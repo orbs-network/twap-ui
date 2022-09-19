@@ -1,0 +1,43 @@
+{
+  "name": "@orbs-network/twap-ui",
+  "version": "0.0.1",
+  "description": "TWAP UI",
+  "license": "MIT",
+  "author": "Orbs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orbs-network/twap-ui.git"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "./dist"
+  ],
+  "dependencies": {
+    "@defi.org/web3-candies": "3.x",
+    "ethereum-multicall": "2.x",
+    "react-query": "3.x"
+  },
+  "peerDependencies": {
+    "react": "*"
+  },
+  "devDependencies": {
+    "@types/react": "18.x",
+    "@types/react-dom": "18.x",
+    "react": "18.x",
+    "react-dom": "18.x",
+    "typescript": "4.x",
+    "nodemon": "2.x"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && prettier -w && tsc",
+    "start": "npm run clean && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
+  },
+  "config": {
+    "omit": "optional"
+  },
+  "prettier": {
+    "printWidth": 180
+  }
+}

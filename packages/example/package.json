@@ -1,0 +1,29 @@
+{
+  "name": "example",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@types/react": "18.x",
+    "@types/react-dom": "18.x",
+    "react": "18.x",
+    "react-dom": "18.x",
+    "react-scripts": "5.x",
+    "typescript": "4.x",
+    "@orbs-network/twap-ui": "*"
+  },
+  "scripts": {
+    "start": "react-scripts start"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "version": "0.0.1",
+  "useNx": false,
+  "useWorkspaces": true,
+  "progress": true,
+  "rejectCycles": true,
+  "sort": true,
+  "stream": true,
+  "strict": true,
+  "bail": true
+}
