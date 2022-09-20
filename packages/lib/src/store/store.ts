@@ -3,6 +3,13 @@ import { setWeb3Instance } from "@defi.org/web3-candies";
 import Web3 from "web3";
 import { useEffect } from "react";
 
+export enum TimeFormat {
+  Minutes,
+  Hours,
+  Days,
+}
+
+
 export const useWeb3Provider = (provider: any) => {
   useEffect(() => {
     setWeb3Instance(new Web3(provider));
@@ -53,5 +60,41 @@ export const changeTokenPositions = () => {
     setSrcAddress(dstAddress);
     setDstAmount(srcAmount);
     setDstAddress(srcAddress);
+  };
+};
+
+
+export const useMaxDuration = () => {
+  const client = useQueryClient();
+  const key = ["useMaxDuration"];
+  const data = useQuery(key, () => {
+    return {
+      milliseconds: 0,
+      timeFormat: TimeFormat.Minutes
+    };
+  }).data;
+
+  return {
+    ...data,
+    setMilliseconds: (milliseconds?: number) => client.setQueryData(key, (prevData: any) => ({...prevData, milliseconds})),
+    setTimeFormat: (timeFormat?: TimeFormat) => client.setQueryData(key, (prevData: any) => ({...prevData, timeFormat})),
+  };
+};
+
+
+export const useTradeInterval = () => {
+  const client = useQueryClient();
+  const key = ["useTradeInterval"];
+  const data = useQuery(key, () => {
+    return {
+      milliseconds: 0,
+      timeFormat: TimeFormat.Minutes
+    };
+  }).data;
+
+  return {
+    ...data,
+    setMilliseconds: (milliseconds?: number) => client.setQueryData(key, (prevData: any) => ({...prevData, milliseconds})),
+    setTimeFormat: (timeFormat?: TimeFormat) => client.setQueryData(key, (prevData: any) => ({...prevData, timeFormat})),
   };
 };

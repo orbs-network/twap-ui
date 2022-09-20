@@ -1,9 +1,10 @@
 import { Box, styled } from "@mui/system";
 import { NumericFormat } from "react-number-format";
+import { NumberFormatValues } from "react-number-format/types/types";
 
 interface Props {
-  value: string;
-  onChange: (value: string) => void;
+  value: string | number;
+  onChange: (value: NumberFormatValues) => void;
   placeholder?: string;
 }
 
@@ -14,7 +15,7 @@ function AmountInput({ onChange, value, placeholder = "Enter amount" }: Props) {
         placeholder={placeholder}
         value={value}
         onValueChange={(values) => {
-          onChange(values.value);
+          onChange(values);
         }}
         customInput={StyledInput}
         displayType="input"

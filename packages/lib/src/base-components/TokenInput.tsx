@@ -22,6 +22,9 @@ const TokenInput = ({ address, amount, onChange }: Props) => {
 
   const onSelectClick = () => {};
 
+
+
+
   return (
     <StyledContainer>
       <StyledTop>
@@ -38,7 +41,7 @@ const TokenInput = ({ address, amount, onChange }: Props) => {
           </StyledTokenSelected>
         )}
         <StyledAmount>
-          <AmountInput value={amount} onChange={onChange} />
+          <AmountInput value={amount} onChange={(values) => onChange(values.value)} />
         </StyledAmount>
         <StyledMaxButton>
           <CustomButton onClick={() => {}}>Max</CustomButton>

@@ -1,10 +1,13 @@
 import { Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import InfoIconTooltip from "../base-components/InfoIconTooltip";
-import TimeSelect, { Time } from "../base-components/TimeSelect";
+import TimeSelect from "../base-components/TimeSelect";
+import { useTradeInterval } from "../store/store";
 import { StyledBorderWrapper, StyledShadowContainer } from "../styles";
 
 function TradeInterval() {
+
+  const {setMilliseconds, milliseconds, timeFormat, setTimeFormat} = useTradeInterval()
   return (
     <StyledContainer>
       <StyledTitle>
@@ -12,7 +15,8 @@ function TradeInterval() {
           <Typography>Trade Interval</Typography>
         </InfoIconTooltip>
       </StyledTitle>
-      <TimeSelect selected={Time.Minutes} />
+      <TimeSelect setValue={setMilliseconds} milliseconds={milliseconds} timeFormat={timeFormat!!} setTimeFormat={setTimeFormat} />
+
     </StyledContainer>
   );
 }
