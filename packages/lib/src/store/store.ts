@@ -19,9 +19,9 @@ export const useSrcToken = () => {
 
   return {
     ...data,
-    setAmount: (amount?: string) => client.setQueryData(key, { ...data, amount }),
+    setAmount: (amount?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
     setAmountUi: (amountUi?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, amount: amountUi })), //TODO
-    setAddress: (address?: string) => client.setQueryData(key, { ...data, address }),
+    setAddress: (address?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, address })),
   };
 };
 
@@ -38,13 +38,13 @@ export const useDstToken = () => {
   return {
     ...data,
     amountUi: "fromWei",
-    setAmount: (amount?: string) => client.setQueryData(key, { ...data, amount }),
+    setAmount: (amount?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
     setAmountUi: (amountUi?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, amount: amountUi })), // TODO
-    setAddress: (address?: string) => client.setQueryData(key, { ...data, address }),
+    setAddress: (address?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, address })),
   };
 };
 
-export const useChangeTokenPositions = () => {
+export const changeTokenPositions = () => {
   const { amount: srcAmount, address: srcAddress, setAmount: setSrcAmount, setAddress: setSrcAddress } = useSrcToken();
   const { amount: dstAmount, address: dstAddress, setAmount: setDstAmount, setAddress: setDstAddress } = useDstToken();
 

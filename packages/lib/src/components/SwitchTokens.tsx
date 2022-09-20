@@ -1,9 +1,9 @@
 import { Box, styled } from "@mui/system";
 // import Img from "../assets/images/swap-order.svg";
-import { useChangeTokenPositions } from "../store/store";
+import { changeTokenPositions } from "../store/store";
 
 function SwitchTokens() {
-  const switchTokens = useChangeTokenPositions();
+  const switchTokens = changeTokenPositions();
 
   return (
     <StyledContainer>

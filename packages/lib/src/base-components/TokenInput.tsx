@@ -19,7 +19,6 @@ const TokenInput = ({ address, amount, onChange }: Props) => {
   const [value, setValue] = useState("");
 
   // const {data: usdPrice} = useTokenUsdPrice(tokenAddress)
-  // console.log(usdPrice);
 
   const onSelectClick = () => {};
 

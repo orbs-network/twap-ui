@@ -8,8 +8,6 @@ function SrcToken() {
     setAmountUi(value);
   };
 
-  console.log({ tokenAddress: address });
-
   return <TokenInput onChange={onChange} address={address || ""} amount={amount!} />;
 }
 
