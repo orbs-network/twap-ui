@@ -21,7 +21,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const TWAP = ({ provider }: { provider: any }) => {
+export const TWAP = ({ provider }: { provider: any }) => {
   useWeb3Provider(provider);
 
   return (
@@ -43,8 +43,6 @@ const TWAP = ({ provider }: { provider: any }) => {
     </QueryClientProvider>
   );
 };
-
-export default TWAP;
 
 const StyledContainer = styled(Box)({
   background: "#FFFFFF",

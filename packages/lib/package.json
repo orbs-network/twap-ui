@@ -37,7 +37,7 @@
   "scripts": {
     "clean": "rm -rf dist && prettier -w .",
     "build": "npm run clean && tsc",
-    "start": "npm run clean && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
+    "start": "nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
   },
   "config": {
     "omit": "optional"
