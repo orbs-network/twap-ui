@@ -9,9 +9,13 @@
     "react-dom": "18.x",
     "react-scripts": "5.x",
     "typescript": "4.x",
-    "@orbs-network/twap-ui": "*"
+    "@orbs-network/twap-ui": "*",
+    "@web3-react/core": "6.x",
+    "@web3-react/injected-connector": "6.x",
+    "@web3-react/walletconnect-connector": "6.x"
   },
   "scripts": {
+    "build": "prettier -w .",
     "start": "react-scripts start"
   },
   "browserslist": {
@@ -25,5 +29,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "prettier": {
+    "printWidth": 180
   }
 }

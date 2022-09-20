@@ -1,57 +1,55 @@
-import React from "react";
-import { QueryClient, QueryClientProvider, useMutation, useQuery, useQueryClient } from "react-query";
-import Web3 from "web3";
-import { bn18, erc20s, fmt18, setWeb3Instance } from "@defi.org/web3-candies";
+import { CssBaseline } from "@mui/material";
+import { Box, styled } from "@mui/system";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
+import { StyledColumnGap } from "./styles";
+import DstToken from "./components/DstToken";
+import SrcToken from "./components/SrcToken";
+import TradeSize from "./components/TradeSize";
+import MaxDuration from "./components/MaxDuration";
+import TradeInterval from "./components/TradeInterval";
+import SwitchTokens from "./components/SwitchTokens";
+import { useWeb3Provider } from "./store/store";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
+      cacheTime: 0,
+    },
+  },
+});
 
-export const TWAP = () => {
+const TWAP = ({ provider }: { provider: any }) => {
+  useWeb3Provider(provider);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Inner />
+      <CssBaseline />
+      <StyledContainer>
+        <StyledColumnGap gap={11}>
+          <SrcToken />
+          <SwitchTokens />
+          <DstToken />
+        </StyledColumnGap>
+        <StyledColumnGap gap={20}>
+          <TradeSize />
+          <MaxDuration />
+          <TradeInterval />
+        </StyledColumnGap>
+      </StyledContainer>
+      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </QueryClientProvider>
   );
 };
 
-let externalStateExample: string[] = [];
+export default TWAP;
 
-const Inner = () => {
-  const client = useQueryClient();
-
-  const { data, isLoading } = useQuery(["query key"], async () => {
-    const web3 = new Web3("");
-    setWeb3Instance(web3);
-
-    const amount = await erc20s.eth.WETH().amount(123.456);
-    externalStateExample.push("balance:" + fmt18(amount) + fmt18(bn18(456789.123456)));
-    return externalStateExample;
-  });
-
-  const mutation = useMutation(
-    async (data: { id: number; title: string }) => {
-      externalStateExample.push(data.id + "-" + data.title);
-    },
-    {
-      onSuccess: () => client.invalidateQueries(["query key"]),
-    }
-  );
-
-  return (
-    <div>
-      <div>Using react query</div>
-
-      <div>{isLoading ? "LOADING" : data?.map((i, index) => <div key={index}>{i}</div>)}</div>
-
-      <button
-        onClick={() => {
-          mutation.mutate({
-            id: Date.now(),
-            title: "just works",
-          });
-        }}
-      >
-        Mutate
-      </button>
-    </div>
-  );
-};
+const StyledContainer = styled(Box)({
+  background: "#FFFFFF",
+  boxShadow: "0px 10px 100px rgba(85, 94, 104, 0.1)",
+  borderRadius: 30,
+  minHeight: 200,
+  padding: 22,
+});
