@@ -35,9 +35,10 @@
     "nodemon": "2.x"
   },
   "scripts": {
-    "clean": "rm -rf dist && prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
+    "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
+    "clean": "rm -rf dist && npm run prettier",
     "build": "npm run clean && tsc",
-    "start": "nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
+    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
   },
   "config": {
     "omit": "optional"

@@ -1,106 +1,73 @@
 import { ClickAwayListener, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
+import _ from "lodash";
 import { useMemo, useState } from "react";
 import { TimeFormat } from "../store/store";
 import AmountInput from "./AmountInput";
 
-const list = [
+const displayValues = [
   {
     text: "Minutes",
-    value: TimeFormat.Minutes,
+    format: TimeFormat.Minutes,
+    base: 1000 * 60,
   },
   {
     text: "Hours",
-    value: TimeFormat.Hours,
+    format: TimeFormat.Hours,
+    base: 1000 * 60 * 60,
   },
   {
     text: "Days",
-    value: TimeFormat.Days,
+    format: TimeFormat.Days,
+    base: 1000 * 60 * 60 * 24,
   },
 ];
 
-const uiFormatToMilliseconds = (selectedTime: TimeFormat, value?: number) => {
-    if(!value){
-      return 0
-    }
-  switch (selectedTime) {
-    case TimeFormat.Minutes:
-      return value * 60000;
-    case TimeFormat.Hours:
-      return value * 3.6e6;
-    case TimeFormat.Days:
-      return value * 8.64e7;
-    default:
-      return 0;
-  }
-};
+const uiFormatToMillis = (format: TimeFormat, value: number) => _.find(displayValues, (v) => v.format === format)!.base * value;
 
-const millisecondsToUiFormat = (selectedTime: TimeFormat, milliseconds?: number) => {
-
-  if (!milliseconds) {
-    return undefined
-  }
-  let result = 0;
-  switch (selectedTime) {
-    case TimeFormat.Minutes:
-      result = milliseconds / 60000;
-      break;
-    case TimeFormat.Hours:
-      result = milliseconds / 3.6e6;
-      break;
-    case TimeFormat.Days:
-      result = milliseconds / 8.64e7;
-      break;
-    default:
-      result = 0;
-  }
-
-  return result;
-};
+const millisecondsToUiFormat = (format: TimeFormat, milliseconds: number) => milliseconds / _.find(displayValues, (v) => v.format === format)!.base;
 
 interface Props {
-  milliseconds?: number;
-  setValue: (value: number) => void;
+  millis?: number;
+  setMillis: (value: number) => void;
   setTimeFormat: (value: TimeFormat) => void;
-  timeFormat: TimeFormat;
+  timeFormat?: TimeFormat;
 }
 
-function TimeSelect({ milliseconds, setValue, timeFormat, setTimeFormat }: Props) {
-  const [show, setShow] = useState(false);
+function TimeSelect({ millis = 0, setMillis, timeFormat = TimeFormat.Minutes, setTimeFormat }: Props) {
+  const [showList, setShowList] = useState(false);
 
-  const selectedItem = useMemo(() => {
-    return list.find((item) => item.value === timeFormat);
-  }, [timeFormat]);
+  const selectedListItem = useMemo(() => displayValues.find((item) => item.format === timeFormat), [timeFormat]);
 
-  const onSelect = (time: TimeFormat) => {
-    setShow(false);
+  const onSelectListItem = (time: TimeFormat) => {
+    setShowList(false);
 
-    const inputValue = millisecondsToUiFormat(timeFormat, milliseconds);
+    const inputValue = millisecondsToUiFormat(timeFormat, millis);
     setTimeFormat(time);
-    setValue(uiFormatToMilliseconds(time, inputValue));
+    setMillis(uiFormatToMillis(time, inputValue));
   };
 
-  const onChange = (value: number) => {
-    setValue(uiFormatToMilliseconds(timeFormat, value));
+  const onValueChange = (value: number) => {
+    setMillis(uiFormatToMillis(timeFormat, value));
   };
 
   return (
     <StyledContainer>
       <StyledInput>
-        <AmountInput value={millisecondsToUiFormat(timeFormat, milliseconds) || ''} onChange={(values) => onChange(values.floatValue || 0)} placeholder={"0"} />
+        <AmountInput value={millisecondsToUiFormat(timeFormat, millis) || ""} onChange={(values) => onValueChange(values.floatValue || 0)} placeholder={"0"} />
       </StyledInput>
 
       <StyledTimeSelect>
-        <StyledSelected onClick={() => setShow(true)}>
-          <Typography> {selectedItem?.text}</Typography>
+        <StyledSelected onClick={() => setShowList(true)}>
+          <Typography> {selectedListItem?.text}</Typography>
         </StyledSelected>
-        {show && (
-          <ClickAwayListener onClickAway={() => setShow(false)}>
+        {showList && (
+          <ClickAwayListener onClickAway={() => setShowList(false)}>
             <StyledList>
-              {list.map((item) => {
-                const isSelected = timeFormat === item.value;
+              {displayValues.map((item) => {
+                const isSelected = timeFormat === item.format;
                 return (
-                  <StyledListItem selected={isSelected} onClick={() => onSelect(item.value)} key={item.value}>
+                  <StyledListItem selected={isSelected} onClick={() => onSelectListItem(item.format)} key={item.format}>
                     <Typography>{item.text}</Typography>
                   </StyledListItem>
                 );

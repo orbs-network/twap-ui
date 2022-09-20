@@ -6,9 +6,7 @@ import { useMaxDuration } from "../store/store";
 import { StyledBorderWrapper, StyledShadowContainer } from "../styles";
 
 function MaxDuration() {
-  const { milliseconds, setMilliseconds, timeFormat, setTimeFormat } = useMaxDuration();
-
-  console.log({ milliseconds });
+  const { millis, setMillis, timeFormat, setTimeFormat } = useMaxDuration();
 
   return (
     <StyledContainer>
@@ -17,7 +15,7 @@ function MaxDuration() {
           <Typography>Max Duration</Typography>
         </InfoIconTooltip>
       </StyledTitle>
-      <TimeSelect setValue={setMilliseconds} milliseconds={milliseconds} timeFormat={timeFormat!!} setTimeFormat={setTimeFormat} />
+      <TimeSelect setMillis={setMillis} millis={millis} timeFormat={timeFormat} setTimeFormat={setTimeFormat} />
     </StyledContainer>
   );
 }

@@ -6,8 +6,7 @@ import { useTradeInterval } from "../store/store";
 import { StyledBorderWrapper, StyledShadowContainer } from "../styles";
 
 function TradeInterval() {
-
-  const {setMilliseconds, milliseconds, timeFormat, setTimeFormat} = useTradeInterval()
+  const { setMillis, millis, timeFormat, setTimeFormat } = useTradeInterval();
   return (
     <StyledContainer>
       <StyledTitle>
@@ -15,8 +14,7 @@ function TradeInterval() {
           <Typography>Trade Interval</Typography>
         </InfoIconTooltip>
       </StyledTitle>
-      <TimeSelect setValue={setMilliseconds} milliseconds={milliseconds} timeFormat={timeFormat!!} setTimeFormat={setTimeFormat} />
-
+      <TimeSelect setMillis={setMillis} millis={millis} timeFormat={timeFormat} setTimeFormat={setTimeFormat} />
     </StyledContainer>
   );
 }

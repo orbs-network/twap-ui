@@ -17,7 +17,7 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: Infinity,
       cacheTime: 0,
-    },
+    }, // TODO how do we log each state change?
   },
 });
 

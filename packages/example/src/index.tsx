@@ -8,9 +8,7 @@ import Web3 from "web3";
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 
 export const getLibrary = (provider: any): Web3 => {
-  const library = new Web3(provider);
-  (library as any).pollingInterval = 12000;
-  return library;
+  return new Web3(provider);
 };
 
 root.render(

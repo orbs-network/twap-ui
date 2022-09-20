@@ -9,21 +9,18 @@ import { Typography } from "@mui/material";
 import CustomButton from "./CustomButton";
 
 interface Props {
-  address: string;
-  amount: string;
+  address?: string;
+  amount?: string;
   onChange: (value: string) => void;
 }
 
 // TODO
-const TokenInput = ({ address, amount, onChange }: Props) => {
+const TokenInput = ({ address = "", amount = "", onChange }: Props) => {
   const [value, setValue] = useState("");
 
   // const {data: usdPrice} = useTokenUsdPrice(tokenAddress)
 
   const onSelectClick = () => {};
-
-
-
 
   return (
     <StyledContainer>
