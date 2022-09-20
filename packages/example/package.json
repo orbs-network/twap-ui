@@ -15,7 +15,7 @@
     "@web3-react/walletconnect-connector": "6.x"
   },
   "scripts": {
-    "build": "prettier -w .",
+    "build": "prettier -w 'src/**/*.{ts,tsx,js,jsx,json,sol}'",
     "start": "react-scripts start"
   },
   "browserslist": {
