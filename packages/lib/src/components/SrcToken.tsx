@@ -1,14 +1,15 @@
 import TokenInput from "../base-components/TokenInput";
-import { useSrcToken } from "../store/store";
+import { useActionHandlers, useSrcToken } from "../store/store";
 
 function SrcToken() {
-  const { address, amount, setAmountUi } = useSrcToken();
+  const { address, uiAmount } = useSrcToken();
+  const { onSrcTokenChange } = useActionHandlers();
 
   const onChange = (value: string) => {
-    setAmountUi(value);
+    onSrcTokenChange(value);
   };
 
-  return <TokenInput onChange={onChange} address={address || ""} amount={amount!} />;
+  return <TokenInput onChange={onChange} address={address || ""} amount={uiAmount} />;
 }
 
 export default SrcToken;

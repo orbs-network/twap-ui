@@ -16,7 +16,7 @@ export const StyledShadowContainer = styled(Box)({
   },
 });
 
-export const StyledColumnGap = styled(Box)(({ gap }: { gap: number }) => ({
+export const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
   display: "flex",
   flexDirection: "column",
   gap,
@@ -32,7 +32,22 @@ export const StyledBorderWrapper = styled(Box)({
   padding: 8,
 });
 
-export const StyledSmallTitle = styled(Typography)({
+export const StyledOverflowText = styled(Typography)({
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+});
+
+export const StyledSmallTitle = styled(StyledOverflowText)({
   fontWeight: 600,
   fontSize: 12,
+});
+
+export const StyledSmallTextDetail = styled(Typography)({
+  fontWeight: 400,
+  fontSize: "12px",
+});
+
+export const StyledBoxWithDetails = styled(StyledColumnGap)({
+  gap: 10,
 });

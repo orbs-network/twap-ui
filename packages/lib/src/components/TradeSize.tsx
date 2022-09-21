@@ -1,12 +1,18 @@
-import { Typography, typographyClasses } from "@mui/material";
+import { Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import React from "react";
 import AmountInput from "../base-components/AmountInput";
 import InfoIconTooltip from "../base-components/InfoIconTooltip";
 import TokenDisplay from "../base-components/TokenDisplay";
-import { StyledSmallTitle, StyledShadowContainer, StyledColumnGap, StyledBorderWrapper } from "../styles";
+import { useActionHandlers, useTradeSize } from "../store/store";
+import { StyledSmallTitle, StyledShadowContainer, StyledColumnGap, StyledBorderWrapper, StyledSmallTextDetail } from "../styles";
 
 function TradeSize() {
+  const {tradeSizeForUi, totalTradesForUi} = useTradeSize()
+  const {onTradeSizeChange} = useActionHandlers()
+
+  
+
   return (
     <StyledContainer gap={10}>
       <StyledTop>
@@ -16,12 +22,12 @@ function TradeSize() {
           </InfoIconTooltip>
         </StyledTitle>
         <StyledInput>
-          <AmountInput value="" onChange={() => {}} />
+          <AmountInput value={tradeSizeForUi} onChange={(values) => onTradeSizeChange(values.value)} />
         </StyledInput>
         <TokenDisplay address={""} />
       </StyledTop>
       <StyledBottom>
-        <StyledTotalTrades>Total trades: 0</StyledTotalTrades>
+        <StyledSmallTextDetail>Total trades: {totalTradesForUi}</StyledSmallTextDetail>
       </StyledBottom>
     </StyledContainer>
   );

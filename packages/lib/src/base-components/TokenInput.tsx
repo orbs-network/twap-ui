@@ -1,6 +1,5 @@
 import { Box, styled } from "@mui/system";
-import { useState } from "react";
-import { StyledBorderWrapper, StyledShadowContainer } from "../styles";
+import { StyledBorderWrapper, StyledBoxWithDetails, StyledShadowContainer, StyledSmallTextDetail } from "../styles";
 import AmountInput from "./AmountInput";
 import TokenDisplay from "./TokenDisplay";
 import { FiEdit } from "react-icons/fi";
@@ -11,45 +10,31 @@ import CustomButton from "./CustomButton";
 interface Props {
   address?: string;
   amount?: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
+  disabled?: boolean;
 }
 
 // TODO
-const TokenInput = ({ address = "", amount = "", onChange }: Props) => {
-  const [value, setValue] = useState("");
-
-  // const {data: usdPrice} = useTokenUsdPrice(tokenAddress)
-
-  const onSelectClick = () => {};
-
+const TokenInput = ({ address = "", amount = "", onChange, disabled }: Props) => {
   return (
     <StyledContainer>
       <StyledTop>
-        {!address ? (
-          <StyledTokenSelect>
-            <Typography>Select token</Typography>
-          </StyledTokenSelect>
-        ) : (
-          <StyledTokenSelected>
-            <TokenDisplay address={""} />
-            <StyledIcon>
-              <Icon icon={FiEdit} style={{ width: 22, height: 22 }} />
-            </StyledIcon>
-          </StyledTokenSelected>
-        )}
+        <TokenInputSelect address={address} />
         <StyledAmount>
-          <AmountInput value={amount} onChange={(values) => onChange(values.value)} />
+          <AmountInput disabled={disabled} value={amount} onChange={(values) => onChange?.(values.value)} />
         </StyledAmount>
-        <StyledMaxButton>
-          <CustomButton onClick={() => {}}>Max</CustomButton>
-        </StyledMaxButton>
+        {!disabled && (
+          <StyledMaxButton>
+            <CustomButton onClick={() => {}}>Max</CustomButton>
+          </StyledMaxButton>
+        )}
       </StyledTop>
       <StyledBottom>
         <StyledBalance>
           <StyledBalanceFigure />
-          <Typography>
+          <StyledSmallTextDetail>
             Balance: <span>1</span>
-          </Typography>
+          </StyledSmallTextDetail>
         </StyledBalance>
         <StyledUsdPrice>{/* $ {usdPrice} */}</StyledUsdPrice>
       </StyledBottom>
@@ -58,6 +43,21 @@ const TokenInput = ({ address = "", amount = "", onChange }: Props) => {
 };
 
 export default TokenInput;
+
+const TokenInputSelect = ({ address }: { address?: string }) => {
+  return !address ? (
+    <StyledTokenSelect>
+      <Typography>Select token</Typography>
+    </StyledTokenSelect>
+  ) : (
+    <StyledTokenSelected>
+      <TokenDisplay address={address} />
+      <StyledIcon>
+        <Icon icon={FiEdit} style={{ width: 22, height: 22 }} />
+      </StyledIcon>
+    </StyledTokenSelected>
+  );
+};
 
 const StyledUsdPrice = styled(Typography)({});
 
@@ -91,11 +91,8 @@ const StyledBalanceFigure = styled(Box)({
   },
 });
 
-const StyledContainer = styled(Box)({
+const StyledContainer = styled(StyledBoxWithDetails)({
   width: "100%",
-  display: "flex",
-  flexDirection: "column",
-  gap: 20,
 });
 
 const StyledTop = styled(StyledBorderWrapper)({});

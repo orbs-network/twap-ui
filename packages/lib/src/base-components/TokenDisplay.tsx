@@ -1,6 +1,5 @@
-import { Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { CSSProperties } from "react";
+import { useToken } from "../store/store";
 import { StyledSmallTitle } from "../styles";
 
 interface props {
@@ -9,10 +8,11 @@ interface props {
 }
 
 function TokenDisplay({ address, imageSize }: props) {
+  const { token } = useToken(address);
   return (
     <StyledContainer>
-      <StyledLogo size={imageSize} src={""} />
-      <StyledSmallTitle>{address}</StyledSmallTitle>
+      {/* <StyledLogo size={imageSize} src={""} /> */}
+      <StyledTokenName>{token?.name}</StyledTokenName>
     </StyledContainer>
   );
 }
@@ -24,6 +24,11 @@ const StyledContainer = styled(Box)({
   alignItems: "center",
   gap: 6,
   justifyContent: "center",
+  paddingLeft: 20,
+});
+
+const StyledTokenName = styled(StyledSmallTitle)({
+  maxWidth: 50,
 });
 
 const StyledLogo = styled("img")(({ size }: { size?: string }) => ({

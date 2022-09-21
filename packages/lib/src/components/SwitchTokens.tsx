@@ -1,5 +1,6 @@
 import { Box, styled } from "@mui/system";
-// import Img from "../assets/images/swap-order.svg";
+// import Img from "../assets/images/swap-order.png";
+
 import { changeTokenPositions } from "../store/store";
 
 function SwitchTokens() {
@@ -9,7 +10,7 @@ function SwitchTokens() {
     <StyledContainer>
       <StyledFlex onClick={switchTokens}>
         <StyledBigFigure />
-        <StyledSmallFigure>{/*<img src={Img} />*/}</StyledSmallFigure>
+        <StyledSmallFigure></StyledSmallFigure>
       </StyledFlex>
     </StyledContainer>
   );

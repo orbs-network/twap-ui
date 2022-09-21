@@ -41,20 +41,22 @@ function TimeSelect({ millis = 0, setMillis, timeFormat = TimeFormat.Minutes, se
 
   const onSelectListItem = (time: TimeFormat) => {
     setShowList(false);
-
     const inputValue = millisecondsToUiFormat(timeFormat, millis);
     setTimeFormat(time);
     setMillis(uiFormatToMillis(time, inputValue));
   };
 
-  const onValueChange = (value: number) => {
-    setMillis(uiFormatToMillis(timeFormat, value));
+  const onValueChange = (value?: number) => {
+    if (value != null && value < 1) {
+      value = 1;
+    }
+    setMillis(uiFormatToMillis(timeFormat, value || 0));
   };
 
   return (
     <StyledContainer>
       <StyledInput>
-        <AmountInput value={millisecondsToUiFormat(timeFormat, millis) || ""} onChange={(values) => onValueChange(values.floatValue || 0)} placeholder={"0"} />
+        <AmountInput value={millisecondsToUiFormat(timeFormat, millis) || ""} onChange={(value) => onValueChange(value.floatValue)} placeholder={"0"} />
       </StyledInput>
 
       <StyledTimeSelect>

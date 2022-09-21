@@ -1,24 +1,37 @@
 import { Box, styled } from "@mui/system";
+import { useEffect, useRef, useState } from "react";
 import { NumericFormat } from "react-number-format";
 import { NumberFormatValues } from "react-number-format/types/types";
 
 interface Props {
   value: string | number;
-  onChange: (value: NumberFormatValues) => void;
+  onChange?: (value: NumberFormatValues) => void;
   placeholder?: string;
+  disabled?: boolean;
+  isAllowed?: boolean;
 }
 
-function AmountInput({ onChange, value, placeholder = "Enter amount" }: Props) {
+function AmountInput({ onChange, value, placeholder = "Enter amount", disabled = false, isAllowed = false }: Props) {
+  const [localValue, setLocalValue] = useState(value);
+
+  useEffect(() => {
+    setLocalValue("");
+    setLocalValue(value);
+  }, [value]);
+
   return (
     <StyledContainer>
       <NumericFormat
+        disabled={disabled}
         placeholder={placeholder}
-        value={value}
+        value={localValue}
+        defaultValue={value}
+      
         onValueChange={(values) => {
-          onChange(values);
+          onChange?.(values);
         }}
         customInput={StyledInput}
-        displayType="input"
+        // displayType="input"
       />
     </StyledContainer>
   );

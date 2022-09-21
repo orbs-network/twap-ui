@@ -2,11 +2,13 @@ import { Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import InfoIconTooltip from "../base-components/InfoIconTooltip";
 import TimeSelect from "../base-components/TimeSelect";
-import { useMaxDuration } from "../store/store";
+import { useActionHandlers, useMaxDuration } from "../store/store";
 import { StyledBorderWrapper, StyledShadowContainer } from "../styles";
 
 function MaxDuration() {
-  const { millis, setMillis, timeFormat, setTimeFormat } = useMaxDuration();
+  const { millis, timeFormat, setTimeFormat } = useMaxDuration();
+
+  const { onMaxDurationChange } = useActionHandlers();
 
   return (
     <StyledContainer>
@@ -15,7 +17,7 @@ function MaxDuration() {
           <Typography>Max Duration</Typography>
         </InfoIconTooltip>
       </StyledTitle>
-      <TimeSelect setMillis={setMillis} millis={millis} timeFormat={timeFormat} setTimeFormat={setTimeFormat} />
+      <TimeSelect setMillis={onMaxDurationChange} millis={millis} timeFormat={timeFormat} setTimeFormat={setTimeFormat} />
     </StyledContainer>
   );
 }

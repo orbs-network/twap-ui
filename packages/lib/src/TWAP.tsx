@@ -10,6 +10,8 @@ import MaxDuration from "./components/MaxDuration";
 import TradeInterval from "./components/TradeInterval";
 import SwitchTokens from "./components/SwitchTokens";
 import { useWeb3Provider } from "./store/store";
+import CustomButton from "./base-components/CustomButton";
+import SwapButton from "./components/SwapButton";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,7 +24,7 @@ const queryClient = new QueryClient({
 });
 
 export const TWAP = ({ provider }: { provider: any }) => {
-  useWeb3Provider(provider);
+  useWeb3Provider(provider || (window as any).ethereum);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -37,6 +39,7 @@ export const TWAP = ({ provider }: { provider: any }) => {
           <TradeSize />
           <MaxDuration />
           <TradeInterval />
+          <SwapButton />
         </StyledColumnGap>
       </StyledContainer>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
@@ -44,10 +47,11 @@ export const TWAP = ({ provider }: { provider: any }) => {
   );
 };
 
-const StyledContainer = styled(Box)({
+const StyledContainer = styled(StyledColumnGap)({
   background: "#FFFFFF",
   boxShadow: "0px 10px 100px rgba(85, 94, 104, 0.1)",
   borderRadius: 30,
   minHeight: 200,
   padding: 22,
+  gap: 20,
 });

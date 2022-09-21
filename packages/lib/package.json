@@ -15,13 +15,15 @@
   ],
   "dependencies": {
     "@defi.org/web3-candies": "3.x",
-    "ethereum-multicall": "2.x",
-    "react-query": "3.x",
     "@emotion/react": "11.x",
     "@emotion/styled": "11.x",
     "@mui/material": "5.x",
+    "@types/react-numeric-input": "^2.2.4",
+    "ethereum-multicall": "2.x",
     "react-icons": "4.x",
-    "react-number-format": "^5.0.0-beta"
+    "react-number-format": "^5.0.0-beta",
+    "react-numeric-input": "^2.2.3",
+    "react-query": "3.x"
   },
   "peerDependencies": {
     "react": "*"
@@ -29,10 +31,10 @@
   "devDependencies": {
     "@types/react": "18.x",
     "@types/react-dom": "18.x",
+    "nodemon": "2.x",
     "react": "18.x",
     "react-dom": "18.x",
-    "typescript": "4.x",
-    "nodemon": "2.x"
+    "typescript": "4.x"
   },
   "scripts": {
     "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
