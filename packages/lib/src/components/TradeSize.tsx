@@ -8,10 +8,8 @@ import { useActionHandlers, useTradeSize } from "../store/store";
 import { StyledSmallTitle, StyledShadowContainer, StyledColumnGap, StyledBorderWrapper, StyledSmallTextDetail } from "../styles";
 
 function TradeSize() {
-  const {tradeSizeForUi, totalTradesForUi} = useTradeSize()
-  const {onTradeSizeChange} = useActionHandlers()
-
-  
+  const { tradeSizeForUi, totalTradesForUi } = useTradeSize();
+  const { onTradeSizeChange } = useActionHandlers();
 
   return (
     <StyledContainer gap={10}>

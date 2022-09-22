@@ -3,11 +3,11 @@ import { useToken } from "../store/store";
 import { StyledSmallTitle } from "../styles";
 
 interface props {
-  address: string;
+  address?: string;
   imageSize?: string;
 }
 
-function TokenDisplay({ address, imageSize }: props) {
+function TokenDisplay({ address = '', imageSize }: props) {
   const { token } = useToken(address);
   return (
     <StyledContainer>
@@ -24,7 +24,6 @@ const StyledContainer = styled(Box)({
   alignItems: "center",
   gap: 6,
   justifyContent: "center",
-  paddingLeft: 20,
 });
 
 const StyledTokenName = styled(StyledSmallTitle)({

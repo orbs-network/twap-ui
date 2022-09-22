@@ -12,6 +12,7 @@ import SwitchTokens from "./components/SwitchTokens";
 import { useWeb3Provider } from "./store/store";
 import CustomButton from "./base-components/CustomButton";
 import SwapButton from "./components/SwapButton";
+import PriceInput from "./components/PriceInput";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +25,7 @@ const queryClient = new QueryClient({
 });
 
 export const TWAP = ({ provider }: { provider: any }) => {
+  
   useWeb3Provider(provider || (window as any).ethereum);
 
   return (
@@ -36,6 +38,7 @@ export const TWAP = ({ provider }: { provider: any }) => {
           <DstToken />
         </StyledColumnGap>
         <StyledColumnGap gap={20}>
+          <PriceInput />
           <TradeSize />
           <MaxDuration />
           <TradeInterval />

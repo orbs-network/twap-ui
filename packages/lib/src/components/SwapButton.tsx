@@ -1,11 +1,17 @@
 import { Box, styled } from "@mui/system";
 import React from "react";
 import CustomButton from "../base-components/CustomButton";
+import { useSubmitButtonValidation } from "../store/store";
 
 function SwapButton() {
+
+  const warning = useSubmitButtonValidation()
+
   return (
     <StyledButton>
-      <CustomButton onClick={() => {}}>Place Order</CustomButton>
+      <CustomButton disabled={!!warning} onClick={() => {}}>
+        {warning || 'Place order'}
+      </CustomButton>
     </StyledButton>
   );
 }

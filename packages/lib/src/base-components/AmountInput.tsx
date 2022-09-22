@@ -26,7 +26,6 @@ function AmountInput({ onChange, value, placeholder = "Enter amount", disabled =
         placeholder={placeholder}
         value={localValue}
         defaultValue={value}
-      
         onValueChange={(values) => {
           onChange?.(values);
         }}

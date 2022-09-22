@@ -20,3 +20,14 @@ export const ceilDiv = (a?: BN, b?: BN) => {
 export const notZeroNumber = (value?: number) => {
   return value === undefined ? false : Number(value) > 0;
 };
+
+export const isBigger = (a?: BN, b?: BN) => {
+  if (!a || a.isZero()) {
+    return false;
+  }
+
+  if (!b || b.isZero()) {
+    return true;
+  }
+  return a.gt(b);
+};
