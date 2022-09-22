@@ -1,1 +1,5 @@
-export * from "./TWAP";
+export const TWAPLib = {
+  data: {},
+  actions: {},
+  components: {},
+};

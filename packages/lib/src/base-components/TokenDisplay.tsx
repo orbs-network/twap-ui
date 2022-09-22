@@ -7,7 +7,7 @@ interface props {
   imageSize?: string;
 }
 
-function TokenDisplay({ address = '', imageSize }: props) {
+function TokenDisplay({ address = "", imageSize }: props) {
   const { token } = useToken(address);
   return (
     <StyledContainer>

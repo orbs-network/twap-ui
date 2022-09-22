@@ -5,8 +5,17 @@
   "workspaces": [
     "packages/*"
   ],
+  "peerDependencies": {
+    "react": "*"
+  },
   "devDependencies": {
-    "lerna": "5.x"
+    "lerna": "5.x",
+    "@types/react": "18.x",
+    "@types/react-dom": "18.x",
+    "nodemon": "2.x",
+    "react": "18.x",
+    "react-dom": "18.x",
+    "typescript": "4.x"
   },
   "scripts": {
     "clean": "lerna clean -y || true && lerna bootstrap",

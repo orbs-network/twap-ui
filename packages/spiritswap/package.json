@@ -1,7 +1,7 @@
 {
-  "name": "@orbs-network/twap-ui",
+  "name": "@orbs-network/twap-ui-spiritswap",
   "version": "0.0.1",
-  "description": "TWAP UI",
+  "description": "TWAP UI for Spiritswap",
   "license": "MIT",
   "author": "Orbs",
   "repository": {
@@ -14,22 +14,13 @@
     "./dist"
   ],
   "dependencies": {
-    "@defi.org/web3-candies": "3.x",
-    "@emotion/react": "11.x",
-    "@emotion/styled": "11.x",
-    "@mui/material": "5.x",
-    "ethereum-multicall": "2.x",
-    "react-query": "3.x",
-    "react-icons": "4.x"
+    "@orbs-network/twap-ui": "*"
   },
   "scripts": {
     "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
     "clean": "rm -rf dist && npm run prettier",
     "build": "npm run clean && tsc",
     "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
-  },
-  "config": {
-    "omit": "optional"
   },
   "prettier": {
     "printWidth": 180

@@ -10,9 +10,10 @@ import MaxDuration from "./components/MaxDuration";
 import TradeInterval from "./components/TradeInterval";
 import SwitchTokens from "./components/SwitchTokens";
 import { useWeb3Provider } from "./store/store";
-import CustomButton from "./base-components/CustomButton";
+import CustomButton from "@orbs-network/twap-ui/dist/base-components/CustomButton";
 import SwapButton from "./components/SwapButton";
 import PriceInput from "./components/PriceInput";
+import { TWAPLib } from "@orbs-network/twap-ui";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +26,6 @@ const queryClient = new QueryClient({
 });
 
 export const TWAP = ({ provider }: { provider: any }) => {
-  
   useWeb3Provider(provider || (window as any).ethereum);
 
   return (
