@@ -1,6 +1,5 @@
 import { Box, styled } from "@mui/system";
 import { useEffect, useRef, useState } from "react";
-import { NumericFormat } from "react-number-format";
 import { NumberFormatValues } from "react-number-format/types/types";
 
 interface Props {
@@ -21,15 +20,14 @@ function AmountInput({ onChange, value, placeholder = "Enter amount", disabled =
 
   return (
     <StyledContainer>
-      <NumericFormat
+      <input
         disabled={disabled}
         placeholder={placeholder}
         value={localValue}
         defaultValue={value}
-        onValueChange={(values) => {
-          onChange?.(values);
-        }}
-        customInput={StyledInput}
+        // onValueChange={(values) => {
+        //   onChange?.(values);
+        // }}
         // displayType="input"
       />
     </StyledContainer>
