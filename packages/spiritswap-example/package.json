@@ -1,22 +1,13 @@
 {
-  "name": "example",
+  "name": "@orbs-network/twap-ui-spiritswap-example",
   "version": "0.0.1",
   "private": true,
-  "dependencies": {
-    "@types/react": "18.x",
-    "@types/react-dom": "18.x",
-    "react": "18.x",
-    "react-dom": "18.x",
-    "react-scripts": "5.x",
-    "typescript": "4.x",
-    "@orbs-network/twap-ui-spiritswap": "*",
-    "@web3-react/core": "6.x",
-    "@web3-react/injected-connector": "6.x",
-    "@web3-react/walletconnect-connector": "6.x"
-  },
   "scripts": {
     "build": "prettier -w 'src/**/*.{ts,tsx,js,jsx,json,sol}'",
     "start": "react-scripts start"
+  },
+  "dependencies": {
+    "@orbs-network/twap-ui-spiritswap": "*"
   },
   "browserslist": {
     "production": [
@@ -29,8 +20,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "prettier": {
-    "printWidth": 180
   }
 }

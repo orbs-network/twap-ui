@@ -1,36 +1,28 @@
 import "./App.css";
 import { Box, styled } from "@mui/system";
 import { useWeb3React } from "@web3-react/core";
-import { injected } from "./connectors";
-import { TWAP } from "@orbs-network/twap-ui";
+import { injectedConnector } from "./connectors";
+import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
 
 function App() {
-  const { library, activate, account, deactivate } = useWeb3React();
-
-  const onConnectClick = () => activate(injected);
+  const { activate, deactivate, account, library } = useWeb3React();
 
   return (
     <StyledApp className="App">
-      {account ? (
-        <div>
-          <p>{account}</p>
-          <button onClick={deactivate}>Disconnect</button>
-        </div>
-      ) : (
-        <button onClick={onConnectClick}>Connect</button>
-      )}
-      <StyledTwap>
-        <TWAP provider={library} />
-      </StyledTwap>
+      {ConnectBtn(activate, deactivate, account || "")}
+
+      <TWAP_Spiritswap provider={library} />
     </StyledApp>
   );
 }
 
 export default App;
 
-const StyledTwap = styled(Box)({
-  width: 400,
-});
+function ConnectBtn(activate: (connector: any) => void, deactivate: () => void, account: string) {
+  const disconnect = <button onClick={deactivate}>Disconnect {account}</button>;
+  const connect = <button onClick={() => activate(injectedConnector)}>Connect</button>;
+  return <div>{account ? disconnect : connect}</div>;
+}
 
 const StyledApp = styled(Box)({
   display: "flex",
@@ -38,5 +30,5 @@ const StyledApp = styled(Box)({
   justifyContent: "center",
   flexDirection: "column",
   height: "100vh",
-  gap: 49,
+  gap: 48,
 });

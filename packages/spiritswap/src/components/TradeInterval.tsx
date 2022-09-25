@@ -1,20 +1,18 @@
 import { Typography } from "@mui/material";
 import { styled } from "@mui/system";
-import InfoIconTooltip from "../base-components/InfoIconTooltip";
-import TimeSelect from "../base-components/TimeSelect";
-import { useTradeInterval } from "../store/store";
 import { StyledBorderWrapper, StyledShadowContainer } from "../styles";
+import TWAPLib from "@orbs-network/twap-ui";
 
 function TradeInterval() {
-  const { setMillis, millis, timeFormat, setTimeFormat } = useTradeInterval();
+  const { setMillis, millis, timeFormat, setTimeFormat } = TWAPLib.actions.useTradeInterval();
   return (
     <StyledContainer>
       <StyledTitle>
-        <InfoIconTooltip text="some-text">
+        <TWAPLib.components.InfoIconTooltip text="some-text">
           <Typography>Trade Interval</Typography>
-        </InfoIconTooltip>
+        </TWAPLib.components.InfoIconTooltip>
       </StyledTitle>
-      <TimeSelect setMillis={setMillis} millis={millis} timeFormat={timeFormat} setTimeFormat={setTimeFormat} />
+      <TWAPLib.components.TimeSelect setMillis={setMillis} millis={millis} timeFormat={timeFormat} setTimeFormat={setTimeFormat} />
     </StyledContainer>
   );
 }

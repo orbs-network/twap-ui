@@ -1,10 +1,9 @@
-import TokenInput from "../base-components/TokenInput";
-import { useDstToken } from "../store/store";
+import TWAPLib from "@orbs-network/twap-ui";
 
 function DstToken() {
-  const { address, uiAmount } = useDstToken();
+  const { address, uiAmount } = TWAPLib.actions.useDstToken();
 
-  return <TokenInput disabled={true} address={address} amount={uiAmount} />;
+  return <TWAPLib.components.TokenInput disabled={true} address={address} amount={uiAmount} />;
 }
 
 export default DstToken;

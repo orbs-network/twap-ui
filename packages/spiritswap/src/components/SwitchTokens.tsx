@@ -1,10 +1,9 @@
 import { Box, styled } from "@mui/system";
+import TWAPLib from "@orbs-network/twap-ui";
 // import Img from "../assets/images/swap-order.png";
 
-import { changeTokenPositions } from "../store/store";
-
 function SwitchTokens() {
-  const switchTokens = changeTokenPositions();
+  const switchTokens = TWAPLib.actions.changeTokenPositions();
 
   return (
     <StyledContainer>

@@ -1,28 +1,25 @@
 import { Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import React from "react";
-import AmountInput from "../base-components/AmountInput";
-import InfoIconTooltip from "../base-components/InfoIconTooltip";
-import TokenDisplay from "../base-components/TokenDisplay";
-import { useActionHandlers, useTradeSize } from "../store/store";
 import { StyledSmallTitle, StyledShadowContainer, StyledColumnGap, StyledBorderWrapper, StyledSmallTextDetail } from "../styles";
+import TWAPLib from "@orbs-network/twap-ui";
 
 function TradeSize() {
-  const { tradeSizeForUi, totalTradesForUi } = useTradeSize();
-  const { onTradeSizeChange } = useActionHandlers();
+  const { tradeSizeForUi, totalTradesForUi } = TWAPLib.actions.useTradeSize();
+  const { onTradeSizeChange } = TWAPLib.actions.useActionHandlers();
 
   return (
     <StyledContainer gap={10}>
       <StyledTop>
         <StyledTitle>
-          <InfoIconTooltip text="some text">
+          <TWAPLib.components.InfoIconTooltip text="some text">
             <StyledSmallTitle>Trade size</StyledSmallTitle>
-          </InfoIconTooltip>
+          </TWAPLib.components.InfoIconTooltip>
         </StyledTitle>
         <StyledInput>
-          <AmountInput value={tradeSizeForUi} onChange={(values) => onTradeSizeChange(values.value)} />
+          <TWAPLib.components.AmountInput value={tradeSizeForUi} onChange={(values) => onTradeSizeChange(values.toString())} />
         </StyledInput>
-        <TokenDisplay address={""} />
+        <TWAPLib.components.TokenDisplay address={""} />
       </StyledTop>
       <StyledBottom>
         <StyledSmallTextDetail>Total trades: {totalTradesForUi}</StyledSmallTextDetail>

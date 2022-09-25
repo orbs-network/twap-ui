@@ -1,4 +1,5 @@
 .env
+dist
 
 # Created by https://www.toptal.com/developers/gitignore/api/node,react,intellij+all,macos,visualstudiocode,sublimetext
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,react,intellij+all,macos,visualstudiocode,sublimetext

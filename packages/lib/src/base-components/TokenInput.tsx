@@ -7,21 +7,20 @@ import Icon from "./Icon";
 import { Typography } from "@mui/material";
 import CustomButton from "./CustomButton";
 
-interface Props {
+export type Props = {
   address?: string;
   amount?: string;
   onChange?: (value: string) => void;
   disabled?: boolean;
-}
+};
 
-// TODO
 const TokenInput = ({ address = "", amount = "", onChange, disabled }: Props) => {
   return (
     <StyledContainer>
       <StyledTop>
         <TokenInputSelect address={address} />
         <StyledAmount>
-          <AmountInput disabled={disabled} value={amount} onChange={(values) => onChange?.(values.value)} />
+          <AmountInput disabled={disabled} value={amount} onChange={(values) => onChange?.(values.toString())} />
         </StyledAmount>
         {!disabled && (
           <StyledMaxButton>

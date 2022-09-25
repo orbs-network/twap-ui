@@ -1,33 +1,30 @@
 import { Box, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import React, { useState } from "react";
-import AmountInput from "../base-components/AmountInput";
-import CustomSwitch from "../base-components/CustomSwitch";
-import InfoIconTooltip from "../base-components/InfoIconTooltip";
-import TokenDisplay from "../base-components/TokenDisplay";
-import { useDstToken, useSrcToken } from "../store/store";
+
 import { StyledBorderWrapper, StyledShadowContainer } from "../styles";
+import TWAPLib from "@orbs-network/twap-ui";
 
 function PriceInput() {
   const [open, setOpen] = useState(false);
-  const { address: srcTokenAddress } = useSrcToken();
-  const { address: dstTokenAddress } = useDstToken();
+  const { address: srcTokenAddress } = TWAPLib.actions.useSrcToken();
+  const { address: dstTokenAddress } = TWAPLib.actions.useDstToken();
   return (
     <StyledContainer>
       <StyledTop>
         <StyledTitle>
-          <InfoIconTooltip text="some-text">
-            <CustomSwitch value={open} onChange={() => setOpen(!open)} />
+          <TWAPLib.components.InfoIconTooltip text="some-text">
+            <TWAPLib.components.CustomSwitch value={open} onChange={() => setOpen(!open)} />
             <Typography>Limit price</Typography>
-          </InfoIconTooltip>
+          </TWAPLib.components.InfoIconTooltip>
         </StyledTitle>
         <StyledNoneText fontWeight={500}>None</StyledNoneText>
       </StyledTop>
       {open && (
         <StyledBottom>
-          <TokenDisplay address={srcTokenAddress} />
-          <AmountInput value="" onChange={() => {}} />
-          <TokenDisplay address={dstTokenAddress} />
+          <TWAPLib.components.TokenDisplay address={srcTokenAddress} />
+          <TWAPLib.components.AmountInput value="" onChange={() => {}} />
+          <TWAPLib.components.TokenDisplay address={dstTokenAddress} />
         </StyledBottom>
       )}
     </StyledContainer>

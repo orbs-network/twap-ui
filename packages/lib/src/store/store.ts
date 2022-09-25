@@ -1,10 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { bn, erc20s, setWeb3Instance } from "@defi.org/web3-candies";
 import Web3 from "web3";
-import { useEffect, useMemo } from "react";
 import _ from "lodash";
-import BN from "bn.js";
-import { ceilDiv, isBigger, notZeroNumber } from "./utils";
+import { BigNumber, bn, erc20s, one, setWeb3Instance, web3, zero } from "@defi.org/web3-candies";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useEffect, useMemo } from "react";
 
 export enum TimeFormat {
   Minutes,
@@ -23,14 +21,14 @@ export const useSrcToken = () => {
   const key = ["useSrcToken"];
   const data = useQuery(key, () => ({
     address: erc20s.eth.WETH().address,
-    amount: new BN(0),
+    amount: zero,
   })).data;
 
   return {
     ...data,
     uiAmount: useBnToUiAmount(data?.address, data?.amount),
     setAddress: (address?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, address })),
-    setAmount: (amount?: BN) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
+    setAmount: (amount?: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
   };
 };
 
@@ -40,7 +38,7 @@ export const useDstToken = () => {
   const data = useQuery(key, () => {
     return {
       address: erc20s.eth.WETH().address,
-      amount: new BN(0),
+      amount: zero,
     };
   }).data;
 
@@ -48,7 +46,7 @@ export const useDstToken = () => {
     ...data,
     uiAmount: useBnToUiAmount(data?.address, data?.amount),
     setAddress: (address?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, address })),
-    setAmount: (amount?: BN) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
+    setAmount: (amount?: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
   };
 };
 
@@ -107,8 +105,8 @@ export const useTradeSize = () => {
   const key = ["useTradeSize"];
   const data = useQuery(key, () => {
     return {
-      tradeSize: new BN(0),
-      totalTrades: new BN(0),
+      tradeSize: zero,
+      totalTrades: zero,
     };
   }).data;
 
@@ -118,8 +116,8 @@ export const useTradeSize = () => {
     ...data,
     tradeSizeForUi: useBnToUiAmount(address, data?.tradeSize),
     totalTradesForUi: data?.totalTrades?.toString(),
-    setTradeSize: (tradeSize?: BN) => client.setQueryData(key, (prev: any) => ({ ...prev, tradeSize })),
-    setTotalTrades: (totalTrades?: BN) => client.setQueryData(key, (prev: any) => ({ ...prev, totalTrades })),
+    setTradeSize: (tradeSize?: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, tradeSize })),
+    setTotalTrades: (totalTrades?: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, totalTrades })),
   };
 };
 
@@ -136,13 +134,13 @@ export const useToken = (address?: string) => {
   return { token, isLoading: !token };
 };
 
-const useUiAmountToBN = (address?: string) => {
+const useUiAmountToBigNumber = (address?: string) => {
   const { token } = useToken(address);
 
   return useMutation(async (amountUi?: string) => (!amountUi ? undefined : token?.amount(parseFloat(amountUi))));
 };
 
-const useBnToUiAmount = (address?: string, amount?: BN) => {
+const useBnToUiAmount = (address?: string, amount?: BigNumber) => {
   const { token } = useToken(address);
 
   return !amount || amount.isZero() ? "" : (parseFloat(amount ? amount?.toString() : "0") / 10 ** 18).toString();
@@ -150,18 +148,17 @@ const useBnToUiAmount = (address?: string, amount?: BN) => {
 
 export const useActionHandlers = () => {
   const { address, setAmount, amount: srcTokenAmount } = useSrcToken();
-  const { mutateAsync: onUiAmountChange } = useUiAmountToBN(address);
+  const { mutateAsync: onUiAmountChange } = useUiAmountToBigNumber(address);
   const { tradeSize, setTradeSize, setTotalTrades, totalTrades } = useTradeSize();
   const { millis: maxDurationMillis, setMillis: setMaxDurationMillis } = useMaxDuration();
   const { setMillis: setTradeIntervalMillis } = useTradeInterval();
 
   const onSrcTokenChange = async (amountUi?: string) => {
     const amount = await onUiAmountChange(amountUi);
-    console.log(amount?.toString(), tradeSize?.toString());
 
-    if (isBigger(tradeSize, amount)) {
+    if (tradeSize?.gt(amount || zero)) {
       setTradeSize(amount);
-      setTotalTrades(ceilDiv(amount, tradeSize));
+      setTotalTrades(amount?.idiv(tradeSize || one));
     }
     setAmount(amount);
   };
@@ -169,10 +166,10 @@ export const useActionHandlers = () => {
   const onTradeSizeChange = async (amountUi?: string) => {
     const tradeSize = await onUiAmountChange(amountUi);
 
-    const totalTrades = ceilDiv(srcTokenAmount, tradeSize);
+    const totalTrades = srcTokenAmount?.idiv(tradeSize || one) || zero; //ceilDiv(srcTokenAmount, tradeSize);
 
     if (maxDurationMillis && !totalTrades.isZero()) {
-      const res = new BN(maxDurationMillis).div(totalTrades).toNumber();
+      const res = BigNumber(maxDurationMillis).div(totalTrades).toNumber();
       setTradeIntervalMillis(res);
     } else {
       setTradeIntervalMillis(0);
@@ -190,7 +187,7 @@ export const useActionHandlers = () => {
     }
 
     if (totalTrades && tradeSize && !tradeSize?.isZero()) {
-      const result = new BN(millis).div(totalTrades).toNumber();
+      const result = BigNumber(millis).div(totalTrades).toNumber();
       setTradeIntervalMillis(result);
     }
   };
@@ -224,7 +221,7 @@ export const useSubmitButtonValidation = () => {
       return "Enter trade interval";
     }
 
-    if (isBigger(tradeSize, srcTokenAmount)) {
+    if (tradeSize?.gt(srcTokenAmount || zero)) {
       return "Trade size must be less than source amount";
     }
   }, [tradeSize, srcTokenAmount, tradeIntervalMillis, maxDurationMillis]);
@@ -240,12 +237,10 @@ export const usePartialFillValidation = () => {
       return;
     }
 
-    const showWarning = isBigger(new BN(tradeIntervalMillis).mul(totalTrades), new BN(maxDurationMillis));
+    const showWarning = BigNumber(tradeIntervalMillis).times(totalTrades).gt(BigNumber(maxDurationMillis));
 
     if (showWarning) {
       return "Partial fill warning";
     }
   }, []);
 };
-
-

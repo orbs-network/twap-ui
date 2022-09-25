@@ -13,16 +13,12 @@
   "files": [
     "./dist"
   ],
-  "dependencies": {
-    "@orbs-network/twap-ui": "*"
-  },
   "scripts": {
     "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
-    "clean": "rm -rf dist && npm run prettier",
-    "build": "npm run clean && tsc",
+    "build": "npm run prettier && rm -rf dist && tsc",
     "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
   },
-  "prettier": {
-    "printWidth": 180
+  "dependencies": {
+    "@orbs-network/twap-ui": "*"
   }
 }

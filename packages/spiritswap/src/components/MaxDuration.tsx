@@ -1,23 +1,21 @@
 import { Typography } from "@mui/material";
 import { styled } from "@mui/system";
-import InfoIconTooltip from "../base-components/InfoIconTooltip";
-import TimeSelect from "../base-components/TimeSelect";
-import { useActionHandlers, useMaxDuration } from "../store/store";
 import { StyledBorderWrapper, StyledShadowContainer } from "../styles";
+import TWAPLib from "@orbs-network/twap-ui";
 
 function MaxDuration() {
-  const { millis, timeFormat, setTimeFormat } = useMaxDuration();
+  const { millis, timeFormat, setTimeFormat } = TWAPLib.actions.useMaxDuration();
 
-  const { onMaxDurationChange } = useActionHandlers();
+  const { onMaxDurationChange } = TWAPLib.actions.useActionHandlers();
 
   return (
     <StyledContainer>
       <StyledTitle>
-        <InfoIconTooltip text="some-text">
+        <TWAPLib.components.InfoIconTooltip text="some-text">
           <Typography>Max Duration</Typography>
-        </InfoIconTooltip>
+        </TWAPLib.components.InfoIconTooltip>
       </StyledTitle>
-      <TimeSelect setMillis={onMaxDurationChange} millis={millis} timeFormat={timeFormat} setTimeFormat={setTimeFormat} />
+      <TWAPLib.components.TimeSelect setMillis={onMaxDurationChange} millis={millis} timeFormat={timeFormat} setTimeFormat={setTimeFormat} />
     </StyledContainer>
   );
 }

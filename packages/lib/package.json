@@ -13,8 +13,13 @@
   "files": [
     "./dist"
   ],
+  "scripts": {
+    "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
+    "build": "npm run prettier && rm -rf dist && tsc",
+    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
+  },
   "dependencies": {
-    "@defi.org/web3-candies": "3.x",
+    "@defi.org/web3-candies": "4.x",
     "@emotion/react": "11.x",
     "@emotion/styled": "11.x",
     "@mui/material": "5.x",
@@ -22,16 +27,11 @@
     "react-query": "3.x",
     "react-icons": "4.x"
   },
-  "scripts": {
-    "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
-    "clean": "rm -rf dist && npm run prettier",
-    "build": "npm run clean && tsc",
-    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*"
   },
   "config": {
     "omit": "optional"
-  },
-  "prettier": {
-    "printWidth": 180
   }
 }

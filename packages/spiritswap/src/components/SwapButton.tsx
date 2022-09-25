@@ -1,16 +1,15 @@
 import { Box, styled } from "@mui/system";
 import React from "react";
-import CustomButton from "../base-components/CustomButton";
-import { useSubmitButtonValidation } from "../store/store";
+import TWAPLib from "@orbs-network/twap-ui";
 
 function SwapButton() {
-  const warning = useSubmitButtonValidation();
+  const warning = TWAPLib.actions.useSubmitButtonValidation();
 
   return (
     <StyledButton>
-      <CustomButton disabled={!!warning} onClick={() => {}}>
+      <TWAPLib.components.CustomButton disabled={!!warning} onClick={() => {}}>
         {warning || "Place order"}
-      </CustomButton>
+      </TWAPLib.components.CustomButton>
     </StyledButton>
   );
 }

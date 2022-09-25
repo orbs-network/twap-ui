@@ -1,35 +1,32 @@
 import { Box, styled } from "@mui/system";
-import { useEffect, useRef, useState } from "react";
-import { NumberFormatValues } from "react-number-format/types/types";
+import { BigNumber, parsebn } from "@defi.org/web3-candies";
+import { useEffect, useState } from "react";
 
-interface Props {
-  value: string | number;
-  onChange?: (value: NumberFormatValues) => void;
+export type Props = {
+  onChange: (value: BigNumber) => void;
+  value?: string | number;
   placeholder?: string;
   disabled?: boolean;
   isAllowed?: boolean;
-}
+};
 
-function AmountInput({ onChange, value, placeholder = "Enter amount", disabled = false, isAllowed = false }: Props) {
-  const [localValue, setLocalValue] = useState(value);
+function AmountInput({ onChange, value, disabled = false, isAllowed = false, placeholder = "Enter amount" }: Props) {
+  const [localValue, setValue] = useState(value);
 
   useEffect(() => {
-    setLocalValue("");
-    setLocalValue(value);
+    setValue("");
+    setValue(value);
   }, [value]);
+
+  const onInput = (e: any) => {
+    const v = e.target.value;
+    setValue(v);
+    onChange(parsebn(v));
+  };
 
   return (
     <StyledContainer>
-      <input
-        disabled={disabled}
-        placeholder={placeholder}
-        value={localValue}
-        defaultValue={value}
-        // onValueChange={(values) => {
-        //   onChange?.(values);
-        // }}
-        // displayType="input"
-      />
+      <input placeholder={placeholder} value={localValue} disabled={disabled} type="text" onInput={onInput} />
     </StyledContainer>
   );
 }

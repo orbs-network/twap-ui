@@ -56,7 +56,8 @@ function TimeSelect({ millis = 0, setMillis, timeFormat = TimeFormat.Minutes, se
   return (
     <StyledContainer>
       <StyledInput>
-        <AmountInput value={millisecondsToUiFormat(timeFormat, millis) || ""} onChange={(value) => onValueChange(value.floatValue)} placeholder={"0"} />
+        <AmountInput value={millisecondsToUiFormat(timeFormat, millis) || ""} onChange={(value) => onValueChange(0)} placeholder={"0"} />
+        {/*  //TODO */}
       </StyledInput>
 
       <StyledTimeSelect>
