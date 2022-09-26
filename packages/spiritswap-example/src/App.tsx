@@ -10,7 +10,6 @@ function App() {
   return (
     <StyledApp className="App">
       {ConnectBtn(activate, deactivate, account || "")}
-
       <TWAP_Spiritswap provider={library} />
     </StyledApp>
   );
