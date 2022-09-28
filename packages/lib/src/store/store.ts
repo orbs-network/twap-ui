@@ -1,8 +1,10 @@
 import _ from "lodash";
-import { BigNumber, erc20s, hasWeb3Instance, setWeb3Instance, zero , web3} from "@defi.org/web3-candies";
+import { BigNumber, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
 import { useQuery, useQueryClient } from "react-query";
 import { useEffect, useMemo } from "react";
-import Web3 from 'web3'
+import Web3 from "web3";
+
+setWeb3Instance(new Web3(""));
 
 export enum TimeFormat {
   Minutes,
@@ -10,31 +12,24 @@ export enum TimeFormat {
   Days,
 }
 
-
-
-
 export const useInitWeb3 = (provider?: any) => {
-    useEffect(() => {
+  useEffect(() => {
     setWeb3Instance(new Web3(provider));
   }, [provider]);
-
-}
-
-
+};
 
 const getWeb3 = () => {
-  if(hasWeb3Instance()) {
-    return web3()
+  if (hasWeb3Instance()) {
+    return web3();
   }
-  return undefined
-} 
-
+  return undefined;
+};
 
 const useSrcToken = () => {
   const client = useQueryClient();
 
   const initialData = {
-    address: erc20s.eth.WETH().address,
+    address: erc20s.eth.WETH().address, //TODO temp
     amount: zero,
   };
 
@@ -43,7 +38,7 @@ const useSrcToken = () => {
 
   return {
     ...data,
-    uiAmount: useBnToUiAmount(data.address, data.amount),
+    uiAmount: useBigNumberToUiAmount(data.address, data.amount),
     setAddress: (address?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, address })),
     setAmount: (amount?: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
   };
@@ -61,7 +56,7 @@ const useDstToken = () => {
 
   return {
     ...data,
-    uiAmount: useBnToUiAmount(data.address, data.amount),
+    uiAmount: useBigNumberToUiAmount(data.address, data.amount),
     setAddress: (address: string) => client.setQueryData(key, (prev: any) => ({ ...prev, address })),
     setAmount: (amount: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
   };
@@ -106,7 +101,7 @@ const useTradeInterval = () => {
 
   return {
     ...data,
-    millis: Math.max(data.customInterval ? data.millis : derivedMillis, 60_000),
+    millis: Math.max(Math.floor(data.customInterval ? data.millis : derivedMillis), 60_000),
     setMillis: (millis: number) => {
       client.setQueryData(key, (prev: any) => ({ ...prev, millis }));
     },
@@ -132,12 +127,13 @@ const useTradeSize = () => {
       return 0;
     }
 
+    BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_CEIL });
     return amount.idiv(data.tradeSize).toNumber() || 0;
   }, [amount, data?.tradeSize]);
 
   return {
     ...data,
-    tradeSizeForUi: useBnToUiAmount(address, data?.tradeSize),
+    tradeSizeForUi: useBigNumberToUiAmount(address, data.tradeSize),
     totalTrades,
     setTradeSize: (tradeSize?: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, tradeSize })),
   };
@@ -156,16 +152,17 @@ export const useToken = (address?: string) => {
   return { token, isLoading: !token };
 };
 
-const useUiAmountToBigNumber = (address?: string) => {
-  const { token } = useToken(address);
-
-  return async (amountUi?: string) => (!amountUi ? undefined : token?.amount(parseFloat(amountUi)));
+const getUiAmountToBigNumber = (token?: Token, amountUi?: string) => {
+  return !token || !amountUi ? undefined : token?.amount(parsebn(amountUi));
 };
 
-const useBnToUiAmount = (address?: string, amount?: BigNumber) => {
-  const { token } = useToken(address);
+const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) => {
+  return !amount || !token || amount.isZero() ? "" : (await token.mantissa(amount)).toFormat();
+};
 
-  return !amount || amount.isZero() ? "" : (parseFloat(amount ? amount?.toString() : "0") / 10 ** 18).toString();
+const useBigNumberToUiAmount = (address?: string, amount?: BigNumber) => {
+  const { token } = useToken(address);
+  return useQuery(["useBigNumberToUiAmount", address, amount], () => getBigNumberToUiAmount(token, amount)).data;
 };
 
 export const useActionHandlers = () => {
@@ -174,10 +171,10 @@ export const useActionHandlers = () => {
   const { setCustomInterval, setMillis: setTradeIntervalMillis, setTimeFormat: setTradeIntervalTimeFormat } = useTradeInterval();
   const { amount: srcAmount, address: srcAddress, setAmount: setSrcAmount, setAddress: setSrcAddress } = useSrcToken();
   const { amount: dstAmount, address: dstAddress, setAmount: setDstAmount, setAddress: setDstAddress } = useDstToken();
-  const uiAmountToBigNumber = useUiAmountToBigNumber(srcAddress);
+  const { token: srcToken } = useToken(srcAddress);
 
   const onSrcTokenChange = async (amountUi?: string) => {
-    const amount = await uiAmountToBigNumber(amountUi);
+    const amount = await getUiAmountToBigNumber(srcToken, amountUi);
 
     if (tradeSize?.gt(amount || zero)) {
       setTradeSize(amount);
@@ -186,7 +183,7 @@ export const useActionHandlers = () => {
   };
 
   const onTradeSizeChange = async (amountUi?: string) => {
-    const tradeSize = await uiAmountToBigNumber(amountUi);
+    const tradeSize = await getUiAmountToBigNumber(srcToken, amountUi);
     setTradeSize(tradeSize);
   };
 
@@ -213,6 +210,7 @@ export const useActionHandlers = () => {
   };
 
   return {
+    useInitWeb3,
     onSrcTokenChange,
     onTradeSizeChange,
     onMaxDurationChange,
@@ -284,7 +282,7 @@ export const useTWAPState = () => {
   };
 };
 
-export const useVlidation = () => {
+export const useValidation = () => {
   return {
     useSubmitButtonValidation,
     usePartialFillValidation,

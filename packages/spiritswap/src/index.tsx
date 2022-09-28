@@ -29,11 +29,10 @@ type Props = {
 };
 
 const TWAP = (props: Props) => {
-  
-  
+  TWAPLib.initializer(props.provider);
 
   return (
-    <TWAPLib.providers.Web3Provider {...props}>
+    <TWAPLib.providers.TWAPPropsProvider>
       <QueryClientProvider client={queryClient}>
         <CssBaseline />
         <StyledContainer>
@@ -52,7 +51,7 @@ const TWAP = (props: Props) => {
         </StyledContainer>
         <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
       </QueryClientProvider>
-    </TWAPLib.providers.Web3Provider>
+    </TWAPLib.providers.TWAPPropsProvider>
   );
 };
 

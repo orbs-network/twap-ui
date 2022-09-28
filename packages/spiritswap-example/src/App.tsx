@@ -5,7 +5,7 @@ import { injectedConnector } from "./connectors";
 import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
 
 function ConnectBtn() {
-  const { activate, deactivate, account, chainId } = useWeb3React();
+  const { activate, deactivate, account } = useWeb3React();
 
   const disconnect = <button onClick={deactivate}>Disconnect {account}</button>;
   const connect = <button onClick={() => activate(injectedConnector)}>Connect</button>;
@@ -14,13 +14,11 @@ function ConnectBtn() {
 }
 
 function App() {
-  const { activate, deactivate, account, chainId, library } = useWeb3React();
-
   return (
     <StyledApp className="App">
       <ConnectBtn />
 
-      <TWAP_Spiritswap provider={library} />
+      <TWAP_Spiritswap provider={useWeb3React().library} />
     </StyledApp>
   );
 }
