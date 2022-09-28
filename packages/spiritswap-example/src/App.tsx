@@ -20,7 +20,7 @@ function App() {
     <StyledApp className="App">
       <ConnectBtn />
 
-      <TWAP_Spiritswap account={account} chainId={chainId} provider={library} />
+      <TWAP_Spiritswap provider={library} />
     </StyledApp>
   );
 }

@@ -17,11 +17,9 @@ import Web3 from "web3";
 
 const Context = createContext<any>({} as any);
 const Web3Provider = ({ children, chainId, account, provider }: any) => {
-  const [appReady, setAppReady] = useState(false)
-  useEffect(() => {    
-    setWeb3Instance(new Web3(provider));
-    setAppReady(true)
-  }, [provider]);
+
+
+
 
   const value = {
     chainId,
@@ -29,9 +27,7 @@ const Web3Provider = ({ children, chainId, account, provider }: any) => {
     provider,
   };
 
-  if(!appReady){
-    return null
-  }
+
   return <Context.Provider value={value}>{children}</Context.Provider>;
 };
 const useWeb3 = () => useContext(Context);

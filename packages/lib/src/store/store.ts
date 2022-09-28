@@ -1,7 +1,8 @@
 import _ from "lodash";
-import { BigNumber, erc20s, zero } from "@defi.org/web3-candies";
-import {  useQuery, useQueryClient } from "react-query";
-import {  useMemo } from "react";
+import { BigNumber, erc20s, hasWeb3Instance, setWeb3Instance, zero , web3} from "@defi.org/web3-candies";
+import { useQuery, useQueryClient } from "react-query";
+import { useEffect, useMemo } from "react";
+import Web3 from 'web3'
 
 export enum TimeFormat {
   Minutes,
@@ -9,7 +10,27 @@ export enum TimeFormat {
   Days,
 }
 
- const useSrcToken = () => {
+
+
+
+export const useInitWeb3 = (provider?: any) => {
+    useEffect(() => {
+    setWeb3Instance(new Web3(provider));
+  }, [provider]);
+
+}
+
+
+
+const getWeb3 = () => {
+  if(hasWeb3Instance()) {
+    return web3()
+  }
+  return undefined
+} 
+
+
+const useSrcToken = () => {
   const client = useQueryClient();
 
   const initialData = {
@@ -22,13 +43,13 @@ export enum TimeFormat {
 
   return {
     ...data,
-    uiAmount: useBnToUiAmount(data?.address, data?.amount),
+    uiAmount: useBnToUiAmount(data.address, data.amount),
     setAddress: (address?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, address })),
     setAmount: (amount?: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
   };
 };
 
- const useDstToken = () => {
+const useDstToken = () => {
   const initialData = {
     address: erc20s.eth.WETH().address,
     amount: zero,
@@ -46,7 +67,7 @@ export enum TimeFormat {
   };
 };
 
- const useMaxDuration = () => {
+const useMaxDuration = () => {
   const initialData = {
     millis: 0,
     timeFormat: TimeFormat.Minutes,
@@ -62,7 +83,7 @@ export enum TimeFormat {
   };
 };
 
- const useTradeInterval = () => {
+const useTradeInterval = () => {
   const initialData = {
     millis: 0,
     timeFormat: TimeFormat.Minutes,
@@ -96,7 +117,7 @@ export enum TimeFormat {
   };
 };
 
- const useTradeSize = () => {
+const useTradeSize = () => {
   const initialData = {
     tradeSize: zero,
   };
