@@ -4,9 +4,9 @@ import { StyledBorderWrapper, StyledShadowContainer } from "../styles";
 import TWAPLib from "@orbs-network/twap-ui";
 
 function MaxDuration() {
-  const { millis, timeFormat, setTimeFormat } = TWAPLib.actions.useMaxDuration();
+  const { maxDurationFormat, maxDurationMillis } = TWAPLib.state();
 
-  const { onMaxDurationChange } = TWAPLib.actions.useActionHandlers();
+  const { onMaxDurationChange } = TWAPLib.actions();
 
   return (
     <StyledContainer>
@@ -15,7 +15,7 @@ function MaxDuration() {
           <Typography>Max Duration</Typography>
         </TWAPLib.components.InfoIconTooltip>
       </StyledTitle>
-      <TWAPLib.components.TimeSelect setMillis={onMaxDurationChange} millis={millis} timeFormat={timeFormat} setTimeFormat={setTimeFormat} />
+      <TWAPLib.components.TimeSelect onChange={onMaxDurationChange} millis={maxDurationMillis} timeFormat={maxDurationFormat} />
     </StyledContainer>
   );
 }

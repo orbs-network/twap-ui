@@ -25,38 +25,38 @@ const displayValues = [
 
 const uiFormatToMillis = (format: TimeFormat, value: number) => _.find(displayValues, (v) => v.format === format)!.base * value;
 
-const millisecondsToUiFormat = (format: TimeFormat, milliseconds: number) => milliseconds / _.find(displayValues, (v) => v.format === format)!.base;
+const millisToUiFormat = (format: TimeFormat, milliseconds: number) => milliseconds / _.find(displayValues, (v) => v.format === format)!.base;
 
 interface Props {
   millis?: number;
-  setMillis: (value: number) => void;
-  setTimeFormat: (value: TimeFormat) => void;
+  onChange: (timeFormat: TimeFormat, millis: number) => void;
   timeFormat?: TimeFormat;
 }
 
-function TimeSelect({ millis = 0, setMillis, timeFormat = TimeFormat.Minutes, setTimeFormat }: Props) {
+function TimeSelect({ millis = 0, onChange, timeFormat = TimeFormat.Minutes }: Props) {
   const [showList, setShowList] = useState(false);
 
   const selectedListItem = useMemo(() => displayValues.find((item) => item.format === timeFormat), [timeFormat]);
 
   const onSelectListItem = (time: TimeFormat) => {
     setShowList(false);
-    const inputValue = millisecondsToUiFormat(timeFormat, millis);
-    setTimeFormat(time);
-    setMillis(uiFormatToMillis(time, inputValue));
+    const inputValue = millisToUiFormat(timeFormat, millis);
+    onChange(time, uiFormatToMillis(time, inputValue));
   };
 
   const onValueChange = (value?: number) => {
-    if (value != null && value < 1) {
+    console.log(value);
+
+    if (value != null && value > 0 && value < 1) {
       value = 1;
     }
-    setMillis(uiFormatToMillis(timeFormat, value || 0));
+    onChange(timeFormat, uiFormatToMillis(timeFormat, value || 0));
   };
 
   return (
     <StyledContainer>
       <StyledInput>
-        <AmountInput value={millisecondsToUiFormat(timeFormat, millis) || ""} onChange={(value) => onValueChange(0)} placeholder={"0"} />
+        <AmountInput value={millisToUiFormat(timeFormat, millis) || ""} onChange={(value) => onValueChange(value.toNumber())} placeholder={"0"} />
         {/*  //TODO */}
       </StyledInput>
 

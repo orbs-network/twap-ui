@@ -5,8 +5,9 @@ import { StyledSmallTitle, StyledShadowContainer, StyledColumnGap, StyledBorderW
 import TWAPLib from "@orbs-network/twap-ui";
 
 function TradeSize() {
-  const { tradeSizeForUi, totalTradesForUi } = TWAPLib.actions.useTradeSize();
-  const { onTradeSizeChange } = TWAPLib.actions.useActionHandlers();
+  const { onTradeSizeChange } = TWAPLib.actions();
+
+  const { srcTokenAddress, tradeSize, totalTrades } = TWAPLib.state();
 
   return (
     <StyledContainer gap={10}>
@@ -17,12 +18,12 @@ function TradeSize() {
           </TWAPLib.components.InfoIconTooltip>
         </StyledTitle>
         <StyledInput>
-          <TWAPLib.components.AmountInput value={tradeSizeForUi} onChange={(values) => onTradeSizeChange(values.toString())} />
+          <TWAPLib.components.AmountInput value={tradeSize} onChange={(values) => onTradeSizeChange(values.toString())} />
         </StyledInput>
-        <TWAPLib.components.TokenDisplay address={""} />
+        <TWAPLib.components.TokenDisplay address={srcTokenAddress} />
       </StyledTop>
       <StyledBottom>
-        <StyledSmallTextDetail>Total trades: {totalTradesForUi}</StyledSmallTextDetail>
+        <StyledSmallTextDetail>Total trades: {totalTrades}</StyledSmallTextDetail>
       </StyledBottom>
     </StyledContainer>
   );

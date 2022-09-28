@@ -6,6 +6,7 @@ import { FiEdit } from "react-icons/fi";
 import Icon from "./Icon";
 import { Typography } from "@mui/material";
 import CustomButton from "./CustomButton";
+import { parsebn } from "@defi.org/web3-candies";
 
 export type Props = {
   address?: string;

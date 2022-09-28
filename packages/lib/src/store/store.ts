@@ -1,8 +1,7 @@
-import Web3 from "web3";
 import _ from "lodash";
-import { BigNumber, bn, erc20s, one, setWeb3Instance, web3, zero } from "@defi.org/web3-candies";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useEffect, useMemo } from "react";
+import { BigNumber, erc20s, zero } from "@defi.org/web3-candies";
+import {  useQuery, useQueryClient } from "react-query";
+import {  useMemo } from "react";
 
 export enum TimeFormat {
   Minutes,
@@ -10,19 +9,16 @@ export enum TimeFormat {
   Days,
 }
 
-export const useWeb3Provider = (provider: any) => {
-  useEffect(() => {
-    setWeb3Instance(new Web3(provider));
-  }, [provider]);
-};
-
-export const useSrcToken = () => {
+ const useSrcToken = () => {
   const client = useQueryClient();
-  const key = ["useSrcToken"];
-  const data = useQuery(key, () => ({
+
+  const initialData = {
     address: erc20s.eth.WETH().address,
     amount: zero,
-  })).data;
+  };
+
+  const key = ["useSrcToken"];
+  const data = useQuery(key, () => initialData).data || initialData;
 
   return {
     ...data,
@@ -32,92 +28,97 @@ export const useSrcToken = () => {
   };
 };
 
-export const useDstToken = () => {
+ const useDstToken = () => {
+  const initialData = {
+    address: erc20s.eth.WETH().address,
+    amount: zero,
+  };
+
   const client = useQueryClient();
   const key = ["useDstToken"];
-  const data = useQuery(key, () => {
-    return {
-      address: erc20s.eth.WETH().address,
-      amount: zero,
-    };
-  }).data;
+  const data = useQuery(key, () => initialData).data || initialData;
 
   return {
     ...data,
-    uiAmount: useBnToUiAmount(data?.address, data?.amount),
-    setAddress: (address?: string) => client.setQueryData(key, (prev: any) => ({ ...prev, address })),
-    setAmount: (amount?: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
+    uiAmount: useBnToUiAmount(data.address, data.amount),
+    setAddress: (address: string) => client.setQueryData(key, (prev: any) => ({ ...prev, address })),
+    setAmount: (amount: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, amount })),
   };
 };
 
-export const changeTokenPositions = () => {
-  const { amount: srcAmount, address: srcAddress, setAmount: setSrcAmount, setAddress: setSrcAddress } = useSrcToken();
-  const { amount: dstAmount, address: dstAddress, setAmount: setDstAmount, setAddress: setDstAddress } = useDstToken();
-  const { setTradeSize } = useTradeSize();
-
-  return () => {
-    setSrcAmount(dstAmount);
-    setSrcAddress(dstAddress);
-    setDstAmount(srcAmount);
-    setDstAddress(srcAddress);
-    setTradeSize(undefined);
+ const useMaxDuration = () => {
+  const initialData = {
+    millis: 0,
+    timeFormat: TimeFormat.Minutes,
   };
-};
-
-export const useMaxDuration = () => {
   const client = useQueryClient();
   const key = ["useMaxDuration"];
-  const data = useQuery(key, () => {
-    return {
-      millis: 0,
-      timeFormat: TimeFormat.Minutes,
-    };
-  }).data;
+  const data = useQuery(key, () => initialData).data || initialData;
 
   return {
     ...data,
-    setMillis: (millis?: number) => client.setQueryData(key, (prev: any) => ({ ...prev, millis })),
-    setTimeFormat: (timeFormat?: TimeFormat) => client.setQueryData(key, (prev: any) => ({ ...prev, timeFormat })),
+    setMillis: (millis: number) => client.setQueryData(key, (prev: any) => ({ ...prev, millis })),
+    setTimeFormat: (timeFormat: TimeFormat) => client.setQueryData(key, (prev: any) => ({ ...prev, timeFormat })),
   };
 };
 
-export const useTradeInterval = () => {
+ const useTradeInterval = () => {
+  const initialData = {
+    millis: 0,
+    timeFormat: TimeFormat.Minutes,
+    customInterval: false,
+  };
   const client = useQueryClient();
   const key = ["useTradeInterval"];
-  const data = useQuery(key, () => {
-    return {
-      millis: 0,
-      timeFormat: TimeFormat.Minutes,
-    };
-  }).data;
+  const data = useQuery(key, () => initialData).data || initialData;
+
+  const { millis: maxDurationMillis } = useMaxDuration();
+  const { totalTrades } = useTradeSize();
+
+  const derivedMillis = useMemo(() => {
+    if (maxDurationMillis > 0 && totalTrades > 0) {
+      return maxDurationMillis / totalTrades;
+    } else {
+      return 0;
+    }
+  }, [totalTrades, maxDurationMillis]);
 
   return {
     ...data,
-    setMillis: (millis?: number) => {
+    millis: Math.max(data.customInterval ? data.millis : derivedMillis, 60_000),
+    setMillis: (millis: number) => {
       client.setQueryData(key, (prev: any) => ({ ...prev, millis }));
     },
-    setTimeFormat: (timeFormat?: TimeFormat) => client.setQueryData(key, (prev: any) => ({ ...prev, timeFormat })),
+    setCustomInterval: (customInterval: boolean) => {
+      client.setQueryData(key, (prev: any) => ({ ...prev, customInterval, millis: derivedMillis }));
+    },
+    setTimeFormat: (timeFormat: TimeFormat) => client.setQueryData(key, (prev: any) => ({ ...prev, timeFormat })),
   };
 };
 
-export const useTradeSize = () => {
+ const useTradeSize = () => {
+  const initialData = {
+    tradeSize: zero,
+  };
   const client = useQueryClient();
   const key = ["useTradeSize"];
-  const data = useQuery(key, () => {
-    return {
-      tradeSize: zero,
-      totalTrades: zero,
-    };
-  }).data;
+  const data = useQuery(key, () => initialData).data || initialData;
 
-  const { address } = useSrcToken();
+  const { address, amount } = useSrcToken();
+
+  const totalTrades = useMemo(() => {
+    if (data.tradeSize.isZero()) {
+      return 0;
+    }
+
+    return amount.idiv(data.tradeSize).toNumber() || 0;
+  }, [amount, data?.tradeSize]);
 
   return {
     ...data,
     tradeSizeForUi: useBnToUiAmount(address, data?.tradeSize),
-    totalTradesForUi: data?.totalTrades?.toString(),
+    totalTrades,
     setTradeSize: (tradeSize?: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, tradeSize })),
-    setTotalTrades: (totalTrades?: BigNumber) => client.setQueryData(key, (prev: any) => ({ ...prev, totalTrades })),
   };
 };
 
@@ -129,15 +130,15 @@ const getAllTokens = () => {
 };
 
 export const useToken = (address?: string) => {
-  const { data: allTokens, isLoading: allTokensLoading } = getAllTokens();
-  const { data: token, isLoading: tokenLoading } = useQuery(["useToken", address], () => _.find(allTokens, (t) => t.address === address), { enabled: !!allTokens });
+  const { data: allTokens } = getAllTokens();
+  const { data: token } = useQuery(["useToken", address], () => _.find(allTokens, (t) => t.address === address), { enabled: !!allTokens });
   return { token, isLoading: !token };
 };
 
 const useUiAmountToBigNumber = (address?: string) => {
   const { token } = useToken(address);
 
-  return useMutation(async (amountUi?: string) => (!amountUi ? undefined : token?.amount(parseFloat(amountUi))));
+  return async (amountUi?: string) => (!amountUi ? undefined : token?.amount(parseFloat(amountUi)));
 };
 
 const useBnToUiAmount = (address?: string, amount?: BigNumber) => {
@@ -147,55 +148,56 @@ const useBnToUiAmount = (address?: string, amount?: BigNumber) => {
 };
 
 export const useActionHandlers = () => {
-  const { address, setAmount, amount: srcTokenAmount } = useSrcToken();
-  const { mutateAsync: onUiAmountChange } = useUiAmountToBigNumber(address);
-  const { tradeSize, setTradeSize, setTotalTrades, totalTrades } = useTradeSize();
-  const { millis: maxDurationMillis, setMillis: setMaxDurationMillis } = useMaxDuration();
-  const { setMillis: setTradeIntervalMillis } = useTradeInterval();
+  const { tradeSize, setTradeSize } = useTradeSize();
+  const { setMillis: setMaxDurationMillis, setTimeFormat: setMaxDurationTimeFormat } = useMaxDuration();
+  const { setCustomInterval, setMillis: setTradeIntervalMillis, setTimeFormat: setTradeIntervalTimeFormat } = useTradeInterval();
+  const { amount: srcAmount, address: srcAddress, setAmount: setSrcAmount, setAddress: setSrcAddress } = useSrcToken();
+  const { amount: dstAmount, address: dstAddress, setAmount: setDstAmount, setAddress: setDstAddress } = useDstToken();
+  const uiAmountToBigNumber = useUiAmountToBigNumber(srcAddress);
 
   const onSrcTokenChange = async (amountUi?: string) => {
-    const amount = await onUiAmountChange(amountUi);
+    const amount = await uiAmountToBigNumber(amountUi);
 
     if (tradeSize?.gt(amount || zero)) {
       setTradeSize(amount);
-      setTotalTrades(amount?.idiv(tradeSize || one));
     }
-    setAmount(amount);
+    setSrcAmount(amount);
   };
 
   const onTradeSizeChange = async (amountUi?: string) => {
-    const tradeSize = await onUiAmountChange(amountUi);
-
-    const totalTrades = srcTokenAmount?.idiv(tradeSize || one) || zero; //ceilDiv(srcTokenAmount, tradeSize);
-
-    if (maxDurationMillis && !totalTrades.isZero()) {
-      const res = BigNumber(maxDurationMillis).div(totalTrades).toNumber();
-      setTradeIntervalMillis(res);
-    } else {
-      setTradeIntervalMillis(0);
-    }
-
+    const tradeSize = await uiAmountToBigNumber(amountUi);
     setTradeSize(tradeSize);
-    setTotalTrades(totalTrades);
   };
 
-  const onMaxDurationChange = (millis?: number) => {
+  const onMaxDurationChange = (timeFormat: TimeFormat, millis: number) => {
     setMaxDurationMillis(millis);
-    if (!millis) {
-      setTradeIntervalMillis(0);
-      return;
-    }
+    setMaxDurationTimeFormat(timeFormat);
+  };
 
-    if (totalTrades && tradeSize && !tradeSize?.isZero()) {
-      const result = BigNumber(millis).div(totalTrades).toNumber();
-      setTradeIntervalMillis(result);
-    }
+  const onTradeIntervalChange = (timeFormat: TimeFormat, millis: number) => {
+    setTradeIntervalMillis(millis);
+    setTradeIntervalTimeFormat(timeFormat);
+  };
+
+  const onEnableTradeInterval = (value: boolean) => {
+    setCustomInterval(value);
+  };
+
+  const onChangeTokenPositions = () => {
+    setSrcAmount(dstAmount);
+    setSrcAddress(dstAddress);
+    setDstAmount(srcAmount);
+    setDstAddress(srcAddress);
+    setTradeSize(undefined);
   };
 
   return {
     onSrcTokenChange,
     onTradeSizeChange,
     onMaxDurationChange,
+    onEnableTradeInterval,
+    onTradeIntervalChange,
+    onChangeTokenPositions,
   };
 };
 
@@ -233,7 +235,7 @@ export const usePartialFillValidation = () => {
   const { millis: maxDurationMillis } = useMaxDuration();
 
   return useMemo(() => {
-    if (!totalTrades || totalTrades?.isZero() || !tradeIntervalMillis || !maxDurationMillis) {
+    if (!totalTrades || totalTrades === 0 || !tradeIntervalMillis || !maxDurationMillis) {
       return;
     }
 
@@ -243,4 +245,27 @@ export const usePartialFillValidation = () => {
       return "Partial fill warning";
     }
   }, []);
+};
+
+export const useTWAPState = () => {
+  return {
+    srcTokenAmount: useSrcToken().uiAmount,
+    srcTokenAddress: useSrcToken().address,
+    dstTokenAmount: useDstToken().uiAmount,
+    dstTokenAddress: useDstToken().address,
+    tradeIntervalFormat: useTradeInterval().timeFormat,
+    tradeIntervalMillis: useTradeInterval().millis,
+    tradeIntervalEnabled: useTradeInterval().customInterval,
+    maxDurationMillis: useMaxDuration().millis,
+    maxDurationFormat: useMaxDuration().timeFormat,
+    tradeSize: useTradeSize().tradeSizeForUi,
+    totalTrades: useTradeSize().totalTrades,
+  };
+};
+
+export const useVlidation = () => {
+  return {
+    useSubmitButtonValidation,
+    usePartialFillValidation,
+  };
 };

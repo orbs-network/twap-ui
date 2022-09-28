@@ -3,7 +3,7 @@ import React from "react";
 import TWAPLib from "@orbs-network/twap-ui";
 
 function SwapButton() {
-  const warning = TWAPLib.actions.useSubmitButtonValidation();
+  const warning = TWAPLib.validation().useSubmitButtonValidation();
 
   return (
     <StyledButton>

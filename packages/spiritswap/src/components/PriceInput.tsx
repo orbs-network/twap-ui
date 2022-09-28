@@ -7,8 +7,7 @@ import TWAPLib from "@orbs-network/twap-ui";
 
 function PriceInput() {
   const [open, setOpen] = useState(false);
-  const { address: srcTokenAddress } = TWAPLib.actions.useSrcToken();
-  const { address: dstTokenAddress } = TWAPLib.actions.useDstToken();
+  const { srcTokenAddress, dstTokenAddress } = TWAPLib.state();
   return (
     <StyledContainer>
       <StyledTop>

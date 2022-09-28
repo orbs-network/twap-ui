@@ -1,6 +1,5 @@
 import { Box, styled } from "@mui/system";
 import { BigNumber, parsebn } from "@defi.org/web3-candies";
-import { useEffect, useState } from "react";
 
 export type Props = {
   onChange: (value: BigNumber) => void;
@@ -10,23 +9,14 @@ export type Props = {
   isAllowed?: boolean;
 };
 
-function AmountInput({ onChange, value, disabled = false, isAllowed = false, placeholder = "Enter amount" }: Props) {
-  const [localValue, setValue] = useState(value);
-
-  useEffect(() => {
-    setValue("");
-    setValue(value);
-  }, [value]);
-
-  const onInput = (e: any) => {
-    const v = e.target.value;
-    setValue(v);
-    onChange(parsebn(v));
+function AmountInput({ onChange, value, disabled = false, placeholder = "Enter amount" }: Props) {
+  const onInput = (value: any) => {
+    onChange(parsebn(value));
   };
 
   return (
     <StyledContainer>
-      <input placeholder={placeholder} value={localValue} disabled={disabled} type="text" onInput={onInput} />
+      <StyledInput placeholder={placeholder} value={value} disabled={disabled} type="number" onChange={(e) => onInput(e.target.value)} />
     </StyledContainer>
   );
 }
@@ -48,4 +38,15 @@ const StyledInput = styled("input")({
   outline: "unset",
   fontWeight: 500,
   paddingRight: 10,
+  "& ::-webkit-outer-spin-button": {
+    "-webkit-appearance": "none",
+    margin: 0,
+  },
+  "::-webkit-inner-spin-button": {
+    "-webkit-appearance": "none",
+    margin: 0,
+  },
+  "& input[type=number]": {
+    "-moz-appearance": "textfield",
+  },
 });

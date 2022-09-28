@@ -3,11 +3,11 @@ import TWAPLib from "@orbs-network/twap-ui";
 // import Img from "../assets/images/swap-order.png";
 
 function SwitchTokens() {
-  const switchTokens = TWAPLib.actions.changeTokenPositions();
+  const { onChangeTokenPositions } = TWAPLib.actions();
 
   return (
     <StyledContainer>
-      <StyledFlex onClick={switchTokens}>
+      <StyledFlex onClick={onChangeTokenPositions}>
         <StyledBigFigure />
         <StyledSmallFigure></StyledSmallFigure>
       </StyledFlex>

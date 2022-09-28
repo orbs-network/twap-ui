@@ -1,10 +1,12 @@
-import { Typography } from "@mui/material";
+import { Typography, IconButton } from "@mui/material";
 import { styled } from "@mui/system";
 import { StyledBorderWrapper, StyledShadowContainer } from "../styles";
 import TWAPLib from "@orbs-network/twap-ui";
 
 function TradeInterval() {
-  const { setMillis, millis, timeFormat, setTimeFormat } = TWAPLib.actions.useTradeInterval();
+  const { tradeIntervalFormat, tradeIntervalMillis, tradeIntervalEnabled } = TWAPLib.state();
+  const { onTradeIntervalChange } = TWAPLib.actions();
+
   return (
     <StyledContainer>
       <StyledTitle>
@@ -12,7 +14,10 @@ function TradeInterval() {
           <Typography>Trade Interval</Typography>
         </TWAPLib.components.InfoIconTooltip>
       </StyledTitle>
-      <TWAPLib.components.TimeSelect setMillis={setMillis} millis={millis} timeFormat={timeFormat} setTimeFormat={setTimeFormat} />
+      <IconButton>
+        <Typography>Edit</Typography>
+      </IconButton>
+      <TWAPLib.components.TimeSelect onChange={onTradeIntervalChange} millis={tradeIntervalMillis} timeFormat={tradeIntervalFormat} />
     </StyledContainer>
   );
 }

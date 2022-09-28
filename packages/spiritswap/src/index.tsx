@@ -22,28 +22,34 @@ const queryClient = new QueryClient({
   },
 });
 
-const TWAP = ({ provider }: { provider: any }) => {
-  TWAPLib.actions.useWeb3Provider(provider);
+type Props = {
+  chainId?: number;
+  account?: string | null;
+  provider: any;
+};
 
+const TWAP = (props: Props) => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <CssBaseline />
-      <StyledContainer>
-        <StyledColumnGap gap={12}>
-          <SrcToken />
-          <SwitchTokens />
-          <DstToken />
-        </StyledColumnGap>
-        <StyledColumnGap gap={20}>
-          <PriceInput />
-          <TradeSize />
-          <MaxDuration />
-          <TradeInterval />
-          <SwapButton />
-        </StyledColumnGap>
-      </StyledContainer>
-      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
-    </QueryClientProvider>
+    <TWAPLib.providers.Web3Provider {...props}>
+      <QueryClientProvider client={queryClient}>
+        <CssBaseline />
+        <StyledContainer>
+          <StyledColumnGap gap={12}>
+            <SrcToken />
+            <SwitchTokens />
+            <DstToken />
+          </StyledColumnGap>
+          <StyledColumnGap gap={20}>
+            <PriceInput />
+            <TradeSize />
+            <MaxDuration />
+            <TradeInterval />
+            <SwapButton />
+          </StyledColumnGap>
+        </StyledContainer>
+        <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+      </QueryClientProvider>
+    </TWAPLib.providers.Web3Provider>
   );
 };
 
