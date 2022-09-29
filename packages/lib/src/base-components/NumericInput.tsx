@@ -1,36 +1,32 @@
-import { Box, styled } from "@mui/system";
+import { styled } from "@mui/system";
 import { BigNumber, parsebn } from "@defi.org/web3-candies";
 
-export type Props = {
-  onChange: (value: BigNumber) => void;
+function NumericInput({
+  onChange,
+  value,
+  disabled = false,
+  placeholder = "Enter amount",
+}: {
+  onChange: (value: string) => void;
   value?: string | number;
   placeholder?: string;
   disabled?: boolean;
   isAllowed?: boolean;
-};
+}) {
+  // const onInput = (value: string) => {
+  //   onChange(parsebn(value));
+  // };
 
-function AmountInput({ onChange, value, disabled = false, placeholder = "Enter amount" }: Props) {
-  const onInput = (value: any) => {
-    onChange(parsebn(value));
-  };
-
-  return (
-    <StyledContainer>
-      <StyledInput placeholder={placeholder} value={value} disabled={disabled} type="number" onChange={(e) => onInput(e.target.value)} />
-    </StyledContainer>
-  );
+  return <StyledInput 
+  
+  placeholder={placeholder} value={value} disabled={disabled} type="number" onChange={(e) => onChange(e.target.value)} className="twap-input" />;
 }
 
-export default AmountInput;
-
-const StyledContainer = styled(Box)({
-  height: "100%",
-  width: "100%",
-});
+export default NumericInput;
 
 const StyledInput = styled("input")({
   height: "100%",
-  width: "100%",
+ flex:1,
   textIndent: 10,
   fontSize: 16,
   border: "unset",

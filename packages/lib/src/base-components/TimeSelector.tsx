@@ -3,7 +3,7 @@ import { Box, styled } from "@mui/system";
 import _ from "lodash";
 import { useMemo, useState } from "react";
 import { TimeFormat } from "../store/store";
-import AmountInput from "./AmountInput";
+import NumericInput from "./NumericInput";
 
 const displayValues = [
   {
@@ -33,7 +33,7 @@ interface Props {
   timeFormat?: TimeFormat;
 }
 
-function TimeSelect({ millis = 0, onChange, timeFormat = TimeFormat.Minutes }: Props) {
+function TimeSelector({ millis = 0, onChange, timeFormat = TimeFormat.Minutes }: Props) {
   const [showList, setShowList] = useState(false);
 
   const selectedListItem = useMemo(() => displayValues.find((item) => item.format === timeFormat), [timeFormat]);
@@ -54,9 +54,9 @@ function TimeSelect({ millis = 0, onChange, timeFormat = TimeFormat.Minutes }: P
   };
 
   return (
-    <StyledContainer>
+    <StyledContainer className="twap-time-selector">
       <StyledInput>
-        <AmountInput value={millisToUiFormat(timeFormat, millis) || ""} onChange={(value) => onValueChange(value.toNumber())} placeholder={"0"} />
+        <NumericInput value={millisToUiFormat(timeFormat, millis) || ""} onChange={(value) => onValueChange(parseFloat(value))} placeholder={"0"} />
         {/*  //TODO */}
       </StyledInput>
 
@@ -66,11 +66,11 @@ function TimeSelect({ millis = 0, onChange, timeFormat = TimeFormat.Minutes }: P
         </StyledSelected>
         {showList && (
           <ClickAwayListener onClickAway={() => setShowList(false)}>
-            <StyledList>
+            <StyledList className="twap-time-selector-list">
               {displayValues.map((item) => {
                 const isSelected = timeFormat === item.format;
                 return (
-                  <StyledListItem selected={isSelected} onClick={() => onSelectListItem(item.format)} key={item.format}>
+                  <StyledListItem className="twap-time-selector-list-item" selected={isSelected} onClick={() => onSelectListItem(item.format)} key={item.format}>
                     <Typography>{item.text}</Typography>
                   </StyledListItem>
                 );
@@ -83,7 +83,7 @@ function TimeSelect({ millis = 0, onChange, timeFormat = TimeFormat.Minutes }: P
   );
 }
 
-export default TimeSelect;
+export default TimeSelector;
 
 const StyledInput = styled(Box)({
   flex: 1,
@@ -113,8 +113,6 @@ const StyledList = styled(Box)({
   position: "absolute",
   top: "-50%",
   right: -30,
-  background: "#FFFFFF",
-  boxShadow: "0px 10px 100px rgba(85, 94, 104, 0.1)",
   borderRadius: 30,
   padding: "11px 0px",
   width: 150,
@@ -127,11 +125,7 @@ const StyledListItem = styled(Box)(({ selected }: { selected: boolean }) => ({
   display: "flex",
   alignItems: "center",
   cursor: "pointer",
-  background: selected ? "#F8F8F8" : "transparent",
   transition: "0.2s all",
-  "&:hover": {
-    background: "#F8F8F8",
-  },
   "& p": {
     fontSize: 14,
   },

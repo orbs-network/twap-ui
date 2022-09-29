@@ -1,4 +1,4 @@
-import { Tooltip } from "@mui/material";
+import { Tooltip as MuiTooltip } from "@mui/material";
 import { ReactElement, ReactNode } from "react";
 
 interface Props {
@@ -6,12 +6,12 @@ interface Props {
   text: string | ReactElement;
 }
 
-function CustomTooltip({ children, text }: Props) {
+function Tooltip({ children, text }: Props) {
   return (
-    <Tooltip title={text}>
+    <MuiTooltip title={text}>
       <span>{children}</span>
-    </Tooltip>
+    </MuiTooltip>
   );
 }
 
-export default CustomTooltip;
+export default Tooltip;

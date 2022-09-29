@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { BigNumber, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
 import { useQuery, useQueryClient } from "react-query";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import Web3 from "web3";
 
 setWeb3Instance(new Web3(""));
@@ -173,41 +173,49 @@ export const useActionHandlers = () => {
   const { amount: dstAmount, address: dstAddress, setAmount: setDstAmount, setAddress: setDstAddress } = useDstToken();
   const { token: srcToken } = useToken(srcAddress);
 
-  const onSrcTokenChange = async (amountUi?: string) => {
-    const amount = await getUiAmountToBigNumber(srcToken, amountUi);
+  const onSrcTokenChange = useCallback(
+    async (amountUi: string) => {
+      const amount = await getUiAmountToBigNumber(srcToken, amountUi);
 
-    if (tradeSize?.gt(amount || zero)) {
-      setTradeSize(amount);
-    }
-    setSrcAmount(amount);
-  };
+      if (tradeSize?.gt(amount || zero)) {
+        setTradeSize(amount);
+      }
+      setSrcAmount(amount);
+    },
+    [srcToken, tradeSize]
+  );
 
-  const onTradeSizeChange = async (amountUi?: string) => {
-    const tradeSize = await getUiAmountToBigNumber(srcToken, amountUi);
-    setTradeSize(tradeSize);
-  };
+  const onTradeSizeChange = useCallback(
+    async (amountUi?: string) => {
+      const tradeSize = await getUiAmountToBigNumber(srcToken, amountUi);
+      setTradeSize(tradeSize);
+    },
+    [srcToken]
+  );
 
-  const onMaxDurationChange = (timeFormat: TimeFormat, millis: number) => {
+  const onMaxDurationChange = useCallback((timeFormat: TimeFormat, millis: number) => {
+    console.log(timeFormat, millis);
+    
     setMaxDurationMillis(millis);
     setMaxDurationTimeFormat(timeFormat);
-  };
+  }, []);
 
-  const onTradeIntervalChange = (timeFormat: TimeFormat, millis: number) => {
+  const onTradeIntervalChange = useCallback((timeFormat: TimeFormat, millis: number) => {
     setTradeIntervalMillis(millis);
     setTradeIntervalTimeFormat(timeFormat);
-  };
+  }, []);
 
-  const onEnableTradeInterval = (value: boolean) => {
+  const onEnableTradeInterval = useCallback((value: boolean) => {
     setCustomInterval(value);
-  };
+  }, []);
 
-  const onChangeTokenPositions = () => {
+  const onChangeTokenPositions = useCallback(() => {
     setSrcAmount(dstAmount);
     setSrcAddress(dstAddress);
     setDstAmount(srcAmount);
     setDstAddress(srcAddress);
-    setTradeSize(undefined);
-  };
+    setTradeSize(zero);
+  }, []);
 
   return {
     useInitWeb3,
