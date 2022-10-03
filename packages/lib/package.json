@@ -24,8 +24,9 @@
     "@emotion/styled": "11.x",
     "@mui/material": "5.x",
     "ethereum-multicall": "2.x",
+    "react-icons": "4.x",
     "react-query": "3.x",
-    "react-icons": "4.x"
+    "zustand": "^4.1.1"
   },
   "peerDependencies": {
     "react": "*",

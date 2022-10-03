@@ -4,17 +4,18 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import TWAPLib from "@orbs-network/twap-ui";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import React, { useMemo } from "react";
 
-const NumericInput = TWAPLib.components.NumericInput;
-const Card = TWAPLib.components.Card;
-const Label = TWAPLib.components.Label;
-const TokenLogo = TWAPLib.components.TokenLogo;
-const TokenName = TWAPLib.components.TokenName;
-const SmallLabel = TWAPLib.components.SmallLabel;
-const Switch = TWAPLib.components.Switch;
-const PriceInput = TWAPLib.components.PriceInput;
-const TimeSelector = TWAPLib.components.TimeSelector;
-const ActionButton = TWAPLib.components.ActionButton;
+const NumericInput = TWAPLib.baseComponents.NumericInput;
+const Card = TWAPLib.baseComponents.Card;
+const Label = TWAPLib.baseComponents.Label;
+const TokenLogo = TWAPLib.baseComponents.TokenLogo;
+const TokenName = TWAPLib.baseComponents.TokenName;
+const SmallLabel = TWAPLib.baseComponents.SmallLabel;
+const Switch = TWAPLib.baseComponents.Switch;
+const Price = TWAPLib.components.Price;
+const TimeSelector = TWAPLib.baseComponents.TimeSelector;
+const ActionButton = TWAPLib.baseComponents.ActionButton;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,7 +45,7 @@ const TWAP = (props: Props) => {
               <SrcTokenCard />
               <ChangeTokensOrder />
               <DstTokenCard />
-              <Price />
+              <PriceDisplay />
               <TradeSize />
               <MaxDuration />
               <TradeInterval />
@@ -61,8 +62,9 @@ const TWAP = (props: Props) => {
 export default TWAP;
 
 const SrcTokenCard = () => {
-  const { onSrcTokenChange } = TWAPLib.actions();
-  const { srcTokenAddress, srcTokenAmount } = TWAPLib.state();  
+  const { onChange } = TWAPLib.actions.useSrcTokenActions();
+  const address = TWAPLib.state.useSrcTokenAddress();
+  const amount = TWAPLib.state.useSrcTokenAmount();
 
   return (
     <StyledTokenInput>
@@ -70,8 +72,8 @@ const SrcTokenCard = () => {
         <StyledColumnGap>
           <Label>From:</Label>
           <StyledFlexStart>
-            <TokenSelect address={srcTokenAddress}  onClick={() => {}}  />
-            <NumericInput placeholder={"0.00"} onChange={onSrcTokenChange} value={srcTokenAmount} />
+            <TokenSelect address={address} onClick={() => {}} />
+            <NumericInput placeholder={"0.00"} onChange={onChange} value={amount} />
           </StyledFlexStart>
         </StyledColumnGap>
       </Card>
@@ -80,16 +82,16 @@ const SrcTokenCard = () => {
 };
 
 const DstTokenCard = () => {
-  const { dstTokenAmount, dstTokenAddress } = TWAPLib.state();
-
+  const address = TWAPLib.state.useDstTokenAddress();
+  const amount = TWAPLib.state.useDstTokenAmount();
   return (
     <StyledTokenInput>
       <Card>
         <StyledColumnGap>
           <Label>To:</Label>
           <StyledFlexStart>
-            <TokenSelect address={dstTokenAddress} onClick={() => {}} />
-            <NumericInput placeholder={"0.00"} onChange={() => {}} disabled value={dstTokenAmount} />
+            <TokenSelect address={address} onClick={() => {}} />
+            <NumericInput placeholder={"0.00"} onChange={() => {}} disabled value={amount} />
           </StyledFlexStart>
         </StyledColumnGap>
       </Card>
@@ -98,13 +100,21 @@ const DstTokenCard = () => {
 };
 
 const ChangeTokensOrder = () => {
-  const { onChangeTokenPositions } = TWAPLib.actions();
-  return <StyledChangeOrder image={"https://i.postimg.cc/BQWmSW9S/Mediamodifier-Design.png"} onClick={onChangeTokenPositions} />;
+  const onChangeTokenPositions = TWAPLib.actions.useChangeTokenPositions();
+  return (
+    <StyledChangeOrder onClick={onChangeTokenPositions}>
+      <img src={"https://i.postimg.cc/BQWmSW9S/Mediamodifier-Design.png"} />
+    </StyledChangeOrder>
+  );
 };
 
 const TradeSize = () => {
-  const { onTradeSizeChange } = TWAPLib.actions();
-  const { tradeSize, srcTokenAddress } = TWAPLib.state();
+  const { onChange } = TWAPLib.actions.useTradeSizeActions();
+  const srcTokenAddress = TWAPLib.state.useSrcTokenAddress();
+
+  const { tradeSize } = TWAPLib.state.useTradeSize();
+
+  console.log(tradeSize);
 
   const usd = 10;
 
@@ -114,7 +124,7 @@ const TradeSize = () => {
         <StyledColumnGap>
           <StyledFlexBetween>
             <Label tooltipText="Some text">Trade Size</Label>
-            <NumericInput placeholder ={'0'} onChange={onTradeSizeChange} value={tradeSize} />
+            <NumericInput placeholder={"0"} onChange={onChange} value={tradeSize} />
             <TokenName address={srcTokenAddress} />
           </StyledFlexBetween>
           <StyledFlexBetween>
@@ -127,67 +137,63 @@ const TradeSize = () => {
   );
 };
 
-
 const StyledTrade = styled(Box)({
-width:'100%',
-"& .twap-input" :{
-  textAlign:'right',
-  paddingRight: 20
-}
-})
+  width: "100%",
+  "& .twap-input": {
+    textAlign: "right",
+    paddingRight: 20,
+  },
+});
 
+const PriceDisplay = () => {
+  const { showPrice } = TWAPLib.state.usePrice();
 
-const Price = () => {
-  const { srcTokenAddress, dstTokenAddress } = TWAPLib.state();
+  const { togglePrice} = TWAPLib.actions.usePriceActions();
+
   return (
     <StyledPrice>
       <Card>
         <StyledColumnGap>
           <StyledFlexStart>
-            <Switch value={false} onChange={() => {}} />
+            <Switch value={!showPrice} onChange={() => togglePrice(!showPrice)} />
             <Label tooltipText="some text">Limit Price</Label>
           </StyledFlexStart>
-          <PriceInput srcTokenAddress={srcTokenAddress} dstTokenAddress={dstTokenAddress} onChange={() => {}} />
+          {showPrice && <Price />}
         </StyledColumnGap>
       </Card>
     </StyledPrice>
   );
 };
 
-
-const StyledPrice = styled(Box)({
-  width:'100%',
-  "& .twap-input":{
-    textAlign:'center',
-    width: 100,
+const StyledPrice = styled(Box)(({ theme }) => ({
+  width: "100%",
+  "& .twap-price": {
+    background: theme.palette.primary.main,
+    padding: 10,
+    borderRadius: 10,
   },
-  "& .twap-price":{
-    width: '100%',
-    marginLeft:'auto',
- 
-
-  }
-})
+}));
 
 const MaxDuration = () => {
-  const { onMaxDurationChange } = TWAPLib.actions();
-  const {maxDurationMillis, maxDurationFormat} = TWAPLib.state();
+  const { onChange } = TWAPLib.actions.useMaxDurationActions();
+  const { maxDurationMillis, maxDurationTimeFormat } = TWAPLib.state.useMaxDuration();
 
   return (
     <Card>
       <Label tooltipText="Some text">Max Duration</Label>
-      <TimeSelector millis={maxDurationMillis} timeFormat={maxDurationFormat} onChange={onMaxDurationChange} />
+      <TimeSelector millis={maxDurationMillis} timeFormat={maxDurationTimeFormat} onChange={onChange} />
     </Card>
   );
 };
 
 const TradeInterval = () => {
-  const { onTradeIntervalChange } = TWAPLib.actions();
+  const { onChange } = TWAPLib.actions.useTradeIntervalActions();
+  const { tradeIntervalMillis, tradeIntervalTimeFormat } = TWAPLib.state.useTradeInterval();
 
   return (
     <Card>
       <Label tooltipText="Some text">Trade Interval</Label>
-      <TimeSelector onChange={onTradeIntervalChange} />
+      <TimeSelector onChange={onChange} millis={tradeIntervalMillis} timeFormat={tradeIntervalTimeFormat} />
     </Card>
   );
 };
@@ -198,16 +204,14 @@ const SubmitButton = () => {
   return <ActionButton onClick={() => {}}>{warning || "Submit"}</ActionButton>;
 };
 
-
-const TokenDisplay = ({address}:{address: string}) => {
-      return (
-        <StyledTokenDisplay className="token-display">
-          <TokenLogo address={address} />
-          <TokenName address={address} />
-        </StyledTokenDisplay>
-      );
-}
-
+const TokenDisplay = ({ address }: { address: string }) => {
+  return (
+    <StyledTokenDisplay className="token-display">
+      <TokenLogo address={address} />
+      <TokenName address={address} />
+    </StyledTokenDisplay>
+  );
+};
 
 const TokenSelect = ({ address, onClick }: { address: string; onClick: () => void }) => {
   return (
@@ -217,29 +221,25 @@ const TokenSelect = ({ address, onClick }: { address: string; onClick: () => voi
   );
 };
 
-
-
 const StyledTokenSelect = styled("button")(({ theme }) => ({
   background: theme.palette.primary.light,
   border: "unset",
   padding: "6px 12px",
   borderRadius: 38,
-  cursor:'pointer'
+  cursor: "pointer",
 }));
 
 const StyledTokenDisplay = styled(Box)({
   display: "flex",
   alignItems: "center",
-  gap: 10
+  gap: 10,
 });
-
-
 
 const StyledFlexBetween = styled(Box)({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  width:'100%'
+  width: "100%",
 });
 
 const StyledFlexStart = styled(Box)({
@@ -247,27 +247,33 @@ const StyledFlexStart = styled(Box)({
   alignItems: "center",
   justifyContent: "flex-start",
   gap: 10,
-  width:'100%'
+  width: "100%",
 });
 
-const StyledChangeOrder = styled(TWAPLib.components.ChangeTokensOrder)({});
-
-
+const StyledChangeOrder = styled(Box)({
+  display:'flex',
+  alignItems:'center',
+  justifyContent:'center',
+  width:'100%',
+  "& img": {
+    width: 40,
+    height: 40
+  }
+});
 
 const StyledTokenInput = styled(Box)({
-    width:'100%',
-    "& .twap-input":{
-      textAlign:'end'
-    }
-})
-
+  width: "100%",
+  "& .twap-input": {
+    textAlign: "end",
+  },
+});
 
 const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
   display: "flex",
   flexDirection: "column",
   gap: gap || 10,
-  alignItems:'flex-start',
-  width:'100%'
+  alignItems: "flex-start",
+  width: "100%",
 }));
 
 const StyledLayout = styled(Box)(({ theme }) => ({
@@ -306,6 +312,12 @@ const StyledLayout = styled(Box)(({ theme }) => ({
   },
   "& .twap-time-selector-list": {
     background: theme.palette.primary.light,
+  },
+  "& .twap-switch": {
+    "& .MuiSwitch-track": {
+      background: theme.palette.primary.main,
+      opacity: 1,
+    },
   },
 }));
 

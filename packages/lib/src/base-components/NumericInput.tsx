@@ -1,32 +1,40 @@
 import { styled } from "@mui/system";
-import { BigNumber, parsebn } from "@defi.org/web3-candies";
 
 function NumericInput({
   onChange,
-  value,
+  value = "",
   disabled = false,
   placeholder = "Enter amount",
+  onFocus,
+  onBlur,
 }: {
   onChange: (value: string) => void;
   value?: string | number;
   placeholder?: string;
   disabled?: boolean;
   isAllowed?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
-  // const onInput = (value: string) => {
-  //   onChange(parsebn(value));
-  // };
-
-  return <StyledInput 
-  
-  placeholder={placeholder} value={value} disabled={disabled} type="number" onChange={(e) => onChange(e.target.value)} className="twap-input" />;
+  return (
+    <StyledInput
+      onBlur={onBlur}
+      onFocus={onFocus}
+      placeholder={placeholder}
+      value={value}
+      disabled={disabled}
+      type="number"
+      onChange={(e) => onChange(e.target.value)}
+      className="twap-input"
+    />
+  );
 }
 
 export default NumericInput;
 
 const StyledInput = styled("input")({
   height: "100%",
- flex:1,
+  flex: 1,
   textIndent: 10,
   fontSize: 16,
   border: "unset",

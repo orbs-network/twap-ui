@@ -2,30 +2,15 @@ import { ClickAwayListener, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import _ from "lodash";
 import { useMemo, useState } from "react";
-import { TimeFormat } from "../store/store";
+import { timeSelectOptions } from "../consts";
+import { TimeFormat } from "../types";
 import NumericInput from "./NumericInput";
 
-const displayValues = [
-  {
-    text: "Minutes",
-    format: TimeFormat.Minutes,
-    base: 1000 * 60,
-  },
-  {
-    text: "Hours",
-    format: TimeFormat.Hours,
-    base: 1000 * 60 * 60,
-  },
-  {
-    text: "Days",
-    format: TimeFormat.Days,
-    base: 1000 * 60 * 60 * 24,
-  },
-];
 
-const uiFormatToMillis = (format: TimeFormat, value: number) => _.find(displayValues, (v) => v.format === format)!.base * value;
 
-const millisToUiFormat = (format: TimeFormat, milliseconds: number) => milliseconds / _.find(displayValues, (v) => v.format === format)!.base;
+const uiFormatToMillis = (format: TimeFormat, value: number) => _.find(timeSelectOptions, (v) => v.format === format)!.base * value;
+
+const millisToUiFormat = (format: TimeFormat, milliseconds: number) => milliseconds / _.find(timeSelectOptions, (v) => v.format === format)!.base;
 
 interface Props {
   millis?: number;
@@ -36,7 +21,7 @@ interface Props {
 function TimeSelector({ millis = 0, onChange, timeFormat = TimeFormat.Minutes }: Props) {
   const [showList, setShowList] = useState(false);
 
-  const selectedListItem = useMemo(() => displayValues.find((item) => item.format === timeFormat), [timeFormat]);
+  const selectedListItem = useMemo(() => timeSelectOptions.find((item) => item.format === timeFormat), [timeFormat]);
 
   const onSelectListItem = (time: TimeFormat) => {
     setShowList(false);
@@ -67,7 +52,7 @@ function TimeSelector({ millis = 0, onChange, timeFormat = TimeFormat.Minutes }:
         {showList && (
           <ClickAwayListener onClickAway={() => setShowList(false)}>
             <StyledList className="twap-time-selector-list">
-              {displayValues.map((item) => {
+              {timeSelectOptions.map((item) => {
                 const isSelected = timeFormat === item.format;
                 return (
                   <StyledListItem className="twap-time-selector-list-item" selected={isSelected} onClick={() => onSelectListItem(item.format)} key={item.format}>

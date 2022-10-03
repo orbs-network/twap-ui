@@ -22,7 +22,7 @@ const StyledContainer = styled("button")(({ disabled }: { disabled: boolean }) =
   fontWeight: 600,
   cursor: disabled ? "unset" : "pointer",
   fontSize: 16,
-  opacity: disabled ? 0.6 : 1
+  opacity: disabled ? 0.6 : 1,
 }));
 
 const StyledChildren = styled(Box)({});

@@ -7,7 +7,7 @@ interface Props {
 }
 
 function Switch({ value, defaultChecked = false, onChange }: Props) {
-  return <MuiSwitch value={value} defaultChecked={defaultChecked} onChange={onChange} />;
+  return <MuiSwitch className="twap-switch" value={value} defaultChecked={defaultChecked} onChange={onChange} />;
 }
 
 export default Switch;
