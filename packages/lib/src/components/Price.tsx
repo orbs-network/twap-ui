@@ -4,13 +4,12 @@ import NumericInput from "../base-components/NumericInput";
 import TokenLogo from "../base-components/TokenLogo";
 import TokenName from "../base-components/TokenName";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { actions, state } from "../store/store";
+import { store } from "../store/store";
 
-function Price() {
-  const { uiPrice, inverted } = state.usePrice();
-  const { invertPrice, onChange, onFocus, onBlur } = actions.usePriceActions();
-  const srcTokenAddress = state.useSrcTokenAddress();
-  const dstTokenAddress = state.useDstTokenAddress();
+function Price({ placeholder = "0.00" }: { placeholder?: string }) {
+  const { uiPrice, inverted, invertPrice, onChange, onFocus, onBlur } = store.usePrice();
+  const { srcTokenAddress } = store.useSrcToken();
+  const { dstTokenAddress } = store.useDstToken();
 
   const srcAddress = inverted ? dstTokenAddress : srcTokenAddress;
   const dstAddress = inverted ? srcTokenAddress : dstTokenAddress;
@@ -24,13 +23,13 @@ function Price() {
         <Typography>=</Typography>
       </StyledLeft>
       <StyledNumeric>
-        <NumericInput onBlur={onBlur} onFocus={onFocus} placeholder="0.00" onChange={onChange} value={uiPrice} />
+        <NumericInput onBlur={onBlur} onFocus={onFocus} placeholder={placeholder} onChange={onChange} value={uiPrice} />
       </StyledNumeric>
       <StyledRight>
         <TokenName address={dstAddress} />
         <TokenLogo address={dstAddress} />
         <IconButton onClick={invertPrice}>
-          <TbArrowsRightLeft style={{ width: 20, height: 20 }} />
+          <TbArrowsRightLeft style={{ width: 20, height: 20 }} className="twap-price-icon" />
         </IconButton>
       </StyledRight>
     </StyledContainer>

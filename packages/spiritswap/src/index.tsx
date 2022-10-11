@@ -4,7 +4,11 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import TWAPLib from "@orbs-network/twap-ui";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import React, { useMemo } from "react";
+import { AiFillEdit } from "react-icons/ai";
+import { IoIosArrowDown } from "react-icons/io";
+import { HiOutlineSwitchVertical } from "react-icons/hi";
+import { ReactNode } from "react";
+import { GlobalStyles } from "@mui/material";
 
 const NumericInput = TWAPLib.baseComponents.NumericInput;
 const Card = TWAPLib.baseComponents.Card;
@@ -16,6 +20,30 @@ const Switch = TWAPLib.baseComponents.Switch;
 const Price = TWAPLib.components.Price;
 const TimeSelector = TWAPLib.baseComponents.TimeSelector;
 const ActionButton = TWAPLib.baseComponents.ActionButton;
+const Tooltip = TWAPLib.baseComponents.Tooltip;
+const IconButton = TWAPLib.baseComponents.IconButton;
+
+type ColorsScheme = {
+  submitButton: string;
+  text: string;
+  icon: string;
+  submitButtonBorder: string;
+  cardBackground: string;
+  selectTokenFocus: string;
+  percentButtonBackground: string;
+  mainBackground: string;
+};
+
+const colors: ColorsScheme = {
+  cardBackground: "#18202F",
+  submitButton: "rgb(29, 147, 132)",
+  submitButtonBorder: "1px solid rgba(100, 221, 192, 0.15)",
+  text: "#ffffff",
+  icon: "#60E6C5",
+  selectTokenFocus: "#1F2937",
+  percentButtonBackground: "rgb(55, 65, 81)",
+  mainBackground: "#000315",
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,91 +58,92 @@ type Props = {
   chainId?: number;
   account?: string | null;
   provider: any;
+  connect: () => void;
+};
+
+const globalStyle = {
+  "& .twap-tooltip": {
+    "& .MuiTooltip-tooltip": {
+      backgroundColor: colors.mainBackground,
+      fontSize: 14,
+      fontFamily: "inherit",
+    },
+  },
 };
 
 const TWAP = (props: Props) => {
   TWAPLib.initializer(props.provider);
 
   return (
-    <TWAPLib.providers.TWAPPropsProvider>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={getTheme("dark")}>
-          <CssBaseline />
-          <StyledLayout>
-            <StyledColumnGap gap={15}>
-              <SrcTokenCard />
-              <ChangeTokensOrder />
-              <DstTokenCard />
-              <PriceDisplay />
-              <TradeSize />
-              <MaxDuration />
-              <TradeInterval />
-              <SubmitButton />
-            </StyledColumnGap>
-          </StyledLayout>
-        </ThemeProvider>
-        <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
-      </QueryClientProvider>
-    </TWAPLib.providers.TWAPPropsProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={getTheme("dark")}>
+        <CssBaseline />
+        <GlobalStyles styles={globalStyle} />
+        <StyledLayout>
+          <StyledColumnGap gap={15}>
+            <SrcTokenCard />
+            <ChangeTokensOrder />
+            <DstTokenCard />
+            <PriceDisplay />
+            <TradeSize />
+            <MaxDuration />
+            <TradeInterval />
+            <SubmitButton account={props.account} connect={props.connect} />
+          </StyledColumnGap>
+        </StyledLayout>
+      </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+    </QueryClientProvider>
   );
 };
 
 export default TWAP;
 
+const SrcTokenPercentSelector = () => {
+  const onClick = (value: number) => {
+    console.log(value);
+  };
+  return (
+    <StyledSrcTokenPercentSelector>
+      <StyledPercentBtn onClick={() => onClick(25)}>25%</StyledPercentBtn>
+      <StyledPercentBtn onClick={() => onClick(50)}>50%</StyledPercentBtn>
+      <StyledPercentBtn onClick={() => onClick(75)}>75%</StyledPercentBtn>
+      <StyledPercentBtn onClick={() => onClick(100)}>Max</StyledPercentBtn>
+    </StyledSrcTokenPercentSelector>
+  );
+};
+
 const SrcTokenCard = () => {
-  const { onChange } = TWAPLib.actions.useSrcTokenActions();
-  const address = TWAPLib.state.useSrcTokenAddress();
-  const amount = TWAPLib.state.useSrcTokenAmount();
+  const { onChange, srcTokenAddress, srcTokenUiAmount } = TWAPLib.store.useSrcToken();
 
   return (
-    <StyledTokenInput>
-      <Card>
-        <StyledColumnGap>
-          <Label>From:</Label>
-          <StyledFlexStart>
-            <TokenSelect address={address} onClick={() => {}} />
-            <NumericInput placeholder={"0.00"} onChange={onChange} value={amount} />
-          </StyledFlexStart>
-        </StyledColumnGap>
-      </Card>
-    </StyledTokenInput>
+    <TokenInputPanel value={srcTokenUiAmount} address={srcTokenAddress} onChange={onChange} usd={"20"} balance="20">
+      <SrcTokenPercentSelector />
+    </TokenInputPanel>
   );
 };
 
 const DstTokenCard = () => {
-  const address = TWAPLib.state.useDstTokenAddress();
-  const amount = TWAPLib.state.useDstTokenAmount();
-  return (
-    <StyledTokenInput>
-      <Card>
-        <StyledColumnGap>
-          <Label>To:</Label>
-          <StyledFlexStart>
-            <TokenSelect address={address} onClick={() => {}} />
-            <NumericInput placeholder={"0.00"} onChange={() => {}} disabled value={amount} />
-          </StyledFlexStart>
-        </StyledColumnGap>
-      </Card>
-    </StyledTokenInput>
-  );
+  const { dstTokenAddress, dstTokenUiAmount } = TWAPLib.store.useDstToken();
+
+  return <TokenInputPanel disabled={true} value={dstTokenUiAmount} address={dstTokenAddress} usd={"20"} balance="20" />;
 };
 
 const ChangeTokensOrder = () => {
-  const onChangeTokenPositions = TWAPLib.actions.useChangeTokenPositions();
+  const onChangeTokenPositions = TWAPLib.store.useChangeTokenPositions();
   return (
-    <StyledChangeOrder onClick={onChangeTokenPositions}>
-      <img src={"https://i.postimg.cc/BQWmSW9S/Mediamodifier-Design.png"} />
+    <StyledChangeOrder>
+      <IconButton onClick={onChangeTokenPositions}>
+        <HiOutlineSwitchVertical className="icon" />
+      </IconButton>
     </StyledChangeOrder>
   );
 };
 
 const TradeSize = () => {
-  const { onChange } = TWAPLib.actions.useTradeSizeActions();
-  const srcTokenAddress = TWAPLib.state.useSrcTokenAddress();
+  const { srcTokenAddress } = TWAPLib.store.useSrcToken();
 
-  const { tradeSize } = TWAPLib.state.useTradeSize();
-
-  console.log(tradeSize);
+  const { tradeSize, onChange, totalTrades } = TWAPLib.store.useTradeSize();
 
   const usd = 10;
 
@@ -122,14 +151,14 @@ const TradeSize = () => {
     <StyledTrade>
       <Card>
         <StyledColumnGap>
-          <StyledFlexBetween>
+          <StyledFlexBetween gap={10}>
             <Label tooltipText="Some text">Trade Size</Label>
             <NumericInput placeholder={"0"} onChange={onChange} value={tradeSize} />
             <TokenName address={srcTokenAddress} />
           </StyledFlexBetween>
           <StyledFlexBetween>
-            <SmallLabel>Balance: 10</SmallLabel>
-            <SmallLabel>${usd}</SmallLabel>
+            <SmallLabel>Total trades: {totalTrades}</SmallLabel>
+            <SmallLabel style={{opacity: 0.6}}>${usd}</SmallLabel>
           </StyledFlexBetween>
         </StyledColumnGap>
       </Card>
@@ -141,24 +170,24 @@ const StyledTrade = styled(Box)({
   width: "100%",
   "& .twap-input": {
     textAlign: "right",
-    paddingRight: 20,
+    paddingRight: 10,
   },
 });
 
 const PriceDisplay = () => {
-  const { showPrice } = TWAPLib.state.usePrice();
-
-  const { togglePrice} = TWAPLib.actions.usePriceActions();
+  const { showPrice, togglePrice } = TWAPLib.store.usePrice();
 
   return (
     <StyledPrice>
       <Card>
         <StyledColumnGap>
           <StyledFlexStart>
-            <Switch value={!showPrice} onChange={() => togglePrice(!showPrice)} />
+            <Tooltip text="Some text">
+              <Switch value={!showPrice} onChange={() => togglePrice(!showPrice)} />
+            </Tooltip>
             <Label tooltipText="some text">Limit Price</Label>
           </StyledFlexStart>
-          {showPrice && <Price />}
+          {showPrice && <Price placeholder="0" />}
         </StyledColumnGap>
       </Card>
     </StyledPrice>
@@ -168,43 +197,72 @@ const PriceDisplay = () => {
 const StyledPrice = styled(Box)(({ theme }) => ({
   width: "100%",
   "& .twap-price": {
-    background: theme.palette.primary.main,
+    background: colors.mainBackground,
     padding: 10,
     borderRadius: 10,
+    gap: 10,
+  },
+  "& .twap-price-icon * ": {
+    color: colors.icon,
+  },
+  "& .twap-input": {
+    textAlign: "center",
   },
 }));
 
 const MaxDuration = () => {
-  const { onChange } = TWAPLib.actions.useMaxDurationActions();
-  const { maxDurationMillis, maxDurationTimeFormat } = TWAPLib.state.useMaxDuration();
+  const { onChange } = TWAPLib.store.useMaxDuration();
+  const { maxDurationMillis, maxDurationTimeFormat } = TWAPLib.store.useMaxDuration();
 
   return (
     <Card>
-      <Label tooltipText="Some text">Max Duration</Label>
-      <TimeSelector millis={maxDurationMillis} timeFormat={maxDurationTimeFormat} onChange={onChange} />
+      <StyledFlexBetween gap={10}>
+        <Label tooltipText="Some text">Max Duration</Label>
+        <TimeSelector millis={maxDurationMillis} timeFormat={maxDurationTimeFormat} onChange={onChange} />
+      </StyledFlexBetween>
     </Card>
   );
 };
 
 const TradeInterval = () => {
-  const { onChange } = TWAPLib.actions.useTradeIntervalActions();
-  const { tradeIntervalMillis, tradeIntervalTimeFormat } = TWAPLib.state.useTradeInterval();
+  const { onChange } = TWAPLib.store.useTradeInterval();
+  const { tradeIntervalMillis, tradeIntervalTimeFormat, customInterval } = TWAPLib.store.useTradeInterval();
+  const { onCustomIntervalClick } = TWAPLib.store.useTradeInterval();
 
   return (
     <Card>
-      <Label tooltipText="Some text">Trade Interval</Label>
-      <TimeSelector onChange={onChange} millis={tradeIntervalMillis} timeFormat={tradeIntervalTimeFormat} />
+      <StyledFlexBetween gap={10}>
+        <Label tooltipText="Some text">Trade Interval</Label>
+        <StyledIntervalTimeSelect>
+          <Tooltip text={customInterval ? "" : "Some text"}>
+            <TimeSelector disabled={!customInterval} onChange={onChange} millis={tradeIntervalMillis} timeFormat={tradeIntervalTimeFormat} />
+          </Tooltip>
+        </StyledIntervalTimeSelect>
+        {!customInterval && (
+          <IconButton tooltip="Some text" onClick={onCustomIntervalClick}>
+            <AiFillEdit />
+          </IconButton>
+        )}
+      </StyledFlexBetween>
     </Card>
   );
 };
 
-const SubmitButton = () => {
-  const warning = TWAPLib.validation().useSubmitButtonValidation();
+const SubmitButton = ({ account, connect }: { account?: string | null; connect: () => void }) => {
+  const warning = TWAPLib.validation.useSubmitButtonValidation();
 
-  return <ActionButton onClick={() => {}}>{warning || "Submit"}</ActionButton>;
+  if (!account) {
+    return <ActionButton onClick={connect}>Connect Wallet</ActionButton>;
+  }
+
+  return (
+    <ActionButton disabled={!!warning} onClick={() => {}}>
+      {warning || "Submit"}
+    </ActionButton>
+  );
 };
 
-const TokenDisplay = ({ address }: { address: string }) => {
+const TokenDisplay = ({ address }: { address?: string }) => {
   return (
     <StyledTokenDisplay className="token-display">
       <TokenLogo address={address} />
@@ -213,34 +271,94 @@ const TokenDisplay = ({ address }: { address: string }) => {
   );
 };
 
-const TokenSelect = ({ address, onClick }: { address: string; onClick: () => void }) => {
+interface TokenInputPanelProps {
+  value?: string;
+  onChange?: (value: string) => void;
+  address?: string;
+  usd: string;
+  balance: string;
+  children?: ReactNode;
+  disabled?: boolean;
+}
+
+const TokenInputPanel = ({ value, onChange, address, usd, balance, children, disabled = false }: TokenInputPanelProps) => {
   return (
-    <StyledTokenSelect onClick={onClick}>
-      <TokenDisplay address={address} />
-    </StyledTokenSelect>
+    <StyledTokenInputPanel>
+      <Card>
+        <StyledColumnGap>
+          <StyledFlexBetween>
+            <NumericInput disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
+            <StyledTokenSelect onClick={() => {}}>
+              <TokenDisplay address={address} />
+              <IoIosArrowDown style={{ fill: colors.icon }} size={20} />
+            </StyledTokenSelect>
+          </StyledFlexBetween>
+          <StyledFlexBetween>
+            <SmallLabel style={{ opacity: 0.6 }}>~ ${usd}</SmallLabel>
+            <SmallLabel>Balance: {balance} </SmallLabel>
+          </StyledFlexBetween>
+          {children}
+        </StyledColumnGap>
+      </Card>
+    </StyledTokenInputPanel>
   );
 };
 
-const StyledTokenSelect = styled("button")(({ theme }) => ({
-  background: theme.palette.primary.light,
+// ----------- styles -------------- //
+
+const StyledSrcTokenPercentSelector = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  gap: 5,
+  width: "100%",
+});
+
+const StyledPercentBtn = styled("button")({
+  background: colors.percentButtonBackground,
+  height: 22,
+  width: "25%",
   border: "unset",
-  padding: "6px 12px",
-  borderRadius: 38,
+  borderRadius: 4,
   cursor: "pointer",
+  transition: "0.2s all",
+  "&:hover": {
+    background: "rgba(100, 221, 192, 0.15)",
+    color: "rgb(96, 230, 197)",
+  },
+});
+
+const StyledIntervalTimeSelect = styled(Box)({
+  flex: 1,
+});
+const StyledTokenSelect = styled("button")(({ theme }) => ({
+  background: "transparent",
+  border: "unset",
+  padding: "6px",
+  borderRadius: 2,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  gap: 5,
+  marginLeft: 10,
+
+  "&:hover": {
+    background: colors.selectTokenFocus,
+  },
 }));
 
 const StyledTokenDisplay = styled(Box)({
   display: "flex",
   alignItems: "center",
-  gap: 10,
+  gap: 6,
 });
 
-const StyledFlexBetween = styled(Box)({
+const StyledFlexBetween = styled(Box)(({ gap = 0 }: { gap?: number }) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   width: "100%",
-});
+  gap,
+}));
 
 const StyledFlexStart = styled(Box)({
   display: "flex",
@@ -250,21 +368,23 @@ const StyledFlexStart = styled(Box)({
   width: "100%",
 });
 
-const StyledChangeOrder = styled(Box)({
-  display:'flex',
-  alignItems:'center',
-  justifyContent:'center',
-  width:'100%',
-  "& img": {
-    width: 40,
-    height: 40
-  }
-});
+const StyledChangeOrder = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "100%",
+  "& .icon *": {
+    color: colors.icon,
+  },
+}));
 
-const StyledTokenInput = styled(Box)({
+const StyledTokenInputPanel = styled(Box)({
   width: "100%",
   "& .twap-input": {
-    textAlign: "end",
+    textAlign: "left",
+  },
+  "& .twap-token-name": {
+    fontSize: 22,
   },
 });
 
@@ -277,79 +397,85 @@ const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
 }));
 
 const StyledLayout = styled(Box)(({ theme }) => ({
-  background: theme.palette.primary.main,
-  padding: 24,
-  borderRadius: 20,
-  maxWidth: 500,
   width: "100%",
   "& *": {
-    color: theme.palette.text.primary,
+    color: colors.text,
+    fontFamily: "inherit",
   },
+
   "& .twap-card": {
-    padding: 20,
-    background: theme.palette.secondary.main,
-    borderRadius: 10,
+    padding: 12,
+    background: colors.cardBackground,
+    borderRadius: "0.375rem",
+  },
+
+  "& .twap-small-label": {
+    fontSize: 14,
+    opacity: 1,
   },
   "& .twap-change-order": {
     width: 50,
     height: 50,
   },
   "& .twap-token-name": {
-    fontSize: 15,
+    fontSize: 18,
   },
   "& .twap-token-logo": {
-    width: 30,
-    height: 30,
+    width: 28,
+    height: 28,
   },
   "& .twap-input": {
-    color: theme.palette.text.primary,
-    fontSize: 20,
-    fontWeight: 500,
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: 400,
+    textAlign: "right",
+    outline: "1px solid transparent",
+    borderRadius: "0.375rem",
+    height: 40,
+    transition: "0.2s all",
+    "&:focus": {
+      outline: "1px solid #1D9391",
+    },
+    "&::placeholder": {
+      color: "white",
+    },
   },
   "& .twap-action-button": {
-    background: "linear-gradient(180deg,#448aff,#004ce6)",
-    height: 56,
+    background: colors.submitButton,
+    border: `1px solid ${colors.submitButtonBorder}`,
+    height: 40,
+    borderRadius: 4,
+    fontWeight: 500,
+    "&:hover": {
+      opacity: 0.8,
+    },
   },
   "& .twap-time-selector-list": {
-    background: theme.palette.primary.light,
+    background: colors.cardBackground,
   },
   "& .twap-switch": {
+    "& .MuiSwitch-thumb": {
+      background: colors.icon,
+    },
     "& .MuiSwitch-track": {
-      background: theme.palette.primary.main,
-      opacity: 1,
+      background: colors.mainBackground,
+    },
+    "& .Mui-checked+.MuiSwitch-track": {
+      background: colors.mainBackground,
     },
   },
 }));
 
+// ------------- theme --------------- //
 const lightTheme = createTheme({
   palette: {
     mode: "light",
-    primary: {
-      main: "#ffffff",
-      light: "#404557",
-    },
-    secondary: {
-      main: "#ffffff",
-    },
-    text: {
-      primary: "blank",
-    },
   },
 });
 
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
-    primary: {
-      main: "#1b1e29",
-      light: "#404557",
-    },
-    secondary: {
-      main: "#232734",
-    },
-    text: {
-      primary: "white",
-    },
   },
   typography: {},
 });

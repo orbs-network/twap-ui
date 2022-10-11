@@ -32,7 +32,8 @@ function NumericInput({
 
 export default NumericInput;
 
-const StyledInput = styled("input")({
+const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
+  pointerEvents: disabled ? "none" : "unset",
   height: "100%",
   flex: 1,
   textIndent: 10,
@@ -53,4 +54,4 @@ const StyledInput = styled("input")({
   "& input[type=number]": {
     "-moz-appearance": "textfield",
   },
-});
+}));

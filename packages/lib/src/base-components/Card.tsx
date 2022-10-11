@@ -1,13 +1,9 @@
 import { Box, styled } from "@mui/system";
-import React, { forwardRef, ReactNode } from "react";
+import { ReactNode } from "react";
 
-const Card = forwardRef(({ children }: { children: ReactNode }, ref) => {
-  return (
-    <StyledContainer className="twap-card" ref={ref}>
-      {children}
-    </StyledContainer>
-  );
-});
+const Card = ({ children }: { children: ReactNode }) => {
+  return <StyledContainer className="twap-card">{children}</StyledContainer>;
+};
 
 export default Card;
 

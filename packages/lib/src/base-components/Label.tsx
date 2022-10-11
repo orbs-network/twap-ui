@@ -33,5 +33,5 @@ const StyledTooltipContent = styled(Box)({
 });
 
 const StyledLabel = styled(Typography)({
-  whiteSpace: "nowrap",
+  // whiteSpace: "nowrap",
 });

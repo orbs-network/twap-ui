@@ -27,6 +27,17 @@ export const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: 
   }
 };
 
+export const getTradeInterval = (maxDurationMillis: number, totalTrades: number) => {
+  if (maxDurationMillis > 0 && totalTrades > 0) {
+    const result = maxDurationMillis / totalTrades;
+    const derivedMillis = result > 60_000 ? result : 60_000;
+
+    return derivedMillis;
+  } else {
+    return 0;
+  }
+};
+
 export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) => {
   if (amount == null) {
     return "";
@@ -34,8 +45,6 @@ export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) 
 
   return !token ? "" : (await token.mantissa(amount || zero)).toFormat();
 };
-
-
 
 export const getUiAmountToBigNumber = (token?: Token, amountUi?: string) => {
   if (!amountUi) {

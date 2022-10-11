@@ -1,14 +1,18 @@
+import { Box } from "@mui/material";
 import { styled } from "@mui/system";
+import { ReactNode } from "react";
 
-function ChangeTokensOrder({ image, onClick }: { image: string; onClick: () => void }) {
+function ChangeTokensOrder({ children, onClick }: { children: ReactNode; onClick: () => void }) {
   return (
     <StyledContainer onClick={onClick} className="twap-change-order">
-      <img src={image} />
+      <StyledChildren>{children}</StyledChildren>
     </StyledContainer>
   );
 }
 
 export default ChangeTokensOrder;
+
+const StyledChildren = styled(Box)({});
 
 const StyledContainer = styled("button")({
   borderRadius: "50%",
@@ -16,9 +20,7 @@ const StyledContainer = styled("button")({
   marginLeft: "auto",
   marginRight: "auto",
   overflow: "hidden",
-  "& img": {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
 });

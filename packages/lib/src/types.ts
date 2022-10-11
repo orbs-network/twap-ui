@@ -1,6 +1,10 @@
 import { BigNumber } from "@defi.org/web3-candies";
 
-export interface TokenState {
+interface BaseState {
+  reset: () => void;
+}
+
+export interface TokenState extends BaseState {
   address?: string;
   amount?: BigNumber;
   setAddress: (value?: string) => void;
@@ -8,7 +12,7 @@ export interface TokenState {
   uiAmount?: string;
 }
 
-export interface MaxDurationState {
+export interface MaxDurationState extends BaseState {
   millis: number;
   timeFormat: TimeFormat;
   setMillis: (value: number) => void;
@@ -20,19 +24,18 @@ export interface TradeIntervalState extends MaxDurationState {
   setCustomInterval: (value: boolean) => void;
 }
 
-
 export enum TimeFormat {
   Minutes,
   Hours,
   Days,
 }
 
-export interface TradeSizeState {
+export interface TradeSizeState extends BaseState {
   tradeSize?: BigNumber;
   setTradeSize: (tradeSize?: BigNumber) => void;
 }
 
-export interface PriceState {
+export interface PriceState extends BaseState {
   inverted: boolean;
   invertPrice: () => void;
   showPrice: Boolean;

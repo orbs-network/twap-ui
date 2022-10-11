@@ -1,5 +1,5 @@
 {
-  "name": "@orbs-network/twap-ui-spiritswap-example",
+  "name": "@orbs-network/twap-ui-dapp-example",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -7,7 +7,8 @@
     "start": "react-scripts start"
   },
   "dependencies": {
-    "@orbs-network/twap-ui-spiritswap": "*"
+    "@orbs-network/twap-ui-spiritswap": "*",
+      "@orbs-network/twap-ui-quickswap": "*"
   },
   "browserslist": {
     "production": [

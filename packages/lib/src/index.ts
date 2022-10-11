@@ -1,6 +1,5 @@
-import { actions, useInitWeb3, state, useValidation } from "./store/store";
+import { useInitWeb3, store, validation } from "./store/store";
 
-import TWAPPropsProvider from "./providers/TWAPPropsProvider";
 import NumericInput from "./base-components/NumericInput";
 import ActionButton from "./base-components/ActionButton";
 import Card from "./base-components/Card";
@@ -14,15 +13,13 @@ import TokenName from "./base-components/TokenName";
 import Layout from "./base-components/Layout";
 import ChangeTokensOrder from "./base-components/ChangeTokensOrder";
 import Price from "./components/Price";
+import Tooltip from "./base-components/Tooltip";
+import IconButton from "./base-components/IconButton";
 
 export default {
   initializer: useInitWeb3,
-  state,
-  actions,
-  baseComponents: { NumericInput, ActionButton, Card, Icon, Label, SmallLabel, Switch, TimeSelector, TokenLogo, TokenName, Layout, ChangeTokensOrder },
-  components: {Price},
-  validation: useValidation,
-  providers: {
-    TWAPPropsProvider,
-  },
+  store,
+  baseComponents: { IconButton, NumericInput, ActionButton, Card, Icon, Label, SmallLabel, Switch, TimeSelector, TokenLogo, TokenName, Layout, ChangeTokensOrder, Tooltip },
+  components: { Price },
+  validation,
 };

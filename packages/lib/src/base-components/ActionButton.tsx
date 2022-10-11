@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/system";
-import React, { CSSProperties, ReactNode } from "react";
+import React, { CSSProperties, ReactNode, useContext } from "react";
 
 function ActionButton({ children, style = {}, disabled = false, onClick }: { children: ReactNode; style?: CSSProperties; disabled?: boolean; onClick: () => void }) {
   return (
@@ -23,6 +23,7 @@ const StyledContainer = styled("button")(({ disabled }: { disabled: boolean }) =
   cursor: disabled ? "unset" : "pointer",
   fontSize: 16,
   opacity: disabled ? 0.6 : 1,
+  transition: "0.2s all",
 }));
 
 const StyledChildren = styled(Box)({});

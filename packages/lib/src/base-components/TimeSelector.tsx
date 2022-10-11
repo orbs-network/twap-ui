@@ -5,8 +5,7 @@ import { useMemo, useState } from "react";
 import { timeSelectOptions } from "../consts";
 import { TimeFormat } from "../types";
 import NumericInput from "./NumericInput";
-
-
+import Tooltip from "./Tooltip";
 
 const uiFormatToMillis = (format: TimeFormat, value: number) => _.find(timeSelectOptions, (v) => v.format === format)!.base * value;
 
@@ -16,9 +15,10 @@ interface Props {
   millis?: number;
   onChange: (timeFormat: TimeFormat, millis: number) => void;
   timeFormat?: TimeFormat;
+  disabled?: boolean;
 }
 
-function TimeSelector({ millis = 0, onChange, timeFormat = TimeFormat.Minutes }: Props) {
+function TimeSelector({ millis = 0, onChange, timeFormat = TimeFormat.Minutes, disabled = false }: Props) {
   const [showList, setShowList] = useState(false);
 
   const selectedListItem = useMemo(() => timeSelectOptions.find((item) => item.format === timeFormat), [timeFormat]);
@@ -38,15 +38,20 @@ function TimeSelector({ millis = 0, onChange, timeFormat = TimeFormat.Minutes }:
     onChange(timeFormat, uiFormatToMillis(timeFormat, value || 0));
   };
 
+  const onShowListClick = () => {
+    if (disabled) return;
+    setShowList(true);
+  };
+
   return (
-    <StyledContainer className="twap-time-selector">
+    <StyledContainer className="twap-time-selector" style={{ pointerEvents: disabled ? "none" : "unset" }}>
       <StyledInput>
-        <NumericInput value={millisToUiFormat(timeFormat, millis) || ""} onChange={(value) => onValueChange(parseFloat(value))} placeholder={"0"} />
+        <NumericInput disabled={disabled} value={millisToUiFormat(timeFormat, millis) || ""} onChange={(value) => onValueChange(parseFloat(value))} placeholder={"0"} />
         {/*  //TODO */}
       </StyledInput>
 
       <StyledTimeSelect>
-        <StyledSelected onClick={() => setShowList(true)}>
+        <StyledSelected onClick={onShowListClick}>
           <Typography> {selectedListItem?.text}</Typography>
         </StyledSelected>
         {showList && (
@@ -74,6 +79,8 @@ const StyledInput = styled(Box)({
   flex: 1,
   "& input": {
     textAlign: "right",
+    flex: "unset",
+    width: "100%",
   },
 });
 

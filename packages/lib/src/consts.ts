@@ -1,7 +1,5 @@
 import { TimeFormat } from "./types";
 
-
-
 export const timeSelectOptions = [
   {
     text: "Minutes",
@@ -19,8 +17,6 @@ export const timeSelectOptions = [
     text: "Days",
     format: TimeFormat.Days,
     base: 1000 * 60 * 60 * 24,
-    limit: Infinity
+    limit: Infinity,
   },
 ];
-
-
