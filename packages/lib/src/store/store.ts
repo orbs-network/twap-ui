@@ -1,5 +1,6 @@
 import _ from "lodash";
-import { BigNumber, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
+import { BigNumber, convertDecimals, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
+import axios from "axios";
 import { useQuery } from "react-query";
 import { useCallback, useEffect, useMemo } from "react";
 import Web3 from "web3";
@@ -11,12 +12,12 @@ import { TimeFormat } from "./TimeFormat";
 setWeb3Instance(new Web3(""));
 
 const srcTokenInitialState = {
-  address: erc20s.eth.WETH().address,
+  address: erc20s.ftm.WETH().address,
   amount: undefined,
 };
 
 const dstTokenInitialState = {
-  address: erc20s.eth.WETH().address,
+  address: erc20s.ftm.WBTC().address,
 };
 
 const maxDurationInitialState = {
@@ -87,7 +88,7 @@ export const useTradeSizeStore = create<TradeSizeState>((set) => ({
 
 const getTokens = async () => {
   await delay(1000);
-  return [erc20s.eth.WETH(), erc20s.eth.USDC(), erc20s.eth.DAI(), erc20s.eth.WBTC()];
+  return _.map(erc20s.ftm, (it) => it());
 };
 
 export const useInitWeb3 = (provider?: any) => {
@@ -125,7 +126,6 @@ const useSrcToken = () => {
   const onChange = useCallback(
     async (amountUi: string) => {
       const amount = await getUiAmountToBigNumber(token, amountUi);
-
       if (amount && tradeSize && tradeSize.gt(amount)) {
         setTradeSize(undefined);
       }
@@ -133,11 +133,9 @@ const useSrcToken = () => {
     },
     [token, tradeSize]
   );
-  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress, srcTokenAmount);
+  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress);
 
   const { data: balance, isLoading: balanceLoading } = useAccountBalances(srcTokenAddress);
-
-  console.log(balance?.toString());
 
   return {
     setSrcTokenAmount: setAmount,
@@ -148,7 +146,7 @@ const useSrcToken = () => {
     srcTokenUiAmount: useBigNumberToUiAmount(srcTokenAddress, srcTokenAmount),
     usdValueLoading,
     usdValue,
-    uiUsdValue: useBigNumberToUiAmount(srcTokenAddress, usdValue) || "0",
+    uiUsdValue: useBigNumberToUiAmount(srcTokenAddress, srcTokenAmount?.times(usdValue || 0)),
     balance,
     uiBalance: useBigNumberToUiAmount(srcTokenAddress, balance) || "0",
     balanceLoading,
@@ -158,11 +156,11 @@ const useSrcToken = () => {
 // all actions (functions) related to src input
 const useDstToken = () => {
   const { setAddress, address } = useDstTokenStore();
-  const { srcTokenAmount, srcTokenAddress } = useSrcToken();
-
-  const { data: amount, isLoading } = useTrade(srcTokenAddress, address, srcTokenAmount);
-  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(address, amount);
+  const { srcTokenAmount, srcTokenAddress, usdValue: srcTokenUsdValue } = useSrcToken();
+  const { isLoading: usdValueLoading, data: dstTokenUsdValue } = useUsdValue(address);
+  const { data: amount, isLoading } = useDstAmount(srcTokenAddress, address, srcTokenAmount, srcTokenUsdValue, dstTokenUsdValue);
   const { data: balance, isLoading: balanceLoading } = useAccountBalances(address);
+
 
   return {
     setDstTokenAddress: setAddress,
@@ -171,23 +169,24 @@ const useDstToken = () => {
     amount,
     isLoading,
     usdValueLoading: usdValueLoading || isLoading,
-    usdValue,
-    uiUsdValue: useBigNumberToUiAmount(address, usdValue) || "0",
+    usdValue: dstTokenUsdValue,
+    uiUsdValue: useBigNumberToUiAmount(address, amount?.times(dstTokenUsdValue || 0)),
     balance,
     uiBalance: useBigNumberToUiAmount(address, balance) || "0",
     balanceLoading,
   };
 };
 
-const useUsdValue = (address?: string, amount?: BigNumber) => {
+const useUsdValue = (address?: string) => {
   return useQuery(
-    ["useUsdValue", address, amount?.toString()],
+    ["useUsdValue", address],
     async () => {
-      if (!address || !amount || amount.isZero()) {
+      if (!address) {
         return undefined;
       }
-      await delay(1000);
-      return amount.multipliedBy(2);
+      const result = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/fantom?contract_addresses=${address}&vs_currencies=usd `);
+
+      return (_.first(_.values(result.data)).usd as number) || 0;
     },
     {
       enabled: !!address,
@@ -195,16 +194,16 @@ const useUsdValue = (address?: string, amount?: BigNumber) => {
   );
 };
 
-// TODO useDstAmount
-const useTrade = (srcAddress?: string, dstAddress?: string, srcAmount?: BigNumber) => {
-  // const { token } = useToken(address);
+const useDstAmount = (srcAddress?: string, dstAddress?: string, srcAmount?: BigNumber, srcTokenUsdValue?: number, dstTokenUsdValue?: number) => {
+  const { token: srcToken } = useToken(srcAddress);
+  const { token: dstToken } = useToken(dstAddress);
 
-  return useQuery(["useTrade", srcAddress, dstAddress, srcAmount], async () => {
+  return useQuery(["useDstAmount", srcAddress, dstAddress, srcAmount], async () => {
     if (!srcAmount || srcAmount.isZero()) {
       return undefined;
     }
-    await delay(1000);
-    return srcAmount?.multipliedBy(2);
+    const res = srcAmount?.times(srcTokenUsdValue || 0).div(dstTokenUsdValue || 1);
+    return convertDecimals(res, await srcToken?.decimals()!, await dstToken?.decimals()!);
   });
 };
 
@@ -279,7 +278,7 @@ const useTradeSize = () => {
     [token, srcTokenAmount]
   );
 
-  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress, tradeSize);
+  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress);
 
   return {
     totalTrades,
@@ -288,7 +287,7 @@ const useTradeSize = () => {
     onChange,
     usdValue,
     usdValueLoading,
-    uiUsdValue: useBigNumberToUiAmount(srcTokenAddress, usdValue) || "0",
+    uiUsdValue: useBigNumberToUiAmount(srcTokenAddress, tradeSize?.times(usdValue || 0)),
   };
 };
 
@@ -447,6 +446,10 @@ const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number)
   }
 };
 
-export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) => (!amount ? "" : !token ? "" : (await token.mantissa(amount || zero)).toFormat());
+export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) => {
+  const result = !amount ? "" : !token ? "" : (await token.mantissa(amount || zero)).toFormat({ groupSeparator: "", decimalSeparator: "." });
+
+  return result;
+};
 
 export const getUiAmountToBigNumber = (token?: Token, amountUi?: string) => (!token ? undefined : token?.amount(parsebn(amountUi || "0")));

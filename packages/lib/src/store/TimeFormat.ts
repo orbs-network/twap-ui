@@ -20,7 +20,7 @@ export class TimeFormat {
   }
 
   millisToUi(millis: number) {
-       return parseFloat((millis / this.value).toFixed(2));
+    return parseFloat((millis / this.value).toFixed(2));
   }
 
   transmute(newFormat: TimeFormat, millis: number) {

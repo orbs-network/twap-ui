@@ -100,9 +100,7 @@ const TWAP = (props: Props) => {
 export default TWAP;
 
 const SrcTokenPercentSelector = () => {
-  const onClick = (value: number) => {
-    console.log(value);
-  };
+  const onClick = (value: number) => {};
 
   return (
     <StyledSrcTokenPercentSelector>
@@ -116,7 +114,6 @@ const SrcTokenPercentSelector = () => {
 
 const SrcTokenPanel = () => {
   const { onChange, srcTokenAddress, srcTokenUiAmount, usdValueLoading, uiUsdValue, uiBalance, balanceLoading } = TWAPLib.store.useSrcToken();
-  console.log({ uiBalance });
 
   return (
     <TokenPanel
@@ -300,7 +297,7 @@ interface TokenPanelProps {
   children?: ReactNode;
   disabled?: boolean;
   isLoading?: boolean;
-  usdValue?: string;
+  usdValue?: number;
   usdValueLoading?: boolean;
   balanceLoading?: boolean;
 }
@@ -314,7 +311,7 @@ const TokenPanel = ({
   children,
   disabled = false,
   isLoading = false,
-  usdValue = "0",
+  usdValue = 0,
   usdValueLoading = false,
 }: TokenPanelProps) => {
   return (

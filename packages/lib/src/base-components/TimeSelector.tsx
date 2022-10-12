@@ -21,7 +21,7 @@ function TimeSelector({ millis = 0, onChange, selectedTimeFormat = TimeFormat.Mi
   };
 
   const onMillisChange = (uiValue?: string) => {
-       onChange(selectedTimeFormat, uiValue == null  ? 0 :  selectedTimeFormat.uiToMillis(uiValue));
+    onChange(selectedTimeFormat, uiValue == null ? 0 : selectedTimeFormat.uiToMillis(uiValue));
   };
 
   const onOpenListClick = () => {
@@ -32,7 +32,12 @@ function TimeSelector({ millis = 0, onChange, selectedTimeFormat = TimeFormat.Mi
   return (
     <StyledContainer className="twap-time-selector" style={{ pointerEvents: disabled ? "none" : "unset" }}>
       <StyledInput>
-        <NumericInput disabled={disabled} value={millis ? selectedTimeFormat.millisToUi(millis) :  undefined} onChange={(value) => onMillisChange(value === '' ? undefined : value)} placeholder={"0"} />
+        <NumericInput
+          disabled={disabled}
+          value={millis ? selectedTimeFormat.millisToUi(millis) : undefined}
+          onChange={(value) => onMillisChange(value === "" ? undefined : value)}
+          placeholder={"0"}
+        />
       </StyledInput>
 
       <StyledTimeSelect>
