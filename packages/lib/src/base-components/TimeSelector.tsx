@@ -1,44 +1,30 @@
 import { ClickAwayListener, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import _ from "lodash";
-import { useMemo, useState } from "react";
-import { timeSelectOptions } from "../consts";
-import { TimeFormat } from "../types";
+import { useState } from "react";
+import { TimeFormat } from "../store/TimeFormat";
 import NumericInput from "./NumericInput";
-import Tooltip from "./Tooltip";
-
-const uiFormatToMillis = (format: TimeFormat, value: number) => _.find(timeSelectOptions, (v) => v.format === format)!.base * value;
-
-const millisToUiFormat = (format: TimeFormat, milliseconds: number) => milliseconds / _.find(timeSelectOptions, (v) => v.format === format)!.base;
 
 interface Props {
   millis?: number;
   onChange: (timeFormat: TimeFormat, millis: number) => void;
-  timeFormat?: TimeFormat;
+  selectedTimeFormat: TimeFormat;
   disabled?: boolean;
 }
 
-function TimeSelector({ millis = 0, onChange, timeFormat = TimeFormat.Minutes, disabled = false }: Props) {
+function TimeSelector({ millis = 0, onChange, selectedTimeFormat = TimeFormat.Minutes, disabled = false }: Props) {
   const [showList, setShowList] = useState(false);
 
-  const selectedListItem = useMemo(() => timeSelectOptions.find((item) => item.format === timeFormat), [timeFormat]);
-
-  const onSelectListItem = (time: TimeFormat) => {
+  const onTimeFormatChange = (newTimeFormat: TimeFormat) => {
+    onChange(newTimeFormat, selectedTimeFormat.transmute(newTimeFormat, millis));
     setShowList(false);
-    const inputValue = millisToUiFormat(timeFormat, millis);
-    onChange(time, uiFormatToMillis(time, inputValue));
   };
 
-  const onValueChange = (value?: number) => {
-    console.log(value);
-
-    if (value != null && value > 0 && value < 1) {
-      value = 1;
-    }
-    onChange(timeFormat, uiFormatToMillis(timeFormat, value || 0));
+  const onMillisChange = (uiValue?: string) => {
+       onChange(selectedTimeFormat, uiValue == null  ? 0 :  selectedTimeFormat.uiToMillis(uiValue));
   };
 
-  const onShowListClick = () => {
+  const onOpenListClick = () => {
     if (disabled) return;
     setShowList(true);
   };
@@ -46,22 +32,25 @@ function TimeSelector({ millis = 0, onChange, timeFormat = TimeFormat.Minutes, d
   return (
     <StyledContainer className="twap-time-selector" style={{ pointerEvents: disabled ? "none" : "unset" }}>
       <StyledInput>
-        <NumericInput disabled={disabled} value={millisToUiFormat(timeFormat, millis) || ""} onChange={(value) => onValueChange(parseFloat(value))} placeholder={"0"} />
-        {/*  //TODO */}
+        <NumericInput disabled={disabled} value={millis ? selectedTimeFormat.millisToUi(millis) :  undefined} onChange={(value) => onMillisChange(value === '' ? undefined : value)} placeholder={"0"} />
       </StyledInput>
 
       <StyledTimeSelect>
-        <StyledSelected onClick={onShowListClick}>
-          <Typography> {selectedListItem?.text}</Typography>
+        <StyledSelected onClick={onOpenListClick}>
+          <Typography> {selectedTimeFormat.toString()}</Typography>
         </StyledSelected>
         {showList && (
           <ClickAwayListener onClickAway={() => setShowList(false)}>
             <StyledList className="twap-time-selector-list">
-              {timeSelectOptions.map((item) => {
-                const isSelected = timeFormat === item.format;
+              {TimeFormat.All.map((item) => {
+                const selected = item.key === selectedTimeFormat.key;
                 return (
-                  <StyledListItem className="twap-time-selector-list-item" selected={isSelected} onClick={() => onSelectListItem(item.format)} key={item.format}>
-                    <Typography>{item.text}</Typography>
+                  <StyledListItem
+                    className={`twap-time-selector-list-item ${selected ? "twap-time-selector-list-item-selected" : ""}`}
+                    onClick={() => onTimeFormatChange(item)}
+                    key={item.key}
+                  >
+                    <Typography>{item.key}</Typography>
                   </StyledListItem>
                 );
               })}
@@ -108,9 +97,10 @@ const StyledList = styled(Box)({
   borderRadius: 30,
   padding: "11px 0px",
   width: 150,
+  overflow: "hidden",
 });
 
-const StyledListItem = styled(Box)(({ selected }: { selected: boolean }) => ({
+const StyledListItem = styled(Box)({
   padding: "0px 24px",
   textAlign: "left",
   height: 36,
@@ -121,7 +111,8 @@ const StyledListItem = styled(Box)(({ selected }: { selected: boolean }) => ({
   "& p": {
     fontSize: 14,
   },
-}));
+});
+
 const StyledSelected = styled(Box)({
   cursor: "pointer",
 });

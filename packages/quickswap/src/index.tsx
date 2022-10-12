@@ -109,7 +109,7 @@ const ChangeTokensOrder = () => {
 const TradeSize = () => {
   const { srcTokenAddress } = TWAPLib.store.useSrcToken();
 
-  const { tradeSize, onChange, totalTrades } = TWAPLib.store.useTradeSize();
+  const { uiTradeSize, onChange, totalTrades } = TWAPLib.store.useTradeSize();
 
   const usd = 10;
 
@@ -119,7 +119,7 @@ const TradeSize = () => {
         <StyledColumnGap>
           <StyledFlexBetween>
             <Label tooltipText="Some text">Trade Size</Label>
-            <NumericInput placeholder={"0"} onChange={onChange} value={tradeSize} />
+            <NumericInput placeholder={"0"} onChange={onChange} value={uiTradeSize} />
             <TokenName address={srcTokenAddress} />
           </StyledFlexBetween>
           <StyledFlexBetween>
@@ -174,7 +174,7 @@ const MaxDuration = () => {
   return (
     <Card>
       <Label tooltipText="Some text">Max Duration</Label>
-      <TimeSelector millis={maxDurationMillis} timeFormat={maxDurationTimeFormat} onChange={onChange} />
+      <TimeSelector millis={maxDurationMillis} selectedTimeFormat={maxDurationTimeFormat} onChange={onChange} />
     </Card>
   );
 };
@@ -189,7 +189,7 @@ const TradeInterval = () => {
       <Label tooltipText="Some text">Trade Interval</Label>
       <StyledIntervalTimeSelect>
         <Tooltip text={customInterval ? "" : "Some text"}>
-          <TimeSelector disabled={!customInterval} onChange={onChange} millis={tradeIntervalMillis} timeFormat={tradeIntervalTimeFormat} />
+          <TimeSelector disabled={!customInterval} onChange={onChange} millis={tradeIntervalMillis} selectedTimeFormat={tradeIntervalTimeFormat} />
         </Tooltip>
       </StyledIntervalTimeSelect>
       {!customInterval && (

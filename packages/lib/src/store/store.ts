@@ -1,12 +1,12 @@
 import _ from "lodash";
-import { BigNumber, erc20s, hasWeb3Instance, setWeb3Instance, web3, zero } from "@defi.org/web3-candies";
+import { BigNumber, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
 import { useQuery } from "react-query";
 import { useCallback, useEffect, useMemo } from "react";
 import Web3 from "web3";
-import shallow from "zustand/shallow";
-import { MaxDurationState, PriceState, TimeFormat, TokenState, TradeIntervalState, TradeSizeState } from "../types";
-import { delay, getBigNumberToUiAmount, getDerivedTradeInterval, getTimeFormat, getTradeInterval, getUiAmountToBigNumber } from "../utils";
+import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TradeIntervalState, TradeSizeState } from "../types";
+import { delay } from "../utils";
 import create from "zustand";
+import { TimeFormat } from "./TimeFormat";
 // TODO remove when we will fetch tokens
 setWeb3Instance(new Web3(""));
 
@@ -16,8 +16,7 @@ const srcTokenInitialState = {
 };
 
 const dstTokenInitialState = {
-  address: erc20s.eth.WBTC().address,
-  amount: undefined,
+  address: erc20s.eth.WETH().address,
 };
 
 const maxDurationInitialState = {
@@ -43,17 +42,16 @@ const tradeSizeInitialState = {
   tradeSize: undefined,
 };
 
-export const useSrcTokenStore = create<TokenState>((set) => ({
+export const useSrcTokenStore = create<SrcTokenState>((set) => ({
   ...srcTokenInitialState,
   setAddress: (address) => set({ address }),
   setAmount: (amount) => set({ amount }),
   reset: () => set(srcTokenInitialState),
 }));
 
-export const useDstTokenStore = create<TokenState>((set, get) => ({
+export const useDstTokenStore = create<DstTokenState>((set, get) => ({
   ...dstTokenInitialState,
   setAddress: (address) => set({ address }),
-  setAmount: (amount) => set({ amount }),
   reset: () => set(dstTokenInitialState),
 }));
 
@@ -105,32 +103,41 @@ const getWeb3 = () => {
   return undefined;
 };
 
+const useAccountBalances = (address?: string) => {
+  return useQuery(
+    ["useAccountBalances", address],
+    async () => {
+      await delay(1000);
+      return BigNumber(1 * 1e18);
+    },
+    { staleTime: 0, enabled: !!address }
+  );
+};
+
 // all actions (functions) related to src input
 const useSrcToken = () => {
   const { setAddress, setAmount, address: srcTokenAddress, amount: srcTokenAmount } = useSrcTokenStore();
   const tradeSize = useTradeSizeStore().tradeSize;
-  const dstTokenAddress = useDstTokenStore().address;
-  const setDstTokenAmount = useDstTokenStore().setAmount;
   const { token } = useToken(srcTokenAddress);
-  const { token: dstToken } = useToken(dstTokenAddress);
 
   const setTradeSize = useTradeSizeStore().setTradeSize;
 
   const onChange = useCallback(
     async (amountUi: string) => {
-      const base = "0.000040181";
       const amount = await getUiAmountToBigNumber(token, amountUi);
-
-      const dstamount = await getUiAmountToBigNumber(dstToken, base);
 
       if (amount && tradeSize && tradeSize.gt(amount)) {
         setTradeSize(undefined);
       }
       setAmount(amount);
-      setDstTokenAmount(dstamount);
     },
     [token, tradeSize]
   );
+  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress, srcTokenAmount);
+
+  const { data: balance, isLoading: balanceLoading } = useAccountBalances(srcTokenAddress);
+
+  console.log(balance?.toString());
 
   return {
     setSrcTokenAmount: setAmount,
@@ -139,7 +146,66 @@ const useSrcToken = () => {
     srcTokenAddress,
     srcTokenAmount,
     srcTokenUiAmount: useBigNumberToUiAmount(srcTokenAddress, srcTokenAmount),
+    usdValueLoading,
+    usdValue,
+    uiUsdValue: useBigNumberToUiAmount(srcTokenAddress, usdValue) || "0",
+    balance,
+    uiBalance: useBigNumberToUiAmount(srcTokenAddress, balance) || "0",
+    balanceLoading,
   };
+};
+
+// all actions (functions) related to src input
+const useDstToken = () => {
+  const { setAddress, address } = useDstTokenStore();
+  const { srcTokenAmount, srcTokenAddress } = useSrcToken();
+
+  const { data: amount, isLoading } = useTrade(srcTokenAddress, address, srcTokenAmount);
+  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(address, amount);
+  const { data: balance, isLoading: balanceLoading } = useAccountBalances(address);
+
+  return {
+    setDstTokenAddress: setAddress,
+    dstTokenUiAmount: useBigNumberToUiAmount(address, amount),
+    dstTokenAddress: address,
+    amount,
+    isLoading,
+    usdValueLoading: usdValueLoading || isLoading,
+    usdValue,
+    uiUsdValue: useBigNumberToUiAmount(address, usdValue) || "0",
+    balance,
+    uiBalance: useBigNumberToUiAmount(address, balance) || "0",
+    balanceLoading,
+  };
+};
+
+const useUsdValue = (address?: string, amount?: BigNumber) => {
+  return useQuery(
+    ["useUsdValue", address, amount?.toString()],
+    async () => {
+      if (!address || !amount || amount.isZero()) {
+        return undefined;
+      }
+      await delay(1000);
+      return amount.multipliedBy(2);
+    },
+    {
+      enabled: !!address,
+    }
+  );
+};
+
+// TODO useDstAmount
+const useTrade = (srcAddress?: string, dstAddress?: string, srcAmount?: BigNumber) => {
+  // const { token } = useToken(address);
+
+  return useQuery(["useTrade", srcAddress, dstAddress, srcAmount], async () => {
+    if (!srcAmount || srcAmount.isZero()) {
+      return undefined;
+    }
+    await delay(1000);
+    return srcAmount?.multipliedBy(2);
+  });
 };
 
 const useTotalTrades = () => {
@@ -152,12 +218,6 @@ const useTotalTrades = () => {
     BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_CEIL });
     return srcTokenAmount?.idiv(tradeSize).toNumber() || 0;
   }, [srcTokenAmount, tradeSize]);
-};
-
-// all actions (functions) related to src input
-const useDstToken = () => {
-  const { setAddress, setAmount, address, amount } = useDstTokenStore();
-  return { setDstTokenAddress: setAddress, setDstTokenAmount: setAmount, dstTokenUiAmount: useBigNumberToUiAmount(address, amount), dstTokenAddress: address };
 };
 
 // all actions (functions) related to max duration input
@@ -188,9 +248,6 @@ const useTradeInterval = () => {
     setTimeFormat(timeFormat);
   }, []);
 
-  const onCustomIntervalClick = useCallback(() => {
-    setCustomInterval(true);
-  }, []);
   const { derivedMillis, derivedTimeFormat } = useMemo(() => {
     return getDerivedTradeInterval(maxDurationMillis, totalTrades);
   }, [totalTrades, maxDurationMillis]);
@@ -198,7 +255,7 @@ const useTradeInterval = () => {
   const tradeIntervalMillis = customInterval ? millis : derivedMillis;
   const tradeIntervalTimeFormat = customInterval ? timeFormat : derivedTimeFormat;
 
-  return { tradeIntervalMillis, tradeIntervalTimeFormat, customInterval, onChange, onCustomIntervalClick };
+  return { tradeIntervalMillis, tradeIntervalTimeFormat, customInterval, onChange, onCustomIntervalClick: () => setCustomInterval(true) };
 };
 
 // all data related to trade size input
@@ -222,7 +279,17 @@ const useTradeSize = () => {
     [token, srcTokenAmount]
   );
 
-  return { totalTrades, tradeSize, uiTradeSize: useBigNumberToUiAmount(srcTokenAddress, tradeSize), onChange };
+  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress, tradeSize);
+
+  return {
+    totalTrades,
+    tradeSize,
+    uiTradeSize: useBigNumberToUiAmount(srcTokenAddress, tradeSize),
+    onChange,
+    usdValue,
+    usdValueLoading,
+    uiUsdValue: useBigNumberToUiAmount(srcTokenAddress, usdValue) || "0",
+  };
 };
 
 const getAllTokens = () => {
@@ -240,18 +307,24 @@ export const useToken = (address?: string) => {
 const useBigNumberToUiAmount = (address?: string, amount?: BigNumber) => {
   const { token } = useToken(address);
 
-  return useQuery(["useBigNumberToUiAmount", address, amount], () => getBigNumberToUiAmount(token, amount)).data;
+  return useQuery(["useBigNumberToUiAmount", address, amount], () => getBigNumberToUiAmount(token, amount), {
+    enabled: !!address,
+  }).data;
+};
+
+const useDstTokenAmount = () => {
+  return useDstToken().amount;
 };
 
 const useChangeTokenPositions = () => {
   const { setAddress: setSrcTokenAddress, setAmount: setSrcTokenAmount, address: srcTokenAddress, amount: srcTokenAmount } = useSrcTokenStore();
-  const { setAddress: setDstTokenAddress, setAmount: setDstTokenAmount, address: dstTokenAddress, amount: dstTokenAmount } = useDstTokenStore();
+  const { setAddress: setDstTokenAddress, address: dstTokenAddress } = useDstTokenStore();
+  const dstTokenAmount = useDstTokenAmount();
   const setTradeSize = useTradeSizeStore().setTradeSize;
 
   return () => {
     setSrcTokenAmount(dstTokenAmount);
     setSrcTokenAddress(dstTokenAddress);
-    setDstTokenAmount(srcTokenAmount);
     setDstTokenAddress(srcTokenAddress);
     setTradeSize(undefined);
   };
@@ -347,13 +420,7 @@ export const store = {
   useMaxDuration,
   useTradeInterval,
   usePrice,
-  useTradeSize: () => {
-    return {
-      ...useTradeSize(),
-      tradeSize: useTradeSize().uiTradeSize,
-      totalTrades: useTradeSize().totalTrades,
-    };
-  },
+  useTradeSize,
   useChangeTokenPositions,
   reset: resetState,
 };
@@ -363,3 +430,23 @@ export const validation = {
   useSubmitButtonValidation,
   usePartialFillValidation,
 };
+
+const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number) => {
+  if (maxDurationMillis > 0 && totalTrades > 0) {
+    const derivedMillis = Math.max(maxDurationMillis / totalTrades, 60_000);
+
+    return {
+      derivedMillis,
+      derivedTimeFormat: TimeFormat.valueOf(derivedMillis),
+    };
+  } else {
+    return {
+      derivedMillis: 0,
+      derivedTimeFormat: TimeFormat.Minutes,
+    };
+  }
+};
+
+export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) => (!amount ? "" : !token ? "" : (await token.mantissa(amount || zero)).toFormat());
+
+export const getUiAmountToBigNumber = (token?: Token, amountUi?: string) => (!token ? undefined : token?.amount(parsebn(amountUi || "0")));

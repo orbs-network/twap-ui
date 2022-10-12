@@ -81,9 +81,9 @@ const TWAP = (props: Props) => {
         <GlobalStyles styles={globalStyle} />
         <StyledLayout>
           <StyledColumnGap gap={15}>
-            <SrcTokenCard />
+            <SrcTokenPanel />
             <ChangeTokensOrder />
-            <DstTokenCard />
+            <DstTokenPanel />
             <PriceDisplay />
             <TradeSize />
             <MaxDuration />
@@ -103,6 +103,7 @@ const SrcTokenPercentSelector = () => {
   const onClick = (value: number) => {
     console.log(value);
   };
+
   return (
     <StyledSrcTokenPercentSelector>
       <StyledPercentBtn onClick={() => onClick(25)}>25%</StyledPercentBtn>
@@ -113,20 +114,40 @@ const SrcTokenPercentSelector = () => {
   );
 };
 
-const SrcTokenCard = () => {
-  const { onChange, srcTokenAddress, srcTokenUiAmount } = TWAPLib.store.useSrcToken();
+const SrcTokenPanel = () => {
+  const { onChange, srcTokenAddress, srcTokenUiAmount, usdValueLoading, uiUsdValue, uiBalance, balanceLoading } = TWAPLib.store.useSrcToken();
+  console.log({ uiBalance });
 
   return (
-    <TokenInputPanel value={srcTokenUiAmount} address={srcTokenAddress} onChange={onChange} usd={"20"} balance="20">
+    <TokenPanel
+      usdValue={uiUsdValue}
+      usdValueLoading={usdValueLoading}
+      value={srcTokenUiAmount}
+      address={srcTokenAddress}
+      onChange={onChange}
+      balance={uiBalance}
+      balanceLoading={balanceLoading}
+    >
       <SrcTokenPercentSelector />
-    </TokenInputPanel>
+    </TokenPanel>
   );
 };
 
-const DstTokenCard = () => {
-  const { dstTokenAddress, dstTokenUiAmount } = TWAPLib.store.useDstToken();
+const DstTokenPanel = () => {
+  const { dstTokenAddress, dstTokenUiAmount, isLoading, uiUsdValue, usdValueLoading, uiBalance, balanceLoading } = TWAPLib.store.useDstToken();
 
-  return <TokenInputPanel disabled={true} value={dstTokenUiAmount} address={dstTokenAddress} usd={"20"} balance="20" />;
+  return (
+    <TokenPanel
+      usdValueLoading={usdValueLoading}
+      usdValue={uiUsdValue}
+      disabled={true}
+      value={dstTokenUiAmount}
+      address={dstTokenAddress}
+      isLoading={isLoading}
+      balance={uiBalance}
+      balanceLoading={balanceLoading}
+    />
+  );
 };
 
 const ChangeTokensOrder = () => {
@@ -143,9 +164,7 @@ const ChangeTokensOrder = () => {
 const TradeSize = () => {
   const { srcTokenAddress } = TWAPLib.store.useSrcToken();
 
-  const { tradeSize, onChange, totalTrades } = TWAPLib.store.useTradeSize();
-
-  const usd = 10;
+  const { uiTradeSize, onChange, totalTrades, uiUsdValue, usdValueLoading } = TWAPLib.store.useTradeSize();
 
   return (
     <StyledTrade>
@@ -153,12 +172,14 @@ const TradeSize = () => {
         <StyledColumnGap>
           <StyledFlexBetween gap={10}>
             <Label tooltipText="Some text">Trade Size</Label>
-            <NumericInput placeholder={"0"} onChange={onChange} value={tradeSize} />
+            <NumericInput placeholder={"0"} onChange={onChange} value={uiTradeSize} />
             <TokenName address={srcTokenAddress} />
           </StyledFlexBetween>
           <StyledFlexBetween>
             <SmallLabel>Total trades: {totalTrades}</SmallLabel>
-            <SmallLabel style={{opacity: 0.6}}>${usd}</SmallLabel>
+            <SmallLabel loading={usdValueLoading} style={{ opacity: 0.6 }}>
+              ${uiUsdValue}
+            </SmallLabel>
           </StyledFlexBetween>
         </StyledColumnGap>
       </Card>
@@ -218,7 +239,7 @@ const MaxDuration = () => {
     <Card>
       <StyledFlexBetween gap={10}>
         <Label tooltipText="Some text">Max Duration</Label>
-        <TimeSelector millis={maxDurationMillis} timeFormat={maxDurationTimeFormat} onChange={onChange} />
+        <TimeSelector millis={maxDurationMillis} selectedTimeFormat={maxDurationTimeFormat} onChange={onChange} />
       </StyledFlexBetween>
     </Card>
   );
@@ -235,7 +256,7 @@ const TradeInterval = () => {
         <Label tooltipText="Some text">Trade Interval</Label>
         <StyledIntervalTimeSelect>
           <Tooltip text={customInterval ? "" : "Some text"}>
-            <TimeSelector disabled={!customInterval} onChange={onChange} millis={tradeIntervalMillis} timeFormat={tradeIntervalTimeFormat} />
+            <TimeSelector disabled={!customInterval} onChange={onChange} millis={tradeIntervalMillis} selectedTimeFormat={tradeIntervalTimeFormat} />
           </Tooltip>
         </StyledIntervalTimeSelect>
         {!customInterval && (
@@ -271,36 +292,52 @@ const TokenDisplay = ({ address }: { address?: string }) => {
   );
 };
 
-interface TokenInputPanelProps {
+interface TokenPanelProps {
   value?: string;
   onChange?: (value: string) => void;
   address?: string;
-  usd: string;
-  balance: string;
+  balance?: string;
   children?: ReactNode;
   disabled?: boolean;
+  isLoading?: boolean;
+  usdValue?: string;
+  usdValueLoading?: boolean;
+  balanceLoading?: boolean;
 }
 
-const TokenInputPanel = ({ value, onChange, address, usd, balance, children, disabled = false }: TokenInputPanelProps) => {
+const TokenPanel = ({
+  value,
+  onChange,
+  address,
+  balance = "",
+  balanceLoading = false,
+  children,
+  disabled = false,
+  isLoading = false,
+  usdValue = "0",
+  usdValueLoading = false,
+}: TokenPanelProps) => {
   return (
-    <StyledTokenInputPanel>
+    <StyledTokenPanel>
       <Card>
         <StyledColumnGap>
           <StyledFlexBetween>
-            <NumericInput disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
+            <NumericInput loading={isLoading} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
             <StyledTokenSelect onClick={() => {}}>
               <TokenDisplay address={address} />
               <IoIosArrowDown style={{ fill: colors.icon }} size={20} />
             </StyledTokenSelect>
           </StyledFlexBetween>
           <StyledFlexBetween>
-            <SmallLabel style={{ opacity: 0.6 }}>~ ${usd}</SmallLabel>
-            <SmallLabel>Balance: {balance} </SmallLabel>
+            <SmallLabel loading={usdValueLoading} style={{ opacity: 0.6 }}>
+              ~ ${usdValue}
+            </SmallLabel>
+            <SmallLabel loading={balanceLoading}>Balance: {balance} </SmallLabel>
           </StyledFlexBetween>
           {children}
         </StyledColumnGap>
       </Card>
-    </StyledTokenInputPanel>
+    </StyledTokenPanel>
   );
 };
 
@@ -378,7 +415,7 @@ const StyledChangeOrder = styled(Box)(({ theme }) => ({
   },
 }));
 
-const StyledTokenInputPanel = styled(Box)({
+const StyledTokenPanel = styled(Box)({
   width: "100%",
   "& .twap-input": {
     textAlign: "left",
@@ -451,7 +488,17 @@ const StyledLayout = styled(Box)(({ theme }) => ({
     },
   },
   "& .twap-time-selector-list": {
-    background: colors.cardBackground,
+    background: colors.mainBackground,
+    border: "1px solid rgb(55, 65, 81)",
+    right: 0,
+    "& .twap-time-selector-list-item": {
+      "&:hover": {
+        background: "rgba(255,255,255, 0.05)",
+      },
+    },
+    "& .twap-time-selector-list-item-selected": {
+      background: "rgba(255,255,255, 0.05)",
+    },
   },
   "& .twap-switch": {
     "& .MuiSwitch-thumb": {
