@@ -34,7 +34,7 @@ function TimeSelector({ millis = 0, onChange, selectedTimeFormat = TimeFormat.Mi
       <StyledInput>
         <NumericInput
           disabled={disabled}
-          value={millis ? selectedTimeFormat.millisToUi(millis) : undefined}
+          value={millis ? selectedTimeFormat.millisToUi(millis).toString() : undefined}
           onChange={(value) => onMillisChange(value === "" ? undefined : value)}
           placeholder={"0"}
         />

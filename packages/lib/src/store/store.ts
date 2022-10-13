@@ -2,12 +2,14 @@ import _ from "lodash";
 import { BigNumber, convertDecimals, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
 import axios from "axios";
 import { useQuery } from "react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Web3 from "web3";
 import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TradeIntervalState, TradeSizeState } from "../types";
 import { delay } from "../utils";
 import create from "zustand";
 import { TimeFormat } from "./TimeFormat";
+import { useDebounce } from "../base-components/NumericInput";
+
 // TODO remove when we will fetch tokens
 setWeb3Instance(new Web3(""));
 
@@ -127,14 +129,14 @@ const useSrcToken = () => {
     async (amountUi: string) => {
       const amount = await getUiAmountToBigNumber(token, amountUi);
       if (amount && tradeSize && tradeSize.gt(amount)) {
-        setTradeSize(undefined);
+        setTradeSize(amount);
       }
       setAmount(amount);
     },
     [token, tradeSize]
   );
-  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress);
 
+  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress);
   const { data: balance, isLoading: balanceLoading } = useAccountBalances(srcTokenAddress);
 
   return {
@@ -176,7 +178,7 @@ const useDstToken = () => {
   };
 };
 
-const useUsdValue = (address?: string) => {
+const useUsdValue = (address?: string, isEnabled?: boolean) => {
   return useQuery(
     ["useUsdValue", address],
     async () => {
@@ -286,7 +288,7 @@ const useTradeSize = () => {
     onChange,
     usdValue,
     usdValueLoading,
-    uiUsdValue: useBigNumberToUiAmount(srcTokenAddress, tradeSize?.times(usdValue || 0)),
+    uiUsdValue: useBigNumberToUiAmount(srcTokenAddress, !usdValue ? undefined : tradeSize?.times(usdValue)),
   };
 };
 
@@ -307,6 +309,8 @@ const useBigNumberToUiAmount = (address?: string, amount?: BigNumber) => {
 
   return useQuery(["useBigNumberToUiAmount", address, amount], () => getBigNumberToUiAmount(token, amount), {
     enabled: !!address,
+    cacheTime: 0,
+    staleTime: 0,
   }).data;
 };
 
@@ -471,9 +475,10 @@ const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number)
 };
 
 export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) => {
-  const result = !amount ? "" : !token ? "" : (await token.mantissa(amount || zero)).toFormat({ groupSeparator: "", decimalSeparator: "." });
+
+  const result = !amount ? "" : !token ? "" : (await token.mantissa(amount || zero)).toFormat();
 
   return result;
 };
 
-export const getUiAmountToBigNumber = (token?: Token, amountUi?: string) => (!token ? undefined : token?.amount(parsebn(amountUi || "0")));
+export const getUiAmountToBigNumber = (token?: Token, amountUi?: string) => (amountUi === '' ? undefined : !token ? undefined : token?.amount(parsebn(amountUi || "0")));

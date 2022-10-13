@@ -1,10 +1,26 @@
 import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import Loader from "./Loader";
+import { NumericFormat } from "react-number-format";
+import { useEffect, useState } from "react";
+
+export function useDebounce<T>(value: T, delay?: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 function NumericInput({
   onChange,
-  value = "",
+  value,
   disabled = false,
   placeholder = "Enter amount",
   onFocus,
@@ -12,7 +28,7 @@ function NumericInput({
   loading = false,
 }: {
   onChange: (value: string) => void;
-  value?: string | number;
+  value?: string;
   placeholder?: string;
   disabled?: boolean;
   isAllowed?: boolean;
@@ -20,9 +36,7 @@ function NumericInput({
   onBlur?: () => void;
   loading?: boolean;
 }) {
-  const handleChange = (value: any) => {
-    onChange(value);
-  };
+
   return (
     <StyledContainer>
       <Fade in={loading} style={{ transition: "0s" }}>
@@ -31,16 +45,21 @@ function NumericInput({
         </StyledLoader>
       </Fade>
       <Fade in={!loading} style={{ transition: "0s" }}>
-        <StyledInput
-          onBlur={onBlur}
-          onFocus={onFocus}
-          placeholder={placeholder}
-          value={value}
-          disabled={disabled}
-          type="number"
-          onChange={(e) => handleChange(e.target.value)}
-          className="twap-input"
-        />
+        <div>
+          <NumericFormat
+            disabled={disabled}
+            onBlur={onBlur}
+            onFocus={onFocus}
+            placeholder={placeholder}
+            value={value}
+            thousandSeparator=","
+            customInput={StyledInput}
+            className="twap-input"
+            onValueChange={(values, _sourceInfo) => {
+              onChange(values.value);
+            }}
+          />
+        </div>
       </Fade>
     </StyledContainer>
   );

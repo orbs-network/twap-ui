@@ -18,7 +18,7 @@ function Price({ placeholder = "0.00" }: { placeholder?: string }) {
         <Typography>=</Typography>
       </StyledLeft>
       <StyledNumeric>
-        <NumericInput onBlur={onBlur} onFocus={onFocus} placeholder={placeholder} onChange={onChange} value={uiPrice} />
+        <NumericInput onBlur={onBlur} onFocus={onFocus} placeholder={placeholder} onChange={onChange} value={uiPrice?.toLocaleString()} />
       </StyledNumeric>
       <StyledRight>
         <TokenName address={rightTokenAddress} />

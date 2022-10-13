@@ -24,6 +24,7 @@ const ActionButton = TWAPLib.baseComponents.ActionButton;
 const Tooltip = TWAPLib.baseComponents.Tooltip;
 const IconButton = TWAPLib.baseComponents.IconButton;
 const Text = TWAPLib.baseComponents.Text;
+const NumberDisplay = TWAPLib.baseComponents.NumberDisplay;
 
 type ColorsScheme = {
   submitButton: string;
@@ -125,7 +126,6 @@ const MarketPrice = () => {
   );
 };
 
-
 const SrcTokenPercentSelector = () => {
   const onClick = (value: number) => {};
 
@@ -208,9 +208,8 @@ const TradeSize = () => {
           </StyledFlexBetween>
           <StyledFlexBetween>
             <SmallLabel>Total trades: {totalTrades}</SmallLabel>
-            <SmallLabel loading={usdValueLoading} style={{ opacity: 0.6 }}>
-              ${uiUsdValue}
-            </SmallLabel>
+            <Usd isLoading={usdValueLoading} value={uiUsdValue} />
+    
           </StyledFlexBetween>
         </StyledColumnGap>
       </Card>
@@ -360,15 +359,22 @@ const TokenPanel = ({
             </StyledTokenSelect>
           </StyledFlexBetween>
           <StyledFlexBetween>
-            <SmallLabel loading={usdValueLoading} style={{ opacity: 0.6 }}>
-              ~ ${usdValue}
-            </SmallLabel>
+            <Usd isLoading={usdValueLoading} value={usdValue} />
             <SmallLabel loading={balanceLoading}>Balance: {balance} </SmallLabel>
           </StyledFlexBetween>
           {children}
         </StyledColumnGap>
       </Card>
     </StyledTokenPanel>
+  );
+};
+
+const Usd = ({ isLoading, value }: { isLoading: boolean; value?: string | number }) => {
+  return (
+    <SmallLabel loading={isLoading} style={{ opacity: 0.6 }}>
+      ~$
+      {value ? <NumberDisplay value={value} /> : "0"}
+    </SmallLabel>
   );
 };
 
@@ -471,7 +477,7 @@ const StyledLayout = styled(Box)(({ theme }) => ({
     fontFamily: "inherit",
   },
   "& .icon *": {
-    color: colors.icon
+    color: colors.icon,
   },
   "& .twap-card": {
     padding: 12,
@@ -555,11 +561,9 @@ const StyledMarketPrice = styled(Box)({
   },
   "& .title": {
     fontSize: 13,
-    opacity: 0.8
+    opacity: 0.8,
   },
 });
-
-
 
 const StyledMarketPriceRight = styled(Box)({
   display: "flex",

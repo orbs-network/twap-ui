@@ -25,6 +25,7 @@
     "@mui/material": "5.x",
     "ethereum-multicall": "2.x",
     "react-icons": "4.x",
+    "react-number-format": "^5.0.1",
     "react-query": "3.x",
     "zustand": "^4.1.1"
   },

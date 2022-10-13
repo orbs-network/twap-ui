@@ -16,11 +16,29 @@ import Price from "./components/Price";
 import Tooltip from "./base-components/Tooltip";
 import IconButton from "./base-components/IconButton";
 import Text from "./base-components/Text";
+import NumberDisplay from "./base-components/NumberDisplay";
 
 export default {
   initializer: useInitWeb3,
   store,
-  baseComponents: { Text, IconButton, NumericInput, ActionButton, Card, Icon, Label, SmallLabel, Switch, TimeSelector, TokenLogo, TokenName, Layout, ChangeTokensOrder, Tooltip },
+  baseComponents: {
+    NumberDisplay,
+    Text,
+    IconButton,
+    NumericInput,
+    ActionButton,
+    Card,
+    Icon,
+    Label,
+    SmallLabel,
+    Switch,
+    TimeSelector,
+    TokenLogo,
+    TokenName,
+    Layout,
+    ChangeTokensOrder,
+    Tooltip,
+  },
   components: { Price },
   validation,
 };
