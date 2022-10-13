@@ -2,7 +2,7 @@ import _ from "lodash";
 import { BigNumber, convertDecimals, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
 import axios from "axios";
 import { useQuery } from "react-query";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Web3 from "web3";
 import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TradeIntervalState, TradeSizeState } from "../types";
 import { delay } from "../utils";
@@ -160,7 +160,6 @@ const useDstToken = () => {
   const { isLoading: usdValueLoading, data: dstTokenUsdValue } = useUsdValue(address);
   const { data: amount, isLoading } = useDstAmount(srcTokenAddress, address, srcTokenAmount, srcTokenUsdValue, dstTokenUsdValue);
   const { data: balance, isLoading: balanceLoading } = useAccountBalances(address);
-
 
   return {
     setDstTokenAddress: setAddress,
@@ -330,14 +329,10 @@ const useChangeTokenPositions = () => {
 };
 
 export const usePrice = () => {
-  const { showPrice, inverted, price, showDerived, togglePrice, invertPrice, setPrice, setShowDerived } = usePriceStore();
+  const { showPrice, price, showDerived, togglePrice, setPrice, setShowDerived } = usePriceStore();
 
-  const { amount: srcTokenAmount, address: srcTokenAddress } = useSrcTokenStore();
-  const { token } = useToken(srcTokenAddress);
-
-  const onChange = async (amountUi?: string) => {
-    const amount = await getUiAmountToBigNumber(token, amountUi);
-    setPrice(amount);
+  const onChange = (amountUi?: string) => {
+    setPrice(amountUi ? parseFloat(amountUi) : undefined);
   };
 
   const onFocus = () => {
@@ -350,11 +345,39 @@ export const usePrice = () => {
     }
   };
 
-  const derivedPrice = useBigNumberToUiAmount(srcTokenAddress, srcTokenAmount);
-  const priceAsUiFormat = useBigNumberToUiAmount(srcTokenAddress, price);
+  const { marketPrice, leftTokenAddress, rightTokenAddress, toggleInverted } = useMarketPrice();
+  const uiPrice = showDerived ? marketPrice : price;
+  return {
+    showPrice,
+    togglePrice,
+    toggleInverted,
+    onChange,
+    onFocus,
+    onBlur,
+    leftTokenAddress,
+    rightTokenAddress,
+    uiPrice,
+  };
+};
 
-  const uiPrice = showDerived ? derivedPrice : priceAsUiFormat;
-  return { showPrice, uiPrice, inverted, togglePrice, invertPrice, onChange, onFocus, onBlur };
+const useMarketPrice = () => {
+  const [inverted, setInverted] = useState(false);
+  const { address: srcTokenAddress } = useSrcTokenStore();
+  const { address: dstTokenAddress } = useDstTokenStore();
+
+  const leftTokenAddress = inverted ? dstTokenAddress : srcTokenAddress;
+  const rightTokenAddress = !inverted ? dstTokenAddress : srcTokenAddress;
+
+  const { data: leftUsdValue = 0 } = useUsdValue(leftTokenAddress);
+  const { data: rightUsdValue = 1 } = useUsdValue(rightTokenAddress);
+  const marketPrice = leftUsdValue / rightUsdValue;
+
+  return {
+    marketPrice,
+    toggleInverted: () => setInverted((prevState) => !prevState),
+    leftTokenAddress,
+    rightTokenAddress,
+  };
 };
 
 export const useSubmitButtonValidation = () => {
@@ -421,6 +444,7 @@ export const store = {
   usePrice,
   useTradeSize,
   useChangeTokenPositions,
+  useMarketPrice,
   reset: resetState,
 };
 

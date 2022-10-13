@@ -39,8 +39,8 @@ export interface PriceState extends BaseState {
   invertPrice: () => void;
   showPrice: Boolean;
   togglePrice: (value: boolean) => void;
-  price?: BigNumber;
-  setPrice: (value?: BigNumber) => void;
+  price?: number;
+  setPrice: (value?: number) => void;
   showDerived: boolean;
   setShowDerived: (value: boolean) => void;
 }

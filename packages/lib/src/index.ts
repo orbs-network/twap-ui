@@ -15,11 +15,12 @@ import ChangeTokensOrder from "./base-components/ChangeTokensOrder";
 import Price from "./components/Price";
 import Tooltip from "./base-components/Tooltip";
 import IconButton from "./base-components/IconButton";
+import Text from "./base-components/Text";
 
 export default {
   initializer: useInitWeb3,
   store,
-  baseComponents: { IconButton, NumericInput, ActionButton, Card, Icon, Label, SmallLabel, Switch, TimeSelector, TokenLogo, TokenName, Layout, ChangeTokensOrder, Tooltip },
+  baseComponents: { Text, IconButton, NumericInput, ActionButton, Card, Icon, Label, SmallLabel, Switch, TimeSelector, TokenLogo, TokenName, Layout, ChangeTokensOrder, Tooltip },
   components: { Price },
   validation,
 };

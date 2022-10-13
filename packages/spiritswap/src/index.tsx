@@ -7,6 +7,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
+import { TbArrowsRightLeft } from "react-icons/tb";
 import { ReactNode } from "react";
 import { GlobalStyles } from "@mui/material";
 
@@ -22,6 +23,7 @@ const TimeSelector = TWAPLib.baseComponents.TimeSelector;
 const ActionButton = TWAPLib.baseComponents.ActionButton;
 const Tooltip = TWAPLib.baseComponents.Tooltip;
 const IconButton = TWAPLib.baseComponents.IconButton;
+const Text = TWAPLib.baseComponents.Text;
 
 type ColorsScheme = {
   submitButton: string;
@@ -80,7 +82,7 @@ const TWAP = (props: Props) => {
         <CssBaseline />
         <GlobalStyles styles={globalStyle} />
         <StyledLayout>
-          <StyledColumnGap gap={15}>
+          <StyledColumnGap gap={10}>
             <SrcTokenPanel />
             <ChangeTokensOrder />
             <DstTokenPanel />
@@ -98,6 +100,31 @@ const TWAP = (props: Props) => {
 };
 
 export default TWAP;
+
+const MarketPrice = () => {
+  const { marketPrice, toggleInverted, leftTokenAddress, rightTokenAddress } = TWAPLib.store.useMarketPrice();
+
+  return (
+    <StyledMarketPrice>
+      <Card>
+        <StyledFlexBetween>
+          <Text className="title">Current Market Price</Text>
+          <StyledMarketPriceRight>
+            <Text>1</Text>
+            <TokenDisplay address={leftTokenAddress} />
+            <Text>= {marketPrice.toFixed(4)}</Text>
+
+            <TokenDisplay address={rightTokenAddress} />
+            <IconButton onClick={toggleInverted}>
+              <TbArrowsRightLeft className="icon" />
+            </IconButton>
+          </StyledMarketPriceRight>
+        </StyledFlexBetween>
+      </Card>
+    </StyledMarketPrice>
+  );
+};
+
 
 const SrcTokenPercentSelector = () => {
   const onClick = (value: number) => {};
@@ -134,18 +161,25 @@ const DstTokenPanel = () => {
   const { dstTokenAddress, dstTokenUiAmount, isLoading, uiUsdValue, usdValueLoading, uiBalance, balanceLoading } = TWAPLib.store.useDstToken();
 
   return (
-    <TokenPanel
-      usdValueLoading={usdValueLoading}
-      usdValue={uiUsdValue}
-      disabled={true}
-      value={dstTokenUiAmount}
-      address={dstTokenAddress}
-      isLoading={isLoading}
-      balance={uiBalance}
-      balanceLoading={balanceLoading}
-    />
+    <StyledDstToken>
+      <TokenPanel
+        usdValueLoading={usdValueLoading}
+        usdValue={uiUsdValue}
+        disabled={true}
+        value={dstTokenUiAmount}
+        address={dstTokenAddress}
+        isLoading={isLoading}
+        balance={uiBalance}
+        balanceLoading={balanceLoading}
+      />
+      <MarketPrice />
+    </StyledDstToken>
   );
 };
+
+const StyledDstToken = styled(Box)({
+  width: "100%",
+});
 
 const ChangeTokensOrder = () => {
   const onChangeTokenPositions = TWAPLib.store.useChangeTokenPositions();
@@ -297,7 +331,7 @@ interface TokenPanelProps {
   children?: ReactNode;
   disabled?: boolean;
   isLoading?: boolean;
-  usdValue?: number;
+  usdValue?: number | string;
   usdValueLoading?: boolean;
   balanceLoading?: boolean;
 }
@@ -436,7 +470,9 @@ const StyledLayout = styled(Box)(({ theme }) => ({
     color: colors.text,
     fontFamily: "inherit",
   },
-
+  "& .icon *": {
+    color: colors.icon
+  },
   "& .twap-card": {
     padding: 12,
     background: colors.cardBackground,
@@ -509,6 +545,43 @@ const StyledLayout = styled(Box)(({ theme }) => ({
     },
   },
 }));
+
+const StyledMarketPrice = styled(Box)({
+  "& .twap-card": {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    background: "rgba(24, 32, 47, 0.5)",
+    paddingBottom: 5,
+  },
+  "& .title": {
+    fontSize: 13,
+    opacity: 0.8
+  },
+});
+
+
+
+const StyledMarketPriceRight = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  gap: 5,
+  "& .twap-token-logo": {
+    order: 2,
+    width: 20,
+    height: 20,
+  },
+  "& .twap-token-name": {
+    order: 1,
+    fontSize: 14,
+  },
+  "& .twap-text": {
+    fontSize: 14,
+  },
+  "& .icon": {
+    width: 20,
+    height: 20,
+  },
+});
 
 // ------------- theme --------------- //
 const lightTheme = createTheme({
