@@ -1,6 +1,6 @@
 import { BigNumber } from "@defi.org/web3-candies";
 import { TimeFormat } from "./store/TimeFormat";
-
+import Web3 from "web3";
 interface BaseState {
   reset: () => void;
 }
@@ -32,6 +32,13 @@ export interface TradeIntervalState extends MaxDurationState {
 export interface TradeSizeState extends BaseState {
   tradeSize?: BigNumber;
   setTradeSize: (tradeSize?: BigNumber) => void;
+}
+
+export interface Web3State {
+  web3?: Web3;
+  setWeb3: (web3?: Web3) => void;
+  account?: string;
+  setAccount: (value?: string) => void;
 }
 
 export interface PriceState extends BaseState {

@@ -8,7 +8,7 @@ import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { GlobalStyles } from "@mui/material";
 
 const NumericInput = TWAPLib.baseComponents.NumericInput;
@@ -75,7 +75,10 @@ const globalStyle = {
 };
 
 const TWAP = (props: Props) => {
-  TWAPLib.initializer(props.provider);
+  const { initWeb3 } = TWAPLib.useInitializer();
+  useEffect(() => {
+    initWeb3(props.provider);
+  }, [props.provider]);
 
   return (
     <QueryClientProvider client={queryClient}>

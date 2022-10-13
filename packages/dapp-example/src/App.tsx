@@ -4,7 +4,6 @@ import { useWeb3React } from "@web3-react/core";
 import { injectedConnector } from "./connectors";
 // import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
 import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
-import TWAP_Quickswap from "@orbs-network/twap-ui-quickswap";
 import { CSSProperties, useMemo, useState } from "react";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -33,7 +32,7 @@ function ConnectBtn() {
 }
 
 const clients = [
-  { id: "1", Component: TWAP_Quickswap, text: "Quickswap", Layout: StyledLayoutQuickswap },
+  // { id: "1", Component: TWAP_Quickswap, text: "Quickswap", Layout: StyledLayoutQuickswap },
   { id: "2", Component: TWAP_Spiritswap, text: "Spiritswap", Layout: StyledLayoutSpiritswap },
 ];
 

@@ -7,8 +7,7 @@
     "start": "react-scripts start"
   },
   "dependencies": {
-    "@orbs-network/twap-ui-spiritswap": "*",
-    "@orbs-network/twap-ui-quickswap": "*"
+    "@orbs-network/twap-ui-spiritswap": "*"
   },
   "browserslist": {
     "production": [

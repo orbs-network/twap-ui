@@ -1,24 +1,20 @@
 import _ from "lodash";
-import { BigNumber, bn, convertDecimals, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
+import { account, BigNumber, bn, convertDecimals, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
 import axios from "axios";
 import { useQuery } from "react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Web3 from "web3";
-import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TradeIntervalState, TradeSizeState } from "../types";
-import { delay } from "../utils";
+import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TradeIntervalState, TradeSizeState, Web3State } from "../types";
 import create from "zustand";
 import { TimeFormat } from "./TimeFormat";
 
-// TODO remove when we will fetch tokens
-setWeb3Instance(new Web3(""));
-
 const srcTokenInitialState = {
-  address: erc20s.ftm.WETH().address,
+  address: undefined,
   amount: undefined,
 };
 
 const dstTokenInitialState = {
-  address: erc20s.ftm.WBTC().address,
+  address: undefined,
 };
 
 const maxDurationInitialState = {
@@ -83,38 +79,50 @@ export const useTradeSizeStore = create<TradeSizeState>((set) => ({
   reset: () => set(tradeSizeInitialState),
 }));
 
-const getTokens = async () => {
-  await delay(1000);
-  return _.map(erc20s.ftm, (it) => it());
-};
+export const useWeb3Store = create<Web3State>((set) => ({
+  web3: undefined,
+  setWeb3: (web3) => set({ web3 }),
+  account: undefined,
+  setAccount: (account) => set({ account }),
+}));
 
-export const useInitWeb3 = (provider?: any) => {
-  useEffect(() => {
-    setWeb3Instance(new Web3(provider));
-  }, [provider]);
-};
+export const useWeb3 = () => {
+  const { setWeb3, web3, setAccount, account } = useWeb3Store();
 
-const getWeb3 = () => {
-  if (hasWeb3Instance()) {
-    return web3();
-  }
-  return undefined;
+  const init = async (provider?: any) => {
+    const newWeb3 = provider ? new Web3(provider) : undefined;
+    setWeb3(newWeb3);
+    setWeb3Instance(newWeb3);
+    const _account = newWeb3 ? (await newWeb3.eth.getAccounts())[0] : undefined;
+    setAccount(_account);
+  };
+
+  return {
+    init,
+    web3,
+    account,
+  };
 };
 
 const useAccountBalances = (address?: string) => {
+  const { token } = useToken(address);
+  const { account } = useWeb3();
+
   return useQuery(
-    ["useAccountBalances", address],
+    ["useAccountBalances", address, account],
     async () => {
-      await delay(1000);
-      return BigNumber(1 * 1e18);
+      console.log('test');
+      
+      return BigNumber(await token!.methods.balanceOf(account!).call());
     },
-    {enabled: !!address }
+    { enabled: !!token && !!account }
   );
 };
 
 // all actions (functions) related to src input
 const useSrcToken = () => {
-  const { setAddress, setAmount, address: srcTokenAddress, amount: srcTokenAmount } = useSrcTokenStore();
+  const allTokens = useAllTokens();
+  const { setAddress, setAmount, address: srcTokenAddress = _.first(allTokens)?.address, amount: srcTokenAmount } = useSrcTokenStore();
   const tradeSize = useTradeSizeStore().tradeSize;
   const { token } = useToken(srcTokenAddress);
 
@@ -152,7 +160,9 @@ const useSrcToken = () => {
 
 // all actions (functions) related to src input
 const useDstToken = () => {
-  const { setAddress, address } = useDstTokenStore();
+  const allTokens = useAllTokens();
+
+  const { setAddress, address = _.get(allTokens, [1])?.address } = useDstTokenStore();
   const { srcTokenAmount, srcTokenAddress, usdValue: srcTokenUsdValue } = useSrcToken();
   const { isLoading: usdValueLoading, data: dstTokenUsdValue } = useUsdValue(address);
   const { data: amount, isLoading } = useDstAmount(srcTokenAddress, address, srcTokenAmount, srcTokenUsdValue, dstTokenUsdValue);
@@ -203,7 +213,7 @@ const useDstAmount = (srcAddress?: string, dstAddress?: string, srcAmount?: BigN
 
 const useTotalTrades = () => {
   const tradeSize = useTradeSizeStore().tradeSize;
-  const srcTokenAmount = useSrcTokenStore().amount;
+  const srcTokenAmount = useSrcToken().srcTokenAmount;
   return useMemo(() => {
     if (!tradeSize || tradeSize.isZero()) {
       return 0;
@@ -253,7 +263,7 @@ const useTradeInterval = () => {
 
 // all data related to trade size input
 const useTradeSize = () => {
-  const { address: srcTokenAddress, amount: srcTokenAmount } = useSrcTokenStore();
+  const { srcTokenAddress, srcTokenAmount } = useSrcToken();
   const { tradeSize, setTradeSize } = useTradeSizeStore();
   const totalTrades = useTotalTrades();
   const { token } = useToken(srcTokenAddress);
@@ -285,14 +295,21 @@ const useTradeSize = () => {
   };
 };
 
-const getAllTokens = () => {
-  return useQuery("allTokens", async () => {
-    return getTokens();
-  });
+
+const useAllTokens = () => {
+  const { web3 } = useWeb3();
+  return useQuery(
+    "useAllTokens",
+    async () => {
+
+      return _.map(erc20s.ftm, (it) => it());
+    },
+    { enabled: !!web3 }
+  ).data;
 };
 
 export const useToken = (address?: string) => {
-  const { data: allTokens } = getAllTokens();
+  const allTokens = useAllTokens();
   const { data: token } = useQuery(["useToken", address], () => _.find(allTokens, (t) => t.address === address), { enabled: !!allTokens });
   return { token, isLoading: !token };
 };
@@ -312,8 +329,8 @@ const useDstTokenAmount = () => {
 };
 
 const useChangeTokenPositions = () => {
-  const { setAddress: setSrcTokenAddress, setAmount: setSrcTokenAmount, address: srcTokenAddress, amount: srcTokenAmount } = useSrcTokenStore();
-  const { setAddress: setDstTokenAddress, address: dstTokenAddress } = useDstTokenStore();
+  const { setSrcTokenAddress, setSrcTokenAmount, srcTokenAddress } = useSrcToken();
+  const { setDstTokenAddress, dstTokenAddress } = useDstToken();
   const dstTokenAmount = useDstTokenAmount();
   const setTradeSize = useTradeSizeStore().setTradeSize;
 
@@ -339,7 +356,6 @@ export const useLimitPrice = () => {
 
   const { marketPrice, leftTokenAddress, rightTokenAddress, toggleInverted, inverted } = useMarketPrice();
 
-
   return {
     showLimit,
     onToggleLimit,
@@ -347,14 +363,14 @@ export const useLimitPrice = () => {
     onChange,
     leftTokenAddress,
     rightTokenAddress,
-    uiPrice: price && inverted ? BigNumber(1).div(price).toFormat() : price?.toFormat()
+    uiPrice: price && inverted ? BigNumber(1).div(price).toFormat() : price?.toFormat(),
   };
 };
 
 const useMarketPrice = () => {
   const [inverted, setInverted] = useState(false);
-  const { address: srcTokenAddress } = useSrcTokenStore();
-  const { address: dstTokenAddress } = useDstTokenStore();
+  const { srcTokenAddress } = useSrcToken();
+  const { dstTokenAddress } = useDstToken();
 
   const leftTokenAddress = inverted ? dstTokenAddress : srcTokenAddress;
   const rightTokenAddress = !inverted ? dstTokenAddress : srcTokenAddress;
@@ -368,12 +384,12 @@ const useMarketPrice = () => {
     toggleInverted: () => setInverted((prevState) => !prevState),
     leftTokenAddress,
     rightTokenAddress,
-    inverted
+    inverted,
   };
 };
 
 export const useSubmitButtonValidation = () => {
-  const srcTokenAmount = useSrcTokenStore().amount;
+  const srcTokenAmount = useSrcToken().srcTokenAmount;
   const tradeSize = useTradeSizeStore().tradeSize;
   const maxDurationMillis = useMaxDurationStore().millis;
   const tradeIntervalMillis = useTradeInterval().tradeIntervalMillis;

@@ -1,4 +1,4 @@
-import { useInitWeb3, store, validation } from "./store/store";
+import { useWeb3, store, validation } from "./store/store";
 
 import NumericInput from "./base-components/NumericInput";
 import ActionButton from "./base-components/ActionButton";
@@ -18,8 +18,13 @@ import IconButton from "./base-components/IconButton";
 import Text from "./base-components/Text";
 import NumberDisplay from "./base-components/NumberDisplay";
 
+const useInitializer = () => {
+  const {init} = useWeb3()
+  return { initWeb3: init };
+};
+
 export default {
-  initializer: useInitWeb3,
+  useInitializer,
   store,
   baseComponents: {
     NumberDisplay,

@@ -2,21 +2,6 @@ import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";
-import { useEffect, useState } from "react";
-
-export function useDebounce<T>(value: T, delay?: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
 
 function NumericInput({
   onChange,
