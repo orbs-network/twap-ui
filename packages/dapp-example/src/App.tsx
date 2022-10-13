@@ -53,7 +53,7 @@ function App() {
   return (
     <StyledApp className="App">
       <ConnectBtn />
-      <Box sx={{ minWidth: 120 }}>
+      {/* <Box sx={{ minWidth: 120 }}>
         <Select value={selectedClient} label="Age" onChange={handleChange} style={{ color: "white" }}>
           {clients.map((client) => {
             return (
@@ -63,7 +63,7 @@ function App() {
             );
           })}
         </Select>
-      </Box>
+      </Box> */}
       <StyledContent>
         {clients.map((client) => {
           if (client.id === selectedClient) {

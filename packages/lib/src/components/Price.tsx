@@ -7,7 +7,7 @@ import { TbArrowsRightLeft } from "react-icons/tb";
 import { store } from "../store/store";
 
 function Price({ placeholder = "0.00" }: { placeholder?: string }) {
-  const { uiPrice, toggleInverted, onChange, onFocus, onBlur, leftTokenAddress, rightTokenAddress } = store.usePrice();
+  const { uiPrice, toggleInverted, onChange, leftTokenAddress, rightTokenAddress } = store.useLimitPrice();
 
   return (
     <StyledContainer className="twap-price">
@@ -18,7 +18,7 @@ function Price({ placeholder = "0.00" }: { placeholder?: string }) {
         <Typography>=</Typography>
       </StyledLeft>
       <StyledNumeric>
-        <NumericInput onBlur={onBlur} onFocus={onFocus} placeholder={placeholder} onChange={onChange} value={uiPrice?.toLocaleString()} />
+        <NumericInput placeholder={placeholder} onChange={onChange} value={uiPrice?.toLocaleString()} />
       </StyledNumeric>
       <StyledRight>
         <TokenName address={rightTokenAddress} />

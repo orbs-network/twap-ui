@@ -209,7 +209,6 @@ const TradeSize = () => {
           <StyledFlexBetween>
             <SmallLabel>Total trades: {totalTrades}</SmallLabel>
             <Usd isLoading={usdValueLoading} value={uiUsdValue} />
-    
           </StyledFlexBetween>
         </StyledColumnGap>
       </Card>
@@ -226,7 +225,7 @@ const StyledTrade = styled(Box)({
 });
 
 const PriceDisplay = () => {
-  const { showPrice, togglePrice } = TWAPLib.store.usePrice();
+  const { showLimit, onToggleLimit } = TWAPLib.store.useLimitPrice();
 
   return (
     <StyledPrice>
@@ -234,11 +233,11 @@ const PriceDisplay = () => {
         <StyledColumnGap>
           <StyledFlexStart>
             <Tooltip text="Some text">
-              <Switch value={!showPrice} onChange={() => togglePrice(!showPrice)} />
+              <Switch value={!showLimit} onChange={() => onToggleLimit()} />
             </Tooltip>
             <Label tooltipText="some text">Limit Price</Label>
           </StyledFlexStart>
-          {showPrice && <Price placeholder="0" />}
+          {showLimit && <Price placeholder="0" />}
         </StyledColumnGap>
       </Card>
     </StyledPrice>

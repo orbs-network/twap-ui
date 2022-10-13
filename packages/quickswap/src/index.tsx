@@ -141,17 +141,17 @@ const StyledTrade = styled(Box)({
 });
 
 const PriceDisplay = () => {
-  const { showPrice, togglePrice } = TWAPLib.store.usePrice();
+  const { showLimit, onToggleLimit } = TWAPLib.store.useLimitPrice();
 
   return (
     <StyledPrice>
       <Card>
         <StyledColumnGap>
           <StyledFlexStart>
-            <Switch value={!showPrice} onChange={() => togglePrice(!showPrice)} />
+            <Switch value={!showLimit} onChange={() => onToggleLimit()} />
             <Label tooltipText="some text">Limit Price</Label>
           </StyledFlexStart>
-          {showPrice && <Price />}
+          {showLimit && <Price />}
         </StyledColumnGap>
       </Card>
     </StyledPrice>

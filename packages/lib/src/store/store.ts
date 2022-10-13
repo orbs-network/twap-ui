@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { BigNumber, convertDecimals, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
+import { BigNumber, bn, convertDecimals, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
 import axios from "axios";
 import { useQuery } from "react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -8,7 +8,6 @@ import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TradeInterv
 import { delay } from "../utils";
 import create from "zustand";
 import { TimeFormat } from "./TimeFormat";
-import { useDebounce } from "../base-components/NumericInput";
 
 // TODO remove when we will fetch tokens
 setWeb3Instance(new Web3(""));
@@ -35,10 +34,8 @@ const tradeIntervalInitialState = {
 };
 
 const priceInitialState = {
-  inverted: false,
-  showPrice: false,
   price: undefined,
-  showDerived: true,
+  showLimit: false,
 };
 
 const tradeSizeInitialState = {
@@ -73,12 +70,10 @@ export const useTradeIntervalStore = create<TradeIntervalState>((set) => ({
   reset: () => set(tradeIntervalInitialState),
 }));
 
-export const usePriceStore = create<PriceState>((set) => ({
+export const usePriceStore = create<PriceState>((set, get) => ({
   ...priceInitialState,
-  togglePrice: (showPrice) => set({ showPrice }),
-  invertPrice: () => set((state) => ({ inverted: !state.inverted })),
   setPrice: (price) => set({ price }),
-  setShowDerived: (showDerived) => set({ showDerived }),
+  toggleLimit: () => set({ showLimit: !get().showLimit }),
   reset: () => set(priceInitialState),
 }));
 
@@ -113,7 +108,7 @@ const useAccountBalances = (address?: string) => {
       await delay(1000);
       return BigNumber(1 * 1e18);
     },
-    { staleTime: 0, enabled: !!address }
+    {enabled: !!address }
   );
 };
 
@@ -182,20 +177,18 @@ const useUsdValue = (address?: string, isEnabled?: boolean) => {
   return useQuery(
     ["useUsdValue", address],
     async () => {
-      if (!address) {
-        return undefined;
-      }
       const result = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/fantom?contract_addresses=${address}&vs_currencies=usd `);
-
-      return (_.first(_.values(result.data)).usd as number) || 0;
+      const n = BigNumber(_.first(_.values(result.data)).usd);
+      return n.gte(0) ? n : undefined;
     },
     {
       enabled: !!address,
+      // refetchInterval: 10000
     }
   );
 };
 
-const useDstAmount = (srcAddress?: string, dstAddress?: string, srcAmount?: BigNumber, srcTokenUsdValue?: number, dstTokenUsdValue?: number) => {
+const useDstAmount = (srcAddress?: string, dstAddress?: string, srcAmount?: BigNumber, srcTokenUsdValue?: BigNumber, dstTokenUsdValue?: BigNumber) => {
   const { token: srcToken } = useToken(srcAddress);
   const { token: dstToken } = useToken(dstAddress);
 
@@ -332,35 +325,29 @@ const useChangeTokenPositions = () => {
   };
 };
 
-export const usePrice = () => {
-  const { showPrice, price, showDerived, togglePrice, setPrice, setShowDerived } = usePriceStore();
+export const useLimitPrice = () => {
+  const { showLimit, price, toggleLimit, setPrice } = usePriceStore();
 
   const onChange = (amountUi?: string) => {
-    setPrice(amountUi ? parseFloat(amountUi) : undefined);
+    setPrice(amountUi ? BigNumber(amountUi) : undefined);
   };
 
-  const onFocus = () => {
-    setShowDerived(false);
+  const onToggleLimit = () => {
+    setPrice(marketPrice);
+    toggleLimit();
   };
 
-  const onBlur = () => {
-    if (price == null) {
-      setShowDerived(true);
-    }
-  };
+  const { marketPrice, leftTokenAddress, rightTokenAddress, toggleInverted, inverted } = useMarketPrice();
 
-  const { marketPrice, leftTokenAddress, rightTokenAddress, toggleInverted } = useMarketPrice();
-  const uiPrice = showDerived ? marketPrice : price;
+
   return {
-    showPrice,
-    togglePrice,
+    showLimit,
+    onToggleLimit,
     toggleInverted,
     onChange,
-    onFocus,
-    onBlur,
     leftTokenAddress,
     rightTokenAddress,
-    uiPrice,
+    uiPrice: price && inverted ? BigNumber(1).div(price).toFormat() : price?.toFormat()
   };
 };
 
@@ -372,15 +359,16 @@ const useMarketPrice = () => {
   const leftTokenAddress = inverted ? dstTokenAddress : srcTokenAddress;
   const rightTokenAddress = !inverted ? dstTokenAddress : srcTokenAddress;
 
-  const { data: leftUsdValue = 0 } = useUsdValue(leftTokenAddress);
-  const { data: rightUsdValue = 1 } = useUsdValue(rightTokenAddress);
-  const marketPrice = leftUsdValue / rightUsdValue;
+  const { data: leftUsdValue = BigNumber(0) } = useUsdValue(leftTokenAddress);
+  const { data: rightUsdValue = BigNumber(1) } = useUsdValue(rightTokenAddress);
+  const marketPrice = leftUsdValue.div(rightUsdValue);
 
   return {
     marketPrice,
     toggleInverted: () => setInverted((prevState) => !prevState),
     leftTokenAddress,
     rightTokenAddress,
+    inverted
   };
 };
 
@@ -445,7 +433,7 @@ export const store = {
   useDstToken,
   useMaxDuration,
   useTradeInterval,
-  usePrice,
+  useLimitPrice,
   useTradeSize,
   useChangeTokenPositions,
   useMarketPrice,
@@ -475,10 +463,9 @@ const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number)
 };
 
 export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) => {
-
   const result = !amount ? "" : !token ? "" : (await token.mantissa(amount || zero)).toFormat();
 
   return result;
 };
 
-export const getUiAmountToBigNumber = (token?: Token, amountUi?: string) => (amountUi === '' ? undefined : !token ? undefined : token?.amount(parsebn(amountUi || "0")));
+export const getUiAmountToBigNumber = (token?: Token, amountUi?: string) => (amountUi === "" ? undefined : !token ? undefined : token?.amount(parsebn(amountUi || "0")));

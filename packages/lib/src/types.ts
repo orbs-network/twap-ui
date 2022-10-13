@@ -35,12 +35,8 @@ export interface TradeSizeState extends BaseState {
 }
 
 export interface PriceState extends BaseState {
-  inverted: boolean;
-  invertPrice: () => void;
-  showPrice: Boolean;
-  togglePrice: (value: boolean) => void;
-  price?: number;
-  setPrice: (value?: number) => void;
-  showDerived: boolean;
-  setShowDerived: (value: boolean) => void;
+  showLimit: Boolean;
+  toggleLimit: () => void;
+  price?: BigNumber;
+  setPrice: (value?: BigNumber) => void;
 }

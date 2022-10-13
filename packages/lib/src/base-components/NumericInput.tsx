@@ -36,7 +36,6 @@ function NumericInput({
   onBlur?: () => void;
   loading?: boolean;
 }) {
-
   return (
     <StyledContainer>
       <Fade in={loading} style={{ transition: "0s" }}>
@@ -50,9 +49,11 @@ function NumericInput({
             disabled={disabled}
             onBlur={onBlur}
             onFocus={onFocus}
+            thousandsGroupStyle="thousand"
             placeholder={placeholder}
             value={value}
             thousandSeparator=","
+            decimalSeparator="."
             customInput={StyledInput}
             className="twap-input"
             onValueChange={(values, _sourceInfo) => {
