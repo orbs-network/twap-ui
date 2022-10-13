@@ -303,9 +303,18 @@ const TradeInterval = () => {
 
 const SubmitButton = ({ account, connect }: { account?: string | null; connect: () => void }) => {
   const warning = TWAPLib.validation.useSubmitButtonValidation();
+  const { isApproved, approve } = TWAPLib.store.useTokenApproval();
 
   if (!account) {
     return <ActionButton onClick={connect}>Connect Wallet</ActionButton>;
+  }
+
+  if (!isApproved) {
+    return (
+      <ActionButton onClick={approve} disabled={!!warning}>
+        Approve
+      </ActionButton>
+    );
   }
 
   return (

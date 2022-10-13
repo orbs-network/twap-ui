@@ -19,7 +19,7 @@ import Text from "./base-components/Text";
 import NumberDisplay from "./base-components/NumberDisplay";
 
 const useInitializer = () => {
-  const {init} = useWeb3()
+  const { init } = useWeb3();
   return { initWeb3: init };
 };
 

@@ -1,12 +1,13 @@
 import _ from "lodash";
-import { account, BigNumber, bn, convertDecimals, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
+import { account as candiesAccount, BigNumber, bn, convertDecimals, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
 import axios from "axios";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Web3 from "web3";
 import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TradeIntervalState, TradeSizeState, Web3State } from "../types";
 import create from "zustand";
 import { TimeFormat } from "./TimeFormat";
+import { twapConfig } from "../consts";
 
 const srcTokenInitialState = {
   address: undefined,
@@ -84,23 +85,45 @@ export const useWeb3Store = create<Web3State>((set) => ({
   setWeb3: (web3) => set({ web3 }),
   account: undefined,
   setAccount: (account) => set({ account }),
+  chain: undefined,
+  setChain: (chain) => set({ chain }),
 }));
 
-export const useWeb3 = () => {
-  const { setWeb3, web3, setAccount, account } = useWeb3Store();
+const useTokenApproval = () => {
+  const { account, chain } = useWeb3();
+  const { srcTokenAddress, srcTokenAmount } = useSrcToken();
+  const { token } = useToken(srcTokenAddress);
+  const spender = chain ? twapConfig[chain].twapAddress : undefined;
 
+  const allowance = useQuery(["allowance"], async () => BigNumber(await token!.methods.allowance(account!, spender!).call()), {
+    enabled: !!token && !!chain && !!spender && !!account && !!srcTokenAmount,
+    refetchInterval: 10_000,
+  }).data;
+
+  const { mutate: approve, isLoading: approveLoading } = useMutation(async () => token?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account }));
+
+  return {
+    isApproved: !srcTokenAmount ? false : allowance?.gte(srcTokenAmount || 0),
+    approve,
+    approveLoading,
+  };
+};
+
+export const useWeb3 = () => {
+  const { setWeb3, web3, setAccount, account, setChain, chain } = useWeb3Store();
   const init = async (provider?: any) => {
     const newWeb3 = provider ? new Web3(provider) : undefined;
     setWeb3(newWeb3);
     setWeb3Instance(newWeb3);
-    const _account = newWeb3 ? (await newWeb3.eth.getAccounts())[0] : undefined;
-    setAccount(_account);
+    setAccount(newWeb3 ? await candiesAccount() : undefined);
+    setChain(newWeb3 ? await newWeb3.eth.getChainId() : undefined);
   };
 
   return {
     init,
     web3,
     account,
+    chain,
   };
 };
 
@@ -111,11 +134,11 @@ const useAccountBalances = (address?: string) => {
   return useQuery(
     ["useAccountBalances", address, account],
     async () => {
-      console.log('test');
-      
+      console.log("test");
+
       return BigNumber(await token!.methods.balanceOf(account!).call());
     },
-    { enabled: !!token && !!account }
+    { enabled: !!token && !!account, refetchInterval: 10_000 }
   );
 };
 
@@ -295,13 +318,11 @@ const useTradeSize = () => {
   };
 };
 
-
 const useAllTokens = () => {
   const { web3 } = useWeb3();
   return useQuery(
     "useAllTokens",
     async () => {
-
       return _.map(erc20s.ftm, (it) => it());
     },
     { enabled: !!web3 }
@@ -454,6 +475,7 @@ export const store = {
   useChangeTokenPositions,
   useMarketPrice,
   reset: resetState,
+  useTokenApproval,
 };
 
 // all validation hooks
