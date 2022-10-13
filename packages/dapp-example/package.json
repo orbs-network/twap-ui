@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@orbs-network/twap-ui-spiritswap": "*",
-      "@orbs-network/twap-ui-quickswap": "*"
+    "@orbs-network/twap-ui-quickswap": "*"
   },
   "browserslist": {
     "production": [
