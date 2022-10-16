@@ -21,7 +21,7 @@
   "scripts": {
     "clean": "lerna exec 'rm -f package-lock.json' && lerna clean -y || true && lerna bootstrap",
     "build": "lerna run build",
-    "start": "lerna run build && lerna run start --parallel"
+    "start": "lerna run start --parallel"
   },
   "prettier": {
     "printWidth": 180

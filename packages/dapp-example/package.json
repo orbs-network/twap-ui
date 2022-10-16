@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "prettier -w 'src/**/*.{ts,tsx,js,jsx,json,sol}'",
-    "start": "react-scripts start"
+    "prettier": "prettier -w 'src/**/*.{ts,tsx,js,jsx,json,sol}'",
+    "start": "npm run prettier && react-scripts start",
+    "build": "npm run prettier && react-scripts build"
   },
   "dependencies": {
     "@orbs-network/twap-ui-spiritswap": "*"
