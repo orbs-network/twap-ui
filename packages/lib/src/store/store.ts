@@ -1,13 +1,14 @@
 import _ from "lodash";
-import { account as candiesAccount, BigNumber, bn, convertDecimals, erc20s, hasWeb3Instance, parsebn, setWeb3Instance, Token, web3, zero } from "@defi.org/web3-candies";
+import { account as candiesAccount, BigNumber, bn, convertDecimals, erc20s, parsebn, setWeb3Instance, Token, zero } from "@defi.org/web3-candies";
 import axios from "axios";
 import { useMutation, useQuery } from "react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Web3 from "web3";
 import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TradeIntervalState, TradeSizeState, Web3State } from "../types";
 import create from "zustand";
 import { TimeFormat } from "./TimeFormat";
-import { twapConfig } from "../consts";
+import { IntegrationDapp, twapConfig } from "../consts";
+import { changeNetwork } from "./connect";
 
 const srcTokenInitialState = {
   address: undefined,
@@ -87,13 +88,15 @@ export const useWeb3Store = create<Web3State>((set) => ({
   setAccount: (account) => set({ account }),
   chain: undefined,
   setChain: (chain) => set({ chain }),
+  integrationChain: undefined,
+  setIntegrationChain: (integrationChain) => set({ integrationChain }),
 }));
 
 const useTokenApproval = () => {
   const { account, chain } = useWeb3();
   const { srcTokenAddress, srcTokenAmount } = useSrcToken();
   const { token } = useToken(srcTokenAddress);
-  const spender = chain ? twapConfig[chain].twapAddress : undefined;
+  const spender = chain && twapConfig[chain] ? twapConfig[chain].twapAddress : undefined;
 
   const allowance = useQuery(["allowance"], async () => BigNumber(await token!.methods.allowance(account!, spender!).call()), {
     enabled: !!token && !!chain && !!spender && !!account && !!srcTokenAmount,
@@ -109,14 +112,30 @@ const useTokenApproval = () => {
   };
 };
 
+const useWrapToken = () => {
+  const { srcTokenAddress, srcTokenAmount } = useSrcToken();
+  const { token } = useToken(srcTokenAddress);
+  const { account } = useWeb3();
+
+  const { mutate: wrap } = useMutation(async () => {
+    erc20s.ftm.WFTM().methods.deposit().send({ from: account, value: srcTokenAmount?.toString() });
+  });
+
+  return {
+    wrap,
+  };
+};
+
 export const useWeb3 = () => {
-  const { setWeb3, web3, setAccount, account, setChain, chain } = useWeb3Store();
-  const init = async (provider?: any) => {
+  const { setWeb3, web3, setAccount, account, setChain, chain, setIntegrationChain, integrationChain } = useWeb3Store();
+
+  const init = async (integrationKey: string, provider?: any, integrationChainId?: number) => {
     const newWeb3 = provider ? new Web3(provider) : undefined;
     setWeb3(newWeb3);
     setWeb3Instance(newWeb3);
     setAccount(newWeb3 ? await candiesAccount() : undefined);
     setChain(newWeb3 ? await newWeb3.eth.getChainId() : undefined);
+    setIntegrationChain(integrationChainId);
   };
 
   return {
@@ -124,21 +143,22 @@ export const useWeb3 = () => {
     web3,
     account,
     chain,
+    integrationChain,
+    isValidChain: chain && chain === integrationChain,
+    changeNetwork: () => changeNetwork(web3, integrationChain),
   };
 };
 
 const useAccountBalances = (address?: string) => {
   const { token } = useToken(address);
-  const { account } = useWeb3();
+  const { account, isValidChain } = useWeb3();
 
   return useQuery(
     ["useAccountBalances", address, account],
     async () => {
-      console.log("test");
-
       return BigNumber(await token!.methods.balanceOf(account!).call());
     },
-    { enabled: !!token && !!account, refetchInterval: 10_000 }
+    { enabled: !!token && !!account && !!isValidChain, refetchInterval: 10_000 }
   );
 };
 
@@ -162,6 +182,12 @@ const useSrcToken = () => {
     [token, tradeSize]
   );
 
+  const onChangePercent = async (percent: number) => {
+    const value = balance?.multipliedBy(percent) || zero;
+    const uiValue = await getBigNumberToUiAmount(token, value);
+    onChange(uiValue);
+  };
+
   const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress);
   const { data: balance, isLoading: balanceLoading } = useAccountBalances(srcTokenAddress);
 
@@ -178,6 +204,7 @@ const useSrcToken = () => {
     balance,
     uiBalance: useBigNumberToUiAmount(srcTokenAddress, balance) || "0",
     balanceLoading,
+    onChangePercent,
   };
 };
 
@@ -207,6 +234,7 @@ const useDstToken = () => {
 };
 
 const useUsdValue = (address?: string, isEnabled?: boolean) => {
+  const { isValidChain } = useWeb3();
   return useQuery(
     ["useUsdValue", address],
     async () => {
@@ -215,7 +243,7 @@ const useUsdValue = (address?: string, isEnabled?: boolean) => {
       return n.gte(0) ? n : undefined;
     },
     {
-      enabled: !!address,
+      enabled: !!address && !!isValidChain,
       // refetchInterval: 10000
     }
   );
@@ -410,7 +438,7 @@ const useMarketPrice = () => {
 };
 
 export const useSubmitButtonValidation = () => {
-  const srcTokenAmount = useSrcToken().srcTokenAmount;
+  const { srcTokenAmount, balance: srcTokenBalance } = useSrcToken();
   const tradeSize = useTradeSizeStore().tradeSize;
   const maxDurationMillis = useMaxDurationStore().millis;
   const tradeIntervalMillis = useTradeInterval().tradeIntervalMillis;
@@ -418,6 +446,9 @@ export const useSubmitButtonValidation = () => {
   return useMemo(() => {
     if (!srcTokenAmount || srcTokenAmount?.isZero()) {
       return "Enter amount";
+    }
+    if (srcTokenBalance && srcTokenAmount.gt(srcTokenBalance)) {
+      return "Insufficient funds";
     }
 
     if (!tradeSize || tradeSize?.isZero()) {
@@ -476,6 +507,8 @@ export const store = {
   useMarketPrice,
   reset: resetState,
   useTokenApproval,
+  useAccountBalances,
+  useWeb3,
 };
 
 // all validation hooks

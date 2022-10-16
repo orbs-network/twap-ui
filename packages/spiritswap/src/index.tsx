@@ -77,7 +77,7 @@ const globalStyle = {
 const TWAP = (props: Props) => {
   const { initWeb3 } = TWAPLib.useInitializer();
   useEffect(() => {
-    initWeb3(props.provider);
+    initWeb3("spiritswap", props.provider, 250);
   }, [props.provider]);
 
   return (
@@ -116,7 +116,9 @@ const MarketPrice = () => {
           <StyledMarketPriceRight>
             <Text>1</Text>
             <TokenDisplay address={leftTokenAddress} />
-            <Text>= {marketPrice.toFixed(4)}</Text>
+            <Tooltip text={marketPrice.toString()}>
+              <Text>= {marketPrice.toFixed(4)}</Text>
+            </Tooltip>
 
             <TokenDisplay address={rightTokenAddress} />
             <IconButton onClick={toggleInverted}>
@@ -130,14 +132,18 @@ const MarketPrice = () => {
 };
 
 const SrcTokenPercentSelector = () => {
-  const onClick = (value: number) => {};
+  const { onChangePercent } = TWAPLib.store.useSrcToken();
+
+  const onClick = (value: number) => {
+    onChangePercent(value);
+  };
 
   return (
     <StyledSrcTokenPercentSelector>
-      <StyledPercentBtn onClick={() => onClick(25)}>25%</StyledPercentBtn>
-      <StyledPercentBtn onClick={() => onClick(50)}>50%</StyledPercentBtn>
-      <StyledPercentBtn onClick={() => onClick(75)}>75%</StyledPercentBtn>
-      <StyledPercentBtn onClick={() => onClick(100)}>Max</StyledPercentBtn>
+      <StyledPercentBtn onClick={() => onClick(0.25)}>25%</StyledPercentBtn>
+      <StyledPercentBtn onClick={() => onClick(0.5)}>50%</StyledPercentBtn>
+      <StyledPercentBtn onClick={() => onClick(0.75)}>75%</StyledPercentBtn>
+      <StyledPercentBtn onClick={() => onClick(1)}>Max</StyledPercentBtn>
     </StyledSrcTokenPercentSelector>
   );
 };
@@ -304,11 +310,23 @@ const TradeInterval = () => {
 const SubmitButton = ({ account, connect }: { account?: string | null; connect: () => void }) => {
   const warning = TWAPLib.validation.useSubmitButtonValidation();
   const { isApproved, approve } = TWAPLib.store.useTokenApproval();
+  const { isValidChain, changeNetwork } = TWAPLib.store.useWeb3();
 
   if (!account) {
     return <ActionButton onClick={connect}>Connect Wallet</ActionButton>;
   }
 
+  if (!isValidChain) {
+    return <ActionButton onClick={changeNetwork}>Switch network</ActionButton>;
+  }
+
+  if (warning) {
+    return (
+      <ActionButton disabled={true} onClick={() => {}}>
+        {warning}
+      </ActionButton>
+    );
+  }
   if (!isApproved) {
     return (
       <ActionButton onClick={approve} disabled={!!warning}>
@@ -317,11 +335,7 @@ const SubmitButton = ({ account, connect }: { account?: string | null; connect: 
     );
   }
 
-  return (
-    <ActionButton disabled={!!warning} onClick={() => {}}>
-      {warning || "Submit"}
-    </ActionButton>
-  );
+  return <ActionButton onClick={() => {}}>Submit</ActionButton>;
 };
 
 const TokenDisplay = ({ address }: { address?: string }) => {
@@ -533,9 +547,6 @@ const StyledLayout = styled(Box)(({ theme }) => ({
     height: 40,
     borderRadius: 4,
     fontWeight: 500,
-    "&:hover": {
-      opacity: 0.8,
-    },
   },
   "& .twap-time-selector-list": {
     background: colors.mainBackground,

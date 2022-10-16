@@ -41,6 +41,8 @@ export interface Web3State {
   setAccount: (value?: string) => void;
   chain?: number;
   setChain: (chain?: number) => void;
+  integrationChain?: number;
+  setIntegrationChain: (value?: number) => void;
 }
 
 export interface PriceState extends BaseState {
