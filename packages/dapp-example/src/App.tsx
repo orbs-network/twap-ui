@@ -7,7 +7,8 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import axios from "axios";
 import { useQuery } from "react-query";
-import { networks } from "@defi.org/web3-candies";
+import { networks, erc20s, zeroAddress } from "@defi.org/web3-candies";
+import _ from "lodash";
 import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
 // import TWAP_Quickswap from "@orbs-network/twap-ui-quickswap";
 
@@ -72,16 +73,6 @@ export default App;
 // chainID={chainID}
 // notSearchToken={notSearchToken}
 
-const tokenlistsNetworkName = (chainId: number) => {
-  switch (chainId) {
-    case networks.ftm.id:
-      return "ftm";
-    case networks.eth.id:
-    default:
-      return "ethereum";
-  }
-};
-
 interface TokenInfo {
   symbol: string;
   address: string;
@@ -90,26 +81,54 @@ interface TokenInfo {
 }
 
 const useTokenList = (chainId: number) => {
+  const tokenlistsNetworkNames = {
+    [networks.eth.id]: "ethereum",
+    [networks.ftm.id]: "ftm",
+  };
   return useQuery(
     ["useList", chainId],
-    async () => (await axios.get(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${tokenlistsNetworkName(chainId)}.json`)).data as TokenInfo[],
+    async () => {
+      const tokenlist = (await axios.get(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${tokenlistsNetworkNames[chainId]}.json`)).data;
+      const parsed = tokenlist.map(({ symbol, address, decimals, logoURI }: any) => ({ symbol, address, decimals, logoUrl: logoURI }));
+
+      const networkShortName = _.find(networks, (n) => n.id === chainId)!.shortname;
+      const topTokens = [
+        zeroAddress,
+        ..._.chain(erc20s)
+          .find((it: any, k) => k === networkShortName)
+          .map((t: any) => t().address)
+          .value(),
+      ];
+
+      return _.sortBy(parsed, (t: any) => {
+        const index = topTokens.indexOf(t.address);
+        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
+      });
+    },
     { enabled: !!chainId }
   );
 };
 
 const TokenListItem = ({ token }: any) => {
-  return <li>{token.symbol}</li>;
+  return (
+    <li>
+      <img src={token.logoUrl || ""} width={20} height={20} alt="" />
+      {token.symbol}
+    </li>
+  );
 };
 
 const TokenSelectModal = ({ chainId, isOpen, onClose, selectedToken, onSelect }: any) => {
   const { data: list = [] } = useTokenList(chainId);
   return (
     isOpen && (
-      <ul>
-        {list.map((m) => {
-          return <TokenListItem key={m.address} token={m} />;
-        })}
-      </ul>
+      <div>
+        <ul>
+          {list.map((m: TokenInfo) => {
+            return <TokenListItem key={m.address} token={m} />;
+          })}
+        </ul>
+      </div>
     )
   );
 };
