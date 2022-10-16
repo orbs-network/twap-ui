@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { account as candiesAccount, BigNumber, bn, convertDecimals, erc20s, parsebn, setWeb3Instance, Token, zero } from "@defi.org/web3-candies";
+import { account as candiesAccount, BigNumber, bn, convertDecimals, eqIgnoreCase, erc20, erc20s, parsebn, setWeb3Instance, Token, zero, zeroAddress } from "@defi.org/web3-candies";
 import axios from "axios";
 import { useMutation, useQuery } from "react-query";
 import { useCallback, useMemo, useState } from "react";
@@ -93,10 +93,10 @@ export const useWeb3Store = create<Web3State>((set) => ({
 }));
 
 const useTokenApproval = () => {
-  const { account, chain } = useWeb3();
+  const { account, chain, config } = useWeb3();
   const { srcTokenAddress, srcTokenAmount } = useSrcToken();
   const { token } = useToken(srcTokenAddress);
-  const spender = chain && twapConfig[chain] ? twapConfig[chain].twapAddress : undefined;
+  const spender = config ? config.twapAddress : undefined;
 
   const allowance = useQuery(["allowance"], async () => BigNumber(await token!.methods.allowance(account!, spender!).call()), {
     enabled: !!token && !!chain && !!spender && !!account && !!srcTokenAmount,
@@ -114,15 +114,16 @@ const useTokenApproval = () => {
 
 const useWrapToken = () => {
   const { srcTokenAddress, srcTokenAmount } = useSrcToken();
-  const { token } = useToken(srcTokenAddress);
-  const { account } = useWeb3();
+  const { account, config } = useWeb3();
 
   const { mutate: wrap } = useMutation(async () => {
-    erc20s.ftm.WFTM().methods.deposit().send({ from: account, value: srcTokenAmount?.toString() });
+    const wToken = config!.wrappedToken();
+    return wToken.methods.deposit().send({ from: account, value: srcTokenAmount!.toString() });
   });
 
   return {
     wrap,
+    shouldWrap: eqIgnoreCase(srcTokenAddress || "", zeroAddress),
   };
 };
 
@@ -146,6 +147,7 @@ export const useWeb3 = () => {
     integrationChain,
     isValidChain: chain && chain === integrationChain,
     changeNetwork: () => changeNetwork(web3, integrationChain),
+    config: integrationChain ? twapConfig[integrationChain] : undefined,
   };
 };
 
@@ -186,6 +188,17 @@ const useSrcToken = () => {
     const value = balance?.multipliedBy(percent) || zero;
     const uiValue = await getBigNumberToUiAmount(token, value);
     onChange(uiValue);
+  };
+
+  interface SelectedToken {
+    symbol: string;
+    address: string;
+    decimals: number;
+    logoUrl?: string;
+  }
+  const onSelectToken = (token: SelectedToken) => {
+    // if(native)
+    // setToken
   };
 
   const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress);
@@ -351,6 +364,7 @@ const useAllTokens = () => {
   return useQuery(
     "useAllTokens",
     async () => {
+      // return [erc20("FTM", zeroAddress, 18), ..._.map(erc20s.ftm, (it) => it())];
       return _.map(erc20s.ftm, (it) => it());
     },
     { enabled: !!web3 }
@@ -509,6 +523,7 @@ export const store = {
   useTokenApproval,
   useAccountBalances,
   useWeb3,
+  useWrapToken,
 };
 
 // all validation hooks

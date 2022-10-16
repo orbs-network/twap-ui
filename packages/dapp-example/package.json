@@ -9,7 +9,8 @@
     "build": "npm run prettier && react-scripts build"
   },
   "dependencies": {
-    "@orbs-network/twap-ui-spiritswap": "*"
+    "@orbs-network/twap-ui-spiritswap": "*",
+    "react-query": "^3.39.2"
   },
   "browserslist": {
     "production": [

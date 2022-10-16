@@ -4,11 +4,16 @@ import "./index.css";
 import App from "./App";
 import { Web3ReactProvider } from "@web3-react/core";
 import Web3 from "web3";
+import { QueryClient, QueryClientProvider } from "react-query";
+
+const client = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <Web3ReactProvider getLibrary={(provider) => new Web3(provider)}>
-      <App />
-    </Web3ReactProvider>
+    <QueryClientProvider client={client}>
+      <Web3ReactProvider getLibrary={(provider) => new Web3(provider)}>
+        <App />
+      </Web3ReactProvider>
+    </QueryClientProvider>
   </React.StrictMode>
 );

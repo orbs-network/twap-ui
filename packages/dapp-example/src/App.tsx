@@ -7,6 +7,7 @@ import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
 import { CSSProperties, useMemo, useState } from "react";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import { useQuery } from "react-query";
 
 const StyledLayoutQuickswap = styled(Box)({
   background: "#1b1e29",
@@ -33,12 +34,12 @@ function ConnectBtn() {
 
 const clients = [
   // { id: "1", Component: TWAP_Quickswap, text: "Quickswap", Layout: StyledLayoutQuickswap },
-  { id: "2", Component: TWAP_Spiritswap, text: "Spiritswap", Layout: StyledLayoutSpiritswap },
+  { id: "1", Component: TWAP_Spiritswap, text: "Spiritswap", Layout: StyledLayoutSpiritswap },
 ];
 
 function App() {
   const { account, activate } = useWeb3React();
-  const [selectedClient, setSelectedClient] = useState("2");
+  const [selectedClient, setSelectedClient] = useState("1");
 
   const onConnectClick = () => {
     console.log("on connect click");
@@ -48,7 +49,7 @@ function App() {
   const handleChange = (event: SelectChangeEvent) => {
     setSelectedClient(event.target.value as string);
   };
-
+  const [open, setOpen] = useState(false);
   return (
     <StyledApp className="App">
       <Box sx={{ minWidth: 120 }}>
@@ -69,7 +70,16 @@ function App() {
             const Layout = client.Layout;
             return (
               <Layout key={client.id}>
-                <Component provider={useWeb3React().library} connect={onConnectClick} account={account} />
+                <Component
+                  provider={useWeb3React().library}
+                  connect={onConnectClick}
+                  account={account}
+                  // selectedSrcToken={}
+                  // selectedDstToken={}
+                  // onClickSelectSrcToken={() => setOpen(true)}
+                  // onClickSelectDstToken={() => setOpen(true)}
+                  // setOpen={setOpen}
+                />
               </Layout>
             );
           }
@@ -81,6 +91,37 @@ function App() {
 }
 
 export default App;
+
+// tokens={tokens}
+// commonTokens={commonTokens()}
+// tokenSelected={token}
+// bridge={bridge}
+// onSelect={handleSelect}
+// isOpen={isOpen}
+// onClose={onClose}
+// chainID={chainID}
+// notSearchToken={notSearchToken}
+
+const useList = () => {
+  return useQuery(["useList"], () => {
+    return [];
+  });
+};
+
+const TokenListItem = () => {
+  return <li></li>;
+};
+
+const TokenSelectModal = ({ onSelect, isOpen, onClose, selectedToken }: any) => {
+  const { data: list = [] } = useList();
+  return (
+    <ul>
+      {list.map((m) => {
+        return <TokenListItem key={m} />;
+      })}
+    </ul>
+  );
+};
 
 const StyledApp = styled(Box)({
   display: "flex",

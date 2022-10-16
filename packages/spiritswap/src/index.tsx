@@ -311,6 +311,7 @@ const SubmitButton = ({ account, connect }: { account?: string | null; connect: 
   const warning = TWAPLib.validation.useSubmitButtonValidation();
   const { isApproved, approve } = TWAPLib.store.useTokenApproval();
   const { isValidChain, changeNetwork } = TWAPLib.store.useWeb3();
+  const { wrap, shouldWrap } = TWAPLib.store.useWrapToken();
 
   if (!account) {
     return <ActionButton onClick={connect}>Connect Wallet</ActionButton>;
@@ -327,6 +328,11 @@ const SubmitButton = ({ account, connect }: { account?: string | null; connect: 
       </ActionButton>
     );
   }
+
+  if (shouldWrap) {
+    return <ActionButton onClick={wrap}>Wrap</ActionButton>;
+  }
+
   if (!isApproved) {
     return (
       <ActionButton onClick={approve} disabled={!!warning}>
