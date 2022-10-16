@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@orbs-network/twap-ui-spiritswap": "*",
-    "react-query": "^3.39.2"
+    "react-query": "*"
   },
   "browserslist": {
     "production": [

@@ -2,59 +2,26 @@ import "./App.css";
 import { Box, styled } from "@mui/system";
 import { useWeb3React } from "@web3-react/core";
 import { injectedConnector } from "./connectors";
-// import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
-import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
-import { CSSProperties, useMemo, useState } from "react";
+import { CSSProperties, useState } from "react";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import axios from "axios";
 import { useQuery } from "react-query";
-
-const StyledLayoutQuickswap = styled(Box)({
-  background: "#1b1e29",
-  borderRadius: 20,
-  padding: 20,
-});
-
-const StyledLayoutSpiritswap = styled(Box)({
-  background: "rgb(16, 23, 38)",
-  border: `1px solid rgb(55, 65, 81)`,
-  borderRadius: 10,
-  padding: "0.5rem",
-  fontFamily: "Jost",
-});
-
-function ConnectBtn() {
-  const { activate, deactivate, account } = useWeb3React();
-
-  const disconnect = <button onClick={deactivate}>Disconnect {account}</button>;
-  const connect = <button onClick={() => activate(injectedConnector)}>Connect</button>;
-
-  return <div>{account ? disconnect : connect}</div>;
-}
-
-const clients = [
-  // { id: "1", Component: TWAP_Quickswap, text: "Quickswap", Layout: StyledLayoutQuickswap },
-  { id: "1", Component: TWAP_Spiritswap, text: "Spiritswap", Layout: StyledLayoutSpiritswap },
-];
+import { networks } from "@defi.org/web3-candies";
+import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
+// import TWAP_Quickswap from "@orbs-network/twap-ui-quickswap";
 
 function App() {
-  const { account, activate } = useWeb3React();
-  const [selectedClient, setSelectedClient] = useState("1");
+  const { account, activate, library, chainId } = useWeb3React();
+  const [selectedDapp, setSelectedDapp] = useState("1");
 
-  const onConnectClick = () => {
-    console.log("on connect click");
-    activate(injectedConnector);
-  };
+  const [isSelectModalOpen, setSelectModalOpen] = useState(false);
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setSelectedClient(event.target.value as string);
-  };
-  const [open, setOpen] = useState(false);
   return (
     <StyledApp className="App">
       <Box sx={{ minWidth: 120 }}>
-        <Select value={selectedClient} label="Age" onChange={handleChange} style={{ color: "white" }}>
-          {clients.map((client) => {
+        <Select value={selectedDapp} label="Age" onChange={(event: SelectChangeEvent) => setSelectedDapp(event.target.value)} style={{ color: "white" }}>
+          {dapps.map((client) => {
             return (
               <MenuItem key={client.id} value={client.id}>
                 {client.text}
@@ -64,15 +31,15 @@ function App() {
         </Select>
       </Box>
       <StyledContent>
-        {clients.map((client) => {
-          if (client.id === selectedClient) {
-            const Component = client.Component;
-            const Layout = client.Layout;
+        {dapps.map((dapp) => {
+          if (dapp.id === selectedDapp) {
+            const Component = dapp.Component;
+            const Layout = dapp.Layout;
             return (
-              <Layout key={client.id}>
+              <Layout key={dapp.id}>
                 <Component
-                  provider={useWeb3React().library}
-                  connect={onConnectClick}
+                  provider={library}
+                  connect={() => activate(injectedConnector)}
                   account={account}
                   // selectedSrcToken={}
                   // selectedDstToken={}
@@ -86,6 +53,9 @@ function App() {
           return null;
         })}
       </StyledContent>
+
+      {/*<button onClick={() => setSelectModalOpen(true)}>Select Token</button>*/}
+      {/*<TokenSelectModal chainId={chainId} isOpen={isSelectModalOpen} />*/}
     </StyledApp>
   );
 }
@@ -102,24 +72,45 @@ export default App;
 // chainID={chainID}
 // notSearchToken={notSearchToken}
 
-const useList = () => {
-  return useQuery(["useList"], () => {
-    return [];
-  });
+const tokenlistsNetworkName = (chainId: number) => {
+  switch (chainId) {
+    case networks.ftm.id:
+      return "ftm";
+    case networks.eth.id:
+    default:
+      return "ethereum";
+  }
 };
 
-const TokenListItem = () => {
-  return <li></li>;
+interface TokenInfo {
+  symbol: string;
+  address: string;
+  decimals: number;
+  logoUrl?: string;
+}
+
+const useTokenList = (chainId: number) => {
+  return useQuery(
+    ["useList", chainId],
+    async () => (await axios.get(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${tokenlistsNetworkName(chainId)}.json`)).data as TokenInfo[],
+    { enabled: !!chainId }
+  );
 };
 
-const TokenSelectModal = ({ onSelect, isOpen, onClose, selectedToken }: any) => {
-  const { data: list = [] } = useList();
+const TokenListItem = ({ token }: any) => {
+  return <li>{token.symbol}</li>;
+};
+
+const TokenSelectModal = ({ chainId, isOpen, onClose, selectedToken, onSelect }: any) => {
+  const { data: list = [] } = useTokenList(chainId);
   return (
-    <ul>
-      {list.map((m) => {
-        return <TokenListItem key={m} />;
-      })}
-    </ul>
+    isOpen && (
+      <ul>
+        {list.map((m) => {
+          return <TokenListItem key={m.address} token={m} />;
+        })}
+      </ul>
+    )
   );
 };
 
@@ -138,9 +129,28 @@ const StyledApp = styled(Box)({
   },
 });
 
+const StyledLayoutQuickswap = styled(Box)({
+  background: "#1b1e29",
+  borderRadius: 20,
+  padding: 20,
+});
+
+const StyledLayoutSpiritswap = styled(Box)({
+  background: "rgb(16, 23, 38)",
+  border: `1px solid rgb(55, 65, 81)`,
+  borderRadius: 10,
+  padding: "0.5rem",
+  fontFamily: "Jost",
+});
+
 const StyledContent = styled(Box)(({ styles }: { styles?: CSSProperties }) => ({
   flex: 1,
   width: 500,
   overflow: "auto",
   ...styles,
 }));
+
+const dapps = [
+  { id: "1", text: "Spiritswap", Component: TWAP_Spiritswap, Layout: StyledLayoutSpiritswap },
+  // { id: "1", text: "Quickswap", Component: TWAP_Quickswap, Layout: StyledLayoutQuickswap },
+];
