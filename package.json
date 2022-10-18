@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "lerna": "5.x",
+    "lerna": "6.x",
     "@types/react": "18.x",
     "@types/react-dom": "18.x",
     "@web3-react/core": "6.x",
