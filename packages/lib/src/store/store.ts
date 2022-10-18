@@ -534,10 +534,11 @@ const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number)
 
 const useBigNumberToUiAmount = (token?: Token, amount?: BigNumber) => {
   const getUiAmount = async (amount?: BigNumber) => (!amount ? "" : !token ? "" : (await token.mantissa(amount || zero)).toFormat());
-  const { data } = useQuery(["useBigNumberToUiAmount"], () => getUiAmount(amount), {
+  const { data } = useQuery(["useBigNumberToUiAmount", token?.address, amount?.toString()], () => getUiAmount(amount), {
     enabled: !!token,
     cacheTime: 0,
     staleTime: 0,
+    retry: false,
   });
 
   return { data, getUiAmount };

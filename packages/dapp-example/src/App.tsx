@@ -106,6 +106,9 @@ const TokenSelectModal = ({ chainId, isOpen, selectedToken, onSelect, onClose }:
         </StyledCloseIcon>
         <StyledModalList>
           {list.map((token: TokenInfo) => {
+            if (token.address === selectedToken?.address) {
+              return null;
+            }
             return (
               <StyledModalListItem onClick={() => onSelect(token)} key={token.address}>
                 <img src={token.logoUrl || ""} width={20} height={20} alt="" />

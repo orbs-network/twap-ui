@@ -157,12 +157,10 @@ const SrcTokenPanel = ({ TokenSelectModal }: { TokenSelectModal: any }) => {
       usdValue={uiUsdValue}
       usdValueLoading={usdValueLoading}
       value={srcTokenUiAmount}
-      address={srcTokenInfo?.address}
       onChange={onChange}
       balance={uiBalance}
       balanceLoading={balanceLoading}
-      logo={srcTokenInfo?.logoUrl}
-      name={srcTokenInfo?.symbol}
+      selectedToken={srcTokenInfo}
       onSelect={onSrcTokenSelect}
     >
       <SrcTokenPercentSelector />
@@ -181,12 +179,10 @@ const DstTokenPanel = ({ TokenSelectModal }: { TokenSelectModal: any }) => {
         usdValue={uiUsdValue}
         disabled={true}
         value={dstTokenUiAmount}
-        address={dstTokenInfo?.address}
+        selectedToken={dstTokenInfo}
         isLoading={isLoading}
         balance={uiBalance}
         balanceLoading={balanceLoading}
-        logo={dstTokenInfo?.logoUrl}
-        name={dstTokenInfo?.symbol}
         onSelect={onDstTokenSelect}
       />
       <MarketPrice />
@@ -364,7 +360,6 @@ const TokenDisplay = ({ logo, name }: { logo?: string; name?: string }) => {
 interface TokenPanelProps {
   value?: string;
   onChange?: (value: string) => void;
-  address?: string;
   balance?: string;
   children?: ReactNode;
   disabled?: boolean;
@@ -373,12 +368,12 @@ interface TokenPanelProps {
   usdValueLoading?: boolean;
   balanceLoading?: boolean;
   TokenSelectModal: any;
-  logo?: string;
-  name?: string;
   onSelect: (token: any) => void;
+  selectedToken?: any;
 }
 
 const TokenPanel = ({
+  selectedToken,
   TokenSelectModal,
   value,
   onChange,
@@ -389,12 +384,12 @@ const TokenPanel = ({
   isLoading = false,
   usdValue = 0,
   usdValueLoading = false,
-  logo,
-  name,
   onSelect,
 }: TokenPanelProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { chain } = TWAPLib.store.useWeb3();
+  // const {srcToken} = TWAPLib.store.useSrcToken()
+  // const {dstToken} = TWAPLib.store.useDstToken();
 
   const onSelectClick = (token: any) => {
     setIsOpen(false);
@@ -409,13 +404,13 @@ const TokenPanel = ({
 
   return (
     <StyledTokenPanel>
-      <TokenSelectModal isOpen={isOpen} chainId={chain} onClose={() => setIsOpen(false)} onSelect={onSelectClick} />
+      <TokenSelectModal isOpen={isOpen} chainId={chain} selectedTokens={selectedToken} onClose={() => setIsOpen(false)} onSelect={onSelectClick} />
       <Card>
         <StyledColumnGap>
           <StyledFlexBetween>
             <NumericInput loading={isLoading} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
             <StyledTokenSelect onClick={onOpen}>
-              <TokenDisplay logo={logo} name={name} />
+              <TokenDisplay logo={selectedToken?.logoUrl} name={selectedToken?.symbol} />
               <IoIosArrowDown style={{ fill: colors.icon }} size={20} />
             </StyledTokenSelect>
           </StyledFlexBetween>
