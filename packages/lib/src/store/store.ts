@@ -2,21 +2,21 @@ import _ from "lodash";
 import { account as candiesAccount, BigNumber, bn, convertDecimals, eqIgnoreCase, erc20, erc20s, parsebn, setWeb3Instance, Token, zero, zeroAddress } from "@defi.org/web3-candies";
 import axios from "axios";
 import { useMutation, useQuery } from "react-query";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Web3 from "web3";
-import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TradeIntervalState, TradeSizeState, Web3State } from "../types";
+import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TokenInfo, TradeIntervalState, TradeSizeState, Web3State } from "../types";
 import create from "zustand";
 import { TimeFormat } from "./TimeFormat";
-import { IntegrationDapp, twapConfig } from "../consts";
+import { twapConfig } from "../consts";
 import { changeNetwork } from "./connect";
 
 const srcTokenInitialState = {
-  address: undefined,
+  token: undefined,
   amount: undefined,
 };
 
 const dstTokenInitialState = {
-  address: undefined,
+  token: undefined,
 };
 
 const maxDurationInitialState = {
@@ -42,18 +42,18 @@ const tradeSizeInitialState = {
 
 export const useSrcTokenStore = create<SrcTokenState>((set) => ({
   ...srcTokenInitialState,
-  setAddress: (address) => set({ address }),
+  setToken: (token) => set({ token }),
   setAmount: (amount) => set({ amount }),
   reset: () => set(srcTokenInitialState),
 }));
 
-export const useDstTokenStore = create<DstTokenState>((set, get) => ({
+export const useDstTokenStore = create<DstTokenState>((set) => ({
   ...dstTokenInitialState,
-  setAddress: (address) => set({ address }),
+  setToken: (token) => set({ token }),
   reset: () => set(dstTokenInitialState),
 }));
 
-export const useMaxDurationStore = create<MaxDurationState>((set, get) => ({
+export const useMaxDurationStore = create<MaxDurationState>((set) => ({
   ...maxDurationInitialState,
   setMillis: (millis) => set({ millis }),
   setTimeFormat: (timeFormat) => set({ timeFormat }),
@@ -94,16 +94,15 @@ export const useWeb3Store = create<Web3State>((set) => ({
 
 const useTokenApproval = () => {
   const { account, chain, config } = useWeb3();
-  const { srcTokenAddress, srcTokenAmount } = useSrcToken();
-  const { token } = useToken(srcTokenAddress);
+  const { srcToken, srcTokenAmount } = useSrcToken();
   const spender = config ? config.twapAddress : undefined;
 
-  const allowance = useQuery(["allowance"], async () => BigNumber(await token!.methods.allowance(account!, spender!).call()), {
-    enabled: !!token && !!chain && !!spender && !!account && !!srcTokenAmount,
+  const allowance = useQuery(["allowance"], async () => BigNumber(await srcToken!.methods.allowance(account!, spender!).call()), {
+    enabled: !!account && !!chain && !!spender && !!account && !!srcTokenAmount,
     refetchInterval: 10_000,
   }).data;
 
-  const { mutate: approve, isLoading: approveLoading } = useMutation(async () => token?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account }));
+  const { mutate: approve, isLoading: approveLoading } = useMutation(async () => srcToken?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account }));
 
   return {
     isApproved: !srcTokenAmount ? false : allowance?.gte(srcTokenAmount || 0),
@@ -113,7 +112,7 @@ const useTokenApproval = () => {
 };
 
 const useWrapToken = () => {
-  const { srcTokenAddress, srcTokenAmount } = useSrcToken();
+  const { srcToken, srcTokenAmount } = useSrcToken();
   const { account, config } = useWeb3();
 
   const { mutate: wrap } = useMutation(async () => {
@@ -123,7 +122,7 @@ const useWrapToken = () => {
 
   return {
     wrap,
-    shouldWrap: eqIgnoreCase(srcTokenAddress || "", zeroAddress),
+    shouldWrap: eqIgnoreCase(srcToken?.address || "", zeroAddress),
   };
 };
 
@@ -145,77 +144,70 @@ export const useWeb3 = () => {
     account,
     chain,
     integrationChain,
-    isValidChain: chain && chain === integrationChain,
+    isInvalidChain: chain && chain !== integrationChain,
     changeNetwork: () => changeNetwork(web3, integrationChain),
     config: integrationChain ? twapConfig[integrationChain] : undefined,
   };
 };
 
-const useAccountBalances = (address?: string) => {
-  const { token } = useToken(address);
-  const { account, isValidChain } = useWeb3();
+const useAccountBalances = (token?: Token) => {
+  const { account, isInvalidChain } = useWeb3();
 
   return useQuery(
-    ["useAccountBalances", address, account],
+    ["useAccountBalances", token?.address, account],
     async () => {
       return BigNumber(await token!.methods.balanceOf(account!).call());
     },
-    { enabled: !!token && !!account && !!isValidChain, refetchInterval: 10_000 }
+    { enabled: !!token && !!account && !isInvalidChain, refetchInterval: 10_000 }
   );
 };
 
 // all actions (functions) related to src input
 const useSrcToken = () => {
-  const allTokens = useAllTokens();
-  const { setAddress, setAmount, address: srcTokenAddress = _.first(allTokens)?.address, amount: srcTokenAmount } = useSrcTokenStore();
+  const { setToken: setSrcToken, setAmount, token: srcTokenInfo, amount: srcTokenAmount } = useSrcTokenStore();
   const tradeSize = useTradeSizeStore().tradeSize;
-  const { token } = useToken(srcTokenAddress);
+  const { token } = useToken(srcTokenInfo);
+
+  const { getBnAmount } = useUiAmountToBigNumber(token);
+  const { getUiAmount } = useBigNumberToUiAmount(token);
 
   const setTradeSize = useTradeSizeStore().setTradeSize;
 
-  const onChange = useCallback(
-    async (amountUi: string) => {
-      const amount = await getUiAmountToBigNumber(token, amountUi);
-      if (amount && tradeSize && tradeSize.gt(amount)) {
-        setTradeSize(amount);
-      }
-      setAmount(amount);
-    },
-    [token, tradeSize]
-  );
+  const onChange = async (amountUi: string) => {
+    const amount = await getBnAmount(amountUi);
+    if (amount && tradeSize && tradeSize.gt(amount)) {
+      setTradeSize(amount);
+    }
+    setAmount(amount);
+  };
 
   const onChangePercent = async (percent: number) => {
     const value = balance?.multipliedBy(percent) || zero;
-    const uiValue = await getBigNumberToUiAmount(token, value);
+    const uiValue = await getUiAmount(value);
     onChange(uiValue);
   };
 
-  interface SelectedToken {
-    symbol: string;
-    address: string;
-    decimals: number;
-    logoUrl?: string;
-  }
-  const onSelectToken = (token: SelectedToken) => {
-    // if(native)
-    // setToken
+  const onSrcTokenSelect = (token: TokenInfo) => {
+    setSrcToken(token);
   };
 
-  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress);
-  const { data: balance, isLoading: balanceLoading } = useAccountBalances(srcTokenAddress);
+  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(token);
+  const { data: balance, isLoading: balanceLoading } = useAccountBalances(token);
 
   return {
+    onSrcTokenSelect,
     setSrcTokenAmount: setAmount,
-    setSrcTokenAddress: setAddress,
+    setSrcToken,
     onChange,
-    srcTokenAddress,
+    srcTokenInfo,
+    srcToken: token,
     srcTokenAmount,
-    srcTokenUiAmount: useBigNumberToUiAmount(srcTokenAddress, srcTokenAmount),
+    srcTokenUiAmount: useBigNumberToUiAmount(token, srcTokenAmount).data,
     usdValueLoading,
     usdValue,
-    uiUsdValue: useBigNumberToUiAmount(srcTokenAddress, srcTokenAmount?.times(usdValue || 0)),
+    uiUsdValue: useBigNumberToUiAmount(token, srcTokenAmount?.times(usdValue || 0)).data,
     balance,
-    uiBalance: useBigNumberToUiAmount(srcTokenAddress, balance) || "0",
+    uiBalance: useBigNumberToUiAmount(token, balance).data || "0",
     balanceLoading,
     onChangePercent,
   };
@@ -223,50 +215,52 @@ const useSrcToken = () => {
 
 // all actions (functions) related to src input
 const useDstToken = () => {
-  const allTokens = useAllTokens();
+  const { setToken: setDstToken, token: dstTokenInfo } = useDstTokenStore();
+  const { srcTokenAmount, srcToken, usdValue: srcTokenUsdValue } = useSrcToken();
+  const { token: dstToken } = useToken(dstTokenInfo);
+  const { isLoading: usdValueLoading, data: dstTokenUsdValue } = useUsdValue(dstToken);
+  const { data: amount, isLoading } = useDstAmount(srcToken, dstToken, srcTokenAmount, srcTokenUsdValue, dstTokenUsdValue);
+  const { data: balance, isLoading: balanceLoading } = useAccountBalances(dstToken);
 
-  const { setAddress, address = _.get(allTokens, [1])?.address } = useDstTokenStore();
-  const { srcTokenAmount, srcTokenAddress, usdValue: srcTokenUsdValue } = useSrcToken();
-  const { isLoading: usdValueLoading, data: dstTokenUsdValue } = useUsdValue(address);
-  const { data: amount, isLoading } = useDstAmount(srcTokenAddress, address, srcTokenAmount, srcTokenUsdValue, dstTokenUsdValue);
-  const { data: balance, isLoading: balanceLoading } = useAccountBalances(address);
+  const onDstTokenSelect = (token: TokenInfo) => {
+    setDstToken(token);
+  };
 
   return {
-    setDstTokenAddress: setAddress,
-    dstTokenUiAmount: useBigNumberToUiAmount(address, amount),
-    dstTokenAddress: address,
+    onDstTokenSelect,
+    setDstToken,
+    dstTokenUiAmount: useBigNumberToUiAmount(dstToken, amount).data,
+    dstTokenInfo,
+    dstToken,
     amount,
     isLoading,
     usdValueLoading: usdValueLoading || isLoading,
     usdValue: dstTokenUsdValue,
-    uiUsdValue: useBigNumberToUiAmount(address, amount?.times(dstTokenUsdValue || 0)),
+    uiUsdValue: useBigNumberToUiAmount(dstToken, amount?.times(dstTokenUsdValue || 0)).data,
     balance,
-    uiBalance: useBigNumberToUiAmount(address, balance) || "0",
+    uiBalance: useBigNumberToUiAmount(dstToken, balance).data || "0",
     balanceLoading,
   };
 };
 
-const useUsdValue = (address?: string, isEnabled?: boolean) => {
-  const { isValidChain } = useWeb3();
+const useUsdValue = (token?: Token, isEnabled?: boolean) => {
+  const { isInvalidChain } = useWeb3();
   return useQuery(
-    ["useUsdValue", address],
+    ["useUsdValue", token?.address],
     async () => {
-      const result = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/fantom?contract_addresses=${address}&vs_currencies=usd `);
+      const result = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/fantom?contract_addresses=${token?.address}&vs_currencies=usd `);
       const n = BigNumber(_.first(_.values(result.data)).usd);
       return n.gte(0) ? n : undefined;
     },
     {
-      enabled: !!address && !!isValidChain,
+      enabled: !!token && !isInvalidChain,
       // refetchInterval: 10000
     }
   );
 };
 
-const useDstAmount = (srcAddress?: string, dstAddress?: string, srcAmount?: BigNumber, srcTokenUsdValue?: BigNumber, dstTokenUsdValue?: BigNumber) => {
-  const { token: srcToken } = useToken(srcAddress);
-  const { token: dstToken } = useToken(dstAddress);
-
-  return useQuery(["useDstAmount", srcAddress, dstAddress, srcAmount], async () => {
+const useDstAmount = (srcToken?: Token, dstToken?: Token, srcAmount?: BigNumber, srcTokenUsdValue?: BigNumber, dstTokenUsdValue?: BigNumber) => {
+  return useQuery(["useDstAmount", srcToken?.address, dstToken?.address, srcAmount], async () => {
     if (!srcAmount || srcAmount.isZero()) {
       return undefined;
     }
@@ -327,80 +321,57 @@ const useTradeInterval = () => {
 
 // all data related to trade size input
 const useTradeSize = () => {
-  const { srcTokenAddress, srcTokenAmount } = useSrcToken();
+  const { srcToken, srcTokenAmount } = useSrcToken();
   const { tradeSize, setTradeSize } = useTradeSizeStore();
   const totalTrades = useTotalTrades();
-  const { token } = useToken(srcTokenAddress);
 
-  const onChange = useCallback(
-    async (amountUi?: string) => {
-      const tradeSize = await getUiAmountToBigNumber(token, amountUi);
-      if (!tradeSize) {
-        setTradeSize(undefined);
-      } else if (srcTokenAmount?.gt(zero) && tradeSize.gte(srcTokenAmount)) {
-        setTradeSize(srcTokenAmount);
-      } else {
-        setTradeSize(tradeSize);
-      }
-    },
-    [token, srcTokenAmount]
-  );
+  const { getBnAmount } = useUiAmountToBigNumber(srcToken);
 
-  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcTokenAddress);
+  const onChange = async (amountUi?: string) => {
+    const tradeSize = await getBnAmount(amountUi);
+    if (!tradeSize) {
+      setTradeSize(undefined);
+    } else if (srcTokenAmount?.gt(zero) && tradeSize.gte(srcTokenAmount)) {
+      setTradeSize(srcTokenAmount);
+    } else {
+      setTradeSize(tradeSize);
+    }
+  };
+
+  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcToken);
 
   return {
     totalTrades,
     tradeSize,
-    uiTradeSize: useBigNumberToUiAmount(srcTokenAddress, tradeSize),
+    uiTradeSize: useBigNumberToUiAmount(srcToken, tradeSize).data,
     onChange,
     usdValue,
     usdValueLoading,
-    uiUsdValue: useBigNumberToUiAmount(srcTokenAddress, !usdValue ? undefined : tradeSize?.times(usdValue)),
+    uiUsdValue: useBigNumberToUiAmount(srcToken, !usdValue ? undefined : tradeSize?.times(usdValue)).data,
   };
 };
 
-const useAllTokens = () => {
-  const { web3 } = useWeb3();
-  return useQuery(
-    "useAllTokens",
-    async () => {
-      // return [erc20("FTM", zeroAddress, 18), ..._.map(erc20s.ftm, (it) => it())];
-      return _.map(erc20s.ftm, (it) => it());
+const useToken = (tokenInfo?: TokenInfo) => {
+  const { data: token } = useQuery<Token>(
+    ["useToken", tokenInfo?.address],
+    () => {
+      return erc20(tokenInfo!.symbol, tokenInfo!.address, tokenInfo!.decimals);
     },
-    { enabled: !!web3 }
-  ).data;
-};
-
-export const useToken = (address?: string) => {
-  const allTokens = useAllTokens();
-  const { data: token } = useQuery(["useToken", address], () => _.find(allTokens, (t) => t.address === address), { enabled: !!allTokens });
+    { enabled: !!tokenInfo }
+  );
   return { token, isLoading: !token };
 };
 
-const useBigNumberToUiAmount = (address?: string, amount?: BigNumber) => {
-  const { token } = useToken(address);
-
-  return useQuery(["useBigNumberToUiAmount", address, amount], () => getBigNumberToUiAmount(token, amount), {
-    enabled: !!address,
-    cacheTime: 0,
-    staleTime: 0,
-  }).data;
-};
-
-const useDstTokenAmount = () => {
-  return useDstToken().amount;
-};
-
 const useChangeTokenPositions = () => {
-  const { setSrcTokenAddress, setSrcTokenAmount, srcTokenAddress } = useSrcToken();
-  const { setDstTokenAddress, dstTokenAddress } = useDstToken();
-  const dstTokenAmount = useDstTokenAmount();
+  const { srcTokenInfo, setSrcTokenAmount, setSrcToken } = useSrcToken();
+  const { setDstToken, dstTokenInfo } = useDstToken();
+  const { amount: dstTokenAmount } = useDstToken();
   const setTradeSize = useTradeSizeStore().setTradeSize;
 
   return () => {
     setSrcTokenAmount(dstTokenAmount);
-    setSrcTokenAddress(dstTokenAddress);
-    setDstTokenAddress(srcTokenAddress);
+    setSrcToken(dstTokenInfo);
+    setDstToken(srcTokenInfo);
     setTradeSize(undefined);
   };
 };
@@ -417,37 +388,44 @@ export const useLimitPrice = () => {
     toggleLimit();
   };
 
-  const { marketPrice, leftTokenAddress, rightTokenAddress, toggleInverted, inverted } = useMarketPrice();
+  const { marketPrice, leftToken, rightToken, toggleInverted, inverted, leftTokenInfo, rightTokenInfo } = useMarketPrice();
 
   return {
     showLimit,
     onToggleLimit,
     toggleInverted,
     onChange,
-    leftTokenAddress,
-    rightTokenAddress,
+    leftToken,
+    rightToken,
+    leftTokenInfo,
+    rightTokenInfo,
     uiPrice: price && inverted ? BigNumber(1).div(price).toFormat() : price?.toFormat(),
   };
 };
 
 const useMarketPrice = () => {
   const [inverted, setInverted] = useState(false);
-  const { srcTokenAddress } = useSrcToken();
-  const { dstTokenAddress } = useDstToken();
+  const { srcToken, srcTokenInfo } = useSrcToken();
+  const { dstToken, dstTokenInfo } = useDstToken();
 
-  const leftTokenAddress = inverted ? dstTokenAddress : srcTokenAddress;
-  const rightTokenAddress = !inverted ? dstTokenAddress : srcTokenAddress;
+  const leftToken = inverted ? dstToken : srcToken;
+  const rightToken = !inverted ? dstToken : srcToken;
 
-  const { data: leftUsdValue = BigNumber(0) } = useUsdValue(leftTokenAddress);
-  const { data: rightUsdValue = BigNumber(1) } = useUsdValue(rightTokenAddress);
+  const leftTokenInfo = inverted ? dstTokenInfo : srcTokenInfo;
+  const rightTokenInfo = !inverted ? dstTokenInfo : srcTokenInfo;
+
+  const { data: leftUsdValue = BigNumber(0) } = useUsdValue(leftToken);
+  const { data: rightUsdValue = BigNumber(1) } = useUsdValue(rightToken);
   const marketPrice = leftUsdValue.div(rightUsdValue);
 
   return {
     marketPrice,
     toggleInverted: () => setInverted((prevState) => !prevState),
-    leftTokenAddress,
-    rightTokenAddress,
+    leftToken,
+    rightToken,
     inverted,
+    leftTokenInfo,
+    rightTokenInfo,
   };
 };
 
@@ -480,6 +458,12 @@ export const useSubmitButtonValidation = () => {
       return "Trade size must be less than source amount";
     }
   }, [tradeSize, srcTokenAmount, tradeIntervalMillis, maxDurationMillis]);
+};
+
+export const useSubmit = () => {
+  return useMutation(async () => {
+    return null;
+  });
 };
 
 const usePartialFillValidation = () => {
@@ -548,10 +532,25 @@ const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number)
   }
 };
 
-export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) => {
-  const result = !amount ? "" : !token ? "" : (await token.mantissa(amount || zero)).toFormat();
+const useBigNumberToUiAmount = (token?: Token, amount?: BigNumber) => {
+  const getUiAmount = async (amount?: BigNumber) => (!amount ? "" : !token ? "" : (await token.mantissa(amount || zero)).toFormat());
+  const { data } = useQuery(["useBigNumberToUiAmount"], () => getUiAmount(amount), {
+    enabled: !!token,
+    cacheTime: 0,
+    staleTime: 0,
+  });
 
-  return result;
+  return { data, getUiAmount };
 };
 
-export const getUiAmountToBigNumber = (token?: Token, amountUi?: string) => (amountUi === "" ? undefined : !token ? undefined : token?.amount(parsebn(amountUi || "0")));
+const useUiAmountToBigNumber = (token?: Token, amountUi?: string) => {
+  const getBnAmount = async (amountUi?: string) => (amountUi === "" ? undefined : !token ? undefined : token?.amount(parsebn(amountUi || "0")));
+
+  const { data } = useQuery(["useUiAmountToBigNumber"], () => getBnAmount(amountUi), {
+    enabled: !!token,
+    cacheTime: 0,
+    staleTime: 0,
+  });
+
+  return { data, getBnAmount };
+};

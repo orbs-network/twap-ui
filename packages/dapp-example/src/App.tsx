@@ -1,8 +1,7 @@
-import "./App.css";
 import { Box, styled } from "@mui/system";
 import { useWeb3React } from "@web3-react/core";
 import { injectedConnector } from "./connectors";
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useRef, useState } from "react";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import axios from "axios";
@@ -11,12 +10,14 @@ import { networks, erc20s, zeroAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
 import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
 // import TWAP_Quickswap from "@orbs-network/twap-ui-quickswap";
+import Modal from "@mui/material/Modal";
+import { AiOutlineClose } from "react-icons/ai";
+type Selection = "src" | "dst";
 
 function App() {
-  const { account, activate, library, chainId } = useWeb3React();
+  const { activate, library } = useWeb3React();
   const [selectedDapp, setSelectedDapp] = useState("1");
-
-  const [isSelectModalOpen, setSelectModalOpen] = useState(false);
+  const [dstToken, setDstToken] = useState(undefined);
 
   return (
     <StyledApp className="App">
@@ -38,40 +39,18 @@ function App() {
             const Layout = dapp.Layout;
             return (
               <Layout key={dapp.id}>
-                <Component
-                  provider={library}
-                  connect={() => activate(injectedConnector)}
-                  account={account}
-                  // selectedSrcToken={}
-                  // selectedDstToken={}
-                  // onClickSelectSrcToken={() => setOpen(true)}
-                  // onClickSelectDstToken={() => setOpen(true)}
-                  // setOpen={setOpen}
-                />
+                <Component TokenSelectModal={TokenSelectModal} provider={library} connect={() => activate(injectedConnector)} />
               </Layout>
             );
           }
           return null;
         })}
       </StyledContent>
-
-      {/*<button onClick={() => setSelectModalOpen(true)}>Select Token</button>*/}
-      {/*<TokenSelectModal chainId={chainId} isOpen={isSelectModalOpen} />*/}
     </StyledApp>
   );
 }
 
 export default App;
-
-// tokens={tokens}
-// commonTokens={commonTokens()}
-// tokenSelected={token}
-// bridge={bridge}
-// onSelect={handleSelect}
-// isOpen={isOpen}
-// onClose={onClose}
-// chainID={chainID}
-// notSearchToken={notSearchToken}
 
 interface TokenInfo {
   symbol: string;
@@ -79,16 +58,16 @@ interface TokenInfo {
   decimals: number;
   logoUrl?: string;
 }
-
+const tokenlistsNetworkNames = {
+  [networks.eth.id]: "ethereum",
+  [networks.ftm.id]: "ftm",
+};
 const useTokenList = (chainId: number) => {
-  const tokenlistsNetworkNames = {
-    [networks.eth.id]: "ethereum",
-    [networks.ftm.id]: "ftm",
-  };
   return useQuery(
     ["useList", chainId],
     async () => {
       const tokenlist = (await axios.get(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${tokenlistsNetworkNames[chainId]}.json`)).data;
+
       const parsed = tokenlist.map(({ symbol, address, decimals, logoURI }: any) => ({ symbol, address, decimals, logoUrl: logoURI }));
 
       const networkShortName = _.find(networks, (n) => n.id === chainId)!.shortname;
@@ -109,29 +88,79 @@ const useTokenList = (chainId: number) => {
   );
 };
 
-const TokenListItem = ({ token }: any) => {
+interface Props {
+  chainId: number;
+  isOpen: boolean;
+  selectedToken?: TokenInfo;
+  onSelect: (token: TokenInfo) => void;
+  onClose: () => void;
+}
+
+const TokenSelectModal = ({ chainId, isOpen, selectedToken, onSelect, onClose }: Props) => {
+  const { data: list = [] } = useTokenList(chainId);
   return (
-    <li>
-      <img src={token.logoUrl || ""} width={20} height={20} alt="" />
-      {token.symbol}
-    </li>
+    <Modal open={isOpen} onClose={onClose} onBackdropClick={onClose}>
+      <>
+        <StyledCloseIcon onClick={onClose}>
+          <AiOutlineClose className="icon" />
+        </StyledCloseIcon>
+        <StyledModalList>
+          {list.map((token: TokenInfo) => {
+            return (
+              <StyledModalListItem onClick={() => onSelect(token)} key={token.address}>
+                <img src={token.logoUrl || ""} width={20} height={20} alt="" />
+                {token.symbol}
+              </StyledModalListItem>
+            );
+          })}
+        </StyledModalList>
+      </>
+    </Modal>
   );
 };
 
-const TokenSelectModal = ({ chainId, isOpen, onClose, selectedToken, onSelect }: any) => {
-  const { data: list = [] } = useTokenList(chainId);
-  return (
-    isOpen && (
-      <div>
-        <ul>
-          {list.map((m: TokenInfo) => {
-            return <TokenListItem key={m.address} token={m} />;
-          })}
-        </ul>
-      </div>
-    )
-  );
-};
+const StyledCloseIcon = styled("button")({
+  position: "absolute",
+  background: "transparent",
+  top: 30,
+  right: 30,
+  border: "unset",
+  cursor: "pointer",
+  "& .icon": {
+    width: 20,
+    height: 20,
+    "* ": {
+      fill: "white",
+    },
+  },
+});
+
+const StyledModalList = styled("ul")({
+  listStyleType: "none",
+  width: "500px",
+  height: 500,
+  overflow: "auto",
+  background: "#18202F",
+  border: "1px solid rgb(55, 65, 81)",
+  display: "flex",
+  flexDirection: "column",
+  padding: 0,
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+});
+const StyledModalListItem = styled("li")({
+  cursor: "pointer",
+  display: "flex",
+  gap: 10,
+  alignItems: "center",
+  padding: "10px 30px",
+  transition: "0.2s all",
+  "&:hover": {
+    background: "rgba(255,255,255, 0.07)",
+  },
+});
 
 const StyledApp = styled(Box)({
   display: "flex",

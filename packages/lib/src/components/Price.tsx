@@ -7,22 +7,22 @@ import { TbArrowsRightLeft } from "react-icons/tb";
 import { store } from "../store/store";
 
 function Price({ placeholder = "0.00" }: { placeholder?: string }) {
-  const { uiPrice, toggleInverted, onChange, leftTokenAddress, rightTokenAddress } = store.useLimitPrice();
+  const { uiPrice, toggleInverted, onChange, leftTokenInfo, rightTokenInfo } = store.useLimitPrice();
 
   return (
     <StyledContainer className="twap-price">
       <StyledLeft>
         <Typography>1</Typography>
-        <TokenName address={leftTokenAddress} />
-        <TokenLogo address={leftTokenAddress} />
+        <TokenName name={leftTokenInfo?.symbol} />
+        <TokenLogo logo={leftTokenInfo?.logoUrl} />
         <Typography>=</Typography>
       </StyledLeft>
       <StyledNumeric>
         <NumericInput placeholder={placeholder} onChange={onChange} value={uiPrice?.toLocaleString()} />
       </StyledNumeric>
       <StyledRight>
-        <TokenName address={rightTokenAddress} />
-        <TokenLogo address={rightTokenAddress} />
+        <TokenName name={rightTokenInfo?.symbol} />
+        <TokenLogo logo={rightTokenInfo?.logoUrl} />
         <IconButton onClick={toggleInverted}>
           <TbArrowsRightLeft style={{ width: 20, height: 20 }} className="twap-price-icon" />
         </IconButton>

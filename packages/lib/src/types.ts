@@ -1,4 +1,4 @@
-import { BigNumber } from "@defi.org/web3-candies";
+import { BigNumber, Token } from "@defi.org/web3-candies";
 import { TimeFormat } from "./store/TimeFormat";
 import Web3 from "web3";
 interface BaseState {
@@ -6,15 +6,15 @@ interface BaseState {
 }
 
 export interface SrcTokenState extends BaseState {
-  address?: string;
+  token?: TokenInfo;
   amount?: BigNumber;
-  setAddress: (value?: string) => void;
+  setToken: (value?: TokenInfo) => void;
   setAmount: (value?: BigNumber) => void;
 }
 
 export interface DstTokenState extends BaseState {
-  address?: string;
-  setAddress: (value?: string) => void;
+  token?: TokenInfo;
+  setToken: (value?: TokenInfo) => void;
 }
 
 export interface MaxDurationState extends BaseState {
@@ -50,4 +50,11 @@ export interface PriceState extends BaseState {
   toggleLimit: () => void;
   price?: BigNumber;
   setPrice: (value?: BigNumber) => void;
+}
+
+export interface TokenInfo {
+  symbol: string;
+  address: string;
+  decimals: number;
+  logoUrl?: string;
 }

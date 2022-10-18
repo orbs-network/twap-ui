@@ -8,8 +8,9 @@ import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { GlobalStyles } from "@mui/material";
+import { TokenInfo } from "@orbs-network/twap-ui/dist/types";
 
 const NumericInput = TWAPLib.baseComponents.NumericInput;
 const Card = TWAPLib.baseComponents.Card;
@@ -58,10 +59,9 @@ const queryClient = new QueryClient({
 });
 
 type Props = {
-  chainId?: number;
-  account?: string | null;
   provider: any;
   connect: () => void;
+  TokenSelectModal: any;
 };
 
 const globalStyle = {
@@ -87,14 +87,14 @@ const TWAP = (props: Props) => {
         <GlobalStyles styles={globalStyle} />
         <StyledLayout>
           <StyledColumnGap gap={10}>
-            <SrcTokenPanel />
+            <SrcTokenPanel TokenSelectModal={props.TokenSelectModal} />
             <ChangeTokensOrder />
-            <DstTokenPanel />
+            <DstTokenPanel TokenSelectModal={props.TokenSelectModal} />
             <PriceDisplay />
             <TradeSize />
             <MaxDuration />
             <TradeInterval />
-            <SubmitButton account={props.account} connect={props.connect} />
+            <SubmitButton connect={props.connect} />
           </StyledColumnGap>
         </StyledLayout>
       </ThemeProvider>
@@ -106,7 +106,7 @@ const TWAP = (props: Props) => {
 export default TWAP;
 
 const MarketPrice = () => {
-  const { marketPrice, toggleInverted, leftTokenAddress, rightTokenAddress } = TWAPLib.store.useMarketPrice();
+  const { marketPrice, toggleInverted, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useMarketPrice();
 
   return (
     <StyledMarketPrice>
@@ -115,12 +115,12 @@ const MarketPrice = () => {
           <Text className="title">Current Market Price</Text>
           <StyledMarketPriceRight>
             <Text>1</Text>
-            <TokenDisplay address={leftTokenAddress} />
+            <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} />
             <Tooltip text={marketPrice.toString()}>
               <Text>= {marketPrice.toFixed(4)}</Text>
             </Tooltip>
 
-            <TokenDisplay address={rightTokenAddress} />
+            <TokenDisplay logo={rightTokenInfo?.logoUrl} name={rightTokenInfo?.symbol} />
             <IconButton onClick={toggleInverted}>
               <TbArrowsRightLeft className="icon" />
             </IconButton>
@@ -148,38 +148,46 @@ const SrcTokenPercentSelector = () => {
   );
 };
 
-const SrcTokenPanel = () => {
-  const { onChange, srcTokenAddress, srcTokenUiAmount, usdValueLoading, uiUsdValue, uiBalance, balanceLoading } = TWAPLib.store.useSrcToken();
+const SrcTokenPanel = ({ TokenSelectModal }: { TokenSelectModal: any }) => {
+  const { onChange, srcTokenInfo, srcTokenUiAmount, usdValueLoading, uiUsdValue, uiBalance, balanceLoading, onSrcTokenSelect } = TWAPLib.store.useSrcToken();
 
   return (
     <TokenPanel
+      TokenSelectModal={TokenSelectModal}
       usdValue={uiUsdValue}
       usdValueLoading={usdValueLoading}
       value={srcTokenUiAmount}
-      address={srcTokenAddress}
+      address={srcTokenInfo?.address}
       onChange={onChange}
       balance={uiBalance}
       balanceLoading={balanceLoading}
+      logo={srcTokenInfo?.logoUrl}
+      name={srcTokenInfo?.symbol}
+      onSelect={onSrcTokenSelect}
     >
       <SrcTokenPercentSelector />
     </TokenPanel>
   );
 };
 
-const DstTokenPanel = () => {
-  const { dstTokenAddress, dstTokenUiAmount, isLoading, uiUsdValue, usdValueLoading, uiBalance, balanceLoading } = TWAPLib.store.useDstToken();
+const DstTokenPanel = ({ TokenSelectModal }: { TokenSelectModal: any }) => {
+  const { dstTokenUiAmount, isLoading, uiUsdValue, usdValueLoading, uiBalance, balanceLoading, dstTokenInfo, onDstTokenSelect } = TWAPLib.store.useDstToken();
 
   return (
     <StyledDstToken>
       <TokenPanel
+        TokenSelectModal={TokenSelectModal}
         usdValueLoading={usdValueLoading}
         usdValue={uiUsdValue}
         disabled={true}
         value={dstTokenUiAmount}
-        address={dstTokenAddress}
+        address={dstTokenInfo?.address}
         isLoading={isLoading}
         balance={uiBalance}
         balanceLoading={balanceLoading}
+        logo={dstTokenInfo?.logoUrl}
+        name={dstTokenInfo?.symbol}
+        onSelect={onDstTokenSelect}
       />
       <MarketPrice />
     </StyledDstToken>
@@ -202,7 +210,7 @@ const ChangeTokensOrder = () => {
 };
 
 const TradeSize = () => {
-  const { srcTokenAddress } = TWAPLib.store.useSrcToken();
+  const { srcTokenInfo } = TWAPLib.store.useSrcToken();
 
   const { uiTradeSize, onChange, totalTrades, uiUsdValue, usdValueLoading } = TWAPLib.store.useTradeSize();
 
@@ -213,7 +221,7 @@ const TradeSize = () => {
           <StyledFlexBetween gap={10}>
             <Label tooltipText="Some text">Trade Size</Label>
             <NumericInput placeholder={"0"} onChange={onChange} value={uiTradeSize} />
-            <TokenName address={srcTokenAddress} />
+            <TokenName name={srcTokenInfo?.symbol} />
           </StyledFlexBetween>
           <StyledFlexBetween>
             <SmallLabel>Total trades: {totalTrades}</SmallLabel>
@@ -307,17 +315,17 @@ const TradeInterval = () => {
   );
 };
 
-const SubmitButton = ({ account, connect }: { account?: string | null; connect: () => void }) => {
+const SubmitButton = ({ connect }: { connect: () => void }) => {
   const warning = TWAPLib.validation.useSubmitButtonValidation();
   const { isApproved, approve } = TWAPLib.store.useTokenApproval();
-  const { isValidChain, changeNetwork } = TWAPLib.store.useWeb3();
+  const { isInvalidChain, changeNetwork, account } = TWAPLib.store.useWeb3();
   const { wrap, shouldWrap } = TWAPLib.store.useWrapToken();
 
   if (!account) {
     return <ActionButton onClick={connect}>Connect Wallet</ActionButton>;
   }
 
-  if (!isValidChain) {
+  if (isInvalidChain) {
     return <ActionButton onClick={changeNetwork}>Switch network</ActionButton>;
   }
 
@@ -344,11 +352,11 @@ const SubmitButton = ({ account, connect }: { account?: string | null; connect: 
   return <ActionButton onClick={() => {}}>Submit</ActionButton>;
 };
 
-const TokenDisplay = ({ address }: { address?: string }) => {
+const TokenDisplay = ({ logo, name }: { logo?: string; name?: string }) => {
   return (
     <StyledTokenDisplay className="token-display">
-      <TokenLogo address={address} />
-      <TokenName address={address} />
+      <TokenLogo logo={logo} />
+      <TokenName name={name} />
     </StyledTokenDisplay>
   );
 };
@@ -364,12 +372,16 @@ interface TokenPanelProps {
   usdValue?: number | string;
   usdValueLoading?: boolean;
   balanceLoading?: boolean;
+  TokenSelectModal: any;
+  logo?: string;
+  name?: string;
+  onSelect: (token: any) => void;
 }
 
 const TokenPanel = ({
+  TokenSelectModal,
   value,
   onChange,
-  address,
   balance = "",
   balanceLoading = false,
   children,
@@ -377,15 +389,33 @@ const TokenPanel = ({
   isLoading = false,
   usdValue = 0,
   usdValueLoading = false,
+  logo,
+  name,
+  onSelect,
 }: TokenPanelProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { chain } = TWAPLib.store.useWeb3();
+
+  const onSelectClick = (token: any) => {
+    setIsOpen(false);
+    onSelect(token);
+  };
+
+  const onOpen = () => {
+    if (chain != null) {
+      setIsOpen(true);
+    }
+  };
+
   return (
     <StyledTokenPanel>
+      <TokenSelectModal isOpen={isOpen} chainId={chain} onClose={() => setIsOpen(false)} onSelect={onSelectClick} />
       <Card>
         <StyledColumnGap>
           <StyledFlexBetween>
             <NumericInput loading={isLoading} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
-            <StyledTokenSelect onClick={() => {}}>
-              <TokenDisplay address={address} />
+            <StyledTokenSelect onClick={onOpen}>
+              <TokenDisplay logo={logo} name={name} />
               <IoIosArrowDown style={{ fill: colors.icon }} size={20} />
             </StyledTokenSelect>
           </StyledFlexBetween>
