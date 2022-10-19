@@ -6,13 +6,15 @@ import Loader from "./Loader";
 function SmallLabel({ children, style, loading = false }: { children?: string | ReactNode; style?: CSSProperties; loading?: boolean }) {
   return (
     <StyledContainer style={style} className="twap-small-label">
-      <Fade in={loading}>
-        <StyledLoader>
-          <Loader width="100%" height="100%" />
-        </StyledLoader>
-      </Fade>
+      {loading && (
+        <Fade in={loading}>
+          <StyledLoader className="twap-small-label-loader">
+            <Loader width="100%" height="100%" />
+          </StyledLoader>
+        </Fade>
+      )}
 
-      {children && (
+      {!loading && (
         <Fade in={!loading}>
           <StyledChildren>{children}</StyledChildren>
         </Fade>
@@ -28,15 +30,12 @@ const StyledChildren = styled(Typography)({
 });
 
 const StyledLoader = styled(Box)({
-  width: "100%",
+  width: 50,
   height: 20,
-  position: "absolute",
-  top: "50%",
-  transform: "translate(0, -50%)",
-  left: 0,
 });
 
 const StyledContainer = styled(Box)({
   position: "relative",
-  minWidth: 50,
+  display: "flex",
+  alignItems: "center",
 });

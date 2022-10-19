@@ -1,7 +1,6 @@
 import { useWeb3, store, validation } from "./store/store";
 
 import NumericInput from "./base-components/NumericInput";
-import ActionButton from "./base-components/ActionButton";
 import Card from "./base-components/Card";
 import Icon from "./base-components/Icon";
 import Label from "./base-components/Label";
@@ -17,21 +16,15 @@ import Tooltip from "./base-components/Tooltip";
 import IconButton from "./base-components/IconButton";
 import Text from "./base-components/Text";
 import NumberDisplay from "./base-components/NumberDisplay";
-
-const useInitializer = () => {
-  const { init } = useWeb3();
-  return { initWeb3: init };
-};
-
+import { TwapContext, TwapProvider } from "./context";
+import SubmitTwap from "./components/SubmitTwap";
 export default {
-  useInitializer,
   store,
   baseComponents: {
     NumberDisplay,
     Text,
     IconButton,
     NumericInput,
-    ActionButton,
     Card,
     Icon,
     Label,
@@ -44,6 +37,8 @@ export default {
     ChangeTokensOrder,
     Tooltip,
   },
-  components: { Price },
+  components: { Price, SubmitTwap },
   validation,
+  TwapContext,
+  TwapProvider,
 };

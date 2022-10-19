@@ -57,4 +57,5 @@ export interface TokenInfo {
   address: string;
   decimals: number;
   logoUrl?: string;
+  isNative?: boolean;
 }

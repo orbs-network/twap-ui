@@ -8,9 +8,10 @@ import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useContext, useState } from "react";
 import { GlobalStyles } from "@mui/material";
-import { TokenInfo } from "@orbs-network/twap-ui/dist/types";
+import axios from "axios";
+import BigNumber from "bignumber.js";
 
 const NumericInput = TWAPLib.baseComponents.NumericInput;
 const Card = TWAPLib.baseComponents.Card;
@@ -21,24 +22,27 @@ const SmallLabel = TWAPLib.baseComponents.SmallLabel;
 const Switch = TWAPLib.baseComponents.Switch;
 const Price = TWAPLib.components.Price;
 const TimeSelector = TWAPLib.baseComponents.TimeSelector;
-const ActionButton = TWAPLib.baseComponents.ActionButton;
+const SubmitTwap = TWAPLib.components.SubmitTwap;
 const Tooltip = TWAPLib.baseComponents.Tooltip;
 const IconButton = TWAPLib.baseComponents.IconButton;
 const Text = TWAPLib.baseComponents.Text;
 const NumberDisplay = TWAPLib.baseComponents.NumberDisplay;
+const TwapContext = TWAPLib.TwapContext;
+const TwapProvider = TWAPLib.TwapProvider;
 
-type ColorsScheme = {
-  submitButton: string;
-  text: string;
-  icon: string;
-  submitButtonBorder: string;
-  cardBackground: string;
-  selectTokenFocus: string;
-  percentButtonBackground: string;
-  mainBackground: string;
+const dappIntegrationChainId = 250;
+
+const getUsdPrice = async (srcToken: string, srcDecimals: number): Promise<BigNumber> => {
+  const amount = BigNumber(10).pow(srcDecimals);
+
+  const result = await axios.get(
+    `https://apiv5.paraswap.io/prices/?srcToken=${srcToken}&destToken=0x04068DA6C83AFCFA0e13ba15A6696662335D5B75&srcDecimals=${srcDecimals}&destDecimals=8&amount=${amount}&side=SELL&network=${dappIntegrationChainId}`
+  );
+
+  return BigNumber(result.data.priceRoute.destUSD);
 };
 
-const colors: ColorsScheme = {
+const colors = {
   cardBackground: "#18202F",
   submitButton: "rgb(29, 147, 132)",
   submitButtonBorder: "1px solid rgba(100, 221, 192, 0.15)",
@@ -58,46 +62,35 @@ const queryClient = new QueryClient({
   },
 });
 
-type Props = {
-  provider: any;
-  connect: () => void;
-  TokenSelectModal: any;
-};
-
-const globalStyle = {
-  "& .twap-tooltip": {
-    "& .MuiTooltip-tooltip": {
-      backgroundColor: colors.mainBackground,
-      fontSize: 14,
-      fontFamily: "inherit",
-    },
-  },
-};
-
-const TWAP = (props: Props) => {
-  const { initWeb3 } = TWAPLib.useInitializer();
-  useEffect(() => {
-    initWeb3("spiritswap", props.provider, 250);
-  }, [props.provider]);
-
+const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any }) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={getTheme("dark")}>
-        <CssBaseline />
-        <GlobalStyles styles={globalStyle} />
-        <StyledLayout>
-          <StyledColumnGap gap={10}>
-            <SrcTokenPanel TokenSelectModal={props.TokenSelectModal} />
-            <ChangeTokensOrder />
-            <DstTokenPanel TokenSelectModal={props.TokenSelectModal} />
-            <PriceDisplay />
-            <TradeSize />
-            <MaxDuration />
-            <TradeInterval />
-            <SubmitButton connect={props.connect} />
-          </StyledColumnGap>
-        </StyledLayout>
-      </ThemeProvider>
+      <TwapProvider
+        getUsdPrice={getUsdPrice}
+        dappIntegration="spiritswap"
+        provider={props.provider}
+        connect={props.connect}
+        integrationChainId={dappIntegrationChainId}
+        TokenSelectModal={props.TokenSelectModal}
+      >
+        <ThemeProvider theme={getTheme("dark")}>
+          <CssBaseline />
+          <GlobalStyles styles={globalStyle} />
+
+          <StyledLayout>
+            <StyledColumnGap gap={10}>
+              <SrcTokenPanel />
+              <ChangeTokensOrder />
+              <DstTokenPanel />
+              <PriceDisplay />
+              <TradeSize />
+              <MaxDuration />
+              <TradeInterval />
+              <SubmitTwap />
+            </StyledColumnGap>
+          </StyledLayout>
+        </ThemeProvider>
+      </TwapProvider>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </QueryClientProvider>
   );
@@ -113,18 +106,22 @@ const MarketPrice = () => {
       <Card>
         <StyledFlexBetween>
           <Text className="title">Current Market Price</Text>
-          <StyledMarketPriceRight>
-            <Text>1</Text>
-            <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} />
-            <Tooltip text={marketPrice.toString()}>
-              <Text>= {marketPrice.toFixed(4)}</Text>
-            </Tooltip>
+          {marketPrice ? (
+            <StyledMarketPriceRight>
+              <Text>1</Text>
+              <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} />
+              <Tooltip text={marketPrice.toString()}>
+                <Text>= {marketPrice.toFixed(4)}</Text>
+              </Tooltip>
 
-            <TokenDisplay logo={rightTokenInfo?.logoUrl} name={rightTokenInfo?.symbol} />
-            <IconButton onClick={toggleInverted}>
-              <TbArrowsRightLeft className="icon" />
-            </IconButton>
-          </StyledMarketPriceRight>
+              <TokenDisplay logo={rightTokenInfo?.logoUrl} name={rightTokenInfo?.symbol} />
+              <IconButton onClick={toggleInverted}>
+                <TbArrowsRightLeft className="icon" />
+              </IconButton>
+            </StyledMarketPriceRight>
+          ) : (
+            <Label>-</Label>
+          )}
         </StyledFlexBetween>
       </Card>
     </StyledMarketPrice>
@@ -148,8 +145,9 @@ const SrcTokenPercentSelector = () => {
   );
 };
 
-const SrcTokenPanel = ({ TokenSelectModal }: { TokenSelectModal: any }) => {
+const SrcTokenPanel = () => {
   const { onChange, srcTokenInfo, srcTokenUiAmount, usdValueLoading, uiUsdValue, uiBalance, balanceLoading, onSrcTokenSelect } = TWAPLib.store.useSrcToken();
+  const { TokenSelectModal } = useContext(TwapContext);
 
   return (
     <TokenPanel
@@ -168,8 +166,9 @@ const SrcTokenPanel = ({ TokenSelectModal }: { TokenSelectModal: any }) => {
   );
 };
 
-const DstTokenPanel = ({ TokenSelectModal }: { TokenSelectModal: any }) => {
+const DstTokenPanel = () => {
   const { dstTokenUiAmount, isLoading, uiUsdValue, usdValueLoading, uiBalance, balanceLoading, dstTokenInfo, onDstTokenSelect } = TWAPLib.store.useDstToken();
+  const { TokenSelectModal } = useContext(TwapContext);
 
   return (
     <StyledDstToken>
@@ -189,10 +188,6 @@ const DstTokenPanel = ({ TokenSelectModal }: { TokenSelectModal: any }) => {
     </StyledDstToken>
   );
 };
-
-const StyledDstToken = styled(Box)({
-  width: "100%",
-});
 
 const ChangeTokensOrder = () => {
   const onChangeTokenPositions = TWAPLib.store.useChangeTokenPositions();
@@ -217,7 +212,7 @@ const TradeSize = () => {
           <StyledFlexBetween gap={10}>
             <Label tooltipText="Some text">Trade Size</Label>
             <NumericInput placeholder={"0"} onChange={onChange} value={uiTradeSize} />
-            <TokenName name={srcTokenInfo?.symbol} />
+            <TokenDisplay logo={srcTokenInfo?.logoUrl} name={srcTokenInfo?.symbol} />
           </StyledFlexBetween>
           <StyledFlexBetween>
             <SmallLabel>Total trades: {totalTrades}</SmallLabel>
@@ -228,14 +223,6 @@ const TradeSize = () => {
     </StyledTrade>
   );
 };
-
-const StyledTrade = styled(Box)({
-  width: "100%",
-  "& .twap-input": {
-    textAlign: "right",
-    paddingRight: 10,
-  },
-});
 
 const PriceDisplay = () => {
   const { showLimit, onToggleLimit } = TWAPLib.store.useLimitPrice();
@@ -256,22 +243,6 @@ const PriceDisplay = () => {
     </StyledPrice>
   );
 };
-
-const StyledPrice = styled(Box)(({ theme }) => ({
-  width: "100%",
-  "& .twap-price": {
-    background: colors.mainBackground,
-    padding: 10,
-    borderRadius: 10,
-    gap: 10,
-  },
-  "& .twap-price-icon * ": {
-    color: colors.icon,
-  },
-  "& .twap-input": {
-    textAlign: "center",
-  },
-}));
 
 const MaxDuration = () => {
   const { onChange } = TWAPLib.store.useMaxDuration();
@@ -309,43 +280,6 @@ const TradeInterval = () => {
       </StyledFlexBetween>
     </Card>
   );
-};
-
-const SubmitButton = ({ connect }: { connect: () => void }) => {
-  const warning = TWAPLib.validation.useSubmitButtonValidation();
-  const { isApproved, approve } = TWAPLib.store.useTokenApproval();
-  const { isInvalidChain, changeNetwork, account } = TWAPLib.store.useWeb3();
-  const { wrap, shouldWrap } = TWAPLib.store.useWrapToken();
-
-  if (!account) {
-    return <ActionButton onClick={connect}>Connect Wallet</ActionButton>;
-  }
-
-  if (isInvalidChain) {
-    return <ActionButton onClick={changeNetwork}>Switch network</ActionButton>;
-  }
-
-  if (warning) {
-    return (
-      <ActionButton disabled={true} onClick={() => {}}>
-        {warning}
-      </ActionButton>
-    );
-  }
-
-  if (shouldWrap) {
-    return <ActionButton onClick={wrap}>Wrap</ActionButton>;
-  }
-
-  if (!isApproved) {
-    return (
-      <ActionButton onClick={approve} disabled={!!warning}>
-        Approve
-      </ActionButton>
-    );
-  }
-
-  return <ActionButton onClick={() => {}}>Submit</ActionButton>;
 };
 
 const TokenDisplay = ({ logo, name }: { logo?: string; name?: string }) => {
@@ -387,9 +321,7 @@ const TokenPanel = ({
   onSelect,
 }: TokenPanelProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { chain } = TWAPLib.store.useWeb3();
-  // const {srcToken} = TWAPLib.store.useSrcToken()
-  // const {dstToken} = TWAPLib.store.useDstToken();
+  const { chain, account } = TWAPLib.store.useWeb3();
 
   const onSelectClick = (token: any) => {
     setIsOpen(false);
@@ -409,14 +341,18 @@ const TokenPanel = ({
         <StyledColumnGap>
           <StyledFlexBetween>
             <NumericInput loading={isLoading} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
-            <StyledTokenSelect onClick={onOpen}>
-              <TokenDisplay logo={selectedToken?.logoUrl} name={selectedToken?.symbol} />
-              <IoIosArrowDown style={{ fill: colors.icon }} size={20} />
-            </StyledTokenSelect>
+            <Tooltip text={!account ? "Connect wallet" : undefined}>
+              <StyledTokenSelect onClick={onOpen}>
+                <TokenDisplay logo={selectedToken?.logoUrl} name={selectedToken?.symbol} />
+                <IoIosArrowDown style={{ fill: colors.icon }} size={20} />
+              </StyledTokenSelect>
+            </Tooltip>
           </StyledFlexBetween>
           <StyledFlexBetween>
             <Usd isLoading={usdValueLoading} value={usdValue} />
-            <SmallLabel loading={balanceLoading}>Balance: {balance} </SmallLabel>
+            <SmallLabel loading={balanceLoading}>
+              Balance: <NumberDisplay value={balance} />
+            </SmallLabel>
           </StyledFlexBetween>
           {children}
         </StyledColumnGap>
@@ -435,6 +371,44 @@ const Usd = ({ isLoading, value }: { isLoading: boolean; value?: string | number
 };
 
 // ----------- styles -------------- //
+
+const globalStyle = {
+  "& .twap-tooltip": {
+    "& .MuiTooltip-tooltip": {
+      backgroundColor: colors.mainBackground,
+      fontSize: 14,
+      fontFamily: "inherit",
+    },
+  },
+};
+
+const StyledTrade = styled(Box)({
+  width: "100%",
+  "& .twap-input": {
+    textAlign: "right",
+    paddingRight: 10,
+  },
+});
+
+const StyledPrice = styled(Box)(({ theme }) => ({
+  width: "100%",
+  "& .twap-price": {
+    background: colors.mainBackground,
+    padding: 10,
+    borderRadius: 10,
+    gap: 10,
+  },
+  "& .twap-price-icon * ": {
+    color: colors.icon,
+  },
+  "& .twap-input": {
+    textAlign: "center",
+  },
+}));
+
+const StyledDstToken = styled(Box)({
+  width: "100%",
+});
 
 const StyledSrcTokenPercentSelector = styled(Box)({
   display: "flex",
@@ -572,7 +546,7 @@ const StyledLayout = styled(Box)(({ theme }) => ({
       color: "white",
     },
   },
-  "& .twap-action-button": {
+  "& .twap-submit-button": {
     background: colors.submitButton,
     border: `1px solid ${colors.submitButtonBorder}`,
     height: 40,
