@@ -2,7 +2,7 @@ import _ from "lodash";
 import { account as candiesAccount, BigNumber, bn, convertDecimals, eqIgnoreCase, erc20, erc20s, parsebn, setWeb3Instance, Token, zero, zeroAddress } from "@defi.org/web3-candies";
 import axios from "axios";
 import { useMutation, useQuery } from "react-query";
-import { useCallback, useContext, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Web3 from "web3";
 import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TokenInfo, TradeIntervalState, TradeSizeState, Web3State } from "../types";
 import create from "zustand";
@@ -570,36 +570,54 @@ const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number)
 };
 
 const useBigNumberToUiAmount = (token?: Token, amount?: BigNumber) => {
-  const getUiAmount = async (amount?: BigNumber) => {
-    if (!amount || !token) {
-      return "";
-    }
+  const [data, setData] = useState<string | undefined>(undefined);
 
-    return (await token.mantissa(amount || zero)).toFormat();
-  };
-  const { data } = useQuery(["useBigNumberToUiAmount", token?.address, amount?.toString()], () => getUiAmount(amount), {
-    enabled: !!token,
-    cacheTime: 0,
-    staleTime: 0,
-    retry: false,
-  });
+  const getUiAmount = useCallback(
+    async (amount?: BigNumber) => {
+      if (!amount || !token) {
+        return "";
+      }
+
+      return (await token.mantissa(amount || zero)).toFormat();
+    },
+    [token]
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (!token) {
+        return;
+      }
+      const result = await getUiAmount(amount);
+      setData(result);
+    })();
+  }, [token, amount, getUiAmount]);
 
   return { data, getUiAmount };
 };
 
 const useUiAmountToBigNumber = (token?: Token, amountUi?: string) => {
-  const getBnAmount = async (amountUi?: string) => {
-    if (amountUi === "" || !token) {
-      return undefined;
-    }
-    return token?.amount(parsebn(amountUi || "0"));
-  };
+  const [data, setData] = useState<BigNumber | undefined>(undefined);
 
-  const { data } = useQuery(["useUiAmountToBigNumber"], () => getBnAmount(amountUi), {
-    enabled: !!token,
-    cacheTime: 0,
-    staleTime: 0,
-  });
+  const getBnAmount = useCallback(
+    async (amountUi?: string) => {
+      if (amountUi === "" || !token) {
+        return undefined;
+      }
+      return token?.amount(parsebn(amountUi || "0"));
+    },
+    [token]
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (!token) {
+        return;
+      }
+      const result = await getBnAmount(amountUi);
+      setData(result);
+    })();
+  }, [token, amountUi, getBnAmount]);
 
   return { data, getBnAmount };
 };
