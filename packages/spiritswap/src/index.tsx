@@ -167,7 +167,7 @@ const SrcTokenPanel = () => {
 };
 
 const DstTokenPanel = () => {
-  const { dstTokenUiAmount, isLoading, uiUsdValue, usdValueLoading, uiBalance, balanceLoading, dstTokenInfo, onDstTokenSelect } = TWAPLib.store.useDstToken();
+  const { dstTokenUiAmount, uiUsdValue, usdValueLoading, uiBalance, balanceLoading, dstTokenInfo, onDstTokenSelect } = TWAPLib.store.useDstToken();
   const { TokenSelectModal } = useContext(TwapContext);
 
   return (
@@ -179,7 +179,7 @@ const DstTokenPanel = () => {
         disabled={true}
         value={dstTokenUiAmount}
         selectedToken={dstTokenInfo}
-        isLoading={isLoading}
+        isLoading={false}
         balance={uiBalance}
         balanceLoading={balanceLoading}
         onSelect={onDstTokenSelect}
