@@ -29,6 +29,10 @@ const Text = TWAPLib.baseComponents.Text;
 const NumberDisplay = TWAPLib.baseComponents.NumberDisplay;
 const TwapContext = TWAPLib.TwapContext;
 const TwapProvider = TWAPLib.TwapProvider;
+const TradeInfoModal = TWAPLib.components.TradeInfoModal;
+const TradeInfoDetails = TWAPLib.components.TradeInfoDetails;
+const PriceToggle = TWAPLib.baseComponents.PriceToggle;
+const TradeInfoExplanation = TWAPLib.components.TradeInfoExplanation;
 
 const dappIntegrationChainId = 250;
 
@@ -86,7 +90,7 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
               <TradeSize />
               <MaxDuration />
               <TradeInterval />
-              <SubmitTwap />
+              <SubmitButton />
             </StyledColumnGap>
           </StyledLayout>
         </ThemeProvider>
@@ -361,7 +365,7 @@ const TokenPanel = ({
   );
 };
 
-const Usd = ({ isLoading, value }: { isLoading: boolean; value?: string | number }) => {
+const Usd = ({ isLoading = false, value }: { isLoading?: boolean; value?: string | number }) => {
   return (
     <SmallLabel loading={isLoading} style={{ opacity: 0.6 }}>
       ~$
@@ -370,9 +374,133 @@ const Usd = ({ isLoading, value }: { isLoading: boolean; value?: string | number
   );
 };
 
+const SubmitButton = () => {
+  const [open, seOpen] = useState(false);
+  return (
+    <>
+      <SubmitTwap onSubmit={() => seOpen(true)} />
+      <SubmitOrderConfirmation open={open} onClose={() => seOpen(false)} />
+    </>
+  );
+};
+
+const SubmitOrderConfirmation = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+  const { uiUsdValue: srcTokenUsdValue, srcTokenUiAmount, srcTokenInfo } = TWAPLib.store.useSrcToken();
+  const { uiUsdValue: dstTokenUsdValue, dstTokenUiAmount, dstTokenInfo } = TWAPLib.store.useDstToken();
+  return (
+    <TradeInfoModal open={open} onClose={onClose}>
+      <StyledColumnGap gap={20}>
+        <TokenOrderPreview title="From" amount={srcTokenUiAmount} usdPrice={srcTokenUsdValue} name={srcTokenInfo?.symbol} logo={srcTokenInfo?.logoUrl} />
+        <TokenOrderPreview title="To" amount={dstTokenUiAmount} usdPrice={dstTokenUsdValue} name={dstTokenInfo?.symbol} logo={dstTokenInfo?.logoUrl} />
+        <LimitPrice />
+        <TradeInfoDetailsDisplay />
+        <TradeDetails />
+      </StyledColumnGap>
+    </TradeInfoModal>
+  );
+};
+
+const TradeDetails = () => {
+  return (
+    <Card>
+      <StyledColumnGap className="trade-info-explanation" gap={20}>
+        <TradeInfoExplanation />
+      </StyledColumnGap>
+    </Card>
+  );
+};
+
+const TradeInfoDetailsDisplay = () => {
+  return (
+    <Card>
+      <StyledColumnGap gap={10}>
+        <TradeInfoDetails />
+      </StyledColumnGap>
+    </Card>
+  );
+};
+
+const StyledTradeInfoDetails = styled(Box)({});
+
+const LimitPrice = () => {
+  const { showLimit, toggleInverted, uiPrice, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useLimitPrice();
+
+  return (
+    <StyledLimitPrice>
+      <StyledFlexBetween>
+        <Label tooltipText="some text">Limit Price</Label>
+        {showLimit ? (
+          <div className="right">
+            <Text>1</Text> <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} /> <Text>=</Text>
+            <Tooltip text={uiPrice}>
+              <Text>
+                <NumberDisplay value={uiPrice || "0"} />
+              </Text>
+            </Tooltip>
+            <TokenDisplay logo={rightTokenInfo?.logoUrl} name={rightTokenInfo?.symbol} />
+            <PriceToggle onClick={toggleInverted} />
+          </div>
+        ) : (
+          <Text>NONE</Text>
+        )}
+      </StyledFlexBetween>
+    </StyledLimitPrice>
+  );
+};
+
+const StyledOrderDetails = styled(Box)({});
+
+const StyledLimitPrice = styled(Box)({
+  width: "100%",
+  "& .right": {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  },
+  "& .twap-token-logo": {
+    width: 22,
+    height: 22,
+  },
+});
+
+const TokenOrderPreview = ({ title, logo, name, usdPrice, amount }: { title: string; logo?: string; name?: string; usdPrice?: string; amount?: string }) => {
+  return (
+    <StyledTokenOrder>
+      <Card>
+        <StyledColumnGap gap={10}>
+          <StyledFlexBetween>
+            <Label>{title}</Label>
+            <Usd value={usdPrice} />
+          </StyledFlexBetween>
+          <StyledFlexBetween>
+            <TokenDisplay name={name} logo={logo} />
+            <SmallLabel>
+              <NumberDisplay value={amount} />
+            </SmallLabel>
+          </StyledFlexBetween>
+        </StyledColumnGap>
+      </Card>
+    </StyledTokenOrder>
+  );
+};
+
 // ----------- styles -------------- //
 
+const StyledTokenOrder = styled(Box)({ width: "100%" });
+
 const globalStyle = {
+  "& .twap-card": {
+    padding: 12,
+    background: colors.cardBackground,
+    borderRadius: "0.375rem",
+  },
+  "& .twap-trade-info-modal": {
+    "& .twap-modal-content": {
+      background: colors.mainBackground,
+      maxHeight: "85vh",
+      overflow: "auto",
+    },
+  },
   "& .twap-tooltip": {
     "& .MuiTooltip-tooltip": {
       backgroundColor: colors.mainBackground,
@@ -508,11 +636,6 @@ const StyledLayout = styled(Box)(({ theme }) => ({
   },
   "& .icon *": {
     color: colors.icon,
-  },
-  "& .twap-card": {
-    padding: 12,
-    background: colors.cardBackground,
-    borderRadius: "0.375rem",
   },
 
   "& .twap-small-label": {

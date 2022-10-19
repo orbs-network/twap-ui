@@ -1,50 +1,54 @@
 import { Box, styled } from "@mui/system";
-import React, { CSSProperties, ReactNode, useContext } from "react";
+import React, { CSSProperties, ReactNode, useContext, useMemo, useState } from "react";
 import { TwapContext } from "../context";
 import { store, validation } from "../store/store";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Fade } from "@mui/material";
 
-function SubmitTwap() {
+function SubmitTwap({ onSubmit }: { onSubmit: () => void }) {
   const warning = validation.useSubmitButtonValidation();
-  const { isApproved, approve } = store.useTokenApproval();
+  const { isApproved, approve, approveLoading } = store.useTokenApproval();
   const { isInvalidChain, changeNetwork, account } = store.useWeb3();
   const { wrap, shouldWrap, isLoading: wrapLoading } = store.useWrapToken();
   const { connect } = useContext(TwapContext);
 
-  if (!account) {
-    return <ActionButton onClick={connect}>Connect Wallet</ActionButton>;
-  }
+  const button = useMemo(() => {
+    if (!account) {
+      return <ActionButton onClick={connect}>Connect Wallet</ActionButton>;
+    }
 
-  if (isInvalidChain) {
-    return <ActionButton onClick={changeNetwork}>Switch network</ActionButton>;
-  }
+    if (isInvalidChain) {
+      return <ActionButton onClick={changeNetwork}>Switch network</ActionButton>;
+    }
 
-  if (warning) {
-    return (
-      <ActionButton disabled={true} onClick={() => {}}>
-        {warning}
-      </ActionButton>
-    );
-  }
+    if (warning) {
+      return (
+        <ActionButton disabled={true} onClick={() => {}}>
+          {warning}
+        </ActionButton>
+      );
+    }
 
-  if (shouldWrap) {
-    return (
-      <ActionButton loading={wrapLoading} onClick={wrap}>
-        Wrap
-      </ActionButton>
-    );
-  }
+    if (shouldWrap) {
+      return (
+        <ActionButton loading={wrapLoading} onClick={wrap}>
+          Wrap
+        </ActionButton>
+      );
+    }
 
-  if (!isApproved) {
-    return (
-      <ActionButton onClick={approve} disabled={!!warning}>
-        Approve
-      </ActionButton>
-    );
-  }
+    if (!isApproved) {
+      return (
+        <ActionButton loading={approveLoading} onClick={approve} disabled={!!warning}>
+          Approve
+        </ActionButton>
+      );
+    }
 
-  return <ActionButton onClick={() => {}}>Submit</ActionButton>;
+    return <ActionButton onClick={onSubmit}>Submit</ActionButton>;
+  }, [isApproved, shouldWrap, warning, isInvalidChain, account, onSubmit, approveLoading]);
+
+  return button;
 }
 
 export default SubmitTwap;

@@ -24,6 +24,7 @@
     "@emotion/styled": "11.x",
     "@mui/material": "5.x",
     "ethereum-multicall": "2.x",
+    "moment": "^2.29.4",
     "react-icons": "4.x",
     "react-number-format": "5.x",
     "react-query": "3.x",

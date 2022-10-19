@@ -18,6 +18,8 @@ import Text from "./base-components/Text";
 import NumberDisplay from "./base-components/NumberDisplay";
 import { TwapContext, TwapProvider } from "./context";
 import SubmitTwap from "./components/SubmitTwap";
+import { TradeInfoModal, TradeInfoDetails, TradeInfoExplanation } from "./components/TradeInfo";
+import PriceToggle from "./base-components/PriceToggle";
 export default {
   store,
   baseComponents: {
@@ -36,8 +38,9 @@ export default {
     Layout,
     ChangeTokensOrder,
     Tooltip,
+    PriceToggle,
   },
-  components: { Price, SubmitTwap },
+  components: { Price, SubmitTwap, TradeInfoModal, TradeInfoDetails, TradeInfoExplanation },
   validation,
   TwapContext,
   TwapProvider,

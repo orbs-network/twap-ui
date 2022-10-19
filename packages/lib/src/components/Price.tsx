@@ -3,8 +3,8 @@ import { Box, styled } from "@mui/system";
 import NumericInput from "../base-components/NumericInput";
 import TokenLogo from "../base-components/TokenLogo";
 import TokenName from "../base-components/TokenName";
-import { TbArrowsRightLeft } from "react-icons/tb";
 import { store } from "../store/store";
+import PriceToggle from "../base-components/PriceToggle";
 
 function Price({ placeholder = "0.00" }: { placeholder?: string }) {
   const { uiPrice, toggleInverted, onChange, leftTokenInfo, rightTokenInfo } = store.useLimitPrice();
@@ -23,9 +23,7 @@ function Price({ placeholder = "0.00" }: { placeholder?: string }) {
       <StyledRight>
         <TokenName name={rightTokenInfo?.symbol} />
         <TokenLogo logo={rightTokenInfo?.logoUrl} />
-        <IconButton onClick={toggleInverted}>
-          <TbArrowsRightLeft style={{ width: 20, height: 20 }} className="twap-price-icon" />
-        </IconButton>
+        <PriceToggle onClick={toggleInverted} />
       </StyledRight>
     </StyledContainer>
   );

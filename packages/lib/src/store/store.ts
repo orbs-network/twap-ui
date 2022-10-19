@@ -10,6 +10,7 @@ import { TimeFormat } from "./TimeFormat";
 import { nativeAddresses, twapConfig } from "../consts";
 import { changeNetwork } from "./connect";
 import { TwapContext } from "../context";
+import moment from "moment";
 
 const srcTokenInitialState = {
   token: undefined,
@@ -98,12 +99,15 @@ const useTokenApproval = () => {
   const { srcToken, srcTokenAmount } = useSrcToken();
   const spender = config ? config.twapAddress : undefined;
 
-  const allowance = useQuery(["allowance", account, srcToken?.address], async () => BigNumber(await srcToken!.methods.allowance(account!, spender!).call()), {
+  const { data: allowance, refetch } = useQuery(["allowance", account, srcToken?.address], async () => BigNumber(await srcToken!.methods.allowance(account!, spender!).call()), {
     enabled: !!account && !!chain && !!spender && !!srcToken && !!srcTokenAmount,
     refetchInterval: 10_000,
-  }).data;
+  });
 
-  const { mutate: approve, isLoading: approveLoading } = useMutation(async () => srcToken?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account }));
+  const { mutate: approve, isLoading: approveLoading } = useMutation(async () => {
+    await srcToken?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account });
+    refetch();
+  });
 
   return {
     isApproved: !srcTokenAmount ? false : allowance?.gte(srcTokenAmount || 0),
@@ -309,12 +313,17 @@ const useMaxDuration = () => {
     setTimeFormat(timeFormat);
   }, []);
 
+  const maxDurationWithExtraMinute = useMemo(() => moment(millis).add(60_000, "milliseconds"), [millis]);
+
+  // TODO need to display milliseconds + now()
   return {
     setMaxDurationMillis: setMillis,
     setMaxDurationTimeFormat: setTimeFormat,
     onChange,
     maxDurationTimeFormat: timeFormat,
     maxDurationMillis: millis,
+    maxDurationWithExtraMinute,
+    maxDurationWithExtraMinuteUi: moment(maxDurationWithExtraMinute).format("DD/MM/YYYY HH:mm"),
   };
 };
 
@@ -335,7 +344,14 @@ const useTradeInterval = () => {
   const tradeIntervalMillis = customInterval ? millis : derivedMillis;
   const tradeIntervalTimeFormat = customInterval ? timeFormat : derivedTimeFormat;
 
-  return { tradeIntervalMillis, tradeIntervalTimeFormat, customInterval, onChange, onCustomIntervalClick: () => setCustomInterval(true) };
+  return {
+    tradeIntervalMillis,
+    tradeIntervalTimeFormat,
+    customInterval,
+    onChange,
+    onCustomIntervalClick: () => setCustomInterval(true),
+    tradeIntervalUi: getIntervalForUi(tradeIntervalMillis),
+  };
 };
 
 // all data related to trade size input
@@ -628,4 +644,27 @@ const isNativeToken = (address?: string) => {
   }
 
   return !!nativeAddresses.find((it) => eqIgnoreCase(address, it));
+};
+
+const getIntervalForUi = (value?: number) => {
+  if (!value) {
+    return "0";
+  }
+  const time = moment.duration(value);
+  const days = time.days();
+  const hours = time.hours();
+  const minutes = time.minutes();
+
+  let str = "";
+
+  if (days) {
+    str += `${days} Days `;
+  }
+  if (hours) {
+    str += `${hours} Hours `;
+  }
+  if (minutes) {
+    str += `${minutes} Minutes`;
+  }
+  return str;
 };
