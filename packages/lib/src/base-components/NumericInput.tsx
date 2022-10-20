@@ -13,9 +13,10 @@ export interface Props {
   onBlur?: () => void;
   loading?: boolean;
   className?: string;
+  maxValue?: string;
 }
 
-function NumericInput({ onChange, value, disabled = false, placeholder = "Enter amount", onFocus, onBlur, loading = false, className = "" }: Props) {
+function NumericInput({ onChange, value, disabled = false, placeholder = "Enter amount", onFocus, onBlur, loading = false, className = "", maxValue }: Props) {
   return (
     <StyledContainer className={className}>
       <Fade in={loading} style={{ transition: "0s" }}>
@@ -31,6 +32,10 @@ function NumericInput({ onChange, value, disabled = false, placeholder = "Enter 
             onFocus={onFocus}
             thousandsGroupStyle="thousand"
             placeholder={placeholder}
+            isAllowed={(values) => {
+              const { floatValue = 0 } = values;
+              return maxValue ? floatValue <= parseFloat(maxValue) : true;
+            }}
             value={value}
             thousandSeparator=","
             decimalSeparator="."

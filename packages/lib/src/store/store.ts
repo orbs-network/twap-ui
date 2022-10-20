@@ -176,13 +176,11 @@ const useAccountBalances = (token?: Token) => {
 // all actions (functions) related to src input
 const useSrcToken = () => {
   const { setToken: setSrcToken, setAmount, token: srcTokenInfo, amount: srcTokenAmount } = useSrcTokenStore();
-  const tradeSize = useTradeSizeStore().tradeSize;
+  const { tradeSize, setTradeSize } = useTradeSizeStore();
   const { token } = useToken(srcTokenInfo);
 
   const { getBnAmount } = useUiAmountToBigNumber(token);
   const { getUiAmount } = useBigNumberToUiAmount(token);
-
-  const setTradeSize = useTradeSizeStore().setTradeSize;
 
   const onChange = async (amountUi: string) => {
     const amount = await getBnAmount(amountUi);
@@ -360,7 +358,7 @@ const useTradeInterval = () => {
 
 // all data related to trade size input
 const useTradeSize = () => {
-  const { srcToken, srcTokenAmount } = useSrcToken();
+  const { srcToken } = useSrcToken();
   const { tradeSize, setTradeSize } = useTradeSizeStore();
   const totalTrades = useTotalTrades();
 
@@ -370,9 +368,11 @@ const useTradeSize = () => {
     const tradeSize = await getBnAmount(amountUi);
     if (!tradeSize) {
       setTradeSize(undefined);
-    } else if (srcTokenAmount?.gt(zero) && tradeSize.gte(srcTokenAmount)) {
-      setTradeSize(srcTokenAmount);
-    } else {
+    }
+    // else if (srcTokenAmount?.gt(zero) && tradeSize.gte(srcTokenAmount)) {
+    //   setTradeSize(srcTokenAmount);
+    // }
+    else {
       setTradeSize(tradeSize);
     }
   };
@@ -387,6 +387,7 @@ const useTradeSize = () => {
     usdValue,
     usdValueLoading: usdValueLoading && tradeSize?.gt(zero) ? true : false,
     uiUsdValue: useBigNumberToUiAmount(srcToken, !usdValue ? undefined : tradeSize?.times(usdValue)).data,
+    setTradeSize,
   };
 };
 
@@ -420,7 +421,7 @@ const useChangeTokenPositions = () => {
   const { srcTokenInfo, setSrcTokenAmount, setSrcToken } = useSrcToken();
   const { setDstToken, dstTokenInfo } = useDstToken();
   const { amount: dstTokenAmount } = useDstToken();
-  const setTradeSize = useTradeSizeStore().setTradeSize;
+  const { setTradeSize } = useTradeSize();
 
   return () => {
     setSrcTokenAmount(dstTokenAmount);
@@ -484,7 +485,7 @@ const useMarketPrice = () => {
 };
 
 export const useSubmitButtonValidation = () => {
-  const { srcTokenAmount, balance: srcTokenBalance, srcToken } = useSrcToken();
+  const { srcTokenAmount, balance: srcTokenBalance, srcToken, srcTokenUiAmount } = useSrcToken();
   const tradeSize = useTradeSize().tradeSize;
   const maxDurationMillis = useMaxDurationStore().millis;
   const tradeIntervalMillis = useTradeInterval().tradeIntervalMillis;
@@ -512,7 +513,7 @@ export const useSubmitButtonValidation = () => {
     }
 
     if (tradeSize?.gt(srcTokenAmount || zero)) {
-      return "Trade size must be less than source amount";
+      return `Maximum trade size is ${srcTokenUiAmount}`;
     }
   }, [tradeSize, srcTokenAmount, tradeIntervalMillis, maxDurationMillis, srcToken]);
 };
