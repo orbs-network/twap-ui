@@ -3,15 +3,7 @@ import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";
 
-function NumericInput({
-  onChange,
-  value,
-  disabled = false,
-  placeholder = "Enter amount",
-  onFocus,
-  onBlur,
-  loading = false,
-}: {
+export interface Props {
   onChange: (value: string) => void;
   value?: string;
   placeholder?: string;
@@ -20,9 +12,12 @@ function NumericInput({
   onFocus?: () => void;
   onBlur?: () => void;
   loading?: boolean;
-}) {
+  className?: string;
+}
+
+function NumericInput({ onChange, value, disabled = false, placeholder = "Enter amount", onFocus, onBlur, loading = false, className = "" }: Props) {
   return (
-    <StyledContainer>
+    <StyledContainer className={className}>
       <Fade in={loading} style={{ transition: "0s" }}>
         <StyledLoader>
           <Loader width="100%" height="100%" />

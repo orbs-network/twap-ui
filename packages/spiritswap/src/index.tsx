@@ -22,7 +22,6 @@ const SmallLabel = TWAPLib.baseComponents.SmallLabel;
 const Switch = TWAPLib.baseComponents.Switch;
 const Price = TWAPLib.components.Price;
 const TimeSelector = TWAPLib.baseComponents.TimeSelector;
-const SubmitTwap = TWAPLib.components.SubmitTwap;
 const Tooltip = TWAPLib.baseComponents.Tooltip;
 const IconButton = TWAPLib.baseComponents.IconButton;
 const Text = TWAPLib.baseComponents.Text;
@@ -33,6 +32,8 @@ const TradeInfoModal = TWAPLib.components.TradeInfoModal;
 const TradeInfoDetails = TWAPLib.components.TradeInfoDetails;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 const TradeInfoExplanation = TWAPLib.components.TradeInfoExplanation;
+const Icon = TWAPLib.baseComponents.Icon;
+const Button = TWAPLib.baseComponents.Button;
 
 const dappIntegrationChainId = 250;
 
@@ -53,8 +54,8 @@ const colors = {
   text: "#ffffff",
   icon: "#60E6C5",
   selectTokenFocus: "#1F2937",
-  percentButtonBackground: "rgb(55, 65, 81)",
   mainBackground: "#000315",
+  borderColor: "rgb(55, 65, 81)",
 };
 
 const queryClient = new QueryClient({
@@ -80,7 +81,6 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
         <ThemeProvider theme={getTheme("dark")}>
           <CssBaseline />
           <GlobalStyles styles={globalStyle} />
-
           <StyledLayout>
             <StyledColumnGap gap={10}>
               <SrcTokenPanel />
@@ -107,7 +107,7 @@ const MarketPrice = () => {
 
   return (
     <StyledMarketPrice>
-      <Card>
+      <StyledCard>
         <StyledFlexBetween>
           <Text className="title">Current Market Price</Text>
           {marketPrice ? (
@@ -115,19 +115,21 @@ const MarketPrice = () => {
               <Text>1</Text>
               <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} />
               <Tooltip text={marketPrice.toString()}>
-                <Text>= {marketPrice.toFixed(4)}</Text>
+                <Text>
+                  = <NumberDisplay value={marketPrice.toString()} />
+                </Text>
               </Tooltip>
 
               <TokenDisplay logo={rightTokenInfo?.logoUrl} name={rightTokenInfo?.symbol} />
               <IconButton onClick={toggleInverted}>
-                <TbArrowsRightLeft className="icon" />
+                <StyledIcon icon={<TbArrowsRightLeft />} />
               </IconButton>
             </StyledMarketPriceRight>
           ) : (
             <Label>-</Label>
           )}
         </StyledFlexBetween>
-      </Card>
+      </StyledCard>
     </StyledMarketPrice>
   );
 };
@@ -150,44 +152,17 @@ const SrcTokenPercentSelector = () => {
 };
 
 const SrcTokenPanel = () => {
-  const { onChange, srcTokenInfo, srcTokenUiAmount, usdValueLoading, uiUsdValue, uiBalance, balanceLoading, onSrcTokenSelect } = TWAPLib.store.useSrcToken();
-  const { TokenSelectModal } = useContext(TwapContext);
-
   return (
-    <TokenPanel
-      TokenSelectModal={TokenSelectModal}
-      usdValue={uiUsdValue}
-      usdValueLoading={usdValueLoading}
-      value={srcTokenUiAmount}
-      onChange={onChange}
-      balance={uiBalance}
-      balanceLoading={balanceLoading}
-      selectedToken={srcTokenInfo}
-      onSelect={onSrcTokenSelect}
-    >
+    <TokenPanel isSrcToken={true}>
       <SrcTokenPercentSelector />
     </TokenPanel>
   );
 };
 
 const DstTokenPanel = () => {
-  const { dstTokenUiAmount, uiUsdValue, usdValueLoading, uiBalance, balanceLoading, dstTokenInfo, onDstTokenSelect } = TWAPLib.store.useDstToken();
-  const { TokenSelectModal } = useContext(TwapContext);
-
   return (
     <StyledDstToken>
-      <TokenPanel
-        TokenSelectModal={TokenSelectModal}
-        usdValueLoading={usdValueLoading}
-        usdValue={uiUsdValue}
-        disabled={true}
-        value={dstTokenUiAmount}
-        selectedToken={dstTokenInfo}
-        isLoading={false}
-        balance={uiBalance}
-        balanceLoading={balanceLoading}
-        onSelect={onDstTokenSelect}
-      />
+      <TokenPanel isSrcToken={false} />
       <MarketPrice />
     </StyledDstToken>
   );
@@ -198,7 +173,7 @@ const ChangeTokensOrder = () => {
   return (
     <StyledChangeOrder>
       <IconButton onClick={onChangeTokenPositions}>
-        <HiOutlineSwitchVertical className="icon" />
+        <StyledIcon icon={<HiOutlineSwitchVertical />} />
       </IconButton>
     </StyledChangeOrder>
   );
@@ -211,11 +186,11 @@ const TradeSize = () => {
 
   return (
     <StyledTrade>
-      <Card>
+      <StyledCard>
         <StyledColumnGap>
           <StyledFlexBetween gap={10}>
             <Label tooltipText="Some text">Trade Size</Label>
-            <NumericInput placeholder={"0"} onChange={onChange} value={uiTradeSize} />
+            <StyledNumbericInput placeholder={"0"} onChange={onChange} value={uiTradeSize} />
             <TokenDisplay logo={srcTokenInfo?.logoUrl} name={srcTokenInfo?.symbol} />
           </StyledFlexBetween>
           <StyledFlexBetween>
@@ -223,7 +198,7 @@ const TradeSize = () => {
             <Usd isLoading={usdValueLoading} value={uiUsdValue} />
           </StyledFlexBetween>
         </StyledColumnGap>
-      </Card>
+      </StyledCard>
     </StyledTrade>
   );
 };
@@ -233,17 +208,17 @@ const PriceDisplay = () => {
 
   return (
     <StyledPrice>
-      <Card>
+      <StyledCard>
         <StyledColumnGap>
           <StyledFlexStart>
             <Tooltip text="Some text">
-              <Switch value={!showLimit} onChange={() => onToggleLimit()} />
+              <StyledSwitch value={!showLimit} onChange={() => onToggleLimit()} />
             </Tooltip>
             <Label tooltipText="some text">Limit Price</Label>
           </StyledFlexStart>
           {showLimit && <Price placeholder="0" />}
         </StyledColumnGap>
-      </Card>
+      </StyledCard>
     </StyledPrice>
   );
 };
@@ -253,12 +228,12 @@ const MaxDuration = () => {
   const { maxDurationMillis, maxDurationTimeFormat } = TWAPLib.store.useMaxDuration();
 
   return (
-    <Card>
+    <StyledCard>
       <StyledFlexBetween gap={10}>
         <Label tooltipText="Some text">Max Duration</Label>
         <TimeSelector millis={maxDurationMillis} selectedTimeFormat={maxDurationTimeFormat} onChange={onChange} />
       </StyledFlexBetween>
-    </Card>
+    </StyledCard>
   );
 };
 
@@ -268,7 +243,7 @@ const TradeInterval = () => {
   const { onCustomIntervalClick } = TWAPLib.store.useTradeInterval();
 
   return (
-    <Card>
+    <StyledCard>
       <StyledFlexBetween gap={10}>
         <Label tooltipText="Some text">Trade Interval</Label>
         <StyledIntervalTimeSelect>
@@ -278,11 +253,11 @@ const TradeInterval = () => {
         </StyledIntervalTimeSelect>
         {!customInterval && (
           <IconButton tooltip="Some text" onClick={onCustomIntervalClick}>
-            <AiFillEdit />
+            <StyledIcon icon={<AiFillEdit />} />
           </IconButton>
         )}
       </StyledFlexBetween>
-    </Card>
+    </StyledCard>
   );
 };
 
@@ -296,59 +271,34 @@ const TokenDisplay = ({ logo, name }: { logo?: string; name?: string }) => {
 };
 
 interface TokenPanelProps {
-  value?: string;
-  onChange?: (value: string) => void;
-  balance?: string;
   children?: ReactNode;
-  disabled?: boolean;
-  isLoading?: boolean;
-  usdValue?: number | string;
-  usdValueLoading?: boolean;
-  balanceLoading?: boolean;
-  TokenSelectModal: any;
-  onSelect: (token: any) => void;
-  selectedToken?: any;
+  isSrcToken?: boolean;
 }
 
-const TokenPanel = ({
-  selectedToken,
-  TokenSelectModal,
-  value,
-  onChange,
-  balance = "",
-  balanceLoading = false,
-  children,
-  disabled = false,
-  isLoading = false,
-  usdValue = 0,
-  usdValueLoading = false,
-  onSelect,
-}: TokenPanelProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { chain, account } = TWAPLib.store.useWeb3();
+const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
+  const { usdValueLoading, usdValue, disabled, balanceLoading, balance, value, onSelect, selectedToken, onChange, tokenListOpen, toggleTokenList } =
+    TWAPLib.store.useTokenPanel(isSrcToken);
 
-  const onSelectClick = (token: any) => {
-    setIsOpen(false);
-    onSelect(token);
-  };
+  const { chain, account } = TWAPLib.store.useWeb3();
+  const { TokenSelectModal }: { TokenSelectModal: any } = useContext(TwapContext);
 
   const onOpen = () => {
     if (chain != null) {
-      setIsOpen(true);
+      toggleTokenList(true);
     }
   };
 
   return (
     <StyledTokenPanel>
-      <TokenSelectModal isOpen={isOpen} chainId={chain} selectedTokens={selectedToken} onClose={() => setIsOpen(false)} onSelect={onSelectClick} />
-      <Card>
+      <TokenSelectModal isOpen={tokenListOpen} chainId={chain} selectedTokens={selectedToken} onClose={() => toggleTokenList(false)} onSelect={onSelect} />
+      <StyledCard>
         <StyledColumnGap>
           <StyledFlexBetween>
-            <NumericInput loading={isLoading} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
+            <StyledNumbericInput loading={false} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
             <Tooltip text={!account ? "Connect wallet" : undefined}>
               <StyledTokenSelect onClick={onOpen}>
                 <TokenDisplay logo={selectedToken?.logoUrl} name={selectedToken?.symbol} />
-                <IoIosArrowDown style={{ fill: colors.icon }} size={20} />
+                <StyledIcon icon={<IoIosArrowDown size={20} />} />
               </StyledTokenSelect>
             </Tooltip>
           </StyledFlexBetween>
@@ -360,7 +310,7 @@ const TokenPanel = ({
           </StyledFlexBetween>
           {children}
         </StyledColumnGap>
-      </Card>
+      </StyledCard>
     </StyledTokenPanel>
   );
 };
@@ -375,52 +325,83 @@ const Usd = ({ isLoading = false, value }: { isLoading?: boolean; value?: string
 };
 
 const SubmitButton = () => {
-  const [open, seOpen] = useState(false);
+  const { loading, text, onClick, disabled, showConfirmation, closeConfirmation } = TWAPLib.store.useSubmitOrder();
+
   return (
     <>
-      <SubmitTwap onSubmit={() => seOpen(true)} />
-      <SubmitOrderConfirmation open={open} onClose={() => seOpen(false)} />
+      <StyledButton loading={loading} onClick={onClick} disabled={disabled}>
+        {text}
+      </StyledButton>
+      <OrderConfirmation open={showConfirmation} onClose={closeConfirmation} />
     </>
   );
 };
 
-const SubmitOrderConfirmation = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+const OrderConfirmation = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const { uiUsdValue: srcTokenUsdValue, srcTokenUiAmount, srcTokenInfo } = TWAPLib.store.useSrcToken();
   const { uiUsdValue: dstTokenUsdValue, dstTokenUiAmount, dstTokenInfo } = TWAPLib.store.useDstToken();
+  const [accepted, setAccepted] = useState(false);
+  const { ellipsisAccount } = TWAPLib.store.useWeb3();
   return (
-    <TradeInfoModal open={open} onClose={onClose}>
-      <StyledColumnGap gap={20}>
-        <TokenOrderPreview title="From" amount={srcTokenUiAmount} usdPrice={srcTokenUsdValue} name={srcTokenInfo?.symbol} logo={srcTokenInfo?.logoUrl} />
-        <TokenOrderPreview title="To" amount={dstTokenUiAmount} usdPrice={dstTokenUsdValue} name={dstTokenInfo?.symbol} logo={dstTokenInfo?.logoUrl} />
-        <LimitPrice />
-        <TradeInfoDetailsDisplay />
-        <TradeDetails />
-      </StyledColumnGap>
-    </TradeInfoModal>
+    <StyledTradeInfoModal open={open} onClose={onClose}>
+      <StyledOrderConfirmation>
+        <StyledColumnGap gap={20}>
+          <StyledColumnGap gap={20}>
+            <TokenOrderPreview title="From" amount={srcTokenUiAmount} usdPrice={srcTokenUsdValue} name={srcTokenInfo?.symbol} logo={srcTokenInfo?.logoUrl} />
+            <TokenOrderPreview title="To" amount={dstTokenUiAmount} usdPrice={dstTokenUsdValue} name={dstTokenInfo?.symbol} logo={dstTokenInfo?.logoUrl} />
+            <LimitPrice />
+            <TradeInfoDetailsDisplay />
+            <TradeDetails />
+          </StyledColumnGap>
+          <StyledColumnGap gap={20}>
+            <StyledDisclaimer>
+              <SmallLabel>Accept Disclaimer</SmallLabel>
+              <Switch value={accepted} onChange={() => setAccepted(!accepted)} />
+            </StyledDisclaimer>
+            <Text className="output-text">Output will be sent to {ellipsisAccount}</Text>
+
+            <StyledButton onClick={() => {}} disabled={!accepted}>
+              Confirm order
+            </StyledButton>
+          </StyledColumnGap>
+        </StyledColumnGap>
+      </StyledOrderConfirmation>
+    </StyledTradeInfoModal>
   );
 };
 
+const StyledOrderConfirmation = styled(Box)({
+  "& .output-text": {
+    textAlign: "center",
+    width: "100%",
+    fontSize: 15,
+  },
+});
+
+const StyledDisclaimer = styled(Box)({
+  display: "flex",
+  gap: 5,
+});
+
 const TradeDetails = () => {
   return (
-    <Card>
+    <StyledCard>
       <StyledColumnGap className="trade-info-explanation" gap={20}>
         <TradeInfoExplanation />
       </StyledColumnGap>
-    </Card>
+    </StyledCard>
   );
 };
 
 const TradeInfoDetailsDisplay = () => {
   return (
-    <Card>
+    <StyledCard>
       <StyledColumnGap gap={10}>
         <TradeInfoDetails />
       </StyledColumnGap>
-    </Card>
+    </StyledCard>
   );
 };
-
-const StyledTradeInfoDetails = styled(Box)({});
 
 const LimitPrice = () => {
   const { showLimit, toggleInverted, uiPrice, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useLimitPrice();
@@ -448,8 +429,6 @@ const LimitPrice = () => {
   );
 };
 
-const StyledOrderDetails = styled(Box)({});
-
 const StyledLimitPrice = styled(Box)({
   width: "100%",
   "& .right": {
@@ -466,7 +445,7 @@ const StyledLimitPrice = styled(Box)({
 const TokenOrderPreview = ({ title, logo, name, usdPrice, amount }: { title: string; logo?: string; name?: string; usdPrice?: string; amount?: string }) => {
   return (
     <StyledTokenOrder>
-      <Card>
+      <StyledCard>
         <StyledColumnGap gap={10}>
           <StyledFlexBetween>
             <Label>{title}</Label>
@@ -479,28 +458,79 @@ const TokenOrderPreview = ({ title, logo, name, usdPrice, amount }: { title: str
             </SmallLabel>
           </StyledFlexBetween>
         </StyledColumnGap>
-      </Card>
+      </StyledCard>
     </StyledTokenOrder>
   );
 };
+
+const StyledButton = styled(Button)({
+  background: colors.submitButton,
+  border: `1px solid ${colors.submitButtonBorder}`,
+  height: 40,
+  borderRadius: 4,
+  fontWeight: 500,
+  color: "white",
+});
+
+const StyledNumbericInput = styled(NumericInput)({
+  "& input": {
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: 400,
+    textAlign: "right",
+    outline: "1px solid transparent",
+    borderRadius: "0.375rem",
+    height: 40,
+    transition: "0.2s all",
+    "&:focus": {
+      outline: "1px solid #1D9391",
+    },
+    "&::placeholder": {
+      color: "white",
+    },
+  },
+});
+
+const StyledCard = styled(Card)({
+  padding: 12,
+  background: colors.cardBackground,
+  borderRadius: "0.375rem",
+});
+
+const StyledIcon = styled(Icon)({
+  "& path": {
+    color: colors.icon,
+  },
+  "& line": {
+    color: colors.icon,
+  },
+});
+
+const StyledTradeInfoModal = styled(TradeInfoModal)({
+  "& .twap-modal-content": {
+    background: colors.mainBackground,
+    border: `1px solid ${colors.borderColor}`,
+    maxHeight: "85vh",
+    overflow: "auto",
+    borderRadius: "10px",
+    padding: 15,
+    paddingTop: 30,
+  },
+});
 
 // ----------- styles -------------- //
 
 const StyledTokenOrder = styled(Box)({ width: "100%" });
 
 const globalStyle = {
-  "& .twap-card": {
-    padding: 12,
-    background: colors.cardBackground,
-    borderRadius: "0.375rem",
+  "*": {
+    fontFamily: "inherit",
   },
-  "& .twap-trade-info-modal": {
-    "& .twap-modal-content": {
-      background: colors.mainBackground,
-      maxHeight: "85vh",
-      overflow: "auto",
-    },
+  a: {
+    color: "white",
+    fontWeight: 500,
   },
+
   "& .twap-tooltip": {
     "& .MuiTooltip-tooltip": {
       backgroundColor: colors.mainBackground,
@@ -546,7 +576,7 @@ const StyledSrcTokenPercentSelector = styled(Box)({
 });
 
 const StyledPercentBtn = styled("button")({
-  background: colors.percentButtonBackground,
+  background: colors.borderColor,
   height: 22,
   width: "25%",
   border: "unset",
@@ -605,9 +635,6 @@ const StyledChangeOrder = styled(Box)(({ theme }) => ({
   alignItems: "center",
   justifyContent: "center",
   width: "100%",
-  "& .icon *": {
-    color: colors.icon,
-  },
 }));
 
 const StyledTokenPanel = styled(Box)({
@@ -628,14 +655,23 @@ const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
   width: "100%",
 }));
 
+const StyledSwitch = styled(Switch)({
+  "& .MuiSwitch-thumb": {
+    background: colors.icon,
+  },
+  "& .MuiSwitch-track": {
+    background: colors.mainBackground,
+  },
+  "& .Mui-checked+.MuiSwitch-track": {
+    background: colors.mainBackground,
+  },
+});
+
 const StyledLayout = styled(Box)(({ theme }) => ({
   width: "100%",
   "& *": {
     color: colors.text,
     fontFamily: "inherit",
-  },
-  "& .icon *": {
-    color: colors.icon,
   },
 
   "& .twap-small-label": {
@@ -653,32 +689,10 @@ const StyledLayout = styled(Box)(({ theme }) => ({
     width: 28,
     height: 28,
   },
-  "& .twap-input": {
-    color: colors.text,
-    fontSize: 24,
-    fontWeight: 400,
-    textAlign: "right",
-    outline: "1px solid transparent",
-    borderRadius: "0.375rem",
-    height: 40,
-    transition: "0.2s all",
-    "&:focus": {
-      outline: "1px solid #1D9391",
-    },
-    "&::placeholder": {
-      color: "white",
-    },
-  },
-  "& .twap-submit-button": {
-    background: colors.submitButton,
-    border: `1px solid ${colors.submitButtonBorder}`,
-    height: 40,
-    borderRadius: 4,
-    fontWeight: 500,
-  },
+
   "& .twap-time-selector-list": {
     background: colors.mainBackground,
-    border: "1px solid rgb(55, 65, 81)",
+    border: `1px solid ${colors.borderColor}`,
     right: 0,
     "& .twap-time-selector-list-item": {
       "&:hover": {
@@ -687,17 +701,6 @@ const StyledLayout = styled(Box)(({ theme }) => ({
     },
     "& .twap-time-selector-list-item-selected": {
       background: "rgba(255,255,255, 0.05)",
-    },
-  },
-  "& .twap-switch": {
-    "& .MuiSwitch-thumb": {
-      background: colors.icon,
-    },
-    "& .MuiSwitch-track": {
-      background: colors.mainBackground,
-    },
-    "& .Mui-checked+.MuiSwitch-track": {
-      background: colors.mainBackground,
     },
   },
 }));

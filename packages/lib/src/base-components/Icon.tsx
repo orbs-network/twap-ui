@@ -1,8 +1,14 @@
-import { CSSProperties } from "react";
-import { IconType } from "react-icons";
+import { Box, styled } from "@mui/system";
+import { ReactElement } from "react";
 
-const Icon = ({ icon: IconElement, color = "#4D6FF3", style = {} }: { icon: IconType; color?: string; style?: CSSProperties }) => {
-  return <IconElement style={{ ...style, color }} />;
+const Icon = ({ icon, className = "" }: { icon: ReactElement; className?: string }) => {
+  return <StyledContainer className={`twap-icon ${className}`}>{icon}</StyledContainer>;
 };
 
 export default Icon;
+
+const StyledContainer = styled(Box)({
+  height: "fit-content",
+  display: "flex",
+  alignItems: "center",
+});

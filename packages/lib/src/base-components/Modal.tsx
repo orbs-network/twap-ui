@@ -23,6 +23,7 @@ function Modal({ handleClose, open, children, title, className = "" }: Props) {
             <IoMdClose />
           </StyledClose>
           {title && <StyledTitle>{title}</StyledTitle>}
+          <StyledSeparator />
           {children}
         </StyledModalContent>
       </>
@@ -32,20 +33,30 @@ function Modal({ handleClose, open, children, title, className = "" }: Props) {
 
 export default Modal;
 
-const StyledTitle = styled(Typography)({});
+const StyledSeparator = styled(Box)({
+  height: 20,
+});
 
-const StyledClose = styled(IconButton)({});
+const StyledTitle = styled(Box)({
+  textAlign: "center",
+  fontWeight: 500,
+  fontSize: 17,
+});
+
+const StyledClose = styled(IconButton)({
+  position: "absolute",
+  right: 10,
+  top: 10,
+});
 
 const StyledModal = styled(MuiModal)({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  padding: 20,
 });
 
 const StyledModalContent = styled(Box)({
   maxWidth: 500,
   width: "100%",
   position: "relative",
-  padding: 30,
 });

@@ -106,7 +106,7 @@ const useTokenApproval = () => {
 
   const { mutate: approve, isLoading: approveLoading } = useMutation(async () => {
     await srcToken?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account });
-    refetch();
+    await refetch();
   });
 
   return {
@@ -154,6 +154,7 @@ export const useWeb3 = () => {
     isInvalidChain: chain && chain !== integrationChain,
     changeNetwork: () => changeNetwork(web3, integrationChain),
     config: integrationChain ? twapConfig[integrationChain] : undefined,
+    ellipsisAccount: makeEllipsisAddress(account),
   };
 };
 
@@ -313,7 +314,10 @@ const useMaxDuration = () => {
     setTimeFormat(timeFormat);
   }, []);
 
-  const maxDurationWithExtraMinute = useMemo(() => moment(millis).add(60_000, "milliseconds"), [millis]);
+  const maxDurationWithExtraMinute = useMemo(() => {
+    const now = moment().valueOf();
+    return now + moment(millis).add(60_000, "milliseconds").valueOf();
+  }, [millis]);
 
   // TODO need to display milliseconds + now()
   return {
@@ -546,6 +550,69 @@ const resetState = () => {
   usePriceStore.getState().reset();
 };
 
+function useSubmitOrder() {
+  const warning = useSubmitButtonValidation();
+  const { isApproved, approve, approveLoading } = useTokenApproval();
+  const { isInvalidChain, changeNetwork, account } = useWeb3();
+  const { wrap, shouldWrap, isLoading: wrapLoading } = useWrapToken();
+  const { connect } = useContext(TwapContext);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const values = useMemo(() => {
+    if (!account) {
+      return { text: "Connect wallet", onClick: connect };
+    }
+    if (isInvalidChain) {
+      return { text: "  Switch network", onClick: changeNetwork };
+    }
+    if (warning) {
+      return { text: warning, onClick: () => {}, disabled: true };
+    }
+    if (shouldWrap) {
+      return { text: "Wrap", onClick: wrap, loading: wrapLoading };
+    }
+    if (!isApproved) {
+      return { text: "Approve", onClick: approve, loading: approveLoading };
+    }
+
+    return { text: "Place order", onClick: () => setShowConfirmation(true) };
+  }, [isApproved, shouldWrap, warning, isInvalidChain, account, approveLoading, setShowConfirmation]);
+
+  return { ...values, showConfirmation, closeConfirmation: () => setShowConfirmation(false) };
+}
+
+export const useTokenPanel = (isSrcToken?: boolean) => {
+  const srcToken = useSrcToken();
+  const dstToken = useDstToken();
+  const [tokenListOpen, setTokenListOpen] = useState(false);
+
+  const onSelect = useCallback(
+    (token: TokenInfo) => {
+      if (isSrcToken) {
+        srcToken.onSrcTokenSelect(token);
+      } else {
+        dstToken.onDstTokenSelect(token);
+      }
+      setTokenListOpen(false);
+    },
+    [isSrcToken, setTokenListOpen]
+  );
+
+  return {
+    selectedToken: isSrcToken ? srcToken.srcTokenInfo : dstToken.dstTokenInfo,
+    value: isSrcToken ? srcToken.srcTokenUiAmount : dstToken.dstTokenUiAmount,
+    onChange: isSrcToken ? srcToken.onChange : null,
+    balance: isSrcToken ? srcToken.uiBalance : dstToken.uiBalance,
+    balanceLoading: isSrcToken ? srcToken.balanceLoading : dstToken.balanceLoading,
+    disabled: isSrcToken ? false : true,
+    usdValue: isSrcToken ? srcToken.uiUsdValue : dstToken.uiUsdValue,
+    usdValueLoading: isSrcToken ? srcToken.usdValueLoading : dstToken.usdValueLoading,
+    onSelect,
+    tokenListOpen,
+    toggleTokenList: (value: boolean) => setTokenListOpen(value),
+  };
+};
+
 // all hooks with state, export state only from here
 export const store = {
   useSrcToken,
@@ -561,6 +628,8 @@ export const store = {
   useAccountBalances,
   useWeb3,
   useWrapToken,
+  useSubmitOrder,
+  useTokenPanel,
 };
 
 // all validation hooks
@@ -667,4 +736,11 @@ const getIntervalForUi = (value?: number) => {
     str += `${minutes} Minutes`;
   }
   return str;
+};
+
+export const makeEllipsisAddress = (address?: string, padding: number = 6): string => {
+  if (!address) return "";
+  const firstPart = address.substring(0, padding);
+  const secondPart = address.substring(address.length - padding);
+  return `${firstPart}...${secondPart}`;
 };

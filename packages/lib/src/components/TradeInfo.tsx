@@ -5,9 +5,9 @@ import Modal from "../base-components/Modal";
 import Text from "../base-components/Text";
 import { store } from "../store/store";
 
-export function TradeInfoModal({ onClose, open, children }: { onClose: () => void; open: boolean; children: ReactNode }) {
+export function TradeInfoModal({ onClose, open, children, className = "" }: { onClose: () => void; open: boolean; children: ReactNode; className?: string }) {
   return (
-    <Modal className="twap-trade-info-modal" open={open} handleClose={onClose} title="Confirm Transaction">
+    <Modal className={`twap-trade-info-modal ${className}`} open={open} handleClose={onClose} title="Confirm Transaction">
       <StyledModalContent className="twap-order-confirmation">{children}</StyledModalContent>
     </Modal>
   );

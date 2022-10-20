@@ -16,7 +16,7 @@ function Label({ children, tooltipText }: Props) {
       <Tooltip text={tooltipText}>
         <StyledTooltipContent>
           <StyledLabel>{children}</StyledLabel>
-          <Icon style={{ width: 15, height: 15 }} icon={AiOutlineInfoCircle} />
+          <Icon icon={<AiOutlineInfoCircle style={{ width: 15, height: 15 }} />} />
         </StyledTooltipContent>
       </Tooltip>
     );
