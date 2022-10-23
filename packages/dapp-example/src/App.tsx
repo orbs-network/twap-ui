@@ -8,17 +8,17 @@ import axios from "axios";
 import { useQuery } from "react-query";
 import { networks, erc20s, zeroAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
-import TWAP_Spiritswap from "@orbs-network/twap-ui-spiritswap";
+import { TWAP_Spiritswap, OrderHistory } from "@orbs-network/twap-ui-spiritswap";
 // import TWAP_Quickswap from "@orbs-network/twap-ui-quickswap";
 import Modal from "@mui/material/Modal";
 import { AiOutlineClose } from "react-icons/ai";
 type Selection = "src" | "dst";
 
 function App() {
-  const { activate, library } = useWeb3React();
+  const { activate, library, chainId } = useWeb3React();
   const [selectedDapp, setSelectedDapp] = useState("1");
   const [dstToken, setDstToken] = useState(undefined);
-
+  const { data: list = [] } = useTokenList(chainId);
   return (
     <StyledApp className="App">
       <Box sx={{ minWidth: 120 }}>
@@ -40,6 +40,7 @@ function App() {
             return (
               <Layout key={dapp.id}>
                 <Component TokenSelectModal={TokenSelectModal} provider={library} connect={() => activate(injectedConnector)} />
+                <OrderHistory tokensList={list} />
               </Layout>
             );
           }
@@ -62,11 +63,11 @@ const tokenlistsNetworkNames = {
   [networks.eth.id]: "ethereum",
   [networks.ftm.id]: "ftm",
 };
-const useTokenList = (chainId: number) => {
+const useTokenList = (chainId?: number) => {
   return useQuery(
     ["useList", chainId],
     async () => {
-      const tokenlist = (await axios.get(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${tokenlistsNetworkNames[chainId]}.json`)).data;
+      const tokenlist = (await axios.get(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${tokenlistsNetworkNames[chainId!]}.json`)).data;
 
       const parsed = tokenlist.map(({ symbol, address, decimals, logoURI }: any) => ({ symbol, address, decimals, logoUrl: logoURI }));
 

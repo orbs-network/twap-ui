@@ -29,4 +29,20 @@ const TwapProvider = ({ children, provider, dappIntegration, integrationChainId,
   return <TwapContext.Provider value={value}>{children}</TwapContext.Provider>;
 };
 
-export { TwapContext, TwapProvider };
+export interface OrderHistoryState {
+  tokensList: any[];
+}
+
+const OrderHistoryContext = createContext<OrderHistoryState>({} as OrderHistoryState);
+
+export interface OrderHistoryStateProps extends OrderHistoryState {
+  children: ReactNode;
+}
+
+const OrderHistoryProvider = ({ children, tokensList }: OrderHistoryStateProps) => {
+  const value = { tokensList };
+
+  return <OrderHistoryContext.Provider value={value}>{children}</OrderHistoryContext.Provider>;
+};
+
+export { TwapContext, TwapProvider, OrderHistoryProvider, OrderHistoryContext };

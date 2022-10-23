@@ -90,7 +90,7 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
         <ThemeProvider theme={getTheme("dark")}>
           <CssBaseline />
           <GlobalStyles styles={globalStyle} />
-          <StyledLayout>
+          {/* <StyledLayout>
             <StyledColumnGap gap={10}>
               <SrcTokenPanel />
               <ChangeTokensOrder />
@@ -101,7 +101,7 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
               <TradeInterval />
               <SubmitButton />
             </StyledColumnGap>
-          </StyledLayout>
+          </StyledLayout> */}
         </ThemeProvider>
       </TwapProvider>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
