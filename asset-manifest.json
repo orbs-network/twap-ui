@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/twap-ui/static/css/main.e6c13ad2.css",
-    "main.js": "/twap-ui/static/js/main.64dbc7ab.js",
+    "main.js": "/twap-ui/static/js/main.d3e96b72.js",
     "index.html": "/twap-ui/index.html",
     "main.e6c13ad2.css.map": "/twap-ui/static/css/main.e6c13ad2.css.map",
-    "main.64dbc7ab.js.map": "/twap-ui/static/js/main.64dbc7ab.js.map"
+    "main.d3e96b72.js.map": "/twap-ui/static/js/main.d3e96b72.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.64dbc7ab.js"
+    "static/js/main.d3e96b72.js"
   ]
 }
