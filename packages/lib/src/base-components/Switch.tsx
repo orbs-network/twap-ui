@@ -1,6 +1,6 @@
 import { Switch as MuiSwitch } from "@mui/material";
 
-interface Props {
+export interface Props {
   defaultChecked?: boolean;
   value: boolean;
   onChange: () => void;
