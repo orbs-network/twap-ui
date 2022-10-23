@@ -316,8 +316,7 @@ const SubmitButton = () => {
 };
 
 const OrderConfirmation = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
-  const { uiUsdValue: srcTokenUsdValue, srcTokenUiAmount, srcTokenInfo } = TWAPLib.store.useSrcToken();
-  const { uiUsdValue: dstTokenUsdValue, dstTokenUiAmount, dstTokenInfo } = TWAPLib.store.useDstToken();
+  const { srcTokenUsdValue, srcTokenUiAmount, srcTokenInfo, dstTokenUsdValue, dstTokenUiAmount, dstTokenInfo } = TWAPLib.store.useConfirmation();
   const [accepted, setAccepted] = useState(false);
   const { ellipsisAccount, account } = TWAPLib.store.useWeb3();
   return (
@@ -339,7 +338,6 @@ const OrderConfirmation = ({ open, onClose }: { open: boolean; onClose: () => vo
             <Text className="output-text">
               Output will be sent to <Tooltip text={account}>{ellipsisAccount}</Tooltip>
             </Text>
-
             <StyledButton onClick={() => {}} disabled={!accepted}>
               Confirm order
             </StyledButton>
