@@ -3,9 +3,9 @@ import { styled } from "@mui/system";
 import { CSSProperties, ReactNode } from "react";
 import Loader from "./Loader";
 
-function SmallLabel({ children, style, loading = false }: { children?: string | ReactNode; style?: CSSProperties; loading?: boolean }) {
+function SmallLabel({ children, style, loading = false, className = "" }: { children?: string | ReactNode; style?: CSSProperties; loading?: boolean; className?: string }) {
   return (
-    <StyledContainer style={style} className="twap-small-label">
+    <StyledContainer style={style} className={`twap-small-label ${className}`}>
       {loading && (
         <Fade in={loading}>
           <StyledLoader className="twap-small-label-loader">

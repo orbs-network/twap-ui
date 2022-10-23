@@ -1,7 +1,21 @@
 import { NumericFormat } from "react-number-format";
 
 function NumberDisplay({ value }: { value?: string | number }) {
-  return <NumericFormat value={value} allowLeadingZeros thousandSeparator="," className="twap-number-display" displayType="text" decimalScale={6} />;
+  return value ? (
+    <NumericFormat
+      type="text"
+      valueIsNumericString={true}
+      thousandsGroupStyle="lakh"
+      value={value}
+      allowLeadingZeros
+      thousandSeparator=","
+      className="twap-number-display"
+      displayType="text"
+      decimalScale={6}
+    />
+  ) : (
+    <> -</>
+  );
 }
 
 export default NumberDisplay;

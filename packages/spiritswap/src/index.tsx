@@ -34,6 +34,8 @@ const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 const TradeInfoExplanation = TWAPLib.components.TradeInfoExplanation;
 const Icon = TWAPLib.baseComponents.Icon;
 const Button = TWAPLib.baseComponents.Button;
+const Balance = TWAPLib.baseComponents.Balance;
+const USD = TWAPLib.baseComponents.USD;
 
 const dappIntegrationChainId = 250;
 
@@ -195,7 +197,7 @@ const TradeSize = () => {
           </StyledFlexBetween>
           <StyledFlexBetween>
             <SmallLabel>Total trades: {totalTrades}</SmallLabel>
-            <Usd isLoading={usdValueLoading} value={uiUsdValue} />
+            <StyledUSD value={uiUsdValue} isLoading={usdValueLoading} />
           </StyledFlexBetween>
         </StyledColumnGap>
       </StyledCard>
@@ -301,24 +303,13 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
             </Tooltip>
           </StyledFlexBetween>
           <StyledFlexBetween>
-            <Usd isLoading={usdValueLoading} value={usdValue} />
-            <SmallLabel loading={balanceLoading}>
-              Balance: <NumberDisplay value={balance} />
-            </SmallLabel>
+            <StyledUSD value={usdValue} isLoading={usdValueLoading} />
+            <Balance isLoading={balanceLoading} value={balance} />
           </StyledFlexBetween>
           {children}
         </StyledColumnGap>
       </StyledCard>
     </StyledTokenPanel>
-  );
-};
-
-const Usd = ({ isLoading = false, value }: { isLoading?: boolean; value?: string | number }) => {
-  return (
-    <SmallLabel loading={isLoading} style={{ opacity: 0.6 }}>
-      ~$
-      {value ? <NumberDisplay value={value} /> : "0"}
-    </SmallLabel>
   );
 };
 
@@ -447,7 +438,7 @@ const TokenOrderPreview = ({ title, logo, name, usdPrice, amount }: { title: str
         <StyledColumnGap gap={10}>
           <StyledFlexBetween>
             <Label>{title}</Label>
-            <Usd value={usdPrice} />
+            <StyledUSD value={usdPrice} />
           </StyledFlexBetween>
           <StyledFlexBetween>
             <TokenDisplay name={name} logo={logo} />
@@ -460,6 +451,10 @@ const TokenOrderPreview = ({ title, logo, name, usdPrice, amount }: { title: str
     </StyledTokenOrder>
   );
 };
+
+const StyledUSD = styled(USD)({
+  opacity: 0.6,
+});
 
 const StyledButton = styled(Button)({
   background: colors.submitButton,

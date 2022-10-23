@@ -220,7 +220,7 @@ const useSrcToken = () => {
     usdValue,
     uiUsdValue: useBigNumberToUiAmount(token, srcTokenAmount?.times(usdValue || 0)).data,
     balance,
-    uiBalance: useBigNumberToUiAmount(token, balance).data || "0",
+    uiBalance: useBigNumberToUiAmount(token, balance).data,
     balanceLoading,
     onChangePercent,
   };
@@ -253,7 +253,7 @@ const useDstToken = () => {
     usdValue: dstTokenUsdValue,
     uiUsdValue: useBigNumberToUiAmount(dstToken, amount?.times(dstTokenUsdValue || 0)).data,
     balance,
-    uiBalance: useBigNumberToUiAmount(dstToken, balance).data || "0",
+    uiBalance: useBigNumberToUiAmount(dstToken, balance).data,
     balanceLoading,
   };
 };

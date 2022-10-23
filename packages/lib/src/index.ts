@@ -20,6 +20,8 @@ import { TwapContext, TwapProvider } from "./context";
 import { TradeInfoModal, TradeInfoDetails, TradeInfoExplanation } from "./components/TradeInfo";
 import PriceToggle from "./base-components/PriceToggle";
 import Button from "./base-components/Button";
+import Balance from "./base-components/Balance";
+import USD from "./base-components/USD";
 export default {
   store,
   baseComponents: {
@@ -40,6 +42,8 @@ export default {
     Tooltip,
     PriceToggle,
     Button,
+    Balance,
+    USD,
   },
   components: { Price, TradeInfoModal, TradeInfoDetails, TradeInfoExplanation },
   validation,
