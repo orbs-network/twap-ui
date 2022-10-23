@@ -6,15 +6,17 @@ interface BaseState {
 }
 
 export interface SrcTokenState extends BaseState {
-  token?: TokenInfo;
-  amount?: BigNumber;
-  setToken: (value?: TokenInfo) => void;
-  setAmount: (value?: BigNumber) => void;
+  srcTokenInfo?: TokenInfo;
+  srcToken?: Token;
+  srcTokenAmount?: BigNumber;
+  setSrcToken: (value?: TokenInfo, keepAmount?: boolean) => void;
+  setSrcTokenAmount: (value?: BigNumber) => void;
 }
 
 export interface DstTokenState extends BaseState {
-  token?: TokenInfo;
-  setToken: (value?: TokenInfo) => void;
+  dstTokenInfo?: TokenInfo;
+  dstToken?: Token;
+  setDstToken: (value?: TokenInfo) => void;
 }
 
 export interface MaxDurationState extends BaseState {
@@ -46,10 +48,10 @@ export interface Web3State {
 }
 
 export interface PriceState extends BaseState {
-  showLimit: Boolean;
-  toggleLimit: () => void;
-  price?: BigNumber;
-  setPrice: (value?: BigNumber) => void;
+  isLimitOrder: Boolean;
+  toggleLimit: (limitPrice?: BigNumber) => void;
+  limitPrice?: BigNumber;
+  setLimitPrice: (value?: BigNumber) => void;
 }
 
 export interface TokenInfo {

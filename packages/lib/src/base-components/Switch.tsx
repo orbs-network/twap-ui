@@ -5,10 +5,13 @@ interface Props {
   value: boolean;
   onChange: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
-function Switch({ value, defaultChecked = false, onChange, className = "" }: Props) {
-  return <MuiSwitch className={`twap-switch ${className}`} value={value} defaultChecked={defaultChecked} onChange={onChange} />;
+function Switch({ value, defaultChecked = false, onChange, className = "", disabled = false }: Props) {
+  return (
+    <MuiSwitch style={{ pointerEvents: disabled ? "none" : "unset" }} className={`twap-switch ${className}`} value={value} defaultChecked={defaultChecked} onChange={onChange} />
+  );
 }
 
 export default Switch;

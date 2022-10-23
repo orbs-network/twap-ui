@@ -5,7 +5,6 @@ function NumberDisplay({ value }: { value?: string | number }) {
     <NumericFormat
       type="text"
       valueIsNumericString={true}
-      thousandsGroupStyle="lakh"
       value={value}
       allowLeadingZeros
       thousandSeparator=","

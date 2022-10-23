@@ -2,7 +2,9 @@ import { Box, styled } from "@mui/system";
 import { ReactNode } from "react";
 import Label from "../base-components/Label";
 import Modal from "../base-components/Modal";
+import NumberDisplay from "../base-components/NumberDisplay";
 import Text from "../base-components/Text";
+import Tooltip from "../base-components/Tooltip";
 import { store } from "../store/store";
 
 export function TradeInfoModal({ onClose, open, children, className = "" }: { onClose: () => void; open: boolean; children: ReactNode; className?: string }) {
@@ -16,7 +18,7 @@ export function TradeInfoModal({ onClose, open, children, className = "" }: { on
 const StyledModalContent = styled(Box)({});
 
 export function Expiration() {
-  const { maxDurationWithExtraMinuteUi } = store.useMaxDuration();
+  const { maxDurationWithExtraMinuteUi } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText="text">Expiration</Label>
@@ -26,7 +28,7 @@ export function Expiration() {
 }
 
 export function TradeSize() {
-  const { uiTradeSize } = store.useTradeSize();
+  const { uiTradeSize } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText="text">Trade size</Label>
@@ -36,7 +38,7 @@ export function TradeSize() {
 }
 
 export function TotalTrades() {
-  const { totalTrades } = store.useTradeSize();
+  const { totalTrades } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText="text">Total trades</Label>
@@ -46,7 +48,7 @@ export function TotalTrades() {
 }
 
 export function TradeInterval() {
-  const { tradeIntervalUi } = store.useTradeInterval();
+  const { tradeIntervalUi } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText="text">Trade interval</Label>
@@ -56,11 +58,19 @@ export function TradeInterval() {
 }
 
 export function MinimumReceived() {
-  const { dstTokenUiAmount } = store.useDstToken();
+  const { minAmountOutUi, isLimitOrder } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText="text">Minimum Received Per Trade:</Label>
-      <Text>{dstTokenUiAmount}</Text>
+      <Text>
+        {isLimitOrder ? (
+          <Tooltip text={minAmountOutUi}>
+            <NumberDisplay value={minAmountOutUi} />
+          </Tooltip>
+        ) : (
+          "None"
+        )}
+      </Text>
     </StyledRow>
   );
 }

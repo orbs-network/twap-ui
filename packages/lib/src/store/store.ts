@@ -1,6 +1,5 @@
 import _ from "lodash";
-import { account as candiesAccount, BigNumber, bn, convertDecimals, eqIgnoreCase, erc20, erc20s, parsebn, setWeb3Instance, Token, zero, zeroAddress } from "@defi.org/web3-candies";
-import axios from "axios";
+import { account as candiesAccount, BigNumber, bn, convertDecimals, eqIgnoreCase, erc20, parsebn, setWeb3Instance, Token, zero, zeroAddress } from "@defi.org/web3-candies";
 import { useMutation, useQuery } from "react-query";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Web3 from "web3";
@@ -13,12 +12,14 @@ import { TwapContext } from "../context";
 import moment from "moment";
 
 const srcTokenInitialState = {
-  token: undefined,
-  amount: undefined,
+  srcTokenInfo: undefined,
+  srcToken: undefined,
+  srcTokenAmount: undefined,
 };
 
 const dstTokenInitialState = {
-  token: undefined,
+  dstTokenInfo: undefined,
+  dstToken: undefined,
 };
 
 const maxDurationInitialState = {
@@ -34,8 +35,8 @@ const tradeIntervalInitialState = {
 };
 
 const priceInitialState = {
-  price: undefined,
-  showLimit: false,
+  limitPrice: undefined,
+  isLimitOrder: false,
 };
 
 const tradeSizeInitialState = {
@@ -44,14 +45,19 @@ const tradeSizeInitialState = {
 
 export const useSrcTokenStore = create<SrcTokenState>((set) => ({
   ...srcTokenInitialState,
-  setToken: (token) => set({ token }),
-  setAmount: (amount) => set({ amount }),
+  setSrcToken: (srcTokenInfo, keepAmount) => {
+    set({ srcTokenInfo, srcToken: getToken(srcTokenInfo) });
+    if (!keepAmount) {
+      set({ srcTokenAmount: undefined });
+    }
+  },
+  setSrcTokenAmount: (srcTokenAmount) => set({ srcTokenAmount }),
   reset: () => set(srcTokenInitialState),
 }));
 
 export const useDstTokenStore = create<DstTokenState>((set) => ({
   ...dstTokenInitialState,
-  setToken: (token) => set({ token }),
+  setDstToken: (dstTokenInfo) => set({ dstTokenInfo, dstToken: getToken(dstTokenInfo) }),
   reset: () => set(dstTokenInitialState),
 }));
 
@@ -70,10 +76,10 @@ export const useTradeIntervalStore = create<TradeIntervalState>((set) => ({
   reset: () => set(tradeIntervalInitialState),
 }));
 
-export const usePriceStore = create<PriceState>((set, get) => ({
+export const useLimitPriceStore = create<PriceState>((set, get) => ({
   ...priceInitialState,
-  setPrice: (price) => set({ price }),
-  toggleLimit: () => set({ showLimit: !get().showLimit }),
+  setLimitPrice: (limitPrice) => set({ limitPrice }),
+  toggleLimit: (limitPrice) => set({ isLimitOrder: !get().isLimitOrder, limitPrice }),
   reset: () => set(priceInitialState),
 }));
 
@@ -96,7 +102,7 @@ export const useWeb3Store = create<Web3State>((set) => ({
 
 const useTokenApproval = () => {
   const { account, chain, config } = useWeb3();
-  const { srcToken, srcTokenAmount } = useSrcToken();
+  const { srcToken, srcTokenAmount } = useSrcTokenStore();
   const spender = config ? config.twapAddress : undefined;
 
   const { data: allowance, refetch } = useQuery(["allowance", account, srcToken?.address], async () => BigNumber(await srcToken!.methods.allowance(account!, spender!).call()), {
@@ -117,13 +123,13 @@ const useTokenApproval = () => {
 };
 
 const useWrapToken = () => {
-  const { srcTokenAmount, onSrcTokenSelect, srcTokenInfo } = useSrcToken();
+  const { srcTokenAmount, setSrcToken, srcTokenInfo } = useSrcTokenStore();
   const { account, config } = useWeb3();
   const { token: wToken }: any = useTokenOrWrappedToken(srcTokenInfo);
 
   const { mutateAsync: wrap, isLoading } = useMutation(async () => {
     await wToken?.methods.deposit().send({ from: account, value: srcTokenAmount!.toString() });
-    onSrcTokenSelect(config!.wrappedTokenInfo);
+    setSrcToken(config!.wrappedTokenInfo);
   });
 
   return {
@@ -175,19 +181,18 @@ const useAccountBalances = (token?: Token) => {
 
 // all actions (functions) related to src input
 const useSrcToken = () => {
-  const { setToken: setSrcToken, setAmount, token: srcTokenInfo, amount: srcTokenAmount } = useSrcTokenStore();
+  const { setSrcToken, setSrcTokenAmount, srcTokenInfo, srcTokenAmount, srcToken } = useSrcTokenStore();
   const { tradeSize, setTradeSize } = useTradeSizeStore();
-  const { token } = useToken(srcTokenInfo);
 
-  const { getBnAmount } = useUiAmountToBigNumber(token);
-  const { getUiAmount } = useBigNumberToUiAmount(token);
+  const { getBnAmount } = useUiAmountToBigNumber(srcToken);
+  const { getUiAmount } = useBigNumberToUiAmount(srcToken);
 
   const onChange = async (amountUi: string) => {
     const amount = await getBnAmount(amountUi);
     if (amount && tradeSize && tradeSize.gt(amount)) {
       setTradeSize(amount);
     }
-    setAmount(amount);
+    setSrcTokenAmount(amount);
   };
 
   const onChangePercent = async (percent: number) => {
@@ -196,31 +201,27 @@ const useSrcToken = () => {
     onChange(uiValue);
   };
 
-  const onSrcTokenSelect = useCallback(
-    (token: TokenInfo) => {
-      setSrcToken(token);
-      setAmount(undefined);
-    },
-    [setSrcToken]
-  );
+  const onSrcTokenSelect = (token: TokenInfo) => {
+    setSrcToken(token);
+  };
 
-  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(token);
-  const { data: balance, isLoading: balanceLoading } = useAccountBalances(token);
+  const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcToken);
+  const { data: balance, isLoading: balanceLoading } = useAccountBalances(srcToken);
 
   return {
     onSrcTokenSelect,
-    setSrcTokenAmount: setAmount,
+    setSrcTokenAmount,
     setSrcToken,
     onChange,
     srcTokenInfo,
-    srcToken: token,
+    srcToken,
     srcTokenAmount,
-    srcTokenUiAmount: useBigNumberToUiAmount(token, srcTokenAmount).data,
+    srcTokenUiAmount: useBigNumberToUiAmount(srcToken, srcTokenAmount).data,
     usdValueLoading: usdValueLoading && srcTokenAmount?.gt(zero) ? true : false,
     usdValue,
-    uiUsdValue: useBigNumberToUiAmount(token, srcTokenAmount?.times(usdValue || 0)).data,
+    uiUsdValue: useBigNumberToUiAmount(srcToken, srcTokenAmount?.times(usdValue || 0)).data,
     balance,
-    uiBalance: useBigNumberToUiAmount(token, balance).data,
+    uiBalance: useBigNumberToUiAmount(srcToken, balance).data,
     balanceLoading,
     onChangePercent,
   };
@@ -228,11 +229,8 @@ const useSrcToken = () => {
 
 // all actions (functions) related to src input
 const useDstToken = () => {
-  const { setToken: setDstToken, token: dstTokenInfo } = useDstTokenStore();
-  const { srcTokenAmount, srcToken, usdValue: srcTokenUsdValue, srcTokenInfo, usdValueLoading: srcTokenUsdLoading } = useSrcToken();
-  const { token: dstToken } = useToken(dstTokenInfo);
+  const { setDstToken, dstTokenInfo, dstToken } = useDstTokenStore();
   const { isLoading: usdValueLoading, data: dstTokenUsdValue } = useUsdValue(dstToken);
-  const amount = getDstAmount(srcToken, dstToken, srcTokenInfo?.decimals, dstTokenInfo?.decimals, srcTokenAmount, srcTokenUsdValue, dstTokenUsdValue);
 
   const { data: balance, isLoading: balanceLoading } = useAccountBalances(dstToken);
 
@@ -240,38 +238,44 @@ const useDstToken = () => {
     setDstToken(token);
   };
 
-  const showAmount = !usdValueLoading && !srcTokenUsdLoading;
-
+  const showAmount = !usdValueLoading;
+  const dstAmount = useDstAmount();
   return {
     onDstTokenSelect,
     setDstToken,
-    dstTokenUiAmount: useBigNumberToUiAmount(dstToken, showAmount ? amount : undefined).data,
+    dstTokenUiAmount: useBigNumberToUiAmount(dstToken, showAmount ? dstAmount : undefined).data,
     dstTokenInfo,
     dstToken,
-    amount,
-    usdValueLoading: usdValueLoading && amount ? true : false,
+    amount: dstAmount,
+    usdValueLoading: usdValueLoading && dstAmount ? true : false,
     usdValue: dstTokenUsdValue,
-    uiUsdValue: useBigNumberToUiAmount(dstToken, amount?.times(dstTokenUsdValue || 0)).data,
+    uiUsdValue: useBigNumberToUiAmount(dstToken, dstAmount?.times(dstTokenUsdValue || 0)).data,
     balance,
     uiBalance: useBigNumberToUiAmount(dstToken, balance).data,
     balanceLoading,
   };
 };
 
-const getDstAmount = (
-  srcToken?: Token,
-  dstToken?: Token,
-  srcDecimals?: number,
-  dstDecimals?: number,
-  srcAmount?: BigNumber,
-  srcTokenUsdValue?: BigNumber,
-  dstTokenUsdValue?: BigNumber
-) => {
-  if (!srcAmount || srcAmount.isZero() || !srcToken || !dstToken || !srcDecimals || !dstDecimals) {
+const useDstAmount = () => {
+  const { srcToken, srcTokenInfo, srcTokenAmount } = useSrcTokenStore();
+  const { dstToken, dstTokenInfo } = useDstTokenStore();
+  const { data: srcTokenUsdValue } = useUsdValue(srcToken);
+  const { data: dstTokenUsdValue } = useUsdValue(dstToken);
+  const { limitPrice } = useLimitPriceStore();
+
+  const srcTokenDecimals = srcTokenInfo?.decimals;
+  const dstTokenDecimals = dstTokenInfo?.decimals;
+
+  if (!srcTokenAmount || srcTokenAmount.isZero() || !srcToken || !dstToken || !srcTokenDecimals || !dstTokenDecimals) {
     return undefined;
   }
-  const res = srcAmount?.times(srcTokenUsdValue || 0).div(dstTokenUsdValue || 1);
-  return convertDecimals(res, srcDecimals, dstDecimals);
+  let res;
+  if (limitPrice) {
+    res = srcTokenAmount.times(limitPrice);
+  } else {
+    res = srcTokenAmount.times(srcTokenUsdValue || 0).div(dstTokenUsdValue || 1);
+  }
+  return convertDecimals(res, srcTokenDecimals, dstTokenDecimals);
 };
 
 const useUsdValue = (token?: Token) => {
@@ -293,7 +297,7 @@ const useUsdValue = (token?: Token) => {
 
 const useTotalTrades = () => {
   const tradeSize = useTradeSizeStore().tradeSize;
-  const srcTokenAmount = useSrcToken().srcTokenAmount;
+  const srcTokenAmount = useSrcTokenStore().srcTokenAmount;
   return useMemo(() => {
     if (!tradeSize || tradeSize.isZero()) {
       return 0;
@@ -317,7 +321,6 @@ const useMaxDuration = () => {
     return now + moment(millis).add(60_000, "milliseconds").valueOf();
   }, [millis]);
 
-  // TODO need to display milliseconds + now()
   return {
     setMaxDurationMillis: setMillis,
     setMaxDurationTimeFormat: setTimeFormat,
@@ -358,7 +361,7 @@ const useTradeInterval = () => {
 
 // all data related to trade size input
 const useTradeSize = () => {
-  const { srcToken } = useSrcToken();
+  const { srcToken } = useSrcTokenStore();
   const { tradeSize, setTradeSize } = useTradeSizeStore();
   const totalTrades = useTotalTrades();
 
@@ -399,18 +402,7 @@ const useTokenOrWrappedToken = (tokenInfo?: TokenInfo) => {
       if (isNativeToken(tokenInfo?.address)) {
         tokenInfo = config?.wrappedTokenInfo;
       }
-      return erc20(tokenInfo!.symbol, tokenInfo!.address, tokenInfo!.decimals);
-    },
-    { enabled: !!tokenInfo }
-  );
-  return { token, isLoading: !token };
-};
-
-const useToken = (tokenInfo?: TokenInfo) => {
-  const { data: token } = useQuery<Token>(
-    ["useToken", tokenInfo?.address],
-    () => {
-      return erc20(tokenInfo!.symbol, tokenInfo!.address, tokenInfo!.decimals);
+      return getToken(tokenInfo);
     },
     { enabled: !!tokenInfo }
   );
@@ -418,35 +410,32 @@ const useToken = (tokenInfo?: TokenInfo) => {
 };
 
 const useChangeTokenPositions = () => {
-  const { srcTokenInfo, setSrcTokenAmount, setSrcToken } = useSrcToken();
-  const { setDstToken, dstTokenInfo } = useDstToken();
-  const { amount: dstTokenAmount } = useDstToken();
-  const { setTradeSize } = useTradeSize();
+  const { srcTokenInfo, setSrcTokenAmount, setSrcToken } = useSrcTokenStore();
+  const { setDstToken, dstTokenInfo } = useDstTokenStore();
+  const dstTokenAmount = useDstAmount();
+  const { setTradeSize } = useTradeSizeStore();
 
   return () => {
     setSrcTokenAmount(dstTokenAmount);
-    setSrcToken(dstTokenInfo);
+    setSrcToken(dstTokenInfo, true);
     setDstToken(srcTokenInfo);
     setTradeSize(undefined);
   };
 };
 
 export const useLimitPrice = () => {
-  const { showLimit, price, toggleLimit, setPrice } = usePriceStore();
+  const { isLimitOrder, limitPrice, toggleLimit, setLimitPrice } = useLimitPriceStore();
 
   const onChange = (amountUi?: string) => {
-    setPrice(amountUi ? BigNumber(amountUi) : undefined);
-  };
-
-  const onToggleLimit = () => {
-    setPrice(marketPrice);
-    toggleLimit();
+    setLimitPrice(amountUi ? BigNumber(amountUi) : undefined);
   };
 
   const { marketPrice, leftToken, rightToken, toggleInverted, inverted, leftTokenInfo, rightTokenInfo } = useMarketPrice();
-
+  const onToggleLimit = () => {
+    toggleLimit(marketPrice);
+  };
   return {
-    showLimit,
+    isLimitOrder,
     onToggleLimit,
     toggleInverted,
     onChange,
@@ -454,14 +443,14 @@ export const useLimitPrice = () => {
     rightToken,
     leftTokenInfo,
     rightTokenInfo,
-    uiPrice: price && inverted ? BigNumber(1).div(price).toFormat() : price?.toFormat(),
+    uiPrice: limitPrice && inverted ? BigNumber(1).div(limitPrice).toFormat() : limitPrice?.toFormat(),
   };
 };
 
 const useMarketPrice = () => {
   const [inverted, setInverted] = useState(false);
-  const { srcToken, srcTokenInfo } = useSrcToken();
-  const { dstToken, dstTokenInfo } = useDstToken();
+  const { srcToken, srcTokenInfo } = useSrcTokenStore();
+  const { dstToken, dstTokenInfo } = useDstTokenStore();
 
   const leftToken = inverted ? dstToken : srcToken;
   const rightToken = !inverted ? dstToken : srcToken;
@@ -486,7 +475,7 @@ const useMarketPrice = () => {
 
 export const useSubmitButtonValidation = () => {
   const { srcTokenAmount, balance: srcTokenBalance, srcToken, srcTokenUiAmount } = useSrcToken();
-  const tradeSize = useTradeSize().tradeSize;
+  const tradeSize = useTradeSizeStore().tradeSize;
   const maxDurationMillis = useMaxDurationStore().millis;
   const tradeIntervalMillis = useTradeInterval().tradeIntervalMillis;
 
@@ -548,7 +537,7 @@ const resetState = () => {
   useDstTokenStore.getState().reset();
   useMaxDurationStore.getState().reset();
   useTradeIntervalStore.getState().reset();
-  usePriceStore.getState().reset();
+  useLimitPriceStore.getState().reset();
 };
 
 function useSubmitOrder() {
@@ -614,6 +603,59 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
   };
 };
 
+const useConfirmation = () => {
+  const { maxDurationWithExtraMinuteUi } = useMaxDuration();
+  const { tradeIntervalUi } = useTradeInterval();
+  const { totalTrades, uiTradeSize, tradeSize } = useTradeSize();
+  const { uiUsdValue: srcTokenUsdValue, srcTokenUiAmount, srcTokenInfo } = useSrcToken();
+  const { uiUsdValue: dstTokenUsdValue, dstTokenUiAmount, dstTokenInfo, dstToken } = useDstToken();
+  const { limitPrice, isLimitOrder } = useLimitPriceStore();
+
+  const onSubmit = () => {
+    //
+  };
+  const minAmountOut = useMemo(() => {
+    if (!isLimitOrder) {
+      return BigNumber(1);
+    }
+    return convertDecimals(tradeSize?.times(limitPrice || 0) || 0, srcTokenInfo?.decimals || 0, dstTokenInfo?.decimals || 0);
+  }, [isLimitOrder, limitPrice, tradeSize, srcTokenInfo, dstTokenInfo]);
+
+  const result = {
+    maxDurationWithExtraMinuteUi,
+    tradeIntervalUi,
+    totalTrades,
+    uiTradeSize,
+    srcTokenUsdValue,
+    srcTokenUiAmount,
+    srcTokenInfo,
+    dstTokenUsdValue,
+    dstTokenUiAmount,
+    dstTokenInfo,
+    minAmountOut,
+    minAmountOutUi: useBigNumberToUiAmount(dstToken, minAmountOut).data,
+    isLimitOrder,
+  };
+
+  const isValid = _.every(_.values(result));
+
+  return isValid ? result : ({} as typeof result);
+};
+
+const useLimitPriceToggleValidation = () => {
+  const { srcTokenInfo } = useSrcTokenStore();
+  const { dstTokenInfo } = useDstTokenStore();
+
+  return useMemo(() => {
+    if (!srcTokenInfo) {
+      return "Select source token";
+    }
+    if (!dstTokenInfo) {
+      return "Select destination token";
+    }
+  }, [srcTokenInfo, dstTokenInfo]);
+};
+
 // all hooks with state, export state only from here
 export const store = {
   useSrcToken,
@@ -631,12 +673,14 @@ export const store = {
   useWrapToken,
   useSubmitOrder,
   useTokenPanel,
+  useConfirmation,
 };
 
 // all validation hooks
 export const validation = {
   useSubmitButtonValidation,
   usePartialFillValidation,
+  useLimitPriceToggleValidation,
 };
 
 const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number) => {
@@ -724,19 +768,23 @@ const getIntervalForUi = (value?: number) => {
   const days = time.days();
   const hours = time.hours();
   const minutes = time.minutes();
+  const seconds = time.seconds();
 
-  let str = "";
+  let arr: string[] = [];
 
   if (days) {
-    str += `${days} Days `;
+    arr.push(`${days} Days `);
   }
   if (hours) {
-    str += `${hours} Hours `;
+    arr.push(`${hours} Hours `);
   }
   if (minutes) {
-    str += `${minutes} Minutes`;
+    arr.push(`${minutes} Minutes`);
   }
-  return str;
+  if (seconds) {
+    arr.push(`${seconds} Seconds`);
+  }
+  return arr.join(" ");
 };
 
 export const makeEllipsisAddress = (address?: string, padding: number = 6): string => {
@@ -744,4 +792,8 @@ export const makeEllipsisAddress = (address?: string, padding: number = 6): stri
   const firstPart = address.substring(0, padding);
   const secondPart = address.substring(address.length - padding);
   return `${firstPart}...${secondPart}`;
+};
+
+const getToken = (tokenInfo?: TokenInfo) => {
+  return erc20(tokenInfo!.symbol, tokenInfo!.address, tokenInfo!.decimals);
 };

@@ -13,29 +13,17 @@ import { GlobalStyles } from "@mui/material";
 import axios from "axios";
 import BigNumber from "bignumber.js";
 
-const NumericInput = TWAPLib.baseComponents.NumericInput;
-const Card = TWAPLib.baseComponents.Card;
-const Label = TWAPLib.baseComponents.Label;
-const TokenLogo = TWAPLib.baseComponents.TokenLogo;
-const TokenName = TWAPLib.baseComponents.TokenName;
-const SmallLabel = TWAPLib.baseComponents.SmallLabel;
-const Switch = TWAPLib.baseComponents.Switch;
-const Price = TWAPLib.components.Price;
-const TimeSelector = TWAPLib.baseComponents.TimeSelector;
-const Tooltip = TWAPLib.baseComponents.Tooltip;
-const IconButton = TWAPLib.baseComponents.IconButton;
-const Text = TWAPLib.baseComponents.Text;
-const NumberDisplay = TWAPLib.baseComponents.NumberDisplay;
+// TODO create file for styles
+
+const { USD, Balance, Button, Icon, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
+  TWAPLib.baseComponents;
+const LimitPrice = TWAPLib.components.LimitPrice;
 const TwapContext = TWAPLib.TwapContext;
 const TwapProvider = TWAPLib.TwapProvider;
 const TradeInfoModal = TWAPLib.components.TradeInfoModal;
 const TradeInfoDetails = TWAPLib.components.TradeInfoDetails;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 const TradeInfoExplanation = TWAPLib.components.TradeInfoExplanation;
-const Icon = TWAPLib.baseComponents.Icon;
-const Button = TWAPLib.baseComponents.Button;
-const Balance = TWAPLib.baseComponents.Balance;
-const USD = TWAPLib.baseComponents.USD;
 
 const dappIntegrationChainId = 250;
 
@@ -88,7 +76,7 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
               <SrcTokenPanel />
               <ChangeTokensOrder />
               <DstTokenPanel />
-              <PriceDisplay />
+              <LimitPriceDisplay />
               <TradeSize />
               <MaxDuration />
               <TradeInterval />
@@ -162,6 +150,7 @@ const SrcTokenPanel = () => {
 };
 
 const DstTokenPanel = () => {
+  // add tilda to amount if market or >= if limit price
   return (
     <StyledDstToken>
       <TokenPanel isSrcToken={false} />
@@ -182,7 +171,7 @@ const ChangeTokensOrder = () => {
 };
 
 const TradeSize = () => {
-  const { srcTokenInfo, srcTokenAmount, srcTokenUiAmount } = TWAPLib.store.useSrcToken();
+  const { srcTokenInfo, srcTokenUiAmount } = TWAPLib.store.useSrcToken();
 
   const { uiTradeSize, onChange, totalTrades, uiUsdValue, usdValueLoading } = TWAPLib.store.useTradeSize();
 
@@ -205,20 +194,21 @@ const TradeSize = () => {
   );
 };
 
-const PriceDisplay = () => {
-  const { showLimit, onToggleLimit } = TWAPLib.store.useLimitPrice();
+const LimitPriceDisplay = () => {
+  const { isLimitOrder, onToggleLimit } = TWAPLib.store.useLimitPrice();
+  const warning = TWAPLib.validation.useLimitPriceToggleValidation();
 
   return (
     <StyledPrice>
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexStart>
-            <Tooltip text="Some text">
-              <StyledSwitch value={!showLimit} onChange={() => onToggleLimit()} />
+            <Tooltip text={warning}>
+              <StyledSwitch disabled={!!warning} value={!isLimitOrder} onChange={onToggleLimit} />
             </Tooltip>
             <Label tooltipText="some text">Limit Price</Label>
           </StyledFlexStart>
-          {showLimit && <Price placeholder="0" />}
+          {isLimitOrder && <LimitPrice placeholder="0" />}
         </StyledColumnGap>
       </StyledCard>
     </StyledPrice>
@@ -338,7 +328,7 @@ const OrderConfirmation = ({ open, onClose }: { open: boolean; onClose: () => vo
           <StyledColumnGap gap={20}>
             <TokenOrderPreview title="From" amount={srcTokenUiAmount} usdPrice={srcTokenUsdValue} name={srcTokenInfo?.symbol} logo={srcTokenInfo?.logoUrl} />
             <TokenOrderPreview title="To" amount={dstTokenUiAmount} usdPrice={dstTokenUsdValue} name={dstTokenInfo?.symbol} logo={dstTokenInfo?.logoUrl} />
-            <LimitPrice />
+            <OrderConfirmationLimitPrice />
             <TradeInfoDetailsDisplay />
             <TradeDetails />
           </StyledColumnGap>
@@ -392,14 +382,14 @@ const TradeInfoDetailsDisplay = () => {
   );
 };
 
-const LimitPrice = () => {
-  const { showLimit, toggleInverted, uiPrice, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useLimitPrice();
+const OrderConfirmationLimitPrice = () => {
+  const { isLimitOrder, toggleInverted, uiPrice, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useLimitPrice();
 
   return (
     <StyledLimitPrice>
       <StyledFlexBetween>
         <Label tooltipText="some text">Limit Price</Label>
-        {showLimit ? (
+        {isLimitOrder ? (
           <div className="right">
             <Text>1</Text> <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} /> <Text>=</Text>
             <Tooltip text={uiPrice}>

@@ -11,7 +11,7 @@ import TokenLogo from "./base-components/TokenLogo";
 import TokenName from "./base-components/TokenName";
 import Layout from "./base-components/Layout";
 import ChangeTokensOrder from "./base-components/ChangeTokensOrder";
-import Price from "./components/Price";
+import { LimitPrice } from "./components/LimitPrice";
 import Tooltip from "./base-components/Tooltip";
 import IconButton from "./base-components/IconButton";
 import Text from "./base-components/Text";
@@ -45,7 +45,7 @@ export default {
     Balance,
     USD,
   },
-  components: { Price, TradeInfoModal, TradeInfoDetails, TradeInfoExplanation },
+  components: { LimitPrice, TradeInfoModal, TradeInfoDetails, TradeInfoExplanation },
   validation,
   TwapContext,
   TwapProvider,

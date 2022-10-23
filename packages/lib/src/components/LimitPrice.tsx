@@ -1,14 +1,16 @@
-import { IconButton, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import NumericInput from "../base-components/NumericInput";
 import TokenLogo from "../base-components/TokenLogo";
 import TokenName from "../base-components/TokenName";
-import { store } from "../store/store";
+import { store, validation } from "../store/store";
 import PriceToggle from "../base-components/PriceToggle";
+import Tooltip from "../base-components/Tooltip";
+import Switch from "../base-components/Switch";
 
-function Price({ placeholder = "0.00" }: { placeholder?: string }) {
+function LimitPrice({ placeholder = "0.00" }: { placeholder?: string }) {
   const { uiPrice, toggleInverted, onChange, leftTokenInfo, rightTokenInfo } = store.useLimitPrice();
-
+  // TODO start from left input
   return (
     <StyledContainer className="twap-price">
       <StyledLeft>
@@ -29,7 +31,17 @@ function Price({ placeholder = "0.00" }: { placeholder?: string }) {
   );
 }
 
-export default Price;
+export { LimitPrice };
+
+export const LimitPriceSwitch = ({ className = "" }: { className?: string }) => {
+  const { isLimitOrder, onToggleLimit } = store.useLimitPrice();
+  const warning = validation.useLimitPriceToggleValidation();
+  return (
+    <Tooltip text={warning}>
+      <Switch disabled={!!warning} className={className} value={!isLimitOrder} onChange={onToggleLimit} />
+    </Tooltip>
+  );
+};
 
 const StyledLeft = styled(Box)({
   display: "flex",
