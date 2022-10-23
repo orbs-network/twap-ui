@@ -574,6 +574,7 @@ function useSubmitOrder() {
 export const useTokenPanel = (isSrcToken?: boolean) => {
   const srcToken = useSrcToken();
   const dstToken = useDstToken();
+  const { isLimitOrder } = useLimitPriceStore();
   const [tokenListOpen, setTokenListOpen] = useState(false);
 
   const onSelect = useCallback(
@@ -600,6 +601,7 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
     onSelect,
     tokenListOpen,
     toggleTokenList: (value: boolean) => setTokenListOpen(value),
+    amountPrefix: isSrcToken ? "" : isLimitOrder ? "≥" : "~",
   };
 };
 

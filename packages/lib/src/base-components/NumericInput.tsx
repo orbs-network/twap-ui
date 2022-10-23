@@ -14,9 +14,10 @@ export interface Props {
   loading?: boolean;
   className?: string;
   maxValue?: string;
+  prefix?: string;
 }
 
-function NumericInput({ onChange, value, disabled = false, placeholder = "Enter amount", onFocus, onBlur, loading = false, className = "", maxValue }: Props) {
+function NumericInput({ prefix = "", onChange, value, disabled = false, placeholder = "Enter amount", onFocus, onBlur, loading = false, className = "", maxValue }: Props) {
   return (
     <StyledContainer className={className}>
       <Fade in={loading} style={{ transition: "0s" }}>
@@ -29,6 +30,7 @@ function NumericInput({ onChange, value, disabled = false, placeholder = "Enter 
           <NumericFormat
             disabled={disabled}
             onBlur={onBlur}
+            prefix={prefix && `${prefix} `}
             onFocus={onFocus}
             thousandsGroupStyle="thousand"
             placeholder={placeholder}
@@ -72,7 +74,7 @@ const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   pointerEvents: disabled ? "none" : "unset",
   height: "100%",
   width: "100%",
-  textIndent: 10,
+  textIndent: 3,
   fontSize: 16,
   border: "unset",
   background: "transparent",

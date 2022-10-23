@@ -150,7 +150,6 @@ const SrcTokenPanel = () => {
 };
 
 const DstTokenPanel = () => {
-  // add tilda to amount if market or >= if limit price
   return (
     <StyledDstToken>
       <TokenPanel isSrcToken={false} />
@@ -266,7 +265,7 @@ interface TokenPanelProps {
 }
 
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
-  const { usdValueLoading, usdValue, disabled, balanceLoading, balance, value, onSelect, selectedToken, onChange, tokenListOpen, toggleTokenList } =
+  const { amountPrefix, usdValueLoading, usdValue, disabled, balanceLoading, balance, value, onSelect, selectedToken, onChange, tokenListOpen, toggleTokenList } =
     TWAPLib.store.useTokenPanel(isSrcToken);
 
   const { chain, account } = TWAPLib.store.useWeb3();
@@ -284,7 +283,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexBetween>
-            <StyledNumbericInput loading={false} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
+            <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
             <Tooltip text={!account ? "Connect wallet" : undefined}>
               <StyledTokenSelect onClick={onOpen}>
                 <TokenDisplay logo={selectedToken?.logoUrl} name={selectedToken?.symbol} />
@@ -320,7 +319,7 @@ const OrderConfirmation = ({ open, onClose }: { open: boolean; onClose: () => vo
   const { uiUsdValue: srcTokenUsdValue, srcTokenUiAmount, srcTokenInfo } = TWAPLib.store.useSrcToken();
   const { uiUsdValue: dstTokenUsdValue, dstTokenUiAmount, dstTokenInfo } = TWAPLib.store.useDstToken();
   const [accepted, setAccepted] = useState(false);
-  const { ellipsisAccount } = TWAPLib.store.useWeb3();
+  const { ellipsisAccount, account } = TWAPLib.store.useWeb3();
   return (
     <StyledTradeInfoModal open={open} onClose={onClose}>
       <StyledOrderConfirmation>
@@ -337,7 +336,9 @@ const OrderConfirmation = ({ open, onClose }: { open: boolean; onClose: () => vo
               <SmallLabel>Accept Disclaimer</SmallLabel>
               <Switch value={accepted} onChange={() => setAccepted(!accepted)} />
             </StyledDisclaimer>
-            <Text className="output-text">Output will be sent to {ellipsisAccount}</Text>
+            <Text className="output-text">
+              Output will be sent to <Tooltip text={account}>{ellipsisAccount}</Tooltip>
+            </Text>
 
             <StyledButton onClick={() => {}} disabled={!accepted}>
               Confirm order
