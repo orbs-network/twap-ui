@@ -1,6 +1,7 @@
 import { BigNumber } from "@defi.org/web3-candies";
 import { createContext, ReactElement, ReactNode, useEffect } from "react";
 import { useWeb3 } from "./store/store";
+import { TokenInfo } from "./types";
 
 export interface IState {
   provider: any;
@@ -29,20 +30,21 @@ const TwapProvider = ({ children, provider, dappIntegration, integrationChainId,
   return <TwapContext.Provider value={value}>{children}</TwapContext.Provider>;
 };
 
-export interface OrderHistoryState {
-  tokensList: any[];
+export interface Orders {
+  tokensList: TokenInfo[];
 }
 
-const OrderHistoryContext = createContext<OrderHistoryState>({} as OrderHistoryState);
+const OrdersContext = createContext<Orders>({} as Orders);
 
-export interface OrderHistoryStateProps extends OrderHistoryState {
+export interface OrdersProps extends Orders {
   children: ReactNode;
+  provider: any;
 }
 
-const OrderHistoryProvider = ({ children, tokensList }: OrderHistoryStateProps) => {
-  const value = { tokensList };
+const OrdersProvider = ({ children, tokensList }: OrdersProps) => {
+  const value = { tokensList: tokensList || [] };
 
-  return <OrderHistoryContext.Provider value={value}>{children}</OrderHistoryContext.Provider>;
+  return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>;
 };
 
-export { TwapContext, TwapProvider, OrderHistoryProvider, OrderHistoryContext };
+export { TwapContext, TwapProvider, OrdersProvider, OrdersContext };

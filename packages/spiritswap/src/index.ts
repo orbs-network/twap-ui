@@ -1,4 +1,4 @@
 import TWAP_Spiritswap from "./Twap";
-import OrderHistory from "./OrderHistory";
+import Orders from "./Orders";
 
-export { TWAP_Spiritswap, OrderHistory };
+export { TWAP_Spiritswap, Orders };

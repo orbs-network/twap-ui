@@ -1,24 +1,27 @@
 import { Box, styled } from "@mui/system";
 import { useWeb3React } from "@web3-react/core";
 import { injectedConnector } from "./connectors";
-import { CSSProperties, useRef, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import axios from "axios";
 import { useQuery } from "react-query";
 import { networks, erc20s, zeroAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
-import { TWAP_Spiritswap, OrderHistory } from "@orbs-network/twap-ui-spiritswap";
+import { TWAP_Spiritswap, Orders } from "@orbs-network/twap-ui-spiritswap";
 // import TWAP_Quickswap from "@orbs-network/twap-ui-quickswap";
 import Modal from "@mui/material/Modal";
 import { AiOutlineClose } from "react-icons/ai";
-type Selection = "src" | "dst";
 
 function App() {
   const { activate, library, chainId } = useWeb3React();
   const [selectedDapp, setSelectedDapp] = useState("1");
-  const [dstToken, setDstToken] = useState(undefined);
   const { data: list = [] } = useTokenList(chainId);
+
+  useEffect(() => {
+    activate(injectedConnector);
+  }, [activate]);
+
   return (
     <StyledApp className="App">
       <Box sx={{ minWidth: 120 }}>
@@ -40,7 +43,7 @@ function App() {
             return (
               <Layout key={dapp.id}>
                 <Component TokenSelectModal={TokenSelectModal} provider={library} connect={() => activate(injectedConnector)} />
-                <OrderHistory tokensList={list} />
+                <Orders tokensList={list} provider={library} />
               </Layout>
             );
           }

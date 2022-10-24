@@ -16,13 +16,14 @@ import Tooltip from "./base-components/Tooltip";
 import IconButton from "./base-components/IconButton";
 import Text from "./base-components/Text";
 import NumberDisplay from "./base-components/NumberDisplay";
-import { TwapContext, TwapProvider, OrderHistoryProvider, OrderHistoryContext } from "./context";
+import { TwapContext, TwapProvider, OrdersProvider } from "./context";
 import { TradeInfoModal, TradeInfoDetails, TradeInfoExplanation } from "./components/TradeInfo";
 import PriceToggle from "./base-components/PriceToggle";
 import Button from "./base-components/Button";
 import Balance from "./base-components/Balance";
 import USD from "./base-components/USD";
-import LimitOrder from "./base-components/LimitOrder";
+import Orders from "./orders/Orders";
+import TokenPriceCompare from "./base-components/TokenPriceCompare";
 export default {
   store,
   baseComponents: {
@@ -45,12 +46,12 @@ export default {
     Button,
     Balance,
     USD,
-    LimitOrder,
+    TokenPriceCompare,
   },
   components: { LimitPrice, TradeInfoModal, TradeInfoDetails, TradeInfoExplanation },
   validation,
   TwapContext,
   TwapProvider,
-  OrderHistoryProvider,
-  OrderHistoryContext,
+  OrdersProvider,
+  Orders,
 };

@@ -1,4 +1,4 @@
-export type TransactionDataType = {
+export type LimitOrderItem = {
   fromTokenId: string;
   toTokenId: string;
   operationType: string;
@@ -8,14 +8,14 @@ export type TransactionDataType = {
   executionPrice: number;
   minimumReceived: number;
   expiryDate: number;
-  status: TxStatus;
+  status: OrderStatus;
   totalChunks: number;
   finishedChunks: number;
   lastFilled: number;
   interval: number;
 };
 
-export enum TxStatus {
+export enum OrderStatus {
   OPEN,
   CANCELED,
   EXECUTED,
@@ -27,9 +27,9 @@ const mod = function (n: number, m: number) {
   return Math.floor(remain >= 0 ? remain : remain + m);
 };
 
-const status = [TxStatus.OPEN, TxStatus.CANCELED, TxStatus.EXECUTED, TxStatus.EXPIRED];
+const status = [OrderStatus.OPEN, OrderStatus.CANCELED, OrderStatus.EXECUTED, OrderStatus.EXPIRED];
 
-export const createTxData = (): TransactionDataType[] => {
+export const createTxData = (): LimitOrderItem[] => {
   return Array.from({ length: 10 }).map((_, i) => {
     return {
       fromTokenId: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
@@ -50,15 +50,16 @@ export const createTxData = (): TransactionDataType[] => {
   });
 };
 
-export const getData = (): { [key: string]: TransactionDataType[] } => {
+export const getData = (): { [key: string]: LimitOrderItem[] } => {
   const data = createTxData();
 
-  const obj: { [key: string]: TransactionDataType[] } = {
-    [TxStatus.OPEN]: [],
-    [TxStatus.CANCELED]: [],
-    [TxStatus.EXPIRED]: [],
-    [TxStatus.EXECUTED]: [],
+  const obj: { [key: string]: LimitOrderItem[] } = {
+    [OrderStatus.OPEN]: [],
+    [OrderStatus.CANCELED]: [],
+    [OrderStatus.EXPIRED]: [],
+    [OrderStatus.EXECUTED]: [],
   };
+
   for (const element of data) {
     const statuses = obj[element.status];
     if (statuses) {

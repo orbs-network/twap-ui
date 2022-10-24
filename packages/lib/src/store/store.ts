@@ -81,6 +81,7 @@ export const useLimitPriceStore = create<PriceState>((set, get) => ({
   setLimitPrice: (limitPrice) => set({ limitPrice }),
   toggleLimit: (limitPrice) => set({ isLimitOrder: !get().isLimitOrder, limitPrice }),
   reset: () => set(priceInitialState),
+  hideLimit: () => set({ isLimitOrder: false }),
 }));
 
 export const useTradeSizeStore = create<TradeSizeState>((set) => ({
@@ -183,6 +184,7 @@ const useAccountBalances = (token?: Token) => {
 const useSrcToken = () => {
   const { setSrcToken, setSrcTokenAmount, srcTokenInfo, srcTokenAmount, srcToken } = useSrcTokenStore();
   const { tradeSize, setTradeSize } = useTradeSizeStore();
+  const { reset } = useLimitPriceStore();
 
   const { getBnAmount } = useUiAmountToBigNumber(srcToken);
   const { getUiAmount } = useBigNumberToUiAmount(srcToken);
@@ -203,6 +205,7 @@ const useSrcToken = () => {
 
   const onSrcTokenSelect = (token: TokenInfo) => {
     setSrcToken(token);
+    reset();
   };
 
   const { isLoading: usdValueLoading, data: usdValue } = useUsdValue(srcToken);
@@ -231,11 +234,13 @@ const useSrcToken = () => {
 const useDstToken = () => {
   const { setDstToken, dstTokenInfo, dstToken } = useDstTokenStore();
   const { isLoading: usdValueLoading, data: dstTokenUsdValue } = useUsdValue(dstToken);
+  const { reset } = useLimitPriceStore();
 
   const { data: balance, isLoading: balanceLoading } = useAccountBalances(dstToken);
 
   const onDstTokenSelect = (token: TokenInfo) => {
     setDstToken(token);
+    reset();
   };
 
   const showAmount = !usdValueLoading;
@@ -425,53 +430,89 @@ const useChangeTokenPositions = () => {
 
 export const useLimitPrice = () => {
   const { isLimitOrder, limitPrice, toggleLimit, setLimitPrice } = useLimitPriceStore();
-
+  const { srcToken, srcTokenInfo } = useSrcTokenStore();
+  const { dstToken, dstTokenInfo } = useDstTokenStore();
   const onChange = (amountUi?: string) => {
     setLimitPrice(amountUi ? BigNumber(amountUi) : undefined);
   };
 
-  const { marketPrice, leftToken, rightToken, toggleInverted, inverted, leftTokenInfo, rightTokenInfo } = useMarketPrice();
+  const { data: srcTokenUSD = BigNumber(0) } = useUsdValue(srcToken);
+  const { data: dstTokenUSD = BigNumber(1) } = useUsdValue(dstToken);
+
+  const { price, toggleInverted, inverted, leftTokenInfo, rightTokenInfo } = usePrice(srcTokenInfo, dstTokenInfo, srcTokenUSD, dstTokenUSD);
+
   const onToggleLimit = () => {
-    toggleLimit(marketPrice);
+    toggleLimit(price);
   };
+
   return {
     isLimitOrder,
     onToggleLimit,
     toggleInverted,
     onChange,
-    leftToken,
-    rightToken,
     leftTokenInfo,
     rightTokenInfo,
     uiPrice: limitPrice && inverted ? BigNumber(1).div(limitPrice).toFormat() : limitPrice?.toFormat(),
   };
 };
 
-const useMarketPrice = () => {
+export const usePrice = (srcTokenInfo?: TokenInfo, dstTokenInfo?: TokenInfo, srcTokenPrice?: BigNumber, dstTokenPrice?: BigNumber) => {
   const [inverted, setInverted] = useState(false);
-  const { srcToken, srcTokenInfo } = useSrcTokenStore();
-  const { dstToken, dstTokenInfo } = useDstTokenStore();
-
-  const leftToken = inverted ? dstToken : srcToken;
-  const rightToken = !inverted ? dstToken : srcToken;
 
   const leftTokenInfo = inverted ? dstTokenInfo : srcTokenInfo;
   const rightTokenInfo = !inverted ? dstTokenInfo : srcTokenInfo;
 
-  const { data: leftUsdValue = BigNumber(0) } = useUsdValue(leftToken);
-  const { data: rightUsdValue = BigNumber(1) } = useUsdValue(rightToken);
-  const marketPrice = leftUsdValue.div(rightUsdValue);
+  const price = srcTokenPrice && dstTokenPrice ? srcTokenPrice.div(dstTokenPrice) : undefined;
+  const invertedPrice = dstTokenPrice && srcTokenPrice ? dstTokenPrice.div(srcTokenPrice) : undefined;
 
   return {
-    marketPrice: leftToken && rightToken ? marketPrice : undefined,
+    price,
     toggleInverted: () => setInverted((prevState) => !prevState),
-    leftToken,
-    rightToken,
     inverted,
     leftTokenInfo,
     rightTokenInfo,
+    uiPrice: inverted ? invertedPrice : price,
   };
 };
+
+// const useOrderHistoryPrice = (srcToken: TokenInfo, dstToken: TokenInfo, srcAmount:   ) => {
+
+// }
+
+const useMarketPrice = () => {
+  const { srcTokenInfo, srcToken } = useSrcTokenStore();
+  const { dstTokenInfo, dstToken } = useDstTokenStore();
+
+  const { data: srcTokenUsdPrice = BigNumber(0) } = useUsdValue(srcToken);
+  const { data: dstTokenUsdPrice = BigNumber(1) } = useUsdValue(dstToken);
+  return usePrice(srcTokenInfo, dstTokenInfo, srcTokenUsdPrice, dstTokenUsdPrice);
+};
+
+// const useMarketPrice = () => {
+//   const [inverted, setInverted] = useState(false);
+//   const { srcToken, srcTokenInfo } = useSrcTokenStore();
+//   const { dstToken, dstTokenInfo } = useDstTokenStore();
+
+//   const leftToken = inverted ? dstToken : srcToken;
+//   const rightToken = !inverted ? dstToken : srcToken;
+
+//   const leftTokenInfo = inverted ? dstTokenInfo : srcTokenInfo;
+//   const rightTokenInfo = !inverted ? dstTokenInfo : srcTokenInfo;
+
+//   const { data: leftUsdValue = BigNumber(0) } = useUsdValue(leftToken);
+//   const { data: rightUsdValue = BigNumber(1) } = useUsdValue(rightToken);
+//   const marketPrice = leftUsdValue.div(rightUsdValue);
+
+//   return {
+//     marketPrice: leftToken && rightToken ? marketPrice : undefined,
+//     toggleInverted: () => setInverted((prevState) => !prevState),
+//     leftToken,
+//     rightToken,
+//     inverted,
+//     leftTokenInfo,
+//     rightTokenInfo,
+//   };
+// };
 
 export const useSubmitButtonValidation = () => {
   const { srcTokenAmount, balance: srcTokenBalance, srcToken, srcTokenUiAmount } = useSrcToken();
@@ -798,4 +839,14 @@ export const makeEllipsisAddress = (address?: string, padding: number = 6): stri
 
 const getToken = (tokenInfo?: TokenInfo) => {
   return erc20(tokenInfo!.symbol, tokenInfo!.address, tokenInfo!.decimals);
+};
+
+enum OrderStatus {
+  InProgress,
+  Filled,
+  Canceled,
+}
+
+const useOrdersHistory = (status: OrderStatus) => {
+  const { account } = useWeb3();
 };

@@ -50,7 +50,6 @@ const { USD, Balance, Button, Icon, NumberDisplay, TimeSelector, NumericInput, C
 const LimitPrice = TWAPLib.components.LimitPrice;
 const TwapContext = TWAPLib.TwapContext;
 const TwapProvider = TWAPLib.TwapProvider;
-const TradeInfoModal = TWAPLib.components.TradeInfoModal;
 const TradeInfoDetails = TWAPLib.components.TradeInfoDetails;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 const TradeInfoExplanation = TWAPLib.components.TradeInfoExplanation;
@@ -90,7 +89,7 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
         <ThemeProvider theme={getTheme("dark")}>
           <CssBaseline />
           <GlobalStyles styles={globalStyle} />
-          {/* <StyledLayout>
+          <StyledLayout>
             <StyledColumnGap gap={10}>
               <SrcTokenPanel />
               <ChangeTokensOrder />
@@ -101,7 +100,7 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
               <TradeInterval />
               <SubmitButton />
             </StyledColumnGap>
-          </StyledLayout> */}
+          </StyledLayout>
         </ThemeProvider>
       </TwapProvider>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
@@ -112,20 +111,20 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
 export default TWAP;
 
 const MarketPrice = () => {
-  const { marketPrice, toggleInverted, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useMarketPrice();
+  const { price, toggleInverted, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useMarketPrice();
 
   return (
     <StyledMarketPrice>
       <StyledCard>
         <StyledFlexBetween>
           <Text className="title">Current Market Price</Text>
-          {marketPrice ? (
+          {price ? (
             <StyledMarketPriceRight>
               <Text>1</Text>
               <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} />
-              <Tooltip text={marketPrice.toString()}>
+              <Tooltip text={price?.toString()}>
                 <Text>
-                  = <NumberDisplay value={marketPrice.toString()} />
+                  = <NumberDisplay value={price?.toString()} />
                 </Text>
               </Tooltip>
 
@@ -222,7 +221,7 @@ const LimitPriceDisplay = () => {
         <StyledColumnGap>
           <StyledFlexStart>
             <Tooltip text={warning}>
-              <StyledSwitch disabled={!!warning} value={!isLimitOrder} onChange={onToggleLimit} />
+              <StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />
             </Tooltip>
             <Label tooltipText="some text">Limit Price</Label>
           </StyledFlexStart>

@@ -48,10 +48,11 @@ export interface Web3State {
 }
 
 export interface PriceState extends BaseState {
-  isLimitOrder: Boolean;
+  isLimitOrder: boolean;
   toggleLimit: (limitPrice?: BigNumber) => void;
   limitPrice?: BigNumber;
   setLimitPrice: (value?: BigNumber) => void;
+  hideLimit: () => void;
 }
 
 export interface TokenInfo {

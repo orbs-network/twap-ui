@@ -8,14 +8,15 @@ import { Typography } from "@mui/material";
 interface Props {
   children: string;
   tooltipText?: string | ReactElement;
+  className?: string;
 }
 
-function Label({ children, tooltipText }: Props) {
+function Label({ children, tooltipText, className }: Props) {
   if (tooltipText) {
     return (
       <Tooltip text={tooltipText}>
         <StyledTooltipContent>
-          <StyledLabel>{children}</StyledLabel>
+          <StyledLabel className={className}>{children}</StyledLabel>
           <Icon icon={<AiOutlineInfoCircle style={{ width: 15, height: 15 }} />} />
         </StyledTooltipContent>
       </Tooltip>
