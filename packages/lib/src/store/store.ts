@@ -457,26 +457,43 @@ export const useLimitPrice = () => {
   const { dstTokenInfo } = useDstToken();
   const [inverted, setInverted] = useState(false);
   const { marketPrice } = useMarketPrice();
+  const [limitPriceUI, setlimitPriceUI] = useState<BigNumber | undefined>(undefined);
+  const [invertedUI, setInvertedUI] = useState(false);
 
   const leftTokenInfo = inverted ? dstTokenInfo : srcTokenInfo;
   const rightTokenInfo = !inverted ? dstTokenInfo : srcTokenInfo;
 
   const onChange = (amountUi?: string) => {
     setLimitPrice(amountUi ? BigNumber(amountUi) : undefined);
+    setlimitPriceUI(amountUi ? BigNumber(amountUi) : undefined);
+    setInvertedUI(false);
   };
 
   const onToggleLimit = () => {
     toggleLimit(marketPrice);
+    setlimitPriceUI(marketPrice);
+    setInvertedUI(false);
+    setInverted(false);
+  };
+
+  const toggleInverted = () => {
+    setInverted(!inverted);
+    if (!invertedUI) {
+      setlimitPriceUI(BigNumber(1).div(limitPrice || 1));
+    } else {
+      setlimitPriceUI(limitPrice);
+    }
+    setInvertedUI(!invertedUI);
   };
 
   return {
     isLimitOrder,
     onToggleLimit,
-    toggleInverted: () => setInverted(!inverted),
+    toggleInverted,
     onChange,
     leftTokenInfo,
     rightTokenInfo,
-    limitPriceUI: limitPrice && inverted ? BigNumber(1).div(limitPrice).toFormat() : limitPrice?.toFormat(),
+    limitPriceUI: limitPriceUI?.toFormat(),
     limitPrice,
   };
 };

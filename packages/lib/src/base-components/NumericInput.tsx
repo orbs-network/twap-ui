@@ -15,9 +15,22 @@ export interface Props {
   className?: string;
   maxValue?: string;
   prefix?: string;
+  decimalScale?: number;
 }
 
-function NumericInput({ prefix = "", onChange, value, disabled = false, placeholder = "Enter amount", onFocus, onBlur, loading = false, className = "", maxValue }: Props) {
+function NumericInput({
+  prefix = "",
+  onChange,
+  value,
+  disabled = false,
+  placeholder = "Enter amount",
+  onFocus,
+  onBlur,
+  loading = false,
+  className = "",
+  maxValue,
+  decimalScale,
+}: Props) {
   return (
     <StyledContainer className={className}>
       <Fade in={loading} style={{ transition: "0s" }}>
@@ -29,10 +42,11 @@ function NumericInput({ prefix = "", onChange, value, disabled = false, placehol
         <div>
           <NumericFormat
             disabled={disabled}
+            decimalScale={decimalScale}
             onBlur={onBlur}
             prefix={prefix && `${prefix} `}
             onFocus={onFocus}
-            thousandsGroupStyle="thousand"
+            // thousandsGroupStyle="thousand"
             placeholder={placeholder}
             isAllowed={(values) => {
               const { floatValue = 0 } = values;

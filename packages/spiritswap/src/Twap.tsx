@@ -215,7 +215,7 @@ const TradeSize = () => {
 };
 
 const LimitPriceDisplay = () => {
-  const { isLimitOrder, onToggleLimit } = TWAPLib.store.useLimitPrice();
+  const { isLimitOrder, onToggleLimit, onChange, limitPriceUI, leftTokenInfo, rightTokenInfo, toggleInverted } = TWAPLib.store.useLimitPrice();
   const warning = TWAPLib.validation.useLimitPriceToggleValidation();
 
   return (
@@ -228,7 +228,16 @@ const LimitPriceDisplay = () => {
             </Tooltip>
             <Label tooltipText="some text">Limit Price</Label>
           </StyledFlexStart>
-          {isLimitOrder && <LimitPrice placeholder="0" />}
+          {isLimitOrder && (
+            <LimitPrice
+              onChange={onChange}
+              toggleInverted={toggleInverted}
+              limitPriceUI={limitPriceUI}
+              leftTokenInfo={leftTokenInfo}
+              rightTokenInfo={rightTokenInfo}
+              placeholder="0"
+            />
+          )}
         </StyledColumnGap>
       </StyledCard>
     </StyledPrice>
