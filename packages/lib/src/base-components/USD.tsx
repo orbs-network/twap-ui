@@ -2,11 +2,11 @@ import React from "react";
 import NumberDisplay from "./NumberDisplay";
 import SmallLabel from "./SmallLabel";
 
-const USD = ({ isLoading = false, value, className = "" }: { isLoading?: boolean; value?: string | number; className?: string }) => {
+const USD = ({ isLoading = false, value, className = "", prefix = "" }: { prefix?: string; isLoading?: boolean; value?: string | number; className?: string }) => {
   if (value == null) return null;
   return (
     <SmallLabel loading={isLoading} className={className}>
-      ~$ <NumberDisplay value={value} />
+      {prefix} ~$ <NumberDisplay value={value} />
     </SmallLabel>
   );
 };

@@ -41,10 +41,14 @@ function App() {
             const Component = dapp.Component;
             const Layout = dapp.Layout;
             return (
-              <Layout key={dapp.id}>
-                <Component TokenSelectModal={TokenSelectModal} provider={library} connect={() => activate(injectedConnector)} />
-                <Orders tokensList={list} provider={library} />
-              </Layout>
+              <StyledContainer key={dapp.id}>
+                <Layout>
+                  <Component TokenSelectModal={TokenSelectModal} provider={library} connect={() => activate(injectedConnector)} />
+                </Layout>
+                <Layout>
+                  <Orders tokensList={list} provider={library} />
+                </Layout>
+              </StyledContainer>
             );
           }
           return null;
@@ -55,6 +59,13 @@ function App() {
 }
 
 export default App;
+
+const StyledContainer = styled(Box)({
+  display: "flex",
+  flexDirection: "column",
+
+  gap: 30,
+});
 
 interface TokenInfo {
   symbol: string;

@@ -16,10 +16,10 @@ export type LimitOrderItem = {
 };
 
 export enum OrderStatus {
-  OPEN,
-  CANCELED,
-  EXECUTED,
-  EXPIRED,
+  OPEN = "In Progress",
+  CANCELED = "Canceled",
+  FILLED = "Filled",
+  EXPIRED = "Expired",
 }
 
 const mod = function (n: number, m: number) {
@@ -27,7 +27,7 @@ const mod = function (n: number, m: number) {
   return Math.floor(remain >= 0 ? remain : remain + m);
 };
 
-const status = [OrderStatus.OPEN, OrderStatus.CANCELED, OrderStatus.EXECUTED, OrderStatus.EXPIRED];
+const status = [OrderStatus.OPEN, OrderStatus.CANCELED, OrderStatus.FILLED, OrderStatus.EXPIRED];
 
 export const createTxData = (): LimitOrderItem[] => {
   return Array.from({ length: 10 }).map((_, i) => {
@@ -57,7 +57,7 @@ export const getData = (): { [key: string]: LimitOrderItem[] } => {
     [OrderStatus.OPEN]: [],
     [OrderStatus.CANCELED]: [],
     [OrderStatus.EXPIRED]: [],
-    [OrderStatus.EXECUTED]: [],
+    [OrderStatus.FILLED]: [],
   };
 
   for (const element of data) {

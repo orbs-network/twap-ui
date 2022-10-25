@@ -1,17 +1,19 @@
 import { Box, styled } from "@mui/system";
 import TWAPLib from "@orbs-network/twap-ui";
 import { createTheme } from "@mui/material/styles";
+import { CSSProperties } from "react";
 
 const { USD, Button, Icon, NumericInput, Card, Switch } = TWAPLib.baseComponents;
 
 const { TradeInfoModal } = TWAPLib.components;
 
-const colors = {
+export const colors = {
   cardBackground: "#18202F",
   submitButton: "rgb(29, 147, 132)",
   submitButtonBorder: "1px solid rgba(100, 221, 192, 0.15)",
   text: "#ffffff",
   icon: "#60E6C5",
+  light: "#60E6C5",
   selectTokenFocus: "#1F2937",
   mainBackground: "#000315",
   borderColor: "rgb(55, 65, 81)",
@@ -49,10 +51,14 @@ export const StyledNumbericInput = styled(NumericInput)({
   },
 });
 
-export const StyledCard = styled(Card)({
+const cardStyles: CSSProperties = {
   padding: 12,
   background: colors.cardBackground,
   borderRadius: "0.375rem",
+};
+
+export const StyledCard = styled(Card)({
+  ...cardStyles,
 });
 
 export const StyledIcon = styled(Icon)({
@@ -100,6 +106,15 @@ export const StyledLimitPrice = styled(Box)({
 export const StyledTokenOrder = styled(Box)({ width: "100%" });
 
 export const globalStyle = {
+  "& .twap-card": { ...cardStyles },
+  "& .twap-order-progress-line-preview": {
+    "&::after": {
+      background: "#373E55!important",
+    },
+    "& .MuiLinearProgress-bar": {
+      background: colors.light,
+    },
+  },
   "*": {
     fontFamily: "inherit",
   },

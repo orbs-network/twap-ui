@@ -12,6 +12,8 @@ import { ReactNode, useContext, useState } from "react";
 import { GlobalStyles } from "@mui/material";
 import axios from "axios";
 import BigNumber from "bignumber.js";
+import { convertDecimals } from "@defi.org/web3-candies";
+
 import {
   getTheme,
   globalStyle,
@@ -62,8 +64,8 @@ const getUsdPrice = async (srcToken: string, srcDecimals: number): Promise<BigNu
   const result = await axios.get(
     `https://apiv5.paraswap.io/prices/?srcToken=${srcToken}&destToken=0x04068DA6C83AFCFA0e13ba15A6696662335D5B75&srcDecimals=${srcDecimals}&destDecimals=8&amount=${amount}&side=SELL&network=${dappIntegrationChainId}`
   );
-
-  return BigNumber(result.data.priceRoute.destUSD);
+  const priceRoute = result.data.priceRoute;
+  return convertDecimals(priceRoute.destAmount, priceRoute.destDecimals, 18);
 };
 
 const queryClient = new QueryClient({
@@ -99,6 +101,7 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
               <MaxDuration />
               <TradeInterval />
               <SubmitButton />
+              <OrderConfirmation />
             </StyledColumnGap>
           </StyledLayout>
         </ThemeProvider>
@@ -111,20 +114,20 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
 export default TWAP;
 
 const MarketPrice = () => {
-  const { price, toggleInverted, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useMarketPrice();
+  const { toggleInverted, leftTokenInfo, rightTokenInfo, marketPrice } = TWAPLib.store.useMarketPrice();
 
   return (
     <StyledMarketPrice>
       <StyledCard>
         <StyledFlexBetween>
           <Text className="title">Current Market Price</Text>
-          {price ? (
+          {marketPrice ? (
             <StyledMarketPriceRight>
               <Text>1</Text>
               <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} />
-              <Tooltip text={price?.toString()}>
+              <Tooltip text={marketPrice?.toString()}>
                 <Text>
-                  = <NumberDisplay value={price?.toString()} />
+                  = <NumberDisplay value={marketPrice?.toString()} decimalScale={3} />
                 </Text>
               </Tooltip>
 
@@ -190,8 +193,8 @@ const ChangeTokensOrder = () => {
 const TradeSize = () => {
   const { srcTokenInfo, srcTokenUiAmount } = TWAPLib.store.useSrcToken();
 
-  const { uiTradeSize, onChange, totalTrades, uiUsdValue, usdValueLoading } = TWAPLib.store.useTradeSize();
-
+  const { uiTradeSize, onChange, totalTrades, uiUsdValue } = TWAPLib.store.useTradeSize();
+  const { usdValueLoading } = TWAPLib.store.useSrcToken();
   return (
     <StyledTrade>
       <StyledCard>
@@ -321,48 +324,73 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
 };
 
 const SubmitButton = () => {
-  const { loading, text, onClick, disabled, showConfirmation, closeConfirmation } = TWAPLib.store.useSubmitOrder();
+  const { loading, text, onClick, disabled } = TWAPLib.store.useSubmitOrder();
 
   return (
-    <>
-      <StyledButton loading={loading} onClick={onClick} disabled={disabled}>
-        {text}
-      </StyledButton>
-      <OrderConfirmation open={showConfirmation} onClose={closeConfirmation} />
-    </>
+    <StyledButton loading={loading} onClick={onClick} disabled={disabled}>
+      {text}
+    </StyledButton>
   );
 };
 
-const OrderConfirmation = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
-  const { srcTokenUsdValue, srcTokenUiAmount, srcTokenInfo, dstTokenUsdValue, dstTokenUiAmount, dstTokenInfo } = TWAPLib.store.useConfirmation();
-  const [accepted, setAccepted] = useState(false);
+const OrderConfirmation = () => {
+  const {
+    srcTokenUsdValue,
+    srcTokenUiAmount,
+    srcTokenInfo,
+    dstTokenUsdValue,
+    dstTokenUiAmount,
+    dstTokenInfo,
+    isLimitOrder,
+    closeConfirmation,
+    showConfirmation,
+    disclaimerAccepted,
+    setDisclaimerAccepted,
+  } = TWAPLib.store.useConfirmation();
+
   const { ellipsisAccount, account } = TWAPLib.store.useWeb3();
+
   return (
-    <StyledTradeInfoModal open={open} onClose={onClose}>
-      <StyledOrderConfirmation>
-        <StyledColumnGap gap={20}>
+    <>
+      <StyledTradeInfoModal open={showConfirmation} onClose={closeConfirmation}>
+        <StyledOrderConfirmation>
           <StyledColumnGap gap={20}>
-            <TokenOrderPreview title="From" amount={srcTokenUiAmount} usdPrice={srcTokenUsdValue} name={srcTokenInfo?.symbol} logo={srcTokenInfo?.logoUrl} />
-            <TokenOrderPreview title="To" amount={dstTokenUiAmount} usdPrice={dstTokenUsdValue} name={dstTokenInfo?.symbol} logo={dstTokenInfo?.logoUrl} />
-            <OrderConfirmationLimitPrice />
-            <TradeInfoDetailsDisplay />
-            <TradeDetails />
+            <StyledColumnGap gap={20}>
+              <TokenOrderPreview
+                isSrc={true}
+                isLimitOrder={isLimitOrder}
+                title="From"
+                amount={srcTokenUiAmount}
+                usdPrice={srcTokenUsdValue}
+                name={srcTokenInfo?.symbol}
+                logo={srcTokenInfo?.logoUrl}
+              />
+              <TokenOrderPreview
+                isLimitOrder={isLimitOrder}
+                title="To"
+                amount={dstTokenUiAmount}
+                usdPrice={dstTokenUsdValue}
+                name={dstTokenInfo?.symbol}
+                logo={dstTokenInfo?.logoUrl}
+              />
+              <OrderConfirmationLimitPrice />
+              <TradeInfoDetailsDisplay />
+              <TradeDetails />
+            </StyledColumnGap>
+            <StyledColumnGap gap={20}>
+              <Box style={{ display: "flex", gap: 5 }}>
+                <SmallLabel>Accept Disclaimer</SmallLabel>
+                <Switch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
+              </Box>
+              <Text className="output-text">
+                Output will be sent to <Tooltip text={account}>{ellipsisAccount}</Tooltip>
+              </Text>
+              <SubmitButton />
+            </StyledColumnGap>
           </StyledColumnGap>
-          <StyledColumnGap gap={20}>
-            <Box style={{ display: "flex", gap: 5 }}>
-              <SmallLabel>Accept Disclaimer</SmallLabel>
-              <Switch value={accepted} onChange={() => setAccepted(!accepted)} />
-            </Box>
-            <Text className="output-text">
-              Output will be sent to <Tooltip text={account}>{ellipsisAccount}</Tooltip>
-            </Text>
-            <StyledButton onClick={() => {}} disabled={!accepted}>
-              Confirm order
-            </StyledButton>
-          </StyledColumnGap>
-        </StyledColumnGap>
-      </StyledOrderConfirmation>
-    </StyledTradeInfoModal>
+        </StyledOrderConfirmation>
+      </StyledTradeInfoModal>
+    </>
   );
 };
 
@@ -412,7 +440,23 @@ const OrderConfirmationLimitPrice = () => {
   );
 };
 
-const TokenOrderPreview = ({ title, logo, name, usdPrice, amount }: { title: string; logo?: string; name?: string; usdPrice?: string; amount?: string }) => {
+const TokenOrderPreview = ({
+  isLimitOrder,
+  title,
+  logo,
+  name,
+  usdPrice,
+  amount,
+  isSrc,
+}: {
+  isLimitOrder?: boolean;
+  title: string;
+  logo?: string;
+  name?: string;
+  usdPrice?: string;
+  amount?: string;
+  isSrc?: boolean;
+}) => {
   return (
     <StyledTokenOrder>
       <StyledCard>
@@ -424,7 +468,7 @@ const TokenOrderPreview = ({ title, logo, name, usdPrice, amount }: { title: str
           <StyledFlexBetween>
             <TokenDisplay name={name} logo={logo} />
             <SmallLabel>
-              <NumberDisplay value={amount} />
+              {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <NumberDisplay value={amount} />
             </SmallLabel>
           </StyledFlexBetween>
         </StyledColumnGap>

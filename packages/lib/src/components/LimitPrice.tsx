@@ -9,7 +9,7 @@ import Tooltip from "../base-components/Tooltip";
 import Switch from "../base-components/Switch";
 
 function LimitPrice({ placeholder = "0.00" }: { placeholder?: string }) {
-  const { uiPrice, toggleInverted, onChange, leftTokenInfo, rightTokenInfo } = store.useLimitPrice();
+  const { limitPriceUI, toggleInverted, onChange, leftTokenInfo, rightTokenInfo } = store.useLimitPrice();
   // TODO start from left input
   return (
     <StyledContainer className="twap-price">
@@ -20,7 +20,7 @@ function LimitPrice({ placeholder = "0.00" }: { placeholder?: string }) {
         <Typography>=</Typography>
       </StyledLeft>
       <StyledNumeric>
-        <NumericInput placeholder={placeholder} onChange={onChange} value={uiPrice?.toLocaleString()} />
+        <NumericInput placeholder={placeholder} onChange={onChange} value={limitPriceUI?.toLocaleString()} />
       </StyledNumeric>
       <StyledRight>
         <TokenName name={rightTokenInfo?.symbol} />

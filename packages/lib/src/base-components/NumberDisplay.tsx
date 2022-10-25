@@ -1,6 +1,6 @@
 import { NumericFormat } from "react-number-format";
 
-function NumberDisplay({ value }: { value?: string | number }) {
+function NumberDisplay({ value, decimalScale = 6, prefix }: { value?: string | number; decimalScale?: number; prefix?: string }) {
   return value ? (
     <NumericFormat
       type="text"
@@ -10,7 +10,8 @@ function NumberDisplay({ value }: { value?: string | number }) {
       thousandSeparator=","
       className="twap-number-display"
       displayType="text"
-      decimalScale={6}
+      decimalScale={decimalScale}
+      prefix={prefix}
     />
   ) : (
     <> -</>

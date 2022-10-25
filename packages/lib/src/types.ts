@@ -5,6 +5,13 @@ interface BaseState {
   reset: () => void;
 }
 
+export interface GlobalState extends BaseState {
+  showConfirmation: boolean;
+  setShowConfirmation: (value: boolean) => void;
+  disclaimerAccepted: boolean;
+  setDisclaimerAccepted: (value: boolean) => void;
+}
+
 export interface SrcTokenState extends BaseState {
   srcTokenInfo?: TokenInfo;
   srcToken?: Token;
@@ -45,6 +52,8 @@ export interface Web3State {
   setChain: (chain?: number) => void;
   integrationChain?: number;
   setIntegrationChain: (value?: number) => void;
+  integrationKey?: string;
+  setIntegrationKey: (value?: string) => void;
 }
 
 export interface PriceState extends BaseState {

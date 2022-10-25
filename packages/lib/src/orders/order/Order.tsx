@@ -1,47 +1,50 @@
 import { Box, styled } from "@mui/system";
 import React, { ReactNode, useState } from "react";
-import Text from "../base-components/Text";
+import Text from "../../base-components/Text";
 import LinearProgress from "@mui/material/LinearProgress";
-import TokenName from "../base-components/TokenName";
-import TokenLogo from "../base-components/TokenLogo";
-import NumberDisplay from "../base-components/NumberDisplay";
+import TokenName from "../../base-components/TokenName";
+import TokenLogo from "../../base-components/TokenLogo";
+import NumberDisplay from "../../base-components/NumberDisplay";
 import { BsArrowRight } from "react-icons/bs";
-import Icon from "../base-components/Icon";
+import Icon from "../../base-components/Icon";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import Label from "../base-components/Label";
-import Tooltip from "../base-components/Tooltip";
-import SmallLabel from "../base-components/SmallLabel";
-import Button from "../base-components/Button";
-import TokenPriceCompare from "../base-components/TokenPriceCompare";
-import { useTokenFromTokensList } from "../store/limit-order";
+import Label from "../../base-components/Label";
+import Tooltip from "../../base-components/Tooltip";
+import SmallLabel from "../../base-components/SmallLabel";
+import Button from "../../base-components/Button";
+import TokenPriceCompare from "../../base-components/TokenPriceCompare";
+import { useTokenFromTokensList } from "../../store/limit-order";
+import Card from "../../base-components/Card";
+import { OrderStatus } from "../data";
 
 export interface Props {}
-
-function LimitOrder({ onExpand, expanded }: { onExpand: () => void; expanded: boolean }) {
+function LimitOrder({ onExpand, expanded, type }: { onExpand: () => void; expanded: boolean; type: OrderStatus }) {
   return (
-    <StyledContainer expanded={expanded}>
-      <StyledSummary onClick={onExpand}>
-        <StyledColumnFlex>
-          <StyledHeader>
-            <Text>#123</Text>
-            <Text>12 oct 22 10:00</Text>
-          </StyledHeader>
+    <StyledContainer className="twap-order">
+      <StyledAccordion expanded={expanded}>
+        <StyledSummary onClick={onExpand}>
+          <StyledColumnFlex>
+            <StyledHeader>
+              <Text>#123</Text>
+              <Text>12 oct 22 10:00</Text>
+            </StyledHeader>
 
-          {expanded ? <StyledSeperator /> : <PreviewProgressBar progress={80} />}
-          <StyledFlexStart>
-            <TokenDetails address="WBTC" />
-            <Icon className="icon" icon={<BsArrowRight style={{ width: 30, height: 30 }} />} />
-            <TokenDetails address="WETH" />
-          </StyledFlexStart>
-          <StyledSeperator />
-        </StyledColumnFlex>
-        <StyledSpace />
-      </StyledSummary>
-      <AccordionDetails style={{ padding: 0 }}>
-        <OrderDetails />
-      </AccordionDetails>
+            {expanded ? <StyledSeperator /> : <PreviewProgressBar progress={80} />}
+            <StyledFlexStart>
+              <TokenDetails address="WBTC" />
+              <Icon className="icon" icon={<BsArrowRight style={{ width: 30, height: 30 }} />} />
+              <TokenDetails address="WETH" />
+            </StyledFlexStart>
+            <StyledSeperator />
+          </StyledColumnFlex>
+          <StyledSpace />
+        </StyledSummary>
+        <AccordionDetails style={{ padding: 0 }}>
+          <OrderDetails type={type} />
+        </AccordionDetails>
+      </StyledAccordion>
     </StyledContainer>
   );
 }
@@ -72,10 +75,12 @@ const StyledSummary = styled(AccordionSummary)({
   padding: 0,
 });
 
-const StyledContainer = styled(Accordion)({
+const StyledContainer = styled(Card)({});
+
+const StyledAccordion = styled(Accordion)({
   width: "100%",
   fontFamily: "inherit",
-  padding: 10,
+  padding: 0,
   margin: 0,
   background: "transparent",
   boxShadow: "unset",
@@ -102,7 +107,7 @@ const StyledHeader = styled(Box)({
 });
 
 const PreviewProgressBar = ({ progress, emptyBarColor }: { progress: number; emptyBarColor?: string }) => {
-  return <StyledPreviewLinearProgress variant="determinate" value={progress} emptybarcolor={emptyBarColor} />;
+  return <StyledPreviewLinearProgress variant="determinate" value={progress} emptybarcolor={emptyBarColor} className="twap-order-progress-line-preview" />;
 };
 
 const TokenDetails = ({ hideUSD, address }: { hideUSD?: boolean; address: string }) => {
@@ -119,7 +124,8 @@ const TokenDetails = ({ hideUSD, address }: { hideUSD?: boolean; address: string
       </Box>
       {!hideUSD && (
         <Text className="usd">
-          ~$ <NumberDisplay value={100000} />
+          ≈$
+          <NumberDisplay value={100000} />
         </Text>
       )}
     </StyledTokenDetails>
@@ -132,13 +138,13 @@ const StyledTokenDetails = styled(Box)({
   alignItems: "center",
   justifyContent: "center",
   gap: 10,
-  fontSize: 18,
+
   "& .top": {
     display: "flex",
     alignItems: "center",
     gap: 5,
     "& *": {
-      fontSize: "inherit",
+      fontSize: 18,
     },
   },
   "& .twap-token-logo": {
@@ -183,7 +189,7 @@ const OrderPriceCompare = () => {
   return null;
 };
 
-const OrderDetails = () => {
+const OrderDetails = ({ type }: { type: OrderStatus }) => {
   const [fullInfo, setFullInfo] = useState(false);
   // TODO use addresses
   return (
@@ -219,7 +225,7 @@ const OrderDetails = () => {
           12 oct 22 10:00
         </DetailRow>
       </StyledColumnFlex>
-      <CancelOrderButton />
+      {type === OrderStatus.OPEN && <CancelOrderButton />}
     </StyledOrderDetails>
   );
 };
@@ -303,7 +309,7 @@ const StyledProgressContent = styled(StyledColumnFlex)({
 });
 
 const MainProgressBar = ({ progress, emptyBarColor }: { progress: number; emptyBarColor?: string }) => {
-  return <StyledMainProgressBar variant="determinate" value={progress} />;
+  return <StyledMainProgressBar variant="determinate" value={progress} className="twap-order-main-progress-bar" />;
 };
 
 const StyledMainProgressBar = styled(LinearProgress)({

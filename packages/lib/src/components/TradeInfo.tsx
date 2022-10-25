@@ -4,6 +4,8 @@ import Label from "../base-components/Label";
 import Modal from "../base-components/Modal";
 import NumberDisplay from "../base-components/NumberDisplay";
 import Text from "../base-components/Text";
+import TokenLogo from "../base-components/TokenLogo";
+import TokenName from "../base-components/TokenName";
 import Tooltip from "../base-components/Tooltip";
 import { store } from "../store/store";
 
@@ -18,11 +20,21 @@ export function TradeInfoModal({ onClose, open, children, className = "" }: { on
 const StyledModalContent = styled(Box)({});
 
 export function Expiration() {
-  const { maxDurationWithExtraMinuteUi } = store.useConfirmation();
+  const { deadlineUi } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText="text">Expiration</Label>
-      <Text>{maxDurationWithExtraMinuteUi}</Text>
+      <Text>{deadlineUi}</Text>
+    </StyledRow>
+  );
+}
+
+export function OrderType() {
+  const { isLimitOrder } = store.useConfirmation();
+  return (
+    <StyledRow className="twap-trade-info-row">
+      <Label tooltipText="text">Order type</Label>
+      <Text>{isLimitOrder ? "Limit order" : "Market order"}</Text>
     </StyledRow>
   );
 }
@@ -58,22 +70,36 @@ export function TradeInterval() {
 }
 
 export function MinimumReceived() {
-  const { minAmountOutUi, isLimitOrder } = store.useConfirmation();
+  const { minAmountOutUi, isLimitOrder, srcTokenInfo } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText="text">Minimum Received Per Trade:</Label>
-      <Text>
-        {isLimitOrder ? (
-          <Tooltip text={minAmountOutUi}>
-            <NumberDisplay value={minAmountOutUi} />
-          </Tooltip>
-        ) : (
-          "None"
-        )}
-      </Text>
+      {isLimitOrder ? (
+        <StyledMinumimReceived>
+          <Text>
+            <Tooltip text={minAmountOutUi}>
+              <NumberDisplay value={minAmountOutUi} />
+            </Tooltip>
+          </Text>
+          <TokenLogo logo={srcTokenInfo?.logoUrl} />
+          <TokenName name={srcTokenInfo?.symbol} />
+        </StyledMinumimReceived>
+      ) : (
+        <Text>None</Text>
+      )}
     </StyledRow>
   );
 }
+
+const StyledMinumimReceived = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  "& .twap-token-logo": {
+    width: 25,
+    height: 25,
+  },
+});
 
 const StyledRow = styled(Box)({
   display: "flex",
@@ -85,6 +111,7 @@ const StyledRow = styled(Box)({
 export const TradeInfoDetails = () => {
   return (
     <>
+      <OrderType />
       <Expiration />
       <TradeSize />
       <TotalTrades />

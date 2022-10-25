@@ -1,10 +1,11 @@
 import { Tab, Tabs, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import React from "react";
-import { OrderStatus } from "./data";
+import { createTxData, OrderStatus } from "./data";
 import OrdersList from "./OrdersList";
 import _ from "lodash";
-// TODO change name to orders
+import Label from "../base-components/Label";
+const data = createTxData();
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
@@ -14,30 +15,72 @@ function Orders() {
   };
 
   return (
-    <StyledContainer>
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs value={selectedTab} onChange={handleChange} aria-label="basic tabs example">
+    <StyledContainer className="twap-orders">
+      <StyledHeader className="twap-orders-header">
+        <StyledTitle>
+          <Label tooltipText="Some text">Orders</Label>
+        </StyledTitle>
+        <StyledTabs value={selectedTab} onChange={handleChange}>
           {_.keys(allOrders).map((key, index) => {
-            return <Tab label={key} {...a11yProps(index)} />;
+            return <Tab key={key} label={key} {...a11yProps(index)} />;
           })}
-        </Tabs>
-      </Box>
-
-      {_.keys(allOrders).map((key: any, index: number) => {
-        const orders = allOrders[key as any as OrderStatus];
-        if (selectedTab !== index) {
-          return null;
-        }
-        if (index == 2) {
-          return null;
-        }
-        return <OrdersList key={index} />;
-      })}
+        </StyledTabs>
+      </StyledHeader>
+      <StyledLists className="twap-orders-lists">
+        {_.keys(allOrders).map((key: any, index: number) => {
+          const orders = allOrders[key as any as OrderStatus];
+          if (selectedTab !== index) {
+            return null;
+          }
+          return <OrdersList orders={orders} type={key as OrderStatus} key={index} />;
+        })}
+      </StyledLists>
     </StyledContainer>
   );
 }
 
-const StyledContainer = styled(Box)({ width: "100%" });
+const StyledLists = styled(Box)({
+  maxHeight: 400,
+  overflow: "auto",
+});
+
+const StyledHeader = styled(Box)({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-start",
+  gap: 13,
+});
+
+const StyledTabs = styled(Tabs)({
+  border: "1px solid #202432",
+  width: "fit-content",
+  borderRadius: 6,
+  padding: 3,
+  "& .MuiTabs-indicator": {
+    height: "100%",
+    borderRadius: 4,
+    zIndex: 1,
+  },
+  "& .MuiTouchRipple-root": {
+    display: "none",
+  },
+  "& .MuiButtonBase-root": {
+    zIndex: 9,
+    color: "white",
+  },
+  "& .Mui-selected": {
+    color: "white",
+  },
+});
+const StyledContainer = styled(Box)({ width: "100%", paddingTop: 20, display: "flex", flexDirection: "column", gap: 15 });
+const StyledTitle = styled(Box)({
+  paddingLeft: 5,
+  width: "fit-content",
+  marginRight: "auto",
+  "& p": {
+    fontSize: 20,
+  },
+});
 
 export default Orders;
 
@@ -49,8 +92,8 @@ function a11yProps(index: number) {
 }
 
 const allOrders = {
-  [OrderStatus.OPEN]: [1, 2, 3],
-  [OrderStatus.CANCELED]: [4, 5, 6],
-  [OrderStatus.EXECUTED]: [7, 8, 9],
-  [OrderStatus.EXPIRED]: [10, 11, 12],
+  [OrderStatus.OPEN]: data,
+  [OrderStatus.CANCELED]: [],
+  [OrderStatus.FILLED]: data,
+  [OrderStatus.EXPIRED]: data,
 };
