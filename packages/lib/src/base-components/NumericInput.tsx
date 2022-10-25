@@ -2,6 +2,7 @@ import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";
+import { useEffect, useRef, useState } from "react";
 
 export interface Props {
   onChange: (value: string) => void;
@@ -52,7 +53,7 @@ function NumericInput({
               const { floatValue = 0 } = values;
               return maxValue ? floatValue <= parseFloat(maxValue) : true;
             }}
-            value={value}
+            value={value || null}
             thousandSeparator=","
             decimalSeparator="."
             customInput={StyledInput}

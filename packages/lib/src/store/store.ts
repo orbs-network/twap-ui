@@ -441,7 +441,7 @@ const useTokenOrWrappedToken = (tokenInfo?: TokenInfo) => {
 };
 
 const useChangeTokenPositions = () => {
-  const { srcTokenInfo, setSrcTokenAmount, setSrcToken } = useSrcToken();
+  const { srcTokenInfo, setSrcTokenAmount, setSrcToken } = useSrcTokenStore();
   const { setDstToken, dstTokenInfo, dstTokenAmount } = useDstToken();
 
   return () => {
@@ -457,7 +457,7 @@ export const useLimitPrice = () => {
   const { dstTokenInfo } = useDstToken();
   const [inverted, setInverted] = useState(false);
   const { marketPrice } = useMarketPrice();
-  const [limitPriceUI, setlimitPriceUI] = useState<BigNumber | undefined>(undefined);
+  const [limitPriceUI, setlimitPriceUI] = useState<BigNumber | undefined>(limitPrice);
   const [invertedUI, setInvertedUI] = useState(false);
 
   const leftTokenInfo = inverted ? dstTokenInfo : srcTokenInfo;
@@ -639,7 +639,6 @@ function useSubmitOrder() {
   );
 
   const values = useMemo(() => {
-    // return { text: "Reset", onClick: resetState };
     if (!account) {
       return { text: "Connect wallet", onClick: connect };
     }
@@ -818,14 +817,14 @@ const useBigNumberToUiAmount = (token?: Token, amount?: BigNumber) => {
   useEffect(() => {
     (async () => {
       if (!token) {
-        return;
+        return setData(undefined);
       }
       const result = await getUiAmount(amount);
       setData(result);
     })();
   }, [token, amount, getUiAmount]);
 
-  return { data, getUiAmount };
+  return { data: data || " ", getUiAmount };
 };
 
 const useUiAmountToBigNumber = (token?: Token, amountUi?: string) => {
@@ -844,7 +843,7 @@ const useUiAmountToBigNumber = (token?: Token, amountUi?: string) => {
   useEffect(() => {
     (async () => {
       if (!token) {
-        return;
+        return setData(undefined);
       }
       const result = await getBnAmount(amountUi);
       setData(result);

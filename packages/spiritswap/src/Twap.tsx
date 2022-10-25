@@ -424,7 +424,7 @@ const TradeInfoDetailsDisplay = () => {
 };
 
 const OrderConfirmationLimitPrice = () => {
-  const { isLimitOrder, toggleInverted, uiPrice, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useLimitPrice();
+  const { isLimitOrder, toggleInverted, limitPriceUI, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useLimitPrice();
 
   return (
     <StyledLimitPrice>
@@ -433,9 +433,9 @@ const OrderConfirmationLimitPrice = () => {
         {isLimitOrder ? (
           <div className="right">
             <Text>1</Text> <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} /> <Text>=</Text>
-            <Tooltip text={uiPrice}>
+            <Tooltip text={limitPriceUI}>
               <Text>
-                <NumberDisplay value={uiPrice || "0"} />
+                <NumberDisplay value={limitPriceUI || "0"} />
               </Text>
             </Tooltip>
             <TokenDisplay logo={rightTokenInfo?.logoUrl} name={rightTokenInfo?.symbol} />
