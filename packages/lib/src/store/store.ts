@@ -25,7 +25,7 @@ import { changeNetwork } from "./connect";
 import { TwapContext } from "../context";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
-// import lensAbi from "./lens-abi.json";
+import lensAbi from "./lens-abi.json";
 
 const srcTokenInitialState = {
   srcTokenInfo: undefined,
@@ -149,15 +149,17 @@ export const useWeb3Store = create<Web3State>((set) => ({
 const useTokenApproval = () => {
   const { account, chain, config } = useWeb3();
   const { srcToken, srcTokenAmount } = useSrcToken();
+
   const spender = config ? config.twapAddress : undefined;
 
   const { data: allowance, refetch } = useQuery(["allowance", account, srcToken?.address], async () => BigNumber(await srcToken!.methods.allowance(account!, spender!).call()), {
     enabled: !!account && !!chain && !!spender && !!srcToken && !!srcTokenAmount,
-    refetchInterval: 10_000,
+    refetchInterval: 5_000,
   });
 
   const { mutate: approve, isLoading: approveLoading } = useMutation(async () => {
     await srcToken?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account });
+    await new Promise((r) => setTimeout(r, 3000));
     await refetch();
   });
 
@@ -912,33 +914,38 @@ export const useOrders = () => {
   return useQuery(
     ["useOrders"],
     async () => {
-      // const lens = contract(lensAbi as Abi, config.lensContract);
-      // const orders = await lens.methods.makerOrders(account).call();
-      // const latestBlock = await web3?.eth.getBlockNumber();
-      // function parseStatus(status: number, latestBlock: number) {
-      //   if (status === 1) return OrderStatus.Canceled;
-      //   if (status === 2) return OrderStatus.Filled;
-      //   if (status < latestBlock) return OrderStatus.Expired;
-      //   return OrderStatus.Open;
-      // }
-      // return _.map(orders, (o) => {
-      // return {
-      //   srcToken: o.ask.srcToken,
-      //   dstToken: o.ask.dstToken,
-      //   srcTokenAmount: BigNumber(o.ask.srcAmount),
-      //   tradeSize: BigNumber(o.ask.srcBidAmount),
-      //   dstMinAmount: BigNumber(o.ask.dstMinAmount),
-      //   deadline: parseInt(o.ask.dealine),
-      //   delay: parseInt(o.ask.delay),
-      //   id: o.id,
-      //   status: parseStatus(parseInt(o.status), latestBlock!),
-      //   srcFilledAmount: BigNumber(o.srcFilledAmount),
-      //   price:
-      // };
-      // });
+      const lens = contract(lensAbi as Abi, config.lensContract);
+      const orders = await lens.methods.makerOrders(account).call();
+
+      const latestBlock = await web3?.eth.getBlockNumber();
+      function parseStatus(status: number, latestBlock: number) {
+        if (status === 1) return OrderStatus.Canceled;
+        if (status === 2) return OrderStatus.Filled;
+        if (status < latestBlock) return OrderStatus.Expired;
+        return OrderStatus.Open;
+      }
+      const arr = _.map(orders, (o) => {
+        return {
+          srcToken: o.ask.srcToken,
+          dstToken: o.ask.dstToken,
+          srcTokenAmount: BigNumber(o.ask.srcAmount), // left top (10 wbtc figma )
+          tradeSize: BigNumber(o.ask.srcBidAmount),
+          dstMinAmount: BigNumber(o.ask.dstMinAmount),
+          deadline: parseInt(o.ask.deadline),
+          delay: parseInt(o.ask.delay),
+          id: o.id,
+          status: parseStatus(parseInt(o.status), latestBlock!),
+          srcFilledAmount: BigNumber(o.srcFilledAmount),
+          time: parseInt(o.ask.time),
+          // price:
+        };
+      });
+
+      return _.groupBy(arr, "status");
     },
     {
       enabled: !!account && !!config && !!web3,
+      refetchInterval: 30_000,
     }
   );
 };

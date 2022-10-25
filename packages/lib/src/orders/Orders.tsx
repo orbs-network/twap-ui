@@ -5,10 +5,12 @@ import { createTxData, OrderStatus } from "./data";
 import OrdersList from "./OrdersList";
 import _ from "lodash";
 import Label from "../base-components/Label";
+import { useOrders } from "../store/store";
 const data = createTxData();
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
+  const { data: orders = {} } = useOrders();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
@@ -27,12 +29,11 @@ function Orders() {
         </StyledTabs>
       </StyledHeader>
       <StyledLists className="twap-orders-lists">
-        {_.keys(allOrders).map((key: any, index: number) => {
-          const orders = allOrders[key as any as OrderStatus];
+        {_.keys(orders).map((key: any, index: number) => {
           if (selectedTab !== index) {
             return null;
           }
-          return <OrdersList orders={orders} type={key as OrderStatus} key={index} />;
+          return <OrdersList orders={orders[key as any as OrderStatus]} type={key as OrderStatus} key={index} />;
         })}
       </StyledLists>
     </StyledContainer>

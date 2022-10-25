@@ -171,6 +171,16 @@
   { "inputs": [{ "internalType": "uint64", "name": "id", "type": "uint64" }], "name": "fill", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
   { "inputs": [], "name": "length", "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }], "stateMutability": "view", "type": "function" },
   {
+    "inputs": [
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "makerOrders",
+    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [{ "internalType": "uint64", "name": "id", "type": "uint64" }],
     "name": "order",
     "outputs": [
@@ -216,6 +226,13 @@
         "type": "tuple"
       }
     ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "maker", "type": "address" }],
+    "name": "orderIdsByMaker",
+    "outputs": [{ "internalType": "uint64[]", "name": "", "type": "uint64[]" }],
     "stateMutability": "view",
     "type": "function"
   },
