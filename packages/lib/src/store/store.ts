@@ -17,7 +17,7 @@ import {
 import { useMutation, useQuery } from "react-query";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Web3 from "web3";
-import { DstTokenState, GlobalState, MaxDurationState, PriceState, SrcTokenState, TokenInfo, TradeIntervalState, TradeSizeState, Web3State } from "../types";
+import { DstTokenState, GlobalState, MaxDurationState, OrderStatus, PriceState, SrcTokenState, TokenInfo, TradeIntervalState, TradeSizeState, Web3State } from "../types";
 import create from "zustand";
 import { TimeFormat } from "./TimeFormat";
 import { nativeAddresses, TwapConfig } from "../consts";
@@ -900,13 +900,6 @@ export const makeEllipsisAddress = (address?: string, padding: number = 6): stri
 const getToken = (tokenInfo?: TokenInfo) => {
   return erc20(tokenInfo!.symbol, tokenInfo!.address, tokenInfo!.decimals);
 };
-
-export enum OrderStatus {
-  Open = "In Progress",
-  Canceled = "Canceled",
-  Filled = "Filled",
-  Expired = "Expired",
-}
 
 export const useOrders = () => {
   const { account, config, web3 } = useWeb3();

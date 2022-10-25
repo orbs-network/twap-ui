@@ -71,3 +71,24 @@ export interface TokenInfo {
   logoUrl?: string;
   isNative?: boolean;
 }
+
+export enum OrderStatus {
+  Open = "In Progress",
+  Canceled = "Canceled",
+  Filled = "Filled",
+  Expired = "Expired",
+}
+
+type Order = {
+  srcToken: string;
+  dstToken: string;
+  srcTokenAmount: BigNumber;
+  tradeSize: BigNumber;
+  dstMinAmount: BigNumber;
+  deadline: number;
+  delay: number;
+  id: string;
+  status: OrderStatus;
+  srcFilledAmount: BigNumber;
+  time: number;
+};

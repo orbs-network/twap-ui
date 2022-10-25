@@ -1,11 +1,12 @@
 import { Tab, Tabs, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import React from "react";
-import { createTxData, OrderStatus } from "./data";
+import { createTxData } from "./data";
 import OrdersList from "./OrdersList";
 import _ from "lodash";
 import Label from "../base-components/Label";
 import { useOrders } from "../store/store";
+import { OrderStatus } from "../types";
 const data = createTxData();
 
 function Orders() {
@@ -23,17 +24,17 @@ function Orders() {
           <Label tooltipText="Some text">Orders</Label>
         </StyledTitle>
         <StyledTabs value={selectedTab} onChange={handleChange}>
-          {_.keys(allOrders).map((key, index) => {
-            return <Tab key={key} label={key} {...a11yProps(index)} />;
+          {_.keys(OrderStatus).map((key, index) => {
+            return <Tab key={index} label={key} {...a11yProps(index)} />;
           })}
         </StyledTabs>
       </StyledHeader>
       <StyledLists className="twap-orders-lists">
-        {_.keys(orders).map((key: any, index: number) => {
+        {_.keys(OrderStatus).map((key: any, index: number) => {
           if (selectedTab !== index) {
             return null;
           }
-          return <OrdersList orders={orders[key as any as OrderStatus]} type={key as OrderStatus} key={index} />;
+          return <OrdersList orders={orders[key as any as OrderStatus]} key={key} />;
         })}
       </StyledLists>
     </StyledContainer>
@@ -91,10 +92,3 @@ function a11yProps(index: number) {
     "aria-controls": `simple-tabpanel-${index}`,
   };
 }
-
-const allOrders = {
-  [OrderStatus.OPEN]: data,
-  [OrderStatus.CANCELED]: [],
-  [OrderStatus.FILLED]: data,
-  [OrderStatus.EXPIRED]: data,
-};

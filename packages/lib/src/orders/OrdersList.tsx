@@ -6,7 +6,7 @@ import LimitOrder from "./order/Order";
 
 // TODO chnage all limitOrder -->  orders, ordersList, Order
 
-function OrdersList({ type, orders }: { type: OrderStatus; orders: any[] }) {
+function OrdersList({ orders }: { orders: any[] }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
   const { account } = useWeb3();
 
@@ -15,12 +15,12 @@ function OrdersList({ type, orders }: { type: OrderStatus; orders: any[] }) {
   };
   return (
     <StyledContainer>
-      {orders.length ? (
+      {orders ? (
         orders.map((it, index) => {
-          return <LimitOrder type={type} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
+          return <LimitOrder type={undefined} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
         })
       ) : (
-        <StyledEmptyList>No Orders found</StyledEmptyList>
+        <StyledEmptyList>No Orders Found</StyledEmptyList>
       )}
     </StyledContainer>
   );

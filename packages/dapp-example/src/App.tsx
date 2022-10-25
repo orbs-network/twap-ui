@@ -18,10 +18,6 @@ function App() {
   const [selectedDapp, setSelectedDapp] = useState("1");
   const { data: list = [] } = useTokenList(chainId);
 
-  useEffect(() => {
-    activate(injectedConnector);
-  }, [activate]);
-
   return (
     <StyledApp className="App">
       <Box sx={{ minWidth: 120 }}>
@@ -185,7 +181,6 @@ const StyledApp = styled(Box)({
   alignItems: "center",
   justifyContent: "center",
   flexDirection: "column",
-  height: "100vh",
   gap: 48,
   paddingBottom: 50,
   paddingTop: 40,

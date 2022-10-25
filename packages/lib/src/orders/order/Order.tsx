@@ -20,7 +20,7 @@ import Card from "../../base-components/Card";
 import { OrderStatus } from "../data";
 
 export interface Props {}
-function LimitOrder({ onExpand, expanded, type }: { onExpand: () => void; expanded: boolean; type: OrderStatus }) {
+function LimitOrder({ onExpand, expanded, type }: { onExpand: () => void; expanded: boolean; type?: OrderStatus }) {
   return (
     <StyledContainer className="twap-order">
       <StyledAccordion expanded={expanded}>
@@ -189,7 +189,7 @@ const OrderPriceCompare = () => {
   return null;
 };
 
-const OrderDetails = ({ type }: { type: OrderStatus }) => {
+const OrderDetails = ({ type }: { type?: OrderStatus }) => {
   const [fullInfo, setFullInfo] = useState(false);
   // TODO use addresses
   return (
