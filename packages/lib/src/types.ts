@@ -80,8 +80,8 @@ export enum OrderStatus {
 }
 
 export type Order = {
-  srcToken: string;
-  dstToken: string;
+  srcToken: Token;
+  dstToken: Token;
   srcTokenAmount: BigNumber;
   tradeSize: BigNumber;
   dstMinAmount: BigNumber;

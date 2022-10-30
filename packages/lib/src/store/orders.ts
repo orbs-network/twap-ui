@@ -20,33 +20,11 @@ export const useTokenFromTokensList = (address?: string) => {
   return getTokenFromList(tokensList, address);
 };
 
-const useGetUsdValueCallback = () => {
-  const client = useQueryClient();
-  const { getUsdPrice } = useContext(TwapContext);
-
-  return async (token: Token) => {
-    const data = client.getQueryData(["useUsdValue", token.address]) as BigNumber;
-    if (data) {
-      return data.div(1e18);
-    }
-
-    const decimals = await token.decimals();
-    const result = await getUsdPrice(token.address!, decimals);
-
-    client.setQueryData(["useUsdValue", token.address], result);
-    return result.div(1e18);
-  };
-};
-
 export const useOrdersUsdValueToUi = (token?: Token, amount?: BigNumber) => {
   const { data } = useUsdValue(token);
-  const resultUi = useGetBigNumberToUiAmount(token, amount);
+  const result = data?.times(amount || 0).div(1e18);
 
-  const result = data?.times(amount || 0);
-  if (!result) {
-    return "";
-  }
-  return resultUi;
+  return useGetBigNumberToUiAmount(token, result);
 };
 
 function parseStatus(status: number, latestBlock: number) {
@@ -70,15 +48,15 @@ export const useOrders = () => {
       const arr = await Promise.all(
         _.map(orders, async (o) => {
           const srcTokenInfo = getTokenFromList(tokensList, o.ask.srcToken);
+          const dstTokenInfo = getTokenFromList(tokensList, o.ask.dstToken);
           const srcToken = getToken(srcTokenInfo);
+          const dstToken = getToken(dstTokenInfo);
           const srcTokenAmount = BigNumber(o.ask.srcAmount);
           const srcFilledAmount = BigNumber(o.srcFilledAmount);
           const tradeSize = BigNumber(o.ask.srcBidAmount);
           const dstMinAmount = BigNumber(o.ask.dstMinAmount);
 
           return {
-            srcToken: o.ask.srcToken,
-            dstToken: o.ask.dstToken,
             srcTokenAmount, // left top (10 wbtc figma )
             srcTokenAmountUi: await getBigNumberToUiAmount(srcToken, srcTokenAmount),
             tradeSize,
@@ -94,6 +72,8 @@ export const useOrders = () => {
             createdAtUi: moment(parseInt(o.ask.time) * 1000).format("DD/MM/YY HH:mm"),
             deadline: parseInt(o.ask.deadline),
             deadlineUi: moment(parseInt(o.ask.deadline) * 1000).format("DD/MM/YY HH:mm"),
+            srcToken,
+            dstToken,
 
             // price:
           };

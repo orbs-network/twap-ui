@@ -14,9 +14,11 @@ import Label from "../../base-components/Label";
 import Tooltip from "../../base-components/Tooltip";
 import SmallLabel from "../../base-components/SmallLabel";
 import Button from "../../base-components/Button";
-import { useTokenFromTokensList } from "../../store/orders";
+import { useOrdersUsdValueToUi, useTokenFromTokensList } from "../../store/orders";
 import Card from "../../base-components/Card";
 import { Order, OrderStatus } from "../../types";
+import { BigNumber, Token } from "@defi.org/web3-candies";
+import { useGetBigNumberToUiAmount } from "../../store/store";
 
 export interface Props {
   order: Order;
@@ -25,7 +27,7 @@ export interface Props {
   type?: OrderStatus;
 }
 function OrderComponent({ order, onExpand, expanded, type }: Props) {
-  const { id, createdAtUi, srcToken, dstToken, srcTokenAmountUi } = order;
+  const { id, createdAtUi, srcToken, dstToken, srcTokenAmount } = order;
   console.log({ order });
 
   return (
@@ -40,9 +42,9 @@ function OrderComponent({ order, onExpand, expanded, type }: Props) {
 
             {expanded ? <StyledSeperator /> : <PreviewProgressBar progress={80} />}
             <StyledFlexStart>
-              <TokenDetails address={srcToken} amount={srcTokenAmountUi} />
+              <TokenDetails token={srcToken} amount={srcTokenAmount} />
               <Icon className="icon" icon={<BsArrowRight style={{ width: 30, height: 30 }} />} />
-              <TokenDetails address={dstToken} />
+              <TokenDetails token={dstToken} />
             </StyledFlexStart>
             <StyledSeperator />
           </StyledColumnFlex>
@@ -59,7 +61,7 @@ function OrderComponent({ order, onExpand, expanded, type }: Props) {
 const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => {
   const [fullInfo, setFullInfo] = useState(false);
 
-  const { deadlineUi, tradeIntervalUi, srcToken, dstToken, srcTokenAmountUi, tradeSizeUi, srcFilledAmountUi } = order;
+  const { deadlineUi, tradeIntervalUi, srcToken, dstToken, srcTokenAmountUi, tradeSizeUi, srcFilledAmount } = order;
 
   return (
     <StyledOrderDetails>
@@ -68,14 +70,14 @@ const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => 
         <Label className="label">Progress</Label>
         <StyledProgressContent gap={20}>
           <StyledFlex>
-            <TokenDetails hideUSD={!fullInfo} address={srcToken} amount={srcFilledAmountUi} />
-            <TokenDetails hideUSD={!fullInfo} address={dstToken} />
+            <TokenDetails hideUSD={!fullInfo} token={srcToken} amount={srcFilledAmount} />
+            <TokenDetails hideUSD={!fullInfo} token={dstToken} />
           </StyledFlex>
           <MainProgressBar progress={60} />
           {fullInfo && (
             <StyledFlex>
-              <TokenDetails address={srcToken} />
-              <TokenDetails address={dstToken} />
+              <TokenDetails token={srcToken} />
+              <TokenDetails token={dstToken} />
             </StyledFlex>
           )}
           <StyledInformationButton className="more-btn" onClick={() => setFullInfo(!fullInfo)}>
@@ -160,21 +162,24 @@ const PreviewProgressBar = ({ progress, emptyBarColor }: { progress: number; emp
   return <StyledPreviewLinearProgress variant="determinate" value={progress} emptybarcolor={emptyBarColor} className="twap-order-progress-line-preview" />;
 };
 
-const TokenDetails = ({ hideUSD, address, amount }: { hideUSD?: boolean; address: string; amount?: string }) => {
-  const token = useTokenFromTokensList(address);
+const TokenDetails = ({ hideUSD, token, amount }: { hideUSD?: boolean; token: Token; amount?: BigNumber }) => {
+  const tokenInfo = useTokenFromTokensList(token.address);
+  const usdValueUi = useOrdersUsdValueToUi(token, amount);
+  const uiAmount = useGetBigNumberToUiAmount(token, amount);
+
   return (
     <StyledTokenDetails>
       <Box className="top">
-        <TokenLogo logo={token.logoUrl} />
+        <TokenLogo logo={tokenInfo.logoUrl} />
         <Text>
-          <NumberDisplay value={amount} />
+          <NumberDisplay value={uiAmount} />
         </Text>
-        <TokenName name={token.symbol} />
+        <TokenName name={tokenInfo.symbol} />
       </Box>
       {!hideUSD && (
         <Text className="usd">
           ≈$
-          <NumberDisplay value={100000} />
+          <NumberDisplay value={usdValueUi} />
         </Text>
       )}
     </StyledTokenDetails>
