@@ -61,7 +61,7 @@ function OrderComponent({ order, onExpand, expanded, type }: Props) {
 const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => {
   const [fullInfo, setFullInfo] = useState(false);
 
-  const { deadlineUi, tradeIntervalUi, srcToken, dstToken, srcTokenAmountUi, tradeSizeUi, srcFilledAmount } = order;
+  const { deadlineUi, tradeIntervalUi, srcToken, dstToken, srcTokenAmount, tradeSizeUi, srcFilledAmount } = order;
 
   return (
     <StyledOrderDetails>
@@ -164,7 +164,7 @@ const PreviewProgressBar = ({ progress, emptyBarColor }: { progress: number; emp
 
 const TokenDetails = ({ hideUSD, token, amount }: { hideUSD?: boolean; token: Token; amount?: BigNumber }) => {
   const tokenInfo = useTokenFromTokensList(token.address);
-  const usdValueUi = useOrdersUsdValueToUi(token, amount);
+  const { data: usdValueUi, isLoading } = useOrdersUsdValueToUi(token, amount);
   const uiAmount = useGetBigNumberToUiAmount(token, amount);
 
   return (
@@ -177,10 +177,10 @@ const TokenDetails = ({ hideUSD, token, amount }: { hideUSD?: boolean; token: To
         <TokenName name={tokenInfo.symbol} />
       </Box>
       {!hideUSD && (
-        <Text className="usd">
+        <SmallLabel loading={isLoading}>
           ≈$
           <NumberDisplay value={usdValueUi} />
-        </Text>
+        </SmallLabel>
       )}
     </StyledTokenDetails>
   );

@@ -14,6 +14,7 @@ import {
   zero,
   zeroAddress,
   iwethabi,
+  web3,
 } from "@defi.org/web3-candies";
 import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -325,7 +326,7 @@ const useDstToken = () => {
  * @returns USD value for 1 whole token (mantissa)
  */
 export const useUsdValue = (token?: Token) => {
-  const { isInvalidChain, config } = useWeb3();
+  const { isInvalidChain, config, web3 } = useWeb3();
   const { getUsdPrice } = useContext(TwapContext);
   return useQuery(
     ["useUsdValue", token?.address],
@@ -335,7 +336,7 @@ export const useUsdValue = (token?: Token) => {
       return getUsdPrice(address!, decimals);
     },
     {
-      enabled: !!token && !isInvalidChain,
+      enabled: !!token && !isInvalidChain && !!web3,
       // refetchInterval: 10000
       staleTime: 60_000,
     }
@@ -604,9 +605,9 @@ function useSubmitOrder() {
           config.exchangeAddress,
           srcTokenInfo?.address,
           dstTokenInfo?.address,
-          srcTokenAmount,
-          tradeSize,
-          minAmountOut,
+          srcTokenAmount?.toString(),
+          tradeSize?.toString(),
+          minAmountOut.toString(),
           Math.round(deadline / 1000),
           Math.round(tradeIntervalMillis / 1000)
         )
@@ -798,6 +799,8 @@ export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) 
   if (!amount || !token) {
     return "";
   }
+
+  console.log({ token });
 
   return (await token.mantissa(amount || zero)).toFormat();
 };

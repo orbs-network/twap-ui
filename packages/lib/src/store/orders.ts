@@ -21,10 +21,10 @@ export const useTokenFromTokensList = (address?: string) => {
 };
 
 export const useOrdersUsdValueToUi = (token?: Token, amount?: BigNumber) => {
-  const { data } = useUsdValue(token);
+  const { data, isLoading } = useUsdValue(token);
   const result = data?.times(amount || 0).div(1e18);
 
-  return useGetBigNumberToUiAmount(token, result);
+  return { data: useGetBigNumberToUiAmount(token, result), isLoading };
 };
 
 function parseStatus(status: number, latestBlock: number) {
