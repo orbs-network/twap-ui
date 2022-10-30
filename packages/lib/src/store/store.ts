@@ -13,6 +13,7 @@ import {
   Token,
   zero,
   zeroAddress,
+  iwethabi,
 } from "@defi.org/web3-candies";
 import { useMutation, useQuery } from "react-query";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -173,9 +174,10 @@ const useTokenApproval = () => {
 const useWrapToken = () => {
   const { srcTokenAmount, setSrcToken, srcTokenInfo } = useSrcToken();
   const { account, config } = useWeb3();
-  const { token: wToken }: any = useTokenOrWrappedToken(srcTokenInfo);
 
   const { mutateAsync: wrap, isLoading } = useMutation(async () => {
+    const wToken: any = getToken(config!.wrappedTokenInfo, true);
+
     await wToken?.methods.deposit().send({ from: account, value: srcTokenAmount!.toString() });
     setSrcToken(config!.wrappedTokenInfo);
   });
@@ -427,21 +429,6 @@ const useTradeSize = () => {
   };
 };
 
-const useTokenOrWrappedToken = (tokenInfo?: TokenInfo) => {
-  const { config } = useWeb3();
-  const { data: token } = useQuery<Token>(
-    ["useTokenOrWrappedToken", tokenInfo?.address],
-    () => {
-      if (isNativeToken(tokenInfo?.address)) {
-        tokenInfo = config?.wrappedTokenInfo;
-      }
-      return getToken(tokenInfo);
-    },
-    { enabled: !!tokenInfo }
-  );
-  return { token, isLoading: !token };
-};
-
 const useChangeTokenPositions = () => {
   const { srcTokenInfo, setSrcTokenAmount, setSrcToken } = useSrcTokenStore();
   const { setDstToken, dstTokenInfo, dstTokenAmount } = useDstToken();
@@ -661,7 +648,20 @@ function useSubmitOrder() {
     }
 
     return { text: "Confirm order", onClick: createOrder, loading: createdOrderLoading, disabled: !disclaimerAccepted };
-  }, [disclaimerAccepted, isApproved, shouldWrap, warning, isInvalidChain, account, approveLoading, setShowConfirmation, showConfirmation, createdOrderLoading, createOrder]);
+  }, [
+    wrapLoading,
+    disclaimerAccepted,
+    isApproved,
+    shouldWrap,
+    warning,
+    isInvalidChain,
+    account,
+    approveLoading,
+    setShowConfirmation,
+    showConfirmation,
+    createdOrderLoading,
+    createOrder,
+  ]);
 
   return { ...values, showConfirmation };
 }
@@ -897,8 +897,8 @@ export const makeEllipsisAddress = (address?: string, padding: number = 6): stri
   return `${firstPart}...${secondPart}`;
 };
 
-const getToken = (tokenInfo?: TokenInfo) => {
-  return erc20(tokenInfo!.symbol, tokenInfo!.address, tokenInfo!.decimals);
+const getToken = (tokenInfo?: TokenInfo, isWrapped?: boolean) => {
+  return erc20(tokenInfo!.symbol, tokenInfo!.address, tokenInfo!.decimals, isWrapped ? iwethabi : undefined);
 };
 
 export const useOrders = () => {
