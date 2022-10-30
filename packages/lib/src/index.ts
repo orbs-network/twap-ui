@@ -16,7 +16,7 @@ import Tooltip from "./base-components/Tooltip";
 import IconButton from "./base-components/IconButton";
 import Text from "./base-components/Text";
 import NumberDisplay from "./base-components/NumberDisplay";
-import { TwapContext, TwapProvider, OrdersProvider } from "./context";
+import { TwapContext, TwapProvider } from "./context";
 import { TradeInfoModal, TradeInfoDetails, TradeInfoExplanation } from "./components/TradeInfo";
 import PriceToggle from "./base-components/PriceToggle";
 import Button from "./base-components/Button";
@@ -55,6 +55,5 @@ export default {
   validation,
   TwapContext,
   TwapProvider,
-  OrdersProvider,
   Orders,
 };

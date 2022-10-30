@@ -39,10 +39,10 @@ function App() {
             return (
               <StyledContainer key={dapp.id}>
                 <Layout>
-                  <Component TokenSelectModal={TokenSelectModal} provider={library} connect={() => activate(injectedConnector)} />
+                  <Component TokenSelectModal={TokenSelectModal} provider={library} connect={() => activate(injectedConnector)} tokensList={list} />
                 </Layout>
                 <Layout>
-                  <Orders tokensList={list} provider={library} />
+                  <Orders TokenSelectModal={TokenSelectModal} provider={library} connect={() => activate(injectedConnector)} tokensList={list} />
                 </Layout>
               </StyledContainer>
             );

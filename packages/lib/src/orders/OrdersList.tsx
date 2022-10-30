@@ -1,14 +1,13 @@
 import { Box, styled } from "@mui/system";
 import React, { useState } from "react";
 import { useWeb3 } from "../store/store";
-import { createTxData, OrderStatus } from "./data";
-import LimitOrder from "./order/Order";
+import { Order } from "../types";
+import OrderComponent from "./order/Order";
 
 // TODO chnage all limitOrder -->  orders, ordersList, Order
 
-function OrdersList({ orders }: { orders: any[] }) {
+function OrdersList({ orders }: { orders: Order[] }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
-  const { account } = useWeb3();
 
   const onSelect = (value: number) => {
     setSelected((prevState) => (prevState === value ? undefined : value));
@@ -16,8 +15,8 @@ function OrdersList({ orders }: { orders: any[] }) {
   return (
     <StyledContainer>
       {orders ? (
-        orders.map((it, index) => {
-          return <LimitOrder type={undefined} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
+        orders.map((order, index) => {
+          return <OrderComponent order={order} type={undefined} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
         })
       ) : (
         <StyledEmptyList>No Orders Found</StyledEmptyList>

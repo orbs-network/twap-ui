@@ -15,7 +15,7 @@ import {
   zeroAddress,
   iwethabi,
 } from "@defi.org/web3-candies";
-import { useMutation, useQuery } from "react-query";
+import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Web3 from "web3";
 import { DstTokenState, GlobalState, MaxDurationState, OrderStatus, PriceState, SrcTokenState, TokenInfo, TradeIntervalState, TradeSizeState, Web3State } from "../types";
@@ -26,7 +26,6 @@ import { changeNetwork } from "./connect";
 import { TwapContext } from "../context";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
-import lensAbi from "./lens-abi.json";
 
 const srcTokenInitialState = {
   srcTokenInfo: undefined,
@@ -236,18 +235,15 @@ const useAccountBalances = (token?: Token) => {
 const useSrcToken = () => {
   const { setSrcToken, setSrcTokenAmount, srcTokenInfo, srcTokenAmount, srcToken } = useSrcTokenStore();
 
-  const { getBnAmount } = useUiAmountToBigNumber(srcToken);
-  const { getUiAmount } = useBigNumberToUiAmount(srcToken);
-
   const onChange = async (amountUi: string) => {
-    const amount = await getBnAmount(amountUi);
+    const amount = await getUiAmountToBigNumber(srcToken, amountUi);
 
     setSrcTokenAmount(amount);
   };
 
   const onChangePercent = async (percent: number) => {
     const value = balance?.multipliedBy(percent) || zero;
-    const uiValue = await getUiAmount(value);
+    const uiValue = await getBigNumberToUiAmount(srcToken, value);
     onChange(uiValue);
   };
 
@@ -266,12 +262,12 @@ const useSrcToken = () => {
     srcTokenInfo,
     srcToken,
     srcTokenAmount,
-    srcTokenUiAmount: useBigNumberToUiAmount(srcToken, srcTokenAmount).data,
+    srcTokenUiAmount: useGetBigNumberToUiAmount(srcToken, srcTokenAmount),
     usdValueLoading: usdValueLoading && srcTokenAmount?.gt(zero) ? true : false,
     srcTokenUsdValue18,
-    srcTokenUsdValueUI: useBigNumberToUiAmount(srcToken, srcTokenAmount?.times(srcTokenUsdValue18 || 0).div(1e18)).data,
+    srcTokenUsdValueUI: useGetBigNumberToUiAmount(srcToken, srcTokenAmount?.times(srcTokenUsdValue18 || 0).div(1e18)),
     balance,
-    uiBalance: useBigNumberToUiAmount(srcToken, balance).data,
+    uiBalance: useGetBigNumberToUiAmount(srcToken, balance),
     balanceLoading,
     onChangePercent,
   };
@@ -312,15 +308,15 @@ const useDstToken = () => {
   return {
     onDstTokenSelect,
     setDstToken,
-    dstTokenUiAmount: useBigNumberToUiAmount(dstToken, showAmount ? dstTokenAmount : undefined).data,
+    dstTokenUiAmount: useGetBigNumberToUiAmount(dstToken, showAmount ? dstTokenAmount : undefined),
     dstTokenInfo,
     dstToken,
     dstTokenAmount,
     usdValueLoading: usdValueLoading && dstTokenAmount ? true : false,
     dstTokenUsdValue18,
-    dstTokenUsdValueUI: useBigNumberToUiAmount(dstToken, dstTokenAmount?.times(dstTokenUsdValue18 || 0).div(1e18)).data,
+    dstTokenUsdValueUI: useGetBigNumberToUiAmount(dstToken, dstTokenAmount?.times(dstTokenUsdValue18 || 0).div(1e18)),
     balance,
-    uiBalance: useBigNumberToUiAmount(dstToken, balance).data,
+    uiBalance: useGetBigNumberToUiAmount(dstToken, balance),
     balanceLoading,
   };
 };
@@ -328,7 +324,7 @@ const useDstToken = () => {
 /**
  * @returns USD value for 1 whole token (mantissa)
  */
-const useUsdValue = (token?: Token) => {
+export const useUsdValue = (token?: Token) => {
   const { isInvalidChain, config } = useWeb3();
   const { getUsdPrice } = useContext(TwapContext);
   return useQuery(
@@ -341,6 +337,7 @@ const useUsdValue = (token?: Token) => {
     {
       enabled: !!token && !isInvalidChain,
       // refetchInterval: 10000
+      staleTime: 60_000,
     }
   );
 };
@@ -409,10 +406,8 @@ const useTradeSize = () => {
     return srcTokenAmount?.div(tradeSize).integerValue(BigNumber.ROUND_CEIL).toNumber() || 0;
   }, [srcTokenAmount, tradeSize]);
 
-  const { getBnAmount } = useUiAmountToBigNumber(srcToken);
-
   const onChange = async (amountUi?: string) => {
-    const tradeSize = await getBnAmount(amountUi);
+    const tradeSize = await getUiAmountToBigNumber(srcToken, amountUi);
     if (!tradeSize) {
       setTradeSize(undefined);
     } else {
@@ -423,9 +418,9 @@ const useTradeSize = () => {
   return {
     totalTrades,
     tradeSize,
-    uiTradeSize: useBigNumberToUiAmount(srcToken, tradeSize).data,
+    uiTradeSize: useGetBigNumberToUiAmount(srcToken, tradeSize),
     onChange,
-    uiUsdValue: useBigNumberToUiAmount(srcToken, !srcTokenUsdValue18 ? undefined : tradeSize?.times(srcTokenUsdValue18).div(1e18)).data,
+    uiUsdValue: useGetBigNumberToUiAmount(srcToken, !srcTokenUsdValue18 ? undefined : tradeSize?.times(srcTokenUsdValue18).div(1e18)),
   };
 };
 
@@ -551,18 +546,15 @@ export const useSubmitButtonValidation = () => {
       return "Enter trade interval";
     }
 
-    if (
-      (srcTokenAmount && tradeSize && srcTokenUsdValue18 && srcTokenInfo && getSmallestTradeSize(srcTokenAmount, tradeSize))
-        ?.times(srcTokenUsdValue18)
-        .lt(BigNumber(10).pow(srcTokenInfo.decimals))
-    ) {
+    if (srcTokenAmount && tradeSize && srcTokenUsdValue18 && srcTokenInfo && isTradeSizeTooSmall(srcTokenAmount, tradeSize, srcTokenUsdValue18, srcTokenInfo)) {
       return `Trazde size must be equal to at least 1 USD`;
     }
   }, [srcTokenAmount, srcTokenUsdValue18, tradeSize, srcTokenAmount, tradeIntervalMillis, maxDurationMillis, srcToken, srcTokenInfo]);
 };
 
-const getSmallestTradeSize = (srcTokenAmount: BigNumber, tradeSize: BigNumber) => {
-  return srcTokenAmount.modulo(tradeSize).eq(0) ? tradeSize : srcTokenAmount.modulo(tradeSize);
+const isTradeSizeTooSmall = (srcTokenAmount: BigNumber, tradeSize: BigNumber, srcTokenUsdValue18: BigNumber, srcTokenInfo: TokenInfo) => {
+  const smallestTradeSize = srcTokenAmount.modulo(tradeSize).eq(0) ? tradeSize : srcTokenAmount.modulo(tradeSize);
+  return smallestTradeSize?.times(srcTokenUsdValue18).div(1e18).lt(1e18);
 };
 
 const usePartialFillValidation = () => {
@@ -728,7 +720,7 @@ const useConfirmation = () => {
     dstTokenUiAmount,
     dstTokenInfo,
     minAmountOut,
-    minAmountOutUi: useBigNumberToUiAmount(dstToken, minAmountOut).data,
+    minAmountOutUi: useGetBigNumberToUiAmount(dstToken, minAmountOut),
     isLimitOrder,
     srcTokenAmount,
     tradeSize,
@@ -802,57 +794,35 @@ const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number)
   }
 };
 
-const useBigNumberToUiAmount = (token?: Token, amount?: BigNumber) => {
-  const [data, setData] = useState<string | undefined>(undefined);
+export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) => {
+  if (!amount || !token) {
+    return "";
+  }
 
-  const getUiAmount = useCallback(
-    async (amount?: BigNumber) => {
-      if (!amount || !token) {
-        return "";
-      }
-
-      return (await token.mantissa(amount || zero)).toFormat();
-    },
-    [token]
-  );
-
-  useEffect(() => {
-    (async () => {
-      if (!token) {
-        return setData(undefined);
-      }
-      const result = await getUiAmount(amount);
-      setData(result);
-    })();
-  }, [token, amount, getUiAmount]);
-
-  return { data: data || " ", getUiAmount };
+  return (await token.mantissa(amount || zero)).toFormat();
 };
 
-const useUiAmountToBigNumber = (token?: Token, amountUi?: string) => {
-  const [data, setData] = useState<BigNumber | undefined>(undefined);
-
-  const getBnAmount = useCallback(
-    async (amountUi?: string) => {
-      if (amountUi === "" || !token) {
-        return undefined;
-      }
-      return token?.amount(parsebn(amountUi || "0"));
-    },
-    [token]
-  );
+export const useGetBigNumberToUiAmount = (token?: Token, amount?: BigNumber) => {
+  const [data, setData] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     (async () => {
       if (!token) {
         return setData(undefined);
       }
-      const result = await getBnAmount(amountUi);
+      const result = await getBigNumberToUiAmount(token, amount);
       setData(result);
     })();
-  }, [token, amountUi, getBnAmount]);
+  }, [token, amount]);
 
-  return { data, getBnAmount };
+  return data || " ";
+};
+
+export const getUiAmountToBigNumber = async (token?: Token, amountUi?: string) => {
+  if (amountUi === "" || !token) {
+    return undefined;
+  }
+  return token?.amount(parsebn(amountUi || "0"));
 };
 
 const isNativeToken = (address?: string) => {
@@ -863,7 +833,7 @@ const isNativeToken = (address?: string) => {
   return !!nativeAddresses.find((it) => eqIgnoreCase(address, it));
 };
 
-const getIntervalForUi = (value?: number) => {
+export const getIntervalForUi = (value?: number) => {
   if (!value) {
     return "0";
   }
@@ -897,48 +867,6 @@ export const makeEllipsisAddress = (address?: string, padding: number = 6): stri
   return `${firstPart}...${secondPart}`;
 };
 
-const getToken = (tokenInfo?: TokenInfo, isWrapped?: boolean) => {
+export const getToken = (tokenInfo?: TokenInfo, isWrapped?: boolean) => {
   return erc20(tokenInfo!.symbol, tokenInfo!.address, tokenInfo!.decimals, isWrapped ? iwethabi : undefined);
-};
-
-export const useOrders = () => {
-  const { account, config, web3 } = useWeb3();
-
-  return useQuery(
-    ["useOrders"],
-    async () => {
-      const lens = contract(lensAbi as Abi, config.lensContract);
-      const orders = await lens.methods.makerOrders(account).call();
-
-      const latestBlock = await web3?.eth.getBlockNumber();
-      function parseStatus(status: number, latestBlock: number) {
-        if (status === 1) return OrderStatus.Canceled;
-        if (status === 2) return OrderStatus.Filled;
-        if (status < latestBlock) return OrderStatus.Expired;
-        return OrderStatus.Open;
-      }
-      const arr = _.map(orders, (o) => {
-        return {
-          srcToken: o.ask.srcToken,
-          dstToken: o.ask.dstToken,
-          srcTokenAmount: BigNumber(o.ask.srcAmount), // left top (10 wbtc figma )
-          tradeSize: BigNumber(o.ask.srcBidAmount),
-          dstMinAmount: BigNumber(o.ask.dstMinAmount),
-          deadline: parseInt(o.ask.deadline),
-          delay: parseInt(o.ask.delay),
-          id: o.id,
-          status: parseStatus(parseInt(o.status), latestBlock!),
-          srcFilledAmount: BigNumber(o.srcFilledAmount),
-          time: parseInt(o.ask.time),
-          // price:
-        };
-      });
-
-      return _.groupBy(arr, "status");
-    },
-    {
-      enabled: !!account && !!config && !!web3,
-      refetchInterval: 30_000,
-    }
-  );
 };

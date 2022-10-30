@@ -79,7 +79,7 @@ export enum OrderStatus {
   Expired = "Expired",
 }
 
-type Order = {
+export type Order = {
   srcToken: string;
   dstToken: string;
   srcTokenAmount: BigNumber;
@@ -91,4 +91,10 @@ type Order = {
   status: OrderStatus;
   srcFilledAmount: BigNumber;
   time: number;
+  tradeIntervalUi: string;
+  createdAtUi: string;
+  deadlineUi: string;
+  srcTokenAmountUi: string;
+  srcFilledAmountUi: string;
+  tradeSizeUi: string;
 };

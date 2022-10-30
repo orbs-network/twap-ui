@@ -1,13 +1,11 @@
 import { Tab, Tabs, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import React from "react";
-import { createTxData } from "./data";
 import OrdersList from "./OrdersList";
 import _ from "lodash";
 import Label from "../base-components/Label";
-import { useOrders } from "../store/store";
 import { OrderStatus } from "../types";
-const data = createTxData();
+import { useOrders } from "../store/orders";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);

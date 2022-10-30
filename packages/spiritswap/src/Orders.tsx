@@ -3,9 +3,9 @@ import TWAPLib from "@orbs-network/twap-ui";
 import { Box, styled } from "@mui/system";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { colors } from "./styles";
+import { ProviderWrapper } from ".";
 
 const { Orders } = TWAPLib;
-const { OrdersProvider } = TWAPLib;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,14 +16,14 @@ const queryClient = new QueryClient({
   },
 });
 
-function OrderHistory({ tokensList, provider }: { tokensList: any[]; provider: any }) {
+function OrderHistory(props: { provider: any; connect: () => void; TokenSelectModal: any; tokensList: any[] }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <OrdersProvider tokensList={tokensList} provider={provider}>
+      <ProviderWrapper {...props}>
         <StyledContainer>
           <Orders />
         </StyledContainer>
-      </OrdersProvider>
+      </ProviderWrapper>
     </QueryClientProvider>
   );
 }

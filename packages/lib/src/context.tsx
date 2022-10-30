@@ -10,6 +10,7 @@ export interface IState {
   connect: () => void;
   TokenSelectModal: ReactElement;
   getUsdPrice: (address: string, decimals: number) => Promise<BigNumber>;
+  tokensList: TokenInfo[];
 }
 
 const TwapContext = createContext<IState>({} as IState);
@@ -18,8 +19,8 @@ export interface TwapProviderProps extends IState {
   children: ReactNode;
 }
 
-const TwapProvider = ({ children, provider, dappIntegration, integrationChainId, connect, TokenSelectModal, getUsdPrice }: TwapProviderProps) => {
-  const value = { provider, dappIntegration, integrationChainId, connect, TokenSelectModal, getUsdPrice };
+const TwapProvider = ({ children, provider, dappIntegration, integrationChainId, connect, TokenSelectModal, getUsdPrice, tokensList }: TwapProviderProps) => {
+  const value = { provider, dappIntegration, integrationChainId, connect, TokenSelectModal, getUsdPrice, tokensList };
   const { init } = useWeb3();
 
   // init web3 every time the provider changes
@@ -30,21 +31,4 @@ const TwapProvider = ({ children, provider, dappIntegration, integrationChainId,
   return <TwapContext.Provider value={value}>{children}</TwapContext.Provider>;
 };
 
-export interface Orders {
-  tokensList: TokenInfo[];
-}
-
-const OrdersContext = createContext<Orders>({} as Orders);
-
-export interface OrdersProps extends Orders {
-  children: ReactNode;
-  provider: any;
-}
-
-const OrdersProvider = ({ children, tokensList }: OrdersProps) => {
-  const value = { tokensList: tokensList || [] };
-
-  return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>;
-};
-
-export { TwapContext, TwapProvider, OrdersProvider, OrdersContext };
+export { TwapContext, TwapProvider };
