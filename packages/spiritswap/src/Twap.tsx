@@ -47,7 +47,7 @@ import {
 
 // TODO create file for styles
 
-const { USD, Balance, Button, Icon, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
+const { OdnpButton, Balance, Button, Icon, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
   TWAPLib.baseComponents;
 const LimitPrice = TWAPLib.components.LimitPrice;
 const TwapContext = TWAPLib.TwapContext;
@@ -101,6 +101,7 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
               <MaxDuration />
               <TradeInterval />
               <SubmitButton />
+              <OdnpButton />
               <OrderConfirmation />
             </StyledColumnGap>
           </StyledLayout>

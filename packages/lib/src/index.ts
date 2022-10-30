@@ -24,6 +24,8 @@ import Balance from "./base-components/Balance";
 import USD from "./base-components/USD";
 import Orders from "./orders/Orders";
 import TokenPriceCompare from "./base-components/TokenPriceCompare";
+import OdnpButton from "./base-components/OdnpButton";
+
 export default {
   store,
   baseComponents: {
@@ -47,6 +49,7 @@ export default {
     Balance,
     USD,
     TokenPriceCompare,
+    OdnpButton,
   },
   components: { LimitPrice, TradeInfoModal, TradeInfoDetails, TradeInfoExplanation },
   validation,

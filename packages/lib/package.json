@@ -28,7 +28,8 @@
     "react-icons": "4.x",
     "react-number-format": "5.x",
     "react-query": "3.x",
-    "zustand": "4.x"
+    "zustand": "4.x",
+    "@open-defi-notification-protocol/widget": "^0.0.5"
   },
   "peerDependencies": {
     "react": "*",
