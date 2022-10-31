@@ -24,12 +24,12 @@
     "@emotion/styled": "11.x",
     "@mui/material": "5.x",
     "ethereum-multicall": "2.x",
-    "moment": "^2.29.4",
+    "moment": "2.x",
     "react-icons": "4.x",
     "react-number-format": "5.x",
     "react-query": "3.x",
     "zustand": "4.x",
-    "@open-defi-notification-protocol/widget": "^0.0.5"
+    "@open-defi-notification-protocol/widget": "0.0.x"
   },
   "peerDependencies": {
     "react": "*",
