@@ -31,8 +31,6 @@ export interface DstTokenState extends BaseState {
 export interface MaxDurationState extends BaseState {
   millis: number;
   timeFormat: TimeFormat;
-  setMillis: (value: number) => void;
-  setTimeFormat: (value: TimeFormat) => void;
   computed: {
     deadline: number;
     deadlineUi: string;
@@ -43,18 +41,14 @@ export interface MaxDurationState extends BaseState {
 export interface TradeIntervalState extends BaseState {
   millis: number;
   timeFormat: TimeFormat;
-  setMillis: (value: number) => void;
-  setTimeFormat: (value: TimeFormat) => void;
+
   customInterval: boolean;
   setCustomInterval: (value: boolean) => void;
   onChange: (timeFormat: TimeFormat, millis: number) => void;
   computed: {
-    derivedValues: {
-      millis: number;
-      timeFormat: TimeFormat;
-      tradeIntervalUi: string;
-    };
+    intervalUi: string;
   };
+  onDrivedChange: (maxDurationMillis: number, totalTrades: number) => void;
 }
 
 export interface TradeSizeState extends BaseState {

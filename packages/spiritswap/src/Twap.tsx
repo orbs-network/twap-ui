@@ -228,7 +228,7 @@ const MaxDuration = () => {
 const TradeInterval = () => {
   const { tradeIntervalMillis, tradeIntervalTimeFormat, customInterval, onChange, onCustomIntervalClick } = TWAPLib.store.useTradeInterval();
 
-  console.log(tradeIntervalMillis);
+  console.log({ tradeIntervalMillis });
 
   return (
     <StyledCard>
