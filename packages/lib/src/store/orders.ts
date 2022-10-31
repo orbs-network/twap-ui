@@ -42,7 +42,7 @@ export const useOrders = () => {
   return useQuery(
     ["useOrders", account],
     async () => {
-      const lens = contract(lensAbi as Abi, config.lensContract);
+      const lens = contract(lensAbi as Abi, config.lensAddress);
       const orders = await lens.methods.makerOrders(account).call();
 
       const latestBlock = await web3?.eth.getBlockNumber();

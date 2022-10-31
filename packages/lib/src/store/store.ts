@@ -20,7 +20,7 @@ import Web3 from "web3";
 import { DstTokenState, GlobalState, MaxDurationState, PriceState, SrcTokenState, TokenInfo, TradeIntervalState, TradeSizeState, Web3State } from "../types";
 import create from "zustand";
 import { TimeFormat } from "./TimeFormat";
-import { nativeAddresses, TwapConfig } from "../consts";
+import { getConfig, nativeAddresses } from "../consts";
 import { changeNetwork } from "./connect";
 import { TwapContext } from "../context";
 import moment from "moment";
@@ -254,8 +254,6 @@ export const useWeb3 = () => {
     setIntegrationKey(_integrationKey);
   };
 
-  const rawConfig = _.get(TwapConfig, [integrationChain || ""]);
-
   return {
     init,
     web3,
@@ -264,7 +262,7 @@ export const useWeb3 = () => {
     integrationChain,
     isInvalidChain: chain && chain !== integrationChain,
     changeNetwork: () => changeNetwork(web3, integrationChain),
-    config: _.merge(rawConfig, _.get(rawConfig, [integrationKey || ""])),
+    config: getConfig(integrationChain || 0, integrationKey || ""),
     ellipsisAccount: makeEllipsisAddress(account),
   };
 };

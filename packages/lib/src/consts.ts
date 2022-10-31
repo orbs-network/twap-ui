@@ -1,8 +1,10 @@
 import { networks, zeroAddress } from "@defi.org/web3-candies";
-export const TwapConfig = {
+import _ from "lodash";
+
+const Config = {
   [networks.ftm.id]: {
     twapAddress: "0x85253417E9BF576980318E7882147618C4980969",
-    lensContract: "0x1c4b5371dfDF424a162974C2361a6405b1F772cf",
+    lensAddress: "0x1c4b5371dfDF424a162974C2361a6405b1F772cf",
     wrappedTokenInfo: {
       symbol: "WFTM",
       address: "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
@@ -15,6 +17,11 @@ export const TwapConfig = {
     },
   },
 };
+
+export function getConfig(chainId: number, dapp: string) {
+  const c = _.get(Config, [chainId]);
+  return _.merge({}, c, _.get(c, [dapp]));
+}
 
 export enum IntegrationDapp {
   Spiritswap = "spiritswap",
