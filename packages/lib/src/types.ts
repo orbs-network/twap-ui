@@ -49,9 +49,11 @@ export interface TradeIntervalState extends BaseState {
   setCustomInterval: (value: boolean) => void;
   onChange: (timeFormat: TimeFormat, millis: number) => void;
   computed: {
-    millis: number;
-    timeFormat: TimeFormat;
-    tradeIntervalUi: string;
+    derivedValues: {
+      millis: number;
+      timeFormat: TimeFormat;
+      tradeIntervalUi: string;
+    };
   };
 }
 

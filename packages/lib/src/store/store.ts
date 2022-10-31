@@ -140,23 +140,15 @@ export const useTradeIntervalStore = create<TradeIntervalState>((set, get) => ({
     set({ millis, timeFormat });
   },
   computed: {
-    get millis() {
+    get derivedValues() {
       const maxDurationMillis = useMaxDurationStore.getState().millis;
       const totalTrades = useTradeSizeStore.getState().totalTrades;
       const { derivedMillis, derivedTimeFormat } = getDerivedTradeInterval(maxDurationMillis, totalTrades || 0);
       const customInterval = get().customInterval;
-      return customInterval ? get().millis : derivedMillis;
-    },
-    get timeFormat() {
-      const maxDurationMillis = useMaxDurationStore.getState().millis;
-      const totalTrades = useTradeSizeStore.getState().totalTrades;
-      const { derivedTimeFormat } = getDerivedTradeInterval(maxDurationMillis, totalTrades || 0);
-      const customInterval = get().customInterval;
-
-      return customInterval ? get().timeFormat : derivedTimeFormat;
-    },
-    get tradeIntervalUi() {
-      return getIntervalForUi(get().computed.millis);
+      const millis = customInterval ? get().millis : derivedMillis;
+      const timeFormat = customInterval ? get().timeFormat : derivedTimeFormat;
+      const tradeIntervalUi = getIntervalForUi(millis);
+      return { timeFormat, tradeIntervalUi, millis };
     },
   },
 }));
@@ -369,12 +361,10 @@ const useMaxDuration = () => {
 };
 
 const useTradeInterval = () => {
-  const {
-    customInterval,
-    computed: { millis, tradeIntervalUi, timeFormat },
-    setCustomInterval,
-    onChange,
-  } = useTradeIntervalStore();
+  const { customInterval, computed, setCustomInterval, onChange } = useTradeIntervalStore();
+  const { millis, timeFormat, tradeIntervalUi } = computed.derivedValues;
+
+  console.log({ millis });
 
   return {
     tradeIntervalMillis: millis,
@@ -685,7 +675,7 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
     balanceLoading: isSrcToken ? srcTokenBalanceLoading : dstTokenBalanceLoading,
     disabled: isSrcToken ? false : true,
     usdValue: isSrcToken ? srcTokenUsdValueUi : dstTokenUsdValueUi,
-    usdValueLoading: isSrcToken ? srcTokenUsdValueLoading && srcTokenAmount : dstTokenUsdValueLoading && destTokenAmount,
+    usdValueLoading: isSrcToken ? (srcTokenUsdValueLoading && srcTokenAmount ? true : false) : dstTokenUsdValueLoading && destTokenAmount ? true : false,
     onSelect,
     tokenListOpen,
     toggleTokenList: (value: boolean) => setTokenListOpen(value),
