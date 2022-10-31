@@ -8,7 +8,7 @@ import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { ReactNode, useContext, useState } from "react";
+import { ReactNode } from "react";
 import { GlobalStyles } from "@mui/material";
 
 import {
@@ -45,7 +45,7 @@ import { ProviderWrapper, queryClient } from ".";
 
 // TODO create file for styles
 
-const { OdnpButton, Balance, Button, Icon, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
+const { Balance, Button, Icon, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
   TWAPLib.baseComponents;
 const LimitPrice = TWAPLib.components.LimitPrice;
 const TwapContext = TWAPLib.TwapContext;
@@ -70,7 +70,6 @@ const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any
               <MaxDuration />
               <TradeInterval />
               <SubmitButton />
-              <OdnpButton />
               <OrderConfirmation />
             </StyledColumnGap>
           </StyledLayout>
@@ -227,8 +226,6 @@ const MaxDuration = () => {
 
 const TradeInterval = () => {
   const { tradeIntervalMillis, tradeIntervalTimeFormat, customInterval, onChange, onCustomIntervalClick } = TWAPLib.store.useTradeInterval();
-
-  console.log({ tradeIntervalMillis });
 
   return (
     <StyledCard>

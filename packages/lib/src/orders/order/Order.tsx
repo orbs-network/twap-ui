@@ -5,7 +5,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import TokenName from "../../base-components/TokenName";
 import TokenLogo from "../../base-components/TokenLogo";
 import NumberDisplay from "../../base-components/NumberDisplay";
-import { BsArrowRight } from "react-icons/bs";
+import { HiOutlineArrowNarrowRight } from "react-icons/hi";
 import Icon from "../../base-components/Icon";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -14,43 +14,55 @@ import Label from "../../base-components/Label";
 import Tooltip from "../../base-components/Tooltip";
 import SmallLabel from "../../base-components/SmallLabel";
 import Button from "../../base-components/Button";
-import { useOrdersUsdValueToUi, useTokenFromTokensList } from "../../store/orders";
+import { useCancelCallback, useOrdersUsdValueToUi, useTokenFromTokensList } from "../../store/orders";
 import Card from "../../base-components/Card";
 import { Order, OrderStatus } from "../../types";
 import { BigNumber, Token } from "@defi.org/web3-candies";
 import { useGetBigNumberToUiAmount } from "../../store/store";
-
+import { Fade, Typography } from "@mui/material";
+import text from "../../text.json";
 export interface Props {
   order: Order;
   onExpand: () => void;
   expanded: boolean;
   type?: OrderStatus;
 }
+
+const useTokenDisplay = (token: Token, amount?: BigNumber) => {
+  const tokenInfo = useTokenFromTokensList(token.address);
+  const { data, isLoading } = useOrdersUsdValueToUi(token, amount);
+
+  return {
+    tokenInfo,
+    usdValue: data,
+    usdValueLoading: isLoading,
+    amountUi: useGetBigNumberToUiAmount(token, amount),
+  };
+};
+
 function OrderComponent({ order, onExpand, expanded, type }: Props) {
   const { id, createdAtUi, srcToken, dstToken, srcTokenAmount, progress } = order;
-  console.log({ order });
-
   return (
     <StyledContainer className="twap-order">
       <StyledAccordion expanded={expanded}>
         <StyledSummary onClick={onExpand}>
-          <StyledColumnFlex gap={20}>
+          <StyledColumnFlex gap={0}>
             <StyledHeader>
               <Text>#{id}</Text>
               <Text>{createdAtUi}</Text>
             </StyledHeader>
 
             {expanded ? <StyledSeperator /> : <PreviewProgressBar progress={progress} />}
-            <StyledFlexStart>
-              <TokenDetails token={srcToken} amount={srcTokenAmount} />
-              <Icon className="icon" icon={<BsArrowRight style={{ width: 30, height: 30 }} />} />
-              <TokenDetails token={dstToken} />
-            </StyledFlexStart>
-            <StyledSeperator />
+            <StyledPreview>
+              <TokenDisplay token={srcToken} amount={srcTokenAmount} />
+              <Icon className="icon" icon={<HiOutlineArrowNarrowRight style={{ width: 30, height: 30 }} />} />
+              <TokenDisplay token={dstToken} prefix="≥" />
+            </StyledPreview>
           </StyledColumnFlex>
           <StyledSpace />
         </StyledSummary>
-        <AccordionDetails style={{ padding: 0 }}>
+        <AccordionDetails style={{ padding: 0, paddingTop: 10 }}>
+          <StyledSeperator style={{ marginBottom: 10 }} />
           <OrderDetails order={order} type={type} />
         </AccordionDetails>
       </StyledAccordion>
@@ -59,45 +71,54 @@ function OrderComponent({ order, onExpand, expanded, type }: Props) {
 }
 
 const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => {
-  const [fullInfo, setFullInfo] = useState(false);
-
-  const { deadlineUi, tradeIntervalUi, srcToken, dstToken, srcFilledAmount, progress } = order;
+  const { deadlineUi, tradeIntervalUi, srcToken, srcRemainingAmount, srcFilledAmount, progress, tradeSize, id } = order;
 
   return (
     <StyledOrderDetails>
       {/* <OrderPriceCompare fromTokenSymbol={"WBTC"} toTokenSymbol={"WETH"} /> */}
       <StyledProgress>
-        <Label className="label">Progress</Label>
+        <Label className="label">Progress:</Label>
         <StyledProgressContent gap={20}>
           <StyledFlex>
-            <TokenDetails hideUSD={!fullInfo} token={srcToken} amount={srcFilledAmount} />
-            <TokenDetails hideUSD={!fullInfo} token={srcToken} amount={srcFilledAmount} />
+            <TokenDisplay token={srcToken} amount={srcFilledAmount} />
+            <TokenDisplay token={srcToken} amount={srcRemainingAmount} />
           </StyledFlex>
-          <MainProgressBar progress={progress} />
-          {fullInfo && (
-            <StyledFlex>
-              <TokenDetails token={dstToken} />
-              <TokenDetails token={dstToken} />
-            </StyledFlex>
-          )}
-          <StyledInformationButton className="more-btn" onClick={() => setFullInfo(!fullInfo)}>
-            {fullInfo ? "View Less information" : "View full information"}
-          </StyledInformationButton>
+          <Tooltip text={`${progress}%`}>
+            <MainProgressBar progress={progress} />
+          </Tooltip>
         </StyledProgressContent>
       </StyledProgress>
       <StyledColumnFlex>
-        <DetailRow label="Trades Size:" tooltip="some text">
-          0.25 WBTC≈$4,750
+        <DetailRow label="Trades Size:" tooltip={text.tradeSizeTooltip}>
+          <TradeSize token={srcToken} amount={tradeSize} />
         </DetailRow>
-        <DetailRow label="Trades interval:" tooltip="some text">
+        <DetailRow label="Trades interval:" tooltip={text.tradeIntervalTooltip}>
           {tradeIntervalUi}
         </DetailRow>
-        <DetailRow label="Deadline:" tooltip="some text">
+        <DetailRow label="Deadline:" tooltip={text.deadlineTooltip}>
           {deadlineUi}
         </DetailRow>
       </StyledColumnFlex>
-      {type === OrderStatus.Open && <CancelOrderButton />}
+      {type === OrderStatus.Open && <CancelOrderButton orderId={id} />}
     </StyledOrderDetails>
+  );
+};
+
+const TradeSize = ({ token, amount }: { token: Token; amount: BigNumber }) => {
+  const { amountUi, usdValue, tokenInfo } = useTokenDisplay(token, amount);
+  return (
+    <>
+      <NumberDisplay value={amountUi} /> {tokenInfo.symbol} ≈$ {usdValue}
+    </>
+  );
+};
+
+const CancelOrderButton = ({ orderId }: { orderId: string }) => {
+  const { isLoading, mutate } = useCancelCallback();
+  return (
+    <StyledCancelOrderButton loading={isLoading} onClick={() => mutate(orderId)}>
+      Cancel Order
+    </StyledCancelOrderButton>
   );
 };
 
@@ -108,14 +129,19 @@ const StyledSeperator = styled(Box)({
 });
 
 const StyledSpace = styled(Box)({
-  height: 10,
+  height: 20,
 });
 
-const StyledFlexStart = styled(Box)({
+const StyledPreview = styled(Box)({
   display: "flex",
   alignItems: "flex-start",
   justifyContent: "space-between",
   width: "100%",
+  marginTop: 18,
+  fontSize: 18,
+  "& .usd": {
+    fontSize: 14,
+  },
 });
 
 export default OrderComponent;
@@ -137,7 +163,7 @@ const StyledAccordion = styled(Accordion)({
   background: "transparent",
   boxShadow: "unset",
   "& .MuiAccordionSummary-content": {
-    margin: 0,
+    margin: "0!important",
     width: "100%",
   },
   "& *": {
@@ -151,6 +177,7 @@ const StyledHeader = styled(Box)({
   color: "#9CA3AF",
   fontSize: 14,
   fontWeight: 300,
+  marginBottom: 12,
   "& p": {
     color: "inherit",
     fontSize: "inherit",
@@ -162,52 +189,73 @@ const PreviewProgressBar = ({ progress, emptyBarColor }: { progress: number; emp
   return <StyledPreviewLinearProgress variant="determinate" value={progress} emptybarcolor={emptyBarColor} className="twap-order-progress-line-preview" />;
 };
 
-const TokenDetails = ({ hideUSD, token, amount }: { hideUSD?: boolean; token: Token; amount?: BigNumber }) => {
-  const tokenInfo = useTokenFromTokensList(token.address);
-  const { data: usdValueUi, isLoading } = useOrdersUsdValueToUi(token, amount);
-  const uiAmount = useGetBigNumberToUiAmount(token, amount);
+const TokenDisplay = ({ token, amount, prefix = "" }: { token: Token; amount?: BigNumber; prefix?: string }) => {
+  const { amountUi, usdValue, usdValueLoading, tokenInfo } = useTokenDisplay(token, amount);
 
   return (
-    <StyledTokenDetails>
-      <Box className="top">
-        <TokenLogo logo={tokenInfo.logoUrl} />
-        <Text>
-          <NumberDisplay value={uiAmount} />
-        </Text>
-        <TokenName name={tokenInfo.symbol} />
-      </Box>
-      {!hideUSD && (
-        <SmallLabel loading={isLoading}>
-          ≈$
-          <NumberDisplay value={usdValueUi} />
-        </SmallLabel>
-      )}
-    </StyledTokenDetails>
+    <StyledTokenDisplay className="token-display">
+      <StyledTokenLogo logo={tokenInfo.logoUrl} />
+      <StyledTokenDisplayRight>
+        <StyledTokenDisplayRightTop>
+          <StyledTokenDisplayAmount className="amount">
+            {prefix ? `${prefix} ` : ""}
+            <NumberDisplay value={amountUi} />
+          </StyledTokenDisplayAmount>
+          <TokenName name={tokenInfo.symbol} />
+        </StyledTokenDisplayRightTop>
+        <StyledTokenDisplayUsd loading={usdValueLoading} className="usd">
+          ≈$ <NumberDisplay value={usdValue} />
+        </StyledTokenDisplayUsd>
+      </StyledTokenDisplayRight>
+    </StyledTokenDisplay>
   );
 };
 
-const StyledTokenDetails = styled(Box)({
+const StyledTokenDisplayAmount = styled(Typography)({});
+
+const StyledTokenDisplayRightTop = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  gap: 5,
+  "& *": {
+    fontSize: "inherit",
+  },
+});
+
+const StyledTokenDisplayRight = styled(Box)({
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
+  gap: 3,
+});
+
+const StyledTokenDisplay = styled(Box)({
+  display: "flex",
+  alignItems: "flex-start",
   justifyContent: "center",
   gap: 10,
-
   "& .top": {
     display: "flex",
     alignItems: "center",
-    gap: 5,
+    gap: 8,
     "& *": {
       fontSize: 18,
     },
   },
-  "& .twap-token-logo": {
-    width: 28,
-    height: 28,
-  },
+
   "& .twap-token-name": {},
   "& .twap-text": {},
-  "& .usd": { fontSize: 14 },
+});
+
+const StyledTokenLogo = styled(TokenLogo)({
+  width: 28,
+  height: 28,
+  top: -2,
+  position: "relative",
+});
+
+const StyledTokenDisplayUsd = styled(SmallLabel)({
+  fontSize: 13,
 });
 
 const StyledPreviewLinearProgress = styled(LinearProgress)(({ emptybarcolor }: { emptybarcolor?: string }) => ({
@@ -243,28 +291,25 @@ const OrderPriceCompare = () => {
   return null;
 };
 
-const CancelOrderButton = () => {
-  return <StyledCancelOrderButton onClick={() => {}}>Cancel Order</StyledCancelOrderButton>;
-};
-
 const StyledCancelOrderButton = styled(Button)({
   background: "transparent",
   border: "unset",
   width: "fit-content",
   marginTop: 30,
-  fontSize: 14,
+  fontSize: 15,
   fontFamily: "inherit",
   marginLeft: "auto",
   marginRight: "auto",
   fontWeight: 300,
+  marginBottom: 20,
 });
 
 const DetailRow = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
   return (
     <StyledDetailRow>
-      <Tooltip text={tooltip}>
-        <SmallLabel className="label">{label}</SmallLabel>
-      </Tooltip>
+      <Label className="label" tooltipText={tooltip}>
+        {label}
+      </Label>
       <Text className="text">{children}</Text>
     </StyledDetailRow>
   );
@@ -274,6 +319,7 @@ const StyledFlex = styled(Box)({
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
+  fontSize: 14,
 });
 
 const StyledDetailRow = styled(StyledFlex)({
@@ -303,11 +349,6 @@ const StyledProgress = styled(Box)({
   },
 });
 
-const StyledInformationButton = styled("button")({
-  background: "transparent",
-  border: "unset",
-  cursor: "pointer",
-});
 const StyledColumnFlex = styled(Box)(({ gap = 10 }: { gap?: number }) => ({
   display: "flex",
   flexDirection: "column",

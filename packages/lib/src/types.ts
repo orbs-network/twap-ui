@@ -89,7 +89,7 @@ export interface TokenInfo {
 }
 
 export enum OrderStatus {
-  Open = "In Progress",
+  Open = "Open",
   Canceled = "Canceled",
   Filled = "Filled",
   Expired = "Expired",
@@ -111,7 +111,5 @@ export type Order = {
   createdAtUi: string;
   deadlineUi: string;
   progress: number;
-  srcLeftToFillAmount: BigNumber;
-  dstFilledAmount: BigNumber;
-  dstLeftToFillAmount: BigNumber;
+  srcRemainingAmount: BigNumber;
 };

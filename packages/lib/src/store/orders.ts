@@ -1,12 +1,13 @@
 import { contract, eqIgnoreCase, Abi, BigNumber, Token, zero } from "@defi.org/web3-candies";
 import _ from "lodash";
 import { useContext, useMemo } from "react";
-import { useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { TwapContext } from "../context";
-import { OrderStatus, TokenInfo } from "../types";
+import { Order, OrderStatus, TokenInfo } from "../types";
 import { getBigNumberToUiAmount, getIntervalForUi, getToken, useGetBigNumberToUiAmount, useUsdValue, useWeb3 } from "./store";
 import lensAbi from "./lens-abi.json";
 import moment from "moment";
+import twapAbi from "./twap-abi.json";
 
 const getTokenFromList = (tokensList: TokenInfo[], address?: string) => {
   if (!address) {
@@ -45,6 +46,8 @@ export const useOrders = () => {
       const orders = await lens.methods.makerOrders(account).call();
 
       const latestBlock = await web3?.eth.getBlockNumber();
+      console.log(orders);
+
       const arr = _.map(orders, (o) => {
         const srcTokenInfo = getTokenFromList(tokensList, o.ask.srcToken);
         const dstTokenInfo = getTokenFromList(tokensList, o.ask.dstToken);
@@ -63,17 +66,16 @@ export const useOrders = () => {
           tradeIntervalUi: getIntervalForUi(parseInt(o.ask.delay) * 1000),
           id: o.id,
           status: parseStatus(parseInt(o.status), latestBlock!),
-          srcFilledAmount,
           time: parseInt(o.ask.time),
           createdAtUi: moment(parseInt(o.ask.time) * 1000).format("DD/MM/YY HH:mm"),
           deadline: parseInt(o.ask.deadline),
           deadlineUi: moment(parseInt(o.ask.deadline) * 1000).format("DD/MM/YY HH:mm"),
           srcToken,
           dstToken,
-          progress: 40,
-          srcLeftToFillAmount: zero,
-          dstFilledAmount: zero,
-          dstLeftToFillAmount: zero,
+          progress: srcFilledAmount.div(srcTokenAmount).times(100).toNumber(),
+          srcFilledAmount,
+          srcRemainingAmount: srcTokenAmount.minus(srcFilledAmount),
+
           // price:
         };
       });
@@ -83,7 +85,32 @@ export const useOrders = () => {
     {
       enabled: !!account && !!config && !!web3,
       refetchInterval: 30_000,
-      refetchOnWindowFocus: false,
+    }
+  );
+};
+
+// dstMinAmount.eq(1) , market order, same logic as twap
+// limit price of dest token (for 1 src token) =  destMinAmount.div(convertDecimals(tradeSzie, srcToken, dstToken ))
+
+export const useCancelCallback = () => {
+  const client = useQueryClient();
+  const { config, account } = useWeb3();
+  const { refetch } = useOrders();
+
+  return useMutation(
+    async (orderId: string) => {
+      const twap = contract(twapAbi as Abi, config.twapAddress);
+      await twap.methods.cancel(orderId).send({ from: account });
+      await refetch();
+    },
+    {
+      onSuccess: (_result, orderId) => {
+        client.setQueryData(["useOrders", account], (prevData: any) => {
+          const index = prevData.findIndex((e: Order) => e.id === orderId);
+          prevData[index].status = 1;
+          return prevData;
+        });
+      },
     }
   );
 };

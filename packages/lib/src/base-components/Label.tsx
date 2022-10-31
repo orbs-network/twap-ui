@@ -16,7 +16,7 @@ function Label({ children, tooltipText, className }: Props) {
     return (
       <Tooltip text={tooltipText}>
         <StyledTooltipContent>
-          <StyledLabel className={className}>{children}</StyledLabel>
+          <StyledLabel className={`twap-label ${className}`}>{children}</StyledLabel>
           <Icon icon={<AiOutlineInfoCircle style={{ width: 15, height: 15 }} />} />
         </StyledTooltipContent>
       </Tooltip>

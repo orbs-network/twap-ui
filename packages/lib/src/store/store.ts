@@ -25,6 +25,7 @@ import { changeNetwork } from "./connect";
 import { TwapContext } from "../context";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
+import { txHandler } from "..";
 
 const srcTokenInitialState = {
   srcTokenInfo: undefined,
@@ -199,15 +200,16 @@ const useTokenApproval = () => {
   const { srcToken, srcTokenAmount } = useSrcTokenStore();
 
   const spender = config ? config.twapAddress : undefined;
-
   const { data: allowance, refetch } = useQuery(["allowance", account, srcToken?.address], async () => BigNumber(await srcToken!.methods.allowance(account!, spender!).call()), {
-    enabled: !!account && !!chain && !!spender && !!srcToken && !!srcTokenAmount,
+    enabled: !!account && !!chain && !!spender && !!srcToken && !!srcTokenAmount && !isNativeToken(srcToken.address),
     refetchInterval: 5_000,
   });
 
   const { mutate: approve, isLoading: approveLoading } = useMutation(async () => {
-    await srcToken?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account });
-    await new Promise((r) => setTimeout(r, 3000));
+    const tx = () => {
+      return srcToken?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account });
+    };
+    await txHandler(tx);
     await refetch();
   });
 
@@ -223,10 +225,13 @@ const useWrapToken = () => {
   const { account, config } = useWeb3();
 
   const { mutateAsync: wrap, isLoading } = useMutation(async () => {
-    const wToken: any = getToken(config!.wrappedTokenInfo, true);
+    const tx = async () => {
+      const wToken: any = getToken(config!.wrappedTokenInfo, true);
+      await wToken?.methods.deposit().send({ from: account, value: srcTokenAmount!.toString() });
 
-    await wToken?.methods.deposit().send({ from: account, value: srcTokenAmount!.toString() });
-    setSrcToken(config!.wrappedTokenInfo);
+      setSrcToken(config!.wrappedTokenInfo);
+    };
+    return txHandler(tx, 4000);
   });
 
   return {

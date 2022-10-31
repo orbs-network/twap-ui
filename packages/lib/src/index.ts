@@ -26,6 +26,17 @@ import Orders from "./orders/Orders";
 import TokenPriceCompare from "./base-components/TokenPriceCompare";
 import OdnpButton from "./base-components/OdnpButton";
 
+async function delay(time: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time);
+  });
+}
+
+export const txHandler = async <T>(method: () => T, delayMillis?: number) => {
+  await method();
+  return delay(delayMillis || 3000);
+};
+
 export default {
   store,
   baseComponents: {

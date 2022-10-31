@@ -1,4 +1,4 @@
-import { Tab, Tabs, Typography } from "@mui/material";
+import { Tab, Tabs } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import React from "react";
 import OrdersList from "./OrdersList";
@@ -6,6 +6,7 @@ import _ from "lodash";
 import Label from "../base-components/Label";
 import { OrderStatus } from "../types";
 import { useOrders } from "../store/orders";
+import OdnpButton from "../base-components/OdnpButton";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
@@ -18,9 +19,10 @@ function Orders() {
   return (
     <StyledContainer className="twap-orders">
       <StyledHeader className="twap-orders-header">
-        <StyledTitle>
+        <StyledHeaderTop>
           <Label tooltipText="Some text">Orders</Label>
-        </StyledTitle>
+          <StyledOdnpButton />
+        </StyledHeaderTop>
         <StyledTabs value={selectedTab} onChange={handleChange}>
           {_.keys(OrderStatus).map((key, index) => {
             return <Tab key={index} label={key} {...a11yProps(index)} />;
@@ -32,7 +34,7 @@ function Orders() {
           if (selectedTab !== index) {
             return null;
           }
-          return <OrdersList orders={orders[key as any as OrderStatus]} key={key} />;
+          return <OrdersList type={key as any as OrderStatus} orders={orders[key as any as OrderStatus]} key={key} />;
         })}
       </StyledLists>
     </StyledContainer>
@@ -49,6 +51,10 @@ const StyledHeader = styled(Box)({
   flexDirection: "column",
   alignItems: "flex-start",
   gap: 13,
+});
+
+const StyledOdnpButton = styled(OdnpButton)({
+  marginRight: 5,
 });
 
 const StyledTabs = styled(Tabs)({
@@ -72,13 +78,15 @@ const StyledTabs = styled(Tabs)({
     color: "white",
   },
 });
-const StyledContainer = styled(Box)({ width: "100%", paddingTop: 20, display: "flex", flexDirection: "column", gap: 15 });
-const StyledTitle = styled(Box)({
+const StyledContainer = styled(Box)({ width: "100%", paddingTop: 5, display: "flex", flexDirection: "column", gap: 15 });
+const StyledHeaderTop = styled(Box)({
+  display: "flex",
+  justifyContent: "space-between",
   paddingLeft: 5,
-  width: "fit-content",
-  marginRight: "auto",
-  "& p": {
-    fontSize: 20,
+  width: "100%",
+  marginBottom: 10,
+  "& .twap-label": {
+    fontSize: 18,
   },
 });
 
