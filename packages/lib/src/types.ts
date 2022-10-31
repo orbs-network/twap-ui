@@ -18,6 +18,8 @@ export interface SrcTokenState extends BaseState {
   srcTokenAmount?: BigNumber;
   setSrcToken: (value?: TokenInfo, keepAmount?: boolean) => void;
   setSrcTokenAmount: (value?: BigNumber) => void;
+  onChange: (value: string) => void;
+  srcTokenAmountUi?: string;
 }
 
 export interface DstTokenState extends BaseState {
@@ -31,16 +33,34 @@ export interface MaxDurationState extends BaseState {
   timeFormat: TimeFormat;
   setMillis: (value: number) => void;
   setTimeFormat: (value: TimeFormat) => void;
+  computed: {
+    deadline: number;
+    deadlineUi: string;
+  };
+  onChange: (timeFormat: TimeFormat, millis: number) => void;
 }
 
-export interface TradeIntervalState extends MaxDurationState {
+export interface TradeIntervalState extends BaseState {
+  millis: number;
+  timeFormat: TimeFormat;
+  setMillis: (value: number) => void;
+  setTimeFormat: (value: TimeFormat) => void;
   customInterval: boolean;
   setCustomInterval: (value: boolean) => void;
+  onChange: (timeFormat: TimeFormat, millis: number) => void;
+  computed: {
+    millis: number;
+    timeFormat: TimeFormat;
+    tradeIntervalUi: string;
+  };
 }
 
 export interface TradeSizeState extends BaseState {
   tradeSize?: BigNumber;
   setTradeSize: (tradeSize?: BigNumber) => void;
+  totalTrades: number;
+  onChange: (value: string) => void;
+  tradeSizeUi?: string;
 }
 
 export interface Web3State {
@@ -94,7 +114,8 @@ export type Order = {
   tradeIntervalUi: string;
   createdAtUi: string;
   deadlineUi: string;
-  srcTokenAmountUi: string;
-  srcFilledAmountUi: string;
-  tradeSizeUi: string;
+  progress: number;
+  srcLeftToFillAmount: BigNumber;
+  dstFilledAmount: BigNumber;
+  dstLeftToFillAmount: BigNumber;
 };

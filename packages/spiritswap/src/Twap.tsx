@@ -1,6 +1,6 @@
 import { CssBaseline } from "@mui/material";
 import { Box } from "@mui/system";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import TWAPLib from "@orbs-network/twap-ui";
 import { ThemeProvider } from "@mui/material/styles";
@@ -10,9 +10,6 @@ import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { ReactNode, useContext, useState } from "react";
 import { GlobalStyles } from "@mui/material";
-import axios from "axios";
-import BigNumber from "bignumber.js";
-import { convertDecimals } from "@defi.org/web3-candies";
 
 import {
   getTheme,
@@ -44,7 +41,7 @@ import {
   StyledTradeInfoModal,
   StyledUSD,
 } from "./styles";
-import { ProviderWrapper } from ".";
+import { ProviderWrapper, queryClient } from ".";
 
 // TODO create file for styles
 
@@ -52,19 +49,9 @@ const { OdnpButton, Balance, Button, Icon, NumberDisplay, TimeSelector, NumericI
   TWAPLib.baseComponents;
 const LimitPrice = TWAPLib.components.LimitPrice;
 const TwapContext = TWAPLib.TwapContext;
-const TwapProvider = TWAPLib.TwapProvider;
 const TradeInfoDetails = TWAPLib.components.TradeInfoDetails;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 const TradeInfoExplanation = TWAPLib.components.TradeInfoExplanation;
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-    },
-  },
-});
 
 const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any; tokensList: any[] }) => {
   return (
@@ -129,7 +116,7 @@ const MarketPrice = () => {
 };
 
 const SrcTokenPercentSelector = () => {
-  const { onChangePercent } = TWAPLib.store.useSrcToken();
+  const { onChangePercent } = TWAPLib.store.useActionHandlers();
 
   const onClick = (value: number) => {
     onChangePercent(value);
@@ -174,22 +161,19 @@ const ChangeTokensOrder = () => {
 };
 
 const TradeSize = () => {
-  const { srcTokenInfo, srcTokenUiAmount } = TWAPLib.store.useSrcToken();
-
-  const { uiTradeSize, onChange, totalTrades, uiUsdValue } = TWAPLib.store.useTradeSize();
-  const { usdValueLoading } = TWAPLib.store.useSrcToken();
+  const { uiTradeSize, onChange, totalTrades, uiUsdValue, usdPriceLoading, maxValue, logoUrl, symbol } = TWAPLib.store.useTradeSize();
   return (
     <StyledTrade>
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexBetween gap={10}>
             <Label tooltipText="Some text">Trade Size</Label>
-            <StyledNumbericInput placeholder={"0"} onChange={onChange} value={uiTradeSize} maxValue={srcTokenUiAmount} />
-            <TokenDisplay logo={srcTokenInfo?.logoUrl} name={srcTokenInfo?.symbol} />
+            <StyledNumbericInput placeholder={"0"} onChange={onChange} value={uiTradeSize} maxValue={maxValue} />
+            <TokenDisplay logo={logoUrl} name={symbol} />
           </StyledFlexBetween>
           <StyledFlexBetween>
             <SmallLabel>Total trades: {totalTrades}</SmallLabel>
-            <StyledUSD value={uiUsdValue} isLoading={usdValueLoading} />
+            <StyledUSD value={uiUsdValue} isLoading={usdPriceLoading} />
           </StyledFlexBetween>
         </StyledColumnGap>
       </StyledCard>
@@ -244,6 +228,8 @@ const MaxDuration = () => {
 const TradeInterval = () => {
   const { tradeIntervalMillis, tradeIntervalTimeFormat, customInterval, onChange, onCustomIntervalClick } = TWAPLib.store.useTradeInterval();
 
+  console.log(tradeIntervalMillis);
+
   return (
     <StyledCard>
       <StyledFlexBetween gap={10}>
@@ -278,11 +264,10 @@ interface TokenPanelProps {
 }
 
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
-  const { amountPrefix, usdValueLoading, usdValue, disabled, balanceLoading, balance, value, onSelect, selectedToken, onChange, tokenListOpen, toggleTokenList } =
+  const { amountPrefix, usdValueLoading, usdValue, disabled, balanceLoading, balance, value, onSelect, selectedToken, onChange, tokenListOpen, toggleTokenList, TokenSelectModal } =
     TWAPLib.store.useTokenPanel(isSrcToken);
 
   const { chain, account } = TWAPLib.store.useWeb3();
-  const { TokenSelectModal }: { TokenSelectModal: any } = useContext(TwapContext);
 
   const onOpen = () => {
     if (chain != null) {
@@ -292,7 +277,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
 
   return (
     <StyledTokenPanel>
-      <TokenSelectModal isOpen={tokenListOpen} chainId={chain} selectedTokens={selectedToken} onClose={() => toggleTokenList(false)} onSelect={onSelect} />
+      {TokenSelectModal && <TokenSelectModal isOpen={tokenListOpen} chainId={chain} selectedTokens={selectedToken} onClose={() => toggleTokenList(false)} onSelect={onSelect} />}
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexBetween>

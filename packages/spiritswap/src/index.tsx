@@ -5,8 +5,18 @@ import BigNumber from "bignumber.js";
 import { convertDecimals } from "@defi.org/web3-candies";
 import axios from "axios";
 import { ReactNode } from "react";
-import { TokenInfo } from "@orbs-network/twap-ui/dist/types";
+import { QueryClient, QueryClientProvider } from "react-query";
+
 const TwapProvider = TWAPLib.TwapProvider;
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
+    },
+  },
+});
 
 const dappIntegrationChainId = 250;
 
@@ -25,7 +35,7 @@ interface ProviderWrapperProps {
   connect: () => void;
   TokenSelectModal: any;
   children: ReactNode;
-  tokensList: TokenInfo[];
+  tokensList: any[];
 }
 export const ProviderWrapper = (props: ProviderWrapperProps) => {
   return (

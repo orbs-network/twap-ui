@@ -3,18 +3,9 @@ import TWAPLib from "@orbs-network/twap-ui";
 import { Box, styled } from "@mui/system";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { colors } from "./styles";
-import { ProviderWrapper } from ".";
+import { ProviderWrapper, queryClient } from ".";
 
 const { Orders } = TWAPLib;
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-    },
-  },
-});
 
 function OrderHistory(props: { provider: any; connect: () => void; TokenSelectModal: any; tokensList: any[] }) {
   return (

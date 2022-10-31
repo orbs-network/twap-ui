@@ -1,4 +1,4 @@
-import { contract, eqIgnoreCase, Abi, BigNumber, Token } from "@defi.org/web3-candies";
+import { contract, eqIgnoreCase, Abi, BigNumber, Token, zero } from "@defi.org/web3-candies";
 import _ from "lodash";
 import { useContext, useMemo } from "react";
 import { useQuery, useQueryClient } from "react-query";
@@ -45,40 +45,38 @@ export const useOrders = () => {
       const orders = await lens.methods.makerOrders(account).call();
 
       const latestBlock = await web3?.eth.getBlockNumber();
-      const arr = await Promise.all(
-        _.map(orders, async (o) => {
-          const srcTokenInfo = getTokenFromList(tokensList, o.ask.srcToken);
-          const dstTokenInfo = getTokenFromList(tokensList, o.ask.dstToken);
-          const srcToken = getToken(srcTokenInfo);
-          const dstToken = getToken(dstTokenInfo);
-          const srcTokenAmount = BigNumber(o.ask.srcAmount);
-          const srcFilledAmount = BigNumber(o.srcFilledAmount);
-          const tradeSize = BigNumber(o.ask.srcBidAmount);
-          const dstMinAmount = BigNumber(o.ask.dstMinAmount);
+      const arr = _.map(orders, (o) => {
+        const srcTokenInfo = getTokenFromList(tokensList, o.ask.srcToken);
+        const dstTokenInfo = getTokenFromList(tokensList, o.ask.dstToken);
+        const srcToken = getToken(srcTokenInfo);
+        const dstToken = getToken(dstTokenInfo);
+        const srcTokenAmount = BigNumber(o.ask.srcAmount);
+        const srcFilledAmount = BigNumber(o.srcFilledAmount);
+        const tradeSize = BigNumber(o.ask.srcBidAmount);
+        const dstMinAmount = BigNumber(o.ask.dstMinAmount);
 
-          return {
-            srcTokenAmount, // left top (10 wbtc figma )
-            srcTokenAmountUi: await getBigNumberToUiAmount(srcToken, srcTokenAmount),
-            tradeSize,
-            tradeSizeUi: await getBigNumberToUiAmount(srcToken, tradeSize),
-            dstMinAmount,
-            delay: parseInt(o.ask.delay),
-            tradeIntervalUi: getIntervalForUi(parseInt(o.ask.delay) * 1000),
-            id: o.id,
-            status: parseStatus(parseInt(o.status), latestBlock!),
-            srcFilledAmount,
-            srcFilledAmountUi: await getBigNumberToUiAmount(srcToken, srcFilledAmount),
-            time: parseInt(o.ask.time),
-            createdAtUi: moment(parseInt(o.ask.time) * 1000).format("DD/MM/YY HH:mm"),
-            deadline: parseInt(o.ask.deadline),
-            deadlineUi: moment(parseInt(o.ask.deadline) * 1000).format("DD/MM/YY HH:mm"),
-            srcToken,
-            dstToken,
-
-            // price:
-          };
-        })
-      );
+        return {
+          srcTokenAmount, // left top (10 wbtc figma )
+          tradeSize,
+          dstMinAmount,
+          delay: parseInt(o.ask.delay),
+          tradeIntervalUi: getIntervalForUi(parseInt(o.ask.delay) * 1000),
+          id: o.id,
+          status: parseStatus(parseInt(o.status), latestBlock!),
+          srcFilledAmount,
+          time: parseInt(o.ask.time),
+          createdAtUi: moment(parseInt(o.ask.time) * 1000).format("DD/MM/YY HH:mm"),
+          deadline: parseInt(o.ask.deadline),
+          deadlineUi: moment(parseInt(o.ask.deadline) * 1000).format("DD/MM/YY HH:mm"),
+          srcToken,
+          dstToken,
+          progress: 40,
+          srcLeftToFillAmount: zero,
+          dstFilledAmount: zero,
+          dstLeftToFillAmount: zero,
+          // price:
+        };
+      });
 
       return _.groupBy(arr, "status");
     },

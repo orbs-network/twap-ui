@@ -27,20 +27,20 @@ export interface Props {
   type?: OrderStatus;
 }
 function OrderComponent({ order, onExpand, expanded, type }: Props) {
-  const { id, createdAtUi, srcToken, dstToken, srcTokenAmount } = order;
+  const { id, createdAtUi, srcToken, dstToken, srcTokenAmount, progress } = order;
   console.log({ order });
 
   return (
     <StyledContainer className="twap-order">
       <StyledAccordion expanded={expanded}>
         <StyledSummary onClick={onExpand}>
-          <StyledColumnFlex>
+          <StyledColumnFlex gap={20}>
             <StyledHeader>
               <Text>#{id}</Text>
               <Text>{createdAtUi}</Text>
             </StyledHeader>
 
-            {expanded ? <StyledSeperator /> : <PreviewProgressBar progress={80} />}
+            {expanded ? <StyledSeperator /> : <PreviewProgressBar progress={progress} />}
             <StyledFlexStart>
               <TokenDetails token={srcToken} amount={srcTokenAmount} />
               <Icon className="icon" icon={<BsArrowRight style={{ width: 30, height: 30 }} />} />
@@ -61,7 +61,7 @@ function OrderComponent({ order, onExpand, expanded, type }: Props) {
 const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => {
   const [fullInfo, setFullInfo] = useState(false);
 
-  const { deadlineUi, tradeIntervalUi, srcToken, dstToken, srcTokenAmount, tradeSizeUi, srcFilledAmount } = order;
+  const { deadlineUi, tradeIntervalUi, srcToken, dstToken, srcFilledAmount, progress } = order;
 
   return (
     <StyledOrderDetails>
@@ -71,12 +71,12 @@ const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => 
         <StyledProgressContent gap={20}>
           <StyledFlex>
             <TokenDetails hideUSD={!fullInfo} token={srcToken} amount={srcFilledAmount} />
-            <TokenDetails hideUSD={!fullInfo} token={dstToken} />
+            <TokenDetails hideUSD={!fullInfo} token={srcToken} amount={srcFilledAmount} />
           </StyledFlex>
-          <MainProgressBar progress={60} />
+          <MainProgressBar progress={progress} />
           {fullInfo && (
             <StyledFlex>
-              <TokenDetails token={srcToken} />
+              <TokenDetails token={dstToken} />
               <TokenDetails token={dstToken} />
             </StyledFlex>
           )}

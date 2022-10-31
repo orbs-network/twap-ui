@@ -1,4 +1,4 @@
-import { useWeb3, store, validation } from "./store/store";
+import { store, validation } from "./store/store";
 
 import NumericInput from "./base-components/NumericInput";
 import Card from "./base-components/Card";
