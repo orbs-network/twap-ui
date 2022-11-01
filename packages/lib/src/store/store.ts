@@ -221,17 +221,18 @@ const useTokenApproval = () => {
 };
 
 const useWrapToken = () => {
-  const { srcTokenAmount, setSrcToken, srcTokenInfo } = useSrcTokenStore();
+  const { srcTokenAmount, setSrcToken, srcTokenInfo, srcToken } = useSrcTokenStore();
   const { account, config } = useWeb3();
+  const { refetch } = useAccountBalances(srcToken);
 
   const { mutateAsync: wrap, isLoading } = useMutation(async () => {
     const tx = async () => {
       const wToken: any = getToken(config!.wrappedTokenInfo, true);
       await wToken?.methods.deposit().send({ from: account, value: srcTokenAmount!.toString() });
-
-      setSrcToken(config!.wrappedTokenInfo);
     };
-    return txHandler(tx, 4000);
+    await txHandler(tx, 4000);
+    await refetch();
+    setSrcToken(config!.wrappedTokenInfo);
   });
 
   return {

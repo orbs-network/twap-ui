@@ -8,6 +8,7 @@ import { getBigNumberToUiAmount, getIntervalForUi, getToken, useGetBigNumberToUi
 import lensAbi from "./lens-abi.json";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
+import { txHandler } from "..";
 
 const getTokenFromList = (tokensList: TokenInfo[], address?: string) => {
   if (!address) {
@@ -93,24 +94,15 @@ export const useOrders = () => {
 // limit price of dest token (for 1 src token) =  destMinAmount.div(convertDecimals(tradeSzie, srcToken, dstToken ))
 
 export const useCancelCallback = () => {
-  const client = useQueryClient();
   const { config, account } = useWeb3();
   const { refetch } = useOrders();
 
-  return useMutation(
-    async (orderId: string) => {
+  return useMutation(async (orderId: string) => {
+    const tx = async () => {
       const twap = contract(twapAbi as Abi, config.twapAddress);
       await twap.methods.cancel(orderId).send({ from: account });
-      await refetch();
-    },
-    {
-      onSuccess: (_result, orderId) => {
-        client.setQueryData(["useOrders", account], (prevData: any) => {
-          const index = prevData.findIndex((e: Order) => e.id === orderId);
-          prevData[index].status = 1;
-          return prevData;
-        });
-      },
-    }
-  );
+    };
+    await txHandler(tx, 4000);
+    await refetch();
+  });
 };
