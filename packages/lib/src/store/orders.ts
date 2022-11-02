@@ -98,7 +98,7 @@ export const useOrders = () => {
             deadlineUi: moment(parseInt(o.ask.deadline) * 1000).format("DD/MM/YY HH:mm"),
             srcToken,
             dstToken,
-            progress: srcFilledAmount.div(srcTokenAmount).times(100).toNumber(),
+            progress: srcFilledAmount.div(srcTokenAmount).times(100).toNumber() || 1,
             srcFilledAmount,
             srcRemainingAmount,
             isMarketOrder,

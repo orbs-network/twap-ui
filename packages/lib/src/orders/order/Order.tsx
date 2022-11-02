@@ -28,7 +28,7 @@ export interface Props {
 }
 
 function OrderComponent({ order, onExpand, expanded, type, text }: Props) {
-  const { id, createdAtUi, progress, prefix, srcTokenInfo, dstTokenInfo, srcTokenAmountUi, dstTokenAmountUi, srcUsdValueUi, dstUsdValueUi } = order;
+  const { id, createdAtUi, progress, prefix, srcTokenInfo, dstTokenInfo, srcTokenAmountUi, dstTokenAmountUi, srcUsdValueUi, dstUsdValueUi, isMarketOrder } = order;
 
   return (
     <StyledContainer className="twap-order">
@@ -36,7 +36,10 @@ function OrderComponent({ order, onExpand, expanded, type, text }: Props) {
         <StyledSummary onClick={onExpand}>
           <StyledColumnFlex gap={0}>
             <StyledHeader>
-              <Text>#{id}</Text>
+              <Box className="flex">
+                <Text>#{id}</Text>
+                <Text>{isMarketOrder ? "Market Order" : "Limit Order"}</Text>
+              </Box>
               <Text>{createdAtUi}</Text>
             </StyledHeader>
 
@@ -178,6 +181,11 @@ const StyledHeader = styled(Box)({
   fontSize: 14,
   fontWeight: 300,
   marginBottom: 12,
+  "& .flex": {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  },
   "& p": {
     color: "inherit",
     fontSize: "inherit",
