@@ -1,15 +1,9 @@
 import { BigNumber, Token } from "@defi.org/web3-candies";
 import { TimeFormat } from "./store/TimeFormat";
 import Web3 from "web3";
+
 interface BaseState {
   reset: () => void;
-}
-
-export interface GlobalState extends BaseState {
-  showConfirmation: boolean;
-  setShowConfirmation: (value: boolean) => void;
-  disclaimerAccepted: boolean;
-  setDisclaimerAccepted: (value: boolean) => void;
 }
 
 export interface SrcTokenState extends BaseState {

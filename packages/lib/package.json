@@ -17,7 +17,7 @@
     "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
     "build": "npm run prettier && rm -rf dist && tsc",
     "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc",
-    "test": "tsc && for t in eth ftm; do echo \"testing $t...\"; NETWORK=$t DOTENV_CONFIG_PATH=../../.env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r dotenv/config -r ts-node/register 'test/**/*.test.ts'; done"
+    "test": "for t in eth ftm; do echo \"testing $t...\"; NETWORK=$t DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors; done"
   },
   "dependencies": {
     "@defi.org/web3-candies": "4.x",
@@ -36,7 +36,18 @@
     "react": "*",
     "react-dom": "*"
   },
+  "devDependencies": {
+    "@testing-library/react": "13.x",
+    "@testing-library/jest-dom": "5.x",
+    "jest": "29.x",
+    "jest-environment-jsdom": "29.x",
+    "ts-jest": "29.x"
+  },
   "config": {
     "omit": "optional"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom"
   }
 }

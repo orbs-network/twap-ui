@@ -1,23 +1,9 @@
 import _ from "lodash";
-import {
-  Abi,
-  account as candiesAccount,
-  BigNumber,
-  bn,
-  contract,
-  convertDecimals,
-  eqIgnoreCase,
-  erc20,
-  parsebn,
-  setWeb3Instance,
-  Token,
-  zero,
-  iwethabi,
-} from "@defi.org/web3-candies";
+import { Abi, account as candiesAccount, BigNumber, contract, convertDecimals, eqIgnoreCase, erc20, iwethabi, parsebn, setWeb3Instance, Token, zero } from "@defi.org/web3-candies";
 import { useMutation, useQuery } from "react-query";
 import { useCallback, useContext, useMemo, useState } from "react";
 import Web3 from "web3";
-import { DstTokenState, GlobalState, MaxDurationState, PriceState, SrcTokenState, TokenInfo, TradeIntervalState, TradeSizeState, Web3State } from "../types";
+import { DstTokenState, MaxDurationState, PriceState, SrcTokenState, TokenInfo, TradeIntervalState, TradeSizeState, Web3State } from "../types";
 import create from "zustand";
 import { TimeFormat } from "./TimeFormat";
 import { getConfig, nativeAddresses } from "../consts";
@@ -27,6 +13,12 @@ import moment from "moment";
 import twapAbi from "./twap-abi.json";
 import { txHandler } from "..";
 import { useOrders } from "./orders";
+
+function createStore<T extends { reset: () => void }>(initialState: Partial<T>, creator: (set: any, get: any) => Partial<T>) {
+  const store = create<T>(creator as any);
+  store.setState({ ...initialState, reset: () => store.setState(initialState) });
+  return store;
+}
 
 const srcTokenInitialState = {
   srcTokenInfo: undefined,
@@ -60,22 +52,27 @@ const tradeSizeInitialState = {
   tradeSize: undefined,
 };
 
-const globalInitialState = {
-  showConfirmation: false,
-  disclaimerAccepted: false,
-};
-
-export const useGlobalState = create<GlobalState>((set) => ({
-  ...globalInitialState,
-  setShowConfirmation: (showConfirmation) => {
-    set({ showConfirmation });
-    if (!showConfirmation) {
-      set({ disclaimerAccepted: false });
-    }
+export const useGlobalState = createStore<{
+  reset: () => void;
+  showConfirmation: boolean;
+  disclaimerAccepted: boolean;
+  setShowConfirmation: (value: boolean) => void;
+  setDisclaimerAccepted: (value: boolean) => void;
+}>(
+  {
+    showConfirmation: false,
+    disclaimerAccepted: false,
   },
-  setDisclaimerAccepted: (disclaimerAccepted) => set({ disclaimerAccepted }),
-  reset: () => set(globalInitialState),
-}));
+  (set) => ({
+    setShowConfirmation: (showConfirmation) => {
+      set({ showConfirmation });
+      if (!showConfirmation) {
+        set({ disclaimerAccepted: false });
+      }
+    },
+    setDisclaimerAccepted: (disclaimerAccepted) => set({ disclaimerAccepted }),
+  })
+);
 
 export const useSrcTokenStore = create<SrcTokenState>((set, get) => ({
   ...srcTokenInitialState,
