@@ -1,12 +1,12 @@
 import { Box, styled } from "@mui/system";
 import React, { useState } from "react";
 import { useWeb3 } from "../store/store";
-import { Order, OrderStatus } from "../types";
+import { Order, OrderStatus, OrderText } from "../types";
 import OrderComponent from "./order/Order";
 
 // TODO chnage all limitOrder -->  orders, ordersList, Order
 
-function OrdersList({ orders, type }: { orders: Order[]; type: OrderStatus }) {
+function OrdersList({ orders, type, text }: { orders: Order[]; type: OrderStatus; text: OrderText }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
 
   const onSelect = (value: number) => {
@@ -16,7 +16,7 @@ function OrdersList({ orders, type }: { orders: Order[]; type: OrderStatus }) {
     <StyledContainer>
       {orders ? (
         orders.map((order, index) => {
-          return <OrderComponent order={order} type={type} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
+          return <OrderComponent text={text} order={order} type={type} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
         })
       ) : (
         <StyledEmptyList>No Orders Found</StyledEmptyList>

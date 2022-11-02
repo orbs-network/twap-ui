@@ -1,5 +1,0 @@
-{
-  "deadlineTooltip": "This is the date and time marking the end of the period which you have selected for your TWAP order to be executed.",
-  "tradeIntervalTooltip": "The minimum amount of time that will elapse between each trade in your order.",
-  "tradeSizeTooltip": "The number of input tokens that will be removed from your balance and swapped for the output token in each individual trade."
-}

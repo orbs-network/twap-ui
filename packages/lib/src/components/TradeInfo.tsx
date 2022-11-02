@@ -19,61 +19,61 @@ export function TradeInfoModal({ onClose, open, children, className = "" }: { on
 
 const StyledModalContent = styled(Box)({});
 
-export function Expiration() {
+export function ConfirmationExpiration({ tooltip }: { tooltip: string }) {
   const { deadlineUi } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText="text">Expiration</Label>
+      <Label tooltipText={tooltip}>Expiration</Label>
       <Text>{deadlineUi}</Text>
     </StyledRow>
   );
 }
 
-export function OrderType() {
+export function ConfirmationOrderType({ tooltip }: { tooltip: string }) {
   const { isLimitOrder } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText="text">Order type</Label>
+      <Label tooltipText={tooltip}>Order type</Label>
       <Text>{isLimitOrder ? "Limit order" : "Market order"}</Text>
     </StyledRow>
   );
 }
 
-export function TradeSize() {
+export function ConfirmationTradeSize({ tooltip }: { tooltip: string }) {
   const { uiTradeSize } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText="text">Trade size</Label>
+      <Label tooltipText={tooltip}>Trade size</Label>
       <Text>{uiTradeSize}</Text>
     </StyledRow>
   );
 }
 
-export function TotalTrades() {
+export function ConfirmationTotalTrades({ tooltip }: { tooltip: string }) {
   const { totalTrades } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText="text">Total trades</Label>
+      <Label tooltipText={tooltip}>Total trades</Label>
       <Text>{totalTrades}</Text>
     </StyledRow>
   );
 }
 
-export function TradeInterval() {
+export function ConfirmationTradeInterval({ tooltip }: { tooltip: string }) {
   const { tradeIntervalUi } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText="text">Trade interval</Label>
+      <Label tooltipText={tooltip}>Trade interval</Label>
       <Text>{tradeIntervalUi}</Text>
     </StyledRow>
   );
 }
 
-export function MinimumReceived() {
+export function ConfirmationMinimumReceived({ tooltip }: { tooltip: string }) {
   const { minAmountOutUi, isLimitOrder, srcTokenInfo } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText="text">Minimum Received Per Trade:</Label>
+      <Label tooltipText={tooltip}>Minimum Received Per Trade:</Label>
       {isLimitOrder ? (
         <StyledMinumimReceived>
           <Text>
@@ -107,19 +107,6 @@ const StyledRow = styled(Box)({
   justifyContent: "space-between",
   width: "100%",
 });
-
-export const TradeInfoDetails = () => {
-  return (
-    <>
-      <OrderType />
-      <Expiration />
-      <TradeSize />
-      <TotalTrades />
-      <TradeInterval />
-      <MinimumReceived />
-    </>
-  );
-};
 
 export const TradeInfoExplanation = () => {
   return (

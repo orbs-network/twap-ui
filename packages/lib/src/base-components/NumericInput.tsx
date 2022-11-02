@@ -58,6 +58,7 @@ function NumericInput({
             decimalSeparator="."
             customInput={StyledInput}
             className="twap-input"
+            type="text"
             onValueChange={(values, _sourceInfo) => {
               onChange(values.value);
             }}

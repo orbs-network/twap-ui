@@ -4,11 +4,15 @@ import React from "react";
 import OrdersList from "./OrdersList";
 import _ from "lodash";
 import Label from "../base-components/Label";
-import { OrderStatus } from "../types";
+import { OrderStatus, OrderText } from "../types";
 import { useOrders } from "../store/orders";
 import OdnpButton from "../base-components/OdnpButton";
 
-function Orders() {
+export interface Props {
+  text: OrderText;
+}
+
+function Orders({ text }: Props) {
   const [selectedTab, setSelectedTab] = React.useState(0);
   const { data: orders = {} } = useOrders();
 
@@ -34,7 +38,7 @@ function Orders() {
           if (selectedTab !== index) {
             return null;
           }
-          return <OrdersList type={key as any as OrderStatus} orders={orders[key as any as OrderStatus]} key={key} />;
+          return <OrdersList text={text} type={key as any as OrderStatus} orders={orders[key as any as OrderStatus]} key={key} />;
         })}
       </StyledLists>
     </StyledContainer>

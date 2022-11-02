@@ -129,3 +129,9 @@ export type Order = {
   srcFilledUsdValueUi: string;
   srcRemainingUsdValueUi: string;
 };
+
+export type OrderText = {
+  tradeSizeTooltipText: string;
+  tradeIntervalTooltipText: string;
+  deadlineTooltipText: string;
+};

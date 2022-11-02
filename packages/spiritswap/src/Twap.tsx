@@ -10,7 +10,7 @@ import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { ReactNode } from "react";
 import { GlobalStyles } from "@mui/material";
-
+import text from "./text.json";
 import {
   getTheme,
   globalStyle,
@@ -47,10 +47,10 @@ import { ProviderWrapper, queryClient } from ".";
 
 const { Balance, Loader, Icon, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
   TWAPLib.baseComponents;
-const LimitPrice = TWAPLib.components.LimitPrice;
-const TradeInfoDetails = TWAPLib.components.TradeInfoDetails;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
-const TradeInfoExplanation = TWAPLib.components.TradeInfoExplanation;
+
+const { LimitPrice, ConfirmationExpiration, ConfirmationOrderType, ConfirmationTradeSize, ConfirmationTotalTrades, ConfirmationTradeInterval, ConfirmationMinimumReceived } =
+  TWAPLib.components;
 
 const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any; tokensList: any[] }) => {
   return (
@@ -165,7 +165,7 @@ const TradeSize = () => {
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexBetween gap={10}>
-            <Label tooltipText="Some text">Trade Size</Label>
+            <Label tooltipText={text.tradeSize}>Trade Size</Label>
             <StyledNumbericInput placeholder={"0"} onChange={onChange} value={uiTradeSize} maxValue={maxValue} />
             <TokenDisplay logo={logoUrl} name={symbol} />
           </StyledFlexBetween>
@@ -188,7 +188,7 @@ const LimitPriceDisplay = () => {
         <StyledColumnGap>
           <StyledFlexStart>
             <Tooltip text={warning}>{isLoading ? <Loader width={50} /> : <StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}</Tooltip>
-            <Label tooltipText="some text">Limit Price</Label>
+            <Label tooltipText={isLimitOrder ? text.limitPrice : text.marketPrice}>Limit Price</Label>
           </StyledFlexStart>
           {isLimitOrder && (
             <LimitPrice
@@ -213,7 +213,7 @@ const MaxDuration = () => {
   return (
     <StyledCard>
       <StyledFlexBetween gap={10}>
-        <Label tooltipText="Some text">Max Duration</Label>
+        <Label tooltipText={text.maxDuration}>Max Duration</Label>
         <TimeSelector millis={maxDurationMillis} selectedTimeFormat={maxDurationTimeFormat} onChange={onChange} />
       </StyledFlexBetween>
     </StyledCard>
@@ -226,14 +226,12 @@ const TradeInterval = () => {
   return (
     <StyledCard>
       <StyledFlexBetween gap={10}>
-        <Label tooltipText="Some text">Trade Interval</Label>
+        <Label tooltipText={text.tradeInterval}>Trade Interval</Label>
         <StyledIntervalTimeSelect>
-          <Tooltip text={customInterval ? "" : "Some text"}>
-            <TimeSelector disabled={!customInterval} onChange={onChange} millis={tradeIntervalMillis} selectedTimeFormat={tradeIntervalTimeFormat} />
-          </Tooltip>
+          <TimeSelector disabled={!customInterval} onChange={onChange} millis={tradeIntervalMillis} selectedTimeFormat={tradeIntervalTimeFormat} />
         </StyledIntervalTimeSelect>
         {!customInterval && (
-          <IconButton tooltip="Some text" onClick={onCustomIntervalClick}>
+          <IconButton tooltip={text.customInterval} onClick={onCustomIntervalClick}>
             <StyledIcon icon={<AiFillEdit />} />
           </IconButton>
         )}
@@ -275,7 +273,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
         <StyledColumnGap>
           <StyledFlexBetween>
             <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
-            <Tooltip text={!account ? "Connect wallet" : undefined}>
+            <Tooltip text={!account ? text.connect : undefined}>
               <StyledTokenSelect onClick={onOpen}>
                 <TokenDisplay logo={selectedToken?.logoUrl} name={selectedToken?.symbol} />
                 <StyledIcon icon={<IoIosArrowDown size={20} />} />
@@ -345,15 +343,24 @@ const OrderConfirmation = () => {
               />
               <OrderConfirmationLimitPrice />
               <TradeInfoDetailsDisplay />
-              <TradeDetails />
+              <StyledCard>
+                <StyledColumnGap className="trade-info-explanation" gap={20}>
+                  <ConfirmationExpiration tooltip={text.confirmationDeadline} />
+                  <ConfirmationOrderType tooltip={isLimitOrder ? text.limitPrice : text.marketPrice} />
+                  <ConfirmationTradeSize tooltip={text.confirmationTradeSize} />
+                  <ConfirmationTotalTrades tooltip={text.confirmationTotalTrades} />
+                  <ConfirmationTradeInterval tooltip={text.confirmationtradeInterval} />
+                  <ConfirmationMinimumReceived tooltip={text.confirmationMinimumReceivedPerTrade} />
+                </StyledColumnGap>
+              </StyledCard>
             </StyledColumnGap>
             <StyledColumnGap gap={20}>
               <Box style={{ display: "flex", gap: 5 }}>
-                <SmallLabel>Accept Disclaimer</SmallLabel>
+                <SmallLabel>{text.acceptDisclaimer}</SmallLabel>
                 <Switch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
               </Box>
               <Text className="output-text">
-                Output will be sent to <Tooltip text={account}>{ellipsisAccount}</Tooltip>
+                {text.outputWillBeSentTo} <Tooltip text={account}>{ellipsisAccount}</Tooltip>
               </Text>
               <SubmitButton />
             </StyledColumnGap>
@@ -364,21 +371,28 @@ const OrderConfirmation = () => {
   );
 };
 
-const TradeDetails = () => {
-  return (
-    <StyledCard>
-      <StyledColumnGap className="trade-info-explanation" gap={20}>
-        <TradeInfoExplanation />
-      </StyledColumnGap>
-    </StyledCard>
-  );
-};
-
 const TradeInfoDetailsDisplay = () => {
   return (
     <StyledCard>
       <StyledColumnGap gap={10}>
-        <TradeInfoDetails />
+        <Text>{text.disclaimer1}</Text>
+        <Text>{text.disclaimer2}</Text>
+        <Text>{text.disclaimer3}</Text>
+        <Text>{text.disclaimer4}</Text>
+        <Text>{text.disclaimer5}</Text>
+        <Text>
+          {text.disclaimer6}
+          <a href="https://www.orbs.com/" target="_blank">
+            {" "}
+            {text.link}
+          </a>
+          . {text.disclaimer7}
+          <a href="https://www.orbs.com/" target="_blank">
+            {" "}
+            {text.link}
+          </a>
+          .
+        </Text>
       </StyledColumnGap>
     </StyledCard>
   );

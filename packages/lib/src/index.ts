@@ -17,7 +17,16 @@ import IconButton from "./base-components/IconButton";
 import Text from "./base-components/Text";
 import NumberDisplay from "./base-components/NumberDisplay";
 import { TwapContext, TwapProvider } from "./context";
-import { TradeInfoModal, TradeInfoDetails, TradeInfoExplanation } from "./components/TradeInfo";
+import {
+  TradeInfoModal,
+  TradeInfoExplanation,
+  ConfirmationExpiration,
+  ConfirmationOrderType,
+  ConfirmationTradeSize,
+  ConfirmationTotalTrades,
+  ConfirmationTradeInterval,
+  ConfirmationMinimumReceived,
+} from "./components/TradeInfo";
 import PriceToggle from "./base-components/PriceToggle";
 import Button from "./base-components/Button";
 import Balance from "./base-components/Balance";
@@ -64,7 +73,17 @@ export default {
     OdnpButton,
     Loader,
   },
-  components: { LimitPrice, TradeInfoModal, TradeInfoDetails, TradeInfoExplanation },
+  components: {
+    LimitPrice,
+    TradeInfoModal,
+    ConfirmationExpiration,
+    ConfirmationOrderType,
+    ConfirmationTradeSize,
+    ConfirmationTotalTrades,
+    ConfirmationTradeInterval,
+    ConfirmationMinimumReceived,
+    TradeInfoExplanation,
+  },
   validation,
   TwapContext,
   TwapProvider,

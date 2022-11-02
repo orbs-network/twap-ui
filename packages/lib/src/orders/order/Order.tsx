@@ -16,18 +16,18 @@ import SmallLabel from "../../base-components/SmallLabel";
 import Button from "../../base-components/Button";
 import { useCancelCallback } from "../../store/orders";
 import Card from "../../base-components/Card";
-import { Order, OrderStatus, TokenInfo } from "../../types";
+import { Order, OrderStatus, OrderText, TokenInfo } from "../../types";
 import { Typography } from "@mui/material";
-import text from "../../text.json";
 import { StyledColumnGap } from "../../styles";
 export interface Props {
   order: Order;
   onExpand: () => void;
   expanded: boolean;
   type?: OrderStatus;
+  text: OrderText;
 }
 
-function OrderComponent({ order, onExpand, expanded, type }: Props) {
+function OrderComponent({ order, onExpand, expanded, type, text }: Props) {
   const { id, createdAtUi, progress, prefix, srcTokenInfo, dstTokenInfo, srcTokenAmountUi, dstTokenAmountUi, srcUsdValueUi, dstUsdValueUi } = order;
 
   return (
@@ -51,14 +51,14 @@ function OrderComponent({ order, onExpand, expanded, type }: Props) {
         </StyledSummary>
         <AccordionDetails style={{ padding: 0, paddingTop: 10 }}>
           <StyledSeperator style={{ marginBottom: 10 }} />
-          <OrderDetails order={order} type={type} />
+          <OrderDetails order={order} type={type} text={text} />
         </AccordionDetails>
       </StyledAccordion>
     </StyledContainer>
   );
 }
 
-const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => {
+const OrderDetails = ({ order, type, text }: { order: Order; type?: OrderStatus; text: OrderText }) => {
   const {
     deadlineUi,
     tradeIntervalUi,
@@ -94,13 +94,13 @@ const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => 
         </StyledProgressContent>
       </StyledProgress>
       <StyledColumnFlex>
-        <DetailRow label="Trades Size:" tooltip={text.tradeSizeTooltip}>
+        <DetailRow label="Trades Size:" tooltip={text.tradeSizeTooltipText}>
           <NumberDisplay value={tradeSizeAmountUi} /> {srcTokenInfo.symbol} ≈$ {tradeSizeUsdValueUi}
         </DetailRow>
-        <DetailRow label="Trades interval:" tooltip={text.tradeIntervalTooltip}>
+        <DetailRow label="Trades interval:" tooltip={text.tradeIntervalTooltipText}>
           {tradeIntervalUi}
         </DetailRow>
-        <DetailRow label="Deadline:" tooltip={text.deadlineTooltip}>
+        <DetailRow label="Deadline:" tooltip={text.deadlineTooltipText}>
           {deadlineUi}
         </DetailRow>
       </StyledColumnFlex>
