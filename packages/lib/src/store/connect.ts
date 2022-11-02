@@ -1,5 +1,6 @@
 import Web3 from "web3";
 import axios from "axios";
+import _ from "lodash";
 export const changeNetwork = async (web3?: Web3, chain?: number) => {
   if (!web3 || !chain) {
     return;
@@ -18,7 +19,7 @@ export const changeNetwork = async (web3?: Web3, chain?: number) => {
   } catch (error: any) {
     // if unknown chain, add chain
     if (error.code === 4902) {
-      const list = (await axios.get("https://chainid.network/chains_mini.json")).data;
+      const list = (await axios.get("https://chainid.network/chains.json")).data;
       const chainArgs = list.find((it: any) => it.chainId === chain);
       if (!chainArgs) {
         return;
@@ -32,6 +33,8 @@ export const changeNetwork = async (web3?: Web3, chain?: number) => {
             nativeCurrency: chainArgs.nativeCurrency,
             rpcUrls: chainArgs.rpc,
             chainId: Web3.utils.toHex(chain),
+            blockExplorerUrls: [_.get(chainArgs, ["explorers", 0, "url"])],
+            iconUrls: [`https://defillama.com/chain-icons/rsz_${chainArgs.chain}.jpg`],
           },
         ],
       });
