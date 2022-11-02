@@ -542,7 +542,7 @@ export const useSubmitButtonValidation = () => {
 
 const isTradeSizeTooSmall = (srcTokenAmount: BigNumber, tradeSize: BigNumber, srcTokenUsdValue18: BigNumber, srcTokenInfo: TokenInfo) => {
   const smallestTradeSize = srcTokenAmount.modulo(tradeSize).eq(0) ? tradeSize : srcTokenAmount.modulo(tradeSize);
-  return smallestTradeSize?.times(srcTokenUsdValue18).div(1e18).lt(1e18);
+  return smallestTradeSize?.times(srcTokenUsdValue18).div(1e18).lt(BigNumber(10).times(srcTokenInfo.decimals));
 };
 
 const usePartialFillValidation = () => {

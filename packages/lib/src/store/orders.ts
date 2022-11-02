@@ -40,11 +40,9 @@ const getAllUsdValuesCallback = () => {
   const { getUsdPrice, tokensList } = useContext(TwapContext);
 
   return useMutation(async (tokens: string[]) => {
-    console.log(tokens);
-
     const result = await Promise.all(
       tokens.map(async (address) => {
-        const decimals = tokensList.find((t) => t.address === address)?.decimals;
+        const decimals = tokensList.find((t) => eqIgnoreCase(t.address, address))?.decimals;
         return { address, value: await getUsdPrice(address, decimals!) };
       })
     );
@@ -68,8 +66,6 @@ export const useOrders = () => {
 
       const usdValues = await getUsdValues(_.uniq([...dstAddresses, ...srcAddresses]));
 
-      console.log({ usdValues });
-
       const arr = await Promise.all(
         _.map(orders, async (o) => {
           const srcTokenInfo = getTokenFromList(tokensList, o.ask.srcToken);
@@ -87,8 +83,6 @@ export const useOrders = () => {
           const dstAmount = convertDecimals(srcTokenAmount, srcTokenInfo.decimals, dstTokenInfo.decimals).times(dstLimitPrice);
           const srcRemainingAmount = srcTokenAmount.minus(srcFilledAmount);
           const status = parseStatus(parseInt(o.status));
-
-          console.log(status, o.status);
 
           return {
             srcTokenAmount,
@@ -130,7 +124,7 @@ export const useOrders = () => {
       return _.groupBy(arr, "status");
     },
     {
-      enabled: !!account && !!config && !!web3,
+      enabled: !!account && !!config && !!web3 && !!tokensList.length,
       refetchInterval: 30_000,
     }
   );
