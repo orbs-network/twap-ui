@@ -14,7 +14,7 @@ export interface Props {
 
 function Orders({ text }: Props) {
   const [selectedTab, setSelectedTab] = React.useState(0);
-  const { data: orders = {} } = useOrders();
+  const { data: orders = {}, isLoading: ordersLoading } = useOrders();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
@@ -29,7 +29,7 @@ function Orders({ text }: Props) {
         </StyledHeaderTop>
         <StyledTabs value={selectedTab} onChange={handleChange}>
           {_.keys(OrderStatus).map((key, index) => {
-            return <Tab key={index} label={key} {...a11yProps(index)} />;
+            return <Tab key={index} label={`${key} (${orders[key] ? orders[key]?.length : "0"})`} {...a11yProps(index)} />;
           })}
         </StyledTabs>
       </StyledHeader>
@@ -38,7 +38,7 @@ function Orders({ text }: Props) {
           if (selectedTab !== index) {
             return null;
           }
-          return <OrdersList text={text} type={key as any as OrderStatus} orders={orders[key as any as OrderStatus]} key={key} />;
+          return <OrdersList isLoading={ordersLoading} text={text} type={key as any as OrderStatus} orders={orders[key as any as OrderStatus]} key={key} />;
         })}
       </StyledLists>
     </StyledContainer>

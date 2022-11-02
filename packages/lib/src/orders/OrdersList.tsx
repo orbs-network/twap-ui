@@ -1,17 +1,25 @@
 import { Box, styled } from "@mui/system";
 import React, { useState } from "react";
-import { useWeb3 } from "../store/store";
 import { Order, OrderStatus, OrderText } from "../types";
 import OrderComponent from "./order/Order";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // TODO chnage all limitOrder -->  orders, ordersList, Order
 
-function OrdersList({ orders, type, text }: { orders: Order[]; type: OrderStatus; text: OrderText }) {
+function OrdersList({ orders, type, text, isLoading }: { orders: Order[]; type: OrderStatus; text: OrderText; isLoading: boolean }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
 
   const onSelect = (value: number) => {
     setSelected((prevState) => (prevState === value ? undefined : value));
   };
+
+  if (isLoading) {
+    return (
+      <StyledLoader>
+        <CircularProgress className="twap-spinner" />
+      </StyledLoader>
+    );
+  }
   return (
     <StyledContainer>
       {orders ? (
@@ -38,4 +46,14 @@ const StyledContainer = styled(Box)({
   display: "flex",
   flexDirection: "column",
   gap: 20,
+});
+
+const StyledLoader = styled(StyledContainer)({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  height: 110,
+  "& .twap-spinner": {
+    color: "white",
+  },
 });

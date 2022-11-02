@@ -3,7 +3,7 @@
   "confirmationtradeInterval": "The minimum amount of time that will elapse between each trade in your order.",
   "confirmationTradeSize": "The number of input tokens that will be removed from your balance and swapped for the output token in each individual trade.",
   "confirmationTotalTrades": "The total number of individual trades that will be scheduled as part of your TWAP order. Note that in limit orders, not all trades that are scheduled will be executed.",
-  "confirmationMinimumReceivedPerTrade": "Since you have chosen a market order without a limit price, there is no set minimum number of tokens. The actual amount received is subject to market conditions.",
+  " ": "Since you have chosen a market order without a limit price, there is no set minimum number of tokens. The actual amount received is subject to market conditions.",
   "confirmationLimitOrder": "Limit order",
   "confirmationMarketOrder": "Market order",
   "marketPrice": "You have the option to set a “limit price” for your order. If you do not select this option, each trade in your TWAP order will execute at the available market price.",
