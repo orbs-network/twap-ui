@@ -50,6 +50,7 @@ export interface TradeSizeState extends BaseState {
   totalTrades: number;
   onChange: (totalTrades: number, token?: Token, amount?: BigNumber) => void;
   tradeSizeUi?: string;
+  derivedTradeSize?: BigNumber;
 }
 
 export interface Web3State {

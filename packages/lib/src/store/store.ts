@@ -170,6 +170,10 @@ export const useTradeSizeStore = create<TradeSizeState>((set, get) => ({
     set({ totalTrades, tradeSize, tradeSizeUi });
     useTradeIntervalStore.getState().onDrivedChange(useMaxDurationStore.getState().millis, totalTrades);
   },
+  get derivedTradeSize() {
+    const srcTokenAmount = useSrcTokenStore.getState().srcTokenAmount;
+    return srcTokenAmount?.div(get().totalTrades);
+  },
 }));
 
 export const useWeb3Store = create<Web3State>((set) => ({
@@ -504,6 +508,7 @@ const useMarketPrice = () => {
 
 export const useSubmitButtonValidation = () => {
   const { srcTokenAmount, srcToken, srcTokenAmountUi, srcTokenInfo } = useSrcTokenStore();
+  const { dstToken } = useDstTokenStore();
   const { maxDurationMillis } = useMaxDuration();
   const tradeIntervalMillis = useTradeIntervalStore((state) => state.millis);
   const { tradeSize } = useTradeSizeStore();
@@ -511,8 +516,8 @@ export const useSubmitButtonValidation = () => {
   const { data: srcTokenBalance } = useAccountBalances(srcToken);
 
   return useMemo(() => {
-    if (!srcToken) {
-      return "Select token";
+    if (!srcToken || !dstToken) {
+      return "Select tokens";
     }
     if (!srcTokenAmount || srcTokenAmount?.isZero()) {
       return "Enter amount";
@@ -544,7 +549,7 @@ export const useSubmitButtonValidation = () => {
     if (srcTokenAmount && tradeSize && srcTokenUsdValue18 && srcTokenInfo && isTradeSizeTooSmall(srcTokenAmount, tradeSize, srcTokenUsdValue18, srcTokenInfo)) {
       return `Trazde size must be equal to at least 1 USD`;
     }
-  }, [srcTokenAmount, srcTokenUsdValue18, tradeSize, srcTokenAmount, tradeIntervalMillis, maxDurationMillis, srcToken, srcTokenInfo, srcTokenAmountUi]);
+  }, [dstToken, srcTokenAmount, srcTokenUsdValue18, tradeSize, srcTokenAmount, tradeIntervalMillis, maxDurationMillis, srcToken, srcTokenInfo, srcTokenAmountUi]);
 };
 
 const isTradeSizeTooSmall = (srcTokenAmount: BigNumber, tradeSize: BigNumber, srcTokenUsdValue18: BigNumber, srcTokenInfo: TokenInfo) => {
@@ -670,17 +675,31 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
   const { data: dstTokenUsdValue, isLoading: dstTokenUsdValueLoading } = useUsdValue(dstToken);
   const { TokenSelectModal }: { TokenSelectModal: any } = useContext(TwapContext);
 
-  const onSelect = useCallback(
-    (token: TokenInfo) => {
-      if (isSrcToken) {
-        setSrcToken(token);
-      } else {
-        setDstToken(token);
-      }
-      setTokenListOpen(false);
-    },
-    [isSrcToken, setTokenListOpen]
-  );
+  const onSelectSrcToken = (token: TokenInfo) => {
+    if (dstTokenInfo && eqIgnoreCase(token.address, dstTokenInfo?.address)) {
+      return;
+    }
+    setSrcToken(token);
+  };
+
+  const onSelectDstToken = (token: TokenInfo) => {
+    if (srcTokenInfo && eqIgnoreCase(token.address, srcTokenInfo?.address)) {
+      return;
+    }
+    if (isNativeToken(token.address)) {
+      return;
+    }
+    setDstToken(token);
+  };
+
+  const onSelect = (token: TokenInfo) => {
+    if (isSrcToken) {
+      onSelectSrcToken(token);
+    } else {
+      onSelectDstToken(token);
+    }
+    setTokenListOpen(false);
+  };
 
   const dstTokenValueUi = useGetBigNumberToUiAmount(dstToken, destTokenAmount) || "0";
   const srcTokenValue = srcTokenUsdValueLoading ? " " : srcTokenAmountUi;

@@ -370,7 +370,7 @@ const OrderConfirmation = () => {
                   <ConfirmationTradeSize tooltip={text.confirmationTradeSize} />
                   <ConfirmationTotalTrades tooltip={text.confirmationTotalTrades} />
                   <ConfirmationTradeInterval tooltip={text.confirmationtradeInterval} />
-                  <ConfirmationMinimumReceived tooltip={text.confirmationMinimumReceivedPerTrade} />
+                  <ConfirmationMinimumReceived tooltip={text.confirmationMinDstAmount} />
                 </StyledColumnGap>
               </StyledCard>
             </StyledColumnGap>

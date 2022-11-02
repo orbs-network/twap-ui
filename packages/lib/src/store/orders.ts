@@ -124,7 +124,7 @@ export const useOrders = () => {
       return _.groupBy(arr, "status");
     },
     {
-      enabled: !!account && !!config && !!web3 && !!tokensList.length,
+      enabled: !!account && !!config && !!web3 && !!tokensList?.length,
       refetchInterval: 30_000,
     }
   );
