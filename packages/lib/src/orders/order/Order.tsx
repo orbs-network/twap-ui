@@ -14,11 +14,13 @@ import Label from "../../base-components/Label";
 import Tooltip from "../../base-components/Tooltip";
 import SmallLabel from "../../base-components/SmallLabel";
 import Button from "../../base-components/Button";
-import { useCancelCallback } from "../../store/orders";
+import { useCancelCallback, useHistoryPrice } from "../../store/orders";
 import Card from "../../base-components/Card";
 import { Order, OrderStatus, OrderText, TokenInfo } from "../../types";
 import { Typography } from "@mui/material";
 import { StyledColumnGap } from "../../styles";
+import { BigNumber } from "@defi.org/web3-candies";
+import PriceDisplay from "../../base-components/PriceDisplay";
 export interface Props {
   order: Order;
   onExpand: () => void;
@@ -74,11 +76,14 @@ const OrderDetails = ({ order, type, text }: { order: Order; type?: OrderStatus;
     srcTokenInfo,
     srcRemainingAmountUi,
     srcFilledAmountUi,
+    dstTokenInfo,
+    dstPrice,
+    isMarketOrder,
   } = order;
 
   return (
     <StyledOrderDetails>
-      {/* <OrderPriceCompare fromTokenSymbol={"WBTC"} toTokenSymbol={"WETH"} /> */}
+      <OrderPrice srcTokenInfo={srcTokenInfo} dstTokenInfo={dstTokenInfo} dstPrice={dstPrice} isMarketOrder={isMarketOrder} />
       <StyledProgress>
         <StyledProgressContent gap={20}>
           <StyledFlex>
@@ -205,7 +210,7 @@ const TokenDisplay = ({ token, amount, prefix = "", usdValue }: { token: TokenIn
         <StyledTokenDisplayRightTop>
           <StyledTokenDisplayAmount className="amount">
             {prefix ? `${prefix} ` : ""}
-            <NumberDisplay value={amount} />
+            <NumberDisplay value={amount} decimalScale={4} />
           </StyledTokenDisplayAmount>
           <TokenName name={token.symbol} />
         </StyledTokenDisplayRightTop>
@@ -288,13 +293,10 @@ const StyledPreviewLinearProgress = styled(LinearProgress)(({ emptybarcolor }: {
   },
 }));
 
-const OrderPriceCompare = () => {
-  // const srcToken = useTokenFromTokensList(fromTokenSymbol);
-  // const dstToken = useTokenFromTokensList(toTokenSymbol);
+const OrderPrice = ({ srcTokenInfo, dstTokenInfo, dstPrice, isMarketOrder }: { srcTokenInfo: TokenInfo; dstTokenInfo: TokenInfo; dstPrice: BigNumber; isMarketOrder: boolean }) => {
+  const { leftTokenInfo, rightTokenInfo, priceUi, toggleInverted } = useHistoryPrice(srcTokenInfo, dstTokenInfo, dstPrice);
 
-  // if (!srcToken || !dstToken) return null;
-  // return <TokenPriceCompare srcToken={srcToken} dstToken={dstToken} srcTokenPrice="3000" dstTokenPrice="500" />;
-  return null;
+  return <PriceDisplay leftTokenInfo={leftTokenInfo} rightTokenInfo={rightTokenInfo} price={priceUi} toggleInverted={toggleInverted} isMarketOrder={isMarketOrder} />;
 };
 
 const StyledCancelOrderButton = styled(Button)({
@@ -346,7 +348,6 @@ const StyledProgress = styled(Box)({
   padding: 20,
   background: "#3C404E",
   borderRadius: 6,
-  marginBottom: 20,
   "& .more-btn": {
     marginTop: 10,
   },
@@ -382,5 +383,6 @@ const StyledMainProgressBar = styled(LinearProgress)({
 
 const StyledOrderDetails = styled(StyledColumnFlex)({
   width: "100%",
-  gap: 0,
+  gap: 20,
+  paddingTop: 10,
 });

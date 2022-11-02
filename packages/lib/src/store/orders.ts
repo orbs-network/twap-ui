@@ -1,6 +1,6 @@
 import { contract, eqIgnoreCase, Abi, BigNumber, Token, zero, convertDecimals, block } from "@defi.org/web3-candies";
 import _ from "lodash";
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { TwapContext } from "../context";
 import { Order, OrderStatus, TokenInfo } from "../types";
@@ -66,7 +66,7 @@ export const useOrders = () => {
 
       const usdValues = await getUsdValues(_.uniq([...dstAddresses, ...srcAddresses]));
 
-      const arr = await Promise.all(
+      const parsedOrders = await Promise.all(
         _.map(orders, async (o) => {
           const srcTokenInfo = getTokenFromList(tokensList, o.ask.srcToken);
           const dstTokenInfo = getTokenFromList(tokensList, o.ask.dstToken);
@@ -77,14 +77,15 @@ export const useOrders = () => {
           const tradeSize = BigNumber(o.ask.srcBidAmount);
           const dstMinAmount = BigNumber(o.ask.dstMinAmount);
           const isMarketOrder = dstMinAmount.eq(1);
-          const dstLimitPrice = isMarketOrder
+          const dstPrice = isMarketOrder
             ? usdValues[srcTokenInfo.address].div(usdValues[dstTokenInfo.address])
             : dstMinAmount.div(convertDecimals(tradeSize, srcTokenInfo.decimals, dstTokenInfo.decimals));
-          const dstAmount = convertDecimals(srcTokenAmount, srcTokenInfo.decimals, dstTokenInfo.decimals).times(dstLimitPrice);
+          const dstAmount = convertDecimals(srcTokenAmount, srcTokenInfo.decimals, dstTokenInfo.decimals).times(dstPrice);
           const srcRemainingAmount = srcTokenAmount.minus(srcFilledAmount);
           const status = parseStatus(parseInt(o.status));
 
           return {
+            dstPrice,
             srcTokenAmount,
             tradeSize,
             dstMinAmount,
@@ -102,7 +103,6 @@ export const useOrders = () => {
             srcFilledAmount,
             srcRemainingAmount,
             isMarketOrder,
-            dstLimitPrice,
             prefix: isMarketOrder ? "~" : "≥",
             dstAmount,
             srcTokenInfo,
@@ -121,7 +121,7 @@ export const useOrders = () => {
         })
       );
 
-      return _.groupBy(arr, "status");
+      return _.groupBy(_.orderBy(parsedOrders, "deadline", "desc"), "status");
     },
     {
       enabled: !!account && !!config && !!web3 && !!tokensList?.length,
@@ -142,4 +142,21 @@ export const useCancelCallback = () => {
     await txHandler(tx, 4000);
     await refetch();
   });
+};
+
+export const useHistoryPrice = (srcTokenInfo: TokenInfo, dstTokenInfo: TokenInfo, dstPrice: BigNumber) => {
+  const [inverted, setInverted] = useState(false);
+
+  const srcPrice = BigNumber(1).div(dstPrice);
+
+  const price = inverted ? srcPrice : dstPrice;
+
+  return {
+    inverted,
+    toggleInverted: () => setInverted(!inverted),
+    price,
+    priceUi: price.toFormat(),
+    leftTokenInfo: inverted ? dstTokenInfo : srcTokenInfo,
+    rightTokenInfo: !inverted ? dstTokenInfo : srcTokenInfo,
+  };
 };

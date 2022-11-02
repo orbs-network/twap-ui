@@ -29,7 +29,7 @@ function Orders({ text }: Props) {
         </StyledHeaderTop>
         <StyledTabs value={selectedTab} onChange={handleChange}>
           {_.keys(OrderStatus).map((key, index) => {
-            return <Tab key={index} label={`${key} (${orders[key] ? orders[key]?.length : "0"})`} {...a11yProps(index)} />;
+            return <StyledTab key={index} label={`${orders[key] ? orders[key]?.length : "0"} ${key}`} {...a11yProps(index)} />;
           })}
         </StyledTabs>
       </StyledHeader>
@@ -61,9 +61,16 @@ const StyledOdnpButton = styled(OdnpButton)({
   marginRight: 5,
 });
 
+const StyledTab = styled(Tab)({
+  fontSize: 13,
+  width: "calc(100% / 4)",
+  padding: "0px",
+  textTransform: "unset",
+});
+
 const StyledTabs = styled(Tabs)({
   border: "1px solid #202432",
-  width: "fit-content",
+  width: "100%",
   borderRadius: 6,
   padding: 3,
   "& .MuiTabs-indicator": {

@@ -84,12 +84,13 @@ export interface TokenInfo {
 
 export enum OrderStatus {
   Open = "Open",
-  Canceled = "Canceled",
   Filled = "Filled",
   Expired = "Expired",
+  Canceled = "Canceled",
 }
 
 export type Order = {
+  dstPrice: BigNumber;
   srcToken: Token;
   dstToken: Token;
   srcTokenAmount: BigNumber;
@@ -107,7 +108,6 @@ export type Order = {
   progress: number;
   srcRemainingAmount: BigNumber;
   isMarketOrder: boolean;
-  dstLimitPrice: BigNumber;
   dstAmount: BigNumber;
   prefix: string;
   srcTokenInfo: TokenInfo;

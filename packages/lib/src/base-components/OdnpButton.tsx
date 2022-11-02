@@ -14,6 +14,7 @@ function OdnpButton({ className = "" }: { className?: string }) {
   if (!account) return null;
   return (
     <StyledButton className={className} onClick={() => odnp.show(account, "twap")}>
+      <img src="https://open-defi-notifications.web.app/widget/assets/icon.png" />
       <Typography>Notify me</Typography>
     </StyledButton>
   );
@@ -30,8 +31,11 @@ const StyledButton = styled("button")({
   alignItems: "center",
   justifyContent: "center",
   gap: 10,
-  padding: "0px 20px",
+  padding: "0px 15px",
   cursor: "pointer",
+  "& img": {
+    width: 20,
+  },
   "& p": {
     fontSize: 12,
     color: "white",

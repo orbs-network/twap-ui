@@ -32,7 +32,7 @@ import Button from "./base-components/Button";
 import Balance from "./base-components/Balance";
 import USD from "./base-components/USD";
 import Orders from "./orders/Orders";
-import TokenPriceCompare from "./base-components/TokenPriceCompare";
+import TokenPriceCompare from "./base-components/PriceDisplay";
 import OdnpButton from "./base-components/OdnpButton";
 import Loader from "./base-components/Loader";
 import Slider from "./base-components/Slider";
