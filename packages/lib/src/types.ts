@@ -10,7 +10,7 @@ export interface SrcTokenState extends BaseState {
   srcTokenInfo?: TokenInfo;
   srcToken?: Token;
   srcTokenAmount?: BigNumber;
-  setSrcToken: (value?: TokenInfo, keepAmount?: boolean) => void;
+  setSrcToken: (value?: TokenInfo, amount?: BigNumber) => void;
   setSrcTokenAmount: (value?: BigNumber) => void;
   onChange: (value: string) => void;
   srcTokenAmountUi?: string;
@@ -48,7 +48,7 @@ export interface TradeIntervalState extends BaseState {
 export interface TradeSizeState extends BaseState {
   tradeSize?: BigNumber;
   totalTrades: number;
-  onChange: (totalTrades: number) => void;
+  onChange: (totalTrades: number, token?: Token, amount?: BigNumber) => void;
   tradeSizeUi?: string;
 }
 

@@ -77,19 +77,16 @@ export const useGlobalState = createStore<{
 
 export const useSrcTokenStore = create<SrcTokenState>((set, get) => ({
   ...srcTokenInitialState,
-  setSrcToken: (srcTokenInfo, keepAmount) => {
-    set({ srcTokenInfo, srcToken: getToken(srcTokenInfo) });
-    useTradeSizeStore.getState().onChange(0);
-    if (!keepAmount) {
-      set({ srcTokenAmount: undefined });
-    }
+  setSrcToken: async (srcTokenInfo, srcTokenAmount) => {
+    const srcToken = getToken(srcTokenInfo);
+    const srcTokenAmountUi = await getBigNumberToUiAmount(srcToken, srcTokenAmount);
+    set({ srcTokenInfo, srcToken, srcTokenAmount, srcTokenAmountUi });
+    useTradeSizeStore.getState().onChange(0, srcToken, srcTokenAmount);
     useLimitPriceStore.getState().reset();
   },
   setSrcTokenAmount: (srcTokenAmount) => {
     const tradeSizeState = useTradeSizeStore.getState();
-    if (srcTokenAmount && tradeSizeState.tradeSize && tradeSizeState.tradeSize.gt(srcTokenAmount)) {
-      tradeSizeState.onChange(0);
-    }
+    tradeSizeState.onChange(0, get().srcToken, srcTokenAmount);
     set({ srcTokenAmount });
   },
   reset: () => set(srcTokenInitialState),
@@ -161,14 +158,15 @@ export const useLimitPriceStore = create<PriceState>((set, get) => ({
 export const useTradeSizeStore = create<TradeSizeState>((set, get) => ({
   ...tradeSizeInitialState,
   reset: () => set(tradeSizeInitialState),
-  totalTrades: 1,
-  onChange: async (totalTrades: number) => {
+  onChange: async (totalTrades: number, optionalSrcToken?: Token, optionalSrcAmount?: BigNumber) => {
     if (totalTrades < 1) totalTrades = 1;
-    const srcToken = useSrcTokenStore.getState().srcToken;
-    const srcTokenAmount = useSrcTokenStore.getState().srcTokenAmount;
+    const srcToken = optionalSrcToken || useSrcTokenStore.getState().srcToken;
+    const srcTokenAmount = optionalSrcAmount || useSrcTokenStore.getState().srcTokenAmount;
     const tradeSize = srcTokenAmount?.div(totalTrades);
-    const tradeSizeUi = await getBigNumberToUiAmount(srcToken, tradeSize);
 
+    console.log({ tradeSize: tradeSize?.toString() });
+
+    const tradeSizeUi = await getBigNumberToUiAmount(srcToken, tradeSize);
     set({ totalTrades, tradeSize, tradeSizeUi });
     useTradeIntervalStore.getState().onDrivedChange(useMaxDurationStore.getState().millis, totalTrades);
   },
@@ -190,6 +188,7 @@ export const useWeb3Store = create<Web3State>((set) => ({
 const useTokenApproval = () => {
   const { account, chain, config } = useWeb3();
   const { srcToken, srcTokenAmount } = useSrcTokenStore();
+  const [waitForApproval, setWaitForApproval] = useState(false);
 
   const spender = config ? config.twapAddress : undefined;
   const { data: allowance, refetch } = useQuery(["allowance", account, srcToken?.address], async () => BigNumber(await srcToken!.methods.allowance(account!, spender!).call()), {
@@ -203,17 +202,21 @@ const useTokenApproval = () => {
     };
     await txHandler(tx);
     await refetch();
+    setWaitForApproval(true);
   });
 
+  const isApproved = !srcTokenAmount ? false : allowance?.gte(srcTokenAmount || 0);
+
   return {
-    isApproved: !srcTokenAmount ? false : allowance?.gte(srcTokenAmount || 0),
+    isApproved,
     approve,
-    approveLoading,
+    approveLoading: approveLoading || (waitForApproval && !isApproved),
   };
 };
 
 const useWrapToken = () => {
   const { srcTokenAmount, setSrcToken, srcTokenInfo, srcToken } = useSrcTokenStore();
+  const { setShowConfirmation } = useGlobalState();
   const { account, config } = useWeb3();
   const { refetch } = useAccountBalances(srcToken);
 
@@ -223,8 +226,10 @@ const useWrapToken = () => {
       await wToken?.methods.deposit().send({ from: account, value: srcTokenAmount!.toString() });
     };
     await txHandler(tx, 4000);
+    setSrcToken(config!.wrappedTokenInfo, srcTokenAmount);
+
     await refetch();
-    setSrcToken(config!.wrappedTokenInfo);
+    setShowConfirmation(true);
   });
 
   return {
@@ -395,13 +400,12 @@ const useTradeSize = () => {
 };
 
 const useChangeTokenPositions = () => {
-  const { srcTokenInfo, setSrcTokenAmount, setSrcToken } = useSrcTokenStore();
+  const { srcTokenInfo, setSrcToken } = useSrcTokenStore();
   const { setDstToken, dstTokenInfo } = useDstTokenStore();
   const dstTokenAmount = useDstTokenAmount();
 
   return () => {
-    setSrcTokenAmount(dstTokenAmount);
-    setSrcToken(dstTokenInfo, true);
+    setSrcToken(dstTokenInfo, dstTokenAmount);
     setDstToken(srcTokenInfo);
   };
 };
@@ -584,6 +588,7 @@ function useSubmitOrder() {
   const { connect } = useContext(TwapContext);
   const { showConfirmation, setShowConfirmation, disclaimerAccepted } = useGlobalState();
   const { refetch } = useOrders();
+  const { setSrcToken } = useSrcTokenStore();
 
   const { srcTokenInfo, dstTokenInfo, srcTokenAmount, tradeSize, minAmountOut, deadline, tradeIntervalMillis } = useConfirmation();
 
@@ -626,13 +631,14 @@ function useSubmitOrder() {
     }
   );
 
-  const values = useMemo(() => {
+  const values = () => {
     if (!account) {
       return { text: "Connect wallet", onClick: connect };
     }
     if (isInvalidChain) {
       return { text: "Switch network", onClick: changeNetwork };
     }
+
     if (warning) {
       return { text: warning, onClick: () => {}, disabled: true };
     }
@@ -647,22 +653,9 @@ function useSubmitOrder() {
     }
 
     return { text: "Confirm order", onClick: createOrder, loading: createdOrderLoading, disabled: !disclaimerAccepted };
-  }, [
-    wrapLoading,
-    disclaimerAccepted,
-    isApproved,
-    shouldWrap,
-    warning,
-    isInvalidChain,
-    account,
-    approveLoading,
-    setShowConfirmation,
-    showConfirmation,
-    createdOrderLoading,
-    createOrder,
-  ]);
+  };
 
-  return { ...values, showConfirmation };
+  return { ...values(), showConfirmation };
 }
 
 export const useTokenPanel = (isSrcToken?: boolean) => {
@@ -701,7 +694,7 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
   return {
     selectedToken: isSrcToken ? srcTokenInfo : dstTokenInfo,
     value: isSrcToken ? srcTokenValue : dstTokenValue,
-    onChange: isSrcToken ? onChange : null,
+    onChange: isSrcToken ? onChange : undefined,
     balance: isSrcToken ? srcTokenBalanceUi : dstTokenBalanceUi,
     balanceLoading: isSrcToken ? srcTokenBalanceLoading : dstTokenBalanceLoading,
     disabled: !isSrcToken,
@@ -777,7 +770,6 @@ export const store = {
   useTradeSize,
   useChangeTokenPositions,
   useMarketPrice,
-  reset: resetState,
   useTokenApproval,
   useAccountBalances,
   useWeb3,

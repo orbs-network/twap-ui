@@ -59,7 +59,9 @@ function NumericInput({
             className="twap-input"
             type="text"
             onValueChange={(values, _sourceInfo) => {
-              onChange(values.value);
+              if (_sourceInfo.source === "event") {
+                onChange(values.value);
+              }
             }}
           />
         </div>

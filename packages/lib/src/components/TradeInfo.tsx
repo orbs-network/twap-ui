@@ -124,8 +124,8 @@ export const TradeInfoExplanation = () => {
       <Text>Takers may take into account gas fees for your transactions when setting their fees, which may result in fluctuations in the fee amounts.</Text>
       <Text>
         Note that the protocol has been designed such that the presence of one honest taker (i.e, a taker who charges only reimbursement for gas fees) should result in an output
-        amount that is as close as possible to spot market prices. QuickSwap and Orbs have implemented automated, decentralized “honest takers”, however, these features are in beta
-        and their use are subject to risks.
+        amount that is as close as possible to spot market prices. Spiritswap and Orbs have implemented automated, decentralized “honest takers”, however, these features are in
+        beta and their use are subject to risks.
       </Text>
       <Text>
         This TWAP order will be executed using that is in beta and its use is at your own risk. You can read more about the TWAP protocol here{" "}

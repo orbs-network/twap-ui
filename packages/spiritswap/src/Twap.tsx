@@ -49,8 +49,7 @@ import { ProviderWrapper, queryClient } from ".";
 
 // TODO create file for styles
 
-const { Balance, Loader, Slider, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
-  TWAPLib.baseComponents;
+const { Balance, Loader, Slider, NumberDisplay, TimeSelector, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } = TWAPLib.baseComponents;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 
 const { LimitPrice, ConfirmationExpiration, ConfirmationOrderType, ConfirmationTradeSize, ConfirmationTotalTrades, ConfirmationTradeInterval, ConfirmationMinimumReceived } =
@@ -284,7 +283,16 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexBetween>
-            <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
+            <Tooltip text={!account ? text.connect : !selectedToken ? "Select token" : undefined}>
+              <StyledNumbericInput
+                prefix={amountPrefix}
+                loading={false}
+                disabled={disabled || !account || !selectedToken}
+                placeholder="0"
+                onChange={onChange ? onChange : () => {}}
+                value={value}
+              />
+            </Tooltip>
             <Tooltip text={!account ? text.connect : undefined}>
               <StyledTokenSelect onClick={onOpen}>
                 <TokenDisplay logo={selectedToken?.logoUrl} name={selectedToken?.symbol} />
