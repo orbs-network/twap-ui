@@ -50,6 +50,7 @@ const priceInitialState = {
 
 const tradeSizeInitialState = {
   tradeSize: undefined,
+  totalTrades: 1,
 };
 
 export const useGlobalState = createStore<{
@@ -78,7 +79,7 @@ export const useSrcTokenStore = create<SrcTokenState>((set, get) => ({
   ...srcTokenInitialState,
   setSrcToken: (srcTokenInfo, keepAmount) => {
     set({ srcTokenInfo, srcToken: getToken(srcTokenInfo) });
-    useTradeSizeStore.getState().setTradeSize(undefined);
+    useTradeSizeStore.getState().onChange(0);
     if (!keepAmount) {
       set({ srcTokenAmount: undefined });
     }
@@ -87,7 +88,7 @@ export const useSrcTokenStore = create<SrcTokenState>((set, get) => ({
   setSrcTokenAmount: (srcTokenAmount) => {
     const tradeSizeState = useTradeSizeStore.getState();
     if (srcTokenAmount && tradeSizeState.tradeSize && tradeSizeState.tradeSize.gt(srcTokenAmount)) {
-      tradeSizeState.setTradeSize(srcTokenAmount);
+      tradeSizeState.onChange(0);
     }
     set({ srcTokenAmount });
   },
@@ -159,24 +160,17 @@ export const useLimitPriceStore = create<PriceState>((set, get) => ({
 
 export const useTradeSizeStore = create<TradeSizeState>((set, get) => ({
   ...tradeSizeInitialState,
-  setTradeSize: async (tradeSize) => {
-    const srcToken = useSrcTokenStore.getState().srcToken;
-    const tradeSizeUi = await getBigNumberToUiAmount(srcToken, tradeSize);
-    const srcTokenAmount = useSrcTokenStore.getState().srcTokenAmount;
-    if (!tradeSize || tradeSize.isZero()) {
-      return 0;
-    }
-    const totalTrades = srcTokenAmount?.div(tradeSize).integerValue(BigNumber.ROUND_CEIL).toNumber() || 0;
-    set({ totalTrades });
-    set({ tradeSize, tradeSizeUi: tradeSizeUi || "" });
-    useTradeIntervalStore.getState().onDrivedChange(useMaxDurationStore.getState().millis, totalTrades);
-  },
   reset: () => set(tradeSizeInitialState),
-  totalTrades: 0,
-  onChange: async (amountUi?: string) => {
+  totalTrades: 1,
+  onChange: async (totalTrades: number) => {
+    if (totalTrades < 1) totalTrades = 1;
     const srcToken = useSrcTokenStore.getState().srcToken;
-    const tradeSize = await getUiAmountToBigNumber(srcToken, amountUi);
-    get().setTradeSize(tradeSize);
+    const srcTokenAmount = useSrcTokenStore.getState().srcTokenAmount;
+    const tradeSize = srcTokenAmount?.div(totalTrades);
+    const tradeSizeUi = await getBigNumberToUiAmount(srcToken, tradeSize);
+
+    set({ totalTrades, tradeSize, tradeSizeUi });
+    useTradeIntervalStore.getState().onDrivedChange(useMaxDurationStore.getState().millis, totalTrades);
   },
 }));
 
@@ -372,9 +366,20 @@ const useTradeInterval = () => {
 
 // all data related to trade size input
 const useTradeSize = () => {
-  const { srcToken, srcTokenAmountUi, srcTokenInfo } = useSrcTokenStore();
+  const { srcToken, srcTokenAmountUi, srcTokenInfo, srcTokenAmount } = useSrcTokenStore();
   const { data: srcTokenUsdValue18, isLoading: usdPriceLoading } = useUsdValue(srcToken);
   const { tradeSize, onChange, tradeSizeUi: uiTradeSize, totalTrades } = useTradeSizeStore();
+
+  const maxTrades = BigNumber.max(
+    1,
+    srcTokenAmount
+      ?.div(
+        BigNumber(10)
+          .pow(srcTokenInfo?.decimals || 1)
+          .div(srcTokenUsdValue18?.div(1e18) || 1)
+      )
+      .integerValue(BigNumber.ROUND_FLOOR) || 1
+  ).toNumber();
 
   return {
     totalTrades,
@@ -385,6 +390,7 @@ const useTradeSize = () => {
     maxValue: srcTokenAmountUi,
     logoUrl: srcTokenInfo?.logoUrl,
     symbol: srcTokenInfo?.symbol,
+    maxTrades,
   };
 };
 

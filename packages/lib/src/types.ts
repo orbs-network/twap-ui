@@ -47,9 +47,8 @@ export interface TradeIntervalState extends BaseState {
 
 export interface TradeSizeState extends BaseState {
   tradeSize?: BigNumber;
-  setTradeSize: (tradeSize?: BigNumber) => void;
   totalTrades: number;
-  onChange: (value: string) => void;
+  onChange: (totalTrades: number) => void;
   tradeSizeUi?: string;
 }
 

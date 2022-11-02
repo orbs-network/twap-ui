@@ -31,21 +31,25 @@ import {
   StyledOrderConfirmation,
   StyledPercentBtn,
   StyledPrice,
+  StyledSlider,
   StyledSrcTokenPercentSelector,
   StyledSwitch,
   StyledTokenDisplay,
   StyledTokenOrder,
   StyledTokenPanel,
   StyledTokenSelect,
+  StyledTotalTrades,
+  StyledTotalTradesInput,
   StyledTrade,
   StyledTradeInfoModal,
+  StyledTradeSize,
   StyledUSD,
 } from "./styles";
 import { ProviderWrapper, queryClient } from ".";
 
 // TODO create file for styles
 
-const { Balance, Loader, Icon, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
+const { Balance, Loader, Slider, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
   TWAPLib.baseComponents;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 
@@ -159,18 +163,26 @@ const ChangeTokensOrder = () => {
 };
 
 const TradeSize = () => {
-  const { uiTradeSize, onChange, totalTrades, uiUsdValue, usdPriceLoading, maxValue, logoUrl, symbol } = TWAPLib.store.useTradeSize();
+  const { uiTradeSize, onChange, totalTrades, uiUsdValue, usdPriceLoading, logoUrl, symbol, maxTrades } = TWAPLib.store.useTradeSize();
+
   return (
     <StyledTrade>
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexBetween gap={10}>
-            <Label tooltipText={text.tradeSize}>Trade Size</Label>
-            <StyledNumbericInput placeholder={"0"} onChange={onChange} value={uiTradeSize} maxValue={maxValue} />
-            <TokenDisplay logo={logoUrl} name={symbol} />
+            <Label tooltipText={text.totalTrades}>Total trades</Label>
+            <StyledSlider>
+              <Slider maxTrades={maxTrades} value={totalTrades} onChange={onChange} />
+            </StyledSlider>
+            <StyledTotalTradesInput value={totalTrades} decimalScale={0} maxValue={maxTrades.toString()} onChange={(value) => onChange(Number(value))} />
           </StyledFlexBetween>
           <StyledFlexBetween>
-            <SmallLabel>Total trades: {totalTrades}</SmallLabel>
+            <StyledTradeSize>
+              <Label>
+                Trade size: <NumberDisplay value={uiTradeSize} decimalScale={4} />
+              </Label>
+              {symbol && <TokenDisplay logo={logoUrl} name={symbol} />}
+            </StyledTradeSize>
             <StyledUSD value={uiUsdValue} isLoading={usdPriceLoading} />
           </StyledFlexBetween>
         </StyledColumnGap>
@@ -188,7 +200,7 @@ const LimitPriceDisplay = () => {
         <StyledColumnGap>
           <StyledFlexStart>
             <Tooltip text={warning}>{isLoading ? <Loader width={50} /> : <StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}</Tooltip>
-            <Label tooltipText={isLimitOrder ? text.limitPrice : text.marketPrice}>Limit Price</Label>
+            <Label tooltipText={isLimitOrder ? text.limitPrice : text.marketPrice}>{isLimitOrder ? "Limit Price" : "Market Price"}</Label>
           </StyledFlexStart>
           {isLimitOrder && (
             <LimitPrice

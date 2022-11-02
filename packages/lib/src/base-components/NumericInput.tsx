@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 export interface Props {
   onChange: (value: string) => void;
-  value?: string;
+  value?: string | number;
   placeholder?: string;
   disabled?: boolean;
   isAllowed?: boolean;
@@ -47,7 +47,6 @@ function NumericInput({
             onBlur={onBlur}
             prefix={prefix && `${prefix} `}
             onFocus={onFocus}
-            // thousandsGroupStyle="thousand"
             placeholder={placeholder}
             isAllowed={(values) => {
               const { floatValue = 0 } = values;

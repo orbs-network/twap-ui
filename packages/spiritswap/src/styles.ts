@@ -3,7 +3,7 @@ import TWAPLib from "@orbs-network/twap-ui";
 import { createTheme } from "@mui/material/styles";
 import { CSSProperties } from "react";
 
-const { USD, Button, Icon, NumericInput, Card, Switch, Loader } = TWAPLib.baseComponents;
+const { USD, Button, Icon, NumericInput, Card, Switch, SmallLabel } = TWAPLib.baseComponents;
 
 const { TradeInfoModal } = TWAPLib.components;
 
@@ -21,6 +21,12 @@ export const colors = {
 
 export const StyledUSD = styled(USD)({
   opacity: 0.6,
+  maxWidth: "50%",
+  "& p": {
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
 });
 
 export const StyledButton = styled(Button)({
@@ -30,6 +36,14 @@ export const StyledButton = styled(Button)({
   borderRadius: 4,
   fontWeight: 500,
   color: "white",
+});
+
+export const StyledSlider = styled(Box)({
+  flex: 1,
+  paddingLeft: 30,
+  paddingRight: 10,
+  position: "relative",
+  top: 2,
 });
 
 export const StyledNumbericInput = styled(NumericInput)({
@@ -249,13 +263,16 @@ export const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
 globalStyle;
 export const StyledSwitch = styled(Switch)({
   "& .MuiSwitch-thumb": {
-    background: colors.icon,
+    background: "white",
   },
   "& .MuiSwitch-track": {
     background: colors.mainBackground,
   },
   "& .Mui-checked+.MuiSwitch-track": {
     background: colors.mainBackground,
+  },
+  "& .Mui-checked .MuiSwitch-thumb": {
+    background: colors.icon,
   },
 });
 
@@ -357,3 +374,40 @@ export const getTheme = (mode: "light" | "dark") => {
       return lightTheme;
   }
 };
+
+export const StyledTradeSize = styled(Box)({
+  maxWidth: "50%",
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+
+  "& .twap-label": {
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  "& .twap-token-logo": {
+    width: 20,
+    height: 20,
+  },
+  "& .twap-token-name": {
+    fontSize: 16,
+  },
+});
+
+export const StyledTotalTrades = styled(SmallLabel)({
+  minWidth: 50,
+  justifyContent: "flex-end",
+  "& p": {
+    fontSize: 18,
+    textAlign: "right",
+  },
+});
+
+export const StyledTotalTradesInput = styled(StyledNumbericInput)({
+  width: 70,
+  flex: "unset",
+  "& input": {
+    fontSize: 16,
+  },
+});
