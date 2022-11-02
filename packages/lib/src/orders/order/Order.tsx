@@ -14,13 +14,12 @@ import Label from "../../base-components/Label";
 import Tooltip from "../../base-components/Tooltip";
 import SmallLabel from "../../base-components/SmallLabel";
 import Button from "../../base-components/Button";
-import { useCancelCallback, useOrdersUsdValueToUi, useTokenFromTokensList } from "../../store/orders";
+import { useCancelCallback } from "../../store/orders";
 import Card from "../../base-components/Card";
-import { Order, OrderStatus } from "../../types";
-import { BigNumber, Token } from "@defi.org/web3-candies";
-import { useGetBigNumberToUiAmount } from "../../store/store";
-import { Fade, Typography } from "@mui/material";
+import { Order, OrderStatus, TokenInfo } from "../../types";
+import { Typography } from "@mui/material";
 import text from "../../text.json";
+import { StyledColumnGap } from "../../styles";
 export interface Props {
   order: Order;
   onExpand: () => void;
@@ -28,20 +27,9 @@ export interface Props {
   type?: OrderStatus;
 }
 
-const useTokenDisplay = (token: Token, amount?: BigNumber) => {
-  const tokenInfo = useTokenFromTokensList(token.address);
-  const { data, isLoading } = useOrdersUsdValueToUi(token, amount);
-
-  return {
-    tokenInfo,
-    usdValue: data,
-    usdValueLoading: isLoading,
-    amountUi: useGetBigNumberToUiAmount(token, amount),
-  };
-};
-
 function OrderComponent({ order, onExpand, expanded, type }: Props) {
-  const { id, createdAtUi, srcToken, dstToken, srcTokenAmount, progress } = order;
+  const { id, createdAtUi, progress, prefix, srcTokenInfo, dstTokenInfo, srcTokenAmountUi, dstTokenAmountUi, srcUsdValueUi, dstUsdValueUi } = order;
+
   return (
     <StyledContainer className="twap-order">
       <StyledAccordion expanded={expanded}>
@@ -54,9 +42,9 @@ function OrderComponent({ order, onExpand, expanded, type }: Props) {
 
             {expanded ? <StyledSeperator /> : <PreviewProgressBar progress={progress} />}
             <StyledPreview>
-              <TokenDisplay token={srcToken} amount={srcTokenAmount} />
+              <TokenDisplay token={srcTokenInfo} amount={srcTokenAmountUi} usdValue={srcUsdValueUi} />
               <Icon className="icon" icon={<HiOutlineArrowNarrowRight style={{ width: 30, height: 30 }} />} />
-              <TokenDisplay token={dstToken} prefix="≥" />
+              <TokenDisplay token={dstTokenInfo} prefix={prefix} amount={dstTokenAmountUi} usdValue={dstUsdValueUi} />
             </StyledPreview>
           </StyledColumnFlex>
           <StyledSpace />
@@ -71,17 +59,34 @@ function OrderComponent({ order, onExpand, expanded, type }: Props) {
 }
 
 const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => {
-  const { deadlineUi, tradeIntervalUi, srcToken, srcRemainingAmount, srcFilledAmount, progress, tradeSize, id } = order;
+  const {
+    deadlineUi,
+    tradeIntervalUi,
+    srcFilledUsdValueUi,
+    srcRemainingUsdValueUi,
+    progress,
+    tradeSizeAmountUi,
+    tradeSizeUsdValueUi,
+    id,
+    srcTokenInfo,
+    srcRemainingAmountUi,
+    srcFilledAmountUi,
+  } = order;
 
   return (
     <StyledOrderDetails>
       {/* <OrderPriceCompare fromTokenSymbol={"WBTC"} toTokenSymbol={"WETH"} /> */}
       <StyledProgress>
-        <Label className="label">Progress:</Label>
         <StyledProgressContent gap={20}>
           <StyledFlex>
-            <TokenDisplay token={srcToken} amount={srcFilledAmount} />
-            <TokenDisplay token={srcToken} amount={srcRemainingAmount} />
+            <StyledTokenDisplayWithTitle>
+              <Typography className="title">Filled</Typography>
+              <TokenDisplay usdValue={srcFilledUsdValueUi} token={srcTokenInfo} amount={srcFilledAmountUi} />
+            </StyledTokenDisplayWithTitle>
+            <StyledTokenDisplayWithTitle>
+              <Typography className="title">Remaining</Typography>
+              <TokenDisplay usdValue={srcRemainingUsdValueUi} token={srcTokenInfo} amount={srcRemainingAmountUi} />
+            </StyledTokenDisplayWithTitle>
           </StyledFlex>
           <Tooltip text={`${progress}%`}>
             <MainProgressBar progress={progress} />
@@ -90,7 +95,7 @@ const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => 
       </StyledProgress>
       <StyledColumnFlex>
         <DetailRow label="Trades Size:" tooltip={text.tradeSizeTooltip}>
-          <TradeSize token={srcToken} amount={tradeSize} />
+          <NumberDisplay value={tradeSizeAmountUi} /> {srcTokenInfo.symbol} ≈$ {tradeSizeUsdValueUi}
         </DetailRow>
         <DetailRow label="Trades interval:" tooltip={text.tradeIntervalTooltip}>
           {tradeIntervalUi}
@@ -104,14 +109,9 @@ const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => 
   );
 };
 
-const TradeSize = ({ token, amount }: { token: Token; amount: BigNumber }) => {
-  const { amountUi, usdValue, tokenInfo } = useTokenDisplay(token, amount);
-  return (
-    <>
-      <NumberDisplay value={amountUi} /> {tokenInfo.symbol} ≈$ {usdValue}
-    </>
-  );
-};
+const StyledTokenDisplayWithTitle = styled(StyledColumnGap)({
+  gap: 10,
+});
 
 const CancelOrderButton = ({ orderId }: { orderId: string }) => {
   const { isLoading, mutate } = useCancelCallback();
@@ -189,21 +189,19 @@ const PreviewProgressBar = ({ progress, emptyBarColor }: { progress: number; emp
   return <StyledPreviewLinearProgress variant="determinate" value={progress} emptybarcolor={emptyBarColor} className="twap-order-progress-line-preview" />;
 };
 
-const TokenDisplay = ({ token, amount, prefix = "" }: { token: Token; amount?: BigNumber; prefix?: string }) => {
-  const { amountUi, usdValue, usdValueLoading, tokenInfo } = useTokenDisplay(token, amount);
-
+const TokenDisplay = ({ token, amount, prefix = "", usdValue }: { token: TokenInfo; amount?: string; usdValue: string; prefix?: string }) => {
   return (
     <StyledTokenDisplay className="token-display">
-      <StyledTokenLogo logo={tokenInfo.logoUrl} />
+      <StyledTokenLogo logo={token.logoUrl} />
       <StyledTokenDisplayRight>
         <StyledTokenDisplayRightTop>
           <StyledTokenDisplayAmount className="amount">
             {prefix ? `${prefix} ` : ""}
-            <NumberDisplay value={amountUi} />
+            <NumberDisplay value={amount} />
           </StyledTokenDisplayAmount>
-          <TokenName name={tokenInfo.symbol} />
+          <TokenName name={token.symbol} />
         </StyledTokenDisplayRightTop>
-        <StyledTokenDisplayUsd loading={usdValueLoading} className="usd">
+        <StyledTokenDisplayUsd loading={false} className="usd">
           ≈$ <NumberDisplay value={usdValue} />
         </StyledTokenDisplayUsd>
       </StyledTokenDisplayRight>
@@ -359,7 +357,6 @@ const StyledColumnFlex = styled(Box)(({ gap = 10 }: { gap?: number }) => ({
 const StyledProgressContent = styled(StyledColumnFlex)({
   display: "flex",
   flexDirection: "column",
-  paddingTop: 20,
 });
 
 const MainProgressBar = ({ progress, emptyBarColor }: { progress: number; emptyBarColor?: string }) => {

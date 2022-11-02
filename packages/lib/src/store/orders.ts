@@ -1,4 +1,4 @@
-import { contract, eqIgnoreCase, Abi, BigNumber, Token, zero } from "@defi.org/web3-candies";
+import { contract, eqIgnoreCase, Abi, BigNumber, Token, zero, convertDecimals, block } from "@defi.org/web3-candies";
 import _ from "lodash";
 import { useContext, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -29,57 +29,103 @@ export const useOrdersUsdValueToUi = (token?: Token, amount?: BigNumber) => {
   return { data: useGetBigNumberToUiAmount(token, result), isLoading };
 };
 
-function parseStatus(status: number, latestBlock: number) {
+function parseStatus(status: number) {
   if (status === 1) return OrderStatus.Canceled;
   if (status === 2) return OrderStatus.Filled;
-  if (status < latestBlock) return OrderStatus.Expired;
+  if (status < Date.now() / 1000) return OrderStatus.Expired;
   return OrderStatus.Open;
 }
+
+const getAllUsdValuesCallback = () => {
+  const { getUsdPrice, tokensList } = useContext(TwapContext);
+
+  return useMutation(async (tokens: string[]) => {
+    console.log(tokens);
+
+    const result = await Promise.all(
+      tokens.map(async (address) => {
+        const decimals = tokensList.find((t) => t.address === address)?.decimals;
+        return { address, value: await getUsdPrice(address, decimals!) };
+      })
+    );
+
+    return Object.fromEntries(result.map((v) => [v.address, v.value]));
+  });
+};
 
 export const useOrders = () => {
   const { account, config, web3 } = useWeb3();
   const tokensList = useContext(TwapContext).tokensList;
+  const { mutateAsync: getUsdValues } = getAllUsdValuesCallback();
 
   return useQuery(
     ["useOrders", account],
     async () => {
       const lens = contract(lensAbi as Abi, config.lensAddress);
       const orders = await lens.methods.makerOrders(account).call();
+      const srcAddresses = _.keys(_.groupBy(orders, "ask.srcToken"));
+      const dstAddresses = _.keys(_.groupBy(orders, "ask.dstToken"));
 
-      const latestBlock = await web3?.eth.getBlockNumber();
-      console.log(orders);
+      const usdValues = await getUsdValues(_.uniq([...dstAddresses, ...srcAddresses]));
 
-      const arr = _.map(orders, (o) => {
-        const srcTokenInfo = getTokenFromList(tokensList, o.ask.srcToken);
-        const dstTokenInfo = getTokenFromList(tokensList, o.ask.dstToken);
-        const srcToken = getToken(srcTokenInfo);
-        const dstToken = getToken(dstTokenInfo);
-        const srcTokenAmount = BigNumber(o.ask.srcAmount);
-        const srcFilledAmount = BigNumber(o.srcFilledAmount);
-        const tradeSize = BigNumber(o.ask.srcBidAmount);
-        const dstMinAmount = BigNumber(o.ask.dstMinAmount);
+      console.log({ usdValues });
 
-        return {
-          srcTokenAmount, // left top (10 wbtc figma )
-          tradeSize,
-          dstMinAmount,
-          delay: parseInt(o.ask.delay),
-          tradeIntervalUi: getIntervalForUi(parseInt(o.ask.delay) * 1000),
-          id: o.id,
-          status: parseStatus(parseInt(o.status), latestBlock!),
-          time: parseInt(o.ask.time),
-          createdAtUi: moment(parseInt(o.ask.time) * 1000).format("DD/MM/YY HH:mm"),
-          deadline: parseInt(o.ask.deadline),
-          deadlineUi: moment(parseInt(o.ask.deadline) * 1000).format("DD/MM/YY HH:mm"),
-          srcToken,
-          dstToken,
-          progress: srcFilledAmount.div(srcTokenAmount).times(100).toNumber(),
-          srcFilledAmount,
-          srcRemainingAmount: srcTokenAmount.minus(srcFilledAmount),
+      const arr = await Promise.all(
+        _.map(orders, async (o) => {
+          const srcTokenInfo = getTokenFromList(tokensList, o.ask.srcToken);
+          const dstTokenInfo = getTokenFromList(tokensList, o.ask.dstToken);
+          const srcToken = getToken(srcTokenInfo);
+          const dstToken = getToken(dstTokenInfo);
+          const srcTokenAmount = BigNumber(o.ask.srcAmount);
+          const srcFilledAmount = BigNumber(o.srcFilledAmount);
+          const tradeSize = BigNumber(o.ask.srcBidAmount);
+          const dstMinAmount = BigNumber(o.ask.dstMinAmount);
+          const isMarketOrder = dstMinAmount.eq(1);
+          const dstLimitPrice = isMarketOrder
+            ? usdValues[srcTokenInfo.address].div(usdValues[dstTokenInfo.address])
+            : dstMinAmount.div(convertDecimals(tradeSize, srcTokenInfo.decimals, dstTokenInfo.decimals));
+          const dstAmount = convertDecimals(srcTokenAmount, srcTokenInfo.decimals, dstTokenInfo.decimals).times(dstLimitPrice);
+          const srcRemainingAmount = srcTokenAmount.minus(srcFilledAmount);
+          const status = parseStatus(parseInt(o.status));
 
-          // price:
-        };
-      });
+          console.log(status, o.status);
+
+          return {
+            srcTokenAmount,
+            tradeSize,
+            dstMinAmount,
+            delay: parseInt(o.ask.delay),
+            tradeIntervalUi: getIntervalForUi(parseInt(o.ask.delay) * 1000),
+            id: o.id,
+            status,
+            time: parseInt(o.ask.time),
+            createdAtUi: moment(parseInt(o.ask.time) * 1000).format("DD/MM/YY HH:mm"),
+            deadline: parseInt(o.ask.deadline),
+            deadlineUi: moment(parseInt(o.ask.deadline) * 1000).format("DD/MM/YY HH:mm"),
+            srcToken,
+            dstToken,
+            progress: srcFilledAmount.div(srcTokenAmount).times(100).toNumber(),
+            srcFilledAmount,
+            srcRemainingAmount,
+            isMarketOrder,
+            dstLimitPrice,
+            prefix: isMarketOrder ? "~" : "≥",
+            dstAmount,
+            srcTokenInfo,
+            dstTokenInfo,
+            srcUsdValueUi: await getBigNumberToUiAmount(srcToken, srcTokenAmount.times(usdValues[srcTokenInfo.address]).div(1e18)),
+            dstUsdValueUi: await getBigNumberToUiAmount(dstToken, dstAmount.times(usdValues[dstTokenInfo.address]).div(1e18)),
+            srcTokenAmountUi: await getBigNumberToUiAmount(srcToken, srcTokenAmount),
+            dstTokenAmountUi: await getBigNumberToUiAmount(dstToken, dstAmount),
+            tradeSizeAmountUi: await getBigNumberToUiAmount(srcToken, tradeSize),
+            tradeSizeUsdValueUi: await getBigNumberToUiAmount(srcToken, tradeSize.times(usdValues[srcTokenInfo.address]).div(1e18)),
+            srcFilledAmountUi: await getBigNumberToUiAmount(srcToken, srcFilledAmount),
+            srcFilledUsdValueUi: await getBigNumberToUiAmount(srcToken, srcFilledAmount.times(usdValues[srcTokenInfo.address]).div(1e18)),
+            srcRemainingAmountUi: await getBigNumberToUiAmount(srcToken, srcRemainingAmount),
+            srcRemainingUsdValueUi: await getBigNumberToUiAmount(srcToken, srcRemainingAmount.times(usdValues[srcTokenInfo.address]).div(1e18)),
+          };
+        })
+      );
 
       return _.groupBy(arr, "status");
     },
@@ -89,9 +135,6 @@ export const useOrders = () => {
     }
   );
 };
-
-// dstMinAmount.eq(1) , market order, same logic as twap
-// limit price of dest token (for 1 src token) =  destMinAmount.div(convertDecimals(tradeSzie, srcToken, dstToken ))
 
 export const useCancelCallback = () => {
   const { config, account } = useWeb3();
