@@ -26,6 +26,7 @@ import { TwapContext } from "../context";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
 import { txHandler } from "..";
+import { useOrders } from "./orders";
 
 const srcTokenInitialState = {
   srcTokenInfo: undefined,
@@ -407,7 +408,7 @@ export const useLimitPrice = () => {
   const { srcTokenInfo } = useSrcTokenStore();
   const { dstTokenInfo } = useDstTokenStore();
   const [inverted, setInverted] = useState(false);
-  const { marketPrice } = useMarketPrice();
+  const { marketPrice, isLoading } = useMarketPrice();
   const [limitPriceUI, setlimitPriceUI] = useState<BigNumber | undefined>(limitPrice);
   const [invertedUI, setInvertedUI] = useState(false);
 
@@ -437,6 +438,15 @@ export const useLimitPrice = () => {
     setInvertedUI(!invertedUI);
   };
 
+  const warning = useMemo(() => {
+    if (!srcTokenInfo) {
+      return "Select source token";
+    }
+    if (!dstTokenInfo) {
+      return "Select destination token";
+    }
+  }, [srcTokenInfo, dstTokenInfo]);
+
   return {
     isLimitOrder,
     onToggleLimit,
@@ -446,6 +456,8 @@ export const useLimitPrice = () => {
     rightTokenInfo,
     limitPriceUI: limitPriceUI?.toFormat(),
     limitPrice,
+    warning,
+    isLoading,
   };
 };
 
@@ -454,8 +466,8 @@ const useMarketPrice = () => {
   const { srcToken, srcTokenInfo } = useSrcTokenStore();
   const { dstToken, dstTokenInfo } = useDstTokenStore();
 
-  const { data: srcTokenUsdValue18 } = useUsdValue(srcToken);
-  const { data: dstTokenUsdValue18 } = useUsdValue(dstToken);
+  const { data: srcTokenUsdValue18, isLoading: srcTokenUsdLoading } = useUsdValue(srcToken);
+  const { data: dstTokenUsdValue18, isLoading: dstTokenUsdLoading } = useUsdValue(dstToken);
 
   const leftToken = inverted ? dstToken : srcToken;
   const rightToken = !inverted ? dstToken : srcToken;
@@ -467,6 +479,7 @@ const useMarketPrice = () => {
   const rightUsdValue = !inverted ? dstTokenUsdValue18 : srcTokenUsdValue18;
 
   const marketPrice = leftUsdValue && rightUsdValue && leftUsdValue.div(rightUsdValue);
+  const isLoading = srcTokenUsdLoading || dstTokenUsdLoading;
 
   return {
     marketPrice: leftToken && rightToken ? marketPrice : undefined,
@@ -476,6 +489,9 @@ const useMarketPrice = () => {
     inverted,
     leftTokenInfo,
     rightTokenInfo,
+    srcTokenUsdLoading,
+    dstTokenUsdLoading,
+    isLoading,
   };
 };
 
@@ -544,7 +560,7 @@ const usePartialFillValidation = () => {
     if (showWarning) {
       return "Partial fill warning";
     }
-  }, []);
+  }, [totalTrades, tradeIntervalMillis, maxDurationMillis]);
 };
 
 const resetState = () => {
@@ -564,25 +580,41 @@ function useSubmitOrder() {
   const { wrap, shouldWrap, isLoading: wrapLoading } = useWrapToken();
   const { connect } = useContext(TwapContext);
   const { showConfirmation, setShowConfirmation, disclaimerAccepted } = useGlobalState();
+  const { refetch } = useOrders();
 
   const { srcTokenInfo, dstTokenInfo, srcTokenAmount, tradeSize, minAmountOut, deadline, tradeIntervalMillis } = useConfirmation();
 
   const { mutate: createOrder, isLoading: createdOrderLoading } = useMutation(
     async () => {
-      const twap = contract(twapAbi as Abi, config.twapAddress);
+      const tx = async () => {
+        const twap = contract(twapAbi as Abi, config.twapAddress);
 
-      return twap.methods
-        .ask(
-          config.exchangeAddress,
-          srcTokenInfo?.address,
-          dstTokenInfo?.address,
-          srcTokenAmount?.toString(),
-          tradeSize?.toString(),
-          minAmountOut.toString(),
-          Math.round(deadline / 1000),
-          Math.round(tradeIntervalMillis / 1000)
-        )
-        .send({ from: account });
+        console.log({
+          exchangeAddress: config.exchangeAddress,
+          srcToken: srcTokenInfo?.address,
+          dstToken: dstTokenInfo?.address,
+          srcTokenAmount: srcTokenAmount?.toString(),
+          tradeSize: tradeSize?.toString(),
+          minAmountOut: minAmountOut.toString(),
+          deadline: Math.round(deadline / 1000),
+          tradeInterval: Math.round(tradeIntervalMillis / 1000),
+        });
+
+        return twap.methods
+          .ask(
+            config.exchangeAddress,
+            srcTokenInfo?.address,
+            dstTokenInfo?.address,
+            srcTokenAmount?.toString(),
+            tradeSize?.toString(),
+            minAmountOut.toString(),
+            Math.round(deadline / 1000),
+            Math.round(tradeIntervalMillis / 1000)
+          )
+          .send({ from: account });
+      };
+      await txHandler(tx);
+      await refetch();
     },
     {
       onSuccess: () => {
@@ -733,20 +765,6 @@ const useConfirmation = () => {
   return result;
 };
 
-const useLimitPriceToggleValidation = () => {
-  const { srcTokenInfo } = useSrcTokenStore();
-  const { dstTokenInfo } = useDstTokenStore();
-
-  return useMemo(() => {
-    if (!srcTokenInfo) {
-      return "Select source token";
-    }
-    if (!dstTokenInfo) {
-      return "Select destination token";
-    }
-  }, [srcTokenInfo, dstTokenInfo]);
-};
-
 // all hooks with state, export state only from here
 export const store = {
   useActionHandlers,
@@ -770,7 +788,6 @@ export const store = {
 export const validation = {
   useSubmitButtonValidation,
   usePartialFillValidation,
-  useLimitPriceToggleValidation,
 };
 
 const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number) => {

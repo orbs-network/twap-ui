@@ -20,7 +20,7 @@ function App() {
 
   return (
     <StyledApp className="App">
-      <Box sx={{ minWidth: 120 }}>
+      {/* <Box sx={{ minWidth: 120 }}>
         <Select value={selectedDapp} label="Age" onChange={(event: SelectChangeEvent) => setSelectedDapp(event.target.value)} style={{ color: "white" }}>
           {dapps.map((client) => {
             return (
@@ -30,7 +30,7 @@ function App() {
             );
           })}
         </Select>
-      </Box>
+      </Box> */}
       <StyledContent>
         {dapps.map((dapp) => {
           if (dapp.id === selectedDapp) {

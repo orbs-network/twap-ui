@@ -48,8 +48,7 @@ function LimitPrice({
 export { LimitPrice };
 
 export const LimitPriceSwitch = ({ className = "" }: { className?: string }) => {
-  const { isLimitOrder, onToggleLimit } = store.useLimitPrice();
-  const warning = validation.useLimitPriceToggleValidation();
+  const { isLimitOrder, onToggleLimit, warning } = store.useLimitPrice();
   return (
     <Tooltip text={warning}>
       <Switch disabled={!!warning} className={className} value={!isLimitOrder} onChange={onToggleLimit} />

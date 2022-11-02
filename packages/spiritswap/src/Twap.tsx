@@ -45,10 +45,9 @@ import { ProviderWrapper, queryClient } from ".";
 
 // TODO create file for styles
 
-const { Balance, Button, Icon, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
+const { Balance, Loader, Icon, NumberDisplay, TimeSelector, NumericInput, Card, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } =
   TWAPLib.baseComponents;
 const LimitPrice = TWAPLib.components.LimitPrice;
-const TwapContext = TWAPLib.TwapContext;
 const TradeInfoDetails = TWAPLib.components.TradeInfoDetails;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 const TradeInfoExplanation = TWAPLib.components.TradeInfoExplanation;
@@ -181,17 +180,14 @@ const TradeSize = () => {
 };
 
 const LimitPriceDisplay = () => {
-  const { isLimitOrder, onToggleLimit, onChange, limitPriceUI, leftTokenInfo, rightTokenInfo, toggleInverted } = TWAPLib.store.useLimitPrice();
-  const warning = TWAPLib.validation.useLimitPriceToggleValidation();
+  const { isLimitOrder, onToggleLimit, onChange, limitPriceUI, leftTokenInfo, rightTokenInfo, toggleInverted, warning, isLoading } = TWAPLib.store.useLimitPrice();
 
   return (
     <StyledPrice>
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexStart>
-            <Tooltip text={warning}>
-              <StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />
-            </Tooltip>
+            <Tooltip text={warning}>{isLoading ? <Loader width={50} /> : <StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}</Tooltip>
             <Label tooltipText="some text">Limit Price</Label>
           </StyledFlexStart>
           {isLimitOrder && (

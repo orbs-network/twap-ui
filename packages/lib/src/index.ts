@@ -25,6 +25,7 @@ import USD from "./base-components/USD";
 import Orders from "./orders/Orders";
 import TokenPriceCompare from "./base-components/TokenPriceCompare";
 import OdnpButton from "./base-components/OdnpButton";
+import Loader from "./base-components/Loader";
 
 async function delay(time: number) {
   return new Promise((resolve) => {
@@ -61,6 +62,7 @@ export default {
     USD,
     TokenPriceCompare,
     OdnpButton,
+    Loader,
   },
   components: { LimitPrice, TradeInfoModal, TradeInfoDetails, TradeInfoExplanation },
   validation,

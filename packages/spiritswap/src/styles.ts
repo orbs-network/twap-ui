@@ -3,7 +3,7 @@ import TWAPLib from "@orbs-network/twap-ui";
 import { createTheme } from "@mui/material/styles";
 import { CSSProperties } from "react";
 
-const { USD, Button, Icon, NumericInput, Card, Switch } = TWAPLib.baseComponents;
+const { USD, Button, Icon, NumericInput, Card, Switch, Loader } = TWAPLib.baseComponents;
 
 const { TradeInfoModal } = TWAPLib.components;
 
