@@ -21,5 +21,9 @@
   },
   "dependencies": {
     "@orbs-network/twap-ui": "^0.1.0"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "47b01d7d7fa39c84df36265e03629016523a1745"
 }
