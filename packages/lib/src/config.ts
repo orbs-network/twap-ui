@@ -3,6 +3,7 @@ import _ from "lodash";
 
 const Config = {
   [networks.ftm.id]: {
+    minimumTradeSizeUsd: 10,
     twapAddress: "0x85253417E9BF576980318E7882147618C4980969",
     lensAddress: "0x1c4b5371dfDF424a162974C2361a6405b1F772cf",
     wrappedTokenInfo: {

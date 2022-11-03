@@ -12,7 +12,7 @@
   "tradeSizeTooltip": "This sets the size of each individual trade that will be executed over the duration of your TWAP order.",
   "maxDurationTooltip": "The maximum time during which the total amount of individual trades making up your full TWAP order can be executed. Note that depending on your parameters, your order may be filled earlier than this time, partially filled or not filled at all.",
   "tradeIntervalTootlip": "This sets the minimum amount of time that will elapse between each individual trade in your TWAP order. Note that if you choose to set this parameter manually, you will also need to set the trade size and duration manually as well.",
-  "customIntervalTooltip": "Enable custom inteval",
+  "customIntervalTooltip": "Enable custom interval",
   "totalTradesTooltip": "totalTrades",
   "connect": "Connect wallet",
   "selectTokens": "Select tokens",

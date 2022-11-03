@@ -301,22 +301,15 @@ const useTradeInterval = () => {
   };
 };
 
-// all data related to trade size input
 const useTradeSize = () => {
   const { srcToken, srcTokenInfo, srcTokenAmount, onTradeSizeChange, totalTrades, getTradeSize } = useTwapStore();
   const { data: srcTokenUsdValue18, isLoading: usdPriceLoading } = useUsdValue(srcToken);
+  const { config } = useWeb3();
 
   const maxTrades = useMemo(() => {
-    return BigNumber.max(
-      1,
-      srcTokenAmount
-        ?.div(
-          BigNumber(10)
-            .pow(srcTokenInfo?.decimals || 1)
-            .div(srcTokenUsdValue18?.div(1e18) || 1)
-        )
-        .integerValue(BigNumber.ROUND_FLOOR) || 1
-    ).toNumber();
+    const mantissa = BigNumber(10).pow(srcTokenInfo?.decimals || 1);
+    const minUsdValue = srcTokenUsdValue18?.div(1e18).div(config.minimumTradeSizeUsd) || 1;
+    return BigNumber.max(1, srcTokenAmount?.div(mantissa.div(minUsdValue)).integerValue(BigNumber.ROUND_FLOOR) || 1).toNumber();
   }, [srcTokenInfo, srcTokenUsdValue18, srcTokenAmount]);
 
   return {
@@ -439,37 +432,26 @@ export const useSubmitButtonValidation = () => {
   const tradeIntervalMillis = getTradeIntervalMillis();
 
   return useMemo(() => {
-    if (!srcToken || !dstToken) {
-      return translations.selectTokens;
-    }
-    if (!srcTokenAmount || srcTokenAmount?.isZero()) {
-      return translations.enterAmount;
-    }
-    if (srcTokenBalance && srcTokenAmount.gt(srcTokenBalance)) {
-      return translations.insufficientFunds;
-    }
+    if (!srcToken || !dstToken) return translations.selectTokens;
 
-    if (!tradeSize || tradeSize?.isZero()) {
-      return translations.enterTradeSize;
-    }
+    if (!srcTokenAmount || srcTokenAmount?.isZero()) return translations.enterAmount;
 
-    if (maxDurationMillis === 0) {
-      return translations.enterMaxDuration;
-    }
+    if (srcTokenBalance && srcTokenAmount.gt(srcTokenBalance)) return translations.insufficientFunds;
 
-    if (tradeIntervalMillis === 0) {
-      return translations.enterTradeInterval;
-    }
+    if (!tradeSize || tradeSize?.isZero()) return translations.enterTradeSize;
 
-    if (srcTokenAmount && tradeSize && srcTokenUsdValue18 && srcTokenInfo && isTradeSizeTooSmall(srcTokenAmount, tradeSize, srcTokenUsdValue18, srcTokenInfo)) {
+    if (maxDurationMillis === 0) return translations.enterMaxDuration;
+
+    if (tradeIntervalMillis === 0) return translations.enterTradeInterval;
+
+    if (srcTokenAmount && tradeSize && srcTokenUsdValue18 && srcTokenInfo && isTradeSizeTooSmall(srcTokenAmount, tradeSize, srcTokenUsdValue18, srcTokenInfo))
       return translations.tradeSizeMustBeEqual;
-    }
   }, [translations, dstToken, srcTokenAmount, srcTokenUsdValue18, tradeSize, srcTokenAmount, tradeIntervalMillis, maxDurationMillis, srcToken, srcTokenInfo, srcTokenAmountUi]);
 };
 
 const isTradeSizeTooSmall = (srcTokenAmount: BigNumber, tradeSize: BigNumber, srcTokenUsdValue18: BigNumber, srcTokenInfo: TokenInfo) => {
   const smallestTradeSize = srcTokenAmount.modulo(tradeSize).eq(0) ? tradeSize : srcTokenAmount.modulo(tradeSize);
-  return smallestTradeSize?.times(srcTokenUsdValue18).div(1e18).lt(BigNumber(10).times(srcTokenInfo.decimals));
+  return smallestTradeSize?.times(srcTokenUsdValue18).div(1e18).lt(BigNumber(10).pow(srcTokenInfo.decimals));
 };
 
 const usePartialFillValidation = () => {

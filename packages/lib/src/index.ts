@@ -16,7 +16,7 @@ import Tooltip from "./base-components/Tooltip";
 import IconButton from "./base-components/IconButton";
 import Text from "./base-components/Text";
 import NumberDisplay from "./base-components/NumberDisplay";
-import { TwapContext, TwapProvider } from "./context";
+import { TwapContext, TwapProvider, useTwapTranslations } from "./context";
 import {
   ConfirmationExpiration,
   ConfirmationMinimumReceived,
@@ -79,4 +79,5 @@ export default {
   TwapContext,
   TwapProvider,
   Orders,
+  useTwapTranslations,
 };

@@ -34,7 +34,6 @@ const TwapProvider = ({ children, provider, dappIntegration, integrationChainId,
 
 export const useTwapTranslations = () => {
   const { translations } = useContext(TwapContext);
-
   return translations;
 };
 

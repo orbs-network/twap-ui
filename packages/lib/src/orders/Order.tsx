@@ -21,8 +21,8 @@ import { Typography } from "@mui/material";
 import { StyledColumnGap } from "../styles";
 import { BigNumber } from "@defi.org/web3-candies";
 import PriceDisplay from "../base-components/PriceDisplay";
-import { useTwapTranslations } from "..";
 import { useGetTradeIntervalForUi } from "../store/store";
+import { useTwapTranslations } from "../context";
 export interface Props {
   order: Order;
   onExpand: () => void;

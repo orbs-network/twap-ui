@@ -2,7 +2,7 @@ import { CssBaseline } from "@mui/material";
 import { Box } from "@mui/system";
 import { QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
-import TWAPLib, { useTwapTranslations } from "@orbs-network/twap-ui";
+import TWAPLib from "@orbs-network/twap-ui";
 import { ThemeProvider } from "@mui/material/styles";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
@@ -421,7 +421,7 @@ const TradeInfoDetailsDisplay = () => {
 
 const OrderConfirmationLimitPrice = () => {
   const { isLimitOrder, toggleInverted, limitPriceUI, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useLimitPrice();
-  const translations = useTwapTranslations();
+  const translations = TWAPLib.useTwapTranslations();
 
   return (
     <StyledLimitPrice>

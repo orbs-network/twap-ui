@@ -1,6 +1,5 @@
 import { Box, styled } from "@mui/system";
 import { ReactNode } from "react";
-import { useTwapTranslations } from "..";
 import Label from "../base-components/Label";
 import Modal from "../base-components/Modal";
 import NumberDisplay from "../base-components/NumberDisplay";
@@ -9,6 +8,7 @@ import TokenLogo from "../base-components/TokenLogo";
 import TokenName from "../base-components/TokenName";
 import Tooltip from "../base-components/Tooltip";
 import { store } from "../store/store";
+import { useTwapTranslations } from "../context";
 
 export function TradeInfoModal({ onClose, open, children, className = "" }: { onClose: () => void; open: boolean; children: ReactNode; className?: string }) {
   const translations = useTwapTranslations();

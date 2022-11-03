@@ -7,7 +7,7 @@ import Label from "../base-components/Label";
 import { OrderStatus, Translations } from "../types";
 import { useOrders } from "../store/orders";
 import OdnpButton from "../base-components/OdnpButton";
-import { useTwapTranslations } from "..";
+import { useTwapTranslations } from "../context";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);

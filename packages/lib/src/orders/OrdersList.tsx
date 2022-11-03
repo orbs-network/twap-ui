@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Order, OrderStatus } from "../types";
 import OrderComponent from "./Order";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useTwapTranslations } from "..";
+import { useTwapTranslations } from "../context";
 
 // TODO chnage all limitOrder -->  orders, ordersList, Order
 
