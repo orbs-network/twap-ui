@@ -23,7 +23,7 @@
   "disclaimer3": "The TWAP trades are based on a decentralized TWAP protocol that utilizes off-chain takers which compete to fill orders. These takers are entitled to request a fee, which the protocol removes for the winning taker from the output tokens. Accordingly, the amount of output tokens you will receive may vary in accordance with taker behavior.",
   "disclaimer4": "Takers may take into account gas fees for your transactions when setting their fees, which may result in fluctuations in the fee amounts.",
   "disclaimer5": "Note that the protocol has been designed such that the presence of one honest taker (i.e, a taker who charges only reimbursement for gas fees) should result in an output amount that is as close as possible to spot market prices. QuickSwap and Orbs have implemented automated, decentralized “honest takers”, however, these features are in beta and their use are subject to risks.",
-  "disclaimer6": "This TWAP order will be executed using that is in beta and its use is at your own risk. You can read more about the TWAP protocol here",
+  "disclaimer6": "This TWAP order will be executed using a decentralized protocol that is in beta and its use is at your own risk. You can read more about the TWAP protocol here",
   "disclaimer7": "Use of this feature is subject to the terms and conditions set forth here",
   "link": "link",
   "days": "Days",
