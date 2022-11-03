@@ -22,7 +22,9 @@
     "clean": "lerna exec 'rm -f package-lock.json' && lerna clean -y || true && lerna bootstrap",
     "build": "lerna run build",
     "start": "lerna run start --parallel",
-    "test": "lerna run test"
+    "test": "lerna run test",
+    "prepublish": "npm run clean && npm run build && npm run test",
+    "publish": "lerna run publish"
   },
   "prettier": {
     "printWidth": 180
