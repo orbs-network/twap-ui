@@ -18,14 +18,14 @@ import Text from "./base-components/Text";
 import NumberDisplay from "./base-components/NumberDisplay";
 import { TwapContext, TwapProvider } from "./context";
 import {
-  TradeInfoModal,
-  TradeInfoExplanation,
   ConfirmationExpiration,
+  ConfirmationMinimumReceived,
   ConfirmationOrderType,
-  ConfirmationTradeSize,
   ConfirmationTotalTrades,
   ConfirmationTradeInterval,
-  ConfirmationMinimumReceived,
+  ConfirmationTradeSize,
+  TradeInfoExplanation,
+  TradeInfoModal,
 } from "./components/TradeInfo";
 import PriceToggle from "./base-components/PriceToggle";
 import Button from "./base-components/Button";
@@ -36,24 +36,6 @@ import TokenPriceCompare from "./base-components/PriceDisplay";
 import OdnpButton from "./base-components/OdnpButton";
 import Loader from "./base-components/Loader";
 import Slider from "./base-components/Slider";
-import { useContext } from "react";
-
-async function delay(time: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, time);
-  });
-}
-
-export const txHandler = async <T>(method: () => T, delayMillis?: number) => {
-  await method();
-  return delay(delayMillis || 3000);
-};
-
-export const useTwapTranslations = () => {
-  const { translations } = useContext(TwapContext);
-
-  return translations;
-};
 
 export default {
   store,

@@ -19,6 +19,14 @@ export interface Store {
   customTradeIntervalMillis: number;
   customTradeIntervalTimeFormat: TimeFormat;
 
+  getTradeIntervalMillis: () => number;
+  getTradeIntervalTimeFormat: () => TimeFormat;
+  getDeadline: () => number;
+  getDeadlineUi: () => string;
+  getTradeSize: () => BigNumber;
+  getDerivedTradeInterval: () => { millis: number; timeFormat: TimeFormat };
+  getMinAmountOut: () => BigNumber;
+
   //actions
   onMaxDurationChange: (timeFormat: TimeFormat, millis: number) => void;
   setSrcToken: (value?: TokenInfo, amount?: BigNumber) => void;
@@ -36,17 +44,6 @@ export interface Store {
   resetLimitPrice: () => void;
   switchTokens: (dstTokenAmount?: BigNumber) => void;
   reset: () => void;
-
-  // derived
-  computed: {
-    tradeIntervalMillis: number;
-    tradeIntervalTimeFormat: TimeFormat;
-    deadline: number;
-    deadlineUi: string;
-    tradeSize?: BigNumber;
-    derivedTradeInterval: { millis: number; timeFormat: TimeFormat };
-    minAmountOut: BigNumber;
-  };
 }
 
 export interface Web3State {

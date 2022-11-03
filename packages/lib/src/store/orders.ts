@@ -1,14 +1,14 @@
-import { contract, eqIgnoreCase, Abi, BigNumber, Token, zero, convertDecimals, block } from "@defi.org/web3-candies";
+import { Abi, BigNumber, contract, convertDecimals, eqIgnoreCase, Token } from "@defi.org/web3-candies";
 import _ from "lodash";
-import { useContext, useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useContext, useState } from "react";
+import { useMutation, useQuery } from "react-query";
 import { TwapContext } from "../context";
-import { Order, OrderStatus, TokenInfo } from "../types";
+import { OrderStatus, TokenInfo } from "../types";
 import { getBigNumberToUiAmount, getToken, useGetBigNumberToUiAmount, useUsdValue, useWeb3 } from "./store";
 import lensAbi from "./lens-abi.json";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
-import { txHandler } from "..";
+import { sendTxAndWait } from "../config";
 
 const getTokenFromList = (tokensList: TokenInfo[], address?: string) => {
   if (!address) {
@@ -139,7 +139,7 @@ export const useCancelCallback = () => {
       const twap = contract(twapAbi as Abi, config.twapAddress);
       await twap.methods.cancel(orderId).send({ from: account });
     };
-    await txHandler(tx, 4000);
+    await sendTxAndWait(tx);
     await refetch();
   });
 };

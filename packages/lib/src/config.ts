@@ -29,3 +29,14 @@ export enum IntegrationDapp {
 }
 
 export const nativeAddresses = [zeroAddress, "0x0000000000000000000000000000000000001010", "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"];
+
+export const sendTxAndWait = async <T>(method: () => T) => {
+  await method();
+  return delay(10_000);
+};
+
+async function delay(time: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time);
+  });
+}

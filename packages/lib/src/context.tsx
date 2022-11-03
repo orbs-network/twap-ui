@@ -1,5 +1,5 @@
 import { BigNumber } from "@defi.org/web3-candies";
-import { createContext, ReactElement, ReactNode, useEffect } from "react";
+import { createContext, ReactElement, ReactNode, useContext, useEffect } from "react";
 import { useWeb3 } from "./store/store";
 import { TokenInfo, Translations } from "./types";
 
@@ -30,6 +30,12 @@ const TwapProvider = ({ children, provider, dappIntegration, integrationChainId,
   }, [provider, dappIntegration, integrationChainId]);
 
   return <TwapContext.Provider value={value}>{children}</TwapContext.Provider>;
+};
+
+export const useTwapTranslations = () => {
+  const { translations } = useContext(TwapContext);
+
+  return translations;
 };
 
 export { TwapContext, TwapProvider };

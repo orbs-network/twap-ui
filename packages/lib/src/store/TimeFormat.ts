@@ -6,7 +6,7 @@ export class TimeFormat {
   static All = [this.Minutes, this.Hours, this.Days];
 
   static valueOf(millis: number) {
-    return [...this.All].reverse().find((it) => it.value <= millis)!;
+    return [...this.All].reverse().find((it) => it.value <= millis) || TimeFormat.Minutes;
   }
 
   constructor(public key: string, public value: number) {}

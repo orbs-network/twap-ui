@@ -1,10 +1,10 @@
 import "react";
 import { expect } from "chai";
 import { contract, currentNetwork, erc20s, hasWeb3Instance, networks } from "@defi.org/web3-candies";
-import { getConfig, IntegrationDapp } from "../src/consts";
 import { initFixture } from "./fixture";
-import { useGlobalState } from "../src/store/store";
 import { act, renderHook } from "@testing-library/react";
+import { getConfig, IntegrationDapp } from "../src/config";
+import { useTwapStore } from "../src/store/store";
 
 describe("Sanity", function () {
   beforeEach(initFixture);
@@ -31,7 +31,7 @@ describe("Sanity", function () {
   });
 
   it("state", async () => {
-    const { result } = renderHook(() => useGlobalState());
+    const { result } = renderHook(() => useTwapStore());
     expect(result.current.showConfirmation).false;
     expect(result.current.disclaimerAccepted).false;
 

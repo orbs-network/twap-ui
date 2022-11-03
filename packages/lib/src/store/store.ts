@@ -3,16 +3,15 @@ import { Abi, account as candiesAccount, BigNumber, contract, convertDecimals, e
 import { useMutation, useQuery } from "react-query";
 import { useContext, useMemo, useState } from "react";
 import Web3 from "web3";
-import { Store, TokenInfo, Translations, Web3State } from "../types";
+import { Store, TokenInfo, Web3State } from "../types";
 import create from "zustand";
 import { TimeFormat } from "./TimeFormat";
-import { getConfig, nativeAddresses } from "../consts";
 import { changeNetwork } from "./connect";
-import { TwapContext } from "../context";
+import { TwapContext, useTwapTranslations } from "../context";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
-import { txHandler, useTwapTranslations } from "..";
 import { useOrders } from "./orders";
+import { getConfig, nativeAddresses, sendTxAndWait } from "../config";
 
 const defaultState = {
   srcTokenInfo: undefined,
@@ -35,7 +34,7 @@ const defaultState = {
   customTradeIntervalTimeFormat: TimeFormat.Minutes,
 };
 
-export const useStore = create<Store>((set, get) => ({
+export const useTwapStore = create<Store>((set, get) => ({
   ...defaultState,
   switchTokens: (dstTokenAmount) => {
     const src = get().srcTokenInfo;
@@ -82,55 +81,33 @@ export const useStore = create<Store>((set, get) => ({
     set({ totalTrades });
   },
   resetLimitPrice: () => set({ limitPrice: undefined, isLimitOrder: false }),
-  computed: {
-    get derivedTradeInterval() {
-      const maxDurationMillis = get().maxDurationMillis;
-      const totalTrades = get().totalTrades;
-
-      if (maxDurationMillis > 0 && totalTrades > 0) {
-        const millis = Math.max(maxDurationMillis / totalTrades, 60_000);
-
-        return {
-          millis,
-          timeFormat: TimeFormat.valueOf(millis),
-        };
-      } else {
-        return {
-          millis: 0,
-          timeFormat: TimeFormat.Minutes,
-        };
-      }
-    },
-    get tradeIntervalMillis() {
-      if (get().customInterval) {
-        return get().customTradeIntervalMillis;
-      }
-      return get().computed.derivedTradeInterval.millis;
-    },
-    get tradeIntervalTimeFormat() {
-      if (get().customInterval) {
-        return get().customTradeIntervalTimeFormat;
-      }
-      return get().computed.derivedTradeInterval.timeFormat;
-    },
-    get tradeSize() {
-      if (get().totalTrades === 0) return undefined;
-      return get().srcTokenAmount?.div(get().totalTrades).integerValue(BigNumber.ROUND_CEIL);
-    },
-    get deadline() {
-      const now = moment().valueOf();
-      return now + moment(get().maxDurationMillis).add(60_000, "milliseconds").valueOf();
-    },
-    get deadlineUi() {
-      if (!get().computed.deadline) return "";
-      return moment(get().computed.deadline).format("DD/MM/YYYY HH:mm");
-    },
-    get minAmountOut() {
-      if (!get().limitPrice || !get().srcTokenInfo || !get().dstTokenInfo || !get().computed.tradeSize || !get().isLimitOrder) {
-        return BigNumber(1);
-      }
-      return convertDecimals(get().computed.tradeSize!.times(get().limitPrice!), get().srcTokenInfo!.decimals, get().dstTokenInfo!.decimals);
-    },
+  getDerivedTradeInterval: () => {
+    const millis = get().maxDurationMillis > 0 && get().totalTrades > 0 ? Math.max(get().maxDurationMillis / get().totalTrades, 60_000) : 0;
+    const timeFormat = TimeFormat.valueOf(millis);
+    return { millis, timeFormat };
+  },
+  getTradeIntervalMillis: () => {
+    if (get().customInterval) return get().customTradeIntervalMillis;
+    return get().getDerivedTradeInterval().millis;
+  },
+  getTradeIntervalTimeFormat: () => {
+    if (get().customInterval) return get().customTradeIntervalTimeFormat;
+    return get().getDerivedTradeInterval().timeFormat;
+  },
+  getTradeSize: () => {
+    if (get().totalTrades === 0 || !get().srcTokenAmount) return zero;
+    return get().srcTokenAmount!.div(get().totalTrades).integerValue(BigNumber.ROUND_CEIL);
+  },
+  getDeadline: () => {
+    return moment().valueOf() + moment(get().maxDurationMillis).add(60_000, "milliseconds").valueOf();
+  },
+  getDeadlineUi: () => {
+    if (!get().getDeadline()) return "";
+    return moment(get().getDeadline()).format("DD/MM/YYYY HH:mm");
+  },
+  getMinAmountOut: () => {
+    if (!get().limitPrice || !get().srcTokenInfo || !get().dstTokenInfo || !get().getTradeSize() || !get().isLimitOrder) return BigNumber(1);
+    return convertDecimals(get().getTradeSize()!.times(get().limitPrice!), get().srcTokenInfo!.decimals, get().dstTokenInfo!.decimals);
   },
   reset: () => set(defaultState),
 }));
@@ -150,7 +127,7 @@ export const useWeb3Store = create<Web3State>((set) => ({
 
 const useTokenApproval = () => {
   const { account, chain, config } = useWeb3();
-  const { srcToken, srcTokenAmount } = useStore();
+  const { srcToken, srcTokenAmount } = useTwapStore();
   const [waitForApproval, setWaitForApproval] = useState(false);
 
   const spender = config ? config.twapAddress : undefined;
@@ -163,7 +140,7 @@ const useTokenApproval = () => {
     const tx = () => {
       return srcToken?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account });
     };
-    await txHandler(tx);
+    await sendTxAndWait(tx);
     await refetch();
     setWaitForApproval(true);
   });
@@ -178,16 +155,16 @@ const useTokenApproval = () => {
 };
 
 const useWrapToken = () => {
-  const { srcTokenAmount, setSrcToken, srcTokenInfo, srcToken, setShowConfirmation } = useStore();
+  const { srcTokenAmount, setSrcToken, srcTokenInfo, srcToken, setShowConfirmation } = useTwapStore();
   const { account, config } = useWeb3();
   const { refetch } = useAccountBalances(srcToken);
 
   const { mutateAsync: wrap, isLoading } = useMutation(async () => {
     const tx = async () => {
       const wToken: any = getToken(config!.wrappedTokenInfo, true);
-      await wToken?.methods.deposit().send({ from: account, value: srcTokenAmount!.toString() });
+      await wToken?.methods.deposit().send({ from: account!, value: srcTokenAmount!.toString() });
     };
-    await txHandler(tx, 4000);
+    await sendTxAndWait(tx);
     setSrcToken(config!.wrappedTokenInfo, srcTokenAmount);
 
     await refetch();
@@ -196,7 +173,7 @@ const useWrapToken = () => {
 
   return {
     wrap,
-    shouldWrap: isNativeToken(srcTokenInfo?.address),
+    shouldWrap: !!account && !!srcTokenAmount && isNativeToken(srcTokenInfo?.address),
     isLoading,
   };
 };
@@ -242,7 +219,7 @@ const useAccountBalances = (token?: Token) => {
 };
 
 const useActionHandlers = () => {
-  const { srcToken, onSrcTokenChange } = useStore();
+  const { srcToken, onSrcTokenChange } = useTwapStore();
   const { data: balance } = useAccountBalances(srcToken);
 
   const onChangePercent = async (percent: number) => {
@@ -255,7 +232,7 @@ const useActionHandlers = () => {
 };
 
 const useDstTokenAmount = () => {
-  const { srcTokenInfo, srcTokenAmount, srcToken, dstTokenInfo, dstToken, limitPrice } = useStore();
+  const { srcTokenInfo, srcTokenAmount, srcToken, dstTokenInfo, dstToken, limitPrice } = useTwapStore();
   const { data: dstTokenUsdValue18 } = useUsdValue(dstToken);
   const { data: srcTokenUsdValue18 } = useUsdValue(srcToken);
 
@@ -300,50 +277,33 @@ export const useUsdValue = (token?: Token) => {
 
 // all actions (functions) related to max duration input
 const useMaxDuration = () => {
-  const {
-    maxDurationTimeFormat,
-    maxDurationMillis,
-    onMaxDurationChange,
-    computed: { deadline, deadlineUi },
-  } = useStore();
+  const { maxDurationTimeFormat, maxDurationMillis, onMaxDurationChange, getDeadline, getDeadlineUi } = useTwapStore();
 
   return {
     onMaxDurationChange,
     maxDurationTimeFormat,
     maxDurationMillis,
-    deadline,
-    deadlineUi,
+    deadline: getDeadline(),
+    deadlineUi: getDeadlineUi(),
   };
 };
 
 const useTradeInterval = () => {
-  const {
-    customInterval,
-    setCustomInterval,
-    onTradeIntervalChange,
-    computed: { tradeIntervalMillis, tradeIntervalTimeFormat },
-  } = useStore();
+  const { customInterval, setCustomInterval, onTradeIntervalChange, getTradeIntervalMillis, getTradeIntervalTimeFormat } = useTwapStore();
 
   return {
-    tradeIntervalMillis,
-    tradeIntervalTimeFormat,
+    tradeIntervalMillis: getTradeIntervalMillis(),
+    tradeIntervalTimeFormat: getTradeIntervalTimeFormat(),
     customInterval,
     onTradeIntervalChange,
     onCustomIntervalClick: () => setCustomInterval(true),
-    tradeIntervalUi: useGetTradeIntervalForUi(tradeIntervalMillis),
+    tradeIntervalUi: useGetTradeIntervalForUi(getTradeIntervalMillis()),
   };
 };
 
 // all data related to trade size input
 const useTradeSize = () => {
-  const {
-    srcToken,
-    srcTokenInfo,
-    srcTokenAmount,
-    onTradeSizeChange,
-    totalTrades,
-    computed: { tradeSize },
-  } = useStore();
+  const { srcToken, srcTokenInfo, srcTokenAmount, onTradeSizeChange, totalTrades, getTradeSize } = useTwapStore();
   const { data: srcTokenUsdValue18, isLoading: usdPriceLoading } = useUsdValue(srcToken);
 
   const maxTrades = useMemo(() => {
@@ -361,9 +321,9 @@ const useTradeSize = () => {
 
   return {
     totalTrades,
-    uiTradeSize: useGetBigNumberToUiAmount(srcToken, tradeSize),
+    uiTradeSize: useGetBigNumberToUiAmount(srcToken, getTradeSize()),
     onTradeSizeChange,
-    uiUsdValue: useGetBigNumberToUiAmount(srcToken, !tradeSize || !srcTokenUsdValue18 ? undefined : tradeSize?.times(srcTokenUsdValue18).div(1e18)),
+    uiUsdValue: useGetBigNumberToUiAmount(srcToken, !getTradeSize() || !srcTokenUsdValue18 ? undefined : getTradeSize()?.times(srcTokenUsdValue18).div(1e18)),
     usdPriceLoading,
     maxValue: useGetBigNumberToUiAmount(srcToken, srcTokenAmount),
     logoUrl: srcTokenInfo?.logoUrl,
@@ -373,7 +333,7 @@ const useTradeSize = () => {
 };
 
 const useChangeTokenPositions = () => {
-  const switchTokens = useStore().switchTokens;
+  const switchTokens = useTwapStore().switchTokens;
   const dstTokenAmount = useDstTokenAmount();
 
   return () => {
@@ -382,7 +342,7 @@ const useChangeTokenPositions = () => {
 };
 
 export const useLimitPrice = () => {
-  const { isLimitOrder, limitPrice, toggleLimit, setLimitPrice, srcTokenInfo, dstTokenInfo } = useStore();
+  const { isLimitOrder, limitPrice, toggleLimit, setLimitPrice, srcTokenInfo, dstTokenInfo } = useTwapStore();
   const [inverted, setInverted] = useState(false);
   const { marketPrice, isLoading } = useMarketPrice();
   const [limitPriceUI, setlimitPriceUI] = useState<BigNumber | undefined>(limitPrice);
@@ -437,7 +397,7 @@ export const useLimitPrice = () => {
 
 const useMarketPrice = () => {
   const [inverted, setInverted] = useState(false);
-  const { srcToken, srcTokenInfo, dstToken, dstTokenInfo } = useStore();
+  const { srcToken, srcTokenInfo, dstToken, dstTokenInfo } = useTwapStore();
 
   const { data: srcTokenUsdValue18, isLoading: srcTokenUsdLoading } = useUsdValue(srcToken);
   const { data: dstTokenUsdValue18, isLoading: dstTokenUsdLoading } = useUsdValue(dstToken);
@@ -469,19 +429,14 @@ const useMarketPrice = () => {
 };
 
 export const useSubmitButtonValidation = () => {
-  const {
-    srcTokenAmount,
-    srcToken,
-    srcTokenInfo,
-    dstToken,
-    maxDurationMillis,
-    computed: { tradeIntervalMillis, tradeSize },
-  } = useStore();
+  const { srcTokenAmount, srcToken, srcTokenInfo, dstToken, maxDurationMillis, getTradeIntervalMillis, getTradeSize } = useTwapStore();
   const { data: srcTokenUsdValue18 } = useUsdValue(srcToken);
   const { data: srcTokenBalance } = useAccountBalances(srcToken);
   const translations = useTwapTranslations();
 
   const srcTokenAmountUi = useGetBigNumberToUiAmount(srcToken, srcTokenAmount);
+  const tradeSize = getTradeSize();
+  const tradeIntervalMillis = getTradeIntervalMillis();
 
   return useMemo(() => {
     if (!srcToken || !dstToken) {
@@ -518,12 +473,9 @@ const isTradeSizeTooSmall = (srcTokenAmount: BigNumber, tradeSize: BigNumber, sr
 };
 
 const usePartialFillValidation = () => {
-  const {
-    totalTrades,
-    maxDurationMillis,
-    computed: { tradeIntervalMillis },
-  } = useStore();
+  const { totalTrades, maxDurationMillis, getTradeIntervalMillis } = useTwapStore();
   const translations = useTwapTranslations();
+  const tradeIntervalMillis = getTradeIntervalMillis();
 
   return useMemo(() => {
     if (!totalTrades || totalTrades === 0 || !tradeIntervalMillis || !maxDurationMillis) {
@@ -544,7 +496,7 @@ function useSubmitOrder() {
   const { isInvalidChain, changeNetwork, config, account } = useWeb3();
   const { wrap, shouldWrap, isLoading: wrapLoading } = useWrapToken();
   const { connect } = useContext(TwapContext);
-  const { showConfirmation, setShowConfirmation, disclaimerAccepted, reset } = useStore();
+  const { showConfirmation, setShowConfirmation, disclaimerAccepted, reset } = useTwapStore();
   const { refetch } = useOrders();
   const translations = useTwapTranslations();
 
@@ -580,7 +532,7 @@ function useSubmitOrder() {
           )
           .send({ from: account });
       };
-      await txHandler(tx, 10_000);
+      await sendTxAndWait(tx);
       await refetch();
     },
     {
@@ -618,7 +570,7 @@ function useSubmitOrder() {
 }
 
 export const useTokenPanel = (isSrcToken?: boolean) => {
-  const { srcToken, setSrcToken, srcTokenInfo, onSrcTokenChange, srcTokenAmount, dstToken, setDstToken, dstTokenInfo, isLimitOrder } = useStore();
+  const { srcToken, setSrcToken, srcTokenInfo, onSrcTokenChange, srcTokenAmount, dstToken, setDstToken, dstTokenInfo, isLimitOrder } = useTwapStore();
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const destTokenAmount = useDstTokenAmount();
   const { data: srcTokenBalance, isLoading: srcTokenBalanceLoading } = useAccountBalances(srcToken);
@@ -697,31 +649,35 @@ const useConfirmation = () => {
     disclaimerAccepted,
     setDisclaimerAccepted,
     reset,
-    computed: { deadline, deadlineUi, tradeIntervalMillis, tradeSize, minAmountOut },
-  } = useStore();
+    getDeadline,
+    getDeadlineUi,
+    getTradeIntervalMillis,
+    getTradeSize,
+    getMinAmountOut,
+  } = useTwapStore();
 
   const { data: srcTokenUsdValue18 } = useUsdValue(srcToken);
   const { data: dstTokenUsdValue18 } = useUsdValue(dstToken);
   const dstTokenAmount = useDstTokenAmount();
 
   const result = {
-    deadlineUi,
-    tradeIntervalUi: useGetTradeIntervalForUi(tradeIntervalMillis),
+    deadlineUi: getDeadlineUi(),
+    tradeIntervalUi: useGetTradeIntervalForUi(getTradeIntervalMillis()),
     totalTrades,
-    uiTradeSize: useGetBigNumberToUiAmount(srcToken, tradeSize),
+    uiTradeSize: useGetBigNumberToUiAmount(srcToken, getTradeSize()),
     srcTokenUsdValue: useGetBigNumberToUiAmount(srcToken, !srcTokenUsdValue18 ? undefined : srcTokenAmount?.times(srcTokenUsdValue18).div(1e18)),
     srcTokenUiAmount: useGetBigNumberToUiAmount(srcToken, srcTokenAmount),
     srcTokenInfo,
     dstTokenUsdValue: useGetBigNumberToUiAmount(dstToken, !dstTokenUsdValue18 ? undefined : dstTokenAmount?.times(dstTokenUsdValue18).div(1e18)),
     dstTokenUiAmount: useGetBigNumberToUiAmount(dstToken, dstTokenAmount),
     dstTokenInfo,
-    minAmountOut,
-    minAmountOutUi: useGetBigNumberToUiAmount(dstToken, minAmountOut),
+    minAmountOut: getMinAmountOut(),
+    minAmountOutUi: useGetBigNumberToUiAmount(dstToken, getMinAmountOut()),
     isLimitOrder,
     srcTokenAmount,
-    tradeSize,
-    deadline,
-    tradeIntervalMillis,
+    tradeSize: getTradeSize(),
+    deadline: getDeadline(),
+    tradeIntervalMillis: getTradeIntervalMillis(),
     showConfirmation,
     closeConfirmation: () => setShowConfirmation(false),
     disclaimerAccepted,
@@ -731,7 +687,7 @@ const useConfirmation = () => {
 
   const isValid = _.every(_.values(result));
 
-  return result;
+  return { ...result, isValid }; // TODO check isValid in components
 };
 
 // all hooks with state, export state only from here
