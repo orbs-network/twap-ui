@@ -22,7 +22,7 @@ function Orders() {
     <StyledContainer className="twap-orders">
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
-          <Label tooltipText="Some text">{translations.orders}</Label>
+          <Label tooltipText={translations.ordersTooltip}>{translations.orders}</Label>
           <StyledOdnpButton />
         </StyledHeaderTop>
         <StyledTabs value={selectedTab} onChange={handleChange}>

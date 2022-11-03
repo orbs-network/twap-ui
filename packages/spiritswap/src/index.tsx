@@ -4,7 +4,7 @@ import TWAPLib from "@orbs-network/twap-ui";
 import BigNumber from "bignumber.js";
 import { convertDecimals } from "@defi.org/web3-candies";
 import axios from "axios";
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import { QueryClient } from "react-query";
 import translations from "./i18n/en.json";
 
@@ -31,21 +31,38 @@ export const getUsdPrice = async (srcToken: string, srcDecimals: number): Promis
   return convertDecimals(priceRoute.destAmount, priceRoute.destDecimals, 18);
 };
 
-interface ProviderWrapperProps {
-  provider: any;
+export interface TwapProps {
   connect: () => void;
   TokenSelectModal: any;
-  children: ReactNode;
   tokensList: any[];
+  account: any;
+  getProvider: () => any;
 }
+
+interface ProviderWrapperProps extends TwapProps {
+  children: ReactNode;
+}
+
+const useGetProvider = (getProvider: () => any, account?: string) => {
+  return useMemo(() => {
+    if (account) {
+      return getProvider();
+    }
+    return undefined;
+  }, [account]);
+};
+
 export const ProviderWrapper = (props: ProviderWrapperProps) => {
+  const provider = useGetProvider(props.getProvider, props.account);
+
   return (
     <TwapProvider
+      analyticsID="G-NYX815X5K9"
       translations={translations}
       tokensList={props.tokensList}
       getUsdPrice={getUsdPrice}
       dappIntegration="spiritswap"
-      provider={props.provider}
+      provider={provider}
       connect={props.connect}
       integrationChainId={dappIntegrationChainId}
       TokenSelectModal={props.TokenSelectModal}
@@ -55,4 +72,4 @@ export const ProviderWrapper = (props: ProviderWrapperProps) => {
   );
 };
 
-export { TWAP_Spiritswap, Orders };
+export { TWAP_Spiritswap, Orders, useGetProvider };

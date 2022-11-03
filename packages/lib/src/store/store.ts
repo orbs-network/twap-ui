@@ -12,6 +12,7 @@ import moment from "moment";
 import twapAbi from "./twap-abi.json";
 import { useOrders } from "./orders";
 import { getConfig, nativeAddresses, sendTxAndWait } from "../config";
+import { analytics } from "../analytics";
 
 const defaultState = {
   srcTokenInfo: undefined,
@@ -180,7 +181,6 @@ const useWrapToken = () => {
 
 export const useWeb3 = () => {
   const { setWeb3, web3, setAccount, account, setChain, chain, setIntegrationChain, integrationChain, integrationKey, setIntegrationKey } = useWeb3Store();
-
   const init = async (_integrationKey: string, provider?: any, integrationChainId?: number) => {
     const newWeb3 = provider ? new Web3(provider) : undefined;
     setWeb3(newWeb3);
@@ -481,14 +481,14 @@ function useSubmitOrder() {
   const { showConfirmation, setShowConfirmation, disclaimerAccepted, reset } = useTwapStore();
   const { refetch } = useOrders();
   const translations = useTwapTranslations();
-
+  const sendAnalyticsEvent = analytics.useOnConfirmTxEvent();
   const { srcTokenInfo, dstTokenInfo, srcTokenAmount, tradeSize, minAmountOut, deadline, tradeIntervalMillis } = useConfirmation();
 
   const { mutate: createOrder, isLoading: createdOrderLoading } = useMutation(
     async () => {
       const tx = async () => {
         const twap = contract(twapAbi as Abi, config.twapAddress);
-
+        sendAnalyticsEvent();
         console.log({
           exchangeAddress: config.exchangeAddress,
           srcToken: srcTokenInfo?.address,

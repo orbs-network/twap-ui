@@ -1,5 +1,6 @@
 import { Box, styled } from "@mui/system";
 import { ReactNode } from "react";
+import { useTwapTranslations } from "../context";
 import Label from "../base-components/Label";
 import Modal from "../base-components/Modal";
 import NumberDisplay from "../base-components/NumberDisplay";
@@ -8,7 +9,6 @@ import TokenLogo from "../base-components/TokenLogo";
 import TokenName from "../base-components/TokenName";
 import Tooltip from "../base-components/Tooltip";
 import { store } from "../store/store";
-import { useTwapTranslations } from "../context";
 
 export function TradeInfoModal({ onClose, open, children, className = "" }: { onClose: () => void; open: boolean; children: ReactNode; className?: string }) {
   const translations = useTwapTranslations();
@@ -39,7 +39,7 @@ export function ConfirmationOrderType() {
 
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={isLimitOrder ? translations.confirmationLimitOrderTooltip : translations.confirmationMarketOrderTooltip}>{translations.orderType}</Label>
+      <Label tooltipText={translations.confirmationOrderType}>{translations.orderType}</Label>
       <Text>{isLimitOrder ? translations.limitOrder : translations.marketOrder}</Text>
     </StyledRow>
   );
@@ -65,12 +65,12 @@ export function ConfirmationTradeSize() {
 }
 
 export function ConfirmationTotalTrades() {
-  const { totalTrades } = store.useConfirmation();
+  const { totalTrades, isLimitOrder } = store.useConfirmation();
   const translations = useTwapTranslations();
 
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Label>
+      <Label tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>{translations.totalTrades}</Label>
       <Text>{totalTrades}</Text>
     </StyledRow>
   );
@@ -82,7 +82,7 @@ export function ConfirmationTradeInterval() {
 
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Label>
+      <Label tooltipText={translations.confirmationtradeIntervalTooltip}>{translations.tradeInterval}</Label>
       <Text>{tradeIntervalUi}</Text>
     </StyledRow>
   );

@@ -1,13 +1,12 @@
-import React from "react";
 import TWAPLib from "@orbs-network/twap-ui";
 import { Box, styled } from "@mui/system";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClientProvider } from "react-query";
 import { colors } from "./styles";
-import { ProviderWrapper, queryClient } from ".";
+import { queryClient, TwapProps, ProviderWrapper, useGetProvider } from ".";
 
 const { Orders } = TWAPLib;
 
-function OrderHistory(props: { provider: any; connect: () => void; TokenSelectModal: any; tokensList: any[] }) {
+function OrderHistory(props: TwapProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ProviderWrapper {...props}>

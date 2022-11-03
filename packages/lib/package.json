@@ -24,21 +24,22 @@
     "@emotion/react": "11.x",
     "@emotion/styled": "11.x",
     "@mui/material": "5.x",
+    "@open-defi-notification-protocol/widget": "0.0.x",
     "ethereum-multicall": "2.x",
     "moment": "2.x",
+    "react-ga4": "^1.4.1",
     "react-icons": "4.x",
     "react-number-format": "5.x",
     "react-query": "3.x",
-    "zustand": "4.x",
-    "@open-defi-notification-protocol/widget": "0.0.x"
+    "zustand": "4.x"
   },
   "peerDependencies": {
     "react": "*",
     "react-dom": "*"
   },
   "devDependencies": {
-    "@testing-library/react": "13.x",
     "@testing-library/jest-dom": "5.x",
+    "@testing-library/react": "13.x",
     "jest": "29.x",
     "jest-environment-jsdom": "29.x",
     "ts-jest": "29.x"

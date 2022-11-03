@@ -14,9 +14,13 @@ import Modal from "@mui/material/Modal";
 import { AiOutlineClose } from "react-icons/ai";
 
 function App() {
-  const { activate, library, chainId } = useWeb3React();
+  const { activate, library, chainId, account } = useWeb3React();
   const [selectedDapp, setSelectedDapp] = useState("1");
   const { data: list = [] } = useTokenList(chainId);
+
+  const getProvider = () => {
+    return library;
+  };
 
   return (
     <StyledApp className="App">
@@ -39,10 +43,10 @@ function App() {
             return (
               <StyledContainer key={dapp.id}>
                 <Layout>
-                  <Component TokenSelectModal={TokenSelectModal} provider={library} connect={() => activate(injectedConnector)} tokensList={list} />
+                  <Component getProvider={getProvider} account={account} TokenSelectModal={TokenSelectModal} connect={() => activate(injectedConnector)} tokensList={list} />
                 </Layout>
                 <Layout>
-                  <Orders TokenSelectModal={TokenSelectModal} provider={library} connect={() => activate(injectedConnector)} tokensList={list} />
+                  <Orders account={account} getProvider={getProvider} TokenSelectModal={TokenSelectModal} connect={() => activate(injectedConnector)} tokensList={list} />
                 </Layout>
               </StyledContainer>
             );

@@ -8,9 +8,10 @@ import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import { GlobalStyles } from "@mui/material";
 import translations from "./i18n/en.json";
+import { useQuery, useQueryClient } from "react-query";
 
 import {
   getTheme,
@@ -45,7 +46,7 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { ProviderWrapper, queryClient } from ".";
+import { TwapProps, ProviderWrapper, queryClient, useGetProvider } from ".";
 
 // TODO create file for styles
 
@@ -63,7 +64,7 @@ const {
   ConfirmationMinimumReceived,
 } = TWAPLib.components;
 
-const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any; tokensList: any[] }) => {
+const TWAP = (props: TwapProps) => {
   return (
     <QueryClientProvider client={queryClient}>
       <ProviderWrapper {...props}>
@@ -185,7 +186,7 @@ const TradeSize = () => {
           </StyledFlexBetween>
           <StyledFlexBetween>
             <StyledTradeSize>
-              <Label>
+              <Label fontSize={14} tooltipText={translations.tradeSizeTooltip}>
                 {translations.tradeSize}: <NumberDisplay value={uiTradeSize} decimalScale={4} />
               </Label>
               {symbol && <TokenDisplay logo={logoUrl} name={symbol} />}
@@ -207,9 +208,7 @@ const LimitPriceDisplay = () => {
         <StyledColumnGap>
           <StyledFlexStart>
             <Tooltip text={warning}>{isLoading ? <Loader width={50} /> : <StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}</Tooltip>
-            <Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>
-              {isLimitOrder ? translations.limitPrice : translations.marketPrice}
-            </Label>
+            <Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{translations.limitPrice}</Label>
           </StyledFlexStart>
           {isLimitOrder && (
             <LimitPrice
@@ -421,7 +420,6 @@ const TradeInfoDetailsDisplay = () => {
 
 const OrderConfirmationLimitPrice = () => {
   const { isLimitOrder, toggleInverted, limitPriceUI, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useLimitPrice();
-  const translations = TWAPLib.useTwapTranslations();
 
   return (
     <StyledLimitPrice>
