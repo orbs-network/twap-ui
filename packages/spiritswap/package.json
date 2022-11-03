@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-spiritswap",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "TWAP UI for Spiritswap",
   "license": "MIT",
   "author": "Orbs",
@@ -20,6 +20,6 @@
     "publish": "npm publish --scope=orbs-network --access=public"
   },
   "dependencies": {
-    "@orbs-network/twap-ui": "x"
+    "@orbs-network/twap-ui": "^0.1.0"
   }
 }
