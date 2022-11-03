@@ -2,7 +2,7 @@ import { CssBaseline } from "@mui/material";
 import { Box } from "@mui/system";
 import { QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
-import TWAPLib from "@orbs-network/twap-ui";
+import TWAPLib, { useTwapTranslations } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "@mui/material/styles";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
@@ -354,7 +354,7 @@ const OrderConfirmation = () => {
     setDisclaimerAccepted,
   } = TWAPLib.store.useConfirmation();
 
-  const { ellipsisAccount, account } = TWAPLib.store.useWeb3();
+  const { account } = TWAPLib.store.useWeb3();
 
   return (
     <>
@@ -380,7 +380,7 @@ const OrderConfirmation = () => {
                 logo={dstTokenInfo?.logoUrl}
               />
               <OrderConfirmationLimitPrice />
-              <TradeInfoDetailsDisplay />
+
               <StyledCard>
                 <StyledColumnGap className="trade-info-explanation" gap={20}>
                   <ConfirmationExpiration />
@@ -391,15 +391,15 @@ const OrderConfirmation = () => {
                   <ConfirmationMinimumReceived />
                 </StyledColumnGap>
               </StyledCard>
+              <TradeInfoDetailsDisplay />
             </StyledColumnGap>
-            <StyledColumnGap gap={20}>
+            <StyledColumnGap gap={12}>
               <Box style={{ display: "flex", gap: 5 }}>
                 <SmallLabel>{translations.acceptDisclaimer}</SmallLabel>
                 <Switch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
               </Box>
-              <Text className="output-text">
-                {translations.outputWillBeSentTo} <Tooltip text={account}>{ellipsisAccount}</Tooltip>
-              </Text>
+              <Text className="output-text">{translations.outputWillBeSentTo}</Text>
+              <Text className="output-text">{account}</Text>
               <SubmitButton />
             </StyledColumnGap>
           </StyledColumnGap>
@@ -421,11 +421,12 @@ const TradeInfoDetailsDisplay = () => {
 
 const OrderConfirmationLimitPrice = () => {
   const { isLimitOrder, toggleInverted, limitPriceUI, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useLimitPrice();
+  const translations = useTwapTranslations();
 
   return (
     <StyledLimitPrice>
       <StyledFlexBetween>
-        <Label tooltipText="some text">{translations.limitPrice}</Label>
+        <Label tooltipText={translations.confirmationLimitPriceTooltip}>{translations.limitPrice}</Label>
         {isLimitOrder ? (
           <div className="right">
             <Text>1</Text> <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} /> <Text>=</Text>

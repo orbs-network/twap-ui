@@ -84,11 +84,22 @@ export const useStore = create<Store>((set, get) => ({
   resetLimitPrice: () => set({ limitPrice: undefined, isLimitOrder: false }),
   computed: {
     get derivedTradeInterval() {
-      if (get().customInterval) {
-        return { millis: 0, timeFormat: TimeFormat.Minutes };
+      const maxDurationMillis = get().maxDurationMillis;
+      const totalTrades = get().totalTrades;
+
+      if (maxDurationMillis > 0 && totalTrades > 0) {
+        const millis = Math.max(maxDurationMillis / totalTrades, 60_000);
+
+        return {
+          millis,
+          timeFormat: TimeFormat.valueOf(millis),
+        };
+      } else {
+        return {
+          millis: 0,
+          timeFormat: TimeFormat.Minutes,
+        };
       }
-      const { derivedMillis: millis, derivedTimeFormat: timeFormat } = getDerivedTradeInterval(get().maxDurationMillis, get().totalTrades || 0);
-      return { millis, timeFormat };
     },
     get tradeIntervalMillis() {
       if (get().customInterval) {
@@ -104,7 +115,7 @@ export const useStore = create<Store>((set, get) => ({
     },
     get tradeSize() {
       if (get().totalTrades === 0) return undefined;
-      return get().srcTokenAmount?.div(get().totalTrades);
+      return get().srcTokenAmount?.div(get().totalTrades).integerValue(BigNumber.ROUND_CEIL);
     },
     get deadline() {
       const now = moment().valueOf();
@@ -115,10 +126,10 @@ export const useStore = create<Store>((set, get) => ({
       return moment(get().computed.deadline).format("DD/MM/YYYY HH:mm");
     },
     get minAmountOut() {
-      if (!get().isLimitOrder) {
+      if (!get().limitPrice || !get().srcTokenInfo || !get().dstTokenInfo || !get().computed.tradeSize || !get().isLimitOrder) {
         return BigNumber(1);
       }
-      return convertDecimals(get().computed.tradeSize?.times(get().limitPrice || 0) || 0, get().srcTokenInfo?.decimals || 0, get().dstTokenInfo?.decimals || 0);
+      return convertDecimals(get().computed.tradeSize!.times(get().limitPrice!), get().srcTokenInfo!.decimals, get().dstTokenInfo!.decimals);
     },
   },
   reset: () => set(defaultState),
@@ -212,7 +223,6 @@ export const useWeb3 = () => {
     isInvalidChain: chain && chain !== integrationChain,
     changeNetwork: () => changeNetwork(web3, integrationChain),
     config: getConfig(integrationChain || 0, integrationKey || ""),
-    ellipsisAccount: makeEllipsisAddress(account),
   };
 };
 
@@ -570,7 +580,7 @@ function useSubmitOrder() {
           )
           .send({ from: account });
       };
-      await txHandler(tx);
+      await txHandler(tx, 10_000);
       await refetch();
     },
     {
@@ -748,22 +758,6 @@ export const validation = {
   usePartialFillValidation,
 };
 
-const getDerivedTradeInterval = (maxDurationMillis: number, totalTrades: number) => {
-  if (maxDurationMillis > 0 && totalTrades > 0) {
-    const derivedMillis = Math.max(maxDurationMillis / totalTrades, 60_000);
-
-    return {
-      derivedMillis,
-      derivedTimeFormat: TimeFormat.valueOf(derivedMillis),
-    };
-  } else {
-    return {
-      derivedMillis: 0,
-      derivedTimeFormat: TimeFormat.Minutes,
-    };
-  }
-};
-
 export const getBigNumberToUiAmount = async (token?: Token, amount?: BigNumber) => {
   if (!amount || !token) {
     return " ";
@@ -826,13 +820,6 @@ export const useGetTradeIntervalForUi = (value: number) => {
     }
     return arr.join(" ");
   }, [translations, value]);
-};
-
-export const makeEllipsisAddress = (address?: string, padding: number = 6): string => {
-  if (!address) return "";
-  const firstPart = address.substring(0, padding);
-  const secondPart = address.substring(address.length - padding);
-  return `${firstPart}...${secondPart}`;
 };
 
 export const getToken = (tokenInfo?: TokenInfo, isWrapped?: boolean) => {

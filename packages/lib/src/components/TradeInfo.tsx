@@ -47,11 +47,19 @@ export function ConfirmationOrderType() {
 
 export function ConfirmationTradeSize() {
   const translations = useTwapTranslations();
-  const uiTradeSize = store.useConfirmation().uiTradeSize;
+  const { uiTradeSize, srcTokenInfo } = store.useConfirmation();
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText={translations.confirmationTradeSizeTooltip}>{translations.tradeSize}</Label>
-      <Text>{uiTradeSize}</Text>
+      <StyledTradeSizeRight>
+        <TokenName name={srcTokenInfo?.symbol} />
+        <TokenLogo logo={srcTokenInfo?.logoUrl} />
+        <Text>
+          <Tooltip text={uiTradeSize}>
+            <NumberDisplay value={uiTradeSize} decimalScale={3} />
+          </Tooltip>
+        </Text>
+      </StyledTradeSizeRight>
     </StyledRow>
   );
 }
@@ -81,24 +89,25 @@ export function ConfirmationTradeInterval() {
 }
 
 export function ConfirmationMinimumReceived() {
-  const { minAmountOutUi, isLimitOrder, srcTokenInfo } = store.useConfirmation();
+  const { minAmountOutUi, isLimitOrder, dstTokenInfo } = store.useConfirmation();
   const translations = useTwapTranslations();
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText={translations.confirmationMinReceivedPerTradeTooltip}>{translations.minReceivedPerTrade}:</Label>
-      {isLimitOrder ? (
-        <StyledMinumimReceived>
-          <Text>
+
+      <StyledMinumimReceived>
+        <TokenName name={dstTokenInfo?.symbol} />
+        <TokenLogo logo={dstTokenInfo?.logoUrl} />
+        <Text>
+          {isLimitOrder ? (
             <Tooltip text={minAmountOutUi}>
-              <NumberDisplay value={minAmountOutUi} />
+              <NumberDisplay value={minAmountOutUi} decimalScale={3} />
             </Tooltip>
-          </Text>
-          <TokenLogo logo={srcTokenInfo?.logoUrl} />
-          <TokenName name={srcTokenInfo?.symbol} />
-        </StyledMinumimReceived>
-      ) : (
-        <Text>{translations.none}</Text>
-      )}
+          ) : (
+            translations.none
+          )}
+        </Text>
+      </StyledMinumimReceived>
     </StyledRow>
   );
 }
@@ -107,17 +116,23 @@ const StyledMinumimReceived = styled(Box)({
   display: "flex",
   alignItems: "center",
   gap: 8,
-  "& .twap-token-logo": {
-    width: 25,
-    height: 25,
-  },
 });
+
+const StyledTradeSizeRight = styled(Box)({ display: "flex", alignItems: "center", gap: 10 });
 
 const StyledRow = styled(Box)({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   width: "100%",
+  gap: 20,
+  "& .twap-token-logo": {
+    width: 22,
+    height: 22,
+  },
+  "& .twap-token-name": {
+    fontSize: 14,
+  },
 });
 
 export const TradeInfoExplanation = () => {

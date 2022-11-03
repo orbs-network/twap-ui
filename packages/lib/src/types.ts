@@ -36,6 +36,7 @@ export interface Store {
   resetLimitPrice: () => void;
   switchTokens: (dstTokenAmount?: BigNumber) => void;
   reset: () => void;
+
   // derived
   computed: {
     tradeIntervalMillis: number;
@@ -182,4 +183,5 @@ export interface Translations {
   expiration: string;
   orderType: string;
   minReceivedPerTrade: string;
+  confirmationLimitPriceTooltip: string;
 }

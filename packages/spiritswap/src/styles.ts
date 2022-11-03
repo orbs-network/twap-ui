@@ -21,7 +21,7 @@ export const colors = {
 
 export const StyledUSD = styled(USD)({
   opacity: 0.6,
-  maxWidth: "50%",
+  maxWidth: "20%",
   "& p": {
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -376,7 +376,7 @@ export const getTheme = (mode: "light" | "dark") => {
 };
 
 export const StyledTradeSize = styled(Box)({
-  maxWidth: "50%",
+  maxWidth: "80%",
   display: "flex",
   alignItems: "center",
   gap: 10,

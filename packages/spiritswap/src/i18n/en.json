@@ -68,5 +68,6 @@
   "confirmTx": "Confirm Transaction",
   "expiration": "Expiration",
   "orderType": "Order type",
-  "minReceivedPerTrade": "Minimum Received Per Trade"
+  "minReceivedPerTrade": "Minimum Received Per Trade",
+  "confirmationLimitPriceTooltip": "confirmationLimitPriceTooltip"
 }
