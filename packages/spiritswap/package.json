@@ -16,8 +16,7 @@
   "scripts": {
     "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
     "build": "npm run prettier && rm -rf dist && tsc",
-    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc",
-    "publish": "npm publish --scope=orbs-network --access=public"
+    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
   },
   "dependencies": {
     "@orbs-network/twap-ui": "^0.1.1"
