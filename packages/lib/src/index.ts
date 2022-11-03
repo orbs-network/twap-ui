@@ -36,6 +36,7 @@ import TokenPriceCompare from "./base-components/PriceDisplay";
 import OdnpButton from "./base-components/OdnpButton";
 import Loader from "./base-components/Loader";
 import Slider from "./base-components/Slider";
+import { useContext } from "react";
 
 async function delay(time: number) {
   return new Promise((resolve) => {
@@ -46,6 +47,12 @@ async function delay(time: number) {
 export const txHandler = async <T>(method: () => T, delayMillis?: number) => {
   await method();
   return delay(delayMillis || 3000);
+};
+
+export const useTwapTranslations = () => {
+  const { translations } = useContext(TwapContext);
+
+  return translations;
 };
 
 export default {

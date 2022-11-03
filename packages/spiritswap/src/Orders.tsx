@@ -4,7 +4,6 @@ import { Box, styled } from "@mui/system";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { colors } from "./styles";
 import { ProviderWrapper, queryClient } from ".";
-import text from "./text.json";
 
 const { Orders } = TWAPLib;
 
@@ -13,13 +12,7 @@ function OrderHistory(props: { provider: any; connect: () => void; TokenSelectMo
     <QueryClientProvider client={queryClient}>
       <ProviderWrapper {...props}>
         <StyledContainer>
-          <Orders
-            text={{
-              tradeSizeTooltipText: text.tradeSize,
-              tradeIntervalTooltipText: text.tradeInterval,
-              deadlineTooltipText: text.maxDuration,
-            }}
-          />
+          <Orders />
         </StyledContainer>
       </ProviderWrapper>
     </QueryClientProvider>

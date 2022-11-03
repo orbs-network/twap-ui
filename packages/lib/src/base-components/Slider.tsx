@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import MuiSlider from "@mui/material/Slider";
@@ -17,16 +17,27 @@ export interface Props {
   maxTrades: number;
 }
 
-export default function Slider({ onChange, value, maxTrades }: Props) {
+const Slider = ({ onChange, value, maxTrades }: Props) => {
+  const [localValue, setLocalValue] = React.useState(value);
+  const debouncedValue = useDebounce<number>(localValue, 200);
+
+  useEffect(() => {
+    onChange(debouncedValue);
+  }, [debouncedValue]);
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
   const handleChange = (_event: Event, newValue: number | number[]) => {
     if (typeof newValue === "number") {
-      onChange(newValue);
+      setLocalValue(newValue);
     }
   };
 
   return (
     <MuiSlider
-      value={value}
+      value={localValue}
       min={1}
       step={1}
       max={maxTrades}
@@ -37,4 +48,20 @@ export default function Slider({ onChange, value, maxTrades }: Props) {
       valueLabelDisplay="auto"
     />
   );
+};
+
+export default Slider;
+
+function useDebounce<T>(value: T, delay?: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 }

@@ -4,7 +4,7 @@ import { useContext, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { TwapContext } from "../context";
 import { Order, OrderStatus, TokenInfo } from "../types";
-import { getBigNumberToUiAmount, getIntervalForUi, getToken, useGetBigNumberToUiAmount, useUsdValue, useWeb3 } from "./store";
+import { getBigNumberToUiAmount, getToken, useGetBigNumberToUiAmount, useUsdValue, useWeb3 } from "./store";
 import lensAbi from "./lens-abi.json";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
@@ -90,7 +90,7 @@ export const useOrders = () => {
             tradeSize,
             dstMinAmount,
             delay: parseInt(o.ask.delay),
-            tradeIntervalUi: getIntervalForUi(parseInt(o.ask.delay) * 1000),
+            tradeIntervalMillis: parseInt(o.ask.delay) * 1000,
             id: o.id,
             status,
             time: parseInt(o.ask.time),

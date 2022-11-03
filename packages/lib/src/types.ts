@@ -2,55 +2,50 @@ import { BigNumber, Token } from "@defi.org/web3-candies";
 import { TimeFormat } from "./store/TimeFormat";
 import Web3 from "web3";
 
-interface BaseState {
-  reset: () => void;
-}
-
-export interface SrcTokenState extends BaseState {
-  srcTokenInfo?: TokenInfo;
+export interface Store {
   srcToken?: Token;
+  srcTokenInfo?: TokenInfo;
   srcTokenAmount?: BigNumber;
-  setSrcToken: (value?: TokenInfo, amount?: BigNumber) => void;
-  setSrcTokenAmount: (value?: BigNumber) => void;
-  onChange: (value: string) => void;
-  srcTokenAmountUi?: string;
-}
-
-export interface DstTokenState extends BaseState {
   dstTokenInfo?: TokenInfo;
   dstToken?: Token;
-  setDstToken: (value?: TokenInfo) => void;
-}
+  maxDurationMillis: number;
+  maxDurationTimeFormat: TimeFormat;
+  customInterval: boolean;
+  showConfirmation: boolean;
+  disclaimerAccepted: boolean;
+  limitPrice?: BigNumber;
+  isLimitOrder: boolean;
+  totalTrades: number;
+  customTradeIntervalMillis: number;
+  customTradeIntervalTimeFormat: TimeFormat;
 
-export interface MaxDurationState extends BaseState {
-  millis: number;
-  timeFormat: TimeFormat;
+  //actions
+  onMaxDurationChange: (timeFormat: TimeFormat, millis: number) => void;
+  setSrcToken: (value?: TokenInfo, amount?: BigNumber) => void;
+  setSrcTokenAmount: (value?: BigNumber) => void;
+  onSrcTokenChange: (value: string) => void;
+  setDstToken: (value?: TokenInfo) => void;
+  setCustomInterval: (value: boolean) => void;
+  onTradeIntervalChange: (timeFormat: TimeFormat, millis: number) => void;
+  onTradeSizeChange: (totalTrades: number, token?: Token, amount?: BigNumber) => void;
+  toggleLimit: (limitPrice?: BigNumber) => void;
+  setLimitPrice: (value?: BigNumber) => void;
+  hideLimit: () => void;
+  setShowConfirmation: (value: boolean) => void;
+  setDisclaimerAccepted: (value: boolean) => void;
+  resetLimitPrice: () => void;
+  switchTokens: (dstTokenAmount?: BigNumber) => void;
+  reset: () => void;
+  // derived
   computed: {
+    tradeIntervalMillis: number;
+    tradeIntervalTimeFormat: TimeFormat;
     deadline: number;
     deadlineUi: string;
+    tradeSize?: BigNumber;
+    derivedTradeInterval: { millis: number; timeFormat: TimeFormat };
+    minAmountOut: BigNumber;
   };
-  onChange: (timeFormat: TimeFormat, millis: number) => void;
-}
-
-export interface TradeIntervalState extends BaseState {
-  millis: number;
-  timeFormat: TimeFormat;
-
-  customInterval: boolean;
-  setCustomInterval: (value: boolean) => void;
-  onChange: (timeFormat: TimeFormat, millis: number) => void;
-  computed: {
-    intervalUi: string;
-  };
-  onDrivedChange: (maxDurationMillis: number, totalTrades: number) => void;
-}
-
-export interface TradeSizeState extends BaseState {
-  tradeSize?: BigNumber;
-  totalTrades: number;
-  onChange: (totalTrades: number, token?: Token, amount?: BigNumber) => void;
-  tradeSizeUi?: string;
-  derivedTradeSize?: BigNumber;
 }
 
 export interface Web3State {
@@ -64,14 +59,6 @@ export interface Web3State {
   setIntegrationChain: (value?: number) => void;
   integrationKey?: string;
   setIntegrationKey: (value?: string) => void;
-}
-
-export interface PriceState extends BaseState {
-  isLimitOrder: boolean;
-  toggleLimit: (limitPrice?: BigNumber) => void;
-  limitPrice?: BigNumber;
-  setLimitPrice: (value?: BigNumber) => void;
-  hideLimit: () => void;
 }
 
 export interface TokenInfo {
@@ -102,7 +89,7 @@ export type Order = {
   status: OrderStatus;
   srcFilledAmount: BigNumber;
   time: number;
-  tradeIntervalUi: string;
+  tradeIntervalMillis: number;
   createdAtUi: string;
   deadlineUi: string;
   progress: number;
@@ -124,8 +111,75 @@ export type Order = {
   srcRemainingUsdValueUi: string;
 };
 
-export type OrderText = {
-  tradeSizeTooltipText: string;
-  tradeIntervalTooltipText: string;
-  deadlineTooltipText: string;
-};
+export interface Translations {
+  confirmationDeadlineTooltip: string;
+  confirmationtradeIntervalTooltip: string;
+  confirmationTradeSizeTooltip: string;
+  confirmationTotalTradesTooltip: string;
+  confirmationMinDstAmountTootip: string;
+  confirmationLimitOrderTooltip: string;
+  confirmationMarketOrderTooltip: string;
+  confirmationMinReceivedPerTradeTooltip: string;
+  marketPriceTooltip: string;
+  limitPriceTooltip: string;
+  tradeSizeTooltip: string;
+  maxDurationTooltip: string;
+  tradeIntervalTootlip: string;
+  customIntervalTooltip: string;
+  totalTradesTooltip: string;
+  connect: string;
+  selectTokens: string;
+  acceptDisclaimer: string;
+  outputWillBeSentTo: string;
+  disclaimer1: string;
+  disclaimer2: string;
+  disclaimer3: string;
+  disclaimer4: string;
+  disclaimer5: string;
+  disclaimer6: string;
+  disclaimer7: string;
+  link: string;
+  days: string;
+  hours: string;
+  minutes: string;
+  seconds: string;
+  switchNetwork: string;
+  wrap: string;
+  approve: string;
+  placeOrder: string;
+  confirmOrder: string;
+  partialFillWarning: string;
+  enterAmount: string;
+  insufficientFunds: string;
+  enterTradeSize: string;
+  enterMaxDuration: string;
+  enterTradeInterval: string;
+  tradeSizeMustBeEqual: string;
+  tradeSize: string;
+  tradeInterval: string;
+  maxDuration: string;
+  totalTrades: string;
+  deadline: string;
+  filled: string;
+  remaining: string;
+  cancelOrder: string;
+  marketOrder: string;
+  limitOrder: string;
+  limitPrice: string;
+  marketPrice: string;
+  max: string;
+  currentMarketPrice: string;
+  from: string;
+  to: string;
+  none: string;
+  orders: string;
+  Open: string;
+  Filled: string;
+  Expired: string;
+  Canceled: string;
+  noOrdersFound: string;
+  confirmTx: string;
+  expiration: string;
+  orderType: string;
+  minReceivedPerTrade: string;
+}

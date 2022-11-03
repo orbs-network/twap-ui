@@ -4,17 +4,15 @@ import React from "react";
 import OrdersList from "./OrdersList";
 import _ from "lodash";
 import Label from "../base-components/Label";
-import { OrderStatus, OrderText } from "../types";
+import { OrderStatus, Translations } from "../types";
 import { useOrders } from "../store/orders";
 import OdnpButton from "../base-components/OdnpButton";
+import { useTwapTranslations } from "..";
 
-export interface Props {
-  text: OrderText;
-}
-
-function Orders({ text }: Props) {
+function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
   const { data: orders = {}, isLoading: ordersLoading } = useOrders();
+  const translations = useTwapTranslations();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
@@ -24,12 +22,12 @@ function Orders({ text }: Props) {
     <StyledContainer className="twap-orders">
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
-          <Label tooltipText="Some text">Orders</Label>
+          <Label tooltipText="Some text">{translations.orders}</Label>
           <StyledOdnpButton />
         </StyledHeaderTop>
         <StyledTabs value={selectedTab} onChange={handleChange}>
           {_.keys(OrderStatus).map((key, index) => {
-            return <StyledTab key={index} label={`${orders[key] ? orders[key]?.length : "0"} ${key}`} {...a11yProps(index)} />;
+            return <StyledTab key={index} label={`${orders[key] ? orders[key]?.length : "0"} ${translations[key as keyof Translations]}`} {...a11yProps(index)} />;
           })}
         </StyledTabs>
       </StyledHeader>
@@ -38,7 +36,7 @@ function Orders({ text }: Props) {
           if (selectedTab !== index) {
             return null;
           }
-          return <OrdersList isLoading={ordersLoading} text={text} type={key as any as OrderStatus} orders={orders[key as any as OrderStatus]} key={key} />;
+          return <OrdersList isLoading={ordersLoading} type={key as any as OrderStatus} orders={orders[key as any as OrderStatus]} key={key} />;
         })}
       </StyledLists>
     </StyledContainer>

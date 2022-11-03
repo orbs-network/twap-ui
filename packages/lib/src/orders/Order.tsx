@@ -1,37 +1,38 @@
 import { Box, styled } from "@mui/system";
-import React, { ReactNode, useMemo, useState } from "react";
-import Text from "../../base-components/Text";
+import { ReactNode } from "react";
+import Text from "../base-components/Text";
 import LinearProgress from "@mui/material/LinearProgress";
-import TokenName from "../../base-components/TokenName";
-import TokenLogo from "../../base-components/TokenLogo";
-import NumberDisplay from "../../base-components/NumberDisplay";
+import TokenName from "../base-components/TokenName";
+import TokenLogo from "../base-components/TokenLogo";
+import NumberDisplay from "../base-components/NumberDisplay";
 import { HiOutlineArrowNarrowRight } from "react-icons/hi";
-import Icon from "../../base-components/Icon";
+import Icon from "../base-components/Icon";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import Label from "../../base-components/Label";
-import Tooltip from "../../base-components/Tooltip";
-import SmallLabel from "../../base-components/SmallLabel";
-import Button from "../../base-components/Button";
-import { useCancelCallback, useHistoryPrice } from "../../store/orders";
-import Card from "../../base-components/Card";
-import { Order, OrderStatus, OrderText, TokenInfo } from "../../types";
+import Label from "../base-components/Label";
+import Tooltip from "../base-components/Tooltip";
+import SmallLabel from "../base-components/SmallLabel";
+import Button from "../base-components/Button";
+import { useCancelCallback, useHistoryPrice } from "../store/orders";
+import Card from "../base-components/Card";
+import { Order, OrderStatus, TokenInfo } from "../types";
 import { Typography } from "@mui/material";
-import { StyledColumnGap } from "../../styles";
+import { StyledColumnGap } from "../styles";
 import { BigNumber } from "@defi.org/web3-candies";
-import PriceDisplay from "../../base-components/PriceDisplay";
+import PriceDisplay from "../base-components/PriceDisplay";
+import { useTwapTranslations } from "..";
+import { useGetTradeIntervalForUi } from "../store/store";
 export interface Props {
   order: Order;
   onExpand: () => void;
   expanded: boolean;
   type?: OrderStatus;
-  text: OrderText;
 }
 
-function OrderComponent({ order, onExpand, expanded, type, text }: Props) {
+function OrderComponent({ order, onExpand, expanded, type }: Props) {
   const { id, createdAtUi, progress, prefix, srcTokenInfo, dstTokenInfo, srcTokenAmountUi, dstTokenAmountUi, srcUsdValueUi, dstUsdValueUi, isMarketOrder } = order;
-
+  const translations = useTwapTranslations();
   return (
     <StyledContainer className="twap-order">
       <StyledAccordion expanded={expanded}>
@@ -40,7 +41,7 @@ function OrderComponent({ order, onExpand, expanded, type, text }: Props) {
             <StyledHeader>
               <Box className="flex">
                 <Text>#{id}</Text>
-                <Text>{isMarketOrder ? "Market Order" : "Limit Order"}</Text>
+                <Text>{isMarketOrder ? translations.marketOrder : translations.limitOrder}</Text>
               </Box>
               <Text>{createdAtUi}</Text>
             </StyledHeader>
@@ -56,17 +57,17 @@ function OrderComponent({ order, onExpand, expanded, type, text }: Props) {
         </StyledSummary>
         <AccordionDetails style={{ padding: 0, paddingTop: 10 }}>
           <StyledSeperator style={{ marginBottom: 10 }} />
-          <OrderDetails order={order} type={type} text={text} />
+          <OrderDetails order={order} type={type} />
         </AccordionDetails>
       </StyledAccordion>
     </StyledContainer>
   );
 }
 
-const OrderDetails = ({ order, type, text }: { order: Order; type?: OrderStatus; text: OrderText }) => {
+const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => {
   const {
     deadlineUi,
-    tradeIntervalUi,
+    tradeIntervalMillis,
     srcFilledUsdValueUi,
     srcRemainingUsdValueUi,
     progress,
@@ -80,6 +81,8 @@ const OrderDetails = ({ order, type, text }: { order: Order; type?: OrderStatus;
     dstPrice,
     isMarketOrder,
   } = order;
+  const translations = useTwapTranslations();
+  const tradeIntervalUi = useGetTradeIntervalForUi(tradeIntervalMillis);
 
   return (
     <StyledOrderDetails>
@@ -88,11 +91,11 @@ const OrderDetails = ({ order, type, text }: { order: Order; type?: OrderStatus;
         <StyledProgressContent gap={20}>
           <StyledFlex>
             <StyledTokenDisplayWithTitle>
-              <Typography className="title">Filled</Typography>
+              <Typography className="title">{translations.filled}</Typography>
               <TokenDisplay usdValue={srcFilledUsdValueUi} token={srcTokenInfo} amount={srcFilledAmountUi} />
             </StyledTokenDisplayWithTitle>
             <StyledTokenDisplayWithTitle>
-              <Typography className="title">Remaining</Typography>
+              <Typography className="title">{translations.remaining}</Typography>
               <TokenDisplay usdValue={srcRemainingUsdValueUi} token={srcTokenInfo} amount={srcRemainingAmountUi} />
             </StyledTokenDisplayWithTitle>
           </StyledFlex>
@@ -102,13 +105,13 @@ const OrderDetails = ({ order, type, text }: { order: Order; type?: OrderStatus;
         </StyledProgressContent>
       </StyledProgress>
       <StyledColumnFlex>
-        <DetailRow label="Trades Size:" tooltip={text.tradeSizeTooltipText}>
+        <DetailRow label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
           <NumberDisplay value={tradeSizeAmountUi} /> {srcTokenInfo.symbol} ≈$ {tradeSizeUsdValueUi}
         </DetailRow>
-        <DetailRow label="Trades interval:" tooltip={text.tradeIntervalTooltipText}>
+        <DetailRow label={`${translations.tradeInterval}:`} tooltip={translations.tradeIntervalTootlip}>
           {tradeIntervalUi}
         </DetailRow>
-        <DetailRow label="Deadline:" tooltip={text.deadlineTooltipText}>
+        <DetailRow label={`${translations.deadline}:`} tooltip={translations.maxDurationTooltip}>
           {deadlineUi}
         </DetailRow>
       </StyledColumnFlex>
@@ -123,9 +126,10 @@ const StyledTokenDisplayWithTitle = styled(StyledColumnGap)({
 
 const CancelOrderButton = ({ orderId }: { orderId: string }) => {
   const { isLoading, mutate } = useCancelCallback();
+  const translations = useTwapTranslations();
   return (
     <StyledCancelOrderButton loading={isLoading} onClick={() => mutate(orderId)}>
-      Cancel Order
+      {translations.cancelOrder}
     </StyledCancelOrderButton>
   );
 };

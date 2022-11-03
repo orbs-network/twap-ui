@@ -10,7 +10,8 @@ import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { ReactNode } from "react";
 import { GlobalStyles } from "@mui/material";
-import text from "./text.json";
+import translations from "./translations/en.json";
+
 import {
   getTheme,
   globalStyle,
@@ -38,7 +39,6 @@ import {
   StyledTokenOrder,
   StyledTokenPanel,
   StyledTokenSelect,
-  StyledTotalTrades,
   StyledTotalTradesInput,
   StyledTrade,
   StyledTradeInfoModal,
@@ -52,8 +52,16 @@ import { ProviderWrapper, queryClient } from ".";
 const { Balance, Loader, Slider, NumberDisplay, TimeSelector, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } = TWAPLib.baseComponents;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 
-const { LimitPrice, ConfirmationExpiration, ConfirmationOrderType, ConfirmationTradeSize, ConfirmationTotalTrades, ConfirmationTradeInterval, ConfirmationMinimumReceived } =
-  TWAPLib.components;
+const {
+  LimitPrice,
+  TradeInfoExplanation,
+  ConfirmationExpiration,
+  ConfirmationOrderType,
+  ConfirmationTradeSize,
+  ConfirmationTotalTrades,
+  ConfirmationTradeInterval,
+  ConfirmationMinimumReceived,
+} = TWAPLib.components;
 
 const TWAP = (props: { provider: any; connect: () => void; TokenSelectModal: any; tokensList: any[] }) => {
   return (
@@ -91,7 +99,7 @@ const MarketPrice = () => {
     <StyledMarketPrice>
       <StyledCard>
         <StyledFlexBetween>
-          <Text className="title">Current Market Price</Text>
+          <Text className="title">{translations.currentMarketPrice}</Text>
           {marketPrice ? (
             <StyledMarketPriceRight>
               <Text>1</Text>
@@ -128,7 +136,7 @@ const SrcTokenPercentSelector = () => {
       <StyledPercentBtn onClick={() => onClick(0.25)}>25%</StyledPercentBtn>
       <StyledPercentBtn onClick={() => onClick(0.5)}>50%</StyledPercentBtn>
       <StyledPercentBtn onClick={() => onClick(0.75)}>75%</StyledPercentBtn>
-      <StyledPercentBtn onClick={() => onClick(1)}>Max</StyledPercentBtn>
+      <StyledPercentBtn onClick={() => onClick(1)}>{translations.max}</StyledPercentBtn>
     </StyledSrcTokenPercentSelector>
   );
 };
@@ -162,23 +170,23 @@ const ChangeTokensOrder = () => {
 };
 
 const TradeSize = () => {
-  const { uiTradeSize, onChange, totalTrades, uiUsdValue, usdPriceLoading, logoUrl, symbol, maxTrades } = TWAPLib.store.useTradeSize();
+  const { uiTradeSize, onTradeSizeChange, totalTrades, uiUsdValue, usdPriceLoading, logoUrl, symbol, maxTrades } = TWAPLib.store.useTradeSize();
 
   return (
     <StyledTrade>
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexBetween gap={10}>
-            <Label tooltipText={text.totalTrades}>Total trades</Label>
+            <Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Label>
             <StyledSlider>
-              <Slider maxTrades={maxTrades} value={totalTrades} onChange={onChange} />
+              <Slider maxTrades={maxTrades} value={totalTrades} onChange={onTradeSizeChange} />
             </StyledSlider>
-            <StyledTotalTradesInput value={totalTrades} decimalScale={0} maxValue={maxTrades.toString()} onChange={(value) => onChange(Number(value))} />
+            <StyledTotalTradesInput placeholder="0" value={totalTrades} decimalScale={0} maxValue={maxTrades.toString()} onChange={(value) => onTradeSizeChange(Number(value))} />
           </StyledFlexBetween>
           <StyledFlexBetween>
             <StyledTradeSize>
               <Label>
-                Trade size: <NumberDisplay value={uiTradeSize} decimalScale={4} />
+                {translations.tradeSize}: <NumberDisplay value={uiTradeSize} decimalScale={4} />
               </Label>
               {symbol && <TokenDisplay logo={logoUrl} name={symbol} />}
             </StyledTradeSize>
@@ -199,7 +207,9 @@ const LimitPriceDisplay = () => {
         <StyledColumnGap>
           <StyledFlexStart>
             <Tooltip text={warning}>{isLoading ? <Loader width={50} /> : <StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}</Tooltip>
-            <Label tooltipText={isLimitOrder ? text.limitPrice : text.marketPrice}>{isLimitOrder ? "Limit Price" : "Market Price"}</Label>
+            <Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>
+              {isLimitOrder ? translations.limitPrice : translations.marketPrice}
+            </Label>
           </StyledFlexStart>
           {isLimitOrder && (
             <LimitPrice
@@ -218,31 +228,31 @@ const LimitPriceDisplay = () => {
 };
 
 const MaxDuration = () => {
-  const { onChange } = TWAPLib.store.useMaxDuration();
+  const { onMaxDurationChange } = TWAPLib.store.useMaxDuration();
   const { maxDurationMillis, maxDurationTimeFormat } = TWAPLib.store.useMaxDuration();
 
   return (
     <StyledCard>
       <StyledFlexBetween gap={10}>
-        <Label tooltipText={text.maxDuration}>Max Duration</Label>
-        <TimeSelector millis={maxDurationMillis} selectedTimeFormat={maxDurationTimeFormat} onChange={onChange} />
+        <Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Label>
+        <TimeSelector millis={maxDurationMillis} selectedTimeFormat={maxDurationTimeFormat} onChange={onMaxDurationChange} />
       </StyledFlexBetween>
     </StyledCard>
   );
 };
 
 const TradeInterval = () => {
-  const { tradeIntervalMillis, tradeIntervalTimeFormat, customInterval, onChange, onCustomIntervalClick } = TWAPLib.store.useTradeInterval();
+  const { tradeIntervalMillis, tradeIntervalTimeFormat, customInterval, onTradeIntervalChange, onCustomIntervalClick } = TWAPLib.store.useTradeInterval();
 
   return (
     <StyledCard>
       <StyledFlexBetween gap={10}>
-        <Label tooltipText={text.tradeInterval}>Trade Interval</Label>
+        <Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Label>
         <StyledIntervalTimeSelect>
-          <TimeSelector disabled={!customInterval} onChange={onChange} millis={tradeIntervalMillis} selectedTimeFormat={tradeIntervalTimeFormat} />
+          <TimeSelector disabled={!customInterval} onChange={onTradeIntervalChange} millis={tradeIntervalMillis} selectedTimeFormat={tradeIntervalTimeFormat} />
         </StyledIntervalTimeSelect>
         {!customInterval && (
-          <IconButton tooltip={text.customInterval} onClick={onCustomIntervalClick}>
+          <IconButton tooltip={translations.customIntervalTooltip} onClick={onCustomIntervalClick}>
             <StyledIcon icon={<AiFillEdit />} />
           </IconButton>
         )}
@@ -266,10 +276,25 @@ interface TokenPanelProps {
 }
 
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
-  const { amountPrefix, usdValueLoading, usdValue, disabled, balanceLoading, balance, value, onSelect, selectedToken, onChange, tokenListOpen, toggleTokenList, TokenSelectModal } =
-    TWAPLib.store.useTokenPanel(isSrcToken);
+  const {
+    inputWarningTooltip,
+    tokenSeletWarningTooltip,
+    amountPrefix,
+    usdValueLoading,
+    usdValue,
+    disabled,
+    balanceLoading,
+    balance,
+    value,
+    onSelect,
+    selectedToken,
+    onChange,
+    tokenListOpen,
+    toggleTokenList,
+    TokenSelectModal,
+  } = TWAPLib.store.useTokenPanel(isSrcToken);
 
-  const { chain, account } = TWAPLib.store.useWeb3();
+  const { chain } = TWAPLib.store.useWeb3();
 
   const onOpen = () => {
     if (chain != null) {
@@ -283,17 +308,10 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexBetween>
-            <Tooltip text={!account ? text.connect : !selectedToken ? "Select token" : undefined}>
-              <StyledNumbericInput
-                prefix={amountPrefix}
-                loading={false}
-                disabled={disabled || !account || !selectedToken}
-                placeholder="0"
-                onChange={onChange ? onChange : () => {}}
-                value={value}
-              />
+            <Tooltip text={inputWarningTooltip}>
+              <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
             </Tooltip>
-            <Tooltip text={!account ? text.connect : undefined}>
+            <Tooltip text={tokenSeletWarningTooltip}>
               <StyledTokenSelect onClick={onOpen}>
                 <TokenDisplay logo={selectedToken?.logoUrl} name={selectedToken?.symbol} />
                 <StyledIcon icon={<IoIosArrowDown size={20} />} />
@@ -347,7 +365,7 @@ const OrderConfirmation = () => {
               <TokenOrderPreview
                 isSrc={true}
                 isLimitOrder={isLimitOrder}
-                title="From"
+                title={translations.from}
                 amount={srcTokenUiAmount}
                 usdPrice={srcTokenUsdValue}
                 name={srcTokenInfo?.symbol}
@@ -355,7 +373,7 @@ const OrderConfirmation = () => {
               />
               <TokenOrderPreview
                 isLimitOrder={isLimitOrder}
-                title="To"
+                title={translations.to}
                 amount={dstTokenUiAmount}
                 usdPrice={dstTokenUsdValue}
                 name={dstTokenInfo?.symbol}
@@ -365,22 +383,22 @@ const OrderConfirmation = () => {
               <TradeInfoDetailsDisplay />
               <StyledCard>
                 <StyledColumnGap className="trade-info-explanation" gap={20}>
-                  <ConfirmationExpiration tooltip={text.confirmationDeadline} />
-                  <ConfirmationOrderType tooltip={isLimitOrder ? text.limitPrice : text.marketPrice} />
-                  <ConfirmationTradeSize tooltip={text.confirmationTradeSize} />
-                  <ConfirmationTotalTrades tooltip={text.confirmationTotalTrades} />
-                  <ConfirmationTradeInterval tooltip={text.confirmationtradeInterval} />
-                  <ConfirmationMinimumReceived tooltip={text.confirmationMinDstAmount} />
+                  <ConfirmationExpiration />
+                  <ConfirmationOrderType />
+                  <ConfirmationTradeSize />
+                  <ConfirmationTotalTrades />
+                  <ConfirmationTradeInterval />
+                  <ConfirmationMinimumReceived />
                 </StyledColumnGap>
               </StyledCard>
             </StyledColumnGap>
             <StyledColumnGap gap={20}>
               <Box style={{ display: "flex", gap: 5 }}>
-                <SmallLabel>{text.acceptDisclaimer}</SmallLabel>
+                <SmallLabel>{translations.acceptDisclaimer}</SmallLabel>
                 <Switch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
               </Box>
               <Text className="output-text">
-                {text.outputWillBeSentTo} <Tooltip text={account}>{ellipsisAccount}</Tooltip>
+                {translations.outputWillBeSentTo} <Tooltip text={account}>{ellipsisAccount}</Tooltip>
               </Text>
               <SubmitButton />
             </StyledColumnGap>
@@ -395,24 +413,7 @@ const TradeInfoDetailsDisplay = () => {
   return (
     <StyledCard>
       <StyledColumnGap gap={10}>
-        <Text>{text.disclaimer1}</Text>
-        <Text>{text.disclaimer2}</Text>
-        <Text>{text.disclaimer3}</Text>
-        <Text>{text.disclaimer4}</Text>
-        <Text>{text.disclaimer5}</Text>
-        <Text>
-          {text.disclaimer6}
-          <a href="https://www.orbs.com/" target="_blank">
-            {" "}
-            {text.link}
-          </a>
-          . {text.disclaimer7}
-          <a href="https://www.orbs.com/" target="_blank">
-            {" "}
-            {text.link}
-          </a>
-          .
-        </Text>
+        <TradeInfoExplanation />
       </StyledColumnGap>
     </StyledCard>
   );
@@ -424,7 +425,7 @@ const OrderConfirmationLimitPrice = () => {
   return (
     <StyledLimitPrice>
       <StyledFlexBetween>
-        <Label tooltipText="some text">Limit Price</Label>
+        <Label tooltipText="some text">{translations.limitPrice}</Label>
         {isLimitOrder ? (
           <div className="right">
             <Text>1</Text> <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} /> <Text>=</Text>
@@ -437,7 +438,7 @@ const OrderConfirmationLimitPrice = () => {
             <PriceToggle onClick={toggleInverted} />
           </div>
         ) : (
-          <Text>NONE</Text>
+          <Text>{translations.none}</Text>
         )}
       </StyledFlexBetween>
     </StyledLimitPrice>

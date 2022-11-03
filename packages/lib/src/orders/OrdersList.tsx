@@ -1,13 +1,15 @@
 import { Box, styled } from "@mui/system";
 import React, { useState } from "react";
-import { Order, OrderStatus, OrderText } from "../types";
-import OrderComponent from "./order/Order";
+import { Order, OrderStatus } from "../types";
+import OrderComponent from "./Order";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useTwapTranslations } from "..";
 
 // TODO chnage all limitOrder -->  orders, ordersList, Order
 
-function OrdersList({ orders, type, text, isLoading }: { orders: Order[]; type: OrderStatus; text: OrderText; isLoading: boolean }) {
+function OrdersList({ orders, type, isLoading }: { orders: Order[]; type: OrderStatus; isLoading: boolean }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
+  const translations = useTwapTranslations();
 
   const onSelect = (value: number) => {
     setSelected((prevState) => (prevState === value ? undefined : value));
@@ -24,10 +26,10 @@ function OrdersList({ orders, type, text, isLoading }: { orders: Order[]; type: 
     <StyledContainer>
       {orders ? (
         orders.map((order, index) => {
-          return <OrderComponent text={text} order={order} type={type} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
+          return <OrderComponent order={order} type={type} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
         })
       ) : (
-        <StyledEmptyList>No Orders Found</StyledEmptyList>
+        <StyledEmptyList>{translations.noOrdersFound}</StyledEmptyList>
       )}
     </StyledContainer>
   );

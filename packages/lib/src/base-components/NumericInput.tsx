@@ -17,6 +17,7 @@ export interface Props {
   maxValue?: string;
   prefix?: string;
   decimalScale?: number;
+  minAmount?: number;
 }
 
 function NumericInput({
@@ -31,6 +32,7 @@ function NumericInput({
   className = "",
   maxValue,
   decimalScale,
+  minAmount,
 }: Props) {
   return (
     <StyledContainer className={className}>
@@ -52,16 +54,19 @@ function NumericInput({
               const { floatValue = 0 } = values;
               return maxValue ? floatValue <= parseFloat(maxValue) : true;
             }}
-            value={value || null}
+            value={value || minAmount || ""}
             thousandSeparator=","
             decimalSeparator="."
             customInput={StyledInput}
             className="twap-input"
             type="text"
+            min={minAmount}
             onValueChange={(values, _sourceInfo) => {
-              if (_sourceInfo.source === "event") {
-                onChange(values.value);
+              if (_sourceInfo.source !== "event") {
+                return;
               }
+
+              onChange(values.value);
             }}
           />
         </div>

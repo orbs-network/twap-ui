@@ -1,5 +1,6 @@
 import { Box, styled } from "@mui/system";
 import { ReactNode } from "react";
+import { useTwapTranslations } from "..";
 import Label from "../base-components/Label";
 import Modal from "../base-components/Modal";
 import NumberDisplay from "../base-components/NumberDisplay";
@@ -10,8 +11,9 @@ import Tooltip from "../base-components/Tooltip";
 import { store } from "../store/store";
 
 export function TradeInfoModal({ onClose, open, children, className = "" }: { onClose: () => void; open: boolean; children: ReactNode; className?: string }) {
+  const translations = useTwapTranslations();
   return (
-    <Modal className={`twap-trade-info-modal ${className}`} open={open} handleClose={onClose} title="Confirm Transaction">
+    <Modal className={`twap-trade-info-modal ${className}`} open={open} handleClose={onClose} title={translations.confirmTx}>
       <StyledModalContent className="twap-order-confirmation">{children}</StyledModalContent>
     </Modal>
   );
@@ -19,61 +21,71 @@ export function TradeInfoModal({ onClose, open, children, className = "" }: { on
 
 const StyledModalContent = styled(Box)({});
 
-export function ConfirmationExpiration({ tooltip }: { tooltip: string }) {
-  const { deadlineUi } = store.useConfirmation();
+export function ConfirmationExpiration() {
+  const translations = useTwapTranslations();
+
+  const deadlineUi = store.useConfirmation().deadlineUi;
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={tooltip}>Expiration</Label>
+      <Label tooltipText={translations.confirmationDeadlineTooltip}>{translations.expiration}</Label>
       <Text>{deadlineUi}</Text>
     </StyledRow>
   );
 }
 
-export function ConfirmationOrderType({ tooltip }: { tooltip: string }) {
-  const { isLimitOrder } = store.useConfirmation();
+export function ConfirmationOrderType() {
+  const isLimitOrder = store.useConfirmation().isLimitOrder;
+  const translations = useTwapTranslations();
+
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={tooltip}>Order type</Label>
-      <Text>{isLimitOrder ? "Limit order" : "Market order"}</Text>
+      <Label tooltipText={isLimitOrder ? translations.confirmationLimitOrderTooltip : translations.confirmationMarketOrderTooltip}>{translations.orderType}</Label>
+      <Text>{isLimitOrder ? translations.limitOrder : translations.marketOrder}</Text>
     </StyledRow>
   );
 }
 
-export function ConfirmationTradeSize({ tooltip }: { tooltip: string }) {
-  const { uiTradeSize } = store.useConfirmation();
+export function ConfirmationTradeSize() {
+  const translations = useTwapTranslations();
+  const uiTradeSize = store.useConfirmation().uiTradeSize;
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={tooltip}>Trade size</Label>
+      <Label tooltipText={translations.confirmationTradeSizeTooltip}>{translations.tradeSize}</Label>
       <Text>{uiTradeSize}</Text>
     </StyledRow>
   );
 }
 
-export function ConfirmationTotalTrades({ tooltip }: { tooltip: string }) {
+export function ConfirmationTotalTrades() {
   const { totalTrades } = store.useConfirmation();
+  const translations = useTwapTranslations();
+
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={tooltip}>Total trades</Label>
+      <Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Label>
       <Text>{totalTrades}</Text>
     </StyledRow>
   );
 }
 
-export function ConfirmationTradeInterval({ tooltip }: { tooltip: string }) {
+export function ConfirmationTradeInterval() {
   const { tradeIntervalUi } = store.useConfirmation();
+  const translations = useTwapTranslations();
+
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={tooltip}>Trade interval</Label>
+      <Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Label>
       <Text>{tradeIntervalUi}</Text>
     </StyledRow>
   );
 }
 
-export function ConfirmationMinimumReceived({ tooltip }: { tooltip: string }) {
+export function ConfirmationMinimumReceived() {
   const { minAmountOutUi, isLimitOrder, srcTokenInfo } = store.useConfirmation();
+  const translations = useTwapTranslations();
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={tooltip}>Minimum Received Per Trade:</Label>
+      <Label tooltipText={translations.confirmationMinReceivedPerTradeTooltip}>{translations.minReceivedPerTrade}:</Label>
       {isLimitOrder ? (
         <StyledMinumimReceived>
           <Text>
@@ -85,7 +97,7 @@ export function ConfirmationMinimumReceived({ tooltip }: { tooltip: string }) {
           <TokenName name={srcTokenInfo?.symbol} />
         </StyledMinumimReceived>
       ) : (
-        <Text>None</Text>
+        <Text>{translations.none}</Text>
       )}
     </StyledRow>
   );
@@ -109,34 +121,24 @@ const StyledRow = styled(Box)({
 });
 
 export const TradeInfoExplanation = () => {
+  const translations = useTwapTranslations();
   return (
     <>
-      <Text>TWAP orders are executed in smaller trades over a specified period of time and are subject to market conditions and other risks.</Text>
+      <Text>{translations.disclaimer1}</Text>
+      <Text>{translations.disclaimer2}</Text>
+      <Text>{translations.disclaimer3}</Text>
+      <Text>{translations.disclaimer4}</Text>
+      <Text>{translations.disclaimer5}</Text>
       <Text>
-        Your trade may be executed at a price that is significantly different from the current market price (although not below your limit price), which could result in significant
-        losses. If the available market price is lower than the limit price you have set, some of the trades of your TWAP order may not be executed, resulting in a partially filled
-        order.
-      </Text>
-      <Text>
-        The TWAP trades are based on a decentralized TWAP protocol that utilizes off-chain takers which compete to fill orders. These takers are entitled to request a fee, which
-        the protocol removes for the winning taker from the output tokens. Accordingly, the amount of output tokens you will receive may vary in accordance with taker behavior.
-      </Text>
-      <Text>Takers may take into account gas fees for your transactions when setting their fees, which may result in fluctuations in the fee amounts.</Text>
-      <Text>
-        Note that the protocol has been designed such that the presence of one honest taker (i.e, a taker who charges only reimbursement for gas fees) should result in an output
-        amount that is as close as possible to spot market prices. Spiritswap and Orbs have implemented automated, decentralized “honest takers”, however, these features are in
-        beta and their use are subject to risks.
-      </Text>
-      <Text>
-        This TWAP order will be executed using that is in beta and its use is at your own risk. You can read more about the TWAP protocol here{" "}
+        {translations.disclaimer6}
         <a href="https://www.orbs.com/" target="_blank">
           {" "}
-          link
+          {translations.link}
         </a>
-        . Use of this feature is subject to the terms and conditions set forth here
+        . {translations.disclaimer7}
         <a href="https://www.orbs.com/" target="_blank">
           {" "}
-          link
+          {translations.link}
         </a>
         .
       </Text>

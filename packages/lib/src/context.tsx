@@ -1,9 +1,9 @@
 import { BigNumber } from "@defi.org/web3-candies";
 import { createContext, ReactElement, ReactNode, useEffect } from "react";
 import { useWeb3 } from "./store/store";
-import { TokenInfo } from "./types";
+import { TokenInfo, Translations } from "./types";
 
-export interface IState {
+export interface State {
   provider: any;
   dappIntegration: string;
   integrationChainId: number;
@@ -11,16 +11,17 @@ export interface IState {
   TokenSelectModal: ReactElement;
   getUsdPrice: (address: string, decimals: number) => Promise<BigNumber>;
   tokensList: TokenInfo[];
+  translations: Translations;
 }
 
-const TwapContext = createContext<IState>({} as IState);
+const TwapContext = createContext<State>({} as State);
 
-export interface TwapProviderProps extends IState {
+export interface TwapProviderProps extends State {
   children: ReactNode;
 }
 
-const TwapProvider = ({ children, provider, dappIntegration, integrationChainId, connect, TokenSelectModal, getUsdPrice, tokensList }: TwapProviderProps) => {
-  const value = { provider, dappIntegration, integrationChainId, connect, TokenSelectModal, getUsdPrice, tokensList };
+const TwapProvider = ({ children, provider, dappIntegration, integrationChainId, connect, TokenSelectModal, getUsdPrice, tokensList, translations }: TwapProviderProps) => {
+  const value = { provider, dappIntegration, integrationChainId, connect, TokenSelectModal, getUsdPrice, tokensList, translations } as TwapProviderProps;
   const { init } = useWeb3();
 
   // init web3 every time the provider changes

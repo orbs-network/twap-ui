@@ -5,7 +5,8 @@ import BigNumber from "bignumber.js";
 import { convertDecimals } from "@defi.org/web3-candies";
 import axios from "axios";
 import { ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient } from "react-query";
+import translations from "./translations/en.json";
 
 const TwapProvider = TWAPLib.TwapProvider;
 
@@ -40,6 +41,7 @@ interface ProviderWrapperProps {
 export const ProviderWrapper = (props: ProviderWrapperProps) => {
   return (
     <TwapProvider
+      translations={translations}
       tokensList={props.tokensList}
       getUsdPrice={getUsdPrice}
       dappIntegration="spiritswap"
