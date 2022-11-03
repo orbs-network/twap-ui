@@ -41,7 +41,7 @@
   "enterTradeSize": "Enter trade size",
   "enterMaxDuration": "Enter max duration",
   "enterTradeInterval": "Enter trade interval",
-  "tradeSizeMustBeEqual": "Trazde size must be equal to at least 1 USD",
+  "tradeSizeMustBeEqual": "Trade size must be equal to at least 1 USD",
   "tradeSize": "Trades Size",
   "tradeInterval": "Trades Interval",
   "maxDuration": "Max Duration",
