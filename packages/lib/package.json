@@ -38,13 +38,6 @@
     "react": "*",
     "react-dom": "*"
   },
-  "devDependencies": {
-    "@testing-library/jest-dom": "5.x",
-    "@testing-library/react": "13.x",
-    "jest": "29.x",
-    "jest-environment-jsdom": "29.x",
-    "ts-jest": "29.x"
-  },
   "config": {
     "omit": "optional"
   },

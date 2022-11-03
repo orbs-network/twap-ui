@@ -16,15 +16,20 @@
     "react": "18.x",
     "react-dom": "18.x",
     "react-scripts": "5.x",
-    "typescript": "4.x"
+    "typescript": "4.x",
+    "@testing-library/jest-dom": "5.x",
+    "@testing-library/react": "13.x",
+    "jest": "29.x",
+    "jest-environment-jsdom": "29.x",
+    "ts-jest": "29.x"
   },
   "scripts": {
     "clean": "lerna exec 'rm -f package-lock.json' && lerna clean -y || true && lerna bootstrap",
     "build": "lerna run build",
     "start": "lerna run start --parallel",
     "test": "lerna run test",
-    "prepublish": "npm run clean && npm run build && npm run test",
-    "publish": "lerna run publish"
+    "prepublish": "npm run build && npm run test",
+    "publish": "lerna publish"
   },
   "prettier": {
     "printWidth": 180
