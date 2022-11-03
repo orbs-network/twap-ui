@@ -10,7 +10,7 @@ import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { ReactNode } from "react";
 import { GlobalStyles } from "@mui/material";
-import translations from "./translations/en.json";
+import translations from "./i18n/en.json";
 
 import {
   getTheme,

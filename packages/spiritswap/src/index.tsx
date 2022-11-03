@@ -6,7 +6,7 @@ import { convertDecimals } from "@defi.org/web3-candies";
 import axios from "axios";
 import { ReactNode } from "react";
 import { QueryClient } from "react-query";
-import translations from "./translations/en.json";
+import translations from "./i18n/en.json";
 
 const TwapProvider = TWAPLib.TwapProvider;
 
