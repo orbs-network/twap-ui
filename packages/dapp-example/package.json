@@ -6,8 +6,8 @@
   "homepage": "https://orbs-network.github.io/twap-ui/",
   "scripts": {
     "prettier": "prettier -w 'src/**/*.{ts,tsx,js,jsx,json,sol}'",
-    "start": "npm run prettier && react-scripts start",
-    "build": "npm run prettier && react-scripts build"
+    "start": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts start",
+    "build": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts build"
   },
   "dependencies": {
     "@orbs-network/twap-ui-spiritswap": "^0.1.12",
