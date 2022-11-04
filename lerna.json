@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "useNx": false,
   "useWorkspaces": true,
   "progress": true,
