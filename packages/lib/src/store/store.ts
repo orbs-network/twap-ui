@@ -426,6 +426,7 @@ export const useSubmitButtonValidation = () => {
   const { srcTokenAmount, srcToken, srcTokenInfo, dstToken, maxDurationMillis, getTradeIntervalMillis, getTradeSize } = useTwapStore();
   const { data: srcTokenUsdValue18 } = useUsdValue(srcToken);
   const { data: srcTokenBalance } = useAccountBalances(srcToken);
+  const { config } = useWeb3();
   const translations = useTwapTranslations();
 
   const srcTokenAmountUi = useGetBigNumberToUiAmount(srcToken, srcTokenAmount);
@@ -445,14 +446,20 @@ export const useSubmitButtonValidation = () => {
 
     if (tradeIntervalMillis === 0) return translations.enterTradeInterval;
 
-    if (srcTokenAmount && tradeSize && srcTokenUsdValue18 && srcTokenInfo && isTradeSizeTooSmall(srcTokenAmount, tradeSize, srcTokenUsdValue18, srcTokenInfo))
+    if (
+      srcTokenAmount &&
+      tradeSize &&
+      srcTokenUsdValue18 &&
+      srcTokenInfo &&
+      isTradeSizeTooSmall(srcTokenAmount, tradeSize, srcTokenUsdValue18, srcTokenInfo, config.minimumTradeSizeUsd)
+    )
       return translations.tradeSizeMustBeEqual;
   }, [translations, dstToken, srcTokenAmount, srcTokenUsdValue18, tradeSize, srcTokenAmount, tradeIntervalMillis, maxDurationMillis, srcToken, srcTokenInfo, srcTokenAmountUi]);
 };
 
-const isTradeSizeTooSmall = (srcTokenAmount: BigNumber, tradeSize: BigNumber, srcTokenUsdValue18: BigNumber, srcTokenInfo: TokenInfo) => {
+const isTradeSizeTooSmall = (srcTokenAmount: BigNumber, tradeSize: BigNumber, srcTokenUsdValue18: BigNumber, srcTokenInfo: TokenInfo, minUsdValue: number) => {
   const smallestTradeSize = srcTokenAmount.modulo(tradeSize).eq(0) ? tradeSize : srcTokenAmount.modulo(tradeSize);
-  return smallestTradeSize?.times(srcTokenUsdValue18).div(1e18).lt(BigNumber(10).pow(srcTokenInfo.decimals));
+  return smallestTradeSize.times(srcTokenUsdValue18).div(1e18).div(BigNumber(10).pow(srcTokenInfo.decimals)).lt(minUsdValue);
 };
 
 const usePartialFillValidation = () => {
