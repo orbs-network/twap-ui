@@ -19,9 +19,13 @@
     "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
   },
   "dependencies": {
-    "@mui/material": "5.x",
-    "@mui/system": "5.x",
     "@orbs-network/twap-ui": "^0.1.6"
+  },
+  "peerDependencies": {
+    "@mui/material": "*",
+    "@mui/system": "*",
+    "react": "*",
+    "react-dom": "*"
   },
   "publishConfig": {
     "access": "public"
