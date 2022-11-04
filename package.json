@@ -25,8 +25,7 @@
     "build": "lerna run build",
     "start": "lerna run start --parallel",
     "test": "lerna run test",
-    "prepublishOnly": "lerna run test && lerna run build",
-    "publish": "lerna publish"
+    "publish": "npm run test && npm run build && lerna publish"
   },
   "prettier": {
     "printWidth": 180
