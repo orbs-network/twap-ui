@@ -6,15 +6,19 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@testing-library/jest-dom": "5.x",
+    "@testing-library/react": "13.x",
+    "@typescript-eslint/parser": "5.x",
+    "@typescript-eslint/eslint-plugin": "5.x",
+    "eslint": "8.x",
+    "eslint-plugin-import": "2.x",
+    "jest": "29.x",
+    "jest-environment-jsdom": "29.x",
     "lerna": "6.x",
     "nodemon": "2.x",
     "react-scripts": "5.x",
-    "typescript": "4.x",
-    "@testing-library/jest-dom": "5.x",
-    "@testing-library/react": "13.x",
-    "jest": "29.x",
-    "jest-environment-jsdom": "29.x",
-    "ts-jest": "29.x"
+    "ts-jest": "29.x",
+    "typescript": "4.x"
   },
   "scripts": {
     "clean": "lerna exec 'rm -f package-lock.json' && lerna clean -y || true && lerna bootstrap",
@@ -26,5 +30,17 @@
   },
   "prettier": {
     "printWidth": 180
+  },
+  "eslintConfig": {
+    "extends": [],
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint",
+      "eslint-plugin-import"
+    ],
+    "root": true,
+    "rules": {
+      "import/no-extraneous-dependencies": 2
+    }
   }
 }

@@ -16,14 +16,20 @@
   "scripts": {
     "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
     "build": "npm run prettier && rm -rf dist && tsc",
-    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
+    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc",
+    "test": "eslint ."
   },
   "dependencies": {
-    "@orbs-network/twap-ui": "^0.1.6"
+    "@defi.org/web3-candies": "4.x",
+    "@orbs-network/twap-ui": "^0.1.6",
+    "@mui/material": "5.x",
+    "@mui/system": "5.x",
+    "axios": "1.x",
+    "bignumber.js": "9.x",
+    "react-icons": "4.x",
+    "react-query": "3.x"
   },
   "peerDependencies": {
-    "@mui/material": "*",
-    "@mui/system": "*",
     "react": "*",
     "react-dom": "*"
   },
