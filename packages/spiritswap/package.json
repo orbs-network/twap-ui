@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-spiritswap",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "TWAP UI for Spiritswap",
   "license": "MIT",
   "author": "Orbs",
@@ -23,7 +23,7 @@
     "@defi.org/web3-candies": "4.x",
     "@mui/material": "5.x",
     "@mui/system": "5.x",
-    "@orbs-network/twap-ui": "^0.1.11",
+    "@orbs-network/twap-ui": "^0.1.12",
     "axios": "1.x",
     "bignumber.js": "9.x",
     "react-icons": "4.x",
