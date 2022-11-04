@@ -1,6 +1,7 @@
 import { Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import React from "react";
+import { AnalyticsEvents } from "../analytics";
 import { useWeb3 } from "../store/store";
 
 console.debug = () => {};
@@ -12,8 +13,13 @@ odnp.hide();
 function OdnpButton({ className = "" }: { className?: string }) {
   const { account } = useWeb3();
   if (!account) return null;
+
+  const onClick = () => {
+    AnalyticsEvents.onNotificationsClick();
+    odnp.show(account, "twap");
+  };
   return (
-    <StyledButton className={className} onClick={() => odnp.show(account, "twap")}>
+    <StyledButton className={className} onClick={onClick}>
       <img src="https://open-defi-notifications.web.app/widget/assets/icon.png" />
       <Typography>Notify me</Typography>
     </StyledButton>

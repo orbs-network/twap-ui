@@ -183,4 +183,5 @@ export interface Translations {
   minReceivedPerTrade: string;
   confirmationLimitPriceTooltip: string;
   ordersTooltip: string;
+  totalTradesSliderTooltip: string;
 }

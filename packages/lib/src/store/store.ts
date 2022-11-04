@@ -10,9 +10,10 @@ import { changeNetwork } from "./connect";
 import { TwapContext, useTwapTranslations } from "../context";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
-import { useOrders } from "./orders";
+import { useGetOrderCallback, useOrders } from "./orders";
 import { getConfig, nativeAddresses, sendTxAndWait } from "../config";
-import { analytics } from "../analytics";
+import { AnalyticsEvents } from "../analytics";
+import lensAbi from "./lens-abi.json";
 
 const defaultState = {
   srcTokenInfo: undefined,
@@ -40,6 +41,7 @@ export const useTwapStore = create<Store>((set, get) => ({
   switchTokens: (dstTokenAmount) => {
     const src = get().srcTokenInfo;
     const dst = get().dstTokenInfo;
+
     get().setSrcToken(dst, dstTokenAmount);
     get().setDstToken(src);
   },
@@ -138,14 +140,25 @@ const useTokenApproval = () => {
     refetchInterval: 5_000,
   });
 
-  const { mutate: approve, isLoading: approveLoading } = useMutation(async () => {
-    const tx = () => {
-      return srcToken?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account });
-    };
-    await sendTxAndWait(tx);
-    await refetch();
-    setWaitForApproval(true);
-  });
+  const { mutate: approve, isLoading: approveLoading } = useMutation(
+    async () => {
+      AnalyticsEvents.onApproveClick();
+      const tx = () => {
+        return srcToken?.methods.approve(spender!, srcTokenAmount!.toString()).send({ from: account });
+      };
+      await sendTxAndWait(tx);
+      await refetch();
+      setWaitForApproval(true);
+    },
+    {
+      onSuccess: () => {
+        AnalyticsEvents.onApproveSuccess();
+      },
+      onError: (error: Error) => {
+        AnalyticsEvents.onApproveError(error.message);
+      },
+    }
+  );
 
   const isApproved = !srcTokenAmount ? false : allowance?.gte(srcTokenAmount || 0);
 
@@ -161,17 +174,28 @@ const useWrapToken = () => {
   const { account, config } = useWeb3();
   const { refetch } = useAccountBalances(srcToken);
 
-  const { mutateAsync: wrap, isLoading } = useMutation(async () => {
-    const tx = async () => {
-      const wToken: any = getToken(config!.wrappedTokenInfo, true);
-      await wToken?.methods.deposit().send({ from: account!, value: srcTokenAmount!.toString() });
-    };
-    await sendTxAndWait(tx);
-    setSrcToken(config!.wrappedTokenInfo, srcTokenAmount);
+  const { mutateAsync: wrap, isLoading } = useMutation(
+    async () => {
+      AnalyticsEvents.onWrapClick();
+      const tx = async () => {
+        const wToken: any = getToken(config!.wrappedTokenInfo, true);
+        await wToken?.methods.deposit().send({ from: account!, value: srcTokenAmount!.toString() });
+      };
+      await sendTxAndWait(tx);
+      setSrcToken(config!.wrappedTokenInfo, srcTokenAmount);
 
-    await refetch();
-    setShowConfirmation(true);
-  });
+      await refetch();
+      setShowConfirmation(true);
+    },
+    {
+      onSuccess: () => {
+        AnalyticsEvents.onWrapTxSuccess();
+      },
+      onError: (error: Error) => {
+        AnalyticsEvents.onWrapError(error.message);
+      },
+    }
+  );
 
   return {
     wrap,
@@ -292,12 +316,17 @@ const useMaxDuration = () => {
 const useTradeInterval = () => {
   const { customInterval, setCustomInterval, onTradeIntervalChange, getTradeIntervalMillis, getTradeIntervalTimeFormat } = useTwapStore();
 
+  const onCustomIntervalClick = () => {
+    AnalyticsEvents.onSelectCustomInterval();
+    setCustomInterval(true);
+  };
+
   return {
     tradeIntervalMillis: getTradeIntervalMillis(),
     tradeIntervalTimeFormat: getTradeIntervalTimeFormat(),
     customInterval,
     onTradeIntervalChange,
-    onCustomIntervalClick: () => setCustomInterval(true),
+    onCustomIntervalClick,
     tradeIntervalUi: useGetTradeIntervalForUi(getTradeIntervalMillis()),
   };
 };
@@ -353,6 +382,11 @@ export const useLimitPrice = () => {
   };
 
   const onToggleLimit = () => {
+    if (isLimitOrder) {
+      AnalyticsEvents.onMarketPriceSelect();
+    } else {
+      AnalyticsEvents.onLimitOrderSelect();
+    }
     toggleLimit(marketPrice);
     setlimitPriceUI(marketPrice);
     setInvertedUI(false);
@@ -482,14 +516,37 @@ function useSubmitOrder() {
   const { showConfirmation, setShowConfirmation, disclaimerAccepted, reset } = useTwapStore();
   const { refetch } = useOrders();
   const translations = useTwapTranslations();
-  const sendAnalyticsEvent = analytics.useOnConfirmTxEvent();
-  const { srcTokenInfo, dstTokenInfo, srcTokenAmount, tradeSize, minAmountOut, deadline, tradeIntervalMillis } = useConfirmation();
+  const { srcTokenInfo, dstTokenInfo, srcTokenAmount, tradeSize, minAmountOut, deadline, tradeIntervalMillis, isLimitOrder } = useConfirmation();
+  const { mutateAsync: getOrders } = useGetOrderCallback();
+
+  const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+  const waitForNewOrder = async () => {
+    const orders = await getOrders();
+    const ordesIdsBefore = orders.map((o: any) => o.id) || [];
+
+    return async () => {
+      for (let attempt = 0; attempt < 30; attempt++) {
+        await delay(2000);
+        let orderIdsAfter;
+        try {
+          const orders = await getOrders();
+          orderIdsAfter = orders.map((o: any) => o.id);
+        } catch (error) {}
+
+        if (orderIdsAfter && orderIdsAfter.length > ordesIdsBefore.length) {
+          return;
+        }
+      }
+      return;
+    };
+  };
 
   const { mutate: createOrder, isLoading: createdOrderLoading } = useMutation(
     async () => {
+      AnalyticsEvents.onCreateOrderClick(isLimitOrder);
       const tx = async () => {
         const twap = contract(twapAbi as Abi, config.twapAddress);
-        sendAnalyticsEvent();
         console.log({
           exchangeAddress: config.exchangeAddress,
           srcToken: srcTokenInfo?.address,
@@ -516,12 +573,21 @@ function useSubmitOrder() {
           )
           .send({ from: account });
       };
+
+      const waiter = await waitForNewOrder();
+
       await sendTxAndWait(tx);
-      await refetch();
+
+      await waiter();
+      return refetch();
     },
     {
-      onSuccess: () => {
+      onSuccess: async () => {
         reset();
+        AnalyticsEvents.onCreateOrderTxSuccess(isLimitOrder);
+      },
+      onError: (error: Error) => {
+        AnalyticsEvents.onCreateOrderTxError(error.message, isLimitOrder);
       },
     }
   );
@@ -584,8 +650,10 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
 
   const onSelect = (token: TokenInfo) => {
     if (isSrcToken) {
+      AnalyticsEvents.onSelectSrcToken(token.symbol);
       onSelectSrcToken(token);
     } else {
+      AnalyticsEvents.onSelectDstToken(token.symbol);
       onSelectDstToken(token);
     }
     setTokenListOpen(false);

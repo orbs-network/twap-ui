@@ -11,13 +11,14 @@ export interface Props {
   children: ReactNode;
   title?: string;
   className?: string;
+  disableBackdropClick?: boolean;
 }
 
-function Modal({ handleClose, open, children, title, className = "" }: Props) {
+function Modal({ handleClose, open, children, title, className = "", disableBackdropClick }: Props) {
   return (
     <StyledModal open={open} onClose={handleClose} className={`${className} twap-modal`} hideBackdrop>
       <>
-        <Backdrop open={open} onClick={handleClose}></Backdrop>
+        <Backdrop open={open} onClick={disableBackdropClick ? () => {} : handleClose}></Backdrop>
         <StyledModalContent className="twap-modal-content">
           <StyledClose onClick={handleClose}>
             <IoMdClose />

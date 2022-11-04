@@ -13,7 +13,7 @@ import { store } from "../store/store";
 export function TradeInfoModal({ onClose, open, children, className = "" }: { onClose: () => void; open: boolean; children: ReactNode; className?: string }) {
   const translations = useTwapTranslations();
   return (
-    <Modal className={`twap-trade-info-modal ${className}`} open={open} handleClose={onClose} title={translations.confirmTx}>
+    <Modal disableBackdropClick={true} className={`twap-trade-info-modal ${className}`} open={open} handleClose={onClose} title={translations.confirmTx}>
       <StyledModalContent className="twap-order-confirmation">{children}</StyledModalContent>
     </Modal>
   );

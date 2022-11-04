@@ -9,6 +9,7 @@ import lensAbi from "./lens-abi.json";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
 import { sendTxAndWait } from "../config";
+import { AnalyticsEvents } from "../analytics";
 
 const getTokenFromList = (tokensList: TokenInfo[], address?: string) => {
   if (!address) {
@@ -51,16 +52,24 @@ const getAllUsdValuesCallback = () => {
   });
 };
 
+export const useGetOrderCallback = () => {
+  const { account, config } = useWeb3();
+  return useMutation(async () => {
+    const lens = contract(lensAbi as Abi, config.lensAddress);
+    return lens.methods.makerOrders(account).call();
+  });
+};
+
 export const useOrders = () => {
   const { account, config, web3 } = useWeb3();
   const tokensList = useContext(TwapContext).tokensList;
   const { mutateAsync: getUsdValues } = getAllUsdValuesCallback();
+  const { mutateAsync: getOrders } = useGetOrderCallback();
 
   return useQuery(
     ["useOrders", account],
     async () => {
-      const lens = contract(lensAbi as Abi, config.lensAddress);
-      const orders = await lens.methods.makerOrders(account).call();
+      const orders = await getOrders();
       const srcAddresses = _.keys(_.groupBy(orders, "ask.srcToken"));
       const dstAddresses = _.keys(_.groupBy(orders, "ask.dstToken"));
 
@@ -130,18 +139,31 @@ export const useOrders = () => {
   );
 };
 
+export const useWaitForNewOrderLoading = () => {};
+
 export const useCancelCallback = () => {
   const { config, account } = useWeb3();
   const { refetch } = useOrders();
 
-  return useMutation(async (orderId: string) => {
-    const tx = async () => {
-      const twap = contract(twapAbi as Abi, config.twapAddress);
-      await twap.methods.cancel(orderId).send({ from: account });
-    };
-    await sendTxAndWait(tx);
-    await refetch();
-  });
+  return useMutation(
+    async (orderId: string) => {
+      AnalyticsEvents.onCancelOrderClick(orderId);
+      const tx = async () => {
+        const twap = contract(twapAbi as Abi, config.twapAddress);
+        await twap.methods.cancel(orderId).send({ from: account });
+      };
+      await sendTxAndWait(tx);
+      await refetch();
+    },
+    {
+      onSuccess: (_, orderId) => {
+        AnalyticsEvents.onCancelOrderTxSuccess(orderId);
+      },
+      onError: (error: Error) => {
+        AnalyticsEvents.onCancelOrderTxError(error.message);
+      },
+    }
+  );
 };
 
 export const useHistoryPrice = (srcTokenInfo: TokenInfo, dstTokenInfo: TokenInfo, dstPrice: BigNumber) => {
