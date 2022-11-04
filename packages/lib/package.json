@@ -31,7 +31,12 @@
     "react-icons": "4.x",
     "react-number-format": "5.x",
     "react-query": "3.x",
-    "zustand": "4.x"
+    "zustand": "4.x",
+    "@types/lodash": "4.x",
+    "axios": "1.x",
+    "bignumber.js": "9.x",
+    "lodash": "4.x",
+    "web3": "1.x"
   },
   "peerDependencies": {
     "react": "*",

@@ -11,7 +11,13 @@
   },
   "dependencies": {
     "@orbs-network/twap-ui-spiritswap": "^0.1.4",
-    "react-query": "*"
+    "@types/react": "18.x",
+    "@types/react-dom": "18.x",
+    "@web3-react/core": "6.x",
+    "@web3-react/injected-connector": "6.x",
+    "@web3-react/walletconnect-connector": "6.x",
+    "react": "18.x",
+    "react-dom": "18.x"
   },
   "browserslist": {
     "production": [
