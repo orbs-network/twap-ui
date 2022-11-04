@@ -15,7 +15,8 @@
             "components": [
               { "internalType": "uint32", "name": "time", "type": "uint32" },
               { "internalType": "uint32", "name": "deadline", "type": "uint32" },
-              { "internalType": "uint32", "name": "delay", "type": "uint32" },
+              { "internalType": "uint32", "name": "bidDelay", "type": "uint32" },
+              { "internalType": "uint32", "name": "fillDelay", "type": "uint32" },
               { "internalType": "address", "name": "maker", "type": "address" },
               { "internalType": "address", "name": "exchange", "type": "address" },
               { "internalType": "address", "name": "srcToken", "type": "address" },
@@ -68,7 +69,8 @@
             "components": [
               { "internalType": "uint32", "name": "time", "type": "uint32" },
               { "internalType": "uint32", "name": "deadline", "type": "uint32" },
-              { "internalType": "uint32", "name": "delay", "type": "uint32" },
+              { "internalType": "uint32", "name": "bidDelay", "type": "uint32" },
+              { "internalType": "uint32", "name": "fillDelay", "type": "uint32" },
               { "internalType": "address", "name": "maker", "type": "address" },
               { "internalType": "address", "name": "exchange", "type": "address" },
               { "internalType": "address", "name": "srcToken", "type": "address" },
@@ -121,7 +123,8 @@
             "components": [
               { "internalType": "uint32", "name": "time", "type": "uint32" },
               { "internalType": "uint32", "name": "deadline", "type": "uint32" },
-              { "internalType": "uint32", "name": "delay", "type": "uint32" },
+              { "internalType": "uint32", "name": "bidDelay", "type": "uint32" },
+              { "internalType": "uint32", "name": "fillDelay", "type": "uint32" },
               { "internalType": "address", "name": "maker", "type": "address" },
               { "internalType": "address", "name": "exchange", "type": "address" },
               { "internalType": "address", "name": "srcToken", "type": "address" },

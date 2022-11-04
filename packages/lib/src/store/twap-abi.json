@@ -55,7 +55,8 @@
         "components": [
           { "internalType": "uint32", "name": "time", "type": "uint32" },
           { "internalType": "uint32", "name": "deadline", "type": "uint32" },
-          { "internalType": "uint32", "name": "delay", "type": "uint32" },
+          { "internalType": "uint32", "name": "bidDelay", "type": "uint32" },
+          { "internalType": "uint32", "name": "fillDelay", "type": "uint32" },
           { "internalType": "address", "name": "maker", "type": "address" },
           { "internalType": "address", "name": "exchange", "type": "address" },
           { "internalType": "address", "name": "srcToken", "type": "address" },
@@ -88,11 +89,11 @@
     "name": "OrderFilled",
     "type": "event"
   },
-  { "inputs": [], "name": "MAX_BID_WINDOW_SECONDS", "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }], "stateMutability": "view", "type": "function" },
-  { "inputs": [], "name": "MIN_BID_WINDOW_SECONDS", "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }], "stateMutability": "view", "type": "function" },
+  { "inputs": [], "name": "MIN_BID_DELAY_SECONDS", "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }], "stateMutability": "view", "type": "function" },
   { "inputs": [], "name": "MIN_FILL_DELAY_SECONDS", "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }], "stateMutability": "view", "type": "function" },
   { "inputs": [], "name": "MIN_OUTBID_PERCENT", "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }], "stateMutability": "view", "type": "function" },
   { "inputs": [], "name": "PERCENT_BASE", "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }], "stateMutability": "view", "type": "function" },
+  { "inputs": [], "name": "STALE_BID_DELAY_MUL", "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }], "stateMutability": "view", "type": "function" },
   { "inputs": [], "name": "STATUS_CANCELED", "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }], "stateMutability": "view", "type": "function" },
   { "inputs": [], "name": "STATUS_COMPLETED", "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }], "stateMutability": "view", "type": "function" },
   { "inputs": [], "name": "VERSION", "outputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }], "stateMutability": "view", "type": "function" },
@@ -105,7 +106,8 @@
       { "internalType": "uint256", "name": "srcBidAmount", "type": "uint256" },
       { "internalType": "uint256", "name": "dstMinAmount", "type": "uint256" },
       { "internalType": "uint32", "name": "deadline", "type": "uint32" },
-      { "internalType": "uint32", "name": "delay", "type": "uint32" }
+      { "internalType": "uint32", "name": "bidDelay", "type": "uint32" },
+      { "internalType": "uint32", "name": "fillDelay", "type": "uint32" }
     ],
     "name": "ask",
     "outputs": [{ "internalType": "uint64", "name": "id", "type": "uint64" }],
@@ -137,7 +139,8 @@
         "components": [
           { "internalType": "uint32", "name": "time", "type": "uint32" },
           { "internalType": "uint32", "name": "deadline", "type": "uint32" },
-          { "internalType": "uint32", "name": "delay", "type": "uint32" },
+          { "internalType": "uint32", "name": "bidDelay", "type": "uint32" },
+          { "internalType": "uint32", "name": "fillDelay", "type": "uint32" },
           { "internalType": "address", "name": "maker", "type": "address" },
           { "internalType": "address", "name": "exchange", "type": "address" },
           { "internalType": "address", "name": "srcToken", "type": "address" },
@@ -194,7 +197,8 @@
             "components": [
               { "internalType": "uint32", "name": "time", "type": "uint32" },
               { "internalType": "uint32", "name": "deadline", "type": "uint32" },
-              { "internalType": "uint32", "name": "delay", "type": "uint32" },
+              { "internalType": "uint32", "name": "bidDelay", "type": "uint32" },
+              { "internalType": "uint32", "name": "fillDelay", "type": "uint32" },
               { "internalType": "address", "name": "maker", "type": "address" },
               { "internalType": "address", "name": "exchange", "type": "address" },
               { "internalType": "address", "name": "srcToken", "type": "address" },

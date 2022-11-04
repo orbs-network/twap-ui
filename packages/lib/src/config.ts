@@ -4,8 +4,10 @@ import _ from "lodash";
 const Config = {
   [networks.ftm.id]: {
     minimumTradeSizeUsd: 10,
-    twapAddress: "0x85253417E9BF576980318E7882147618C4980969",
-    lensAddress: "0x1c4b5371dfDF424a162974C2361a6405b1F772cf",
+    twapAddress: "0xBeDf3660c6524eFe533b4058E0c726535ac251a2",
+    lensAddress: "0x715181517a576eA382E4351F10EAE693Cfe4471a",
+    bidDelaySeconds: 60,
+    minimumFillDelaySeconds: 60,
     wrappedTokenInfo: {
       symbol: "WFTM",
       address: "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
