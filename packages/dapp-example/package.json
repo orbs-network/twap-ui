@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-dapp-example",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "license": "MIT",
   "homepage": "https://orbs-network.github.io/twap-ui/",
@@ -10,7 +10,7 @@
     "build": "npm run prettier && react-scripts build"
   },
   "dependencies": {
-    "@orbs-network/twap-ui-spiritswap": "^0.1.4",
+    "@orbs-network/twap-ui-spiritswap": "^0.1.5",
     "@types/react": "18.x",
     "@types/react-dom": "18.x",
     "@web3-react/core": "6.x",

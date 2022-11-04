@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "TWAP UI",
   "license": "MIT",
   "author": "Orbs",
@@ -25,18 +25,18 @@
     "@emotion/styled": "11.x",
     "@mui/material": "5.x",
     "@open-defi-notification-protocol/widget": "0.0.x",
+    "@types/lodash": "4.x",
+    "axios": "1.x",
+    "bignumber.js": "9.x",
     "ethereum-multicall": "2.x",
+    "lodash": "4.x",
     "moment": "2.x",
     "react-ga4": "^1.4.1",
     "react-icons": "4.x",
     "react-number-format": "5.x",
     "react-query": "3.x",
-    "zustand": "4.x",
-    "@types/lodash": "4.x",
-    "axios": "1.x",
-    "bignumber.js": "9.x",
-    "lodash": "4.x",
-    "web3": "1.x"
+    "web3": "1.x",
+    "zustand": "4.x"
   },
   "peerDependencies": {
     "react": "*",

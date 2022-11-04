@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-spiritswap",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "TWAP UI for Spiritswap",
   "license": "MIT",
   "author": "Orbs",
@@ -19,11 +19,10 @@
     "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc"
   },
   "dependencies": {
-    "@orbs-network/twap-ui": "^0.1.4"
+    "@orbs-network/twap-ui": "^0.1.5"
   },
   "publishConfig": {
     "access": "public"
   },
   "gitHead": "44f6ffc37818c6451c3c29ed82dbc67122602b83"
 }
-
