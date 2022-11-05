@@ -3,7 +3,6 @@ import { Box } from "@mui/system";
 import { QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import TWAPLib from "@orbs-network/twap-ui";
-import { ThemeProvider } from "@mui/material/styles";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
@@ -11,10 +10,8 @@ import { TbArrowsRightLeft } from "react-icons/tb";
 import { ReactNode, useMemo } from "react";
 import { GlobalStyles } from "@mui/material";
 import translations from "./i18n/en.json";
-import { useQuery, useQueryClient } from "react-query";
 
 import {
-  getTheme,
   globalStyle,
   StyledButton,
   StyledCard,
@@ -68,23 +65,21 @@ const TWAP = (props: TwapProps) => {
   return (
     <QueryClientProvider client={queryClient} contextSharing={true}>
       <ProviderWrapper {...props}>
-        <ThemeProvider theme={getTheme("dark")}>
-          <CssBaseline />
-          <GlobalStyles styles={globalStyle} />
-          <StyledLayout>
-            <StyledColumnGap gap={10}>
-              <SrcTokenPanel />
-              <ChangeTokensOrder />
-              <DstTokenPanel />
-              <LimitPriceDisplay />
-              <TradeSize />
-              <MaxDuration />
-              <TradeInterval />
-              <SubmitButton />
-              <OrderConfirmation />
-            </StyledColumnGap>
-          </StyledLayout>
-        </ThemeProvider>
+        <CssBaseline />
+        <GlobalStyles styles={globalStyle} />
+        <StyledLayout>
+          <StyledColumnGap gap={10}>
+            <SrcTokenPanel />
+            <ChangeTokensOrder />
+            <DstTokenPanel />
+            <LimitPriceDisplay />
+            <TradeSize />
+            <MaxDuration />
+            <TradeInterval />
+            <SubmitButton />
+            <OrderConfirmation />
+          </StyledColumnGap>
+        </StyledLayout>
       </ProviderWrapper>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </QueryClientProvider>
