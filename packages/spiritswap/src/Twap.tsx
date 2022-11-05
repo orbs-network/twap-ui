@@ -66,7 +66,7 @@ const {
 
 const TWAP = (props: TwapProps) => {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient} contextSharing={true}>
       <ProviderWrapper {...props}>
         <ThemeProvider theme={getTheme("dark")}>
           <CssBaseline />
