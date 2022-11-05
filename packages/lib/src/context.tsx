@@ -46,6 +46,7 @@ const TwapProvider = ({
     analyticsID,
   } as TwapProviderProps;
   const { init } = useWeb3();
+
   // useAnalyticsInit(analyticsID);
 
   // init web3 every time the provider changes
