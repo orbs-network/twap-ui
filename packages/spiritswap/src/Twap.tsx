@@ -7,7 +7,7 @@ import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { ReactNode, useMemo } from "react";
+import { memo, ReactNode, useMemo } from "react";
 import { GlobalStyles } from "@mui/material";
 import translations from "./i18n/en.json";
 
@@ -22,7 +22,6 @@ import {
   StyledFlexStart,
   StyledIcon,
   StyledIntervalTimeSelect,
-  StyledLayout,
   StyledLimitPrice,
   StyledMarketPrice,
   StyledMarketPriceRight,
@@ -43,7 +42,7 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { TwapProps, ProviderWrapper, queryClient, useGetProvider } from ".";
+import { TwapProps, ProviderWrapper, queryClient } from ".";
 
 // TODO create file for styles
 
@@ -62,24 +61,23 @@ const {
 } = TWAPLib.components;
 
 const TWAP = (props: TwapProps) => {
+  // try to move it inside the panel
+
   return (
-    <QueryClientProvider client={queryClient} contextSharing={true}>
+    <QueryClientProvider client={queryClient}>
       <ProviderWrapper {...props}>
-        <CssBaseline />
-        <GlobalStyles styles={globalStyle} />
-        <StyledLayout>
-          <StyledColumnGap gap={10}>
-            <SrcTokenPanel />
-            <ChangeTokensOrder />
-            <DstTokenPanel />
-            <LimitPriceDisplay />
-            <TradeSize />
-            <MaxDuration />
-            <TradeInterval />
-            <SubmitButton />
-            <OrderConfirmation />
-          </StyledColumnGap>
-        </StyledLayout>
+        <GlobalStyles styles={globalStyle as any} />
+        <div className="twap-container" style={{ flexDirection: "column" }}>
+          <SrcTokenPanel />
+          <ChangeTokensOrder />
+          <DstTokenPanel />
+          <LimitPriceDisplay />
+          <TradeSize />
+          <MaxDuration />
+          <TradeInterval />
+          <SubmitButton />
+          <OrderConfirmation />
+        </div>
       </ProviderWrapper>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </QueryClientProvider>
@@ -281,11 +279,13 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     balance,
     value,
     onSelect,
-    selectedToken,
     onChange,
     tokenListOpen,
     toggleTokenList,
     TokenSelectModal,
+    address,
+    logo,
+    symbol,
   } = TWAPLib.store.useTokenPanel(isSrcToken);
 
   const { chain } = TWAPLib.store.useWeb3();
@@ -297,29 +297,33 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   };
 
   return (
-    <StyledTokenPanel>
-      {TokenSelectModal && <TokenSelectModal isOpen={tokenListOpen} chainId={chain} selectedTokens={selectedToken} onClose={() => toggleTokenList(false)} onSelect={onSelect} />}
-      <StyledCard>
-        <StyledColumnGap>
-          <StyledFlexBetween>
-            <Tooltip text={inputWarningTooltip}>
-              <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
-            </Tooltip>
-            <Tooltip text={tokenSeletWarningTooltip}>
-              <StyledTokenSelect onClick={onOpen}>
-                <TokenDisplay logo={selectedToken?.logoUrl} name={selectedToken?.symbol} />
-                <StyledIcon icon={<IoIosArrowDown size={20} />} />
-              </StyledTokenSelect>
-            </Tooltip>
-          </StyledFlexBetween>
-          <StyledFlexBetween>
-            <StyledUSD value={usdValue} isLoading={usdValueLoading} />
-            <Balance isLoading={balanceLoading} value={balance} />
-          </StyledFlexBetween>
-          {children}
-        </StyledColumnGap>
-      </StyledCard>
-    </StyledTokenPanel>
+    <>
+      {TokenSelectModal && (
+        <TokenSelectModal chainId={chain} commonTokens={[]} tokenSelected={undefined} onSelect={onSelect} isOpen={tokenListOpen} onClose={() => toggleTokenList(false)} />
+      )}
+      <StyledTokenPanel>
+        <StyledCard>
+          <StyledColumnGap>
+            <StyledFlexBetween>
+              <Tooltip text={inputWarningTooltip}>
+                <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
+              </Tooltip>
+              <Tooltip text={tokenSeletWarningTooltip}>
+                <StyledTokenSelect onClick={onOpen}>
+                  <TokenDisplay logo={logo} name={symbol} />
+                  <StyledIcon icon={<IoIosArrowDown size={20} />} />
+                </StyledTokenSelect>
+              </Tooltip>
+            </StyledFlexBetween>
+            <StyledFlexBetween>
+              <StyledUSD value={usdValue} isLoading={usdValueLoading} />
+              <Balance isLoading={balanceLoading} value={balance} />
+            </StyledFlexBetween>
+            {children}
+          </StyledColumnGap>
+        </StyledCard>
+      </StyledTokenPanel>
+    </>
   );
 };
 
@@ -327,7 +331,7 @@ const SubmitButton = () => {
   const { loading, text, onClick, disabled } = TWAPLib.store.useSubmitOrder();
 
   return (
-    <StyledButton loading={loading} onClick={onClick} disabled={disabled}>
+    <StyledButton loading={loading} onClick={onClick ? onClick : () => {}} disabled={disabled}>
       {text}
     </StyledButton>
   );

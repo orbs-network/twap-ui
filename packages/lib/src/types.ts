@@ -118,7 +118,6 @@ export interface Translations {
   confirmationMinDstAmountTootipLimit: string;
   confirmationOrderType: string;
   confirmationMarketOrderTooltip: string;
-  confirmationMinReceivedPerTradeTooltip: string;
   marketPriceTooltip: string;
   limitPriceTooltip: string;
   tradeSizeTooltip: string;
@@ -183,5 +182,5 @@ export interface Translations {
   minReceivedPerTrade: string;
   confirmationLimitPriceTooltip: string;
   ordersTooltip: string;
-  totalTradesSliderTooltip: string;
+  noOrdersFound1: string;
 }

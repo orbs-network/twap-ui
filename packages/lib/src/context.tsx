@@ -8,12 +8,13 @@ export interface State {
   provider: any;
   dappIntegration: string;
   integrationChainId: number;
-  connect: () => void;
-  TokenSelectModal: ReactElement;
+  connect?: () => void;
+  TokenSelectModal?: any;
   getUsdPrice: (address: string, decimals: number) => Promise<BigNumber>;
   tokensList: TokenInfo[];
   translations: Translations;
   analyticsID: string;
+  getTokenImage?: (value: any) => string;
 }
 
 const TwapContext = createContext<State>({} as State);
@@ -33,6 +34,7 @@ const TwapProvider = ({
   tokensList,
   translations,
   analyticsID,
+  getTokenImage,
 }: TwapProviderProps) => {
   const value = {
     provider,
@@ -44,6 +46,7 @@ const TwapProvider = ({
     tokensList,
     translations,
     analyticsID,
+    getTokenImage,
   } as TwapProviderProps;
   const { init } = useWeb3();
   useAnalyticsInit(analyticsID);

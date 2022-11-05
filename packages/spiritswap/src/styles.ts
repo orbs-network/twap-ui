@@ -2,6 +2,7 @@ import { Box, styled } from "@mui/system";
 import TWAPLib from "@orbs-network/twap-ui";
 import { createTheme } from "@mui/material/styles";
 import { CSSProperties } from "react";
+import { GlobalStylesProps } from "@mui/material";
 
 const { USD, Button, Icon, NumericInput, Card, Switch, SmallLabel } = TWAPLib.baseComponents;
 
@@ -120,6 +121,45 @@ export const StyledLimitPrice = styled(Box)({
 export const StyledTokenOrder = styled(Box)({ width: "100%" });
 
 export const globalStyle = {
+  "& .twap-container": {
+    display: "flex",
+    gap: 15,
+    marginTop: 20,
+    "*": {
+      boxSizing: "border-box",
+      color: "white",
+    },
+  },
+  "& .twap-small-label": {
+    fontSize: 14,
+    opacity: 1,
+  },
+  "& .twap-change-order": {
+    width: 50,
+    height: 50,
+  },
+  "& .twap-token-name": {
+    fontSize: 18,
+  },
+  "& .twap-token-logo": {
+    width: 28,
+    height: 28,
+  },
+
+  "& .twap-time-selector-list": {
+    background: colors.mainBackground,
+    border: `1px solid ${colors.borderColor}`,
+    right: 0,
+  },
+  "& .twap-time-selector-list-item": {
+    "&:hover": {
+      background: "rgba(255,255,255, 0.05)",
+    },
+  },
+  "& .twap-time-selector-list-item-selected": {
+    background: "rgba(255,255,255, 0.05)",
+  },
+
   "& .twap-card": { ...cardStyles },
   "& .twap-order-progress-line-preview": {
     "&::after": {
@@ -129,9 +169,7 @@ export const globalStyle = {
       background: colors.light,
     },
   },
-  "*": {
-    fontFamily: "inherit",
-  },
+
   a: {
     color: "white",
     fontWeight: 500,
@@ -248,6 +286,10 @@ export const StyledTokenPanel = styled(Box)({
   "& .twap-input": {
     textAlign: "left",
   },
+  "& .twap-token-logo": {
+    width: "28px!important",
+    height: "28px!important",
+  },
   "& .twap-token-name": {
     fontSize: 22,
   },
@@ -276,49 +318,11 @@ export const StyledSwitch = styled(Switch)({
   },
 });
 
-export const StyledLayout = styled(Box)(({ theme }) => ({
-  width: "100%",
-  "& *": {
-    color: colors.text,
-    fontFamily: "inherit",
-  },
-
-  "& .twap-small-label": {
-    fontSize: 14,
-    opacity: 1,
-  },
-  "& .twap-change-order": {
-    width: 50,
-    height: 50,
-  },
-  "& .twap-token-name": {
-    fontSize: 18,
-  },
-  "& .twap-token-logo": {
-    width: 28,
-    height: 28,
-  },
-
-  "& .twap-time-selector-list": {
-    background: colors.mainBackground,
-    border: `1px solid ${colors.borderColor}`,
-    right: 0,
-    "& .twap-time-selector-list-item": {
-      "&:hover": {
-        background: "rgba(255,255,255, 0.05)",
-      },
-    },
-    "& .twap-time-selector-list-item-selected": {
-      background: "rgba(255,255,255, 0.05)",
-    },
-  },
-}));
-
 export const StyledMarketPrice = styled(Box)({
   "& .twap-card": {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
-    background: "rgba(24, 32, 47, 0.5)",
+    background: "#0D1321",
     paddingBottom: 5,
   },
   "& .title": {
@@ -348,32 +352,6 @@ export const StyledMarketPriceRight = styled(Box)({
     height: 20,
   },
 });
-
-// ------------- theme --------------- //
-const lightTheme = createTheme({
-  palette: {
-    mode: "light",
-  },
-});
-
-const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-  },
-  typography: {},
-});
-
-export const getTheme = (mode: "light" | "dark") => {
-  switch (mode) {
-    case "dark":
-      return darkTheme;
-    case "light":
-      return lightTheme;
-
-    default:
-      return lightTheme;
-  }
-};
 
 export const StyledTradeSize = styled(Box)({
   maxWidth: "80%",
@@ -406,7 +384,7 @@ export const StyledTotalTrades = styled(SmallLabel)({
 
 export const StyledTotalTradesInput = styled(StyledNumbericInput)({
   width: 70,
-  flex: "unset",
+  flex: "unset!important",
   "& input": {
     fontSize: 16,
   },

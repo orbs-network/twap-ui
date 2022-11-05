@@ -32,20 +32,21 @@ export const getUsdPrice = async (srcToken: string, srcDecimals: number): Promis
 };
 
 export interface TwapProps {
-  connect: () => void;
-  TokenSelectModal: any;
+  connect?: () => void;
+  TokenSelectModal?: any;
   tokensList: any[];
   account: any;
-  getProvider: () => any;
+  getProvider?: () => any;
+  getTokenImage?: (value: any) => string;
 }
 
 interface ProviderWrapperProps extends TwapProps {
   children: ReactNode;
 }
 
-const useGetProvider = (getProvider: () => any, account?: string) => {
+const useGetProvider = (getProvider?: () => any, account?: string) => {
   return useMemo(() => {
-    if (account) {
+    if (account && getProvider) {
       return getProvider();
     }
     return undefined;
@@ -66,6 +67,7 @@ export const ProviderWrapper = (props: ProviderWrapperProps) => {
       connect={props.connect}
       integrationChainId={dappIntegrationChainId}
       TokenSelectModal={props.TokenSelectModal}
+      getTokenImage={props.getTokenImage}
     >
       {props.children}
     </TwapProvider>

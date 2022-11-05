@@ -65,12 +65,12 @@ export function ConfirmationTradeSize() {
 }
 
 export function ConfirmationTotalTrades() {
-  const { totalTrades, isLimitOrder } = store.useConfirmation();
+  const { totalTrades } = store.useConfirmation();
   const translations = useTwapTranslations();
 
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>{translations.totalTrades}</Label>
+      <Label tooltipText={translations.confirmationTotalTradesTooltip}>{translations.totalTrades}</Label>
       <Text>{totalTrades}</Text>
     </StyledRow>
   );
@@ -93,7 +93,9 @@ export function ConfirmationMinimumReceived() {
   const translations = useTwapTranslations();
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={translations.confirmationMinReceivedPerTradeTooltip}>{translations.minReceivedPerTrade}:</Label>
+      <Label tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
+        {translations.minReceivedPerTrade}:
+      </Label>
 
       <StyledMinumimReceived>
         <TokenName name={dstTokenInfo?.symbol} />

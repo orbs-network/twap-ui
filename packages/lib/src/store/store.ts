@@ -160,6 +160,7 @@ const useWrapToken = () => {
   const { srcTokenAmount, setSrcToken, srcTokenInfo, srcToken, setShowConfirmation } = useTwapStore();
   const { account, config } = useWeb3();
   const { refetch } = useAccountBalances(srcToken);
+  const { getTokenImage } = useContext(TwapContext);
 
   const { mutateAsync: wrap, isLoading } = useMutation(async () => {
     const tx = async () => {
@@ -167,7 +168,12 @@ const useWrapToken = () => {
       await wToken?.methods.deposit().send({ from: account!, value: srcTokenAmount!.toString() });
     };
     await sendTxAndWait(tx);
-    setSrcToken(config!.wrappedTokenInfo, srcTokenAmount);
+
+    const token = config!.wrappedTokenInfo;
+    if (getTokenImage) {
+      token.logoUrl = getTokenImage(token);
+    }
+    setSrcToken(token, srcTokenAmount);
 
     await refetch();
     setShowConfirmation(true);
@@ -535,7 +541,7 @@ function useSubmitOrder() {
 
   const values = () => {
     if (!account) {
-      return { text: translations.connect, onClick: connect };
+      return { text: translations.connect, onClick: connect ? connect : undefined };
     }
     if (isInvalidChain) {
       return { text: translations.switchNetwork, onClick: changeNetwork };
@@ -561,6 +567,7 @@ function useSubmitOrder() {
 }
 
 export const useTokenPanel = (isSrcToken?: boolean) => {
+  const { getTokenImage } = useContext(TwapContext);
   const { srcToken, setSrcToken, srcTokenInfo, onSrcTokenChange, srcTokenAmount, dstToken, setDstToken, dstTokenInfo, isLimitOrder } = useTwapStore();
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const destTokenAmount = useDstTokenAmount();
@@ -570,7 +577,7 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
   const { data: dstTokenUsdValue, isLoading: dstTokenUsdValueLoading } = useUsdValue(dstToken);
   const translations = useTwapTranslations();
   const { account } = useWeb3();
-  const { TokenSelectModal }: { TokenSelectModal: any } = useContext(TwapContext);
+  const { TokenSelectModal } = useContext(TwapContext);
   const srcTokenAmountUi = useGetBigNumberToUiAmount(srcToken, srcTokenAmount);
   const onSelectSrcToken = (token: TokenInfo) => {
     if (dstTokenInfo && eqIgnoreCase(token.address, dstTokenInfo?.address)) {
@@ -590,6 +597,10 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
   };
 
   const onSelect = (token: TokenInfo) => {
+    if (getTokenImage) {
+      token.logoUrl = getTokenImage(token);
+    }
+
     if (isSrcToken) {
       onSelectSrcToken(token);
     } else {
@@ -608,7 +619,9 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
   const dstTokenUsdValueUi = useGetBigNumberToUiAmount(dstToken, destTokenAmount?.times(dstTokenUsdValue || 0).div(1e18));
   const selectedToken = isSrcToken ? srcTokenInfo : dstTokenInfo;
   return {
-    selectedToken,
+    address: selectedToken?.address,
+    symbol: selectedToken?.symbol,
+    logo: selectedToken?.logoUrl,
     value: isSrcToken ? srcTokenValue : dstTokenValue,
     onChange: isSrcToken ? onSrcTokenChange : undefined,
     balance: isSrcToken ? srcTokenBalanceUi : dstTokenBalanceUi,

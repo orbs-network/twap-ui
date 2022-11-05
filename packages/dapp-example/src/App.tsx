@@ -113,6 +113,7 @@ interface Props {
 
 const TokenSelectModal = ({ chainId, isOpen, selectedToken, onSelect, onClose }: Props) => {
   const { data: list = [] } = useTokenList(chainId);
+
   return (
     <Modal open={isOpen} onClose={onClose} onBackdropClick={onClose}>
       <>
@@ -188,6 +189,7 @@ const StyledApp = styled(Box)({
   gap: 48,
   paddingBottom: 50,
   paddingTop: 40,
+  background: "black",
   "& *::-webkit-scrollbar": {
     display: "none",
     width: 0,
