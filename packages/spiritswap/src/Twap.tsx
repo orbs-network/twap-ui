@@ -44,7 +44,7 @@ import {
 import { ProviderWrapper, queryClient, TwapProps } from ".";
 
 // TODO create file for styles
-const { PoweredBy, Balance, Loader, Slider, NumberDisplay, TimeSelector, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } = TWAPLib.baseComponents;
+const { PoweredBy, Balance, Loader, Slider, NumberDisplay, TimeSelector, Label, TokenLogo, TokenName, SmallLabel, Text, IconButton, Tooltip } = TWAPLib.baseComponents;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 
 const {
