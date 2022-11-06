@@ -7,7 +7,7 @@ import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { ReactNode } from "react";
+import { memo, ReactNode } from "react";
 import translations from "./i18n/en.json";
 
 import {
@@ -82,7 +82,7 @@ const TWAP = (props: TwapProps) => {
   );
 };
 
-export default TWAP;
+export default memo(TWAP);
 
 const MarketPrice = () => {
   const { toggleInverted, leftTokenInfo, rightTokenInfo, marketPrice } = TWAPLib.store.useMarketPrice();

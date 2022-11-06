@@ -3,6 +3,7 @@ import { Box, styled } from "@mui/system";
 import { QueryClientProvider } from "react-query";
 import { colors } from "./styles";
 import { ProviderWrapper, queryClient, TwapProps } from ".";
+import { memo } from "react";
 
 const { Orders } = TWAPLib;
 
@@ -18,7 +19,7 @@ function OrderHistory(props: TwapProps) {
   );
 }
 
-export default OrderHistory;
+export default memo(OrderHistory);
 
 const StyledContainer = styled(Box)({
   "& *": {
