@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import MuiModal from "@mui/material/Modal";
 import { Box, styled } from "@mui/system";
-import { IconButton, Typography } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { IoMdClose } from "react-icons/io";
 import Backdrop from "@mui/material/Backdrop";
 

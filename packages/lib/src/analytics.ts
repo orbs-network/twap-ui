@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import ReactGA from "react-ga4";
 import { useQuery } from "react-query";
 import { store, useWeb3 } from "./store/store";

@@ -1,5 +1,5 @@
 import { BigNumber } from "@defi.org/web3-candies";
-import { createContext, ReactElement, ReactNode, useContext, useEffect } from "react";
+import { createContext, ReactNode, useContext, useEffect } from "react";
 import { useAnalyticsInit } from "./analytics";
 import { useWeb3 } from "./store/store";
 import { TokenInfo, Translations } from "./types";

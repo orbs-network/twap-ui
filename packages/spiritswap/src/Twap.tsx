@@ -1,4 +1,4 @@
-import { CssBaseline } from "@mui/material";
+import { GlobalStyles } from "@mui/material";
 import { Box } from "@mui/system";
 import { QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
@@ -7,8 +7,7 @@ import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { memo, ReactNode, useMemo } from "react";
-import { GlobalStyles } from "@mui/material";
+import { ReactNode } from "react";
 import translations from "./i18n/en.json";
 
 import {
@@ -42,7 +41,7 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { TwapProps, ProviderWrapper, queryClient } from ".";
+import { ProviderWrapper, queryClient, TwapProps } from ".";
 
 // TODO create file for styles
 
@@ -283,7 +282,6 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     tokenListOpen,
     toggleTokenList,
     TokenSelectModal,
-    address,
     logo,
     symbol,
   } = TWAPLib.store.useTokenPanel(isSrcToken);
@@ -306,7 +304,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
           <StyledColumnGap>
             <StyledFlexBetween>
               <Tooltip text={inputWarningTooltip}>
-                <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
+                <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange || (() => {})} value={value} />
               </Tooltip>
               <Tooltip text={tokenSeletWarningTooltip}>
                 <StyledTokenSelect onClick={onOpen}>
@@ -331,7 +329,7 @@ const SubmitButton = () => {
   const { loading, text, onClick, disabled } = TWAPLib.store.useSubmitOrder();
 
   return (
-    <StyledButton loading={loading} onClick={onClick ? onClick : () => {}} disabled={disabled}>
+    <StyledButton loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
       {text}
     </StyledButton>
   );

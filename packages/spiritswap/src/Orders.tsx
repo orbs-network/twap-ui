@@ -2,7 +2,7 @@ import TWAPLib from "@orbs-network/twap-ui";
 import { Box, styled } from "@mui/system";
 import { QueryClientProvider } from "react-query";
 import { colors } from "./styles";
-import { queryClient, TwapProps, ProviderWrapper } from ".";
+import { ProviderWrapper, queryClient, TwapProps } from ".";
 
 const { Orders } = TWAPLib;
 

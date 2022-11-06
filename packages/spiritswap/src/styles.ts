@@ -1,10 +1,8 @@
 import { Box, styled } from "@mui/system";
 import TWAPLib from "@orbs-network/twap-ui";
-import { createTheme } from "@mui/material/styles";
 import { CSSProperties } from "react";
-import { GlobalStylesProps } from "@mui/material";
 
-const { USD, Button, Icon, NumericInput, Card, Switch, SmallLabel } = TWAPLib.baseComponents;
+const { USD, Button, Icon, NumericInput, Card, Switch } = TWAPLib.baseComponents;
 
 const { TradeInfoModal } = TWAPLib.components;
 
@@ -192,7 +190,7 @@ export const StyledTrade = styled(Box)({
   },
 });
 
-export const StyledPrice = styled(Box)(({ theme }) => ({
+export const StyledPrice = styled(Box)(() => ({
   width: "100%",
   "& .twap-price": {
     background: colors.mainBackground,
@@ -236,7 +234,7 @@ export const StyledPercentBtn = styled("button")({
 export const StyledIntervalTimeSelect = styled(Box)({
   flex: 1,
 });
-export const StyledTokenSelect = styled("button")(({ theme }) => ({
+export const StyledTokenSelect = styled("button")(() => ({
   background: "transparent",
   border: "unset",
   padding: "6px",
@@ -274,7 +272,7 @@ export const StyledFlexStart = styled(Box)({
   width: "100%",
 });
 
-export const StyledChangeOrder = styled(Box)(({ theme }) => ({
+export const StyledChangeOrder = styled(Box)(() => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -370,15 +368,6 @@ export const StyledTradeSize = styled(Box)({
   },
   "& .twap-token-name": {
     fontSize: 16,
-  },
-});
-
-export const StyledTotalTrades = styled(SmallLabel)({
-  minWidth: 50,
-  justifyContent: "flex-end",
-  "& p": {
-    fontSize: 18,
-    textAlign: "right",
   },
 });
 

@@ -17,7 +17,7 @@
     "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
     "build": "npm run prettier && rm -rf dist && tsc",
     "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc",
-    "test": "eslint . && for t in eth ftm; do echo \"testing $t...\"; NETWORK=$t DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors; done"
+    "test": "eslint src && for t in eth ftm; do echo \"testing $t...\"; NETWORK=$t DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors; done"
   },
   "dependencies": {
     "@defi.org/web3-candies": "4.x",

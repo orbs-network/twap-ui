@@ -764,7 +764,7 @@ export const useGetTradeIntervalForUi = (value: number) => {
     const minutes = time.minutes();
     const seconds = time.seconds();
 
-    let arr: string[] = [];
+    const arr: string[] = [];
 
     if (days) {
       arr.push(`${days} ${translations.days} `);
