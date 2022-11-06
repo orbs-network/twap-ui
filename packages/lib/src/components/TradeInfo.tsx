@@ -146,15 +146,14 @@ export const TradeInfoExplanation = () => {
       <Text>{translations.disclaimer3}</Text>
       <Text>{translations.disclaimer4}</Text>
       <Text>{translations.disclaimer5}</Text>
+
       <Text>
-        {translations.disclaimer6}
+        {translations.disclaimer6}{" "}
         <a href="https://www.orbs.com/" target="_blank">
-          {" "}
           {translations.link}
         </a>
-        . {translations.disclaimer7}
+        . {translations.disclaimer7}{" "}
         <a href="https://www.orbs.com/" target="_blank">
-          {" "}
           {translations.link}
         </a>
         .

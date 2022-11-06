@@ -107,7 +107,9 @@ const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => 
       </StyledProgress>
       <StyledColumnFlex>
         <DetailRow label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
-          <NumberDisplay value={tradeSizeAmountUi} /> {srcTokenInfo.symbol} ≈$ <NumberDisplay value={tradeSizeUsdValueUi} />
+          <NumberDisplay value={tradeSizeAmountUi} decimalScale={3} />
+          <TokenLogo logo={srcTokenInfo.logoUrl} />
+          {srcTokenInfo.symbol} ≈ $ <NumberDisplay value={tradeSizeUsdValueUi} decimalScale={3} />
         </DetailRow>
         <DetailRow label={`${translations.tradeInterval}:`} tooltip={translations.tradeIntervalTootlip}>
           {tradeIntervalUi}
@@ -220,7 +222,7 @@ const TokenDisplay = ({ token, amount, prefix = "", usdValue }: { token: TokenIn
           <TokenName name={token.symbol} />
         </StyledTokenDisplayRightTop>
         <StyledTokenDisplayUsd loading={false} className="usd">
-          ≈$ <NumberDisplay value={usdValue} />
+          ≈ $ <NumberDisplay value={usdValue} />
         </StyledTokenDisplayUsd>
       </StyledTokenDisplayRight>
     </StyledTokenDisplay>
@@ -323,7 +325,7 @@ const DetailRow = ({ label, tooltip, children }: { label: string; tooltip: strin
       <Label className="label" tooltipText={tooltip}>
         {label}
       </Label>
-      <Text className="text">{children}</Text>
+      <StyledDetailRowChildren>{children}</StyledDetailRowChildren>
     </StyledDetailRow>
   );
 };
@@ -337,6 +339,7 @@ const StyledFlex = styled(Box)({
 
 const StyledDetailRow = styled(StyledFlex)({
   fontSize: 14,
+
   "& *": {
     fontSize: "inherit",
   },
@@ -345,6 +348,16 @@ const StyledDetailRow = styled(StyledFlex)({
   },
   "& .text": {
     fontWeight: 300,
+  },
+});
+
+const StyledDetailRowChildren = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  gap: 5,
+  "& .twap-token-logo": {
+    width: 22,
+    height: 22,
   },
 });
 
