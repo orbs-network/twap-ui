@@ -14,7 +14,7 @@ function Button({ children, disabled = false, onClick, loading = false, classNam
     <StyledContainer onClick={onClick} className={`twap-button ${disabled ? "twap-button" : ""} ${className}`} disabled={disabled || loading}>
       {loading && (
         <StyledLoader>
-          <CircularProgress style={{ zoom: 0.8 }} />
+          <CircularProgress style={{ zoom: 0.8 }} className="twap-button-loader" />
         </StyledLoader>
       )}
       <Fade in={!loading}>

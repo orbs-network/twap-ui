@@ -100,7 +100,7 @@ const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => 
               <TokenDisplay usdValue={srcRemainingUsdValueUi} token={srcTokenInfo} amount={srcRemainingAmountUi} />
             </StyledTokenDisplayWithTitle>
           </StyledFlex>
-          <Tooltip text={`${(<NumberDisplay value={progress} decimalScale={2} />)}%`}>
+          <Tooltip text={<NumberDisplay value={progress} decimalScale={2} suffix="%" />}>
             <MainProgressBar progress={progress} />
           </Tooltip>
         </StyledProgressContent>

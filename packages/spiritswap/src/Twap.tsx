@@ -390,7 +390,7 @@ const OrderConfirmation = () => {
             <StyledColumnGap gap={12}>
               <Box style={{ display: "flex", gap: 5 }}>
                 <SmallLabel>{translations.acceptDisclaimer}</SmallLabel>
-                <Switch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
+                <StyledSwitch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
               </Box>
               <Text className="output-text">{translations.outputWillBeSentTo}</Text>
               <Text className="output-text">{account}</Text>

@@ -1,6 +1,18 @@
 import { NumericFormat } from "react-number-format";
 
-function NumberDisplay({ value, decimalScale = 6, prefix, className = "" }: { value?: string | number; decimalScale?: number; prefix?: string; className?: string }) {
+function NumberDisplay({
+  value,
+  decimalScale = 6,
+  prefix,
+  className = "",
+  suffix,
+}: {
+  value?: string | number;
+  decimalScale?: number;
+  prefix?: string;
+  className?: string;
+  suffix?: string;
+}) {
   return value ? (
     <NumericFormat
       type="text"
@@ -12,6 +24,7 @@ function NumberDisplay({ value, decimalScale = 6, prefix, className = "" }: { va
       displayType="text"
       decimalScale={decimalScale}
       prefix={prefix}
+      suffix={suffix}
     />
   ) : (
     <> -</>

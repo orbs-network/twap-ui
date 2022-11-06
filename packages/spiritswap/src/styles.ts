@@ -84,6 +84,11 @@ export const StyledIcon = styled(Icon)({
 });
 
 export const StyledTradeInfoModal = styled(TradeInfoModal)({
+  "& a": {
+    color: "white",
+    fontWeight: 500,
+    textDecoration: "underline",
+  },
   "& *": {
     boxSizing: "border-box",
     color: "white",
@@ -126,6 +131,11 @@ export const StyledLimitPrice = styled(Box)({
 export const StyledTokenOrder = styled(Box)({ width: "100%" });
 
 export const globalStyle = {
+  "& .twap-button": {
+    "& .twap-button-loader": {
+      color: "white",
+    },
+  },
   "& .twap-container": {
     display: "flex",
     gap: 15,
@@ -173,11 +183,6 @@ export const globalStyle = {
     "& .MuiLinearProgress-bar": {
       background: colors.light,
     },
-  },
-
-  a: {
-    color: "white",
-    fontWeight: 500,
   },
 
   "& .twap-tooltip": {
@@ -307,16 +312,18 @@ export const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
   alignItems: "flex-start",
   width: "100%",
 }));
-globalStyle;
+
 export const StyledSwitch = styled(Switch)({
   "& .MuiSwitch-thumb": {
     background: "white",
   },
   "& .MuiSwitch-track": {
-    background: colors.mainBackground,
+    background: "#19202F",
+    opacity: "1!important",
   },
   "& .Mui-checked+.MuiSwitch-track": {
-    background: colors.mainBackground,
+    backgroundColor: "#19202F!important",
+    opacity: "1!important",
   },
   "& .Mui-checked .MuiSwitch-thumb": {
     background: colors.icon,
