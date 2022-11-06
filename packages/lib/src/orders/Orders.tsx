@@ -44,8 +44,8 @@ function Orders() {
 }
 
 const StyledLists = styled(Box)({
-  maxHeight: 400,
   overflow: "auto",
+  height: "100%",
 });
 
 const StyledHeader = styled(Box)({

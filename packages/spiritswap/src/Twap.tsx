@@ -8,6 +8,7 @@ import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { ReactNode } from "react";
+import { GlobalStyles } from "@mui/material";
 import translations from "./i18n/en.json";
 
 import {
@@ -45,7 +46,7 @@ import { ProviderWrapper, queryClient, TwapProps } from ".";
 
 // TODO create file for styles
 
-const { Balance, Loader, Slider, NumberDisplay, TimeSelector, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } = TWAPLib.baseComponents;
+const { PoweredBy, Balance, Loader, Slider, NumberDisplay, TimeSelector, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } = TWAPLib.baseComponents;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 
 const {
@@ -76,6 +77,7 @@ const TWAP = (props: TwapProps) => {
           <TradeInterval />
           <SubmitButton />
           <OrderConfirmation />
+          <PoweredBy />
         </div>
       </ProviderWrapper>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />

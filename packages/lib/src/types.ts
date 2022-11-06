@@ -183,4 +183,5 @@ export interface Translations {
   confirmationLimitPriceTooltip: string;
   ordersTooltip: string;
   noOrdersFound1: string;
+  poweredBy: string;
 }

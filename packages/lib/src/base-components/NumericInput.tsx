@@ -95,7 +95,7 @@ const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   pointerEvents: disabled ? "none" : "unset",
   height: "100%",
   width: "100%",
-  textIndent: 3,
+  textIndent: 10,
   fontSize: 16,
   border: "unset",
   background: "transparent",

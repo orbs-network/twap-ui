@@ -167,7 +167,7 @@ const useWrapToken = () => {
       const wToken: any = getToken(config!.wrappedTokenInfo, true);
       await wToken?.methods.deposit().send({ from: account!, value: srcTokenAmount!.toString() });
     };
-    await sendTxAndWait(tx);
+    await sendTxAndWait(tx, 10_000);
 
     const token = config!.wrappedTokenInfo;
     if (getTokenImage) {
@@ -529,7 +529,7 @@ function useSubmitOrder() {
           )
           .send({ from: account });
       };
-      await sendTxAndWait(tx);
+      await sendTxAndWait(tx, 30_000);
       await refetch();
     },
     {

@@ -107,7 +107,7 @@ const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => 
       </StyledProgress>
       <StyledColumnFlex>
         <DetailRow label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
-          <NumberDisplay value={tradeSizeAmountUi} /> {srcTokenInfo.symbol} ≈$ {tradeSizeUsdValueUi}
+          <NumberDisplay value={tradeSizeAmountUi} /> {srcTokenInfo.symbol} ≈$ <NumberDisplay value={tradeSizeUsdValueUi} />
         </DetailRow>
         <DetailRow label={`${translations.tradeInterval}:`} tooltip={translations.tradeIntervalTootlip}>
           {tradeIntervalUi}

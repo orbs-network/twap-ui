@@ -10,16 +10,21 @@ import moment from "moment";
 import twapAbi from "./twap-abi.json";
 import { sendTxAndWait } from "../config";
 
-const getTokenFromList = (tokensList: TokenInfo[], address?: string) => {
-  if (!address) {
-    return {} as TokenInfo;
-  }
-  return tokensList.find((it) => eqIgnoreCase(it.address, address)) || ({} as TokenInfo);
-};
-
-export const useTokenFromTokensList = (address?: string) => {
-  const { tokensList } = useContext(TwapContext);
-  return getTokenFromList(tokensList, address);
+export const useGetTokenFromList = () => {
+  const { tokensList, getTokenImage } = useContext(TwapContext);
+  return (address?: string) => {
+    if (!address) {
+      return {} as TokenInfo;
+    }
+    let token = tokensList.find((it) => eqIgnoreCase(it.address, address));
+    if (token && getTokenImage) {
+      token = {
+        ...token,
+        logoUrl: getTokenImage(token),
+      };
+    }
+    return token || ({} as TokenInfo);
+  };
 };
 
 export const useOrdersUsdValueToUi = (token?: Token, amount?: BigNumber) => {
@@ -53,8 +58,9 @@ const getAllUsdValuesCallback = () => {
 
 export const useOrders = () => {
   const { account, config, web3 } = useWeb3();
-  const tokensList = useContext(TwapContext).tokensList;
+  const { tokensList } = useContext(TwapContext);
   const { mutateAsync: getUsdValues } = getAllUsdValuesCallback();
+  const getTokenFromList = useGetTokenFromList();
 
   return useQuery(
     ["useOrders", account],
@@ -68,8 +74,8 @@ export const useOrders = () => {
 
       const parsedOrders = await Promise.all(
         _.map(orders, async (o) => {
-          const srcTokenInfo = getTokenFromList(tokensList, o.ask.srcToken);
-          const dstTokenInfo = getTokenFromList(tokensList, o.ask.dstToken);
+          const srcTokenInfo = getTokenFromList(o.ask.srcToken);
+          const dstTokenInfo = getTokenFromList(o.ask.dstToken);
 
           const srcToken = getToken(srcTokenInfo);
           const dstToken = getToken(dstTokenInfo);
