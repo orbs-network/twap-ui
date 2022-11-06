@@ -70,7 +70,7 @@
   "expiration": "Expiration",
   "orderType": "Order type",
   "minReceivedPerTrade": "Minimum Received Per Trade",
-  "confirmationLimitPriceTooltip": "Trades will only be executed when this limit price is equal to or worse than the available market price. Some trades may not be executed if the limit price is better than the available market prices and your order may only be partially filled.",
+  "confirmationLimitPriceTooltip": "Trades will only be executed when this limit price is equal to or lower than the available market price. Some trades may not be executed if the limit price is higher than the available market prices and your order may only be partially filled.",
   "ordersTooltip": "The below shows your wallet's TWAP order history and current status.",
   "poweredByOrbs": "Powered by Orbs"
 }
