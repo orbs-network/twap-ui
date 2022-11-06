@@ -8,7 +8,6 @@ import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { ReactNode } from "react";
-import { GlobalStyles } from "@mui/material";
 import translations from "./i18n/en.json";
 
 import {
@@ -61,8 +60,6 @@ const {
 } = TWAPLib.components;
 
 const TWAP = (props: TwapProps) => {
-  // try to move it inside the panel
-
   return (
     <QueryClientProvider client={queryClient}>
       <ProviderWrapper {...props}>
