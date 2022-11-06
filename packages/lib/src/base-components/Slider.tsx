@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import MuiSlider from "@mui/material/Slider";
+import { styled } from "@mui/system";
+import Tooltip from "./Tooltip";
+import { useTwapTranslations } from "../context";
 
 function valueLabelFormat(value: number) {
   return value.toString();
@@ -14,6 +17,18 @@ export interface Props {
   value: number;
   maxTrades: number;
 }
+
+const getMarks = (maxTrades: number) => {
+  if (maxTrades < 4) return [];
+  const size = maxTrades / 4;
+  return Array.from(Array(4)).map((_, index) => {
+    const value: number = size * (index + 1);
+    return {
+      value,
+      label: value.toFixed(0),
+    };
+  });
+};
 
 const Slider = ({ onChange, value, maxTrades }: Props) => {
   const [localValue, setLocalValue] = React.useState(value);
@@ -34,10 +49,11 @@ const Slider = ({ onChange, value, maxTrades }: Props) => {
   };
 
   return (
-    <MuiSlider
+    <StyledSlider
       value={localValue}
       min={1}
       step={1}
+      // marks={getMarks(maxTrades)}
       max={maxTrades}
       scale={calculateValue}
       getAriaValueText={valueLabelFormat}
@@ -49,6 +65,15 @@ const Slider = ({ onChange, value, maxTrades }: Props) => {
 };
 
 export default Slider;
+
+const StyledSlider = styled(MuiSlider)({
+  "& .MuiSlider-markLabel": {
+    maxWidth: 50,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+});
 
 function useDebounce<T>(value: T, delay?: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);

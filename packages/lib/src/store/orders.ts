@@ -9,6 +9,7 @@ import lensAbi from "./lens-abi.json";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
 import { sendTxAndWait } from "../config";
+import { AnalyticsEvents } from "../analytics";
 
 export const useGetTokenFromList = () => {
   const { tokensList, getTokenImage } = useContext(TwapContext);
@@ -139,18 +140,31 @@ export const useOrders = () => {
   );
 };
 
+export const useWaitForNewOrderLoading = () => {};
+
 export const useCancelCallback = () => {
   const { config, account } = useWeb3();
   const { refetch } = useOrders();
 
-  return useMutation(async (orderId: string) => {
-    const tx = async () => {
-      const twap = contract(twapAbi as Abi, config.twapAddress);
-      await twap.methods.cancel(orderId).send({ from: account });
-    };
-    await sendTxAndWait(tx);
-    await refetch();
-  });
+  return useMutation(
+    async (orderId: string) => {
+      AnalyticsEvents.onCancelOrderClick(orderId);
+      const tx = async () => {
+        const twap = contract(twapAbi as Abi, config.twapAddress);
+        await twap.methods.cancel(orderId).send({ from: account });
+      };
+      await sendTxAndWait(tx);
+      await refetch();
+    },
+    {
+      onSuccess: (_, orderId) => {
+        AnalyticsEvents.onCancelOrderTxSuccess(orderId);
+      },
+      onError: (error: Error) => {
+        AnalyticsEvents.onCancelOrderTxError(error.message);
+      },
+    }
+  );
 };
 
 export const useHistoryPrice = (srcTokenInfo: TokenInfo, dstTokenInfo: TokenInfo, dstPrice: BigNumber) => {
