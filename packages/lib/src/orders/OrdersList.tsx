@@ -5,8 +5,6 @@ import OrderComponent from "./Order";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useTwapTranslations } from "../context";
 
-// TODO chnage all limitOrder -->  orders, ordersList, Order
-
 function OrdersList({ orders, type, isLoading }: { orders: Order[]; type: OrderStatus; isLoading: boolean }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
   const translations = useTwapTranslations();
@@ -29,7 +27,7 @@ function OrdersList({ orders, type, isLoading }: { orders: Order[]; type: OrderS
           return <OrderComponent order={order} type={type} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
         })
       ) : (
-        <StyledEmptyList>{translations.noOrdersFound}</StyledEmptyList>
+        <StyledEmptyList>{`${translations.noOrdersFound} ${type} ${translations.noOrdersFound1}`}</StyledEmptyList>
       )}
     </StyledContainer>
   );

@@ -1,12 +1,12 @@
 import { Tooltip as MuiTooltip } from "@mui/material";
-import { Fragment, ReactElement, ReactNode } from "react";
+import { ReactElement, ReactNode } from "react";
 
 interface Props extends React.HTMLAttributes<HTMLElement> {
   children: ReactNode;
   text?: string | ReactElement;
 }
 
-function Tooltip({ children, text, style }: Props) {
+function Tooltip({ children, text }: Props) {
   if (!text) {
     return <>{children}</>;
   }

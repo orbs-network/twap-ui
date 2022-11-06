@@ -1,20 +1,16 @@
-import { CssBaseline } from "@mui/material";
+import { GlobalStyles } from "@mui/material";
 import { Box } from "@mui/system";
 import { QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import TWAPLib from "@orbs-network/twap-ui";
-import { ThemeProvider } from "@mui/material/styles";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { ReactNode, useMemo } from "react";
-import { GlobalStyles } from "@mui/material";
+import { ReactNode } from "react";
 import translations from "./i18n/en.json";
-import { useQuery, useQueryClient } from "react-query";
 
 import {
-  getTheme,
   globalStyle,
   StyledButton,
   StyledCard,
@@ -25,7 +21,6 @@ import {
   StyledFlexStart,
   StyledIcon,
   StyledIntervalTimeSelect,
-  StyledLayout,
   StyledLimitPrice,
   StyledMarketPrice,
   StyledMarketPriceRight,
@@ -46,11 +41,11 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { TwapProps, ProviderWrapper, queryClient, useGetProvider } from ".";
+import { ProviderWrapper, queryClient, TwapProps } from ".";
 
 // TODO create file for styles
 
-const { Balance, Loader, Slider, NumberDisplay, TimeSelector, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } = TWAPLib.baseComponents;
+const { PoweredBy, Balance, Loader, Slider, NumberDisplay, TimeSelector, Label, TokenLogo, TokenName, SmallLabel, Switch, Text, IconButton, Tooltip } = TWAPLib.baseComponents;
 const PriceToggle = TWAPLib.baseComponents.PriceToggle;
 
 const {
@@ -68,23 +63,19 @@ const TWAP = (props: TwapProps) => {
   return (
     <QueryClientProvider client={queryClient}>
       <ProviderWrapper {...props}>
-        <ThemeProvider theme={getTheme("dark")}>
-          <CssBaseline />
-          <GlobalStyles styles={globalStyle} />
-          <StyledLayout>
-            <StyledColumnGap gap={10}>
-              <SrcTokenPanel />
-              <ChangeTokensOrder />
-              <DstTokenPanel />
-              <LimitPriceDisplay />
-              <TradeSize />
-              <MaxDuration />
-              <TradeInterval />
-              <SubmitButton />
-              <OrderConfirmation />
-            </StyledColumnGap>
-          </StyledLayout>
-        </ThemeProvider>
+        <GlobalStyles styles={globalStyle as any} />
+        <div className="twap-container" style={{ flexDirection: "column" }}>
+          <SrcTokenPanel />
+          <ChangeTokensOrder />
+          <DstTokenPanel />
+          <LimitPriceDisplay />
+          <TradeSize />
+          <MaxDuration />
+          <TradeInterval />
+          <SubmitButton />
+          <OrderConfirmation />
+          <PoweredBy />
+        </div>
       </ProviderWrapper>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </QueryClientProvider>
@@ -286,11 +277,12 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     balance,
     value,
     onSelect,
-    selectedToken,
     onChange,
     tokenListOpen,
     toggleTokenList,
     TokenSelectModal,
+    logo,
+    symbol,
   } = TWAPLib.store.useTokenPanel(isSrcToken);
 
   const { chain } = TWAPLib.store.useWeb3();
@@ -302,29 +294,33 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   };
 
   return (
-    <StyledTokenPanel>
-      {TokenSelectModal && <TokenSelectModal isOpen={tokenListOpen} chainId={chain} selectedTokens={selectedToken} onClose={() => toggleTokenList(false)} onSelect={onSelect} />}
-      <StyledCard>
-        <StyledColumnGap>
-          <StyledFlexBetween>
-            <Tooltip text={inputWarningTooltip}>
-              <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange ? onChange : () => {}} value={value} />
-            </Tooltip>
-            <Tooltip text={tokenSeletWarningTooltip}>
-              <StyledTokenSelect onClick={onOpen}>
-                <TokenDisplay logo={selectedToken?.logoUrl} name={selectedToken?.symbol} />
-                <StyledIcon icon={<IoIosArrowDown size={20} />} />
-              </StyledTokenSelect>
-            </Tooltip>
-          </StyledFlexBetween>
-          <StyledFlexBetween>
-            <StyledUSD value={usdValue} isLoading={usdValueLoading} />
-            <Balance isLoading={balanceLoading} value={balance} />
-          </StyledFlexBetween>
-          {children}
-        </StyledColumnGap>
-      </StyledCard>
-    </StyledTokenPanel>
+    <>
+      {TokenSelectModal && (
+        <TokenSelectModal chainId={chain} commonTokens={[]} tokenSelected={undefined} onSelect={onSelect} isOpen={tokenListOpen} onClose={() => toggleTokenList(false)} />
+      )}
+      <StyledTokenPanel>
+        <StyledCard>
+          <StyledColumnGap>
+            <StyledFlexBetween>
+              <Tooltip text={inputWarningTooltip}>
+                <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange || (() => {})} value={value} />
+              </Tooltip>
+              <Tooltip text={tokenSeletWarningTooltip}>
+                <StyledTokenSelect onClick={onOpen}>
+                  <TokenDisplay logo={logo} name={symbol} />
+                  <StyledIcon icon={<IoIosArrowDown size={20} />} />
+                </StyledTokenSelect>
+              </Tooltip>
+            </StyledFlexBetween>
+            <StyledFlexBetween>
+              <StyledUSD value={usdValue} isLoading={usdValueLoading} />
+              <Balance isLoading={balanceLoading} value={balance} />
+            </StyledFlexBetween>
+            {children}
+          </StyledColumnGap>
+        </StyledCard>
+      </StyledTokenPanel>
+    </>
   );
 };
 
@@ -332,7 +328,7 @@ const SubmitButton = () => {
   const { loading, text, onClick, disabled } = TWAPLib.store.useSubmitOrder();
 
   return (
-    <StyledButton loading={loading} onClick={onClick} disabled={disabled}>
+    <StyledButton loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
       {text}
     </StyledButton>
   );

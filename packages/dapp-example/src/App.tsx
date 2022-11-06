@@ -1,14 +1,12 @@
 import { Box, styled } from "@mui/system";
 import { useWeb3React } from "@web3-react/core";
 import { injectedConnector } from "./connectors";
-import { CSSProperties, useEffect, useRef, useState } from "react";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
+import { CSSProperties, useState } from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
-import { networks, erc20s, zeroAddress } from "@defi.org/web3-candies";
+import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
-import { TWAP_Spiritswap, Orders } from "@orbs-network/twap-ui-spiritswap";
+import { Orders, TWAP_Spiritswap } from "@orbs-network/twap-ui-spiritswap";
 // import TWAP_Quickswap from "@orbs-network/twap-ui-quickswap";
 import Modal from "@mui/material/Modal";
 import { AiOutlineClose } from "react-icons/ai";
@@ -113,6 +111,7 @@ interface Props {
 
 const TokenSelectModal = ({ chainId, isOpen, selectedToken, onSelect, onClose }: Props) => {
   const { data: list = [] } = useTokenList(chainId);
+
   return (
     <Modal open={isOpen} onClose={onClose} onBackdropClick={onClose}>
       <>
@@ -188,6 +187,7 @@ const StyledApp = styled(Box)({
   gap: 48,
   paddingBottom: 50,
   paddingTop: 40,
+  background: "black",
   "& *::-webkit-scrollbar": {
     display: "none",
     width: 0,

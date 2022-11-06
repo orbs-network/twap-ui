@@ -1,6 +1,5 @@
 import { ClickAwayListener, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import _ from "lodash";
 import { useState } from "react";
 import { TimeFormat } from "../store/TimeFormat";
 import NumericInput from "./NumericInput";

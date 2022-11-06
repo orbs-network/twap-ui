@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import MuiModal from "@mui/material/Modal";
 import { Box, styled } from "@mui/system";
-import { IconButton, Typography } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { IoMdClose } from "react-icons/io";
 import Backdrop from "@mui/material/Backdrop";
 
@@ -14,11 +14,11 @@ export interface Props {
   disableBackdropClick?: boolean;
 }
 
-function Modal({ handleClose, open, children, title, className = "", disableBackdropClick }: Props) {
+function Modal({ handleClose, open, children, title, className = "", disableBackdropClick = false }: Props) {
   return (
     <StyledModal open={open} onClose={handleClose} className={`${className} twap-modal`} hideBackdrop>
       <>
-        <Backdrop open={open} onClick={disableBackdropClick ? () => {} : handleClose}></Backdrop>
+        <Backdrop open={open} onClick={disableBackdropClick ? undefined : handleClose}></Backdrop>
         <StyledModalContent className="twap-modal-content">
           <StyledClose onClick={handleClose}>
             <IoMdClose />

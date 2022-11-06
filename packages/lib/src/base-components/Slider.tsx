@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import MuiSlider from "@mui/material/Slider";
 import { styled } from "@mui/system";
 import Tooltip from "./Tooltip";
@@ -35,7 +33,6 @@ const getMarks = (maxTrades: number) => {
 const Slider = ({ onChange, value, maxTrades }: Props) => {
   const [localValue, setLocalValue] = React.useState(value);
   const debouncedValue = useDebounce<number>(localValue, 200);
-  const translations = useTwapTranslations();
 
   useEffect(() => {
     onChange(debouncedValue);
@@ -52,20 +49,18 @@ const Slider = ({ onChange, value, maxTrades }: Props) => {
   };
 
   return (
-    <Tooltip text={translations.totalTradesSliderTooltip}>
-      <StyledSlider
-        value={localValue}
-        min={1}
-        step={1}
-        marks={getMarks(maxTrades)}
-        max={maxTrades}
-        scale={calculateValue}
-        getAriaValueText={valueLabelFormat}
-        valueLabelFormat={valueLabelFormat}
-        onChange={handleChange}
-        valueLabelDisplay="auto"
-      />
-    </Tooltip>
+    <StyledSlider
+      value={localValue}
+      min={1}
+      step={1}
+      // marks={getMarks(maxTrades)}
+      max={maxTrades}
+      scale={calculateValue}
+      getAriaValueText={valueLabelFormat}
+      valueLabelFormat={valueLabelFormat}
+      onChange={handleChange}
+      valueLabelDisplay="auto"
+    />
   );
 };
 

@@ -10,10 +10,9 @@ import { changeNetwork } from "./connect";
 import { TwapContext, useTwapTranslations } from "../context";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
-import { useGetOrderCallback, useOrders } from "./orders";
+import { useOrders } from "./orders";
 import { getConfig, nativeAddresses, sendTxAndWait } from "../config";
 import { AnalyticsEvents } from "../analytics";
-import lensAbi from "./lens-abi.json";
 
 const defaultState = {
   srcTokenInfo: undefined,
@@ -173,16 +172,21 @@ const useWrapToken = () => {
   const { srcTokenAmount, setSrcToken, srcTokenInfo, srcToken, setShowConfirmation } = useTwapStore();
   const { account, config } = useWeb3();
   const { refetch } = useAccountBalances(srcToken);
+  const { getTokenImage } = useContext(TwapContext);
 
   const { mutateAsync: wrap, isLoading } = useMutation(
     async () => {
-      AnalyticsEvents.onWrapClick();
       const tx = async () => {
         const wToken: any = getToken(config!.wrappedTokenInfo, true);
         await wToken?.methods.deposit().send({ from: account!, value: srcTokenAmount!.toString() });
       };
-      await sendTxAndWait(tx);
-      setSrcToken(config!.wrappedTokenInfo, srcTokenAmount);
+      await sendTxAndWait(tx, 10_000);
+
+      const token = config!.wrappedTokenInfo;
+      if (getTokenImage) {
+        token.logoUrl = getTokenImage(token);
+      }
+      setSrcToken(token, srcTokenAmount);
 
       await refetch();
       setShowConfirmation(true);
@@ -460,6 +464,7 @@ export const useSubmitButtonValidation = () => {
   const { srcTokenAmount, srcToken, srcTokenInfo, dstToken, maxDurationMillis, getTradeIntervalMillis, getTradeSize } = useTwapStore();
   const { data: srcTokenUsdValue18 } = useUsdValue(srcToken);
   const { data: srcTokenBalance } = useAccountBalances(srcToken);
+  const { config } = useWeb3();
   const translations = useTwapTranslations();
 
   const srcTokenAmountUi = useGetBigNumberToUiAmount(srcToken, srcTokenAmount);
@@ -479,14 +484,20 @@ export const useSubmitButtonValidation = () => {
 
     if (tradeIntervalMillis === 0) return translations.enterTradeInterval;
 
-    if (srcTokenAmount && tradeSize && srcTokenUsdValue18 && srcTokenInfo && isTradeSizeTooSmall(srcTokenAmount, tradeSize, srcTokenUsdValue18, srcTokenInfo))
+    if (
+      srcTokenAmount &&
+      tradeSize &&
+      srcTokenUsdValue18 &&
+      srcTokenInfo &&
+      isTradeSizeTooSmall(srcTokenAmount, tradeSize, srcTokenUsdValue18, srcTokenInfo, config.minimumTradeSizeUsd)
+    )
       return translations.tradeSizeMustBeEqual;
   }, [translations, dstToken, srcTokenAmount, srcTokenUsdValue18, tradeSize, srcTokenAmount, tradeIntervalMillis, maxDurationMillis, srcToken, srcTokenInfo, srcTokenAmountUi]);
 };
 
-const isTradeSizeTooSmall = (srcTokenAmount: BigNumber, tradeSize: BigNumber, srcTokenUsdValue18: BigNumber, srcTokenInfo: TokenInfo) => {
+const isTradeSizeTooSmall = (srcTokenAmount: BigNumber, tradeSize: BigNumber, srcTokenUsdValue18: BigNumber, srcTokenInfo: TokenInfo, minUsdValue: number) => {
   const smallestTradeSize = srcTokenAmount.modulo(tradeSize).eq(0) ? tradeSize : srcTokenAmount.modulo(tradeSize);
-  return smallestTradeSize?.times(srcTokenUsdValue18).div(1e18).lt(BigNumber(10).pow(srcTokenInfo.decimals));
+  return smallestTradeSize.times(srcTokenUsdValue18).div(1e18).div(BigNumber(10).pow(srcTokenInfo.decimals)).lt(minUsdValue);
 };
 
 const usePartialFillValidation = () => {
@@ -517,30 +528,6 @@ function useSubmitOrder() {
   const { refetch } = useOrders();
   const translations = useTwapTranslations();
   const { srcTokenInfo, dstTokenInfo, srcTokenAmount, tradeSize, minAmountOut, deadline, tradeIntervalMillis, isLimitOrder } = useConfirmation();
-  const { mutateAsync: getOrders } = useGetOrderCallback();
-
-  const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
-  const waitForNewOrder = async () => {
-    const orders = await getOrders();
-    const ordesIdsBefore = orders.map((o: any) => o.id) || [];
-
-    return async () => {
-      for (let attempt = 0; attempt < 30; attempt++) {
-        await delay(2000);
-        let orderIdsAfter;
-        try {
-          const orders = await getOrders();
-          orderIdsAfter = orders.map((o: any) => o.id);
-        } catch (error) {}
-
-        if (orderIdsAfter && orderIdsAfter.length > ordesIdsBefore.length) {
-          return;
-        }
-      }
-      return;
-    };
-  };
 
   const { mutate: createOrder, isLoading: createdOrderLoading } = useMutation(
     async () => {
@@ -573,13 +560,8 @@ function useSubmitOrder() {
           )
           .send({ from: account });
       };
-
-      const waiter = await waitForNewOrder();
-
-      await sendTxAndWait(tx);
-
-      await waiter();
-      return refetch();
+      await sendTxAndWait(tx, 30_000);
+      await refetch();
     },
     {
       onSuccess: async () => {
@@ -594,7 +576,7 @@ function useSubmitOrder() {
 
   const values = () => {
     if (!account) {
-      return { text: translations.connect, onClick: connect };
+      return { text: translations.connect, onClick: connect ? connect : undefined };
     }
     if (isInvalidChain) {
       return { text: translations.switchNetwork, onClick: changeNetwork };
@@ -620,6 +602,7 @@ function useSubmitOrder() {
 }
 
 export const useTokenPanel = (isSrcToken?: boolean) => {
+  const { getTokenImage } = useContext(TwapContext);
   const { srcToken, setSrcToken, srcTokenInfo, onSrcTokenChange, srcTokenAmount, dstToken, setDstToken, dstTokenInfo, isLimitOrder } = useTwapStore();
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const destTokenAmount = useDstTokenAmount();
@@ -629,7 +612,7 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
   const { data: dstTokenUsdValue, isLoading: dstTokenUsdValueLoading } = useUsdValue(dstToken);
   const translations = useTwapTranslations();
   const { account } = useWeb3();
-  const { TokenSelectModal }: { TokenSelectModal: any } = useContext(TwapContext);
+  const { TokenSelectModal } = useContext(TwapContext);
   const srcTokenAmountUi = useGetBigNumberToUiAmount(srcToken, srcTokenAmount);
   const onSelectSrcToken = (token: TokenInfo) => {
     if (dstTokenInfo && eqIgnoreCase(token.address, dstTokenInfo?.address)) {
@@ -649,6 +632,10 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
   };
 
   const onSelect = (token: TokenInfo) => {
+    if (getTokenImage) {
+      token.logoUrl = getTokenImage(token);
+    }
+
     if (isSrcToken) {
       AnalyticsEvents.onSelectSrcToken(token.symbol);
       onSelectSrcToken(token);
@@ -669,7 +656,9 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
   const dstTokenUsdValueUi = useGetBigNumberToUiAmount(dstToken, destTokenAmount?.times(dstTokenUsdValue || 0).div(1e18));
   const selectedToken = isSrcToken ? srcTokenInfo : dstTokenInfo;
   return {
-    selectedToken,
+    address: selectedToken?.address,
+    symbol: selectedToken?.symbol,
+    logo: selectedToken?.logoUrl,
     value: isSrcToken ? srcTokenValue : dstTokenValue,
     onChange: isSrcToken ? onSrcTokenChange : undefined,
     balance: isSrcToken ? srcTokenBalanceUi : dstTokenBalanceUi,
@@ -812,7 +801,7 @@ export const useGetTradeIntervalForUi = (value: number) => {
     const minutes = time.minutes();
     const seconds = time.seconds();
 
-    let arr: string[] = [];
+    const arr: string[] = [];
 
     if (days) {
       arr.push(`${days} ${translations.days} `);

@@ -1,7 +1,5 @@
-import { BigNumber, convertDecimals } from "@defi.org/web3-candies";
 import { Box, styled } from "@mui/system";
-import React, { useState } from "react";
-import { IoMdLogIn } from "react-icons/io";
+import React from "react";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { TokenInfo } from "../types";
 import Icon from "./Icon";

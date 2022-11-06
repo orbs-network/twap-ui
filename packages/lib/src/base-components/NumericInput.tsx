@@ -2,7 +2,6 @@ import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";
-import { useEffect, useRef, useState } from "react";
 
 export interface Props {
   onChange: (value: string) => void;
@@ -96,7 +95,7 @@ const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   pointerEvents: disabled ? "none" : "unset",
   height: "100%",
   width: "100%",
-  textIndent: 3,
+  textIndent: 10,
   fontSize: 16,
   border: "unset",
   background: "transparent",

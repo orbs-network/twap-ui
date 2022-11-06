@@ -16,6 +16,7 @@ import Tooltip from "./base-components/Tooltip";
 import IconButton from "./base-components/IconButton";
 import Text from "./base-components/Text";
 import NumberDisplay from "./base-components/NumberDisplay";
+import PoweredBy from "./base-components/PoweredBy";
 import { TwapContext, TwapProvider, useTwapTranslations } from "./context";
 import {
   ConfirmationExpiration,
@@ -63,6 +64,7 @@ export default {
     OdnpButton,
     Loader,
     Slider,
+    PoweredBy,
   },
   components: {
     LimitPrice,

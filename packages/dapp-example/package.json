@@ -1,17 +1,23 @@
 {
   "name": "@orbs-network/twap-ui-dapp-example",
-  "version": "0.1.3",
+  "version": "0.1.18",
   "private": true,
   "license": "MIT",
   "homepage": "https://orbs-network.github.io/twap-ui/",
   "scripts": {
     "prettier": "prettier -w 'src/**/*.{ts,tsx,js,jsx,json,sol}'",
-    "start": "npm run prettier && react-scripts start",
-    "build": "npm run prettier && react-scripts build"
+    "start": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts start",
+    "build": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts build"
   },
   "dependencies": {
-    "@orbs-network/twap-ui-spiritswap": "^0.1.3",
-    "react-query": "*"
+    "@orbs-network/twap-ui-spiritswap": "^0.1.18",
+    "@types/react": "18.x",
+    "@types/react-dom": "18.x",
+    "@web3-react/core": "6.x",
+    "@web3-react/injected-connector": "6.x",
+    "@web3-react/walletconnect-connector": "6.x",
+    "react": "18.x",
+    "react-dom": "18.x"
   },
   "browserslist": {
     "production": [

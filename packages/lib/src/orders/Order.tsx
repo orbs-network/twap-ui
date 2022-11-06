@@ -23,6 +23,7 @@ import { BigNumber } from "@defi.org/web3-candies";
 import PriceDisplay from "../base-components/PriceDisplay";
 import { useGetTradeIntervalForUi } from "../store/store";
 import { useTwapTranslations } from "../context";
+
 export interface Props {
   order: Order;
   onExpand: () => void;
@@ -106,7 +107,7 @@ const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => 
       </StyledProgress>
       <StyledColumnFlex>
         <DetailRow label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
-          <NumberDisplay value={tradeSizeAmountUi} /> {srcTokenInfo.symbol} ≈$ {tradeSizeUsdValueUi}
+          <NumberDisplay value={tradeSizeAmountUi} /> {srcTokenInfo.symbol} ≈$ <NumberDisplay value={tradeSizeUsdValueUi} />
         </DetailRow>
         <DetailRow label={`${translations.tradeInterval}:`} tooltip={translations.tradeIntervalTootlip}>
           {tradeIntervalUi}
@@ -372,7 +373,7 @@ const StyledProgressContent = styled(StyledColumnFlex)({
   flexDirection: "column",
 });
 
-const MainProgressBar = ({ progress, emptyBarColor }: { progress: number; emptyBarColor?: string }) => {
+const MainProgressBar = ({ progress }: { progress: number; emptyBarColor?: string }) => {
   return <StyledMainProgressBar variant="determinate" value={progress} className="twap-order-main-progress-bar" />;
 };
 

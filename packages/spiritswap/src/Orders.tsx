@@ -2,7 +2,7 @@ import TWAPLib from "@orbs-network/twap-ui";
 import { Box, styled } from "@mui/system";
 import { QueryClientProvider } from "react-query";
 import { colors } from "./styles";
-import { queryClient, TwapProps, ProviderWrapper, useGetProvider } from ".";
+import { ProviderWrapper, queryClient, TwapProps } from ".";
 
 const { Orders } = TWAPLib;
 
@@ -23,6 +23,8 @@ export default OrderHistory;
 const StyledContainer = styled(Box)({
   "& *": {
     fontFamily: "inherit",
+    color: "white",
+    boxSizing: "border-box",
   },
   "& .twap-orders-lists": {
     maxHeight: 600,

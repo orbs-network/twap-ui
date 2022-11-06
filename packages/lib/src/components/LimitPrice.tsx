@@ -3,7 +3,7 @@ import { Box, styled } from "@mui/system";
 import NumericInput from "../base-components/NumericInput";
 import TokenLogo from "../base-components/TokenLogo";
 import TokenName from "../base-components/TokenName";
-import { store, validation } from "../store/store";
+import { store } from "../store/store";
 import PriceToggle from "../base-components/PriceToggle";
 import Tooltip from "../base-components/Tooltip";
 import Switch from "../base-components/Switch";

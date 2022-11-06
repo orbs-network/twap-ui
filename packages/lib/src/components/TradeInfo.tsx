@@ -13,7 +13,7 @@ import { store } from "../store/store";
 export function TradeInfoModal({ onClose, open, children, className = "" }: { onClose: () => void; open: boolean; children: ReactNode; className?: string }) {
   const translations = useTwapTranslations();
   return (
-    <Modal disableBackdropClick={true} className={`twap-trade-info-modal ${className}`} open={open} handleClose={onClose} title={translations.confirmTx}>
+    <Modal className={`twap-trade-info-modal ${className}`} open={open} handleClose={onClose} title={translations.confirmTx} disableBackdropClick={true}>
       <StyledModalContent className="twap-order-confirmation">{children}</StyledModalContent>
     </Modal>
   );
@@ -65,12 +65,12 @@ export function ConfirmationTradeSize() {
 }
 
 export function ConfirmationTotalTrades() {
-  const { totalTrades, isLimitOrder } = store.useConfirmation();
+  const { totalTrades } = store.useConfirmation();
   const translations = useTwapTranslations();
 
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>{translations.totalTrades}</Label>
+      <Label tooltipText={translations.confirmationTotalTradesTooltip}>{translations.totalTrades}</Label>
       <Text>{totalTrades}</Text>
     </StyledRow>
   );
@@ -93,7 +93,9 @@ export function ConfirmationMinimumReceived() {
   const translations = useTwapTranslations();
   return (
     <StyledRow className="twap-trade-info-row">
-      <Label tooltipText={translations.confirmationMinReceivedPerTradeTooltip}>{translations.minReceivedPerTrade}:</Label>
+      <Label tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
+        {translations.minReceivedPerTrade}:
+      </Label>
 
       <StyledMinumimReceived>
         <TokenName name={dstTokenInfo?.symbol} />

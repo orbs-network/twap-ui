@@ -11,16 +11,21 @@ import twapAbi from "./twap-abi.json";
 import { sendTxAndWait } from "../config";
 import { AnalyticsEvents } from "../analytics";
 
-const getTokenFromList = (tokensList: TokenInfo[], address?: string) => {
-  if (!address) {
-    return {} as TokenInfo;
-  }
-  return tokensList.find((it) => eqIgnoreCase(it.address, address)) || ({} as TokenInfo);
-};
-
-export const useTokenFromTokensList = (address?: string) => {
-  const { tokensList } = useContext(TwapContext);
-  return getTokenFromList(tokensList, address);
+export const useGetTokenFromList = () => {
+  const { tokensList, getTokenImage } = useContext(TwapContext);
+  return (address?: string) => {
+    if (!address) {
+      return {} as TokenInfo;
+    }
+    let token = tokensList.find((it) => eqIgnoreCase(it.address, address));
+    if (token && getTokenImage) {
+      token = {
+        ...token,
+        logoUrl: getTokenImage(token),
+      };
+    }
+    return token || ({} as TokenInfo);
+  };
 };
 
 export const useOrdersUsdValueToUi = (token?: Token, amount?: BigNumber) => {
@@ -52,24 +57,17 @@ const getAllUsdValuesCallback = () => {
   });
 };
 
-export const useGetOrderCallback = () => {
-  const { account, config } = useWeb3();
-  return useMutation(async () => {
-    const lens = contract(lensAbi as Abi, config.lensAddress);
-    return lens.methods.makerOrders(account).call();
-  });
-};
-
 export const useOrders = () => {
   const { account, config, web3 } = useWeb3();
-  const tokensList = useContext(TwapContext).tokensList;
+  const { tokensList } = useContext(TwapContext);
   const { mutateAsync: getUsdValues } = getAllUsdValuesCallback();
-  const { mutateAsync: getOrders } = useGetOrderCallback();
+  const getTokenFromList = useGetTokenFromList();
 
   return useQuery(
     ["useOrders", account],
     async () => {
-      const orders = await getOrders();
+      const lens = contract(lensAbi as Abi, config.lensAddress);
+      const orders = await lens.methods.makerOrders(account).call();
       const srcAddresses = _.keys(_.groupBy(orders, "ask.srcToken"));
       const dstAddresses = _.keys(_.groupBy(orders, "ask.dstToken"));
 
@@ -77,8 +75,9 @@ export const useOrders = () => {
 
       const parsedOrders = await Promise.all(
         _.map(orders, async (o) => {
-          const srcTokenInfo = getTokenFromList(tokensList, o.ask.srcToken);
-          const dstTokenInfo = getTokenFromList(tokensList, o.ask.dstToken);
+          const srcTokenInfo = getTokenFromList(o.ask.srcToken);
+          const dstTokenInfo = getTokenFromList(o.ask.dstToken);
+
           const srcToken = getToken(srcTokenInfo);
           const dstToken = getToken(dstTokenInfo);
           const srcTokenAmount = BigNumber(o.ask.srcAmount);
@@ -86,9 +85,11 @@ export const useOrders = () => {
           const tradeSize = BigNumber(o.ask.srcBidAmount);
           const dstMinAmount = BigNumber(o.ask.dstMinAmount);
           const isMarketOrder = dstMinAmount.eq(1);
-          const dstPrice = isMarketOrder
-            ? usdValues[srcTokenInfo.address].div(usdValues[dstTokenInfo.address])
-            : dstMinAmount.div(convertDecimals(tradeSize, srcTokenInfo.decimals, dstTokenInfo.decimals));
+
+          const srcTokenUsdValue = _.find(usdValues, (v, k) => eqIgnoreCase(k, srcTokenInfo.address))!;
+          const dstTokenUsdValue = _.find(usdValues, (v, k) => eqIgnoreCase(k, dstTokenInfo.address))!;
+
+          const dstPrice = isMarketOrder ? srcTokenUsdValue.div(dstTokenUsdValue) : dstMinAmount.div(convertDecimals(tradeSize, srcTokenInfo.decimals, dstTokenInfo.decimals));
           const dstAmount = convertDecimals(srcTokenAmount, srcTokenInfo.decimals, dstTokenInfo.decimals).times(dstPrice);
           const srcRemainingAmount = srcTokenAmount.minus(srcFilledAmount);
           const status = parseStatus(parseInt(o.status));
@@ -116,16 +117,16 @@ export const useOrders = () => {
             dstAmount,
             srcTokenInfo,
             dstTokenInfo,
-            srcUsdValueUi: await getBigNumberToUiAmount(srcToken, srcTokenAmount.times(usdValues[srcTokenInfo.address]).div(1e18)),
-            dstUsdValueUi: await getBigNumberToUiAmount(dstToken, dstAmount.times(usdValues[dstTokenInfo.address]).div(1e18)),
+            srcUsdValueUi: await getBigNumberToUiAmount(srcToken, srcTokenAmount.times(srcTokenUsdValue).div(1e18)),
+            dstUsdValueUi: await getBigNumberToUiAmount(dstToken, dstAmount.times(dstTokenUsdValue).div(1e18)),
             srcTokenAmountUi: await getBigNumberToUiAmount(srcToken, srcTokenAmount),
             dstTokenAmountUi: await getBigNumberToUiAmount(dstToken, dstAmount),
             tradeSizeAmountUi: await getBigNumberToUiAmount(srcToken, tradeSize),
-            tradeSizeUsdValueUi: await getBigNumberToUiAmount(srcToken, tradeSize.times(usdValues[srcTokenInfo.address]).div(1e18)),
+            tradeSizeUsdValueUi: await getBigNumberToUiAmount(srcToken, tradeSize.times(srcTokenUsdValue).div(1e18)),
             srcFilledAmountUi: await getBigNumberToUiAmount(srcToken, srcFilledAmount),
-            srcFilledUsdValueUi: await getBigNumberToUiAmount(srcToken, srcFilledAmount.times(usdValues[srcTokenInfo.address]).div(1e18)),
+            srcFilledUsdValueUi: await getBigNumberToUiAmount(srcToken, srcFilledAmount.times(srcTokenUsdValue).div(1e18)),
             srcRemainingAmountUi: await getBigNumberToUiAmount(srcToken, srcRemainingAmount),
-            srcRemainingUsdValueUi: await getBigNumberToUiAmount(srcToken, srcRemainingAmount.times(usdValues[srcTokenInfo.address]).div(1e18)),
+            srcRemainingUsdValueUi: await getBigNumberToUiAmount(srcToken, srcRemainingAmount.times(srcTokenUsdValue).div(1e18)),
           };
         })
       );
@@ -133,7 +134,7 @@ export const useOrders = () => {
       return _.groupBy(_.orderBy(parsedOrders, "deadline", "desc"), "status");
     },
     {
-      enabled: !!account && !!config && !!web3 && !!tokensList?.length,
+      enabled: !!account && !!config && !!web3 && tokensList?.length > 0,
       refetchInterval: 30_000,
     }
   );

@@ -1,4 +1,4 @@
-import { Box, styled } from "@mui/system";
+import { styled } from "@mui/system";
 import React, { ReactNode } from "react";
 import Loader from "./Loader";
 

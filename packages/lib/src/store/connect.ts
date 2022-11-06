@@ -1,6 +1,7 @@
 import Web3 from "web3";
 import axios from "axios";
 import _ from "lodash";
+
 export const changeNetwork = async (web3?: Web3, chain?: number) => {
   if (!web3 || !chain) {
     return;
