@@ -84,6 +84,13 @@ export const StyledIcon = styled(Icon)({
 });
 
 export const StyledTradeInfoModal = styled(TradeInfoModal)({
+  "& *": {
+    boxSizing: "border-box",
+    color: "white",
+  },
+  "& .MuiIconButton-root": {
+    color: "white",
+  },
   "& .twap-modal-content": {
     background: colors.mainBackground,
     border: `1px solid ${colors.borderColor}`,
