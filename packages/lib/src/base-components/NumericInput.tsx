@@ -102,15 +102,4 @@ const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   outline: "unset",
   fontWeight: 500,
   paddingRight: 10,
-  "& ::-webkit-outer-spin-button": {
-    "-webkit-appearance": "none",
-    margin: 0,
-  },
-  "::-webkit-inner-spin-button": {
-    "-webkit-appearance": "none",
-    margin: 0,
-  },
-  "& input[type=number]": {
-    "-moz-appearance": "textfield",
-  },
 }));
