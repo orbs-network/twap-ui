@@ -369,7 +369,7 @@ const useChangeTokenPositions = () => {
 };
 
 export const useLimitPrice = () => {
-  const { isLimitOrder, limitPrice, toggleLimit, setLimitPrice, srcTokenInfo, dstTokenInfo, srcToken } = useTwapStore();
+  const { isLimitOrder, limitPrice, toggleLimit, setLimitPrice, srcTokenInfo, dstTokenInfo } = useTwapStore();
   const [inverted, setInverted] = useState(false);
   const { marketPrice, isLoading } = useMarketPrice();
   const translations = useTwapTranslations();
