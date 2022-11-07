@@ -6,6 +6,7 @@ import { useWeb3 } from "../store/store";
 
 console.debug = () => {};
 const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
+
 const odnp = new ODNP();
 odnp.init();
 odnp.hide();
