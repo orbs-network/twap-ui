@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { Abi, account as candiesAccount, BigNumber, contract, convertDecimals, eqIgnoreCase, erc20, iwethabi, parsebn, setWeb3Instance, Token, zero } from "@defi.org/web3-candies";
-import { useMutation, useQuery } from "react-query";
-import { useContext, useMemo, useState } from "react";
+import { useIsFetching, useMutation, useQuery } from "react-query";
+import { useContext, useMemo, useRef, useState } from "react";
 import Web3 from "web3";
 import { Store, TokenInfo, Web3State } from "../types";
 import create from "zustand";
@@ -369,42 +369,50 @@ const useChangeTokenPositions = () => {
 };
 
 export const useLimitPrice = () => {
-  const { isLimitOrder, limitPrice, toggleLimit, setLimitPrice, srcTokenInfo, dstTokenInfo } = useTwapStore();
+  const { isLimitOrder, limitPrice, toggleLimit, setLimitPrice, srcTokenInfo, dstTokenInfo, srcToken } = useTwapStore();
   const [inverted, setInverted] = useState(false);
   const { marketPrice, isLoading } = useMarketPrice();
-  const [limitPriceUI, setlimitPriceUI] = useState<BigNumber | undefined>(limitPrice);
-  const [invertedUI, setInvertedUI] = useState(false);
   const translations = useTwapTranslations();
+  const [isTyping, setIsTyping] = useState(false);
+  const [typedValue, setTypedValue] = useState<string | undefined>(undefined);
+
+  const isTypedValueInInvertedState = useRef(false);
 
   const leftTokenInfo = inverted ? dstTokenInfo : srcTokenInfo;
   const rightTokenInfo = !inverted ? dstTokenInfo : srcTokenInfo;
 
   const onChange = (amountUi?: string) => {
-    setLimitPrice(amountUi ? BigNumber(amountUi) : undefined);
-    setlimitPriceUI(amountUi ? BigNumber(amountUi) : undefined);
-    setInvertedUI(false);
+    setIsTyping(true);
+    // we save the typed value, and the state (inverted or not inverted), because we want to prevent the 9.9999999993 numbers
+    // so we always want to make the big number calculation only on the second value (not the value that was entered by the user)
+    setTypedValue(amountUi);
+    isTypedValueInInvertedState.current = inverted;
+    if (!amountUi) {
+      setLimitPrice(undefined);
+      return;
+    }
+    if (inverted) {
+      setLimitPrice(BigNumber(1).div(BigNumber(amountUi)));
+      return;
+    }
+    setLimitPrice(BigNumber(amountUi));
   };
 
   const onToggleLimit = () => {
+    setIsTyping(false);
+    setTypedValue(undefined);
     if (isLimitOrder) {
       AnalyticsEvents.onMarketPriceSelect();
     } else {
       AnalyticsEvents.onLimitOrderSelect();
     }
     toggleLimit(marketPrice);
-    setlimitPriceUI(marketPrice);
-    setInvertedUI(false);
     setInverted(false);
   };
 
   const toggleInverted = () => {
+    setIsTyping(false);
     setInverted(!inverted);
-    if (!invertedUI) {
-      setlimitPriceUI(BigNumber(1).div(limitPrice || 1));
-    } else {
-      setlimitPriceUI(limitPrice);
-    }
-    setInvertedUI(!invertedUI);
   };
 
   const warning = useMemo(() => {
@@ -413,6 +421,29 @@ export const useLimitPrice = () => {
     }
   }, [srcTokenInfo, dstTokenInfo, translations]);
 
+  const limitPriceUi = useMemo(() => {
+    if (isTyping) {
+      return typedValue;
+    }
+
+    // if the state is inverted, and the use typed value in this state, return the value
+    if (inverted && isTypedValueInInvertedState.current && typedValue) {
+      return typedValue;
+    }
+
+    // if the state is not inverted, and the use typed value in this state, return the value
+    if (!inverted && !isTypedValueInInvertedState.current && typedValue) {
+      return typedValue;
+    }
+
+    if (inverted) {
+      return BigNumber(1)
+        .div(BigNumber(limitPrice || 1))
+        .toFormat();
+    }
+    return limitPrice ? limitPrice.toFormat() : "";
+  }, [limitPrice, isTyping, inverted, typedValue]);
+
   return {
     isLimitOrder,
     onToggleLimit,
@@ -420,7 +451,7 @@ export const useLimitPrice = () => {
     onChange,
     leftTokenInfo,
     rightTokenInfo,
-    limitPriceUI: limitPriceUI?.toFormat(),
+    limitPriceUI: limitPriceUi,
     limitPrice,
     warning,
     isLoading,

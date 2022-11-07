@@ -131,6 +131,11 @@ export const StyledLimitPrice = styled(Box)({
 export const StyledTokenOrder = styled(Box)({ width: "100%" });
 
 export const globalStyle = {
+  "& .twap-modal": {
+    "& *": {
+      color: "white",
+    },
+  },
   "& .twap-button": {
     "& .twap-button-loader": {
       color: "white",

@@ -188,6 +188,7 @@ const StyledApp = styled(Box)({
   paddingBottom: 50,
   paddingTop: 40,
   background: "black",
+  minHeight: "100vh",
   "& *::-webkit-scrollbar": {
     display: "none",
     width: 0,

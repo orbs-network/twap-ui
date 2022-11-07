@@ -1,4 +1,5 @@
 import { Switch as MuiSwitch } from "@mui/material";
+import { useEffect, useState } from "react";
 
 export interface Props {
   defaultChecked?: boolean;
@@ -9,7 +10,7 @@ export interface Props {
 }
 
 function Switch({ value, onChange, className = "", disabled = false }: Props) {
-  return <MuiSwitch style={{ pointerEvents: disabled ? "none" : "unset" }} className={`twap-switch ${className}`} value={value} onChange={onChange} />;
+  return <MuiSwitch style={{ pointerEvents: disabled ? "none" : "unset" }} className={`twap-switch ${className}`} checked={value} onChange={onChange} />;
 }
 
 export default Switch;
