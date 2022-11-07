@@ -140,7 +140,7 @@ const StyledRow = styled(Box)({
 export const TradeInfoExplanation = () => {
   const translations = useTwapTranslations();
   return (
-    <>
+    <StyledTradeInfoExplanation>
       <Text>{translations.disclaimer1}</Text>
       <Text>{translations.disclaimer2}</Text>
       <Text>{translations.disclaimer3}</Text>
@@ -158,6 +158,15 @@ export const TradeInfoExplanation = () => {
         </a>
         .
       </Text>
-    </>
+    </StyledTradeInfoExplanation>
   );
 };
+
+const StyledTradeInfoExplanation = styled(Box)({
+  maxHeight: 180,
+  overflow: "auto",
+  paddingRight: 30,
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+});
