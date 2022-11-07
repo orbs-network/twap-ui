@@ -53,15 +53,16 @@ export const useTwapStore = create<Store>((set, get) => ({
   setDisclaimerAccepted: (disclaimerAccepted) => set({ disclaimerAccepted }),
   setSrcToken: async (srcTokenInfo, srcTokenAmount) => {
     const srcToken = getToken(srcTokenInfo);
-    set({ srcTokenInfo, srcToken, srcTokenAmount, totalTrades: 1 });
+    set({ srcTokenInfo, srcToken });
+    get().setSrcTokenAmount(srcTokenAmount);
     get().resetLimitPrice();
   },
   setSrcTokenAmount: (srcTokenAmount) => {
-    set({ srcTokenAmount, totalTrades: 1 });
+    set({ srcTokenAmount: srcTokenAmount?.integerValue(), totalTrades: 1 });
   },
   onSrcTokenChange: async (amountUi: string) => {
     const srcTokenAmount = await getUiAmountToBigNumber(get().srcToken, amountUi);
-    set({ srcTokenAmount, totalTrades: 1 });
+    get().setSrcTokenAmount(srcTokenAmount);
   },
   setDstToken: (dstTokenInfo) => {
     set({ dstTokenInfo, dstToken: getToken(dstTokenInfo) });
@@ -110,7 +111,7 @@ export const useTwapStore = create<Store>((set, get) => ({
   },
   getMinAmountOut: () => {
     if (!get().limitPrice || !get().srcTokenInfo || !get().dstTokenInfo || !get().getTradeSize() || !get().isLimitOrder) return BigNumber(1);
-    return convertDecimals(get().getTradeSize()!.times(get().limitPrice!), get().srcTokenInfo!.decimals, get().dstTokenInfo!.decimals);
+    return convertDecimals(get().getTradeSize()!.times(get().limitPrice!), get().srcTokenInfo!.decimals, get().dstTokenInfo!.decimals).integerValue();
   },
   reset: () => set(defaultState),
 }));
@@ -180,7 +181,7 @@ const useWrapToken = () => {
         const wToken: any = getToken(config!.wrappedTokenInfo, true);
         await wToken?.methods.deposit().send({ from: account!, value: srcTokenAmount!.toString() });
       };
-      await sendTxAndWait(tx, 10_000);
+      await sendTxAndWait(tx);
 
       const token = config!.wrappedTokenInfo;
       if (getTokenImage) {
@@ -581,16 +582,16 @@ function useSubmitOrder() {
             config.exchangeAddress,
             srcTokenInfo?.address,
             dstTokenInfo?.address,
-            srcTokenAmount?.toString(),
-            tradeSize?.toString(),
-            minAmountOut.toString(),
+            srcTokenAmount?.integerValue().toString(),
+            tradeSize?.integerValue().toString(),
+            minAmountOut.integerValue().toString(),
             Math.round(deadline / 1000),
-            config.bidDelaySeconds,
+            Math.round(config.bidDelaySeconds),
             Math.round(tradeIntervalMillis / 1000)
           )
           .send({ from: account });
       };
-      await sendTxAndWait(tx, 30_000);
+      await sendTxAndWait(tx);
       await refetch();
     },
     {
