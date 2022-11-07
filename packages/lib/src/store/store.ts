@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { Abi, account as candiesAccount, BigNumber, contract, convertDecimals, eqIgnoreCase, erc20, iwethabi, parsebn, setWeb3Instance, Token, zero } from "@defi.org/web3-candies";
-import { useIsFetching, useMutation, useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { useContext, useMemo, useRef, useState } from "react";
 import Web3 from "web3";
 import { Store, TokenInfo, Web3State } from "../types";
