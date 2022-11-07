@@ -304,7 +304,6 @@ export const useUsdValue = (token?: Token) => {
   );
 };
 
-// all actions (functions) related to max duration input
 const useMaxDuration = () => {
   const { maxDurationTimeFormat, maxDurationMillis, onMaxDurationChange, getDeadline, getDeadlineUi } = useTwapStore();
 
