@@ -24,8 +24,9 @@ const dappIntegrationChainId = 250;
 export const getUsdPrice = async (srcToken: string, srcDecimals: number): Promise<BigNumber> => {
   const amount = BigNumber(10).pow(srcDecimals);
 
+  const USDC = `0x04068DA6C83AFCFA0e13ba15A6696662335D5B75`;
   const result = await axios.get(
-    `https://apiv5.paraswap.io/prices/?srcToken=${srcToken}&destToken=0x04068DA6C83AFCFA0e13ba15A6696662335D5B75&srcDecimals=${srcDecimals}&destDecimals=8&amount=${amount}&side=SELL&network=${dappIntegrationChainId}`
+    `https://apiv5.paraswap.io/prices/?srcToken=${srcToken}&destToken=${USDC}&srcDecimals=${srcDecimals}&destDecimals=6&amount=${amount}&side=SELL&network=${dappIntegrationChainId}`
   );
   const priceRoute = result.data.priceRoute;
   return convertDecimals(priceRoute.destAmount, priceRoute.destDecimals, 18);
