@@ -27,7 +27,7 @@ function OrdersList({ orders, type, isLoading }: { orders: Order[]; type: OrderS
           return <OrderComponent order={order} type={type} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
         })
       ) : (
-        <StyledEmptyList>{`${translations.noOrdersFound} ${type} ${translations.noOrdersFound1}`}</StyledEmptyList>
+        <StyledEmptyList>{`${translations.noOrdersFound} ${(translations as any)["noOrdersFound_" + type]} ${translations.noOrdersFound1}`}</StyledEmptyList>
       )}
     </StyledContainer>
   );

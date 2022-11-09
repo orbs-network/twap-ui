@@ -1,7 +1,7 @@
 import { Box, styled } from "@mui/system";
 import React, { ReactElement, ReactNode } from "react";
 import Tooltip from "./Tooltip";
-import { AiOutlineInfoCircle } from "react-icons/ai";
+import { AiOutlineQuestionCircle } from "react-icons/ai";
 import Icon from "./Icon";
 import { Typography } from "@mui/material";
 
@@ -18,7 +18,7 @@ function Label({ children, tooltipText, className = "", fontSize }: Props) {
       <Tooltip text={tooltipText}>
         <StyledTooltipContent className={`twap-label ${className}`}>
           <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
-          <Icon icon={<AiOutlineInfoCircle style={{ width: 15, height: 15 }} />} />
+          <Icon icon={<AiOutlineQuestionCircle style={{ width: 16, height: 16 }} />} />
         </StyledTooltipContent>
       </Tooltip>
     );

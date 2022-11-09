@@ -97,7 +97,7 @@ const MarketPrice = () => {
               <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} />
               <Tooltip text={marketPrice?.toString()}>
                 <Text>
-                  = <NumberDisplay value={marketPrice?.toString()} decimalScale={3} />
+                  ≈ <NumberDisplay value={marketPrice?.toString()} decimalScale={3} />
                 </Text>
               </Tooltip>
 
@@ -172,7 +172,9 @@ const TradeSize = () => {
             <StyledSlider>
               <Slider maxTrades={maxTrades} value={totalTrades} onChange={onTradeSizeChange} />
             </StyledSlider>
-            <StyledTotalTradesInput placeholder="0" value={totalTrades} decimalScale={0} maxValue={maxTrades.toString()} onChange={(value) => onTradeSizeChange(Number(value))} />
+            <Label fontSize={14} tooltipText={translations.sliderMinSizeTooltip}>
+              <StyledTotalTradesInput placeholder="0" value={totalTrades} decimalScale={0} maxValue={maxTrades.toString()} onChange={(value) => onTradeSizeChange(Number(value))} />
+            </Label>
           </StyledFlexBetween>
           <StyledFlexBetween>
             <StyledTradeSize>
