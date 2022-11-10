@@ -10,15 +10,17 @@ interface Props {
   tooltipText?: string | ReactElement;
   className?: string;
   fontSize?: number;
+  iconStart?: ReactElement;
 }
 
-function Label({ children, tooltipText, className = "", fontSize }: Props) {
+function Label({ children, tooltipText, className = "", fontSize, iconStart }: Props) {
   if (tooltipText) {
     return (
       <Tooltip text={tooltipText}>
         <StyledTooltipContent className={`twap-label ${className}`}>
+          {iconStart}
           <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
-          <Icon icon={<AiOutlineQuestionCircle style={{ width: 16, height: 16 }} />} />
+          <Icon icon={<AiOutlineQuestionCircle className="twap-tooltip-icon" style={{ width: 16, height: 16 }} />} />
         </StyledTooltipContent>
       </Tooltip>
     );

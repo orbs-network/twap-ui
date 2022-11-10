@@ -8,6 +8,8 @@ import { OrderStatus, Translations } from "../types";
 import { useOrders } from "../store/orders";
 import OdnpButton from "../base-components/OdnpButton";
 import { useTwapTranslations } from "../context";
+import Icon from "../base-components/Icon";
+import { AiOutlineHistory } from "react-icons/ai";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
@@ -22,7 +24,9 @@ function Orders() {
     <StyledContainer className="twap-orders">
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
-          <Label tooltipText={translations.ordersTooltip}>{translations.orders}</Label>
+          <Label iconStart={<Icon icon={<AiOutlineHistory className="twap-tooltip-icon" style={{ width: 20, height: 20 }} />} />} tooltipText={translations.ordersTooltip}>
+            {translations.orders}
+          </Label>
           <StyledOdnpButton />
         </StyledHeaderTop>
         <StyledTabs value={selectedTab} onChange={handleChange}>
@@ -87,13 +91,14 @@ const StyledTabs = styled(Tabs)({
     color: "white",
   },
 });
-const StyledContainer = styled(Box)({ width: "100%", paddingTop: 5, display: "flex", flexDirection: "column", gap: 15 });
+const StyledContainer = styled(Box)({ width: "100%", display: "flex", flexDirection: "column", gap: 15 });
 const StyledHeaderTop = styled(Box)({
   display: "flex",
+  alignItems: "center",
   justifyContent: "space-between",
-  paddingLeft: 5,
+  padding: 5,
+  paddingTop: 10,
   width: "100%",
-  marginBottom: 10,
   "& .twap-label": {
     fontSize: 18,
   },

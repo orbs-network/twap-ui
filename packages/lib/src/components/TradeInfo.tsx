@@ -163,7 +163,7 @@ export const TradeInfoExplanation = () => {
 };
 
 const StyledTradeInfoExplanation = styled(Box)({
-  maxHeight: 180,
+  maxHeight: 140,
   overflow: "auto",
   paddingRight: 30,
   display: "flex",

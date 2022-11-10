@@ -192,11 +192,18 @@ export const globalStyle = {
 
   "& .twap-tooltip": {
     "& .MuiTooltip-tooltip": {
-      backgroundColor: "#202122",
-      color: "#64c37a",
+      backgroundColor: "rgba(32, 32, 34, 0.9)",
+      borderRadius: "4px",
+      color: colors.light,
       fontSize: 14,
       fontFamily: "inherit",
+      lineHeight: 1.5,
+      padding: 16,
+      maxWidth: 500,
     },
+  },
+  "& .twap-tooltip-icon": {
+    fill: colors.icon,
   },
 };
 
