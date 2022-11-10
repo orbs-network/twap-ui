@@ -192,7 +192,8 @@ export const globalStyle = {
 
   "& .twap-tooltip": {
     "& .MuiTooltip-tooltip": {
-      backgroundColor: colors.mainBackground,
+      backgroundColor: "#202122",
+      color: "#64c37a",
       fontSize: 14,
       fontFamily: "inherit",
     },
