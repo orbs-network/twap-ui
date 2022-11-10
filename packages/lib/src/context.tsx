@@ -2,61 +2,41 @@ import { BigNumber } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useContext, useEffect } from "react";
 import { useAnalyticsInit } from "./analytics";
 import { useWeb3 } from "./store/store";
-import { TokenInfo, Translations } from "./types";
+import { TokenInfo as Token, Translations } from "./types";
 
-export interface State {
+const TwapContext = createContext<ContextProps>({} as ContextProps);
+
+export interface ContextProps {
   provider: any;
   dappIntegration: string;
   integrationChainId: number;
   connect?: () => void;
   TokenSelectModal?: any;
   getUsdPrice: (address: string, decimals: number) => Promise<BigNumber>;
-  tokensList: TokenInfo[];
+  tokensList: Token[];
   translations: Translations;
   analyticsID: string;
   getTokenImage?: (value: any) => string;
+  srcToken?: Token;
+  dstToken?: Token;
+  onSrcTokenSelected?: (token: Token) => void;
+  onDstTokenSelected?: (token: Token) => void;
 }
 
-const TwapContext = createContext<State>({} as State);
-
-export interface TwapProviderProps extends State {
+export interface TwapProviderProps extends ContextProps {
   children: ReactNode;
 }
 
-const TwapProvider = ({
-  children,
-  provider,
-  dappIntegration,
-  integrationChainId,
-  connect,
-  TokenSelectModal,
-  getUsdPrice,
-  tokensList,
-  translations,
-  analyticsID,
-  getTokenImage,
-}: TwapProviderProps) => {
-  const value = {
-    provider,
-    dappIntegration,
-    integrationChainId,
-    connect,
-    TokenSelectModal,
-    getUsdPrice,
-    tokensList,
-    translations,
-    analyticsID,
-    getTokenImage,
-  } as TwapProviderProps;
+const TwapProvider = (props: TwapProviderProps) => {
   const { init } = useWeb3();
-  useAnalyticsInit(analyticsID);
+  useAnalyticsInit(props.analyticsID);
 
   // init web3 every time the provider changes
   useEffect(() => {
-    init(dappIntegration, provider, integrationChainId);
-  }, [provider, dappIntegration, integrationChainId]);
+    init(props.dappIntegration, props.provider, props.integrationChainId);
+  }, [props.provider, props.dappIntegration, props.integrationChainId]);
 
-  return <TwapContext.Provider value={value}>{children}</TwapContext.Provider>;
+  return <TwapContext.Provider value={props}>{props.children}</TwapContext.Provider>;
 };
 
 export const useTwapTranslations = () => {

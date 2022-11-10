@@ -39,6 +39,8 @@ export interface TwapProps {
   account: any;
   getProvider?: () => any;
   getTokenImage?: (value: any) => string;
+  onSrcTokenSelected?: (token: any) => void;
+  onDstTokenSelected?: (token: any) => void;
 }
 
 interface ProviderWrapperProps extends TwapProps {
@@ -69,6 +71,8 @@ export const ProviderWrapper = (props: ProviderWrapperProps) => {
       integrationChainId={dappIntegrationChainId}
       TokenSelectModal={props.TokenSelectModal}
       getTokenImage={props.getTokenImage}
+      onSrcTokenSelected={props.onSrcTokenSelected}
+      onDstTokenSelected={props.onDstTokenSelected}
     >
       {props.children}
     </TwapProvider>

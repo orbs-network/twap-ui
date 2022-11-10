@@ -7,7 +7,7 @@ import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { memo, ReactNode } from "react";
+import { memo, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
 
 import {
@@ -288,16 +288,24 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
 
   const { chain } = TWAPLib.store.useWeb3();
 
+  const { onSrcTokenSelected, onDstTokenSelected } = useContext(TWAPLib.TwapContext);
+
   const onOpen = () => {
     if (chain != null) {
       toggleTokenList(true);
     }
   };
 
+  const onTokenSelected = (token: any) => {
+    onSelect(token);
+    if (onSrcTokenSelected && isSrcToken) onSrcTokenSelected(token);
+    if (onDstTokenSelected && !isSrcToken) onDstTokenSelected(token);
+  };
+
   return (
     <>
       {TokenSelectModal && (
-        <TokenSelectModal chainId={chain} commonTokens={[]} tokenSelected={undefined} onSelect={onSelect} isOpen={tokenListOpen} onClose={() => toggleTokenList(false)} />
+        <TokenSelectModal chainId={chain} commonTokens={[]} tokenSelected={undefined} onSelect={onTokenSelected} isOpen={tokenListOpen} onClose={() => toggleTokenList(false)} />
       )}
       <StyledTokenPanel>
         <StyledCard>
