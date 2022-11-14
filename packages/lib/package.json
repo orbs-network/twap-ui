@@ -32,7 +32,6 @@
     "ethereum-multicall": "2.x",
     "lodash": "4.x",
     "moment": "2.x",
-    "react-ga4": "^1.4.1",
     "react-icons": "4.x",
     "react-number-format": "5.x",
     "react-query": "3.x",

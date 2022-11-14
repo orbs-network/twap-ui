@@ -9,7 +9,7 @@ import lensAbi from "./lens-abi.json";
 import moment from "moment";
 import twapAbi from "./twap-abi.json";
 import { sendTxAndWait } from "../config";
-import { AnalyticsEvents } from "../analytics";
+import { useSendAnalyticsEvents } from "../analytics";
 
 export const useGetTokenFromList = () => {
   const { tokensList, getTokenImage } = useContext(TwapContext);
@@ -145,10 +145,11 @@ export const useWaitForNewOrderLoading = () => {};
 export const useCancelCallback = () => {
   const { config, account } = useWeb3();
   const { refetch } = useOrders();
+  const { onCancelOrderClick, onCancelOrderError, onCancelOrderSuccess } = useSendAnalyticsEvents();
 
   return useMutation(
     async (orderId: string) => {
-      AnalyticsEvents.onCancelOrderClick(orderId);
+      onCancelOrderClick(orderId);
       const tx = async () => {
         const twap = contract(twapAbi as Abi, config.twapAddress);
         await twap.methods.cancel(orderId).send({ from: account });
@@ -158,10 +159,10 @@ export const useCancelCallback = () => {
     },
     {
       onSuccess: (_, orderId) => {
-        AnalyticsEvents.onCancelOrderTxSuccess(orderId);
+        onCancelOrderSuccess(orderId);
       },
       onError: (error: Error) => {
-        AnalyticsEvents.onCancelOrderTxError(error.message);
+        onCancelOrderError(error.message);
       },
     }
   );

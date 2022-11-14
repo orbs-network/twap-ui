@@ -1,6 +1,5 @@
 import { BigNumber } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useContext, useEffect } from "react";
-import { useAnalyticsInit } from "./analytics";
 import { useWeb3 } from "./store/store";
 import { TokenInfo as Token, Translations } from "./types";
 
@@ -15,7 +14,6 @@ export interface ContextProps {
   getUsdPrice: (address: string, decimals: number) => Promise<BigNumber>;
   tokensList: Token[];
   translations: Translations;
-  analyticsID: string;
   getTokenImage?: (value: any) => string;
   srcToken?: Token;
   dstToken?: Token;
@@ -29,7 +27,6 @@ export interface TwapProviderProps extends ContextProps {
 
 const TwapProvider = (props: TwapProviderProps) => {
   const { init } = useWeb3();
-  useAnalyticsInit(props.analyticsID);
 
   // init web3 every time the provider changes
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import React from "react";
-import { AnalyticsEvents } from "../analytics";
+import { useSendAnalyticsEvents } from "../analytics";
 import { useWeb3 } from "../store/store";
 
 console.debug = () => {};
@@ -13,10 +13,11 @@ odnp.hide();
 
 function OdnpButton({ className = "" }: { className?: string }) {
   const { account } = useWeb3();
+  const { onODNPClick } = useSendAnalyticsEvents();
   if (!account) return null;
 
   const onClick = () => {
-    AnalyticsEvents.onNotificationsClick();
+    onODNPClick();
     odnp.show(account, "twap");
   };
   return (

@@ -26,8 +26,8 @@ export function getConfig(chainId: number, dapp: string) {
 }
 
 export enum IntegrationDapp {
-  Spiritswap = "spiritswap",
-  Quickswap = "quickswap",
+  SpiritSwap = "SpiritSwap",
+  QuickSwap = "QuickSwap",
 }
 
 export const nativeAddresses = [zeroAddress, "0x0000000000000000000000000000000000001010", "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"];

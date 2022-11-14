@@ -61,11 +61,10 @@ export const ProviderWrapper = (props: ProviderWrapperProps) => {
 
   return (
     <TwapProvider
-      analyticsID="G-NYX815X5K9"
       translations={translations}
       tokensList={props.tokensList}
       getUsdPrice={getUsdPrice}
-      dappIntegration="spiritswap"
+      dappIntegration="SpiritSwap"
       provider={provider}
       connect={props.connect}
       integrationChainId={dappIntegrationChainId}
