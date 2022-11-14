@@ -20,6 +20,7 @@
     "test": "eslint src && for t in eth ftm; do echo \"testing $t...\"; NETWORK=$t DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors; done"
   },
   "dependencies": {
+    "@orbs-network/twap": "latest",
     "@defi.org/web3-candies": "4.x",
     "@emotion/react": "11.x",
     "@emotion/styled": "11.x",

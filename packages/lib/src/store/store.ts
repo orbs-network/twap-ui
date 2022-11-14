@@ -85,8 +85,7 @@ export const useTwapStore = create<Store>((set, get) => ({
   },
   resetLimitPrice: () => set({ limitPrice: undefined, isLimitOrder: false }),
   getDerivedTradeInterval: () => {
-    // TODO getConfig().minimumFillDelaySeconds instead of hardcoded 60
-    const millis = get().maxDurationMillis > 0 && get().totalTrades > 0 ? Math.max(get().maxDurationMillis / get().totalTrades, 60_000) : 0;
+    const millis = get().maxDurationMillis > 0 && get().totalTrades > 0 ? Math.max(get().maxDurationMillis / get().totalTrades - 60_000, 60_000) : 0;
     const timeFormat = TimeFormat.valueOf(millis);
     return { millis, timeFormat };
   },
