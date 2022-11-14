@@ -17,7 +17,7 @@ describe("Sanity", function () {
   it("config - ftm Spiritswap", async () => {
     if ((await currentNetwork())?.id !== networks.ftm.id) return;
 
-    const config = getConfig(networks.ftm.id, IntegrationDapp.SpiritSwap);
+    const config = getConfig(networks.ftm.id);
     expect(config.twapAddress).is.not.empty;
     expect(config.lensAddress).is.not.empty;
     expect(config.exchangeAddress).is.not.empty;

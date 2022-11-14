@@ -17,7 +17,7 @@ const Config = {
   },
 };
 
-export function getConfig(chainId: number, _dapp: string) {
+export function getConfig(chainId: number) {
   return _.get(Config, [chainId]);
 }
 

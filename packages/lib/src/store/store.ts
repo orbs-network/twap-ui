@@ -231,7 +231,7 @@ export const useWeb3 = () => {
     integrationChain,
     isInvalidChain: chain && chain !== integrationChain,
     changeNetwork: () => changeNetwork(web3, integrationChain),
-    config: getConfig(integrationChain || 0, integrationKey || ""),
+    config: getConfig(integrationChain || 0),
     integrationKey,
   };
 };
