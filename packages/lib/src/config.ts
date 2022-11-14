@@ -13,16 +13,12 @@ const Config = {
       decimals: 18,
       logoUrl: "https://tokens.1inch.io/0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83.png",
     },
-
-    spiritswap: {
-      exchangeAddress: "0xAd19179201be5A51D1cBd3bB2fC651BB05822404",
-    },
+    exchangeAddress: "0xAd19179201be5A51D1cBd3bB2fC651BB05822404",
   },
 };
 
-export function getConfig(chainId: number, dapp: string) {
-  const c = _.get(Config, [chainId]);
-  return _.merge({}, c, _.get(c, [dapp]));
+export function getConfig(chainId: number, _dapp: string) {
+  return _.get(Config, [chainId]);
 }
 
 export enum IntegrationDapp {

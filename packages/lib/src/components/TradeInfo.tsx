@@ -149,11 +149,11 @@ export const TradeInfoExplanation = () => {
 
       <Text>
         {translations.disclaimer6}{" "}
-        <a href="https://www.orbs.com/" target="_blank">
+        <a href="https://github.com/orbs-network/twap" target="_blank">
           {translations.link}
         </a>
         . {translations.disclaimer7}{" "}
-        <a href="https://www.orbs.com/" target="_blank">
+        <a href="https://github.com/orbs-network/twap/blob/master/TOS.md" target="_blank">
           {translations.link}
         </a>
         .

@@ -1,7 +1,7 @@
 import axios from "axios";
 import BigNumber from "bignumber.js";
 import moment from "moment";
-import { store, useTwapStore, useWeb3Store } from "./store/store";
+import { useTwapStore, useWeb3Store } from "./store/store";
 
 enum Category {
   Error = "Error",
