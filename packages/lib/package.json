@@ -26,7 +26,6 @@
     "@mui/material": "5.x",
     "@mui/system": "5.x",
     "@open-defi-notification-protocol/widget": "0.0.x",
-    "@orbs-network/twap": "latest",
     "@types/lodash": "4.x",
     "axios": "1.x",
     "bignumber.js": "9.x",

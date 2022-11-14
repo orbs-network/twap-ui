@@ -1,12 +1,11 @@
 import { networks, zeroAddress } from "@defi.org/web3-candies";
-import { SpiritSwapConfig } from "@orbs-network/twap";
 import _ from "lodash";
 
 const Config = {
   [networks.ftm.id]: {
     minimumTradeSizeUsd: 10,
-    twapAddress: SpiritSwapConfig.twapAddress,
-    lensAddress: SpiritSwapConfig.lensAddress,
+    twapAddress: "0xdE2ed02ef21895B97a937E82068F28390fF464aC",
+    lensAddress: "0xbF8e5B3Af58b041c0ADf0c3DEA933e7D32b8D5ef",
     bidDelaySeconds: 60,
     wrappedTokenInfo: {
       symbol: "WFTM",
