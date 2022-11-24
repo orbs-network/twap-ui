@@ -18,8 +18,6 @@ function App() {
     return library;
   };
 
-  const getTokenImage = (value: string) => "https://api.lorem.space/image/movie?w=150&h=220";
-
   const args = {
     connectedChainId: chainId,
     getProvider,
@@ -27,7 +25,6 @@ function App() {
     TokenSelectModal,
     connect: () => activate(injectedConnector),
     tokensList,
-    getTokenImage: getTokenImage,
   };
 
   return (

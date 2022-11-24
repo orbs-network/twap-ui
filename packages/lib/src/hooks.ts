@@ -65,7 +65,7 @@ const useWrapToken = () => {
 
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
 
-  const getTokenImage = useContext(TwapContext).getTokenImage;
+  const { getTokenImage } = useContext(TwapContext);
   const setSrcToken = useSetAtom(srcTokenAtom);
   const analytics = useSendAnalyticsEvents();
   const reset = useSetAtom(resetAllSet);
@@ -82,12 +82,7 @@ const useWrapToken = () => {
           reset();
           return;
         }
-
-        const token = lib!.config.wToken;
-        if (getTokenImage) {
-          token.logoUrl = getTokenImage(token);
-        }
-        setSrcToken(token);
+        setSrcToken(lib!.config.wToken);
       },
       onError: (error: Error) => {
         console.log(error.message);
@@ -668,18 +663,36 @@ export const useCancelOrder = () => {
   );
 };
 
+export const useTokenImage = (token?: TokenData) => {
+  const { getTokenImage } = useContext(TwapContext);
+  return !token ? "" : getTokenImage ? getTokenImage(token) : token.logoUrl;
+};
+
 export const useHistoryPrice = (order: OrderUI) => {
   const [inverted, setInverted] = useState(false);
 
+  const srcTokenLogo = useTokenImage(order.ui.srcToken);
+  const dstTokenLogo = useTokenImage(order.ui.dstToken);
+
   const price = inverted ? BN(1).div(order.ui.dstPriceFor1Src) : order.ui.dstPriceFor1Src;
+
+  const srcToken = {
+    ...order.ui.srcToken,
+    logoUrl: srcTokenLogo,
+  };
+
+  const dstToken = {
+    ...order.ui.dstToken,
+    logoUrl: dstTokenLogo,
+  };
 
   return {
     inverted,
     toggleInverted: () => setInverted(!inverted),
     price,
     priceUi: price.toFormat(),
-    leftToken: inverted ? order.ui.dstToken : order.ui.srcToken,
-    rightToken: !inverted ? order.ui.dstToken : order.ui.srcToken,
+    leftToken: inverted ? dstToken : srcToken,
+    rightToken: !inverted ? dstToken : srcToken,
   };
 };
 
