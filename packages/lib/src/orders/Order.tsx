@@ -210,9 +210,13 @@ const PreviewProgressBar = ({ progress, emptyBarColor }: { progress: number; emp
 };
 
 const OrderTokenLogo = ({ token, className = "" }: { token?: TokenData; className?: string }) => {
-  const { getTokenImage } = useContext(TwapContext);
-  const tokenLogo = getTokenImage ? getTokenImage(token?.address) : token?.logoUrl;
+  const tokenLogo = useTokenImage(token);
   return <TokenLogo className={className} logo={tokenLogo} />;
+};
+
+const useTokenImage = (token?: TokenData) => {
+  const { getTokenImage } = useContext(TwapContext);
+  return !token ? "" : getTokenImage ? getTokenImage(token) : token.logoUrl;
 };
 
 const TokenDisplay = ({ token, amount, prefix = "", usdValue }: { token?: TokenData; amount?: string; usdValue: string; prefix?: string }) => {
