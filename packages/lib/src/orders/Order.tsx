@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/system";
-import { ReactNode } from "react";
+import { ReactNode, useContext } from "react";
 import Text from "../components/Text";
 import LinearProgress from "@mui/material/LinearProgress";
 import TokenName from "../components/TokenName";
@@ -21,6 +21,7 @@ import { Status, TokenData } from "@orbs-network/twap";
 import { fillDelayUi, useCancelOrder, useHistoryPrice, useTwapTranslations } from "../hooks";
 import { OrderUI } from "../state";
 import TokenPriceCompare from "../components/TokenPriceCompare";
+import { TwapContext } from "../context";
 
 export interface Props {
   order: OrderUI;
@@ -89,18 +90,18 @@ const OrderDetails = ({ order }: { order: OrderUI }) => {
           <NumberDisplay value={order.ui.totalChunks} />
         </DetailRow>
         <DetailRow label={`${translations.tradeSize}:`} tooltip={translations.tradeSizeTooltip}>
-          <TokenLogo logo={order.ui.srcToken?.logoUrl} />
+          <OrderTokenLogo token={order.ui.srcToken} />
           <NumberDisplay value={order.ui.srcChunkAmountUi} />
           {order.ui.srcToken?.symbol} ≈ $ <NumberDisplay value={order.ui.srcChunkAmountUsdUi} />
         </DetailRow>
         {order.ui.isMarketOrder ? (
           <DetailRow label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipMarket}>
-            <TokenLogo logo={order.ui.dstToken?.logoUrl} />
+            <OrderTokenLogo token={order.ui.dstToken} />
             {translations.none} {order.ui.dstToken?.symbol}
           </DetailRow>
         ) : (
           <DetailRow label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
-            <TokenLogo logo={order.ui.dstToken?.logoUrl} />
+            <OrderTokenLogo token={order.ui.dstToken} />
             <NumberDisplay value={order.ui.dstMinAmountOutUi} />
             {order.ui.dstToken?.symbol} ≈ $ <NumberDisplay value={order.ui.dstMinAmountOutUsdUi} />
           </DetailRow>
@@ -208,10 +209,16 @@ const PreviewProgressBar = ({ progress, emptyBarColor }: { progress: number; emp
   return <StyledPreviewLinearProgress variant="determinate" value={progress} emptybarcolor={emptyBarColor} className="twap-order-progress-line-preview" />;
 };
 
+const OrderTokenLogo = ({ token, className = "" }: { token?: TokenData; className?: string }) => {
+  const { getTokenImage } = useContext(TwapContext);
+  const tokenLogo = getTokenImage ? getTokenImage(token?.address) : token?.logoUrl;
+  return <TokenLogo className={className} logo={tokenLogo} />;
+};
+
 const TokenDisplay = ({ token, amount, prefix = "", usdValue }: { token?: TokenData; amount?: string; usdValue: string; prefix?: string }) => {
   return (
     <StyledTokenDisplay className="token-display">
-      <StyledTokenLogo logo={token?.logoUrl} />
+      <StyledTokenLogo token={token} />
       <StyledTokenDisplayRight>
         <StyledTokenDisplayRightTop>
           <StyledTokenDisplayAmount className="amount">
@@ -264,7 +271,7 @@ const StyledTokenDisplay = styled(Box)({
   "& .twap-text": {},
 });
 
-const StyledTokenLogo = styled(TokenLogo)({
+const StyledTokenLogo = styled(OrderTokenLogo)({
   width: 28,
   height: 28,
   top: -2,
