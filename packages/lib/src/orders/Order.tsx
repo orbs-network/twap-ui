@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/system";
-import { ReactNode, useContext } from "react";
+import { ReactNode } from "react";
 import Text from "../components/Text";
 import LinearProgress from "@mui/material/LinearProgress";
 import TokenName from "../components/TokenName";
@@ -21,7 +21,6 @@ import { Status, TokenData } from "@orbs-network/twap";
 import { fillDelayUi, useCancelOrder, useHistoryPrice, useTokenImage, useTwapTranslations } from "../hooks";
 import { OrderUI } from "../state";
 import TokenPriceCompare from "../components/TokenPriceCompare";
-import { TwapContext } from "../context";
 
 export interface Props {
   order: OrderUI;

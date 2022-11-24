@@ -65,7 +65,6 @@ const useWrapToken = () => {
 
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
 
-  const { getTokenImage } = useContext(TwapContext);
   const setSrcToken = useSetAtom(srcTokenAtom);
   const analytics = useSendAnalyticsEvents();
   const reset = useSetAtom(resetAllSet);
