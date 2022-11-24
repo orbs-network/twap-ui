@@ -11,7 +11,7 @@ export interface Props extends React.HTMLAttributes<HTMLElement> {
 
 function Button({ children, disabled = false, onClick, loading = false, className }: Props) {
   return (
-    <StyledContainer onClick={onClick} className={`twap-button ${disabled ? "twap-button" : ""} ${className}`} disabled={disabled || loading}>
+    <StyledContainer onClick={onClick} className={`twap-button ${disabled ? "twap-button" : ""} ${className}`} disabled={disabled}>
       {loading && (
         <StyledLoader>
           <CircularProgress style={{ zoom: 0.8 }} className="twap-button-loader" />

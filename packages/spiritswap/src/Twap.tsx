@@ -1,13 +1,10 @@
 import { GlobalStyles } from "@mui/material";
-import { Box } from "@mui/system";
-import { QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
-import TWAPLib from "@orbs-network/twap-ui";
+import { Box, styled } from "@mui/system";
+import { Components, hooks } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { TbArrowsRightLeft } from "react-icons/tb";
-import { memo, ReactNode, useContext } from "react";
+import { memo, ReactNode } from "react";
 import translations from "./i18n/en.json";
 
 import {
@@ -23,12 +20,12 @@ import {
   StyledIntervalTimeSelect,
   StyledLimitPrice,
   StyledMarketPrice,
-  StyledMarketPriceRight,
   StyledNumbericInput,
   StyledOrderConfirmation,
   StyledPercentBtn,
   StyledPrice,
   StyledSlider,
+  StyledSliderContainer,
   StyledSrcTokenPercentSelector,
   StyledSwitch,
   StyledTokenDisplay,
@@ -41,73 +38,42 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { ProviderWrapper, queryClient, TwapProps } from ".";
-
-// TODO create file for styles
-const { PoweredBy, Balance, Loader, Slider, NumberDisplay, TimeSelector, Label, TokenLogo, TokenName, SmallLabel, Text, IconButton, Tooltip } = TWAPLib.baseComponents;
-const PriceToggle = TWAPLib.baseComponents.PriceToggle;
-
-const {
-  LimitPrice,
-  TradeInfoExplanation,
-  ConfirmationExpiration,
-  ConfirmationOrderType,
-  ConfirmationTradeSize,
-  ConfirmationTotalTrades,
-  ConfirmationTradeInterval,
-  ConfirmationMinimumReceived,
-} = TWAPLib.components;
+import { ProviderWrapper, TwapProps } from ".";
 
 const TWAP = (props: TwapProps) => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ProviderWrapper {...props}>
-        <GlobalStyles styles={globalStyle as any} />
-        <div className="twap-container" style={{ flexDirection: "column" }}>
-          <SrcTokenPanel />
-          <ChangeTokensOrder />
-          <DstTokenPanel />
-          <LimitPriceDisplay />
-          <TradeSize />
-          <MaxDuration />
-          <TradeInterval />
-          <SubmitButton />
-          <OrderConfirmation />
-          <PoweredBy />
-        </div>
-      </ProviderWrapper>
-      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
-    </QueryClientProvider>
+    <ProviderWrapper {...props}>
+      <GlobalStyles styles={globalStyle as any} />
+      <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
+        <SrcTokenPanel />
+        <ChangeTokensOrder />
+        <DstTokenPanel />
+        <LimitPriceDisplay />
+        <TradeSize />
+        <MaxDuration />
+        <TradeInterval />
+        <PlaceOrderButton />
+        <OrderConfirmation />
+        <Components.PoweredBy />
+      </div>
+    </ProviderWrapper>
   );
 };
 
 export default memo(TWAP);
 
 const MarketPrice = () => {
-  const { toggleInverted, leftTokenInfo, rightTokenInfo, marketPrice } = TWAPLib.store.useMarketPrice();
+  const { toggleInverted, leftToken, rightToken, marketPrice, ready } = hooks.useMarketPrice();
 
   return (
     <StyledMarketPrice>
       <StyledCard>
         <StyledFlexBetween>
-          <Text className="title">{translations.currentMarketPrice}</Text>
-          {marketPrice ? (
-            <StyledMarketPriceRight>
-              <Text>1</Text>
-              <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} />
-              <Tooltip text={marketPrice?.toString()}>
-                <Text>
-                  ≈ <NumberDisplay value={marketPrice?.toString()} decimalScale={3} />
-                </Text>
-              </Tooltip>
-
-              <TokenDisplay logo={rightTokenInfo?.logoUrl} name={rightTokenInfo?.symbol} />
-              <IconButton onClick={toggleInverted}>
-                <StyledIcon icon={<TbArrowsRightLeft />} />
-              </IconButton>
-            </StyledMarketPriceRight>
+          <Components.Text className="title">{translations.currentMarketPrice}</Components.Text>
+          {ready ? (
+            <Components.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
           ) : (
-            <Label>-</Label>
+            <Components.Text>-</Components.Text>
           )}
         </StyledFlexBetween>
       </StyledCard>
@@ -116,10 +82,10 @@ const MarketPrice = () => {
 };
 
 const SrcTokenPercentSelector = () => {
-  const { onChangePercent } = TWAPLib.store.useActionHandlers();
+  const { onPercentClick } = hooks.useCustomActions();
 
   const onClick = (value: number) => {
-    onChangePercent(value);
+    onPercentClick(value);
   };
 
   return (
@@ -150,40 +116,52 @@ const DstTokenPanel = () => {
 };
 
 const ChangeTokensOrder = () => {
-  const onChangeTokenPositions = TWAPLib.store.useChangeTokenPositions();
+  const switchTokens = hooks.useSwitchTokens();
   return (
     <StyledChangeOrder>
-      <IconButton onClick={onChangeTokenPositions}>
+      <Components.IconButton onClick={switchTokens}>
         <StyledIcon icon={<HiOutlineSwitchVertical />} />
-      </IconButton>
+      </Components.IconButton>
     </StyledChangeOrder>
   );
 };
 
 const TradeSize = () => {
-  const { uiTradeSize, onTradeSizeChange, totalTrades, uiUsdValue, usdPriceLoading, logoUrl, symbol, maxTrades } = TWAPLib.store.useTradeSize();
+  const { chunksAmount, onTotalChunksChange, totalChunks, token, usdValue, usdLoading, maxPossibleChunks, ready } = hooks.useChunks();
 
   return (
     <StyledTrade>
       <StyledCard>
         <StyledColumnGap>
-          <StyledFlexBetween gap={10}>
-            <Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Label>
-            <StyledSlider>
-              <Slider maxTrades={maxTrades} value={totalTrades} onChange={onTradeSizeChange} />
-            </StyledSlider>
-            <Label fontSize={14} tooltipText={translations.sliderMinSizeTooltip}>
-              <StyledTotalTradesInput placeholder="0" value={totalTrades} decimalScale={0} maxValue={maxTrades.toString()} onChange={(value) => onTradeSizeChange(Number(value))} />
-            </Label>
-          </StyledFlexBetween>
+          <StyledSliderContainer gap={10}>
+            <Components.Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Components.Label>
+            {ready ? (
+              <>
+                <StyledSlider>
+                  <Components.Slider maxTrades={maxPossibleChunks} value={totalChunks} onChange={onTotalChunksChange} />
+                </StyledSlider>
+                <Components.Tooltip text={translations.sliderMinSizeTooltip}>
+                  <StyledTotalTradesInput
+                    placeholder="0"
+                    value={totalChunks}
+                    decimalScale={0}
+                    maxValue={maxPossibleChunks.toString()}
+                    onChange={(value) => onTotalChunksChange(Number(value))}
+                  />
+                </Components.Tooltip>
+              </>
+            ) : (
+              <Components.Text>-</Components.Text>
+            )}
+          </StyledSliderContainer>
           <StyledFlexBetween>
             <StyledTradeSize>
-              <Label fontSize={14} tooltipText={translations.tradeSizeTooltip}>
-                {translations.tradeSize}: <NumberDisplay value={uiTradeSize} decimalScale={4} />
-              </Label>
-              {symbol && <TokenDisplay logo={logoUrl} name={symbol} />}
+              <Components.Label fontSize={14} tooltipText={translations.tradeSizeTooltip}>
+                {translations.tradeSize}: <Components.NumberDisplay value={chunksAmount} />
+              </Components.Label>
+              {token && <TokenDisplay logo={token?.logoUrl} name={token?.symbol} />}
             </StyledTradeSize>
-            <StyledUSD value={uiUsdValue} isLoading={usdPriceLoading} />
+            <StyledUSD value={usdValue} isLoading={usdLoading} />
           </StyledFlexBetween>
         </StyledColumnGap>
       </StyledCard>
@@ -192,25 +170,20 @@ const TradeSize = () => {
 };
 
 const LimitPriceDisplay = () => {
-  const { isLimitOrder, onToggleLimit, onChange, limitPriceUI, leftTokenInfo, rightTokenInfo, toggleInverted, warning, isLoading } = TWAPLib.store.useLimitPrice();
-
+  const { isLimitOrder, onToggleLimit, onChange, limitPrice, leftToken, rightToken, toggleInverted, warning } = hooks.useLimitPrice();
+  const isLoading = false;
   return (
     <StyledPrice>
       <StyledCard>
         <StyledColumnGap>
           <StyledFlexStart>
-            <Tooltip text={warning}>{isLoading ? <Loader width={50} /> : <StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}</Tooltip>
-            <Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{translations.limitPrice}</Label>
+            <Components.Tooltip text={warning}>
+              {isLoading ? <Components.Loader width={50} /> : <StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}
+            </Components.Tooltip>
+            <Components.Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{translations.limitPrice}</Components.Label>
           </StyledFlexStart>
           {isLimitOrder && (
-            <LimitPrice
-              onChange={onChange}
-              toggleInverted={toggleInverted}
-              limitPriceUI={limitPriceUI}
-              leftTokenInfo={leftTokenInfo}
-              rightTokenInfo={rightTokenInfo}
-              placeholder="0"
-            />
+            <Components.LimitPrice onChange={onChange} toggleInverted={toggleInverted} price={limitPrice} leftToken={leftToken} rightToken={rightToken} placeholder="0" />
           )}
         </StyledColumnGap>
       </StyledCard>
@@ -219,33 +192,32 @@ const LimitPriceDisplay = () => {
 };
 
 const MaxDuration = () => {
-  const { onMaxDurationChange } = TWAPLib.store.useMaxDuration();
-  const { maxDurationMillis, maxDurationTimeFormat } = TWAPLib.store.useMaxDuration();
+  const { maxDuration, onChange } = hooks.useMaxDuration();
 
   return (
     <StyledCard>
       <StyledFlexBetween gap={10}>
-        <Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Label>
-        <TimeSelector millis={maxDurationMillis} selectedTimeFormat={maxDurationTimeFormat} onChange={onMaxDurationChange} />
+        <Components.Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Components.Label>
+        <Components.TimeSelector value={maxDuration} onChange={onChange} />
       </StyledFlexBetween>
     </StyledCard>
   );
 };
 
 const TradeInterval = () => {
-  const { tradeIntervalMillis, tradeIntervalTimeFormat, customInterval, onTradeIntervalChange, onCustomIntervalClick } = TWAPLib.store.useTradeInterval();
+  const { fillDelay, customFillDelayEnabled, onChange, onCustomFillDelayClick } = hooks.useFillDelay();
 
   return (
     <StyledCard>
       <StyledFlexBetween gap={10}>
-        <Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Label>
+        <Components.Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Components.Label>
         <StyledIntervalTimeSelect>
-          <TimeSelector disabled={!customInterval} onChange={onTradeIntervalChange} millis={tradeIntervalMillis} selectedTimeFormat={tradeIntervalTimeFormat} />
+          <Components.TimeSelector disabled={!customFillDelayEnabled} onChange={onChange} value={fillDelay} />
         </StyledIntervalTimeSelect>
-        {!customInterval && (
-          <IconButton tooltip={translations.customIntervalTooltip} onClick={onCustomIntervalClick}>
+        {!customFillDelayEnabled && (
+          <Components.IconButton tooltip={translations.customIntervalTooltip} onClick={onCustomFillDelayClick}>
             <StyledIcon icon={<AiFillEdit />} />
-          </IconButton>
+          </Components.IconButton>
         )}
       </StyledFlexBetween>
     </StyledCard>
@@ -255,8 +227,8 @@ const TradeInterval = () => {
 const TokenDisplay = ({ logo, name }: { logo?: string; name?: string }) => {
   return (
     <StyledTokenDisplay className="token-display">
-      <TokenLogo logo={logo} />
-      <TokenName name={name} />
+      <Components.TokenLogo logo={logo} />
+      <Components.TokenName name={name} />
     </StyledTokenDisplay>
   );
 };
@@ -268,62 +240,61 @@ interface TokenPanelProps {
 
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   const {
-    inputWarningTooltip,
-    tokenSeletWarningTooltip,
-    amountPrefix,
-    usdValueLoading,
-    usdValue,
-    disabled,
-    balanceLoading,
-    balance,
-    value,
-    onSelect,
-    onChange,
-    tokenListOpen,
     toggleTokenList,
+    onTokenSelect,
     TokenSelectModal,
+    tokenListOpen,
+    inputWarning,
+    amountPrefix,
+    disabled,
+    selectTokenWarning,
     logo,
     symbol,
-  } = TWAPLib.store.useTokenPanel(isSrcToken);
-
-  const { chain } = TWAPLib.store.useWeb3();
-
-  const { onSrcTokenSelected, onDstTokenSelected } = useContext(TWAPLib.TwapContext);
+    onChange,
+    value,
+    usdValue,
+    balanceLoading,
+    balance,
+    connectedChainId,
+    usdLoading,
+  } = hooks.useTokenPanel(isSrcToken);
 
   const onOpen = () => {
-    if (chain != null) {
-      toggleTokenList(true);
-    }
+    if (!selectTokenWarning) toggleTokenList(true);
   };
 
   const onTokenSelected = (token: any) => {
-    onSelect(token);
-    if (onSrcTokenSelected && isSrcToken) onSrcTokenSelected(token);
-    if (onDstTokenSelected && !isSrcToken) onDstTokenSelected(token);
+    onTokenSelect(token);
   };
-
   return (
     <>
       {TokenSelectModal && (
-        <TokenSelectModal chainId={chain} commonTokens={[]} tokenSelected={undefined} onSelect={onTokenSelected} isOpen={tokenListOpen} onClose={() => toggleTokenList(false)} />
+        <TokenSelectModal
+          chainId={connectedChainId}
+          commonTokens={[]}
+          tokenSelected={undefined}
+          onSelect={onTokenSelected}
+          isOpen={tokenListOpen}
+          onClose={() => toggleTokenList(false)}
+        />
       )}
       <StyledTokenPanel>
         <StyledCard>
           <StyledColumnGap>
             <StyledFlexBetween>
-              <Tooltip text={inputWarningTooltip}>
+              <Components.Tooltip text={inputWarning}>
                 <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange || (() => {})} value={value} />
-              </Tooltip>
-              <Tooltip text={tokenSeletWarningTooltip}>
+              </Components.Tooltip>
+              <Components.Tooltip text={selectTokenWarning}>
                 <StyledTokenSelect onClick={onOpen}>
                   <TokenDisplay logo={logo} name={symbol} />
                   <StyledIcon icon={<IoIosArrowDown size={20} />} />
                 </StyledTokenSelect>
-              </Tooltip>
+              </Components.Tooltip>
             </StyledFlexBetween>
             <StyledFlexBetween>
-              <StyledUSD value={usdValue} isLoading={usdValueLoading} />
-              <Balance isLoading={balanceLoading} value={balance} />
+              <StyledUSD value={usdValue} isLoading={usdLoading} />
+              <Components.Balance isLoading={balanceLoading} value={balance} />
             </StyledFlexBetween>
             {children}
           </StyledColumnGap>
@@ -333,9 +304,8 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   );
 };
 
-const SubmitButton = () => {
-  const { loading, text, onClick, disabled } = TWAPLib.store.useSubmitOrder();
-
+const PlaceOrderButton = () => {
+  const { loading, text, onClick, disabled } = hooks.useShowConfirmationButton();
   return (
     <StyledButton loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
       {text}
@@ -344,21 +314,9 @@ const SubmitButton = () => {
 };
 
 const OrderConfirmation = () => {
-  const {
-    srcTokenUsdValue,
-    srcTokenUiAmount,
-    srcTokenInfo,
-    dstTokenUsdValue,
-    dstTokenUiAmount,
-    dstTokenInfo,
-    isLimitOrder,
-    closeConfirmation,
-    showConfirmation,
-    disclaimerAccepted,
-    setDisclaimerAccepted,
-  } = TWAPLib.store.useConfirmation();
-
-  const { account } = TWAPLib.store.useWeb3();
+  const { srcToken, dstToken, srcUsd, srcAmount, dstUsd, dstAmount, isLimitOrder, showConfirmation, closeConfirmation, disclaimerAccepted, setDisclaimerAccepted, maker } =
+    hooks.useOrderOverview();
+  const { loading, text, onClick, disabled } = hooks.useCreateOrderButton();
 
   return (
     <>
@@ -370,41 +328,36 @@ const OrderConfirmation = () => {
                 isSrc={true}
                 isLimitOrder={isLimitOrder}
                 title={translations.from}
-                amount={srcTokenUiAmount}
-                usdPrice={srcTokenUsdValue}
-                name={srcTokenInfo?.symbol}
-                logo={srcTokenInfo?.logoUrl}
+                amount={srcAmount}
+                usdPrice={srcUsd}
+                name={srcToken?.symbol}
+                logo={srcToken?.logoUrl}
               />
-              <TokenOrderPreview
-                isLimitOrder={isLimitOrder}
-                title={translations.to}
-                amount={dstTokenUiAmount}
-                usdPrice={dstTokenUsdValue}
-                name={dstTokenInfo?.symbol}
-                logo={dstTokenInfo?.logoUrl}
-              />
+              <TokenOrderPreview isLimitOrder={isLimitOrder} title={translations.to} amount={dstAmount} usdPrice={dstUsd} name={dstToken?.symbol} logo={dstToken?.logoUrl} />
               <OrderConfirmationLimitPrice />
 
               <StyledCard>
                 <StyledColumnGap className="trade-info-explanation" gap={20}>
-                  <ConfirmationExpiration />
-                  <ConfirmationOrderType />
-                  <ConfirmationTradeSize />
-                  <ConfirmationTotalTrades />
-                  <ConfirmationTradeInterval />
-                  <ConfirmationMinimumReceived />
+                  <Components.ConfirmationExpiration />
+                  <Components.ConfirmationOrderType />
+                  <Components.ConfirmationTradeSize />
+                  <Components.ConfirmationTotalTrades />
+                  <Components.ConfirmationTradeInterval />
+                  <Components.ConfirmationMinimumReceived />
                 </StyledColumnGap>
               </StyledCard>
               <TradeInfoDetailsDisplay />
             </StyledColumnGap>
             <StyledColumnGap gap={12}>
               <Box style={{ display: "flex", gap: 5 }}>
-                <SmallLabel>{translations.acceptDisclaimer}</SmallLabel>
+                <Components.SmallLabel>{translations.acceptDisclaimer}</Components.SmallLabel>
                 <StyledSwitch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
               </Box>
-              <Text className="output-text">{translations.outputWillBeSentTo}</Text>
-              <Text className="output-text">{account}</Text>
-              <SubmitButton />
+              <Components.Text className="output-text">{translations.outputWillBeSentTo}</Components.Text>
+              <Components.Text className="output-text">{maker}</Components.Text>
+              <StyledButton loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
+                {text}
+              </StyledButton>
             </StyledColumnGap>
           </StyledColumnGap>
         </StyledOrderConfirmation>
@@ -417,32 +370,23 @@ const TradeInfoDetailsDisplay = () => {
   return (
     <StyledCard>
       <StyledColumnGap gap={10}>
-        <TradeInfoExplanation />
+        <Components.TradeInfoExplanation />
       </StyledColumnGap>
     </StyledCard>
   );
 };
 
 const OrderConfirmationLimitPrice = () => {
-  const { isLimitOrder, toggleInverted, limitPriceUI, leftTokenInfo, rightTokenInfo } = TWAPLib.store.useLimitPrice();
+  const { isLimitOrder, toggleInverted, limitPrice, leftToken, rightToken } = hooks.useLimitPrice();
 
   return (
     <StyledLimitPrice>
       <StyledFlexBetween>
-        <Label tooltipText={translations.confirmationLimitPriceTooltip}>{translations.limitPrice}</Label>
+        <Components.Label tooltipText={translations.confirmationLimitPriceTooltip}>{translations.limitPrice}</Components.Label>
         {isLimitOrder ? (
-          <div className="right">
-            <Text>1</Text> <TokenDisplay logo={leftTokenInfo?.logoUrl} name={leftTokenInfo?.symbol} /> <Text>=</Text>
-            <Tooltip text={limitPriceUI}>
-              <Text>
-                <NumberDisplay value={limitPriceUI || "0"} />
-              </Text>
-            </Tooltip>
-            <TokenDisplay logo={rightTokenInfo?.logoUrl} name={rightTokenInfo?.symbol} />
-            <PriceToggle onClick={toggleInverted} />
-          </div>
+          <Components.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice} toggleInverted={toggleInverted} />
         ) : (
-          <Text>{translations.none}</Text>
+          <Components.Text>{translations.none}</Components.Text>
         )}
       </StyledFlexBetween>
     </StyledLimitPrice>
@@ -471,17 +415,21 @@ const TokenOrderPreview = ({
       <StyledCard>
         <StyledColumnGap gap={10}>
           <StyledFlexBetween>
-            <Label>{title}</Label>
+            <Components.Label>{title}</Components.Label>
             <StyledUSD value={usdPrice} />
           </StyledFlexBetween>
           <StyledFlexBetween>
             <TokenDisplay name={name} logo={logo} />
-            <SmallLabel>
-              {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <NumberDisplay value={amount} />
-            </SmallLabel>
+            <StyledTokenOrderPreviewAmount>
+              {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} />
+            </StyledTokenOrderPreviewAmount>
           </StyledFlexBetween>
         </StyledColumnGap>
       </StyledCard>
     </StyledTokenOrder>
   );
 };
+
+const StyledTokenOrderPreviewAmount = styled(Components.SmallLabel)({
+  fontSize: 19,
+});

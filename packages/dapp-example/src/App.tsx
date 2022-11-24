@@ -1,9 +1,7 @@
 import { Box, styled } from "@mui/system";
 import { useWeb3React } from "@web3-react/core";
 import { injectedConnector } from "./connectors";
-import { CSSProperties, useState } from "react";
-import axios from "axios";
-import { useQuery } from "react-query";
+import { CSSProperties, useEffect, useState } from "react";
 import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
 import { Orders, TWAP_Spiritswap } from "@orbs-network/twap-ui-spiritswap";
@@ -14,10 +12,19 @@ import { AiOutlineClose } from "react-icons/ai";
 function App() {
   const { activate, library, chainId, account } = useWeb3React();
   const [selectedDapp, setSelectedDapp] = useState("1");
-  const { data: list = [] } = useTokenList(chainId);
+  const tokensList = useTokenList(chainId);
 
   const getProvider = () => {
     return library;
+  };
+
+  const args = {
+    connectedChainId: chainId,
+    getProvider,
+    account,
+    TokenSelectModal,
+    connect: () => activate(injectedConnector),
+    tokensList,
   };
 
   return (
@@ -41,10 +48,10 @@ function App() {
             return (
               <StyledContainer key={dapp.id}>
                 <Layout>
-                  <Component getProvider={getProvider} account={account} TokenSelectModal={TokenSelectModal} connect={() => activate(injectedConnector)} tokensList={list} />
+                  <Component {...args} />
                 </Layout>
                 <Layout>
-                  <Orders account={account} getProvider={getProvider} TokenSelectModal={TokenSelectModal} connect={() => activate(injectedConnector)} tokensList={list} />
+                  <Orders {...args} />
                 </Layout>
               </StyledContainer>
             );
@@ -76,12 +83,14 @@ const tokenlistsNetworkNames = {
   [networks.ftm.id]: "ftm",
 };
 const useTokenList = (chainId?: number) => {
-  return useQuery(
-    ["useList", chainId],
-    async () => {
-      const tokenlist = (await axios.get(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${tokenlistsNetworkNames[chainId!]}.json`)).data;
+  const [tokens, setTokens] = useState<any[]>([]);
 
-      const parsed = tokenlist.map(({ symbol, address, decimals, logoURI }: any) => ({ symbol, address, decimals, logoUrl: logoURI }));
+  useEffect(() => {
+    if (!chainId) return;
+    (async () => {
+      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${tokenlistsNetworkNames[chainId!]}.json`);
+      const tokenList = await response.json();
+      const parsed = tokenList.map(({ symbol, address, decimals, logoURI }: any) => ({ symbol, address, decimals, logoUrl: logoURI }));
 
       const networkShortName = _.find(networks, (n) => n.id === chainId)!.shortname;
       const topTokens = [
@@ -92,13 +101,15 @@ const useTokenList = (chainId?: number) => {
           .value(),
       ];
 
-      return _.sortBy(parsed, (t: any) => {
+      const _tokens = _.sortBy(parsed, (t: any) => {
         const index = topTokens.indexOf(t.address);
         return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
       });
-    },
-    { enabled: !!chainId }
-  );
+      setTokens(_tokens);
+    })();
+  }, [chainId]);
+
+  return tokens;
 };
 
 interface Props {
@@ -110,7 +121,7 @@ interface Props {
 }
 
 const TokenSelectModal = ({ chainId, isOpen, selectedToken, onSelect, onClose }: Props) => {
-  const { data: list = [] } = useTokenList(chainId);
+  const list = useTokenList(chainId);
 
   return (
     <Modal open={isOpen} onClose={onClose} onBackdropClick={onClose}>
@@ -154,7 +165,8 @@ const StyledCloseIcon = styled("button")({
 
 const StyledModalList = styled("ul")({
   listStyleType: "none",
-  width: "500px",
+  maxWidth: 500,
+  width: "calc(100vw - 20px)",
   height: 500,
   overflow: "auto",
   background: "#18202F",
@@ -211,7 +223,8 @@ const StyledLayoutSpiritswap = styled(Box)({
 
 const StyledContent = styled(Box)(({ styles }: { styles?: CSSProperties }) => ({
   flex: 1,
-  width: 500,
+  maxWidth: 500,
+  width: "calc(100% - 30px)",
   overflow: "auto",
   ...styles,
 }));

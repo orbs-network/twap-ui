@@ -1,44 +1,40 @@
 import { Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import NumericInput from "../base-components/NumericInput";
-import TokenLogo from "../base-components/TokenLogo";
-import TokenName from "../base-components/TokenName";
-import { store } from "../store/store";
-import PriceToggle from "../base-components/PriceToggle";
-import Tooltip from "../base-components/Tooltip";
-import Switch from "../base-components/Switch";
-import { TokenInfo } from "../types";
+import NumericInput from "./NumericInput";
+import TokenLogo from "./TokenLogo";
+import TokenName from "./TokenName";
+import PriceToggle from "./PriceToggle";
+import { TokenData } from "@orbs-network/twap";
 
 function LimitPrice({
   placeholder = "0.00",
-  limitPriceUI,
+  price,
   toggleInverted,
   onChange,
-  leftTokenInfo,
-  rightTokenInfo,
+  leftToken,
+  rightToken,
 }: {
   placeholder?: string;
-  limitPriceUI?: string;
+  price?: string;
   toggleInverted: () => void;
-  leftTokenInfo?: TokenInfo;
-  rightTokenInfo?: TokenInfo;
+  leftToken?: TokenData;
+  rightToken?: TokenData;
   onChange: (value?: string) => void;
 }) {
-  // TODO start from left input
   return (
     <StyledContainer className="twap-price">
       <StyledLeft>
         <Typography>1</Typography>
-        <TokenName name={leftTokenInfo?.symbol} />
-        <TokenLogo logo={leftTokenInfo?.logoUrl} />
+        <TokenName name={leftToken?.symbol} />
+        <TokenLogo logo={leftToken?.logoUrl} />
         <Typography>=</Typography>
       </StyledLeft>
       <StyledNumeric>
-        <NumericInput placeholder={placeholder} onChange={onChange} value={limitPriceUI} />
+        <NumericInput placeholder={placeholder} onChange={onChange} value={price} />
       </StyledNumeric>
       <StyledRight>
-        <TokenName name={rightTokenInfo?.symbol} />
-        <TokenLogo logo={rightTokenInfo?.logoUrl} />
+        <TokenName name={rightToken?.symbol} />
+        <TokenLogo logo={rightToken?.logoUrl} />
         <PriceToggle onClick={toggleInverted} />
       </StyledRight>
     </StyledContainer>
@@ -46,15 +42,6 @@ function LimitPrice({
 }
 
 export { LimitPrice };
-
-export const LimitPriceSwitch = ({ className = "" }: { className?: string }) => {
-  const { isLimitOrder, onToggleLimit, warning } = store.useLimitPrice();
-  return (
-    <Tooltip text={warning}>
-      <Switch disabled={!!warning} className={className} value={!isLimitOrder} onChange={onToggleLimit} />
-    </Tooltip>
-  );
-};
 
 const StyledLeft = styled(Box)({
   display: "flex",

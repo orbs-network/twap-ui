@@ -1,26 +1,43 @@
 import { ClickAwayListener, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useState } from "react";
-import { TimeFormat } from "../store/TimeFormat";
+import { useTwapTranslations } from "../hooks";
+import { TimeResolution } from "../state";
+import { Translations } from "../types";
 import NumericInput from "./NumericInput";
 
+const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
+  {
+    text: "minutes",
+    value: TimeResolution.Minutes,
+  },
+  {
+    text: "hours",
+    value: TimeResolution.Hours,
+  },
+  {
+    text: "days",
+    value: TimeResolution.Days,
+  },
+];
+
+const findSelectedResolutionText = (resolution: TimeResolution) => {
+  return timeArr.find((t) => t.value === resolution)!.text;
+};
+
 interface Props {
-  millis?: number;
-  onChange: (timeFormat: TimeFormat, millis: number) => void;
-  selectedTimeFormat: TimeFormat;
+  value: { resolution: TimeResolution; amount: number };
+  onChange: ({ resolution, amount }: { resolution: TimeResolution; amount: number }) => void;
   disabled?: boolean;
 }
 
-function TimeSelector({ millis = 0, onChange, selectedTimeFormat = TimeFormat.Minutes, disabled = false }: Props) {
+function TimeSelector({ value, onChange, disabled = false }: Props) {
   const [showList, setShowList] = useState(false);
+  const translations = useTwapTranslations();
 
-  const onTimeFormatChange = (newTimeFormat: TimeFormat) => {
-    onChange(newTimeFormat, selectedTimeFormat.transmute(newTimeFormat, millis));
+  const onTimeFormatChange = (resolution: TimeResolution) => {
+    onChange({ resolution, amount: value.amount });
     setShowList(false);
-  };
-
-  const onMillisChange = (uiValue?: string) => {
-    onChange(selectedTimeFormat, uiValue == null ? 0 : selectedTimeFormat.uiToMillis(uiValue));
   };
 
   const onOpenListClick = () => {
@@ -31,30 +48,25 @@ function TimeSelector({ millis = 0, onChange, selectedTimeFormat = TimeFormat.Mi
   return (
     <StyledContainer className="twap-time-selector" style={{ pointerEvents: disabled ? "none" : "unset" }}>
       <StyledInput>
-        <NumericInput
-          disabled={disabled}
-          value={millis ? selectedTimeFormat.millisToUi(millis).toString() : undefined}
-          onChange={(value) => onMillisChange(value === "" ? undefined : value)}
-          placeholder={"0"}
-        />
+        <NumericInput disabled={disabled} value={value.amount} onChange={(v) => onChange({ resolution: value.resolution, amount: Number(v) })} placeholder={"0"} />
       </StyledInput>
 
       <StyledTimeSelect>
         <StyledSelected onClick={onOpenListClick}>
-          <Typography> {selectedTimeFormat.toString()}</Typography>
+          <Typography> {translations[findSelectedResolutionText(value.resolution)]}</Typography>
         </StyledSelected>
         {showList && (
           <ClickAwayListener onClickAway={() => setShowList(false)}>
             <StyledList className="twap-time-selector-list">
-              {TimeFormat.All.map((item) => {
-                const selected = item.key === selectedTimeFormat.key;
+              {timeArr.map((item) => {
+                const selected = item.value === value.resolution;
                 return (
                   <StyledListItem
                     className={`twap-time-selector-list-item ${selected ? "twap-time-selector-list-item-selected" : ""}`}
-                    onClick={() => onTimeFormatChange(item)}
-                    key={item.key}
+                    onClick={() => onTimeFormatChange(item.value)}
+                    key={item.value}
                   >
-                    <Typography>{item.key}</Typography>
+                    <Typography>{translations[item.text]}</Typography>
                   </StyledListItem>
                 );
               })}
@@ -74,6 +86,9 @@ const StyledInput = styled(Box)({
     textAlign: "right",
     flex: "unset",
     width: "100%",
+    "&::placeholder": {
+      color: "white",
+    },
   },
 });
 

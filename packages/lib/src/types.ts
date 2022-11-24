@@ -1,114 +1,3 @@
-import { BigNumber, Token } from "@defi.org/web3-candies";
-import { TimeFormat } from "./store/TimeFormat";
-import Web3 from "web3";
-
-export interface Store {
-  srcToken?: Token;
-  srcTokenInfo?: TokenInfo;
-  srcTokenAmount?: BigNumber;
-  dstTokenInfo?: TokenInfo;
-  dstToken?: Token;
-  maxDurationMillis: number;
-  maxDurationTimeFormat: TimeFormat;
-  customInterval: boolean;
-  showConfirmation: boolean;
-  disclaimerAccepted: boolean;
-  limitPrice?: BigNumber;
-  isLimitOrder: boolean;
-  totalTrades: number;
-  customTradeIntervalMillis: number;
-  customTradeIntervalTimeFormat: TimeFormat;
-
-  getTradeIntervalMillis: () => number;
-  getTradeIntervalTimeFormat: () => TimeFormat;
-  getDeadline: () => number;
-  getDeadlineUi: () => string;
-  getTradeSize: () => BigNumber;
-  getDerivedTradeInterval: () => { millis: number; timeFormat: TimeFormat };
-  getMinAmountOut: () => BigNumber;
-
-  //actions
-  onMaxDurationChange: (timeFormat: TimeFormat, millis: number) => void;
-  setSrcToken: (value?: TokenInfo, amount?: BigNumber) => void;
-  setSrcTokenAmount: (value?: BigNumber) => void;
-  onSrcTokenChange: (value: string) => void;
-  setDstToken: (value?: TokenInfo) => void;
-  setCustomInterval: (value: boolean) => void;
-  onTradeIntervalChange: (timeFormat: TimeFormat, millis: number) => void;
-  onTradeSizeChange: (totalTrades: number, token?: Token, amount?: BigNumber) => void;
-  toggleLimit: (limitPrice?: BigNumber) => void;
-  setLimitPrice: (value?: BigNumber) => void;
-  hideLimit: () => void;
-  setShowConfirmation: (value: boolean) => void;
-  setDisclaimerAccepted: (value: boolean) => void;
-  resetLimitPrice: () => void;
-  switchTokens: (dstTokenAmount?: BigNumber) => void;
-  reset: () => void;
-}
-
-export interface Web3State {
-  web3?: Web3;
-  setWeb3: (web3?: Web3) => void;
-  account?: string;
-  setAccount: (value?: string) => void;
-  chain?: number;
-  setChain: (chain?: number) => void;
-  integrationChain?: number;
-  setIntegrationChain: (value?: number) => void;
-  integrationKey?: string;
-  setIntegrationKey: (value?: string) => void;
-}
-
-export interface TokenInfo {
-  symbol: string;
-  address: string;
-  decimals: number;
-  logoUrl?: string;
-  isNative?: boolean;
-}
-
-export enum OrderStatus {
-  Open = "Open",
-  Filled = "Filled",
-  Expired = "Expired",
-  Canceled = "Canceled",
-}
-
-export type Order = {
-  dstPrice: BigNumber;
-  srcToken: Token;
-  dstToken: Token;
-  srcTokenAmount: BigNumber;
-  tradeSize: BigNumber;
-  dstMinAmount: BigNumber;
-  deadline: number;
-  delay: number;
-  id: string;
-  status: OrderStatus;
-  srcFilledAmount: BigNumber;
-  time: number;
-  tradeIntervalMillis: number;
-  createdAtUi: string;
-  deadlineUi: string;
-  progress: number;
-  srcRemainingAmount: BigNumber;
-  isMarketOrder: boolean;
-  dstAmount: BigNumber;
-  prefix: string;
-  srcTokenInfo: TokenInfo;
-  dstTokenInfo: TokenInfo;
-  srcUsdValueUi: string;
-  dstUsdValueUi: string;
-  srcTokenAmountUi: string;
-  dstTokenAmountUi: string;
-  tradeSizeAmountUi: string;
-  tradeSizeUsdValueUi: string;
-  srcFilledAmountUi: string;
-  srcRemainingAmountUi: string;
-  srcFilledUsdValueUi: string;
-  srcRemainingUsdValueUi: string;
-};
-
 export interface Translations {
   confirmationDeadlineTooltip: string;
   confirmationtradeIntervalTooltip: string;
@@ -172,7 +61,7 @@ export interface Translations {
   none: string;
   orders: string;
   Open: string;
-  Filled: string;
+  Completed: string;
   Expired: string;
   Canceled: string;
   noOrdersFound: string;
@@ -184,4 +73,6 @@ export interface Translations {
   ordersTooltip: string;
   noOrdersFound1: string;
   poweredBy: string;
+  insertLimitPriceWarning: string;
+  unwrap: string;
 }

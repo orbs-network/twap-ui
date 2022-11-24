@@ -1,21 +1,16 @@
-import TWAPLib from "@orbs-network/twap-ui";
+import { Orders } from "@orbs-network/twap-ui";
 import { Box, styled } from "@mui/system";
-import { QueryClientProvider } from "react-query";
 import { colors } from "./styles";
-import { ProviderWrapper, queryClient, TwapProps } from ".";
+import { ProviderWrapper, TwapProps } from ".";
 import { memo } from "react";
-
-const { Orders } = TWAPLib;
 
 function OrderHistory(props: TwapProps) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ProviderWrapper {...props}>
-        <StyledContainer>
-          <Orders />
-        </StyledContainer>
-      </ProviderWrapper>
-    </QueryClientProvider>
+    <ProviderWrapper {...props}>
+      <StyledContainer>
+        <Orders />
+      </StyledContainer>
+    </ProviderWrapper>
   );
 }
 
@@ -47,7 +42,6 @@ const StyledContainer = styled(Box)({
       "& .MuiButtonBase-root": {
         color: "#FFFFFF",
         fontWeight: 400,
-        fontSize: 14,
       },
       "& .Mui-selected": {
         color: "#60E6C5",

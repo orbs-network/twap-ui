@@ -2,7 +2,7 @@ import { NumericFormat } from "react-number-format";
 
 function NumberDisplay({
   value,
-  decimalScale = 6,
+  decimalScale = 3,
   prefix,
   className = "",
   suffix,

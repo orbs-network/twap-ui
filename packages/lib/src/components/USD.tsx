@@ -6,7 +6,7 @@ const USD = ({ isLoading = false, value, className = "", prefix = "" }: { prefix
   if (value == null) return null;
   return (
     <SmallLabel loading={isLoading} className={className}>
-      {prefix} ~ $ <NumberDisplay value={value} decimalScale={1} />
+      {prefix} ~ $ <NumberDisplay value={value} />
     </SmallLabel>
   );
 };

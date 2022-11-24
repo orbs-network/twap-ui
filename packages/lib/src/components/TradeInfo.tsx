@@ -1,14 +1,13 @@
 import { Box, styled } from "@mui/system";
 import { ReactNode } from "react";
-import { useTwapTranslations } from "../context";
-import Label from "../base-components/Label";
-import Modal from "../base-components/Modal";
-import NumberDisplay from "../base-components/NumberDisplay";
-import Text from "../base-components/Text";
-import TokenLogo from "../base-components/TokenLogo";
-import TokenName from "../base-components/TokenName";
-import Tooltip from "../base-components/Tooltip";
-import { store } from "../store/store";
+import Label from "./Label";
+import Modal from "./Modal";
+import NumberDisplay from "./NumberDisplay";
+import Text from "./Text";
+import TokenLogo from "./TokenLogo";
+import TokenName from "./TokenName";
+import Tooltip from "./Tooltip";
+import { useOrderOverview, useTwapTranslations } from "../hooks";
 
 export function TradeInfoModal({ onClose, open, children, className = "" }: { onClose: () => void; open: boolean; children: ReactNode; className?: string }) {
   const translations = useTwapTranslations();
@@ -24,17 +23,17 @@ const StyledModalContent = styled(Box)({});
 export function ConfirmationExpiration() {
   const translations = useTwapTranslations();
 
-  const deadlineUi = store.useConfirmation().deadlineUi;
+  const deadline = useOrderOverview().deadline;
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText={translations.confirmationDeadlineTooltip}>{translations.expiration}</Label>
-      <Text>{deadlineUi}</Text>
+      <Text>{deadline}</Text>
     </StyledRow>
   );
 }
 
 export function ConfirmationOrderType() {
-  const isLimitOrder = store.useConfirmation().isLimitOrder;
+  const isLimitOrder = useOrderOverview().isLimitOrder;
   const translations = useTwapTranslations();
 
   return (
@@ -47,16 +46,16 @@ export function ConfirmationOrderType() {
 
 export function ConfirmationTradeSize() {
   const translations = useTwapTranslations();
-  const { uiTradeSize, srcTokenInfo } = store.useConfirmation();
+  const { srcChunkAmount, srcToken } = useOrderOverview();
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText={translations.confirmationTradeSizeTooltip}>{translations.tradeSize}</Label>
       <StyledTradeSizeRight>
-        <TokenName name={srcTokenInfo?.symbol} />
-        <TokenLogo logo={srcTokenInfo?.logoUrl} />
+        <TokenName name={srcToken?.symbol} />
+        <TokenLogo logo={srcToken?.logoUrl} />
         <Text>
-          <Tooltip text={uiTradeSize}>
-            <NumberDisplay value={uiTradeSize} decimalScale={3} />
+          <Tooltip text={srcChunkAmount}>
+            <NumberDisplay value={srcChunkAmount} />
           </Tooltip>
         </Text>
       </StyledTradeSizeRight>
@@ -65,31 +64,31 @@ export function ConfirmationTradeSize() {
 }
 
 export function ConfirmationTotalTrades() {
-  const { totalTrades } = store.useConfirmation();
+  const totalChunks = useOrderOverview().totalChunks;
   const translations = useTwapTranslations();
 
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText={translations.confirmationTotalTradesTooltip}>{translations.totalTrades}</Label>
-      <Text>{totalTrades}</Text>
+      <Text>{totalChunks}</Text>
     </StyledRow>
   );
 }
 
 export function ConfirmationTradeInterval() {
-  const { tradeIntervalUi } = store.useConfirmation();
+  const fillDelay = useOrderOverview().fillDelay;
   const translations = useTwapTranslations();
 
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText={translations.confirmationtradeIntervalTooltip}>{translations.tradeInterval}</Label>
-      <Text>{tradeIntervalUi}</Text>
+      <Text>{fillDelay}</Text>
     </StyledRow>
   );
 }
 
 export function ConfirmationMinimumReceived() {
-  const { minAmountOutUi, isLimitOrder, dstTokenInfo } = store.useConfirmation();
+  const { minAmountOut, isLimitOrder, dstToken } = useOrderOverview();
   const translations = useTwapTranslations();
   return (
     <StyledRow className="twap-trade-info-row">
@@ -98,12 +97,12 @@ export function ConfirmationMinimumReceived() {
       </Label>
 
       <StyledMinumimReceived>
-        <TokenName name={dstTokenInfo?.symbol} />
-        <TokenLogo logo={dstTokenInfo?.logoUrl} />
+        <TokenName name={dstToken?.symbol} />
+        <TokenLogo logo={dstToken?.logoUrl} />
         <Text>
           {isLimitOrder ? (
-            <Tooltip text={minAmountOutUi}>
-              <NumberDisplay value={minAmountOutUi} decimalScale={3} />
+            <Tooltip text={minAmountOut}>
+              <NumberDisplay value={minAmountOut} />
             </Tooltip>
           ) : (
             translations.none
@@ -149,11 +148,11 @@ export const TradeInfoExplanation = () => {
 
       <Text>
         {translations.disclaimer6}{" "}
-        <a href="https://www.orbs.com/" target="_blank">
+        <a href="https://github.com/orbs-network/twap" target="_blank">
           {translations.link}
         </a>
         . {translations.disclaimer7}{" "}
-        <a href="https://www.orbs.com/" target="_blank">
+        <a href="https://github.com/orbs-network/twap/blob/master/TOS.md" target="_blank">
           {translations.link}
         </a>
         .

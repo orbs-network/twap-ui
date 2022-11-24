@@ -23,12 +23,9 @@
     "@defi.org/web3-candies": "4.x",
     "@mui/material": "5.x",
     "@mui/system": "5.x",
+    "@orbs-network/twap": "1.7.x",
     "@orbs-network/twap-ui": "^0.2.4",
-    "axios": "1.x",
-    "bignumber.js": "9.x",
-    "lodash": "4.x",
-    "react-icons": "4.x",
-    "react-query": "3.x"
+    "react-icons": "4.x"
   },
   "peerDependencies": {
     "react": "*",

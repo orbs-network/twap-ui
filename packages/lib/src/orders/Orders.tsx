@@ -3,17 +3,17 @@ import { Box, styled } from "@mui/system";
 import React from "react";
 import OrdersList from "./OrdersList";
 import _ from "lodash";
-import Label from "../base-components/Label";
-import { OrderStatus, Translations } from "../types";
-import { useOrders } from "../store/orders";
-import OdnpButton from "../base-components/OdnpButton";
-import { useTwapTranslations } from "../context";
-import Icon from "../base-components/Icon";
+import Label from "../components/Label";
+import { Translations } from "../types";
+import OdnpButton from "../components/OdnpButton";
+import Icon from "../components/Icon";
 import { AiOutlineHistory } from "react-icons/ai";
+import { Status } from "@orbs-network/twap";
+import { useOrders, useTwapTranslations } from "../hooks";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
-  const { data: orders = {}, isLoading: ordersLoading } = useOrders();
+  const { orders, loading } = useOrders();
   const translations = useTwapTranslations();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -30,17 +30,17 @@ function Orders() {
           <StyledOdnpButton />
         </StyledHeaderTop>
         <StyledTabs value={selectedTab} onChange={handleChange}>
-          {_.keys(OrderStatus).map((key, index) => {
+          {_.keys(Status).map((key, index) => {
             return <StyledTab key={index} label={`${orders[key] ? orders[key]?.length : "0"} ${translations[key as keyof Translations]}`} {...a11yProps(index)} />;
           })}
         </StyledTabs>
       </StyledHeader>
       <StyledLists className="twap-orders-lists">
-        {_.keys(OrderStatus).map((key: any, index: number) => {
+        {_.keys(Status).map((key: any, index: number) => {
           if (selectedTab !== index) {
             return null;
           }
-          return <OrdersList isLoading={ordersLoading} type={key as any as OrderStatus} orders={orders[key as any as OrderStatus]} key={key} />;
+          return <OrdersList isLoading={loading} status={key as any as Status} orders={orders[key as any as Status]} key={key} />;
         })}
       </StyledLists>
     </StyledContainer>
@@ -64,10 +64,14 @@ const StyledOdnpButton = styled(OdnpButton)({
 });
 
 const StyledTab = styled(Tab)({
-  fontSize: 13,
+  fontSize: 14,
   width: "calc(100% / 4)",
   padding: "0px",
   textTransform: "unset",
+  "@media(max-width: 600px)": {
+    fontSize: 10,
+    minWidth: "unset",
+  },
 });
 
 const StyledTabs = styled(Tabs)({

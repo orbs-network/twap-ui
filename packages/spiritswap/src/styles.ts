@@ -1,10 +1,6 @@
 import { Box, styled } from "@mui/system";
-import TWAPLib from "@orbs-network/twap-ui";
+import { Components } from "@orbs-network/twap-ui";
 import { CSSProperties } from "react";
-
-const { USD, Button, Icon, NumericInput, Card, Switch } = TWAPLib.baseComponents;
-
-const { TradeInfoModal } = TWAPLib.components;
 
 export const colors = {
   cardBackground: "#18202F",
@@ -18,9 +14,8 @@ export const colors = {
   borderColor: "rgb(55, 65, 81)",
 };
 
-export const StyledUSD = styled(USD)({
+export const StyledUSD = styled(Components.USD)({
   opacity: 0.6,
-  maxWidth: "20%",
   "& p": {
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -28,7 +23,7 @@ export const StyledUSD = styled(USD)({
   },
 });
 
-export const StyledButton = styled(Button)({
+export const StyledButton = styled(Components.Button)({
   background: colors.submitButton,
   border: `1px solid ${colors.submitButtonBorder}`,
   height: 40,
@@ -45,7 +40,7 @@ export const StyledSlider = styled(Box)({
   top: 2,
 });
 
-export const StyledNumbericInput = styled(NumericInput)({
+export const StyledNumbericInput = styled(Components.NumericInput)({
   "& input": {
     color: colors.text,
     fontSize: 24,
@@ -70,11 +65,11 @@ const cardStyles: CSSProperties = {
   borderRadius: "0.375rem",
 };
 
-export const StyledCard = styled(Card)({
+export const StyledCard = styled(Components.Card)({
   ...cardStyles,
 });
 
-export const StyledIcon = styled(Icon)({
+export const StyledIcon = styled(Components.Icon)({
   "& path": {
     color: colors.icon,
   },
@@ -83,7 +78,7 @@ export const StyledIcon = styled(Icon)({
   },
 });
 
-export const StyledTradeInfoModal = styled(TradeInfoModal)({
+export const StyledTradeInfoModal = styled(Components.TradeInfoModal)({
   "& a": {
     color: "white",
     fontWeight: 500,
@@ -91,7 +86,6 @@ export const StyledTradeInfoModal = styled(TradeInfoModal)({
   },
   "& *": {
     boxSizing: "border-box",
-    color: "white",
   },
   "& .MuiIconButton-root": {
     color: "white",
@@ -131,6 +125,17 @@ export const StyledLimitPrice = styled(Box)({
 export const StyledTokenOrder = styled(Box)({ width: "100%" });
 
 export const globalStyle = {
+  "& .odnp": {
+    "*": {
+      color: "black",
+    },
+    "& button": {
+      color: "white",
+    },
+  },
+  ".twap-loader": {
+    backgroundColor: "rgba(255,255,255, 0.1)!important",
+  },
   "& .twap-modal": {
     "& *": {
       color: "white",
@@ -326,7 +331,7 @@ export const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
   width: "100%",
 }));
 
-export const StyledSwitch = styled(Switch)({
+export const StyledSwitch = styled(Components.Switch)({
   "& .MuiSwitch-thumb": {
     background: "white",
   },
@@ -404,4 +409,8 @@ export const StyledTotalTradesInput = styled(StyledNumbericInput)({
   "& input": {
     fontSize: 16,
   },
+});
+
+export const StyledSliderContainer = styled(StyledFlexBetween)({
+  height: 30,
 });

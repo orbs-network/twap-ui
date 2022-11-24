@@ -1,4 +1,4 @@
-import { Box, Fade } from "@mui/material";
+import { Box, Fade, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";
@@ -33,6 +33,8 @@ function NumericInput({
   decimalScale,
   minAmount,
 }: Props) {
+  const inputValue = value || minAmount || "";
+
   return (
     <StyledContainer className={className}>
       <Fade in={loading} style={{ transition: "0s" }}>
@@ -41,19 +43,19 @@ function NumericInput({
         </StyledLoader>
       </Fade>
       <Fade in={!loading} style={{ transition: "0s" }}>
-        <div>
+        <StyledFlex>
+          {prefix && <StyledPrefix className="twap-input-prefix">{prefix}</StyledPrefix>}
           <NumericFormat
             disabled={disabled}
             decimalScale={decimalScale}
             onBlur={onBlur}
-            prefix={prefix && `${prefix} `}
             onFocus={onFocus}
             placeholder={placeholder}
             isAllowed={(values) => {
               const { floatValue = 0 } = values;
               return maxValue ? floatValue <= parseFloat(maxValue) : true;
             }}
-            value={value || minAmount || ""}
+            value={inputValue}
             thousandSeparator=","
             decimalSeparator="."
             customInput={StyledInput}
@@ -65,10 +67,10 @@ function NumericInput({
                 return;
               }
 
-              onChange(values.value);
+              onChange(values.formattedValue);
             }}
           />
-        </div>
+        </StyledFlex>
       </Fade>
     </StyledContainer>
   );
@@ -91,6 +93,11 @@ const StyledContainer = styled(Box)({
   position: "relative",
 });
 
+const StyledPrefix = styled(Typography)({
+  fontFamily: "inherit",
+  fontSize: 22,
+});
+
 const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   pointerEvents: disabled ? "none" : "unset",
   height: "100%",
@@ -103,3 +110,8 @@ const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   fontWeight: 500,
   paddingRight: 10,
 }));
+
+const StyledFlex = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+});

@@ -1,26 +1,28 @@
-import { BigNumber } from "@defi.org/web3-candies";
-import { createContext, ReactNode, useContext, useEffect } from "react";
-import { useAnalyticsInit } from "./analytics";
-import { useWeb3 } from "./store/store";
-import { TokenInfo as Token, Translations } from "./types";
+import { createContext, ReactNode, useEffect } from "react";
+import { Translations } from "./types";
+import { Config, TokenData } from "@orbs-network/twap";
+import { useInitLib } from "./hooks";
 
 const TwapContext = createContext<ContextProps>({} as ContextProps);
 
 export interface ContextProps {
+  account?: any;
+  config: Config;
   provider: any;
-  dappIntegration: string;
-  integrationChainId: number;
   connect?: () => void;
   TokenSelectModal?: any;
-  getUsdPrice: (address: string, decimals: number) => Promise<BigNumber>;
-  tokensList: Token[];
+  tokensList: TokenData[];
   translations: Translations;
-  analyticsID: string;
   getTokenImage?: (value: any) => string;
-  srcToken?: Token;
-  dstToken?: Token;
-  onSrcTokenSelected?: (token: Token) => void;
-  onDstTokenSelected?: (token: Token) => void;
+  srcToken?: TokenData;
+  dstToken?: TokenData;
+  onSrcTokenSelected?: (token: TokenData) => void;
+  onDstTokenSelected?: (token: TokenData) => void;
+  connectedChainId?: number;
+  gasPrice?: {
+    priorityFeePerGas?: string;
+    maxFeePerGas?: string;
+  };
 }
 
 export interface TwapProviderProps extends ContextProps {
@@ -28,20 +30,14 @@ export interface TwapProviderProps extends ContextProps {
 }
 
 const TwapProvider = (props: TwapProviderProps) => {
-  const { init } = useWeb3();
-  useAnalyticsInit(props.analyticsID);
+  const initLib = useInitLib();
 
   // init web3 every time the provider changes
   useEffect(() => {
-    init(props.dappIntegration, props.provider, props.integrationChainId);
-  }, [props.provider, props.dappIntegration, props.integrationChainId]);
+    initLib(props.config, props.provider, props.account, props.tokensList);
+  }, [props.provider, props.config, props.account, props.tokensList]);
 
   return <TwapContext.Provider value={props}>{props.children}</TwapContext.Provider>;
-};
-
-export const useTwapTranslations = () => {
-  const { translations } = useContext(TwapContext);
-  return translations;
 };
 
 export { TwapContext, TwapProvider };

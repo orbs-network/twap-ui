@@ -8,8 +8,8 @@
   "devDependencies": {
     "@testing-library/jest-dom": "5.x",
     "@testing-library/react": "13.x",
-    "@typescript-eslint/parser": "5.x",
     "@typescript-eslint/eslint-plugin": "5.x",
+    "@typescript-eslint/parser": "5.x",
     "eslint": "8.x",
     "eslint-plugin-import": "2.x",
     "jest": "29.x",
@@ -25,6 +25,7 @@
     "build": "lerna run build",
     "start": "lerna run start --parallel",
     "test": "lerna run test",
+    "test:watch": "cd packages/lib; npm run test:watch",
     "publish": "npm run test && npm run build && lerna publish"
   },
   "prettier": {

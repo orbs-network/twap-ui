@@ -1,38 +1,34 @@
 import { Box, styled } from "@mui/system";
 import { ReactNode } from "react";
-import Text from "../base-components/Text";
+import Text from "../components/Text";
 import LinearProgress from "@mui/material/LinearProgress";
-import TokenName from "../base-components/TokenName";
-import TokenLogo from "../base-components/TokenLogo";
-import NumberDisplay from "../base-components/NumberDisplay";
+import TokenName from "../components/TokenName";
+import TokenLogo from "../components/TokenLogo";
+import NumberDisplay from "../components/NumberDisplay";
 import { HiOutlineArrowNarrowRight } from "react-icons/hi";
-import Icon from "../base-components/Icon";
+import Icon from "../components/Icon";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import Label from "../base-components/Label";
-import Tooltip from "../base-components/Tooltip";
-import SmallLabel from "../base-components/SmallLabel";
-import Button from "../base-components/Button";
-import { useCancelCallback, useHistoryPrice } from "../store/orders";
-import Card from "../base-components/Card";
-import { Order, OrderStatus, TokenInfo } from "../types";
+import Label from "../components/Label";
+import Tooltip from "../components/Tooltip";
+import SmallLabel from "../components/SmallLabel";
+import Button from "../components/Button";
+import Card from "../components/Card";
 import { Typography } from "@mui/material";
 import { StyledColumnGap } from "../styles";
-import { BigNumber } from "@defi.org/web3-candies";
-import PriceDisplay from "../base-components/PriceDisplay";
-import { useGetTradeIntervalForUi } from "../store/store";
-import { useTwapTranslations } from "../context";
+import { Status, TokenData } from "@orbs-network/twap";
+import { fillDelayUi, useCancelOrder, useHistoryPrice, useTwapTranslations } from "../hooks";
+import { OrderUI } from "../state";
+import TokenPriceCompare from "../components/TokenPriceCompare";
 
 export interface Props {
-  order: Order;
+  order: OrderUI;
   onExpand: () => void;
   expanded: boolean;
-  type?: OrderStatus;
 }
 
-function OrderComponent({ order, onExpand, expanded, type }: Props) {
-  const { id, createdAtUi, progress, prefix, srcTokenInfo, dstTokenInfo, srcTokenAmountUi, dstTokenAmountUi, srcUsdValueUi, dstUsdValueUi, isMarketOrder } = order;
+function OrderComponent({ order, onExpand, expanded }: Props) {
   const translations = useTwapTranslations();
   return (
     <StyledContainer className="twap-order">
@@ -41,84 +37,83 @@ function OrderComponent({ order, onExpand, expanded, type }: Props) {
           <StyledColumnFlex gap={0}>
             <StyledHeader>
               <Box className="flex">
-                <Text>#{id}</Text>
-                <Text>{isMarketOrder ? translations.marketOrder : translations.limitOrder}</Text>
+                <Text>#{order.order.id}</Text>
+                <Text>{order.ui.isMarketOrder ? translations.marketOrder : translations.limitOrder}</Text>
               </Box>
-              <Text>{createdAtUi}</Text>
+              <Text>{order.ui.createdAtUi}</Text>
             </StyledHeader>
 
-            {expanded ? <StyledSeperator /> : <PreviewProgressBar progress={progress} />}
+            {expanded ? <StyledSeperator /> : <PreviewProgressBar progress={order.ui.progress || 1} />}
             <StyledPreview>
-              <TokenDisplay token={srcTokenInfo} amount={srcTokenAmountUi} usdValue={srcUsdValueUi} />
+              <TokenDisplay token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
               <Icon className="icon" icon={<HiOutlineArrowNarrowRight style={{ width: 30, height: 30 }} />} />
-              <TokenDisplay token={dstTokenInfo} prefix={prefix} amount={dstTokenAmountUi} usdValue={dstUsdValueUi} />
+              <TokenDisplay token={order.ui.dstToken} prefix={order.ui.prefix} amount={order.ui.dstAmountUi} usdValue={order.ui.dstAmountUsdUi} />
             </StyledPreview>
           </StyledColumnFlex>
           <StyledSpace />
         </StyledSummary>
         <AccordionDetails style={{ padding: 0, paddingTop: 10 }}>
           <StyledSeperator style={{ marginBottom: 10 }} />
-          <OrderDetails order={order} type={type} />
+          <OrderDetails order={order} />
         </AccordionDetails>
       </StyledAccordion>
     </StyledContainer>
   );
 }
 
-const OrderDetails = ({ order, type }: { order: Order; type?: OrderStatus }) => {
-  const {
-    deadlineUi,
-    tradeIntervalMillis,
-    srcFilledUsdValueUi,
-    srcRemainingUsdValueUi,
-    progress,
-    tradeSizeAmountUi,
-    tradeSizeUsdValueUi,
-    id,
-    srcTokenInfo,
-    srcRemainingAmountUi,
-    srcFilledAmountUi,
-    dstTokenInfo,
-    dstPrice,
-    isMarketOrder,
-  } = order;
+const OrderDetails = ({ order }: { order: OrderUI }) => {
   const translations = useTwapTranslations();
-  const tradeIntervalUi = useGetTradeIntervalForUi(tradeIntervalMillis);
 
   return (
     <StyledOrderDetails>
-      <OrderPrice srcTokenInfo={srcTokenInfo} dstTokenInfo={dstTokenInfo} dstPrice={dstPrice} isMarketOrder={isMarketOrder} />
+      {order.ui.srcToken && order.ui.dstToken && <OrderPrice order={order} />}
       <StyledProgress>
         <StyledProgressContent gap={20}>
           <StyledFlex>
             <StyledTokenDisplayWithTitle>
               <Typography className="title">{translations.filled}</Typography>
-              <TokenDisplay usdValue={srcFilledUsdValueUi} token={srcTokenInfo} amount={srcFilledAmountUi} />
+              <TokenDisplay usdValue={order.ui.srcFilledAmountUsdUi} token={order.ui.srcToken} amount={order.ui.srcFilledAmountUi} />
             </StyledTokenDisplayWithTitle>
             <StyledTokenDisplayWithTitle>
               <Typography className="title">{translations.remaining}</Typography>
-              <TokenDisplay usdValue={srcRemainingUsdValueUi} token={srcTokenInfo} amount={srcRemainingAmountUi} />
+              <TokenDisplay usdValue={order.ui.srcRemainingAmountUsdUi} token={order.ui.srcToken} amount={order.ui.srcRemainingAmountUi} />
             </StyledTokenDisplayWithTitle>
           </StyledFlex>
-          <Tooltip text={<NumberDisplay value={progress} decimalScale={2} suffix="%" />}>
-            <MainProgressBar progress={progress} />
+          <Tooltip text={<NumberDisplay value={order.ui.progress} decimalScale={1} suffix="%" />}>
+            <MainProgressBar progress={order.ui.progress || 1} />
           </Tooltip>
         </StyledProgressContent>
       </StyledProgress>
       <StyledColumnFlex>
-        <DetailRow label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
-          <NumberDisplay value={tradeSizeAmountUi} decimalScale={3} />
-          <TokenLogo logo={srcTokenInfo.logoUrl} />
-          {srcTokenInfo.symbol} ≈ $ <NumberDisplay value={tradeSizeUsdValueUi} decimalScale={3} />
+        <DetailRow label={`${translations.totalTrades}:`} tooltip={translations.totalTradesTooltip}>
+          <NumberDisplay value={order.ui.totalChunks} />
         </DetailRow>
+        <DetailRow label={`${translations.tradeSize}:`} tooltip={translations.tradeSizeTooltip}>
+          <TokenLogo logo={order.ui.srcToken?.logoUrl} />
+          <NumberDisplay value={order.ui.srcChunkAmountUi} />
+          {order.ui.srcToken?.symbol} ≈ $ <NumberDisplay value={order.ui.srcChunkAmountUsdUi} />
+        </DetailRow>
+        {order.ui.isMarketOrder ? (
+          <DetailRow label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipMarket}>
+            <TokenLogo logo={order.ui.dstToken?.logoUrl} />
+            {translations.none} {order.ui.dstToken?.symbol}
+          </DetailRow>
+        ) : (
+          <DetailRow label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
+            <TokenLogo logo={order.ui.dstToken?.logoUrl} />
+            <NumberDisplay value={order.ui.dstMinAmountOutUi} />
+            {order.ui.dstToken?.symbol} ≈ $ <NumberDisplay value={order.ui.dstMinAmountOutUsdUi} />
+          </DetailRow>
+        )}
+
         <DetailRow label={`${translations.tradeInterval}:`} tooltip={translations.tradeIntervalTootlip}>
-          {tradeIntervalUi}
+          {fillDelayUi(order.ui.fillDelay, translations)}
         </DetailRow>
         <DetailRow label={`${translations.deadline}:`} tooltip={translations.maxDurationTooltip}>
-          {deadlineUi}
+          {order.ui.deadlineUi}
         </DetailRow>
       </StyledColumnFlex>
-      {type === OrderStatus.Open && <CancelOrderButton orderId={id} />}
+      {order.ui.status === Status.Open && <CancelOrderButton orderId={order.order.id} />}
     </StyledOrderDetails>
   );
 };
@@ -127,8 +122,8 @@ const StyledTokenDisplayWithTitle = styled(StyledColumnGap)({
   gap: 10,
 });
 
-const CancelOrderButton = ({ orderId }: { orderId: string }) => {
-  const { isLoading, mutate } = useCancelCallback();
+const CancelOrderButton = ({ orderId }: { orderId: number }) => {
+  const { isLoading, mutate } = useCancelOrder();
   const translations = useTwapTranslations();
   return (
     <StyledCancelOrderButton loading={isLoading} onClick={() => mutate(orderId)}>
@@ -154,8 +149,12 @@ const StyledPreview = styled(Box)({
   width: "100%",
   marginTop: 18,
   fontSize: 18,
+
   "& .usd": {
     fontSize: 14,
+  },
+  "@media(max-width: 600px)": {
+    zoom: 0.85,
   },
 });
 
@@ -209,17 +208,17 @@ const PreviewProgressBar = ({ progress, emptyBarColor }: { progress: number; emp
   return <StyledPreviewLinearProgress variant="determinate" value={progress} emptybarcolor={emptyBarColor} className="twap-order-progress-line-preview" />;
 };
 
-const TokenDisplay = ({ token, amount, prefix = "", usdValue }: { token: TokenInfo; amount?: string; usdValue: string; prefix?: string }) => {
+const TokenDisplay = ({ token, amount, prefix = "", usdValue }: { token?: TokenData; amount?: string; usdValue: string; prefix?: string }) => {
   return (
     <StyledTokenDisplay className="token-display">
-      <StyledTokenLogo logo={token.logoUrl} />
+      <StyledTokenLogo logo={token?.logoUrl} />
       <StyledTokenDisplayRight>
         <StyledTokenDisplayRightTop>
           <StyledTokenDisplayAmount className="amount">
             {prefix ? `${prefix} ` : ""}
-            <NumberDisplay value={amount} decimalScale={4} />
+            <NumberDisplay value={amount} />
           </StyledTokenDisplayAmount>
-          <TokenName name={token.symbol} />
+          <TokenName name={token?.symbol} />
         </StyledTokenDisplayRightTop>
         <StyledTokenDisplayUsd loading={false} className="usd">
           ≈ $ <NumberDisplay value={usdValue} />
@@ -270,6 +269,10 @@ const StyledTokenLogo = styled(TokenLogo)({
   height: 28,
   top: -2,
   position: "relative",
+  "@media(max-width: 600px)": {
+    width: 20,
+    height: 20,
+  },
 });
 
 const StyledTokenDisplayUsd = styled(SmallLabel)({
@@ -300,10 +303,15 @@ const StyledPreviewLinearProgress = styled(LinearProgress)(({ emptybarcolor }: {
   },
 }));
 
-const OrderPrice = ({ srcTokenInfo, dstTokenInfo, dstPrice, isMarketOrder }: { srcTokenInfo: TokenInfo; dstTokenInfo: TokenInfo; dstPrice: BigNumber; isMarketOrder: boolean }) => {
-  const { leftTokenInfo, rightTokenInfo, priceUi, toggleInverted } = useHistoryPrice(srcTokenInfo, dstTokenInfo, dstPrice);
-
-  return <PriceDisplay leftTokenInfo={leftTokenInfo} rightTokenInfo={rightTokenInfo} price={priceUi} toggleInverted={toggleInverted} isMarketOrder={isMarketOrder} />;
+const OrderPrice = ({ order }: { order: OrderUI }) => {
+  const { leftToken, rightToken, priceUi, toggleInverted } = useHistoryPrice(order);
+  const translations = useTwapTranslations();
+  return (
+    <StyledFlex>
+      <SmallLabel>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</SmallLabel>
+      <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={priceUi} toggleInverted={toggleInverted} />
+    </StyledFlex>
+  );
 };
 
 const StyledCancelOrderButton = styled(Button)({
@@ -348,6 +356,11 @@ const StyledDetailRow = styled(StyledFlex)({
   },
   "& .text": {
     fontWeight: 300,
+  },
+  "@media(max-width: 600px)": {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 5,
   },
 });
 

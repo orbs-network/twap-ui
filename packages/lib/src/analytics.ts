@@ -1,135 +1,147 @@
-import ReactGA from "react-ga4";
-import { useQuery } from "react-query";
-import { useWeb3 } from "./store/store";
+import BigNumber from "bignumber.js";
+import { useAtomValue } from "jotai";
+import moment from "moment";
+import { deadlineGet, dstAmountGet, dstTokenAtom, fillDelayAtom, srcChunkAmountGet, srcTokenAtom, totalChunksAtom, twapLibAtom } from "./state";
 
-export const useAnalyticsInit = (analyticsID?: string) => {
-  const { account } = useWeb3();
+enum Category {
+  Error = "Error",
+  TWAPPanel = "TWAPPanel",
+  OrdersPanel = "OrdersPanel",
+  ConfirmationPanel = "ConfirmationPanel",
+}
 
-  useQuery(
-    ["setAnalyticsApiKey"],
-    () => {
-      ReactGA.initialize(analyticsID!);
-    },
-    { enabled: !!analyticsID }
-  );
+export const useSendAnalyticsEvents = () => {
+  const lib = useAtomValue(twapLibAtom);
+  const srcToken = useAtomValue(srcTokenAtom);
+  const dstToken = useAtomValue(dstTokenAtom);
+  const srcTokenAmount = useAtomValue(srcTokenAtom);
+  const chunksAmount = useAtomValue(srcChunkAmountGet);
+  const dstMinAmountOut = useAtomValue(dstAmountGet);
+  const deadline = useAtomValue(deadlineGet);
+  const fillDelay = useAtomValue(fillDelayAtom);
+  const totalChunks = useAtomValue(totalChunksAtom);
 
-  useQuery(
-    ["setAnalyticsUserId"],
-    () => {
-      ReactGA.set({ userId: account });
-    },
-    { enabled: !!account }
-  );
-};
-const getOrderType = (isLimitOrder: boolean) => (isLimitOrder ? "Limit" : "Market");
+  const onLimitToggleClick = (isLimitOrder: boolean) => {
+    sendAnalyticsEvent(Category.TWAPPanel, "onLimitToggleClick", isLimitOrder);
+  };
 
-type Category = "Error" | "Main panel" | "Orders panel" | "Confirmation panel";
+  const onSrcTokenClick = (symbol?: string) => {
+    sendAnalyticsEvent(Category.TWAPPanel, `onSrcTokenClick`, symbol);
+  };
 
-const onLimitOrderSelect = () => {
-  sendAnalyticsEvent("Main panel", "Selected limit order");
-};
+  const onDstTokenClick = (symbol?: string) => {
+    sendAnalyticsEvent(Category.TWAPPanel, `onDstTokenClick`, symbol);
+  };
 
-const onMarketPriceSelect = () => {
-  sendAnalyticsEvent("Main panel", "Selected market price");
-};
+  const onCustomIntervalClick = () => {
+    sendAnalyticsEvent(Category.TWAPPanel, "onCustomIntervalClick");
+  };
 
-const onSelectSrcToken = (symbol?: string) => {
-  sendAnalyticsEvent("Main panel", `Selected source token: ${symbol}`, symbol);
-};
-const onSelectDstToken = (symbol?: string) => {
-  sendAnalyticsEvent("Main panel", `Selected destination token: ${symbol}`, symbol);
-};
+  const onApproveClick = (amount: BigNumber) => {
+    sendAnalyticsEvent(Category.TWAPPanel, "onApproveClick", amount.toString());
+  };
 
-const onSelectCustomInterval = () => {
-  sendAnalyticsEvent("Main panel", "Selected custom trade interval");
-};
+  const onApproveSuccess = () => {
+    sendAnalyticsEvent(Category.TWAPPanel, "onApproveSuccess");
+  };
 
-const onApproveClick = () => {
-  sendAnalyticsEvent("Main panel", "Approve token click");
-};
+  const onWrapClick = (amount: BigNumber) => {
+    sendAnalyticsEvent(Category.TWAPPanel, "onWrapClick", amount.toString());
+  };
 
-const onApproveSuccess = () => {
-  sendAnalyticsEvent("Main panel", "Approve token click");
-};
+  const onWrapSuccess = () => {
+    sendAnalyticsEvent(Category.TWAPPanel, "onWrapSuccess");
+  };
 
-const onWrapClick = () => {
-  sendAnalyticsEvent("Main panel", "Wrap token click");
-};
+  const onPlaceOrderClick = () => {
+    sendAnalyticsEvent(Category.TWAPPanel, `onPlaceOrderClick`);
+  };
 
-const onWrapTxSuccess = () => {
-  sendAnalyticsEvent("Main panel", "Wrap success");
-};
+  const onConfirmationCreateOrderClick = () => {
+    sendAnalyticsEvent(Category.ConfirmationPanel, `onConfirmationCreateOrderClick`, {
+      config: lib?.config,
+      exchangeAddress: lib?.config.exchangeAddress,
+      srcToken: srcToken?.address,
+      dstToken: dstToken?.address,
+      srcTokenAmount: srcTokenAmount?.toString(),
+      tradeSize: chunksAmount,
+      minAmountOut: dstMinAmountOut,
+      deadline,
+      tradeInterval: fillDelay,
+      totalTrades: totalChunks,
+    });
+  };
 
-const onPlaceOrderClick = (isLimitOrder: boolean) => {
-  sendAnalyticsEvent("Main panel", `Place ${getOrderType(isLimitOrder)} order click`);
-};
+  const onODNPClick = () => {
+    sendAnalyticsEvent(Category.OrdersPanel, "onODNPClick");
+  };
 
-const onCreateOrderClick = (isLimitOrder: boolean) => {
-  const orderType = getOrderType(isLimitOrder);
+  const onCreateOrderSuccess = () => {
+    sendAnalyticsEvent(Category.ConfirmationPanel, `onCreateOrderSuccess`);
+  };
 
-  sendAnalyticsEvent("Confirmation panel", `Create ${orderType} order click`, `Order type: ${orderType}`);
-};
+  const onCreateOrderError = (message: string) => {
+    sendAnalyticsEvent(Category.Error, `onCreateOrderError`, message);
+  };
 
-const onNotificationsClick = () => {
-  sendAnalyticsEvent("Orders panel", "Notifications click");
-};
+  const onWrapError = (message: string) => {
+    sendAnalyticsEvent(Category.Error, "onWrapError", message);
+  };
 
-const onCreateOrderTxSuccess = (isLimitOrder: boolean) => {
-  const orderType = getOrderType(isLimitOrder);
-  sendAnalyticsEvent("Confirmation panel", `Create ${orderType} Order Success`, `Order type: ${orderType}`);
-};
+  const onApproveError = (message: string) => {
+    sendAnalyticsEvent(Category.Error, "onApproveError", message);
+  };
 
-const onCreateOrderTxError = (message: string, isLimitOrder: boolean) => {
-  sendAnalyticsEvent("Error", `Create ${getOrderType(isLimitOrder)} Order failed`, message);
-};
+  const onCancelOrderClick = (orderId: number) => {
+    sendAnalyticsEvent(Category.OrdersPanel, "onCancelOrderClick", orderId);
+  };
 
-const onWrapError = (message: string) => {
-  sendAnalyticsEvent("Error", "Wrap failed", message);
-};
+  const onCancelOrderSuccess = (orderId: string) => {
+    sendAnalyticsEvent(Category.OrdersPanel, "onCancelOrderSuccess", orderId);
+  };
 
-const onApproveError = (message: string) => {
-  sendAnalyticsEvent("Error", "Approve failed", message);
-};
+  const onCancelOrderError = (error: string) => {
+    sendAnalyticsEvent(Category.Error, `onCancelOrderError`, error);
+  };
 
-const onCancelOrderClick = (orderId: string) => {
-  sendAnalyticsEvent("Orders panel", "Cancel order click", `Order ID: ${orderId}`);
-};
+  const sendAnalyticsEvent = (category: Category, action: string, data?: any) => {
+    fetch("https://bi.orbs.network/putes/twap-ui", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        maker: lib?.maker,
+        timestamp: moment().valueOf(),
+        userAgent: navigator.userAgent.toString(),
+        partner: lib?.config.partner,
+        chain: lib?.config.chainId,
+        category,
+        action,
+        data,
+      }),
+    }).catch();
+  };
 
-const onCancelOrderTxSuccess = (orderId: string) => {
-  sendAnalyticsEvent("Orders panel", "Cancel order sccess", `Order ID: ${orderId}`);
-};
-
-const onCancelOrderTxError = (error: string) => {
-  sendAnalyticsEvent("Error", `Cancel order failed`, error);
-};
-
-export const AnalyticsEvents = {
-  onLimitOrderSelect,
-  onMarketPriceSelect,
-  onSelectSrcToken,
-  onSelectDstToken,
-  onSelectCustomInterval,
-  onApproveClick,
-  onWrapClick,
-  onWrapTxSuccess,
-  onPlaceOrderClick,
-  onCreateOrderClick,
-  onNotificationsClick,
-  onCreateOrderTxError,
-  onWrapError,
-  onApproveError,
-  onCreateOrderTxSuccess,
-  onApproveSuccess,
-  onCancelOrderClick,
-  onCancelOrderTxSuccess,
-  onCancelOrderTxError,
-};
-
-const sendAnalyticsEvent = (category: Category, action: string, label?: string) => {
-  if (!ReactGA.isInitialized) return;
-  ReactGA.event({
-    category: category,
-    action: action,
-    label,
-  });
+  return {
+    onLimitToggleClick,
+    onSrcTokenClick,
+    onDstTokenClick,
+    onCustomIntervalClick,
+    onApproveClick,
+    onApproveSuccess,
+    onWrapClick,
+    onWrapSuccess,
+    onPlaceOrderClick,
+    onConfirmationCreateOrderClick,
+    onODNPClick,
+    onCreateOrderSuccess,
+    onCreateOrderError,
+    onWrapError,
+    onApproveError,
+    onCancelOrderClick,
+    onCancelOrderSuccess,
+    onCancelOrderError,
+  };
 };

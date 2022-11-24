@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import React from "react";
-import { useTwapTranslations } from "../context";
+import { useTwapTranslations } from "../hooks";
 
 function PoweredBy() {
   const translations = useTwapTranslations();

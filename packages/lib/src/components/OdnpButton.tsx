@@ -1,8 +1,8 @@
 import { Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import React from "react";
-import { AnalyticsEvents } from "../analytics";
-import { useWeb3 } from "../store/store";
+import { useSendAnalyticsEvents } from "../analytics";
+import { useMaker } from "../hooks";
 
 console.debug = () => {};
 const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
@@ -11,12 +11,15 @@ const odnp = new ODNP();
 odnp.init();
 odnp.hide();
 
+odnp.mainDiv.classList = "odnp";
+
 function OdnpButton({ className = "" }: { className?: string }) {
-  const { account } = useWeb3();
+  const account = useMaker();
+  const onODNPClick = useSendAnalyticsEvents().onODNPClick;
   if (!account) return null;
 
   const onClick = () => {
-    AnalyticsEvents.onNotificationsClick();
+    onODNPClick();
     odnp.show(account, "twap");
   };
   return (
