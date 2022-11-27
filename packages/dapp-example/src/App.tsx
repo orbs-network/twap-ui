@@ -25,6 +25,8 @@ function App() {
   const onDstTokenSelected = (token: any) => {
     console.log(token);
   };
+  const [src, setSrc] = useState("USDC");
+  const [dst, setDst] = useState("WBTC");
 
   const args = {
     connectedChainId: chainId,
@@ -35,10 +37,16 @@ function App() {
     tokensList,
     onSrcTokenSelected,
     onDstTokenSelected,
+    initialSrcToken: src,
+    initialDstToken: dst,
   };
 
   return (
     <StyledApp className="App">
+      <Box display="flex">
+        <button onClick={() => setSrc("WFTM")}>Src</button>
+        <button onClick={() => setDst("USDC")}>Dst</button>
+      </Box>
       {/* <Box sx={{ minWidth: 120 }}>
         <Select value={selectedDapp} label="Age" onChange={(event: SelectChangeEvent) => setSelectedDapp(event.target.value)} style={{ color: "white" }}>
           {dapps.map((client) => {

@@ -1,10 +1,10 @@
 import { GlobalStyles } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, hooks, TwapContext } from "@orbs-network/twap-ui";
+import { Components, hooks } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode, useContext } from "react";
+import { memo, ReactNode, useMemo } from "react";
 import translations from "./i18n/en.json";
 
 import {
@@ -41,7 +41,26 @@ import {
 import { ProviderWrapper, TwapProps } from ".";
 import { TokenData } from "@orbs-network/twap";
 
+const useOnload = (props: TwapProps) => {
+  const { tokensList, initialSrcToken, initialDstToken } = props;
+
+  const findToken = (symbol?: string) => {
+    const token = tokensList.find((t) => t.symbol.toUpperCase() === symbol?.toUpperCase());
+    return !token ? undefined : { ...token, logoUrl: token.logoUrl || props.getTokenImage?.(token) };
+  };
+  return useMemo(() => {
+    if (!tokensList?.length) return { srcToken: undefined, dstToken: undefined };
+    return {
+      srcToken: findToken(initialSrcToken),
+      dstToken: findToken(initialDstToken),
+    };
+  }, [initialSrcToken, initialDstToken, tokensList]);
+};
+
 const TWAP = (props: TwapProps) => {
+  const { srcToken, dstToken } = useOnload(props);
+  hooks.useGetInitialTokens(srcToken, dstToken);
+
   return (
     <ProviderWrapper {...props}>
       <GlobalStyles styles={globalStyle as any} />

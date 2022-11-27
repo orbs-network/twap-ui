@@ -2,7 +2,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Config, OrderInputValidation, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { TwapContext } from "./context";
 import Web3 from "web3";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   allTokensListAtom,
   balanceGet,
@@ -54,7 +54,7 @@ import moment from "moment";
 import { Translations } from "./types";
 import _ from "lodash";
 import { useSendAnalyticsEvents } from "./analytics";
-import { zeroAddress } from "@defi.org/web3-candies";
+import { eqIgnoreCase, zeroAddress } from "@defi.org/web3-candies";
 import { queryClientAtom } from "jotai-tanstack-query";
 
 const useWrapToken = () => {
@@ -334,6 +334,11 @@ export const useShowConfirmationButton = () => {
   const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
   const createOrderLoading = useAtomValue(createOrderLoadingAtom);
+  const srcToken = useAtomValue(srcTokenAtom);
+  const dsToken = useAtomValue(dstTokenAtom);
+
+  const srcUsdLoading = useAtomValue(usdGet(srcToken)).loading;
+  const dstUsdLoading = useAtomValue(usdGet(dsToken)).loading;
 
   const wrongNetwork = useIsWrongNetwork();
   if (!lib?.maker) {
@@ -354,6 +359,9 @@ export const useShowConfirmationButton = () => {
   }
   if (allowance.loading) {
     return { text: "", onClick: () => {}, loading: true, disabled: true };
+  }
+  if (srcUsdLoading || dstUsdLoading) {
+    return { text: translations.placeOrder, onClick: () => {}, loading: false, disabled: true };
   }
   if (allowance.hasAllowance === false) {
     return { text: translations.approve, onClick: approve, loading: approveLoading, disabled: approveLoading };
@@ -664,6 +672,16 @@ export const useCancelOrder = () => {
       },
     }
   );
+};
+
+export const useGetInitialTokens = (srcToken?: TokenData, dstToken?: TokenData) => {
+  const srcTokenSelect = useSetAtom(srcTokenAtom);
+  const dstTokenSelect = useSetAtom(dstTokenAtom);
+
+  useEffect(() => {
+    srcTokenSelect(srcToken);
+    dstTokenSelect(dstToken);
+  }, [srcTokenSelect, dstTokenSelect, srcToken, dstToken]);
 };
 
 export const useTokenImage = (token?: TokenData) => {

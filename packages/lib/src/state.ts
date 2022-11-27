@@ -275,7 +275,7 @@ export const usdGet = atomFamily(
       const result = get(usdValueLoad(get(sameNativeBasedTokenGet) ? get(twapLibAtom)!.config.wToken : token));
       return {
         loading: result.state === "loading",
-        value: result.state === "hasData" ? result.data! : zero,
+        value: result.state === "hasData" ? result.data || zero : zero,
       };
     }),
   _.isEqual
@@ -375,10 +375,12 @@ const prepareHistoryTokens = async (rawOrders: Order[], get: Getter) => {
 const orderHistoryQuery = atomWithQuery((get) => ({
   queryKey: ["orderHistoryQuery", get(twapLibAtom)!.maker],
   queryFn: async () => {
+    const lib = get(twapLibAtom);
+    if (!lib) return null;
+
     const rawOrders = await get(twapLibAtom)!.getAllOrders();
     const tokens = await prepareHistoryTokens(rawOrders, get);
-    const lib = get(twapLibAtom);
-    const parsedOrders = _.map(rawOrders, (o) => parseOrder(lib!, tokens, o));
+    const parsedOrders = _.map(rawOrders, (o) => parseOrder(lib, tokens, o));
     return _.chain(parsedOrders)
       .orderBy((o: OrderUI) => o.order.ask.deadline, "desc")
       .groupBy((o: OrderUI) => o.ui.status)
@@ -441,4 +443,4 @@ const parseOrder = (lib: TWAPLib, usdValues: { [address: string]: { token: Token
     },
   };
 };
-const amountUi = (token: TokenData | undefined, amount: BN) => amount.div(BN(10).pow(token?.decimals || 0)).toFormat();
+const amountUi = (token: TokenData | undefined, amount: BN) => (!amount ? "" : amount.div(BN(10).pow(token?.decimals || 0)).toFormat());
