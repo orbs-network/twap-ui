@@ -4,69 +4,99 @@ import { injectedConnector } from "./connectors";
 import { CSSProperties, useEffect, useState } from "react";
 import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
-import { Orders, TWAP_Spiritswap } from "@orbs-network/twap-ui-spiritswap";
+import { Orders as Orders_Spiritswap, TWAP_Spiritswap } from "@orbs-network/twap-ui-spiritswap";
+import { Orders as Orders_Spookyswap, TWAP_Spookyswap } from "@orbs-network/twap-ui-spookyswap";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+
 // import TWAP_Quickswap from "@orbs-network/twap-ui-quickswap";
 import Modal from "@mui/material/Modal";
 import { AiOutlineClose } from "react-icons/ai";
+const StyledLayoutSpiritswap = styled(Box)({
+  background: "rgb(16, 23, 38)",
+  border: `1px solid rgb(55, 65, 81)`,
+  borderRadius: 10,
+  padding: "0.5rem",
+  fontFamily: "Jost",
+});
+
+const StyledSelect = styled(Select)({});
+
+const StyledLayoutSpookyswap = styled(Box)({
+  background: "linear-gradient(rgb(49, 65, 94) 0%, rgba(49, 65, 94, 0) 100%), rgba(18, 17, 34, 0.6)",
+  borderRadius: 10,
+  padding: "0.5rem",
+});
+
+enum Dapps {
+  Spiritswap = "Spiritswap",
+  Spookyswap = "Spookyswap",
+}
+
+const dapps = [
+  {
+    Orders: Orders_Spiritswap,
+    Twap: TWAP_Spiritswap,
+    id: Dapps.Spiritswap,
+    Layout: StyledLayoutSpiritswap,
+  },
+  {
+    Orders: Orders_Spookyswap,
+    Twap: TWAP_Spookyswap,
+    id: Dapps.Spookyswap,
+    Layout: StyledLayoutSpookyswap,
+  },
+];
 
 function App() {
   const { activate, library, chainId, account } = useWeb3React();
-  const [selectedDapp, setSelectedDapp] = useState("1");
+  const [selectedDapp, setSelectedDapp] = useState(Dapps.Spiritswap);
   const tokensList = useTokenList(chainId);
-
-  const getProvider = () => {
-    return library;
-  };
-
-  const onSrcTokenSelected = (token: any) => {
-    console.log(token);
-  };
-
-  const onDstTokenSelected = (token: any) => {
-    console.log(token);
-  };
-  const [src, setSrc] = useState("USDC");
-  const [dst, setDst] = useState("WBTC");
 
   const args = {
     connectedChainId: chainId,
-    getProvider,
+    getProvider: () => {
+      return library;
+    },
     account,
     TokenSelectModal,
     connect: () => activate(injectedConnector),
     tokensList,
-    onSrcTokenSelected,
-    onDstTokenSelected,
-    initialSrcToken: src,
-    initialDstToken: dst,
+    onSrcTokenSelected: (value: any) => {},
+    onDstTokenSelected: (value: any) => {},
+    initialSrcToken: undefined,
+    initialDstToken: undefined,
   };
 
   return (
     <StyledApp className="App">
-      <Box display="flex">
-        <button onClick={() => setSrc("WFTM")}>Src</button>
-        <button onClick={() => setDst("USDC")}>Dst</button>
-      </Box>
-      {/* <Box sx={{ minWidth: 120 }}>
-        <Select value={selectedDapp} label="Age" onChange={(event: SelectChangeEvent) => setSelectedDapp(event.target.value)} style={{ color: "white" }}>
-          {dapps.map((client) => {
+      <Box sx={{ minWidth: 120 }}>
+        <Select
+          MenuProps={{
+            TransitionProps: { style: { background: "black" } },
+          }}
+          value={selectedDapp}
+          label="Dapp"
+          onChange={(event: SelectChangeEvent) => setSelectedDapp(event.target.value as Dapps)}
+          style={{ color: "white" }}
+        >
+          {dapps.map((dapp) => {
             return (
-              <MenuItem key={client.id} value={client.id}>
-                {client.text}
+              <MenuItem key={dapp.id} value={dapp.id}>
+                {dapp.id}
               </MenuItem>
             );
           })}
         </Select>
-      </Box> */}
+      </Box>
       <StyledContent>
         {dapps.map((dapp) => {
+          const { Orders, Twap, Layout } = dapp;
           if (dapp.id === selectedDapp) {
-            const Component = dapp.Component;
-            const Layout = dapp.Layout;
             return (
               <StyledContainer key={dapp.id}>
                 <Layout>
-                  <Component {...args} />
+                  <Twap {...args} />
                 </Layout>
                 <Layout>
                   <Orders {...args} />
@@ -225,20 +255,6 @@ const StyledApp = styled(Box)({
   },
 });
 
-const StyledLayoutQuickswap = styled(Box)({
-  background: "#1b1e29",
-  borderRadius: 20,
-  padding: 20,
-});
-
-const StyledLayoutSpiritswap = styled(Box)({
-  background: "rgb(16, 23, 38)",
-  border: `1px solid rgb(55, 65, 81)`,
-  borderRadius: 10,
-  padding: "0.5rem",
-  fontFamily: "Jost",
-});
-
 const StyledContent = styled(Box)(({ styles }: { styles?: CSSProperties }) => ({
   flex: 1,
   maxWidth: 500,
@@ -246,8 +262,3 @@ const StyledContent = styled(Box)(({ styles }: { styles?: CSSProperties }) => ({
   overflow: "auto",
   ...styles,
 }));
-
-const dapps = [
-  { id: "1", text: "Spiritswap", Component: TWAP_Spiritswap, Layout: StyledLayoutSpiritswap },
-  // { id: "1", text: "Quickswap", Component: TWAP_Quickswap, Layout: StyledLayoutQuickswap },
-];

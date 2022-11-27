@@ -1,6 +1,6 @@
-import TWAP_Spiritswap from "./Twap";
+import TWAP_Spookyswap from "./Twap";
 import Orders from "./Orders";
-import { TwapProvider, TwapProps } from "@orbs-network/twap-ui";
+import { TwapProps, TwapProvider } from "@orbs-network/twap-ui";
 import { ReactNode, useMemo } from "react";
 import translations from "./i18n/en.json";
 import { Configs } from "@orbs-network/twap";
@@ -26,7 +26,7 @@ export const ProviderWrapper = (props: ProviderWrapperProps) => {
       gasPrice={props.gasPrice}
       translations={translations}
       tokensList={props.tokensList}
-      config={Configs.SpiritSwap}
+      config={Configs.SpookySwap}
       connectedChainId={props.connectedChainId}
       account={props.account}
       provider={provider}
@@ -41,4 +41,4 @@ export const ProviderWrapper = (props: ProviderWrapperProps) => {
   );
 };
 
-export { TWAP_Spiritswap, Orders, useGetProvider };
+export { TWAP_Spookyswap, Orders, useGetProvider };

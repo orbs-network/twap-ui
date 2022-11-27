@@ -232,15 +232,21 @@ export const useCreateOrder = () => {
 
 export const useInitLib = () => {
   const setTwapLib = useSetAtom(twapLibAtom);
-  const setTokenList = useSetAtom(allTokensListAtom);
 
-  return (config: Config, provider?: any, account?: any, tokenList?: TokenData[]) => {
-    setTokenList(tokenList || []);
+  return (config: Config, provider?: any, account?: any) => {
     if (provider && account) {
       setTwapLib(new TWAPLib(config, account, provider));
     } else {
       setTwapLib(undefined);
     }
+  };
+};
+
+export const useSetTokensList = () => {
+  const setTokenList = useSetAtom(allTokensListAtom);
+
+  return (tokenList: TokenData[]) => {
+    setTokenList(tokenList || []);
   };
 };
 

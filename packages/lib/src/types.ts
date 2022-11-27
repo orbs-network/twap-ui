@@ -76,3 +76,20 @@ export interface Translations {
   insertLimitPriceWarning: string;
   unwrap: string;
 }
+export interface TwapProps {
+  connect?: () => void;
+  TokenSelectModal?: any;
+  tokensList: any[];
+  account?: any;
+  getProvider?: () => any;
+  getTokenImage?: (value: any) => string;
+  onSrcTokenSelected?: (token: any) => void;
+  onDstTokenSelected?: (token: any) => void;
+  initialSrcToken?: string;
+  initialDstToken?: string;
+  connectedChainId?: number;
+  gasPrice?: {
+    priorityFeePerGas?: string;
+    maxFeePerGas?: string;
+  };
+}

@@ -36,6 +36,7 @@ import OdnpButton from "./components/OdnpButton";
 import Loader from "./components/Loader";
 import Slider from "./components/Slider";
 export * as hooks from "./hooks";
+export * from "./types";
 
 export const Components = {
   NumberDisplay,

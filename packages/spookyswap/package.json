@@ -1,0 +1,38 @@
+{
+  "name": "@orbs-network/twap-ui-spookyswap",
+  "version": "0.3.3",
+  "description": "TWAP UI for Spookyswap",
+  "license": "MIT",
+  "author": "Orbs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orbs-network/twap-ui.git"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "./dist"
+  ],
+  "scripts": {
+    "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
+    "build": "npm run prettier && rm -rf dist && tsc",
+    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc",
+    "test": "eslint src"
+  },
+  "dependencies": {
+    "@defi.org/web3-candies": "4.x",
+    "@mui/material": "5.x",
+    "@mui/system": "5.x",
+    "@orbs-network/twap": "1.7.x",
+    "@orbs-network/twap-ui": "^0.3.3",
+    "react-icons": "4.x"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "0c682a5d40f13e21e288de468c9b887b4d79f2d1"
+}
