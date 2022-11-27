@@ -399,10 +399,12 @@ const useSrcTokenPanel = () => {
   const usdLoading = useAtomValue(usdGet(useAtomValue(srcTokenAtom))).loading;
   const balanceLoading = useAtomValue(balanceGet(useAtomValue(srcTokenAtom))).loading;
   const analytics = useSendAnalyticsEvents();
+  const { onSrcTokenSelected } = useContext(TwapContext);
 
   const onSelectToken = (token: TokenData) => {
     selectToken(token);
     analytics.onSrcTokenClick(token.symbol);
+    onSrcTokenSelected?.(token);
   };
 
   return {
@@ -426,10 +428,12 @@ const useDstTokenPanel = () => {
   const usdLoading = useAtomValue(usdGet(useAtomValue(dstTokenAtom))).loading;
   const balanceLoading = useAtomValue(balanceGet(useAtomValue(dstTokenAtom))).loading;
   const analytics = useSendAnalyticsEvents();
+  const { onDstTokenSelected } = useContext(TwapContext);
 
   const onSelectToken = (token: TokenData) => {
     selectToken(token);
     analytics.onDstTokenClick(token.symbol);
+    onDstTokenSelected?.(token);
   };
 
   return {
@@ -771,5 +775,5 @@ export const changeNetwork = async (web3?: Web3, chain?: number) => {
 
 export const useTwapTranslations = () => {
   const { translations } = useContext(TwapContext);
-  return translations;
+  return translations || ({} as Translations);
 };

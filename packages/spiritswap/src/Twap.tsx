@@ -1,10 +1,10 @@
 import { GlobalStyles } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, hooks } from "@orbs-network/twap-ui";
+import { Components, hooks, TwapContext } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode } from "react";
+import { memo, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
 
 import {
@@ -39,6 +39,7 @@ import {
   StyledUSD,
 } from "./styles";
 import { ProviderWrapper, TwapProps } from ".";
+import { TokenData } from "@orbs-network/twap";
 
 const TWAP = (props: TwapProps) => {
   return (
@@ -263,9 +264,10 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     if (!selectTokenWarning) toggleTokenList(true);
   };
 
-  const onTokenSelected = (token: any) => {
+  const onTokenSelected = (token: TokenData) => {
     onTokenSelect(token);
   };
+
   return (
     <>
       {TokenSelectModal && (

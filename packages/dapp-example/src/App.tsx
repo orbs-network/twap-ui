@@ -18,6 +18,14 @@ function App() {
     return library;
   };
 
+  const onSrcTokenSelected = (token: any) => {
+    console.log(token);
+  };
+
+  const onDstTokenSelected = (token: any) => {
+    console.log(token);
+  };
+
   const args = {
     connectedChainId: chainId,
     getProvider,
@@ -25,6 +33,8 @@ function App() {
     TokenSelectModal,
     connect: () => activate(injectedConnector),
     tokensList,
+    onSrcTokenSelected,
+    onDstTokenSelected,
   };
 
   return (
