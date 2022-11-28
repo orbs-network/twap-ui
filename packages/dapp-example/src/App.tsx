@@ -5,6 +5,8 @@ import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
 import { Orders as Orders_Spiritswap, Twap as TWAP_Spiritswap } from "@orbs-network/twap-ui-spiritswap";
 import { Orders as Orders_Spookyswap, Twap as TWAP_Spookyswap } from "@orbs-network/twap-ui-spookyswap";
+import { Orders as Orders_Pangolin, Twap as TWAP_Pangolin } from "@orbs-network/twap-ui-pangolin";
+
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Modal from "@mui/material/Modal";
@@ -16,6 +18,7 @@ import {
   StyledContent,
   StyledDappContainer,
   StyledDappSelector,
+  StyledLayoutPangolin,
   StyledLayoutSpiritswap,
   StyledLayoutSpookyswap,
   StyledModalList,
@@ -39,6 +42,12 @@ const dapps = [
     Twap: TWAP_Spookyswap,
     id: Configs.SpookySwap.partner,
     Layout: StyledLayoutSpookyswap,
+  },
+  {
+    Orders: Orders_Pangolin,
+    Twap: TWAP_Pangolin,
+    id: Configs.Pangolin.partner,
+    Layout: StyledLayoutPangolin,
   },
 ];
 

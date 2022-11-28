@@ -18,6 +18,13 @@ export const StyledLayoutSpiritswap = styled(Box)({
 export const StyledLayoutSpookyswap = styled(Box)({
   background: "linear-gradient(rgb(49, 65, 94) 0%, rgba(49, 65, 94, 0) 100%), rgba(18, 17, 34, 0.6)",
   borderRadius: 10,
+  padding: 20,
+  fontFamily: "Red Hat Display",
+});
+
+export const StyledLayoutPangolin = styled(Box)({
+  background: "linear-gradient(rgb(49, 65, 94) 0%, rgba(49, 65, 94, 0) 100%), rgba(18, 17, 34, 0.6)",
+  borderRadius: 10,
   padding: "0.5rem",
   fontFamily: "Red Hat Display",
 });

@@ -65,9 +65,9 @@ const OrderDetails = ({ order }: { order: OrderUI }) => {
   const translations = useTwapTranslations();
 
   return (
-    <StyledOrderDetails>
+    <StyledOrderDetails className="twap-order-details">
       {order.ui.srcToken && order.ui.dstToken && <OrderPrice order={order} />}
-      <StyledProgress>
+      <StyledProgress className="twap-order-details-progress">
         <StyledProgressContent gap={20}>
           <StyledFlex>
             <StyledTokenDisplayWithTitle>

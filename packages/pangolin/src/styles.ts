@@ -438,26 +438,22 @@ export const StyledOrdersContainer = styled(Box)({
     color: "white",
     boxSizing: "border-box",
   },
-  "& .twap-order-details-progress": {
-    background: "rgba(255, 255, 255, 0.05)",
-  },
   "& .twap-orders-lists": {
     maxHeight: 600,
   },
   "& .twap-order": {
-    border: "unset",
+    border: "1px solid rgb(55, 65, 81)",
   },
   "& .twap-order-main-progress-bar": {
     background: "#22353C",
     "& .MuiLinearProgress-bar ": {
-      background: "rgb(115, 204, 231)",
+      background: colors.light,
     },
   },
   "& .twap-orders-header": {
     "& .MuiTabs-root": {
-      background: "rgba(255, 255, 255, 0.05)",
       "& .MuiTabs-indicator": {
-        backgroundColor: colors.mainBackground,
+        backgroundColor: "rgba(96, 230, 197, 0.26)",
       },
       "& .MuiButtonBase-root": {
         color: "#FFFFFF",
