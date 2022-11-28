@@ -9,6 +9,7 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Modal from "@mui/material/Modal";
 import { AiOutlineClose } from "react-icons/ai";
+import { Configs } from "@orbs-network/twap";
 import {
   StyledApp,
   StyledCloseIcon,
@@ -30,20 +31,35 @@ const dapps = [
   {
     Orders: Orders_Spiritswap,
     Twap: TWAP_Spiritswap,
-    id: Dapps.Spiritswap,
+    id: Configs.SpiritSwap.partner,
     Layout: StyledLayoutSpiritswap,
   },
   {
     Orders: Orders_Spookyswap,
     Twap: TWAP_Spookyswap,
-    id: Dapps.Spookyswap,
+    id: Configs.SpookySwap.partner,
     Layout: StyledLayoutSpookyswap,
   },
 ];
 
 function App() {
-  const [selectedDapp, setSelectedDapp] = useState(Dapps.Spiritswap);
-  const dappsProps = useDappsProps();
+  const [selectedDapp, setSelectedDapp] = useState(Configs.SpiritSwap.partner);
+  const { activate, library, chainId, account } = useWeb3React();
+  const tokensList = useTokenList(chainId);
+
+  const props = {
+    connectedChainId: chainId,
+    getProvider: () => library,
+    account,
+    TokenSelectModal,
+    connect: () => activate(injectedConnector),
+    tokensList,
+    onSrcTokenSelected: (value: any) => {},
+    onDstTokenSelected: (value: any) => {},
+    srcToken: undefined,
+    dstToken: undefined,
+    provider: library,
+  };
 
   return (
     <StyledApp className="App">
@@ -52,7 +68,6 @@ function App() {
         {dapps.map((dapp) => {
           const { Orders, Twap, Layout } = dapp;
           if (dapp.id === selectedDapp) {
-            const props = dappsProps[dapp.id];
             return (
               <StyledDappContainer key={dapp.id}>
                 <Layout>
@@ -72,7 +87,7 @@ function App() {
 
 export default App;
 
-const DappSelector = ({ selectedDapp, selectDapp }: { selectedDapp: Dapps; selectDapp: (value: Dapps) => void }) => {
+const DappSelector = ({ selectedDapp, selectDapp }: { selectedDapp: string; selectDapp: (value: string) => void }) => {
   return (
     <StyledDappSelector>
       <Select
@@ -81,7 +96,7 @@ const DappSelector = ({ selectedDapp, selectDapp }: { selectedDapp: Dapps; selec
         }}
         value={selectedDapp}
         label="Dapp"
-        onChange={(event: SelectChangeEvent) => selectDapp(event.target.value as Dapps)}
+        onChange={(event: SelectChangeEvent) => selectDapp(event.target.value)}
         style={{ color: "white" }}
       >
         {dapps.map((dapp) => {
@@ -169,36 +184,4 @@ const TokenSelectModal = ({ chainId, isOpen, selectedToken, onSelect, onClose }:
       </>
     </Modal>
   );
-};
-
-export const useDappsProps = () => {
-  const { activate, library, chainId, account } = useWeb3React();
-  const tokensList = useTokenList(chainId);
-
-  return {
-    [Dapps.Spiritswap]: {
-      connectedChainId: chainId,
-      getProvider: () => library,
-      account,
-      TokenSelectModal,
-      connect: () => activate(injectedConnector),
-      tokensList,
-      onSrcTokenSelected: (value: any) => {},
-      onDstTokenSelected: (value: any) => {},
-      initialSrcToken: undefined,
-      initialDstToken: undefined,
-    },
-    [Dapps.Spookyswap]: {
-      connectedChainId: chainId,
-      provider: library,
-      account,
-      TokenSelectModal,
-      connect: () => activate(injectedConnector),
-      tokensList,
-      onSrcTokenSelected: (value: any) => {},
-      onDstTokenSelected: (value: any) => {},
-      initialSrcToken: undefined,
-      initialDstToken: undefined,
-    },
-  };
 };

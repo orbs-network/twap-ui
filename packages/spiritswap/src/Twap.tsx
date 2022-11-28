@@ -42,7 +42,7 @@ import { ProviderWrapper } from ".";
 import { TokenData } from "@orbs-network/twap";
 
 const useOnload = (props: TwapProps) => {
-  const { tokensList, initialSrcToken, initialDstToken } = props;
+  const { tokensList, srcToken, dstToken } = props;
 
   const findToken = (symbol?: string) => {
     const token = tokensList.find((t) => t.symbol.toUpperCase() === symbol?.toUpperCase());
@@ -51,15 +51,15 @@ const useOnload = (props: TwapProps) => {
   return useMemo(() => {
     if (!tokensList?.length) return { srcToken: undefined, dstToken: undefined };
     return {
-      srcToken: findToken(initialSrcToken),
-      dstToken: findToken(initialDstToken),
+      srcToken: findToken(srcToken),
+      dstToken: findToken(dstToken),
     };
-  }, [initialSrcToken, initialDstToken, tokensList]);
+  }, [srcToken, dstToken, tokensList]);
 };
 
 const TWAP = (props: TwapProps) => {
   const { srcToken, dstToken } = useOnload(props);
-  hooks.useGetInitialTokens(srcToken, dstToken);
+  hooks.useTokens(srcToken, dstToken);
 
   return (
     <ProviderWrapper {...props}>

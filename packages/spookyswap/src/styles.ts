@@ -432,7 +432,6 @@ export const StyledPanelLabel = styled(Components.SmallLabel)({
   },
 });
 
-
 export const StyledOrdersContainer = styled(Box)({
   "& *": {
     fontFamily: "inherit",

@@ -45,26 +45,7 @@ import { TokenData } from "@orbs-network/twap";
 import SmallLabel from "@orbs-network/twap-ui/dist/components/SmallLabel";
 import { useTwapTranslations } from "@orbs-network/twap-ui/dist/hooks";
 
-const useOnload = (props: TwapProps) => {
-  const { tokensList, initialSrcToken, initialDstToken } = props;
-
-  const findToken = (symbol?: string) => {
-    const token = tokensList.find((t) => t.symbol.toUpperCase() === symbol?.toUpperCase());
-    return !token ? undefined : { ...token, logoUrl: token.logoUrl || props.getTokenImage?.(token) };
-  };
-  return useMemo(() => {
-    if (!tokensList?.length) return { srcToken: undefined, dstToken: undefined };
-    return {
-      srcToken: findToken(initialSrcToken),
-      dstToken: findToken(initialDstToken),
-    };
-  }, [initialSrcToken, initialDstToken, tokensList]);
-};
-
 const TWAP = (props: TwapProps) => {
-  const { srcToken, dstToken } = useOnload(props);
-  hooks.useGetInitialTokens(srcToken, dstToken);
-
   return (
     <ProviderWrapper {...props}>
       <GlobalStyles styles={globalStyle as any} />

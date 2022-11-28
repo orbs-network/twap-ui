@@ -680,7 +680,7 @@ export const useCancelOrder = () => {
   );
 };
 
-export const useGetInitialTokens = (srcToken?: TokenData, dstToken?: TokenData) => {
+export const useTokens = (srcToken?: TokenData, dstToken?: TokenData) => {
   const srcTokenSelect = useSetAtom(srcTokenAtom);
   const dstTokenSelect = useSetAtom(dstTokenAtom);
 
