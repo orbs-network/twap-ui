@@ -86,8 +86,8 @@ export interface TwapProps {
   getTokenImage?: (value: any) => string;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
-  initialSrcToken?: string;
-  initialDstToken?: string;
+  srcToken?: string;
+  dstToken?: string;
   connectedChainId?: number;
   provider?: any;
   gasPrice?: {
