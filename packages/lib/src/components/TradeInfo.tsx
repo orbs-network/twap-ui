@@ -8,6 +8,8 @@ import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
 import Tooltip from "./Tooltip";
 import { useOrderOverview, useTwapTranslations } from "../hooks";
+import { useAtomValue } from "jotai";
+import { twapLibAtom } from "../state";
 
 export function TradeInfoModal({ onClose, open, children, className = "" }: { onClose: () => void; open: boolean; children: ReactNode; className?: string }) {
   const translations = useTwapTranslations();
@@ -138,13 +140,14 @@ const StyledRow = styled(Box)({
 
 export const TradeInfoExplanation = () => {
   const translations = useTwapTranslations();
+  const lib = useAtomValue(twapLibAtom);
   return (
     <StyledTradeInfoExplanation>
       <Text>{translations.disclaimer1}</Text>
       <Text>{translations.disclaimer2}</Text>
       <Text>{translations.disclaimer3}</Text>
       <Text>{translations.disclaimer4}</Text>
-      <Text>{translations.disclaimer5}</Text>
+      <Text>{translations.disclaimer5.replace("{{dex}}", lib?.config.partner || "DEX")}</Text>
 
       <Text>
         {translations.disclaimer6}{" "}

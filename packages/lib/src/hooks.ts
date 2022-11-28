@@ -3,6 +3,7 @@ import { Config, OrderInputValidation, TokenData, TokensValidation, TWAPLib } fr
 import { TwapContext } from "./context";
 import Web3 from "web3";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import defaultTranlations from "./i18n/en.json";
 import {
   allTokensListAtom,
   balanceGet,
@@ -799,5 +800,8 @@ export const changeNetwork = async (web3?: Web3, chain?: number) => {
 
 export const useTwapTranslations = () => {
   const { translations } = useContext(TwapContext);
-  return translations || ({} as Translations);
+
+  const combinedTranslations = { ...defaultTranlations, ...translations };
+
+  return combinedTranslations || ({} as Translations);
 };

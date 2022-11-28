@@ -5,7 +5,6 @@ import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useMemo } from "react";
-import translations from "./i18n/en.json";
 
 import {
   globalStyle,
@@ -43,7 +42,6 @@ import {
 import { ProviderWrapper } from ".";
 import { TokenData } from "@orbs-network/twap";
 import SmallLabel from "@orbs-network/twap-ui/dist/components/SmallLabel";
-import { useTwapTranslations } from "@orbs-network/twap-ui/dist/hooks";
 
 const TWAP = (props: TwapProps) => {
   return (
@@ -69,6 +67,7 @@ export default memo(TWAP);
 
 const MarketPrice = () => {
   const { toggleInverted, leftToken, rightToken, marketPrice, ready } = hooks.useMarketPrice();
+  const translations = hooks.useTwapTranslations();
 
   return (
     <StyledMarketPrice>
@@ -88,6 +87,7 @@ const MarketPrice = () => {
 
 const SrcTokenPercentSelector = () => {
   const { onPercentClick } = hooks.useCustomActions();
+  const translations = hooks.useTwapTranslations();
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -127,6 +127,7 @@ const ChangeTokensOrder = () => {
 
 const TradeSize = () => {
   const { chunksAmount, onTotalChunksChange, totalChunks, token, usdValue, usdLoading, maxPossibleChunks, ready } = hooks.useChunks();
+  const translations = hooks.useTwapTranslations();
 
   return (
     <StyledTrade>
@@ -171,6 +172,8 @@ const TradeSize = () => {
 const LimitPriceDisplay = () => {
   const { isLimitOrder, onToggleLimit, onChange, limitPrice, leftToken, rightToken, toggleInverted, warning } = hooks.useLimitPrice();
   const isLoading = false;
+  const translations = hooks.useTwapTranslations();
+
   return (
     <StyledPrice>
       <StyledCard>
@@ -192,6 +195,7 @@ const LimitPriceDisplay = () => {
 
 const MaxDuration = () => {
   const { maxDuration, onChange } = hooks.useMaxDuration();
+  const translations = hooks.useTwapTranslations();
 
   return (
     <StyledCard>
@@ -205,6 +209,7 @@ const MaxDuration = () => {
 
 const TradeInterval = () => {
   const { fillDelay, customFillDelayEnabled, onChange, onCustomFillDelayClick } = hooks.useFillDelay();
+  const translations = hooks.useTwapTranslations();
 
   return (
     <StyledCard>
@@ -306,7 +311,8 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
 };
 
 const Balance = ({ isLoading, balance = "0" }: { isLoading: boolean; balance: string }) => {
-  const translations = useTwapTranslations();
+  const translations = hooks.useTwapTranslations();
+
   return (
     <StyledBalance>
       <Components.Text>{translations.balance}</Components.Text>
@@ -332,6 +338,7 @@ const OrderConfirmation = () => {
   const { srcToken, dstToken, srcUsd, srcAmount, dstUsd, dstAmount, isLimitOrder, showConfirmation, closeConfirmation, disclaimerAccepted, setDisclaimerAccepted, maker } =
     hooks.useOrderOverview();
   const { loading, text, onClick, disabled } = hooks.useCreateOrderButton();
+  const translations = hooks.useTwapTranslations();
 
   return (
     <>
@@ -393,6 +400,7 @@ const TradeInfoDetailsDisplay = () => {
 
 const OrderConfirmationLimitPrice = () => {
   const { isLimitOrder, toggleInverted, limitPrice, leftToken, rightToken } = hooks.useLimitPrice();
+  const translations = hooks.useTwapTranslations();
 
   return (
     <StyledLimitPrice>

@@ -12,7 +12,7 @@ export interface ContextProps {
   connect?: () => void;
   TokenSelectModal?: any;
   tokensList: TokenData[];
-  translations: Translations;
+  translations: Partial<Translations>;
   getTokenImage?: (value: any) => string;
   srcToken?: TokenData;
   dstToken?: TokenData;
