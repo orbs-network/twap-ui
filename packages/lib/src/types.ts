@@ -75,6 +75,7 @@ export interface Translations {
   poweredBy: string;
   insertLimitPriceWarning: string;
   unwrap: string;
+  balance: string;
 }
 export interface TwapProps {
   connect?: () => void;
@@ -88,6 +89,7 @@ export interface TwapProps {
   initialSrcToken?: string;
   initialDstToken?: string;
   connectedChainId?: number;
+  provider?: any;
   gasPrice?: {
     priorityFeePerGas?: string;
     maxFeePerGas?: string;

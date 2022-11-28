@@ -44,7 +44,7 @@ function NumericInput({
       </Fade>
       <Fade in={!loading} style={{ transition: "0s" }}>
         <StyledFlex>
-          {prefix && <StyledPrefix className="twap-input-prefix">{prefix}</StyledPrefix>}
+          {/* {prefix && <StyledPrefix className="twap-input-prefix">{prefix}</StyledPrefix>} */}
           <NumericFormat
             disabled={disabled}
             decimalScale={decimalScale}
@@ -55,6 +55,7 @@ function NumericInput({
               const { floatValue = 0 } = values;
               return maxValue ? floatValue <= parseFloat(maxValue) : true;
             }}
+            prefix={prefix ? `${prefix} ` : ""}
             value={inputValue}
             thousandSeparator=","
             decimalSeparator="."

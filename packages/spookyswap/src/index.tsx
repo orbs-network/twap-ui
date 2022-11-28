@@ -1,4 +1,4 @@
-import TWAP_Spookyswap from "./Twap";
+import Twap from "./Twap";
 import Orders from "./Orders";
 import { TwapProps, TwapProvider } from "@orbs-network/twap-ui";
 import { ReactNode, useMemo } from "react";
@@ -9,18 +9,7 @@ interface ProviderWrapperProps extends TwapProps {
   children: ReactNode;
 }
 
-const useGetProvider = (getProvider?: () => any, account?: string, connectedChainId?: number) => {
-  return useMemo(() => {
-    if (getProvider) {
-      return getProvider();
-    }
-    return undefined;
-  }, [account, connectedChainId]);
-};
-
 export const ProviderWrapper = (props: ProviderWrapperProps) => {
-  const provider = useGetProvider(props.getProvider, props.account, props.connectedChainId);
-
   return (
     <TwapProvider
       gasPrice={props.gasPrice}
@@ -29,7 +18,7 @@ export const ProviderWrapper = (props: ProviderWrapperProps) => {
       config={Configs.SpookySwap}
       connectedChainId={props.connectedChainId}
       account={props.account}
-      provider={provider}
+      provider={props.provider}
       connect={props.connect}
       TokenSelectModal={props.TokenSelectModal}
       getTokenImage={props.getTokenImage}
@@ -41,4 +30,4 @@ export const ProviderWrapper = (props: ProviderWrapperProps) => {
   );
 };
 
-export { TWAP_Spookyswap, Orders, useGetProvider };
+export { Twap, Orders };

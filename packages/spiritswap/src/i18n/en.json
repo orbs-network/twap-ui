@@ -80,5 +80,6 @@
   "confirmationLimitPriceTooltip": "Trades will only be executed when this limit price is equal to or worse than the available market price. Some trades may not be executed if the limit price is better than the available market prices and your order may only be partially filled.",
   "ordersTooltip": "The below shows your wallet's TWAP order history and current status.",
   "poweredBy": "Powered by Orbs",
-  "insertLimitPriceWarning": "Insert limit price"
+  "insertLimitPriceWarning": "Insert limit price",
+  "balance": "Balance"
 }

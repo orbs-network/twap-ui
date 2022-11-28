@@ -1,4 +1,4 @@
-import TWAP_Spiritswap from "./Twap";
+import Twap from "./Twap";
 import Orders from "./Orders";
 import { TwapProvider, TwapProps } from "@orbs-network/twap-ui";
 import { ReactNode, useMemo } from "react";
@@ -41,4 +41,4 @@ export const ProviderWrapper = (props: ProviderWrapperProps) => {
   );
 };
 
-export { TWAP_Spiritswap, Orders, useGetProvider };
+export { Twap, Orders, useGetProvider };

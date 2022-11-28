@@ -9,6 +9,7 @@ import translations from "./i18n/en.json";
 
 import {
   globalStyle,
+  StyledBalance,
   StyledButton,
   StyledCard,
   StyledChangeOrder,
@@ -22,6 +23,7 @@ import {
   StyledMarketPrice,
   StyledNumbericInput,
   StyledOrderConfirmation,
+  StyledPanelLabel,
   StyledPercentBtn,
   StyledPrice,
   StyledSlider,
@@ -40,6 +42,8 @@ import {
 } from "./styles";
 import { ProviderWrapper } from ".";
 import { TokenData } from "@orbs-network/twap";
+import SmallLabel from "@orbs-network/twap-ui/dist/components/SmallLabel";
+import { useTwapTranslations } from "@orbs-network/twap-ui/dist/hooks";
 
 const useOnload = (props: TwapProps) => {
   const { tokensList, initialSrcToken, initialDstToken } = props;
@@ -110,30 +114,24 @@ const SrcTokenPercentSelector = () => {
 
   return (
     <StyledSrcTokenPercentSelector>
-      <StyledPercentBtn onClick={() => onClick(0.25)}>25%</StyledPercentBtn>
       <StyledPercentBtn onClick={() => onClick(0.5)}>50%</StyledPercentBtn>
-      <StyledPercentBtn onClick={() => onClick(0.75)}>75%</StyledPercentBtn>
       <StyledPercentBtn onClick={() => onClick(1)}>{translations.max}</StyledPercentBtn>
     </StyledSrcTokenPercentSelector>
   );
 };
 
-const SrcTokenPanel = () => {
-  return (
-    <TokenPanel isSrcToken={true}>
-      <SrcTokenPercentSelector />
-    </TokenPanel>
-  );
-};
+const SrcTokenPanel = () => (
+  <TokenPanel isSrcToken={true}>
+    <SrcTokenPercentSelector />
+  </TokenPanel>
+);
 
-const DstTokenPanel = () => {
-  return (
-    <StyledDstToken>
-      <TokenPanel isSrcToken={false} />
-      <MarketPrice />
-    </StyledDstToken>
-  );
-};
+const DstTokenPanel = () => (
+  <StyledDstToken>
+    <TokenPanel isSrcToken={false} />
+    <MarketPrice />
+  </StyledDstToken>
+);
 
 const ChangeTokensOrder = () => {
   const switchTokens = hooks.useSwitchTokens();
@@ -303,25 +301,40 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
         <StyledCard>
           <StyledColumnGap>
             <StyledFlexBetween>
-              <Components.Tooltip text={inputWarning}>
-                <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange || (() => {})} value={value} />
-              </Components.Tooltip>
+              <StyledPanelLabel>{isSrcToken ? "From" : "To (estimated)"}</StyledPanelLabel>
+              {children}
+            </StyledFlexBetween>
+            <StyledFlexBetween gap={20}>
               <Components.Tooltip text={selectTokenWarning}>
                 <StyledTokenSelect onClick={onOpen}>
                   <TokenDisplay logo={logo} name={symbol} />
                   <StyledIcon icon={<IoIosArrowDown size={20} />} />
                 </StyledTokenSelect>
               </Components.Tooltip>
+              <Components.Tooltip text={inputWarning}>
+                <StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0.0" onChange={onChange || (() => {})} value={value} />
+              </Components.Tooltip>
             </StyledFlexBetween>
-            <StyledFlexBetween>
-              <StyledUSD value={usdValue} isLoading={usdLoading} />
-              <Components.Balance isLoading={balanceLoading} value={balance} />
-            </StyledFlexBetween>
-            {children}
+            <StyledUSD value={usdValue} isLoading={usdLoading} />
+            <Balance isLoading={balanceLoading} balance={balance} />
           </StyledColumnGap>
         </StyledCard>
       </StyledTokenPanel>
     </>
+  );
+};
+
+const Balance = ({ isLoading, balance = "0" }: { isLoading: boolean; balance: string }) => {
+  const translations = useTwapTranslations();
+  return (
+    <StyledBalance>
+      <Components.Text>{translations.balance}</Components.Text>
+      {balance && (
+        <SmallLabel loading={isLoading}>
+          <Components.NumberDisplay value={balance} />
+        </SmallLabel>
+      )}
+    </StyledBalance>
   );
 };
 

@@ -1,32 +1,25 @@
-import { Box, styled } from "@mui/system";
 import { useWeb3React } from "@web3-react/core";
 import { injectedConnector } from "./connectors";
-import { CSSProperties, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
-import { Orders as Orders_Spiritswap, TWAP_Spiritswap } from "@orbs-network/twap-ui-spiritswap";
-import { Orders as Orders_Spookyswap, TWAP_Spookyswap } from "@orbs-network/twap-ui-spookyswap";
+import { Orders as Orders_Spiritswap, Twap as TWAP_Spiritswap } from "@orbs-network/twap-ui-spiritswap";
+import { Orders as Orders_Spookyswap, Twap as TWAP_Spookyswap } from "@orbs-network/twap-ui-spookyswap";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-
-// import TWAP_Quickswap from "@orbs-network/twap-ui-quickswap";
 import Modal from "@mui/material/Modal";
 import { AiOutlineClose } from "react-icons/ai";
-const StyledLayoutSpiritswap = styled(Box)({
-  background: "rgb(16, 23, 38)",
-  border: `1px solid rgb(55, 65, 81)`,
-  borderRadius: 10,
-  padding: "0.5rem",
-  fontFamily: "Jost",
-});
-
-const StyledSelect = styled(Select)({});
-
-const StyledLayoutSpookyswap = styled(Box)({
-  background: "linear-gradient(rgb(49, 65, 94) 0%, rgba(49, 65, 94, 0) 100%), rgba(18, 17, 34, 0.6)",
-  borderRadius: 10,
-  padding: "0.5rem",
-});
+import {
+  StyledApp,
+  StyledCloseIcon,
+  StyledContent,
+  StyledDappContainer,
+  StyledDappSelector,
+  StyledLayoutSpiritswap,
+  StyledLayoutSpookyswap,
+  StyledModalList,
+  StyledModalListItem,
+} from "./styles";
 
 enum Dapps {
   Spiritswap = "Spiritswap",
@@ -49,62 +42,28 @@ const dapps = [
 ];
 
 function App() {
-  const { activate, library, chainId, account } = useWeb3React();
   const [selectedDapp, setSelectedDapp] = useState(Dapps.Spiritswap);
-  const tokensList = useTokenList(chainId);
-
-  const args = {
-    connectedChainId: chainId,
-    getProvider: () => {
-      return library;
-    },
-    account,
-    TokenSelectModal,
-    connect: () => activate(injectedConnector),
-    tokensList,
-    onSrcTokenSelected: (value: any) => {},
-    onDstTokenSelected: (value: any) => {},
-    initialSrcToken: undefined,
-    initialDstToken: undefined,
-  };
+  const dappsProps = useDappsProps();
 
   return (
     <StyledApp className="App">
-      <Box sx={{ minWidth: 120 }}>
-        <Select
-          MenuProps={{
-            TransitionProps: { style: { background: "black" } },
-          }}
-          value={selectedDapp}
-          label="Dapp"
-          onChange={(event: SelectChangeEvent) => setSelectedDapp(event.target.value as Dapps)}
-          style={{ color: "white" }}
-        >
-          {dapps.map((dapp) => {
-            return (
-              <MenuItem key={dapp.id} value={dapp.id}>
-                {dapp.id}
-              </MenuItem>
-            );
-          })}
-        </Select>
-      </Box>
+      <DappSelector selectedDapp={selectedDapp} selectDapp={(dapp) => setSelectedDapp(dapp)} />
       <StyledContent>
         {dapps.map((dapp) => {
           const { Orders, Twap, Layout } = dapp;
           if (dapp.id === selectedDapp) {
+            const props = dappsProps[dapp.id];
             return (
-              <StyledContainer key={dapp.id}>
+              <StyledDappContainer key={dapp.id}>
                 <Layout>
-                  <Twap {...args} />
+                  <Twap {...props} />
                 </Layout>
                 <Layout>
-                  <Orders {...args} />
+                  <Orders {...props} />
                 </Layout>
-              </StyledContainer>
+              </StyledDappContainer>
             );
           }
-          return null;
         })}
       </StyledContent>
     </StyledApp>
@@ -113,12 +72,29 @@ function App() {
 
 export default App;
 
-const StyledContainer = styled(Box)({
-  display: "flex",
-  flexDirection: "column",
-
-  gap: 30,
-});
+const DappSelector = ({ selectedDapp, selectDapp }: { selectedDapp: Dapps; selectDapp: (value: Dapps) => void }) => {
+  return (
+    <StyledDappSelector>
+      <Select
+        MenuProps={{
+          TransitionProps: { style: { background: "black" } },
+        }}
+        value={selectedDapp}
+        label="Dapp"
+        onChange={(event: SelectChangeEvent) => selectDapp(event.target.value as Dapps)}
+        style={{ color: "white" }}
+      >
+        {dapps.map((dapp) => {
+          return (
+            <MenuItem key={dapp.id} value={dapp.id}>
+              {dapp.id}
+            </MenuItem>
+          );
+        })}
+      </Select>
+    </StyledDappSelector>
+  );
+};
 
 interface TokenInfo {
   symbol: string;
@@ -195,70 +171,34 @@ const TokenSelectModal = ({ chainId, isOpen, selectedToken, onSelect, onClose }:
   );
 };
 
-const StyledCloseIcon = styled("button")({
-  position: "absolute",
-  background: "transparent",
-  top: 30,
-  right: 30,
-  border: "unset",
-  cursor: "pointer",
-  "& .icon": {
-    width: 20,
-    height: 20,
-    "* ": {
-      fill: "white",
+export const useDappsProps = () => {
+  const { activate, library, chainId, account } = useWeb3React();
+  const tokensList = useTokenList(chainId);
+
+  return {
+    [Dapps.Spiritswap]: {
+      connectedChainId: chainId,
+      getProvider: () => library,
+      account,
+      TokenSelectModal,
+      connect: () => activate(injectedConnector),
+      tokensList,
+      onSrcTokenSelected: (value: any) => {},
+      onDstTokenSelected: (value: any) => {},
+      initialSrcToken: undefined,
+      initialDstToken: undefined,
     },
-  },
-});
-
-const StyledModalList = styled("ul")({
-  listStyleType: "none",
-  maxWidth: 500,
-  width: "calc(100vw - 20px)",
-  height: 500,
-  overflow: "auto",
-  background: "#18202F",
-  border: "1px solid rgb(55, 65, 81)",
-  display: "flex",
-  flexDirection: "column",
-  padding: 0,
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-});
-const StyledModalListItem = styled("li")({
-  cursor: "pointer",
-  display: "flex",
-  gap: 10,
-  alignItems: "center",
-  padding: "10px 30px",
-  transition: "0.2s all",
-  "&:hover": {
-    background: "rgba(255,255,255, 0.07)",
-  },
-});
-
-const StyledApp = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  flexDirection: "column",
-  gap: 48,
-  paddingBottom: 50,
-  paddingTop: 40,
-  background: "black",
-  minHeight: "100vh",
-  "& *::-webkit-scrollbar": {
-    display: "none",
-    width: 0,
-  },
-});
-
-const StyledContent = styled(Box)(({ styles }: { styles?: CSSProperties }) => ({
-  flex: 1,
-  maxWidth: 500,
-  width: "calc(100% - 30px)",
-  overflow: "auto",
-  ...styles,
-}));
+    [Dapps.Spookyswap]: {
+      connectedChainId: chainId,
+      provider: library,
+      account,
+      TokenSelectModal,
+      connect: () => activate(injectedConnector),
+      tokensList,
+      onSrcTokenSelected: (value: any) => {},
+      onDstTokenSelected: (value: any) => {},
+      initialSrcToken: undefined,
+      initialDstToken: undefined,
+    },
+  };
+};

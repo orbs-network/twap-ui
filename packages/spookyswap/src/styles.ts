@@ -13,8 +13,16 @@ export const colors = {
   mainBackground: "#000315",
   borderColor: "rgb(55, 65, 81)",
 };
+export const StyledFlexBetween = styled(Box)(({ gap = 0 }: { gap?: number }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  width: "100%",
+  gap,
+}));
 
 export const StyledUSD = styled(Components.USD)({
+  marginLeft: "auto",
   opacity: 0.6,
   "& p": {
     whiteSpace: "nowrap",
@@ -23,13 +31,24 @@ export const StyledUSD = styled(Components.USD)({
   },
 });
 
+export const StyledBalance = styled(StyledFlexBetween)({
+  borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+  paddingTop: 8,
+  "& *": {
+    color: "rgba(255, 255, 255, 0.6)",
+    fontSize: 15,
+  },
+});
+
 export const StyledButton = styled(Components.Button)({
-  background: colors.submitButton,
-  border: `1px solid ${colors.submitButtonBorder}`,
+  background: "rgb(115, 204, 231)",
   height: 40,
-  borderRadius: 4,
+  borderRadius: "60px",
   fontWeight: 500,
-  color: "white",
+  "& *": {
+    color: "rgb(18, 17, 34)",
+    fontWeight: 700,
+  },
 });
 
 export const StyledSlider = styled(Box)({
@@ -50,9 +69,8 @@ export const StyledNumbericInput = styled(Components.NumericInput)({
     borderRadius: "0.375rem",
     height: 40,
     transition: "0.2s all",
-    "&:focus": {
-      outline: "1px solid #1D9391",
-    },
+    paddingRight: 0,
+    "&:focus": {},
     "&::placeholder": {
       color: "white",
     },
@@ -61,7 +79,7 @@ export const StyledNumbericInput = styled(Components.NumericInput)({
 
 const cardStyles: CSSProperties = {
   padding: 12,
-  background: colors.cardBackground,
+  background: "rgb(18, 17, 34)",
   borderRadius: "0.375rem",
 };
 
@@ -91,13 +109,12 @@ export const StyledTradeInfoModal = styled(Components.TradeInfoModal)({
     color: "white",
   },
   "& .twap-modal-content": {
-    background: colors.mainBackground,
-    border: `1px solid ${colors.borderColor}`,
     maxHeight: "85vh",
     overflow: "auto",
     borderRadius: "10px",
     padding: 15,
     paddingTop: 30,
+    background: "linear-gradient(rgb(49, 65, 94) 0%, rgba(49, 65, 94, 0) 100%),rgba(18, 17, 34, 0.6)",
   },
 });
 
@@ -140,6 +157,10 @@ export const globalStyle = {
     "& *": {
       color: "white",
     },
+    "& .twap-modal-content": {
+      position: "relative",
+      background: "#19233B!important",
+    },
   },
   "& .twap-button": {
     "& .twap-button-loader": {
@@ -149,7 +170,6 @@ export const globalStyle = {
   "& .twap-container": {
     display: "flex",
     gap: 15,
-    marginTop: 20,
     "*": {
       boxSizing: "border-box",
       color: "white",
@@ -243,37 +263,35 @@ export const StyledDstToken = styled(Box)({
 export const StyledSrcTokenPercentSelector = styled(Box)({
   display: "flex",
   alignItems: "center",
-  gap: 5,
-  width: "100%",
+  gap: 10,
 });
 
 export const StyledPercentBtn = styled("button")({
-  background: colors.borderColor,
-  height: 22,
-  width: "25%",
+  background: "transparent",
   border: "unset",
-  borderRadius: 4,
   cursor: "pointer",
-  transition: "0.2s all",
-  "&:hover": {
-    background: "rgba(100, 221, 192, 0.15)",
-    color: "rgb(96, 230, 197)",
-  },
+  color: "rgb(140, 140, 227)",
+  fontWeight: 700,
+  fontSize: 14,
 });
 
 export const StyledIntervalTimeSelect = styled(Box)({
   flex: 1,
 });
 export const StyledTokenSelect = styled("button")(() => ({
-  background: "transparent",
+  background: "rgba(255, 255, 255, 0.05)",
   border: "unset",
-  padding: "6px",
-  borderRadius: 2,
+  padding: "6px 10px",
+  borderRadius: 60,
   cursor: "pointer",
   display: "flex",
   alignItems: "center",
   gap: 5,
-  marginLeft: 10,
+  "& .twap-token-name": {
+    fontSize: 16,
+    color: "rgba(255, 255, 255, 0.87)",
+    fontWeight: 700,
+  },
 
   "&:hover": {
     background: colors.selectTokenFocus,
@@ -285,14 +303,6 @@ export const StyledTokenDisplay = styled(Box)({
   alignItems: "center",
   gap: 6,
 });
-
-export const StyledFlexBetween = styled(Box)(({ gap = 0 }: { gap?: number }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  width: "100%",
-  gap,
-}));
 
 export const StyledFlexStart = styled(Box)({
   display: "flex",
@@ -312,7 +322,7 @@ export const StyledChangeOrder = styled(Box)(() => ({
 export const StyledTokenPanel = styled(Box)({
   width: "100%",
   "& .twap-input": {
-    textAlign: "left",
+    textAlign: "right",
   },
   "& .twap-token-logo": {
     width: "28px!important",
@@ -352,7 +362,7 @@ export const StyledMarketPrice = styled(Box)({
   "& .twap-card": {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
-    background: "#0D1321",
+    background: "rgba(255, 255, 255, 0.05)",
     paddingBottom: 5,
   },
   "& .title": {
@@ -413,4 +423,46 @@ export const StyledTotalTradesInput = styled(StyledNumbericInput)({
 
 export const StyledSliderContainer = styled(StyledFlexBetween)({
   height: 30,
+});
+
+export const StyledPanelLabel = styled(Components.SmallLabel)({
+  "& *": {
+    fontWeight: 700,
+    color: "rgba(255, 255, 255, 0.6)",
+  },
+});
+
+
+export const StyledOrdersContainer = styled(Box)({
+  "& *": {
+    fontFamily: "inherit",
+    color: "white",
+    boxSizing: "border-box",
+  },
+  "& .twap-orders-lists": {
+    maxHeight: 600,
+  },
+  "& .twap-order": {
+    border: "1px solid rgb(55, 65, 81)",
+  },
+  "& .twap-order-main-progress-bar": {
+    background: "#22353C",
+    "& .MuiLinearProgress-bar ": {
+      background: colors.light,
+    },
+  },
+  "& .twap-orders-header": {
+    "& .MuiTabs-root": {
+      "& .MuiTabs-indicator": {
+        backgroundColor: "rgba(96, 230, 197, 0.26)",
+      },
+      "& .MuiButtonBase-root": {
+        color: "#FFFFFF",
+        fontWeight: 400,
+      },
+      "& .Mui-selected": {
+        color: "#60E6C5",
+      },
+    },
+  },
 });
