@@ -23,10 +23,10 @@ export const StyledLayoutSpookyswap = styled(Box)({
 });
 
 export const StyledLayoutPangolin = styled(Box)({
-  background: "linear-gradient(rgb(49, 65, 94) 0%, rgba(49, 65, 94, 0) 100%), rgba(18, 17, 34, 0.6)",
+  background: "rgb(17, 17, 17)",
   borderRadius: 10,
-  padding: "0.5rem",
-  fontFamily: "Red Hat Display",
+  padding: "20px 10px 10px 10px",
+  fontFamily: "Poppins",
 });
 
 export const StyledDappContainer = styled(Box)({
@@ -57,7 +57,7 @@ export const StyledModalList = styled("ul")({
   width: "calc(100vw - 20px)",
   height: 500,
   overflow: "auto",
-  background: "#18202F",
+  background: "black",
   border: "1px solid rgb(55, 65, 81)",
   display: "flex",
   flexDirection: "column",

@@ -94,11 +94,6 @@ const StyledContainer = styled(Box)({
   position: "relative",
 });
 
-const StyledPrefix = styled(Typography)({
-  fontFamily: "inherit",
-  fontSize: 22,
-});
-
 const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   pointerEvents: disabled ? "none" : "unset",
   height: "100%",

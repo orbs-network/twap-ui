@@ -4,15 +4,23 @@ import { CSSProperties } from "react";
 
 export const colors = {
   cardBackground: "rgb(18, 17, 34)",
-  submitButton: "rgb(29, 147, 132)",
   submitButtonBorder: "1px solid rgba(100, 221, 192, 0.15)",
-  text: "#ffffff",
+  text: "rgb(113, 113, 113)",
   icon: "#60E6C5",
   light: "#60E6C5",
   selectTokenFocus: "#1F2937",
-  mainBackground: "#000315",
+  mainBackground: "rgb(17, 17, 17)",
   borderColor: "rgb(55, 65, 81)",
 };
+
+export const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
+  display: "flex",
+  flexDirection: "column",
+  gap: gap || 10,
+  alignItems: "flex-start",
+  width: "100%",
+}));
+
 export const StyledFlexBetween = styled(Box)(({ gap = 0 }: { gap?: number }) => ({
   display: "flex",
   alignItems: "center",
@@ -20,6 +28,25 @@ export const StyledFlexBetween = styled(Box)(({ gap = 0 }: { gap?: number }) => 
   width: "100%",
   gap,
 }));
+
+const coloredBoxStyles = {
+  background: "rgb(28, 28, 28)",
+  padding: 10,
+  borderRadius: 8,
+};
+
+export const StyledTradeSizeContent = styled(StyledColumnGap)({
+  ...coloredBoxStyles,
+});
+
+export const StyledColoredFlex = styled(StyledFlexBetween)({
+  minHeight: 60,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  width: "100%",
+  ...coloredBoxStyles,
+});
 
 export const StyledUSD = styled(Components.USD)({
   marginLeft: "auto",
@@ -41,13 +68,15 @@ export const StyledBalance = styled(StyledFlexBetween)({
 });
 
 export const StyledButton = styled(Components.Button)({
-  background: "rgb(115, 204, 231)",
-  height: 40,
-  borderRadius: "60px",
-  fontWeight: 500,
+  background: "rgb(229, 229, 229)",
+  height: 50,
+  borderRadius: 8,
+  color: colors.text,
+
   "& *": {
-    color: "rgb(18, 17, 34)",
-    fontWeight: 700,
+    color: colors.text,
+    fontWeight: 500,
+    fontSize: 16,
   },
 });
 
@@ -64,22 +93,23 @@ export const StyledNumbericInput = styled(Components.NumericInput)({
     color: colors.text,
     fontSize: 24,
     fontWeight: 400,
-    textAlign: "right",
+    textAlign: "left",
     outline: "1px solid transparent",
     borderRadius: "0.375rem",
     height: 40,
     transition: "0.2s all",
     paddingRight: 0,
+    textIndent: 0,
     "&:focus": {},
     "&::placeholder": {
-      color: "white",
+      color: colors.text,
     },
   },
 });
 
 const cardStyles: CSSProperties = {
   padding: 12,
-  background: "rgb(18, 17, 34)",
+  background: colors.mainBackground,
   borderRadius: "0.375rem",
 };
 
@@ -98,7 +128,7 @@ export const StyledIcon = styled(Components.Icon)({
 
 export const StyledTradeInfoModal = styled(Components.TradeInfoModal)({
   "& a": {
-    color: "white",
+    color: colors.text,
     fontWeight: 500,
     textDecoration: "underline",
   },
@@ -106,7 +136,7 @@ export const StyledTradeInfoModal = styled(Components.TradeInfoModal)({
     boxSizing: "border-box",
   },
   "& .MuiIconButton-root": {
-    color: "white",
+    color: colors.text,
   },
   "& .twap-modal-content": {
     maxHeight: "85vh",
@@ -147,7 +177,7 @@ export const globalStyle = {
       color: "black",
     },
     "& button": {
-      color: "white",
+      color: colors.text,
     },
   },
   ".twap-loader": {
@@ -155,7 +185,7 @@ export const globalStyle = {
   },
   "& .twap-modal": {
     "& *": {
-      color: "white",
+      color: colors.text,
     },
     "& .twap-modal-content": {
       position: "relative",
@@ -164,7 +194,7 @@ export const globalStyle = {
   },
   "& .twap-button": {
     "& .twap-button-loader": {
-      color: "white",
+      color: colors.text,
     },
   },
   "& .twap-container": {
@@ -172,7 +202,8 @@ export const globalStyle = {
     gap: 15,
     "*": {
       boxSizing: "border-box",
-      color: "white",
+      color: colors.text,
+      fontFamily: "inherit!important",
     },
   },
   "& .twap-small-label": {
@@ -221,7 +252,6 @@ export const globalStyle = {
       borderRadius: "4px",
       color: colors.light,
       fontSize: 14,
-      fontFamily: "inherit",
       lineHeight: 1.5,
       padding: 16,
       maxWidth: 500,
@@ -232,15 +262,16 @@ export const globalStyle = {
   },
 };
 
-export const StyledTrade = styled(Box)({
+export const StyledTrade = styled(StyledColumnGap)({
   width: "100%",
+  ...coloredBoxStyles,
   "& .twap-input": {
-    textAlign: "right",
+    textAlign: "left",
     paddingRight: 10,
   },
 });
 
-export const StyledPrice = styled(Box)(() => ({
+export const StyledPrice = styled(StyledColoredFlex)(() => ({
   width: "100%",
   "& .twap-price": {
     background: colors.mainBackground,
@@ -263,45 +294,43 @@ export const StyledDstToken = styled(Box)({
 export const StyledSrcTokenPercentSelector = styled(Box)({
   display: "flex",
   alignItems: "center",
-  gap: 10,
+  gap: 5,
 });
 
 export const StyledPercentBtn = styled("button")({
   background: "transparent",
   border: "unset",
   cursor: "pointer",
-  color: "rgb(140, 140, 227)",
-  fontWeight: 700,
-  fontSize: 14,
+  color: colors.text,
+  fontSize: 16,
+  "&:hover": {
+    color: "white",
+  },
 });
 
 export const StyledIntervalTimeSelect = styled(Box)({
   flex: 1,
 });
 export const StyledTokenSelect = styled("button")(() => ({
-  background: "rgba(255, 255, 255, 0.05)",
+  background: colors.mainBackground,
   border: "unset",
-  padding: "6px 10px",
-  borderRadius: 60,
+  padding: "6px 8px",
+  borderRadius: 12,
+  minHeight: 40,
   cursor: "pointer",
   display: "flex",
   alignItems: "center",
-  gap: 5,
+  gap: 10,
   "& .twap-token-name": {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.87)",
-    fontWeight: 700,
-  },
-
-  "&:hover": {
-    background: colors.selectTokenFocus,
+    color: "white",
+    fontWeight: 500,
   },
 }));
 
 export const StyledTokenDisplay = styled(Box)({
   display: "flex",
   alignItems: "center",
-  gap: 6,
+  gap: 10,
 });
 
 export const StyledFlexStart = styled(Box)({
@@ -316,37 +345,36 @@ export const StyledChangeOrder = styled(Box)(() => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  width: "100%",
+  "& button": {
+    width: 35,
+    height: 35,
+    background: "rgb(28, 28, 28)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 }));
 
 export const StyledTokenPanel = styled(Box)({
   width: "100%",
   "& .twap-input": {
-    textAlign: "right",
+    textAlign: "left",
   },
   "& .twap-token-logo": {
-    width: "28px!important",
-    height: "28px!important",
+    width: "24px!important",
+    height: "24px!important",
   },
   "& .twap-token-name": {
-    fontSize: 22,
+    fontSize: 20,
   },
 });
-
-export const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
-  display: "flex",
-  flexDirection: "column",
-  gap: gap || 10,
-  alignItems: "flex-start",
-  width: "100%",
-}));
 
 export const StyledSwitch = styled(Components.Switch)({
   "& .MuiSwitch-thumb": {
     background: "white",
   },
   "& .MuiSwitch-track": {
-    background: "#19202F",
+    background: colors.mainBackground,
     opacity: "1!important",
   },
   "& .Mui-checked+.MuiSwitch-track": {
@@ -362,7 +390,7 @@ export const StyledMarketPrice = styled(Box)({
   "& .twap-card": {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
-    background: "rgba(255, 255, 255, 0.05)",
+    background: "rgba(255, 255, 255, 0.03)",
     paddingBottom: 5,
   },
   "& .title": {
@@ -434,33 +462,38 @@ export const StyledPanelLabel = styled(Components.SmallLabel)({
 
 export const StyledOrdersContainer = styled(Box)({
   "& *": {
-    fontFamily: "inherit",
-    color: "white",
+    color: colors.text,
     boxSizing: "border-box",
   },
   "& .twap-orders-lists": {
     maxHeight: 600,
   },
+  "& .twap-order-separator": {
+    background: "rgba(255,255,255, 0.5)",
+  },
+  "& .twap-order-details-progress": {
+    background: colors.mainBackground,
+  },
   "& .twap-order": {
-    border: "1px solid rgb(55, 65, 81)",
+    background: "rgb(28, 28, 28)",
   },
   "& .twap-order-main-progress-bar": {
-    background: "#22353C",
+    background: "rgb(28, 28, 28)",
     "& .MuiLinearProgress-bar ": {
-      background: colors.light,
+      background: "rgb(255, 200, 0)",
     },
   },
   "& .twap-orders-header": {
     "& .MuiTabs-root": {
       "& .MuiTabs-indicator": {
-        backgroundColor: "rgba(96, 230, 197, 0.26)",
+        background: "rgb(255, 200, 0)",
       },
       "& .MuiButtonBase-root": {
         color: "#FFFFFF",
         fontWeight: 400,
       },
       "& .Mui-selected": {
-        color: "#60E6C5",
+        color: "black",
       },
     },
   },

@@ -76,6 +76,7 @@ export interface Translations {
   insertLimitPriceWarning: string;
   unwrap: string;
   balance: string;
+  selectToken: string;
 }
 export interface TwapProps {
   connect?: () => void;

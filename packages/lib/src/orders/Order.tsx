@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/system";
-import { ReactNode } from "react";
+import { CSSProperties, ReactNode } from "react";
 import Text from "../components/Text";
 import LinearProgress from "@mui/material/LinearProgress";
 import TokenName from "../components/TokenName";
@@ -43,7 +43,7 @@ function OrderComponent({ order, onExpand, expanded }: Props) {
               <Text>{order.ui.createdAtUi}</Text>
             </StyledHeader>
 
-            {expanded ? <StyledSeperator /> : <PreviewProgressBar progress={order.ui.progress || 1} />}
+            {expanded ? <Separator /> : <PreviewProgressBar progress={order.ui.progress || 1} />}
             <StyledPreview>
               <TokenDisplay token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
               <Icon className="icon" icon={<HiOutlineArrowNarrowRight style={{ width: 30, height: 30 }} />} />
@@ -53,13 +53,17 @@ function OrderComponent({ order, onExpand, expanded }: Props) {
           <StyledSpace />
         </StyledSummary>
         <AccordionDetails style={{ padding: 0, paddingTop: 10 }}>
-          <StyledSeperator style={{ marginBottom: 10 }} />
+          <Separator style={{ marginBottom: 10 }} />
           <OrderDetails order={order} />
         </AccordionDetails>
       </StyledAccordion>
     </StyledContainer>
   );
 }
+
+const Separator = ({ className = "", style }: { className?: string; style?: CSSProperties }) => {
+  return <StyledSeperator className={`twap-order-separator ${className}`} style={style} />;
+};
 
 const OrderDetails = ({ order }: { order: OrderUI }) => {
   const translations = useTwapTranslations();

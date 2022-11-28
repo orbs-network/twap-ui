@@ -52,7 +52,7 @@ const dapps = [
 ];
 
 function App() {
-  const [selectedDapp, setSelectedDapp] = useState(Configs.SpiritSwap.partner);
+  const [selectedDapp, setSelectedDapp] = useState(Configs.Pangolin.partner);
   const { activate, library, chainId, account } = useWeb3React();
   const tokensList = useTokenList(chainId);
 

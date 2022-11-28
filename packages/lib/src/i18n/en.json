@@ -81,5 +81,6 @@
   "ordersTooltip": "The below shows your wallet's TWAP order history and current status.",
   "poweredBy": "Powered by Orbs",
   "insertLimitPriceWarning": "Insert limit price",
-  "balance": "Balance"
+  "balance": "Balance",
+  "selectToken": "Select token"
 }
