@@ -7,12 +7,13 @@ import Text from "./Text";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
 import Tooltip from "./Tooltip";
-import { useOrderOverview, useTwapTranslations } from "../hooks";
+import { useOrderOverview } from "../hooks";
 import { useAtomValue } from "jotai";
 import { twapLibAtom } from "../state";
+import { useTwapContext } from "../context";
 
 export function TradeInfoModal({ onClose, open, children, className = "" }: { onClose: () => void; open: boolean; children: ReactNode; className?: string }) {
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   return (
     <Modal className={`twap-trade-info-modal ${className}`} open={open} handleClose={onClose} title={translations.confirmTx} disableBackdropClick={true}>
       <StyledModalContent className="twap-order-confirmation">{children}</StyledModalContent>
@@ -23,7 +24,7 @@ export function TradeInfoModal({ onClose, open, children, className = "" }: { on
 const StyledModalContent = styled(Box)({});
 
 export function ConfirmationExpiration() {
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   const deadline = useOrderOverview().deadline;
   return (
@@ -36,7 +37,7 @@ export function ConfirmationExpiration() {
 
 export function ConfirmationOrderType() {
   const isLimitOrder = useOrderOverview().isLimitOrder;
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledRow className="twap-trade-info-row">
@@ -47,7 +48,7 @@ export function ConfirmationOrderType() {
 }
 
 export function ConfirmationTradeSize() {
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   const { srcChunkAmount, srcToken } = useOrderOverview();
   return (
     <StyledRow className="twap-trade-info-row">
@@ -67,7 +68,7 @@ export function ConfirmationTradeSize() {
 
 export function ConfirmationTotalTrades() {
   const totalChunks = useOrderOverview().totalChunks;
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledRow className="twap-trade-info-row">
@@ -79,7 +80,7 @@ export function ConfirmationTotalTrades() {
 
 export function ConfirmationTradeInterval() {
   const fillDelay = useOrderOverview().fillDelay;
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledRow className="twap-trade-info-row">
@@ -91,7 +92,7 @@ export function ConfirmationTradeInterval() {
 
 export function ConfirmationMinimumReceived() {
   const { minAmountOut, isLimitOrder, dstToken } = useOrderOverview();
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   return (
     <StyledRow className="twap-trade-info-row">
       <Label tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
@@ -139,7 +140,7 @@ const StyledRow = styled(Box)({
 });
 
 export const TradeInfoExplanation = () => {
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   const lib = useAtomValue(twapLibAtom);
   return (
     <StyledTradeInfoExplanation>

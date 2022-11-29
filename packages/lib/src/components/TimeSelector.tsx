@@ -1,7 +1,7 @@
 import { ClickAwayListener, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useState } from "react";
-import { useTwapTranslations } from "../hooks";
+import { useTwapContext } from "../context";
 import { TimeResolution } from "../state";
 import { Translations } from "../types";
 import NumericInput from "./NumericInput";
@@ -33,7 +33,7 @@ interface Props {
 
 function TimeSelector({ value, onChange, disabled = false }: Props) {
   const [showList, setShowList] = useState(false);
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   const onTimeFormatChange = (resolution: TimeResolution) => {
     onChange({ resolution, amount: value.amount });

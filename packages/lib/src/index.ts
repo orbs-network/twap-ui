@@ -15,7 +15,6 @@ import IconButton from "./components/IconButton";
 import Text from "./components/Text";
 import NumberDisplay from "./components/NumberDisplay";
 import PoweredBy from "./components/PoweredBy";
-import { TwapContext, TwapProvider } from "./context";
 import {
   ConfirmationExpiration,
   ConfirmationMinimumReceived,
@@ -37,6 +36,7 @@ import Loader from "./components/Loader";
 import Slider from "./components/Slider";
 export * as hooks from "./hooks";
 export * from "./types";
+export * from "./context";
 
 export const Components = {
   NumberDisplay,
@@ -73,4 +73,4 @@ export const Components = {
   ConfirmationMinimumReceived,
   TradeInfoExplanation,
 };
-export { TwapContext, TwapProvider, Orders };
+export { Orders };

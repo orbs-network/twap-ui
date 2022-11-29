@@ -1,5 +1,5 @@
 import React from "react";
-import { useTwapTranslations } from "../hooks";
+import { useTwapContext } from "../context";
 import NumberDisplay from "./NumberDisplay";
 import SmallLabel from "./SmallLabel";
 
@@ -10,7 +10,7 @@ interface Props {
 }
 
 function Balance({ isLoading, value, className = "" }: Props) {
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   if (value == null) {
     return null;
   }

@@ -373,7 +373,7 @@ const prepareHistoryTokens = async (rawOrders: Order[], get: Getter) => {
 };
 
 const orderHistoryQuery = atomWithQuery((get) => ({
-  queryKey: ["orderHistoryQuery", get(twapLibAtom)!.maker, get(twapLibAtom)!.config.partner],
+  queryKey: ["orderHistoryQuery", get(twapLibAtom)!.maker, get(twapLibAtom)!.config.chainId],
   queryFn: async () => {
     const lib = get(twapLibAtom);
     if (!lib) return null;

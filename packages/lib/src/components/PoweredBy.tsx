@@ -1,10 +1,10 @@
 import { Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import React from "react";
-import { useTwapTranslations } from "../hooks";
+import { useTwapContext } from "../context";
 
 function PoweredBy() {
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   return (
     <StyledContainer className="twap-powered-by">
       <Typography>{translations.poweredBy}</Typography>

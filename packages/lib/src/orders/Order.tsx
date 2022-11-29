@@ -18,9 +18,10 @@ import Card from "../components/Card";
 import { Typography } from "@mui/material";
 import { StyledColumnGap } from "../styles";
 import { Status, TokenData } from "@orbs-network/twap";
-import { fillDelayUi, useCancelOrder, useHistoryPrice, useTokenImage, useTwapTranslations } from "../hooks";
+import { fillDelayUi, useCancelOrder, useHistoryPrice, useTokenImage } from "../hooks";
 import { OrderUI } from "../state";
 import TokenPriceCompare from "../components/TokenPriceCompare";
+import { useTwapContext } from "../context";
 
 export interface Props {
   order: OrderUI;
@@ -29,7 +30,7 @@ export interface Props {
 }
 
 function OrderComponent({ order, onExpand, expanded }: Props) {
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   return (
     <StyledContainer className="twap-order">
       <StyledAccordion expanded={expanded}>
@@ -66,7 +67,7 @@ const Separator = ({ className = "", style }: { className?: string; style?: CSSP
 };
 
 const OrderDetails = ({ order }: { order: OrderUI }) => {
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledOrderDetails className="twap-order-details">
@@ -128,7 +129,7 @@ const StyledTokenDisplayWithTitle = styled(StyledColumnGap)({
 
 const CancelOrderButton = ({ orderId }: { orderId: number }) => {
   const { isLoading, mutate } = useCancelOrder();
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   return (
     <StyledCancelOrderButton loading={isLoading} onClick={() => mutate(orderId)}>
       {translations.cancelOrder}
@@ -314,7 +315,7 @@ const StyledPreviewLinearProgress = styled(LinearProgress)(({ emptybarcolor }: {
 
 const OrderPrice = ({ order }: { order: OrderUI }) => {
   const { leftToken, rightToken, priceUi, toggleInverted } = useHistoryPrice(order);
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   return (
     <StyledFlex>
       <SmallLabel>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</SmallLabel>

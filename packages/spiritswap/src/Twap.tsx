@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, hooks, TwapProps } from "@orbs-network/twap-ui";
+import { Components, hooks, TWAPProps, useTwapContext } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
@@ -37,14 +37,14 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { ProviderWrapper } from ".";
+import { SpiritSwapAdapter } from ".";
 import { TokenData } from "@orbs-network/twap";
 
-const useOnload = (props: TwapProps) => {
+const useOnload = (props: TWAPProps) => {
   const { tokensList, srcToken, dstToken } = props;
 
   const findToken = (symbol?: string) => {
-    const token = tokensList.find((t) => t.symbol.toUpperCase() === symbol?.toUpperCase());
+    const token = tokensList.find((t: TokenData) => t.symbol.toUpperCase() === symbol?.toUpperCase());
     return !token ? undefined : { ...token, logoUrl: token.logoUrl || props.getTokenImage?.(token) };
   };
   return useMemo(() => {
@@ -56,12 +56,12 @@ const useOnload = (props: TwapProps) => {
   }, [srcToken, dstToken, tokensList]);
 };
 
-const TWAP = (props: TwapProps) => {
+const TWAP = (props: TWAPProps) => {
   const { srcToken, dstToken } = useOnload(props);
   hooks.useTokens(srcToken, dstToken);
 
   return (
-    <ProviderWrapper {...props}>
+    <SpiritSwapAdapter twapProps={props}>
       <GlobalStyles styles={globalStyle as any} />
       <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
         <SrcTokenPanel />
@@ -75,7 +75,7 @@ const TWAP = (props: TwapProps) => {
         <OrderConfirmation />
         <Components.PoweredBy />
       </div>
-    </ProviderWrapper>
+    </SpiritSwapAdapter>
   );
 };
 
@@ -83,7 +83,7 @@ export default memo(TWAP);
 
 const MarketPrice = () => {
   const { toggleInverted, leftToken, rightToken, marketPrice, ready } = hooks.useMarketPrice();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
   return (
     <StyledMarketPrice>
       <StyledCard>
@@ -102,7 +102,7 @@ const MarketPrice = () => {
 
 const SrcTokenPercentSelector = () => {
   const { onPercentClick } = hooks.useCustomActions();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -148,7 +148,7 @@ const ChangeTokensOrder = () => {
 
 const TradeSize = () => {
   const { chunksAmount, onTotalChunksChange, totalChunks, token, usdValue, usdLoading, maxPossibleChunks, ready } = hooks.useChunks();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledTrade>
@@ -193,7 +193,7 @@ const TradeSize = () => {
 const LimitPriceDisplay = () => {
   const { isLimitOrder, onToggleLimit, onChange, limitPrice, leftToken, rightToken, toggleInverted, warning } = hooks.useLimitPrice();
   const isLoading = false;
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledPrice>
@@ -216,7 +216,7 @@ const LimitPriceDisplay = () => {
 
 const MaxDuration = () => {
   const { maxDuration, onChange } = hooks.useMaxDuration();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledCard>
@@ -230,7 +230,7 @@ const MaxDuration = () => {
 
 const TradeInterval = () => {
   const { fillDelay, customFillDelayEnabled, onChange, onCustomFillDelayClick } = hooks.useFillDelay();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledCard>
@@ -267,7 +267,6 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   const {
     toggleTokenList,
     onTokenSelect,
-    TokenSelectModal,
     tokenListOpen,
     inputWarning,
     amountPrefix,
@@ -283,6 +282,8 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     connectedChainId,
     usdLoading,
   } = hooks.useTokenPanel(isSrcToken);
+
+  const { TokenSelectModal } = useTwapContext();
 
   const onOpen = () => {
     if (!selectTokenWarning) toggleTokenList(true);
@@ -343,7 +344,7 @@ const OrderConfirmation = () => {
   const { srcToken, dstToken, srcUsd, srcAmount, dstUsd, dstAmount, isLimitOrder, showConfirmation, closeConfirmation, disclaimerAccepted, setDisclaimerAccepted, maker } =
     hooks.useOrderOverview();
   const { loading, text, onClick, disabled } = hooks.useCreateOrderButton();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <>
@@ -405,7 +406,7 @@ const TradeInfoDetailsDisplay = () => {
 
 const OrderConfirmationLimitPrice = () => {
   const { isLimitOrder, toggleInverted, limitPrice, leftToken, rightToken } = hooks.useLimitPrice();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledLimitPrice>

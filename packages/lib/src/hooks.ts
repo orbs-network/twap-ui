@@ -1,9 +1,8 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Config, OrderInputValidation, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
-import { TwapContext } from "./context";
+import { useTwapContext } from "./context";
 import Web3 from "web3";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import defaultTranlations from "./i18n/en.json";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   allTokensListAtom,
   balanceGet,
@@ -136,7 +135,7 @@ const useMutation = <T>(
 };
 
 const useGasPrice = () => {
-  const gasPriceFromDapp = useContext(TwapContext).gasPrice;
+  const gasPriceFromDapp = useTwapContext().gasPrice;
   return useAtomValue(gasPriceGet(gasPriceFromDapp));
 };
 
@@ -263,7 +262,7 @@ const useOrderFillWarning = () => {
   const minAmountOut = useAtomValue(dstMinAmountOutGet);
   const lib = useAtomValue(twapLibAtom);
   const deadline = useAtomValue(deadlineGet);
-  const translation = useTwapTranslations();
+  const translation = useTwapContext().translations;
   const isLimitOrder = useAtomValue(isLimitOrderAtom);
   const limitPrice = useAtomValue(limitPriceGet(false));
 
@@ -299,7 +298,7 @@ export const useSwitchTokens = () => {
 };
 
 const useChangeNetwork = () => {
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   const lib = useAtomValue(twapLibAtom);
   const reset = useSetAtom(resetAllSet);
 
@@ -314,14 +313,14 @@ const useChangeNetwork = () => {
 };
 
 const useConnect = () => {
-  const translations = useTwapTranslations();
-  const { connect } = useContext(TwapContext);
+  const translations = useTwapContext().translations;
+  const { connect } = useTwapContext();
 
   return { text: translations.connect, onClick: connect ? connect : undefined, loading: false, disabled: false };
 };
 
 const useIsWrongNetwork = () => {
-  const { connectedChainId } = useContext(TwapContext);
+  const { connectedChainId } = useTwapContext();
   const lib = useAtomValue(twapLibAtom);
 
   return useMemo(() => (connectedChainId && connectedChainId !== lib?.config.chainId ? true : false), [connectedChainId, lib]);
@@ -329,7 +328,7 @@ const useIsWrongNetwork = () => {
 
 export const useShowConfirmationButton = () => {
   const lib = useAtomValue(twapLibAtom);
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   const shouldWrap = useAtomValue(shouldWrapNativeGet);
   const shouldUnwrap = useAtomValue(shouldUnwrapGet);
   const allowance = useAtomValue(tokenAllowanceGet);
@@ -348,6 +347,7 @@ export const useShowConfirmationButton = () => {
   const dstUsdLoading = useAtomValue(usdGet(dsToken)).loading;
 
   const wrongNetwork = useIsWrongNetwork();
+
   if (!lib?.maker) {
     return connectArgs;
   }
@@ -388,7 +388,7 @@ export const useCreateOrderButton = () => {
   const { mutate: createOrder } = useCreateOrder();
   const disclaimerAccepted = useAtomValue(disclaimerAcceptedAtom);
   const lib = useAtomValue(twapLibAtom);
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   const connectArgs = useConnect();
   const changeNetworkArgs = useChangeNetwork();
   const wrongNetwork = useIsWrongNetwork();
@@ -414,9 +414,11 @@ const useSrcTokenPanel = () => {
   const usdLoading = useAtomValue(usdGet(useAtomValue(srcTokenAtom))).loading;
   const balanceLoading = useAtomValue(balanceGet(useAtomValue(srcTokenAtom))).loading;
   const analytics = useSendAnalyticsEvents();
-  const { onSrcTokenSelected } = useContext(TwapContext);
+  const { onSrcTokenSelected } = useTwapContext();
 
   const onSelectToken = (token: TokenData) => {
+    console.log({ token });
+
     selectToken(token);
     analytics.onSrcTokenClick(token.symbol);
     onSrcTokenSelected?.(token);
@@ -443,9 +445,10 @@ const useDstTokenPanel = () => {
   const usdLoading = useAtomValue(usdGet(useAtomValue(dstTokenAtom))).loading;
   const balanceLoading = useAtomValue(balanceGet(useAtomValue(dstTokenAtom))).loading;
   const analytics = useSendAnalyticsEvents();
-  const { onDstTokenSelected } = useContext(TwapContext);
+  const { onDstTokenSelected } = useTwapContext();
 
   const onSelectToken = (token: TokenData) => {
+    console.log({ token });
     selectToken(token);
     analytics.onDstTokenClick(token.symbol);
     onDstTokenSelected?.(token);
@@ -467,8 +470,8 @@ export const useTokenPanel = (isSrc?: boolean) => {
   const srcValues = useSrcTokenPanel();
   const dstValues = useDstTokenPanel();
   const isLimitOrder = useAtomValue(isLimitOrderAtom);
-  const { getTokenImage, TokenSelectModal, connectedChainId } = useContext(TwapContext);
-  const translations = useTwapTranslations();
+  const { getTokenImage, connectedChainId } = useTwapContext();
+  const translations = useTwapContext().translations;
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const maker = useMaker();
   const wrongNetwork = useIsWrongNetwork();
@@ -506,7 +509,6 @@ export const useTokenPanel = (isSrc?: boolean) => {
     tokenListOpen,
     toggleTokenList: (value: boolean) => setTokenListOpen(value),
     amountPrefix: isSrc ? "" : isLimitOrder ? "≥" : "~",
-    TokenSelectModal,
     inputWarning: !isSrc ? undefined : !token ? translations.selectTokens : undefined,
     selectTokenWarning,
     connectedChainId,
@@ -524,7 +526,7 @@ export const useMarketPrice = () => {
 
 export const useLimitPrice = () => {
   const [inverted, setInverted] = useState(false);
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   const [isLimitOrder, setIsLimitOrder] = useAtom(isLimitOrderAtom);
   const setLimitPrice = useSetAtom(limitPriceUiAtom);
   const { limitPriceUi: limitPrice, leftToken, rightToken } = useAtomValue(limitPriceGet(inverted));
@@ -573,7 +575,7 @@ export const useOrderOverview = () => {
   const srcUsd = useAtomValue(srcUsdUiGet);
   const dstUsd = useAtomValue(dstUsdUiGet);
   const dstAmount = useAtomValue(dstAmountUiGet);
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
   const maker = useMaker();
 
   const result = {
@@ -599,6 +601,11 @@ export const useOrderOverview = () => {
   const isValid = _.every(_.values(result));
 
   return { ...result, isValid }; // TODO check isValid in components
+};
+
+export const resetState = () => {
+  const reset = useSetAtom(resetAllSet);
+  return reset;
 };
 
 export const useCustomActions = () => {
@@ -692,7 +699,7 @@ export const useTokens = (srcToken?: TokenData, dstToken?: TokenData) => {
 };
 
 export const useTokenImage = (token?: TokenData) => {
-  const { getTokenImage } = useContext(TwapContext);
+  const { getTokenImage } = useTwapContext();
   return !token ? "" : getTokenImage ? getTokenImage(token) : token.logoUrl;
 };
 
@@ -796,12 +803,4 @@ export const changeNetwork = async (web3?: Web3, chain?: number) => {
       });
     }
   }
-};
-
-export const useTwapTranslations = () => {
-  const { translations } = useContext(TwapContext);
-
-  const combinedTranslations = { ...defaultTranlations, ...translations };
-
-  return combinedTranslations || ({} as Translations);
 };

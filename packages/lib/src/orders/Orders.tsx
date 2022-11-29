@@ -9,12 +9,13 @@ import OdnpButton from "../components/OdnpButton";
 import Icon from "../components/Icon";
 import { AiOutlineHistory } from "react-icons/ai";
 import { Status } from "@orbs-network/twap";
-import { useOrders, useTwapTranslations } from "../hooks";
+import { useOrders } from "../hooks";
+import { useTwapContext } from "../context";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
   const { orders, loading } = useOrders();
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);

@@ -1,10 +1,10 @@
 import { GlobalStyles } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, hooks, TwapProps } from "@orbs-network/twap-ui";
+import { Components, hooks, TWAPProps, useTwapContext } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode, useMemo } from "react";
+import { memo, ReactNode } from "react";
 
 import {
   globalStyle,
@@ -39,13 +39,12 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { ProviderWrapper } from ".";
 import { TokenData } from "@orbs-network/twap";
-import SmallLabel from "@orbs-network/twap-ui/dist/components/SmallLabel";
+import { SpookySwapAdapter } from ".";
 
-const TWAP = (props: TwapProps) => {
+const TWAP = (props: TWAPProps) => {
   return (
-    <ProviderWrapper {...props}>
+    <SpookySwapAdapter twapProps={props}>
       <GlobalStyles styles={globalStyle as any} />
       <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
         <SrcTokenPanel />
@@ -59,7 +58,7 @@ const TWAP = (props: TwapProps) => {
         <OrderConfirmation />
         <Components.PoweredBy />
       </div>
-    </ProviderWrapper>
+    </SpookySwapAdapter>
   );
 };
 
@@ -67,7 +66,7 @@ export default memo(TWAP);
 
 const MarketPrice = () => {
   const { toggleInverted, leftToken, rightToken, marketPrice, ready } = hooks.useMarketPrice();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledMarketPrice>
@@ -87,7 +86,7 @@ const MarketPrice = () => {
 
 const SrcTokenPercentSelector = () => {
   const { onPercentClick } = hooks.useCustomActions();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -127,7 +126,7 @@ const ChangeTokensOrder = () => {
 
 const TradeSize = () => {
   const { chunksAmount, onTotalChunksChange, totalChunks, token, usdValue, usdLoading, maxPossibleChunks, ready } = hooks.useChunks();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledTrade>
@@ -172,7 +171,7 @@ const TradeSize = () => {
 const LimitPriceDisplay = () => {
   const { isLimitOrder, onToggleLimit, onChange, limitPrice, leftToken, rightToken, toggleInverted, warning } = hooks.useLimitPrice();
   const isLoading = false;
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledPrice>
@@ -195,7 +194,7 @@ const LimitPriceDisplay = () => {
 
 const MaxDuration = () => {
   const { maxDuration, onChange } = hooks.useMaxDuration();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledCard>
@@ -209,7 +208,7 @@ const MaxDuration = () => {
 
 const TradeInterval = () => {
   const { fillDelay, customFillDelayEnabled, onChange, onCustomFillDelayClick } = hooks.useFillDelay();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledCard>
@@ -246,7 +245,6 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   const {
     toggleTokenList,
     onTokenSelect,
-    TokenSelectModal,
     tokenListOpen,
     inputWarning,
     amountPrefix,
@@ -262,6 +260,8 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     connectedChainId,
     usdLoading,
   } = hooks.useTokenPanel(isSrcToken);
+
+  const { TokenSelectModal } = useTwapContext();
 
   const onOpen = () => {
     if (!selectTokenWarning) toggleTokenList(true);
@@ -311,15 +311,15 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
 };
 
 const Balance = ({ isLoading, balance = "0" }: { isLoading: boolean; balance: string }) => {
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledBalance>
       <Components.Text>{translations.balance}</Components.Text>
       {balance && (
-        <SmallLabel loading={isLoading}>
+        <Components.SmallLabel loading={isLoading}>
           <Components.NumberDisplay value={balance} />
-        </SmallLabel>
+        </Components.SmallLabel>
       )}
     </StyledBalance>
   );
@@ -338,7 +338,7 @@ const OrderConfirmation = () => {
   const { srcToken, dstToken, srcUsd, srcAmount, dstUsd, dstAmount, isLimitOrder, showConfirmation, closeConfirmation, disclaimerAccepted, setDisclaimerAccepted, maker } =
     hooks.useOrderOverview();
   const { loading, text, onClick, disabled } = hooks.useCreateOrderButton();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <>
@@ -400,7 +400,7 @@ const TradeInfoDetailsDisplay = () => {
 
 const OrderConfirmationLimitPrice = () => {
   const { isLimitOrder, toggleInverted, limitPrice, leftToken, rightToken } = hooks.useLimitPrice();
-  const translations = hooks.useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   return (
     <StyledLimitPrice>

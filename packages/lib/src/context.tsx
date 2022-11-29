@@ -1,7 +1,8 @@
-import { createContext, ReactNode, useEffect } from "react";
-import { Translations } from "./types";
+import { createContext, ReactNode, useContext, useEffect, useMemo } from "react";
+import { Translations, TWAPProps } from "./types";
 import { Config, TokenData } from "@orbs-network/twap";
 import { useInitLib, useSetTokensList } from "./hooks";
+import defaultTranlations from "./i18n/en.json";
 
 const TwapContext = createContext<ContextProps>({} as ContextProps);
 
@@ -10,14 +11,14 @@ export interface ContextProps {
   config: Config;
   provider: any;
   connect?: () => void;
-  TokenSelectModal?: any;
   tokensList: TokenData[];
-  translations: Partial<Translations>;
+  translations: Translations;
   getTokenImage?: (value: any) => string;
   srcToken?: TokenData;
   dstToken?: TokenData;
   onSrcTokenSelected?: (token: TokenData) => void;
   onDstTokenSelected?: (token: TokenData) => void;
+  TokenSelectModal?: any;
   connectedChainId?: number;
   gasPrice?: {
     priorityFeePerGas?: string;
@@ -45,4 +46,37 @@ const TwapProvider = (props: TwapProviderProps) => {
   return <TwapContext.Provider value={props}>{props.children}</TwapContext.Provider>;
 };
 
-export { TwapContext, TwapProvider };
+export const useTwapContext = () => {
+  return useContext(TwapContext);
+};
+
+interface Props {
+  twapProps: TWAPProps;
+  children: ReactNode;
+  config: Config;
+  translations: Partial<Translations>;
+}
+
+export function TwapAdapter(props: Props) {
+  const { twapProps, config } = props;
+
+  const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
+  return (
+    <TwapProvider
+      gasPrice={twapProps.gasPrice}
+      translations={translations}
+      tokensList={twapProps.tokensList}
+      config={config}
+      connectedChainId={twapProps.connectedChainId}
+      account={twapProps.account}
+      provider={twapProps.provider}
+      connect={twapProps.connect}
+      getTokenImage={twapProps.getTokenImage}
+      onSrcTokenSelected={twapProps.onSrcTokenSelected}
+      onDstTokenSelected={twapProps.onDstTokenSelected}
+      TokenSelectModal={twapProps.TokenSelectModal}
+    >
+      {props.children}
+    </TwapProvider>
+  );
+}

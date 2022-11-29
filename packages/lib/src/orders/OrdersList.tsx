@@ -4,11 +4,11 @@ import OrderComponent from "./Order";
 import CircularProgress from "@mui/material/CircularProgress";
 import { OrderUI } from "../state";
 import { Status } from "@orbs-network/twap";
-import { useTwapTranslations } from "../hooks";
+import { useTwapContext } from "../context";
 
 function OrdersList({ orders, status, isLoading }: { orders: OrderUI[]; status: Status; isLoading: boolean }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
-  const translations = useTwapTranslations();
+  const translations = useTwapContext().translations;
 
   const onSelect = (value: number) => {
     setSelected((prevState) => (prevState === value ? undefined : value));

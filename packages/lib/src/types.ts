@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export interface Translations {
   confirmationDeadlineTooltip: string;
   confirmationtradeIntervalTooltip: string;
@@ -77,11 +79,12 @@ export interface Translations {
   unwrap: string;
   balance: string;
   selectToken: string;
+  sliderMinSizeTooltip: string;
 }
-export interface TwapProps {
+export interface TWAPProps {
   connect?: () => void;
   TokenSelectModal?: any;
-  tokensList: any[];
+  tokensList: any;
   account?: any;
   getProvider?: () => any;
   getTokenImage?: (value: any) => string;
@@ -95,4 +98,10 @@ export interface TwapProps {
     priorityFeePerGas?: string;
     maxFeePerGas?: string;
   };
+  theme?: any;
+}
+
+export interface AdapterProps {
+  twapProps: TWAPProps;
+  children: ReactNode;
 }

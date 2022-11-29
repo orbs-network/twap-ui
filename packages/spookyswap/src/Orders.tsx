@@ -1,15 +1,15 @@
-import { Orders, TwapProps } from "@orbs-network/twap-ui";
+import { Orders, TWAPProps } from "@orbs-network/twap-ui";
 import { StyledOrdersContainer } from "./styles";
-import { ProviderWrapper } from ".";
 import { memo } from "react";
+import { SpookySwapAdapter } from ".";
 
-function OrderHistory(props: TwapProps) {
+function OrderHistory(props: TWAPProps) {
   return (
-    <ProviderWrapper {...props}>
+    <SpookySwapAdapter twapProps={props}>
       <StyledOrdersContainer>
         <Orders />
       </StyledOrdersContainer>
-    </ProviderWrapper>
+    </SpookySwapAdapter>
   );
 }
 
