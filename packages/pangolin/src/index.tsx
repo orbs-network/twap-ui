@@ -32,9 +32,7 @@ const useParseTokenList = (tokenList?: any): TokenData[] => {
   }, [tokenList]);
 };
 
-const useOnload = (props: TWAPProps, tokenList: TokenData[]) => {
-  const { srcToken, dstToken } = props;
-
+const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: string, tokenList?: TokenData[]) => {
   const findToken = (address?: string) => {
     if (!address) return;
     const token = _.find(tokenList, (t: any) => eqIgnoreCase(t.address, address));
@@ -45,16 +43,16 @@ const useOnload = (props: TWAPProps, tokenList: TokenData[]) => {
     if (!tokenList?.length) return { srcToken: undefined, dstToken: undefined };
 
     return {
-      srcToken: findToken(srcToken),
-      dstToken: findToken(dstToken),
+      srcToken: findToken(srcTokenAddress),
+      dstToken: findToken(dstTokenAddress),
     };
-  }, [srcToken, dstToken, tokenList]);
+  }, [srcTokenAddress, dstTokenAddress, tokenList]);
 };
 
 export const PangolinAdapter = (props: AdapterProps) => {
   const { children, twapProps } = props;
   const tokenList = useParseTokenList(twapProps.dappTokens);
-  const { srcToken, dstToken } = useOnload(twapProps, tokenList);
+  const { srcToken, dstToken } = useTokensFromDapp(twapProps.srcToken, twapProps.dstToken, tokenList);
   hooks.useTokens(srcToken, dstToken);
 
   return (
