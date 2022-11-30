@@ -1,3 +1,4 @@
+import { Config, TokenData } from "@orbs-network/twap";
 import { ReactNode } from "react";
 
 export interface Translations {
@@ -81,27 +82,52 @@ export interface Translations {
   selectToken: string;
   sliderMinSizeTooltip: string;
 }
-export interface TWAPProps {
-  connect?: () => void;
-  TokenSelectModal?: any;
-  dappTokens: any;
-  account?: any;
-  getProvider?: () => any;
-  getTokenImage?: (value: any) => string;
-  onSrcTokenSelected?: (token: any) => void;
-  onDstTokenSelected?: (token: any) => void;
-  srcToken?: string;
-  dstToken?: string;
+
+interface BaseProps {
   connectedChainId?: number;
-  provider?: any;
+  account?: any;
+  provider: any;
+  translations: Translations;
+  getProvider: () => any;
+
+  getTokenImage?: (value: any) => string;
+  dappTokens: any;
   gasPrice?: {
     priorityFeePerGas?: string;
     maxFeePerGas?: string;
   };
-  theme?: any;
+}
+export interface TWAPProps extends BaseProps {
+  connect?: () => void;
+  srcToken?: string;
+  dstToken?: string;
+  onSrcTokenSelected?: (token: TokenData) => void;
+  onDstTokenSelected?: (token: TokenData) => void;
+  TokenSelectModal?: any;
+}
+export interface OrdersProps extends BaseProps {}
+
+interface LibProps {
+  children: ReactNode;
+  connectedChainId?: number;
+  account?: any;
+  config: Config;
+  provider: any;
+  translations: Translations;
+  getTokenImage?: (value: any) => string;
+  gasPrice?: {
+    priorityFeePerGas?: string;
+    maxFeePerGas?: string;
+  };
 }
 
-export interface AdapterProps {
-  twapProps: TWAPProps;
-  children: ReactNode;
+export interface TwapLibProps extends LibProps {
+  connect?: () => void;
+  onSrcTokenSelected?: (token: TokenData) => void;
+  onDstTokenSelected?: (token: TokenData) => void;
+  TokenSelectModal?: any;
+}
+
+export interface OrderLibProps extends LibProps {
+  tokenList: TokenData[];
 }

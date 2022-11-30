@@ -416,8 +416,6 @@ export const orderHistoryGet = atom((get) => {
 
 export type OrderUI = ReturnType<typeof parseOrder>;
 const parseOrder = (lib: TWAPLib, usdValues: { [address: string]: { token: TokenData; usd: BN } }, o: Order) => {
-  console.log(usdValues[o.ask.srcToken]);
-
   const { usd: srcUsd, token: srcToken } = usdValues[o.ask.srcToken];
 
   const { usd: dstUsd, token: dstToken } = usdValues[o.ask.dstToken];

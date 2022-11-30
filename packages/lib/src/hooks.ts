@@ -443,7 +443,6 @@ const useDstTokenPanel = () => {
   const { onDstTokenSelected } = useTwapContext();
 
   const onSelectToken = (token: TokenData) => {
-    console.log({ token });
     selectToken(token);
     analytics.onDstTokenClick(token.symbol);
     onDstTokenSelected?.(token);
@@ -683,14 +682,14 @@ export const useCancelOrder = () => {
   );
 };
 
-export const useTokens = (srcToken?: TokenData, dstToken?: TokenData) => {
+export const useSetTokens = () => {
   const srcTokenSelect = useSetAtom(srcTokenAtom);
   const dstTokenSelect = useSetAtom(dstTokenAtom);
 
-  useEffect(() => {
+  return (srcToken?: TokenData, dstToken?: TokenData) => {
     srcTokenSelect(srcToken);
     dstTokenSelect(dstToken);
-  }, [srcTokenSelect, dstTokenSelect, srcToken, dstToken]);
+  };
 };
 
 export const useTokenImage = (token?: TokenData) => {

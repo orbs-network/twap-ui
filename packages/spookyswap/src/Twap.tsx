@@ -1,10 +1,10 @@
 import { GlobalStyles } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, hooks, TWAPProps, useTwapContext } from "@orbs-network/twap-ui";
+import { Components, hooks, TwapAdapter, TWAPProps, useTwapContext } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode, useMemo } from "react";
+import { memo, ReactNode } from "react";
 
 import {
   globalStyle,
@@ -39,30 +39,28 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { TokenData } from "@orbs-network/twap";
-import { SpookySwapAdapter } from ".";
-
-const useOnload = (props: TWAPProps) => {
-  const { tokensList, srcToken, dstToken } = props;
-
-  const findToken = (symbol?: string) => {
-    const token = tokensList.find((t: TokenData) => t.symbol.toUpperCase() === symbol?.toUpperCase());
-    return !token ? undefined : { ...token, logoUrl: token.logoUrl || props.getTokenImage?.(token) };
-  };
-  return useMemo(() => {
-    if (!tokensList?.length) return { srcToken: undefined, dstToken: undefined };
-    return {
-      srcToken: findToken(srcToken),
-      dstToken: findToken(dstToken),
-    };
-  }, [srcToken, dstToken, tokensList]);
-};
+import { Configs, TokenData } from "@orbs-network/twap";
+import { useGetProvider, useTokensFromDapp } from "./hooks";
 
 const TWAP = (props: TWAPProps) => {
-  const { srcToken, dstToken } = useOnload(props);
-  hooks.useTokens(srcToken, dstToken);
+  const tokenList = props.dappTokens;
+  useTokensFromDapp(props.srcToken, props.dstToken, tokenList);
+  const provider = useGetProvider(props.getProvider, props.account, props.connectedChainId);
+
   return (
-    <SpookySwapAdapter twapProps={props}>
+    <TwapAdapter
+      connect={props.connect}
+      config={Configs.SpookySwap}
+      onSrcTokenSelected={props.onSrcTokenSelected}
+      onDstTokenSelected={props.onDstTokenSelected}
+      TokenSelectModal={props.TokenSelectModal}
+      gasPrice={props.gasPrice}
+      getTokenImage={props.getTokenImage}
+      translations={props.translations}
+      provider={provider}
+      account={props.account}
+      connectedChainId={props.connectedChainId}
+    >
       <GlobalStyles styles={globalStyle as any} />
       <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
         <SrcTokenPanel />
@@ -76,7 +74,7 @@ const TWAP = (props: TWAPProps) => {
         <OrderConfirmation />
         <Components.PoweredBy />
       </div>
-    </SpookySwapAdapter>
+    </TwapAdapter>
   );
 };
 

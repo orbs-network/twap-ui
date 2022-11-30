@@ -7,6 +7,7 @@ import { AiOutlineClose } from "react-icons/ai";
 import { StyledCloseIcon, StyledModalList, StyledModalListItem } from "./styles";
 import { TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
+import { Translations } from "@orbs-network/twap-ui";
 export const injectedConnector = new InjectedConnector({});
 
 const tokenlistsNetworkNames = {
@@ -29,7 +30,6 @@ const useDappTokens = (chainId?: number) => {
     (async () => {
       const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${name}.json`);
       const tokenList = await response.json();
-      console.log({ tokenList });
 
       const parsed = tokenList.map(({ symbol, address, decimals, logoURI }: any) => ({ symbol, address, decimals, logoUrl: logoURI }));
 
@@ -96,21 +96,37 @@ export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose:
   );
 };
 
-export const useDefaultProps = () => {
-  const { activate, library, chainId, account } = useWeb3React();
+const useDefaultProps = () => {
+  const { library, chainId, account } = useWeb3React();
   const dappTokens = useDappTokens(chainId);
 
   return {
     connectedChainId: chainId,
     getProvider: () => library,
     account,
-    TokenSelectModal: DefaultTokenSelectModal,
-    connect: () => activate(injectedConnector),
     dappTokens,
+    provider: library,
+    translations: {} as Translations,
+  };
+};
+
+export const useOrdersDefaultProps = () => {
+  const defaultProps = useDefaultProps();
+
+  return defaultProps;
+};
+
+export const useTwapDefaultProps = () => {
+  const { activate } = useWeb3React();
+  const defaultProps = useDefaultProps();
+
+  return {
+    ...defaultProps,
     onSrcTokenSelected: (value: any) => {},
     onDstTokenSelected: (value: any) => {},
     srcToken: undefined,
     dstToken: undefined,
-    provider: library,
+    TokenSelectModal: DefaultTokenSelectModal,
+    connect: () => activate(injectedConnector),
   };
 };

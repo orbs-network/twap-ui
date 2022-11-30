@@ -1,10 +1,10 @@
 import { GlobalStyles } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, hooks, TWAPProps, useTwapContext } from "@orbs-network/twap-ui";
+import { Components, hooks, TwapAdapter, TWAPProps, useTwapContext } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode, useMemo } from "react";
+import { memo, ReactNode } from "react";
 import _ from "lodash";
 import {
   globalStyle,
@@ -39,13 +39,26 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { TokenData } from "@orbs-network/twap";
-import { PangolinAdapter, parseToken } from ".";
-import { eqIgnoreCase } from "@defi.org/web3-candies";
+import { Configs, TokenData } from "@orbs-network/twap";
+import { parseToken, useTokensFromDapp } from "./hooks";
 
 const TWAP = (props: TWAPProps) => {
+  useTokensFromDapp(props.srcToken, props.dstToken, props.dappTokens);
+
   return (
-    <PangolinAdapter twapProps={props}>
+    <TwapAdapter
+      connect={props.connect}
+      config={Configs.Pangolin}
+      onSrcTokenSelected={props.onSrcTokenSelected}
+      onDstTokenSelected={props.onDstTokenSelected}
+      TokenSelectModal={props.TokenSelectModal}
+      gasPrice={props.gasPrice}
+      getTokenImage={props.getTokenImage}
+      translations={props.translations}
+      provider={props.provider}
+      account={props.account}
+      connectedChainId={props.connectedChainId}
+    >
       <GlobalStyles styles={globalStyle as any} />
       <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
         <SrcTokenPanel />
@@ -59,7 +72,7 @@ const TWAP = (props: TWAPProps) => {
         <OrderConfirmation />
         <Components.PoweredBy />
       </div>
-    </PangolinAdapter>
+    </TwapAdapter>
   );
 };
 

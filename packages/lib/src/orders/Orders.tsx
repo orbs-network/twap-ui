@@ -10,12 +10,12 @@ import Icon from "../components/Icon";
 import { AiOutlineHistory } from "react-icons/ai";
 import { Status } from "@orbs-network/twap";
 import { useOrders } from "../hooks";
-import { useTwapContext } from "../context";
+import { useOrdersContext } from "../context";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
   const { orders, loading } = useOrders();
-  const translations = useTwapContext().translations;
+  const translations = useOrdersContext().translations;
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);

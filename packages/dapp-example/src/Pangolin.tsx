@@ -1,10 +1,11 @@
 import { Orders, Twap } from "@orbs-network/twap-ui-pangolin";
-import { Popup, useDefaultProps } from "./defaults";
+import { Popup, useOrdersDefaultProps, useTwapDefaultProps } from "./defaults";
 import { StyledLayoutPangolin, StyledModalList, StyledModalListItem } from "./styles";
 import _ from "lodash";
 import { useEffect, useState } from "react";
 import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
+import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 
 interface TokenSelectModalProps {
   isOpen: boolean;
@@ -89,23 +90,28 @@ const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModa
 };
 
 const Dapp = () => {
-  const defaultProps = useDefaultProps();
   const { chainId } = useWeb3React();
-
   const dappTokens = useDappTokens(chainId);
-  const props = {
-    ...defaultProps,
+
+  const defaultOrdersProps = useOrdersDefaultProps();
+  const defaultTwapProps = useTwapDefaultProps();
+
+  const twapProps: TWAPProps = {
+    ...defaultTwapProps,
     TokenSelectModal,
-    dappTokens: dappTokens,
-    srcToken: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+    srcToken: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+    dstToken: "0x340fE1D898ECCAad394e2ba0fC1F93d27c7b717A",
+    dappTokens,
   };
+  const ordersProps: OrdersProps = { ...defaultOrdersProps, dappTokens };
+
   return (
     <>
       <StyledLayoutPangolin>
-        <Twap {...props} />
+        <Twap {...twapProps} />
       </StyledLayoutPangolin>
       <StyledLayoutPangolin>
-        <Orders {...props} />
+        <Orders {...ordersProps} />
       </StyledLayoutPangolin>
     </>
   );

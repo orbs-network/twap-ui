@@ -1,15 +1,27 @@
-import { Orders, TWAPProps } from "@orbs-network/twap-ui";
+import { Orders, OrdersAdapter, OrdersProps } from "@orbs-network/twap-ui";
 import { StyledOrdersContainer } from "./styles";
 import { memo } from "react";
-import { PangolinAdapter } from ".";
+import { useParseTokenList } from "./hooks";
+import { Configs } from "@orbs-network/twap";
 
-function OrderHistory(props: TWAPProps) {
+function OrderHistory(props: OrdersProps) {
+  const tokenList = useParseTokenList(props.dappTokens);
+
   return (
-    <PangolinAdapter twapProps={props}>
+    <OrdersAdapter
+      connectedChainId={props.connectedChainId}
+      account={props.account}
+      config={Configs.Pangolin}
+      provider={props.provider}
+      translations={props.translations}
+      getTokenImage={props.getTokenImage}
+      tokenList={tokenList}
+      gasPrice={props.gasPrice}
+    >
       <StyledOrdersContainer>
         <Orders />
       </StyledOrdersContainer>
-    </PangolinAdapter>
+    </OrdersAdapter>
   );
 }
 

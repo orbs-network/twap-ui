@@ -1,17 +1,22 @@
 import { StyledLayoutSpookyswap } from "./styles";
 import { Orders, Twap } from "@orbs-network/twap-ui-spookyswap";
-import { useDefaultProps } from "./defaults";
+import { useOrdersDefaultProps, useTwapDefaultProps } from "./defaults";
+import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 
 const Dapp = () => {
-  const defaultProps = useDefaultProps();
-  const props = { ...defaultProps, srcToken: "WFTM", dstToken: "ORBS" };
+  const defaultOrdersProps = useOrdersDefaultProps();
+  const defaultTwapProps = useTwapDefaultProps();
+
+  const ordersProps: OrdersProps = defaultOrdersProps;
+  const twapProps: TWAPProps = { ...defaultTwapProps, srcToken: "WFTM", dstToken: "ORBS" };
+
   return (
     <>
       <StyledLayoutSpookyswap>
-        <Twap {...props} />
+        <Twap {...twapProps} />
       </StyledLayoutSpookyswap>
       <StyledLayoutSpookyswap>
-        <Orders {...props} />
+        <Orders {...ordersProps} />
       </StyledLayoutSpookyswap>
     </>
   );

@@ -1,18 +1,22 @@
 import { StyledLayoutSpiritswap } from "./styles";
 import { Orders, Twap } from "@orbs-network/twap-ui-spiritswap";
-import { useDefaultProps } from "./defaults";
+import { useOrdersDefaultProps, useTwapDefaultProps } from "./defaults";
+import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 
 const Dapp = () => {
-  const defaultProps = useDefaultProps();
-  const props = { ...defaultProps, srcToken: "WFTM", dstToken: "ORBS" };
+  const defaultOrdersProps = useOrdersDefaultProps();
+  const defaultTwapProps = useTwapDefaultProps();
+
+  const twapProps: TWAPProps = { ...defaultTwapProps, srcToken: "WFTM", dstToken: "ORBS" };
+  const ordersProps: OrdersProps = defaultOrdersProps;
 
   return (
     <>
       <StyledLayoutSpiritswap>
-        <Twap {...props} />
+        <Twap {...twapProps} />
       </StyledLayoutSpiritswap>
       <StyledLayoutSpiritswap>
-        <Orders {...props} />
+        <Orders {...ordersProps} />
       </StyledLayoutSpiritswap>
     </>
   );
