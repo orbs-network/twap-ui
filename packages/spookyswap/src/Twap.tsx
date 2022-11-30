@@ -4,7 +4,7 @@ import { Components, hooks, TWAPProps, useTwapContext } from "@orbs-network/twap
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode } from "react";
+import { memo, ReactNode, useMemo } from "react";
 
 import {
   globalStyle,
@@ -42,7 +42,25 @@ import {
 import { TokenData } from "@orbs-network/twap";
 import { SpookySwapAdapter } from ".";
 
+const useOnload = (props: TWAPProps) => {
+  const { tokensList, srcToken, dstToken } = props;
+
+  const findToken = (symbol?: string) => {
+    const token = tokensList.find((t: TokenData) => t.symbol.toUpperCase() === symbol?.toUpperCase());
+    return !token ? undefined : { ...token, logoUrl: token.logoUrl || props.getTokenImage?.(token) };
+  };
+  return useMemo(() => {
+    if (!tokensList?.length) return { srcToken: undefined, dstToken: undefined };
+    return {
+      srcToken: findToken(srcToken),
+      dstToken: findToken(dstToken),
+    };
+  }, [srcToken, dstToken, tokensList]);
+};
+
 const TWAP = (props: TWAPProps) => {
+  const { srcToken, dstToken } = useOnload(props);
+  hooks.useTokens(srcToken, dstToken);
   return (
     <SpookySwapAdapter twapProps={props}>
       <GlobalStyles styles={globalStyle as any} />

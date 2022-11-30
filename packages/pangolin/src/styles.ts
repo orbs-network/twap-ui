@@ -11,6 +11,7 @@ export const colors = {
   selectTokenFocus: "#1F2937",
   mainBackground: "rgb(17, 17, 17)",
   borderColor: "rgb(55, 65, 81)",
+  yellow: "rgb(255, 200, 0)",
 };
 
 export const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
@@ -67,18 +68,18 @@ export const StyledBalance = styled(StyledFlexBetween)({
   },
 });
 
-export const StyledButton = styled(Components.Button)({
-  background: "rgb(229, 229, 229)",
+export const StyledButton = styled(Components.Button)(({ disabled }: { disabled?: boolean }) => ({
+  background: disabled ? "rgb(229, 229, 229)" : colors.yellow,
   height: 50,
   borderRadius: 8,
-  color: colors.text,
+  color: disabled ? colors.text : "black",
 
   "& *": {
-    color: colors.text,
+    color: disabled ? colors.text : "black",
     fontWeight: 500,
     fontSize: 16,
   },
-});
+}));
 
 export const StyledSlider = styled(Box)({
   flex: 1,
@@ -378,11 +379,11 @@ export const StyledSwitch = styled(Components.Switch)({
     opacity: "1!important",
   },
   "& .Mui-checked+.MuiSwitch-track": {
-    backgroundColor: "#19202F!important",
+    backgroundColor: colors.mainBackground,
     opacity: "1!important",
   },
   "& .Mui-checked .MuiSwitch-thumb": {
-    background: colors.icon,
+    background: colors.yellow,
   },
 });
 
@@ -480,13 +481,13 @@ export const StyledOrdersContainer = styled(Box)({
   "& .twap-order-main-progress-bar": {
     background: "rgb(28, 28, 28)",
     "& .MuiLinearProgress-bar ": {
-      background: "rgb(255, 200, 0)",
+      background: colors.yellow,
     },
   },
   "& .twap-orders-header": {
     "& .MuiTabs-root": {
       "& .MuiTabs-indicator": {
-        background: "rgb(255, 200, 0)",
+        background: colors.yellow,
       },
       "& .MuiButtonBase-root": {
         color: "#FFFFFF",

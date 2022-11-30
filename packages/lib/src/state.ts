@@ -1,7 +1,7 @@
 import BN from "bignumber.js";
-import { atom, Getter } from "jotai";
+import { atom, Getter, useAtom } from "jotai";
 import { atomFamily, atomWithDefault, atomWithReset, loadable, RESET } from "jotai/utils";
-import { atomWithQuery, queryClientAtom } from "jotai/query";
+import { atomWithInfiniteQuery, atomWithQuery, queryClientAtom } from "jotai/query";
 import { convertDecimals, parsebn, zero } from "@defi.org/web3-candies";
 import { Order, Paraswap, TokenData, TokensValidation, TWAPLib, Status } from "@orbs-network/twap";
 import _ from "lodash";
@@ -19,6 +19,20 @@ export const allTokensListAtom = atom(
     );
   }
 );
+
+export const connectedChainAtom = atomWithReset<number | undefined>(undefined);
+
+export const isInValidChainGet = atom((get) => {
+  const lib = get(twapLibAtom);
+  const connectedChain = get(connectedChainAtom);
+
+  if (!lib || !connectedChain) return false;
+  return lib.config.chainId !== connectedChain;
+});
+
+export const allowFetchQueriesGet = atom((get) => {
+  return get(connectedChainAtom) && !get(isInValidChainGet);
+});
 
 const srcTokenValue = atomWithReset<TokenData | undefined>(undefined);
 export const srcTokenAtom = atom(
@@ -119,6 +133,8 @@ export const resetAllQueriesSet = atom(null, async (get) => {
 });
 
 export const resetAllSet = atom(null, (get, set) => {
+  get(queryClientAtom).resetQueries({ queryKey: ["accountBalanceQuery"], exact: false });
+  get(queryClientAtom).resetQueries({ queryKey: ["orderHistoryQuery"], exact: false });
   set(srcTokenValue, RESET);
   set(dstTokenValue, RESET);
   set(srcAmountUiAtomValue, RESET);
@@ -131,8 +147,7 @@ export const resetAllSet = atom(null, (get, set) => {
   set(confirmationAtom, RESET);
   set(priceUsdFetcherAtom, RESET);
   set(maxDurationValue, RESET);
-  get(queryClientAtom).resetQueries({ queryKey: ["accountBalanceQuery"], exact: false });
-  get(queryClientAtom).resetQueries({ queryKey: ["orderHistoryQuery"], exact: false });
+  set(connectedChainAtom, RESET);
 });
 
 export const srcAmountGet = atom((get) => parsebn(get(srcAmountUiAtom) || "0").times(BN(10).pow(get(srcTokenAtom)?.decimals || 0)));
@@ -246,7 +261,7 @@ const usdValueQuery = atomFamily(
     atomWithQuery((get) => ({
       queryKey: [`usdValue`, token.address],
       queryFn: () => get(priceUsdFetcherAtom).priceUsd(get(twapLibAtom)!.config.chainId, token),
-      enabled: !!get(twapLibAtom) && !!token,
+      enabled: !!get(twapLibAtom) && !!token && !!get(allowFetchQueriesGet),
       refetchInterval: 60_000,
       staleTime: 60_000,
     })),
@@ -284,7 +299,7 @@ export const usdGet = atomFamily(
 const allowanceQuery = atomWithQuery((get) => ({
   queryKey: [`allowanceQuery`, get(twapLibAtom)?.maker, get(srcTokenAtom)?.address, get(srcAmountUiAtomValue)],
   queryFn: () => get(twapLibAtom)!.hasAllowance(get(srcTokenAtom)!, get(srcAmountGet)),
-  enabled: !!get(twapLibAtom) && !!get(twapLibAtom)?.maker && !!get(srcTokenAtom) && !!get(srcTokenValue) && get(srcAmountGet).gt(0),
+  enabled: !!get(twapLibAtom) && !!get(twapLibAtom)?.maker && !!get(srcTokenAtom) && !!get(srcTokenValue) && get(srcAmountGet).gt(0) && !!get(allowFetchQueriesGet),
   staleTime: 10_000,
   refetchOnWindowFocus: true,
 }));
@@ -307,7 +322,7 @@ const accountBalanceQuery = atomFamily(
     atomWithQuery((get) => ({
       queryKey: ["accountBalanceQuery", get(twapLibAtom)?.maker, token!.address],
       queryFn: () => get(twapLibAtom)!.makerBalance(token!),
-      enabled: !!get(twapLibAtom) && !!token,
+      enabled: !!get(twapLibAtom) && !!token && !!get(allowFetchQueriesGet),
       refetchInterval: 10_000,
     })),
   _.isEqual
@@ -326,7 +341,7 @@ export const balanceGet = atomFamily(
 const gasPriceQuery = atomWithQuery((get) => ({
   queryKey: ["gasPriceQuery", get(twapLibAtom)!.config.chainId],
   queryFn: () => Paraswap.gasPrices(get(twapLibAtom)!.config.chainId),
-  enabled: !!get(twapLibAtom),
+  enabled: !!get(twapLibAtom) && !!get(allowFetchQueriesGet),
   refetchInterval: 60_000,
 }));
 
@@ -338,6 +353,7 @@ export const gasPriceGet = atomFamily((gasPrice?: { priorityFeePerGas?: string; 
     if (value.priorityFeePerGas.gt(0) && value.maxFeePerGas.gt(0)) return value;
     const result = get(gasPriceLoad);
     if (result.state !== "hasData") return value;
+    if (result.state === "hasData" && !result.data) return value;
     const priorityFeePerGas = value.priorityFeePerGas.gt(0) ? value.priorityFeePerGas : result.data!.low;
     return {
       priorityFeePerGas,
@@ -377,7 +393,6 @@ const orderHistoryQuery = atomWithQuery((get) => ({
   queryFn: async () => {
     const lib = get(twapLibAtom);
     if (!lib) return null;
-
     const rawOrders = await get(twapLibAtom)!.getAllOrders();
     const tokens = await prepareHistoryTokens(rawOrders, get);
     const parsedOrders = _.map(rawOrders, (o) => parseOrder(lib, tokens, o));
@@ -387,7 +402,7 @@ const orderHistoryQuery = atomWithQuery((get) => ({
       .value();
   },
   refetchInterval: 10_000,
-  enabled: !!get(twapLibAtom) && !!get(twapLibAtom)?.maker && !!get(allTokensListAtom) && get(allTokensListAtom).length > 0,
+  enabled: !!get(twapLibAtom) && !!get(twapLibAtom)?.maker && !!get(allTokensListAtom) && get(allTokensListAtom).length > 0 && !!get(allowFetchQueriesGet),
 }));
 
 const orderHistoryLoad = loadable(orderHistoryQuery);
@@ -401,7 +416,10 @@ export const orderHistoryGet = atom((get) => {
 
 export type OrderUI = ReturnType<typeof parseOrder>;
 const parseOrder = (lib: TWAPLib, usdValues: { [address: string]: { token: TokenData; usd: BN } }, o: Order) => {
+  console.log(usdValues[o.ask.srcToken]);
+
   const { usd: srcUsd, token: srcToken } = usdValues[o.ask.srcToken];
+
   const { usd: dstUsd, token: dstToken } = usdValues[o.ask.dstToken];
 
   const isMarketOrder = lib.isMarketOrder(o);

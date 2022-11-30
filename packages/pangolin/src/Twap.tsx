@@ -4,8 +4,8 @@ import { Components, hooks, TWAPProps, useTwapContext } from "@orbs-network/twap
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode } from "react";
-
+import { memo, ReactNode, useMemo } from "react";
+import _ from "lodash";
 import {
   globalStyle,
   StyledButton,
@@ -41,6 +41,7 @@ import {
 } from "./styles";
 import { TokenData } from "@orbs-network/twap";
 import { PangolinAdapter, parseToken } from ".";
+import { eqIgnoreCase } from "@defi.org/web3-candies";
 
 const TWAP = (props: TWAPProps) => {
   return (

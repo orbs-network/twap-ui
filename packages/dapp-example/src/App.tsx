@@ -10,21 +10,22 @@ const dapps = [Configs.Pangolin.partner, Configs.SpookySwap.partner, Configs.Spi
 
 function App() {
   const [selectedDapp, setSelectedDapp] = useState(Configs.Pangolin.partner);
-  const SelectedDapp = useMemo(() => lazy(() => import(`./${selectedDapp}`)), [selectedDapp]);
+  const SelectedDapp = useMemo(() => require(`./${selectedDapp}`).default, [selectedDapp]);
   const reset = hooks.resetState();
 
-  const onDappSelect = (dapp: string) => {
+  const onDappSelect = async (dapp: string) => {
     reset();
-    setSelectedDapp(dapp);
+    // TODO once migrated to zustand fix this.
+    setTimeout(() => {
+      setSelectedDapp(dapp);
+    }, 50);
   };
 
   return (
     <StyledApp className="App">
       <DappSelector selectedDapp={selectedDapp} selectDapp={onDappSelect} />
       <StyledContent>
-        <Suspense>
-          <SelectedDapp />
-        </Suspense>
+        <SelectedDapp />
       </StyledContent>
     </StyledApp>
   );

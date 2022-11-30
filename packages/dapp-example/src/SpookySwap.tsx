@@ -4,9 +4,7 @@ import { useDefaultProps } from "./defaults";
 
 const Dapp = () => {
   const defaultProps = useDefaultProps();
-  const props = {
-    ...defaultProps,
-  };
+  const props = { ...defaultProps, srcToken: "WFTM", dstToken: "ORBS" };
   return (
     <>
       <StyledLayoutSpookyswap>

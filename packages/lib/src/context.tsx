@@ -36,8 +36,8 @@ const TwapProvider = (props: TwapProviderProps) => {
 
   // init web3 every time the provider changes
   useEffect(() => {
-    initLib(props.config, props.provider, props.account);
-  }, [props.provider, props.config, props.account]);
+    initLib(props.config, props.provider, props.account, props.connectedChainId);
+  }, [props.provider, props.config, props.account, props.connectedChainId]);
 
   useEffect(() => {
     setTokensList(props.tokensList);

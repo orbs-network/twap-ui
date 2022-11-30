@@ -7,6 +7,7 @@ import {
   allTokensListAtom,
   balanceGet,
   confirmationAtom,
+  connectedChainAtom,
   createOrderLoadingAtom,
   customFillDelayEnabledAtom,
   deadlineGet,
@@ -21,6 +22,7 @@ import {
   fillDelayAtom,
   fillDelayMillisGet,
   gasPriceGet,
+  isInValidChainGet,
   isLimitOrderAtom,
   limitPriceGet,
   limitPriceUiAtom,
@@ -120,7 +122,7 @@ const useMutation = <T>(
   const mutate = async (args?: any) => {
     try {
       setIsLoading(true);
-      const result = await lib!.waitForConfirmation(() => method(args));
+      const result = await method(args);
       setData(result);
       callbacks?.onSuccess?.(result, args);
     } catch (error) {
@@ -232,8 +234,10 @@ export const useCreateOrder = () => {
 
 export const useInitLib = () => {
   const setTwapLib = useSetAtom(twapLibAtom);
+  const setConnectedChain = useSetAtom(connectedChainAtom);
 
-  return (config: Config, provider?: any, account?: any) => {
+  return (config: Config, provider?: any, account?: any, connectedChainId?: number) => {
+    setConnectedChain(connectedChainId);
     if (provider && account) {
       setTwapLib(new TWAPLib(config, account, provider));
     } else {
@@ -319,13 +323,6 @@ const useConnect = () => {
   return { text: translations.connect, onClick: connect ? connect : undefined, loading: false, disabled: false };
 };
 
-const useIsWrongNetwork = () => {
-  const { connectedChainId } = useTwapContext();
-  const lib = useAtomValue(twapLibAtom);
-
-  return useMemo(() => (connectedChainId && connectedChainId !== lib?.config.chainId ? true : false), [connectedChainId, lib]);
-};
-
 export const useShowConfirmationButton = () => {
   const lib = useAtomValue(twapLibAtom);
   const translations = useTwapContext().translations;
@@ -346,7 +343,7 @@ export const useShowConfirmationButton = () => {
   const srcUsdLoading = useAtomValue(usdGet(srcToken)).loading;
   const dstUsdLoading = useAtomValue(usdGet(dsToken)).loading;
 
-  const wrongNetwork = useIsWrongNetwork();
+  const wrongNetwork = useAtomValue(isInValidChainGet);
 
   if (!lib?.maker) {
     return connectArgs;
@@ -391,7 +388,7 @@ export const useCreateOrderButton = () => {
   const translations = useTwapContext().translations;
   const connectArgs = useConnect();
   const changeNetworkArgs = useChangeNetwork();
-  const wrongNetwork = useIsWrongNetwork();
+  const wrongNetwork = useAtomValue(isInValidChainGet);
   const createOrderLoading = useAtomValue(createOrderLoadingAtom);
 
   if (!lib?.maker) {
@@ -417,8 +414,6 @@ const useSrcTokenPanel = () => {
   const { onSrcTokenSelected } = useTwapContext();
 
   const onSelectToken = (token: TokenData) => {
-    console.log({ token });
-
     selectToken(token);
     analytics.onSrcTokenClick(token.symbol);
     onSrcTokenSelected?.(token);
@@ -474,7 +469,7 @@ export const useTokenPanel = (isSrc?: boolean) => {
   const translations = useTwapContext().translations;
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const maker = useMaker();
-  const wrongNetwork = useIsWrongNetwork();
+  const wrongNetwork = useAtomValue(isInValidChainGet);
 
   const { selectToken, token, amount, onChange, balance, usdValue, usdLoading, balanceLoading } = isSrc ? srcValues : dstValues;
 

@@ -1,12 +1,21 @@
 import Twap from "./Twap";
 import Orders from "./Orders";
-import { AdapterProps, TwapAdapter } from "@orbs-network/twap-ui";
+import { AdapterProps, hooks, TwapAdapter, TWAPProps } from "@orbs-network/twap-ui";
 import { useMemo } from "react";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import _ from "lodash";
+import { eqIgnoreCase, zeroAddress } from "@defi.org/web3-candies";
 
 export const parseToken = (rawToken: any): TokenData => {
+  if (!rawToken.tokenInfo) {
+    return {
+      address: zeroAddress,
+      decimals: 18,
+      symbol: "AVAX",
+      logoUrl: "https://raw.githubusercontent.com/pangolindex/sdk/master/src/images/chains/avax.png",
+    };
+  }
   const { tokenInfo } = rawToken;
   return {
     address: tokenInfo.address,
@@ -16,21 +25,40 @@ export const parseToken = (rawToken: any): TokenData => {
   };
 };
 
-const useTokenList = (tokenList?: any): TokenData[] => {
+const useParseTokenList = (tokenList?: any): TokenData[] => {
   return useMemo(() => {
     if (!tokenList) return [];
-    return _.map(tokenList, (t) => {
-      return parseToken(t);
-    });
+    return _.map(tokenList, (t) => parseToken(t));
   }, [tokenList]);
+};
+
+const useOnload = (props: TWAPProps, tokenList: TokenData[]) => {
+  const { srcToken, dstToken } = props;
+
+  const findToken = (address?: string) => {
+    if (!address) return;
+    const token = _.find(tokenList, (t: any) => eqIgnoreCase(t.address, address));
+
+    return !token ? undefined : parseToken(token);
+  };
+  return useMemo(() => {
+    if (!tokenList?.length) return { srcToken: undefined, dstToken: undefined };
+
+    return {
+      srcToken: findToken(srcToken),
+      dstToken: findToken(dstToken),
+    };
+  }, [srcToken, dstToken, tokenList]);
 };
 
 export const PangolinAdapter = (props: AdapterProps) => {
   const { children, twapProps } = props;
-  const tokensList = useTokenList(twapProps.tokensList);
+  const tokenList = useParseTokenList(twapProps.dappTokens);
+  const { srcToken, dstToken } = useOnload(twapProps, tokenList);
+  hooks.useTokens(srcToken, dstToken);
 
   return (
-    <TwapAdapter twapProps={{ ...twapProps, tokensList }} config={Configs.Pangolin} translations={translations}>
+    <TwapAdapter twapProps={{ ...twapProps, tokenList }} config={Configs.Pangolin} translations={translations}>
       {children}
     </TwapAdapter>
   );

@@ -345,7 +345,7 @@ const OrderConfirmation = () => {
     hooks.useOrderOverview();
   const { loading, text, onClick, disabled } = hooks.useCreateOrderButton();
   const translations = useTwapContext().translations;
-
+  // if (!showConfirmation) return null;
   return (
     <>
       <StyledTradeInfoModal open={showConfirmation} onClose={closeConfirmation}>

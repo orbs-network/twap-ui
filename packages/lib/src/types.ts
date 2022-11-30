@@ -84,7 +84,7 @@ export interface Translations {
 export interface TWAPProps {
   connect?: () => void;
   TokenSelectModal?: any;
-  tokensList: any;
+  dappTokens: any;
   account?: any;
   getProvider?: () => any;
   getTokenImage?: (value: any) => string;

@@ -1,12 +1,10 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import _ from "lodash";
-import MenuItem from "@mui/material/MenuItem";
 import Modal from "@mui/material/Modal";
 import { AiOutlineClose } from "react-icons/ai";
-import { Configs } from "@orbs-network/twap";
-import { StyledApp, StyledCloseIcon, StyledContent, StyledDappSelector, StyledModalList, StyledModalListItem } from "./styles";
+import { StyledCloseIcon, StyledModalList, StyledModalListItem } from "./styles";
 import { TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 export const injectedConnector = new InjectedConnector({});
@@ -14,9 +12,14 @@ export const injectedConnector = new InjectedConnector({});
 const tokenlistsNetworkNames = {
   [networks.eth.id]: "ethereum",
   [networks.ftm.id]: "ftm",
+  [networks.poly.id]: "polygon",
+  [networks.avax.id]: "avax",
+  [networks.bsc.id]: "bsc",
+  [networks.arb.id]: "arbitrum",
+  [networks.oeth.id]: "optimism",
 };
 
-const useTokenList = (chainId?: number) => {
+const useDappTokens = (chainId?: number) => {
   const [tokens, setTokens] = useState<any[]>([]);
 
   useEffect(() => {
@@ -26,6 +29,8 @@ const useTokenList = (chainId?: number) => {
     (async () => {
       const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${name}.json`);
       const tokenList = await response.json();
+      console.log({ tokenList });
+
       const parsed = tokenList.map(({ symbol, address, decimals, logoURI }: any) => ({ symbol, address, decimals, logoUrl: logoURI }));
 
       const networkShortName = _.find(networks, (n) => n.id === chainId)!.shortname;
@@ -57,7 +62,7 @@ interface DefaultTokenSelectModalProps {
 }
 
 export const DefaultTokenSelectModal = ({ chainId, isOpen, selectedToken, onSelect, onClose }: DefaultTokenSelectModalProps) => {
-  const list = useTokenList(chainId);
+  const list = useDappTokens(chainId);
 
   return (
     <Popup isOpen={isOpen} onClose={onClose}>
@@ -93,7 +98,7 @@ export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose:
 
 export const useDefaultProps = () => {
   const { activate, library, chainId, account } = useWeb3React();
-  const tokensList = useTokenList(chainId);
+  const dappTokens = useDappTokens(chainId);
 
   return {
     connectedChainId: chainId,
@@ -101,7 +106,7 @@ export const useDefaultProps = () => {
     account,
     TokenSelectModal: DefaultTokenSelectModal,
     connect: () => activate(injectedConnector),
-    tokensList,
+    dappTokens,
     onSrcTokenSelected: (value: any) => {},
     onDstTokenSelected: (value: any) => {},
     srcToken: undefined,
