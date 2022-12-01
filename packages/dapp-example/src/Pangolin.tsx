@@ -30,8 +30,8 @@ const useDappTokens = (connectedChainId?: number) => {
     async () => {
       const response = await fetch(`https://raw.githubusercontent.com/pangolindex/tokenlists/main/pangolin.tokenlist.json`);
       const tokenList = await response.json();
-      console.log('fetch');
-      
+      console.log("fetch");
+
       const parsed = tokenList.tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
         decimals,
         symbol,
@@ -51,7 +51,7 @@ const useDappTokens = (connectedChainId?: number) => {
       return { native: nativeToken, ..._.mapKeys(_tokens, (t) => t.address) };
     },
     {
-      enabled: !!connectedChainId,
+      enabled: !!connectedChainId && connectedChainId === chainId,
     }
   );
 };
@@ -59,7 +59,7 @@ const useDappTokens = (connectedChainId?: number) => {
 const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModalProps) => {
   const { chainId } = useWeb3React();
 
-  const {data: tokensList} = useDappTokens(chainId);
+  const { data: tokensList } = useDappTokens(chainId);
 
   if (!tokensList) return null;
 

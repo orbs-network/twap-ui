@@ -94,7 +94,7 @@ export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose:
 
 const useDefaultProps = () => {
   const { library, chainId, account } = useWeb3React();
-  const {data: dappTokens} = useDappTokens(chainId);
+  const { data: dappTokens } = useDappTokens(chainId);
 
   return {
     connectedChainId: chainId,

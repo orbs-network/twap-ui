@@ -33,7 +33,7 @@ export const useParseTokenList = (dappTokens?: any): TokenData[] => {
     if (!dappTokens) return [];
     const result = _.map(dappTokens, (t) => parseToken(t));
 
-    return result;
+    return [nativeToken, ...result];
   }, [dappTokens]);
 };
 
