@@ -44,8 +44,6 @@ export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: st
   const findToken = (address?: string) => {
     if (!address) return;
     const token = _.find(tokenList, (t: any) => eqIgnoreCase(t.address, address));
-    console.log(token);
-
     return !token ? undefined : token;
   };
 

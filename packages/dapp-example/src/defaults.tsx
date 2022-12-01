@@ -1,6 +1,6 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
 import _ from "lodash";
 import Modal from "@mui/material/Modal";
 import { AiOutlineClose } from "react-icons/ai";
@@ -8,6 +8,7 @@ import { StyledCloseIcon, StyledModalList, StyledModalListItem } from "./styles"
 import { TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Translations } from "@orbs-network/twap-ui";
+import { useQuery } from "@tanstack/react-query";
 export const injectedConnector = new InjectedConnector({});
 
 const tokenlistsNetworkNames = {
@@ -21,18 +22,14 @@ const tokenlistsNetworkNames = {
 };
 
 const useDappTokens = (chainId?: number) => {
-  const [tokens, setTokens] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (!chainId) return;
-    const name = tokenlistsNetworkNames[chainId];
-    if (!name) return;
-    (async () => {
+  return useQuery(
+    ["useDappTokens", chainId],
+    async () => {
+      const name = tokenlistsNetworkNames[chainId!];
+      if (!name) return;
       const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${name}.json`);
       const tokenList = await response.json();
-
       const parsed = tokenList.map(({ symbol, address, decimals, logoURI }: any) => ({ symbol, address, decimals, logoUrl: logoURI }));
-
       const networkShortName = _.find(networks, (n) => n.id === chainId)!.shortname;
       const topTokens = [
         zeroAddress,
@@ -46,11 +43,10 @@ const useDappTokens = (chainId?: number) => {
         const index = topTokens.indexOf(t.address);
         return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
       });
-      setTokens(_tokens);
-    })();
-  }, [chainId]);
-
-  return tokens;
+      return _tokens;
+    },
+    { enabled: !!chainId }
+  );
 };
 
 interface DefaultTokenSelectModalProps {
@@ -62,12 +58,12 @@ interface DefaultTokenSelectModalProps {
 }
 
 export const DefaultTokenSelectModal = ({ chainId, isOpen, selectedToken, onSelect, onClose }: DefaultTokenSelectModalProps) => {
-  const list = useDappTokens(chainId);
+  const { data: list } = useDappTokens(chainId);
 
   return (
     <Popup isOpen={isOpen} onClose={onClose}>
       <StyledModalList>
-        {list.map((token: TokenData) => {
+        {list?.map((token: TokenData) => {
           if (token.address === selectedToken?.address) {
             return null;
           }
@@ -98,7 +94,7 @@ export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose:
 
 const useDefaultProps = () => {
   const { library, chainId, account } = useWeb3React();
-  const dappTokens = useDappTokens(chainId);
+  const {data: dappTokens} = useDappTokens(chainId);
 
   return {
     connectedChainId: chainId,

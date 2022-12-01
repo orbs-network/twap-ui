@@ -7,6 +7,8 @@ export const globalStyle = {
   },
 };
 
+
+
 export const StyledLayoutSpiritswap = styled(Box)({
   background: "rgb(16, 23, 38)",
   border: `1px solid rgb(55, 65, 81)`,
@@ -101,6 +103,9 @@ export const StyledContent = styled(Box)(({ styles }: { styles?: CSSProperties }
   width: "calc(100% - 30px)",
   overflow: "auto",
   ...styles,
+  display:'flex',
+  flexDirection:'column',
+  gap: 10
 }));
 
 export const StyledDappSelector = styled(Box)({
