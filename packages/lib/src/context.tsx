@@ -12,7 +12,9 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
   // init web3 every time the provider changes
   useEffect(() => {
-    initLib(props.config, props.provider, props.account, props.connectedChainId);
+    console.log("init");
+
+    initLib(props.config, props.provider, props.account);
   }, [props.provider, props.config, props.account, props.connectedChainId]);
 
   return <TwapContext.Provider value={{ ...props, translations }}>{props.children}</TwapContext.Provider>;

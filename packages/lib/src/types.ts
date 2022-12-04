@@ -86,25 +86,24 @@ export interface Translations {
 interface BaseProps {
   connectedChainId?: number;
   account?: any;
-  provider: any;
-  translations: Translations;
-  getProvider: () => any;
-
+  provider?: any;
+  getProvider?: () => any;
+  getRpc?: () => string;
   getTokenImage?: (value: any) => string;
   dappTokens: any;
-  gasPrice?: {
-    priorityFeePerGas?: string;
-    maxFeePerGas?: string;
-  };
+  maxFeePerGas?: string;
+  priorityFeePerGas?: string;
 }
 export interface TWAPProps extends BaseProps {
   connect?: () => void;
   srcToken?: string;
   dstToken?: string;
-  onSrcTokenSelected?: (token: TokenData) => void;
-  onDstTokenSelected?: (token: TokenData) => void;
-  TokenSelectModal?: any;
+  onSrcTokenSelected?: (token: any) => void;
+  onDstTokenSelected?: (token: any) => void;
+  TokenSelectModal: any;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OrdersProps extends BaseProps {}
 
 interface LibProps {
@@ -114,18 +113,12 @@ interface LibProps {
   config: Config;
   provider: any;
   translations: Translations;
-  getTokenImage?: (value: any) => string;
-  gasPrice?: {
-    priorityFeePerGas?: string;
-    maxFeePerGas?: string;
-  };
+  priorityFeePerGas?: string;
+  maxFeePerGas?: string;
 }
 
 export interface TwapLibProps extends LibProps {
   connect?: () => void;
-  onSrcTokenSelected?: (token: TokenData) => void;
-  onDstTokenSelected?: (token: TokenData) => void;
-  TokenSelectModal?: any;
 }
 
 export interface OrderLibProps extends LibProps {

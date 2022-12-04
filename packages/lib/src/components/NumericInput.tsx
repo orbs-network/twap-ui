@@ -1,4 +1,4 @@
-import { Box, Fade, Typography } from "@mui/material";
+import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";

@@ -1,8 +1,9 @@
-import { Orders, OrdersAdapter, OrdersProps } from "@orbs-network/twap-ui";
+import { Orders, OrdersAdapter, OrdersProps, Translations } from "@orbs-network/twap-ui";
 import { StyledOrdersContainer } from "./styles";
 import { memo } from "react";
 import { useParseTokenList } from "./hooks";
 import { Configs } from "@orbs-network/twap";
+import translations from "./i18n/en.json";
 
 function OrderHistory(props: OrdersProps) {
   const tokenList = useParseTokenList(props.dappTokens);
@@ -13,10 +14,10 @@ function OrderHistory(props: OrdersProps) {
       account={props.account}
       config={Configs.Pangolin}
       provider={props.provider}
-      translations={props.translations}
-      getTokenImage={props.getTokenImage}
+      translations={translations as Translations}
       tokenList={tokenList}
-      gasPrice={props.gasPrice}
+      maxFeePerGas={props.maxFeePerGas}
+      priorityFeePerGas={props.priorityFeePerGas}
     >
       <StyledOrdersContainer>
         <Orders />

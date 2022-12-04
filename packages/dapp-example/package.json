@@ -19,7 +19,9 @@
     "@web3-react/injected-connector": "6.x",
     "@web3-react/walletconnect-connector": "6.x",
     "react": "18.x",
-    "react-dom": "18.x"
+    "react-dom": "18.x",
+    "react-helmet": "^6.1.0",
+    "react-router-dom": "^6.4.4"
   },
   "browserslist": {
     "production": [
@@ -32,5 +34,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/react-helmet": "^6.1.6"
   }
 }

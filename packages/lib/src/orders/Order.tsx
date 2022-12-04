@@ -18,7 +18,7 @@ import Card from "../components/Card";
 import { Typography } from "@mui/material";
 import { StyledColumnGap } from "../styles";
 import { Status, TokenData } from "@orbs-network/twap";
-import { fillDelayUi, useCancelOrder, useHistoryPrice, useTokenImage } from "../hooks";
+import { fillDelayUi, useCancelOrder, useHistoryPrice } from "../hooks";
 import { OrderUI } from "../state";
 import TokenPriceCompare from "../components/TokenPriceCompare";
 import { useOrdersContext } from "../context";
@@ -214,8 +214,7 @@ const PreviewProgressBar = ({ progress, emptyBarColor }: { progress: number; emp
 };
 
 const OrderTokenLogo = ({ token, className = "" }: { token?: TokenData; className?: string }) => {
-  const tokenLogo = useTokenImage(token);
-  return <TokenLogo className={className} logo={tokenLogo} />;
+  return <TokenLogo className={className} logo={token?.logoUrl} />;
 };
 
 const TokenDisplay = ({ token, amount, prefix = "", usdValue }: { token?: TokenData; amount?: string; usdValue: string; prefix?: string }) => {

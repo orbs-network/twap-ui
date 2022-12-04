@@ -1,22 +1,25 @@
-import { Orders, OrdersAdapter, TWAPProps } from "@orbs-network/twap-ui";
+import { Orders, OrdersAdapter, Translations } from "@orbs-network/twap-ui";
 import { StyledOrdersContainer } from "./styles";
 import { memo } from "react";
-import { Configs, TokenData } from "@orbs-network/twap";
-import { useGetProvider } from "./hooks";
+import { Configs } from "@orbs-network/twap";
+import { useGetProvider, useParseTokenList } from "./hooks";
+import translations from "./i18n/en.json";
+import { SpiritSwapOrdersProps } from ".";
 
-function OrderHistory(props: TWAPProps) {
-  const tokenList = props.dappTokens as TokenData[];
-  const provider = useGetProvider(props.getProvider, props.account, props.connectedChainId);
+function OrderHistory(props: SpiritSwapOrdersProps) {
+  const tokenList = useParseTokenList(props.getTokenImage, props.dappTokens);
+  const provider = useGetProvider(props.getProvider, props.account);
+
   return (
     <OrdersAdapter
-      connectedChainId={props.connectedChainId}
+      connectedChainId={undefined}
       account={props.account}
       config={Configs.SpiritSwap}
       provider={provider}
-      translations={props.translations}
-      getTokenImage={props.getTokenImage}
+      translations={translations as Translations}
       tokenList={tokenList}
-      gasPrice={props.gasPrice}
+      maxFeePerGas={props.maxFeePerGas}
+      priorityFeePerGas={props.priorityFeePerGas}
     >
       <StyledOrdersContainer>
         <Orders />

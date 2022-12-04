@@ -1,11 +1,11 @@
 import { GlobalStyles } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, hooks, TwapAdapter, TWAPProps, useTwapContext } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, TWAPProps, useTwapContext } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode } from "react";
-import _ from "lodash";
+import { memo, ReactNode, useCallback } from "react";
+import translations from "./i18n/en.json";
 import {
   globalStyle,
   StyledButton,
@@ -39,39 +39,52 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { Configs, TokenData } from "@orbs-network/twap";
-import { parseToken, useTokensFromDapp } from "./hooks";
+import { Configs } from "@orbs-network/twap";
+import { LocalContext, parseToken, useAdapterContext, useParseTokenList, useTokensFromDapp } from "./hooks";
 
 const TWAP = (props: TWAPProps) => {
-  useTokensFromDapp(props.srcToken, props.dstToken, props.dappTokens);
+  const tokenList = useParseTokenList(props.dappTokens);
+  useTokensFromDapp(props.srcToken, props.dstToken, tokenList);
+
+  const memoizedOnSrcTokenSelected = useCallback((token: any) => {
+    props.onSrcTokenSelected?.(token);
+  }, []);
+
+  const memoizedOnDstTokenSelected = useCallback((token: any) => {
+    props.onDstTokenSelected?.(token);
+  }, []);
+
+  const memoizedTokenSelectModal = memo(props.TokenSelectModal);
+  const memoizedConnect = useCallback(() => {
+    props.connect?.();
+  }, []);
 
   return (
     <TwapAdapter
-      connect={props.connect}
+      connect={memoizedConnect}
       config={Configs.Pangolin}
-      onSrcTokenSelected={props.onSrcTokenSelected}
-      onDstTokenSelected={props.onDstTokenSelected}
-      TokenSelectModal={props.TokenSelectModal}
-      gasPrice={props.gasPrice}
-      getTokenImage={props.getTokenImage}
-      translations={props.translations}
+      maxFeePerGas={props.maxFeePerGas}
+      priorityFeePerGas={props.priorityFeePerGas}
+      translations={translations as Translations}
       provider={props.provider}
       account={props.account}
       connectedChainId={props.connectedChainId}
     >
       <GlobalStyles styles={globalStyle as any} />
-      <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
-        <SrcTokenPanel />
-        <ChangeTokensOrder />
-        <DstTokenPanel />
-        <LimitPriceDisplay />
-        <TradeSize />
-        <MaxDuration />
-        <TradeInterval />
-        <PlaceOrderButton />
-        <OrderConfirmation />
-        <Components.PoweredBy />
-      </div>
+      <LocalContext value={{ TokenSelectModal: props.TokenSelectModal }}>
+        <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
+          <SrcTokenPanel />
+          <ChangeTokensOrder />
+          <DstTokenPanel />
+          <LimitPriceDisplay />
+          <TradeSize />
+          <MaxDuration />
+          <TradeInterval />
+          <PlaceOrderButton />
+          <OrderConfirmation />
+          <Components.PoweredBy />
+        </div>
+      </LocalContext>
     </TwapAdapter>
   );
 };
@@ -140,7 +153,7 @@ const ChangeTokensOrder = () => {
 };
 
 const TradeSize = () => {
-  const { chunksAmount, onTotalChunksChange, totalChunks, token, usdValue, usdLoading, maxPossibleChunks, ready } = hooks.useChunks();
+  const { chunksAmount, onTotalChunksChange, totalChunks, token, maxPossibleChunks, ready } = hooks.useChunks();
   const translations = useTwapContext().translations;
 
   return (
@@ -244,10 +257,32 @@ interface TokenPanelProps {
   isSrcToken?: boolean;
 }
 
+interface TokenSelectProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCurrencySelect: (value: any) => void;
+  selectedCurrency?: any;
+  otherSelectedCurrency?: any;
+}
+
+const TokenSelect = (props: TokenSelectProps) => {
+  const { TokenSelectModal } = useAdapterContext();
+
+  return (
+    <TokenSelectModal
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      onCurrencySelect={props.onCurrencySelect}
+      selectedCurrency={props.selectedCurrency}
+      otherSelectedCurrency={props.otherSelectedCurrency}
+    />
+  );
+};
+
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
-  const { toggleTokenList, onTokenSelect, tokenListOpen, inputWarning, amountPrefix, disabled, selectTokenWarning, logo, symbol, onChange, value, connectedChainId } =
+  const { toggleTokenList, onTokenSelect, tokenListOpen, inputWarning, amountPrefix, disabled, selectTokenWarning, logo, symbol, onChange, value } =
     hooks.useTokenPanel(isSrcToken);
-  const { translations, TokenSelectModal } = useTwapContext();
+  const { translations } = useTwapContext();
 
   const { marketPrice } = hooks.useMarketPrice();
 
@@ -255,19 +290,18 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     if (!selectTokenWarning) toggleTokenList(true);
   };
 
-  const onTokenSelected = (token: TokenData) => onTokenSelect(token);
+  const onTokenSelected = useCallback((token: any) => {
+    onTokenSelect(parseToken(token));
+  }, []);
+
+  const onClose = useCallback(() => {
+    toggleTokenList(false);
+  }, []);
 
   return (
     <>
-      {TokenSelectModal && (
-        <TokenSelectModal
-          isOpen={tokenListOpen}
-          onClose={() => toggleTokenList(false)}
-          onCurrencySelect={(token: any) => onTokenSelected(parseToken(token))}
-          selectedCurrency={undefined}
-          otherSelectedCurrency={undefined}
-        />
-      )}
+      <TokenSelect isOpen={tokenListOpen} onClose={onClose} onCurrencySelect={onTokenSelected} selectedCurrency={undefined} otherSelectedCurrency={undefined} />
+
       <StyledTokenPanel>
         <StyledColumnGap>
           <StyledFlexBetween>

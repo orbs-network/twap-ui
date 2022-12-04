@@ -2,7 +2,8 @@ import { zeroAddress, eqIgnoreCase } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
 import { hooks } from "@orbs-network/twap-ui";
 import _ from "lodash";
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useRef, useCallback, createContext, useContext } from "react";
+import { PangolinTWAPProps } from ".";
 
 export const parseToken = (rawToken: any): TokenData => {
   if (!rawToken.tokenInfo) {
@@ -37,20 +38,36 @@ export const useParseTokenList = (dappTokens?: any): TokenData[] => {
   }, [dappTokens]);
 };
 
-export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: string, dappTokens?: any) => {
-  const tokenList = useParseTokenList(dappTokens);
-  const setTokens = hooks.useSetTokens();
+const findToken = (tokenList?: TokenData[], address?: string) => {
+  if (!address || !tokenList || !tokenList.length) return;
+  const token = _.find(tokenList, (t: any) => eqIgnoreCase(t.address, address));
+  return !token ? undefined : token;
+};
 
-  const findToken = (address?: string) => {
-    if (!address) return;
-    const token = _.find(tokenList, (t: any) => eqIgnoreCase(t.address, address));
-    return !token ? undefined : token;
-  };
+export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: string, tokenList?: TokenData[]) => {
+  const setTokens = hooks.useSetTokens();
+  const tokenListRef = useRef<TokenData[] | undefined>(undefined);
+  tokenListRef.current = tokenList;
+  const tokensLoaded = tokenList && tokenList.length > 0;
 
   useEffect(() => {
-    if (!tokenList?.length) return;
-    const srcToken = findToken(srcTokenAddress);
-    const dstToken = findToken(dstTokenAddress);
+    const srcToken = findToken(tokenListRef.current, srcTokenAddress);
+    const dstToken = findToken(tokenListRef.current, dstTokenAddress);
+
     setTokens(srcToken, dstToken);
-  }, [srcTokenAddress, dstTokenAddress, tokenList]);
+  }, [srcTokenAddress, dstTokenAddress, tokensLoaded]);
 };
+
+export interface AdapterContextProps {
+  TokenSelectModal: any;
+}
+
+export const usePreparetAdapterContextProps = (props: PangolinTWAPProps) => {
+  return {
+    TokenSelectModal: props.TokenSelectModal,
+  };
+};
+
+const LocalAdapter = createContext({} as AdapterContextProps);
+export const LocalContext = LocalAdapter.Provider;
+export const useAdapterContext = () => useContext(LocalAdapter);

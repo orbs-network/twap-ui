@@ -1,10 +1,12 @@
-import { Orders, OrdersAdapter, TWAPProps } from "@orbs-network/twap-ui";
+import { Orders, OrdersAdapter, Translations } from "@orbs-network/twap-ui";
 import { StyledOrdersContainer } from "./styles";
 import { memo } from "react";
 import { Configs } from "@orbs-network/twap";
 import { useGetProvider } from "./hooks";
+import translations from "./i18n/en.json";
+import { SpookySwapOrdersProps } from ".";
 
-function OrderHistory(props: TWAPProps) {
+function OrderHistory(props: SpookySwapOrdersProps) {
   const tokenList = props.dappTokens;
   const provider = useGetProvider(props.getProvider, props.account, props.connectedChainId);
 
@@ -14,10 +16,10 @@ function OrderHistory(props: TWAPProps) {
       account={props.account}
       config={Configs.SpookySwap}
       provider={provider}
-      translations={props.translations}
-      getTokenImage={props.getTokenImage}
+      translations={translations as Translations}
       tokenList={tokenList}
-      gasPrice={props.gasPrice}
+      maxFeePerGas={props.maxFeePerGas}
+      priorityFeePerGas={props.priorityFeePerGas}
     >
       <StyledOrdersContainer>
         <Orders />
