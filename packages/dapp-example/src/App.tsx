@@ -1,33 +1,39 @@
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import { StyledApp, StyledContent, StyledDappSelector } from "./styles";
-import { hooks } from "@orbs-network/twap-ui";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { StyledApp, StyledContent } from "./styles";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import pangolin from "./Pangolin";
 import spiritswap from "./SpiritSwap";
 import spookyswap from "./SpookySwap";
-import Typography from "@mui/material/Typography";
-import { styled } from "@mui/system";
-import { useMemo } from "react";
+import { Dapp, DappsMenu } from "./Components";
+import { Navigate } from "react-router-dom";
+import { hooks } from "@orbs-network/twap-ui";
+import { useSelectedDapp } from "./hooks";
+import { useCallback } from "react";
 
 const defaultDapp = spiritswap;
 const dapps = [spiritswap, pangolin, spookyswap];
 
-const useSelectedDapp = () => {
-  const location = useLocation();
-  return location.pathname.split("/")[1];
-};
-
 function App() {
+  const reset = hooks.resetState();
+  const navigate = useNavigate();
+  const isSelected = useSelectedDapp();
+
+  const onSelect = useCallback(
+    (dapp: Dapp) => {
+      reset();
+      navigate(dapp.path);
+    },
+    [navigate]
+  );
+
   return (
     <StyledApp className="App">
-      <DappSelector />
+      <DappsMenu onSelect={onSelect} dapps={dapps} isSelected={isSelected} />
       <StyledContent>
         <Routes>
           {dapps.map(({ path, Component }) => {
             return <Route path={path} element={<Component />} key={path} />;
           })}
-          <Route path="*" element={<defaultDapp.Component />} />
+          <Route path="*" element={<Navigate to={defaultDapp.path} />} />
         </Routes>
       </StyledContent>
     </StyledApp>
@@ -35,67 +41,3 @@ function App() {
 }
 
 export default App;
-
-const DappSelector = () => {
-  const reset = hooks.resetState();
-  const navigate = useNavigate();
-  const selected = useSelectedDapp();
-
-  const onSelect = (path: string) => {
-    reset();
-    setTimeout(() => {
-      navigate(path);
-    }, 50);
-  };
-  return (
-    <StyledDappSelector>
-      <Select
-        MenuProps={{
-          TransitionProps: { style: { background: "black" } },
-        }}
-        value={selected}
-        renderValue={(value) => <SelectedValue value={value} />}
-        onChange={(event: SelectChangeEvent) => onSelect(event.target.value)}
-        style={{ color: "white" }}
-      >
-        {dapps.map((dapp) => {
-          return (
-            <StyledMenuItem key={dapp.path} value={dapp.path}>
-              <img src={dapp.logo} />
-              <Typography>{dapp.name}</Typography>
-            </StyledMenuItem>
-          );
-        })}
-      </Select>
-    </StyledDappSelector>
-  );
-};
-
-const SelectedValue = ({ value }: { value: string }) => {
-  const selectedItem = useMemo(() => {
-    return dapps.find((d) => d.path === value);
-  }, [value]);
-
-  return (
-    <StyledSelected>
-      <img src={selectedItem?.logo} />
-      <Typography>{selectedItem?.name}</Typography>
-    </StyledSelected>
-  );
-};
-
-const StyledMenuItem = styled(MenuItem)({
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  "& img": {
-    width: 30,
-    height: 30,
-    objectFit: "containt",
-    borderRadius: 50,
-  },
-});
-
-const StyledSelected = styled(StyledMenuItem)({
-  padding: 10,
-});

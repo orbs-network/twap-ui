@@ -25,6 +25,7 @@
     "@mui/system": "5.x",
     "@orbs-network/twap": "1.7.x",
     "@orbs-network/twap-ui": "^0.3.3",
+    "lodash": "^4.17.21",
     "react-icons": "4.x"
   },
   "peerDependencies": {

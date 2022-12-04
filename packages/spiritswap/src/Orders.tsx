@@ -8,7 +8,7 @@ import { SpiritSwapOrdersProps } from ".";
 
 function OrderHistory(props: SpiritSwapOrdersProps) {
   const tokenList = useParseTokenList(props.getTokenImage, props.dappTokens);
-  const {provider, connectedChain} = useGetProvider(props.getProvider, props.account);
+  const { provider, connectedChain } = useGetProvider(props.getProvider, props.account);
 
   return (
     <OrdersAdapter

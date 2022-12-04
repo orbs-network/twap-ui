@@ -54,7 +54,7 @@ import moment from "moment";
 import { Translations } from "./types";
 import _ from "lodash";
 import { useSendAnalyticsEvents } from "./analytics";
-import { eqIgnoreCase, zeroAddress } from "@defi.org/web3-candies";
+import { zeroAddress } from "@defi.org/web3-candies";
 import { queryClientAtom } from "jotai-tanstack-query";
 
 const useWrapToken = () => {

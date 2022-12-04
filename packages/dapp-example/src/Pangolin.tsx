@@ -1,11 +1,12 @@
 import { Orders, PangolinOrdersProps, PangolinTWAPProps, Twap } from "@orbs-network/twap-ui-pangolin";
-import { MetaTags, Popup } from "./defaults";
+import { DappLayout, MetaTags, Popup } from "./Components";
 import { StyledLayoutPangolin, StyledModalList, StyledModalListItem } from "./styles";
 import _ from "lodash";
 import { erc20s } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { Configs } from "@orbs-network/twap";
+import { Dapp } from "./Components";
 
 interface TokenSelectModalProps {
   isOpen: boolean;
@@ -85,8 +86,8 @@ const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModa
     </Popup>
   );
 };
-
-const Dapp = () => {
+const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8422.png";
+const DappComponent = () => {
   const { library, account } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
 
@@ -104,23 +105,24 @@ const Dapp = () => {
 
   return (
     <>
-      <MetaTags title={Configs.Pangolin.partner} />
-
-      <StyledLayoutPangolin>
-        <Twap {...twapProps} />
-      </StyledLayoutPangolin>
-      <StyledLayoutPangolin>
-        <Orders {...ordersProps} />
-      </StyledLayoutPangolin>
+      <MetaTags title={Configs.Pangolin.partner} favicon={logo} />
+      <DappLayout>
+        <StyledLayoutPangolin>
+          <Twap {...twapProps} />
+        </StyledLayoutPangolin>
+        <StyledLayoutPangolin>
+          <Orders {...ordersProps} />
+        </StyledLayoutPangolin>
+      </DappLayout>
     </>
   );
 };
 
-const dapp = {
+const dapp: Dapp = {
   name: Configs.Pangolin.partner,
   path: Configs.Pangolin.partner.toLowerCase(),
-  Component: Dapp,
-  logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/8422.png",
+  Component: DappComponent,
+  logo,
 };
 
 export default dapp;

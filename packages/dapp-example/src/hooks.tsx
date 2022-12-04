@@ -1,14 +1,13 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
-import { ReactNode } from "react";
 import _ from "lodash";
-import Modal from "@mui/material/Modal";
-import { AiOutlineClose } from "react-icons/ai";
-import { StyledCloseIcon } from "./styles";
+
 import { TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
-import { Helmet } from "react-helmet";
+import { useLocation } from "react-router-dom";
+import { useCallback } from "react";
+import { Dapp } from "./Components";
 export const injectedConnector = new InjectedConnector({});
 
 const tokenlistsNetworkNames = {
@@ -51,29 +50,14 @@ export const useGetTokens = (chainId: number, parseToken: (token: any) => TokenD
   );
 };
 
-export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: ReactNode }) => {
-  return (
-    <Modal open={isOpen} onClose={onClose} onBackdropClick={onClose}>
-      <>
-        <StyledCloseIcon onClick={onClose}>
-          <AiOutlineClose className="icon" />
-        </StyledCloseIcon>
-        {children}
-      </>
-    </Modal>
-  );
-};
-
-export const MetaTags = ({ title }: { title: string; favicon?: string }) => {
-  return (
-    <Helmet>
-      {/* <link rel="icon" href="/favicon.ico" /> */}
-      <title>TWAP On {title}</title>
-    </Helmet>
-  );
-};
-
 export const useConnectWallet = () => {
   const { activate } = useWeb3React();
   return () => activate(injectedConnector);
+};
+
+export const useSelectedDapp = () => {
+  const location = useLocation();
+  const selected = location.pathname.split("/")[1];
+  const isSelected = useCallback((dapp: Dapp) => selected === dapp.path, [selected]);
+  return isSelected;
 };

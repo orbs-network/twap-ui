@@ -46,15 +46,6 @@ const TWAP = (props: TWAPProps) => {
   const tokenList = useParseTokenList(props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, tokenList);
 
-  const memoizedOnSrcTokenSelected = useCallback((token: any) => {
-    props.onSrcTokenSelected?.(token);
-  }, []);
-
-  const memoizedOnDstTokenSelected = useCallback((token: any) => {
-    props.onDstTokenSelected?.(token);
-  }, []);
-
-  const memoizedTokenSelectModal = memo(props.TokenSelectModal);
   const memoizedConnect = useCallback(() => {
     props.connect?.();
   }, []);

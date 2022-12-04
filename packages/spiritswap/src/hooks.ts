@@ -1,10 +1,10 @@
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { hooks } from "@orbs-network/twap-ui";
-import _ from "lodash";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SpiritSwapTWAPProps } from ".";
 import Web3 from "web3";
+import _ from "lodash";
 export const useGetProvider = (getProvider: () => any, account?: string) => {
   const [provider, setProvider] = useState<any | undefined>(undefined);
   const [connectedChain, setConnectedChain] = useState<any | undefined>(undefined);
@@ -13,7 +13,7 @@ export const useGetProvider = (getProvider: () => any, account?: string) => {
     if (!_account) {
       setConnectedChain(undefined);
       setProvider(undefined);
-      return 
+      return;
     }
     const _provider = getProvider();
     const web3 = new Web3(_provider);

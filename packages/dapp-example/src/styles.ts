@@ -1,5 +1,10 @@
 import { Box, styled } from "@mui/system";
 import { CSSProperties } from "react";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import IconButton from "@mui/material/IconButton";
 
 export const globalStyle = {
   "& *": {
@@ -84,14 +89,16 @@ export const StyledApp = styled(Box)({
   alignItems: "center",
   justifyContent: "center",
   flexDirection: "column",
-  gap: 48,
   paddingBottom: 50,
-  paddingTop: 40,
   background: "black",
   minHeight: "100vh",
+  gap: 30,
   "& *::-webkit-scrollbar": {
     display: "none",
     width: 0,
+  },
+  "@media (max-width:1100px)": {
+    gap: 20,
   },
 });
 
@@ -110,4 +117,34 @@ export const StyledDappSelector = styled(Box)({
   "& .MuiSelect-select": {
     fontSize: 18,
   },
+});
+
+export const StyledMenuLogo = styled("img")({
+  width: 40,
+  height: 40,
+  borderRadius: 50,
+});
+
+export const StyledMenuListItemButton = styled(ListItemButton)({
+  gap: 20,
+  height: 60,
+});
+
+export const StyledMenuList = styled(List)({
+  paddingTop: 30,
+});
+
+export const StyledMenuDrawer = styled(Drawer)({});
+
+export const StyledMenuMobileToggle = styled(IconButton)({
+  marginRight: "auto",
+  marginLeft: 20,
+  zoom: 1.4,
+  marginTop: 20,
+});
+
+export const StyledDappLayout = styled(Box)({
+  display: "flex",
+  flexDirection: "column",
+  gap: 20,
 });

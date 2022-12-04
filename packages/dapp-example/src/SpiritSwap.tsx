@@ -1,10 +1,12 @@
 import { StyledLayoutSpiritswap, StyledModalList, StyledModalListItem } from "./styles";
 import { Orders, Twap, SpiritSwapTWAPProps, SpiritSwapOrdersProps } from "@orbs-network/twap-ui-spiritswap";
-import { MetaTags, Popup, useConnectWallet, useGetTokens } from "./defaults";
+import { useConnectWallet, useGetTokens } from "./hooks";
 import { TokenData } from "@orbs-network/twap";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
-import { Helmet } from "react-helmet";
+import { Dapp } from "./Components";
+
+import { DappLayout, MetaTags, Popup } from "./Components";
 
 const parseToken = (token: any): TokenData => {
   return { symbol: token.symbol, address: token.address, decimals: token.decimals, logoUrl: token.logoURI };
@@ -42,8 +44,8 @@ const TokenSelectModal = ({ isOpen, selectedToken, onSelect, onClose }: TokenSel
     </Popup>
   );
 };
-
-const Dapp = () => {
+const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/10239.png";
+const DappComponent = () => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
@@ -73,23 +75,24 @@ const Dapp = () => {
 
   return (
     <>
-      <MetaTags title={Configs.SpiritSwap.partner} />
-
-      <StyledLayoutSpiritswap>
-        <Twap {...twapProps} />
-      </StyledLayoutSpiritswap>
-      <StyledLayoutSpiritswap>
-        <Orders {...ordersProps} />
-      </StyledLayoutSpiritswap>
+      <MetaTags title={Configs.SpiritSwap.partner} favicon={logo} />
+      <DappLayout>
+        <StyledLayoutSpiritswap>
+          <Twap {...twapProps} />
+        </StyledLayoutSpiritswap>
+        <StyledLayoutSpiritswap>
+          <Orders {...ordersProps} />
+        </StyledLayoutSpiritswap>
+      </DappLayout>
     </>
   );
 };
 
-const dapp = {
+const dapp: Dapp = {
   name: Configs.SpiritSwap.partner,
   path: Configs.SpiritSwap.partner.toLowerCase(),
-  Component: Dapp,
-  logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/10239.png",
+  Component: DappComponent,
+  logo,
 };
 
 export default dapp;

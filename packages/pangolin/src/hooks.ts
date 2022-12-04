@@ -2,7 +2,7 @@ import { zeroAddress, eqIgnoreCase } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
 import { hooks } from "@orbs-network/twap-ui";
 import _ from "lodash";
-import { useMemo, useEffect, useRef, useCallback, createContext, useContext } from "react";
+import { useMemo, useEffect, useRef, createContext, useContext } from "react";
 import { PangolinTWAPProps } from ".";
 
 export const parseToken = (rawToken: any): TokenData => {
