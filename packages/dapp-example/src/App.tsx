@@ -71,11 +71,10 @@ const DappSelector = () => {
   );
 };
 
-
 const SelectedValue = ({ value }: { value: string }) => {
   const selectedItem = useMemo(() => {
     return dapps.find((d) => d.path === value);
-  }, [value])
+  }, [value]);
 
   return (
     <StyledSelected>
@@ -85,19 +84,18 @@ const SelectedValue = ({ value }: { value: string }) => {
   );
 };
 
-
 const StyledMenuItem = styled(MenuItem)({
-  display:'flex',
-  alignItems:'center',
-  gap:10,
-  "& img":{
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  "& img": {
     width: 30,
     height: 30,
-    objectFit:'containt',
-    borderRadius: 50
-  }
-})
+    objectFit: "containt",
+    borderRadius: 50,
+  },
+});
 
 const StyledSelected = styled(StyledMenuItem)({
-  padding: 10
-})
+  padding: 10,
+});

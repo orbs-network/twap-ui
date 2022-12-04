@@ -46,7 +46,7 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
   const { getTokenImage, dappTokens } = props;
   const tokenList = useParseTokenList(getTokenImage, dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, tokenList);
-  const provider = useGetProvider(props.getProvider, props.account);
+  const { provider, connectedChain } = useGetProvider(props.getProvider, props.account);
   // this is the props we need locally only in this layer
   const adapterContextProps = usePreparetAdapterContextProps(props);
 
@@ -63,7 +63,7 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
       translations={translations as Translations}
       provider={provider}
       account={props.account}
-      connectedChainId={undefined}
+      connectedChainId={connectedChain}
     >
       <GlobalStyles styles={globalStyle as any} />
       <LocalContext value={adapterContextProps}>

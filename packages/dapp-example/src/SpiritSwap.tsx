@@ -69,11 +69,11 @@ const Dapp = () => {
     onDstTokenSelected: (token: any) => console.log(token),
     TokenSelectModal,
   };
-  const ordersProps: SpiritSwapOrdersProps = { account, getRpc, getTokenImage, dappTokens };
+  const ordersProps: SpiritSwapOrdersProps = { account, getRpc, getTokenImage, dappTokens, getProvider: () => library };
 
   return (
     <>
-     <MetaTags title={Configs.SpiritSwap.partner} />
+      <MetaTags title={Configs.SpiritSwap.partner} />
 
       <StyledLayoutSpiritswap>
         <Twap {...twapProps} />
@@ -84,7 +84,6 @@ const Dapp = () => {
     </>
   );
 };
-
 
 const dapp = {
   name: Configs.SpiritSwap.partner,

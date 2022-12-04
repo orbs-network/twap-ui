@@ -64,9 +64,7 @@ export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose:
   );
 };
 
-
-
-export const MetaTags = ({ title }: { title: string, favicon?: string }) => {
+export const MetaTags = ({ title }: { title: string; favicon?: string }) => {
   return (
     <Helmet>
       {/* <link rel="icon" href="/favicon.ico" /> */}

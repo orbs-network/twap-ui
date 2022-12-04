@@ -84,8 +84,6 @@ const Dapp = () => {
   );
 };
 
-
-
 const dapp = {
   name: Configs.SpookySwap.partner,
   path: Configs.SpookySwap.partner.toLowerCase(),

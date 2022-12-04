@@ -14,14 +14,14 @@ import { MetaTags } from "./defaults";
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-    <Web3ReactProvider getLibrary={(provider) => new Web3(provider)}>
-      <GlobalStyles styles={globalStyle as any} />
-      <CssBaseline />
-      <QueryClientProvider client={queryClient}>
-        <Router basename={process.env.PUBLIC_URL}>
-          <App />
-        </Router>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </Web3ReactProvider>
+  <Web3ReactProvider getLibrary={(provider) => new Web3(provider)}>
+    <GlobalStyles styles={globalStyle as any} />
+    <CssBaseline />
+    <QueryClientProvider client={queryClient}>
+      <Router basename={process.env.PUBLIC_URL}>
+        <App />
+      </Router>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  </Web3ReactProvider>
 );
