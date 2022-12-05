@@ -41,30 +41,6 @@ export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose:
   );
 };
 
-interface WrongNetworkPopup {
-  config: Config;
-}
-
-export const WrongNetworkPopup = ({ config }: WrongNetworkPopup) => {
-  const changeNetwork = useChangeNetwork();
-  const { isInValidNetwork } = useNetwork(config.chainId);
-
-  const onClick = async () => {
-    try {
-      await changeNetwork(config.chainId);
-    } catch (error) {}
-  };
-
-  return (
-    <Popup isOpen={isInValidNetwork} onClose={() => {}}>
-      <StyledWrongNetwork>
-        <StyledWrongNetworkText>Change network to {config.partner}</StyledWrongNetworkText>
-        <StyledWrongNetworkButton onClick={onClick}>Change</StyledWrongNetworkButton>
-      </StyledWrongNetwork>
-    </Popup>
-  );
-};
-
 export const MetaTags = ({ title, favicon }: { title: string; favicon: string }) => {
   return (
     <Helmet>
@@ -74,13 +50,12 @@ export const MetaTags = ({ title, favicon }: { title: string; favicon: string })
   );
 };
 
-const drawerWidth = 260;
-
 interface DappsMenuProps {
   dapps: Dapp[];
   onSelect: (dapp: Dapp) => void;
   isSelected: (dapp: Dapp) => boolean;
 }
+const drawerWidth = 260;
 
 export const DappsMenu = ({ dapps, onSelect, isSelected }: DappsMenuProps) => {
   const isMobile = useMediaQuery("(max-width:1100px)");

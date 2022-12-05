@@ -1,4 +1,4 @@
-import TWAP from "./Twap"
+import TWAP from "./Twap";
 import Orders from "./Orders";
 import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 export interface SpiritSwapOrdersProps extends OrdersProps {

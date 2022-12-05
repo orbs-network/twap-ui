@@ -766,7 +766,7 @@ export const useChangeNetworkCallback = () => {
   return async (onSuccess: () => void) => {
     const chain = config.chainId;
 
-    const web3 = new Web3(_provider) as any
+    const web3 = new Web3(_provider) as any;
 
     const provider = web3.provider || web3.currentProvider;
     if (!provider) return;
