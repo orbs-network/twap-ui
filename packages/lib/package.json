@@ -37,7 +37,8 @@
     "moment": "2.x",
     "react-icons": "4.x",
     "react-number-format": "5.x",
-    "web3": "1.x"
+    "web3": "1.x",
+    "zustand": "4.x"
   },
   "peerDependencies": {
     "react": "*",
