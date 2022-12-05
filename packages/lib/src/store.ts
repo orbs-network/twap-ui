@@ -48,7 +48,7 @@ const initialState = {
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
     reset: () => set(initialState),
-    setLib: (lib: TWAPLib) => set({ lib }),
+    setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken: TokenData) => set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" }),
     setDstToken: (dstToken: TokenData) => set({ dstToken, limitPriceUi: initialState.limitPriceUi }),
@@ -70,7 +70,7 @@ export const useTwapStore = create(
         !get().isLimitOrder
       );
     },
-    setDisclaimerAccepted: (disclaimerAccepted: boolean) =>  set({disclaimerAccepted}),
+    setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork: boolean) => set({ wrongNetwork }),
     setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation }),
 
