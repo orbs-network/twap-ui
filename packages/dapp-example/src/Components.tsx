@@ -100,10 +100,10 @@ export const DappsMenu = ({ dapps, onSelect, isSelected }: DappsMenuProps) => {
   );
 };
 
-export const DappLayout = ({ children, name }: { children: ReactNode; name: string }) => {
+export const DappLayout = ({ children, name, favicon }: { children: ReactNode; name: string; favicon: string }) => {
   return (
     <>
-      <MetaTags title={name} favicon={""} />
+      <MetaTags title={name} favicon={favicon} />
       <Fade in>
         <StyledDappLayout>{children}</StyledDappLayout>
       </Fade>

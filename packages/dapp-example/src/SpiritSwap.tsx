@@ -71,7 +71,7 @@ const DappComponent = () => {
   const ordersProps: SpiritSwapOrdersProps = { account, getTokenImage, dappTokens, getProvider: () => library };
 
   return (
-    <DappLayout name={config.partner}>
+    <DappLayout name={config.partner} favicon={logo}>
       <StyledLayoutSpiritswap>
         <TWAP {...twapProps} />
       </StyledLayoutSpiritswap>

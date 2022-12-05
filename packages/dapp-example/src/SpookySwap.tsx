@@ -72,7 +72,7 @@ const DappComponent = () => {
   const ordersProps: SpookySwapOrdersProps = { account, getTokenImage, dappTokens, getProvider };
 
   return (
-    <DappLayout name={config.partner}>
+    <DappLayout name={config.partner} favicon={logo}>
       <StyledLayoutSpookyswap>
         <TWAP {...twapProps} />
       </StyledLayoutSpookyswap>

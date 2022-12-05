@@ -112,7 +112,7 @@ const DappComponent = () => {
   const ordersProps: PangolinOrdersProps = { account, dappTokens, provider };
 
   return (
-    <DappLayout name={config.partner}>
+    <DappLayout name={config.partner} favicon={logo}>
       <StyledLayoutPangolin>
         <TWAP {...twapProps} />
       </StyledLayoutPangolin>
