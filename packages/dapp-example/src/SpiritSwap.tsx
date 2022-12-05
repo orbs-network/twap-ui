@@ -52,11 +52,6 @@ const DappComponent = () => {
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
 
-  //TODO remove
-  const getRpc = () => {
-    return "https://rpc.ankr.com/fantom/";
-  };
-
   const getTokenImage = (token: any) => {
     return token.logoUrl;
   };
@@ -67,36 +62,28 @@ const DappComponent = () => {
     account,
     srcToken: "WFTM",
     dstToken: "ORBS",
-    getRpc,
     getTokenImage,
     dappTokens,
     onSrcTokenSelected: (token: any) => console.log(token),
     onDstTokenSelected: (token: any) => console.log(token),
     TokenSelectModal,
   };
-  const ordersProps: SpiritSwapOrdersProps = { account, getRpc, getTokenImage, dappTokens, getProvider: () => library };
+  const ordersProps: SpiritSwapOrdersProps = { account, getTokenImage, dappTokens, getProvider: () => library };
 
   return (
-    <>
-      {/* <WrongNetworkPopup config={Configs.SpiritSwap} /> */}
-      <MetaTags title={Configs.SpiritSwap.partner} favicon={logo} />
-      <DappLayout>
-        <StyledLayoutSpiritswap>
-          <Twap {...twapProps} />
-        </StyledLayoutSpiritswap>
-        <StyledLayoutSpiritswap>
-          <Orders {...ordersProps} />
-        </StyledLayoutSpiritswap>
-      </DappLayout>
-    </>
+    <DappLayout name={config.partner}>
+      <StyledLayoutSpiritswap>
+        <Twap {...twapProps} />
+      </StyledLayoutSpiritswap>
+      <StyledLayoutSpiritswap>
+        <Orders {...ordersProps} />
+      </StyledLayoutSpiritswap>
+    </DappLayout>
   );
 };
 
-//create path from name (.toLowercase())
-
 const dapp: Dapp = {
-  name: Configs.SpiritSwap.partner,
-  path: Configs.SpiritSwap.partner.toLowerCase(),
+  name: config.partner,
   Component: DappComponent,
   logo,
 };

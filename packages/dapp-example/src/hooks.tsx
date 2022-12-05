@@ -71,7 +71,7 @@ export const useDisconnectWallet = () => {
 export const useSelectedDapp = () => {
   const location = useLocation();
   const selected = location.pathname.split("/")[1];
-  const isSelected = useCallback((dapp: Dapp) => selected === dapp.path, [selected]);
+  const isSelected = useCallback((dapp: Dapp) => selected === dapp.name.toLowerCase(), [selected]);
   return isSelected;
 };
 

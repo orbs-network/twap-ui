@@ -23,7 +23,7 @@ function App() {
     (dapp: Dapp) => {
       resetState();
       disconnect();
-      navigate(dapp.path);
+      navigate(dapp.name.toLowerCase());
     },
     [navigate]
   );
@@ -33,10 +33,10 @@ function App() {
       <DappsMenu onSelect={onSelect} dapps={dapps} isSelected={isSelected} />
       <StyledContent>
         <Routes>
-          {dapps.map(({ path, Component }) => {
-            return <Route path={path} element={<Component />} key={path} />;
+          {dapps.map(({ name, Component }) => {
+            return <Route path={name.toLowerCase()} element={<Component />} key={name} />;
           })}
-          <Route path="*" element={<Navigate to={defaultDapp.path} />} />
+          <Route path="*" element={<Navigate to={defaultDapp.name.toLowerCase()} />} />
         </Routes>
       </StyledContent>
     </StyledApp>

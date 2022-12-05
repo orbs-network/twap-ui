@@ -18,20 +18,16 @@ export const parseToken = (rawToken: any, getTokenImage: (rawToken: any) => stri
   };
 };
 
-export const useUnparsedToken = () => {
-  const { dappTokens } = useAdapterContext();
 
-  return (token: TokenData) => {
-    return dappTokens.filter((t) => eqIgnoreCase(t.address, token.address));
-  };
-};
+export const useParseTokenList = (getTokenImage: (rawToken: any) => string, dappTokens?: any[]): TokenData[] => {
+  const dappTokensRef = useRef<any[] | undefined>(undefined)
+  dappTokensRef.current = dappTokens
+  const dappTokensLength =  dappTokens?.length || 0
 
-export const useParseTokenList = (getTokenImage: (rawToken: any) => string, dappTokens?: any): TokenData[] => {
-  // TODO performance analysis
   return useMemo(() => {
-    if (!dappTokens) return [];
-    return _.map(dappTokens, (t) => parseToken(t, getTokenImage));
-  }, [dappTokens]);
+    if (!dappTokensRef.current) return [];    
+    return _.map(dappTokensRef.current, (t) => parseToken(t, getTokenImage));
+  }, [dappTokensLength]);
 };
 
 const findToken = (tokenList?: TokenData[], symbol?: string) => {
@@ -42,16 +38,15 @@ const findToken = (tokenList?: TokenData[], symbol?: string) => {
 export const useSetTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: string, tokenList?: TokenData[]) => {
   const setTokens = hooks.useSetTokens();
   const tokenListRef = useRef<TokenData[] | undefined>(undefined);
-
   tokenListRef.current = tokenList;
-  const tokensLoaded = tokenList && tokenList.length > 0;
-  const listLength = tokenList ? tokenList.length : 0;
+  const listLength = tokenList?.length || 0;
 
   useEffect(() => {
-    const srcToken = findToken(tokenListRef.current, srcTokenSymbol);
+    if (!listLength) return; 
+     const srcToken = findToken(tokenListRef.current, srcTokenSymbol);
     const dstToken = findToken(tokenListRef.current, dstTokenSymbol);
     setTokens(srcToken, dstToken);
-  }, [srcTokenSymbol, dstTokenSymbol, tokensLoaded, listLength]);
+  }, [srcTokenSymbol, dstTokenSymbol, listLength]);
 };
 
 export interface AdapterContextProps {
@@ -79,10 +74,8 @@ export const usePrepareAdapterContextProps = (props: SpiritSwapTWAPProps) => {
     TokenSelectModal: props.TokenSelectModal,
   };
 };
-//TODO AdapterContext
-const LocalAdapter = createContext({} as AdapterContextProps);
+const AdapterContext = createContext({} as AdapterContextProps);
 
-//TODO AdapterContextProvider
-export const LocalContext = LocalAdapter.Provider;
+export const AdapterContextProvider = AdapterContext.Provider;
 
-export const useAdapterContext = () => useContext(LocalAdapter);
+export const useAdapterContext = () => useContext(AdapterContext);

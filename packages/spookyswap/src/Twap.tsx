@@ -41,13 +41,13 @@ import {
   StyledUSD,
 } from "./styles";
 import { Configs, TokenData } from "@orbs-network/twap";
-import { LocalContext, parseToken, useAdapterContext, useGetProvider, useParseTokenList, usePrepareAdapterContextProps, useTokensFromDapp } from "./hooks";
+import { AdapterContextProvider, parseToken, useAdapterContext, useGetProvider, useParseTokenList, usePrepareAdapterContextProps, useTokensFromDapp } from "./hooks";
 import { SpookySwapTWAPProps } from ".";
 
 const TWAP = (props: SpookySwapTWAPProps) => {
   const tokenList = useParseTokenList(props.getTokenImage, props.dappTokens);
-  useTokensFromDapp(props.srcToken, props.dstToken, tokenList);
-  const provider = useGetProvider(props.getProvider, props.account, props.connectedChainId);
+  useTokensFromDapp(props.srcToken, props.dstToken,  props.account ? tokenList : undefined);
+  const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
 
   const connect = useCallback(() => {
@@ -66,7 +66,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       connectedChainId={props.connectedChainId}
     >
       <GlobalStyles styles={globalStyle as any} />
-      <LocalContext value={adapterContextProps}>
+      <AdapterContextProvider value={adapterContextProps}>
         <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
           <SrcTokenPanel />
           <ChangeTokensOrder />
@@ -79,7 +79,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
           <OrderConfirmation />
           <Components.PoweredBy />
         </div>
-      </LocalContext>
+      </AdapterContextProvider>
     </TwapAdapter>
   );
 };

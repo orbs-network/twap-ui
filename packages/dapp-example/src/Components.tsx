@@ -24,7 +24,6 @@ import { Config } from "@orbs-network/twap";
 import { useChangeNetwork, useNetwork } from "./hooks";
 export interface Dapp {
   name: string;
-  path: string;
   Component: any;
   logo: string;
 }
@@ -124,7 +123,7 @@ export const DappsMenu = ({ dapps, onSelect, isSelected }: DappsMenuProps) => {
         <StyledMenuList>
           <Backdrop open={isMobile && isOpen} onClick={() => setIsOpen(false)} />
           {dapps.map((dapp) => (
-            <ListItem onClick={() => onSelectClick(dapp)} key={dapp.path} disablePadding selected={isSelected(dapp)}>
+            <ListItem onClick={() => onSelectClick(dapp)} key={dapp.name.toLowerCase()} disablePadding selected={isSelected(dapp)}>
               <StyledMenuListItemButton>
                 <StyledMenuLogo src={dapp.logo} />
                 <ListItemText primary={dapp.name} />
@@ -137,10 +136,13 @@ export const DappsMenu = ({ dapps, onSelect, isSelected }: DappsMenuProps) => {
   );
 };
 
-export const DappLayout = ({ children }: { children: ReactNode }) => {
+export const DappLayout = ({ children, name }: { children: ReactNode; name: string }) => {
   return (
-    <Fade in>
-      <StyledDappLayout>{children}</StyledDappLayout>
-    </Fade>
+    <>
+      <MetaTags title={name} favicon={""} />
+      <Fade in>
+        <StyledDappLayout>{children}</StyledDappLayout>
+      </Fade>
+    </>
   );
 };

@@ -88,7 +88,6 @@ interface BaseProps {
   account?: any;
   provider?: any;
   getProvider?: () => any;
-  getRpc?: () => string;
   getTokenImage?: (value: any) => string;
   dappTokens: any;
   maxFeePerGas?: string;

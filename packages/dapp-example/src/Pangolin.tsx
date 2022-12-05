@@ -92,7 +92,7 @@ const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModa
 };
 const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8422.png";
 const DappComponent = () => {
-  const { account, library: provider } = useWeb3React();
+  const { account, library: provider, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
 
   const connect = useConnectWallet();
@@ -100,35 +100,31 @@ const DappComponent = () => {
   const twapProps: PangolinTWAPProps = {
     account,
     TokenSelectModal,
-    srcToken: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
-    dstToken: "0x340fE1D898ECCAad394e2ba0fC1F93d27c7b717A",
+    srcToken: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", //WAVAX
+    dstToken: "0x340fE1D898ECCAad394e2ba0fC1F93d27c7b717A", // ORBS
     dappTokens,
     provider,
     onSrcTokenSelected: (token: any) => console.log(token),
     onDstTokenSelected: (token: any) => console.log(token),
     connect,
+    connectedChainId: chainId,
   };
   const ordersProps: PangolinOrdersProps = { account, dappTokens, provider };
 
   return (
-    <>
-      {/* <WrongNetworkPopup config={Configs.Pangolin} /> */}
-      <MetaTags title={config.partner} favicon={logo} />
-      <DappLayout>
-        <StyledLayoutPangolin>
-          <Twap {...twapProps} />
-        </StyledLayoutPangolin>
-        <StyledLayoutPangolin>
-          <Orders {...ordersProps} />
-        </StyledLayoutPangolin>
-      </DappLayout>
-    </>
+    <DappLayout name={config.partner}>
+      <StyledLayoutPangolin>
+        <Twap {...twapProps} />
+      </StyledLayoutPangolin>
+      <StyledLayoutPangolin>
+        <Orders {...ordersProps} />
+      </StyledLayoutPangolin>
+    </DappLayout>
   );
 };
 
 const dapp: Dapp = {
   name: Configs.Pangolin.partner,
-  path: Configs.Pangolin.partner.toLowerCase(),
   Component: DappComponent,
   logo,
 };

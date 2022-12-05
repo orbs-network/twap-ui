@@ -5,7 +5,7 @@ import { TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp } from "./Components";
-import { DappLayout, MetaTags, Popup } from "./Components";
+import { DappLayout, Popup } from "./Components";
 
 const parseToken = (token: any): TokenData => {
   return { symbol: token.symbol, address: token.address, decimals: token.decimals, logoUrl: token.logoURI };
@@ -53,48 +53,38 @@ const DappComponent = () => {
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
 
-  const getRpc = () => {
-    return "https://rpc.ankr.com/fantom/";
-  };
+  const getTokenImage = (token: any) => token.logoUrl;
 
-  const getTokenImage = (token: any) => {
-    return token.logoUrl;
-  };
+  const  getProvider = () => library
 
   const twapProps: SpookySwapTWAPProps = {
-    getProvider: () => library,
+    getProvider,
     connect,
     account,
     srcToken: "WFTM",
     dstToken: "ORBS",
-    getRpc,
     getTokenImage,
     dappTokens,
     onSrcTokenSelected: (token: any) => console.log(token),
     onDstTokenSelected: (token: any) => console.log(token),
     TokenSelectModal,
   };
-  const ordersProps: SpookySwapOrdersProps = { account, getRpc, getTokenImage, dappTokens };
+  const ordersProps: SpookySwapOrdersProps = { account, getTokenImage, dappTokens, getProvider };
 
   return (
-    <>
-      {/* <WrongNetworkPopup config={Configs.SpiritSwap} /> */}
-      <MetaTags title={Configs.SpookySwap.partner} favicon={logo} />
-      <DappLayout>
-        <StyledLayoutSpookyswap>
-          <Twap {...twapProps} />
-        </StyledLayoutSpookyswap>
-        <StyledLayoutSpookyswap>
-          <Orders {...ordersProps} />
-        </StyledLayoutSpookyswap>
-      </DappLayout>
-    </>
+    <DappLayout name={config.partner}>
+      <StyledLayoutSpookyswap>
+        <Twap {...twapProps} />
+      </StyledLayoutSpookyswap>
+      <StyledLayoutSpookyswap>
+        <Orders {...ordersProps} />
+      </StyledLayoutSpookyswap>
+    </DappLayout>
   );
 };
 
 const dapp: Dapp = {
-  name: Configs.SpookySwap.partner,
-  path: Configs.SpookySwap.partner.toLowerCase(),
+  name: config.partner,
   Component: DappComponent,
   logo,
 };

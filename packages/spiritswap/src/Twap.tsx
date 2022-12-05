@@ -38,20 +38,18 @@ import {
   StyledUSD,
 } from "./styles";
 import { Configs } from "@orbs-network/twap";
-import { LocalContext, parseToken, useAdapterContext, useGetProvider, useParseTokenList, usePrepareAdapterContextProps, useSetTokensFromDapp } from "./hooks";
+import { AdapterContextProvider, parseToken, useAdapterContext, useGetProvider, useParseTokenList, usePrepareAdapterContextProps, useSetTokensFromDapp } from "./hooks";
 import translations from "./i18n/en.json";
 import { SpiritSwapTWAPProps } from ".";
 
 const TWAP = (props: SpiritSwapTWAPProps) => {
   const { getTokenImage, dappTokens } = props;
   const tokenList = useParseTokenList(getTokenImage, dappTokens);
-  useSetTokensFromDapp(props.srcToken, props.dstToken, tokenList);
+  useSetTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
-
-  console.log({ provider });
-
-  const connect = useCallback(() => {
+  
+const connect = useCallback(() => {
     props.connect();
   }, []);
 
@@ -66,7 +64,7 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
       account={props.account}
     >
       <GlobalStyles styles={globalStyle as any} />
-      <LocalContext value={adapterContextProps}>
+      <AdapterContextProvider value={adapterContextProps}>
         <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
           <SrcTokenPanel />
           <ChangeTokensOrder />
@@ -79,7 +77,7 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
           <OrderConfirmation />
           <Components.PoweredBy />
         </div>
-      </LocalContext>
+      </AdapterContextProvider>
     </TwapAdapter>
   );
 };

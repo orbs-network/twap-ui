@@ -40,11 +40,12 @@ import {
   StyledUSD,
 } from "./styles";
 import { Configs } from "@orbs-network/twap";
-import { LocalContext, parseToken, useAdapterContext, useParseTokenList, useTokensFromDapp } from "./hooks";
+import { AdapterContextProvider, parseToken, useAdapterContext, useParseTokenList, useTokensFromDapp } from "./hooks";
 
 const TWAP = (props: TWAPProps) => {
+  const {account} = props
   const tokenList = useParseTokenList(props.dappTokens);
-  useTokensFromDapp(props.srcToken, props.dstToken, tokenList);
+  useTokensFromDapp(props.srcToken, props.dstToken, account ? tokenList : undefined);
 
   const memoizedConnect = useCallback(() => {
     props.connect?.();
@@ -61,7 +62,7 @@ const TWAP = (props: TWAPProps) => {
       account={props.account}
     >
       <GlobalStyles styles={globalStyle as any} />
-      <LocalContext value={{ TokenSelectModal: props.TokenSelectModal }}>
+      <AdapterContextProvider value={{ TokenSelectModal: props.TokenSelectModal }}>
         <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
           <SrcTokenPanel />
           <ChangeTokensOrder />
@@ -74,7 +75,7 @@ const TWAP = (props: TWAPProps) => {
           <OrderConfirmation />
           <Components.PoweredBy />
         </div>
-      </LocalContext>
+      </AdapterContextProvider>
     </TwapAdapter>
   );
 };

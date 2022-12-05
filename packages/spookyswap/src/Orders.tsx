@@ -8,7 +8,7 @@ import { SpookySwapOrdersProps } from ".";
 
 function OrderHistory(props: SpookySwapOrdersProps) {
   const tokenList = props.dappTokens;
-  const provider = useGetProvider(props.getProvider, props.account, props.connectedChainId);
+  const provider = useGetProvider(props.getProvider, props.account);
 
   return (
     <OrdersAdapter

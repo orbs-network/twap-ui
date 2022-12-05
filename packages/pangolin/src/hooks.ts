@@ -30,6 +30,7 @@ const nativeToken: TokenData = {
 };
 
 export const useParseTokenList = (dappTokens?: any): TokenData[] => {
+
   return useMemo(() => {
     if (!dappTokens) return [];
     const result = _.map(dappTokens, (t) => parseToken(t));
@@ -48,14 +49,17 @@ export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: st
   const setTokens = hooks.useSetTokens();
   const tokenListRef = useRef<TokenData[] | undefined>(undefined);
   tokenListRef.current = tokenList;
-  const tokensLoaded = tokenList && tokenList.length > 0;
+  const tokensLength = tokenList?.length || 0;
 
   useEffect(() => {
+
+    if(!tokensLength) return 
+    
     const srcToken = findToken(tokenListRef.current, srcTokenAddress);
     const dstToken = findToken(tokenListRef.current, dstTokenAddress);
 
     setTokens(srcToken, dstToken);
-  }, [srcTokenAddress, dstTokenAddress, tokensLoaded]);
+  }, [srcTokenAddress, dstTokenAddress, tokensLength]);
 };
 
 export interface AdapterContextProps {
@@ -68,6 +72,6 @@ export const usePrepareAdapterContextProps = (props: PangolinTWAPProps) => {
   };
 };
 
-const LocalAdapter = createContext({} as AdapterContextProps);
-export const LocalContext = LocalAdapter.Provider;
-export const useAdapterContext = () => useContext(LocalAdapter);
+const AdapterContext = createContext({} as AdapterContextProps);
+export const AdapterContextProvider = AdapterContext.Provider;
+export const useAdapterContext = () => useContext(AdapterContext);
