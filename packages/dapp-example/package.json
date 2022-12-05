@@ -7,7 +7,7 @@
   "scripts": {
     "prettier": "prettier -w 'src/**/*.{ts,tsx,js,jsx,json,sol}'",
     "start": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts start",
-    "build": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts build"
+    "build": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts build && cp build/index.html build/404.html"
   },
   "dependencies": {
     "@orbs-network/twap-ui-spiritswap": "^0.3.3",
