@@ -59,7 +59,7 @@ export interface AdapterContextProps {
   TokenSelectModal: any;
 }
 
-export const usePreparetAdapterContextProps = (props: SpookySwapTWAPProps) => {
+export const usePrepareAdapterContextProps = (props: SpookySwapTWAPProps) => {
   const memoizedOnSrcTokenSelected = useCallback((token: any) => {
     props.onSrcTokenSelected?.(token);
   }, []);

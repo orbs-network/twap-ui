@@ -14,7 +14,7 @@ export const TwapAdapter = (props: TwapLibProps) => {
   useEffect(() => {
     console.log("init");
 
-    initLib(props.config, props.provider, props.account);
+    initLib(props.config, props.provider, props.account, props.connectedChainId);
   }, [props.provider, props.config, props.account, props.connectedChainId]);
 
   return <TwapContext.Provider value={{ ...props, translations }}>{props.children}</TwapContext.Provider>;
@@ -28,6 +28,8 @@ export const OrdersAdapter = (props: OrderLibProps) => {
   useEffect(() => {
     setTokensList(props.tokenList);
   }, [props.tokenList]);
+
+  // orders lib init
 
   return <OrdersContext.Provider value={{ ...props, translations }}>{props.children}</OrdersContext.Provider>;
 };

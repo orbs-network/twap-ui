@@ -21,6 +21,8 @@ export const allTokensListAtom = atom(
 );
 
 const srcTokenValue = atomWithReset<TokenData | undefined>(undefined);
+export const invalidChainAtom = atomWithReset<boolean>(false);
+
 export const srcTokenAtom = atom(
   (get) => get(srcTokenValue),
   (_get, set, token: TokenData | undefined) => {

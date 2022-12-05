@@ -59,7 +59,6 @@ const TWAP = (props: TWAPProps) => {
       translations={translations as Translations}
       provider={props.provider}
       account={props.account}
-      connectedChainId={props.connectedChainId}
     >
       <GlobalStyles styles={globalStyle as any} />
       <LocalContext value={{ TokenSelectModal: props.TokenSelectModal }}>

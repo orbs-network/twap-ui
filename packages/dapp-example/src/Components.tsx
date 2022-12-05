@@ -2,14 +2,26 @@ import Modal from "@mui/material/Modal";
 import { ReactNode, useState } from "react";
 import { Helmet } from "react-helmet";
 import { AiOutlineClose } from "react-icons/ai";
-import { StyledCloseIcon, StyledDappLayout, StyledMenuDrawer, StyledMenuList, StyledMenuListItemButton, StyledMenuLogo, StyledMenuMobileToggle } from "./styles";
+import {
+  StyledCloseIcon,
+  StyledDappLayout,
+  StyledMenuDrawer,
+  StyledMenuList,
+  StyledMenuListItemButton,
+  StyledMenuLogo,
+  StyledMenuMobileToggle,
+  StyledWrongNetwork,
+  StyledWrongNetworkButton,
+  StyledWrongNetworkText,
+} from "./styles";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { FiMenu } from "react-icons/fi";
 import Backdrop from "@mui/material/Backdrop";
 import { Fade } from "@mui/material";
-
+import { Config } from "@orbs-network/twap";
+import { useChangeNetwork, useNetwork } from "./hooks";
 export interface Dapp {
   name: string;
   path: string;
@@ -27,6 +39,30 @@ export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose:
         {children}
       </>
     </Modal>
+  );
+};
+
+interface WrongNetworkPopup {
+  config: Config;
+}
+
+export const WrongNetworkPopup = ({ config }: WrongNetworkPopup) => {
+  const changeNetwork = useChangeNetwork();
+  const { isInValidNetwork } = useNetwork(config.chainId);
+
+  const onClick = async () => {
+    try {
+      await changeNetwork(config.chainId);
+    } catch (error) {}
+  };
+
+  return (
+    <Popup isOpen={isInValidNetwork} onClose={() => {}}>
+      <StyledWrongNetwork>
+        <StyledWrongNetworkText>Change network to {config.partner}</StyledWrongNetworkText>
+        <StyledWrongNetworkButton onClick={onClick}>Change</StyledWrongNetworkButton>
+      </StyledWrongNetwork>
+    </Popup>
   );
 };
 

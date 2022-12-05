@@ -11,8 +11,10 @@ const parseToken = (token: any): TokenData => {
   return { symbol: token.symbol, address: token.address, decimals: token.decimals, logoUrl: token.logoURI };
 };
 
+const config = Configs.SpookySwap;
+
 const useDappTokens = () => {
-  return useGetTokens(Configs.SpookySwap.chainId, parseToken);
+  return useGetTokens(config.chainId, parseToken);
 };
 
 interface TokenSelectModalProps {
@@ -76,6 +78,7 @@ const DappComponent = () => {
 
   return (
     <>
+      {/* <WrongNetworkPopup config={Configs.SpiritSwap} /> */}
       <MetaTags title={Configs.SpookySwap.partner} favicon={logo} />
       <DappLayout>
         <StyledLayoutSpookyswap>

@@ -62,7 +62,7 @@ export interface AdapterContextProps {
   TokenSelectModal: any;
 }
 
-export const usePreparetAdapterContextProps = (props: PangolinTWAPProps) => {
+export const usePrepareAdapterContextProps = (props: PangolinTWAPProps) => {
   return {
     TokenSelectModal: props.TokenSelectModal,
   };

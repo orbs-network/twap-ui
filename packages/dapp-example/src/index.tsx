@@ -11,6 +11,8 @@ import { BrowserRouter as Router } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
+export const PROVIDER_NAME = "TWAP_UI";
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <Web3ReactProvider getLibrary={(provider) => new Web3(provider)}>
     <GlobalStyles styles={globalStyle as any} />

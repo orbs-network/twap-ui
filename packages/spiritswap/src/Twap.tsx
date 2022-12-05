@@ -37,18 +37,19 @@ import {
   StyledTradeSize,
   StyledUSD,
 } from "./styles";
-import { Configs, TokenData } from "@orbs-network/twap";
-import { LocalContext, parseToken, useAdapterContext, useGetProvider, useParseTokenList, usePreparetAdapterContextProps, useTokensFromDapp } from "./hooks";
+import { Configs } from "@orbs-network/twap";
+import { LocalContext, parseToken, useAdapterContext, useGetProvider, useParseTokenList, usePrepareAdapterContextProps, useSetTokensFromDapp } from "./hooks";
 import translations from "./i18n/en.json";
 import { SpiritSwapTWAPProps } from ".";
 
 const TWAP = (props: SpiritSwapTWAPProps) => {
   const { getTokenImage, dappTokens } = props;
   const tokenList = useParseTokenList(getTokenImage, dappTokens);
-  useTokensFromDapp(props.srcToken, props.dstToken, tokenList);
-  const { provider, connectedChain } = useGetProvider(props.getProvider, props.account);
-  // this is the props we need locally only in this layer
-  const adapterContextProps = usePreparetAdapterContextProps(props);
+  useSetTokensFromDapp(props.srcToken, props.dstToken, tokenList);
+  const provider = useGetProvider(props.getProvider, props.account);
+  const adapterContextProps = usePrepareAdapterContextProps(props);
+
+  console.log({ provider });
 
   const connect = useCallback(() => {
     props.connect();
@@ -63,7 +64,6 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
       translations={translations as Translations}
       provider={provider}
       account={props.account}
-      connectedChainId={connectedChain}
     >
       <GlobalStyles styles={globalStyle as any} />
       <LocalContext value={adapterContextProps}>
@@ -294,7 +294,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   };
 
   const onTokenSelected = useCallback(
-    (token: TokenData) => {
+    (token: any) => {
       onTokenSelect(parseToken(token, getTokenImage));
       if (isSrcToken) {
         onSrcTokenSelected(token);
@@ -311,7 +311,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
 
   return (
     <>
-      <TokenSelectModal chainId={250} tokenSelected={undefined} onSelect={onTokenSelected} isOpen={tokenListOpen} onClose={onListClose} />
+      <TokenSelectModal tokenSelected={undefined} onSelect={onTokenSelected} isOpen={tokenListOpen} onClose={onListClose} />
       <StyledTokenPanel>
         <StyledCard>
           <StyledColumnGap>

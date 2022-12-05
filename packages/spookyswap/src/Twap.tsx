@@ -41,14 +41,14 @@ import {
   StyledUSD,
 } from "./styles";
 import { Configs, TokenData } from "@orbs-network/twap";
-import { LocalContext, parseToken, useAdapterContext, useGetProvider, useParseTokenList, usePreparetAdapterContextProps, useTokensFromDapp } from "./hooks";
+import { LocalContext, parseToken, useAdapterContext, useGetProvider, useParseTokenList, usePrepareAdapterContextProps, useTokensFromDapp } from "./hooks";
 import { SpookySwapTWAPProps } from ".";
 
 const TWAP = (props: SpookySwapTWAPProps) => {
   const tokenList = useParseTokenList(props.getTokenImage, props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, tokenList);
   const provider = useGetProvider(props.getProvider, props.account, props.connectedChainId);
-  const adapterContextProps = usePreparetAdapterContextProps(props);
+  const adapterContextProps = usePrepareAdapterContextProps(props);
 
   const connect = useCallback(() => {
     props.connect();

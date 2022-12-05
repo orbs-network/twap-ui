@@ -3,34 +3,10 @@ import { Configs, TokenData } from "@orbs-network/twap";
 import { hooks } from "@orbs-network/twap-ui";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SpiritSwapTWAPProps } from ".";
-import Web3 from "web3";
 import _ from "lodash";
+
 export const useGetProvider = (getProvider: () => any, account?: string) => {
-  const [provider, setProvider] = useState<any | undefined>(undefined);
-  const [connectedChain, setConnectedChain] = useState<any | undefined>(undefined);
-
-  const onAccountChanged = async (_account?: any) => {
-    if (!_account) {
-      setConnectedChain(undefined);
-      setProvider(undefined);
-      return;
-    }
-    const _provider = getProvider();
-    const web3 = new Web3(_provider);
-    const _connectedChain = await web3.eth.getChainId();
-    if (_connectedChain !== Configs.SpiritSwap.chainId) {
-      setProvider(undefined);
-    } else {
-      setProvider(_provider);
-    }
-
-    setConnectedChain(_connectedChain);
-  };
-
-  useEffect(() => {
-    onAccountChanged(account);
-  }, [account]);
-  return { connectedChain, provider };
+  return useMemo(() => getProvider(), [account]);
 };
 
 export const parseToken = (rawToken: any, getTokenImage: (rawToken: any) => string): TokenData => {
@@ -51,11 +27,10 @@ export const useUnparsedToken = () => {
 };
 
 export const useParseTokenList = (getTokenImage: (rawToken: any) => string, dappTokens?: any): TokenData[] => {
+  // TODO performance analysis
   return useMemo(() => {
     if (!dappTokens) return [];
-    const result = _.map(dappTokens, (t) => parseToken(t, getTokenImage));
-
-    return result;
+    return _.map(dappTokens, (t) => parseToken(t, getTokenImage));
   }, [dappTokens]);
 };
 
@@ -64,7 +39,7 @@ const findToken = (tokenList?: TokenData[], symbol?: string) => {
   return !token ? undefined : token;
 };
 
-export const useTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: string, tokenList?: TokenData[]) => {
+export const useSetTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: string, tokenList?: TokenData[]) => {
   const setTokens = hooks.useSetTokens();
   const tokenListRef = useRef<TokenData[] | undefined>(undefined);
 
@@ -87,7 +62,7 @@ export interface AdapterContextProps {
   TokenSelectModal: any;
 }
 
-export const usePreparetAdapterContextProps = (props: SpiritSwapTWAPProps) => {
+export const usePrepareAdapterContextProps = (props: SpiritSwapTWAPProps) => {
   const memoizedOnSrcTokenSelected = useCallback((token: any) => {
     props.onSrcTokenSelected?.(token);
   }, []);
@@ -104,7 +79,10 @@ export const usePreparetAdapterContextProps = (props: SpiritSwapTWAPProps) => {
     TokenSelectModal: props.TokenSelectModal,
   };
 };
-
+//TODO AdapterContext
 const LocalAdapter = createContext({} as AdapterContextProps);
+
+//TODO AdapterContextProvider
 export const LocalContext = LocalAdapter.Provider;
+
 export const useAdapterContext = () => useContext(LocalAdapter);

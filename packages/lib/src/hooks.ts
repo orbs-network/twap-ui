@@ -21,6 +21,7 @@ import {
   fillDelayAtom,
   fillDelayMillisGet,
   gasPriceGet,
+  invalidChainAtom,
   isLimitOrderAtom,
   limitPriceGet,
   limitPriceUiAtom,
@@ -89,16 +90,6 @@ const useWrapToken = () => {
       },
     }
   );
-};
-
-const useIsInvalidChain = () => {
-  const { connectedChainId } = useTwapContext();
-  const lib = useAtomValue(twapLibAtom);
-  if (!connectedChainId || !lib) {
-    return false;
-  }
-
-  return lib.config.chainId !== connectedChainId;
 };
 
 const useUnwrapToken = () => {
@@ -245,12 +236,21 @@ export const useCreateOrder = () => {
 
 export const useInitLib = () => {
   const setTwapLib = useSetAtom(twapLibAtom);
+  const setInvalidChain = useSetAtom(invalidChainAtom);
 
-  return (config: Config, provider?: any, account?: any) => {
-    if (provider && account) {
+  return async (config: Config, provider?: any, account?: string, connectedChainId?: number) => {
+    if (!provider || !account) {
+      setTwapLib(undefined);
+      setInvalidChain(false);
+      return;
+    }
+    const chain = connectedChainId || (await new Web3(provider).eth.getChainId());
+    if (config.chainId === chain) {
       setTwapLib(new TWAPLib(config, account, provider));
+      setInvalidChain(false);
     } else {
       setTwapLib(undefined);
+      setInvalidChain(true);
     }
   };
 };
@@ -306,23 +306,27 @@ const useOrderFillWarning = () => {
 };
 
 export const useSwitchTokens = () => {
-  const result = useSetAtom(switchTokensSet);
-  return result;
+  return useSetAtom(switchTokensSet);
 };
 
 const useChangeNetwork = () => {
-  const translations = useTwapContext().translations;
-  const lib = useAtomValue(twapLibAtom);
-  const reset = useSetAtom(resetAllSet);
-
+  const { translations } = useTwapContext();
+  const setInvalidChain = useSetAtom(invalidChainAtom);
+  const changeNetwork = useChangeNetworkCallback();
+  const initLib = useInitLib();
+  const context = useTwapContext();
+  const [loading, setLoading] = useState(false);
   const onChangeNetwork = async () => {
-    if (lib) {
-      await changeNetwork(new Web3(lib.provider), lib.config.chainId);
-      reset();
-    }
+    const onSuccess = () => {
+      setInvalidChain(false);
+      initLib(context.config, context.provider, context.account);
+    };
+    setLoading(true);
+    await changeNetwork(onSuccess);
+    setLoading(false);
   };
 
-  return { text: translations.switchNetwork, onClick: onChangeNetwork, loading: false, disabled: false };
+  return { text: translations.switchNetwork, onClick: onChangeNetwork, loading, disabled: loading };
 };
 
 const useConnect = () => {
@@ -352,13 +356,14 @@ export const useShowConfirmationButton = () => {
   const srcUsdLoading = useAtomValue(usdGet(srcToken)).loading;
   const dstUsdLoading = useAtomValue(usdGet(dsToken)).loading;
 
-  const wrongNetwork = useIsInvalidChain();
+  const wrongNetwork = useAtomValue(invalidChainAtom);
+
+  if (wrongNetwork) {
+    return changeNetworkArgs;
+  }
 
   if (!lib?.maker) {
     return connectArgs;
-  }
-  if (wrongNetwork) {
-    return changeNetworkArgs;
   }
 
   if (warning) {
@@ -397,7 +402,7 @@ export const useCreateOrderButton = () => {
   const translations = useTwapContext().translations;
   const connectArgs = useConnect();
   const changeNetworkArgs = useChangeNetwork();
-  const wrongNetwork = useIsInvalidChain();
+  const wrongNetwork = useAtomValue(invalidChainAtom);
 
   const createOrderLoading = useAtomValue(createOrderLoadingAtom);
 
@@ -475,7 +480,7 @@ export const useTokenPanel = (isSrc?: boolean) => {
   const translations = useTwapContext().translations;
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const maker = useMaker();
-  const wrongNetwork = useIsInvalidChain();
+  const wrongNetwork = useAtomValue(invalidChainAtom);
 
   const { selectToken, token, amount, onChange, balance, usdValue, usdLoading, balanceLoading } = isSrc ? srcValues : dstValues;
 
@@ -638,6 +643,16 @@ export const useChunks = () => {
   };
 };
 
+export const disconnectAndReset = () => {
+  const resetState = useSetAtom(resetAllSet);
+  const resetLib = useSetAtom(twapLibAtom);
+
+  return () => {
+    resetState();
+    resetLib(undefined);
+  };
+};
+
 export const useMaxDuration = () => {
   const [maxDuration, setMaxDuration] = useAtom(maxDurationAtom);
 
@@ -745,44 +760,45 @@ export const useMaker = () => {
   return lib?.maker;
 };
 
-export const changeNetwork = async (web3?: Web3, chain?: number) => {
-  if (!web3 || !chain) {
-    return;
-  }
+export const useChangeNetworkCallback = () => {
+  const { provider: _provider, config } = useTwapContext();
 
-  const provider = web3 ? web3.givenProvider : undefined;
-  if (!provider) {
-    return;
-  }
+  return async (onSuccess: () => void) => {
+    const chain = config.chainId;
 
-  try {
-    await provider.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: Web3.utils.toHex(chain) }],
-    });
-  } catch (error: any) {
-    // if unknown chain, add chain
-    if (error.code === 4902) {
-      const response = await fetch("https://chainid.network/chains.json");
-      const list = await response.json();
-      const chainArgs = list.find((it: any) => it.chainId === chain);
-      if (!chainArgs) {
-        return;
-      }
-
+    const provider = _provider.provider || _provider.currentProvider;
+    if (!provider) return;
+    try {
       await provider.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainName: chainArgs.name,
-            nativeCurrency: chainArgs.nativeCurrency,
-            rpcUrls: chainArgs.rpc,
-            chainId: Web3.utils.toHex(chain),
-            blockExplorerUrls: [_.get(chainArgs, ["explorers", 0, "url"])],
-            iconUrls: [`https://defillama.com/chain-icons/rsz_${chainArgs.chain}.jpg`],
-          },
-        ],
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: Web3.utils.toHex(chain) }],
       });
+      onSuccess();
+    } catch (error: any) {
+      // if unknown chain, add chain
+      if (error.code === 4902) {
+        const response = await fetch("https://chainid.network/chains.json");
+        const list = await response.json();
+        const chainArgs = list.find((it: any) => it.chainId === chain);
+        if (!chainArgs) {
+          return;
+        }
+
+        await provider.request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainName: chainArgs.name,
+              nativeCurrency: chainArgs.nativeCurrency,
+              rpcUrls: chainArgs.rpc,
+              chainId: Web3.utils.toHex(chain),
+              blockExplorerUrls: [_.get(chainArgs, ["explorers", 0, "url"])],
+              iconUrls: [`https://defillama.com/chain-icons/rsz_${chainArgs.chain}.jpg`],
+            },
+          ],
+        });
+        onSuccess();
+      }
     }
-  }
+  };
 };

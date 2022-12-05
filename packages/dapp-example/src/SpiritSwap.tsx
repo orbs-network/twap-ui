@@ -12,8 +12,10 @@ const parseToken = (token: any): TokenData => {
   return { symbol: token.symbol, address: token.address, decimals: token.decimals, logoUrl: token.logoURI };
 };
 
+const config = Configs.SpiritSwap;
+
 const useDappTokens = () => {
-  return useGetTokens(Configs.SpookySwap.chainId, parseToken);
+  return useGetTokens(config.chainId, parseToken);
 };
 
 interface TokenSelectModalProps {
@@ -50,6 +52,7 @@ const DappComponent = () => {
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
 
+  //TODO remove
   const getRpc = () => {
     return "https://rpc.ankr.com/fantom/";
   };
@@ -75,6 +78,7 @@ const DappComponent = () => {
 
   return (
     <>
+      {/* <WrongNetworkPopup config={Configs.SpiritSwap} /> */}
       <MetaTags title={Configs.SpiritSwap.partner} favicon={logo} />
       <DappLayout>
         <StyledLayoutSpiritswap>
@@ -87,6 +91,8 @@ const DappComponent = () => {
     </>
   );
 };
+
+//create path from name (.toLowercase())
 
 const dapp: Dapp = {
   name: Configs.SpiritSwap.partner,

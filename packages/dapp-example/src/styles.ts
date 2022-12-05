@@ -148,3 +148,28 @@ export const StyledDappLayout = styled(Box)({
   flexDirection: "column",
   gap: 20,
 });
+
+export const StyledWrongNetwork = styled(Box)({
+  margin: "auto",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  padding: 20,
+  background: "rgb(16, 23, 38)",
+  display: "flex",
+  flexDirection: "column",
+  gap: 30,
+});
+
+export const StyledWrongNetworkButton = styled("button")({
+  background: "black",
+  color: "white",
+  padding: "5px 20px",
+  border: "unset",
+  cursor: "pointer",
+});
+
+export const StyledWrongNetworkText = styled("p")({
+  fontSize: 22,
+});

@@ -6,20 +6,23 @@ import spookyswap from "./SpookySwap";
 import { Dapp, DappsMenu } from "./Components";
 import { Navigate } from "react-router-dom";
 import { hooks } from "@orbs-network/twap-ui";
-import { useSelectedDapp } from "./hooks";
+import { useEagerlyConnect, useSelectedDapp, useDisconnectWallet } from "./hooks";
 import { useCallback } from "react";
 
 const defaultDapp = spiritswap;
 const dapps = [spiritswap, pangolin, spookyswap];
 
 function App() {
-  const reset = hooks.resetState();
+  const resetState = hooks.disconnectAndReset();
   const navigate = useNavigate();
   const isSelected = useSelectedDapp();
+  const disconnect = useDisconnectWallet();
+  useEagerlyConnect();
 
   const onSelect = useCallback(
     (dapp: Dapp) => {
-      reset();
+      resetState();
+      disconnect();
       navigate(dapp.path);
     },
     [navigate]

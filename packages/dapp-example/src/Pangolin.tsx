@@ -7,12 +7,15 @@ import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { Configs } from "@orbs-network/twap";
 import { Dapp } from "./Components";
+import { useConnectWallet, useNetwork } from "./hooks";
 
 interface TokenSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCurrencySelect: (token: any) => void;
 }
+
+const config = Configs.Pangolin;
 
 const nativeToken = {
   decimals: 18,
@@ -23,10 +26,11 @@ const nativeToken = {
 
 const nativeTokenLogo = "https://raw.githubusercontent.com/pangolindex/sdk/master/src/images/chains/avax.png";
 
-const chainId = 43114;
+const chainId = config.chainId;
 
 const useDappTokens = () => {
   const { account } = useWeb3React();
+  const { isInValidNetwork } = useNetwork(chainId);
 
   return useQuery(
     ["useDappTokens", chainId],
@@ -53,7 +57,7 @@ const useDappTokens = () => {
       return { native: nativeToken, ..._.mapKeys(_tokens, (t) => t.address) };
     },
     {
-      enabled: !!account,
+      enabled: !!account && !isInValidNetwork,
     }
   );
 };
@@ -88,8 +92,10 @@ const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModa
 };
 const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8422.png";
 const DappComponent = () => {
-  const { library, account } = useWeb3React();
+  const { account, library: provider } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
+
+  const connect = useConnectWallet();
 
   const twapProps: PangolinTWAPProps = {
     account,
@@ -97,15 +103,17 @@ const DappComponent = () => {
     srcToken: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
     dstToken: "0x340fE1D898ECCAad394e2ba0fC1F93d27c7b717A",
     dappTokens,
-    provider: library,
+    provider,
     onSrcTokenSelected: (token: any) => console.log(token),
     onDstTokenSelected: (token: any) => console.log(token),
+    connect,
   };
-  const ordersProps: PangolinOrdersProps = { account, dappTokens };
+  const ordersProps: PangolinOrdersProps = { account, dappTokens, provider };
 
   return (
     <>
-      <MetaTags title={Configs.Pangolin.partner} favicon={logo} />
+      {/* <WrongNetworkPopup config={Configs.Pangolin} /> */}
+      <MetaTags title={config.partner} favicon={logo} />
       <DappLayout>
         <StyledLayoutPangolin>
           <Twap {...twapProps} />

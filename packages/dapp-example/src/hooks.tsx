@@ -1,13 +1,14 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
-
+import Web3 from "web3";
 import { TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Dapp } from "./Components";
+import { PROVIDER_NAME } from ".";
 export const injectedConnector = new InjectedConnector({});
 
 const tokenlistsNetworkNames = {
@@ -22,6 +23,7 @@ const tokenlistsNetworkNames = {
 
 export const useGetTokens = (chainId: number, parseToken: (token: any) => TokenData) => {
   const { account } = useWeb3React();
+  const { isInValidNetwork } = useNetwork(chainId);
 
   return useQuery(
     ["useGetTokens", chainId],
@@ -46,13 +48,24 @@ export const useGetTokens = (chainId: number, parseToken: (token: any) => TokenD
       });
       return _tokens;
     },
-    { enabled: !!account }
+    { enabled: !!account && !isInValidNetwork }
   );
 };
 
 export const useConnectWallet = () => {
   const { activate } = useWeb3React();
-  return () => activate(injectedConnector);
+  return () => {
+    activate(injectedConnector);
+    window.localStorage.setItem(PROVIDER_NAME, "1");
+  };
+};
+
+export const useDisconnectWallet = () => {
+  const { deactivate } = useWeb3React();
+  return () => {
+    deactivate();
+    window.localStorage.removeItem(PROVIDER_NAME);
+  };
 };
 
 export const useSelectedDapp = () => {
@@ -60,4 +73,63 @@ export const useSelectedDapp = () => {
   const selected = location.pathname.split("/")[1];
   const isSelected = useCallback((dapp: Dapp) => selected === dapp.path, [selected]);
   return isSelected;
+};
+
+export const useNetwork = (chainId: number) => {
+  const { chainId: connectedChainId } = useWeb3React();
+
+  const isInValidNetwork = connectedChainId && connectedChainId !== chainId ? true : false;
+
+  return { isInValidNetwork };
+};
+
+export const useChangeNetwork = () => {
+  const { library } = useWeb3React();
+
+  return async (chain: number) => {
+    const web3 = new Web3(library);
+    const provider = web3 ? web3.givenProvider : undefined;
+
+    try {
+      await provider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: Web3.utils.toHex(chain) }],
+      });
+    } catch (error: any) {
+      // if unknown chain, add chain
+      if (error.code === 4902) {
+        const response = await fetch("https://chainid.network/chains.json");
+        const list = await response.json();
+        const chainArgs = list.find((it: any) => it.chainId === chain);
+        if (!chainArgs) {
+          return;
+        }
+
+        await provider.request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainName: chainArgs.name,
+              nativeCurrency: chainArgs.nativeCurrency,
+              rpcUrls: chainArgs.rpc,
+              chainId: Web3.utils.toHex(chain),
+              blockExplorerUrls: [_.get(chainArgs, ["explorers", 0, "url"])],
+              iconUrls: [`https://defillama.com/chain-icons/rsz_${chainArgs.chain}.jpg`],
+            },
+          ],
+        });
+      }
+    }
+  };
+};
+
+export const useEagerlyConnect = () => {
+  const connect = useConnectWallet();
+
+  useEffect(() => {
+    const wasConnected = window.localStorage.getItem(PROVIDER_NAME);
+    if (wasConnected) {
+      connect();
+    }
+  }, []);
 };
