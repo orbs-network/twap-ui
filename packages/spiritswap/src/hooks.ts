@@ -1,7 +1,6 @@
-import { eqIgnoreCase } from "@defi.org/web3-candies";
-import { Configs, TokenData } from "@orbs-network/twap";
+import { TokenData } from "@orbs-network/twap";
 import { hooks } from "@orbs-network/twap-ui";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { SpiritSwapTWAPProps } from ".";
 import _ from "lodash";
 
