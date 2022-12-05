@@ -18,14 +18,13 @@ export const parseToken = (rawToken: any, getTokenImage: (rawToken: any) => stri
   };
 };
 
-
 export const useParseTokenList = (getTokenImage: (rawToken: any) => string, dappTokens?: any[]): TokenData[] => {
-  const dappTokensRef = useRef<any[] | undefined>(undefined)
-  dappTokensRef.current = dappTokens
-  const dappTokensLength =  dappTokens?.length || 0
+  const dappTokensRef = useRef<any[] | undefined>(undefined);
+  dappTokensRef.current = dappTokens;
+  const dappTokensLength = dappTokens?.length || 0;
 
   return useMemo(() => {
-    if (!dappTokensRef.current) return [];    
+    if (!dappTokensRef.current) return [];
     return _.map(dappTokensRef.current, (t) => parseToken(t, getTokenImage));
   }, [dappTokensLength]);
 };
@@ -42,8 +41,8 @@ export const useSetTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: s
   const listLength = tokenList?.length || 0;
 
   useEffect(() => {
-    if (!listLength) return; 
-     const srcToken = findToken(tokenListRef.current, srcTokenSymbol);
+    if (!listLength) return;
+    const srcToken = findToken(tokenListRef.current, srcTokenSymbol);
     const dstToken = findToken(tokenListRef.current, dstTokenSymbol);
     setTokens(srcToken, dstToken);
   }, [srcTokenSymbol, dstTokenSymbol, listLength]);

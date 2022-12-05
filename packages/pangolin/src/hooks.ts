@@ -30,7 +30,6 @@ const nativeToken: TokenData = {
 };
 
 export const useParseTokenList = (dappTokens?: any): TokenData[] => {
-
   return useMemo(() => {
     if (!dappTokens) return [];
     const result = _.map(dappTokens, (t) => parseToken(t));
@@ -52,9 +51,8 @@ export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: st
   const tokensLength = tokenList?.length || 0;
 
   useEffect(() => {
+    if (!tokensLength) return;
 
-    if(!tokensLength) return 
-    
     const srcToken = findToken(tokenListRef.current, srcTokenAddress);
     const dstToken = findToken(tokenListRef.current, dstTokenAddress);
 

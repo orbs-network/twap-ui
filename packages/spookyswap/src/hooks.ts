@@ -6,7 +6,7 @@ import { SpookySwapTWAPProps } from ".";
 
 export const useGetProvider = (getProvider: () => any, account?: string) => {
   return useMemo(() => {
-     return getProvider();
+    return getProvider();
   }, [account]);
 };
 
@@ -20,12 +20,12 @@ export const parseToken = (rawToken: any, getTokenImage: (rawToken: any) => stri
 };
 
 export const useParseTokenList = (getTokenImage: (rawToken: any) => string, dappTokens?: any[]): TokenData[] => {
-  const dappTokensRef = useRef<any[] | undefined>(undefined)
-  dappTokensRef.current = dappTokens
-  const dappTokensLength =  dappTokens?.length || 0
+  const dappTokensRef = useRef<any[] | undefined>(undefined);
+  dappTokensRef.current = dappTokens;
+  const dappTokensLength = dappTokens?.length || 0;
 
   return useMemo(() => {
-    if (!dappTokensRef.current) return [];    
+    if (!dappTokensRef.current) return [];
     return _.map(dappTokensRef.current, (t) => parseToken(t, getTokenImage));
   }, [dappTokensLength]);
 };

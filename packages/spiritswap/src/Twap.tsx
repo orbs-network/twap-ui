@@ -48,8 +48,8 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
   useSetTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
-  
-const connect = useCallback(() => {
+
+  const connect = useCallback(() => {
     props.connect();
   }, []);
 

@@ -46,7 +46,7 @@ import { SpookySwapTWAPProps } from ".";
 
 const TWAP = (props: SpookySwapTWAPProps) => {
   const tokenList = useParseTokenList(props.getTokenImage, props.dappTokens);
-  useTokensFromDapp(props.srcToken, props.dstToken,  props.account ? tokenList : undefined);
+  useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
 

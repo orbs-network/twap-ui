@@ -43,7 +43,7 @@ import { Configs } from "@orbs-network/twap";
 import { AdapterContextProvider, parseToken, useAdapterContext, useParseTokenList, useTokensFromDapp } from "./hooks";
 
 const TWAP = (props: TWAPProps) => {
-  const {account} = props
+  const { account } = props;
   const tokenList = useParseTokenList(props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, account ? tokenList : undefined);
 

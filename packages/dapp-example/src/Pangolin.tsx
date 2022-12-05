@@ -1,5 +1,5 @@
-import { Orders, PangolinOrdersProps, PangolinTWAPProps, Twap } from "@orbs-network/twap-ui-pangolin";
-import { DappLayout, MetaTags, Popup } from "./Components";
+import { Orders, PangolinOrdersProps, PangolinTWAPProps, TWAP } from "@orbs-network/twap-ui-pangolin";
+import { DappLayout, Popup } from "./Components";
 import { StyledLayoutPangolin, StyledModalList, StyledModalListItem } from "./styles";
 import _ from "lodash";
 import { erc20s } from "@defi.org/web3-candies";
@@ -114,7 +114,7 @@ const DappComponent = () => {
   return (
     <DappLayout name={config.partner}>
       <StyledLayoutPangolin>
-        <Twap {...twapProps} />
+        <TWAP {...twapProps} />
       </StyledLayoutPangolin>
       <StyledLayoutPangolin>
         <Orders {...ordersProps} />

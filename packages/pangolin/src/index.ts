@@ -1,4 +1,4 @@
-import Twap from "./Twap";
+import TWAP from "./Twap";
 import Orders from "./Orders";
 import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 
@@ -8,4 +8,4 @@ export interface PangolinOrdersProps extends OrdersProps {}
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface PangolinTWAPProps extends TWAPProps {}
 
-export { Twap, Orders };
+export { TWAP, Orders };

@@ -1,4 +1,4 @@
-import Twap from "./Twap";
+import TWAP from "./Twap";
 import Orders from "./Orders";
 import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 
@@ -12,4 +12,4 @@ export interface SpookySwapTWAPProps extends TWAPProps {
   getProvider: () => any;
 }
 
-export { Twap, Orders };
+export { TWAP, Orders };

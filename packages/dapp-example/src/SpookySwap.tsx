@@ -1,5 +1,5 @@
 import { StyledLayoutSpookyswap, StyledModalList, StyledModalListItem } from "./styles";
-import { Orders, Twap, SpookySwapTWAPProps, SpookySwapOrdersProps } from "@orbs-network/twap-ui-spookyswap";
+import { Orders, TWAP, SpookySwapTWAPProps, SpookySwapOrdersProps } from "@orbs-network/twap-ui-spookyswap";
 import { useConnectWallet, useGetTokens } from "./hooks";
 import { TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -55,7 +55,7 @@ const DappComponent = () => {
 
   const getTokenImage = (token: any) => token.logoUrl;
 
-  const  getProvider = () => library
+  const getProvider = () => library;
 
   const twapProps: SpookySwapTWAPProps = {
     getProvider,
@@ -74,7 +74,7 @@ const DappComponent = () => {
   return (
     <DappLayout name={config.partner}>
       <StyledLayoutSpookyswap>
-        <Twap {...twapProps} />
+        <TWAP {...twapProps} />
       </StyledLayoutSpookyswap>
       <StyledLayoutSpookyswap>
         <Orders {...ordersProps} />

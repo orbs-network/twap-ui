@@ -1,12 +1,12 @@
 import { StyledLayoutSpiritswap, StyledModalList, StyledModalListItem } from "./styles";
-import { Orders, Twap, SpiritSwapTWAPProps, SpiritSwapOrdersProps } from "@orbs-network/twap-ui-spiritswap";
+import { Orders, TWAP, SpiritSwapTWAPProps, SpiritSwapOrdersProps } from "@orbs-network/twap-ui-spiritswap";
 import { useConnectWallet, useGetTokens } from "./hooks";
 import { TokenData } from "@orbs-network/twap";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp } from "./Components";
 
-import { DappLayout, MetaTags, Popup } from "./Components";
+import { DappLayout, Popup } from "./Components";
 
 const parseToken = (token: any): TokenData => {
   return { symbol: token.symbol, address: token.address, decimals: token.decimals, logoUrl: token.logoURI };
@@ -73,7 +73,7 @@ const DappComponent = () => {
   return (
     <DappLayout name={config.partner}>
       <StyledLayoutSpiritswap>
-        <Twap {...twapProps} />
+        <TWAP {...twapProps} />
       </StyledLayoutSpiritswap>
       <StyledLayoutSpiritswap>
         <Orders {...ordersProps} />
