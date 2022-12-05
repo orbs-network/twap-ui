@@ -34,7 +34,9 @@ import TokenPriceCompare from "./components/TokenPriceCompare";
 import OdnpButton from "./components/OdnpButton";
 import Loader from "./components/Loader";
 import Slider from "./components/Slider";
+
 export * as hooks from "./hooks";
+export * as store from "./store";
 export * from "./types";
 export * from "./context";
 
