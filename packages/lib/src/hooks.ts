@@ -9,7 +9,7 @@ import { Translations } from "./types";
 import _ from "lodash";
 import { useSendAnalyticsEvents } from "./analytics";
 import { zeroAddress } from "@defi.org/web3-candies";
-import { useOrderHistoryStore, useTwapStore } from "./store";
+import { OrderUI, useOrderHistoryStore, useTwapStore } from "./store";
 
 const useWrapToken = () => {
   const lib = useTwapStore((state) => state.lib);
@@ -277,12 +277,12 @@ const useConnect = () => {
 export const useShowConfirmationButton = () => {
   const lib = useTwapStore((state) => state.lib);
   const srcToken = useTwapStore((state) => state.srcToken);
-  const dsToken = useTwapStore((state) => state.dstToken);
+  const dstToken = useTwapStore((state) => state.dstToken);
   const translations = useTwapContext().translations;
   const shouldWrap = useTwapStore((state) => state.shouldWrap());
   const shouldUnwrap = useTwapStore((state) => state.shouldUnwrap());
   const allowance = useHasAllowanceQuery();
-  const showConfirmation = useTwapStore((state) => state.showConfirmation);
+  const showConfirmation = useTwapStore((state) => state.setShowConfirmation);
   const connectArgs = useConnect();
   const changeNetworkArgs = useChangeNetwork();
   const { mutate: approve, isLoading: approveLoading } = useApproveToken();
@@ -290,11 +290,10 @@ export const useShowConfirmationButton = () => {
   const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
   const createOrderLoading = useTwapStore((state) => state.loading);
+  const wrongNetwork = useTwapStore((state) => state.wrongNetwork);
 
-  const srcUsdLoading = useAtomValue(usdGet(srcToken)).loading;
-  const dstUsdLoading = useAtomValue(usdGet(dsToken)).loading;
-
-  const wrongNetwork = useAtomValue(invalidChainAtom);
+  const srcUsdLoading = useUsdValueQuery(srcToken).isLoading;
+  const dstUsdLoading = useUsdValueQuery(dstToken).isLoading;
 
   if (wrongNetwork) {
     return changeNetworkArgs;
@@ -313,13 +312,13 @@ export const useShowConfirmationButton = () => {
   if (shouldWrap) {
     return { text: translations.wrap, onClick: wrap, loading: wrapLoading, disabled: wrapLoading };
   }
-  if (allowance.loading) {
+  if (allowance.isLoading) {
     return { text: "", onClick: () => {}, loading: true, disabled: true };
   }
   if (srcUsdLoading || dstUsdLoading) {
     return { text: translations.placeOrder, onClick: () => {}, loading: false, disabled: true };
   }
-  if (allowance.hasAllowance === false) {
+  if (allowance.data === false) {
     return { text: translations.approve, onClick: approve, loading: approveLoading, disabled: approveLoading };
   }
   if (createOrderLoading) {
@@ -329,20 +328,20 @@ export const useShowConfirmationButton = () => {
 };
 
 export const useOrders = () => {
-  const { orders = {}, loading } = useAtomValue(orderHistoryGet);
-  return { orders, loading };
+  // const { orders = {}, loading } = useAtomValue(orderHistoryGet); // TODO
+  // return { orders, loading };
 };
 
 export const useCreateOrderButton = () => {
   const { mutate: createOrder } = useCreateOrder();
-  const disclaimerAccepted = useAtomValue(disclaimerAcceptedAtom);
-  const lib = useAtomValue(twapLibAtom);
+  const lib = useTwapStore((state) => state.lib);
+  const disclaimerAccepted = useTwapStore((state) => state.disclaimerAccepted);
   const translations = useTwapContext().translations;
   const connectArgs = useConnect();
   const changeNetworkArgs = useChangeNetwork();
-  const wrongNetwork = useAtomValue(invalidChainAtom);
+  const wrongNetwork = useTwapStore((state) => state.wrongNetwork);
 
-  const createOrderLoading = useAtomValue(createOrderLoadingAtom);
+  const createOrderLoading = useTwapStore((state) => state.loading);
 
   if (!lib?.maker) {
     return connectArgs;
@@ -358,7 +357,7 @@ const useSrcTokenPanel = () => {
   const onSrcAmountChange = useTwapStore((state) => state.setSrcAmountUi);
   const srcToken = useTwapStore((state) => state.srcToken);
   const selectSrcToken = useTwapStore((state) => state.setSrcToken);
-  const srcTokenAmount = useTwapStore((state) => state.getSrcAmountUi());
+  const srcTokenAmount = useTwapStore((state) => state.srcAmountUi);
   const setSrcUsd = useTwapStore((state) => state.setSrcUsd);
   const { isLoading: srcUsdLoading } = useUsdValueQuery(srcToken, setSrcUsd);
   const srcSrcBalance = useTwapStore((state) => state.setSrcBalance);
@@ -490,7 +489,7 @@ export const useLimitPrice = () => {
     setInverted(false);
     toggleLimitOrder();
     onChange(marketPrice);
-    analytics.onLimitToggleClick(isLimitOrder ? false : true);
+    analytics.onLimitToggleClick(!isLimitOrder);
   };
 
   const toggleInverted = () => {
@@ -566,19 +565,18 @@ export const useChunks = () => {
   const onTotalChunksChange = useTwapStore((state) => state.setChunks);
   const totalChunks = useTwapStore((state) => state.chunks);
   const setSrcUsd = useTwapStore((state) => state.setSrcUsd);
-  const usdValue = useAtomValue(srcChunkAmountUsdUiGet);
-  const token = useAtomValue(srcTokenAtom);
-  const maxPossibleChunks = useAtomValue(maxPossibleChunksGet);
-  const srcToken = useAtomValue(srcTokenAtom);
-  const srcAmountUi = useAtomValue(srcAmountUiAtom);
-  const usdLoading = useAtomValue(usdGet(useAtomValue(srcTokenAtom))).loading;
+  const usdValue = useTwapStore((state) => state.getSrcChunkAmountUsdUi);
+  const srcToken = useTwapStore((state) => state.srcToken);
+  const maxPossibleChunks = useTwapStore((state) => state.getMaxPossibleChunks());
+  const srcAmountUi = useTwapStore((state) => state.srcAmountUi);
+  const usdLoading = useUsdValueQuery(srcToken).isLoading;
 
   return {
     chunksAmount,
     onTotalChunksChange,
     totalChunks,
     usdValue,
-    token,
+    token: srcToken,
     usdLoading,
     maxPossibleChunks,
     ready: !!srcToken && !!srcAmountUi,
@@ -586,8 +584,8 @@ export const useChunks = () => {
 };
 
 export const disconnectAndReset = () => {
-  const resetState = useSetAtom(resetAllSet);
-  const resetLib = useSetAtom(twapLibAtom);
+  const resetState = useTwapStore((state) => state.reset);
+  const resetLib = useTwapStore((state) => state.setLib);
 
   return () => {
     resetState();
@@ -596,21 +594,24 @@ export const disconnectAndReset = () => {
 };
 
 export const useMaxDuration = () => {
-  const [maxDuration, setMaxDuration] = useAtom(maxDurationAtom);
+  const duration = useTwapStore((state) => state.duration);
+  const setDuration = useTwapStore((state) => state.setDuration);
 
   return {
-    maxDuration,
-    onChange: setMaxDuration,
+    maxDuration: duration,
+    onChange: setDuration,
   };
 };
 
 export const useFillDelay = () => {
-  const [fillDelay, setFillDelay] = useAtom(fillDelayAtom);
-  const [customFillDelayEnabled, setCustomFillDelayEnabled] = useAtom(customFillDelayEnabledAtom);
+  const fillDelay = useTwapStore((state) => state.getFillDelay());
+  const setFillDelay = useTwapStore((state) => state.setFillDelay);
+  const customFillDelayEnabled = useTwapStore((state) => state.customFillDelayEnabled);
+  const setCustomFillDelayEnabled = useTwapStore((state) => state.setCustomFillDelayEnabled);
   const analytics = useSendAnalyticsEvents();
 
   const onCustomFillDelayClick = () => {
-    setCustomFillDelayEnabled(true);
+    setCustomFillDelayEnabled();
     analytics.onCustomIntervalClick();
   };
 
@@ -623,9 +624,9 @@ export const useFillDelay = () => {
 };
 
 export const useCancelOrder = () => {
-  const lib = useAtomValue(twapLibAtom);
-  const reset = useSetAtom(resetAllQueriesSet);
-  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
+  const lib = useTwapStore((state) => state.lib);
+  // const reset = useSetAtom(resetAllQueriesSet); //TODO
+  const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
 
   const analytics = useSendAnalyticsEvents();
 
@@ -637,7 +638,7 @@ export const useCancelOrder = () => {
     {
       onSuccess: (_result, orderId) => {
         analytics.onCancelOrderClick(orderId);
-        reset();
+        // reset(); //TODO
       },
       onError: (error: Error) => {
         analytics.onCancelOrderError(error.message);
@@ -647,8 +648,8 @@ export const useCancelOrder = () => {
 };
 
 export const useSetTokens = () => {
-  const srcTokenSelect = useSetAtom(srcTokenAtom);
-  const dstTokenSelect = useSetAtom(dstTokenAtom);
+  const srcTokenSelect = useTwapStore((state) => state.setSrcToken);
+  const dstTokenSelect = useTwapStore((state) => state.setDstToken);
 
   return (srcToken?: TokenData, dstToken?: TokenData) => {
     srcTokenSelect(srcToken);
@@ -733,6 +734,8 @@ const useHasAllowanceQuery = () => {
 
 const useGasPriceQuery = () => {
   const { maxFeePerGas, priorityFeePerGas } = useTwapContext();
+  if (BN(maxFeePerGas || 0).gt(0) && BN(priorityFeePerGas || 0).gt(0)) return { isLoading: false, maxFeePerGas: BN(maxFeePerGas!), priorityFeePerGas: BN(priorityFeePerGas!) };
+
   const lib = useTwapStore((state) => state.lib);
 
   const { isLoading, data } = useQuery(["useGasPrice", priorityFeePerGas, maxFeePerGas], () => Paraswap.gasPrices(lib!.config.chainId), {

@@ -41,7 +41,7 @@ const initialState = {
 
   chunks: 1,
   duration: { resolution: TimeResolution.Minutes, amount: 5 },
-  customFillDelay: undefined as { resolution: TimeResolution; amount: number } | undefined,
+  customFillDelay: { resolution: TimeResolution.Minutes, amount: 0 },
   customFillDelayEnabled: false,
 };
 
@@ -50,8 +50,8 @@ export const useTwapStore = create(
     reset: () => set(initialState),
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
-    setSrcToken: (srcToken: TokenData) => set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" }),
-    setDstToken: (dstToken: TokenData) => set({ dstToken, limitPriceUi: initialState.limitPriceUi }),
+    setSrcToken: (srcToken?: TokenData) => set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" }),
+    setDstToken: (dstToken?: TokenData) => set({ dstToken, limitPriceUi: initialState.limitPriceUi }),
     setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi, chunks: 1 }),
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),
     setDstBalance: (dstBalance: BN) => set({ dstBalance }),
@@ -137,6 +137,7 @@ export const useTwapStore = create(
       return { resolution, amount: Number(BN(millis / resolution).toFixed(2)) };
     },
     getFillDelayMillis: () => (get() as any).getFillDelay().amount * (get() as any).getFillDelay().resolution,
+    setCustomFillDelayEnabled: () => set({ customFillDelayEnabled: true }),
 
     switchTokens: () => {
       const srcToken = get().srcToken!;
@@ -147,9 +148,6 @@ export const useTwapStore = create(
       (get() as any).setDstToken(srcToken);
       (get() as any).setSrcAmountUi(dstAmount.isZero() ? "" : dstAmountUi);
     },
-    getSrcAmountUi: () => amountUi(get().srcToken, (get() as any).getSrcAmount()),
-
-    getDstAmountUi: () => amountUi(get().dstToken, (get() as any).getDstAmount()),
 
     getSrcChunkAmount: () => get().lib?.srcChunkAmount((get() as any).getSrcAmount(), get().chunks) || BN(0),
 
@@ -178,6 +176,7 @@ export const useTwapStore = create(
         .valueOf(),
     getDeadlineUi: () => moment((get() as any).getDeadline()).format("DD/MM/YYYY HH:mm"),
 
+    getDstAmountUi: () => amountUi(get().dstToken, (get() as any).getDstAmount()),
     getSrcAmountUsdUi: () => amountUi(get().srcToken, (get() as any).getSrcAmount().times(get().srcUsd)),
     getDstAmountUsdUi: () => amountUi(get().dstToken, (get() as any).getDstAmount().times(get().dstUsd)),
     getSrcBalanceUi: () => amountUi(get().srcToken, get().srcBalance),
