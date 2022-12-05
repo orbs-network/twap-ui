@@ -1,4 +1,4 @@
-import TWAP from "./TWAP1";
+import TWAP from "./TWAP";
 import Orders from "./Orders";
 import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 
