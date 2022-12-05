@@ -23,6 +23,7 @@ const initialState = {
   lib: undefined as TWAPLib | undefined,
   srcToken: undefined as TokenData | undefined,
   dstToken: undefined as TokenData | undefined,
+  wrongNetwork: false,
 
   srcAmountUi: "",
 
@@ -35,7 +36,7 @@ const initialState = {
   loading: false,
   isLimitOrder: false,
   confirmationClickTimestamp: 0,
-  confirmation: false,
+  showConfirmation: false,
   disclaimerAccepted: false,
 
   chunks: 1,
@@ -52,7 +53,10 @@ export const useTwapStore = create(
     setSrcToken: (srcToken: TokenData) => set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" }),
     setDstToken: (dstToken: TokenData) => set({ dstToken, limitPriceUi: initialState.limitPriceUi }),
     setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi, chunks: 1 }),
-
+    setSrcBalance: (srcBalance: BN) => set({ srcBalance }),
+    setDstBalance: (dstBalance: BN) => set({ dstBalance }),
+    setSrcUsd: (srcUsd: BN) => set({ srcUsd }),
+    setDstUsd: (dstUsd: BN) => set({ dstUsd }),
     getSrcAmount: () => amountBN(get().srcToken, get().srcAmountUi),
     getDstAmount: () => {
       if (!get().lib || !get().srcToken || !get().dstToken || get().srcUsd.isZero() || get().dstUsd.isZero()) return BN(0);
@@ -66,6 +70,9 @@ export const useTwapStore = create(
         !get().isLimitOrder
       );
     },
+    setDisclaimerAccepted: (disclaimerAccepted: boolean) =>  set({disclaimerAccepted}),
+    setWrongNetwork: (wrongNetwork: boolean) => set({ wrongNetwork }),
+    setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation }),
 
     toggleLimitOrder: () => set({ isLimitOrder: !get().isLimitOrder, limitPriceUi: (get() as any).getMarketPrice(false) }),
     setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => set({ limitPriceUi }),
@@ -140,6 +147,7 @@ export const useTwapStore = create(
       (get() as any).setDstToken(srcToken);
       (get() as any).setSrcAmountUi(dstAmount.isZero() ? "" : dstAmountUi);
     },
+    getSrcAmountUi: () => amountUi(get().srcToken, (get() as any).getSrcAmount()),
 
     getDstAmountUi: () => amountUi(get().dstToken, (get() as any).getDstAmount()),
 

@@ -1,8 +1,9 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { Config, OrderInputValidation, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { Config, OrderInputValidation, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   allTokensListAtom,
   balanceGet,
@@ -57,6 +58,7 @@ import _ from "lodash";
 import { useSendAnalyticsEvents } from "./analytics";
 import { zeroAddress } from "@defi.org/web3-candies";
 import { queryClientAtom } from "jotai-tanstack-query";
+import { useTwapStore } from "./store";
 
 const useWrapToken = () => {
   const lib = useAtomValue(twapLibAtom);
@@ -417,43 +419,65 @@ export const useCreateOrderButton = () => {
 };
 
 const useSrcTokenPanel = () => {
-  const onChange = useSetAtom(srcAmountUiAtom);
-  const token = useAtomValue(srcTokenAtom);
-  const selectToken = useSetAtom(srcTokenAtom);
-  const amount = useAtomValue(srcAmountUiAtom);
-  const usdValue = useAtomValue(srcUsdUiGet);
-  const balance = useAtomValue(srcBalanceUiGet);
-  const usdLoading = useAtomValue(usdGet(useAtomValue(srcTokenAtom))).loading;
-  const balanceLoading = useAtomValue(balanceGet(useAtomValue(srcTokenAtom))).loading;
-
+  const onSrcAmountChange = useTwapStore((state) => state.setSrcAmountUi);
+  const srcToken = useTwapStore((state) => state.srcToken);
+  const selectSrcToken = useTwapStore((state) => state.setSrcToken);
+  const srcTokenAmount = useTwapStore((state) => state.getSrcAmountUi());
+  const setSrcUsd = useTwapStore((state) => state.setSrcUsd);
+  const { isLoading: srcUsdLoading } = useUsdValueQuery(srcToken, setSrcUsd);
+  const srcSrcBalance = useTwapStore((state) => state.setSrcBalance);
+  const { isLoading: srcBalacneLoading } = useBalanceQuery(srcToken, srcSrcBalance);
+  const srcBalance = useTwapStore((state) => state.getSrcBalanceUi());
+  const srcUsd = useTwapStore((state) => state.getSrcAmountUsdUi);
   const analytics = useSendAnalyticsEvents();
 
   const onSelectToken = (token: TokenData) => {
-    selectToken(token);
+    selectSrcToken(token);
     analytics.onSrcTokenClick(token.symbol);
   };
 
   return {
-    onChange,
-    token,
+    onChange: onSrcAmountChange,
+    token: srcToken,
     selectToken: onSelectToken,
-    amount,
-    usdValue,
-    balance,
-    usdLoading,
-    balanceLoading,
+    amount: srcTokenAmount,
+    usdValue: srcUsd,
+    balance: srcBalance,
+    usdLoading: srcUsdLoading,
+    balanceLoading: srcBalacneLoading,
   };
 };
 
+const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => {
+  const lib = useTwapStore((state) => state.lib);
+  return useQuery(["useUsdValueQuery", token?.address], () => Paraswap.priceUsd(lib!.config.chainId, token!), {
+    enabled: !!lib && !!token,
+    onSuccess,
+    refetchInterval: 60_000,
+    staleTime: 60_000,
+  });
+};
+
+const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => {
+  const lib = useTwapStore((state) => state.lib);
+  return useQuery(["useBalanceQuery", lib?.maker, token?.address], () => lib!.makerBalance(token!), {
+    enabled: !!lib && !!token,
+    onSuccess,
+    refetchInterval: 10_000,
+  });
+};
+
 const useDstTokenPanel = () => {
-  const token = useAtomValue(dstTokenAtom);
-  const selectToken = useSetAtom(dstTokenAtom);
-  const amount = useAtomValue(dstAmountUiGet);
-  const usdValue = useAtomValue(dstUsdUiGet);
-  const balance = useAtomValue(dstBalanceUiGet);
-  const usdLoading = useAtomValue(usdGet(useAtomValue(dstTokenAtom))).loading;
-  const balanceLoading = useAtomValue(balanceGet(useAtomValue(dstTokenAtom))).loading;
+  const dstToken = useTwapStore((state) => state.dstToken);
+  const selectToken = useTwapStore((state) => state.setDstToken);
+  const amount = useTwapStore((state) => state.getDstAmountUi());
+  const usdValue = useTwapStore((state) => state.getDstAmountUsdUi());
+  const balance = useTwapStore((state) => state.getDstBalanceUi());
   const analytics = useSendAnalyticsEvents();
+  const setDstUsd = useTwapStore((state) => state.setDstUsd);
+  const { isLoading: dstUsdLoading } = useUsdValueQuery(dstToken, setDstUsd);
+  const setDstBalance = useTwapStore((state) => state.setDstBalance);
+  const { isLoading: dstBalanceLoading } = useBalanceQuery(dstToken, setDstBalance);
 
   const onSelectToken = (token: TokenData) => {
     selectToken(token);
@@ -461,26 +485,26 @@ const useDstTokenPanel = () => {
   };
 
   return {
-    token,
+    token: dstToken,
     selectToken: onSelectToken,
     amount,
     usdValue,
     balance,
     onChange: () => {},
-    usdLoading,
-    balanceLoading,
+    usdLoading: dstUsdLoading,
+    balanceLoading: dstBalanceLoading,
   };
 };
 
 export const useTokenPanel = (isSrc?: boolean) => {
   const srcValues = useSrcTokenPanel();
   const dstValues = useDstTokenPanel();
-  const isLimitOrder = useAtomValue(isLimitOrderAtom);
+  const isLimitOrder = useTwapStore(state => state.isLimitOrder)
   const { connectedChainId } = useTwapContext();
   const translations = useTwapContext().translations;
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const maker = useMaker();
-  const wrongNetwork = useAtomValue(invalidChainAtom);
+  const wrongNetwork = useTwapStore((state) => state.wrongNetwork);
 
   const { selectToken, token, amount, onChange, balance, usdValue, usdLoading, balanceLoading } = isSrc ? srcValues : dstValues;
 
@@ -525,7 +549,7 @@ export const useTokenPanel = (isSrc?: boolean) => {
 
 export const useMarketPrice = () => {
   const [inverted, setInverted] = useState(false);
-  const { leftToken, rightToken, marketPriceUi: marketPrice } = useAtomValue(marketPriceGet(inverted));
+  const { leftToken, rightToken, marketPriceUi: marketPrice } = useTwapStore((state) => state.getMarketPrice(inverted));
 
   return { leftToken, rightToken, marketPrice, toggleInverted: () => setInverted(!inverted), ready: !!leftToken && !!rightToken };
 };
@@ -533,19 +557,21 @@ export const useMarketPrice = () => {
 export const useLimitPrice = () => {
   const [inverted, setInverted] = useState(false);
   const translations = useTwapContext().translations;
-  const [isLimitOrder, setIsLimitOrder] = useAtom(isLimitOrderAtom);
-  const setLimitPrice = useSetAtom(limitPriceUiAtom);
-  const { limitPriceUi: limitPrice, leftToken, rightToken } = useAtomValue(limitPriceGet(inverted));
+  const isLimitOrder = useTwapStore(state => state.isLimitOrder)
+  const toggleLimitOrder = useTwapStore((state) => state.toggleLimitOrder);
+  const setLimitPrice = useTwapStore(state => state.setLimitPriceUi)
+    const { limitPriceUi: limitPrice, leftToken, rightToken } = useTwapStore((state) => state.getLimitPrice(inverted));
+
   const { marketPrice } = useMarketPrice();
   const analytics = useSendAnalyticsEvents();
 
   const onChange = (amountUi = "") => {
-    setLimitPrice({ price: amountUi, inverted });
+    setLimitPrice({ priceUi: amountUi, inverted });
   };
 
   const onToggleLimit = () => {
     setInverted(false);
-    setIsLimitOrder(!isLimitOrder);
+    toggleLimitOrder();
     onChange(marketPrice);
     analytics.onLimitToggleClick(isLimitOrder ? false : true);
   };
@@ -567,22 +593,25 @@ export const useLimitPrice = () => {
 };
 
 export const useOrderOverview = () => {
-  const totalChunks = useAtomValue(totalChunksAtom);
-  const srcToken = useAtomValue(srcTokenAtom);
-  const dstToken = useAtomValue(dstTokenAtom);
-  const srcAmount = useAtomValue(srcAmountUiAtom);
-  const isLimitOrder = useAtomValue(isLimitOrderAtom);
-  const [showConfirmation, setShowConfirmation] = useAtom(confirmationAtom);
-  const [disclaimerAccepted, setDisclaimerAccepted] = useAtom(disclaimerAcceptedAtom);
-  const deadlineUi = useAtomValue(deadlineUiGet);
-  const fillDelayMillis = useAtomValue(fillDelayMillisGet);
-  const srcChunkAmount = useAtomValue(srcChunkAmountUiGet);
-  const minAmountOut = useAtomValue(dstMinAmountOutUiGet);
-  const srcUsd = useAtomValue(srcUsdUiGet);
-  const dstUsd = useAtomValue(dstUsdUiGet);
-  const dstAmount = useAtomValue(dstAmountUiGet);
+  const srcToken = useTwapStore(state => state.srcToken)
+  const dstToken = useTwapStore(state => state.dstToken)
+  const srcAmount = useTwapStore(state => state.srcAmountUi)
+  const isLimitOrder = useTwapStore(state => state.isLimitOrder)
+  const showConfirmation = useTwapStore(state => state.showConfirmation)
+  const setShowConfirmation = useTwapStore((state) => state.setShowConfirmation);
+  const disclaimerAccepted = useTwapStore(state => state.disclaimerAccepted)
+  const setDisclaimerAccepted = useTwapStore((state) => state.setDisclaimerAccepted);
+  const deadlineUi = useTwapStore(state => state.getDeadlineUi())
+  const fillDelayMillis = useTwapStore((state) => state.getFillDelayMillis());
+  const srcChunkAmount = useTwapStore((state) => state.getSrcChunkAmountUi());
+  const minAmountOut = useTwapStore((state) => state.getDstMinAmountOutUi());
+  const srcUsd = useTwapStore((state) => state.getSrcAmountUsdUi());
+  const dstUsd = useTwapStore((state) => state.getDstAmountUsdUi());
+  const dstAmount = useTwapStore((state) => state.getDstAmountUi());
   const translations = useTwapContext().translations;
-  const maker = useMaker();
+  const maker = useTwapStore(state => state.lib?.maker)
+
+  const totalChunks = useTwapStore(state => state.chunks)
 
   const result = {
     srcToken,
@@ -610,20 +639,20 @@ export const useOrderOverview = () => {
 };
 
 export const resetState = () => {
-  const reset = useSetAtom(resetAllSet);
-  return reset;
+  return  useTwapStore(state => state.reset)
 };
 
 export const useCustomActions = () => {
-  const onPercentClick = useSetAtom(srcAmountPercentSet);
+  const onPercentClick = useTwapStore(state => state.setSrcAmountPercent)
 
   return { onPercentClick };
 };
 
 export const useChunks = () => {
-  const chunksAmount = useAtomValue(srcChunkAmountUiGet);
-  const onTotalChunksChange = useSetAtom(totalChunksAtom);
-  const totalChunks = useAtomValue(totalChunksAtom);
+  const chunksAmount = useTwapStore(state => state.getSrcChunkAmountUi())
+  const onTotalChunksChange = useTwapStore((state) => state.setChunks);
+  const totalChunks = useTwapStore((state) => state.chunks);
+  const setSrcUsd = useTwapStore((state) => state.setSrcUsd);
   const usdValue = useAtomValue(srcChunkAmountUsdUiGet);
   const token = useAtomValue(srcTokenAtom);
   const maxPossibleChunks = useAtomValue(maxPossibleChunksGet);
