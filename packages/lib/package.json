@@ -43,9 +43,6 @@
     "react": "*",
     "react-dom": "*"
   },
-  "config": {
-    "omit": "optional"
-  },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "jsdom",

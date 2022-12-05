@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@orbs-network/twap-ui-spiritswap": "^0.3.3",
+    "@orbs-network/twap-ui-spookyswap": "^0.3.3",
+    "@orbs-network/twap-ui-pangolin": "^0.3.3",
     "@tanstack/react-query": "^4.18.0",
     "@tanstack/react-query-devtools": "^4.18.0",
     "@types/react": "18.x",
