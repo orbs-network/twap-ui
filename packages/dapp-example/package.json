@@ -13,17 +13,18 @@
     "@orbs-network/twap-ui-spiritswap": "^0.3.3",
     "@orbs-network/twap-ui-spookyswap": "^0.3.3",
     "@orbs-network/twap-ui-pangolin": "^0.3.3",
-    "@tanstack/react-query": "^4.18.0",
-    "@tanstack/react-query-devtools": "^4.18.0",
+    "@tanstack/react-query": "4.x",
+    "@tanstack/react-query-devtools": "4.x",
     "@types/react": "18.x",
     "@types/react-dom": "18.x",
+    "@types/react-helmet": "6.x",
     "@web3-react/core": "6.x",
     "@web3-react/injected-connector": "6.x",
     "@web3-react/walletconnect-connector": "6.x",
     "react": "18.x",
     "react-dom": "18.x",
-    "react-helmet": "^6.1.0",
-    "react-router-dom": "^6.4.4"
+    "react-helmet": "6.x",
+    "react-router-dom": "6.x"
   },
   "browserslist": {
     "production": [
@@ -36,8 +37,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@types/react-helmet": "^6.1.6"
   }
 }
