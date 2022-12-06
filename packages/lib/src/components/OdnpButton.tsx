@@ -2,7 +2,7 @@ import { Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import React from "react";
 import { useSendAnalyticsEvents } from "../analytics";
-import { useOrderHistoryStore } from "../store";
+import { useTwapStore } from "../store";
 
 console.debug = () => {};
 const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
@@ -14,7 +14,7 @@ odnp.hide();
 odnp.mainDiv.classList = "odnp";
 
 function OdnpButton({ className = "" }: { className?: string }) {
-  const account = useOrderHistoryStore((state) => state.lib)?.maker;
+  const account = useTwapStore((state) => state.lib)?.maker;
   const onODNPClick = useSendAnalyticsEvents().onODNPClick;
   if (!account) return null;
 

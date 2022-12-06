@@ -7,20 +7,20 @@ import Backdrop from "@mui/material/Backdrop";
 
 export interface Props {
   open: boolean;
-  handleClose: () => void;
+  onClose: () => void;
   children: ReactNode;
   title?: string;
   className?: string;
   disableBackdropClick?: boolean;
 }
 
-function Modal({ handleClose, open, children, title, className = "", disableBackdropClick = false }: Props) {
+function Modal({ onClose, open, children, title, className = "", disableBackdropClick = false }: Props) {
   return (
-    <StyledModal open={open} onClose={handleClose} className={`${className} twap-modal`} hideBackdrop>
+    <StyledModal open={open} onClose={onClose} className={`${className} twap-modal`} hideBackdrop>
       <>
-        <Backdrop open={open} onClick={disableBackdropClick ? undefined : handleClose}></Backdrop>
+        <Backdrop open={open} onClick={disableBackdropClick ? undefined : onClose}></Backdrop>
         <StyledModalContent className="twap-modal-content">
-          <StyledClose onClick={handleClose}>
+          <StyledClose onClick={onClose}>
             <IoMdClose />
           </StyledClose>
           {title && <StyledTitle>{title}</StyledTitle>}

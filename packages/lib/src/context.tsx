@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect } from "react";
 import { OrderLibProps, TwapLibProps } from "./types";
-import { useInitLib, useSetTokensList } from "./hooks";
+import { useInitLib } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 
 const TwapContext = createContext<TwapLibProps>({} as TwapLibProps);
@@ -12,24 +12,14 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
   // init web3 every time the provider changes
   useEffect(() => {
-    console.log("init");
-
-    initLib(props.config, props.provider, props.account, props.connectedChainId);
+    initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId });
   }, [props.provider, props.config, props.account, props.connectedChainId]);
 
   return <TwapContext.Provider value={{ ...props, translations }}>{props.children}</TwapContext.Provider>;
 };
 
 export const OrdersAdapter = (props: OrderLibProps) => {
-  const setTokensList = useSetTokensList();
-
   const translations = { ...defaultTranlations, ...props.translations };
-
-  useEffect(() => {
-    setTokensList(props.tokenList);
-  }, [props.tokenList]);
-
-  // orders lib init
 
   return <OrdersContext.Provider value={{ ...props, translations }}>{props.children}</OrdersContext.Provider>;
 };

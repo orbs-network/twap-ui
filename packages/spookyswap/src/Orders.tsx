@@ -2,12 +2,12 @@ import { Orders, OrdersAdapter, Translations } from "@orbs-network/twap-ui";
 import { StyledOrdersContainer } from "./styles";
 import { memo } from "react";
 import { Configs } from "@orbs-network/twap";
-import { useGetProvider } from "./hooks";
+import { useGetProvider, useParseTokenList } from "./hooks";
 import translations from "./i18n/en.json";
 import { SpookySwapOrdersProps } from ".";
 
 function OrderHistory(props: SpookySwapOrdersProps) {
-  const tokenList = props.dappTokens;
+  const tokenList = useParseTokenList(props.getTokenImage, props.dappTokens);
   const provider = useGetProvider(props.getProvider, props.account);
 
   return (

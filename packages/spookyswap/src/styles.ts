@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/system";
-import { Components } from "@orbs-network/twap-ui";
+import { Components, Styles as TwapStyles } from "@orbs-network/twap-ui";
 import { CSSProperties } from "react";
 
 export const colors = {
@@ -13,13 +13,8 @@ export const colors = {
   mainBackground: "#000315",
   borderColor: "rgb(55, 65, 81)",
 };
-export const StyledFlexBetween = styled(Box)(({ gap = 0 }: { gap?: number }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  width: "100%",
-  gap,
-}));
+
+export const Text = styled(TwapStyles.StyledText)({});
 
 export const StyledUSD = styled(Components.USD)({
   marginLeft: "auto",
@@ -31,9 +26,10 @@ export const StyledUSD = styled(Components.USD)({
   },
 });
 
-export const StyledBalance = styled(StyledFlexBetween)({
+export const StyledBalance = styled(TwapStyles.StyledRowFlex)({
   borderTop: "1px solid rgba(255, 255, 255, 0.05)",
   paddingTop: 8,
+  justifyContent: "space-between",
   "& *": {
     color: "rgba(255, 255, 255, 0.6)",
     fontSize: 15,
@@ -96,7 +92,7 @@ export const StyledIcon = styled(Components.Icon)({
   },
 });
 
-export const StyledTradeInfoModal = styled(Components.TradeInfoModal)({
+export const StyledTradeInfoModal = styled(Components.Modal)({
   "& a": {
     color: "white",
     fontWeight: 500,
@@ -304,14 +300,6 @@ export const StyledTokenDisplay = styled(Box)({
   gap: 6,
 });
 
-export const StyledFlexStart = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  gap: 10,
-  width: "100%",
-});
-
 export const StyledChangeOrder = styled(Box)(() => ({
   display: "flex",
   alignItems: "center",
@@ -421,8 +409,9 @@ export const StyledTotalTradesInput = styled(StyledNumbericInput)({
   },
 });
 
-export const StyledSliderContainer = styled(StyledFlexBetween)({
+export const StyledSliderContainer = styled(TwapStyles.StyledRowFlex)({
   height: 30,
+  justifyContent: "space-between",
 });
 
 export const StyledPanelLabel = styled(Components.SmallLabel)({
@@ -468,4 +457,8 @@ export const StyledOrdersContainer = styled(Box)({
       },
     },
   },
+});
+
+export const StyledTokenOrderPreviewAmount = styled(Components.SmallLabel)({
+  fontSize: 19,
 });

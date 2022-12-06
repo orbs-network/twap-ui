@@ -3,14 +3,14 @@ import { hooks } from "@orbs-network/twap-ui";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { SpiritSwapTWAPProps } from ".";
 import _ from "lodash";
-
+import Web3 from "web3";
 export const useGetProvider = (getProvider: () => any, account?: string) => {
   return useMemo(() => getProvider(), [account]);
 };
 
 export const parseToken = (rawToken: any, getTokenImage: (rawToken: any) => string): TokenData => {
   return {
-    address: rawToken.address,
+    address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
     logoUrl: getTokenImage(rawToken),

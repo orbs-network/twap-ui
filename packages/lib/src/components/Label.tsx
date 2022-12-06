@@ -3,7 +3,7 @@ import React, { ReactElement, ReactNode } from "react";
 import Tooltip from "./Tooltip";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
 import Icon from "./Icon";
-import { Typography } from "@mui/material";
+import { StyledOneLineText } from "../styles";
 
 interface Props {
   children: string | number | ReactNode;
@@ -36,6 +36,6 @@ const StyledTooltipContent = styled(Box)({
   gap: 5,
 });
 
-const StyledLabel = styled(Typography)({
+const StyledLabel = styled(StyledOneLineText)({
   // whiteSpace: "nowrap",
 });

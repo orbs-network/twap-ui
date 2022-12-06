@@ -1,5 +1,4 @@
 import BN from "bignumber.js";
-import Web3 from "web3";
 import { Order, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import moment from "moment";
 import create from "zustand";
@@ -108,7 +107,7 @@ export const useTwapStore = create(
         leftToken,
         rightToken,
         marketPrice,
-        marketPriceUi: marketPrice.toFormat(), // TODO needed?
+        marketPriceUi: marketPrice.toFormat(),
       };
     },
 
@@ -187,37 +186,7 @@ export const useTwapStore = create(
   }))
 );
 
-/**
- * Order History store
- */
-
-const orderHistoryInitialState = {
-  lib: undefined as TWAPLib | undefined,
-  allTokens: [] as TokenData[],
-  ordersUi: {} as _.Dictionary<OrderUI[]>,
-};
-
-export const useOrderHistoryStore = create(
-  combine(orderHistoryInitialState, (set, get) => ({
-    reset: () => set(orderHistoryInitialState),
-    setLib: (lib: TWAPLib) => set({ lib }),
-    setAllTokens: (tokens: TokenData[]) => set({ allTokens: tokens.map((t) => ({ ...t, address: Web3.utils.toChecksumAddress(t.address) })) }),
-
-    fetchHistory: async (fetchUsd: (token: TokenData) => Promise<BN>) => {
-      if (!get().lib || !get().allTokens.length) return [];
-      const rawOrders = await get().lib!.getAllOrders();
-      const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(get().allTokens, rawOrders, fetchUsd);
-      const parsedOrders = rawOrders.map((o: Order) => parseOrderUi(get().lib!, tokenWithUsdByAddress, o));
-      const ordersUi = _.chain(parsedOrders)
-        .orderBy((o: OrderUI) => o.order.ask.deadline, "desc")
-        .groupBy((o: OrderUI) => o.ui.status)
-        .value();
-      set({ ordersUi });
-    },
-  }))
-);
-
-const prepareOrdersTokensWithUsd = async (allTokens: TokenData[], rawOrders: Order[], fetchUsd: (token: TokenData) => Promise<BN>) => {
+export const prepareOrdersTokensWithUsd = async (allTokens: TokenData[], rawOrders: Order[], fetchUsd: (token: TokenData) => Promise<BN>) => {
   const relevantTokens = allTokens.filter((t) => rawOrders.find((o) => t.address === o.ask.srcToken || t.address === o.ask.dstToken));
   const usdValues = await Promise.all(relevantTokens.map(fetchUsd));
   return _.mapKeys(
@@ -226,8 +195,7 @@ const prepareOrdersTokensWithUsd = async (allTokens: TokenData[], rawOrders: Ord
   );
 };
 
-export type OrderUI = ReturnType<typeof parseOrderUi>;
-const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { token: TokenData; usd: BN } }, o: Order) => {
+export const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { token: TokenData; usd: BN } }, o: Order) => {
   const { token: srcToken, usd: srcUsd } = usdValues[o.ask.srcToken] || { token: undefined, usd: BN(0) };
   const { token: dstToken, usd: dstUsd } = usdValues[o.ask.dstToken] || { token: undefined, usd: BN(0) };
 

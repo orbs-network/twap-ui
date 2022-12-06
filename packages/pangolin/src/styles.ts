@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/system";
-import { Components } from "@orbs-network/twap-ui";
+import { Components, Styles as TwapStyles } from "@orbs-network/twap-ui";
 import { CSSProperties } from "react";
 
 export const colors = {
@@ -14,21 +14,7 @@ export const colors = {
   yellow: "rgb(255, 200, 0)",
 };
 
-export const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
-  display: "flex",
-  flexDirection: "column",
-  gap: gap || 10,
-  alignItems: "flex-start",
-  width: "100%",
-}));
-
-export const StyledFlexBetween = styled(Box)(({ gap = 0 }: { gap?: number }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  width: "100%",
-  gap,
-}));
+export const Text = styled(TwapStyles.StyledText)({});
 
 const coloredBoxStyles = {
   background: "rgb(28, 28, 28)",
@@ -36,11 +22,11 @@ const coloredBoxStyles = {
   borderRadius: 8,
 };
 
-export const StyledTradeSizeContent = styled(StyledColumnGap)({
+export const StyledTradeSizeContent = styled(TwapStyles.StyledColumnFlex)({
   ...coloredBoxStyles,
 });
 
-export const StyledColoredFlex = styled(StyledFlexBetween)({
+export const StyledColoredFlex = styled(TwapStyles.StyledRowFlex)({
   minHeight: 60,
   display: "flex",
   alignItems: "center",
@@ -59,9 +45,10 @@ export const StyledUSD = styled(Components.USD)({
   },
 });
 
-export const StyledBalance = styled(StyledFlexBetween)({
+export const StyledBalance = styled(TwapStyles.StyledRowFlex)({
   borderTop: "1px solid rgba(255, 255, 255, 0.05)",
   paddingTop: 8,
+  justifyContent: "space-between",
   "& *": {
     color: "rgba(255, 255, 255, 0.6)",
     fontSize: 15,
@@ -112,6 +99,7 @@ const cardStyles: CSSProperties = {
   padding: 12,
   background: colors.mainBackground,
   borderRadius: "0.375rem",
+  width: "100%",
 };
 
 export const StyledCard = styled(Components.Card)({
@@ -127,7 +115,7 @@ export const StyledIcon = styled(Components.Icon)({
   },
 });
 
-export const StyledTradeInfoModal = styled(Components.TradeInfoModal)({
+export const StyledOrderSummary = styled(Components.Modal)({
   "& a": {
     color: colors.text,
     fontWeight: 500,
@@ -145,9 +133,11 @@ export const StyledTradeInfoModal = styled(Components.TradeInfoModal)({
     borderRadius: "10px",
     padding: 15,
     paddingTop: 30,
-    background: "linear-gradient(rgb(49, 65, 94) 0%, rgba(49, 65, 94, 0) 100%),rgba(18, 17, 34, 0.6)",
+    background: colors.mainBackground,
   },
 });
+export const StyledOrderSummaryContent = styled(Box)({})
+
 
 export const StyledOrderConfirmation = styled(Box)({
   "& .output-text": {
@@ -187,10 +177,6 @@ export const globalStyle = {
   "& .twap-modal": {
     "& *": {
       color: colors.text,
-    },
-    "& .twap-modal-content": {
-      position: "relative",
-      background: "#19233B!important",
     },
   },
   "& .twap-button": {
@@ -263,7 +249,7 @@ export const globalStyle = {
   },
 };
 
-export const StyledTrade = styled(StyledColumnGap)({
+export const StyledTrade = styled(TwapStyles.StyledColumnFlex)({
   width: "100%",
   ...coloredBoxStyles,
   "& .twap-input": {
@@ -335,6 +321,22 @@ export const StyledTokenDisplay = styled(Box)({
 });
 
 export const StyledFlexStart = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  gap: 10,
+  width: "100%",
+});
+
+export const StyledFlex = styled(Box)(({ gap = 10, justifyContent = "center" }: { gap?: number; justifyContent?: "flex-start" | "flex-end" | "center" }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent,
+  width: "100%",
+  gap,
+}));
+
+export const StyledFlexEnd = styled(Box)({
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start",
@@ -450,8 +452,9 @@ export const StyledTotalTradesInput = styled(StyledNumbericInput)({
   },
 });
 
-export const StyledSliderContainer = styled(StyledFlexBetween)({
+export const StyledSliderContainer = styled(TwapStyles.StyledRowFlex)({
   height: 30,
+  justifyContent: "space-between",
 });
 
 export const StyledPanelLabel = styled(Components.SmallLabel)({

@@ -1,6 +1,5 @@
 import { Box, styled } from "@mui/system";
 import { CSSProperties, ReactNode } from "react";
-import Text from "../components/Text";
 import LinearProgress from "@mui/material/LinearProgress";
 import TokenName from "../components/TokenName";
 import TokenLogo from "../components/TokenLogo";
@@ -16,12 +15,12 @@ import SmallLabel from "../components/SmallLabel";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import { Typography } from "@mui/material";
-import { StyledColumnGap } from "../styles";
 import { Status, TokenData } from "@orbs-network/twap";
 import { fillDelayUi, useCancelOrder, useHistoryPrice } from "../hooks";
 import { OrderUI } from "../state";
 import TokenPriceCompare from "../components/TokenPriceCompare";
 import { useOrdersContext } from "../context";
+import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
 
 export interface Props {
   order: OrderUI;
@@ -38,10 +37,10 @@ function OrderComponent({ order, onExpand, expanded }: Props) {
           <StyledColumnFlex gap={0}>
             <StyledHeader>
               <Box className="flex">
-                <Text>#{order.order.id}</Text>
-                <Text>{order.ui.isMarketOrder ? translations.marketOrder : translations.limitOrder}</Text>
+                <StyledText>#{order.order.id}</StyledText>
+                <StyledText>{order.ui.isMarketOrder ? translations.marketOrder : translations.limitOrder}</StyledText>
               </Box>
-              <Text>{order.ui.createdAtUi}</Text>
+              <StyledText>{order.ui.createdAtUi}</StyledText>
             </StyledHeader>
 
             {expanded ? <Separator /> : <PreviewProgressBar progress={order.ui.progress || 1} />}
@@ -123,7 +122,7 @@ const OrderDetails = ({ order }: { order: OrderUI }) => {
   );
 };
 
-const StyledTokenDisplayWithTitle = styled(StyledColumnGap)({
+const StyledTokenDisplayWithTitle = styled(StyledColumnFlex)({
   gap: 10,
 });
 
@@ -347,10 +346,8 @@ const DetailRow = ({ label, tooltip, children }: { label: string; tooltip: strin
   );
 };
 
-const StyledFlex = styled(Box)({
-  display: "flex",
+const StyledFlex = styled(StyledRowFlex)({
   justifyContent: "space-between",
-  alignItems: "center",
   fontSize: 14,
 });
 
@@ -395,13 +392,6 @@ const StyledProgress = styled(Box)({
     fontSize: 14,
   },
 });
-
-const StyledColumnFlex = styled(Box)(({ gap = 10 }: { gap?: number }) => ({
-  display: "flex",
-  flexDirection: "column",
-  gap,
-  width: "100%",
-}));
 
 const StyledProgressContent = styled(StyledColumnFlex)({
   display: "flex",

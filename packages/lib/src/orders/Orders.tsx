@@ -9,12 +9,12 @@ import OdnpButton from "../components/OdnpButton";
 import Icon from "../components/Icon";
 import { AiOutlineHistory } from "react-icons/ai";
 import { Status } from "@orbs-network/twap";
-import { useOrders } from "../hooks";
+import { useOrdersHistoryQuery } from "../hooks";
 import { useOrdersContext } from "../context";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
-  const { orders, loading } = useOrders();
+  const { orders, isLoading }: any = useOrdersHistoryQuery();
   const translations = useOrdersContext().translations;
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -41,7 +41,7 @@ function Orders() {
           if (selectedTab !== index) {
             return null;
           }
-          return <OrdersList isLoading={loading} status={key as any as Status} orders={orders[key as any as Status]} key={key} />;
+          return <OrdersList isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status]} key={key} />;
         })}
       </StyledLists>
     </StyledContainer>

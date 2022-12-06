@@ -41,7 +41,7 @@ function LimitPrice({
   );
 }
 
-export { LimitPrice };
+export default LimitPrice;
 
 const StyledLeft = styled(Box)({
   display: "flex",

@@ -1,5 +1,6 @@
 import { Config, TokenData } from "@orbs-network/twap";
 import { ReactNode } from "react";
+import { parseOrderUi } from "./store";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -123,3 +124,12 @@ export interface TwapLibProps extends LibProps {
 export interface OrderLibProps extends LibProps {
   tokenList: TokenData[];
 }
+
+export interface InitLibProps {
+  config: Config;
+  provider?: any;
+  account?: string;
+  connectedChainId?: number;
+}
+
+export type OrderUI = ReturnType<typeof parseOrderUi>;

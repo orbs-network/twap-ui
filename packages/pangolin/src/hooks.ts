@@ -4,11 +4,19 @@ import { hooks } from "@orbs-network/twap-ui";
 import _ from "lodash";
 import { useMemo, useEffect, useRef, createContext, useContext } from "react";
 import { PangolinTWAPProps } from ".";
+import Web3 from "web3";
+
+const nativeToken: TokenData = {
+  decimals: 18,
+  symbol: "AVAX",
+  address: zeroAddress,
+  logoUrl: "https://raw.githubusercontent.com/pangolindex/sdk/master/src/images/chains/avax.png",
+};
 
 export const parseToken = (rawToken: any): TokenData => {
   if (!rawToken.tokenInfo) {
     return {
-      address: zeroAddress,
+      address: Web3.utils.toChecksumAddress(zeroAddress),
       decimals: 18,
       symbol: "AVAX",
       logoUrl: "https://raw.githubusercontent.com/pangolindex/sdk/master/src/images/chains/avax.png",
@@ -16,17 +24,11 @@ export const parseToken = (rawToken: any): TokenData => {
   }
   const { tokenInfo } = rawToken;
   return {
-    address: tokenInfo.address,
+    address: Web3.utils.toChecksumAddress(tokenInfo.address),
     decimals: tokenInfo.decimals,
     symbol: tokenInfo.symbol,
     logoUrl: tokenInfo.logoURI,
   };
-};
-const nativeToken: TokenData = {
-  decimals: 18,
-  symbol: "AVAX",
-  address: zeroAddress,
-  logoUrl: "https://raw.githubusercontent.com/pangolindex/sdk/master/src/images/chains/avax.png",
 };
 
 export const useParseTokenList = (dappTokens?: any): TokenData[] => {

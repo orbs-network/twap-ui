@@ -16,10 +16,12 @@ export const StyledShadowContainer = styled(Box)({
   },
 });
 
-export const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
+export const StyledColumnFlex = styled(Box)(({ gap = 10 }: { gap?: number }) => ({
   display: "flex",
   flexDirection: "column",
   gap,
+  alignItems: "flex-start",
+  width: "100%",
 }));
 
 export const StyledBorderWrapper = styled(Box)({
@@ -32,13 +34,13 @@ export const StyledBorderWrapper = styled(Box)({
   padding: 8,
 });
 
-export const StyledOverflowText = styled(Typography)({
+export const StyledOneLineText = styled(Typography)({
   whiteSpace: "nowrap",
   overflow: "hidden",
   textOverflow: "ellipsis",
 });
 
-export const StyledSmallTitle = styled(StyledOverflowText)({
+export const StyledSmallTitle = styled(StyledOneLineText)({
   fontWeight: 600,
   fontSize: 12,
 });
@@ -48,6 +50,18 @@ export const StyledSmallTextDetail = styled(Typography)({
   fontSize: "12px",
 });
 
-export const StyledBoxWithDetails = styled(StyledColumnGap)({
+export const StyledBoxWithDetails = styled(StyledColumnFlex)({
   gap: 10,
+});
+
+export const StyledRowFlex = styled(Box)(({ gap = 10, justifyContent = "center" }: { gap?: number; justifyContent?: "flex-start" | "flex-end" | "center" | "space-between" }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent,
+  width: "100%",
+  gap,
+}));
+
+export const StyledText = styled(Typography)({
+  fontFamily: "inherit",
 });
