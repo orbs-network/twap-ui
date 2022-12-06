@@ -71,14 +71,14 @@ export const useDisconnectWallet = () => {
 export const useSelectedDapp = () => {
   const location = useLocation();
   const selected = location.pathname.split("/")[1];
-  const isSelected = useCallback((dapp: Dapp) => selected === dapp.name.toLowerCase(), [selected]);
+  const isSelected = useCallback((dapp: Dapp) => selected === dapp.config.partner.toLowerCase(), [selected]);
   return isSelected;
 };
 
 export const useNetwork = (chainId: number) => {
   const { chainId: connectedChainId } = useWeb3React();
 
-  const isInValidNetwork = connectedChainId && connectedChainId !== chainId ? true : false;
+  const isInValidNetwork = !!(connectedChainId && connectedChainId !== chainId);
 
   return { isInValidNetwork };
 };

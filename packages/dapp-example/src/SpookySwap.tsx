@@ -84,9 +84,9 @@ const DappComponent = () => {
 };
 
 const dapp: Dapp = {
-  name: config.partner,
   Component: DappComponent,
   logo,
+  config,
 };
 
 export default dapp;

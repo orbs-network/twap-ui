@@ -124,9 +124,9 @@ const DappComponent = () => {
 };
 
 const dapp: Dapp = {
-  name: Configs.Pangolin.partner,
   Component: DappComponent,
   logo,
+  config,
 };
 
 export default dapp;

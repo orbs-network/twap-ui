@@ -10,11 +10,11 @@ import { FiMenu } from "react-icons/fi";
 import Backdrop from "@mui/material/Backdrop";
 import { Fade } from "@mui/material";
 import { Config } from "@orbs-network/twap";
-import { useChangeNetwork, useNetwork } from "./hooks";
+
 export interface Dapp {
-  name: string;
-  Component: any;
+  config: Config;
   logo: string;
+  Component: any;
 }
 
 export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: ReactNode }) => {
@@ -87,10 +87,10 @@ export const DappsMenu = ({ dapps, onSelect, isSelected }: DappsMenuProps) => {
         <StyledMenuList>
           <Backdrop open={isMobile && isOpen} onClick={() => setIsOpen(false)} />
           {dapps.map((dapp) => (
-            <ListItem onClick={() => onSelectClick(dapp)} key={dapp.name.toLowerCase()} disablePadding selected={isSelected(dapp)}>
+            <ListItem onClick={() => onSelectClick(dapp)} key={dapp.config.partner.toLowerCase()} disablePadding selected={isSelected(dapp)}>
               <StyledMenuListItemButton>
                 <StyledMenuLogo src={dapp.logo} />
-                <ListItemText primary={dapp.name} />
+                <ListItemText primary={dapp.config.partner} />
               </StyledMenuListItemButton>
             </ListItem>
           ))}
