@@ -14,8 +14,7 @@ export const colors = {
   borderColor: "rgb(55, 65, 81)",
 };
 
-
-export const Text = styled(TwapStyles.StyledText)({})
+export const Text = styled(TwapStyles.StyledText)({});
 
 export const StyledUSD = styled(Components.USD)({
   opacity: 0.6,
@@ -128,6 +127,18 @@ export const StyledLimitPrice = styled(Box)({
 export const StyledTokenOrder = styled(Box)({ width: "100%" });
 
 export const globalStyle = {
+  "& .twap-order-summary": {
+    "& .twap-token-logo": {
+      width: 22,
+      height: 22,
+    },
+    "& .twap-token-name": {
+      fontSize: 14,
+    },
+    "& .twap-label": {
+      fontSize: 15,
+    },
+  },
   "& .odnp": {
     "*": {
       color: "black",
@@ -286,9 +297,8 @@ export const StyledTokenSelect = styled("button")(() => ({
 export const StyledTokenDisplay = styled(TwapStyles.StyledRowFlex)({
   alignItems: "center",
   gap: 6,
+  width: "fit-content",
 });
-
-
 
 export const StyledFlexStart = styled(Box)({
   display: "flex",
@@ -401,7 +411,7 @@ export const StyledTotalTradesInput = styled(StyledNumbericInput)({
 
 export const StyledSliderContainer = styled(TwapStyles.StyledRowFlex)({
   height: 30,
-  justifyContent:'space-between'
+  justifyContent: "space-between",
 });
 
 export const StyledOrdersContainer = styled(Box)({
@@ -437,8 +447,6 @@ export const StyledOrdersContainer = styled(Box)({
     },
   },
 });
-
-
 
 export const StyledTokenOrderPreviewAmount = styled(Components.SmallLabel)({
   fontSize: 19,

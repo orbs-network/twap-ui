@@ -457,20 +457,20 @@ const TokenOrderPreview = ({
   isSrc?: boolean;
 }) => {
   return (
-      <AdapterStyles.StyledColoredFlex>
-        <TwapStyles.StyledColumnFlex gap={10}>
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <Components.Label>{title}</Components.Label>
-            <AdapterStyles.StyledUSD value={usdPrice} />
-          </TwapStyles.StyledRowFlex>
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <TokenDisplay name={name} logo={logo} />
-            <StyledTokenOrderPreviewAmount>
-              {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} />
-            </StyledTokenOrderPreviewAmount>
-          </TwapStyles.StyledRowFlex>
-        </TwapStyles.StyledColumnFlex>
-      </AdapterStyles.StyledColoredFlex>
+    <AdapterStyles.StyledColoredFlex>
+      <TwapStyles.StyledColumnFlex gap={10}>
+        <TwapStyles.StyledRowFlex justifyContent="space-between">
+          <Components.Label>{title}</Components.Label>
+          <AdapterStyles.StyledUSD value={usdPrice} />
+        </TwapStyles.StyledRowFlex>
+        <TwapStyles.StyledRowFlex justifyContent="space-between">
+          <TokenDisplay name={name} logo={logo} />
+          <StyledTokenOrderPreviewAmount>
+            {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} />
+          </StyledTokenOrderPreviewAmount>
+        </TwapStyles.StyledRowFlex>
+      </TwapStyles.StyledColumnFlex>
+    </AdapterStyles.StyledColoredFlex>
   );
 };
 

@@ -38,4 +38,5 @@ const StyledTooltipContent = styled(Box)({
 
 const StyledLabel = styled(StyledOneLineText)({
   // whiteSpace: "nowrap",
+  fontSize: "inherit",
 });

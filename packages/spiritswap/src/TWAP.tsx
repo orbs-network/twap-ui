@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Box, styled } from "@mui/system";
+import { Box } from "@mui/system";
 import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
@@ -59,7 +59,7 @@ const MarketPrice = () => {
   return (
     <AdapterStyles.StyledMarketPrice>
       <AdapterStyles.StyledCard>
-        <TwapStyles.StyledRowFlex justifyContent='space-between'>
+        <TwapStyles.StyledRowFlex justifyContent="space-between">
           <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
           {ready ? (
             <Components.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
@@ -147,7 +147,7 @@ const TradeSize = () => {
               <AdapterStyles.Text>-</AdapterStyles.Text>
             )}
           </AdapterStyles.StyledSliderContainer>
-          <TwapStyles.StyledRowFlex justifyContent='space-between'>
+          <TwapStyles.StyledRowFlex justifyContent="space-between">
             <AdapterStyles.StyledTradeSize>
               <Components.Label fontSize={14} tooltipText={translations.tradeSizeTooltip}>
                 {translations.tradeSize}: <Components.NumberDisplay value={chunksAmount} />
@@ -155,7 +155,7 @@ const TradeSize = () => {
               {token && <TokenDisplay logo={token?.logoUrl} name={token?.symbol} />}
             </AdapterStyles.StyledTradeSize>
             <AdapterStyles.StyledUSD value={usdValue} isLoading={usdLoading} />
-          </TwapStyles.StyledRowFlex >
+          </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
       </AdapterStyles.StyledCard>
     </AdapterStyles.StyledTrade>
@@ -192,7 +192,7 @@ const MaxDuration = () => {
 
   return (
     <AdapterStyles.StyledCard>
-      <TwapStyles.StyledRowFlex gap={10} justifyContent='space-between'>
+      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Components.Label>
         <Components.TimeSelector value={maxDuration} onChange={onChange} />
       </TwapStyles.StyledRowFlex>
@@ -206,7 +206,7 @@ const TradeInterval = () => {
 
   return (
     <AdapterStyles.StyledCard>
-      <TwapStyles.StyledRowFlex justifyContent='space-between'  gap={10}>
+      <TwapStyles.StyledRowFlex justifyContent="space-between" gap={10}>
         <Components.Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Components.Label>
         <AdapterStyles.StyledIntervalTimeSelect>
           <Components.TimeSelector disabled={!customFillDelayEnabled} onChange={onChange} value={fillDelay} />
@@ -282,7 +282,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
       <AdapterStyles.StyledTokenPanel>
         <AdapterStyles.StyledCard>
           <TwapStyles.StyledColumnFlex>
-            <TwapStyles.StyledRowFlex justifyContent='space-between'>
+            <TwapStyles.StyledRowFlex justifyContent="space-between">
               <Components.Tooltip text={inputWarning}>
                 <AdapterStyles.StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0" onChange={onChange || (() => {})} value={value} />
               </Components.Tooltip>
@@ -293,7 +293,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
                 </AdapterStyles.StyledTokenSelect>
               </Components.Tooltip>
             </TwapStyles.StyledRowFlex>
-            <TwapStyles.StyledRowFlex justifyContent='space-between'>
+            <TwapStyles.StyledRowFlex justifyContent="space-between">
               <AdapterStyles.StyledUSD value={usdValue} isLoading={usdLoading} />
               <Components.Balance isLoading={balanceLoading} value={balance} />
             </TwapStyles.StyledRowFlex>
@@ -315,8 +315,25 @@ const SubmitButton = () => {
 };
 
 const OrderConfirmation = () => {
-  const { srcToken, dstToken, srcUsd,srcChunkAmount, deadline, fillDelay,totalChunks,minAmountOut,    srcAmount, dstUsd, dstAmount, isLimitOrder, showConfirmation, closeConfirmation, disclaimerAccepted, setDisclaimerAccepted, maker } =
-    hooks.useOrderSummary();
+  const {
+    srcToken,
+    dstToken,
+    srcUsd,
+    srcChunkAmount,
+    deadline,
+    fillDelay,
+    totalChunks,
+    minAmountOut,
+    srcAmount,
+    dstUsd,
+    dstAmount,
+    isLimitOrder,
+    showConfirmation,
+    closeConfirmation,
+    disclaimerAccepted,
+    setDisclaimerAccepted,
+    maker,
+  } = hooks.useOrderSummary();
   const translations = useTwapContext().translations;
 
   return (
@@ -337,8 +354,8 @@ const OrderConfirmation = () => {
               <TokenOrderPreview isLimitOrder={isLimitOrder} title={translations.to} amount={dstAmount} usdPrice={dstUsd} name={dstToken?.symbol} logo={dstToken?.logoUrl} />
               <OrderConfirmationLimitPrice />
 
-              <AdapterStyles.StyledCard>
-                <TwapStyles.StyledColumnFlex gap={20}>
+              <AdapterStyles.StyledCard className="twap-order-summary">
+                <TwapStyles.StyledColumnFlex gap={12}>
                   <TwapStyles.StyledRowFlex justifyContent="space-between">
                     <Components.Label tooltipText={translations.confirmationDeadlineTooltip}>{translations.expiration}</Components.Label>
                     <AdapterStyles.Text>{deadline}</AdapterStyles.Text>
@@ -421,7 +438,7 @@ const OrderConfirmationLimitPrice = () => {
 
   return (
     <AdapterStyles.StyledLimitPrice>
-      <TwapStyles.StyledRowFlex justifyContent='space-between'>
+      <TwapStyles.StyledRowFlex justifyContent="space-between">
         <Components.Label tooltipText={translations.confirmationLimitPriceTooltip}>{translations.limitPrice}</Components.Label>
         {isLimitOrder ? (
           <Components.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice} toggleInverted={toggleInverted} />
@@ -454,11 +471,11 @@ const TokenOrderPreview = ({
     <AdapterStyles.StyledTokenOrder>
       <AdapterStyles.StyledCard>
         <TwapStyles.StyledColumnFlex gap={10}>
-          <TwapStyles.StyledRowFlex justifyContent='space-between'>
+          <TwapStyles.StyledRowFlex justifyContent="space-between">
             <Components.Label>{title}</Components.Label>
             <AdapterStyles.StyledUSD value={usdPrice} />
           </TwapStyles.StyledRowFlex>
-          <TwapStyles.StyledRowFlex justifyContent='space-between'>
+          <TwapStyles.StyledRowFlex justifyContent="space-between">
             <TokenDisplay name={name} logo={logo} />
             <AdapterStyles.StyledTokenOrderPreviewAmount>
               {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} />
@@ -469,4 +486,3 @@ const TokenOrderPreview = ({
     </AdapterStyles.StyledTokenOrder>
   );
 };
-

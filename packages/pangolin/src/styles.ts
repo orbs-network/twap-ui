@@ -136,8 +136,7 @@ export const StyledOrderSummary = styled(Components.Modal)({
     background: colors.mainBackground,
   },
 });
-export const StyledOrderSummaryContent = styled(Box)({})
-
+export const StyledOrderSummaryContent = styled(Box)({});
 
 export const StyledOrderConfirmation = styled(Box)({
   "& .output-text": {
