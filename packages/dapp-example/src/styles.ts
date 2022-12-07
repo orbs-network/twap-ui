@@ -153,20 +153,19 @@ export const StyledDappLayout = styled(Box)({
 
 export const StyledStatus = styled(TwapStyles.StyledColumnFlex)({
   padding: "20px",
-  gap: 0,
   marginTop: "auto",
 });
 
 export const StyledStatusSection = styled(TwapStyles.StyledColumnFlex)({
-  gap: 0,
+  gap: 2,
 });
 export const StyledStatusSectionTitle = styled(TwapStyles.StyledText)({
   fontWeight: 700,
-  fontSize: 8,
+  fontSize: 9,
   lineHeight: "normal",
 });
 
 export const StyledStatusSectionText = styled(TwapStyles.StyledText)({
-  fontSize: 8,
+  fontSize: 9,
   lineHeight: "normal",
 });
