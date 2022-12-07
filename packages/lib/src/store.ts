@@ -192,10 +192,10 @@ export const useTwapStore = create(
     switchTokens: () => {
       const srcToken = get().srcToken!;
       const dstToken = get().dstToken!;
-      const dstAmountUi: string = (get() as any).getDstAmountUi();
+
       const dstAmount: BN = (get() as any).getDstAmount();
-      (get() as any).setSrcToken(dstToken);
-      (get() as any).setDstToken(srcToken);
+      const dstAmountUi: string = (get() as any).getDstAmountUi();
+      (get() as any).setTokens(dstToken, srcToken);
       (get() as any).setSrcAmountUi(dstAmount.isZero() ? "" : dstAmountUi);
     },
 
@@ -289,13 +289,11 @@ export const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { tok
 };
 
 const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));
-const amountUi = (token: TokenData | undefined, amount: BN) =>
-  amount
-    .times(BN(10).pow(token?.decimals || 0))
-    .idiv(BN(10).pow(token?.decimals || 0))
-    .div(BN(10).pow(token?.decimals || 0))
-
-    .toFormat();
+const amountUi = (token: TokenData | undefined, amount: BN) => {
+  if (!token) return "";
+  const percision = BN(10).pow(token?.decimals || 0);
+  return amount.times(percision).idiv(percision).div(percision).toFormat();
+};
 
 export const fillDelayUi = (value: number, translations: Translations) => {
   if (!value) {
