@@ -252,7 +252,7 @@ export const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { tok
   const dstPriceFor1Src = lib.dstPriceFor1Src(srcToken, dstToken, srcUsd, dstUsd, o.ask.srcBidAmount, o.ask.dstMinAmount);
   const dstAmount = lib.dstAmount(srcToken, dstToken, o.ask.srcAmount, srcUsd, dstUsd, dstPriceFor1Src, isMarketOrder);
   const srcRemainingAmount = o.ask.srcAmount.minus(o.srcFilledAmount);
-  const progress = lib.orderProgress(o) < 99 ? lib.orderProgress(o) : 100;
+  const progress = lib.orderProgress(o) < 0.99 ? lib.orderProgress(o) * 100 : 100;
   const status = progress === 100 ? Status.Completed : lib.status(o);
 
   return {
