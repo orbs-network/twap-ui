@@ -9,6 +9,7 @@ import { useLocation } from "react-router-dom";
 import { useCallback, useEffect, useMemo } from "react";
 import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
+import { dapps } from "./App";
 export const injectedConnector = new InjectedConnector({});
 
 const tokenlistsNetworkNames = {
@@ -72,8 +73,10 @@ export const useSelectedDapp = () => {
   const location = useLocation();
   const selected = location.pathname.split("/")[1];
   const isSelected = useCallback((dapp: Dapp) => selected === dapp.config.partner.toLowerCase(), [selected]);
-  return isSelected;
+  const selectedDapp = useMemo(() =>   dapps.find((dapp) => dapp.config.partner.toLowerCase() === selected), [selected])
+  return { isSelected, selectedDapp };
 };
+
 
 export const useNetwork = (chainId: number) => {
   const { chainId: connectedChainId } = useWeb3React();

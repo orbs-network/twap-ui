@@ -10,7 +10,8 @@ import { FiMenu } from "react-icons/fi";
 import Backdrop from "@mui/material/Backdrop";
 import { Fade } from "@mui/material";
 import { Config } from "@orbs-network/twap";
-
+import {dapps} from './App'
+import { Status } from "./Status";
 export interface Dapp {
   config: Config;
   logo: string;
@@ -40,13 +41,12 @@ export const MetaTags = ({ title, favicon }: { title: string; favicon: string })
 };
 
 interface DappsMenuProps {
-  dapps: Dapp[];
   onSelect: (dapp: Dapp) => void;
   isSelected: (dapp: Dapp) => boolean;
 }
 const drawerWidth = 260;
 
-export const DappsMenu = ({ dapps, onSelect, isSelected }: DappsMenuProps) => {
+export const DappsMenu = ({onSelect, isSelected }: DappsMenuProps) => {
   const isMobile = useMediaQuery("(max-width:1100px)");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -94,6 +94,7 @@ export const DappsMenu = ({ dapps, onSelect, isSelected }: DappsMenuProps) => {
               </StyledMenuListItemButton>
             </ListItem>
           ))}
+          <Status />
         </StyledMenuList>
       </StyledMenuDrawer>
     </>

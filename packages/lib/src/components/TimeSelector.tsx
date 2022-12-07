@@ -2,7 +2,7 @@ import { ClickAwayListener, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useState } from "react";
 import { useTwapContext } from "../context";
-import { TimeResolution } from "../state";
+import { TimeResolution } from "../store";
 import { Translations } from "../types";
 import NumericInput from "./NumericInput";
 

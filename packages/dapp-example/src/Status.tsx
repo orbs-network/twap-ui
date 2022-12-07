@@ -1,4 +1,4 @@
-import { Configs, TWAPLib } from "@orbs-network/twap";
+import { TWAPLib } from "@orbs-network/twap";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { networks, web3 } from "@defi.org/web3-candies";
@@ -6,10 +6,12 @@ import { useWeb3React } from "@web3-react/core";
 import { Dapp } from "./Components";
 import moment from "moment";
 import BN from "bignumber.js";
-
+import { useSelectedDapp } from "./hooks";
+import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
+import {Components} from "@orbs-network/twap-ui"
+import { useState } from "react";
 const useStatus = (dapp: Dapp) => {
   const { library: provider, account } = useWeb3React(); // TODO replace with useLib from twap-ui store
-
   return useQuery(
     ["useStatus", dapp.config.partner, account],
     async () => {
@@ -60,31 +62,67 @@ const useStatus = (dapp: Dapp) => {
       };
     },
     {
-      enabled: !!provider && !!account,
+      enabled: !!provider && !!account && !!dapp,
       refetchInterval: 60_000,
     }
   );
 };
 
-export function Status({ dapp }: { dapp: Dapp }) {
-  const status = useStatus(dapp);
-  return status.isLoading ? null : (
-    <div>
-      <div>Status:</div>
-      <div>TWAP Version: {status.data!.twapVersion}</div>
-      <div>TWAP-UI Version: {status.data!.twapUiVersion}</div>
-      <div>Chain: {dapp.config.chainId}</div>
-      <div>TWAP: {dapp.config.twapAddress}</div>
-      <div>Lens: {dapp.config.lensAddress}</div>
-      <div>
-        Exchange: {dapp.config.exchangeAddress} {dapp.config.exchangeType}
-      </div>
-      <div>
-        Backup Taker 1: uptime: {status.data!.backupTaker1Uptime} gas: {status.data!.backupTaker1Balances.join(", ")}
-      </div>
-      <div>
-        Backup Taker 2: uptime: {status.data!.backupTaker2Uptime} gas: {status.data!.backupTaker2Balances.join(", ")}
-      </div>
-    </div>
+export function Status() {
+  const { selectedDapp } = useSelectedDapp();
+  const dapp = selectedDapp!;
+  const [show, setShow] = useState(false)
+  const {data: status} = useStatus(dapp);
+
+  
+
+  return (
+    <>
+      {status && <button onClick={() => setShow(true)}>Status</button>}
+
+      <Components.Modal open={show} onClose={() => setShow(false)}>
+        {status && (
+          <StyledStatus>
+            <StyledStatusSection>
+              <StyledStatusSectionTitle>TWAP Version:</StyledStatusSectionTitle>
+              <StyledStatusSectionText> {status!.twapVersion}</StyledStatusSectionText>
+            </StyledStatusSection>
+            <StyledStatusSection>
+              <StyledStatusSectionTitle>TWAP-UI Version:</StyledStatusSectionTitle>
+              StyledStatusSectionText<>{status!.twapUiVersion}</>
+            </StyledStatusSection>
+            <StyledStatusSection>
+              <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
+              <StyledStatusSectionText> {dapp.config.chainId}</StyledStatusSectionText>
+            </StyledStatusSection>
+            <StyledStatusSection>
+              <StyledStatusSectionTitle>TWAP:</StyledStatusSectionTitle>
+              <StyledStatusSectionText> {dapp.config.twapAddress}</StyledStatusSectionText>
+            </StyledStatusSection>
+            <StyledStatusSection>
+              <StyledStatusSectionTitle> Lens:</StyledStatusSectionTitle>
+              <StyledStatusSectionText> {dapp.config.lensAddress}</StyledStatusSectionText>
+            </StyledStatusSection>
+            <StyledStatusSection>
+              <StyledStatusSectionTitle>Exchange:</StyledStatusSectionTitle>
+              <StyledStatusSectionText>
+                {" "}
+                {dapp.config.exchangeAddress} {dapp.config.exchangeType}
+              </StyledStatusSectionText>
+            </StyledStatusSection>
+            <StyledStatusSection>
+              <>Backup Taker 1:</>
+              <StyledStatusSectionText>uptime: {status!.backupTaker1Uptime}</StyledStatusSectionText>
+              <StyledStatusSectionText>gas: {status!.backupTaker1Balances.join(", ")}</StyledStatusSectionText>
+            </StyledStatusSection>
+            <StyledStatusSection>
+              <StyledStatusSectionTitle>Backup Taker 2:</StyledStatusSectionTitle>
+              <StyledStatusSectionText>uptime: {status!.backupTaker2Uptime}</StyledStatusSectionText>
+              <StyledStatusSectionText> gas: {status!.backupTaker2Balances.join(", ")}</StyledStatusSectionText>
+            </StyledStatusSection>
+          </StyledStatus>
+        )}
+      </Components.Modal>
+    </>
   );
 }

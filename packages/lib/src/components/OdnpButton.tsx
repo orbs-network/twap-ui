@@ -1,7 +1,6 @@
 import { Typography } from "@mui/material";
 import { styled } from "@mui/system";
-import React from "react";
-import { useSendAnalyticsEvents } from "../analytics";
+import { analytics } from "../analytics";
 import { useTwapStore } from "../store";
 
 console.debug = () => {};
@@ -15,11 +14,10 @@ odnp.mainDiv.classList = "odnp";
 
 function OdnpButton({ className = "" }: { className?: string }) {
   const account = useTwapStore((state) => state.lib)?.maker;
-  const onODNPClick = useSendAnalyticsEvents().onODNPClick;
   if (!account) return null;
 
   const onClick = () => {
-    onODNPClick();
+    analytics.onODNPClick();
     odnp.show(account, "twap");
   };
   return (

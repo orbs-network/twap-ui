@@ -16,11 +16,12 @@ import Button from "../components/Button";
 import Card from "../components/Card";
 import { Typography } from "@mui/material";
 import { Status, TokenData } from "@orbs-network/twap";
-import { fillDelayUi, useCancelOrder, useHistoryPrice } from "../hooks";
-import { OrderUI } from "../state";
+import { useCancelOrder, useHistoryPrice } from "../hooks";
 import TokenPriceCompare from "../components/TokenPriceCompare";
 import { useOrdersContext } from "../context";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
+import { OrderUI } from "../types";
+import { fillDelayUi } from "../store";
 
 export interface Props {
   order: OrderUI;

@@ -5,18 +5,18 @@ import spiritswap from "./SpiritSwap";
 import spookyswap from "./SpookySwap";
 import { Dapp, DappsMenu } from "./Components";
 import { Navigate } from "react-router-dom";
-import { hooks } from "@orbs-network/twap-ui";
+import { hooks, useTwapStore } from "@orbs-network/twap-ui";
 import { useEagerlyConnect, useSelectedDapp, useDisconnectWallet } from "./hooks";
 import { useCallback } from "react";
 import { Status } from "./Status";
 
 const defaultDapp = spiritswap;
-const dapps = [spiritswap, pangolin, spookyswap];
+export const dapps = [spiritswap, pangolin, spookyswap];
 
 function App() {
-  const resetState = hooks.disconnectAndReset();
+  const resetState = useTwapStore((state) => state.reset);
   const navigate = useNavigate();
-  const isSelected = useSelectedDapp();
+  const { isSelected } = useSelectedDapp();
   const disconnect = useDisconnectWallet();
   useEagerlyConnect();
 
@@ -31,7 +31,7 @@ function App() {
 
   return (
     <StyledApp className="App">
-      <DappsMenu onSelect={onSelect} dapps={dapps} isSelected={isSelected} />
+      <DappsMenu onSelect={onSelect} isSelected={isSelected} />
       <StyledContent>
         <Routes>
           {dapps.map(({ config, Component }) => {
@@ -40,7 +40,7 @@ function App() {
           <Route path="*" element={<Navigate to={defaultDapp.config.partner.toLowerCase()} />} />
         </Routes>
       </StyledContent>
-      <Status dapp={dapps.find((d) => isSelected(d))!} />
+      
     </StyledApp>
   );
 }

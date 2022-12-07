@@ -1,6 +1,6 @@
 import { zeroAddress, eqIgnoreCase } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
-import { hooks } from "@orbs-network/twap-ui";
+import { hooks, useTwapStore } from "@orbs-network/twap-ui";
 import _ from "lodash";
 import { useMemo, useEffect, useRef, createContext, useContext } from "react";
 import { PangolinTWAPProps } from ".";
@@ -47,7 +47,7 @@ const findToken = (tokenList?: TokenData[], address?: string) => {
 };
 
 export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: string, tokenList?: TokenData[]) => {
-  const setTokens = hooks.useSetTokens();
+  const setTokens = useTwapStore((state) => state.setTokens);
   const tokenListRef = useRef<TokenData[] | undefined>(undefined);
   tokenListRef.current = tokenList;
   const tokensLength = tokenList?.length || 0;

@@ -2,10 +2,9 @@ import { Box, styled } from "@mui/system";
 import { CSSProperties } from "react";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import IconButton from "@mui/material/IconButton";
-
+import {Styles as TwapStyles} from "@orbs-network/twap-ui"
 export const globalStyle = {
   "& *": {
     color: "white",
@@ -148,3 +147,21 @@ export const StyledDappLayout = styled(Box)({
   flexDirection: "column",
   gap: 20,
 });
+
+
+
+export const StyledStatus = styled(TwapStyles.StyledColumnFlex)({
+  padding: "20px",
+  gap: 10,
+  maxHeight:'80vh',
+  overflow:'auto'
+});
+
+export const StyledStatusSection = styled(TwapStyles.StyledColumnFlex)({
+  gap:2
+});
+export const StyledStatusSectionTitle = styled(TwapStyles.StyledText)({
+  fontWeight: 700
+});
+
+export const StyledStatusSectionText = styled(TwapStyles.StyledText)({});

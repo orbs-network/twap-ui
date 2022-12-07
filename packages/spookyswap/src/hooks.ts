@@ -1,5 +1,5 @@
 import { TokenData } from "@orbs-network/twap";
-import { hooks } from "@orbs-network/twap-ui";
+import { hooks, useTwapStore } from "@orbs-network/twap-ui";
 import _ from "lodash";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { SpookySwapTWAPProps } from ".";
@@ -36,7 +36,8 @@ const findToken = (tokenList?: TokenData[], symbol?: string) => {
 };
 
 export const useTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: string, tokenList?: TokenData[]) => {
-  const setTokens = hooks.useSetTokens();
+  const setTokens = useTwapStore((state) => state.setTokens);
+
   const tokenListRef = useRef<TokenData[] | undefined>(undefined);
 
   tokenListRef.current = tokenList;

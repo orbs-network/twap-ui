@@ -1,10 +1,10 @@
 import { Box, styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
 import { TbArrowsRightLeft } from "react-icons/tb";
+import { StyledText } from "../styles";
 import Icon from "./Icon";
 import IconButton from "./IconButton";
 import NumberDisplay from "./NumberDisplay";
-import Text from "./Text";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
 import Tooltip from "./Tooltip";
@@ -21,7 +21,7 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
   return (
     <StyledContainer className={className}>
       <TokenLogo logo={leftToken?.logoUrl} />
-      <Text>1</Text>
+      <StyledText>1</StyledText>
       <TokenName name={leftToken?.symbol} />
       <IconButton onClick={toggleInverted}>
         <Icon icon={<TbArrowsRightLeft />} />
@@ -29,9 +29,9 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
 
       <TokenLogo logo={rightToken?.logoUrl} />
       <Tooltip text={price}>
-        <Text>
+        <StyledText>
           <NumberDisplay value={price} />
-        </Text>
+        </StyledText>
       </Tooltip>
       <TokenName name={rightToken?.symbol} />
     </StyledContainer>

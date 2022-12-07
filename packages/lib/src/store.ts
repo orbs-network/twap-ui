@@ -1,10 +1,12 @@
 import BN from "bignumber.js";
-import { Order, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { Order, OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import moment from "moment";
 import create from "zustand";
 import { combine } from "zustand/middleware";
 import _ from "lodash";
 import { parsebn } from "@defi.org/web3-candies";
+import { Translations } from "./types";
+import { analytics } from "./analytics";
 
 export enum TimeResolution {
   Minutes = 60 * 1000,
@@ -34,7 +36,7 @@ const initialState = {
 
   loading: false,
   isLimitOrder: false,
-  confirmationClickTimestamp: 0,
+  confirmationClickTimestamp: moment(),
   showConfirmation: false,
   disclaimerAccepted: false,
 
@@ -49,8 +51,14 @@ export const useTwapStore = create(
     reset: () => set(initialState),
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
-    setSrcToken: (srcToken?: TokenData) => set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" }),
-    setDstToken: (dstToken?: TokenData) => set({ dstToken, limitPriceUi: initialState.limitPriceUi }),
+    setSrcToken: (srcToken?: TokenData) => {
+      srcToken && analytics.onSrcTokenClick(srcToken?.symbol);
+      set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" });
+    },
+    setDstToken: (dstToken?: TokenData) => {
+      dstToken && analytics.onDstTokenClick(dstToken.symbol);
+      set({ dstToken, limitPriceUi: initialState.limitPriceUi });
+    },
     setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi, chunks: 1 }),
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),
     setDstBalance: (dstBalance: BN) => set({ dstBalance }),
@@ -69,15 +77,49 @@ export const useTwapStore = create(
         !get().isLimitOrder
       );
     },
+    getFillWarning: (translation?: Translations) => {
+      if (!translation) return;
+      const chunkSize = (get() as any).getSrcChunkAmount();
+      const srcToken = get().srcToken;
+      const dstToken = get().dstToken;
+      const srcBalance = get().srcBalance;
+      const srcAmount = (get() as any).getSrcAmount();
+      const lib = get().lib;
+      const deadline = (get() as any).getDeadline();
+      const isLimitOrder = get().isLimitOrder;
+      const limitPrice = (get() as any).getLimitPrice(false);
+      if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) return translation.selectTokens;
+      if (srcAmount.isZero()) return translation.enterAmount;
+      if (srcBalance && srcAmount.gt(srcBalance)) return translation.insufficientFunds;
+      if (chunkSize.isZero()) return translation.enterTradeSize;
+      if (get().duration.amount === 0) return translation.enterMaxDuration;
+      if (isLimitOrder && limitPrice.limitPrice.isZero()) return translation.insertLimitPriceWarning;
+      const valuesValidation = lib?.validateOrderInputs(
+        srcToken!,
+        dstToken!,
+        srcAmount,
+        chunkSize,
+        (get() as any).getDstMinAmountOut(),
+        deadline,
+        (get() as any).getFillDelayMillis() / 1000,
+        get().srcUsd
+      );
+
+      if (valuesValidation === OrderInputValidation.invalidTokens) {
+        return translation.selectTokens;
+      }
+
+      if (valuesValidation === OrderInputValidation.invalidSmallestSrcChunkUsd) {
+        return translation.tradeSizeMustBeEqual;
+      }
+    },
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork: boolean) => set({ wrongNetwork }),
-    setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation }),
 
     toggleLimitOrder: () => set({ isLimitOrder: !get().isLimitOrder, limitPriceUi: (get() as any).getMarketPrice(false) }),
     setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => set({ limitPriceUi }),
 
     setChunks: (chunks: number) => set({ chunks: Math.min(chunks, (get() as any).getMaxPossibleChunks()) }),
-
     setDuration: (duration: Duration) =>
       get().lib &&
       set(() => ({
@@ -126,8 +168,14 @@ export const useTwapStore = create(
         limitPrice,
       };
     },
-
-    setFillDelay: (customFillDelay: { resolution: TimeResolution; amount: number }) => set({ customFillDelay }),
+    setTokens: (srcToken?: TokenData, dstToken?: TokenData) => {
+      srcToken && set({ srcToken });
+      dstToken && set({ dstToken });
+    },
+    setFillDelay: (customFillDelay: { resolution: TimeResolution; amount: number }) => {
+      analytics.onCustomIntervalClick();
+      set({ customFillDelay });
+    },
     getFillDelay: () => {
       if (!get().lib) return { resolution: TimeResolution.Minutes, amount: 0 };
       if (get().customFillDelayEnabled && get().customFillDelay) return get().customFillDelay;
@@ -135,6 +183,7 @@ export const useTwapStore = create(
       const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= millis) || TimeResolution.Minutes;
       return { resolution, amount: Number(BN(millis / resolution).toFixed(2)) };
     },
+    getFillDelayUi: (translations: Translations) => fillDelayUi((get() as any).getFillDelayMillis(), translations),
     getFillDelayMillis: () => (get() as any).getFillDelay().amount * (get() as any).getFillDelay().resolution,
     setCustomFillDelayEnabled: () => set({ customFillDelayEnabled: true }),
 
@@ -166,8 +215,9 @@ export const useTwapStore = create(
     shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
 
     isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
-
-    onClickConfirmation: () => set({ confirmationClickTimestamp: Date.now() }),
+    setShowConfirmation: (showConfirmation: boolean) => {
+      set({ showConfirmation, confirmationClickTimestamp: moment() });
+    },
     getDeadline: () =>
       moment(get().confirmationClickTimestamp)
         .add(get().duration.amount * get().duration.resolution)
@@ -241,3 +291,30 @@ export const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { tok
 
 const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));
 const amountUi = (token: TokenData | undefined, amount: BN) => amount.div(BN(10).pow(token?.decimals || 0)).toFormat();
+
+export const fillDelayUi = (value: number, translations: Translations) => {
+  if (!value) {
+    return "0";
+  }
+  const time = moment.duration(value);
+  const days = time.days();
+  const hours = time.hours();
+  const minutes = time.minutes();
+  const seconds = time.seconds();
+
+  const arr: string[] = [];
+
+  if (days) {
+    arr.push(`${days} ${translations.days} `);
+  }
+  if (hours) {
+    arr.push(`${hours} ${translations.hours} `);
+  }
+  if (minutes) {
+    arr.push(`${minutes} ${translations.minutes}`);
+  }
+  if (seconds) {
+    arr.push(`${seconds} ${translations.seconds}`);
+  }
+  return arr.join(" ");
+};

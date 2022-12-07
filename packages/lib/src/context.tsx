@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect } from "react";
 import { OrderLibProps, TwapLibProps } from "./types";
-import { useInitLib } from "./hooks";
+import { useDstBalance, useDstUsd, useInitLib, useSrcBalance, useSrcUsd } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 
 const TwapContext = createContext<TwapLibProps>({} as TwapLibProps);
@@ -9,6 +9,10 @@ const OrdersContext = createContext<OrderLibProps>({} as OrderLibProps);
 export const TwapAdapter = (props: TwapLibProps) => {
   const initLib = useInitLib();
   const translations = { ...defaultTranlations, ...props.translations };
+  useSrcUsd();
+  useDstUsd();
+  useSrcBalance();
+  useDstBalance();
 
   // init web3 every time the provider changes
   useEffect(() => {
