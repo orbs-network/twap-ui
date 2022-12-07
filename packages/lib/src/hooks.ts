@@ -2,7 +2,7 @@ import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-net
 import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, OrderUI } from "./types";
 import _ from "lodash";
@@ -65,30 +65,6 @@ const useUnwrapToken = () => {
   );
 };
 
-const useMutation = <T>(
-  method: (args?: any) => Promise<T>,
-  callbacks?: { onSuccess?: (data: T, args?: any) => void; onError?: (error: Error) => void; onFinally?: () => void }
-) => {
-  const [data, setData] = useState<any>(undefined);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const mutate = async (args?: any) => {
-    try {
-      setIsLoading(true);
-      const result = await method(args);
-      setData(result);
-      callbacks?.onSuccess?.(result, args);
-    } catch (error) {
-      callbacks?.onError?.(error as Error);
-    } finally {
-      setIsLoading(false);
-      callbacks?.onFinally?.();
-    }
-  };
-
-  return { isLoading, mutate, data };
-};
-
 const useApproveToken = () => {
   const lib = useTwapStore((state) => state.lib);
   const srcAmount = useTwapStore((state) => state.getSrcAmount());
@@ -115,63 +91,50 @@ const useApproveToken = () => {
 //TODO store.
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
-  const { srcToken, dstToken, lib, srcAmount, srcChunkAmount, dstMinChunkAmountOut, deadline, srcUsd, setCreateOrderLoading, fillDelayMillis, resetTwapStore } = useTwapStore(
-    (state) => ({
-      lib: state.lib,
-      srcToken: state.srcToken!,
-      dstToken: state.dstToken!,
-      srcAmount: state.getSrcAmount(),
-      srcChunkAmount: state.getSrcChunkAmount(),
-      dstMinChunkAmountOut: state.getDstMinAmountOut(),
-      deadline: state.getDeadline(),
-      fillDelayMillis: state.getFillDelayMillis(),
-      srcUsd: state.srcUsd,
-      setCreateOrderLoading: state.setLoading,
-      resetTwapStore: state.reset,
-    })
-  );
-
+  const store = useTwapStore();
+  const { refetch: refetchHistoryOrders } = useOrdersHistoryQuery();
   return useMutation(
     async () => {
       console.log({
-        srcToken,
-        dstToken,
-        srcAmount: srcAmount.toString(),
-        srcChunkAmount: srcChunkAmount.toString(),
-        dstMinChunkAmountOut: dstMinChunkAmountOut.toString(),
-        deadline,
-        fillDelay: fillDelayMillis,
-        srcUsd: srcUsd.toString(),
+        srcToken: store.srcToken,
+        dstToken: store.dstToken,
+        srcAmount: store.getSrcAmount().toString(),
+        srcChunkAmount: store.getSrcChunkAmount().toString(),
+        dstMinChunkAmountOut: store.getDstMinAmountOut().toString(),
+        deadline: store.getDeadline(),
+        fillDelay: store.getFillDelayMillis(),
+        srcUsd: store.srcUsd.toString(),
         priorityFeePerGas: priorityFeePerGas?.toString(),
         maxFeePerGas: maxFeePerGas?.toString(),
       });
       analytics.onConfirmationCreateOrderClick();
-      setCreateOrderLoading(true);
-      return lib!.submitOrder(
-        srcToken,
-        { ...dstToken, address: lib?.validateTokens(srcToken, dstToken) === TokensValidation.dstTokenZero ? zeroAddress : dstToken.address },
-        srcAmount,
-        srcChunkAmount,
-        dstMinChunkAmountOut,
-        deadline,
-        fillDelayMillis / 1000,
-        srcUsd,
+      store.setLoading(true);
+      return store.lib!.submitOrder(
+        store.srcToken!,
+        { ...store.dstToken!, address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address },
+        store.getSrcAmount(),
+        store.getSrcChunkAmount(),
+        store.getDstMinAmountOut(),
+        store.getDeadline(),
+        store.getFillDelayMillis() / 1000,
+        store.srcUsd,
         priorityFeePerGas,
         maxFeePerGas
       );
     },
     {
-      onSuccess: () => {
+      onSuccess: async () => {
         analytics.onCreateOrderSuccess();
-        resetTwapStore();
+        store.resetWithLib();
+        await refetchHistoryOrders();
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
         console.log(error);
       },
 
-      onFinally: () => {
-        setCreateOrderLoading(false);
+      onSettled: () => {
+        store.setLoading(false);
       },
     }
   );
@@ -250,10 +213,12 @@ const useApproveButton = () => {
 
 const useLoadingButton = () => {
   const setShowConfirmation = useTwapStore((state) => state.setShowConfirmation);
+  const showConfirmation = useTwapStore((state) => state.showConfirmation);
+
   const createOrderLoading = useTwapStore((state) => state.loading);
 
   if (createOrderLoading) {
-    return { text: "", onClick: () => setShowConfirmation(true), loading: true, disabled: false };
+    return { text: "", onClick: () => setShowConfirmation(true), loading: true, disabled: showConfirmation };
   }
   return { text: "", onClick: () => {}, loading: true, disabled: true };
 };
@@ -286,6 +251,8 @@ export const useSubmitButton = () => {
   const { srcUsdLoading, dstUsdLoading } = useLoadingState();
   const translations = useTwapContext().translations;
   const warning = useTwapStore((state) => state.getFillWarning(translations));
+  const createOrderLoading = useTwapStore((state) => state.loading);
+
   const allowance = useHasAllowanceQuery();
   const changeNetwork = useChangeNetworkButton();
   const connectButton = useConnectButton();
@@ -302,7 +269,7 @@ export const useSubmitButton = () => {
   if (warning) return warningButton;
   if (shouldUnwrap) return unwrapButton;
   if (shouldWrap) return wrapButton;
-  if (allowance.isLoading || srcUsdLoading || dstUsdLoading) return loadingButton;
+  if (allowance.isLoading || srcUsdLoading || dstUsdLoading || createOrderLoading) return loadingButton;
   if (allowance.data === false) return approvebutton;
   if (showConfirmation) return createOrderButton;
   return showConfirmationButton;
@@ -372,6 +339,7 @@ export const useTokenPanel = (isSrc?: boolean) => {
     selectTokenWarning,
     usdLoading: isSrc ? loadingState.srcUsdLoading : loadingState.dstUsdLoading,
     balanceLoading: isSrc ? loadingState.srcBalanceLoading : loadingState.dstBalanceLoading,
+    decimalScale: token?.decimals,
   };
 };
 
@@ -608,7 +576,7 @@ export const useOrdersHistoryQuery = (fetcher: (token: TokenData) => Promise<BN>
     ["useOrdersHistory", lib?.maker, lib?.config.chainId],
     async () => {
       const rawOrders = await lib!.getAllOrders();
-      const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(tokenList, rawOrders, fetcher);
+      const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(tokenList || [], rawOrders, fetcher);
       const parsedOrders = rawOrders.map((o: Order) => parseOrderUi(lib!, tokenWithUsdByAddress, o));
       const ordersUi = _.chain(parsedOrders)
         .orderBy((o: OrderUI) => o.order.ask.deadline, "desc")

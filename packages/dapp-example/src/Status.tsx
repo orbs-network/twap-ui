@@ -8,7 +8,7 @@ import moment from "moment";
 import BN from "bignumber.js";
 import { useSelectedDapp } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
-import { useState } from "react";
+
 const useStatus = (dapp: Dapp) => {
   const { library: provider, account } = useWeb3React(); // TODO replace with useLib from twap-ui store
   return useQuery(
@@ -74,7 +74,7 @@ export function Status() {
 
   return (
     <>
-      {status && (
+      {dapp && status && (
         <StyledStatus>
           <StyledStatusSection>
             <StyledStatusSectionTitle>TWAP Version:</StyledStatusSectionTitle>

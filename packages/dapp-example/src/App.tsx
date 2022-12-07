@@ -5,10 +5,9 @@ import spiritswap from "./SpiritSwap";
 import spookyswap from "./SpookySwap";
 import { Dapp, DappsMenu } from "./Components";
 import { Navigate } from "react-router-dom";
-import { hooks, store } from "@orbs-network/twap-ui";
+import { store } from "@orbs-network/twap-ui";
 import { useEagerlyConnect, useSelectedDapp, useDisconnectWallet } from "./hooks";
 import { useCallback } from "react";
-import { Status } from "./Status";
 
 const defaultDapp = spiritswap;
 export const dapps = [spiritswap, pangolin, spookyswap];

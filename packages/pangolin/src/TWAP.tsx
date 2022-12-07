@@ -253,7 +253,7 @@ const TokenSelect = (props: TokenSelectProps) => {
 };
 
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
-  const { toggleTokenList, onTokenSelect, tokenListOpen, inputWarning, amountPrefix, disabled, selectTokenWarning, logo, symbol, onChange, value } =
+  const { decimalScale, toggleTokenList, onTokenSelect, tokenListOpen, inputWarning, amountPrefix, disabled, selectTokenWarning, logo, symbol, onChange, value } =
     hooks.useTokenPanel(isSrcToken);
   const { translations } = useTwapContext();
 
@@ -290,7 +290,15 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
           </TwapStyles.StyledRowFlex>
           <AdapterStyles.StyledColoredFlex gap={20} style={{ borderBottomLeftRadius: !isSrcToken ? "0px" : "", borderBottomRightRadius: !isSrcToken ? "0px" : "" }}>
             <Components.Tooltip text={inputWarning}>
-              <AdapterStyles.StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0.0" onChange={onChange || (() => {})} value={value} />
+              <AdapterStyles.StyledNumbericInput
+                decimalScale={decimalScale}
+                prefix={amountPrefix}
+                loading={false}
+                disabled={disabled}
+                placeholder="0.0"
+                onChange={onChange || (() => {})}
+                value={value}
+              />
             </Components.Tooltip>
             <Components.Tooltip text={selectTokenWarning}>
               <AdapterStyles.StyledTokenSelect onClick={onOpen} style={{ background: symbol ? "" : "rgb(255, 200, 0)" }}>

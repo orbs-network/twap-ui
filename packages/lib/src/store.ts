@@ -49,6 +49,7 @@ const initialState = {
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
     reset: () => set(initialState),
+    resetWithLib: () => set({ ...initialState, lib: get().lib }),
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
@@ -287,7 +288,13 @@ export const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { tok
 };
 
 const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));
-const amountUi = (token: TokenData | undefined, amount: BN) => amount.div(BN(10).pow(token?.decimals || 0)).toFormat();
+const amountUi = (token: TokenData | undefined, amount: BN) =>
+  amount
+    .times(BN(10).pow(token?.decimals || 0))
+    .idiv(BN(10).pow(token?.decimals || 0))
+    .div(BN(10).pow(token?.decimals || 0))
+
+    .toFormat();
 
 export const fillDelayUi = (value: number, translations: Translations) => {
   if (!value) {

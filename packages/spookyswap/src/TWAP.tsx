@@ -264,6 +264,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     balanceLoading,
     balance,
     usdLoading,
+    decimalScale,
   } = hooks.useTokenPanel(isSrcToken);
 
   const { TokenSelectModal, getTokenImage, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
@@ -304,7 +305,15 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
                 </AdapterStyles.StyledTokenSelect>
               </Components.Tooltip>
               <Components.Tooltip text={inputWarning}>
-                <AdapterStyles.StyledNumbericInput prefix={amountPrefix} loading={false} disabled={disabled} placeholder="0.0" onChange={onChange || (() => {})} value={value} />
+                <AdapterStyles.StyledNumbericInput
+                  decimalScale={decimalScale}
+                  prefix={amountPrefix}
+                  loading={false}
+                  disabled={disabled}
+                  placeholder="0.0"
+                  onChange={onChange || (() => {})}
+                  value={value}
+                />
               </Components.Tooltip>
             </TwapStyles.StyledRowFlex>
             <AdapterStyles.StyledUSD value={usdValue} isLoading={usdLoading} />
