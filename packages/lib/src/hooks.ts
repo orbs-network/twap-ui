@@ -571,12 +571,10 @@ const defaultFetcher = (token: TokenData) => {
 export const useOrdersHistoryQuery = (fetcher: (token: TokenData) => Promise<BN> = defaultFetcher) => {
   const tokenList = useOrdersContext().tokenList;
   const lib = useTwapStore((state) => state.lib);
-  console.log(tokenList, "outside");
 
   const query = useQuery(
     ["useOrdersHistory", lib?.maker, lib?.config.chainId],
     async () => {
-      console.log(tokenList, "inside");
 
       const rawOrders = await lib!.getAllOrders();
       const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(tokenList || [], rawOrders, fetcher);

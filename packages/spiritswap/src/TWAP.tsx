@@ -17,16 +17,10 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
   useSetTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
-  const twapStore = store.useTwapStore();
 
   const connect = useCallback(() => {
     props.connect();
   }, []);
-
-  const onClick = () => {
-    twapStore.resetWithLib();
-    // refetch();
-  };
 
   return (
     <TwapAdapter
@@ -41,7 +35,7 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
       <GlobalStyles styles={AdapterStyles.globalStyle as any} />
       <AdapterContextProvider value={adapterContextProps}>
         <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
-          <button onClick={onClick}>reset</button>
+          {/* <button onClick={onClick}>reset</button> */}
           <SrcTokenPanel />
           <ChangeTokensOrder />
           <DstTokenPanel />
