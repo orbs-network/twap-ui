@@ -1,20 +1,16 @@
 import { StyledLayoutSpookyswap, StyledModalList, StyledModalListItem } from "./styles";
 import { Orders, TWAP, SpookySwapTWAPProps, SpookySwapOrdersProps } from "@orbs-network/twap-ui-spookyswap";
-import { useConnectWallet, useGetTokens } from "./hooks";
+import { useConnectWallet, useGetTokensFromViaProtocol } from "./hooks";
 import { TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp } from "./Components";
 import { DappLayout, Popup } from "./Components";
 
-const parseToken = (token: any): TokenData => {
-  return { symbol: token.symbol, address: token.address, decimals: token.decimals, logoUrl: token.logoURI };
-};
-
 const config = Configs.SpookySwap;
 
 const useDappTokens = () => {
-  return useGetTokens(config.chainId, parseToken);
+  return useGetTokensFromViaProtocol(config.chainId);
 };
 
 interface TokenSelectModalProps {

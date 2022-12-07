@@ -22,7 +22,7 @@ const tokenlistsNetworkNames = {
   [networks.oeth.id]: "optimism",
 };
 
-export const useGetTokens = (chainId: number, parseToken: (token: any) => TokenData) => {
+export const useGetTokensFromViaProtocol = (chainId: number) => {
   const { account } = useWeb3React();
   const { isInValidNetwork } = useNetwork(chainId);
 
@@ -33,7 +33,12 @@ export const useGetTokens = (chainId: number, parseToken: (token: any) => TokenD
       if (!name) return;
       const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${name}.json`);
       const tokenList = await response.json();
-      const parsed = tokenList.map((t: any) => parseToken(t));
+      const parsed = tokenList.map((token: any) => ({
+        symbol: token.symbol,
+        address: token.address,
+        decimals: token.decimals,
+        logoUrl: token.logoURI?.replace("/logo_24.png", "/logo_48.png"),
+      }));
       const networkShortName = _.find(networks, (n) => n.id === chainId)!.shortname;
       const topTokens = [
         zeroAddress,

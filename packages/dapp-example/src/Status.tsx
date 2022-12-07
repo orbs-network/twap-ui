@@ -47,16 +47,17 @@ const useStatus = (dapp: Dapp) => {
                 balances: _.sortBy(await fetchBalances(wallets)),
               };
             })
+            .catch(console.error)
         )
       );
 
       return {
         twapVersion,
         twapUiVersion,
-        backupTaker1Uptime: backupTakersStatus[0].uptime,
-        backupTaker1Balances: backupTakersStatus[0].balances,
-        backupTaker2Uptime: backupTakersStatus[1].uptime,
-        backupTaker2Balances: backupTakersStatus[1].balances,
+        backupTaker1Uptime: backupTakersStatus[0]?.uptime || "",
+        backupTaker1Balances: backupTakersStatus[0]?.balances || [],
+        backupTaker2Uptime: backupTakersStatus[1]?.uptime || "",
+        backupTaker2Balances: backupTakersStatus[1]?.balances || [],
       };
     },
     {
@@ -98,7 +99,7 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle>Exchange:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              {dapp.config.exchangeAddress} {dapp.config.exchangeType}
+              {dapp.config.exchangeType} {dapp.config.exchangeAddress}
             </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
