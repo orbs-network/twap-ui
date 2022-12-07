@@ -15,7 +15,6 @@ export const dapps = [spiritswap, pangolin, spookyswap];
 function App() {
   const resetState = store.useTwapStore((state) => state.reset);
   const navigate = useNavigate();
-  const { isSelected } = useSelectedDapp();
   const disconnect = useDisconnectWallet();
   useEagerlyConnect();
 
@@ -30,7 +29,7 @@ function App() {
 
   return (
     <StyledApp className="App">
-      <DappsMenu onSelect={onSelect} isSelected={isSelected} />
+      <DappsMenu onSelect={onSelect} />
       <StyledContent>
         <Routes>
           {dapps.map(({ config, Component }) => {

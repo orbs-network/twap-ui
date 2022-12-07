@@ -575,7 +575,6 @@ export const useOrdersHistoryQuery = (fetcher: (token: TokenData) => Promise<BN>
   const query = useQuery(
     ["useOrdersHistory", lib?.maker, lib?.config.chainId],
     async () => {
-
       const rawOrders = await lib!.getAllOrders();
       const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(tokenList || [], rawOrders, fetcher);
       if (!tokenWithUsdByAddress) return null;

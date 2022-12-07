@@ -12,6 +12,7 @@ import { Fade } from "@mui/material";
 import { Config } from "@orbs-network/twap";
 import { dapps } from "./App";
 import { Status } from "./Status";
+import { useSelectedDapp } from "./hooks";
 export interface Dapp {
   config: Config;
   logo: string;
@@ -42,11 +43,12 @@ export const MetaTags = ({ title, favicon }: { title: string; favicon: string })
 
 interface DappsMenuProps {
   onSelect: (dapp: Dapp) => void;
-  isSelected: (dapp: Dapp) => boolean;
 }
 const drawerWidth = 260;
 
-export const DappsMenu = ({ onSelect, isSelected }: DappsMenuProps) => {
+export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
+  const { isSelected } = useSelectedDapp();
+
   const isMobile = useMediaQuery("(max-width:1100px)");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -95,7 +97,7 @@ export const DappsMenu = ({ onSelect, isSelected }: DappsMenuProps) => {
             </ListItem>
           ))}
         </StyledMenuList>
-        {/* <Status /> */}
+        <Status />
       </StyledMenuDrawer>
     </>
   );

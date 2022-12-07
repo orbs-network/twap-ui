@@ -7,18 +7,18 @@ import BN from "bignumber.js";
 import { useSelectedDapp } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
 
-const useStatus = (dapp: Dapp) => {
+const useStatus = (dapp?: Dapp) => {
   return useQuery(
-    ["useStatus", dapp.config.partner],
+    ["useStatus", dapp?.config.partner],
     async () => {
       const twapVersion = require("@orbs-network/twap/package.json").version;
       const twapUiVersion = require("@orbs-network/twap-ui/package.json").version;
 
-      const network = _.find(networks, (n) => n.id === dapp.config.chainId)!;
+      const network = _.find(networks, (n) => n.id === dapp?.config.chainId)!;
 
       const backupTakersStatus = await Promise.all(
         [1, 2].map((i) =>
-          fetch(`https://twap-taker-${network.shortname}-${dapp.config.partner.toLowerCase()}-${i}.herokuapp.com/health`)
+          fetch(`https://twap-taker-${network.shortname}-${dapp?.config.partner.toLowerCase()}-${i}.herokuapp.com/health`)
             .then((x) => x.json())
             .then(async (s) => {
               return {
@@ -48,8 +48,7 @@ const useStatus = (dapp: Dapp) => {
 };
 
 export function Status() {
-  const { selectedDapp } = useSelectedDapp();
-  const dapp = selectedDapp!;
+  const { selectedDapp: dapp } = useSelectedDapp();
   const { data: status } = useStatus(dapp);
 
   return (
