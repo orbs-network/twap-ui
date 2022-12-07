@@ -5,7 +5,7 @@ import spiritswap from "./SpiritSwap";
 import spookyswap from "./SpookySwap";
 import { Dapp, DappsMenu } from "./Components";
 import { Navigate } from "react-router-dom";
-import { hooks, useTwapStore } from "@orbs-network/twap-ui";
+import { hooks, store } from "@orbs-network/twap-ui";
 import { useEagerlyConnect, useSelectedDapp, useDisconnectWallet } from "./hooks";
 import { useCallback } from "react";
 import { Status } from "./Status";
@@ -14,7 +14,7 @@ const defaultDapp = spiritswap;
 export const dapps = [spiritswap, pangolin, spookyswap];
 
 function App() {
-  const resetState = useTwapStore((state) => state.reset);
+  const resetState = store.useTwapStore((state) => state.reset);
   const navigate = useNavigate();
   const { isSelected } = useSelectedDapp();
   const disconnect = useDisconnectWallet();
@@ -40,7 +40,6 @@ function App() {
           <Route path="*" element={<Navigate to={defaultDapp.config.partner.toLowerCase()} />} />
         </Routes>
       </StyledContent>
-      
     </StyledApp>
   );
 }

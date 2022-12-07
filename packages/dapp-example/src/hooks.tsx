@@ -73,10 +73,9 @@ export const useSelectedDapp = () => {
   const location = useLocation();
   const selected = location.pathname.split("/")[1];
   const isSelected = useCallback((dapp: Dapp) => selected === dapp.config.partner.toLowerCase(), [selected]);
-  const selectedDapp = useMemo(() =>   dapps.find((dapp) => dapp.config.partner.toLowerCase() === selected), [selected])
+  const selectedDapp = useMemo(() => dapps.find((dapp) => dapp.config.partner.toLowerCase() === selected), [selected]);
   return { isSelected, selectedDapp };
 };
-
 
 export const useNetwork = (chainId: number) => {
   const { chainId: connectedChainId } = useWeb3React();

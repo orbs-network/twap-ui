@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, hooks, TwapAdapter, useTwapContext, Translations, Styles as TwapStyles, useTwapStore } from "@orbs-network/twap-ui";
+import { Components, hooks, TwapAdapter, useTwapContext, Translations, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
@@ -114,7 +114,7 @@ const ChangeTokensOrder = () => {
 };
 
 const TradeSize = () => {
-  const { chunksAmount, onTotalChunksChange, totalChunks, token, maxPossibleChunks, showChunksSelect, usdValue } = useTwapStore((state) => ({
+  const { chunksAmount, onTotalChunksChange, totalChunks, token, maxPossibleChunks, showChunksSelect, usdValue } = store.useTwapStore((state) => ({
     chunksAmount: state.getSrcChunkAmountUi(),
     onTotalChunksChange: state.setChunks,
     totalChunks: state.chunks,
@@ -191,7 +191,7 @@ const LimitPriceDisplay = () => {
 };
 
 const MaxDuration = () => {
-  const { duration, onChange } = useTwapStore((state) => ({
+  const { duration, onChange } = store.useTwapStore((state) => ({
     duration: state.duration,
     onChange: state.setDuration,
   }));
@@ -208,7 +208,7 @@ const MaxDuration = () => {
 };
 
 const TradeInterval = () => {
-  const { fillDelay, customFillDelayEnabled, onChange, onCustomFillDelayClick } = useTwapStore((state) => ({
+  const { fillDelay, customFillDelayEnabled, onChange, onCustomFillDelayClick } = store.useTwapStore((state) => ({
     fillDelay: state.getFillDelay(),
     customFillDelayEnabled: state.customFillDelayEnabled,
     onChange: state.setFillDelay,
@@ -359,7 +359,7 @@ const OrderConfirmation = () => {
     disclaimerAccepted,
     setDisclaimerAccepted,
     lib,
-  } = useTwapStore();
+  } = store.useTwapStore();
   const translations = useTwapContext().translations;
 
   return (

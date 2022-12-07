@@ -13,7 +13,7 @@ export enum TimeResolution {
   Hours = Minutes * 60,
   Days = Hours * 24,
 }
-
+//TODO move to types
 export type Duration = { resolution: TimeResolution; amount: number };
 
 /**
@@ -215,16 +215,13 @@ export const useTwapStore = create(
     shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
 
     isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
-    setShowConfirmation: (showConfirmation: boolean) => {
-      set({ showConfirmation, confirmationClickTimestamp: moment() });
-    },
+    setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment() }),
     getDeadline: () =>
       moment(get().confirmationClickTimestamp)
         .add(get().duration.amount * get().duration.resolution)
         .add(1, "minute")
         .valueOf(),
     getDeadlineUi: () => moment((get() as any).getDeadline()).format("DD/MM/YYYY HH:mm"),
-
     getDstAmountUi: () => amountUi(get().dstToken, (get() as any).getDstAmount()),
     getSrcAmountUsdUi: () => amountUi(get().srcToken, (get() as any).getSrcAmount().times(get().srcUsd)),
     getDstAmountUsdUi: () => amountUi(get().dstToken, (get() as any).getDstAmount().times(get().dstUsd)),

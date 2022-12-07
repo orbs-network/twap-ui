@@ -112,7 +112,7 @@ const useApproveToken = () => {
     }
   );
 };
-
+//TODO store.
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const { srcToken, dstToken, lib, srcAmount, srcChunkAmount, dstMinChunkAmountOut, deadline, srcUsd, setCreateOrderLoading, fillDelayMillis, resetTwapStore } = useTwapStore(
@@ -177,30 +177,20 @@ export const useCreateOrder = () => {
   );
 };
 
-const useValidateProvider = () => {
+export const useInitLib = () => {
+  const setTwapLib = useTwapStore((state) => state.setLib);
   const setWrongNetwork = useTwapStore((state) => state.setWrongNetwork);
 
   return async (props: InitLibProps) => {
-    const { provider, account, connectedChainId, config } = props;
-    if (!provider || !account) {
-      return false;
+    if (!props.provider || !props.account) {
+      setTwapLib(undefined);
+      setWrongNetwork(false);
+      return;
     }
-    const chain = connectedChainId || (await new Web3(provider).eth.getChainId());
-    setWrongNetwork(config.chainId !== chain);
-    if (config.chainId !== chain) {
-      return false;
-    }
-    return true;
-  };
-};
-
-export const useInitLib = () => {
-  const setTwapLib = useTwapStore((state) => state.setLib);
-  const isValidProviderGet = useValidateProvider();
-
-  return async (props: InitLibProps) => {
-    const isValidProvider = await isValidProviderGet(props);
-    setTwapLib(!isValidProvider ? undefined : new TWAPLib(props.config, props.account!, props.provider));
+    const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
+    const wrongChain = props.config.chainId !== chain;
+    setWrongNetwork(wrongChain);
+    setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));
   };
 };
 
@@ -344,8 +334,7 @@ export const useTokenPanel = (isSrc?: boolean) => {
   }));
   const { translations } = useTwapContext();
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const values = isSrc ? srcTokenValues : dstTokenValues;
-  const { selectToken, token, onChange, amount, balance, usdValue } = values;
+  const { selectToken, token, onChange, amount, balance, usdValue } = isSrc ? srcTokenValues : dstTokenValues;
   const loadingState = useLoadingState();
 
   const onTokenSelect = useCallback((token: TokenData) => {
@@ -443,7 +432,7 @@ export const useCancelOrder = () => {
   const lib = useTwapStore((state) => state.lib);
   const { refetch } = useOrdersHistoryQuery();
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
-
+  // TODO useMutation react query
   return useMutation(
     async (orderId: number) => {
       analytics.onCancelOrderClick(orderId);
@@ -475,14 +464,6 @@ export const useHistoryPrice = (order: OrderUI) => {
   };
 };
 
-export const useSrcUsd = () => {
-  const { srcToken, setSrcUsd } = useTwapStore((state) => ({
-    srcToken: state.srcToken,
-    setSrcUsd: state.setSrcUsd,
-  }));
-  return useUsdValueQuery(srcToken, setSrcUsd);
-};
-
 export const useLoadingState = () => {
   const srcUsdLoading = useSrcUsd().isLoading;
   const dstUsdLoading = useDstUsd().isLoading;
@@ -497,24 +478,24 @@ export const useLoadingState = () => {
   };
 };
 
+export const useSrcUsd = () => {
+  const state = useTwapStore();
+  return useUsdValueQuery(state.srcToken, state.setSrcUsd);
+};
+
 export const useDstUsd = () => {
-  const { dstToken, setDstUsd } = useTwapStore((state) => ({
-    dstToken: state.dstToken,
-    setDstUsd: state.setDstUsd,
-  }));
-  return useUsdValueQuery(dstToken, setDstUsd);
+  const state = useTwapStore();
+  return useUsdValueQuery(state.dstToken, state.setDstUsd);
 };
 
 export const useSrcBalance = () => {
-  const srcToken = useTwapStore((state) => state.srcToken);
-  const setSrcBalance = useTwapStore((state) => state.setSrcBalance);
-  return useBalanceQuery(srcToken, setSrcBalance);
+  const state = useTwapStore();
+  return useBalanceQuery(state.srcToken, state.setSrcBalance);
 };
 
 export const useDstBalance = () => {
-  const dstToken = useTwapStore((state) => state.dstToken);
-  const setDstBalance = useTwapStore((state) => state.setDstBalance);
-  return useBalanceQuery(dstToken, setDstBalance);
+  const state = useTwapStore();
+  return useBalanceQuery(state.dstToken, state.setDstBalance);
 };
 
 export const useChangeNetworkCallback = () => {

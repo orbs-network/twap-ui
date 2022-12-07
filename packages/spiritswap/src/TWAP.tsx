@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Box } from "@mui/system";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, useTwapStore } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
@@ -119,7 +119,7 @@ const ChangeTokensOrder = () => {
 };
 
 const TradeSize = () => {
-  const { chunksAmount, onTotalChunksChange, totalChunks, token, maxPossibleChunks, showChunksSelect, usdValue } = useTwapStore((state) => ({
+  const { chunksAmount, onTotalChunksChange, totalChunks, token, maxPossibleChunks, showChunksSelect, usdValue } = store.useTwapStore((state) => ({
     chunksAmount: state.getSrcChunkAmountUi(),
     onTotalChunksChange: state.setChunks,
     totalChunks: state.chunks,
@@ -196,7 +196,7 @@ const LimitPriceDisplay = () => {
 };
 
 const MaxDuration = () => {
-  const { duration, onChange } = useTwapStore((state) => ({
+  const { duration, onChange } = store.useTwapStore((state) => ({
     duration: state.duration,
     onChange: state.setDuration,
   }));
@@ -213,7 +213,7 @@ const MaxDuration = () => {
 };
 
 const TradeInterval = () => {
-  const { fillDelay, customFillDelayEnabled, onChange, onCustomFillDelayClick } = useTwapStore((state) => ({
+  const { fillDelay, customFillDelayEnabled, onChange, onCustomFillDelayClick } = store.useTwapStore((state) => ({
     fillDelay: state.getFillDelay(),
     customFillDelayEnabled: state.customFillDelayEnabled,
     onChange: state.setFillDelay,
@@ -332,50 +332,31 @@ const SubmitButton = () => {
 };
 
 const OrderSummary = () => {
-  const {
-    srcToken,
-    dstToken,
-    getSrcAmountUsdUi,
-    getSrcChunkAmountUi,
-    getDeadlineUi,
-    getFillDelayUi,
-    chunks,
-    getDstMinAmountOutUi,
-    srcAmountUi,
-    getDstAmountUsdUi,
-    getDstAmountUi,
-    isLimitOrder,
-    showConfirmation,
-    setShowConfirmation,
-    disclaimerAccepted,
-    setDisclaimerAccepted,
-    lib,
-  } = useTwapStore();
-
+  const twapStore = store.useTwapStore();
   const translations = useTwapContext().translations;
 
   return (
     <>
-      <AdapterStyles.StyledTradeInfoModal open={showConfirmation} onClose={() => setShowConfirmation(false)}>
+      <AdapterStyles.StyledTradeInfoModal open={twapStore.showConfirmation} onClose={() => twapStore.setShowConfirmation(false)}>
         <AdapterStyles.StyledOrderConfirmation>
           <TwapStyles.StyledColumnFlex gap={20}>
             <TwapStyles.StyledColumnFlex gap={20}>
               <TokenOrderPreview
                 isSrc={true}
-                isLimitOrder={isLimitOrder}
+                isLimitOrder={twapStore.isLimitOrder}
                 title={translations.from}
-                amount={srcAmountUi}
-                usdPrice={getSrcAmountUsdUi()}
-                name={srcToken?.symbol}
-                logo={srcToken?.logoUrl}
+                amount={twapStore.srcAmountUi}
+                usdPrice={twapStore.getSrcAmountUsdUi()}
+                name={twapStore.srcToken?.symbol}
+                logo={twapStore.srcToken?.logoUrl}
               />
               <TokenOrderPreview
-                isLimitOrder={isLimitOrder}
+                isLimitOrder={twapStore.isLimitOrder}
                 title={translations.to}
-                amount={getDstAmountUi()}
-                usdPrice={getDstAmountUsdUi()}
-                name={dstToken?.symbol}
-                logo={dstToken?.logoUrl}
+                amount={twapStore.getDstAmountUi()}
+                usdPrice={twapStore.getDstAmountUsdUi()}
+                name={twapStore.dstToken?.symbol}
+                logo={twapStore.dstToken?.logoUrl}
               />
               <OrderConfirmationLimitPrice />
 
@@ -383,43 +364,43 @@ const OrderSummary = () => {
                 <TwapStyles.StyledColumnFlex gap={12}>
                   <TwapStyles.StyledRowFlex justifyContent="space-between">
                     <Components.Label tooltipText={translations.confirmationDeadlineTooltip}>{translations.expiration}</Components.Label>
-                    <AdapterStyles.Text>{getDeadlineUi()}</AdapterStyles.Text>
+                    <AdapterStyles.Text>{twapStore.getDeadlineUi()}</AdapterStyles.Text>
                   </TwapStyles.StyledRowFlex>
                   <TwapStyles.StyledRowFlex justifyContent="space-between">
                     <Components.Label tooltipText={translations.confirmationOrderType}>{translations.orderType}</Components.Label>
-                    <AdapterStyles.Text>{isLimitOrder ? translations.limitOrder : translations.marketOrder}</AdapterStyles.Text>
+                    <AdapterStyles.Text>{twapStore.isLimitOrder ? translations.limitOrder : translations.marketOrder}</AdapterStyles.Text>
                   </TwapStyles.StyledRowFlex>
                   <TwapStyles.StyledRowFlex justifyContent="space-between">
                     <Components.Label tooltipText={translations.confirmationTradeSizeTooltip}>{translations.tradeSize}</Components.Label>
                     <TwapStyles.StyledRowFlex justifyContent="flex-end">
-                      <Components.TokenName name={srcToken?.symbol} />
-                      <Components.TokenLogo logo={srcToken?.logoUrl} />
+                      <Components.TokenName name={twapStore.srcToken?.symbol} />
+                      <Components.TokenLogo logo={twapStore.srcToken?.logoUrl} />
                       <AdapterStyles.Text>
-                        <Components.Tooltip text={getSrcChunkAmountUi()}>
-                          <Components.NumberDisplay value={getSrcChunkAmountUi()} />
+                        <Components.Tooltip text={twapStore.getSrcChunkAmountUi()}>
+                          <Components.NumberDisplay value={twapStore.getSrcChunkAmountUi()} />
                         </Components.Tooltip>
                       </AdapterStyles.Text>
                     </TwapStyles.StyledRowFlex>
                   </TwapStyles.StyledRowFlex>
                   <TwapStyles.StyledRowFlex justifyContent="space-between">
                     <Components.Label tooltipText={translations.confirmationTotalTradesTooltip}>{translations.totalTrades}</Components.Label>
-                    <AdapterStyles.Text>{chunks}</AdapterStyles.Text>
+                    <AdapterStyles.Text>{twapStore.chunks}</AdapterStyles.Text>
                   </TwapStyles.StyledRowFlex>
                   <TwapStyles.StyledRowFlex justifyContent="space-between">
                     <Components.Label tooltipText={translations.confirmationtradeIntervalTooltip}>{translations.tradeInterval}</Components.Label>
-                    <AdapterStyles.Text>{getFillDelayUi(translations)}</AdapterStyles.Text>
+                    <AdapterStyles.Text>{twapStore.getFillDelayUi(translations)}</AdapterStyles.Text>
                   </TwapStyles.StyledRowFlex>
                   <TwapStyles.StyledRowFlex justifyContent="space-between">
-                    <Components.Label tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
+                    <Components.Label tooltipText={twapStore.isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
                       {translations.minReceivedPerTrade}:
                     </Components.Label>
                     <TwapStyles.StyledRowFlex justifyContent="flex-end">
-                      <Components.TokenName name={dstToken?.symbol} />
-                      <Components.TokenLogo logo={dstToken?.logoUrl} />
+                      <Components.TokenName name={twapStore.dstToken?.symbol} />
+                      <Components.TokenLogo logo={twapStore.dstToken?.logoUrl} />
                       <AdapterStyles.Text>
-                        {isLimitOrder ? (
-                          <Components.Tooltip text={getDstMinAmountOutUi()}>
-                            <Components.NumberDisplay value={getDstMinAmountOutUi()} />
+                        {twapStore.isLimitOrder ? (
+                          <Components.Tooltip text={twapStore.getDstMinAmountOutUi()}>
+                            <Components.NumberDisplay value={twapStore.getDstMinAmountOutUi()} />
                           </Components.Tooltip>
                         ) : (
                           translations.none
@@ -434,10 +415,10 @@ const OrderSummary = () => {
             <TwapStyles.StyledColumnFlex gap={12}>
               <Box style={{ display: "flex", gap: 5 }}>
                 <Components.SmallLabel>{translations.acceptDisclaimer}</Components.SmallLabel>
-                <AdapterStyles.StyledSwitch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
+                <AdapterStyles.StyledSwitch value={twapStore.disclaimerAccepted} onChange={() => twapStore.setDisclaimerAccepted(!twapStore.disclaimerAccepted)} />
               </Box>
               <AdapterStyles.Text className="output-text">{translations.outputWillBeSentTo}</AdapterStyles.Text>
-              <AdapterStyles.Text className="output-text">{lib?.maker}</AdapterStyles.Text>
+              <AdapterStyles.Text className="output-text">{twapStore.lib?.maker}</AdapterStyles.Text>
               <SubmitButton />
             </TwapStyles.StyledColumnFlex>
           </TwapStyles.StyledColumnFlex>

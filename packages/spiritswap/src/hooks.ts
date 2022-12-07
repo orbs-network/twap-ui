@@ -1,5 +1,5 @@
 import { TokenData } from "@orbs-network/twap";
-import { hooks, useTwapStore } from "@orbs-network/twap-ui";
+import { store } from "@orbs-network/twap-ui";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { SpiritSwapTWAPProps } from ".";
 import _ from "lodash";
@@ -34,7 +34,7 @@ const findToken = (tokenList?: TokenData[], symbol?: string) => {
 };
 
 export const useSetTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: string, tokenList?: TokenData[]) => {
-  const setTokens = useTwapStore((state) => state.setTokens);
+  const setTokens = store.useTwapStore((state) => state.setTokens);
 
   const tokenListRef = useRef<TokenData[] | undefined>(undefined);
   tokenListRef.current = tokenList;

@@ -4,7 +4,7 @@ import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import IconButton from "@mui/material/IconButton";
-import {Styles as TwapStyles} from "@orbs-network/twap-ui"
+import { Styles as TwapStyles } from "@orbs-network/twap-ui";
 export const globalStyle = {
   "& *": {
     color: "white",
@@ -133,7 +133,10 @@ export const StyledMenuList = styled(List)({
   paddingTop: 30,
 });
 
-export const StyledMenuDrawer = styled(Drawer)({});
+export const StyledMenuDrawer = styled(Drawer)({
+  display: "flex",
+  flexDirection: "column",
+});
 
 export const StyledMenuMobileToggle = styled(IconButton)({
   marginRight: "auto",
@@ -148,20 +151,22 @@ export const StyledDappLayout = styled(Box)({
   gap: 20,
 });
 
-
-
 export const StyledStatus = styled(TwapStyles.StyledColumnFlex)({
   padding: "20px",
-  gap: 10,
-  maxHeight:'80vh',
-  overflow:'auto'
+  gap: 0,
+  marginTop: "auto",
 });
 
 export const StyledStatusSection = styled(TwapStyles.StyledColumnFlex)({
-  gap:2
+  gap: 0,
 });
 export const StyledStatusSectionTitle = styled(TwapStyles.StyledText)({
-  fontWeight: 700
+  fontWeight: 700,
+  fontSize: 8,
+  lineHeight: "normal",
 });
 
-export const StyledStatusSectionText = styled(TwapStyles.StyledText)({});
+export const StyledStatusSectionText = styled(TwapStyles.StyledText)({
+  fontSize: 8,
+  lineHeight: "normal",
+});

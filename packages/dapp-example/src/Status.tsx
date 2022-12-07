@@ -8,7 +8,6 @@ import moment from "moment";
 import BN from "bignumber.js";
 import { useSelectedDapp } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
-import {Components} from "@orbs-network/twap-ui"
 import { useState } from "react";
 const useStatus = (dapp: Dapp) => {
   const { library: provider, account } = useWeb3React(); // TODO replace with useLib from twap-ui store
@@ -18,7 +17,6 @@ const useStatus = (dapp: Dapp) => {
       const twapVersion = require("@orbs-network/twap/package.json").version;
       const twapUiVersion = require("@orbs-network/twap-ui/package.json").version;
 
-      const lib = new TWAPLib(dapp.config, account || "", provider); // TODO replace with useLib
       const network = _.find(networks, (n) => n.id === dapp.config.chainId)!;
 
       const fetchBalances = (wallets: string[]) =>
@@ -71,58 +69,50 @@ const useStatus = (dapp: Dapp) => {
 export function Status() {
   const { selectedDapp } = useSelectedDapp();
   const dapp = selectedDapp!;
-  const [show, setShow] = useState(false)
-  const {data: status} = useStatus(dapp);
-
-  
+  const { data: status } = useStatus(dapp);
 
   return (
     <>
-      {status && <button onClick={() => setShow(true)}>Status</button>}
-
-      <Components.Modal open={show} onClose={() => setShow(false)}>
-        {status && (
-          <StyledStatus>
-            <StyledStatusSection>
-              <StyledStatusSectionTitle>TWAP Version:</StyledStatusSectionTitle>
-              <StyledStatusSectionText> {status!.twapVersion}</StyledStatusSectionText>
-            </StyledStatusSection>
-            <StyledStatusSection>
-              <StyledStatusSectionTitle>TWAP-UI Version:</StyledStatusSectionTitle>
-              StyledStatusSectionText<>{status!.twapUiVersion}</>
-            </StyledStatusSection>
-            <StyledStatusSection>
-              <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
-              <StyledStatusSectionText> {dapp.config.chainId}</StyledStatusSectionText>
-            </StyledStatusSection>
-            <StyledStatusSection>
-              <StyledStatusSectionTitle>TWAP:</StyledStatusSectionTitle>
-              <StyledStatusSectionText> {dapp.config.twapAddress}</StyledStatusSectionText>
-            </StyledStatusSection>
-            <StyledStatusSection>
-              <StyledStatusSectionTitle> Lens:</StyledStatusSectionTitle>
-              <StyledStatusSectionText> {dapp.config.lensAddress}</StyledStatusSectionText>
-            </StyledStatusSection>
-            <StyledStatusSection>
-              <StyledStatusSectionTitle>Exchange:</StyledStatusSectionTitle>
-              <StyledStatusSectionText>
-                {" "}
-                {dapp.config.exchangeAddress} {dapp.config.exchangeType}
-              </StyledStatusSectionText>
-            </StyledStatusSection>
-            <StyledStatusSection>
-              <>Backup Taker 1:</>
-              <StyledStatusSectionText>uptime: {status!.backupTaker1Uptime}</StyledStatusSectionText>
-              <StyledStatusSectionText>gas: {status!.backupTaker1Balances.join(", ")}</StyledStatusSectionText>
-            </StyledStatusSection>
-            <StyledStatusSection>
-              <StyledStatusSectionTitle>Backup Taker 2:</StyledStatusSectionTitle>
-              <StyledStatusSectionText>uptime: {status!.backupTaker2Uptime}</StyledStatusSectionText>
-              <StyledStatusSectionText> gas: {status!.backupTaker2Balances.join(", ")}</StyledStatusSectionText>
-            </StyledStatusSection>
-          </StyledStatus>
-        )}
-      </Components.Modal>
+      {status && (
+        <StyledStatus>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>TWAP Version:</StyledStatusSectionTitle>
+            <StyledStatusSectionText> {status!.twapVersion}</StyledStatusSectionText>
+          </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>TWAP-UI Version:</StyledStatusSectionTitle>
+            <StyledStatusSectionText>{status!.twapUiVersion}</StyledStatusSectionText>
+          </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
+            <StyledStatusSectionText> {dapp.config.chainId}</StyledStatusSectionText>
+          </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>TWAP:</StyledStatusSectionTitle>
+            <StyledStatusSectionText> {dapp.config.twapAddress}</StyledStatusSectionText>
+          </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle> Lens:</StyledStatusSectionTitle>
+            <StyledStatusSectionText> {dapp.config.lensAddress}</StyledStatusSectionText>
+          </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>Exchange:</StyledStatusSectionTitle>
+            <StyledStatusSectionText>
+              {dapp.config.exchangeAddress} {dapp.config.exchangeType}
+            </StyledStatusSectionText>
+          </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>Backup Taker 1:</StyledStatusSectionTitle>
+            <StyledStatusSectionText>uptime: {status!.backupTaker1Uptime}</StyledStatusSectionText>
+            <StyledStatusSectionText>gas: {status!.backupTaker1Balances.join(", ")}</StyledStatusSectionText>
+          </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>Backup Taker 2:</StyledStatusSectionTitle>
+            <StyledStatusSectionText>uptime: {status!.backupTaker2Uptime}</StyledStatusSectionText>
+            <StyledStatusSectionText> gas: {status!.backupTaker2Balances.join(", ")}</StyledStatusSectionText>
+          </StyledStatusSection>
+        </StyledStatus>
+      )}
     </>
   );
 }
