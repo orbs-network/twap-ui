@@ -2,7 +2,7 @@ import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-net
 import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useMemo, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, OrderUI } from "./types";
 import _ from "lodash";
@@ -89,10 +89,18 @@ const useApproveToken = () => {
   );
 };
 //TODO store.
+
+const useInvalidateQueries = () => {
+  const client = useQueryClient();
+  return () => {
+    client.invalidateQueries();
+  };
+};
+
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
-  // const { refetch: refetchHistoryOrders } = useOrdersHistoryQuery();
+  const resetQueries = useInvalidateQueries();
   return useMutation(
     async () => {
       console.log({
@@ -126,7 +134,7 @@ export const useCreateOrder = () => {
       onSuccess: async () => {
         analytics.onCreateOrderSuccess();
         store.resetWithLib();
-        // await refetchHistoryOrders();
+        resetQueries();
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
