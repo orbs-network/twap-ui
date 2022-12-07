@@ -21,6 +21,7 @@ export const useParseTokenList = (getTokenImage: (rawToken: any) => string, dapp
   const dappTokensRef = useRef<any[] | undefined>(undefined);
   dappTokensRef.current = dappTokens;
   const dappTokensLength = dappTokens?.length || 0;
+  const setTokens = store.useTwapStore((state) => state.setTokens);
 
   return useMemo(() => {
     if (!dappTokensRef.current) return [];

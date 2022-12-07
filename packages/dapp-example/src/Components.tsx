@@ -95,7 +95,7 @@ export const DappsMenu = ({ onSelect, isSelected }: DappsMenuProps) => {
             </ListItem>
           ))}
         </StyledMenuList>
-        <Status />
+        {/* <Status /> */}
       </StyledMenuDrawer>
     </>
   );

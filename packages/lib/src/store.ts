@@ -25,7 +25,7 @@ const initialState = {
   srcToken: undefined as TokenData | undefined,
   dstToken: undefined as TokenData | undefined,
   wrongNetwork: false,
-
+  tokenList: [] as TokenData[],
   srcAmountUi: "",
 
   limitPriceUi: { priceUi: "", inverted: false },
@@ -60,6 +60,7 @@ export const useTwapStore = create(
       dstToken && analytics.onDstTokenClick(dstToken.symbol);
       set({ dstToken, limitPriceUi: initialState.limitPriceUi });
     },
+    setTokenList: (tokenList?: TokenData[]) => set({ tokenList }),
     setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi, chunks: 1 }),
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),
     setDstBalance: (dstBalance: BN) => set({ dstBalance }),

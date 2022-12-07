@@ -92,7 +92,7 @@ const useApproveToken = () => {
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
-  const { refetch: refetchHistoryOrders } = useOrdersHistoryQuery();
+  // const { refetch: refetchHistoryOrders } = useOrdersHistoryQuery();
   return useMutation(
     async () => {
       console.log({
@@ -126,7 +126,7 @@ export const useCreateOrder = () => {
       onSuccess: async () => {
         analytics.onCreateOrderSuccess();
         store.resetWithLib();
-        await refetchHistoryOrders();
+        // await refetchHistoryOrders();
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
@@ -569,14 +569,19 @@ const defaultFetcher = (token: TokenData) => {
 };
 
 export const useOrdersHistoryQuery = (fetcher: (token: TokenData) => Promise<BN> = defaultFetcher) => {
-  const { tokenList } = useOrdersContext();
+  const tokenList = useOrdersContext().tokenList;
   const lib = useTwapStore((state) => state.lib);
+  console.log(tokenList, "outside");
 
   const query = useQuery(
     ["useOrdersHistory", lib?.maker, lib?.config.chainId],
     async () => {
+      console.log(tokenList, "inside");
+
       const rawOrders = await lib!.getAllOrders();
       const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(tokenList || [], rawOrders, fetcher);
+      if (!tokenWithUsdByAddress) return null;
+
       const parsedOrders = rawOrders.map((o: Order) => parseOrderUi(lib!, tokenWithUsdByAddress, o));
       const ordersUi = _.chain(parsedOrders)
         .orderBy((o: OrderUI) => o.order.ask.deadline, "desc")
