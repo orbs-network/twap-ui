@@ -44,7 +44,7 @@ const useDappTokens = () => {
         name,
         chainId,
         address,
-        tokenInfo: { symbol, address, decimals, logoURI, name, chainId },
+        tokenInfo: { symbol, address, decimals, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"), name, chainId },
         tags: [],
       }));
       const candiesAddresses = _.map(erc20s.avax, (t) => t().address);
