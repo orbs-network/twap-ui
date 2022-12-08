@@ -529,7 +529,7 @@ const useHasAllowanceQuery = () => {
     amount: state.getSrcAmount(),
     srcToken: state.srcToken,
   }));
-  const query = useQuery(["useHasAllowanceQuery", srcToken?.address, amount.toString()], () => lib!.hasAllowance(srcToken!, amount), {
+  const query = useQuery(["useTwapHasAllowanceQuery", srcToken?.address, amount.toString()], () => lib!.hasAllowance(srcToken!, amount), {
     enabled: !!lib && !!srcToken && amount.gt(0),
     staleTime: 10_000,
     refetchOnWindowFocus: true,

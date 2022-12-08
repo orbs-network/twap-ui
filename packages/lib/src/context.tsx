@@ -2,9 +2,10 @@ import { createContext, useContext, useEffect } from "react";
 import { OrderLibProps, TwapLibProps } from "./types";
 import { useDstBalance, useDstUsd, useInitLib, useSrcBalance, useSrcUsd } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
-
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const TwapContext = createContext<TwapLibProps>({} as TwapLibProps);
 const OrdersContext = createContext<OrderLibProps>({} as OrderLibProps);
+const queryClient = new QueryClient();
 
 export const TwapAdapter = (props: TwapLibProps) => {
   const initLib = useInitLib();
@@ -19,13 +20,21 @@ export const TwapAdapter = (props: TwapLibProps) => {
     initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId });
   }, [props.provider, props.config, props.account, props.connectedChainId]);
 
-  return <TwapContext.Provider value={{ ...props, translations }}>{props.children}</TwapContext.Provider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TwapContext.Provider value={{ ...props, translations }}>{props.children}</TwapContext.Provider>
+    </QueryClientProvider>
+  );
 };
 
 export const OrdersAdapter = (props: OrderLibProps) => {
   const translations = { ...defaultTranlations, ...props.translations };
 
-  return <OrdersContext.Provider value={{ ...props, translations }}>{props.children}</OrdersContext.Provider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <OrdersContext.Provider value={{ ...props, translations }}>{props.children}</OrdersContext.Provider>
+    </QueryClientProvider>
+  );
 };
 
 export const useTwapContext = () => {
