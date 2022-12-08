@@ -5,7 +5,13 @@ import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const TwapContext = createContext<TwapLibProps>({} as TwapLibProps);
 const OrdersContext = createContext<OrderLibProps>({} as OrderLibProps);
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export const TwapAdapter = (props: TwapLibProps) => {
   const initLib = useInitLib();

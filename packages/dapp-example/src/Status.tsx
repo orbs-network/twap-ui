@@ -6,7 +6,6 @@ import moment from "moment";
 import BN from "bignumber.js";
 import { useSelectedDapp } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
-
 const useStatus = (dapp?: Dapp) => {
   return useQuery(
     ["useStatus", dapp?.config.partner],

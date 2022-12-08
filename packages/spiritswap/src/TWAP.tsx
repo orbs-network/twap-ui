@@ -271,6 +271,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     balance,
     usdLoading,
     decimalScale,
+    inputLoading,
   } = hooks.useTokenPanel(isSrcToken);
 
   const { getTokenImage, TokenSelectModal, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
@@ -311,6 +312,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
                   placeholder="0"
                   onChange={onChange || (() => {})}
                   value={value}
+                  loading={inputLoading}
                 />
               </Components.Tooltip>
               <Components.Tooltip text={selectTokenWarning}>

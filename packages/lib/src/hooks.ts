@@ -7,12 +7,22 @@ import BN from "bignumber.js";
 import { InitLibProps, OrderUI } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
-import { zeroAddress } from "@defi.org/web3-candies";
+import { zero, zeroAddress } from "@defi.org/web3-candies";
 import { parseOrderUi, prepareOrdersTokensWithUsd, useTwapStore } from "./store";
 
 /**
  * Actions
  */
+
+const useResetStoreAndQueries = () => {
+  const resetTwapStore = useTwapStore((state) => state.reset);
+  const client = useQueryClient();
+
+  return () => {
+    resetTwapStore();
+    client.invalidateQueries();
+  };
+};
 
 const useWrapToken = () => {
   const lib = useTwapStore((state) => state.lib);
@@ -48,10 +58,10 @@ const useWrapToken = () => {
 };
 
 const useUnwrapToken = () => {
-  const srcTokenAmount = useTwapStore((state) => state.getSrcAmount());
   const lib = useTwapStore((state) => state.lib);
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   const resetTwapStore = useTwapStore((state) => state.reset);
+  const srcTokenAmount = useTwapStore((state) => state.getSrcAmount());
 
   return useMutation(
     async () => {
@@ -76,10 +86,10 @@ const useApproveToken = () => {
     async () => {
       analytics.onApproveClick(srcAmount);
       await lib?.approve(srcToken!, srcAmount, priorityFeePerGas, maxFeePerGas);
+      await refetch();
     },
     {
-      onSuccess: () => {
-        refetch();
+      onSuccess: async () => {
         analytics.onApproveSuccess();
       },
       onError: (error: Error) => {
@@ -90,17 +100,10 @@ const useApproveToken = () => {
 };
 //TODO store.
 
-const useInvalidateQueries = () => {
-  const client = useQueryClient();
-  return () => {
-    client.invalidateQueries();
-  };
-};
-
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
-  const resetQueries = useInvalidateQueries();
+  const reset = useResetStoreAndQueries();
   return useMutation(
     async () => {
       console.log({
@@ -133,8 +136,7 @@ export const useCreateOrder = () => {
     {
       onSuccess: async () => {
         analytics.onCreateOrderSuccess();
-        store.resetWithLib();
-        resetQueries();
+        reset();
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
@@ -330,6 +332,20 @@ export const useTokenPanel = (isSrc?: boolean) => {
     setTokenListOpen(value);
   }, []);
 
+
+  const loaders = useMemo(() => {
+    const usdLoading = isSrc ? loadingState.srcUsdLoading : loadingState.dstUsdLoading;
+    const balanceLoading = isSrc ? loadingState.srcBalanceLoading : loadingState.dstBalanceLoading;
+    let inputLoading;
+    if (isSrc) {
+      inputLoading = !!amount && amount !== "0" && loadingState.srcUsdLoading;
+    } else {
+      inputLoading = !!amount && amount !== "0" && loadingState.dstUsdLoading;
+    }
+    return { usdLoading, balanceLoading, inputLoading };
+  }, [loadingState, amount, isSrc]);
+
+
   return {
     address: token?.address,
     symbol: token?.symbol,
@@ -345,9 +361,10 @@ export const useTokenPanel = (isSrc?: boolean) => {
     amountPrefix: isSrc ? "" : isLimitOrder ? "≥" : "~",
     inputWarning: !isSrc ? undefined : !token ? translations.selectTokens : undefined,
     selectTokenWarning,
-    usdLoading: isSrc ? loadingState.srcUsdLoading : loadingState.dstUsdLoading,
-    balanceLoading: isSrc ? loadingState.srcBalanceLoading : loadingState.dstBalanceLoading,
-    decimalScale: token?.decimals,
+    usdLoading: loaders.usdLoading,
+    inputLoading: loaders.inputLoading,
+    balanceLoading: loaders.balanceLoading,
+    decimalScale: token?.decimals || 0,
   };
 };
 
@@ -408,7 +425,6 @@ export const useCancelOrder = () => {
   const lib = useTwapStore((state) => state.lib);
   const { refetch } = useOrdersHistoryQuery();
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
-  // TODO useMutation react query
   return useMutation(
     async (orderId: number) => {
       analytics.onCancelOrderClick(orderId);
@@ -542,7 +558,7 @@ const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) =>
   const query = useQuery(["useUsdValueQuery", token?.address], () => Paraswap.priceUsd(lib!.config.chainId, token!), {
     enabled: !!lib && !!token,
     onSuccess,
-    refetchInterval: 10_000,
+    refetchInterval: 20_000,
     staleTime: 60_000,
   });
 
@@ -553,7 +569,7 @@ const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => 
   const query = useQuery(["useBalanceQuery", lib?.maker, token?.address], () => lib!.makerBalance(token!), {
     enabled: !!lib && !!token,
     onSuccess,
-    refetchInterval: 10_000,
+    refetchInterval: 20_000,
   });
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
@@ -572,11 +588,11 @@ const useGasPriceQuery = () => {
   return { isLoading, maxFeePerGas: BN.max(data?.instant || 0, maxFeePerGas || 0, priorityFeePerGas || 0), priorityFeePerGas: BN.max(data?.low || 0, priorityFeePerGas || 0) };
 };
 
-const defaultFetcher = (token: TokenData) => {
-  return Paraswap.priceUsd(useTwapStore.getState().lib!.config.chainId, token);
+const defaultFetcher = (chainId: number, token: TokenData) => {
+  return Paraswap.priceUsd(chainId, token);
 };
 
-export const useOrdersHistoryQuery = (fetcher: (token: TokenData) => Promise<BN> = defaultFetcher) => {
+export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenData) => Promise<BN> = defaultFetcher) => {
   const tokenList = useOrdersContext().tokenList;
   const lib = useTwapStore((state) => state.lib);
 
@@ -584,7 +600,10 @@ export const useOrdersHistoryQuery = (fetcher: (token: TokenData) => Promise<BN>
     ["useOrdersHistory", lib?.maker, lib?.config.chainId],
     async () => {
       const rawOrders = await lib!.getAllOrders();
-      const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(tokenList || [], rawOrders, fetcher);
+      const fecthUsdValues = (token: TokenData) => {
+        return fetcher(lib!.config.chainId, token);
+      };
+      const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(tokenList || [], rawOrders, fecthUsdValues);
       if (!tokenWithUsdByAddress) return null;
 
       const parsedOrders = rawOrders.map((o: Order) => parseOrderUi(lib!, tokenWithUsdByAddress, o));
