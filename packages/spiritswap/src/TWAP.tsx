@@ -55,7 +55,7 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
 export default memo(TWAP);
 
 const MarketPrice = () => {
-  const { toggleInverted, leftToken, rightToken, marketPrice, ready } = hooks.useMarketPrice();
+  const { toggleInverted, leftToken, rightToken, marketPrice, ready, loading } = hooks.useMarketPrice();
   const translations = useTwapContext().translations;
   return (
     <AdapterStyles.StyledMarketPrice>
@@ -63,7 +63,7 @@ const MarketPrice = () => {
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
           {ready ? (
-            <Components.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
+            <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
           ) : (
             <AdapterStyles.Text>-</AdapterStyles.Text>
           )}

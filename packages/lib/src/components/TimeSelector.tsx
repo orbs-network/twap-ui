@@ -29,9 +29,10 @@ interface Props {
   value: { resolution: TimeResolution; amount: number };
   onChange: ({ resolution, amount }: { resolution: TimeResolution; amount: number }) => void;
   disabled?: boolean;
+  className?: string;
 }
 
-function TimeSelector({ value, onChange, disabled = false }: Props) {
+function TimeSelector({ value, onChange, disabled = false, className = "" }: Props) {
   const [showList, setShowList] = useState(false);
   const translations = useTwapContext().translations;
 
@@ -46,7 +47,7 @@ function TimeSelector({ value, onChange, disabled = false }: Props) {
   };
 
   return (
-    <StyledContainer className="twap-time-selector" style={{ pointerEvents: disabled ? "none" : "unset" }}>
+    <StyledContainer className={`twap-time-selector ${className}`} style={{ pointerEvents: disabled ? "none" : "unset" }}>
       <StyledInput>
         <NumericInput disabled={disabled} value={value.amount} onChange={(v) => onChange({ resolution: value.resolution, amount: Number(v) })} placeholder={"0"} />
       </StyledInput>

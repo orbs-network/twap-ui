@@ -1,6 +1,7 @@
 import { Box, styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
 import { TbArrowsRightLeft } from "react-icons/tb";
+import { Loader } from ".";
 import { StyledText } from "../styles";
 import Icon from "./Icon";
 import IconButton from "./IconButton";
@@ -15,9 +16,15 @@ export interface Props {
   price?: string;
   className?: string;
   toggleInverted: () => void;
+  loading?: boolean;
 }
 
-function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInverted }: Props) {
+function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInverted, loading }: Props) {
+  if (loading) {
+   return  <StyledContainer>
+      <Loader width={120} height={30} />
+    </StyledContainer>;
+  }
   return (
     <StyledContainer className={className}>
       <TokenLogo logo={leftToken?.logoUrl} />

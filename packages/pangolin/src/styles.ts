@@ -6,18 +6,19 @@ export const colors = {
   cardBackground: "rgb(18, 17, 34)",
   submitButtonBorder: "1px solid rgba(100, 221, 192, 0.15)",
   text: "rgb(113, 113, 113)",
-  icon: "#60E6C5",
-  light: "#60E6C5",
+  icon: "rgb(113, 113, 113)",
   selectTokenFocus: "#1F2937",
   mainBackground: "rgb(17, 17, 17)",
-  borderColor: "rgb(55, 65, 81)",
+  borderColor: "rgba(255,255,255, 0.2)",
   yellow: "rgb(255, 200, 0)",
+  buttonsBackground: "rgb(28, 28, 28)",
 };
 
 export const Text = styled(TwapStyles.StyledText)({});
+export const StyledOneLineText = styled(TwapStyles.StyledOneLineText)({});
 
 const coloredBoxStyles = {
-  background: "rgb(28, 28, 28)",
+  background: colors.buttonsBackground,
   padding: 10,
   borderRadius: 8,
 };
@@ -74,6 +75,12 @@ export const StyledSlider = styled(Box)({
   paddingRight: 10,
   position: "relative",
   top: 2,
+  "& .MuiSlider-valueLabel": {
+    background: colors.yellow,
+  },
+  "& .MuiSlider-valueLabelLabel": {
+    color: "black",
+  },
 });
 
 export const StyledNumbericInput = styled(Components.NumericInput)({
@@ -88,10 +95,6 @@ export const StyledNumbericInput = styled(Components.NumericInput)({
     transition: "0.2s all",
     paddingRight: 0,
     textIndent: 0,
-    "&:focus": {},
-    "&::placeholder": {
-      color: colors.text,
-    },
   },
 });
 
@@ -207,13 +210,21 @@ export const globalStyle = {
     width: 28,
     height: 28,
   },
-
+  "& .twap-time-selector": {
+    "& input": {
+      "&::placeholder": {
+        color: `${colors.text}!important`,
+      },
+    },
+  },
   "& .twap-time-selector-list": {
     background: colors.mainBackground,
     border: `1px solid ${colors.borderColor}`,
     right: 0,
+    padding: "0px!important",
   },
   "& .twap-time-selector-list-item": {
+    minHeight: 42,
     "&:hover": {
       background: "rgba(255,255,255, 0.05)",
     },
@@ -228,15 +239,15 @@ export const globalStyle = {
       background: "#373E55!important",
     },
     "& .MuiLinearProgress-bar": {
-      background: colors.light,
+      background: colors.text,
     },
   },
 
   "& .twap-tooltip": {
     "& .MuiTooltip-tooltip": {
-      backgroundColor: "rgba(32, 32, 34, 0.9)",
+      backgroundColor: colors.mainBackground,
       borderRadius: "4px",
-      color: colors.light,
+      color: colors.text,
       fontSize: 14,
       lineHeight: 1.5,
       padding: 16,
@@ -300,7 +311,7 @@ export const StyledIntervalTimeSelect = styled(Box)({
 export const StyledTokenSelect = styled("button")(() => ({
   background: colors.mainBackground,
   border: "unset",
-  padding: "6px 8px",
+  padding: "6px 8px 6px 10px",
   borderRadius: 12,
   minHeight: 40,
   cursor: "pointer",
@@ -350,7 +361,7 @@ export const StyledChangeOrder = styled(Box)(() => ({
   "& button": {
     width: 35,
     height: 35,
-    background: "rgb(28, 28, 28)",
+    background: colors.buttonsBackground,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -373,14 +384,14 @@ export const StyledTokenPanel = styled(Box)({
 
 export const StyledSwitch = styled(Components.Switch)({
   "& .MuiSwitch-thumb": {
-    background: "white",
+    background: colors.icon,
   },
   "& .MuiSwitch-track": {
-    background: colors.mainBackground,
+    background: `${colors.mainBackground}!important`,
     opacity: "1!important",
   },
   "& .Mui-checked+.MuiSwitch-track": {
-    backgroundColor: colors.mainBackground,
+    backgroundColor: `${colors.mainBackground}!important`,
     opacity: "1!important",
   },
   "& .Mui-checked .MuiSwitch-thumb": {
@@ -478,10 +489,10 @@ export const StyledOrdersContainer = styled(Box)({
     background: colors.mainBackground,
   },
   "& .twap-order": {
-    background: "rgb(28, 28, 28)",
+    background: colors.buttonsBackground,
   },
   "& .twap-order-main-progress-bar": {
-    background: "rgb(28, 28, 28)",
+    background: colors.buttonsBackground,
     "& .MuiLinearProgress-bar ": {
       background: colors.yellow,
     },

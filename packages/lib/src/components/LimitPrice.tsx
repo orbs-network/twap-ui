@@ -47,6 +47,7 @@ const StyledLeft = styled(Box)({
   display: "flex",
   gap: 10,
   alignItems: "center",
+  paddingLeft: 5,
 });
 
 const StyledRight = styled(Box)({
@@ -63,6 +64,13 @@ const StyledContainer = styled(Box)({
     fontSize: 16,
     textAlign: "left",
     width: "100%",
+  },
+  "& .twap-token-logo": {
+    width: 28,
+    height: 28,
+  },
+  "& .twap-token-name": {
+    fontSize: 16,
   },
 });
 

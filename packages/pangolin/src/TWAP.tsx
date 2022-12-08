@@ -50,7 +50,7 @@ const TWAP = (props: TWAPProps) => {
 export default memo(TWAP);
 
 const MarketPrice = () => {
-  const { toggleInverted, leftToken, rightToken, marketPrice, ready } = hooks.useMarketPrice();
+  const { toggleInverted, leftToken, rightToken, marketPrice, ready, loading } = hooks.useMarketPrice();
   const translations = useTwapContext().translations;
 
   return (
@@ -59,7 +59,7 @@ const MarketPrice = () => {
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
           {ready ? (
-            <Components.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
+            <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
           ) : (
             <AdapterStyles.Text>-</AdapterStyles.Text>
           )}
@@ -156,16 +156,15 @@ const TradeSize = () => {
 };
 
 const LimitPriceDisplay = () => {
-  const { isLimitOrder, onToggleLimit, onChange, limitPrice, leftToken, rightToken, toggleInverted, warning } = hooks.useLimitPrice();
-  const isLoading = false;
+  const { isLimitOrder, onToggleLimit, onChange, limitPrice, leftToken, rightToken, toggleInverted, warning, isLoading } = hooks.useLimitPrice();
   const translations = useTwapContext().translations;
 
   return (
     <AdapterStyles.StyledPrice>
       <TwapStyles.StyledColumnFlex>
         <AdapterStyles.StyledFlexStart>
-          <Components.Tooltip text={warning}>
-            {isLoading ? <Components.Loader width={50} /> : <AdapterStyles.StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}
+          <Components.Tooltip text={isLoading ? `${translations.loading}...` : warning}>
+            <AdapterStyles.StyledSwitch disabled={!!warning || isLoading} value={isLimitOrder} onChange={onToggleLimit} />
           </Components.Tooltip>
           <Components.Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{translations.limitPrice}</Components.Label>
         </AdapterStyles.StyledFlexStart>
@@ -253,7 +252,7 @@ const TokenSelect = (props: TokenSelectProps) => {
 };
 
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
-  const { decimalScale, toggleTokenList, onTokenSelect, tokenListOpen, inputWarning, amountPrefix, disabled, selectTokenWarning, logo, symbol, onChange, value } =
+  const { toggleTokenList, onTokenSelect, tokenListOpen, inputWarning, amountPrefix, disabled, selectTokenWarning, logo, symbol, onChange, value, decimalScale } =
     hooks.useTokenPanel(isSrcToken);
   const { translations } = useTwapContext();
 
@@ -305,7 +304,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
                 {symbol ? (
                   <TokenDisplay logo={logo} name={symbol} />
                 ) : (
-                  <AdapterStyles.Text style={{ color: symbol ? "" : "black", fontWeight: 500 }}>{translations.selectToken}</AdapterStyles.Text>
+                  <AdapterStyles.StyledOneLineText style={{ color: symbol ? "" : "black", fontWeight: 500 }}>{translations.selectToken}</AdapterStyles.StyledOneLineText>
                 )}
                 <AdapterStyles.StyledIcon icon={<IoIosArrowDown size={20} style={{ fill: symbol ? "" : "black" }} />} />
               </AdapterStyles.StyledTokenSelect>

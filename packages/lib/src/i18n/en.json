@@ -82,5 +82,6 @@
   "poweredBy": "Powered by Orbs",
   "insertLimitPriceWarning": "Insert limit price",
   "balance": "Balance",
-  "selectToken": "Select token"
+  "selectToken": "Select token",
+  "loading": "Loading"
 }

@@ -17,26 +17,15 @@ export interface Props {
 }
 
 const Slider = ({ onChange, value, maxTrades }: Props) => {
-  const [localValue, setLocalValue] = React.useState(value);
-  const debouncedValue = useDebounce<number>(localValue, 200);
-
-  useEffect(() => {
-    onChange(debouncedValue);
-  }, [debouncedValue]);
-
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
-
   const handleChange = (_event: Event, newValue: number | number[]) => {
     if (typeof newValue === "number") {
-      setLocalValue(newValue);
+      onChange(newValue);
     }
   };
 
   return (
     <StyledSlider
-      value={localValue}
+      value={value}
       min={1}
       step={1}
       // marks={getMarks(maxTrades)}

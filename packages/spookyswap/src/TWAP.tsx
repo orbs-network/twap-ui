@@ -54,7 +54,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
 export default memo(TWAP);
 
 const MarketPrice = () => {
-  const { toggleInverted, leftToken, rightToken, marketPrice, ready } = hooks.useMarketPrice();
+  const { toggleInverted, leftToken, rightToken, marketPrice, ready, loading } = hooks.useMarketPrice();
   const translations = useTwapContext().translations;
 
   return (
@@ -63,7 +63,7 @@ const MarketPrice = () => {
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <TwapStyles.StyledText className="title">{translations.currentMarketPrice}</TwapStyles.StyledText>
           {ready ? (
-            <Components.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
+            <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
           ) : (
             <TwapStyles.StyledText>-</TwapStyles.StyledText>
           )}

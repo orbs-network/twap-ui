@@ -332,7 +332,6 @@ export const useTokenPanel = (isSrc?: boolean) => {
     setTokenListOpen(value);
   }, []);
 
-
   const loaders = useMemo(() => {
     const usdLoading = isSrc ? loadingState.srcUsdLoading : loadingState.dstUsdLoading;
     const balanceLoading = isSrc ? loadingState.srcBalanceLoading : loadingState.dstBalanceLoading;
@@ -344,7 +343,6 @@ export const useTokenPanel = (isSrc?: boolean) => {
     }
     return { usdLoading, balanceLoading, inputLoading };
   }, [loadingState, amount, isSrc]);
-
 
   return {
     address: token?.address,
@@ -370,9 +368,9 @@ export const useTokenPanel = (isSrc?: boolean) => {
 
 export const useMarketPrice = () => {
   const [inverted, setInverted] = useState(false);
-  const { leftToken, rightToken, marketPriceUi: marketPrice } = useTwapStore((state) => state.getMarketPrice(inverted));
+  const { leftToken, rightToken, marketPriceUi: marketPrice, loading } = useTwapStore((state) => state.getMarketPrice(inverted));
 
-  return { leftToken, rightToken, marketPrice, toggleInverted: () => setInverted(!inverted), ready: !!leftToken && !!rightToken };
+  return { leftToken, rightToken, marketPrice, toggleInverted: () => setInverted(!inverted), ready: !!leftToken && !!rightToken, loading };
 };
 
 export const useLimitPrice = () => {
@@ -404,6 +402,8 @@ export const useLimitPrice = () => {
     setInverted(!inverted);
   }, [inverted]);
 
+  const loading = useLoadingState();
+
   return {
     onToggleLimit,
     toggleInverted,
@@ -413,6 +413,7 @@ export const useLimitPrice = () => {
     rightToken,
     warning: !leftToken || !rightToken ? translations.selectTokens : undefined,
     isLimitOrder,
+    isLoading: loading.srcUsdLoading && loading.dstUsdLoading,
   };
 };
 

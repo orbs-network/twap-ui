@@ -82,6 +82,7 @@ export interface Translations {
   balance: string;
   selectToken: string;
   sliderMinSizeTooltip: string;
+  loading: string;
 }
 
 interface BaseProps {

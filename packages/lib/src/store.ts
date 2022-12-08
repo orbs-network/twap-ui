@@ -54,11 +54,12 @@ export const useTwapStore = create(
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
       srcToken && analytics.onSrcTokenClick(srcToken?.symbol);
-      set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" });
+
+      set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "", srcUsd: BN(0), srcBalance: BN(0) });
     },
     setDstToken: (dstToken?: TokenData) => {
       dstToken && analytics.onDstTokenClick(dstToken.symbol);
-      set({ dstToken, limitPriceUi: initialState.limitPriceUi });
+      set({ dstToken, limitPriceUi: initialState.limitPriceUi, dstUsd: BN(0), dstBalance: BN(0) });
     },
     setTokenList: (tokenList?: TokenData[]) => set({ tokenList }),
     setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi, chunks: 1 }),
@@ -118,7 +119,7 @@ export const useTwapStore = create(
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork: boolean) => set({ wrongNetwork }),
 
-    toggleLimitOrder: () => set({ isLimitOrder: !get().isLimitOrder, limitPriceUi: (get() as any).getMarketPrice(false) }),
+    toggleLimitOrder: () => set({ isLimitOrder: !get().isLimitOrder, limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false } }),
     setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => set({ limitPriceUi }),
 
     setChunks: (chunks: number) => set({ chunks: Math.min(chunks, (get() as any).getMaxPossibleChunks()) }),
@@ -152,6 +153,7 @@ export const useTwapStore = create(
         rightToken,
         marketPrice,
         marketPriceUi: marketPrice.toFormat(),
+        loading: leftUsd.isZero() || rightUsd.isZero(),
       };
     },
 
@@ -171,8 +173,8 @@ export const useTwapStore = create(
       };
     },
     setTokens: (srcToken?: TokenData, dstToken?: TokenData) => {
-      srcToken && set({ srcToken });
-      dstToken && set({ dstToken });
+      srcToken && (get() as any).setSrcToken(srcToken);
+      dstToken && (get() as any).setDstToken(dstToken);
     },
     setFillDelay: (customFillDelay: { resolution: TimeResolution; amount: number }) => {
       analytics.onCustomIntervalClick();
