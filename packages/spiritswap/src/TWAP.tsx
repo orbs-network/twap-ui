@@ -6,7 +6,7 @@ import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback } from "react";
 import * as AdapterStyles from "./styles";
-import { Configs } from "@orbs-network/twap";
+import { Configs, TokenData } from "@orbs-network/twap";
 import { AdapterContextProvider, parseToken, useAdapterContext, useGetProvider, useParseTokenList, usePrepareAdapterContextProps, useSetTokensFromDapp } from "./hooks";
 import translations from "./i18n/en.json";
 import { SpiritSwapTWAPProps } from ".";
@@ -270,8 +270,8 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     balanceLoading,
     balance,
     usdLoading,
-    decimalScale,
     inputLoading,
+    decimalScale,
   } = hooks.useTokenPanel(isSrcToken);
 
   const { getTokenImage, TokenSelectModal, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
@@ -307,7 +307,6 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
                 <AdapterStyles.StyledNumbericInput
                   decimalScale={decimalScale}
                   prefix={amountPrefix}
-                  loading={false}
                   disabled={disabled}
                   placeholder="0"
                   onChange={onChange || (() => {})}
@@ -359,16 +358,14 @@ const OrderSummary = () => {
                 title={translations.from}
                 amount={twapStore.srcAmountUi}
                 usdPrice={twapStore.getSrcAmountUsdUi()}
-                name={twapStore.srcToken?.symbol}
-                logo={twapStore.srcToken?.logoUrl}
+                token={twapStore.srcToken}
               />
               <TokenOrderPreview
                 isLimitOrder={twapStore.isLimitOrder}
                 title={translations.to}
                 amount={twapStore.getDstAmountUi()}
                 usdPrice={twapStore.getDstAmountUsdUi()}
-                name={twapStore.dstToken?.symbol}
-                logo={twapStore.dstToken?.logoUrl}
+                token={twapStore.dstToken}
               />
               <OrderConfirmationLimitPrice />
 
@@ -470,17 +467,16 @@ const OrderConfirmationLimitPrice = () => {
 
 const TokenOrderPreview = ({
   isLimitOrder,
+  token,
   title,
-  logo,
-  name,
   usdPrice,
   amount,
   isSrc,
 }: {
   isLimitOrder?: boolean;
-  title: string;
-  logo?: string;
+  token?: TokenData;
   name?: string;
+  title: string;
   usdPrice?: string;
   amount?: string;
   isSrc?: boolean;
@@ -494,9 +490,9 @@ const TokenOrderPreview = ({
             <AdapterStyles.StyledUSD value={usdPrice} />
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <TokenDisplay name={name} logo={logo} />
+            <TokenDisplay name={token?.symbol} logo={token?.logoUrl} />
             <AdapterStyles.StyledTokenOrderPreviewAmount>
-              {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} />
+              {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} decimalScale={token?.decimals} />
             </AdapterStyles.StyledTokenOrderPreviewAmount>
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>

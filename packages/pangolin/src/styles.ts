@@ -4,7 +4,7 @@ import { CSSProperties } from "react";
 
 export const colors = {
   cardBackground: "rgb(18, 17, 34)",
-  submitButtonBorder: "1px solid rgba(100, 221, 192, 0.15)",
+  submitButtonBackground: "rgb(229, 229, 229)",
   text: "rgb(113, 113, 113)",
   icon: "rgb(113, 113, 113)",
   selectTokenFocus: "#1F2937",
@@ -61,7 +61,7 @@ export const StyledButton = styled(Components.Button)(({ disabled }: { disabled?
   height: 50,
   borderRadius: 8,
   color: disabled ? colors.text : "black",
-
+  opacity: 1,
   "& *": {
     color: disabled ? colors.text : "black",
     fontWeight: 500,
@@ -137,6 +137,12 @@ export const StyledOrderSummary = styled(Components.Modal)({
     padding: 15,
     paddingTop: 30,
     background: colors.mainBackground,
+  },
+  "& .twap-summary-breakdown": {
+    "& .twap-token-logo": {
+      width: 24,
+      height: 24,
+    },
   },
 });
 export const StyledOrderSummaryContent = styled(Box)({});
@@ -469,8 +475,8 @@ export const StyledSliderContainer = styled(TwapStyles.StyledRowFlex)({
 
 export const StyledPanelLabel = styled(Components.SmallLabel)({
   "& *": {
-    fontWeight: 700,
-    color: "rgba(255, 255, 255, 0.6)",
+    color: colors.text,
+    fontSize: 16,
   },
 });
 

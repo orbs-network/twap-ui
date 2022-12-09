@@ -21,9 +21,11 @@ export interface Props {
 
 function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInverted, loading }: Props) {
   if (loading) {
-   return  <StyledContainer>
-      <Loader width={120} height={30} />
-    </StyledContainer>;
+    return (
+      <StyledContainer>
+        <Loader width={120} height={30} />
+      </StyledContainer>
+    );
   }
   return (
     <StyledContainer className={className}>

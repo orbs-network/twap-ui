@@ -54,12 +54,11 @@ export const useTwapStore = create(
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
       srcToken && analytics.onSrcTokenClick(srcToken?.symbol);
-
-      set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "", srcUsd: BN(0), srcBalance: BN(0) });
+      set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" });
     },
     setDstToken: (dstToken?: TokenData) => {
       dstToken && analytics.onDstTokenClick(dstToken.symbol);
-      set({ dstToken, limitPriceUi: initialState.limitPriceUi, dstUsd: BN(0), dstBalance: BN(0) });
+      set({ dstToken, limitPriceUi: initialState.limitPriceUi });
     },
     setTokenList: (tokenList?: TokenData[]) => set({ tokenList }),
     setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi, chunks: 1 }),

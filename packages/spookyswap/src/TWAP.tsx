@@ -377,23 +377,8 @@ const OrderConfirmation = () => {
         <AdapterStyles.StyledOrderConfirmation>
           <AdapterStyles.StyledColumnGap gap={20}>
             <AdapterStyles.StyledColumnGap gap={20}>
-              <TokenOrderPreview
-                isSrc={true}
-                isLimitOrder={isLimitOrder}
-                title={translations.from}
-                amount={srcAmountUi}
-                usdPrice={getSrcAmountUsdUi()}
-                name={srcToken?.symbol}
-                logo={srcToken?.logoUrl}
-              />
-              <TokenOrderPreview
-                isLimitOrder={isLimitOrder}
-                title={translations.to}
-                amount={getDstAmountUi()}
-                usdPrice={getDstAmountUsdUi()}
-                name={dstToken?.symbol}
-                logo={dstToken?.logoUrl}
-              />
+              <TokenOrderPreview isSrc={true} isLimitOrder={isLimitOrder} title={translations.from} amount={srcAmountUi} usdPrice={getSrcAmountUsdUi()} token={srcToken} />
+              <TokenOrderPreview isLimitOrder={isLimitOrder} title={translations.to} amount={getDstAmountUi()} usdPrice={getDstAmountUsdUi()} token={dstToken} />
               <OrderConfirmationLimitPrice />
 
               <AdapterStyles.StyledCard>
@@ -495,16 +480,14 @@ const OrderConfirmationLimitPrice = () => {
 const TokenOrderPreview = ({
   isLimitOrder,
   title,
-  logo,
-  name,
+  token,
   usdPrice,
   amount,
   isSrc,
 }: {
   isLimitOrder?: boolean;
   title: string;
-  logo?: string;
-  name?: string;
+  token?: TokenData;
   usdPrice?: string;
   amount?: string;
   isSrc?: boolean;
@@ -518,9 +501,9 @@ const TokenOrderPreview = ({
             <AdapterStyles.StyledUSD value={usdPrice} />
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <TokenDisplay name={name} logo={logo} />
+            <TokenDisplay name={token?.symbol} logo={token?.logoUrl} />
             <AdapterStyles.StyledTokenOrderPreviewAmount>
-              {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} />
+              {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} decimalScale={token?.decimals} />
             </AdapterStyles.StyledTokenOrderPreviewAmount>
           </TwapStyles.StyledRowFlex>
         </AdapterStyles.StyledColumnGap>

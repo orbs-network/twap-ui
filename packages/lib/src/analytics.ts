@@ -104,7 +104,6 @@ const sendAnalyticsEvent = (category: Category, action: string, data?: any) => {
     },
     body: JSON.stringify({
       maker: lib?.maker,
-      timestamp: moment().valueOf(),
       userAgent: navigator.userAgent.toString(),
       partner: lib?.config.partner,
       chain: lib?.config.chainId,

@@ -15,7 +15,7 @@ import { parseOrderUi, prepareOrdersTokensWithUsd, useTwapStore } from "./store"
  */
 
 const useResetStoreAndQueries = () => {
-  const resetTwapStore = useTwapStore((state) => state.reset);
+  const resetTwapStore = useTwapStore((state) => state.resetWithLib);
   const client = useQueryClient();
 
   return () => {
@@ -293,6 +293,8 @@ export const useTokenPanel = (isSrc?: boolean) => {
     amount: state.srcAmountUi,
     balance: state.getSrcBalanceUi(),
     usdValue: state.getSrcAmountUsdUi(),
+    setUsd: state.setSrcUsd,
+    setBalance: state.setSrcBalance,
   }));
 
   const dstTokenValues = useTwapStore((state) => ({
@@ -302,6 +304,8 @@ export const useTokenPanel = (isSrc?: boolean) => {
     usdValue: state.getDstAmountUsdUi(),
     balance: state.getDstBalanceUi(),
     onChange: null,
+    setUsd: state.setDstUsd,
+    setBalance: state.setDstBalance,
   }));
 
   const { isLimitOrder, maker, wrongNetwork } = useTwapStore((state) => ({
@@ -311,12 +315,14 @@ export const useTokenPanel = (isSrc?: boolean) => {
   }));
   const { translations } = useTwapContext();
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const { selectToken, token, onChange, amount, balance, usdValue } = isSrc ? srcTokenValues : dstTokenValues;
+  const { selectToken, token, onChange, amount, balance, usdValue, setUsd, setBalance } = isSrc ? srcTokenValues : dstTokenValues;
   const loadingState = useLoadingState();
 
   const onTokenSelect = useCallback((token: TokenData) => {
     selectToken(token);
     setTokenListOpen(false);
+    setUsd(BN(0));
+    setBalance(BN(0));
   }, []);
 
   const selectTokenWarning = useMemo(() => {

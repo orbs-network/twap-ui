@@ -7,7 +7,7 @@ import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
-import { Configs } from "@orbs-network/twap";
+import { Configs, TokenData } from "@orbs-network/twap";
 import { AdapterContextProvider, parseToken, useAdapterContext, useParseTokenList, useTokensFromDapp } from "./hooks";
 const TWAP = (props: TWAPProps) => {
   const { account } = props;
@@ -353,26 +353,11 @@ const OrderSummary = () => {
         <AdapterStyles.StyledOrderSummaryContent>
           <TwapStyles.StyledColumnFlex gap={20}>
             <TwapStyles.StyledColumnFlex gap={20}>
-              <TokenOrderPreview
-                isSrc={true}
-                isLimitOrder={isLimitOrder}
-                title={translations.from}
-                amount={srcAmountUi}
-                usdPrice={getSrcAmountUsdUi()}
-                name={srcToken?.symbol}
-                logo={srcToken?.logoUrl}
-              />
-              <TokenOrderPreview
-                isLimitOrder={isLimitOrder}
-                title={translations.to}
-                amount={getDstAmountUi()}
-                usdPrice={getDstAmountUsdUi()}
-                name={dstToken?.symbol}
-                logo={dstToken?.logoUrl}
-              />
+              <TokenOrderPreview isSrc={true} isLimitOrder={isLimitOrder} title={translations.from} amount={srcAmountUi} usdPrice={getSrcAmountUsdUi()} token={srcToken} />
+              <TokenOrderPreview isLimitOrder={isLimitOrder} title={translations.to} amount={getDstAmountUi()} usdPrice={getDstAmountUsdUi()} token={dstToken} />
               <OrderConfirmationLimitPrice />
 
-              <AdapterStyles.StyledColoredFlex>
+              <AdapterStyles.StyledColoredFlex className="twap-summary-breakdown">
                 <TwapStyles.StyledColumnFlex gap={20}>
                   <TwapStyles.StyledRowFlex justifyContent="space-between">
                     <Components.Label tooltipText={translations.confirmationDeadlineTooltip}>{translations.expiration}</Components.Label>
@@ -471,19 +456,17 @@ const OrderConfirmationLimitPrice = () => {
 const TokenOrderPreview = ({
   isLimitOrder,
   title,
-  logo,
-  name,
   usdPrice,
   amount,
   isSrc,
+  token,
 }: {
   isLimitOrder?: boolean;
   title: string;
-  logo?: string;
-  name?: string;
   usdPrice?: string;
   amount?: string;
   isSrc?: boolean;
+  token?: TokenData;
 }) => {
   return (
     <AdapterStyles.StyledColoredFlex>
@@ -493,9 +476,9 @@ const TokenOrderPreview = ({
           <AdapterStyles.StyledUSD value={usdPrice} />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <TokenDisplay name={name} logo={logo} />
+          <TokenDisplay name={token?.symbol} logo={token?.logoUrl} />
           <StyledTokenOrderPreviewAmount>
-            {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} />
+            {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} decimalScale={token?.decimals} />
           </StyledTokenOrderPreviewAmount>
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>
