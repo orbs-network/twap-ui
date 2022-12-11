@@ -83,6 +83,7 @@ export interface Translations {
   selectToken: string;
   sliderMinSizeTooltip: string;
   loading: string;
+  progress: string;
 }
 
 interface BaseProps {
@@ -134,3 +135,21 @@ export interface InitLibProps {
 }
 
 export type OrderUI = ReturnType<typeof parseOrderUi>;
+
+
+export interface MakeGlobalStylesArgs {
+  textColor: string;
+  iconsColor: string;
+  tooltipBackground: string;
+  tooltipTextColor: string;
+  skeletonLoaderBackground?: string;
+  spinnerColor: string;
+  containerBackground: string;
+  cardBackground: string;
+  borderColor?: string;
+  progressBarColor: string;
+  progressBarTrackColor: string;
+  orderHistorySelectedTabBackground: string;
+  orderHistorySelectedTabColor: string;
+  orderHistoryTabColor: string;
+}

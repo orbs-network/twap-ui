@@ -22,32 +22,34 @@ const TWAP = (props: SpookySwapTWAPProps) => {
   }, []);
 
   return (
-    <TwapAdapter
-      connect={connect}
-      config={Configs.SpookySwap}
-      maxFeePerGas={props.maxFeePerGas}
-      priorityFeePerGas={props.priorityFeePerGas}
-      translations={translations as Translations}
-      provider={provider}
-      account={props.account}
-      connectedChainId={props.connectedChainId}
-    >
+    <>
       <GlobalStyles styles={AdapterStyles.globalStyle as any} />
-      <AdapterContextProvider value={adapterContextProps}>
-        <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
-          <SrcTokenPanel />
-          <ChangeTokensOrder />
-          <DstTokenPanel />
-          <LimitPriceDisplay />
-          <TradeSize />
-          <MaxDuration />
-          <TradeInterval />
-          <SubmitButton />
-          <OrderConfirmation />
-          <Components.PoweredBy />
-        </div>
-      </AdapterContextProvider>
-    </TwapAdapter>
+      <TwapAdapter
+        connect={connect}
+        config={Configs.SpookySwap}
+        maxFeePerGas={props.maxFeePerGas}
+        priorityFeePerGas={props.priorityFeePerGas}
+        translations={translations as Translations}
+        provider={provider}
+        account={props.account}
+        connectedChainId={props.connectedChainId}
+      >
+        <AdapterContextProvider value={adapterContextProps}>
+          <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
+            <SrcTokenPanel />
+            <ChangeTokensOrder />
+            <DstTokenPanel />
+            <LimitPriceDisplay />
+            <TradeSize />
+            <MaxDuration />
+            <TradeInterval />
+            <SubmitButton />
+            <OrderConfirmation />
+            <Components.PoweredBy />
+          </div>
+        </AdapterContextProvider>
+      </TwapAdapter>
+    </>
   );
 };
 

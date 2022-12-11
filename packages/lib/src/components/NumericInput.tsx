@@ -36,7 +36,7 @@ function NumericInput({
   const inputValue = value || minAmount || "";
 
   return (
-    <StyledContainer className={className}>
+    <StyledContainer className={`twap-input ${className}`}>
       <Fade in={loading} style={{ transition: "0s" }}>
         <StyledLoader>
           <Loader width="100%" height="100%" />
@@ -55,11 +55,10 @@ function NumericInput({
               return maxValue ? floatValue <= parseFloat(maxValue) : true;
             }}
             prefix={prefix ? `${prefix} ` : ""}
-            value={inputValue}
+            value={disabled && value === '0' ? '' : inputValue}
             thousandSeparator=","
             decimalSeparator="."
             customInput={StyledInput}
-            className="twap-input"
             type="text"
             min={minAmount}
             onValueChange={(values, _sourceInfo) => {

@@ -9,7 +9,7 @@ export interface Props extends React.HTMLAttributes<HTMLElement> {
   loading?: boolean;
 }
 
-function Button({ children, disabled = false, onClick, loading = false, className }: Props) {
+function Button({ children, disabled = false, onClick, loading = false, className = '' }: Props) {
   return (
     <StyledContainer onClick={onClick} className={`twap-button ${disabled ? "twap-button-disabled" : ""} ${className}`} disabled={disabled}>
       {loading && (

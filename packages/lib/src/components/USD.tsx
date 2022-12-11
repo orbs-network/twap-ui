@@ -5,7 +5,7 @@ import SmallLabel from "./SmallLabel";
 const USD = ({ isLoading = false, value, className = "", prefix = "" }: { prefix?: string; isLoading?: boolean; value?: string | number; className?: string }) => {
   if (value == null) return null;
   return (
-    <SmallLabel loading={isLoading} className={className}>
+    <SmallLabel loading={isLoading} className={`twap-usd ${className}`} >
       {prefix} ~ $ <NumberDisplay value={value} />
     </SmallLabel>
   );

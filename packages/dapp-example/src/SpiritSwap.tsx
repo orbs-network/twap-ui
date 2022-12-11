@@ -5,6 +5,7 @@ import { TokenData } from "@orbs-network/twap";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp } from "./Components";
+import { Components } from "@orbs-network/twap-ui";
 
 import { DappLayout, Popup } from "./Components";
 
@@ -33,7 +34,14 @@ const TokenSelectModal = ({ isOpen, selectedToken, onSelect, onClose }: TokenSel
           }
           return (
             <StyledModalListItem onClick={() => onSelect(token)} key={token.address}>
-              <img src={token.logoUrl || ""} width={20} height={20} alt="" />
+              <Components.TokenLogo
+                logo={token.logoUrl}
+                alt={token.symbol}
+                style={{
+                  width: 30,
+                  height: 30
+                }}
+              />
               {token.symbol}
             </StyledModalListItem>
           );

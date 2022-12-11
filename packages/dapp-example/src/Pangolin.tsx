@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Configs } from "@orbs-network/twap";
 import { Dapp } from "./Components";
 import { useConnectWallet, useNetwork } from "./hooks";
+import { Components } from "@orbs-network/twap-ui";
 
 interface TokenSelectModalProps {
   isOpen: boolean;
@@ -81,7 +82,14 @@ const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModa
           }
           return (
             <StyledModalListItem onClick={() => onCurrencySelect(token)} key={token.tokenInfo.address}>
-              <img src={token.tokenInfo.logoURI || ""} width={20} height={20} alt="" />
+              <Components.TokenLogo
+                logo={token.tokenInfo.logoURI}
+                alt={token.tokenInfo.symbol}
+                style={{
+                  width: 30,
+                  height: 30,
+                }}
+              />
               {token.tokenInfo.symbol}
             </StyledModalListItem>
           );

@@ -65,7 +65,7 @@ const StyledOdnpButton = styled(OdnpButton)({
 });
 
 const StyledTab = styled(Tab)({
-  fontSize: 14,
+  fontSize: 13,
   width: "calc(100% / 4)",
   padding: "0px",
   textTransform: "unset",
@@ -96,7 +96,16 @@ const StyledTabs = styled(Tabs)({
     color: "white",
   },
 });
-const StyledContainer = styled(Box)({ width: "100%", display: "flex", flexDirection: "column", gap: 15 });
+const StyledContainer = styled(Box)({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  gap: 15,
+
+  "& *": {
+    fontFamily: "inherit",
+  },
+});
 const StyledHeaderTop = styled(Box)({
   display: "flex",
   alignItems: "center",

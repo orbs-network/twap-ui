@@ -15,7 +15,7 @@ function Balance({ isLoading, value, className = "" }: Props) {
     return null;
   }
   return (
-    <SmallLabel loading={isLoading} className={className}>
+    <SmallLabel loading={isLoading} className={`twap-balance ${className}`}>
       {translations.balance}: <NumberDisplay value={value} />
     </SmallLabel>
   );

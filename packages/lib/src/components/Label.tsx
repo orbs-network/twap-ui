@@ -1,7 +1,7 @@
 import { Box, styled } from "@mui/system";
 import React, { ReactElement, ReactNode } from "react";
 import Tooltip from "./Tooltip";
-import { AiOutlineQuestionCircle } from "react-icons/ai";
+import { SlInfo } from "react-icons/sl";
 import Icon from "./Icon";
 import { StyledOneLineText } from "../styles";
 
@@ -20,7 +20,7 @@ function Label({ children, tooltipText, className = "", fontSize, iconStart }: P
         <StyledTooltipContent className={`twap-label ${className}`}>
           {iconStart}
           <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
-          <Icon icon={<AiOutlineQuestionCircle className="twap-tooltip-icon" style={{ width: 16, height: 16 }} />} />
+          <Icon icon={<SlInfo className="twap-tooltip-icon" style={{ width: 14, height: 14 }} />} />
         </StyledTooltipContent>
       </Tooltip>
     );
@@ -37,6 +37,6 @@ const StyledTooltipContent = styled(Box)({
 });
 
 const StyledLabel = styled(StyledOneLineText)({
-  // whiteSpace: "nowrap",
   fontSize: "inherit",
+  fontFamily: "inherit",
 });

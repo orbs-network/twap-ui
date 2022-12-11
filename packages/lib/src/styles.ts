@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
-
+import {MakeGlobalStylesArgs} from './types'
 export const StyledShadowContainer = styled(Box)({
   boxShadow: "0px 5px 20px rgba(85, 94, 104, 0.13)",
   borderRadius: 25,
@@ -65,3 +65,4 @@ export const StyledRowFlex = styled(Box)(({ gap = 10, justifyContent = "center" 
 export const StyledText = styled(Typography)({
   fontFamily: "inherit",
 });
+

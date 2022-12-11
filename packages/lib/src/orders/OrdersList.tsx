@@ -1,6 +1,6 @@
 import { Box, styled } from "@mui/system";
 import React, { useState } from "react";
-import OrderComponent from "./Order";
+import Order from "./Order/Order";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Status } from "@orbs-network/twap";
 import { useOrdersContext } from "../context";
@@ -25,7 +25,7 @@ function OrdersList({ orders, status, isLoading }: { orders: OrderUI[]; status: 
     <StyledContainer>
       {orders ? (
         orders.map((order, index) => {
-          return <OrderComponent order={order} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
+          return <Order order={order} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
         })
       ) : (
         <StyledEmptyList>{`${translations.noOrdersFound} ${(translations as any)["noOrdersFound_" + status]} ${translations.noOrdersFound1}`}</StyledEmptyList>

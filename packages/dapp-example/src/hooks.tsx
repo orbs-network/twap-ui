@@ -2,14 +2,13 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
 import Web3 from "web3";
-import { TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
 import { useCallback, useEffect, useMemo } from "react";
 import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
-import { dapps } from "./App";
+import { dapps } from "./config";
 export const injectedConnector = new InjectedConnector({});
 
 const tokenlistsNetworkNames = {

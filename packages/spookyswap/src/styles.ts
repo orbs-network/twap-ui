@@ -6,12 +6,12 @@ export const colors = {
   cardBackground: "rgb(18, 17, 34)",
   submitButton: "rgb(29, 147, 132)",
   submitButtonBorder: "1px solid rgba(100, 221, 192, 0.15)",
-  text: "#ffffff",
+  text: "rgba(255,255,255, 0.6)",
   icon: "#60E6C5",
-  light: "#60E6C5",
   selectTokenFocus: "#1F2937",
   mainBackground: "#000315",
   borderColor: "rgb(55, 65, 81)",
+  tooltipBackground: "rgb(30, 29, 45)",
 };
 
 export const Text = styled(TwapStyles.StyledText)({});
@@ -68,7 +68,7 @@ export const StyledNumbericInput = styled(Components.NumericInput)({
     paddingRight: 0,
     "&:focus": {},
     "&::placeholder": {
-      color: "white",
+      color: colors.text,
     },
   },
 });
@@ -91,6 +91,8 @@ export const StyledIcon = styled(Components.Icon)({
     color: colors.icon,
   },
 });
+
+
 
 export const StyledTradeInfoModal = styled(Components.Modal)({
   "& a": {
@@ -138,6 +140,11 @@ export const StyledLimitPrice = styled(Box)({
 export const StyledTokenOrder = styled(Box)({ width: "100%" });
 
 export const globalStyle = {
+  "& .twap-label": {
+    "& p": {
+      color: colors.text,
+    },
+  },
   "& .odnp": {
     "*": {
       color: "black",
@@ -151,7 +158,7 @@ export const globalStyle = {
   },
   "& .twap-modal": {
     "& *": {
-      color: "white",
+      color: colors.text,
     },
     "& .twap-modal-content": {
       position: "relative",
@@ -168,7 +175,7 @@ export const globalStyle = {
     gap: 15,
     "*": {
       boxSizing: "border-box",
-      color: "white",
+      color: colors.text,
     },
   },
   "& .twap-small-label": {
@@ -207,26 +214,35 @@ export const globalStyle = {
       background: "#373E55!important",
     },
     "& .MuiLinearProgress-bar": {
-      background: colors.light,
+      background: colors.text,
     },
   },
 
   "& .twap-tooltip": {
     "& .MuiTooltip-tooltip": {
-      backgroundColor: "rgba(32, 32, 34, 0.9)",
+      backgroundColor: colors.tooltipBackground,
       borderRadius: "4px",
-      color: colors.light,
+      color: colors.text,
       fontSize: 14,
       fontFamily: "inherit",
       lineHeight: 1.5,
       padding: 16,
       maxWidth: 500,
     },
+    "& .MuiTooltip-arrow": {
+      color: colors.tooltipBackground,
+    },
   },
   "& .twap-tooltip-icon": {
     fill: colors.icon,
   },
+  ".twap-order-summary": {},
+  ".twap-order-summary-rows": {
+  },
 };
+
+
+
 
 export const StyledTrade = styled(Box)({
   width: "100%",

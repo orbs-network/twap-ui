@@ -1,16 +1,13 @@
 import { StyledApp, StyledContent } from "./styles";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import pangolin from "./Pangolin";
-import spiritswap from "./SpiritSwap";
-import spookyswap from "./SpookySwap";
 import { Dapp, DappsMenu } from "./Components";
 import { Navigate } from "react-router-dom";
 import { store } from "@orbs-network/twap-ui";
-import { useEagerlyConnect, useSelectedDapp, useDisconnectWallet } from "./hooks";
+import { useEagerlyConnect, useDisconnectWallet } from "./hooks";
 import { useCallback } from "react";
+import { dapps, defaultDapp } from "./config";
 
-const defaultDapp = spiritswap;
-export const dapps = [spiritswap, pangolin, spookyswap];
+
 
 function App() {
   const resetState = store.useTwapStore((state) => state.reset);

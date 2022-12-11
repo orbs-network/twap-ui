@@ -1,9 +1,8 @@
-import { Box, styled } from "@mui/system";
+import { StyledText } from "../styles";
 
 function TokenName({ name }: { name?: string }) {
-  return <StyledName className="twap-token-name">{name || "-"}</StyledName>;
+  return <StyledText className="twap-token-name">{name || "-"}</StyledText>;
 }
 
 export default TokenName;
 
-const StyledName = styled(Box)({});

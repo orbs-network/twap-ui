@@ -35,6 +35,7 @@ const Slider = ({ onChange, value, maxTrades }: Props) => {
       valueLabelFormat={valueLabelFormat}
       onChange={handleChange}
       valueLabelDisplay="auto"
+      className="twap-slider"
     />
   );
 };

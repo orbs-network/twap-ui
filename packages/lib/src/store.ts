@@ -195,18 +195,17 @@ export const useTwapStore = create(
       const dstToken = get().dstToken!;
 
       const dstAmount: BN = (get() as any).getDstAmount();
-      const dstAmountUi: string = (get() as any).getDstAmountUi();      
-  
+      const dstAmountUi: string = (get() as any).getDstAmountUi();
+
       (get() as any).setTokens(dstToken, srcToken);
-            (get() as any).setSrcAmountUi(dstAmount.isZero() ? "" : dstAmountUi);
+      (get() as any).setSrcAmountUi(dstAmount.isZero() ? "" : dstAmountUi);
 
       set({
         srcUsd: get().dstUsd,
-        dstUsd:get().srcUsd,
+        dstUsd: get().srcUsd,
         srcBalance: get().dstBalance,
-        dstBalance: get().srcBalance
-      })
-
+        dstBalance: get().srcBalance,
+      });
     },
 
     getSrcChunkAmount: () => get().lib?.srcChunkAmount((get() as any).getSrcAmount(), get().chunks) || BN(0),

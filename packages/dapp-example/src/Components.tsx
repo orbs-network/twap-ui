@@ -10,7 +10,8 @@ import { FiMenu } from "react-icons/fi";
 import Backdrop from "@mui/material/Backdrop";
 import { Fade } from "@mui/material";
 import { Config } from "@orbs-network/twap";
-import { dapps } from "./App";
+
+import { dapps } from "./config";
 import { Status } from "./Status";
 import { useSelectedDapp } from "./hooks";
 export interface Dapp {

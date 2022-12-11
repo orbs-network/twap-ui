@@ -83,5 +83,6 @@
   "insertLimitPriceWarning": "Insert limit price",
   "balance": "Balance",
   "selectToken": "Select token",
-  "loading": "Loading"
+  "loading": "Loading",
+  "progress":"progress"
 }

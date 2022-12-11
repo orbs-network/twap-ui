@@ -1,8 +1,9 @@
-import { ClickAwayListener, Typography } from "@mui/material";
+import { ClickAwayListener } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useState } from "react";
 import { useTwapContext } from "../context";
 import { TimeResolution } from "../store";
+import { StyledText } from "../styles";
 import { Translations } from "../types";
 import NumericInput from "./NumericInput";
 
@@ -54,7 +55,7 @@ function TimeSelector({ value, onChange, disabled = false, className = "" }: Pro
 
       <StyledTimeSelect>
         <StyledSelected onClick={onOpenListClick}>
-          <Typography> {translations[findSelectedResolutionText(value.resolution)]}</Typography>
+          <StyledText> {translations[findSelectedResolutionText(value.resolution)]}</StyledText>
         </StyledSelected>
         {showList && (
           <ClickAwayListener onClickAway={() => setShowList(false)}>
@@ -67,7 +68,7 @@ function TimeSelector({ value, onChange, disabled = false, className = "" }: Pro
                     onClick={() => onTimeFormatChange(item.value)}
                     key={item.value}
                   >
-                    <Typography>{translations[item.text]}</Typography>
+                    <StyledText>{translations[item.text]}</StyledText>
                   </StyledListItem>
                 );
               })}

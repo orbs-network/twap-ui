@@ -7,7 +7,16 @@ import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback } from "react";
 import * as AdapterStyles from "./styles";
 import { Configs, TokenData } from "@orbs-network/twap";
-import { AdapterContextProvider, parseToken, useAdapterContext, useGetProvider, useParseTokenList, usePrepareAdapterContextProps, useSetTokensFromDapp } from "./hooks";
+import {
+  AdapterContextProvider,
+  parseToken,
+  useAdapterContext,
+  useGetProvider,
+  useGlobalStyles,
+  useParseTokenList,
+  usePrepareAdapterContextProps,
+  useSetTokensFromDapp,
+} from "./hooks";
 import translations from "./i18n/en.json";
 import { SpiritSwapTWAPProps } from ".";
 
@@ -17,6 +26,7 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
   useSetTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
+  const globalStyles = useGlobalStyles();
 
   const connect = useCallback(() => {
     props.connect();
@@ -32,10 +42,9 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
       provider={provider}
       account={props.account}
     >
-      <GlobalStyles styles={AdapterStyles.globalStyle as any} />
+      <GlobalStyles styles={globalStyles} />
       <AdapterContextProvider value={adapterContextProps}>
         <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
-          {/* <button onClick={onClick}>reset</button> */}
           <SrcTokenPanel />
           <ChangeTokensOrder />
           <DstTokenPanel />
@@ -59,7 +68,7 @@ const MarketPrice = () => {
   const translations = useTwapContext().translations;
   return (
     <AdapterStyles.StyledMarketPrice>
-      <AdapterStyles.StyledCard>
+      <Components.Card>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
           {ready ? (
@@ -68,7 +77,7 @@ const MarketPrice = () => {
             <AdapterStyles.Text>-</AdapterStyles.Text>
           )}
         </TwapStyles.StyledRowFlex>
-      </AdapterStyles.StyledCard>
+      </Components.Card>
     </AdapterStyles.StyledMarketPrice>
   );
 };
@@ -101,10 +110,10 @@ const SrcTokenPanel = () => {
 
 const DstTokenPanel = () => {
   return (
-    <AdapterStyles.StyledDstToken>
+    <Box style={{ width: "100%" }}>
       <TokenPanel isSrcToken={false} />
       <MarketPrice />
-    </AdapterStyles.StyledDstToken>
+    </Box>
   );
 };
 
@@ -113,7 +122,7 @@ const ChangeTokensOrder = () => {
   return (
     <AdapterStyles.StyledChangeOrder>
       <Components.IconButton onClick={switchTokens}>
-        <AdapterStyles.StyledIcon icon={<HiOutlineSwitchVertical />} />
+        <Components.Icon icon={<HiOutlineSwitchVertical />} />
       </Components.IconButton>
     </AdapterStyles.StyledChangeOrder>
   );
@@ -134,7 +143,7 @@ const TradeSize = () => {
 
   return (
     <AdapterStyles.StyledTrade>
-      <AdapterStyles.StyledCard>
+      <Components.Card>
         <TwapStyles.StyledColumnFlex>
           <AdapterStyles.StyledSliderContainer gap={10}>
             <Components.Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Components.Label>
@@ -164,10 +173,10 @@ const TradeSize = () => {
               </Components.Label>
               {token && <TokenDisplay logo={token?.logoUrl} name={token?.symbol} />}
             </AdapterStyles.StyledTradeSize>
-            <AdapterStyles.StyledUSD value={usdValue} isLoading={usdLoading} />
+            <Components.USD value={usdValue} isLoading={usdLoading} />
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
-      </AdapterStyles.StyledCard>
+      </Components.Card>
     </AdapterStyles.StyledTrade>
   );
 };
@@ -179,11 +188,11 @@ const LimitPriceDisplay = () => {
 
   return (
     <AdapterStyles.StyledPrice>
-      <AdapterStyles.StyledCard>
+      <Components.Card>
         <TwapStyles.StyledColumnFlex>
           <AdapterStyles.StyledFlexStart>
             <Components.Tooltip text={warning}>
-              {isLoading ? <Components.Loader width={50} /> : <AdapterStyles.StyledSwitch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}
+              {isLoading ? <Components.Loader width={50} /> : <Components.Switch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}
             </Components.Tooltip>
             <Components.Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{translations.limitPrice}</Components.Label>
           </AdapterStyles.StyledFlexStart>
@@ -191,7 +200,7 @@ const LimitPriceDisplay = () => {
             <Components.LimitPrice onChange={onChange} toggleInverted={toggleInverted} price={limitPrice} leftToken={leftToken} rightToken={rightToken} placeholder="0" />
           )}
         </TwapStyles.StyledColumnFlex>
-      </AdapterStyles.StyledCard>
+      </Components.Card>
     </AdapterStyles.StyledPrice>
   );
 };
@@ -204,12 +213,12 @@ const MaxDuration = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <AdapterStyles.StyledCard>
+    <Components.Card>
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Components.Label>
         <Components.TimeSelector value={duration} onChange={onChange} />
       </TwapStyles.StyledRowFlex>
-    </AdapterStyles.StyledCard>
+    </Components.Card>
   );
 };
 
@@ -223,7 +232,7 @@ const TradeInterval = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <AdapterStyles.StyledCard>
+    <Components.Card>
       <TwapStyles.StyledRowFlex justifyContent="space-between" gap={10}>
         <Components.Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Components.Label>
         <AdapterStyles.StyledIntervalTimeSelect>
@@ -231,11 +240,11 @@ const TradeInterval = () => {
         </AdapterStyles.StyledIntervalTimeSelect>
         {!customFillDelayEnabled && (
           <Components.IconButton tooltip={translations.customIntervalTooltip} onClick={onCustomFillDelayClick}>
-            <AdapterStyles.StyledIcon icon={<AiFillEdit />} />
+            <Components.Icon icon={<AiFillEdit />} />
           </Components.IconButton>
         )}
       </TwapStyles.StyledRowFlex>
-    </AdapterStyles.StyledCard>
+    </Components.Card>
   );
 };
 
@@ -300,11 +309,11 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     <>
       <TokenSelectModal tokenSelected={undefined} onSelect={onTokenSelected} isOpen={tokenListOpen} onClose={onListClose} />
       <AdapterStyles.StyledTokenPanel>
-        <AdapterStyles.StyledCard>
+        <Components.Card>
           <TwapStyles.StyledColumnFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
               <Components.Tooltip text={inputWarning}>
-                <AdapterStyles.StyledNumbericInput
+                <Components.NumericInput
                   decimalScale={decimalScale}
                   prefix={amountPrefix}
                   disabled={disabled}
@@ -317,17 +326,17 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
               <Components.Tooltip text={selectTokenWarning}>
                 <AdapterStyles.StyledTokenSelect onClick={onOpen}>
                   <TokenDisplay logo={logo} name={symbol} />
-                  <AdapterStyles.StyledIcon icon={<IoIosArrowDown size={20} />} />
+                  <Components.Icon icon={<IoIosArrowDown size={20} />} />
                 </AdapterStyles.StyledTokenSelect>
               </Components.Tooltip>
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <AdapterStyles.StyledUSD value={usdValue} isLoading={usdLoading} />
+              <Components.USD value={usdValue} isLoading={usdLoading} />
               <Components.Balance isLoading={balanceLoading} value={balance} />
             </TwapStyles.StyledRowFlex>
             {children}
           </TwapStyles.StyledColumnFlex>
-        </AdapterStyles.StyledCard>
+        </Components.Card>
       </AdapterStyles.StyledTokenPanel>
     </>
   );
@@ -336,9 +345,9 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
 const SubmitButton = () => {
   const { loading, text, onClick, disabled } = hooks.useSubmitButton();
   return (
-    <AdapterStyles.StyledButton loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
+    <Components.Button loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
       {text}
-    </AdapterStyles.StyledButton>
+    </Components.Button>
   );
 };
 
@@ -348,10 +357,10 @@ const OrderSummary = () => {
 
   return (
     <>
-      <AdapterStyles.StyledTradeInfoModal open={twapStore.showConfirmation} onClose={() => twapStore.setShowConfirmation(false)}>
-        <AdapterStyles.StyledOrderConfirmation>
-          <TwapStyles.StyledColumnFlex gap={20}>
-            <TwapStyles.StyledColumnFlex gap={20}>
+      <Components.Modal open={twapStore.showConfirmation} onClose={() => twapStore.setShowConfirmation(false)}>
+        <AdapterStyles.StyledOrderConfirmation className="twap-order-summary">
+          <TwapStyles.StyledColumnFlex gap={15}>
+            <TwapStyles.StyledColumnFlex gap={15}>
               <TokenOrderPreview
                 isSrc={true}
                 isLimitOrder={twapStore.isLimitOrder}
@@ -369,17 +378,17 @@ const OrderSummary = () => {
               />
               <OrderConfirmationLimitPrice />
 
-              <AdapterStyles.StyledCard className="twap-order-summary">
+              <Components.Card className="twap-order-summary-rows">
                 <TwapStyles.StyledColumnFlex gap={12}>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
+                  <AdapterStyles.StyledSummaryRow>
                     <Components.Label tooltipText={translations.confirmationDeadlineTooltip}>{translations.expiration}</Components.Label>
                     <AdapterStyles.Text>{twapStore.getDeadlineUi()}</AdapterStyles.Text>
-                  </TwapStyles.StyledRowFlex>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
+                  </AdapterStyles.StyledSummaryRow>
+                  <AdapterStyles.StyledSummaryRow>
                     <Components.Label tooltipText={translations.confirmationOrderType}>{translations.orderType}</Components.Label>
                     <AdapterStyles.Text>{twapStore.isLimitOrder ? translations.limitOrder : translations.marketOrder}</AdapterStyles.Text>
-                  </TwapStyles.StyledRowFlex>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
+                  </AdapterStyles.StyledSummaryRow>
+                  <AdapterStyles.StyledSummaryRow>
                     <Components.Label tooltipText={translations.confirmationTradeSizeTooltip}>{translations.tradeSize}</Components.Label>
                     <TwapStyles.StyledRowFlex justifyContent="flex-end">
                       <Components.TokenName name={twapStore.srcToken?.symbol} />
@@ -390,16 +399,16 @@ const OrderSummary = () => {
                         </Components.Tooltip>
                       </AdapterStyles.Text>
                     </TwapStyles.StyledRowFlex>
-                  </TwapStyles.StyledRowFlex>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
+                  </AdapterStyles.StyledSummaryRow>
+                  <AdapterStyles.StyledSummaryRow>
                     <Components.Label tooltipText={translations.confirmationTotalTradesTooltip}>{translations.totalTrades}</Components.Label>
                     <AdapterStyles.Text>{twapStore.chunks}</AdapterStyles.Text>
-                  </TwapStyles.StyledRowFlex>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
+                  </AdapterStyles.StyledSummaryRow>
+                  <AdapterStyles.StyledSummaryRow>
                     <Components.Label tooltipText={translations.confirmationtradeIntervalTooltip}>{translations.tradeInterval}</Components.Label>
                     <AdapterStyles.Text>{twapStore.getFillDelayUi(translations)}</AdapterStyles.Text>
-                  </TwapStyles.StyledRowFlex>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
+                  </AdapterStyles.StyledSummaryRow>
+                  <AdapterStyles.StyledSummaryRow>
                     <Components.Label tooltipText={twapStore.isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
                       {translations.minReceivedPerTrade}:
                     </Components.Label>
@@ -416,34 +425,36 @@ const OrderSummary = () => {
                         )}
                       </AdapterStyles.Text>
                     </TwapStyles.StyledRowFlex>
-                  </TwapStyles.StyledRowFlex>
+                  </AdapterStyles.StyledSummaryRow>
                 </TwapStyles.StyledColumnFlex>
-              </AdapterStyles.StyledCard>
+              </Components.Card>
               <TradeInfoDetailsDisplay />
             </TwapStyles.StyledColumnFlex>
-            <TwapStyles.StyledColumnFlex gap={12}>
-              <Box style={{ display: "flex", gap: 5 }}>
-                <Components.SmallLabel>{translations.acceptDisclaimer}</Components.SmallLabel>
-                <AdapterStyles.StyledSwitch value={twapStore.disclaimerAccepted} onChange={() => twapStore.setDisclaimerAccepted(!twapStore.disclaimerAccepted)} />
-              </Box>
-              <AdapterStyles.Text className="output-text">{translations.outputWillBeSentTo}</AdapterStyles.Text>
-              <AdapterStyles.Text className="output-text">{twapStore.lib?.maker}</AdapterStyles.Text>
-              <SubmitButton />
-            </TwapStyles.StyledColumnFlex>
+            <Components.Card>
+              <TwapStyles.StyledColumnFlex gap={12}>
+                <Box style={{ display: "flex", gap: 5 }}>
+                  <Components.SmallLabel>{translations.acceptDisclaimer}</Components.SmallLabel>
+                  <Components.Switch value={twapStore.disclaimerAccepted} onChange={() => twapStore.setDisclaimerAccepted(!twapStore.disclaimerAccepted)} />
+                </Box>
+                <AdapterStyles.Text className="output-text">{translations.outputWillBeSentTo}</AdapterStyles.Text>
+                <AdapterStyles.Text className="output-text">{twapStore.lib?.maker}</AdapterStyles.Text>
+              </TwapStyles.StyledColumnFlex>
+            </Components.Card>
+            <SubmitButton />
           </TwapStyles.StyledColumnFlex>
         </AdapterStyles.StyledOrderConfirmation>
-      </AdapterStyles.StyledTradeInfoModal>
+      </Components.Modal>
     </>
   );
 };
 
 const TradeInfoDetailsDisplay = () => {
   return (
-    <AdapterStyles.StyledCard>
+    <Components.Card>
       <TwapStyles.StyledColumnFlex gap={10}>
         <Components.Disclaimer />
       </TwapStyles.StyledColumnFlex>
-    </AdapterStyles.StyledCard>
+    </Components.Card>
   );
 };
 
@@ -483,11 +494,11 @@ const TokenOrderPreview = ({
 }) => {
   return (
     <AdapterStyles.StyledTokenOrder>
-      <AdapterStyles.StyledCard>
+      <Components.Card>
         <TwapStyles.StyledColumnFlex gap={10}>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <Components.Label>{title}</Components.Label>
-            <AdapterStyles.StyledUSD value={usdPrice} />
+            <Components.USD value={usdPrice} />
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <TokenDisplay name={token?.symbol} logo={token?.logoUrl} />
@@ -496,7 +507,7 @@ const TokenOrderPreview = ({
             </AdapterStyles.StyledTokenOrderPreviewAmount>
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
-      </AdapterStyles.StyledCard>
+      </Components.Card>
     </AdapterStyles.StyledTokenOrder>
   );
 };
