@@ -257,7 +257,7 @@ export const configureStyles = (darkMode: boolean) => {
       gap: 5,
       "& .twap-token-name": {
         fontSize: 16,
-        color:   styles.lighterTextColor,
+        color: styles.lighterTextColor,
         fontWeight: 700,
       },
       "& .twap-token-logo": {

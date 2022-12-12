@@ -25,7 +25,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
   useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
-  const globalStyles = useGlobalStyles(false);
+  const globalStyles = useGlobalStyles(true);
   const connect = useCallback(() => {
     props.connect();
   }, []);
