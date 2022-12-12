@@ -111,7 +111,7 @@ const StyledContainer = styled(Box)({
 
   "& *": {
     fontFamily: "inherit",
-    color:'inherit'
+    color: "inherit",
   },
 });
 const StyledHeaderTop = styled(Box)({

@@ -63,5 +63,5 @@ export const StyledRowFlex = styled(Box)(({ gap = 10, justifyContent = "center" 
 
 export const StyledText = styled(Typography)({
   fontFamily: "inherit",
-  fontSize:'inherit'
+  fontSize: "inherit",
 });

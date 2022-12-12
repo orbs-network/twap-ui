@@ -98,7 +98,7 @@ const DstTokenPanel = () => (
 const ChangeTokensOrder = () => {
   const switchTokens = hooks.useSwitchTokens();
   return (
-    <Box className='twap-change-tokens-order'>
+    <Box className="twap-change-tokens-order">
       <Components.IconButton onClick={switchTokens}>
         <Components.Icon icon={<HiOutlineSwitchVertical />} />
       </Components.IconButton>
@@ -158,7 +158,7 @@ const LimitPriceDisplay = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <Components.Card className='twap-limit-price'>
+    <Components.Card className="twap-limit-price">
       <TwapStyles.StyledColumnFlex>
         <AdapterStyles.StyledFlexStart>
           <Components.Tooltip text={isLoading ? `${translations.loading}...` : warning}>
@@ -422,13 +422,11 @@ const OrderSummary = () => {
   );
 };
 
-
-
 const SummaryRow = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
   return (
     <AdapterStyles.StyledSummaryRow>
       <Components.Label tooltipText={tooltip}>{label}</Components.Label>
-      <Box className='twap-summary-row-children'>{children}</Box>
+      <Box className="twap-summary-row-children">{children}</Box>
     </AdapterStyles.StyledSummaryRow>
   );
 };

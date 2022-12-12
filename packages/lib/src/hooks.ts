@@ -332,7 +332,6 @@ export const useTokenPanel = (isSrc?: boolean) => {
     }
   }, [maker, translations, wrongNetwork]);
 
-
   const loaders = useMemo(() => {
     const usdLoading = isSrc ? loadingState.srcUsdLoading : loadingState.dstUsdLoading;
     const balanceLoading = isSrc ? loadingState.srcBalanceLoading : loadingState.dstBalanceLoading;

@@ -92,10 +92,18 @@ const SrcTokenPercentSelector = () => {
 
   return (
     <AdapterStyles.StyledPercentSelector>
-      <button className="twap-percent-button" onClick={() => onClick(0.25)}>25%</button>
-      <button className="twap-percent-button" onClick={() => onClick(0.5)}>50%</button>
-      <button className="twap-percent-button" onClick={() => onClick(0.75)}>75%</button>
-      <button className="twap-percent-button" onClick={() => onClick(1)}>{translations.max}</button>
+      <button className="twap-percent-button" onClick={() => onClick(0.25)}>
+        25%
+      </button>
+      <button className="twap-percent-button" onClick={() => onClick(0.5)}>
+        50%
+      </button>
+      <button className="twap-percent-button" onClick={() => onClick(0.75)}>
+        75%
+      </button>
+      <button className="twap-percent-button" onClick={() => onClick(1)}>
+        {translations.max}
+      </button>
     </AdapterStyles.StyledPercentSelector>
   );
 };

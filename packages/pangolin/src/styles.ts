@@ -5,7 +5,7 @@ interface StylesType extends StylesConfig {
   mainBackground: string;
 }
 
-const mainPadding = 10
+const mainPadding = 10;
 const mainBorderRadius = 8;
 
 const green = "rgb(255, 200, 0)";
@@ -148,7 +148,7 @@ export const StyledTokenPanel = styled(Box)(({ issrc }: { issrc: boolean }) => (
   width: "100%",
   "& .twap-card": {
     borderBottomLeftRadius: issrc ? mainBorderRadius : 0,
-     borderBottomRightRadius: issrc ? mainBorderRadius : 0,
+    borderBottomRightRadius: issrc ? mainBorderRadius : 0,
   },
   "& .twap-input": {
     textAlign: "left",
@@ -203,7 +203,7 @@ export const StyledSliderContainer = styled(TwapStyles.StyledRowFlex)({
   justifyContent: "space-between",
 });
 
-// 
+//
 export const configureStyles = (darkMode: boolean) => {
   const styles = darkMode ? darkModeStylesConfig : lightModeStylesConfig;
   return {
@@ -245,7 +245,7 @@ export const configureStyles = (darkMode: boolean) => {
       ".twap-price": {
         background: styles.containerBackground,
         padding: 5,
-        borderRadius: mainBorderRadius
+        borderRadius: mainBorderRadius,
       },
     },
     ".twap-market-price": {

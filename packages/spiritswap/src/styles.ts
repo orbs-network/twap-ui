@@ -58,8 +58,6 @@ export const StyledTrade = styled(Box)({
   },
 });
 
-
-
 export const StyledPercentSelector = styled(Box)({
   display: "flex",
   alignItems: "center",
@@ -67,11 +65,9 @@ export const StyledPercentSelector = styled(Box)({
   width: "100%",
 });
 
-
 export const StyledIntervalTimeSelect = styled(Box)({
   flex: 1,
 });
-
 
 export const StyledTokenDisplay = styled(TwapStyles.StyledRowFlex)({
   alignItems: "center",

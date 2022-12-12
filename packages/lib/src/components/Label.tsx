@@ -35,10 +35,10 @@ function Label({ children, tooltipText, className = "", fontSize, iconStart, pla
 export default Label;
 
 const StyledContainer = styled(Styles.StyledRowFlex)({
-  justifyContent:'flex-start',
+  justifyContent: "flex-start",
   gap: 7,
-  width:'fit-content'
-})
+  width: "fit-content",
+});
 
 const StyledTooltipContent = styled(Box)({
   display: "flex",

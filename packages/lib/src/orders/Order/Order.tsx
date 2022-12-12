@@ -58,7 +58,7 @@ const StyledAccordion = styled(Accordion)({
     margin: "0!important",
     width: "100%",
   },
-  "& *":{
-    color:'inherit'
-  }
+  "& *": {
+    color: "inherit",
+  },
 });

@@ -7,7 +7,16 @@ import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
-import { AdapterContextProvider, parseToken, useAdapterContext, useGetProvider, useGlobalStyles, useParseTokenList, usePrepareAdapterContextProps, useTokensFromDapp } from "./hooks";
+import {
+  AdapterContextProvider,
+  parseToken,
+  useAdapterContext,
+  useGetProvider,
+  useGlobalStyles,
+  useParseTokenList,
+  usePrepareAdapterContextProps,
+  useTokensFromDapp,
+} from "./hooks";
 import { SpookySwapTWAPProps } from ".";
 import * as AdapterStyles from "./styles";
 
@@ -43,7 +52,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
             <TradeSize />
             <MaxDuration />
             <TradeInterval />
-            <TwapStyles.StyledRowFlex className='twap-create-order-btn'>
+            <TwapStyles.StyledRowFlex className="twap-create-order-btn">
               <SubmitButton />
             </TwapStyles.StyledRowFlex>
             <OrderConfirmation />
@@ -111,8 +120,7 @@ const ChangeTokensOrder = () => {
   return (
     <TwapStyles.StyledRowFlex className="twap-change-order">
       <button onClick={switchTokens}>
-        <Components.Icon icon={<HiOutlineSwitchVertical style={{width:16,
-        height:16}} />} />
+        <Components.Icon icon={<HiOutlineSwitchVertical style={{ width: 16, height: 16 }} />} />
       </button>
     </TwapStyles.StyledRowFlex>
   );
@@ -137,7 +145,9 @@ const TradeSize = () => {
         <AdapterStyles.StyledCardFlex>
           <AdapterStyles.StyledColumnGap>
             <AdapterStyles.StyledSliderContainer gap={10}>
-              <Components.Label placement="right" tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Components.Label>
+              <Components.Label placement="right" tooltipText={translations.totalTradesTooltip}>
+                {translations.totalTrades}
+              </Components.Label>
               {showChunksSelect ? (
                 <>
                   <AdapterStyles.StyledSlider>
@@ -185,10 +195,12 @@ const LimitPriceDisplay = () => {
           <Components.Tooltip placement="left" text={isLoading ? `${translations.loading}...` : warning}>
             <Components.Switch disabled={!!warning || isLoading} value={isLimitOrder} onChange={onToggleLimit} />
           </Components.Tooltip>
-          <Components.Label placement="right" tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{translations.limitPrice}</Components.Label>
+          <Components.Label placement="right" tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>
+            {translations.limitPrice}
+          </Components.Label>
         </TwapStyles.StyledRowFlex>
         {isLimitOrder && (
-          <Box style={{padding: '0px 5px'}}>
+          <Box style={{ padding: "0px 5px" }}>
             <Components.LimitPrice onChange={onChange} toggleInverted={toggleInverted} price={limitPrice} leftToken={leftToken} rightToken={rightToken} placeholder="0" />
           </Box>
         )}
@@ -207,7 +219,9 @@ const MaxDuration = () => {
   return (
     <Components.Card>
       <AdapterStyles.StyledCardFlex justifyContent="space-between" gap={10}>
-        <Components.Label placement="right" tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Components.Label>
+        <Components.Label placement="right" tooltipText={translations.maxDurationTooltip}>
+          {translations.maxDuration}
+        </Components.Label>
         <Components.TimeSelector value={duration} onChange={onChange} />
       </AdapterStyles.StyledCardFlex>
     </Components.Card>
@@ -226,7 +240,9 @@ const TradeInterval = () => {
   return (
     <Components.Card>
       <AdapterStyles.StyledCardFlex justifyContent="space-between" gap={10}>
-        <Components.Label placement="right" tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Components.Label>
+        <Components.Label placement="right" tooltipText={translations.tradeIntervalTootlip}>
+          {translations.tradeInterval}
+        </Components.Label>
         <AdapterStyles.StyledIntervalTimeSelect>
           <Components.TimeSelector disabled={!customFillDelayEnabled} onChange={onChange} value={fillDelay} />
         </AdapterStyles.StyledIntervalTimeSelect>
@@ -256,7 +272,7 @@ interface TokenPanelProps {
 
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const translations = useTwapContext().translations
+  const translations = useTwapContext().translations;
 
   const { onTokenSelect, inputWarning, amountPrefix, disabled, selectTokenWarning, token, onChange, value, usdValue, balanceLoading, balance, usdLoading, decimalScale } =
     hooks.useTokenPanel(isSrcToken);
@@ -325,7 +341,7 @@ const Balance = ({ isLoading, balance = "0" }: { isLoading: boolean; balance: st
   const translations = useTwapContext().translations;
 
   return (
-    <AdapterStyles.StyledCardFlex justifyContent='space-between' className="twap-balance">
+    <AdapterStyles.StyledCardFlex justifyContent="space-between" className="twap-balance">
       <TwapStyles.StyledText>{translations.balance}</TwapStyles.StyledText>
       {balance && (
         <Components.SmallLabel loading={isLoading}>
@@ -443,13 +459,13 @@ const OrderConfirmation = () => {
 const SummaryRow = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
   return (
     <AdapterStyles.StyledSummaryRow>
-      <Components.Label placement="right" tooltipText={tooltip}>{label}</Components.Label>
-      <Box className='twap-summary-row-children'>{children}</Box>
+      <Components.Label placement="right" tooltipText={tooltip}>
+        {label}
+      </Components.Label>
+      <Box className="twap-summary-row-children">{children}</Box>
     </AdapterStyles.StyledSummaryRow>
   );
 };
-
-
 
 const TradeInfoDetailsDisplay = () => {
   return (

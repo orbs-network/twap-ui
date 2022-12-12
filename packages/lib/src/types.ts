@@ -84,7 +84,7 @@ export interface Translations {
   sliderMinSizeTooltip: string;
   loading: string;
   progress: string;
-  estimated: string
+  estimated: string;
 }
 
 interface BaseProps {

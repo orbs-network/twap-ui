@@ -38,5 +38,5 @@ const StyledTradeInfoExplanation = styled(Box)({
   display: "flex",
   flexDirection: "column",
   gap: 10,
-  fontSize:'inherit'
+  fontSize: "inherit",
 });

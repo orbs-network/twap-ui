@@ -25,12 +25,12 @@ export const darkModeStylesConfig: Styles = {
 export const lightModeStylesConfig: Styles = {
   iconsColor: "rgb(140, 140, 227)",
   textColor: "rgba(255, 255, 255, 0.6)",
-  lighterTextColor: "rgba(255, 255, 255, 0.87)",
+  lighterTextColor: "rgb(49, 65, 94)",
   tooltipBackground: "rgb(30, 29, 45)",
   tooltipTextColor: "rgba(255, 255, 255, 0.6)",
   spinnerColor: "white",
-  containerBackground: "#192239",
-  cardBackground: "rgb(18, 17, 34)",
+  containerBackground: "rgb(242, 244, 248)",
+  cardBackground: "rgb(228, 233, 241)",
   progressBarColor: "#60E6C5",
   progressBarTrackColor: "#373E55",
   orderHistorySelectedTabBackground: "rgba(96, 230, 197, 0.26)",
@@ -38,11 +38,10 @@ export const lightModeStylesConfig: Styles = {
   orderHistorySelectedTabColor: "rgb(96, 230, 197)",
 };
 
-
 export const StyledCardFlex = styled(TwapStyles.StyledRowFlex)({
- paddingLeft:10,
- paddingRight:10
-})
+  paddingLeft: 10,
+  paddingRight: 10,
+});
 
 export const Text = styled(TwapStyles.StyledText)({});
 
@@ -55,7 +54,6 @@ export const StyledUSD = styled(Components.USD)({
     textOverflow: "ellipsis",
   },
 });
-
 
 export const StyledButton = styled(Components.Button)({
   background: "rgb(115, 204, 231)",
@@ -75,8 +73,6 @@ export const StyledSlider = styled(Box)({
   position: "relative",
   top: 2,
 });
-
-
 
 export const StyledSummaryRow = styled(StyledCardFlex)({
   justifyContent: "space-between",
@@ -104,14 +100,12 @@ export const StyledLimitPrice = styled(Box)({
 export const StyledTrade = styled(Box)({
   width: "100%",
   "& .twap-input": {
-    width:50,
+    width: 50,
     "& input": {
       textAlign: "right",
-     
     },
   },
 });
-
 
 export const StyledDstToken = styled(Box)({
   width: "100%",
@@ -152,12 +146,12 @@ export const StyledChangeOrder = styled(Box)(() => ({
 export const StyledTokenPanel = styled(Box)({
   "& .twap-panel-title": {
     fontWeight: 700,
-    fontSize: 14
+    fontSize: 14,
   },
   width: "100%",
   "& .twap-input": {
     textAlign: "right",
-    width:'100%'
+    width: "100%",
   },
 });
 
@@ -168,8 +162,6 @@ export const StyledColumnGap = styled(Box)(({ gap }: { gap?: number }) => ({
   alignItems: "flex-start",
   width: "100%",
 }));
-
-
 
 export const StyledMarketPrice = styled(Box)({
   "& .twap-card": {
@@ -183,8 +175,6 @@ export const StyledMarketPrice = styled(Box)({
     opacity: 0.8,
   },
 });
-
-
 
 export const StyledTradeSize = styled(Box)({
   maxWidth: "80%",
@@ -232,7 +222,7 @@ export const configureStyles = (darkMode: boolean) => {
   const styles = darkMode ? darkModeStylesConfig : lightModeStylesConfig;
   return {
     ".twap-order-summary": {
-      padding: 30
+      padding: 30,
     },
     ".twap-balance": {
       borderTop: "1px solid rgba(255, 255, 255, 0.05)",
@@ -255,7 +245,8 @@ export const configureStyles = (darkMode: boolean) => {
       },
     },
     ".twap-token-select": {
-      background: "rgba(255, 255, 255, 0.05)",
+      boxShadow: "rgb(49 65 94 / 8%) 0px 10px 17px, rgb(49 65 94 / 4%) 0px 5px 26px",
+      background: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgb(242, 244, 248)",
       border: "unset",
       padding: "0px 20px 0px 6px",
       borderRadius: 60,
@@ -266,7 +257,7 @@ export const configureStyles = (darkMode: boolean) => {
       gap: 5,
       "& .twap-token-name": {
         fontSize: 16,
-        color: styles.lighterTextColor,
+        color:   styles.lighterTextColor,
         fontWeight: 700,
       },
       "& .twap-token-logo": {
@@ -518,4 +509,3 @@ export const configureStyles = (darkMode: boolean) => {
     },
   };
 };
-

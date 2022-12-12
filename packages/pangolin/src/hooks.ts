@@ -77,7 +77,6 @@ const AdapterContext = createContext({} as AdapterContextProps);
 export const AdapterContextProvider = AdapterContext.Provider;
 export const useAdapterContext = () => useContext(AdapterContext);
 
-
 export const useGlobalStyles = (darkMode: boolean) => {
   return configureStyles(darkMode);
 };
