@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
-import { networks } from "@defi.org/web3-candies";
+import { chainInfo, networks } from "@defi.org/web3-candies";
 import { Dapp } from "./Components";
 import moment from "moment";
 import BN from "bignumber.js";
 import { useSelectedDapp } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
+
 const useStatus = (dapp?: Dapp) => {
   return useQuery(
     ["useStatus", dapp?.config.partner],
@@ -13,11 +14,11 @@ const useStatus = (dapp?: Dapp) => {
       const twapVersion = require("@orbs-network/twap/package.json").version;
       const twapUiVersion = require("@orbs-network/twap-ui/package.json").version;
 
-      const network = _.find(networks, (n) => n.id === dapp?.config.chainId)!;
+      const network = _.find(networks, (n) => n.id === dapp!.config.chainId)!;
 
       const backupTakersStatus = await Promise.all(
         [1, 2].map((i) =>
-          fetch(`https://twap-taker-${network.shortname}-${dapp?.config.partner.toLowerCase()}-${i}.herokuapp.com/health`)
+          fetch(`https://twap-taker-${network.shortname}-${dapp!.config.partner.toLowerCase()}-${i}.herokuapp.com/health`)
             .then((x) => x.json())
             .then(async (s) => {
               const balances = _.sortBy(_.map(s.takersWallets, (w) => BN(w.balance).toFixed(1))).map(Number);
@@ -39,6 +40,7 @@ const useStatus = (dapp?: Dapp) => {
         twapVersion,
         twapUiVersion,
         backupTakersStatus,
+        chainInfo: await chainInfo(dapp!.config.chainId),
       };
     },
     {
@@ -58,7 +60,7 @@ export function Status() {
         <StyledStatus>
           <StyledStatusSection>
             <StyledStatusSectionTitle>TWAP Version:</StyledStatusSectionTitle>
-            <StyledStatusSectionText> {status!.twapVersion}</StyledStatusSectionText>
+            <StyledStatusSectionText>{status!.twapVersion}</StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle>TWAP-UI Version:</StyledStatusSectionTitle>
@@ -66,26 +68,40 @@ export function Status() {
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
-            <StyledStatusSectionText> {dapp.config.chainId}</StyledStatusSectionText>
+            <StyledStatusSectionText>
+              <img src={status!.chainInfo.logoUrl} width={10} height={10} style={{ marginRight: 2 }} />
+              {dapp.config.chainId}
+            </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle>TWAP:</StyledStatusSectionTitle>
-            <StyledStatusSectionText> {dapp.config.twapAddress}</StyledStatusSectionText>
+            <StyledStatusSectionText>
+              <a href={status.chainInfo.explorers[0].url + "/address/" + dapp.config.twapAddress} target={"_blank"}>
+                {dapp.config.twapAddress}
+              </a>
+            </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle> Lens:</StyledStatusSectionTitle>
-            <StyledStatusSectionText> {dapp.config.lensAddress}</StyledStatusSectionText>
+            <StyledStatusSectionText>
+              <a href={status.chainInfo.explorers[0].url + "/address/" + dapp.config.lensAddress} target={"_blank"}>
+                {dapp.config.lensAddress}
+              </a>
+            </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle>Exchange:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              {dapp.config.exchangeType} {dapp.config.exchangeAddress}
+              {dapp.config.exchangeType}{" "}
+              <a href={status.chainInfo.explorers[0].url + "/address/" + dapp.config.exchangeAddress} target={"_blank"}>
+                {dapp.config.exchangeAddress}
+              </a>
             </StyledStatusSectionText>
           </StyledStatusSection>
           {_.map([1, 2], (i, k) => (
             <StyledStatusSection key={i}>
               <StyledStatusSectionTitle>
-                {status!.backupTakersStatus[k].status ? "✅" : "⚠️"} Backup Taker {i}:
+                {status!.backupTakersStatus[k].status ? "✅" : "⚠️⚠️⚠️"} Backup Taker {i}:
               </StyledStatusSectionTitle>
               <StyledStatusSectionText>uptime: {status!.backupTakersStatus[k].uptime}</StyledStatusSectionText>
               <StyledStatusSectionText>gas: {status!.backupTakersStatus[k].balances.join(" ")}</StyledStatusSectionText>
