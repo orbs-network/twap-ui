@@ -8,7 +8,6 @@ export { default as TimeSelector } from "./TimeSelector";
 export { default as TokenLogo } from "./TokenLogo";
 export { default as TokenName } from "./TokenName";
 export { default as Layout } from "./Layout";
-export { default as ChangeTokensOrder } from "./ChangeTokensOrder";
 export { default as LimitPrice } from "./LimitPrice";
 export { default as Tooltip } from "./Tooltip";
 export { default as IconButton } from "./IconButton";
