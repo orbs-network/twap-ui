@@ -3,27 +3,10 @@ import { Box, styled } from "@mui/system";
 import { Styles as TwapStyles } from "../..";
 import { Button, Card, SmallLabel, TokenLogo } from "../../components";
 
-
-
-
-
-
 export const StyledFlex = styled(TwapStyles.StyledRowFlex)({
   justifyContent: "space-between",
   fontSize: 14,
 });
-
-
-
-
-
-
-
-
-
-
-
-
 
 export const StyledTokenDisplay = styled(Box)({
   display: "flex",
@@ -43,14 +26,6 @@ export const StyledTokenDisplay = styled(Box)({
   "& .twap-text": {},
 });
 
-
-
-
-
-
-
-
-
 export const StyledContainer = styled(Card)({});
 
 export const StyledAccordion = styled(Accordion)({
@@ -64,12 +39,7 @@ export const StyledAccordion = styled(Accordion)({
     margin: "0!important",
     width: "100%",
   },
-  "& *": {
-    color: "white",
-  },
 });
-
-
 
 export const StyledSpace = styled(Box)({
   height: 20,
@@ -90,5 +60,3 @@ export const StyledPreview = styled(Box)({
     zoom: 0.85,
   },
 });
-
-

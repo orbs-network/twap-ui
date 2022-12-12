@@ -1,5 +1,21 @@
 import { Box, styled } from "@mui/system";
-import { Components, MakeGlobalStylesArgs, Styles as TwapStyles } from "@orbs-network/twap-ui";
+import { Components, StylesConfig, Styles as TwapStyles } from "@orbs-network/twap-ui";
+
+// Styles configuration
+export const stylesConfig: StylesConfig = {
+  iconsColor: "#60E6C5",
+  textColor: "white",
+  tooltipBackground: "rgba(32, 32, 34, 0.9)",
+  tooltipTextColor: "#60E6C5",
+  spinnerColor: "white",
+  containerBackground: "rgb(16, 23, 38)",
+  cardBackground: "#18202F",
+  progressBarColor: "#60E6C5",
+  progressBarTrackColor: "#373E55",
+  orderHistorySelectedTabBackground: "rgba(96, 230, 197, 0.26)",
+  orderHistoryTabColor: "white",
+  orderHistorySelectedTabColor: "rgb(96, 230, 197)",
+};
 
 export const Text = styled(TwapStyles.StyledText)({});
 
@@ -42,59 +58,26 @@ export const StyledTrade = styled(Box)({
   },
 });
 
-export const StyledPrice = styled(Box)(() => ({
-  width: "100%",
-  "& .twap-price": {
-    padding: 10,
-    borderRadius: 10,
-    gap: 10,
-  },
-  "& .twap-input": {
-    textAlign: "center",
-  },
-}));
 
-export const StyledSrcTokenPercentSelector = styled(Box)({
+
+export const StyledPercentSelector = styled(Box)({
   display: "flex",
   alignItems: "center",
   gap: 5,
   width: "100%",
 });
 
-export const StyledPercentBtn = styled("button")({
-  height: 22,
-  width: "25%",
-  border: "unset",
-  borderRadius: 4,
-  cursor: "pointer",
-  transition: "0.2s all",
-  background: "rgb(55, 65, 81)",
-  "&:hover": {
-    background: "rgba(100, 221, 192, 0.15)",
-    color: "rgb(96, 230, 197)",
-  },
-});
 
 export const StyledIntervalTimeSelect = styled(Box)({
   flex: 1,
 });
-export const StyledTokenSelect = styled("button")(() => ({
-  background: "transparent",
-  border: "unset",
-  padding: "6px",
-  borderRadius: 2,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  gap: 5,
-  marginLeft: 10,
-}));
+
 
 export const StyledTokenDisplay = styled(TwapStyles.StyledRowFlex)({
   alignItems: "center",
   gap: 6,
   width: "fit-content",
-  fontFamily:'inherit'
+  fontFamily: "inherit",
 });
 
 export const StyledFlexStart = styled(TwapStyles.StyledRowFlex)({
@@ -135,19 +118,6 @@ export const StyledTokenPanel = styled(Box)({
   },
 });
 
-export const StyledMarketPrice = styled(Box)({
-  "& .twap-card": {
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    background: "#0D1321",
-    paddingBottom: 5,
-  },
-  "& .title": {
-    fontSize: 13,
-    opacity: 0.8,
-  },
-});
-
 export const StyledTradeSize = styled(Box)({
   maxWidth: "80%",
   display: "flex",
@@ -178,7 +148,6 @@ export const StyledSummaryRow = styled(TwapStyles.StyledRowFlex)({
   },
 });
 
-
 export const StyledTotalTradesInput = styled(Components.NumericInput)({
   width: 70,
   flex: "unset!important",
@@ -197,70 +166,109 @@ export const StyledTokenOrderPreviewAmount = styled(Components.SmallLabel)({
   fontSize: 19,
 });
 
-// Styles configuration
-export const globalStylesConfig: MakeGlobalStylesArgs = {
-  iconsColor: "#60E6C5",
-  textColor: "white",
-  tooltipBackground: "rgba(32, 32, 34, 0.9)",
-  tooltipTextColor: "#60E6C5",
-  spinnerColor: "white",
-  containerBackground: "rgb(16, 23, 38)",
-  cardBackground: "#18202F",
-  progressBarColor: "#60E6C5",
-  progressBarTrackColor: "#373E55",
-  orderHistorySelectedTabBackground: "rgba(96, 230, 197, 0.26)",
-  orderHistoryTabColor: "white",
-  orderHistorySelectedTabColor: "rgb(96, 230, 197)",
-};
-
 export const configureStyles = () => {
   return {
+    ".twap-limit-price": {
+      width: "100%",
+      ".twap-price": {
+        background: "#0D1321",
+        padding: 10,
+        borderRadius: 10,
+        gap: 10,
+      },
+      ".twap-input": {
+        textAlign: "center" as const,
+      },
+    },
+    ".twap-percent-button": {
+      height: 22,
+      width: "25%",
+      border: "unset",
+      borderRadius: 4,
+      cursor: "pointer",
+      transition: "0.2s all",
+      background: "rgb(55, 65, 81)",
+      "&:hover": {
+        background: "rgba(100, 221, 192, 0.15)",
+        color: "rgb(96, 230, 197)",
+      },
+    },
+    ".twap-token-select": {
+      background: "transparent",
+      border: "unset",
+      padding: "6px",
+      borderRadius: 2,
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      marginLeft: 10,
+    },
+    ".twap-market-price": {
+      "& .twap-card": {
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
+        background: "#0D1321",
+        paddingBottom: 5,
+      },
+      "& .title": {
+        fontSize: 13,
+        opacity: 0.8,
+      },
+    },
     ".twap-icon": {
       "& *": {
-        color: `${globalStylesConfig.iconsColor}!important`,
+        color: `${stylesConfig.iconsColor}!important`,
       },
     },
     ".twap-tooltip": {
       "& .MuiTooltip-tooltip": {
-        backgroundColor: globalStylesConfig.tooltipBackground,
+        backgroundColor: stylesConfig.tooltipBackground,
         borderRadius: "4px",
-        color: globalStylesConfig.tooltipTextColor,
+        color: stylesConfig.tooltipTextColor,
         fontSize: 14,
         fontFamily: "inherit",
         lineHeight: 1.5,
         maxWidth: 400,
         padding: 10,
         "& *": {
-          color: globalStylesConfig.tooltipTextColor,
+          color: stylesConfig.tooltipTextColor,
           fontSize: 14,
         },
       },
       "& .MuiTooltip-arrow": {
-        color: globalStylesConfig.tooltipBackground,
+        color: stylesConfig.tooltipBackground,
       },
     },
     ".twap-loader": {
-      backgroundColor: `${globalStylesConfig.skeletonLoaderBackground || "rgba(255,255,255, 0.1)"}!important`,
+      backgroundColor: `${stylesConfig.skeletonLoaderBackground || "rgba(255,255,255, 0.1)"}!important`,
     },
     ".twap-modal": {
-       background:'rgba(0,0,0, 0.8)',
-      fontFamily:'Jost',
-      color: globalStylesConfig.textColor,
+      background: "rgba(0,0,0, 0.8)",
+      fontFamily: "Jost",
+      color: stylesConfig.textColor,
       "& *": {
-        color: globalStylesConfig.textColor,
+        color: stylesConfig.textColor,
       },
     },
     ".twap-button-loader": {
-      color: globalStylesConfig.spinnerColor,
+      color: stylesConfig.spinnerColor,
+    },
+    ".twap-time-selector": {
+      "& input": {
+        "&::placeholder": {
+          color: "rgba(255,255,255, 0.5)!important",
+        },
+      },
     },
     ".twap-time-selector-list": {
-      background: globalStylesConfig.containerBackground,
-      border: `1px solid ${globalStylesConfig.borderColor || "transparent"}`,
+      background: stylesConfig.containerBackground,
+      border: `1px solid ${stylesConfig.borderColor || "transparent"}`,
       right: 0,
     },
     ".twap-card": {
       padding: 12,
-      background: globalStylesConfig.cardBackground,
+      background: stylesConfig.cardBackground,
       borderRadius: "0.375rem",
     },
     ".twap-container": {
@@ -268,7 +276,7 @@ export const configureStyles = () => {
       gap: 15,
       marginTop: 20,
       "*": {
-        color: globalStylesConfig.textColor,
+        color: stylesConfig.textColor,
         fontFamily: "inherit!important",
       },
     },
@@ -278,13 +286,13 @@ export const configureStyles = () => {
     },
     ".twap-slider": {
       "& .MuiSlider-valueLabel": {
-        background: globalStylesConfig.tooltipBackground,
+        background: stylesConfig.tooltipBackground,
       },
       "& .MuiSlider-valueLabelLabel": {
-        color: globalStylesConfig.tooltipTextColor,
+        color: stylesConfig.tooltipTextColor,
       },
       "& .MuiSlider-thumb": {
-        background: globalStylesConfig.iconsColor,
+        background: stylesConfig.iconsColor,
       },
     },
     ".twap-change-order": {
@@ -303,40 +311,42 @@ export const configureStyles = () => {
         background: "white",
       },
       "& .MuiSwitch-track": {
-        background: `${globalStylesConfig.containerBackground}!important`,
+        background: `${stylesConfig.containerBackground}!important`,
         opacity: "1!important",
       },
       "& .Mui-checked+.MuiSwitch-track": {
-        backgroundColor: `${globalStylesConfig.containerBackground}!important`,
+        backgroundColor: `${stylesConfig.containerBackground}!important`,
         opacity: "1!important",
       },
       "& .Mui-checked .MuiSwitch-thumb": {
-        background: globalStylesConfig.iconsColor,
+        background: stylesConfig.iconsColor,
       },
     },
     ".twap-order": {
       border: "1px solid rgb(55, 65, 81)",
-
+      "& .twap-order-expanded-colored": {
+        background: "rgb(60, 64, 78)",
+      },
       "& .twap-order-progress": {
         "&::after": {
-          background: `${globalStylesConfig.progressBarTrackColor}!important`,
+          background: `${stylesConfig.progressBarTrackColor}!important`,
         },
         "& .MuiLinearProgress-bar": {
-          background: globalStylesConfig.progressBarColor,
+          background: stylesConfig.progressBarColor,
         },
       },
     },
     ".twap-orders-header": {
-      "& .MuiTabs-root": {
+      "& .twap-orders-header-tabs": {
         "& .MuiTabs-indicator": {
-          backgroundColor: globalStylesConfig.orderHistorySelectedTabBackground,
+          backgroundColor: stylesConfig.orderHistorySelectedTabBackground,
         },
         "& .MuiButtonBase-root": {
-          color: globalStylesConfig.orderHistoryTabColor,
+          color: stylesConfig.orderHistoryTabColor,
           fontWeight: 400,
         },
         "& .Mui-selected": {
-          color: globalStylesConfig.orderHistorySelectedTabColor,
+          color: stylesConfig.orderHistorySelectedTabColor,
         },
       },
     },
@@ -375,10 +385,9 @@ export const configureStyles = () => {
         fontSize: 16,
       },
     },
-   
 
     ".twap-modal-content": {
-      background: globalStylesConfig.containerBackground,
+      background: stylesConfig.containerBackground,
 
       maxHeight: "85vh",
       overflow: "auto",

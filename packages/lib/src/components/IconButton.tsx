@@ -6,7 +6,7 @@ import Tooltip from "./Tooltip";
 function IconButton({ children, tooltip, onClick, icon }: { children?: ReactNode; tooltip?: ReactElement | string; onClick: () => void; icon?: ReactElement }) {
   return (
     <Tooltip text={tooltip}>
-      <MuiIconButton onClick={onClick}>
+      <MuiIconButton onClick={onClick} className='twap-icon-btn'>
         {children}
         {icon && <Icon icon={icon} />}
       </MuiIconButton>

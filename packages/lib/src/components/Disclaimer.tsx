@@ -8,7 +8,7 @@ const Disclaimer = () => {
   const translations = useTwapContext().translations;
   const lib = useTwapStore((state) => state.lib);
   return (
-    <StyledTradeInfoExplanation>
+    <StyledTradeInfoExplanation className="twap-disclaimer">
       <StyledText>{translations.disclaimer1}</StyledText>
       <StyledText>{translations.disclaimer2}</StyledText>
       <StyledText>{translations.disclaimer3}</StyledText>
@@ -35,8 +35,8 @@ export default Disclaimer;
 const StyledTradeInfoExplanation = styled(Box)({
   maxHeight: 140,
   overflow: "auto",
-  paddingRight: 30,
   display: "flex",
   flexDirection: "column",
   gap: 10,
+  fontSize:'inherit'
 });

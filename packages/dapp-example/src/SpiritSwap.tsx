@@ -39,7 +39,7 @@ const TokenSelectModal = ({ isOpen, selectedToken, onSelect, onClose }: TokenSel
                 alt={token.symbol}
                 style={{
                   width: 30,
-                  height: 30
+                  height: 30,
                 }}
               />
               {token.symbol}

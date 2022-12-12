@@ -17,7 +17,7 @@ interface OrderTokenDisplayProps {
 export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix }: OrderTokenDisplayProps) => {
   return (
     <StyledTokenDisplay className={`twap-token-display ${className}`}>
-      <TwapStyles.StyledRowFlex style={{alignItems:'flex-start'}}>
+      <TwapStyles.StyledRowFlex style={{ alignItems: "flex-start" }}>
         <StyledTokenLogo logo={token?.logoUrl} />
         <TwapStyles.StyledColumnFlex gap={3} style={{ flex: 1, justifyContent: "flex-start" }}>
           <Typography className="twap-token-display-amount-and-symbol">
@@ -48,7 +48,6 @@ export function OrderUsdValue({ usdValue, prefix = "≈" }: OrderUsdValueProps) 
 
 const StyledTokenDisplayUsd = styled(SmallLabel)({
   fontSize: 14,
-  color: "white",
 });
 
 const StyledTokenDisplay = styled(TwapStyles.StyledColumnFlex)({
@@ -56,10 +55,9 @@ const StyledTokenDisplay = styled(TwapStyles.StyledColumnFlex)({
   alignItems: "flex-start",
   width: "fit-content",
   fontSize: 18,
-  color: "white",
   "& .twap-token-display-amount-and-symbol": {
-    fontSize:'inherit'
-  }
+    fontSize: "inherit",
+  },
 });
 
 const StyledTokenLogo = styled(TokenLogo)({

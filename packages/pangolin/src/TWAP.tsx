@@ -1,19 +1,19 @@
 import { GlobalStyles } from "@mui/material";
-import { styled } from "@mui/system";
+import { Box, styled } from "@mui/system";
 import { Components, hooks, Translations, TwapAdapter, TWAPProps, useTwapContext, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode, useCallback } from "react";
+import { memo, ReactNode, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
 import { Configs, TokenData } from "@orbs-network/twap";
-import { AdapterContextProvider, parseToken, useAdapterContext, useParseTokenList, useTokensFromDapp } from "./hooks";
+import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles, useParseTokenList, useTokensFromDapp } from "./hooks";
 const TWAP = (props: TWAPProps) => {
   const { account } = props;
   const tokenList = useParseTokenList(props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, account ? tokenList : undefined);
-
+  const globalStyles = useGlobalStyles(true);
   const memoizedConnect = useCallback(() => {
     props.connect?.();
   }, []);
@@ -28,9 +28,9 @@ const TWAP = (props: TWAPProps) => {
       provider={props.provider}
       account={props.account}
     >
-      <GlobalStyles styles={AdapterStyles.globalStyle as any} />
+      <GlobalStyles styles={globalStyles as any} />
       <AdapterContextProvider value={{ TokenSelectModal: props.TokenSelectModal }}>
-        <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
+        <div className="twap-container">
           <SrcTokenPanel />
           <ChangeTokensOrder />
           <DstTokenPanel />
@@ -54,18 +54,14 @@ const MarketPrice = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <AdapterStyles.StyledMarketPrice>
-      <AdapterStyles.StyledCard>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
-          {ready ? (
-            <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
-          ) : (
-            <AdapterStyles.Text>-</AdapterStyles.Text>
-          )}
-        </TwapStyles.StyledRowFlex>
-      </AdapterStyles.StyledCard>
-    </AdapterStyles.StyledMarketPrice>
+    <TwapStyles.StyledRowFlex justifyContent="space-between" className="twap-market-price">
+      <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
+      {ready ? (
+        <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
+      ) : (
+        <AdapterStyles.Text>-</AdapterStyles.Text>
+      )}
+    </TwapStyles.StyledRowFlex>
   );
 };
 
@@ -102,11 +98,11 @@ const DstTokenPanel = () => (
 const ChangeTokensOrder = () => {
   const switchTokens = hooks.useSwitchTokens();
   return (
-    <AdapterStyles.StyledChangeOrder>
+    <Box className='twap-change-tokens-order'>
       <Components.IconButton onClick={switchTokens}>
-        <AdapterStyles.StyledIcon icon={<HiOutlineSwitchVertical />} />
+        <Components.Icon icon={<HiOutlineSwitchVertical />} />
       </Components.IconButton>
-    </AdapterStyles.StyledChangeOrder>
+    </Box>
   );
 };
 
@@ -122,36 +118,38 @@ const TradeSize = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <AdapterStyles.StyledTrade>
-      <AdapterStyles.StyledSliderContainer gap={10}>
-        <Components.Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Components.Label>
+    <Components.Card>
+      <AdapterStyles.StyledTrade>
+        <AdapterStyles.StyledSliderContainer gap={10}>
+          <Components.Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Components.Label>
 
-        {showChunksSelect ? (
-          <>
-            <AdapterStyles.StyledSlider>
-              <Components.Slider maxTrades={maxPossibleChunks} value={totalChunks} onChange={onTotalChunksChange} />
-            </AdapterStyles.StyledSlider>
-            <Components.Tooltip text={translations.sliderMinSizeTooltip}>
-              <AdapterStyles.StyledTotalTradesInput
-                placeholder="0"
-                value={totalChunks}
-                decimalScale={0}
-                maxValue={maxPossibleChunks.toString()}
-                onChange={(value) => onTotalChunksChange(Number(value))}
-              />
-            </Components.Tooltip>
-          </>
-        ) : (
-          <AdapterStyles.Text>-</AdapterStyles.Text>
-        )}
-      </AdapterStyles.StyledSliderContainer>
-      <AdapterStyles.StyledTradeSize>
-        <Components.Label fontSize={14} tooltipText={translations.tradeSizeTooltip}>
-          {translations.tradeSize}: <Components.NumberDisplay value={chunksAmount} />
-        </Components.Label>
-        {token && <TokenDisplay logo={token?.logoUrl} name={token?.symbol} />}
-      </AdapterStyles.StyledTradeSize>
-    </AdapterStyles.StyledTrade>
+          {showChunksSelect ? (
+            <>
+              <AdapterStyles.StyledSlider>
+                <Components.Slider maxTrades={maxPossibleChunks} value={totalChunks} onChange={onTotalChunksChange} />
+              </AdapterStyles.StyledSlider>
+              <Components.Tooltip text={translations.sliderMinSizeTooltip}>
+                <AdapterStyles.StyledTotalTradesInput
+                  placeholder="0"
+                  value={totalChunks}
+                  decimalScale={0}
+                  maxValue={maxPossibleChunks.toString()}
+                  onChange={(value) => onTotalChunksChange(Number(value))}
+                />
+              </Components.Tooltip>
+            </>
+          ) : (
+            <AdapterStyles.Text>-</AdapterStyles.Text>
+          )}
+        </AdapterStyles.StyledSliderContainer>
+        <AdapterStyles.StyledTradeSize>
+          <Components.Label fontSize={14} tooltipText={translations.tradeSizeTooltip}>
+            {translations.tradeSize}: <Components.NumberDisplay value={chunksAmount} />
+          </Components.Label>
+          {token && <TokenDisplay logo={token.logoUrl} name={token.symbol} />}
+        </AdapterStyles.StyledTradeSize>
+      </AdapterStyles.StyledTrade>
+    </Components.Card>
   );
 };
 
@@ -160,11 +158,11 @@ const LimitPriceDisplay = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <AdapterStyles.StyledPrice>
+    <Components.Card className='twap-limit-price'>
       <TwapStyles.StyledColumnFlex>
         <AdapterStyles.StyledFlexStart>
           <Components.Tooltip text={isLoading ? `${translations.loading}...` : warning}>
-            <AdapterStyles.StyledSwitch disabled={!!warning || isLoading} value={isLimitOrder} onChange={onToggleLimit} />
+            <Components.Switch disabled={!!warning || isLoading} value={isLimitOrder} onChange={onToggleLimit} />
           </Components.Tooltip>
           <Components.Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{translations.limitPrice}</Components.Label>
         </AdapterStyles.StyledFlexStart>
@@ -172,7 +170,7 @@ const LimitPriceDisplay = () => {
           <Components.LimitPrice onChange={onChange} toggleInverted={toggleInverted} price={limitPrice} leftToken={leftToken} rightToken={rightToken} placeholder="0" />
         )}
       </TwapStyles.StyledColumnFlex>
-    </AdapterStyles.StyledPrice>
+    </Components.Card>
   );
 };
 
@@ -184,10 +182,10 @@ const MaxDuration = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <AdapterStyles.StyledColoredFlex gap={10}>
+    <Components.Card>
       <Components.Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Components.Label>
       <Components.TimeSelector value={duration} onChange={onChange} />
-    </AdapterStyles.StyledColoredFlex>
+    </Components.Card>
   );
 };
 
@@ -201,17 +199,17 @@ const TradeInterval = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <AdapterStyles.StyledColoredFlex gap={10}>
+    <Components.Card>
       <Components.Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Components.Label>
       <AdapterStyles.StyledIntervalTimeSelect>
         <Components.TimeSelector disabled={!customFillDelayEnabled} onChange={onChange} value={fillDelay} />
       </AdapterStyles.StyledIntervalTimeSelect>
       {!customFillDelayEnabled && (
         <Components.IconButton tooltip={translations.customIntervalTooltip} onClick={onCustomFillDelayClick}>
-          <AdapterStyles.StyledIcon icon={<AiFillEdit />} />
+          <Components.Icon icon={<AiFillEdit />} />
         </Components.IconButton>
       )}
-    </AdapterStyles.StyledColoredFlex>
+    </Components.Card>
   );
 };
 
@@ -226,7 +224,7 @@ const TokenDisplay = ({ logo, name }: { logo?: string; name?: string }) => {
 
 interface TokenPanelProps {
   children?: ReactNode;
-  isSrcToken?: boolean;
+  isSrcToken: boolean;
 }
 
 interface TokenSelectProps {
@@ -252,44 +250,46 @@ const TokenSelect = (props: TokenSelectProps) => {
 };
 
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
-  const { toggleTokenList, onTokenSelect, tokenListOpen, inputWarning, amountPrefix, disabled, selectTokenWarning, logo, symbol, onChange, value, decimalScale } =
-    hooks.useTokenPanel(isSrcToken);
+  const [tokenListOpen, setTokenListOpen] = useState(false);
+
+  const { onTokenSelect, inputWarning, amountPrefix, disabled, selectTokenWarning, token, onChange, value, decimalScale } = hooks.useTokenPanel(isSrcToken);
   const { translations } = useTwapContext();
 
   const marketPrice = hooks.useMarketPrice().marketPrice;
 
   const onOpen = () => {
-    if (!selectTokenWarning) toggleTokenList(true);
+    if (!selectTokenWarning) setTokenListOpen(true);
   };
 
   const onTokenSelected = useCallback((token: any) => {
+    setTokenListOpen(false);
     onTokenSelect(parseToken(token));
   }, []);
 
   const onClose = useCallback(() => {
-    toggleTokenList(false);
+    setTokenListOpen(false);
   }, []);
 
   return (
     <>
       <TokenSelect isOpen={tokenListOpen} onClose={onClose} onCurrencySelect={onTokenSelected} selectedCurrency={undefined} otherSelectedCurrency={undefined} />
 
-      <AdapterStyles.StyledTokenPanel>
-        <TwapStyles.StyledColumnFlex>
+      <AdapterStyles.StyledTokenPanel issrc={isSrcToken}>
+        <TwapStyles.StyledColumnFlex gap={2}>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <AdapterStyles.StyledPanelLabel>{isSrcToken ? translations.from : translations.to}</AdapterStyles.StyledPanelLabel>
+            <Components.SmallLabel>{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.SmallLabel>
             {children}
             {!isSrcToken && marketPrice !== "0" && (
               <Components.Tooltip text={marketPrice}>
                 <AdapterStyles.Text>
-                  Price <Components.NumberDisplay value={marketPrice} /> {symbol}
+                  Price <Components.NumberDisplay value={marketPrice} /> {token?.symbol}
                 </AdapterStyles.Text>
               </Components.Tooltip>
             )}
           </TwapStyles.StyledRowFlex>
-          <AdapterStyles.StyledColoredFlex gap={20} style={{ borderBottomLeftRadius: !isSrcToken ? "0px" : "", borderBottomRightRadius: !isSrcToken ? "0px" : "" }}>
+          <Components.Card>
             <Components.Tooltip text={inputWarning}>
-              <AdapterStyles.StyledNumbericInput
+              <Components.NumericInput
                 decimalScale={decimalScale}
                 prefix={amountPrefix}
                 loading={false}
@@ -300,16 +300,16 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
               />
             </Components.Tooltip>
             <Components.Tooltip text={selectTokenWarning}>
-              <AdapterStyles.StyledTokenSelect onClick={onOpen} style={{ background: symbol ? "" : "rgb(255, 200, 0)" }}>
-                {symbol ? (
-                  <TokenDisplay logo={logo} name={symbol} />
+              <button className="twap-token-select" onClick={onOpen} style={{ background: token?.symbol ? "" : "rgb(255, 200, 0)" }}>
+                {token ? (
+                  <TokenDisplay logo={token?.logoUrl} name={token?.symbol} />
                 ) : (
-                  <AdapterStyles.StyledOneLineText style={{ color: symbol ? "" : "black", fontWeight: 500 }}>{translations.selectToken}</AdapterStyles.StyledOneLineText>
+                  <AdapterStyles.StyledOneLineText style={{ color: "black", fontWeight: 500 }}>{translations.selectToken}</AdapterStyles.StyledOneLineText>
                 )}
-                <AdapterStyles.StyledIcon icon={<IoIosArrowDown size={20} style={{ fill: symbol ? "" : "black" }} />} />
-              </AdapterStyles.StyledTokenSelect>
+                <Components.Icon icon={<IoIosArrowDown size={20} style={{ fill: token ? "" : "black" }} />} />
+              </button>
             </Components.Tooltip>
-          </AdapterStyles.StyledColoredFlex>
+          </Components.Card>
         </TwapStyles.StyledColumnFlex>
       </AdapterStyles.StyledTokenPanel>
     </>
@@ -319,9 +319,9 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
 const SubmitButton = ({ className = "" }: { className?: string }) => {
   const { loading, text, onClick, disabled } = hooks.useSubmitButton();
   return (
-    <AdapterStyles.StyledButton className={className} loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
+    <Components.Button className={className} loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
       {text}
-    </AdapterStyles.StyledButton>
+    </Components.Button>
   );
 };
 
@@ -349,7 +349,7 @@ const OrderSummary = () => {
 
   return (
     <>
-      <AdapterStyles.StyledOrderSummary open={showConfirmation} onClose={() => setShowConfirmation(false)}>
+      <Components.Modal open={showConfirmation} onClose={() => setShowConfirmation(false)}>
         <AdapterStyles.StyledOrderSummaryContent>
           <TwapStyles.StyledColumnFlex gap={20}>
             <TwapStyles.StyledColumnFlex gap={20}>
@@ -357,19 +357,16 @@ const OrderSummary = () => {
               <TokenOrderPreview isLimitOrder={isLimitOrder} title={translations.to} amount={getDstAmountUi()} usdPrice={getDstAmountUsdUi()} token={dstToken} />
               <OrderConfirmationLimitPrice />
 
-              <AdapterStyles.StyledColoredFlex className="twap-summary-breakdown">
+              <Components.Card className="twap-summary-breakdown">
                 <TwapStyles.StyledColumnFlex gap={20}>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
-                    <Components.Label tooltipText={translations.confirmationDeadlineTooltip}>{translations.expiration}</Components.Label>
+                  <SummaryRow tooltip={translations.confirmationDeadlineTooltip} label={translations.expiration}>
                     <AdapterStyles.Text>{getDeadlineUi()}</AdapterStyles.Text>
-                  </TwapStyles.StyledRowFlex>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
-                    <Components.Label tooltipText={translations.confirmationOrderType}>{translations.orderType}</Components.Label>
+                  </SummaryRow>
+                  <SummaryRow tooltip={translations.confirmationOrderType} label={translations.orderType}>
                     <AdapterStyles.Text>{isLimitOrder ? translations.limitOrder : translations.marketOrder}</AdapterStyles.Text>
-                  </TwapStyles.StyledRowFlex>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
-                    <Components.Label tooltipText={translations.confirmationTradeSizeTooltip}>{translations.tradeSize}</Components.Label>
-                    <TwapStyles.StyledRowFlex justifyContent="flex-end">
+                  </SummaryRow>
+                  <SummaryRow tooltip={translations.confirmationTradeSizeTooltip} label={translations.tradeSize}>
+                    <TwapStyles.StyledRowFlex>
                       <Components.TokenName name={srcToken?.symbol} />
                       <Components.TokenLogo logo={srcToken?.logoUrl} />
                       <AdapterStyles.Text>
@@ -378,19 +375,17 @@ const OrderSummary = () => {
                         </Components.Tooltip>
                       </AdapterStyles.Text>
                     </TwapStyles.StyledRowFlex>
-                  </TwapStyles.StyledRowFlex>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
-                    <Components.Label tooltipText={translations.confirmationTotalTradesTooltip}>{translations.totalTrades}</Components.Label>
+                  </SummaryRow>
+                  <SummaryRow tooltip={translations.confirmationTotalTradesTooltip} label={translations.totalTrades}>
                     <AdapterStyles.Text>{chunks}</AdapterStyles.Text>
-                  </TwapStyles.StyledRowFlex>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
-                    <Components.Label tooltipText={translations.confirmationtradeIntervalTooltip}>{translations.tradeInterval}</Components.Label>
+                  </SummaryRow>
+                  <SummaryRow tooltip={translations.confirmationtradeIntervalTooltip} label={translations.tradeInterval}>
                     <AdapterStyles.Text>{getFillDelayUi(translations)}</AdapterStyles.Text>
-                  </TwapStyles.StyledRowFlex>
-                  <TwapStyles.StyledRowFlex justifyContent="space-between">
-                    <Components.Label tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
-                      {translations.minReceivedPerTrade}:
-                    </Components.Label>
+                  </SummaryRow>
+                  <SummaryRow
+                    tooltip={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}
+                    label={`${translations.minReceivedPerTrade}:`}
+                  >
                     <TwapStyles.StyledRowFlex justifyContent="flex-end">
                       <Components.TokenName name={dstToken?.symbol} />
                       <Components.TokenLogo logo={dstToken?.logoUrl} />
@@ -404,34 +399,47 @@ const OrderSummary = () => {
                         )}
                       </AdapterStyles.Text>
                     </TwapStyles.StyledRowFlex>
-                  </TwapStyles.StyledRowFlex>
+                  </SummaryRow>
                 </TwapStyles.StyledColumnFlex>
-              </AdapterStyles.StyledColoredFlex>
+              </Components.Card>
               <TradeInfoDetailsDisplay />
             </TwapStyles.StyledColumnFlex>
-            <TwapStyles.StyledColumnFlex gap={12}>
-              <TwapStyles.StyledRowFlex gap={5}>
-                <Components.SmallLabel>{translations.acceptDisclaimer}</Components.SmallLabel>
-                <AdapterStyles.StyledSwitch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
-              </TwapStyles.StyledRowFlex>
-              <AdapterStyles.Text>{translations.outputWillBeSentTo}</AdapterStyles.Text>
-              <AdapterStyles.Text>{lib?.maker}</AdapterStyles.Text>
-              <SubmitButton />
-            </TwapStyles.StyledColumnFlex>
+            <Components.Card>
+              <TwapStyles.StyledColumnFlex gap={12}>
+                <TwapStyles.StyledRowFlex gap={5} justifyContent="flex-start">
+                  <Components.SmallLabel>{translations.acceptDisclaimer}</Components.SmallLabel>
+                  <Components.Switch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
+                </TwapStyles.StyledRowFlex>
+                <AdapterStyles.Text style={{ textAlign: "center", width: "100%" }}>{translations.outputWillBeSentTo}</AdapterStyles.Text>
+                <AdapterStyles.Text style={{ textAlign: "center", width: "100%" }}>{lib?.maker}</AdapterStyles.Text>
+              </TwapStyles.StyledColumnFlex>
+            </Components.Card>
+            <SubmitButton />
           </TwapStyles.StyledColumnFlex>
         </AdapterStyles.StyledOrderSummaryContent>
-      </AdapterStyles.StyledOrderSummary>
+      </Components.Modal>
     </>
+  );
+};
+
+
+
+const SummaryRow = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
+  return (
+    <AdapterStyles.StyledSummaryRow>
+      <Components.Label tooltipText={tooltip}>{label}</Components.Label>
+      <Box className='twap-summary-row-children'>{children}</Box>
+    </AdapterStyles.StyledSummaryRow>
   );
 };
 
 const TradeInfoDetailsDisplay = () => {
   return (
-    <AdapterStyles.StyledColoredFlex>
+    <Components.Card>
       <TwapStyles.StyledColumnFlex gap={10}>
         <Components.Disclaimer />
       </TwapStyles.StyledColumnFlex>
-    </AdapterStyles.StyledColoredFlex>
+    </Components.Card>
   );
 };
 
@@ -469,11 +477,11 @@ const TokenOrderPreview = ({
   token?: TokenData;
 }) => {
   return (
-    <AdapterStyles.StyledColoredFlex>
+    <Components.Card>
       <TwapStyles.StyledColumnFlex gap={10}>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Label>{title}</Components.Label>
-          <AdapterStyles.StyledUSD value={usdPrice} />
+          <Components.USD value={usdPrice} />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <TokenDisplay name={token?.symbol} logo={token?.logoUrl} />
@@ -482,7 +490,7 @@ const TokenOrderPreview = ({
           </StyledTokenOrderPreviewAmount>
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>
-    </AdapterStyles.StyledColoredFlex>
+    </Components.Card>
   );
 };
 

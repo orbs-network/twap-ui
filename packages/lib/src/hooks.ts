@@ -314,13 +314,11 @@ export const useTokenPanel = (isSrc?: boolean) => {
     wrongNetwork: state.wrongNetwork,
   }));
   const { translations } = useTwapContext();
-  const [tokenListOpen, setTokenListOpen] = useState(false);
   const { selectToken, token, onChange, amount, balance, usdValue, setUsd, setBalance } = isSrc ? srcTokenValues : dstTokenValues;
   const loadingState = useLoadingState();
 
   const onTokenSelect = useCallback((token: TokenData) => {
     selectToken(token);
-    setTokenListOpen(false);
     setUsd(BN(0));
     setBalance(BN(0));
   }, []);
@@ -334,9 +332,6 @@ export const useTokenPanel = (isSrc?: boolean) => {
     }
   }, [maker, translations, wrongNetwork]);
 
-  const toggleTokenList = useCallback((value: boolean) => {
-    setTokenListOpen(value);
-  }, []);
 
   const loaders = useMemo(() => {
     const usdLoading = isSrc ? loadingState.srcUsdLoading : loadingState.dstUsdLoading;
@@ -351,17 +346,13 @@ export const useTokenPanel = (isSrc?: boolean) => {
   }, [loadingState, amount, isSrc]);
 
   return {
-    address: token?.address,
-    symbol: token?.symbol,
-    logo: token?.logoUrl,
+    token,
     value: amount,
     onChange,
     balance,
     disabled: !isSrc || !maker || !token,
     usdValue,
     onTokenSelect,
-    tokenListOpen,
-    toggleTokenList,
     amountPrefix: isSrc ? "" : isLimitOrder ? "≥" : "~",
     inputWarning: !isSrc ? undefined : !token ? translations.selectTokens : undefined,
     selectTokenWarning,

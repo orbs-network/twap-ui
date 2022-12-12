@@ -7,8 +7,6 @@ import { useEagerlyConnect, useDisconnectWallet } from "./hooks";
 import { useCallback } from "react";
 import { dapps, defaultDapp } from "./config";
 
-
-
 function App() {
   const resetState = store.useTwapStore((state) => state.reset);
   const navigate = useNavigate();

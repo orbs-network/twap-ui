@@ -84,5 +84,6 @@
   "balance": "Balance",
   "selectToken": "Select token",
   "loading": "Loading",
-  "progress":"progress"
+  "progress": "progress",
+  "estimated":"estimated"
 }

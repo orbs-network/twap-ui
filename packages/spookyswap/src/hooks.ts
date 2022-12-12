@@ -4,6 +4,7 @@ import _ from "lodash";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { SpookySwapTWAPProps } from ".";
 import Web3 from "web3";
+import { configureStyles } from "./styles";
 export const useGetProvider = (getProvider: () => any, account?: string) => {
   return useMemo(() => {
     return getProvider();
@@ -82,3 +83,6 @@ const AdapterContext = createContext({} as AdapterContextProps);
 export const AdapterContextProvider = AdapterContext.Provider;
 
 export const useAdapterContext = () => useContext(AdapterContext);
+export const useGlobalStyles = (darkMode: boolean) => {
+  return configureStyles(darkMode);
+};

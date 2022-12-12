@@ -5,6 +5,7 @@ import _ from "lodash";
 import { useMemo, useEffect, useRef, createContext, useContext } from "react";
 import { PangolinTWAPProps } from ".";
 import Web3 from "web3";
+import { configureStyles } from "./styles";
 
 const nativeToken: TokenData = {
   decimals: 18,
@@ -75,3 +76,8 @@ export const usePrepareAdapterContextProps = (props: PangolinTWAPProps) => {
 const AdapterContext = createContext({} as AdapterContextProps);
 export const AdapterContextProvider = AdapterContext.Provider;
 export const useAdapterContext = () => useContext(AdapterContext);
+
+
+export const useGlobalStyles = (darkMode: boolean) => {
+  return configureStyles(darkMode);
+};

@@ -1,10 +1,9 @@
 import { TokenData } from "@orbs-network/twap";
-import { MakeGlobalStylesArgs, store, Styles as TwapStyles } from "@orbs-network/twap-ui";
+import {  store } from "@orbs-network/twap-ui";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { SpiritSwapTWAPProps } from ".";
 import _ from "lodash";
 import Web3 from "web3";
-import { GlobalStylesProps } from "@mui/system";
 import { configureStyles } from "./styles";
 export const useGetProvider = (getProvider: () => any, account?: string) => {
   return useMemo(() => getProvider(), [account]);
@@ -81,7 +80,6 @@ const AdapterContext = createContext({} as AdapterContextProps);
 export const AdapterContextProvider = AdapterContext.Provider;
 
 export const useAdapterContext = () => useContext(AdapterContext);
-
 
 export const useGlobalStyles = () => {
   return configureStyles();

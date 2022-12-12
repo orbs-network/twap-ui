@@ -5,4 +5,3 @@ function TokenName({ name }: { name?: string }) {
 }
 
 export default TokenName;
-

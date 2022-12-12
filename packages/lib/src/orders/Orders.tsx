@@ -30,9 +30,16 @@ function Orders() {
           </Label>
           <StyledOdnpButton />
         </StyledHeaderTop>
-        <StyledTabs value={selectedTab} onChange={handleChange}>
+        <StyledTabs className="twap-orders-header-tabs" value={selectedTab} onChange={handleChange}>
           {_.keys(Status).map((key, index) => {
-            return <StyledTab key={index} label={`${orders[key] ? orders[key]?.length : "0"} ${translations[key as keyof Translations]}`} {...a11yProps(index)} />;
+            return (
+              <StyledTab
+                className="twap-orders-header-tabs-tab"
+                key={index}
+                label={`${orders[key] ? orders[key]?.length : "0"} ${translations[key as keyof Translations]}`}
+                {...a11yProps(index)}
+              />
+            );
           })}
         </StyledTabs>
       </StyledHeader>
@@ -104,6 +111,7 @@ const StyledContainer = styled(Box)({
 
   "& *": {
     fontFamily: "inherit",
+    color:'inherit'
   },
 });
 const StyledHeaderTop = styled(Box)({

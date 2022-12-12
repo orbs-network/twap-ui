@@ -84,6 +84,7 @@ export interface Translations {
   sliderMinSizeTooltip: string;
   loading: string;
   progress: string;
+  estimated: string
 }
 
 interface BaseProps {
@@ -136,8 +137,7 @@ export interface InitLibProps {
 
 export type OrderUI = ReturnType<typeof parseOrderUi>;
 
-
-export interface MakeGlobalStylesArgs {
+export interface StylesConfig {
   textColor: string;
   iconsColor: string;
   tooltipBackground: string;

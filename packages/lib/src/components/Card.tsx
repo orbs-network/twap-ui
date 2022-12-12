@@ -1,8 +1,12 @@
 import { Box, styled } from "@mui/system";
-import { ReactNode } from "react";
+import { CSSProperties, ReactNode } from "react";
 
-const Card = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  return <StyledContainer className={`twap-card ${className}`}>{children}</StyledContainer>;
+const Card = ({ children, className = "", style = {} }: { children: ReactNode; className?: string, style?: CSSProperties }) => {
+  return (
+    <StyledContainer style={style} className={`twap-card ${className}`}>
+      {children}
+    </StyledContainer>
+  );
 };
 
 export default Card;

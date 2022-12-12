@@ -27,7 +27,7 @@ export default SmallLabel;
 
 const StyledChildren = styled(Typography)({
   fontSize: "inherit",
-  fontFamily:'inherit'
+  fontFamily: "inherit",
 });
 
 const StyledLoader = styled(Box)({

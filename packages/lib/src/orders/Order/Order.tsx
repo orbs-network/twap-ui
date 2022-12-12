@@ -41,7 +41,11 @@ export const StyledAccordionSummary = styled(AccordionSummary)({
   padding: 0,
 });
 
-const StyledContainer = styled(Card)({});
+const StyledContainer = styled(Card)({
+  "& *": {
+    color: "inherit!important",
+  },
+});
 
 const StyledAccordion = styled(Accordion)({
   width: "100%",
@@ -54,7 +58,7 @@ const StyledAccordion = styled(Accordion)({
     margin: "0!important",
     width: "100%",
   },
-  "& *": {
-    color: "white",
-  },
+  "& *":{
+    color:'inherit'
+  }
 });

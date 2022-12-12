@@ -4,7 +4,7 @@ import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as
 import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode, useCallback } from "react";
+import { memo, ReactNode, useCallback, useState } from "react";
 import * as AdapterStyles from "./styles";
 import { Configs, TokenData } from "@orbs-network/twap";
 import {
@@ -67,7 +67,7 @@ const MarketPrice = () => {
   const { toggleInverted, leftToken, rightToken, marketPrice, ready, loading } = hooks.useMarketPrice();
   const translations = useTwapContext().translations;
   return (
-    <AdapterStyles.StyledMarketPrice>
+    <Box className="twap-market-price">
       <Components.Card>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
@@ -78,7 +78,7 @@ const MarketPrice = () => {
           )}
         </TwapStyles.StyledRowFlex>
       </Components.Card>
-    </AdapterStyles.StyledMarketPrice>
+    </Box>
   );
 };
 
@@ -91,12 +91,12 @@ const SrcTokenPercentSelector = () => {
   };
 
   return (
-    <AdapterStyles.StyledSrcTokenPercentSelector>
-      <AdapterStyles.StyledPercentBtn onClick={() => onClick(0.25)}>25%</AdapterStyles.StyledPercentBtn>
-      <AdapterStyles.StyledPercentBtn onClick={() => onClick(0.5)}>50%</AdapterStyles.StyledPercentBtn>
-      <AdapterStyles.StyledPercentBtn onClick={() => onClick(0.75)}>75%</AdapterStyles.StyledPercentBtn>
-      <AdapterStyles.StyledPercentBtn onClick={() => onClick(1)}>{translations.max}</AdapterStyles.StyledPercentBtn>
-    </AdapterStyles.StyledSrcTokenPercentSelector>
+    <AdapterStyles.StyledPercentSelector>
+      <button className="twap-percent-button" onClick={() => onClick(0.25)}>25%</button>
+      <button className="twap-percent-button" onClick={() => onClick(0.5)}>50%</button>
+      <button className="twap-percent-button" onClick={() => onClick(0.75)}>75%</button>
+      <button className="twap-percent-button" onClick={() => onClick(1)}>{translations.max}</button>
+    </AdapterStyles.StyledPercentSelector>
   );
 };
 
@@ -182,17 +182,16 @@ const TradeSize = () => {
 };
 
 const LimitPriceDisplay = () => {
-  const { isLimitOrder, onToggleLimit, onChange, limitPrice, leftToken, rightToken, toggleInverted, warning } = hooks.useLimitPrice();
-  const isLoading = false;
+  const { isLimitOrder, onToggleLimit, onChange, limitPrice, leftToken, rightToken, toggleInverted, warning, isLoading } = hooks.useLimitPrice();
   const translations = useTwapContext().translations;
 
   return (
-    <AdapterStyles.StyledPrice>
+    <Box className="twap-limit-price">
       <Components.Card>
         <TwapStyles.StyledColumnFlex>
           <AdapterStyles.StyledFlexStart>
-            <Components.Tooltip text={warning}>
-              {isLoading ? <Components.Loader width={50} /> : <Components.Switch disabled={!!warning} value={isLimitOrder} onChange={onToggleLimit} />}
+            <Components.Tooltip text={isLoading ? `${translations.loading}...` : warning}>
+              <Components.Switch disabled={!!warning || isLoading} value={isLimitOrder} onChange={onToggleLimit} />
             </Components.Tooltip>
             <Components.Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{translations.limitPrice}</Components.Label>
           </AdapterStyles.StyledFlexStart>
@@ -201,15 +200,14 @@ const LimitPriceDisplay = () => {
           )}
         </TwapStyles.StyledColumnFlex>
       </Components.Card>
-    </AdapterStyles.StyledPrice>
+    </Box>
   );
 };
 
 const MaxDuration = () => {
-  const { duration, onChange } = store.useTwapStore((state) => ({
-    duration: state.duration,
-    onChange: state.setDuration,
-  }));
+  const duration = store.useTwapStore((store) => store.duration);
+  const onChange = store.useTwapStore((store) => store.setDuration);
+
   const translations = useTwapContext().translations;
 
   return (
@@ -223,12 +221,11 @@ const MaxDuration = () => {
 };
 
 const TradeInterval = () => {
-  const { fillDelay, customFillDelayEnabled, onChange, onCustomFillDelayClick } = store.useTwapStore((state) => ({
-    fillDelay: state.getFillDelay(),
-    customFillDelayEnabled: state.customFillDelayEnabled,
-    onChange: state.setFillDelay,
-    onCustomFillDelayClick: state.setCustomFillDelayEnabled,
-  }));
+  const fillDelay = store.useTwapStore((state) => state.getFillDelay());
+  const customFillDelayEnabled = store.useTwapStore((state) => state.customFillDelayEnabled);
+  const onChange = store.useTwapStore((state) => state.setFillDelay);
+  const onCustomFillDelayClick = store.useTwapStore((state) => state.setCustomFillDelayEnabled);
+
   const translations = useTwapContext().translations;
 
   return (
@@ -263,16 +260,14 @@ interface TokenPanelProps {
 }
 
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
+  const [tokenListOpen, setTokenListOpen] = useState(false);
   const {
-    toggleTokenList,
+    token,
     onTokenSelect,
-    tokenListOpen,
     inputWarning,
     amountPrefix,
     disabled,
     selectTokenWarning,
-    logo,
-    symbol,
     onChange,
     value,
     usdValue,
@@ -286,11 +281,12 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   const { getTokenImage, TokenSelectModal, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
 
   const onOpen = () => {
-    if (!selectTokenWarning) toggleTokenList(true);
+    if (!selectTokenWarning) setTokenListOpen(true);
   };
 
   const onTokenSelected = useCallback(
     (token: any) => {
+      setTokenListOpen(false);
       onTokenSelect(parseToken(token, getTokenImage));
       if (isSrcToken) {
         onSrcTokenSelected(token);
@@ -302,7 +298,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   );
 
   const onListClose = useCallback(() => {
-    toggleTokenList(false);
+    setTokenListOpen(false);
   }, []);
 
   return (
@@ -324,10 +320,10 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
                 />
               </Components.Tooltip>
               <Components.Tooltip text={selectTokenWarning}>
-                <AdapterStyles.StyledTokenSelect onClick={onOpen}>
-                  <TokenDisplay logo={logo} name={symbol} />
+                <button onClick={onOpen} className="twap-token-select">
+                  <TokenDisplay logo={token?.logoUrl} name={token?.symbol} />
                   <Components.Icon icon={<IoIosArrowDown size={20} />} />
-                </AdapterStyles.StyledTokenSelect>
+                </button>
               </Components.Tooltip>
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">

@@ -22,7 +22,7 @@ function OrdersList({ orders, status, isLoading }: { orders: OrderUI[]; status: 
     );
   }
   return (
-    <StyledContainer>
+    <StyledContainer className="twap-orders-list">
       {orders ? (
         orders.map((order, index) => {
           return <Order order={order} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;

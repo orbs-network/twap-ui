@@ -29,7 +29,6 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
 
 export default OrderPreview;
 
-
 export const StyledPreviewLinearProgress = styled(LinearProgress)(({ opacity }: { opacity: number }) => ({
   height: 5,
   marginLeft: "auto",
@@ -51,7 +50,7 @@ export const StyledPreviewLinearProgress = styled(LinearProgress)(({ opacity }: 
     height: 5,
     zIndex: 1,
     borderRadius: 50,
-    opacity: opacity,
+    // opacity: opacity,
     transition: "0.2s all",
   },
 }));

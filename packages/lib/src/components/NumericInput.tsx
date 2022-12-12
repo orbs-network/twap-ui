@@ -55,7 +55,7 @@ function NumericInput({
               return maxValue ? floatValue <= parseFloat(maxValue) : true;
             }}
             prefix={prefix ? `${prefix} ` : ""}
-            value={disabled && value === '0' ? '' : inputValue}
+            value={disabled && value === "0" ? "" : inputValue}
             thousandSeparator=","
             decimalSeparator="."
             customInput={StyledInput}
@@ -96,7 +96,6 @@ const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   pointerEvents: disabled ? "none" : "unset",
   height: "100%",
   width: "100%",
-  textIndent: 10,
   fontSize: 16,
   border: "unset",
   background: "transparent",

@@ -30,7 +30,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
             </TwapStyles.StyledColumnFlex>
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex>
-            <Tooltip childrenStyles={{width:'100%'}} placement="top" text={<NumberDisplay value={order.ui.progress || "0"} decimalScale={1} suffix="%" />}>
+            <Tooltip childrenStyles={{ width: "100%" }} placement="top" text={<NumberDisplay value={order.ui.progress || "0"} decimalScale={1} suffix="%" />}>
               <StyledMainProgressBar variant="determinate" value={order.ui.progress || 1} className="twap-order-progress twap-order-main-progress-bar" />
             </Tooltip>
           </TwapStyles.StyledRowFlex>
@@ -125,7 +125,6 @@ export const StyledDetailRow = styled(TwapStyles.StyledRowFlex)({
     fontSize: 14,
     "& p": {
       whiteSpace: "unset",
-
     },
   },
   "& .text": {
@@ -185,7 +184,6 @@ const StyledMainProgressBar = styled(LinearProgress)({
 const StyledColoredContainer = styled(TwapStyles.StyledColumnFlex)({
   width: "100%",
   padding: 12,
-  background: "#3C404E",
   borderRadius: 6,
   gap: 15,
   "& .more-btn": {

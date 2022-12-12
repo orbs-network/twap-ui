@@ -1,5 +1,4 @@
 import { Orders, OrdersAdapter, OrdersProps, Translations } from "@orbs-network/twap-ui";
-import { StyledOrdersContainer } from "./styles";
 import { memo } from "react";
 import { useParseTokenList } from "./hooks";
 import { Configs } from "@orbs-network/twap";
@@ -19,9 +18,7 @@ function OrderHistory(props: OrdersProps) {
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
     >
-      <StyledOrdersContainer>
-        <Orders />
-      </StyledOrdersContainer>
+      <Orders />
     </OrdersAdapter>
   );
 }
