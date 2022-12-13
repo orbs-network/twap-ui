@@ -7,7 +7,7 @@ import BN from "bignumber.js";
 import { InitLibProps, OrderUI } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
-import { zero, zeroAddress } from "@defi.org/web3-candies";
+import { setWeb3Instance, switchMetaMaskNetwork, zero, zeroAddress } from "@defi.org/web3-candies";
 import { parseOrderUi, prepareOrdersTokensWithUsd, useTwapStore } from "./store";
 
 /**
@@ -491,44 +491,9 @@ export const useChangeNetworkCallback = () => {
   const { provider: _provider, config } = useTwapContext();
 
   return async (onSuccess: () => void) => {
-    const chain = config.chainId;
-
-    const web3 = new Web3(_provider) as any;
-
-    const provider = web3.provider || web3.currentProvider;
-    if (!provider) return;
-    try {
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: Web3.utils.toHex(chain) }],
-      });
-      onSuccess();
-    } catch (error: any) {
-      // if unknown chain, add chain
-      if (error.code === 4902) {
-        const response = await fetch("https://chainid.network/chains.json");
-        const list = await response.json();
-        const chainArgs = list.find((it: any) => it.chainId === chain);
-        if (!chainArgs) {
-          return;
-        }
-
-        await provider.request({
-          method: "wallet_addEthereumChain",
-          params: [
-            {
-              chainName: chainArgs.name,
-              nativeCurrency: chainArgs.nativeCurrency,
-              rpcUrls: chainArgs.rpc,
-              chainId: Web3.utils.toHex(chain),
-              blockExplorerUrls: [_.get(chainArgs, ["explorers", 0, "url"])],
-              iconUrls: [`https://defillama.com/chain-icons/rsz_${chainArgs.chain}.jpg`],
-            },
-          ],
-        });
-        onSuccess();
-      }
-    }
+    setWeb3Instance(new Web3(_provider));
+    await switchMetaMaskNetwork(config.chainId);
+    onSuccess();
   };
 };
 
