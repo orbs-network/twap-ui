@@ -36,11 +36,22 @@ const useStatus = (dapp?: Dapp) => {
         )
       );
 
+      const backupAwsStatusResponse = await fetch(`https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status`).then((r) => r.json());
+      const backupAwsStatusChain = _.find(backupAwsStatusResponse, (s) => s.config?.chainId === dapp?.config.chainId);
+
       return {
         twapVersion,
         twapUiVersion,
         backupTakersStatus,
         chainInfo: await chainInfo(dapp!.config.chainId),
+        backupAwsStatus: {
+          status: BN(backupAwsStatusChain.balance).gt(0.1),
+          balance: backupAwsStatusChain.balance,
+          totalBids: backupAwsStatusChain.totalBids || "0",
+          totalFills: backupAwsStatusChain.totalFills || "0",
+          lastBid: backupAwsStatusChain.lastBid || "-",
+          lastFill: backupAwsStatusChain.lastFill || "-",
+        },
       };
     },
     {
@@ -111,6 +122,14 @@ export function Status() {
               <StyledStatusSectionText>lastFill: {status!.backupTakersStatus[k].lastFill}</StyledStatusSectionText>
             </StyledStatusSection>
           ))}
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>{status!.backupAwsStatus.status ? "✅" : "⚠️⚠️⚠️"} Backup Taker X:</StyledStatusSectionTitle>
+            <StyledStatusSectionText>gas: {status!.backupAwsStatus.balance}</StyledStatusSectionText>
+            <StyledStatusSectionText>totalBids: {status!.backupAwsStatus.totalBids}</StyledStatusSectionText>
+            <StyledStatusSectionText>totalFills: {status!.backupAwsStatus.totalFills}</StyledStatusSectionText>
+            <StyledStatusSectionText>lastBid: {status!.backupAwsStatus.lastBid}</StyledStatusSectionText>
+            <StyledStatusSectionText>lastFill: {status!.backupAwsStatus.lastFill}</StyledStatusSectionText>
+          </StyledStatusSection>
         </StyledStatus>
       )}
     </>
