@@ -80,8 +80,7 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <img src={status!.chainInfo.logoUrl} width={10} height={10} style={{ marginRight: 2 }} />
-              {dapp.config.chainId}
+              <img src={status!.chainInfo.logoUrl} width={10} height={10} style={{ marginRight: 2 }} /> {status!.chainInfo.name} {dapp.config.chainId}
             </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
