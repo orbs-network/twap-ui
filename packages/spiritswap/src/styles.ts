@@ -280,7 +280,7 @@ export const configureStyles = () => {
     ".twap-container": {
       display: "flex",
       gap: 12,
-      marginTop: 0,
+      marginTop: 20,
       flexDirection: "column" as const,
       width: "100%",
       "*": {

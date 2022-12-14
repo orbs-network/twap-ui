@@ -380,16 +380,13 @@ const OrderSummary = () => {
 
               <Components.Card className="twap-order-summary-rows">
                 <TwapStyles.StyledColumnFlex gap={12}>
-                  <AdapterStyles.StyledSummaryRow>
-                    <Components.Label tooltipText={translations.confirmationDeadlineTooltip}>{translations.expiration}</Components.Label>
+                  <SummaryRow tooltip={translations.confirmationDeadlineTooltip} label={translations.expiration}>
                     <AdapterStyles.Text>{twapStore.getDeadlineUi()}</AdapterStyles.Text>
-                  </AdapterStyles.StyledSummaryRow>
-                  <AdapterStyles.StyledSummaryRow>
-                    <Components.Label tooltipText={translations.confirmationOrderType}>{translations.orderType}</Components.Label>
+                  </SummaryRow>
+                  <SummaryRow tooltip={translations.confirmationOrderType} label={translations.orderType}>
                     <AdapterStyles.Text>{twapStore.isLimitOrder ? translations.limitOrder : translations.marketOrder}</AdapterStyles.Text>
-                  </AdapterStyles.StyledSummaryRow>
-                  <AdapterStyles.StyledSummaryRow>
-                    <Components.Label tooltipText={translations.confirmationTradeSizeTooltip}>{translations.tradeSize}</Components.Label>
+                  </SummaryRow>
+                  <SummaryRow tooltip={translations.confirmationTradeSizeTooltip} label={translations.tradeSize}>
                     <TwapStyles.StyledRowFlex justifyContent="flex-end">
                       <Components.TokenName name={twapStore.srcToken?.symbol} />
                       <Components.TokenLogo logo={twapStore.srcToken?.logoUrl} />
@@ -397,25 +394,23 @@ const OrderSummary = () => {
                         <Components.NumberDisplay value={twapStore.getSrcChunkAmountUi()} />
                       </AdapterStyles.Text>
                     </TwapStyles.StyledRowFlex>
-                  </AdapterStyles.StyledSummaryRow>
-                  <AdapterStyles.StyledSummaryRow>
-                    <Components.Label tooltipText={translations.confirmationTotalTradesTooltip}>{translations.totalTrades}</Components.Label>
+                  </SummaryRow>
+                  <SummaryRow tooltip={translations.confirmationTotalTradesTooltip} label={translations.totalTrades}>
                     <AdapterStyles.Text>{twapStore.chunks}</AdapterStyles.Text>
-                  </AdapterStyles.StyledSummaryRow>
-                  <AdapterStyles.StyledSummaryRow>
-                    <Components.Label tooltipText={translations.confirmationtradeIntervalTooltip}>{translations.tradeInterval}</Components.Label>
+                  </SummaryRow>
+                  <SummaryRow tooltip={translations.confirmationtradeIntervalTooltip} label={translations.tradeInterval}>
                     <AdapterStyles.Text>{twapStore.getFillDelayUi(translations)}</AdapterStyles.Text>
-                  </AdapterStyles.StyledSummaryRow>
-                  <AdapterStyles.StyledSummaryRow>
-                    <Components.Label tooltipText={twapStore.isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
-                      {translations.minReceivedPerTrade}:
-                    </Components.Label>
+                  </SummaryRow>
+                  <SummaryRow
+                    tooltip={twapStore.isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}
+                    label={`${translations.minReceivedPerTrade}:`}
+                  >
                     <TwapStyles.StyledRowFlex justifyContent="flex-end">
                       <Components.TokenName name={twapStore.dstToken?.symbol} />
                       <Components.TokenLogo logo={twapStore.dstToken?.logoUrl} />
                       <AdapterStyles.Text>{twapStore.isLimitOrder ? <Components.NumberDisplay value={twapStore.getDstMinAmountOutUi()} /> : translations.none}</AdapterStyles.Text>
                     </TwapStyles.StyledRowFlex>
-                  </AdapterStyles.StyledSummaryRow>
+                  </SummaryRow>
                 </TwapStyles.StyledColumnFlex>
               </Components.Card>
               <TradeInfoDetailsDisplay />
@@ -435,6 +430,17 @@ const OrderSummary = () => {
         </AdapterStyles.StyledOrderConfirmation>
       </Components.Modal>
     </>
+  );
+};
+
+const SummaryRow = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
+  return (
+    <AdapterStyles.StyledSummaryRow>
+      <Components.Label placement="right" tooltipText={tooltip}>
+        {label}
+      </Components.Label>
+      <Box className="twap-summary-row-children">{children}</Box>
+    </AdapterStyles.StyledSummaryRow>
   );
 };
 
