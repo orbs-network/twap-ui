@@ -573,18 +573,17 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
     ["useOrdersHistory", lib?.maker, lib?.config.chainId],
     async () => {
       const rawOrders = await lib!.getAllOrders();
-      const fecthUsdValues = (token: TokenData) => {
+      const fetchUsdValues = (token: TokenData) => {
         return fetcher(lib!.config.chainId, token);
       };
-      const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(tokenList || [], rawOrders, fecthUsdValues);
+      const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(tokenList || [], rawOrders, fetchUsdValues);
       if (!tokenWithUsdByAddress) return null;
 
       const parsedOrders = rawOrders.map((o: Order) => parseOrderUi(lib!, tokenWithUsdByAddress, o));
-      const ordersUi = _.chain(parsedOrders)
+      return _.chain(parsedOrders)
         .orderBy((o: OrderUI) => o.order.ask.deadline, "desc")
         .groupBy((o: OrderUI) => o.ui.status)
         .value();
-      return ordersUi;
     },
     {
       enabled: !!lib && !!tokenList && tokenList.length > 0,

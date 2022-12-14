@@ -3,10 +3,10 @@ import { store } from "@orbs-network/twap-ui";
 import _ from "lodash";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { SpookySwapTWAPProps } from ".";
-import { QueryClient } from "@tanstack/react-query";
 
 import Web3 from "web3";
 import { configureStyles } from "./styles";
+
 export const useGetProvider = (getProvider: () => any, account?: string) => {
   return useMemo(() => {
     return getProvider();

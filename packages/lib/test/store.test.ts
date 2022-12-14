@@ -2,9 +2,10 @@ import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook } from "@testing-library/react";
 import { Configs, TWAPLib } from "@orbs-network/twap";
 import { web3, zero, zeroAddress } from "@defi.org/web3-candies";
-import { TimeResolution, useTwapStore } from "../src/store";
+import { prepareOrdersTokensWithUsd, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
+import _ from "lodash";
 
 describe("store", () => {
   beforeEach(() => initFixture());
@@ -101,8 +102,9 @@ describe("store", () => {
     });
   });
 
-  describe("OrderHistoryState", () => {
+  describe("Orders History", () => {
     let { result: store } = renderHook(() => useTwapStore());
+    let mockOrder: any;
 
     beforeEach(async () => {
       const { result } = renderHook(() => useTwapStore());
@@ -110,76 +112,65 @@ describe("store", () => {
       lib = new TWAPLib(Configs.SpiritSwap, maker, web3());
       await act(async () => store.current.setLib(lib));
       expect(store.current.lib).eq(lib);
+
+      mockOrder = {
+        id: 123,
+        status: (Date.now() + 1e6) / 1000,
+        filledTime: 0,
+        srcFilledAmount: BN(900 * 10 ** tokens[0].decimals),
+        ask: {
+          time: Date.now() / 1000,
+          deadline: (Date.now() + 1e6) / 1000,
+          srcToken: tokens[0].address,
+          dstToken: tokens[1].address,
+          srcAmount: BN(1000 * 10 ** tokens[0].decimals),
+          srcBidAmount: BN(100 * 10 ** tokens[0].decimals),
+          dstMinAmount: BN(1),
+          bidDelay: 60,
+          fillDelay: 0,
+          maker: lib.maker,
+          exchange: zeroAddress,
+        },
+        bid: {
+          time: 0,
+          taker: zeroAddress,
+          exchange: zeroAddress,
+          dstAmount: zero,
+          dstFee: zero,
+          data: "",
+        },
+      };
     });
 
     afterEach(async () => {
       await act(async () => store.current.reset());
     });
 
-    // it("all tokens with checksummed address", async () => {
-    //   expect(store.current.allTokens).length(0);
-    //   const t = { ...tokens[0] };
-    //   t.address = t.address.toLowerCase();
-    //   await act(async () => store.current.setAllTokens([t]));
-    //   expect(store.current.allTokens).length(1);
-    //   expect(store.current.allTokens[0].address).not.eq(t.address);
-    //   expect(store.current.allTokens[0].address).eq(tokens[0].address);
-    // });
+    it("prepare orders tokens", async () => {
+      const result = await prepareOrdersTokensWithUsd(tokens, [mockOrder, mockOrder, mockOrder], async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7)));
+      expect(_.keys(result)).length(2);
+      expect(result[tokens[0].address].usd).bignumber.eq(123.5);
+      expect(result[tokens[1].address].usd).bignumber.eq(456.7);
+    });
 
-    // it("fetchHistory safe on undefined", async () => {
-    //   await act(async () => await store.current.fetchHistory(async () => zero));
-    //   expect(store.current.ordersUi).empty;
-
-    //   await act(async () => store.current.setAllTokens(tokens));
-    //   await act(async () => await store.current.fetchHistory(async () => zero));
-    //   expect(store.current.ordersUi).empty;
-    // });
-
-    // it("fetchHistory", async () => {
-    //   const mockOrder = {
-    //     id: 123,
-    //     status: (Date.now() + 1e6) / 1000,
-    //     filledTime: 0,
-    //     srcFilledAmount: BN(900 * 10 ** tokens[0].decimals),
-    //     ask: {
-    //       time: Date.now() / 1000,
-    //       deadline: (Date.now() + 1e6) / 1000,
-    //       srcToken: tokens[0].address,
-    //       dstToken: tokens[1].address,
-    //       srcAmount: BN(1000 * 10 ** tokens[0].decimals),
-    //       srcBidAmount: BN(100 * 10 ** tokens[0].decimals),
-    //       dstMinAmount: BN(1),
-    //       bidDelay: 60,
-    //       fillDelay: 0,
-    //       maker: lib.maker,
-    //       exchange: zeroAddress,
-    //     },
-    //     bid: {
-    //       time: 0,
-    //       taker: zeroAddress,
-    //       exchange: zeroAddress,
-    //       dstAmount: zero,
-    //       dstFee: zero,
-    //       data: "",
-    //     },
-    //   };
-    //   lib.getAllOrders = async () => [mockOrder];
-
-    //   await act(async () => store.current.setAllTokens(tokens));
-    //   await act(async () => await store.current.fetchHistory(async (t) => (t.address === tokens[0].address ? BN(123.456) : BN(456.789))));
-
-    //   const orders = store.current.ordersUi;
-    //   expect(orders).keys("Open");
-    //   expect(orders.Open).length(1);
-
-    //   const orderUi = orders.Open[0];
-    //   expect(orderUi.order).deep.eq(mockOrder);
-    //   expect(orderUi.ui.srcUsdUi).eq("123.456");
-    //   expect(orderUi.ui.dstUsdUi).eq("456.789");
-    //   expect(orderUi.ui.isMarketOrder).true;
-    //   expect(orderUi.ui.dstPriceFor1Src).bignumber.closeTo(0.2702, 0.0001);
-    //   expect(orderUi.ui.dstAmountUi).matches(/^270.2/);
-    //   expect(orderUi.ui.prefix).eq("~");
-    // });
+    it("fetchHistory", async () => {
+      // lib.getAllOrders = async () => [mockOrder];
+      //
+      // await act(async () => store.current.setAllTokens(tokens));
+      // await act(async () => await store.current.fetchHistory(async (t) => (t.address === tokens[0].address ? BN(123.456) : BN(456.789))));
+      //
+      // const orders = store.current.ordersUi;
+      // expect(orders).keys("Open");
+      // expect(orders.Open).length(1);
+      //
+      // const orderUi = orders.Open[0];
+      // expect(orderUi.order).deep.eq(mockOrder);
+      // expect(orderUi.ui.srcUsdUi).eq("123.456");
+      // expect(orderUi.ui.dstUsdUi).eq("456.789");
+      // expect(orderUi.ui.isMarketOrder).true;
+      // expect(orderUi.ui.dstPriceFor1Src).bignumber.closeTo(0.2702, 0.0001);
+      // expect(orderUi.ui.dstAmountUi).matches(/^270.2/);
+      // expect(orderUi.ui.prefix).eq("~");
+    });
   });
 });

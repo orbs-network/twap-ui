@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
-import { Box, styled } from "@mui/system";
-import { Components, hooks, TwapAdapter, useTwapContext, Translations, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
+import { Box } from "@mui/system";
+import { Components, hooks, store, Styles as TwapStyles, Translations, TwapAdapter, useTwapContext } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback, useState } from "react";
@@ -268,7 +268,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
 
-  const { onTokenSelect, inputWarning, amountPrefix, disabled, selectTokenWarning, token, onChange, value, usdValue, balanceLoading, balance, usdLoading, decimalScale } =
+  const { onTokenSelect, amountPrefix, disabled, selectTokenWarning, token, onChange, value, usdValue, balanceLoading, balance, usdLoading, decimalScale } =
     hooks.useTokenPanel(isSrcToken);
 
   const { TokenSelectModal, getTokenImage, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
