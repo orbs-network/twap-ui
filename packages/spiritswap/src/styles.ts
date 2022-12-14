@@ -156,6 +156,7 @@ export const StyledTotalTradesInput = styled(Components.NumericInput)({
 export const StyledSliderContainer = styled(TwapStyles.StyledRowFlex)({
   height: 30,
   justifyContent: "space-between",
+  gap: "10px!important",
 });
 
 export const StyledTokenOrderPreviewAmount = styled(Components.SmallLabel)({
