@@ -2,7 +2,7 @@ import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook } from "@testing-library/react";
 import { Configs, TWAPLib } from "@orbs-network/twap";
 import { web3, zero, zeroAddress } from "@defi.org/web3-candies";
-import { prepareOrdersTokensWithUsd, TimeResolution, useTwapStore } from "../src/store";
+import { parseOrderUi, prepareOrdersTokensWithUsd, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
 import _ from "lodash";
@@ -153,24 +153,19 @@ describe("store", () => {
       expect(result[tokens[1].address].usd).bignumber.eq(456.7);
     });
 
-    it("fetchHistory", async () => {
-      // lib.getAllOrders = async () => [mockOrder];
-      //
-      // await act(async () => store.current.setAllTokens(tokens));
-      // await act(async () => await store.current.fetchHistory(async (t) => (t.address === tokens[0].address ? BN(123.456) : BN(456.789))));
-      //
-      // const orders = store.current.ordersUi;
-      // expect(orders).keys("Open");
-      // expect(orders.Open).length(1);
-      //
-      // const orderUi = orders.Open[0];
-      // expect(orderUi.order).deep.eq(mockOrder);
-      // expect(orderUi.ui.srcUsdUi).eq("123.456");
-      // expect(orderUi.ui.dstUsdUi).eq("456.789");
-      // expect(orderUi.ui.isMarketOrder).true;
-      // expect(orderUi.ui.dstPriceFor1Src).bignumber.closeTo(0.2702, 0.0001);
-      // expect(orderUi.ui.dstAmountUi).matches(/^270.2/);
-      // expect(orderUi.ui.prefix).eq("~");
+    it("parseOrderUi", async () => {
+      const parsed = await parseOrderUi(
+        lib,
+        await prepareOrdersTokensWithUsd(tokens, [mockOrder, mockOrder, mockOrder], async (t) => (t === tokens[0] ? BN(123.456) : BN(456.789))),
+        mockOrder
+      );
+      expect(parsed.order).deep.eq(mockOrder);
+      expect(parsed.ui.srcUsdUi).eq("123.456");
+      expect(parsed.ui.dstUsdUi).eq("456.789");
+      expect(parsed.ui.isMarketOrder).true;
+      expect(parsed.ui.dstPriceFor1Src).bignumber.closeTo(0.2702, 0.0001);
+      expect(parsed.ui.dstAmountUi).matches(/^270.2/);
+      expect(parsed.ui.prefix).eq("~");
     });
   });
 });
