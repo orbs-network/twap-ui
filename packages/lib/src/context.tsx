@@ -33,7 +33,6 @@ const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
   );
 };
 
-
 export const TwapAdapter = (props: TwapLibProps) => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -41,8 +40,6 @@ export const TwapAdapter = (props: TwapLibProps) => {
     </QueryClientProvider>
   );
 };
-
-
 
 const OrdersAdapterQueryClient = (props: OrderLibProps) => {
   const translations = { ...defaultTranlations, ...props.translations };
@@ -61,7 +58,6 @@ export const OrdersAdapter = (props: OrderLibProps) => {
     </QueryClientProvider>
   );
 };
-
 
 export const useTwapContext = () => {
   return useContext(TwapContext);
