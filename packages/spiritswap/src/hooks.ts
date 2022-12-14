@@ -1,6 +1,6 @@
 import { TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import { SpiritSwapTWAPProps } from ".";
 import _ from "lodash";
 import Web3 from "web3";
