@@ -28,7 +28,7 @@
     "@mui/system": "5.x",
     "@open-defi-notification-protocol/widget": "0.0.x",
     "@orbs-network/twap": "1.8.x",
-    "@tanstack/react-query": "^4.19.1",
+    "@tanstack/react-query": "4.x",
     "@types/lodash": "4.x",
     "bignumber.js": "9.x",
     "lodash": "4.x",
