@@ -41,7 +41,7 @@ const initialState = {
   disclaimerAccepted: false,
 
   chunks: 1,
-  duration: { resolution: TimeResolution.Minutes, amount: 5 },
+  duration: { resolution: TimeResolution.Minutes, amount: 10 },
   customFillDelay: { resolution: TimeResolution.Minutes, amount: 0 },
   customFillDelayEnabled: false,
   waitingForNewOrder: false,
@@ -228,7 +228,7 @@ export const useTwapStore = create(
     shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
 
     isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
-    setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment() }),
+    setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment(), disclaimerAccepted: false }),
     getDeadline: () =>
       moment(get().confirmationClickTimestamp)
         .add(get().duration.amount * get().duration.resolution)

@@ -67,7 +67,7 @@ describe("store", () => {
     });
 
     it("setDuration minimum of config bid delay x 2, affects fillDelay", async () => {
-      expect(store.current.duration).deep.eq({ resolution: TimeResolution.Minutes, amount: 5 });
+      expect(store.current.duration).deep.eq({ resolution: TimeResolution.Minutes, amount: 10 });
       expect(store.current.getFillDelay()).deep.eq({ resolution: TimeResolution.Minutes, amount: 0 });
 
       await act(async () => store.current.setDuration({ resolution: TimeResolution.Minutes, amount: 1 }));
