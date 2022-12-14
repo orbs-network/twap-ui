@@ -9,5 +9,7 @@ export interface SpiritSwapTWAPProps extends TWAPProps {
   getTokenImage: (token: any) => string;
   connect: () => void;
   getProvider: () => any;
+  onSrcTokenSelected: (value: any) => void;
+  onDstTokenSelected: (value: any) => void;
 }
 export { TWAP, Orders };

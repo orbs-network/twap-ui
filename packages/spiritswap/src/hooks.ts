@@ -36,7 +36,8 @@ const findToken = (tokenList?: TokenData[], symbol?: string) => {
 };
 
 export const useSetTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: string, tokenList?: TokenData[]) => {
-  const setTokens = store.useTwapStore((state) => state.setTokens);
+  const setSrcToken = store.useTwapStore((state) => state.setSrcToken);
+  const setDstToken = store.useTwapStore((state) => state.setDstToken);
 
   const tokenListRef = useRef<TokenData[] | undefined>(undefined);
   tokenListRef.current = tokenList;
@@ -46,7 +47,8 @@ export const useSetTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: s
     if (!listLength) return;
     const srcToken = findToken(tokenListRef.current, srcTokenSymbol);
     const dstToken = findToken(tokenListRef.current, dstTokenSymbol);
-    setTokens(srcToken, dstToken);
+    setSrcToken(srcToken);
+    setDstToken(dstToken);
   }, [srcTokenSymbol, dstTokenSymbol, listLength]);
 };
 
@@ -59,17 +61,9 @@ export interface AdapterContextProps {
 }
 
 export const usePrepareAdapterContextProps = (props: SpiritSwapTWAPProps) => {
-  const memoizedOnSrcTokenSelected = useCallback((token: any) => {
-    props.onSrcTokenSelected?.(token);
-  }, []);
-
-  const memoizedOnDstTokenSelected = useCallback((token: any) => {
-    props.onDstTokenSelected?.(token);
-  }, []);
-
   return {
-    onSrcTokenSelected: memoizedOnSrcTokenSelected,
-    onDstTokenSelected: memoizedOnDstTokenSelected,
+    onSrcTokenSelected: props.onSrcTokenSelected,
+    onDstTokenSelected: props.onDstTokenSelected,
     dappTokens: props.dappTokens,
     getTokenImage: props.getTokenImage,
     TokenSelectModal: props.TokenSelectModal,
