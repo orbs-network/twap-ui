@@ -26,7 +26,7 @@ function Orders() {
     <StyledContainer className="twap-orders">
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
-          <Styles.StyledRowFlex justifyContent="flex-start" gap={5} style={{width:'auto'}}>
+          <Styles.StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>
             <Icon icon={<AiOutlineHistory style={{ width: 20, height: 20 }} />} />
             <Label tooltipText={translations.ordersTooltip}>{translations.orders}</Label>
           </Styles.StyledRowFlex>
