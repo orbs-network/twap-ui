@@ -17,7 +17,7 @@ export const StyledLayoutSpiritswap = styled(Box)({
   borderRadius: 10,
   padding: "0.5rem",
   fontFamily: "Jost",
-  maxWidth: 500
+  maxWidth: 500,
 });
 
 export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) => ({
