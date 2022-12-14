@@ -547,12 +547,10 @@ const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => 
 
 const useGasPriceQuery = () => {
   const { maxFeePerGas, priorityFeePerGas } = useTwapContext();
-  if (BN(maxFeePerGas || 0).gt(0) && BN(priorityFeePerGas || 0).gt(0)) return { isLoading: false, maxFeePerGas: BN(maxFeePerGas!), priorityFeePerGas: BN(priorityFeePerGas!) };
-
   const lib = useTwapStore((state) => state.lib);
 
   const { isLoading, data } = useQuery(["useGasPrice", priorityFeePerGas, maxFeePerGas], () => Paraswap.gasPrices(lib!.config.chainId), {
-    enabled: !!lib,
+    enabled: !!lib && !BN(maxFeePerGas || 0).gt(0) && !BN(priorityFeePerGas || 0).gt(0),
     refetchInterval: 60_000,
   });
 

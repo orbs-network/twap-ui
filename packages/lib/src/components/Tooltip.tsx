@@ -1,6 +1,6 @@
 import { ClickAwayListener, Tooltip as MuiTooltip } from "@mui/material";
 import { CSSProperties, ReactElement, ReactNode, useState } from "react";
-import { isMobile } from "react-device-detect";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 interface Props extends React.HTMLAttributes<HTMLElement> {
   childrenStyles?: CSSProperties;
@@ -11,6 +11,7 @@ interface Props extends React.HTMLAttributes<HTMLElement> {
 
 function Tooltip({ children, text, placement, childrenStyles }: Props) {
   const [open, setOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   if (!text) {
     return <>{children}</>;

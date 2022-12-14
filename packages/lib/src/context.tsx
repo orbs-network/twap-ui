@@ -26,11 +26,7 @@ const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
     initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId });
   }, [props.provider, props.config, props.account, props.connectedChainId]);
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TwapContext.Provider value={{ ...props, translations }}>{props.children}</TwapContext.Provider>
-    </QueryClientProvider>
-  );
+  return <TwapContext.Provider value={{ ...props, translations }}>{props.children}</TwapContext.Provider>;
 };
 
 export const TwapAdapter = (props: TwapLibProps) => {
@@ -44,11 +40,7 @@ export const TwapAdapter = (props: TwapLibProps) => {
 const OrdersAdapterQueryClient = (props: OrderLibProps) => {
   const translations = { ...defaultTranlations, ...props.translations };
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <OrdersContext.Provider value={{ ...props, translations }}>{props.children}</OrdersContext.Provider>
-    </QueryClientProvider>
-  );
+  return <OrdersContext.Provider value={{ ...props, translations }}>{props.children}</OrdersContext.Provider>;
 };
 
 export const OrdersAdapter = (props: OrderLibProps) => {
