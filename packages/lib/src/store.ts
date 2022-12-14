@@ -13,7 +13,6 @@ export enum TimeResolution {
   Hours = Minutes * 60,
   Days = Hours * 24,
 }
-//TODO move to types
 export type Duration = { resolution: TimeResolution; amount: number };
 
 /**
