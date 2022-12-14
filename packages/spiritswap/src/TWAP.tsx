@@ -394,9 +394,7 @@ const OrderSummary = () => {
                       <Components.TokenName name={twapStore.srcToken?.symbol} />
                       <Components.TokenLogo logo={twapStore.srcToken?.logoUrl} />
                       <AdapterStyles.Text>
-                        <Components.Tooltip text={twapStore.getSrcChunkAmountUi()}>
-                          <Components.NumberDisplay value={twapStore.getSrcChunkAmountUi()} />
-                        </Components.Tooltip>
+                        <Components.NumberDisplay value={twapStore.getSrcChunkAmountUi()} />
                       </AdapterStyles.Text>
                     </TwapStyles.StyledRowFlex>
                   </AdapterStyles.StyledSummaryRow>
@@ -415,15 +413,7 @@ const OrderSummary = () => {
                     <TwapStyles.StyledRowFlex justifyContent="flex-end">
                       <Components.TokenName name={twapStore.dstToken?.symbol} />
                       <Components.TokenLogo logo={twapStore.dstToken?.logoUrl} />
-                      <AdapterStyles.Text>
-                        {twapStore.isLimitOrder ? (
-                          <Components.Tooltip text={twapStore.getDstMinAmountOutUi()}>
-                            <Components.NumberDisplay value={twapStore.getDstMinAmountOutUi()} />
-                          </Components.Tooltip>
-                        ) : (
-                          translations.none
-                        )}
-                      </AdapterStyles.Text>
+                      <AdapterStyles.Text>{twapStore.isLimitOrder ? <Components.NumberDisplay value={twapStore.getDstMinAmountOutUi()} /> : translations.none}</AdapterStyles.Text>
                     </TwapStyles.StyledRowFlex>
                   </AdapterStyles.StyledSummaryRow>
                 </TwapStyles.StyledColumnFlex>

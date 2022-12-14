@@ -398,9 +398,7 @@ const OrderConfirmation = () => {
                   <Components.TokenName name={srcToken?.symbol} />
                   <Components.TokenLogo logo={srcToken?.logoUrl} />
                   <AdapterStyles.Text>
-                    <Components.Tooltip text={getSrcChunkAmountUi()}>
-                      <Components.NumberDisplay value={getSrcChunkAmountUi()} />
-                    </Components.Tooltip>
+                    <Components.NumberDisplay value={getSrcChunkAmountUi()} />
                   </AdapterStyles.Text>
                 </TwapStyles.StyledRowFlex>
               </SummaryRow>
@@ -417,15 +415,7 @@ const OrderConfirmation = () => {
                 <TwapStyles.StyledRowFlex justifyContent="flex-end">
                   <Components.TokenName name={dstToken?.symbol} />
                   <Components.TokenLogo logo={dstToken?.logoUrl} />
-                  <AdapterStyles.Text>
-                    {isLimitOrder ? (
-                      <Components.Tooltip text={getDstMinAmountOutUi()}>
-                        <Components.NumberDisplay value={getDstMinAmountOutUi()} />
-                      </Components.Tooltip>
-                    ) : (
-                      translations.none
-                    )}
-                  </AdapterStyles.Text>
+                  <AdapterStyles.Text>{isLimitOrder ? <Components.NumberDisplay value={getDstMinAmountOutUi()} /> : translations.none}</AdapterStyles.Text>
                 </TwapStyles.StyledRowFlex>
               </SummaryRow>
             </TwapStyles.StyledColumnFlex>

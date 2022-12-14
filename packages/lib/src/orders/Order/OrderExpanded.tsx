@@ -42,9 +42,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
         </Row>
         <Row label={`${translations.tradeSize}:`} tooltip={translations.tradeSizeTooltip}>
           <TokenLogo logo={order.ui.srcToken.logoUrl} />
-          <Tooltip text={order.ui.srcChunkAmountUi}>
-            <NumberDisplay value={order.ui.srcChunkAmountUi} />
-          </Tooltip>
+          <NumberDisplay value={order.ui.srcChunkAmountUi} />
           {order.ui.srcToken?.symbol} ≈ $ <NumberDisplay value={order.ui.srcChunkAmountUsdUi} />
         </Row>
         {order.ui.isMarketOrder ? (
@@ -55,9 +53,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
         ) : (
           <Row label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
             <TokenLogo logo={order.ui.dstToken.logoUrl} />
-            <Tooltip text={order.ui.dstMinAmountOutUi}>
-              <NumberDisplay value={order.ui.dstMinAmountOutUi} />
-            </Tooltip>
+            <NumberDisplay value={order.ui.dstMinAmountOutUi} />
             {order.ui.dstToken?.symbol} ≈ $ <NumberDisplay value={order.ui.dstMinAmountOutUsdUi} />
           </Row>
         )}

@@ -1,4 +1,5 @@
 import { NumericFormat } from "react-number-format";
+import Tooltip from "./Tooltip";
 
 function NumberDisplay({
   value,
@@ -14,18 +15,20 @@ function NumberDisplay({
   suffix?: string;
 }) {
   return value ? (
-    <NumericFormat
-      type="text"
-      valueIsNumericString={true}
-      value={value}
-      allowLeadingZeros
-      thousandSeparator=","
-      className={`twap-number-display ${className}`}
-      displayType="text"
-      decimalScale={decimalScale}
-      prefix={prefix}
-      suffix={suffix}
-    />
+    <Tooltip text={value}>
+      <NumericFormat
+        type="text"
+        valueIsNumericString={true}
+        value={value}
+        allowLeadingZeros
+        thousandSeparator=","
+        className={`twap-number-display ${className}`}
+        displayType="text"
+        decimalScale={decimalScale}
+        prefix={prefix}
+        suffix={suffix}
+      />
+    </Tooltip>
   ) : (
     <> -</>
   );

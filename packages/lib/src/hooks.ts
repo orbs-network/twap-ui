@@ -262,20 +262,9 @@ const useCreateOrderButton = () => {
 };
 
 export const useSubmitButton = () => {
-  const { lib, shouldWrap, shouldUnwrap, wrongNetwork, showConfirmation } = useTwapStore((state) => ({
-    lib: state.lib,
-    shouldWrap: state.shouldWrap(),
-    shouldUnwrap: state.shouldUnwrap(),
-    wrongNetwork: state.wrongNetwork,
-    showConfirmation: state.showConfirmation,
-    srcusd: state.getSrcAmountUsdUi(),
-  }));
-
+  const store = useTwapStore();
   const { srcUsdLoading, dstUsdLoading } = useLoadingState();
   const translations = useTwapContext().translations;
-  const warning = useTwapStore((state) => state.getFillWarning(translations));
-  const createOrderLoading = useTwapStore((state) => state.loading);
-
   const allowance = useHasAllowanceQuery();
   const changeNetwork = useChangeNetworkButton();
   const connectButton = useConnectButton();
@@ -286,15 +275,16 @@ export const useSubmitButton = () => {
   const approvebutton = useApproveButton();
   const createOrderButton = useCreateOrderButton();
   const showConfirmationButton = useShowConfirmationModalButton();
+  const warning = store.getFillWarning(translations);
 
-  if (wrongNetwork) return changeNetwork;
-  if (!lib?.maker) return connectButton;
+  if (store.wrongNetwork) return changeNetwork;
+  if (!store.lib?.maker) return connectButton;
   if (warning) return warningButton;
-  if (shouldUnwrap) return unwrapButton;
-  if (shouldWrap) return wrapButton;
-  if (allowance.isLoading || srcUsdLoading || dstUsdLoading || createOrderLoading) return loadingButton;
+  if (store.shouldUnwrap()) return unwrapButton;
+  if (store.shouldWrap()) return wrapButton;
+  if (allowance.isLoading || srcUsdLoading || dstUsdLoading || store.loading) return loadingButton;
   if (allowance.data === false) return approvebutton;
-  if (showConfirmation) return createOrderButton;
+  if (store.showConfirmation) return createOrderButton;
   return showConfirmationButton;
 };
 

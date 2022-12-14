@@ -5,7 +5,7 @@ import { isMobile } from "react-device-detect";
 interface Props extends React.HTMLAttributes<HTMLElement> {
   childrenStyles?: CSSProperties;
   children: ReactNode;
-  text?: string | ReactElement;
+  text?: string | ReactElement | number;
   placement?: "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top";
 }
 

@@ -3,7 +3,7 @@ import { styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
 import { CSSProperties } from "react";
 import { Styles as TwapStyles } from "../..";
-import { NumberDisplay, SmallLabel, TokenLogo, Tooltip } from "../../components";
+import { NumberDisplay, SmallLabel, TokenLogo } from "../../components";
 
 interface OrderTokenDisplayProps {
   token?: TokenData;
@@ -20,13 +20,11 @@ export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", 
       <TwapStyles.StyledRowFlex style={{ alignItems: "flex-start" }}>
         <StyledTokenLogo logo={token?.logoUrl} />
         <TwapStyles.StyledColumnFlex gap={3} style={{ flex: 1, justifyContent: "flex-start" }}>
-          <Tooltip text={`${amount}`}>
-            <Typography className="twap-token-display-amount-and-symbol">
-              {prefix ? `${prefix} ` : ""}
-              <NumberDisplay value={amount} />
-              {` ${token?.symbol}`}
-            </Typography>
-          </Tooltip>
+          <Typography className="twap-token-display-amount-and-symbol">
+            {prefix ? `${prefix} ` : ""}
+            <NumberDisplay value={amount} />
+            {` ${token?.symbol}`}
+          </Typography>
           {!alighLeft && <OrderUsdValue usdValue={usdValue} prefix={usdPrefix} />}
         </TwapStyles.StyledColumnFlex>
       </TwapStyles.StyledRowFlex>
@@ -43,8 +41,8 @@ interface OrderUsdValueProps {
 export function OrderUsdValue({ usdValue, prefix = "≈" }: OrderUsdValueProps) {
   return (
     <StyledTokenDisplayUsd loading={false} className="twap-order-token-display-usd">
-        {prefix} $ <NumberDisplay value={usdValue} />
-      </StyledTokenDisplayUsd>
+      {prefix} $ <NumberDisplay value={usdValue} />
+    </StyledTokenDisplayUsd>
   );
 }
 
