@@ -2,10 +2,10 @@ import { LinearProgress } from "@mui/material";
 import { styled } from "@mui/system";
 import { OrderUI, Styles as TwapStyles, useOrdersContext } from "../..";
 import { StyledText } from "../../styles";
-import { OrderTokenDisplay, StyledSeperator } from "./Components";
+import { OrderTokenDisplay } from "./Components";
 import { HiOutlineArrowLongRight } from "react-icons/hi2";
 import { Icon } from "../../components";
-function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }) {
+function OrderPreview({ order }: { order: OrderUI }) {
   const translations = useOrdersContext().translations;
   return (
     <TwapStyles.StyledColumnFlex gap={0} className="twap-order-preview">
@@ -17,7 +17,7 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
         <StyledHeaderText>{order.ui.createdAtUi}</StyledHeaderText>
       </StyledHeader>
 
-      <StyledPreviewLinearProgress opacity={expanded ? 0 : 1} variant="determinate" value={order.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
+      <StyledPreviewLinearProgress variant="determinate" value={order.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
       <TwapStyles.StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start" }} className="twap-order-preview-tokens" justifyContent="space-between">
         <OrderTokenDisplay usdPrefix="=" token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
         <Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 30, height: 30 }} />} />
@@ -29,7 +29,7 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
 
 export default OrderPreview;
 
-export const StyledPreviewLinearProgress = styled(LinearProgress)(({ opacity }: { opacity: number }) => ({
+export const StyledPreviewLinearProgress = styled(LinearProgress)({
   height: 5,
   marginLeft: "auto",
   marginRight: "auto",
@@ -50,10 +50,9 @@ export const StyledPreviewLinearProgress = styled(LinearProgress)(({ opacity }: 
     height: 5,
     zIndex: 1,
     borderRadius: 50,
-    // opacity: opacity,
     transition: "0.2s all",
   },
-}));
+});
 
 const StyledHeader = styled(TwapStyles.StyledRowFlex)({
   justifyContent: "space-between",

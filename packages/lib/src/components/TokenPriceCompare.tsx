@@ -27,6 +27,14 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
       </StyledContainer>
     );
   }
+
+  if (!leftToken || !rightToken) {
+    return (
+      <StyledContainer>
+        <StyledText>-</StyledText>
+      </StyledContainer>
+    );
+  }
   return (
     <StyledContainer className={className}>
       <TokenLogo logo={leftToken?.logoUrl} />

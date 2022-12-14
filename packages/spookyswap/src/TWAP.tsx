@@ -2,7 +2,6 @@ import { GlobalStyles } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { Components, hooks, TwapAdapter, useTwapContext, Translations, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
-import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
@@ -25,64 +24,59 @@ const TWAP = (props: SpookySwapTWAPProps) => {
   useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
-  const globalStyles = useGlobalStyles(true);
+  const globalStyles = useGlobalStyles(props.isDarkTheme);
   const connect = useCallback(() => {
     props.connect();
   }, []);
 
   return (
-    <>
+    <TwapAdapter
+      connect={connect}
+      config={Configs.SpookySwap}
+      maxFeePerGas={props.maxFeePerGas}
+      priorityFeePerGas={props.priorityFeePerGas}
+      translations={translations as Translations}
+      provider={provider}
+      account={props.account}
+      connectedChainId={props.connectedChainId}
+    >
       <GlobalStyles styles={globalStyles} />
-      <TwapAdapter
-        connect={connect}
-        config={Configs.SpookySwap}
-        maxFeePerGas={props.maxFeePerGas}
-        priorityFeePerGas={props.priorityFeePerGas}
-        translations={translations as Translations}
-        provider={provider}
-        account={props.account}
-        connectedChainId={props.connectedChainId}
-      >
-        <AdapterContextProvider value={adapterContextProps}>
-          <div className="twap-container">
-            <SrcTokenPanel />
-            <ChangeTokensOrder />
-            <DstTokenPanel />
-            <LimitPriceDisplay />
-            <TradeSize />
-            <MaxDuration />
-            <TradeInterval />
-            <TwapStyles.StyledRowFlex className="twap-create-order-btn">
-              <SubmitButton />
-            </TwapStyles.StyledRowFlex>
-            <OrderConfirmation />
-            <Components.PoweredBy />
-          </div>
-        </AdapterContextProvider>
-      </TwapAdapter>
-    </>
+
+      <AdapterContextProvider value={adapterContextProps}>
+        <div className="twap-container">
+          <SrcTokenPanel />
+          <ChangeTokensOrder />
+          <DstTokenPanel />
+          <LimitPriceDisplay />
+          <TradeSize />
+          <MaxDuration />
+          <TradeInterval />
+          <TwapStyles.StyledRowFlex className="twap-create-order-btn">
+            <SubmitButton />
+          </TwapStyles.StyledRowFlex>
+          <OrderConfirmation />
+          <Components.PoweredBy />
+        </div>
+      </AdapterContextProvider>
+    </TwapAdapter>
   );
 };
 
 export default memo(TWAP);
 
 const MarketPrice = () => {
-  const { toggleInverted, leftToken, rightToken, marketPrice, ready, loading } = hooks.useMarketPrice();
+  const { toggleInverted, leftToken, rightToken, marketPrice, loading } = hooks.useMarketPrice();
   const translations = useTwapContext().translations;
 
   return (
-    <AdapterStyles.StyledMarketPrice>
+    <Box className="twap-market-price">
       <Components.Card>
         <AdapterStyles.StyledCardFlex justifyContent="space-between">
           <TwapStyles.StyledText className="title">{translations.currentMarketPrice}</TwapStyles.StyledText>
-          {ready ? (
-            <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
-          ) : (
-            <TwapStyles.StyledText>-</TwapStyles.StyledText>
-          )}
+          <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
         </AdapterStyles.StyledCardFlex>
       </Components.Card>
-    </AdapterStyles.StyledMarketPrice>
+    </Box>
   );
 };
 
@@ -174,7 +168,7 @@ const TradeSize = () => {
                 </Components.Label>
                 {token && <TokenDisplay logo={token?.logoUrl} name={token?.symbol} />}
               </AdapterStyles.StyledTradeSize>
-              <AdapterStyles.StyledUSD value={usdValue} isLoading={usdLoading} />
+              <Components.USD value={usdValue} isLoading={usdLoading} />
             </TwapStyles.StyledRowFlex>
           </AdapterStyles.StyledColumnGap>
         </AdapterStyles.StyledCardFlex>
@@ -192,7 +186,7 @@ const LimitPriceDisplay = () => {
     <Components.Card className="twap-limit-price">
       <AdapterStyles.StyledColumnGap>
         <TwapStyles.StyledRowFlex justifyContent="flex-start">
-          <Components.Tooltip placement="left" text={isLoading ? `${translations.loading}...` : warning}>
+          <Components.Tooltip placement="bottom" text={isLoading ? `${translations.loading}...` : warning}>
             <Components.Switch disabled={!!warning || isLoading} value={isLimitOrder} onChange={onToggleLimit} />
           </Components.Tooltip>
           <Components.Label placement="right" tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>
@@ -325,7 +319,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
                     onChange={onChange || (() => {})}
                     value={value}
                   />
-                  <AdapterStyles.StyledUSD value={usdValue} isLoading={usdLoading} />
+                  <Components.USD value={usdValue} isLoading={usdLoading} />
                 </TwapStyles.StyledColumnFlex>
               </AdapterStyles.StyledCardFlex>
               <Balance isLoading={balanceLoading} balance={balance} />
@@ -520,7 +514,7 @@ const TokenOrderPreview = ({
         <AdapterStyles.StyledColumnGap gap={10}>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <Components.Label placement="right">{title}</Components.Label>
-            <AdapterStyles.StyledUSD value={usdPrice} />
+            <Components.USD value={usdPrice} />
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <TokenDisplay name={token?.symbol} logo={token?.logoUrl} />

@@ -1,7 +1,7 @@
-import { Accordion, AccordionSummary, LinearProgress, Typography } from "@mui/material";
+import { Accordion } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { Styles as TwapStyles } from "../..";
-import { Button, Card, SmallLabel, TokenLogo } from "../../components";
+import { Card } from "../../components";
 
 export const StyledFlex = styled(TwapStyles.StyledRowFlex)({
   justifyContent: "space-between",

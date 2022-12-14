@@ -85,6 +85,7 @@ export interface Translations {
   loading: string;
   progress: string;
   estimated: string;
+  notify: string;
 }
 
 interface BaseProps {
@@ -96,6 +97,7 @@ interface BaseProps {
   dappTokens: any;
   maxFeePerGas?: string;
   priorityFeePerGas?: string;
+  isDarkTheme?: boolean;
 }
 export interface TWAPProps extends BaseProps {
   connect?: () => void;

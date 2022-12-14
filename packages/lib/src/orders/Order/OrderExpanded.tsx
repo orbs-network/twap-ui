@@ -1,5 +1,5 @@
 import { LinearProgress } from "@mui/material";
-import { Box, styled } from "@mui/system";
+import { styled } from "@mui/system";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { Styles as TwapStyles } from "../..";
@@ -31,7 +31,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex>
             <Tooltip childrenStyles={{ width: "100%" }} placement="top" text={<NumberDisplay value={order.ui.progress || "0"} decimalScale={1} suffix="%" />}>
-              <StyledMainProgressBar variant="determinate" value={order.ui.progress || 1} className="twap-order-progress twap-order-main-progress-bar" />
+              <StyledMainProgressBar variant="determinate" value={order.ui.progress || 1} className="twap-order-main-progress-bar" />
             </Tooltip>
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
@@ -90,9 +90,9 @@ const StyledOrderTokenDisplay = styled(OrderTokenDisplay)({
 
 const Row = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
   return (
-    <StyledDetailRow>
+    <StyledDetailRow className="twap-order-expanded-row">
       <Label tooltipText={tooltip}>{label}</Label>
-      <StyledDetailRowChildren>{children}</StyledDetailRowChildren>
+      <StyledDetailRowChildren className="twap-order-expanded-right">{children}</StyledDetailRowChildren>
     </StyledDetailRow>
   );
 };
@@ -173,7 +173,6 @@ export const StyledCancelOrderButton = styled(Button)({
 
 const StyledMainProgressBar = styled(LinearProgress)({
   height: 21,
-  background: "#22353C",
   borderRadius: 2,
   width: "100%",
   "& .MuiLinearProgress-bar": {

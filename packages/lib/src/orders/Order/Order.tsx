@@ -20,7 +20,7 @@ function OrderComponent({ order, onExpand, expanded }: Props) {
     <StyledContainer className="twap-order">
       <StyledAccordion expanded={expanded}>
         <StyledAccordionSummary onClick={onExpand}>
-          <OrderPreview order={order} expanded={expanded} />
+          <OrderPreview order={order} />
         </StyledAccordionSummary>
         <StyledSpace />
         <AccordionDetails style={{ padding: 0, paddingTop: 10 }}>

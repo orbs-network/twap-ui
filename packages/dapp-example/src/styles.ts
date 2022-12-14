@@ -19,12 +19,12 @@ export const StyledLayoutSpiritswap = styled(Box)({
   fontFamily: "Jost",
 });
 
-export const StyledLayoutSpookyswap = styled(Box)({
-  background: "#192239",
+export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) => ({
+  background: mode === "dark" ? "#192239" : "rgb(242, 244, 248)",
   borderRadius: 10,
   padding: 50,
   fontFamily: "Red Hat Display",
-});
+}));
 
 export const StyledLayoutPangolin = styled(Box)({
   background: "rgb(17, 17, 17)",
@@ -168,4 +168,19 @@ export const StyledStatusSectionTitle = styled(TwapStyles.StyledText)({
 export const StyledStatusSectionText = styled(TwapStyles.StyledText)({
   fontSize: 9,
   lineHeight: "normal",
+});
+
+export const StyledThemeToggle = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  cursor: "pointer",
+  marginTop: 20,
+  marginLeft: "auto",
+  marginRight: 20,
+  "& button": {
+    background: "unset",
+    border: "unset",
+    cursor: "pointer",
+  },
 });

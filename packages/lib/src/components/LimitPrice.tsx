@@ -3,8 +3,9 @@ import { Box, styled } from "@mui/system";
 import NumericInput from "./NumericInput";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
-import PriceToggle from "./PriceToggle";
+import { TbArrowsRightLeft } from "react-icons/tb";
 import { TokenData } from "@orbs-network/twap";
+import IconButton from "./IconButton";
 
 function LimitPrice({
   placeholder = "0.00",
@@ -35,7 +36,7 @@ function LimitPrice({
       <StyledRight>
         <TokenName name={rightToken?.symbol} />
         <TokenLogo logo={rightToken?.logoUrl} />
-        <PriceToggle onClick={toggleInverted} />
+        <IconButton onClick={toggleInverted} icon={<TbArrowsRightLeft style={{ width: 20, height: 20 }} />}></IconButton>
       </StyledRight>
     </StyledContainer>
   );

@@ -8,6 +8,7 @@ import { memo, ReactNode, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
 import { Configs, TokenData } from "@orbs-network/twap";
+
 import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles, useParseTokenList, useTokensFromDapp } from "./hooks";
 const TWAP = (props: TWAPProps) => {
   const { account } = props;
@@ -50,17 +51,13 @@ const TWAP = (props: TWAPProps) => {
 export default memo(TWAP);
 
 const MarketPrice = () => {
-  const { toggleInverted, leftToken, rightToken, marketPrice, ready, loading } = hooks.useMarketPrice();
+  const { toggleInverted, leftToken, rightToken, marketPrice, loading } = hooks.useMarketPrice();
   const translations = useTwapContext().translations;
 
   return (
     <TwapStyles.StyledRowFlex justifyContent="space-between" className="twap-market-price">
       <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
-      {ready ? (
-        <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
-      ) : (
-        <AdapterStyles.Text>-</AdapterStyles.Text>
-      )}
+      <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
     </TwapStyles.StyledRowFlex>
   );
 };

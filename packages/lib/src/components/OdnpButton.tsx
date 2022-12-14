@@ -1,7 +1,8 @@
-import { Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import { analytics } from "../analytics";
+import { useOrdersContext } from "../context";
 import { useTwapStore } from "../store";
+import { StyledOneLineText } from "../styles";
 
 console.debug = () => {};
 const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
@@ -14,6 +15,7 @@ odnp.mainDiv.classList = "odnp";
 
 function OdnpButton({ className = "" }: { className?: string }) {
   const account = useTwapStore((state) => state.lib)?.maker;
+  const translations = useOrdersContext().translations;
   if (!account) return null;
 
   const onClick = () => {
@@ -21,9 +23,9 @@ function OdnpButton({ className = "" }: { className?: string }) {
     odnp.show(account, "twap");
   };
   return (
-    <StyledButton className={className} onClick={onClick}>
+    <StyledButton className={`twap-odnp ${className}`} onClick={onClick}>
       <img src="https://open-defi-notifications.web.app/widget/assets/icon.png" />
-      <Typography>Notify me</Typography>
+      <StyledOneLineText>{translations.notify}</StyledOneLineText>
     </StyledButton>
   );
 }
@@ -31,9 +33,7 @@ function OdnpButton({ className = "" }: { className?: string }) {
 export default OdnpButton;
 
 const StyledButton = styled("button")({
-  background: "transparent",
   borderRadius: "4px",
-  border: "0.75px solid #26A7EF",
   height: 30,
   display: "flex",
   alignItems: "center",
@@ -46,6 +46,6 @@ const StyledButton = styled("button")({
   },
   "& p": {
     fontSize: 12,
-    color: "white",
+    color: "inherit",
   },
 });

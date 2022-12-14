@@ -11,6 +11,7 @@ import { AiOutlineHistory } from "react-icons/ai";
 import { Status } from "@orbs-network/twap";
 import { useOrdersHistoryQuery } from "../hooks";
 import { useOrdersContext } from "../context";
+import { Styles } from "..";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
@@ -25,9 +26,10 @@ function Orders() {
     <StyledContainer className="twap-orders">
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
-          <Label iconStart={<Icon icon={<AiOutlineHistory className="twap-tooltip-icon" style={{ width: 20, height: 20 }} />} />} tooltipText={translations.ordersTooltip}>
-            {translations.orders}
-          </Label>
+          <Styles.StyledRowFlex justifyContent="flex-start" gap={5}>
+            <Icon icon={<AiOutlineHistory style={{ width: 20, height: 20 }} />} />
+            <Label tooltipText={translations.ordersTooltip}>{translations.orders}</Label>
+          </Styles.StyledRowFlex>
           <StyledOdnpButton />
         </StyledHeaderTop>
         <StyledTabs className="twap-orders-header-tabs" value={selectedTab} onChange={handleChange}>
@@ -76,6 +78,7 @@ const StyledTab = styled(Tab)({
   width: "calc(100% / 4)",
   padding: "0px",
   textTransform: "unset",
+  fontFamily: "inherit",
   "@media(max-width: 600px)": {
     fontSize: 10,
     minWidth: "unset",

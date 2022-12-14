@@ -16,7 +16,7 @@ interface OrderTokenDisplayProps {
 }
 export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix }: OrderTokenDisplayProps) => {
   return (
-    <StyledTokenDisplay className={`twap-token-display ${className}`}>
+    <StyledTokenDisplay className={`twap-order-token-display ${className}`}>
       <TwapStyles.StyledRowFlex style={{ alignItems: "flex-start" }}>
         <StyledTokenLogo logo={token?.logoUrl} />
         <TwapStyles.StyledColumnFlex gap={3} style={{ flex: 1, justifyContent: "flex-start" }}>
@@ -40,7 +40,7 @@ interface OrderUsdValueProps {
 
 export function OrderUsdValue({ usdValue, prefix = "≈" }: OrderUsdValueProps) {
   return (
-    <StyledTokenDisplayUsd loading={false} className="twap-token-display-usd">
+    <StyledTokenDisplayUsd loading={false} className="twap-order-token-display-usd">
       {prefix} $ <NumberDisplay value={usdValue} />
     </StyledTokenDisplayUsd>
   );

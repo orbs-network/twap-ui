@@ -14,7 +14,6 @@ export { default as IconButton } from "./IconButton";
 export { default as NumberDisplay } from "./NumberDisplay";
 export { default as PoweredBy } from "./PoweredBy";
 export { default as Disclaimer } from "./Disclaimer";
-export { default as PriceToggle } from "./PriceToggle";
 export { default as Button } from "./Button";
 export { default as Balance } from "./Balance";
 export { default as USD } from "./USD";

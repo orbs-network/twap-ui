@@ -5,6 +5,7 @@ import { SpiritSwapTWAPProps } from ".";
 import _ from "lodash";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
+
 export const useGetProvider = (getProvider: () => any, account?: string) => {
   return useMemo(() => getProvider(), [account]);
 };

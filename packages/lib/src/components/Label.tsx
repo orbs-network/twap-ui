@@ -3,7 +3,7 @@ import React, { ReactElement, ReactNode } from "react";
 import Tooltip from "./Tooltip";
 import { SlInfo } from "react-icons/sl";
 import Icon from "./Icon";
-import { StyledOneLineText } from "../styles";
+import { StyledText } from "../styles";
 import { Styles } from "..";
 
 interface Props {
@@ -46,7 +46,7 @@ const StyledTooltipContent = styled(Box)({
   gap: 5,
 });
 
-const StyledLabel = styled(StyledOneLineText)({
+const StyledLabel = styled(StyledText)({
   fontSize: "inherit",
   fontFamily: "inherit",
 });

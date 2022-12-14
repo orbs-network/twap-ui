@@ -44,7 +44,7 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
     >
       <GlobalStyles styles={globalStyles} />
       <AdapterContextProvider value={adapterContextProps}>
-        <div className="twap-container" style={{ flexDirection: "column", width: "100%" }}>
+        <div className="twap-container">
           <SrcTokenPanel />
           <ChangeTokensOrder />
           <DstTokenPanel />
@@ -64,18 +64,14 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
 export default memo(TWAP);
 
 const MarketPrice = () => {
-  const { toggleInverted, leftToken, rightToken, marketPrice, ready, loading } = hooks.useMarketPrice();
+  const { toggleInverted, leftToken, rightToken, marketPrice, loading } = hooks.useMarketPrice();
   const translations = useTwapContext().translations;
   return (
     <Box className="twap-market-price">
       <Components.Card>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
-          {ready ? (
-            <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
-          ) : (
-            <AdapterStyles.Text>-</AdapterStyles.Text>
-          )}
+          <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
         </TwapStyles.StyledRowFlex>
       </Components.Card>
     </Box>

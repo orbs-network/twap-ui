@@ -4,7 +4,7 @@ import _ from "lodash";
 import Web3 from "web3";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { useCallback, useEffect, useMemo } from "react";
 import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
@@ -138,4 +138,19 @@ export const useEagerlyConnect = () => {
       connect();
     }
   }, []);
+};
+
+export const useTheme = () => {
+  let [searchParams, setSearchParams] = useSearchParams();
+
+  const currentTheme = searchParams.get("theme") || "dark";
+
+  const setTheme = (value: "dark" | "light") => {
+    setSearchParams({ theme: value });
+  };
+
+  return {
+    isDarkTheme: currentTheme === "dark",
+    setTheme,
+  };
 };

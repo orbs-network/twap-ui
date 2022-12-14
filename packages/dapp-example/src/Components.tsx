@@ -2,7 +2,7 @@ import Modal from "@mui/material/Modal";
 import { ReactNode, useState } from "react";
 import { Helmet } from "react-helmet";
 import { AiOutlineClose } from "react-icons/ai";
-import { StyledCloseIcon, StyledDappLayout, StyledMenuDrawer, StyledMenuList, StyledMenuListItemButton, StyledMenuLogo, StyledMenuMobileToggle } from "./styles";
+import { StyledCloseIcon, StyledDappLayout, StyledMenuDrawer, StyledMenuList, StyledMenuListItemButton, StyledMenuLogo, StyledMenuMobileToggle, StyledThemeToggle } from "./styles";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -10,10 +10,11 @@ import { FiMenu } from "react-icons/fi";
 import Backdrop from "@mui/material/Backdrop";
 import { Fade } from "@mui/material";
 import { Config } from "@orbs-network/twap";
-
+import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
 import { dapps } from "./config";
 import { Status } from "./Status";
-import { useSelectedDapp } from "./hooks";
+import { useSelectedDapp, useTheme } from "./hooks";
+import { useSearchParams } from "react-router-dom";
 export interface Dapp {
   config: Config;
   logo: string;
@@ -39,6 +40,31 @@ export const MetaTags = ({ title, favicon }: { title: string; favicon: string })
       <link rel="icon" href={favicon} />
       <title>TWAP On {title}</title>
     </Helmet>
+  );
+};
+
+const ToggleTheme = () => {
+  const size = 18;
+  const { setTheme, isDarkTheme } = useTheme();
+  return (
+    <StyledThemeToggle>
+      <button
+        style={{
+          opacity: isDarkTheme ? 0.5 : 1,
+        }}
+        onClick={() => setTheme("light")}
+      >
+        <BsFillSunFill style={{ width: size, height: size }} />
+      </button>
+      <button
+        style={{
+          opacity: !isDarkTheme ? 0.5 : 1,
+        }}
+        onClick={() => setTheme("dark")}
+      >
+        <BsFillMoonFill style={{ width: size, height: size }} />
+      </button>
+    </StyledThemeToggle>
   );
 };
 
@@ -87,6 +113,7 @@ export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
         anchor="left"
         open={open}
       >
+        <ToggleTheme />
         <StyledMenuList>
           <Backdrop open={isMobile && isOpen} onClick={() => setIsOpen(false)} />
           {dapps.map((dapp) => (

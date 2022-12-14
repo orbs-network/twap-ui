@@ -7,7 +7,7 @@ import BN from "bignumber.js";
 import { InitLibProps, OrderUI } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
-import { setWeb3Instance, switchMetaMaskNetwork, zero, zeroAddress } from "@defi.org/web3-candies";
+import { setWeb3Instance, switchMetaMaskNetwork, zeroAddress } from "@defi.org/web3-candies";
 import { parseOrderUi, prepareOrdersTokensWithUsd, useTwapStore } from "./store";
 
 /**
@@ -15,12 +15,22 @@ import { parseOrderUi, prepareOrdersTokensWithUsd, useTwapStore } from "./store"
  */
 
 const useResetStoreAndQueries = () => {
+  const resetTwapStore = useTwapStore((state) => state.reset);
+  const client = useQueryClient();
+
+  return () => {
+    client.invalidateQueries();
+    resetTwapStore();
+  };
+};
+
+const useResetStoreWithLibAndQueries = () => {
   const resetTwapStore = useTwapStore((state) => state.resetWithLib);
   const client = useQueryClient();
 
   return () => {
-    resetTwapStore();
     client.invalidateQueries();
+    resetTwapStore();
   };
 };
 
@@ -98,12 +108,12 @@ const useApproveToken = () => {
     }
   );
 };
-//TODO store.
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
-  const reset = useResetStoreAndQueries();
+  const reset = useResetStoreWithLibAndQueries();
+
   return useMutation(
     async () => {
       console.log({
@@ -137,6 +147,7 @@ export const useCreateOrder = () => {
       onSuccess: async () => {
         analytics.onCreateOrderSuccess();
         reset();
+        store.setWaitingForNewOrder(true);
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
@@ -153,8 +164,10 @@ export const useCreateOrder = () => {
 export const useInitLib = () => {
   const setTwapLib = useTwapStore((state) => state.setLib);
   const setWrongNetwork = useTwapStore((state) => state.setWrongNetwork);
+  const reset = useResetStoreAndQueries();
 
   return async (props: InitLibProps) => {
+    reset();
     if (!props.provider || !props.account) {
       setTwapLib(undefined);
       setWrongNetwork(false);
@@ -366,7 +379,13 @@ export const useMarketPrice = () => {
   const [inverted, setInverted] = useState(false);
   const { leftToken, rightToken, marketPriceUi: marketPrice, loading } = useTwapStore((state) => state.getMarketPrice(inverted));
 
-  return { leftToken, rightToken, marketPrice, toggleInverted: () => setInverted(!inverted), ready: !!leftToken && !!rightToken, loading };
+  return {
+    leftToken,
+    rightToken,
+    marketPrice,
+    toggleInverted: () => setInverted(!inverted),
+    loading,
+  };
 };
 
 export const useLimitPrice = () => {
@@ -556,8 +575,10 @@ const defaultFetcher = (chainId: number, token: TokenData) => {
 
 export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenData) => Promise<BN> = defaultFetcher) => {
   const tokenList = useOrdersContext().tokenList;
-  const lib = useTwapStore((state) => state.lib);
+  const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
+  const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
 
+  const lib = useTwapStore((state) => state.lib);
   const query = useQuery(
     ["useOrdersHistory", lib?.maker, lib?.config.chainId],
     async () => {
@@ -577,8 +598,11 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
     },
     {
       enabled: !!lib && !!tokenList && tokenList.length > 0,
+      onSettled: () => {
+        setWaitingForNewOrder(false);
+      },
     }
   );
 
-  return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };
+  return { ...query, orders: query.data || {}, isLoading: (query.isLoading && query.fetchStatus !== "idle") || waitingForNewOrder };
 };

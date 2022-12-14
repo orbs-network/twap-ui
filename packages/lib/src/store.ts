@@ -44,10 +44,12 @@ const initialState = {
   duration: { resolution: TimeResolution.Minutes, amount: 5 },
   customFillDelay: { resolution: TimeResolution.Minutes, amount: 0 },
   customFillDelayEnabled: false,
+  waitingForNewOrder: false,
 };
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
+    setWaitingForNewOrder: (waitingForNewOrder: boolean) => set({ waitingForNewOrder }),
     reset: () => set(initialState),
     resetWithLib: () => set({ ...initialState, lib: get().lib }),
     setLib: (lib?: TWAPLib) => set({ lib }),
@@ -152,7 +154,7 @@ export const useTwapStore = create(
         rightToken,
         marketPrice,
         marketPriceUi: marketPrice.toFormat(),
-        loading: leftUsd.isZero() || rightUsd.isZero(),
+        loading: !leftToken || !rightToken ? false : leftUsd.isZero() || rightUsd.isZero(),
       };
     },
 
