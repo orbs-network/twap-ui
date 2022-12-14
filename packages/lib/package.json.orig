@@ -1,0 +1,58 @@
+{
+  "name": "@orbs-network/twap-ui",
+<<<<<<< HEAD
+  "version": "0.4.2",
+=======
+  "version": "0.4.1",
+>>>>>>> 01c522b (v0.4.1)
+  "description": "TWAP UI",
+  "license": "MIT",
+  "author": "Orbs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orbs-network/twap-ui.git"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "./dist"
+  ],
+  "scripts": {
+    "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
+    "build": "npm run prettier && rm -rf dist && tsc",
+    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc",
+    "test": "eslint src && for t in ftm; do echo \"testing $t...\"; NETWORK=$t DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors; done",
+    "test:watch": "NETWORK=FTM DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors --watch"
+  },
+  "dependencies": {
+    "@defi.org/web3-candies": "4.x",
+    "@emotion/react": "11.x",
+    "@emotion/styled": "11.x",
+    "@mui/material": "5.x",
+    "@mui/system": "5.x",
+    "@open-defi-notification-protocol/widget": "0.0.x",
+    "@orbs-network/twap": "1.8.x",
+    "@tanstack/react-query": "4.x",
+    "@types/lodash": "4.x",
+    "bignumber.js": "9.x",
+    "lodash": "4.x",
+    "moment": "2.x",
+    "react-icons": "4.x",
+    "react-number-format": "5.x",
+    "web3": "1.x",
+    "zustand": "4.x"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "testTimeout": 30000
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "0c682a5d40f13e21e288de468c9b887b4d79f2d1"
+}
