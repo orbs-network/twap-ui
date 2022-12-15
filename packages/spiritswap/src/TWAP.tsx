@@ -19,6 +19,7 @@ import {
 } from "./hooks";
 import translations from "./i18n/en.json";
 import { SpiritSwapTWAPProps } from ".";
+import {AiOutlineWarning} from 'react-icons/ai'
 
 const TWAP = (props: SpiritSwapTWAPProps) => {
   const { getTokenImageUrl, dappTokens } = props;
@@ -60,6 +61,21 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
     </TwapAdapter>
   );
 };
+
+
+const PartialFillWarning = () => {
+    const translations = useTwapContext().translations;
+    const isWarning = store.useTwapStore((state) => state.getIsPartialFillWarning());
+    if(!isWarning) return null
+    return (
+      <Components.Tooltip text={translations.prtialFillWarningTooltip}>
+        <TwapStyles.StyledRowFlex justifyContent='flex-start' gap={5}  className="twap-partial-fill">
+          <AdapterStyles.Text>{translations.prtialFillWarning}</AdapterStyles.Text>
+          <AiOutlineWarning />
+        </TwapStyles.StyledRowFlex>
+      </Components.Tooltip>
+    );
+} 
 
 export default memo(TWAP);
 
@@ -216,10 +232,11 @@ const MaxDuration = () => {
 
   return (
     <Components.Card>
-      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
-        <Components.Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Components.Label>
-        <Components.TimeSelector value={duration} onChange={onChange} />
-      </TwapStyles.StyledRowFlex>
+        <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
+          <Components.Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Components.Label>
+          <PartialFillWarning />
+          <Components.TimeSelector value={duration} onChange={onChange} />
+        </TwapStyles.StyledRowFlex>
     </Components.Card>
   );
 };

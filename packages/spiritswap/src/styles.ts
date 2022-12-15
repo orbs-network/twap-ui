@@ -166,6 +166,11 @@ export const StyledTokenOrderPreviewAmount = styled(Components.SmallLabel)({
 export const configureStyles = () => {
   const styles = darkModeStylesConfig;
   return {
+    ".twap-partial-fill": {
+      fontSize: 14,
+      color:'white',
+      opacity: 0.5
+    },
     ".twap-odnp": {
       color: styles.textColor,
       background: "transparent",
@@ -430,3 +435,5 @@ export const configureStyles = () => {
     },
   };
 };
+
+

@@ -117,6 +117,7 @@ export const useTwapStore = create(
         return translation.tradeSizeMustBeEqual;
       }
     },
+    getIsPartialFillWarning: () => get().chunks * (get() as any).getFillDelayMillis() > (get() as any).getDurationMillis(),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork: boolean) => set({ wrongNetwork }),
 
@@ -190,6 +191,8 @@ export const useTwapStore = create(
     },
     getFillDelayUi: (translations: Translations) => fillDelayUi((get() as any).getFillDelayMillis(), translations),
     getFillDelayMillis: () => (get() as any).getFillDelay().amount * (get() as any).getFillDelay().resolution,
+    getDurationMillis: () => get().duration.amount * get().duration.resolution,
+
     setCustomFillDelayEnabled: () => set({ customFillDelayEnabled: true }),
 
     switchTokens: () => {

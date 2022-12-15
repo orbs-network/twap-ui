@@ -86,6 +86,8 @@ export interface Translations {
   progress: string;
   estimated: string;
   notify: string;
+  prtialFillWarning: string;
+  prtialFillWarningTooltip: string;
 }
 
 interface BaseProps {
