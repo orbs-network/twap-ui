@@ -168,8 +168,8 @@ export const configureStyles = () => {
   return {
     ".twap-partial-fill": {
       fontSize: 14,
-      color:'white',
-      opacity: 0.5
+      color: "white",
+      opacity: 0.5,
     },
     ".twap-odnp": {
       color: styles.textColor,
@@ -435,5 +435,3 @@ export const configureStyles = () => {
     },
   };
 };
-
-

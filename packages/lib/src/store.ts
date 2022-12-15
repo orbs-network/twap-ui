@@ -125,14 +125,7 @@ export const useTwapStore = create(
     setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => set({ limitPriceUi }),
 
     setChunks: (chunks: number) => set({ chunks: Math.min(chunks, (get() as any).getMaxPossibleChunks()) }),
-    setDuration: (duration: Duration) =>
-      get().lib &&
-      set(() => ({
-        duration:
-          duration.resolution * duration.amount < get().lib!.config.bidDelaySeconds * 2 * 1000
-            ? { resolution: TimeResolution.Minutes, amount: (get().lib!.config.bidDelaySeconds * 2) / 60 }
-            : duration,
-      })),
+    setDuration: (duration: Duration) => set({ duration }),
 
     isSameNativeBasedToken: () =>
       !!get().lib &&
@@ -193,7 +186,7 @@ export const useTwapStore = create(
     getFillDelayMillis: () => (get() as any).getFillDelay().amount * (get() as any).getFillDelay().resolution,
     getDurationMillis: () => get().duration.amount * get().duration.resolution,
 
-    setCustomFillDelayEnabled: () => set({ customFillDelayEnabled: true }),
+    setCustomFillDelayEnabled: (customFillDelayEnabled: boolean) => set({ customFillDelayEnabled }),
 
     switchTokens: () => {
       const srcToken = get().srcToken!;

@@ -31,9 +31,11 @@ interface Props {
   onChange: ({ resolution, amount }: { resolution: TimeResolution; amount: number }) => void;
   disabled?: boolean;
   className?: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
-function TimeSelector({ value, onChange, disabled = false, className = "" }: Props) {
+function TimeSelector({ value, onChange, disabled = false, className = "", onFocus, onBlur }: Props) {
   const [showList, setShowList] = useState(false);
   const translations = useTwapContext().translations;
 
@@ -50,7 +52,14 @@ function TimeSelector({ value, onChange, disabled = false, className = "" }: Pro
   return (
     <StyledContainer className={`twap-time-selector ${className}`} style={{ pointerEvents: disabled ? "none" : "unset" }}>
       <StyledInput>
-        <NumericInput disabled={disabled} value={value.amount} onChange={(v) => onChange({ resolution: value.resolution, amount: Number(v) })} placeholder={"0"} />
+        <NumericInput
+          onBlur={onBlur}
+          onFocus={onFocus}
+          disabled={disabled}
+          value={value.amount}
+          onChange={(v) => onChange({ resolution: value.resolution, amount: Number(v) })}
+          placeholder={"0"}
+        />
       </StyledInput>
 
       <StyledTimeSelect>

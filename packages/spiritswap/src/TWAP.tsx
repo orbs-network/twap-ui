@@ -1,7 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Box } from "@mui/system";
 import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
-import { AiFillEdit } from "react-icons/ai";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback, useState } from "react";
@@ -19,7 +18,7 @@ import {
 } from "./hooks";
 import translations from "./i18n/en.json";
 import { SpiritSwapTWAPProps } from ".";
-import {AiOutlineWarning} from 'react-icons/ai'
+import { AiOutlineWarning } from "react-icons/ai";
 
 const TWAP = (props: SpiritSwapTWAPProps) => {
   const { getTokenImageUrl, dappTokens } = props;
@@ -62,20 +61,19 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
   );
 };
 
-
 const PartialFillWarning = () => {
-    const translations = useTwapContext().translations;
-    const isWarning = store.useTwapStore((state) => state.getIsPartialFillWarning());
-    if(!isWarning) return null
-    return (
-      <Components.Tooltip text={translations.prtialFillWarningTooltip}>
-        <TwapStyles.StyledRowFlex justifyContent='flex-start' gap={5}  className="twap-partial-fill">
-          <AdapterStyles.Text>{translations.prtialFillWarning}</AdapterStyles.Text>
-          <AiOutlineWarning />
-        </TwapStyles.StyledRowFlex>
-      </Components.Tooltip>
-    );
-} 
+  const translations = useTwapContext().translations;
+  const isWarning = store.useTwapStore((state) => state.getIsPartialFillWarning());
+  if (!isWarning) return null;
+  return (
+    <Components.Tooltip text={translations.prtialFillWarningTooltip}>
+      <TwapStyles.StyledRowFlex justifyContent="flex-start" gap={5} className="twap-partial-fill">
+        <AdapterStyles.Text>{translations.prtialFillWarning}</AdapterStyles.Text>
+        <AiOutlineWarning />
+      </TwapStyles.StyledRowFlex>
+    </Components.Tooltip>
+  );
+};
 
 export default memo(TWAP);
 
@@ -232,35 +230,39 @@ const MaxDuration = () => {
 
   return (
     <Components.Card>
-        <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
-          <Components.Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Components.Label>
-          <PartialFillWarning />
-          <Components.TimeSelector value={duration} onChange={onChange} />
-        </TwapStyles.StyledRowFlex>
+      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
+        <Components.Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Components.Label>
+        <PartialFillWarning />
+        <Components.TimeSelector value={duration} onChange={onChange} />
+      </TwapStyles.StyledRowFlex>
     </Components.Card>
   );
 };
 
 const TradeInterval = () => {
   const fillDelay = store.useTwapStore((state) => state.getFillDelay());
-  const customFillDelayEnabled = store.useTwapStore((state) => state.customFillDelayEnabled);
   const onChange = store.useTwapStore((state) => state.setFillDelay);
-  const onCustomFillDelayClick = store.useTwapStore((state) => state.setCustomFillDelayEnabled);
+  const setCustomFillDelayEnabled = store.useTwapStore((state) => state.setCustomFillDelayEnabled);
 
   const translations = useTwapContext().translations;
+
+  const onBlur = () => {
+    if (!fillDelay.amount) {
+      setCustomFillDelayEnabled(false);
+    }
+  };
+
+  const onFocus = () => {
+    setCustomFillDelayEnabled(true);
+  };
 
   return (
     <Components.Card>
       <TwapStyles.StyledRowFlex justifyContent="space-between" gap={10}>
         <Components.Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Components.Label>
         <AdapterStyles.StyledIntervalTimeSelect>
-          <Components.TimeSelector disabled={!customFillDelayEnabled} onChange={onChange} value={fillDelay} />
+          <Components.TimeSelector onFocus={onFocus} onBlur={onBlur} onChange={onChange} value={fillDelay} />
         </AdapterStyles.StyledIntervalTimeSelect>
-        {!customFillDelayEnabled && (
-          <Components.IconButton tooltip={translations.customIntervalTooltip} onClick={onCustomFillDelayClick}>
-            <Components.Icon icon={<AiFillEdit />} />
-          </Components.IconButton>
-        )}
       </TwapStyles.StyledRowFlex>
     </Components.Card>
   );
