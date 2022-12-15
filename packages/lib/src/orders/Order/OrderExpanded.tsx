@@ -6,12 +6,13 @@ import { Styles as TwapStyles } from "../..";
 import { Button, Label, NumberDisplay, SmallLabel, TokenLogo, TokenPriceCompare, Tooltip } from "../../components";
 import { useOrdersContext } from "../../context";
 import { useCancelOrder, useHistoryPrice } from "../../hooks";
-import { fillDelayText } from "../../store";
+import { fillDelayText, useTwapStore } from "../../store";
 import { StyledText } from "../../styles";
 import { OrderUI } from "../../types";
 import { OrderTokenDisplay } from "./Components";
 const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const translations = useOrdersContext().translations;
+  const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
 
   return (
     <StyledContainer className="twap-order-expanded">
@@ -58,7 +59,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
           </Row>
         )}
 
-        <Row label={`${translations.tradeInterval}:`} tooltip={translations.tradeIntervalTootlip}>
+        <Row label={`${translations.tradeInterval}:`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
           {fillDelayText(order.ui.fillDelay, translations)}
         </Row>
         <Row label={`${translations.deadline}:`} tooltip={translations.maxDurationTooltip}>

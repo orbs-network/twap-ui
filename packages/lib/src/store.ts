@@ -189,7 +189,7 @@ export const useTwapStore = create(
 
     setCustomFillDelayEnabled: (customFillDelayEnabled: boolean) => set({ customFillDelayEnabled }),
     getMinimumDelayMinutes: () => (get().lib?.estimatedDelayBetweenChunksMillis() || 0) / 1000 / 60,
-    getFillDelayWarning: () => get().lib &&  (get() as any).getFillDelayMillis() > 0 && (get() as any).getFillDelayMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000,
+    getFillDelayWarning: () => get().lib && (get() as any).getFillDelayMillis() > 0 && (get() as any).getFillDelayMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000,
     switchTokens: () => {
       const srcToken = get().srcToken!;
       const dstToken = get().dstToken!;

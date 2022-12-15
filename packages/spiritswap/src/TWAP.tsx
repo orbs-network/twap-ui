@@ -259,8 +259,9 @@ const TradeInterval = () => {
   const fillDelay = store.useTwapStore((state) => state.getFillDelay());
   const onChange = store.useTwapStore((state) => state.setFillDelay);
   const setCustomFillDelayEnabled = store.useTwapStore((state) => state.setCustomFillDelayEnabled);
-
+  const setCustomFillDelay = store.useTwapStore((state) => state.setFillDelay);
   const translations = useTwapContext().translations;
+  const minimumDelayMinutes = store.useTwapStore((state) => state.getMinimumDelayMinutes());
 
   const onBlur = () => {
     if (!fillDelay.amount) {
@@ -269,13 +270,14 @@ const TradeInterval = () => {
   };
 
   const onFocus = () => {
+    setCustomFillDelay(fillDelay);
     setCustomFillDelayEnabled(true);
   };
 
   return (
     <Components.Card>
       <TwapStyles.StyledRowFlex justifyContent="space-between" gap={10}>
-        <Components.Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Components.Label>
+        <Components.Label tooltipText={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>{translations.tradeInterval}</Components.Label>
         <FillDelayWarning />
         <AdapterStyles.StyledIntervalTimeSelect>
           <Components.TimeSelector onFocus={onFocus} onBlur={onBlur} onChange={onChange} value={fillDelay} />
@@ -390,6 +392,7 @@ const SubmitButton = () => {
 const OrderSummary = () => {
   const twapStore = store.useTwapStore();
   const translations = useTwapContext().translations;
+  const minimumDelayMinutes = store.useTwapStore((state) => state.getMinimumDelayMinutes());
 
   return (
     <>
@@ -434,7 +437,7 @@ const OrderSummary = () => {
                   <SummaryRow tooltip={translations.confirmationTotalTradesTooltip} label={translations.totalTrades}>
                     <AdapterStyles.Text>{twapStore.chunks}</AdapterStyles.Text>
                   </SummaryRow>
-                  <SummaryRow tooltip={translations.confirmationtradeIntervalTooltip} label={translations.tradeInterval}>
+                  <SummaryRow tooltip={translations.confirmationtradeIntervalTooltip.replace("{{minutes}}", minimumDelayMinutes.toString())} label={translations.tradeInterval}>
                     <AdapterStyles.Text>{twapStore.getFillDelayText(translations)}</AdapterStyles.Text>
                   </SummaryRow>
                   <SummaryRow
