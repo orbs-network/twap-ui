@@ -202,7 +202,7 @@ const TradeInterval = () => {
         <Components.TimeSelector disabled={!customFillDelayEnabled} onChange={onChange} value={fillDelay} />
       </AdapterStyles.StyledIntervalTimeSelect>
       {!customFillDelayEnabled && (
-        <Components.IconButton tooltip={translations.customIntervalTooltip} onClick={onCustomFillDelayClick}>
+        <Components.IconButton tooltip={translations.customIntervalTooltip} onClick={() => onCustomFillDelayClick(true)}>
           <Components.Icon icon={<AiFillEdit />} />
         </Components.IconButton>
       )}
@@ -327,7 +327,7 @@ const OrderSummary = () => {
     getSrcAmountUsdUi,
     getSrcChunkAmountUi,
     getDeadlineUi,
-    getFillDelayUi,
+    getFillDelayText,
     chunks,
     getDstMinAmountOutUi,
     srcAmountUi,
@@ -373,7 +373,7 @@ const OrderSummary = () => {
                     <AdapterStyles.Text>{chunks}</AdapterStyles.Text>
                   </SummaryRow>
                   <SummaryRow tooltip={translations.confirmationtradeIntervalTooltip} label={translations.tradeInterval}>
-                    <AdapterStyles.Text>{getFillDelayUi(translations)}</AdapterStyles.Text>
+                    <AdapterStyles.Text>{getFillDelayText(translations)}</AdapterStyles.Text>
                   </SummaryRow>
                   <SummaryRow
                     tooltip={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}

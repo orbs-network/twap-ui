@@ -116,14 +116,15 @@ export const useTwapStore = create(
       if (valuesValidation === OrderInputValidation.invalidSmallestSrcChunkUsd) {
         return translation.tradeSizeMustBeEqual;
       }
+      if ((get() as any).getFillDelayWarning()) {
+        return translation.fillDelayWarning;
+      }
     },
     getIsPartialFillWarning: () => get().chunks * (get() as any).getFillDelayMillis() > (get() as any).getDurationMillis(),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork: boolean) => set({ wrongNetwork }),
-
     toggleLimitOrder: () => set({ isLimitOrder: !get().isLimitOrder, limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false } }),
     setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => set({ limitPriceUi }),
-
     setChunks: (chunks: number) => set({ chunks: Math.min(chunks, (get() as any).getMaxPossibleChunks()) }),
     setDuration: (duration: Duration) => set({ duration }),
 
@@ -178,16 +179,17 @@ export const useTwapStore = create(
     getFillDelay: () => {
       if (!get().lib) return { resolution: TimeResolution.Minutes, amount: 0 };
       if (get().customFillDelayEnabled && get().customFillDelay) return get().customFillDelay;
-      const millis = get().lib!.fillDelayMillis(get().chunks, get().duration.resolution * get().duration.amount);
+      const millis = get().lib!.fillDelayUiMillis(get().chunks, get().duration.resolution * get().duration.amount);
       const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= millis) || TimeResolution.Minutes;
       return { resolution, amount: Number(BN(millis / resolution).toFixed(2)) };
     },
-    getFillDelayUi: (translations: Translations) => fillDelayUi((get() as any).getFillDelayMillis(), translations),
+    getFillDelayText: (translations: Translations) => fillDelayText((get() as any).getFillDelayMillis(), translations),
     getFillDelayMillis: () => (get() as any).getFillDelay().amount * (get() as any).getFillDelay().resolution,
     getDurationMillis: () => get().duration.amount * get().duration.resolution,
 
     setCustomFillDelayEnabled: (customFillDelayEnabled: boolean) => set({ customFillDelayEnabled }),
-
+    getMinimumDelayMinutes: () => (get().lib?.estimatedDelayBetweenChunksMillis() || 0) / 1000 / 60,
+    getFillDelayWarning: () => get().lib && (get() as any).getFillDelayMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000,
     switchTokens: () => {
       const srcToken = get().srcToken!;
       const dstToken = get().dstToken!;
@@ -302,7 +304,7 @@ const amountUi = (token: TokenData | undefined, amount: BN) => {
   return amount.times(percision).idiv(percision).div(percision).toFormat();
 };
 
-export const fillDelayUi = (value: number, translations: Translations) => {
+export const fillDelayText = (value: number, translations: Translations) => {
   if (!value) {
     return "0";
   }

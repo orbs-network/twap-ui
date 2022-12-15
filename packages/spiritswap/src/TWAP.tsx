@@ -67,13 +67,30 @@ const PartialFillWarning = () => {
   if (!isWarning) return null;
   return (
     <Components.Tooltip text={translations.prtialFillWarningTooltip}>
-      <TwapStyles.StyledRowFlex justifyContent="flex-start" gap={5} className="twap-partial-fill">
+      <TwapStyles.StyledRowFlex justifyContent="flex-start" gap={5} className="twap-warning">
         <AdapterStyles.Text>{translations.prtialFillWarning}</AdapterStyles.Text>
         <AiOutlineWarning />
       </TwapStyles.StyledRowFlex>
     </Components.Tooltip>
   );
 };
+
+const FillDelayWarning = () => {
+  const translations = useTwapContext().translations;
+  const isWarning = store.useTwapStore((state) => state.getFillDelayWarning());
+  const minimumDelayMinutes = store.useTwapStore((state) => state.getMinimumDelayMinutes());
+
+  if (!isWarning) return null;
+  return (
+    <Components.Tooltip text={translations.fillDelayWarningTooltip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
+      <TwapStyles.StyledRowFlex justifyContent="flex-start" gap={5} className="twap-warning">
+        <AdapterStyles.Text>{translations.invalid}</AdapterStyles.Text>
+        <AiOutlineWarning />
+      </TwapStyles.StyledRowFlex>
+    </Components.Tooltip>
+  );
+};
+
 
 export default memo(TWAP);
 
@@ -260,6 +277,7 @@ const TradeInterval = () => {
     <Components.Card>
       <TwapStyles.StyledRowFlex justifyContent="space-between" gap={10}>
         <Components.Label tooltipText={translations.tradeIntervalTootlip}>{translations.tradeInterval}</Components.Label>
+        <FillDelayWarning />
         <AdapterStyles.StyledIntervalTimeSelect>
           <Components.TimeSelector onFocus={onFocus} onBlur={onBlur} onChange={onChange} value={fillDelay} />
         </AdapterStyles.StyledIntervalTimeSelect>
@@ -418,7 +436,7 @@ const OrderSummary = () => {
                     <AdapterStyles.Text>{twapStore.chunks}</AdapterStyles.Text>
                   </SummaryRow>
                   <SummaryRow tooltip={translations.confirmationtradeIntervalTooltip} label={translations.tradeInterval}>
-                    <AdapterStyles.Text>{twapStore.getFillDelayUi(translations)}</AdapterStyles.Text>
+                    <AdapterStyles.Text>{twapStore.getFillDelayText(translations)}</AdapterStyles.Text>
                   </SummaryRow>
                   <SummaryRow
                     tooltip={twapStore.isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}

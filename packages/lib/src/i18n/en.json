@@ -88,5 +88,8 @@
   "estimated": "estimated",
   "notify": "Notify me",
   "prtialFillWarning": "Partial fill",
-  "prtialFillWarningTooltip": "Order will not be completely filled in the selected duration"
+  "prtialFillWarningTooltip": "Order will not be completely filled in the selected duration.",
+  "invalid": "Invalid",
+  "fillDelayWarning": "Invalid trade interval",
+  "fillDelayWarningTooltip": "Trade interval must be higher than {{minutes}} minutes to allow for the bidding war."
 }

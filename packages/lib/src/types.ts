@@ -88,6 +88,9 @@ export interface Translations {
   notify: string;
   prtialFillWarning: string;
   prtialFillWarningTooltip: string;
+  fillDelayWarning: string;
+  fillDelayWarningTooltip: string;
+  invalid: string;
 }
 
 interface BaseProps {
