@@ -93,7 +93,6 @@ interface BaseProps {
   account?: any;
   provider?: any;
   getProvider?: () => any;
-  getTokenImage?: (value: any) => string;
   dappTokens: any;
   maxFeePerGas?: string;
   priorityFeePerGas?: string;

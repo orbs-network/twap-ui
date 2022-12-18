@@ -10,23 +10,23 @@ export const useGetProvider = (getProvider: () => any, account?: string) => {
   return useMemo(() => getProvider(), [account]);
 };
 
-export const parseToken = (rawToken: any, getTokenImage: (rawToken: any) => string): TokenData => {
+export const parseToken = (rawToken: any, getTokenImageUrl: (symbol: string) => string): TokenData => {
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: getTokenImage(rawToken),
+    logoUrl: getTokenImageUrl(rawToken.symbol),
   };
 };
 
-export const useParseTokenList = (getTokenImage: (rawToken: any) => string, dappTokens?: any[]): TokenData[] => {
+export const useParseTokenList = (getTokenImageUrl: (symbol: string) => string, dappTokens?: any[]): TokenData[] => {
   const dappTokensRef = useRef<any[] | undefined>(undefined);
   dappTokensRef.current = dappTokens;
   const dappTokensLength = dappTokens?.length || 0;
 
   return useMemo(() => {
     if (!dappTokensRef.current) return [];
-    return _.map(dappTokensRef.current, (t) => parseToken(t, getTokenImage));
+    return _.map(dappTokensRef.current, (t) => parseToken(t, getTokenImageUrl));
   }, [dappTokensLength]);
 };
 
@@ -53,7 +53,7 @@ export const useSetTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: s
 };
 
 export interface AdapterContextProps {
-  getTokenImage: (token: any) => string;
+  getTokenImageUrl: (symbol: string) => string;
   dappTokens: any[];
   onSrcTokenSelected: (value: any) => void;
   onDstTokenSelected: (value: any) => void;
@@ -65,7 +65,7 @@ export const usePrepareAdapterContextProps = (props: SpiritSwapTWAPProps) => {
     onSrcTokenSelected: props.onSrcTokenSelected,
     onDstTokenSelected: props.onDstTokenSelected,
     dappTokens: props.dappTokens,
-    getTokenImage: props.getTokenImage,
+    getTokenImageUrl: props.getTokenImageUrl,
     TokenSelectModal: props.TokenSelectModal,
   };
 };

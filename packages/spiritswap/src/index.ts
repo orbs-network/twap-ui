@@ -2,11 +2,11 @@ import TWAP from "./TWAP";
 import Orders from "./Orders";
 import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 export interface SpiritSwapOrdersProps extends OrdersProps {
-  getTokenImage: (token: any) => string;
+  getTokenImageUrl: (symbol: string) => string;
   getProvider: () => any;
 }
 export interface SpiritSwapTWAPProps extends TWAPProps {
-  getTokenImage: (token: any) => string;
+  getTokenImageUrl: (symbol: string) => string;
   connect: () => void;
   getProvider: () => any;
   onSrcTokenSelected: (value: any) => void;

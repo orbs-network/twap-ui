@@ -57,7 +57,7 @@ const DappComponent = () => {
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
 
-  const getTokenImage = (token: any) => token.logoUrl;
+  const getTokenImageUrl = (symbol: string) => dappTokens?.find((t) => t.symbol === symbol)?.logoUrl;
 
   const getProvider = () => library;
   const { isDarkTheme } = useTheme();
@@ -68,14 +68,14 @@ const DappComponent = () => {
     account,
     srcToken: "WFTM",
     dstToken: "ORBS",
-    getTokenImage,
+    getTokenImageUrl,
     dappTokens,
     onSrcTokenSelected: (token: any) => console.log(token),
     onDstTokenSelected: (token: any) => console.log(token),
     TokenSelectModal,
     isDarkTheme,
   };
-  const ordersProps: SpookySwapOrdersProps = { account, getTokenImage, dappTokens, getProvider, isDarkTheme };
+  const ordersProps: SpookySwapOrdersProps = { account, getTokenImageUrl, dappTokens, getProvider, isDarkTheme };
 
   return (
     <DappLayout name={config.partner} favicon={logo}>

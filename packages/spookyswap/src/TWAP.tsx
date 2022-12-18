@@ -20,7 +20,7 @@ import { SpookySwapTWAPProps } from ".";
 import * as AdapterStyles from "./styles";
 
 const TWAP = (props: SpookySwapTWAPProps) => {
-  const tokenList = useParseTokenList(props.getTokenImage, props.dappTokens);
+  const tokenList = useParseTokenList(props.getTokenImageUrl, props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
@@ -271,7 +271,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   const { onTokenSelect, amountPrefix, disabled, selectTokenWarning, token, onChange, value, usdValue, balanceLoading, balance, usdLoading, decimalScale } =
     hooks.useTokenPanel(isSrcToken);
 
-  const { TokenSelectModal, getTokenImage, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
+  const { TokenSelectModal, getTokenImageUrl, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
 
   const onOpen = () => {
     if (!selectTokenWarning) setTokenListOpen(true);
@@ -285,7 +285,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
       } else {
         onDstTokenSelected(token);
       }
-      onTokenSelect(parseToken(token, getTokenImage));
+      onTokenSelect(parseToken(token, getTokenImageUrl));
     },
     [isSrcToken]
   );

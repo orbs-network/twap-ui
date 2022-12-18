@@ -56,9 +56,7 @@ const DappComponent = () => {
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
 
-  const getTokenImage = (token: any) => {
-    return token.logoUrl;
-  };
+  const getTokenImageUrl = (symbol: string) => dappTokens?.find((t) => t.symbol === symbol)?.logoUrl;
 
   const twapProps: SpiritSwapTWAPProps = {
     getProvider: () => library,
@@ -66,13 +64,13 @@ const DappComponent = () => {
     account,
     srcToken: "WFTM",
     dstToken: "ORBS",
-    getTokenImage,
+    getTokenImageUrl,
     dappTokens,
     onSrcTokenSelected: (token: any) => console.log(token),
     onDstTokenSelected: (token: any) => console.log(token),
     TokenSelectModal,
   };
-  const ordersProps: SpiritSwapOrdersProps = { account, getTokenImage, dappTokens, getProvider: () => library };
+  const ordersProps: SpiritSwapOrdersProps = { account, getTokenImageUrl, dappTokens, getProvider: () => library };
 
   return (
     <DappLayout name={config.partner} favicon={logo}>

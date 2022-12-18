@@ -6,7 +6,7 @@ import translations from "./i18n/en.json";
 import { SpookySwapOrdersProps } from ".";
 
 function OrderHistory(props: SpookySwapOrdersProps) {
-  const tokenList = useParseTokenList(props.getTokenImage, props.dappTokens);
+  const tokenList = useParseTokenList(props.getTokenImageUrl, props.dappTokens);
   const provider = useGetProvider(props.getProvider, props.account);
 
   return (

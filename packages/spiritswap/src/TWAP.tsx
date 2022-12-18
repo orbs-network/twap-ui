@@ -21,8 +21,8 @@ import translations from "./i18n/en.json";
 import { SpiritSwapTWAPProps } from ".";
 
 const TWAP = (props: SpiritSwapTWAPProps) => {
-  const { getTokenImage, dappTokens } = props;
-  const tokenList = useParseTokenList(getTokenImage, dappTokens);
+  const { getTokenImageUrl, dappTokens } = props;
+  const tokenList = useParseTokenList(getTokenImageUrl, dappTokens);
   useSetTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
@@ -282,7 +282,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     decimalScale,
   } = hooks.useTokenPanel(isSrcToken);
 
-  const { getTokenImage, TokenSelectModal, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
+  const { getTokenImageUrl, TokenSelectModal, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
 
   const onOpen = () => {
     if (!selectTokenWarning) setTokenListOpen(true);
@@ -291,7 +291,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   const onTokenSelected = useCallback(
     (token: any) => {
       setTokenListOpen(false);
-      onTokenSelect(parseToken(token, getTokenImage));
+      onTokenSelect(parseToken(token, getTokenImageUrl));
       if (isSrcToken) {
         onSrcTokenSelected(token);
       } else {
