@@ -11,25 +11,22 @@ interface Props {
   tooltipText?: string | ReactElement;
   className?: string;
   fontSize?: number;
-  iconStart?: ReactElement;
   placement?: "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top";
 }
 
-function Label({ children, tooltipText, className = "", fontSize, iconStart, placement }: Props) {
-  if (tooltipText) {
-    return (
-      <StyledContainer>
-        <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
+function Label({ children, tooltipText, className = "", fontSize, placement }: Props) {
+  return (
+    <StyledContainer className={`twap-label ${className}`}>
+      <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
+      {tooltipText && (
         <Tooltip placement={placement} text={tooltipText}>
           <StyledTooltipContent className={`twap-label ${className}`}>
-            {iconStart}
             <Icon icon={<SlInfo className="twap-tooltip-icon" style={{ width: 14, height: 14 }} />} />
           </StyledTooltipContent>
         </Tooltip>
-      </StyledContainer>
-    );
-  }
-  return <StyledLabel className={`twap-label ${className}`}>{children}</StyledLabel>;
+      )}
+    </StyledContainer>
+  );
 }
 
 export default Label;

@@ -27,12 +27,12 @@ export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) =
   fontFamily: "Red Hat Display",
 }));
 
-export const StyledLayoutPangolin = styled(Box)({
-  background: "rgb(17, 17, 17)",
+export const StyledLayoutPangolin = styled(Box)(({ mode }: { mode: string }) => ({
+  background: mode === "dark" ? "rgb(17, 17, 17)" : "#F7F8FA",
   borderRadius: 10,
   padding: "20px 10px 10px 10px",
   fontFamily: "Poppins",
-});
+}));
 
 export const StyledDappContainer = styled(Box)({
   display: "flex",

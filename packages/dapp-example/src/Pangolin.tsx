@@ -7,7 +7,7 @@ import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { Configs } from "@orbs-network/twap";
 import { Dapp } from "./Components";
-import { useConnectWallet, useNetwork } from "./hooks";
+import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Components } from "@orbs-network/twap-ui";
 
 interface TokenSelectModalProps {
@@ -102,6 +102,7 @@ const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8422.png";
 const DappComponent = () => {
   const { account, library: provider, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
+  const { isDarkTheme } = useTheme();
 
   const connect = useConnectWallet();
 
@@ -116,15 +117,16 @@ const DappComponent = () => {
     onDstTokenSelected: (token: any) => console.log(token),
     connect,
     connectedChainId: chainId,
+    isDarkTheme,
   };
-  const ordersProps: PangolinOrdersProps = { account, dappTokens, provider };
+  const ordersProps: PangolinOrdersProps = { account, dappTokens, provider, isDarkTheme };
 
   return (
     <DappLayout name={config.partner} favicon={logo}>
-      <StyledLayoutPangolin>
+      <StyledLayoutPangolin mode={isDarkTheme ? "dark" : "light"}>
         <TWAP {...twapProps} />
       </StyledLayoutPangolin>
-      <StyledLayoutPangolin>
+      <StyledLayoutPangolin mode={isDarkTheme ? "dark" : "light"}>
         <Orders {...ordersProps} />
       </StyledLayoutPangolin>
     </DappLayout>
