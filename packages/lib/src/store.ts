@@ -136,7 +136,7 @@ export const useTwapStore = create(
       (get().lib!.isWrappedToken(get().srcToken!) || get().lib!.isWrappedToken(get().dstToken!)),
 
     getMaxPossibleChunks: () => (get().lib && get().srcToken ? get().lib!.maxPossibleChunks(get().srcToken!, amountBN(get().srcToken, get().srcAmountUi), get().srcUsd) : 1),
-    getChunks: () =>  get().chunks > 0 ? get().chunks : (get() as any).getMaxPossibleChunks(),
+    getChunks: () => (get().chunks > 0 ? get().chunks : (get() as any).getMaxPossibleChunks()),
     getMarketPrice: (inverted: boolean) => {
       const leftToken = inverted ? get().dstToken : get().srcToken;
       const rightToken = !inverted ? get().dstToken : get().srcToken;

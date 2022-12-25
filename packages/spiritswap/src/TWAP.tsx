@@ -172,7 +172,7 @@ const TradeSize = () => {
     showChunksSelect: state.getChunksBiggerThanOne(),
     usdValue: state.getSrcChunkAmountUsdUi(),
   }));
-  
+
   const translations = useTwapContext().translations;
   const usdLoading = hooks.useLoadingState().srcUsdLoading;
 

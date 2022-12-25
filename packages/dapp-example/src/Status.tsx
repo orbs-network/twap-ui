@@ -6,6 +6,7 @@ import moment from "moment";
 import BN from "bignumber.js";
 import { useSelectedDapp } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
+import { useEffect, useState } from "react";
 
 function useConfigAndNetwork(dapp?: Dapp) {
   return useQuery(
@@ -69,12 +70,23 @@ function useTakerXStatus(dapp?: Dapp) {
   ).data;
 }
 
+const Image = ({ logo }: { logo?: string }) => {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+  }, [logo]);
+
+  return <img src={logo} onLoad={() => setLoaded(true)} width={10} height={10} style={{ marginRight: 2, opacity: !loaded ? 0 : 1 }} />;
+};
+
 export function Status() {
   const { selectedDapp: dapp } = useSelectedDapp();
   const config = useConfigAndNetwork(dapp);
   const status = useBackupTakersStatus(dapp);
   const takerx = useTakerXStatus(dapp);
 
+  const logo = config?.info.logoUrl;
   return (
     <>
       {dapp && (
@@ -90,10 +102,9 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-<<<<<<< HEAD
+              {logo && <Image logo={logo} />} {config?.info.name} {dapp.config.chainId}
               <img alt="" src={status!.chainInfo.logoUrl} width={10} height={10} style={{ marginRight: 2 }} /> {status!.chainInfo.name} {dapp.config.chainId}
 =======
-              <img src={config?.info.logoUrl} width={10} height={10} style={{ marginRight: 2 }} /> {config?.info.name} {dapp.config.chainId}
 >>>>>>> e66a2af (fix playground status loading)
             </StyledStatusSectionText>
           </StyledStatusSection>
