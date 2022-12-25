@@ -61,9 +61,7 @@ function Orders() {
   );
 }
 
-const StyledOrderList = styled(Box)({
-
-})
+const StyledOrderList = styled(Box)({});
 
 const StyledLists = styled(Box)({
   overflow: "auto",

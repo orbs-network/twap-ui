@@ -118,7 +118,7 @@ const TradeSize = () => {
     totalChunks: state.chunks,
     token: state.srcToken,
     maxPossibleChunks: state.getMaxPossibleChunks(),
-    showChunksSelect: !!state.srcToken && !!state.srcAmountUi,
+    showChunksSelect: state.getSetShowChunksSelect(),
     usdValue: state.getSrcChunkAmountUsdUi(),
   }));
   const translations = useTwapContext().translations;
@@ -146,7 +146,7 @@ const TradeSize = () => {
               </Components.Tooltip>
             </>
           ) : (
-            <AdapterStyles.Text>-</AdapterStyles.Text>
+            <AdapterStyles.Text>{totalChunks || "-"}</AdapterStyles.Text>
           )}
         </AdapterStyles.StyledSliderContainer>
         <TwapStyles.StyledRowFlex>

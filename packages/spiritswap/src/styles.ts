@@ -54,7 +54,10 @@ export const StyledTrade = styled(Box)({
   width: "100%",
   "& .twap-input": {
     textAlign: "right",
-    paddingRight: 10,
+    input: {
+      textIndent: "unset",
+      paddingRight: 0,
+    },
   },
 });
 
