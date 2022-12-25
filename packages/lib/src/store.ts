@@ -3,7 +3,7 @@ import { Order, OrderInputValidation, Status, TokenData, TokensValidation, TWAPL
 import moment from "moment";
 import create from "zustand";
 import { combine } from "zustand/middleware";
-import _ from "lodash";
+import _, { chunk } from "lodash";
 import { eqIgnoreCase, parsebn } from "@defi.org/web3-candies";
 import { Translations } from "./types";
 import { analytics } from "./analytics";
@@ -14,6 +14,7 @@ export enum TimeResolution {
   Hours = Minutes * 60,
   Days = Hours * 24,
 }
+const SUGGEST_CHUNK_VALUE = 100;
 export type Duration = { resolution: TimeResolution; amount: number };
 
 /**
@@ -136,7 +137,18 @@ export const useTwapStore = create(
       (get().lib!.isWrappedToken(get().srcToken!) || get().lib!.isWrappedToken(get().dstToken!)),
 
     getMaxPossibleChunks: () => (get().lib && get().srcToken ? get().lib!.maxPossibleChunks(get().srcToken!, amountBN(get().srcToken, get().srcAmountUi), get().srcUsd) : 1),
-    getChunks: () => (get().chunks > 0 ? get().chunks : (get() as any).getMaxPossibleChunks()),
+    getChunks: () => {
+      const srcUsd = get().srcUsd;
+      const srcToken = get().srcToken;
+      const chunks = get().chunks;
+      if (!srcUsd || !srcToken) return 1;
+      if (chunks >= 1) return chunks;
+
+      const maxPossibleChunks = (get() as any).getMaxPossibleChunks();
+      const srcAmountUsd = (get() as any).getSrcAmount().times(get().srcUsd);
+
+      return Math.min(maxPossibleChunks, srcAmountUsd.div(BN(10).pow(srcToken.decimals)).idiv(SUGGEST_CHUNK_VALUE).toNumber() || 1);
+    },
     getMarketPrice: (inverted: boolean) => {
       const leftToken = inverted ? get().dstToken : get().srcToken;
       const rightToken = !inverted ? get().dstToken : get().srcToken;
@@ -189,7 +201,7 @@ export const useTwapStore = create(
 
     setCustomFillDelayEnabled: (customFillDelayEnabled: boolean) => set({ customFillDelayEnabled }),
     getMinimumDelayMinutes: () => (get().lib?.estimatedDelayBetweenChunksMillis() || 0) / 1000 / 60,
-    getFillDelayWarning: () => get().lib && (get() as any).getFillDelayMillis() > 0 && (get() as any).getFillDelayMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000,
+    getFillDelayWarning: () => get().lib && (get() as any).getFillDelayMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000,
     switchTokens: () => {
       const srcToken = get().srcToken!;
       const dstToken = get().dstToken!;

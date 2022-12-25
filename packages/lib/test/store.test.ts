@@ -42,7 +42,7 @@ describe("store", () => {
       await act(async () => store.current.setSrcToken(tokens[0]));
 
       expect(store.current.limitPriceUi.priceUi).eq("");
-      expect(store.current.chunks).eq(1);
+      expect(store.current.getChunks()).eq(1);
       expect(store.current.srcAmountUi).eq("");
     });
 
@@ -61,19 +61,23 @@ describe("store", () => {
       await act(async () => store.current.setSrcAmountUi("1234.5678"));
       await act(async () => (store.current.srcUsd = BN(1.23)));
       await act(async () => store.current.setChunks(10));
-      expect(store.current.chunks).eq(10);
+      expect(store.current.getChunks()).eq(10);
       await act(async () => store.current.setSrcAmountUi("2.345"));
-      expect(store.current.chunks).eq(1);
+      expect(store.current.getChunks()).eq(1);
     });
 
     it("setDuration minimum of config bid delay x 2, affects fillDelay", async () => {
       expect(store.current.duration).deep.eq({ resolution: TimeResolution.Minutes, amount: 10 });
-      expect(store.current.getFillDelay()).deep.eq({ resolution: TimeResolution.Minutes, amount: 0 });
+      expect(store.current.getFillDelay()).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
+      expect(store.current.getIsPartialFillWarning()).eq(false);
 
       await act(async () => store.current.setDuration({ resolution: TimeResolution.Minutes, amount: 1 }));
-      expect(store.current.duration).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
-      await act(async () => store.current.setDuration({ resolution: TimeResolution.Minutes, amount: 0.5 }));
-      expect(store.current.duration).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
+      expect(store.current.getFillDelay()).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
+      expect(store.current.getIsPartialFillWarning()).eq(true);
+
+      await act(async () => store.current.setDuration({ resolution: TimeResolution.Minutes, amount: 5 }));
+      expect(store.current.getFillDelay()).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
+      expect(store.current.getIsPartialFillWarning()).eq(false);
     });
 
     it("isSameNativeBasedToken", async () => {
@@ -96,9 +100,33 @@ describe("store", () => {
         .eq(Math.floor((1234.5678 * 1.23) / 10));
 
       await act(async () => store.current.setChunks(100));
-      expect(store.current.chunks).eq(100);
+      expect(store.current.getChunks()).eq(100);
       await act(async () => store.current.setChunks(200));
-      expect(store.current.chunks).eq(151);
+      expect(store.current.getChunks()).eq(151);
+    });
+
+    it("getChunks with suggested chunks for 100 usd", async () => {
+      expect(store.current.getChunks()).eq(1);
+      await act(async () => store.current.setSrcToken(tokens[0]));
+      await act(async () => (store.current.srcUsd = BN(1)));
+      await act(async () => store.current.setSrcAmountUi("1"));
+      expect(store.current.getMaxPossibleChunks()).eq(1);
+      expect(store.current.getChunks()).eq(1);
+      await act(async () => store.current.setSrcAmountUi("10"));
+      expect(store.current.getMaxPossibleChunks()).eq(1);
+      expect(store.current.getChunks()).eq(1);
+      await act(async () => store.current.setSrcAmountUi("50"));
+      expect(store.current.getMaxPossibleChunks()).eq(5);
+      expect(store.current.getChunks()).eq(1);
+      await act(async () => store.current.setSrcAmountUi("100"));
+      expect(store.current.getMaxPossibleChunks()).eq(10);
+      expect(store.current.getChunks()).eq(1);
+      await act(async () => store.current.setSrcAmountUi("500"));
+      expect(store.current.getMaxPossibleChunks()).eq(50);
+      expect(store.current.getChunks()).eq(5);
+      await act(async () => store.current.setSrcAmountUi("5000"));
+      expect(store.current.getMaxPossibleChunks()).eq(500);
+      expect(store.current.getChunks()).eq(50);
     });
   });
 
