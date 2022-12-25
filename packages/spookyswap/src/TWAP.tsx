@@ -124,7 +124,7 @@ const TradeSize = () => {
   const { chunksAmount, onTotalChunksChange, totalChunks, token, maxPossibleChunks, showChunksSelect, usdValue } = store.useTwapStore((state) => ({
     chunksAmount: state.getSrcChunkAmountUi(),
     onTotalChunksChange: state.setChunks,
-    totalChunks: state.chunks,
+      totalChunks: state.getChunks(),
     token: state.srcToken,
     maxPossibleChunks: state.getMaxPossibleChunks(),
     showChunksSelect: state.getChunksBiggerThanOne(),

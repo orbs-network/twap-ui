@@ -166,12 +166,13 @@ const TradeSize = () => {
   const { chunksAmount, onTotalChunksChange, totalChunks, token, maxPossibleChunks, showChunksSelect, usdValue } = store.useTwapStore((state) => ({
     chunksAmount: state.getSrcChunkAmountUi(),
     onTotalChunksChange: state.setChunks,
-    totalChunks: state.chunks,
+    totalChunks: state.getChunks(),
     token: state.srcToken,
     maxPossibleChunks: state.getMaxPossibleChunks(),
     showChunksSelect: state.getChunksBiggerThanOne(),
     usdValue: state.getSrcChunkAmountUsdUi(),
   }));
+  
   const translations = useTwapContext().translations;
   const usdLoading = hooks.useLoadingState().srcUsdLoading;
 
@@ -435,7 +436,7 @@ const OrderSummary = () => {
                     </TwapStyles.StyledRowFlex>
                   </SummaryRow>
                   <SummaryRow tooltip={translations.confirmationTotalTradesTooltip} label={translations.totalTrades}>
-                    <AdapterStyles.Text>{twapStore.chunks}</AdapterStyles.Text>
+                    <AdapterStyles.Text>{twapStore.getChunks()}</AdapterStyles.Text>
                   </SummaryRow>
                   <SummaryRow tooltip={translations.confirmationtradeIntervalTooltip.replace("{{minutes}}", minimumDelayMinutes.toString())} label={translations.tradeInterval}>
                     <AdapterStyles.Text>{twapStore.getFillDelayText(translations)}</AdapterStyles.Text>

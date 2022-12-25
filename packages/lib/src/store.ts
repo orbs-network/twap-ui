@@ -40,7 +40,7 @@ const initialState = {
   showConfirmation: false,
   disclaimerAccepted: false,
 
-  chunks: 1,
+  chunks: 0,
   duration: { resolution: TimeResolution.Minutes, amount: 10 },
   customFillDelay: { resolution: TimeResolution.Minutes, amount: 0 },
   customFillDelayEnabled: false,
@@ -56,14 +56,14 @@ export const useTwapStore = create(
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
       srcToken && analytics.onSrcTokenClick(srcToken?.symbol);
-      set({ srcToken, chunks: 1, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" });
+      set({ srcToken, chunks: 0, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" });
     },
     setDstToken: (dstToken?: TokenData) => {
       dstToken && analytics.onDstTokenClick(dstToken.symbol);
       set({ dstToken, limitPriceUi: initialState.limitPriceUi });
     },
     setTokenList: (tokenList?: TokenData[]) => set({ tokenList }),
-    setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi, chunks: 1, isLimitOrder: false }),
+    setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi, chunks: 0, isLimitOrder: false }),
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),
     setDstBalance: (dstBalance: BN) => set({ dstBalance }),
     setSrcUsd: (srcUsd: BN) => set({ srcUsd }),
@@ -120,7 +120,7 @@ export const useTwapStore = create(
         return translation.fillDelayWarning;
       }
     },
-    getIsPartialFillWarning: () => get().chunks * (get() as any).getFillDelayMillis() > (get() as any).getDurationMillis(),
+    getIsPartialFillWarning: () => (get() as any).getChunks() * (get() as any).getFillDelayMillis() > (get() as any).getDurationMillis(),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork: boolean) => set({ wrongNetwork }),
     toggleLimitOrder: () => set({ isLimitOrder: !get().isLimitOrder, limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false } }),
@@ -136,7 +136,7 @@ export const useTwapStore = create(
       (get().lib!.isWrappedToken(get().srcToken!) || get().lib!.isWrappedToken(get().dstToken!)),
 
     getMaxPossibleChunks: () => (get().lib && get().srcToken ? get().lib!.maxPossibleChunks(get().srcToken!, amountBN(get().srcToken, get().srcAmountUi), get().srcUsd) : 1),
-
+    getChunks: () =>  get().chunks > 0 ? get().chunks : (get() as any).getMaxPossibleChunks(),
     getMarketPrice: (inverted: boolean) => {
       const leftToken = inverted ? get().dstToken : get().srcToken;
       const rightToken = !inverted ? get().dstToken : get().srcToken;
@@ -179,7 +179,7 @@ export const useTwapStore = create(
     getFillDelay: () => {
       if (!get().lib) return { resolution: TimeResolution.Minutes, amount: 0 };
       if (get().customFillDelayEnabled && get().customFillDelay) return get().customFillDelay;
-      const millis = get().lib!.fillDelayUiMillis(get().chunks, get().duration.resolution * get().duration.amount);
+      const millis = get().lib!.fillDelayUiMillis((get() as any).getChunks(), get().duration.resolution * get().duration.amount);
       const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= millis) || TimeResolution.Minutes;
       return { resolution, amount: Number(BN(millis / resolution).toFixed(2)) };
     },
@@ -208,7 +208,7 @@ export const useTwapStore = create(
       });
     },
 
-    getSrcChunkAmount: () => get().lib?.srcChunkAmount((get() as any).getSrcAmount(), get().chunks) || BN(0),
+    getSrcChunkAmount: () => get().lib?.srcChunkAmount((get() as any).getSrcAmount(), (get() as any).getChunks()) || BN(0),
 
     getDstMinAmountOut: () =>
       get().lib && get().srcToken && get().dstToken && (get() as any).getLimitPrice(false).limitPrice.gt(0)

@@ -49,8 +49,8 @@ function Orders() {
         {_.keys(Status).map((key: any, index: number) => {
           const selected = selectedTab === index;
           return (
-            <Fade in={selected}>
-              <StyledOrderList key={key} style={{ display: selected ? "block" : "none" }}>
+            <Fade in={selected} key={key}>
+              <StyledOrderList style={{ display: selected ? "block" : "none" }}>
                 <OrdersList isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status]} />
               </StyledOrderList>
             </Fade>
