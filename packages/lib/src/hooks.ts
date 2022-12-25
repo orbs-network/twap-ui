@@ -585,6 +585,7 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
     },
     {
       enabled: !!lib && !!tokenList && tokenList.length > 0,
+      refetchInterval: 60_000,
       onSettled: () => {
         setWaitingForNewOrder(false);
       },
