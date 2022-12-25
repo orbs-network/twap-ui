@@ -1,4 +1,4 @@
-import { Tab, Tabs } from "@mui/material";
+import { Fade, Tab, Tabs } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import React from "react";
 import OrdersList from "./OrdersList";
@@ -47,15 +47,23 @@ function Orders() {
       </StyledHeader>
       <StyledLists className="twap-orders-lists">
         {_.keys(Status).map((key: any, index: number) => {
-          if (selectedTab !== index) {
-            return null;
-          }
-          return <OrdersList isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status]} key={key} />;
+          const selected = selectedTab === index;
+          return (
+            <Fade in={selected}>
+              <StyledOrderList key={key} style={{ display: selected ? "block" : "none" }}>
+                <OrdersList isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status]} />
+              </StyledOrderList>
+            </Fade>
+          );
         })}
       </StyledLists>
     </StyledContainer>
   );
 }
+
+const StyledOrderList = styled(Box)({
+
+})
 
 const StyledLists = styled(Box)({
   overflow: "auto",
