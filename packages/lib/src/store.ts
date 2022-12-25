@@ -241,7 +241,7 @@ export const useTwapStore = create(
     getSrcChunkAmountUi: () => amountUi(get().srcToken, (get() as any).getSrcChunkAmount()),
     getDstMinAmountOutUi: () => ((get() as any).getDstMinAmountOut().eq(1) ? "" : amountUi(get().dstToken, (get() as any).getDstMinAmountOut())),
     getSrcChunkAmountUsdUi: () => amountUi(get().srcToken, (get() as any).getSrcChunkAmount().times(get().srcUsd)),
-    getSetShowChunksSelect: () => !!get().srcToken && !!get().srcAmountUi && (get() as any).getMaxPossibleChunks() > 1,
+    getChunksBiggerThanOne: () => !!get().srcToken && !!get().srcAmountUi && (get() as any).getMaxPossibleChunks() > 1,
   }))
 );
 

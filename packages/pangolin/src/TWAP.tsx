@@ -118,7 +118,7 @@ const TradeSize = () => {
     totalChunks: state.chunks,
     token: state.srcToken,
     maxPossibleChunks: state.getMaxPossibleChunks(),
-    showChunksSelect: state.getSetShowChunksSelect(),
+    showChunksSelect: state.getChunksBiggerThanOne(),
     usdValue: state.getSrcChunkAmountUsdUi(),
   }));
   const translations = useTwapContext().translations;
