@@ -31,7 +31,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
             </TwapStyles.StyledColumnFlex>
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex>
-            <Tooltip childrenStyles={{ width: "100%" }} placement="top" text={<NumberDisplay value={order.ui.progress || "0"} decimalScale={1} suffix="%" />}>
+            <Tooltip childrenStyles={{ width: "100%" }} placement="top" text={<NumberDisplay hideTooltip value={order.ui.progress || "0"} decimalScale={1} suffix="%" />}>
               <StyledMainProgressBar variant="determinate" value={order.ui.progress || 1} className="twap-order-main-progress-bar" />
             </Tooltip>
           </TwapStyles.StyledRowFlex>

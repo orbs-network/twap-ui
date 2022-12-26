@@ -152,10 +152,19 @@ export interface StylesConfig {
   spinnerColor: string;
   containerBackground: string;
   cardBackground: string;
+  iconBackground?: string;
   borderColor?: string;
   progressBarColor: string;
   progressBarTrackColor: string;
   orderHistorySelectedTabBackground: string;
   orderHistorySelectedTabColor: string;
   orderHistoryTabColor: string;
+  buttonBackground: string;
+  buttonColor: string;
+  disabledButtonBackground: string;
+  disabledButtonColor: string;
+  selectTokenBackground: string;
+  selectTokenTextColor: string;
+  selectedTokenBackground: string;
+  selectedTokenTextColor: string;
 }

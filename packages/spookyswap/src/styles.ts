@@ -20,6 +20,14 @@ export const darkModeStylesConfig: Styles = {
   orderHistorySelectedTabBackground: "rgb(115, 204, 231)",
   orderHistoryTabColor: "white",
   orderHistorySelectedTabColor: "rgb(18, 17, 34)",
+  buttonBackground: "rgb(115, 204, 231)",
+  buttonColor: "rgb(18, 17, 34)",
+  disabledButtonBackground: "rgba(255, 255, 255, 0.09)",
+  disabledButtonColor: "rgba(255, 255, 255, 0.87)",
+  selectTokenBackground: "rgba(255, 255, 255, 0.05)",
+  selectTokenTextColor: "rgba(255, 255, 255, 0.87)",
+  selectedTokenBackground: "rgba(255, 255, 255, 0.6)",
+  selectedTokenTextColor: "rgba(255, 255, 255, 0.87)",
 };
 
 export const lightModeStylesConfig: Styles = {
@@ -36,6 +44,14 @@ export const lightModeStylesConfig: Styles = {
   orderHistorySelectedTabBackground: "rgb(102, 101, 221)",
   orderHistoryTabColor: "rgb(102, 101, 221)",
   orderHistorySelectedTabColor: "white",
+  buttonBackground: "rgb(242, 244, 248)",
+  buttonColor: "rgb(49, 65, 94)",
+  disabledButtonBackground: "rgb(242, 244, 248)",
+  disabledButtonColor: "rgb(49, 65, 94)",
+  selectTokenBackground: "rgb(242, 244, 248)",
+  selectTokenTextColor: "rgb(49, 65, 94)",
+  selectedTokenBackground: "rgb(242, 244, 248)",
+  selectedTokenTextColor: "rgb(49, 65, 94)",
 };
 
 export const StyledCardFlex = styled(TwapStyles.StyledRowFlex)({
@@ -467,8 +483,8 @@ export const configureStyles = (darkMode?: boolean) => {
     ".twap-button": {
       height: 30,
       borderRadius: 60,
-      background: darkMode ? "rgb(115, 204, 231)" : "rgb(242, 244, 248)",
-      color: darkMode ? "rgb(18, 17, 34)" : "rgb(49, 65, 94)",
+      background: styles.buttonBackground,
+      color: styles.buttonColor,
       width: "fit-content!important",
       padding: "0px 16px",
       minWidth: 180,
@@ -483,9 +499,8 @@ export const configureStyles = (darkMode?: boolean) => {
       },
     },
     ".twap-button-disabled": {
-      background: "rgba(255, 255, 255, 0.09)",
-      opacity: 0.45,
-      color: styles.lighterTextColor,
+      background: styles.disabledButtonBackground,
+      color: styles.disabledButtonColor,
     },
 
     ".twap-modal-content": {

@@ -36,9 +36,7 @@ export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) =
 }));
 
 export const StyledLayoutPangolin = styled(Box)(({ mode }: { mode: string }) => ({
-  background: mode === "dark" ? "rgb(17, 17, 17)" : "#F7F8FA",
   borderRadius: 10,
-  padding: "20px 10px 10px 10px",
   fontFamily: "Poppins",
 }));
 

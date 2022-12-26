@@ -15,6 +15,14 @@ export const darkModeStylesConfig: StylesConfig = {
   orderHistorySelectedTabBackground: "rgba(96, 230, 197, 0.26)",
   orderHistoryTabColor: "white",
   orderHistorySelectedTabColor: "rgb(96, 230, 197)",
+  buttonBackground: "rgb(29, 147, 132)",
+  buttonColor: "white",
+  disabledButtonBackground: "rgb(29, 147, 132)",
+  disabledButtonColor: "white",
+  selectTokenBackground: "transparent",
+  selectTokenTextColor: "white",
+  selectedTokenBackground: "transparent",
+  selectedTokenTextColor: "white",
 };
 
 export const Text = styled(TwapStyles.StyledText)({});
@@ -408,7 +416,7 @@ export const configureStyles = () => {
     ".twap-button": {
       height: 40,
       borderRadius: 4,
-      background: "rgb(29, 147, 132)",
+      background: styles.buttonBackground,
       "& *": {
         color: "white",
         fontWeight: 500,

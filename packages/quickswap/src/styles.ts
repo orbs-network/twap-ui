@@ -15,6 +15,14 @@ export const darkModeStylesConfig: StylesConfig = {
   orderHistorySelectedTabBackground: "#134DC8",
   orderHistoryTabColor: "white",
   orderHistorySelectedTabColor: "rgb(96, 230, 197)",
+  buttonBackground: "linear-gradient(180deg,#448aff,#004ce6)",
+  buttonColor: "white",
+  disabledButtonBackground: "#12131a",
+  disabledButtonColor: "#c7cad9",
+  selectTokenBackground: "linear-gradient(180deg,#448aff,#004ce6)",
+  selectTokenTextColor: "white",
+  selectedTokenBackground: "#404557",
+  selectedTokenTextColor: "#c7cad9",
 };
 
 export const Text = styled(TwapStyles.StyledText)({});
@@ -201,7 +209,7 @@ export const configureStyles = () => {
       padding: 0,
     },
     ".twap-token-select": {
-      background: "linear-gradient(105deg,#448aff 3%,#004ce6)",
+      background: styles.selectTokenBackground,
       border: "unset",
       padding: "6px 12px",
       borderRadius: 38,
@@ -211,10 +219,14 @@ export const configureStyles = () => {
       gap: 5,
       marginRight: 10,
       fontSize: 16,
+      color: `${styles.selectTokenTextColor}!important`,
+      p: {
+        color: "inherit",
+      },
     },
 
     ".twap-token-select-selected": {
-      background: "#404557",
+      background: styles.selectedTokenBackground,
     },
     ".twap-market-price": {
       "& .twap-card": {
@@ -408,8 +420,8 @@ export const configureStyles = () => {
     ".twap-button": {
       height: 56,
       borderRadius: 10,
-      background: "linear-gradient(180deg,#448aff,#004ce6)",
-      color: "white",
+      background: styles.buttonBackground,
+      color: styles.buttonColor,
       fontWeight: `600!important`,
       fontSize: 16,
       "& *": {
@@ -419,8 +431,8 @@ export const configureStyles = () => {
       },
     },
     ".twap-button-disabled": {
-      background: "#12131a",
-      color: styles.textColor,
+      background: styles.disabledButtonBackground,
+      color: styles.disabledButtonColor,
     },
 
     ".twap-modal-content": {

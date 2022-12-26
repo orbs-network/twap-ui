@@ -3,7 +3,6 @@ import { TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
 import _ from "lodash";
 import { useMemo, useEffect, useRef, createContext, useContext } from "react";
-import { PangolinTWAPProps } from ".";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 
@@ -67,16 +66,10 @@ export interface AdapterContextProps {
   TokenSelectModal: any;
 }
 
-export const usePrepareAdapterContextProps = (props: PangolinTWAPProps) => {
-  return {
-    TokenSelectModal: props.TokenSelectModal,
-  };
-};
-
 const AdapterContext = createContext({} as AdapterContextProps);
 export const AdapterContextProvider = AdapterContext.Provider;
 export const useAdapterContext = () => useContext(AdapterContext);
 
-export const useGlobalStyles = (darkMode?: boolean) => {
-  return configureStyles(darkMode);
+export const useGlobalStyles = (theme: any) => {
+  return configureStyles(theme);
 };

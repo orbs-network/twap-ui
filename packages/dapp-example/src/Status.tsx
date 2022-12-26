@@ -57,6 +57,7 @@ function useTakerXStatus(dapp?: Dapp) {
     async () => {
       const backupAwsStatusResponse = await fetch(`https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status`).then((r) => r.json());
       const backupAwsStatusChain = _.find(backupAwsStatusResponse, (s) => s.config?.chainId === dapp?.config.chainId);
+      if (!backupAwsStatusChain) return null;
       return {
         status: BN(backupAwsStatusChain.balance).gt(0.1),
         balance: backupAwsStatusChain.balance,

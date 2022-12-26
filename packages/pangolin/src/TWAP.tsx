@@ -8,13 +8,14 @@ import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { AiOutlineWarning } from "react-icons/ai";
-
 import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles, useParseTokenList, useTokensFromDapp } from "./hooks";
-const TWAP = (props: TWAPProps) => {
+import { PangolinTWAPProps } from "./types";
+import { GrClose } from "react-icons/gr";
+const TWAP = (props: PangolinTWAPProps) => {
   const { account } = props;
   const tokenList = useParseTokenList(props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, account ? tokenList : undefined);
-  const globalStyles = useGlobalStyles(props.isDarkTheme);
+  const globalStyles = useGlobalStyles(props.theme);
   const memoizedConnect = useCallback(() => {
     props.connect?.();
   }, []);
@@ -300,7 +301,7 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
       <AdapterStyles.StyledTokenPanel type={isSrcToken ? "src" : "dst"}>
         <TwapStyles.StyledColumnFlex gap={2}>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <Components.SmallLabel>{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.SmallLabel>
+            <Components.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.SmallLabel>
             {children}
             {!isSrcToken && marketPrice !== "0" && (
               <AdapterStyles.Text>
@@ -355,11 +356,14 @@ const SubmitButton = ({ className = "" }: { className?: string }) => {
 const OrderSummary = () => {
   const twapStore = store.useTwapStore();
   const translations = useTwapContext().translations;
+
   if (!twapStore.showConfirmation) return null;
   return (
     <>
-      <AdapterStyles.StyledSummary>
-        <button onClick={() => twapStore.setShowConfirmation(false)}>Close</button>
+      <AdapterStyles.StyledSummary className="twap-summary">
+        <AdapterStyles.StyledSummaryCloseButton onClick={() => twapStore.setShowConfirmation(false)} className="twap-summary-close">
+          <Components.Icon icon={<GrClose style={{ width: 20, height: 20 }} />} />
+        </AdapterStyles.StyledSummaryCloseButton>
         <AdapterStyles.StyledOrderSummaryContent>
           <TwapStyles.StyledColumnFlex gap={14}>
             <TwapStyles.StyledColumnFlex gap={14}>
@@ -488,7 +492,7 @@ const TokenOrderPreview = ({
   token?: TokenData;
 }) => {
   return (
-    <Components.Card>
+    <AdapterStyles.StyledTokenSummary>
       <TwapStyles.StyledColumnFlex gap={10}>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Label>{title}</Components.Label>
@@ -497,11 +501,11 @@ const TokenOrderPreview = ({
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <TokenDisplay name={token?.symbol} logo={token?.logoUrl} />
           <StyledTokenOrderPreviewAmount>
-            {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} decimalScale={token?.decimals} />
+            {!isSrc && <> {isLimitOrder ? "≥ " : "~ "}</>} <Components.NumberDisplay value={amount} decimalScale={token?.decimals} hideTooltip />
           </StyledTokenOrderPreviewAmount>
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>
-    </Components.Card>
+    </AdapterStyles.StyledTokenSummary>
   );
 };
 

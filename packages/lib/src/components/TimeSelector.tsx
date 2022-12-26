@@ -63,7 +63,7 @@ function TimeSelector({ value, onChange, disabled = false, className = "", onFoc
       </StyledInput>
 
       <StyledTimeSelect>
-        <StyledSelected onClick={onOpenListClick}>
+        <StyledSelected onClick={onOpenListClick} className="twap-time-selectore-selected">
           <StyledText> {translations[findSelectedResolutionText(value.resolution)]}</StyledText>
         </StyledSelected>
         {showList && (

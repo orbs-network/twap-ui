@@ -7,31 +7,35 @@ function NumberDisplay({
   prefix,
   className = "",
   suffix,
+  hideTooltip = false,
 }: {
   value?: string | number;
   decimalScale?: number;
   prefix?: string;
   className?: string;
   suffix?: string;
+  hideTooltip?: boolean;
 }) {
-  return value ? (
-    <Tooltip text={value}>
-      <NumericFormat
-        type="text"
-        valueIsNumericString={true}
-        value={value}
-        allowLeadingZeros
-        thousandSeparator=","
-        className={`twap-number-display ${className}`}
-        displayType="text"
-        decimalScale={decimalScale}
-        prefix={prefix}
-        suffix={suffix}
-      />
-    </Tooltip>
-  ) : (
-    <> -</>
+  const component = (
+    <NumericFormat
+      type="text"
+      valueIsNumericString={true}
+      value={value}
+      allowLeadingZeros
+      thousandSeparator=","
+      className={`twap-number-display ${className}`}
+      displayType="text"
+      decimalScale={decimalScale}
+      prefix={prefix}
+      suffix={suffix}
+    />
   );
+
+  if (hideTooltip) return component;
+  if (value) {
+    return <Tooltip text={value}>{component}</Tooltip>;
+  }
+  return <>-</>;
 }
 
 export default NumberDisplay;
