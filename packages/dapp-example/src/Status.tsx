@@ -27,7 +27,7 @@ function useBackupTakersStatus(dapp?: Dapp) {
     async () =>
       await Promise.all(
         [1, 2].map((i) =>
-          fetch(`https://twap-taker-${dapp!.config.chainName}-${dapp!.config.partner.toLowerCase()}-${i}.herokuapp.com/health`)
+          fetch(`https://twap-taker-${dapp!.config.chainName === "poly" ? "polygon" : dapp!.config.chainName}-${dapp!.config.partner.toLowerCase()}-${i}.herokuapp.com/health`)
             .then((x) => x.json())
             .then(async (s) => {
               const balances = _.sortBy(_.map(s.takersWallets, (w) => BN(w.balance).toFixed(1))).map(Number);
