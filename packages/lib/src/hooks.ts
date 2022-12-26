@@ -193,11 +193,14 @@ const useChangeNetworkButton = () => {
   const onChangeNetwork = async () => {
     const onSuccess = () => {
       setInvalidChain(false);
+      setLoading(false);
       initLib({ config, provider, account });
     };
+    const onError = () => {
+      setLoading(false);
+    };
     setLoading(true);
-    await changeNetwork(onSuccess);
-    setLoading(false);
+    changeNetwork(onSuccess, onError);
   };
 
   return { text: translations.switchNetwork, onClick: onChangeNetwork, loading, disabled: loading };
@@ -499,10 +502,14 @@ export const useDstBalance = () => {
 export const useChangeNetworkCallback = () => {
   const { provider: _provider, config } = useTwapContext();
 
-  return async (onSuccess: () => void) => {
+  return async (onSuccess: () => void, onError: () => void) => {
     setWeb3Instance(new Web3(_provider));
-    await switchMetaMaskNetwork(config.chainId);
-    onSuccess();
+    try {
+      await switchMetaMaskNetwork(config.chainId);
+      onSuccess();
+    } catch (error) {
+      onError();
+    }
   };
 };
 

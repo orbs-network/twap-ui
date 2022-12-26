@@ -103,9 +103,6 @@ export function Status() {
             <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
               <Image logo={logo} /> {config?.info.name} {dapp.config.chainId}
-              <img alt="" src={status!.chainInfo.logoUrl} width={10} height={10} style={{ marginRight: 2 }} /> {status!.chainInfo.name} {dapp.config.chainId}
-=======
->>>>>>> e66a2af (fix playground status loading)
             </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>

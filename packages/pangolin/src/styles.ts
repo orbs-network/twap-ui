@@ -516,3 +516,5 @@ export const configureStyles = (darkMode?: boolean) => {
     },
   };
 };
+
+export const StyledSummary = styled(Box)({});

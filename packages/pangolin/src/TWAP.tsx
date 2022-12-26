@@ -260,9 +260,10 @@ interface TokenSelectProps {
 const TokenSelect = (props: TokenSelectProps) => {
   const { TokenSelectModal } = useAdapterContext();
 
+  if (!props.isOpen) return null;
   return (
     <TokenSelectModal
-      isOpen={props.isOpen}
+      isOpen={true}
       onClose={props.onClose}
       onCurrencySelect={props.onCurrencySelect}
       selectedCurrency={props.selectedCurrency}
@@ -354,10 +355,11 @@ const SubmitButton = ({ className = "" }: { className?: string }) => {
 const OrderSummary = () => {
   const twapStore = store.useTwapStore();
   const translations = useTwapContext().translations;
-
+  if (!twapStore.showConfirmation) return null;
   return (
     <>
-      <Components.Modal open={twapStore.showConfirmation} onClose={() => twapStore.setShowConfirmation(false)}>
+      <AdapterStyles.StyledSummary>
+        <button onClick={() => twapStore.setShowConfirmation(false)}>Close</button>
         <AdapterStyles.StyledOrderSummaryContent>
           <TwapStyles.StyledColumnFlex gap={14}>
             <TwapStyles.StyledColumnFlex gap={14}>
@@ -428,7 +430,7 @@ const OrderSummary = () => {
             <SubmitButton />
           </TwapStyles.StyledColumnFlex>
         </AdapterStyles.StyledOrderSummaryContent>
-      </Components.Modal>
+      </AdapterStyles.StyledSummary>
     </>
   );
 };
