@@ -15,7 +15,7 @@ import { dapps } from "./config";
 import { Status } from "./Status";
 import { useSelectedDapp, useTheme } from "./hooks";
 
-const FAVICON = "https://github.com/orbs-network/twap-ui/raw/32bda127d7fb269b08524fd4774adb38d6ad0b2b/packages/lib/src/logo/64.png";
+const FAVICON = "https://github.com/orbs-network/twap-ui/raw/66e183e804002fe382d9b0070caef060ad2e21ac/logo/64.png";
 
 export interface Dapp {
   config: Config;
