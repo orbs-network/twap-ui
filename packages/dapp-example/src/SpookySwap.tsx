@@ -78,7 +78,7 @@ const DappComponent = () => {
   const ordersProps: SpookySwapOrdersProps = { account, getTokenImageUrl, dappTokens, getProvider, isDarkTheme };
 
   return (
-    <DappLayout name={config.partner} favicon={logo}>
+    <DappLayout name={config.partner}>
       <StyledLayoutSpookyswap mode={isDarkTheme ? "dark" : "light"}>
         <TWAP {...twapProps} />
       </StyledLayoutSpookyswap>

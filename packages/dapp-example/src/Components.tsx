@@ -14,7 +14,7 @@ import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
 import { dapps } from "./config";
 import { Status } from "./Status";
 import { useSelectedDapp, useTheme } from "./hooks";
-import { useSearchParams } from "react-router-dom";
+
 export interface Dapp {
   config: Config;
   logo: string;
@@ -131,10 +131,10 @@ export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
   );
 };
 
-export const DappLayout = ({ children, name, favicon }: { children: ReactNode; name: string; favicon: string }) => {
+export const DappLayout = ({ children, name }: { children: ReactNode; name: string }) => {
   return (
     <>
-      <MetaTags title={name} favicon={favicon} />
+      <MetaTags title={name} favicon={""} />
       <Fade in>
         <StyledDappLayout>{children}</StyledDappLayout>
       </Fade>

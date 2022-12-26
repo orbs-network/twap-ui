@@ -122,7 +122,7 @@ const DappComponent = () => {
   const ordersProps: PangolinOrdersProps = { account, dappTokens, provider, isDarkTheme };
 
   return (
-    <DappLayout name={config.partner} favicon={logo}>
+    <DappLayout name={config.partner}>
       <StyledLayoutPangolin mode={isDarkTheme ? "dark" : "light"}>
         <TWAP {...twapProps} />
       </StyledLayoutPangolin>

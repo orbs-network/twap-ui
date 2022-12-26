@@ -73,7 +73,7 @@ const DappComponent = () => {
   const ordersProps: QuickSwapOrdersProps = { account, getTokenImageUrl, dappTokens, getProvider: () => library };
 
   return (
-    <DappLayout name={config.partner} favicon={logo}>
+    <DappLayout name={config.partner}>
       <StyledLayoutQuickswap>
         <TWAP {...twapProps} />
       </StyledLayoutQuickswap>

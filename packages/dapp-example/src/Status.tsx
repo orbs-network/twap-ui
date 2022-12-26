@@ -17,7 +17,7 @@ function useConfigAndNetwork(dapp?: Dapp) {
       const info = await chainInfo(dapp!.config.chainId);
       return { twapVersion, twapUiVersion, info };
     },
-    { enabled: !!dapp, refetchInterval: 60_000 }
+    { enabled: !!dapp }
   ).data;
 }
 
@@ -86,7 +86,6 @@ export function Status() {
   const status = useBackupTakersStatus(dapp);
   const takerx = useTakerXStatus(dapp);
 
-  const logo = config?.info.logoUrl;
   return (
     <>
       {dapp && (
@@ -102,7 +101,7 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <Image logo={logo} /> {config?.info.name} {dapp.config.chainId}
+              <Image logo={config?.info.logoUrl} /> {config?.info.name || dapp.config.chainName} {dapp.config.chainId}
             </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
