@@ -1,7 +1,7 @@
 import { Box, styled } from "@mui/system";
 import { Components, Styles as TwapStyles, StylesConfig } from "@orbs-network/twap-ui";
 
-interface StylesType extends StylesConfig {}
+type StylesType = StylesConfig;
 
 const mainPadding = 10;
 const mainBorderRadius = 8;

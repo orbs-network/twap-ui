@@ -3,7 +3,7 @@ import { Order, OrderInputValidation, Status, TokenData, TokensValidation, TWAPL
 import moment from "moment";
 import create from "zustand";
 import { combine } from "zustand/middleware";
-import _, { chunk } from "lodash";
+import _ from "lodash";
 import { eqIgnoreCase, parsebn } from "@defi.org/web3-candies";
 import { Translations } from "./types";
 import { analytics } from "./analytics";

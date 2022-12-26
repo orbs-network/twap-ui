@@ -297,22 +297,8 @@ interface TokenPanelProps {
 
 const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const {
-    token,
-    onTokenSelect,
-    inputWarning,
-    amountPrefix,
-    disabled,
-    selectTokenWarning,
-    onChange,
-    value,
-    usdValue,
-    balanceLoading,
-    balance,
-    usdLoading,
-    inputLoading,
-    decimalScale,
-  } = hooks.useTokenPanel(isSrcToken);
+  const { token, onTokenSelect, amountPrefix, disabled, selectTokenWarning, onChange, value, usdValue, balanceLoading, balance, usdLoading, inputLoading, decimalScale } =
+    hooks.useTokenPanel(isSrcToken);
 
   const { getTokenImageUrl, TokenSelectModal, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
 

@@ -15,6 +15,8 @@ import { dapps } from "./config";
 import { Status } from "./Status";
 import { useSelectedDapp, useTheme } from "./hooks";
 
+const FAVICON = "https://github.com/orbs-network/twap-ui/raw/32bda127d7fb269b08524fd4774adb38d6ad0b2b/packages/lib/src/logo/64.png";
+
 export interface Dapp {
   config: Config;
   logo: string;
@@ -34,10 +36,10 @@ export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose:
   );
 };
 
-export const MetaTags = ({ title, favicon }: { title: string; favicon: string }) => {
+export const MetaTags = ({ title }: { title: string }) => {
   return (
     <Helmet>
-      <link rel="icon" href={favicon} />
+      <link rel="icon" href={FAVICON} />
       <title>TWAP On {title}</title>
     </Helmet>
   );
@@ -134,7 +136,7 @@ export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
 export const DappLayout = ({ children, name }: { children: ReactNode; name: string }) => {
   return (
     <>
-      <MetaTags title={name} favicon={""} />
+      <MetaTags title={name} />
       <Fade in>
         <StyledDappLayout>{children}</StyledDappLayout>
       </Fade>
