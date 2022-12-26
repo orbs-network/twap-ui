@@ -6,6 +6,7 @@ enum Category {
   TWAPPanel = "TWAPPanel",
   OrdersPanel = "OrdersPanel",
   ConfirmationPanel = "ConfirmationPanel",
+  PageView = "onTwapPageView",
 }
 
 const onLimitToggleClick = (isLimitOrder: boolean) => {
@@ -63,6 +64,10 @@ const onConfirmationCreateOrderClick = () => {
 
 const onODNPClick = () => {
   sendAnalyticsEvent(Category.OrdersPanel, "onODNPClick");
+};
+
+const onTwapPageView = () => {
+  sendAnalyticsEvent(Category.PageView, "onTwapPageView");
 };
 
 const onCreateOrderSuccess = () => {
@@ -132,4 +137,5 @@ export const analytics = {
   onCancelOrderClick,
   onCancelOrderSuccess,
   onCancelOrderError,
+  onTwapPageView,
 };
