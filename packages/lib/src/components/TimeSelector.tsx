@@ -115,7 +115,6 @@ const StyledContainer = styled(Box)({
   display: "flex",
   alignItems: "center",
   flex: 1,
-  paddingRight: 10,
   gap: 10,
 });
 

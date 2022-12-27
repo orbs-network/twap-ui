@@ -38,6 +38,7 @@ export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) =
 export const StyledLayoutPangolin = styled(Box)(({ mode }: { mode: string }) => ({
   borderRadius: 10,
   fontFamily: "Poppins",
+  overflow: "hidden",
 }));
 
 export const StyledDappContainer = styled(Box)({

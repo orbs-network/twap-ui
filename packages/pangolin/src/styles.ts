@@ -163,12 +163,12 @@ export const StyledSliderContainer = styled(TwapStyles.StyledRowFlex)({
 });
 
 const parseTheme = (theme: any): StylesConfig => {
-  console.log(theme.swapWidget);
+  console.log(theme);
 
   return {
     iconsColor: theme.swapWidget.interactiveColor,
     iconBackground: theme.swapWidget.interactiveBgColor,
-    textColor: theme.swapWidget.secondary,
+    textColor: theme.textInput.text,
     tooltipBackground: "white",
     tooltipTextColor: "black",
     spinnerColor: theme.swapWidget.secondary,
@@ -279,10 +279,27 @@ export const configureStyles = (theme: any) => {
     },
     ".twap-market-price": {
       width: "100%",
-      background: styles.containerBackground,
       padding: mainPadding,
       borderBottomLeftRadius: mainBorderRadius,
       borderBottomRightRadius: mainBorderRadius,
+      overflow: "hidden",
+      position: "relative",
+      ".twap-market-price-content": {
+        position: "relative",
+        zIndex: 1,
+      },
+      "&::after": {
+        position: "absolute",
+        left: 0,
+        top: 0,
+        width: "100%",
+        height: "100%",
+        content: "''",
+        background: styles.cardBackground,
+        opacity: 0.4,
+        zIndex: 0,
+      },
+
       "& .title": {
         fontSize: 13,
         fontWeight: 300,
@@ -336,16 +353,23 @@ export const configureStyles = (theme: any) => {
       color: styles.spinnerColor,
     },
     ".twap-time-selector": {
+      ".twap-time-selector-list": {
+        right: 0,
+        top: "-30%",
+      },
       ".twap-time-selectore-selected": {
-        borderBottom: `1px solid ${styles.textColor}`,
-
+        background: styles.selectTokenBackground,
+        padding: "6px 8px",
+        borderRadius: 10,
         p: {
           fontWeight: 500,
+          color: "black",
+          fontSize: 14,
         },
       },
       ".twap-input": {
         input: {
-          fontSize: 16,
+          fontSize: 22,
           "&::placeholder": {
             color: `${styles.textColor}!important`,
           },
@@ -372,6 +396,7 @@ export const configureStyles = (theme: any) => {
     },
     ".twap-orders": {
       padding: 10,
+      borderRadius: 10,
       color: styles.textColor,
       background: styles.containerBackground,
 
@@ -390,8 +415,9 @@ export const configureStyles = (theme: any) => {
       width: "100%",
       background: styles.containerBackground,
       padding: 10,
+      borderRadius: "0px 0px 10px 10px",
       "*": {
-        color: theme.swapWidget.secondary,
+        color: styles.textColor,
 
         fontFamily: "inherit!important",
         "&::-webkit-scrollbar": {
