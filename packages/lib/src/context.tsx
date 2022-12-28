@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect } from "react";
 import { OrderLibProps, TwapLibProps } from "./types";
 import { useDstBalance, useDstUsd, useInitLib, useSrcBalance, useSrcUsd } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
 const TwapContext = createContext<TwapLibProps>({} as TwapLibProps);
 const OrdersContext = createContext<OrderLibProps>({} as OrderLibProps);
@@ -14,6 +14,8 @@ const queryClient = new QueryClient({
   },
 });
 
+analytics.onModuleLoad();
+
 const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
   const initLib = useInitLib();
   const translations = { ...defaultTranlations, ...props.translations };
@@ -21,7 +23,10 @@ const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
   useDstUsd();
   useSrcBalance();
   useDstBalance();
-  useSendOnPageViewEvent();
+
+  useEffect(() => {
+    analytics.onTwapPageView();
+  }, []);
 
   // init web3 every time the provider changes
   useEffect(() => {
@@ -59,10 +64,4 @@ export const useTwapContext = () => {
 
 export const useOrdersContext = () => {
   return useContext(OrdersContext);
-};
-
-const useSendOnPageViewEvent = () => {
-  return useQuery(["useSendOnPageViewEvent"], () => {
-    return analytics.onTwapPageView();
-  });
 };

@@ -57,10 +57,10 @@ const MarketPrice = () => {
 
   return (
     <Box className="twap-market-price">
-      <TwapStyles.StyledRowFlex justifyContent="space-between" className="twap-market-price-content">
+      <TwapStyles.StyledColumnFlex className="twap-market-price-content">
         <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
         <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
-      </TwapStyles.StyledRowFlex>
+      </TwapStyles.StyledColumnFlex>
     </Box>
   );
 };
@@ -99,7 +99,6 @@ const SrcTokenPanel = () => (
 const DstTokenPanel = () => (
   <AdapterStyles.StyledDstToken>
     <TokenPanel isSrcToken={false} />
-    <MarketPrice />
   </AdapterStyles.StyledDstToken>
 );
 
@@ -293,21 +292,22 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
   const onClose = useCallback(() => {
     setTokenListOpen(false);
   }, []);
+  const { marketPrice } = hooks.useMarketPrice();
 
   return (
     <>
       <TokenSelect isOpen={tokenListOpen} onClose={onClose} onCurrencySelect={onTokenSelected} selectedCurrency={undefined} otherSelectedCurrency={undefined} />
 
-      <AdapterStyles.StyledTokenPanel type={isSrcToken ? "src" : "dst"}>
+      <AdapterStyles.StyledTokenPanel>
         <TwapStyles.StyledColumnFlex gap={2}>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <Components.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.SmallLabel>
             {children}
-            {/* {!isSrcToken && marketPrice !== "0" && (
+            {!isSrcToken && marketPrice !== "0" && (
               <AdapterStyles.Text>
                 Price <Components.NumberDisplay value={marketPrice} /> {tokenPanel.token?.symbol}
               </AdapterStyles.Text>
-            )} */}
+            )}
           </TwapStyles.StyledRowFlex>
           <Components.Card>
             <TwapStyles.StyledColumnFlex gap={15}>

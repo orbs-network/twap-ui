@@ -54,7 +54,7 @@ const onConfirmationCreateOrderClick = () => {
     srcToken: useTwapStore.getState().srcToken?.address,
     dstToken: useTwapStore.getState().dstToken?.address,
     srcTokenAmount: useTwapStore.getState().getSrcAmount(),
-    tradeSize: useTwapStore.getState().getSrcChunkAmount,
+    tradeSize: useTwapStore.getState().getSrcChunkAmount(),
     minAmountOut: useTwapStore.getState().getDstMinAmountOut(),
     deadline: useTwapStore.getState().getDeadline(),
     tradeInterval: useTwapStore.getState().getFillDelayMillis(),
@@ -64,6 +64,10 @@ const onConfirmationCreateOrderClick = () => {
 
 const onODNPClick = () => {
   sendAnalyticsEvent(Category.OrdersPanel, "onODNPClick");
+};
+
+const onModuleLoad = () => {
+  sendAnalyticsEvent(Category.PageView, "onModuleLoad");
 };
 
 const onTwapPageView = () => {
@@ -98,8 +102,14 @@ const onCancelOrderError = (error: string) => {
   sendAnalyticsEvent(Category.Error, `onCancelOrderError`, error);
 };
 
+const onCreateOrderRejected = () => {
+  sendAnalyticsEvent(Category.Error, `onCreateOrderRejected`);
+};
+
 const sendAnalyticsEvent = (category: Category, action: string, data?: any) => {
   const lib = useTwapStore.getState().lib;
+  console.log("start");
+
   fetch("https://bi.orbs.network/putes/twap-ui", {
     method: "POST",
     headers: {
@@ -115,7 +125,9 @@ const sendAnalyticsEvent = (category: Category, action: string, data?: any) => {
       action,
       data,
     }),
-  }).catch();
+  }).catch((err) => {
+    console.log(err, "🐱");
+  });
 };
 
 export const analytics = {
@@ -138,4 +150,6 @@ export const analytics = {
   onCancelOrderSuccess,
   onCancelOrderError,
   onTwapPageView,
+  onCreateOrderRejected,
+  onModuleLoad,
 };

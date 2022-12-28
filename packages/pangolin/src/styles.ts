@@ -2,8 +2,6 @@ import { Box, styled } from "@mui/system";
 import { Components, Styles as TwapStyles, StylesConfig } from "@orbs-network/twap-ui";
 import { PangolinTheme } from "./types";
 
-type StylesType = StylesConfig;
-
 const mainPadding = 10;
 const mainBorderRadius = 8;
 
@@ -97,12 +95,9 @@ export const StyledFlexEnd = styled(Box)({
   width: "100%",
 });
 
-export const StyledTokenPanel = styled(Box)(({ type }: { type: "src" | "dst" }) => ({
+export const StyledTokenPanel = styled(Box)({
   width: "100%",
-  "& .twap-card": {
-    borderBottomLeftRadius: type === "src" ? mainBorderRadius : 0,
-    borderBottomRightRadius: type === "src" ? mainBorderRadius : 0,
-  },
+
   "& .twap-input": {
     textAlign: "left",
   },
@@ -113,7 +108,7 @@ export const StyledTokenPanel = styled(Box)(({ type }: { type: "src" | "dst" }) 
   "& .twap-token-name": {
     fontSize: 20,
   },
-}));
+});
 export const StyledTradeSize = styled(TwapStyles.StyledRowFlex)({
   flex: 1,
   width: "unset",
@@ -162,11 +157,16 @@ export const StyledSliderContainer = styled(TwapStyles.StyledRowFlex)({
   justifyContent: "space-between",
 });
 
-const parseTheme = (theme: any): StylesConfig => {
+interface PangolinStyles extends StylesConfig {
+  labelColor: string;
+}
+
+const parseTheme = (theme: any): PangolinStyles => {
   console.log(theme);
 
   return {
-    iconsColor: theme.swapWidget.interactiveColor,
+    labelColor: theme.textInput.labelText,
+    iconsColor: theme.textInput.text,
     iconBackground: theme.swapWidget.interactiveBgColor,
     textColor: theme.textInput.text,
     tooltipBackground: "white",
@@ -194,6 +194,11 @@ const parseTheme = (theme: any): StylesConfig => {
 export const configureStyles = (theme: any) => {
   const styles = parseTheme(theme);
   return {
+    ".twap-powered-by": {
+      "*": {
+        color: `${theme.swapWidget.primary}!important`,
+      },
+    },
     ".twap-warning": {
       fontSize: 14,
       p: {
@@ -251,6 +256,11 @@ export const configureStyles = (theme: any) => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
+      ".twap-icon": {
+        "*": {
+          color: `${theme.swapWidget.primary}!important`,
+        },
+      },
       "& button": {
         width: 35,
         height: 35,
@@ -269,13 +279,17 @@ export const configureStyles = (theme: any) => {
       },
       ".twap-price": {
         background: styles.containerBackground,
-
         padding: 5,
         borderRadius: mainBorderRadius,
+        "*": {
+          color: `${theme.swapWidget.primary}!important`,
+        },
       },
     },
     ".twap-panel-title": {
-      color: styles.textColor,
+      "*": {
+        color: `${styles.labelColor}!important`,
+      },
     },
     ".twap-market-price": {
       width: "100%",
@@ -287,6 +301,9 @@ export const configureStyles = (theme: any) => {
       ".twap-market-price-content": {
         position: "relative",
         zIndex: 1,
+        "*": {
+          color: `${theme.swapWidget.primary}!important`,
+        },
       },
       "&::after": {
         position: "absolute",
@@ -296,7 +313,7 @@ export const configureStyles = (theme: any) => {
         height: "100%",
         content: "''",
         background: styles.cardBackground,
-        opacity: 0.4,
+        opacity: 0.1,
         zIndex: 0,
       },
 
@@ -369,7 +386,7 @@ export const configureStyles = (theme: any) => {
       },
       ".twap-input": {
         input: {
-          fontSize: 22,
+          fontSize: 18,
           "&::placeholder": {
             color: `${styles.textColor}!important`,
           },
@@ -377,8 +394,7 @@ export const configureStyles = (theme: any) => {
       },
     },
     ".twap-time-selector-list": {
-      background: styles.buttonBackground,
-      border: `1px solid ${styles.borderColor || "transparent"}`,
+      background: styles.selectTokenBackground,
       right: 0,
       ".twap-time-selector-list-item": {
         color: "black!important",
@@ -429,6 +445,7 @@ export const configureStyles = (theme: any) => {
       fontSize: 14,
       opacity: 1,
     },
+
     ".twap-slider": {
       "& .MuiSlider-valueLabel": {
         background: styles.tooltipBackground,

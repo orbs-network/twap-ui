@@ -151,7 +151,9 @@ export const useCreateOrder = () => {
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
-        console.log(error);
+        if ((error as any).code === 4001) {
+          analytics.onCreateOrderRejected();
+        }
       },
 
       onSettled: () => {
