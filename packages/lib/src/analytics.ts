@@ -108,7 +108,6 @@ const onCreateOrderRejected = () => {
 
 const sendAnalyticsEvent = (category: Category, action: string, data?: any) => {
   const lib = useTwapStore.getState().lib;
-  console.log("start");
 
   fetch("https://bi.orbs.network/putes/twap-ui", {
     method: "POST",
@@ -125,9 +124,7 @@ const sendAnalyticsEvent = (category: Category, action: string, data?: any) => {
       action,
       data,
     }),
-  }).catch((err) => {
-    console.log(err, "🐱");
-  });
+  }).catch();
 };
 
 export const analytics = {

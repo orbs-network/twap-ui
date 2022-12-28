@@ -1,6 +1,5 @@
 import { Box, styled } from "@mui/system";
 import { Components, Styles as TwapStyles, StylesConfig } from "@orbs-network/twap-ui";
-import { PangolinTheme } from "./types";
 
 const mainPadding = 10;
 const mainBorderRadius = 8;

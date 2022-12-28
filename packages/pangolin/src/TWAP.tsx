@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, hooks, Translations, TwapAdapter, TWAPProps, useTwapContext, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback, useState } from "react";
@@ -50,20 +50,6 @@ const TWAP = (props: PangolinTWAPProps) => {
 };
 
 export default memo(TWAP);
-
-const MarketPrice = () => {
-  const { toggleInverted, leftToken, rightToken, marketPrice, loading } = hooks.useMarketPrice();
-  const translations = useTwapContext().translations;
-
-  return (
-    <Box className="twap-market-price">
-      <TwapStyles.StyledColumnFlex className="twap-market-price-content">
-        <AdapterStyles.Text className="title">{translations.currentMarketPrice}</AdapterStyles.Text>
-        <Components.TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
-      </TwapStyles.StyledColumnFlex>
-    </Box>
-  );
-};
 
 const SrcTokenPercentSelector = () => {
   const { onPercentClick } = hooks.useCustomActions();
