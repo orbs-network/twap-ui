@@ -123,8 +123,8 @@ interface PangolinStyles extends StylesConfig {
 }
 
 const parseTheme = (theme: any): PangolinStyles => {
-  console.log(theme);
-
+  const isDarkMode = theme.textInput.backgroundColor !== "#FFFFFF";
+    
   return {
     labelColor: theme.textInput.labelText,
     iconsColor: theme.textInput.text,
@@ -148,10 +148,11 @@ const parseTheme = (theme: any): PangolinStyles => {
     selectTokenTextColor: theme.currencySelect.defaultText,
     selectedTokenBackground: theme.currencySelect.selectedBackgroundColor,
     selectedTokenTextColor: theme.currencySelect.selectedText,
+    skeletonLoaderBackground: isDarkMode ? "rgba(255,255,255, 0.1)" : "rgba(0,0,0, 0.1)",
   };
 };
 
-//
+
 export const configureStyles = (theme: any) => {
   const styles = parseTheme(theme);
   return {
@@ -194,12 +195,12 @@ export const configureStyles = (theme: any) => {
       alignItems: "center",
       gap: 8,
       "*": {
-        color: `${styles.selectTokenTextColor}!important`,
+        color: `black!important`,
         fontWeight: `500!important`,
       },
       "& .twap-icon": {
         "* ": {
-          fill: styles.selectTokenTextColor,
+          fill: "black",
         },
       },
     },
@@ -220,7 +221,7 @@ export const configureStyles = (theme: any) => {
       justifyContent: "center",
       ".twap-icon": {
         "*": {
-          color: `${theme.swapWidget.primary}!important`,
+          color: `${styles.iconsColor}!important`,
         },
       },
       "& button": {
@@ -314,19 +315,10 @@ export const configureStyles = (theme: any) => {
       },
     },
     ".twap-loader": {
-      backgroundColor: `${styles.skeletonLoaderBackground || "rgba(255,255,255, 0.1)"}!important`,
+      backgroundColor: `${styles.skeletonLoaderBackground}!important`,
     },
-    ".twap-modal": {
-      background: "rgba(0,0,0, 0.8)",
-      fontFamily: "Poppins",
-      color: styles.textColor,
-
-      "& *": {
-        color: styles.textColor,
-        "&::-webkit-scrollbar": {
-          display: "none",
-        },
-      },
+    ".twap-spinner":{
+      color: `${styles.spinnerColor}!important`,
     },
     ".twap-button-loader": {
       color: styles.spinnerColor,

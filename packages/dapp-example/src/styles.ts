@@ -39,6 +39,9 @@ export const StyledLayoutPangolin = styled(Box)(({ mode }: { mode: string }) => 
   borderRadius: 10,
   fontFamily: "Poppins",
   overflow: "hidden",
+  "& .twap-container": {
+    paddingTop: 20
+  }
 }));
 
 export const StyledDappContainer = styled(Box)({
@@ -147,10 +150,10 @@ export const StyledMenuDrawer = styled(Drawer)({
 });
 
 export const StyledDrawerContent = styled(Box)({
-   display: "flex",
+  display: "flex",
   flexDirection: "column",
-  zIndex: 10
-})
+  zIndex: 10,
+});
 
 export const StyledMenuMobileToggle = styled(IconButton)({
   marginRight: "auto",

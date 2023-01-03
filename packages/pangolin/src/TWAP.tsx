@@ -3,7 +3,7 @@ import { Box, styled } from "@mui/system";
 import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode, useCallback, useState } from "react";
+import { memo, ReactNode, useCallback, useMemo, useState } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
 import { Configs, TokenData } from "@orbs-network/twap";
@@ -13,7 +13,10 @@ import { PangolinTWAPProps } from "./types";
 import { GrClose } from "react-icons/gr";
 import Slide from "@mui/material/Slide";
 
+const configs = { [Configs.Pangolin.chainId]: Configs.Pangolin };
+
 const TWAP = (props: PangolinTWAPProps) => {
+  const { connectedChainId } = props;
   const tokenList = useParseTokenList(props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const globalStyles = useGlobalStyles(props.theme);
@@ -21,15 +24,24 @@ const TWAP = (props: PangolinTWAPProps) => {
     props.connect?.();
   }, []);
 
+  const config = useMemo(() => {
+    if (!connectedChainId) {
+      return undefined;
+    }
+
+    return configs[connectedChainId];
+  }, [connectedChainId]);
+
   return (
     <TwapAdapter
       connect={memoizedConnect}
-      config={Configs.Pangolin}
+      config={config || Configs.Pangolin}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
       translations={translations as Translations}
       provider={props.provider}
       account={props.account}
+      connectedChainId={props.connectedChainId}
     >
       <GlobalStyles styles={globalStyles as any} />
       <AdapterContextProvider value={props}>
@@ -272,7 +284,7 @@ const TokenPanel = ({ isSrcToken }: TokenPanelProps) => {
       <TokenSelect isOpen={tokenListOpen} onClose={onClose} onCurrencySelect={onTokenSelected} selectedCurrency={undefined} otherSelectedCurrency={undefined} />
 
       <AdapterStyles.StyledTokenPanel>
-        <TwapStyles.StyledColumnFlex gap={2}>
+        <TwapStyles.StyledColumnFlex gap={4}>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <Components.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.SmallLabel>
             {isSrcToken && <SrcTokenPercentSelector />}
