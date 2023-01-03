@@ -101,7 +101,6 @@ const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   background: "transparent",
   outline: "unset",
   fontWeight: 500,
-  paddingRight: 10,
 }));
 
 const StyledFlex = styled(Box)({

@@ -40,35 +40,6 @@ export const StyledLimitPrice = styled(Box)({
   },
 });
 
-export const StyledTokenOrder = styled(Box)({ width: "100%" });
-
-export const StyledTrade = styled(TwapStyles.StyledColumnFlex)({
-  width: "100%",
-  "& .twap-input": {
-    textAlign: "left",
-    paddingRight: 10,
-  },
-});
-
-export const StyledDstToken = styled(Box)({
-  width: "100%",
-});
-
-export const StyledSrcTokenPercentSelector = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  gap: 5,
-});
-
-export const StyledIntervalTimeSelect = styled(Box)({
-  flex: 1,
-});
-
-export const StyledTokenDisplay = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-});
 
 export const StyledFlexStart = styled(Box)({
   display: "flex",
@@ -78,13 +49,6 @@ export const StyledFlexStart = styled(Box)({
   width: "100%",
 });
 
-export const StyledFlex = styled(Box)(({ gap = 10, justifyContent = "center" }: { gap?: number; justifyContent?: "flex-start" | "flex-end" | "center" }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent,
-  width: "100%",
-  gap,
-}));
 
 export const StyledFlexEnd = styled(Box)({
   display: "flex",
@@ -230,10 +194,11 @@ export const configureStyles = (theme: any) => {
       cursor: "pointer",
       display: "flex",
       alignItems: "center",
-      gap: 10,
-      "& .twap-token-name": {
-        fontWeight: 500,
-      },
+      gap: 8,
+     "*": {
+       color: `${styles.selectTokenTextColor}!important`,
+       fontWeight: `500!important`
+     },
       "& .twap-icon": {
         "* ": {
           fill: styles.selectTokenTextColor,
@@ -243,7 +208,7 @@ export const configureStyles = (theme: any) => {
     ".twap-token-select-selected": {
       background: styles.selectedTokenBackground,
       "& .twap-token-name": {
-        color: styles.selectedTokenTextColor,
+        color: `${styles.selectedTokenTextColor}!important`,
       },
       "& .twap-icon": {
         "* ": {
@@ -605,6 +570,7 @@ export const StyledSummary = styled(Box)({
   paddingTop: 30,
   display: "flex",
   transition: "0.2s all",
+  padding: '40px 10px 10px 10px'
 });
 
 export const StyledTokenSummary = styled(Components.Card)({
@@ -621,8 +587,8 @@ export const StyledSummaryCloseButton = styled("button")({
   padding: 0,
   border: "unset",
   background: "unset",
-  top: 0,
-  right: 0,
+  top: 10,
+  right: 10,
   position: "absolute",
   cursor: "pointer",
 });

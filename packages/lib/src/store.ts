@@ -343,3 +343,8 @@ export const fillDelayText = (value: number, translations: Translations) => {
   }
   return arr.join(" ");
 };
+
+
+export const handleFillDelayText = (text: string, minutes: number) => {
+  return text.replace("{{minutes}}", minutes.toString());
+}
