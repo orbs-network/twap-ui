@@ -2,7 +2,7 @@ import Modal from "@mui/material/Modal";
 import { ReactNode, useState } from "react";
 import { Helmet } from "react-helmet";
 import { AiOutlineClose } from "react-icons/ai";
-import { StyledCloseIcon, StyledDappLayout, StyledMenuDrawer, StyledMenuList, StyledMenuListItemButton, StyledMenuLogo, StyledMenuMobileToggle, StyledThemeToggle } from "./styles";
+import { StyledCloseIcon, StyledDappLayout, StyledDrawerContent, StyledMenuDrawer, StyledMenuList, StyledMenuListItemButton, StyledMenuLogo, StyledMenuMobileToggle, StyledThemeToggle } from "./styles";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -115,19 +115,22 @@ export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
         anchor="left"
         open={open}
       >
-        <ToggleTheme />
-        <StyledMenuList>
-          <Backdrop open={isMobile && isOpen} onClick={() => setIsOpen(false)} />
-          {dapps.map((dapp) => (
-            <ListItem onClick={() => onSelectClick(dapp)} key={dapp.config.partner.toLowerCase()} disablePadding selected={isSelected(dapp)}>
-              <StyledMenuListItemButton>
-                <StyledMenuLogo src={dapp.logo} />
-                <ListItemText primary={dapp.config.partner} />
-              </StyledMenuListItemButton>
-            </ListItem>
-          ))}
-        </StyledMenuList>
-        <Status />
+        <Backdrop open={isMobile && isOpen} onClick={() => setIsOpen(false)} />
+
+        <StyledDrawerContent>
+          <ToggleTheme />
+          <StyledMenuList>
+            {dapps.map((dapp) => (
+              <ListItem onClick={() => onSelectClick(dapp)} key={dapp.config.partner.toLowerCase()} disablePadding selected={isSelected(dapp)}>
+                <StyledMenuListItemButton>
+                  <StyledMenuLogo src={dapp.logo} />
+                  <ListItemText primary={dapp.config.partner} />
+                </StyledMenuListItemButton>
+              </ListItem>
+            ))}
+          </StyledMenuList>
+          <Status />
+        </StyledDrawerContent>
       </StyledMenuDrawer>
     </>
   );

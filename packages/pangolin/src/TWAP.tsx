@@ -334,7 +334,7 @@ const OrderSummary = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <Slide in={twapStore.showConfirmation} direction='left'>
+    <Slide in={twapStore.showConfirmation} direction="left">
       <AdapterStyles.StyledSummary className="twap-summary">
         <AdapterStyles.StyledSummaryCloseButton onClick={() => twapStore.setShowConfirmation(false)} className="twap-summary-close">
           <Components.Icon icon={<GrClose style={{ width: 20, height: 20 }} />} />

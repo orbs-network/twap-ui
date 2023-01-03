@@ -40,7 +40,6 @@ export const StyledLimitPrice = styled(Box)({
   },
 });
 
-
 export const StyledFlexStart = styled(Box)({
   display: "flex",
   alignItems: "center",
@@ -48,7 +47,6 @@ export const StyledFlexStart = styled(Box)({
   gap: 10,
   width: "100%",
 });
-
 
 export const StyledFlexEnd = styled(Box)({
   display: "flex",
@@ -195,10 +193,10 @@ export const configureStyles = (theme: any) => {
       display: "flex",
       alignItems: "center",
       gap: 8,
-     "*": {
-       color: `${styles.selectTokenTextColor}!important`,
-       fontWeight: `500!important`
-     },
+      "*": {
+        color: `${styles.selectTokenTextColor}!important`,
+        fontWeight: `500!important`,
+      },
       "& .twap-icon": {
         "* ": {
           fill: styles.selectTokenTextColor,
@@ -570,7 +568,7 @@ export const StyledSummary = styled(Box)({
   paddingTop: 30,
   display: "flex",
   transition: "0.2s all",
-  padding: '40px 10px 10px 10px'
+  padding: "40px 10px 10px 10px",
 });
 
 export const StyledTokenSummary = styled(Components.Card)({

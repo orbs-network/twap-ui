@@ -146,6 +146,12 @@ export const StyledMenuDrawer = styled(Drawer)({
   flexDirection: "column",
 });
 
+export const StyledDrawerContent = styled(Box)({
+   display: "flex",
+  flexDirection: "column",
+  zIndex: 10
+})
+
 export const StyledMenuMobileToggle = styled(IconButton)({
   marginRight: "auto",
   marginLeft: 20,
