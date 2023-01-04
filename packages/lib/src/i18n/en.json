@@ -1,6 +1,6 @@
 {
   "confirmationDeadlineTooltip": "This is the date and time marking the end of the period which you have selected for your TWAP order to be executed.",
-  "confirmationtradeIntervalTooltip": "The minimum amount of time that will elapse between each trade in your order. This includes {{minutes}} minutes per trade of bidding war.",
+  "confirmationtradeIntervalTooltip": "The estimated minimum amount of time that will elapse between each trade in your order.",
   "confirmationTradeSizeTooltip": "The number of input tokens that will be removed from your balance and swapped for the output token in each individual trade.",
   "confirmationTotalTradesTooltip": "The total number of individual trades that will be scheduled as part of your TWAP order. Note that in limit orders, not all trades that are scheduled will be executed.",
   "confirmationMinDstAmountTootipMarket": "Since you have chosen a market order without a limit price, there is no set minimum number of tokens. The actual amount received is subject to market conditions.",
@@ -12,7 +12,7 @@
   "limitPriceTooltip": "This sets the lowest price for trades in your TWAP order. Trades will ONLY be executed when this limit price is lower than or equal to the available market price. Some trades may not be executed if the limit price is higher than the available market price and your order may only be partially filled.",
   "tradeSizeTooltip": "This sets the size of each individual trade that will be executed over the duration of your TWAP order.",
   "maxDurationTooltip": "The maximum time during which the total amount of individual trades making up your full TWAP order can be executed. Note that depending on your parameters, your order may be filled earlier than this time, partially filled or not filled at all.",
-  "tradeIntervalTootlip": "This sets the minimum amount of time that will elapse between each individual trade in your TWAP order. Note that this includes estimated {{minutes}} minutes of bidding war per trade.",
+  "tradeIntervalTootlip": "This sets the minimum amount of time that will elapse between each individual trade in your TWAP order.",
   "customIntervalTooltip": "Enable custom interval",
   "totalTradesTooltip": "The total number of individual trades that will be scheduled as part of your TWAP order. Note that in limit orders, it is possible that not all scheduled trades will be executed.",
   "sliderMinSizeTooltip": "Individual trades must have a minimum trade size of $10.00 USD.",
@@ -91,5 +91,5 @@
   "prtialFillWarningTooltip": "Order will not be completely filled in the selected duration.",
   "invalid": "Invalid",
   "fillDelayWarning": "Invalid trade interval",
-  "fillDelayWarningTooltip": "Trade interval must be higher than {{minutes}} minutes to allow for the bidding war."
+  "fillDelayWarningTooltip": "Trade interval must be higher than {{minutes}} minutes to allow for the bidder auction."
 }
