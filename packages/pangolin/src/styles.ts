@@ -15,7 +15,6 @@ export const StyledSlider = styled(Box)({
   top: 2,
 });
 
-
 export const StyledLimitPrice = styled(Box)({
   width: "100%",
   "& .right": {

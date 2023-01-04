@@ -1,5 +1,4 @@
-import styled from "@emotion/styled";
-import { Box } from "@mui/system";
+import { Box, styled } from "@mui/system";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../store";
 import { StyledText } from "../styles";

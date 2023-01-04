@@ -2,7 +2,17 @@ import Modal from "@mui/material/Modal";
 import { ReactNode, useState } from "react";
 import { Helmet } from "react-helmet";
 import { AiOutlineClose } from "react-icons/ai";
-import { StyledCloseIcon, StyledDappLayout, StyledDrawerContent, StyledMenuDrawer, StyledMenuList, StyledMenuListItemButton, StyledMenuLogo, StyledMenuMobileToggle, StyledThemeToggle } from "./styles";
+import {
+  StyledCloseIcon,
+  StyledDappLayout,
+  StyledDrawerContent,
+  StyledMenuDrawer,
+  StyledMenuList,
+  StyledMenuListItemButton,
+  StyledMenuLogo,
+  StyledMenuMobileToggle,
+  StyledThemeToggle,
+} from "./styles";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import useMediaQuery from "@mui/material/useMediaQuery";

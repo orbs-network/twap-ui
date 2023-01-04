@@ -40,8 +40,8 @@ export const StyledLayoutPangolin = styled(Box)(({ mode }: { mode: string }) => 
   fontFamily: "Poppins",
   overflow: "hidden",
   "& .twap-container": {
-    paddingTop: 20
-  }
+    paddingTop: 20,
+  },
 }));
 
 export const StyledDappContainer = styled(Box)({

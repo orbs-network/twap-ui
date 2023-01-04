@@ -12,6 +12,10 @@ import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles,
 import { PangolinTWAPProps } from "./types";
 import { GrClose } from "react-icons/gr";
 import Slide from "@mui/material/Slide";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
+
+const defaultTheme = createTheme();
 
 const configs = {
   // [`${Configs.Pangolin.chainId}:`]: Configs.Pangolin,
@@ -19,7 +23,7 @@ const configs = {
 };
 
 const TWAP = (props: PangolinTWAPProps) => {
-  const { connectedChainId, partnerDaas = '' } = props;
+  const { connectedChainId, partnerDaas = "" } = props;
   const tokenList = useParseTokenList(props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const globalStyles = useGlobalStyles(props.theme);
@@ -36,32 +40,36 @@ const TWAP = (props: PangolinTWAPProps) => {
   // }, [connectedChainId, partnerDaas]);
 
   return (
-    <TwapAdapter
-      connect={memoizedConnect}
-      config={Configs.Pangolin}
-      maxFeePerGas={props.maxFeePerGas}
-      priorityFeePerGas={props.priorityFeePerGas}
-      translations={translations as Translations}
-      provider={props.provider}
-      account={props.account}
-      connectedChainId={props.connectedChainId}
-    >
-      <GlobalStyles styles={globalStyles as any} />
-      <AdapterContextProvider value={props}>
-        <div className="twap-container">
-          <TokenPanel isSrcToken={true} />
-          <ChangeTokensOrder />
-          <TokenPanel isSrcToken={false} />
-          <LimitPriceDisplay />
-          <TradeSize />
-          <MaxDuration />
-          <TradeInterval />
-          <SubmitButton />
-          <OrderSummary />
-          <Components.PoweredBy />
-        </div>
-      </AdapterContextProvider>
-    </TwapAdapter>
+    <Emotion10ThemeProvider theme={defaultTheme}>
+      <ThemeProvider theme={defaultTheme}>
+        <TwapAdapter
+          connect={memoizedConnect}
+          config={Configs.Pangolin}
+          maxFeePerGas={props.maxFeePerGas}
+          priorityFeePerGas={props.priorityFeePerGas}
+          translations={translations as Translations}
+          provider={props.provider}
+          account={props.account}
+          connectedChainId={props.connectedChainId}
+        >
+          <GlobalStyles styles={globalStyles as any} />
+          <AdapterContextProvider value={props}>
+            <div className="twap-container">
+              <TokenPanel isSrcToken={true} />
+              <ChangeTokensOrder />
+              <TokenPanel isSrcToken={false} />
+              <LimitPriceDisplay />
+              <TradeSize />
+              <MaxDuration />
+              <TradeInterval />
+              <SubmitButton />
+              <OrderSummary />
+              <Components.PoweredBy />
+            </div>
+          </AdapterContextProvider>
+        </TwapAdapter>
+      </ThemeProvider>
+    </Emotion10ThemeProvider>
   );
 };
 
@@ -196,9 +204,8 @@ const MaxDuration = () => {
 
 const TradeInterval = () => {
   const translations = useTwapContext().translations;
-  const twapStore = store.useTwapStore()
-  const {onFillDelayBlur, onFillDelayFocus} = hooks.useCustomActions()
-
+  const twapStore = store.useTwapStore();
+  const { onFillDelayBlur, onFillDelayFocus } = hooks.useCustomActions();
 
   return (
     <Components.Card>
