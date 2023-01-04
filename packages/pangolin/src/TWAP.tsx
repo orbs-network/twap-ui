@@ -13,10 +13,13 @@ import { PangolinTWAPProps } from "./types";
 import { GrClose } from "react-icons/gr";
 import Slide from "@mui/material/Slide";
 
-const configs = { [Configs.Pangolin.chainId]: Configs.Pangolin };
+const configs = {
+  // [`${Configs.Pangolin.chainId}:`]: Configs.Pangolin,
+  // [`${Configs.Pangolin.chainId}:0x12345`]: Configs.SpiritSwap,
+};
 
 const TWAP = (props: PangolinTWAPProps) => {
-  const { connectedChainId } = props;
+  const { connectedChainId, partnerDaas = '' } = props;
   const tokenList = useParseTokenList(props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const globalStyles = useGlobalStyles(props.theme);
@@ -24,18 +27,18 @@ const TWAP = (props: PangolinTWAPProps) => {
     props.connect?.();
   }, []);
 
-  const config = useMemo(() => {
-    if (!connectedChainId) {
-      return undefined;
-    }
+  // const config = useMemo(() => {
+  //   if (!connectedChainId) {
+  //     return undefined;
+  //   }
 
-    return configs[connectedChainId];
-  }, [connectedChainId]);
+  //   return configs[`${connectedChainId}:${partnerDaas}`];
+  // }, [connectedChainId, partnerDaas]);
 
   return (
     <TwapAdapter
       connect={memoizedConnect}
-      config={config || Configs.Pangolin}
+      config={Configs.Pangolin}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
       translations={translations as Translations}
@@ -192,31 +195,20 @@ const MaxDuration = () => {
 };
 
 const TradeInterval = () => {
-  const fillDelay = store.useTwapStore((state) => state.getFillDelay());
-  const onChange = store.useTwapStore((state) => state.setFillDelay);
-  const setCustomFillDelayEnabled = store.useTwapStore((state) => state.setCustomFillDelayEnabled);
-  const setCustomFillDelay = store.useTwapStore((state) => state.setFillDelay);
   const translations = useTwapContext().translations;
-  const minimumDelayMinutes = store.useTwapStore((state) => state.getMinimumDelayMinutes());
+  const twapStore = store.useTwapStore()
+  const {onFillDelayBlur, onFillDelayFocus} = hooks.useCustomActions()
 
-  const onBlur = () => {
-    if (!fillDelay.amount) {
-      setCustomFillDelayEnabled(false);
-    }
-  };
-
-  const onFocus = () => {
-    setCustomFillDelay(fillDelay);
-    setCustomFillDelayEnabled(true);
-  };
 
   return (
     <Components.Card>
       <TwapStyles.StyledRowFlex>
-        <Components.Label tooltipText={store.handleFillDelayText(translations.tradeIntervalTootlip, minimumDelayMinutes)}>{translations.tradeInterval}</Components.Label>
+        <Components.Label tooltipText={store.handleFillDelayText(translations.tradeIntervalTootlip, twapStore.getMinimumDelayMinutes())}>
+          {translations.tradeInterval}
+        </Components.Label>
         <FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ width: "unset", flex: 1 }}>
-          <Components.TimeSelector onFocus={onFocus} onBlur={onBlur} onChange={onChange} value={fillDelay} />
+          <Components.TimeSelector onFocus={onFillDelayFocus} onBlur={onFillDelayBlur} onChange={twapStore.setFillDelay} value={twapStore.getFillDelay()} />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
     </Components.Card>
@@ -264,6 +256,7 @@ const TokenPanel = ({ isSrcToken }: TokenPanelProps) => {
 
   const tokenPanel = hooks.useTokenPanel(isSrcToken);
   const translations = useTwapContext().translations;
+  const marketPrice = hooks.useMarketPrice().marketPrice;
 
   const onOpen = () => {
     if (!tokenPanel.selectTokenWarning) setTokenListOpen(true);
@@ -277,7 +270,6 @@ const TokenPanel = ({ isSrcToken }: TokenPanelProps) => {
   const onClose = useCallback(() => {
     setTokenListOpen(false);
   }, []);
-  const { marketPrice } = hooks.useMarketPrice();
 
   return (
     <>

@@ -20,26 +20,24 @@ function Tooltip({ children, text, placement, childrenStyles }: Props) {
   if (isMobile) {
     return (
       <ClickAwayListener onClickAway={() => setOpen(false)}>
-        <div>
-          <MuiTooltip
-            arrow
-            title={text}
-            onClose={() => setOpen(false)}
-            open={open}
-            PopperProps={{
-              className: "twap-tooltip",
-              disablePortal: true,
-              style: {
-                maxWidth: 200,
-              },
-            }}
-            placement="bottom"
-          >
-            <span onClick={() => setOpen(true)} style={childrenStyles}>
-              {children}
-            </span>
-          </MuiTooltip>
-        </div>
+        <MuiTooltip
+          arrow
+          title={text}
+          onClose={() => setOpen(false)}
+          open={open}
+          PopperProps={{
+            className: "twap-tooltip",
+            disablePortal: true,
+            style: {
+              maxWidth: 200,
+            },
+          }}
+          placement="bottom"
+        >
+          <span onClick={() => setOpen(true)} style={childrenStyles}>
+            {children}
+          </span>
+        </MuiTooltip>
       </ClickAwayListener>
     );
   }

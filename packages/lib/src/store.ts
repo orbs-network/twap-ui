@@ -1,5 +1,5 @@
 import BN from "bignumber.js";
-import { Order, OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { isNativeAddress, Order, OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import moment from "moment";
 import create from "zustand";
 import { combine } from "zustand/middleware";
@@ -64,7 +64,18 @@ export const useTwapStore = create(
       set({ dstToken, limitPriceUi: initialState.limitPriceUi });
     },
     setTokenList: (tokenList?: TokenData[]) => set({ tokenList }),
-    setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi, chunks: 0, isLimitOrder: false }),
+    setSrcAmountUi: (srcAmountUi: string) => {
+      const token = get().srcToken;
+
+      if (isNativeAddress(token?.address || "")) {
+        const balance = get().srcBalance;
+        const amount = amountBN(get().srcToken, srcAmountUi);
+        const result = BN.max(0, BN.min(balance.minus(0.01), amount));
+        set({ srcAmountUi: amountUi(token, result), chunks: 0, isLimitOrder: false });
+      } else {
+        set({ srcAmountUi, chunks: 0, isLimitOrder: false });
+      }
+    },
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),
     setDstBalance: (dstBalance: BN) => set({ dstBalance }),
     setSrcUsd: (srcUsd: BN) => set({ srcUsd }),

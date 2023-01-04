@@ -38,4 +38,5 @@ export interface PangolinTheme {
 
 export interface PangolinTWAPProps extends TWAPProps {
   theme: any;
+  partnerDaas?: string;
 }

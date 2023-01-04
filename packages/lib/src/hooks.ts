@@ -428,8 +428,19 @@ export const useLimitPrice = () => {
 };
 
 export const useCustomActions = () => {
-  const onPercentClick = useTwapStore((state) => state.setSrcAmountPercent);
-  return { onPercentClick };
+  const store = useTwapStore()
+    const onFillDelayBlur = () => {
+      if (!store.getFillDelay().amount) {
+        store.setCustomFillDelayEnabled(false);
+      }
+    };
+
+    const onFillDelayFocus = () => {
+      store.setFillDelay(store.getFillDelay());
+      store.setCustomFillDelayEnabled(true);
+    };
+
+  return { onPercentClick: store.setSrcAmountPercent, onFillDelayBlur, onFillDelayFocus };
 };
 
 export const useCancelOrder = () => {

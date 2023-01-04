@@ -7,10 +7,6 @@ const mainBorderRadius = 8;
 export const Text = styled(TwapStyles.StyledText)({});
 export const StyledOneLineText = styled(TwapStyles.StyledOneLineText)({});
 
-export const StyledContent = styled(TwapStyles.StyledRowFlex)({
-  justifyContent: "space-between",
-});
-
 export const StyledSlider = styled(Box)({
   flex: 1,
   paddingLeft: 30,
@@ -19,13 +15,6 @@ export const StyledSlider = styled(Box)({
   top: 2,
 });
 
-export const StyledOrderConfirmation = styled(Box)({
-  "& .output-text": {
-    textAlign: "center",
-    width: "100%",
-    fontSize: 15,
-  },
-});
 
 export const StyledLimitPrice = styled(Box)({
   width: "100%",
@@ -124,7 +113,7 @@ interface PangolinStyles extends StylesConfig {
 
 const parseTheme = (theme: any): PangolinStyles => {
   const isDarkMode = theme.textInput.backgroundColor !== "#FFFFFF";
-    
+
   return {
     labelColor: theme.textInput.labelText,
     iconsColor: theme.textInput.text,
@@ -151,7 +140,6 @@ const parseTheme = (theme: any): PangolinStyles => {
     skeletonLoaderBackground: isDarkMode ? "rgba(255,255,255, 0.1)" : "rgba(0,0,0, 0.1)",
   };
 };
-
 
 export const configureStyles = (theme: any) => {
   const styles = parseTheme(theme);
@@ -317,7 +305,7 @@ export const configureStyles = (theme: any) => {
     ".twap-loader": {
       backgroundColor: `${styles.skeletonLoaderBackground}!important`,
     },
-    ".twap-spinner":{
+    ".twap-spinner": {
       color: `${styles.spinnerColor}!important`,
     },
     ".twap-button-loader": {
