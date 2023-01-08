@@ -277,18 +277,15 @@ const TokenPanel = ({ children, isSrcToken }: TokenPanelProps) => {
     if (!selectTokenWarning) setTokenListOpen(true);
   };
 
-  const onTokenSelected = useCallback(
-    (token: TokenData) => {
-      setTokenListOpen(false);
-      if (isSrcToken) {
-        onSrcTokenSelected(token);
-      } else {
-        onDstTokenSelected(token);
-      }
-      onTokenSelect(parseToken(token, getTokenImageUrl));
-    },
-    [isSrcToken]
-  );
+  const onTokenSelected = (token: TokenData) => {
+    setTokenListOpen(false);
+    if (isSrcToken) {
+      onSrcTokenSelected(token);
+    } else {
+      onDstTokenSelected(token);
+    }
+    onTokenSelect(parseToken(token, getTokenImageUrl));
+  };
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);

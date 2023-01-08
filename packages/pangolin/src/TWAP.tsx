@@ -3,7 +3,7 @@ import { Box, styled } from "@mui/system";
 import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
 import { IoIosArrowDown } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { memo, ReactNode, useCallback, useMemo, useState } from "react";
+import { memo, ReactNode, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
 import { Configs, TokenData } from "@orbs-network/twap";
@@ -17,13 +17,12 @@ import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
 
 const defaultTheme = createTheme();
 
-const configs = {
+// const configs = {
   // [`${Configs.Pangolin.chainId}:`]: Configs.Pangolin,
   // [`${Configs.Pangolin.chainId}:0x12345`]: Configs.SpiritSwap,
-};
+// };
 
 const TWAP = (props: PangolinTWAPProps) => {
-  const { connectedChainId, partnerDaas = "" } = props;
   const tokenList = useParseTokenList(props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const globalStyles = useGlobalStyles(props.theme);
