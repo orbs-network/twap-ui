@@ -21,10 +21,10 @@
   },
   "dependencies": {
     "@defi.org/web3-candies": "4.x",
-    "@emotion/react": "^11.10.5",
+    "@emotion/react": "11.x",
     "@mui/material": "5.x",
     "@mui/system": "5.x",
-    "@orbs-network/twap": "1.8.x",
+    "@orbs-network/twap": "1.9.x",
     "@orbs-network/twap-ui": "^0.4.3-alpha.0",
     "lodash": "4.x",
     "react-icons": "4.x",
