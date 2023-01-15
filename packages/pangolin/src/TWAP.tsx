@@ -17,10 +17,7 @@ import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
 
 const defaultTheme = createTheme();
 
-// const configs = {
-  // [`${Configs.Pangolin.chainId}:`]: Configs.Pangolin,
-  // [`${Configs.Pangolin.chainId}:0x12345`]: Configs.SpiritSwap,
-// };
+
 
 const TWAP = (props: PangolinTWAPProps) => {
   const tokenList = useParseTokenList(props.dappTokens);
@@ -30,26 +27,19 @@ const TWAP = (props: PangolinTWAPProps) => {
     props.connect?.();
   }, []);
 
-  // const config = useMemo(() => {
-  //   if (!connectedChainId) {
-  //     return undefined;
-  //   }
-
-  //   return configs[`${connectedChainId}:${partnerDaas}`];
-  // }, [connectedChainId, partnerDaas]);
-
   return (
     <Emotion10ThemeProvider theme={defaultTheme}>
       <ThemeProvider theme={defaultTheme}>
         <TwapAdapter
           connect={memoizedConnect}
-          config={Configs.Pangolin}
+          config={props.partnerDaas ? Configs.PangolinDaas : Configs.Pangolin}
           maxFeePerGas={props.maxFeePerGas}
           priorityFeePerGas={props.priorityFeePerGas}
           translations={translations as Translations}
           provider={props.provider}
           account={props.account}
           connectedChainId={props.connectedChainId}
+          askDataParams={[props.partnerDaas]}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider value={props}>
