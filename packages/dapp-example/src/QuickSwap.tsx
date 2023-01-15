@@ -9,7 +9,7 @@ import { Components } from "@orbs-network/twap-ui";
 
 import { DappLayout, Popup } from "./Components";
 
-const config = Configs.SpiritSwap;
+const config = Configs.QuickSwap;
 
 const useDappTokens = () => {
   return useGetTokensFromViaProtocol(config.chainId);

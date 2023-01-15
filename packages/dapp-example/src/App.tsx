@@ -1,7 +1,6 @@
 import { StyledApp, StyledContent } from "./styles";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate, Navigate } from "react-router-dom";
 import { Dapp, DappsMenu } from "./Components";
-import { Navigate } from "react-router-dom";
 import { useEagerlyConnect, useDisconnectWallet } from "./hooks";
 import { useCallback } from "react";
 import { dapps, defaultDapp } from "./config";

@@ -9,6 +9,7 @@ import _ from "lodash";
 import { analytics } from "./analytics";
 import { setWeb3Instance, switchMetaMaskNetwork, zeroAddress } from "@defi.org/web3-candies";
 import { parseOrderUi, prepareOrdersTokensWithUsd, useTwapStore } from "./store";
+import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_USD } from "./consts";
 
 /**
  * Actions
@@ -113,7 +114,7 @@ export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
   const reset = useResetStoreWithLibAndQueries();
-  const {askDataParams} = useTwapContext()
+  const { askDataParams } = useTwapContext();
 
   return useMutation(
     async () => {
@@ -131,7 +132,7 @@ export const useCreateOrder = () => {
       });
       analytics.onConfirmationCreateOrderClick();
       store.setLoading(true);
-    
+
       return store.lib!.submitOrder(
         store.srcToken!,
         { ...store.dstToken!, address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address },
@@ -143,7 +144,7 @@ export const useCreateOrder = () => {
         store.srcUsd,
         askDataParams,
         priorityFeePerGas,
-        maxFeePerGas,
+        maxFeePerGas
       );
     },
     {
@@ -552,8 +553,7 @@ const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) =>
   const query = useQuery(["useUsdValueQuery", token?.address], () => Paraswap.priceUsd(lib!.config.chainId, token!), {
     enabled: !!lib && !!token,
     onSuccess,
-    refetchInterval: 20_000,
-    staleTime: 60_000,
+    refetchInterval: REFETCH_USD,
   });
 
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
@@ -563,7 +563,7 @@ const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => 
   const query = useQuery(["useBalanceQuery", lib?.maker, token?.address], () => lib!.makerBalance(token!), {
     enabled: !!lib && !!token,
     onSuccess,
-    refetchInterval: 20_000,
+    refetchInterval: REFETCH_BALANCE,
   });
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
@@ -574,7 +574,7 @@ const useGasPriceQuery = () => {
 
   const { isLoading, data } = useQuery(["useGasPrice", priorityFeePerGas, maxFeePerGas], () => Paraswap.gasPrices(lib!.config.chainId), {
     enabled: !!lib && !BN(maxFeePerGas || 0).gt(0) && !BN(priorityFeePerGas || 0).gt(0),
-    refetchInterval: 60_000,
+    refetchInterval: REFETCH_GAS_PRICE,
   });
 
   return { isLoading, maxFeePerGas: BN.max(data?.instant || 0, maxFeePerGas || 0, priorityFeePerGas || 0), priorityFeePerGas: BN.max(data?.low || 0, priorityFeePerGas || 0) };
@@ -608,7 +608,7 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
     },
     {
       enabled: !!lib && !!tokenList && tokenList.length > 0,
-      refetchInterval: 60_000,
+      refetchInterval: 30_000,
       onSettled: () => {
         setWaitingForNewOrder(false);
       },

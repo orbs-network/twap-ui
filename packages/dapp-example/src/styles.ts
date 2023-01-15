@@ -44,6 +44,16 @@ export const StyledLayoutPangolin = styled(Box)(({ mode }: { mode: string }) => 
   },
 }));
 
+export const StyledLayoutPangolinDaas = styled(Box)(({ mode }: { mode: string }) => ({
+  borderRadius: 10,
+  fontFamily: "Poppins",
+  overflow: "hidden",
+  border: "1px solid #FFC800",
+  "& .twap-container": {
+    paddingTop: 20,
+  },
+}));
+
 export const StyledDappContainer = styled(Box)({
   display: "flex",
   flexDirection: "column",

@@ -1,13 +1,14 @@
 import BN from "bignumber.js";
 import { isNativeAddress, Order, OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import moment from "moment";
-import create from "zustand";
+import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import _ from "lodash";
 import { eqIgnoreCase, parsebn } from "@defi.org/web3-candies";
 import { Translations } from "./types";
 import { analytics } from "./analytics";
 import Web3 from "web3";
+import { MIN_NATIVE_BALANCE } from "./consts";
 
 export enum TimeResolution {
   Minutes = 60 * 1000,
@@ -57,7 +58,7 @@ export const useTwapStore = create(
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
       srcToken && analytics.onSrcTokenClick(srcToken?.symbol);
-      set({ srcToken, chunks: 0, limitPriceUi: initialState.limitPriceUi, srcAmountUi: "" });
+      set({ srcToken});
     },
     setDstToken: (dstToken?: TokenData) => {
       dstToken && analytics.onDstTokenClick(dstToken.symbol);
@@ -70,10 +71,12 @@ export const useTwapStore = create(
       if (isNativeAddress(token?.address || "")) {
         const balance = get().srcBalance;
         const amount = amountBN(get().srcToken, srcAmountUi);
-        const result = BN.max(0, BN.min(balance.minus(0.01), amount));
-        set({ srcAmountUi: amountUi(token, result), chunks: 0, isLimitOrder: false });
+        const srcTokenMinimum =  amountBN (get().srcToken, MIN_NATIVE_BALANCE.toString())
+        const result = BN.max(0, BN.min(balance.minus(srcTokenMinimum), amount));
+        
+        set({ srcAmountUi: amountUi(token, result)});
       } else {
-        set({ srcAmountUi, chunks: 0, isLimitOrder: false });
+        set({ srcAmountUi });
       }
     },
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),

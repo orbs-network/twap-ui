@@ -31,6 +31,7 @@ export interface Dapp {
   config: Config;
   logo: string;
   Component: any;
+  invertLogo?: boolean;
 }
 
 export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: ReactNode }) => {
@@ -86,7 +87,7 @@ interface DappsMenuProps {
 const drawerWidth = 260;
 
 export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
-  const { isSelected } = useSelectedDapp();
+  const { isSelected, selectedDapp } = useSelectedDapp();
 
   const isMobile = useMediaQuery("(max-width:1100px)");
   const [isOpen, setIsOpen] = useState(false);
@@ -133,7 +134,12 @@ export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
             {dapps.map((dapp) => (
               <ListItem onClick={() => onSelectClick(dapp)} key={dapp.config.partner.toLowerCase()} disablePadding selected={isSelected(dapp)}>
                 <StyledMenuListItemButton>
-                  <StyledMenuLogo src={dapp.logo} />
+                  <StyledMenuLogo
+                    src={dapp.logo}
+                    style={{
+                      filter: dapp.invertLogo ? "invert(100%)" : "unset",
+                    }}
+                  />
                   <ListItemText primary={dapp.config.partner} />
                 </StyledMenuListItemButton>
               </ListItem>

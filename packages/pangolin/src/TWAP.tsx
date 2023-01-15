@@ -6,7 +6,7 @@ import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
-import { Configs, TokenData } from "@orbs-network/twap";
+import { Configs, isNativeAddress, TokenData } from "@orbs-network/twap";
 import { AiOutlineWarning } from "react-icons/ai";
 import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles, useParseTokenList, useTokensFromDapp } from "./hooks";
 import { PangolinTWAPProps } from "./types";
@@ -17,8 +17,6 @@ import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
 
 const defaultTheme = createTheme();
 
-
-
 const TWAP = (props: PangolinTWAPProps) => {
   const tokenList = useParseTokenList(props.dappTokens);
   useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
@@ -27,19 +25,21 @@ const TWAP = (props: PangolinTWAPProps) => {
     props.connect?.();
   }, []);
 
+  const partnerDaas = props.partnerDaas && !isNativeAddress(props.partnerDaas) ? props.partnerDaas : undefined;
+
   return (
     <Emotion10ThemeProvider theme={defaultTheme}>
       <ThemeProvider theme={defaultTheme}>
         <TwapAdapter
           connect={memoizedConnect}
-          config={props.partnerDaas ? Configs.PangolinDaas : Configs.Pangolin}
+          config={partnerDaas ? Configs.PangolinDaas : Configs.Pangolin}
           maxFeePerGas={props.maxFeePerGas}
           priorityFeePerGas={props.priorityFeePerGas}
           translations={translations as Translations}
           provider={props.provider}
           account={props.account}
           connectedChainId={props.connectedChainId}
-          askDataParams={[props.partnerDaas]}
+          askDataParams={[partnerDaas]}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider value={props}>

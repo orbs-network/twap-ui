@@ -33,19 +33,6 @@ describe("store", () => {
       await act(async () => store.current.setLoading(true));
       expect(store.current.loading).true;
     });
-
-    it("setSrcToken resets derivatives", async () => {
-      await act(async () => store.current.setSrcAmountUi("2.345"));
-      await act(async () => store.current.setChunks(10));
-      await act(async () => store.current.setLimitPriceUi({ priceUi: "1.234", inverted: false }));
-
-      await act(async () => store.current.setSrcToken(tokens[0]));
-
-      expect(store.current.limitPriceUi.priceUi).eq("");
-      expect(store.current.getChunks()).eq(1);
-      expect(store.current.srcAmountUi).eq("");
-    });
-
     it("setDstToken resets derivatives", async () => {
       expect(store.current.limitPriceUi.priceUi).eq("");
 
@@ -54,16 +41,6 @@ describe("store", () => {
 
       await act(async () => store.current.setDstToken(tokens[1]));
       expect(store.current.limitPriceUi.priceUi).eq("");
-    });
-
-    it("setSrcAmountUi resets derivatives", async () => {
-      await act(async () => store.current.setSrcToken(tokens[0]));
-      await act(async () => store.current.setSrcAmountUi("1234.5678"));
-      await act(async () => (store.current.srcUsd = BN(1.23)));
-      await act(async () => store.current.setChunks(10));
-      expect(store.current.getChunks()).eq(10);
-      await act(async () => store.current.setSrcAmountUi("2.345"));
-      expect(store.current.getChunks()).eq(1);
     });
 
     it("setDuration minimum of config bid delay x 2, affects fillDelay", async () => {

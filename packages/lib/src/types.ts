@@ -128,8 +128,7 @@ interface LibProps {
 
 export interface TwapLibProps extends LibProps {
   connect?: () => void;
-  askDataParams?: any[]
-
+  askDataParams?: any[];
 }
 
 export interface OrderLibProps extends LibProps {
