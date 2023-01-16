@@ -1,4 +1,5 @@
-import { usePrepareOrderUSDValues } from './../src/hooks';
+import { QueryClientProvider } from "@tanstack/react-query";
+import { usePrepareOrderUSDValues } from "../src/hooks";
 import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook } from "@testing-library/react";
 import { Configs, TWAPLib } from "@orbs-network/twap";
@@ -7,6 +8,13 @@ import { parseOrderUi, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
 import _ from "lodash";
+import { QueryClient } from "@tanstack/react-query";
+import React, { ReactNode } from "react";
+
+const createQueryProvider = () => {
+  const queryClient = new QueryClient();
+  return ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+};
 
 describe("store", () => {
   beforeEach(() => initFixture());
@@ -23,6 +31,7 @@ describe("store", () => {
       await act(async () => store.current.setLib(lib));
       expect(store.current.lib).eq(lib);
     });
+  
 
     afterEach(async () => {
       await act(async () => store.current.reset());
@@ -153,7 +162,7 @@ describe("store", () => {
     });
 
     it("prepare orders tokens", async () => {
-      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareOrderUSDValues(async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7))));
+      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareOrderUSDValues(async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7))), { wrapper: createQueryProvider() });
 
       const result = await prepareOrdersTokensWithUsd.result.current(tokens, [mockOrder, mockOrder]);
       expect(_.keys(result)).length(2);
@@ -162,13 +171,9 @@ describe("store", () => {
     });
 
     it("parseOrderUi", async () => {
-      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareOrderUSDValues(async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7))));
+      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareOrderUSDValues(async (t) => (t === tokens[0] ? BN(123.456) : BN(456.789))), { wrapper: createQueryProvider() });
 
-      const parsed = await parseOrderUi(
-        lib,
-        await prepareOrdersTokensWithUsd.result.current(tokens, [mockOrder, mockOrder, mockOrder]),
-        mockOrder
-      );
+      const parsed = await parseOrderUi(lib, await prepareOrdersTokensWithUsd.result.current(tokens, [mockOrder, mockOrder, mockOrder]), mockOrder);
       expect(parsed.order).deep.eq(mockOrder);
       expect(parsed.ui.srcUsdUi).eq("123.456");
       expect(parsed.ui.dstUsdUi).eq("456.789");
