@@ -24,10 +24,12 @@ function useConfigAndNetwork(dapp?: Dapp) {
 function useBackupTakersStatus(dapp?: Dapp) {
   return useQuery(
     ["useBackupTakersStatus", dapp?.config.partner],
-    async () =>
-      await Promise.all(
+    async () => {
+      const chainName = dapp!.config.chainName === "poly" ? "polygon" : dapp!.config.chainName;
+      const dappName = dapp!.config.partner === "PangolinDaas" ? "Pangolin" : dapp!.config.partner.toLowerCase();
+      return await Promise.all(
         [1, 2].map((i) =>
-          fetch(`https://twap-taker-${dapp!.config.chainName === "poly" ? "polygon" : dapp!.config.chainName}-${dapp!.config.partner.toLowerCase()}-${i}.herokuapp.com/health`)
+          fetch(`https://twap-taker-${chainName}-${dappName}-${i}.herokuapp.com/health`)
             .then((x) => x.json())
             .then(async (s) => {
               const balances = _.sortBy(_.map(s.takersWallets, (w) => BN(w.balance).toFixed(1))).map(Number);
@@ -43,7 +45,8 @@ function useBackupTakersStatus(dapp?: Dapp) {
             })
             .catch(() => ({ status: false, uptime: "⚠️", balances: [] as number[], totalBids: "?", totalFills: "?", lastBid: "?", lastFill: "?" }))
         )
-      ),
+      );
+    },
     {
       enabled: !!dapp,
       refetchInterval: 60_000,
