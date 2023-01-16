@@ -620,7 +620,7 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
   return { ...query, orders: query.data || {}, isLoading: (query.isLoading && query.fetchStatus !== "idle") || waitingForNewOrder };
 };
 
-const usePrepareOrderUSDValues = (fetchUsd: (token: TokenData) => Promise<BN>) => {
+export const usePrepareOrderUSDValues = (fetchUsd: (token: TokenData) => Promise<BN>) => {
   const client = useQueryClient();
 
   return async (allTokens: TokenData[] = [], rawOrders: Order[]) => {

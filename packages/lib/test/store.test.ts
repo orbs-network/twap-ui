@@ -1,8 +1,9 @@
+import { usePrepareOrderUSDValues } from './../src/hooks';
 import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook } from "@testing-library/react";
 import { Configs, TWAPLib } from "@orbs-network/twap";
 import { web3, zero, zeroAddress } from "@defi.org/web3-candies";
-import { parseOrderUi, prepareOrdersTokensWithUsd, TimeResolution, useTwapStore } from "../src/store";
+import { parseOrderUi, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
 import _ from "lodash";
@@ -152,16 +153,20 @@ describe("store", () => {
     });
 
     it("prepare orders tokens", async () => {
-      const result = await prepareOrdersTokensWithUsd(tokens, [mockOrder, mockOrder, mockOrder], async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7)));
+      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareOrderUSDValues(async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7))));
+
+      const result = await prepareOrdersTokensWithUsd.result.current(tokens, [mockOrder, mockOrder]);
       expect(_.keys(result)).length(2);
       expect(result[tokens[0].address].usd).bignumber.eq(123.5);
       expect(result[tokens[1].address].usd).bignumber.eq(456.7);
     });
 
     it("parseOrderUi", async () => {
+      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareOrderUSDValues(async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7))));
+
       const parsed = await parseOrderUi(
         lib,
-        await prepareOrdersTokensWithUsd(tokens, [mockOrder, mockOrder, mockOrder], async (t) => (t === tokens[0] ? BN(123.456) : BN(456.789))),
+        await prepareOrdersTokensWithUsd.result.current(tokens, [mockOrder, mockOrder, mockOrder]),
         mockOrder
       );
       expect(parsed.order).deep.eq(mockOrder);
