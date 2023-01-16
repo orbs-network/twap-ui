@@ -31,7 +31,6 @@ describe("store", () => {
       await act(async () => store.current.setLib(lib));
       expect(store.current.lib).eq(lib);
     });
-  
 
     afterEach(async () => {
       await act(async () => store.current.reset());
