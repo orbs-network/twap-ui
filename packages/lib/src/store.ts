@@ -58,31 +58,26 @@ export const useTwapStore = create(
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
       srcToken && analytics.onSrcTokenClick(srcToken?.symbol);
-      set({ srcToken});
+      set({ srcToken });
     },
     setDstToken: (dstToken?: TokenData) => {
       dstToken && analytics.onDstTokenClick(dstToken.symbol);
       set({ dstToken, limitPriceUi: initialState.limitPriceUi });
     },
     setTokenList: (tokenList?: TokenData[]) => set({ tokenList }),
-    setSrcAmountUi: (srcAmountUi: string) => {
-      const token = get().srcToken;
-
-      if (isNativeAddress(token?.address || "")) {
-        const balance = get().srcBalance;
-        const amount = amountBN(get().srcToken, srcAmountUi);
-        const srcTokenMinimum =  amountBN (get().srcToken, MIN_NATIVE_BALANCE.toString())
-        const result = BN.max(0, BN.min(balance.minus(srcTokenMinimum), amount));
-        
-        set({ srcAmountUi: amountUi(token, result)});
-      } else {
-        set({ srcAmountUi });
-      }
-    },
+    setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi }),
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),
     setDstBalance: (dstBalance: BN) => set({ dstBalance }),
     setSrcUsd: (srcUsd: BN) => set({ srcUsd }),
     setDstUsd: (dstUsd: BN) => set({ dstUsd }),
+    getMaxSrcInputAmount: () => {
+      const srcToken = get().srcToken;
+      if (isNativeAddress(srcToken?.address || "")) {
+        const balance = get().srcBalance;
+        const srcTokenMinimum = amountBN(srcToken, MIN_NATIVE_BALANCE.toString());
+        return BN.max(0, BN.min(balance.minus(srcTokenMinimum)));
+      }
+    },
     getSrcAmount: () => amountBN(get().srcToken, get().srcAmountUi),
     getDstAmount: () => {
       if (!get().lib || !get().srcToken || !get().dstToken || get().srcUsd.isZero() || get().dstUsd.isZero()) return BN(0);
@@ -107,9 +102,11 @@ export const useTwapStore = create(
       const deadline = (get() as any).getDeadline();
       const isLimitOrder = get().isLimitOrder;
       const limitPrice = (get() as any).getLimitPrice(false);
+      const maxSrcInputAmount = (get() as any).getMaxSrcInputAmount();
+      const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount > maxSrcInputAmount;
       if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) return translation.selectTokens;
       if (srcAmount.isZero()) return translation.enterAmount;
-      if (srcBalance && srcAmount.gt(srcBalance)) return translation.insufficientFunds;
+      if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) return translation.insufficientFunds;
       if (chunkSize.isZero()) return translation.enterTradeSize;
       if (get().duration.amount === 0) return translation.enterMaxDuration;
       if (isLimitOrder && limitPrice.limitPrice.isZero()) return translation.insertLimitPriceWarning;
@@ -241,7 +238,20 @@ export const useTwapStore = create(
         ? get().lib!.dstMinAmountOut(get().srcToken!, get().dstToken!, (get() as any).getSrcChunkAmount(), (get() as any).getLimitPrice(false).limitPrice, !get().isLimitOrder)
         : BN(1),
 
-    setSrcAmountPercent: (percent: number) => (get().srcToken ? (get() as any).setSrcAmountUi(amountUi(get().srcToken, get().srcBalance.times(percent))) : undefined),
+    setSrcAmountPercent: (percent: number) => {
+      const srcToken = get().srcToken;
+      const balance = get().srcBalance;
+      const setSrcAmountUi = (get() as any).setSrcAmountUi;
+      const maxAmount: BN | undefined = (get() as any).getMaxSrcInputAmount();
+      if (!srcToken) {
+        return;
+      }
+
+      //max amount will be greater than zero only if the src token is native token
+      const _maxAmount = maxAmount && percent === 1 && maxAmount.gt(0) ? maxAmount : undefined;
+
+      setSrcAmountUi(amountUi(srcToken, _maxAmount || balance.times(percent)));
+    },
 
     shouldWrap: () =>
       get().lib &&
@@ -270,15 +280,6 @@ export const useTwapStore = create(
     getChunksBiggerThanOne: () => !!get().srcToken && !!get().srcAmountUi && (get() as any).getMaxPossibleChunks() > 1,
   }))
 );
-
-export const prepareOrdersTokensWithUsd = async (allTokens: TokenData[], rawOrders: Order[], fetchUsd: (token: TokenData) => Promise<BN>) => {
-  const relevantTokens = allTokens.filter((t) => rawOrders.find((o) => eqIgnoreCase(t.address, o.ask.srcToken) || eqIgnoreCase(t.address, o.ask.dstToken)));
-  const usdValues = await Promise.all(relevantTokens.map(fetchUsd));
-  return _.mapKeys(
-    relevantTokens.map((t, i) => ({ token: t, usd: usdValues[i] || BN(0) })),
-    (t) => Web3.utils.toChecksumAddress(t.token.address)
-  );
-};
 
 export const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { token: TokenData; usd: BN } }, o: Order) => {
   const { token: srcToken, usd: srcUsd } = usdValues[Web3.utils.toChecksumAddress(o.ask.srcToken)] || { token: undefined, usd: BN(0) };

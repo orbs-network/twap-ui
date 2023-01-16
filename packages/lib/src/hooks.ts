@@ -7,9 +7,10 @@ import BN from "bignumber.js";
 import { InitLibProps, OrderUI } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
-import { setWeb3Instance, switchMetaMaskNetwork, zeroAddress } from "@defi.org/web3-candies";
-import { parseOrderUi, prepareOrdersTokensWithUsd, useTwapStore } from "./store";
-import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_USD } from "./consts";
+import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress } from "@defi.org/web3-candies";
+import { parseOrderUi, useTwapStore } from "./store";
+import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
+import { QueryKeys } from "./enums";
 
 /**
  * Actions
@@ -540,9 +541,9 @@ const useHasAllowanceQuery = () => {
     amount: state.getSrcAmount(),
     srcToken: state.srcToken,
   }));
-  const query = useQuery(["useTwapHasAllowanceQuery", srcToken?.address, amount.toString()], () => lib!.hasAllowance(srcToken!, amount), {
+  const query = useQuery([QueryKeys.GET_ALLOWANCE, srcToken?.address, amount.toString()], () => lib!.hasAllowance(srcToken!, amount), {
     enabled: !!lib && !!srcToken && amount.gt(0),
-    staleTime: 10_000,
+    staleTime: STALE_ALLOWANCE,
     refetchOnWindowFocus: true,
   });
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
@@ -550,7 +551,7 @@ const useHasAllowanceQuery = () => {
 
 const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => {
   const lib = useTwapStore((state) => state.lib);
-  const query = useQuery(["useUsdValueQuery", token?.address], () => Paraswap.priceUsd(lib!.config.chainId, token!), {
+  const query = useQuery([QueryKeys.GET_USD_VALUE, token?.address], () => Paraswap.priceUsd(lib!.config.chainId, token!), {
     enabled: !!lib && !!token,
     onSuccess,
     refetchInterval: REFETCH_USD,
@@ -560,7 +561,7 @@ const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) =>
 };
 const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => {
   const lib = useTwapStore((state) => state.lib);
-  const query = useQuery(["useBalanceQuery", lib?.maker, token?.address], () => lib!.makerBalance(token!), {
+  const query = useQuery([QueryKeys.GET_BALANCE, lib?.maker, token?.address], () => lib!.makerBalance(token!), {
     enabled: !!lib && !!token,
     onSuccess,
     refetchInterval: REFETCH_BALANCE,
@@ -572,7 +573,7 @@ const useGasPriceQuery = () => {
   const { maxFeePerGas, priorityFeePerGas } = useTwapContext();
   const lib = useTwapStore((state) => state.lib);
 
-  const { isLoading, data } = useQuery(["useGasPrice", priorityFeePerGas, maxFeePerGas], () => Paraswap.gasPrices(lib!.config.chainId), {
+  const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, priorityFeePerGas, maxFeePerGas], () => Paraswap.gasPrices(lib!.config.chainId), {
     enabled: !!lib && !BN(maxFeePerGas || 0).gt(0) && !BN(priorityFeePerGas || 0).gt(0),
     refetchInterval: REFETCH_GAS_PRICE,
   });
@@ -588,17 +589,18 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
   const tokenList = useOrdersContext().tokenList;
   const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
   const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
-
   const lib = useTwapStore((state) => state.lib);
+
+  const fetchUsdValues = (token: TokenData) => {
+    return fetcher(lib!.config.chainId, token);
+  };
+  const prepareOrderUSDValues = usePrepareOrderUSDValues(fetchUsdValues);
   const query = useQuery(
-    ["useOrdersHistory", lib?.maker, lib?.config.chainId],
+    [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
       const rawOrders = await lib!.getAllOrders();
-      const fetchUsdValues = (token: TokenData) => {
-        return fetcher(lib!.config.chainId, token);
-      };
-      const tokenWithUsdByAddress = await prepareOrdersTokensWithUsd(tokenList || [], rawOrders, fetchUsdValues);
-      if (!tokenWithUsdByAddress) return null;
+
+      const tokenWithUsdByAddress = await prepareOrderUSDValues(tokenList, rawOrders);
 
       const parsedOrders = rawOrders.map((o: Order) => parseOrderUi(lib!, tokenWithUsdByAddress, o));
       return _.chain(parsedOrders)
@@ -608,7 +610,7 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
     },
     {
       enabled: !!lib && !!tokenList && tokenList.length > 0,
-      refetchInterval: 30_000,
+      refetchInterval: REFETCH_ORDER_HISTORY,
       onSettled: () => {
         setWaitingForNewOrder(false);
       },
@@ -616,4 +618,25 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
   );
 
   return { ...query, orders: query.data || {}, isLoading: (query.isLoading && query.fetchStatus !== "idle") || waitingForNewOrder };
+};
+
+const usePrepareOrderUSDValues = (fetchUsd: (token: TokenData) => Promise<BN>) => {
+  const client = useQueryClient();
+
+  return async (allTokens: TokenData[] = [], rawOrders: Order[]) => {
+    const relevantTokens = allTokens.filter((t) => rawOrders.find((o) => eqIgnoreCase(t.address, o.ask.srcToken) || eqIgnoreCase(t.address, o.ask.dstToken)));
+    const uniqueRelevantTokens = _.uniqBy(relevantTokens, "address");
+    const usdValues = await Promise.all(
+      uniqueRelevantTokens.map((token) => {
+        return client.ensureQueryData({
+          queryKey: [QueryKeys.GET_USD_VALUE, token.address],
+          queryFn: () => fetchUsd(token),
+        });
+      })
+    );
+    return _.mapKeys(
+      uniqueRelevantTokens.map((t, i) => ({ token: t, usd: usdValues[i] || BN(0) })),
+      (t) => Web3.utils.toChecksumAddress(t.token.address)
+    );
+  };
 };

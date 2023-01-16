@@ -76,7 +76,7 @@ const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModa
           if (!token.tokenInfo) {
             return (
               <StyledModalListItem onClick={() => onCurrencySelect(token)} key={token.symbol}>
-                <img src={nativeTokenLogo} width={20} height={20} alt="" />
+                <img src={nativeTokenLogo} width={30} height={30} alt="" />
                 {token.symbol}
               </StyledModalListItem>
             );
