@@ -12,10 +12,11 @@ function useConfigAndNetwork(dapp?: Dapp) {
   return useQuery(
     ["useConfigAndNetwork", dapp?.config.partner],
     async () => {
-      const twapVersion = require("@orbs-network/twap/package.json").version;
+      const twapVersion = dapp?.config.twapVersion || 0;
+      const twapLibVersion = require("@orbs-network/twap/package.json").version;
       const twapUiVersion = require("@orbs-network/twap-ui/package.json").version;
       const info = await chainInfo(dapp!.config.chainId);
-      return { twapVersion, twapUiVersion, info };
+      return { twapVersion, twapLibVersion, twapUiVersion, info };
     },
     { enabled: !!dapp }
   ).data;
@@ -37,10 +38,6 @@ function useBackupTakersStatus(dapp?: Dapp) {
                 status: s.uptime > 0 && balances[0] > 0.1,
                 uptime: (moment.utc(s.uptime * 1000).dayOfYear() > 1 ? moment.utc(s.uptime * 1000).dayOfYear() + " days " : "") + moment.utc(s.uptime * 1000).format("HH:mm:ss"),
                 balances,
-                totalBids: (s.taker.bids as string) || "0",
-                totalFills: (s.taker.fills as string) || "0",
-                lastBid: (s.taker.lastBid?.order?.[0] as string) || "-",
-                lastFill: (s.taker.lastBid?.order?.[0] as string) || "-",
               };
             })
             .catch(() => ({ status: false, uptime: "⚠️", balances: [] as number[], totalBids: "?", totalFills: "?", lastBid: "?", lastFill: "?" }))
@@ -64,10 +61,6 @@ function useTakerXStatus(dapp?: Dapp) {
       return {
         status: BN(backupAwsStatusChain.balance).gt(0.1),
         balance: backupAwsStatusChain.balance,
-        totalBids: backupAwsStatusChain.totalBids || "0",
-        totalFills: backupAwsStatusChain.totalFills || "0",
-        lastBid: backupAwsStatusChain.lastBid || "-",
-        lastFill: backupAwsStatusChain.lastFill || "-",
       };
     },
     { enabled: !!dapp, refetchInterval: 60_000 }
@@ -97,6 +90,10 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle>TWAP Version:</StyledStatusSectionTitle>
             <StyledStatusSectionText>{config?.twapVersion}</StyledStatusSectionText>
+          </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>TWAP Lib Version:</StyledStatusSectionTitle>
+            <StyledStatusSectionText>{config?.twapLibVersion}</StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle>TWAP-UI Version:</StyledStatusSectionTitle>
@@ -140,19 +137,11 @@ export function Status() {
               </StyledStatusSectionTitle>
               <StyledStatusSectionText>uptime: {status?.[k].uptime}</StyledStatusSectionText>
               <StyledStatusSectionText>gas: {status?.[k].balances.join(" ")}</StyledStatusSectionText>
-              <StyledStatusSectionText>totalBids: {status?.[k].totalBids}</StyledStatusSectionText>
-              <StyledStatusSectionText>totalFills: {status?.[k].totalFills}</StyledStatusSectionText>
-              <StyledStatusSectionText>lastBid: {status?.[k].lastBid}</StyledStatusSectionText>
-              <StyledStatusSectionText>lastFill: {status?.[k].lastFill}</StyledStatusSectionText>
             </StyledStatusSection>
           ))}
           <StyledStatusSection>
             <StyledStatusSectionTitle>{!takerx ? "" : takerx?.status ? "✅" : "⚠️⚠️⚠️"} Backup Taker X:</StyledStatusSectionTitle>
             <StyledStatusSectionText>gas: {takerx?.balance}</StyledStatusSectionText>
-            <StyledStatusSectionText>totalBids: {takerx?.totalBids}</StyledStatusSectionText>
-            <StyledStatusSectionText>totalFills: {takerx?.totalFills}</StyledStatusSectionText>
-            <StyledStatusSectionText>lastBid: {takerx?.lastBid}</StyledStatusSectionText>
-            <StyledStatusSectionText>lastFill: {takerx?.lastFill}</StyledStatusSectionText>
           </StyledStatusSection>
         </StyledStatus>
       )}
