@@ -11,6 +11,8 @@ import {
   StyledMenuListItemButton,
   StyledMenuLogo,
   StyledMenuMobileToggle,
+  StyledModalListItem,
+  StyledSearchInput,
   StyledThemeToggle,
 } from "./styles";
 import ListItem from "@mui/material/ListItem";
@@ -20,10 +22,13 @@ import { FiMenu } from "react-icons/fi";
 import Backdrop from "@mui/material/Backdrop";
 import { Fade } from "@mui/material";
 import { Config } from "@orbs-network/twap";
+import { Components, Styles } from "@orbs-network/twap-ui";
+
 import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
 import { dapps } from "./config";
 import { Status } from "./Status";
-import { useSelectedDapp, useTheme } from "./hooks";
+import { useListTokenBalace, useSelectedDapp, useTheme } from "./hooks";
+import { showTokenInList } from "./utils";
 
 const FAVICON = "https://github.com/orbs-network/twap-ui/raw/66e183e804002fe382d9b0070caef060ad2e21ac/logo/64.png";
 
@@ -41,7 +46,9 @@ export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose:
         <StyledCloseIcon onClick={onClose}>
           <AiOutlineClose className="icon" />
         </StyledCloseIcon>
-        {children}
+        <Fade in={isOpen}>
+          <div>{children}</div>
+        </Fade>
       </>
     </Modal>
   );
@@ -87,7 +94,7 @@ interface DappsMenuProps {
 const drawerWidth = 260;
 
 export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
-  const { isSelected, selectedDapp } = useSelectedDapp();
+  const { isSelected } = useSelectedDapp();
 
   const isMobile = useMediaQuery("(max-width:1100px)");
   const [isOpen, setIsOpen] = useState(false);
@@ -152,6 +159,46 @@ export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
   );
 };
 
+export const TokenSelectListItem = ({
+  logo,
+  symbol,
+  address,
+  decimals,
+  onClick,
+  filter,
+}: {
+  logo?: string;
+  symbol: string;
+  address: string;
+  decimals: number;
+  onClick: () => void;
+  filter: string;
+}) => {
+  const { balance, isLoading } = useListTokenBalace(address, decimals, symbol, logo);
+  if (!showTokenInList(symbol, filter)) {
+    return null;
+  }
+
+  return (
+    <StyledModalListItem onClick={onClick}>
+      <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "unset", flex: 1 }}>
+        <Components.TokenLogo
+          logo={logo}
+          alt={symbol}
+          style={{
+            width: 30,
+            height: 30,
+          }}
+        />
+        {symbol}
+      </Styles.StyledRowFlex>
+      <Components.SmallLabel loading={isLoading} className="balance">
+        <Components.NumberDisplay value={balance} decimalScale={6} />
+      </Components.SmallLabel>
+    </StyledModalListItem>
+  );
+};
+
 export const DappLayout = ({ children, name }: { children: ReactNode; name: string }) => {
   return (
     <>
@@ -161,4 +208,8 @@ export const DappLayout = ({ children, name }: { children: ReactNode; name: stri
       </Fade>
     </>
   );
+};
+
+export const TokenSearchInput = ({ value, setValue }: { value: string; setValue: (value: string) => void }) => {
+  return <StyledSearchInput placeholder="Insert token name..." value={value} onChange={(e) => setValue(e.target.value)} />;
 };

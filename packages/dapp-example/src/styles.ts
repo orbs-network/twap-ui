@@ -35,24 +35,27 @@ export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) =
   fontFamily: "Red Hat Display",
 }));
 
-export const StyledLayoutPangolin = styled(Box)(({ mode }: { mode: string }) => ({
+export const StyledPangolin = styled(Box)({
   borderRadius: 10,
   fontFamily: "Poppins",
   overflow: "hidden",
   "& .twap-container": {
     paddingTop: 20,
   },
-}));
+});
 
-export const StyledLayoutPangolinDaas = styled(Box)(({ mode }: { mode: string }) => ({
-  borderRadius: 10,
-  fontFamily: "Poppins",
-  overflow: "hidden",
+export const StyledPangolinTWAP = styled(StyledPangolin)({
+  height: "70vh",
+  maxHeight: 930,
+});
+
+export const StyledLayoutPangolinDaasTWAP = styled(StyledPangolinTWAP)({
   border: "1px solid #FFC800",
-  "& .twap-container": {
-    paddingTop: 20,
-  },
-}));
+});
+
+export const StyledLayoutPangolinDaasOrders = styled(StyledPangolin)({
+  border: "1px solid #FFC800",
+});
 
 export const StyledDappContainer = styled(Box)({
   display: "flex",
@@ -78,20 +81,29 @@ export const StyledCloseIcon = styled("button")({
 
 export const StyledModalList = styled("ul")({
   listStyleType: "none",
-  maxWidth: 500,
-  width: "calc(100vw - 20px)",
-  height: 500,
+  flex: 1,
   overflow: "auto",
-  background: "black",
-  border: "1px solid rgb(55, 65, 81)",
   display: "flex",
   flexDirection: "column",
   padding: 0,
+  width: "100%",
+  height: "calc(100% - 50px)",
+  margin: 0,
+  paddingTop: 10,
+});
+
+export const StyledModalContent = styled(Box)({
+  width: "calc(100vw - 20px)",
+  height: 500,
+  border: "1px solid rgb(55, 65, 81)",
+  background: "black",
+  maxWidth: 500,
   position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
 });
+
 export const StyledModalListItem = styled("li")({
   cursor: "pointer",
   display: "flex",
@@ -101,6 +113,9 @@ export const StyledModalListItem = styled("li")({
   transition: "0.2s all",
   "&:hover": {
     background: "rgba(255,255,255, 0.07)",
+  },
+  ".balance": {
+    opacity: 0.6,
   },
 });
 
@@ -210,4 +225,16 @@ export const StyledThemeToggle = styled(Box)({
     border: "unset",
     cursor: "pointer",
   },
+});
+
+export const StyledSearchInput = styled("input")({
+  height: 50,
+  width: "100%",
+  background: "rgba(255,255,255, 0.05)",
+  color: "white",
+  fontFamily: "inherit",
+  fontSize: 18,
+  border: "unset",
+  outline: "unset",
+  textIndent: 20,
 });

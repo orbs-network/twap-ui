@@ -1,14 +1,17 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
-import { erc20s, networks, zeroAddress } from "@defi.org/web3-candies";
+import { erc20s, networks, zeroAddress, zero } from "@defi.org/web3-candies";
 import _ from "lodash";
 import Web3 from "web3";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearchParams } from "react-router-dom";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
 import { dapps } from "./config";
+import { TokenData } from "@orbs-network/twap";
+import { hooks, store } from "@orbs-network/twap-ui";
+
 export const injectedConnector = new InjectedConnector({});
 
 const tokenlistsNetworkNames = {
@@ -153,4 +156,24 @@ export const useTheme = () => {
     isDarkTheme: currentTheme === "dark",
     setTheme,
   };
+};
+
+export const useListTokenBalace = (address: string, decimals: number, symbol: string, logo?: string) => {
+  const token: TokenData = useMemo(
+    () => ({
+      address,
+      decimals,
+      symbol,
+      logoUrl: logo,
+    }),
+    [symbol, address, decimals, logo]
+  );
+
+  const { data = zero, isLoading } = hooks.useBalanceQuery(token, undefined, Infinity);
+
+  const balance = useMemo(() => {
+    return store.amountUi(token, data);
+  }, [token, data]);
+
+  return { balance, isLoading };
 };

@@ -326,7 +326,7 @@ export const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { tok
 };
 
 const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));
-const amountUi = (token: TokenData | undefined, amount: BN) => {
+export const amountUi = (token: TokenData | undefined, amount: BN) => {
   if (!token) return "";
   const percision = BN(10).pow(token?.decimals || 0);
   return amount.times(percision).idiv(percision).div(percision).toFormat();

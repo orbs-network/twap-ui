@@ -134,14 +134,19 @@ export const useCreateOrder = () => {
       analytics.onConfirmationCreateOrderClick();
       store.setLoading(true);
 
+      const dstToken = {
+        ...store.dstToken!,
+        address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
+      };
+      const fillDelayMillis = store.getFillDelayMillis() / 1000;
       return store.lib!.submitOrder(
         store.srcToken!,
-        { ...store.dstToken!, address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address },
+        dstToken,
         store.getSrcAmount(),
         store.getSrcChunkAmount(),
         store.getDstMinAmountOut(),
         store.getDeadline(),
-        store.getFillDelayMillis() / 1000,
+        fillDelayMillis,
         store.srcUsd,
         askDataParams,
         priorityFeePerGas,
@@ -180,6 +185,7 @@ export const useInitLib = () => {
       setWrongNetwork(false);
       return;
     }
+
     const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
@@ -541,7 +547,7 @@ const useHasAllowanceQuery = () => {
     amount: state.getSrcAmount(),
     srcToken: state.srcToken,
   }));
-  const query = useQuery([QueryKeys.GET_ALLOWANCE, srcToken?.address, amount.toString()], () => lib!.hasAllowance(srcToken!, amount), {
+  const query = useQuery([QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, amount.toString()], () => lib!.hasAllowance(srcToken!, amount), {
     enabled: !!lib && !!srcToken && amount.gt(0),
     staleTime: STALE_ALLOWANCE,
     refetchOnWindowFocus: true,
@@ -559,12 +565,14 @@ const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) =>
 
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
-const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => {
+export const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => void, staleTime?: number) => {
   const lib = useTwapStore((state) => state.lib);
+
   const query = useQuery([QueryKeys.GET_BALANCE, lib?.maker, token?.address], () => lib!.makerBalance(token!), {
     enabled: !!lib && !!token,
     onSuccess,
     refetchInterval: REFETCH_BALANCE,
+    staleTime,
   });
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };

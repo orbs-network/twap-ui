@@ -1,13 +1,14 @@
-import { StyledLayoutQuickswap, StyledModalList, StyledModalListItem } from "./styles";
+import { StyledLayoutQuickswap, StyledModalContent, StyledModalList, StyledModalListItem } from "./styles";
 import { Orders, TWAP, QuickSwapTWAPProps, QuickSwapOrdersProps } from "@orbs-network/twap-ui-quickswap";
 import { useConnectWallet, useGetTokensFromViaProtocol } from "./hooks";
 import { TokenData } from "@orbs-network/twap";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
-import { Dapp } from "./Components";
-import { Components } from "@orbs-network/twap-ui";
+import { Dapp, TokenSearchInput, TokenSelectListItem } from "./Components";
 
 import { DappLayout, Popup } from "./Components";
+import { useState } from "react";
+import { showTokenInList } from "./utils";
 
 const config = Configs.QuickSwap;
 
@@ -24,29 +25,31 @@ interface TokenSelectModalProps {
 
 const TokenSelectModal = ({ isOpen, selectedToken, onSelect, onClose }: TokenSelectModalProps) => {
   const { data: list } = useDappTokens();
+  const [filterValue, setFilterValue] = useState("");
 
   return (
     <Popup isOpen={isOpen} onClose={onClose}>
-      <StyledModalList>
-        {list?.map((token: TokenData) => {
-          if (token.address === selectedToken?.address) {
-            return null;
-          }
-          return (
-            <StyledModalListItem onClick={() => onSelect(token)} key={token.address}>
-              <Components.TokenLogo
+      <StyledModalContent>
+        <TokenSearchInput setValue={setFilterValue} value={filterValue} />
+        <StyledModalList>
+          {list?.map((token: TokenData) => {
+            if (token.address === selectedToken?.address) {
+              return null;
+            }
+            return (
+              <TokenSelectListItem
+                filter={filterValue}
+                key={token.address}
+                onClick={() => onSelect(token)}
                 logo={token.logoUrl}
-                alt={token.symbol}
-                style={{
-                  width: 30,
-                  height: 30,
-                }}
+                symbol={token.symbol}
+                address={token.address}
+                decimals={token.decimals}
               />
-              {token.symbol}
-            </StyledModalListItem>
-          );
-        })}
-      </StyledModalList>
+            );
+          })}
+        </StyledModalList>
+      </StyledModalContent>
     </Popup>
   );
 };

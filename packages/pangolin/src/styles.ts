@@ -365,6 +365,7 @@ export const configureStyles = (theme: any) => {
     },
 
     ".twap-container": {
+      height: "100%",
       position: "relative",
       display: "flex",
       gap: 12,
@@ -484,6 +485,7 @@ export const configureStyles = (theme: any) => {
     },
 
     ".twap-button": {
+      marginTop: "auto",
       height: 50,
       borderRadius: 8,
       background: theme.button.primary.background,

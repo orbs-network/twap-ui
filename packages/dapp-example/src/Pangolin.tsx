@@ -1,15 +1,17 @@
 import { Orders, PangolinOrdersProps, PangolinTWAPProps, TWAP } from "@orbs-network/twap-ui-pangolin";
-import { DappLayout, Popup } from "./Components";
-import { StyledLayoutPangolin, StyledModalList, StyledModalListItem, StyledLayoutPangolinDaas } from "./styles";
+import { DappLayout, Popup, TokenSearchInput, TokenSelectListItem } from "./Components";
+import { StyledModalList, StyledPangolinTWAP, StyledLayoutPangolinDaasOrders, StyledLayoutPangolinDaasTWAP, StyledPangolin, StyledModalContent } from "./styles";
 import _ from "lodash";
-import { erc20s } from "@defi.org/web3-candies";
+import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { Configs } from "@orbs-network/twap";
 import { Dapp } from "./Components";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
-import { Components } from "@orbs-network/twap-ui";
 import { pangolinDarkTheme, pangolinLightTheme } from "./themes";
+import Web3 from "web3";
+import { useState } from "react";
+import { showTokenInList } from "./utils";
 
 interface TokenSelectModalProps {
   isOpen: boolean;
@@ -24,6 +26,7 @@ const nativeToken = {
   name: "Avalanche",
   symbol: "AVAX",
   "_constructor-name_": "Currency",
+  address: Web3.utils.toChecksumAddress(zeroAddress),
 };
 
 const nativeTokenLogo = "https://raw.githubusercontent.com/pangolindex/sdk/master/src/images/chains/avax.png";
@@ -40,15 +43,18 @@ const useDappTokens = () => {
       const response = await fetch(`https://raw.githubusercontent.com/pangolindex/tokenlists/main/pangolin.tokenlist.json`);
       const tokenList = await response.json();
 
-      const parsed = tokenList.tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
-        decimals,
-        symbol,
-        name,
-        chainId,
-        address,
-        tokenInfo: { symbol, address, decimals, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"), name, chainId },
-        tags: [],
-      }));
+      const parsed = tokenList.tokens
+        .filter((t: any) => t.chainId === config.chainId)
+        .map(({ symbol, address, decimals, logoURI, name }: any) => ({
+          decimals,
+          symbol,
+          name,
+          chainId,
+          address,
+          tokenInfo: { symbol, address, decimals, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"), name, chainId },
+          tags: [],
+        }));
+
       const candiesAddresses = _.map(erc20s.avax, (t) => t().address);
 
       const _tokens = _.sortBy(parsed, (t: any) => {
@@ -66,40 +72,32 @@ const useDappTokens = () => {
 
 const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModalProps) => {
   const { data: tokensList } = useDappTokens();
+  const [filterValue, setFilterValue] = useState("");
 
   if (!tokensList) return null;
 
   return (
     <Popup isOpen={isOpen} onClose={onClose}>
-      <StyledModalList>
-        {_.map(tokensList, (token: any) => {
-          if (!token.tokenInfo) {
+      <StyledModalContent>
+        <TokenSearchInput setValue={setFilterValue} value={filterValue} />
+        <StyledModalList>
+          {_.map(tokensList, (token: any) => {
+            const address = token.tokenInfo ? token.tokenInfo.address : token.address;
+            const decimals = token.tokenInfo ? token.tokenInfo.decimals : token.decimals;
+            const symbol = token.tokenInfo ? token.tokenInfo.symbol : token.symbol;
+            const logo = token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
+
             return (
-              <StyledModalListItem onClick={() => onCurrencySelect(token)} key={token.symbol}>
-                <img src={nativeTokenLogo} width={30} height={30} alt="" />
-                {token.symbol}
-              </StyledModalListItem>
+              <TokenSelectListItem filter={filterValue} key={address} onClick={() => onCurrencySelect(token)} decimals={decimals} logo={logo} symbol={symbol} address={address} />
             );
-          }
-          return (
-            <StyledModalListItem onClick={() => onCurrencySelect(token)} key={token.tokenInfo.address}>
-              <Components.TokenLogo
-                logo={token.tokenInfo.logoURI}
-                alt={token.tokenInfo.symbol}
-                style={{
-                  width: 30,
-                  height: 30,
-                }}
-              />
-              {token.tokenInfo.symbol}
-            </StyledModalListItem>
-          );
-        })}
-      </StyledModalList>
+          })}
+        </StyledModalList>
+      </StyledModalContent>
     </Popup>
   );
 };
 const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8422.png";
+
 const PangolinComponent = () => {
   const { account, library: provider, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
@@ -124,12 +122,12 @@ const PangolinComponent = () => {
 
   return (
     <DappLayout name={config.partner}>
-      <StyledLayoutPangolin mode={isDarkTheme ? "dark" : "light"}>
+      <StyledPangolinTWAP>
         <TWAP {...twapProps} />
-      </StyledLayoutPangolin>
-      <StyledLayoutPangolin mode={isDarkTheme ? "dark" : "light"}>
+      </StyledPangolinTWAP>
+      <StyledPangolin>
         <Orders {...ordersProps} />
-      </StyledLayoutPangolin>
+      </StyledPangolin>
     </DappLayout>
   );
 };
@@ -159,12 +157,12 @@ const PangolinDaasComponent = () => {
 
   return (
     <DappLayout name={config.partner}>
-      <StyledLayoutPangolinDaas mode={isDarkTheme ? "dark" : "light"}>
+      <StyledLayoutPangolinDaasTWAP>
         <TWAP {...twapProps} />
-      </StyledLayoutPangolinDaas>
-      <StyledLayoutPangolinDaas mode={isDarkTheme ? "dark" : "light"}>
+      </StyledLayoutPangolinDaasTWAP>
+      <StyledLayoutPangolinDaasOrders>
         <Orders {...ordersProps} />
-      </StyledLayoutPangolinDaas>
+      </StyledLayoutPangolinDaasOrders>
     </DappLayout>
   );
 };

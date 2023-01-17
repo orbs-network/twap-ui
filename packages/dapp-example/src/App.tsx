@@ -2,7 +2,6 @@ import { StyledApp, StyledContent } from "./styles";
 import { Route, Routes, useNavigate, Navigate } from "react-router-dom";
 import { Dapp, DappsMenu } from "./Components";
 import { useEagerlyConnect, useDisconnectWallet } from "./hooks";
-import { useCallback } from "react";
 import { dapps, defaultDapp } from "./config";
 
 function App() {
@@ -10,13 +9,11 @@ function App() {
   const disconnect = useDisconnectWallet();
   useEagerlyConnect();
 
-  const onSelect = useCallback(
-    (dapp: Dapp) => {
-      navigate(dapp.config.partner.toLowerCase());
-      disconnect();
-    },
-    [navigate]
-  );
+  const onSelect = (dapp: Dapp) => {
+    disconnect();
+
+    navigate(dapp.config.partner.toLowerCase());
+  };
 
   return (
     <StyledApp className="App">
