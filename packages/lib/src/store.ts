@@ -65,7 +65,10 @@ export const useTwapStore = create(
       set({ dstToken, limitPriceUi: initialState.limitPriceUi });
     },
     setTokenList: (tokenList?: TokenData[]) => set({ tokenList }),
-    setSrcAmountUi: (srcAmountUi: string) => set({ srcAmountUi }),
+    setSrcAmountUi: (srcAmountUi: string) => {
+      set({ srcAmountUi });
+      (get() as any).setChunks(get().chunks)
+    },
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),
     setDstBalance: (dstBalance: BN) => set({ dstBalance }),
     setSrcUsd: (srcUsd: BN) => set({ srcUsd }),

@@ -606,10 +606,9 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
   const query = useQuery(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
-      const rawOrders = await lib!.getAllOrders();
+      const rawOrders = (await lib!.getAllOrders()).filter((o) => eqIgnoreCase(o.ask.exchange, lib!.config.exchangeAddress));
 
       const tokenWithUsdByAddress = await prepareOrderUSDValues(tokenList, rawOrders);
-
       const parsedOrders = rawOrders.map((o: Order) => parseOrderUi(lib!, tokenWithUsdByAddress, o));
       return _.chain(parsedOrders)
         .orderBy((o: OrderUI) => o.order.ask.deadline, "desc")
