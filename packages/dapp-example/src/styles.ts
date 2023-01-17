@@ -44,9 +44,7 @@ export const StyledPangolin = styled(Box)({
   },
 });
 
-export const StyledPangolinTWAP = styled(StyledPangolin)({
-
-});
+export const StyledPangolinTWAP = styled(StyledPangolin)({});
 
 export const StyledLayoutPangolinDaasTWAP = styled(StyledPangolinTWAP)({
   border: "1px solid #FFC800",
