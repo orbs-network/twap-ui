@@ -45,8 +45,7 @@ export const StyledPangolin = styled(Box)({
 });
 
 export const StyledPangolinTWAP = styled(StyledPangolin)({
-  height: "70vh",
-  maxHeight: 930,
+
 });
 
 export const StyledLayoutPangolinDaasTWAP = styled(StyledPangolinTWAP)({

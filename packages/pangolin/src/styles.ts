@@ -369,7 +369,7 @@ export const configureStyles = (theme: any) => {
     },
 
     ".twap-container": {
-        overflow:'auto',
+      overflow: "auto",
       height: "100%",
       position: "relative",
       display: "flex",

@@ -355,7 +355,7 @@ export const useTokenPanel = (isSrc?: boolean) => {
     const usdLoading = isSrc ? loadingState.srcUsdLoading : loadingState.dstUsdLoading;
     const balanceLoading = isSrc ? loadingState.srcBalanceLoading : loadingState.dstBalanceLoading;
     let inputLoading;
-    
+
     if (isSrc) {
       inputLoading = (!!amount || amount !== "0") && loadingState.srcUsdLoading;
     } else {
@@ -491,7 +491,7 @@ export const useHistoryPrice = (order: OrderUI) => {
 };
 
 export const useLoadingState = () => {
-  const srcUSD  = useSrcUsd();
+  const srcUSD = useSrcUsd();
   const dstUSD = useDstUsd();
   const srcBalance = useSrcBalance();
   const dstBalance = useDstBalance();
