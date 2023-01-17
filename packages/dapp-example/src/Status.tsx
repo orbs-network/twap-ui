@@ -23,17 +23,21 @@ function useConfigAndNetwork(dapp?: Dapp) {
 }
 
 function useBackupTakersStatus(dapp?: Dapp) {
+  const chainNames = {
+    ftm: "fantom",
+    avax: "avalanche",
+    poly: "polygon",
+  };
   return useQuery(
     ["useBackupTakersStatus", dapp?.config.partner],
     async () => {
-      const chainName = dapp!.config.chainName === "poly" ? "polygon" : dapp!.config.chainName;
-      const dappName = dapp!.config.partner === "PangolinDaas" ? "Pangolin" : dapp!.config.partner.toLowerCase();
       return await Promise.all(
         [1, 2].map((i) =>
-          fetch(`https://twap-taker-${chainName}-${dappName}-${i}.herokuapp.com/health`)
+          fetch(`https://twap-taker-${i}.herokuapp.com/health`)
             .then((x) => x.json())
-            .then(async (s) => {
-              const balances = _.sortBy(_.map(s.takersWallets, (w) => BN(w.balance).toFixed(1))).map(Number);
+            .then(async (s: any) => {
+              const wallets = s.takersWallets[(chainNames as any)[dapp!.config.chainName]];
+              const balances = _.sortBy(_.map(wallets, (w) => BN(w.balance).toFixed(1))).map(Number);
               return {
                 status: s.uptime > 0 && balances[0] > 0.1,
                 uptime: (moment.utc(s.uptime * 1000).dayOfYear() > 1 ? moment.utc(s.uptime * 1000).dayOfYear() + " days " : "") + moment.utc(s.uptime * 1000).format("HH:mm:ss"),
@@ -74,7 +78,7 @@ const Image = ({ logo }: { logo?: string }) => {
     setLoaded(false);
   }, [logo]);
 
-  return <img src={logo} onLoad={() => setLoaded(true)} width={10} height={10} style={{ marginRight: 2, opacity: !loaded ? 0 : 1 }} />;
+  return <img alt="" src={logo} onLoad={() => setLoaded(true)} width={10} height={10} style={{ marginRight: 2, opacity: !loaded ? 0 : 1 }} />;
 };
 
 export function Status() {
