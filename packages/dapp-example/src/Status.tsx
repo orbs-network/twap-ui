@@ -40,7 +40,7 @@ function useBackupTakersStatus(dapp?: Dapp) {
                 balances,
               };
             })
-            .catch(() => ({ status: false, uptime: "⚠️", balances: [] as number[], totalBids: "?", totalFills: "?", lastBid: "?", lastFill: "?" }))
+            .catch(() => ({ status: false, uptime: "⚠️", balances: [] as number[] }))
         )
       );
     },
