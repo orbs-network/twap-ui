@@ -164,7 +164,11 @@ export const configureStyles = (theme: any) => {
       fontSize: 16,
       color: styles.textColor,
     },
-
+    ".odnp": {
+      "*": {
+        color: "black",
+      },
+    },
     ".twap-odnp": {
       color: theme.swapWidget.primary,
       background: "transparent",
