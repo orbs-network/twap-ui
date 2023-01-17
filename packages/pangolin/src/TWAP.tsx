@@ -288,7 +288,7 @@ const TokenPanel = ({ isSrcToken }: TokenPanelProps) => {
                 <Components.NumericInput
                   decimalScale={tokenPanel.decimalScale}
                   prefix={tokenPanel.amountPrefix}
-                  loading={false}
+                  loading={tokenPanel.inputLoading}
                   disabled={tokenPanel.disabled}
                   placeholder="0.0"
                   onChange={tokenPanel.onChange || (() => {})}

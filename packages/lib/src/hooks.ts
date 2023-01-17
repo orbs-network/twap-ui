@@ -355,10 +355,11 @@ export const useTokenPanel = (isSrc?: boolean) => {
     const usdLoading = isSrc ? loadingState.srcUsdLoading : loadingState.dstUsdLoading;
     const balanceLoading = isSrc ? loadingState.srcBalanceLoading : loadingState.dstBalanceLoading;
     let inputLoading;
+    
     if (isSrc) {
-      inputLoading = !!amount && amount !== "0" && loadingState.srcUsdLoading;
+      inputLoading = (!!amount || amount !== "0") && loadingState.srcUsdLoading;
     } else {
-      inputLoading = !!amount && amount !== "0" && loadingState.dstUsdLoading;
+      inputLoading = (!!amount || amount !== "0") && loadingState.dstUsdLoading;
     }
     return { usdLoading, balanceLoading, inputLoading };
   }, [loadingState, amount, isSrc]);
@@ -490,16 +491,16 @@ export const useHistoryPrice = (order: OrderUI) => {
 };
 
 export const useLoadingState = () => {
-  const srcUsdLoading = useSrcUsd().isLoading;
-  const dstUsdLoading = useDstUsd().isLoading;
-  const srcBalanceLoading = useSrcBalance().isLoading;
-  const dstBalanceLoading = useDstBalance().isLoading;
+  const srcUSD  = useSrcUsd();
+  const dstUSD = useDstUsd();
+  const srcBalance = useSrcBalance();
+  const dstBalance = useDstBalance();
 
   return {
-    srcUsdLoading,
-    dstUsdLoading,
-    srcBalanceLoading,
-    dstBalanceLoading,
+    srcUsdLoading: srcUSD.isLoading,
+    dstUsdLoading: dstUSD.isLoading,
+    srcBalanceLoading: srcBalance.isLoading,
+    dstBalanceLoading: dstBalance.isLoading,
   };
 };
 
