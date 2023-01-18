@@ -21,6 +21,11 @@ function NumberDisplay({
       type="text"
       valueIsNumericString={true}
       value={value}
+      style={{
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
       allowLeadingZeros
       thousandSeparator=","
       className={`twap-number-display ${className}`}
@@ -33,9 +38,15 @@ function NumberDisplay({
 
   if (hideTooltip) return component;
   if (value) {
-    return <Tooltip text={value}>{component}</Tooltip>;
+    return (
+      <Tooltip childrenStyles={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} placement="bottom" text={value}>
+        {component}
+      </Tooltip>
+    );
   }
   return <>-</>;
 }
 
 export default NumberDisplay;
+
+

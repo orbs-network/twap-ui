@@ -2,13 +2,12 @@ import { Box, styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { Loader } from ".";
-import { StyledText } from "../styles";
+import { StyledOneLineText, StyledText } from "../styles";
 import Icon from "./Icon";
 import IconButton from "./IconButton";
 import NumberDisplay from "./NumberDisplay";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
-import Tooltip from "./Tooltip";
 
 export interface Props {
   leftToken?: TokenData;
@@ -45,11 +44,9 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
       </IconButton>
 
       <TokenLogo logo={rightToken?.logoUrl} />
-      <Tooltip text={price}>
-        <StyledText>
-          <NumberDisplay value={price} />
-        </StyledText>
-      </Tooltip>
+      <StyledOneLineText>
+        <NumberDisplay value={price}  />
+      </StyledOneLineText>
       <TokenName name={rightToken?.symbol} />
     </StyledContainer>
   );
@@ -58,6 +55,9 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
 export default TokenPriceCompare;
 
 const StyledContainer = styled(Box)({
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
   display: "flex",
   justifyContent: "space-between",
   gap: 5,
@@ -66,7 +66,7 @@ const StyledContainer = styled(Box)({
     fontSize: 14,
   },
   "& .twap-token-logo": {
-    width: 22,
-    height: 22,
+    minWidth: 22,
+    minHeight: 22,
   },
 });

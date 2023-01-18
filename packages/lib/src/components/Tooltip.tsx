@@ -27,14 +27,15 @@ function Tooltip({ children, text, placement, childrenStyles }: Props) {
           open={open}
           PopperProps={{
             className: "twap-tooltip",
-            disablePortal: true,
+            // disablePortal: true,
             style: {
-              maxWidth: 200,
+              maxWidth: 360,
             },
           }}
-          placement="bottom"
+          placement={placement}
         >
-          <span onClick={() => setOpen(true)} style={childrenStyles}>
+          <span 
+           onClick={() => setOpen(true)} style={childrenStyles}>
             {children}
           </span>
         </MuiTooltip>
