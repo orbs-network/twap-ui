@@ -48,5 +48,3 @@ function NumberDisplay({
 }
 
 export default NumberDisplay;
-
-

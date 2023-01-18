@@ -34,8 +34,7 @@ function Tooltip({ children, text, placement, childrenStyles }: Props) {
           }}
           placement={placement}
         >
-          <span 
-           onClick={() => setOpen(true)} style={childrenStyles}>
+          <span onClick={() => setOpen(true)} style={childrenStyles}>
             {children}
           </span>
         </MuiTooltip>

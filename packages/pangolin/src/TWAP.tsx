@@ -435,19 +435,17 @@ const SummaryRow = ({ label, tooltip, children }: { label: string; tooltip: stri
 };
 
 const StyledStyledSummaryRowChildren = styled(Box)({
-flex:1,
-display:'flex',
-justifyContent:'flex-end',
-minWidth: 150,
-".twap-token-logo":{
-  minWidth:22,
-  minHeight: 22
-}
-})
-
-const StyledSummaryRowLabel = styled(Components.Label)({
-
+  flex: 1,
+  display: "flex",
+  justifyContent: "flex-end",
+  minWidth: 150,
+  ".twap-token-logo": {
+    minWidth: 22,
+    minHeight: 22,
+  },
 });
+
+const StyledSummaryRowLabel = styled(Components.Label)({});
 
 const TradeInfoDetailsDisplay = () => {
   return (

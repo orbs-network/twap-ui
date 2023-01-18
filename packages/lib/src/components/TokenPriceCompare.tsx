@@ -45,7 +45,7 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
 
       <TokenLogo logo={rightToken?.logoUrl} />
       <StyledOneLineText>
-        <NumberDisplay value={price}  />
+        <NumberDisplay value={price} />
       </StyledOneLineText>
       <TokenName name={rightToken?.symbol} />
     </StyledContainer>
