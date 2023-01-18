@@ -581,13 +581,13 @@ export const StyledShowOrdersButton = styled(Components.Button)({
   width: "unset",
   height: "unset",
   padding: "6px 20px",
-  borderRadius:10,
- 
-  minHeight:'unset',
-  "*":{
-     fontSize: 14,
-     fontWeight: 500
-  }
+  borderRadius: 10,
+
+  minHeight: "unset",
+  "*": {
+    fontSize: 14,
+    fontWeight: 500,
+  },
 });
 
 export const StyledTokenSummary = styled(Components.Card)({

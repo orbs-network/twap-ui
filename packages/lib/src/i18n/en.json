@@ -92,6 +92,6 @@
   "invalid": "Invalid",
   "fillDelayWarning": "Invalid trade interval",
   "fillDelayWarningTooltip": "Trade interval must be higher than {{minutes}} minutes to allow for the bidder auction.",
-  "viewOrders":"View TWAP orders",
-  "view":"View"
+  "viewOrders": "View TWAP orders",
+  "view": "View"
 }
