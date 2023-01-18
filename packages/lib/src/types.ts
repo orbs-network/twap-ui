@@ -91,6 +91,8 @@ export interface Translations {
   fillDelayWarning: string;
   fillDelayWarningTooltip: string;
   invalid: string;
+  viewOrders: string;
+  view: string;
 }
 
 interface BaseProps {

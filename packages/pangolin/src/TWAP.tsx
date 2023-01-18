@@ -8,12 +8,15 @@ import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
 import { Configs, isNativeAddress, TokenData } from "@orbs-network/twap";
 import { AiOutlineWarning } from "react-icons/ai";
-import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles, useParseTokenList, useTokensFromDapp } from "./hooks";
+import { parseToken, useGlobalStyles, useParseTokenList, useTokensFromDapp } from "./hooks";
 import { PangolinTWAPProps } from "./types";
 import { GrClose } from "react-icons/gr";
 import Slide from "@mui/material/Slide";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
+import { AdapterContextProvider, useAdapterContext } from "./context";
+import { AiOutlineHistory } from "react-icons/ai";
+import OrderHistory from "./Orders";
 
 const defaultTheme = createTheme();
 
@@ -42,7 +45,7 @@ const TWAP = (props: PangolinTWAPProps) => {
           askDataParams={[partnerDaas]}
         >
           <GlobalStyles styles={globalStyles as any} />
-          <AdapterContextProvider value={props}>
+          <AdapterContextProvider twapProps={props}>
             <div className="twap-container">
               <TokenPanel isSrcToken={true} />
               <ChangeTokensOrder />
@@ -51,8 +54,10 @@ const TWAP = (props: PangolinTWAPProps) => {
               <TradeSize />
               <MaxDuration />
               <TradeInterval />
+              <ShowOrderHistory />
               <SubmitButton />
               <OrderSummary />
+              <Orders />
               <Components.PoweredBy />
             </div>
           </AdapterContextProvider>
@@ -253,15 +258,24 @@ const TokenPanel = ({ isSrcToken }: TokenPanelProps) => {
   const tokenPanel = hooks.useTokenPanel(isSrcToken);
   const translations = useTwapContext().translations;
   const marketPrice = hooks.useMarketPrice().marketPrice;
+  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
 
   const onOpen = () => {
     if (!tokenPanel.selectTokenWarning) setTokenListOpen(true);
   };
 
-  const onTokenSelected = useCallback((token: any) => {
-    setTokenListOpen(false);
-    tokenPanel.onTokenSelect(parseToken(token));
-  }, []);
+  const onTokenSelected = useCallback(
+    (token: any) => {
+      setTokenListOpen(false);
+      tokenPanel.onTokenSelect(parseToken(token));
+      if (isSrcToken) {
+        onSrcTokenSelected?.(token);
+      } else {
+        onDstTokenSelected?.(token);
+      }
+    },
+    [isSrcToken, onSrcTokenSelected, onDstTokenSelected]
+  );
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -334,94 +348,126 @@ const OrderSummary = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <Slide in={twapStore.showConfirmation} direction="left">
+    <SwipeContainer show={twapStore.showConfirmation} close={() => twapStore.setShowConfirmation(false)}>
       <AdapterStyles.StyledSummary className="twap-summary">
-        <AdapterStyles.StyledSummaryCloseButton onClick={() => twapStore.setShowConfirmation(false)} className="twap-summary-close">
-          <Components.Icon icon={<GrClose style={{ width: 20, height: 20 }} />} />
-        </AdapterStyles.StyledSummaryCloseButton>
-        <AdapterStyles.StyledOrderSummaryContent>
+        <TwapStyles.StyledColumnFlex gap={14}>
           <TwapStyles.StyledColumnFlex gap={14}>
-            <TwapStyles.StyledColumnFlex gap={14}>
-              <TokenOrderPreview
-                isSrc={true}
-                isLimitOrder={twapStore.isLimitOrder}
-                title={translations.from}
-                amount={twapStore.srcAmountUi}
-                usdPrice={twapStore.getSrcAmountUsdUi()}
-                token={twapStore.srcToken}
-              />
-              <TokenOrderPreview
-                isLimitOrder={twapStore.isLimitOrder}
-                title={translations.to}
-                amount={twapStore.getDstAmountUi()}
-                usdPrice={twapStore.getDstAmountUsdUi()}
-                token={twapStore.dstToken}
-              />
-              <OrderConfirmationLimitPrice />
+            <TokenOrderPreview
+              isSrc={true}
+              isLimitOrder={twapStore.isLimitOrder}
+              title={translations.from}
+              amount={twapStore.srcAmountUi}
+              usdPrice={twapStore.getSrcAmountUsdUi()}
+              token={twapStore.srcToken}
+            />
+            <TokenOrderPreview
+              isLimitOrder={twapStore.isLimitOrder}
+              title={translations.to}
+              amount={twapStore.getDstAmountUi()}
+              usdPrice={twapStore.getDstAmountUsdUi()}
+              token={twapStore.dstToken}
+            />
+            <OrderConfirmationLimitPrice />
 
-              <Components.Card className="twap-summary-breakdown">
-                <TwapStyles.StyledColumnFlex gap={14}>
-                  <SummaryRow tooltip={translations.confirmationDeadlineTooltip} label={translations.expiration}>
-                    <AdapterStyles.Text>{twapStore.getDeadlineUi()}</AdapterStyles.Text>
-                  </SummaryRow>
-                  <SummaryRow tooltip={translations.confirmationOrderType} label={translations.orderType}>
-                    <AdapterStyles.Text>{twapStore.isLimitOrder ? translations.limitOrder : translations.marketOrder}</AdapterStyles.Text>
-                  </SummaryRow>
-                  <SummaryRow tooltip={translations.confirmationTradeSizeTooltip} label={translations.tradeSize}>
-                    <TwapStyles.StyledRowFlex justifyContent="flex-end">
-                      <Components.TokenName name={twapStore.srcToken?.symbol} />
-                      <Components.TokenLogo logo={twapStore.srcToken?.logoUrl} />
-                      <AdapterStyles.StyledOneLineText>
-                        <Components.NumberDisplay value={twapStore.getSrcChunkAmountUi()} />
-                      </AdapterStyles.StyledOneLineText>
-                    </TwapStyles.StyledRowFlex>
-                  </SummaryRow>
-                  <SummaryRow tooltip={translations.confirmationTotalTradesTooltip} label={translations.totalTrades}>
-                    <AdapterStyles.Text>{twapStore.getChunks()}</AdapterStyles.Text>
-                  </SummaryRow>
-                  <SummaryRow tooltip={translations.confirmationtradeIntervalTooltip} label={translations.tradeInterval}>
-                    <AdapterStyles.Text>{twapStore.getFillDelayText(translations)}</AdapterStyles.Text>
-                  </SummaryRow>
-                  <SummaryRow
-                    tooltip={twapStore.isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}
-                    label={`${translations.minReceivedPerTrade}:`}
+            <Components.Card className="twap-summary-breakdown">
+              <TwapStyles.StyledColumnFlex gap={14}>
+                <SummaryRow tooltip={translations.confirmationDeadlineTooltip} label={translations.expiration}>
+                  <AdapterStyles.Text>{twapStore.getDeadlineUi()}</AdapterStyles.Text>
+                </SummaryRow>
+                <SummaryRow tooltip={translations.confirmationOrderType} label={translations.orderType}>
+                  <AdapterStyles.Text>{twapStore.isLimitOrder ? translations.limitOrder : translations.marketOrder}</AdapterStyles.Text>
+                </SummaryRow>
+                <SummaryRow tooltip={translations.confirmationTradeSizeTooltip} label={translations.tradeSize}>
+                  <TwapStyles.StyledRowFlex justifyContent="flex-end">
+                    <Components.TokenName name={twapStore.srcToken?.symbol} />
+                    <Components.TokenLogo logo={twapStore.srcToken?.logoUrl} />
+                    <AdapterStyles.StyledOneLineText>
+                      <Components.NumberDisplay value={twapStore.getSrcChunkAmountUi()} />
+                    </AdapterStyles.StyledOneLineText>
+                  </TwapStyles.StyledRowFlex>
+                </SummaryRow>
+                <SummaryRow tooltip={translations.confirmationTotalTradesTooltip} label={translations.totalTrades}>
+                  <AdapterStyles.Text>{twapStore.getChunks()}</AdapterStyles.Text>
+                </SummaryRow>
+                <SummaryRow tooltip={translations.confirmationtradeIntervalTooltip} label={translations.tradeInterval}>
+                  <AdapterStyles.Text>{twapStore.getFillDelayText(translations)}</AdapterStyles.Text>
+                </SummaryRow>
+                <SummaryRow
+                  tooltip={twapStore.isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}
+                  label={`${translations.minReceivedPerTrade}:`}
+                >
+                  <TwapStyles.StyledRowFlex
+                    justifyContent="flex-end"
+                    style={{
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
                   >
-                    <TwapStyles.StyledRowFlex
-                      justifyContent="flex-end"
-                      style={{
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      <Components.TokenName name={twapStore.dstToken?.symbol} />
-                      <Components.TokenLogo logo={twapStore.dstToken?.logoUrl} />
-                      <AdapterStyles.StyledOneLineText>
-                        {twapStore.isLimitOrder ? <Components.NumberDisplay value={twapStore.getDstMinAmountOutUi()} /> : translations.none}
-                      </AdapterStyles.StyledOneLineText>
-                    </TwapStyles.StyledRowFlex>
-                  </SummaryRow>
-                </TwapStyles.StyledColumnFlex>
-              </Components.Card>
-              <TradeInfoDetailsDisplay />
-            </TwapStyles.StyledColumnFlex>
-            <Components.Card>
-              <TwapStyles.StyledColumnFlex gap={12}>
-                <TwapStyles.StyledRowFlex gap={5} justifyContent="flex-start">
-                  <Components.SmallLabel>{translations.acceptDisclaimer}</Components.SmallLabel>
-                  <Components.Switch value={twapStore.disclaimerAccepted} onChange={() => twapStore.setDisclaimerAccepted(!twapStore.disclaimerAccepted)} />
-                </TwapStyles.StyledRowFlex>
-                <AdapterStyles.Text style={{ textAlign: "center", width: "100%" }}>{translations.outputWillBeSentTo}</AdapterStyles.Text>
-                <Components.Tooltip childrenStyles={{ width: "100%" }} text={twapStore.lib?.maker}>
-                  <TwapStyles.StyledOneLineText style={{ textAlign: "center", width: "100%" }}>{twapStore.lib?.maker}</TwapStyles.StyledOneLineText>
-                </Components.Tooltip>
+                    <Components.TokenName name={twapStore.dstToken?.symbol} />
+                    <Components.TokenLogo logo={twapStore.dstToken?.logoUrl} />
+                    <AdapterStyles.StyledOneLineText>
+                      {twapStore.isLimitOrder ? <Components.NumberDisplay value={twapStore.getDstMinAmountOutUi()} /> : translations.none}
+                    </AdapterStyles.StyledOneLineText>
+                  </TwapStyles.StyledRowFlex>
+                </SummaryRow>
               </TwapStyles.StyledColumnFlex>
             </Components.Card>
-            <SubmitButton />
+            <TradeInfoDetailsDisplay />
           </TwapStyles.StyledColumnFlex>
-        </AdapterStyles.StyledOrderSummaryContent>
+          <Components.Card>
+            <TwapStyles.StyledColumnFlex gap={12}>
+              <TwapStyles.StyledRowFlex gap={5} justifyContent="flex-start">
+                <Components.SmallLabel>{translations.acceptDisclaimer}</Components.SmallLabel>
+                <Components.Switch value={twapStore.disclaimerAccepted} onChange={() => twapStore.setDisclaimerAccepted(!twapStore.disclaimerAccepted)} />
+              </TwapStyles.StyledRowFlex>
+              <AdapterStyles.Text style={{ textAlign: "center", width: "100%" }}>{translations.outputWillBeSentTo}</AdapterStyles.Text>
+              <Components.Tooltip childrenStyles={{ width: "100%" }} text={twapStore.lib?.maker}>
+                <TwapStyles.StyledOneLineText style={{ textAlign: "center", width: "100%" }}>{twapStore.lib?.maker}</TwapStyles.StyledOneLineText>
+              </Components.Tooltip>
+            </TwapStyles.StyledColumnFlex>
+          </Components.Card>
+          <SubmitButton />
+        </TwapStyles.StyledColumnFlex>
       </AdapterStyles.StyledSummary>
-    </Slide>
+    </SwipeContainer>
+  );
+};
+
+const ShowOrderHistory = () => {
+  const { toggleOrders } = useAdapterContext();
+  const translations = useTwapContext().translations;
+
+  return (
+    <Components.Card>
+      <TwapStyles.StyledRowFlex justifyContent="space-between">
+        <TwapStyles.StyledRowFlex justifyContent="flex-start">
+          <Components.Icon icon={<AiOutlineHistory style={{ width: 23, height: 23 }} />} />
+          <Components.Label>{translations.viewOrders}</Components.Label>
+        </TwapStyles.StyledRowFlex>
+        <AdapterStyles.StyledShowOrdersButton onClick={toggleOrders}>
+          <AdapterStyles.Text>{translations.view}</AdapterStyles.Text>
+        </AdapterStyles.StyledShowOrdersButton>
+      </TwapStyles.StyledRowFlex>
+    </Components.Card>
+  );
+};
+
+const Orders = () => {
+  const args = useAdapterContext();
+  return (
+    <SwipeContainer show={args.showOrders} close={args.toggleOrders}>
+      <AdapterStyles.StyledOrders>
+        <OrderHistory
+          dappTokens={args.dappTokens}
+          connectedChainId={args.connectedChainId}
+          account={args.account}
+          provider={args.provider}
+          maxFeePerGas={args.maxFeePerGas}
+          priorityFeePerGas={args.priorityFeePerGas}
+        />
+      </AdapterStyles.StyledOrders>
+    </SwipeContainer>
   );
 };
 
@@ -537,5 +583,18 @@ const FillDelayWarning = () => {
         <AiOutlineWarning />
       </TwapStyles.StyledRowFlex>
     </Components.Tooltip>
+  );
+};
+
+const SwipeContainer = ({ show, children, close }: { show: boolean; children: ReactNode; close: () => void }) => {
+  return (
+    <Slide direction="left" in={show} className="twap-swipe-container">
+      <AdapterStyles.StyledSwipeContainer>
+        <button onClick={close} className="twap-close">
+          <Components.Icon icon={<GrClose style={{ width: 20, height: 20 }} />} />
+        </button>
+        <AdapterStyles.StyledSwipeContainerChildren>{children}</AdapterStyles.StyledSwipeContainerChildren>
+      </AdapterStyles.StyledSwipeContainer>
+    </Slide>
   );
 };

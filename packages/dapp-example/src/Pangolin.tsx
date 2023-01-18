@@ -1,6 +1,6 @@
-import { Orders, PangolinOrdersProps, PangolinTWAPProps, TWAP } from "@orbs-network/twap-ui-pangolin";
+import { PangolinTWAPProps, TWAP } from "@orbs-network/twap-ui-pangolin";
 import { DappLayout, Popup, TokenSearchInput, TokenSelectListItem } from "./Components";
-import { StyledModalList, StyledPangolinTWAP, StyledLayoutPangolinDaasOrders, StyledLayoutPangolinDaasTWAP, StyledPangolin, StyledModalContent } from "./styles";
+import { StyledModalList, StyledPangolinTWAP, StyledLayoutPangolinDaasTWAP, StyledModalContent } from "./styles";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
@@ -118,16 +118,12 @@ const PangolinComponent = () => {
     connectedChainId: chainId,
     theme: isDarkTheme ? pangolinDarkTheme : pangolinLightTheme,
   };
-  const ordersProps: PangolinOrdersProps = { account, dappTokens, provider, isDarkTheme };
 
   return (
     <DappLayout name={config.partner}>
       <StyledPangolinTWAP>
         <TWAP {...twapProps} />
       </StyledPangolinTWAP>
-      <StyledPangolin>
-        <Orders {...ordersProps} />
-      </StyledPangolin>
     </DappLayout>
   );
 };
@@ -153,16 +149,12 @@ const PangolinDaasComponent = () => {
     theme: isDarkTheme ? pangolinDarkTheme : pangolinLightTheme,
     partnerDaas: "0xFA1c2Ae5c52a02cbaD6A05CdcA89f032Fa3a4D0d",
   };
-  const ordersProps: PangolinOrdersProps = { account, dappTokens, provider, isDarkTheme };
 
   return (
     <DappLayout name={config.partner}>
       <StyledLayoutPangolinDaasTWAP>
         <TWAP {...twapProps} />
       </StyledLayoutPangolinDaasTWAP>
-      <StyledLayoutPangolinDaasOrders>
-        <Orders {...ordersProps} />
-      </StyledLayoutPangolinDaasOrders>
     </DappLayout>
   );
 };

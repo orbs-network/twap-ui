@@ -355,12 +355,12 @@ export const configureStyles = (theme: any) => {
       background: styles.cardBackground,
       width: "100%",
     },
-    ".twap-orders": {
-      padding: 10,
-      borderRadius: 10,
-      color: styles.textColor,
+    ".twap-swipe-container": {
       background: styles.containerBackground,
-
+      borderRadius: 10,
+    },
+    ".twap-orders": {
+      color: styles.textColor,
       "*": {
         "&::-webkit-scrollbar": {
           display: "none",
@@ -369,8 +369,6 @@ export const configureStyles = (theme: any) => {
     },
 
     ".twap-container": {
-      overflow: "auto",
-      height: "100%",
       position: "relative",
       display: "flex",
       gap: 12,
@@ -463,9 +461,7 @@ export const configureStyles = (theme: any) => {
         },
       },
     },
-    ".twap-orders-lists": {
-      maxHeight: 600,
-    },
+    ".twap-orders-lists": {},
     ".twap-usd": {
       fontSize: 14,
     },
@@ -528,7 +524,7 @@ export const configureStyles = (theme: any) => {
     ".twap-summary": {
       background: theme.drawer.backgroundColor,
     },
-    ".twap-summary-close": {
+    ".twap-close": {
       ".twap-icon": {
         svg: {
           "*": {
@@ -540,21 +536,58 @@ export const configureStyles = (theme: any) => {
   };
 };
 
-export const StyledOrderSummaryContent = styled(Box)({
-  flex: 1,
-  overflow: "auto",
+const StyledAbsoluteFull = styled(Box)({});
+export const StyledSummary = styled(Box)({});
+
+export const StyledOrders = styled(Box)({
+  width: "100%",
+  height: "100%",
+  ".twap-orders": {
+    width: "100%",
+    height: "100%",
+  },
 });
 
-export const StyledSummary = styled(Box)({
+export const StyledSwipeContainer = styled(Box)({
   position: "absolute",
   top: 0,
   left: 0,
   width: "100%",
   height: "100%",
-  paddingTop: 30,
-  display: "flex",
-  transition: "0.2s all",
   padding: "40px 10px 10px 10px",
+  ".twap-close": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 0,
+    border: "unset",
+    background: "unset",
+    top: 10,
+    right: 10,
+    position: "absolute",
+    cursor: "pointer",
+  },
+});
+
+export const StyledSwipeContainerChildren = styled(Box)({
+  width: "100%",
+  height: "100%",
+  overflow: "auto",
+});
+
+export const StyledOrdersContainer = styled(StyledAbsoluteFull)({});
+
+export const StyledShowOrdersButton = styled(Components.Button)({
+  width: "unset",
+  height: "unset",
+  padding: "6px 20px",
+  borderRadius:10,
+ 
+  minHeight:'unset',
+  "*":{
+     fontSize: 14,
+     fontWeight: 500
+  }
 });
 
 export const StyledTokenSummary = styled(Components.Card)({
@@ -562,17 +595,4 @@ export const StyledTokenSummary = styled(Components.Card)({
     width: 38,
     height: 38,
   },
-});
-
-export const StyledSummaryCloseButton = styled("button")({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  border: "unset",
-  background: "unset",
-  top: 10,
-  right: 10,
-  position: "absolute",
-  cursor: "pointer",
 });

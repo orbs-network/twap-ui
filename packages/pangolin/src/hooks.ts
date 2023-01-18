@@ -2,10 +2,9 @@ import { zeroAddress, eqIgnoreCase } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
 import _ from "lodash";
-import { useMemo, useEffect, useRef, createContext, useContext } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
-import { PangolinTWAPProps } from "./types";
 
 const nativeToken: TokenData = {
   decimals: 18,
@@ -62,10 +61,6 @@ export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: st
     setTokens(srcToken, dstToken);
   }, [srcTokenAddress, dstTokenAddress, tokensLength]);
 };
-
-const AdapterContext = createContext({} as PangolinTWAPProps);
-export const AdapterContextProvider = AdapterContext.Provider;
-export const useAdapterContext = () => useContext(AdapterContext);
 
 export const useGlobalStyles = (theme: any) => {
   return configureStyles(theme);

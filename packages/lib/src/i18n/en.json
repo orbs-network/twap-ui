@@ -91,5 +91,7 @@
   "prtialFillWarningTooltip": "Order will not be completely filled in the selected duration.",
   "invalid": "Invalid",
   "fillDelayWarning": "Invalid trade interval",
-  "fillDelayWarningTooltip": "Trade interval must be higher than {{minutes}} minutes to allow for the bidder auction."
+  "fillDelayWarningTooltip": "Trade interval must be higher than {{minutes}} minutes to allow for the bidder auction.",
+  "viewOrders":"View TWAP orders",
+  "view":"View"
 }
