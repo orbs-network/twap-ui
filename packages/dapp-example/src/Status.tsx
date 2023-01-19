@@ -8,6 +8,12 @@ import { useSelectedDapp } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
 import { useEffect, useState } from "react";
 
+const chainNames = {
+  ftm: "fantom",
+  avax: "avalanche",
+  poly: "polygon",
+};
+
 function useConfigAndNetwork(dapp?: Dapp) {
   return useQuery(
     ["useConfigAndNetwork", dapp?.config.partner],
@@ -23,13 +29,8 @@ function useConfigAndNetwork(dapp?: Dapp) {
 }
 
 function useBackupTakersStatus(dapp?: Dapp) {
-  const chainNames = {
-    ftm: "fantom",
-    avax: "avalanche",
-    poly: "polygon",
-  };
   return useQuery(
-    ["useBackupTakersStatus", dapp?.config.partner],
+    ["useBackupTakersStatus", dapp?.config.chainId],
     async () => {
       return await Promise.all(
         [1, 2].map((i) =>
@@ -53,6 +54,35 @@ function useBackupTakersStatus(dapp?: Dapp) {
       refetchInterval: 60_000,
     }
   ).data;
+}
+
+function useOrbsL3TakersStatus(dapp?: Dapp) {
+  return useQuery(["useOrbsL3TakersStatus", dapp?.config.chainId], async () => {
+    const orbsStatus = await (await fetch("https://status.orbs.network/json")).json();
+    const result = await Promise.all(
+      _.map(orbsStatus.CommitteeNodes, async (node) => {
+        try {
+          const url = _.get(node, ["NodeServices", "vm-twap", "URLs", "Status"]);
+          const nodeStatus = await (await fetch(url)).json();
+          const balance = Number(BN(_.values(nodeStatus.takersWallets[(chainNames as any)[dapp!.config.chainName]])[0].balance).toFixed(1));
+          return {
+            status: balance > 0.1,
+            balance,
+          };
+        } catch (e) {
+          return Promise.resolve({
+            status: false,
+            balance: 0,
+          });
+        }
+      })
+    );
+    const online = _.sortBy(
+      _.filter(result, (r) => r.status),
+      (r) => r.balance
+    );
+    return { status: online.length >= 10, balances: online.map((n) => n.balance) };
+  }).data;
 }
 
 function useTakerXStatus(dapp?: Dapp) {
@@ -86,6 +116,7 @@ export function Status() {
   const config = useConfigAndNetwork(dapp);
   const status = useBackupTakersStatus(dapp);
   const takerx = useTakerXStatus(dapp);
+  const orbsTakers = useOrbsL3TakersStatus(dapp);
 
   return (
     <>
@@ -134,17 +165,26 @@ export function Status() {
               </a>
             </StyledStatusSectionText>
           </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>
+              <a href={"https://twap-takers.orbs.network/"} target={"_blank"}>
+                {!orbsTakers ? "" : orbsTakers.status ? "✅" : "⚠️⚠️⚠️"} Orbs L3 Takers ({orbsTakers?.balances.length}):
+              </a>
+            </StyledStatusSectionTitle>
+            <StyledStatusSectionText>gas: {orbsTakers?.balances.slice(0, 5).join(" / ")}...</StyledStatusSectionText>
+          </StyledStatusSection>
           {_.map([1, 2], (i, k) => (
             <StyledStatusSection key={i}>
               <StyledStatusSectionTitle>
-                {!status ? "" : status[k].status ? "✅" : "⚠️⚠️⚠️"} Backup Taker {i}:
+                <a href={"https://twap-takers.orbs.network/"} target={"_blank"}>
+                  {!status ? "" : status[k].status ? "✅" : "⚠️⚠️⚠️"} Backup Taker {i} ({status?.[k].balances.length}):
+                </a>
               </StyledStatusSectionTitle>
-              <StyledStatusSectionText>uptime: {status?.[k].uptime}</StyledStatusSectionText>
-              <StyledStatusSectionText>gas: {status?.[k].balances.join(" ")}</StyledStatusSectionText>
+              <StyledStatusSectionText>gas: {status?.[k].balances.join(" / ")}</StyledStatusSectionText>
             </StyledStatusSection>
           ))}
           <StyledStatusSection>
-            <StyledStatusSectionTitle>{!takerx ? "" : takerx?.status ? "✅" : "⚠️⚠️⚠️"} Backup Taker X:</StyledStatusSectionTitle>
+            <StyledStatusSectionTitle>{!takerx ? "" : takerx?.status ? "✅" : "⚠️⚠️⚠️"} Backup Taker X (1):</StyledStatusSectionTitle>
             <StyledStatusSectionText>gas: {takerx?.balance}</StyledStatusSectionText>
           </StyledStatusSection>
         </StyledStatus>
