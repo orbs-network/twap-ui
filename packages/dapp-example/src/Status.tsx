@@ -59,24 +59,21 @@ function useBackupTakersStatus(dapp?: Dapp) {
 function useOrbsL3TakersStatus(dapp?: Dapp) {
   return useQuery(["useOrbsL3TakersStatus", dapp?.config.chainId], async () => {
     const orbsStatus = await (await fetch("https://status.orbs.network/json")).json();
-    const result = await Promise.all(
-      _.map(orbsStatus.CommitteeNodes, async (node) => {
-        try {
-          const url = _.get(node, ["NodeServices", "vm-twap", "URLs", "Status"]);
-          const nodeStatus = await (await fetch(url)).json();
-          const balance = Number(BN(_.values(nodeStatus.takersWallets[(chainNames as any)[dapp!.config.chainName]])[0].balance).toFixed(1));
-          return {
-            status: balance > 0.1,
-            balance,
-          };
-        } catch (e) {
-          return Promise.resolve({
-            status: false,
-            balance: 0,
-          });
-        }
-      })
-    );
+    const result = _.map(orbsStatus.CommitteeNodes, (node) => {
+      try {
+        const nodeStatus = _.get(node, ["NodeServices", "vm-twap", "VMStatusJson"]);
+        const balance = Number(BN(_.values(nodeStatus.takersWallets[(chainNames as any)[dapp!.config.chainName]])[0].balance).toFixed(1));
+        return {
+          status: balance > 0.1,
+          balance,
+        };
+      } catch (e) {
+        return {
+          status: false,
+          balance: 0,
+        };
+      }
+    });
     const online = _.sortBy(
       _.filter(result, (r) => r.status),
       (r) => r.balance
