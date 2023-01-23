@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Box } from "@mui/system";
-import { Components, hooks, store, Styles as TwapStyles, Translations, TwapAdapter, useTwapContext } from "@orbs-network/twap-ui";
+import { Components, hooks, StateComponents, store, Styles as TwapStyles, Translations, TwapAdapter, useTwapContext } from "@orbs-network/twap-ui";
 import { AiFillEdit } from "react-icons/ai";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback, useState } from "react";
@@ -453,7 +453,7 @@ const TradeInfoDetailsDisplay = () => {
     <Components.Card>
       <AdapterStyles.StyledCardFlex>
         <AdapterStyles.StyledColumnGap gap={10}>
-          <Components.Disclaimer />
+          <StateComponents.DisclaimerText />
         </AdapterStyles.StyledColumnGap>
       </AdapterStyles.StyledCardFlex>
     </Components.Card>

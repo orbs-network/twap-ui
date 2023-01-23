@@ -1,6 +1,7 @@
-import { Box, Fade, Typography } from "@mui/material";
+import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import { CSSProperties, ReactNode } from "react";
+import { StyledOneLineText } from "../styles";
 import Loader from "./Loader";
 
 function SmallLabel({ children, style, loading = false, className = "" }: { children?: string | ReactNode; style?: CSSProperties; loading?: boolean; className?: string }) {
@@ -25,7 +26,7 @@ function SmallLabel({ children, style, loading = false, className = "" }: { chil
 
 export default SmallLabel;
 
-const StyledChildren = styled(Typography)({
+const StyledChildren = styled(StyledOneLineText)({
   fontSize: "inherit",
   fontFamily: "inherit",
 });

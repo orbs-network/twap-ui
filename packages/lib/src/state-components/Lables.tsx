@@ -72,5 +72,3 @@ export const OrderSummaryMinDstAmountOutLabel = () => {
     </Label>
   );
 };
-
-

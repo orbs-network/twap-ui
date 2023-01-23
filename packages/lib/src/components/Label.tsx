@@ -20,7 +20,7 @@ function Label({ children, tooltipText, className = "", fontSize, placement }: P
       <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
       {tooltipText && (
         <Tooltip placement={placement} text={tooltipText}>
-          <StyledTooltipContent className={`twap-label ${className}`}>
+          <StyledTooltipContent className={`twap-label-tooltip-content ${className}`}>
             <Icon icon={<SlInfo className="twap-tooltip-icon" style={{ width: 14, height: 14 }} />} />
           </StyledTooltipContent>
         </Tooltip>
