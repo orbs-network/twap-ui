@@ -364,6 +364,8 @@ export const useTokenPanel = (isSrc?: boolean) => {
     return { usdLoading, balanceLoading, inputLoading };
   }, [loadingState, amount, isSrc]);
 
+  const [showTokenSelect, setShowTokenSelect] = useState(false);
+
   return {
     token,
     value: amount,
@@ -379,6 +381,8 @@ export const useTokenPanel = (isSrc?: boolean) => {
     inputLoading: loaders.inputLoading,
     balanceLoading: loaders.balanceLoading,
     decimalScale: token?.decimals || 0,
+    showTokenSelect,
+    setShowTokenSelect,
   };
 };
 

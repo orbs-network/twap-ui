@@ -53,13 +53,23 @@ export const StyledBoxWithDetails = styled(StyledColumnFlex)({
   gap: 10,
 });
 
-export const StyledRowFlex = styled(Box)(({ gap = 10, justifyContent = "center" }: { gap?: number; justifyContent?: "flex-start" | "flex-end" | "center" | "space-between" }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent,
-  width: "100%",
-  gap,
-}));
+export const StyledRowFlex = styled(Box)(
+  ({
+    gap = 10,
+    justifyContent = "center",
+    width = "100%",
+  }: {
+    gap?: number;
+    justifyContent?: "flex-start" | "flex-end" | "center" | "space-between";
+    width?: string | number;
+  }) => ({
+    display: "flex",
+    alignItems: "center",
+    justifyContent,
+    width,
+    gap,
+  })
+);
 
 export const StyledText = styled(Typography)({
   fontFamily: "inherit",

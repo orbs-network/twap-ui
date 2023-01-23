@@ -35,15 +35,18 @@ function NumberDisplay({
       suffix={suffix}
     />
   );
-
+ if (value === "0") {
+   return <>0</>;
+ }
   if (hideTooltip) return component;
-  if (value) {
-    return (
-      <Tooltip childrenStyles={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} placement="bottom" text={value}>
-        {component}
-      </Tooltip>
-    );
-  }
+ 
+    if (value) {
+      return (
+        <Tooltip childrenStyles={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} placement="bottom" text={value}>
+          {component}
+        </Tooltip>
+      );
+    }
   return <>-</>;
 }
 
