@@ -95,6 +95,10 @@ export interface Translations {
   view: string;
 }
 
+export interface BaseComponentProps {
+  className?: string;
+}
+
 interface BaseProps {
   connectedChainId?: number;
   account?: any;
