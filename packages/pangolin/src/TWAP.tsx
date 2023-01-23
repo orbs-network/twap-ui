@@ -44,7 +44,7 @@ const TWAP = (props: PangolinTWAPProps) => {
               <TokenPanel isSrcToken={true} />
               <StateComponents.ChangeTokensOrder />
               <TokenPanel isSrcToken={false} />
-              <LimitPriceDisplay />
+              <LimitPrice />
               <TradeSize />
               <MaxDuration />
               <TradeInterval />
@@ -87,20 +87,21 @@ const SrcTokenPercentSelector = () => {
 
 const TradeSize = () => {
   return (
-    <Components.Card>
+    <Components.Card className="twap-trade-size">
       <TwapStyles.StyledColumnFlex gap={5}>
-        <AdapterStyles.StyledSliderContainer gap={10}>
+        <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <StateComponents.TotalTradesLabel />
-          <StateComponents.ChunksSelectDisplay />
-        </AdapterStyles.StyledSliderContainer>
-        <TwapStyles.StyledRowFlex>
-          <AdapterStyles.StyledTradeSize>
+          <StateComponents.ChunksSliderSelect />
+          <StateComponents.ChunksInput />
+        </TwapStyles.StyledRowFlex>
+        <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
+          <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
             <TwapStyles.StyledRowFlex>
               <StateComponents.ChunksAmountLabel />
               <StateComponents.ChunksAmount />
             </TwapStyles.StyledRowFlex>
-            <StateComponents.TokenLogoAndSymbol isSrc={true} hideIfNullToken={true} />
-          </AdapterStyles.StyledTradeSize>
+            <StateComponents.TokenLogoAndSymbol isSrc={true} />
+          </TwapStyles.StyledRowFlex>
           <StateComponents.ChunksUSD />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>
@@ -108,15 +109,15 @@ const TradeSize = () => {
   );
 };
 
-const LimitPriceDisplay = () => {
+const LimitPrice = () => {
   return (
     <Components.Card className="twap-limit-price">
       <TwapStyles.StyledColumnFlex>
-        <AdapterStyles.StyledFlexStart>
-          <StateComponents.LimitPriceToggle />
+        <TwapStyles.StyledRowFlex justifyContent="space-between">
           <StateComponents.LimitPriceLabel />
-        </AdapterStyles.StyledFlexStart>
-        <StateComponents.LimitPrice placeholder="0" />
+          <StateComponents.LimitPriceToggle />
+        </TwapStyles.StyledRowFlex>
+        <StateComponents.LimitPriceInput placeholder="0" />
       </TwapStyles.StyledColumnFlex>
     </Components.Card>
   );
@@ -169,32 +170,31 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
         isSrc={isSrcToken}
         parseToken={parseToken}
       />
-
-      <AdapterStyles.StyledTokenPanel>
-        <TwapStyles.StyledColumnFlex gap={4}>
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <Components.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.SmallLabel>
-            {isSrcToken && <SrcTokenPercentSelector />}
-            {!isSrcToken && marketPrice !== "0" && (
-              <AdapterStyles.Text>
-                Price <Components.NumberDisplay value={marketPrice} /> <StateComponents.TokenSymbol isSrc={isSrcToken} />
-              </AdapterStyles.Text>
-            )}
-          </TwapStyles.StyledRowFlex>
-          <Components.Card>
-            <TwapStyles.StyledColumnFlex gap={15}>
-              <TwapStyles.StyledRowFlex justifyContent="space-between">
-                <StateComponents.TokenInput isSrc={isSrcToken} />
-                <StateComponents.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
-              </TwapStyles.StyledRowFlex>
-              <TwapStyles.StyledRowFlex justifyContent="space-between">
+      <TwapStyles.StyledColumnFlex gap={4} className="twap-token-panel">
+        <TwapStyles.StyledRowFlex justifyContent="space-between">
+          <Components.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.SmallLabel>
+          {isSrcToken && <SrcTokenPercentSelector />}
+          {!isSrcToken && marketPrice !== "0" && (
+            <TwapStyles.StyledRowFlex className="twap-token-panel-price">
+              <TwapStyles.StyledText>Price</TwapStyles.StyledText> <Components.NumberDisplay value={marketPrice} /> <StateComponents.TokenSymbol isSrc={isSrcToken} />
+            </TwapStyles.StyledRowFlex>
+          )}
+        </TwapStyles.StyledRowFlex>
+        <Components.Card>
+          <TwapStyles.StyledColumnFlex gap={15}>
+            <TwapStyles.StyledRowFlex justifyContent="space-between">
+              <StateComponents.TokenInput isSrc={isSrcToken} />
+              <StateComponents.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+            </TwapStyles.StyledRowFlex>
+            <TwapStyles.StyledRowFlex justifyContent="space-between">
+              <TwapStyles.StyledOverflowContainer>
                 <StateComponents.TokenUSD isSrc={isSrcToken} />
-                <StateComponents.TokenBalance isSrc={isSrcToken} />
-              </TwapStyles.StyledRowFlex>
-            </TwapStyles.StyledColumnFlex>
-          </Components.Card>
-        </TwapStyles.StyledColumnFlex>
-      </AdapterStyles.StyledTokenPanel>
+              </TwapStyles.StyledOverflowContainer>
+              <StateComponents.TokenBalance isSrc={isSrcToken} />
+            </TwapStyles.StyledRowFlex>
+          </TwapStyles.StyledColumnFlex>
+        </Components.Card>
+      </TwapStyles.StyledColumnFlex>
     </>
   );
 };
@@ -202,34 +202,32 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
 const OrderSummary = () => {
   return (
     <StateComponents.OrderSummarySwipeContainer>
-      <AdapterStyles.StyledSummary className="twap-summary">
+      <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
-          <TwapStyles.StyledColumnFlex gap={14}>
-            <Components.Card>
-              <StateComponents.OrderSummarySrcTokenDisplay />
-            </Components.Card>
-            <Components.Card>
-              <StateComponents.OrderSummaryDstTokenDisplay />
-            </Components.Card>
-            <StateComponents.OrderSummaryLimitPrice />
-            <Components.Card className="twap-summary-breakdown">
-              <StateComponents.OrderSummaryDetails />
-            </Components.Card>
-            <Components.Card>
-              <TwapStyles.StyledColumnFlex gap={10}>
-                <Components.Disclaimer />
-              </TwapStyles.StyledColumnFlex>
-            </Components.Card>
-          </TwapStyles.StyledColumnFlex>
           <Components.Card>
-            <TwapStyles.StyledColumnFlex gap={12}>
-              <StateComponents.AcceptDisclaimer />
-              <StateComponents.OutputAddress />
+            <StateComponents.OrderSummaryTokenDisplay isSrc={true} />
+          </Components.Card>
+          <Components.Card>
+            <StateComponents.OrderSummaryTokenDisplay />
+          </Components.Card>
+          <StateComponents.OrderSummaryLimitPrice />
+          <Components.Card>
+            <StateComponents.OrderSummaryDetails />
+          </Components.Card>
+          <Components.Card>
+            <TwapStyles.StyledColumnFlex gap={10}>
+              <StateComponents.DisclaimerText />
             </TwapStyles.StyledColumnFlex>
           </Components.Card>
-          <StateComponents.SubmitButton />
         </TwapStyles.StyledColumnFlex>
-      </AdapterStyles.StyledSummary>
+        <Components.Card>
+          <TwapStyles.StyledColumnFlex gap={12}>
+            <StateComponents.AcceptDisclaimer />
+            <StateComponents.OutputAddress />
+          </TwapStyles.StyledColumnFlex>
+        </Components.Card>
+        <StateComponents.SubmitButton />
+      </TwapStyles.StyledColumnFlex>
     </StateComponents.OrderSummarySwipeContainer>
   );
 };
@@ -246,7 +244,7 @@ const ShowOrderHistory = () => {
           <Components.Label>{translations.viewOrders}</Components.Label>
         </TwapStyles.StyledRowFlex>
         <AdapterStyles.StyledShowOrdersButton onClick={toggleOrders}>
-          <AdapterStyles.Text>{translations.view}</AdapterStyles.Text>
+          <TwapStyles.StyledText>{translations.view}</TwapStyles.StyledText>
         </AdapterStyles.StyledShowOrdersButton>
       </TwapStyles.StyledRowFlex>
     </Components.Card>
@@ -270,5 +268,3 @@ const Orders = () => {
     </Components.SwipeContainer>
   );
 };
-
-

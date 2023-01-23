@@ -1,5 +1,6 @@
 import { Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
+import { CSSProperties } from "react";
 export const StyledShadowContainer = styled(Box)({
   boxShadow: "0px 5px 20px rgba(85, 94, 104, 0.13)",
   borderRadius: 25,
@@ -13,6 +14,11 @@ export const StyledShadowContainer = styled(Box)({
     fontSize: 12,
     fontWeight: 600,
   },
+});
+
+export const StyledText = styled(Typography)({
+  fontFamily: "inherit",
+  fontSize: "inherit",
 });
 
 export const StyledColumnFlex = styled(Box)(({ gap = 10 }: { gap?: number }) => ({
@@ -33,10 +39,14 @@ export const StyledBorderWrapper = styled(Box)({
   padding: 8,
 });
 
-export const StyledOneLineText = styled(Typography)({
+export const textOverflow: CSSProperties = {
   whiteSpace: "nowrap",
   overflow: "hidden",
   textOverflow: "ellipsis",
+};
+
+export const StyledOneLineText = styled(StyledText)({
+  ...textOverflow,
 });
 
 export const StyledSmallTitle = styled(StyledOneLineText)({
@@ -71,7 +81,7 @@ export const StyledRowFlex = styled(Box)(
   })
 );
 
-export const StyledText = styled(Typography)({
-  fontFamily: "inherit",
-  fontSize: "inherit",
+export const StyledOverflowContainer = styled(StyledRowFlex)({
+  ...textOverflow,
+  justifyContent: "flex-start",
 });

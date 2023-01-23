@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Box } from "@mui/system";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, store, StateComponents } from "@orbs-network/twap-ui";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { memo, ReactNode, useCallback, useState } from "react";
 import * as AdapterStyles from "./styles";
@@ -469,7 +469,7 @@ const TradeInfoDetailsDisplay = () => {
   return (
     <Components.Card>
       <TwapStyles.StyledColumnFlex gap={10}>
-        <Components.Disclaimer />
+        <StateComponents.DisclaimerText />
       </TwapStyles.StyledColumnFlex>
     </Components.Card>
   );

@@ -13,9 +13,10 @@ export interface Props {
   onChange: (value: number) => void;
   value: number;
   maxTrades: number;
+  className?: string;
 }
 
-const Slider = ({ onChange, value, maxTrades }: Props) => {
+const Slider = ({ onChange, value, maxTrades, className = "" }: Props) => {
   const handleChange = (_event: Event, newValue: number | number[]) => {
     if (typeof newValue === "number") {
       onChange(newValue);
@@ -34,7 +35,7 @@ const Slider = ({ onChange, value, maxTrades }: Props) => {
       valueLabelFormat={valueLabelFormat}
       onChange={handleChange}
       valueLabelDisplay="auto"
-      className="twap-slider"
+      className={`twap-slider ${className}`}
     />
   );
 };

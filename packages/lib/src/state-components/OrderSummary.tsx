@@ -5,8 +5,7 @@ import SwipeContainer from "../components/SwipeContainer";
 import { useTwapContext } from "../context";
 import { useLimitPrice } from "../hooks";
 import { useTwapStore } from "../store";
-import { StyledColumnFlex, StyledOneLineText, StyledRowFlex, StyledText } from "../styles";
-import { ChunksAmount, Deadline, DstTokenAmount, DstTokenUSD, MinDstAmountOut, OrderType, SrcTokenAmount, SrcTokenUSD, TotalChunks, TradeIntervalAsText } from "./Amounts";
+import { StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, StyledRowFlex, StyledText } from "../styles";
 import {
   OrderSummaryChunkSizeLabel,
   OrderSummaryDeadlineLabel,
@@ -15,7 +14,19 @@ import {
   OrderSummaryTotalChunksLabel,
   OrderSummaryTradeIntervalLabel,
 } from "./Lables";
-import TokenLogoAndSymbol from "./TokenLogoAndSymbol";
+import {
+  Deadline,
+  OrderType,
+  ChunksAmount,
+  TotalChunks,
+  TradeIntervalAsText,
+  MinDstAmountOut,
+  SrcTokenAmount,
+  SrcTokenUSD,
+  DstTokenAmount,
+  DstTokenUSD,
+  TokenLogoAndSymbol,
+} from "./StateComponents";
 
 const orderSummaryDetailsComponent = [
   {
@@ -30,7 +41,7 @@ const orderSummaryDetailsComponent = [
     label: <OrderSummaryChunkSizeLabel />,
     component: (
       <>
-        <TokenLogoAndSymbol isSrc={true} />
+        <TokenLogoAndSymbol isSrc={true} reverse={true} />
         <ChunksAmount />
       </>
     ),
@@ -47,7 +58,7 @@ const orderSummaryDetailsComponent = [
     label: <OrderSummaryMinDstAmountOutLabel />,
     component: (
       <>
-        <TokenLogoAndSymbol isSrc={false} />
+        <TokenLogoAndSymbol isSrc={false} reverse={true} />
         <MinDstAmountOut />
       </>
     ),
@@ -72,25 +83,33 @@ export const OrderSummaryDetails = ({ className = "" }: { className?: string }) 
 const StyledSummaryRow = styled(StyledRowFlex)({
   justifyContent: "space-between",
   width: "100%",
+  ".twap-label": {
+    minWidth: 150,
+    flex: 1,
+  },
 });
 
-const StyledSummaryRowRight = styled(StyledRowFlex)({
+const StyledSummaryRowRight = styled(StyledOverflowContainer)({
   flex: 1,
   width: "unset",
   justifyContent: "flex-end",
   ".twap-token-logo": {
     width: 22,
     height: 22,
+    minWidth: 22,
+    minHeight: 22,
   },
 });
-const StyledSummaryDetails = styled(StyledColumnFlex)({});
+const StyledSummaryDetails = styled(StyledColumnFlex)({
+  gap: 15,
+});
 
 interface Props {
   children: ReactNode;
 }
 
 export function OrderSummarySwipeContainer({ children }: Props) {
-    const showConfirmation = useTwapStore((store) => store.showConfirmation);
+  const showConfirmation = useTwapStore((store) => store.showConfirmation);
   const setShowConfirmation = useTwapStore((store) => store.setShowConfirmation);
   return (
     <SwipeContainer show={showConfirmation} close={() => setShowConfirmation(false)}>
@@ -99,34 +118,39 @@ export function OrderSummarySwipeContainer({ children }: Props) {
   );
 }
 
-const OrderSummaryTokenDisplay = ({ label, usd, logoAndSymbol, amount }: { label: string; usd: ReactElement; logoAndSymbol: ReactElement; amount: ReactElement }) => {
+export const OrderSummaryTokenDisplay = ({ isSrc }: {isSrc?: boolean}) => {
+      const translations = useTwapContext().translations;
+    const isLimitOrder = useTwapStore(store => store.isLimitOrder)
   return (
     <StyledOrderSummaryTokenDisplay className="twap-orders-summary-token-display">
       <StyledRowFlex className="twap-orders-summary-token-display-flex">
-        <StyledText>{label}</StyledText>
-        {usd}
+        <StyledText>{isSrc ? translations.from : translations.to}</StyledText>
+        {isSrc ? <SrcTokenUSD /> : <DstTokenUSD />}
       </StyledRowFlex>
       <StyledRowFlex className="twap-orders-summary-token-display-flex">
-        {logoAndSymbol}
-        {amount}
+        <TokenLogoAndSymbol isSrc={isSrc} />
+        <StyledRowFlex className="twap-orders-summary-token-display-amount">
+          {!isSrc && <StyledText> {isLimitOrder ? "≥ " : "~ "}</StyledText>}
+          {isSrc ? <SrcTokenAmount /> : <DstTokenAmount />}
+        </StyledRowFlex>
       </StyledRowFlex>
     </StyledOrderSummaryTokenDisplay>
   );
 };
 
-export const OrderSummarySrcTokenDisplay = () => {
-  const translations = useTwapContext().translations;
-
-  return <OrderSummaryTokenDisplay amount={<SrcTokenAmount />} label={translations.from} usd={<SrcTokenUSD />} logoAndSymbol={<TokenLogoAndSymbol isSrc={true} />} />;
-};
-
-export const OrderSummaryDstTokenDisplay = () => {
-  const translations = useTwapContext().translations;
-
-  return <OrderSummaryTokenDisplay amount={<DstTokenAmount />} label={translations.to} usd={<DstTokenUSD />} logoAndSymbol={<TokenLogoAndSymbol isSrc={false} />} />;
-};
-
 const StyledOrderSummaryTokenDisplay = styled(StyledColumnFlex)({
+  ".twap-token-logo": {
+    width: 38,
+    height: 38,
+  },
+  ".twap-token-name": {
+    fontSize: 16,
+  },
+  ".twap-orders-summary-token-display-amount": {
+    fontSize: 19,
+    justifyContent:"flex-end",
+    width:'fit-content'
+  },
   ".twap-orders-summary-token-display-flex": {
     justifyContent: "space-between",
   },
@@ -183,3 +207,36 @@ export const OrderSummaryLimitPrice = () => {
     </StyledRowFlex>
   );
 };
+
+export const DisclaimerText = () => {
+  const translations = useTwapContext().translations;
+  const lib = useTwapStore((state) => state.lib);
+  return (
+    <StyledTradeInfoExplanation className="twap-disclaimer-text">
+      <StyledText>{translations.disclaimer1}</StyledText>
+      <StyledText>{translations.disclaimer2}</StyledText>
+      <StyledText>{translations.disclaimer3}</StyledText>
+      <StyledText>{translations.disclaimer4}</StyledText>
+      <StyledText>{translations.disclaimer5.replace("{{dex}}", lib?.config.partner || "DEX")}</StyledText>
+
+      <StyledText>
+        {translations.disclaimer6}{" "}
+        <a href="https://github.com/orbs-network/twap" target="_blank">
+          {translations.link}
+        </a>
+        . {translations.disclaimer7}{" "}
+        <a href="https://github.com/orbs-network/twap/blob/master/TOS.md" target="_blank">
+          {translations.link}
+        </a>
+        .
+      </StyledText>
+    </StyledTradeInfoExplanation>
+  );
+};
+
+const StyledTradeInfoExplanation = styled(StyledColumnFlex)({
+  maxHeight: 140,
+  overflow: "auto",
+  gap: 10,
+  fontSize: 14,
+});
