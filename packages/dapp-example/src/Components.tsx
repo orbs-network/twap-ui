@@ -182,7 +182,7 @@ export const TokenSelectListItem = ({
   return (
     <StyledModalListItem onClick={onClick}>
       <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "unset", flex: 1 }}>
-        <Components.TokenLogo
+        <Components.Base.TokenLogo
           logo={logo}
           alt={symbol}
           style={{
@@ -192,9 +192,9 @@ export const TokenSelectListItem = ({
         />
         {symbol}
       </Styles.StyledRowFlex>
-      <Components.SmallLabel loading={isLoading} className="balance">
-        <Components.NumberDisplay value={balance} decimalScale={6} />
-      </Components.SmallLabel>
+      <Components.Base.SmallLabel loading={isLoading} className="balance">
+        <Components.Base.NumberDisplay value={balance} decimalScale={6} />
+      </Components.Base.SmallLabel>
     </StyledModalListItem>
   );
 };

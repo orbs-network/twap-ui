@@ -1,10 +1,10 @@
 import { ClickAwayListener } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useState } from "react";
-import { useTwapContext } from "../context";
-import { TimeResolution } from "../store";
-import { StyledText } from "../styles";
-import { Translations } from "../types";
+import { useTwapContext } from "../../context";
+import { TimeResolution } from "../../store";
+import { StyledText } from "../../styles";
+import { Translations } from "../../types";
 import NumericInput from "./NumericInput";
 
 const timeArr: { text: keyof Translations; value: TimeResolution }[] = [

@@ -5,9 +5,9 @@ import OrderPreview from "./OrderPreview";
 import OrderExpanded from "./OrderExpanded";
 import { OrderSeparator } from "./Components";
 import { OrderUI } from "../../types";
-import { Card } from "../../components";
 import { AccordionSummary } from "@mui/material";
 import { StyledSpace } from "./styles";
+import { Components } from "../..";
 
 export interface Props {
   order: OrderUI;
@@ -41,7 +41,7 @@ export const StyledAccordionSummary = styled(AccordionSummary)({
   padding: 0,
 });
 
-const StyledContainer = styled(Card)({
+const StyledContainer = styled(Components.Base.Card)({
   "& *": {
     color: "inherit!important",
   },

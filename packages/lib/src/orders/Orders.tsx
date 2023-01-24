@@ -3,15 +3,12 @@ import { Box, styled } from "@mui/system";
 import React from "react";
 import OrdersList from "./OrdersList";
 import _ from "lodash";
-import Label from "../components/Label";
 import { Translations } from "../types";
-import OdnpButton from "../components/OdnpButton";
-import Icon from "../components/Icon";
 import { AiOutlineHistory } from "react-icons/ai";
 import { Status } from "@orbs-network/twap";
 import { useOrdersHistoryQuery } from "../hooks";
 import { useOrdersContext } from "../context";
-import { Styles } from "..";
+import { Components, Styles } from "..";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
@@ -27,8 +24,8 @@ function Orders() {
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
           <Styles.StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>
-            <Icon icon={<AiOutlineHistory style={{ width: 20, height: 20 }} />} />
-            <Label tooltipText={translations.ordersTooltip}>{translations.orders}</Label>
+            <Components.Base.Icon icon={<AiOutlineHistory style={{ width: 20, height: 20 }} />} />
+            <Components.Base.Label tooltipText={translations.ordersTooltip}>{translations.orders}</Components.Base.Label>
           </Styles.StyledRowFlex>
           <StyledOdnpButton />
         </StyledHeaderTop>
@@ -75,7 +72,7 @@ const StyledHeader = styled(Box)({
   gap: 13,
 });
 
-const StyledOdnpButton = styled(OdnpButton)({
+const StyledOdnpButton = styled(Components.TWAP.OdnpButton)({
   marginRight: 5,
 });
 

@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, StateComponents } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
@@ -13,6 +13,14 @@ import { AiOutlineHistory } from "react-icons/ai";
 import OrderHistory from "./Orders";
 
 const defaultTheme = createTheme();
+
+const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
+  const TokenSelectModal = useAdapterContext().TokenSelectModal;
+  console.log('render');
+  
+  return <TokenSelectModal
+   onCurrencySelect={props.onSelect} isOpen={props.isOpen} onClose={props.onClose} />;
+};
 
 const TWAP = (props: PangolinTWAPProps) => {
   const tokenList = useParseTokenList(props.dappTokens);
@@ -39,20 +47,20 @@ const TWAP = (props: PangolinTWAPProps) => {
           askDataParams={[partnerDaas]}
         >
           <GlobalStyles styles={globalStyles as any} />
-          <AdapterContextProvider twapProps={props}>
+          <AdapterContextProvider twapProps={props} ModifiedTokenSelectModal={ModifiedTokenSelectModal}>
             <div className="twap-container">
               <TokenPanel isSrcToken={true} />
-              <StateComponents.ChangeTokensOrder />
+              <Components.TWAP.ChangeTokensOrder />
               <TokenPanel isSrcToken={false} />
               <LimitPrice />
               <TradeSize />
               <MaxDuration />
               <TradeInterval />
               <ShowOrderHistory />
-              <StateComponents.SubmitButton />
+              <Components.TWAP.SubmitButton />
               <OrderSummary />
               <Orders />
-              <Components.PoweredBy />
+              <Components.TWAP.PoweredBy />
             </div>
           </AdapterContextProvider>
         </TwapAdapter>
@@ -87,71 +95,71 @@ const SrcTokenPercentSelector = () => {
 
 const TradeSize = () => {
   return (
-    <Components.Card className="twap-trade-size">
+    <Components.Base.Card className="twap-trade-size">
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
-          <StateComponents.TotalTradesLabel />
-          <StateComponents.ChunksSliderSelect />
-          <StateComponents.ChunksInput />
+          <Components.Labels.TotalTradesLabel />
+          <Components.TWAP.ChunksSliderSelect />
+          <Components.TWAP.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
             <TwapStyles.StyledRowFlex>
-              <StateComponents.ChunksAmountLabel />
-              <StateComponents.ChunksAmount />
+              <Components.Labels.ChunksAmountLabel />
+              <Components.TWAP.ChunksAmount />
             </TwapStyles.StyledRowFlex>
-            <StateComponents.TokenLogoAndSymbol isSrc={true} />
+            <Components.TWAP.TokenLogoAndSymbol isSrc={true} />
           </TwapStyles.StyledRowFlex>
-          <StateComponents.ChunksUSD />
+          <Components.TWAP.ChunksUSD />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>
-    </Components.Card>
+    </Components.Base.Card>
   );
 };
 
 const LimitPrice = () => {
   return (
-    <Components.Card className="twap-limit-price">
+    <Components.Base.Card className="twap-limit-price">
       <TwapStyles.StyledColumnFlex>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <StateComponents.LimitPriceLabel />
-          <StateComponents.LimitPriceToggle />
+          <Components.Labels.LimitPriceLabel />
+          <Components.TWAP.LimitPriceToggle />
         </TwapStyles.StyledRowFlex>
-        <StateComponents.LimitPriceInput placeholder="0" />
+        <Components.TWAP.LimitPriceInput placeholder="0" />
       </TwapStyles.StyledColumnFlex>
-    </Components.Card>
+    </Components.Base.Card>
   );
 };
 
 const MaxDuration = () => {
   return (
-    <Components.Card>
+    <Components.Base.Card>
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
-        <StateComponents.MaxDurationLabel />
-        <StateComponents.PartialFillWarning />
-        <StateComponents.MaxDurationSelector />
+        <Components.Labels.MaxDurationLabel />
+        <Components.TWAP.PartialFillWarning />
+        <Components.TWAP.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
-    </Components.Card>
+    </Components.Base.Card>
   );
 };
 
 const TradeInterval = () => {
   return (
-    <Components.Card>
+    <Components.Base.Card>
       <TwapStyles.StyledRowFlex>
-        <StateComponents.TradeIntervalLabel />
-        <StateComponents.FillDelayWarning />
+        <Components.Labels.TradeIntervalLabel />
+        <Components.TWAP.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
-          <StateComponents.TradeIntervalSelector />
+          <Components.TWAP.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
-    </Components.Card>
+    </Components.Base.Card>
   );
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const { TokenSelectModal, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
+  const { onSrcTokenSelected, onDstTokenSelected, ModifiedTokenSelectModal } = useAdapterContext();
   const translations = useTwapContext().translations;
   const marketPrice = hooks.useMarketPrice().marketPrice;
 
@@ -161,8 +169,8 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
 
   return (
     <>
-      <StateComponents.TokenSelectModal
-        Modal={TokenSelectModal}
+      <Components.TWAP.TokenSelectModal
+        Component={ModifiedTokenSelectModal}
         onSrcSelect={onSrcTokenSelected}
         onDstSelect={onDstTokenSelected}
         isOpen={tokenListOpen}
@@ -172,28 +180,28 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
       />
       <TwapStyles.StyledColumnFlex gap={4} className="twap-token-panel">
         <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.SmallLabel>
+          <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>
           {isSrcToken && <SrcTokenPercentSelector />}
           {!isSrcToken && marketPrice !== "0" && (
             <TwapStyles.StyledRowFlex className="twap-token-panel-price">
-              <TwapStyles.StyledText>Price</TwapStyles.StyledText> <Components.NumberDisplay value={marketPrice} /> <StateComponents.TokenSymbol isSrc={isSrcToken} />
+              <TwapStyles.StyledText>Price</TwapStyles.StyledText> <Components.Base.NumberDisplay value={marketPrice} /> <Components.TWAP.TokenSymbol isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
           )}
         </TwapStyles.StyledRowFlex>
-        <Components.Card>
+        <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={15}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <StateComponents.TokenInput isSrc={isSrcToken} />
-              <StateComponents.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              <Components.TWAP.TokenInput isSrc={isSrcToken} />
+              <Components.TWAP.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
               <TwapStyles.StyledOverflowContainer>
-                <StateComponents.TokenUSD isSrc={isSrcToken} />
+                <Components.TWAP.TokenUSD isSrc={isSrcToken} />
               </TwapStyles.StyledOverflowContainer>
-              <StateComponents.TokenBalance isSrc={isSrcToken} />
+              <Components.TWAP.TokenBalance isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
-        </Components.Card>
+        </Components.Base.Card>
       </TwapStyles.StyledColumnFlex>
     </>
   );
@@ -201,34 +209,34 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
 
 const OrderSummary = () => {
   return (
-    <StateComponents.OrderSummarySwipeContainer>
+    <Components.TWAP.OrderSummarySwipeContainer>
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Card>
-            <StateComponents.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Card>
-          <Components.Card>
-            <StateComponents.OrderSummaryTokenDisplay />
-          </Components.Card>
-          <StateComponents.OrderSummaryLimitPrice />
-          <Components.Card>
-            <StateComponents.OrderSummaryDetails />
-          </Components.Card>
-          <Components.Card>
+          <Components.Base.Card>
+            <Components.TWAP.OrderSummaryTokenDisplay isSrc={true} />
+          </Components.Base.Card>
+          <Components.Base.Card>
+            <Components.TWAP.OrderSummaryTokenDisplay />
+          </Components.Base.Card>
+          <Components.TWAP.OrderSummaryLimitPrice />
+          <Components.Base.Card>
+            <Components.TWAP.OrderSummaryDetails />
+          </Components.Base.Card>
+          <Components.Base.Card>
             <TwapStyles.StyledColumnFlex gap={10}>
-              <StateComponents.DisclaimerText />
+              <Components.TWAP.DisclaimerText />
             </TwapStyles.StyledColumnFlex>
-          </Components.Card>
+          </Components.Base.Card>
         </TwapStyles.StyledColumnFlex>
-        <Components.Card>
+        <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={12}>
-            <StateComponents.AcceptDisclaimer />
-            <StateComponents.OutputAddress />
+            <Components.TWAP.AcceptDisclaimer />
+            <Components.TWAP.OutputAddress />
           </TwapStyles.StyledColumnFlex>
-        </Components.Card>
-        <StateComponents.SubmitButton />
+        </Components.Base.Card>
+        <Components.TWAP.SubmitButton />
       </TwapStyles.StyledColumnFlex>
-    </StateComponents.OrderSummarySwipeContainer>
+    </Components.TWAP.OrderSummarySwipeContainer>
   );
 };
 
@@ -237,24 +245,24 @@ const ShowOrderHistory = () => {
   const translations = useTwapContext().translations;
 
   return (
-    <Components.Card>
+    <Components.Base.Card>
       <TwapStyles.StyledRowFlex justifyContent="space-between">
         <TwapStyles.StyledRowFlex justifyContent="flex-start">
-          <Components.Icon icon={<AiOutlineHistory style={{ width: 23, height: 23 }} />} />
-          <Components.Label>{translations.viewOrders}</Components.Label>
+          <Components.Base.Icon icon={<AiOutlineHistory style={{ width: 23, height: 23 }} />} />
+          <Components.Base.Label>{translations.viewOrders}</Components.Base.Label>
         </TwapStyles.StyledRowFlex>
         <AdapterStyles.StyledShowOrdersButton onClick={toggleOrders}>
           <TwapStyles.StyledText>{translations.view}</TwapStyles.StyledText>
         </AdapterStyles.StyledShowOrdersButton>
       </TwapStyles.StyledRowFlex>
-    </Components.Card>
+    </Components.Base.Card>
   );
 };
 
 const Orders = () => {
   const args = useAdapterContext();
   return (
-    <Components.SwipeContainer show={args.showOrders} close={args.toggleOrders}>
+    <Components.Base.SwipeContainer show={args.showOrders} close={args.toggleOrders}>
       <AdapterStyles.StyledOrders>
         <OrderHistory
           dappTokens={args.dappTokens}
@@ -265,6 +273,6 @@ const Orders = () => {
           priorityFeePerGas={args.priorityFeePerGas}
         />
       </AdapterStyles.StyledOrders>
-    </Components.SwipeContainer>
+    </Components.Base.SwipeContainer>
   );
 };

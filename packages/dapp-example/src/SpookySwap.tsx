@@ -1,4 +1,4 @@
-import { StyledLayoutSpookyswap, StyledModalContent, StyledModalList, StyledModalListItem } from "./styles";
+import { StyledLayoutSpookyswap, StyledModalContent, StyledModalList } from "./styles";
 import { Orders, TWAP, SpookySwapTWAPProps, SpookySwapOrdersProps } from "@orbs-network/twap-ui-spookyswap";
 import { useConnectWallet, useGetTokensFromViaProtocol, useTheme } from "./hooks";
 import { TokenData } from "@orbs-network/twap";

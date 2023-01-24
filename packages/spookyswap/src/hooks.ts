@@ -1,7 +1,7 @@
 import { TokenData } from "@orbs-network/twap";
-import { store } from "@orbs-network/twap-ui";
+import { store, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
 import _ from "lodash";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, FC, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { SpookySwapTWAPProps } from ".";
 
 import Web3 from "web3";
@@ -60,6 +60,7 @@ export interface AdapterContextProps {
   onSrcTokenSelected: (value: any) => void;
   onDstTokenSelected: (value: any) => void;
   TokenSelectModal: any;
+  ModifiedTokenSelectModal: FC<TWAPTokenSelectProps>;
 }
 
 export const usePrepareAdapterContextProps = (props: SpookySwapTWAPProps) => {

@@ -3,8 +3,7 @@ import React, { ReactElement, ReactNode } from "react";
 import Tooltip from "./Tooltip";
 import { SlInfo } from "react-icons/sl";
 import Icon from "./Icon";
-import { StyledText } from "../styles";
-import { Styles } from "..";
+import { StyledRowFlex, StyledText } from "../../styles";
 
 interface Props {
   children: string | number | ReactNode;
@@ -31,7 +30,7 @@ function Label({ children, tooltipText, className = "", fontSize, placement }: P
 
 export default Label;
 
-const StyledContainer = styled(Styles.StyledRowFlex)({
+const StyledContainer = styled(StyledRowFlex)({
   justifyContent: "flex-start",
   gap: 7,
   width: "fit-content",

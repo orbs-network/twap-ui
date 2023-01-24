@@ -175,3 +175,11 @@ export interface StylesConfig {
   selectedTokenBackground: string;
   selectedTokenTextColor: string;
 }
+
+export interface TWAPTokenSelectProps {
+  onSelect?: (token: any) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  srcTokenSelected?: any;
+  dstTokenSelected?: any;
+}

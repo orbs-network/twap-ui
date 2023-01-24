@@ -1,5 +1,5 @@
 import { styled } from "@mui/system";
-import { StyledRowFlex } from "../styles";
+import { StyledRowFlex } from "../../styles";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
 
