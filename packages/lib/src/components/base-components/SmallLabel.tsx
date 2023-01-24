@@ -1,7 +1,7 @@
 import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import { CSSProperties, ReactNode } from "react";
-import { StyledOneLineText } from "../styles";
+import { StyledOneLineText } from "../../styles";
 import Loader from "./Loader";
 
 function SmallLabel({ children, style, loading = false, className = "" }: { children?: string | ReactNode; style?: CSSProperties; loading?: boolean; className?: string }) {

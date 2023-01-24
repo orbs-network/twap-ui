@@ -1,10 +1,10 @@
 import { styled } from "@mui/system";
-import { useTwapContext } from "../context";
-import { StyledOneLineText } from "../styles";
 import Icon from "./Icon";
 import { IoIosArrowDown } from "react-icons/io";
 import Tooltip from "./Tooltip";
-import { useTwapStore } from "../store";
+import { useTwapContext } from "../../context";
+import { useTwapStore } from "../../store";
+import { StyledOneLineText } from "../../styles";
 
 interface Props {
   onClick: () => void;

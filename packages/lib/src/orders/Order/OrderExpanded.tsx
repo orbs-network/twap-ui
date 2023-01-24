@@ -2,8 +2,7 @@ import { LinearProgress } from "@mui/material";
 import { styled } from "@mui/system";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
-import { Styles as TwapStyles } from "../..";
-import { Button, Label, NumberDisplay, SmallLabel, TokenLogo, TokenPriceCompare, Tooltip } from "../../components";
+import { Components, Styles as TwapStyles } from "../..";
 import { useOrdersContext } from "../../context";
 import { useCancelOrder, useHistoryPrice } from "../../hooks";
 import { fillDelayText, useTwapStore } from "../../store";
@@ -31,31 +30,35 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
             </TwapStyles.StyledColumnFlex>
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex>
-            <Tooltip childrenStyles={{ width: "100%" }} placement="top" text={<NumberDisplay hideTooltip value={order.ui.progress || "0"} decimalScale={1} suffix="%" />}>
+            <Components.Base.Tooltip
+              childrenStyles={{ width: "100%" }}
+              placement="top"
+              text={<Components.Base.NumberDisplay hideTooltip value={order.ui.progress || "0"} decimalScale={1} suffix="%" />}
+            >
               <StyledMainProgressBar variant="determinate" value={order.ui.progress || 1} className="twap-order-main-progress-bar" />
-            </Tooltip>
+            </Components.Base.Tooltip>
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
       </StyledColoredContainer>
       <TwapStyles.StyledColumnFlex>
         <Row label={`${translations.totalTrades}:`} tooltip={translations.totalTradesTooltip}>
-          <NumberDisplay value={order.ui.totalChunks} />
+          <Components.Base.NumberDisplay value={order.ui.totalChunks} />
         </Row>
         <Row label={`${translations.tradeSize}:`} tooltip={translations.tradeSizeTooltip}>
-          <TokenLogo logo={order.ui.srcToken.logoUrl} />
-          <NumberDisplay value={order.ui.srcChunkAmountUi} />
-          {order.ui.srcToken?.symbol} ≈ $ <NumberDisplay value={order.ui.srcChunkAmountUsdUi} />
+          <Components.Base.TokenLogo logo={order.ui.srcToken.logoUrl} />
+          <Components.Base.NumberDisplay value={order.ui.srcChunkAmountUi} />
+          {order.ui.srcToken?.symbol} ≈ $ <Components.Base.NumberDisplay value={order.ui.srcChunkAmountUsdUi} />
         </Row>
         {order.ui.isMarketOrder ? (
           <Row label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipMarket}>
-            <TokenLogo logo={order.ui.dstToken.logoUrl} />
+            <Components.Base.TokenLogo logo={order.ui.dstToken.logoUrl} />
             {translations.none} {order.ui.dstToken?.symbol}
           </Row>
         ) : (
           <Row label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
-            <TokenLogo logo={order.ui.dstToken.logoUrl} />
-            <NumberDisplay value={order.ui.dstMinAmountOutUi} />
-            {order.ui.dstToken?.symbol} ≈ $ <NumberDisplay value={order.ui.dstMinAmountOutUsdUi} />
+            <Components.Base.TokenLogo logo={order.ui.dstToken.logoUrl} />
+            <Components.Base.NumberDisplay value={order.ui.dstMinAmountOutUi} />
+            {order.ui.dstToken?.symbol} ≈ $ <Components.Base.NumberDisplay value={order.ui.dstMinAmountOutUsdUi} />
           </Row>
         )}
 
@@ -92,7 +95,7 @@ const StyledOrderTokenDisplay = styled(OrderTokenDisplay)({
 const Row = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
   return (
     <StyledDetailRow className="twap-order-expanded-row">
-      <Label tooltipText={tooltip}>{label}</Label>
+      <Components.Base.Label tooltipText={tooltip}>{label}</Components.Base.Label>
       <StyledDetailRowChildren className="twap-order-expanded-right">{children}</StyledDetailRowChildren>
     </StyledDetailRow>
   );
@@ -143,8 +146,8 @@ const OrderPrice = ({ order }: { order: OrderUI }) => {
   const translations = useOrdersContext().translations;
   return (
     <TwapStyles.StyledRowFlex justifyContent="space-between">
-      <SmallLabel>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</SmallLabel>
-      <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={priceUi} toggleInverted={toggleInverted} />
+      <Components.Base.SmallLabel>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</Components.Base.SmallLabel>
+      <Components.Base.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={priceUi} toggleInverted={toggleInverted} />
     </TwapStyles.StyledRowFlex>
   );
 };
@@ -159,7 +162,7 @@ const CancelOrderButton = ({ orderId }: { orderId: number }) => {
   );
 };
 
-export const StyledCancelOrderButton = styled(Button)({
+export const StyledCancelOrderButton = styled(Components.Base.Button)({
   background: "transparent",
   border: "unset",
   width: "fit-content",

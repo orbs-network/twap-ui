@@ -8,7 +8,6 @@ import { Dapp, TokenSearchInput, TokenSelectListItem } from "./Components";
 
 import { DappLayout, Popup } from "./Components";
 import { useState } from "react";
-import { showTokenInList } from "./utils";
 
 const config = Configs.QuickSwap;
 

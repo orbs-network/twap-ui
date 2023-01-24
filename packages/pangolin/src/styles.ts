@@ -440,7 +440,7 @@ export const StyledOrders = styled(Box)({
   },
 });
 
-export const StyledShowOrdersButton = styled(Components.Button)({
+export const StyledShowOrdersButton = styled(Components.Base.Button)({
   width: "unset",
   height: "unset",
   padding: "6px 20px",

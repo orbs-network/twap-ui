@@ -1,5 +1,5 @@
 import React from "react";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../../context";
 import NumberDisplay from "./NumberDisplay";
 import SmallLabel from "./SmallLabel";
 

@@ -2,7 +2,7 @@ import { Box, styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { Loader } from ".";
-import { StyledOneLineText, StyledText } from "../styles";
+import { StyledText, StyledOneLineText } from "../../styles";
 import Icon from "./Icon";
 import IconButton from "./IconButton";
 import NumberDisplay from "./NumberDisplay";

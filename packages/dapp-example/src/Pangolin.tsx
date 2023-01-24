@@ -11,7 +11,6 @@ import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { pangolinDarkTheme, pangolinLightTheme } from "./themes";
 import Web3 from "web3";
 import { useState } from "react";
-import { showTokenInList } from "./utils";
 
 interface TokenSelectModalProps {
   isOpen: boolean;

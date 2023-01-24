@@ -2,8 +2,7 @@ import { Box, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
 import { CSSProperties } from "react";
-import { Styles as TwapStyles } from "../..";
-import { NumberDisplay, SmallLabel, TokenLogo } from "../../components";
+import { Components, Styles as TwapStyles } from "../..";
 
 interface OrderTokenDisplayProps {
   token?: TokenData;
@@ -22,7 +21,7 @@ export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", 
         <TwapStyles.StyledColumnFlex gap={3} style={{ flex: 1, justifyContent: "flex-start" }}>
           <Typography className="twap-token-display-amount-and-symbol">
             {prefix ? `${prefix} ` : ""}
-            <NumberDisplay value={amount} />
+            <Components.Base.NumberDisplay value={amount} />
             {` ${token?.symbol}`}
           </Typography>
           {!alighLeft && <OrderUsdValue usdValue={usdValue} prefix={usdPrefix} />}
@@ -41,12 +40,12 @@ interface OrderUsdValueProps {
 export function OrderUsdValue({ usdValue, prefix = "≈" }: OrderUsdValueProps) {
   return (
     <StyledTokenDisplayUsd loading={false} className="twap-order-token-display-usd">
-      {prefix} $ <NumberDisplay value={usdValue} />
+      {prefix} $ <Components.Base.NumberDisplay value={usdValue} />
     </StyledTokenDisplayUsd>
   );
 }
 
-const StyledTokenDisplayUsd = styled(SmallLabel)({
+const StyledTokenDisplayUsd = styled(Components.Base.SmallLabel)({
   fontSize: 14,
 });
 
@@ -60,7 +59,7 @@ const StyledTokenDisplay = styled(TwapStyles.StyledColumnFlex)({
   },
 });
 
-const StyledTokenLogo = styled(TokenLogo)({
+const StyledTokenLogo = styled(Components.Base.TokenLogo)({
   width: 28,
   height: 28,
   top: -2,
