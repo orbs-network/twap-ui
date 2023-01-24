@@ -1,11 +1,11 @@
 import { Box } from "@mui/material";
 import { ReactNode } from "react";
 import { useTwapContext } from "..";
-import { Balance, Button, Icon, IconButton, NumberDisplay, NumericInput, Slider, Switch, TimeSelector, TokenName, Tooltip, USD } from "../components";
+import { Balance, Button, Icon, IconButton, NumberDisplay, NumericInput, Slider, Switch, TimeSelector, TokenName, TokenPriceCompare, Tooltip, USD } from "../components";
 import { useTwapStore } from "../store";
 import { StyledOneLineText, StyledRowFlex, StyledText } from "../styles";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { useCustomActions, useLimitPrice, useLoadingState, useSubmitButton } from "../hooks";
+import { useCustomActions, useLimitPrice, useLoadingState, useMarketPrice, useSubmitButton } from "../hooks";
 import Logo from "../components/TokenLogo";
 import TokenDisplay from "../components/TokenDisplay";
 import { IoIosArrowDown } from "react-icons/io";
@@ -365,3 +365,14 @@ const StyledLimitPriceInput = styled(StyledRowFlex)({
     fontSize: 15,
   },
 });
+
+export const MarketPrice = () => {
+  const { toggleInverted, leftToken, rightToken, marketPrice, loading } = useMarketPrice();
+  const translations = useTwapContext().translations;
+  return (
+    <StyledRowFlex justifyContent="space-between" className="twap-market-price">
+      <StyledText className="title">{translations.currentMarketPrice}</StyledText>
+      <TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
+    </StyledRowFlex>
+  );
+};

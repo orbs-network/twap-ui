@@ -1,5 +1,5 @@
 import { styled } from "@mui/system";
-import React, { ReactElement, ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { Label, Switch, TokenPriceCompare, Tooltip } from "../components";
 import SwipeContainer from "../components/SwipeContainer";
 import { useTwapContext } from "../context";
@@ -118,9 +118,9 @@ export function OrderSummarySwipeContainer({ children }: Props) {
   );
 }
 
-export const OrderSummaryTokenDisplay = ({ isSrc }: {isSrc?: boolean}) => {
-      const translations = useTwapContext().translations;
-    const isLimitOrder = useTwapStore(store => store.isLimitOrder)
+export const OrderSummaryTokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
+  const translations = useTwapContext().translations;
+  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   return (
     <StyledOrderSummaryTokenDisplay className="twap-orders-summary-token-display">
       <StyledRowFlex className="twap-orders-summary-token-display-flex">
@@ -148,8 +148,8 @@ const StyledOrderSummaryTokenDisplay = styled(StyledColumnFlex)({
   },
   ".twap-orders-summary-token-display-amount": {
     fontSize: 19,
-    justifyContent:"flex-end",
-    width:'fit-content'
+    justifyContent: "flex-end",
+    width: "fit-content",
   },
   ".twap-orders-summary-token-display-flex": {
     justifyContent: "space-between",
