@@ -1,3 +1,3 @@
-export * as Base from "./base-components";
-export * as TWAP from "./TWAPComponents";
+export * as Base from "./base";
 export * as Labels from "./Labels";
+export * from "./Components";

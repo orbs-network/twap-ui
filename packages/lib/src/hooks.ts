@@ -1,7 +1,7 @@
 import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, OrderUI } from "./types";
@@ -36,7 +36,7 @@ const useResetStoreWithLibAndQueries = () => {
   };
 };
 
-const useWrapToken = () => {
+export const useWrapToken = () => {
   const lib = useTwapStore((state) => state.lib);
   const srcAmount = useTwapStore((state) => state.getSrcAmount());
   const srcToken = useTwapStore((state) => state.srcToken);
@@ -69,7 +69,7 @@ const useWrapToken = () => {
   );
 };
 
-const useUnwrapToken = () => {
+export const useUnwrapToken = () => {
   const lib = useTwapStore((state) => state.lib);
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   const resetTwapStore = useTwapStore((state) => state.reset);
@@ -87,7 +87,7 @@ const useUnwrapToken = () => {
   );
 };
 
-const useApproveToken = () => {
+export const useApproveToken = () => {
   const lib = useTwapStore((state) => state.lib);
   const srcAmount = useTwapStore((state) => state.getSrcAmount());
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
@@ -193,21 +193,27 @@ export const useInitLib = () => {
   };
 };
 
-export const useSwitchTokens = () => {
-  return useTwapStore((state) => state.switchTokens);
-};
-
-const useChangeNetworkButton = () => {
-  const setInvalidChain = useTwapStore((state) => state.setWrongNetwork);
-  const changeNetwork = useChangeNetworkCallback();
-  const initLib = useInitLib();
-  const { config, provider, account, translations } = useTwapContext();
+export const useChangeNetwork = () => {
+  const { config, provider: _provider, account } = useTwapContext();
   const [loading, setLoading] = useState(false);
+  const initLib = useInitLib();
+  const setInvalidChain = useTwapStore((state) => state.setWrongNetwork);
+
+  const changeNetwork = async (onSuccess: () => void, onError: () => void) => {
+    setWeb3Instance(new Web3(_provider));
+    try {
+      await switchMetaMaskNetwork(config.chainId);
+      onSuccess();
+    } catch (error) {
+      onError();
+    }
+  };
+
   const onChangeNetwork = async () => {
     const onSuccess = () => {
       setInvalidChain(false);
       setLoading(false);
-      initLib({ config, provider, account });
+      initLib({ config, provider: _provider, account });
     };
     const onError = () => {
       setLoading(false);
@@ -215,174 +221,9 @@ const useChangeNetworkButton = () => {
     setLoading(true);
     changeNetwork(onSuccess, onError);
   };
-
-  return { text: translations.switchNetwork, onClick: onChangeNetwork, loading, disabled: loading };
-};
-
-const useConnectButton = () => {
-  const { connect, translations } = useTwapContext();
-
-  return { text: translations.connect, onClick: connect ? connect : undefined, loading: false, disabled: false };
-};
-
-const useWarningButton = () => {
-  const translations = useTwapContext().translations;
-  const warning = useTwapStore((state) => state.getFillWarning(translations));
-  return { text: warning, onClick: () => {}, disabled: true, loading: false };
-};
-
-const useUnWrapButton = () => {
-  const translations = useTwapContext().translations;
-  const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
-  return { text: translations.unwrap, onClick: unwrap, loading: unwrapLoading, disabled: unwrapLoading };
-};
-
-const useWrapButton = () => {
-  const translations = useTwapContext().translations;
-  const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
-  return { text: translations.wrap, onClick: wrap, loading: wrapLoading, disabled: wrapLoading };
-};
-
-const useApproveButton = () => {
-  const translations = useTwapContext().translations;
-  const { mutate: approve, isLoading: approveLoading } = useApproveToken();
-
-  return { text: translations.approve, onClick: approve, loading: approveLoading, disabled: approveLoading };
-};
-
-const useLoadingButton = () => {
-  const setShowConfirmation = useTwapStore((state) => state.setShowConfirmation);
-  const showConfirmation = useTwapStore((state) => state.showConfirmation);
-
-  const createOrderLoading = useTwapStore((state) => state.loading);
-
-  if (createOrderLoading) {
-    return { text: "", onClick: () => setShowConfirmation(true), loading: true, disabled: showConfirmation };
-  }
-  return { text: "", onClick: () => {}, loading: true, disabled: true };
-};
-
-const useShowConfirmationModalButton = () => {
-  const translations = useTwapContext().translations;
-  const setShowConfirmation = useTwapStore((state) => state.setShowConfirmation);
-
-  return { text: translations.placeOrder, onClick: () => setShowConfirmation(true), loading: false, disabled: false };
-};
-const useCreateOrderButton = () => {
-  const translations = useTwapContext().translations;
-  const { mutate: createOrder } = useCreateOrder();
-  const disclaimerAccepted = useTwapStore((state) => state.disclaimerAccepted);
-  const createOrderLoading = useTwapStore((state) => state.loading);
-
-  return { text: translations.confirmOrder, onClick: createOrder, loading: createOrderLoading, disabled: !disclaimerAccepted || createOrderLoading };
-};
-
-export const useSubmitButton = () => {
-  const store = useTwapStore();
-  const { srcUsdLoading, dstUsdLoading } = useLoadingState();
-  const translations = useTwapContext().translations;
-  const allowance = useHasAllowanceQuery();
-  const changeNetwork = useChangeNetworkButton();
-  const connectButton = useConnectButton();
-  const warningButton = useWarningButton();
-  const unwrapButton = useUnWrapButton();
-  const wrapButton = useWrapButton();
-  const loadingButton = useLoadingButton();
-  const approvebutton = useApproveButton();
-  const createOrderButton = useCreateOrderButton();
-  const showConfirmationButton = useShowConfirmationModalButton();
-  const warning = store.getFillWarning(translations);
-
-  if (store.wrongNetwork) return changeNetwork;
-  if (!store.lib?.maker) return connectButton;
-  if (warning) return warningButton;
-  if (store.shouldUnwrap()) return unwrapButton;
-  if (store.shouldWrap()) return wrapButton;
-  if (allowance.isLoading || srcUsdLoading || dstUsdLoading || store.loading) return loadingButton;
-  if (allowance.data === false) return approvebutton;
-  if (store.showConfirmation) return createOrderButton;
-  return showConfirmationButton;
-};
-
-export const useTokenPanel = (isSrc?: boolean) => {
-  const srcTokenValues = useTwapStore((state) => ({
-    token: state.srcToken,
-    onChange: state.setSrcAmountUi,
-    selectToken: state.setSrcToken,
-    amount: state.srcAmountUi,
-    balance: state.getSrcBalanceUi(),
-    usdValue: state.getSrcAmountUsdUi(),
-    setUsd: state.setSrcUsd,
-    setBalance: state.setSrcBalance,
-  }));
-
-  const dstTokenValues = useTwapStore((state) => ({
-    token: state.dstToken,
-    selectToken: state.setDstToken,
-    amount: state.getDstAmountUi(),
-    usdValue: state.getDstAmountUsdUi(),
-    balance: state.getDstBalanceUi(),
-    onChange: null,
-    setUsd: state.setDstUsd,
-    setBalance: state.setDstBalance,
-  }));
-
-  const { isLimitOrder, maker, wrongNetwork } = useTwapStore((state) => ({
-    isLimitOrder: state.isLimitOrder,
-    maker: state.lib?.maker,
-    wrongNetwork: state.wrongNetwork,
-  }));
-  const { translations } = useTwapContext();
-  const { selectToken, token, onChange, amount, balance, usdValue, setUsd, setBalance } = isSrc ? srcTokenValues : dstTokenValues;
-  const loadingState = useLoadingState();
-
-  const onTokenSelect = useCallback((token: TokenData) => {
-    selectToken(token);
-    setUsd(BN(0));
-    setBalance(BN(0));
-  }, []);
-
-  const selectTokenWarning = useMemo(() => {
-    if (wrongNetwork) {
-      return translations.switchNetwork;
-    }
-    if (!maker) {
-      return translations.connect;
-    }
-  }, [maker, translations, wrongNetwork]);
-
-  const loaders = useMemo(() => {
-    const usdLoading = isSrc ? loadingState.srcUsdLoading : loadingState.dstUsdLoading;
-    const balanceLoading = isSrc ? loadingState.srcBalanceLoading : loadingState.dstBalanceLoading;
-    let inputLoading;
-
-    if (isSrc) {
-      inputLoading = (!!amount || amount !== "0") && loadingState.srcUsdLoading;
-    } else {
-      inputLoading = (!!amount || amount !== "0") && loadingState.dstUsdLoading;
-    }
-    return { usdLoading, balanceLoading, inputLoading };
-  }, [loadingState, amount, isSrc]);
-
-  const [showTokenSelect, setShowTokenSelect] = useState(false);
-
   return {
-    token,
-    value: amount,
-    onChange,
-    balance,
-    disabled: !isSrc || !maker || !token,
-    usdValue,
-    onTokenSelect,
-    amountPrefix: isSrc ? "" : isLimitOrder ? "≥" : "~",
-    inputWarning: !isSrc ? undefined : !token ? translations.selectTokens : undefined,
-    selectTokenWarning,
-    usdLoading: loaders.usdLoading,
-    inputLoading: loaders.inputLoading,
-    balanceLoading: loaders.balanceLoading,
-    decimalScale: token?.decimals || 0,
-    showTokenSelect,
-    setShowTokenSelect,
+    changeNetwork: onChangeNetwork,
+    loading,
   };
 };
 
@@ -444,19 +285,9 @@ export const useLimitPrice = () => {
 };
 
 export const useCustomActions = () => {
-  const store = useTwapStore();
-  const onFillDelayBlur = () => {
-    if (!store.getFillDelay().amount) {
-      store.setCustomFillDelayEnabled(false);
-    }
-  };
+  const onPercentClick = useTwapStore((store) => store.setSrcAmountPercent);
 
-  const onFillDelayFocus = () => {
-    store.setFillDelay(store.getFillDelay());
-    store.setCustomFillDelayEnabled(true);
-  };
-
-  return { onPercentClick: store.setSrcAmountPercent, onFillDelayBlur, onFillDelayFocus };
+  return { onPercentClick };
 };
 
 export const useCancelOrder = () => {
@@ -528,25 +359,12 @@ export const useDstBalance = () => {
   return useBalanceQuery(state.dstToken, state.setDstBalance);
 };
 
-export const useChangeNetworkCallback = () => {
-  const { provider: _provider, config } = useTwapContext();
-
-  return async (onSuccess: () => void, onError: () => void) => {
-    setWeb3Instance(new Web3(_provider));
-    try {
-      await switchMetaMaskNetwork(config.chainId);
-      onSuccess();
-    } catch (error) {
-      onError();
-    }
-  };
-};
 
 /**
  * Queries
  */
 
-const useHasAllowanceQuery = () => {
+export const useHasAllowanceQuery = () => {
   const { lib, amount, srcToken } = useTwapStore((state) => ({
     lib: state.lib,
     amount: state.getSrcAmount(),

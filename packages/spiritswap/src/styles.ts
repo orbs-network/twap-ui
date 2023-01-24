@@ -62,25 +62,11 @@ export const configureStyles = () => {
         color: "rgb(96, 230, 197)",
       },
     },
-    ".twap-token-select": {
-      background: "transparent",
-      border: "unset",
-      padding: "6px",
-      borderRadius: 2,
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      gap: 5,
-      marginLeft: 10,
-    },
+
     ".twap-market-price": {
-      "& .twap-card": {
-        borderTopLeftRadius: 0,
-        borderTopRightRadius: 0,
-        background: "#0D1321",
-        paddingBottom: 5,
-        paddingTop: 5,
-      },
+      borderRadius: "0px 0px 10px 10px",
+      background: "#0D1321",
+      padding: "5px 10px 5px 10px",
       "& .title": {
         fontSize: 13,
         opacity: 0.8,
@@ -250,17 +236,32 @@ export const configureStyles = () => {
       },
     },
     ".twap-input": {
-      "& input": {
+      input: {
         fontFamily: "inherit",
         textIndent: 10,
         fontWeight: 400,
         outline: "1px solid transparent",
         borderRadius: "0.375rem",
         transition: "0.2s all",
-        height: 35,
+        height: 40,
+        fontSize: 24,
         "&:focus": {
           outline: "1px solid #1D9391",
         },
+      },
+    },
+    ".twap-token-select": {
+      background: "transparent",
+      border: "unset",
+      padding: "6px",
+      borderRadius: 2,
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      marginLeft: 10,
+      ".twap-token-name": {
+        fontSize: 22,
       },
     },
     ".twap-button": {

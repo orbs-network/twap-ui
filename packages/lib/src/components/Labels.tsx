@@ -1,7 +1,7 @@
 import React from "react";
 import { useTwapContext } from "../context";
 import { handleFillDelayText, useTwapStore } from "../store";
-import { Label } from "./base-components";
+import { Label } from "./base";
 
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;

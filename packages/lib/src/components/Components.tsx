@@ -18,7 +18,7 @@ import {
   NumberDisplay,
   SwipeContainer,
   Modal,
-} from "./base-components";
+} from "./base";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
 import { TokenData } from "@orbs-network/twap";
@@ -26,11 +26,21 @@ import { TbArrowsRightLeft } from "react-icons/tb";
 import { styled } from "@mui/system";
 import { AiOutlineWarning } from "react-icons/ai";
 import { useOrdersContext, useTwapContext } from "../context";
-import { useLoadingState, useCustomActions, useSubmitButton, useLimitPrice, useMarketPrice } from "../hooks";
+import {
+  useLoadingState,
+  useLimitPrice,
+  useMarketPrice,
+  useCreateOrder,
+  useApproveToken,
+  useChangeNetwork,
+  useHasAllowanceQuery,
+  useUnwrapToken,
+  useWrapToken,
+} from "../hooks";
 import { useTwapStore, handleFillDelayText } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer } from "../styles";
-import TokenDisplay from "./base-components/TokenDisplay";
-import TokenSelectButton from "./base-components/TokenSelectButton";
+import TokenDisplay from "./base/TokenDisplay";
+import TokenSelectButton from "./base/TokenSelectButton";
 import {
   OrderSummaryDeadlineLabel,
   OrderSummaryOrderTypeLabel,
@@ -182,8 +192,19 @@ export const TokenSymbol = ({ isSrc }: { isSrc?: boolean }) => {
 export function TradeIntervalSelector() {
   const setFillDelay = useTwapStore((store) => store.setFillDelay);
   const fillDelay = useTwapStore((store) => store.getFillDelay());
+  const setCustomFillDelayEnabled = useTwapStore((store) => store.setCustomFillDelayEnabled);
 
-  const { onFillDelayBlur, onFillDelayFocus } = useCustomActions();
+  const onFillDelayBlur = () => {
+    if (!fillDelay.amount) {
+      setCustomFillDelayEnabled(false);
+    }
+  };
+
+  const onFillDelayFocus = () => {
+    setFillDelay(fillDelay);
+    setCustomFillDelayEnabled(true);
+  };
+
   return <TimeSelector onFocus={onFillDelayFocus} onBlur={onFillDelayBlur} onChange={setFillDelay} value={fillDelay} />;
 }
 
@@ -262,10 +283,96 @@ export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
 }
 
 export const SubmitButton = ({ className = "" }: { className?: string }) => {
-  const { loading, text, onClick, disabled } = useSubmitButton();
+  const translations = useTwapContext().translations;
+  const shouldUnwrap = useTwapStore((store) => store.shouldUnwrap());
+  const shouldWrap = useTwapStore((store) => store.shouldWrap());
+  const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
+  const maker = useTwapStore((store) => store.lib?.maker);
+  const disclaimerAccepted = useTwapStore((state) => state.disclaimerAccepted);
+  const setShowConfirmation = useTwapStore((state) => state.setShowConfirmation);
+  const showConfirmation = useTwapStore((state) => state.showConfirmation);
+  const warning = useTwapStore((state) => state.getFillWarning(translations));
+  const createOrderLoading = useTwapStore((state) => state.loading);
+  const { srcUsdLoading, dstUsdLoading } = useLoadingState();
+
+  const { mutate: approve, isLoading: approveLoading } = useApproveToken();
+  const { mutate: createOrder } = useCreateOrder();
+  const allowance = useHasAllowanceQuery();
+  const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
+  const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
+  const connect = useTwapContext().connect;
+
+  const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
+
+  const getArgs = () => {
+    if (wrongNetwork)
+      return {
+        text: translations.switchNetwork,
+        onClick: changeNetwork,
+        loading: changeNetworkLoading,
+        disabled: changeNetworkLoading,
+      };
+    if (!maker)
+      return {
+        text: translations.connect,
+        onClick: connect ? connect : undefined,
+        loading: false,
+        disabled: false,
+      };
+    if (warning)
+      return {
+        text: warning,
+        onClick: undefined,
+        disabled: true,
+        loading: false,
+      };
+    if (shouldUnwrap)
+      return {
+        text: translations.unwrap,
+        onClick: unwrap,
+        loading: unwrapLoading,
+        disabled: unwrapLoading,
+      };
+    if (shouldWrap)
+      return {
+        text: translations.wrap,
+        onClick: wrap,
+        loading: wrapLoading,
+        disabled: wrapLoading,
+      };
+    if (createOrderLoading) {
+      return { text: "", onClick: () => setShowConfirmation(true), loading: true, disabled: showConfirmation };
+    }
+    if (allowance.isLoading || srcUsdLoading || dstUsdLoading) {
+      return { text: "", onClick: undefined, loading: true, disabled: true };
+    }
+    if (allowance.data === false)
+      return {
+        text: translations.approve,
+        onClick: approve,
+        loading: approveLoading,
+        disabled: approveLoading,
+      };
+    if (showConfirmation)
+      return {
+        text: translations.confirmOrder,
+        onClick: createOrder,
+        loading: createOrderLoading,
+        disabled: !disclaimerAccepted || createOrderLoading,
+      };
+    return {
+      text: translations.placeOrder,
+      onClick: () => setShowConfirmation(true),
+      loading: false,
+      disabled: false,
+    };
+  };
+
+  const args = getArgs();
+
   return (
-    <Button className={`twap-submit ${className}`} loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
-      {text}
+    <Button className={`twap-submit ${className}`} loading={args.loading} onClick={args.onClick || (() => {})} disabled={args.disabled}>
+      {args.text}
     </Button>
   );
 };
@@ -314,8 +421,6 @@ export function PoweredBy() {
     </StyledPoweredBy>
   );
 }
-
-export default PoweredBy;
 
 // --- warnings --- //
 

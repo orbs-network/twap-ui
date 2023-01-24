@@ -72,7 +72,7 @@ const StyledHeader = styled(Box)({
   gap: 13,
 });
 
-const StyledOdnpButton = styled(Components.TWAP.OdnpButton)({
+const StyledOdnpButton = styled(Components.OdnpButton)({
   marginRight: 5,
 });
 
