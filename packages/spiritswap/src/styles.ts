@@ -32,34 +32,61 @@ export const configureStyles = () => {
       color: "white",
       opacity: 0.5,
     },
+    ".twap-trade-size": {
+      ".twap-token-logo": {
+        width: 20,
+        height: 20,
+      },
+      ".twap-token-name": {
+        fontSize: 14,
+      },
+      ".twap-input": {
+        input: {
+          height: 35,
+          fontSize: 16,
+        },
+      },
+    },
+    ".odnp": {
+      "*": {
+        color: "black!important",
+      },
+      button: {
+        color:'white!important'
+      }
+    },
     ".twap-odnp": {
       color: styles.textColor,
       background: "transparent",
       border: "0.75px solid #26A7EF",
     },
-    ".twap-limit-price": {
+    ".twap-limit-price-input": {
       width: "100%",
-      ".twap-price": {
-        background: "#0D1321",
-        padding: 10,
-        borderRadius: 10,
-        gap: 10,
-      },
+      background: "#0D1321",
+      padding: 10,
+      borderRadius: 10,
       ".twap-input": {
-        textAlign: "center" as const,
+        input: {
+          height: 35,
+          fontSize: 16,
+          textAlign: "center" as const,
+        },
       },
     },
-    ".twap-percent-button": {
-      height: 22,
-      width: "25%",
-      border: "unset",
-      borderRadius: 4,
-      cursor: "pointer",
-      transition: "0.2s all",
-      background: "rgb(55, 65, 81)",
-      "&:hover": {
-        background: "rgba(100, 221, 192, 0.15)",
-        color: "rgb(96, 230, 197)",
+    ".twap-change-tokens-order": {},
+    ".twap-percent-selector": {
+      button: {
+        height: 22,
+        width: "25%",
+        border: "unset",
+        borderRadius: 4,
+        cursor: "pointer",
+        transition: "0.2s all",
+        background: "rgb(55, 65, 81)",
+        "&:hover": {
+          background: "rgba(100, 221, 192, 0.15)",
+          color: "rgb(96, 230, 197)",
+        },
       },
     },
 
@@ -114,9 +141,22 @@ export const configureStyles = () => {
       color: styles.spinnerColor,
     },
     ".twap-time-selector": {
-      "& input": {
-        "&::placeholder": {
-          color: "rgba(255,255,255, 0.5)!important",
+      ".twap-time-selector-list": {
+        border: "1px solid rgb(55, 65, 81)",
+        right: -13,
+        ".twap-time-selector-list-item": {
+          "&:hover": {
+            background: "rgba(255,255,255, 0.03)",
+          },
+        },
+      },
+      ".twap-input": {
+        input: {
+          height: 35,
+          fontSize: 16,
+          "&::placeholder": {
+            color: "rgba(255,255,255, 0.5)!important",
+          },
         },
       },
     },
@@ -186,6 +226,28 @@ export const configureStyles = () => {
         background: styles.iconsColor,
       },
     },
+    ".twap-disclaimer-text": {
+      "*": {},
+    },
+    ".twap-order-summary-details-item": {
+      "*": {
+        fontSize: 14,
+      },
+    },
+    ".twap-order-summary-output-address": {
+      fontSize: 15,
+    },
+    ".twap-disclaimer-switch": {
+      p: {
+        fontSize: 14,
+      },
+    },
+    ".twap-orders-summary-token-display": {
+      ".twap-token-logo": {
+        width: 30,
+        height: 30,
+      },
+    },
     ".twap-order": {
       border: "1px solid rgb(55, 65, 81)",
       ".twap-order-expanded-colored": {
@@ -229,22 +291,30 @@ export const configureStyles = () => {
     },
     ".twap-usd": {
       opacity: 0.6,
+      fontSize: 14,
     },
     "& .twap-balance": {
+      fontSize: 14,
       "& *": {
         color: "#D1D5DB",
+      },
+    },
+    ".twap-token-panel": {
+      ".twap-input": {
+        input: {
+          textIndent: 7,
+          height: 40,
+          fontSize: 24,
+        },
       },
     },
     ".twap-input": {
       input: {
         fontFamily: "inherit",
-        textIndent: 10,
         fontWeight: 400,
         outline: "1px solid transparent",
         borderRadius: "0.375rem",
         transition: "0.2s all",
-        height: 40,
-        fontSize: 24,
         "&:focus": {
           outline: "1px solid #1D9391",
         },

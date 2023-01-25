@@ -11,6 +11,7 @@ import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress } fro
 import { parseOrderUi, useTwapStore } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
+import { store } from ".";
 
 /**
  * Actions
@@ -326,14 +327,16 @@ export const useHistoryPrice = (order: OrderUI) => {
 };
 
 export const useLoadingState = () => {
+  const srcToken = useTwapStore(store => store.srcToken)
+  const dstToken = useTwapStore((store) => store.dstToken);
   const srcUSD = useSrcUsd();
   const dstUSD = useDstUsd();
   const srcBalance = useSrcBalance();
   const dstBalance = useDstBalance();
 
   return {
-    srcUsdLoading: srcUSD.isLoading,
-    dstUsdLoading: dstUSD.isLoading,
+    srcUsdLoading: (srcToken && !srcUSD.data) || srcUSD.isLoading,
+    dstUsdLoading: (dstToken && !dstUSD.data) || dstUSD.isLoading,
     srcBalanceLoading: srcBalance.isLoading,
     dstBalanceLoading: dstBalance.isLoading,
   };
@@ -358,7 +361,6 @@ export const useDstBalance = () => {
   const state = useTwapStore();
   return useBalanceQuery(state.dstToken, state.setDstBalance);
 };
-
 
 /**
  * Queries

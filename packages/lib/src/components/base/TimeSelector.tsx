@@ -93,12 +93,15 @@ export default TimeSelector;
 
 const StyledInput = styled(Box)({
   flex: 1,
-  "& input": {
-    textAlign: "right",
-    flex: "unset",
-    width: "100%",
-    "&::placeholder": {
-      color: "white",
+  ".twap-input": {
+    input: {
+      textAlign: "right",
+      paddingRight: 10,
+      flex: "unset",
+      width: "100%",
+      "&::placeholder": {
+        color: "white",
+      },
     },
   },
 });

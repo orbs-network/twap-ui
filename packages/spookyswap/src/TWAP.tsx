@@ -5,6 +5,7 @@ import translations from "./i18n/en.json";
 import { Configs } from "@orbs-network/twap";
 import { AdapterContextProvider, useAdapterContext, useGetProvider, useGlobalStyles, useParseTokenList, usePrepareAdapterContextProps, useTokensFromDapp } from "./hooks";
 import { SpookySwapTWAPProps } from ".";
+import { StyledColumnFlex } from "@orbs-network/twap-ui/dist/styles";
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
@@ -65,7 +66,7 @@ const SrcTokenPercentSelector = () => {
   };
 
   return (
-    <TwapStyles.StyledRowFlex className="twap-percent-selector">
+    <TwapStyles.StyledRowFlex width='fit-content' className="twap-percent-selector">
       <button onClick={() => onClick(0.5)}>50%</button>
       <button onClick={() => onClick(1)}>{translations.max}</button>
     </TwapStyles.StyledRowFlex>
@@ -85,7 +86,6 @@ const TradeSize = () => {
           <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
             <TwapStyles.StyledRowFlex>
               <Components.Labels.ChunksAmountLabel />
-              <Components.ChunksAmount />
             </TwapStyles.StyledRowFlex>
             <Components.TokenLogoAndSymbol isSrc={true} />
           </TwapStyles.StyledRowFlex>
@@ -139,7 +139,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const { ModifiedTokenSelectModal, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
   const translations = useTwapContext().translations;
-  const marketPrice = hooks.useMarketPrice().marketPrice;
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -155,30 +154,28 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         onClose={onClose}
         isSrc={isSrcToken}
       />
-      <TwapStyles.StyledColumnFlex gap={4} className="twap-token-panel">
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>
-          {isSrcToken && <SrcTokenPercentSelector />}
-          {!isSrcToken && marketPrice !== "0" && (
-            <TwapStyles.StyledRowFlex className="twap-token-panel-price">
-              <TwapStyles.StyledText>Price</TwapStyles.StyledText> <Components.Base.NumberDisplay value={marketPrice} /> <Components.TokenSymbol isSrc={isSrcToken} />
-            </TwapStyles.StyledRowFlex>
-          )}
-        </TwapStyles.StyledRowFlex>
+      <TwapStyles.StyledColumnFlex gap={0} className="twap-token-panel">
         <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={15}>
+          <TwapStyles.StyledColumnFlex gap={10}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenInput isSrc={isSrcToken} />
-              <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : translations.to}</Components.Base.SmallLabel>
+              {isSrcToken && <SrcTokenPercentSelector />}
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
+              <Components.TokenSelect hideArrow={true} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
               <TwapStyles.StyledOverflowContainer>
-                <Components.TokenUSD isSrc={isSrcToken} />
+                <StyledColumnFlex style={{ width: "fit-content", alignItems: "flex-end", flex: 1 }} gap={2}>
+                  <Components.TokenInput isSrc={isSrcToken} />
+                  <Components.TokenUSD isSrc={isSrcToken} />
+                </StyledColumnFlex>
               </TwapStyles.StyledOverflowContainer>
-              <Components.TokenBalance isSrc={isSrcToken} />
+            </TwapStyles.StyledRowFlex>
+            <TwapStyles.StyledRowFlex className="twap-balance-container" justifyContent="flex-start">
+              <Components.TokenBalance label={translations.balance} isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
+        {!isSrcToken && <Components.MarketPrice />}
       </TwapStyles.StyledColumnFlex>
     </>
   );

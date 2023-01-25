@@ -65,7 +65,7 @@ const DappComponent = () => {
     connect,
     account,
     srcToken: "WFTM",
-    dstToken: "ORBS",
+    dstToken: "USDC",
     getTokenImageUrl,
     dappTokens,
     onSrcTokenSelected: (token: any) => console.log(token),

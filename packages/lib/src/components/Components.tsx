@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import { FC, ReactNode } from "react";
 import {
   Balance,
@@ -26,17 +25,7 @@ import { TbArrowsRightLeft } from "react-icons/tb";
 import { styled } from "@mui/system";
 import { AiOutlineWarning } from "react-icons/ai";
 import { useOrdersContext, useTwapContext } from "../context";
-import {
-  useLoadingState,
-  useLimitPrice,
-  useMarketPrice,
-  useCreateOrder,
-  useApproveToken,
-  useChangeNetwork,
-  useHasAllowanceQuery,
-  useUnwrapToken,
-  useWrapToken,
-} from "../hooks";
+import { useLoadingState, useLimitPrice, useMarketPrice, useCreateOrder, useApproveToken, useChangeNetwork, useHasAllowanceQuery, useUnwrapToken, useWrapToken } from "../hooks";
 import { useTwapStore, handleFillDelayText } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
@@ -58,7 +47,6 @@ odnp.init();
 odnp.hide();
 
 odnp.mainDiv.classList = "odnp";
-
 export function OdnpButton({ className = "" }: { className?: string }) {
   const account = useTwapStore((state) => state.lib)?.maker;
   const translations = useOrdersContext().translations;
@@ -106,9 +94,9 @@ export function ChunksSliderSelect() {
 export const ChangeTokensOrder = ({ children }: { children?: ReactNode }) => {
   const switchTokens = useTwapStore((state) => state.switchTokens);
   return (
-    <Box className="twap-change-tokens-order">
+    <StyledRowFlex className="twap-change-tokens-order">
       <IconButton onClick={switchTokens}>{children || <Icon icon={<HiOutlineSwitchVertical />} />}</IconButton>
-    </Box>
+    </StyledRowFlex>
   );
 };
 
@@ -178,7 +166,7 @@ export const TokenSelect = ({ onClick, isSrc, hideArrow }: { onClick: () => void
       </StyledRowFlex>
     );
   }
-  return <TokenSelectButton className="twap-token-not-select" onClick={onClick} />;
+  return <TokenSelectButton className="twap-token-not-selected" onClick={onClick} />;
 };
 
 export const TokenSymbol = ({ isSrc }: { isSrc?: boolean }) => {
@@ -261,14 +249,14 @@ export function ChunksUSD() {
   return <USD value={usd} isLoading={loading} />;
 }
 
-export const TokenBalance = ({ isSrc }: { isSrc?: boolean }) => {
+export const TokenBalance = ({ isSrc, label }: { isSrc?: boolean; label?: string }) => {
   const srcBalance = useTwapStore((state) => state.getSrcBalanceUi());
   const srcLoading = useLoadingState().srcBalanceLoading;
   const dstBalance = useTwapStore((state) => state.getDstBalanceUi());
   const dstLoading = useLoadingState().dstBalanceLoading;
   const balance = isSrc ? srcBalance : dstBalance;
   const isLoading = isSrc ? srcLoading : dstLoading;
-  return <Balance value={balance} isLoading={isLoading} />;
+  return <Balance label={label} value={balance} isLoading={isLoading} />;
 };
 
 export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
@@ -402,12 +390,19 @@ export const MarketPrice = () => {
   const { toggleInverted, leftToken, rightToken, marketPrice, loading } = useMarketPrice();
   const translations = useTwapContext().translations;
   return (
-    <StyledRowFlex justifyContent="space-between" className="twap-market-price">
+    <StyledMarketPrice justifyContent="space-between" className="twap-market-price">
       <StyledText className="title">{translations.currentMarketPrice}</StyledText>
       <TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
-    </StyledRowFlex>
+    </StyledMarketPrice>
   );
 };
+
+const StyledMarketPrice = styled(StyledRowFlex)({
+  ".twap-token-logo":{
+    minWidth:22,
+    minHeight:22
+  }
+});
 
 export function PoweredBy() {
   const translations = useTwapContext().translations;
@@ -734,14 +729,13 @@ const StyledTradeInfoExplanation = styled(StyledColumnFlex)({
   maxHeight: 140,
   overflow: "auto",
   gap: 10,
-  fontSize: 14,
+  "*": {
+    fontSize: 16,
+  },
 });
 
 const StyledOrderSummaryTokenDisplay = styled(StyledColumnFlex)({
-  ".twap-token-logo": {
-    width: 38,
-    height: 38,
-  },
+  ".twap-token-logo": {},
   ".twap-token-name": {
     fontSize: 16,
   },

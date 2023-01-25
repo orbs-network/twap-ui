@@ -64,24 +64,26 @@ export const configureStyles = (darkMode?: boolean) => {
     ".twap-order-summary": {
       padding: 30,
     },
-    ".twap-balance": {
-      borderTop: darkMode ? "1px solid rgba(255, 255, 255, 0.05)" : "1px solid rgb(188, 200, 220)",
-      paddingTop: 5,
-      fontSize: 14,
-    },
-    ".twap-limit-price": {
-      ".twap-price": {
-        background: styles.containerBackground,
 
-        padding: "10px",
-        borderRadius: 10,
-        gap: 10,
-      },
+    ".twap-limit-price-input": {
+      background: styles.containerBackground,
+      borderRadius: 10,
+      gap: 10,
+      padding: "5px 0px",
       ".twap-input": {
         "& input": {
           fontSize: 16,
           textAlign: "center" as const,
         },
+      },
+    },
+    ".twap-percent-selector": {
+      button: {
+        background: "unset",
+        border: "unset",
+        color: styles.iconsColor,
+        fontSize: 14,
+        fontWeight: 700,
       },
     },
     ".twap-token-select": {
@@ -95,6 +97,8 @@ export const configureStyles = (darkMode?: boolean) => {
       display: "flex",
       alignItems: "center",
       gap: 5,
+    },
+    ".twap-token-selected": {
       "& .twap-token-name": {
         fontSize: 16,
         color: styles.lighterTextColor,
@@ -105,17 +109,20 @@ export const configureStyles = (darkMode?: boolean) => {
         height: 24,
       },
     },
-    ".twap-market-price": {
-      "& .twap-card": {
-        borderTopLeftRadius: 0,
-        borderTopRightRadius: 0,
-        background: darkMode ? "rgba(255,255,255, 0.05)" : "rgba(0,0,0, 0.01)",
-        paddingBottom: 5,
-        paddingTop: 5,
+    ".twap-token-not-selected": {
+      paddingLeft: 14,
+      paddingRight: 14,
+      p: {
+        fontSize: 14,
       },
-      "& .title": {
+    },
+    ".twap-market-price": {
+      borderRadius: "0px 0px 5px 5px",
+      background: darkMode ? "rgba(255,255,255, 0.05)" : "rgba(0,0,0, 0.01)",
+      padding: "5px 15px",
+      minHeight: 40,
+      ".title": {
         fontSize: 13,
-        opacity: 0.8,
       },
     },
     ".twap-icon": {
@@ -164,7 +171,7 @@ export const configureStyles = (darkMode?: boolean) => {
     },
     ".twap-time-selector": {
       ".twap-input": {
-        "& input": {
+        input: {
           fontSize: 16,
           "&::placeholder": {
             color: styles.textColor,
@@ -174,11 +181,17 @@ export const configureStyles = (darkMode?: boolean) => {
     },
     ".twap-time-selector-list": {
       background: styles.containerBackground,
-      border: `1px solid ${styles.borderColor || "transparent"}`,
+      boxShadow: "1px 1px 14px 0px rgba(0,0,0,0.65)",
       right: 0,
+      ".twap-time-selector-list-item": {
+        "&:hover": {
+          background: darkMode ? "rgba(255,255,255, 0.03)" : "rgba(0,0,0, 0.03)",
+        },
+      },
     },
     ".twap-card": {
-      padding: "10px 5px",
+      minHeight: 50,
+      padding: "10px 15px",
       background: styles.cardBackground,
       borderRadius: "0.375rem",
       boxShadow: darkMode ? "unset" : "rgb(49 65 94 / 8%) 0px 2px 4px inset, rgb(49 65 94 / 4%) 0px 4px 8px inset",
@@ -314,19 +327,96 @@ export const configureStyles = (darkMode?: boolean) => {
     ".twap-orders-lists": {
       maxHeight: 600,
     },
+    ".twap-trade-size": {
+      ".twap-token-logo": {
+        width: 20,
+        height: 20,
+      },
+      ".twap-token-name": {
+        fontSize: 14,
+      },
+      ".twap-input": {
+        input: {
+          height: 30,
+        },
+      },
+      ".twap-chunks-size": {
+        ".twap-label": {
+          fontSize: 13,
+        },
+      },
+    },
+    ".twap-change-tokens-order": {
+      button: {
+        background: "rgba(255, 255, 255, 0.05)",
+        width: 28,
+        height: 28,
+      },
+      ".twap-icon": {
+        width: 16,
+        height: 16,
+      },
+    },
 
+    ".twap-token-panel": {
+      ".twap-usd": {
+        maxWidth: "unset",
+        textAlign: "left",
+      },
+      ".twap-panel-title": {
+        p: {
+          fontSize: 14,
+          fontWeight: 700,
+        },
+      },
+
+      ".twap-balance-container": {
+        position: "relative" as const,
+        paddingTop: 5,
+        "&:after": {
+          content: '""',
+          position: "absolute" as const,
+          left: "50%",
+          transform: "translate(-50%)",
+          top: 0,
+          width: "calc(100% + 20px)",
+          height: 1,
+          background: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgb(188, 200, 220)",
+        },
+      },
+      ".twap-balance": {
+        fontSize: 14,
+        maxWidth: "unset",
+
+        width: "100%",
+        p: {
+          width: "100%",
+          display: "flex",
+          justifyContent: "space-between",
+        },
+      },
+      ".twap-input": {
+        width: "100%",
+        ".twap-loader": {
+          left: "unset",
+          right: 0,
+        },
+        input: {
+          padding: 0,
+          height: 35,
+          fontSize: 18,
+          textAlign: "right" as const,
+        },
+      },
+    },
     ".twap-input": {
-      "& input": {
+      input: {
         fontFamily: "inherit",
         fontWeight: 400,
         outline: "1px solid transparent",
         borderRadius: "0.375rem",
         transition: "0.2s all",
-        height: 35,
         color: styles.lighterTextColor,
-        fontSize: 18,
-        textAlign: "right" as const,
-        padding: "unset",
         "&::placeholder": {
           color: styles.textColor,
           opacity: 0.8,
@@ -355,14 +445,31 @@ export const configureStyles = (darkMode?: boolean) => {
       background: styles.disabledButtonBackground,
       color: styles.disabledButtonColor,
     },
-
+    ".twap-disclaimer-text": {
+      "*": {
+        fontSize: "14px!important",
+      },
+    },
+    ".twap-disclaimer-switch": {
+        fontSize:14
+    },
+    ".twap-order-summary-output-address":{
+      fontSize:14
+    },
+    ".twap-order-summary-details": {
+      ".twap-order-summary-details-item": {
+        p: {
+          fontSize: 14,
+        },
+      },
+    },
     ".twap-modal-content": {
       background: styles.containerBackground,
-      maxHeight: "85vh",
       overflow: "auto",
       borderRadius: "10px",
       padding: 15,
       paddingTop: 30,
+      paddingBottom:60,
       "& a": {
         color: "white",
         fontWeight: 500,
