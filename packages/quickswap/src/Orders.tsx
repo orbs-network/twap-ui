@@ -12,7 +12,7 @@ function OrderHistory(props: QuickSwapOrdersProps) {
   return (
     <OrdersAdapter
       account={props.account}
-      config={Configs.SpiritSwap}
+      config={Configs.QuickSwap}
       provider={provider}
       translations={translations as Translations}
       tokenList={tokenList}

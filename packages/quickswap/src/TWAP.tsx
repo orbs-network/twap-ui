@@ -34,7 +34,7 @@ const TWAP = (props: QuickSwapTWAPProps) => {
   return (
     <TwapAdapter
       connect={connect}
-      config={Configs.SpiritSwap}
+      config={Configs.QuickSwap}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
       translations={translations as Translations}
