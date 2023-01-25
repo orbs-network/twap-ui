@@ -73,18 +73,10 @@ const SrcTokenPercentSelector = () => {
 
   return (
     <TwapStyles.StyledRowFlex className="twap-percent-selector">
-      <button className="twap-percent-button" onClick={() => onClick(0.25)}>
-        25%
-      </button>
-      <button className="twap-percent-button" onClick={() => onClick(0.5)}>
-        50%
-      </button>
-      <button className="twap-percent-button" onClick={() => onClick(0.75)}>
-        75%
-      </button>
-      <button className="twap-percent-button" onClick={() => onClick(1)}>
-        {translations.max}
-      </button>
+      <button onClick={() => onClick(0.25)}>25%</button>
+      <button onClick={() => onClick(0.5)}>50%</button>
+      <button onClick={() => onClick(0.75)}>75%</button>
+      <button onClick={() => onClick(1)}>{translations.max}</button>
     </TwapStyles.StyledRowFlex>
   );
 };
@@ -100,7 +92,7 @@ const TradeSize = () => {
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
-            <TwapStyles.StyledRowFlex>
+            <TwapStyles.StyledRowFlex style={{ width: "fit-content" }}>
               <Components.Labels.ChunksAmountLabel />
               <Components.ChunksAmount />
             </TwapStyles.StyledRowFlex>
@@ -179,9 +171,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
               <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <TwapStyles.StyledOverflowContainer>
-                <Components.TokenUSD isSrc={isSrcToken} />
-              </TwapStyles.StyledOverflowContainer>
+              <Components.TokenUSD isSrc={isSrcToken} />
               <Components.TokenBalance isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
             {isSrcToken && <SrcTokenPercentSelector />}

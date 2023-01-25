@@ -66,6 +66,20 @@ export const configureStyles = (theme: any) => {
         fontWeight: `500!important`,
       },
     },
+    ".twap-disclaimer-text": {
+      "*":{
+        fontSize: '14px!important'
+      }
+    },
+    ".twap-orders-summary-token-display": {
+      ".twap-token-logo": {
+        width: 36,
+        height: 36
+      },
+      ".twap-token-name": {
+        fontSize: 16
+      }
+    },
     ".twap-token-not-select": {
       background: styles.selectTokenBackground,
       "*": {

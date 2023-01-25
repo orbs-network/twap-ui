@@ -16,7 +16,6 @@ const defaultTheme = createTheme();
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
-  console.log("render");
 
   return <TokenSelectModal onCurrencySelect={props.onSelect} isOpen={props.isOpen} onClose={props.onClose} />;
 };
@@ -194,9 +193,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
               <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <TwapStyles.StyledOverflowContainer>
-                <Components.TokenUSD isSrc={isSrcToken} />
-              </TwapStyles.StyledOverflowContainer>
+              <Components.TokenUSD isSrc={isSrcToken} />
               <Components.TokenBalance isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
