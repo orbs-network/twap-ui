@@ -9,9 +9,10 @@ import { StyledOneLineText } from "../../styles";
 interface Props {
   onClick: () => void;
   className?: string;
+  hideArrow?: boolean;
 }
 
-function TokenSelectButton({ className = "", onClick }: Props) {
+function TokenSelectButton({ className = "", onClick, hideArrow }: Props) {
   const translations = useTwapContext().translations;
   const wrongNetwork = useTwapStore((state) => state.wrongNetwork);
   const maker = useTwapStore((state) => state.lib?.maker);
@@ -36,7 +37,7 @@ function TokenSelectButton({ className = "", onClick }: Props) {
     <Tooltip text={warning}>
       <StyledContainer className={`twap-token-select ${className}`} onClick={_onClick}>
         <StyledOneLineText>{translations.selectToken}</StyledOneLineText>
-        <Icon icon={<IoIosArrowDown size={20} />} />
+        {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
       </StyledContainer>
     </Tooltip>
   );

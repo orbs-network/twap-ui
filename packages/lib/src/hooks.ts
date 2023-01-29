@@ -111,6 +111,13 @@ export const useApproveToken = () => {
   );
 };
 
+export const useOnTokenSelect = (isSrc?: boolean) => {
+  const srcSelect = useTwapStore((store) => store.setSrcToken);
+  const dstSelect = useTwapStore((store) => store.setDstToken);
+
+  return isSrc ? srcSelect : dstSelect;
+};
+
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();

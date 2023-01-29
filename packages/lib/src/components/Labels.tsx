@@ -7,7 +7,7 @@ export function ChunksAmountLabel() {
   const value = useTwapStore((store) => store.getSrcChunkAmountUi());
   return (
     <Label tooltipText={translations.tradeSizeTooltip}>
-      {translations.tradeSize}: <NumberDisplay value={value || '0'} />
+      {translations.tradeSize}: <NumberDisplay value={value || "0"} />
     </Label>
   );
 }

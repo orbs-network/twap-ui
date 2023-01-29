@@ -18,8 +18,7 @@ function Balance({ isLoading, value, className = "", label }: Props) {
   }
   return (
     <StyledLabel loading={isLoading} className={`twap-balance ${className}`}>
-      {label ? <span className="twap-balance-title">{label}</span> : <span className="twap-balance-title">{translations.balance}:</span>}
-      {" "}<NumberDisplay value={value} />
+      {label ? <span className="twap-balance-title">{label}</span> : <span className="twap-balance-title">{translations.balance}:</span>} <NumberDisplay value={value} />
     </StyledLabel>
   );
 }

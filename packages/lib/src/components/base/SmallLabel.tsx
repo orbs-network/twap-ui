@@ -40,5 +40,4 @@ const StyledContainer = styled(Box)({
   position: "relative",
   display: "flex",
   alignItems: "center",
-  ...textOverflow,
 });

@@ -86,6 +86,7 @@
   "loading": "Loading",
   "progress": "progress",
   "estimated": "estimated",
+  "estimate": "estimate",
   "notify": "Notify me",
   "prtialFillWarning": "Partial fill",
   "prtialFillWarningTooltip": "Order will not be completely filled in the selected duration.",

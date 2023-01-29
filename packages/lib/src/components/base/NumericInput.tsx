@@ -39,7 +39,7 @@ function NumericInput({
     <StyledContainer className={`twap-input ${className}`}>
       <Fade in={loading} style={{ transition: "0s" }}>
         <span>
-          <StyledLoader width="75%" height="60%" />
+          <StyledLoader className="twap-input-loader" width="75%" height="60%" />
         </span>
       </Fade>
       <Fade in={!loading} style={{ transition: "0s" }}>
@@ -79,7 +79,6 @@ export default NumericInput;
 
 const StyledLoader = styled(Loader)({
   position: "absolute",
-  left: 0,
   top: "50%",
   transform: "translate(0, -50%)",
 });
