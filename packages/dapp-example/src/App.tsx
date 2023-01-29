@@ -3,15 +3,17 @@ import { Route, Routes, useNavigate, Navigate } from "react-router-dom";
 import { Dapp, DappsMenu } from "./Components";
 import { useEagerlyConnect, useDisconnectWallet } from "./hooks";
 import { dapps, defaultDapp } from "./config";
+import { hooks } from "@orbs-network/twap-ui";
 
 function App() {
   const navigate = useNavigate();
   const disconnect = useDisconnectWallet();
+const resetTwapStore = hooks.useResetStoreAndQueries();
   useEagerlyConnect();
 
   const onSelect = (dapp: Dapp) => {
     disconnect();
-
+    resetTwapStore();
     navigate(dapp.config.partner.toLowerCase());
   };
 

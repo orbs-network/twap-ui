@@ -60,5 +60,5 @@ const StyledModalContent = styled(Box)({
   maxWidth: 500,
   width: "100%",
   position: "relative",
-  maxHeight: "90vh",
+  maxHeight: "95vh",
 });

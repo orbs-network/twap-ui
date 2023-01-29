@@ -70,6 +70,7 @@ export const useConnectWallet = () => {
 
 export const useDisconnectWallet = () => {
   const { deactivate } = useWeb3React();
+  
   return () => {
     deactivate();
     window.localStorage.removeItem(PROVIDER_NAME);
