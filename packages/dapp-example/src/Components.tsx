@@ -1,5 +1,5 @@
 import Modal from "@mui/material/Modal";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { AiOutlineClose } from "react-icons/ai";
 import {
@@ -27,7 +27,7 @@ import { Components, Styles } from "@orbs-network/twap-ui";
 import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
 import { dapps } from "./config";
 import { Status } from "./Status";
-import { useListTokenBalace, useSelectedDapp, useTheme } from "./hooks";
+import { useDebounce, useListTokenBalace, useSelectedDapp, useTheme } from "./hooks";
 import { showTokenInList } from "./utils";
 
 const FAVICON = "https://github.com/orbs-network/twap-ui/raw/66e183e804002fe382d9b0070caef060ad2e21ac/logo/64.png";
@@ -210,6 +210,13 @@ export const DappLayout = ({ children, name }: { children: ReactNode; name: stri
   );
 };
 
-export const TokenSearchInput = ({ value, setValue }: { value: string; setValue: (value: string) => void }) => {
-  return <StyledSearchInput placeholder="Insert token name..." value={value} onChange={(e) => setValue(e.target.value)} />;
+export const TokenSearchInput = ({ setValue }: { value: string; setValue: (value: string) => void }) => {
+  const [localValue, setLocalValue] = useState("");
+  const debouncedValue = useDebounce(localValue, 300);
+
+  useEffect(() => {
+    setValue(debouncedValue);
+  }, [debouncedValue]);
+
+  return <StyledSearchInput placeholder="Insert token name..." value={localValue} onChange={(e) => setLocalValue(e.target.value)} />;
 };

@@ -8,7 +8,7 @@ import { hooks } from "@orbs-network/twap-ui";
 function App() {
   const navigate = useNavigate();
   const disconnect = useDisconnectWallet();
-const resetTwapStore = hooks.useResetStoreAndQueries();
+  const resetTwapStore = hooks.useResetStoreAndQueries();
   useEagerlyConnect();
 
   const onSelect = (dapp: Dapp) => {

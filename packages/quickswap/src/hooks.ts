@@ -1,32 +1,28 @@
 import { TokenData } from "@orbs-network/twap";
 import { store, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
 import { createContext, FC, useContext, useEffect, useMemo, useRef } from "react";
-import { QuickSwapTWAPProps } from ".";
 import _ from "lodash";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
+import { GetTokenLogoURL, QuickSwapTWAPProps } from "./types";
 
-export const useGetProvider = (getProvider: () => any, account?: string) => {
-  return useMemo(() => getProvider(), [account]);
-};
-
-export const parseToken = (rawToken: any, getTokenImageUrl: (symbol: string) => string): TokenData => {
+export const parseToken = (rawToken: any, getTokenLogoURL: GetTokenLogoURL): TokenData => {
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: getTokenImageUrl(rawToken.symbol),
+    logoUrl: getTokenLogoURL(rawToken.address ?? rawToken.tokenInfo.address),
   };
 };
 
-export const useParseTokenList = (getTokenImageUrl: (symbol: string) => string, dappTokens?: any[]): TokenData[] => {
+export const useParseTokenList = (getTokenLogoURL: GetTokenLogoURL, dappTokens?: any[]): TokenData[] => {
   const dappTokensRef = useRef<any[] | undefined>(undefined);
   dappTokensRef.current = dappTokens;
   const dappTokensLength = dappTokens?.length || 0;
 
   return useMemo(() => {
     if (!dappTokensRef.current) return [];
-    return _.map(dappTokensRef.current, (t) => parseToken(t, getTokenImageUrl));
+    return _.map(dappTokensRef.current, (t) => parseToken(t, getTokenLogoURL));
   }, [dappTokensLength]);
 };
 
@@ -53,12 +49,12 @@ export const useSetTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: s
 };
 
 export interface AdapterContextProps {
-  getTokenImageUrl: (symbol: string) => string;
   dappTokens: any[];
   onSrcTokenSelected: (value: any) => void;
   onDstTokenSelected: (value: any) => void;
   TokenSelectModal: any;
   ModifiedTokenSelectModal: FC<TWAPTokenSelectProps>;
+  getTokenLogoURL: GetTokenLogoURL;
 }
 
 export const usePrepareAdapterContextProps = (props: QuickSwapTWAPProps) => {
@@ -66,8 +62,8 @@ export const usePrepareAdapterContextProps = (props: QuickSwapTWAPProps) => {
     onSrcTokenSelected: props.onSrcTokenSelected,
     onDstTokenSelected: props.onDstTokenSelected,
     dappTokens: props.dappTokens,
-    getTokenImageUrl: props.getTokenImageUrl,
     TokenSelectModal: props.TokenSelectModal,
+    getTokenLogoURL: props.getTokenLogoURL,
   };
 };
 const AdapterContext = createContext({} as AdapterContextProps);

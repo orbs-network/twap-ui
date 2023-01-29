@@ -27,6 +27,17 @@ export const darkModeStylesConfig: StylesConfig = {
 export const configureStyles = () => {
   const styles = darkModeStylesConfig;
   return {
+    ".twap-percent-selector": {
+      button: {
+        background: "transparent",
+        border: "unset",
+        color: "#448aff",
+        fontWeight: `600!important`,
+        fontSize: 14,
+        textTransform: "uppercase" as const,
+        cursor: "pointer",
+      },
+    },
     ".twap-warning": {
       fontSize: 14,
       color: "white",
@@ -37,17 +48,20 @@ export const configureStyles = () => {
       background: "transparent",
       border: "0.75px solid #26A7EF",
     },
-    ".twap-limit-price": {
+
+    ".twap-limit-price-input": {
       width: "100%",
-      ".twap-price": {
-        background: "#0D1321",
-        padding: 10,
-        borderRadius: 10,
-        gap: 10,
-      },
+      background: "#1b1e29",
+      padding: 10,
+      borderRadius: 10,
+      gap: 10,
       ".twap-input": {
         textAlign: "center" as const,
       },
+    },
+    ".twap-input-loader": {
+      right: 0,
+      left: "unset",
     },
     ".twap-percent-button": {
       border: "unset",
@@ -61,35 +75,39 @@ export const configureStyles = () => {
       margin: 0,
       padding: 0,
     },
+    ".twap-label": {
+      fontSize: 16,
+    },
     ".twap-token-select": {
-      background: styles.selectTokenBackground,
       border: "unset",
       padding: "6px 12px",
       borderRadius: 38,
       cursor: "pointer",
       display: "flex",
       alignItems: "center",
-      gap: 5,
-      marginRight: 10,
-      fontSize: 16,
       color: `${styles.selectTokenTextColor}!important`,
       p: {
         color: "inherit",
       },
     },
+    ".twap-token-not-selected": {
+      background: "linear-gradient(105deg,#448aff 3%,#004ce6)",
+      p: {
+        fontSize: 16,
+      },
+    },
 
-    ".twap-token-select-selected": {
-      background: styles.selectedTokenBackground,
+    ".twap-token-selected": {
+      background: "#404557",
+      p: {
+        fontSize: 16,
+      },
     },
     ".twap-market-price": {
-      "& .twap-card": {
-        borderTopLeftRadius: 0,
-        borderTopRightRadius: 0,
-        background: "#0D1321",
-        paddingBottom: 5,
-        paddingTop: 5,
-      },
-      "& .title": {
+      borderRadius: "0px 0px 10px 10px",
+      background: "#12141B",
+      padding: "7px 15px",
+      ".title": {
         fontSize: 13,
       },
     },
@@ -256,6 +274,18 @@ export const configureStyles = () => {
         color: "inherit",
       },
     },
+    ".twap-token-panel": {
+      ".twap-token-panel-title": {
+        fontSize: 16,
+      },
+      ".twap-input": {
+        input: {
+          fontSize: 18,
+          fontWeight: `600!important`,
+          textAlign: "right" as const,
+        },
+      },
+    },
     ".twap-input": {
       "& input": {
         fontFamily: "inherit",
@@ -264,8 +294,6 @@ export const configureStyles = () => {
         borderRadius: "0.375rem",
         transition: "0.2s all",
         height: 35,
-        fontSize: 18,
-        fontWeight: 600,
         color: "#696c80",
         paddingRight: 0,
       },

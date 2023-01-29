@@ -166,7 +166,7 @@ export const TokenSelect = ({ onClick, isSrc, hideArrow }: { onClick: () => void
       </StyledRowFlex>
     );
   }
-  return <TokenSelectButton className="twap-token-not-selected" onClick={onClick} />;
+  return <TokenSelectButton hideArrow={hideArrow} className="twap-token-not-selected" onClick={onClick} />;
 };
 
 export const TokenSymbol = ({ isSrc }: { isSrc?: boolean }) => {
@@ -212,12 +212,12 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, onSrc
 
   const onTokenSelected = (token: any) => {
     onClose();
-
+    const parsedToken = parseToken ? parseToken(token) : token;
     if (isSrc) {
-      setSrcToken(parseToken ? parseToken(token) : token);
+      setSrcToken(parsedToken);
       onSrcSelect?.(token);
     } else {
-      setDstToken(parseToken ? parseToken(token) : token);
+      setDstToken(parsedToken);
       onDstSelect?.(token);
     }
   };
@@ -267,7 +267,7 @@ export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
   const usd = isSrc ? srcUSD : dstUSD;
   const isLoading = isSrc ? srcLoading : dstLoading;
 
-  return <USD value={usd} isLoading={isLoading} />;
+  return <USD value={usd || "0"} isLoading={isLoading} />;
 }
 
 export const SubmitButton = ({ className = "" }: { className?: string }) => {
@@ -461,12 +461,12 @@ export function TotalChunks() {
 
 export function ChunksAmount() {
   const value = useTwapStore((store) => store.getSrcChunkAmountUi());
-  if (!value) return null
-    return (
-      <StyledOneLineText className="twap-chunks-amount">
-        <NumberDisplay value={value} />
-      </StyledOneLineText>
-    );
+  if (!value) return null;
+  return (
+    <StyledOneLineText className="twap-chunks-amount">
+      <NumberDisplay value={value} />
+    </StyledOneLineText>
+  );
 }
 
 export const Deadline = () => {

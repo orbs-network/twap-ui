@@ -93,6 +93,7 @@ export interface Translations {
   invalid: string;
   viewOrders: string;
   view: string;
+  estimate: string;
 }
 
 export interface BaseComponentProps {

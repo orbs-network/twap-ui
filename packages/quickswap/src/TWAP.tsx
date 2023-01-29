@@ -2,29 +2,19 @@ import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
 import { Configs } from "@orbs-network/twap";
-import {
-  AdapterContextProvider,
-  parseToken,
-  useAdapterContext,
-  useGetProvider,
-  useGlobalStyles,
-  useParseTokenList,
-  usePrepareAdapterContextProps,
-  useSetTokensFromDapp,
-} from "./hooks";
+import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles, useParseTokenList, usePrepareAdapterContextProps, useSetTokensFromDapp } from "./hooks";
 import translations from "./i18n/en.json";
-import { QuickSwapTWAPProps } from ".";
+import { QuickSwapTWAPProps } from "./types";
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
-  return <TokenSelectModal tokenSelected={undefined} onSelect={props.onSelect} isOpen={props.isOpen} onClose={props.onClose} />;
+  return <TokenSelectModal tokenSelected={undefined} onCurrencySelect={props.onSelect} isOpen={props.isOpen} onDismiss={props.onClose} />;
 };
 
 const TWAP = (props: QuickSwapTWAPProps) => {
-  const { getTokenImageUrl, dappTokens } = props;
-  const tokenList = useParseTokenList(getTokenImageUrl, dappTokens);
+  const { dappTokens } = props;
+  const tokenList = useParseTokenList(props.getTokenLogoURL, dappTokens);
   useSetTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
-  const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
   const globalStyles = useGlobalStyles();
 
@@ -35,11 +25,11 @@ const TWAP = (props: QuickSwapTWAPProps) => {
   return (
     <TwapAdapter
       connect={connect}
-      config={Configs.SpiritSwap}
+      config={Configs.QuickSwap}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
       translations={translations as Translations}
-      provider={provider}
+      provider={props.provider}
       account={props.account}
     >
       <GlobalStyles styles={globalStyles} />
@@ -72,7 +62,7 @@ const SrcTokenPercentSelector = () => {
   };
 
   return (
-    <TwapStyles.StyledRowFlex className="twap-percent-selector">
+    <TwapStyles.StyledRowFlex className="twap-percent-selector" width="fit-content">
       <button onClick={() => onClick(0.5)}>50%</button>
       <button onClick={() => onClick(1)}>{translations.max}</button>
     </TwapStyles.StyledRowFlex>
@@ -90,10 +80,7 @@ const TradeSize = () => {
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
-            <TwapStyles.StyledRowFlex>
-              <Components.Labels.ChunksAmountLabel />
-              <Components.ChunksAmount />
-            </TwapStyles.StyledRowFlex>
+            <Components.Labels.ChunksAmountLabel />
             <Components.TokenLogoAndSymbol isSrc={true} />
           </TwapStyles.StyledRowFlex>
           <Components.ChunksUSD />
@@ -145,7 +132,7 @@ const TradeInterval = () => {
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const { ModifiedTokenSelectModal, onSrcTokenSelected, onDstTokenSelected, getTokenImageUrl } = useAdapterContext();
+  const { ModifiedTokenSelectModal, onSrcTokenSelected, onDstTokenSelected, getTokenLogoURL } = useAdapterContext();
   const translations = useTwapContext().translations;
 
   const onClose = useCallback(() => {
@@ -161,27 +148,28 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         isOpen={tokenListOpen}
         onClose={onClose}
         isSrc={isSrcToken}
-        parseToken={(token) => parseToken(token, getTokenImageUrl)}
+        parseToken={(token: any) => parseToken(token, getTokenLogoURL)}
       />
-      <TwapStyles.StyledColumnFlex gap={4} className="twap-token-panel">
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>
-          {isSrcToken && <SrcTokenPercentSelector />}
-        </TwapStyles.StyledRowFlex>
+      <TwapStyles.StyledColumnFlex gap={0} className="twap-token-panel">
         <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={15}>
+          <TwapStyles.StyledColumnFlex gap={16}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenInput isSrc={isSrcToken} />
-              <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              <Components.Base.SmallLabel className="twap-token-panel-title">
+                {isSrcToken ? translations.from : `${translations.to} (${translations.estimate})`}
+              </Components.Base.SmallLabel>
+              {isSrcToken && <SrcTokenPercentSelector />}
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <TwapStyles.StyledOverflowContainer>
-                <Components.TokenUSD isSrc={isSrcToken} />
-              </TwapStyles.StyledOverflowContainer>
+              <Components.TokenSelect hideArrow={true} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              <Components.TokenInput placeholder="0.00" isSrc={isSrcToken} />
+            </TwapStyles.StyledRowFlex>
+            <TwapStyles.StyledRowFlex justifyContent="space-between">
               <Components.TokenBalance isSrc={isSrcToken} />
+              <Components.TokenUSD isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
+        {!isSrcToken && <Components.MarketPrice />}
       </TwapStyles.StyledColumnFlex>
     </>
   );

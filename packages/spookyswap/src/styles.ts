@@ -361,7 +361,7 @@ export const configureStyles = (darkMode?: boolean) => {
     ".twap-token-panel": {
       ".twap-usd": {
         maxWidth: "unset",
-        textAlign: "left",
+        textAlign: "left" as const,
       },
       ".twap-panel-title": {
         p: {
