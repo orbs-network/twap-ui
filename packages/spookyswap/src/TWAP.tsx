@@ -66,7 +66,7 @@ const SrcTokenPercentSelector = () => {
   };
 
   return (
-    <TwapStyles.StyledRowFlex width='fit-content' className="twap-percent-selector">
+    <TwapStyles.StyledRowFlex width="fit-content" className="twap-percent-selector">
       <button onClick={() => onClick(0.5)}>50%</button>
       <button onClick={() => onClick(1)}>{translations.max}</button>
     </TwapStyles.StyledRowFlex>

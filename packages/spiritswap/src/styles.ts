@@ -52,8 +52,8 @@ export const configureStyles = () => {
         color: "black!important",
       },
       button: {
-        color:'white!important'
-      }
+        color: "white!important",
+      },
     },
     ".twap-odnp": {
       color: styles.textColor,

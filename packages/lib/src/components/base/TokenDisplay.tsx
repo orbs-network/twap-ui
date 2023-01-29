@@ -31,6 +31,6 @@ function TokenDisplay({ symbol, logo, className = "", reverse }: Props) {
 export default TokenDisplay;
 
 const StyledContainer = styled(StyledRowFlex)({
-  gap: 10,
+  gap: 8,
   width: "fit-content",
 });

@@ -67,18 +67,18 @@ export const configureStyles = (theme: any) => {
       },
     },
     ".twap-disclaimer-text": {
-      "*":{
-        fontSize: '14px!important'
-      }
+      "*": {
+        fontSize: "14px!important",
+      },
     },
     ".twap-orders-summary-token-display": {
       ".twap-token-logo": {
         width: 36,
-        height: 36
+        height: 36,
       },
       ".twap-token-name": {
-        fontSize: 16
-      }
+        fontSize: 16,
+      },
     },
     ".twap-token-not-select": {
       background: styles.selectTokenBackground,

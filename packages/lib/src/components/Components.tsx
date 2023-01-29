@@ -160,7 +160,7 @@ export const TokenSelect = ({ onClick, isSrc, hideArrow }: { onClick: () => void
 
   if (token) {
     return (
-      <StyledRowFlex style={{ cursor: "pointer" }} width="fit-content" onClick={onClick} className="twap-token-select twap-token-selected">
+      <StyledRowFlex gap={5} style={{ cursor: "pointer" }} width="fit-content" onClick={onClick} className="twap-token-select twap-token-selected">
         <TokenLogoAndSymbol isSrc={isSrc} />
         {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
       </StyledRowFlex>
@@ -398,10 +398,10 @@ export const MarketPrice = () => {
 };
 
 const StyledMarketPrice = styled(StyledRowFlex)({
-  ".twap-token-logo":{
-    minWidth:22,
-    minHeight:22
-  }
+  ".twap-token-logo": {
+    minWidth: 22,
+    minHeight: 22,
+  },
 });
 
 export function PoweredBy() {
@@ -461,11 +461,12 @@ export function TotalChunks() {
 
 export function ChunksAmount() {
   const value = useTwapStore((store) => store.getSrcChunkAmountUi());
-  return (
-    <StyledOneLineText className="twap-chunks-amount">
-      <NumberDisplay value={value} />
-    </StyledOneLineText>
-  );
+  if (!value) return null
+    return (
+      <StyledOneLineText className="twap-chunks-amount">
+        <NumberDisplay value={value} />
+      </StyledOneLineText>
+    );
 }
 
 export const Deadline = () => {

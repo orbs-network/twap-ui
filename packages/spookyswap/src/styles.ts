@@ -451,10 +451,10 @@ export const configureStyles = (darkMode?: boolean) => {
       },
     },
     ".twap-disclaimer-switch": {
-        fontSize:14
+      fontSize: 14,
     },
-    ".twap-order-summary-output-address":{
-      fontSize:14
+    ".twap-order-summary-output-address": {
+      fontSize: 14,
     },
     ".twap-order-summary-details": {
       ".twap-order-summary-details-item": {
@@ -469,7 +469,7 @@ export const configureStyles = (darkMode?: boolean) => {
       borderRadius: "10px",
       padding: 15,
       paddingTop: 30,
-      paddingBottom:60,
+      paddingBottom: 60,
       "& a": {
         color: "white",
         fontWeight: 500,

@@ -11,13 +11,12 @@ import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress } fro
 import { parseOrderUi, useTwapStore } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
-import { store } from ".";
 
 /**
  * Actions
  */
 
-const useResetStoreAndQueries = () => {
+export const useResetStoreAndQueries = () => {
   const resetTwapStore = useTwapStore((state) => state.reset);
   const client = useQueryClient();
 
@@ -327,7 +326,7 @@ export const useHistoryPrice = (order: OrderUI) => {
 };
 
 export const useLoadingState = () => {
-  const srcToken = useTwapStore(store => store.srcToken)
+  const srcToken = useTwapStore((store) => store.srcToken);
   const dstToken = useTwapStore((store) => store.dstToken);
   const srcUSD = useSrcUsd();
   const dstUSD = useDstUsd();

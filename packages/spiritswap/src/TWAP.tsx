@@ -72,7 +72,7 @@ const SrcTokenPercentSelector = () => {
   };
 
   return (
-    <TwapStyles.StyledRowFlex className="twap-percent-selector">
+    <TwapStyles.StyledRowFlex className="twap-percent-selector" gap={5}>
       <button onClick={() => onClick(0.25)}>25%</button>
       <button onClick={() => onClick(0.5)}>50%</button>
       <button onClick={() => onClick(0.75)}>75%</button>
@@ -92,10 +92,7 @@ const TradeSize = () => {
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
-            <TwapStyles.StyledRowFlex style={{ width: "fit-content" }}>
-              <Components.Labels.ChunksAmountLabel />
-              <Components.ChunksAmount />
-            </TwapStyles.StyledRowFlex>
+            <Components.Labels.ChunksAmountLabel />
             <Components.TokenLogoAndSymbol isSrc={true} />
           </TwapStyles.StyledRowFlex>
           <Components.ChunksUSD />
@@ -165,7 +162,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       />
       <TwapStyles.StyledColumnFlex gap={0} className="twap-token-panel">
         <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={15}>
+          <TwapStyles.StyledColumnFlex gap={10}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
               <Components.TokenInput isSrc={isSrcToken} placeholder="0" />
               <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
