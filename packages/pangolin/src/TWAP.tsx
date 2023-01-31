@@ -3,8 +3,7 @@ import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as
 import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
-import { Configs, isNativeAddress } from "@orbs-network/twap";
-import { parseToken, useGlobalStyles, useTokensFromDapp } from "./hooks";
+import { handlePartnerDaas, parseToken, useGlobalStyles, useTokensFromDapp } from "./hooks";
 import { PangolinTWAPProps } from "./types";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
@@ -21,14 +20,14 @@ const TWAP = (props: PangolinTWAPProps) => {
     props.connect?.();
   }, []);
 
-  const partnerDaas = props.partnerDaas && !isNativeAddress(props.partnerDaas) ? props.partnerDaas : undefined;
+  const { partnerDaas, config } = handlePartnerDaas(props.partnerDaas);
 
   return (
     <Emotion10ThemeProvider theme={defaultTheme}>
       <ThemeProvider theme={defaultTheme}>
         <TwapAdapter
           connect={memoizedConnect}
-          config={partnerDaas ? Configs.PangolinDaas : Configs.Pangolin}
+          config={config}
           maxFeePerGas={props.maxFeePerGas}
           priorityFeePerGas={props.priorityFeePerGas}
           translations={translations as Translations}
@@ -274,6 +273,7 @@ const Orders = () => {
     <Components.Base.SwipeContainer show={args.showOrders} close={args.toggleOrders}>
       <AdapterStyles.StyledOrders>
         <OrderHistory
+          partnerDaas={args.partnerDaas}
           dappTokens={args.dappTokens}
           connectedChainId={args.connectedChainId}
           account={args.account}

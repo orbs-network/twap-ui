@@ -1,7 +1,9 @@
 import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface PangolinOrdersProps extends OrdersProps {}
+export interface PangolinOrdersProps extends OrdersProps {
+  partnerDaas?: string;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 

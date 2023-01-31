@@ -140,6 +140,7 @@ export interface TwapLibProps extends LibProps {
 
 export interface OrderLibProps extends LibProps {
   tokenList: TokenData[];
+  askDataParams?: any[];
 }
 
 export interface InitLibProps {

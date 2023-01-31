@@ -5,6 +5,7 @@ import _ from "lodash";
 import { useMemo, useEffect } from "react";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
+import { isNativeAddress, Configs } from "@orbs-network/twap";
 
 const nativeToken: TokenData = {
   decimals: 18,
@@ -70,4 +71,14 @@ export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: st
 
 export const useGlobalStyles = (theme: any) => {
   return configureStyles(theme);
+};
+
+export const handlePartnerDaas = (partnerDaas?: string) => {
+  const _partnerDaas = partnerDaas && !isNativeAddress(partnerDaas) ? partnerDaas : undefined;
+  const config = _partnerDaas ? Configs.PangolinDaas : Configs.Pangolin;
+
+  return {
+    partnerDaas: _partnerDaas,
+    config,
+  };
 };
