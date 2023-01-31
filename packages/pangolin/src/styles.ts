@@ -381,8 +381,6 @@ export const configureStyles = (theme: any) => {
         },
       },
     },
-    ".twap-orders-lists": {},
-
     ".twap-button": {
       marginTop: "auto",
       minHeight: 50,

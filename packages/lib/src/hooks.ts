@@ -437,6 +437,8 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
   const query = useQuery(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
+      console.log('refetch history');
+      
       const rawOrders = (await lib!.getAllOrders()).filter((o) => eqIgnoreCase(o.ask.exchange, lib!.config.exchangeAddress));
 
       const tokenWithUsdByAddress = await prepareOrderUSDValues(tokenList, rawOrders);

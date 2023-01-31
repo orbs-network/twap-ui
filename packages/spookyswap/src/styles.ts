@@ -324,9 +324,6 @@ export const configureStyles = (darkMode?: boolean) => {
         },
       },
     },
-    ".twap-orders-lists": {
-      maxHeight: 600,
-    },
     ".twap-trade-size": {
       ".twap-token-logo": {
         width: 20,

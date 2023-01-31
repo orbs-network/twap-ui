@@ -6,8 +6,7 @@ import translations from "./i18n/en.json";
 
 function OrderHistory(props: OrdersProps) {
   const tokenList = useParseTokenList(props.dappTokens);
-  console.log({ tokenList });
-  
+
   return (
     <OrdersAdapter
       connectedChainId={props.connectedChainId}

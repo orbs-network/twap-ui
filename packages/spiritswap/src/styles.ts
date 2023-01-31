@@ -286,9 +286,6 @@ export const configureStyles = () => {
         },
       },
     },
-    ".twap-orders-lists": {
-      maxHeight: 600,
-    },
     ".twap-usd": {
       opacity: 0.6,
       fontSize: 14,

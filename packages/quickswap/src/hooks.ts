@@ -6,8 +6,7 @@ import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { QuickSwapRawToken, QuickSwapTWAPProps } from "./types";
 
-export const parseToken = (getTokenLogoURL: (address: string) => string,  rawToken: QuickSwapRawToken): TokenData => {
-
+export const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): TokenData => {
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
@@ -16,8 +15,8 @@ export const parseToken = (getTokenLogoURL: (address: string) => string,  rawTok
   };
 };
 
-export const useParseTokenList = (getTokenLogoURL: (address: string) => string, dappTokens?: {[key: string]: QuickSwapRawToken } ): TokenData[] => {
-  const dappTokensLength = !dappTokens ?  0 : _.size(dappTokens)
+export const useParseTokenList = (getTokenLogoURL: (address: string) => string, dappTokens?: { [key: string]: QuickSwapRawToken }): TokenData[] => {
+  const dappTokensLength = !dappTokens ? 0 : _.size(dappTokens);
 
   return useMemo(() => {
     return _.map(dappTokens, (t) => parseToken(getTokenLogoURL, t));
@@ -29,14 +28,18 @@ const findAndParseToken = (getTokenLogoURL: (address: string) => string, address
   return !token ? undefined : parseToken(getTokenLogoURL, token);
 };
 
-export const useSetTokensFromDapp = (getTokenLogoURL: (address: string) => string, srcTokenAddress?: string, dstTokenAddress?: string, dappTokens?: {[key: string]:  QuickSwapRawToken}) => {
+export const useSetTokensFromDapp = (
+  getTokenLogoURL: (address: string) => string,
+  srcTokenAddress?: string,
+  dstTokenAddress?: string,
+  dappTokens?: { [key: string]: QuickSwapRawToken }
+) => {
   const setSrcToken = store.useTwapStore((state) => state.setSrcToken);
   const setDstToken = store.useTwapStore((state) => state.setDstToken);
   const tokensReady = !!dappTokens && _.size(dappTokens) > 0;
 
-
   useEffect(() => {
-    if (!tokensReady) return;    
+    if (!tokensReady) return;
 
     if (srcTokenAddress) {
       const srcToken = findAndParseToken(getTokenLogoURL, srcTokenAddress, dappTokens);

@@ -31,24 +31,21 @@ export const parseToken = (rawToken: any): TokenData => {
   };
 };
 
-
 export const useParseTokenList = (dappTokens?: any): TokenData[] => {
   const dappTokensLength = !dappTokens ? 0 : _.size(dappTokens);
-  
+
   return useMemo(() => {
-    if (dappTokensLength  === 0) return []
-     const result = _.map(dappTokens, (t) => parseToken(t));
-    
+    if (dappTokensLength === 0) return [];
+    const result = _.map(dappTokens, (t) => parseToken(t));
+
     return [nativeToken, ...result];
   }, [dappTokensLength]);
 };
 
-const findToken = (address: string, tokenList:any) => {
-  const token = tokenList[address]
+const findToken = (address: string, tokenList: any) => {
+  const token = tokenList[address];
   return !token ? undefined : parseToken(token);
 };
-
-
 
 export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: string, dappTokens?: any) => {
   const setSrcToken = store.useTwapStore((state) => state.setSrcToken);

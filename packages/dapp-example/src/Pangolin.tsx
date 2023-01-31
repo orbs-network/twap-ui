@@ -131,7 +131,7 @@ const PangolinDaasComponent = () => {
   const { account, library: provider, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
   console.log(dappTokens);
-  
+
   const { isDarkTheme } = useTheme();
 
   const connect = useConnectWallet();

@@ -268,9 +268,6 @@ export const configureStyles = () => {
         },
       },
     },
-    ".twap-orders-lists": {
-      maxHeight: 600,
-    },
     ".twap-usd": {
       color: "#696c80",
       "& *": {

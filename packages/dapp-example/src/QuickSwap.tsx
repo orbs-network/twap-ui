@@ -35,7 +35,7 @@ export const useDappTokens = () => {
           tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
           tags: [],
         }));
-      const candiesAddresses = _.map(erc20s.poly, (t) => t().address);
+      const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
 
       const _tokens = _.sortBy(parsed, (t: any) => {
         const index = candiesAddresses.indexOf(t.address);
