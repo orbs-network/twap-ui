@@ -7,7 +7,7 @@ import { QuickSwapOrdersProps } from "./types";
 
 function OrderHistory(props: QuickSwapOrdersProps) {
   const tokenList = useParseTokenList(props.getTokenLogoURL, props.dappTokens);
-
+  
   return (
     <OrdersAdapter
       account={props.account}

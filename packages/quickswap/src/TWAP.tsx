@@ -1,21 +1,13 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
-import { memo, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { Configs } from "@orbs-network/twap";
-import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles, useParseTokenList, usePrepareAdapterContextProps, useSetTokensFromDapp } from "./hooks";
+import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles, useSetTokensFromDapp } from "./hooks";
 import translations from "./i18n/en.json";
-import { QuickSwapTWAPProps } from "./types";
-
-const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const TokenSelectModal = useAdapterContext().TokenSelectModal;
-  return <TokenSelectModal tokenSelected={undefined} onCurrencySelect={props.onSelect} isOpen={props.isOpen} onDismiss={props.onClose} />;
-};
+import { QuickSwapRawToken, QuickSwapTWAPProps } from "./types";
 
 const TWAP = (props: QuickSwapTWAPProps) => {
-  const { dappTokens } = props;
-  const tokenList = useParseTokenList(props.getTokenLogoURL, dappTokens);
-  useSetTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
-  const adapterContextProps = usePrepareAdapterContextProps(props);
+  useSetTokensFromDapp(props.getTokenLogoURL, props.srcToken, props.dstToken, props.dappTokens);
   const globalStyles = useGlobalStyles();
 
   const connect = useCallback(() => {
@@ -33,7 +25,7 @@ const TWAP = (props: QuickSwapTWAPProps) => {
       account={props.account}
     >
       <GlobalStyles styles={globalStyles} />
-      <AdapterContextProvider value={{ ...adapterContextProps, ModifiedTokenSelectModal }}>
+      <AdapterContextProvider value={props}>
         <div className="twap-container">
           <TokenPanel isSrcToken={true} />
           <Components.ChangeTokensOrder />
@@ -51,10 +43,10 @@ const TWAP = (props: QuickSwapTWAPProps) => {
   );
 };
 
-export default memo(TWAP);
+export default TWAP;
 
 const SrcTokenPercentSelector = () => {
-  const { onPercentClick } = hooks.useCustomActions();
+  const onPercentClick = hooks.useCustomActions().onPercentClick;
   const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {
@@ -130,9 +122,15 @@ const TradeInterval = () => {
   );
 };
 
+const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
+  const TokenSelectModal = useAdapterContext().TokenSelectModal;
+
+  return <TokenSelectModal tokenSelected={undefined} onCurrencySelect={props.onSelect} isOpen={props.isOpen} onDismiss={props.onClose} />;
+};
+
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const { ModifiedTokenSelectModal, onSrcTokenSelected, onDstTokenSelected, getTokenLogoURL } = useAdapterContext();
+  const { onSrcTokenSelected, onDstTokenSelected, getTokenLogoURL } = useAdapterContext();
   const translations = useTwapContext().translations;
 
   const onClose = useCallback(() => {
@@ -148,7 +146,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         isOpen={tokenListOpen}
         onClose={onClose}
         isSrc={isSrcToken}
-        parseToken={(token: any) => parseToken(token, getTokenLogoURL)}
+        parseToken={(token: QuickSwapRawToken) => parseToken(getTokenLogoURL, token)}
       />
       <TwapStyles.StyledColumnFlex gap={0} className="twap-token-panel">
         <Components.Base.Card>
