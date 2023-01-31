@@ -51,19 +51,21 @@ export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: st
   const setSrcToken = store.useTwapStore((state) => state.setSrcToken);
   const setDstToken = store.useTwapStore((state) => state.setDstToken);
   const tokensReady = !!dappTokens && _.size(dappTokens) > 0;
+  const wrongNetwork = store.useTwapStore((store) => store.wrongNetwork);
 
   useEffect(() => {
-    if (!tokensReady) return;
+    if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
 
     if (srcTokenAddress) {
       const srcToken = findToken(srcTokenAddress, dappTokens);
+
       setSrcToken(srcToken);
     }
     if (dstTokenAddress) {
       const dstToken = findToken(dstTokenAddress, dappTokens);
       setDstToken(dstToken);
     }
-  }, [srcTokenAddress, dstTokenAddress, tokensReady]);
+  }, [srcTokenAddress, dstTokenAddress, tokensReady, wrongNetwork]);
 };
 
 export const useGlobalStyles = (theme: any) => {

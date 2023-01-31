@@ -183,13 +183,11 @@ export const useCreateOrder = () => {
 export const useInitLib = () => {
   const setTwapLib = useTwapStore((state) => state.setLib);
   const setWrongNetwork = useTwapStore((state) => state.setWrongNetwork);
-  const reset = useResetStoreAndQueries();
 
   return async (props: InitLibProps) => {
-    reset();
     if (!props.provider || !props.account) {
       setTwapLib(undefined);
-      setWrongNetwork(false);
+      setWrongNetwork(undefined);
       return;
     }
 
@@ -437,8 +435,6 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
   const query = useQuery(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
-      console.log('refetch history');
-      
       const rawOrders = (await lib!.getAllOrders()).filter((o) => eqIgnoreCase(o.ask.exchange, lib!.config.exchangeAddress));
 
       const tokenWithUsdByAddress = await prepareOrderUSDValues(tokenList, rawOrders);

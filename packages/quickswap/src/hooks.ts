@@ -37,9 +37,10 @@ export const useSetTokensFromDapp = (
   const setSrcToken = store.useTwapStore((state) => state.setSrcToken);
   const setDstToken = store.useTwapStore((state) => state.setDstToken);
   const tokensReady = !!dappTokens && _.size(dappTokens) > 0;
+  const wrongNetwork = store.useTwapStore((store) => store.wrongNetwork);
 
   useEffect(() => {
-    if (!tokensReady) return;
+    if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
 
     if (srcTokenAddress) {
       const srcToken = findAndParseToken(getTokenLogoURL, srcTokenAddress, dappTokens);
@@ -49,7 +50,7 @@ export const useSetTokensFromDapp = (
       const dstToken = findAndParseToken(getTokenLogoURL, dstTokenAddress, dappTokens);
       setDstToken(dstToken);
     }
-  }, [srcTokenAddress, dstTokenAddress, tokensReady]);
+  }, [srcTokenAddress, dstTokenAddress, tokensReady, wrongNetwork]);
 };
 
 const AdapterContext = createContext({} as QuickSwapTWAPProps);

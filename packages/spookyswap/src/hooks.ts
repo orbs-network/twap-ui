@@ -33,25 +33,29 @@ export const useParseTokenList = (getTokenImageUrl: (symbol: string) => string, 
   }, [dappTokensLength]);
 };
 
-const findToken = (tokenList?: TokenData[], symbol?: string) => {
+const findToken = (symbol?: string, tokenList?: TokenData[]) => {
   const token = tokenList?.find((t: TokenData) => t.symbol.toUpperCase() === symbol?.toUpperCase());
   return !token ? undefined : token;
 };
 
-export const useTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: string, tokenList?: TokenData[]) => {
-  const setTokens = store.useTwapStore((state) => state.setTokens);
-
-  const tokenListRef = useRef<TokenData[] | undefined>(undefined);
-
-  tokenListRef.current = tokenList;
-  const listLength = tokenList?.length || 0;
+export const useTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: string, dappTokens?: any[]) => {
+  const setSrcToken = store.useTwapStore((state) => state.setSrcToken);
+  const setDstToken = store.useTwapStore((state) => state.setDstToken);
+  const wrongNetwork = store.useTwapStore((store) => store.wrongNetwork);
+  const tokensReady = dappTokens && dappTokens.length > 0;
 
   useEffect(() => {
-    if (!listLength) return;
-    const srcToken = findToken(tokenListRef.current, srcTokenSymbol);
-    const dstToken = findToken(tokenListRef.current, dstTokenSymbol);
-    setTokens(srcToken, dstToken);
-  }, [srcTokenSymbol, dstTokenSymbol, listLength]);
+    if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
+
+    if (srcTokenSymbol) {
+      const srcToken = findToken(srcTokenSymbol, dappTokens);
+      setSrcToken(srcToken);
+    }
+    if (dstTokenSymbol) {
+      const dstToken = findToken(dstTokenSymbol, dappTokens);
+      setDstToken(dstToken);
+    }
+  }, [srcTokenSymbol, dstTokenSymbol, tokensReady, wrongNetwork]);
 };
 
 export interface AdapterContextProps {

@@ -3,7 +3,7 @@ import { Components, hooks, Styles as TwapStyles, TWAPTokenSelectProps, Translat
 import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import { Configs } from "@orbs-network/twap";
-import { AdapterContextProvider, useAdapterContext, useGetProvider, useGlobalStyles, useParseTokenList, usePrepareAdapterContextProps, useTokensFromDapp } from "./hooks";
+import { AdapterContextProvider, useAdapterContext, useGetProvider, useGlobalStyles, usePrepareAdapterContextProps, useTokensFromDapp } from "./hooks";
 import { SpookySwapTWAPProps } from ".";
 import { StyledColumnFlex } from "@orbs-network/twap-ui/dist/styles";
 
@@ -13,9 +13,8 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
 };
 
 const TWAP = (props: SpookySwapTWAPProps) => {
-  const tokenList = useParseTokenList(props.getTokenImageUrl, props.dappTokens);
-  useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
   const provider = useGetProvider(props.getProvider, props.account);
+  useTokensFromDapp(props.srcToken, props.dstToken, props.dappTokens);
   const adapterContextProps = usePrepareAdapterContextProps(props);
   const globalStyles = useGlobalStyles(props.isDarkTheme);
   const connect = useCallback(() => {

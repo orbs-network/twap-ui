@@ -29,12 +29,12 @@ export const configureStyles = () => {
   return {
     ".twap-trade-size": {
       ".twap-token-logo": {
-        width:20,
-        height:20
+        width: 20,
+        height: 20,
       },
       ".twap-token-name": {
-        fontSize: 14
-      }
+        fontSize: 14,
+      },
     },
     ".twap-percent-selector": {
       button: {

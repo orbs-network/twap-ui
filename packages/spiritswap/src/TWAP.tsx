@@ -2,16 +2,7 @@ import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
 import { Configs } from "@orbs-network/twap";
-import {
-  AdapterContextProvider,
-  parseToken,
-  useAdapterContext,
-  useGetProvider,
-  useGlobalStyles,
-  useParseTokenList,
-  usePrepareAdapterContextProps,
-  useSetTokensFromDapp,
-} from "./hooks";
+import { AdapterContextProvider, parseToken, useAdapterContext, useGetProvider, useGlobalStyles, usePrepareAdapterContextProps, useTokensFromDapp } from "./hooks";
 import translations from "./i18n/en.json";
 import { SpiritSwapTWAPProps } from ".";
 
@@ -21,9 +12,7 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
 };
 
 const TWAP = (props: SpiritSwapTWAPProps) => {
-  const { getTokenImageUrl, dappTokens } = props;
-  const tokenList = useParseTokenList(getTokenImageUrl, dappTokens);
-  useSetTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
+  useTokensFromDapp(props.srcToken, props.dstToken, props.dappTokens);
   const provider = useGetProvider(props.getProvider, props.account);
   const adapterContextProps = usePrepareAdapterContextProps(props);
   const globalStyles = useGlobalStyles();
