@@ -175,6 +175,7 @@ export const StyledDrawerContent = styled(Box)({
   display: "flex",
   flexDirection: "column",
   zIndex: 10,
+  height: "100%",
 });
 
 export const StyledMenuMobileToggle = styled(IconButton)({
