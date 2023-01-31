@@ -292,6 +292,7 @@ export const configureStyles = (theme: any) => {
       position: "relative",
       display: "flex",
       gap: 12,
+      minHeight: 900,
       flexDirection: "column",
       width: "100%",
       background: styles.containerBackground,
