@@ -4,7 +4,7 @@ import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
 import { Configs, isNativeAddress } from "@orbs-network/twap";
-import { parseToken, useGlobalStyles, useParseTokenList, useTokensFromDapp } from "./hooks";
+import { parseToken, useGlobalStyles, useTokensFromDapp } from "./hooks";
 import { PangolinTWAPProps } from "./types";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
@@ -15,8 +15,7 @@ import OrderHistory from "./Orders";
 const defaultTheme = createTheme();
 
 const TWAP = (props: PangolinTWAPProps) => {
-  const tokenList = useParseTokenList(props.dappTokens);
-  useTokensFromDapp(props.srcToken, props.dstToken, props.account ? tokenList : undefined);
+  useTokensFromDapp(props.srcToken, props.dstToken, props.dappTokens);
   const globalStyles = useGlobalStyles(props.theme);
   const memoizedConnect = useCallback(() => {
     props.connect?.();

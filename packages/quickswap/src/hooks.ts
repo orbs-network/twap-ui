@@ -1,12 +1,13 @@
 import { TokenData } from "@orbs-network/twap";
-import { store, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
-import { createContext, FC, useContext, useEffect, useMemo, useRef } from "react";
+import { store } from "@orbs-network/twap-ui";
+import { createContext, useContext, useEffect, useMemo } from "react";
 import _ from "lodash";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
-import { GetTokenLogoURL, QuickSwapTWAPProps } from "./types";
+import { QuickSwapRawToken, QuickSwapTWAPProps } from "./types";
 
-export const parseToken = (rawToken: any, getTokenLogoURL: GetTokenLogoURL): TokenData => {
+export const parseToken = (getTokenLogoURL: (address: string) => string,  rawToken: QuickSwapRawToken): TokenData => {
+
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
@@ -15,58 +16,40 @@ export const parseToken = (rawToken: any, getTokenLogoURL: GetTokenLogoURL): Tok
   };
 };
 
-export const useParseTokenList = (getTokenLogoURL: GetTokenLogoURL, dappTokens?: any[]): TokenData[] => {
-  const dappTokensRef = useRef<any[] | undefined>(undefined);
-  dappTokensRef.current = dappTokens;
-  const dappTokensLength = dappTokens?.length || 0;
+export const useParseTokenList = (getTokenLogoURL: (address: string) => string, dappTokens?: {[key: string]: QuickSwapRawToken } ): TokenData[] => {
+  const dappTokensLength = !dappTokens ?  0 : _.size(dappTokens)
 
   return useMemo(() => {
-    if (!dappTokensRef.current) return [];
-    return _.map(dappTokensRef.current, (t) => parseToken(t, getTokenLogoURL));
+    return _.map(dappTokens, (t) => parseToken(getTokenLogoURL, t));
   }, [dappTokensLength]);
 };
 
-const findToken = (tokenList?: TokenData[], symbol?: string) => {
-  const token = tokenList?.find((t: TokenData) => t.symbol.toUpperCase() === symbol?.toUpperCase());
-  return !token ? undefined : token;
+const findAndParseToken = (getTokenLogoURL: (address: string) => string, address: string, tokenList?: { [key: string]: QuickSwapRawToken }) => {
+  const token = tokenList ? tokenList[address as any] : undefined;
+  return !token ? undefined : parseToken(getTokenLogoURL, token);
 };
 
-export const useSetTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: string, tokenList?: TokenData[]) => {
+export const useSetTokensFromDapp = (getTokenLogoURL: (address: string) => string, srcTokenAddress?: string, dstTokenAddress?: string, dappTokens?: {[key: string]:  QuickSwapRawToken}) => {
   const setSrcToken = store.useTwapStore((state) => state.setSrcToken);
   const setDstToken = store.useTwapStore((state) => state.setDstToken);
+  const tokensReady = !!dappTokens && _.size(dappTokens) > 0;
 
-  const tokenListRef = useRef<TokenData[] | undefined>(undefined);
-  tokenListRef.current = tokenList;
-  const listLength = tokenList?.length || 0;
 
   useEffect(() => {
-    if (!listLength) return;
-    const srcToken = findToken(tokenListRef.current, srcTokenSymbol);
-    const dstToken = findToken(tokenListRef.current, dstTokenSymbol);
-    setSrcToken(srcToken);
-    setDstToken(dstToken);
-  }, [srcTokenSymbol, dstTokenSymbol, listLength]);
+    if (!tokensReady) return;    
+
+    if (srcTokenAddress) {
+      const srcToken = findAndParseToken(getTokenLogoURL, srcTokenAddress, dappTokens);
+      setSrcToken(srcToken);
+    }
+    if (dstTokenAddress) {
+      const dstToken = findAndParseToken(getTokenLogoURL, dstTokenAddress, dappTokens);
+      setDstToken(dstToken);
+    }
+  }, [srcTokenAddress, dstTokenAddress, tokensReady]);
 };
 
-export interface AdapterContextProps {
-  dappTokens: any[];
-  onSrcTokenSelected: (value: any) => void;
-  onDstTokenSelected: (value: any) => void;
-  TokenSelectModal: any;
-  ModifiedTokenSelectModal: FC<TWAPTokenSelectProps>;
-  getTokenLogoURL: GetTokenLogoURL;
-}
-
-export const usePrepareAdapterContextProps = (props: QuickSwapTWAPProps) => {
-  return {
-    onSrcTokenSelected: props.onSrcTokenSelected,
-    onDstTokenSelected: props.onDstTokenSelected,
-    dappTokens: props.dappTokens,
-    TokenSelectModal: props.TokenSelectModal,
-    getTokenLogoURL: props.getTokenLogoURL,
-  };
-};
-const AdapterContext = createContext({} as AdapterContextProps);
+const AdapterContext = createContext({} as QuickSwapTWAPProps);
 
 export const AdapterContextProvider = AdapterContext.Provider;
 

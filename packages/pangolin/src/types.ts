@@ -36,6 +36,23 @@ export interface PangolinTheme {
   };
 }
 
+export interface PangolinToken {
+  address: string;
+  chainId: number;
+  decimals: number;
+  name: string;
+  symbol: string;
+  tags: any[];
+  tokenInfo: {
+    address: string;
+    chainId: number;
+    decimals: number;
+    logoURI: string;
+    name: string;
+    symbol: string;
+  };
+}
+
 export interface PangolinTWAPProps extends TWAPProps {
   theme: any;
   partnerDaas?: string;

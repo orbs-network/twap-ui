@@ -27,6 +27,15 @@ export const darkModeStylesConfig: StylesConfig = {
 export const configureStyles = () => {
   const styles = darkModeStylesConfig;
   return {
+    ".twap-trade-size": {
+      ".twap-token-logo": {
+        width:20,
+        height:20
+      },
+      ".twap-token-name": {
+        fontSize: 14
+      }
+    },
     ".twap-percent-selector": {
       button: {
         background: "transparent",

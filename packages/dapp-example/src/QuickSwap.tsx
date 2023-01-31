@@ -57,7 +57,6 @@ interface TokenSelectModalProps {
 
 const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectModalProps) => {
   const { data: tokensList } = useDappTokens();
-  console.log({ tokensList });
 
   const [filterValue, setFilterValue] = useState("");
 
@@ -98,8 +97,8 @@ const DappComponent = () => {
   const twapProps: QuickSwapTWAPProps = {
     connect,
     account,
-    // srcToken: "USDC",
-    // dstToken: "ORBS",
+    srcToken: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+    dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff",
     dappTokens,
     onSrcTokenSelected: (token: any) => console.log(token),
     onDstTokenSelected: (token: any) => console.log(token),

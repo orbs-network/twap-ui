@@ -105,7 +105,7 @@ interface BaseProps {
   account?: any;
   provider?: any;
   getProvider?: () => any;
-  dappTokens: any;
+  dappTokens?: any;
   maxFeePerGas?: string;
   priorityFeePerGas?: string;
   isDarkTheme?: boolean;

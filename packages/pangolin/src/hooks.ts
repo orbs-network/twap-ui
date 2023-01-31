@@ -1,8 +1,8 @@
-import { zeroAddress, eqIgnoreCase } from "@defi.org/web3-candies";
+import { zeroAddress } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
 import _ from "lodash";
-import { useMemo, useEffect, useRef } from "react";
+import { useMemo, useEffect } from "react";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 
@@ -31,35 +31,42 @@ export const parseToken = (rawToken: any): TokenData => {
   };
 };
 
+
 export const useParseTokenList = (dappTokens?: any): TokenData[] => {
+  const dappTokensLength = !dappTokens ? 0 : _.size(dappTokens);
+  
   return useMemo(() => {
-    if (!dappTokens) return [];
-    const result = _.map(dappTokens, (t) => parseToken(t));
-
+    if (dappTokensLength  === 0) return []
+     const result = _.map(dappTokens, (t) => parseToken(t));
+    
     return [nativeToken, ...result];
-  }, [dappTokens]);
+  }, [dappTokensLength]);
 };
 
-const findToken = (tokenList?: TokenData[], address?: string) => {
-  if (!address || !tokenList || !tokenList.length) return;
-  const token = _.find(tokenList, (t: any) => eqIgnoreCase(t.address, address));
-  return !token ? undefined : token;
+const findToken = (address: string, tokenList:any) => {
+  const token = tokenList[address]
+  return !token ? undefined : parseToken(token);
 };
 
-export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: string, tokenList?: TokenData[]) => {
-  const setTokens = store.useTwapStore((state) => state.setTokens);
-  const tokenListRef = useRef<TokenData[] | undefined>(undefined);
-  tokenListRef.current = tokenList;
-  const tokensLength = tokenList?.length || 0;
+
+
+export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: string, dappTokens?: any) => {
+  const setSrcToken = store.useTwapStore((state) => state.setSrcToken);
+  const setDstToken = store.useTwapStore((state) => state.setDstToken);
+  const tokensReady = !!dappTokens && _.size(dappTokens) > 0;
 
   useEffect(() => {
-    if (!tokensLength) return;
+    if (!tokensReady) return;
 
-    const srcToken = findToken(tokenListRef.current, srcTokenAddress);
-    const dstToken = findToken(tokenListRef.current, dstTokenAddress);
-
-    setTokens(srcToken, dstToken);
-  }, [srcTokenAddress, dstTokenAddress, tokensLength]);
+    if (srcTokenAddress) {
+      const srcToken = findToken(srcTokenAddress, dappTokens);
+      setSrcToken(srcToken);
+    }
+    if (dstTokenAddress) {
+      const dstToken = findToken(dstTokenAddress, dappTokens);
+      setDstToken(dstToken);
+    }
+  }, [srcTokenAddress, dstTokenAddress, tokensReady]);
 };
 
 export const useGlobalStyles = (theme: any) => {
