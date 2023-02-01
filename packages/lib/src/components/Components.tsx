@@ -179,21 +179,9 @@ export const TokenSymbol = ({ isSrc }: { isSrc?: boolean }) => {
 
 export function TradeIntervalSelector() {
   const setFillDelay = useTwapStore((store) => store.setFillDelay);
-  const fillDelay = useTwapStore((store) => store.getFillDelay());
-  const setCustomFillDelayEnabled = useTwapStore((store) => store.setCustomFillDelayEnabled);
+  const fillDelay = useTwapStore((store) => store.getFillDelayUi());
 
-  const onFillDelayBlur = () => {
-    if (!fillDelay.amount) {
-      setCustomFillDelayEnabled(false);
-    }
-  };
-
-  const onFillDelayFocus = () => {
-    setFillDelay(fillDelay);
-    setCustomFillDelayEnabled(true);
-  };
-
-  return <TimeSelector onFocus={onFillDelayFocus} onBlur={onFillDelayBlur} onChange={setFillDelay} value={fillDelay} />;
+  return <TimeSelector onChange={setFillDelay} value={fillDelay} />;
 }
 
 interface TokenSelectProps extends TWAPTokenSelectProps {

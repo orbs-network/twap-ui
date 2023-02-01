@@ -16,7 +16,7 @@ export enum TimeResolution {
   Days = Hours * 24,
 }
 const SUGGEST_CHUNK_VALUE = 100;
-export type Duration = { resolution: TimeResolution; amount: number };
+export type Duration = { resolution: TimeResolution; amount?: number };
 
 /**
  * TWAP Store
@@ -43,9 +43,8 @@ const initialState = {
   disclaimerAccepted: false,
 
   chunks: 0,
-  duration: { resolution: TimeResolution.Minutes, amount: 10 },
-  customFillDelay: { resolution: TimeResolution.Minutes, amount: 0 },
-  customFillDelayEnabled: false,
+  duration: { resolution: TimeResolution.Minutes, amount: 10 } as Duration,
+  customFillDelay: { resolution: TimeResolution.Minutes, amount: undefined } as Duration,
   waitingForNewOrder: false,
 };
 
@@ -120,7 +119,7 @@ export const useTwapStore = create(
         chunkSize,
         (get() as any).getDstMinAmountOut(),
         deadline,
-        (get() as any).getFillDelayMillis() / 1000,
+        (get() as any).getFillDelayUiMillis() / 1000,
         get().srcUsd
       );
 
@@ -135,7 +134,7 @@ export const useTwapStore = create(
         return translation.fillDelayWarning;
       }
     },
-    getIsPartialFillWarning: () => (get() as any).getChunks() * (get() as any).getFillDelayMillis() > (get() as any).getDurationMillis(),
+    getIsPartialFillWarning: () => (get() as any).getChunks() * (get() as any).getFillDelayUiMillis() > (get() as any).getDurationMillis(),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork?: boolean) => set({ wrongNetwork }),
     toggleLimitOrder: () => set({ isLimitOrder: !get().isLimitOrder, limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false } }),
@@ -198,24 +197,28 @@ export const useTwapStore = create(
       srcToken && (get() as any).setSrcToken(srcToken);
       dstToken && (get() as any).setDstToken(dstToken);
     },
-    setFillDelay: (customFillDelay: { resolution: TimeResolution; amount: number }) => {
+    setFillDelay: (customFillDelay: Duration) => {
       analytics.onCustomIntervalClick();
       set({ customFillDelay });
     },
-    getFillDelay: () => {
+    getFillDelayUi: () => {
       if (!get().lib) return { resolution: TimeResolution.Minutes, amount: 0 };
-      if (get().customFillDelayEnabled && get().customFillDelay) return get().customFillDelay;
-      const millis = get().lib!.fillDelayUiMillis((get() as any).getChunks(), get().duration.resolution * get().duration.amount);
+
+      if (get().customFillDelay.amount !== undefined) return get().customFillDelay;
+      const millis = get().lib!.fillDelayUiMillis((get() as any).getChunks(), get().duration.resolution * (get().duration.amount || 0));
       const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= millis) || TimeResolution.Minutes;
       return { resolution, amount: Number(BN(millis / resolution).toFixed(2)) };
     },
-    getFillDelayText: (translations: Translations) => fillDelayText((get() as any).getFillDelayMillis(), translations),
-    getFillDelayMillis: () => (get() as any).getFillDelay().amount * (get() as any).getFillDelay().resolution,
-    getDurationMillis: () => get().duration.amount * get().duration.resolution,
 
-    setCustomFillDelayEnabled: (customFillDelayEnabled: boolean) => set({ customFillDelayEnabled }),
+    getFillDelayText: (translations: Translations) => fillDelayText((get() as any).getFillDelayUiMillis(), translations),
+    getFillDelayUiMillis: () => (get() as any).getFillDelayUi().amount * (get() as any).getFillDelayUi().resolution,
+
+    getDurationMillis: () => (get().duration.amount || 0) * get().duration.resolution,
+
     getMinimumDelayMinutes: () => (get().lib?.estimatedDelayBetweenChunksMillis() || 0) / 1000 / 60,
-    getFillDelayWarning: () => get().lib && (get() as any).getFillDelayMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000,
+    getFillDelayWarning: () => {
+      return get().lib && (get() as any).getFillDelayUiMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000;
+    },
     switchTokens: () => {
       const srcToken = get().srcToken!;
       const dstToken = get().dstToken!;
@@ -268,7 +271,7 @@ export const useTwapStore = create(
     setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment(), disclaimerAccepted: false }),
     getDeadline: () =>
       moment(get().confirmationClickTimestamp)
-        .add(get().duration.amount * get().duration.resolution)
+        .add((get().duration.amount || 0) * get().duration.resolution)
         .add(1, "minute")
         .valueOf(),
     getDeadlineUi: () => moment((get() as any).getDeadline()).format("DD/MM/YYYY HH:mm"),

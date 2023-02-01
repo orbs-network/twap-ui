@@ -144,13 +144,11 @@ const TradeInterval = () => {
   );
 };
 
-
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
 
   return <TokenSelectModal onCurrencySelect={props.onSelect} isOpen={props.isOpen} onClose={props.onClose} />;
 };
-
 
 const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken: boolean }) => {
   const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
@@ -177,7 +175,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
-    console.log("onClose");
   }, []);
 
   return (

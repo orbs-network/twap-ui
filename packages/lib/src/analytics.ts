@@ -57,7 +57,7 @@ const onConfirmationCreateOrderClick = () => {
     tradeSize: useTwapStore.getState().getSrcChunkAmount(),
     minAmountOut: useTwapStore.getState().getDstMinAmountOut(),
     deadline: useTwapStore.getState().getDeadline(),
-    tradeInterval: useTwapStore.getState().getFillDelayMillis(),
+    tradeInterval: useTwapStore.getState().getFillDelayUiMillis(),
     totalTrades: useTwapStore.getState().getChunks(),
   });
 };

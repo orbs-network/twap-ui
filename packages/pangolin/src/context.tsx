@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState, memo } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 import { PangolinTWAPProps } from "./types";
 
 interface Props {

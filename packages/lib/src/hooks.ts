@@ -126,6 +126,8 @@ export const useCreateOrder = () => {
 
   return useMutation(
     async () => {
+      const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
+
       console.log({
         srcToken: store.srcToken,
         dstToken: store.dstToken,
@@ -133,7 +135,7 @@ export const useCreateOrder = () => {
         srcChunkAmount: store.getSrcChunkAmount().toString(),
         dstMinChunkAmountOut: store.getDstMinAmountOut().toString(),
         deadline: store.getDeadline(),
-        fillDelay: store.getFillDelayMillis(),
+        fillDelay: fillDelayMillis,
         srcUsd: store.srcUsd.toString(),
         priorityFeePerGas: priorityFeePerGas?.toString(),
         maxFeePerGas: maxFeePerGas?.toString(),
@@ -145,7 +147,7 @@ export const useCreateOrder = () => {
         ...store.dstToken!,
         address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
       };
-      const fillDelayMillis = store.getFillDelayMillis() / 1000;
+
       return store.lib!.submitOrder(
         store.srcToken!,
         dstToken,

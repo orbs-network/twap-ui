@@ -2,7 +2,7 @@ import { ClickAwayListener } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useState } from "react";
 import { useTwapContext } from "../../context";
-import { TimeResolution } from "../../store";
+import { Duration, TimeResolution } from "../../store";
 import { StyledText } from "../../styles";
 import { Translations } from "../../types";
 import NumericInput from "./NumericInput";
@@ -27,8 +27,8 @@ const findSelectedResolutionText = (resolution: TimeResolution) => {
 };
 
 interface Props {
-  value: { resolution: TimeResolution; amount: number };
-  onChange: ({ resolution, amount }: { resolution: TimeResolution; amount: number }) => void;
+  value: Duration;
+  onChange: ({ resolution, amount }: Duration) => void;
   disabled?: boolean;
   className?: string;
   onFocus?: () => void;
