@@ -1,7 +1,7 @@
 import { TokenData } from "@orbs-network/twap";
-import { store, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
+import { store } from "@orbs-network/twap-ui";
 import _ from "lodash";
-import { createContext, FC, useCallback, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import { SpookySwapTWAPProps } from ".";
 
 import Web3 from "web3";
@@ -58,34 +58,7 @@ export const useTokensFromDapp = (srcTokenSymbol?: string, dstTokenSymbol?: stri
   }, [srcTokenSymbol, dstTokenSymbol, tokensReady, wrongNetwork]);
 };
 
-export interface AdapterContextProps {
-  getTokenImageUrl: (symbol: string) => string;
-  dappTokens: any[];
-  onSrcTokenSelected: (value: any) => void;
-  onDstTokenSelected: (value: any) => void;
-  TokenSelectModal: any;
-  ModifiedTokenSelectModal: FC<TWAPTokenSelectProps>;
-}
-
-export const usePrepareAdapterContextProps = (props: SpookySwapTWAPProps) => {
-  const memoizedOnSrcTokenSelected = useCallback((token: any) => {
-    props.onSrcTokenSelected?.(token);
-  }, []);
-
-  const memoizedOnDstTokenSelected = useCallback((token: any) => {
-    props.onDstTokenSelected?.(token);
-  }, []);
-
-  return {
-    onSrcTokenSelected: memoizedOnSrcTokenSelected,
-    onDstTokenSelected: memoizedOnDstTokenSelected,
-    dappTokens: props.dappTokens,
-    getTokenImageUrl: props.getTokenImageUrl,
-    TokenSelectModal: props.TokenSelectModal,
-  };
-};
-
-const AdapterContext = createContext({} as AdapterContextProps);
+const AdapterContext = createContext({} as SpookySwapTWAPProps);
 
 export const AdapterContextProvider = AdapterContext.Provider;
 

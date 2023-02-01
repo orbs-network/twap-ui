@@ -198,12 +198,8 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, onSrc
   const setSrcToken = useTwapStore((store) => store.setSrcToken);
   const setDstToken = useTwapStore((store) => store.setDstToken);
 
-  console.log("render");
-
   const onTokenSelected = useCallback(
     (token: any) => {
-      console.log("onTokenSelected");
-
       onClose();
       const parsedToken = parseToken ? parseToken(token) : token;
       if (isSrc) {

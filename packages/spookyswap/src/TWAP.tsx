@@ -3,19 +3,13 @@ import { Components, hooks, Styles as TwapStyles, TWAPTokenSelectProps, Translat
 import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import { Configs } from "@orbs-network/twap";
-import { AdapterContextProvider, useAdapterContext, useGetProvider, useGlobalStyles, usePrepareAdapterContextProps, useTokensFromDapp } from "./hooks";
+import { AdapterContextProvider, parseToken, useAdapterContext, useGetProvider, useGlobalStyles, useTokensFromDapp } from "./hooks";
 import { SpookySwapTWAPProps } from ".";
 import { StyledColumnFlex } from "@orbs-network/twap-ui/dist/styles";
-
-const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const TokenSelectModal = useAdapterContext().TokenSelectModal;
-  return <TokenSelectModal commonTokens={[]} tokenSelected={undefined} onSelect={props.onSelect} isOpen={props.isOpen} onClose={props.onClose} />;
-};
 
 const TWAP = (props: SpookySwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
   useTokensFromDapp(props.srcToken, props.dstToken, props.dappTokens);
-  const adapterContextProps = usePrepareAdapterContextProps(props);
   const globalStyles = useGlobalStyles(props.isDarkTheme);
   const connect = useCallback(() => {
     props.connect();
@@ -34,7 +28,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
     >
       <GlobalStyles styles={globalStyles} />
 
-      <AdapterContextProvider value={{ ...adapterContextProps, ModifiedTokenSelectModal }}>
+      <AdapterContextProvider value={props}>
         <div className="twap-container">
           <TokenPanel isSrcToken={true} />
           <Components.ChangeTokensOrder />
@@ -134,9 +128,31 @@ const TradeInterval = () => {
   );
 };
 
+const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
+  const TokenSelectModal = useAdapterContext().TokenSelectModal;
+  return <TokenSelectModal commonTokens={[]} tokenSelected={undefined} onSelect={props.onSelect} isOpen={props.isOpen} onClose={props.onClose} />;
+};
+
+const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
+  const { onSrcTokenSelected, onDstTokenSelected, getTokenImageUrl } = useAdapterContext();
+
+  return (
+    <Components.TokenSelectModal
+      Component={ModifiedTokenSelectModal}
+      onSrcSelect={onSrcTokenSelected}
+      onDstSelect={onDstTokenSelected}
+      isOpen={open}
+      onClose={onClose}
+      isSrc={isSrcToken}
+      parseToken={(token: any) => parseToken(token, getTokenImageUrl)}
+    />
+  );
+};
+
+const MemoizedTokenSelect = memo(TokenSelect);
+
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const { ModifiedTokenSelectModal, onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
   const translations = useTwapContext().translations;
 
   const onClose = useCallback(() => {
@@ -145,14 +161,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 
   return (
     <>
-      <Components.TokenSelectModal
-        Component={ModifiedTokenSelectModal}
-        onSrcSelect={onSrcTokenSelected}
-        onDstSelect={onDstTokenSelected}
-        isOpen={tokenListOpen}
-        onClose={onClose}
-        isSrc={isSrcToken}
-      />
+      <MemoizedTokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
       <TwapStyles.StyledColumnFlex gap={0} className="twap-token-panel">
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={10}>

@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
-import { useCallback, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { Configs } from "@orbs-network/twap";
 import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles, useSetTokensFromDapp } from "./hooks";
 import translations from "./i18n/en.json";
@@ -128,9 +128,26 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   return <TokenSelectModal tokenSelected={undefined} onCurrencySelect={props.onSelect} isOpen={props.isOpen} onDismiss={props.onClose} />;
 };
 
+const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
+  const { onSrcTokenSelected, onDstTokenSelected, getTokenLogoURL } = useAdapterContext();
+
+  return (
+    <Components.TokenSelectModal
+      Component={ModifiedTokenSelectModal}
+      onSrcSelect={onSrcTokenSelected}
+      onDstSelect={onDstTokenSelected}
+      isOpen={open}
+      onClose={onClose}
+      isSrc={isSrcToken}
+      parseToken={(token: QuickSwapRawToken) => parseToken(getTokenLogoURL, token)}
+    />
+  );
+};
+
+const MemoizedTokenSelect = memo(TokenSelect);
+
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const { onSrcTokenSelected, onDstTokenSelected, getTokenLogoURL } = useAdapterContext();
   const translations = useTwapContext().translations;
 
   const onClose = useCallback(() => {
@@ -139,15 +156,8 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 
   return (
     <>
-      <Components.TokenSelectModal
-        Component={ModifiedTokenSelectModal}
-        onSrcSelect={onSrcTokenSelected}
-        onDstSelect={onDstTokenSelected}
-        isOpen={tokenListOpen}
-        onClose={onClose}
-        isSrc={isSrcToken}
-        parseToken={(token: QuickSwapRawToken) => parseToken(getTokenLogoURL, token)}
-      />
+      <MemoizedTokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
+
       <TwapStyles.StyledColumnFlex gap={0} className="twap-token-panel">
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={16}>

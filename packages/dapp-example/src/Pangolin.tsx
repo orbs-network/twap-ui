@@ -72,7 +72,6 @@ const useDappTokens = () => {
 const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModalProps) => {
   const { data: tokensList } = useDappTokens();
   const [filterValue, setFilterValue] = useState("");
-  console.log("render");
 
   if (!tokensList) return null;
 
