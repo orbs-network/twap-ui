@@ -32,7 +32,6 @@ const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
   useEffect(() => {
     initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId });
   }, [props.provider, props.config, props.account, props.connectedChainId]);
-  console.log("render");
 
   return <TwapContext.Provider value={{ ...props, translations }}>{props.children}</TwapContext.Provider>;
 };

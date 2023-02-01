@@ -116,6 +116,9 @@ export const configureStyles = (theme: any) => {
       ".twap-token-name": {
         fontSize: 16,
       },
+      ".twap-label": {
+        fontSize: 14,
+      },
     },
     ".twap-token-panel": {
       "& .twap-input": {

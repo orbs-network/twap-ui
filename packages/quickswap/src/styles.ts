@@ -244,6 +244,11 @@ export const configureStyles = () => {
         background: styles.progressBarColor,
       },
     },
+    ".twap-chunks-size": {
+      ".twap-label": {
+        fontSize: 14,
+      },
+    },
     ".twap-orders": {
       fontWeight: 500,
       color: styles.textColor,

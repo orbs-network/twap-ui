@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
@@ -94,10 +94,7 @@ const TradeSize = () => {
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
-            <TwapStyles.StyledRowFlex>
-              <Components.Labels.ChunksAmountLabel />
-              <Components.ChunksAmount />
-            </TwapStyles.StyledRowFlex>
+            <Components.Labels.ChunksAmountLabel />
             <Components.TokenLogoAndSymbol isSrc={true} />
           </TwapStyles.StyledRowFlex>
           <Components.ChunksUSD />
@@ -147,47 +144,45 @@ const TradeInterval = () => {
   );
 };
 
-// const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-//   const TokenSelectModal = useAdapterContext().TokenSelectModal;
 
-//   return <TokenSelectModal onCurrencySelect={props.onSelect} isOpen={props.isOpen} onClose={props.onClose} />;
-// };
-
-const TokenSelect = (props: any) => {
+const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
 
-  if (!props.isOpen) return null;
-  return <TokenSelectModal isOpen={true} onClose={props.onClose} onCurrencySelect={props.onCurrencySelect} />;
+  return <TokenSelectModal onCurrencySelect={props.onSelect} isOpen={props.isOpen} onClose={props.onClose} />;
 };
+
+
+const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken: boolean }) => {
+  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
+
+  return (
+    <Components.TokenSelectModal
+      Component={ModifiedTokenSelectModal}
+      onSrcSelect={onSrcTokenSelected}
+      onDstSelect={onDstTokenSelected}
+      isOpen={open}
+      onClose={onClose}
+      isSrc={isSrcToken}
+      parseToken={parseToken}
+    />
+  );
+};
+
+const MemoizedTokenSelect = memo(TokenSelect);
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
-  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
   const marketPrice = hooks.useMarketPrice().marketPrice;
-  const select = hooks.useOnTokenSelect(isSrcToken);
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
+    console.log("onClose");
   }, []);
-
-  const onTokenSelected = useCallback(
-    (token: any) => {
-      setTokenListOpen(false);
-      select(parseToken(token));
-      if (isSrcToken) {
-        onSrcTokenSelected?.(token);
-      } else {
-        onDstTokenSelected?.(token);
-      }
-    },
-    [isSrcToken, onSrcTokenSelected, onDstTokenSelected]
-  );
 
   return (
     <>
-      <TokenSelect isOpen={tokenListOpen} onClose={onClose} onCurrencySelect={onTokenSelected} />
-
+      <MemoizedTokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
       <TwapStyles.StyledColumnFlex gap={4} className="twap-token-panel">
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>

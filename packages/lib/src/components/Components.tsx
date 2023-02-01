@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useCallback } from "react";
 import {
   Balance,
   Button,
@@ -210,17 +210,24 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, onSrc
   const setSrcToken = useTwapStore((store) => store.setSrcToken);
   const setDstToken = useTwapStore((store) => store.setDstToken);
 
-  const onTokenSelected = (token: any) => {
-    onClose();
-    const parsedToken = parseToken ? parseToken(token) : token;
-    if (isSrc) {
-      setSrcToken(parsedToken);
-      onSrcSelect?.(token);
-    } else {
-      setDstToken(parsedToken);
-      onDstSelect?.(token);
-    }
-  };
+  console.log("render");
+
+  const onTokenSelected = useCallback(
+    (token: any) => {
+      console.log("onTokenSelected");
+
+      onClose();
+      const parsedToken = parseToken ? parseToken(token) : token;
+      if (isSrc) {
+        setSrcToken(parsedToken);
+        onSrcSelect?.(token);
+      } else {
+        setDstToken(parsedToken);
+        onDstSelect?.(token);
+      }
+    },
+    [onDstSelect, onSrcSelect, isSrc]
+  );
 
   if (!isOpen || !Component) return null;
   return <Component isOpen={true} onClose={onClose} onSelect={onTokenSelected} srcTokenSelected={undefined} dstTokenSelected={undefined} />;

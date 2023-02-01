@@ -53,7 +53,7 @@ const StyledTokenDisplay = styled(TwapStyles.StyledColumnFlex)({
   gap: 3,
   alignItems: "flex-start",
   width: "fit-content",
-  fontSize: 18,
+  fontSize: 16,
   "& .twap-token-display-amount-and-symbol": {
     fontSize: "inherit",
   },
