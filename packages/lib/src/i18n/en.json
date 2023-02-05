@@ -12,7 +12,7 @@
   "limitPriceTooltip": "This sets the lowest price for trades in your TWAP order. Trades will ONLY be executed when this limit price is lower than or equal to the available market price. Some trades may not be executed if the limit price is higher than the available market price and your order may only be partially filled.",
   "tradeSizeTooltip": "This sets the size of each individual trade that will be executed over the duration of your TWAP order.",
   "maxDurationTooltip": "The maximum time during which the total amount of individual trades making up your full TWAP order can be executed. Note that depending on your parameters, your order may be filled earlier than this time, partially filled or not filled at all.",
-  "tradeIntervalTootlip": "This sets the minimum amount of time that will elapse between each individual trade in your TWAP order.",
+  "tradeIntervalTootlip": "The estimated time that will elapse between each trade in your order. Note that as this time includes an allowance of two minutes for bidder auction and block settlement, which cannot be predicted exactly, actual time may vary.",
   "customIntervalTooltip": "Enable custom interval",
   "totalTradesTooltip": "The total number of individual trades that will be scheduled as part of your TWAP order. Note that in limit orders, it is possible that not all scheduled trades will be executed.",
   "sliderMinSizeTooltip": "Individual trades must have a minimum trade size of $10.00 USD.",
@@ -77,7 +77,7 @@
   "expiration": "Expiration",
   "orderType": "Order type",
   "minReceivedPerTrade": "Minimum received per trade",
-  "confirmationLimitPriceTooltip": "Trades will only be executed when this limit price is equal to or worse than the available market price. Some trades may not be executed if the limit price is better than the available market prices and your order may only be partially filled.",
+  "confirmationLimitPriceTooltip": "Trades will only be executed when the available market price is equal to or better than this limit price. Your order may only be partially filled.",
   "ordersTooltip": "The below shows your wallet's TWAP order history and current status.",
   "poweredBy": "Powered by Orbs",
   "insertLimitPriceWarning": "Insert limit price",
@@ -92,7 +92,7 @@
   "prtialFillWarningTooltip": "Order will not be completely filled in the selected duration.",
   "invalid": "Invalid",
   "fillDelayWarning": "Invalid trade interval",
-  "fillDelayWarningTooltip": "Trade interval must be higher than {{minutes}} minutes to allow for the bidder auction.",
+  "fillDelayWarningTooltip": "Trade interval must be higher than {{minutes}} minutes to allow time for bidder auction and block settlement.",
   "viewOrders": "View TWAP orders",
   "view": "View"
 }
