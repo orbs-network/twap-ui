@@ -1,8 +1,7 @@
 import { TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
-import { createContext, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 import { SpiritSwapTWAPProps } from ".";
-import _ from "lodash";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 
@@ -17,17 +16,6 @@ export const parseToken = (rawToken: any, getTokenImageUrl: (symbol: string) => 
     symbol: rawToken.symbol,
     logoUrl: getTokenImageUrl(rawToken.symbol),
   };
-};
-
-export const useParseTokenList = (getTokenImageUrl: (symbol: string) => string, dappTokens?: any[]): TokenData[] => {
-  const dappTokensRef = useRef<any[] | undefined>(undefined);
-  dappTokensRef.current = dappTokens;
-  const dappTokensLength = dappTokens?.length || 0;
-
-  return useMemo(() => {
-    if (!dappTokensRef.current) return [];
-    return _.map(dappTokensRef.current, (t) => parseToken(t, getTokenImageUrl));
-  }, [dappTokensLength]);
 };
 
 const findToken = (symbol: string, tokenList?: TokenData[]) => {

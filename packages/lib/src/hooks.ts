@@ -1,7 +1,7 @@
 import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, OrderUI } from "./types";
@@ -424,8 +424,26 @@ const defaultFetcher = (chainId: number, token: TokenData) => {
   return Paraswap.priceUsd(chainId, token);
 };
 
+const useTokenList = () => {
+  const { tokenList } = useOrdersContext();
+  const listLength = tokenList?.length;
+  const lib = useTwapStore().lib;
+
+  return useMemo(() => {
+    if (!lib || !listLength) return [];
+    if (!tokenList.find((it) => lib?.isNativeToken(it))) {
+      tokenList.push(lib.config.nativeToken);
+    }
+    if (!tokenList.find((it) => lib?.isWrappedToken(it))) {
+      tokenList.push(lib.config.wToken);
+    }    
+    return tokenList;
+  }, [listLength, lib]);
+};
+
 export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenData) => Promise<BN> = defaultFetcher) => {
-  const tokenList = useOrdersContext().tokenList;
+  const tokenList = useTokenList();
+
   const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
   const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
   const lib = useTwapStore((state) => state.lib);
@@ -437,8 +455,9 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
   const query = useQuery(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
+      console.log({ tokenList });
+      
       const rawOrders = (await lib!.getAllOrders()).filter((o) => eqIgnoreCase(o.ask.exchange, lib!.config.exchangeAddress));
-
       const tokenWithUsdByAddress = await prepareOrderUSDValues(tokenList, rawOrders);
       const parsedOrders = rawOrders.map((o: Order) => parseOrderUi(lib!, tokenWithUsdByAddress, o));
       return _.chain(parsedOrders)
@@ -447,7 +466,7 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
         .value();
     },
     {
-      enabled: !!lib && !!tokenList && tokenList.length > 0,
+      enabled: !!lib && _.size(tokenList) > 0,
       refetchInterval: REFETCH_ORDER_HISTORY,
       onSettled: () => {
         setWaitingForNewOrder(false);

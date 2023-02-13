@@ -6,12 +6,17 @@ import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { QuickSwapRawToken, QuickSwapTWAPProps } from "./types";
 
-export const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): TokenData => {
+export const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): TokenData | null => {
+  const address = rawToken.address ?? rawToken.tokenInfo.address;
+  if (!address || !rawToken.decimals || !rawToken.symbol) {
+    console.error("Invalid token");
+    return null;
+  }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: getTokenLogoURL(rawToken.address ?? rawToken.tokenInfo.address),
+    logoUrl: getTokenLogoURL(address),
   };
 };
 
@@ -19,7 +24,11 @@ export const useParseTokenList = (getTokenLogoURL: (address: string) => string, 
   const dappTokensLength = !dappTokens ? 0 : _.size(dappTokens);
 
   return useMemo(() => {
-    return _.map(dappTokens, (t) => parseToken(getTokenLogoURL, t));
+    const result = _.map(dappTokens, (t) => parseToken(getTokenLogoURL, t));
+    const filtered = result.filter((it) => it !== null);
+    console.log(filtered);
+    
+    return filtered as TokenData[];
   }, [dappTokensLength]);
 };
 
