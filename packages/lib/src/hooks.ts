@@ -4,7 +4,7 @@ import Web3 from "web3";
 import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { InitLibProps, OrderUI } from "./types";
+import { InitLibProps, OrdersData, OrderUI } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
 import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress } from "@defi.org/web3-candies";
@@ -427,18 +427,19 @@ const defaultFetcher = (chainId: number, token: TokenData) => {
 };
 
 const useTokenList = () => {
-  const { tokenList } = useOrdersContext();
+  const tokenList = useOrdersContext().tokenList;
   const listLength = tokenList?.length;
-  const lib = useTwapStore().lib;
+  const lib = useTwapStore((store) => store.lib);
 
   return useMemo(() => {
     if (!lib || !listLength) return [];
-    if (!tokenList.find((it) => lib?.isNativeToken(it))) {
+    if (!tokenList.find((it: any) => lib?.isNativeToken(it))) {
       tokenList.push(lib.config.nativeToken);
     }
-    if (!tokenList.find((it) => lib?.isWrappedToken(it))) {
+    if (!tokenList.find((it: any) => lib?.isWrappedToken(it))) {
       tokenList.push(lib.config.wToken);
     }
+
     return tokenList;
   }, [listLength, lib]);
 };
@@ -454,7 +455,7 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
     return fetcher(lib!.config.chainId, token);
   };
   const prepareOrderUSDValues = usePrepareOrderUSDValues(fetchUsdValues);
-  const query = useQuery(
+  const query = useQuery<OrdersData>(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
       const rawOrders = (await lib!.getAllOrders()).filter((o) => eqIgnoreCase(o.ask.exchange, lib!.config.exchangeAddress));

@@ -1,12 +1,12 @@
-import { StyledLayoutSpookyswap, StyledModalContent, StyledModalList } from "./styles";
+import { StyledLayoutSpookyswap, StyledModalContent } from "./styles";
 import { Orders, TWAP, SpookySwapTWAPProps, SpookySwapOrdersProps } from "@orbs-network/twap-ui-spookyswap";
 import { useConnectWallet, useGetTokensFromViaProtocol, useTheme } from "./hooks";
-import { TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
-import { Dapp, TokenSearchInput, TokenSelectListItem } from "./Components";
+import { Dapp, TokensList } from "./Components";
 import { DappLayout, Popup } from "./Components";
-import { useState } from "react";
+import { TokenListItem } from "./types";
+import _ from "lodash";
 
 const config = Configs.SpookySwap;
 
@@ -21,32 +21,27 @@ interface TokenSelectModalProps {
   onClose: () => void;
 }
 
-export const TokenSelectModal = ({ isOpen, selectedToken, onSelect, onClose }: TokenSelectModalProps) => {
-  const list = useDappTokens().data;
-  const [filterValue, setFilterValue] = useState("");
+const parseList = (rawList?: any): TokenListItem[] => {
+  return _.map(rawList, (rawToken) => {
+    return {
+      token: {
+        address: rawToken.address,
+        decimals: rawToken.decimals,
+        symbol: rawToken.symbol,
+        logoUrl: rawToken.logoUrl,
+      },
+      rawToken,
+    };
+  });
+};
 
+export const TokenSelectModal = ({ isOpen, onSelect, onClose }: TokenSelectModalProps) => {
+  const tokensList = useDappTokens().data;
+  const parsedList = parseList(tokensList);
   return (
     <Popup isOpen={isOpen} onClose={onClose}>
       <StyledModalContent>
-        <TokenSearchInput setValue={setFilterValue} value={filterValue} />
-        <StyledModalList>
-          {list?.map((token: TokenData) => {
-            if (token.address === selectedToken?.address) {
-              return null;
-            }
-            return (
-              <TokenSelectListItem
-                filter={filterValue}
-                onClick={() => onSelect(token)}
-                key={token.address}
-                logo={token.logoUrl}
-                symbol={token.symbol}
-                address={token.address}
-                decimals={token.decimals}
-              />
-            );
-          })}
-        </StyledModalList>
+        <TokensList tokens={parsedList} onClick={onSelect} />
       </StyledModalContent>
     </Popup>
   );

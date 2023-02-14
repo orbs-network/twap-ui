@@ -162,7 +162,7 @@ export const useTheme = () => {
 export const useBalanceQuery = (token?: TokenData) => {
   const lib = store.useTwapStore().lib;
 
-  const query = useQuery(["useDappExampleBalance", lib?.maker, token?.address], () => lib!.makerBalance(token!), {
+  const query = useQuery(["useDappExampleBalance", lib?.maker, token?.address, lib?.config.chainId], () => lib!.makerBalance(token!), {
     enabled: !!lib && !!token,
     refetchInterval: 20_000,
     staleTime: Infinity,
@@ -170,17 +170,7 @@ export const useBalanceQuery = (token?: TokenData) => {
   return query;
 };
 
-export const useListTokenBalace = (address: string, decimals: number, symbol: string, logo?: string) => {
-  const token: TokenData = useMemo(
-    () => ({
-      address,
-      decimals,
-      symbol,
-      logoUrl: logo,
-    }),
-    [symbol, address, decimals, logo]
-  );
-
+export const useBalance = (token?: TokenData) => {
   const { data = zero, isLoading } = useBalanceQuery(token);
 
   return { balance: store.amountUi(token, data), isLoading };

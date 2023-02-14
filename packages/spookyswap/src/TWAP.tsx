@@ -5,7 +5,6 @@ import translations from "./i18n/en.json";
 import { Configs } from "@orbs-network/twap";
 import { AdapterContextProvider, parseToken, useAdapterContext, useGetProvider, useGlobalStyles, useTokensFromDapp } from "./hooks";
 import { SpookySwapTWAPProps } from ".";
-import { StyledColumnFlex } from "@orbs-network/twap-ui/dist/styles";
 
 const TWAP = (props: SpookySwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
@@ -173,10 +172,10 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             <TwapStyles.StyledRowFlex justifyContent="space-between">
               <Components.TokenSelect hideArrow={true} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
               <TwapStyles.StyledOverflowContainer>
-                <StyledColumnFlex style={{ width: "fit-content", alignItems: "flex-end", flex: 1 }} gap={2}>
+                <TwapStyles.StyledColumnFlex style={{ width: "fit-content", alignItems: "flex-end", flex: 1 }} gap={2}>
                   <Components.TokenInput isSrc={isSrcToken} />
                   <Components.TokenUSD isSrc={isSrcToken} />
-                </StyledColumnFlex>
+                </TwapStyles.StyledColumnFlex>
               </TwapStyles.StyledOverflowContainer>
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex className="twap-balance-container" justifyContent="flex-start">

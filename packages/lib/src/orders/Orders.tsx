@@ -12,7 +12,7 @@ import { Components, Styles } from "..";
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
-  const { orders, isLoading }: any = useOrdersHistoryQuery();
+  const { orders, isLoading } = useOrdersHistoryQuery();
   const translations = useOrdersContext().translations;
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -31,11 +31,13 @@ function Orders() {
         </StyledHeaderTop>
         <StyledTabs className="twap-orders-header-tabs" value={selectedTab} onChange={handleChange}>
           {_.keys(Status).map((key, index) => {
+            const status = key as Status;
+
             return (
               <StyledTab
                 className="twap-orders-header-tabs-tab"
-                key={index}
-                label={`${orders[key] ? orders[key]?.length : "0"} ${translations[key as keyof Translations]}`}
+                key={key}
+                label={`${orders[status] ? orders[status]?.length : "0"} ${translations[key as keyof Translations]}`}
                 {...a11yProps(index)}
               />
             );

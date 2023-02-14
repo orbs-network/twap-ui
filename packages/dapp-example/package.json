@@ -24,7 +24,9 @@
     "react": "18.x",
     "react-dom": "18.x",
     "react-helmet": "6.x",
-    "react-router-dom": "6.x"
+    "react-router-dom": "6.x",
+    "react-virtualized-auto-sizer": "^1.0.7",
+    "react-window": "^1.8.8"
   },
   "browserslist": {
     "production": [
@@ -37,5 +39,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/react-virtualized-auto-sizer": "^1.0.1",
+    "@types/react-window": "^1.8.5"
   }
 }

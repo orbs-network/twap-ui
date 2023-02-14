@@ -6,7 +6,7 @@ import { Status } from "@orbs-network/twap";
 import { useOrdersContext } from "../context";
 import { OrderUI } from "../types";
 
-function OrdersList({ orders, status, isLoading }: { orders: OrderUI[]; status: Status; isLoading: boolean }) {
+function OrdersList({ orders, status, isLoading }: { orders?: OrderUI[]; status: Status; isLoading: boolean }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
   const translations = useOrdersContext().translations;
 

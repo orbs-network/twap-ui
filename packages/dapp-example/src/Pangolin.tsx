@@ -1,6 +1,6 @@
 import { PangolinTWAPProps, TWAP } from "@orbs-network/twap-ui-pangolin";
-import { DappLayout, Popup, TokenSearchInput, TokenSelectListItem } from "./Components";
-import { StyledModalList, StyledPangolinTWAP, StyledLayoutPangolinDaasTWAP, StyledModalContent } from "./styles";
+import { DappLayout, Popup, TokensList } from "./Components";
+import { StyledPangolinTWAP, StyledLayoutPangolinDaasTWAP, StyledModalContent } from "./styles";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
@@ -10,7 +10,7 @@ import { Dapp } from "./Components";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { pangolinDarkTheme, pangolinLightTheme } from "./themes";
 import Web3 from "web3";
-import { useState } from "react";
+import { TokenListItem } from "./types";
 
 interface TokenSelectModalProps {
   isOpen: boolean;
@@ -69,28 +69,28 @@ const useDappTokens = () => {
   );
 };
 
+const parseList = (rawList?: any): TokenListItem[] => {
+  return _.map(rawList, (rawToken) => {
+    return {
+      token: {
+        address: rawToken.address ?? rawToken.tokenInfo?.address,
+        decimals: rawToken.decimals ?? rawToken.tokenInfo?.decimals,
+        symbol: rawToken.symbol ?? rawToken.tokenInfo?.symbol,
+        logoUrl: rawToken.tokenInfo?.logoURI || nativeTokenLogo,
+      },
+      rawToken,
+    };
+  });
+};
+
 const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModalProps) => {
   const { data: tokensList } = useDappTokens();
-  const [filterValue, setFilterValue] = useState("");
-
-  if (!tokensList) return null;
+  const parsedList = parseList(tokensList);
 
   return (
     <Popup isOpen={isOpen} onClose={onClose}>
       <StyledModalContent>
-        <TokenSearchInput setValue={setFilterValue} value={filterValue} />
-        <StyledModalList>
-          {_.map(tokensList, (token: any) => {
-            const address = token.tokenInfo ? token.tokenInfo.address : token.address;
-            const decimals = token.tokenInfo ? token.tokenInfo.decimals : token.decimals;
-            const symbol = token.tokenInfo ? token.tokenInfo.symbol : token.symbol;
-            const logo = token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
-
-            return (
-              <TokenSelectListItem filter={filterValue} key={address} onClick={() => onCurrencySelect(token)} decimals={decimals} logo={logo} symbol={symbol} address={address} />
-            );
-          })}
-        </StyledModalList>
+        <TokensList tokens={parsedList} onClick={onCurrencySelect} />
       </StyledModalContent>
     </Popup>
   );

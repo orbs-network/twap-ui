@@ -76,19 +76,6 @@ export const StyledCloseIcon = styled("button")({
   },
 });
 
-export const StyledModalList = styled("ul")({
-  listStyleType: "none",
-  flex: 1,
-  overflow: "auto",
-  display: "flex",
-  flexDirection: "column",
-  padding: 0,
-  width: "100%",
-  height: "calc(100% - 50px)",
-  margin: 0,
-  paddingTop: 10,
-});
-
 export const StyledModalContent = styled(Box)({
   width: "calc(100vw - 20px)",
   height: 500,
@@ -99,9 +86,11 @@ export const StyledModalContent = styled(Box)({
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
+  display: "flex",
+  flexDirection: "column",
 });
 
-export const StyledModalListItem = styled("li")({
+export const StyledListToken = styled(Box)({
   cursor: "pointer",
   display: "flex",
   gap: 10,
@@ -235,4 +224,21 @@ export const StyledSearchInput = styled("input")({
   border: "unset",
   outline: "unset",
   textIndent: 20,
+});
+
+export const StyledTokens = styled(Box)({
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+  overflow: "auto",
+  padding: 0,
+  width: "100%",
+  height: "calc(100% - 50px)",
+  margin: 0,
+  paddingTop: 10,
+});
+
+export const StyledTokensList = styled(Box)({
+  flex: 1,
+  display: "flex",
 });

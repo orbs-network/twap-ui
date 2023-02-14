@@ -1,4 +1,4 @@
-import { Config, TokenData } from "@orbs-network/twap";
+import { Config, Status, TokenData } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { parseOrderUi } from "./store";
 
@@ -184,4 +184,11 @@ export interface TWAPTokenSelectProps {
   onClose: () => void;
   srcTokenSelected?: any;
   dstTokenSelected?: any;
+}
+
+export interface OrdersData {
+  [Status.Open]?: OrderUI[];
+  [Status.Canceled]?: OrderUI[];
+  [Status.Expired]?: OrderUI[];
+  [Status.Completed]?: OrderUI[];
 }
