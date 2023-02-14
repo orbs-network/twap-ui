@@ -230,15 +230,16 @@ export const StyledTokens = styled(Box)({
   display: "flex",
   flexDirection: "column",
   flex: 1,
-  overflow: "auto",
   padding: 0,
   width: "100%",
-  height: "calc(100% - 50px)",
   margin: 0,
-  paddingTop: 10,
+  overflow:'hidden'
 });
 
 export const StyledTokensList = styled(Box)({
   flex: 1,
   display: "flex",
+  overflow: "auto",
+  width: "100%",
+  paddingTop: 10,
 });
