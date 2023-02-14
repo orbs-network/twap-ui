@@ -1,4 +1,4 @@
-import { TokenData } from "@orbs-network/twap";
+import { Configs, isNativeAddress, TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import { SpiritSwapTWAPProps } from ".";
@@ -9,7 +9,15 @@ export const useGetProvider = (getProvider: () => any, account?: string) => {
   return useMemo(() => getProvider(), [account]);
 };
 
-export const parseToken = (rawToken: any, getTokenImageUrl: (symbol: string) => string): TokenData => {
+export const parseToken = (rawToken: any, getTokenImageUrl: (symbol: string) => string): TokenData | undefined => {
+  if (!rawToken.address || !rawToken.symbol || !rawToken.decimals) {
+    console.error("Invalid token");
+    return;
+  }
+  if (isNativeAddress(rawToken.address)) {
+    return Configs.SpiritSwap.nativeToken;
+  }
+
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,

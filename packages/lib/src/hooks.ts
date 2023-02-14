@@ -338,6 +338,7 @@ export const useLoadingState = () => {
   const srcUSD = useSrcUsd();
   const dstUSD = useDstUsd();
   const srcBalance = useSrcBalance();
+
   const dstBalance = useDstBalance();
 
   return {
@@ -360,6 +361,7 @@ export const useDstUsd = () => {
 
 export const useSrcBalance = () => {
   const state = useTwapStore();
+
   return useBalanceQuery(state.srcToken, state.setSrcBalance);
 };
 
@@ -436,7 +438,7 @@ const useTokenList = () => {
     }
     if (!tokenList.find((it) => lib?.isWrappedToken(it))) {
       tokenList.push(lib.config.wToken);
-    }    
+    }
     return tokenList;
   }, [listLength, lib]);
 };
@@ -455,8 +457,6 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
   const query = useQuery(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
-      console.log({ tokenList });
-      
       const rawOrders = (await lib!.getAllOrders()).filter((o) => eqIgnoreCase(o.ask.exchange, lib!.config.exchangeAddress));
       const tokenWithUsdByAddress = await prepareOrderUSDValues(tokenList, rawOrders);
       const parsedOrders = rawOrders.map((o: Order) => parseOrderUi(lib!, tokenWithUsdByAddress, o));

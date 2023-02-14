@@ -191,7 +191,7 @@ interface TokenSelectProps extends TWAPTokenSelectProps {
   isOpen: boolean;
   onClose: () => void;
   isSrc?: boolean;
-  parseToken?: (value: any) => TokenData;
+  parseToken?: (value: any) => TokenData | undefined;
 }
 
 export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, onSrcSelect, onDstSelect, isSrc }: TokenSelectProps) => {

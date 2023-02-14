@@ -1,35 +1,25 @@
-import { TokenData } from "@orbs-network/twap";
+import { Configs, isNativeAddress, TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
-import { createContext, useContext, useEffect, useMemo } from "react";
+import { createContext, useContext, useEffect } from "react";
 import _ from "lodash";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { QuickSwapRawToken, QuickSwapTWAPProps } from "./types";
 
-export const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): TokenData | null => {
-  const address = rawToken.address ?? rawToken.tokenInfo.address;
-  if (!address || !rawToken.decimals || !rawToken.symbol) {
+export const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): TokenData | undefined => {
+  if (!rawToken.address || !rawToken.decimals || !rawToken.symbol) {
     console.error("Invalid token");
-    return null;
+    return;
+  }
+  if (isNativeAddress(rawToken.address)) {
+    return Configs.QuickSwap.nativeToken;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: getTokenLogoURL(address),
+    logoUrl: getTokenLogoURL(rawToken.address),
   };
-};
-
-export const useParseTokenList = (getTokenLogoURL: (address: string) => string, dappTokens?: { [key: string]: QuickSwapRawToken }): TokenData[] => {
-  const dappTokensLength = !dappTokens ? 0 : _.size(dappTokens);
-
-  return useMemo(() => {
-    const result = _.map(dappTokens, (t) => parseToken(getTokenLogoURL, t));
-    const filtered = result.filter((it) => it !== null);
-    console.log(filtered);
-    
-    return filtered as TokenData[];
-  }, [dappTokensLength]);
 };
 
 const findAndParseToken = (getTokenLogoURL: (address: string) => string, address: string, tokenList?: { [key: string]: QuickSwapRawToken }) => {

@@ -105,7 +105,8 @@ export const useTwapStore = create(
       const isLimitOrder = get().isLimitOrder;
       const limitPrice = (get() as any).getLimitPrice(false);
       const maxSrcInputAmount = (get() as any).getMaxSrcInputAmount();
-      const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount > maxSrcInputAmount;
+
+      const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount.gt(maxSrcInputAmount);
       if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) return translation.selectTokens;
       if (srcAmount.isZero()) return translation.enterAmount;
       if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) return translation.insufficientFunds;

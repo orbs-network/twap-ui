@@ -1,46 +1,27 @@
-import { zeroAddress } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
 import _ from "lodash";
-import { useMemo, useEffect } from "react";
+import { useEffect } from "react";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { isNativeAddress, Configs } from "@orbs-network/twap";
 
-const nativeToken: TokenData = {
-  decimals: 18,
-  symbol: "AVAX",
-  address: zeroAddress,
-  logoUrl: "https://raw.githubusercontent.com/pangolindex/sdk/master/src/images/chains/avax.png",
-};
-
-export const parseToken = (rawToken: any): TokenData => {
-  if (!rawToken.tokenInfo) {
-    return {
-      address: Web3.utils.toChecksumAddress(zeroAddress),
-      decimals: 18,
-      symbol: "AVAX",
-      logoUrl: "https://raw.githubusercontent.com/pangolindex/sdk/master/src/images/chains/avax.png",
-    };
+export const parseToken = (rawToken: any): TokenData | undefined => {
+  if (!rawToken.address || !rawToken.symbol || !rawToken.decimals) {
+    console.error("Invalid token");
+    return;
   }
-  const { tokenInfo } = rawToken;
+
+  if (isNativeAddress(rawToken.address)) {
+    return Configs.Pangolin.nativeToken;
+  }
+
   return {
-    address: Web3.utils.toChecksumAddress(tokenInfo.address),
-    decimals: tokenInfo.decimals,
-    symbol: tokenInfo.symbol,
-    logoUrl: tokenInfo.logoURI,
+    address: Web3.utils.toChecksumAddress(rawToken.address),
+    decimals: rawToken.decimals,
+    symbol: rawToken.symbol,
+    logoUrl: rawToken.tokenInfo && rawToken.tokenInfo.logoURI,
   };
-};
-
-export const useParseTokenList = (dappTokens?: any): TokenData[] => {
-  const dappTokensLength = !dappTokens ? 0 : _.size(dappTokens);
-
-  return useMemo(() => {
-    if (dappTokensLength === 0) return [];
-    const result = _.map(dappTokens, (t) => parseToken(t));
-
-    return [nativeToken, ...result];
-  }, [dappTokensLength]);
 };
 
 const findToken = (address: string, tokenList: any) => {

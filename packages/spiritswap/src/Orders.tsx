@@ -6,9 +6,8 @@ import translations from "./i18n/en.json";
 import { SpiritSwapOrdersProps } from ".";
 import _ from "lodash";
 
-const parseDappTokens = (props: SpiritSwapOrdersProps): TokenData[] => {
-  if (!props.dappTokens) return [];
-  return _.map(props.dappTokens, (t) => parseToken(t, props.getTokenImageUrl));
+const parseTokens = (props: SpiritSwapOrdersProps): TokenData[] => {
+  return _.compact(_.map(props.dappTokens, (t) => parseToken(t, props.getTokenImageUrl)));
 };
 
 function OrderHistory(props: SpiritSwapOrdersProps) {
@@ -20,7 +19,7 @@ function OrderHistory(props: SpiritSwapOrdersProps) {
       config={Configs.SpiritSwap}
       provider={provider}
       translations={translations as Translations}
-      tokenList={parseDappTokens(props)}
+      tokenList={parseTokens(props)}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
     >

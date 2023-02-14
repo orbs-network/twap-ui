@@ -1,7 +1,6 @@
-import { TokenData } from "@orbs-network/twap";
+import { Configs, isNativeAddress, TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
-import _ from "lodash";
-import { createContext, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 import { SpookySwapTWAPProps } from ".";
 
 import Web3 from "web3";
@@ -13,24 +12,20 @@ export const useGetProvider = (getProvider: () => any, account?: string) => {
   }, [account]);
 };
 
-export const parseToken = (rawToken: any, getTokenImage: (symbol: string) => string): TokenData => {
+export const parseToken = (rawToken: any, getTokenImage: (symbol: string) => string): TokenData | undefined => {
+  if (!rawToken.address || !rawToken.symbol || !rawToken.decimals) {
+    console.error("Invalid token");
+    return;
+  }
+  if (isNativeAddress(rawToken.address)) {
+    return Configs.SpookySwap.nativeToken;
+  }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
     logoUrl: getTokenImage(rawToken.symbol),
   };
-};
-
-export const useParseTokenList = (getTokenImageUrl: (symbol: string) => string, dappTokens?: any[]): TokenData[] => {
-  const dappTokensRef = useRef<any[] | undefined>(undefined);
-  dappTokensRef.current = dappTokens;
-  const dappTokensLength = dappTokens?.length || 0;
-
-  return useMemo(() => {
-    if (!dappTokensRef.current) return [];
-    return _.map(dappTokensRef.current, (t) => parseToken(t, getTokenImageUrl));
-  }, [dappTokensLength]);
 };
 
 const findToken = (symbol?: string, tokenList?: TokenData[]) => {
