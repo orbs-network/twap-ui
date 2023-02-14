@@ -127,13 +127,14 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
 
   return <TokenSelectModal tokenSelected={undefined} onCurrencySelect={props.onSelect} isOpen={props.isOpen} onDismiss={props.onClose} />;
 };
+const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 
 const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
   const { onSrcTokenSelected, onDstTokenSelected, getTokenLogoURL } = useAdapterContext();
 
   return (
     <Components.TokenSelectModal
-      Component={ModifiedTokenSelectModal}
+      Component={memoizedTokenSelect}
       onSrcSelect={onSrcTokenSelected}
       onDstSelect={onDstTokenSelected}
       isOpen={open}

@@ -10,7 +10,7 @@ import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
 import { dapps } from "./config";
 import { TokenData } from "@orbs-network/twap";
-import { hooks, store } from "@orbs-network/twap-ui";
+import { store } from "@orbs-network/twap-ui";
 
 export const injectedConnector = new InjectedConnector({});
 
@@ -159,6 +159,17 @@ export const useTheme = () => {
   };
 };
 
+export const useBalanceQuery = (token?: TokenData) => {
+  const lib = store.useTwapStore().lib;
+
+  const query = useQuery(["useDappExampleBalance", lib?.maker, token?.address], () => lib!.makerBalance(token!), {
+    enabled: !!lib && !!token,
+    refetchInterval: 20_000,
+    staleTime: Infinity,
+  });
+  return query;
+};
+
 export const useListTokenBalace = (address: string, decimals: number, symbol: string, logo?: string) => {
   const token: TokenData = useMemo(
     () => ({
@@ -170,13 +181,9 @@ export const useListTokenBalace = (address: string, decimals: number, symbol: st
     [symbol, address, decimals, logo]
   );
 
-  const { data = zero, isLoading } = hooks.useBalanceQuery(token, undefined, Infinity);
+  const { data = zero, isLoading } = useBalanceQuery(token);
 
-  const balance = useMemo(() => {
-    return store.amountUi(token, data);
-  }, [token, data]);
-
-  return { balance, isLoading };
+  return { balance: store.amountUi(token, data), isLoading };
 };
 
 export function useDebounce(value: string, delay: number) {
