@@ -1,25 +1,19 @@
-import { Orders, OrdersAdapter, Translations } from "@orbs-network/twap-ui";
+import { hooks, Orders, OrdersAdapter, Translations } from "@orbs-network/twap-ui";
 import { memo } from "react";
-import { Configs, TokenData } from "@orbs-network/twap";
-import { parseToken, useGetProvider } from "./hooks";
+import { config, parseToken, useGetProvider } from "./hooks";
 import translations from "./i18n/en.json";
 import { SpiritSwapOrdersProps } from ".";
-import _ from "lodash";
-
-const parseTokens = (props: SpiritSwapOrdersProps): TokenData[] => {
-  return _.compact(_.map(props.dappTokens, (t) => parseToken(t, props.getTokenImageUrl)));
-};
 
 function OrderHistory(props: SpiritSwapOrdersProps) {
   const provider = useGetProvider(props.getProvider, props.account);
-
+  const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(rawToken, props.getTokenImageUrl));
   return (
     <OrdersAdapter
       account={props.account}
-      config={Configs.SpiritSwap}
+      config={config}
       provider={provider}
       translations={translations as Translations}
-      tokenList={parseTokens(props)}
+      tokenList={parsedTokens}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
     >

@@ -131,6 +131,7 @@ interface LibProps {
   translations: Translations;
   priorityFeePerGas?: string;
   maxFeePerGas?: string;
+  tokensList?: TokenData[];
 }
 
 export interface TwapLibProps extends LibProps {

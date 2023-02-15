@@ -107,7 +107,7 @@ const PangolinComponent = () => {
   const twapProps: PangolinTWAPProps = {
     account,
     TokenSelectModal,
-    srcToken: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", //WAVAX
+    srcToken: zeroAddress, //AVAX
     dstToken: "0x340fE1D898ECCAad394e2ba0fC1F93d27c7b717A", // ORBS
     dappTokens,
     provider,

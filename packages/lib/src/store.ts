@@ -23,11 +23,11 @@ export type Duration = { resolution: TimeResolution; amount?: number };
  */
 
 const initialState = {
+  tokensList: [] as TokenData[],
   lib: undefined as TWAPLib | undefined,
   srcToken: undefined as TokenData | undefined,
   dstToken: undefined as TokenData | undefined,
   wrongNetwork: undefined as undefined | boolean,
-  tokenList: [] as TokenData[],
   srcAmountUi: "",
 
   limitPriceUi: { priceUi: "", inverted: false },
@@ -55,6 +55,18 @@ export const useTwapStore = create(
     resetWithLib: () => set({ ...initialState, lib: get().lib }),
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
+    setTokensList: (tokensList: TokenData[]) => {
+      const lib = get().lib;
+      if (!lib) return;
+      if (!tokensList.find((it: any) => lib.isNativeToken(it))) {
+        tokensList.push(lib.config.nativeToken);
+      }
+      if (!tokensList.find((it: any) => lib.isWrappedToken(it))) {
+        tokensList.push(lib.config.wToken);
+      }
+
+      set({ tokensList });
+    },
     setSrcToken: (srcToken?: TokenData) => {
       srcToken && analytics.onSrcTokenClick(srcToken?.symbol);
       set({ srcToken });
@@ -63,7 +75,6 @@ export const useTwapStore = create(
       dstToken && analytics.onDstTokenClick(dstToken.symbol);
       set({ dstToken, limitPriceUi: initialState.limitPriceUi });
     },
-    setTokenList: (tokenList?: TokenData[]) => set({ tokenList }),
     setSrcAmountUi: (srcAmountUi: string) => {
       set({ srcAmountUi });
       (get() as any).setChunks(get().chunks);

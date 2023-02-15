@@ -3,7 +3,7 @@ import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as
 import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
-import { handlePartnerDaas, parseToken, useGlobalStyles, useTokensFromDapp } from "./hooks";
+import { getConfig, parseToken, useGlobalStyles } from "./hooks";
 import { PangolinTWAPProps } from "./types";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
@@ -14,13 +14,15 @@ import OrderHistory from "./Orders";
 const defaultTheme = createTheme();
 
 const TWAP = (props: PangolinTWAPProps) => {
-  useTokensFromDapp(props.srcToken, props.dstToken, props.dappTokens);
+  const tokenList = hooks.useParseTokens(props.dappTokens, parseToken);
+
+  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles(props.theme);
   const memoizedConnect = useCallback(() => {
     props.connect?.();
   }, []);
 
-  const { partnerDaas, config } = handlePartnerDaas(props.partnerDaas);
+  const { partnerDaas, config } = getConfig(props.partnerDaas);
 
   return (
     <Emotion10ThemeProvider theme={defaultTheme}>
@@ -35,6 +37,7 @@ const TWAP = (props: PangolinTWAPProps) => {
           account={props.account}
           connectedChainId={props.connectedChainId}
           askDataParams={[partnerDaas]}
+          tokensList={tokenList}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
@@ -168,8 +171,6 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
   );
 };
 
-const MemoizedTokenSelect = memo(TokenSelect);
-
 const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
@@ -181,7 +182,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
 
   return (
     <>
-      <MemoizedTokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
+      <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
       <TwapStyles.StyledColumnFlex gap={4} className="twap-token-panel">
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>

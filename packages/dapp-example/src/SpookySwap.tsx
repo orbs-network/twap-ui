@@ -63,7 +63,7 @@ const DappComponent = () => {
     getProvider,
     connect,
     account,
-    srcToken: "WFTM",
+    srcToken: "FTM",
     dstToken: "ORBS",
     getTokenImageUrl,
     dappTokens,

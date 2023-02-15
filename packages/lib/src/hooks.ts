@@ -1,7 +1,7 @@
 import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
-import { useOrdersContext, useTwapContext } from "./context";
+import { useTwapContext } from "./context";
 import Web3 from "web3";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI } from "./types";
@@ -426,26 +426,8 @@ const defaultFetcher = (chainId: number, token: TokenData) => {
   return Paraswap.priceUsd(chainId, token);
 };
 
-const useTokenList = () => {
-  const tokenList = useOrdersContext().tokenList;
-  const listLength = tokenList?.length;
-  const lib = useTwapStore((store) => store.lib);
-
-  return useMemo(() => {
-    if (!lib || !listLength) return [];
-    if (!tokenList.find((it: any) => lib?.isNativeToken(it))) {
-      tokenList.push(lib.config.nativeToken);
-    }
-    if (!tokenList.find((it: any) => lib?.isWrappedToken(it))) {
-      tokenList.push(lib.config.wToken);
-    }
-
-    return tokenList;
-  }, [listLength, lib]);
-};
-
 export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenData) => Promise<BN> = defaultFetcher) => {
-  const tokenList = useTokenList();
+  const tokenList = useTwapStore((store) => store.tokensList);
 
   const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
   const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
@@ -497,4 +479,30 @@ export const usePrepareOrderUSDValues = (fetchUsd: (token: TokenData) => Promise
       (t) => Web3.utils.toChecksumAddress(t.token.address)
     );
   };
+};
+
+export const useSetTokensFromDapp = (srcTokenAddressOrSymbol?: string, dstTokenAddressOrSymbol?: string) => {
+  const setSrcToken = useTwapStore((state) => state.setSrcToken);
+  const setDstToken = useTwapStore((state) => state.setDstToken);
+  const tokensList = useTwapStore((store) => store.tokensList);
+  const tokensReady = _.size(tokensList) > 0;
+  const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
+
+  useEffect(() => {
+    if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
+
+    if (srcTokenAddressOrSymbol) {
+      const srcToken = _.find(tokensList, (token) => eqIgnoreCase(srcTokenAddressOrSymbol, token.address) || eqIgnoreCase(srcTokenAddressOrSymbol, token.symbol));
+      setSrcToken(srcToken);
+    }
+    if (dstTokenAddressOrSymbol) {
+      const dstToken = _.find(tokensList, (token) => eqIgnoreCase(dstTokenAddressOrSymbol, token.address) || eqIgnoreCase(dstTokenAddressOrSymbol, token.symbol));
+      setDstToken(dstToken);
+    }
+  }, [srcTokenAddressOrSymbol, dstTokenAddressOrSymbol, tokensReady, wrongNetwork]);
+};
+
+export const useParseTokens = (dappTokens: any, parseToken: (rawToken: any) => TokenData | undefined): TokenData[] => {
+  const listLength = _.size(dappTokens);
+  return useMemo(() => _.compact(_.map(dappTokens, parseToken)), [listLength]);
 };

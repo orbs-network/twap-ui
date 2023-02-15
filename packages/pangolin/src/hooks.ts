@@ -1,60 +1,33 @@
 import { TokenData } from "@orbs-network/twap";
-import { store } from "@orbs-network/twap-ui";
-import _ from "lodash";
-import { useEffect } from "react";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { isNativeAddress, Configs } from "@orbs-network/twap";
 
 export const parseToken = (rawToken: any): TokenData | undefined => {
-  if (!rawToken.address || !rawToken.symbol || !rawToken.decimals) {
-    console.error("Invalid token");
+  const { config } = getConfig();
+  if (!rawToken.address || !rawToken.symbol) {
+    console.error("Invalid token", rawToken);
+
     return;
   }
 
   if (isNativeAddress(rawToken.address)) {
-    return Configs.Pangolin.nativeToken;
+    return config.nativeToken;
   }
 
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: rawToken.tokenInfo && rawToken.tokenInfo.logoURI,
+    logoUrl: rawToken.tokenInfo ? rawToken.tokenInfo.logoURI : "",
   };
-};
-
-const findToken = (address: string, tokenList: any) => {
-  const token = tokenList[address];
-  return !token ? undefined : parseToken(token);
-};
-
-export const useTokensFromDapp = (srcTokenAddress?: string, dstTokenAddress?: string, dappTokens?: any) => {
-  const setSrcToken = store.useTwapStore((state) => state.setSrcToken);
-  const setDstToken = store.useTwapStore((state) => state.setDstToken);
-  const tokensReady = !!dappTokens && _.size(dappTokens) > 0;
-  const wrongNetwork = store.useTwapStore((store) => store.wrongNetwork);
-
-  useEffect(() => {
-    if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
-
-    if (srcTokenAddress) {
-      const srcToken = findToken(srcTokenAddress, dappTokens);
-
-      setSrcToken(srcToken);
-    }
-    if (dstTokenAddress) {
-      const dstToken = findToken(dstTokenAddress, dappTokens);
-      setDstToken(dstToken);
-    }
-  }, [srcTokenAddress, dstTokenAddress, tokensReady, wrongNetwork]);
 };
 
 export const useGlobalStyles = (theme: any) => {
   return configureStyles(theme);
 };
 
-export const handlePartnerDaas = (partnerDaas?: string) => {
+export const getConfig = (partnerDaas?: string) => {
   const _partnerDaas = partnerDaas && !isNativeAddress(partnerDaas) ? partnerDaas : undefined;
   const config = _partnerDaas ? Configs.PangolinDaas : Configs.Pangolin;
 

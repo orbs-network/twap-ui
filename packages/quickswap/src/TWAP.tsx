@@ -1,13 +1,14 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
-import { Configs } from "@orbs-network/twap";
-import { AdapterContextProvider, parseToken, useAdapterContext, useGlobalStyles, useSetTokensFromDapp } from "./hooks";
+import { AdapterContextProvider, config, parseToken, useAdapterContext, useGlobalStyles } from "./hooks";
 import translations from "./i18n/en.json";
 import { QuickSwapRawToken, QuickSwapTWAPProps } from "./types";
 
 const TWAP = (props: QuickSwapTWAPProps) => {
-  useSetTokensFromDapp(props.getTokenLogoURL, props.srcToken, props.dstToken, props.dappTokens);
+  const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
+
+  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles();
 
   const connect = useCallback(() => {
@@ -17,12 +18,13 @@ const TWAP = (props: QuickSwapTWAPProps) => {
   return (
     <TwapAdapter
       connect={connect}
-      config={Configs.QuickSwap}
+      config={config}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
       translations={translations as Translations}
       provider={props.provider}
       account={props.account}
+      tokensList={parsedTokens}
     >
       <GlobalStyles styles={globalStyles} />
       <AdapterContextProvider value={props}>
@@ -145,8 +147,6 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
   );
 };
 
-const MemoizedTokenSelect = memo(TokenSelect);
-
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
@@ -157,7 +157,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 
   return (
     <>
-      <MemoizedTokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
+      <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
 
       <TwapStyles.StyledColumnFlex gap={0} className="twap-token-panel">
         <Components.Base.Card>

@@ -1,18 +1,12 @@
-import { TokenData } from "@orbs-network/twap";
-import { Orders, OrdersAdapter, Translations } from "@orbs-network/twap-ui";
-import _ from "lodash";
+import { hooks, Orders, OrdersAdapter, Translations } from "@orbs-network/twap-ui";
 import { memo } from "react";
-import { handlePartnerDaas, parseToken } from "./hooks";
+import { getConfig, parseToken } from "./hooks";
 import translations from "./i18n/en.json";
 import { PangolinOrdersProps } from "./types";
 
-export const parseTokens = (props: PangolinOrdersProps): TokenData[] => {
-  return _.compact(_.map(props.dappTokens, parseToken));
-};
-
 function OrderHistory(props: PangolinOrdersProps) {
-  const tokenList = parseTokens(props);
-  const { partnerDaas, config } = handlePartnerDaas(props.partnerDaas);
+  const tokenList = hooks.useParseTokens(props.dappTokens, parseToken);
+  const { partnerDaas, config } = getConfig(props.partnerDaas);
 
   return (
     <OrdersAdapter

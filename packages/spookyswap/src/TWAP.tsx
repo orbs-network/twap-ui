@@ -2,13 +2,13 @@ import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Styles as TwapStyles, TWAPTokenSelectProps, Translations, TwapAdapter, useTwapContext } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
-import { Configs } from "@orbs-network/twap";
-import { AdapterContextProvider, parseToken, useAdapterContext, useGetProvider, useGlobalStyles, useTokensFromDapp } from "./hooks";
+import { AdapterContextProvider, config, parseToken, useAdapterContext, useGetProvider, useGlobalStyles } from "./hooks";
 import { SpookySwapTWAPProps } from ".";
 
 const TWAP = (props: SpookySwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
-  useTokensFromDapp(props.srcToken, props.dstToken, props.dappTokens);
+  const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(rawToken, props.getTokenImageUrl));
+  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles(props.isDarkTheme);
   const connect = useCallback(() => {
     props.connect();
@@ -17,13 +17,14 @@ const TWAP = (props: SpookySwapTWAPProps) => {
   return (
     <TwapAdapter
       connect={connect}
-      config={Configs.SpookySwap}
+      config={config}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
       translations={translations as Translations}
       provider={provider}
       account={props.account}
       connectedChainId={props.connectedChainId}
+      tokensList={parsedTokens}
     >
       <GlobalStyles styles={globalStyles} />
 
@@ -149,8 +150,6 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
   );
 };
 
-const MemoizedTokenSelect = memo(TokenSelect);
-
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
@@ -161,7 +160,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 
   return (
     <>
-      <MemoizedTokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
+      <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
       <TwapStyles.StyledColumnFlex gap={0} className="twap-token-panel">
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={10}>

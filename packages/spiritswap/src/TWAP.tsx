@@ -1,13 +1,14 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
-import { Configs } from "@orbs-network/twap";
-import { AdapterContextProvider, parseToken, useAdapterContext, useGetProvider, useGlobalStyles, useTokensFromDapp } from "./hooks";
+import { AdapterContextProvider, config, parseToken, useAdapterContext, useGetProvider, useGlobalStyles } from "./hooks";
 import translations from "./i18n/en.json";
 import { SpiritSwapTWAPProps } from ".";
 
 const TWAP = (props: SpiritSwapTWAPProps) => {
-  useTokensFromDapp(props.srcToken, props.dstToken, props.dappTokens);
+  const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(rawToken, props.getTokenImageUrl));
+
+  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const provider = useGetProvider(props.getProvider, props.account);
   const globalStyles = useGlobalStyles();
 
@@ -18,12 +19,13 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
   return (
     <TwapAdapter
       connect={connect}
-      config={Configs.SpiritSwap}
+      config={config}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
       translations={translations as Translations}
       provider={provider}
       account={props.account}
+      tokensList={parsedTokens}
     >
       <GlobalStyles styles={globalStyles} />
       <AdapterContextProvider value={props}>
