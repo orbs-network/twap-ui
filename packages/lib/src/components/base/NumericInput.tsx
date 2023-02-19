@@ -45,6 +45,7 @@ function NumericInput({
       <Fade in={!loading} style={{ transition: "0s" }}>
         <StyledFlex>
           <NumericFormat
+            allowNegative={false}
             disabled={disabled}
             decimalScale={decimalScale}
             onBlur={onBlur}
