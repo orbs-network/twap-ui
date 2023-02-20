@@ -106,7 +106,8 @@ export const useTwapStore = create(
       const isLimitOrder = get().isLimitOrder;
       const limitPrice = (get() as any).getLimitPrice(false);
       const maxSrcInputAmount = (get() as any).getMaxSrcInputAmount();
-      const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount > maxSrcInputAmount;
+      const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount?.gt(maxSrcInputAmount);
+
       if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) return translation.selectTokens;
       if (srcAmount.isZero()) return translation.enterAmount;
       if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) return translation.insufficientFunds;
@@ -271,7 +272,7 @@ export const useTwapStore = create(
         .add(get().duration.amount * get().duration.resolution)
         .add(1, "minute")
         .valueOf(),
-    getDeadlineUi: () => moment((get() as any).getDeadline()).format("DD/MM/YYYY HH:mm"),
+    getDeadlineUi: () => moment((get() as any).getDeadline()).format("L HH:mm"),
     getDstAmountUi: () => amountUi(get().dstToken, (get() as any).getDstAmount()),
     getSrcAmountUsdUi: () => amountUi(get().srcToken, (get() as any).getSrcAmount().times(get().srcUsd)),
     getDstAmountUsdUi: () => amountUi(get().dstToken, (get() as any).getDstAmount().times(get().dstUsd)),
@@ -320,8 +321,8 @@ export const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { tok
       dstMinAmountOutUi: amountUi(dstToken, o.ask.dstMinAmount),
       dstMinAmountOutUsdUi: amountUi(dstToken, o.ask.dstMinAmount.times(dstUsd)),
       fillDelay: o.ask.fillDelay * 1000,
-      createdAtUi: moment(o.time * 1000).format("DD/MM/YY HH:mm"),
-      deadlineUi: moment(o.ask.deadline * 1000).format("DD/MM/YY HH:mm"),
+      createdAtUi: moment(o.time * 1000).format("L HH:mm"),
+      deadlineUi: moment(o.ask.deadline * 1000).format("L HH:mm"),
       prefix: isMarketOrder ? "~" : "≥",
       totalChunks: o.ask.srcAmount.div(o.ask.srcBidAmount).integerValue(BN.ROUND_CEIL).toNumber(),
     },
