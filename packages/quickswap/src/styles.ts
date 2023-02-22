@@ -14,7 +14,7 @@ export const darkModeStylesConfig: StylesConfig = {
   orderHistorySelectedTabBackground: "#134DC8",
   orderHistoryTabColor: "white",
   orderHistorySelectedTabColor: "rgb(96, 230, 197)",
-  buttonBackground: "linear-gradient(180deg,#448aff,#004ce6)",
+  buttonBackground: "#448aff",
   buttonColor: "white",
   disabledButtonBackground: "#12131a",
   disabledButtonColor: "#c7cad9",
@@ -40,6 +40,7 @@ export const configureStyles = () => {
         // fontSize: 14,
       },
       input: {
+        textAlign: 'end!important',
         fontSize: "13px!important",
       },
       ".twap-label": {
@@ -87,6 +88,10 @@ export const configureStyles = () => {
       },
     },
     ".twap-limit-price-input": {
+      button: {
+        padding: 0,
+      },
+      justifyContent: "space-between!important",
       width: "100%",
       paddingTop: 10,
       paddingBottom: 10,
@@ -108,6 +113,9 @@ export const configureStyles = () => {
       ".twap-token-display img": {
         width: 25,
         height: 25,
+      },
+      div: {
+        paddingLeft: "0!important",
       },
     },
     ".twap-input-loader": {
@@ -397,7 +405,7 @@ export const configureStyles = () => {
         input: {
           fontSize: 18,
           fontWeight: `600!important`,
-          textAlign: "end" as const,
+          textAlign: "right" as const,
         },
       },
     },
@@ -418,8 +426,8 @@ export const configureStyles = () => {
       width: "calc(100% - 52px)!important",
       borderRadius: 10,
       background: styles.buttonBackground,
-      color: styles.buttonColor,
-      fontWeight: `600!important`,
+      color: styles.textColor,
+      fontWeight: `500!important`,
       fontSize: 16,
       margin: "0 26px",
       "& *": {
@@ -468,6 +476,7 @@ export const configureStyles = () => {
       },
     },
     ".twap-powered-by": {
+      marginTop: "24px!important",
       p: {
         fontSize: "11px!important",
         fontWeight: "400!important",
