@@ -364,8 +364,7 @@ export function LimitPriceInput({ placeholder = "0.00" }: { placeholder?: string
   return (
     <StyledLimitPriceInput className="twap-limit-price-input">
       <StyledRowFlex gap={10} style={{ paddingLeft: 5 }} width="fit-content">
-        <StyledText>1</StyledText>
-        <TokenDisplay symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />
+        <TokenDisplay singleToken symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />
         <StyledText>=</StyledText>
       </StyledRowFlex>
       <NumericInput placeholder={placeholder} onChange={onChange} value={limitPrice} />
