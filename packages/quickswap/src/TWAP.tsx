@@ -4,6 +4,7 @@ import { memo, useCallback, useState } from "react";
 import { AdapterContextProvider, config, parseToken, useAdapterContext, useGlobalStyles } from "./hooks";
 import translations from "./i18n/en.json";
 import { QuickSwapRawToken, QuickSwapTWAPProps } from "./types";
+import { Box } from "@mui/system";
 
 const TWAP = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
@@ -16,32 +17,38 @@ const TWAP = (props: QuickSwapTWAPProps) => {
   }, []);
 
   return (
-    <TwapAdapter
-      connect={connect}
-      config={config}
-      maxFeePerGas={props.maxFeePerGas}
-      priorityFeePerGas={props.priorityFeePerGas}
-      translations={translations as Translations}
-      provider={props.provider}
-      account={props.account}
-      tokensList={parsedTokens}
-    >
-      <GlobalStyles styles={globalStyles} />
-      <AdapterContextProvider value={props}>
-        <div className="twap-container">
-          <TokenPanel isSrcToken={true} />
-          <Components.ChangeTokensOrder />
-          <TokenPanel />
-          <LimitPrice />
-          <TradeSize />
-          <MaxDuration />
-          <TradeInterval />
-          <Components.SubmitButton />
-          <OrderSummary />
-          <Components.PoweredBy />
-        </div>
-      </AdapterContextProvider>
-    </TwapAdapter>
+    <Box className="adapter-wrapper">
+      <TwapAdapter
+        connect={connect}
+        config={config}
+        maxFeePerGas={props.maxFeePerGas}
+        priorityFeePerGas={props.priorityFeePerGas}
+        translations={translations as Translations}
+        provider={props.provider}
+        account={props.account}
+        tokensList={parsedTokens}
+      >
+        <GlobalStyles styles={globalStyles as any} />
+        <AdapterContextProvider value={props}>
+          <div className="twap-container">
+            <TokenPanel isSrcToken={true} />
+            <Box mt={1.5} sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <Components.ChangeTokensOrder />
+            </Box>
+            <TokenPanel />
+            <LimitPrice />
+            <TradeSize />
+            <MaxDuration />
+            <TradeInterval />
+            <Box mb={2}>
+              <Components.SubmitButton />
+            </Box>
+            <OrderSummary />
+            <Components.PoweredBy />
+          </div>
+        </AdapterContextProvider>
+      </TwapAdapter>
+    </Box>
   );
 };
 
@@ -100,7 +107,7 @@ const LimitPrice = () => {
 
 const MaxDuration = () => {
   return (
-    <Components.Base.Card>
+    <Components.Base.Card style={{ marginBottom: 12 }} className="twap-max-duration-wrapper">
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Labels.MaxDurationLabel />
         <Components.PartialFillWarning />
@@ -112,7 +119,7 @@ const MaxDuration = () => {
 
 const TradeInterval = () => {
   return (
-    <Components.Base.Card>
+    <Components.Base.Card style={{ marginBottom: 24 }} className="twap-trade-interval-wrapper">
       <TwapStyles.StyledRowFlex>
         <Components.Labels.TradeIntervalLabel />
         <Components.FillDelayWarning />
