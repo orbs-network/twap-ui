@@ -23,7 +23,6 @@ export const StyledLayoutSpiritswap = styled(Box)({
 export const StyledLayoutQuickswap = styled(Box)({
   background: "#1b1e29",
   borderRadius: 24,
-  padding: 24,
   fontFamily: "Inter",
   maxWidth: 500,
 });
