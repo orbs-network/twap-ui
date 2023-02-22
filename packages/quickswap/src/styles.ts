@@ -3,12 +3,12 @@ import { StylesConfig } from "@orbs-network/twap-ui";
 // Styles configuration
 export const darkModeStylesConfig: StylesConfig = {
   iconsColor: "rgb(105, 108, 128)",
-  textColor: "#c7cad9",
+  textColor: "#D1D5DB",
   tooltipBackground: "#1C1E29",
   tooltipTextColor: "white",
   spinnerColor: "white",
   containerBackground: "rgb(16, 23, 38)",
-  cardBackground: "#232734",
+  cardBackground: "#282D3D",
   progressBarColor: "linear-gradient(180deg,#448aff,#004ce6)",
   progressBarTrackColor: "#c7cad9",
   orderHistorySelectedTabBackground: "#134DC8",
@@ -23,25 +23,48 @@ export const darkModeStylesConfig: StylesConfig = {
   selectedTokenBackground: "#404557",
   selectedTokenTextColor: "#c7cad9",
 };
-
 export const configureStyles = () => {
   const styles = darkModeStylesConfig;
   return {
     ".twap-trade-size": {
+      paddingTop: "8px!important",
+      paddingBottom: "17px!important",
+      marginBottom: 12,
       ".twap-token-logo": {
-        width: 20,
-        height: 20,
+        width: 18,
+        height: 18,
       },
       ".twap-token-name": {
-        fontSize: 14,
+        fontSize: "13px!important",
+        fontWeight: "400!important",
+        // fontSize: 14,
+      },
+      input: {
+        fontSize: "13px!important",
+      },
+      ".twap-label": {
+        fontSize: "14px",
+      },
+      ".MuiSlider-thumb": {
+        background: "white",
+      },
+      ".MuiSlider-rail": {
+        color: "#40475A",
+      },
+      ".MuiSlider-track": {
+        color: "#A3A8B8",
       },
     },
     ".twap-percent-selector": {
       button: {
+        "&:nth-child(2)": {
+          marginLeft: 22.5,
+        },
+        padding: 0,
         background: "transparent",
         border: "unset",
         color: "#448aff",
-        fontWeight: `600!important`,
+        fontWeight: `500!important`,
         fontSize: 14,
         textTransform: "uppercase" as const,
         cursor: "pointer",
@@ -57,15 +80,34 @@ export const configureStyles = () => {
       background: "transparent",
       border: "0.75px solid #26A7EF",
     },
-
+    ".twap-limit-price": {
+      marginBottom: 12,
+      ".twap-label": {
+        fontSize: 14,
+      },
+    },
     ".twap-limit-price-input": {
       width: "100%",
-      background: "#1b1e29",
-      padding: 10,
+      paddingTop: 10,
+      paddingBottom: 10,
+      paddingLeft: "0!important",
       borderRadius: 10,
       gap: 10,
       ".twap-input": {
         textAlign: "center" as const,
+        input: {
+          "&::placeholder": {
+            color: styles.textColor,
+          },
+        },
+      },
+      p: {
+        fontSize: "13px!important",
+        fontWeight: "400!important",
+      },
+      ".twap-token-display img": {
+        width: 25,
+        height: 25,
       },
     },
     ".twap-input-loader": {
@@ -88,8 +130,15 @@ export const configureStyles = () => {
       fontSize: 16,
     },
     ".twap-token-select": {
+      ".twap-token-name": {
+        fontWeight: "500!important",
+        fontSize: "16px!important",
+      },
+      width: "115px !important",
+      height: 45,
       border: "unset",
-      padding: "6px 12px",
+      padding: "8px 7px",
+      marginBottom: 2,
       borderRadius: 38,
       cursor: "pointer",
       display: "flex",
@@ -98,9 +147,24 @@ export const configureStyles = () => {
       p: {
         color: "inherit",
       },
+      ".twap-token-display": {
+        img: {
+          width: 30,
+          height: 30,
+          minWidth: 30,
+          minHeight: 30,
+        },
+        p: {
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+          textOverflow: "ellipsis",
+        },
+        justifyContent: "start",
+        width: "100%",
+      },
     },
     ".twap-token-not-selected": {
-      background: "linear-gradient(105deg,#448aff 3%,#004ce6)",
+      background: "#448AFF",
       p: {
         fontSize: 16,
       },
@@ -113,11 +177,31 @@ export const configureStyles = () => {
       },
     },
     ".twap-market-price": {
-      borderRadius: "0px 0px 10px 10px",
-      background: "#12141B",
-      padding: "7px 15px",
+      img: {
+        width: "25px!important",
+        minWidth: "25px!important",
+        height: "25px!important",
+        minHeight: "25px!important",
+      },
+      p: {
+        display: "flex",
+        alignItems: "center",
+        fontSize: "13px",
+        fontWeight: "400!important",
+        span: {
+          fontSize: "13px",
+        },
+      },
+      "&:nth-child(2)": {
+        fontSize: "13px!important",
+        display: "flex",
+        alignItems: "center",
+      },
+      // borderRadius: "0px 0px 10px 10px",
+      // background: "#12141B",
+      padding: "13px 26px",
       ".title": {
-        fontSize: 13,
+        fontSize: 14,
       },
     },
     ".twap-icon": {
@@ -153,6 +237,7 @@ export const configureStyles = () => {
     },
     ".twap-time-selector": {
       "& input": {
+        fontSize: "14px!important",
         "&::placeholder": {
           color: "rgba(255,255,255, 0.5)!important",
         },
@@ -164,15 +249,18 @@ export const configureStyles = () => {
       right: 0,
     },
     ".twap-card": {
-      padding: 15,
+      padding: "15px 26px 20px",
       background: styles.cardBackground,
-      borderRadius: 10,
+      // borderRadius: 10,
     },
     ".twap-container": {
-      display: "flex",
-      gap: 12,
-      marginTop: 20,
-      flexDirection: "column" as const,
+      ".twap-limit-price": {
+        paddingTop: 9,
+        paddingBottom: 9,
+      },
+      background: "#1B1E29!important",
+      padding: "36px 0",
+      marginTop: 26,
       width: "100%",
       fontWeight: 500,
       "*": {
@@ -186,17 +274,25 @@ export const configureStyles = () => {
     },
     ".twap-small-label": {
       fontSize: 14,
-      opacity: 1,
+      fontWeight: "500!important",
     },
     ".twap-slider": {
+      ".MuiSlider-thumb.Mui-focusVisible, .MuiSlider-thumb:hover": {
+        boxShadow: "none!important",
+      },
       "& .MuiSlider-valueLabel": {
         background: styles.tooltipBackground,
+        boxShadow: "none!important",
       },
       "& .MuiSlider-valueLabelLabel": {
+        boxShadow: "none!important",
         color: styles.tooltipTextColor,
       },
       "& .MuiSlider-thumb": {
-        background: styles.iconsColor,
+        boxShadow: "none!important",
+        background: "#D9D9D9",
+        width: 13,
+        height: 13,
       },
     },
     ".twap-change-order": {
@@ -211,19 +307,39 @@ export const configureStyles = () => {
       height: 28,
     },
     ".twap-switch": {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      padding: "0!important",
+
       "& .MuiSwitch-thumb": {
-        background: "white",
+        padding: "0!important",
+        width: 16,
+        height: 16,
+        background: "#D9D9D9",
       },
       "& .MuiSwitch-track": {
-        background: `${styles.containerBackground}!important`,
+        padding: "0!important",
+        width: 46,
+        height: 24,
+        borderRadius: 20,
+        border: "1px solid #636679",
+        background: "#1B1E29",
         opacity: "1!important",
       },
       "& .Mui-checked+.MuiSwitch-track": {
+        padding: "0!important",
         backgroundColor: `${styles.containerBackground}!important`,
         opacity: "1!important",
       },
       "& .Mui-checked .MuiSwitch-thumb": {
-        background: styles.iconsColor,
+        padding: "0!important",
+        background: "#D9D9D9",
+      },
+      "& .MuiSwitch-switchBase": {
+        top: 11,
+        left: 17,
+        padding: "0!important",
       },
     },
     ".twap-order": {
@@ -273,18 +389,6 @@ export const configureStyles = () => {
         },
       },
     },
-    ".twap-usd": {
-      color: "#696c80",
-      "& *": {
-        color: "inherit",
-      },
-    },
-    "& .twap-balance": {
-      color: "#696c80",
-      "& *": {
-        color: "inherit",
-      },
-    },
     ".twap-token-panel": {
       ".twap-token-panel-title": {
         fontSize: 16,
@@ -293,7 +397,7 @@ export const configureStyles = () => {
         input: {
           fontSize: 18,
           fontWeight: `600!important`,
-          textAlign: "right" as const,
+          textAlign: "end" as const,
         },
       },
     },
@@ -305,17 +409,19 @@ export const configureStyles = () => {
         borderRadius: "0.375rem",
         transition: "0.2s all",
         height: 35,
-        color: "#696c80",
+        color: styles.textColor,
         paddingRight: 0,
       },
     },
     ".twap-button": {
-      height: 56,
+      height: 60,
+      width: "calc(100% - 52px)!important",
       borderRadius: 10,
       background: styles.buttonBackground,
       color: styles.buttonColor,
       fontWeight: `600!important`,
       fontSize: 16,
+      margin: "0 26px",
       "& *": {
         color: "inherit",
         fontWeight: "inherit",
@@ -348,6 +454,62 @@ export const configureStyles = () => {
         fontFamily: "inherit",
         color: "inherit",
       },
+    },
+    ".twap-change-tokens-order": {
+      position: "absolute",
+      width: "36px!important",
+      height: 36,
+      top: -24,
+      background: "#1b1e29",
+      border: `3px solid ${styles.cardBackground}`,
+      borderRadius: 8,
+      button: {
+        padding: "0!important",
+      },
+    },
+    ".twap-powered-by": {
+      p: {
+        fontSize: "11px!important",
+        fontWeight: "400!important",
+      },
+      img: {
+        width: "18px!important",
+        height: "18px!important",
+      },
+      marginBottom: "50px!important",
+    },
+    ".twap-input input": {
+      paddingRight: "0!important",
+      fontSize: "13px!important",
+    },
+    ".twap-token-panel .twap-input input": {
+      fontSize: "24px!important",
+      color: "#D1D5DB!important",
+      fontWeight: "400!important",
+      "&::placeholder": {
+        color: "#D1D5DB!important",
+      },
+    },
+    ".twap-balance": {
+      marginBottom: 8,
+    },
+    ".adapter-wrapper": {
+      padding: "26px 0",
+      width: "454px!important",
+      margin: "auto",
+    },
+    ".twap-max-duration-wrapper, .twap-trade-interval-wrapper": {
+      minHeight: 56,
+      paddingTop: 9,
+      paddingBottom: 9,
+      ".twap-label": {
+        fontSize: 14,
+        fontWeight: 500,
+      },
+    },
+    ".twap-label-tooltip-content svg": {
+      width: "15px!important",
+      height: "15px!important",
     },
   };
 };
