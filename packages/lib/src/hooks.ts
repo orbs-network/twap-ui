@@ -138,7 +138,7 @@ export const useCreateOrder = () => {
         ...store.dstToken!,
         address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
       };
-      const fillDelayMillis = store.getFillDelayMillis() / 1000;
+      const fillDelayMillis = (store.getFillDelayMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
       return store.lib!.submitOrder(
         store.srcToken!,
         dstToken,

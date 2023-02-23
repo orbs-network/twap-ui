@@ -320,7 +320,7 @@ export const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { tok
       srcRemainingAmountUsdUi: amountUi(srcToken, srcRemainingAmount.times(srcUsd)),
       dstMinAmountOutUi: amountUi(dstToken, o.ask.dstMinAmount),
       dstMinAmountOutUsdUi: amountUi(dstToken, o.ask.dstMinAmount.times(dstUsd)),
-      fillDelay: o.ask.fillDelay * 1000,
+      fillDelay: o.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
       createdAtUi: moment(o.time * 1000).format("L HH:mm"),
       deadlineUi: moment(o.ask.deadline * 1000).format("L HH:mm"),
       prefix: isMarketOrder ? "~" : "≥",
