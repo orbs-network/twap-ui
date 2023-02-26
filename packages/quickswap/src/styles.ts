@@ -104,14 +104,13 @@ export const configureStyles = () => {
       },
     },
     ".twap-limit-price-input": {
+      background: "#1B1E29",
+      padding: "5px 10px!important",
       button: {
         padding: 0,
       },
       justifyContent: "space-between!important",
       width: "100%",
-      paddingTop: 10,
-      paddingBottom: 10,
-      paddingLeft: "0!important",
       borderRadius: 10,
       gap: 10,
       ".twap-input": {
@@ -530,7 +529,7 @@ export const configureStyles = () => {
       width: "calc(100% - 52px)!important",
       borderRadius: 10,
       background: styles.buttonBackground,
-      color: styles.textColor,
+      color: "white",
       fontWeight: `500!important`,
       fontSize: 16,
       margin: "0 26px",
@@ -546,12 +545,38 @@ export const configureStyles = () => {
     },
 
     ".twap-modal-content": {
+      fontSize: "14px",
+      fontFamily: "Inter",
+      maxWidth: "454px!important",
+      boxSizing: "border-box",
       background: styles.containerBackground,
 
+      ".twap-orders-summary-token-display": {
+        ".twap-token-logo": {
+          width: 30,
+          height: 30,
+        },
+        ".twap-orders-summary-token-display-amount": {
+          fontSize: 16,
+        },
+      },
+      ".twap-order-summary-details": {
+        ".twap-order-summary-details-item": {
+          div: {
+            fontSize: 14,
+          },
+          ".twap-label": {
+            fontSize: 16,
+          },
+        },
+      },
+      ".twap-disclaimer-text p, .twap-disclaimer-text a": {
+        fontSize: "14px",
+      },
       maxHeight: "85vh",
       overflow: "auto",
-      borderRadius: "10px",
-      padding: 15,
+      borderRadius: "24px",
+      padding: "24px 0",
       paddingTop: 30,
       color: styles.textColor,
       "& a": {
@@ -565,6 +590,9 @@ export const configureStyles = () => {
       "& *": {
         fontFamily: "inherit",
         color: "inherit",
+      },
+      ".twap-order-summary-limit-price": {
+        padding: "10px 26px",
       },
     },
     ".twap-change-tokens-order": {
