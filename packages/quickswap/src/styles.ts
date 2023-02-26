@@ -326,8 +326,8 @@ export const configureStyles = () => {
       fontSize: 18,
     },
     ".twap-token-logo": {
-      width: 28,
-      height: 28,
+      width: 25,
+      height: 25,
     },
     ".twap-switch": {
       display: "flex",
@@ -366,6 +366,15 @@ export const configureStyles = () => {
       },
     },
     ".twap-order-expanded": {
+      '.twap-market-price-section': {
+        p: {
+          fontSize: '13px!important',
+        },
+        '.twap-small-label p': {
+          fontSize: '14px!important',
+          fontWeight: '500!important',
+        },
+      },
       ".twap-order-expanded-cancel-wraper": {
         width: "100%",
         display: "flex",
@@ -385,6 +394,12 @@ export const configureStyles = () => {
         ".MuiLinearProgress-bar": {
           height: "16px!important",
         },
+        '.twap-order-token-display': {
+          '.twap-token-logo': {
+            width: 25,
+            height: 25,
+          },
+        },
       },
       display: "block!important",
       paddingTop: "0!important",
@@ -395,6 +410,16 @@ export const configureStyles = () => {
       ".twap-order-expanded-colored": {
         padding: "15px 26px",
         background: "#282D3D",
+        '.twap-order-expanded-colored-title':{
+          fontSize: 16,
+        },
+        '.twap-order-expanded-title': {
+          fontSize: 14,
+        },
+        '.twap-token-display-amount-and-symbol': {
+          fontSize: 16,
+          fontWeight: '400!important',
+        },
       },
       ".twap-order-main-progress-bar": {
         height: 8,
@@ -622,7 +647,15 @@ export const configureStyles = () => {
       ".twap-order-preview-icon": {
         color: "#636679!important",
       },
-      ".twap-order-token-display": {},
+      ".twap-order-token-display": {
+        '.twap-small-label': {
+          fontSize: 13,
+        },
+        '.twap-token-logo': {
+          width: 25,
+          height: 25,
+        },
+      },
     },
     ".twap-orders-list": {
       ".twap-order": {
@@ -636,10 +669,23 @@ export const configureStyles = () => {
       background: "#1B1E29",
       width: "100%",
       padding: "15px 26px",
+      '.twap-token-logo': {
+        width: '25px!important',
+        height: '25px!important',
+      },
     },
     ".twap-extended-order-info": {
       gap: "15px!important",
       padding: "15px 26px",
+      '.twap-order-expanded-row': {
+        '.twap-label, .twap-order-expanded-right': {
+          fontSize: 14,
+        },
+        '.twap-token-logo': {
+          width: 25,
+          height: 25,
+        },
+      },
     },
     ".twap-order-expanded-row": {},
     ".odnp *": {
