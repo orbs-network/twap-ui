@@ -188,9 +188,11 @@ export const configureStyles = () => {
       },
     },
     ".twap-token-not-selected": {
+      display: 'flex',
+      justifyContent: 'center',
       background: "#448AFF",
       p: {
-        fontSize: 16,
+        fontSize: 14,
       },
     },
 
