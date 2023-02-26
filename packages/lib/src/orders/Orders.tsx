@@ -4,7 +4,7 @@ import React from "react";
 import OrdersList from "./OrdersList";
 import _ from "lodash";
 import { Translations } from "../types";
-import { AiOutlineHistory } from "react-icons/ai";
+import { RxStopwatch } from "react-icons/rx";
 import { Status } from "@orbs-network/twap";
 import { useOrdersHistoryQuery } from "../hooks";
 import { useOrdersContext } from "../context";
@@ -24,8 +24,10 @@ function Orders() {
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
           <Styles.StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>
-            <Components.Base.Icon icon={<AiOutlineHistory style={{ width: 20, height: 20 }} />} />
-            <Components.Base.Label tooltipText={translations.ordersTooltip}>{translations.orders}</Components.Base.Label>
+            <Components.Base.Icon icon={<RxStopwatch style={{ width: 19, height: 19 }} />} />
+            <Components.Base.Label tooltipText={translations.ordersTooltip} fontSize={16}>
+              {translations.orders}
+            </Components.Base.Label>
           </Styles.StyledRowFlex>
           <StyledOdnpButton />
         </StyledHeaderTop>
@@ -72,6 +74,8 @@ const StyledHeader = styled(Box)({
   flexDirection: "column",
   alignItems: "flex-start",
   gap: 13,
+  padding: "0 26px",
+  paddingTop: 20,
 });
 
 const StyledOdnpButton = styled(Components.OdnpButton)({
@@ -113,6 +117,8 @@ const StyledTabs = styled(Tabs)({
 });
 const StyledContainer = styled(Box)({
   width: "100%",
+  maxWidth: 454,
+  margin: "auto",
   display: "flex",
   flexDirection: "column",
   gap: 15,
@@ -126,8 +132,6 @@ const StyledHeaderTop = styled(Box)({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: 5,
-  paddingTop: 10,
   width: "100%",
   "& .twap-label": {
     fontSize: 18,

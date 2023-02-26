@@ -1,5 +1,5 @@
 import { LinearProgress } from "@mui/material";
-import { styled } from "@mui/system";
+import { Box, styled } from "@mui/system";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { Components, Styles as TwapStyles } from "../..";
@@ -15,7 +15,12 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
 
   return (
     <StyledContainer className="twap-order-expanded">
-      {order.ui.srcToken && order.ui.dstToken && <OrderPrice order={order} />}
+      {order.ui.srcToken && order.ui.dstToken && (
+        <Box className="twap-market-price-section">
+          {" "}
+          <OrderPrice order={order} />{" "}
+        </Box>
+      )}
       <StyledColoredContainer className="twap-order-expanded-colored">
         <StyledTitle className="twap-order-expanded-colored-title">{translations.progress}:</StyledTitle>
         <TwapStyles.StyledColumnFlex gap={20}>
@@ -40,7 +45,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
       </StyledColoredContainer>
-      <TwapStyles.StyledColumnFlex>
+      <TwapStyles.StyledColumnFlex className="twap-extended-order-info">
         <Row label={`${translations.totalTrades}:`} tooltip={translations.totalTradesTooltip}>
           <Components.Base.NumberDisplay value={order.ui.totalChunks} />
         </Row>
@@ -69,7 +74,11 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
           {order.ui.deadlineUi}
         </Row>
       </TwapStyles.StyledColumnFlex>
-      {order.ui.status === Status.Open && <CancelOrderButton orderId={order.order.id} />}
+      {order.ui.status === Status.Open && (
+        <Box className="twap-order-expanded-cancel-wraper">
+          <CancelOrderButton orderId={order.order.id} />
+        </Box>
+      )}
     </StyledContainer>
   );
 };

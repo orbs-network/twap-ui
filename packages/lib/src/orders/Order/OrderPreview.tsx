@@ -9,11 +9,11 @@ function OrderPreview({ order }: { order: OrderUI }) {
   return (
     <TwapStyles.StyledColumnFlex gap={0} className="twap-order-preview">
       <StyledHeader className="twap-order-preview-header">
-        <TwapStyles.StyledRowFlex gap={6} justifyContent="flex-start" style={{ width: "auto" }}>
+        <TwapStyles.StyledRowFlex className="twap-order-preview-info" gap={6} justifyContent="flex-start" style={{ width: "auto" }}>
           <StyledHeaderText>#{order.order.id}</StyledHeaderText>
           <StyledHeaderText>{order.ui.isMarketOrder ? translations.marketOrder : translations.limitOrder}</StyledHeaderText>
         </TwapStyles.StyledRowFlex>
-        <StyledHeaderText>{order.ui.createdAtUi}</StyledHeaderText>
+        <StyledHeaderText className="twap-order-preview-date">{order.ui.createdAtUi}</StyledHeaderText>
       </StyledHeader>
 
       <StyledPreviewLinearProgress variant="determinate" value={order.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />

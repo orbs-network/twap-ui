@@ -1,4 +1,4 @@
-import { styled } from "@mui/system";
+import { Box, styled } from "@mui/system";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import OrderPreview from "./OrderPreview";
@@ -22,10 +22,12 @@ function OrderComponent({ order, onExpand, expanded }: Props) {
         <StyledAccordionSummary onClick={onExpand}>
           <OrderPreview order={order} />
         </StyledAccordionSummary>
-        <StyledSpace />
-        <AccordionDetails style={{ padding: 0, paddingTop: 10 }}>
-          <OrderSeparator style={{ marginBottom: 10 }} />
-          <OrderExpanded order={order} />
+        <StyledSpace className="twap-order-separator" />
+        <AccordionDetails className="twap-order-accordion" style={{ padding: 0, paddingTop: 10 }}>
+          <OrderSeparator className="twap-order-separator" style={{ marginBottom: 10 }} />
+          <Box>
+            <OrderExpanded order={order} />
+          </Box>
         </AccordionDetails>
       </StyledAccordion>
     </StyledContainer>
