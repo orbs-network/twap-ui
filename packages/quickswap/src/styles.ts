@@ -30,6 +30,9 @@ export const configureStyles = () => {
       paddingTop: "8px!important",
       paddingBottom: "17px!important",
       marginBottom: 12,
+      p: {
+        fontSize: "13px!important",
+      },
       ".twap-token-logo": {
         width: 18,
         height: 18,
@@ -40,7 +43,7 @@ export const configureStyles = () => {
         // fontSize: 14,
       },
       input: {
-        textAlign: 'end!important',
+        textAlign: "end!important",
         fontSize: "13px!important",
       },
       ".twap-label": {
@@ -77,9 +80,22 @@ export const configureStyles = () => {
       opacity: 0.5,
     },
     ".twap-odnp": {
+      marginRight: "0px!important",
+      width: 119,
+      height: 31,
+      border: "1px solid #636679",
+      borderRadius: "20px!important",
+
+      p: {
+        fontSize: "13px!important",
+        fontWeight: "500!important",
+      },
+      img: {
+        width: "17px!important",
+        height: 17,
+      },
       color: styles.textColor,
       background: "transparent",
-      border: "0.75px solid #26A7EF",
     },
     ".twap-limit-price": {
       marginBottom: 12,
@@ -267,8 +283,7 @@ export const configureStyles = () => {
         paddingBottom: 9,
       },
       background: "#1B1E29!important",
-      padding: "36px 0",
-      marginTop: 26,
+      padding: 0,
       width: "100%",
       fontWeight: 500,
       "*": {
@@ -350,22 +365,54 @@ export const configureStyles = () => {
         padding: "0!important",
       },
     },
+    ".twap-order-expanded": {
+      ".twap-order-expanded-cancel-wraper": {
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+      },
+      ".twap-button": {
+        margin: "15px auto",
+        width: 160,
+        maxWidth: 160,
+        height: 40,
+        border: "1px solid #636679",
+      },
+      ".twap-order-expanded-colored": {
+        ".twap-order-main-progress-bar": {
+          height: "16px!important",
+        },
+        ".MuiLinearProgress-bar": {
+          height: "16px!important",
+        },
+      },
+      display: "block!important",
+      paddingTop: "0!important",
+    },
     ".twap-order": {
       border: "unset",
       background: styles.cardBackground,
       ".twap-order-expanded-colored": {
-        background: styles.containerBackground,
+        padding: "15px 26px",
+        background: "#282D3D",
       },
       ".twap-order-main-progress-bar": {
+        height: 8,
+        borderRadius: 100,
         background: `${styles.progressBarTrackColor}!important`,
       },
       "& .twap-order-progress": {
+        height: 8,
+        borderRadius: 100,
+        background: `${styles.progressBarTrackColor}!important`,
+
         "&::after": {
           background: `${styles.progressBarTrackColor}!important`,
         },
       },
       "& .MuiLinearProgress-bar": {
-        background: styles.progressBarColor,
+        height: "8px!important",
+        background: "#1A5366",
       },
     },
     ".twap-chunks-size": {
@@ -374,6 +421,9 @@ export const configureStyles = () => {
       },
     },
     ".twap-orders": {
+      borderRadius: "24px",
+      paddingBottom: 24,
+      background: "#1B1E29",
       fontWeight: 500,
       color: styles.textColor,
       "*": {
@@ -385,15 +435,44 @@ export const configureStyles = () => {
     },
     ".twap-orders-header": {
       "& .twap-orders-header-tabs": {
+        display: "flex",
+        justifyContent: "space-between",
+        marginTop: 2,
+        border: "none",
+        minHeight: 38,
+        maxHeight: 38,
+        alignItems: "center",
+        "& .twap-orders-header-tabs-tab": {
+          width: 94,
+          display: "flex",
+          alignItems: "center",
+          lineHeight: "normal",
+        },
         "& .MuiTabs-indicator": {
-          backgroundColor: styles.orderHistorySelectedTabBackground,
+          minHeight: 38,
+          maxHeight: 38,
+          width: 94,
+          height: 38,
+          borderRadius: 100,
+          background: "#3E4252",
         },
         "& .MuiButtonBase-root": {
           color: styles.orderHistoryTabColor,
           fontWeight: 400,
         },
         "& .Mui-selected": {
-          color: styles.orderHistorySelectedTabColor,
+          minHeight: 38,
+          maxHeight: 38,
+          width: 94,
+          height: 38,
+          borderRadius: 100,
+          background: "#3E4252",
+          color: styles.textColor,
+        },
+        "& .MuiTabs-flexContainer": {
+          height: 38,
+          alignItems: "center",
+          justifyContent: "space-between",
         },
       },
     },
@@ -477,6 +556,7 @@ export const configureStyles = () => {
     },
     ".twap-powered-by": {
       marginTop: "24px!important",
+      marginBottom: "0px!important",
       p: {
         fontSize: "11px!important",
         fontWeight: "400!important",
@@ -485,7 +565,6 @@ export const configureStyles = () => {
         width: "18px!important",
         height: "18px!important",
       },
-      marginBottom: "50px!important",
     },
     ".twap-input input": {
       paddingRight: "0!important",
@@ -503,9 +582,12 @@ export const configureStyles = () => {
       marginBottom: 8,
     },
     ".adapter-wrapper": {
-      padding: "26px 0",
+      padding: "24px 0",
       width: "454px!important",
       margin: "auto",
+      fontFamily: "Inter",
+      background: "#1b1e29",
+      borderRadius: 24,
     },
     ".twap-max-duration-wrapper, .twap-trade-interval-wrapper": {
       minHeight: 56,
@@ -519,6 +601,49 @@ export const configureStyles = () => {
     ".twap-label-tooltip-content svg": {
       width: "15px!important",
       height: "15px!important",
+    },
+    ".twap-order-preview": {
+      padding: "15px 26px",
+    },
+    ".twap-order-preview-info": {
+      fontSize: 16,
+    },
+    ".twap-order-preview-header": {
+      marginBottom: "15px!important",
+      ".twap-order-preview-date": {
+        fontSize: "14px!important",
+        color: "#696C81!important",
+      },
+    },
+    ".twap-order-preview-tokens": {
+      paddingTop: "17px!important",
+      paddingRight: "0!important",
+      alingItems: "center!important",
+      ".twap-order-preview-icon": {
+        color: "#636679!important",
+      },
+      ".twap-order-token-display": {},
+    },
+    ".twap-orders-list": {
+      ".twap-order": {
+        padding: 0,
+      },
+    },
+    ".twap-order-separator": {
+      display: "none",
+    },
+    ".twap-market-price-section": {
+      background: "#1B1E29",
+      width: "100%",
+      padding: "15px 26px",
+    },
+    ".twap-extended-order-info": {
+      gap: "15px!important",
+      padding: "15px 26px",
+    },
+    ".twap-order-expanded-row": {},
+    ".odnp *": {
+      color: "black",
     },
   };
 };
