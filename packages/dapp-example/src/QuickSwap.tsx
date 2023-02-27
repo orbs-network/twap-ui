@@ -112,6 +112,9 @@ const DappComponent = () => {
   return (
     <DappLayout name={config.partner}>
       <StyledLayoutQuickswap>
+        <TWAP {...twapProps} simpleLimit />
+      </StyledLayoutQuickswap>
+      <StyledLayoutQuickswap>
         <TWAP {...twapProps} />
       </StyledLayoutQuickswap>
       <StyledLayoutQuickswap>
