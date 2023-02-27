@@ -5,6 +5,7 @@ import { AdapterContextProvider, config, parseToken, useAdapterContext, useGloba
 import translations from "./i18n/en.json";
 import { QuickSwapRawToken, QuickSwapTWAPProps } from "./types";
 import { Box } from "@mui/system";
+import { useTwapStore } from "@orbs-network/twap-ui/dist/store";
 
 const TWAP = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
@@ -15,6 +16,43 @@ const TWAP = (props: QuickSwapTWAPProps) => {
   const connect = useCallback(() => {
     props.connect();
   }, []);
+
+  const renderAdapterBody = () => {
+    if (props?.simpleLimit) {
+      return (
+        <div className="twap-container">
+          <TokenPanel isSrcToken={true} />
+          <Box mt={1.5} sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <Components.ChangeTokensOrder />
+          </Box>
+          <TokenPanel />
+          <LimitPrice simpleLimit />
+          <Box mb={2}>
+            <Components.SubmitButton />
+          </Box>
+          <Components.PoweredBy />
+        </div>
+      );
+    }
+    return (
+      <div className="twap-container">
+        <TokenPanel isSrcToken={true} />
+        <Box mt={1.5} sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <Components.ChangeTokensOrder />
+        </Box>
+        <TokenPanel />
+        <LimitPrice />
+        <TradeSize />
+        <MaxDuration />
+        <TradeInterval />
+        <Box mb={2}>
+          <Components.SubmitButton />
+        </Box>
+        <OrderSummary />
+        <Components.PoweredBy />
+      </div>
+    );
+  };
 
   return (
     <Box className="adapter-wrapper">
@@ -29,24 +67,7 @@ const TWAP = (props: QuickSwapTWAPProps) => {
         tokensList={parsedTokens}
       >
         <GlobalStyles styles={globalStyles as any} />
-        <AdapterContextProvider value={props}>
-          <div className="twap-container">
-            <TokenPanel isSrcToken={true} />
-            <Box mt={1.5} sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <Components.ChangeTokensOrder />
-            </Box>
-            <TokenPanel />
-            <LimitPrice />
-            <TradeSize />
-            <MaxDuration />
-            <TradeInterval />
-            <Box mb={2}>
-              <Components.SubmitButton />
-            </Box>
-            <OrderSummary />
-            <Components.PoweredBy />
-          </div>
-        </AdapterContextProvider>
+        <AdapterContextProvider value={props}>{renderAdapterBody()}</AdapterContextProvider>
       </TwapAdapter>
     </Box>
   );
@@ -91,17 +112,24 @@ const TradeSize = () => {
   );
 };
 
-const LimitPrice = () => {
+const LimitPrice = ({ simpleLimit }: { simpleLimit?: boolean }) => {
+  const setLimitOrder = useTwapStore((store) => store.setLimitOrder);
+
+  setLimitOrder(simpleLimit);
+
   return (
+    <>
+      <Components.MarketPrice />
     <Components.Base.Card className="twap-limit-price">
       <TwapStyles.StyledColumnFlex>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Labels.LimitPriceLabel />
-          <Components.LimitPriceToggle />
+          {!simpleLimit && <Components.LimitPriceToggle />}
         </TwapStyles.StyledRowFlex>
         <Components.LimitPriceInput placeholder="0" />
       </TwapStyles.StyledColumnFlex>
     </Components.Base.Card>
+    </>
   );
 };
 
@@ -185,7 +213,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
-        {!isSrcToken && <Components.MarketPrice />}
       </TwapStyles.StyledColumnFlex>
     </>
   );

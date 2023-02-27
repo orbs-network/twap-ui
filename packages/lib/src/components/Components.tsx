@@ -223,12 +223,12 @@ export function LimitPriceToggle() {
   const translations = useTwapContext().translations;
   const { leftToken, rightToken } = useTwapStore((state) => state.getLimitPrice(false));
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const toggleLimit = useTwapStore((store) => store.toggleLimitOrder);
+  const setLimitOrder = useTwapStore((store) => store.setLimitOrder);
   const selectTokensWarning = !leftToken || !rightToken;
 
   return (
     <Tooltip text={isLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
-      <Switch disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={toggleLimit} />
+      <Switch disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={(value: boolean) => setLimitOrder(value)} />
     </Tooltip>
   );
 }
@@ -360,7 +360,7 @@ export function LimitPriceInput({ placeholder = "0.00" }: { placeholder?: string
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const { leftToken, rightToken, onChange, limitPrice, toggleInverted } = useLimitPrice();
 
-  if (!isLimitOrder) return null;
+  if (!isLimitOrder || !leftToken || !rightToken) return null;
   return (
     <StyledLimitPriceInput className="twap-limit-price-input">
       <StyledRowFlex gap={10} style={{ paddingLeft: 5 }} width="fit-content">

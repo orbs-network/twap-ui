@@ -251,11 +251,9 @@ export const useLimitPrice = () => {
   const [inverted, setInverted] = useState(false);
   const translations = useTwapContext().translations;
 
-  const { isLimitOrder, toggleLimitOrder, setLimitPrice, marketPriceUi } = useTwapStore((state) => ({
+  const { isLimitOrder, setLimitPrice } = useTwapStore((state) => ({
     isLimitOrder: state.isLimitOrder,
-    toggleLimitOrder: state.toggleLimitOrder,
     setLimitPrice: state.setLimitPriceUi,
-    marketPriceUi: state.getMarketPrice(false).marketPriceUi,
   }));
   const { limitPriceUi: limitPrice, leftToken, rightToken } = useTwapStore((state) => state.getLimitPrice(inverted));
 
@@ -266,12 +264,6 @@ export const useLimitPrice = () => {
     [inverted]
   );
 
-  const onToggleLimit = useCallback(() => {
-    setInverted(false);
-    toggleLimitOrder();
-    analytics.onLimitToggleClick(!isLimitOrder);
-  }, [marketPriceUi, isLimitOrder]);
-
   const toggleInverted = useCallback(() => {
     setInverted(!inverted);
   }, [inverted]);
@@ -279,7 +271,6 @@ export const useLimitPrice = () => {
   const loading = useLoadingState();
 
   return {
-    onToggleLimit,
     toggleInverted,
     onChange,
     limitPrice,
