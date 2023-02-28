@@ -106,6 +106,7 @@ export const configureStyles = () => {
     ".twap-limit-price-input": {
       background: "#1B1E29",
       padding: "5px 10px!important",
+      marginBottom: 8,
       button: {
         padding: 0,
       },
@@ -720,6 +721,9 @@ export const configureStyles = () => {
     ".twap-order-expanded-row": {},
     ".odnp *": {
       color: "black",
+    },
+    ".twap-limit-price .twap-label": {
+      height: 38,
     },
   };
 };

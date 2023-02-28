@@ -5,11 +5,12 @@ import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList } from "./Components";
 import { DappLayout, Popup } from "./Components";
-import { useMemo } from "react";
+import { useMemo, useState } from 'react'
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
+import { Box } from '@mui/system'
 const config = Configs.QuickSwap;
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
@@ -108,18 +109,36 @@ const DappComponent = () => {
     getTokenLogoURL,
   };
   const ordersProps: QuickSwapOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL };
+  const [showSimplified, setShowSimplified] = useState(false)
 
   return (
     <DappLayout name={config.partner}>
-      <StyledLayoutQuickswap>
-        <TWAP {...twapProps} simpleLimit />
-      </StyledLayoutQuickswap>
-      <StyledLayoutQuickswap>
-        <TWAP {...twapProps} />
-      </StyledLayoutQuickswap>
-      <StyledLayoutQuickswap>
-        <Orders {...ordersProps} />
-      </StyledLayoutQuickswap>
+      <Box sx={{width: "100%", maxWidth: 454, margin: 'auto', fontFamily: "Inter"}}>
+        <Box sx={{width: "100%"}}>
+          <h4 style={{display: 'inline', cursor: 'pointer', fontWeight: !showSimplified ? 500 : 400, margin: 0, color: !showSimplified ? 'lightgreen' : 'gray'}} onClick={() => setShowSimplified(false)}>Full version</h4>
+        </Box>
+        <Box sx={{width: "100%"}}>
+        <h4 style={{display: 'inline', cursor: 'pointer',fontWeight: showSimplified ? 500 : 400, margin: 0, color: showSimplified ? 'lightgreen' : 'gray'}} onClick={() => setShowSimplified(true)}>Simplified version</h4>
+        </Box>
+      </Box>
+      {showSimplified
+      ? <>
+          <StyledLayoutQuickswap>
+            <TWAP {...twapProps} simpleLimit />
+          </StyledLayoutQuickswap>
+          <StyledLayoutQuickswap>
+            <Orders {...ordersProps} />
+          </StyledLayoutQuickswap>
+        </>
+      : <>
+          <StyledLayoutQuickswap>
+            <TWAP {...twapProps} />
+          </StyledLayoutQuickswap>
+          <StyledLayoutQuickswap>
+            <Orders {...ordersProps} />
+          </StyledLayoutQuickswap>
+        </>
+      }
     </DappLayout>
   );
 };
