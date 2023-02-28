@@ -116,12 +116,12 @@ const DappComponent = () => {
       <TabsWrapper>
         <AdapterTab>
           <AdapterTabTitle showSimplified={!showSimplified} onClick={() => setShowSimplified(false)}>
-            Full version
+            TWAP
           </AdapterTabTitle>
         </AdapterTab>
         <AdapterTab>
           <AdapterTabTitle showSimplified={showSimplified} onClick={() => setShowSimplified(true)}>
-            Simplified version
+            Simple Limit
           </AdapterTabTitle>
         </AdapterTab>
       </TabsWrapper>
