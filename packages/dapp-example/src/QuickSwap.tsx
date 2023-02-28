@@ -114,14 +114,14 @@ const DappComponent = () => {
   return (
     <DappLayout name={config.partner}>
       <TabsWrapper>
-        <AdapterTab>
+        <AdapterTab showSimplified={!showSimplified}>
           <AdapterTabTitle showSimplified={!showSimplified} onClick={() => setShowSimplified(false)}>
             TWAP
           </AdapterTabTitle>
         </AdapterTab>
-        <AdapterTab>
+        <AdapterTab showSimplified={showSimplified}>
           <AdapterTabTitle showSimplified={showSimplified} onClick={() => setShowSimplified(true)}>
-            Simple Limit
+            Limit
           </AdapterTabTitle>
         </AdapterTab>
       </TabsWrapper>
@@ -153,18 +153,24 @@ const TabsWrapper = styled(Box)({
   maxWidth: 454,
   margin: "auto",
   fontFamily: "Inter",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: 'center',
+  gap: 40,
 });
 
-const AdapterTab = styled(Box)({
-  width: "100%",
-});
+const AdapterTab = styled(Box)(({ showSimplified }: { showSimplified: boolean }) => ({
+  borderBottom: showSimplified ? "1px solid #D1D5DB" : "1px solid transparent",
+  transition: ".15s linear all",
+}));
 
 const AdapterTabTitle = styled("h4")(({ showSimplified }: { showSimplified: boolean }) => ({
   display: "inline",
   cursor: "pointer",
   fontWeight: showSimplified ? 500 : 400,
   margin: 0,
-  color: showSimplified ? "lightgreen" : "gray",
+  color: showSimplified ? "#D1D5DB" : "gray",
+  transition: ".15s linear all",
 }));
 
 const dapp: Dapp = {

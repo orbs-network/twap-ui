@@ -27,10 +27,10 @@ const TWAP = (props: QuickSwapTWAPProps) => {
           </Box>
           <TokenPanel />
           <LimitPrice simpleLimit />
-          <Box mb={2}>
+          <Box mb={2} mt={3}>
             <Components.SubmitButton simpleLimit />
           </Box>
-          <OrderSummary />
+          <OrderSummary simpleLimit />
           <Components.PoweredBy />
         </div>
       );
@@ -219,7 +219,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-const OrderSummary = () => {
+const OrderSummary = ({ simpleLimit }: { simpleLimit?: boolean }) => {
   return (
     <Components.OrderSummaryModalContainer>
       <TwapStyles.StyledColumnFlex gap={14}>
@@ -232,7 +232,7 @@ const OrderSummary = () => {
           </Components.Base.Card>
           <Components.OrderSummaryLimitPrice />
           <Components.Base.Card>
-            <Components.OrderSummaryDetails />
+            <Components.OrderSummaryDetails simpleLimit={simpleLimit} />
           </Components.Base.Card>
           <Components.Base.Card>
             <TwapStyles.StyledColumnFlex gap={10}>

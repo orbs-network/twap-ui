@@ -391,9 +391,11 @@ export const configureStyles = () => {
       },
       ".twap-order-expanded-colored": {
         ".twap-order-main-progress-bar": {
+          borderRadius: 0,
           height: "16px!important",
         },
         ".MuiLinearProgress-bar": {
+          borderRadius: 0,
           height: "16px!important",
         },
         ".twap-order-token-display": {
@@ -425,12 +427,10 @@ export const configureStyles = () => {
       },
       ".twap-order-main-progress-bar": {
         height: 8,
-        borderRadius: 100,
         background: `${styles.progressBarTrackColor}!important`,
       },
       "& .twap-order-progress": {
         height: 8,
-        borderRadius: 100,
         background: `${styles.progressBarTrackColor}!important`,
 
         "&::after": {
