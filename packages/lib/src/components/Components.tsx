@@ -542,10 +542,12 @@ const orderSummaryDetailsComponent = [
   },
 ];
 
-export const OrderSummaryDetails = ({ className = "" }: { className?: string }) => {
+export const OrderSummaryDetails = ({ className = "", simpleLimit }: { className?: string; simpleLimit?: boolean }) => {
+  const summarydetails = simpleLimit ? orderSummaryDetailsComponent.filter((_, i) => (i !== 3 && i !== 4)) : orderSummaryDetailsComponent;
+
   return (
     <StyledSummaryDetails className={`twap-order-summary-details ${className}`}>
-      {orderSummaryDetailsComponent.map((details, index) => {
+      {summarydetails.map((details, index) => {
         return (
           <StyledSummaryRow key={index} className="twap-order-summary-details-item">
             {details.label}

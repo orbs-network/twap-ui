@@ -33,7 +33,6 @@ export const StyledPreviewLinearProgress = styled(LinearProgress)({
   marginLeft: "auto",
   marginRight: "auto",
   width: "100%",
-  borderRadius: 50,
   background: "transparent",
 
   "&::after": {
@@ -48,7 +47,6 @@ export const StyledPreviewLinearProgress = styled(LinearProgress)({
   "& .MuiLinearProgress-bar": {
     height: 5,
     zIndex: 1,
-    borderRadius: 50,
     transition: "0.2s all",
   },
 });
