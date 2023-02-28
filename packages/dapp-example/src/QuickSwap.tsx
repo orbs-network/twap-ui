@@ -5,12 +5,12 @@ import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList } from "./Components";
 import { DappLayout, Popup } from "./Components";
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
-import { Box } from '@mui/system'
+import { Box, styled } from "@mui/system";
 const config = Configs.QuickSwap;
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
@@ -109,20 +109,24 @@ const DappComponent = () => {
     getTokenLogoURL,
   };
   const ordersProps: QuickSwapOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL };
-  const [showSimplified, setShowSimplified] = useState(false)
+  const [showSimplified, setShowSimplified] = useState(false);
 
   return (
     <DappLayout name={config.partner}>
-      <Box sx={{width: "100%", maxWidth: 454, margin: 'auto', fontFamily: "Inter"}}>
-        <Box sx={{width: "100%"}}>
-          <h4 style={{display: 'inline', cursor: 'pointer', fontWeight: !showSimplified ? 500 : 400, margin: 0, color: !showSimplified ? 'lightgreen' : 'gray'}} onClick={() => setShowSimplified(false)}>Full version</h4>
-        </Box>
-        <Box sx={{width: "100%"}}>
-        <h4 style={{display: 'inline', cursor: 'pointer',fontWeight: showSimplified ? 500 : 400, margin: 0, color: showSimplified ? 'lightgreen' : 'gray'}} onClick={() => setShowSimplified(true)}>Simplified version</h4>
-        </Box>
-      </Box>
-      {showSimplified
-      ? <>
+      <TabsWrapper>
+        <AdapterTab>
+          <AdapterTabTitle showSimplified={!showSimplified} onClick={() => setShowSimplified(false)}>
+            Full version
+          </AdapterTabTitle>
+        </AdapterTab>
+        <AdapterTab>
+          <AdapterTabTitle showSimplified={showSimplified} onClick={() => setShowSimplified(true)}>
+            Simplified version
+          </AdapterTabTitle>
+        </AdapterTab>
+      </TabsWrapper>
+      {showSimplified ? (
+        <>
           <StyledLayoutQuickswap>
             <TWAP {...twapProps} simpleLimit />
           </StyledLayoutQuickswap>
@@ -130,7 +134,8 @@ const DappComponent = () => {
             <Orders {...ordersProps} />
           </StyledLayoutQuickswap>
         </>
-      : <>
+      ) : (
+        <>
           <StyledLayoutQuickswap>
             <TWAP {...twapProps} />
           </StyledLayoutQuickswap>
@@ -138,10 +143,29 @@ const DappComponent = () => {
             <Orders {...ordersProps} />
           </StyledLayoutQuickswap>
         </>
-      }
+      )}
     </DappLayout>
   );
 };
+
+const TabsWrapper = styled(Box)({
+  width: "100%",
+  maxWidth: 454,
+  margin: "auto",
+  fontFamily: "Inter",
+});
+
+const AdapterTab = styled(Box)({
+  width: "100%",
+});
+
+const AdapterTabTitle = styled("h4")(({ showSimplified }: { showSimplified: boolean }) => ({
+  display: "inline",
+  cursor: "pointer",
+  fontWeight: showSimplified ? 500 : 400,
+  margin: 0,
+  color: showSimplified ? "lightgreen" : "gray",
+}));
 
 const dapp: Dapp = {
   Component: DappComponent,
