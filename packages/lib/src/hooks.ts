@@ -118,6 +118,12 @@ export const useOnTokenSelect = (isSrc?: boolean) => {
   return isSrc ? srcSelect : dstSelect;
 };
 
+export const useCreateSimpleLimitOrder = () => {
+  return useMutation(async () => {
+    return useCreateOrder();
+  });
+};
+
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();

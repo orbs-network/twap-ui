@@ -28,8 +28,9 @@ const TWAP = (props: QuickSwapTWAPProps) => {
           <TokenPanel />
           <LimitPrice simpleLimit />
           <Box mb={2}>
-            <Components.SubmitButton />
+            <Components.SubmitButton simpleLimit />
           </Box>
+          <OrderSummary />
           <Components.PoweredBy />
         </div>
       );
@@ -120,15 +121,15 @@ const LimitPrice = ({ simpleLimit }: { simpleLimit?: boolean }) => {
   return (
     <>
       <Components.MarketPrice />
-    <Components.Base.Card className="twap-limit-price">
-      <TwapStyles.StyledColumnFlex>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel />
-          {!simpleLimit && <Components.LimitPriceToggle />}
-        </TwapStyles.StyledRowFlex>
-        <Components.LimitPriceInput placeholder="0" />
-      </TwapStyles.StyledColumnFlex>
-    </Components.Base.Card>
+      <Components.Base.Card className="twap-limit-price">
+        <TwapStyles.StyledColumnFlex>
+          <TwapStyles.StyledRowFlex justifyContent="space-between">
+            <Components.Labels.LimitPriceLabel />
+            {!simpleLimit && <Components.LimitPriceToggle />}
+          </TwapStyles.StyledRowFlex>
+          <Components.LimitPriceInput placeholder="0" />
+        </TwapStyles.StyledColumnFlex>
+      </Components.Base.Card>
     </>
   );
 };

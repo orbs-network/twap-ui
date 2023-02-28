@@ -26,7 +26,7 @@ import { styled } from "@mui/system";
 import { AiOutlineWarning } from "react-icons/ai";
 import { useOrdersContext, useTwapContext } from "../context";
 import { useLoadingState, useLimitPrice, useMarketPrice, useCreateOrder, useApproveToken, useChangeNetwork, useHasAllowanceQuery, useUnwrapToken, useWrapToken } from "../hooks";
-import { useTwapStore, handleFillDelayText } from "../store";
+import { useTwapStore, handleFillDelayText, TimeResolution } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
@@ -40,6 +40,7 @@ import {
 } from "./Labels";
 import { TWAPTokenSelectProps } from "../types";
 import { analytics } from "../analytics";
+import { SIMPLE_LIMIT_ORDER_DURATION_DAYS } from "../consts";
 const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
 
 const odnp = new ODNP();
@@ -261,7 +262,7 @@ export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
   return <USD value={usd || "0"} isLoading={isLoading} />;
 }
 
-export const SubmitButton = ({ className = "" }: { className?: string }) => {
+export const SubmitButton = ({ className = "", simpleLimit }: { className?: string; simpleLimit?: boolean }) => {
   const translations = useTwapContext().translations;
   const shouldUnwrap = useTwapStore((store) => store.shouldUnwrap());
   const shouldWrap = useTwapStore((store) => store.shouldWrap());
@@ -272,6 +273,10 @@ export const SubmitButton = ({ className = "" }: { className?: string }) => {
   const showConfirmation = useTwapStore((state) => state.showConfirmation);
   const warning = useTwapStore((state) => state.getFillWarning(translations));
   const createOrderLoading = useTwapStore((state) => state.loading);
+  const setFillDelay = useTwapStore((store) => store.setFillDelay);
+  const setDuration = useTwapStore((store) => store.setDuration);
+  const setChunks = useTwapStore((store) => store.setChunks);
+
   const { srcUsdLoading, dstUsdLoading } = useLoadingState();
 
   const { mutate: approve, isLoading: approveLoading } = useApproveToken();
@@ -341,7 +346,14 @@ export const SubmitButton = ({ className = "" }: { className?: string }) => {
       };
     return {
       text: translations.placeOrder,
-      onClick: () => setShowConfirmation(true),
+      onClick: () => {
+        if (simpleLimit) {
+          setChunks(1);
+          setFillDelay({ resolution: TimeResolution.Minutes, amount: 2 });
+          setDuration({ resolution: TimeResolution.Days, amount: SIMPLE_LIMIT_ORDER_DURATION_DAYS });
+        }
+        setShowConfirmation(true);
+      },
       loading: false,
       disabled: false,
     };
