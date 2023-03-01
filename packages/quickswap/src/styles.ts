@@ -569,7 +569,7 @@ export const configureStyles = () => {
             fontSize: 14,
           },
           ".twap-label": {
-            fontSize: 16,
+            fontSize: 14,
           },
         },
       },
