@@ -161,7 +161,7 @@ export const TokenSelect = ({ onClick, isSrc, hideArrow }: { onClick: () => void
 
   if (token) {
     return (
-      <StyledRowFlex gap={5} style={{ cursor: "pointer" }} width="fit-content" onClick={onClick} className="twap-token-select twap-token-selected">
+      <StyledRowFlex gap={5} style={{ cursor: "pointer" }} width="fit-content" onClick={onClick} className={`twap-token-select twap-token-selected ${!!srcToken && !!dstToken ? 'twap-token-filled' : ''}`}>
         <TokenLogoAndSymbol isSrc={isSrc} />
         {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
       </StyledRowFlex>

@@ -9,6 +9,8 @@ import { useTwapStore } from "@orbs-network/twap-ui/dist/store";
 
 const TWAP = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
+  const srcToken = useTwapStore((state) => state.srcToken);
+  const dstToken = useTwapStore((state) => state.dstToken);
 
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles();
@@ -37,11 +39,11 @@ const TWAP = (props: QuickSwapTWAPProps) => {
     }
     return (
       <div className="twap-container">
-        <TokenPanel isSrcToken={true} />
+        <TokenPanel isSrcToken={true} hideArrow={!!srcToken} />
         <Box mt={1.5} sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
           <Components.ChangeTokensOrder />
         </Box>
-        <TokenPanel />
+        <TokenPanel hideArrow={!!dstToken} />
         <LimitPrice />
         <TradeSize />
         <MaxDuration />
@@ -183,7 +185,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
   );
 };
 
-const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
+const TokenPanel = ({ isSrcToken, hideArrow = true }: { isSrcToken?: boolean, hideArrow?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
 
@@ -205,7 +207,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
               {isSrcToken && <SrcTokenPercentSelector />}
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenSelect hideArrow={true} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              <Components.TokenSelect hideArrow={hideArrow} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
               <Components.TokenInput placeholder="0.00" isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">

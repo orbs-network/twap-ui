@@ -154,11 +154,17 @@ export const configureStyles = () => {
       fontSize: 16,
     },
     ".twap-token-select": {
+      '.twap-icon svg': {
+        color: '#D1D5DB!important',
+        fill: '#D1D5DB!important',
+        stroke: '#D1D5DB!important',
+      },
+      background: "#404557!important",
       ".twap-token-name": {
         fontWeight: "500!important",
         fontSize: "16px!important",
       },
-      width: "115px !important",
+      width: "186px!important",
       height: 45,
       border: "unset",
       padding: "8px 7px",
@@ -167,6 +173,7 @@ export const configureStyles = () => {
       cursor: "pointer",
       display: "flex",
       alignItems: "center",
+      justifyContent: 'space-between!important',
       color: `${styles.selectTokenTextColor}!important`,
       p: {
         color: "inherit",
@@ -640,7 +647,7 @@ export const configureStyles = () => {
     ".adapter-wrapper": {
       padding: "24px 0",
       width: "100%!important",
-      maxWidth: '454px!important',
+      maxWidth: "454px!important",
       margin: "auto",
       fontFamily: "Inter",
       background: "#1b1e29",
@@ -725,6 +732,9 @@ export const configureStyles = () => {
     },
     ".twap-limit-price .twap-label": {
       height: 38,
+    },
+    '.twap-token-filled': {
+      width: '115px!important',
     },
   };
 };
