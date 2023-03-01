@@ -543,7 +543,7 @@ const orderSummaryDetailsComponent = [
 ];
 
 export const OrderSummaryDetails = ({ className = "", simpleLimit }: { className?: string; simpleLimit?: boolean }) => {
-  const summarydetails = simpleLimit ? orderSummaryDetailsComponent.filter((_, i) => (i !== 3 && i !== 4)) : orderSummaryDetailsComponent;
+  const summarydetails = simpleLimit ? orderSummaryDetailsComponent.filter((_, i) => i !== 3 && i !== 4) : orderSummaryDetailsComponent;
 
   return (
     <StyledSummaryDetails className={`twap-order-summary-details ${className}`}>
@@ -688,10 +688,10 @@ export const DisclaimerText = () => {
 const StyledWarning = styled(StyledRowFlex)({
   p: {
     fontSize: 14,
-    color: "#dc3545",
+    color: "#E23D5B",
   },
   "& *": {
-    fill: "#dc3545",
+    fill: "#E23D5B",
   },
 });
 

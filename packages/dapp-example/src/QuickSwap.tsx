@@ -155,7 +155,7 @@ const TabsWrapper = styled(Box)({
   fontFamily: "Inter",
   display: "flex",
   alignItems: "center",
-  justifyContent: 'center',
+  justifyContent: "center",
   gap: 40,
 });
 
