@@ -639,7 +639,8 @@ export const configureStyles = () => {
     },
     ".adapter-wrapper": {
       padding: "24px 0",
-      width: "454px!important",
+      width: "100%!important",
+      maxWidth: '454px!important',
       margin: "auto",
       fontFamily: "Inter",
       background: "#1b1e29",
