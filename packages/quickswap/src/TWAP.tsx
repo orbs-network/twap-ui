@@ -185,7 +185,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
   );
 };
 
-const TokenPanel = ({ isSrcToken, hideArrow = true }: { isSrcToken?: boolean, hideArrow?: boolean }) => {
+const TokenPanel = ({ isSrcToken, hideArrow = true }: { isSrcToken?: boolean; hideArrow?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
 
