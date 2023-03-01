@@ -36,7 +36,7 @@ import { TokenData } from "@orbs-network/twap";
 import { TokenListItem } from "./types";
 import _ from "lodash";
 
-const FAVICON = "https://github.com/orbs-network/twap-ui/raw/66e183e804002fe382d9b0070caef060ad2e21ac/logo/64.png";
+const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
 
 export interface Dapp {
   config: Config;
