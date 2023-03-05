@@ -82,6 +82,7 @@ export const configureStyles = () => {
     ".twap-odnp": {
       marginRight: "0px!important",
       width: 119,
+      minWidth: 119,
       height: 31,
       border: "1px solid #636679",
       borderRadius: "20px!important",
