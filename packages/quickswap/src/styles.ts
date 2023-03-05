@@ -195,6 +195,7 @@ export const configureStyles = () => {
       },
     },
     ".twap-token-not-selected": {
+      padding: "0 12px",
       display: "flex",
       justifyContent: "center",
       background: "#448AFF",
@@ -645,7 +646,7 @@ export const configureStyles = () => {
     ".adapter-wrapper": {
       padding: "24px 0",
       width: "100%!important",
-      maxWidth: "454px!important",
+      maxWidth: "100%!important",
       margin: "auto",
       fontFamily: "Inter",
       background: "#1b1e29",
@@ -733,6 +734,9 @@ export const configureStyles = () => {
     },
     ".twap-token-filled": {
       width: "115px!important",
+    },
+    ".twap-orders-wrapper": {
+      maxWidth: "100%!important",
     },
   };
 };
