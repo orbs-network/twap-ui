@@ -129,15 +129,19 @@ export function Status() {
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle>
+              <a href={"https://github.com/orbs-network/twap"} target={"_blank"}>
+                TWAP Lib Version:
+              </a>
+            </StyledStatusSectionTitle>
+            <StyledStatusSectionText>{config?.twapLibVersion}</StyledStatusSectionText>
+          </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>
               <a href={"https://github.com/orbs-network/twap-ui"} target={"_blank"}>
                 TWAP-UI Version:
               </a>
             </StyledStatusSectionTitle>
             <StyledStatusSectionText>{config?.twapUiVersion}</StyledStatusSectionText>
-          </StyledStatusSection>
-          <StyledStatusSection>
-            <StyledStatusSectionTitle>TWAP Lib Version:</StyledStatusSectionTitle>
-            <StyledStatusSectionText>{config?.twapLibVersion}</StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
@@ -189,7 +193,11 @@ export function Status() {
             </StyledStatusSection>
           ))}
           <StyledStatusSection>
-            <StyledStatusSectionTitle>{!takerx ? "" : takerx?.status ? "✅" : "⚠️⚠️⚠️"} Backup Taker X (1):</StyledStatusSectionTitle>
+            <StyledStatusSectionTitle>
+              <a href={"https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status"} target={"_blank"}>
+                {!takerx ? "" : takerx?.status ? "✅" : "⚠️⚠️⚠️"} Backup Taker X (1):
+              </a>
+            </StyledStatusSectionTitle>
             <StyledStatusSectionText>gas: {takerx?.balance}</StyledStatusSectionText>
           </StyledStatusSection>
         </StyledStatus>
