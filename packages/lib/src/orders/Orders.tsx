@@ -20,7 +20,7 @@ function Orders() {
   };
 
   return (
-    <StyledContainer className="twap-orders">
+    <StyledContainer className="twap-orders twap-orders-wrapper">
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
           <Styles.StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>
