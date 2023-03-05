@@ -120,8 +120,20 @@ export function Status() {
       {dapp && (
         <StyledStatus>
           <StyledStatusSection>
-            <StyledStatusSectionTitle>TWAP Version:</StyledStatusSectionTitle>
+            <StyledStatusSectionTitle>
+              <a href={"https://github.com/orbs-network/twap"} target={"_blank"}>
+                TWAP Version:
+              </a>
+            </StyledStatusSectionTitle>
             <StyledStatusSectionText>{config?.twapVersion}</StyledStatusSectionText>
+          </StyledStatusSection>
+          <StyledStatusSection>
+            <StyledStatusSectionTitle>
+              <a href={"https://github.com/orbs-network/twap-ui"} target={"_blank"}>
+                TWAP-UI Version:
+              </a>
+            </StyledStatusSectionTitle>
+            <StyledStatusSectionText>{config?.twapUiVersion}</StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle>TWAP Lib Version:</StyledStatusSectionTitle>
