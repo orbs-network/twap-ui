@@ -1,16 +1,15 @@
-import { StyledLayoutQuickswap, StyledModalContent } from "./styles";
-import { Orders, TWAP, QuickSwapTWAPProps, QuickSwapOrdersProps } from "@orbs-network/twap-ui-quickswap";
+import { StyledModalContent } from "./styles";
+import { Orders, TWAP, Limit, QuickSwapTWAPProps, QuickSwapOrdersProps } from "@orbs-network/twap-ui-quickswap";
 import { useConnectWallet, useNetwork } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
-import { Dapp, TokensList } from "./Components";
+import { Dapp, TokensList, UISelector } from "./Components";
 import { DappLayout, Popup } from "./Components";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
-import { Box, styled } from "@mui/system";
 const config = Configs.QuickSwap;
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
@@ -109,69 +108,19 @@ const DappComponent = () => {
     getTokenLogoURL,
   };
   const ordersProps: QuickSwapOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL };
-  const [showSimplified, setShowSimplified] = useState(false);
 
   return (
     <DappLayout name={config.partner}>
-      <TabsWrapper>
-        <AdapterTab showSimplified={!showSimplified}>
-          <AdapterTabTitle showSimplified={!showSimplified} onClick={() => setShowSimplified(false)}>
-            TWAP
-          </AdapterTabTitle>
-        </AdapterTab>
-        <AdapterTab showSimplified={showSimplified}>
-          <AdapterTabTitle showSimplified={showSimplified} onClick={() => setShowSimplified(true)}>
-            Limit
-          </AdapterTabTitle>
-        </AdapterTab>
-      </TabsWrapper>
-      {showSimplified ? (
-        <>
-          <StyledLayoutQuickswap>
-            <TWAP {...twapProps} simpleLimit />
-          </StyledLayoutQuickswap>
-          <StyledLayoutQuickswap>
-            <Orders {...ordersProps} />
-          </StyledLayoutQuickswap>
-        </>
-      ) : (
-        <>
-          <StyledLayoutQuickswap>
-            <TWAP {...twapProps} />
-          </StyledLayoutQuickswap>
-          <StyledLayoutQuickswap>
-            <Orders {...ordersProps} />
-          </StyledLayoutQuickswap>
-        </>
-      )}
+      <UISelector
+        options={[
+          { title: "TWAP", component: <TWAP {...twapProps} /> },
+          { title: "LIMIT", component: <Limit {...twapProps} /> },
+        ]}
+      />
+      <Orders {...ordersProps} />
     </DappLayout>
   );
 };
-
-const TabsWrapper = styled(Box)({
-  width: "100%",
-  maxWidth: 454,
-  margin: "auto",
-  fontFamily: "Inter",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 40,
-});
-
-const AdapterTab = styled(Box)(({ showSimplified }: { showSimplified: boolean }) => ({
-  borderBottom: showSimplified ? "1px solid #D1D5DB" : "1px solid transparent",
-  transition: ".15s linear all",
-}));
-
-const AdapterTabTitle = styled("h4")(({ showSimplified }: { showSimplified: boolean }) => ({
-  display: "inline",
-  cursor: "pointer",
-  fontWeight: showSimplified ? 500 : 400,
-  margin: 0,
-  color: showSimplified ? "#D1D5DB" : "gray",
-  transition: ".15s linear all",
-}));
 
 const dapp: Dapp = {
   Component: DappComponent,

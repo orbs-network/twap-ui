@@ -61,7 +61,7 @@ export const configureStyles = () => {
     },
     ".twap-percent-selector": {
       button: {
-        "&:nth-child(2)": {
+        "&:nth-of-type(2)": {
           marginLeft: 22.5,
         },
         padding: 0,
@@ -225,7 +225,7 @@ export const configureStyles = () => {
           fontSize: "13px",
         },
       },
-      "&:nth-child(2)": {
+      "&:nth-of-type(2)": {
         fontSize: "13px!important",
         display: "flex",
         alignItems: "center",
@@ -570,14 +570,12 @@ export const configureStyles = () => {
           fontSize: 16,
         },
       },
-      ".twap-order-summary-details": {
-        ".twap-order-summary-details-item": {
-          div: {
-            fontSize: 14,
-          },
-          ".twap-label": {
-            fontSize: 14,
-          },
+      ".twap-order-summary-details-item": {
+        div: {
+          fontSize: 14,
+        },
+        ".twap-label": {
+          fontSize: 14,
         },
       },
       ".twap-disclaimer-text p, .twap-disclaimer-text a": {

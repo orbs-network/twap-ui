@@ -17,6 +17,7 @@ import {
   NumberDisplay,
   SwipeContainer,
   Modal,
+  Loader,
 } from "./base";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
@@ -268,7 +269,7 @@ export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
   return <USD value={usd || "0"} isLoading={isLoading} />;
 }
 
-export const SubmitButton = ({ className = "", simpleLimit }: { className?: string; simpleLimit?: boolean }) => {
+export const SubmitButton = ({ className = "" }: { className?: string }) => {
   const translations = useTwapContext().translations;
   const shouldUnwrap = useTwapStore((store) => store.shouldUnwrap());
   const shouldWrap = useTwapStore((store) => store.shouldWrap());
@@ -279,10 +280,6 @@ export const SubmitButton = ({ className = "", simpleLimit }: { className?: stri
   const showConfirmation = useTwapStore((state) => state.showConfirmation);
   const warning = useTwapStore((state) => state.getFillWarning(translations));
   const createOrderLoading = useTwapStore((state) => state.loading);
-  const setFillDelay = useTwapStore((store) => store.setFillDelay);
-  const setDuration = useTwapStore((store) => store.setDuration);
-  const setChunks = useTwapStore((store) => store.setChunks);
-
   const { srcUsdLoading, dstUsdLoading } = useLoadingState();
 
   const { mutate: approve, isLoading: approveLoading } = useApproveToken();
@@ -352,14 +349,7 @@ export const SubmitButton = ({ className = "", simpleLimit }: { className?: stri
       };
     return {
       text: translations.placeOrder,
-      onClick: () => {
-        if (simpleLimit) {
-          setChunks(1);
-          setFillDelay({ resolution: TimeResolution.Minutes, amount: 2 });
-          setDuration({ resolution: TimeResolution.Days, amount: SIMPLE_LIMIT_ORDER_DURATION_DAYS });
-        }
-        setShowConfirmation(true);
-      },
+      onClick: () => setShowConfirmation(true),
       loading: false,
       disabled: false,
     };
@@ -374,18 +364,20 @@ export const SubmitButton = ({ className = "", simpleLimit }: { className?: stri
   );
 };
 
-export function LimitPriceInput({ placeholder = "0.00" }: { placeholder?: string }) {
+export function LimitPriceInput({ placeholder = "0.00", isLoading }: { placeholder?: string; isLoading?: boolean }) {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const { leftToken, rightToken, onChange, limitPrice, toggleInverted } = useLimitPrice();
 
   if (!isLimitOrder || !leftToken || !rightToken) return null;
+
   return (
     <StyledLimitPriceInput className="twap-limit-price-input">
       <StyledRowFlex gap={10} style={{ paddingLeft: 5 }} width="fit-content">
         <TokenDisplay singleToken symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />
         <StyledText>=</StyledText>
       </StyledRowFlex>
-      <NumericInput placeholder={placeholder} onChange={onChange} value={limitPrice} />
+      {isLoading ? <Loader width={80} height={34} /> : <NumericInput placeholder={placeholder} onChange={onChange} value={limitPrice} />}
+
       <StyledRowFlex gap={10} width="fit-content">
         <TokenDisplay symbol={rightToken?.symbol} logo={rightToken?.logoUrl} />
         <IconButton onClick={toggleInverted} icon={<TbArrowsRightLeft style={{ width: 20, height: 20 }} />}></IconButton>
@@ -511,56 +503,89 @@ export const MinDstAmountOut = () => {
   );
 };
 
-const orderSummaryDetailsComponent = [
-  {
-    label: <OrderSummaryDeadlineLabel />,
-    component: <Deadline />,
-  },
-  {
-    label: <OrderSummaryOrderTypeLabel />,
-    component: <OrderType />,
-  },
-  {
-    label: <OrderSummaryChunkSizeLabel />,
-    component: (
-      <>
-        <TokenLogoAndSymbol isSrc={true} reverse={true} />
-        <ChunksAmount />
-      </>
-    ),
-  },
-  {
-    label: <OrderSummaryTotalChunksLabel />,
-    component: <TotalChunks />,
-  },
-  {
-    label: <OrderSummaryTradeIntervalLabel />,
-    component: <TradeIntervalAsText />,
-  },
-  {
-    label: <OrderSummaryMinDstAmountOutLabel />,
-    component: (
-      <>
-        <TokenLogoAndSymbol isSrc={false} reverse={true} />
-        <MinDstAmountOut />
-      </>
-    ),
-  },
-];
+export const OrderSummaryDetailsMinDstAmount = () => {
+  return (
+    <StyledSummaryRow className="twap-order-summary-details-item">
+      <OrderSummaryMinDstAmountOutLabel />
+      <StyledSummaryRowRight>
+        <>
+          <TokenLogoAndSymbol isSrc={false} reverse={true} />
+          <MinDstAmountOut />
+        </>
+      </StyledSummaryRowRight>
+    </StyledSummaryRow>
+  );
+};
 
-export const OrderSummaryDetails = ({ className = "", simpleLimit }: { className?: string; simpleLimit?: boolean }) => {
-  const summarydetails = simpleLimit ? orderSummaryDetailsComponent.filter((_, i) => i !== 3 && i !== 4) : orderSummaryDetailsComponent;
+
+export const OrderSummaryDetailsTradeInterval = () => {
+  return (
+    <StyledSummaryRow className="twap-order-summary-details-item">
+      <OrderSummaryTradeIntervalLabel />
+      <StyledSummaryRowRight>
+        <TradeIntervalAsText />
+      </StyledSummaryRowRight>
+    </StyledSummaryRow>
+  );
+};
+
+export const OrderSummaryDetailsTotalChunks = () => {
+  return (
+    <StyledSummaryRow className="twap-order-summary-details-item">
+      <OrderSummaryTotalChunksLabel />
+      <StyledSummaryRowRight>
+        <TotalChunks />
+      </StyledSummaryRowRight>
+    </StyledSummaryRow>
+  );
+};
+
+export const OrderSummaryDetailsChunkSize = () => {
+  return (
+    <StyledSummaryRow className="twap-order-summary-details-item">
+      <OrderSummaryChunkSizeLabel />
+      <StyledSummaryRowRight>
+        <>
+          <TokenLogoAndSymbol isSrc={true} reverse={true} />
+          <ChunksAmount />
+        </>
+      </StyledSummaryRowRight>
+    </StyledSummaryRow>
+  );
+};
+
+export const OrderSummaryDetailsOrderType = () => {
+  return (
+    <StyledSummaryRow className="twap-order-summary-details-item">
+      <OrderSummaryOrderTypeLabel />
+      <StyledSummaryRowRight>
+        <OrderType />
+      </StyledSummaryRowRight>
+    </StyledSummaryRow>
+  );
+};
+
+export const OrderSummaryDetailsDeadline = () => {
+  return (
+    <StyledSummaryRow className="twap-order-summary-details-item">
+      <OrderSummaryDeadlineLabel />
+      <StyledSummaryRowRight>
+        <Deadline />
+      </StyledSummaryRowRight>
+    </StyledSummaryRow>
+  );
+};
+
+export const OrderSummaryDetails = ({ className = "" }: { className?: string }) => {
 
   return (
     <StyledSummaryDetails className={`twap-order-summary-details ${className}`}>
-      {summarydetails.map((details, index) => {
-        return (
-          <StyledSummaryRow key={index} className="twap-order-summary-details-item">
-            {details.label}
-            <StyledSummaryRowRight>{details.component}</StyledSummaryRowRight>
-          </StyledSummaryRow>
-        );
-      })}
+      <OrderSummaryDetailsDeadline />
+      <OrderSummaryDetailsOrderType />
+      <OrderSummaryDetailsChunkSize />
+      <OrderSummaryDetailsTotalChunks />
+      <OrderSummaryDetailsTradeInterval />
+      <OrderSummaryDetailsMinDstAmount />
     </StyledSummaryDetails>
   );
 };
