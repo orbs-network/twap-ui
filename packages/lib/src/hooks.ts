@@ -284,7 +284,7 @@ export const useLimitPrice = () => {
     rightToken,
     warning: !leftToken || !rightToken ? translations.selectTokens : undefined,
     isLimitOrder,
-    isLoading: loading.srcUsdLoading && loading.dstUsdLoading,
+    isLoading: loading.srcUsdLoading || loading.dstUsdLoading,
   };
 };
 

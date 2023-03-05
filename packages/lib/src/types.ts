@@ -109,7 +109,6 @@ interface BaseProps {
   maxFeePerGas?: string;
   priorityFeePerGas?: string;
   isDarkTheme?: boolean;
-  simpleLimit?: boolean;
 }
 export interface TWAPProps extends BaseProps {
   connect?: () => void;

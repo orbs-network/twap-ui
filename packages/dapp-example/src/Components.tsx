@@ -1,5 +1,5 @@
 import Modal from "@mui/material/Modal";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { Component, ReactNode, useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet";
 import { AiOutlineClose } from "react-icons/ai";
 import {
@@ -16,6 +16,9 @@ import {
   StyledThemeToggle,
   StyledTokens,
   StyledTokensList,
+  StyledUISelector,
+  StyledUISelectorButton,
+  StyledUISelectorButtons,
 } from "./styles";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
@@ -24,7 +27,7 @@ import { FiMenu } from "react-icons/fi";
 import Backdrop from "@mui/material/Backdrop";
 import { Fade } from "@mui/material";
 import { Config } from "@orbs-network/twap";
-import { Components, Styles } from "@orbs-network/twap-ui";
+import { Components, hooks, Styles } from "@orbs-network/twap-ui";
 
 import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
 import { dapps } from "./config";
@@ -248,5 +251,41 @@ export const TokensList = ({ tokens = [], onClick }: { tokens?: TokenListItem[];
         </AutoSizer>
       </StyledTokensList>
     </StyledTokens>
+  );
+};
+
+interface UIOption {
+  title: string;
+  component: ReactNode;
+}
+
+export const UISelector = ({ options }: { options: UIOption[] }) => {
+  const [selected, setSelected] = useState(options[0].title);
+    const resetTwapStore = hooks.useResetStoreAndQueries();
+
+    const onSelect = (value: string) => {
+      setSelected(value);
+      resetTwapStore();
+      
+    }
+
+  return (
+    <StyledUISelector>
+      <StyledUISelectorButtons>
+        {options.map((o) => {
+          return (
+            <StyledUISelectorButton style={{ borderBottom: selected === o.title ? "1px solid white" : "1px solid transparent" }} key={o.title} onClick={() => onSelect(o.title)}>
+              {o.title}
+            </StyledUISelectorButton>
+          );
+        })}
+      </StyledUISelectorButtons>
+      {options.map((o) => {
+        if (o.title === selected) {
+          return <div key={o.title}>{o.component}</div>;
+        }
+        return null;
+      })}
+    </StyledUISelector>
   );
 };

@@ -237,3 +237,19 @@ export const StyledTokensList = styled(Box)({
   width: "100%",
   paddingTop: 10,
 });
+
+
+export const StyledUISelector = styled(Box)({
+
+})
+
+export const StyledUISelectorButtons = styled(TwapStyles.StyledRowFlex)({
+  marginBottom: 20
+});
+export const StyledUISelectorButton = styled('button')({
+  background:'transparent',
+  color:'white',
+  border:'unset',
+  cursor:'pointer',
+  transition:'0.2s all'
+});
