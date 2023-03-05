@@ -140,10 +140,6 @@ export function Status() {
             <StyledStatusSectionText>{config?.twapLibVersion}</StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
-            <StyledStatusSectionTitle>TWAP-UI Version:</StyledStatusSectionTitle>
-            <StyledStatusSectionText>{config?.twapUiVersion}</StyledStatusSectionText>
-          </StyledStatusSection>
-          <StyledStatusSection>
             <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
               <Image logo={config?.info.logoUrl} /> {config?.info.name || dapp.config.chainName} {dapp.config.chainId}
