@@ -551,9 +551,12 @@ export const configureStyles = () => {
         fontSize: "inherit",
       },
     },
+    ".twap-submit": {
+      color: 'white!important',
+    },
     ".twap-button-disabled": {
       background: styles.disabledButtonBackground,
-      color: styles.disabledButtonColor,
+      color: `${styles.disabledButtonColor}!important`,
     },
 
     ".twap-modal-content": {
