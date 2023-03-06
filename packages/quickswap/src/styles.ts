@@ -405,6 +405,17 @@ export const configureStyles = (isProMode?: boolean) => {
         border: "1px solid #636679",
       },
       ".twap-order-expanded-colored": {
+        ".twap-token-display-amount-and-symbol": {
+          fontSize: "16px!important",
+        },
+        ".twap-order-token-display-usd": {
+          p: {
+            fontSize: 13,
+            span: {
+              fontSize: 13,
+            },
+          },
+        },
         ".twap-order-main-progress-bar": {
           borderRadius: 0,
           height: "16px!important",
@@ -436,8 +447,10 @@ export const configureStyles = (isProMode?: boolean) => {
           fontSize: 14,
         },
         ".twap-token-display-amount-and-symbol": {
-          fontSize: 16,
-          fontWeight: "400!important",
+          "p, span": {
+            fontSize: 16,
+            fontWeight: "400!important",
+          },
         },
       },
       ".twap-order-main-progress-bar": {
@@ -695,14 +708,18 @@ export const configureStyles = (isProMode?: boolean) => {
       },
       ".twap-order-token-display": {
         ".twap-small-label": {
-          fontSize: "13px!important",
+          "p, span": {
+            fontSize: "13px!important",
+          },
         },
         ".twap-token-logo": {
           width: 25,
           height: 25,
         },
         ".twap-token-display-amount-and-symbol": {
-          fontSize: "16px!important",
+          "p, span": {
+            fontSize: "16px!important",
+          },
         },
       },
     },
