@@ -692,14 +692,14 @@ export const configureStyles = () => {
       },
       ".twap-order-token-display": {
         ".twap-small-label": {
-          fontSize: '13px!important',
+          fontSize: "13px!important",
         },
         ".twap-token-logo": {
           width: 25,
           height: 25,
         },
-        '.twap-token-display-amount-and-symbol': {
-          fontSize: '16px!important',
+        ".twap-token-display-amount-and-symbol": {
+          fontSize: "16px!important",
         },
       },
     },
@@ -719,7 +719,7 @@ export const configureStyles = () => {
         width: "25px!important",
         height: "25px!important",
       },
-      '.twap-number-display': {
+      ".twap-number-display": {
         fontSize: 13,
       },
     },
@@ -749,7 +749,7 @@ export const configureStyles = () => {
     ".twap-orders-wrapper": {
       maxWidth: "100%!important",
     },
-    'p .twap-balance-title': {
+    "p .twap-balance-title": {
       fontSize: 14,
     },
   };
