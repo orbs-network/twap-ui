@@ -20,7 +20,10 @@ export const StyledLayoutSpiritswap = styled(Box)({
   maxWidth: 500,
 });
 
-export const StyledLayoutQuickswap = styled(Box)({});
+export const StyledLayoutQuickswap = styled(Box)({
+  background: "#1b1e29",
+  padding: 20
+});
 
 export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) => ({
   background: mode === "dark" ? "#192239" : "rgb(242, 244, 248)",
