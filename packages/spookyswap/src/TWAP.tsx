@@ -169,7 +169,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
               {isSrcToken && <SrcTokenPercentSelector />}
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenSelect hideArrow={true} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
               <TwapStyles.StyledOverflowContainer>
                 <TwapStyles.StyledColumnFlex style={{ width: "fit-content", alignItems: "flex-end", flex: 1 }} gap={2}>
                   <Components.TokenInput isSrc={isSrcToken} />
