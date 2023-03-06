@@ -196,7 +196,7 @@ export const configureStyles = () => {
       },
     },
     ".twap-token-not-selected": {
-      padding: "0 12px",
+      padding: "8px 12px!important",
       display: "flex",
       justifyContent: "center",
       background: "#448AFF",
@@ -552,7 +552,7 @@ export const configureStyles = () => {
       },
     },
     ".twap-submit": {
-      color: 'white!important',
+      color: "white!important",
     },
     ".twap-button-disabled": {
       background: styles.disabledButtonBackground,

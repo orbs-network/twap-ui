@@ -38,9 +38,9 @@ const TWAP = (props: QuickSwapTWAPProps) => {
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>
           <div className="twap-container">
-            <TokenPanel hideArrow={!!parsedTokens.length} isSrcToken={true} />
+            <TokenPanel isSrcToken={true} />
             <ChangeTokensOrder />
-            <TokenPanel hideArrow={!!parsedTokens.length} />
+            <TokenPanel />
             <Components.MarketPrice />
             <LimitPrice />
             <TradeSize />

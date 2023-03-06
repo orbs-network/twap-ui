@@ -27,7 +27,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
   );
 };
 
-export const TokenPanel = ({ isSrcToken, hideArrow = true }: { isSrcToken?: boolean; hideArrow?: boolean }) => {
+export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
 
@@ -49,7 +49,7 @@ export const TokenPanel = ({ isSrcToken, hideArrow = true }: { isSrcToken?: bool
               {isSrcToken && <SrcTokenPercentSelector />}
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenSelect hideArrow={hideArrow} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
               <Components.TokenInput placeholder="0.00" isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
