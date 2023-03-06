@@ -1,5 +1,6 @@
 import { StylesConfig } from "@orbs-network/twap-ui";
-
+//#232734
+// #1b1e29 < --- bg bg
 // Styles configuration
 export const darkModeStylesConfig: StylesConfig = {
   iconsColor: "rgb(105, 108, 128)",
@@ -8,7 +9,8 @@ export const darkModeStylesConfig: StylesConfig = {
   tooltipTextColor: "white",
   spinnerColor: "white",
   containerBackground: "rgb(16, 23, 38)",
-  cardBackground: "#282D3D",
+  cardBackground: "#232734",
+  wrapperBackground: "#1b1e29",
   progressBarColor: "linear-gradient(180deg,#448aff,#004ce6)",
   progressBarTrackColor: "#c7cad9",
   orderHistorySelectedTabBackground: "#134DC8",
@@ -157,17 +159,17 @@ export const configureStyles = () => {
     },
     ".twap-token-select": {
       ".twap-icon svg": {
-        color: "#D1D5DB!important",
-        fill: "#D1D5DB!important",
-        stroke: "#D1D5DB!important",
+        color: `${styles.textColor}!important`,
+        fill: `${styles.textColor}!important`,
+        stroke: `${styles.textColor}!important`,
       },
-      background: "#404557!important",
+      background: `${styles.selectedTokenBackground}!important`,
       ".twap-token-name": {
         fontWeight: "500!important",
         fontSize: "16px!important",
       },
-      width: "186px!important",
-      height: 45,
+      width: "126px!important",
+      height: 40,
       border: "unset",
       padding: "8px 7px",
       marginBottom: 2,
@@ -178,7 +180,7 @@ export const configureStyles = () => {
       justifyContent: "space-between!important",
       color: `${styles.selectTokenTextColor}!important`,
       p: {
-        color: "inherit",
+        color: `${styles.textColor}`,
       },
       ".twap-token-display": {
         img: {
@@ -197,17 +199,17 @@ export const configureStyles = () => {
       },
     },
     ".twap-token-not-selected": {
-      padding: "8px 12px!important",
+      padding: "6px 12px!important",
       display: "flex",
       justifyContent: "center",
-      background: "#448AFF",
+      backgroundImage: 'linear-gradient(105deg,#448aff 3%,#004ce6)!important',
       p: {
         fontSize: 14,
       },
     },
 
     ".twap-token-selected": {
-      background: "#404557",
+      background: `${styles.selectedTokenBackground}!important`,
       p: {
         fontSize: 16,
       },
@@ -423,7 +425,7 @@ export const configureStyles = () => {
       background: styles.cardBackground,
       ".twap-order-expanded-colored": {
         padding: "15px 26px",
-        background: "#282D3D",
+        background: styles.cardBackground,
         ".twap-order-expanded-colored-title": {
           fontSize: 16,
         },
@@ -458,7 +460,7 @@ export const configureStyles = () => {
       },
     },
     ".twap-orders": {
-      borderRadius: "24px",
+      // borderRadius: "24px",
       paddingBottom: 24,
       background: "#1B1E29",
       fontWeight: 500,
@@ -539,13 +541,12 @@ export const configureStyles = () => {
     },
     ".twap-button": {
       height: 60,
-      width: "calc(100% - 52px)!important",
+      width: "100%!important",
       borderRadius: 10,
       background: styles.buttonBackground,
       color: "white",
       fontWeight: `500!important`,
       fontSize: 16,
-      margin: "0 26px",
       "& *": {
         color: "inherit",
         fontWeight: "inherit",
@@ -639,10 +640,10 @@ export const configureStyles = () => {
     },
     ".twap-token-panel .twap-input input": {
       fontSize: "24px!important",
-      color: "#D1D5DB!important",
+      color: `${styles.textColor}!important`,
       fontWeight: "400!important",
       "&::placeholder": {
-        color: "#D1D5DB!important",
+        color: `${styles.textColor}!important`,
       },
     },
     ".twap-balance": {
@@ -655,7 +656,7 @@ export const configureStyles = () => {
       margin: "auto",
       fontFamily: "Inter",
       background: "#1b1e29",
-      borderRadius: 24,
+      // borderRadius: 24,
     },
     ".twap-max-duration-wrapper, .twap-trade-interval-wrapper": {
       minHeight: 56,
