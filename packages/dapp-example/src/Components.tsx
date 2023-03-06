@@ -43,6 +43,7 @@ export interface Dapp {
   logo: string;
   Component: any;
   invertLogo?: boolean;
+  theme?: "light" | "dark";
 }
 
 export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: ReactNode }) => {
@@ -70,26 +71,33 @@ export const MetaTags = ({ title }: { title: string }) => {
 };
 
 const ToggleTheme = () => {
+  const { selectedDapp } = useSelectedDapp();
+  const showLight = !selectedDapp?.theme || selectedDapp.theme === "light";
+  const showDark = !selectedDapp?.theme || selectedDapp.theme === "dark";
   const size = 18;
   const { setTheme, isDarkTheme } = useTheme();
   return (
     <StyledThemeToggle>
-      <button
-        style={{
-          opacity: isDarkTheme ? 0.5 : 1,
-        }}
-        onClick={() => setTheme("light")}
-      >
-        <BsFillSunFill style={{ width: size, height: size }} />
-      </button>
-      <button
-        style={{
-          opacity: !isDarkTheme ? 0.5 : 1,
-        }}
-        onClick={() => setTheme("dark")}
-      >
-        <BsFillMoonFill style={{ width: size, height: size }} />
-      </button>
+      {showLight && (
+        <button
+          style={{
+            opacity: isDarkTheme ? 0.5 : 1,
+          }}
+          onClick={() => setTheme("light")}
+        >
+          <BsFillSunFill style={{ width: size, height: size }} />
+        </button>
+      )}
+      {showDark && (
+        <button
+          style={{
+            opacity: !isDarkTheme ? 0.5 : 1,
+          }}
+          onClick={() => setTheme("dark")}
+        >
+          <BsFillMoonFill style={{ width: size, height: size }} />
+        </button>
+      )}
     </StyledThemeToggle>
   );
 };

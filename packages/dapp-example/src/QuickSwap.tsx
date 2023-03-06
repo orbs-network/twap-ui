@@ -177,6 +177,7 @@ const dapp: Dapp = {
   Component: DappComponent,
   logo,
   config,
+  theme: "dark",
 };
 
 export default dapp;
