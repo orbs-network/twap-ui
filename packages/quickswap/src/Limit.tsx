@@ -9,10 +9,6 @@ import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
 
 const Limit = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
-  const marketPriceUi = store.useTwapStore((store) => store.getMarketPrice(false)).marketPriceUi;
-
-  const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
-
 
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles();
@@ -29,17 +25,11 @@ const Limit = (props: QuickSwapTWAPProps) => {
     resetValues();
   }, []);
 
-    useEffect(() => {
-      if (Number(marketPriceUi) > 0) {
-        setLimitOrder(true);
-      }
-    }, [marketPriceUi]);
-
-  const resetValues = () => {
+  const resetValues = useCallback(() => {
     setChunks(1);
     setFillDelay({ resolution: store.TimeResolution.Minutes, amount: 2 });
     setDuration({ resolution: store.TimeResolution.Days, amount: SIMPLE_LIMIT_ORDER_DURATION_DAYS });
-  };
+  }, []);
 
   return (
     <Box className="adapter-wrapper">
@@ -83,6 +73,16 @@ const Limit = (props: QuickSwapTWAPProps) => {
 export default Limit;
 
 const LimitPrice = () => {
+  const marketPriceUi = store.useTwapStore((store) => store.getMarketPrice(false)).marketPriceUi;
+
+  const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
+  useEffect(() => {
+    if (Number(marketPriceUi) > 0) {
+      setTimeout(() => {
+        setLimitOrder(true);
+      }, 0);
+    }
+  }, [marketPriceUi]);
 
   return (
     <>

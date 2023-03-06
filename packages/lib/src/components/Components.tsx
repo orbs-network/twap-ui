@@ -1,4 +1,4 @@
-import { FC, ReactNode, useCallback } from "react";
+import { FC, ReactNode, useCallback, useEffect } from "react";
 import {
   Balance,
   Button,
@@ -17,7 +17,6 @@ import {
   NumberDisplay,
   SwipeContainer,
   Modal,
-  Loader,
 } from "./base";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
@@ -27,7 +26,7 @@ import { styled } from "@mui/system";
 import { AiOutlineWarning } from "react-icons/ai";
 import { useOrdersContext, useTwapContext } from "../context";
 import { useLoadingState, useLimitPrice, useMarketPrice, useCreateOrder, useApproveToken, useChangeNetwork, useHasAllowanceQuery, useUnwrapToken, useWrapToken } from "../hooks";
-import { useTwapStore, handleFillDelayText, TimeResolution } from "../store";
+import { useTwapStore, handleFillDelayText } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
@@ -366,7 +365,7 @@ export const SubmitButton = ({ className = "", onPlaceOrderClick }: { className?
   );
 };
 
-export function LimitPriceInput({ placeholder = "0.00", isLoading }: { placeholder?: string; isLoading?: boolean }) {
+export function LimitPriceInput({ placeholder = "0.00" }: { placeholder?: string }) {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const { leftToken, rightToken, onChange, limitPrice, toggleInverted } = useLimitPrice();
 
@@ -378,7 +377,7 @@ export function LimitPriceInput({ placeholder = "0.00", isLoading }: { placehold
         <TokenDisplay singleToken symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />
         <StyledText>=</StyledText>
       </StyledRowFlex>
-      {isLoading ? <Loader width={80} height={34} /> : <NumericInput placeholder={placeholder} onChange={onChange} value={limitPrice} />}
+      <NumericInput placeholder={placeholder} onChange={onChange} value={limitPrice} />
 
       <StyledRowFlex gap={10} width="fit-content">
         <TokenDisplay symbol={rightToken?.symbol} logo={rightToken?.logoUrl} />
