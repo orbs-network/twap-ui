@@ -287,6 +287,9 @@ export const configureStyles = (isProMode?: boolean) => {
       border: `1px solid ${styles.borderColor || "transparent"}`,
       right: 0,
     },
+    ".twap-trade-size":{
+      marginBottom: 12,
+    },
     ".twap-card": {
       padding: "15px 26px 20px",
       background: cardBackground,
@@ -636,7 +639,7 @@ export const configureStyles = (isProMode?: boolean) => {
     },
     ".twap-input input": {
       paddingRight: "0!important",
-      fontSize: "13px!important",
+      fontSize: "15px!important",
     },
     ".twap-token-panel .twap-input input": {
       fontSize: "24px!important",
