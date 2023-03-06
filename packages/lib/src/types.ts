@@ -162,6 +162,7 @@ export interface StylesConfig {
   spinnerColor: string;
   containerBackground: string;
   cardBackground: string;
+  wrapperBackground: string;
   iconBackground?: string;
   borderColor?: string;
   progressBarColor: string;
