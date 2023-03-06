@@ -117,7 +117,7 @@ const DappComponent = () => {
             title: "TWAP",
             component: (
               <StyledLayoutQuickswap>
-                <TWAP {...twapProps} isProMode={true} />
+                <TWAP {...twapProps} />
               </StyledLayoutQuickswap>
             ),
           },
