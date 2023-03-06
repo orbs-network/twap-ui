@@ -287,7 +287,7 @@ export const configureStyles = (isProMode?: boolean) => {
       border: `1px solid ${styles.borderColor || "transparent"}`,
       right: 0,
     },
-    ".twap-trade-size":{
+    ".twap-trade-size": {
       marginBottom: 12,
     },
     ".twap-card": {

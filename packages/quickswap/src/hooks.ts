@@ -13,12 +13,11 @@ export const useParseTokens = (dappTokens: any, getTokenLogoURL: (address: strin
 };
 
 export const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): TokenData | undefined => {
-  if (!rawToken.address || !rawToken.symbol) {
+  if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
-
     return;
   }
-  if (isNativeAddress(rawToken.address)) {
+  if (!rawToken.address || isNativeAddress(rawToken.address)) {
     return config.nativeToken;
   }
   return {
