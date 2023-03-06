@@ -1,4 +1,4 @@
-import { StyledModalContent } from "./styles";
+import { StyledLayoutQuickswap, StyledModalContent } from "./styles";
 import { Orders, TWAP, Limit, QuickSwapTWAPProps, QuickSwapOrdersProps } from "@orbs-network/twap-ui-quickswap";
 import { useConnectWallet, useNetwork } from "./hooks";
 import { Configs } from "@orbs-network/twap";
@@ -113,8 +113,22 @@ const DappComponent = () => {
     <DappLayout name={config.partner}>
       <UISelector
         options={[
-          { title: "TWAP", component: <TWAP {...twapProps} /> },
-          { title: "LIMIT", component: <Limit {...twapProps} /> },
+          {
+            title: "TWAP",
+            component: (
+              <StyledLayoutQuickswap>
+                <TWAP {...twapProps} />
+              </StyledLayoutQuickswap>
+            ),
+          },
+          {
+            title: "LIMIT",
+            component: (
+              <StyledLayoutQuickswap>
+                <Limit {...twapProps} />
+              </StyledLayoutQuickswap>
+            ),
+          },
         ]}
       />
       <Orders {...ordersProps} />

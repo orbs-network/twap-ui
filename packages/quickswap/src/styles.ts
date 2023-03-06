@@ -202,7 +202,7 @@ export const configureStyles = () => {
       padding: "6px 12px!important",
       display: "flex",
       justifyContent: "center",
-      backgroundImage: 'linear-gradient(105deg,#448aff 3%,#004ce6)!important',
+      backgroundImage: "linear-gradient(105deg,#448aff 3%,#004ce6)!important",
       p: {
         fontSize: 14,
       },
@@ -296,7 +296,6 @@ export const configureStyles = () => {
         paddingTop: 9,
         paddingBottom: 9,
       },
-      background: "#1B1E29!important",
       padding: 0,
       width: "100%",
       fontWeight: 500,
@@ -655,7 +654,6 @@ export const configureStyles = () => {
       maxWidth: "100%!important",
       margin: "auto",
       fontFamily: "Inter",
-      background: "#1b1e29",
       // borderRadius: 24,
     },
     ".twap-max-duration-wrapper, .twap-trade-interval-wrapper": {
