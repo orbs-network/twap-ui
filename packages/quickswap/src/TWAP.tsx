@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles } from "@orbs-network/twap-ui";
-import { useCallback } from "react";
+import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
+import { useCallback, useEffect } from "react";
 import { AdapterContextProvider, config, parseToken, useGlobalStyles } from "./hooks";
 import translations from "./i18n/en.json";
 import { QuickSwapTWAPProps } from "./types";
@@ -10,11 +10,17 @@ import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
 const TWAP = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
 
+  const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
+
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles();
 
   const connect = useCallback(() => {
     props.connect();
+  }, []);
+
+  useEffect(() => {
+    setLimitOrder(false);
   }, []);
 
   return (

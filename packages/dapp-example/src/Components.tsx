@@ -253,20 +253,13 @@ interface UIOption {
 
 export const UISelector = ({ options }: { options: UIOption[] }) => {
   const [selected, setSelected] = useState(options[0].title);
-    const resetTwapStore = hooks.useResetStoreAndQueries();
-
-    const onSelect = (value: string) => {
-      setSelected(value);
-      resetTwapStore();
-      
-    }
 
   return (
     <StyledUISelector>
       <StyledUISelectorButtons>
         {options.map((o) => {
           return (
-            <StyledUISelectorButton style={{ borderBottom: selected === o.title ? "1px solid white" : "1px solid transparent" }} key={o.title} onClick={() => onSelect(o.title)}>
+            <StyledUISelectorButton style={{ borderBottom: selected === o.title ? "1px solid white" : "1px solid transparent" }} key={o.title} onClick={() => setSelected(o.title)}>
               {o.title}
             </StyledUISelectorButton>
           );
