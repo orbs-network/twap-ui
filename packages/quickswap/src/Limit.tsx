@@ -11,7 +11,7 @@ const Limit = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
 
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
-  const globalStyles = useGlobalStyles();
+  const globalStyles = useGlobalStyles(props.isProMode);
 
   const connect = useCallback(() => {
     props.connect();
@@ -73,16 +73,10 @@ const Limit = (props: QuickSwapTWAPProps) => {
 export default Limit;
 
 const LimitPrice = () => {
-  const marketPriceUi = store.useTwapStore((store) => store.getMarketPrice(false)).marketPriceUi;
-
   const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
   useEffect(() => {
-    if (Number(marketPriceUi) > 0) {
-      setTimeout(() => {
-        setLimitOrder(true);
-      }, 0);
-    }
-  }, [marketPriceUi]);
+    setLimitOrder(true);
+  }, []);
 
   return (
     <>

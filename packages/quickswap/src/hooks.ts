@@ -25,7 +25,7 @@ export const parseToken = (getTokenLogoURL: (address: string) => string, rawToke
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: getTokenLogoURL(rawToken.address),
+    logoUrl: rawToken.tokenInfo.logoURI || getTokenLogoURL(rawToken.address),
   };
 };
 
@@ -35,6 +35,6 @@ export const AdapterContextProvider = AdapterContext.Provider;
 
 export const useAdapterContext = () => useContext(AdapterContext);
 
-export const useGlobalStyles = () => {
-  return configureStyles();
+export const useGlobalStyles = (isProMode?: boolean) => {
+  return configureStyles(isProMode);
 };

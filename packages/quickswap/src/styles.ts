@@ -25,10 +25,11 @@ export const darkModeStylesConfig: StylesConfig = {
   selectedTokenBackground: "#404557",
   selectedTokenTextColor: "#c7cad9",
 };
-export const configureStyles = () => {
+export const configureStyles = (isProMode?: boolean) => {
   const styles = darkModeStylesConfig;
+  const cardBackground = isProMode ? "#404557" : styles.cardBackground;
   return {
-    ".twap-trade-size": {
+    ".twap-trade-si ze": {
       paddingTop: "8px!important",
       paddingBottom: "17px!important",
       marginBottom: 12,
@@ -288,8 +289,8 @@ export const configureStyles = () => {
     },
     ".twap-card": {
       padding: "15px 26px 20px",
-      background: styles.cardBackground,
-      // borderRadius: 10,
+      background: cardBackground,
+      borderRadius: 10,
     },
     ".twap-container": {
       ".twap-limit-price": {
@@ -747,7 +748,7 @@ export const configureStyles = () => {
     },
     ".twap-orders-wrapper": {
       maxWidth: "100%!important",
-     borderRadius: 10
+      borderRadius: 10,
     },
     "p .twap-balance-title": {
       fontSize: 14,

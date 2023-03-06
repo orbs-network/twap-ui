@@ -23,7 +23,7 @@ export const StyledLayoutSpiritswap = styled(Box)({
 export const StyledLayoutQuickswap = styled(Box)({
   background: "#1b1e29",
   padding: 20,
-  borderRadius: 10
+  borderRadius: 10,
 });
 
 export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) => ({
