@@ -9,6 +9,10 @@ import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
 
 const Limit = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
+  const marketPriceUi = store.useTwapStore((store) => store.getMarketPrice(false)).marketPriceUi;
+
+  const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
+
 
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles();
@@ -22,10 +26,20 @@ const Limit = (props: QuickSwapTWAPProps) => {
   const setDuration = store.useTwapStore((store) => store.setDuration);
 
   useEffect(() => {
+    resetValues();
+  }, []);
+
+    useEffect(() => {
+      if (Number(marketPriceUi) > 0) {
+        setLimitOrder(true);
+      }
+    }, [marketPriceUi]);
+
+  const resetValues = () => {
     setChunks(1);
     setFillDelay({ resolution: store.TimeResolution.Minutes, amount: 2 });
     setDuration({ resolution: store.TimeResolution.Days, amount: SIMPLE_LIMIT_ORDER_DURATION_DAYS });
-  }, []);
+  };
 
   return (
     <Box className="adapter-wrapper">
@@ -48,7 +62,7 @@ const Limit = (props: QuickSwapTWAPProps) => {
             <Components.MarketPrice />
             <LimitPrice />
             <Box mb={2} mt={3}>
-              <Components.SubmitButton simpleLimit />
+              <Components.SubmitButton onPlaceOrderClick={resetValues} />
             </Box>
             <OrderSummary>
               <TwapStyles.StyledColumnFlex>
@@ -69,14 +83,6 @@ const Limit = (props: QuickSwapTWAPProps) => {
 export default Limit;
 
 const LimitPrice = () => {
-  const { marketPrice, loading } = hooks.useMarketPrice();
-
-  const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
-  useEffect(() => {
-    if (marketPrice) {
-      setLimitOrder(true);
-    }
-  }, [setLimitOrder, marketPrice]);
 
   return (
     <>
@@ -85,7 +91,7 @@ const LimitPrice = () => {
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <Components.Labels.LimitPriceLabel />
           </TwapStyles.StyledRowFlex>
-          <Components.LimitPriceInput isLoading={loading} placeholder="0" />
+          <Components.LimitPriceInput placeholder="0" />
         </TwapStyles.StyledColumnFlex>
       </Components.Base.Card>
     </>

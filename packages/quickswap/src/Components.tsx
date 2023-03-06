@@ -110,10 +110,10 @@ export const OrderSummary = ({ children }: { children: ReactNode }) => {
   );
 };
 
-
-
 export const ChangeTokensOrder = () => {
-  return <Box mt={1.5} sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
-    <Components.ChangeTokensOrder />
-  </Box>;
+  return (
+    <Box mt={1.5} sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <Components.ChangeTokensOrder />
+    </Box>
+  );
 };

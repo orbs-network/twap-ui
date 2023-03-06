@@ -41,7 +41,6 @@ import {
 } from "./Labels";
 import { TWAPTokenSelectProps } from "../types";
 import { analytics } from "../analytics";
-import { SIMPLE_LIMIT_ORDER_DURATION_DAYS } from "../consts";
 const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
 
 const odnp = new ODNP();
@@ -269,7 +268,7 @@ export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
   return <USD value={usd || "0"} isLoading={isLoading} />;
 }
 
-export const SubmitButton = ({ className = "" }: { className?: string }) => {
+export const SubmitButton = ({ className = "", onPlaceOrderClick }: { className?: string; onPlaceOrderClick?: () => void }) => {
   const translations = useTwapContext().translations;
   const shouldUnwrap = useTwapStore((store) => store.shouldUnwrap());
   const shouldWrap = useTwapStore((store) => store.shouldWrap());
@@ -349,7 +348,10 @@ export const SubmitButton = ({ className = "" }: { className?: string }) => {
       };
     return {
       text: translations.placeOrder,
-      onClick: () => setShowConfirmation(true),
+      onClick: () => {
+        onPlaceOrderClick?.();
+        setShowConfirmation(true);
+      },
       loading: false,
       disabled: false,
     };
@@ -517,7 +519,6 @@ export const OrderSummaryDetailsMinDstAmount = () => {
   );
 };
 
-
 export const OrderSummaryDetailsTradeInterval = () => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
@@ -577,7 +578,6 @@ export const OrderSummaryDetailsDeadline = () => {
 };
 
 export const OrderSummaryDetails = ({ className = "" }: { className?: string }) => {
-
   return (
     <StyledSummaryDetails className={`twap-order-summary-details ${className}`}>
       <OrderSummaryDetailsDeadline />
