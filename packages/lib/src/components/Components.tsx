@@ -170,7 +170,7 @@ export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: b
       </StyledRowFlex>
     );
   }
-  return <TokenSelectButton hideArrow={true} className="twap-token-not-selected" onClick={onClick} />;
+  return <TokenSelectButton hideArrow={false} className="twap-token-not-selected" onClick={onClick} />;
 };
 
 export const TokenSymbol = ({ isSrc }: { isSrc?: boolean }) => {

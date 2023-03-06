@@ -86,6 +86,7 @@ export const configureStyles = () => {
       height: 31,
       border: "1px solid #636679",
       borderRadius: "20px!important",
+      padding: "0 10px!important",
 
       p: {
         fontSize: "13px!important",
