@@ -747,6 +747,7 @@ export const configureStyles = () => {
     },
     ".twap-orders-wrapper": {
       maxWidth: "100%!important",
+     borderRadius: 10
     },
     "p .twap-balance-title": {
       fontSize: 14,
