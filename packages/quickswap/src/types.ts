@@ -11,6 +11,7 @@ export interface QuickSwapTWAPProps extends TWAPProps {
   onDstTokenSelected: (value: any) => void;
   getTokenLogoURL: (address: string) => string;
   dappTokens: { [key: string]: QuickSwapRawToken };
+  isProMode?: boolean;
 }
 
 export interface QuickSwapRawToken {
