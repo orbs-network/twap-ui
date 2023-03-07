@@ -33,7 +33,7 @@ describe("store", () => {
     });
 
     afterEach(async () => {
-      await act(async () => store.current.reset());
+      await act(async () => store.current.reset({}));
     });
 
     it("initial and observable state", async () => {
@@ -157,7 +157,7 @@ describe("store", () => {
     });
 
     afterEach(async () => {
-      await act(async () => store.current.reset());
+      await act(async () => store.current.reset({}));
     });
 
     it("prepare orders tokens", async () => {
