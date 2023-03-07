@@ -223,12 +223,13 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, onSrc
 
 export function LimitPriceToggle() {
   const loadingState = useLoadingState();
-  const isLoading = loadingState.srcUsdLoading && loadingState.dstUsdLoading;
+  const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
   const translations = useTwapContext().translations;
   const { leftToken, rightToken } = useTwapStore((state) => state.getLimitPrice(false));
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const setLimitOrder = useTwapStore((store) => store.setLimitOrder);
   const selectTokensWarning = !leftToken || !rightToken;
+
 
   return (
     <Tooltip text={isLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
