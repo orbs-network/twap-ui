@@ -42,13 +42,13 @@ const TWAP = (props: QuickSwapTWAPProps) => {
             <ChangeTokensOrder />
             <TokenPanel />
             <Components.MarketPrice />
-            <LimitPrice />
-            <TradeSize />
-            <MaxDuration />
-            <TradeInterval />
-            <Box mb={2}>
+            <TwapStyles.StyledColumnFlex gap={12}>
+              <LimitPrice />
+              <TradeSize />
+              <MaxDuration />
+              <TradeInterval />
               <Components.SubmitButton />
-            </Box>
+            </TwapStyles.StyledColumnFlex>
             <OrderSummary>
               <Components.OrderSummaryDetails />
             </OrderSummary>
@@ -85,7 +85,7 @@ const TradeSize = () => {
 
 const MaxDuration = () => {
   return (
-    <Components.Base.Card style={{ marginBottom: 12 }} className="twap-max-duration-wrapper">
+    <Components.Base.Card className="twap-max-duration-wrapper">
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Labels.MaxDurationLabel />
         <Components.PartialFillWarning />
@@ -97,7 +97,7 @@ const MaxDuration = () => {
 
 const TradeInterval = () => {
   return (
-    <Components.Base.Card style={{ marginBottom: 24 }} className="twap-trade-interval-wrapper">
+    <Components.Base.Card className="twap-trade-interval-wrapper">
       <TwapStyles.StyledRowFlex>
         <Components.Labels.TradeIntervalLabel />
         <Components.FillDelayWarning />

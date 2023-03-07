@@ -103,7 +103,6 @@ export const configureStyles = (isProMode?: boolean) => {
       background: "transparent",
     },
     ".twap-limit-price": {
-      marginBottom: 12,
       ".twap-label": {
         fontSize: 14,
       },
@@ -169,10 +168,9 @@ export const configureStyles = (isProMode?: boolean) => {
         fontWeight: "500!important",
         fontSize: "16px!important",
       },
-      width: "126px!important",
       height: 40,
       border: "unset",
-      padding: "8px 7px",
+      padding: "8px 13px 8px 8px",
       marginBottom: 2,
       borderRadius: 38,
       cursor: "pointer",
@@ -200,12 +198,12 @@ export const configureStyles = (isProMode?: boolean) => {
       },
     },
     ".twap-token-not-selected": {
-      padding: "6px 12px!important",
       display: "flex",
+      paddingLeft:12,
       justifyContent: "center",
       backgroundImage: "linear-gradient(105deg,#448aff 3%,#004ce6)!important",
       p: {
-        fontSize: 14,
+        fontSize: 16,
       },
     },
 
@@ -238,7 +236,7 @@ export const configureStyles = (isProMode?: boolean) => {
       },
       // borderRadius: "0px 0px 10px 10px",
       // background: "#12141B",
-      padding: "13px 26px",
+      padding: "13px 5px",
       ".title": {
         fontSize: 14,
       },
@@ -276,7 +274,7 @@ export const configureStyles = (isProMode?: boolean) => {
     },
     ".twap-time-selector": {
       "& input": {
-        fontSize: "14px!important",
+        fontSize: "16px!important",
         "&::placeholder": {
           color: "rgba(255,255,255, 0.5)!important",
         },
@@ -287,19 +285,14 @@ export const configureStyles = (isProMode?: boolean) => {
       border: `1px solid ${styles.borderColor || "transparent"}`,
       right: 0,
     },
-    ".twap-trade-size": {
-      marginBottom: 12,
-    },
+    ".twap-trade-size": {},
     ".twap-card": {
-      padding: "15px 26px 20px",
+      padding: "16px",
       background: cardBackground,
       borderRadius: 10,
     },
     ".twap-container": {
-      ".twap-limit-price": {
-        paddingTop: 9,
-        paddingBottom: 9,
-      },
+      ".twap-limit-price": {},
       padding: 0,
       width: "100%",
       fontWeight: 500,
@@ -473,6 +466,10 @@ export const configureStyles = (isProMode?: boolean) => {
     ".twap-chunks-size": {
       ".twap-label": {
         fontSize: 14,
+      },
+      ".twap-token-logo": {
+        width: 20,
+        height: 20,
       },
     },
     ".twap-orders": {
@@ -652,19 +649,13 @@ export const configureStyles = (isProMode?: boolean) => {
     },
     ".twap-input input": {
       paddingRight: "0!important",
-      fontSize: "15px!important",
     },
     ".twap-token-panel .twap-input input": {
-      fontSize: "24px!important",
-      color: `${styles.textColor}!important`,
-      fontWeight: "400!important",
-      "&::placeholder": {
-        color: `${styles.textColor}!important`,
-      },
+      fontSize: "18px!important",
+      color: `#696c80!important`,
+      fontWeight: "600",
     },
-    ".twap-balance": {
-      marginBottom: 8,
-    },
+    ".twap-balance": {},
     ".adapter-wrapper": {
       padding: "24px 0",
       width: "100%!important",
@@ -674,9 +665,6 @@ export const configureStyles = (isProMode?: boolean) => {
       // borderRadius: 24,
     },
     ".twap-max-duration-wrapper, .twap-trade-interval-wrapper": {
-      minHeight: 56,
-      paddingTop: 9,
-      paddingBottom: 9,
       ".twap-label": {
         fontSize: 14,
         fontWeight: 500,
@@ -764,7 +752,7 @@ export const configureStyles = (isProMode?: boolean) => {
       height: 38,
     },
     ".twap-token-filled": {
-      width: "115px!important",
+     
     },
     ".twap-orders-wrapper": {
       maxWidth: "100%!important",
