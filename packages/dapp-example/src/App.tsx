@@ -12,8 +12,8 @@ function App() {
   useEagerlyConnect();
 
   const onSelect = (dapp: Dapp) => {
-    disconnect();
     reset();
+    disconnect();
     navigate(dapp.config.partner.toLowerCase());
   };
 
