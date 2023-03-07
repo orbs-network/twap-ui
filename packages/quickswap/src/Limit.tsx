@@ -7,6 +7,13 @@ import { QuickSwapTWAPProps } from "./types";
 import { Box } from "@mui/system";
 import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
 
+const storeOverride = {
+  isLimitOrder: true,
+  chunks: 1,
+  duration: { resolution: store.TimeResolution.Days, amount: SIMPLE_LIMIT_ORDER_DURATION_DAYS },
+  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
+};
+
 const Limit = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
 
@@ -15,20 +22,6 @@ const Limit = (props: QuickSwapTWAPProps) => {
 
   const connect = useCallback(() => {
     props.connect();
-  }, []);
-
-  const setChunks = store.useTwapStore((store) => store.setChunks);
-  const setFillDelay = store.useTwapStore((store) => store.setFillDelay);
-  const setDuration = store.useTwapStore((store) => store.setDuration);
-
-  useEffect(() => {
-    resetValues();
-  }, []);
-
-  const resetValues = useCallback(() => {
-    setChunks(1);
-    setFillDelay({ resolution: store.TimeResolution.Minutes, amount: 2 });
-    setDuration({ resolution: store.TimeResolution.Days, amount: SIMPLE_LIMIT_ORDER_DURATION_DAYS });
   }, []);
 
   return (
@@ -42,6 +35,7 @@ const Limit = (props: QuickSwapTWAPProps) => {
         provider={props.provider}
         account={props.account}
         tokensList={parsedTokens}
+        storeOverride={storeOverride}
       >
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>
@@ -50,10 +44,10 @@ const Limit = (props: QuickSwapTWAPProps) => {
             <ChangeTokensOrder />
             <TokenPanel />
             <Components.MarketPrice />
-            <LimitPrice />
-            <Box mb={2} mt={3}>
-              <Components.SubmitButton onPlaceOrderClick={resetValues} />
-            </Box>
+            <TwapStyles.StyledColumnFlex gap={12}>
+              <LimitPrice />
+              <Components.SubmitButton />
+            </TwapStyles.StyledColumnFlex>
             <OrderSummary>
               <TwapStyles.StyledColumnFlex>
                 <Components.OrderSummaryDetailsDeadline />

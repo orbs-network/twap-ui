@@ -8,12 +8,12 @@ import { hooks } from "@orbs-network/twap-ui";
 function App() {
   const navigate = useNavigate();
   const disconnect = useDisconnectWallet();
-  const resetTwapStore = hooks.useResetStoreAndQueries();
+  const reset = hooks.useReset();
   useEagerlyConnect();
 
   const onSelect = (dapp: Dapp) => {
     disconnect();
-    resetTwapStore();
+    reset();
     navigate(dapp.config.partner.toLowerCase());
   };
 

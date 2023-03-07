@@ -16,23 +16,14 @@ import { QueryKeys } from "./enums";
  * Actions
  */
 
-export const useResetStoreAndQueries = () => {
+export const useReset = () => {
   const resetTwapStore = useTwapStore((state) => state.reset);
   const client = useQueryClient();
+  const storeOverride = useTwapContext().storeOverride;
 
   return () => {
     client.invalidateQueries();
-    resetTwapStore();
-  };
-};
-
-const useResetStoreWithLibAndQueries = () => {
-  const resetTwapStore = useTwapStore((state) => state.resetWithLib);
-  const client = useQueryClient();
-
-  return () => {
-    client.invalidateQueries();
-    resetTwapStore();
+    resetTwapStore(storeOverride || {});
   };
 };
 
@@ -45,7 +36,7 @@ export const useWrapToken = () => {
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
 
   const setSrcToken = useTwapStore((state) => state.setSrcToken);
-  const resetTwapStore = useTwapStore((state) => state.reset);
+  const reset = useReset();
 
   return useMutation(
     async () => {
@@ -56,7 +47,7 @@ export const useWrapToken = () => {
       onSuccess: () => {
         analytics.onWrapSuccess();
         if (lib?.validateTokens(srcToken!, dstToken!) === TokensValidation.wrapOnly) {
-          resetTwapStore();
+          reset();
           return;
         }
         setSrcToken(lib!.config.wToken);
@@ -72,7 +63,7 @@ export const useWrapToken = () => {
 export const useUnwrapToken = () => {
   const lib = useTwapStore((state) => state.lib);
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
-  const resetTwapStore = useTwapStore((state) => state.reset);
+  const reset = useReset();
   const srcTokenAmount = useTwapStore((state) => state.getSrcAmount());
 
   return useMutation(
@@ -80,9 +71,7 @@ export const useUnwrapToken = () => {
       return lib?.unwrapNativeToken(srcTokenAmount, priorityFeePerGas, maxFeePerGas);
     },
     {
-      onSuccess: () => {
-        resetTwapStore();
-      },
+      onSuccess: reset,
     }
   );
 };
@@ -127,7 +116,7 @@ export const useCreateSimpleLimitOrder = () => {
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
-  const reset = useResetStoreWithLibAndQueries();
+  const reset = useReset();
   const { askDataParams } = useTwapContext();
 
   return useMutation(
@@ -191,7 +180,7 @@ export const useCreateOrder = () => {
 export const useInitLib = () => {
   const setTwapLib = useTwapStore((state) => state.setLib);
   const setWrongNetwork = useTwapStore((state) => state.setWrongNetwork);
-
+  const setValues = useTwapStore((state) => state.setValues);
   return async (props: InitLibProps) => {
     if (!props.provider || !props.account) {
       setTwapLib(undefined);
@@ -203,11 +192,12 @@ export const useInitLib = () => {
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
     setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));
+    setValues(props.storeOverride || {});
   };
 };
 
 export const useChangeNetwork = () => {
-  const { config, provider: _provider, account } = useTwapContext();
+  const { config, provider: _provider, account, storeOverride } = useTwapContext();
   const [loading, setLoading] = useState(false);
   const initLib = useInitLib();
   const setInvalidChain = useTwapStore((state) => state.setWrongNetwork);
@@ -226,7 +216,7 @@ export const useChangeNetwork = () => {
     const onSuccess = () => {
       setInvalidChain(false);
       setLoading(false);
-      initLib({ config, provider: _provider, account });
+      initLib({ config, provider: _provider, account, storeOverride });
     };
     const onError = () => {
       setLoading(false);
@@ -451,6 +441,7 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
       onSettled: () => {
         setWaitingForNewOrder(false);
       },
+      onError: console.error,
     }
   );
 
