@@ -752,5 +752,9 @@ export const configureStyles = (isProMode?: boolean) => {
     "p .twap-balance-title": {
       fontSize: 14,
     },
+    ".MuiBackdrop-root": {
+      backdropFilter: "blur(15px)",
+      background: "rgba(0,0,0,.4)!important",
+    },
   };
 };
