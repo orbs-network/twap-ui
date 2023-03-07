@@ -40,7 +40,7 @@ const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
 
   // init web3 every time the provider changes
   useEffect(() => {
-    initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId });
+    initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId, storeOverride: props.storeOverride || {} });
   }, [props.provider, props.config, props.account, props.connectedChainId]);
 
   return <TwapContext.Provider value={{ ...props, translations }}>{props.children}</TwapContext.Provider>;

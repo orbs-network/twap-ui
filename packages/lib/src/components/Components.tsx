@@ -1,4 +1,4 @@
-import { FC, ReactNode, useCallback, useEffect } from "react";
+import { FC, ReactNode, useCallback } from "react";
 import {
   Balance,
   Button,
@@ -229,7 +229,6 @@ export function LimitPriceToggle() {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const setLimitOrder = useTwapStore((store) => store.setLimitOrder);
   const selectTokensWarning = !leftToken || !rightToken;
-
 
   return (
     <Tooltip text={isLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>

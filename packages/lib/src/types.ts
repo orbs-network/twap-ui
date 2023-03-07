@@ -1,6 +1,8 @@
-import { Config, Status, TokenData } from "@orbs-network/twap";
+import { BN } from "@defi.org/web3-candies";
+import { Config, Status, TokenData, TWAPLib } from "@orbs-network/twap";
+import { Moment } from "moment";
 import { ReactNode } from "react";
-import { parseOrderUi } from "./store";
+import { Duration, parseOrderUi } from "./store";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -134,9 +136,12 @@ interface LibProps {
   tokensList?: TokenData[];
 }
 
+export type StoreOverride = Partial<State>;
+
 export interface TwapLibProps extends LibProps {
   connect?: () => void;
   askDataParams?: any[];
+  storeOverride?: StoreOverride;
 }
 
 export interface OrderLibProps extends LibProps {
@@ -149,6 +154,7 @@ export interface InitLibProps {
   provider?: any;
   account?: string;
   connectedChainId?: number;
+  storeOverride?: StoreOverride;
 }
 
 export type OrderUI = ReturnType<typeof parseOrderUi>;
@@ -193,4 +199,30 @@ export interface OrdersData {
   [Status.Canceled]?: OrderUI[];
   [Status.Expired]?: OrderUI[];
   [Status.Completed]?: OrderUI[];
+}
+
+export interface State {
+  tokensList: TokenData[];
+  lib: TWAPLib | undefined;
+  srcToken: TokenData | undefined;
+  dstToken: TokenData | undefined;
+  wrongNetwork: undefined | boolean;
+  srcAmountUi: string;
+
+  limitPriceUi: { priceUi: string; inverted: boolean };
+  srcUsd: BN;
+  dstUsd: BN;
+  srcBalance: BN;
+  dstBalance: BN;
+
+  loading: boolean;
+  isLimitOrder: boolean;
+  confirmationClickTimestamp: Moment;
+  showConfirmation: boolean;
+  disclaimerAccepted: boolean;
+
+  chunks: number;
+  duration: Duration;
+  customFillDelay: Duration;
+  waitingForNewOrder: boolean;
 }

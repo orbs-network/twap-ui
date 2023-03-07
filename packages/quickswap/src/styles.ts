@@ -29,10 +29,9 @@ export const configureStyles = (isProMode?: boolean) => {
   const styles = darkModeStylesConfig;
   const cardBackground = isProMode ? "#404557" : styles.cardBackground;
   return {
-    ".twap-trade-si ze": {
+    ".twap-trade-size": {
       paddingTop: "8px!important",
       paddingBottom: "17px!important",
-      marginBottom: 12,
       p: {
         fontSize: "14px!important",
       },
@@ -199,7 +198,7 @@ export const configureStyles = (isProMode?: boolean) => {
     },
     ".twap-token-not-selected": {
       display: "flex",
-      paddingLeft:12,
+      paddingLeft: 12,
       justifyContent: "center",
       backgroundImage: "linear-gradient(105deg,#448aff 3%,#004ce6)!important",
       p: {
@@ -285,7 +284,6 @@ export const configureStyles = (isProMode?: boolean) => {
       border: `1px solid ${styles.borderColor || "transparent"}`,
       right: 0,
     },
-    ".twap-trade-size": {},
     ".twap-card": {
       padding: "16px",
       background: cardBackground,
@@ -751,9 +749,7 @@ export const configureStyles = (isProMode?: boolean) => {
     ".twap-limit-price .twap-label": {
       height: 38,
     },
-    ".twap-token-filled": {
-     
-    },
+    ".twap-token-filled": {},
     ".twap-orders-wrapper": {
       maxWidth: "100%!important",
       borderRadius: 10,

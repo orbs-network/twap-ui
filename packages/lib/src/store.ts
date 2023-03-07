@@ -5,7 +5,7 @@ import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import _ from "lodash";
 import { parsebn } from "@defi.org/web3-candies";
-import { Translations } from "./types";
+import { State, StoreOverride, Translations } from "./types";
 import { analytics } from "./analytics";
 import Web3 from "web3";
 import { MIN_NATIVE_BALANCE } from "./consts";
@@ -22,12 +22,12 @@ export type Duration = { resolution: TimeResolution; amount?: number };
  * TWAP Store
  */
 
-const initialState = {
-  tokensList: [] as TokenData[],
-  lib: undefined as TWAPLib | undefined,
-  srcToken: undefined as TokenData | undefined,
-  dstToken: undefined as TokenData | undefined,
-  wrongNetwork: undefined as undefined | boolean,
+const initialState: State = {
+  tokensList: [],
+  lib: undefined,
+  srcToken: undefined,
+  dstToken: undefined,
+  wrongNetwork: undefined,
   srcAmountUi: "",
 
   limitPriceUi: { priceUi: "", inverted: false },
@@ -43,16 +43,16 @@ const initialState = {
   disclaimerAccepted: false,
 
   chunks: 0,
-  duration: { resolution: TimeResolution.Minutes, amount: 10 } as Duration,
-  customFillDelay: { resolution: TimeResolution.Minutes, amount: undefined } as Duration,
+  duration: { resolution: TimeResolution.Minutes, amount: 10 },
+  customFillDelay: { resolution: TimeResolution.Minutes, amount: undefined },
   waitingForNewOrder: false,
 };
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
+    setValues: (storeOverride: StoreOverride) => set({ ...storeOverride }),
     setWaitingForNewOrder: (waitingForNewOrder: boolean) => set({ waitingForNewOrder }),
-    reset: () => set(initialState),
-    resetWithLib: () => set({ ...initialState, lib: get().lib }),
+    reset: (storeOverride: StoreOverride) => set({ ...initialState, lib: get().lib, tokensList: get().tokensList, ...storeOverride }),
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
     setTokensList: (tokensList: TokenData[]) => {
