@@ -497,6 +497,7 @@ export const configureStyles = (isProMode?: boolean) => {
           display: "flex",
           alignItems: "center",
           lineHeight: "normal",
+          transition: '.3s all linear',
         },
         "& .MuiTabs-indicator": {
           minHeight: 38,
