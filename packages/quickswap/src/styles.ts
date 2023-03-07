@@ -1,7 +1,5 @@
 import { StylesConfig } from "@orbs-network/twap-ui";
-//#232734
-// #1b1e29 < --- bg bg
-// Styles configuration
+
 export const darkModeStylesConfig: StylesConfig = {
   iconsColor: "rgb(105, 108, 128)",
   textColor: "#D1D5DB",
@@ -233,8 +231,6 @@ export const configureStyles = (isProMode?: boolean) => {
         display: "flex",
         alignItems: "center",
       },
-      // borderRadius: "0px 0px 10px 10px",
-      // background: "#12141B",
       padding: "13px 5px",
       ".title": {
         fontSize: 14,
@@ -471,7 +467,6 @@ export const configureStyles = (isProMode?: boolean) => {
       },
     },
     ".twap-orders": {
-      // borderRadius: "24px",
       paddingBottom: 24,
       background: "#1B1E29",
       fontWeight: 500,
@@ -497,7 +492,7 @@ export const configureStyles = (isProMode?: boolean) => {
           display: "flex",
           alignItems: "center",
           lineHeight: "normal",
-          transition: '.3s all linear',
+          transition: ".3s all linear",
         },
         "& .MuiTabs-indicator": {
           minHeight: 38,
@@ -661,7 +656,6 @@ export const configureStyles = (isProMode?: boolean) => {
       maxWidth: "100%!important",
       margin: "auto",
       fontFamily: "Inter",
-      // borderRadius: 24,
     },
     ".twap-max-duration-wrapper, .twap-trade-interval-wrapper": {
       ".twap-label": {

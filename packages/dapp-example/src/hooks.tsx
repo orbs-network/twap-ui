@@ -145,7 +145,7 @@ export const useEagerlyConnect = () => {
 };
 
 export const useTheme = () => {
-  let [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const currentTheme = searchParams.get("theme") || "dark";
 
