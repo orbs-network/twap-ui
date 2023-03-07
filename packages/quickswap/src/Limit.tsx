@@ -46,7 +46,7 @@ const Limit = (props: QuickSwapTWAPProps) => {
             <Components.MarketPrice />
             <TwapStyles.StyledColumnFlex gap={12}>
               <LimitPrice />
-              <Components.SubmitButton />
+              <Components.SubmitButton isMain />
             </TwapStyles.StyledColumnFlex>
             <OrderSummary>
               <TwapStyles.StyledColumnFlex>

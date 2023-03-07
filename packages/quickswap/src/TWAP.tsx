@@ -47,7 +47,7 @@ const TWAP = (props: QuickSwapTWAPProps) => {
               <TradeSize />
               <MaxDuration />
               <TradeInterval />
-              <Components.SubmitButton />
+              <Components.SubmitButton isMain />
             </TwapStyles.StyledColumnFlex>
             <OrderSummary>
               <Components.OrderSummaryDetails />

@@ -265,7 +265,7 @@ export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
   return <USD value={usd || "0"} isLoading={isLoading} />;
 }
 
-export const SubmitButton = ({ className = "", onPlaceOrderClick }: { className?: string; onPlaceOrderClick?: () => void }) => {
+export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
   const translations = useTwapContext().translations;
   const shouldUnwrap = useTwapStore((store) => store.shouldUnwrap());
   const shouldWrap = useTwapStore((store) => store.shouldWrap());
@@ -341,12 +341,11 @@ export const SubmitButton = ({ className = "", onPlaceOrderClick }: { className?
         text: translations.confirmOrder,
         onClick: createOrder,
         loading: createOrderLoading,
-        disabled: !disclaimerAccepted || createOrderLoading,
+        disabled: isMain ? true : !disclaimerAccepted || createOrderLoading,
       };
     return {
       text: translations.placeOrder,
       onClick: () => {
-        onPlaceOrderClick?.();
         setShowConfirmation(true);
       },
       loading: false,

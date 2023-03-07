@@ -495,6 +495,7 @@ export const configureStyles = (isProMode?: boolean) => {
           transition: ".3s all linear",
         },
         "& .MuiTabs-indicator": {
+          display: "none",
           minHeight: 38,
           maxHeight: 38,
           width: 94,
@@ -571,7 +572,7 @@ export const configureStyles = (isProMode?: boolean) => {
     ".twap-modal-content": {
       fontSize: "14px",
       fontFamily: "Inter",
-      maxWidth: "454px!important",
+      padding: "40px 20px 20px 20px",
       boxSizing: "border-box",
       background: styles.containerBackground,
 
@@ -598,7 +599,6 @@ export const configureStyles = (isProMode?: boolean) => {
       maxHeight: "85vh",
       overflow: "auto",
       borderRadius: "24px",
-      padding: "24px 0",
       paddingTop: 30,
       color: styles.textColor,
       "& a": {

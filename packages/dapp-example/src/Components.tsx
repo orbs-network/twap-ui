@@ -28,7 +28,7 @@ import Backdrop from "@mui/material/Backdrop";
 import { Fade } from "@mui/material";
 import { Config } from "@orbs-network/twap";
 import { Components, hooks, Styles } from "@orbs-network/twap-ui";
-
+import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
 import { dapps } from "./config";
 import { Status } from "./Status";
@@ -230,7 +230,9 @@ const Row = (props: any) => {
 
 const filterTokens = (list: TokenListItem[], filterValue: string) => {
   if (!filterValue) return list;
-  return _.filter(list, (it) => it.token.symbol.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0);
+  return _.filter(list, (it) => {
+    return it.token.symbol.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0 || eqIgnoreCase(it.token.address, filterValue);
+  });
 };
 export const TokensList = ({ tokens = [], onClick }: { tokens?: TokenListItem[]; onClick: (token: TokenData) => void }) => {
   const [filterValue, setFilterValue] = useState("");

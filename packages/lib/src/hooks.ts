@@ -94,6 +94,8 @@ export const useApproveToken = () => {
         analytics.onApproveSuccess();
       },
       onError: (error: Error) => {
+        console.log(error.message);
+
         analytics.onApproveError(error.message);
       },
     }
