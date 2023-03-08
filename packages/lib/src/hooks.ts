@@ -443,7 +443,7 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
       onSettled: () => {
         setWaitingForNewOrder(false);
       },
-      onError: console.error,
+      onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,
     }
   );
@@ -454,6 +454,10 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
 export const usePrepareOrderUSDValues = (fetchUsd: (token: TokenData) => Promise<BN>) => {
   const client = useQueryClient();
 
+  const { mutateAsync: fetchUsdMutation } = useMutation((token: TokenData) => fetchUsd(token), {
+    onError: (error: any, token) => console.debug({ error, token }),
+  });
+
   return async (allTokens: TokenData[] = [], rawOrders: Order[]) => {
     const relevantTokens = allTokens.filter((t) => rawOrders.find((o) => eqIgnoreCase(t.address, o.ask.srcToken) || eqIgnoreCase(t.address, o.ask.dstToken)));
     const uniqueRelevantTokens = _.uniqBy(relevantTokens, "address");
@@ -461,7 +465,7 @@ export const usePrepareOrderUSDValues = (fetchUsd: (token: TokenData) => Promise
       uniqueRelevantTokens.map((token) => {
         return client.ensureQueryData({
           queryKey: [QueryKeys.GET_USD_VALUE, token.address],
-          queryFn: () => fetchUsd(token),
+          queryFn: () => fetchUsdMutation(token),
         });
       })
     );
