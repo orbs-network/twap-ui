@@ -651,7 +651,7 @@ export const configureStyles = (isProMode?: boolean) => {
     },
     ".twap-balance": {},
     ".adapter-wrapper": {
-      padding: "24px 0",
+      padding: "0px",
       width: "100%!important",
       maxWidth: "100%!important",
       margin: "auto",
