@@ -488,7 +488,6 @@ export const configureStyles = (isProMode?: boolean) => {
         maxHeight: 38,
         alignItems: "center",
         "& .twap-orders-header-tabs-tab": {
-          width: 94,
           display: "flex",
           alignItems: "center",
           lineHeight: "normal",
@@ -510,8 +509,6 @@ export const configureStyles = (isProMode?: boolean) => {
         "& .Mui-selected": {
           minHeight: 38,
           maxHeight: 38,
-          width: 94,
-          height: 38,
           borderRadius: 100,
           background: "#3E4252",
           color: styles.textColor,
@@ -577,6 +574,8 @@ export const configureStyles = (isProMode?: boolean) => {
       background: styles.containerBackground,
 
       ".twap-orders-summary-token-display": {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
         ".twap-token-logo": {
           width: 30,
           height: 30,
@@ -591,6 +590,7 @@ export const configureStyles = (isProMode?: boolean) => {
         },
         ".twap-label": {
           fontSize: 14,
+          minWidth: 120,
         },
       },
       ".twap-disclaimer-text p, .twap-disclaimer-text a": {
@@ -756,5 +756,22 @@ export const configureStyles = (isProMode?: boolean) => {
       backdropFilter: "blur(15px)",
       background: "rgba(0,0,0,.4)!important",
     },
+    '@media(max-width:450px)': {
+      '.twap-market-price': {
+        display: 'flex',
+        flexDirection: 'column',
+      },
+      ".twap-limit-price-input": {
+        ".twap-token-display img": {
+          display: 'none',
+        },
+      },
+      '.twap-trade-size': {
+        '.twap-chunks-size': {
+          display: 'flex',
+          flexDirection: 'column',
+        },
+      },
+    }
   };
 };
