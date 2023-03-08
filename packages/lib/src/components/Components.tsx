@@ -408,7 +408,7 @@ export function PoweredBy() {
     <StyledPoweredBy className="twap-powered-by">
       <a href="https://www.orbs.com/" target="_blank">
         <StyledText>{translations.poweredBy}</StyledText>
-        <img src="https://www.orbs.com/assets/img/common/logo.svg" />
+        <img src="https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/orbslogo.svg" />
       </a>
     </StyledPoweredBy>
   );
