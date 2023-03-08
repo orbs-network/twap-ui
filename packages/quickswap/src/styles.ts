@@ -574,8 +574,8 @@ export const configureStyles = (isProMode?: boolean) => {
       background: styles.containerBackground,
 
       ".twap-orders-summary-token-display": {
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
+        overflow: "hidden",
+        textOverflow: "ellipsis",
         ".twap-token-logo": {
           width: 30,
           height: 30,
@@ -590,7 +590,7 @@ export const configureStyles = (isProMode?: boolean) => {
         },
         ".twap-label": {
           fontSize: 14,
-          minWidth: 120,
+          maxWidth: 120,
         },
       },
       ".twap-disclaimer-text p, .twap-disclaimer-text a": {
@@ -756,22 +756,22 @@ export const configureStyles = (isProMode?: boolean) => {
       backdropFilter: "blur(15px)",
       background: "rgba(0,0,0,.4)!important",
     },
-    '@media(max-width:450px)': {
-      '.twap-market-price': {
-        display: 'flex',
-        flexDirection: 'column',
+    "@media(max-width:450px)": {
+      ".twap-market-price": {
+        display: "flex",
+        flexDirection: "column",
       },
       ".twap-limit-price-input": {
         ".twap-token-display img": {
-          display: 'none',
+          display: "none",
         },
       },
-      '.twap-trade-size': {
-        '.twap-chunks-size': {
-          display: 'flex',
-          flexDirection: 'column',
+      ".twap-trade-size": {
+        ".twap-chunks-size": {
+          display: "flex",
+          flexDirection: "column",
         },
       },
-    }
+    },
   };
 };
