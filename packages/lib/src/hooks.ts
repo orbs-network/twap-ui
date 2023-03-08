@@ -444,6 +444,7 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
         setWaitingForNewOrder(false);
       },
       onError: console.error,
+      refetchOnWindowFocus: true,
     }
   );
 
