@@ -29,7 +29,7 @@ export const StyledLayoutQuickswap = styled(Box)({
 export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) => ({
   background: mode === "dark" ? "#192239" : "rgb(242, 244, 248)",
   borderRadius: 10,
-  padding: 50,
+  padding: 24,
   fontFamily: "Red Hat Display",
 }));
 
