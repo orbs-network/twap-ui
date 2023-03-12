@@ -20,11 +20,11 @@ export const StyledLayoutSpiritswap = styled(Box)({
   maxWidth: 500,
 });
 
-export const StyledLayoutQuickswap = styled(Box)({
-  background: "#1b1e29",
+export const StyledLayoutQuickswap = styled(Box)(({ mode }: { mode: string }) => ({
+  background: mode === "dark" ? "#1b1e29" : "#FBFBFB",
   padding: 20,
   borderRadius: 10,
-});
+}));
 
 export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) => ({
   background: mode === "dark" ? "#192239" : "rgb(242, 244, 248)",

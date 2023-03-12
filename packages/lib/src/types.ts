@@ -184,6 +184,7 @@ export interface StylesConfig {
   selectTokenTextColor: string;
   selectedTokenBackground: string;
   selectedTokenTextColor: string;
+  selectedTokenBorderColor?: string;
 }
 
 export interface TWAPTokenSelectProps {

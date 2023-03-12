@@ -13,7 +13,7 @@ const TWAP = (props: QuickSwapTWAPProps) => {
   const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
 
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
-  const globalStyles = useGlobalStyles(props.isProMode);
+  const globalStyles = useGlobalStyles(props.isProMode, props.isDarkTheme);
 
   const connect = useCallback(() => {
     props.connect();

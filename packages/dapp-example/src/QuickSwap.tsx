@@ -1,6 +1,6 @@
 import { StyledLayoutQuickswap, StyledModalContent } from "./styles";
 import { Orders, TWAP, Limit, QuickSwapTWAPProps, QuickSwapOrdersProps } from "@orbs-network/twap-ui-quickswap";
-import { useConnectWallet, useNetwork } from "./hooks";
+import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -86,6 +86,8 @@ const DappComponent = () => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
+  const { isDarkTheme } = useTheme();
+
   const getTokenLogoURL = (address: string) => {
     if (!dappTokens) return "";
     const token = dappTokens[address];
@@ -106,8 +108,9 @@ const DappComponent = () => {
     TokenSelectModal,
     provider: library,
     getTokenLogoURL,
+    isDarkTheme,
   };
-  const ordersProps: QuickSwapOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL };
+  const ordersProps: QuickSwapOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
 
   return (
     <DappLayout name={config.partner}>
@@ -116,7 +119,7 @@ const DappComponent = () => {
           {
             title: "TWAP",
             component: (
-              <StyledLayoutQuickswap>
+              <StyledLayoutQuickswap mode={isDarkTheme ? "dark" : "light"}>
                 <TWAP {...twapProps} />
               </StyledLayoutQuickswap>
             ),
@@ -124,7 +127,7 @@ const DappComponent = () => {
           {
             title: "LIMIT",
             component: (
-              <StyledLayoutQuickswap>
+              <StyledLayoutQuickswap mode={isDarkTheme ? "dark" : "light"}>
                 <Limit {...twapProps} />
               </StyledLayoutQuickswap>
             ),
@@ -140,7 +143,6 @@ const dapp: Dapp = {
   Component: DappComponent,
   logo,
   config,
-  theme: "dark",
 };
 
 export default dapp;
