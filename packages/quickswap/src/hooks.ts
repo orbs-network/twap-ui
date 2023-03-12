@@ -34,6 +34,6 @@ export const AdapterContextProvider = AdapterContext.Provider;
 
 export const useAdapterContext = () => useContext(AdapterContext);
 
-export const useGlobalStyles = (isProMode?: boolean) => {
-  return configureStyles(isProMode);
+export const useGlobalStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
+  return configureStyles(isProMode, isDarkMode);
 };

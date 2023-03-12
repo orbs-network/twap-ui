@@ -23,9 +23,33 @@ export const darkModeStylesConfig: StylesConfig = {
   selectedTokenBackground: "#404557",
   selectedTokenTextColor: "#c7cad9",
 };
-export const configureStyles = (isProMode?: boolean) => {
-  const styles = darkModeStylesConfig;
-  const cardBackground = isProMode ? "#404557" : styles.cardBackground;
+export const lightModeStylesConfig: StylesConfig = {
+  iconsColor: "rgb(105, 108, 128)",
+  textColor: "#656565",
+  tooltipBackground: "#1C1E29",
+  tooltipTextColor: "white",
+  spinnerColor: "white",
+  containerBackground: "rgb(16, 23, 38)",
+  cardBackground: "#F8F7F7",
+  wrapperBackground: "#FBFBFB",
+  progressBarColor: "linear-gradient(180deg,#448aff,#004ce6)",
+  progressBarTrackColor: "#c7cad9",
+  orderHistorySelectedTabBackground: "#134DC8",
+  orderHistoryTabColor: "white",
+  orderHistorySelectedTabColor: "rgb(96, 230, 197)",
+  buttonBackground: "#448aff",
+  buttonColor: "white",
+  disabledButtonBackground: "#12131a",
+  disabledButtonColor: "#c7cad9",
+  selectTokenBackground: "linear-gradient(180deg,#448aff,#004ce6)",
+  selectTokenTextColor: "white",
+  selectedTokenBackground: "transparent",
+  selectedTokenTextColor: "#404557",
+  selectedTokenBorderColor: "#656565",
+};
+export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
+  const styles = isDarkMode ? darkModeStylesConfig : lightModeStylesConfig;
+  const cardBackground = isProMode ? styles.selectedTokenBackground : styles.cardBackground;
   return {
     ".twap-trade-size": {
       paddingTop: "8px!important",
@@ -66,7 +90,7 @@ export const configureStyles = (isProMode?: boolean) => {
         padding: 0,
         background: "transparent",
         border: "unset",
-        color: "#448aff",
+        color: styles.buttonBackground,
         fontWeight: `500!important`,
         fontSize: 14,
         textTransform: "uppercase" as const,
@@ -104,7 +128,7 @@ export const configureStyles = (isProMode?: boolean) => {
       },
     },
     ".twap-limit-price-input": {
-      background: "#1B1E29",
+      background: styles.wrapperBackground,
       padding: "5px 10px!important",
       marginBottom: 8,
       button: {
@@ -142,7 +166,7 @@ export const configureStyles = (isProMode?: boolean) => {
       border: "unset",
       borderRadius: 4,
       cursor: "pointer",
-      color: "#448aff!important",
+      color: `${styles.buttonBackground}!important`,
       background: "unset",
       fontSize: 14,
       fontWeight: 600,
@@ -159,13 +183,13 @@ export const configureStyles = (isProMode?: boolean) => {
         fill: `${styles.textColor}!important`,
         stroke: `${styles.textColor}!important`,
       },
+      border: `1px solid ${styles?.selectedTokenBorderColor ? styles.selectedTokenBorderColor : "none"}`,
       background: `${styles.selectedTokenBackground}!important`,
       ".twap-token-name": {
         fontWeight: "500!important",
         fontSize: "16px!important",
       },
       height: 40,
-      border: "unset",
       padding: "8px 13px 8px 8px",
       marginBottom: 2,
       borderRadius: 38,
@@ -197,7 +221,7 @@ export const configureStyles = (isProMode?: boolean) => {
       display: "flex",
       paddingLeft: 12,
       justifyContent: "center",
-      backgroundImage: "linear-gradient(105deg,#448aff 3%,#004ce6)!important",
+      backgroundImage: styles.selectedTokenBorderColor ? styles.selectedTokenBackground : "linear-gradient(105deg,#448aff 3%,#004ce6)!important",
       p: {
         fontSize: 16,
       },
@@ -342,7 +366,8 @@ export const configureStyles = (isProMode?: boolean) => {
         padding: "0!important",
         width: 16,
         height: 16,
-        background: "#D9D9D9",
+        background: styles.selectedTokenBorderColor ? styles.selectedTokenBorderColor : "#D9D9D9",
+        // background: "#D9D9D9",
       },
       "& .MuiSwitch-track": {
         padding: "0!important",
@@ -350,17 +375,18 @@ export const configureStyles = (isProMode?: boolean) => {
         height: 24,
         borderRadius: 20,
         border: "1px solid #636679",
-        background: "#1B1E29",
+        background: styles.wrapperBackground,
         opacity: "1!important",
       },
       "& .Mui-checked+.MuiSwitch-track": {
         padding: "0!important",
-        backgroundColor: `${styles.containerBackground}!important`,
+        backgroundColor: `${styles.selectedTokenBorderColor ? styles.wrapperBackground : styles.containerBackground}!important`,
         opacity: "1!important",
       },
       "& .Mui-checked .MuiSwitch-thumb": {
         padding: "0!important",
-        background: "#D9D9D9",
+        // background: "#D9D9D9",
+        background: styles.selectedTokenBorderColor ? styles.selectedTokenBorderColor : "#D9D9D9",
       },
       "& .MuiSwitch-switchBase": {
         top: 11,
@@ -467,7 +493,7 @@ export const configureStyles = (isProMode?: boolean) => {
     },
     ".twap-orders": {
       paddingBottom: 24,
-      background: "#1B1E29",
+      background: styles.wrapperBackground,
       fontWeight: 500,
       color: styles.textColor,
       "*": {
@@ -499,18 +525,19 @@ export const configureStyles = (isProMode?: boolean) => {
           width: 94,
           height: 38,
           borderRadius: 100,
-          background: "#3E4252",
+          background: styles.selectedTokenBorderColor ? styles.selectedTokenBackground : "#3E4252",
         },
         "& .MuiButtonBase-root": {
-          color: styles.orderHistoryTabColor,
+          color: styles.selectedTokenBorderColor ? styles.textColor : styles.orderHistoryTabColor,
           fontWeight: 400,
         },
         "& .Mui-selected": {
           minHeight: 38,
           maxHeight: 38,
           borderRadius: 100,
-          background: "#3E4252",
+          background: styles.selectedTokenBorderColor ? styles.selectedTokenBackground : "#3E4252",
           color: styles.textColor,
+          border: styles.selectedTokenBorderColor ? `1px solid ${styles.selectedTokenBorderColor}` : "none",
         },
         "& .MuiTabs-flexContainer": {
           height: 38,
@@ -570,7 +597,7 @@ export const configureStyles = (isProMode?: boolean) => {
       fontFamily: "Inter",
       padding: "40px 20px 20px 20px",
       boxSizing: "border-box",
-      background: styles.containerBackground,
+      background: styles.selectedTokenBorderColor ? styles.wrapperBackground : styles.containerBackground,
 
       ".twap-orders-summary-token-display": {
         overflow: "hidden",
@@ -621,8 +648,8 @@ export const configureStyles = (isProMode?: boolean) => {
       width: "36px!important",
       height: 36,
       top: -24,
-      background: "#1b1e29",
-      border: `3px solid ${styles.cardBackground}`,
+      background: styles.wrapperBackground,
+      border: styles?.selectedTokenBorderColor ? `1px solid ${styles.selectedTokenBorderColor}` : `3px solid ${styles.cardBackground}`,
       borderRadius: 8,
       button: {
         padding: "0!important",
@@ -712,7 +739,7 @@ export const configureStyles = (isProMode?: boolean) => {
       display: "none",
     },
     ".twap-market-price-section": {
-      background: "#1B1E29",
+      background: styles.wrapperBackground,
       width: "100%",
       padding: "15px 26px",
       ".twap-token-logo": {
