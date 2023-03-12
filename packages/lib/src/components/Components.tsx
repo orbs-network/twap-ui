@@ -17,6 +17,7 @@ import {
   NumberDisplay,
   SwipeContainer,
   Modal,
+  Radio,
 } from "./base";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TokenData } from "@orbs-network/twap";
@@ -39,6 +40,7 @@ import {
 } from "./Labels";
 import { TWAPTokenSelectProps } from "../types";
 import { analytics } from "../analytics";
+import { FormControl, RadioGroup } from "@mui/material";
 const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
 
 const odnp = new ODNP();
@@ -233,6 +235,31 @@ export function LimitPriceToggle() {
   return (
     <Tooltip text={isLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
       <Switch disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={(value: boolean) => setLimitOrder(value)} />
+    </Tooltip>
+  );
+}
+
+export function LimitPriceRadioGroup() {
+  const loadingState = useLoadingState();
+  const translations = useTwapContext().translations;
+  const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
+  const { leftToken, rightToken } = useTwapStore((state) => state.getLimitPrice(false));
+  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+  const setLimitOrder = useTwapStore((store) => store.setLimitOrder);
+  const selectTokensWarning = !leftToken || !rightToken;
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLimitOrder(String(event.target.value) === "true");
+  };
+
+  return (
+    <Tooltip text={isLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
+      <FormControl disabled={!!selectTokensWarning || isLoading}>
+        <RadioGroup row name="isLimitOrder" value={String(isLimitOrder)} onChange={handleChange}>
+          <Radio label="Market Price" value="false" />
+          <Radio label="Limit Price" value="true" />
+        </RadioGroup>
+      </FormControl>
     </Tooltip>
   );
 }

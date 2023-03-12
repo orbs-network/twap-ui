@@ -4,6 +4,7 @@ import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import { AdapterContextProvider, config, parseToken, useAdapterContext, useGetProvider, useGlobalStyles } from "./hooks";
 import { SpookySwapTWAPProps } from ".";
+import { Box } from "@mui/system";
 
 const TWAP = (props: SpookySwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
@@ -30,9 +31,13 @@ const TWAP = (props: SpookySwapTWAPProps) => {
 
       <AdapterContextProvider value={props}>
         <div className="twap-container">
-          <TokenPanel isSrcToken={true} />
-          <Components.ChangeTokensOrder />
-          <TokenPanel />
+          <Box>
+            <TokenPanel isSrcToken={true} />
+            <Box my="10px">
+              <Components.ChangeTokensOrder />
+            </Box>
+            <TokenPanel />
+          </Box>
           <LimitPrice />
           <TradeSize />
           <MaxDuration />
@@ -72,7 +77,6 @@ const TradeSize = () => {
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
-          <Components.ChunksSliderSelect />
           <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
@@ -95,9 +99,10 @@ const LimitPrice = () => {
       <TwapStyles.StyledColumnFlex>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Labels.LimitPriceLabel />
-          <Components.LimitPriceToggle />
         </TwapStyles.StyledRowFlex>
+        <Components.LimitPriceRadioGroup />
         <Components.LimitPriceInput placeholder="0" />
+        <Components.MarketPrice />
       </TwapStyles.StyledColumnFlex>
     </Components.Base.Card>
   );
@@ -182,7 +187,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
-        {!isSrcToken && <Components.MarketPrice />}
       </TwapStyles.StyledColumnFlex>
     </>
   );

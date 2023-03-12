@@ -40,7 +40,6 @@ export const configureStyles = (isProMode?: boolean) => {
       ".twap-token-name": {
         fontSize: "13px!important",
         fontWeight: "400!important",
-        // fontSize: 14,
       },
       input: {
         textAlign: "end!important",

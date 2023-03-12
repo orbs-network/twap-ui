@@ -24,7 +24,7 @@ function Orders() {
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
           <Styles.StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>
-            <Components.Base.Icon icon={<RxStopwatch style={{ width: 19, height: 19 }} />} />
+            <Components.Base.Icon className="stopwatch-icon" icon={<RxStopwatch style={{ width: 19, height: 19 }} />} />
             <Components.Base.Label tooltipText={translations.ordersTooltip} fontSize={16}>
               {translations.orders}
             </Components.Base.Label>

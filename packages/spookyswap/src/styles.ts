@@ -57,9 +57,15 @@ export const configureStyles = (darkMode?: boolean) => {
   const styles = darkMode ? darkModeStylesConfig : lightModeStylesConfig;
   return {
     ".twap-odnp": {
+      marginRight: "0px!important",
+      width: 119,
+      minWidth: 119,
+      height: 31,
+      border: darkMode ? "1px solid #636679" : "1px solid rgb(46, 179, 220)",
+      borderRadius: "20px!important",
+      padding: "0 10px!important",
       color: styles.textColor,
       background: "transparent",
-      border: darkMode ? "1px solid white" : "1px solid rgb(46, 179, 220)",
     },
     ".twap-order-summary": {
       padding: 30,
@@ -117,12 +123,21 @@ export const configureStyles = (darkMode?: boolean) => {
       },
     },
     ".twap-market-price": {
+      position: "relative" as const,
       borderRadius: "0px 0px 5px 5px",
-      background: darkMode ? "rgba(255,255,255, 0.05)" : "rgba(0,0,0, 0.01)",
-      padding: "5px 15px",
-      minHeight: 40,
+      paddingTop: 5,
       ".title": {
         fontSize: 13,
+      },
+      "&:after": {
+        content: '""',
+        position: "absolute" as const,
+        left: "50%",
+        transform: "translate(-50%)",
+        top: 0,
+        width: "calc(100% + 20px)",
+        height: 1,
+        background: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgb(188, 200, 220)",
       },
     },
     ".twap-icon": {
@@ -170,6 +185,12 @@ export const configureStyles = (darkMode?: boolean) => {
       zoom: `0.55!important`,
     },
     ".twap-time-selector": {
+      ".twap-time-selectore-selected": {
+        padding: ".5rem",
+        border: "1px solid rgba(255,255,255,0.87)",
+        marginBottom: "5px",
+        borderRadius: "8px",
+      },
       ".twap-input": {
         input: {
           fontSize: 16,
@@ -192,6 +213,7 @@ export const configureStyles = (darkMode?: boolean) => {
     ".twap-card": {
       minHeight: 50,
       padding: "10px 15px",
+      paddingBottom: 5,
       background: styles.cardBackground,
       borderRadius: "0.375rem",
       boxShadow: darkMode ? "unset" : "rgb(49 65 94 / 8%) 0px 2px 4px inset, rgb(49 65 94 / 4%) 0px 4px 8px inset",
@@ -203,7 +225,7 @@ export const configureStyles = (darkMode?: boolean) => {
       width: "100%",
       display: "flex",
       flexDirection: "column" as const,
-      gap: 8,
+      gap: 15,
       marginTop: 20,
       "*": {
         color: styles.textColor,
@@ -270,8 +292,26 @@ export const configureStyles = (darkMode?: boolean) => {
       },
     },
     ".twap-order": {
+      position: "relative" as const,
+      background: "transparent",
       border: "unset",
       padding: 10,
+      borderRadius: 0,
+      transition: ".15s all linear",
+
+      "&:after": {
+        content: '""',
+        position: "absolute" as const,
+        left: "50%",
+        transform: "translate(-50%)",
+        bottom: 0,
+        width: "calc(100% + 20px)",
+        height: 1,
+        background: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgb(188, 200, 220)",
+      },
+      "&:hover": {
+        backgroundColor: "rgba(255, 255, 255, 0.09)",
+      },
 
       "& .twap-order-preview-tokens": {
         "& .twap-order-token-display": {
@@ -284,18 +324,21 @@ export const configureStyles = (darkMode?: boolean) => {
         },
       },
       "& .twap-order-expanded-row": {
-        flexDirection: "column" as const,
         alignItems: "flex-start",
         fontSize: 14,
       },
+      ".twap-market-price-section": {
+        width: "100%",
+      },
       "& .twap-order-expanded-colored": {
-        background: darkMode ? "rgba(255, 255, 255, 0.05)" : styles.containerBackground,
+        padding: "12px 0",
       },
       "& .twap-order-main-progress-bar": {
+        height: 21,
         background: `${styles.progressBarTrackColor}!important`,
       },
       "& .MuiLinearProgress-bar": {
-        background: styles.progressBarColor,
+        background: styles.orderHistorySelectedTabBackground,
       },
       "& .twap-order-progress": {
         "&::after": {
@@ -303,23 +346,51 @@ export const configureStyles = (darkMode?: boolean) => {
         },
       },
     },
+    ".twap-order-expanded-wrapper": {
+      "&:hover": {
+        backgroundColor: "transparent",
+      },
+      backgroundColor: "rgba(255, 255, 255, 0.09)!important",
+    },
     ".twap-orders": {
+      gap: "0!important",
       color: styles.textColor,
+      ".twap-orders-header": {
+        ".twap-label p": {
+          fontSize: "21px!important",
+          fontWeight: 700,
+        },
+        padding: 0,
+      },
+      ".twap-orders-list": {
+        overflowX: "hidden",
+        gap: 0,
+      },
     },
     ".twap-orders-header": {
       "& .twap-orders-header-tabs": {
-        boxShadow: darkMode ? "unset" : "rgb(49 65 94 / 8%) 0px 10px 17px, rgb(49 65 94 / 4%) 0px 5px 26px",
+        borderRadius: 0,
+        padding: 0,
+        minHeight: 28,
+        ".twap-orders-header-tabs-tab": {
+          background: "none",
+          padding: 0,
+          minHeight: 28,
+          minWidth: 0,
+          transition: ".15s all linear",
+          borderBottom: `2px solid ${styles.textColor}`,
+        },
         border: "unset",
-        background: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgb(242, 244, 248)",
         "& .MuiTabs-indicator": {
-          backgroundColor: styles.orderHistorySelectedTabBackground,
+          backgroundColor: "transparent",
         },
         "& .MuiButtonBase-root": {
           color: styles.textColor,
           fontWeight: 400,
         },
         "& .Mui-selected": {
-          color: styles.orderHistorySelectedTabColor,
+          color: `${styles.orderHistorySelectedTabBackground}!important`,
+          borderBottom: `2px solid ${styles.orderHistorySelectedTabBackground}`,
           fontWeight: 700,
         },
       },
@@ -335,6 +406,7 @@ export const configureStyles = (darkMode?: boolean) => {
       ".twap-input": {
         input: {
           height: 30,
+          textAlign: "right",
         },
       },
       ".twap-chunks-size": {
@@ -346,8 +418,8 @@ export const configureStyles = (darkMode?: boolean) => {
     ".twap-change-tokens-order": {
       button: {
         background: "rgba(255, 255, 255, 0.05)",
-        width: 28,
-        height: 28,
+        width: 24,
+        height: 24,
       },
       ".twap-icon": {
         width: 16,
@@ -477,6 +549,52 @@ export const configureStyles = (darkMode?: boolean) => {
       },
       "& *": {
         fontFamily: "inherit",
+      },
+    },
+    ".twap-extended-order-info": {
+      ".twap-icon": {
+        svg: {
+          color: `${styles.iconsColor}!important`,
+          fill: `${styles.iconsColor}!important`,
+        },
+      },
+    },
+    ".odnp *": {
+      color: "black",
+    },
+    ".stopwatch-icon": {
+      display: "none!important",
+    },
+    ".twap-order-preview": {
+      ".twap-order-progress": {
+        height: 4,
+        background: "#373E55!important",
+        ".MuiLinearProgress-bar": {
+          height: 4,
+        },
+      },
+    },
+    ".twap-radio": {
+      input: {
+        width: 12,
+        height: 12,
+      },
+    },
+    "@media(max-width:450px)": {
+      ".twap-market-price": {
+        display: "flex",
+        flexDirection: "column",
+      },
+      ".twap-limit-price-input": {
+        ".twap-token-display img": {
+          display: "none",
+        },
+      },
+      ".twap-trade-size": {
+        ".twap-chunks-size": {
+          display: "flex",
+          flexDirection: "column",
+        },
       },
     },
   };
