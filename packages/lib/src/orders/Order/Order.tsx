@@ -17,7 +17,7 @@ export interface Props {
 
 function OrderComponent({ order, onExpand, expanded }: Props) {
   return (
-    <StyledContainer className={`twap-order ${expanded ? 'twap-order-expanded-wrapper' : ''}`}>
+    <StyledContainer className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
       <StyledAccordion expanded={expanded}>
         <StyledAccordionSummary onClick={onExpand}>
           <OrderPreview order={order} />

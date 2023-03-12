@@ -191,10 +191,10 @@ export const configureStyles = (darkMode?: boolean) => {
     },
     ".twap-time-selector": {
       ".twap-time-selectore-selected": {
-        padding: '.5rem',
-        border: '1px solid rgba(255,255,255,0.87)',
-        marginBottom: '5px',
-        borderRadius: '8px',
+        padding: ".5rem",
+        border: "1px solid rgba(255,255,255,0.87)",
+        marginBottom: "5px",
+        borderRadius: "8px",
       },
       ".twap-input": {
         input: {
@@ -302,7 +302,7 @@ export const configureStyles = (darkMode?: boolean) => {
       border: "unset",
       padding: 10,
       borderRadius: 0,
-      transition: '.15s all linear',
+      transition: ".15s all linear",
 
       "&:after": {
         content: '""',
@@ -315,7 +315,7 @@ export const configureStyles = (darkMode?: boolean) => {
         background: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgb(188, 200, 220)",
       },
       "&:hover": {
-        backgroundColor: 'rgba(255, 255, 255, 0.09)',
+        backgroundColor: "rgba(255, 255, 255, 0.09)",
       },
 
       "& .twap-order-preview-tokens": {
@@ -334,29 +334,32 @@ export const configureStyles = (darkMode?: boolean) => {
         fontSize: 14,
       },
       ".twap-market-price-section": {
-        width: '100%',
+        width: "100%",
       },
       "& .twap-order-expanded-colored": {
-        padding: '12px 0',
+        padding: "12px 0",
         // background: darkMode ? "rgba(255, 255, 255, 0.05)" : styles.containerBackground,
       },
       "& .twap-order-main-progress-bar": {
+        height: 21,
         background: `${styles.progressBarTrackColor}!important`,
       },
       "& .MuiLinearProgress-bar": {
+        // height: 4,
         background: styles.orderHistorySelectedTabBackground,
       },
       "& .twap-order-progress": {
         "&::after": {
+          // height: 21,
           background: `${styles.progressBarTrackColor}!important`,
         },
       },
     },
     ".twap-order-expanded-wrapper": {
       "&:hover": {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
       },
-      backgroundColor: 'rgba(255, 255, 255, 0.09)!important',
+      backgroundColor: "rgba(255, 255, 255, 0.09)!important",
     },
     ".twap-orders": {
       gap: "0!important",
@@ -369,7 +372,7 @@ export const configureStyles = (darkMode?: boolean) => {
         padding: 0,
       },
       ".twap-orders-list": {
-        overflowX: 'hidden',
+        overflowX: "hidden",
         gap: 0,
       },
     },
@@ -379,11 +382,11 @@ export const configureStyles = (darkMode?: boolean) => {
         padding: 0,
         minHeight: 28,
         ".twap-orders-header-tabs-tab": {
-          background: 'none',
+          background: "none",
           padding: 0,
           minHeight: 28,
           minWidth: 0,
-          transition: '.15s all linear',
+          transition: ".15s all linear",
           borderBottom: `2px solid ${styles.textColor}`,
         },
         // boxShadow: darkMode ? "unset" : "rgb(49 65 94 / 8%) 0px 10px 17px, rgb(49 65 94 / 4%) 0px 5px 26px",
@@ -391,7 +394,7 @@ export const configureStyles = (darkMode?: boolean) => {
         // background: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgb(242, 244, 248)",
         "& .MuiTabs-indicator": {
           // color: `${styles.orderHistorySelectedTabBackground}!important`,
-          backgroundColor: 'transparent',
+          backgroundColor: "transparent",
         },
         "& .MuiButtonBase-root": {
           color: styles.textColor,
@@ -416,7 +419,7 @@ export const configureStyles = (darkMode?: boolean) => {
       ".twap-input": {
         input: {
           height: 30,
-          textAlign: 'right',
+          textAlign: "right",
         },
       },
       ".twap-chunks-size": {
@@ -574,6 +577,21 @@ export const configureStyles = (darkMode?: boolean) => {
     },
     ".stopwatch-icon": {
       display: "none!important",
+    },
+    ".twap-order-preview": {
+      ".twap-order-progress": {
+        height: 4,
+        background: "#373E55!important",
+        ".MuiLinearProgress-bar": {
+          height: 4,
+        },
+      },
+    },
+    ".twap-radio": {
+      input: {
+        width: 12,
+        height: 12,
+      },
     },
     "@media(max-width:450px)": {
       ".twap-market-price": {

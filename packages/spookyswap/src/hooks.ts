@@ -33,6 +33,6 @@ const AdapterContext = createContext({} as SpookySwapTWAPProps);
 export const AdapterContextProvider = AdapterContext.Provider;
 
 export const useAdapterContext = () => useContext(AdapterContext);
-export const useGlobalStyles = (darkMode?: boolean) => {
+export const useGlobalStyles: any = (darkMode?: boolean) => {
   return configureStyles(darkMode);
 };

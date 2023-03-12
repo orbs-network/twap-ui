@@ -4,7 +4,7 @@ import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import { AdapterContextProvider, config, parseToken, useAdapterContext, useGetProvider, useGlobalStyles } from "./hooks";
 import { SpookySwapTWAPProps } from ".";
-import { Box } from '@mui/system'
+import { Box } from "@mui/system";
 
 const TWAP = (props: SpookySwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
@@ -33,8 +33,8 @@ const TWAP = (props: SpookySwapTWAPProps) => {
         <div className="twap-container">
           <Box>
             <TokenPanel isSrcToken={true} />
-            <Box my='10px'>
-            <Components.ChangeTokensOrder />
+            <Box my="10px">
+              <Components.ChangeTokensOrder />
             </Box>
             <TokenPanel />
           </Box>
@@ -77,11 +77,7 @@ const TradeSize = () => {
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
-          {/*<Components.ChunksSliderSelect />*/}
           <Components.ChunksInput />
-        </TwapStyles.StyledRowFlex>
-        <TwapStyles.StyledRowFlex justifyContent="space-between" style={{ minHeight: 40 }}>
-          Intervals here
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
@@ -103,10 +99,9 @@ const LimitPrice = () => {
       <TwapStyles.StyledColumnFlex>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Labels.LimitPriceLabel />
-          <Components.LimitPriceToggle />
         </TwapStyles.StyledRowFlex>
+        <Components.LimitPriceRadioGroup />
         <Components.LimitPriceInput placeholder="0" />
-        <Box>Radio here</Box>
         <Components.MarketPrice />
       </TwapStyles.StyledColumnFlex>
     </Components.Base.Card>
@@ -133,7 +128,6 @@ const TradeInterval = () => {
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>
-        <Box>button here</Box>
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
   );
@@ -193,7 +187,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
-        {/*{!isSrcToken && <Components.MarketPrice />}*/}
       </TwapStyles.StyledColumnFlex>
     </>
   );
