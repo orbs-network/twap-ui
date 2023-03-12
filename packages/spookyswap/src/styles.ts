@@ -124,13 +124,8 @@ export const configureStyles = (darkMode?: boolean) => {
     },
     ".twap-market-price": {
       position: "relative" as const,
-      // paddingTop: 5,
       borderRadius: "0px 0px 5px 5px",
-      // background: darkMode ? "rgba(255,255,255, 0.05)" : "rgba(0,0,0, 0.01)",
-      // padding: "5px 15px",
       paddingTop: 5,
-      // minHeight: 30,
-      // height: 22,
       ".title": {
         fontSize: 13,
       },
@@ -329,7 +324,6 @@ export const configureStyles = (darkMode?: boolean) => {
         },
       },
       "& .twap-order-expanded-row": {
-        // flexDirection: "column" as const,
         alignItems: "flex-start",
         fontSize: 14,
       },
@@ -338,19 +332,16 @@ export const configureStyles = (darkMode?: boolean) => {
       },
       "& .twap-order-expanded-colored": {
         padding: "12px 0",
-        // background: darkMode ? "rgba(255, 255, 255, 0.05)" : styles.containerBackground,
       },
       "& .twap-order-main-progress-bar": {
         height: 21,
         background: `${styles.progressBarTrackColor}!important`,
       },
       "& .MuiLinearProgress-bar": {
-        // height: 4,
         background: styles.orderHistorySelectedTabBackground,
       },
       "& .twap-order-progress": {
         "&::after": {
-          // height: 21,
           background: `${styles.progressBarTrackColor}!important`,
         },
       },
@@ -389,11 +380,8 @@ export const configureStyles = (darkMode?: boolean) => {
           transition: ".15s all linear",
           borderBottom: `2px solid ${styles.textColor}`,
         },
-        // boxShadow: darkMode ? "unset" : "rgb(49 65 94 / 8%) 0px 10px 17px, rgb(49 65 94 / 4%) 0px 5px 26px",
         border: "unset",
-        // background: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgb(242, 244, 248)",
         "& .MuiTabs-indicator": {
-          // color: `${styles.orderHistorySelectedTabBackground}!important`,
           backgroundColor: "transparent",
         },
         "& .MuiButtonBase-root": {
@@ -401,7 +389,6 @@ export const configureStyles = (darkMode?: boolean) => {
           fontWeight: 400,
         },
         "& .Mui-selected": {
-          // color: styles.orderHistorySelectedTabColor,
           color: `${styles.orderHistorySelectedTabBackground}!important`,
           borderBottom: `2px solid ${styles.orderHistorySelectedTabBackground}`,
           fontWeight: 700,
