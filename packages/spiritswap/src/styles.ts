@@ -127,7 +127,7 @@ export const configureStyles = () => {
       backgroundColor: `${styles.skeletonLoaderBackground || "rgba(255,255,255, 0.1)"}!important`,
     },
     ".twap-modal": {
-      background: "rgba(0,0,0, 0.8)",
+      background: "transparent",
       fontFamily: "Jost",
       color: styles.textColor,
       "& *": {
@@ -341,10 +341,12 @@ export const configureStyles = () => {
         fontSize: 16,
       },
     },
-
+    ".MuiBackdrop-root": {
+      backdropFilter: "blur(15px)",
+      background: "rgba(0,0,0,.4)!important",
+    },
     ".twap-modal-content": {
       background: styles.containerBackground,
-
       maxHeight: "85vh",
       overflow: "auto",
       borderRadius: "10px",
@@ -361,6 +363,9 @@ export const configureStyles = () => {
       "& *": {
         fontFamily: "inherit",
       },
+    },
+    ".twap-market-price-section": {
+      width: "100%",
     },
   };
 };
