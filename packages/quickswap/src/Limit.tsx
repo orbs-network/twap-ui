@@ -18,7 +18,7 @@ const Limit = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
 
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
-  const globalStyles = useGlobalStyles(props.isProMode);
+  const globalStyles = useGlobalStyles(props.isProMode, props.isDarkTheme);
 
   const connect = useCallback(() => {
     props.connect();
