@@ -22,7 +22,6 @@ export type Duration = { resolution: TimeResolution; amount?: number };
  */
 
 const initialState: State = {
-  tokensList: [],
   lib: undefined,
   srcToken: undefined,
   dstToken: undefined,
@@ -51,21 +50,9 @@ export const useTwapStore = create(
   combine(initialState, (set, get) => ({
     setValues: (storeOverride: StoreOverride) => set({ ...storeOverride }),
     setWaitingForNewOrder: (waitingForNewOrder: boolean) => set({ waitingForNewOrder }),
-    reset: (storeOverride: StoreOverride) => set({ ...initialState, lib: get().lib, tokensList: get().tokensList, ...storeOverride }),
+    reset: (storeOverride: StoreOverride) => set({ ...initialState, lib: get().lib, ...storeOverride }),
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
-    setTokensList: (tokensList: TokenData[]) => {
-      const lib = get().lib;
-      if (!lib) return;
-      if (!tokensList.find((it: any) => lib.isNativeToken(it))) {
-        tokensList.push(lib.config.nativeToken);
-      }
-      if (!tokensList.find((it: any) => lib.isWrappedToken(it))) {
-        tokensList.push(lib.config.wToken);
-      }
-
-      set({ tokensList });
-    },
     setSrcToken: (srcToken?: TokenData) => {
       srcToken && analytics.onSrcTokenClick(srcToken?.symbol);
       set({ srcToken });

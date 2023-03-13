@@ -202,7 +202,6 @@ export interface OrdersData {
 }
 
 export interface State {
-  tokensList: TokenData[];
   lib: TWAPLib | undefined;
   srcToken: TokenData | undefined;
   dstToken: TokenData | undefined;

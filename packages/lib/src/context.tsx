@@ -4,8 +4,6 @@ import { useDstBalance, useDstUsd, useInitLib, useSrcBalance, useSrcUsd } from "
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
-import _ from "lodash";
-import { useTwapStore } from "./store";
 const TwapContext = createContext<TwapLibProps>({} as TwapLibProps);
 const OrdersContext = createContext<OrderLibProps>({} as OrderLibProps);
 const queryClient = new QueryClient({
@@ -25,18 +23,10 @@ const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
   useDstUsd();
   useSrcBalance();
   useDstBalance();
-  const lib = useTwapStore((store) => store.lib);
-  const setTokensList = useTwapStore((store) => store.setTokensList);
-  const tokensListLength = _.size(props.tokenList);
 
   useEffect(() => {
     analytics.onTwapPageView();
   }, []);
-
-  useEffect(() => {
-    if (!lib || !props.tokenList || !tokensListLength) return;
-    setTokensList(props.tokenList);
-  }, [tokensListLength, lib]);
 
   // init web3 every time the provider changes
   useEffect(() => {
@@ -56,14 +46,6 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
 const OrdersAdapterQueryClient = (props: OrderLibProps) => {
   const translations = { ...defaultTranlations, ...props.translations };
-  const lib = useTwapStore((store) => store.lib);
-  const setTokensList = useTwapStore((store) => store.setTokensList);
-  const tokensListLength = _.size(props.tokenList);
-
-  useEffect(() => {
-    if (!lib || !props.tokenList || !tokensListLength) return;
-    setTokensList(props.tokenList);
-  }, [tokensListLength, lib]);
 
   return <OrdersContext.Provider value={{ ...props, translations }}>{props.children}</OrdersContext.Provider>;
 };
