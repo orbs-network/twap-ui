@@ -411,8 +411,28 @@ const useGasPriceQuery = () => {
   return { isLoading, maxFeePerGas: BN.max(data?.instant || 0, maxFeePerGas || 0, priorityFeePerGas || 0), priorityFeePerGas: BN.max(data?.low || 0, priorityFeePerGas || 0) };
 };
 
+const useTokenList = () => {
+  const twapTokens = useTwapContext().tokenList;
+  const ordersHistoryTokens = useOrdersContext().tokenList;
+  const tokens = twapTokens || ordersHistoryTokens;
+  const lib = useTwapStore((store) => store.lib);
+
+  const tokensLength = _.size(tokens);
+
+  return useMemo(() => {
+    if (!lib || !tokensLength) return [];
+    if (!tokens.find((it: TokenData) => lib.isNativeToken(it))) {
+      tokens.push(lib.config.nativeToken);
+    }
+    if (!tokens.find((it: TokenData) => lib.isWrappedToken(it))) {
+      tokens.push(lib.config.wToken);
+    }
+    return tokens;
+  }, [lib, tokensLength]);
+};
+
 export const useOrdersHistoryQuery = () => {
-  const tokenList = useOrdersContext().tokenList;
+  const tokenList = useTokenList();
 
   const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
   const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
@@ -479,7 +499,7 @@ export const usePrepareUSDValues = (fetchUsd: (chainId: number, token: TokenData
 export const useSetTokensFromDapp = (srcTokenAddressOrSymbol?: string, dstTokenAddressOrSymbol?: string) => {
   const setSrcToken = useTwapStore((state) => state.setSrcToken);
   const setDstToken = useTwapStore((state) => state.setDstToken);
-  const tokensList = useTwapStore((store) => store.tokensList);
+  const tokensList = useTokenList();
   const tokensReady = _.size(tokensList) > 0;
   const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
 
