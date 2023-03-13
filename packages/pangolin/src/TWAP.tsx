@@ -37,7 +37,7 @@ const TWAP = (props: PangolinTWAPProps) => {
           account={props.account}
           connectedChainId={props.connectedChainId}
           askDataParams={[partnerDaas]}
-          tokensList={tokenList}
+          tokenList={tokenList}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>

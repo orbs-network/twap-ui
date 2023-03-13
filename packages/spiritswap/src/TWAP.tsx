@@ -25,7 +25,7 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
       translations={translations as Translations}
       provider={provider}
       account={props.account}
-      tokensList={parsedTokens}
+      tokenList={parsedTokens}
     >
       <GlobalStyles styles={globalStyles} />
       <AdapterContextProvider value={props}>
