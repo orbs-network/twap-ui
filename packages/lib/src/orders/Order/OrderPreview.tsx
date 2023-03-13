@@ -1,5 +1,5 @@
 import { LinearProgress } from "@mui/material";
-import { styled } from "@mui/system";
+import { Box, styled } from "@mui/system";
 import { Components, OrderUI, Styles as TwapStyles, useOrdersContext } from "../..";
 import { StyledText } from "../../styles";
 import { OrderTokenDisplay } from "./Components";
@@ -15,8 +15,19 @@ function OrderPreview({ order }: { order: OrderUI }) {
         </TwapStyles.StyledRowFlex>
         <StyledHeaderText className="twap-order-preview-date">{order.ui.createdAtUi}</StyledHeaderText>
       </StyledHeader>
-
-      <StyledPreviewLinearProgress variant="determinate" value={order.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
+      <Components.Base.Tooltip
+        childrenStyles={{ width: "100%" }}
+        placement="top"
+        text={
+          <Box>
+            <Components.Base.NumberDisplay value={order.ui.srcFilledAmountUi} />
+            {" " + order.ui.srcToken?.symbol + " "}
+            (<Components.Base.NumberDisplay hideTooltip value={order.ui.progress || 0} decimalScale={1} suffix="%" />)
+          </Box>
+        }
+      >
+        <StyledPreviewLinearProgress variant="determinate" value={order.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
+      </Components.Base.Tooltip>
       <TwapStyles.StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start" }} className="twap-order-preview-tokens" justifyContent="space-between">
         <OrderTokenDisplay usdPrefix="=" token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
         <Components.Base.Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 30, height: 30 }} />} />

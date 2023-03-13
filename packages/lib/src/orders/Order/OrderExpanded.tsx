@@ -1,4 +1,3 @@
-import { LinearProgress } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
@@ -6,9 +5,7 @@ import { Components, Styles as TwapStyles } from "../..";
 import { useOrdersContext } from "../../context";
 import { useCancelOrder, useHistoryPrice } from "../../hooks";
 import { fillDelayText, useTwapStore } from "../../store";
-import { StyledText } from "../../styles";
 import { OrderUI } from "../../types";
-import { OrderTokenDisplay } from "./Components";
 const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const translations = useOrdersContext().translations;
   const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
@@ -21,30 +18,6 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
           <OrderPrice order={order} />{" "}
         </Box>
       )}
-      <StyledColoredContainer className="twap-order-expanded-colored">
-        <StyledTitle className="twap-order-expanded-colored-title">{translations.progress}:</StyledTitle>
-        <TwapStyles.StyledColumnFlex gap={20}>
-          <TwapStyles.StyledRowFlex justifyContent="space-between" style={{ paddingRight: 20 }}>
-            <TwapStyles.StyledColumnFlex gap={10} style={{ width: "auto" }}>
-              <StyledSectionTitle className="twap-order-expanded-title">{translations.filled}</StyledSectionTitle>
-              <StyledOrderTokenDisplay alighLeft usdValue={order.ui.srcFilledAmountUsdUi} token={order.ui.srcToken} amount={order.ui.srcFilledAmountUi} />
-            </TwapStyles.StyledColumnFlex>
-            <TwapStyles.StyledColumnFlex gap={10} style={{ width: "auto" }}>
-              <StyledSectionTitle className="twap-order-expanded-title">{translations.remaining}</StyledSectionTitle>
-              <StyledOrderTokenDisplay alighLeft usdValue={order.ui.srcRemainingAmountUsdUi} token={order.ui.srcToken} amount={order.ui.srcRemainingAmountUi} />
-            </TwapStyles.StyledColumnFlex>
-          </TwapStyles.StyledRowFlex>
-          <TwapStyles.StyledRowFlex>
-            <Components.Base.Tooltip
-              childrenStyles={{ width: "100%" }}
-              placement="top"
-              text={<Components.Base.NumberDisplay hideTooltip value={order.ui.progress || "0"} decimalScale={1} suffix="%" />}
-            >
-              <StyledMainProgressBar variant="determinate" value={order.ui.progress || 1} className="twap-order-main-progress-bar" />
-            </Components.Base.Tooltip>
-          </TwapStyles.StyledRowFlex>
-        </TwapStyles.StyledColumnFlex>
-      </StyledColoredContainer>
       <TwapStyles.StyledColumnFlex className="twap-extended-order-info">
         <Row label={`${translations.totalTrades}:`} tooltip={translations.totalTradesTooltip}>
           <Components.Base.NumberDisplay value={order.ui.totalChunks} />
@@ -85,22 +58,6 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
 
 export default OrderExpanded;
 
-const StyledSectionTitle = styled(StyledText)({
-  fontSize: 13,
-});
-
-const StyledOrderTokenDisplay = styled(OrderTokenDisplay)({
-  fontSize: 14,
-  "& .twap-token-logo": {
-    width: 19,
-    height: 19,
-    top: 0,
-  },
-  "& .twap-token-display-usd": {
-    fontSize: 13,
-  },
-});
-
 const Row = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
   return (
     <StyledDetailRow className="twap-order-expanded-row">
@@ -124,11 +81,6 @@ export const StyledDetailRowChildren = styled(TwapStyles.StyledRowFlex)({
     width: 21,
     height: 21,
   },
-});
-
-const StyledTitle = styled(StyledText)({
-  textTransform: "capitalize",
-  fontSize: 14,
 });
 
 export const StyledDetailRow = styled(TwapStyles.StyledRowFlex)({
@@ -182,28 +134,6 @@ export const StyledCancelOrderButton = styled(Components.Base.Button)({
   marginRight: "auto",
   fontWeight: 300,
   marginBottom: 20,
-});
-
-const StyledMainProgressBar = styled(LinearProgress)({
-  height: 21,
-  borderRadius: 2,
-  width: "100%",
-  "& .MuiLinearProgress-bar": {
-    borderRadius: "4px",
-  },
-});
-
-const StyledColoredContainer = styled(TwapStyles.StyledColumnFlex)({
-  width: "100%",
-  padding: 12,
-  borderRadius: 6,
-  gap: 15,
-  "& .more-btn": {
-    marginTop: 10,
-  },
-  "& .label": {
-    fontSize: 14,
-  },
 });
 
 export const StyledContainer = styled(TwapStyles.StyledColumnFlex)({
