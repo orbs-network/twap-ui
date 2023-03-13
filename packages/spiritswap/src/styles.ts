@@ -364,5 +364,8 @@ export const configureStyles = () => {
         fontFamily: "inherit",
       },
     },
+    ".twap-market-price-section": {
+      width: "100%",
+    },
   };
 };
