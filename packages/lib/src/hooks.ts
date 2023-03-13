@@ -414,7 +414,7 @@ const useGasPriceQuery = () => {
 const useTokenList = () => {
   const twapTokens = useTwapContext().tokenList;
   const ordersHistoryTokens = useOrdersContext().tokenList;
-  const tokens = twapTokens || ordersHistoryTokens;
+  const tokens = twapTokens && _.size(twapTokens) > 0 ? twapTokens : ordersHistoryTokens;
   const lib = useTwapStore((store) => store.lib);
 
   const tokensLength = _.size(tokens);
