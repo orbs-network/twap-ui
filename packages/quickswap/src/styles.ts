@@ -758,6 +758,9 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       ".twap-order-expanded-row": {
         ".twap-label, .twap-order-expanded-right": {
           fontSize: 14,
+          p: {
+            maxWidth: 130,
+          },
         },
         ".twap-token-logo": {
           width: 25,
