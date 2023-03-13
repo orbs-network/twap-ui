@@ -10,12 +10,12 @@ export const useGetProvider = (getProvider: () => any, account?: string) => {
 };
 
 export const parseToken = (rawToken: any, getTokenImageUrl: (symbol: string) => string): TokenData | undefined => {
-  if (!rawToken.address || !rawToken.symbol) {
+  if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
 
     return;
   }
-  if (isNativeAddress(rawToken.address)) {
+  if (!rawToken.address || isNativeAddress(rawToken.address)) {
     return config.nativeToken;
   }
 
