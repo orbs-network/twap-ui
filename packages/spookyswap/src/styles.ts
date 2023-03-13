@@ -580,6 +580,10 @@ export const configureStyles = (darkMode?: boolean) => {
         height: 12,
       },
     },
+    ".MuiBackdrop-root": {
+      backdropFilter: "blur(15px)",
+      background: "rgba(0,0,0,.4)!important",
+    },
     "@media(max-width:450px)": {
       ".twap-market-price": {
         display: "flex",
