@@ -1,5 +1,5 @@
 import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
-import { useTwapContext } from "./context";
+import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -411,27 +411,28 @@ const useGasPriceQuery = () => {
   return { isLoading, maxFeePerGas: BN.max(data?.instant || 0, maxFeePerGas || 0, priorityFeePerGas || 0), priorityFeePerGas: BN.max(data?.low || 0, priorityFeePerGas || 0) };
 };
 
-const defaultFetcher = (chainId: number, token: TokenData) => {
-  return Paraswap.priceUsd(chainId, token);
-};
-
-export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenData) => Promise<BN> = defaultFetcher) => {
-  const tokenList = useTwapStore((store) => store.tokensList);
+export const useOrdersHistoryQuery = () => {
+  const tokenList = useOrdersContext().tokenList;
 
   const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
   const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
   const lib = useTwapStore((state) => state.lib);
+  const getUsdValues = usePrepareUSDValues();
 
-  const fetchUsdValues = (token: TokenData) => {
-    return fetcher(lib!.config.chainId, token);
-  };
-  const prepareOrderUSDValues = usePrepareOrderUSDValues(fetchUsdValues);
   const query = useQuery<OrdersData>(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
-      const rawOrders = (await lib!.getAllOrders()).filter((o) => eqIgnoreCase(o.ask.exchange, lib!.config.exchangeAddress));
-      const tokenWithUsdByAddress = await prepareOrderUSDValues(tokenList, rawOrders);
-      const parsedOrders = rawOrders.map((o: Order) => parseOrderUi(lib!, tokenWithUsdByAddress, o));
+      const orders = await lib!.getAllOrders();
+      const tokens = _.uniqBy(
+        _.concat(
+          _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.srcToken))!),
+          _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.dstToken))!)
+        ),
+        (t) => t.address
+      );
+      const tokensWithUsd = await getUsdValues(tokens);
+
+      const parsedOrders = orders.map((o: Order) => parseOrderUi(lib!, tokensWithUsd, o));
       return _.chain(parsedOrders)
         .orderBy((o: OrderUI) => o.order.ask.deadline, "desc")
         .groupBy((o: OrderUI) => o.ui.status)
@@ -445,33 +446,32 @@ export const useOrdersHistoryQuery = (fetcher: (chainId: number, token: TokenDat
       },
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,
+      retry: 5,
     }
   );
 
   return { ...query, orders: query.data || {}, isLoading: (query.isLoading && query.fetchStatus !== "idle") || waitingForNewOrder };
 };
 
-export const usePrepareOrderUSDValues = (fetchUsd: (token: TokenData) => Promise<BN>) => {
+const defaultFetchUsd = (chainId: number, token: TokenData) => Paraswap.priceUsd(chainId, token);
+export const usePrepareUSDValues = (fetchUsd: (chainId: number, token: TokenData) => Promise<BN> = defaultFetchUsd) => {
   const client = useQueryClient();
+  const lib = useTwapStore((state) => state.lib);
 
-  const { mutateAsync: fetchUsdMutation } = useMutation((token: TokenData) => fetchUsd(token), {
+  const { mutateAsync: fetchUsdMutation } = useMutation((token: TokenData) => fetchUsd(lib!.config.chainId, token), {
     onError: (error: any, token) => console.debug({ error, token }),
   });
 
-  return async (allTokens: TokenData[] = [], rawOrders: Order[]) => {
-    const relevantTokens = allTokens.filter((t) => rawOrders.find((o) => eqIgnoreCase(t.address, o.ask.srcToken) || eqIgnoreCase(t.address, o.ask.dstToken)));
-    const uniqueRelevantTokens = _.uniqBy(relevantTokens, "address");
-    const usdValues = await Promise.all(
-      uniqueRelevantTokens.map((token) => {
-        return client.ensureQueryData({
-          queryKey: [QueryKeys.GET_USD_VALUE, token.address],
-          queryFn: () => fetchUsdMutation(token),
-        });
-      })
-    );
-    return _.mapKeys(
-      uniqueRelevantTokens.map((t, i) => ({ token: t, usd: usdValues[i] || BN(0) })),
-      (t) => Web3.utils.toChecksumAddress(t.token.address)
+  return async (tokens: TokenData[] = []) => {
+    return Promise.all(
+      tokens.map((token) =>
+        client
+          .ensureQueryData({
+            queryKey: [QueryKeys.GET_USD_VALUE, token.address],
+            queryFn: () => fetchUsdMutation(token),
+          })
+          .then((usd) => _.merge({}, token, { usd }))
+      )
     );
   };
 };

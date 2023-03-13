@@ -1,5 +1,4 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { usePrepareOrderUSDValues } from "../src/hooks";
 import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook } from "@testing-library/react";
 import { Configs, TWAPLib } from "@orbs-network/twap";
@@ -10,6 +9,7 @@ import BN from "bignumber.js";
 import _ from "lodash";
 import { QueryClient } from "@tanstack/react-query";
 import React, { ReactNode } from "react";
+import { usePrepareUSDValues } from "../src/hooks";
 
 const createQueryProvider = () => {
   const queryClient = new QueryClient();
@@ -161,16 +161,22 @@ describe("store", () => {
     });
 
     it("prepare orders tokens", async () => {
-      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareOrderUSDValues(async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7))), { wrapper: createQueryProvider() });
+      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareUSDValues(async (chain, t) => (t === tokens[0] ? BN(123.5) : BN(456.7))), {
+        wrapper: createQueryProvider(),
+      });
 
       const result = await prepareOrdersTokensWithUsd.result.current(tokens, [mockOrder, mockOrder]);
-      expect(_.keys(result)).length(2);
-      expect(result[tokens[0].address].usd).bignumber.eq(123.5);
-      expect(result[tokens[1].address].usd).bignumber.eq(456.7);
+      expect(result).length(2);
+      expect(result[0].address).eq(tokens[0].address);
+      expect(result[0].usd).bignumber.eq(123.5);
+      expect(result[1].address).eq(tokens[1].address);
+      expect(result[1].usd).bignumber.eq(456.7);
     });
 
     it("parseOrderUi", async () => {
-      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareOrderUSDValues(async (t) => (t === tokens[0] ? BN(123.456) : BN(456.789))), { wrapper: createQueryProvider() });
+      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareUSDValues(async (chain, t) => (t === tokens[0] ? BN(123.456) : BN(456.789))), {
+        wrapper: createQueryProvider(),
+      });
 
       const parsed = await parseOrderUi(lib, await prepareOrdersTokensWithUsd.result.current(tokens, [mockOrder, mockOrder, mockOrder]), mockOrder);
       expect(parsed.order).deep.eq(mockOrder);

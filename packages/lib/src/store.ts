@@ -4,10 +4,9 @@ import moment from "moment";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import _ from "lodash";
-import { parsebn } from "@defi.org/web3-candies";
+import { eqIgnoreCase, parsebn } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
 import { analytics } from "./analytics";
-import Web3 from "web3";
 import { MIN_NATIVE_BALANCE } from "./consts";
 
 export enum TimeResolution {
@@ -301,9 +300,13 @@ export const useTwapStore = create(
   }))
 );
 
-export const parseOrderUi = (lib: TWAPLib, usdValues: { [address: string]: { token: TokenData; usd: BN } }, o: Order) => {
-  const { token: srcToken, usd: srcUsd } = usdValues[Web3.utils.toChecksumAddress(o.ask.srcToken)] || { token: undefined, usd: BN(0) };
-  const { token: dstToken, usd: dstUsd } = usdValues[Web3.utils.toChecksumAddress(o.ask.dstToken)] || { token: undefined, usd: BN(0) };
+export const parseOrderUi = (lib: TWAPLib, tokensWithUsd: (TokenData & { usd: BN })[], o: Order) => {
+  const srcToken = tokensWithUsd.find((t) => eqIgnoreCase(o.ask.srcToken, t.address));
+  const dstToken = tokensWithUsd.find((t) => eqIgnoreCase(o.ask.dstToken, t.address));
+  const srcUsd = srcToken?.usd;
+  const dstUsd = dstToken?.usd;
+
+  if (!srcToken || !dstToken || !srcUsd || !dstUsd) throw new Error(`parseOrderUi srcToken:${srcToken} dstToken:${dstToken}`);
 
   const isMarketOrder = lib.isMarketOrder(o);
   const dstPriceFor1Src = lib.dstPriceFor1Src(srcToken, dstToken, srcUsd, dstUsd, o.ask.srcBidAmount, o.ask.dstMinAmount);

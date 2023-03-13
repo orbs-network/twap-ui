@@ -27,15 +27,15 @@ const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
   useDstBalance();
   const lib = useTwapStore((store) => store.lib);
   const setTokensList = useTwapStore((store) => store.setTokensList);
-  const tokensListLength = _.size(props.tokensList);
+  const tokensListLength = _.size(props.tokenList);
 
   useEffect(() => {
     analytics.onTwapPageView();
   }, []);
 
   useEffect(() => {
-    if (!lib || !props.tokensList || !tokensListLength) return;
-    setTokensList(props.tokensList);
+    if (!lib || !props.tokenList || !tokensListLength) return;
+    setTokensList(props.tokenList);
   }, [tokensListLength, lib]);
 
   // init web3 every time the provider changes
@@ -58,11 +58,11 @@ const OrdersAdapterQueryClient = (props: OrderLibProps) => {
   const translations = { ...defaultTranlations, ...props.translations };
   const lib = useTwapStore((store) => store.lib);
   const setTokensList = useTwapStore((store) => store.setTokensList);
-  const tokensListLength = _.size(props.tokensList);
+  const tokensListLength = _.size(props.tokenList);
 
   useEffect(() => {
-    if (!lib || !props.tokensList || !tokensListLength) return;
-    setTokensList(props.tokensList);
+    if (!lib || !props.tokenList || !tokensListLength) return;
+    setTokensList(props.tokenList);
   }, [tokensListLength, lib]);
 
   return <OrdersContext.Provider value={{ ...props, translations }}>{props.children}</OrdersContext.Provider>;

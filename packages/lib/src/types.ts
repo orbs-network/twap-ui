@@ -1,4 +1,4 @@
-import { BN } from "@defi.org/web3-candies";
+import BN from "bignumber.js";
 import { Config, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import { Moment } from "moment";
 import { ReactNode } from "react";
@@ -133,7 +133,7 @@ interface LibProps {
   translations: Translations;
   priorityFeePerGas?: string;
   maxFeePerGas?: string;
-  tokensList?: TokenData[];
+  tokenList?: TokenData[];
 }
 
 export type StoreOverride = Partial<State>;

@@ -5,13 +5,12 @@ import { isNativeAddress, Configs } from "@orbs-network/twap";
 
 export const parseToken = (rawToken: any): TokenData | undefined => {
   const { config } = getConfig();
-  if (!rawToken.address || !rawToken.symbol) {
+  if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
-
     return;
   }
 
-  if (isNativeAddress(rawToken.address)) {
+  if (!rawToken.address || isNativeAddress(rawToken.address)) {
     return config.nativeToken;
   }
 
