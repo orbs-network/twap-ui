@@ -299,8 +299,8 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       },
     },
     ".twap-time-selector-list": {
-      background: styles.containerBackground,
-      border: `1px solid ${styles.borderColor || "transparent"}`,
+      background: styles.selectedTokenBackground ? styles.cardBackground : styles.containerBackground,
+      border: `1px solid ${styles.selectedTokenTextColor}`,
       right: 0,
     },
     ".twap-card": {
@@ -374,7 +374,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         width: 46,
         height: 24,
         borderRadius: 20,
-        border: "1px solid #636679",
+        border: `1px solid ${styles.selectedTokenBorderColor ? styles.textColor : "#D9D9D9"}`,
         background: styles.wrapperBackground,
         opacity: "1!important",
       },
@@ -398,6 +398,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       ".twap-market-price-section": {
         p: {
           fontSize: "13px!important",
+          lineHeight: 2,
         },
         ".twap-small-label p": {
           fontSize: "14px!important",
@@ -479,7 +480,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       },
       "& .MuiLinearProgress-bar": {
         height: "8px!important",
-        background: "#1A5366",
+        background: styles.selectedTokenBorderColor ? "#4387F9" : "#1A5366",
       },
     },
     ".twap-chunks-size": {
@@ -512,11 +513,13 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         minHeight: 38,
         maxHeight: 38,
         alignItems: "center",
+
         "& .twap-orders-header-tabs-tab": {
           display: "flex",
           alignItems: "center",
           lineHeight: "normal",
-          transition: ".3s all linear",
+          borderRadius: 100,
+          transition: ".15s all linear",
         },
         "& .MuiTabs-indicator": {
           display: "none",
@@ -525,7 +528,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
           width: 94,
           height: 38,
           borderRadius: 100,
-          background: styles.selectedTokenBorderColor ? styles.selectedTokenBackground : "#3E4252",
+          background: "#3E4252",
         },
         "& .MuiButtonBase-root": {
           color: styles.selectedTokenBorderColor ? styles.textColor : styles.orderHistoryTabColor,
@@ -535,9 +538,8 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
           minHeight: 38,
           maxHeight: 38,
           borderRadius: 100,
-          background: styles.selectedTokenBorderColor ? styles.selectedTokenBackground : "#3E4252",
-          color: styles.textColor,
-          border: styles.selectedTokenBorderColor ? `1px solid ${styles.selectedTokenBorderColor}` : "none",
+          background: "#3E4252",
+          color: styles.orderHistoryTabColor,
         },
         "& .MuiTabs-flexContainer": {
           height: 38,
@@ -564,7 +566,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         textIndent: 0,
         outline: "1px solid transparent",
         borderRadius: "0.375rem",
-        transition: "0.2s all",
+        transition: "0.15s all",
         height: 35,
         color: styles.textColor,
         paddingRight: 0,
@@ -628,12 +630,12 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       paddingTop: 30,
       color: styles.textColor,
       "& a": {
-        color: "white",
+        color: styles.textColor,
         fontWeight: 500,
         textDecoration: "underline",
       },
       "& .MuiIconButton-root": {
-        color: "white",
+        color: styles.textColor,
       },
       "& *": {
         fontFamily: "inherit",
@@ -671,9 +673,9 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       paddingRight: "0!important",
     },
     ".twap-token-panel .twap-input input": {
-      fontSize: "18px!important",
+      fontSize: "24px!important",
       color: `#696c80!important`,
-      fontWeight: "600",
+      fontWeight: "400!important",
     },
     ".twap-balance": {},
     ".adapter-wrapper": {
@@ -772,8 +774,12 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
     },
     ".twap-token-filled": {},
     ".twap-orders-wrapper": {
+      fontFamily: 'Inter',
       maxWidth: "100%!important",
       borderRadius: 10,
+      'p, span': {
+        fontFamily: "Inter",
+      },
     },
     "p .twap-balance-title": {
       fontSize: 14,
