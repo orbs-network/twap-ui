@@ -49,7 +49,6 @@ export const lightModeStylesConfig: StylesConfig = {
 };
 export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
   const styles = isDarkMode ? darkModeStylesConfig : lightModeStylesConfig;
-  const isLightMode = !!styles.selectedTokenBorderColor
   const cardBackground = isProMode ? styles.selectedTokenBackground : styles.cardBackground;
   return {
     ".twap-trade-size": {
@@ -184,7 +183,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         fill: `${styles.textColor}!important`,
         stroke: `${styles.textColor}!important`,
       },
-      border: `1px solid ${isLightMode ? styles.selectedTokenBorderColor : "none"}`,
+      border: `1px solid ${isDarkMode ? "none" : styles.selectedTokenBorderColor}`,
       background: `${styles.selectedTokenBackground}!important`,
       ".twap-token-name": {
         fontWeight: "500!important",
@@ -222,7 +221,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       display: "flex",
       paddingLeft: 12,
       justifyContent: "center",
-      backgroundImage: isLightMode ? styles.selectedTokenBackground : "linear-gradient(105deg,#448aff 3%,#004ce6)!important",
+      backgroundImage: isDarkMode ? "linear-gradient(105deg,#448aff 3%,#004ce6)!important" : styles.selectedTokenBackground,
       p: {
         fontSize: 16,
       },
@@ -367,25 +366,25 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         padding: "0!important",
         width: 16,
         height: 16,
-        background: isLightMode ? styles.selectedTokenBorderColor : "#D9D9D9",
+        background: isDarkMode ? "#D9D9D9" : styles.selectedTokenBorderColor,
       },
       "& .MuiSwitch-track": {
         padding: "0!important",
         width: 46,
         height: 24,
         borderRadius: 20,
-        border: `1px solid ${isLightMode ? styles.textColor : "#D9D9D9"}`,
+        border: `1px solid ${isDarkMode ? "#D9D9D9" : styles.textColor}`,
         background: styles.wrapperBackground,
         opacity: "1!important",
       },
       "& .Mui-checked+.MuiSwitch-track": {
         padding: "0!important",
-        backgroundColor: `${isLightMode ? styles.wrapperBackground : styles.containerBackground}!important`,
+        backgroundColor: `${isDarkMode ? styles.containerBackground : styles.wrapperBackground}!important`,
         opacity: "1!important",
       },
       "& .Mui-checked .MuiSwitch-thumb": {
         padding: "0!important",
-        background: isLightMode ? styles.selectedTokenBorderColor : "#D9D9D9",
+        background: isDarkMode ? "#D9D9D9" : styles.selectedTokenBorderColor,
       },
       "& .MuiSwitch-switchBase": {
         top: 11,
@@ -479,7 +478,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       },
       "& .MuiLinearProgress-bar": {
         height: "8px!important",
-        background: isLightMode ? "#4387F9" : "#1A5366",
+        background: isDarkMode ? "#1A5366" : "#4387F9",
       },
     },
     ".twap-chunks-size": {
@@ -530,7 +529,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
           background: "#3E4252",
         },
         "& .MuiButtonBase-root": {
-          color: isLightMode ? styles.textColor : styles.orderHistoryTabColor,
+          color: isDarkMode ? styles.orderHistoryTabColor : styles.textColor,
           fontWeight: 400,
         },
         "& .Mui-selected": {
@@ -598,7 +597,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       fontFamily: "Inter",
       padding: "40px 20px 20px 20px",
       boxSizing: "border-box",
-      background: isLightMode ? styles.wrapperBackground : styles.containerBackground,
+      background: isDarkMode ? styles.containerBackground : styles.wrapperBackground,
 
       ".twap-orders-summary-token-display": {
         overflow: "hidden",
@@ -650,7 +649,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       height: 36,
       top: -24,
       background: styles.wrapperBackground,
-      border: isLightMode ? `1px solid ${styles.selectedTokenBorderColor}` : `3px solid ${styles.cardBackground}`,
+      border: isDarkMode ? `3px solid ${styles.cardBackground}` : `1px solid ${styles.selectedTokenBorderColor}`,
       borderRadius: 8,
       button: {
         padding: "0!important",
