@@ -38,7 +38,7 @@ export const lightModeStylesConfig: StylesConfig = {
   orderHistoryTabColor: "white",
   orderHistorySelectedTabColor: "rgb(96, 230, 197)",
   buttonBackground: "#448aff",
-  buttonColor: "white",
+  buttonColor: "#656565",
   disabledButtonBackground: "#12131a",
   disabledButtonColor: "#c7cad9",
   selectTokenBackground: "linear-gradient(180deg,#448aff,#004ce6)",
@@ -529,7 +529,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
           background: "#3E4252",
         },
         "& .MuiButtonBase-root": {
-          color: isDarkMode ? styles.orderHistoryTabColor : styles.textColor,
+          color: styles.buttonColor,
           fontWeight: 400,
         },
         "& .Mui-selected": {
