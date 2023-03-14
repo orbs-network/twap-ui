@@ -165,8 +165,8 @@ describe("store", () => {
         wrapper: createQueryProvider(),
       });
 
-      const result = await prepareOrdersTokensWithUsd.result.current(tokens, [mockOrder, mockOrder]);
-      expect(result).length(2);
+      const result = await prepareOrdersTokensWithUsd.result.current(tokens);
+      expect(result).length(tokens.length);
       expect(result[0].address).eq(tokens[0].address);
       expect(result[0].usd).bignumber.eq(123.5);
       expect(result[1].address).eq(tokens[1].address);
@@ -178,7 +178,7 @@ describe("store", () => {
         wrapper: createQueryProvider(),
       });
 
-      const parsed = await parseOrderUi(lib, await prepareOrdersTokensWithUsd.result.current(tokens, [mockOrder, mockOrder, mockOrder]), mockOrder);
+      const parsed = parseOrderUi(lib, await prepareOrdersTokensWithUsd.result.current(tokens), mockOrder);
       expect(parsed.order).deep.eq(mockOrder);
       expect(parsed.ui.srcUsdUi).eq("123.456");
       expect(parsed.ui.dstUsdUi).eq("456.789");
