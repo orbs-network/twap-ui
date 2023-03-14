@@ -25,7 +25,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       provider={provider}
       account={props.account}
       connectedChainId={props.connectedChainId}
-      tokensList={parsedTokens}
+      tokenList={parsedTokens}
     >
       <GlobalStyles styles={globalStyles} />
 

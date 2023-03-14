@@ -33,7 +33,7 @@ const TWAP = (props: QuickSwapTWAPProps) => {
         translations={translations as Translations}
         provider={props.provider}
         account={props.account}
-        tokensList={parsedTokens}
+        tokenList={parsedTokens}
       >
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>

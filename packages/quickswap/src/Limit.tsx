@@ -34,7 +34,7 @@ const Limit = (props: QuickSwapTWAPProps) => {
         translations={translations as Translations}
         provider={props.provider}
         account={props.account}
-        tokensList={parsedTokens}
+        tokenList={parsedTokens}
         storeOverride={storeOverride}
       >
         <GlobalStyles styles={globalStyles as any} />
