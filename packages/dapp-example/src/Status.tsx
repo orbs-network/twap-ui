@@ -89,7 +89,6 @@ function useTakerXStatus(dapp?: Dapp) {
       const backupAwsStatusResponse = await fetch(`https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status`).then((r) => r.json());
       const backupAwsStatusChain = _.find(backupAwsStatusResponse, (s) => s.config?.chainId === dapp?.config.chainId);
       if (!backupAwsStatusChain) return null;
-      console.log(backupAwsStatusChain)
       const takers = [{
           status: BN(backupAwsStatusChain.balance0).gt(0.1),
           balance: backupAwsStatusChain.balance0,
@@ -97,7 +96,7 @@ function useTakerXStatus(dapp?: Dapp) {
           status: BN(backupAwsStatusChain.balance1).gt(0.1),
           balance: backupAwsStatusChain.balance1,
         }]
-      return _.sortBy(_.map(takers, (taker) => Number(taker.balance).toFixed(1)))
+      return _.sortBy(_.map(takers, (taker) => BN(taker.balance).toFixed(1)))
     },
     { enabled: !!dapp, refetchInterval: 60_000 }
   ).data;
