@@ -89,10 +89,13 @@ function useTakerXStatus(dapp?: Dapp) {
       const backupAwsStatusResponse = await fetch(`https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status`).then((r) => r.json());
       const backupAwsStatusChain = _.find(backupAwsStatusResponse, (s) => s.config?.chainId === dapp?.config.chainId);
       if (!backupAwsStatusChain) return null;
-      return {
-        status: BN(backupAwsStatusChain.balance).gt(0.1),
-        balance: backupAwsStatusChain.balance,
-      };
+      return [{
+        status: BN(backupAwsStatusChain.balance0).gt(0.1),
+        balance: backupAwsStatusChain.balance0,
+      }, {
+          status: BN(backupAwsStatusChain.balance1).gt(0.1),
+          balance: backupAwsStatusChain.balance1,
+      }];
     },
     { enabled: !!dapp, refetchInterval: 60_000 }
   ).data;
@@ -114,7 +117,6 @@ export function Status() {
   const status = useBackupTakersStatus(dapp);
   const takerx = useTakerXStatus(dapp);
   const orbsTakers = useOrbsL3TakersStatus(dapp);
-
   return (
     <>
       {dapp && (
@@ -195,10 +197,12 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle>
               <a href={"https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status"} target={"_blank"}>
-                {!takerx ? "" : takerx?.status ? "✅" : "⚠️⚠️⚠️"} Backup Taker X (1):
+                {!takerx ? "" : takerx?.filter(taker => taker.status).length ? "✅" : "⚠️⚠️⚠️"} Backup Taker X (2):
               </a>
             </StyledStatusSectionTitle>
-            <StyledStatusSectionText>gas: {takerx?.balance}</StyledStatusSectionText>
+            <StyledStatusSectionText>gas: {' '}
+              {_.sortBy(_.map(takerx, (taker) => Number(taker.balance).toFixed(1))).join(' / ')}
+            </StyledStatusSectionText>
           </StyledStatusSection>
         </StyledStatus>
       )}
