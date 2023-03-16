@@ -98,7 +98,7 @@ function useTakerXStatus(dapp?: Dapp) {
         }]
       return {
         balances: _.sortBy(_.map(takers, (taker) => taker.balance)),
-        status: !takers.filter((taker) => !taker.status).length,
+        status: _.every(takers, t=>t.status)
       }
     },
     { enabled: !!dapp, refetchInterval: 60_000 }
