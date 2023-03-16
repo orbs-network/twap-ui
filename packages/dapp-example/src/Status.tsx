@@ -91,12 +91,12 @@ function useTakerXStatus(dapp?: Dapp) {
       if (!backupAwsStatusChain) return null;
       const takers = [{
           status: BN(backupAwsStatusChain.balance0).gt(0.1),
-          balance: backupAwsStatusChain.balance0,
+          balance: BN(backupAwsStatusChain.balance0).toFixed(1),
         }, {
           status: BN(backupAwsStatusChain.balance1).gt(0.1),
-          balance: backupAwsStatusChain.balance1,
+          balance: BN(backupAwsStatusChain.balance1).toFixed(1),
         }]
-      return _.sortBy(_.map(takers, (taker) => BN(taker.balance).toFixed(1)))
+      return _.sortBy(_.map(takers, (taker) => taker.balance))
     },
     { enabled: !!dapp, refetchInterval: 60_000 }
   ).data;
