@@ -96,7 +96,10 @@ function useTakerXStatus(dapp?: Dapp) {
           status: BN(backupAwsStatusChain.balance1).gt(0.1),
           balance: BN(backupAwsStatusChain.balance1).toFixed(1),
         }]
-      return _.sortBy(_.map(takers, (taker) => taker.balance))
+      return {
+        balances: _.sortBy(_.map(takers, (taker) => taker.balance)),
+        status: !takers.filter((taker) => !taker.status).length,
+      }
     },
     { enabled: !!dapp, refetchInterval: 60_000 }
   ).data;
@@ -198,11 +201,11 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle>
               <a href={"https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status"} target={"_blank"}>
-                {!takerx ? "" : takerx?.length ? "✅" : "⚠️⚠️⚠️"} Backup Taker X (2):
+                {!takerx ? "" : takerx?.status ? "✅" : "⚠️⚠️⚠️"} Backup Taker X (2):
               </a>
             </StyledStatusSectionTitle>
             <StyledStatusSectionText>gas: {' '}
-              {takerx?.join(' / ')}
+              {takerx?.balances.join(' / ')}
             </StyledStatusSectionText>
           </StyledStatusSection>
         </StyledStatus>
