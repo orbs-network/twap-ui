@@ -11,14 +11,14 @@ export const globalStyle = {
   },
 };
 
-export const StyledLayoutSpiritswap = styled(Box)({
-  background: "rgb(16, 23, 38)",
+export const StyledLayoutSpiritswap = styled(Box)(({ mode }: { mode: string }) => ({
+  background: mode === "dark" ? "rgb(16, 23, 38)" : "#FBFBFB",
   border: `1px solid rgb(55, 65, 81)`,
   borderRadius: 10,
   padding: "0.5rem",
   fontFamily: "Jost",
   maxWidth: 500,
-});
+}));
 
 export const StyledLayoutQuickswap = styled(Box)(({ mode }: { mode: string }) => ({
   background: mode === "dark" ? "#1b1e29" : "#FBFBFB",

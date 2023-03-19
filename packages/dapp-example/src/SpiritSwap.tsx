@@ -1,6 +1,6 @@
 import { StyledLayoutSpiritswap, StyledModalContent } from "./styles";
 import { Orders, TWAP, SpiritSwapTWAPProps, SpiritSwapOrdersProps } from "@orbs-network/twap-ui-spiritswap";
-import { useConnectWallet, useGetTokensFromViaProtocol } from "./hooks";
+import { useConnectWallet, useGetTokensFromViaProtocol, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList } from "./Components";
@@ -52,6 +52,7 @@ const DappComponent = () => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
+  const { isDarkTheme } = useTheme();
 
   const getTokenImageUrl = (symbol: string) => dappTokens?.find((t) => t.symbol === symbol)?.logoUrl;
 
@@ -66,15 +67,16 @@ const DappComponent = () => {
     onSrcTokenSelected: (token: any) => console.log(token),
     onDstTokenSelected: (token: any) => console.log(token),
     TokenSelectModal,
+    isDarkTheme,
   };
-  const ordersProps: SpiritSwapOrdersProps = { account, getTokenImageUrl, dappTokens, getProvider: () => library };
+  const ordersProps: SpiritSwapOrdersProps = { account, getTokenImageUrl, dappTokens, getProvider: () => library, isDarkTheme };
 
   return (
     <DappLayout name={config.partner}>
-      <StyledLayoutSpiritswap>
+      <StyledLayoutSpiritswap mode={isDarkTheme ? "dark" : "light"}>
         <TWAP {...twapProps} />
       </StyledLayoutSpiritswap>
-      <StyledLayoutSpiritswap>
+      <StyledLayoutSpiritswap mode={isDarkTheme ? "dark" : "light"}>
         <Orders {...ordersProps} />
       </StyledLayoutSpiritswap>
     </DappLayout>
@@ -85,7 +87,6 @@ const dapp: Dapp = {
   Component: DappComponent,
   logo,
   config,
-  theme: "dark",
 };
 
 export default dapp;

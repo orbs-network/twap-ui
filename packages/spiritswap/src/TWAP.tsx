@@ -10,7 +10,7 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
 
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const provider = useGetProvider(props.getProvider, props.account);
-  const globalStyles = useGlobalStyles();
+  const globalStyles = useGlobalStyles(props.isDarkTheme);
 
   const connect = useCallback(() => {
     props.connect();
