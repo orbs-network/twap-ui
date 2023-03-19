@@ -24,8 +24,31 @@ export const darkModeStylesConfig: StylesConfig = {
   selectedTokenTextColor: "white",
 };
 
-export const configureStyles = () => {
-  const styles = darkModeStylesConfig;
+export const lightModeStylesConfig: StylesConfig = {
+  iconsColor: "#4fab94",
+  textColor: "#656565",
+  tooltipBackground: "rgba(32, 32, 34, 0.9)",
+  tooltipTextColor: "#4fab94",
+  spinnerColor: "white",
+  containerBackground: "#bfbdbd",
+  cardBackground: "#F8F7F7",
+  progressBarColor: "#4fab94",
+  progressBarTrackColor: "#bfbdbd",
+  orderHistorySelectedTabBackground: "rgb(29, 147, 132)",
+  orderHistoryTabColor: "#656565",
+  orderHistorySelectedTabColor: "rgb(96, 230, 197)",
+  buttonBackground: "rgb(29, 147, 132)",
+  buttonColor: "white",
+  disabledButtonBackground: "rgb(29, 147, 132)",
+  disabledButtonColor: "white",
+  selectTokenBackground: "transparent",
+  selectTokenTextColor: "white",
+  selectedTokenBackground: "transparent",
+  selectedTokenTextColor: "white",
+};
+
+export const configureStyles = (isDarkMode?: boolean) => {
+  const styles = isDarkMode ? darkModeStylesConfig : lightModeStylesConfig;
   return {
     ".twap-warning": {
       fontSize: 14,
@@ -62,7 +85,7 @@ export const configureStyles = () => {
     },
     ".twap-limit-price-input": {
       width: "100%",
-      background: "#0D1321",
+      background: isDarkMode ? "#0D1321" : '#e6e6e6',
       padding: 10,
       borderRadius: 10,
       ".twap-input": {
@@ -76,15 +99,16 @@ export const configureStyles = () => {
     ".twap-change-tokens-order": {},
     ".twap-percent-selector": {
       button: {
+        color: 'white',
         height: 22,
         width: "25%",
         border: "unset",
         borderRadius: 4,
         cursor: "pointer",
         transition: "0.2s all",
-        background: "rgb(55, 65, 81)",
+        background: isDarkMode ? "rgb(55, 65, 81)" : '#bfbdbd',
         "&:hover": {
-          background: "rgba(100, 221, 192, 0.15)",
+          background: isDarkMode ?  "rgba(31, 166, 149, .15)" : "#1fa695",
           color: "rgb(96, 230, 197)",
         },
       },
@@ -92,7 +116,7 @@ export const configureStyles = () => {
 
     ".twap-market-price": {
       borderRadius: "0px 0px 10px 10px",
-      background: "#0D1321",
+      background: isDarkMode ? "#0D1321" : '#e6e6e6',
       padding: "5px 10px 5px 10px",
       "& .title": {
         fontSize: 13,
@@ -142,7 +166,7 @@ export const configureStyles = () => {
     },
     ".twap-time-selector": {
       ".twap-time-selector-list": {
-        border: "1px solid rgb(55, 65, 81)",
+        background: isDarkMode ? "rgb(55, 65, 81)" : '#bfbdbd',
         right: -13,
         ".twap-time-selector-list-item": {
           "&:hover": {
@@ -189,6 +213,12 @@ export const configureStyles = () => {
       opacity: 1,
     },
     ".twap-slider": {
+      '& .MuiSlider-rail': {
+        color: '#8f8f8f',
+      },
+        '& .MuiSlider-track': {
+        color: '#bfbdbd',
+      },
       "& .MuiSlider-valueLabel": {
         background: styles.tooltipBackground,
       },
@@ -249,7 +279,10 @@ export const configureStyles = () => {
       },
     },
     ".twap-order": {
-      border: "1px solid rgb(55, 65, 81)",
+      'p, span, svg, div': {
+        color: `${styles.textColor}!important`,
+      },
+      background: isDarkMode ? "rgb(55, 65, 81)" : '#e6e6e6',
       ".twap-order-expanded-colored": {
         background: "rgb(60, 64, 78)",
       },
@@ -258,10 +291,13 @@ export const configureStyles = () => {
       },
       "& .twap-order-progress": {
         "&::after": {
+          top: 0,
+          height: 5,
           background: `${styles.progressBarTrackColor}!important`,
         },
       },
       "& .MuiLinearProgress-bar": {
+        height: 5,
         background: styles.progressBarColor,
       },
     },
@@ -273,7 +309,11 @@ export const configureStyles = () => {
       },
     },
     ".twap-orders-header": {
+      '.twap-label, .twap-odnp': {
+        color: styles.textColor
+      },
       "& .twap-orders-header-tabs": {
+        border: `1px solid ${isDarkMode ? 'inherit' : styles.containerBackground}`,
         "& .MuiTabs-indicator": {
           backgroundColor: styles.orderHistorySelectedTabBackground,
         },
@@ -346,7 +386,7 @@ export const configureStyles = () => {
       background: "rgba(0,0,0,.4)!important",
     },
     ".twap-modal-content": {
-      background: styles.containerBackground,
+      background: isDarkMode ? styles.containerBackground : '#FBFBFB',
       maxHeight: "85vh",
       overflow: "auto",
       borderRadius: "10px",
