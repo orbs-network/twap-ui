@@ -9,6 +9,7 @@ import { Status } from "@orbs-network/twap";
 import { useOrdersHistoryQuery } from "../hooks";
 import { useOrdersContext } from "../context";
 import { Components, Styles } from "..";
+import moment from 'moment/moment'
 
 function Orders() {
   const [selectedTab, setSelectedTab] = React.useState(0);
@@ -49,10 +50,13 @@ function Orders() {
       <StyledLists className="twap-orders-lists">
         {_.keys(Status).map((key: any, index: number) => {
           const selected = selectedTab === index;
+          const sortedOrders = _.sortBy(orders[key as any as Status], ({order}) => {
+            return moment(order.time)
+          }).reverse()
           return (
             <Fade in={selected} key={key}>
               <StyledOrderList style={{ display: selected ? "block" : "none" }}>
-                <OrdersList isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status]} />
+                <OrdersList isLoading={isLoading} status={key as any as Status} orders={sortedOrders} />
               </StyledOrderList>
             </Fade>
           );
