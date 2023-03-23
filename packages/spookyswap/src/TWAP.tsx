@@ -40,8 +40,8 @@ const TWAP = (props: SpookySwapTWAPProps) => {
           </Box>
           <LimitPrice />
           <TradeSize />
-          <MaxDuration />
           <TradeInterval />
+          <MaxDuration />
           <TwapStyles.StyledRowFlex className="twap-create-order-btn">
             <Components.SubmitButton />
           </TwapStyles.StyledRowFlex>
