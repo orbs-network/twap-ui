@@ -96,6 +96,10 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         textTransform: "uppercase" as const,
         cursor: "pointer",
       },
+      'button:hover': {
+        borderColor: 'rgb(255, 218, 0)',
+        background: 'rgb(255, 218, 0)',
+      },
     },
     ".twap-warning": {
       fontSize: 14,
@@ -215,6 +219,14 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         justifyContent: "start",
         width: "100%",
       },
+    },
+    '.twap-token-select:hover': {
+      background: isDarkMode ? '#5E5E5E!important' : '#C8BA9C!important',
+      transition: '.3s all linear',
+    },
+    '.twap-token-select:active': {
+      transform: 'scale(.9, .9)',
+      transition: '.3s all linear',
     },
     ".twap-token-not-selected": {
       display: "flex",
@@ -806,6 +818,10 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
           flexDirection: "column",
         },
       },
+    },
+    'button:active': {
+      transition: '.3s linear all',
+      transform: 'scale(.9, .9)',
     },
   };
 };
