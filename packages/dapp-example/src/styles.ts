@@ -21,7 +21,7 @@ export const StyledLayoutSpiritswap = styled(Box)(({ mode }: { mode: string }) =
 }));
 
 export const StyledLayoutQuickswap = styled(Box)(({ mode }: { mode: string }) => ({
-  background: mode === "dark" ? "#1b1e29" : "#FBFBFB",
+  background: mode === "dark" ? "#212121" : "#F9F4E7",
   padding: 20,
   borderRadius: 10,
 }));

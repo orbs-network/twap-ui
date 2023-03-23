@@ -10,6 +10,7 @@
     "build": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts build && cp build/index.html build/404.html"
   },
   "dependencies": {
+    "@orbs-network/twap-ui-apeswap": "^0.6.0",
     "@orbs-network/twap-ui-pangolin": "^0.6.0",
     "@orbs-network/twap-ui-spiritswap": "^0.6.0",
     "@orbs-network/twap-ui-spookyswap": "^0.6.0",
