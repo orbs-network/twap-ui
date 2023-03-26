@@ -49,7 +49,6 @@ function Orders() {
       <StyledLists className="twap-orders-lists">
         {_.keys(Status).map((key: any, index: number) => {
           const selected = selectedTab === index;
-          // const sortedOrders = _.sortBy(orders[key as any as Status], ({order}) => order.time, ['desc'])
           return (
             <Fade in={selected} key={key}>
               <StyledOrderList style={{ display: selected ? "block" : "none" }}>
