@@ -1,4 +1,4 @@
-import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { Order, Paraswap, Status, TokenData, TokensValidation, TWAPLib } from '@orbs-network/twap'
 import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -470,7 +470,15 @@ export const useOrdersHistoryQuery = () => {
     }
   );
 
-  return { ...query, orders: query.data || {}, isLoading: (query.isLoading && query.fetchStatus !== "idle") || waitingForNewOrder };
+  const sortedOrders:OrdersData = {}
+  _.keys(Status).map((key: any) => {
+    if(query.data) {
+      sortedOrders[key as any as Status] = query.data[key as any as Status]?.length
+      ? [..._.sortBy(query.data[key as any as Status], ({order}) => order.time).reverse()]
+        : []
+    }
+    })
+  return { ...query, orders: sortedOrders, isLoading: (query.isLoading && query.fetchStatus !== "idle") || waitingForNewOrder };
 };
 
 const defaultFetchUsd = (chainId: number, token: TokenData) => Paraswap.priceUsd(chainId, token);
