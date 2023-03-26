@@ -45,8 +45,8 @@ const TWAP = (props: QuickSwapTWAPProps) => {
             <TwapStyles.StyledColumnFlex gap={12}>
               <LimitPrice />
               <TradeSize />
-              <MaxDuration />
               <TradeInterval />
+              <MaxDuration />
               <Components.SubmitButton isMain />
             </TwapStyles.StyledColumnFlex>
             <OrderSummary>

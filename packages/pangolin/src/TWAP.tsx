@@ -47,8 +47,8 @@ const TWAP = (props: PangolinTWAPProps) => {
               <TokenPanel isSrcToken={false} />
               <LimitPrice />
               <TradeSize />
-              <MaxDuration />
               <TradeInterval />
+              <MaxDuration />
               <ShowOrderHistory />
               <Components.SubmitButton />
               <OrderSummary />

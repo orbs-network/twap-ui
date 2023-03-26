@@ -35,8 +35,8 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
           <TokenPanel />
           <LimitPrice />
           <TradeSize />
-          <MaxDuration />
           <TradeInterval />
+          <MaxDuration />
           <Components.SubmitButton />
           <OrderSummary />
           <Components.PoweredBy />
