@@ -85,7 +85,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
     },
     ".twap-limit-price-input": {
       width: "100%",
-      background: isDarkMode ? "#0D1321" : '#e6e6e6',
+      background: isDarkMode ? "#0D1321" : "#e6e6e6",
       padding: 10,
       borderRadius: 10,
       ".twap-input": {
@@ -99,16 +99,16 @@ export const configureStyles = (isDarkMode?: boolean) => {
     ".twap-change-tokens-order": {},
     ".twap-percent-selector": {
       button: {
-        color: 'white',
+        color: "white",
         height: 22,
         width: "25%",
         border: "unset",
         borderRadius: 4,
         cursor: "pointer",
         transition: "0.2s all",
-        background: isDarkMode ? "rgb(55, 65, 81)" : '#bfbdbd',
+        background: isDarkMode ? "rgb(55, 65, 81)" : "#bfbdbd",
         "&:hover": {
-          background: isDarkMode ?  "rgba(31, 166, 149, .15)" : "#1fa695",
+          background: isDarkMode ? "rgba(31, 166, 149, .15)" : "#1fa695",
           color: "rgb(96, 230, 197)",
         },
       },
@@ -116,7 +116,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
 
     ".twap-market-price": {
       borderRadius: "0px 0px 10px 10px",
-      background: isDarkMode ? "#0D1321" : '#e6e6e6',
+      background: isDarkMode ? "#0D1321" : "#e6e6e6",
       padding: "5px 10px 5px 10px",
       "& .title": {
         fontSize: 13,
@@ -166,7 +166,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
     },
     ".twap-time-selector": {
       ".twap-time-selector-list": {
-        background: isDarkMode ? "rgb(55, 65, 81)" : '#bfbdbd',
+        background: isDarkMode ? "rgb(55, 65, 81)" : "#bfbdbd",
         right: -13,
         ".twap-time-selector-list-item": {
           "&:hover": {
@@ -213,11 +213,11 @@ export const configureStyles = (isDarkMode?: boolean) => {
       opacity: 1,
     },
     ".twap-slider": {
-      '& .MuiSlider-rail': {
-        color: '#8f8f8f',
+      "& .MuiSlider-rail": {
+        color: "#8f8f8f",
       },
-        '& .MuiSlider-track': {
-        color: '#bfbdbd',
+      "& .MuiSlider-track": {
+        color: "#bfbdbd",
       },
       "& .MuiSlider-valueLabel": {
         background: styles.tooltipBackground,
@@ -279,10 +279,10 @@ export const configureStyles = (isDarkMode?: boolean) => {
       },
     },
     ".twap-order": {
-      'p, span, svg, div': {
+      "p, span, svg, div": {
         color: `${styles.textColor}!important`,
       },
-      background: isDarkMode ? "rgb(55, 65, 81)" : '#e6e6e6',
+      background: isDarkMode ? "rgb(55, 65, 81)" : "#e6e6e6",
       ".twap-order-expanded-colored": {
         background: "rgb(60, 64, 78)",
       },
@@ -309,11 +309,11 @@ export const configureStyles = (isDarkMode?: boolean) => {
       },
     },
     ".twap-orders-header": {
-      '.twap-label, .twap-odnp': {
-        color: styles.textColor
+      ".twap-label, .twap-odnp": {
+        color: styles.textColor,
       },
       "& .twap-orders-header-tabs": {
-        border: `1px solid ${isDarkMode ? 'inherit' : styles.containerBackground}`,
+        border: `1px solid ${isDarkMode ? "inherit" : styles.containerBackground}`,
         "& .MuiTabs-indicator": {
           backgroundColor: styles.orderHistorySelectedTabBackground,
         },
@@ -386,7 +386,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
       background: "rgba(0,0,0,.4)!important",
     },
     ".twap-modal-content": {
-      background: isDarkMode ? styles.containerBackground : '#FBFBFB',
+      background: isDarkMode ? styles.containerBackground : "#FBFBFB",
       maxHeight: "85vh",
       overflow: "auto",
       borderRadius: "10px",
