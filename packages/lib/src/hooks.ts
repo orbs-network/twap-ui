@@ -1,4 +1,4 @@
-import { Order, Paraswap, Status, TokenData, TokensValidation, TWAPLib } from '@orbs-network/twap'
+import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -411,10 +411,10 @@ const useGasPriceQuery = () => {
   return { isLoading, maxFeePerGas: BN.max(data?.instant || 0, maxFeePerGas || 0, priorityFeePerGas || 0), priorityFeePerGas: BN.max(data?.low || 0, priorityFeePerGas || 0) };
 };
 
-const useTokenList = () => {
+const useTokenList = (customTokens?: TokenData[]) => {
   const twapTokens = useTwapContext().tokenList;
   const ordersHistoryTokens = useOrdersContext().tokenList;
-  const tokens = twapTokens && _.size(twapTokens) > 0 ? twapTokens : ordersHistoryTokens;
+  const tokens = customTokens ? customTokens : twapTokens && _.size(twapTokens) > 0 ? twapTokens : ordersHistoryTokens;
   const lib = useTwapStore((store) => store.lib);
 
   const tokensLength = _.size(tokens);
@@ -431,18 +431,18 @@ const useTokenList = () => {
   }, [lib, tokensLength]);
 };
 
-export const useOrdersHistoryQuery = () => {
-  const tokenList = useTokenList();
+export const useOrdersHistoryQuery = (getAllOrders?: () => Promise<Order[]>, tokens?: TokenData[], fetchUsdValues?: (chainId: number, token: TokenData) => Promise<BN>) => {
+  const tokenList = useTokenList(tokens);
 
   const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
   const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
   const lib = useTwapStore((state) => state.lib);
-  const getUsdValues = usePrepareUSDValues();
+  const getUsdValues = usePrepareUSDValues(fetchUsdValues);
 
   const query = useQuery<OrdersData>(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
-      const orders = await lib!.getAllOrders();
+      const orders = getAllOrders ? await getAllOrders() : await lib!.getAllOrders();
       const tokens = _.uniqBy(
         _.concat(
           _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.srcToken))!),
@@ -451,10 +451,9 @@ export const useOrdersHistoryQuery = () => {
         (t) => t.address
       );
       const tokensWithUsd = await getUsdValues(tokens);
-
       const parsedOrders = orders.map((o: Order) => parseOrderUi(lib!, tokensWithUsd, o));
       return _.chain(parsedOrders)
-        .orderBy((o: OrderUI) => o.order.ask.deadline, "desc")
+        .orderBy((o: OrderUI) => o.order.time, "desc")
         .groupBy((o: OrderUI) => o.ui.status)
         .value();
     },
@@ -469,16 +468,7 @@ export const useOrdersHistoryQuery = () => {
       retry: 5,
     }
   );
-
-  const sortedOrders:OrdersData = {}
-  _.keys(Status).map((key: any) => {
-    if(query.data) {
-      sortedOrders[key as any as Status] = query.data[key as any as Status]?.length
-      ? [..._.sortBy(query.data[key as any as Status], ({order}) => order.time).reverse()]
-        : []
-    }
-    })
-  return { ...query, orders: sortedOrders, isLoading: (query.isLoading && query.fetchStatus !== "idle") || waitingForNewOrder };
+  return { ...query, orders: query.data || {}, isLoading: (query.isLoading && query.fetchStatus !== "idle") || waitingForNewOrder };
 };
 
 const defaultFetchUsd = (chainId: number, token: TokenData) => Paraswap.priceUsd(chainId, token);

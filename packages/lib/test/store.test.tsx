@@ -1,15 +1,14 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook } from "@testing-library/react";
-import { Configs, TWAPLib } from "@orbs-network/twap";
+import { Configs, Order, TWAPLib } from "@orbs-network/twap";
 import { web3, zero, zeroAddress } from "@defi.org/web3-candies";
 import { parseOrderUi, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
-import _ from "lodash";
 import { QueryClient } from "@tanstack/react-query";
 import React, { ReactNode } from "react";
-import { usePrepareUSDValues } from "../src/hooks";
+import { useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
 
 const createQueryProvider = () => {
   const queryClient = new QueryClient();
@@ -186,6 +185,53 @@ describe("store", () => {
       expect(parsed.ui.dstPriceFor1Src).bignumber.closeTo(0.2702, 0.0001);
       expect(parsed.ui.dstAmountUi).matches(/^270.2/);
       expect(parsed.ui.prefix).eq("~");
+    });
+
+    it.only("ordersSorting", async () => {
+      const mockOrder: Order = {
+        id: 123,
+        status: (Date.now() + 1e6) / 1000,
+        filledTime: 0,
+        time: 1,
+        maker: lib.maker,
+        srcFilledAmount: BN(900 * 10 ** tokens[0].decimals),
+        ask: {
+          deadline: (Date.now() + 1e6) / 1000,
+          srcToken: tokens[0].address,
+          dstToken: tokens[1].address,
+          srcAmount: BN(1000 * 10 ** tokens[0].decimals),
+          srcBidAmount: BN(100 * 10 ** tokens[0].decimals),
+          dstMinAmount: BN(1),
+          bidDelay: 60,
+          fillDelay: 0,
+          exchange: zeroAddress,
+        },
+        bid: {
+          time: 0,
+          taker: zeroAddress,
+          exchange: zeroAddress,
+          dstAmount: zero,
+          dstFee: zero,
+          data: "",
+        },
+      };
+      const mockOrder2: Order = {
+        ...mockOrder,
+        id: 124,
+        time: 0,
+      };
+      const useOrdersHistory = renderHook(
+        () =>
+          useOrdersHistoryQuery(
+            async () => [mockOrder, mockOrder2],
+            tokens,
+            async (chain, t) => (t === tokens[0] ? BN(123.5) : BN(456.7))
+          ),
+        {
+          wrapper: createQueryProvider(),
+        }
+      );
+      console.log(await useOrdersHistory.result.current);
     });
   });
 });

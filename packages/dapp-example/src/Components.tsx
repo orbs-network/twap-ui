@@ -1,5 +1,5 @@
 import Modal from "@mui/material/Modal";
-import { Component, ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet";
 import { AiOutlineClose } from "react-icons/ai";
 import {
@@ -27,7 +27,7 @@ import { FiMenu } from "react-icons/fi";
 import Backdrop from "@mui/material/Backdrop";
 import { Fade } from "@mui/material";
 import { Config } from "@orbs-network/twap";
-import { Components, hooks, Styles } from "@orbs-network/twap-ui";
+import { Components, Styles } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
 import { dapps } from "./config";
