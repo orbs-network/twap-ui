@@ -1,14 +1,34 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { initFixture, maker, tokens } from "./fixture";
-import { act, renderHook } from "@testing-library/react";
-import { Configs, Order, TWAPLib } from "@orbs-network/twap";
-import { web3, zero, zeroAddress } from "@defi.org/web3-candies";
+import { act, renderHook, waitFor } from '@testing-library/react'
+import { Configs, Order, TokenData, TWAPLib } from '@orbs-network/twap'
+import { web3, zero, zeroAddress } from '@defi.org/web3-candies'
 import { parseOrderUi, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
 import { QueryClient } from "@tanstack/react-query";
-import React, { ReactNode } from "react";
+import React, { createContext, ReactNode } from 'react'
 import { useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
+import BigNumber from 'bignumber.js'
+
+const defaultState: {tokens?: TokenData[], fetchUsd?: (chain: any, t: any) => Promise<BigNumber>} = {
+  tokens: tokens,
+  fetchUsd: async (chain, t) => (t === tokens[0] ? BN(123.5) : BN(456.7))
+}
+
+export const OrdersSortingContext = createContext(defaultState)
+
+const createOrdersSortingProvider = () => {
+  const queryClient = new QueryClient();
+  return ({ children }: { children: ReactNode }) =>
+    <QueryClientProvider client={queryClient}>
+      <OrdersSortingContext.Provider value={{tokens: tokens,
+        fetchUsd: async (chain, t) => (t === tokens[0] ? BN(123.5) : BN(456.7))}}>
+        {children}
+      </OrdersSortingContext.Provider>
+    </QueryClientProvider>
+};
+
 
 const createQueryProvider = () => {
   const queryClient = new QueryClient();
@@ -188,13 +208,13 @@ describe("store", () => {
     });
 
     it.only("ordersSorting", async () => {
-      const mockOrder: Order = {
+      lib.getAllOrders = async ():Promise<Order[]> => [{
         id: 123,
+        time: 0,
         status: (Date.now() + 1e6) / 1000,
         filledTime: 0,
-        time: 1,
-        maker: lib.maker,
         srcFilledAmount: BN(900 * 10 ** tokens[0].decimals),
+        maker: lib.maker,
         ask: {
           deadline: (Date.now() + 1e6) / 1000,
           srcToken: tokens[0].address,
@@ -214,24 +234,43 @@ describe("store", () => {
           dstFee: zero,
           data: "",
         },
-      };
-      const mockOrder2: Order = {
-        ...mockOrder,
+      }, {
         id: 124,
-        time: 0,
-      };
-      const useOrdersHistory = renderHook(
-        () =>
-          useOrdersHistoryQuery(
-            async () => [mockOrder, mockOrder2],
-            tokens,
-            async (chain, t) => (t === tokens[0] ? BN(123.5) : BN(456.7))
-          ),
-        {
-          wrapper: createQueryProvider(),
+        time: 1,
+        status: (Date.now() + 1e6) / 1000,
+        filledTime: 0,
+        srcFilledAmount: BN(900 * 10 ** tokens[0].decimals),
+        maker: lib.maker,
+        ask: {
+          deadline: (Date.now() + 1e6) / 1000,
+          srcToken: tokens[0].address,
+          dstToken: tokens[1].address,
+          srcAmount: BN(1000 * 10 ** tokens[0].decimals),
+          srcBidAmount: BN(100 * 10 ** tokens[0].decimals),
+          dstMinAmount: BN(1),
+          bidDelay: 60,
+          fillDelay: 0,
+          exchange: zeroAddress,
+        },
+        bid: {
+          time: 0,
+          taker: zeroAddress,
+          exchange: zeroAddress,
+          dstAmount: zero,
+          dstFee: zero,
+          data: "",
         }
-      );
-      console.log(await useOrdersHistory.result.current);
+      }]
+
+      const {result} = await act(async () =>
+        renderHook(() => useOrdersHistoryQuery(), {
+          wrapper: createOrdersSortingProvider(),
+        }
+      ))
+      await waitFor( () => !result.current.isLoading)
+      expect(result.current.orders.Open)?.length(2)
+      expect(result.current.orders.Open?.[0].order.id).eq(124)
+      expect(result.current.orders.Open?.[1].order.id).eq(123)
     });
   });
 });

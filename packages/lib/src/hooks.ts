@@ -1,7 +1,7 @@
 import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI } from "./types";
@@ -11,6 +11,7 @@ import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress } fro
 import { parseOrderUi, useTwapStore } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
+import { OrdersSortingContext } from '../test/store.test'
 
 /**
  * Actions
@@ -431,18 +432,19 @@ const useTokenList = (customTokens?: TokenData[]) => {
   }, [lib, tokensLength]);
 };
 
-export const useOrdersHistoryQuery = (getAllOrders?: () => Promise<Order[]>, tokens?: TokenData[], fetchUsdValues?: (chainId: number, token: TokenData) => Promise<BN>) => {
-  const tokenList = useTokenList(tokens);
+export const useOrdersHistoryQuery = () => {
+  const data = useContext(OrdersSortingContext)
+  const tokenList = useTokenList(data?.tokens);
 
   const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
   const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
   const lib = useTwapStore((state) => state.lib);
-  const getUsdValues = usePrepareUSDValues(fetchUsdValues);
+  const getUsdValues = usePrepareUSDValues(data?.fetchUsd);
 
   const query = useQuery<OrdersData>(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
-      const orders = getAllOrders ? await getAllOrders() : await lib!.getAllOrders();
+      const orders = await lib!.getAllOrders();
       const tokens = _.uniqBy(
         _.concat(
           _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.srcToken))!),
