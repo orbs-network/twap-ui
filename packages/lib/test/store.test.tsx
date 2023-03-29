@@ -10,6 +10,8 @@ import { QueryClient } from "@tanstack/react-query";
 import React, { createContext, ReactNode } from 'react'
 import { useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
 import BigNumber from 'bignumber.js'
+import { OrdersContext } from '../src/context'
+import translations from "../src/i18n/en.json";
 
 const defaultState: {tokens?: TokenData[], fetchUsd?: (chain: any, t: any) => Promise<BigNumber>} = {
   tokens: tokens,
@@ -19,13 +21,15 @@ const defaultState: {tokens?: TokenData[], fetchUsd?: (chain: any, t: any) => Pr
 export const OrdersSortingContext = createContext(defaultState)
 
 const createOrdersSortingProvider = () => {
+  const config = Configs.SpookySwap;
   const queryClient = new QueryClient();
   return ({ children }: { children: ReactNode }) =>
     <QueryClientProvider client={queryClient}>
-      <OrdersSortingContext.Provider value={{tokens: tokens,
-        fetchUsd: async (chain, t) => (t === tokens[0] ? BN(123.5) : BN(456.7))}}>
-        {children}
-      </OrdersSortingContext.Provider>
+      <OrdersContext.Provider value={{tokenList: tokens, config: config, provider: '', translations: translations, children: <OrdersSortingContext.Provider value={{tokens: tokens,
+          fetchUsd: async (chain, t) => (t === tokens[0] ? BN(123.5) : BN(456.7))}}>
+          {children}
+        </OrdersSortingContext.Provider>}}>
+      </OrdersContext.Provider>
     </QueryClientProvider>
 };
 
