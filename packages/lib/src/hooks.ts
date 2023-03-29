@@ -434,7 +434,7 @@ const useTokenList = (customTokens?: TokenData[]) => {
 
 export const useOrdersHistoryQuery = () => {
   const data = useContext(OrdersSortingContext)
-  const tokenList = useTokenList(data?.tokens);
+  const tokenList = useTokenList();
 
   const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
   const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
