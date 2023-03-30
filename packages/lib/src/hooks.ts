@@ -1,7 +1,7 @@
 import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI } from "./types";
@@ -11,7 +11,6 @@ import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress } fro
 import { parseOrderUi, useTwapStore } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
-import { OrdersSortingContext } from '../test/store.test'
 
 /**
  * Actions
@@ -275,7 +274,7 @@ export const useLimitPrice = () => {
     limitPrice,
     leftToken,
     rightToken,
-    warning: !leftToken || !rightToken ? translations.selectTokens : undefined,
+    warning: !leftToken || !rightToken ? translations?.selectTokens : undefined,
     isLimitOrder,
     isLoading: loading.srcUsdLoading || loading.dstUsdLoading,
   };
@@ -433,13 +432,12 @@ const useTokenList = (customTokens?: TokenData[]) => {
 };
 
 export const useOrdersHistoryQuery = () => {
-  const data = useContext(OrdersSortingContext)
   const tokenList = useTokenList();
 
   const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
   const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
   const lib = useTwapStore((state) => state.lib);
-  const getUsdValues = usePrepareUSDValues(data?.fetchUsd);
+  const getUsdValues = usePrepareUSDValues();
 
   const query = useQuery<OrdersData>(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
@@ -454,6 +452,7 @@ export const useOrdersHistoryQuery = () => {
       );
       const tokensWithUsd = await getUsdValues(tokens);
       const parsedOrders = orders.map((o: Order) => parseOrderUi(lib!, tokensWithUsd, o));
+      if (waitingForNewOrder) setWaitingForNewOrder(false);
       return _.chain(parsedOrders)
         .orderBy((o: OrderUI) => o.order.time, "desc")
         .groupBy((o: OrderUI) => o.ui.status)
@@ -462,9 +461,6 @@ export const useOrdersHistoryQuery = () => {
     {
       enabled: !!lib && _.size(tokenList) > 0,
       refetchInterval: REFETCH_ORDER_HISTORY,
-      onSettled: () => {
-        setWaitingForNewOrder(false);
-      },
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,
       retry: 5,

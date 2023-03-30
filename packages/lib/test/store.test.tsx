@@ -1,38 +1,24 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { initFixture, maker, tokens } from "./fixture";
-import { act, renderHook, waitFor } from '@testing-library/react'
-import { Configs, Order, TokenData, TWAPLib } from '@orbs-network/twap'
-import { web3, zero, zeroAddress } from '@defi.org/web3-candies'
+import { act, renderHook } from "@testing-library/react";
+import { Configs, TWAPLib } from "@orbs-network/twap";
+import { sleep, web3, zero, zeroAddress } from '@defi.org/web3-candies'
 import { parseOrderUi, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
 import { QueryClient } from "@tanstack/react-query";
-import React, { createContext, ReactNode } from 'react'
+import React, { ReactNode } from "react";
 import { useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
-import BigNumber from 'bignumber.js'
-import { OrdersContext } from '../src/context'
-import translations from "../src/i18n/en.json";
+import { OrdersAdapter } from "../src/context";
 
-const defaultState: {tokens?: TokenData[], fetchUsd?: (chain: any, t: any) => Promise<BigNumber>} = {
-  tokens: tokens,
-  fetchUsd: async (chain, t) => (t === tokens[0] ? BN(123.5) : BN(456.7))
-}
-
-export const OrdersSortingContext = createContext(defaultState)
-
-const createOrdersSortingProvider = () => {
+const useOrdersAdapter = () => {
   const config = Configs.SpookySwap;
-  const queryClient = new QueryClient();
-  return ({ children }: { children: ReactNode }) =>
-    <QueryClientProvider client={queryClient}>
-      <OrdersContext.Provider value={{tokenList: tokens, config: config, provider: '', translations: translations, children: <OrdersSortingContext.Provider value={{tokens: tokens,
-          fetchUsd: async (chain, t) => (t === tokens[0] ? BN(123.5) : BN(456.7))}}>
-          {children}
-        </OrdersSortingContext.Provider>}}>
-      </OrdersContext.Provider>
-    </QueryClientProvider>
+  return ({ children }: { children: ReactNode }) => (
+    <OrdersAdapter tokenList={tokens} config={config} provider={""}>
+      {children}
+    </OrdersAdapter>
+  );
 };
-
 
 const createQueryProvider = () => {
   const queryClient = new QueryClient();
@@ -212,69 +198,27 @@ describe("store", () => {
     });
 
     it.only("ordersSorting", async () => {
-      lib.getAllOrders = async ():Promise<Order[]> => [{
-        id: 123,
-        time: 0,
-        status: (Date.now() + 1e6) / 1000,
-        filledTime: 0,
-        srcFilledAmount: BN(900 * 10 ** tokens[0].decimals),
-        maker: lib.maker,
-        ask: {
-          deadline: (Date.now() + 1e6) / 1000,
-          srcToken: tokens[0].address,
-          dstToken: tokens[1].address,
-          srcAmount: BN(1000 * 10 ** tokens[0].decimals),
-          srcBidAmount: BN(100 * 10 ** tokens[0].decimals),
-          dstMinAmount: BN(1),
-          bidDelay: 60,
-          fillDelay: 0,
-          exchange: zeroAddress,
+      lib.getAllOrders = async () => [
+        {
+          ...mockOrder,
+          id: 1,
+          time: 0
         },
-        bid: {
-          time: 0,
-          taker: zeroAddress,
-          exchange: zeroAddress,
-          dstAmount: zero,
-          dstFee: zero,
-          data: "",
+        {
+         ...mockOrder,
+          id: 2,
+          time: 10,
         },
-      }, {
-        id: 124,
-        time: 1,
-        status: (Date.now() + 1e6) / 1000,
-        filledTime: 0,
-        srcFilledAmount: BN(900 * 10 ** tokens[0].decimals),
-        maker: lib.maker,
-        ask: {
-          deadline: (Date.now() + 1e6) / 1000,
-          srcToken: tokens[0].address,
-          dstToken: tokens[1].address,
-          srcAmount: BN(1000 * 10 ** tokens[0].decimals),
-          srcBidAmount: BN(100 * 10 ** tokens[0].decimals),
-          dstMinAmount: BN(1),
-          bidDelay: 60,
-          fillDelay: 0,
-          exchange: zeroAddress,
-        },
-        bid: {
-          time: 0,
-          taker: zeroAddress,
-          exchange: zeroAddress,
-          dstAmount: zero,
-          dstFee: zero,
-          data: "",
-        }
-      }]
+      ];
 
-      const {result} = await act(async () =>
+      const { result } =
         renderHook(() => useOrdersHistoryQuery(), {
-          wrapper: createOrdersSortingProvider(),
-        }
-      ))
-      await waitFor( () => !result.current.isLoading)
-      expect(result.current.orders.Open)?.length(2)
-      expect(result.current.orders.Open?.[0].order.id).eq(124)
-      expect(result.current.orders.Open?.[1].order.id).eq(123)
+          wrapper: useOrdersAdapter(),
+        })
+      while (result.current.isLoading) await sleep(1)
+      expect(result.current.data?.Open)?.length(2);
+      expect(result.current.orders.Open?.[0].order.id).eq(2);
+      expect(result.current.orders.Open?.[1].order.id).eq(1);
     });
   });
 });
