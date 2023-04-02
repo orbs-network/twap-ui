@@ -197,7 +197,7 @@ describe("store", () => {
       expect(parsed.ui.prefix).eq("~");
     });
 
-    it.only("ordersSorting", async () => {
+    it("ordersSorting", async () => {
       lib.getAllOrders = async () => [
         {
           ...mockOrder,
