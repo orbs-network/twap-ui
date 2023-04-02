@@ -41,8 +41,8 @@ const initialState: State = {
   disclaimerAccepted: false,
 
   chunks: 0,
-  duration: { resolution: TimeResolution.Minutes, amount: 10 },
-  customFillDelay: { resolution: TimeResolution.Minutes, amount: undefined },
+  fillDelay: { resolution: TimeResolution.Minutes, amount: 2 },
+  customDuration: { resolution: TimeResolution.Minutes, amount: undefined },
   waitingForNewOrder: false,
 };
 
@@ -108,7 +108,7 @@ export const useTwapStore = create(
       if (srcAmount.isZero()) return translation.enterAmount;
       if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) return translation.insufficientFunds;
       if (chunkSize.isZero()) return translation.enterTradeSize;
-      if (get().duration.amount === 0) return translation.enterMaxDuration;
+      if ((get() as any).getDurationUi().amount === 0) return translation.enterMaxDuration;
       if (isLimitOrder && limitPrice.limitPrice.isZero()) return translation.insertLimitPriceWarning;
       const valuesValidation = lib?.validateOrderInputs(
         srcToken!,
@@ -140,7 +140,7 @@ export const useTwapStore = create(
     },
     setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => set({ limitPriceUi }),
     setChunks: (chunks: number) => set({ chunks: Math.min(chunks, (get() as any).getMaxPossibleChunks()) }),
-    setDuration: (duration: Duration) => set({ duration }),
+    setDuration: (customDuration: Duration) => set({ customDuration }),
 
     isSameNativeBasedToken: () =>
       !!get().lib &&
@@ -197,23 +197,25 @@ export const useTwapStore = create(
       srcToken && (get() as any).setSrcToken(srcToken);
       dstToken && (get() as any).setDstToken(dstToken);
     },
-    setFillDelay: (customFillDelay: Duration) => {
-      analytics.onCustomIntervalClick();
-      set({ customFillDelay });
+    setFillDelay: (fillDelay: Duration) => {
+      set({ fillDelay });
     },
-    getFillDelayUi: () => {
+
+    getDurationUi: () => {
       if (!get().lib) return { resolution: TimeResolution.Minutes, amount: 0 };
 
-      if (get().customFillDelay.amount !== undefined) return get().customFillDelay;
-      const millis = get().lib!.fillDelayUiMillis((get() as any).getChunks(), get().duration.resolution * (get().duration.amount || 0));
-      const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= millis) || TimeResolution.Minutes;
-      return { resolution, amount: Number(BN(millis / resolution).toFixed(2)) };
+      if (get().customDuration.amount !== undefined) return get().customDuration;
+
+      const _millis = (get() as any).getFillDelayUiMillis() * 2 * (get() as any).getChunks();
+
+      const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= _millis) || TimeResolution.Minutes;
+      return { resolution, amount: Number(BN(_millis / resolution).toFixed(2)) };
     },
 
     getFillDelayText: (translations: Translations) => fillDelayText((get() as any).getFillDelayUiMillis(), translations),
-    getFillDelayUiMillis: () => (get() as any).getFillDelayUi().amount * (get() as any).getFillDelayUi().resolution,
+    getFillDelayUiMillis: () => get().fillDelay.amount! * get().fillDelay.resolution,
 
-    getDurationMillis: () => (get().duration.amount || 0) * get().duration.resolution,
+    getDurationMillis: () => ((get() as any).getDurationUi().amount || 0) * (get() as any).getDurationUi().resolution,
 
     getMinimumDelayMinutes: () => (get().lib?.estimatedDelayBetweenChunksMillis() || 0) / 1000 / 60,
     getFillDelayWarning: () => {
@@ -271,7 +273,7 @@ export const useTwapStore = create(
     setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment(), disclaimerAccepted: false }),
     getDeadline: () =>
       moment(get().confirmationClickTimestamp)
-        .add((get().duration.amount || 0) * get().duration.resolution)
+        .add(((get() as any).getDurationUi().amount || 0) * (get() as any).getDurationUi().resolution)
         .add(1, "minute")
         .valueOf(),
     getDeadlineUi: () => moment((get() as any).getDeadline()).format("L HH:mm"),
