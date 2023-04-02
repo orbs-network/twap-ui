@@ -102,7 +102,8 @@ export const ChangeTokensOrder = ({ children }: { children?: ReactNode }) => {
 };
 
 export function MaxDurationSelector() {
-  const duration = useTwapStore((store) => store.duration);
+  const duration = useTwapStore((store) => store.getDurationUi());
+
   const onChange = useTwapStore((store) => store.setDuration);
 
   return <TimeSelector value={duration} onChange={onChange} />;
@@ -185,7 +186,7 @@ export const TokenSymbol = ({ isSrc }: { isSrc?: boolean }) => {
 
 export function TradeIntervalSelector() {
   const setFillDelay = useTwapStore((store) => store.setFillDelay);
-  const fillDelay = useTwapStore((store) => store.getFillDelayUi());
+  const fillDelay = useTwapStore((store) => store.fillDelay);
 
   return <TimeSelector onChange={setFillDelay} value={fillDelay} />;
 }
