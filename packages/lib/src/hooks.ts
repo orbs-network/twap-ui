@@ -411,10 +411,10 @@ const useGasPriceQuery = () => {
   return { isLoading, maxFeePerGas: BN.max(data?.instant || 0, maxFeePerGas || 0, priorityFeePerGas || 0), priorityFeePerGas: BN.max(data?.low || 0, priorityFeePerGas || 0) };
 };
 
-const useTokenList = (customTokens?: TokenData[]) => {
+const useTokenList = () => {
   const twapTokens = useTwapContext().tokenList;
   const ordersHistoryTokens = useOrdersContext().tokenList;
-  const tokens = customTokens ? customTokens : twapTokens && _.size(twapTokens) > 0 ? twapTokens : ordersHistoryTokens;
+  const tokens = twapTokens && _.size(twapTokens) > 0 ? twapTokens : ordersHistoryTokens;
   const lib = useTwapStore((store) => store.lib);
 
   const tokensLength = _.size(tokens);
