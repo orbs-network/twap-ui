@@ -53,16 +53,16 @@ describe("store", () => {
     });
 
     it("setDuration minimum of config bid delay x 2, affects fillDelay", async () => {
-      expect(store.current.duration).deep.eq({ resolution: TimeResolution.Minutes, amount: 10 });
-      expect(store.current.getFillDelayUi()).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
+      expect(store.current.getDurationUi()).deep.eq({ resolution: TimeResolution.Minutes, amount: 4 });
+      expect(store.current.fillDelay).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
       expect(store.current.getIsPartialFillWarning()).eq(false);
 
       await act(async () => store.current.setDuration({ resolution: TimeResolution.Minutes, amount: 1 }));
-      expect(store.current.getFillDelayUi()).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
+      expect(store.current.fillDelay).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
       expect(store.current.getIsPartialFillWarning()).eq(true);
 
       await act(async () => store.current.setDuration({ resolution: TimeResolution.Minutes, amount: 5 }));
-      expect(store.current.getFillDelayUi()).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
+      expect(store.current.fillDelay).deep.eq({ resolution: TimeResolution.Minutes, amount: 2 });
       expect(store.current.getIsPartialFillWarning()).eq(false);
     });
 
