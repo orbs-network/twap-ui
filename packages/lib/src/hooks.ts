@@ -274,7 +274,7 @@ export const useLimitPrice = () => {
     limitPrice,
     leftToken,
     rightToken,
-    warning: !leftToken || !rightToken ? translations.selectTokens : undefined,
+    warning: !leftToken || !rightToken ? translations?.selectTokens : undefined,
     isLimitOrder,
     isLoading: loading.srcUsdLoading || loading.dstUsdLoading,
   };
@@ -451,25 +451,21 @@ export const useOrdersHistoryQuery = () => {
         (t) => t.address
       );
       const tokensWithUsd = await getUsdValues(tokens);
-
       const parsedOrders = orders.map((o: Order) => parseOrderUi(lib!, tokensWithUsd, o));
+      if (waitingForNewOrder) setWaitingForNewOrder(false);
       return _.chain(parsedOrders)
-        .orderBy((o: OrderUI) => o.order.ask.deadline, "desc")
+        .orderBy((o: OrderUI) => o.order.time, "desc")
         .groupBy((o: OrderUI) => o.ui.status)
         .value();
     },
     {
       enabled: !!lib && _.size(tokenList) > 0,
       refetchInterval: REFETCH_ORDER_HISTORY,
-      onSettled: () => {
-        setWaitingForNewOrder(false);
-      },
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,
       retry: 5,
     }
   );
-
   return { ...query, orders: query.data || {}, isLoading: (query.isLoading && query.fetchStatus !== "idle") || waitingForNewOrder };
 };
 

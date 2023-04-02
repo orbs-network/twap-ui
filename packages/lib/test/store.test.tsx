@@ -2,14 +2,23 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook } from "@testing-library/react";
 import { Configs, TWAPLib } from "@orbs-network/twap";
-import { web3, zero, zeroAddress } from "@defi.org/web3-candies";
+import { sleep, web3, zero, zeroAddress } from '@defi.org/web3-candies'
 import { parseOrderUi, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
-import _ from "lodash";
 import { QueryClient } from "@tanstack/react-query";
 import React, { ReactNode } from "react";
-import { usePrepareUSDValues } from "../src/hooks";
+import { useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
+import { OrdersAdapter } from "../src/context";
+
+const useOrdersAdapter = () => {
+  const config = Configs.SpookySwap;
+  return ({ children }: { children: ReactNode }) => (
+    <OrdersAdapter tokenList={tokens} config={config} provider={""}>
+      {children}
+    </OrdersAdapter>
+  );
+};
 
 const createQueryProvider = () => {
   const queryClient = new QueryClient();
@@ -186,6 +195,30 @@ describe("store", () => {
       expect(parsed.ui.dstPriceFor1Src).bignumber.closeTo(0.2702, 0.0001);
       expect(parsed.ui.dstAmountUi).matches(/^270.2/);
       expect(parsed.ui.prefix).eq("~");
+    });
+
+    it("ordersSorting", async () => {
+      lib.getAllOrders = async () => [
+        {
+          ...mockOrder,
+          id: 1,
+          time: 0
+        },
+        {
+         ...mockOrder,
+          id: 2,
+          time: 10,
+        },
+      ];
+
+      const { result } =
+        renderHook(() => useOrdersHistoryQuery(), {
+          wrapper: useOrdersAdapter(),
+        })
+      while (result.current.isLoading) await sleep(1)
+      expect(result.current.data?.Open)?.length(2);
+      expect(result.current.orders.Open?.[0].order.id).eq(2);
+      expect(result.current.orders.Open?.[1].order.id).eq(1);
     });
   });
 });
