@@ -2,7 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook } from "@testing-library/react";
 import { Configs, TWAPLib } from "@orbs-network/twap";
-import { sleep, web3, zero, zeroAddress } from '@defi.org/web3-candies'
+import { sleep, web3, zero, zeroAddress } from "@defi.org/web3-candies";
 import { parseOrderUi, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
@@ -12,9 +12,10 @@ import { useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
 import { OrdersAdapter } from "../src/context";
 
 const useOrdersAdapter = () => {
+  const t: any = {};
   const config = Configs.SpookySwap;
   return ({ children }: { children: ReactNode }) => (
-    <OrdersAdapter tokenList={tokens} config={config} provider={""}>
+    <OrdersAdapter tokenList={tokens} config={config} provider={""} translations={t}>
       {children}
     </OrdersAdapter>
   );
@@ -202,20 +203,19 @@ describe("store", () => {
         {
           ...mockOrder,
           id: 1,
-          time: 0
+          time: 0,
         },
         {
-         ...mockOrder,
+          ...mockOrder,
           id: 2,
           time: 10,
         },
       ];
 
-      const { result } =
-        renderHook(() => useOrdersHistoryQuery(), {
-          wrapper: useOrdersAdapter(),
-        })
-      while (result.current.isLoading) await sleep(1)
+      const { result } = renderHook(() => useOrdersHistoryQuery(), {
+        wrapper: useOrdersAdapter(),
+      });
+      while (result.current.isLoading) await sleep(1);
       expect(result.current.data?.Open)?.length(2);
       expect(result.current.orders.Open?.[0].order.id).eq(2);
       expect(result.current.orders.Open?.[1].order.id).eq(1);
