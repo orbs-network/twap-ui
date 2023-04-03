@@ -130,7 +130,7 @@ interface LibProps {
   account?: any;
   config: Config;
   provider: any;
-  translations?: Translations;
+  translations: Translations;
   priorityFeePerGas?: string;
   maxFeePerGas?: string;
   tokenList?: TokenData[];
