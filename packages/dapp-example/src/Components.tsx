@@ -246,7 +246,15 @@ export const TokensList = ({ tokens = [], onClick }: { tokens?: TokenListItem[];
       <StyledTokensList>
         <AutoSizer>
           {({ height, width }) => (
-            <List overscanCount={10} className="List" itemData={{ tokens: filteredTokens, onClick }} height={height} itemCount={filteredTokens.length} itemSize={50} width={width}>
+            <List
+              overscanCount={10}
+              className="List"
+              itemData={{ tokens: filteredTokens, onClick }}
+              height={height || 0}
+              itemCount={filteredTokens.length}
+              itemSize={50}
+              width={width || 0}
+            >
               {Row}
             </List>
           )}
