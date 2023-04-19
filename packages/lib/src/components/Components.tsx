@@ -186,7 +186,7 @@ export const TokenSymbol = ({ isSrc }: { isSrc?: boolean }) => {
 
 export function TradeIntervalSelector() {
   const setFillDelay = useTwapStore((store) => store.setFillDelay);
-  const fillDelay = useTwapStore((store) => store.fillDelay);
+  const fillDelay = useTwapStore((store) => store.customFillDelay);
 
   return <TimeSelector onChange={setFillDelay} value={fillDelay} />;
 }

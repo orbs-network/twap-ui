@@ -41,8 +41,8 @@ const initialState: State = {
   disclaimerAccepted: false,
 
   chunks: 0,
-  fillDelay: { resolution: TimeResolution.Minutes, amount: 2 },
   customDuration: { resolution: TimeResolution.Minutes, amount: undefined },
+  customFillDelay: { resolution: TimeResolution.Minutes, amount: 2 },
   waitingForNewOrder: false,
 };
 
@@ -198,7 +198,7 @@ export const useTwapStore = create(
       dstToken && (get() as any).setDstToken(dstToken);
     },
     setFillDelay: (fillDelay: Duration) => {
-      set({ fillDelay });
+      set({ customFillDelay: fillDelay });
     },
 
     getDurationUi: () => {
@@ -213,7 +213,7 @@ export const useTwapStore = create(
     },
 
     getFillDelayText: (translations: Translations) => fillDelayText((get() as any).getFillDelayUiMillis(), translations),
-    getFillDelayUiMillis: () => get().fillDelay.amount! * get().fillDelay.resolution,
+    getFillDelayUiMillis: () => get().customFillDelay.amount! * get().customFillDelay.resolution,
 
     getDurationMillis: () => ((get() as any).getDurationUi().amount || 0) * (get() as any).getDurationUi().resolution,
 

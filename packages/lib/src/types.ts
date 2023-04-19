@@ -222,7 +222,7 @@ export interface State {
   disclaimerAccepted: boolean;
 
   chunks: number;
-  fillDelay: Duration;
+  customFillDelay: Duration;
   customDuration: Duration;
   waitingForNewOrder: boolean;
 }

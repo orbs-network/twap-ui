@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, SIMPLE_LIMIT_ORDER_DURATION_DAYS } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
 import { useCallback, useEffect } from "react";
 import { AdapterContextProvider, config, parseToken, useGlobalStyles } from "./hooks";
 import translations from "./i18n/en.json";
@@ -10,7 +10,7 @@ import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
 const storeOverride = {
   isLimitOrder: true,
   chunks: 1,
-  duration: { resolution: store.TimeResolution.Days, amount: SIMPLE_LIMIT_ORDER_DURATION_DAYS },
+  customDuration: { resolution: store.TimeResolution.Days, amount: 90 },
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
