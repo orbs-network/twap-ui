@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet";
 import { AiOutlineClose } from "react-icons/ai";
 import {
   StyledCloseIcon,
-  StyledDappLayout,
+  StyledDappLayoutContent,
   StyledDrawerContent,
   StyledListToken,
   StyledMenuDrawer,
@@ -27,17 +27,18 @@ import { FiMenu } from "react-icons/fi";
 import Backdrop from "@mui/material/Backdrop";
 import { Fade } from "@mui/material";
 import { Config } from "@orbs-network/twap";
-import { Components, Styles } from "@orbs-network/twap-ui";
+import { Components, hooks, Styles } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
 import { dapps } from "./config";
 import { Status } from "./Status";
-import { useBalance, useDebounce, useSelectedDapp, useTheme } from "./hooks";
+import { useBalance, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { TokenData } from "@orbs-network/twap";
 import { TokenListItem } from "./types";
 import _ from "lodash";
+import { useNavigate } from "react-router-dom";
 
 const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
 
@@ -105,16 +106,22 @@ const ToggleTheme = () => {
   );
 };
 
-interface DappsMenuProps {
-  onSelect: (dapp: Dapp) => void;
-}
 const drawerWidth = 260;
 
-export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
+export const DappsMenu = () => {
   const { isSelected } = useSelectedDapp();
+  const { isDarkTheme } = useTheme();
 
   const isMobile = useMediaQuery("(max-width:1100px)");
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const disconnect = useDisconnectWallet();
+  const reset = hooks.useReset();
+  const onSelect = (dapp: Dapp) => {
+    reset();
+    disconnect();
+    navigate(`/${dapp.config.partner.toLowerCase()}`);
+  };
 
   const open = !isMobile ? true : isMobile && isOpen;
 
@@ -132,7 +139,7 @@ export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
   return (
     <>
       {isMobile && (
-        <StyledMenuMobileToggle color="inherit" edge="start" onClick={handleDrawerToggle}>
+        <StyledMenuMobileToggle className="menu-button" color="inherit" edge="start" onClick={handleDrawerToggle}>
           <FiMenu />
         </StyledMenuMobileToggle>
       )}
@@ -176,13 +183,12 @@ export const DappsMenu = ({ onSelect }: DappsMenuProps) => {
   );
 };
 
-export const DappLayout = ({ children, name }: { children: ReactNode; name: string }) => {
+export const DappLayout = ({ children, name, className }: { children: ReactNode; name: string; className?: string }) => {
   return (
     <>
       <MetaTags title={name} />
-      <Fade in>
-        <StyledDappLayout>{children}</StyledDappLayout>
-      </Fade>
+      <DappsMenu />
+      <StyledDappLayoutContent className={className}>{children}</StyledDappLayoutContent>
     </>
   );
 };
@@ -273,11 +279,11 @@ export const UISelector = ({ options }: { options: UIOption[] }) => {
   const [selected, setSelected] = useState(options[0].title);
 
   return (
-    <StyledUISelector>
+    <StyledUISelector className="ui-selector">
       <StyledUISelectorButtons>
         {options.map((o) => {
           return (
-            <StyledUISelectorButton style={{ borderBottom: selected === o.title ? "1px solid white" : "1px solid transparent" }} key={o.title} onClick={() => setSelected(o.title)}>
+            <StyledUISelectorButton className={`${selected === o.title ? " ui-selector-btn-selected" : ""} ui-selector-btn`} key={o.title} onClick={() => setSelected(o.title)}>
               {o.title}
             </StyledUISelectorButton>
           );

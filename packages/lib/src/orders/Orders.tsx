@@ -10,7 +10,11 @@ import { useOrdersHistoryQuery } from "../hooks";
 import { useOrdersContext } from "../context";
 import { Components, Styles } from "..";
 
-function Orders() {
+interface Props {
+  disableAnimation?: boolean;
+}
+
+function Orders(props: Props) {
   const [selectedTab, setSelectedTab] = React.useState(0);
   const { orders, isLoading } = useOrdersHistoryQuery();
   const translations = useOrdersContext().translations;
@@ -49,6 +53,13 @@ function Orders() {
       <StyledLists className="twap-orders-lists">
         {_.keys(Status).map((key: any, index: number) => {
           const selected = selectedTab === index;
+          if (props.disableAnimation) {
+            return (
+              <StyledOrderList key={key} style={{ display: selected ? "block" : "none" }}>
+                <OrdersList isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status]} />
+              </StyledOrderList>
+            );
+          }
           return (
             <Fade in={selected} key={key}>
               <StyledOrderList style={{ display: selected ? "block" : "none" }}>

@@ -1,30 +1,153 @@
 import { Box, styled } from "@mui/system";
-import { CSSProperties } from "react";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import IconButton from "@mui/material/IconButton";
 import { Styles as TwapStyles } from "@orbs-network/twap-ui";
+import { DappLayout } from "./Components";
 export const globalStyle = {
   "& *": {
     color: "white",
   },
 };
 
-export const StyledLayoutSpiritswap = styled(Box)(({ mode }: { mode: string }) => ({
-  background: mode === "dark" ? "rgb(16, 23, 38)" : "#FBFBFB",
+export const StyledSpiritSwapBox = styled(Box)(({ isDarkMode }: { isDarkMode: number }) => ({
+  background: isDarkMode ? "rgb(16, 23, 38)" : "#FBFBFB",
   border: `1px solid rgb(55, 65, 81)`,
   borderRadius: 10,
   padding: "0.5rem",
   fontFamily: "Jost",
-  maxWidth: 500,
 }));
 
-export const StyledLayoutQuickswap = styled(Box)(({ mode }: { mode: string }) => ({
-  background: mode === "dark" ? "#1b1e29" : "#FBFBFB",
+export const StyledDapp = styled(Box)({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  minHeight: "100vh",
+  paddingBottom: 100,
+});
+
+export const StyledDappLayoutContent = styled(Box)({
+  gap: 20,
+  display: "flex",
+  flexDirection: "column",
+  paddingTop: 30,
+});
+
+export const StyledQuickswapBox = styled(Box)(({ isDarkMode }: { isDarkMode: number }) => ({
+  background: isDarkMode ? "#1b1e29" : "#FBFBFB",
   padding: 20,
   borderRadius: 10,
 }));
+
+export const StyledQuickswap = styled(StyledDapp)({
+  background: "#12131a",
+  ".ui-selector-btn-selected": {
+    borderBottom: "2px solid white",
+  },
+});
+
+export const StyledSpiritSwap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#000315" : "#FBFBFB",
+  ".menu-button": {
+    svg: {
+      "* ": {
+        color: isDarkMode ? "#FBFBFB" : "#000315",
+      },
+    },
+  },
+}));
+
+export const StyledPangolinBox = styled(Box)({
+  borderRadius: 10,
+  overflow: "hidden",
+  fontFamily: "Poppins",
+
+  "& .twap-container": {
+    paddingTop: 20,
+  },
+});
+export const StyledPangolinDaasBox = styled(StyledPangolinBox)({
+  borderRadius: 10,
+  border: "1px solid #FFC800",
+});
+
+export const StyledPangolin = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#1c1c1c" : "white",
+  ".menu-button": {
+    svg: {
+      "* ": {
+        color: "#FFC800",
+      },
+    },
+  },
+}));
+
+export const StyledSpookySwapLayout = styled(DappLayout)({
+  maxWidth: 520,
+  width: "calc(100% - 30px)",
+});
+
+export const StyledSpiritSwapLayout = styled(DappLayout)({
+  maxWidth: 520,
+  width: "calc(100% - 30px)",
+});
+
+export const StyledSpookySwap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "rgb(18, 17, 34)" : "rgb(250, 249, 250)",
+  ".menu-button": {
+    svg: {
+      "* ": {
+        color: isDarkMode ? "rgb(250, 249, 250)" : "rgb(18, 17, 34)",
+      },
+    },
+  },
+}));
+
+export const StyledSpookySwapBox = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#192239" : "rgb(242, 244, 248)",
+  borderRadius: 10,
+  padding: 24,
+  fontFamily: "Red Hat Display",
+}));
+
+export const StyledChronos = styled(StyledDapp)(({ isDarkMode }: { isDarkMode: number }) => ({
+  fontFamily: "Space Grotesk",
+  background: isDarkMode ? "rgb(10 9 62/1)" : "rgb(224 239 253/1)",
+  backgroundImage: isDarkMode ? `url("chronos.svg")` : "unset",
+  backgroundRepeat: "no-repeat",
+  backgroundSize: "cover",
+  backgroundPosition: "left",
+  ".ui-selector-btn": {
+    color: isDarkMode ? "white" : "black",
+  },
+  ".ui-selector-btn-selected": {
+    borderBottom: isDarkMode ? "2px solid white" : "2px solid black",
+  },
+  ".menu-button": {
+    svg: {
+      "* ": {
+        color: isDarkMode ? "white" : "black",
+      },
+    },
+  },
+}));
+
+export const StyledChronosLayout = styled(DappLayout)({
+  maxWidth: 720,
+  width: "calc(100% - 30px)",
+});
+
+export const StyledQuickswapLayout = styled(DappLayout)({
+  maxWidth: 520,
+  width: "calc(100% - 30px)",
+});
+
+export const StyledPangolinLayout = styled(DappLayout)({
+  maxWidth: 520,
+  width: "calc(100% - 30px)",
+});
 
 export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) => ({
   background: mode === "dark" ? "#192239" : "rgb(242, 244, 248)",
@@ -33,30 +156,13 @@ export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) =
   fontFamily: "Red Hat Display",
 }));
 
-export const StyledPangolin = styled(Box)({
-  borderRadius: 10,
-  fontFamily: "Poppins",
-  overflow: "hidden",
-  "& .twap-container": {
-    paddingTop: 20,
-  },
-});
+// export const StyledLayoutPangolinDaasTWAP = styled(StyledPangolinTWAP)({
+//   border: "1px solid #FFC800",
+// });
 
-export const StyledPangolinTWAP = styled(StyledPangolin)({});
-
-export const StyledLayoutPangolinDaasTWAP = styled(StyledPangolinTWAP)({
-  border: "1px solid #FFC800",
-});
-
-export const StyledLayoutPangolinDaasOrders = styled(StyledPangolin)({
-  border: "1px solid #FFC800",
-});
-
-export const StyledDappContainer = styled(Box)({
-  display: "flex",
-  flexDirection: "column",
-  gap: 30,
-});
+// export const StyledLayoutPangolinDaasOrders = styled(StyledPangolin)({
+//   border: "1px solid #FFC800",
+// });
 
 export const StyledCloseIcon = styled("button")({
   position: "absolute",
@@ -108,10 +214,6 @@ export const StyledApp = styled(Box)({
   alignItems: "center",
   justifyContent: "center",
   flexDirection: "column",
-  paddingBottom: 50,
-  background: "black",
-  minHeight: "100vh",
-  gap: 30,
   "& *::-webkit-scrollbar": {
     display: "none",
     width: 0,
@@ -120,17 +222,6 @@ export const StyledApp = styled(Box)({
     gap: 20,
   },
 });
-
-export const StyledContent = styled(Box)(({ styles }: { styles?: CSSProperties }) => ({
-  flex: 1,
-  maxWidth: 500,
-  width: "calc(100% - 30px)",
-  overflow: "auto",
-  ...styles,
-  display: "flex",
-  flexDirection: "column",
-  gap: 10,
-}));
 
 export const StyledDappSelector = styled(Box)({
   "& .MuiSelect-select": {
@@ -170,12 +261,6 @@ export const StyledMenuMobileToggle = styled(IconButton)({
   marginLeft: 20,
   zoom: 1.4,
   marginTop: 20,
-});
-
-export const StyledDappLayout = styled(Box)({
-  display: "flex",
-  flexDirection: "column",
-  gap: 20,
 });
 
 export const StyledStatus = styled(TwapStyles.StyledColumnFlex)({
@@ -249,8 +334,8 @@ export const StyledUISelectorButtons = styled(TwapStyles.StyledRowFlex)({
 });
 export const StyledUISelectorButton = styled("button")({
   background: "transparent",
-  color: "white",
   border: "unset",
   cursor: "pointer",
   transition: "0.2s all",
+  borderBottom: "2px solid transparent",
 });

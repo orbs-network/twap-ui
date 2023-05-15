@@ -1,6 +1,6 @@
 import { PangolinTWAPProps, TWAP } from "@orbs-network/twap-ui-pangolin";
 import { DappLayout, Popup, TokensList } from "./Components";
-import { StyledPangolinTWAP, StyledLayoutPangolinDaasTWAP, StyledModalContent } from "./styles";
+import { StyledModalContent, StyledPangolin, StyledPangolinBox, StyledPangolinDaasBox, StyledPangolinLayout } from "./styles";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
@@ -119,11 +119,13 @@ const PangolinComponent = () => {
   };
 
   return (
-    <DappLayout name={config.partner}>
-      <StyledPangolinTWAP>
-        <TWAP {...twapProps} />
-      </StyledPangolinTWAP>
-    </DappLayout>
+    <StyledPangolin isDarkMode={isDarkTheme ? 1 : 0}>
+      <StyledPangolinLayout name={config.partner}>
+        <StyledPangolinBox>
+          <TWAP {...twapProps} />
+        </StyledPangolinBox>
+      </StyledPangolinLayout>
+    </StyledPangolin>
   );
 };
 
@@ -151,11 +153,13 @@ const PangolinDaasComponent = () => {
   };
 
   return (
-    <DappLayout name={config.partner}>
-      <StyledLayoutPangolinDaasTWAP>
-        <TWAP {...twapProps} />
-      </StyledLayoutPangolinDaasTWAP>
-    </DappLayout>
+    <StyledPangolin isDarkMode={isDarkTheme ? 1 : 0}>
+      <StyledPangolinLayout name={config.partner}>
+        <StyledPangolinDaasBox>
+          <TWAP {...twapProps} />
+        </StyledPangolinDaasBox>
+      </StyledPangolinLayout>
+    </StyledPangolin>
   );
 };
 

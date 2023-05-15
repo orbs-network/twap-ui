@@ -1,5 +1,5 @@
-import { StyledQuickswapBox, StyledModalContent, StyledQuickswapLayout, StyledQuickswap } from "./styles";
-import { Orders, TWAP, Limit, QuickSwapTWAPProps, QuickSwapOrdersProps } from "@orbs-network/twap-ui-quickswap";
+import { StyledChronos, StyledChronosLayout, StyledModalContent } from "./styles";
+import { Orders, TWAP, Limit, ChronosTWAPProps, ChronosOrdersProps } from "@orbs-network/twap-ui-chronos";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -10,8 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
-const config = Configs.QuickSwap;
-
+const config = { ...Configs.QuickSwap };
+config.partner = "chronos";
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
 export const useDappTokens = () => {
   const { account } = useWeb3React();
@@ -97,7 +97,7 @@ const DappComponent = () => {
     return token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
   };
 
-  const twapProps: QuickSwapTWAPProps = {
+  const twapProps: ChronosTWAPProps = {
     connect,
     account,
     srcToken: zeroAddress,
@@ -110,34 +110,26 @@ const DappComponent = () => {
     getTokenLogoURL,
     isDarkTheme,
   };
-  const ordersProps: QuickSwapOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
+  const ordersProps: ChronosOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
 
   return (
-    <StyledQuickswap>
-      <StyledQuickswapLayout name={config.partner}>
+    <StyledChronos isDarkMode={isDarkTheme ? 1 : 0}>
+      <StyledChronosLayout name={config.partner}>
         <UISelector
           options={[
             {
               title: "TWAP",
-              component: (
-                <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
-                  <TWAP {...twapProps} />
-                </StyledQuickswapBox>
-              ),
+              component: <TWAP {...twapProps} />,
             },
             {
               title: "LIMIT",
-              component: (
-                <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
-                  <Limit {...twapProps} />
-                </StyledQuickswapBox>
-              ),
+              component: <Limit {...twapProps} />,
             },
           ]}
         />
         <Orders {...ordersProps} />
-      </StyledQuickswapLayout>
-    </StyledQuickswap>
+      </StyledChronosLayout>
+    </StyledChronos>
   );
 };
 

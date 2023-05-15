@@ -19,12 +19,17 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
     <StyledModal open={open} onClose={onClose} className={`${className} twap-modal`} hideBackdrop>
       <>
         <Backdrop open={open} onClick={disableBackdropClick ? undefined : onClose}></Backdrop>
-        <StyledModalContent className="twap-modal-content">
+        <StyledModalContent className="twap-modal-content" id="twap-modal-content">
           <StyledClose onClick={onClose}>
             <IoMdClose />
           </StyledClose>
-          {title && <StyledTitle>{title}</StyledTitle>}
-          <StyledSeparator />
+          {title && (
+            <>
+              <StyledTitle>{title}</StyledTitle>
+              <StyledSeparator />
+            </>
+          )}
+
           {children}
         </StyledModalContent>
       </>

@@ -160,6 +160,7 @@ export interface InitLibProps {
 export type OrderUI = ReturnType<typeof parseOrderUi>;
 
 export interface StylesConfig {
+  primaryColor?: string;
   textColor: string;
   iconsColor: string;
   tooltipBackground: string;

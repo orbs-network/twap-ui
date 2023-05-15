@@ -1,10 +1,10 @@
-import { StyledLayoutSpookyswap, StyledModalContent } from "./styles";
+import { StyledModalContent, StyledSpookySwap, StyledSpookySwapBox, StyledSpookySwapLayout } from "./styles";
 import { Orders, TWAP, SpookySwapTWAPProps, SpookySwapOrdersProps } from "@orbs-network/twap-ui-spookyswap";
 import { useConnectWallet, useGetTokensFromViaProtocol, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList } from "./Components";
-import { DappLayout, Popup } from "./Components";
+import { Popup } from "./Components";
 import { TokenListItem } from "./types";
 import _ from "lodash";
 
@@ -75,14 +75,16 @@ const DappComponent = () => {
   const ordersProps: SpookySwapOrdersProps = { account, getTokenImageUrl, dappTokens, getProvider, isDarkTheme };
 
   return (
-    <DappLayout name={config.partner}>
-      <StyledLayoutSpookyswap mode={isDarkTheme ? "dark" : "light"}>
-        <TWAP {...twapProps} />
-      </StyledLayoutSpookyswap>
-      <StyledLayoutSpookyswap mode={isDarkTheme ? "dark" : "light"}>
-        <Orders {...ordersProps} />
-      </StyledLayoutSpookyswap>
-    </DappLayout>
+    <StyledSpookySwap isDarkMode={isDarkTheme ? 1 : 0}>
+      <StyledSpookySwapLayout name={config.partner}>
+        <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+          <TWAP {...twapProps} />
+        </StyledSpookySwapBox>
+        <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+          <Orders {...ordersProps} />
+        </StyledSpookySwapBox>
+      </StyledSpookySwapLayout>
+    </StyledSpookySwap>
   );
 };
 

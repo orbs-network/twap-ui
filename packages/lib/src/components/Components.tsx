@@ -176,12 +176,11 @@ export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: b
   return <TokenSelectButton hideArrow={true} className="twap-token-not-selected" onClick={onClick} />;
 };
 
-export const TokenSymbol = ({ isSrc }: { isSrc?: boolean }) => {
+export const TokenSymbol = ({ isSrc, hideNull }: { isSrc?: boolean; hideNull?: boolean }) => {
   const srcToken = useTwapStore((store) => store.srcToken);
   const dstToken = useTwapStore((store) => store.dstToken);
   const token = isSrc ? srcToken : dstToken;
-
-  return <TokenName name={token?.symbol} />;
+  return <TokenName hideNull={hideNull} name={token?.symbol} />;
 };
 
 export function TradeIntervalSelector() {
@@ -272,14 +271,17 @@ export function ChunksUSD() {
   return <USD value={usd} isLoading={loading} />;
 }
 
-export const TokenBalance = ({ isSrc, label }: { isSrc?: boolean; label?: string }) => {
+export const TokenBalance = ({ isSrc, label, showSymbol }: { isSrc?: boolean; label?: string; showSymbol?: boolean }) => {
   const srcBalance = useTwapStore((state) => state.getSrcBalanceUi());
   const srcLoading = useLoadingState().srcBalanceLoading;
   const dstBalance = useTwapStore((state) => state.getDstBalanceUi());
   const dstLoading = useLoadingState().dstBalanceLoading;
+  const srcToken = useTwapStore((state) => state.srcToken);
+  const dstToken = useTwapStore((state) => state.dstToken);
   const balance = isSrc ? srcBalance : dstBalance;
   const isLoading = isSrc ? srcLoading : dstLoading;
-  return <Balance label={label} value={balance} isLoading={isLoading} />;
+  const symbol = !showSymbol ? undefined : isSrc ? srcToken?.symbol : dstToken?.symbol;
+  return <Balance suffix={symbol} label={label} value={balance} isLoading={isLoading} />;
 };
 
 export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
