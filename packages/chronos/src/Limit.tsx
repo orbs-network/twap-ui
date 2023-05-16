@@ -1,12 +1,12 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
 import { useCallback, useEffect } from "react";
-import { AdapterContextProvider, config, parseToken, useGlobalStyles } from "./hooks";
+import { AdapterContextProvider, config, parseToken } from "./hooks";
 import translations from "./i18n/en.json";
 import { ChronosTWAPProps } from "./types";
 import { Box } from "@mui/system";
 import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
-import { StyledColumnFlex } from "./styles";
+import { configureStyles, StyledColumnFlex } from "./styles";
 
 const storeOverride = {
   isLimitOrder: true,
@@ -19,7 +19,6 @@ const Limit = (props: ChronosTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
 
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
-  const globalStyles = useGlobalStyles(props.isDarkTheme);
 
   const connect = useCallback(() => {
     props.connect();
@@ -38,7 +37,7 @@ const Limit = (props: ChronosTWAPProps) => {
         tokenList={parsedTokens}
         storeOverride={storeOverride}
       >
-        <GlobalStyles styles={globalStyles as any} />
+        <GlobalStyles styles={configureStyles() as any} />
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <StyledColumnFlex>

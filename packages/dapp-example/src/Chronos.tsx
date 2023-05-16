@@ -1,6 +1,6 @@
 import { StyledChronos, StyledChronosLayout, StyledModalContent } from "./styles";
 import { Orders, TWAP, Limit, ChronosTWAPProps, ChronosOrdersProps, ChronosRawToken } from "@orbs-network/twap-ui-chronos";
-import { useConnectWallet, useNetwork, useTheme } from "./hooks";
+import { useConnectWallet, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -12,7 +12,7 @@ import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
 config.partner = "chronos";
-const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
+// const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
 
 const getTokenLogoURL = (symbol: string) => {
   return `https://dexapi.chronos.exchange/tokens/${symbol}.png`;
@@ -20,15 +20,16 @@ const getTokenLogoURL = (symbol: string) => {
 
 export const useDappTokens = () => {
   const { account } = useWeb3React();
-  const { isInValidNetwork } = useNetwork(config.chainId);
+  // const { isInValidNetwork } = useNetwork(config.chainId);
 
   return useQuery(
     ["useDappTokens", config.chainId],
     async () => {
-      const response = await fetch(`https://dexapi.chronos.exchange/pairs/tokens`);
+      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json`);
 
-      const data = (await response.json()).data;
-      const tokenList = data.tokens;
+      // const data = (await response.json()).data;
+      // const tokenList = data.tokens;
+      const tokenList = await response.json();
 
       const parsed = tokenList
         // .filter((t: any) => t.chainId === config.chainId)

@@ -2,7 +2,6 @@ import { Configs, isNativeAddress, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useMemo } from "react";
 import _ from "lodash";
 import Web3 from "web3";
-import { configureStyles } from "./styles";
 import { ChronosRawToken, ChronosTWAPProps } from "./types";
 
 export const config = Configs.QuickSwap;
@@ -33,7 +32,3 @@ const AdapterContext = createContext({} as ChronosTWAPProps);
 export const AdapterContextProvider = AdapterContext.Provider;
 
 export const useAdapterContext = () => useContext(AdapterContext);
-
-export const useGlobalStyles = (isDarkMode = true) => {
-  return configureStyles(isDarkMode);
-};

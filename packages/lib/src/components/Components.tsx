@@ -432,10 +432,10 @@ const StyledMarketPrice = styled(StyledRowFlex)({
   },
 });
 
-export function PoweredBy() {
+export function PoweredBy({ className = "" }: { className?: string }) {
   const translations = useTwapContext().translations;
   return (
-    <StyledPoweredBy className="twap-powered-by">
+    <StyledPoweredBy className={`${className} twap-powered-by`}>
       <a href="https://www.orbs.com/" target="_blank">
         <StyledText>{translations.poweredBy}</StyledText>
         <img src="https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/orbslogo.svg" />
