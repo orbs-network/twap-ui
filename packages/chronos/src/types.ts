@@ -2,7 +2,7 @@ import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 
 export interface ChronosOrdersProps extends OrdersProps {
   getTokenLogoURL: (address: string) => string;
-  dappTokens: { [key: string]: ChronosRawToken };
+  dappTokens: ChronosRawToken[];
 }
 
 export interface ChronosTWAPProps extends TWAPProps {

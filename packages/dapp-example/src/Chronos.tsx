@@ -1,11 +1,11 @@
 import { StyledChronos, StyledChronosLayout, StyledModalContent } from "./styles";
-import { Orders, TWAP, Limit, ChronosTWAPProps, ChronosOrdersProps } from "@orbs-network/twap-ui-chronos";
+import { Orders, TWAP, Limit, ChronosTWAPProps, ChronosOrdersProps, ChronosRawToken } from "@orbs-network/twap-ui-chronos";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
@@ -13,6 +13,11 @@ import { TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
 config.partner = "chronos";
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
+
+const getTokenLogoURL = (symbol: string) => {
+  return `https://dexapi.chronos.exchange/tokens/${symbol}.png`;
+};
+
 export const useDappTokens = () => {
   const { account } = useWeb3React();
   const { isInValidNetwork } = useNetwork(config.chainId);
@@ -20,63 +25,62 @@ export const useDappTokens = () => {
   return useQuery(
     ["useDappTokens", config.chainId],
     async () => {
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json`);
+      const response = await fetch(`https://dexapi.chronos.exchange/pairs/tokens`);
 
-      const tokenList = await response.json();
+      const data = (await response.json()).data;
+      const tokenList = data.tokens;
+
       const parsed = tokenList
-        .filter((t: any) => t.chainId === config.chainId)
-        .map(({ symbol, address, decimals, logoURI, name, chainId }: any) => ({
+        // .filter((t: any) => t.chainId === config.chainId)
+        .map(({ symbol, address, decimals, name }: any) => ({
           decimals,
           symbol,
           name,
-          chainId,
           address,
-          tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
-          tags: [],
+          logoURI: getTokenLogoURL(symbol),
         }));
+
       const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
 
-      const _tokens = _.sortBy(parsed, (t: any) => {
+      return _.sortBy(parsed, (t: any) => {
         const index = candiesAddresses.indexOf(t.address);
         return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
       });
-
-      return { ..._.mapKeys(_tokens, (t) => t.address) } as any;
     },
-    { enabled: !!account && !isInValidNetwork }
+    { enabled: !!account }
   );
 };
 
 interface TokenSelectModalProps {
-  isOpen: boolean;
-  selectedToken?: any;
-  onCurrencySelect: (token: any) => void;
-  onDismiss: () => void;
+  open: boolean;
+  selectToken: (token: any) => void;
+  setOpen: () => void;
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
   return _.map(rawList, (rawToken) => {
     return {
       token: {
-        address: rawToken.address ?? rawToken.tokenInfo?.address,
-        decimals: rawToken.decimals ?? rawToken.tokenInfo?.decimals,
-        symbol: rawToken.symbol ?? rawToken.tokenInfo?.symbol,
-        logoUrl: rawToken.tokenInfo?.logoURI || nativeTokenLogo,
+        address: rawToken.address,
+        decimals: rawToken.decimals,
+        symbol: rawToken.symbol,
+        logoUrl: rawToken.logoURI,
       },
       rawToken,
     };
   });
 };
 
-const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectModalProps) => {
+const TokenSelectModal = ({ open, selectToken, setOpen }: TokenSelectModalProps) => {
   const { data: tokensList } = useDappTokens();
+
   const tokensListSize = _.size(tokensList);
   const parsedList = useMemo(() => parseList(tokensList), [tokensListSize]);
 
   return (
-    <Popup isOpen={isOpen} onClose={onDismiss}>
+    <Popup isOpen={open} onClose={setOpen}>
       <StyledModalContent>
-        <TokensList tokens={parsedList} onClick={onCurrencySelect} />
+        <TokensList tokens={parsedList} onClick={selectToken} />
       </StyledModalContent>
     </Popup>
   );
@@ -85,17 +89,8 @@ const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8206.png";
 const DappComponent = () => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
-  const { data: dappTokens } = useDappTokens();
+  const { data: dappTokens = [] } = useDappTokens();
   const { isDarkTheme } = useTheme();
-
-  const getTokenLogoURL = (address: string) => {
-    if (!dappTokens) return "";
-    const token = dappTokens[address];
-    if (!token) {
-      return null;
-    }
-    return token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
-  };
 
   const twapProps: ChronosTWAPProps = {
     connect,
@@ -111,6 +106,14 @@ const DappComponent = () => {
     isDarkTheme,
   };
   const ordersProps: ChronosOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
+
+  useEffect(() => {
+    if (isDarkTheme) {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+  }, [isDarkTheme]);
 
   return (
     <StyledChronos isDarkMode={isDarkTheme ? 1 : 0}>

@@ -12,7 +12,7 @@ export const useParseTokens = (dappTokens: any, getTokenLogoURL: (address: strin
   return useMemo(() => _.compact(_.map(dappTokens, (t) => parseToken(getTokenLogoURL, t))), [listLength]);
 };
 
-export const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: ChronosRawToken): TokenData | undefined => {
+export const parseToken = (getTokenLogoURL: (symbol: string) => string, rawToken: ChronosRawToken): TokenData | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
@@ -24,7 +24,7 @@ export const parseToken = (getTokenLogoURL: (address: string) => string, rawToke
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: getTokenLogoURL(rawToken.address),
+    logoUrl: getTokenLogoURL(rawToken.symbol),
   };
 };
 

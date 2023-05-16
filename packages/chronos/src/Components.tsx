@@ -2,7 +2,7 @@ import { memo, ReactNode, useCallback, useState } from "react";
 import { parseToken, useAdapterContext } from "./hooks";
 import { ChronosRawToken } from "./types";
 import { Components, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks } from "@orbs-network/twap-ui";
-import { StyledChange } from "./styles";
+import { StyledBalance, StyledCard, StyledChange } from "./styles";
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
@@ -35,7 +35,7 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   }, []);
 
   return (
-    <Components.Base.Card className="twap-token-panel">
+    <Container className="twap-token-panel">
       <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
       <TwapStyles.StyledColumnFlex gap={16}>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
@@ -51,11 +51,13 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
               {isSrcToken && <SrcTokenPercentSelector />}
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
-          <Components.TokenBalance label="Available balance" showSymbol={true} isSrc={isSrcToken} />
+          <StyledBalance>
+            <Components.TokenBalance label="Available balance" showSymbol={true} isSrc={isSrcToken} />
+          </StyledBalance>
         </TwapStyles.StyledRowFlex>
         {/* <Components.TokenUSD isSrc={isSrcToken} /> */}
       </TwapStyles.StyledColumnFlex>
-    </Components.Base.Card>
+    </Container>
   );
 };
 
@@ -72,11 +74,12 @@ export const SrcTokenPercentSelector = () => {
   return (
     <TwapStyles.StyledRowFlex gap={4} justifyContent="flex-start" className="twap-percent-selector" width="fit-content">
       {percent.map((it) => {
+        TwapStyles.StyledRowFlex;
         const text = it === 1 ? translations.max : `${it * 100}%`;
         return (
-          <Components.Base.Card key={it}>
+          <Container key={it}>
             <button onClick={() => onClick(it)}>{text}</button>
-          </Components.Base.Card>
+          </Container>
         );
       })}
     </TwapStyles.StyledRowFlex>
@@ -88,26 +91,26 @@ export const OrderSummary = ({ children }: { children: ReactNode }) => {
     <Components.OrderSummaryModalContainer>
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Base.Card>
+          <Container>
             <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Base.Card>
-          <Components.Base.Card>
+          </Container>
+          <Container>
             <Components.OrderSummaryTokenDisplay />
-          </Components.Base.Card>
+          </Container>
           <Components.OrderSummaryLimitPrice />
-          <Components.Base.Card>{children}</Components.Base.Card>
-          <Components.Base.Card>
+          <Container>{children}</Container>
+          <Container>
             <TwapStyles.StyledColumnFlex gap={10}>
               <Components.DisclaimerText />
             </TwapStyles.StyledColumnFlex>
-          </Components.Base.Card>
+          </Container>
         </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
+        <Container>
           <TwapStyles.StyledColumnFlex gap={12}>
             <Components.AcceptDisclaimer />
             <Components.OutputAddress />
           </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
+        </Container>
         <Components.SubmitButton />
       </TwapStyles.StyledColumnFlex>
     </Components.OrderSummaryModalContainer>
@@ -119,5 +122,13 @@ export const ChangeTokensOrder = () => {
     <StyledChange>
       <Components.ChangeTokensOrder />
     </StyledChange>
+  );
+};
+
+export const Container = ({ children, className }: { children: ReactNode; className?: string }) => {
+  return (
+    <StyledCard className={className}>
+      <div className="twap-card-children">{children}</div>
+    </StyledCard>
   );
 };

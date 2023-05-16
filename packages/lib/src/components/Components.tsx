@@ -92,10 +92,10 @@ export function ChunksSliderSelect() {
   return <StyledChunksSliderSelect maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />;
 }
 
-export const ChangeTokensOrder = ({ children }: { children?: ReactNode }) => {
+export const ChangeTokensOrder = ({ children, className = "" }: { children?: ReactNode; className?: string }) => {
   const switchTokens = useTwapStore((state) => state.switchTokens);
   return (
-    <StyledRowFlex className="twap-change-tokens-order">
+    <StyledRowFlex className={`${className} twap-change-tokens-order`}>
       <IconButton onClick={switchTokens}>{children || <Icon icon={<HiOutlineSwitchVertical />} />}</IconButton>
     </StyledRowFlex>
   );
