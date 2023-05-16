@@ -10,21 +10,13 @@ export interface ChronosTWAPProps extends TWAPProps {
   onSrcTokenSelected: (value: any) => void;
   onDstTokenSelected: (value: any) => void;
   getTokenLogoURL: (address: string) => string;
-  dappTokens: { [key: string]: ChronosRawToken };
+  dappTokens: ChronosRawToken[];
 }
 
 export interface ChronosRawToken {
-  address: string;
-  chainId: number;
-  decimals: number;
   name: string;
   symbol: string;
-  tokenInfo: {
-    address: string;
-    chainId: number;
-    decimals: number;
-    logoURI: string;
-    name: string;
-    symbol: string;
-  };
+  decimals: number;
+  address: string;
+  price_quote: number;
 }

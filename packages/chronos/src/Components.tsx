@@ -7,7 +7,7 @@ import { StyledChange } from "./styles";
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
 
-  return <TokenSelectModal tokenSelected={undefined} onCurrencySelect={props.onSelect} isOpen={props.isOpen} onDismiss={props.onClose} />;
+  return <TokenSelectModal selectToken={props.onSelect} open={props.isOpen} setOpen={props.onClose} />;
 };
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 

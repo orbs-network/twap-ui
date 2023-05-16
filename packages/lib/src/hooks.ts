@@ -190,7 +190,7 @@ export const useInitLib = () => {
       return;
     }
 
-    const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
+    const chain = 137;
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
     setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));

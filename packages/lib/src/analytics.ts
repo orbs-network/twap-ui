@@ -117,7 +117,7 @@ const sendAnalyticsEvent = (category: Category, action: string, data?: any) => {
     },
     body: JSON.stringify({
       maker: lib?.maker,
-      userAgent: navigator.userAgent.toString(),
+      userAgent: "",
       partner: lib?.config.partner,
       chain: lib?.config.chainId,
       category,

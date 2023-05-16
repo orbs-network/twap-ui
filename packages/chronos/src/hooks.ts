@@ -24,7 +24,7 @@ export const parseToken = (getTokenLogoURL: (address: string) => string, rawToke
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: rawToken.tokenInfo?.logoURI || getTokenLogoURL(rawToken.address),
+    logoUrl: getTokenLogoURL(rawToken.address),
   };
 };
 

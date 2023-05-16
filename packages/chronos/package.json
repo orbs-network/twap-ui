@@ -28,7 +28,7 @@
     "lodash": "4.x",
     "react-icons": "4.x",
     "web3": "1.x"
-  },
+    },
   "peerDependencies": {
     "react": "*",
     "react-dom": "*"

@@ -41,13 +41,13 @@ import {
 import { TWAPTokenSelectProps } from "../types";
 import { analytics } from "../analytics";
 import { FormControl, RadioGroup } from "@mui/material";
-const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
+// const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
 
-const odnp = new ODNP();
-odnp.init();
-odnp.hide();
+// const odnp = new ODNP();
+// odnp.init();
+// odnp.hide();
 
-odnp.mainDiv.classList = "odnp";
+// odnp.mainDiv.classList = "odnp";
 export function OdnpButton({ className = "" }: { className?: string }) {
   const account = useTwapStore((state) => state.lib)?.maker;
   const translations = useOrdersContext().translations;
@@ -55,7 +55,7 @@ export function OdnpButton({ className = "" }: { className?: string }) {
 
   const onClick = () => {
     analytics.onODNPClick();
-    odnp.show(account, "twap");
+    // odnp.show(account, "twap");
   };
   return (
     <StyledOdnpButton className={`twap-odnp ${className}`} onClick={onClick}>

@@ -1,5 +1,9 @@
 import { Box, styled } from "@mui/material";
+import { Styles } from "@orbs-network/twap-ui";
 import { StylesConfig } from "@orbs-network/twap-ui";
+
+
+
 
 interface Styles extends StylesConfig {
   fromGradient: string;
@@ -59,6 +63,39 @@ export const lightModeStylesConfig: Styles = {
   selectedTokenBorderColor: "#656565",
 };
 
+
+  const card = {
+    padding: "20px",
+    borderRadius: 10,
+    position: "relative",
+    "*": {
+      zIndex: 1,
+    },
+    "&:after": {
+      pointerEvents: "none",
+      borderRadius: 30,
+      left: 0,
+      top: 0,
+      content: "''",
+      background: lightModeStylesConfig.cardBackground,
+      position: "absolute",
+      opacity: 0.5,
+      mixBlendMode: "overlay",
+      width: "100%",
+      height: "100%",
+      zIndex: 0,
+    },
+    ".dark": {
+      "&:after": {
+        background: darkModeStylesConfig.cardBackground,
+      },
+    },
+  };
+
+  export const StyledCard = styled(Styles.Card)({});
+
+  
+
 export const StyledColumnFlex = styled(Box)({
   display: "flex",
   flexDirection: "column",
@@ -81,29 +118,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
   const stops = `${styles.fromGradient},${styles.toGradient}`;
   const gradient = `linear-gradient(to right,${styles.fromGradient},${styles.toGradient} )`;
 
-  const card = {
-    padding: "20px",
-    borderRadius: 10,
-    position: "relative",
-    "*": {
-      position: "relative",
-      zIndex: 1,
-    },
-    "&:after": {
-      pointerEvents: "none",
-      borderRadius: 30,
-      left: 0,
-      top: 0,
-      content: "''",
-      background: styles.cardBackground,
-      position: "absolute",
-      opacity: 0.5,
-      mixBlendMode: "overlay",
-      width: "100%",
-      height: "100%",
-      zIndex: 0,
-    },
-  };
+
 
   return {
     ".twap-change-tokens-order": {
