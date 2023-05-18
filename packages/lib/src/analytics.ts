@@ -120,6 +120,7 @@ const sendAnalyticsEvent = (category: Category, action: string, data?: any) => {
       userAgent: "",
       partner: lib?.config.partner,
       chain: lib?.config.chainId,
+      location: document.location.href,
       category,
       action,
       data,
