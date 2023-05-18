@@ -62,6 +62,11 @@ export const StyledThenaBox = styled(Box)(({ isDarkMode }: { isDarkMode: number 
   borderRadius: 10,
 }));
 
+export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#090333" : "#FBFBFB",
+  fontFamily: "Figtree",
+}));
+
 export const StyledQuickswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#12131a" : "#F8F7F7",
   ".ui-selector-btn-selected": {

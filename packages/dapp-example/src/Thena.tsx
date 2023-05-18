@@ -1,4 +1,4 @@
-import { StyledQuickswapBox, StyledModalContent, StyledQuickswapLayout, StyledQuickswap, StyledThenaGradient, StyledThenaBox } from "./styles";
+import { StyledQuickswapBox, StyledModalContent, StyledQuickswapLayout, StyledQuickswap, StyledThenaGradient, StyledThenaBox, StyledThena } from "./styles";
 import { Orders, TWAP, Limit, QuickSwapTWAPProps, QuickSwapOrdersProps } from "@orbs-network/twap-ui-thena";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
@@ -11,7 +11,7 @@ import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
-config.partner = "Thena";
+config.partner = "Thena [WIP]";
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
 export const useDappTokens = () => {
@@ -82,7 +82,8 @@ const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectMo
     </Popup>
   );
 };
-const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8206.png";
+const logo =
+  "https://www.gitbook.com/cdn-cgi/image/width=40,dpr=2,height=40,fit=contain,format=auto/https%3A%2F%2F2770290301-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252Fp4Ew3qUZPqMSVg5hJI12%252Ficon%252FIfdx379foqQ3kMzwzmSx%252FTHE.png%3Falt%3Dmedia%26token%3D67208295-11aa-4faa-9c85-117b381682f3";
 const DappComponent = () => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
@@ -114,7 +115,7 @@ const DappComponent = () => {
   const ordersProps: QuickSwapOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
 
   return (
-    <StyledQuickswap isDarkMode={isDarkTheme ? 1 : 0}>
+    <StyledThena isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledQuickswapLayout name={config.partner}>
         <UISelector
           options={[
@@ -146,7 +147,7 @@ const DappComponent = () => {
           </StyledThenaBox>
         </StyledThenaGradient>
       </StyledQuickswapLayout>
-    </StyledQuickswap>
+    </StyledThena>
   );
 };
 
