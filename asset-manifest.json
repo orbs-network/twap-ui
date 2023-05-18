@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/twap-ui/static/js/main.fef44310.js",
+    "main.js": "/twap-ui/static/js/main.740138bb.js",
     "index.html": "/twap-ui/index.html",
-    "main.fef44310.js.map": "/twap-ui/static/js/main.fef44310.js.map"
+    "main.740138bb.js.map": "/twap-ui/static/js/main.740138bb.js.map"
   },
   "entrypoints": [
-    "static/js/main.fef44310.js"
+    "static/js/main.740138bb.js"
   ]
 }
