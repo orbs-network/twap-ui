@@ -7,7 +7,7 @@ const USD = ({ isLoading = false, value, className = "", prefix = "" }: { prefix
   if (value == null) return null;
   return (
     <StyledLabel loading={isLoading} className={`twap-usd ${className}`}>
-      {prefix} ~ $ <NumberDisplay value={value} />
+      {prefix} ~ $<NumberDisplay value={value} />
     </StyledLabel>
   );
 };

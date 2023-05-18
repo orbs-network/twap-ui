@@ -4,7 +4,7 @@ import { IoIosArrowDown } from "react-icons/io";
 import Tooltip from "./Tooltip";
 import { useTwapContext } from "../../context";
 import { useTwapStore } from "../../store";
-import { StyledOneLineText } from "../../styles";
+import { StyledOneLineText, StyledRowFlex } from "../../styles";
 
 interface Props {
   onClick: () => void;
@@ -36,8 +36,10 @@ function TokenSelectButton({ className = "", onClick, hideArrow }: Props) {
   return (
     <Tooltip text={warning}>
       <StyledContainer className={`twap-token-select ${className}`} onClick={_onClick}>
-        <StyledOneLineText>{translations.selectToken}</StyledOneLineText>
-        {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
+        <StyledRowFlex>
+          <StyledOneLineText>{translations.selectToken}</StyledOneLineText>
+          {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
+        </StyledRowFlex>
       </StyledContainer>
     </Tooltip>
   );
@@ -45,4 +47,6 @@ function TokenSelectButton({ className = "", onClick, hideArrow }: Props) {
 
 export default TokenSelectButton;
 
-const StyledContainer = styled("div")({});
+const StyledContainer = styled("div")({
+  cursor: "pointer",
+});

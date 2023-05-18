@@ -5,8 +5,8 @@ import { AdapterContextProvider, config, parseToken, useGlobalStyles } from "./h
 import translations from "./i18n/en.json";
 import { QuickSwapTWAPProps } from "./types";
 import { Box } from "@mui/system";
-import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
-import { StyledSubmit } from "./styles";
+import { Card, OrderSummary, TokenPanel } from "./Components";
+import { StyledColumnFlex, StyledContainer, StyledPoweredBy, StyledSubmit, StyledTokenChange } from "./styles";
 
 const TWAP = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
@@ -25,7 +25,7 @@ const TWAP = (props: QuickSwapTWAPProps) => {
   }, []);
 
   return (
-    <Box className="adapter-wrapper">
+    <Box className="twap-adapter-wrapper">
       <TwapAdapter
         connect={connect}
         config={config}
@@ -39,21 +39,21 @@ const TWAP = (props: QuickSwapTWAPProps) => {
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>
           <div className="twap-container">
-            <TokenPanel isSrcToken={true} />
-            <ChangeTokensOrder />
-            <TokenPanel />
-            <Components.MarketPrice />
-            <TwapStyles.StyledColumnFlex gap={12}>
+            <StyledColumnFlex>
+              <TokenPanel isSrcToken={true} />
+              <StyledTokenChange />
+              <TokenPanel />
+              <Components.MarketPrice />
               <LimitPrice />
               <TradeSize />
               <TradeInterval />
               <MaxDuration />
               <StyledSubmit isMain />
-            </TwapStyles.StyledColumnFlex>
+            </StyledColumnFlex>
             <OrderSummary>
               <Components.OrderSummaryDetails />
             </OrderSummary>
-            <Components.PoweredBy />
+            <StyledPoweredBy />
           </div>
         </AdapterContextProvider>
       </TwapAdapter>
@@ -65,7 +65,7 @@ export default TWAP;
 
 const TradeSize = () => {
   return (
-    <Components.Base.Card className="twap-trade-size">
+    <Card className="twap-trade-size">
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
@@ -80,25 +80,25 @@ const TradeSize = () => {
           <Components.ChunksUSD />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>
-    </Components.Base.Card>
+    </Card>
   );
 };
 
 const MaxDuration = () => {
   return (
-    <Components.Base.Card className="twap-max-duration-wrapper">
+    <Card className="twap-max-duration-wrapper">
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Labels.MaxDurationLabel />
         <Components.PartialFillWarning />
         <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
-    </Components.Base.Card>
+    </Card>
   );
 };
 
 const TradeInterval = () => {
   return (
-    <Components.Base.Card className="twap-trade-interval-wrapper">
+    <Card className="twap-trade-interval-wrapper">
       <TwapStyles.StyledRowFlex>
         <Components.Labels.TradeIntervalLabel />
         <Components.FillDelayWarning />
@@ -106,22 +106,20 @@ const TradeInterval = () => {
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
-    </Components.Base.Card>
+    </Card>
   );
 };
 
 export const LimitPrice = () => {
   return (
     <>
-      <Components.Base.Card className="twap-limit-price">
-        <TwapStyles.StyledColumnFlex>
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <Components.Labels.LimitPriceLabel />
-            <Components.LimitPriceToggle />{" "}
-          </TwapStyles.StyledRowFlex>
-          <Components.LimitPriceInput placeholder="0" />
-        </TwapStyles.StyledColumnFlex>
-      </Components.Base.Card>
+      <Card className="twap-limit-price">
+        <TwapStyles.StyledRowFlex justifyContent="space-between">
+          <Components.Labels.LimitPriceLabel />
+          <Components.LimitPriceToggle />{" "}
+        </TwapStyles.StyledRowFlex>
+        <Components.LimitPriceInput placeholder="0" />
+      </Card>
     </>
   );
 };

@@ -5,7 +5,8 @@ import { AdapterContextProvider, config, parseToken, useGlobalStyles } from "./h
 import translations from "./i18n/en.json";
 import { QuickSwapTWAPProps } from "./types";
 import { Box } from "@mui/system";
-import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
+import { OrderSummary, TokenPanel } from "./Components";
+import { StyledPoweredBy, StyledTokenChange } from "./styles";
 
 const storeOverride = {
   isLimitOrder: true,
@@ -25,7 +26,7 @@ const Limit = (props: QuickSwapTWAPProps) => {
   }, []);
 
   return (
-    <Box className="adapter-wrapper">
+    <Box className="twap-adapter-wrapper">
       <TwapAdapter
         connect={connect}
         config={config}
@@ -41,7 +42,7 @@ const Limit = (props: QuickSwapTWAPProps) => {
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <TokenPanel isSrcToken={true} />
-            <ChangeTokensOrder />
+            <StyledTokenChange />
             <TokenPanel />
             <Components.MarketPrice />
             <TwapStyles.StyledColumnFlex gap={12}>
@@ -56,7 +57,7 @@ const Limit = (props: QuickSwapTWAPProps) => {
                 <Components.OrderSummaryDetailsMinDstAmount />
               </TwapStyles.StyledColumnFlex>
             </OrderSummary>
-            <Components.PoweredBy />
+            <StyledPoweredBy />
           </div>
         </AdapterContextProvider>
       </TwapAdapter>

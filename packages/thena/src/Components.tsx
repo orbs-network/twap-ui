@@ -2,8 +2,7 @@ import { memo, ReactNode, useCallback, useState } from "react";
 import { parseToken, useAdapterContext } from "./hooks";
 import { QuickSwapRawToken } from "./types";
 import { Components, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks } from "@orbs-network/twap-ui";
-import { Box } from "@mui/material";
-import { StyledPanelInput } from "./styles";
+import { StyledBalance, StyledCard, StyledContainer, StyledPanelInput, StyledPercentSelector, StyledTokenPanelTop, StyledTokenSelect } from "./styles";
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
@@ -40,43 +39,52 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     <>
       <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
 
-      <TwapStyles.StyledColumnFlex gap={0} className="twap-token-panel">
-        <Components.Base.Card>
+      <StyledContainer className="twap-token-panel">
+        <StyledTokenPanelTop>
+          <Components.Base.SmallLabel className="twap-token-panel-title">{isSrcToken ? translations.from : translations.to}</Components.Base.SmallLabel>
+          <TwapStyles.StyledRowFlex justifyContent="flex-end">
+            {isSrcToken && <SrcTokenPercentSelector />}
+            <StyledBalance isSrc={isSrcToken} />
+          </TwapStyles.StyledRowFlex>
+        </StyledTokenPanelTop>
+        <Card>
           <TwapStyles.StyledColumnFlex gap={16}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.Base.SmallLabel className="twap-token-panel-title">
-                {isSrcToken ? translations.from : `${translations.to} (${translations.estimate})`}
-              </Components.Base.SmallLabel>
-              {isSrcToken && <SrcTokenPercentSelector />}
-            </TwapStyles.StyledRowFlex>
-            <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
-              <StyledPanelInput placeholder="0.00" isSrc={isSrcToken} />
-            </TwapStyles.StyledRowFlex>
-            <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenBalance isSrc={isSrcToken} />
-              <Components.TokenUSD isSrc={isSrcToken} />
+              <TwapStyles.StyledColumnFlex gap={0}>
+                <StyledPanelInput placeholder="0.00" isSrc={isSrcToken} />
+                <Components.TokenUSD isSrc={isSrcToken} />
+              </TwapStyles.StyledColumnFlex>
+              <StyledTokenSelect hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-      </TwapStyles.StyledColumnFlex>
+        </Card>
+      </StyledContainer>
     </>
+  );
+};
+
+export const Card = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
+  return (
+    <StyledCard className={`twap-card ${className}`}>
+      <div className="twap-card-children">{children}</div>
+    </StyledCard>
   );
 };
 
 export const SrcTokenPercentSelector = () => {
   const onPercentClick = hooks.useCustomActions().onPercentClick;
-  const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {
     onPercentClick(value);
   };
 
   return (
-    <TwapStyles.StyledRowFlex className="twap-percent-selector" width="fit-content">
+    <StyledPercentSelector className="twap-percent-selector">
+      <button onClick={() => onClick(0.25)}>25%</button>
       <button onClick={() => onClick(0.5)}>50%</button>
-      <button onClick={() => onClick(1)}>{translations.max}</button>
-    </TwapStyles.StyledRowFlex>
+      <button onClick={() => onClick(0.75)}>75%</button>
+      <button onClick={() => onClick(1)}>100%</button>
+    </StyledPercentSelector>
   );
 };
 
@@ -108,13 +116,5 @@ export const OrderSummary = ({ children }: { children: ReactNode }) => {
         <Components.SubmitButton />
       </TwapStyles.StyledColumnFlex>
     </Components.OrderSummaryModalContainer>
-  );
-};
-
-export const ChangeTokensOrder = () => {
-  return (
-    <Box mt={1.5} sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <Components.ChangeTokensOrder />
-    </Box>
   );
 };

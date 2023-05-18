@@ -41,6 +41,7 @@ import {
 import { TWAPTokenSelectProps } from "../types";
 import { analytics } from "../analytics";
 import { FormControl, RadioGroup } from "@mui/material";
+import { IoIosArrowDown } from "react-icons/io";
 // const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
 
 // const odnp = new ODNP();
@@ -154,7 +155,7 @@ export function TokenLogoAndSymbol({ isSrc, reverse }: { isSrc?: boolean; revers
   return <TokenDisplay reverse={reverse} logo={token?.logoUrl} symbol={token?.symbol} />;
 }
 
-export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: boolean }) => {
+export const TokenSelect = ({ onClick, isSrc, hideArrow = true, className = "" }: { onClick: () => void; isSrc?: boolean; hideArrow?: boolean; className?: string }) => {
   const srcToken = useTwapStore((state) => state.srcToken);
   const dstToken = useTwapStore((state) => state.dstToken);
 
@@ -167,13 +168,14 @@ export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: b
         style={{ cursor: "pointer" }}
         width="fit-content"
         onClick={onClick}
-        className={`twap-token-select twap-token-selected ${!!srcToken && !!dstToken ? "twap-token-filled" : ""}`}
+        className={`${className} twap-token-select twap-token-selected ${!!srcToken && !!dstToken ? "twap-token-filled" : ""}`}
       >
         <TokenLogoAndSymbol isSrc={isSrc} />
+        {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
       </StyledRowFlex>
     );
   }
-  return <TokenSelectButton hideArrow={true} className="twap-token-not-selected" onClick={onClick} />;
+  return <TokenSelectButton hideArrow={hideArrow} className={`${className} twap-token-not-selected`} onClick={onClick} />;
 };
 
 export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hideNull?: boolean; onClick?: () => void }) => {
@@ -271,7 +273,7 @@ export function ChunksUSD() {
   return <USD value={usd} isLoading={loading} />;
 }
 
-export const TokenBalance = ({ isSrc, label, showSymbol }: { isSrc?: boolean; label?: string; showSymbol?: boolean }) => {
+export const TokenBalance = ({ isSrc, label, showSymbol, className = "" }: { isSrc?: boolean; label?: string; showSymbol?: boolean; className?: string }) => {
   const srcBalance = useTwapStore((state) => state.getSrcBalanceUi());
   const srcLoading = useLoadingState().srcBalanceLoading;
   const dstBalance = useTwapStore((state) => state.getDstBalanceUi());
@@ -281,7 +283,7 @@ export const TokenBalance = ({ isSrc, label, showSymbol }: { isSrc?: boolean; la
   const balance = isSrc ? srcBalance : dstBalance;
   const isLoading = isSrc ? srcLoading : dstLoading;
   const symbol = !showSymbol ? undefined : isSrc ? srcToken?.symbol : dstToken?.symbol;
-  return <Balance suffix={symbol} label={label} value={balance} isLoading={isLoading} />;
+  return <Balance className={className} suffix={symbol} label={label} value={balance} isLoading={isLoading} />;
 };
 
 export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
