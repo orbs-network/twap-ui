@@ -50,6 +50,18 @@ export const StyledQuickswapBox = styled(Box)(({ isDarkMode }: { isDarkMode: num
   borderRadius: 10,
 }));
 
+export const StyledThenaGradient = styled(Box)({
+  background: "transparent linear-gradient(128deg,#ed00c9,#bd00ed) 0 0 no-repeat padding-box",
+  padding: 1,
+  borderRadius: 10,
+});
+
+export const StyledThenaBox = styled(Box)(({ isDarkMode }: { isDarkMode: number }) => ({
+  background: "transparent linear-gradient(90deg,#1d023b,#17023e) 0 0 no-repeat padding-box",
+  padding: 20,
+  borderRadius: 10,
+}));
+
 export const StyledQuickswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#12131a" : "#F8F7F7",
   ".ui-selector-btn-selected": {

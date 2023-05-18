@@ -11,7 +11,7 @@ import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
-config.partner = "chronos";
+config.partner = "Chronos";
 // const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
 
 const getTokenLogoURL = (symbol: string) => {

@@ -109,7 +109,7 @@ export function MaxDurationSelector() {
   return <TimeSelector value={duration} onChange={onChange} />;
 }
 
-export const TokenInput = ({ isSrc, placeholder }: { isSrc?: boolean; placeholder?: string }) => {
+export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boolean; placeholder?: string; className?: string }) => {
   // src
   const srcDecimals = useTwapStore((store) => store.srcToken?.decimals);
   const srcUsdLoading = useLoadingState().srcUsdLoading;
@@ -125,7 +125,7 @@ export const TokenInput = ({ isSrc, placeholder }: { isSrc?: boolean; placeholde
 
   return (
     <NumericInput
-      className="twap-token-input"
+      className={`${className} twap-token-input`}
       decimalScale={isSrc ? srcDecimals : dstDecimals}
       prefix={isSrc ? "" : isLimitOrder ? "≥" : "~"}
       loading={isSrc ? srcInputLoading : dstInputLoading}
