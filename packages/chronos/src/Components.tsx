@@ -45,9 +45,8 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
           <TwapStyles.StyledColumnFlex gap={5} style={{ width: "unset", flex: 1 }}>
             <Components.TokenInput placeholder="0.00" isSrc={isSrcToken} />
             <TwapStyles.StyledRowFlex gap={16} justifyContent="flex-start">
-              <div onClick={() => setTokenListOpen(true)} style={{ cursor: "pointer" }}>
-                <Components.TokenSymbol hideNull={true} isSrc={isSrcToken} />
-              </div>
+              <Components.TokenSymbol onClick={() => setTokenListOpen(true)} hideNull={true} isSrc={isSrcToken} />
+
               {isSrcToken && <SrcTokenPercentSelector />}
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
@@ -88,7 +87,7 @@ export const SrcTokenPercentSelector = () => {
 
 export const OrderSummary = ({ children }: { children: ReactNode }) => {
   return (
-    <Components.OrderSummaryModalContainer>
+    <Components.OrderSummaryModalContainer className="twap-ui-chronos-modal">
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
           <Container>

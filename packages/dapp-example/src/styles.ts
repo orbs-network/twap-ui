@@ -9,6 +9,15 @@ export const globalStyle = {
   "& *": {
     color: "white",
   },
+  ".twap-container": {
+    zoom: "1!important",
+  },
+  ".twap-orders-wrapper": {
+    zoom: "1!important",
+  },
+  ".twap-ui-chronos-modal": {
+    fontFamily: "Space Grotesk",
+  },
 };
 
 export const StyledSpiritSwapBox = styled(Box)(({ isDarkMode }: { isDarkMode: number }) => ({
@@ -41,12 +50,12 @@ export const StyledQuickswapBox = styled(Box)(({ isDarkMode }: { isDarkMode: num
   borderRadius: 10,
 }));
 
-export const StyledQuickswap = styled(StyledDapp)({
-  background: "#12131a",
+export const StyledQuickswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#12131a" : "#F8F7F7",
   ".ui-selector-btn-selected": {
     borderBottom: "2px solid white",
   },
-});
+}));
 
 export const StyledSpiritSwap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#000315" : "#FBFBFB",

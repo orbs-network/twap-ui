@@ -1,9 +1,9 @@
 import { Box, styled } from "@mui/material";
 import { Components } from "@orbs-network/twap-ui";
 
-const stops = `#9e5bf1,#356ff4`;
-const gradient = `linear-gradient(to right,#9e5bf1,#356ff4 )`;
-const zoom = 1.17;
+const stops = `#9E5BF1,#356FF4`;
+const gradient = `linear-gradient(to right,${stops} )`;
+const zoom = 1.175;
 const lightStyles = {
   containerBg: "rgb(255 255 255/1)",
   textColor: "rgb(10 9 62/1)",
@@ -13,7 +13,7 @@ const lightStyles = {
 };
 
 const darkStyles = {
-  containerBg: "rgb(255 255 255/0.5)",
+  containerBg: "rgb(255 255 255/1)",
   textColor: "white",
   loader: "rgba(255, 255, 255, 0.2)",
   spinner: "white",
@@ -22,8 +22,6 @@ const darkStyles = {
 
 const cardStyles = {
   position: "relative",
-  borderRadius: 10,
-
   "&:after": {
     pointerEvents: "none",
     borderRadius: 30,
@@ -47,12 +45,12 @@ export const StyledCard = styled(Components.Base.Card)({
     position: "relative",
     width: "100%",
     height: "100%",
-    padding: "20px",
+    padding: "18px 17px 18px 17px",
   },
 });
 
 export const StyledPoweredBy = styled(Components.PoweredBy)({
-  marginTop: 20,
+  marginTop: "20px",
 });
 
 export const StyledBalance = styled(Box)({
@@ -60,12 +58,13 @@ export const StyledBalance = styled(Box)({
     borderRadius: "12px 2px 0px 12px",
     overflow: "hidden",
     marginLeft: "auto",
-    padding: "4px 8px",
+    padding: "3px 6px",
     background: `linear-gradient(to right, #9e5bf1,#356ff4)`,
     maxWidth: "unset",
     position: "absolute",
     right: 0,
     top: 20,
+    zIndex: 1,
     ".twap-number-display": {
       fontWeight: "600",
     },
@@ -147,7 +146,7 @@ export const configureStyles = () => {
       padding: "5px 15px",
     },
     ".twap-label": {
-      fontSize: "18px",
+      fontSize: "16px",
       fontWeight: "700",
       p: {
         fontSize: "inherit",
@@ -187,7 +186,7 @@ export const configureStyles = () => {
     ".twap-percent-selector": {
       ".twap-card": {
         ".twap-card-children": {
-          padding: "1px 10px",
+          padding: "0px",
           height: "auto",
         },
         "&::after": {
@@ -196,7 +195,7 @@ export const configureStyles = () => {
         },
       },
       button: {
-        padding: 0,
+        padding: "1px 10px",
         background: "transparent",
         border: "unset",
         fontWeight: `300!important`,
@@ -261,7 +260,7 @@ export const configureStyles = () => {
       },
 
       ".title": {
-        minHeight: 40,
+        minHeight: 34,
         borderRadius: 30,
         height: "100%",
         background: `linear-gradient(to left,transparent, ${stops})`,
@@ -280,7 +279,7 @@ export const configureStyles = () => {
         display: "flex",
         alignItems: "center",
         fontSize: "15px",
-        fontWeight: "500",
+        fontWeight: 700,
         color: lightStyles.textColor,
       },
     },
@@ -312,7 +311,7 @@ export const configureStyles = () => {
       padding: 0,
       width: "100%",
       fontWeight: 500,
-      zoom: 1.17,
+      zoom,
       "*": {
         fontFamily: "inherit!important",
         letterSpacing: ".01em!important",
@@ -497,6 +496,7 @@ export const configureStyles = () => {
     ".twap-token-panel": {
       padding: "20px 0px 20px 20px",
       ".twap-token-name": {
+        cursor: "pointer",
         ...cardStyles,
         borderRadius: 100,
         padding: "3px 8px",
@@ -508,7 +508,7 @@ export const configureStyles = () => {
       },
       ".twap-input": {
         input: {
-          fontSize: 31,
+          fontSize: 28,
           fontWeight: `400!important`,
           textAlign: "left" as const,
         },
@@ -523,7 +523,7 @@ export const configureStyles = () => {
         transition: "0.15s all",
         paddingRight: 0,
         "&::placeholder": {
-          color: "rgba(0,0,0, 0.4)",
+          color: "rgba(0,0,0, 0.55)",
         },
       },
     },
@@ -553,18 +553,16 @@ export const configureStyles = () => {
       color: "white!important",
     },
     "#twap-modal-content": {
-      zoom: 1.17,
       maxWidth: 600,
       width: "calc(100% - 30px)",
       fontSize: "14px",
-      fontFamily: "inherit",
       padding: 20,
       paddingTop: 50,
       background: "rgb(238 238 238/1)",
       border: `2px solid #9e5bf1`,
       color: lightStyles.textColor,
       "*": {
-        fontFamily: "Space Grotesk",
+        fontFamily: "inherit",
         color: "inherit",
       },
       ".twap-label": {
@@ -615,6 +613,7 @@ export const configureStyles = () => {
 
     ".adapter-wrapper": {
       fontFamily: "inherit",
+      width: "100%",
     },
 
     ".twap-order-separator": {
@@ -626,7 +625,7 @@ export const configureStyles = () => {
     },
 
     ".twap-orders-wrapper": {
-      zoom: 1.17,
+      zoom,
       fontFamily: "inherit",
       maxWidth: "100%!important",
       color: lightStyles.textColor,
@@ -652,7 +651,7 @@ export const configureStyles = () => {
       ".twap-input": {
         "& input": {
           "&::placeholder": {
-            color: "rgba(255,255,255, 0.4)!important",
+            color: "rgba(255,255,255, 0.3)!important",
           },
         },
       },

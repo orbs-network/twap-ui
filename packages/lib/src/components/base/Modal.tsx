@@ -20,7 +20,7 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
       <>
         <Backdrop open={open} onClick={disableBackdropClick ? undefined : onClose}></Backdrop>
         <StyledModalContent className="twap-modal-content" id="twap-modal-content">
-          <StyledClose onClick={onClose}>
+          <StyledClose className="twap-ui-close" onClick={onClose}>
             <IoMdClose />
           </StyledClose>
           {title && (
@@ -51,8 +51,12 @@ const StyledTitle = styled(Box)({
 
 const StyledClose = styled(IconButton)({
   position: "absolute",
-  right: 10,
-  top: 10,
+  right: 7,
+  top: 7,
+  svg: {
+    width: 25,
+    height: 25,
+  },
 });
 
 const StyledModal = styled(MuiModal)({

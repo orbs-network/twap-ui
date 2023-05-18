@@ -1,12 +1,12 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { AdapterContextProvider, config, parseToken } from "./hooks";
 import translations from "./i18n/en.json";
 import { ChronosTWAPProps } from "./types";
 import { Box } from "@mui/system";
 import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
-import { configureStyles, StyledColumnFlex } from "./styles";
+import { configureStyles, StyledColumnFlex, StyledPoweredBy } from "./styles";
 
 const storeOverride = {
   isLimitOrder: true,
@@ -18,16 +18,10 @@ const storeOverride = {
 const Limit = (props: ChronosTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
 
-  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
-
-  const connect = useCallback(() => {
-    props.connect();
-  }, []);
-
   return (
     <Box className="adapter-wrapper">
       <TwapAdapter
-        connect={connect}
+        connect={props.connect ? props.connect : () => {}}
         config={config}
         maxFeePerGas={props.maxFeePerGas}
         priorityFeePerGas={props.priorityFeePerGas}
@@ -61,7 +55,7 @@ const Limit = (props: ChronosTWAPProps) => {
                 <Components.OrderSummaryDetailsMinDstAmount />
               </TwapStyles.StyledColumnFlex>
             </OrderSummary>
-            <Components.PoweredBy />
+            <StyledPoweredBy />
           </div>
         </AdapterContextProvider>
       </TwapAdapter>

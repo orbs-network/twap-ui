@@ -99,12 +99,9 @@ const DappComponent = () => {
     srcToken: zeroAddress,
     dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff", //ORBS
     dappTokens,
-    onSrcTokenSelected: (token: any) => console.log(token),
-    onDstTokenSelected: (token: any) => console.log(token),
     TokenSelectModal,
     provider: library,
     getTokenLogoURL,
-    isDarkTheme,
   };
   const ordersProps: ChronosOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
 

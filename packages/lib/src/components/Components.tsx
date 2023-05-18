@@ -176,11 +176,11 @@ export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: b
   return <TokenSelectButton hideArrow={true} className="twap-token-not-selected" onClick={onClick} />;
 };
 
-export const TokenSymbol = ({ isSrc, hideNull }: { isSrc?: boolean; hideNull?: boolean }) => {
+export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hideNull?: boolean; onClick?: () => void }) => {
   const srcToken = useTwapStore((store) => store.srcToken);
   const dstToken = useTwapStore((store) => store.dstToken);
   const token = isSrc ? srcToken : dstToken;
-  return <TokenName hideNull={hideNull} name={token?.symbol} />;
+  return <TokenName onClick={onClick} hideNull={hideNull} name={token?.symbol} />;
 };
 
 export function TradeIntervalSelector() {
@@ -625,11 +625,11 @@ export function OrderSummarySwipeContainer({ children }: { children: ReactNode }
   );
 }
 
-export function OrderSummaryModalContainer({ children }: { children: ReactNode }) {
+export function OrderSummaryModalContainer({ children, className }: { children: ReactNode; className?: string }) {
   const showConfirmation = useTwapStore((store) => store.showConfirmation);
   const setShowConfirmation = useTwapStore((store) => store.setShowConfirmation);
   return (
-    <Modal open={showConfirmation} onClose={() => setShowConfirmation(false)}>
+    <Modal open={showConfirmation} className={className} onClose={() => setShowConfirmation(false)}>
       {children}
     </Modal>
   );

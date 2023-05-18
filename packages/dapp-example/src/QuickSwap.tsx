@@ -113,7 +113,7 @@ const DappComponent = () => {
   const ordersProps: QuickSwapOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
 
   return (
-    <StyledQuickswap>
+    <StyledQuickswap isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledQuickswapLayout name={config.partner}>
         <UISelector
           options={[
