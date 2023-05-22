@@ -1,11 +1,13 @@
-import { hooks, Orders, OrdersAdapter, Translations } from "@orbs-network/twap-ui";
+import { hooks, OrdersAdapter, Translations } from "@orbs-network/twap-ui";
 import { memo } from "react";
 import translations from "./i18n/en.json";
-import { QuickSwapOrdersProps } from "./types";
-import { config, parseToken } from "./hooks";
+import { ThenaOrdersProps } from "./types";
+import { config } from "./hooks";
+import { StyledOrders } from "./styles";
+import { Orders } from "@orbs-network/twap-ui";
 
-function OrderHistory(props: QuickSwapOrdersProps) {
-  const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
+function OrderHistory(props: ThenaOrdersProps) {
+  const parsedTokens = hooks.useParseTokens(props.dappTokens);
 
   return (
     <OrdersAdapter
@@ -17,7 +19,9 @@ function OrderHistory(props: QuickSwapOrdersProps) {
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
     >
-      <Orders />
+      <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0}>
+        <Orders />
+      </StyledOrders>
     </OrdersAdapter>
   );
 }

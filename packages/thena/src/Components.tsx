@@ -1,18 +1,38 @@
 import { memo, ReactNode, useCallback, useState } from "react";
 import { parseToken, useAdapterContext } from "./hooks";
-import { QuickSwapRawToken } from "./types";
+import { ThenaRawToken } from "./types";
 import { Components, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks } from "@orbs-network/twap-ui";
-import { StyledBalance, StyledCard, StyledContainer, StyledPanelInput, StyledPercentSelector, StyledTokenPanelTop, StyledTokenSelect } from "./styles";
+import {
+  StyledBalance,
+  StyledCard,
+  StyledContainer,
+  StyledOrderSummary,
+  StyledPanelInput,
+  StyledPercentSelector,
+  StyledSubmit,
+  StyledTokenPanelTop,
+  StyledTokenSelect,
+} from "./styles";
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const TokenSelectModal = useAdapterContext().TokenSelectModal;
+  const { TokenSelectModal, dappTokens } = useAdapterContext();
 
-  return <TokenSelectModal tokenSelected={undefined} onCurrencySelect={props.onSelect} isOpen={props.isOpen} onDismiss={props.onClose} />;
+  return (
+    <TokenSelectModal
+      otherAsset={props.dstTokenSelected}
+      selectedAsset={props.srcTokenSelected}
+      setSelectedAsset={props.onSelect}
+      popup={props.isOpen}
+      setPopup={props.onClose}
+      baseAssets={dappTokens}
+      setOtherAsset={props.onSelect}
+    />
+  );
 };
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 
 const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
-  const { onSrcTokenSelected, onDstTokenSelected, getTokenLogoURL } = useAdapterContext();
+  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
 
   return (
     <Components.TokenSelectModal
@@ -22,7 +42,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
       isOpen={open}
       onClose={onClose}
       isSrc={isSrcToken}
-      parseToken={(token: QuickSwapRawToken) => parseToken(getTokenLogoURL, token)}
+      parseToken={(token: ThenaRawToken) => parseToken(token)}
     />
   );
 };
@@ -90,7 +110,7 @@ export const SrcTokenPercentSelector = () => {
 
 export const OrderSummary = ({ children }: { children: ReactNode }) => {
   return (
-    <Components.OrderSummaryModalContainer>
+    <StyledOrderSummary>
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
           <Components.Base.Card>
@@ -99,7 +119,9 @@ export const OrderSummary = ({ children }: { children: ReactNode }) => {
           <Components.Base.Card>
             <Components.OrderSummaryTokenDisplay />
           </Components.Base.Card>
-          <Components.OrderSummaryLimitPrice />
+          <Components.Base.Card>
+            <Components.OrderSummaryLimitPrice />
+          </Components.Base.Card>
           <Components.Base.Card>{children}</Components.Base.Card>
           <Components.Base.Card>
             <TwapStyles.StyledColumnFlex gap={10}>
@@ -113,8 +135,8 @@ export const OrderSummary = ({ children }: { children: ReactNode }) => {
             <Components.OutputAddress />
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
-        <Components.SubmitButton />
+        <StyledSubmit />
       </TwapStyles.StyledColumnFlex>
-    </Components.OrderSummaryModalContainer>
+    </StyledOrderSummary>
   );
 };

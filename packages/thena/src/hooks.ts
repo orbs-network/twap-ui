@@ -2,38 +2,34 @@ import { Configs, isNativeAddress, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useMemo } from "react";
 import _ from "lodash";
 import Web3 from "web3";
-import { configureStyles } from "./styles";
-import { QuickSwapRawToken, QuickSwapTWAPProps } from "./types";
+import { ThenaRawToken, ThenaTWAPProps } from "./types";
 
 export const config = Configs.QuickSwap;
 
-export const useParseTokens = (dappTokens: any, getTokenLogoURL: (address: string) => string): TokenData[] => {
+export const useParseTokens = (dappTokens: ThenaRawToken[]): TokenData[] => {
   const listLength = _.size(dappTokens);
-  return useMemo(() => _.compact(_.map(dappTokens, (t) => parseToken(getTokenLogoURL, t))), [listLength]);
+  return useMemo(() => _.compact(_.map(dappTokens, parseToken)), [listLength]);
 };
 
-export const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): TokenData | undefined => {
-  if (!rawToken.symbol) {
+export const parseToken = (rawToken: ThenaRawToken): TokenData | undefined => {
+  const { address, decimals, symbol, logoURI } = rawToken;
+  if (!symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
-  if (!rawToken.address || isNativeAddress(rawToken.address)) {
+  if (!address || isNativeAddress(address) || address === "BNB") {
     return config.nativeToken;
   }
   return {
-    address: Web3.utils.toChecksumAddress(rawToken.address),
-    decimals: rawToken.decimals,
-    symbol: rawToken.symbol,
-    logoUrl: rawToken.tokenInfo?.logoURI || getTokenLogoURL(rawToken.address),
+    address: Web3.utils.toChecksumAddress(address),
+    decimals,
+    symbol,
+    logoUrl: logoURI,
   };
 };
 
-const AdapterContext = createContext({} as QuickSwapTWAPProps);
+const AdapterContext = createContext({} as ThenaTWAPProps);
 
 export const AdapterContextProvider = AdapterContext.Provider;
 
 export const useAdapterContext = () => useContext(AdapterContext);
-
-export const useGlobalStyles = (isProMode?: boolean, isDarkMode = true) => {
-  return configureStyles(isDarkMode);
-};

@@ -1,31 +1,18 @@
 import { OrdersProps, TWAPProps } from "@orbs-network/twap-ui";
 
-export interface QuickSwapOrdersProps extends OrdersProps {
-  getTokenLogoURL: (address: string) => string;
-  dappTokens: { [key: string]: QuickSwapRawToken };
+export interface ThenaOrdersProps extends OrdersProps {
+  dappTokens: ThenaRawToken[];
 }
 
-export interface QuickSwapTWAPProps extends TWAPProps {
+export interface ThenaTWAPProps extends TWAPProps {
   connect: () => void;
-  onSrcTokenSelected: (value: any) => void;
-  onDstTokenSelected: (value: any) => void;
-  getTokenLogoURL: (address: string) => string;
-  dappTokens: { [key: string]: QuickSwapRawToken };
-  isProMode?: boolean;
+  dappTokens: ThenaRawToken[];
 }
 
-export interface QuickSwapRawToken {
+export interface ThenaRawToken {
   address: string;
-  chainId: number;
   decimals: number;
   name: string;
   symbol: string;
-  tokenInfo: {
-    address: string;
-    chainId: number;
-    decimals: number;
-    logoURI: string;
-    name: string;
-    symbol: string;
-  };
+  logoURI: string;
 }

@@ -394,14 +394,14 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
   );
 };
 
-export function LimitPriceInput({ placeholder = "0.00" }: { placeholder?: string }) {
+export function LimitPriceInput({ placeholder = "0.00", className = "" }: { placeholder?: string; className?: string }) {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const { leftToken, rightToken, onChange, limitPrice, toggleInverted } = useLimitPrice();
 
   if (!isLimitOrder || !leftToken || !rightToken) return null;
 
   return (
-    <StyledLimitPriceInput className="twap-limit-price-input">
+    <StyledLimitPriceInput className={`twap-limit-price-input ${className}`}>
       <StyledRowFlex gap={10} style={{ paddingLeft: 5 }} width="fit-content">
         <TokenDisplay singleToken symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />
         <StyledText>=</StyledText>

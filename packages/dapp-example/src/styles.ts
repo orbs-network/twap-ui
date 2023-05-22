@@ -170,6 +170,11 @@ export const StyledQuickswapLayout = styled(DappLayout)({
   width: "calc(100% - 30px)",
 });
 
+export const StyledThenaLayout = styled(DappLayout)({
+  maxWidth: 520,
+  width: "calc(100% - 30px)",
+});
+
 export const StyledPangolinLayout = styled(DappLayout)({
   maxWidth: 520,
   width: "calc(100% - 30px)",

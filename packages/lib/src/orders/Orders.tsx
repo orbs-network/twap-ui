@@ -12,9 +12,11 @@ import { Components, Styles } from "..";
 
 interface Props {
   disableAnimation?: boolean;
+  className?: string;
 }
 
 function Orders(props: Props) {
+  const { className = "" } = props;
   const [selectedTab, setSelectedTab] = React.useState(0);
   const { orders, isLoading } = useOrdersHistoryQuery();
   const translations = useOrdersContext().translations;
@@ -24,7 +26,7 @@ function Orders(props: Props) {
   };
 
   return (
-    <StyledContainer className="twap-orders twap-orders-wrapper">
+    <StyledContainer className={`twap-orders twap-orders-wrapper ${className}`}>
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
           <Styles.StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>

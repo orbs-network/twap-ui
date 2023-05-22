@@ -1,6 +1,6 @@
 import { Box, styled } from "@mui/material";
-import { Styles } from "@orbs-network/twap-ui";
-import { Components } from "@orbs-network/twap-ui";
+import { Components, Styles, Orders } from "@orbs-network/twap-ui";
+const gradient = "linear-gradient(to right, rgb(216, 0, 183), rgb(177, 0, 222), rgb(177, 0, 222), rgb(216, 0, 183))";
 
 export const StyledPanelInput = styled(Components.TokenInput)({
   input: {
@@ -65,13 +65,16 @@ export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
 export const StyledSubmit = styled(Components.SubmitButton)({
   borderRadius: 3,
   background: "linear-gradient(to right, rgb(216, 0, 183), rgb(177, 0, 222), rgb(177, 0, 222), rgb(216, 0, 183))",
-  height: 57,
+  minHeight: 57,
   fontWeight: 700,
-  fontSize: 18,
+  fontSize: 17,
   textTransform: "uppercase",
+  lineHeight: "24px",
+  padding: 10,
   "*": {
     fontWeight: "inherit",
     fontSize: "inherit",
+    lineHeight: "inherit",
   },
 });
 
@@ -98,10 +101,134 @@ export const StyledTokenSelect = styled(Components.TokenSelect)({
   },
 });
 
-const gradient = "linear-gradient(to right, rgb(216, 0, 183), rgb(177, 0, 222), rgb(177, 0, 222), rgb(216, 0, 183))";
+export const StyledLimitPrice = styled(Components.LimitPriceInput)({
+  ".twap-input": {
+    height: "auto",
+    input: {
+      fontSize: 17,
+    },
+  },
+});
+
+export const StyledOrders = styled(Box)<{ isDarkMode: number }>({
+  ".twap-order": {
+    background: "rgb(16 22 69/1)",
+    padding: 20,
+    borderRadius: 5,
+    ".twap-label p": {
+      fontSize: 14,
+    },
+    ".twap-order-separator": {
+      display: "none",
+    },
+    ".twap-market-price-section": {
+      background: "#090333",
+      width: "100%",
+      padding: "5px 10px",
+      borderRadius: 8,
+      "*": {
+        fontSize: "13px",
+      },
+      ".twap-small-label p": {
+        fontSize: "14px!important",
+      },
+    },
+    ".MuiLinearProgress-root": {
+      background: "rgba(255,255,255,0.1)",
+    },
+    ".MuiLinearProgress-bar": {
+      background: gradient,
+    },
+    ".MuiLinearProgress-root::after": {
+      display: "none",
+    },
+  },
+  ".twap-odnp": {
+    background: "unset",
+    border: "1px solid #BD01D2",
+    transition: "0.2s all",
+    "&:hover": {
+      background: "#BD01D2",
+      border: "1px solid transparent",
+    },
+  },
+  ".twap-orders-header": {
+    ".twap-label": {
+      p: {
+        fontSize: "16px!important",
+      },
+    },
+    ".twap-orders-header-tabs": {
+      border: "1px solid #BD01D2",
+    },
+    ".MuiButtonBase-root": {
+      borderRadius: 4,
+      transition: "0.3s all",
+    },
+    ".Mui-selected": {
+      background: gradient,
+      color: "white",
+    },
+    ".MuiTabs-indicator": {
+      display: "none",
+    },
+  },
+});
+
+export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)({
+  fontFamily: "Figtree",
+  ".twap-modal-content": {
+    padding: "50px 20px 20px 20px",
+    background: "rgb(16 22 69/1)",
+    border: "1px solid rgb(0 0 175/1)",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    width: "calc(100vw - 40px)",
+    borderRadius: 8,
+    ".twap-card": {
+      background: "rgb(13 18 56/1)",
+      borderRadius: 8,
+      padding: 20,
+    },
+    "twap-order-summary-details": {},
+    ".twap-order-summary-details-item": {
+      div: {
+        "&:last-of-type": {
+          "*": {
+            fontSize: 14,
+          },
+        },
+      },
+    },
+  },
+  ".twap-orders-summary-token-display": {
+    ".twap-token-logo": {
+      width: 45,
+      height: 45,
+    },
+  },
+  "@media(max-width: 600px)": {
+    ".twap-order-summary-details-item": {
+      flexDirection: "column",
+      alignItems: "flex-start",
+    },
+    ".twap-orders-summary-token-display-flex": {
+      "&:last-of-type": {
+        flexDirection: "column",
+        alignItems: "flex-start",
+      },
+    },
+  },
+});
 
 export const configureStyles = (isDarkMode?: boolean) => {
   return {
+    ".twap-limit-price-input": {
+      paddingLeft: "0px!important",
+    },
+    ".MuiBackdrop-root": {
+      background: "rgb(9 3 51/0.88)!important",
+    },
     ".twap-time-selector": {
       ".twap-input": {
         input: {
@@ -180,6 +307,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
     },
     ".twap-adapter-wrapper": {
       "*": {
+        color: "white",
         fontFamily: "inherit",
       },
     },
@@ -189,6 +317,10 @@ export const configureStyles = (isDarkMode?: boolean) => {
     },
     ".twap-orders": {
       maxWidth: "unset!important",
+      color: "white",
+      "*": {
+        fontFamily: "inherit",
+      },
     },
   };
 };

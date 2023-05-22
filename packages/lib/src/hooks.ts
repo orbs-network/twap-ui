@@ -513,7 +513,10 @@ export const useSetTokensFromDapp = (srcTokenAddressOrSymbol?: string, dstTokenA
   }, [srcTokenAddressOrSymbol, dstTokenAddressOrSymbol, tokensReady, wrongNetwork]);
 };
 
-export const useParseTokens = (dappTokens: any, parseToken: (rawToken: any) => TokenData | undefined): TokenData[] => {
+export const useParseTokens = (dappTokens: any, parseToken?: (rawToken: any) => TokenData | undefined): TokenData[] => {
   const listLength = _.size(dappTokens);
-  return useMemo(() => _.compact(_.map(dappTokens, parseToken)), [listLength]);
+
+  const parse = parseToken ? parseToken : (t: any) => t;
+
+  return useMemo(() => _.compact(_.map(dappTokens, parse)), [listLength]);
 };

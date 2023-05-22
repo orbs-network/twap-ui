@@ -1,5 +1,5 @@
-import { StyledQuickswapBox, StyledModalContent, StyledQuickswapLayout, StyledQuickswap, StyledThenaGradient, StyledThenaBox, StyledThena } from "./styles";
-import { Orders, TWAP, Limit, QuickSwapTWAPProps, QuickSwapOrdersProps } from "@orbs-network/twap-ui-thena";
+import { StyledModalContent, StyledThenaLayout, StyledThenaGradient, StyledThenaBox, StyledThena } from "./styles";
+import { Orders, TWAP, Limit, ThenaTWAPProps, ThenaOrdersProps } from "@orbs-network/twap-ui-thena";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -12,30 +12,29 @@ import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
 config.partner = "Thena [WIP]";
-
+config.chainId = 56;
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
 export const useDappTokens = () => {
   const { account } = useWeb3React();
-  const { isInValidNetwork } = useNetwork(config.chainId);
 
+  // const { isInValidNetwork } = useNetwork(config.chainId);
+  const isInValidNetwork = false;
   return useQuery(
     ["useDappTokens", config.chainId],
     async () => {
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json`);
+      const response = await fetch(`https://api.thena.fi/api/v1/assets`);
 
-      const tokenList = await response.json();
-      const parsed = tokenList
-        .filter((t: any) => t.chainId === config.chainId)
-        .map(({ symbol, address, decimals, logoURI, name, chainId }: any) => ({
-          decimals,
-          symbol,
-          name,
-          chainId,
-          address,
-          tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
-          tags: [],
-        }));
-      const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
+      const tokenList = (await response.json()).data;
+
+      const parsed = tokenList.map(({ symbol, address, decimals, logoURI, name }: any) => ({
+        decimals,
+        symbol,
+        name,
+        address,
+        logoURI,
+      }));
+      const candiesAddresses = [zeroAddress, ..._.map(erc20s.bsc, (t) => t().address)];
+      console.log({ parsed });
 
       const _tokens = _.sortBy(parsed, (t: any) => {
         const index = candiesAddresses.indexOf(t.address);
@@ -49,35 +48,39 @@ export const useDappTokens = () => {
 };
 
 interface TokenSelectModalProps {
-  isOpen: boolean;
-  selectedToken?: any;
-  onCurrencySelect: (token: any) => void;
-  onDismiss: () => void;
+  popup: boolean;
+  setPopup: (value: boolean) => void;
+  selectedAsset: any;
+  setSelectedAsset: (value: any) => void;
+  otherAsset: any;
+  setOtherAsset: (value: any) => void;
+  baseAssets: any[];
+  onAssetSelect: () => void;
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
   return _.map(rawList, (rawToken) => {
     return {
       token: {
-        address: rawToken.address ?? rawToken.tokenInfo?.address,
-        decimals: rawToken.decimals ?? rawToken.tokenInfo?.decimals,
-        symbol: rawToken.symbol ?? rawToken.tokenInfo?.symbol,
-        logoUrl: rawToken.tokenInfo?.logoURI || nativeTokenLogo,
+        address: rawToken.address,
+        decimals: rawToken.decimals,
+        symbol: rawToken.symbol,
+        logoUrl: rawToken.logoURI || nativeTokenLogo,
       },
       rawToken,
     };
   });
 };
 
-const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectModalProps) => {
-  const { data: tokensList } = useDappTokens();
-  const tokensListSize = _.size(tokensList);
-  const parsedList = useMemo(() => parseList(tokensList), [tokensListSize]);
+const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
+  const tokensListSize = _.size(baseAssets);
+  const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
+  console.log({ popup });
 
   return (
-    <Popup isOpen={isOpen} onClose={onDismiss}>
+    <Popup isOpen={popup} onClose={() => setPopup(true)}>
       <StyledModalContent>
-        <TokensList tokens={parsedList} onClick={onCurrencySelect} />
+        <TokensList tokens={parsedList} onClick={setSelectedAsset} />
       </StyledModalContent>
     </Popup>
   );
@@ -90,33 +93,21 @@ const DappComponent = () => {
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
 
-  const getTokenLogoURL = (address: string) => {
-    if (!dappTokens) return "";
-    const token = dappTokens[address];
-    if (!token) {
-      return null;
-    }
-    return token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
-  };
-
-  const twapProps: QuickSwapTWAPProps = {
+  const twapProps: ThenaTWAPProps = {
     connect,
     account,
     srcToken: zeroAddress,
     dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff", //ORBS
     dappTokens,
-    onSrcTokenSelected: (token: any) => console.log(token),
-    onDstTokenSelected: (token: any) => console.log(token),
     TokenSelectModal,
     provider: library,
-    getTokenLogoURL,
     isDarkTheme,
   };
-  const ordersProps: QuickSwapOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
+  const ordersProps: ThenaOrdersProps = { account, dappTokens, provider: library, isDarkTheme };
 
   return (
     <StyledThena isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledQuickswapLayout name={config.partner}>
+      <StyledThenaLayout name={config.partner}>
         <UISelector
           options={[
             {
@@ -146,7 +137,7 @@ const DappComponent = () => {
             <Orders {...ordersProps} />
           </StyledThenaBox>
         </StyledThenaGradient>
-      </StyledQuickswapLayout>
+      </StyledThenaLayout>
     </StyledThena>
   );
 };

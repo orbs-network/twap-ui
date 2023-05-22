@@ -1,12 +1,12 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
-import { useCallback, useEffect } from "react";
-import { AdapterContextProvider, config, parseToken, useGlobalStyles } from "./hooks";
+import { useEffect } from "react";
+import { AdapterContextProvider, config } from "./hooks";
 import translations from "./i18n/en.json";
-import { QuickSwapTWAPProps } from "./types";
+import { ThenaTWAPProps } from "./types";
 import { Box } from "@mui/system";
-import { OrderSummary, TokenPanel } from "./Components";
-import { StyledPoweredBy, StyledTokenChange } from "./styles";
+import { Card, OrderSummary, TokenPanel } from "./Components";
+import { configureStyles, StyledColumnFlex, StyledPoweredBy, StyledSubmit, StyledTokenChange } from "./styles";
 
 const storeOverride = {
   isLimitOrder: true,
@@ -15,20 +15,14 @@ const storeOverride = {
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
-const Limit = (props: QuickSwapTWAPProps) => {
-  const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
-
+const Limit = (props: ThenaTWAPProps) => {
+  const parsedTokens = hooks.useParseTokens(props.dappTokens);
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
-  const globalStyles = useGlobalStyles(props.isProMode, props.isDarkTheme);
-
-  const connect = useCallback(() => {
-    props.connect();
-  }, []);
 
   return (
     <Box className="twap-adapter-wrapper">
       <TwapAdapter
-        connect={connect}
+        connect={props.connect}
         config={config}
         maxFeePerGas={props.maxFeePerGas}
         priorityFeePerGas={props.priorityFeePerGas}
@@ -38,17 +32,22 @@ const Limit = (props: QuickSwapTWAPProps) => {
         tokenList={parsedTokens}
         storeOverride={storeOverride}
       >
-        <GlobalStyles styles={globalStyles as any} />
+        <GlobalStyles styles={configureStyles() as any} />
         <AdapterContextProvider value={props}>
           <div className="twap-container">
-            <TokenPanel isSrcToken={true} />
-            <StyledTokenChange />
-            <TokenPanel />
-            <Components.MarketPrice />
-            <TwapStyles.StyledColumnFlex gap={12}>
-              <LimitPrice />
-              <Components.SubmitButton isMain />
-            </TwapStyles.StyledColumnFlex>
+            <StyledColumnFlex>
+              <TokenPanel isSrcToken={true} />
+              <StyledTokenChange />
+              <TokenPanel />
+              <Card>
+                <Components.MarketPrice />
+              </Card>
+
+              <Card>
+                <LimitPrice />
+              </Card>
+              <StyledSubmit isMain />
+            </StyledColumnFlex>
             <OrderSummary>
               <TwapStyles.StyledColumnFlex>
                 <Components.OrderSummaryDetailsDeadline />
