@@ -1,7 +1,7 @@
 import { Box, styled } from "@mui/system";
-import { ReactElement } from "react";
+import { ReactNode } from "react";
 
-const Icon = ({ icon, className = "" }: { icon: ReactElement; className?: string }) => {
+const Icon = ({ icon, className = "" }: { icon: ReactNode; className?: string }) => {
   return <StyledContainer className={`twap-icon ${className}`}>{icon}</StyledContainer>;
 };
 

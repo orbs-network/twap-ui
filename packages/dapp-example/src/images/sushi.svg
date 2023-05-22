@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns:xodm="http://www.corel.com/coreldraw/odm/2003" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 2500 2500" style="enable-background:new 0 0 2500 2500;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:url(#SVGID_1_);}
+	.st1{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+	.st2{fill:none;}
+</style>
+<g id="Layer_x0020_1">
+	<g id="_2090557022800">
+		
+			<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="996.3493" y1="1889.4266" x2="1506.3494" y2="607.4266" gradientTransform="matrix(1 0 0 -1 0 2497.8899)">
+			<stop offset="0" style="stop-color:#29AFE5"></stop>
+			<stop offset="0.3608" style="stop-color:#9181C3"></stop>
+			<stop offset="1" style="stop-color:#FA52A0"></stop>
+		</linearGradient>
+		<path class="st0" d="M2458,1563l-481,710l-4-3c-173,232-731,136-1258-237C191,1663-111,1192,39,938l-4-3l481-699l0,0    C683-4,1247,89,1779,466C2322,821,2615,1322,2458,1563L2458,1563z"></path>
+		<path class="st1" d="M2385,1522c-147,209-658,104-1149-240C735,937,442,499,588,290s658-104,1149,240    C2227,875,2520,1313,2385,1522z M1925,1208c-73,104-324,53-575-115c-240-167-386-386-313-490s324-53,575,115    C1852,885,1998,1104,1925,1208z"></path>
+	</g>
+	<rect y="0" class="st2" width="2500" height="2500"></rect>
+</g>
+</svg>

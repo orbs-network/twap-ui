@@ -93,11 +93,11 @@ export function ChunksSliderSelect() {
   return <StyledChunksSliderSelect maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />;
 }
 
-export const ChangeTokensOrder = ({ children, className = "" }: { children?: ReactNode; className?: string }) => {
+export const ChangeTokensOrder = ({ children, className = "", icon = <HiOutlineSwitchVertical /> }: { children?: ReactNode; className?: string; icon?: ReactNode }) => {
   const switchTokens = useTwapStore((state) => state.switchTokens);
   return (
     <StyledRowFlex className={`${className} twap-change-tokens-order`}>
-      <IconButton onClick={switchTokens}>{children || <Icon icon={<HiOutlineSwitchVertical />} />}</IconButton>
+      <IconButton onClick={switchTokens}>{children || <Icon icon={icon} />}</IconButton>
     </StyledRowFlex>
   );
 };
@@ -273,7 +273,21 @@ export function ChunksUSD() {
   return <USD value={usd} isLoading={loading} />;
 }
 
-export const TokenBalance = ({ isSrc, label, showSymbol, className = "" }: { isSrc?: boolean; label?: string; showSymbol?: boolean; className?: string }) => {
+export const TokenBalance = ({
+  isSrc,
+  label,
+  showSymbol,
+  className = "",
+  hideLabel,
+  emptyUi,
+}: {
+  isSrc?: boolean;
+  label?: string;
+  showSymbol?: boolean;
+  className?: string;
+  hideLabel?: boolean;
+  emptyUi?: ReactNode;
+}) => {
   const srcBalance = useTwapStore((state) => state.getSrcBalanceUi());
   const srcLoading = useLoadingState().srcBalanceLoading;
   const dstBalance = useTwapStore((state) => state.getDstBalanceUi());
@@ -283,10 +297,10 @@ export const TokenBalance = ({ isSrc, label, showSymbol, className = "" }: { isS
   const balance = isSrc ? srcBalance : dstBalance;
   const isLoading = isSrc ? srcLoading : dstLoading;
   const symbol = !showSymbol ? undefined : isSrc ? srcToken?.symbol : dstToken?.symbol;
-  return <Balance className={className} suffix={symbol} label={label} value={balance} isLoading={isLoading} />;
+  return <Balance emptyUi={emptyUi} hideLabel={hideLabel} className={className} suffix={symbol} label={label} value={balance} isLoading={isLoading} />;
 };
 
-export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
+export function TokenUSD({ isSrc, emptyUi, className = "" }: { isSrc?: boolean; emptyUi?: ReactNode; className?: string }) {
   const srcUSD = useTwapStore((state) => state.getSrcAmountUsdUi());
   const srcLoading = useLoadingState().srcUsdLoading;
   const dstUSD = useTwapStore((state) => state.getDstAmountUsdUi());
@@ -294,7 +308,7 @@ export function TokenUSD({ isSrc }: { isSrc?: boolean }) {
   const usd = isSrc ? srcUSD : dstUSD;
   const isLoading = isSrc ? srcLoading : dstLoading;
 
-  return <USD value={usd || "0"} isLoading={isLoading} />;
+  return <USD className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
 }
 
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
@@ -416,11 +430,11 @@ export function LimitPriceInput({ placeholder = "0.00", className = "" }: { plac
   );
 }
 
-export const MarketPrice = () => {
+export const MarketPrice = ({ className = "" }: { className?: string }) => {
   const { toggleInverted, leftToken, rightToken, marketPrice, loading } = useMarketPrice();
   const translations = useTwapContext().translations;
   return (
-    <StyledMarketPrice justifyContent="space-between" className="twap-market-price">
+    <StyledMarketPrice justifyContent="space-between" className={`twap-market-price ${className}`}>
       <StyledText className="title">{translations.currentMarketPrice}</StyledText>
       <TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
     </StyledMarketPrice>
@@ -536,7 +550,7 @@ export const OrderSummaryDetailsMinDstAmount = () => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
       <OrderSummaryMinDstAmountOutLabel />
-      <StyledSummaryRowRight>
+      <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <>
           <TokenLogoAndSymbol isSrc={false} reverse={true} />
           <MinDstAmountOut />
@@ -550,7 +564,7 @@ export const OrderSummaryDetailsTradeInterval = () => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
       <OrderSummaryTradeIntervalLabel />
-      <StyledSummaryRowRight>
+      <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <TradeIntervalAsText />
       </StyledSummaryRowRight>
     </StyledSummaryRow>
@@ -561,7 +575,7 @@ export const OrderSummaryDetailsTotalChunks = () => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
       <OrderSummaryTotalChunksLabel />
-      <StyledSummaryRowRight>
+      <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <TotalChunks />
       </StyledSummaryRowRight>
     </StyledSummaryRow>
@@ -572,7 +586,7 @@ export const OrderSummaryDetailsChunkSize = () => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
       <OrderSummaryChunkSizeLabel />
-      <StyledSummaryRowRight>
+      <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <>
           <TokenLogoAndSymbol isSrc={true} reverse={true} />
           <ChunksAmount />
@@ -586,7 +600,7 @@ export const OrderSummaryDetailsOrderType = () => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
       <OrderSummaryOrderTypeLabel />
-      <StyledSummaryRowRight>
+      <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <OrderType />
       </StyledSummaryRowRight>
     </StyledSummaryRow>
@@ -597,7 +611,7 @@ export const OrderSummaryDetailsDeadline = () => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
       <OrderSummaryDeadlineLabel />
-      <StyledSummaryRowRight>
+      <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <Deadline />
       </StyledSummaryRowRight>
     </StyledSummaryRow>

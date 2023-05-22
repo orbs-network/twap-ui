@@ -48,6 +48,7 @@ export interface Dapp {
   Component: any;
   invertLogo?: boolean;
   theme?: "light" | "dark";
+  workInProgress?: boolean;
 }
 
 export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: ReactNode }) => {
@@ -110,7 +111,6 @@ const drawerWidth = 260;
 
 export const DappsMenu = () => {
   const { isSelected } = useSelectedDapp();
-  const { isDarkTheme } = useTheme();
 
   const isMobile = useMediaQuery("(max-width:1100px)");
   const [isOpen, setIsOpen] = useState(false);
@@ -171,7 +171,7 @@ export const DappsMenu = () => {
                       filter: dapp.invertLogo ? "invert(100%)" : "unset",
                     }}
                   />
-                  <ListItemText primary={dapp.config.partner} />
+                  <ListItemText primary={`${dapp.config.partner} ${dapp.workInProgress ? "[WIP]" : ""}`} />
                 </StyledMenuListItemButton>
               </ListItem>
             ))}
@@ -275,11 +275,11 @@ interface UIOption {
   component: ReactNode;
 }
 
-export const UISelector = ({ options }: { options: UIOption[] }) => {
+export const UISelector = ({ options, className = "" }: { options: UIOption[]; className?: string }) => {
   const [selected, setSelected] = useState(options[0].title);
 
   return (
-    <StyledUISelector className="ui-selector">
+    <StyledUISelector className={`ui-selector ${className}`}>
       <StyledUISelectorButtons>
         {options.map((o) => {
           return (

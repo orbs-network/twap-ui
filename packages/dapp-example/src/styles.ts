@@ -4,7 +4,7 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import IconButton from "@mui/material/IconButton";
 import { Styles as TwapStyles } from "@orbs-network/twap-ui";
-import { DappLayout } from "./Components";
+import { DappLayout, UISelector } from "./Components";
 export const globalStyle = {
   "& *": {
     color: "white",
@@ -65,6 +65,25 @@ export const StyledThenaBox = styled(Box)(({ isDarkMode }: { isDarkMode: number 
 export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#090333" : "#FBFBFB",
   fontFamily: "Figtree",
+}));
+
+export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#0F172A" : "#FBFBFB",
+  fontFamily: "Inter",
+}));
+
+export const StyledSushuUiSelector = styled(UISelector)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  ".ui-selector-btn": {
+    padding: "10px 20px",
+    border: "unset",
+    background: "hsla(0,0%,100%,.06)",
+    borderRadius: 10,
+    fontSize: 14,
+    fontWeight: 500,
+  },
+  ".ui-selector-btn-selected": {
+    background: "rgb(59 130 246/1)",
+  },
 }));
 
 export const StyledQuickswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
@@ -172,6 +191,11 @@ export const StyledQuickswapLayout = styled(DappLayout)({
 
 export const StyledThenaLayout = styled(DappLayout)({
   maxWidth: 520,
+  width: "calc(100% - 30px)",
+});
+
+export const StyledSushiLayout = styled(DappLayout)({
+  maxWidth: 490,
   width: "calc(100% - 30px)",
 });
 

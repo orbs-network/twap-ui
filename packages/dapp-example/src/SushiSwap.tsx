@@ -1,62 +1,60 @@
-import { StyledChronos, StyledChronosLayout, StyledModalContent } from "./styles";
-import { Orders, TWAP, Limit, ChronosTWAPProps, ChronosOrdersProps, ChronosRawToken } from "@orbs-network/twap-ui-chronos";
-import { useConnectWallet, useTheme } from "./hooks";
+import { StyledModalContent, StyledSushiLayout, StyledSushi, StyledSushuUiSelector } from "./styles";
+import { Orders, TWAP, Limit, ThenaTWAPProps, ThenaOrdersProps } from "@orbs-network/twap-ui-sushiswap";
+import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
-config.partner = "Chronos";
+config.partner = "SushiSwap";
 
-// const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
-
-const getTokenLogoURL = (symbol: string) => {
-  return `https://dexapi.chronos.exchange/tokens/${symbol}.png`;
-};
-
+const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
 export const useDappTokens = () => {
   const { account } = useWeb3React();
-  // const { isInValidNetwork } = useNetwork(config.chainId);
+  const { isInValidNetwork } = useNetwork(config.chainId);
 
   return useQuery(
     ["useDappTokens", config.chainId],
     async () => {
       const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json`);
 
-      // const data = (await response.json()).data;
-      // const tokenList = data.tokens;
       const tokenList = await response.json();
-
       const parsed = tokenList
-        // .filter((t: any) => t.chainId === config.chainId)
-        .map(({ symbol, address, decimals, name }: any) => ({
+        .filter((t: any) => t.chainId === config.chainId)
+        .map(({ symbol, address, decimals, logoURI, name }: any) => ({
           decimals,
           symbol,
           name,
           address,
-          logoURI: getTokenLogoURL(symbol),
+          logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"),
         }));
-
       const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
 
-      return _.sortBy(parsed, (t: any) => {
+      const _tokens = _.sortBy(parsed, (t: any) => {
         const index = candiesAddresses.indexOf(t.address);
         return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
       });
+
+      return { ..._.mapKeys(_tokens, (t) => t.address) } as any;
     },
-    { enabled: !!account }
+    { enabled: !!account && !isInValidNetwork }
   );
 };
 
 interface TokenSelectModalProps {
-  open: boolean;
-  selectToken: (token: any) => void;
-  setOpen: () => void;
+  popup: boolean;
+  setPopup: (value: boolean) => void;
+  selectedAsset: any;
+  setSelectedAsset: (value: any) => void;
+  otherAsset: any;
+  setOtherAsset: (value: any) => void;
+  baseAssets: any[];
+  onAssetSelect: () => void;
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
@@ -66,35 +64,33 @@ const parseList = (rawList?: any): TokenListItem[] => {
         address: rawToken.address,
         decimals: rawToken.decimals,
         symbol: rawToken.symbol,
-        logoUrl: rawToken.logoURI,
+        logoUrl: rawToken.logoURI || nativeTokenLogo,
       },
       rawToken,
     };
   });
 };
 
-const TokenSelectModal = ({ open, selectToken, setOpen }: TokenSelectModalProps) => {
-  const { data: tokensList } = useDappTokens();
-
-  const tokensListSize = _.size(tokensList);
-  const parsedList = useMemo(() => parseList(tokensList), [tokensListSize]);
+const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
+  const tokensListSize = _.size(baseAssets);
+  const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
   return (
-    <Popup isOpen={open} onClose={setOpen}>
+    <Popup isOpen={popup} onClose={() => setPopup(true)}>
       <StyledModalContent>
-        <TokensList tokens={parsedList} onClick={selectToken} />
+        <TokensList tokens={parsedList} onClick={setSelectedAsset} />
       </StyledModalContent>
     </Popup>
   );
 };
-const logo = "https://chronos.exchange/wp-content/uploads/2023/03/1-1-1.png";
+
 const DappComponent = () => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
-  const { data: dappTokens = [] } = useDappTokens();
+  const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
 
-  const twapProps: ChronosTWAPProps = {
+  const twapProps: ThenaTWAPProps = {
     connect,
     account,
     srcToken: zeroAddress,
@@ -102,22 +98,15 @@ const DappComponent = () => {
     dappTokens,
     TokenSelectModal,
     provider: library,
-    getTokenLogoURL,
+    isDarkTheme,
   };
-  const ordersProps: ChronosOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
-
-  useEffect(() => {
-    if (isDarkTheme) {
-      document.body.classList.add("dark");
-    } else {
-      document.body.classList.remove("dark");
-    }
-  }, [isDarkTheme]);
+  const ordersProps: ThenaOrdersProps = { account, dappTokens, provider: library, isDarkTheme };
 
   return (
-    <StyledChronos isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledChronosLayout name={config.partner}>
-        <UISelector
+    <StyledSushi isDarkMode={isDarkTheme ? 1 : 0}>
+      <StyledSushiLayout name={config.partner}>
+        <StyledSushuUiSelector
+          isDarkMode={isDarkTheme ? 1 : 0}
           options={[
             {
               title: "TWAP",
@@ -130,14 +119,14 @@ const DappComponent = () => {
           ]}
         />
         <Orders {...ordersProps} />
-      </StyledChronosLayout>
-    </StyledChronos>
+      </StyledSushiLayout>
+    </StyledSushi>
   );
 };
 
 const dapp: Dapp = {
   Component: DappComponent,
-  logo,
+  logo: "https://cdn.cdnlogo.com/logos/s/10/sushiswap.svg",
   config,
   workInProgress: true,
 };

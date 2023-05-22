@@ -3,11 +3,29 @@ import React from "react";
 import NumberDisplay from "./NumberDisplay";
 import SmallLabel from "./SmallLabel";
 
-const USD = ({ isLoading = false, value, className = "", prefix = "" }: { prefix?: string; isLoading?: boolean; value?: string | number; className?: string }) => {
+const USD = ({
+  isLoading = false,
+  value,
+  className = "",
+  prefix = "",
+  emptyUi,
+}: {
+  prefix?: string;
+  isLoading?: boolean;
+  value?: string | number;
+  className?: string;
+  emptyUi?: React.ReactNode;
+}) => {
   if (value == null) return null;
   return (
     <StyledLabel loading={isLoading} className={`twap-usd ${className}`}>
-      {prefix} ~ $<NumberDisplay value={value} />
+      {value == 0 && emptyUi ? (
+        <>{emptyUi}</>
+      ) : (
+        <>
+          {prefix} ~ $ <NumberDisplay value={value} />
+        </>
+      )}
     </StyledLabel>
   );
 };

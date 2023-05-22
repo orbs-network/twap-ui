@@ -1,0 +1,86 @@
+{
+  "pair_address": "0x20585BFBC272A9D58ad17582BCdA9A5A57271d6A",
+  "symbol": "vAMM-CHR/USDC",
+  "name": "VolatileV1 AMM - CHR/USDC",
+  "decimals": {
+    "type": "BigNumber",
+    "hex": "0x12"
+  },
+  "stable": false,
+  "total_supply": {
+    "type": "BigNumber",
+    "hex": "0x04b283c54f"
+  },
+  "token0": "0x15b2fb8f08E4Ac1Ce019EADAe02eE92AeDF06851",
+  "token0_symbol": "CHR",
+  "token0_decimals": {
+    "type": "BigNumber",
+    "hex": "0x12"
+  },
+  "reserve0": {
+    "type": "BigNumber",
+    "hex": "0x02334a50381bc2dbaae8d5"
+  },
+  "claimable0": {
+    "type": "BigNumber",
+    "hex": "0x00"
+  },
+  "token1": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+  "token1_symbol": "USDC",
+  "token1_decimals": {
+    "type": "BigNumber",
+    "hex": "0x06"
+  },
+  "reserve1": {
+    "type": "BigNumber",
+    "hex": "0xe68cc84de9"
+  },
+  "claimable1": {
+    "type": "BigNumber",
+    "hex": "0x00"
+  },
+  "gauge": "0x3d34022f552362a25A529EC6AF7B9cb226b9C22D",
+  "gauge_total_supply": {
+    "type": "BigNumber",
+    "hex": "0x01b44ce0e3"
+  },
+  "fee": "0xfd3833de38ea00246edA9c77A0198F9Fc13EDE6B",
+  "bribe": "0x5DCACD68A636A2EC705bF43de8eea90F6eeADab3",
+  "emissions": {
+    "type": "BigNumber",
+    "hex": "0x02c0999145dbd003"
+  },
+  "emissions_token": "0x15b2fb8f08E4Ac1Ce019EADAe02eE92AeDF06851",
+  "emissions_token_decimals": {
+    "type": "BigNumber",
+    "hex": "0x12"
+  },
+  "account_lp_balance": {
+    "type": "BigNumber",
+    "hex": "0x00"
+  },
+  "account_token0_balance": {
+    "type": "BigNumber",
+    "hex": "0x00"
+  },
+  "account_token1_balance": {
+    "type": "BigNumber",
+    "hex": "0x00"
+  },
+  "account_gauge_balance": {
+    "type": "BigNumber",
+    "hex": "0x00"
+  },
+  "account_gauge_total_weight": {
+    "type": "BigNumber",
+    "hex": "0x00"
+  },
+  "account_gauge_earned": {
+    "type": "BigNumber",
+    "hex": "0x00"
+  },
+  "gauge_total_weight": {
+    "type": "BigNumber",
+    "hex": "0x01e8bb2cc0"
+  }
+}
