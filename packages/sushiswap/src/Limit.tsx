@@ -19,7 +19,7 @@ const Limit = (props: ThenaTWAPProps) => {
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
 
   return (
-    <StyledAdapter className="twap-adapter-wrapper">
+    <StyledAdapter isDarkMode={props.isDarkTheme ? 1 : 0} className="twap-adapter-wrapper">
       <TwapAdapter
         connect={props.connect}
         config={config}
@@ -31,7 +31,7 @@ const Limit = (props: ThenaTWAPProps) => {
         tokenList={parsedTokens}
         storeOverride={storeOverride}
       >
-        <GlobalStyles styles={configureStyles() as any} />
+        <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <StyledColumnFlex>

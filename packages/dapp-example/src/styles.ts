@@ -68,21 +68,28 @@ export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
 }));
 
 export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  background: isDarkMode ? "#0F172A" : "#FBFBFB",
+  background: isDarkMode ? "#0F172A" : "#F4F5F6",
   fontFamily: "Inter",
+  ".menu-button": {
+    "*": {
+      color: isDarkMode ? "white" : "black",
+    },
+  },
 }));
 
 export const StyledSushuUiSelector = styled(UISelector)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   ".ui-selector-btn": {
     padding: "10px 20px",
     border: "unset",
-    background: "hsla(0,0%,100%,.06)",
+    background: isDarkMode ? "hsla(0,0%,100%,.06)" : "white",
     borderRadius: 10,
     fontSize: 14,
     fontWeight: 500,
+    color: isDarkMode ? "white" : "black",
   },
   ".ui-selector-btn-selected": {
     background: "rgb(59 130 246/1)",
+    color: "white",
   },
 }));
 

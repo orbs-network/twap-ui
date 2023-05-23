@@ -47,8 +47,10 @@ const EmptyValue = ({ prefix = "" }: { prefix?: string }) => {
 };
 
 export const Balance = ({ isSrc }: { isSrc?: boolean }) => {
+  const { isDarkTheme } = useAdapterContext();
+
   return (
-    <StyledBalance>
+    <StyledBalance isDarkMode={isDarkTheme ? 1 : 0}>
       <IoWalletSharp style={{ width: 18, height: 18 }} />
       <Components.TokenBalance emptyUi={<EmptyValue />} isSrc={isSrc} hideLabel={true} />
     </StyledBalance>
@@ -56,11 +58,13 @@ export const Balance = ({ isSrc }: { isSrc?: boolean }) => {
 };
 
 export const TokenChange = () => {
-  return <StyledTokenChange icon={<BsArrowDownShort />} />;
+  const { isDarkTheme } = useAdapterContext();
+  return <StyledTokenChange isDarkTheme={isDarkTheme ? 1 : 0} icon={<BsArrowDownShort />} />;
 };
 
 export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
+  const { isDarkTheme } = useAdapterContext();
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -75,10 +79,10 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
           <TwapStyles.StyledColumnFlex gap={10}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
               <StyledPanelInput placeholder="0" isSrc={isSrcToken} />
-              <StyledTokenSelect hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              <StyledTokenSelect isDarkMode={isDarkTheme ? 1 : 0} hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <StyledUSD isSrc={isSrcToken} emptyUi={<EmptyValue prefix="$ " />} />
+              <StyledUSD isDarkMode={isDarkTheme ? 1 : 0} isSrc={isSrcToken} emptyUi={<EmptyValue prefix="$ " />} />
               <Balance isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>

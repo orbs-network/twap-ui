@@ -16,7 +16,7 @@ const TWAP = (props: ThenaTWAPProps) => {
   }, []);
 
   return (
-    <StyledAdapter className="twap-adapter-wrapper">
+    <StyledAdapter isDarkMode={props.isDarkTheme ? 1 : 0} className="twap-adapter-wrapper">
       <TwapAdapter
         connect={props.connect}
         config={config}
@@ -27,7 +27,7 @@ const TWAP = (props: ThenaTWAPProps) => {
         account={props.account}
         tokenList={parsedTokens}
       >
-        <GlobalStyles styles={configureStyles() as any} />
+        <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <StyledColumnFlex>
