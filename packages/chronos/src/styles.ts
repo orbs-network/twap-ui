@@ -221,10 +221,12 @@ export const configureStyles = () => {
       width: 119,
       minWidth: 119,
       height: 31,
-      border: "1px solid white",
+      border: "1px solid #5969F4",
       borderRadius: "20px!important",
       padding: "0 10px!important",
-
+      "*": {
+        color: "black",
+      },
       p: {
         fontSize: "13px!important",
         fontWeight: "500!important",
@@ -618,10 +620,6 @@ export const configureStyles = () => {
 
     ".twap-order-separator": {
       display: "none",
-    },
-
-    ".odnp *": {
-      color: "black",
     },
 
     ".twap-orders-wrapper": {

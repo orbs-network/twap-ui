@@ -1,6 +1,6 @@
 import { StyledChronos, StyledChronosLayout, StyledModalContent } from "./styles";
-import { Orders, TWAP, Limit, ChronosTWAPProps, ChronosOrdersProps, ChronosRawToken } from "@orbs-network/twap-ui-chronos";
-import { useConnectWallet, useTheme } from "./hooks";
+import { Orders, TWAP, Limit, ChronosTWAPProps, ChronosOrdersProps } from "@orbs-network/twap-ui-chronos";
+import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -10,37 +10,33 @@ import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
-const config = { ...Configs.QuickSwap };
-config.partner = "Chronos";
-
-// const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
+const config = Configs.Chronos;
 
 const getTokenLogoURL = (symbol: string) => {
+  console.log(`https://dexapi.chronos.exchange/tokens/${symbol}.png`);
+
   return `https://dexapi.chronos.exchange/tokens/${symbol}.png`;
 };
 
 export const useDappTokens = () => {
   const { account } = useWeb3React();
-  // const { isInValidNetwork } = useNetwork(config.chainId);
+  const { isInValidNetwork } = useNetwork(config.chainId);
 
   return useQuery(
     ["useDappTokens", config.chainId],
     async () => {
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json`);
+      const response = await fetch(`https://dexapi.chronos.exchange/pairs/tokens`);
 
-      // const data = (await response.json()).data;
-      // const tokenList = data.tokens;
-      const tokenList = await response.json();
+      const data = (await response.json()).data;
+      const tokens = data.tokens;
 
-      const parsed = tokenList
-        // .filter((t: any) => t.chainId === config.chainId)
-        .map(({ symbol, address, decimals, name }: any) => ({
-          decimals,
-          symbol,
-          name,
-          address,
-          logoURI: getTokenLogoURL(symbol),
-        }));
+      const parsed = tokens.map(({ symbol, address, decimals, name }: any) => ({
+        decimals,
+        symbol,
+        name,
+        address,
+        logoURI: getTokenLogoURL(symbol),
+      }));
 
       const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
 
@@ -49,7 +45,7 @@ export const useDappTokens = () => {
         return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
       });
     },
-    { enabled: !!account }
+    { enabled: !!account && !isInValidNetwork }
   );
 };
 

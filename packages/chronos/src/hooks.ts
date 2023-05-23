@@ -4,7 +4,7 @@ import _ from "lodash";
 import Web3 from "web3";
 import { ChronosRawToken, ChronosTWAPProps } from "./types";
 
-export const config = Configs.QuickSwap;
+export const config = Configs.Chronos;
 
 export const useParseTokens = (dappTokens: any, getTokenLogoURL: (address: string) => string): TokenData[] => {
   const listLength = _.size(dappTokens);

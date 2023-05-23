@@ -14,7 +14,7 @@ const queryClient = new QueryClient({
   },
 });
 
-analytics.onModuleLoad();
+// analytics.onModuleLoad();
 
 const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
   const initLib = useInitLib();
