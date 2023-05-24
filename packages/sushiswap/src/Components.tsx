@@ -93,8 +93,9 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 export const OrderSummary = ({ children }: { children: ReactNode }) => {
+  const {isDarkTheme} = useAdapterContext();
   return (
-    <StyledOrderSummary>
+    <StyledOrderSummary isDarkTheme={isDarkTheme ? 1 : 0}>
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
           <Components.Base.Card>

@@ -41,7 +41,7 @@ export const StyledDappLayoutContent = styled(Box)({
   gap: 20,
   display: "flex",
   flexDirection: "column",
-  paddingTop: 30,
+  paddingTop: 10,
 });
 
 export const StyledQuickswapBox = styled(Box)(({ isDarkMode }: { isDarkMode: number }) => ({
@@ -192,7 +192,7 @@ export const StyledChronos = styled(StyledDapp)(({ isDarkMode }: { isDarkMode: n
 }));
 
 export const StyledChronosLayout = styled(DappLayout)({
-  maxWidth: 720,
+  maxWidth: 620,
   width: "calc(100% - 30px)",
 });
 

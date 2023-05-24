@@ -248,24 +248,28 @@ export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode })
   },
 }));
 
-export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)({
+export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
   fontFamily: "Inter",
+
   ".twap-modal-content": {
     padding: "56px 16px 16px 16px",
-    background: "#222C3D",
+    background: isDarkTheme ? "#222C3D" : "#F4F5F6",
     border: "unset",
     maxHeight: "90vh",
     overflowY: "auto",
     width: "calc(100vw - 40px)",
     borderRadius: 16,
+    "*":{
+      color: getTextColor(isDarkTheme),
+    },
     ".twap-card": {
-      background: "rgb(226 232 240/0.04)",
+      background: isDarkTheme ? "rgb(226 232 240/0.04)" : "white",
       borderRadius: 10,
       padding: 15,
     },
     ".twap-disclaimer-text": {
       "*": {
-        color: getFadedTextColor(),
+        color: getFadedTextColor(isDarkTheme),
         fontSize: 14,
         lineHeight: "18px",
       },
@@ -285,7 +289,7 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)(
     },
     ".twap-order-summary-limit-price": {
       fontSize: 14,
-      color: getFadedTextColor(),
+      color: getFadedTextColor(isDarkTheme),
       p: {
         color: "inherit",
       },
@@ -293,7 +297,7 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)(
     ".twap-label": {
       fontSize: 14,
       fontWeight: 600,
-      color: "white",
+      color: getTextColor(isDarkTheme),
       p: {
         fontSize: "inherit",
         fontWeight: "inherit",
@@ -302,11 +306,11 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)(
     },
     ".twap-order-summary-details-item": {},
     ".twap-order-summary-details-item-right": {
-      color: getFadedTextColor(),
+      color: getFadedTextColor(isDarkTheme),
       fontSize: 14,
       fontWeight: 600,
       "*": {
-        color: getFadedTextColor(),
+        color: getFadedTextColor(isDarkTheme),
         fontSize: 14,
         fontWeight: 600,
       },
@@ -344,7 +348,7 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)(
       },
     },
   },
-});
+}));
 
 export const StyledAdapter = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   ".MuiSlider-valueLabel": {
@@ -404,7 +408,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
       paddingLeft: "0px!important",
     },
     ".MuiBackdrop-root": {
-      background: "rgba(0,0,0,.4)!important",
+      background: isDarkMode ? "rgba(0,0,0,.4)!important" : "rgba(255,255,255,.4)!important",
       backdropFilter: "blur(10px) saturate(190%) contrast(70%) brightness(80%)",
     },
     ".twap-time-selector": {

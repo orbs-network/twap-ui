@@ -112,7 +112,7 @@ const drawerWidth = 260;
 export const DappsMenu = () => {
   const { isSelected } = useSelectedDapp();
 
-  const isMobile = useMediaQuery("(max-width:1100px)");
+  const isMobile = useMediaQuery("(max-width:1200px)");
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const disconnect = useDisconnectWallet();
