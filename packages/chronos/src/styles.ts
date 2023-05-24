@@ -367,6 +367,7 @@ export const configureStyles = () => {
         borderRadius: 20,
         border: `1px solid #9e5bf1`,
         background: "white",
+        transition: "0s!important",
       },
       "& .Mui-checked+.MuiSwitch-track": {
         padding: "0!important",

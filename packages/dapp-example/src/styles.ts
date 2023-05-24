@@ -56,15 +56,23 @@ export const StyledThenaGradient = styled(Box)({
   borderRadius: 10,
 });
 
-export const StyledThenaBox = styled(Box)(({ isDarkMode }: { isDarkMode: number }) => ({
-  background: "transparent linear-gradient(90deg,#1d023b,#17023e) 0 0 no-repeat padding-box",
+export const StyledThenaBox = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "transparent linear-gradient(90deg,#1d023b,#17023e) 0 0 no-repeat padding-box" : "white",
   padding: 20,
   borderRadius: 10,
 }));
 
 export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  background: isDarkMode ? "#090333" : "#FBFBFB",
+  background: isDarkMode ? "#090333" : "#F4F5F6",
   fontFamily: "Figtree",
+  ".ui-selector-btn": {
+    background: isDarkMode ? "rgba(255,255,255, 0.1)" : "white",
+    color: isDarkMode ? "white" : "black",
+  },
+  ".ui-selector-btn-selected": {
+    background: "linear-gradient(to right, rgb(216, 0, 183), rgb(177, 0, 222), rgb(177, 0, 222), rgb(216, 0, 183))",
+    color: "white",
+  },
 }));
 
 export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
@@ -79,12 +87,7 @@ export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
 
 export const StyledSushuUiSelector = styled(UISelector)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   ".ui-selector-btn": {
-    padding: "10px 20px",
-    border: "unset",
     background: isDarkMode ? "hsla(0,0%,100%,.06)" : "white",
-    borderRadius: 10,
-    fontSize: 14,
-    fontWeight: 500,
     color: isDarkMode ? "white" : "black",
   },
   ".ui-selector-btn-selected": {
@@ -172,10 +175,12 @@ export const StyledChronos = styled(StyledDapp)(({ isDarkMode }: { isDarkMode: n
   backgroundSize: "cover",
   backgroundPosition: "left",
   ".ui-selector-btn": {
+    background: isDarkMode ? "rgba(255,255,255, 0.08)" : "white",
     color: isDarkMode ? "white" : "black",
   },
   ".ui-selector-btn-selected": {
-    borderBottom: isDarkMode ? "2px solid white" : "2px solid black",
+    background: "linear-gradient(to right,#9E5BF1,#356FF4 )",
+    color: "white",
   },
   ".menu-button": {
     svg: {
@@ -396,8 +401,12 @@ export const StyledUISelectorButtons = styled(TwapStyles.StyledRowFlex)({
 });
 export const StyledUISelectorButton = styled("button")({
   background: "transparent",
-  border: "unset",
   cursor: "pointer",
   transition: "0.2s all",
   borderBottom: "2px solid transparent",
+  padding: "10px 20px",
+  border: "unset",
+  borderRadius: 10,
+  fontSize: 14,
+  fontWeight: 500,
 });

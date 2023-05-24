@@ -84,8 +84,9 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 export const Card = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
+  const { isDarkTheme } = useAdapterContext();
   return (
-    <StyledCard className={`twap-card ${className}`}>
+    <StyledCard isDarkTheme={isDarkTheme ? 1 : 0} className={`twap-card ${className}`}>
       <div className="twap-card-children">{children}</div>
     </StyledCard>
   );
@@ -109,8 +110,9 @@ export const SrcTokenPercentSelector = () => {
 };
 
 export const OrderSummary = ({ children }: { children: ReactNode }) => {
+  const { isDarkTheme } = useAdapterContext();
   return (
-    <StyledOrderSummary>
+    <StyledOrderSummary isDarkMode={isDarkTheme ? 1 : 0}>
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
           <Components.Base.Card>

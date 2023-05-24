@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/material";
-import { Components, Styles, Orders } from "@orbs-network/twap-ui";
+import { Components, Styles } from "@orbs-network/twap-ui";
 const gradient = "linear-gradient(to right, rgb(216, 0, 183), rgb(177, 0, 222), rgb(177, 0, 222), rgb(216, 0, 183))";
 
 export const StyledPanelInput = styled(Components.TokenInput)({
@@ -9,7 +9,7 @@ export const StyledPanelInput = styled(Components.TokenInput)({
   },
 });
 
-export const StyledCard = styled(Box)({
+export const StyledCard = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
   width: "100%",
   padding: 1,
   borderRadius: 3,
@@ -18,11 +18,11 @@ export const StyledCard = styled(Box)({
     minHeight: 50,
     borderRadius: 3,
     padding: 10,
-    background: "rgb(9 3 51/1)",
+    background: isDarkTheme ? "rgb(9 3 51/1)" : "white",
     display: "flex",
     alighItems: "center",
   },
-});
+}));
 
 export const StyledTokenPanelTop = styled(Styles.StyledRowFlex)({});
 export const StyledBalance = styled(Components.TokenBalance)({
@@ -71,10 +71,12 @@ export const StyledSubmit = styled(Components.SubmitButton)({
   textTransform: "uppercase",
   lineHeight: "24px",
   padding: 10,
+  color: "white!important",
   "*": {
     fontWeight: "inherit",
     fontSize: "inherit",
     lineHeight: "inherit",
+    color: "white!important",
   },
 });
 
@@ -110,7 +112,10 @@ export const StyledLimitPrice = styled(Components.LimitPriceInput)({
   },
 });
 
-export const StyledOrders = styled(Box)<{ isDarkMode: number }>({
+export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  "*": {
+    color: isDarkMode ? "white" : "rgb(10 9 62/1)",
+  },
   ".twap-order": {
     background: "rgb(16 22 69/1)",
     padding: 20,
@@ -164,29 +169,34 @@ export const StyledOrders = styled(Box)<{ isDarkMode: number }>({
     ".MuiButtonBase-root": {
       borderRadius: 4,
       transition: "0.3s all",
+      color: isDarkMode ? "white" : "rgb(10 9 62/1)",
     },
     ".Mui-selected": {
       background: gradient,
-      color: "white",
+      color: "white!important",
     },
     ".MuiTabs-indicator": {
       display: "none",
     },
   },
-});
+}));
 
-export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)({
+export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   fontFamily: "Figtree",
+  "*": {
+    color: isDarkMode ? "white" : "rgb(10 9 62/1)",
+  },
   ".twap-modal-content": {
     padding: "50px 20px 20px 20px",
-    background: "rgb(16 22 69/1)",
+    background: isDarkMode ? "rgb(16 22 69/1)" : "white",
     border: "1px solid rgb(0 0 175/1)",
     maxHeight: "90vh",
     overflowY: "auto",
     width: "calc(100vw - 40px)",
     borderRadius: 8,
     ".twap-card": {
-      background: "rgb(13 18 56/1)",
+      background: isDarkMode ? "rgb(13 18 56/1)" : "transparent",
+      border: isDarkMode ? "1px solid transparent" : "1px solid rgb(13 18 56/1)",
       borderRadius: 8,
       padding: 20,
     },
@@ -219,15 +229,26 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)(
       },
     },
   },
-});
+}));
 
 export const configureStyles = (isDarkMode?: boolean) => {
+  console.log(isDarkMode);
+
   return {
+    ".twap-input": {
+      input: {
+        "&::placeholder": {
+          color: isDarkMode ? "white!important" : "rgb(10 9 62/1)!important",
+          opacity: 0.4,
+        },
+      },
+    },
     ".twap-limit-price-input": {
       paddingLeft: "0px!important",
     },
     ".MuiBackdrop-root": {
-      background: "rgb(9 3 51/0.88)!important",
+      background: isDarkMode ? "rgb(9 3 51/0.88)!important" : "white!important",
+      opacity: isDarkMode ? "unset" : "0.7!important",
     },
     ".twap-time-selector": {
       ".twap-input": {
@@ -256,7 +277,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
       background: gradient,
     },
     ".MuiSwitch-track": {
-      backgroundColor: "white!important",
+      backgroundColor: isDarkMode ? "white!important" : "rgb(10 9 62/1)!important",
     },
     ".twap-label": {
       p: {
@@ -288,16 +309,16 @@ export const configureStyles = (isDarkMode?: boolean) => {
     },
     ".twap-tooltip": {
       "& .MuiTooltip-tooltip": {
-        backgroundColor: "rgb(16 22 69/1)",
+        backgroundColor: isDarkMode ? "rgb(16 22 69/1)" : "white",
         borderRadius: "4px",
-        color: "white",
+        color: isDarkMode ? "white" : "rgb(10 9 62/1)",
         fontSize: 14,
         lineHeight: 1.5,
         padding: 10,
         border: "1px solid rgb(0 0 175/1)",
         fontFamily: "Figtree",
         "& *": {
-          color: "white",
+          color: "inherit",
           fontSize: 14,
         },
       },
@@ -307,7 +328,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
     },
     ".twap-adapter-wrapper": {
       "*": {
-        color: "white",
+        color: isDarkMode ? "white" : "rgb(10 9 62/1)",
         fontFamily: "inherit",
       },
     },
@@ -317,7 +338,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
     },
     ".twap-orders": {
       maxWidth: "unset!important",
-      color: "white",
+      color: isDarkMode ? "white" : "rgb(10 9 62/1)",
       "*": {
         fontFamily: "inherit",
       },
