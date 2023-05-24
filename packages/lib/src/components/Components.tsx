@@ -651,7 +651,7 @@ export function OrderSummaryModalContainer({ children, className }: { children: 
   const showConfirmation = useTwapStore((store) => store.showConfirmation);
   const setShowConfirmation = useTwapStore((store) => store.setShowConfirmation);
   return (
-    <Modal open={true} className={className} onClose={() => setShowConfirmation(false)}>
+    <Modal open={showConfirmation} className={className} onClose={() => setShowConfirmation(false)}>
       {children}
     </Modal>
   );
