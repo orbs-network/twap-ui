@@ -4,7 +4,7 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import IconButton from "@mui/material/IconButton";
 import { Styles as TwapStyles } from "@orbs-network/twap-ui";
-import { DappLayout, UISelector } from "./Components";
+import { DappLayout } from "./Components";
 export const globalStyle = {
   "& *": {
     color: "white",
@@ -41,7 +41,7 @@ export const StyledDappLayoutContent = styled(Box)({
   gap: 20,
   display: "flex",
   flexDirection: "column",
-  paddingTop: 10,
+  paddingTop: 30,
 });
 
 export const StyledQuickswapBox = styled(Box)(({ isDarkMode }: { isDarkMode: number }) => ({
@@ -62,6 +62,12 @@ export const StyledThenaBox = styled(Box)<{ isDarkMode: number }>(({ isDarkMode 
   borderRadius: 10,
 }));
 
+export const StyledStellaSwapBox = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#0E1126" : "white",
+  padding: 20,
+  borderRadius: 10,
+}));
+
 export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#090333" : "#F4F5F6",
   fontFamily: "Figtree",
@@ -75,6 +81,19 @@ export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
   },
 }));
 
+export const StyledStella = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#251842" : "#F4F5F6",
+  fontFamily: "Figtree",
+  ".ui-selector-btn": {
+    background: isDarkMode ? "#0E1126" : "white",
+    color: isDarkMode ? "white" : "black",
+  },
+  ".ui-selector-btn-selected": {
+    background: "#e2107b",
+    color: "white",
+  },
+}));
+
 export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#0F172A" : "#F4F5F6",
   fontFamily: "Inter",
@@ -83,9 +102,6 @@ export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
       color: isDarkMode ? "white" : "black",
     },
   },
-}));
-
-export const StyledSushuUiSelector = styled(UISelector)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   ".ui-selector-btn": {
     background: isDarkMode ? "hsla(0,0%,100%,.06)" : "white",
     color: isDarkMode ? "white" : "black",
@@ -146,6 +162,11 @@ export const StyledSpookySwapLayout = styled(DappLayout)({
 
 export const StyledSpiritSwapLayout = styled(DappLayout)({
   maxWidth: 520,
+  width: "calc(100% - 30px)",
+});
+
+export const StyledStellaSwapLayout = styled(DappLayout)({
+  maxWidth: 650,
   width: "calc(100% - 30px)",
 });
 

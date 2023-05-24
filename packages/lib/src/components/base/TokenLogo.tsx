@@ -12,7 +12,7 @@ function TokenLogo({ logo, className = "", style = {}, alt = "Token logo" }: { l
   return logo && !error ? (
     <StyledImg alt={alt} style={style} onError={() => setError(true)} className={`twap-token-logo ${className}`} src={logo} />
   ) : (
-    <AiFillQuestionCircle style={{ width: 20, height: 20 }} />
+    <AiFillQuestionCircle style={{ width: 20, height: 20 }} className="twap-token-svg" />
   );
 }
 

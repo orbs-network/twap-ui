@@ -161,7 +161,21 @@ export function TokenLogoAndSymbol({ isSrc, reverse }: { isSrc?: boolean; revers
   return <TokenDisplay reverse={reverse} logo={token?.logoUrl} symbol={token?.symbol} />;
 }
 
-export const TokenSelect = ({ onClick, isSrc, hideArrow = true, className = "" }: { onClick: () => void; isSrc?: boolean; hideArrow?: boolean; className?: string }) => {
+export const TokenSelect = ({
+  onClick,
+  isSrc,
+  hideArrow = true,
+  className = "",
+  tokenSelectedUi,
+  tokenNotSelectedUi,
+}: {
+  onClick: () => void;
+  isSrc?: boolean;
+  hideArrow?: boolean;
+  className?: string;
+  tokenSelectedUi?: ReactNode;
+  tokenNotSelectedUi?: ReactNode;
+}) => {
   const srcToken = useTwapStore((state) => state.srcToken);
   const dstToken = useTwapStore((state) => state.dstToken);
 
@@ -176,12 +190,18 @@ export const TokenSelect = ({ onClick, isSrc, hideArrow = true, className = "" }
         onClick={onClick}
         className={`${className} twap-token-select twap-token-selected ${!!srcToken && !!dstToken ? "twap-token-filled" : ""}`}
       >
-        <TokenLogoAndSymbol isSrc={isSrc} />
-        {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
+        {tokenSelectedUi ? (
+          <>{tokenSelectedUi}</>
+        ) : (
+          <>
+            <TokenLogoAndSymbol isSrc={isSrc} />
+            {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
+          </>
+        )}
       </StyledRowFlex>
     );
   }
-  return <TokenSelectButton hideArrow={hideArrow} className={`${className} twap-token-not-selected`} onClick={onClick} />;
+  return <TokenSelectButton customUi={tokenNotSelectedUi} hideArrow={hideArrow} className={`${className} twap-token-not-selected`} onClick={onClick} />;
 };
 
 export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hideNull?: boolean; onClick?: () => void }) => {

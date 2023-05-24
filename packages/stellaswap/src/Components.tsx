@@ -1,10 +1,22 @@
 import { memo, ReactNode, useCallback, useState } from "react";
 import { parseToken, useAdapterContext } from "./hooks";
 import { ThenaRawToken } from "./types";
-import { Components, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
-import { StyledBalance, StyledOrderSummary, StyledPanelInput, StyledSubmit, StyledTokenChange, StyledTokenPanel, StyledTokenSelect, StyledUSD } from "./styles";
-import { BsArrowDownShort } from "react-icons/bs";
-import { IoWalletSharp } from "react-icons/io5";
+import { Components, Styles as TwapStyles, TWAPTokenSelectProps, store } from "@orbs-network/twap-ui";
+import {
+  StyledBalance,
+  StyledBalanceAndUSD,
+  StyledOrderSummary,
+  StyledPanelInput,
+  StyledPanelRight,
+  StyledSubmit,
+  StyledTokenChange,
+  StyledTokenPanel,
+  StyledTokenSelect,
+  StyledUSD,
+} from "./styles";
+import { TbArrowsDownUp } from "react-icons/tb";
+import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { Typography } from "@mui/material";
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens } = useAdapterContext();
 
@@ -38,28 +50,28 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
   );
 };
 
-const EmptyValue = ({ prefix = "" }: { prefix?: string }) => {
-  return (
-    <>
-      {prefix}0.<span>00</span>
-    </>
-  );
-};
-
-export const Balance = ({ isSrc }: { isSrc?: boolean }) => {
-  const { isDarkTheme } = useAdapterContext();
-
-  return (
-    <StyledBalance isDarkMode={isDarkTheme ? 1 : 0}>
-      <IoWalletSharp style={{ width: 18, height: 18 }} />
-      <Components.TokenBalance emptyUi={<EmptyValue />} isSrc={isSrc} hideLabel={true} />
-    </StyledBalance>
-  );
-};
-
 export const TokenChange = () => {
   const { isDarkTheme } = useAdapterContext();
-  return <StyledTokenChange isDarkTheme={isDarkTheme ? 1 : 0} icon={<BsArrowDownShort />} />;
+  return <StyledTokenChange isDarkTheme={isDarkTheme ? 1 : 0} icon={<TbArrowsDownUp />} />;
+};
+
+const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () => void }) => {
+  const { srcToken, dstToken } = store.useTwapStore();
+
+  const notSelected = (isSrc && !srcToken) || (!isSrc && !dstToken);
+  return (
+    <StyledTokenSelect onClick={onClick}>
+      <Components.TokenLogo isSrc={isSrc} />
+      <TwapStyles.StyledColumnFlex style={{ flex: 1 }} alignItems="flex-start" gap={1}>
+        <Typography className="twap-token-select-title">Swap {isSrc ? "From" : "To"}</Typography>
+
+        <TwapStyles.StyledRowFlex gap={5} justifyContent="flex-start">
+          {notSelected ? <Typography className="twap-token-select-text">Select</Typography> : <Components.TokenSymbol isSrc={isSrc} />}
+          <MdOutlineKeyboardArrowDown className="twap-token-select-icon" />
+        </TwapStyles.StyledRowFlex>
+      </TwapStyles.StyledColumnFlex>
+    </StyledTokenSelect>
+  );
 };
 
 export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
@@ -75,18 +87,18 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
 
       <StyledTokenPanel className="twap-token-panel">
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={10}>
-            <TwapStyles.StyledRowFlex justifyContent="space-between">
+        <TwapStyles.StyledColumnFlex gap={14}>
+          <TwapStyles.StyledRowFlex justifyContent="space-between" gap={20}>
+            <TokenSelectButton isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+            <StyledPanelRight isSrcToken={isSrcToken ? 1 : 0}>
               <StyledPanelInput placeholder="0" isSrc={isSrcToken} />
-              <StyledTokenSelect isDarkMode={isDarkTheme ? 1 : 0} hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
-            </TwapStyles.StyledRowFlex>
-            <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <StyledUSD isDarkMode={isDarkTheme ? 1 : 0} isSrc={isSrcToken} emptyUi={<EmptyValue prefix="$ " />} />
-              <Balance isSrc={isSrcToken} />
-            </TwapStyles.StyledRowFlex>
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
+              <StyledBalanceAndUSD>
+                <StyledBalance emptyUi={<div>0.00</div>} isDarkMode={isDarkTheme ? 1 : 0} isSrc={isSrcToken} />
+                <StyledUSD isDarkMode={isDarkTheme ? 1 : 0} isSrc={isSrcToken} />
+              </StyledBalanceAndUSD>
+            </StyledPanelRight>
+          </TwapStyles.StyledRowFlex>
+        </TwapStyles.StyledColumnFlex>
       </StyledTokenPanel>
     </>
   );

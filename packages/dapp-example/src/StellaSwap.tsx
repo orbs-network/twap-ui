@@ -1,5 +1,5 @@
-import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
-import { Orders, TWAP, Limit, ThenaTWAPProps, ThenaOrdersProps } from "@orbs-network/twap-ui-sushiswap";
+import { StyledModalContent, StyledStella, StyledStellaSwapBox, StyledStellaSwapLayout } from "./styles";
+import { Orders, TWAP, Limit, ThenaTWAPProps, ThenaOrdersProps } from "@orbs-network/twap-ui-stellaswap";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -11,7 +11,7 @@ import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
-config.partner = "SushiSwap";
+config.partner = "StellaSwap";
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
 export const useDappTokens = () => {
@@ -103,29 +103,39 @@ const DappComponent = () => {
   const ordersProps: ThenaOrdersProps = { account, dappTokens, provider: library, isDarkTheme };
 
   return (
-    <StyledSushi isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledSushiLayout name={config.partner}>
+    <StyledStella isDarkMode={isDarkTheme ? 1 : 0}>
+      <StyledStellaSwapLayout name={config.partner}>
         <UISelector
           options={[
             {
               title: "TWAP",
-              component: <TWAP {...twapProps} />,
+              component: (
+                <StyledStellaSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+                  <TWAP {...twapProps} />
+                </StyledStellaSwapBox>
+              ),
             },
             {
               title: "LIMIT",
-              component: <Limit {...twapProps} />,
+              component: (
+                <StyledStellaSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+                  <Limit {...twapProps} />
+                </StyledStellaSwapBox>
+              ),
             },
           ]}
         />
-        <Orders {...ordersProps} />
-      </StyledSushiLayout>
-    </StyledSushi>
+        <StyledStellaSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+          <Orders {...ordersProps} />
+        </StyledStellaSwapBox>
+      </StyledStellaSwapLayout>
+    </StyledStella>
   );
 };
 
 const dapp: Dapp = {
   Component: DappComponent,
-  logo: "https://cdn.cdnlogo.com/logos/s/10/sushiswap.svg",
+  logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/17358.png",
   config,
   workInProgress: true,
 };

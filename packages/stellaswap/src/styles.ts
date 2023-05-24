@@ -1,70 +1,55 @@
-import { Box, styled, Typography } from "@mui/material";
+import { Box, styled } from "@mui/material";
 import { Components, Styles } from "@orbs-network/twap-ui";
 const gradient = "linear-gradient(to right,rgba(59,130,246,.15),rgba(236,72,153,.15))";
 
 export const StyledPanelInput = styled(Components.TokenInput)({
+  height: "100%",
   input: {
     fontSize: 30,
-    height: 44,
+    height: "100%",
     fontWeight: 500,
   },
 });
 
-const getTextColor = (isDarkMode?: number) => (!isDarkMode ? "rgba(0,0,0, 0.8)" : "white");
-const getFadedTextColor = (isDarkMode?: number) => (!isDarkMode ? "rgb(107 114 128/1)" : "rgb(148 163 184/1)");
+export const StyledPanelRight = styled(Styles.StyledRowFlex)<{ isSrcToken: number }>(({ isSrcToken }) => ({
+  background: isSrcToken ? "rgba(8,8,8,1)" : "rgba(8,8,8,0.5)",
+  borderRadius: 10,
+  padding: 10,
+  minHeight: 60,
+}));
 
-export const StyledWithIcon = styled(Styles.StyledRowFlex)({
-  color: getFadedTextColor(),
+export const StyledBalanceAndUSD = styled(Styles.StyledColumnFlex)({
+  width: "auto",
+  alignItems: "flex-end",
+  gap: 0,
   "*": {
-    color: getFadedTextColor(),
+    color: "rgba(87,87,87,1)",
+    fontSize: 12,
   },
 });
+
+const getTextColor = (isDarkMode?: number) => (!isDarkMode ? "black" : "#BFBFBF");
 
 export const StyledUSD = styled(Components.TokenUSD)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  "*": {
-    color: getFadedTextColor(isDarkMode),
-    fontWeight: 500,
-  },
+  maxWidth: "unset",
+}));
+
+export const StyledBalance = styled(Components.TokenBalance)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  maxWidth: "unset",
+
   p: {
-    fontSize: 18,
-  },
-  span: {
-    fontSize: "14px!important",
-    color: "inherit",
-    fontWeight: "inherit",
+    flexDirection: "column",
+    display: "flex",
+    alignItems: "flex-end",
   },
 }));
 
-export const StyledBalance = styled(Styles.StyledRowFlex)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  color: `${getFadedTextColor(isDarkMode)}!important`,
-  gap: 4,
-  "*": {
-    fontWeight: "500!important",
-  },
-  ".twap-balance": {
-    maxWidth: "unset",
-    fontSize: 18,
-    fontWeight: "500!important",
-  },
-  width: "auto",
-
-  span: {
-    fontSize: 14,
-    fontWeight: "inherit",
-  },
-}));
-
-export const StyledEmpty = styled(Typography)({
-  svg: {
-    fill: getFadedTextColor(),
-    color: getFadedTextColor(),
-  },
+export const StyledTop = styled(Styles.StyledColumnFlex)({
+  gap: 20,
+  padding: "0px 20px 0px 20px",
 });
 
 export const StyledMarketPrice = styled(Components.MarketPrice)({
-  background: gradient,
-  padding: 12,
-  borderRadius: 12,
   "> p": {
     fontSize: 15,
     fontWeight: 500,
@@ -72,20 +57,21 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
 });
 
 export const StyledTokenChange = styled(Components.ChangeTokensOrder)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
+  justifyContent: "flex-start",
   button: {
-    position: "absolute",
-    background: isDarkTheme ? "rgb(15 23 42/1)" : "rgb(243 244 246/1)",
-    width: 30,
-    height: 30,
+    background: isDarkTheme ? "rgba(16,16,16,1)" : "rgb(243 244 246/1)",
+    width: 62,
+    height: 62,
     borderRadius: "50%",
+    border: "2px solid black",
     "&:hover": {
-      background: isDarkTheme ? "rgb(15 23 42/1)" : "rgb(243 244 246/1)",
+      background: isDarkTheme ? "rgba(16,16,16,1)" : "rgb(243 244 246/1)",
     },
   },
   svg: {
     width: 27,
     height: 27,
-    fill: "rgb(59 130 246/1)",
+    fill: "white",
   },
 }));
 
@@ -96,12 +82,12 @@ export const StyledContainer = styled(Styles.StyledColumnFlex)({
 export const StyledTokenPanel = styled(StyledContainer)({});
 
 export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
-  gap: 16,
+  gap: 12,
 });
 
 export const StyledSubmit = styled(Components.SubmitButton)({
   borderRadius: 12,
-  background: "rgb(59 130 246/1)",
+  background: "#e2107b",
   minHeight: 52,
   fontWeight: 500,
   fontSize: 16,
@@ -120,36 +106,44 @@ export const StyledPoweredBy = styled(Components.PoweredBy)({
   marginTop: 20,
 });
 
-export const StyledTokenSelect = styled(Components.TokenSelect)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  gap: 6,
-  background: isDarkMode ? "hsla(0,0%,100%,.06)" : "rgba(0,0,0,.06)",
-  padding: 8,
-  borderRadius: 30,
-  color: getTextColor(isDarkMode),
+export const StyledTokenSelect = styled(Styles.StyledRowFlex)({
+  alignItems: "center",
+  width: "auto",
+  gap: 10,
   "*": {
-    color: "inherit",
-  },
-  ".twap-token-logo": {
-    width: 28,
-    height: 28,
+    whiteSpace: "nowrap",
   },
   ".twap-token-name": {
-    fontSize: 16,
-    fontWeight: 500,
+    fontSize: 24,
+    fontWeight: 700,
   },
-  p: {
-    fontSize: 16,
-    fontWeight: 600,
+  ".twap-token-select-text": {
+    fontSize: 24,
+    fontWeight: 700,
   },
-  ".twap-token-display": {
-    gap: 5,
+  ".twap-token-logo": {
+    width: "54px!important",
+    height: "54px!important",
   },
-}));
+  ".twap-token-svg": {
+    width: "60px!important",
+    height: "60px!important",
+  },
+  cursor: "pointer",
+  ".twap-token-select-title": {
+    fontSize: 12,
+    color: "rgba(87,87,87,1)",
+  },
+  ".twap-token-select-icon": {
+    width: 23,
+    height: 23,
+  },
+});
 
 export const StyledLimitPrice = styled(Components.LimitPriceInput)({
-  background: "hsla(0,0%,100%,.06)",
+  background: "#151519",
   borderRadius: 12,
-  padding: 5,
+  padding: "5px 10px 5px 10px",
   "*": {
     fontSize: `14px!important`,
     fontWeight: 500,
@@ -163,7 +157,9 @@ export const StyledLimitPrice = styled(Components.LimitPriceInput)({
 });
 
 export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  maxWidth: "unset!important",
+  ".twap-orders": {
+    maxWidth: "unset!important",
+  },
   "*": {
     color: getTextColor(isDarkMode),
   },
@@ -171,7 +167,7 @@ export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode })
     gap: 16,
   },
   ".twap-order-expanded-right": {
-    color: `${getFadedTextColor(isDarkMode)}!important`,
+    color: `${getTextColor(isDarkMode)}!important`,
     fontWeight: 500,
     "*": {
       color: `inherit`,
@@ -194,7 +190,7 @@ export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode })
       display: "none",
     },
     ".twap-market-price-section": {
-      background: isDarkMode ? "hsla(0,0%,100%,.06)" : "#F4F5F6",
+      background: isDarkMode ? "#151519" : "#F4F5F6",
       width: "100%",
       padding: "5px 10px",
       borderRadius: 8,
@@ -209,7 +205,7 @@ export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode })
       background: "hsla(0,0%,100%,.06)",
     },
     ".MuiLinearProgress-bar": {
-      background: "rgb(59 130 246/1)",
+      background: "#6034b1",
     },
     ".MuiLinearProgress-root::after": {
       display: "none",
@@ -231,7 +227,7 @@ export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode })
       },
     },
     ".twap-orders-header-tabs": {
-      border: isDarkMode ? "1px solid hsla(0,0%,100%,.06)" : "1px solid rgb(59 130 246/1)",
+      border: "2px solid rgba(48,23,71,1)",
     },
     ".MuiButtonBase-root": {
       borderRadius: 4,
@@ -239,11 +235,12 @@ export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode })
       color: "inherit",
     },
     ".Mui-selected": {
-      background: isDarkMode ? "hsla(0,0%,100%,.06)" : "rgb(59 130 246/1)",
+      background: "unset",
       color: "white",
     },
     ".MuiTabs-indicator": {
-      display: "none",
+      // display: "none",
+      background: "#e2107b",
     },
   },
 }));
@@ -269,7 +266,7 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
     },
     ".twap-disclaimer-text": {
       "*": {
-        color: getFadedTextColor(isDarkTheme),
+        color: getTextColor(isDarkTheme),
         fontSize: 14,
         lineHeight: "18px",
       },
@@ -289,7 +286,7 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
     },
     ".twap-order-summary-limit-price": {
       fontSize: 14,
-      color: getFadedTextColor(isDarkTheme),
+      color: getTextColor(isDarkTheme),
       p: {
         color: "inherit",
       },
@@ -306,11 +303,11 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
     },
     ".twap-order-summary-details-item": {},
     ".twap-order-summary-details-item-right": {
-      color: getFadedTextColor(isDarkTheme),
+      color: getTextColor(isDarkTheme),
       fontSize: 14,
       fontWeight: 600,
       "*": {
-        color: getFadedTextColor(isDarkTheme),
+        color: getTextColor(isDarkTheme),
         fontSize: 14,
         fontWeight: 600,
       },
@@ -318,7 +315,7 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
   },
   ".twap-order-summary-output-address": {
     p: {
-      color: getFadedTextColor(),
+      color: getTextColor(),
       fontSize: 15,
       fontWeight: 500,
     },
@@ -326,7 +323,7 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
   ".twap-orders-summary-token-display": {
     ".twap-small-label": {
       p: {
-        color: getFadedTextColor(),
+        color: getTextColor(),
         fontSize: 16,
         fontWeight: 500,
       },
@@ -366,8 +363,8 @@ export const StyledAdapter = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }
     border: "1px solid rgb(59 130 246/1)",
   },
   ".twap-button-disabled": {
-    opacity: 0.7,
-    pointer: "disabled",
+    pointer: "unset",
+    background: "rgba(21,21,21,0.8)!important",
     "*": {},
   },
 
@@ -379,8 +376,8 @@ export const StyledAdapter = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }
     },
   },
   ".twap-time-selector-list": {
-    background: "#0F172A",
-    border: "1px solid rgba(255,255,255, 0.1)",
+    background: "#151519",
+    border: "1px solid rgba(191,191,191,1)",
   },
   ".twap-time-selector-list-item": {
     "&:hover": {
@@ -400,13 +397,12 @@ export const configureStyles = (isDarkMode?: boolean) => {
       },
     },
     ".twap-card": {
-      background: isDarkMode ? "rgb(30 41 59/1)" : "white",
+      background: isDarkMode ? "#080808" : "white",
       padding: 12,
       borderRadius: 12,
+      border: "3px solid rgba(16,16,16,1)",
     },
-    ".twap-limit-price-input": {
-      paddingLeft: "0px!important",
-    },
+
     ".MuiBackdrop-root": {
       background: isDarkMode ? "rgba(0,0,0,.4)!important" : "rgba(255,255,255,.4)!important",
       backdropFilter: "blur(10px) saturate(190%) contrast(70%) brightness(80%)",
@@ -414,7 +410,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
     ".twap-time-selector": {
       ".twap-input": {
         input: {
-          height: 30,
+          height: 40,
         },
       },
       ".twap-loader": {
@@ -448,20 +444,21 @@ export const configureStyles = (isDarkMode?: boolean) => {
       },
     },
     ".Mui-checked+.MuiSwitch-track": {
-      background: "rgb(59 130 246/1)!important",
+      background: "#6034b1!important",
       opacity: "1!important",
     },
 
     ".twap-tooltip": {
       "& .MuiTooltip-tooltip": {
-        backgroundColor: isDarkMode ? "#283449" : "#F9F9FA",
-        borderRadius: "4px",
-        fontSize: 12,
+        backgroundColor: isDarkMode ? "#151519" : "#F9F9FA",
+        borderRadius: "8px",
+        fontSize: 14,
         padding: 10,
         fontFamily: "Inter",
-        fontWeight: 500,
-        color: isDarkMode ? "rgb(148 163 184/1)" : "rgb(107 114 128/1)",
-        lineHeight: "16px",
+        fontWeight: 400,
+        color: isDarkMode ? "rgba(191,191,191,1)" : "rgb(107 114 128/1)",
+        lineHeight: "20px",
+        border: "1px solid rgba(191,191,191,1)",
         "& *": {
           color: "inherit",
           fontSize: "inherit",

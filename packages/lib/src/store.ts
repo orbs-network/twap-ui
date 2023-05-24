@@ -194,8 +194,8 @@ export const useTwapStore = create(
       };
     },
     setTokens: (srcToken?: TokenData, dstToken?: TokenData) => {
-      srcToken && (get() as any).setSrcToken(srcToken);
-      dstToken && (get() as any).setDstToken(dstToken);
+      (get() as any).setSrcToken(srcToken);
+      (get() as any).setDstToken(dstToken);
     },
     setFillDelay: (fillDelay: Duration) => {
       set({ customFillDelay: fillDelay });
