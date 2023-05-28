@@ -715,7 +715,7 @@ export const configureStyles = () => {
       },
 
       ".twap-switch": {
-        position:'relative',
+        position: "relative",
         ".Mui-checked+.MuiSwitch-track": {
           background: "black!important",
         },

@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AdapterContextProvider, config, parseToken } from "./hooks";
 import translations from "./i18n/en.json";
 import { ChronosTWAPProps } from "./types";
@@ -17,7 +17,13 @@ const storeOverride = {
 
 const Limit = (props: ChronosTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
+  const [appReady, setAppReady] = useState(false);
 
+  useEffect(() => {
+    setAppReady(true);
+  }, []);
+
+  if (!appReady) return null;
   return (
     <Box className="adapter-wrapper">
       <TwapAdapter
