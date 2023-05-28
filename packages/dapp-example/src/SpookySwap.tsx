@@ -1,9 +1,9 @@
 import { StyledModalContent, StyledSpookySwap, StyledSpookySwapBox, StyledSpookySwapLayout } from "./styles";
-import { Orders, TWAP, SpookySwapTWAPProps, SpookySwapOrdersProps } from "@orbs-network/twap-ui-spookyswap";
+import { Orders, TWAP, SpookySwapTWAPProps, SpookySwapOrdersProps, Limit } from "@orbs-network/twap-ui-spookyswap";
 import { useConnectWallet, useGetTokensFromViaProtocol, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
-import { Dapp, TokensList } from "./Components";
+import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { TokenListItem } from "./types";
 import _ from "lodash";
@@ -77,9 +77,27 @@ const DappComponent = () => {
   return (
     <StyledSpookySwap isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledSpookySwapLayout name={config.partner}>
-        <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0}>
-          <TWAP {...twapProps} />
-        </StyledSpookySwapBox>
+        <UISelector
+          options={[
+            {
+              title: "TWAP",
+              component: (
+                <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+                  <TWAP {...twapProps} />
+                </StyledSpookySwapBox>
+              ),
+            },
+            {
+              title: "LIMIT",
+              component: (
+                <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+                  <Limit {...twapProps} />
+                </StyledSpookySwapBox>
+              ),
+            },
+          ]}
+        />
+
         <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0}>
           <Orders {...ordersProps} />
         </StyledSpookySwapBox>

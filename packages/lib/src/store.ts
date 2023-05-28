@@ -43,13 +43,14 @@ const initialState: State = {
   chunks: 0,
   customDuration: { resolution: TimeResolution.Minutes, amount: undefined },
   customFillDelay: { resolution: TimeResolution.Minutes, amount: 2 },
-  waitingForNewOrder: false,
+
+  orderCreatedTimestamp: undefined,
 };
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
     setValues: (storeOverride: StoreOverride) => set({ ...storeOverride }),
-    setWaitingForNewOrder: (waitingForNewOrder: boolean) => set({ waitingForNewOrder }),
+    setOrderCreatedTimestamp: (orderCreatedTimestamp: number) => set({ orderCreatedTimestamp }),
     reset: (storeOverride: StoreOverride) => set({ ...initialState, lib: get().lib, ...storeOverride }),
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
@@ -310,7 +311,7 @@ export const parseOrderUi = (lib: TWAPLib, tokensWithUsd: (TokenData & { usd: BN
       srcToken,
       dstToken,
       status,
-      progress,
+      progress: 50,
       isMarketOrder,
       dstPriceFor1Src,
       srcUsdUi: srcUsd.toFormat(),

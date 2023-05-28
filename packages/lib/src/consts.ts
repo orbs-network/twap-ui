@@ -1,4 +1,4 @@
-export const REFETCH_ORDER_HISTORY = 30_000;
+export const REFETCH_ORDER_HISTORY = 10_000;
 export const REFETCH_USD = 10_000;
 export const REFETCH_BALANCE = 10_000;
 export const REFETCH_GAS_PRICE = 10_000;

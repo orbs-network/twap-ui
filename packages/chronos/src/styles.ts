@@ -22,13 +22,14 @@ const darkStyles = {
 
 const cardStyles = {
   position: "relative",
-  "&:after": {
+
+  "&::after": {
     pointerEvents: "none",
     borderRadius: 30,
     left: 0,
     top: 0,
-    content: "''",
     background: lightStyles.containerBg,
+    content: '""',
     position: "absolute",
     opacity: 0.5,
     mixBlendMode: "overlay",
@@ -214,6 +215,11 @@ export const configureStyles = () => {
       "*": {
         fill: "rgb(255 0 0/1)!important",
         color: "rgb(255 0 0/1)!important",
+      },
+    },
+    ".odnp": {
+      "*": {
+        color: "black",
       },
     },
     ".twap-odnp": {
@@ -443,12 +449,19 @@ export const configureStyles = () => {
       ".twap-order-main-progress-bar": {
         // background: styles.progressBarTrackColor,
       },
+      ".twap-order-preview": {
+        ".MuiLinearProgress-root::after": {
+          display: "none",
+          height: "100%",
+        },
+      },
       ".twap-order-progress": {
         height: 6,
         borderRadius: 4,
-        background: gradient,
+        background: "rgba(0,0,0, 0.1)",
         ".MuiLinearProgress-bar": {
-          background: "inherit",
+          height: "100%",
+          background: gradient,
         },
       },
     },
@@ -568,6 +581,14 @@ export const configureStyles = () => {
         fontFamily: "inherit",
         color: "inherit",
       },
+      ".twap-card-children": {
+        position: "relative",
+        zIndex: 2,
+      },
+      "&::after": {
+        background: "rgba(255,255,255, 1)",
+        mixBlendMode: "unset",
+      },
       ".twap-label": {
         p: {
           fontSize: "15px",
@@ -642,6 +663,16 @@ export const configureStyles = () => {
       },
     },
     ".dark": {
+      ".twap-order-progress": {
+        background: "#100E5D",
+      },
+      ".twap-modal-content": {
+        "&::after": {
+          background: "rgba(255,255,255, 0.05)!important",
+          mixBlendMode: "unset",
+        },
+      },
+
       ".twap-market-price": {
         "*": {
           color: darkStyles.textColor,

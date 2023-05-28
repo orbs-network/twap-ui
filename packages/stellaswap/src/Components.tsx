@@ -90,7 +90,7 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <TwapStyles.StyledColumnFlex gap={14}>
           <TwapStyles.StyledRowFlex justifyContent="space-between" gap={20}>
             <TokenSelectButton isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
-            <StyledPanelRight isSrcToken={isSrcToken ? 1 : 0}>
+            <StyledPanelRight isDarkMode={isDarkTheme ? 1 : 0} isSrcToken={isSrcToken ? 1 : 0}>
               <StyledPanelInput placeholder="0" isSrc={isSrcToken} />
               <StyledBalanceAndUSD>
                 <StyledBalance emptyUi={<div>0.00</div>} isDarkMode={isDarkTheme ? 1 : 0} isSrc={isSrcToken} />

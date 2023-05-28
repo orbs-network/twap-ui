@@ -54,7 +54,6 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             <Components.TokenBalance label="Available balance" showSymbol={true} isSrc={isSrcToken} />
           </StyledBalance>
         </TwapStyles.StyledRowFlex>
-        {/* <Components.TokenUSD isSrc={isSrcToken} /> */}
       </TwapStyles.StyledColumnFlex>
     </Container>
   );

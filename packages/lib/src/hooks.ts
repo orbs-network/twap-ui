@@ -7,7 +7,7 @@ import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
-import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress } from "@defi.org/web3-candies";
+import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice } from "@defi.org/web3-candies";
 import { parseOrderUi, useTwapStore } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
@@ -163,7 +163,7 @@ export const useCreateOrder = () => {
       onSuccess: async () => {
         analytics.onCreateOrderSuccess();
         reset();
-        store.setWaitingForNewOrder(true);
+        store.setOrderCreatedTimestamp(Date.now());
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
@@ -189,7 +189,6 @@ export const useInitLib = () => {
       setWrongNetwork(undefined);
       return;
     }
-
     const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
 
     const wrongChain = props.config.chainId !== chain;
@@ -404,12 +403,16 @@ const useGasPriceQuery = () => {
   const { maxFeePerGas, priorityFeePerGas } = useTwapContext();
   const lib = useTwapStore((state) => state.lib);
 
-  const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, priorityFeePerGas, maxFeePerGas], () => Paraswap.gasPrices(lib!.config.chainId), {
+  const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, priorityFeePerGas, maxFeePerGas], () => estimateGasPrice(), {
     enabled: !!lib && !BN(maxFeePerGas || 0).gt(0) && !BN(priorityFeePerGas || 0).gt(0),
     refetchInterval: REFETCH_GAS_PRICE,
   });
 
-  return { isLoading, maxFeePerGas: BN.max(data?.instant || 0, maxFeePerGas || 0, priorityFeePerGas || 0), priorityFeePerGas: BN.max(data?.low || 0, priorityFeePerGas || 0) };
+  return {
+    isLoading,
+    maxFeePerGas: BN.max(data?.fast.max || 0, maxFeePerGas || 0, priorityFeePerGas || 0),
+    priorityFeePerGas: BN.max(data?.slow.tip || 0, priorityFeePerGas || 0),
+  };
 };
 
 const useTokenList = () => {
@@ -435,13 +438,12 @@ const useTokenList = () => {
 export const useOrdersHistoryQuery = () => {
   const tokenList = useTokenList();
 
-  const waitingForNewOrder = useTwapStore((state) => state.waitingForNewOrder);
-  const setWaitingForNewOrder = useTwapStore((state) => state.setWaitingForNewOrder);
+  const orderCreatedTimestamp = useTwapStore((state) => state.orderCreatedTimestamp);
   const lib = useTwapStore((state) => state.lib);
   const getUsdValues = usePrepareUSDValues();
 
   const query = useQuery<OrdersData>(
-    [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
+    [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId, orderCreatedTimestamp],
     async () => {
       const orders = await lib!.getAllOrders();
       const tokens = _.uniqBy(
@@ -453,7 +455,6 @@ export const useOrdersHistoryQuery = () => {
       );
       const tokensWithUsd = await getUsdValues(tokens);
       const parsedOrders = orders.map((o: Order) => parseOrderUi(lib!, tokensWithUsd, o));
-      if (waitingForNewOrder) setWaitingForNewOrder(false);
       return _.chain(parsedOrders)
         .orderBy((o: OrderUI) => o.order.time, "desc")
         .groupBy((o: OrderUI) => o.ui.status)
@@ -467,7 +468,7 @@ export const useOrdersHistoryQuery = () => {
       retry: 5,
     }
   );
-  return { ...query, orders: query.data || {}, isLoading: (query.isLoading && query.fetchStatus !== "idle") || waitingForNewOrder };
+  return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
 const defaultFetchUsd = (chainId: number, token: TokenData) => Paraswap.priceUsd(chainId, token);

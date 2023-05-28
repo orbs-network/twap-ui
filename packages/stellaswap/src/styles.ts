@@ -11,8 +11,8 @@ export const StyledPanelInput = styled(Components.TokenInput)({
   },
 });
 
-export const StyledPanelRight = styled(Styles.StyledRowFlex)<{ isSrcToken: number }>(({ isSrcToken }) => ({
-  background: isSrcToken ? "rgba(8,8,8,1)" : "rgba(8,8,8,0.5)",
+export const StyledPanelRight = styled(Styles.StyledRowFlex)<{ isSrcToken: number; isDarkMode: number }>(({ isDarkMode, isSrcToken }) => ({
+  background: !isDarkMode ? "#F4F5F6" : isSrcToken ? "rgba(8,8,8,1)" : "rgba(8,8,8,0.5)",
   borderRadius: 10,
   padding: 10,
   minHeight: 60,
@@ -28,7 +28,7 @@ export const StyledBalanceAndUSD = styled(Styles.StyledColumnFlex)({
   },
 });
 
-const getTextColor = (isDarkMode?: number) => (!isDarkMode ? "black" : "#BFBFBF");
+const getTextColor = (isDarkMode?: number) => (!isDarkMode ? "rgba(0,0,0, 0.8)" : "#BFBFBF");
 
 export const StyledUSD = styled(Components.TokenUSD)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   maxWidth: "unset",
@@ -259,11 +259,6 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
     "*": {
       color: getTextColor(isDarkTheme),
     },
-    ".twap-card": {
-      background: isDarkTheme ? "rgb(226 232 240/0.04)" : "white",
-      borderRadius: 10,
-      padding: 15,
-    },
     ".twap-disclaimer-text": {
       "*": {
         color: getTextColor(isDarkTheme),
@@ -397,10 +392,10 @@ export const configureStyles = (isDarkMode?: boolean) => {
       },
     },
     ".twap-card": {
-      background: isDarkMode ? "#080808" : "white",
+      background: isDarkMode ? "#080808" : "#F4F5F6",
       padding: 12,
       borderRadius: 12,
-      border: "3px solid rgba(16,16,16,1)",
+      border: isDarkMode ? "3px solid rgba(16,16,16,1)" : "unset",
     },
 
     ".MuiBackdrop-root": {

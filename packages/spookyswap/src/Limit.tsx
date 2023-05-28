@@ -1,13 +1,20 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Styles as TwapStyles, Translations, TwapAdapter } from "@orbs-network/twap-ui";
-import { memo, useCallback } from "react";
+import { Components, hooks, store, Styles as TwapStyles, Translations, TwapAdapter } from "@orbs-network/twap-ui";
+import { useCallback } from "react";
 import translations from "./i18n/en.json";
 import { AdapterContextProvider, config, parseToken, useGetProvider, useGlobalStyles } from "./hooks";
 import { SpookySwapTWAPProps } from ".";
 import { Box } from "@mui/system";
 import { OrderSummary, TokenPanel } from "./Components";
 
-const TWAP = (props: SpookySwapTWAPProps) => {
+const storeOverride = {
+  isLimitOrder: true,
+  chunks: 1,
+  customDuration: { resolution: store.TimeResolution.Days, amount: 90 },
+  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
+};
+
+const Limit = (props: SpookySwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(rawToken, props.getTokenImageUrl));
   hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
@@ -24,6 +31,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       priorityFeePerGas={props.priorityFeePerGas}
       translations={translations as Translations}
       provider={provider}
+      storeOverride={storeOverride}
       account={props.account}
       connectedChainId={props.connectedChainId}
       tokenList={parsedTokens}
@@ -40,14 +48,16 @@ const TWAP = (props: SpookySwapTWAPProps) => {
             <TokenPanel />
           </Box>
           <LimitPrice />
-          <TradeSize />
-          <TradeInterval />
-          <MaxDuration />
           <TwapStyles.StyledRowFlex className="twap-create-order-btn">
             <Components.SubmitButton />
           </TwapStyles.StyledRowFlex>
           <OrderSummary>
-            <Components.OrderSummaryDetails />
+            <TwapStyles.StyledColumnFlex>
+              <Components.OrderSummaryDetailsDeadline />
+              <Components.OrderSummaryDetailsOrderType />
+              <Components.OrderSummaryDetailsChunkSize />
+              <Components.OrderSummaryDetailsMinDstAmount />
+            </TwapStyles.StyledColumnFlex>
           </OrderSummary>
           <Components.PoweredBy />
         </div>
@@ -56,30 +66,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
   );
 };
 
-export default memo(TWAP);
-
-const TradeSize = () => {
-  return (
-    <Components.Base.Card className="twap-trade-size">
-      <TwapStyles.StyledColumnFlex gap={5}>
-        <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
-          <Components.Labels.TotalTradesLabel />
-          <Components.ChunksSliderSelect />
-          <Components.ChunksInput />
-        </TwapStyles.StyledRowFlex>
-        <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
-          <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
-            <TwapStyles.StyledRowFlex>
-              <Components.Labels.ChunksAmountLabel />
-            </TwapStyles.StyledRowFlex>
-            <Components.TokenLogoAndSymbol isSrc={true} />
-          </TwapStyles.StyledRowFlex>
-          <Components.ChunksUSD />
-        </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledColumnFlex>
-    </Components.Base.Card>
-  );
-};
+export default Limit;
 
 const LimitPrice = () => {
   return (
@@ -92,31 +79,6 @@ const LimitPrice = () => {
         <Components.LimitPriceInput placeholder="0" />
         <Components.MarketPrice />
       </TwapStyles.StyledColumnFlex>
-    </Components.Base.Card>
-  );
-};
-const MaxDuration = () => {
-  return (
-    <Components.Base.Card>
-      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
-        <Components.Labels.MaxDurationLabel />
-        <Components.PartialFillWarning />
-        <Components.MaxDurationSelector />
-      </TwapStyles.StyledRowFlex>
-    </Components.Base.Card>
-  );
-};
-
-const TradeInterval = () => {
-  return (
-    <Components.Base.Card>
-      <TwapStyles.StyledRowFlex>
-        <Components.Labels.TradeIntervalLabel />
-        <Components.FillDelayWarning />
-        <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
-          <Components.TradeIntervalSelector />
-        </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
   );
 };

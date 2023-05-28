@@ -253,7 +253,7 @@ export const TokensList = ({ tokens = [], onClick }: { tokens?: TokenListItem[];
         <AutoSizer>
           {({ height, width }) => (
             <List
-              overscanCount={10}
+              overscanCount={30}
               className="List"
               itemData={{ tokens: filteredTokens, onClick }}
               height={height || 0}

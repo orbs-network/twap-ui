@@ -11,7 +11,6 @@ import { configureStyles, StyledColumnFlex, StyledPoweredBy } from "./styles";
 const TWAP = (props: ChronosTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
   const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
-
   useEffect(() => {
     setLimitOrder(false);
   }, []);

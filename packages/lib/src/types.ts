@@ -225,5 +225,6 @@ export interface State {
   chunks: number;
   customFillDelay: Duration;
   customDuration: Duration;
-  waitingForNewOrder: boolean;
+
+  orderCreatedTimestamp?: number;
 }

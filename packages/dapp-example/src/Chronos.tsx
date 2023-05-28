@@ -13,7 +13,9 @@ import { TokenListItem } from "./types";
 const config = Configs.Chronos;
 
 const getTokenLogoURL = (symbol: string) => {
-  console.log(`https://dexapi.chronos.exchange/tokens/${symbol}.png`);
+  if (symbol === "ETH") {
+    return config.nativeToken.logoUrl!;
+  }
 
   return `https://dexapi.chronos.exchange/tokens/${symbol}.png`;
 };
@@ -28,7 +30,7 @@ export const useDappTokens = () => {
       const response = await fetch(`https://dexapi.chronos.exchange/pairs/tokens`);
 
       const data = (await response.json()).data;
-      const tokens = data.tokens;
+      const tokens = [config.nativeToken, ...data.tokens];
 
       const parsed = tokens.map(({ symbol, address, decimals, name }: any) => ({
         decimals,
@@ -38,14 +40,14 @@ export const useDappTokens = () => {
         logoURI: getTokenLogoURL(symbol),
       }));
 
-      const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
+      const candiesAddresses = [zeroAddress, ..._.map(erc20s.arb, (t) => t().address)];
 
       return _.sortBy(parsed, (t: any) => {
         const index = candiesAddresses.indexOf(t.address);
         return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
       });
     },
-    { enabled: !!account && !isInValidNetwork }
+    { enabled: !!account && !isInValidNetwork, staleTime: Infinity }
   );
 };
 
@@ -71,6 +73,7 @@ const parseList = (rawList?: any): TokenListItem[] => {
 
 const TokenSelectModal = ({ open, selectToken, setOpen }: TokenSelectModalProps) => {
   const { data: tokensList } = useDappTokens();
+  console.log({ tokensList });
 
   const tokensListSize = _.size(tokensList);
   const parsedList = useMemo(() => parseList(tokensList), [tokensListSize]);
@@ -86,6 +89,8 @@ const TokenSelectModal = ({ open, selectToken, setOpen }: TokenSelectModalProps)
 const logo = "https://chronos.exchange/wp-content/uploads/2023/03/1-1-1.png";
 const DappComponent = () => {
   const { account, library } = useWeb3React();
+  console.log(library);
+
   const connect = useConnectWallet();
   const { data: dappTokens = [] } = useDappTokens();
   const { isDarkTheme } = useTheme();
