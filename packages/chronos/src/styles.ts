@@ -22,7 +22,10 @@ const darkStyles = {
 
 const cardStyles = {
   position: "relative",
-
+  ".twap-card-children": {
+    // position:'relative',
+    // zIndex: 2
+  },
   "&::after": {
     pointerEvents: "none",
     borderRadius: 30,
@@ -372,12 +375,13 @@ export const configureStyles = () => {
         height: 24,
         borderRadius: 20,
         border: `1px solid #9e5bf1`,
-        background: "white",
         transition: "0s!important",
+        background: "rgba(0,0,0, 0.3)!important",
       },
       "& .Mui-checked+.MuiSwitch-track": {
         padding: "0!important",
-        opacity: "1!important",
+        // opacity: "1!important",
+        background: "rgba(0,0,0, 0.3)!important",
       },
       "& .Mui-checked .MuiSwitch-thumb": {
         padding: "0!important",
@@ -711,12 +715,16 @@ export const configureStyles = () => {
       },
 
       ".twap-switch": {
+        position:'relative',
+        ".Mui-checked+.MuiSwitch-track": {
+          background: "black!important",
+        },
         ".MuiSwitch-track": {
           width: 46,
           height: 24,
           borderRadius: 20,
           border: `1px solid white`,
-          background: "rgb(10 9 62/1)!important",
+          background: "black!important",
           opacity: 1,
         },
       },
