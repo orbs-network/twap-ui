@@ -1,8 +1,9 @@
-import { Configs, isNativeAddress, TokenData } from "@orbs-network/twap";
+import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useMemo } from "react";
 import { SpookySwapTWAPProps } from ".";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
+import { isNativeAddress } from "@defi.org/web3-candies";
 
 export const config = Configs.SpookySwap;
 

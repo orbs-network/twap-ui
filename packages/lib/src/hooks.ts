@@ -1,4 +1,4 @@
-import { Order, Paraswap, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { Order, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -377,9 +377,19 @@ export const useHasAllowanceQuery = () => {
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
+const useGetPriceUsdCallback = () => {
+  const lib = useTwapStore((state) => state.lib);
+
+  return async (token?: TokenData): Promise<BN> => {
+    if (!lib) return BN(0);
+    return new BN(await lib?.priceUsd(token!));
+  };
+};
+
 const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => {
   const lib = useTwapStore((state) => state.lib);
-  const query = useQuery([QueryKeys.GET_USD_VALUE, token?.address], () => Paraswap.priceUsd(lib!.config.chainId, token!), {
+  const priceUsd = useGetPriceUsdCallback();
+  const query = useQuery([QueryKeys.GET_USD_VALUE, token?.address], async () => priceUsd(token!), {
     enabled: !!lib && !!token,
     onSuccess,
     refetchInterval: REFETCH_USD,
@@ -471,14 +481,18 @@ export const useOrdersHistoryQuery = () => {
   return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
-const defaultFetchUsd = (chainId: number, token: TokenData) => Paraswap.priceUsd(chainId, token);
-export const usePrepareUSDValues = (fetchUsd: (chainId: number, token: TokenData) => Promise<BN> = defaultFetchUsd) => {
+export const usePrepareUSDValues = (_priceUsd?: (token: TokenData) => Promise<BN>) => {
   const client = useQueryClient();
-  const lib = useTwapStore((state) => state.lib);
+  const priceUsd = useGetPriceUsdCallback();
 
-  const { mutateAsync: fetchUsdMutation } = useMutation((token: TokenData) => fetchUsd(lib!.config.chainId, token), {
-    onError: (error: any, token) => console.debug({ error, token }),
-  });
+  const { mutateAsync: fetchUsdMutation } = useMutation(
+    (token: TokenData) => {
+      return _priceUsd ? _priceUsd(token) : priceUsd(token);
+    },
+    {
+      onError: (error: any, token) => console.debug({ error, token }),
+    }
+  );
 
   return async (tokens: TokenData[] = []) => {
     return Promise.all(

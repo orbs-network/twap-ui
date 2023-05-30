@@ -1,9 +1,10 @@
-import { Configs, isNativeAddress, TokenData } from "@orbs-network/twap";
+import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useMemo } from "react";
 import _ from "lodash";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { QuickSwapRawToken, QuickSwapTWAPProps } from "./types";
+import { isNativeAddress } from "@defi.org/web3-candies";
 
 export const config = Configs.QuickSwap;
 

@@ -1,7 +1,7 @@
-import { TokenData } from "@orbs-network/twap";
+import { TokenData, Configs } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
-import { isNativeAddress, Configs } from "@orbs-network/twap";
+import { isNativeAddress } from "@defi.org/web3-candies";
 
 export const parseToken = (rawToken: any): TokenData | undefined => {
   const { config } = getConfig();

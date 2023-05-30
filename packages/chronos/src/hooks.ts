@@ -1,4 +1,5 @@
-import { Configs, isNativeAddress, TokenData } from "@orbs-network/twap";
+import { Configs, TokenData } from "@orbs-network/twap";
+import { isNativeAddress } from "@defi.org/web3-candies";
 import { createContext, useContext, useMemo } from "react";
 import _ from "lodash";
 import Web3 from "web3";

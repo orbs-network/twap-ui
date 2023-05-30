@@ -1,10 +1,10 @@
 import BN from "bignumber.js";
-import { isNativeAddress, Order, OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { Order, OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import moment from "moment";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import _ from "lodash";
-import { eqIgnoreCase, parsebn } from "@defi.org/web3-candies";
+import { eqIgnoreCase, parsebn, isNativeAddress } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
 import { analytics } from "./analytics";
 import { MIN_NATIVE_BALANCE } from "./consts";
