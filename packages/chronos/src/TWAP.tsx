@@ -12,6 +12,7 @@ const TWAP = (props: ChronosTWAPProps) => {
   const [appReady, setAppReady] = useState(false);
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
   const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
+
   useEffect(() => {
     setLimitOrder(false);
     setAppReady(true);
@@ -29,6 +30,8 @@ const TWAP = (props: ChronosTWAPProps) => {
         provider={props.provider}
         account={props.account}
         tokenList={parsedTokens}
+        srcToken={props.srcToken}
+        dstToken={props.dstToken}
       >
         <GlobalStyles styles={configureStyles() as any} />
         <AdapterContextProvider value={props}>

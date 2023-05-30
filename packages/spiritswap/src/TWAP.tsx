@@ -7,8 +7,6 @@ import { SpiritSwapTWAPProps } from ".";
 
 const TWAP = (props: SpiritSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(rawToken, props.getTokenImageUrl));
-
-  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const provider = useGetProvider(props.getProvider, props.account);
   const globalStyles = useGlobalStyles(props.isDarkTheme);
 
@@ -26,6 +24,8 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
       provider={provider}
       account={props.account}
       tokenList={parsedTokens}
+      srcToken={props.srcToken}
+      dstToken={props.dstToken}
     >
       <GlobalStyles styles={globalStyles} />
       <AdapterContextProvider value={props}>

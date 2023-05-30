@@ -142,6 +142,8 @@ export interface TwapLibProps extends LibProps {
   connect?: () => void;
   askDataParams?: any[];
   storeOverride?: StoreOverride;
+  srcToken?: string;
+  dstToken?: string;
 }
 
 export interface OrderLibProps extends LibProps {

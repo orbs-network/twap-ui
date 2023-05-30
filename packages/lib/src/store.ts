@@ -311,7 +311,7 @@ export const parseOrderUi = (lib: TWAPLib, tokensWithUsd: (TokenData & { usd: BN
       srcToken,
       dstToken,
       status,
-      progress: 50,
+      progress,
       isMarketOrder,
       dstPriceFor1Src,
       srcUsdUi: srcUsd.toFormat(),

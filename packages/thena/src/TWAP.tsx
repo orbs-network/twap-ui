@@ -11,7 +11,6 @@ import { configureStyles, StyledColumnFlex, StyledLimitPrice, StyledPoweredBy, S
 const TWAP = (props: ThenaTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens);
   const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
-  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   useEffect(() => {
     setLimitOrder(false);
   }, []);
@@ -27,6 +26,8 @@ const TWAP = (props: ThenaTWAPProps) => {
         provider={props.provider}
         account={props.account}
         tokenList={parsedTokens}
+        srcToken={props.srcToken}
+        dstToken={props.dstToken}
       >
         <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>

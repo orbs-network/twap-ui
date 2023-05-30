@@ -183,6 +183,7 @@ export const useInitLib = () => {
   const setTwapLib = useTwapStore((state) => state.setLib);
   const setWrongNetwork = useTwapStore((state) => state.setWrongNetwork);
   const setValues = useTwapStore((state) => state.setValues);
+
   return async (props: InitLibProps) => {
     if (!props.provider || !props.account) {
       setTwapLib(undefined);
@@ -513,16 +514,19 @@ export const useSetTokensFromDapp = (srcTokenAddressOrSymbol?: string, dstTokenA
   const setDstToken = useTwapStore((state) => state.setDstToken);
   const tokensList = useTokenList();
   const tokensReady = _.size(tokensList) > 0;
+
   const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
+  const store = useTwapStore();
 
   useEffect(() => {
     if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
 
-    if (srcTokenAddressOrSymbol) {
+    if (srcTokenAddressOrSymbol && !store.srcToken) {
       const srcToken = _.find(tokensList, (token) => eqIgnoreCase(srcTokenAddressOrSymbol, token.address) || eqIgnoreCase(srcTokenAddressOrSymbol, token.symbol));
+
       setSrcToken(srcToken);
     }
-    if (dstTokenAddressOrSymbol) {
+    if (dstTokenAddressOrSymbol && !store.dstToken) {
       const dstToken = _.find(tokensList, (token) => eqIgnoreCase(dstTokenAddressOrSymbol, token.address) || eqIgnoreCase(dstTokenAddressOrSymbol, token.symbol));
       setDstToken(dstToken);
     }

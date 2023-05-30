@@ -16,7 +16,6 @@ const defaultTheme = createTheme();
 const TWAP = (props: PangolinTWAPProps) => {
   const tokenList = hooks.useParseTokens(props.dappTokens, parseToken);
 
-  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles(props.theme);
   const memoizedConnect = useCallback(() => {
     props.connect?.();
@@ -38,6 +37,8 @@ const TWAP = (props: PangolinTWAPProps) => {
           connectedChainId={props.connectedChainId}
           askDataParams={[partnerDaas]}
           tokenList={tokenList}
+          srcToken={props.srcToken}
+          dstToken={props.dstToken}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>

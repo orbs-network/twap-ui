@@ -12,7 +12,6 @@ const TWAP = (props: QuickSwapTWAPProps) => {
 
   const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
 
-  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles(props.isProMode, props.isDarkTheme);
 
   const connect = useCallback(() => {
@@ -34,6 +33,8 @@ const TWAP = (props: QuickSwapTWAPProps) => {
         provider={props.provider}
         account={props.account}
         tokenList={parsedTokens}
+        srcToken={props.srcToken}
+        dstToken={props.dstToken}
       >
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>

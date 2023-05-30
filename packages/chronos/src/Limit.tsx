@@ -18,6 +18,7 @@ const storeOverride = {
 const Limit = (props: ChronosTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
   const [appReady, setAppReady] = useState(false);
+  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
 
   useEffect(() => {
     setAppReady(true);
@@ -36,6 +37,8 @@ const Limit = (props: ChronosTWAPProps) => {
         account={props.account}
         tokenList={parsedTokens}
         storeOverride={storeOverride}
+        srcToken={props.srcToken}
+        dstToken={props.dstToken}
       >
         <GlobalStyles styles={configureStyles() as any} />
         <AdapterContextProvider value={props}>

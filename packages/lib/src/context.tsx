@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect } from "react";
 import { OrderLibProps, TwapLibProps } from "./types";
-import { useDstBalance, useDstUsd, useInitLib, useSrcBalance, useSrcUsd } from "./hooks";
+import { useDstBalance, useDstUsd, useInitLib, useSetTokensFromDapp, useSrcBalance, useSrcUsd } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
@@ -14,16 +14,14 @@ const queryClient = new QueryClient({
   },
 });
 
-// analytics.onModuleLoad();
+const WrappedTwap = (props: TwapLibProps) => {
+  useSetTokensFromDapp(props.srcToken, props.dstToken);
 
-const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
   const initLib = useInitLib();
-  const translations = { ...defaultTranlations, ...props.translations };
   useSrcUsd();
   useDstUsd();
   useSrcBalance();
   useDstBalance();
-
   useEffect(() => {
     analytics.onTwapPageView();
   }, []);
@@ -33,13 +31,17 @@ const TwapAdapterWithQueryClient = (props: TwapLibProps) => {
     initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId, storeOverride: props.storeOverride || {} });
   }, [props.provider, props.config, props.account, props.connectedChainId]);
 
-  return <TwapContext.Provider value={{ ...props, translations }}>{props.children}</TwapContext.Provider>;
+  return <>{props.children}</>;
 };
 
 export const TwapAdapter = (props: TwapLibProps) => {
+  const translations = { ...defaultTranlations, ...props.translations };
+
   return (
     <QueryClientProvider client={queryClient}>
-      <TwapAdapterWithQueryClient {...props} />
+      <TwapContext.Provider value={{ ...props, translations }}>
+        <WrappedTwap {...props} />
+      </TwapContext.Provider>
     </QueryClientProvider>
   );
 };

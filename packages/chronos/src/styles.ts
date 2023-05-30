@@ -589,9 +589,11 @@ export const configureStyles = () => {
         position: "relative",
         zIndex: 2,
       },
-      "&::after": {
-        background: "rgba(255,255,255, 1)",
-        mixBlendMode: "unset",
+      ".twap-card": {
+        "&::after": {
+          background: "rgba(255,255,255, 1)",
+          mixBlendMode: "unset!important",
+        },
       },
       ".twap-label": {
         p: {
@@ -671,9 +673,11 @@ export const configureStyles = () => {
         background: "#100E5D",
       },
       ".twap-modal-content": {
-        "&::after": {
-          background: "rgba(255,255,255, 0.05)!important",
-          mixBlendMode: "unset",
+        ".twap-card": {
+          "&::after": {
+            background: "rgba(255,255,255, 0.1)!important",
+            mixBlendMode: "unset!important",
+          },
         },
       },
 

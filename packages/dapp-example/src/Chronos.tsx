@@ -89,7 +89,6 @@ const TokenSelectModal = ({ open, selectToken, setOpen }: TokenSelectModalProps)
 const logo = "https://chronos.exchange/wp-content/uploads/2023/03/1-1-1.png";
 const DappComponent = () => {
   const { account, library } = useWeb3React();
-  console.log(library);
 
   const connect = useConnectWallet();
   const { data: dappTokens = [] } = useDappTokens();
@@ -98,8 +97,8 @@ const DappComponent = () => {
   const twapProps: ChronosTWAPProps = {
     connect,
     account,
-    srcToken: zeroAddress,
-    dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff", //ORBS
+    srcToken: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+    dstToken: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
     dappTokens,
     TokenSelectModal,
     provider: library,

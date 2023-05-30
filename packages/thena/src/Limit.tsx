@@ -17,7 +17,6 @@ const storeOverride = {
 
 const Limit = (props: ThenaTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens);
-  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
 
   return (
     <Box className="twap-adapter-wrapper">
@@ -31,6 +30,8 @@ const Limit = (props: ThenaTWAPProps) => {
         account={props.account}
         tokenList={parsedTokens}
         storeOverride={storeOverride}
+        srcToken={props.srcToken}
+        dstToken={props.dstToken}
       >
         <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>
