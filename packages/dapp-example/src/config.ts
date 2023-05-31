@@ -8,4 +8,4 @@ import sushiswap from "./SushiSwap";
 import stellaswap from "./StellaSwap";
 
 export const defaultDapp = spiritswap;
-export const dapps = [sushiswap, quickswap, spookyswap, spiritswap, chronos, thena, stellaswap, pangolin, pangolinDaas];
+export const dapps = [sushiswap, quickswap, spookyswap, spiritswap, pangolin, pangolinDaas, chronos, thena, stellaswap];
