@@ -533,6 +533,13 @@ export const configureStyles = () => {
           textAlign: "left" as const,
         },
       },
+      ".twap-usd": {
+        maxWidth: "unset",
+        fontSize: 12,
+        background: "rgba(255,255,255, 0.7)",
+        borderRadius: 12,
+        padding: "4px 6px",
+      },
     },
     ".twap-input": {
       "& input": {
@@ -669,6 +676,11 @@ export const configureStyles = () => {
       },
     },
     ".dark": {
+      ".twap-token-panel": {
+        ".twap-usd": {
+          background: "rgba(255,255,255, 0.03)",
+        }
+      },
       ".twap-order-progress": {
         background: "#100E5D",
       },
