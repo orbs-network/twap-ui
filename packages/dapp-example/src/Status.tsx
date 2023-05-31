@@ -38,7 +38,7 @@ function useBackupTakersStatus(dapp?: Dapp) {
             .then((x) => x.json())
             .then(async (s: any) => {
               const wallets = s.takersWallets[(chainNames as any)[dapp!.config.chainName]];
-              const balances = _.sortBy(_.map(wallets, (w) => Number(BN(w.balance).toFixed(1))));
+              const balances = _.map(wallets, (w) => BN(w.balance).times(1e6).idiv(1e6).toNumber()).sort();
               return {
                 status: s.uptime > 0 && balances[0] > 0.1,
                 uptime: (moment.utc(s.uptime * 1000).dayOfYear() > 1 ? moment.utc(s.uptime * 1000).dayOfYear() + " days " : "") + moment.utc(s.uptime * 1000).format("HH:mm:ss"),
