@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { AdapterContextProvider, config, parseToken, useGlobalStyles } from "./hooks";
 import translations from "./i18n/en.json";
 import { QuickSwapTWAPProps } from "./types";
@@ -17,7 +17,6 @@ const storeOverride = {
 const Limit = (props: QuickSwapTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
 
-  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles(props.isProMode, props.isDarkTheme);
 
   const connect = useCallback(() => {
@@ -36,6 +35,8 @@ const Limit = (props: QuickSwapTWAPProps) => {
         account={props.account}
         tokenList={parsedTokens}
         storeOverride={storeOverride}
+        srcToken={props.srcToken}
+        dstToken={props.dstToken}
       >
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>
@@ -67,11 +68,6 @@ const Limit = (props: QuickSwapTWAPProps) => {
 export default Limit;
 
 const LimitPrice = () => {
-  const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
-  useEffect(() => {
-    setLimitOrder(true);
-  }, []);
-
   return (
     <>
       <Components.Base.Card className="twap-limit-price">

@@ -22,10 +22,7 @@ const darkStyles = {
 
 const cardStyles = {
   position: "relative",
-  ".twap-card-children": {
-    // position:'relative',
-    // zIndex: 2
-  },
+
   "&::after": {
     pointerEvents: "none",
     borderRadius: 30,
@@ -50,6 +47,7 @@ export const StyledCard = styled(Components.Base.Card)({
     width: "100%",
     height: "100%",
     padding: "18px 17px 18px 17px",
+    zIndex: 2,
   },
 });
 
@@ -90,7 +88,7 @@ export const StyledBalance = styled(Box)({
 export const StyledColumnFlex = styled(Box)({
   display: "flex",
   flexDirection: "column",
-  gap: 16,
+  gap: 18,
 });
 
 export const StyledChange = styled(Box)({
@@ -100,7 +98,7 @@ export const StyledChange = styled(Box)({
   justifyContent: "center",
   width: "100%",
   alignItems: "center",
-  zIndex: 1,
+  zIndex: 5,
 });
 
 export const configureStyles = () => {
@@ -115,6 +113,7 @@ export const configureStyles = () => {
       height: 46,
       background: gradient,
       borderRadius: 10,
+
       svg: {
         color: "white",
         "*": {
@@ -123,9 +122,11 @@ export const configureStyles = () => {
       },
     },
     ".twap-limit-price-input": {
-      ...cardStyles,
       padding: "10px 15px",
+      background: "white",
+      borderRadius: 30,
     },
+
     ".twap-time-selector-list": {
       background: "rgb(10 9 62/1)",
     },
@@ -188,26 +189,18 @@ export const configureStyles = () => {
     },
 
     ".twap-percent-selector": {
-      ".twap-card": {
-        ".twap-card-children": {
-          padding: "0px",
-          height: "auto",
-        },
-        "&::after": {
-          borderRadius: 10,
-          opacity: ".5!important",
-        },
-      },
       button: {
-        padding: "1px 10px",
-        background: "transparent",
+        padding: "3px 8px",
+        borderRadius: 10,
         border: "unset",
-        fontWeight: `300!important`,
+        fontWeight: `400!important`,
         fontSize: 12.8,
         textTransform: "uppercase" as const,
         cursor: "pointer",
         position: "relative",
         zIndex: 1,
+        color: lightStyles.textColor,
+        background: "white",
       },
     },
     ".twap-warning": {
@@ -255,12 +248,12 @@ export const configureStyles = () => {
     },
     ".twap-token-select": {
       img: {
-        width: 70,
-        height: 70,
+        width: 60,
+        height: 60,
       },
       svg: {
-        minWidth: 70,
-        minHeight: 70,
+        minWidth: 60,
+        minHeight: 60,
       },
     },
 
@@ -676,10 +669,15 @@ export const configureStyles = () => {
       },
     },
     ".dark": {
+      ".twap-percent-selector": {
+        button: {
+          background: "rgba(79, 106, 243, 0.4)",
+        },
+      },
       ".twap-token-panel": {
         ".twap-usd": {
           background: "rgba(255,255,255, 0.03)",
-        }
+        },
       },
       ".twap-order-progress": {
         background: "#100E5D",
@@ -773,19 +771,34 @@ export const configureStyles = () => {
           background: darkStyles.containerBg,
         },
       },
+    },
+    "@media(min-width:550px)": {
       ".twap-percent-selector": {
         button: {
-          color: darkStyles.textColor,
+          transition: "0.2s all",
+          "&:hover": {
+            background: "#4F6AF3",
+            color: "white",
+          },
+        },
+      },
+      ".dark": {
+        ".twap-limit-price-input": {
+          background: "#0D0C38",
+        },
+        ".twap-percent-selector": {
+          button: {
+            "&:hover": {
+              background: "#4F6AF3",
+            },
+          },
         },
       },
     },
-
     "@media(max-width:550px)": {
       ".twap-percent-selector": {
-        ".twap-card": {
-          padding: "5px 6px",
-        },
         button: {
+          padding: "5px 6px",
           fontSize: 11,
         },
       },

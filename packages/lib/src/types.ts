@@ -212,7 +212,7 @@ export interface State {
   wrongNetwork: undefined | boolean;
   srcAmountUi: string;
 
-  limitPriceUi: { priceUi: string; inverted: boolean };
+  limitPriceUi: { priceUi: string; inverted: boolean; custom?: boolean };
   srcUsd: BN;
   dstUsd: BN;
   srcBalance: BN;

@@ -17,7 +17,6 @@ const storeOverride = {
 const Limit = (props: SpookySwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(rawToken, props.getTokenImageUrl));
-  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
   const globalStyles = useGlobalStyles(props.isDarkTheme);
   const connect = useCallback(() => {
     props.connect();
@@ -35,6 +34,8 @@ const Limit = (props: SpookySwapTWAPProps) => {
       account={props.account}
       connectedChainId={props.connectedChainId}
       tokenList={parsedTokens}
+      srcToken={props.srcToken}
+      dstToken={props.dstToken}
     >
       <GlobalStyles styles={globalStyles} />
 

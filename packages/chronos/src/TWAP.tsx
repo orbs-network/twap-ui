@@ -11,10 +11,8 @@ import { configureStyles, StyledColumnFlex, StyledPoweredBy } from "./styles";
 const TWAP = (props: ChronosTWAPProps) => {
   const [appReady, setAppReady] = useState(false);
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
-  const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
 
   useEffect(() => {
-    setLimitOrder(false);
     setAppReady(true);
   }, []);
 
@@ -37,7 +35,7 @@ const TWAP = (props: ChronosTWAPProps) => {
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <StyledColumnFlex>
-              <TwapStyles.StyledColumnFlex gap={8}>
+              <TwapStyles.StyledColumnFlex gap={10}>
                 <TokenPanel isSrcToken={true} />
                 <ChangeTokensOrder />
                 <TokenPanel />

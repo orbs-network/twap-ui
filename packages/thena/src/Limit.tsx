@@ -1,6 +1,5 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
-import { useEffect } from "react";
 import { AdapterContextProvider, config } from "./hooks";
 import translations from "./i18n/en.json";
 import { ThenaTWAPProps } from "./types";
@@ -68,11 +67,6 @@ const Limit = (props: ThenaTWAPProps) => {
 export default Limit;
 
 const LimitPrice = () => {
-  const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
-  useEffect(() => {
-    setLimitOrder(true);
-  }, []);
-
   return (
     <>
       <Components.Base.Card className="twap-limit-price">

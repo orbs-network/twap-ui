@@ -45,7 +45,7 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
           <TwapStyles.StyledColumnFlex gap={5} style={{ width: "unset", flex: 1 }}>
             <Components.TokenInput placeholder="0.00" isSrc={isSrcToken} />
             <TwapStyles.StyledRowFlex gap={12} justifyContent="flex-start">
-              <TwapStyles.StyledRowFlex gap={0} width='unset'>
+              <TwapStyles.StyledRowFlex gap={0} width="unset">
                 <Components.TokenSymbol onClick={() => setTokenListOpen(true)} hideNull={true} isSrc={isSrcToken} />
                 <Components.TokenUSD isSrc={isSrcToken} />
               </TwapStyles.StyledRowFlex>
@@ -77,9 +77,9 @@ export const SrcTokenPercentSelector = () => {
         TwapStyles.StyledRowFlex;
         const text = it === 1 ? translations.max : `${it * 100}%`;
         return (
-          <Container key={it}>
-            <button onClick={() => onClick(it)}>{text}</button>
-          </Container>
+          <button key={it} onClick={() => onClick(it)}>
+            {text}
+          </button>
         );
       })}
     </TwapStyles.StyledRowFlex>

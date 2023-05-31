@@ -28,7 +28,7 @@ const initialState: State = {
   wrongNetwork: undefined,
   srcAmountUi: "",
 
-  limitPriceUi: { priceUi: "", inverted: false },
+  limitPriceUi: { priceUi: "", inverted: false, custom: false },
   srcUsd: BN(0),
   dstUsd: BN(0),
   srcBalance: BN(0),
@@ -49,7 +49,16 @@ const initialState: State = {
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
-    setValues: (storeOverride: StoreOverride) => set({ ...storeOverride }),
+    setLimitOrderPriceUi: () => {
+      set({ limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false } });
+    },
+    setLimitOrder: (isLimitOrder?: boolean) => set({ isLimitOrder }),
+    setValues: (storeOverride: StoreOverride) => {
+      if (!storeOverride.isLimitOrder) {
+        set({ customDuration: initialState.customDuration, customFillDelay: initialState.customFillDelay });
+      }
+      set({ ...storeOverride });
+    },
     setOrderCreatedTimestamp: (orderCreatedTimestamp: number) => set({ orderCreatedTimestamp }),
     reset: (storeOverride: StoreOverride) => set({ ...initialState, lib: get().lib, ...storeOverride }),
     setLib: (lib?: TWAPLib) => set({ lib }),
@@ -136,10 +145,7 @@ export const useTwapStore = create(
     getIsPartialFillWarning: () => (get() as any).getChunks() * (get() as any).getFillDelayUiMillis() > (get() as any).getDurationMillis(),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork?: boolean) => set({ wrongNetwork }),
-    setLimitOrder: (limit?: boolean) => {
-      set({ isLimitOrder: limit, limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false } });
-    },
-    setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => set({ limitPriceUi }),
+    setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => set({ limitPriceUi: { ...limitPriceUi, custom: true } }),
     setChunks: (chunks: number) => set({ chunks: Math.min(chunks, (get() as any).getMaxPossibleChunks()) }),
     setDuration: (customDuration: Duration) => set({ customDuration }),
 

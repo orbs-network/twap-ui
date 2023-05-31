@@ -1,6 +1,5 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
-import { useEffect } from "react";
 import { AdapterContextProvider, config } from "./hooks";
 import translations from "./i18n/en.json";
 import { ThenaTWAPProps } from "./types";
@@ -9,10 +8,6 @@ import { configureStyles, StyledAdapter, StyledColumnFlex, StyledLimitPrice, Sty
 
 const TWAP = (props: ThenaTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens);
-  const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
-  useEffect(() => {
-    setLimitOrder(false);
-  }, []);
 
   return (
     <StyledAdapter isDarkMode={props.isDarkTheme ? 1 : 0} className="twap-adapter-wrapper">

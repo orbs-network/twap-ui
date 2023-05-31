@@ -5,7 +5,7 @@ import { AdapterContextProvider, config, parseToken } from "./hooks";
 import translations from "./i18n/en.json";
 import { ChronosTWAPProps } from "./types";
 import { Box } from "@mui/system";
-import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
+import { ChangeTokensOrder, Container, OrderSummary, TokenPanel } from "./Components";
 import { configureStyles, StyledColumnFlex, StyledPoweredBy } from "./styles";
 
 const storeOverride = {
@@ -18,7 +18,6 @@ const storeOverride = {
 const Limit = (props: ChronosTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(props.getTokenLogoURL, rawToken));
   const [appReady, setAppReady] = useState(false);
-  hooks.useSetTokensFromDapp(props.srcToken, props.dstToken);
 
   useEffect(() => {
     setAppReady(true);
@@ -44,7 +43,7 @@ const Limit = (props: ChronosTWAPProps) => {
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <StyledColumnFlex>
-              <TwapStyles.StyledColumnFlex gap={8}>
+              <TwapStyles.StyledColumnFlex gap={10}>
                 <TokenPanel isSrcToken={true} />
                 <ChangeTokensOrder />
                 <TokenPanel />
@@ -75,21 +74,19 @@ const Limit = (props: ChronosTWAPProps) => {
 export default Limit;
 
 const LimitPrice = () => {
-  const setLimitOrder = store.useTwapStore((store) => store.setLimitOrder);
-  useEffect(() => {
-    setLimitOrder(true);
-  }, []);
+  const twapStore = store.useTwapStore();
 
+  if (!twapStore.srcToken || !twapStore.dstToken) return null;
   return (
     <>
-      <Components.Base.Card className="twap-limit-price">
+      <Container className="twap-limit-price">
         <TwapStyles.StyledColumnFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <Components.Labels.LimitPriceLabel />
           </TwapStyles.StyledRowFlex>
           <Components.LimitPriceInput placeholder="0" />
         </TwapStyles.StyledColumnFlex>
-      </Components.Base.Card>
+      </Container>
     </>
   );
 };

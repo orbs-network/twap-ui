@@ -1,9 +1,10 @@
 import { createContext, useContext, useEffect } from "react";
 import { OrderLibProps, TwapLibProps } from "./types";
-import { useDstBalance, useDstUsd, useInitLib, useSetTokensFromDapp, useSrcBalance, useSrcUsd } from "./hooks";
+import { useDstBalance, useDstUsd, useInitLib, useLimitPrice, useSetTokensFromDapp, useSrcBalance, useSrcUsd } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
+import { useTwapStore } from "./store";
 const TwapContext = createContext<TwapLibProps>({} as TwapLibProps);
 const OrdersContext = createContext<OrderLibProps>({} as OrderLibProps);
 const queryClient = new QueryClient({
@@ -14,8 +15,28 @@ const queryClient = new QueryClient({
   },
 });
 
+const useLimitOrderPriceUpdate = () => {
+  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+  const setLimitOrderPriceUi = useTwapStore((store) => store.setLimitOrderPriceUi);
+  const srcUsd = useTwapStore((store) => store.srcUsd);
+  const dstUsd = useTwapStore((store) => store.dstUsd);
+
+  const { custom } = useLimitPrice();
+
+  useEffect(() => {
+    if (isLimitOrder && !custom && !srcUsd.isZero() && !dstUsd.isZero()) {
+      setLimitOrderPriceUi();
+    }
+  }, [custom, srcUsd, dstUsd, setLimitOrderPriceUi, isLimitOrder]);
+};
+
 const WrappedTwap = (props: TwapLibProps) => {
-  useSetTokensFromDapp(props.srcToken, props.dstToken);
+  const setTokensFromDappCallback = useSetTokensFromDapp();
+  useLimitOrderPriceUpdate();
+
+  useEffect(() => {
+    setTokensFromDappCallback();
+  }, [setTokensFromDappCallback]);
 
   const initLib = useInitLib();
   useSrcUsd();

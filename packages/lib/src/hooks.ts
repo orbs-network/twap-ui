@@ -1,7 +1,7 @@
 import { Order, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useOrdersContext, useTwapContext } from "./context";
 import Web3 from "web3";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI } from "./types";
@@ -120,7 +120,7 @@ export const useCreateOrder = () => {
   const store = useTwapStore();
   const reset = useReset();
   const { askDataParams } = useTwapContext();
-
+  const setTokensFromDapp = useSetTokensFromDapp();
   return useMutation(
     async () => {
       const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
@@ -164,6 +164,7 @@ export const useCreateOrder = () => {
         analytics.onCreateOrderSuccess();
         reset();
         store.setOrderCreatedTimestamp(Date.now());
+        setTokensFromDapp();
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
@@ -183,13 +184,13 @@ export const useInitLib = () => {
   const setTwapLib = useTwapStore((state) => state.setLib);
   const setWrongNetwork = useTwapStore((state) => state.setWrongNetwork);
   const setValues = useTwapStore((state) => state.setValues);
-
   return async (props: InitLibProps) => {
     if (!props.provider || !props.account) {
       setTwapLib(undefined);
       setWrongNetwork(undefined);
       return;
     }
+
     const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
 
     const wrongChain = props.config.chainId !== chain;
@@ -250,9 +251,10 @@ export const useLimitPrice = () => {
   const [inverted, setInverted] = useState(false);
   const translations = useTwapContext().translations;
 
-  const { isLimitOrder, setLimitPrice } = useTwapStore((state) => ({
+  const { isLimitOrder, setLimitPrice, custom } = useTwapStore((state) => ({
     isLimitOrder: state.isLimitOrder,
     setLimitPrice: state.setLimitPriceUi,
+    custom: state.limitPriceUi.custom,
   }));
   const { limitPriceUi: limitPrice, leftToken, rightToken } = useTwapStore((state) => state.getLimitPrice(inverted));
 
@@ -278,6 +280,7 @@ export const useLimitPrice = () => {
     warning: !leftToken || !rightToken ? translations?.selectTokens : undefined,
     isLimitOrder,
     isLoading: loading.srcUsdLoading || loading.dstUsdLoading,
+    custom,
   };
 };
 
@@ -509,24 +512,28 @@ export const usePrepareUSDValues = (_priceUsd?: (token: TokenData) => Promise<BN
   };
 };
 
-export const useSetTokensFromDapp = (srcTokenAddressOrSymbol?: string, dstTokenAddressOrSymbol?: string) => {
+export const useSetTokensFromDapp = () => {
+  const context = useTwapContext();
+
+  const srcTokenAddressOrSymbol = context.srcToken;
+  const dstTokenAddressOrSymbol = context.dstToken;
+
   const setSrcToken = useTwapStore((state) => state.setSrcToken);
   const setDstToken = useTwapStore((state) => state.setDstToken);
   const tokensList = useTokenList();
   const tokensReady = _.size(tokensList) > 0;
 
   const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
-  const store = useTwapStore();
 
-  useEffect(() => {
+  return useCallback(() => {
     if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
 
-    if (srcTokenAddressOrSymbol && !store.srcToken) {
+    if (srcTokenAddressOrSymbol) {
       const srcToken = _.find(tokensList, (token) => eqIgnoreCase(srcTokenAddressOrSymbol, token.address) || eqIgnoreCase(srcTokenAddressOrSymbol, token.symbol));
 
       setSrcToken(srcToken);
     }
-    if (dstTokenAddressOrSymbol && !store.dstToken) {
+    if (dstTokenAddressOrSymbol) {
       const dstToken = _.find(tokensList, (token) => eqIgnoreCase(dstTokenAddressOrSymbol, token.address) || eqIgnoreCase(dstTokenAddressOrSymbol, token.symbol));
       setDstToken(dstToken);
     }
