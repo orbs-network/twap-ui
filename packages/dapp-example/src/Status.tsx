@@ -12,7 +12,10 @@ const chainNames = {
   ftm: "fantom",
   avax: "avalanche",
   poly: "polygon",
+  arb: "arbitrum",
 };
+
+const MIN_BALANCE = 0.01;
 
 function useConfigAndNetwork(dapp?: Dapp) {
   return useQuery(
@@ -40,7 +43,7 @@ function useBackupTakersStatus(dapp?: Dapp) {
               const wallets = s.takersWallets[(chainNames as any)[dapp!.config.chainName]];
               const balances = _.map(wallets, (w) => BN(w.balance).times(1e6).idiv(1e6).toNumber()).sort();
               return {
-                status: s.uptime > 0 && balances[0] > 0.1,
+                status: s.uptime > 0 && balances[0] > MIN_BALANCE,
                 uptime: (moment.utc(s.uptime * 1000).dayOfYear() > 1 ? moment.utc(s.uptime * 1000).dayOfYear() + " days " : "") + moment.utc(s.uptime * 1000).format("HH:mm:ss"),
                 balances,
               };
@@ -64,7 +67,7 @@ function useOrbsL3TakersStatus(dapp?: Dapp) {
         const nodeStatus = _.get(node, ["NodeServices", "vm-twap", "VMStatusJson"]);
         const balance = Number(BN(_.values(nodeStatus.takersWallets[(chainNames as any)[dapp!.config.chainName]])[0].balance).toFixed(1));
         return {
-          status: balance > 0.1,
+          status: balance > MIN_BALANCE,
           balance,
         };
       } catch (e) {
@@ -91,11 +94,11 @@ function useTakerXStatus(dapp?: Dapp) {
       if (!backupAwsStatusChain) return null;
       const takers = [
         {
-          status: BN(backupAwsStatusChain.balance0).gt(0.1),
+          status: BN(backupAwsStatusChain.balance0).gt(MIN_BALANCE),
           balance: BN(backupAwsStatusChain.balance0).toFixed(1),
         },
         {
-          status: BN(backupAwsStatusChain.balance1).gt(0.1),
+          status: BN(backupAwsStatusChain.balance1).gt(MIN_BALANCE),
           balance: BN(backupAwsStatusChain.balance1).toFixed(1),
         },
       ];
