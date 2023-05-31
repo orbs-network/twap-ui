@@ -30,11 +30,11 @@ export const StyledBalanceAndUSD = styled(Styles.StyledColumnFlex)({
 
 const getTextColor = (isDarkMode?: number) => (!isDarkMode ? "rgba(0,0,0, 0.8)" : "#BFBFBF");
 
-export const StyledUSD = styled(Components.TokenUSD)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+export const StyledUSD = styled(Components.TokenUSD)<{ isDarkMode: number }>({
   maxWidth: "unset",
-}));
+});
 
-export const StyledBalance = styled(Components.TokenBalance)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+export const StyledBalance = styled(Components.TokenBalance)<{ isDarkMode: number }>({
   maxWidth: "unset",
 
   p: {
@@ -42,7 +42,7 @@ export const StyledBalance = styled(Components.TokenBalance)<{ isDarkMode: numbe
     display: "flex",
     alignItems: "flex-end",
   },
-}));
+});
 
 export const StyledTop = styled(Styles.StyledColumnFlex)({
   gap: 20,

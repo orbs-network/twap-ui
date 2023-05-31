@@ -1,10 +1,12 @@
-import { currentNetwork, erc20s, setWeb3Instance, Token as cToken, web3 } from "@defi.org/web3-candies";
+import { erc20s, setWeb3Instance, Token as cToken, web3, network } from "@defi.org/web3-candies";
 import { configure } from "@testing-library/react";
 import { useChaiBigNumber } from "@defi.org/web3-candies/dist/hardhat";
 import type { TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import { expect } from "chai";
 import * as _ from "lodash";
+
+export const CHAIN_ID = 42161;
 
 useChaiBigNumber();
 
@@ -23,8 +25,7 @@ export async function initFixture() {
 }
 
 async function baseTokens() {
-  const network = await currentNetwork();
-  const tokens = _.get(erc20s, [network!.shortname]);
+  const tokens = _.get(erc20s, [network(CHAIN_ID)!.shortname]);
 
   return Promise.all(
     _.map(tokens, async (token: () => cToken) => {

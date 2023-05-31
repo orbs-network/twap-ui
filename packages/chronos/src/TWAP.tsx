@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles } from "@orbs-network/twap-ui";
 import { useEffect, useState } from "react";
 import { AdapterContextProvider, config, parseToken } from "./hooks";
 import translations from "./i18n/en.json";

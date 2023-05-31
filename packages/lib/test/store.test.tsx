@@ -1,29 +1,29 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { initFixture, maker, tokens } from "./fixture";
-import { act, renderHook } from "@testing-library/react";
-import { Configs, TWAPLib } from "@orbs-network/twap";
-import { sleep, web3, zero, zeroAddress } from "@defi.org/web3-candies";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { Configs, Order, TWAPLib } from "@orbs-network/twap";
+import { web3, zero, zeroAddress } from "@defi.org/web3-candies";
 import { parseOrderUi, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
 import { QueryClient } from "@tanstack/react-query";
 import React, { ReactNode } from "react";
 import { useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
-import { OrdersAdapter } from "../src/context";
-
-const useOrdersAdapter = () => {
-  const t: any = {};
-  const config = Configs.SpookySwap;
-  return ({ children }: { children: ReactNode }) => (
-    <OrdersAdapter tokenList={tokens} config={config} provider={""} translations={t}>
-      {children}
-    </OrdersAdapter>
-  );
-};
+import { OrdersContext } from "../src/context";
+import { OrderLibProps, OrderUI } from "../src/types";
 
 const createQueryProvider = () => {
   const queryClient = new QueryClient();
   return ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+};
+
+const createQueryProviderWithOrdersContext = () => {
+  const queryClient = new QueryClient();
+  return ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      <OrdersContext.Provider value={{ tokenList: tokens } as OrderLibProps}>{children}</OrdersContext.Provider>
+    </QueryClientProvider>
+  );
 };
 
 describe("store", () => {
@@ -128,7 +128,7 @@ describe("store", () => {
 
   describe("Orders History", () => {
     let { result: store } = renderHook(() => useTwapStore());
-    let mockOrder: any;
+    let mockOrder: Order;
 
     beforeEach(async () => {
       const { result } = renderHook(() => useTwapStore());
@@ -142,8 +142,9 @@ describe("store", () => {
         status: (Date.now() + 1e6) / 1000,
         filledTime: 0,
         srcFilledAmount: BN(900 * 10 ** tokens[0].decimals),
+        maker: lib.maker,
+        time: Date.now() / 1000,
         ask: {
-          time: Date.now() / 1000,
           deadline: (Date.now() + 1e6) / 1000,
           srcToken: tokens[0].address,
           dstToken: tokens[1].address,
@@ -152,7 +153,7 @@ describe("store", () => {
           dstMinAmount: BN(1),
           bidDelay: 60,
           fillDelay: 0,
-          maker: lib.maker,
+
           exchange: zeroAddress,
         },
         bid: {
@@ -171,7 +172,7 @@ describe("store", () => {
     });
 
     it("prepare orders tokens", async () => {
-      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareUSDValues(async (chain, t) => (t === tokens[0] ? BN(123.5) : BN(456.7))), {
+      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareUSDValues(async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7))), {
         wrapper: createQueryProvider(),
       });
 
@@ -184,7 +185,7 @@ describe("store", () => {
     });
 
     it("parseOrderUi", async () => {
-      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareUSDValues(async (chain, t) => (t === tokens[0] ? BN(123.456) : BN(456.789))), {
+      const prepareOrdersTokensWithUsd = renderHook(() => usePrepareUSDValues(async (t) => (t === tokens[0] ? BN(123.456) : BN(456.789))), {
         wrapper: createQueryProvider(),
       });
 
@@ -199,7 +200,7 @@ describe("store", () => {
     });
 
     it("ordersSorting", async () => {
-      lib.getAllOrders = async () => [
+      lib.getAllOrders = async (): Promise<Order[]> => [
         {
           ...mockOrder,
           id: 1,
@@ -212,10 +213,10 @@ describe("store", () => {
         },
       ];
 
-      const { result } = renderHook(() => useOrdersHistoryQuery(), {
-        wrapper: useOrdersAdapter(),
-      });
-      while (result.current.isLoading) await sleep(1);
+      const { result } = renderHook(() => useOrdersHistoryQuery(async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7))), { wrapper: createQueryProviderWithOrdersContext() });
+
+      await waitFor(() => expect(result.current.status).eq("success"));
+
       expect(result.current.data?.Open)?.length(2);
       expect(result.current.orders.Open?.[0].order.id).eq(2);
       expect(result.current.orders.Open?.[1].order.id).eq(1);

@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
 import { useTwapStore } from "./store";
 const TwapContext = createContext<TwapLibProps>({} as TwapLibProps);
-const OrdersContext = createContext<OrderLibProps>({} as OrderLibProps);
+export const OrdersContext = createContext<OrderLibProps>({} as OrderLibProps);
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

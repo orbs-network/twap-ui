@@ -449,17 +449,18 @@ const useTokenList = () => {
   }, [lib, tokensLength]);
 };
 
-export const useOrdersHistoryQuery = () => {
+export const useOrdersHistoryQuery = (_priceUsd?: (token: TokenData) => Promise<BN>) => {
   const tokenList = useTokenList();
 
   const orderCreatedTimestamp = useTwapStore((state) => state.orderCreatedTimestamp);
   const lib = useTwapStore((state) => state.lib);
-  const getUsdValues = usePrepareUSDValues();
+  const getUsdValues = usePrepareUSDValues(_priceUsd);
 
   const query = useQuery<OrdersData>(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId, orderCreatedTimestamp],
     async () => {
       const orders = await lib!.getAllOrders();
+
       const tokens = _.uniqBy(
         _.concat(
           _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.srcToken))!),
@@ -467,8 +468,11 @@ export const useOrdersHistoryQuery = () => {
         ),
         (t) => t.address
       );
+
       const tokensWithUsd = await getUsdValues(tokens);
+
       const parsedOrders = orders.map((o: Order) => parseOrderUi(lib!, tokensWithUsd, o));
+
       return _.chain(parsedOrders)
         .orderBy((o: OrderUI) => o.order.time, "desc")
         .groupBy((o: OrderUI) => o.ui.status)
