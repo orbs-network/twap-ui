@@ -96,7 +96,7 @@ const DappComponent = () => {
     connect,
     account,
     srcToken: zeroAddress,
-    dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff", 
+    dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff",
     dappTokens,
     TokenSelectModal,
     provider: library,

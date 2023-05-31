@@ -24,7 +24,14 @@ function useConfigAndNetwork(dapp?: Dapp) {
       const twapVersion = dapp?.config.twapVersion || 0;
       const twapLibVersion = require("@orbs-network/twap/package.json").version;
       const twapUiVersion = require("@orbs-network/twap-ui/package.json").version;
-      const info = await chainInfo(dapp!.config.chainId);
+      let info;
+
+      try {
+        info = await chainInfo(dapp!.config.chainId);
+      } catch (error) {
+        console.log(error);
+      }
+
       return { twapVersion, twapLibVersion, twapUiVersion, info };
     },
     { enabled: !!dapp }
@@ -124,6 +131,7 @@ const Image = ({ logo }: { logo?: string }) => {
 export function Status() {
   const { selectedDapp: dapp } = useSelectedDapp();
   const config = useConfigAndNetwork(dapp);
+
   const status = useBackupTakersStatus(dapp);
   const takerx = useTakerXStatus(dapp);
   const orbsTakers = useOrbsL3TakersStatus(dapp);
@@ -158,13 +166,13 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <Image logo={config?.info.logoUrl} /> {config?.info.name || dapp.config.chainName} {dapp.config.chainId}
+              <Image logo={config?.info?.logoUrl} /> {config?.info?.name || dapp.config.chainName} {dapp.config.chainId}
             </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle>TWAP:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <a href={config ? `${config.info.explorers[0].url}/address/${dapp.config.twapAddress}` : ""} target={"_blank"}>
+              <a href={config ? `${config.info?.explorers[0].url}/address/${dapp.config.twapAddress}` : ""} target={"_blank"}>
                 {dapp.config.twapAddress}
               </a>
             </StyledStatusSectionText>
@@ -172,7 +180,7 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle> Lens:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <a href={config ? `${config.info.explorers[0].url}/address/${dapp.config.lensAddress}` : ""} target={"_blank"}>
+              <a href={config ? `${config.info?.explorers[0].url}/address/${dapp.config.lensAddress}` : ""} target={"_blank"}>
                 {dapp.config.lensAddress}
               </a>
             </StyledStatusSectionText>
@@ -181,7 +189,7 @@ export function Status() {
             <StyledStatusSectionTitle>Exchange:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
               {dapp.config.exchangeType}{" "}
-              <a href={config ? `${config.info.explorers[0].url}/address/${dapp.config.exchangeAddress}` : ""} target={"_blank"}>
+              <a href={config ? `${config.info?.explorers[0].url}/address/${dapp.config.exchangeAddress}` : ""} target={"_blank"}>
                 {dapp.config.exchangeAddress}
               </a>
             </StyledStatusSectionText>
