@@ -25,8 +25,9 @@ export const useDappTokens = () => {
       const response = await fetch(`https://api.thena.fi/api/v1/assets`);
 
       const tokenList = (await response.json()).data;
+      const tokens = [config.nativeToken, ...tokenList];
 
-      const parsed = tokenList.map(({ symbol, address, decimals, logoURI, name }: any) => ({
+      const parsed = tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
         decimals,
         symbol,
         name,
@@ -34,7 +35,6 @@ export const useDappTokens = () => {
         logoURI,
       }));
       const candiesAddresses = [zeroAddress, ..._.map(erc20s.bsc, (t) => t().address)];
-      console.log({ parsed });
 
       const _tokens = _.sortBy(parsed, (t: any) => {
         const index = candiesAddresses.indexOf(t.address);
@@ -75,7 +75,6 @@ const parseList = (rawList?: any): TokenListItem[] => {
 const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
   const tokensListSize = _.size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
-  console.log({ popup });
 
   return (
     <Popup isOpen={popup} onClose={() => setPopup(true)}>
@@ -97,7 +96,7 @@ const DappComponent = () => {
     connect,
     account,
     srcToken: zeroAddress,
-    dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff", //ORBS
+    dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff", 
     dappTokens,
     TokenSelectModal,
     provider: library,

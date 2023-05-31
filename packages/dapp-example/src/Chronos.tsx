@@ -73,7 +73,6 @@ const parseList = (rawList?: any): TokenListItem[] => {
 
 const TokenSelectModal = ({ open, selectToken, setOpen }: TokenSelectModalProps) => {
   const { data: tokensList } = useDappTokens();
-  console.log({ tokensList });
 
   const tokensListSize = _.size(tokensList);
   const parsedList = useMemo(() => parseList(tokensList), [tokensListSize]);

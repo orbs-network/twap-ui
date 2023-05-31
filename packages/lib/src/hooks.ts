@@ -444,7 +444,7 @@ const useTokenList = () => {
     }
     if (!tokens.find((it: TokenData) => lib.isWrappedToken(it))) {
       tokens.push(lib.config.wToken);
-    }
+    }    
     return tokens;
   }, [lib, tokensLength]);
 };

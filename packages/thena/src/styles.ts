@@ -232,7 +232,6 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
 }));
 
 export const configureStyles = (isDarkMode?: boolean) => {
-  console.log(isDarkMode);
 
   return {
     ".twap-input": {
