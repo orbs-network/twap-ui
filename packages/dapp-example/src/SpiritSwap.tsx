@@ -7,7 +7,7 @@ import { Dapp, TokensList } from "./Components";
 import { Popup } from "./Components";
 import { TokenListItem } from "./types";
 import _ from "lodash";
-import { erc20sData, zeroAddress} from "@defi.org/web3-candies";
+import { erc20sData, zeroAddress } from "@defi.org/web3-candies";
 
 const config = Configs.SpiritSwap;
 
