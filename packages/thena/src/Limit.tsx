@@ -10,7 +10,7 @@ import { configureStyles, StyledColumnFlex, StyledPoweredBy, StyledSubmit, Style
 const storeOverride = {
   isLimitOrder: true,
   chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 90 },
+  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
