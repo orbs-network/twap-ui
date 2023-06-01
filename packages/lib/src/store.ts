@@ -57,7 +57,7 @@ export const useTwapStore = create(
       if (!storeOverride.isLimitOrder) {
         set({ customDuration: initialState.customDuration, customFillDelay: initialState.customFillDelay });
       }
-      set({ ...storeOverride });
+      set({ ...storeOverride, srcAmountUi: "" });
     },
     setOrderCreatedTimestamp: (orderCreatedTimestamp: number) => set({ orderCreatedTimestamp }),
     reset: (storeOverride: StoreOverride) => set({ ...initialState, lib: get().lib, ...storeOverride }),

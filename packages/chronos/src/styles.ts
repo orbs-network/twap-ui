@@ -23,7 +23,7 @@ const darkStyles = {
 const cardStyles = {
   position: "relative",
 
-  ".twap-card-bg": {
+  "&::after": {
     pointerEvents: "none",
     borderRadius: 30,
     left: 0,
@@ -34,6 +34,7 @@ const cardStyles = {
     mixBlendMode: "overlay",
     width: "100%",
     height: "100%",
+    content: '""',
   },
 };
 
@@ -100,8 +101,13 @@ export const StyledChange = styled(Box)({
 
 export const configureStyles = (isExample?: boolean) => {
   return {
-    ".twap-card-bg": {
-      zIndex: isExample ? 1 : -1,
+    ".twap-card": {
+      "*": {
+        color: lightStyles.textColor,
+      },
+      "&::after": {
+        zIndex: isExample ? 1 : -1,
+      },
     },
     ".twap-card-children": {
       zIndex: isExample ? 2 : "unset",
@@ -589,9 +595,14 @@ export const configureStyles = (isExample?: boolean) => {
         color: "inherit",
       },
       ".twap-card": {
+        ".twap-card-children": {
+          position: "relative",
+          zIndex: 2,
+        },
         "&::after": {
           background: "rgba(255,255,255, 1)",
           mixBlendMode: "unset!important",
+          zIndex: 1,
         },
       },
       ".twap-label": {
@@ -661,11 +672,6 @@ export const configureStyles = (isExample?: boolean) => {
 
     ".MuiBackdrop-root": {
       background: "rgba(10,9, 62, 0.5)!important",
-    },
-    ".twap-card": {
-      "*": {
-        color: lightStyles.textColor,
-      },
     },
     ".dark": {
       ".twap-percent-selector": {
