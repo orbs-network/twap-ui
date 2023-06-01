@@ -7,6 +7,7 @@ import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { TokenListItem } from "./types";
 import _ from "lodash";
+import { erc20sData, zeroAddress } from "@defi.org/web3-candies";
 
 const config = Configs.SpookySwap;
 
@@ -63,8 +64,8 @@ const DappComponent = () => {
     getProvider,
     connect,
     account,
-    srcToken: "FTM",
-    dstToken: "ORBS",
+    srcToken: zeroAddress,
+    dstToken: erc20sData.ftm.USDC.address,
     getTokenImageUrl,
     dappTokens,
     onSrcTokenSelected: (token: any) => console.log(token),

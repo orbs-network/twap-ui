@@ -8,7 +8,7 @@ import { Popup } from "./Components";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
-import { erc20s, zeroAddress } from "@defi.org/web3-candies";
+import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 const config = Configs.Chronos;
 
@@ -96,8 +96,8 @@ const DappComponent = () => {
   const twapProps: ChronosTWAPProps = {
     connect,
     account,
-    srcToken: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
-    dstToken: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+    srcToken: zeroAddress,
+    dstToken: erc20sData.arb.USDC.address,
     dappTokens,
     TokenSelectModal,
     provider: library,

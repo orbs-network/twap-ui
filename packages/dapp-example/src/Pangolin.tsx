@@ -2,7 +2,7 @@ import { PangolinTWAPProps, TWAP } from "@orbs-network/twap-ui-pangolin";
 import { DappLayout, Popup, TokensList } from "./Components";
 import { StyledModalContent, StyledPangolin, StyledPangolinBox, StyledPangolinDaasBox, StyledPangolinLayout } from "./styles";
 import _ from "lodash";
-import { erc20s, zeroAddress } from "@defi.org/web3-candies";
+import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { Configs } from "@orbs-network/twap";
@@ -108,7 +108,7 @@ const PangolinComponent = () => {
     account,
     TokenSelectModal,
     srcToken: zeroAddress, //AVAX
-    dstToken: "0x340fE1D898ECCAad394e2ba0fC1F93d27c7b717A", // ORBS
+    dstToken: erc20sData.avax.USDC.address, // ORBS
     dappTokens,
     provider,
     onSrcTokenSelected: (token: any) => console.log(token),
@@ -140,8 +140,8 @@ const PangolinDaasComponent = () => {
   const twapProps: PangolinTWAPProps = {
     account,
     TokenSelectModal,
-    srcToken: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", //WAVAX
-    dstToken: "0x340fE1D898ECCAad394e2ba0fC1F93d27c7b717A", // ORBS
+    srcToken: zeroAddress, //AVAX
+    dstToken: erc20sData.avax.USDC.address, // ORBS
     dappTokens,
     provider,
     onSrcTokenSelected: (token: any) => console.log(token),

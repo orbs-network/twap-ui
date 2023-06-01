@@ -8,7 +8,7 @@ import { Popup } from "./Components";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
-import { erc20s, zeroAddress } from "@defi.org/web3-candies";
+import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 const config = Configs.QuickSwap;
 
@@ -101,7 +101,7 @@ const DappComponent = () => {
     connect,
     account,
     srcToken: zeroAddress,
-    dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff", //ORBS
+    dstToken: erc20sData.poly.USDC.address, //USDC
     dappTokens,
     onSrcTokenSelected: (token: any) => console.log(token),
     onDstTokenSelected: (token: any) => console.log(token),
