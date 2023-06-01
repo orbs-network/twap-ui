@@ -129,6 +129,7 @@ export const Container = ({ children, className }: { children: ReactNode; classN
   return (
     <StyledCard className={className}>
       <div className="twap-card-children">{children}</div>
+      <div className="twap-card-bg" />
     </StyledCard>
   );
 };

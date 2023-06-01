@@ -116,7 +116,7 @@ export const DappsMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const disconnect = useDisconnectWallet();
-  const reset = hooks.useReset();
+  const reset = hooks.useResetStore();
   const onSelect = (dapp: Dapp) => {
     reset();
     disconnect();

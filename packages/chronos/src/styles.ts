@@ -23,19 +23,18 @@ const darkStyles = {
 const cardStyles = {
   position: "relative",
 
-  "&::after": {
+  ".twap-card-bg": {
     pointerEvents: "none",
     borderRadius: 30,
     left: 0,
     top: 0,
-    background: lightStyles.containerBg,
-    content: '""',
+    backgroundColor: lightStyles.containerBg,
     position: "absolute",
     opacity: 0.5,
     mixBlendMode: "overlay",
     width: "100%",
     height: "100%",
-    zIndex: 0,
+    zIndex: 1,
   },
 };
 
@@ -43,11 +42,9 @@ export const StyledCard = styled(Components.Base.Card)({
   padding: 0,
   ...(cardStyles as any),
   ".twap-card-children": {
-    position: "relative",
     width: "100%",
     height: "100%",
     padding: "18px 17px 18px 17px",
-    zIndex: 2,
   },
 });
 
@@ -584,10 +581,6 @@ export const configureStyles = () => {
       "*": {
         fontFamily: "inherit",
         color: "inherit",
-      },
-      ".twap-card-children": {
-        position: "relative",
-        zIndex: 2,
       },
       ".twap-card": {
         "&::after": {

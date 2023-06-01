@@ -16,13 +16,22 @@ import { QueryKeys } from "./enums";
  * Actions
  */
 
+export const useResetStore = () => {
+  const resetTwapStore = useTwapStore((state) => state.reset);
+  const storeOverride = useTwapContext().storeOverride;
+
+  return () => {
+    resetTwapStore(storeOverride || {});
+  };
+};
+
 export const useReset = () => {
   const resetTwapStore = useTwapStore((state) => state.reset);
   const client = useQueryClient();
   const storeOverride = useTwapContext().storeOverride;
 
   return () => {
-    client.invalidateQueries();
+    client && client.invalidateQueries();
     resetTwapStore(storeOverride || {});
   };
 };
