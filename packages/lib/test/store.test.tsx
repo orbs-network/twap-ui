@@ -11,6 +11,9 @@ import React, { ReactNode } from "react";
 import { useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
 import { OrdersContext } from "../src/context";
 import { OrderLibProps, OrderUI } from "../src/types";
+import { useChaiBigNumber } from "@defi.org/web3-candies/dist/hardhat";
+
+useChaiBigNumber();
 
 const createQueryProvider = () => {
   const queryClient = new QueryClient();
