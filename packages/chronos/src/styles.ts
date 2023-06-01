@@ -1,6 +1,8 @@
 import { Box, styled } from "@mui/material";
 import { Components } from "@orbs-network/twap-ui";
 
+const url = window.location.href;
+
 const stops = `#9E5BF1,#356FF4`;
 const gradient = `linear-gradient(to right,${stops} )`;
 const zoom = 1.175;
@@ -34,7 +36,7 @@ const cardStyles = {
     mixBlendMode: "overlay",
     width: "100%",
     height: "100%",
-    zIndex: 1,
+    zIndex: url.includes("twap-ui") ? 1 : 0,
   },
 };
 
