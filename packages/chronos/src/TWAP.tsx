@@ -31,7 +31,7 @@ const TWAP = (props: ChronosTWAPProps) => {
         srcToken={props.srcToken}
         dstToken={props.dstToken}
       >
-        <GlobalStyles styles={configureStyles() as any} />
+        <GlobalStyles styles={configureStyles(props.isExample) as any} />
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <StyledColumnFlex>

@@ -102,6 +102,7 @@ const DappComponent = () => {
     TokenSelectModal,
     provider: library,
     getTokenLogoURL,
+    isExample: true,
   };
   const ordersProps: ChronosOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
 

@@ -1,8 +1,6 @@
 import { Box, styled } from "@mui/material";
 import { Components } from "@orbs-network/twap-ui";
 
-const url = window.location.href;
-
 const stops = `#9E5BF1,#356FF4`;
 const gradient = `linear-gradient(to right,${stops} )`;
 const zoom = 1.175;
@@ -36,7 +34,6 @@ const cardStyles = {
     mixBlendMode: "overlay",
     width: "100%",
     height: "100%",
-    zIndex: url.includes("twap-ui") ? 1 : 0,
   },
 };
 
@@ -66,15 +63,16 @@ export const StyledBalance = styled(Box)({
     right: 0,
     top: 20,
     zIndex: 1,
+
     ".twap-number-display": {
       fontWeight: "600",
     },
     "*": {
       color: "white",
+      fontSize: "14px!important",
     },
     ".twap-balance-title": {
       fontWeight: 400,
-      fontSize: 14,
     },
 
     "&>p": {
@@ -100,8 +98,14 @@ export const StyledChange = styled(Box)({
   zIndex: 5,
 });
 
-export const configureStyles = () => {
+export const configureStyles = (isExample?: boolean) => {
   return {
+    ".twap-card-bg": {
+      zIndex: isExample ? 1 : -1,
+    },
+    ".twap-card-children": {
+      zIndex: isExample ? 2 : "unset",
+    },
     ".twap-powered-by": {
       a: {
         color: lightStyles.textColor,

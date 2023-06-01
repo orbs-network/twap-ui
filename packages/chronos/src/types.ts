@@ -9,6 +9,7 @@ export interface ChronosTWAPProps extends TWAPProps {
   getTokenLogoURL: (address: string) => string;
   dappTokens: any[];
   connect?: () => void;
+  isExample?: boolean;
 }
 
 export interface ChronosRawToken {
