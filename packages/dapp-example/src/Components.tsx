@@ -251,7 +251,7 @@ export const TokensList = ({ tokens = [], onClick }: { tokens?: TokenListItem[];
       <TokenSearchInput setValue={setFilterValue} value={filterValue} />
       <StyledTokensList>
         <AutoSizer>
-          {({ height, width }) => (
+          {({ height, width }: any) => (
             <List
               overscanCount={30}
               className="List"
