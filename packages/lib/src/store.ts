@@ -283,7 +283,7 @@ export const useTwapStore = create(
         .add(((get() as any).getDurationUi().amount || 0) * (get() as any).getDurationUi().resolution)
         .add(1, "minute")
         .valueOf(),
-    getDeadlineUi: () => moment((get() as any).getDeadline()).format("L HH:mm"),
+    getDeadlineUi: () => moment((get() as any).getDeadline()).format("ll HH:mm"),
     getDstAmountUi: () => amountUi(get().dstToken, (get() as any).getDstAmount()),
     getSrcAmountUsdUi: () => amountUi(get().srcToken, (get() as any).getSrcAmount().times(get().srcUsd)),
     getDstAmountUsdUi: () => amountUi(get().dstToken, (get() as any).getDstAmount().times(get().dstUsd)),
