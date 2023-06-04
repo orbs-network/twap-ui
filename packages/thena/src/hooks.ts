@@ -5,7 +5,7 @@ import Web3 from "web3";
 import { ThenaRawToken, ThenaTWAPProps } from "./types";
 import { isNativeAddress } from "@defi.org/web3-candies";
 
-export const config = Configs.QuickSwap;
+export const config = Configs.Thena;
 
 export const useParseTokens = (dappTokens: ThenaRawToken[]): TokenData[] => {
   const listLength = _.size(dappTokens);
