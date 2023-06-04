@@ -2,7 +2,7 @@ import { memo, ReactNode, useCallback, useState } from "react";
 import { parseToken, useAdapterContext } from "./hooks";
 import { ChronosRawToken } from "./types";
 import { Components, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks } from "@orbs-network/twap-ui";
-import { StyledBalance, StyledCard, StyledChange } from "./styles";
+import { StyledBalance, StyledCard, StyledChange, StyledTokenPanelRow } from "./styles";
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
@@ -44,13 +44,11 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
           </div>
           <TwapStyles.StyledColumnFlex gap={5} style={{ width: "unset", flex: 1 }}>
             <Components.TokenInput placeholder="0.00" isSrc={isSrcToken} />
-            <TwapStyles.StyledRowFlex gap={12} justifyContent="flex-start">
-              <TwapStyles.StyledRowFlex gap={0} width="unset">
-                <Components.TokenSymbol onClick={() => setTokenListOpen(true)} hideNull={true} isSrc={isSrcToken} />
-                <Components.TokenUSD isSrc={isSrcToken} />
-              </TwapStyles.StyledRowFlex>
+            <StyledTokenPanelRow>
+              <Components.TokenSymbol onClick={() => setTokenListOpen(true)} hideNull={true} isSrc={isSrcToken} />
+              <Components.TokenUSD isSrc={isSrcToken} />
               {isSrcToken && <SrcTokenPercentSelector />}
-            </TwapStyles.StyledRowFlex>
+            </StyledTokenPanelRow>
           </TwapStyles.StyledColumnFlex>
           <StyledBalance>
             <Components.TokenBalance label="Available balance" showSymbol={true} isSrc={isSrcToken} />

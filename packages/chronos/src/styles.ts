@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/material";
-import { Components } from "@orbs-network/twap-ui";
+import { Components, Styles as twapStyles } from "@orbs-network/twap-ui";
 
 const stops = `#9E5BF1,#356FF4`;
 const gradient = `linear-gradient(to right,${stops} )`;
@@ -37,6 +37,18 @@ const cardStyles = {
     content: '""',
   },
 };
+
+export const StyledTokenPanelRow = styled(twapStyles.StyledRowFlex)({
+  gap: 10,
+  justifyContent: "flex-start",
+  flexWrap: "wrap",
+  "@media(max-width:550px)": {
+    gap: 2,
+    ".twap-usd": {
+      marginRight: 5,
+    },
+  },
+});
 
 export const StyledCard = styled(Components.Base.Card)({
   padding: 0,
@@ -521,7 +533,7 @@ export const configureStyles = (isExample?: boolean) => {
         cursor: "pointer",
         ...cardStyles,
         borderRadius: 100,
-        padding: "3px 8px",
+        padding: "3px 3px",
         fontSize: 13,
         "&::after": {
           background: "rgb(241 245 249/0.2)",
@@ -801,6 +813,21 @@ export const configureStyles = (isExample?: boolean) => {
       },
     },
     "@media(max-width:550px)": {
+      ".twap-label": {
+        fontSize: "14px",
+      },
+      ".twap-trade-size ": {
+        ".twap-chunks-size": {
+          " .twap-label": {
+            fontSize: "13px",
+          },
+        },
+      },
+      ".twap-token-panel": {
+        ".twap-token-name": {
+          width: "100%",
+        },
+      },
       ".twap-percent-selector": {
         button: {
           padding: "5px 6px",
@@ -808,7 +835,7 @@ export const configureStyles = (isExample?: boolean) => {
         },
       },
       ".twap-token-select": {
-        ".twap-token-logo": {
+        ".twap-token-paneltwap-token-logo": {
           width: 50,
           height: 50,
         },
