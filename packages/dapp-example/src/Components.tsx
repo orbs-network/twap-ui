@@ -171,7 +171,7 @@ export const DappsMenu = () => {
                       filter: dapp.invertLogo ? "invert(100%)" : "unset",
                     }}
                   />
-                  <ListItemText primary={`${dapp.workInProgress ? "[WIP]" : dapp.config.partner}}`} />
+                  <ListItemText primary={`${dapp.workInProgress ? "[WIP]" : dapp.config.partner}`} />
                 </StyledMenuListItemButton>
               </ListItem>
             ))}
