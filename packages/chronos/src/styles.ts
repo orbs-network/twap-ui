@@ -674,6 +674,9 @@ export const configureStyles = (isExample?: boolean) => {
       background: "rgba(10,9, 62, 0.5)!important",
     },
     ".dark": {
+      ".twap-limit-price-input": {
+        background: "#0D0C38",
+      },
       ".twap-percent-selector": {
         button: {
           background: "rgba(79, 106, 243, 0.4)",
@@ -788,9 +791,6 @@ export const configureStyles = (isExample?: boolean) => {
         },
       },
       ".dark": {
-        ".twap-limit-price-input": {
-          background: "#0D0C38",
-        },
         ".twap-percent-selector": {
           button: {
             "&:hover": {
