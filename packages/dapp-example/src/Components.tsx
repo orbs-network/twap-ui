@@ -32,13 +32,14 @@ import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
 import { dapps } from "./config";
 import { Status } from "./Status";
-import { useBalance, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
+import { useBalance, useDebounce, useDisconnectWallet, useNetwork, useSelectedDapp, useTheme } from "./hooks";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { TokenData } from "@orbs-network/twap";
 import { TokenListItem } from "./types";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";
+import { network } from "@defi.org/web3-candies";
 
 const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
 
@@ -165,12 +166,10 @@ export const DappsMenu = () => {
             {dapps.map((dapp) => (
               <ListItem onClick={() => onSelectClick(dapp)} key={dapp.config.partner.toLowerCase()} disablePadding selected={isSelected(dapp)}>
                 <StyledMenuListItemButton>
-                  <StyledMenuLogo
-                    src={dapp.logo}
-                    style={{
-                      filter: dapp.invertLogo ? "invert(100%)" : "unset",
-                    }}
-                  />
+                  <div>
+                    <StyledMenuLogo src={network(dapp.config.chainId).logoUrl} style={{ width: 20, height: 20 }} />
+                    <StyledMenuLogo src={dapp.logo} style={{ filter: dapp.invertLogo ? "invert(100%)" : "unset" }} />
+                  </div>
                   <ListItemText primary={`${dapp.workInProgress ? "[WIP]" : dapp.config.partner}`} />
                 </StyledMenuListItemButton>
               </ListItem>
