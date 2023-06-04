@@ -86,7 +86,7 @@ const TradeSize = () => {
 const MaxDuration = () => {
   return (
     <Container className="twap-max-duration-wrapper">
-      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
+      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between" className="twap-mobile-flex-column">
         <Components.Labels.MaxDurationLabel />
         <Components.PartialFillWarning />
         <Components.MaxDurationSelector />
@@ -98,7 +98,7 @@ const MaxDuration = () => {
 const TradeInterval = () => {
   return (
     <Container className="twap-trade-interval-wrapper">
-      <TwapStyles.StyledRowFlex>
+      <TwapStyles.StyledRowFlex className="twap-mobile-flex-column">
         <Components.Labels.TradeIntervalLabel />
         <Components.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>

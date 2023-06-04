@@ -813,6 +813,10 @@ export const configureStyles = (isExample?: boolean) => {
       },
     },
     "@media(max-width:550px)": {
+      ".twap-mobile-flex-column":{
+        flexDirection: "column",
+        alignItems: "flex-start!important",
+      },
       ".twap-label": {
         fontSize: "14px",
       },
