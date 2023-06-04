@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
-import { chainInfo } from "@defi.org/web3-candies";
+import { network } from "@defi.org/web3-candies";
 import { Dapp } from "./Components";
 import moment from "moment";
 import BN from "bignumber.js";
@@ -15,27 +15,14 @@ const chainNames = {
   arb: "arbitrum",
 };
 
-const MIN_BALANCE = 0.01;
+const MIN_BALANCE = 0.001;
 
-function useConfigAndNetwork(dapp?: Dapp) {
-  return useQuery(
-    ["useConfigAndNetwork", dapp?.config.partner],
-    async () => {
-      const twapVersion = dapp?.config.twapVersion || 0;
-      const twapLibVersion = require("@orbs-network/twap/package.json").version;
-      const twapUiVersion = require("@orbs-network/twap-ui/package.json").version;
-      let info;
-
-      try {
-        info = await chainInfo(dapp!.config.chainId);
-      } catch (error) {
-        console.log(error);
-      }
-
-      return { twapVersion, twapLibVersion, twapUiVersion, info };
-    },
-    { enabled: !!dapp }
-  ).data;
+function useConfig(dapp?: Dapp) {
+  const twapVersion = dapp?.config.twapVersion || "?";
+  const twapLibVersion = require("@orbs-network/twap/package.json").version || "?";
+  const twapUiVersion = require("@orbs-network/twap-ui/package.json").version || "?";
+  const info = network(dapp?.config.chainId || 0) || {};
+  return { twapVersion, twapLibVersion, twapUiVersion, info };
 }
 
 function useBackupTakersStatus(dapp?: Dapp) {
@@ -48,7 +35,7 @@ function useBackupTakersStatus(dapp?: Dapp) {
             .then((x) => x.json())
             .then(async (s: any) => {
               const wallets = s.takersWallets[(chainNames as any)[dapp!.config.chainName]];
-              const balances = _.map(wallets, (w) => BN(w.balance).times(1e6).idiv(1e6).toNumber()).sort();
+              const balances = _.sortBy(_.map(wallets, (w) => BN(w.balance).times(1e3).integerValue().div(1e3).toNumber()));
               return {
                 status: s.uptime > 0 && balances[0] > MIN_BALANCE,
                 uptime: (moment.utc(s.uptime * 1000).dayOfYear() > 1 ? moment.utc(s.uptime * 1000).dayOfYear() + " days " : "") + moment.utc(s.uptime * 1000).format("HH:mm:ss"),
@@ -72,7 +59,11 @@ function useOrbsL3TakersStatus(dapp?: Dapp) {
     const result = _.map(orbsStatus.CommitteeNodes, (node) => {
       try {
         const nodeStatus = _.get(node, ["NodeServices", "vm-twap", "VMStatusJson"]);
-        const balance = Number(BN(_.values(nodeStatus.takersWallets[(chainNames as any)[dapp!.config.chainName]])[0].balance).toFixed(1));
+        const balance = BN(_.values(nodeStatus.takersWallets[(chainNames as any)[dapp!.config.chainName]])[0].balance)
+          .times(1e3)
+          .integerValue()
+          .div(1e3)
+          .toNumber();
         return {
           status: balance > MIN_BALANCE,
           balance,
@@ -102,11 +93,11 @@ function useTakerXStatus(dapp?: Dapp) {
       const takers = [
         {
           status: BN(backupAwsStatusChain.balance0).gt(MIN_BALANCE),
-          balance: BN(backupAwsStatusChain.balance0).toFixed(1),
+          balance: BN(backupAwsStatusChain.balance0).times(1e3).integerValue().div(1e3).toNumber(),
         },
         {
           status: BN(backupAwsStatusChain.balance1).gt(MIN_BALANCE),
-          balance: BN(backupAwsStatusChain.balance1).toFixed(1),
+          balance: BN(backupAwsStatusChain.balance1).times(1e3).integerValue().div(1e3).toNumber(),
         },
       ];
       return {
@@ -130,7 +121,7 @@ const Image = ({ logo }: { logo?: string }) => {
 
 export function Status() {
   const { selectedDapp: dapp } = useSelectedDapp();
-  const config = useConfigAndNetwork(dapp);
+  const config = useConfig(dapp);
 
   const status = useBackupTakersStatus(dapp);
   const takerx = useTakerXStatus(dapp);
@@ -166,13 +157,13 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <Image logo={config?.info?.logoUrl} /> {config?.info?.name || dapp.config.chainName} {dapp.config.chainId}
+              <Image logo={config?.info?.logoUrl} /> {config?.info?.name} {dapp.config.chainId}
             </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle>TWAP:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <a href={config ? `${config.info?.explorers[0].url}/address/${dapp.config.twapAddress}` : ""} target={"_blank"}>
+              <a href={config ? `${config.info?.explorer}/address/${dapp.config.twapAddress}` : ""} target={"_blank"}>
                 {dapp.config.twapAddress}
               </a>
             </StyledStatusSectionText>
@@ -180,7 +171,7 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle> Lens:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <a href={config ? `${config.info?.explorers[0].url}/address/${dapp.config.lensAddress}` : ""} target={"_blank"}>
+              <a href={config ? `${config.info?.explorer}/address/${dapp.config.lensAddress}` : ""} target={"_blank"}>
                 {dapp.config.lensAddress}
               </a>
             </StyledStatusSectionText>
@@ -189,7 +180,7 @@ export function Status() {
             <StyledStatusSectionTitle>Exchange:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
               {dapp.config.exchangeType}{" "}
-              <a href={config ? `${config.info?.explorers[0].url}/address/${dapp.config.exchangeAddress}` : ""} target={"_blank"}>
+              <a href={config ? `${config.info?.explorer}/address/${dapp.config.exchangeAddress}` : ""} target={"_blank"}>
                 {dapp.config.exchangeAddress}
               </a>
             </StyledStatusSectionText>
