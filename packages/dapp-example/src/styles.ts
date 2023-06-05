@@ -194,7 +194,7 @@ export const StyledChronos = styled(StyledDapp)(({ isDarkMode }: { isDarkMode: n
   backgroundImage: isDarkMode ? `url("chronos.svg")` : "unset",
   backgroundRepeat: "no-repeat",
   backgroundSize: "cover",
-  backgroundPosition: "left",
+  backgroundPosition: "top center",
   ".ui-selector-btn": {
     background: isDarkMode ? "rgba(255,255,255, 0.08)" : "white",
     color: isDarkMode ? "white" : "black",
