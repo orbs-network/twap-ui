@@ -3,6 +3,7 @@ import { Components, Styles } from "@orbs-network/twap-ui";
 const gradient = "linear-gradient(to right, rgb(216, 0, 183), rgb(177, 0, 222), rgb(177, 0, 222), rgb(216, 0, 183))";
 
 export const StyledPanelInput = styled(Components.TokenInput)({
+  width: "100%",
   input: {
     fontSize: 20,
     height: 40,
@@ -42,6 +43,7 @@ export const StyledPercentSelector = styled(Styles.StyledRowFlex)({
     padding: "0px 10px",
     fontSize: 14,
     fontWeight: 600,
+    cursor: "pointer",
   },
 });
 
@@ -91,7 +93,7 @@ export const StyledTokenSelect = styled(Components.TokenSelect)({
     height: 28,
   },
   ".twap-token-name": {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: 600,
   },
   p: {
@@ -99,7 +101,7 @@ export const StyledTokenSelect = styled(Components.TokenSelect)({
     fontWeight: 600,
   },
   ".twap-token-display": {
-    gap: 5,
+    gap: 10,
   },
 });
 
@@ -107,7 +109,7 @@ export const StyledLimitPrice = styled(Components.LimitPriceInput)({
   ".twap-input": {
     height: "auto",
     input: {
-      fontSize: 17,
+      fontSize: 15,
     },
   },
 });
@@ -233,6 +235,11 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
 
 export const configureStyles = (isDarkMode?: boolean) => {
   return {
+    ".odnp": {
+      "*": {
+        color: "black",
+      },
+    },
     ".twap-input": {
       input: {
         "&::placeholder": {
@@ -242,7 +249,9 @@ export const configureStyles = (isDarkMode?: boolean) => {
       },
     },
     ".twap-limit-price-input": {
-      paddingLeft: "0px!important",
+      paddingLeft: "5px!important",
+      background: isDarkMode ? "rgb(16 22 69 / 1)" : "#F4F5F6",
+      borderRadius: 8,
     },
     ".MuiBackdrop-root": {
       background: isDarkMode ? "rgb(9 3 51/0.88)!important" : "white!important",
@@ -274,6 +283,9 @@ export const configureStyles = (isDarkMode?: boolean) => {
     ".MuiSwitch-thumb ": {
       background: gradient,
     },
+    ".MuiSlider-thumb": {
+      background: gradient,
+    },
     ".MuiSwitch-track": {
       backgroundColor: isDarkMode ? "white!important" : "rgb(10 9 62/1)!important",
     },
@@ -298,6 +310,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
         fontWeight: 600,
       },
     },
+
     ".twap-token-panel-title": {
       "*": {
         color: "rgb(184 182 203/1)",

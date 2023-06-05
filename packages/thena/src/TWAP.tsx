@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles } from "@orbs-network/twap-ui";
-import { AdapterContextProvider, config } from "./hooks";
+import { AdapterContextProvider, config, parseToken } from "./hooks";
 import translations from "./i18n/en.json";
 import { ThenaTWAPProps } from "./types";
 import { Box } from "@mui/system";
@@ -8,7 +8,7 @@ import { Card, OrderSummary, TokenPanel } from "./Components";
 import { configureStyles, StyledColumnFlex, StyledLimitPrice, StyledPoweredBy, StyledSubmit, StyledTokenChange } from "./styles";
 
 const TWAP = (props: ThenaTWAPProps) => {
-  const parsedTokens = hooks.useParseTokens(props.dappTokens);
+  const parsedTokens = hooks.useParseTokens(props.dappTokens, parseToken);
 
   return (
     <Box className="twap-adapter-wrapper">

@@ -70,7 +70,7 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <Card>
           <TwapStyles.StyledColumnFlex gap={16}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <TwapStyles.StyledColumnFlex gap={0}>
+              <TwapStyles.StyledColumnFlex gap={0} style={{ width: "auto", flex: 1 }}>
                 <StyledPanelInput placeholder="0.00" isSrc={isSrcToken} />
                 <Components.TokenUSD isSrc={isSrcToken} />
               </TwapStyles.StyledColumnFlex>

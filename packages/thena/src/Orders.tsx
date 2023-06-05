@@ -2,12 +2,12 @@ import { hooks, OrdersAdapter, Translations } from "@orbs-network/twap-ui";
 import { memo } from "react";
 import translations from "./i18n/en.json";
 import { ThenaOrdersProps } from "./types";
-import { config } from "./hooks";
+import { config, parseToken } from "./hooks";
 import { StyledOrders } from "./styles";
 import { Orders } from "@orbs-network/twap-ui";
 
 function OrderHistory(props: ThenaOrdersProps) {
-  const parsedTokens = hooks.useParseTokens(props.dappTokens);
+  const parsedTokens = hooks.useParseTokens(props.dappTokens, parseToken);
 
   return (
     <OrdersAdapter

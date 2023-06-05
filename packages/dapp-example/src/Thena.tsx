@@ -8,12 +8,12 @@ import { Popup } from "./Components";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
-import { erc20s, zeroAddress } from "@defi.org/web3-candies";
+import { erc20s, zeroAddress, isNativeAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 
 const config = Configs.Thena;
 
-const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
+const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png";
 export const useDappTokens = () => {
   const { account } = useWeb3React();
 
@@ -32,7 +32,7 @@ export const useDappTokens = () => {
         symbol,
         name,
         address,
-        logoURI,
+        logoURI: isNativeAddress(address) ? nativeTokenLogo : logoURI,
       }));
       const candiesAddresses = [zeroAddress, ..._.map(erc20s.bsc, (t) => t().address)];
 
@@ -95,8 +95,8 @@ const DappComponent = () => {
   const twapProps: ThenaTWAPProps = {
     connect,
     account,
-    srcToken: zeroAddress,
-    dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff",
+    srcToken: "BNB",
+    dstToken: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
     dappTokens,
     TokenSelectModal,
     provider: library,
