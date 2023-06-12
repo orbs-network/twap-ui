@@ -121,7 +121,7 @@ export const DappsMenu = () => {
   const onSelect = (dapp: Dapp) => {
     reset();
     disconnect();
-    navigate(`/${dapp.config.partner.toLowerCase()}`);
+    navigate(`/${dapp.config.name.toLowerCase()}`);
   };
 
   const open = !isMobile ? true : isMobile && isOpen;
@@ -164,13 +164,13 @@ export const DappsMenu = () => {
           <ToggleTheme />
           <StyledMenuList>
             {dapps.map((dapp) => (
-              <ListItem onClick={() => onSelectClick(dapp)} key={dapp.config.partner.toLowerCase()} disablePadding selected={isSelected(dapp)}>
+              <ListItem onClick={() => onSelectClick(dapp)} key={dapp.config.name.toLowerCase()} disablePadding selected={isSelected(dapp)}>
                 <StyledMenuListItemButton>
                   <div>
                     <StyledMenuLogo src={network(dapp.config.chainId).logoUrl} style={{ width: 20, height: 20 }} />
                     <StyledMenuLogo src={dapp.logo} style={{ filter: dapp.invertLogo ? "invert(100%)" : "unset" }} />
                   </div>
-                  <ListItemText primary={`${dapp.workInProgress ? "[WIP]" : dapp.config.partner}`} />
+                  <ListItemText primary={`${dapp.workInProgress ? "[WIP]" : dapp.config.name}`} />
                 </StyledMenuListItemButton>
               </ListItem>
             ))}

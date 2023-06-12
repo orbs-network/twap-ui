@@ -85,7 +85,7 @@ function useOrbsL3TakersStatus(dapp?: Dapp) {
 
 function useTakerXStatus(dapp?: Dapp) {
   return useQuery(
-    ["useTakerXStatus", dapp?.config.partner],
+    ["useTakerXStatus", dapp?.config.name],
     async () => {
       const backupAwsStatusResponse = await fetch(`https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status`).then((r) => r.json());
       const backupAwsStatusChain = _.find(backupAwsStatusResponse, (s) => s.config?.chainId === dapp?.config.chainId);

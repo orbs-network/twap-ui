@@ -120,7 +120,7 @@ const PangolinComponent = () => {
 
   return (
     <StyledPangolin isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledPangolinLayout name={config.partner}>
+      <StyledPangolinLayout name={config.name}>
         <StyledPangolinBox>
           <TWAP {...twapProps} />
         </StyledPangolinBox>
@@ -154,7 +154,7 @@ const PangolinDaasComponent = () => {
 
   return (
     <StyledPangolin isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledPangolinLayout name={config.partner}>
+      <StyledPangolinLayout name={config.name}>
         <StyledPangolinDaasBox>
           <TWAP {...twapProps} />
         </StyledPangolinDaasBox>

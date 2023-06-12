@@ -12,9 +12,9 @@ function App() {
       <GlobalStyles styles={globalStyle} />
       <Routes>
         {dapps.map(({ config, Component }) => {
-          return <Route path={config.partner.toLowerCase()} element={<Component />} key={config.partner} />;
+          return <Route path={config.name.toLowerCase()} element={<Component />} key={config.name} />;
         })}
-        <Route path="*" element={<Navigate to={defaultDapp.config.partner.toLowerCase()} />} />
+        <Route path="*" element={<Navigate to={defaultDapp.config.name.toLowerCase()} />} />
       </Routes>
     </StyledApp>
   );

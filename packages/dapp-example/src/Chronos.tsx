@@ -116,7 +116,7 @@ const DappComponent = () => {
 
   return (
     <StyledChronos isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledChronosLayout name={config.partner}>
+      <StyledChronosLayout name={config.name}>
         <UISelector
           options={[
             {

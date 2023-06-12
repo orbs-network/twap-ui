@@ -106,7 +106,7 @@ const DappComponent = () => {
 
   return (
     <StyledThena isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledThenaLayout name={config.partner}>
+      <StyledThenaLayout name={config.name}>
         <UISelector
           options={[
             {

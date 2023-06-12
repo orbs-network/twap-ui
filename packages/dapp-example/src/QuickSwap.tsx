@@ -114,7 +114,7 @@ const DappComponent = () => {
 
   return (
     <StyledQuickswap isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledQuickswapLayout name={config.partner}>
+      <StyledQuickswapLayout name={config.name}>
         <UISelector
           options={[
             {

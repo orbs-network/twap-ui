@@ -11,7 +11,7 @@ import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
-config.partner = "StellaSwap";
+config.name = "StellaSwap";
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
 export const useDappTokens = () => {
@@ -104,7 +104,7 @@ const DappComponent = () => {
 
   return (
     <StyledStella isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledStellaSwapLayout name={config.partner}>
+      <StyledStellaSwapLayout name={config.name}>
         <UISelector
           options={[
             {

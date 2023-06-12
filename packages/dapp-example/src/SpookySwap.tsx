@@ -77,7 +77,7 @@ const DappComponent = () => {
 
   return (
     <StyledSpookySwap isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledSpookySwapLayout name={config.partner}>
+      <StyledSpookySwapLayout name={config.name}>
         <UISelector
           options={[
             {

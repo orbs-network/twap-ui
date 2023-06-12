@@ -764,7 +764,7 @@ export const DisclaimerText = () => {
       <StyledText>{translations.disclaimer2}</StyledText>
       <StyledText>{translations.disclaimer3}</StyledText>
       <StyledText>{translations.disclaimer4}</StyledText>
-      <StyledText>{translations.disclaimer5.replace("{{dex}}", lib?.config.partner || "DEX")}</StyledText>
+      <StyledText>{translations.disclaimer5.replace("{{dex}}", lib?.config.name || "DEX")}</StyledText>
 
       <StyledText>
         {translations.disclaimer6}{" "}

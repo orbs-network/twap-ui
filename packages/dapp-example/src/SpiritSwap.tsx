@@ -74,7 +74,7 @@ const DappComponent = () => {
 
   return (
     <StyledSpiritSwap isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledSpiritSwapLayout name={config.partner}>
+      <StyledSpiritSwapLayout name={config.name}>
         <StyledSpiritSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
           <TWAP {...twapProps} />
         </StyledSpiritSwapBox>
