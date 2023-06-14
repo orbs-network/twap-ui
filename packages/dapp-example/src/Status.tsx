@@ -90,7 +90,7 @@ function useTakerXStatus(dapp?: Dapp) {
     ["useTakerXStatus", dapp?.config.name],
     async () => {
       const backupAwsStatusResponse = await fetch(takerxUrl).then((r) => r.json());
-      const backupAwsStatusChain = _.find(backupAwsStatusResponse, (s) => s.config?.chainId === dapp?.config.chainId);
+      const backupAwsStatusChain = _.find(backupAwsStatusResponse, (s) => s.chainId === dapp?.config.chainId);
       if (!backupAwsStatusChain) return null;
       const takers = [
         {
