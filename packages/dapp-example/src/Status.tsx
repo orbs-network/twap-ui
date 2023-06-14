@@ -83,11 +83,13 @@ function useOrbsL3TakersStatus(dapp?: Dapp) {
   }).data;
 }
 
+const takerxUrl = "https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status";
+
 function useTakerXStatus(dapp?: Dapp) {
   return useQuery(
     ["useTakerXStatus", dapp?.config.name],
     async () => {
-      const backupAwsStatusResponse = await fetch(`https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status`).then((r) => r.json());
+      const backupAwsStatusResponse = await fetch(takerxUrl).then((r) => r.json());
       const backupAwsStatusChain = _.find(backupAwsStatusResponse, (s) => s.config?.chainId === dapp?.config.chainId);
       if (!backupAwsStatusChain) return null;
       const takers = [
@@ -205,7 +207,7 @@ export function Status() {
           ))}
           <StyledStatusSection>
             <StyledStatusSectionTitle>
-              <a href={"https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status"} target={"_blank"}>
+              <a href={takerxUrl} target={"_blank"}>
                 {!takerx ? "" : takerx?.status ? "✅" : "⚠️⚠️⚠️"} Backup Taker X (2):
               </a>
             </StyledStatusSectionTitle>
