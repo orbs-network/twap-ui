@@ -48,9 +48,9 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
         </Row>
       </TwapStyles.StyledColumnFlex>
       {order.ui.status === Status.Open && (
-        <Box className="twap-order-expanded-cancel-wraper">
+        <div className="twap-order-expanded-cancel-wraper" style={{ marginLeft: "auto", marginRight: "auto" }}>
           <CancelOrderButton orderId={order.order.id} />
-        </Box>
+        </div>
       )}
     </StyledContainer>
   );

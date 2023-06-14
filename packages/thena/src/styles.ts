@@ -10,7 +10,7 @@ export const StyledPanelInput = styled(Components.TokenInput)({
   },
 });
 
-export const StyledCard = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
+export const StyledCard = styled("div")<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
   width: "100%",
   padding: 1,
   borderRadius: 3,
@@ -114,7 +114,7 @@ export const StyledLimitPrice = styled(Components.LimitPriceInput)({
   },
 });
 
-export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+export const StyledOrders = styled("div")<{ isDarkMode: number }>(({ isDarkMode }) => ({
   "*": {
     color: isDarkMode ? "white" : "rgb(10 9 62/1)",
   },
