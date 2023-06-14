@@ -1,4 +1,4 @@
-import { FC, ReactNode, useCallback, useEffect, useRef } from "react";
+import { FC, ReactNode, useCallback} from "react";
 import {
   Balance,
   Button,
