@@ -25,13 +25,14 @@ export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", 
         <TwapStyles.StyledColumnFlex gap={3} style={{ flex: 1, justifyContent: "flex-start" }}>
           <StyledRowFlex className="twap-token-display-amount-and-symbol">
             {isLoading && <Loader width={50} />}
-            {amount && (
+            {amount ? (
               <Typography>
                 {prefix ? `${prefix} ` : ""}
                 <Components.Base.NumberDisplay value={amount} />
+                {` ${token?.symbol}`}
               </Typography>
-            )}
-            <Typography>{` ${token?.symbol}`}</Typography>
+            ) : <Typography>{` ${token?.symbol}`}</Typography>}
+            
           </StyledRowFlex>
           {!alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
         </TwapStyles.StyledColumnFlex>

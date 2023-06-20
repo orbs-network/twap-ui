@@ -1,4 +1,3 @@
-import { CircularProgress } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
@@ -6,12 +5,12 @@ import { Components, Styles as TwapStyles } from "../..";
 import { useOrdersContext } from "../../context";
 import { useCancelOrder, useHistoryPrice } from "../../hooks";
 import { fillDelayText, useTwapStore } from "../../store";
-import { StyledColumnFlex, StyledRowFlex } from "../../styles";
+import { StyledColumnFlex } from "../../styles";
 import { OrderUI } from "../../types";
+
 const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const translations = useOrdersContext().translations;
   const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
-
 
   return (
     <StyledContainer className="twap-order-expanded">
@@ -62,13 +61,6 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
 };
 
 export default OrderExpanded;
-
-const StyledLoaderContainer = styled(StyledRowFlex)({
-  marginBottom: 50,
-  marginTop: 30,
-});
-
-const StyledLoader = styled(CircularProgress)({});
 
 const Row = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
   return (

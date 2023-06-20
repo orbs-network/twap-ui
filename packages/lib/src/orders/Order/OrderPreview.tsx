@@ -6,6 +6,7 @@ import { OrderTokenDisplay } from "./Components";
 import { HiOutlineArrowLongRight } from "react-icons/hi2";
 import { FiChevronDown } from "react-icons/fi";
 import { useOrderPastEvents } from "../../hooks";
+
 function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }) {
   const { data, isLoading: _isLoading } = useOrderPastEvents(order, expanded);
 
@@ -41,7 +42,7 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
           isLoading={isLoading}
           token={order.ui.dstToken}
           prefix={order.ui.prefix}
-          amount={data?.dstAmountOut}
+          amount={'2345345345345'}
           usdValue={data?.dstAmountOutUsdPrice || ""}
           icon={<FiChevronDown />}
         />

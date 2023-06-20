@@ -7,11 +7,11 @@ import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
-import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice } from "@defi.org/web3-candies";
+import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, findBlock } from "@defi.org/web3-candies";
 import { amountUi, parseOrderUi, useTwapStore } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
-import { getClosestBlock, getPastEvents } from "./utils";
+import { readEvents } from "./utils";
 import moment from "moment";
 
 /**
@@ -570,19 +570,22 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
   return useQuery(
     ["useOrderPastEvents", order.order.id, lib?.maker],
     async () => {
-      const [orderStartBlock, orderEndBlock] = await Promise.all([getClosestBlock(order.order.time, lib!.provider), getClosestBlock(order.order.ask.deadline, lib!.provider)]);
+      const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order.order.time * 1000), findBlock(order.order.ask.deadline * 1000)]);
 
       console.log({
         orderTime: moment(order.order.time * 1000).format("DD/MM/YYYY HH:mm:ss"),
-        orderStartBlock,
+        orderStartBlock: orderStartBlock.number,
         orderDeadline: moment(order.order.ask.deadline * 1000).format("DD/MM/YYYY HH:mm:ss"),
-        orderEndBlock,
+        orderEndBlock: orderEndBlock.number,
       });
 
-      const events = await getPastEvents(lib!.twap, "OrderFilled", orderStartBlock, orderEndBlock, { maker: lib!.maker, id: order.order.id });
+      const events = await readEvents(lib!.twap, "OrderFilled", new Web3(lib!.provider), orderStartBlock.number, orderEndBlock.number, 50_000, {
+        maker: lib!.maker,
+        id: order.order.id,
+      });
 
       // ami's function
-      // const events = await getPastEventsLoop(lib!.twap, "OrderFilled", orderEndBlock - orderStartBlock, orderEndBlock, { maker: lib!.maker, id: order.id });
+      // const events = await getPastEventsLoop(lib!.twap, "OrderFilled", orderEndBlock - orderStartBlock + 1, orderEndBlock, { maker: lib!.maker, id: order.order.id });
       const priceUsd1Token = await getPriceUsd(order.ui.dstToken);
       const dstAmountOut = _.reduce(
         events,
@@ -591,8 +594,6 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
         },
         BN(0)
       );
-
-      console.log({ dstToken: order.ui.dstToken, events });
 
       return {
         dstAmountOut: amountUi(order.ui.dstToken, dstAmountOut),
