@@ -206,7 +206,7 @@ export const useInitLib = () => {
 
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
-    setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, "0x2ee05Fad3b206a232E985acBda949B215C67F00e", props.provider));
+    setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account, props.provider));
     setValues(props.storeOverride || {});
   };
 };
@@ -571,15 +571,16 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
     ["useOrderPastEvents", order.order.id, lib?.maker],
     async () => {
       const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order.order.time * 1000), findBlock(order.order.ask.deadline * 1000)]);
-
+     
       console.log({
         orderTime: moment(order.order.time * 1000).format("DD/MM/YYYY HH:mm:ss"),
         orderStartBlock: orderStartBlock.number,
         orderDeadline: moment(order.order.ask.deadline * 1000).format("DD/MM/YYYY HH:mm:ss"),
         orderEndBlock: orderEndBlock.number,
       });
-
-      const events = await readEvents(lib!.twap, "OrderFilled", new Web3(lib!.provider), orderStartBlock.number, orderEndBlock.number, 50_000, {
+      const web3 = new Web3(lib!.provider);
+      const latestBlock = await web3.eth.getBlockNumber();
+      const events = await readEvents(lib!.twap, "OrderFilled", web3, orderStartBlock.number, latestBlock, 50_000, {
         maker: lib!.maker,
         id: order.order.id,
       });

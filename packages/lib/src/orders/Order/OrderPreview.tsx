@@ -42,7 +42,7 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
           isLoading={isLoading}
           token={order.ui.dstToken}
           prefix={order.ui.prefix}
-          amount={'2345345345345'}
+          amount={data?.dstAmountOut}
           usdValue={data?.dstAmountOutUsdPrice || ""}
           icon={<FiChevronDown />}
         />
