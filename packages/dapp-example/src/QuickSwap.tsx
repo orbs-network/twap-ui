@@ -135,7 +135,9 @@ const DappComponent = () => {
             },
           ]}
         />
-        <Orders {...ordersProps} />
+        <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
+          <Orders {...ordersProps} />
+        </StyledQuickswapBox>
       </StyledQuickswapLayout>
     </StyledQuickswap>
   );

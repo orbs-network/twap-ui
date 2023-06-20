@@ -2,6 +2,7 @@ import { Contract } from "@defi.org/web3-candies";
 import _ from "lodash";
 import Web3 from "web3";
 import { EventData } from "./types";
+import retry from 'async-retry'
 
 export const getClosestBlock = async (timestamp: number, provider: string) => {
   const web3 = new Web3(provider);
@@ -28,6 +29,17 @@ export const getClosestBlock = async (timestamp: number, provider: string) => {
 };
 
 const chunkSize = 50000;
+
+
+
+const getEnentsWithRetry = () => {
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+
+  }
+
+}
 
 export const getPastEvents = async (contract: Contract, eventName: string, fromBlock: number, toBlock: number, filter: any): Promise<EventData[]> => {
   const promises: any = [];

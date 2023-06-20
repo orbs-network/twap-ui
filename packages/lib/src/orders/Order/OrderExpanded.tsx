@@ -1,26 +1,17 @@
-import { CircularProgress, Typography } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { Components, Styles as TwapStyles } from "../..";
 import { useOrdersContext } from "../../context";
-import { useCancelOrder, useHistoryPrice, useOrderPastEvents } from "../../hooks";
+import { useCancelOrder, useHistoryPrice } from "../../hooks";
 import { fillDelayText, useTwapStore } from "../../store";
 import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { OrderUI } from "../../types";
-const OrderExpanded = ({ order, expanded }: { order: OrderUI; expanded: boolean }) => {
+const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const translations = useOrdersContext().translations;
   const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
 
-  const { data, isLoading } = useOrderPastEvents(order, expanded);
-
-  if (isLoading) {
-    return (
-      <StyledLoaderContainer>
-        <StyledLoader className="twap-spinner" />
-      </StyledLoaderContainer>
-    );
-  }
 
   return (
     <StyledContainer className="twap-order-expanded">
@@ -31,7 +22,6 @@ const OrderExpanded = ({ order, expanded }: { order: OrderUI; expanded: boolean 
             <OrderPrice order={order} />{" "}
           </Box>
         )}
-        <Typography>{data?.dstAmountOut}</Typography>
         <TwapStyles.StyledColumnFlex className="twap-extended-order-info">
           <Row label={`${translations.totalTrades}:`} tooltip={translations.totalTradesTooltip}>
             <Components.Base.NumberDisplay value={order.ui.totalChunks} />

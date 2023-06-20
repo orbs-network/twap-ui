@@ -1,8 +1,10 @@
 import { Box, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
-import { CSSProperties } from "react";
+import { CSSProperties, ReactNode } from "react";
 import { Components, Styles as TwapStyles } from "../..";
+import { Loader } from "../../components/base";
+import { StyledRowFlex } from "../../styles";
 
 interface OrderTokenDisplayProps {
   token?: TokenData;
@@ -12,32 +14,53 @@ interface OrderTokenDisplayProps {
   alighLeft?: boolean;
   usdPrefix?: string;
   usdValue: string;
+  icon?: ReactNode;
+  isLoading?: boolean;
 }
-export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix }: OrderTokenDisplayProps) => {
+export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading }: OrderTokenDisplayProps) => {
   return (
     <StyledTokenDisplay className={`twap-order-token-display ${className}`}>
       <TwapStyles.StyledRowFlex style={{ alignItems: "flex-start" }}>
         <StyledTokenLogo logo={token?.logoUrl} />
         <TwapStyles.StyledColumnFlex gap={3} style={{ flex: 1, justifyContent: "flex-start" }}>
-          <Typography className="twap-token-display-amount-and-symbol">
-            {prefix ? `${prefix} ` : ""}
-            <Components.Base.NumberDisplay value={amount} />
-            {` ${token?.symbol}`}
-          </Typography>
-          {!alighLeft && <OrderUsdValue usdValue={usdValue} prefix={usdPrefix} />}
+          <StyledRowFlex className="twap-token-display-amount-and-symbol">
+            {isLoading && <Loader width={50} />}
+            {amount && (
+              <Typography>
+                {prefix ? `${prefix} ` : ""}
+                <Components.Base.NumberDisplay value={amount} />
+              </Typography>
+            )}
+            <Typography>{` ${token?.symbol}`}</Typography>
+          </StyledRowFlex>
+          {!alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
         </TwapStyles.StyledColumnFlex>
+        {icon && <StyledIcon>{icon}</StyledIcon>}
       </TwapStyles.StyledRowFlex>
-      {alighLeft && <OrderUsdValue usdValue={usdValue} prefix={usdPrefix} />}
+      {alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
     </StyledTokenDisplay>
   );
 };
 
+const StyledIcon = styled("div")({
+  marginTop: 2,
+  svg: {
+    width: 20,
+    height: 20,
+  },
+});
+
 interface OrderUsdValueProps {
   prefix?: string;
   usdValue: string;
+  isLoading?: boolean;
 }
 
-export function OrderUsdValue({ usdValue, prefix = "≈" }: OrderUsdValueProps) {
+export function OrderUsdValue({ usdValue, prefix = "≈", isLoading }: OrderUsdValueProps) {
+
+  if(isLoading) return <Loader width={100} height={20} />
+  if (!usdValue) return null;
+
   return (
     <StyledTokenDisplayUsd loading={false} className="twap-order-token-display-usd">
       {prefix} $ <Components.Base.NumberDisplay value={usdValue} />

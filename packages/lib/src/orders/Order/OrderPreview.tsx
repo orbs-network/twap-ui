@@ -4,7 +4,13 @@ import { Components, OrderUI, Styles as TwapStyles, useOrdersContext } from "../
 import { StyledText } from "../../styles";
 import { OrderTokenDisplay } from "./Components";
 import { HiOutlineArrowLongRight } from "react-icons/hi2";
-function OrderPreview({ order }: { order: OrderUI }) {
+import { FiChevronDown } from "react-icons/fi";
+import { useOrderPastEvents } from "../../hooks";
+function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }) {
+  const { data, isLoading: _isLoading } = useOrderPastEvents(order, expanded);
+
+  const isLoading = _isLoading && expanded;
+
   const translations = useOrdersContext().translations;
   return (
     <TwapStyles.StyledColumnFlex gap={0} className="twap-order-preview">
@@ -31,7 +37,14 @@ function OrderPreview({ order }: { order: OrderUI }) {
       <TwapStyles.StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start" }} className="twap-order-preview-tokens" justifyContent="space-between">
         <OrderTokenDisplay usdPrefix="=" token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
         <Components.Base.Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 30, height: 30 }} />} />
-        <OrderTokenDisplay token={order.ui.dstToken} prefix={order.ui.prefix} amount={order.ui.dstAmountUi} usdValue={order.ui.dstAmountUsdUi} />
+        <OrderTokenDisplay
+          isLoading={isLoading}
+          token={order.ui.dstToken}
+          prefix={order.ui.prefix}
+          amount={data?.dstAmountOut}
+          usdValue={data?.dstAmountOutUsdPrice || ""}
+          icon={<FiChevronDown />}
+        />
       </TwapStyles.StyledRowFlex>
     </TwapStyles.StyledColumnFlex>
   );

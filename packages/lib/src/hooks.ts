@@ -565,6 +565,7 @@ export const useParseTokens = (dappTokens: any, parseToken?: (rawToken: any) => 
 
 export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
   const lib = useTwapStore((store) => store.lib);
+  const getPriceUsd = useGetPriceUsdCallback();
 
   return useQuery(
     ["useOrderPastEvents", order.order.id, lib?.maker],
@@ -582,7 +583,7 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
 
       // ami's function
       // const events = await getPastEventsLoop(lib!.twap, "OrderFilled", orderEndBlock - orderStartBlock, orderEndBlock, { maker: lib!.maker, id: order.id });
-
+      const priceUsd1Token = await getPriceUsd(order.ui.dstToken);
       const dstAmountOut = _.reduce(
         events,
         (sum, event) => {
@@ -595,6 +596,7 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
 
       return {
         dstAmountOut: amountUi(order.ui.dstToken, dstAmountOut),
+        dstAmountOutUsdPrice: amountUi(order.ui.dstToken, dstAmountOut.times(priceUsd1Token)),
       };
     },
     {

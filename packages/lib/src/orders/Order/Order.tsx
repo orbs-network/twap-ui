@@ -16,17 +16,18 @@ export interface Props {
 }
 
 function OrderComponent({ order, onExpand, expanded }: Props) {
+
   return (
     <StyledContainer className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
       <StyledAccordion expanded={expanded}>
         <StyledAccordionSummary onClick={onExpand}>
-          <OrderPreview order={order} />
+          <OrderPreview order={order} expanded={expanded} />
         </StyledAccordionSummary>
         <StyledSpace className="twap-order-separator" />
         <AccordionDetails className="twap-order-accordion" style={{ padding: 0, paddingTop: 10 }}>
           <OrderSeparator className="twap-order-separator" style={{ marginBottom: 10 }} />
           <Box>
-            <OrderExpanded order={order} expanded={expanded} />
+            <OrderExpanded order={order} />
           </Box>
         </AccordionDetails>
       </StyledAccordion>
