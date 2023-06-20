@@ -26,7 +26,7 @@ function OrderComponent({ order, onExpand, expanded }: Props) {
         <AccordionDetails className="twap-order-accordion" style={{ padding: 0, paddingTop: 10 }}>
           <OrderSeparator className="twap-order-separator" style={{ marginBottom: 10 }} />
           <Box>
-            <OrderExpanded order={order} />
+            <OrderExpanded order={order} expanded={expanded} />
           </Box>
         </AccordionDetails>
       </StyledAccordion>

@@ -8,9 +8,11 @@ import { InitLibProps, OrdersData, OrderUI } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
 import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice } from "@defi.org/web3-candies";
-import { parseOrderUi, useTwapStore } from "./store";
+import { amountUi, parseOrderUi, useTwapStore } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
+import { getClosestBlock, getPastEvents } from "./utils";
+import moment from "moment";
 
 /**
  * Actions
@@ -204,7 +206,7 @@ export const useInitLib = () => {
 
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
-    setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));
+    setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, "0x2ee05Fad3b206a232E985acBda949B215C67F00e", props.provider));
     setValues(props.storeOverride || {});
   };
 };
@@ -559,4 +561,45 @@ export const useParseTokens = (dappTokens: any, parseToken?: (rawToken: any) => 
   const parse = parseToken ? parseToken : (t: any) => t;
 
   return useMemo(() => _.compact(_.map(dappTokens, parse)), [listLength]);
+};
+
+export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
+  const lib = useTwapStore((store) => store.lib);
+
+  return useQuery(
+    ["useOrderPastEvents", order.order.id, lib?.maker],
+    async () => {
+      const [orderStartBlock, orderEndBlock] = await Promise.all([getClosestBlock(order.order.time, lib!.provider), getClosestBlock(order.order.ask.deadline, lib!.provider)]);
+
+      console.log({
+        orderTime: moment(order.order.time * 1000).format("DD/MM/YYYY HH:mm:ss"),
+        orderStartBlock,
+        orderDeadline: moment(order.order.ask.deadline * 1000).format("DD/MM/YYYY HH:mm:ss"),
+        orderEndBlock,
+      });
+
+      const events = await getPastEvents(lib!.twap, "OrderFilled", orderStartBlock, orderEndBlock, { maker: lib!.maker, id: order.order.id });
+
+      // ami's function
+      // const events = await getPastEventsLoop(lib!.twap, "OrderFilled", orderEndBlock - orderStartBlock, orderEndBlock, { maker: lib!.maker, id: order.id });
+
+      const dstAmountOut = _.reduce(
+        events,
+        (sum, event) => {
+          return sum.plus(event.returnValues.dstAmountOut);
+        },
+        BN(0)
+      );
+
+      console.log({ dstToken: order.ui.dstToken, events });
+
+      return {
+        dstAmountOut: amountUi(order.ui.dstToken, dstAmountOut),
+      };
+    },
+    {
+      enabled: !!lib && !!enabled,
+      retry: 5,
+    }
+  );
 };

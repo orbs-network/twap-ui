@@ -1,62 +1,84 @@
+import { CircularProgress, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { Components, Styles as TwapStyles } from "../..";
 import { useOrdersContext } from "../../context";
-import { useCancelOrder, useHistoryPrice } from "../../hooks";
+import { useCancelOrder, useHistoryPrice, useOrderPastEvents } from "../../hooks";
 import { fillDelayText, useTwapStore } from "../../store";
+import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { OrderUI } from "../../types";
-const OrderExpanded = ({ order }: { order: OrderUI }) => {
+const OrderExpanded = ({ order, expanded }: { order: OrderUI; expanded: boolean }) => {
   const translations = useOrdersContext().translations;
   const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
 
+  const { data, isLoading } = useOrderPastEvents(order, expanded);
+
+  if (isLoading) {
+    return (
+      <StyledLoaderContainer>
+        <StyledLoader className="twap-spinner" />
+      </StyledLoaderContainer>
+    );
+  }
+
   return (
     <StyledContainer className="twap-order-expanded">
-      {order.ui.srcToken && order.ui.dstToken && (
-        <Box className="twap-market-price-section">
-          {" "}
-          <OrderPrice order={order} />{" "}
-        </Box>
-      )}
-      <TwapStyles.StyledColumnFlex className="twap-extended-order-info">
-        <Row label={`${translations.totalTrades}:`} tooltip={translations.totalTradesTooltip}>
-          <Components.Base.NumberDisplay value={order.ui.totalChunks} />
-        </Row>
-        <Row label={`${translations.tradeSize}:`} tooltip={translations.tradeSizeTooltip}>
-          <Components.Base.TokenLogo logo={order.ui.srcToken.logoUrl} />
-          <Components.Base.NumberDisplay value={order.ui.srcChunkAmountUi} />
-          {order.ui.srcToken?.symbol} ≈ $ <Components.Base.NumberDisplay value={order.ui.srcChunkAmountUsdUi} />
-        </Row>
-        {order.ui.isMarketOrder ? (
-          <Row label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipMarket}>
-            <Components.Base.TokenLogo logo={order.ui.dstToken.logoUrl} />
-            {translations.none} {order.ui.dstToken?.symbol}
-          </Row>
-        ) : (
-          <Row label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
-            <Components.Base.TokenLogo logo={order.ui.dstToken.logoUrl} />
-            <Components.Base.NumberDisplay value={order.ui.dstMinAmountOutUi} />
-            {order.ui.dstToken?.symbol} ≈ $ <Components.Base.NumberDisplay value={order.ui.dstMinAmountOutUsdUi} />
-          </Row>
+      <StyledColumnFlex>
+        {order.ui.srcToken && order.ui.dstToken && (
+          <Box className="twap-market-price-section">
+            {" "}
+            <OrderPrice order={order} />{" "}
+          </Box>
         )}
+        <Typography>{data?.dstAmountOut}</Typography>
+        <TwapStyles.StyledColumnFlex className="twap-extended-order-info">
+          <Row label={`${translations.totalTrades}:`} tooltip={translations.totalTradesTooltip}>
+            <Components.Base.NumberDisplay value={order.ui.totalChunks} />
+          </Row>
+          <Row label={`${translations.tradeSize}:`} tooltip={translations.tradeSizeTooltip}>
+            <Components.Base.TokenLogo logo={order.ui.srcToken.logoUrl} />
+            <Components.Base.NumberDisplay value={order.ui.srcChunkAmountUi} />
+            {order.ui.srcToken?.symbol} ≈ $ <Components.Base.NumberDisplay value={order.ui.srcChunkAmountUsdUi} />
+          </Row>
+          {order.ui.isMarketOrder ? (
+            <Row label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipMarket}>
+              <Components.Base.TokenLogo logo={order.ui.dstToken.logoUrl} />
+              {translations.none} {order.ui.dstToken?.symbol}
+            </Row>
+          ) : (
+            <Row label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
+              <Components.Base.TokenLogo logo={order.ui.dstToken.logoUrl} />
+              <Components.Base.NumberDisplay value={order.ui.dstMinAmountOutUi} />
+              {order.ui.dstToken?.symbol} ≈ $ <Components.Base.NumberDisplay value={order.ui.dstMinAmountOutUsdUi} />
+            </Row>
+          )}
 
-        <Row label={`${translations.tradeInterval}:`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
-          {fillDelayText(order.ui.fillDelay, translations)}
-        </Row>
-        <Row label={`${translations.deadline}:`} tooltip={translations.maxDurationTooltip}>
-          {order.ui.deadlineUi}
-        </Row>
-      </TwapStyles.StyledColumnFlex>
-      {order.ui.status === Status.Open && (
-        <div className="twap-order-expanded-cancel-wraper" style={{ marginLeft: "auto", marginRight: "auto" }}>
-          <CancelOrderButton orderId={order.order.id} />
-        </div>
-      )}
+          <Row label={`${translations.tradeInterval}:`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
+            {fillDelayText(order.ui.fillDelay, translations)}
+          </Row>
+          <Row label={`${translations.deadline}:`} tooltip={translations.maxDurationTooltip}>
+            {order.ui.deadlineUi}
+          </Row>
+        </TwapStyles.StyledColumnFlex>
+        {order.ui.status === Status.Open && (
+          <div className="twap-order-expanded-cancel-wraper" style={{ marginLeft: "auto", marginRight: "auto" }}>
+            <CancelOrderButton orderId={order.order.id} />
+          </div>
+        )}
+      </StyledColumnFlex>
     </StyledContainer>
   );
 };
 
 export default OrderExpanded;
+
+const StyledLoaderContainer = styled(StyledRowFlex)({
+  marginBottom: 50,
+  marginTop: 30,
+});
+
+const StyledLoader = styled(CircularProgress)({});
 
 const Row = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
   return (
