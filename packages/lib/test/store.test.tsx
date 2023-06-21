@@ -1,14 +1,14 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { Configs, Order, TWAPLib } from "@orbs-network/twap";
-import { web3, zero, zeroAddress } from "@defi.org/web3-candies";
+import { Configs, Order, Status, TWAPLib } from "@orbs-network/twap";
+import { bn, web3, zero, zeroAddress } from "@defi.org/web3-candies";
 import { parseOrderUi, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
 import { QueryClient } from "@tanstack/react-query";
 import React, { ReactNode } from "react";
-import { useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
+import { useOrderPastEvents, useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
 import { OrdersContext } from "../src/context";
 import { OrderLibProps, OrderUI } from "../src/types";
 import { useChaiBigNumber } from "@defi.org/web3-candies/dist/hardhat";
@@ -224,5 +224,85 @@ describe("store", () => {
       expect(result.current.orders.Open?.[0].order.id).eq(2);
       expect(result.current.orders.Open?.[1].order.id).eq(1);
     });
+
+    it("get past events", async () => {
+      lib.maker = "0x50015A452E644F5511fbeeac6B2aD2bf154E40E4";
+      const { result } = renderHook(() => useOrderPastEvents(mockOrderUi, true), {
+        wrapper: createQueryProvider(),
+      });
+
+      await waitFor(() => expect(result.current.status).eq("success"));
+      expect(result.current.data?.dstAmountOut).eq("66.977333");
+    });
   });
 });
+
+const mockOrderUi: OrderUI = {
+  order: {
+    id: 217,
+    status: 1673977206,
+    time: 1673975349,
+    filledTime: 1673977120,
+    srcFilledAmount: bn("2379258265120603054876"),
+    maker: "0x50015A452E644F5511fbeeac6B2aD2bf154E40E4",
+    ask: {
+      deadline: 1673977206,
+      bidDelay: 60,
+      fillDelay: 450,
+      exchange: "0xAd19179201be5A51D1cBd3bB2fC651BB05822404",
+      srcToken: "0x3E01B7E242D5AF8064cB9A8F9468aC0f8683617c",
+      dstToken: "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
+      srcAmount: bn("2379258265120603054878"),
+      srcBidAmount: bn("594814566280150763719"),
+      dstMinAmount: bn("1"),
+    },
+    bid: {
+      time: 0,
+      taker: "0x0000000000000000000000000000000000000000",
+      exchange: "0x0000000000000000000000000000000000000000",
+      dstAmount: bn("0"),
+      dstFee: bn("0"),
+      data: "0x",
+    },
+  },
+  ui: {
+    srcToken: {
+      address: "0x3E01B7E242D5AF8064cB9A8F9468aC0f8683617c",
+      decimals: 18,
+      symbol: "ORBS",
+      logoUrl: "https://assets.spooky.fi/tokens/ORBS.png",
+      usd: bn("0.0216134016"),
+    },
+    dstToken: {
+      address: "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
+      decimals: 6,
+      symbol: "USDC",
+      logoUrl: "https://tokens.1inch.io/0xddafbb505ad214d7b80b1f830fccc89b60fb7a83.png",
+      usd: bn("0.999743"),
+    },
+    status: Status.Completed,
+    progress: 100,
+    isMarketOrder: true,
+    dstPriceFor1Src: bn("0.02161895767212173529"),
+    srcUsdUi: "0.0216134016",
+    dstUsdUi: "0.999743",
+    srcAmountUi: "2,379.258265120603054878",
+    srcAmountUsdUi: "51.423864394170866259",
+    dstAmountUi: "51.437083",
+    dstAmountUsdUi: "51.423863",
+    dstAmountUsd: bn("51423863.669669"),
+    srcChunkAmountUi: "594.814566280150763719",
+    srcChunkAmountUsdUi: "12.855966098542716564",
+    srcFilledAmountUi: "2,379.258265120603054876",
+    srcFilledAmountUsdUi: "51.423864394170866259",
+    srcRemainingAmountUi: "0.000000000000000002",
+    srcRemainingAmountUsdUi: "0",
+    dstMinAmountOutUi: "0.000001",
+    dstMinAmountOutUsdUi: "0",
+    fillDelay: 570000,
+    createdAtUi: "Jan 17, 2023 19:09",
+    deadlineUi: "Jan 17, 2023 19:40",
+    prefix: "~",
+    totalChunks: 4,
+  },
+};

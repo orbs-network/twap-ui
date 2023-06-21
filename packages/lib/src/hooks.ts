@@ -7,12 +7,12 @@ import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
-import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, findBlock } from "@defi.org/web3-candies";
+import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, getPastEvents, findBlock } from "@defi.org/web3-candies";
 import { amountUi, parseOrderUi, useTwapStore } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
-import { readEvents } from "./utils";
 import moment from "moment";
+import { logger } from "./utils";
 
 /**
  * Actions
@@ -206,7 +206,7 @@ export const useInitLib = () => {
 
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
-    setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account, props.provider));
+    setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));
     setValues(props.storeOverride || {});
   };
 };
@@ -571,22 +571,26 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
     ["useOrderPastEvents", order.order.id, lib?.maker],
     async () => {
       const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order.order.time * 1000), findBlock(order.order.ask.deadline * 1000)]);
-     
-      console.log({
+
+      logger({
+        order,
         orderTime: moment(order.order.time * 1000).format("DD/MM/YYYY HH:mm:ss"),
         orderStartBlock: orderStartBlock.number,
         orderDeadline: moment(order.order.ask.deadline * 1000).format("DD/MM/YYYY HH:mm:ss"),
         orderEndBlock: orderEndBlock.number,
       });
-      const web3 = new Web3(lib!.provider);
-      const latestBlock = await web3.eth.getBlockNumber();
-      const events = await readEvents(lib!.twap, "OrderFilled", web3, orderStartBlock.number, latestBlock, 50_000, {
-        maker: lib!.maker,
-        id: order.order.id,
+
+      const events = await getPastEvents({
+        contract: lib!.twap,
+        eventName: "OrderFilled",
+        filter: {
+          maker: lib!.maker,
+          id: order.order.id,
+        },
+        fromBlock: orderStartBlock.number,
+        toBlock: orderEndBlock.number,
       });
 
-      // ami's function
-      // const events = await getPastEventsLoop(lib!.twap, "OrderFilled", orderEndBlock - orderStartBlock + 1, orderEndBlock, { maker: lib!.maker, id: order.order.id });
       const priceUsd1Token = await getPriceUsd(order.ui.dstToken);
       const dstAmountOut = _.reduce(
         events,

@@ -31,8 +31,9 @@ export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", 
                 <Components.Base.NumberDisplay value={amount} />
                 {` ${token?.symbol}`}
               </Typography>
-            ) : <Typography>{` ${token?.symbol}`}</Typography>}
-            
+            ) : (
+              <Typography>{` ${token?.symbol}`}</Typography>
+            )}
           </StyledRowFlex>
           {!alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
         </TwapStyles.StyledColumnFlex>
@@ -58,8 +59,7 @@ interface OrderUsdValueProps {
 }
 
 export function OrderUsdValue({ usdValue, prefix = "≈", isLoading }: OrderUsdValueProps) {
-
-  if(isLoading) return <Loader width={100} height={20} />
+  if (isLoading) return <Loader width={100} height={20} />;
   if (!usdValue) return null;
 
   return (
