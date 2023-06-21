@@ -589,6 +589,7 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
         },
         fromBlock: orderStartBlock.number,
         toBlock: orderEndBlock.number,
+        maxDistanceBlocks: 1000,
       });
 
       const priceUsd1Token = await getPriceUsd(order.ui.dstToken);
