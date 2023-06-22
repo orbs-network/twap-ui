@@ -25,16 +25,15 @@ export const StyledCard = styled("div")<{ isDarkTheme: number }>(({ isDarkTheme 
   },
 }));
 
-export const StyledTokenPanelTop = styled(Styles.StyledRowFlex)<{ isSrc: number }>(({ isSrc }) => ({
-  "@media(max-width: 600px)": {
-    alignItems: "flex-start",
-  },
-}));
+export const StyledTokenPanelTop = styled(Styles.StyledRowFlex)({
+ justifyContent:'space-between'
+})
 
 export const StyledBalance = styled(Components.TokenBalance)({
+  maxWidth:'unset',
   "*": {
     fontWeight: 600,
-    fontSize: 15,
+    fontSize: 14,
     "@media(max-width: 600px)": {
       fontSize: 14,
     },

@@ -60,12 +60,9 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
 
       <StyledContainer className="twap-token-panel">
-        <StyledTokenPanelTop isSrc={isSrcToken ? 1 : 0}>
+        <StyledTokenPanelTop>
           <Components.Base.SmallLabel className="twap-token-panel-title">{isSrcToken ? translations.from : translations.to}</Components.Base.SmallLabel>
-          <TwapStyles.StyledRowFlex justifyContent="flex-end">
-            {isSrcToken && <SrcTokenPercentSelector />}
-            <StyledBalance isSrc={isSrcToken} />
-          </TwapStyles.StyledRowFlex>
+          {isSrcToken && <SrcTokenPercentSelector />}
         </StyledTokenPanelTop>
         <Card>
           <TwapStyles.StyledColumnFlex gap={16}>
@@ -74,7 +71,10 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
                 <StyledPanelInput placeholder="0.00" isSrc={isSrcToken} />
                 <Components.TokenUSD isSrc={isSrcToken} />
               </TwapStyles.StyledColumnFlex>
-              <StyledTokenSelect hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              <TwapStyles.StyledColumnFlex style={{width:'fit-content', alignItems:'flex-end'}}>
+                <StyledTokenSelect hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+                <StyledBalance isSrc={isSrcToken} />
+              </TwapStyles.StyledColumnFlex>
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
         </Card>
