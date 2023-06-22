@@ -7,7 +7,7 @@ import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
-import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, getPastEvents, findBlock } from "@defi.org/web3-candies";
+import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, getPastEvents, findBlock, block } from "@defi.org/web3-candies";
 import { amountUi, parseOrderUi, useTwapStore } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
@@ -573,7 +573,8 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
   return useQuery(
     ["useOrderPastEvents", order.order.id, lib?.maker, order.ui.progress],
     async () => {
-      const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order.order.time * 1000), findBlock(order.order.ask.deadline * 1000)]);
+      const orderEndDate = Math.min(order.order.ask.deadline, (await block()).timestamp);
+      const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order.order.time * 1000), findBlock(orderEndDate * 1000)]);
 
       logger({
         order,
