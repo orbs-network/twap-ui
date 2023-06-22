@@ -566,9 +566,12 @@ export const useParseTokens = (dappTokens: any, parseToken?: (rawToken: any) => 
 export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
   const lib = useTwapStore((store) => store.lib);
   const getPriceUsd = useGetPriceUsdCallback();
+  const [haveValue, setHaveValue] = useState(false);
+
+  const _enabled = haveValue ? true : !!enabled;
 
   return useQuery(
-    ["useOrderPastEvents", order.order.id, lib?.maker],
+    ["useOrderPastEvents", order.order.id, lib?.maker, order.ui.progress],
     async () => {
       const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order.order.time * 1000), findBlock(order.order.ask.deadline * 1000)]);
 
@@ -580,19 +583,21 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
         orderEndBlock: orderEndBlock.number,
       });
 
-      const events = await getPastEvents({
-        contract: lib!.twap,
-        eventName: "OrderFilled",
-        filter: {
-          maker: lib!.maker,
-          id: order.order.id,
-        },
-        fromBlock: orderStartBlock.number,
-        toBlock: orderEndBlock.number,
-        maxDistanceBlocks: 1000,
-      });
+      const [events, priceUsd1Token] = await Promise.all([
+        getPastEvents({
+          contract: lib!.twap,
+          eventName: "OrderFilled",
+          filter: {
+            maker: lib!.maker,
+            id: order.order.id,
+          },
+          fromBlock: orderStartBlock.number,
+          toBlock: orderEndBlock.number,
+          // maxDistanceBlocks: 2_000,
+        }),
+        getPriceUsd(order.ui.dstToken),
+      ]);
 
-      const priceUsd1Token = await getPriceUsd(order.ui.dstToken);
       const dstAmountOut = _.reduce(
         events,
         (sum, event) => {
@@ -607,8 +612,10 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
       };
     },
     {
-      enabled: !!lib && !!enabled,
+      enabled: !!lib && !!_enabled,
       retry: 5,
+      staleTime: Infinity,
+      onSuccess: () => setHaveValue(true),
     }
   );
 };

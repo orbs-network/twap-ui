@@ -38,14 +38,7 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
       <TwapStyles.StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start" }} className="twap-order-preview-tokens" justifyContent="space-between">
         <OrderTokenDisplay usdPrefix="=" token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
         <Components.Base.Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 30, height: 30 }} />} />
-        <OrderTokenDisplay
-          isLoading={isLoading}
-          token={order.ui.dstToken}
-          prefix={order.ui.prefix}
-          amount={data?.dstAmountOut}
-          usdValue={data?.dstAmountOutUsdPrice || ""}
-          icon={<FiChevronDown />}
-        />
+        <OrderTokenDisplay isLoading={isLoading} token={order.ui.dstToken} amount={data?.dstAmountOut} usdValue={data?.dstAmountOutUsdPrice || ""} icon={<FiChevronDown />} />
       </TwapStyles.StyledRowFlex>
     </TwapStyles.StyledColumnFlex>
   );
