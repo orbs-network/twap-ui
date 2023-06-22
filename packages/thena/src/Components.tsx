@@ -71,7 +71,7 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
                 <StyledPanelInput placeholder="0.00" isSrc={isSrcToken} />
                 <Components.TokenUSD isSrc={isSrcToken} />
               </TwapStyles.StyledColumnFlex>
-              <TwapStyles.StyledColumnFlex style={{width:'fit-content', alignItems:'flex-end'}}>
+              <TwapStyles.StyledColumnFlex style={{ width: "fit-content", alignItems: "flex-end" }}>
                 <StyledTokenSelect hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
                 <StyledBalance isSrc={isSrcToken} />
               </TwapStyles.StyledColumnFlex>

@@ -26,11 +26,11 @@ export const StyledCard = styled("div")<{ isDarkTheme: number }>(({ isDarkTheme 
 }));
 
 export const StyledTokenPanelTop = styled(Styles.StyledRowFlex)({
- justifyContent:'space-between'
-})
+  justifyContent: "space-between",
+});
 
 export const StyledBalance = styled(Components.TokenBalance)({
-  maxWidth:'unset',
+  maxWidth: "unset",
   "*": {
     fontWeight: 600,
     fontSize: 14,
