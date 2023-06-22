@@ -27,7 +27,6 @@ export const StyledCard = styled("div")<{ isDarkTheme: number }>(({ isDarkTheme 
 
 export const StyledTokenPanelTop = styled(Styles.StyledRowFlex)<{ isSrc: number }>(({ isSrc }) => ({
   "@media(max-width: 600px)": {
-    flexDirection: isSrc ? "column" : "row",
     alignItems: "flex-start",
   },
 }));
@@ -36,6 +35,9 @@ export const StyledBalance = styled(Components.TokenBalance)({
   "*": {
     fontWeight: 600,
     fontSize: 15,
+    "@media(max-width: 600px)": {
+      fontSize: 14,
+    },
   },
 });
 
