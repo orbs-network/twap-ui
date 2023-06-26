@@ -78,7 +78,7 @@ const TradeSize = () => {
   return (
     <>
       <StyledTradeSize className="twap-trade-size">
-        <TwapStyles.StyledColumnFlex>
+        <TwapStyles.StyledColumnFlex className="twap-trade-size-flex">
           <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
             <Components.Labels.TotalTradesLabel />
             <Components.ChunksSliderSelect />
@@ -100,9 +100,11 @@ const TradeSize = () => {
 const MaxDuration = () => {
   return (
     <StyledMaxDuration className="twap-max-duration">
-      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between" className="twap-mobile-flex-column">
-        <Components.Labels.MaxDurationLabel />
-        <Components.PartialFillWarning />
+      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between" className="twap-max-duration-flex">
+        <TwapStyles.StyledRowFlex justifyContent='flex-start' style={{width:'auto'}}>
+          <Components.Labels.MaxDurationLabel />
+          <Components.PartialFillWarning />
+        </TwapStyles.StyledRowFlex>
         <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
     </StyledMaxDuration>
@@ -112,7 +114,7 @@ const MaxDuration = () => {
 const TradeInterval = () => {
   return (
     <StyledTradeInterval className="twap-trade-interval">
-      <TwapStyles.StyledRowFlex className="twap-mobile-flex-column">
+      <TwapStyles.StyledRowFlex className="twap-trade-interval-flex">
         <Components.Labels.TradeIntervalLabel />
         <Components.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>

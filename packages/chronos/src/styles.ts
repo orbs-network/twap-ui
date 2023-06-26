@@ -113,6 +113,13 @@ export const StyledPanelRight = styled(Styles.StyledColumnFlex)({
   width: "auto",
   flex: 1,
   padding: "24px 30px 22px 0px",
+  "@media(max-width: 600px)": {
+    ".twap-token-panel-flex-right-bottom": {
+      gap: 20,
+      flexDirection: "column",
+      alignItems: "flex-start",
+    }
+  }
 });
 
 export const StyledTokenSelect = styled(Styles.StyledColumnFlex)({
@@ -256,6 +263,10 @@ export const StyledTradeSize = styled(Components.Base.Card)({
       fontSize: smallInputFontSize,
     },
   },
+  "@media(max-width: 600px)": {
+    fontSize: 10,
+    minWidth: "unset",
+  },
 });
 
 export const StyledTradeInterval = styled(Components.Base.Card)({
@@ -269,6 +280,16 @@ export const StyledTradeInterval = styled(Components.Base.Card)({
     },
     ...getSmallInputStyles(),
   },
+  "@media(max-width: 600px)": {
+    ".twap-time-selector": {
+      marginLeft: "auto",
+    },
+    ".twap-trade-interval-flex": {
+      gap: 20,
+      flexDirection: "column",
+      alignItems: "flex-start",
+    },
+  },
 });
 
 export const StyledMaxDuration = styled(Components.Base.Card)({
@@ -280,6 +301,16 @@ export const StyledMaxDuration = styled(Components.Base.Card)({
       textAlign: "center!important",
       padding: "0px!important",
       fontSize: smallInputFontSize,
+    },
+  },
+  "@media(max-width: 600px)": {
+    ".twap-time-selector": {
+      marginLeft: "auto",
+    },
+    ".twap-max-duration-flex": {
+      gap: 20,
+      flexDirection: "column",
+      alignItems: "flex-start",
     },
   },
 });

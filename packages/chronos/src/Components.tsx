@@ -59,7 +59,7 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       </StyledTokenSelect>
       <StyledPanelRight>
         <StyledTokenPanelInput placeholder="0.00" isSrc={isSrcToken} />
-        <TwapStyles.StyledRowFlex justifyContent="flex-start">
+        <TwapStyles.StyledRowFlex justifyContent="flex-start" className="twap-token-panel-flex-right-bottom">
           <USD>
             <Components.TokenUSD onlyValue={true} isSrc={isSrcToken} emptyUi={<>0.00</>} />
           </USD>
