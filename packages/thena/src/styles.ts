@@ -249,6 +249,11 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
 
 export const configureStyles = (isDarkMode?: boolean) => {
   return {
+    ".twap-slider": {
+      ".MuiSlider-valueLabel": {
+        backgroundColor: isDarkMode ? "rgb(16 22 69/1)" : "white",
+      },
+    },
     ".odnp": {
       "*": {
         color: "black",

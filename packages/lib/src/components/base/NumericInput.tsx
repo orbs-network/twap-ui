@@ -2,6 +2,7 @@ import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";
+import { useRef } from "react";
 
 export interface Props {
   onChange: (value: string) => void;

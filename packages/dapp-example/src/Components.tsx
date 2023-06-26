@@ -40,6 +40,7 @@ import { TokenListItem } from "./types";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";
 import { network } from "@defi.org/web3-candies";
+import { useFormatNumber } from "@orbs-network/twap-ui/dist/hooks";
 
 const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
 
@@ -207,8 +208,9 @@ const Row = (props: any) => {
   const { index, style, data } = props;
 
   const item: TokenListItem = data.tokens[index];
-
   const { balance, isLoading } = useBalance(item.token);
+
+  const formattedValue = useFormatNumber({ value: balance, decimalScale: 6 });
 
   if (!item) return null;
   return (
@@ -226,7 +228,7 @@ const Row = (props: any) => {
           {item.token.symbol}
         </Styles.StyledRowFlex>
         <Components.Base.SmallLabel loading={isLoading} className="balance">
-          <Components.Base.NumberDisplay value={balance} decimalScale={6} />
+          {formattedValue}
         </Components.Base.SmallLabel>
       </StyledListToken>
     </div>

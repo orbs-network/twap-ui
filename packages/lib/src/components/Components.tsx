@@ -14,7 +14,6 @@ import {
   USD,
   TokenLogo as Logo,
   Label,
-  NumberDisplay,
   SwipeContainer,
   Modal,
   Radio,
@@ -25,7 +24,18 @@ import { TbArrowsRightLeft } from "react-icons/tb";
 import { styled } from "@mui/system";
 import { AiOutlineWarning } from "react-icons/ai";
 import { useOrdersContext, useTwapContext } from "../context";
-import { useLoadingState, useLimitPrice, useMarketPrice, useCreateOrder, useApproveToken, useChangeNetwork, useHasAllowanceQuery, useUnwrapToken, useWrapToken } from "../hooks";
+import {
+  useLoadingState,
+  useLimitPrice,
+  useMarketPrice,
+  useCreateOrder,
+  useApproveToken,
+  useChangeNetwork,
+  useHasAllowanceQuery,
+  useUnwrapToken,
+  useWrapToken,
+  useFormatNumber,
+} from "../hooks";
 import { useTwapStore, handleFillDelayText } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
@@ -37,10 +47,11 @@ import {
   OrderSummaryTotalChunksLabel,
   OrderSummaryTradeIntervalLabel,
   OrderSummaryMinDstAmountOutLabel,
+  ChunksAmountLabel,
 } from "./Labels";
 import { TWAPTokenSelectProps } from "../types";
 import { analytics } from "../analytics";
-import { FormControl, RadioGroup } from "@mui/material";
+import { Fade, FormControl, RadioGroup, Typography } from "@mui/material";
 import { IoIosArrowDown } from "react-icons/io";
 const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
 
@@ -286,11 +297,11 @@ export function LimitPriceRadioGroup() {
   );
 }
 
-export function ChunksUSD() {
+export function ChunksUSD({ onlyValue, emptyUi }: { onlyValue?: boolean; emptyUi?: React.ReactNode }) {
   const usd = useTwapStore((state) => state.getSrcChunkAmountUsdUi());
   const loading = useLoadingState().srcUsdLoading;
 
-  return <USD value={usd} isLoading={loading} />;
+  return <USD value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={loading} />;
 }
 
 export const TokenBalance = ({
@@ -320,7 +331,7 @@ export const TokenBalance = ({
   return <Balance emptyUi={emptyUi} hideLabel={hideLabel} className={className} suffix={symbol} label={label} value={balance} isLoading={isLoading} />;
 };
 
-export function TokenUSD({ isSrc, emptyUi, className = "" }: { isSrc?: boolean; emptyUi?: ReactNode; className?: string }) {
+export function TokenUSD({ isSrc, emptyUi, className = "", onlyValue }: { isSrc?: boolean; emptyUi?: ReactNode; className?: string; onlyValue?: boolean }) {
   const srcUSD = useTwapStore((state) => state.getSrcAmountUsdUi());
   const srcLoading = useLoadingState().srcUsdLoading;
   const dstUSD = useTwapStore((state) => state.getDstAmountUsdUi());
@@ -328,7 +339,7 @@ export function TokenUSD({ isSrc, emptyUi, className = "" }: { isSrc?: boolean; 
   const usd = isSrc ? srcUSD : dstUSD;
   const isLoading = isSrc ? srcLoading : dstLoading;
 
-  return <USD className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
+  return <USD onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
 }
 
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
@@ -514,21 +525,23 @@ export const FillDelayWarning = () => {
 
 export function TotalChunks() {
   const value = useTwapStore((store) => store.getChunks());
+  const formattedValue = useFormatNumber({ value });
 
   return (
-    <StyledOneLineText>
-      <NumberDisplay value={value} />
-    </StyledOneLineText>
+    <Tooltip text={formattedValue}>
+      <StyledOneLineText>{formattedValue}</StyledOneLineText>
+    </Tooltip>
   );
 }
 
 export function ChunksAmount() {
   const value = useTwapStore((store) => store.getSrcChunkAmountUi());
+  const formattedValue = useFormatNumber({ value });
   if (!value) return null;
   return (
-    <StyledOneLineText className="twap-chunks-amount">
-      <NumberDisplay value={value} />
-    </StyledOneLineText>
+    <Tooltip text={formattedValue}>
+      <StyledOneLineText className="twap-chunks-amount">{formattedValue}</StyledOneLineText>
+    </Tooltip>
   );
 }
 
@@ -555,14 +568,16 @@ export const MinDstAmountOut = () => {
   const translations = useTwapContext().translations;
   const dstMinAmountOutUi = useTwapStore((store) => store.getDstMinAmountOutUi());
 
+  const formattedValue = useFormatNumber({ value: dstMinAmountOutUi });
+
   if (!isLimitOrder) {
     return <StyledOneLineText>{translations.none}</StyledOneLineText>;
   }
 
   return (
-    <StyledOneLineText>
-      <NumberDisplay value={dstMinAmountOutUi} />
-    </StyledOneLineText>
+    <Tooltip text={formattedValue}>
+      <StyledOneLineText>{formattedValue}</StyledOneLineText>
+    </Tooltip>
   );
 };
 
@@ -800,8 +815,10 @@ const StyledLimitPriceInput = styled(StyledRowFlex)({
     width: 24,
     height: 24,
   },
-  "& .twap-token-name": {
-    fontSize: 15,
+  "& .twap-token-name, p": {
+    fontSize: 14,
+    position: "relative",
+    top: 2,
   },
 });
 
@@ -907,4 +924,74 @@ const StyledOdnpButton = styled("button")({
     fontSize: 12,
     color: "inherit",
   },
+});
+
+export const TradeSize = () => {
+  const value = useTwapStore((store) => store.getSrcChunkAmountUi());
+  const srcToken = useTwapStore((store) => store.srcToken);
+  const formattedValue = useFormatNumber({ value });
+
+  if (!srcToken) {
+    return <ChunksAmountLabel />;
+  }
+  return (
+    <StyledTradeSize>
+      <ChunksAmountLabel />
+      <StyledRowFlex gap={7} className="content">
+        <TokenLogo isSrc={true} />
+        <Tooltip text={`${formattedValue} ${srcToken.symbol}`}>
+          <Typography>{formattedValue}</Typography>
+        </Tooltip>
+        <TokenSymbol isSrc={true} />
+      </StyledRowFlex>
+    </StyledTradeSize>
+  );
+};
+
+const StyledTradeSize = styled(StyledRowFlex)({
+  width: "auto",
+  gap: 10,
+  ".content": {
+    ".twap-token-logo": {
+      width: 21,
+      height: 21,
+    },
+    p: {
+      paddingTop: 2,
+    },
+    "*": {
+      fontFamily: "inherit",
+      fontSize: 14,
+    },
+  },
+
+  ".twap-label": {
+    whiteSpace: "nowrap",
+  },
+});
+
+export const WarningMessage = ({ className }: { className?: string }) => {
+  const translations = useTwapContext().translations;
+
+  const warning = useTwapStore((state) => state.getFillWarning(translations));
+
+  if (!warning) return null;
+  if (warning === translations.selectTokens || warning === translations.enterAmount) {
+    return null;
+  }
+
+  return (
+    <Fade in={true}>
+      <StyledMsg className={`twap-warning-msg ${className}`}>
+        <AiOutlineWarning />
+        <Typography>{warning}</Typography>
+      </StyledMsg>
+    </Fade>
+  );
+};
+
+const StyledMsg = styled(StyledRowFlex)({
+  flexWrap: "wrap",
+  justifyContent: "flex-start",
+  padding: "10px 12px",
 });

@@ -69,12 +69,7 @@ const TradeSize = () => {
           <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
-          <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
-            <TwapStyles.StyledRowFlex>
-              <Components.Labels.ChunksAmountLabel />
-            </TwapStyles.StyledRowFlex>
-            <Components.TokenLogoAndSymbol isSrc={true} />
-          </TwapStyles.StyledRowFlex>
+          <Components.TradeSize />
           <Components.ChunksUSD />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>

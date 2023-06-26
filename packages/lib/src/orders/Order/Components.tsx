@@ -3,7 +3,8 @@ import { styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
 import { CSSProperties, ReactNode } from "react";
 import { Components, Styles as TwapStyles } from "../..";
-import { Loader } from "../../components/base";
+import { Loader, Tooltip } from "../../components/base";
+import { useFormatNumber } from "../../hooks";
 import { StyledRowFlex } from "../../styles";
 
 interface OrderTokenDisplayProps {
@@ -18,6 +19,9 @@ interface OrderTokenDisplayProps {
   isLoading?: boolean;
 }
 export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading }: OrderTokenDisplayProps) => {
+  const tokenAmount = useFormatNumber({ value: amount });
+  const tokenAmountTooltip = useFormatNumber({ value: amount, decimalScale: 18 });
+
   return (
     <StyledTokenDisplay className={`twap-order-token-display ${className}`}>
       <TwapStyles.StyledRowFlex style={{ alignItems: "flex-start" }}>
@@ -27,9 +31,11 @@ export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", 
             {isLoading && <Loader width={50} />}
             {amount ? (
               <Typography>
-                {prefix ? `${prefix} ` : ""}
-                <Components.Base.NumberDisplay value={amount} />
-                {` ${token?.symbol}`}
+                <Tooltip text={`${tokenAmountTooltip} ${token?.symbol}`}>
+                  {prefix ? `${prefix} ` : ""}
+                  {tokenAmount}
+                  {` ${token?.symbol}`}
+                </Tooltip>
               </Typography>
             ) : (
               <Typography>{` ${token?.symbol}`}</Typography>
@@ -59,12 +65,17 @@ interface OrderUsdValueProps {
 }
 
 export function OrderUsdValue({ usdValue, prefix = "≈", isLoading }: OrderUsdValueProps) {
+  const formattedValue = useFormatNumber({ value: usdValue });
+  const formattedValueTooltip = useFormatNumber({ value: usdValue, decimalScale: 18 });
+
   if (isLoading) return <Loader width={100} height={20} />;
   if (!usdValue) return null;
 
   return (
     <StyledTokenDisplayUsd loading={false} className="twap-order-token-display-usd">
-      {prefix} $ <Components.Base.NumberDisplay value={usdValue} />
+      <Tooltip text={`$ ${formattedValueTooltip}`}>
+        {prefix} $ {formattedValue}
+      </Tooltip>
     </StyledTokenDisplayUsd>
   );
 }

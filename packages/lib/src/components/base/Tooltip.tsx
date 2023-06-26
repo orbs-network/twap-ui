@@ -27,7 +27,6 @@ function Tooltip({ children, text, placement, childrenStyles }: Props) {
           open={open}
           PopperProps={{
             className: "twap-tooltip",
-            // disablePortal: true,
             style: {
               maxWidth: 360,
             },

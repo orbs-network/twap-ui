@@ -185,7 +185,7 @@ export const configureStyles = (darkMode?: boolean) => {
       zoom: `0.55!important`,
     },
     ".twap-time-selector": {
-      ".twap-time-selectore-selected": {
+      ".twap-time-selector-selected": {
         padding: ".5rem",
         border: "1px solid rgba(255,255,255,0.87)",
         marginBottom: "5px",

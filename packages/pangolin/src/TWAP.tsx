@@ -10,6 +10,7 @@ import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
 import { AdapterContextProvider, useAdapterContext } from "./context";
 import { AiOutlineHistory } from "react-icons/ai";
 import OrderHistory from "./Orders";
+import { useFormatNumber } from "@orbs-network/twap-ui/dist/hooks";
 
 const defaultTheme = createTheme();
 
@@ -97,10 +98,7 @@ const TradeSize = () => {
           <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
-          <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
-            <Components.Labels.ChunksAmountLabel />
-            <Components.TokenLogoAndSymbol isSrc={true} />
-          </TwapStyles.StyledRowFlex>
+          <Components.TradeSize />
           <Components.ChunksUSD />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>
@@ -176,6 +174,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
   const marketPrice = hooks.useMarketPrice().marketPrice;
+  const formattedMarketPrice = useFormatNumber({ value: marketPrice });
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -190,7 +189,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
           {isSrcToken && <SrcTokenPercentSelector />}
           {!isSrcToken && marketPrice !== "0" && (
             <TwapStyles.StyledRowFlex className="twap-token-panel-price">
-              <TwapStyles.StyledText>Price</TwapStyles.StyledText> <Components.Base.NumberDisplay value={marketPrice} /> <Components.TokenSymbol isSrc={isSrcToken} />
+              <TwapStyles.StyledText>Price</TwapStyles.StyledText> {formattedMarketPrice} <Components.TokenSymbol isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
           )}
         </TwapStyles.StyledRowFlex>

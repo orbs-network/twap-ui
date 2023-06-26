@@ -3,9 +3,10 @@ import { Box, styled } from "@mui/system";
 import { useState } from "react";
 import { useTwapContext } from "../../context";
 import { Duration, TimeResolution } from "../../store";
-import { StyledText } from "../../styles";
+import { StyledRowFlex, StyledText } from "../../styles";
 import { Translations } from "../../types";
 import NumericInput from "./NumericInput";
+import { IoIosArrowDown } from "react-icons/io";
 
 const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
   {
@@ -63,8 +64,9 @@ function TimeSelector({ value, onChange, disabled = false, className = "", onFoc
       </StyledInput>
 
       <StyledTimeSelect>
-        <StyledSelected onClick={onOpenListClick} className="twap-time-selectore-selected">
+        <StyledSelected onClick={onOpenListClick} className="twap-time-selector-selected">
           <StyledText> {translations[findSelectedResolutionText(value.resolution)]}</StyledText>
+          <IoIosArrowDown />
         </StyledSelected>
         {showList && (
           <ClickAwayListener onClickAway={() => setShowList(false)}>
@@ -145,6 +147,11 @@ const StyledListItem = styled(Box)({
   },
 });
 
-const StyledSelected = styled(Box)({
+const StyledSelected = styled(StyledRowFlex)({
   cursor: "pointer",
+  gap: 5,
+  svg: {
+    width: 14,
+    height: 14,
+  },
 });

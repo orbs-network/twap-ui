@@ -2,7 +2,7 @@ import MuiSlider from "@mui/material/Slider";
 import { styled } from "@mui/system";
 
 function valueLabelFormat(value: number) {
-  return value.toString();
+  return value.toLocaleString();
 }
 
 function calculateValue(value: number) {

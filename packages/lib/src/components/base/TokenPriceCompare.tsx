@@ -1,11 +1,11 @@
 import { Box, styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { Loader } from ".";
+import { Loader, Tooltip } from ".";
+import { useFormatNumber } from "../../hooks";
 import { StyledText, StyledOneLineText } from "../../styles";
 import Icon from "./Icon";
 import IconButton from "./IconButton";
-import NumberDisplay from "./NumberDisplay";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
 
@@ -19,6 +19,9 @@ export interface Props {
 }
 
 function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInverted, loading }: Props) {
+  const formattedValue = useFormatNumber({ value: price });
+  const formattedValueTooltip = useFormatNumber({ value: price, decimalScale: 18 });
+
   if (loading) {
     return (
       <StyledContainer>
@@ -35,7 +38,7 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
     );
   }
   return (
-    <StyledContainer className={className}>
+    <StyledContainer className={`twap-price-compare ${className}`}>
       <TokenLogo logo={leftToken?.logoUrl} />
       <StyledText>1</StyledText>
       <TokenName name={leftToken?.symbol} />
@@ -44,10 +47,10 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
       </IconButton>
 
       <TokenLogo logo={rightToken?.logoUrl} />
-      <StyledOneLineText>
-        <NumberDisplay value={price} />
-      </StyledOneLineText>
-      <TokenName name={rightToken?.symbol} />
+      <Tooltip text={`${formattedValueTooltip} ${rightToken.symbol}`}>
+        {`${formattedValue} `}
+        {rightToken?.symbol}
+      </Tooltip>
     </StyledContainer>
   );
 }

@@ -5,8 +5,19 @@ import { AdapterContextProvider, config, parseToken } from "./hooks";
 import translations from "./i18n/en.json";
 import { ChronosTWAPProps } from "./types";
 import { Box } from "@mui/system";
-import { ChangeTokensOrder, Container, OrderSummary, TokenPanel } from "./Components";
-import { configureStyles, StyledColumnFlex, StyledPoweredBy } from "./styles";
+import { ChangeTokensOrder, MarketPrice, OrderSummary, TokenPanel, USD } from "./Components";
+import {
+  configureStyles,
+  StyledColumnFlex,
+  StyledLimitPrice,
+  StyledMaxDuration,
+  StyledPoweredByOrbs,
+  StyledSubmit,
+  StyledTopColumnFlex,
+  StyledTradeInterval,
+  StyledTradeSize,
+  StyledWarningMsg,
+} from "./styles";
 
 const TWAP = (props: ChronosTWAPProps) => {
   const [appReady, setAppReady] = useState(false);
@@ -16,7 +27,7 @@ const TWAP = (props: ChronosTWAPProps) => {
     setAppReady(true);
   }, []);
 
-  if (!appReady) return null;
+  if (!appReady && !props.isExample) return null;
   return (
     <Box className="adapter-wrapper">
       <TwapAdapter
@@ -31,28 +42,29 @@ const TWAP = (props: ChronosTWAPProps) => {
         srcToken={props.srcToken}
         dstToken={props.dstToken}
       >
-        <GlobalStyles styles={configureStyles(props.isExample) as any} />
+        <GlobalStyles styles={configureStyles() as any} />
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <StyledColumnFlex>
-              <TwapStyles.StyledColumnFlex gap={10}>
+              <StyledWarningMsg />
+              <StyledTopColumnFlex gap={6.5}>
                 <TokenPanel isSrcToken={true} />
                 <ChangeTokensOrder />
                 <TokenPanel />
-              </TwapStyles.StyledColumnFlex>
+              </StyledTopColumnFlex>
               <StyledColumnFlex>
-                <Components.MarketPrice />
+                <MarketPrice />
                 <LimitPrice />
                 <TradeSize />
                 <TradeInterval />
                 <MaxDuration />
-                <Components.SubmitButton isMain />
+                <StyledSubmit isMain />
               </StyledColumnFlex>
             </StyledColumnFlex>
             <OrderSummary>
               <Components.OrderSummaryDetails />
             </OrderSummary>
-            <StyledPoweredBy />
+            <StyledPoweredByOrbs />
           </div>
         </AdapterContextProvider>
       </TwapAdapter>
@@ -64,40 +76,42 @@ export default TWAP;
 
 const TradeSize = () => {
   return (
-    <Container className="twap-trade-size">
-      <TwapStyles.StyledColumnFlex gap={5}>
-        <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
-          <Components.Labels.TotalTradesLabel />
-          <Components.ChunksSliderSelect />
-          <Components.ChunksInput />
-        </TwapStyles.StyledRowFlex>
-        <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
-          <TwapStyles.StyledRowFlex justifyContent="flex-start" width="fit-content">
-            <Components.Labels.ChunksAmountLabel />
-            <Components.TokenLogoAndSymbol isSrc={true} />
+    <>
+      <StyledTradeSize className="twap-trade-size">
+        <TwapStyles.StyledColumnFlex>
+          <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
+            <Components.Labels.TotalTradesLabel />
+            <Components.ChunksSliderSelect />
+            <Components.ChunksInput />
           </TwapStyles.StyledRowFlex>
-          <Components.ChunksUSD />
-        </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledColumnFlex>
-    </Container>
+
+          <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
+            <Components.TradeSize />
+            <USD>
+              <Components.ChunksUSD onlyValue={true} emptyUi={<>0.00</>} />
+            </USD>
+          </TwapStyles.StyledRowFlex>
+        </TwapStyles.StyledColumnFlex>
+      </StyledTradeSize>
+    </>
   );
 };
 
 const MaxDuration = () => {
   return (
-    <Container className="twap-max-duration-wrapper">
+    <StyledMaxDuration className="twap-max-duration">
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between" className="twap-mobile-flex-column">
         <Components.Labels.MaxDurationLabel />
         <Components.PartialFillWarning />
         <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
-    </Container>
+    </StyledMaxDuration>
   );
 };
 
 const TradeInterval = () => {
   return (
-    <Container className="twap-trade-interval-wrapper">
+    <StyledTradeInterval className="twap-trade-interval">
       <TwapStyles.StyledRowFlex className="twap-mobile-flex-column">
         <Components.Labels.TradeIntervalLabel />
         <Components.FillDelayWarning />
@@ -105,14 +119,14 @@ const TradeInterval = () => {
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
-    </Container>
+    </StyledTradeInterval>
   );
 };
 
 export const LimitPrice = () => {
   return (
     <>
-      <Container className="twap-limit-price">
+      <StyledLimitPrice className="twap-limit-price">
         <TwapStyles.StyledColumnFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <Components.Labels.LimitPriceLabel />
@@ -120,7 +134,7 @@ export const LimitPrice = () => {
           </TwapStyles.StyledRowFlex>
           <Components.LimitPriceInput placeholder="0" />
         </TwapStyles.StyledColumnFlex>
-      </Container>
+      </StyledLimitPrice>
     </>
   );
 };

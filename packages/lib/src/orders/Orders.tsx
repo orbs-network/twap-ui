@@ -87,8 +87,6 @@ const StyledHeader = styled(Box)({
   flexDirection: "column",
   alignItems: "flex-start",
   gap: 13,
-  padding: "0 26px",
-  paddingTop: 20,
 });
 
 const StyledOdnpButton = styled(Components.OdnpButton)({
@@ -130,7 +128,6 @@ const StyledTabs = styled(Tabs)({
 });
 const StyledContainer = styled(Box)({
   width: "100%",
-  maxWidth: 454,
   margin: "auto",
   display: "flex",
   flexDirection: "column",

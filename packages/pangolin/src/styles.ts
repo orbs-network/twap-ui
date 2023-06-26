@@ -242,7 +242,7 @@ export const configureStyles = (theme: any) => {
         right: 0,
         top: "-30%",
       },
-      ".twap-time-selectore-selected": {
+      ".twap-time-selector-selected": {
         background: styles.selectTokenBackground,
         padding: "6px 8px",
         borderRadius: 10,

@@ -2,8 +2,20 @@ import { memo, ReactNode, useCallback, useState } from "react";
 import { parseToken, useAdapterContext } from "./hooks";
 import { ChronosRawToken } from "./types";
 import { Components, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks } from "@orbs-network/twap-ui";
-import { StyledBalance, StyledCard, StyledChange, StyledTokenPanelRow } from "./styles";
-
+import {
+  StyledChangeOrder,
+  StyledMarketPrice,
+  StyledPanelRight,
+  StyledPercentSelect,
+  StyledSubmit,
+  StyledTokenInputBalance,
+  StyledTokenPanel,
+  StyledTokenPanelInput,
+  StyledTokenSelect,
+  StyledUSD,
+} from "./styles";
+import { IoWalletOutline } from "react-icons/io5";
+import { IoIosArrowDown } from "react-icons/io";
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
 
@@ -35,27 +47,48 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   }, []);
 
   return (
-    <Container className="twap-token-panel">
+    <StyledTokenPanel className="twap-token-panel">
       <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
-      <TwapStyles.StyledColumnFlex gap={16}>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <div className="twap-token-select" style={{ cursor: "pointer" }} onClick={() => setTokenListOpen(true)}>
-            <Components.TokenLogo isSrc={isSrcToken} />
-          </div>
-          <TwapStyles.StyledColumnFlex gap={5} style={{ width: "unset", flex: 1 }}>
-            <Components.TokenInput placeholder="0.00" isSrc={isSrcToken} />
-            <StyledTokenPanelRow>
-              <Components.TokenSymbol onClick={() => setTokenListOpen(true)} hideNull={true} isSrc={isSrcToken} />
-              <Components.TokenUSD isSrc={isSrcToken} />
-              {isSrcToken && <SrcTokenPercentSelector />}
-            </StyledTokenPanelRow>
-          </TwapStyles.StyledColumnFlex>
-          <StyledBalance>
-            <Components.TokenBalance label="Available balance" showSymbol={true} isSrc={isSrcToken} />
-          </StyledBalance>
+
+      <StyledTokenSelect onClick={() => setTokenListOpen(true)}>
+        <Components.TokenLogo isSrc={isSrcToken} />
+        <TwapStyles.StyledRowFlex gap={6}>
+          <Components.TokenSymbol isSrc={isSrcToken} />
+          <IoIosArrowDown size={12} />
         </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledColumnFlex>
-    </Container>
+      </StyledTokenSelect>
+      <StyledPanelRight>
+        <StyledTokenPanelInput placeholder="0.00" isSrc={isSrcToken} />
+        <TwapStyles.StyledRowFlex justifyContent="flex-start">
+          <USD>
+            <Components.TokenUSD onlyValue={true} isSrc={isSrcToken} emptyUi={<>0.00</>} />
+          </USD>
+
+          {isSrcToken && <SrcTokenPercentSelector />}
+        </TwapStyles.StyledRowFlex>
+      </StyledPanelRight>
+      <StyledTokenInputBalance>
+        <IoWalletOutline />
+        <Components.TokenBalance emptyUi={<>0.00</>} label="Balance:" showSymbol={true} isSrc={isSrcToken} />
+      </StyledTokenInputBalance>
+    </StyledTokenPanel>
+  );
+};
+
+export const MarketPrice = () => {
+  return (
+    <StyledMarketPrice>
+      <Components.MarketPrice />
+    </StyledMarketPrice>
+  );
+};
+
+export const USD = ({ children }: { children: ReactNode }) => {
+  return (
+    <StyledUSD>
+      <figure>$</figure>
+      {children}
+    </StyledUSD>
   );
 };
 
@@ -70,7 +103,7 @@ export const SrcTokenPercentSelector = () => {
   };
 
   return (
-    <TwapStyles.StyledRowFlex gap={4} justifyContent="flex-start" className="twap-percent-selector" width="fit-content">
+    <StyledPercentSelect>
       {percent.map((it) => {
         TwapStyles.StyledRowFlex;
         const text = it === 1 ? translations.max : `${it * 100}%`;
@@ -80,7 +113,7 @@ export const SrcTokenPercentSelector = () => {
           </button>
         );
       })}
-    </TwapStyles.StyledRowFlex>
+    </StyledPercentSelect>
   );
 };
 
@@ -89,27 +122,27 @@ export const OrderSummary = ({ children }: { children: ReactNode }) => {
     <Components.OrderSummaryModalContainer className="twap-ui-chronos-modal">
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
-          <Container>
+          <Components.Base.Card>
             <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Container>
-          <Container>
+          </Components.Base.Card>
+          <Components.Base.Card>
             <Components.OrderSummaryTokenDisplay />
-          </Container>
-          <Components.OrderSummaryLimitPrice />
-          <Container>{children}</Container>
-          <Container>
-            <TwapStyles.StyledColumnFlex gap={10}>
-              <Components.DisclaimerText />
-            </TwapStyles.StyledColumnFlex>
-          </Container>
+          </Components.Base.Card>
+          <Components.Base.Card>
+            <Components.OrderSummaryLimitPrice />
+          </Components.Base.Card>
+          <Components.Base.Card>{children}</Components.Base.Card>
+          <Components.Base.Card style={{ paddingRight: 5 }}>
+            <Components.DisclaimerText />
+          </Components.Base.Card>
         </TwapStyles.StyledColumnFlex>
-        <Container>
+        <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={12}>
             <Components.AcceptDisclaimer />
             <Components.OutputAddress />
           </TwapStyles.StyledColumnFlex>
-        </Container>
-        <Components.SubmitButton />
+        </Components.Base.Card>
+        <StyledSubmit />
       </TwapStyles.StyledColumnFlex>
     </Components.OrderSummaryModalContainer>
   );
@@ -117,16 +150,8 @@ export const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 export const ChangeTokensOrder = () => {
   return (
-    <StyledChange>
+    <StyledChangeOrder>
       <Components.ChangeTokensOrder />
-    </StyledChange>
-  );
-};
-
-export const Container = ({ children, className }: { children: ReactNode; className?: string }) => {
-  return (
-    <StyledCard className={className}>
-      <div className="twap-card-children">{children}</div>
-    </StyledCard>
+    </StyledChangeOrder>
   );
 };

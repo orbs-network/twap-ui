@@ -13,6 +13,7 @@ import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD,
 import { QueryKeys } from "./enums";
 import moment from "moment";
 import { logger } from "./utils";
+import { useNumericFormat } from "react-number-format";
 
 /**
  * Actions
@@ -619,4 +620,18 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
       onSuccess: () => setHaveValue(true),
     }
   );
+};
+
+export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
+  const result = useNumericFormat({
+    allowLeadingZeros: true,
+    thousandSeparator: ",",
+    displayType: "text",
+    value: value || "",
+    decimalScale,
+    prefix,
+    suffix,
+  });
+
+  return result.value?.toString();
 };

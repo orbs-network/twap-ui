@@ -5,12 +5,13 @@ import { StyledText } from "../../styles";
 import { OrderTokenDisplay } from "./Components";
 import { HiOutlineArrowLongRight } from "react-icons/hi2";
 import { FiChevronDown } from "react-icons/fi";
-import { useOrderPastEvents } from "../../hooks";
+import { useFormatNumber, useOrderPastEvents } from "../../hooks";
 
 function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }) {
-  const { data, isLoading: _isLoading } = useOrderPastEvents(order, expanded);
+  const { data, isFetching } = useOrderPastEvents(order, expanded);
 
-  const isLoading = _isLoading && expanded;
+  const srcFilledAmountUi = useFormatNumber({ value: order.ui.srcFilledAmountUi });
+  const progress = useFormatNumber({ value: order.ui.progress, decimalScale: 1, suffix: "%" });
 
   const translations = useOrdersContext().translations;
   return (
@@ -27,9 +28,9 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
         placement="top"
         text={
           <Box>
-            <Components.Base.NumberDisplay value={order.ui.srcFilledAmountUi} />
+            {srcFilledAmountUi}
             {" " + order.ui.srcToken?.symbol + " "}
-            (<Components.Base.NumberDisplay hideTooltip value={order.ui.progress || 0} decimalScale={1} suffix="%" />)
+            {`(${progress ? progress : "0%"})`}
           </Box>
         }
       >
@@ -38,7 +39,7 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
       <TwapStyles.StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start" }} className="twap-order-preview-tokens" justifyContent="space-between">
         <OrderTokenDisplay usdPrefix="=" token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
         <Components.Base.Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 30, height: 30 }} />} />
-        <OrderTokenDisplay isLoading={isLoading} token={order.ui.dstToken} amount={data?.dstAmountOut} usdValue={data?.dstAmountOutUsdPrice || ""} icon={<FiChevronDown />} />
+        <OrderTokenDisplay isLoading={isFetching} token={order.ui.dstToken} amount={data?.dstAmountOut} usdValue={data?.dstAmountOutUsdPrice || ""} icon={<FiChevronDown />} />
       </TwapStyles.StyledRowFlex>
     </TwapStyles.StyledColumnFlex>
   );
@@ -47,11 +48,11 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
 export default OrderPreview;
 
 export const StyledPreviewLinearProgress = styled(LinearProgress)({
-  height: 5,
   marginLeft: "auto",
   marginRight: "auto",
   width: "100%",
   background: "transparent",
+  height: 7,
 
   "&::after": {
     position: "absolute",
@@ -63,7 +64,7 @@ export const StyledPreviewLinearProgress = styled(LinearProgress)({
     background: "#373E55",
   },
   "& .MuiLinearProgress-bar": {
-    height: 5,
+    height: "100%",
     zIndex: 1,
     transition: "0.2s all",
   },

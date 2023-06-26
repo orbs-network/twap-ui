@@ -5,19 +5,25 @@ import ListItemButton from "@mui/material/ListItemButton";
 import IconButton from "@mui/material/IconButton";
 import { Styles as TwapStyles } from "@orbs-network/twap-ui";
 import { DappLayout } from "./Components";
-export const globalStyle = {
-  "& *": {
-    color: "white",
-  },
-  ".twap-container": {
-    zoom: "1!important",
-  },
-  ".twap-orders-wrapper": {
-    zoom: "1!important",
-  },
-  ".twap-ui-chronos-modal": {
-    fontFamily: "Space Grotesk",
-  },
+import { Configs } from "@orbs-network/twap";
+
+const fonts = {
+  [Configs.Chronos.name]: "TT Firs Neue Trl",
+  [Configs.SpiritSwap.name]: "Jost",
+  [Configs.QuickSwap.name]: "Inter",
+  [Configs.Thena.name]: "Figtree",
+  [Configs.Pangolin.name]: "Poppins",
+  [Configs.PangolinDaas.name]: "Poppins",
+  [Configs.SpookySwap.name]: "Red Hat Display",
+};
+
+export const globalStyle = (name?: string) => {
+  return {
+    "*, p": {
+      color: "white",
+      fontFamily: name ? `${fonts[name]}!important` : "",
+    },
+  };
 };
 
 export const StyledSpiritSwapBox = styled(Box)(({ isDarkMode }: { isDarkMode: number }) => ({
@@ -25,7 +31,6 @@ export const StyledSpiritSwapBox = styled(Box)(({ isDarkMode }: { isDarkMode: nu
   border: `1px solid rgb(55, 65, 81)`,
   borderRadius: 10,
   padding: "0.5rem",
-  fontFamily: "Jost",
 }));
 
 export const StyledDapp = styled(Box)({
@@ -70,7 +75,6 @@ export const StyledStellaSwapBox = styled(Box)<{ isDarkMode: number }>(({ isDark
 
 export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#090333" : "#F4F5F6",
-  fontFamily: "Figtree",
   ".ui-selector-btn": {
     background: isDarkMode ? "rgba(255,255,255, 0.1)" : "white",
     color: isDarkMode ? "white" : "black",
@@ -83,7 +87,6 @@ export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
 
 export const StyledStella = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#251842" : "#F4F5F6",
-  fontFamily: "Figtree",
   ".ui-selector-btn": {
     background: isDarkMode ? "#0E1126" : "white",
     color: isDarkMode ? "white" : "black",
@@ -96,7 +99,6 @@ export const StyledStella = styled(StyledDapp)<{ isDarkMode: number }>(({ isDark
 
 export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#0F172A" : "#F4F5F6",
-  fontFamily: "Inter",
   ".menu-button": {
     "*": {
       color: isDarkMode ? "white" : "black",
@@ -133,7 +135,6 @@ export const StyledSpiritSwap = styled(StyledDapp)<{ isDarkMode: number }>(({ is
 export const StyledPangolinBox = styled(Box)({
   borderRadius: 10,
   overflow: "hidden",
-  fontFamily: "Poppins",
 
   "& .twap-container": {
     paddingTop: 20,
@@ -185,16 +186,10 @@ export const StyledSpookySwapBox = styled(Box)<{ isDarkMode: number }>(({ isDark
   background: isDarkMode ? "#192239" : "rgb(242, 244, 248)",
   borderRadius: 10,
   padding: 24,
-  fontFamily: "Red Hat Display",
 }));
 
 export const StyledChronos = styled(StyledDapp)(({ isDarkMode }: { isDarkMode: number }) => ({
-  fontFamily: "Space Grotesk",
-  background: isDarkMode ? "rgb(10 9 62/1)" : "rgb(224 239 253/1)",
-  backgroundImage: isDarkMode ? `url("chronos.svg")` : "unset",
-  backgroundRepeat: "no-repeat",
-  backgroundSize: "cover",
-  backgroundPosition: "top center",
+  background: isDarkMode ? "#29253A" : "rgb(224 239 253/1)",
   ".ui-selector-btn": {
     background: isDarkMode ? "rgba(255,255,255, 0.08)" : "white",
     color: isDarkMode ? "white" : "black",
@@ -218,12 +213,12 @@ export const StyledChronosLayout = styled(DappLayout)({
 });
 
 export const StyledQuickswapLayout = styled(DappLayout)({
-  maxWidth: 520,
+  maxWidth: 600,
   width: "calc(100% - 30px)",
 });
 
 export const StyledThenaLayout = styled(DappLayout)({
-  maxWidth: 520,
+  maxWidth: 600,
   width: "calc(100% - 30px)",
 });
 
@@ -241,7 +236,6 @@ export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) =
   background: mode === "dark" ? "#192239" : "rgb(242, 244, 248)",
   borderRadius: 10,
   padding: 24,
-  fontFamily: "Red Hat Display",
 }));
 
 // export const StyledLayoutPangolinDaasTWAP = styled(StyledPangolinTWAP)({

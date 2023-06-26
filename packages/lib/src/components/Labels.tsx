@@ -1,15 +1,11 @@
 import { useTwapContext } from "../context";
 import { handleFillDelayText, useTwapStore } from "../store";
-import { Label, NumberDisplay } from "./base";
+import { Label } from "./base";
 
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;
-  const value = useTwapStore((store) => store.getSrcChunkAmountUi());
-  return (
-    <Label tooltipText={translations.tradeSizeTooltip}>
-      {translations.tradeSize}: <NumberDisplay value={value || "0"} />
-    </Label>
-  );
+
+  return <Label tooltipText={translations.tradeSizeTooltip}>{translations.tradeSize} </Label>;
 }
 
 export const TotalTradesLabel = () => {

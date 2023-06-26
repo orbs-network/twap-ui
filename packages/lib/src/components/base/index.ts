@@ -10,7 +10,6 @@ export { default as TokenName } from "./TokenName";
 export { default as Layout } from "./Layout";
 export { default as Tooltip } from "./Tooltip";
 export { default as IconButton } from "./IconButton";
-export { default as NumberDisplay } from "./NumberDisplay";
 export { default as Button } from "./Button";
 export { default as Balance } from "./Balance";
 export { default as USD } from "./USD";

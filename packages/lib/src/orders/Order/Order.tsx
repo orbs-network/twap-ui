@@ -6,7 +6,6 @@ import OrderExpanded from "./OrderExpanded";
 import { OrderSeparator } from "./Components";
 import { OrderUI } from "../../types";
 import { AccordionSummary } from "@mui/material";
-import { StyledSpace } from "./styles";
 import { Components } from "../..";
 
 export interface Props {
@@ -22,17 +21,20 @@ function OrderComponent({ order, onExpand, expanded }: Props) {
         <StyledAccordionSummary onClick={onExpand}>
           <OrderPreview order={order} expanded={expanded} />
         </StyledAccordionSummary>
-        <StyledSpace className="twap-order-separator" />
-        <AccordionDetails className="twap-order-accordion" style={{ padding: 0, paddingTop: 10 }}>
+        <StyledAccordionDetails className="twap-order-accordion" style={{ padding: 0, paddingTop: 10 }}>
           <OrderSeparator className="twap-order-separator" style={{ marginBottom: 10 }} />
           <Box>
             <OrderExpanded order={order} />
           </Box>
-        </AccordionDetails>
+        </StyledAccordionDetails>
       </StyledAccordion>
     </StyledContainer>
   );
 }
+
+const StyledAccordionDetails = styled(AccordionDetails)({
+  marginTop: 10,
+});
 
 export default OrderComponent;
 

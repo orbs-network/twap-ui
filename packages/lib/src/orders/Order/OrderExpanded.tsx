@@ -1,9 +1,10 @@
-import { Box, styled } from "@mui/system";
+import { styled } from "@mui/system";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { Components, Styles as TwapStyles } from "../..";
+import { Tooltip } from "../../components/base";
 import { useOrdersContext } from "../../context";
-import { useCancelOrder, useHistoryPrice } from "../../hooks";
+import { useCancelOrder, useFormatNumber, useHistoryPrice } from "../../hooks";
 import { fillDelayText, useTwapStore } from "../../store";
 import { StyledColumnFlex } from "../../styles";
 import { OrderUI } from "../../types";
@@ -11,42 +12,49 @@ import { OrderUI } from "../../types";
 const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const translations = useOrdersContext().translations;
   const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
+  const totalChunks = useFormatNumber({ value: order.ui.totalChunks });
+  const srcChunkAmountUsdUi = useFormatNumber({ value: order.ui.srcChunkAmountUsdUi });
+  const srcChunkAmountUsdUiTooltip = useFormatNumber({ value: order.ui.srcChunkAmountUsdUi, decimalScale: 18 });
+
+  const srcChunkAmountUi = useFormatNumber({ value: order.ui.srcChunkAmountUi });
+  const srcChunkAmountUiTootlip = useFormatNumber({ value: order.ui.srcChunkAmountUi, decimalScale: 18 });
+
+  const dstMinAmountOutUi = useFormatNumber({ value: order.ui.dstMinAmountOutUi });
+  const dstMinAmountOutUsdUi = useFormatNumber({ value: order.ui.dstMinAmountOutUsdUi });
+  const dstMinAmountOutUsdUiTooltip = useFormatNumber({ value: order.ui.dstMinAmountOutUsdUi, decimalScale: 18 });
 
   return (
     <StyledContainer className="twap-order-expanded">
       <StyledColumnFlex>
-        {order.ui.srcToken && order.ui.dstToken && (
-          <Box className="twap-market-price-section">
-            {" "}
-            <OrderPrice order={order} />{" "}
-          </Box>
-        )}
+        {order.ui.srcToken && order.ui.dstToken && <OrderPrice order={order} />}
         <TwapStyles.StyledColumnFlex className="twap-extended-order-info">
-          <Row label={`${translations.totalTrades}:`} tooltip={translations.totalTradesTooltip}>
-            <Components.Base.NumberDisplay value={order.ui.totalChunks} />
+          <Row label={`${translations.totalTrades}`} tooltip={translations.totalTradesTooltip}>
+            {totalChunks}
           </Row>
-          <Row label={`${translations.tradeSize}:`} tooltip={translations.tradeSizeTooltip}>
+          <Row label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
             <Components.Base.TokenLogo logo={order.ui.srcToken.logoUrl} />
-            <Components.Base.NumberDisplay value={order.ui.srcChunkAmountUi} />
-            {order.ui.srcToken?.symbol} ≈ $ <Components.Base.NumberDisplay value={order.ui.srcChunkAmountUsdUi} />
+            <Tooltip text={`${srcChunkAmountUiTootlip} ${order.ui.srcToken.symbol}`}>
+              {srcChunkAmountUi} {order.ui.srcToken?.symbol}
+            </Tooltip>
+            <Tooltip text={`$ ${srcChunkAmountUsdUiTooltip}`}> ≈ $ {srcChunkAmountUsdUi}</Tooltip>
           </Row>
           {order.ui.isMarketOrder ? (
-            <Row label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipMarket}>
+            <Row label={`${translations.minReceivedPerTrade}`} tooltip={translations.confirmationMinDstAmountTootipMarket}>
               <Components.Base.TokenLogo logo={order.ui.dstToken.logoUrl} />
               {translations.none} {order.ui.dstToken?.symbol}
             </Row>
           ) : (
-            <Row label={`${translations.minReceivedPerTrade}:`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
+            <Row label={`${translations.minReceivedPerTrade}`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
               <Components.Base.TokenLogo logo={order.ui.dstToken.logoUrl} />
-              <Components.Base.NumberDisplay value={order.ui.dstMinAmountOutUi} />
-              {order.ui.dstToken?.symbol} ≈ $ <Components.Base.NumberDisplay value={order.ui.dstMinAmountOutUsdUi} />
+              {dstMinAmountOutUi}
+              {order.ui.dstToken?.symbol} ≈ $ <Tooltip text={dstMinAmountOutUsdUiTooltip}>{dstMinAmountOutUsdUi}</Tooltip>
             </Row>
           )}
 
-          <Row label={`${translations.tradeInterval}:`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
+          <Row label={`${translations.tradeInterval}`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
             {fillDelayText(order.ui.fillDelay, translations)}
           </Row>
-          <Row label={`${translations.deadline}:`} tooltip={translations.maxDurationTooltip}>
+          <Row label={`${translations.deadline}`} tooltip={translations.maxDurationTooltip}>
             {order.ui.deadlineUi}
           </Row>
         </TwapStyles.StyledColumnFlex>
@@ -110,8 +118,8 @@ const OrderPrice = ({ order }: { order: OrderUI }) => {
   const { leftToken, rightToken, priceUi, toggleInverted } = useHistoryPrice(order);
   const translations = useOrdersContext().translations;
   return (
-    <TwapStyles.StyledRowFlex justifyContent="space-between">
-      <Components.Base.SmallLabel>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</Components.Base.SmallLabel>
+    <TwapStyles.StyledRowFlex justifyContent="space-between" className="twap-market-price-section">
+      <Components.Base.Label>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</Components.Base.Label>
       <Components.Base.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={priceUi} toggleInverted={toggleInverted} />
     </TwapStyles.StyledRowFlex>
   );

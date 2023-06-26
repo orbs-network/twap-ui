@@ -1,15 +1,21 @@
 import { globalStyle, StyledApp } from "./styles";
 import { Route, Routes, Navigate } from "react-router-dom";
-import { useEagerlyConnect } from "./hooks";
+import { useEagerlyConnect, useSelectedDapp } from "./hooks";
 import { dapps, defaultDapp } from "./config";
 import { GlobalStyles } from "@mui/material";
 
+const useGlobalStyles = () => {
+  const dapp = useSelectedDapp();
+  return globalStyle(dapp.selectedDapp?.config.name);
+};
+
 function App() {
   useEagerlyConnect();
+  const styles = useGlobalStyles();
 
   return (
     <StyledApp>
-      <GlobalStyles styles={globalStyle} />
+      <GlobalStyles styles={styles} />
       <Routes>
         {dapps.map(({ config, Component }) => {
           return <Route path={config.name.toLowerCase()} element={<Component />} key={config.name} />;

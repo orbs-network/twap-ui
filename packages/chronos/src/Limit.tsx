@@ -5,8 +5,8 @@ import { AdapterContextProvider, config, parseToken } from "./hooks";
 import translations from "./i18n/en.json";
 import { ChronosTWAPProps } from "./types";
 import { Box } from "@mui/system";
-import { ChangeTokensOrder, Container, OrderSummary, TokenPanel } from "./Components";
-import { configureStyles, StyledColumnFlex, StyledPoweredBy } from "./styles";
+import { ChangeTokensOrder, OrderSummary, TokenPanel } from "./Components";
+import { configureStyles, StyledColumnFlex, StyledLimitPrice, StyledMarketPrice, StyledPoweredByOrbs, StyledSubmit, StyledTopColumnFlex, StyledWarningMsg } from "./styles";
 
 const storeOverride = {
   isLimitOrder: true,
@@ -23,7 +23,7 @@ const Limit = (props: ChronosTWAPProps) => {
     setAppReady(true);
   }, []);
 
-  if (!appReady) return null;
+  if (!appReady && !props.isExample) return null;
   return (
     <Box className="adapter-wrapper">
       <TwapAdapter
@@ -39,20 +39,23 @@ const Limit = (props: ChronosTWAPProps) => {
         srcToken={props.srcToken}
         dstToken={props.dstToken}
       >
-        <GlobalStyles styles={configureStyles(props.isExample) as any} />
+        <GlobalStyles styles={configureStyles() as any} />
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <StyledColumnFlex>
-              <TwapStyles.StyledColumnFlex gap={10}>
+              <StyledWarningMsg />
+              <StyledTopColumnFlex>
                 <TokenPanel isSrcToken={true} />
                 <ChangeTokensOrder />
                 <TokenPanel />
-              </TwapStyles.StyledColumnFlex>
+              </StyledTopColumnFlex>
 
               <StyledColumnFlex>
-                <Components.MarketPrice />
+                <StyledMarketPrice>
+                  <Components.MarketPrice />
+                </StyledMarketPrice>
                 <LimitPrice />
-                <Components.SubmitButton isMain />
+                <StyledSubmit isMain />
               </StyledColumnFlex>
             </StyledColumnFlex>
             <OrderSummary>
@@ -63,7 +66,7 @@ const Limit = (props: ChronosTWAPProps) => {
                 <Components.OrderSummaryDetailsMinDstAmount />
               </TwapStyles.StyledColumnFlex>
             </OrderSummary>
-            <StyledPoweredBy />
+            <StyledPoweredByOrbs />
           </div>
         </AdapterContextProvider>
       </TwapAdapter>
@@ -79,14 +82,14 @@ const LimitPrice = () => {
   if (!twapStore.srcToken || !twapStore.dstToken) return null;
   return (
     <>
-      <Container className="twap-limit-price">
+      <StyledLimitPrice className="twap-limit-price">
         <TwapStyles.StyledColumnFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <Components.Labels.LimitPriceLabel />
           </TwapStyles.StyledRowFlex>
           <Components.LimitPriceInput placeholder="0" />
         </TwapStyles.StyledColumnFlex>
-      </Container>
+      </StyledLimitPrice>
     </>
   );
 };
