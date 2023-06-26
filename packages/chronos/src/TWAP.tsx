@@ -46,7 +46,6 @@ const TWAP = (props: ChronosTWAPProps) => {
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <StyledColumnFlex>
-              <StyledWarningMsg />
               <StyledTopColumnFlex gap={6.5}>
                 <TokenPanel isSrcToken={true} />
                 <ChangeTokensOrder />
@@ -58,6 +57,7 @@ const TWAP = (props: ChronosTWAPProps) => {
                 <TradeSize />
                 <TradeInterval />
                 <MaxDuration />
+                <StyledWarningMsg />
                 <StyledSubmit isMain />
               </StyledColumnFlex>
             </StyledColumnFlex>
@@ -101,7 +101,7 @@ const MaxDuration = () => {
   return (
     <StyledMaxDuration className="twap-max-duration">
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between" className="twap-max-duration-flex">
-        <TwapStyles.StyledRowFlex justifyContent='flex-start' style={{width:'auto'}}>
+        <TwapStyles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto" }}>
           <Components.Labels.MaxDurationLabel />
           <Components.PartialFillWarning />
         </TwapStyles.StyledRowFlex>

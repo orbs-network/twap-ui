@@ -3,7 +3,7 @@ import { TokenData } from "@orbs-network/twap";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { Loader, Tooltip } from ".";
 import { useFormatNumber } from "../../hooks";
-import { StyledText, StyledOneLineText } from "../../styles";
+import { StyledText } from "../../styles";
 import Icon from "./Icon";
 import IconButton from "./IconButton";
 import TokenLogo from "./TokenLogo";

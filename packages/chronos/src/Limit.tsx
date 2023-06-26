@@ -43,7 +43,6 @@ const Limit = (props: ChronosTWAPProps) => {
         <AdapterContextProvider value={props}>
           <div className="twap-container">
             <StyledColumnFlex>
-              <StyledWarningMsg />
               <StyledTopColumnFlex>
                 <TokenPanel isSrcToken={true} />
                 <ChangeTokensOrder />
@@ -55,6 +54,7 @@ const Limit = (props: ChronosTWAPProps) => {
                   <Components.MarketPrice />
                 </StyledMarketPrice>
                 <LimitPrice />
+                <StyledWarningMsg />
                 <StyledSubmit isMain />
               </StyledColumnFlex>
             </StyledColumnFlex>

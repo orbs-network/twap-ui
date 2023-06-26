@@ -118,8 +118,8 @@ export const StyledPanelRight = styled(Styles.StyledColumnFlex)({
       gap: 20,
       flexDirection: "column",
       alignItems: "flex-start",
-    }
-  }
+    },
+  },
 });
 
 export const StyledTokenSelect = styled(Styles.StyledColumnFlex)({
@@ -215,7 +215,7 @@ const smallInputFontSize = 14;
 const getSmallInputStyles = () => {
   return {
     padding: "7px 15px",
-    borderRadius: 10,
+    borderRadius: 15,
     background: darkStyles.lightBg,
   };
 };
@@ -414,7 +414,7 @@ export const configureStyles = () => {
     ".twap-time-selector-selected": {
       ...getButtonStyles(),
       height: 32,
-      borderRadius: 10,
+      borderRadius: 15,
       P: {
         fontWeight: "400!important",
       },
@@ -439,6 +439,9 @@ export const configureStyles = () => {
       },
     },
     ".twap-loader": {
+      background: "rgba(255,255,255, 0.1)!important",
+    },
+    ".twap-input-loader": {
       background: "rgba(255,255,255, 0.1)!important",
     },
     ".twap-card": {
