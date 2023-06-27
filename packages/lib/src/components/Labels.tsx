@@ -14,6 +14,11 @@ export const TotalTradesLabel = () => {
   return <Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Label>;
 };
 
+export const CurrentMarketPriceLabel = () => {
+  const translations = useTwapContext().translations;
+  return <Label>{translations.currentMarketPrice}</Label>;
+};
+
 export const LimitPriceLabel = () => {
   const translations = useTwapContext().translations;
 

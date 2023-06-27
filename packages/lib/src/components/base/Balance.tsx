@@ -13,18 +13,23 @@ interface Props {
   suffix?: string;
   hideLabel?: boolean;
   emptyUi?: ReactNode;
+  decimalScale?: number;
 }
 
-function Balance({ isLoading, value, className = "", label, suffix, hideLabel, emptyUi }: Props) {
+function Balance({ isLoading, value, className = "", label, suffix, hideLabel, emptyUi, decimalScale }: Props) {
   const translations = useTwapContext().translations;
 
-  const formattedValue = useFormatNumber({ value: value, suffix: suffix ? ` ${suffix}` : undefined });
+  const args = { value: value, suffix: suffix ? ` ${suffix}` : undefined };
+
+  const formattedValue = useFormatNumber({ ...args, decimalScale });
+  const formattedValueTooltip = useFormatNumber({ ...args, decimalScale: 18 });
+
   if (value == null) {
     return null;
   }
 
   return (
-    <Tooltip text={formattedValue} placement="bottom">
+    <Tooltip text={formattedValueTooltip} placement="bottom">
       <StyledLabel loading={isLoading} className={`twap-balance ${className}`}>
         {hideLabel ? null : label ? <span className="twap-balance-title">{label}</span> : <span className="twap-balance-title">{translations.balance}:</span>}{" "}
         {!value && emptyUi ? emptyUi : <>{formattedValue}</>}
@@ -37,4 +42,5 @@ export default Balance;
 
 const StyledLabel = styled(SmallLabel)({
   overflow: "hidden",
+  minWidth: 0,
 });

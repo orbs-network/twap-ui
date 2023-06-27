@@ -15,13 +15,15 @@ const fonts = {
   [Configs.Pangolin.name]: "Poppins",
   [Configs.PangolinDaas.name]: "Poppins",
   [Configs.SpookySwap.name]: "Red Hat Display",
+  Pancake: "Kanit",
 };
 
 export const globalStyle = (name?: string) => {
+  const font = fonts[name || ""];
   return {
     "*, p": {
       color: "white",
-      fontFamily: name ? `${fonts[name]}!important` : "",
+      fontFamily: `${font || "Helvetica"}!important`,
     },
   };
 };
@@ -75,6 +77,18 @@ export const StyledStellaSwapBox = styled(Box)<{ isDarkMode: number }>(({ isDark
 
 export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#090333" : "#F4F5F6",
+  ".ui-selector-btn": {
+    background: isDarkMode ? "rgba(255,255,255, 0.1)" : "white",
+    color: isDarkMode ? "white" : "black",
+  },
+  ".ui-selector-btn-selected": {
+    background: "linear-gradient(to right, rgb(216, 0, 183), rgb(177, 0, 222), rgb(177, 0, 222), rgb(216, 0, 183))",
+    color: "white",
+  },
+}));
+
+export const StyledPancake = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#383258" : "#EDF6FF",
   ".ui-selector-btn": {
     background: isDarkMode ? "rgba(255,255,255, 0.1)" : "white",
     color: isDarkMode ? "white" : "black",
@@ -222,6 +236,29 @@ export const StyledThenaLayout = styled(DappLayout)({
   width: "calc(100% - 30px)",
 });
 
+export const StyledPancakeTwap = styled(Box)({
+  maxWidth: 326,
+  width: "100%",
+  background: "#27262C",
+  padding: 16,
+  borderRadius: 24,
+});
+
+export const StyledPancakeOrders = styled(Box)({
+  maxWidth: 700,
+  width: "100%",
+  background: "#27262C",
+  borderRadius: 24,
+  padding: 20,
+});
+
+export const StyledPancakeLayout = styled(DappLayout)({
+  width: "calc(100% - 30px)",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+});
+
 export const StyledSushiLayout = styled(DappLayout)({
   maxWidth: 490,
   width: "calc(100% - 30px)",
@@ -329,6 +366,9 @@ export const StyledMenuList = styled(List)({
 export const StyledMenuDrawer = styled(Drawer)({
   display: "flex",
   flexDirection: "column",
+  "*, p": {
+    fontFamily: "Helvetica Neue, sans-serif!important",
+  },
 });
 
 export const StyledDrawerContent = styled(Box)({

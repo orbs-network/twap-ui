@@ -73,6 +73,7 @@ export const StyledUSD = styled(Styles.StyledRowFlex)({
 });
 
 export const StyledTokenPanelInput = styled(Components.TokenInput)({
+  width: "100%",
   input: {
     fontSize: 30,
     fontWeight: "300!important",

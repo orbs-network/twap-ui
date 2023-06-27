@@ -49,10 +49,13 @@ import {
   OrderSummaryMinDstAmountOutLabel,
   ChunksAmountLabel,
 } from "./Labels";
-import { TWAPTokenSelectProps } from "../types";
+import { SwitchVariant, TWAPTokenSelectProps } from "../types";
 import { analytics } from "../analytics";
 import { Fade, FormControl, RadioGroup, Typography } from "@mui/material";
 import { IoIosArrowDown } from "react-icons/io";
+import { IconType } from "react-icons";
+import Copy from "./base/Copy";
+import { SQUIGLE } from "../config";
 const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
 
 const odnp = new ODNP();
@@ -77,23 +80,30 @@ export function OdnpButton({ className = "" }: { className?: string }) {
   );
 }
 
-export function ChunksInput() {
+export function ChunksInput({ className = "" }: { className?: string }) {
   const translations = useTwapContext().translations;
   const chunks = useTwapStore((store) => store.getChunks());
   const maxPossibleChunks = useTwapStore((store) => store.getMaxPossibleChunks());
   const setChunks = useTwapStore((store) => store.setChunks);
   const getChunksBiggerThanOne = useTwapStore((store) => store.getChunksBiggerThanOne());
   if (!getChunksBiggerThanOne) {
-    return <StyledText>{chunks || "-"}</StyledText>;
+    return <StyledText className={className}>{chunks || "-"}</StyledText>;
   }
   return (
     <Tooltip text={translations.sliderMinSizeTooltip}>
-      <StyledChunksInput placeholder="0" value={chunks} decimalScale={0} maxValue={maxPossibleChunks.toString()} onChange={(value) => setChunks(Number(value))} />
+      <StyledChunksInput
+        className={className}
+        placeholder="0"
+        value={chunks}
+        decimalScale={0}
+        maxValue={maxPossibleChunks.toString()}
+        onChange={(value) => setChunks(Number(value))}
+      />
     </Tooltip>
   );
 }
 
-export function ChunksSliderSelect() {
+export function ChunksSliderSelect({ className = "" }: { className?: string }) {
   const getChunksBiggerThanOne = useTwapStore((store) => store.getChunksBiggerThanOne());
 
   const maxPossibleChunks = useTwapStore((store) => store.getMaxPossibleChunks());
@@ -101,7 +111,7 @@ export function ChunksSliderSelect() {
   const setChunks = useTwapStore((store) => store.setChunks);
 
   if (!getChunksBiggerThanOne) return null;
-  return <StyledChunksSliderSelect maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />;
+  return <StyledChunksSliderSelect className={className} maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />;
 }
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <HiOutlineSwitchVertical /> }: { children?: ReactNode; className?: string; icon?: ReactNode }) => {
@@ -139,7 +149,7 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
     <NumericInput
       className={`${className} twap-token-input`}
       decimalScale={isSrc ? srcDecimals : dstDecimals}
-      prefix={isSrc ? "" : isLimitOrder ? "≥" : "~"}
+      prefix={isSrc ? "" : isLimitOrder ? "≥" : SQUIGLE}
       loading={isSrc ? srcInputLoading : dstInputLoading}
       disabled={!isSrc}
       placeholder={placeholder || "0.0"}
@@ -173,6 +183,7 @@ export const TokenSelect = ({
   className = "",
   tokenSelectedUi,
   tokenNotSelectedUi,
+  CustomArrow,
 }: {
   onClick: () => void;
   isSrc?: boolean;
@@ -180,6 +191,7 @@ export const TokenSelect = ({
   className?: string;
   tokenSelectedUi?: ReactNode;
   tokenNotSelectedUi?: ReactNode;
+  CustomArrow?: IconType;
 }) => {
   const srcToken = useTwapStore((state) => state.srcToken);
   const dstToken = useTwapStore((state) => state.dstToken);
@@ -200,7 +212,7 @@ export const TokenSelect = ({
         ) : (
           <>
             <TokenLogoAndSymbol isSrc={isSrc} />
-            {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
+            {!hideArrow && <Icon icon={CustomArrow ? <CustomArrow size={20} /> : <IoIosArrowDown size={20} />} />}
           </>
         )}
       </StyledRowFlex>
@@ -256,7 +268,7 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, onSrc
   return <Component isOpen={true} onClose={onClose} onSelect={onTokenSelected} srcTokenSelected={undefined} dstTokenSelected={undefined} />;
 };
 
-export function LimitPriceToggle() {
+export function LimitPriceToggle({ variant }: { variant?: SwitchVariant }) {
   const loadingState = useLoadingState();
   const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
   const translations = useTwapContext().translations;
@@ -267,7 +279,7 @@ export function LimitPriceToggle() {
 
   return (
     <Tooltip text={isLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
-      <Switch disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={(value: boolean) => setLimitOrder(value)} />
+      <Switch variant={variant} disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={(value: boolean) => setLimitOrder(value)} />
     </Tooltip>
   );
 }
@@ -297,11 +309,11 @@ export function LimitPriceRadioGroup() {
   );
 }
 
-export function ChunksUSD({ onlyValue, emptyUi }: { onlyValue?: boolean; emptyUi?: React.ReactNode }) {
+export function ChunksUSD({ onlyValue, emptyUi, symbol }: { onlyValue?: boolean; emptyUi?: React.ReactNode; symbol?: string }) {
   const usd = useTwapStore((state) => state.getSrcChunkAmountUsdUi());
   const loading = useLoadingState().srcUsdLoading;
 
-  return <USD value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={loading} />;
+  return <USD symbol={symbol} value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={loading} />;
 }
 
 export const TokenBalance = ({
@@ -311,6 +323,7 @@ export const TokenBalance = ({
   className = "",
   hideLabel,
   emptyUi,
+  decimalScale,
 }: {
   isSrc?: boolean;
   label?: string;
@@ -318,6 +331,7 @@ export const TokenBalance = ({
   className?: string;
   hideLabel?: boolean;
   emptyUi?: ReactNode;
+  decimalScale?: number;
 }) => {
   const srcBalance = useTwapStore((state) => state.getSrcBalanceUi());
   const srcLoading = useLoadingState().srcBalanceLoading;
@@ -328,10 +342,22 @@ export const TokenBalance = ({
   const balance = isSrc ? srcBalance : dstBalance;
   const isLoading = isSrc ? srcLoading : dstLoading;
   const symbol = !showSymbol ? undefined : isSrc ? srcToken?.symbol : dstToken?.symbol;
-  return <Balance emptyUi={emptyUi} hideLabel={hideLabel} className={className} suffix={symbol} label={label} value={balance} isLoading={isLoading} />;
+  return <Balance decimalScale={decimalScale} emptyUi={emptyUi} hideLabel={hideLabel} className={className} suffix={symbol} label={label} value={balance} isLoading={isLoading} />;
 };
 
-export function TokenUSD({ isSrc, emptyUi, className = "", onlyValue }: { isSrc?: boolean; emptyUi?: ReactNode; className?: string; onlyValue?: boolean }) {
+export function TokenUSD({
+  isSrc,
+  emptyUi,
+  className = "",
+  onlyValue,
+  symbol,
+}: {
+  isSrc?: boolean;
+  emptyUi?: ReactNode;
+  className?: string;
+  onlyValue?: boolean;
+  symbol?: string;
+}) {
   const srcUSD = useTwapStore((state) => state.getSrcAmountUsdUi());
   const srcLoading = useLoadingState().srcUsdLoading;
   const dstUSD = useTwapStore((state) => state.getDstAmountUsdUi());
@@ -339,7 +365,7 @@ export function TokenUSD({ isSrc, emptyUi, className = "", onlyValue }: { isSrc?
   const usd = isSrc ? srcUSD : dstUSD;
   const isLoading = isSrc ? srcLoading : dstLoading;
 
-  return <USD onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
+  return <USD symbol={symbol} onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
 }
 
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
@@ -439,11 +465,13 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
   );
 };
 
-export function LimitPriceInput({ placeholder = "0.00", className = "" }: { placeholder?: string; className?: string }) {
+export function LimitPriceInput({ placeholder = "0.00", className = "", showDefault }: { placeholder?: string; className?: string; showDefault?: boolean }) {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const { leftToken, rightToken, onChange, limitPrice, toggleInverted } = useLimitPrice();
 
-  if (!isLimitOrder || !leftToken || !rightToken) return null;
+  const _isLimitOrder = isLimitOrder || showDefault;
+
+  if (!_isLimitOrder || !leftToken || !rightToken) return null;
 
   return (
     <StyledLimitPriceInput className={`twap-limit-price-input ${className}`}>
@@ -461,12 +489,12 @@ export function LimitPriceInput({ placeholder = "0.00", className = "" }: { plac
   );
 }
 
-export const MarketPrice = ({ className = "" }: { className?: string }) => {
+export const MarketPrice = ({ className = "", hideLabel }: { className?: string; hideLabel?: boolean }) => {
   const { toggleInverted, leftToken, rightToken, marketPrice, loading } = useMarketPrice();
   const translations = useTwapContext().translations;
   return (
     <StyledMarketPrice justifyContent="space-between" className={`twap-market-price ${className}`}>
-      <StyledText className="title">{translations.currentMarketPrice}</StyledText>
+      {!hideLabel && <StyledText className="title">{translations.currentMarketPrice}</StyledText>}
       <TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
     </StyledMarketPrice>
   );
@@ -926,20 +954,20 @@ const StyledOdnpButton = styled("button")({
   },
 });
 
-export const TradeSize = () => {
+export const TradeSize = ({ hideLabel }: { hideLabel?: boolean }) => {
   const value = useTwapStore((store) => store.getSrcChunkAmountUi());
   const srcToken = useTwapStore((store) => store.srcToken);
   const formattedValue = useFormatNumber({ value });
 
-  if (!srcToken) {
+  if (!srcToken && !hideLabel) {
     return <ChunksAmountLabel />;
   }
   return (
     <StyledTradeSize>
-      <ChunksAmountLabel />
+      {!hideLabel && <ChunksAmountLabel />}
       <StyledRowFlex gap={7} className="content">
         <TokenLogo isSrc={true} />
-        <Tooltip text={`${formattedValue} ${srcToken.symbol}`}>
+        <Tooltip text={`${formattedValue} ${srcToken?.symbol}`}>
           <Typography>{formattedValue}</Typography>
         </Tooltip>
         <TokenSymbol isSrc={true} />
@@ -995,3 +1023,12 @@ const StyledMsg = styled(StyledRowFlex)({
   justifyContent: "flex-start",
   padding: "10px 12px",
 });
+
+export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
+  const srcToken = useTwapStore((store) => store.srcToken);
+  const dstToken = useTwapStore((store) => store.dstToken);
+
+  const address = isSrc ? srcToken?.address : dstToken?.address;
+
+  return <Copy value={address} />;
+};

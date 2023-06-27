@@ -1,6 +1,7 @@
 import { ClickAwayListener, Tooltip as MuiTooltip } from "@mui/material";
 import { CSSProperties, ReactElement, ReactNode, useState } from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { textOverflow } from "../../styles";
 
 interface Props extends React.HTMLAttributes<HTMLElement> {
   childrenStyles?: CSSProperties;
@@ -9,7 +10,7 @@ interface Props extends React.HTMLAttributes<HTMLElement> {
   placement?: "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top";
 }
 
-function Tooltip({ children, text, placement, childrenStyles }: Props) {
+function Tooltip({ children, text, placement, childrenStyles = {} }: Props) {
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
 
@@ -33,7 +34,7 @@ function Tooltip({ children, text, placement, childrenStyles }: Props) {
           }}
           placement={placement}
         >
-          <span onClick={() => setOpen(true)} style={childrenStyles}>
+          <span onClick={() => setOpen(true)} style={{ ...childrenStyles, minWidth: 0 }}>
             {children}
           </span>
         </MuiTooltip>
@@ -53,7 +54,7 @@ function Tooltip({ children, text, placement, childrenStyles }: Props) {
       }}
       placement={placement}
     >
-      <span style={childrenStyles}>{children}</span>
+      <span style={{ ...childrenStyles, ...textOverflow, minWidth: 0 }}>{children}</span>
     </MuiTooltip>
   );
 }

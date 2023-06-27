@@ -3,7 +3,7 @@ export { default as Card } from "./Card";
 export { default as Icon } from "./Icon";
 export { default as Label } from "./Label";
 export { default as SmallLabel } from "./SmallLabel";
-export { default as Switch } from "./Switch";
+export * from "./Switch";
 export { default as TimeSelector } from "./TimeSelector";
 export { default as TokenLogo } from "./TokenLogo";
 export { default as TokenName } from "./TokenName";
