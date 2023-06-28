@@ -11,8 +11,7 @@ import _ from "lodash";
 import { erc20s, zeroAddress, isNativeAddress } from "@defi.org/web3-candies";
 import { TokenListItem } from "./types";
 
-const config = { ...Configs.Thena };
-config.name = "Pancake";
+const config = Configs.PancakeSwap;
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png";
 export const useDappTokens = () => {
@@ -139,7 +138,6 @@ const dapp: Dapp = {
   Component: DappComponent,
   logo,
   config,
-  workInProgress: true,
 };
 
 export default dapp;
