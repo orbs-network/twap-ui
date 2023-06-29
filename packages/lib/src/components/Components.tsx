@@ -254,9 +254,11 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, onSrc
       onClose();
       const parsedToken = parseToken ? parseToken(token) : token;
       if (isSrc) {
+        analytics.onSrcTokenClick(parsedToken?.symbol);
         setSrcToken(parsedToken);
         onSrcSelect?.(token);
       } else {
+        analytics.onDstTokenClick(parsedToken?.symbol);
         setDstToken(parsedToken);
         onDstSelect?.(token);
       }
@@ -427,7 +429,15 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
         disabled: wrapLoading,
       };
     if (createOrderLoading) {
-      return { text: "", onClick: () => setShowConfirmation(true), loading: true, disabled: showConfirmation };
+      return {
+        text: "",
+        onClick: () => {
+          setShowConfirmation(true);
+          analytics.onOpenConfirmationModal();
+        },
+        loading: true,
+        disabled: showConfirmation,
+      };
     }
     if (allowance.isLoading || srcUsdLoading || dstUsdLoading) {
       return { text: "", onClick: undefined, loading: true, disabled: true };
@@ -450,6 +460,7 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
       text: translations.placeOrder,
       onClick: () => {
         setShowConfirmation(true);
+        analytics.onOpenConfirmationModal();
       },
       loading: false,
       disabled: false,

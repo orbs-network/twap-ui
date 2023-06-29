@@ -64,11 +64,9 @@ export const useTwapStore = create(
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
-      srcToken && analytics.onSrcTokenClick(srcToken?.symbol);
       set({ srcToken });
     },
     setDstToken: (dstToken?: TokenData) => {
-      dstToken && analytics.onDstTokenClick(dstToken.symbol);
       set({ dstToken, limitPriceUi: initialState.limitPriceUi });
     },
     setSrcAmountUi: (srcAmountUi: string) => {

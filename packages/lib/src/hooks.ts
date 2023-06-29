@@ -172,8 +172,8 @@ export const useCreateOrder = () => {
       );
     },
     {
-      onSuccess: async () => {
-        analytics.onCreateOrderSuccess();
+      onSuccess: async (id) => {
+        analytics.onCreateOrderSuccess(id);
         reset();
         store.setOrderCreatedTimestamp(Date.now());
         setTokensFromDapp();
@@ -313,7 +313,7 @@ export const useCancelOrder = () => {
     },
     {
       onSuccess: (_result, orderId) => {
-        analytics.onCancelOrderClick(orderId);
+        analytics.onCancelOrderSuccess(orderId.toString());
         refetch();
       },
       onError: (error: Error) => {

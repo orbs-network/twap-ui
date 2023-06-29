@@ -5,6 +5,9 @@ import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
 import { useTwapStore } from "./store";
+
+analytics.onModuleLoad();
+
 const TwapContext = createContext<TwapLibProps>({} as TwapLibProps);
 export const OrdersContext = createContext<OrderLibProps>({} as OrderLibProps);
 const queryClient = new QueryClient({
