@@ -1,13 +1,14 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, AdapterWrapper, store } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store } from "@orbs-network/twap-ui";
 import { AdapterContextProvider, config, parseToken, useAdapterContext } from "./hooks";
 import translations from "./i18n/en.json";
 import { ThenaTWAPProps } from "./types";
 import { Box } from "@mui/system";
 import { ChangeTokensOrder, Container, CurrentMarketPrice, OrderSummary, TokenPanel } from "./Components";
 import { configureStyles, StyledChunksInput, StyledChunksSlider, StyledColumnFlex, StyledPoweredBy, StyledSubmit } from "./styles";
+import { TwapErrorWrapper } from "@orbs-network/twap-ui";
 
-const Children = (props: ThenaTWAPProps) => {
+const TWAP = (props: ThenaTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, parseToken);
 
   return (
@@ -50,15 +51,15 @@ const Children = (props: ThenaTWAPProps) => {
   );
 };
 
-const TWAP = (props: ThenaTWAPProps) => {
+const Test = (props: ThenaTWAPProps) => {
   return (
-    <AdapterWrapper>
-      <Children {...props} />
-    </AdapterWrapper>
+    <TwapErrorWrapper>
+      <TWAP {...props} />
+    </TwapErrorWrapper>
   );
 };
 
-export default TWAP;
+export default Test;
 
 const TotalTrades = () => {
   const { isDarkTheme } = useAdapterContext();

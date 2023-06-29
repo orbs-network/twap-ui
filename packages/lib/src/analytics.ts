@@ -13,6 +13,10 @@ const onLimitToggleClick = (isLimitOrder: boolean) => {
   sendAnalyticsEvent(Category.TWAPPanel, "onLimitToggleClick", { isLimitOrder });
 };
 
+const uiCrashed = (location: "orders" | "twap", error: Error) => {
+  sendAnalyticsEvent(Category.Error, "UI crashed", { location, message: error.message, stack: error.stack });
+};
+
 const onSrcTokenClick = (symbol?: string) => {
   sendAnalyticsEvent(Category.TWAPPanel, `onSrcTokenClick`, { symbol });
 };
@@ -152,4 +156,5 @@ export const analytics = {
   onCreateOrderRejected,
   onModuleLoad,
   onOpenConfirmationModal,
+  uiCrashed,
 };

@@ -4,6 +4,8 @@ import translations from "./i18n/en.json";
 import { ThenaOrdersProps } from "./types";
 import { config, parseToken } from "./hooks";
 import { Orders } from "@orbs-network/twap-ui";
+import {} from "@orbs-network/twap-ui";
+import { OrdersErrorWrapper } from "@orbs-network/twap-ui";
 
 function OrderHistory(props: ThenaOrdersProps) {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, parseToken);
@@ -23,4 +25,12 @@ function OrderHistory(props: ThenaOrdersProps) {
   );
 }
 
-export default memo(OrderHistory);
+const Test = (props: ThenaOrdersProps) => {
+  return (
+    <OrdersErrorWrapper>
+      <OrderHistory {...props} />
+    </OrdersErrorWrapper>
+  );
+};
+
+export default memo(Test);
