@@ -49,4 +49,5 @@ export default USD;
 const StyledLabel = styled(SmallLabel)({
   overflow: "hidden",
   ...textOverflow,
+  minWidth: "0px",
 });

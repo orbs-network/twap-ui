@@ -36,6 +36,7 @@
     "emotion-theming": "11.x",
     "lodash": "4.x",
     "moment": "2.x",
+    "react-error-boundary": "^4.0.10",
     "react-icons": "4.x",
     "react-number-format": "5.x",
     "react-text-overflow": "^1.0.2",

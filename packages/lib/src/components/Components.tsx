@@ -37,7 +37,7 @@ import {
   useFormatNumber,
 } from "../hooks";
 import { useTwapStore, handleFillDelayText } from "../store";
-import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer } from "../styles";
+import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
 import {
@@ -919,7 +919,6 @@ const StyledPoweredBy = styled(StyledRowFlex)({
   marginTop: 10,
   marginBottom: 10,
   "& p": {
-    fontSize: 15,
     color: "inherit",
   },
   "& a": {
@@ -930,14 +929,13 @@ const StyledPoweredBy = styled(StyledRowFlex)({
     gap: 8,
   },
   "& img": {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     objectFit: "contain",
   },
 });
 
 const StyledOdnpButton = styled("button")({
-  borderRadius: "4px",
   height: 30,
   display: "flex",
   alignItems: "center",
@@ -951,6 +949,7 @@ const StyledOdnpButton = styled("button")({
   "& p": {
     fontSize: 12,
     color: "inherit",
+    fontWeight: "inherit",
   },
 });
 
@@ -968,7 +967,7 @@ export const TradeSize = ({ hideLabel }: { hideLabel?: boolean }) => {
       <StyledRowFlex gap={7} className="content">
         <TokenLogo isSrc={true} />
         <Tooltip text={`${formattedValue} ${srcToken?.symbol}`}>
-          <Typography>{formattedValue}</Typography>
+          <Typography className="value">{formattedValue}</Typography>
         </Tooltip>
         <TokenSymbol isSrc={true} />
       </StyledRowFlex>
@@ -979,10 +978,15 @@ export const TradeSize = ({ hideLabel }: { hideLabel?: boolean }) => {
 const StyledTradeSize = styled(StyledRowFlex)({
   width: "auto",
   gap: 10,
+  ...textOverflow,
+  minWidth: 0,
   ".content": {
     ".twap-token-logo": {
       width: 21,
       height: 21,
+    },
+    ".value": {
+      ...textOverflow,
     },
     p: {
       paddingTop: 2,

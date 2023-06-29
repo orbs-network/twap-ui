@@ -1,9 +1,9 @@
 import { Box, styled } from "@mui/system";
 import { CSSProperties, ReactNode } from "react";
 
-const Card = ({ children, className = "", style = {} }: { children: ReactNode; className?: string; style?: CSSProperties }) => {
+const Card = ({ children, className = "", style = {}, onClick = () => {} }: { children: ReactNode; className?: string; style?: CSSProperties; onClick?: () => void }) => {
   return (
-    <StyledContainer style={style} className={`twap-card ${className}`}>
+    <StyledContainer onClick={onClick} style={style} className={`twap-card ${className}`}>
       {children}
     </StyledContainer>
   );

@@ -87,15 +87,22 @@ export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
   },
 }));
 
-export const StyledPancake = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  background: isDarkMode ? "#383258" : "#EDF6FF",
+export const StyledPancake = styled(StyledDapp)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
+  background: isDarkTheme ? "#383258" : "#EAF7FF",
   ".ui-selector-btn": {
-    background: isDarkMode ? "rgba(255,255,255, 0.1)" : "white",
-    color: isDarkMode ? "white" : "black",
+    background: isDarkTheme ? "rgba(255,255,255, 0.1)" : "white",
+    color: isDarkTheme ? "white" : "black",
   },
   ".ui-selector-btn-selected": {
     background: "linear-gradient(to right, rgb(216, 0, 183), rgb(177, 0, 222), rgb(177, 0, 222), rgb(216, 0, 183))",
     color: "white",
+  },
+  ".menu-button": {
+    svg: {
+      "* ": {
+        color: isDarkTheme ? "#FBFBFB" : "#000315",
+      },
+    },
   },
 }));
 
@@ -236,27 +243,38 @@ export const StyledThenaLayout = styled(DappLayout)({
   width: "calc(100% - 30px)",
 });
 
-export const StyledPancakeTwap = styled(Box)({
-  maxWidth: 326,
-  width: "100%",
-  background: "#27262C",
+export const StyledPancakeTwap = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
+  background: isDarkTheme ? "#27262C" : "#FFFFFF",
   padding: 16,
   borderRadius: 24,
-});
+  position: "relative",
+}));
 
-export const StyledPancakeOrders = styled(Box)({
-  maxWidth: 700,
+export const StyledPancakeBackdrop = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
+  width: "calc(100% + 2px)",
+  height: "calc(100% + 4px)",
+  position: "absolute",
+  left: "50%",
+  top: -1,
+  transform: "translateX(-50%)",
+  background: isDarkTheme ? "#383241" : "#e7e3eb",
+  zIndex: 0,
+  borderRadius: 24,
+}));
+
+export const StyledPancakeOrders = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
   width: "100%",
-  background: "#27262C",
+  background: isDarkTheme ? "#27262C" : "#FFFFFF",
   borderRadius: 24,
   padding: 20,
-});
+}));
 
 export const StyledPancakeLayout = styled(DappLayout)({
   width: "calc(100% - 30px)",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
+  position: "relative",
 });
 
 export const StyledSushiLayout = styled(DappLayout)({
@@ -274,14 +292,6 @@ export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) =
   borderRadius: 10,
   padding: 24,
 }));
-
-// export const StyledLayoutPangolinDaasTWAP = styled(StyledPangolinTWAP)({
-//   border: "1px solid #FFC800",
-// });
-
-// export const StyledLayoutPangolinDaasOrders = styled(StyledPangolin)({
-//   border: "1px solid #FFC800",
-// });
 
 export const StyledCloseIcon = styled("button")({
   position: "absolute",

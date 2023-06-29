@@ -1,14 +1,13 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles } from "@orbs-network/twap-ui";
-import { AdapterContextProvider, config, parseToken } from "./hooks";
+import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, AdapterWrapper, store } from "@orbs-network/twap-ui";
+import { AdapterContextProvider, config, parseToken, useAdapterContext } from "./hooks";
 import translations from "./i18n/en.json";
 import { ThenaTWAPProps } from "./types";
 import { Box } from "@mui/system";
 import { ChangeTokensOrder, Container, CurrentMarketPrice, OrderSummary, TokenPanel } from "./Components";
-import { configureStyles, StyledChunksInput, StyledChunksSlider, StyledColumnFlex, StyledSubmit } from "./styles";
-import { store } from "@orbs-network/twap-ui";
+import { configureStyles, StyledChunksInput, StyledChunksSlider, StyledColumnFlex, StyledPoweredBy, StyledSubmit } from "./styles";
 
-const TWAP = (props: ThenaTWAPProps) => {
+const Children = (props: ThenaTWAPProps) => {
   const parsedTokens = hooks.useParseTokens(props.dappTokens, parseToken);
 
   return (
@@ -43,7 +42,7 @@ const TWAP = (props: ThenaTWAPProps) => {
             <OrderSummary>
               <Components.OrderSummaryDetails />
             </OrderSummary>
-            {/* <StyledPoweredBy /> */}
+            <StyledPoweredBy />
           </div>
         </AdapterContextProvider>
       </TwapAdapter>
@@ -51,14 +50,24 @@ const TWAP = (props: ThenaTWAPProps) => {
   );
 };
 
+const TWAP = (props: ThenaTWAPProps) => {
+  return (
+    <AdapterWrapper>
+      <Children {...props} />
+    </AdapterWrapper>
+  );
+};
+
 export default TWAP;
 
 const TotalTrades = () => {
+  const { isDarkTheme } = useAdapterContext();
   const getChunksBiggerThanOne = store.useTwapStore((store) => store.getChunksBiggerThanOne());
+
   return (
     <Container enabled={getChunksBiggerThanOne ? 1 : 0} label={<Components.Labels.TotalTradesLabel />}>
       <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between">
-        <StyledChunksSlider />
+        <StyledChunksSlider isDarkTheme={isDarkTheme ? 1 : 0} />
         <StyledChunksInput />
       </TwapStyles.StyledRowFlex>
     </Container>
@@ -67,19 +76,20 @@ const TotalTrades = () => {
 
 const TradeSize = () => {
   return (
-    <Container label={<Components.Labels.ChunksAmountLabel />}>
-      <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
+    <TwapStyles.StyledRowFlex className="twap-trade-size" justifyContent="space-between">
+      <Components.Labels.ChunksAmountLabel />
+      <TwapStyles.StyledRowFlex style={{ width: "unset", minWidth: 0 }}>
         <Components.TradeSize hideLabel={true} />
-        <Components.ChunksUSD symbol="USD" />
+        <Components.ChunksUSD symbol="USD" emptyUi={<></>} />
       </TwapStyles.StyledRowFlex>
-    </Container>
+    </TwapStyles.StyledRowFlex>
   );
 };
 
 const MaxDuration = () => {
   return (
     <Container enabled={1} label={<Components.Labels.MaxDurationLabel />}>
-      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
+      <TwapStyles.StyledRowFlex justifyContent="space-between">
         <Components.PartialFillWarning />
         <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
@@ -90,8 +100,8 @@ const MaxDuration = () => {
 const TradeInterval = () => {
   return (
     <Container enabled={1} label={<Components.Labels.TradeIntervalLabel />}>
-      <Components.FillDelayWarning />
       <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
+        <Components.FillDelayWarning />
         <Components.TradeIntervalSelector />
       </TwapStyles.StyledRowFlex>
     </Container>

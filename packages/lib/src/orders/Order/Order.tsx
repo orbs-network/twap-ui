@@ -16,9 +16,9 @@ export interface Props {
 
 function OrderComponent({ order, onExpand, expanded }: Props) {
   return (
-    <StyledContainer className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
+    <StyledContainer onClick={onExpand} className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
       <StyledAccordion expanded={expanded}>
-        <StyledAccordionSummary onClick={onExpand}>
+        <StyledAccordionSummary>
           <OrderPreview order={order} expanded={expanded} />
         </StyledAccordionSummary>
         <StyledAccordionDetails className="twap-order-accordion" style={{ padding: 0, paddingTop: 10 }}>
@@ -46,6 +46,7 @@ export const StyledAccordionSummary = styled(AccordionSummary)({
 });
 
 const StyledContainer = styled(Components.Base.Card)({
+  cursor: "pointer",
   "& *": {
     color: "inherit!important",
   },

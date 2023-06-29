@@ -107,7 +107,7 @@ export const StyledDetailRow = styled(TwapStyles.StyledRowFlex)({
   "& .text": {
     fontWeight: 300,
   },
-  "@media(max-width: 600px)": {
+  "@media(max-width: 500px)": {
     flexDirection: "column",
     alignItems: "flex-start",
     gap: 5,
@@ -118,10 +118,10 @@ const OrderPrice = ({ order }: { order: OrderUI }) => {
   const { leftToken, rightToken, priceUi, toggleInverted } = useHistoryPrice(order);
   const translations = useOrdersContext().translations;
   return (
-    <TwapStyles.StyledRowFlex justifyContent="space-between" className="twap-market-price-section">
+    <StyledMarketPrice justifyContent="space-between" className="twap-market-price-section">
       <Components.Base.Label>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</Components.Base.Label>
       <Components.Base.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={priceUi} toggleInverted={toggleInverted} />
-    </TwapStyles.StyledRowFlex>
+    </StyledMarketPrice>
   );
 };
 
@@ -134,6 +134,14 @@ const CancelOrderButton = ({ orderId }: { orderId: number }) => {
     </StyledCancelOrderButton>
   );
 };
+
+const StyledMarketPrice = styled(TwapStyles.StyledRowFlex)({
+  "@media(max-width: 500px)": {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 5,
+  },
+});
 
 export const StyledCancelOrderButton = styled(Components.Base.Button)({
   background: "transparent",

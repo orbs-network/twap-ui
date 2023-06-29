@@ -7,6 +7,7 @@ import {
   StyledContainer,
   StyledContainerContent,
   StyledEmptyUSD,
+  StyledMarketPrice,
   StyledPercentSelect,
   StyledSelectAndBalance,
   StyledTokenChange,
@@ -56,7 +57,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 
 export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-
+  const { isDarkTheme } = useAdapterContext();
   const onClose = useCallback(() => {
     setTokenListOpen(false);
   }, []);
@@ -67,15 +68,22 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 
       <StyledTokenPanel>
         <TwapStyles.StyledColumnFlex gap={8}>
-          <StyledSelectAndBalance>
-            <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
-            <StyledBalance decimalScale={8} isSrc={isSrcToken} />
-          </StyledSelectAndBalance>
-          <StyledTokenPanelInputContainer>
-            <StyledTokenPanelInput placeholder="0.00" isSrc={isSrcToken} />
-            <StyledUSD symbol="USD" isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
-            {isSrcToken && <SrcTokenPercentSelector />}
-          </StyledTokenPanelInputContainer>
+          <Container
+            enabled={isSrcToken ? 1 : 0}
+            label={
+              <StyledSelectAndBalance>
+                <StyledTokenSelect isDarkTheme={isDarkTheme ? 1 : 0} CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+                <StyledBalance decimalScale={8} isSrc={isSrcToken} isDarkTheme={isDarkTheme ? 1 : 0} />
+              </StyledSelectAndBalance>
+            }
+          >
+            {" "}
+            <StyledTokenPanelInputContainer>
+              <StyledTokenPanelInput placeholder="0.00" isSrc={isSrcToken} />
+              <StyledUSD symbol="USD" isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
+              {isSrcToken && <SrcTokenPercentSelector />}
+            </StyledTokenPanelInputContainer>
+          </Container>
         </TwapStyles.StyledColumnFlex>
       </StyledTokenPanel>
     </>
@@ -95,23 +103,21 @@ export const Container = ({
   hideChildren?: boolean;
   className?: string;
 }) => {
+  const { isDarkTheme } = useAdapterContext();
   return (
     <StyledContainer className={className}>
       {label}
-      {!hideChildren && <StyledContainerContent enabled={enabled}>{children}</StyledContainerContent>}
+      {!hideChildren && (
+        <StyledContainerContent isDarkTheme={isDarkTheme ? 1 : 0} enabled={enabled}>
+          {children}
+        </StyledContainerContent>
+      )}
     </StyledContainer>
   );
 };
 
 export const CurrentMarketPrice = () => {
-  return (
-    <StyledContainer>
-      <Components.Labels.CurrentMarketPriceLabel />
-      <StyledContainerContent>
-        <Components.MarketPrice hideLabel={true} />
-      </StyledContainerContent>
-    </StyledContainer>
-  );
+  return <StyledMarketPrice />;
 };
 
 export const SrcTokenPercentSelector = () => {
@@ -166,9 +172,10 @@ export const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 export const ChangeTokensOrder = () => {
   const [hover, setHover] = useState(false);
+  const { isDarkTheme } = useAdapterContext();
   return (
-    <StyledTokenChangeContainer onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <StyledTokenChange icon={hover ? <HiMiniArrowsUpDown /> : <AiOutlineArrowDown />} />
+    <StyledTokenChangeContainer isDarkTheme={isDarkTheme ? 1 : 0} onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      <StyledTokenChange isDarkTheme={isDarkTheme ? 1 : 0} icon={hover ? <HiMiniArrowsUpDown /> : <AiOutlineArrowDown />} />
     </StyledTokenChangeContainer>
   );
 };

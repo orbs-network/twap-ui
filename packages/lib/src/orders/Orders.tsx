@@ -31,13 +31,13 @@ function Orders(props: Props) {
         <StyledHeaderTop>
           <Styles.StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>
             <Components.Base.Icon className="stopwatch-icon" icon={<RxStopwatch style={{ width: 19, height: 19 }} />} />
-            <Components.Base.Label tooltipText={translations.ordersTooltip} fontSize={16}>
+            <Components.Base.Label className="twap-orders-title" tooltipText={translations.ordersTooltip} fontSize={16}>
               {translations.orders}
             </Components.Base.Label>
           </Styles.StyledRowFlex>
           <StyledOdnpButton />
         </StyledHeaderTop>
-        <StyledTabs className="twap-orders-header-tabs" value={selectedTab} onChange={handleChange}>
+        <StyledTabs variant="scrollable" className="twap-orders-header-tabs" value={selectedTab} onChange={handleChange}>
           {_.keys(Status).map((key, index) => {
             const status = key as Status;
 
@@ -99,9 +99,10 @@ const StyledTab = styled(Tab)({
   padding: "0px",
   textTransform: "unset",
   fontFamily: "inherit",
+
   "@media(max-width: 600px)": {
-    fontSize: 10,
-    minWidth: "unset",
+    padding: "0px 20px",
+    width: "unset",
   },
 });
 
@@ -112,19 +113,14 @@ const StyledTabs = styled(Tabs)({
   padding: 3,
   "& .MuiTabs-indicator": {
     height: "100%",
-    borderRadius: 4,
+
     zIndex: 1,
   },
-  "& .MuiTouchRipple-root": {
-    display: "none",
-  },
+  "& .MuiTouchRipple-root": {},
   "& .MuiButtonBase-root": {
     zIndex: 9,
-    color: "white",
   },
-  "& .Mui-selected": {
-    color: "white",
-  },
+  "& .Mui-selected": {},
 });
 const StyledContainer = styled(Box)({
   width: "100%",

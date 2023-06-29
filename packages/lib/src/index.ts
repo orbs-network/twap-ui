@@ -6,4 +6,6 @@ export * from "./context";
 export * from "./consts";
 
 export * as Components from "./components";
+export * from "./AdapterWrapper";
+
 export { default as Orders } from "./orders/Orders";
