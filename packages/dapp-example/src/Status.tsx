@@ -55,7 +55,7 @@ function useBackupTakersStatus(dapp?: Dapp) {
 
 function useOrbsL3TakersStatus(dapp?: Dapp) {
   return useQuery(["useOrbsL3TakersStatus", dapp?.config.chainId], async () => {
-    const orbsStatus = await (await fetch("https://status.orbs.network/json")).json();
+    const orbsStatus = await (await fetch("https://status.orbs.network/json-full")).json();
     const result = _.map(orbsStatus.CommitteeNodes, (node) => {
       try {
         const nodeStatus = _.get(node, ["NodeServices", "vm-twap", "VMStatusJson"]);
