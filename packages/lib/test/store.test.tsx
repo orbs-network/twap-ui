@@ -9,8 +9,8 @@ import BN from "bignumber.js";
 import { QueryClient } from "@tanstack/react-query";
 import React, { ReactNode } from "react";
 import { useOrderPastEvents, useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
-import { OrdersContext } from "../src/context";
-import { OrderLibProps, OrderUI } from "../src/types";
+import { TwapContext, TWAPContextProps } from "../src/context";
+import {  OrderUI } from "../src/types";
 import { useChaiBigNumber } from "@defi.org/web3-candies/dist/hardhat";
 
 useChaiBigNumber();
@@ -20,11 +20,12 @@ const createQueryProvider = () => {
   return ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 };
 
-const createQueryProviderWithOrdersContext = () => {
+const createQueryProviderWithContext = () => {
+
   const queryClient = new QueryClient();
   return ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <OrdersContext.Provider value={{ tokenList: tokens } as OrderLibProps}>{children}</OrdersContext.Provider>
+      <TwapContext.Provider value={{ tokenList: tokens } as TWAPContextProps}>{children}</TwapContext.Provider>
     </QueryClientProvider>
   );
 };
@@ -216,7 +217,7 @@ describe("store", () => {
         },
       ];
 
-      const { result } = renderHook(() => useOrdersHistoryQuery(async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7))), { wrapper: createQueryProviderWithOrdersContext() });
+      const { result } = renderHook(() => useOrdersHistoryQuery(async (t) => (t === tokens[0] ? BN(123.5) : BN(456.7))), { wrapper: createQueryProviderWithContext() });
 
       await waitFor(() => expect(result.current.status).eq("success"));
 

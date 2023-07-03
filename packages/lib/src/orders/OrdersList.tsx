@@ -3,12 +3,12 @@ import React, { useState } from "react";
 import Order from "./Order/Order";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Status } from "@orbs-network/twap";
-import { useOrdersContext } from "../context";
+import { useTwapContext } from "../context";
 import { OrderUI } from "../types";
 
 function OrdersList({ orders, status, isLoading }: { orders?: OrderUI[]; status: Status; isLoading: boolean }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
-  const translations = useOrdersContext().translations;
+  const translations = useTwapContext().translations;
 
   const onSelect = (value: number) => {
     setSelected((prevState) => (prevState === value ? undefined : value));

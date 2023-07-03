@@ -1,6 +1,6 @@
 import { LinearProgress } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, OrderUI, Styles as TwapStyles, useOrdersContext } from "../..";
+import { Components, OrderUI, Styles as TwapStyles, useTwapContext } from "../..";
 import { StyledText } from "../../styles";
 import { OrderTokenDisplay } from "./Components";
 import { HiOutlineArrowLongRight } from "react-icons/hi2";
@@ -13,7 +13,7 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
   const srcFilledAmountUi = useFormatNumber({ value: order.ui.srcFilledAmountUi });
   const progress = useFormatNumber({ value: order.ui.progress, decimalScale: 1, suffix: "%" });
 
-  const translations = useOrdersContext().translations;
+  const translations = useTwapContext().translations;
   return (
     <TwapStyles.StyledColumnFlex gap={0} className="twap-order-preview">
       <StyledHeader className="twap-order-preview-header">

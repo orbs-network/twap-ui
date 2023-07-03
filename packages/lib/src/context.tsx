@@ -1,15 +1,19 @@
-import { createContext, useContext, useEffect } from "react";
-import { OrderLibProps, TwapLibProps } from "./types";
-import { useDstBalance, useDstUsd, useInitLib, useLimitPrice, useSetTokensFromDapp, useSrcBalance, useSrcUsd } from "./hooks";
+import { createContext, useContext, useEffect, useMemo } from "react";
+import { TwapLibProps } from "./types";
+import { useInitLib, useParseTokens, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
-import { useTwapStore } from "./store";
+import { TokenData } from "@orbs-network/twap";
+import { logger } from "./utils";
 
 analytics.onModuleLoad();
 
-const TwapContext = createContext<TwapLibProps>({} as TwapLibProps);
-export const OrdersContext = createContext<OrderLibProps>({} as OrderLibProps);
+export interface TWAPContextProps extends TwapLibProps {
+  tokenList: TokenData[];
+}
+
+export const TwapContext = createContext({} as TWAPContextProps);
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -18,76 +22,48 @@ const queryClient = new QueryClient({
   },
 });
 
-const useLimitOrderPriceUpdate = () => {
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const setLimitOrderPriceUi = useTwapStore((store) => store.setLimitOrderPriceUi);
-  const srcUsd = useTwapStore((store) => store.srcUsd);
-  const dstUsd = useTwapStore((store) => store.dstUsd);
-
-  const { custom } = useLimitPrice();
-
-  useEffect(() => {
-    if (isLimitOrder && !custom && !srcUsd.isZero() && !dstUsd.isZero()) {
-      setLimitOrderPriceUi();
-    }
-  }, [custom, srcUsd, dstUsd, setLimitOrderPriceUi, isLimitOrder]);
-};
-
 const WrappedTwap = (props: TwapLibProps) => {
   const setTokensFromDappCallback = useSetTokensFromDapp();
-  useLimitOrderPriceUpdate();
+  const updateStoreOveride = useUpdateStoreOveride();
 
   useEffect(() => {
     setTokensFromDappCallback();
   }, [setTokensFromDappCallback]);
 
   const initLib = useInitLib();
-  useSrcUsd();
-  useDstUsd();
-  useSrcBalance();
-  useDstBalance();
+
   useEffect(() => {
+    logger("Context initialized");
     analytics.onTwapPageView();
   }, []);
 
+  console.log("test render");
+
+  useEffect(() => {
+    updateStoreOveride(props.storeOverride);
+  }, [updateStoreOveride, props.storeOverride]);
+
   // init web3 every time the provider changes
   useEffect(() => {
-    initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId, storeOverride: props.storeOverride || {} });
+    initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId });
   }, [props.provider, props.config, props.account, props.connectedChainId]);
 
   return <>{props.children}</>;
 };
 
 export const TwapAdapter = (props: TwapLibProps) => {
-  const translations = { ...defaultTranlations, ...props.translations };
+  const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
+  const tokenList = useParseTokens(props.dappTokens, props.parseToken);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TwapContext.Provider value={{ ...props, translations }}>
+      <TwapContext.Provider value={{ ...props, translations, tokenList }}>
         <WrappedTwap {...props} />
       </TwapContext.Provider>
     </QueryClientProvider>
   );
 };
 
-const OrdersAdapterQueryClient = (props: OrderLibProps) => {
-  const translations = { ...defaultTranlations, ...props.translations };
-
-  return <OrdersContext.Provider value={{ ...props, translations }}>{props.children}</OrdersContext.Provider>;
-};
-
-export const OrdersAdapter = (props: OrderLibProps) => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <OrdersAdapterQueryClient {...props} />
-    </QueryClientProvider>
-  );
-};
-
 export const useTwapContext = () => {
   return useContext(TwapContext);
-};
-
-export const useOrdersContext = () => {
-  return useContext(OrdersContext);
 };

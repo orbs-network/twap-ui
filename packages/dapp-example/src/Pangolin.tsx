@@ -1,5 +1,5 @@
-import { PangolinTWAPProps, TWAP } from "@orbs-network/twap-ui-pangolin";
-import { DappLayout, Popup, TokensList } from "./Components";
+import { TWAP } from "@orbs-network/twap-ui-pangolin";
+import { Popup, TokensList } from "./Components";
 import { StyledModalContent, StyledPangolin, StyledPangolinBox, StyledPangolinDaasBox, StyledPangolinLayout } from "./styles";
 import _ from "lodash";
 import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
@@ -97,32 +97,39 @@ const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModa
 };
 const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8422.png";
 
-const PangolinComponent = () => {
+const TWAPComponent = ({ partnerDaas }: { partnerDaas?: string }) => {
   const { account, library: provider, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
 
   const connect = useConnectWallet();
 
-  const twapProps: PangolinTWAPProps = {
-    account,
-    TokenSelectModal,
-    srcToken: zeroAddress, //AVAX
-    dstToken: erc20sData.avax.USDC.address, // ORBS
-    dappTokens,
-    provider,
-    onSrcTokenSelected: (token: any) => console.log(token),
-    onDstTokenSelected: (token: any) => console.log(token),
-    connect,
-    connectedChainId: chainId,
-    theme: isDarkTheme ? pangolinDarkTheme : pangolinLightTheme,
-  };
+  return (
+    <TWAP
+      account={account}
+      TokenSelectModal={TokenSelectModal}
+      srcToken={zeroAddress} //AVAX
+      dstToken={erc20sData.avax.USDC.address} // ORBS
+      dappTokens={dappTokens}
+      provider={provider}
+      onSrcTokenSelected={(token: any) => console.log(token)}
+      onDstTokenSelected={(token: any) => console.log(token)}
+      connect={connect}
+      connectedChainId={chainId}
+      theme={isDarkTheme ? pangolinDarkTheme : pangolinLightTheme}
+      partnerDaas={partnerDaas}
+    />
+  );
+};
+
+const PangolinComponent = () => {
+  const { isDarkTheme } = useTheme();
 
   return (
     <StyledPangolin isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledPangolinLayout name={config.name}>
         <StyledPangolinBox>
-          <TWAP {...twapProps} />
+          <TWAPComponent />
         </StyledPangolinBox>
       </StyledPangolinLayout>
     </StyledPangolin>
@@ -130,33 +137,13 @@ const PangolinComponent = () => {
 };
 
 const PangolinDaasComponent = () => {
-  const { account, library: provider, chainId } = useWeb3React();
-  const { data: dappTokens } = useDappTokens();
-
   const { isDarkTheme } = useTheme();
-
-  const connect = useConnectWallet();
-
-  const twapProps: PangolinTWAPProps = {
-    account,
-    TokenSelectModal,
-    srcToken: zeroAddress, //AVAX
-    dstToken: erc20sData.avax.USDC.address, // ORBS
-    dappTokens,
-    provider,
-    onSrcTokenSelected: (token: any) => console.log(token),
-    onDstTokenSelected: (token: any) => console.log(token),
-    connect,
-    connectedChainId: chainId,
-    theme: isDarkTheme ? pangolinDarkTheme : pangolinLightTheme,
-    partnerDaas: "0xFA1c2Ae5c52a02cbaD6A05CdcA89f032Fa3a4D0d",
-  };
 
   return (
     <StyledPangolin isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledPangolinLayout name={config.name}>
         <StyledPangolinDaasBox>
-          <TWAP {...twapProps} />
+          <TWAPComponent partnerDaas="0xFA1c2Ae5c52a02cbaD6A05CdcA89f032Fa3a4D0d" />
         </StyledPangolinDaasBox>
       </StyledPangolinLayout>
     </StyledPangolin>

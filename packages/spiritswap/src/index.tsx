@@ -1,17 +1,57 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, Orders, TWAPProps } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
-import { AdapterContextProvider, config, parseToken, useAdapterContext, useGetProvider, useGlobalStyles } from "./hooks";
 import translations from "./i18n/en.json";
-import { SpiritSwapTWAPProps } from ".";
+import { Configs, TokenData } from "@orbs-network/twap";
+import { createContext, useContext, useMemo } from "react";
+import Web3 from "web3";
+import { configureStyles } from "./styles";
+import { isNativeAddress } from "@defi.org/web3-candies";
+const config = Configs.SpiritSwap;
 
-const TWAP = (props: SpiritSwapTWAPProps) => {
-  const parsedTokens = hooks.useParseTokens(props.dappTokens, (rawToken) => parseToken(rawToken, props.getTokenImageUrl));
+const useGetProvider = (getProvider: () => any, account?: string) => {
+  return useMemo(() => getProvider(), [account]);
+};
+
+const parseToken = (rawToken: any, getTokenImageUrl: (symbol: string) => string): TokenData | undefined => {
+  if (!rawToken.symbol) {
+    console.error("Invalid token", rawToken);
+
+    return;
+  }
+  if (!rawToken.address || isNativeAddress(rawToken.address)) {
+    return config.nativeToken;
+  }
+
+  return {
+    address: Web3.utils.toChecksumAddress(rawToken.address),
+    decimals: rawToken.decimals,
+    symbol: rawToken.symbol,
+    logoUrl: getTokenImageUrl(rawToken.symbol),
+  };
+};
+
+const AdapterContext = createContext({} as SpiritSwapTWAPProps);
+
+const AdapterContextProvider = AdapterContext.Provider;
+
+const useAdapterContext = () => useContext(AdapterContext);
+
+const useGlobalStyles = (isDarkMode = true) => {
+  return configureStyles(isDarkMode);
+};
+
+interface SpiritSwapTWAPProps extends TWAPProps {
+  getTokenImageUrl: (symbol: string) => string;
+  getProvider: () => any;
+}
+
+export const TWAP = memo((props: SpiritSwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
   const globalStyles = useGlobalStyles(props.isDarkTheme);
 
   const connect = useCallback(() => {
-    props.connect();
+    props.connect!();
   }, []);
 
   return (
@@ -23,9 +63,10 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
       translations={translations as Translations}
       provider={provider}
       account={props.account}
-      tokenList={parsedTokens}
+      dappTokens={props.dappTokens}
       srcToken={props.srcToken}
       dstToken={props.dstToken}
+      parseToken={(rawToken) => parseToken(rawToken, props.getTokenImageUrl)}
     >
       <GlobalStyles styles={globalStyles} />
       <AdapterContextProvider value={props}>
@@ -41,12 +82,13 @@ const TWAP = (props: SpiritSwapTWAPProps) => {
           <OrderSummary />
           <Components.PoweredBy />
         </div>
+        <Components.Base.Portal id={props.ordersContainerId}>
+          <Orders />
+        </Components.Base.Portal>
       </AdapterContextProvider>
     </TwapAdapter>
   );
-};
-
-export default memo(TWAP);
+});
 
 const SrcTokenPercentSelector = () => {
   const { onPercentClick } = hooks.useCustomActions();

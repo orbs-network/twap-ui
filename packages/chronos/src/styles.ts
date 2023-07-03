@@ -1,7 +1,6 @@
 import { Box, styled } from "@mui/material";
 import { Components, Styles } from "@orbs-network/twap-ui";
 
-const lightStyles = { lightBg: "#454062", darkTextColor: "rgba(255,255,255, 0.5)", textColor: "white" };
 const darkStyles = {
   lightBg: "#454062",
   textColor: "white",

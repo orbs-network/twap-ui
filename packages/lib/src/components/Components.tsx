@@ -1,4 +1,4 @@
-import { FC, ReactNode, useCallback } from "react";
+import { FC, ReactNode, useCallback, useEffect } from "react";
 import {
   Balance,
   Button,
@@ -23,7 +23,7 @@ import { TokenData } from "@orbs-network/twap";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { styled } from "@mui/system";
 import { AiOutlineWarning } from "react-icons/ai";
-import { useOrdersContext, useTwapContext } from "../context";
+import { useTwapContext } from "../context";
 import {
   useLoadingState,
   useLimitPrice,
@@ -65,7 +65,7 @@ odnp.mainDiv.classList = "odnp";
 
 export function OdnpButton({ className = "" }: { className?: string }) {
   const account = useTwapStore((state) => state.lib)?.maker;
-  const translations = useOrdersContext().translations;
+  const translations = useTwapContext().translations;
   if (!account) return null;
 
   const onClick = () => {
@@ -478,7 +478,16 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
 
 export function LimitPriceInput({ placeholder = "0.00", className = "", showDefault }: { placeholder?: string; className?: string; showDefault?: boolean }) {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const { leftToken, rightToken, onChange, limitPrice, toggleInverted } = useLimitPrice();
+  const { leftToken, rightToken, onChange, limitPrice, toggleInverted, custom } = useLimitPrice();
+  const setLimitOrderPriceUi = useTwapStore((store) => store.setLimitOrderPriceUi);
+  const srcUsd = useTwapStore((store) => store.srcUsd);
+  const dstUsd = useTwapStore((store) => store.dstUsd);
+
+  useEffect(() => {
+    if (isLimitOrder && !custom && !srcUsd.isZero() && !dstUsd.isZero()) {
+      setLimitOrderPriceUi();
+    }
+  }, [custom, srcUsd, dstUsd, setLimitOrderPriceUi, isLimitOrder]);
 
   const _isLimitOrder = isLimitOrder || showDefault;
 

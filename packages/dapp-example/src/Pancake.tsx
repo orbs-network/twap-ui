@@ -1,15 +1,15 @@
-import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeOrders, StyledPancakeTwap } from "./styles";
-import { Orders, TWAP, Limit, ThenaTWAPProps, ThenaOrdersProps } from "@orbs-network/twap-ui-pancake";
+import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeTwap } from "./styles";
+import { TWAP } from "@orbs-network/twap-ui-pancake";
 import { useConnectWallet, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20s, zeroAddress, isNativeAddress } from "@defi.org/web3-candies";
-import { TokenListItem } from "./types";
+import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
 import { styled } from "@mui/material";
 
@@ -86,77 +86,69 @@ const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: Tok
     </Popup>
   );
 };
+
+const TWAPComponent = ({ limit }: { limit?: boolean }) => {
+  const { isDarkTheme } = useTheme();
+  const connect = useConnectWallet();
+  const { account, library } = useWeb3React();
+  const { data: dappTokens } = useDappTokens();
+
+  return (
+    <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0} style={{ maxWidth: 330 }}>
+      <TWAP
+        connect={connect}
+        account={account}
+        srcToken="BNB"
+        dstToken="0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"
+        dappTokens={dappTokens}
+        TokenSelectModal={TokenSelectModal}
+        provider={library}
+        isDarkTheme={isDarkTheme}
+        limit={limit}
+        ordersContainerId="orders"
+      />
+    </StyledPancakeTwap>
+  );
+};
+
 const logo = "https://assets.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1629359065";
 const DappComponent = () => {
-  const { account, library } = useWeb3React();
-  const connect = useConnectWallet();
-  const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
 
-  const twapProps: ThenaTWAPProps = {
-    connect,
-    account,
-    srcToken: "BNB",
-    dstToken: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
-    dappTokens,
-    TokenSelectModal,
-    provider: library,
-    isDarkTheme,
-  };
-  const ordersProps: ThenaOrdersProps = { account, dappTokens, provider: library, isDarkTheme };
+  const [selected, setSelected] = useState(SelectorOption.TWAP);
 
   return (
     <StyledPancake isDarkTheme={isDarkTheme ? 1 : 0}>
       <StyledPancakeLayout name={config.name}>
-        <UISelector
-          options={[
-            {
-              title: "TWAP",
-              component: (
-                <Wrapper maxWidth={330}>
-                  <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
-                    <TWAP {...twapProps} />
-                  </StyledPancakeTwap>
-                </Wrapper>
-              ),
-            },
-            {
-              title: "LIMIT",
-              component: (
-                <Wrapper maxWidth={330}>
-                  <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
-                    <Limit {...twapProps} />
-                  </StyledPancakeTwap>
-                </Wrapper>
-              ),
-            },
-          ]}
-        />
-        <Wrapper maxWidth={700}>
-          <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
-            <Orders {...ordersProps} />
-          </StyledPancakeOrders>
-        </Wrapper>
+        <UISelector selected={selected} select={setSelected} limit={true} />
+        <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+        <StyledPancakeOrders>
+          <StyledPancakeTwap id="orders" isDarkTheme={isDarkTheme ? 1 : 0} />
+        </StyledPancakeOrders>
       </StyledPancakeLayout>
     </StyledPancake>
   );
 };
 
-const StyledWrapper = styled(Box)({
-  position: "relative",
-  width: "fit-content",
-});
-
-const Wrapper = ({ children, maxWidth }: { children: ReactNode; maxWidth: number }) => {
+const Wrapper = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   const { isDarkTheme } = useTheme();
 
   return (
-    <StyledWrapper style={{ maxWidth, width: "100%" }}>
+    <StyledWrapper className={className}>
       <StyledPancakeBackdrop isDarkTheme={isDarkTheme ? 1 : 0} />
-      <span style={{ position: "relative" }}>{children}</span>
+      <div style={{ position: "relative", width: "100%" }}>{children}</div>
     </StyledWrapper>
   );
 };
+
+export const StyledPancakeOrders = styled(Wrapper)({
+  maxWidth: 700,
+});
+
+const StyledWrapper = styled(Box)({
+  position: "relative",
+  width: "100%",
+});
 
 const dapp: Dapp = {
   Component: DappComponent,

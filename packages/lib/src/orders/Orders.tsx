@@ -1,13 +1,12 @@
-import { Fade, Tab, Tabs } from "@mui/material";
-import { Box, styled } from "@mui/system";
-import React from "react";
+import { Fade, Tab, Tabs, Box, styled } from "@mui/material";
+import { useState } from "react";
 import OrdersList from "./OrdersList";
 import _ from "lodash";
 import { Translations } from "../types";
 import { RxStopwatch } from "react-icons/rx";
 import { Status } from "@orbs-network/twap";
 import { useOrdersHistoryQuery } from "../hooks";
-import { useOrdersContext } from "../context";
+import { useTwapContext } from "../context";
 import { Components, Styles } from "..";
 
 interface Props {
@@ -17,10 +16,9 @@ interface Props {
 
 function Orders(props: Props) {
   const { className = "" } = props;
-  const [selectedTab, setSelectedTab] = React.useState(0);
+  const [selectedTab, setSelectedTab] = useState(0);
   const { orders, isLoading } = useOrdersHistoryQuery();
-  const translations = useOrdersContext().translations;
-
+  const { translations } = useTwapContext();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
   };

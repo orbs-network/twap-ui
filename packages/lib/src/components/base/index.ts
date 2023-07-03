@@ -19,3 +19,4 @@ export { default as Slider } from "./Slider";
 export { default as Modal } from "./Modal";
 export { default as SwipeContainer } from "./SwipeContainer";
 export { default as Radio } from "./Radio";
+export { default as Portal } from "./Portal";

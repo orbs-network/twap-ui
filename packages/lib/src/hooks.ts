@@ -1,10 +1,10 @@
 import { Order, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
-import { useOrdersContext, useTwapContext } from "./context";
+import { useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { InitLibProps, OrdersData, OrderUI } from "./types";
+import { InitLibProps, OrdersData, OrderUI, State } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
 import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, getPastEvents, findBlock, block } from "@defi.org/web3-candies";
@@ -195,7 +195,6 @@ export const useCreateOrder = () => {
 export const useInitLib = () => {
   const setTwapLib = useTwapStore((state) => state.setLib);
   const setWrongNetwork = useTwapStore((state) => state.setWrongNetwork);
-  const setValues = useTwapStore((state) => state.setValues);
   return async (props: InitLibProps) => {
     if (!props.provider || !props.account) {
       setTwapLib(undefined);
@@ -208,8 +207,18 @@ export const useInitLib = () => {
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
     setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));
-    setValues(props.storeOverride || {});
   };
+};
+
+export const useUpdateStoreOveride = () => {
+  const setStoreOverrideValues = useTwapStore((state) => state.setStoreOverrideValues);
+
+  return useCallback(
+    (values?: Partial<State>) => {
+      setStoreOverrideValues(values || {});
+    },
+    [setStoreOverrideValues]
+  );
 };
 
 export const useChangeNetwork = () => {
@@ -442,9 +451,7 @@ const useGasPriceQuery = () => {
 };
 
 const useTokenList = () => {
-  const twapTokens = useTwapContext().tokenList;
-  const ordersHistoryTokens = useOrdersContext().tokenList;
-  const tokens = twapTokens && _.size(twapTokens) > 0 ? twapTokens : ordersHistoryTokens;
+  const tokens = useTwapContext().tokenList || [];
   const lib = useTwapStore((store) => store.lib);
 
   const tokensLength = _.size(tokens);

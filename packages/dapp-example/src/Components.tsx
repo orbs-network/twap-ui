@@ -36,7 +36,7 @@ import { useBalance, useDebounce, useDisconnectWallet, useNetwork, useSelectedDa
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { TokenData } from "@orbs-network/twap";
-import { TokenListItem } from "./types";
+import { SelectorOption, TokenListItem } from "./types";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";
 import { network } from "@defi.org/web3-candies";
@@ -273,28 +273,32 @@ export const TokensList = ({ tokens = [], onClick }: { tokens?: TokenListItem[];
 
 interface UIOption {
   title: string;
-  component: ReactNode;
+  component?: ReactNode;
 }
 
-export const UISelector = ({ options, className = "" }: { options: UIOption[]; className?: string }) => {
-  const [selected, setSelected] = useState(options[0].title);
+export const UISelector = ({
+  options,
+  className = "",
+  select,
+  limit,
+  selected,
+}: {
+  options?: UIOption[];
+  className?: string;
+  select?: (value: SelectorOption) => void;
+  limit?: boolean;
+  selected?: SelectorOption;
+}) => {
+  const tabs = limit ? [SelectorOption.TWAP, SelectorOption.LIMIT] : [SelectorOption.TWAP];
 
   return (
     <StyledUISelector className={`ui-selector ${className}`}>
-      <StyledUISelectorButtons>
-        {options.map((o) => {
-          return (
-            <StyledUISelectorButton className={`${selected === o.title ? " ui-selector-btn-selected" : ""} ui-selector-btn`} key={o.title} onClick={() => setSelected(o.title)}>
-              {o.title}
-            </StyledUISelectorButton>
-          );
-        })}
-      </StyledUISelectorButtons>
-      {options.map((o) => {
-        if (o.title === selected) {
-          return <div key={o.title}>{o.component}</div>;
-        }
-        return null;
+      {tabs.map((it) => {
+        return (
+          <StyledUISelectorButton className={`${selected === it ? " ui-selector-btn-selected" : ""} ui-selector-btn`} key={it} onClick={() => select?.(it)}>
+            {it}
+          </StyledUISelectorButton>
+        );
       })}
     </StyledUISelector>
   );

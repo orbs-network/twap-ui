@@ -1,15 +1,15 @@
 import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
-import { Orders, TWAP, Limit, ThenaTWAPProps, ThenaOrdersProps } from "@orbs-network/twap-ui-sushiswap";
+import { TWAP } from "@orbs-network/twap-ui-sushiswap";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
-import { TokenListItem } from "./types";
+import { SelectorOption, TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
 config.name = "SushiSwap";
 
@@ -84,40 +84,38 @@ const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: Tok
   );
 };
 
-const DappComponent = () => {
+const TWAPComponent = () => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
 
-  const twapProps: ThenaTWAPProps = {
-    connect,
-    account,
-    srcToken: zeroAddress,
-    dstToken: "0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff", //ORBS
-    dappTokens,
-    TokenSelectModal,
-    provider: library,
-    isDarkTheme,
-  };
-  const ordersProps: ThenaOrdersProps = { account, dappTokens, provider: library, isDarkTheme };
+  return (
+    <TWAP
+      connect={connect}
+      account={account}
+      srcToken={zeroAddress}
+      dstToken="0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff" //ORBS
+      dappTokens={dappTokens}
+      TokenSelectModal={TokenSelectModal}
+      provider={library}
+      isDarkTheme={isDarkTheme}
+      ordersContainerId="orders"
+    />
+  );
+};
+
+const DappComponent = () => {
+  const [selected, setSelected] = useState(SelectorOption.TWAP);
+  const { isDarkTheme } = useTheme();
 
   return (
     <StyledSushi isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledSushiLayout name={config.name}>
-        <UISelector
-          options={[
-            {
-              title: "TWAP",
-              component: <TWAP {...twapProps} />,
-            },
-            {
-              title: "LIMIT",
-              component: <Limit {...twapProps} />,
-            },
-          ]}
-        />
-        <Orders {...ordersProps} />
+        <UISelector selected={selected} select={setSelected} limit={true} />
+
+        <TWAPComponent />
+        <div id="orders" />
       </StyledSushiLayout>
     </StyledSushi>
   );

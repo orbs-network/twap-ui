@@ -64,6 +64,9 @@ export const configureStyles = (darkMode?: boolean) => {
   const styles = baseStyles(darkMode);
 
   return {
+    ".twap-adapter-wrapper": {
+      width: "100%",
+    },
     ".twap-modal": {
       ".MuiBackdrop-root": {
         background: darkMode ? "#f4eeff99" : "",

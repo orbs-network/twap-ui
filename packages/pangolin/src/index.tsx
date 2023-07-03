@@ -1,22 +1,85 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps } from "@orbs-network/twap-ui";
-import { memo, useCallback, useState } from "react";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, Orders } from "@orbs-network/twap-ui";
+import { memo, useCallback, useState, createContext, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
-import { getConfig, parseToken, useGlobalStyles } from "./hooks";
-import { PangolinTWAPProps } from "./types";
+import React from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
-import { AdapterContextProvider, useAdapterContext } from "./context";
 import { AiOutlineHistory } from "react-icons/ai";
-import OrderHistory from "./Orders";
 import { useFormatNumber } from "@orbs-network/twap-ui/dist/hooks";
+import { TokenData, Configs } from "@orbs-network/twap";
+import Web3 from "web3";
+import { configureStyles } from "./styles";
+import { isNativeAddress } from "@defi.org/web3-candies";
+
+interface PangolinTWAPProps extends TWAPProps {
+  theme: any;
+  partnerDaas?: string;
+}
+
+interface ContextProps {
+  twapProps: PangolinTWAPProps;
+  children: ReactNode;
+}
+
+interface Values extends PangolinTWAPProps {
+  toggleOrders: () => void;
+  showOrders: boolean;
+}
+
+const Context = createContext({} as Values);
+
+const AdapterContextProvider = ({ twapProps, children }: ContextProps) => {
+  const [showOrders, setShowOrders] = useState(false);
+
+  const values = {
+    ...twapProps,
+    toggleOrders: () => setShowOrders(!showOrders),
+    showOrders,
+  };
+
+  return <Context.Provider value={values}>{children}</Context.Provider>;
+};
+
+const useAdapterContext = () => useContext(Context);
+
+const parseToken = (rawToken: any): TokenData | undefined => {
+  const { config } = getConfig();
+  if (!rawToken.symbol) {
+    console.error("Invalid token", rawToken);
+    return;
+  }
+
+  if (!rawToken.address || isNativeAddress(rawToken.address)) {
+    return config.nativeToken;
+  }
+
+  return {
+    address: Web3.utils.toChecksumAddress(rawToken.address),
+    decimals: rawToken.decimals,
+    symbol: rawToken.symbol,
+    logoUrl: rawToken.tokenInfo ? rawToken.tokenInfo.logoURI : "",
+  };
+};
+
+const useGlobalStyles = (theme: any) => {
+  return configureStyles(theme);
+};
+
+const getConfig = (partnerDaas?: string) => {
+  const _partnerDaas = partnerDaas && !isNativeAddress(partnerDaas) ? partnerDaas : undefined;
+  const config = _partnerDaas ? Configs.PangolinDaas : Configs.Pangolin;
+
+  return {
+    partnerDaas: _partnerDaas,
+    config,
+  };
+};
 
 const defaultTheme = createTheme();
 
-const TWAP = (props: PangolinTWAPProps) => {
-  const tokenList = hooks.useParseTokens(props.dappTokens, parseToken);
-
+export const TWAP = memo((props: PangolinTWAPProps) => {
   const globalStyles = useGlobalStyles(props.theme);
   const memoizedConnect = useCallback(() => {
     props.connect?.();
@@ -37,9 +100,10 @@ const TWAP = (props: PangolinTWAPProps) => {
           account={props.account}
           connectedChainId={props.connectedChainId}
           askDataParams={[partnerDaas]}
-          tokenList={tokenList}
+          dappTokens={props.dappTokens}
           srcToken={props.srcToken}
           dstToken={props.dstToken}
+          parseToken={parseToken}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
@@ -54,7 +118,7 @@ const TWAP = (props: PangolinTWAPProps) => {
               <ShowOrderHistory />
               <Components.SubmitButton />
               <OrderSummary />
-              <Orders />
+              <OrdersComponent />
               <Components.PoweredBy />
             </div>
           </AdapterContextProvider>
@@ -62,9 +126,7 @@ const TWAP = (props: PangolinTWAPProps) => {
       </ThemeProvider>
     </Emotion10ThemeProvider>
   );
-};
-
-export default memo(TWAP);
+});
 
 const buttons = [
   { text: "25%", value: 0.25 },
@@ -262,20 +324,12 @@ const ShowOrderHistory = () => {
   );
 };
 
-const Orders = () => {
+const OrdersComponent = () => {
   const args = useAdapterContext();
   return (
     <Components.Base.SwipeContainer show={args.showOrders} close={args.toggleOrders}>
       <AdapterStyles.StyledOrders>
-        <OrderHistory
-          partnerDaas={args.partnerDaas}
-          dappTokens={args.dappTokens}
-          connectedChainId={args.connectedChainId}
-          account={args.account}
-          provider={args.provider}
-          maxFeePerGas={args.maxFeePerGas}
-          priorityFeePerGas={args.priorityFeePerGas}
-        />
+        <Orders />
       </AdapterStyles.StyledOrders>
     </Components.Base.SwipeContainer>
   );

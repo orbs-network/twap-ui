@@ -113,6 +113,8 @@ const onOpenConfirmationModal = () => {
 };
 
 const sendAnalyticsEvent = (category: Category, action: string, data = {} as { [key: string]: any }) => {
+  if (process.env.NODE_ENV === "development") return;
+
   const lib = useTwapStore.getState().lib;
 
   fetch("https://bi.orbs.network/putes/twap-ui", {

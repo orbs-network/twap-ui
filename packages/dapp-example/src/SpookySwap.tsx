@@ -1,13 +1,14 @@
 import { StyledModalContent, StyledSpookySwap, StyledSpookySwapBox, StyledSpookySwapLayout } from "./styles";
-import { Orders, TWAP, SpookySwapTWAPProps, SpookySwapOrdersProps, Limit } from "@orbs-network/twap-ui-spookyswap";
+import { TWAP } from "@orbs-network/twap-ui-spookyswap";
 import { useConnectWallet, useGetTokensFromViaProtocol, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { TokenListItem } from "./types";
+import { SelectorOption, TokenListItem } from "./types";
 import _ from "lodash";
 import { erc20sData, zeroAddress } from "@defi.org/web3-candies";
+import { useState } from "react";
 
 const config = Configs.SpookySwap;
 
@@ -48,9 +49,7 @@ export const TokenSelectModal = ({ isOpen, onSelect, onClose }: TokenSelectModal
   );
 };
 
-const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/9608.png";
-
-const DappComponent = () => {
+const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
@@ -60,48 +59,40 @@ const DappComponent = () => {
   const getProvider = () => library;
   const { isDarkTheme } = useTheme();
 
-  const twapProps: SpookySwapTWAPProps = {
-    getProvider,
-    connect,
-    account,
-    srcToken: zeroAddress,
-    dstToken: erc20sData.ftm.USDC.address,
-    getTokenImageUrl,
-    dappTokens,
-    onSrcTokenSelected: (token: any) => console.log(token),
-    onDstTokenSelected: (token: any) => console.log(token),
-    TokenSelectModal,
-    isDarkTheme,
-  };
-  const ordersProps: SpookySwapOrdersProps = { account, getTokenImageUrl, dappTokens, getProvider, isDarkTheme };
+  return (
+    <TWAP
+      getProvider={getProvider}
+      connect={connect}
+      account={account}
+      srcToken={zeroAddress}
+      dstToken={erc20sData.ftm.USDC.address}
+      getTokenImageUrl={getTokenImageUrl}
+      dappTokens={dappTokens}
+      onSrcTokenSelected={(token: any) => console.log(token)}
+      onDstTokenSelected={(token: any) => console.log(token)}
+      TokenSelectModal={TokenSelectModal}
+      isDarkTheme={isDarkTheme}
+      limit={limit}
+      ordersContainerId="orders"
+    />
+  );
+};
+
+const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/9608.png";
+
+const DappComponent = () => {
+  const { isDarkTheme } = useTheme();
+  const [selected, setSelected] = useState(SelectorOption.TWAP);
 
   return (
     <StyledSpookySwap isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledSpookySwapLayout name={config.name}>
-        <UISelector
-          options={[
-            {
-              title: "TWAP",
-              component: (
-                <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0}>
-                  <TWAP {...twapProps} />
-                </StyledSpookySwapBox>
-              ),
-            },
-            {
-              title: "LIMIT",
-              component: (
-                <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0}>
-                  <Limit {...twapProps} />
-                </StyledSpookySwapBox>
-              ),
-            },
-          ]}
-        />
-
+        <UISelector limit={true} select={setSelected} selected={selected} />
         <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0}>
-          <Orders {...ordersProps} />
+          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledSpookySwapBox>
+
+        <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0} id="orders" />
       </StyledSpookySwapLayout>
     </StyledSpookySwap>
   );

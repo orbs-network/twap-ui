@@ -3,14 +3,14 @@ import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { Components, Styles as TwapStyles } from "../..";
 import { Tooltip } from "../../components/base";
-import { useOrdersContext } from "../../context";
+import { useTwapContext } from "../../context";
 import { useCancelOrder, useFormatNumber, useHistoryPrice } from "../../hooks";
 import { fillDelayText, useTwapStore } from "../../store";
 import { StyledColumnFlex } from "../../styles";
 import { OrderUI } from "../../types";
 
 const OrderExpanded = ({ order }: { order: OrderUI }) => {
-  const translations = useOrdersContext().translations;
+  const translations = useTwapContext().translations;
   const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
   const totalChunks = useFormatNumber({ value: order.ui.totalChunks });
   const srcChunkAmountUsdUi = useFormatNumber({ value: order.ui.srcChunkAmountUsdUi });
@@ -116,7 +116,7 @@ export const StyledDetailRow = styled(TwapStyles.StyledRowFlex)({
 
 const OrderPrice = ({ order }: { order: OrderUI }) => {
   const { leftToken, rightToken, priceUi, toggleInverted } = useHistoryPrice(order);
-  const translations = useOrdersContext().translations;
+  const translations = useTwapContext().translations;
   return (
     <StyledMarketPrice justifyContent="space-between" className="twap-market-price-section">
       <Components.Base.Label>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</Components.Base.Label>
@@ -127,7 +127,7 @@ const OrderPrice = ({ order }: { order: OrderUI }) => {
 
 const CancelOrderButton = ({ orderId }: { orderId: number }) => {
   const { isLoading, mutate } = useCancelOrder();
-  const translations = useOrdersContext().translations;
+  const translations = useTwapContext().translations;
   return (
     <StyledCancelOrderButton loading={isLoading} onClick={() => mutate(orderId)}>
       {translations.cancelOrder}

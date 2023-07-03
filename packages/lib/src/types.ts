@@ -119,10 +119,9 @@ export interface TWAPProps extends BaseProps {
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
   TokenSelectModal: any;
+  ordersContainerId?: string;
+  limit?: boolean;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface OrdersProps extends BaseProps {}
 
 interface LibProps {
   children: ReactNode;
@@ -133,7 +132,6 @@ interface LibProps {
   translations: Translations;
   priorityFeePerGas?: string;
   maxFeePerGas?: string;
-  tokenList?: TokenData[];
 }
 
 export type StoreOverride = Partial<State>;
@@ -144,11 +142,8 @@ export interface TwapLibProps extends LibProps {
   storeOverride?: StoreOverride;
   srcToken?: string;
   dstToken?: string;
-}
-
-export interface OrderLibProps extends LibProps {
-  tokenList: TokenData[];
-  askDataParams?: any[];
+  parseToken: (token: any) => TokenData | undefined;
+  dappTokens: any;
 }
 
 export interface InitLibProps {

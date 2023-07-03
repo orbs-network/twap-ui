@@ -4,7 +4,7 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import IconButton from "@mui/material/IconButton";
 import { Styles as TwapStyles } from "@orbs-network/twap-ui";
-import { DappLayout } from "./Components";
+import { DappLayout, UISelector } from "./Components";
 import { Configs } from "@orbs-network/twap";
 
 const fonts = {
@@ -15,7 +15,7 @@ const fonts = {
   [Configs.Pangolin.name]: "Poppins",
   [Configs.PangolinDaas.name]: "Poppins",
   [Configs.SpookySwap.name]: "Red Hat Display",
-  Pancake: "Kanit",
+  [Configs.PancakeSwap.name]: "Kanit",
 };
 
 export const globalStyle = (name?: string) => {
@@ -248,6 +248,7 @@ export const StyledPancakeTwap = styled(Box)<{ isDarkTheme: number }>(({ isDarkT
   padding: 16,
   borderRadius: 24,
   position: "relative",
+  width: "100%",
 }));
 
 export const StyledPancakeBackdrop = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
@@ -260,13 +261,6 @@ export const StyledPancakeBackdrop = styled(Box)<{ isDarkTheme: number }>(({ isD
   background: isDarkTheme ? "#383241" : "#e7e3eb",
   zIndex: 0,
   borderRadius: 24,
-}));
-
-export const StyledPancakeOrders = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
-  width: "100%",
-  background: isDarkTheme ? "#27262C" : "#FFFFFF",
-  borderRadius: 24,
-  padding: 20,
 }));
 
 export const StyledPancakeLayout = styled(DappLayout)({
@@ -459,7 +453,7 @@ export const StyledTokensList = styled(Box)({
   paddingTop: 10,
 });
 
-export const StyledUISelector = styled(Box)({});
+export const StyledUISelector = styled(TwapStyles.StyledRowFlex)({});
 
 export const StyledUISelectorButtons = styled(TwapStyles.StyledRowFlex)({
   marginBottom: 20,

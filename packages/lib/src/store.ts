@@ -6,7 +6,6 @@ import { combine } from "zustand/middleware";
 import _ from "lodash";
 import { eqIgnoreCase, parsebn, isNativeAddress } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
-import { analytics } from "./analytics";
 import { MIN_NATIVE_BALANCE } from "./consts";
 
 export enum TimeResolution {
@@ -53,11 +52,18 @@ export const useTwapStore = create(
       set({ limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false } });
     },
     setLimitOrder: (isLimitOrder?: boolean) => set({ isLimitOrder }),
-    setValues: (storeOverride: StoreOverride) => {
-      if (!storeOverride.isLimitOrder) {
-        set({ customDuration: initialState.customDuration, customFillDelay: initialState.customFillDelay });
-      }
-      set({ ...storeOverride, srcAmountUi: "" });
+    setStoreOverrideValues: (storeOverride: StoreOverride) => {
+      set({
+        ...initialState,
+        ...storeOverride,
+        lib: get().lib,
+        srcToken: get().srcToken,
+        dstToken: get().dstToken,
+        srcUsd: get().srcUsd,
+        dstUsd: get().dstUsd,
+        srcBalance: get().srcBalance,
+        dstBalance: get().dstBalance,
+      });
     },
     setOrderCreatedTimestamp: (orderCreatedTimestamp: number) => set({ orderCreatedTimestamp }),
     reset: (storeOverride: StoreOverride) => set({ ...initialState, lib: get().lib, ...storeOverride }),

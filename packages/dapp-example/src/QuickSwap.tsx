@@ -1,15 +1,15 @@
 import { StyledQuickswapBox, StyledModalContent, StyledQuickswapLayout, StyledQuickswap } from "./styles";
-import { Orders, TWAP, Limit, QuickSwapTWAPProps, QuickSwapOrdersProps } from "@orbs-network/twap-ui-quickswap";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
-import { TokenListItem } from "./types";
+import { SelectorOption, TokenListItem } from "./types";
+import { TWAP } from "@orbs-network/twap-ui-quickswap";
 const config = Configs.QuickSwap;
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
@@ -81,63 +81,58 @@ const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectMo
     </Popup>
   );
 };
-const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8206.png";
-const DappComponent = () => {
+
+const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
 
-  const getTokenLogoURL = (address: string) => {
-    if (!dappTokens) return "";
-    const token = dappTokens[address];
-    if (!token) {
-      return null;
-    }
-    return token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
-  };
+  const getTokenLogoURL = useCallback(
+    (address: string) => {
+      if (!dappTokens) return "";
+      const token = dappTokens[address];
+      if (!token) {
+        return null;
+      }
+      return token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
+    },
+    [_.size(dappTokens)]
+  );
 
-  const twapProps: QuickSwapTWAPProps = {
-    connect,
-    account,
-    srcToken: zeroAddress,
-    dstToken: erc20sData.poly.USDC.address, //USDC
-    dappTokens,
-    onSrcTokenSelected: (token: any) => console.log(token),
-    onDstTokenSelected: (token: any) => console.log(token),
-    TokenSelectModal,
-    provider: library,
-    getTokenLogoURL,
-    isDarkTheme,
-  };
-  const ordersProps: QuickSwapOrdersProps = { account, dappTokens, provider: library, getTokenLogoURL, isDarkTheme };
+  return (
+    <TWAP
+      connect={connect}
+      account={account}
+      srcToken={zeroAddress}
+      dstToken={erc20sData.poly.USDC.address} //USDC
+      dappTokens={dappTokens}
+      onSrcTokenSelected={(token: any) => console.log(token)}
+      onDstTokenSelected={(token: any) => console.log(token)}
+      TokenSelectModal={TokenSelectModal}
+      provider={library}
+      getTokenLogoURL={getTokenLogoURL}
+      isDarkTheme={isDarkTheme}
+      ordersContainerId="orders"
+      limit={limit}
+    />
+  );
+};
+const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8206.png";
+const DappComponent = () => {
+  const [selected, setSelected] = useState(SelectorOption.TWAP);
+
+  const { isDarkTheme } = useTheme();
 
   return (
     <StyledQuickswap isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledQuickswapLayout name={config.name}>
-        <UISelector
-          options={[
-            {
-              title: "TWAP",
-              component: (
-                <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
-                  <TWAP {...twapProps} />
-                </StyledQuickswapBox>
-              ),
-            },
-            {
-              title: "LIMIT",
-              component: (
-                <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
-                  <Limit {...twapProps} />
-                </StyledQuickswapBox>
-              ),
-            },
-          ]}
-        />
+        <UISelector select={setSelected} selected={selected} limit={true} />
         <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
-          <Orders {...ordersProps} />
+          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledQuickswapBox>
+
+        <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0} id="orders" />
       </StyledQuickswapLayout>
     </StyledQuickswap>
   );
