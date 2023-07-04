@@ -8,9 +8,10 @@ export interface Props {
   className?: string;
   disabled?: boolean;
   variant?: SwitchVariant;
+  style?: CSSProperties;
 }
 
-function Switch({ value, onChange, className = "", disabled = false, variant }: Props) {
+function Switch({ value, onChange, className = "", disabled = false, variant, style = {} }: Props) {
   const props = {
     style: { pointerEvents: disabled ? "none" : "unset" } as CSSProperties,
     className: `twap-switch ${className}`,
@@ -19,10 +20,10 @@ function Switch({ value, onChange, className = "", disabled = false, variant }: 
   };
 
   if (variant === "ios") {
-    return <IOSSwitch {...props} />;
+    return <IOSSwitch {...props} style={style} />;
   }
 
-  return <MuiSwitch {...props} />;
+  return <MuiSwitch {...props} style={style} />;
 }
 
 const IOSSwitch = styled((props: SwitchProps) => <MuiSwitch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(({ theme }) => ({

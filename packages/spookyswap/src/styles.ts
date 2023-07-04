@@ -463,6 +463,9 @@ export const configureStyles = (darkMode?: boolean) => {
           display: "flex",
           justifyContent: "space-between",
         },
+        span: {
+          marginRight: 5,
+        },
       },
       ".twap-input": {
         width: "100%",

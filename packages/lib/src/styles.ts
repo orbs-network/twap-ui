@@ -47,6 +47,7 @@ export const textOverflow: CSSProperties = {
 
 export const StyledOneLineText = styled(StyledText)({
   ...textOverflow,
+  minWidth: 0,
 });
 
 export const StyledSmallTitle = styled(StyledOneLineText)({

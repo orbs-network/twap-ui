@@ -132,7 +132,7 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             {" "}
             <StyledTokenPanelInputContainer>
               <StyledTokenPanelInput placeholder="0.00" isSrc={isSrcToken} />
-              <StyledUSD symbol="USD" isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
+              <StyledUSD prefix="USD" isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
               {isSrcToken && <SrcTokenPercentSelector />}
             </StyledTokenPanelInputContainer>
           </Container>
@@ -332,7 +332,7 @@ const TradeSize = () => {
       <Components.Labels.ChunksAmountLabel />
       <TwapStyles.StyledRowFlex style={{ width: "unset", minWidth: 0 }}>
         <Components.TradeSize hideLabel={true} />
-        <Components.ChunksUSD symbol="USD" emptyUi={<></>} />
+        <Components.ChunksUSD prefix="USD" emptyUi={<></>} />
       </TwapStyles.StyledRowFlex>
     </TwapStyles.StyledRowFlex>
   );

@@ -10,25 +10,27 @@ const USD = ({
   isLoading = false,
   value,
   className = "",
-  prefix = "",
+  prefix = `${SQUIGLE} $ `,
+  suffix = "",
   emptyUi,
   onlyValue,
-  symbol,
+  tooltipPrefix = `${SQUIGLE} $ `,
 }: {
-  prefix?: string;
   isLoading?: boolean;
   value?: string | number;
   className?: string;
   emptyUi?: React.ReactNode;
   onlyValue?: boolean;
-  symbol?: string;
+  suffix?: string;
+  prefix?: string;
+  tooltipPrefix?: string;
 }) => {
   const formattedValue = useFormatNumber({ value });
   const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
 
   if (value == null) return null;
   return (
-    <Tooltip text={`${!symbol ? "$" : ""} ${formattedValueTooltip} ${symbol}`} placement="bottom">
+    <Tooltip text={`${tooltipPrefix}${formattedValueTooltip}${suffix}`} placement="bottom">
       <StyledLabel loading={isLoading} className={`twap-usd ${className} ${value === "0" ? "twap-usd-zero" : ""} `}>
         {value == 0 && emptyUi ? (
           <>{emptyUi}</>
@@ -36,7 +38,9 @@ const USD = ({
           <>{formattedValue}</>
         ) : (
           <>
-            {prefix} {SQUIGLE} {!symbol ? "$" : ""} <>{formattedValue}</> {symbol}
+            {prefix}
+            <>{formattedValue}</>
+            {suffix}
           </>
         )}
       </StyledLabel>

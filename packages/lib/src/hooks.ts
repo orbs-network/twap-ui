@@ -581,6 +581,7 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
   return useQuery(
     ["useOrderPastEvents", order.order.id, lib?.maker, order.ui.progress],
     async () => {
+      
       const orderEndDate = Math.min(order.order.ask.deadline, (await block()).timestamp);
       const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order.order.time * 1000), findBlock(orderEndDate * 1000)]);
 
@@ -606,6 +607,7 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
         }),
         getPriceUsd(order.ui.dstToken),
       ]);
+
 
       const dstAmountOut = _.reduce(
         events,
@@ -641,4 +643,10 @@ export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { v
   });
 
   return result.value?.toString();
+};
+
+export const useSrcAmountNotZero = () => {
+  const value = useTwapStore((store) => store.getSrcAmount());
+
+  return value.gt(0);
 };

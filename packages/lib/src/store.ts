@@ -49,9 +49,14 @@ const initialState: State = {
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
     setLimitOrderPriceUi: () => {
-      set({ limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false } });
+      set({ limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false, custom: false } });
     },
-    setLimitOrder: (isLimitOrder?: boolean) => set({ isLimitOrder }),
+    setLimitOrder: (isLimitOrder?: boolean) => {
+      set({ isLimitOrder });
+      if (!isLimitOrder) {
+        set({ limitPriceUi: initialState.limitPriceUi });
+      }
+    },
     setStoreOverrideValues: (storeOverride: StoreOverride) => {
       set({
         ...initialState,

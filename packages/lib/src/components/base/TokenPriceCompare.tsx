@@ -71,5 +71,7 @@ const StyledContainer = styled(Box)({
   "& .twap-token-logo": {
     width: 22,
     height: 22,
+    minWidth: 22,
+    minHeight: 22,
   },
 });

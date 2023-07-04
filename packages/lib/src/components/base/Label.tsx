@@ -3,17 +3,27 @@ import React, { ReactElement, ReactNode } from "react";
 import Tooltip from "./Tooltip";
 import { SlInfo } from "react-icons/sl";
 import Icon from "./Icon";
-import { StyledRowFlex, StyledText } from "../../styles";
+import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
+import { Typography } from "@mui/material";
 
 interface Props {
   children: string | number | ReactNode;
   tooltipText?: string | ReactElement;
   className?: string;
   fontSize?: number;
+  subtitle?: boolean;
   placement?: "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top";
 }
 
-function Label({ children, tooltipText, className = "", fontSize, placement }: Props) {
+function Label({ children, tooltipText, className = "", fontSize, placement, subtitle }: Props) {
+  if (subtitle) {
+    return (
+      <StyledColumnFlex className={`twap-label ${className}`}>
+        <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
+        <Typography>{tooltipText}</Typography>
+      </StyledColumnFlex>
+    );
+  }
   return (
     <StyledContainer className={`twap-label ${className}`}>
       <StyledLabel style={{ fontSize }}>{children}</StyledLabel>

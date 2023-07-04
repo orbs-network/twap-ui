@@ -10,7 +10,7 @@ import { QueryClient } from "@tanstack/react-query";
 import React, { ReactNode } from "react";
 import { useOrderPastEvents, useOrdersHistoryQuery, usePrepareUSDValues } from "../src/hooks";
 import { TwapContext, TWAPContextProps } from "../src/context";
-import {  OrderUI } from "../src/types";
+import { OrderUI } from "../src/types";
 import { useChaiBigNumber } from "@defi.org/web3-candies/dist/hardhat";
 
 useChaiBigNumber();
@@ -21,7 +21,6 @@ const createQueryProvider = () => {
 };
 
 const createQueryProviderWithContext = () => {
-
   const queryClient = new QueryClient();
   return ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
@@ -232,7 +231,7 @@ describe("store", () => {
         wrapper: createQueryProvider(),
       });
 
-      await waitFor(() => expect(result.current.status).eq("success"));
+      await waitFor(() => expect(result.current.isLoading).eq(false));      
       expect(result.current.data?.dstAmountOut).eq("66.977333");
     });
   });

@@ -1,4 +1,4 @@
-import { FC, ReactNode, useCallback, useEffect } from "react";
+import { CSSProperties, FC, ReactElement, ReactNode, useCallback } from "react";
 import {
   Balance,
   Button,
@@ -56,6 +56,8 @@ import { IoIosArrowDown } from "react-icons/io";
 import { IconType } from "react-icons";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
+import { GrPowerReset } from "react-icons/gr";
+import { Styles } from "..";
 const ODNP = require("@open-defi-notification-protocol/widget"); // eslint-disable-line
 
 const odnp = new ODNP();
@@ -159,14 +161,14 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
   );
 };
 
-export const TokenLogo = ({ isSrc }: { isSrc?: boolean }) => {
+export const TokenLogo = ({ isSrc, className = "" }: { isSrc?: boolean; className?: string }) => {
   const srcTokenLogo = useTwapStore((store) => store.srcToken);
   const dstTokenLogo = useTwapStore((store) => store.dstToken);
 
   if (isSrc) {
-    return <Logo logo={srcTokenLogo?.logoUrl} />;
+    return <Logo className={className} logo={srcTokenLogo?.logoUrl} />;
   }
-  return <Logo logo={dstTokenLogo?.logoUrl} />;
+  return <Logo className={className} logo={dstTokenLogo?.logoUrl} />;
 };
 
 export function TokenLogoAndSymbol({ isSrc, reverse }: { isSrc?: boolean; reverse?: boolean }) {
@@ -270,7 +272,7 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, onSrc
   return <Component isOpen={true} onClose={onClose} onSelect={onTokenSelected} srcTokenSelected={undefined} dstTokenSelected={undefined} />;
 };
 
-export function LimitPriceToggle({ variant }: { variant?: SwitchVariant }) {
+export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; style?: CSSProperties }) {
   const loadingState = useLoadingState();
   const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
   const translations = useTwapContext().translations;
@@ -281,7 +283,7 @@ export function LimitPriceToggle({ variant }: { variant?: SwitchVariant }) {
 
   return (
     <Tooltip text={isLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
-      <Switch variant={variant} disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={(value: boolean) => setLimitOrder(value)} />
+      <Switch style={style} variant={variant} disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={(value: boolean) => setLimitOrder(value)} />
     </Tooltip>
   );
 }
@@ -311,11 +313,23 @@ export function LimitPriceRadioGroup() {
   );
 }
 
-export function ChunksUSD({ onlyValue, emptyUi, symbol }: { onlyValue?: boolean; emptyUi?: React.ReactNode; symbol?: string }) {
+export function ChunksUSD({
+  onlyValue,
+  emptyUi,
+  suffix,
+  prefix,
+  tooltipPrefix,
+}: {
+  onlyValue?: boolean;
+  emptyUi?: React.ReactNode;
+  suffix?: string;
+  prefix?: string;
+  tooltipPrefix?: string;
+}) {
   const usd = useTwapStore((state) => state.getSrcChunkAmountUsdUi());
   const loading = useLoadingState().srcUsdLoading;
 
-  return <USD symbol={symbol} value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={loading} />;
+  return <USD tooltipPrefix={tooltipPrefix} prefix={prefix} suffix={suffix} value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={loading} />;
 }
 
 export const TokenBalance = ({
@@ -352,13 +366,15 @@ export function TokenUSD({
   emptyUi,
   className = "",
   onlyValue,
-  symbol,
+  prefix,
+  suffix,
 }: {
   isSrc?: boolean;
   emptyUi?: ReactNode;
   className?: string;
   onlyValue?: boolean;
-  symbol?: string;
+  prefix?: string;
+  suffix?: string;
 }) {
   const srcUSD = useTwapStore((state) => state.getSrcAmountUsdUi());
   const srcLoading = useLoadingState().srcUsdLoading;
@@ -367,7 +383,7 @@ export function TokenUSD({
   const usd = isSrc ? srcUSD : dstUSD;
   const isLoading = isSrc ? srcLoading : dstLoading;
 
-  return <USD symbol={symbol} onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
+  return <USD suffix={suffix} prefix={prefix} onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
 }
 
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
@@ -476,34 +492,45 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
   );
 };
 
-export function LimitPriceInput({ placeholder = "0.00", className = "", showDefault }: { placeholder?: string; className?: string; showDefault?: boolean }) {
+export const useLimitPriceComponents = ({
+  placeholder = "0.00",
+  showDefault,
+  toggleIcon = <TbArrowsRightLeft style={{ width: 20, height: 20 }} />,
+}: {
+  placeholder?: string;
+  showDefault?: boolean;
+  toggleIcon?: ReactElement;
+}) => {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const { leftToken, rightToken, onChange, limitPrice, toggleInverted, custom } = useLimitPrice();
-  const setLimitOrderPriceUi = useTwapStore((store) => store.setLimitOrderPriceUi);
-  const srcUsd = useTwapStore((store) => store.srcUsd);
-  const dstUsd = useTwapStore((store) => store.dstUsd);
-
-  useEffect(() => {
-    if (isLimitOrder && !custom && !srcUsd.isZero() && !dstUsd.isZero()) {
-      setLimitOrderPriceUi();
-    }
-  }, [custom, srcUsd, dstUsd, setLimitOrderPriceUi, isLimitOrder]);
+  const { leftToken, rightToken, onChange, limitPrice, toggleInverted } = useLimitPrice();
 
   const _isLimitOrder = isLimitOrder || showDefault;
 
   if (!_isLimitOrder || !leftToken || !rightToken) return null;
 
+  return {
+    leftToken: <TokenDisplay singleToken symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />,
+    rightToken: <TokenDisplay symbol={rightToken?.symbol} logo={rightToken?.logoUrl} />,
+    input: <NumericInput placeholder={placeholder} onChange={onChange} value={limitPrice} />,
+    toggle: <IconButton onClick={toggleInverted} icon={toggleIcon} />,
+  };
+};
+
+export function LimitPriceInput({ placeholder = "0.00", className = "", showDefault }: { placeholder?: string; className?: string; showDefault?: boolean }) {
+  const components = useLimitPriceComponents({ placeholder, showDefault });
+
+  if (!components) return null;
   return (
     <StyledLimitPriceInput className={`twap-limit-price-input ${className}`}>
       <StyledRowFlex gap={10} style={{ paddingLeft: 5 }} width="fit-content">
-        <TokenDisplay singleToken symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />
+        {components.leftToken}
         <StyledText>=</StyledText>
       </StyledRowFlex>
-      <NumericInput placeholder={placeholder} onChange={onChange} value={limitPrice} />
+      {components.input}
 
       <StyledRowFlex gap={10} width="fit-content">
-        <TokenDisplay symbol={rightToken?.symbol} logo={rightToken?.logoUrl} />
-        <IconButton onClick={toggleInverted} icon={<TbArrowsRightLeft style={{ width: 20, height: 20 }} />}></IconButton>
+        {components.rightToken}
+        {components.toggle}
       </StyledRowFlex>
     </StyledLimitPriceInput>
   );
@@ -629,10 +656,10 @@ export const MinDstAmountOut = () => {
   );
 };
 
-export const OrderSummaryDetailsMinDstAmount = () => {
+export const OrderSummaryDetailsMinDstAmount = ({ subtitle }: { subtitle?: boolean }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryMinDstAmountOutLabel />
+      <OrderSummaryMinDstAmountOutLabel subtitle={subtitle} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <>
           <TokenLogoAndSymbol isSrc={false} reverse={true} />
@@ -643,10 +670,10 @@ export const OrderSummaryDetailsMinDstAmount = () => {
   );
 };
 
-export const OrderSummaryDetailsTradeInterval = () => {
+export const OrderSummaryDetailsTradeInterval = ({ subtitle }: { subtitle?: boolean }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryTradeIntervalLabel />
+      <OrderSummaryTradeIntervalLabel subtitle={subtitle} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <TradeIntervalAsText />
       </StyledSummaryRowRight>
@@ -654,10 +681,10 @@ export const OrderSummaryDetailsTradeInterval = () => {
   );
 };
 
-export const OrderSummaryDetailsTotalChunks = () => {
+export const OrderSummaryDetailsTotalChunks = ({ subtitle }: { subtitle?: boolean }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryTotalChunksLabel />
+      <OrderSummaryTotalChunksLabel subtitle={subtitle} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <TotalChunks />
       </StyledSummaryRowRight>
@@ -665,10 +692,10 @@ export const OrderSummaryDetailsTotalChunks = () => {
   );
 };
 
-export const OrderSummaryDetailsChunkSize = () => {
+export const OrderSummaryDetailsChunkSize = ({ subtitle }: { subtitle?: boolean }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryChunkSizeLabel />
+      <OrderSummaryChunkSizeLabel subtitle={subtitle} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <>
           <TokenLogoAndSymbol isSrc={true} reverse={true} />
@@ -679,10 +706,10 @@ export const OrderSummaryDetailsChunkSize = () => {
   );
 };
 
-export const OrderSummaryDetailsOrderType = () => {
+export const OrderSummaryDetailsOrderType = ({ subtitle }: { subtitle?: boolean }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryOrderTypeLabel />
+      <OrderSummaryOrderTypeLabel subtitle={subtitle} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <OrderType />
       </StyledSummaryRowRight>
@@ -690,10 +717,10 @@ export const OrderSummaryDetailsOrderType = () => {
   );
 };
 
-export const OrderSummaryDetailsDeadline = () => {
+export const OrderSummaryDetailsDeadline = ({ subtitle }: { subtitle?: boolean }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryDeadlineLabel />
+      <OrderSummaryDeadlineLabel subtitle={subtitle} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <Deadline />
       </StyledSummaryRowRight>
@@ -701,15 +728,15 @@ export const OrderSummaryDetailsDeadline = () => {
   );
 };
 
-export const OrderSummaryDetails = ({ className = "" }: { className?: string }) => {
+export const OrderSummaryDetails = ({ className = "", subtitle }: { className?: string; subtitle?: boolean }) => {
   return (
     <StyledSummaryDetails className={`twap-order-summary-details ${className}`}>
-      <OrderSummaryDetailsDeadline />
-      <OrderSummaryDetailsOrderType />
-      <OrderSummaryDetailsChunkSize />
-      <OrderSummaryDetailsTotalChunks />
-      <OrderSummaryDetailsTradeInterval />
-      <OrderSummaryDetailsMinDstAmount />
+      <OrderSummaryDetailsDeadline subtitle={subtitle} />
+      <OrderSummaryDetailsOrderType subtitle={subtitle} />
+      <OrderSummaryDetailsChunkSize subtitle={subtitle} />
+      <OrderSummaryDetailsTotalChunks subtitle={subtitle} />
+      <OrderSummaryDetailsTradeInterval subtitle={subtitle} />
+      <OrderSummaryDetailsMinDstAmount subtitle={subtitle} />
     </StyledSummaryDetails>
   );
 };
@@ -760,16 +787,16 @@ export const OrderSummaryTokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
   );
 };
 
-export const AcceptDisclaimer = () => {
+export const AcceptDisclaimer = ({ variant, className }: { variant?: SwitchVariant; className?: string }) => {
   const translations = useTwapContext().translations;
 
   const setDisclaimerAccepted = useTwapStore((store) => store.setDisclaimerAccepted);
   const disclaimerAccepted = useTwapStore((store) => store.disclaimerAccepted);
 
   return (
-    <StyledRowFlex gap={5} justifyContent="flex-start" className="twap-disclaimer-switch">
-      <StyledText>{translations.acceptDisclaimer}</StyledText>
-      <Switch value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
+    <StyledRowFlex gap={5} justifyContent="flex-start" className={`twap-disclaimer-switch ${className}`}>
+      <Label>{translations.acceptDisclaimer}</Label>
+      <Switch variant={variant} value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
     </StyledRowFlex>
   );
 };
@@ -801,6 +828,18 @@ export const OrderSummaryLimitPriceToggle = () => {
   );
 };
 
+export const OrderSummaryPriceCompare = () => {
+  const { isLimitOrder, toggleInverted, limitPrice, leftToken, rightToken } = useLimitPrice();
+
+  const market = useMarketPrice();
+
+  if (isLimitOrder) {
+    return <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice} toggleInverted={toggleInverted} />;
+  }
+
+  return <TokenPriceCompare leftToken={market.leftToken} rightToken={market.rightToken} price={market.marketPrice} toggleInverted={market.toggleInverted} />;
+};
+
 export const OrderSummaryLimitPrice = () => {
   const translations = useTwapContext().translations;
 
@@ -812,11 +851,11 @@ export const OrderSummaryLimitPrice = () => {
   );
 };
 
-export const DisclaimerText = () => {
+export const DisclaimerText = ({ className = "" }: { className?: string }) => {
   const translations = useTwapContext().translations;
   const lib = useTwapStore((state) => state.lib);
   return (
-    <StyledTradeInfoExplanation className="twap-disclaimer-text">
+    <StyledTradeInfoExplanation className={`twap-disclaimer-text ${className}`}>
       <StyledText>{translations.disclaimer1}</StyledText>
       <StyledText>{translations.disclaimer2}</StyledText>
       <StyledText>{translations.disclaimer3}</StyledText>
@@ -973,10 +1012,21 @@ const StyledOdnpButton = styled("button")({
   },
 });
 
-export const TradeSize = ({ hideLabel }: { hideLabel?: boolean }) => {
+export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
   const value = useTwapStore((store) => store.getSrcChunkAmountUi());
-  const srcToken = useTwapStore((store) => store.srcToken);
   const formattedValue = useFormatNumber({ value });
+  const srcToken = useTwapStore((store) => store.srcToken);
+
+  const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
+  return (
+    <Tooltip text={`${symbol ? `${formattedValueTooltip} ${srcToken?.symbol}` : formattedValueTooltip}`}>
+      <Typography className="twap-trade-size-value">{`${symbol ? `${formattedValue} ${srcToken?.symbol}` : formattedValue}`}</Typography>
+    </Tooltip>
+  );
+};
+
+export const TradeSize = ({ hideLabel }: { hideLabel?: boolean }) => {
+  const srcToken = useTwapStore((store) => store.srcToken);
 
   if (!srcToken && !hideLabel) {
     return <ChunksAmountLabel />;
@@ -986,10 +1036,7 @@ export const TradeSize = ({ hideLabel }: { hideLabel?: boolean }) => {
       {!hideLabel && <ChunksAmountLabel />}
       <StyledRowFlex gap={7} className="content">
         <TokenLogo isSrc={true} />
-        <Tooltip text={`${formattedValue} ${srcToken?.symbol}`}>
-          <Typography className="value">{formattedValue}</Typography>
-        </Tooltip>
-        <TokenSymbol isSrc={true} />
+        <TradeSizeValue symbol={true} />
       </StyledRowFlex>
     </StyledTradeSize>
   );
@@ -1055,4 +1102,40 @@ export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
   const address = isSrc ? srcToken?.address : dstToken?.address;
 
   return <Copy value={address} />;
+};
+
+export const ResetLimitButton = () => {
+  const setLimitOrderPriceUi = useTwapStore((store) => store.setLimitOrderPriceUi);
+  const { custom } = useLimitPrice();
+  const onClick = () => {
+    setLimitOrderPriceUi();
+  };
+
+  if (!custom) return null;
+
+  return (
+    <Tooltip text="Reset limit price">
+      <IconButton onClick={onClick} className="twap-limit-reset">
+        <Icon icon={<GrPowerReset style={{ width: 18, height: 18 }} />} />
+      </IconButton>
+    </Tooltip>
+  );
+};
+
+export const SrcToken = () => {
+  return (
+    <Styles.StyledRowFlex style={{ width: "auto" }}>
+      <TokenLogo isSrc={true} />
+      <TokenSymbol isSrc={true} />
+    </Styles.StyledRowFlex>
+  );
+};
+
+export const DstToken = () => {
+  return (
+    <Styles.StyledRowFlex style={{ width: "auto" }}>
+      <TokenLogo />
+      <TokenSymbol />
+    </Styles.StyledRowFlex>
+  );
 };

@@ -1,11 +1,12 @@
 import { createContext, useContext, useEffect, useMemo } from "react";
 import { TwapLibProps } from "./types";
-import { useInitLib, useParseTokens, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
+import { useInitLib, useLimitPrice, useParseTokens, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
 import { TokenData } from "@orbs-network/twap";
 import { logger } from "./utils";
+import { useTwapStore } from "./store";
 
 analytics.onModuleLoad();
 
@@ -22,13 +23,36 @@ const queryClient = new QueryClient({
   },
 });
 
-const WrappedTwap = (props: TwapLibProps) => {
-  const setTokensFromDappCallback = useSetTokensFromDapp();
-  const updateStoreOveride = useUpdateStoreOveride();
+const useLimitPriceUpdater = () => {
+  const setLimitOrderPriceUi = useTwapStore((store) => store.setLimitOrderPriceUi);
+  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+  const custom = useLimitPrice().custom;
 
+  const srcUsd = useTwapStore((store) => store.srcUsd);
+  const dstUsd = useTwapStore((store) => store.dstUsd);
+
+  useEffect(() => {
+    if (isLimitOrder && !custom && !srcUsd.isZero() && !dstUsd.isZero()) {
+      setLimitOrderPriceUi();
+    }
+  }, [custom, srcUsd, dstUsd, setLimitOrderPriceUi, isLimitOrder]);
+};
+
+const Listener = () => {
+  const setTokensFromDappCallback = useSetTokensFromDapp();
+
+  useLimitPriceUpdater();
   useEffect(() => {
     setTokensFromDappCallback();
   }, [setTokensFromDappCallback]);
+
+  return null;
+};
+
+const WrappedTwap = (props: TwapLibProps) => {
+  const updateStoreOveride = useUpdateStoreOveride();
+
+  console.log("context render");
 
   const initLib = useInitLib();
 
@@ -36,8 +60,6 @@ const WrappedTwap = (props: TwapLibProps) => {
     logger("Context initialized");
     analytics.onTwapPageView();
   }, []);
-
-  console.log("test render");
 
   useEffect(() => {
     updateStoreOveride(props.storeOverride);
@@ -48,7 +70,12 @@ const WrappedTwap = (props: TwapLibProps) => {
     initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId });
   }, [props.provider, props.config, props.account, props.connectedChainId]);
 
-  return <>{props.children}</>;
+  return (
+    <>
+      <Listener />
+      {props.children}
+    </>
+  );
 };
 
 export const TwapAdapter = (props: TwapLibProps) => {

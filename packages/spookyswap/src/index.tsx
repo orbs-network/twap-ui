@@ -116,7 +116,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
               </TwapStyles.StyledOverflowContainer>
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex className="twap-balance-container" justifyContent="flex-start">
-              <Components.TokenBalance label={translations.balance} isSrc={isSrcToken} />
+              <Components.TokenBalance label={`${translations.balance}:`} isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
@@ -232,7 +232,7 @@ const LimitPanel = () => {
         </Box>
         <TokenPanel />
       </Box>
-      <LimitPrice />
+      <LimitPrice limit={true} />
       <TwapStyles.StyledRowFlex className="twap-create-order-btn">
         <Components.SubmitButton />
       </TwapStyles.StyledRowFlex>
