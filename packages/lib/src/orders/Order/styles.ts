@@ -1,6 +1,7 @@
 import { Accordion } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, Styles as TwapStyles } from "../..";
+import { Styles as TwapStyles } from "../..";
+import { Card } from "../../components/base";
 
 export const StyledFlex = styled(TwapStyles.StyledRowFlex)({
   justifyContent: "space-between",
@@ -25,7 +26,7 @@ export const StyledTokenDisplay = styled(Box)({
   "& .twap-text": {},
 });
 
-export const StyledContainer = styled(Components.Base.Card)({});
+export const StyledContainer = styled(Card)({});
 
 export const StyledAccordion = styled(Accordion)({
   width: "100%",
@@ -58,4 +59,10 @@ export const StyledPreview = styled(Box)({
   "@media(max-width: 600px)": {
     zoom: 0.85,
   },
+});
+
+export const StyledSeperator = styled(Box)({
+  width: "100%",
+  height: 1,
+  background: "#373E55",
 });

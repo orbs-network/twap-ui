@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material";
+import { Tab, Tabs, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { CSSProperties } from "react";
 export const StyledShadowContainer = styled(Box)({
@@ -85,4 +85,39 @@ export const StyledRowFlex = styled(Box)(
 export const StyledOverflowContainer = styled(StyledRowFlex)({
   ...textOverflow,
   justifyContent: "flex-start",
+});
+
+export const StyledOrdersTab = styled(Tab)({
+  fontSize: 13,
+  width: "calc(100% / 4)",
+  padding: "0px",
+  textTransform: "unset",
+  fontFamily: "inherit",
+
+  "@media(max-width: 600px)": {
+    padding: "0px 20px",
+    width: "unset",
+  },
+});
+
+export const StyledOrdersTabs = styled(Tabs)({
+  border: "1px solid #202432",
+  width: "100%",
+  borderRadius: 6,
+  padding: 3,
+  "& .MuiTabs-indicator": {
+    height: "100%",
+
+    zIndex: 1,
+  },
+  "& .MuiTouchRipple-root": {},
+  "& .MuiButtonBase-root": {
+    zIndex: 9,
+  },
+  "& .Mui-selected": {},
+});
+
+export const StyledOrdersLists = styled(Box)({
+  overflow: "auto",
+  height: "100%",
 });

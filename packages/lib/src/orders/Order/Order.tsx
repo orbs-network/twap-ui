@@ -3,10 +3,11 @@ import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import OrderPreview from "./OrderPreview";
 import OrderExpanded from "./OrderExpanded";
-import { OrderSeparator } from "./Components";
 import { OrderUI } from "../../types";
 import { AccordionSummary } from "@mui/material";
-import { Components } from "../..";
+import { StyledSeperator } from "./styles";
+import { CSSProperties } from "react";
+import { Card } from "../../components/base";
 
 export interface Props {
   order: OrderUI;
@@ -32,6 +33,10 @@ function OrderComponent({ order, onExpand, expanded }: Props) {
   );
 }
 
+const OrderSeparator = ({ className = "", style }: { className?: string; style?: CSSProperties }) => {
+  return <StyledSeperator className={`twap-order-separator ${className}`} style={style} />;
+};
+
 const StyledAccordionDetails = styled(AccordionDetails)({
   marginTop: 10,
 });
@@ -45,7 +50,7 @@ export const StyledAccordionSummary = styled(AccordionSummary)({
   padding: 0,
 });
 
-const StyledContainer = styled(Components.Base.Card)({
+const StyledContainer = styled(Card)({
   cursor: "pointer",
   "& *": {
     color: "inherit!important",

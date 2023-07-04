@@ -1,5 +1,5 @@
 import { GlobalStyles, styled, Typography } from "@mui/material";
-import { Components, Translations, TwapAdapter, Orders, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, TWAPProps, store } from "@orbs-network/twap-ui";
+import { Components, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, TWAPProps, store } from "@orbs-network/twap-ui";
 import { memo, ReactNode, useCallback, useState, useEffect, createContext, useContext, CSSProperties } from "react";
 import translations from "./i18n/en.json";
 import { Box } from "@mui/system";
@@ -33,6 +33,11 @@ import {
   StyledRecipient,
   StyledOrderSummaryModalPadding,
   StyledDisclaimer,
+  StyledOrders,
+  StyledOrdersList,
+  StyledOrdersTabs,
+  StyledODNP,
+  StyledOrdersHeader,
 } from "./styles";
 import { IoWalletOutline } from "react-icons/io5";
 import { IoIosArrowDown } from "react-icons/io";
@@ -109,6 +114,9 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
+  const { isDarkTheme } = useAdapterContext();
+
+  console.log(isDarkTheme);
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -118,7 +126,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     <StyledTokenPanel className="twap-token-panel">
       <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
 
-      <StyledTokenSelect onClick={() => setTokenListOpen(true)}>
+      <StyledTokenSelect onClick={() => setTokenListOpen(true)} darktheme={isDarkTheme ? 1 : 0}>
         <Components.TokenLogo isSrc={isSrcToken} />
         <TwapStyles.StyledRowFlex gap={6}>
           <Components.TokenSymbol isSrc={isSrcToken} />
@@ -135,7 +143,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
           {isSrcToken && <SrcTokenPercentSelector />}
         </TwapStyles.StyledRowFlex>
       </StyledPanelRight>
-      <StyledTokenInputBalance>
+      <StyledTokenInputBalance darktheme={isDarkTheme ? 1 : 0}>
         <IoWalletOutline />
         <Components.TokenBalance emptyUi={<>0.00</>} label="Balance:" showSymbol={true} isSrc={isSrcToken} />
       </StyledTokenInputBalance>
@@ -154,8 +162,9 @@ const MarketPrice = () => {
 };
 
 const USD = ({ children }: { children: ReactNode }) => {
+  const { isDarkTheme } = useAdapterContext();
   return (
-    <StyledUSD>
+    <StyledUSD darktheme={isDarkTheme ? 1 : 0}>
       <figure>$</figure>
       {children}
     </StyledUSD>
@@ -167,13 +176,14 @@ const percent = [0.25, 0.5, 0.75, 1];
 const SrcTokenPercentSelector = () => {
   const onPercentClick = hooks.useCustomActions().onPercentClick;
   const translations = useTwapContext().translations;
+  const { isDarkTheme } = useAdapterContext();
 
   const onClick = (value: number) => {
     onPercentClick(value);
   };
 
   return (
-    <StyledPercentSelect>
+    <StyledPercentSelect darktheme={isDarkTheme ? 1 : 0}>
       {percent.map((it) => {
         TwapStyles.StyledRowFlex;
         const text = it === 1 ? translations.max : `${it * 100}%`;
@@ -350,15 +360,30 @@ export const TWAP = (props: ChronosTWAPProps) => {
         dstToken={props.dstToken}
         storeOverride={props.limit ? limitStoreOverride : undefined}
       >
-        <GlobalStyles styles={configureStyles() as any} />
+        <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
           <Components.Base.Portal id={props.ordersContainerId}>
-            <Orders disableAnimation={true} />
+            <Orders />
           </Components.Base.Portal>
         </AdapterContextProvider>
       </TwapAdapter>
     </Box>
+  );
+};
+
+const getLabel = (name: string, amount: number) => `${name} (${amount})`;
+
+const Orders = () => {
+  return (
+    <StyledOrders className="twap-orders">
+      <StyledOrdersHeader>
+        <Components.Labels.OrdersLabel />
+        <StyledOrdersTabs getLabel={getLabel} />
+        <StyledODNP />
+      </StyledOrdersHeader>
+      <StyledOrdersList />
+    </StyledOrders>
   );
 };
 

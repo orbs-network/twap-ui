@@ -231,7 +231,7 @@ describe("store", () => {
         wrapper: createQueryProvider(),
       });
 
-      await waitFor(() => expect(result.current.isLoading).eq(false));      
+      await waitFor(() => expect(result.current.isLoading).eq(false));
       expect(result.current.data?.dstAmountOut).eq("66.977333");
     });
   });

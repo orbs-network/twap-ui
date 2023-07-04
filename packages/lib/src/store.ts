@@ -390,3 +390,13 @@ export const fillDelayText = (value: number, translations: Translations) => {
 export const handleFillDelayText = (text: string, minutes: number) => {
   return text.replace("{{minutes}}", minutes.toString());
 };
+
+interface OrdersStore {
+  tab: number;
+  setTab: (value: number) => void;
+}
+
+export const useOrdersStore = create<OrdersStore>((set) => ({
+  tab: 0,
+  setTab: (value: number) => set({ tab: value }),
+}));

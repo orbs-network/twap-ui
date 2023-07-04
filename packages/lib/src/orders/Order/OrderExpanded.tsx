@@ -1,8 +1,8 @@
 import { styled } from "@mui/system";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
-import { Components, Styles as TwapStyles } from "../..";
-import { Tooltip } from "../../components/base";
+import { Styles as TwapStyles } from "../..";
+import { Button, Label, TokenLogo, TokenPriceCompare, Tooltip } from "../../components/base";
 import { useTwapContext } from "../../context";
 import { useCancelOrder, useFormatNumber, useHistoryPrice } from "../../hooks";
 import { fillDelayText, useTwapStore } from "../../store";
@@ -32,7 +32,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
             {totalChunks}
           </Row>
           <Row label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
-            <Components.Base.TokenLogo logo={order.ui.srcToken.logoUrl} />
+            <TokenLogo logo={order.ui.srcToken.logoUrl} />
             <Tooltip text={`${srcChunkAmountUiTootlip} ${order.ui.srcToken.symbol}`}>
               {srcChunkAmountUi} {order.ui.srcToken?.symbol}
             </Tooltip>
@@ -40,12 +40,12 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
           </Row>
           {order.ui.isMarketOrder ? (
             <Row label={`${translations.minReceivedPerTrade}`} tooltip={translations.confirmationMinDstAmountTootipMarket}>
-              <Components.Base.TokenLogo logo={order.ui.dstToken.logoUrl} />
+              <TokenLogo logo={order.ui.dstToken.logoUrl} />
               {translations.none} {order.ui.dstToken?.symbol}
             </Row>
           ) : (
             <Row label={`${translations.minReceivedPerTrade}`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
-              <Components.Base.TokenLogo logo={order.ui.dstToken.logoUrl} />
+              <TokenLogo logo={order.ui.dstToken.logoUrl} />
               {dstMinAmountOutUi}
               {order.ui.dstToken?.symbol} ≈ $ <Tooltip text={dstMinAmountOutUsdUiTooltip}>{dstMinAmountOutUsdUi}</Tooltip>
             </Row>
@@ -73,7 +73,7 @@ export default OrderExpanded;
 const Row = ({ label, tooltip, children }: { label: string; tooltip: string; children: ReactNode }) => {
   return (
     <StyledDetailRow className="twap-order-expanded-row">
-      <Components.Base.Label tooltipText={tooltip}>{label}</Components.Base.Label>
+      <Label tooltipText={tooltip}>{label}</Label>
       <StyledDetailRowChildren className="twap-order-expanded-right">{children}</StyledDetailRowChildren>
     </StyledDetailRow>
   );
@@ -119,8 +119,8 @@ const OrderPrice = ({ order }: { order: OrderUI }) => {
   const translations = useTwapContext().translations;
   return (
     <StyledMarketPrice justifyContent="space-between" className="twap-market-price-section">
-      <Components.Base.Label>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</Components.Base.Label>
-      <Components.Base.TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={priceUi} toggleInverted={toggleInverted} />
+      <Label>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</Label>
+      <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={priceUi} toggleInverted={toggleInverted} />
     </StyledMarketPrice>
   );
 };
@@ -143,7 +143,7 @@ const StyledMarketPrice = styled(TwapStyles.StyledRowFlex)({
   },
 });
 
-export const StyledCancelOrderButton = styled(Components.Base.Button)({
+export const StyledCancelOrderButton = styled(Button)({
   background: "transparent",
   border: "unset",
   width: "fit-content",

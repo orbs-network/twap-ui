@@ -1,8 +1,10 @@
 import { styled } from "@mui/material";
+import { RxStopwatch } from "react-icons/rx";
 import { Styles } from "..";
 import { useTwapContext } from "../context";
 import { handleFillDelayText, useTwapStore } from "../store";
-import { Label } from "./base";
+import { StyledRowFlex } from "../styles";
+import { Icon, Label } from "./base";
 import { ResetLimitButton } from "./Components";
 
 export function ChunksAmountLabel() {
@@ -110,5 +112,18 @@ export const OrderSummaryMinDstAmountOutLabel = ({ subtitle }: { subtitle?: bool
     <Label subtitle={subtitle} tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
       {translations.minReceivedPerTrade}
     </Label>
+  );
+};
+
+export const OrdersLabel = ({ className = "" }: { className?: string }) => {
+  const translations = useTwapContext().translations;
+
+  return (
+    <StyledRowFlex justifyContent="flex-start" style={{ width: "auto" }}>
+      <Icon className="stopwatch-icon" icon={<RxStopwatch style={{ width: 19, height: 19 }} />} />
+      <Label className={`twap-orders-title ${className}`} tooltipText={translations.ordersTooltip} fontSize={16}>
+        {translations.orders}
+      </Label>
+    </StyledRowFlex>
   );
 };

@@ -229,8 +229,14 @@ export const StyledChronos = styled(StyledDapp)(({ isDarkMode }: { isDarkMode: n
 }));
 
 export const StyledChronosLayout = styled(DappLayout)({
-  maxWidth: 620,
   width: "calc(100% - 30px)",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+});
+
+export const StyledChronosGrid = styled(Box)({
+  width: "100%",
 });
 
 export const StyledQuickswapLayout = styled(DappLayout)({

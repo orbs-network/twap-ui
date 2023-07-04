@@ -1,11 +1,13 @@
-import { LinearProgress } from "@mui/material";
+import { LinearProgress, Typography } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { Components, OrderUI, Styles as TwapStyles, useTwapContext } from "../..";
-import { StyledText } from "../../styles";
-import { OrderTokenDisplay } from "./Components";
+import { OrderUI, Styles as TwapStyles, useTwapContext } from "../..";
+import { StyledRowFlex, StyledText } from "../../styles";
 import { HiOutlineArrowLongRight } from "react-icons/hi2";
 import { FiChevronDown } from "react-icons/fi";
 import { useFormatNumber, useOrderPastEvents } from "../../hooks";
+import { Icon, Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
+import { TokenData } from "@orbs-network/twap";
+import { ReactNode } from "react";
 
 function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }) {
   const { data, isFetching } = useOrderPastEvents(order, expanded);
@@ -23,7 +25,7 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
         </TwapStyles.StyledRowFlex>
         <StyledHeaderText className="twap-order-preview-date">{order.ui.createdAtUi}</StyledHeaderText>
       </StyledHeader>
-      <Components.Base.Tooltip
+      <Tooltip
         childrenStyles={{ width: "100%" }}
         placement="top"
         text={
@@ -35,10 +37,10 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
         }
       >
         <StyledPreviewLinearProgress variant="determinate" value={order.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
-      </Components.Base.Tooltip>
+      </Tooltip>
       <TwapStyles.StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start" }} className="twap-order-preview-tokens" justifyContent="space-between">
         <OrderTokenDisplay token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
-        <Components.Base.Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 30, height: 30 }} />} />
+        <Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 30, height: 30 }} />} />
         <OrderTokenDisplay isLoading={isFetching} token={order.ui.dstToken} amount={data?.dstAmountOut} usdValue={data?.dstAmountOutUsdPrice || ""} icon={<FiChevronDown />} />
       </TwapStyles.StyledRowFlex>
     </TwapStyles.StyledColumnFlex>
@@ -81,4 +83,102 @@ const StyledHeaderText = styled(StyledText)({
   fontSize: "inherit",
   fontWeight: "inherit",
   color: "#9CA3AF",
+});
+
+interface OrderTokenDisplayProps {
+  token?: TokenData;
+  amount?: string;
+  prefix?: string;
+  className?: string;
+  alighLeft?: boolean;
+  usdPrefix?: string;
+  usdValue: string;
+  icon?: ReactNode;
+  isLoading?: boolean;
+}
+export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading }: OrderTokenDisplayProps) => {
+  const tokenAmount = useFormatNumber({ value: amount });
+  const tokenAmountTooltip = useFormatNumber({ value: amount, decimalScale: 18 });
+
+  return (
+    <StyledTokenDisplay className={`twap-order-token-display ${className}`}>
+      <TwapStyles.StyledRowFlex style={{ alignItems: "flex-start" }}>
+        <StyledTokenLogo logo={token?.logoUrl} />
+        <TwapStyles.StyledColumnFlex gap={3} style={{ flex: 1, justifyContent: "flex-start" }}>
+          <StyledRowFlex className="twap-token-display-amount-and-symbol">
+            {isLoading && <Loader width={50} />}
+            {amount ? (
+              <Typography>
+                <Tooltip text={`${tokenAmountTooltip} ${token?.symbol}`}>
+                  {prefix ? `${prefix} ` : ""}
+                  {tokenAmount}
+                  {` ${token?.symbol}`}
+                </Tooltip>
+              </Typography>
+            ) : (
+              <Typography>{` ${token?.symbol}`}</Typography>
+            )}
+          </StyledRowFlex>
+          {!alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
+        </TwapStyles.StyledColumnFlex>
+        {icon && <StyledIcon>{icon}</StyledIcon>}
+      </TwapStyles.StyledRowFlex>
+      {alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
+    </StyledTokenDisplay>
+  );
+};
+
+const StyledIcon = styled("div")({
+  marginTop: 2,
+  svg: {
+    width: 20,
+    height: 20,
+  },
+});
+
+interface OrderUsdValueProps {
+  prefix?: string;
+  usdValue: string;
+  isLoading?: boolean;
+}
+
+export function OrderUsdValue({ usdValue, prefix = "≈", isLoading }: OrderUsdValueProps) {
+  const formattedValue = useFormatNumber({ value: usdValue });
+  const formattedValueTooltip = useFormatNumber({ value: usdValue, decimalScale: 18 });
+
+  if (isLoading) return <Loader width={100} height={20} />;
+  if (!usdValue) return null;
+
+  return (
+    <StyledTokenDisplayUsd loading={false} className="twap-order-token-display-usd">
+      <Tooltip text={`$ ${formattedValueTooltip}`}>
+        {prefix} $ {formattedValue}
+      </Tooltip>
+    </StyledTokenDisplayUsd>
+  );
+}
+
+const StyledTokenDisplayUsd = styled(SmallLabel)({
+  fontSize: 14,
+});
+
+const StyledTokenDisplay = styled(TwapStyles.StyledColumnFlex)({
+  gap: 3,
+  alignItems: "flex-start",
+  width: "fit-content",
+  fontSize: 16,
+  "& .twap-token-display-amount-and-symbol": {
+    fontSize: "inherit",
+  },
+});
+
+const StyledTokenLogo = styled(TokenLogo)({
+  width: 28,
+  height: 28,
+  top: -2,
+  position: "relative",
+  "@media(max-width: 600px)": {
+    width: 20,
+    height: 20,
+  },
 });
