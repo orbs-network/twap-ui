@@ -1,4 +1,4 @@
-import { StyledChronos, StyledChronosGrid, StyledChronosLayout, StyledModalContent } from "./styles";
+import { StyledChronos, StyledStyledChronosPanel, StyledStyledChronosOrders, StyledChronosLayout, StyledModalContent } from "./styles";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { TWAP } from "@orbs-network/twap-ui-chronos";
@@ -128,13 +128,13 @@ const DappComponent = () => {
     <StyledChronos isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledChronosLayout name={config.name}>
         <UISelector selected={selected} select={setSelected} limit={true} />
-        <StyledChronosGrid style={{ maxWidth: 600 }}>
+        <StyledStyledChronosPanel>
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-        </StyledChronosGrid>
+        </StyledStyledChronosPanel>
 
-        <StyledChronosGrid style={{ maxWidth: 930 }}>
+        <StyledStyledChronosOrders>
           <div id="orders" />
-        </StyledChronosGrid>
+        </StyledStyledChronosOrders>
       </StyledChronosLayout>
     </StyledChronos>
   );

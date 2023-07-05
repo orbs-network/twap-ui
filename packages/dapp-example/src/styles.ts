@@ -235,8 +235,25 @@ export const StyledChronosLayout = styled(DappLayout)({
   alignItems: "center",
 });
 
-export const StyledChronosGrid = styled(Box)({
+export const StyledStyledChronosPanel = styled(Box)({
   width: "100%",
+  maxWidth: 600,
+});
+
+export const StyledStyledChronosOrders = styled(Box)({
+  width: "100%",
+  maxWidth: 930,
+  "@media (max-width:1400px)": {
+    maxWidth: 700,
+    ".twap-chronos-orders-header": {
+      gap: 20,
+      flexDirection: "column",
+      alignItems: "flex-start",
+      "&-right": {
+        marginLeft: "unset",
+      },
+    },
+  },
 });
 
 export const StyledQuickswapLayout = styled(DappLayout)({
