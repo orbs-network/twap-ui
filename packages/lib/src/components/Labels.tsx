@@ -1,11 +1,9 @@
-import { styled } from "@mui/material";
 import { RxStopwatch } from "react-icons/rx";
 import { Styles } from "..";
 import { useTwapContext } from "../context";
 import { handleFillDelayText, useTwapStore } from "../store";
 import { StyledRowFlex } from "../styles";
 import { Icon, Label } from "./base";
-import { ResetLimitButton } from "./Components";
 
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;
@@ -31,17 +29,9 @@ export const LimitPriceLabel = () => {
   return (
     <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", position: "relative" }} gap={3}>
       <Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{translations.limitPrice}</Label>{" "}
-      <StyledResetLimit>
-        <ResetLimitButton />
-      </StyledResetLimit>
     </Styles.StyledRowFlex>
   );
 };
-
-const StyledResetLimit = styled("div")({
-  position: "absolute",
-  right: -35,
-});
 
 export const MaxDurationLabel = () => {
   const translations = useTwapContext().translations;

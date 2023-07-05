@@ -3,7 +3,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { analytics } from "./analytics";
 
 const FallbackUI = () => {
-  return <div style={{ background: "yellow" }}>Error</div>;
+  return <div>Something went wrong</div>;
 };
 
 export function TwapErrorWrapper({ children }: { children: React.ReactNode }) {

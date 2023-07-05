@@ -82,13 +82,13 @@ export function OdnpButton({ className = "" }: { className?: string }) {
   );
 }
 
-export function ChunksInput({ className = "" }: { className?: string }) {
+export function ChunksInput({ className = "", showDefault }: { className?: string; showDefault?: boolean }) {
   const translations = useTwapContext().translations;
   const chunks = useTwapStore((store) => store.getChunks());
   const maxPossibleChunks = useTwapStore((store) => store.getMaxPossibleChunks());
   const setChunks = useTwapStore((store) => store.setChunks);
   const getChunksBiggerThanOne = useTwapStore((store) => store.getChunksBiggerThanOne());
-  if (!getChunksBiggerThanOne) {
+  if (!getChunksBiggerThanOne && !showDefault) {
     return <StyledText className={className}>{chunks || "-"}</StyledText>;
   }
   return (
@@ -105,14 +105,14 @@ export function ChunksInput({ className = "" }: { className?: string }) {
   );
 }
 
-export function ChunksSliderSelect({ className = "" }: { className?: string }) {
+export function ChunksSliderSelect({ className = "", showDefault }: { className?: string; showDefault?: boolean }) {
   const getChunksBiggerThanOne = useTwapStore((store) => store.getChunksBiggerThanOne());
 
   const maxPossibleChunks = useTwapStore((store) => store.getMaxPossibleChunks());
   const chunks = useTwapStore((store) => store.getChunks());
   const setChunks = useTwapStore((store) => store.setChunks);
 
-  if (!getChunksBiggerThanOne) return null;
+  if (!getChunksBiggerThanOne && !showDefault) return null;
   return <StyledChunksSliderSelect className={className} maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />;
 }
 
@@ -125,12 +125,12 @@ export const ChangeTokensOrder = ({ children, className = "", icon = <HiOutlineS
   );
 };
 
-export function MaxDurationSelector() {
+export function MaxDurationSelector({ placeholder }: { placeholder?: string }) {
   const duration = useTwapStore((store) => store.getDurationUi());
 
   const onChange = useTwapStore((store) => store.setDuration);
 
-  return <TimeSelector value={duration} onChange={onChange} />;
+  return <TimeSelector placeholder={placeholder} value={duration} onChange={onChange} />;
 }
 
 export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boolean; placeholder?: string; className?: string }) => {
@@ -230,11 +230,11 @@ export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hid
   return <TokenName onClick={onClick} hideNull={hideNull} name={token?.symbol} />;
 };
 
-export function TradeIntervalSelector() {
+export function TradeIntervalSelector({ placeholder }: { placeholder?: string }) {
   const setFillDelay = useTwapStore((store) => store.setFillDelay);
   const fillDelay = useTwapStore((store) => store.customFillDelay);
 
-  return <TimeSelector onChange={setFillDelay} value={fillDelay} />;
+  return <TimeSelector placeholder={placeholder} onChange={setFillDelay} value={fillDelay} />;
 }
 
 interface TokenSelectProps extends TWAPTokenSelectProps {
@@ -357,8 +357,21 @@ export const TokenBalance = ({
   const dstToken = useTwapStore((state) => state.dstToken);
   const balance = isSrc ? srcBalance : dstBalance;
   const isLoading = isSrc ? srcLoading : dstLoading;
-  const symbol = !showSymbol ? undefined : isSrc ? srcToken?.symbol : dstToken?.symbol;
-  return <Balance decimalScale={decimalScale} emptyUi={emptyUi} hideLabel={hideLabel} className={className} suffix={symbol} label={label} value={balance} isLoading={isLoading} />;
+  const symbol = isSrc ? srcToken?.symbol : dstToken?.symbol;
+  const suffix = !showSymbol ? undefined : isSrc ? srcToken?.symbol : dstToken?.symbol;
+  return (
+    <Balance
+      symbol={symbol || ""}
+      decimalScale={decimalScale}
+      emptyUi={emptyUi}
+      hideLabel={hideLabel}
+      className={className}
+      suffix={suffix}
+      label={label}
+      value={balance}
+      isLoading={isLoading}
+    />
+  );
 };
 
 export function TokenUSD({
@@ -801,15 +814,19 @@ export const AcceptDisclaimer = ({ variant, className }: { variant?: SwitchVaria
   );
 };
 
-export const OutputAddress = () => {
+export const OutputAddress = ({ className }: { className?: string }) => {
   const maker = useTwapStore((store) => store.lib?.maker);
   const translations = useTwapContext().translations;
 
   return (
-    <StyledOutputAddress className="twap-order-summary-output-address">
-      <StyledText style={{ textAlign: "center", width: "100%" }}>{translations.outputWillBeSentTo}</StyledText>
+    <StyledOutputAddress className={`twap-order-summary-output-address ${className}`}>
+      <StyledText style={{ textAlign: "center", width: "100%" }} className="text">
+        {translations.outputWillBeSentTo}
+      </StyledText>
       <Tooltip childrenStyles={{ width: "100%" }} text={maker}>
-        <StyledOneLineText style={{ textAlign: "center", width: "100%" }}>{maker}</StyledOneLineText>
+        <StyledOneLineText style={{ textAlign: "center", width: "100%" }} className="address">
+          {maker}
+        </StyledOneLineText>
       </Tooltip>
     </StyledOutputAddress>
   );
@@ -969,8 +986,8 @@ const StyledSummaryRow = styled(StyledRowFlex)({
   justifyContent: "space-between",
   width: "100%",
   ".twap-label": {
-    minWidth: 150,
-    flex: 1,
+    minWidth: 0,
+    maxWidth: "60%",
   },
 });
 
@@ -1104,7 +1121,7 @@ export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
   return <Copy value={address} />;
 };
 
-export const ResetLimitButton = () => {
+export const ResetLimitButton = ({ children }: { children?: ReactNode }) => {
   const setLimitOrderPriceUi = useTwapStore((store) => store.setLimitOrderPriceUi);
   const { custom } = useLimitPrice();
   const onClick = () => {
@@ -1114,10 +1131,16 @@ export const ResetLimitButton = () => {
   if (!custom) return null;
 
   return (
-    <Tooltip text="Reset limit price">
-      <IconButton onClick={onClick} className="twap-limit-reset">
-        <Icon icon={<GrPowerReset style={{ width: 18, height: 18 }} />} />
-      </IconButton>
+    <Tooltip text="Reset to market price">
+      {children ? (
+        <span onClick={onClick} className="twap-limit-reset">
+          {children}
+        </span>
+      ) : (
+        <IconButton onClick={onClick} className="twap-limit-reset">
+          <Icon icon={<GrPowerReset style={{ width: 18, height: 18 }} />} />
+        </IconButton>
+      )}
     </Tooltip>
   );
 };

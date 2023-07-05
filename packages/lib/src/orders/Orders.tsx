@@ -7,9 +7,10 @@ import { OrdersSelectTabs, SelectedOrders } from "../components/OrdersComponents
 interface Props {
   disableAnimation?: boolean;
   className?: string;
+  getLabel?: (label: string, amount: number) => string;
 }
 
-function Orders({ className = "" }: Props) {
+function Orders({ className = "", getLabel }: Props) {
   return (
     <StyledContainer className={`twap-orders twap-orders-wrapper ${className}`}>
       <StyledHeader className="twap-orders-header">
@@ -19,7 +20,7 @@ function Orders({ className = "" }: Props) {
           </Styles.StyledRowFlex>
           <StyledOdnpButton />
         </StyledHeaderTop>
-        <OrdersSelectTabs />
+        <OrdersSelectTabs getLabel={getLabel} />
       </StyledHeader>
       <SelectedOrders />
     </StyledContainer>

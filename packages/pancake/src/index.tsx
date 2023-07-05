@@ -1,9 +1,26 @@
-import { GlobalStyles, Box } from "@mui/material";
+import { GlobalStyles, Box, ThemeProvider, Typography } from "@mui/material";
 import { Components, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, TwapErrorWrapper, Orders, TWAPProps } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { configureStyles, StyledChunksInput, StyledChunksSlider, StyledColumnFlex, StyledPoweredBy, StyledSubmit } from "./styles";
+import {
+  configureStyles,
+  darkTheme,
+  lightTheme,
+  StyledAcceptDisclaimer,
+  StyledButton,
+  StyledChunksInput,
+  StyledChunksSlider,
+  StyledColumnFlex,
+  StyledLimitPrice,
+  StyledLimitPriceInput,
+  StyledMarketPriceContainer,
+  StyledOutputAddress,
+  StyledPoweredBy,
+  StyledReset,
+  StyledSubmit,
+  StyledSummaryModal,
+} from "./styles";
 
-import { memo, ReactNode, useCallback, useState } from "react";
+import { memo, ReactNode, useCallback, useMemo, useState } from "react";
 import {
   StyledBalance,
   StyledContainer,
@@ -26,6 +43,7 @@ import { HiMiniArrowsUpDown } from "react-icons/hi2";
 import { isNativeAddress } from "@defi.org/web3-candies";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
+import { GrPowerReset } from "react-icons/gr";
 import Web3 from "web3";
 
 export interface ThenaTWAPProps extends TWAPProps {
@@ -109,7 +127,6 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 
 export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const { isDarkTheme } = useAdapterContext();
   const onClose = useCallback(() => {
     setTokenListOpen(false);
   }, []);
@@ -121,18 +138,19 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       <StyledTokenPanel>
         <TwapStyles.StyledColumnFlex gap={8}>
           <Container
+            viewOnly={!isSrcToken}
             enabled={isSrcToken ? 1 : 0}
             label={
               <StyledSelectAndBalance>
-                <StyledTokenSelect isDarkTheme={isDarkTheme ? 1 : 0} CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
-                <StyledBalance decimalScale={8} isSrc={isSrcToken} isDarkTheme={isDarkTheme ? 1 : 0} />
+                <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+                <StyledBalance decimalScale={8} isSrc={isSrcToken} />
               </StyledSelectAndBalance>
             }
           >
             {" "}
             <StyledTokenPanelInputContainer>
-              <StyledTokenPanelInput placeholder="0.00" isSrc={isSrcToken} />
-              <StyledUSD prefix="USD" isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
+              <StyledTokenPanelInput placeholder="0.0" isSrc={isSrcToken} />
+              <StyledUSD suffix=" USD" prefix=" " isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
               {isSrcToken && <SrcTokenPercentSelector />}
             </StyledTokenPanelInputContainer>
           </Container>
@@ -148,19 +166,20 @@ export const Container = ({
   enabled,
   hideChildren,
   className = "",
+  viewOnly,
 }: {
   label: ReactNode;
   children: ReactNode;
   enabled?: number;
   hideChildren?: boolean;
   className?: string;
+  viewOnly?: boolean;
 }) => {
-  const { isDarkTheme } = useAdapterContext();
   return (
     <StyledContainer className={className}>
       {label}
       {!hideChildren && (
-        <StyledContainerContent isDarkTheme={isDarkTheme ? 1 : 0} enabled={enabled}>
+        <StyledContainerContent viewOnly={viewOnly ? 1 : 0} enabled={enabled}>
           {children}
         </StyledContainerContent>
       )}
@@ -169,7 +188,12 @@ export const Container = ({
 };
 
 const CurrentMarketPrice = () => {
-  return <StyledMarketPrice />;
+  return (
+    <StyledMarketPriceContainer justifyContent="space-between">
+      <Components.Base.Label>Market price</Components.Base.Label>
+      <StyledMarketPrice hideLabel={true} />
+    </StyledMarketPriceContainer>
+  );
 };
 
 const SrcTokenPercentSelector = () => {
@@ -181,17 +205,17 @@ const SrcTokenPercentSelector = () => {
 
   return (
     <StyledPercentSelect>
-      <button onClick={() => onClick(0.25)}>25%</button>
-      <button onClick={() => onClick(0.5)}>50%</button>
-      <button onClick={() => onClick(0.75)}>75%</button>
-      <button onClick={() => onClick(1)}>MAX</button>
+      <StyledButton onClick={() => onClick(0.25)}>25%</StyledButton>
+      <StyledButton onClick={() => onClick(0.5)}>50%</StyledButton>
+      <StyledButton onClick={() => onClick(0.75)}>75%</StyledButton>
+      <StyledButton onClick={() => onClick(1)}>MAX</StyledButton>
     </StyledPercentSelect>
   );
 };
 
 const OrderSummary = ({ children }: { children: ReactNode }) => {
   return (
-    <Components.OrderSummaryModalContainer>
+    <StyledSummaryModal>
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
           <Components.Base.Card>
@@ -212,27 +236,30 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
         </TwapStyles.StyledColumnFlex>
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={12}>
-            <Components.AcceptDisclaimer />
-            <Components.OutputAddress />
+            <StyledAcceptDisclaimer variant="ios" />
+            <StyledOutputAddress />
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
-        <Components.SubmitButton />
+        <StyledSubmit />
       </TwapStyles.StyledColumnFlex>
-    </Components.OrderSummaryModalContainer>
+    </StyledSummaryModal>
   );
 };
 
 const ChangeTokensOrder = () => {
   const [hover, setHover] = useState(false);
-  const { isDarkTheme } = useAdapterContext();
   return (
-    <StyledTokenChangeContainer isDarkTheme={isDarkTheme ? 1 : 0} onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <StyledTokenChange isDarkTheme={isDarkTheme ? 1 : 0} icon={hover ? <HiMiniArrowsUpDown /> : <AiOutlineArrowDown />} />
+    <StyledTokenChangeContainer onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      <StyledTokenChange icon={hover ? <HiMiniArrowsUpDown /> : <AiOutlineArrowDown />} />
     </StyledTokenChangeContainer>
   );
 };
 
 const TWAP = (props: ThenaTWAPProps) => {
+  const theme = useMemo(() => {
+    return props.isDarkTheme ? darkTheme : lightTheme;
+  }, [props.isDarkTheme]);
+
   return (
     <TwapErrorWrapper>
       <Box className="twap-adapter-wrapper">
@@ -250,13 +277,15 @@ const TWAP = (props: ThenaTWAPProps) => {
           parseToken={parseToken}
           dappTokens={props.dappTokens}
         >
-          <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
-          <AdapterContextProvider value={props}>
-            {props.limit ? <LimitPanel /> : <TWAPPanel />}
-            <Components.Base.Portal id={props.ordersContainerId}>
-              <Orders />
-            </Components.Base.Portal>
-          </AdapterContextProvider>
+          <ThemeProvider theme={theme}>
+            <GlobalStyles styles={configureStyles(theme) as any} />
+            <AdapterContextProvider value={props}>
+              {props.limit ? <LimitPanel /> : <TWAPPanel />}
+              <Components.Base.Portal id={props.ordersContainerId}>
+                <Orders getLabel={(label, amount) => `${label} (${amount})`} />
+              </Components.Base.Portal>
+            </AdapterContextProvider>
+          </ThemeProvider>
         </TwapAdapter>
       </Box>
     </TwapErrorWrapper>
@@ -313,14 +342,13 @@ const TWAPPanel = () => {
 };
 
 const TotalTrades = () => {
-  const { isDarkTheme } = useAdapterContext();
   const getChunksBiggerThanOne = store.useTwapStore((store) => store.getChunksBiggerThanOne());
 
   return (
     <Container enabled={getChunksBiggerThanOne ? 1 : 0} label={<Components.Labels.TotalTradesLabel />}>
       <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between">
-        <StyledChunksSlider isDarkTheme={isDarkTheme ? 1 : 0} />
-        <StyledChunksInput />
+        <StyledChunksSlider showDefault={true} />
+        <StyledChunksInput showDefault={true} />
       </TwapStyles.StyledRowFlex>
     </Container>
   );
@@ -328,13 +356,12 @@ const TotalTrades = () => {
 
 const TradeSize = () => {
   return (
-    <TwapStyles.StyledRowFlex className="twap-trade-size" justifyContent="space-between">
-      <Components.Labels.ChunksAmountLabel />
-      <TwapStyles.StyledRowFlex style={{ width: "unset", minWidth: 0 }}>
+    <Container label={<Components.Labels.ChunksAmountLabel />} viewOnly={true}>
+      <TwapStyles.StyledRowFlex className="twap-trade-size" justifyContent="flex-start" gap={5}>
         <Components.TradeSize hideLabel={true} />
-        <Components.ChunksUSD prefix="USD" emptyUi={<></>} />
+        <Components.ChunksUSD prefix="(" suffix=" USD)" emptyUi={<></>} />
       </TwapStyles.StyledRowFlex>
-    </TwapStyles.StyledRowFlex>
+    </Container>
   );
 };
 
@@ -364,17 +391,29 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
   const isLimitOrder = store.useTwapStore((store) => store.isLimitOrder);
 
   return (
-    <Container
-      enabled={1}
-      hideChildren={!isLimitOrder}
-      label={
-        <TwapStyles.StyledRowFlex justifyContent="flex-start">
-          <Components.Labels.LimitPriceLabel />
-          {!limitOnly && <Components.LimitPriceToggle variant="ios" />}
-        </TwapStyles.StyledRowFlex>
-      }
-    >
-      <Components.LimitPriceInput placeholder="0" />
-    </Container>
+    <StyledLimitPrice>
+      <Container
+        enabled={limitOnly ? 1 : isLimitOrder ? 1 : 0}
+        hideChildren={false}
+        label={
+          <TwapStyles.StyledRowFlex justifyContent="space-between">
+            <TwapStyles.StyledRowFlex style={{ width: "auto" }}>
+              <Components.Labels.LimitPriceLabel />
+              <Components.ResetLimitButton>
+                <StyledReset>
+                  <TwapStyles.StyledRowFlex gap={8}>
+                    <GrPowerReset />
+                    <Typography>Market</Typography>
+                  </TwapStyles.StyledRowFlex>
+                </StyledReset>
+              </Components.ResetLimitButton>
+            </TwapStyles.StyledRowFlex>
+            {!limitOnly && <Components.LimitPriceToggle variant="ios" />}
+          </TwapStyles.StyledRowFlex>
+        }
+      >
+        <StyledLimitPriceInput showDefault={true} placeholder="0" sx={{ pointerEvents: limitOnly ? "all" : isLimitOrder ? "all" : "none" }} />
+      </Container>
+    </StyledLimitPrice>
   );
 };

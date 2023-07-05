@@ -34,9 +34,10 @@ interface Props {
   className?: string;
   onFocus?: () => void;
   onBlur?: () => void;
+  placeholder?: string;
 }
 
-function TimeSelector({ value, onChange, disabled = false, className = "", onFocus, onBlur }: Props) {
+function TimeSelector({ value, onChange, disabled = false, className = "", onFocus, onBlur, placeholder = "0" }: Props) {
   const [showList, setShowList] = useState(false);
   const translations = useTwapContext().translations;
 
@@ -59,7 +60,7 @@ function TimeSelector({ value, onChange, disabled = false, className = "", onFoc
           disabled={disabled}
           value={value.amount}
           onChange={(v) => onChange({ resolution: value.resolution, amount: Number(v) })}
-          placeholder={"0"}
+          placeholder={placeholder}
         />
       </StyledInput>
 

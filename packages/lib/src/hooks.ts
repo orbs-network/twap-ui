@@ -648,3 +648,7 @@ export const useSrcAmountNotZero = () => {
 
   return value.gt(0);
 };
+
+export const useResetLimitPrice = () => {
+  return useTwapStore((store) => store.setLimitOrderPriceUi);
+};

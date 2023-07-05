@@ -67,7 +67,7 @@ const StyledModal = styled(MuiModal)({
 
 const StyledModalContent = styled(Box)({
   maxWidth: 500,
-  width: "100%",
+  width: "calc(100% - 30px)",
   position: "relative",
   maxHeight: "95vh",
 });

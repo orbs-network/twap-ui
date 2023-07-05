@@ -4,7 +4,7 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import IconButton from "@mui/material/IconButton";
 import { Styles as TwapStyles } from "@orbs-network/twap-ui";
-import { DappLayout, UISelector } from "./Components";
+import { DappLayout } from "./Components";
 import { Configs } from "@orbs-network/twap";
 
 const fonts = {
@@ -90,11 +90,11 @@ export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
 export const StyledPancake = styled(StyledDapp)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
   background: isDarkTheme ? "#383258" : "#EAF7FF",
   ".ui-selector-btn": {
-    background: isDarkTheme ? "rgba(255,255,255, 0.1)" : "white",
+    background: "#1fc7d4",
     color: isDarkTheme ? "white" : "black",
   },
   ".ui-selector-btn-selected": {
-    background: "linear-gradient(to right, rgb(216, 0, 183), rgb(177, 0, 222), rgb(177, 0, 222), rgb(216, 0, 183))",
+    background: "#7a6eaa",
     color: "white",
   },
   ".menu-button": {
