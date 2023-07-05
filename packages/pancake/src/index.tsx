@@ -393,8 +393,8 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
   return (
     <StyledLimitPrice>
       <Container
-        enabled={limitOnly ? 1 : isLimitOrder ? 1 : 0}
-        hideChildren={false}
+        enabled={1}
+        hideChildren={!isLimitOrder}
         label={
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <TwapStyles.StyledRowFlex style={{ width: "auto" }}>
@@ -412,7 +412,7 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
           </TwapStyles.StyledRowFlex>
         }
       >
-        <StyledLimitPriceInput showDefault={true} placeholder="0" sx={{ pointerEvents: limitOnly ? "all" : isLimitOrder ? "all" : "none" }} />
+        <StyledLimitPriceInput placeholder="0" sx={{ pointerEvents: limitOnly ? "all" : isLimitOrder ? "all" : "none" }} />
       </Container>
     </StyledLimitPrice>
   );

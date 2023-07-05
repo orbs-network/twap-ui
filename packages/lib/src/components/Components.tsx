@@ -1044,6 +1044,11 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
 
 export const TradeSize = ({ hideLabel }: { hideLabel?: boolean }) => {
   const srcToken = useTwapStore((store) => store.srcToken);
+  const dsToken = useTwapStore((store) => store.dstToken);
+
+  if (!srcToken && !dsToken) {
+    return <span>0</span>;
+  }
 
   if (!srcToken && !hideLabel) {
     return <ChunksAmountLabel />;

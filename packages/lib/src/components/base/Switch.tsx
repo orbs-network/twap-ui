@@ -20,10 +20,10 @@ function Switch({ value, onChange, className = "", disabled = false, variant, st
   };
 
   if (variant === "ios") {
-    return <IOSSwitch {...props} style={style} />;
+    return <IOSSwitch {...props} style={style} disabled={disabled} />;
   }
 
-  return <MuiSwitch {...props} style={style} />;
+  return <MuiSwitch {...props} style={style} disabled={disabled} />;
 }
 
 const IOSSwitch = styled((props: SwitchProps) => <MuiSwitch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(({ theme }) => ({

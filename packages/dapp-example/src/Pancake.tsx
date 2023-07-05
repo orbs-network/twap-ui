@@ -27,9 +27,8 @@ export const useDappTokens = () => {
       const response = await fetch(`https://api.thena.fi/api/v1/assets`);
 
       const tokenList = (await response.json()).data;
-      const tokens = [config.nativeToken, ...tokenList];
 
-      const parsed = tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
+      const parsed = tokenList.map(({ symbol, address, decimals, logoURI, name }: any) => ({
         decimals,
         symbol,
         name,

@@ -500,8 +500,10 @@ export const StyledLimitPrice = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     justifyContent: "space-between",
-    "*": {
-      color: styles.primaryTextColor,
+    ".twap-limit-price-input": {
+      "*": {
+        color: styles.primaryTextColor,
+      },
     },
     ".twap-token-logo": {
       display: "none",
