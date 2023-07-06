@@ -1,4 +1,3 @@
-
 import { GlobalStyles, Box, ThemeProvider, Typography } from "@mui/material";
 import { Components, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, TwapErrorWrapper, Orders, TWAPProps } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
