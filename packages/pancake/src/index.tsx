@@ -1,3 +1,4 @@
+
 import { GlobalStyles, Box, ThemeProvider, Typography } from "@mui/material";
 import { Components, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, TwapErrorWrapper, Orders, TWAPProps } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
@@ -16,11 +17,10 @@ import {
   StyledOutputAddress,
   StyledPoweredBy,
   StyledReset,
-  StyledSubmit,
   StyledSummaryModal,
 } from "./styles";
 
-import { memo, ReactNode, useCallback, useMemo, useState } from "react";
+import React, { JSXElementConstructor, memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import {
   StyledBalance,
   StyledContainer,
@@ -45,22 +45,16 @@ import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
 import { GrPowerReset } from "react-icons/gr";
 import Web3 from "web3";
+import _ from "lodash";
 
-export interface ThenaTWAPProps extends TWAPProps {
-  connect: () => void;
-  dappTokens: ThenaRawToken[];
+interface AdapterProps extends TWAPProps {
+  dappTokens: { [key: string]: any };
   isDarkTheme?: boolean;
+  getProvider: () => Promise<any>;
+  ConnectButton: JSXElementConstructor<any>;
 }
 
-export interface ThenaRawToken {
-  address: string;
-  decimals: number;
-  name: string;
-  symbol: string;
-  logoURI: string;
-}
-
-const AdapterContext = createContext({} as ThenaTWAPProps);
+const AdapterContext = createContext({} as AdapterProps);
 
 const AdapterContextProvider = AdapterContext.Provider;
 
@@ -68,7 +62,7 @@ const useAdapterContext = () => useContext(AdapterContext);
 
 const config = Configs.PancakeSwap;
 
-const parseToken = (rawToken: ThenaRawToken): TokenData | undefined => {
+const parseToken = (rawToken: any): TokenData | undefined => {
   const { address, decimals, symbol, logoURI } = rawToken;
   if (!symbol) {
     console.error("Invalid token", rawToken);
@@ -93,34 +87,55 @@ const storeOverride = {
 };
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const { TokenSelectModal, dappTokens } = useAdapterContext();
+  const { TokenSelectModal } = useAdapterContext();
 
   return (
     <TokenSelectModal
-      otherAsset={props.dstTokenSelected}
-      selectedAsset={props.srcTokenSelected}
-      setSelectedAsset={props.onSelect}
-      popup={props.isOpen}
-      setPopup={props.onClose}
-      baseAssets={dappTokens}
-      setOtherAsset={props.onSelect}
+      selectedCurrency={props.srcTokenSelected}
+      otherSelectedCurrency={props.dstTokenSelected}
+      onCurrencySelect={props.onSelect}
+      onDismiss={props.onClose}
+      open={props.isOpen}
     />
   );
 };
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 
+const findToken = (dappTokens?: any, address?: string) => {
+  if (!address || !dappTokens) {
+    return undefined;
+  }
+  if (isNativeAddress(address)) {
+    return config.nativeToken;
+  }
+  return dappTokens[address.toLowerCase()];
+};
+
 const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
-  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
+  const { dappTokens } = useAdapterContext();
+
+  const tokensLength = _.size(dappTokens);
+
+  const srcTokenAddress = store.useTwapStore((s) => s.srcToken)?.address;
+  const dstTokenAddress = store.useTwapStore((s) => s.dstToken)?.address;
+
+  const selectedCurrency = useMemo(() => {
+    return findToken(dappTokens, srcTokenAddress);
+  }, [srcTokenAddress, tokensLength]);
+
+  const otherSelectedCurrency = useMemo(() => {
+    return findToken(dappTokens, dstTokenAddress);
+  }, [dstTokenAddress, tokensLength]);
 
   return (
     <Components.TokenSelectModal
       Component={memoizedTokenSelect}
-      onSrcSelect={onSrcTokenSelected}
-      onDstSelect={onDstTokenSelected}
       isOpen={open}
+      srcTokenSelected={selectedCurrency}
+      dstTokenSelected={otherSelectedCurrency}
       onClose={onClose}
       isSrc={isSrcToken}
-      parseToken={(token: ThenaRawToken) => parseToken(token)}
+      parseToken={parseToken}
     />
   );
 };
@@ -240,7 +255,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
             <StyledOutputAddress />
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
-        <StyledSubmit />
+        <Components.SubmitButton />
       </TwapStyles.StyledColumnFlex>
     </StyledSummaryModal>
   );
@@ -255,7 +270,29 @@ const ChangeTokensOrder = () => {
   );
 };
 
-const TWAP = (props: ThenaTWAPProps) => {
+const useProvider = (props: AdapterProps) => {
+  const [provider, setProvider] = useState<any>();
+
+  const chainId = props.connectedChainId;
+  const account = props.account;
+
+  const _getProvider = useCallback(async () => {
+    const provider = await props.getProvider();
+    setProvider(provider);
+    console.log(provider);
+  }, [account, chainId, setProvider, props.getProvider]);
+
+  useEffect(() => {
+    setProvider(undefined);
+    _getProvider();
+  }, [account, chainId, _getProvider, setProvider]);
+
+  return provider;
+};
+
+const TWAP = (props: AdapterProps) => {
+  const provider = useProvider(props);
+
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
@@ -269,7 +306,7 @@ const TWAP = (props: ThenaTWAPProps) => {
           maxFeePerGas={props.maxFeePerGas}
           priorityFeePerGas={props.priorityFeePerGas}
           translations={translations as Translations}
-          provider={props.provider}
+          provider={provider}
           account={props.account}
           srcToken={props.srcToken}
           dstToken={props.dstToken}
@@ -279,7 +316,7 @@ const TWAP = (props: ThenaTWAPProps) => {
         >
           <ThemeProvider theme={theme}>
             <GlobalStyles styles={configureStyles(theme) as any} />
-            <AdapterContextProvider value={props}>
+            <AdapterContextProvider value={{ ...props, provider }}>
               {props.limit ? <LimitPanel /> : <TWAPPanel />}
               <Components.Base.Portal id={props.ordersContainerId}>
                 <Orders getLabel={(label, amount) => `${label} (${amount})`} />
@@ -290,6 +327,16 @@ const TWAP = (props: ThenaTWAPProps) => {
       </Box>
     </TwapErrorWrapper>
   );
+};
+
+const OpenConfirmationModalButton = () => {
+  const { ConnectButton, provider } = useAdapterContext();
+
+  if (!provider) {
+    return <ConnectButton />;
+  }
+
+  return <Components.SubmitButton isMain={true} />;
 };
 
 export { TWAP };
@@ -303,7 +350,7 @@ const LimitPanel = () => {
         <TokenPanel />
         <CurrentMarketPrice />
         <LimitPrice limitOnly={true} />
-        <StyledSubmit isMain />
+        <OpenConfirmationModalButton />
       </StyledColumnFlex>
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
@@ -331,7 +378,7 @@ const TWAPPanel = () => {
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
-        <StyledSubmit isMain />
+        <OpenConfirmationModalButton />
       </StyledColumnFlex>
       <OrderSummary>
         <Components.OrderSummaryDetails />

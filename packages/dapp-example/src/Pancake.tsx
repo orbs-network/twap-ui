@@ -12,6 +12,7 @@ import { erc20s, zeroAddress, isNativeAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
 import { styled } from "@mui/material";
+import { Components } from "@orbs-network/twap-ui";
 
 const config = Configs.PancakeSwap;
 
@@ -49,14 +50,11 @@ export const useDappTokens = () => {
 };
 
 interface TokenSelectModalProps {
-  popup: boolean;
-  setPopup: (value: boolean) => void;
-  selectedAsset: any;
-  setSelectedAsset: (value: any) => void;
-  otherAsset: any;
-  setOtherAsset: (value: any) => void;
-  baseAssets: any[];
-  onAssetSelect: () => void;
+  open: boolean;
+  onDismiss: () => null;
+  onCurrencySelect: (value: any) => void;
+  selectedCurrency?: any;
+  otherSelectedCurrency?: any;
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
@@ -73,17 +71,25 @@ const parseList = (rawList?: any): TokenListItem[] => {
   });
 };
 
-const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
-  const tokensListSize = _.size(baseAssets);
-  const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
+const TokenSelectModal = ({ open, onDismiss, onCurrencySelect, selectedCurrency, otherSelectedCurrency }: TokenSelectModalProps) => {
+  const { data: dappTokens } = useDappTokens();
+
+  const tokensListSize = _.size(dappTokens);
+  const parsedList = useMemo(() => parseList(dappTokens), [tokensListSize]);
+
+  console.log(selectedCurrency, otherSelectedCurrency);
 
   return (
-    <Popup isOpen={popup} onClose={() => setPopup(true)}>
+    <Popup isOpen={open} onClose={onDismiss}>
       <StyledModalContent>
-        <TokensList tokens={parsedList} onClick={setSelectedAsset} />
+        <TokensList tokens={parsedList} onClick={onCurrencySelect} />
       </StyledModalContent>
     </Popup>
   );
+};
+
+const ConnectButton = () => {
+  return <Components.SubmitButton isMain={true} />;
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -91,6 +97,12 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const connect = useConnectWallet();
   const { account, library } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
+
+  console.log({ dappTokens });
+
+  const getProvider = async () => {
+    return library;
+  };
 
   return (
     <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0} style={{ maxWidth: 330 }}>
@@ -101,10 +113,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         dstToken="0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"
         dappTokens={dappTokens}
         TokenSelectModal={TokenSelectModal}
-        provider={library}
         isDarkTheme={isDarkTheme}
         limit={limit}
         ordersContainerId="orders"
+        getProvider={getProvider}
+        ConnectButton={ConnectButton}
       />
     </StyledPancakeTwap>
   );

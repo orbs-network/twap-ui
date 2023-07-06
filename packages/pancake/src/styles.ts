@@ -79,17 +79,16 @@ export const StyledPoweredBy = styled(Components.PoweredBy)(({ theme }) => {
   };
 });
 
-export const StyledSubmit = styled(Components.SubmitButton)(({ theme }) => ({
-  height: 48,
-  ...getButtonStyles(theme),
-}));
-
 export const configureStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
 
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-submit": {
+      height: 48,
+      ...getButtonStyles(theme),
+    },
     ".twap-order-separator": {
       background: `${styles.primaryTextColor}!important`,
       opacity: 0.4,
