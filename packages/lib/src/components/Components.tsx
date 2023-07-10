@@ -1,4 +1,4 @@
-import { CSSProperties, FC, ReactElement, ReactNode, useCallback } from "react";
+import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import {
   Balance,
   Button,
@@ -35,6 +35,9 @@ import {
   useUnwrapToken,
   useWrapToken,
   useFormatNumber,
+  useOnTokenSelectCallback,
+  useToken,
+  useSwitchTokens,
 } from "../hooks";
 import { useTwapStore, handleFillDelayText } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, textOverflow } from "../styles";
@@ -116,11 +119,23 @@ export function ChunksSliderSelect({ className = "", showDefault }: { className?
   return <StyledChunksSliderSelect className={className} maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />;
 }
 
-export const ChangeTokensOrder = ({ children, className = "", icon = <HiOutlineSwitchVertical /> }: { children?: ReactNode; className?: string; icon?: ReactNode }) => {
-  const switchTokens = useTwapStore((state) => state.switchTokens);
+export const ChangeTokensOrder = ({
+  children,
+  className = "",
+  icon = <HiOutlineSwitchVertical />,
+  onSrcTokenSelected,
+  onDstTokenSelected,
+}: {
+  children?: ReactNode;
+  className?: string;
+  icon?: ReactNode;
+  onSrcTokenSelected?: (token: any) => void;
+  onDstTokenSelected?: (token: any) => void;
+}) => {
+  const switchTokens = useSwitchTokens();
   return (
     <StyledRowFlex className={`${className} twap-change-tokens-order`}>
-      <IconButton onClick={switchTokens}>{children || <Icon icon={icon} />}</IconButton>
+      <IconButton onClick={() => switchTokens(onSrcTokenSelected, onDstTokenSelected)}>{children || <Icon icon={icon} />}</IconButton>
     </StyledRowFlex>
   );
 };
@@ -162,19 +177,14 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
 };
 
 export const TokenLogo = ({ isSrc, className = "" }: { isSrc?: boolean; className?: string }) => {
-  const srcTokenLogo = useTwapStore((store) => store.srcToken);
-  const dstTokenLogo = useTwapStore((store) => store.dstToken);
+  const token = useToken(isSrc);
 
-  if (isSrc) {
-    return <Logo className={className} logo={srcTokenLogo?.logoUrl} />;
-  }
-  return <Logo className={className} logo={dstTokenLogo?.logoUrl} />;
+  return <Logo className={className} logo={token?.logoUrl} />;
 };
 
 export function TokenLogoAndSymbol({ isSrc, reverse }: { isSrc?: boolean; reverse?: boolean }) {
-  const srcToken = useTwapStore((state) => state.srcToken);
-  const dstToken = useTwapStore((state) => state.dstToken);
-  const token = isSrc ? srcToken : dstToken;
+  const token = useToken(isSrc);
+
   return <TokenDisplay reverse={reverse} logo={token?.logoUrl} symbol={token?.symbol} />;
 }
 
@@ -224,9 +234,7 @@ export const TokenSelect = ({
 };
 
 export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hideNull?: boolean; onClick?: () => void }) => {
-  const srcToken = useTwapStore((store) => store.srcToken);
-  const dstToken = useTwapStore((store) => store.dstToken);
-  const token = isSrc ? srcToken : dstToken;
+  const token = useToken(isSrc);
   return <TokenName onClick={onClick} hideNull={hideNull} name={token?.symbol} />;
 };
 
@@ -247,29 +255,17 @@ interface TokenSelectProps extends TWAPTokenSelectProps {
   parseToken?: (value: any) => TokenData | undefined;
 }
 
-export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, onSrcSelect, onDstSelect, isSrc }: TokenSelectProps) => {
-  const setSrcToken = useTwapStore((store) => store.setSrcToken);
-  const setDstToken = useTwapStore((store) => store.setDstToken);
+export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, isSrc = false }: TokenSelectProps) => {
+  const onTokenSelectedCallback = useOnTokenSelectCallback();
 
-  const onTokenSelected = useCallback(
-    (token: any) => {
-      onClose();
-      const parsedToken = parseToken ? parseToken(token) : token;
-      if (isSrc) {
-        analytics.onSrcTokenClick(parsedToken?.symbol);
-        setSrcToken(parsedToken);
-        onSrcSelect?.(token);
-      } else {
-        analytics.onDstTokenClick(parsedToken?.symbol);
-        setDstToken(parsedToken);
-        onDstSelect?.(token);
-      }
-    },
-    [onDstSelect, onSrcSelect, isSrc]
-  );
+  const onSelect = (token: any) => {
+    const parsedToken = parseToken ? parseToken(token) : token;
+    onTokenSelectedCallback(isSrc, token, parsedToken);
+    onClose();
+  };
 
   if (!isOpen || !Component) return null;
-  return <Component isOpen={true} onClose={onClose} onSelect={onTokenSelected} srcTokenSelected={undefined} dstTokenSelected={undefined} />;
+  return <Component isOpen={true} onClose={onClose} onSelect={onSelect} srcTokenSelected={undefined} dstTokenSelected={undefined} />;
 };
 
 export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; style?: CSSProperties }) {
@@ -960,7 +956,7 @@ const StyledOrderSummaryTokenDisplay = styled(StyledColumnFlex)({
   ".twap-orders-summary-token-display-amount": {
     fontSize: 19,
     justifyContent: "flex-end",
-    width: "fit-content",
+    width: "auto",
   },
   ".twap-orders-summary-token-display-flex": {
     justifyContent: "space-between",
@@ -1035,6 +1031,10 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
   const srcToken = useTwapStore((store) => store.srcToken);
 
   const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
+
+  if (!formattedValue) {
+    return <Typography className="twap-trade-size-value">0</Typography>;
+  }
   return (
     <Tooltip text={`${symbol ? `${formattedValueTooltip} ${srcToken?.symbol}` : formattedValueTooltip}`}>
       <Typography className="twap-trade-size-value">{`${symbol ? `${formattedValue} ${srcToken?.symbol}` : formattedValue}`}</Typography>

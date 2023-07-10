@@ -8,7 +8,7 @@ import { InitLibProps, OrdersData, OrderUI, State } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
 import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, getPastEvents, findBlock, block } from "@defi.org/web3-candies";
-import { amountUi, parseOrderUi, useTwapStore } from "./store";
+import { amountUi, getTokenFromTokensList, parseOrderUi, useTwapStore } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
 import moment from "moment";
@@ -552,12 +552,12 @@ export const useSetTokensFromDapp = () => {
     if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
 
     if (srcTokenAddressOrSymbol) {
-      const srcToken = _.find(tokensList, (token) => eqIgnoreCase(srcTokenAddressOrSymbol, token.address) || eqIgnoreCase(srcTokenAddressOrSymbol, token.symbol));
+      const srcToken = getTokenFromTokensList(tokensList, srcTokenAddressOrSymbol);
 
       setSrcToken(srcToken);
     }
     if (dstTokenAddressOrSymbol) {
-      const dstToken = _.find(tokensList, (token) => eqIgnoreCase(dstTokenAddressOrSymbol, token.address) || eqIgnoreCase(dstTokenAddressOrSymbol, token.symbol));
+      const dstToken = getTokenFromTokensList(tokensList, dstTokenAddressOrSymbol);
       setDstToken(dstToken);
     }
   }, [srcTokenAddressOrSymbol, dstTokenAddressOrSymbol, tokensReady, wrongNetwork]);
@@ -651,4 +651,49 @@ export const useSrcAmountNotZero = () => {
 
 export const useResetLimitPrice = () => {
   return useTwapStore((store) => store.setLimitOrderPriceUi);
+};
+
+export const useOnTokenSelectCallback = () => {
+  const setSrcToken = useTwapStore((store) => store.setSrcToken);
+  const setDstToken = useTwapStore((store) => store.setDstToken);
+
+  return useCallback(
+    (isSrc: boolean, token: any, parsedToken?: TokenData, onSrcSelect?: (token: any) => void, onDstSelect?: (token: any) => void) => {
+      if (isSrc) {
+        analytics.onSrcTokenClick(parsedToken?.symbol);
+        setSrcToken(parsedToken);
+        onSrcSelect?.(token);
+      } else {
+        analytics.onDstTokenClick(parsedToken?.symbol);
+        setDstToken(parsedToken);
+        onDstSelect?.(token);
+      }
+    },
+    [setSrcToken, setDstToken]
+  );
+};
+
+export const useToken = (isSrc?: boolean) => {
+  const srcTokenLogo = useTwapStore((store) => store.srcToken);
+  const dstTokenLogo = useTwapStore((store) => store.dstToken);
+
+  return isSrc ? srcTokenLogo : dstTokenLogo;
+};
+
+export const useSwitchTokens = () => {
+  const { dappTokens } = useTwapContext();
+  const switchTokens = useTwapStore((s) => s.switchTokens);
+  const srcToken = useTwapStore((s) => s.srcToken);
+  const dstToken = useTwapStore((s) => s.dstToken);
+  return useCallback(
+    (onSrcTokenSelected?: (token: any) => void, onDstTokenSelected?: (token: any) => void) => {
+      switchTokens();
+      const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
+      const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
+
+      srcToken && onSrcTokenSelected?.(_dstToken);
+      dstToken && onDstTokenSelected?.(_srcToken);
+    },
+    [_.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol]
+  );
 };

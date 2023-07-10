@@ -1,5 +1,5 @@
 import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
-import { TWAP } from "@orbs-network/twap-ui-sushiswap";
+import { TWAP, Orders } from "@orbs-network/twap-ui-sushiswap";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -100,7 +100,6 @@ const TWAPComponent = () => {
       TokenSelectModal={TokenSelectModal}
       provider={library}
       isDarkTheme={isDarkTheme}
-      ordersContainerId="orders"
     />
   );
 };
@@ -115,7 +114,7 @@ const DappComponent = () => {
         <UISelector selected={selected} select={setSelected} limit={true} />
 
         <TWAPComponent />
-        <div id="orders" />
+        <Orders />
       </StyledSushiLayout>
     </StyledSushi>
   );

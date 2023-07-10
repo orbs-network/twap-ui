@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
-import { TWAP } from "@orbs-network/twap-ui-quickswap";
+import { TWAP, Orders } from "@orbs-network/twap-ui-quickswap";
 const config = Configs.QuickSwap;
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
@@ -113,7 +113,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library}
       getTokenLogoURL={getTokenLogoURL}
       isDarkTheme={isDarkTheme}
-      ordersContainerId="orders"
       limit={limit}
     />
   );
@@ -132,7 +131,9 @@ const DappComponent = () => {
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledQuickswapBox>
 
-        <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0} id="orders" />
+        <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
+          <Orders />
+        </StyledQuickswapBox>
       </StyledQuickswapLayout>
     </StyledQuickswap>
   );

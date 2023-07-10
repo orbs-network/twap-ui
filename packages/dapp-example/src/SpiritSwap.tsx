@@ -1,5 +1,5 @@
 import { StyledSpiritSwapBox, StyledModalContent, StyledSpiritSwapLayout, StyledSpiritSwap } from "./styles";
-import { TWAP } from "@orbs-network/twap-ui-spiritswap";
+import { TWAP, Orders } from "@orbs-network/twap-ui-spiritswap";
 import { useConnectWallet, useGetTokensFromViaProtocol, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -71,7 +71,6 @@ const TWAPComponent = () => {
       onDstTokenSelected={(token: any) => console.log(token)}
       TokenSelectModal={TokenSelectModal}
       isDarkTheme={isDarkTheme}
-      ordersContainerId="orders"
     />
   );
 };
@@ -85,7 +84,9 @@ const DappComponent = () => {
         <StyledSpiritSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
           <TWAPComponent />
         </StyledSpiritSwapBox>
-        <StyledSpiritSwapBox isDarkMode={isDarkTheme ? 1 : 0} id="orders" />
+        <StyledSpiritSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+          <Orders />
+        </StyledSpiritSwapBox>
       </StyledSpiritSwapLayout>
     </StyledSpiritSwap>
   );

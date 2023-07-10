@@ -1,5 +1,5 @@
 import { GlobalStyles, Typography } from "@mui/material";
-import { Translations, TwapAdapter, Orders, Components, Styles as TwapStyles, TWAPTokenSelectProps, store, TWAPProps } from "@orbs-network/twap-ui";
+import { Translations, TwapAdapter, OrdersPanel, Components, Styles as TwapStyles, TWAPTokenSelectProps, store, TWAPProps, Orders } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
@@ -194,7 +194,7 @@ const storeOverride = {
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
-export const TWAP = (props: ThenaTWAPProps) => {
+const TWAP = (props: ThenaTWAPProps) => {
   return (
     <StyledAdapter isDarkMode={props.isDarkTheme ? 1 : 0} className="twap-adapter-wrapper">
       <TwapAdapter
@@ -214,11 +214,9 @@ export const TWAP = (props: ThenaTWAPProps) => {
         <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
-          <Components.Base.Portal id={props.ordersContainerId}>
-            <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0}>
-              <Orders />
-            </StyledOrders>
-          </Components.Base.Portal>
+          <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0}>
+            <OrdersPanel />
+          </StyledOrders>
         </AdapterContextProvider>
       </TwapAdapter>
     </StyledAdapter>
@@ -339,3 +337,5 @@ const LimitPrice = ({ limit }: { limit?: boolean }) => {
     </>
   );
 };
+
+export { TWAP, Orders };

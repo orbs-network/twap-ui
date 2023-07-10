@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, Orders, TWAPProps } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, OrdersPanel, TWAPProps, Orders } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
@@ -46,7 +46,7 @@ interface SpiritSwapTWAPProps extends TWAPProps {
   getProvider: () => any;
 }
 
-export const TWAP = memo((props: SpiritSwapTWAPProps) => {
+const TWAP = memo((props: SpiritSwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
   const globalStyles = useGlobalStyles(props.isDarkTheme);
 
@@ -82,9 +82,7 @@ export const TWAP = memo((props: SpiritSwapTWAPProps) => {
           <OrderSummary />
           <Components.PoweredBy />
         </div>
-        <Components.Base.Portal id={props.ordersContainerId}>
-          <Orders />
-        </Components.Base.Portal>
+        <OrdersPanel />
       </AdapterContextProvider>
     </TwapAdapter>
   );
@@ -248,3 +246,5 @@ const OrderSummary = () => {
     </Components.OrderSummaryModalContainer>
   );
 };
+
+export { Orders, TWAP };

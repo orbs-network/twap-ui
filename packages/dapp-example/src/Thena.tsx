@@ -1,5 +1,5 @@
 import { StyledModalContent, StyledThenaLayout, StyledThenaGradient, StyledThenaBox, StyledThena } from "./styles";
-import { TWAP } from "@orbs-network/twap-ui-thena";
+import { TWAP, Orders } from "@orbs-network/twap-ui-thena";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -21,7 +21,7 @@ export const useDappTokens = () => {
   return useQuery(
     ["useDappTokens", config.chainId],
     async () => {
-      const response = await fetch(`https://api.thena.fi/api/v1/assets`);
+      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/bsc.json`);
 
       const tokenList = (await response.json()).data;
       const tokens = [config.nativeToken, ...tokenList];
@@ -101,7 +101,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library}
       isDarkTheme={isDarkTheme}
       limit={limit}
-      ordersContainerId="orders"
     />
   );
 };
@@ -124,7 +123,9 @@ const DappComponent = () => {
         </StyledThenaGradient>
 
         <StyledThenaGradient>
-          <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0} id="orders" />
+          <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0}>
+            <Orders />
+          </StyledThenaBox>
         </StyledThenaGradient>
       </StyledThenaLayout>
     </StyledThena>

@@ -1,5 +1,5 @@
 import { StyledModalContent, StyledStella, StyledStellaSwapBox, StyledStellaSwapLayout } from "./styles";
-import { TWAP } from "@orbs-network/twap-ui-stellaswap";
+import { TWAP, Orders } from "@orbs-network/twap-ui-stellaswap";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -101,7 +101,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library}
       isDarkTheme={isDarkTheme}
       limit={limit}
-      ordersContainerId="orders"
     />
   );
 };
@@ -119,7 +118,9 @@ const DappComponent = () => {
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledStellaSwapBox>
 
-        <StyledStellaSwapBox isDarkMode={isDarkTheme ? 1 : 0} id="orders" />
+        <StyledStellaSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+          <Orders />
+        </StyledStellaSwapBox>
       </StyledStellaSwapLayout>
     </StyledStella>
   );

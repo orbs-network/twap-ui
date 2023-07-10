@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, useMediaQuery } from "@mui/material";
 import { Status } from "@orbs-network/twap";
 import _ from "lodash";
 import { Translations, useTwapContext } from "..";
@@ -24,13 +24,21 @@ export const OrdersSelectTabs = ({
   const translations = useTwapContext().translations;
   const { orders } = useOrdersHistoryQuery();
   const { tab, setTab } = useOrdersStore();
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
   };
 
   return (
-    <StyledOrdersTabs variant="scrollable" className={`twap-orders-header-tabs ${className}`} value={tab} onChange={handleChange}>
+    <StyledOrdersTabs
+      variant="scrollable"
+      scrollButtons={isMobile}
+      allowScrollButtonsMobile={isMobile}
+      className={`twap-orders-header-tabs ${className}`}
+      value={tab}
+      onChange={handleChange}
+    >
       {_.keys(Status).map((key, index) => {
         const label = getLabel(translations[key as keyof Translations], orders[key as Status]?.length || 0);
 

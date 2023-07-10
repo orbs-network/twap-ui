@@ -1,5 +1,5 @@
 import { GlobalStyles, Box, ThemeProvider, Typography } from "@mui/material";
-import { Components, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, TwapErrorWrapper, Orders, TWAPProps } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, TwapErrorWrapper, TWAPProps, OrdersPanel, Orders } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
   configureStyles,
@@ -38,8 +38,7 @@ import {
 } from "./styles";
 import { MdArrowDropDown } from "react-icons/md";
 import { AiOutlineArrowDown } from "react-icons/ai";
-import { HiMiniArrowsUpDown } from "react-icons/hi2";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { eqIgnoreCase, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
 import { GrPowerReset } from "react-icons/gr";
@@ -51,6 +50,10 @@ interface AdapterProps extends TWAPProps {
   isDarkTheme?: boolean;
   getProvider: () => Promise<any>;
   ConnectButton: JSXElementConstructor<any>;
+  useModal?: any;
+  onSrcTokenSelected: (token: any) => void;
+  onDstTokenSelected: (token: any) => void;
+  nativeToken: any;
 }
 
 const AdapterContext = createContext({} as AdapterProps);
@@ -85,70 +88,65 @@ const storeOverride = {
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
-const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const { TokenSelectModal } = useAdapterContext();
-
-  return (
-    <TokenSelectModal
-      selectedCurrency={props.srcTokenSelected}
-      otherSelectedCurrency={props.dstTokenSelected}
-      onCurrencySelect={props.onSelect}
-      onDismiss={props.onClose}
-      open={props.isOpen}
-    />
-  );
-};
-const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
-
-const findToken = (dappTokens?: any, address?: string) => {
-  if (!address || !dappTokens) {
-    return undefined;
-  }
-  if (isNativeAddress(address)) {
-    return config.nativeToken;
-  }
-  return dappTokens[address.toLowerCase()];
-};
-
-const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
+const useOnTokenSelection = (isSrcToken: boolean) => {
+  const onTokenSelectedCallback = useSelectTokenCallback();
   const { dappTokens } = useAdapterContext();
-
   const tokensLength = _.size(dappTokens);
 
-  const srcTokenAddress = store.useTwapStore((s) => s.srcToken)?.address;
-  const dstTokenAddress = store.useTwapStore((s) => s.dstToken)?.address;
+  const srcToken = store.useTwapStore((s) => s.srcToken);
+  const dstToken = store.useTwapStore((s) => s.dstToken);
 
   const selectedCurrency = useMemo(() => {
-    return findToken(dappTokens, srcTokenAddress);
-  }, [srcTokenAddress, tokensLength]);
+    return store.getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
+  }, [srcToken?.address, srcToken?.symbol, tokensLength]);
 
   const otherSelectedCurrency = useMemo(() => {
-    return findToken(dappTokens, dstTokenAddress);
-  }, [dstTokenAddress, tokensLength]);
+    return store.getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
+  }, [dstToken?.address, dstToken?.symbol, tokensLength]);
 
-  return (
-    <Components.TokenSelectModal
-      Component={memoizedTokenSelect}
-      isOpen={open}
-      srcTokenSelected={selectedCurrency}
-      dstTokenSelected={otherSelectedCurrency}
-      onClose={onClose}
-      isSrc={isSrcToken}
-      parseToken={parseToken}
-    />
+  const selectToken = useCallback(
+    (token: any) => {
+      const parsedToken = parseToken(token);
+      onTokenSelectedCallback(isSrcToken, token, parsedToken);
+    },
+    [onTokenSelectedCallback, isSrcToken]
+  );
+
+  return {
+    selectToken,
+    selectedCurrency,
+    otherSelectedCurrency,
+  };
+};
+
+const useSelectTokenCallback = () => {
+  const srcTokenAddress = store.useTwapStore((s) => s.srcToken)?.address;
+  const dstTokenAddress = store.useTwapStore((s) => s.dstToken)?.address;
+  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
+  const select = hooks.useOnTokenSelectCallback();
+
+  const switchTokens = hooks.useSwitchTokens();
+  return useCallback(
+    (isSrc: boolean, token: any, parsedToken?: TokenData) => {
+      if (eqIgnoreCase(parsedToken?.address || "", srcTokenAddress || "") || eqIgnoreCase(parsedToken?.address || "", dstTokenAddress || "")) {
+        switchTokens(onSrcTokenSelected, onDstTokenSelected);
+        return;
+      }
+      select(isSrc, token, parsedToken, onSrcTokenSelected, onDstTokenSelected);
+    },
+    [select, srcTokenAddress, dstTokenAddress, onSrcTokenSelected, onDstTokenSelected]
   );
 };
 
-export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const [tokenListOpen, setTokenListOpen] = useState(false);
-  const onClose = useCallback(() => {
-    setTokenListOpen(false);
-  }, []);
+const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
+  const { selectToken, selectedCurrency, otherSelectedCurrency } = useOnTokenSelection(!!isSrcToken);
+
+  const { useModal, TokenSelectModal } = useAdapterContext();
+
+  const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={otherSelectedCurrency} selectedCurrency={selectedCurrency} onCurrencySelect={selectToken} />);
 
   return (
     <>
-      <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
-
       <StyledTokenPanel>
         <TwapStyles.StyledColumnFlex gap={8}>
           <Container
@@ -156,7 +154,7 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             enabled={isSrcToken ? 1 : 0}
             label={
               <StyledSelectAndBalance>
-                <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+                <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} />
                 <StyledBalance decimalScale={8} isSrc={isSrcToken} />
               </StyledSelectAndBalance>
             }
@@ -174,7 +172,7 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-export const Container = ({
+const Container = ({
   label,
   children,
   enabled,
@@ -193,7 +191,7 @@ export const Container = ({
     <StyledContainer className={className}>
       {label}
       {!hideChildren && (
-        <StyledContainerContent viewOnly={viewOnly ? 1 : 0} enabled={enabled}>
+        <StyledContainerContent view={viewOnly ? 1 : 0} enabled={enabled}>
           {children}
         </StyledContainerContent>
       )}
@@ -261,10 +259,10 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 };
 
 const ChangeTokensOrder = () => {
-  const [hover, setHover] = useState(false);
+  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
   return (
-    <StyledTokenChangeContainer onMouseOver={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <StyledTokenChange icon={hover ? <HiMiniArrowsUpDown /> : <AiOutlineArrowDown />} />
+    <StyledTokenChangeContainer>
+      <StyledTokenChange onSrcTokenSelected={onSrcTokenSelected} onDstTokenSelected={onDstTokenSelected} icon={<AiOutlineArrowDown />} />
     </StyledTokenChangeContainer>
   );
 };
@@ -278,7 +276,6 @@ const useProvider = (props: AdapterProps) => {
   const _getProvider = useCallback(async () => {
     const provider = await props.getProvider();
     setProvider(provider);
-    console.log(provider);
   }, [account, chainId, setProvider, props.getProvider]);
 
   useEffect(() => {
@@ -289,12 +286,19 @@ const useProvider = (props: AdapterProps) => {
   return provider;
 };
 
-const TWAP = (props: AdapterProps) => {
-  const provider = useProvider(props);
+const TWAP = memo((props: AdapterProps) => {
+  const { dappTokens, nativeToken } = props;
 
+  const provider = useProvider(props);
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
+
+  const _dappTokens = useMemo(() => {
+    if (!dappTokens) return {};
+
+    return { [zeroAddress]: nativeToken, ...dappTokens };
+  }, [_.size(props.dappTokens)]);
 
   return (
     <TwapErrorWrapper>
@@ -311,22 +315,20 @@ const TWAP = (props: AdapterProps) => {
           dstToken={props.dstToken}
           storeOverride={props.limit ? storeOverride : undefined}
           parseToken={parseToken}
-          dappTokens={props.dappTokens}
+          dappTokens={_dappTokens}
         >
           <ThemeProvider theme={theme}>
             <GlobalStyles styles={configureStyles(theme) as any} />
-            <AdapterContextProvider value={{ ...props, provider }}>
+            <AdapterContextProvider value={{ ...props, provider, dappTokens: _dappTokens }}>
               {props.limit ? <LimitPanel /> : <TWAPPanel />}
-              <Components.Base.Portal id={props.ordersContainerId}>
-                <Orders getLabel={(label, amount) => `${label} (${amount})`} />
-              </Components.Base.Portal>
+              <OrdersPanel getLabel={(label, amount) => `${label} (${amount})`} />
             </AdapterContextProvider>
           </ThemeProvider>
         </TwapAdapter>
       </Box>
     </TwapErrorWrapper>
   );
-};
+});
 
 const OpenConfirmationModalButton = () => {
   const { ConnectButton, provider } = useAdapterContext();
@@ -338,7 +340,9 @@ const OpenConfirmationModalButton = () => {
   return <Components.SubmitButton isMain={true} />;
 };
 
-export { TWAP };
+{
+  TWAP;
+}
 
 const LimitPanel = () => {
   return (
@@ -393,8 +397,8 @@ const TotalTrades = () => {
   return (
     <Container enabled={getChunksBiggerThanOne ? 1 : 0} label={<Components.Labels.TotalTradesLabel />}>
       <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between">
-        <StyledChunksSlider showDefault={true} />
-        <StyledChunksInput showDefault={true} />
+        <StyledChunksSlider />
+        <StyledChunksInput />
       </TwapStyles.StyledRowFlex>
     </Container>
   );
@@ -463,3 +467,5 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
     </StyledLimitPrice>
   );
 };
+
+export { TWAP, Orders };

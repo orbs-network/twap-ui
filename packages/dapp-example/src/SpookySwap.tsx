@@ -1,5 +1,5 @@
 import { StyledModalContent, StyledSpookySwap, StyledSpookySwapBox, StyledSpookySwapLayout } from "./styles";
-import { TWAP } from "@orbs-network/twap-ui-spookyswap";
+import { TWAP, Orders } from "@orbs-network/twap-ui-spookyswap";
 import { useConnectWallet, useGetTokensFromViaProtocol, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
@@ -73,7 +73,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       TokenSelectModal={TokenSelectModal}
       isDarkTheme={isDarkTheme}
       limit={limit}
-      ordersContainerId="orders"
     />
   );
 };
@@ -92,7 +91,9 @@ const DappComponent = () => {
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledSpookySwapBox>
 
-        <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0} id="orders" />
+        <StyledSpookySwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+          <Orders />
+        </StyledSpookySwapBox>
       </StyledSpookySwapLayout>
     </StyledSpookySwap>
   );

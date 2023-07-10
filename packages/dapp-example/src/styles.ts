@@ -292,6 +292,7 @@ export const StyledPancakeLayout = styled(DappLayout)({
   flexDirection: "column",
   alignItems: "center",
   position: "relative",
+  maxWidth: 530,
 });
 
 export const StyledSushiLayout = styled(DappLayout)({

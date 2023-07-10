@@ -39,6 +39,7 @@ const getTootlipStyles = (theme: Theme) => {
     fontSize: 15,
     borderRadius: 10,
     padding: "10px 15px",
+    lineHeight: "20px",
     "*": {
       color: "inherit",
     },
@@ -107,8 +108,7 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-modal": {
       ".MuiBackdrop-root": {
-        background: darkMode ? "#f4eeff99" : "",
-        opacity: "0.7!important",
+        background: darkMode ? "rgba(244, 238, 255, 0.6)" : "",
       },
     },
     ".twap-modal-content": {
@@ -139,6 +139,7 @@ export const configureStyles = (theme: Theme) => {
       },
     },
     ".twap-odnp": {
+      marginRight: "0px!important",
       border: darkMode ? `2px solid ${styles.primaryColor}` : "2px solid transparent",
       borderRadius: 20,
       background: darkMode ? "transparent" : "#eeeaf4",
@@ -212,7 +213,7 @@ export const configureStyles = (theme: Theme) => {
         background: darkMode ? `#27262C!important` : "",
       },
       ".MuiSwitch-track": {
-        backgroundColor: darkMode ? `${styles.inputBox}!important` : "#E9EAEB!important",
+        backgroundColor: darkMode ? `#383258!important` : "#E9EAEB!important",
         opacity: "1!important",
       },
       ".Mui-checked+.MuiSwitch-track": {
@@ -254,6 +255,7 @@ export const configureStyles = (theme: Theme) => {
       },
       "& .MuiTooltip-tooltip": {
         ...getTootlipStyles(theme),
+        fontFamily: "Kanit",
       },
     },
     ".twap-loader": {
@@ -305,6 +307,18 @@ export const configureStyles = (theme: Theme) => {
       },
     },
     "@media (max-width:500px)": {
+      ".twap-orders-title": {
+        p: {
+          fontSize: "14px!important",
+        },
+      },
+      ".twap-odnp": {
+        gap: 5,
+        padding: "0px 10px!important",
+        p: {
+          fontSize: "12px!important",
+        },
+      },
       ".twap-order-preview-tokens": {
         flexDirection: "column",
         alignItems: "center!important",
@@ -321,11 +335,11 @@ export const configureStyles = (theme: Theme) => {
 
 export const StyledContainer = styled(Styles.StyledColumnFlex)({});
 
-export const StyledContainerContent = styled(Styles.StyledColumnFlex)<any>(({ theme, enabled, viewOnly }) => {
+export const StyledContainerContent = styled(Styles.StyledColumnFlex)<any>(({ theme, enabled, view }) => {
   const styles = baseStyles(theme);
   return {
-    pointerEvents: viewOnly ? "all" : !enabled ? "none" : "all",
-    background: viewOnly ? styles.cardColor : enabled ? styles.inputBox : styles.displayBox,
+    pointerEvents: view ? "all" : !enabled ? "none" : "all",
+    background: view ? styles.cardColor : enabled ? styles.inputBox : styles.displayBox,
     padding: 10,
     borderRadius: 16,
     boxShadow: enabled && styles.inputShadow,

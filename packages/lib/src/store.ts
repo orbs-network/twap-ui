@@ -400,3 +400,10 @@ export const useOrdersStore = create<OrdersStore>((set) => ({
   tab: 0,
   setTab: (value: number) => set({ tab: value }),
 }));
+
+export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) => {
+  if (!tokensList || !addressOrSymbol) return;
+
+  if (_.isArray(tokensList)) return _.find(tokensList, (token) => eqIgnoreCase(addressOrSymbol, token.address) || eqIgnoreCase(addressOrSymbol, token.symbol));
+  if (_.isObject(tokensList)) return tokensList[addressOrSymbol as keyof typeof tokensList];
+};

@@ -119,7 +119,6 @@ export interface TWAPProps extends BaseProps {
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
   TokenSelectModal: any;
-  ordersContainerId?: string;
   limit?: boolean;
 }
 

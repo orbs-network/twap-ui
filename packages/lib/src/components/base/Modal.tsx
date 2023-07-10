@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import MuiModal from "@mui/material/Modal";
 import { Box, styled } from "@mui/system";
-import { IconButton } from "@mui/material";
+import { Fade, IconButton } from "@mui/material";
 import { IoMdClose } from "react-icons/io";
 import Backdrop from "@mui/material/Backdrop";
 
@@ -16,9 +16,21 @@ export interface Props {
 
 function Modal({ onClose, open, children, title, className = "", disableBackdropClick = false }: Props) {
   return (
-    <StyledModal open={open} onClose={onClose} className={`${className} twap-modal`} hideBackdrop>
-      <>
-        <Backdrop open={open} onClick={disableBackdropClick ? undefined : onClose}></Backdrop>
+    <StyledModal
+      slots={{ backdrop: Backdrop }}
+      slotProps={{
+        backdrop: {
+          timeout: 500,
+        },
+      }}
+      aria-labelledby="transition-modal-title"
+      aria-describedby="transition-modal-description"
+      open={open}
+      onClose={!disableBackdropClick ? onClose : () => {}}
+      className={`${className} twap-modal`}
+      closeAfterTransition={true}
+    >
+      <Fade in={open}>
         <StyledModalContent className="twap-modal-content" id="twap-modal-content">
           <StyledClose className="twap-ui-close" onClick={onClose}>
             <IoMdClose />
@@ -32,7 +44,7 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
 
           {children}
         </StyledModalContent>
-      </>
+      </Fade>
     </StyledModal>
   );
 }

@@ -1,5 +1,17 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, Translations, TwapAdapter, Orders, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, TWAPProps, store } from "@orbs-network/twap-ui";
+import {
+  Components,
+  Translations,
+  TwapAdapter,
+  OrdersPanel,
+  useTwapContext,
+  Styles as TwapStyles,
+  TWAPTokenSelectProps,
+  hooks,
+  TWAPProps,
+  store,
+  Orders,
+} from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Box } from "@mui/system";
 import { createContext, memo, ReactNode, useCallback, useContext, useState } from "react";
@@ -143,7 +155,7 @@ const SrcTokenPercentSelector = () => {
   );
 };
 
-export const OrderSummary = ({ children }: { children: ReactNode }) => {
+const OrderSummary = ({ children }: { children: ReactNode }) => {
   return (
     <Components.OrderSummaryModalContainer>
       <TwapStyles.StyledColumnFlex gap={14}>
@@ -186,7 +198,7 @@ interface Props extends QuickSwapTWAPProps {
   limit?: boolean;
 }
 
-export const TWAP = (props: Props) => {
+const TWAP = (props: Props) => {
   const globalStyles = useGlobalStyles(props.isProMode, props.isDarkTheme);
 
   const connect = useCallback(() => {
@@ -212,9 +224,7 @@ export const TWAP = (props: Props) => {
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
-          <Components.Base.Portal id={props.ordersContainerId}>
-            <Orders />
-          </Components.Base.Portal>
+          <OrdersPanel />
         </AdapterContextProvider>
       </TwapAdapter>
     </Box>
@@ -311,7 +321,7 @@ const TradeInterval = () => {
   );
 };
 
-export const LimitPrice = ({ limit }: { limit?: boolean }) => {
+const LimitPrice = ({ limit }: { limit?: boolean }) => {
   return (
     <>
       <Components.Base.Card className="twap-limit-price">
@@ -326,3 +336,5 @@ export const LimitPrice = ({ limit }: { limit?: boolean }) => {
     </>
   );
 };
+
+export { Orders, TWAP };

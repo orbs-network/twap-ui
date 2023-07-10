@@ -1,5 +1,17 @@
 import { GlobalStyles, Box } from "@mui/material";
-import { Components, Orders, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, hooks, TWAPTokenSelectProps, useTwapContext, store } from "@orbs-network/twap-ui";
+import {
+  Components,
+  OrdersPanel,
+  Styles as TwapStyles,
+  Translations,
+  TwapAdapter,
+  TWAPProps,
+  hooks,
+  TWAPTokenSelectProps,
+  useTwapContext,
+  store,
+  Orders,
+} from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useMemo } from "react";
@@ -162,7 +174,7 @@ interface SpookySwapTWAPProps extends TWAPProps {
   getProvider: () => any;
 }
 
-export const TWAP = (props: SpookySwapTWAPProps) => {
+const TWAP = (props: SpookySwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
   const globalStyles = useGlobalStyles(props.isDarkTheme);
   const connect = useCallback(() => {
@@ -189,9 +201,7 @@ export const TWAP = (props: SpookySwapTWAPProps) => {
 
       <AdapterContextProvider value={props}>
         {props.limit ? <LimitPanel /> : <TWAPPanel />}
-        <Components.Base.Portal id={props.ordersContainerId}>
-          <Orders />
-        </Components.Base.Portal>
+        <OrdersPanel />
       </AdapterContextProvider>
     </TwapAdapter>
   );
@@ -306,3 +316,5 @@ const TradeInterval = () => {
     </Components.Base.Card>
   );
 };
+
+export { Orders, TWAP };

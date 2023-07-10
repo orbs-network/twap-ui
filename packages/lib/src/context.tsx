@@ -52,7 +52,7 @@ const Listener = () => {
 const WrappedTwap = (props: TwapLibProps) => {
   const updateStoreOveride = useUpdateStoreOveride();
 
-  console.log("context render");
+  logger("context render");
 
   const initLib = useInitLib();
 

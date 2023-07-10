@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, Orders } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, OrdersPanel } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState, createContext, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
@@ -79,7 +79,7 @@ const getConfig = (partnerDaas?: string) => {
 
 const defaultTheme = createTheme();
 
-export const TWAP = memo((props: PangolinTWAPProps) => {
+const TWAP = memo((props: PangolinTWAPProps) => {
   const globalStyles = useGlobalStyles(props.theme);
   const memoizedConnect = useCallback(() => {
     props.connect?.();
@@ -329,8 +329,10 @@ const OrdersComponent = () => {
   return (
     <Components.Base.SwipeContainer show={args.showOrders} close={args.toggleOrders}>
       <AdapterStyles.StyledOrders>
-        <Orders />
+        <OrdersPanel noPortal={true} />
       </AdapterStyles.StyledOrders>
     </Components.Base.SwipeContainer>
   );
 };
+
+export { TWAP };

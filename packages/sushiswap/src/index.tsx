@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, TWAPTokenSelectProps, Translations, TwapAdapter, Styles as TwapStyles, Orders, store, TWAPProps } from "@orbs-network/twap-ui";
+import { Components, TWAPTokenSelectProps, Translations, TwapAdapter, Styles as TwapStyles, Orders, store, TWAPProps, OrdersPanel } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
@@ -66,7 +66,7 @@ const EmptyValue = ({ prefix = "" }: { prefix?: string }) => {
   );
 };
 
-export const Balance = ({ isSrc }: { isSrc?: boolean }) => {
+const Balance = ({ isSrc }: { isSrc?: boolean }) => {
   const { isDarkTheme } = useAdapterContext();
 
   return (
@@ -77,12 +77,12 @@ export const Balance = ({ isSrc }: { isSrc?: boolean }) => {
   );
 };
 
-export const TokenChange = () => {
+const TokenChange = () => {
   const { isDarkTheme } = useAdapterContext();
   return <StyledTokenChange isDarkTheme={isDarkTheme ? 1 : 0} icon={<BsArrowDownShort />} />;
 };
 
-export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
+const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const { isDarkTheme } = useAdapterContext();
 
@@ -112,7 +112,7 @@ export const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-export const OrderSummary = ({ children }: { children: ReactNode }) => {
+const OrderSummary = ({ children }: { children: ReactNode }) => {
   const { isDarkTheme } = useAdapterContext();
   return (
     <StyledOrderSummary isDarkTheme={isDarkTheme ? 1 : 0}>
@@ -146,9 +146,9 @@ export const OrderSummary = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const config = Configs.QuickSwap;
+const config = Configs.QuickSwap;
 
-export interface ThenaRawToken {
+interface ThenaRawToken {
   address: string;
   decimals: number;
   name: string;
@@ -156,7 +156,7 @@ export interface ThenaRawToken {
   logoURI: string;
 }
 
-export const parseToken = (rawToken: ThenaRawToken): TokenData | undefined => {
+const parseToken = (rawToken: ThenaRawToken): TokenData | undefined => {
   const { address, decimals, symbol, logoURI } = rawToken;
   if (!symbol) {
     console.error("Invalid token", rawToken);
@@ -175,9 +175,9 @@ export const parseToken = (rawToken: ThenaRawToken): TokenData | undefined => {
 
 const AdapterContext = createContext({} as TWAPProps);
 
-export const AdapterContextProvider = AdapterContext.Provider;
+const AdapterContextProvider = AdapterContext.Provider;
 
-export const useAdapterContext = () => useContext(AdapterContext);
+const useAdapterContext = () => useContext(AdapterContext);
 
 const storeOverride = {
   isLimitOrder: true,
@@ -186,7 +186,7 @@ const storeOverride = {
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
-export const TWAP = (props: TWAPProps) => {
+const TWAP = (props: TWAPProps) => {
   return (
     <StyledAdapter isDarkMode={props.isDarkTheme ? 1 : 0} className="twap-adapter-wrapper">
       <TwapAdapter
@@ -206,11 +206,9 @@ export const TWAP = (props: TWAPProps) => {
         <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
-          <Components.Base.Portal id={props.ordersContainerId}>
-            <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0}>
-              <Orders />
-            </StyledOrders>
-          </Components.Base.Portal>
+          <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0}>
+            <OrdersPanel />
+          </StyledOrders>
         </AdapterContextProvider>
       </TwapAdapter>
     </StyledAdapter>
@@ -319,7 +317,7 @@ const TradeInterval = () => {
   );
 };
 
-export const LimitPrice = () => {
+const LimitPrice = () => {
   return (
     <>
       <Components.Base.Card className="twap-limit-price">
@@ -334,3 +332,5 @@ export const LimitPrice = () => {
     </>
   );
 };
+
+export { Orders, TWAP };

@@ -1,5 +1,17 @@
 import { GlobalStyles, styled, ThemeProvider, Typography } from "@mui/material";
-import { Components, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, TWAPProps, store } from "@orbs-network/twap-ui";
+import {
+  Components,
+  Translations,
+  TwapAdapter,
+  useTwapContext,
+  Styles as TwapStyles,
+  TWAPTokenSelectProps,
+  hooks,
+  TWAPProps,
+  store,
+  Orders,
+  ORDERS_CONTAINER_ID,
+} from "@orbs-network/twap-ui";
 import { memo, ReactNode, useCallback, useState, useEffect, createContext, useContext, CSSProperties, useMemo } from "react";
 import translations from "./i18n/en.json";
 import { Box } from "@mui/system";
@@ -233,7 +245,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const Recipient = () => {
+const Recipient = () => {
   const maker = store.useTwapStore((store) => store.lib?.maker);
   const translations = useTwapContext().translations;
 
@@ -335,7 +347,7 @@ const limitStoreOverride = {
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
-export const TWAP = (props: ChronosTWAPProps) => {
+const TWAP = (props: ChronosTWAPProps) => {
   const [appReady, setAppReady] = useState(false);
 
   const theme = useMemo(() => {
@@ -367,8 +379,8 @@ export const TWAP = (props: ChronosTWAPProps) => {
           <GlobalStyles styles={configureStyles(theme) as any} />
           <AdapterContextProvider value={props}>
             {props.limit ? <LimitPanel /> : <TWAPPanel />}
-            <Components.Base.Portal id={props.ordersContainerId}>
-              <Orders />
+            <Components.Base.Portal id={ORDERS_CONTAINER_ID}>
+              <OrdersLayout />
             </Components.Base.Portal>
           </AdapterContextProvider>
         </ThemeProvider>
@@ -379,7 +391,7 @@ export const TWAP = (props: ChronosTWAPProps) => {
 
 const getLabel = (name: string, amount: number) => `${name} (${amount})`;
 
-const Orders = () => {
+const OrdersLayout = () => {
   return (
     <StyledOrders className="twap-orders">
       <StyledOrdersHeader className="twap-chronos-orders-header">
@@ -560,3 +572,5 @@ const ChunksSlider = () => {
     </StyledChunksSlider>
   );
 };
+
+export { Orders, TWAP };

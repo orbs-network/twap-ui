@@ -1,24 +1,16 @@
 import { StyledChronos, StyledStyledChronosPanel, StyledStyledChronosOrders, StyledChronosLayout, StyledModalContent } from "./styles";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
-import { TWAP } from "@orbs-network/twap-ui-chronos";
+import { TWAP, Orders } from "@orbs-network/twap-ui-chronos";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
-import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
+import { erc20s, zeroAddress, erc20sData, isNativeAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 const config = Configs.Chronos;
-
-const getTokenLogoURL = (symbol: string) => {
-  if (symbol === "ETH") {
-    return config.nativeToken.logoUrl!;
-  }
-
-  return `https://dexapi.chronos.exchange/tokens/${symbol}.png`;
-};
 
 export const useDappTokens = () => {
   const { account } = useWeb3React();
@@ -27,17 +19,16 @@ export const useDappTokens = () => {
   return useQuery(
     ["useDappTokens", config.chainId],
     async () => {
-      const response = await fetch(`https://dexapi.chronos.exchange/pairs/tokens`);
+      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json`);
 
-      const data = (await response.json()).data;
-      const tokens = [config.nativeToken, ...data.tokens];
+      const tokens = await response.json();
 
-      const parsed = tokens.map(({ symbol, address, decimals, name }: any) => ({
+      const parsed = tokens.map(({ symbol, address, decimals, name, logoURI }: any) => ({
         decimals,
         symbol,
         name,
         address,
-        logoURI: getTokenLogoURL(symbol),
+        logoURI: isNativeAddress(address) ? config.nativeToken.logoUrl : logoURI,
       }));
 
       const candiesAddresses = [zeroAddress, ..._.map(erc20s.arb, (t) => t().address)];
@@ -93,6 +84,13 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { data: dappTokens = [] } = useDappTokens();
   const { isDarkTheme } = useTheme();
 
+  const getTokenLogoURL = useCallback(
+    (symbol: string) => {
+      return dappTokens.find((t) => t.symbol === symbol)?.logoURI;
+    },
+    [_.size(dappTokens)]
+  );
+
   return (
     <TWAP
       connect={connect}
@@ -104,7 +102,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library}
       getTokenLogoURL={getTokenLogoURL}
       isExample={true}
-      ordersContainerId="orders"
       limit={limit}
       isDarkTheme={isDarkTheme}
     />
@@ -133,7 +130,7 @@ const DappComponent = () => {
         </StyledStyledChronosPanel>
 
         <StyledStyledChronosOrders>
-          <div id="orders" />
+          <Orders />
         </StyledStyledChronosOrders>
       </StyledChronosLayout>
     </StyledChronos>

@@ -241,7 +241,13 @@ const filterTokens = (list: TokenListItem[], filterValue: string) => {
     return it.token.symbol.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0 || eqIgnoreCase(it.token.address, filterValue);
   });
 };
-export const TokensList = ({ tokens = [], onClick }: { tokens?: TokenListItem[]; onClick: (token: TokenData) => void }) => {
+
+interface TokensListProps {
+  tokens?: TokenListItem[];
+  onClick: (token: TokenData) => void;
+}
+
+export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
   const [filterValue, setFilterValue] = useState("");
   const tokensLength = _.size(tokens);
 
