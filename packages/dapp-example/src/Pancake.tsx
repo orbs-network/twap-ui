@@ -213,7 +213,6 @@ const dapp: Dapp = {
   Component: DappComponent,
   logo,
   config,
-  workInProgress: true,
 };
 
 export default dapp;

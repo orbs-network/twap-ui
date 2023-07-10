@@ -13,6 +13,7 @@ const chainNames = {
   avax: "avalanche",
   poly: "polygon",
   arb: "arbitrum",
+  bsc: "bsc",
 };
 
 const MIN_BALANCE = 0.001;
@@ -28,24 +29,23 @@ function useConfig(dapp?: Dapp) {
 function useBackupTakersStatus(dapp?: Dapp) {
   return useQuery(
     ["useBackupTakersStatus", dapp?.config.chainId],
-    async () => {
-      return await Promise.all(
-        [1, 2].map((i) =>
-          fetch(`https://twap-taker-${i}.herokuapp.com/health`)
-            .then((x) => x.json())
-            .then(async (s: any) => {
-              const wallets = s.takersWallets[(chainNames as any)[dapp!.config.chainName]];
-              const balances = _.sortBy(_.map(wallets, (w) => BN(w.balance).times(1e3).integerValue().div(1e3).toNumber()));
-              return {
-                status: s.uptime > 0 && balances[0] > MIN_BALANCE,
-                uptime: (moment.utc(s.uptime * 1000).dayOfYear() > 1 ? moment.utc(s.uptime * 1000).dayOfYear() + " days " : "") + moment.utc(s.uptime * 1000).format("HH:mm:ss"),
-                balances,
-              };
-            })
-            .catch(() => ({ status: false, uptime: "⚠️", balances: [] as number[] }))
-        )
-      );
-    },
+    async () =>
+      fetch("https://wallet-manager-1-a1922d7bed1d.herokuapp.com/health")
+        .then((x) => x.json())
+        .then(async (s: any) => {
+          return {
+            status: s.networks[(chainNames as any)[dapp!.config.chainName]].status === "OK",
+            balances: [
+              BN(s.networks[(chainNames as any)[dapp!.config.chainName]].wallets.treasury.balanceInWU)
+                .times(1e3)
+                .integerValue()
+                .div(1e3)
+                .toNumber(),
+            ],
+            count: _.size(s.networks[(chainNames as any)[dapp!.config.chainName]].wallets.availableWallets),
+          };
+        })
+        .catch(() => ({ status: false, balances: [] as number[], count: 0 })),
     {
       enabled: !!dapp,
       refetchInterval: 60_000,
@@ -83,34 +83,6 @@ function useOrbsL3TakersStatus(dapp?: Dapp) {
   }).data;
 }
 
-const takerxUrl = "https://uvk35bjjqk.execute-api.us-east-2.amazonaws.com/status";
-
-function useTakerXStatus(dapp?: Dapp) {
-  return useQuery(
-    ["useTakerXStatus", dapp?.config.name],
-    async () => {
-      const backupAwsStatusResponse = await fetch(takerxUrl).then((r) => r.json());
-      const backupAwsStatusChain = _.find(backupAwsStatusResponse, (s) => s.chainId === dapp?.config.chainId);
-      if (!backupAwsStatusChain) return null;
-      const takers = [
-        {
-          status: BN(backupAwsStatusChain.balance0).gt(MIN_BALANCE),
-          balance: BN(backupAwsStatusChain.balance0).times(1e3).integerValue().div(1e3).toNumber(),
-        },
-        {
-          status: BN(backupAwsStatusChain.balance1).gt(MIN_BALANCE),
-          balance: BN(backupAwsStatusChain.balance1).times(1e3).integerValue().div(1e3).toNumber(),
-        },
-      ];
-      return {
-        balances: _.sortBy(_.map(takers, (taker) => taker.balance)),
-        status: _.every(takers, (t) => t.status),
-      };
-    },
-    { enabled: !!dapp, refetchInterval: 60_000 }
-  ).data;
-}
-
 const Image = ({ logo }: { logo?: string }) => {
   const [loaded, setLoaded] = useState(false);
 
@@ -125,9 +97,8 @@ export function Status() {
   const { selectedDapp: dapp } = useSelectedDapp();
   const config = useConfig(dapp);
 
-  const status = useBackupTakersStatus(dapp);
-  const takerx = useTakerXStatus(dapp);
   const orbsTakers = useOrbsL3TakersStatus(dapp);
+  const backupTakers = useBackupTakersStatus(dapp);
   return (
     <>
       {dapp && (
@@ -190,28 +161,18 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle>
               <a href={"https://twap-takers.orbs.network/"} target={"_blank"}>
-                {!orbsTakers ? "" : orbsTakers.status ? "✅" : "⚠️⚠️⚠️"} Orbs L3 Takers ({orbsTakers?.balances.length}):
+                {!orbsTakers ? "" : orbsTakers.status ? "✅" : "⚠️"} Orbs L3 Takers ({orbsTakers?.balances.length}):
               </a>
             </StyledStatusSectionTitle>
             <StyledStatusSectionText>gas: {orbsTakers?.balances.slice(0, 5).join(" / ")}...</StyledStatusSectionText>
           </StyledStatusSection>
-          {_.map([1, 2], (i, k) => (
-            <StyledStatusSection key={i}>
-              <StyledStatusSectionTitle>
-                <a href={"https://twap-takers.orbs.network/"} target={"_blank"}>
-                  {!status ? "" : status[k].status ? "✅" : "⚠️⚠️⚠️"} Backup Taker {i} ({status?.[k].balances.length}):
-                </a>
-              </StyledStatusSectionTitle>
-              <StyledStatusSectionText>gas: {status?.[k].balances.join(" / ")}</StyledStatusSectionText>
-            </StyledStatusSection>
-          ))}
           <StyledStatusSection>
             <StyledStatusSectionTitle>
-              <a href={takerxUrl} target={"_blank"}>
-                {!takerx ? "" : takerx?.status ? "✅" : "⚠️⚠️⚠️"} Backup Taker X (2):
+              <a href={"https://twap-takers.orbs.network/"} target={"_blank"}>
+                {!backupTakers ? "" : backupTakers.status ? "✅" : "⚠️"} Orbs Backup Takers ({backupTakers?.count}):
               </a>
             </StyledStatusSectionTitle>
-            <StyledStatusSectionText>gas: {takerx?.balances.join(" / ")}</StyledStatusSectionText>
+            <StyledStatusSectionText>gas: {backupTakers?.balances.join(" / ")}</StyledStatusSectionText>
           </StyledStatusSection>
         </StyledStatus>
       )}
