@@ -128,7 +128,6 @@ const sendAnalyticsEvent = (category: Category, action: string, data = {} as { [
       maker: lib?.maker,
       partner: lib?.config.partner,
       chain: lib?.config.chainId,
-      location: document ? document.location.href : "",
       category,
       action,
       ...data,
