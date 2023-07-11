@@ -1,4 +1,4 @@
-import { GlobalStyles, Box, ThemeProvider, Typography } from "@mui/material";
+import { GlobalStyles, Box, ThemeProvider, Typography, styled } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, TwapErrorWrapper, TWAPProps, OrdersPanel, Orders } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -48,7 +48,7 @@ import _ from "lodash";
 interface AdapterProps extends TWAPProps {
   dappTokens: { [key: string]: any };
   isDarkTheme?: boolean;
-  getProvider: () => Promise<any>;
+  connector?: any;
   ConnectButton: JSXElementConstructor<any>;
   useModal?: any;
   onSrcTokenSelected: (token: any) => void;
@@ -274,9 +274,10 @@ const useProvider = (props: AdapterProps) => {
   const account = props.account;
 
   const _getProvider = useCallback(async () => {
-    const provider = await props.getProvider();
+    if (!props.connector) return;
+    const provider = await props.connector.getProvider();
     setProvider(provider);
-  }, [account, chainId, setProvider, props.getProvider]);
+  }, [account, chainId, setProvider, props.connector]);
 
   useEffect(() => {
     setProvider(undefined);
@@ -394,20 +395,34 @@ const TWAPPanel = () => {
 const TotalTrades = () => {
   const getChunksBiggerThanOne = store.useTwapStore((store) => store.getChunksBiggerThanOne());
 
+  if (!getChunksBiggerThanOne) {
+    return (
+      <TwapStyles.StyledRowFlex justifyContent="space-between">
+        <Components.Labels.TotalTradesLabel />
+        <Typography style={{fontSize: 14}}>1</Typography>
+      </TwapStyles.StyledRowFlex>
+    );
+  }
   return (
-    <Container enabled={getChunksBiggerThanOne ? 1 : 0} label={<Components.Labels.TotalTradesLabel />}>
+    <StyledTotalChunks enabled={1} label={<Components.Labels.TotalTradesLabel />}>
       <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between">
         <StyledChunksSlider />
         <StyledChunksInput />
       </TwapStyles.StyledRowFlex>
-    </Container>
+    </StyledTotalChunks>
   );
 };
+
+const StyledTotalChunks = styled(Container)({
+  ".twap-input": {
+    height: 25,
+  },
+});
 
 const TradeSize = () => {
   return (
     <Container label={<Components.Labels.ChunksAmountLabel />} viewOnly={true}>
-      <TwapStyles.StyledRowFlex className="twap-trade-size" justifyContent="flex-start" gap={5}>
+      <TwapStyles.StyledRowFlex className="twap-trade-size" justifyContent="flex-end" gap={5}>
         <Components.TradeSize hideLabel={true} />
         <Components.ChunksUSD prefix="(" suffix=" USD)" emptyUi={<></>} />
       </TwapStyles.StyledRowFlex>

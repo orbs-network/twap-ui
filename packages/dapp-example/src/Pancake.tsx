@@ -128,18 +128,16 @@ const nativeToken = {
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
-  const connect = useConnectWallet();
   const { account, library } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
 
-  const getProvider = async () => {
-    return library;
+  const connector = {
+    getProvider: () => library,
   };
 
   return (
     <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
       <TWAP
-        connect={connect}
         account={account}
         srcToken="BNB"
         dstToken="0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"
@@ -147,7 +145,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         TokenSelectModal={TokenSelectModal}
         isDarkTheme={isDarkTheme}
         limit={limit}
-        getProvider={getProvider}
+        connector={connector}
         ConnectButton={ConnectButton}
         useModal={useModal}
         onSrcTokenSelected={() => {}}

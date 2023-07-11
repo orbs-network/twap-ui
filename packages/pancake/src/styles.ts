@@ -213,7 +213,7 @@ export const configureStyles = (theme: Theme) => {
         background: darkMode ? `#27262C!important` : "",
       },
       ".MuiSwitch-track": {
-        backgroundColor: darkMode ? `#383258!important` : "#E9EAEB!important",
+        backgroundColor: darkMode ? `#b8add2!important` : "#E9EAEB!important",
         opacity: "1!important",
       },
       ".Mui-checked+.MuiSwitch-track": {
