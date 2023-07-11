@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/material";
-import { ORDERS_CONTAINER_ID, Styles, useTwapContext } from "..";
+import { ORDERS_CONTAINER_ID, Styles } from "..";
 import { OdnpButton } from "../components";
 import { Portal } from "../components/base";
 import { OrdersLabel } from "../components/Labels";
