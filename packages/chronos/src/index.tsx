@@ -61,12 +61,17 @@ import { isNativeAddress } from "@defi.org/web3-candies";
 import Web3 from "web3";
 import { HiArrowsRightLeft } from "react-icons/hi2";
 import { IoMdArrowBack } from "react-icons/io";
+import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 interface ChronosTWAPProps extends TWAPProps {
   getTokenLogoURL: (address: string) => string;
   dappTokens: any[];
   connect?: () => void;
   isExample?: boolean;
 }
+
+const uiPreferences: TwapContextUIPreferences = {
+  getOrdersTabsLabel: (name: string, amount: number) => `${name} (${amount})`,
+};
 
 const makeElipsisAddress = (address?: string, padding = 6): string => {
   if (!address) return "";
@@ -374,6 +379,7 @@ const TWAP = (props: ChronosTWAPProps) => {
         srcToken={props.srcToken}
         dstToken={props.dstToken}
         storeOverride={props.limit ? limitStoreOverride : undefined}
+        uiPreferences={uiPreferences}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -389,15 +395,13 @@ const TWAP = (props: ChronosTWAPProps) => {
   );
 };
 
-const getLabel = (name: string, amount: number) => `${name} (${amount})`;
-
 const OrdersLayout = () => {
   return (
     <StyledOrders className="twap-orders">
       <StyledOrdersHeader className="twap-chronos-orders-header">
         <Components.Labels.OrdersLabel />
         <StyledOrderHeaderRight className="twap-chronos-orders-header-right">
-          <StyledOrdersTabs getLabel={getLabel} />
+          <StyledOrdersTabs />
           <StyledODNP />
         </StyledOrderHeaderRight>
       </StyledOrdersHeader>
@@ -484,7 +488,7 @@ const TradeSize = () => {
             </StyledBigBorder>
 
             <StyledBigBorder style={{ width: 90 }}>
-              <Components.ChunksUSD prefix="≈$" tooltipPrefix="1 chunk = $" />
+              <Components.ChunksUSD prefix="≈$" />
             </StyledBigBorder>
           </TwapStyles.StyledRowFlex>
         </StyledCardColumn>

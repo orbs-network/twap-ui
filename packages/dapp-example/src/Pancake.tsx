@@ -72,7 +72,12 @@ const parseList = (rawList?: any): TokenListItem[] => {
 };
 
 const ConnectButton = () => {
-  return <Components.SubmitButton isMain={true} />;
+  const connect = useConnectWallet();
+  return (
+    <div onClick={connect}>
+      <Components.SubmitButton isMain={true} />
+    </div>
+  );
 };
 
 interface ContextProps {
@@ -130,6 +135,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
+
+  console.log(library);
 
   const connector = {
     getProvider: () => library,

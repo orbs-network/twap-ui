@@ -14,14 +14,11 @@ function a11yProps(index: number) {
   };
 }
 
-export const OrdersSelectTabs = ({
-  className = "",
-  getLabel = (label, amount) => `${amount} ${label}`,
-}: {
-  className?: string;
-  getLabel?: (label: string, amount: number) => string;
-}) => {
-  const translations = useTwapContext().translations;
+export const OrdersSelectTabs = ({ className = "" }: { className?: string }) => {
+  const {
+    translations,
+    uiPreferences: { getOrdersTabsLabel },
+  } = useTwapContext();
   const { orders } = useOrdersHistoryQuery();
   const { tab, setTab } = useOrdersStore();
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -40,7 +37,9 @@ export const OrdersSelectTabs = ({
       onChange={handleChange}
     >
       {_.keys(Status).map((key, index) => {
-        const label = getLabel(translations[key as keyof Translations], orders[key as Status]?.length || 0);
+        const name = translations[key as keyof Translations];
+        const amount = orders[key as Status]?.length || 0;
+        const label = getOrdersTabsLabel ? getOrdersTabsLabel(name, amount) : `${amount} ${name}`;
 
         return <StyledOrdersTab className="twap-orders-header-tabs-tab" key={key} label={label} {...a11yProps(index)} />;
       })}

@@ -169,7 +169,7 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
       prefix={isSrc ? "" : isLimitOrder ? "≥" : SQUIGLE}
       loading={isSrc ? srcInputLoading : dstInputLoading}
       disabled={!isSrc}
-      placeholder={placeholder || "0.0"}
+      placeholder={placeholder}
       onChange={isSrc ? setSrcAmountUi : () => {}}
       value={isSrc ? srcAmount : dstAmount}
     />
@@ -309,23 +309,11 @@ export function LimitPriceRadioGroup() {
   );
 }
 
-export function ChunksUSD({
-  onlyValue,
-  emptyUi,
-  suffix,
-  prefix,
-  tooltipPrefix,
-}: {
-  onlyValue?: boolean;
-  emptyUi?: React.ReactNode;
-  suffix?: string;
-  prefix?: string;
-  tooltipPrefix?: string;
-}) {
+export function ChunksUSD({ onlyValue, emptyUi, suffix, prefix }: { onlyValue?: boolean; emptyUi?: React.ReactNode; suffix?: string; prefix?: string }) {
   const usd = useTwapStore((state) => state.getSrcChunkAmountUsdUi());
   const loading = useLoadingState().srcUsdLoading;
 
-  return <USD tooltipPrefix={tooltipPrefix} prefix={prefix} suffix={suffix} value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={loading} />;
+  return <USD prefix={prefix} suffix={suffix} value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={loading} />;
 }
 
 export const TokenBalance = ({

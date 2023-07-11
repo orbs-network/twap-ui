@@ -2,6 +2,7 @@ import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";
+import { useTwapContext } from "../../context";
 
 export interface Props {
   onChange: (value: string) => void;
@@ -19,21 +20,12 @@ export interface Props {
   minAmount?: number;
 }
 
-function NumericInput({
-  prefix = "",
-  onChange,
-  value,
-  disabled = false,
-  placeholder = "Enter amount",
-  onFocus,
-  onBlur,
-  loading = false,
-  className = "",
-  maxValue,
-  decimalScale,
-  minAmount,
-}: Props) {
+function NumericInput({ prefix = "", onChange, value, disabled = false, placeholder, onFocus, onBlur, loading = false, className = "", maxValue, decimalScale, minAmount }: Props) {
   const inputValue = value || minAmount || "";
+
+  const { inputPlaceholder } = useTwapContext().uiPreferences;
+
+  const _placeholder = placeholder || inputPlaceholder || "0.0";
 
   return (
     <StyledContainer className={`twap-input ${className}`}>
@@ -46,7 +38,7 @@ function NumericInput({
             decimalScale={decimalScale}
             onBlur={onBlur}
             onFocus={onFocus}
-            placeholder={placeholder}
+            placeholder={_placeholder}
             isAllowed={(values) => {
               const { floatValue = 0 } = values;
               return maxValue ? floatValue <= parseFloat(maxValue) : true;

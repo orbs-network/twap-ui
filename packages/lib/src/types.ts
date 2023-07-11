@@ -135,6 +135,16 @@ interface LibProps {
 
 export type StoreOverride = Partial<State>;
 
+export interface TwapContextUIPreferences {
+  usdSuffix?: string;
+  usdPrefix?: string;
+  usdEmptyUI?: ReactNode;
+  balanceEmptyUI?: ReactNode;
+  switchVariant?: SwitchVariant;
+  getOrdersTabsLabel?: (label: string, amount: number) => string;
+  inputPlaceholder?: string;
+}
+
 export interface TwapLibProps extends LibProps {
   connect?: () => void;
   askDataParams?: any[];
@@ -143,6 +153,7 @@ export interface TwapLibProps extends LibProps {
   dstToken?: string;
   parseToken: (token: any) => TokenData | undefined;
   dappTokens: any;
+  uiPreferences?: TwapContextUIPreferences;
 }
 
 export interface InitLibProps {

@@ -1,5 +1,17 @@
 import { GlobalStyles, Box, ThemeProvider, Typography, styled } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, TwapErrorWrapper, TWAPProps, OrdersPanel, Orders } from "@orbs-network/twap-ui";
+import {
+  Components,
+  hooks,
+  Translations,
+  TwapAdapter,
+  Styles as TwapStyles,
+  store,
+  TwapErrorWrapper,
+  TWAPProps,
+  OrdersPanel,
+  Orders,
+  TwapContextUIPreferences,
+} from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
   configureStyles,
@@ -44,6 +56,16 @@ import { createContext, useContext } from "react";
 import { GrPowerReset } from "react-icons/gr";
 import Web3 from "web3";
 import _ from "lodash";
+
+const uiPreferences: TwapContextUIPreferences = {
+  usdSuffix: " USD",
+  usdPrefix: " ",
+  usdEmptyUI: <></>,
+  balanceEmptyUI: <></>,
+  switchVariant: "ios",
+  getOrdersTabsLabel: (label: string, amount: number) => `${label} (${amount})`,
+  inputPlaceholder: "0.0",
+};
 
 interface AdapterProps extends TWAPProps {
   dappTokens: { [key: string]: any };
@@ -161,8 +183,8 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
           >
             {" "}
             <StyledTokenPanelInputContainer>
-              <StyledTokenPanelInput placeholder="0.0" isSrc={isSrcToken} />
-              <StyledUSD suffix=" USD" prefix=" " isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
+              <StyledTokenPanelInput isSrc={isSrcToken} />
+              <StyledUSD isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
               {isSrcToken && <SrcTokenPercentSelector />}
             </StyledTokenPanelInputContainer>
           </Container>
@@ -231,10 +253,10 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
           <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} usdSuffix=" USD" usdPrefix=" " />
+            <Components.OrderSummaryTokenDisplay isSrc={true} />
           </Components.Base.Card>
           <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay usdSuffix=" USD" usdPrefix=" " />
+            <Components.OrderSummaryTokenDisplay />
           </Components.Base.Card>
           <Components.Base.Card>
             <Components.OrderSummaryLimitPrice />
@@ -248,7 +270,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
         </TwapStyles.StyledColumnFlex>
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={12}>
-            <StyledAcceptDisclaimer variant="ios" />
+            <StyledAcceptDisclaimer />
             <StyledOutputAddress />
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
@@ -317,12 +339,13 @@ const TWAP = memo((props: AdapterProps) => {
           storeOverride={props.limit ? storeOverride : undefined}
           parseToken={parseToken}
           dappTokens={_dappTokens}
+          uiPreferences={uiPreferences}
         >
           <ThemeProvider theme={theme}>
             <GlobalStyles styles={configureStyles(theme) as any} />
             <AdapterContextProvider value={{ ...props, provider, dappTokens: _dappTokens }}>
               {props.limit ? <LimitPanel /> : <TWAPPanel />}
-              <OrdersPanel getLabel={(label, amount) => `${label} (${amount})`} />
+              <OrdersPanel />
             </AdapterContextProvider>
           </ThemeProvider>
         </TwapAdapter>
@@ -436,7 +459,11 @@ const TradeSize = () => {
     <Container label={<Components.Labels.ChunksAmountLabel />} viewOnly={true}>
       <TwapStyles.StyledRowFlex className="twap-trade-size" justifyContent="flex-end" gap={5}>
         <Components.TradeSize hideLabel={true} />
-        <Components.ChunksUSD prefix="(" suffix=" USD)" emptyUi={<></>} />
+        <TwapStyles.StyledRowFlex gap={2} style={{ width: "auto" }} className="twap-usd">
+          <Typography fontSize={13}>{`(`}</Typography>
+          <Components.ChunksUSD />
+          <Typography fontSize={13}>{`)`}</Typography>
+        </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
     </Container>
   );
@@ -485,7 +512,7 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
                 </StyledReset>
               </Components.ResetLimitButton>
             </TwapStyles.StyledRowFlex>
-            {!limitOnly && <Components.LimitPriceToggle variant="ios" />}
+            {!limitOnly && <Components.LimitPriceToggle />}
           </TwapStyles.StyledRowFlex>
         }
       >

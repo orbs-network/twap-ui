@@ -1,5 +1,6 @@
 import { styled, Switch as MuiSwitch, SwitchProps } from "@mui/material";
 import { CSSProperties } from "react";
+import { useTwapContext } from "../../context";
 import { SwitchVariant } from "../../types";
 export interface Props {
   defaultChecked?: boolean;
@@ -12,6 +13,7 @@ export interface Props {
 }
 
 function Switch({ value, onChange, className = "", disabled = false, variant, style = {} }: Props) {
+  const { switchVariant } = useTwapContext().uiPreferences;
   const props = {
     style: { pointerEvents: disabled ? "none" : "unset" } as CSSProperties,
     className: `twap-switch ${className}`,
@@ -19,7 +21,9 @@ function Switch({ value, onChange, className = "", disabled = false, variant, st
     onChange: (event: any) => onChange(event.target.checked),
   };
 
-  if (variant === "ios") {
+  const _variant = variant || switchVariant;
+
+  if (_variant === "ios") {
     return <IOSSwitch {...props} style={style} disabled={disabled} />;
   }
 

@@ -1,6 +1,7 @@
 import { styled } from "@mui/system";
 import React from "react";
 import { SQUIGLE } from "../../config";
+import { useTwapContext } from "../../context";
 import { useFormatNumber } from "../../hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
@@ -10,11 +11,10 @@ const USD = ({
   isLoading = false,
   value,
   className = "",
-  prefix = `${SQUIGLE} $ `,
+  prefix,
   suffix = "",
   emptyUi,
   onlyValue,
-  tooltipPrefix = `${SQUIGLE} $ `,
 }: {
   isLoading?: boolean;
   value?: string | number;
@@ -23,24 +23,29 @@ const USD = ({
   onlyValue?: boolean;
   suffix?: string;
   prefix?: string;
-  tooltipPrefix?: string;
 }) => {
   const formattedValue = useFormatNumber({ value });
   const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
 
+  const { usdSuffix, usdPrefix, usdEmptyUI } = useTwapContext().uiPreferences;
+
+  const _prefix = prefix || usdPrefix || `${SQUIGLE} $ `;
+  const _suffix = suffix || usdSuffix;
+  const _emptyUi = emptyUi || usdEmptyUI;
+
   if (value == null) return null;
   return (
-    <Tooltip text={`${tooltipPrefix}${formattedValueTooltip}${suffix}`} placement="bottom">
+    <Tooltip text={`${_prefix}${formattedValueTooltip}${_suffix}`} placement="bottom">
       <StyledLabel loading={isLoading} className={`twap-usd ${className} ${value === "0" ? "twap-usd-zero" : ""} `}>
         {value == 0 && emptyUi ? (
-          <>{emptyUi}</>
+          <>{_emptyUi}</>
         ) : onlyValue ? (
           <>{formattedValue}</>
         ) : (
           <>
-            {prefix}
+            {_prefix}
             <>{formattedValue}</>
-            {suffix}
+            {_suffix}
           </>
         )}
       </StyledLabel>

@@ -607,7 +607,9 @@ export const StyledSummaryModal = styled(Components.OrderSummaryModalContainer)(
       color: styles.primaryTextColor,
     },
     ".twap-orders-summary-token-display-amount": {
-      fontSize: 16,
+      p: {
+        fontSize: 16,
+      },
     },
     ".twap-orders-summary-token-display": {
       ".twap-token-logo": {

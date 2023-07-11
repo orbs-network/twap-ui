@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/material";
-import { ORDERS_CONTAINER_ID, Styles } from "..";
+import { ORDERS_CONTAINER_ID, Styles, useTwapContext } from "..";
 import { OdnpButton } from "../components";
 import { Portal } from "../components/base";
 import { OrdersLabel } from "../components/Labels";
@@ -7,7 +7,6 @@ import { OrdersSelectTabs, SelectedOrders } from "../components/OrdersComponents
 
 interface Props {
   className?: string;
-  getLabel?: (label: string, amount: number) => string;
   noPortal?: boolean;
 }
 
@@ -21,7 +20,7 @@ function Orders(props: Props) {
           </Styles.StyledRowFlex>
           <StyledOdnpButton />
         </StyledHeaderTop>
-        <OrdersSelectTabs getLabel={props.getLabel} />
+        <OrdersSelectTabs />
       </StyledHeader>
       <SelectedOrders />
     </StyledContainer>

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo } from "react";
-import { TwapLibProps } from "./types";
+import { TwapContextUIPreferences, TwapLibProps } from "./types";
 import { useInitLib, useLimitPrice, useParseTokens, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ analytics.onModuleLoad();
 
 export interface TWAPContextProps extends TwapLibProps {
   tokenList: TokenData[];
+  uiPreferences: TwapContextUIPreferences;
 }
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -84,7 +85,7 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TwapContext.Provider value={{ ...props, translations, tokenList }}>
+      <TwapContext.Provider value={{ ...props, translations, tokenList, uiPreferences: props.uiPreferences || {} }}>
         <WrappedTwap {...props} />
       </TwapContext.Provider>
     </QueryClientProvider>
