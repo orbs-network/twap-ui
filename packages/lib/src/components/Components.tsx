@@ -591,7 +591,8 @@ const Warning = ({ tootlip, warning }: { tootlip: string; warning: string }) => 
 export const PartialFillWarning = () => {
   const translations = useTwapContext().translations;
   const isWarning = useTwapStore((state) => state.getIsPartialFillWarning());
-  if (!isWarning) return null;
+  const lib = useTwapStore((state) => state.lib);
+  if (!isWarning || !lib) return null;
 
   return <Warning tootlip={translations.prtialFillWarningTooltip} warning={translations.prtialFillWarning} />;
 };
@@ -600,7 +601,9 @@ export const FillDelayWarning = () => {
   const translations = useTwapContext().translations;
   const fillDelayWarning = useTwapStore((store) => store.getFillDelayWarning());
   const minimumDelayMinutes = useTwapStore((store) => store.getMinimumDelayMinutes());
-  if (!fillDelayWarning) return null;
+  const lib = useTwapStore((state) => state.lib);
+
+  if (!fillDelayWarning || !lib) return null;
 
   return <Warning tootlip={handleFillDelayText(translations.fillDelayWarningTooltip, minimumDelayMinutes)} warning={translations.invalid} />;
 };
@@ -770,7 +773,7 @@ export function OrderSummaryModalContainer({ children, className }: { children: 
   );
 }
 
-export const OrderSummaryTokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
+export const OrderSummaryTokenDisplay = ({ isSrc, usdSuffix, usdPrefix }: { isSrc?: boolean; usdSuffix?: string; usdPrefix?: string }) => {
   const translations = useTwapContext().translations;
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const srcAmount = useTwapStore((store) => store.srcAmountUi);
@@ -783,7 +786,7 @@ export const OrderSummaryTokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
     <StyledOrderSummaryTokenDisplay className="twap-orders-summary-token-display">
       <StyledRowFlex className="twap-orders-summary-token-display-flex">
         <StyledText>{isSrc ? translations.from : translations.to}</StyledText>
-        <TokenUSD isSrc={isSrc} />
+        <TokenUSD prefix={usdPrefix} suffix={usdSuffix} isSrc={isSrc} />
       </StyledRowFlex>
       <StyledRowFlex className="twap-orders-summary-token-display-flex">
         <TokenLogoAndSymbol isSrc={isSrc} />

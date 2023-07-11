@@ -231,10 +231,10 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
           <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} />
+            <Components.OrderSummaryTokenDisplay isSrc={true} usdSuffix=" USD" usdPrefix=" " />
           </Components.Base.Card>
           <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay />
+            <Components.OrderSummaryTokenDisplay usdSuffix=" USD" usdPrefix=" " />
           </Components.Base.Card>
           <Components.Base.Card>
             <Components.OrderSummaryLimitPrice />
@@ -335,15 +335,27 @@ const OpenConfirmationModalButton = () => {
   const { ConnectButton, provider } = useAdapterContext();
 
   if (!provider) {
-    return <ConnectButton />;
+    return (
+      <StyledButtonContainer>
+        <ConnectButton />
+      </StyledButtonContainer>
+    );
   }
 
-  return <Components.SubmitButton isMain={true} />;
+  return (
+    <StyledButtonContainer>
+      <Components.SubmitButton isMain={true} />
+    </StyledButtonContainer>
+  );
 };
 
-{
-  TWAP;
-}
+const StyledButtonContainer = styled("div")({
+  width: "100%",
+  "> *": {
+    width: "100%",
+  },
+  marginTop: 20,
+});
 
 const LimitPanel = () => {
   return (
@@ -399,7 +411,7 @@ const TotalTrades = () => {
     return (
       <TwapStyles.StyledRowFlex justifyContent="space-between">
         <Components.Labels.TotalTradesLabel />
-        <Typography style={{fontSize: 14}}>1</Typography>
+        <Typography style={{ fontSize: 14 }}>-</Typography>
       </TwapStyles.StyledRowFlex>
     );
   }

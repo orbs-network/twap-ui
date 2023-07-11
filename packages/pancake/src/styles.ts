@@ -18,14 +18,14 @@ const baseStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
   return {
     primaryColor: darkMode ? "#1fc7d4" : "#1fc7d4",
-    cardColor: darkMode ? "#08060B" : "#FAF9FA",
+    cardColor: darkMode ? "#08060B" : "#eee",
     primaryTextColor: darkMode ? "#f4eeff" : "#280d5f",
     secondaryColor: darkMode ? "#9a6aff" : "#7645d9",
     subtitle: darkMode ? "#b8add2" : "#7a6eaa",
     inputBox: darkMode ? "#362F47" : "#EEEAF4",
     displayBox: darkMode ? "#3C3743" : "#E9EAEB",
     inputShadow: darkMode ? "" : "inset 0px 2px 2px -1px rgba(74,74,104,.1)",
-    displayBoxBorder: darkMode ? "#262130" : "#d7caec",
+    displayBoxBorder: darkMode ? "#262130" : "#e7e3eb",
     cardBorder: darkMode ? "#383241" : "#e7e3eb",
   };
 };
@@ -55,13 +55,12 @@ const getButtonStyles = (theme: Theme) => {
     borderRadius: 16,
     background: styles.primaryColor,
     transition: "0.2s all",
-    marginTop: 20,
-    color: "#191326",
+    color: isDarkMode(theme) ? "#191326" : "white",
     "&:hover": {
       opacity: 0.65,
     },
     "*": {
-      color: "#191326",
+      color: "inherit",
     },
   };
 };
@@ -210,10 +209,10 @@ export const configureStyles = (theme: Theme) => {
 
     ".twap-switch": {
       ".MuiSwitch-thumb": {
-        background: darkMode ? `#27262C!important` : "",
+        background: darkMode ? `#27262C!important` : "white!important",
       },
       ".MuiSwitch-track": {
-        backgroundColor: darkMode ? `#b8add2!important` : "#E9EAEB!important",
+        backgroundColor: darkMode ? `#b8add2!important` : "#1fc7d4!important",
         opacity: "1!important",
       },
       ".Mui-checked+.MuiSwitch-track": {
@@ -560,7 +559,7 @@ export const StyledReset = styled(StyledButton)({
 });
 
 export const StyledAcceptDisclaimer = styled(Components.AcceptDisclaimer)({
-  gap: 20,
+  justifyContent: "space-between",
 });
 
 export const StyledOutputAddress = styled(Components.OutputAddress)({
@@ -578,9 +577,6 @@ export const StyledSummaryModal = styled(Components.OrderSummaryModalContainer)(
       "&::-webkit-scrollbar": {
         display: "none",
       },
-      "*": {
-        color: styles.primaryTextColor,
-      },
     },
     ".twap-order-summary-details-item-right": {
       fontSize: 14,
@@ -591,21 +587,32 @@ export const StyledSummaryModal = styled(Components.OrderSummaryModalContainer)(
         fontSize: 14,
       },
     },
+    ".twap-ui-close": {
+      "*": {
+        color: `${styles.primaryTextColor}`,
+      },
+    },
     ".twap-card": {
       border: `1px solid ${styles.cardBorder}`,
       borderRadius: 16,
       padding: 15,
       transition: "0.2s all",
-      color: `${styles.primaryTextColor}!important`,
+
       background: styles.cardColor,
+      "*": {
+        color: `${styles.primaryTextColor}`,
+      },
     },
     ".twap-label": {
       color: styles.primaryTextColor,
     },
+    ".twap-orders-summary-token-display-amount": {
+      fontSize: 16,
+    },
     ".twap-orders-summary-token-display": {
       ".twap-token-logo": {
-        width: 40,
-        height: 40,
+        width: 35,
+        height: 35,
       },
     },
     "@media (max-width:500px)": {
