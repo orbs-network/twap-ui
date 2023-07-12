@@ -1,4 +1,4 @@
-import { styled } from "@mui/system";
+import { styled } from "@mui/material";
 import Icon from "./Icon";
 import { IoIosArrowDown } from "react-icons/io";
 import Tooltip from "./Tooltip";

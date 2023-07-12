@@ -53,24 +53,33 @@ export const lightModeStylesConfig: Styles = {
   selectedTokenTextColor: "rgb(49, 65, 94)",
 };
 
+const getButtonStyles = (darkMode?: boolean) => {
+  const styles = darkMode ? darkModeStylesConfig : lightModeStylesConfig;
+  return {
+    height: 30,
+    borderRadius: 60,
+    background: styles.buttonBackground,
+    color: `${styles.buttonColor}!important`,
+    width: "fit-content!important",
+    padding: "0px 16px",
+
+    boxShadow: darkMode ? "unset" : "rgb(49 65 94 / 8%) 0px 10px 17px, rgb(49 65 94 / 4%) 0px 5px 26px",
+    border: darkMode ? "1.75px solid transparent!important" : "1.75px solid rgb(49, 65, 94)!important",
+
+    "& *": {
+      color: "inherit",
+      fontWeight: "700",
+      fontSize: 14,
+    },
+  };
+};
+
 export const configureStyles = (darkMode?: boolean) => {
   const styles = darkMode ? darkModeStylesConfig : lightModeStylesConfig;
   return {
-    ".twap-odnp": {
-      marginRight: "0px!important",
-      width: 119,
-      minWidth: 119,
-      height: 31,
-      border: darkMode ? "1px solid #636679" : "1px solid rgb(46, 179, 220)",
-      borderRadius: "20px!important",
-      padding: "0 10px!important",
-      color: styles.textColor,
-      background: "transparent",
-    },
     ".twap-order-summary": {
       padding: 30,
     },
-
     ".twap-limit-price-input": {
       background: styles.containerBackground,
       borderRadius: 10,
@@ -496,23 +505,15 @@ export const configureStyles = (darkMode?: boolean) => {
       },
     },
     ".twap-button": {
-      height: 30,
-      borderRadius: 60,
-      background: styles.buttonBackground,
-      color: styles.buttonColor,
-      width: "fit-content!important",
-      padding: "0px 16px",
-      minWidth: 180,
-      marginLeft: "auto",
-      marginRight: "auto",
-      boxShadow: darkMode ? "unset" : "rgb(49 65 94 / 8%) 0px 10px 17px, rgb(49 65 94 / 4%) 0px 5px 26px",
-      border: darkMode ? "1.75px solid transparent!important" : "1.75px solid rgb(49, 65, 94)!important",
-      "& *": {
-        color: "inherit",
-        fontWeight: 700,
-        fontSize: 14,
-      },
+      ...getButtonStyles(darkMode),
     },
+    ".twap-submit": {
+      minWidth: 180,
+    },
+    ".twap-odnp-button": {
+      ...getButtonStyles(darkMode),
+    },
+
     ".twap-button-disabled": {
       background: styles.disabledButtonBackground,
       color: styles.disabledButtonColor,
@@ -543,7 +544,6 @@ export const configureStyles = (darkMode?: boolean) => {
       paddingTop: 30,
       paddingBottom: 60,
       "& a": {
-        color: "white",
         fontWeight: 500,
         textDecoration: "underline",
       },
@@ -562,9 +562,7 @@ export const configureStyles = (darkMode?: boolean) => {
         },
       },
     },
-    ".odnp *": {
-      color: "black",
-    },
+
     ".stopwatch-icon": {
       display: "none!important",
     },

@@ -85,7 +85,16 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
 
   return {
-    ".twap-submit": {
+    ".twap-odnp-button": {
+      ...borderButtonStyles,
+      p: {
+        color: "#1fc7d4",
+      },
+    },
+    ".twap-container": {
+      color: styles.primaryTextColor,
+    },
+    ".twap-button": {
       height: 48,
       ...getButtonStyles(theme),
     },
@@ -114,6 +123,7 @@ export const configureStyles = (theme: Theme) => {
       background: darkMode ? "#2D2836" : "white",
       padding: "40px 24px 24px 24px",
       borderRadius: 20,
+      color: styles.primaryTextColor,
     },
     ".twap-trade-size": {
       ".twap-label": {
@@ -132,26 +142,7 @@ export const configureStyles = (theme: Theme) => {
         color: `${styles.primaryTextColor}!important`,
       },
     },
-    ".odnp": {
-      "*": {
-        color: "black",
-      },
-    },
-    ".twap-odnp": {
-      marginRight: "0px!important",
-      border: darkMode ? `2px solid ${styles.primaryColor}` : "2px solid transparent",
-      borderRadius: 20,
-      background: darkMode ? "transparent" : "#eeeaf4",
-      color: darkMode ? `${styles.primaryColor}!important` : "#7a6eaa!important",
-      fontWeight: "600!important",
-      minHeight: 38,
-      "&:hover": {
-        opacity: 0.7,
-      },
-      p: {
-        fontSize: "14px!important",
-      },
-    },
+
     ".twap-orders-title": {
       p: {
         fontWeight: 600,
@@ -311,13 +302,7 @@ export const configureStyles = (theme: Theme) => {
           fontSize: "14px!important",
         },
       },
-      ".twap-odnp": {
-        gap: 5,
-        padding: "0px 10px!important",
-        p: {
-          fontSize: "12px!important",
-        },
-      },
+
       ".twap-order-preview-tokens": {
         flexDirection: "column",
         alignItems: "center!important",
@@ -533,7 +518,7 @@ export const StyledLimitPriceInput = styled(Components.LimitPriceInput)({
   paddingLeft: 0,
 });
 
-export const StyledButton = styled("button")({
+const borderButtonStyles = {
   background: "unset",
   borderRadius: 16,
   fontWeight: 600,
@@ -546,6 +531,10 @@ export const StyledButton = styled("button")({
   "&:hover": {
     opacity: 0.65,
   },
+};
+
+export const StyledButton = styled("button")({
+  ...borderButtonStyles,
 });
 
 export const StyledReset = styled(StyledButton)({

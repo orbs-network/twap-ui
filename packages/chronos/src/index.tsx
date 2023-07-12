@@ -48,7 +48,6 @@ import {
   StyledOrders,
   StyledOrdersList,
   StyledOrdersTabs,
-  StyledODNP,
   StyledOrdersHeader,
   lightTheme,
   darkTheme,
@@ -402,7 +401,7 @@ const OrdersLayout = () => {
         <Components.Labels.OrdersLabel />
         <StyledOrderHeaderRight className="twap-chronos-orders-header-right">
           <StyledOrdersTabs />
-          <StyledODNP />
+          <Components.Base.Odnp />
         </StyledOrderHeaderRight>
       </StyledOrdersHeader>
       <StyledOrdersList />

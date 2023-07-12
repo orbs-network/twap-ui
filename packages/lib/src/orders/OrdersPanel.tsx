@@ -1,24 +1,19 @@
 import { Box, styled } from "@mui/material";
-import { ORDERS_CONTAINER_ID, Styles } from "..";
-import { OdnpButton } from "../components";
-import { Portal } from "../components/base";
+import { ORDERS_CONTAINER_ID } from "..";
+import { Odnp, Portal } from "../components/base";
 import { OrdersLabel } from "../components/Labels";
 import { OrdersSelectTabs, SelectedOrders } from "../components/OrdersComponents";
+import { StyledRowFlex } from "../styles";
 
-interface Props {
-  className?: string;
-  noPortal?: boolean;
-}
-
-function Orders(props: Props) {
+function Orders({ className = "" }: { className?: string }) {
   return (
-    <StyledContainer className={`twap-orders twap-orders-wrapper ${props.className}`}>
+    <StyledContainer className={`twap-orders twap-orders-wrapper ${className}`}>
       <StyledHeader className="twap-orders-header">
         <StyledHeaderTop>
-          <Styles.StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>
+          <StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>
             <OrdersLabel />
-          </Styles.StyledRowFlex>
-          <StyledOdnpButton />
+          </StyledRowFlex>
+          <Odnp />
         </StyledHeaderTop>
         <OrdersSelectTabs />
       </StyledHeader>
@@ -27,14 +22,14 @@ function Orders(props: Props) {
   );
 }
 
-export function OrdersPanel(props: Props) {
-  if (props.noPortal) {
-    return <Orders {...props} />;
+export function OrdersPanel({ className, noPortal }: { className?: string; noPortal?: boolean }) {
+  if (noPortal) {
+    return <Orders className={className} />;
   }
 
   return (
     <Portal id={ORDERS_CONTAINER_ID}>
-      <Orders {...props} />
+      <Orders className={className} />
     </Portal>
   );
 }
@@ -46,11 +41,7 @@ const StyledHeader = styled(Box)({
   gap: 13,
 });
 
-const StyledOdnpButton = styled(OdnpButton)({
-  marginRight: 5,
-});
-
-const StyledContainer = styled(Box)({
+const StyledContainer = styled("div")({
   width: "100%",
   margin: "auto",
   display: "flex",

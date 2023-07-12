@@ -1,5 +1,4 @@
-import { Box, Fade } from "@mui/material";
-import { styled } from "@mui/system";
+import { Box, Fade, styled } from "@mui/material";
 import { CSSProperties, ReactNode } from "react";
 import { StyledOneLineText } from "../../styles";
 import Loader from "./Loader";

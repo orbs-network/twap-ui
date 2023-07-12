@@ -18,7 +18,6 @@ import {
   StyledTokensList,
   StyledUISelector,
   StyledUISelectorButton,
-  StyledUISelectorButtons,
 } from "./styles";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";

@@ -47,6 +47,19 @@ export const lightModeStylesConfig: StylesConfig = {
   selectedTokenTextColor: "white",
 };
 
+const getButtonStyles = (styles: any) => {
+  return {
+    height: 40,
+    borderRadius: 4,
+    background: styles.buttonBackground,
+    "& *": {
+      color: "white!important",
+      fontWeight: 500,
+      fontSize: 16,
+    },
+  };
+};
+
 export const configureStyles = (isDarkMode?: boolean) => {
   const styles = isDarkMode ? darkModeStylesConfig : lightModeStylesConfig;
   return {
@@ -70,19 +83,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
         },
       },
     },
-    ".odnp": {
-      "*": {
-        color: "black!important",
-      },
-      button: {
-        color: "white!important",
-      },
-    },
-    ".twap-odnp": {
-      color: styles.textColor,
-      background: "transparent",
-      border: "0.75px solid #26A7EF",
-    },
+
     ".twap-limit-price-input": {
       width: "100%",
       background: isDarkMode ? "#0D1321" : "#e6e6e6",
@@ -99,7 +100,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
     ".twap-change-tokens-order": {},
     ".twap-percent-selector": {
       button: {
-        color: "white",
+        color: "white!important",
         height: 22,
         width: "25%",
         border: "unset",
@@ -200,8 +201,9 @@ export const configureStyles = (isDarkMode?: boolean) => {
       marginTop: 20,
       flexDirection: "column" as const,
       width: "100%",
+      color: `${styles.textColor}!important`,
       "*": {
-        color: styles.textColor,
+        color: `${styles.textColor}!important`,
         fontFamily: "inherit!important",
         "&::-webkit-scrollbar": {
           display: "none",
@@ -302,6 +304,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
       },
     },
     ".twap-orders": {
+      color: `${styles.textColor}`,
       "*": {
         "&::-webkit-scrollbar": {
           display: "none",
@@ -309,7 +312,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
       },
     },
     ".twap-orders-header": {
-      ".twap-label, .twap-odnp": {
+      ".twap-label": {
         color: styles.textColor,
       },
       "& .twap-orders-header-tabs": {
@@ -357,6 +360,9 @@ export const configureStyles = (isDarkMode?: boolean) => {
         },
       },
     },
+    ".twap-odnp-button": {
+      ...getButtonStyles(styles),
+    },
     ".twap-token-select": {
       background: "transparent",
       border: "unset",
@@ -372,14 +378,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
       },
     },
     ".twap-button": {
-      height: 40,
-      borderRadius: 4,
-      background: styles.buttonBackground,
-      "& *": {
-        color: "white",
-        fontWeight: 500,
-        fontSize: 16,
-      },
+      ...getButtonStyles(styles),
     },
     ".MuiBackdrop-root": {
       backdropFilter: "blur(15px)",
@@ -391,7 +390,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
       overflow: "auto",
       borderRadius: "10px",
       padding: 15,
-      paddingTop: 30,
+      paddingTop: 50,
       "& a": {
         color: "white",
         fontWeight: 500,

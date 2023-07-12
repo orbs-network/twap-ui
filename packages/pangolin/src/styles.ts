@@ -38,6 +38,21 @@ const parseTheme = (theme: any): PangolinStyles => {
   };
 };
 
+const getButtonStyles = (theme: any) => {
+  return {
+    marginTop: "auto",
+    minHeight: 50,
+    borderRadius: 8,
+    background: theme.button.primary.background,
+    color: theme.button.primary.background,
+    "& *": {
+      fontWeight: 500,
+      fontSize: 16,
+      color: "black",
+    },
+  };
+};
+
 export const configureStyles = (theme: any) => {
   const styles = parseTheme(theme);
   return {
@@ -151,16 +166,6 @@ export const configureStyles = (theme: any) => {
       cursor: "pointer",
       fontSize: 16,
       color: styles.textColor,
-    },
-    ".odnp": {
-      "*": {
-        color: "black",
-      },
-    },
-    ".twap-odnp": {
-      color: theme.swapWidget.primary,
-      background: "transparent",
-      border: `1px solid ${theme.swapWidget.primary}`,
     },
 
     ".twap-change-tokens-order": {
@@ -386,16 +391,13 @@ export const configureStyles = (theme: any) => {
       },
     },
     ".twap-button": {
-      marginTop: "auto",
-      minHeight: 50,
-      borderRadius: 8,
-      background: theme.button.primary.background,
-      color: theme.button.primary.background,
-      "& *": {
-        fontWeight: 500,
-        fontSize: 16,
-        color: "black",
-      },
+      ...getButtonStyles(theme),
+    },
+    ".twap-odnp-button": {
+      ...getButtonStyles(theme),
+      color: `black!important`,
+      fontWeight: 500,
+      minHeight: "unset",
     },
     ".twap-button-disabled": {
       background: "rgb(229, 229, 229)",
@@ -412,6 +414,10 @@ export const configureStyles = (theme: any) => {
       borderRadius: "10px",
       padding: 15,
       paddingTop: 30,
+      color: styles.textColor,
+      ".twap-ui-close": {
+        color: styles.textColor,
+      },
       "& a": {
         fontWeight: 500,
         textDecoration: "underline",

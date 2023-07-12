@@ -1,5 +1,5 @@
 import { GlobalStyles, Box } from "@mui/material";
-import { Components, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, Orders, OrdersPanel } from "@orbs-network/twap-ui";
+import { Components, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, Orders } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
@@ -220,9 +220,7 @@ const TWAP = (props: ThenaTWAPProps) => {
         <AdapterContextProvider value={props}>
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
 
-          <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0}>
-            <OrdersPanel />
-          </StyledOrders>
+          <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0} />
         </AdapterContextProvider>
       </TwapAdapter>
     </Box>

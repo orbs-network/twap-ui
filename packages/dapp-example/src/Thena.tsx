@@ -23,7 +23,8 @@ export const useDappTokens = () => {
     async () => {
       const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/bsc.json`);
 
-      const tokenList = (await response.json()).data;
+      const tokenList = await response.json();
+
       const tokens = [config.nativeToken, ...tokenList];
 
       const parsed = tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
@@ -31,7 +32,7 @@ export const useDappTokens = () => {
         symbol,
         name,
         address,
-        logoURI: isNativeAddress(address) ? nativeTokenLogo : logoURI,
+        logoURI: isNativeAddress(address) ? nativeTokenLogo : logoURI.replace("_1", ""),
       }));
       const candiesAddresses = [zeroAddress, ..._.map(erc20s.bsc, (t) => t().address)];
 
@@ -59,6 +60,8 @@ interface TokenSelectModalProps {
 
 const parseList = (rawList?: any): TokenListItem[] => {
   return _.map(rawList, (rawToken) => {
+    console.log(rawToken);
+
     return {
       token: {
         address: rawToken.address,

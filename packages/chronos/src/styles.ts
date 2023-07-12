@@ -219,20 +219,6 @@ export const StyledOrderHeaderRight = styled(Styles.StyledRowFlex)({
   width: "auto",
 });
 
-export const StyledODNP = styled(Components.OdnpButton)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    height: "100%",
-    border: `1px solid ${styles.border}`,
-    borderRadius: 20,
-    background: "transparent",
-    padding: "0px 20px",
-    p: {
-      fontSize: 14,
-    },
-  };
-});
-
 export const StyledOrdersTabs = styled(Components.Orders.OrdersSelectTabs)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
@@ -670,10 +656,9 @@ export const configureStyles = (theme: Theme) => {
   const darkTheme = isDark(theme);
 
   return {
+    ".twap-odnp-button": {},
     ".twap-container": {
-      "*": {
-        color: styles.textColor,
-      },
+      color: styles.textColor,
     },
     ".twap-market-price": {
       width: "auto!important",
@@ -706,11 +691,6 @@ export const configureStyles = (theme: Theme) => {
         stroke: styles.icon,
       },
     },
-    ".odnp": {
-      "*": {
-        color: "black",
-      },
-    },
 
     ".twap-modal": {
       ".MuiBackdrop-root": {
@@ -724,6 +704,7 @@ export const configureStyles = (theme: Theme) => {
       borderRadius: 30,
       padding: "50px 20px 20px 20px",
       maxWidth: "600px!important",
+      color: styles.textColor,
       "*": {
         "-ms-overflow-style": "none",
       },

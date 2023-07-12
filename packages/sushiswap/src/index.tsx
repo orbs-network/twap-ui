@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, TWAPTokenSelectProps, Translations, TwapAdapter, Styles as TwapStyles, Orders, store, TWAPProps, OrdersPanel } from "@orbs-network/twap-ui";
+import { Components, TWAPTokenSelectProps, Translations, TwapAdapter, Styles as TwapStyles, Orders, store, TWAPProps } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
@@ -206,9 +206,7 @@ const TWAP = (props: TWAPProps) => {
         <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
-          <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0}>
-            <OrdersPanel />
-          </StyledOrders>
+          <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0} />
         </AdapterContextProvider>
       </TwapAdapter>
     </StyledAdapter>

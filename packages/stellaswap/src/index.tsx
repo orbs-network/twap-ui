@@ -1,5 +1,5 @@
 import { GlobalStyles, Typography } from "@mui/material";
-import { Translations, TwapAdapter, OrdersPanel, Components, Styles as TwapStyles, TWAPTokenSelectProps, store, TWAPProps, Orders } from "@orbs-network/twap-ui";
+import { Translations, TwapAdapter, Components, Styles as TwapStyles, TWAPTokenSelectProps, store, TWAPProps, Orders } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
@@ -214,9 +214,7 @@ const TWAP = (props: ThenaTWAPProps) => {
         <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
-          <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0}>
-            <OrdersPanel />
-          </StyledOrders>
+          <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0} />
         </AdapterContextProvider>
       </TwapAdapter>
     </StyledAdapter>

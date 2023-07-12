@@ -480,19 +480,27 @@ export const useOrdersHistoryQuery = (_priceUsd?: (token: TokenData) => Promise<
     async () => {
       const orders = await lib!.getAllOrders();
 
-      const tokens = _.uniqBy(
-        _.concat(
-          _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.srcToken))!),
-          _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.dstToken))!)
-        ),
-        (t) => t.address
+      const tokens = _.compact(
+        _.uniqBy(
+          _.concat(
+            _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.srcToken))!),
+            _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.dstToken))!)
+          ),
+          (t) => (t ? t.address : undefined)
+        )
       );
+      console.log("order");
 
       const tokensWithUsd = await getUsdValues(tokens);
+      const parsedOrders = orders.map((o: Order) => {
+        try {
+          return parseOrderUi(lib!, tokensWithUsd, o);
+        } catch (error) {
+          return undefined;
+        }
+      });
 
-      const parsedOrders = orders.map((o: Order) => parseOrderUi(lib!, tokensWithUsd, o));
-
-      return _.chain(parsedOrders)
+      return _.chain(_.compact(parsedOrders))
         .orderBy((o: OrderUI) => o.order.time, "desc")
         .groupBy((o: OrderUI) => o.ui.status)
         .value();
@@ -522,7 +530,7 @@ export const usePrepareUSDValues = (_priceUsd?: (token: TokenData) => Promise<BN
   );
 
   return async (tokens: TokenData[] = []) => {
-    return Promise.all(
+    return Promise.allSettled(
       tokens.map((token) =>
         client
           .ensureQueryData({
@@ -531,7 +539,7 @@ export const usePrepareUSDValues = (_priceUsd?: (token: TokenData) => Promise<BN
           })
           .then((usd) => _.merge({}, token, { usd }))
       )
-    );
+    ).then((results) => _.compact(_.map(results, (r) => (r.status === "fulfilled" ? r.value : undefined))));
   };
 };
 

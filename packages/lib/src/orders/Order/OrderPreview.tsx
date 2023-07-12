@@ -1,5 +1,4 @@
-import { LinearProgress, Typography } from "@mui/material";
-import { Box, styled } from "@mui/system";
+import { LinearProgress, Typography, Box, styled } from "@mui/material";
 import { OrderUI, Styles as TwapStyles, useTwapContext } from "../..";
 import { StyledRowFlex, StyledText } from "../../styles";
 import { HiOutlineArrowLongRight } from "react-icons/hi2";

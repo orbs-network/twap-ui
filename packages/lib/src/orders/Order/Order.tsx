@@ -1,10 +1,9 @@
-import { Box, styled } from "@mui/system";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import OrderPreview from "./OrderPreview";
 import OrderExpanded from "./OrderExpanded";
 import { OrderUI } from "../../types";
-import { AccordionSummary } from "@mui/material";
+import { AccordionSummary, Box, styled } from "@mui/material";
 import { StyledSeperator } from "./styles";
 import { CSSProperties } from "react";
 import { Card } from "../../components/base";

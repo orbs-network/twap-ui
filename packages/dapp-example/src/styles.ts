@@ -22,7 +22,6 @@ export const globalStyle = (name?: string) => {
   const font = fonts[name || ""];
   return {
     "*, p": {
-      color: "white",
       fontFamily: `${font || "Helvetica"}!important`,
     },
   };
@@ -138,7 +137,11 @@ export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
 export const StyledQuickswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#12131a" : "#F8F7F7",
   ".ui-selector-btn-selected": {
-    borderBottom: "2px solid white",
+    borderBottom: isDarkMode ? "2px solid white" : "2px solid black",
+  },
+  ".ui-selector-btn": {
+    color: isDarkMode ? "white" : "black",
+    borderRadius: "unset",
   },
 }));
 
@@ -396,6 +399,7 @@ export const StyledMenuDrawer = styled(Drawer)({
   flexDirection: "column",
   "*, p": {
     fontFamily: "Helvetica Neue, sans-serif!important",
+    color: "white",
   },
 });
 
@@ -467,6 +471,9 @@ export const StyledTokens = styled(Box)({
   width: "100%",
   margin: 0,
   overflow: "hidden",
+  "*": {
+    color: "white",
+  },
 });
 
 export const StyledTokensList = styled(Box)({

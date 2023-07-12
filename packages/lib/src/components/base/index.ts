@@ -20,3 +20,4 @@ export { default as Modal } from "./Modal";
 export { default as SwipeContainer } from "./SwipeContainer";
 export { default as Radio } from "./Radio";
 export { default as Portal } from "./Portal";
+export { default as Odnp } from "./Odnp";

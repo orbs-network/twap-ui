@@ -1,4 +1,4 @@
-import { styled } from "@mui/system";
+import { styled } from "@mui/material";
 import React from "react";
 import { SQUIGLE } from "../../config";
 import { useTwapContext } from "../../context";
@@ -32,10 +32,11 @@ const USD = ({
   const _prefix = prefix || usdPrefix || `${SQUIGLE} $ `;
   const _suffix = suffix || usdSuffix;
   const _emptyUi = emptyUi || usdEmptyUI;
-
+  console.log(value);
+  
   if (value == null) return null;
   return (
-    <Tooltip text={`${_prefix}${formattedValueTooltip}${_suffix}`} placement="bottom">
+    <Tooltip text={`${formattedValueTooltip}`} placement="bottom">
       <StyledLabel loading={isLoading} className={`twap-usd ${className} ${value === "0" ? "twap-usd-zero" : ""} `}>
         {value == 0 && emptyUi ? (
           <>{_emptyUi}</>
@@ -44,7 +45,7 @@ const USD = ({
         ) : (
           <>
             {_prefix}
-            <>{formattedValue}</>
+            <>{formattedValue || '0'}</>
             {_suffix}
           </>
         )}

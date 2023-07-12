@@ -1,4 +1,4 @@
-import { styled } from "@mui/system";
+import { styled } from "@mui/material";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { Styles as TwapStyles } from "../..";

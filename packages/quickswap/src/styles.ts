@@ -47,10 +47,35 @@ export const lightModeStylesConfig: StylesConfig = {
   selectedTokenTextColor: "#404557",
   selectedTokenBorderColor: "#656565",
 };
+
+const getButtonStyles = (isDarkMode?: number | boolean) => {
+  const styles = isDarkMode ? darkModeStylesConfig : lightModeStylesConfig;
+  return {
+    height: 60,
+    width: "100%!important",
+    borderRadius: 10,
+    background: styles.buttonBackground,
+    color: "white",
+    fontWeight: `500!important`,
+    fontSize: 16,
+    "& *": {
+      color: "inherit",
+      fontWeight: "inherit",
+      fontSize: "inherit",
+    },
+  };
+};
 export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
   const styles = isDarkMode ? darkModeStylesConfig : lightModeStylesConfig;
   const cardBackground = isProMode ? styles.selectedTokenBackground : styles.cardBackground;
   return {
+    ".twap-odnp-button": {
+      ...getButtonStyles(isDarkMode),
+      height: "unset",
+      width: "auto",
+      border: "unset",
+      color: "white!important",
+    },
     ".twap-trade-size": {
       paddingTop: "8px!important",
       paddingBottom: "17px!important",
@@ -102,26 +127,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       color: "white",
       opacity: 0.5,
     },
-    ".twap-odnp": {
-      marginRight: "0px!important",
-      width: 119,
-      minWidth: 119,
-      height: 31,
-      border: "1px solid #636679",
-      borderRadius: "20px!important",
-      padding: "0 10px!important",
 
-      p: {
-        fontSize: "13px!important",
-        fontWeight: "500!important",
-      },
-      img: {
-        width: "17px!important",
-        height: 17,
-      },
-      color: styles.textColor,
-      background: "transparent",
-    },
     ".twap-limit-price": {
       ".twap-label": {
         fontSize: 14,
@@ -571,18 +577,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       },
     },
     ".twap-button": {
-      height: 60,
-      width: "100%!important",
-      borderRadius: 10,
-      background: styles.buttonBackground,
-      color: "white",
-      fontWeight: `500!important`,
-      fontSize: 16,
-      "& *": {
-        color: "inherit",
-        fontWeight: "inherit",
-        fontSize: "inherit",
-      },
+      ...getButtonStyles(isDarkMode),
     },
     ".twap-submit": {
       color: "white!important",
@@ -637,7 +632,6 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       },
       "& *": {
         fontFamily: "inherit",
-        color: "inherit",
       },
       ".twap-order-summary-limit-price": {
         padding: "10px 26px",
@@ -767,9 +761,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       },
     },
     ".twap-order-expanded-row": {},
-    ".odnp *": {
-      color: "black",
-    },
+
     ".twap-limit-price .twap-label": {
       height: 38,
     },

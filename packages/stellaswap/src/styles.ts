@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/material";
-import { Components, Styles } from "@orbs-network/twap-ui";
+import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
 const gradient = "linear-gradient(to right,rgba(59,130,246,.15),rgba(236,72,153,.15))";
 
 export const StyledPanelInput = styled(Components.TokenInput)({
@@ -85,22 +85,7 @@ export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
   gap: 12,
 });
 
-export const StyledSubmit = styled(Components.SubmitButton)({
-  borderRadius: 12,
-  background: "#e2107b",
-  minHeight: 52,
-  fontWeight: 500,
-  fontSize: 16,
-  lineHeight: "24px",
-  padding: 10,
-  color: "white",
-  "*": {
-    fontWeight: "inherit",
-    fontSize: "inherit",
-    lineHeight: "inherit",
-    color: "white!important",
-  },
-});
+export const StyledSubmit = styled(Components.SubmitButton)({});
 
 export const StyledPoweredBy = styled(Components.PoweredBy)({
   marginTop: 20,
@@ -156,13 +141,9 @@ export const StyledLimitPrice = styled(Components.LimitPriceInput)({
   },
 });
 
-export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  ".twap-orders": {
-    maxWidth: "unset!important",
-  },
-  "*": {
-    color: getTextColor(isDarkMode),
-  },
+export const StyledOrders = styled(OrdersPanel)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  maxWidth: "unset!important",
+  color: getTextColor(isDarkMode),
   ".twap-orders-list": {
     gap: 16,
   },
@@ -211,14 +192,7 @@ export const StyledOrders = styled(Box)<{ isDarkMode: number }>(({ isDarkMode })
       display: "none",
     },
   },
-  ".twap-odnp": {
-    border: isDarkMode ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid transparent",
-    transition: "0.2s all",
-    background: isDarkMode ? "unset" : "white",
-    "&:hover": {
-      border: isDarkMode ? "1px solid rgba(255, 255, 255, 0.5)" : "1px solid transparent",
-    },
-  },
+
   ".twap-orders-header": {
     ".twap-label": {
       p: {
@@ -249,16 +223,6 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
   fontFamily: "Inter",
 
   ".twap-modal-content": {
-    padding: "56px 16px 16px 16px",
-    background: isDarkTheme ? "#222C3D" : "#F4F5F6",
-    border: "unset",
-    maxHeight: "90vh",
-    overflowY: "auto",
-    width: "calc(100vw - 40px)",
-    borderRadius: 16,
-    "*": {
-      color: getTextColor(isDarkTheme),
-    },
     ".twap-disclaimer-text": {
       "*": {
         color: getTextColor(isDarkTheme),
@@ -381,8 +345,49 @@ export const StyledAdapter = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }
   },
 }));
 
+const buttonStyles = {
+  borderRadius: 12,
+  background: "#e2107b",
+  minHeight: 52,
+  fontWeight: 500,
+  fontSize: 16,
+  lineHeight: "24px",
+  padding: 10,
+  color: "white",
+  "*, p": {
+    fontWeight: "inherit",
+    fontSize: "inherit",
+    lineHeight: "inherit",
+    color: "white!important",
+  },
+};
+
 export const configureStyles = (isDarkMode?: boolean) => {
   return {
+    ".twap-odnp-button": {
+      ...buttonStyles,
+      border: "unset",
+      minHeight: "unset",
+      p: {
+        fontWeight: "600!important",
+      },
+    },
+    ".twap-button": {
+      ...buttonStyles,
+    },
+    ".twap-modal-content": {
+      padding: "56px 16px 16px 16px",
+      background: isDarkMode ? "#222C3D" : "#F4F5F6",
+      border: "unset",
+      maxHeight: "90vh",
+      overflowY: "auto",
+      width: "calc(100vw - 40px)",
+      borderRadius: 16,
+      color: getTextColor(isDarkMode ? 1 : 0),
+      ".twap-ui-close": {
+        color: getTextColor(isDarkMode ? 1 : 0),
+      },
+    },
     ".twap-input": {
       input: {
         "&::placeholder": {
