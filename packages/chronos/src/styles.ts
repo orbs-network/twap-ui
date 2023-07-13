@@ -685,7 +685,7 @@ export const StyledTimeSelectCard = styled(StyledDisabledCard)(({ theme }) => {
 const buttonStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
   return {
-    background: styles.gradient,
+    background: `${styles.gradient}!important`,
     border: "unset",
     borderRadius: 15,
     fontSize: "14px!important",
@@ -1044,6 +1044,13 @@ export const configureStyles = (theme: Theme) => {
         height: 50,
       },
       ".twap-token-name": {},
+    },
+    ".twap-cancel-order": {
+      ...buttonStyles(theme),
+      ".twap-button-loader": {
+        width: "25px!important",
+        height: "25px!important",
+      },
     },
     ".twap-button": {
       ...buttonStyles(theme),

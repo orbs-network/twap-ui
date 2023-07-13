@@ -5,7 +5,7 @@ export interface Props extends React.HTMLAttributes<HTMLElement> {
   children: ReactNode;
   style?: CSSProperties;
   disabled?: boolean;
-  onClick: () => void;
+  onClick: (e: any) => void;
   loading?: boolean;
 }
 

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
 import { TokenData } from "@orbs-network/twap";
 import { useTwapStore } from "./store";
+import { TwapErrorWrapper } from "./ErrorHandling";
 
 analytics.onModuleLoad();
 
@@ -68,10 +69,10 @@ const WrappedTwap = (props: TwapLibProps) => {
   }, [props.provider, props.config, props.account, props.connectedChainId]);
 
   return (
-    <>
+    <TwapErrorWrapper>
       <Listener />
       {props.children}
-    </>
+    </TwapErrorWrapper>
   );
 };
 

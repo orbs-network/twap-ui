@@ -1,17 +1,5 @@
 import { GlobalStyles, Box, ThemeProvider, Typography, styled } from "@mui/material";
-import {
-  Components,
-  hooks,
-  Translations,
-  TwapAdapter,
-  Styles as TwapStyles,
-  store,
-  TwapErrorWrapper,
-  TWAPProps,
-  OrdersPanel,
-  Orders,
-  TwapContextUIPreferences,
-} from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, TWAPProps, OrdersPanel, Orders, TwapContextUIPreferences } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
   configureStyles,
@@ -324,33 +312,31 @@ const TWAP = memo((props: AdapterProps) => {
   }, [_.size(props.dappTokens)]);
 
   return (
-    <TwapErrorWrapper>
-      <Box className="twap-adapter-wrapper">
-        <TwapAdapter
-          connect={props.connect}
-          config={config}
-          maxFeePerGas={props.maxFeePerGas}
-          priorityFeePerGas={props.priorityFeePerGas}
-          translations={translations as Translations}
-          provider={provider}
-          account={props.account}
-          srcToken={props.srcToken}
-          dstToken={props.dstToken}
-          storeOverride={props.limit ? storeOverride : undefined}
-          parseToken={parseToken}
-          dappTokens={_dappTokens}
-          uiPreferences={uiPreferences}
-        >
-          <ThemeProvider theme={theme}>
-            <GlobalStyles styles={configureStyles(theme) as any} />
-            <AdapterContextProvider value={{ ...props, provider, dappTokens: _dappTokens }}>
-              {props.limit ? <LimitPanel /> : <TWAPPanel />}
-              <OrdersPanel />
-            </AdapterContextProvider>
-          </ThemeProvider>
-        </TwapAdapter>
-      </Box>
-    </TwapErrorWrapper>
+    <Box className="twap-adapter-wrapper">
+      <TwapAdapter
+        connect={props.connect}
+        config={config}
+        maxFeePerGas={props.maxFeePerGas}
+        priorityFeePerGas={props.priorityFeePerGas}
+        translations={translations as Translations}
+        provider={provider}
+        account={props.account}
+        srcToken={props.srcToken}
+        dstToken={props.dstToken}
+        storeOverride={props.limit ? storeOverride : undefined}
+        parseToken={parseToken}
+        dappTokens={_dappTokens}
+        uiPreferences={uiPreferences}
+      >
+        <ThemeProvider theme={theme}>
+          <GlobalStyles styles={configureStyles(theme) as any} />
+          <AdapterContextProvider value={{ ...props, provider, dappTokens: _dappTokens }}>
+            {props.limit ? <LimitPanel /> : <TWAPPanel />}
+            <OrdersPanel />
+          </AdapterContextProvider>
+        </ThemeProvider>
+      </TwapAdapter>
+    </Box>
   );
 });
 

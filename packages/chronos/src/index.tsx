@@ -129,7 +129,7 @@ const useAdapterContext = () => useContext(AdapterContext);
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
 
-  return <TokenSelectModal selectToken={props.onSelect} open={props.isOpen} setOpen={props.onClose} />;
+  return <TokenSelectModal showEth={true} selectToken={props.onSelect} open={props.isOpen} setOpen={props.onClose} />;
 };
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 
@@ -345,17 +345,23 @@ const limitStoreOverride = {
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
-const TWAP = (props: ChronosTWAPProps) => {
+const Listener = () => {
   const switchTokens = hooks.useSwitchTokens();
+
+  const { swapAnimationStart } = useAdapterContext();
+  useEffect(() => {
+    if (swapAnimationStart) {
+      switchTokens();
+    }
+  }, [swapAnimationStart]);
+
+  return <></>;
+};
+
+const TWAP = (props: ChronosTWAPProps) => {
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
-
-  useEffect(() => {
-    if (props.swapAnimationStart) {
-      switchTokens();
-    }
-  }, [props.swapAnimationStart]);
 
   return (
     <Box className="adapter-wrapper">
@@ -377,6 +383,7 @@ const TWAP = (props: ChronosTWAPProps) => {
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
           <AdapterContextProvider value={props}>
+            <Listener />
             {props.limit ? <LimitPanel /> : <TWAPPanel />}
             <Components.Base.Portal id={ORDERS_CONTAINER_ID}>
               <OrdersLayout />

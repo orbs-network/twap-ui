@@ -129,7 +129,14 @@ const CancelOrderButton = ({ orderId }: { orderId: number }) => {
   const { isLoading, mutate } = useCancelOrder();
   const translations = useTwapContext().translations;
   return (
-    <StyledCancelOrderButton loading={isLoading} onClick={() => mutate(orderId)}>
+    <StyledCancelOrderButton
+      loading={isLoading}
+      onClick={(e: any) => {
+        e.stopPropagation();
+        mutate(orderId);
+      }}
+      className="twap-cancel-order"
+    >
       {translations.cancelOrder}
     </StyledCancelOrderButton>
   );
