@@ -12,7 +12,7 @@ import {
   Orders,
   ORDERS_CONTAINER_ID,
 } from "@orbs-network/twap-ui";
-import { memo, ReactNode, useCallback, useState, useEffect, createContext, useContext, CSSProperties, useMemo } from "react";
+import { memo, ReactNode, useCallback, useState, createContext, useContext, CSSProperties, useMemo, useEffect } from "react";
 import translations from "./i18n/en.json";
 import { Box } from "@mui/system";
 import {
@@ -80,7 +80,7 @@ interface ChronosTWAPProps extends TWAPProps {
   getTokenLogoURL: (address: string) => string;
   dappTokens: any[];
   connect?: () => void;
-  isExample?: boolean;
+  swapAnimationStart: boolean;
 }
 
 const uiPreferences: TwapContextUIPreferences = {
@@ -330,9 +330,10 @@ const TokenSummary = () => {
 };
 
 const ChangeTokensOrder = () => {
+  const context = useAdapterContext();
   return (
     <StyledChangeOrder>
-      <Components.ChangeTokensOrder />
+      <Components.ChangeTokensOrder onDstTokenSelected={context.onDstTokenSelected} onSrcTokenSelected={context.onSrcTokenSelected} />
     </StyledChangeOrder>
   );
 };
@@ -345,17 +346,17 @@ const limitStoreOverride = {
 };
 
 const TWAP = (props: ChronosTWAPProps) => {
-  const [appReady, setAppReady] = useState(false);
-
+  const switchTokens = hooks.useSwitchTokens();
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
   useEffect(() => {
-    setAppReady(true);
-  }, []);
+    if (props.swapAnimationStart) {
+      switchTokens();
+    }
+  }, [props.swapAnimationStart]);
 
-  if (!appReady && !props.isExample) return null;
   return (
     <Box className="adapter-wrapper">
       <TwapAdapter

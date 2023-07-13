@@ -14,7 +14,7 @@ export const lightTheme = createTheme({
   },
 
   typography: {
-    fontFamily: "TT Firs Neue Trl",
+    fontFamily: "inherit",
   },
 });
 const isDark = (theme: Theme) => theme.palette.mode === "dark";
@@ -27,7 +27,7 @@ export const darkTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: "TT Firs Neue Trl",
+    fontFamily: "inherit",
   },
 });
 
@@ -78,7 +78,7 @@ export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ t
     ".twap-number-display": {
       marginTop: 10,
     },
-    width: 125,
+    width: 111,
     borderRadius: 100,
     height: 35,
     justifyContent: "flex-start",
@@ -159,6 +159,7 @@ export const StyledPercentSelect = styled(Styles.StyledRowFlex)(({ theme }) => {
       overflow: "hidden",
       p: {
         fontSize: 14,
+        fontFamily: "inherit",
       },
       "&:hover": {
         background: styles.gradient,
@@ -185,7 +186,7 @@ export const StyledPanelRight = styled(Styles.StyledColumnFlex)({
   gap: 8,
   width: "auto",
   flex: 1,
-  padding: "24px 30px 25px 0px",
+  padding: "25px 25px 25px 0px",
   [`@media(max-width: ${mobile}px)`]: {
     padding: "24px 19px 21px 0px",
     ".twap-token-panel-flex-right-bottom": {
@@ -221,7 +222,7 @@ export const StyledChunksSlider = styled(Components.Base.Card)(({ theme }) => {
   };
 });
 export const StyledOrders = styled(Styles.StyledColumnFlex)(({ theme }) => ({
-  gap: 40,
+  gap: 25,
   color: theme.palette.text.primary,
   "*": {
     color: "inherit",
@@ -287,9 +288,7 @@ export const StyledOrdersTabs = styled(Components.Orders.OrdersSelectTabs)(({ th
       color: styles.textColor,
       position: "relative",
       "&:hover": {
-        "&::after": {
-          opacity: 1,
-        },
+        background: styles.gradient,
       },
     },
     ".Mui-selected": {
@@ -301,8 +300,14 @@ export const StyledOrdersTabs = styled(Components.Orders.OrdersSelectTabs)(({ th
 
 export const StyledOrdersList = styled(Components.Orders.SelectedOrders)(({ theme }) => {
   const darkTheme = isDark(theme);
+  const styles = baseStyles(theme);
   return {
     width: "100%",
+    ".twap-orders-empty-list": {
+      background: styles.cardBg,
+      borderRadius: 30,
+      paddingBottom: 40,
+    },
     ".twap-order": {
       padding: 25,
       ".MuiLinearProgress-root": {
@@ -408,12 +413,11 @@ export const StyledTokenInputBalance = styled(Styles.StyledRowFlex)(({ theme }) 
       width: 19,
       height: 17,
     },
-    ".twap-balance": {
-      maxWidth: 120,
-    },
+
     "*": {
       color: styles.textColor,
       fontSize: 12,
+      fontWeight: 400,
     },
     "&:hover": {
       background: styles.gradient,
@@ -684,7 +688,7 @@ const buttonStyles = (theme: Theme) => {
     background: styles.gradient,
     border: "unset",
     borderRadius: 15,
-    fontSize: 14,
+    fontSize: "14px!important",
     color: "white",
     transition: "0.2s all",
     height: 47,
@@ -698,9 +702,9 @@ const buttonStyles = (theme: Theme) => {
       zIndex: 2,
     },
     "*": {
-      fontSize: "inherit",
+      fontSize: "14px!important",
       color: "inherit",
-      fontWeight: "inherit",
+      fontWeight: "400",
     },
     "&:hover": {
       "&::after": {

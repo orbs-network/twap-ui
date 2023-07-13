@@ -101,9 +101,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       TokenSelectModal={TokenSelectModal}
       provider={library}
       getTokenLogoURL={getTokenLogoURL}
-      isExample={true}
       limit={limit}
       isDarkTheme={isDarkTheme}
+      swapAnimationStart={false}
     />
   );
 };

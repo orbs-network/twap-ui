@@ -232,12 +232,12 @@ interface TokenSelectProps extends TWAPTokenSelectProps {
   parseToken?: (value: any) => TokenData | undefined;
 }
 
-export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, isSrc = false }: TokenSelectProps) => {
+export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, isSrc = false, onSrcSelect, onDstSelect }: TokenSelectProps) => {
   const onTokenSelectedCallback = useOnTokenSelectCallback();
 
   const onSelect = (token: any) => {
     const parsedToken = parseToken ? parseToken(token) : token;
-    onTokenSelectedCallback(isSrc, token, parsedToken);
+    onTokenSelectedCallback(isSrc, token, parsedToken, onSrcSelect, onDstSelect);
     onClose();
   };
 
@@ -989,8 +989,8 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
 
   const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
 
-  if (!formattedValue) {
-    return <Typography className="twap-trade-size-value">0</Typography>;
+  if (!formattedValue || formattedValue === "0") {
+    return <Typography className="twap-trade-size-value">-</Typography>;
   }
   return (
     <Tooltip text={`${symbol ? `${formattedValueTooltip} ${srcToken?.symbol}` : formattedValueTooltip}`}>

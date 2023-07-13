@@ -28,7 +28,7 @@ function OrdersList({ orders, status, isLoading }: { orders?: OrderUI[]; status?
           return <Order order={order} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
         })
       ) : (
-        <StyledEmptyList>
+        <StyledEmptyList className="twap-orders-empty-list">
           {!status ? "You currently don't have orders" : `${translations.noOrdersFound} ${(translations as any)["noOrdersFound_" + status]} ${translations.noOrdersFound1}`}
         </StyledEmptyList>
       )}

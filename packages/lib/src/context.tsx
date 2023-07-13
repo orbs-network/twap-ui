@@ -5,7 +5,6 @@ import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
 import { TokenData } from "@orbs-network/twap";
-import { logger } from "./utils";
 import { useTwapStore } from "./store";
 
 analytics.onModuleLoad();
@@ -53,12 +52,9 @@ const Listener = () => {
 const WrappedTwap = (props: TwapLibProps) => {
   const updateStoreOveride = useUpdateStoreOveride();
 
-  logger("context render");
-
   const initLib = useInitLib();
 
   useEffect(() => {
-    logger("Context initialized");
     analytics.onTwapPageView();
   }, []);
 
