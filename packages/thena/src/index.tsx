@@ -261,9 +261,7 @@ const LimitPanel = () => {
           <Components.MarketPrice />
         </Card>
 
-        <Card>
-          <LimitPrice limit={true} />
-        </Card>
+        <LimitPrice limit={true} />
         <StyledSubmit isMain />
       </StyledColumnFlex>
       <OrderSummary>
