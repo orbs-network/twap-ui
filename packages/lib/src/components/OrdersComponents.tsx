@@ -1,8 +1,8 @@
-import { Box, useMediaQuery } from "@mui/material";
+import { useMediaQuery } from "@mui/material";
 import { Status } from "@orbs-network/twap";
 import _ from "lodash";
 import { Translations, useTwapContext } from "..";
-import { useOrdersHistoryQuery } from "../hooks";
+import { useOrdersHistoryQuery, useOrdersTabs } from "../hooks";
 import { useOrdersStore } from "../store";
 import { StyledOrdersLists, StyledOrdersTab, StyledOrdersTabs } from "../styles";
 import OrdersList from "../orders/OrdersList";
@@ -19,10 +19,9 @@ export const OrdersSelectTabs = ({ className = "" }: { className?: string }) => 
     translations,
     uiPreferences: { getOrdersTabsLabel },
   } = useTwapContext();
-  const { orders } = useOrdersHistoryQuery();
   const { tab, setTab } = useOrdersStore();
   const isMobile = useMediaQuery("(max-width:600px)");
-
+  const tabs = useOrdersTabs();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
   };
@@ -36,9 +35,9 @@ export const OrdersSelectTabs = ({ className = "" }: { className?: string }) => 
       value={tab}
       onChange={handleChange}
     >
-      {_.keys(Status).map((key, index) => {
-        const name = translations[key as keyof Translations];
-        const amount = orders[key as Status]?.length || 0;
+      {_.keys(tabs).map((key, index) => {
+        const name = translations[key as keyof Translations] || key;
+        const amount = tabs[key as keyof typeof tabs];
         const label = getOrdersTabsLabel ? getOrdersTabsLabel(name, amount) : `${amount} ${name}`;
 
         return <StyledOrdersTab className="twap-orders-header-tabs-tab" key={key} label={label} {...a11yProps(index)} />;
@@ -50,16 +49,20 @@ export const OrdersSelectTabs = ({ className = "" }: { className?: string }) => 
 export const SelectedOrders = ({ className = "" }: { className?: string }) => {
   const { orders, isLoading } = useOrdersHistoryQuery();
   const { tab } = useOrdersStore();
-
+  const tabs = useOrdersTabs();
   return (
     <StyledOrdersLists className={`twap-orders-lists ${className}`}>
-      {_.keys(Status).map((key: any, index: number) => {
-        const selected = tab === index;
-        return (
-          <Box key={key} style={{ display: selected ? "block" : "none" }}>
-            <OrdersList isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status]} />
-          </Box>
-        );
+      {_.keys(tabs).map((key: any) => {
+        const tabValue = _.keys(tabs)[tab];
+
+        const selected = tabValue === key;
+
+        if (!selected) return null;
+        if (tabValue === "All") {
+          return <OrdersList key={key} isLoading={isLoading} orders={_.flatMap(orders)} />;
+        }
+
+        return <OrdersList key={key} isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status]} />;
       })}
     </StyledOrdersLists>
   );

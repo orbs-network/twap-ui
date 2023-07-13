@@ -1,7 +1,9 @@
-import { Box, createTheme, styled, Theme } from "@mui/material";
+import { Box, createTheme, Menu, styled, Theme } from "@mui/material";
 import { Components, Styles } from "@orbs-network/twap-ui";
 
 const mobile = 700;
+
+const MOBILE_FONT_SIZE = 11;
 
 export const lightTheme = createTheme({
   palette: {
@@ -108,12 +110,12 @@ export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ t
       width: 70,
       height: 23,
       "*": {
-        fontSize: 11,
+        fontSize: MOBILE_FONT_SIZE,
       },
       figure: {
         width: 26,
         paddingTop: 1,
-        fontSize: 11,
+        fontSize: MOBILE_FONT_SIZE,
       },
     },
   };
@@ -229,13 +231,31 @@ export const StyledOrders = styled(Styles.StyledColumnFlex)(({ theme }) => ({
   },
 }));
 
-export const StyledOrdersHeader = styled(Styles.StyledRowFlex)({});
+export const StyledOrdersHeader = styled(Styles.StyledRowFlex)({
+  [`@media(max-width: ${mobile}px)`]: {
+    flexDirection: "row!important",
+    justifyContent: "space-between",
+    alignItems: "center!important",
+    ".twap-label": {
+      p: {
+        fontSize: "11px!important",
+      },
+    },
+    ".twap-icon": {
+      width: 20,
+      height: 20,
+    },
+  },
+});
 
 export const StyledOrderHeaderRight = styled(Styles.StyledRowFlex)({
   height: 38,
   justifyContent: "space-between",
   marginLeft: "auto",
   width: "auto",
+  [`@media(max-width: ${mobile}px)`]: {
+    height: 30,
+  },
 });
 
 export const StyledOrdersTabs = styled(Components.Orders.OrdersSelectTabs)(({ theme }) => {
@@ -305,6 +325,11 @@ export const StyledOrdersList = styled(Components.Orders.SelectedOrders)(({ them
         fontSize: 15,
         fontWeight: 500,
       },
+      [`@media(max-width: ${mobile}px)`]: {
+        "*": {
+          fontSize: "11px!important",
+        },
+      },
     },
   };
 });
@@ -353,6 +378,7 @@ export const StyledTokenSelect = styled(Styles.StyledColumnFlex)(({ theme }) => 
     },
     [`@media(max-width: ${mobile}px)`]: {
       width: 65,
+      padding: "0px 5px",
       ".twap-token-logo": {
         width: 28,
         height: 28,
@@ -362,7 +388,7 @@ export const StyledTokenSelect = styled(Styles.StyledColumnFlex)(({ theme }) => 
         height: "28px!important",
       },
       ".twap-token-name": {
-        fontSize: 11,
+        fontSize: MOBILE_FONT_SIZE,
       },
     },
   };
@@ -395,7 +421,7 @@ export const StyledTokenInputBalance = styled(Styles.StyledRowFlex)(({ theme }) 
     [`@media(max-width: ${mobile}px)`]: {
       right: 20,
       "*": {
-        fontSize: 11,
+        fontSize: MOBILE_FONT_SIZE,
       },
     },
   };
@@ -435,7 +461,21 @@ export const StyledMarketPrice = styled(Components.Base.Card)<{ disabled: number
   },
   [`@media(max-width: ${mobile}px)`]: {
     ".title": {
-      fontSize: 11,
+      fontSize: MOBILE_FONT_SIZE,
+    },
+    paddingTop: 14,
+    paddingBottom: 14,
+    ".twap-price-compare": {
+      padding: "0px 7px",
+      ".twap-token-logo": {
+        width: 16,
+        height: 16,
+        minWidth: 16,
+        minHeight: 16,
+      },
+      "*": {
+        fontSize: MOBILE_FONT_SIZE,
+      },
     },
   },
 }));
@@ -515,10 +555,34 @@ export const StyledLimitPrice = styled(StyledDisabledCard)({
   [`@media(max-width: ${mobile}px)`]: {
     paddingBottom: 17,
     paddingTop: 17,
+    "*": {
+      fontSize: MOBILE_FONT_SIZE,
+    },
   },
 });
 
-export const StyledLimitPriceInput = styled(Styles.StyledRowFlex)({});
+export const StyledLimitPriceInput = styled(Styles.StyledRowFlex)({
+  ".twap-limit-price-middle": {
+    gap: 20,
+    flex: 1,
+    padding: "0px 19px",
+  },
+  ".twap-limit-price-right": {
+    width: 60,
+    padding: 0,
+  },
+  [`@media(max-width: ${mobile}px)`]: {
+    ".twap-limit-price-right": {
+      width: 40,
+    },
+    ".twap-limit-price-middle": {
+      gap: 5,
+      flex: 1,
+      padding: "0px 10px",
+    },
+    ".MuiButtonBase-root": {},
+  },
+});
 
 export const StyledTradeSize = styled(StyledDisabledCard)({
   paddingBottom: 30,
@@ -541,12 +605,21 @@ export const StyledTradeSize = styled(StyledDisabledCard)({
     },
   },
   [`@media(max-width: ${mobile}px)`]: {
-    fontSize: 11,
+    fontSize: MOBILE_FONT_SIZE,
     minWidth: "unset",
     paddingBottom: 17,
     paddingTop: 17,
-    ".twap-card-children": {
-      flexDirection: "column",
+    ".twap-chunks-left": {
+      width: "65%",
+      justifyContent: "flex-start",
+    },
+    ".twap-chunks-right": {
+      width: "35%!important",
+    },
+    ".twap-chunks-middle": {
+      width: "100%",
+      height: "auto",
+      padding: "10px 20px",
     },
   },
 });
@@ -586,6 +659,19 @@ export const StyledTimeSelectCard = styled(StyledDisabledCard)(({ theme }) => {
         "*": { color: "white" },
       },
     },
+    [`@media(max-width: ${mobile}px)`]: {
+      ".twap-input": {
+        input: {
+          fontSize: 14,
+        },
+      },
+      ".twap-time-selector-selected": {
+        padding: "0px 12px",
+        P: {
+          fontSize: MOBILE_FONT_SIZE,
+        },
+      },
+    },
   };
 });
 
@@ -617,6 +703,9 @@ const buttonStyles = (theme: Theme) => {
       "&::after": {
         opacity: 1,
       },
+    },
+    [`@media(max-width: ${mobile}px)`]: {
+      fontSize: 12,
     },
   };
 };
@@ -1053,11 +1142,18 @@ export const configureStyles = (theme: Theme) => {
       },
     },
     [`@media(max-width: ${mobile}px)`]: {
+      ".twap-odnp-button": {
+        height: "100%",
+        padding: "0px 10px!important",
+        p: {
+          fontSize: "11px!important",
+        },
+      },
       ".twap-label": {
         p: { fontSize: 11 },
       },
       ".twap-market-price": {
-        fontSize: 11,
+        fontSize: MOBILE_FONT_SIZE,
       },
     },
   };
@@ -1103,4 +1199,39 @@ export const StyledDstLogo = styled(Components.TokenLogo)({
 
 export const StyledTokenSummaryLogos = styled(Box)({
   position: "relative",
+});
+
+export const StyledMobileTabsMenuButton = styled("button")(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    background: styles.cardBg,
+    borderRadius: 20,
+    height: 30,
+    padding: "0 20px",
+    border: "unset",
+    cursor: "pointer",
+    p: {
+      fontSize: 12,
+    },
+    svg: {
+      width: 14,
+      height: 14,
+    },
+    [`@media(max-width: ${mobile}px)`]: {
+      height: "100%",
+      padding: "0 8px",
+    },
+  };
+});
+
+export const StyledMobileTabsMenu = styled(Menu)({
+    ".MuiTouchRipple-root": {
+      display: "none",
+    },
+    ".MuiPaper-root": {
+      background: "#38354E",
+    },
+    ".MuiMenuItem-root": {
+      fontSize: 14,
+    },
 });

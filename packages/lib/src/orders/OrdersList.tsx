@@ -2,11 +2,11 @@ import { Box, styled } from "@mui/material";
 import React, { useState } from "react";
 import Order from "./Order/Order";
 import CircularProgress from "@mui/material/CircularProgress";
-import { Status } from "@orbs-network/twap";
 import { useTwapContext } from "../context";
 import { OrderUI } from "../types";
+import _ from "lodash";
 
-function OrdersList({ orders, status, isLoading }: { orders?: OrderUI[]; status: Status; isLoading: boolean }) {
+function OrdersList({ orders, status, isLoading }: { orders?: OrderUI[]; status?: string; isLoading: boolean }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
   const translations = useTwapContext().translations;
 
@@ -23,12 +23,14 @@ function OrdersList({ orders, status, isLoading }: { orders?: OrderUI[]; status:
   }
   return (
     <StyledContainer className="twap-orders-list">
-      {orders ? (
-        orders.map((order, index) => {
+      {_.size(orders) ? (
+        orders?.map((order, index) => {
           return <Order order={order} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
         })
       ) : (
-        <StyledEmptyList>{`${translations.noOrdersFound} ${(translations as any)["noOrdersFound_" + status]} ${translations.noOrdersFound1}`}</StyledEmptyList>
+        <StyledEmptyList>
+          {!status ? "You currently don't have orders" : `${translations.noOrdersFound} ${(translations as any)["noOrdersFound_" + status]} ${translations.noOrdersFound1}`}
+        </StyledEmptyList>
       )}
     </StyledContainer>
   );

@@ -1,4 +1,4 @@
-import { Order, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { Order, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useMemo, useState } from "react";
@@ -703,4 +703,26 @@ export const useSwitchTokens = () => {
     },
     [_.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol]
   );
+};
+
+export const useOrdersTabs = () => {
+  const orders = useOrdersHistoryQuery().orders;
+
+  const {
+    uiPreferences: { orderTabsToExclude = ["All"] },
+  } = useTwapContext();
+
+  return useMemo(() => {
+    const keys = ["All", ..._.keys(Status)];
+
+    const res = _.filter(keys, (it) => !orderTabsToExclude?.includes(it));
+    const mapped = _.map(res, (it) => {
+      if (it === "All") {
+        return { All: _.size(_.flatMap(orders)) || 0 };
+      }
+      return { [it]: _.size(orders[it as Status]) || 0 };
+    });
+
+    return _.reduce(mapped, (acc, it) => ({ ...acc, ...it }), {});
+  }, [_.size(orders), orderTabsToExclude]);
 };

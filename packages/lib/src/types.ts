@@ -144,6 +144,7 @@ export interface TwapContextUIPreferences {
   getOrdersTabsLabel?: (label: string, amount: number) => string;
   inputPlaceholder?: string;
   qrSize?: number;
+  orderTabsToExclude?: string[];
 }
 
 export interface TwapLibProps extends LibProps {
