@@ -415,7 +415,11 @@ const MobileTabs = () => {
       </StyledMobileTabsMenuButton>
       <StyledMobileTabsMenu anchorEl={anchorEl} open={open} onClose={handleClose}>
         {_.keys(tabs).map((key, index) => {
-          return <MenuItem onClick={() => onSelected(index)}>{key}</MenuItem>;
+          return (
+            <MenuItem key={key} onClick={() => onSelected(index)}>
+              {key}
+            </MenuItem>
+          );
         })}
       </StyledMobileTabsMenu>
     </>

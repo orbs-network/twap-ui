@@ -48,7 +48,7 @@ const lightStyles = {
   confirmationBorder: "rgba(83, 89, 146, 0.2)",
   border: "#C5C7DB",
   hoverGradient: "linear-gradient(49deg, #9A89DF 0%, #7774D2 54.17%, #7079D2 100%)",
-  cardBg: "#5558794D",
+  cardBg: "rgba(255,255,255, 0.5)",
 };
 
 const baseStyles = (theme: Theme) => {
@@ -87,7 +87,7 @@ export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ t
       color: styles.textColor,
     },
     figure: {
-      background: styles.cardBg,
+      background: darkTheme ? styles.cardBg : "#9196C6",
       color: darkTheme ? "inherit" : "white",
       padding: 0,
       margin: 0,
@@ -100,7 +100,7 @@ export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ t
       position: "relative",
     },
     "&:hover": {
-      background: "#454168",
+      background: darkTheme ? "#454168" : "",
       figure: {
         background: styles.gradient,
       },
@@ -417,6 +417,9 @@ export const StyledTokenInputBalance = styled(Styles.StyledRowFlex)(({ theme }) 
     },
     "&:hover": {
       background: styles.gradient,
+      "*": {
+        color: "white",
+      },
     },
     [`@media(max-width: ${mobile}px)`]: {
       right: 20,
@@ -1224,14 +1227,17 @@ export const StyledMobileTabsMenuButton = styled("button")(({ theme }) => {
   };
 });
 
-export const StyledMobileTabsMenu = styled(Menu)({
+export const StyledMobileTabsMenu = styled(Menu)(({ theme }) => {
+  const darkTheme = isDark(theme);
+  return {
     ".MuiTouchRipple-root": {
       display: "none",
     },
     ".MuiPaper-root": {
-      background: "#38354E",
+      background: darkTheme ? "#38354E" : "white",
     },
     ".MuiMenuItem-root": {
       fontSize: 14,
     },
+  };
 });

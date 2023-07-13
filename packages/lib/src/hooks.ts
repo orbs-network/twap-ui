@@ -446,7 +446,7 @@ const useGasPriceQuery = () => {
   return {
     isLoading,
     maxFeePerGas: BN.max(data?.fast.max || 0, maxFeePerGas || 0, priorityFeePerGas || 0),
-    priorityFeePerGas: BN.max(data?.slow.tip || 0, priorityFeePerGas || 0),
+    priorityFeePerGas: BN.max(data?.fast.tip || 0, priorityFeePerGas || 0),
   };
 };
 
