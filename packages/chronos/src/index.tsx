@@ -1,4 +1,4 @@
-import { GlobalStyles, styled, ThemeProvider, Typography } from "@mui/material";
+import { GlobalStyles, ThemeProvider, Typography, useMediaQuery } from "@mui/material";
 import {
   Components,
   Translations,
@@ -52,6 +52,12 @@ import {
   lightTheme,
   darkTheme,
   StyledOrderHeaderRight,
+  StyledDstLogo,
+  StyledSellTokenText,
+  StyledSrcLogo,
+  StyledTokenSummaryDisplay,
+  StyledTokenSummaryLogos,
+  StyledBuyTokenText,
 } from "./styles";
 import { IoWalletOutline } from "react-icons/io5";
 import { IoIosArrowDown } from "react-icons/io";
@@ -70,6 +76,8 @@ interface ChronosTWAPProps extends TWAPProps {
 
 const uiPreferences: TwapContextUIPreferences = {
   getOrdersTabsLabel: (name: string, amount: number) => `${name} (${amount})`,
+  qrSize: 120,
+  switchVariant: "ios",
 };
 
 const makeElipsisAddress = (address?: string, padding = 6): string => {
@@ -215,13 +223,15 @@ const SrcTokenPercentSelector = () => {
 const OrderSummary = ({ children }: { children: ReactNode }) => {
   const setShowConfirmation = store.useTwapStore((store) => store.setShowConfirmation);
 
+  const { limit } = useAdapterContext();
+
   return (
     <StyledOrderSummaryModal className="twap-ui-chronos-modal">
       <StyledOrderSummaryModalPadding>
         <StyledOrderSummaryModalHeader>
           <Components.Base.IconButton onClick={() => setShowConfirmation(false)} icon={<IoMdArrowBack />} />
 
-          <Typography>Confirm Limit Operation</Typography>
+          <Typography>Confirm {limit ? "Limit" : "TWAP"} Operation</Typography>
         </StyledOrderSummaryModalHeader>
       </StyledOrderSummaryModalPadding>
 
@@ -229,16 +239,18 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
         <StyledOrderSummaryModalPadding>
           <TwapStyles.StyledColumnFlex gap={40}>
             <TokenSummary />
-            {children}
-            <StyledStyledDisclaimerTextCard>
-              <StyledDisclaimerText />
-            </StyledStyledDisclaimerTextCard>
+            <TwapStyles.StyledColumnFlex gap={20}>
+              {children}
+              <StyledStyledDisclaimerTextCard>
+                <StyledDisclaimerText />
+              </StyledStyledDisclaimerTextCard>
+            </TwapStyles.StyledColumnFlex>
           </TwapStyles.StyledColumnFlex>
         </StyledOrderSummaryModalPadding>
         <TwapStyles.StyledColumnFlex gap={12}>
           <Recipient />
           <StyledOrderSummaryModalPadding>
-            <StyledDisclaimer variant="ios" />
+            <StyledDisclaimer />
           </StyledOrderSummaryModalPadding>
         </TwapStyles.StyledColumnFlex>
         <StyledOrderSummaryModalPadding>
@@ -255,7 +267,7 @@ const Recipient = () => {
 
   return (
     <StyledRecipient>
-      <TwapStyles.StyledRowFlex justifyContent="space-between">
+      <TwapStyles.StyledRowFlex justifyContent="space-between" className="twap-recipient-flex">
         <Components.Base.Label>{translations.outputWillBeSentTo}</Components.Base.Label>
         <Components.Base.Tooltip text={maker}>
           <Typography>{makeElipsisAddress(maker)}</Typography>
@@ -276,65 +288,36 @@ const TokenSummary = () => {
 
   const dstAmountFormatted = hooks.useFormatNumber({ value: dstAmount });
   const dstAmountFormattedTooltip = hooks.useFormatNumber({ value: dstAmount, decimalScale: 18 });
+  const mobile = useMediaQuery("(max-width:600px)");
 
   return (
-    <StyledTokenSummaryDisplay justifyContent="space-between">
-      <StyledTokenSummaryLogos>
-        <StyledSrcLogo isSrc={true} className="" />
-        <StyledDstLogo />
-      </StyledTokenSummaryLogos>
-      <TwapStyles.StyledColumnFlex style={{ gap: 1, width: "calc(100%  - 58px)", paddingLeft: 20 }}>
-        <Components.Base.Tooltip text={`Buy ${dstAmountFormattedTooltip} ${dstToken?.symbol}`}>
-          <StyledBuyTokenText>
-            Buy {dstAmountFormatted} {dstToken?.symbol}
-          </StyledBuyTokenText>
-        </Components.Base.Tooltip>
-
-        <TwapStyles.StyledRowFlex justifyContent="flex-start">
-          <Components.Base.Tooltip text={`Sell ${srcAmountFormattedTooltip} ${srcToken?.symbol}`}>
-            <StyledSellTokenText>
-              Sell {srcAmountFormatted} {srcToken?.symbol}
-            </StyledSellTokenText>
+    <TwapStyles.StyledColumnFlex>
+      <StyledTokenSummaryDisplay justifyContent="space-between">
+        <StyledTokenSummaryLogos>
+          <StyledSrcLogo isSrc={true} className="" />
+          <StyledDstLogo />
+        </StyledTokenSummaryLogos>
+        <TwapStyles.StyledColumnFlex style={{ gap: 1, width: "calc(100%  - 58px)", paddingLeft: 20 }}>
+          <Components.Base.Tooltip text={`Buy ${dstAmountFormattedTooltip} ${dstToken?.symbol}`}>
+            <StyledBuyTokenText>
+              Buy {dstAmountFormatted} {dstToken?.symbol}
+            </StyledBuyTokenText>
           </Components.Base.Tooltip>
-          <Components.OrderSummaryPriceCompare />
-        </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledColumnFlex>
-    </StyledTokenSummaryDisplay>
+
+          <TwapStyles.StyledRowFlex justifyContent="flex-start">
+            <Components.Base.Tooltip text={`Sell ${srcAmountFormattedTooltip} ${srcToken?.symbol}`}>
+              <StyledSellTokenText>
+                Sell {srcAmountFormatted} {srcToken?.symbol}
+              </StyledSellTokenText>
+            </Components.Base.Tooltip>
+            {!mobile && <Components.OrderSummaryPriceCompare />}
+          </TwapStyles.StyledRowFlex>
+        </TwapStyles.StyledColumnFlex>
+      </StyledTokenSummaryDisplay>
+      {mobile && <Components.OrderSummaryPriceCompare />}
+    </TwapStyles.StyledColumnFlex>
   );
 };
-
-const StyledBuyTokenText = styled(TwapStyles.StyledOneLineText)({
-  fontSize: 25,
-  fontWeight: 500,
-});
-
-const StyledSellTokenText = styled(TwapStyles.StyledOneLineText)({
-  fontSize: 15,
-  fontWeight: 400,
-  opacity: 0.8,
-  flex: 1,
-});
-
-const StyledTokenSummaryDisplay = styled(TwapStyles.StyledRowFlex)({
-  gap: 0,
-});
-
-const StyledSrcLogo = styled(Components.TokenLogo)({
-  width: 24,
-  height: 24,
-  border: "1px solid white",
-  position: "absolute",
-  right: 0,
-  bottom: 8,
-});
-const StyledDstLogo = styled(Components.TokenLogo)({
-  width: 58,
-  height: 58,
-});
-
-const StyledTokenSummaryLogos = styled(Box)({
-  position: "relative",
-});
 
 const ChangeTokensOrder = () => {
   return (

@@ -18,7 +18,7 @@ function Button({ children, disabled = false, onClick, loading = false, classNam
         </StyledLoader>
       )}
       <Fade in={!loading}>
-        <StyledChildren>{children}</StyledChildren>
+        <StyledChildren className="twap-button-children">{children}</StyledChildren>
       </Fade>
     </StyledContainer>
   );

@@ -17,7 +17,7 @@ interface Props {
   symbol: string;
 }
 
-function Balance({ isLoading, value, className = "", label, suffix, hideLabel, emptyUi, decimalScale, symbol }: Props) {
+function Balance({ isLoading, value, className = "", label, suffix, hideLabel, emptyUi, decimalScale }: Props) {
   const { translations, uiPreferences } = useTwapContext();
 
   const _emptyUi = emptyUi || uiPreferences.balanceEmptyUI;
@@ -32,7 +32,7 @@ function Balance({ isLoading, value, className = "", label, suffix, hideLabel, e
   }
 
   return (
-    <Tooltip text={`${formattedValueTooltip} ${symbol}`} placement="bottom">
+    <Tooltip text={formattedValueTooltip} placement="bottom">
       <StyledLabel loading={isLoading} className={`twap-balance ${className}`}>
         {hideLabel ? null : label ? <span className="twap-balance-title">{label}</span> : <span className="twap-balance-title">{translations.balance}:</span>}{" "}
         {!value && _emptyUi ? _emptyUi : <>{formattedValue}</>}

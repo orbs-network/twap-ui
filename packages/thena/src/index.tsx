@@ -23,6 +23,7 @@ import {
   StyledPoweredBy,
   StyledSubmit,
   StyledTokenChange,
+  StyledDisclaimerText,
 } from "./styles";
 
 const storeOverride = {
@@ -145,7 +146,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
           <Components.Base.Card>{children}</Components.Base.Card>
           <Components.Base.Card>
             <TwapStyles.StyledColumnFlex gap={10}>
-              <Components.DisclaimerText />
+              <StyledDisclaimerText isDarkMode={isDarkTheme ? 1 : 0} />
             </TwapStyles.StyledColumnFlex>
           </Components.Base.Card>
         </TwapStyles.StyledColumnFlex>

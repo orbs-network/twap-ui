@@ -1,6 +1,8 @@
 import { Box, createTheme, styled, Theme } from "@mui/material";
 import { Components, Styles } from "@orbs-network/twap-ui";
 
+const mobile = 700;
+
 export const lightTheme = createTheme({
   palette: {
     mode: "light",
@@ -28,21 +30,23 @@ export const darkTheme = createTheme({
 });
 
 const darkStyles = {
-  lightBg: "#454062",
   textColor: "white",
-  button: "linear-gradient(49deg, #3F4AB3 0%, #7A64D0 100%)",
+  gradient: "linear-gradient(49deg, #3F4AB3 0%, #7A64D0 100%)",
   icon: "white",
   confirmationBorder: "rgba(113, 122, 196, 0.3)",
   border: "#555879",
+  hoverGradient: "linear-gradient(49deg, #6D78E4 0%, #7A64D0 100%)",
+  cardBg: "#5558794D",
 };
 
 const lightStyles = {
-  lightBg: "rgba(255,255,255, 0.5)",
   textColor: "#535992",
-  button: "linear-gradient(49deg, #7079D2 0%, #9A89DF 100%)",
+  gradient: "linear-gradient(49deg, #7079D2 0%, #9A89DF 100%)",
   icon: "#535992",
   confirmationBorder: "rgba(83, 89, 146, 0.2)",
   border: "#C5C7DB",
+  hoverGradient: "linear-gradient(49deg, #9A89DF 0%, #7774D2 54.17%, #7079D2 100%)",
+  cardBg: "#5558794D",
 };
 
 const baseStyles = (theme: Theme) => {
@@ -59,26 +63,13 @@ export const StyledDisabledCard = styled(Components.Base.Card)<{ disabled: numbe
     pointerEvents: disabled ? "none" : "unset",
   },
 }));
-const overlayStyles = {
-  mixBlendMode: "overlay",
-  width: "100%",
-  height: "100%",
-  position: "absolute",
-  content: "''",
-  top: 0,
-  left: 0,
-  zIndex: 0,
-  borderRadius: "inherit",
-};
 
-export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ theme, disabled }) => {
+export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ theme }) => {
   const styles = baseStyles(theme);
-
   const darkTheme = isDark(theme);
-  const disabledFigureColor = !darkTheme ? "#9196C6" : "";
   return {
     overflow: "hidden",
-    background: disabled ? "unset" : darkTheme ? "unset" : "#E0E0F5",
+    background: styles.cardBg,
     ".twap-usd": {
       maxWidth: 60,
     },
@@ -94,7 +85,7 @@ export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ t
       color: styles.textColor,
     },
     figure: {
-      background: disabled ? disabledFigureColor : darkTheme ? "#44486D" : styles.button,
+      background: styles.cardBg,
       color: darkTheme ? "inherit" : "white",
       padding: 0,
       margin: 0,
@@ -105,12 +96,12 @@ export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ t
       alignItems: "center",
       justifyContent: "center",
       position: "relative",
-      fontFamily: "Space Grotesk!important",
     },
-    "&:before": {
-      display: disabled ? "block" : darkTheme ? "block" : "none",
-      ...overlayStyles,
-      background: "rgba(255, 255, 255, 0.2)",
+    "&:hover": {
+      background: "#454168",
+      figure: {
+        background: styles.gradient,
+      },
     },
   };
 });
@@ -119,7 +110,12 @@ export const StyledTokenPanelInput = styled(Components.TokenInput)({
   width: "100%",
   input: {
     fontSize: 30,
-    fontWeight: "300!important",
+    fontWeight: "400!important",
+    "&:hover": {
+      "&::placeholder": {
+        opacity: 1,
+      },
+    },
   },
 });
 
@@ -137,13 +133,17 @@ export const StyledPercentSelect = styled(Styles.StyledRowFlex)(({ theme }) => {
       borderRadius: 100,
       padding: "7px 15px",
       fontFamily: "inherit",
-      fontSize: 14,
+
       color: styles.textColor,
-      transition: "0.2s all",
+      transition: "0s all",
       position: "relative",
-      background: "transparent",
+      background: styles.cardBg,
+      overflow: "hidden",
+      p: {
+        fontSize: 14,
+      },
       "&:hover": {
-        background: styles.button,
+        background: styles.gradient,
         p: {
           color: "white",
         },
@@ -152,7 +152,6 @@ export const StyledPercentSelect = styled(Styles.StyledRowFlex)(({ theme }) => {
         },
       },
       "&:before": {
-        ...overlayStyles,
         background: isDark(theme) ? "rgba(255, 255, 255, 0.3)" : "rgba(255, 255, 255, 0.6)",
       },
     },
@@ -163,8 +162,8 @@ export const StyledPanelRight = styled(Styles.StyledColumnFlex)({
   gap: 8,
   width: "auto",
   flex: 1,
-  padding: "24px 30px 22px 0px",
-  "@media(max-width: 600px)": {
+  padding: "24px 30px 25px 0px",
+  [`@media(max-width: ${mobile}px)`]: {
     ".twap-token-panel-flex-right-bottom": {
       gap: 20,
       flexDirection: "column",
@@ -237,7 +236,7 @@ export const StyledOrdersTabs = styled(Components.Orders.OrdersSelectTabs)(({ th
     ".MuiTab-root": {
       minHeight: "unset",
       height: "100%",
-      background: "rgba(85, 88, 121, 0.30)",
+      background: isDark(theme) ? "rgba(85, 88, 121, 0.30)" : "rgba(255, 255, 255, 0.5)",
       borderRadius: 20,
       fontSize: 14,
       width: "auto",
@@ -246,9 +245,15 @@ export const StyledOrdersTabs = styled(Components.Orders.OrdersSelectTabs)(({ th
       lineHeight: "normal",
       fontWeight: 400,
       color: styles.textColor,
+      position: "relative",
+      "&:hover": {
+        "&::after": {
+          opacity: 1,
+        },
+      },
     },
     ".Mui-selected": {
-      background: styles.button,
+      background: styles.gradient,
       color: "white!important",
     },
   };
@@ -261,7 +266,8 @@ export const StyledOrdersList = styled(Components.Orders.SelectedOrders)(({ them
     ".twap-order": {
       padding: 25,
       ".MuiLinearProgress-root": {
-        background: darkTheme ? darkStyles.lightBg : "#ECEFF4",
+        borderRadius: 30,
+        background: darkTheme ? darkStyles.cardBg : "#F5F9FE",
         "&::after": {
           display: "none",
         },
@@ -286,13 +292,14 @@ export const StyledTokenSelect = styled(Styles.StyledColumnFlex)(({ theme }) => 
   const styles = baseStyles(theme);
 
   return {
-    background: styles.lightBg,
-    width: 101,
+    background: styles.cardBg,
+    width: 100,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 25,
     padding: "0px 13px",
     cursor: "pointer",
+
     ".twap-token-svg": {
       width: "45px!important",
       height: "45px!important",
@@ -313,6 +320,17 @@ export const StyledTokenSelect = styled(Styles.StyledColumnFlex)(({ theme }) => 
         color: styles.textColor,
       },
     },
+    "&:hover": {
+      background: styles.gradient,
+      svg: {
+        "*": {
+          color: "white",
+        },
+      },
+      ".twap-token-name": {
+        color: "white",
+      },
+    },
   };
 });
 
@@ -320,11 +338,11 @@ export const StyledTokenInputBalance = styled(Styles.StyledRowFlex)(({ theme }) 
   const styles = baseStyles(theme);
   return {
     position: "absolute",
-    width: 175,
-    right: 22,
+    width: 180,
+    right: 25,
     top: 0,
     padding: "7px 14px",
-    background: styles.lightBg,
+    background: styles.cardBg,
     borderRadius: "0px 0px 20px 20px",
     svg: {
       width: 19,
@@ -336,6 +354,12 @@ export const StyledTokenInputBalance = styled(Styles.StyledRowFlex)(({ theme }) 
     "*": {
       color: styles.textColor,
       fontSize: 12,
+      [`@media(max-width: ${mobile}px)`]: {
+        fontSize: 11,
+      },
+    },
+    "&:hover": {
+      background: styles.gradient,
     },
   };
 });
@@ -380,14 +404,24 @@ export const StyledChangeOrder = styled(Box)(({ theme }) => ({
   marginLeft: "auto",
   marginRight: "auto",
   zIndex: 5,
+
   button: {
-    background: isDark(theme) ? "#4F4974" : lightStyles.button,
+    background: isDark(theme) ? "rgb(79 73 116)" : "#9196C6",
     borderRadius: 15,
-    width: 45,
-    height: 45,
+    width: 50,
+    height: 50,
     transition: "0s all",
+    [`@media(max-width: ${mobile}px)`]: {
+      width: 30,
+      height: 30,
+      borderRadius: 10,
+      svg: {
+        width: 16,
+        height: 16,
+      },
+    },
     "&:hover": {
-      background: darkStyles.button,
+      background: baseStyles(theme).gradient,
     },
     svg: {
       "*": {
@@ -400,6 +434,8 @@ export const StyledChangeOrder = styled(Box)(({ theme }) => ({
 export const StyledPoweredByOrbs = styled(Components.PoweredBy)(({ theme }) => ({
   a: {
     flexDirection: "column",
+    color: baseStyles(theme).textColor,
+    gap: 20,
     img: {
       width: 26,
       height: 26,
@@ -482,7 +518,7 @@ export const StyledTimeSelectCard = styled(StyledDisabledCard)(({ theme }) => {
       },
     },
     ".twap-time-selector-selected": {
-      background: darkTheme ? "rgba(85, 88, 121, 0.30)" : styles.button,
+      background: darkTheme ? "rgba(85, 88, 121, 0.30)" : styles.gradient,
       padding: "0px 20px",
       borderRadius: 20,
       height: 40,
@@ -509,23 +545,39 @@ export const StyledTimeSelectCard = styled(StyledDisabledCard)(({ theme }) => {
   };
 });
 
-export const StyledSubmit = styled(Components.SubmitButton)({
-  background: darkStyles.button,
-  border: "unset",
-  borderRadius: 15,
-  fontSize: 14,
-  color: "white",
-  transition: "0.2s all",
-  height: 47,
-  padding: "0px 20px",
-  fontFamily: "inherit",
-  fontWeight: 400,
-  "*": {
-    fontSize: "inherit",
-    color: "inherit",
-    fontWeight: "inherit",
-  },
-});
+const buttonStyles = (theme: Theme) => {
+  const styles = baseStyles(theme);
+  return {
+    background: styles.gradient,
+    border: "unset",
+    borderRadius: 15,
+    fontSize: 14,
+    color: "white",
+    transition: "0.2s all",
+    height: 47,
+    padding: "0px 20px",
+    fontFamily: "inherit",
+    fontWeight: 400,
+    position: "relative",
+    overflow: "hidden",
+    ".twap-button-children": {
+      position: "relative",
+      zIndex: 2,
+    },
+    "*": {
+      fontSize: "inherit",
+      color: "inherit",
+      fontWeight: "inherit",
+    },
+    "&:hover": {
+      "&::after": {
+        opacity: 1,
+      },
+    },
+  };
+};
+
+export const StyledSubmit = styled(Components.SubmitButton)({});
 
 export const StyledWarningMsg = styled(Components.WarningMessage)({
   background: "#DF3C64F5",
@@ -576,14 +628,30 @@ export const StyledBigBorder = styled(Styles.StyledRowFlex)(({ theme }) => {
   };
 });
 
-export const StyledRecipient = styled(Components.Base.Card)({
-  background: "rgba(61, 67, 117, 0.3)!important",
-  borderRadius: "unset",
-  padding: "20px 30px",
+export const StyledRecipient = styled(Components.Base.Card)(({ theme }) => {
+  return {
+    background: isDark(theme) ? "rgba(61, 67, 117, 0.3)!important" : "white!important",
+    borderRadius: "unset",
+    padding: "20px 30px",
+    "@media(max-width: 700px)": {
+      ".twap-recipient-flex": {
+        flexDirection: "column",
+        gap: 20,
+        alignItems: "center",
+      },
+    },
+  };
 });
 
-export const StyledStyledDisclaimerTextCard = styled(Components.Base.Card)({
-  paddingRight: 10,
+export const StyledStyledDisclaimerTextCard = styled(Components.Base.Card)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    paddingRight: 10,
+    a: {
+      color: styles.textColor,
+      fontWeight: 500,
+    },
+  };
 });
 
 export const StyledDisclaimerText = styled(Components.DisclaimerText)({
@@ -597,7 +665,7 @@ export const StyledDisclaimerText = styled(Components.DisclaimerText)({
 export const StyledOrderSummaryModalHeader = styled(Styles.StyledRowFlex)({
   justifyContent: "flex-start",
   borderBottom: `2px solid ${darkStyles.confirmationBorder}`,
-  paddingBottom: 20,
+  paddingBottom: 10,
   marginBottom: 40,
   gap: 2,
   p: {
@@ -608,6 +676,16 @@ export const StyledOrderSummaryModalHeader = styled(Styles.StyledRowFlex)({
     width: 33,
     height: 33,
   },
+  "@media(max-width: 600px)": {
+    marginBottom: 20,
+    p: {
+      fontSize: 16,
+    },
+    svg: {
+      width: 23,
+      height: 23,
+    },
+  },
 });
 
 export const StyledDisclaimer = styled(Components.AcceptDisclaimer)({
@@ -616,6 +694,9 @@ export const StyledDisclaimer = styled(Components.AcceptDisclaimer)({
 export const StyledOrderSummaryModalPadding = styled(Box)({
   padding: "0px 30px",
   width: "100%",
+  "@media(max-width: 600px)": {
+    padding: "0px 15px",
+  },
 });
 export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContainer)({
   ".twap-ui-close": {
@@ -640,7 +721,7 @@ export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContai
 
     "&-right": {
       "*": {
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: 300,
       },
     },
@@ -656,7 +737,85 @@ export const configureStyles = (theme: Theme) => {
   const darkTheme = isDark(theme);
 
   return {
-    ".twap-odnp-button": {},
+    ".twap-odnp-modal": {
+      ".twap-modal-content": {
+        maxWidth: "930px!important",
+      },
+      ".twap-ui-close": {
+        display: "none",
+      },
+      ".twap-odnp-separator": {
+        display: "none",
+      },
+      ".twap-odnp-sections": {
+        marginTop: 100,
+      },
+      ".twap-odnp-title": {
+        fontSize: "25px!important",
+        fontWeight: "500!important",
+      },
+      ".twap-odnp-section": {
+        maxWidth: 360,
+        background: isDark(theme) ? "#4F547D" : "white",
+        borderRadius: 30,
+        flex: 1,
+        padding: "80px 30px 50px 30px",
+        position: "relative",
+      },
+      ".twap-odnp-section-title": {
+        fontSize: "16px!important",
+        fontWeight: "400!important",
+      },
+      ".twap-odnp-header": {
+        gap: "10px!important",
+      },
+      ".twap-odnp-subtitle": {
+        fontSize: "14px!important",
+      },
+      ".twap-odnp-left-buttons": {
+        flexDirection: "row",
+        ".twap-odnp-link": {
+          width: "50%!important",
+          p: {
+            fontSize: "12px!important",
+            textAlign: "left",
+          },
+        },
+      },
+      ".twap-odnp-close-btn": {
+        display: "block!important",
+        maxWidth: 540,
+      },
+
+      ".twap-odnp-section-step": {
+        position: "absolute",
+        top: "-45px",
+        background: isDark(theme) ? "#3A3E64" : "white",
+        width: 90,
+        height: 90,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "50%",
+        border: isDark(theme) ? "2px solid #4F547F" : "2px solid rgba(0,0,0, 0.1)",
+        fontSize: "35px!important",
+        fontWeight: "300!important",
+      },
+    },
+    ".twap-odnp-button": {
+      border: "2px solid rgba(85, 88, 121, 0.50)",
+      padding: "10px 20px",
+      background: "transparent",
+      borderRadius: 20,
+      height: "100%",
+      "& img": {
+        width: "16px!important",
+        height: "16px!important",
+      },
+      p: {
+        fontSize: "14px!important",
+      },
+    },
     ".twap-container": {
       color: styles.textColor,
     },
@@ -700,7 +859,7 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-modal-content": {
       overflowY: "auto",
-      background: "#34385F",
+      background: isDark(theme) ? "#34385F" : "#F4F5FA",
       borderRadius: 30,
       padding: "50px 20px 20px 20px",
       maxWidth: "600px!important",
@@ -712,7 +871,7 @@ export const configureStyles = (theme: Theme) => {
         display: "none",
       },
       ".twap-card": {
-        background: "#45497D",
+        background: isDark(theme) ? "#45497D" : "white",
         "&:before": {
           display: "none",
         },
@@ -738,7 +897,9 @@ export const configureStyles = (theme: Theme) => {
       },
       ".twap-token-name": {},
     },
-
+    ".twap-button": {
+      ...buttonStyles(theme),
+    },
     ".twap-button-disabled": {
       opacity: "0.5!important",
     },
@@ -799,15 +960,8 @@ export const configureStyles = (theme: Theme) => {
     ".twap-card": {
       borderRadius: 25,
       padding: "14px 18px",
+      background: styles.cardBg,
       position: "relative",
-      "*": {
-        position: "relative",
-      },
-
-      "&:before": {
-        ...overlayStyles,
-        background: "rgba(255, 255, 255, 0.31)",
-      },
     },
     ".twap-label": {
       p: {
@@ -820,17 +974,21 @@ export const configureStyles = (theme: Theme) => {
       ".MuiSlider-valueLabel": {
         borderRadius: 10,
         background: darkTheme ? "#44486D" : "white",
+        color: styles.textColor,
       },
     },
     ".twap-switch": {
-      ".MuiSwitch-switchBase": {},
-
-      ".MuiSwitch-switchBase.Mui-checked": {},
+      ".MuiSwitch-switchBase": {
+        "&:hover": {
+          background: "transparent!important",
+        },
+      },
       ".MuiSwitch-thumb": {
         background: "#4F4974",
+        transform: "scale(0.8)",
       },
       ".Mui-checked .MuiSwitch-thumb": {
-        background: darkTheme ? "white" : styles.button,
+        background: darkTheme ? "white" : styles.gradient,
       },
       ".MuiSwitch-track": {
         border: `1.5px solid ${styles.border}`,
@@ -848,5 +1006,41 @@ export const configureStyles = (theme: Theme) => {
 export const StyledSeparator = styled(Box)({
   width: "100%",
   height: 2,
-  background: darkStyles.lightBg,
+  background: darkStyles.cardBg,
+});
+
+export const StyledBuyTokenText = styled(Styles.StyledOneLineText)({
+  fontSize: 25,
+  fontWeight: 500,
+  "@media(max-width: 600px)": {
+    fontSize: 18,
+  },
+});
+
+export const StyledSellTokenText = styled(Styles.StyledOneLineText)({
+  fontSize: 15,
+  fontWeight: 400,
+  opacity: 0.8,
+  flex: 1,
+});
+
+export const StyledTokenSummaryDisplay = styled(Styles.StyledRowFlex)({
+  gap: 0,
+});
+
+export const StyledSrcLogo = styled(Components.TokenLogo)({
+  width: 24,
+  height: 24,
+  border: "1px solid white",
+  position: "absolute",
+  right: 0,
+  bottom: 8,
+});
+export const StyledDstLogo = styled(Components.TokenLogo)({
+  width: 58,
+  height: 58,
+});
+
+export const StyledTokenSummaryLogos = styled(Box)({
+  position: "relative",
 });

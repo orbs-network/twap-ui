@@ -2,12 +2,11 @@ import { QRCodeSVG } from "qrcode.react";
 import { ReactNode, useState } from "react";
 import { useTwapContext } from "../../context";
 import { StyledColumnFlex, StyledOneLineText, StyledRowFlex, StyledText } from "../../styles";
-import { makeElipsisAddress } from "../../utils";
 import Modal from "./Modal";
-import Tooltip from "./Tooltip";
 import { FaApple, FaGooglePlay } from "react-icons/fa";
 import { IconType } from "react-icons";
 import { styled, Typography } from "@mui/material";
+import Button from "./Button";
 
 const mobile = 700;
 
@@ -17,7 +16,7 @@ function Odnp({ className = "" }: { className?: string }) {
   const { account } = useTwapContext();
 
   const [open, setOpen] = useState(false);
-  const translations = useTwapContext().translations;
+  const { translations } = useTwapContext();
 
   if (!account) return null;
   return (
@@ -28,19 +27,24 @@ function Odnp({ className = "" }: { className?: string }) {
           <StyledOneLineText>{translations.notify}</StyledOneLineText>
         </StyledRowFlex>
       </StyledButton>
-      <StyledModal open={open} onClose={() => setOpen(false)}>
+      <StyledModal open={open} onClose={() => setOpen(false)} className="twap-odnp-modal">
         <StyledOdnp className={`twap-odnp ${className}`}>
-          <StyledColumnFlex gap={20} style={{ alignItems: "center" }}>
+          <StyledColumnFlex gap={20} style={{ alignItems: "center" }} className="twap-odnp-header">
             <Typography className="twap-odnp-title" variant="h2">
               Get free mobile alerts for on-chain events
             </Typography>
             <StyledText className="twap-odnp-subtitle">Get a push notification or even a phone call to make sure you never lose your funds and you're always up to date</StyledText>
           </StyledColumnFlex>
-          <StyledFlex>
-            <LeftSection />
-            <StyledSeparator />
-            <RightSection />
-          </StyledFlex>
+          <StyledColumnFlex gap={30} style={{ alignItems: "center" }}>
+            <StyledFlex className="twap-odnp-sections">
+              <LeftSection />
+              <StyledSeparator className="twap-odnp-separator" />
+              <RightSection />
+            </StyledFlex>
+            <StyledCloseButton className="twap-odnp-close-btn" onClick={() => setOpen(false)}>
+              Close
+            </StyledCloseButton>
+          </StyledColumnFlex>
         </StyledOdnp>
       </StyledModal>
     </>
@@ -59,7 +63,7 @@ const Link = ({ Icon, name, url }: { Icon: IconType; name: string; url: string }
 };
 
 const StyledLink = styled("a")({
-  width: "90%!important",
+  width: "90%",
   textDecoration: "unset!important",
   height: "auto",
   padding: "10px 10px",
@@ -78,9 +82,12 @@ const StyledLink = styled("a")({
 
 const StyledModal = styled(Modal)({
   ".twap-modal-content": {
-    maxWidth: 700,
+    maxWidth: 800,
     paddingTop: 50,
     paddingBottom: 50,
+  },
+  ".twap-odnp-close-btn": {
+    display: "none",
   },
 });
 
@@ -96,9 +103,8 @@ const LeftSection = () => {
     >
       <StyledColumnFlex style={{ alignItems: "center" }}>
         <img className="twap-odnp-left-logo" src={icon} />
-        <StyledText className="twap-odnp-left-app">DeFi Notifications</StyledText>
       </StyledColumnFlex>
-      <StyledColumnFlex style={{ alignItems: "center" }}>
+      <StyledColumnFlex style={{ alignItems: "center" }} className="twap-odnp-left-buttons">
         <Link name="Apple" Icon={FaApple} url="https://apps.apple.com/us/app/defi-notifications/id1588243632" />
         <Link name="Android" Icon={FaGooglePlay} url="https://play.google.com/store/apps/details?id=com.orbs.openDefiNotificationsApp" />
       </StyledColumnFlex>
@@ -106,15 +112,24 @@ const LeftSection = () => {
   );
 };
 
+const StyledCloseButton = styled(Button)({
+  width: "100%",
+});
+
 const RightSection = () => {
-  const { account } = useTwapContext();
   return (
-    <StyledRight title="Open the mobile app" step={2}>
-      <StyledColumnFlex style={{ alignItems: "center" }}>
+    <StyledRight
+      title={
+        <>
+          Open the “DeFi Notifications” <br /> mobile app
+        </>
+      }
+      step={2}
+      className="twap-odnp-section-right"
+    >
+      <StyledColumnFlex style={{ alignItems: "center" }} className="twap-odnp-section-right-flex" gap={20}>
         <QR />
-        <Tooltip text={account}>
-          <StyledText className="twap-odnp-right-address">{makeElipsisAddress(account)}</StyledText>
-        </Tooltip>
+        <Typography className="twap-odnp-section-right-bottom-text">and Scan the QR Code to select what to monitor</Typography>
       </StyledColumnFlex>
     </StyledRight>
   );
@@ -122,30 +137,27 @@ const RightSection = () => {
 
 const Section = ({ title, children, className = "", step }: { title: ReactNode; children: ReactNode; className?: string; step: number }) => {
   return (
-    <StyledSection className={className} gap={30}>
-      <StyledColumnFlex style={{ alignItems: "center" }} gap={5}>
-        <StyledText className="twap-odnp-section-step">{step}</StyledText>
+    <StyledSection className={`twap-odnp-section ${className}`}>
+      <figure className="twap-odnp-section-step">{step}</figure>
+      <StyledColumnFlex gap={20} className="twap-odnp-section-content">
         <StyledText className="twap-odnp-section-title">{title}</StyledText>
+        {children}
       </StyledColumnFlex>
-      {children}
     </StyledSection>
   );
 };
 
 const StyledLeft = styled(Section)({
   ".twap-odnp-left-logo": {
-    width: 50,
-    height: 50,
-  },
-  ".twap-odnp-left-app": {
-    fontWeight: 600,
-    fontSize: 15,
+    width: 70,
+    height: 70,
   },
 });
 const StyledRight = styled(Section)({
-  ".twap-odnp-right-address": {
-    fontSize: 14,
-    fontWeight: 500,
+  ".twap-odnp-section-right-bottom-text": {
+    fontSize: 15,
+    fontWeight: 400,
+    maxWidth: 200,
   },
   [`@media(max-width: ${mobile}px)`]: {
     display: "none",
@@ -159,9 +171,18 @@ const StyledSeparator = styled("div")({
 });
 
 const StyledSection = styled(StyledColumnFlex)({
+  justifyContent: "space-between",
+  gap: 20,
   ".twap-odnp-section-step": {
     fontWeight: 600,
     fontSize: 20,
+    padding: 0,
+    margin: 0,
+  },
+  ".twap-odnp-section-content": {
+    justifyContent: "space-between",
+    flex: 1,
+    alignItems: "center",
   },
   ".twap-odnp-section-title": {
     fontSize: 17,
@@ -179,7 +200,7 @@ const StyledSection = styled(StyledColumnFlex)({
 
 const StyledFlex = styled(StyledRowFlex)({
   alignItems: "stretch",
-  marginTop: 30,
+  marginTop: 50,
   gap: 20,
   [`@media(max-width: ${mobile}px)`]: {
     flexDirection: "column",
@@ -188,11 +209,11 @@ const StyledFlex = styled(StyledRowFlex)({
 });
 
 const StyledButton = styled("button")({
-  height: "auto",
   padding: "4px 15px",
   cursor: "pointer",
   "& img": {
     width: 22,
+    height: 22,
   },
   "& p": {
     fontSize: 14,
@@ -202,6 +223,7 @@ const StyledButton = styled("button")({
 
 const StyledOdnp = styled(StyledColumnFlex)({
   textAlign: "center",
+  gap: 0,
   ".twap-odnp-title": {
     fontSize: 26,
     lineHeight: "32px",
@@ -226,14 +248,17 @@ const StyledOdnp = styled(StyledColumnFlex)({
 });
 
 const QR = () => {
-  const { account } = useTwapContext();
+  const {
+    account,
+    uiPreferences: { qrSize },
+  } = useTwapContext();
 
   if (!account) return null;
   return (
     <QRCodeSVG
       className="twap-odnp-qr-code"
       value={"http://onelink.to/9cqqbe" + "?opendefiqr=" + account + "project:" + "twap" + ";"}
-      size={180}
+      size={qrSize || 180}
       bgColor={"#ffffff"}
       fgColor={"#000000"}
       level={"M"}

@@ -33,7 +33,7 @@ const USD = ({
   const _suffix = suffix || usdSuffix;
   const _emptyUi = emptyUi || usdEmptyUI;
   console.log(value);
-  
+
   if (value == null) return null;
   return (
     <Tooltip text={`${formattedValueTooltip}`} placement="bottom">
@@ -45,7 +45,7 @@ const USD = ({
         ) : (
           <>
             {_prefix}
-            <>{formattedValue || '0'}</>
+            <>{formattedValue || "0"}</>
             {_suffix}
           </>
         )}

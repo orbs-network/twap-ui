@@ -771,7 +771,7 @@ export const AcceptDisclaimer = ({ variant, className }: { variant?: SwitchVaria
   const disclaimerAccepted = useTwapStore((store) => store.disclaimerAccepted);
 
   return (
-    <StyledRowFlex gap={5} justifyContent="flex-start" className={`twap-disclaimer-switch ${className}`}>
+    <StyledRowFlex gap={5} justifyContent="space-between" className={`twap-disclaimer-switch ${className}`}>
       <Label>{translations.acceptDisclaimer}</Label>
       <Switch variant={variant} value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
     </StyledRowFlex>
@@ -952,6 +952,13 @@ const StyledSummaryRow = styled(StyledRowFlex)({
   ".twap-label": {
     minWidth: 0,
     maxWidth: "60%",
+  },
+  "@media(max-width: 700px)": {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    ".twap-label": {
+      maxWidth: "unset",
+    },
   },
 });
 

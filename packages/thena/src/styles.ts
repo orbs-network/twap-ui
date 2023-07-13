@@ -182,6 +182,9 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
       borderRadius: 8,
       padding: 20,
     },
+    svg: {
+      color: isDarkMode ? "white" : "black",
+    },
     "twap-order-summary-details": {},
     ".twap-order-summary-details-item": {
       div: {
@@ -191,6 +194,12 @@ export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<
           },
         },
       },
+    },
+  },
+  ".twap-price-compare": {
+    fontSize: 14,
+    "*": {
+      fontSize: 14,
     },
   },
   ".twap-orders-summary-token-display": {
@@ -379,3 +388,9 @@ export const configureStyles = (isDarkMode?: boolean) => {
     },
   };
 };
+
+export const StyledDisclaimerText = styled(Components.DisclaimerText)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  "*": {
+    color: isDarkMode ? "white" : "rgb(10 9 62/1)",
+  },
+}));

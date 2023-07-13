@@ -143,6 +143,7 @@ export interface TwapContextUIPreferences {
   switchVariant?: SwitchVariant;
   getOrdersTabsLabel?: (label: string, amount: number) => string;
   inputPlaceholder?: string;
+  qrSize?: number;
 }
 
 export interface TwapLibProps extends LibProps {

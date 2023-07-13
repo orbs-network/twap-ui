@@ -460,7 +460,7 @@ const TradeSize = () => {
       <TwapStyles.StyledRowFlex className="twap-trade-size" justifyContent="flex-end" gap={5}>
         <Components.TradeSize hideLabel={true} />
         <TwapStyles.StyledRowFlex gap={2} style={{ width: "auto" }} className="twap-usd">
-          <Components.ChunksUSD prefix='( ' suffix = ' USD)'  />
+          <Components.ChunksUSD prefix="( " suffix=" USD)" />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
     </Container>
