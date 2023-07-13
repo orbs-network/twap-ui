@@ -489,7 +489,6 @@ export const useOrdersHistoryQuery = (_priceUsd?: (token: TokenData) => Promise<
           (t) => (t ? t.address : undefined)
         )
       );
-      console.log("order");
 
       const tokensWithUsd = await getUsdValues(tokens);
       const parsedOrders = orders.map((o: Order) => {

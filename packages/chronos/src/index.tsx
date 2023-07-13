@@ -449,6 +449,32 @@ const LimitPanel = () => {
   );
 };
 
+const ChunksLeft = () => {
+  return (
+    <StyledBigBorder style={{ gap: 5 }}>
+      <Components.Labels.ChunksAmountLabel />
+      <Components.TradeSizeValue />
+    </StyledBigBorder>
+  );
+};
+
+const ChunksMiddle = () => {
+  return (
+    <StyledBigBorder style={{ flex: 1 }} justifyContent="space-between">
+      <Components.ChunksInput />
+      <Components.SrcToken />
+    </StyledBigBorder>
+  );
+};
+
+const ChunksRight = () => {
+  return (
+    <StyledBigBorder style={{ width: 90 }}>
+      <Components.ChunksUSD prefix="≈$" />
+    </StyledBigBorder>
+  );
+};
+
 const TradeSize = () => {
   const srcAmountNotZero = hooks.useSrcAmountNotZero();
 
@@ -460,18 +486,10 @@ const TradeSize = () => {
           <ChunksSlider />
 
           <TwapStyles.StyledRowFlex className="twap-card-children">
-            <StyledBigBorder style={{ gap: 5 }}>
-              <Components.Labels.ChunksAmountLabel />
-              <Components.TradeSizeValue />
-            </StyledBigBorder>
-            <StyledBigBorder style={{ flex: 1 }} justifyContent="space-between">
-              <Components.ChunksInput />
-              <Components.SrcToken />
-            </StyledBigBorder>
+            <ChunksLeft />
+            <ChunksMiddle />
 
-            <StyledBigBorder style={{ width: 90 }}>
-              <Components.ChunksUSD prefix="≈$" />
-            </StyledBigBorder>
+            <ChunksRight />
           </TwapStyles.StyledRowFlex>
         </StyledCardColumn>
       </StyledTradeSize>

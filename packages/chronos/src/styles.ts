@@ -103,6 +103,19 @@ export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ t
         background: styles.gradient,
       },
     },
+    [`@media(max-width: ${mobile}px)`]: {
+      gap: 5,
+      width: 70,
+      height: 23,
+      "*": {
+        fontSize: 11,
+      },
+      figure: {
+        width: 26,
+        paddingTop: 1,
+        fontSize: 11,
+      },
+    },
   };
 });
 
@@ -115,6 +128,9 @@ export const StyledTokenPanelInput = styled(Components.TokenInput)({
       "&::placeholder": {
         opacity: 1,
       },
+    },
+    [`@media(max-width: ${mobile}px)`]: {
+      fontSize: 16,
     },
   },
 });
@@ -147,12 +163,17 @@ export const StyledPercentSelect = styled(Styles.StyledRowFlex)(({ theme }) => {
         p: {
           color: "white",
         },
-        "&:before": {
-          display: "none",
-        },
       },
       "&:before": {
         background: isDark(theme) ? "rgba(255, 255, 255, 0.3)" : "rgba(255, 255, 255, 0.6)",
+      },
+    },
+    [`@media(max-width: ${mobile}px)`]: {
+      button: {
+        padding: "5px 8px",
+        p: {
+          fontSize: 10,
+        },
       },
     },
   };
@@ -164,10 +185,9 @@ export const StyledPanelRight = styled(Styles.StyledColumnFlex)({
   flex: 1,
   padding: "24px 30px 25px 0px",
   [`@media(max-width: ${mobile}px)`]: {
+    padding: "24px 19px 21px 0px",
     ".twap-token-panel-flex-right-bottom": {
-      gap: 20,
-      flexDirection: "column",
-      alignItems: "flex-start",
+      gap: 10,
     },
   },
 });
@@ -331,6 +351,20 @@ export const StyledTokenSelect = styled(Styles.StyledColumnFlex)(({ theme }) => 
         color: "white",
       },
     },
+    [`@media(max-width: ${mobile}px)`]: {
+      width: 65,
+      ".twap-token-logo": {
+        width: 28,
+        height: 28,
+      },
+      ".twap-token-svg": {
+        width: "28px!important",
+        height: "28px!important",
+      },
+      ".twap-token-name": {
+        fontSize: 11,
+      },
+    },
   };
 });
 
@@ -354,12 +388,15 @@ export const StyledTokenInputBalance = styled(Styles.StyledRowFlex)(({ theme }) 
     "*": {
       color: styles.textColor,
       fontSize: 12,
-      [`@media(max-width: ${mobile}px)`]: {
-        fontSize: 11,
-      },
     },
     "&:hover": {
       background: styles.gradient,
+    },
+    [`@media(max-width: ${mobile}px)`]: {
+      right: 20,
+      "*": {
+        fontSize: 11,
+      },
     },
   };
 });
@@ -369,6 +406,9 @@ export const StyledTokenPanel = styled(Components.Base.Card)({
   display: "flex",
   gap: 20,
   alignItems: "stretch",
+  [`@media(max-width: ${mobile}px)`]: {
+    gap: 15,
+  },
 });
 
 export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
@@ -392,6 +432,11 @@ export const StyledMarketPrice = styled(Components.Base.Card)<{ disabled: number
   ".title": {
     fontWeight: 400,
     fontSize: 16,
+  },
+  [`@media(max-width: ${mobile}px)`]: {
+    ".title": {
+      fontSize: 11,
+    },
   },
 }));
 
@@ -467,6 +512,10 @@ export const StyledLimitPrice = styled(StyledDisabledCard)({
       },
     },
   },
+  [`@media(max-width: ${mobile}px)`]: {
+    paddingBottom: 17,
+    paddingTop: 17,
+  },
 });
 
 export const StyledLimitPriceInput = styled(Styles.StyledRowFlex)({});
@@ -491,9 +540,14 @@ export const StyledTradeSize = styled(StyledDisabledCard)({
       textAlign: "left!important",
     },
   },
-  "@media(max-width: 600px)": {
-    fontSize: 10,
+  [`@media(max-width: ${mobile}px)`]: {
+    fontSize: 11,
     minWidth: "unset",
+    paddingBottom: 17,
+    paddingTop: 17,
+    ".twap-card-children": {
+      flexDirection: "column",
+    },
   },
 });
 
@@ -530,16 +584,6 @@ export const StyledTimeSelectCard = styled(StyledDisabledCard)(({ theme }) => {
       svg: {
         transform: "rotate(180deg)",
         "*": { color: "white" },
-      },
-    },
-    "@media(max-width: 600px)": {
-      ".twap-time-selector": {
-        marginLeft: "auto",
-      },
-      ".twap-trade-interval-flex": {
-        gap: 20,
-        flexDirection: "column",
-        alignItems: "flex-start",
       },
     },
   };
@@ -624,6 +668,14 @@ export const StyledBigBorder = styled(Styles.StyledRowFlex)(({ theme }) => {
     ".twap-token-logo": {
       width: 35,
       height: 35,
+    },
+    [`@media(max-width: ${mobile}px)`]: {
+      height: 38,
+      padding: "0px 12px",
+      ".twap-token-logo": {
+        width: 22,
+        height: 22,
+      },
     },
   };
 });
@@ -998,6 +1050,14 @@ export const configureStyles = (theme: Theme) => {
       ".Mui-checked+.MuiSwitch-track": {
         background: "transparent!important",
         border: `1.5px solid ${styles.border}!important`,
+      },
+    },
+    [`@media(max-width: ${mobile}px)`]: {
+      ".twap-label": {
+        p: { fontSize: 11 },
+      },
+      ".twap-market-price": {
+        fontSize: 11,
       },
     },
   };

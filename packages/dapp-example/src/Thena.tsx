@@ -60,8 +60,6 @@ interface TokenSelectModalProps {
 
 const parseList = (rawList?: any): TokenListItem[] => {
   return _.map(rawList, (rawToken) => {
-    console.log(rawToken);
-
     return {
       token: {
         address: rawToken.address,

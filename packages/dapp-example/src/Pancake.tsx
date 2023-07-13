@@ -136,8 +136,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
 
-  console.log(library);
-
   const connector = {
     getProvider: () => library,
   };
