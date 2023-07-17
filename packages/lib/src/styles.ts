@@ -1,5 +1,4 @@
-import { Tab, Tabs, Typography } from "@mui/material";
-import { Box, styled } from "@mui/system";
+import { Tab, Tabs, Typography, Box, styled } from "@mui/material";
 import { CSSProperties } from "react";
 export const StyledShadowContainer = styled(Box)({
   boxShadow: "0px 5px 20px rgba(85, 94, 104, 0.13)",

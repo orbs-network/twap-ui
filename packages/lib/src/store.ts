@@ -21,6 +21,8 @@ export type Duration = { resolution: TimeResolution; amount?: number };
  */
 
 const initialState: State = {
+  showSuccessModal: true,
+  showLoadingModal: false,
   lib: undefined,
   srcToken: undefined,
   dstToken: undefined,
@@ -48,6 +50,8 @@ const initialState: State = {
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
+    setShowSuccessModal: (showSuccessModal: boolean) => set({ showSuccessModal }),
+    setShowLodingModal: (showLoadingModal: boolean) => set({ showLoadingModal }),
     setLimitOrderPriceUi: () => {
       set({ limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false, custom: false } });
     },

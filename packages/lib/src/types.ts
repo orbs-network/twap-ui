@@ -236,6 +236,9 @@ export interface State {
   customDuration: Duration;
 
   orderCreatedTimestamp?: number;
+
+  showLoadingModal: boolean;
+  showSuccessModal: boolean;
 }
 
 export type SwitchVariant = "ios" | "default";

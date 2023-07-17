@@ -61,6 +61,8 @@ import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
 import { GrPowerReset } from "react-icons/gr";
 import { Styles } from "..";
+import PendingTxModal from "./base/PendingTxModal";
+import SuccessTxModal from "./base/SuccessTxModal";
 
 export function ChunksInput({ className = "", showDefault }: { className?: string; showDefault?: boolean }) {
   const translations = useTwapContext().translations;
@@ -1123,4 +1125,16 @@ export const DstToken = () => {
       <TokenSymbol />
     </Styles.StyledRowFlex>
   );
+};
+
+export const TxLoading = () => {
+  const { showLoadingModal, setShowLodingModal } = useTwapStore();
+
+  return <PendingTxModal open={showLoadingModal} onClose={() => setShowLodingModal(false)} />;
+};
+
+export const TxSuccess = () => {
+  const { showSuccessModal, setShowSuccessModal } = useTwapStore();
+
+  return <SuccessTxModal open={showSuccessModal} onClose={() => setShowSuccessModal(false)} />;
 };

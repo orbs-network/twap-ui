@@ -1,6 +1,47 @@
-import { Box, styled } from "@mui/material";
+import { Box, createTheme, styled, Theme } from "@mui/material";
 import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
-const gradient = "linear-gradient(to right,rgba(59,130,246,.15),rgba(236,72,153,.15))";
+
+export const lightTheme = createTheme({
+  palette: {
+    mode: "light",
+  },
+
+  typography: {
+    fontFamily: "inherit",
+  },
+});
+const isDark = (theme: Theme) => theme.palette.mode === "dark";
+
+export const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+  },
+  typography: {
+    fontFamily: "inherit",
+  },
+});
+
+const lightStyles = {
+  gradient: "linear-gradient(to right,rgba(59,130,246,.15),rgba(236,72,153,.15))",
+  textMain: "rgba(0,0,0, 0.8)",
+  modalBackground: "#F4F5F6",
+  card: "#F4F5F6",
+  disabledCard: "#F4F5F6",
+  backdrop: "rgba(255,255,255,.4)",
+  switchTrack: "rgba(0,0,0, 0.3)",
+};
+
+const darkStyles = {
+  gradient: "linear-gradient(to right,rgba(59,130,246,.15),rgba(236,72,153,.15))",
+  textMain: "#BFBFBF",
+  modalBackground: "#151515",
+  card: "rgba(8,8,8,1)",
+  disabledCard: "rgba(8,8,8,0.5)",
+  backdrop: "rgba(0, 0, 0, 0.424)",
+  switchTrack: "hsla(0,0%,100%,.3)",
+};
+
+const baseStyles = (theme: Theme) => (isDark(theme) ? darkStyles : lightStyles);
 
 export const StyledPanelInput = styled(Components.TokenInput)({
   height: "100%",
@@ -11,12 +52,28 @@ export const StyledPanelInput = styled(Components.TokenInput)({
   },
 });
 
-export const StyledPanelRight = styled(Styles.StyledRowFlex)<{ isSrcToken: number; isDarkMode: number }>(({ isDarkMode, isSrcToken }) => ({
-  background: !isDarkMode ? "#F4F5F6" : isSrcToken ? "rgba(8,8,8,1)" : "rgba(8,8,8,0.5)",
-  borderRadius: 10,
-  padding: 10,
-  minHeight: 60,
-}));
+export const StyledChunkSize = styled(Components.Base.Card)({
+  ".twap-token-logo": {
+    width: 30,
+    height: 30,
+  },
+  ".twap-chunks-size-usd": {
+    "*": {
+      fontSize: 14,
+    },
+  },
+});
+
+export const StyledPanelRight = styled(Styles.StyledRowFlex)<{ isSrcToken: number }>(({ isSrcToken, theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    background: isSrcToken ? styles.card : styles.disabledCard,
+    borderRadius: 10,
+    padding: 10,
+    minHeight: 60,
+    cursor: isSrcToken ? "auto" : "not-allowed",
+  };
+});
 
 export const StyledBalanceAndUSD = styled(Styles.StyledColumnFlex)({
   width: "auto",
@@ -28,13 +85,11 @@ export const StyledBalanceAndUSD = styled(Styles.StyledColumnFlex)({
   },
 });
 
-const getTextColor = (isDarkMode?: number) => (!isDarkMode ? "rgba(0,0,0, 0.8)" : "#BFBFBF");
-
-export const StyledUSD = styled(Components.TokenUSD)<{ isDarkMode: number }>({
+export const StyledUSD = styled(Components.TokenUSD)({
   maxWidth: "unset",
 });
 
-export const StyledBalance = styled(Components.TokenBalance)<{ isDarkMode: number }>({
+export const StyledBalance = styled(Components.TokenBalance)({
   maxWidth: "unset",
 
   p: {
@@ -56,24 +111,27 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
   },
 });
 
-export const StyledTokenChange = styled(Components.ChangeTokensOrder)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
-  justifyContent: "flex-start",
-  button: {
-    background: isDarkTheme ? "rgba(16,16,16,1)" : "rgb(243 244 246/1)",
-    width: 62,
-    height: 62,
-    borderRadius: "50%",
-    border: "2px solid black",
-    "&:hover": {
+export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }) => {
+  const isDarkTheme = isDark(theme);
+  return {
+    justifyContent: "flex-start",
+    button: {
       background: isDarkTheme ? "rgba(16,16,16,1)" : "rgb(243 244 246/1)",
+      width: 62,
+      height: 62,
+      borderRadius: "50%",
+      border: "2px solid black",
+      "&:hover": {
+        background: isDarkTheme ? "rgba(16,16,16,1)" : "rgb(243 244 246/1)",
+      },
     },
-  },
-  svg: {
-    width: 27,
-    height: 27,
-    fill: "white",
-  },
-}));
+    svg: {
+      width: 27,
+      height: 27,
+      fill: "white",
+    },
+  };
+});
 
 export const StyledContainer = styled(Styles.StyledColumnFlex)({
   gap: 15,
@@ -141,209 +199,222 @@ export const StyledLimitPrice = styled(Components.LimitPriceInput)({
   },
 });
 
-export const StyledOrders = styled(OrdersPanel)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  maxWidth: "unset!important",
-  color: getTextColor(isDarkMode),
-  ".twap-orders-list": {
-    gap: 16,
-  },
-  ".twap-order-expanded-right": {
-    color: `${getTextColor(isDarkMode)}!important`,
-    fontWeight: 500,
-    "*": {
-      color: `inherit`,
-      fontWeight: `inherit`,
-    },
-  },
-  ".twap-token-display-amount-and-symbol": {
-    fontSize: 15,
-    fontWeight: 500,
-  },
-  ".twap-order": {
-    padding: 20,
+export const StyledOrders = styled(OrdersPanel)(({ theme }) => {
+  const styles = baseStyles(theme);
+  const isDarkMode = isDark(theme);
 
-    ".twap-label p": {
-      fontSize: 14,
+  return {
+    maxWidth: "unset!important",
+    color: styles.textMain,
+    ".twap-orders-list": {
+      gap: 16,
+    },
+    ".twap-order-expanded-right": {
+      color: `${styles.textMain}!important`,
       fontWeight: 500,
-    },
-
-    ".twap-order-separator": {
-      display: "none",
-    },
-    ".twap-market-price-section": {
-      background: isDarkMode ? "#151519" : "#F4F5F6",
-      width: "100%",
-      padding: "5px 10px",
-      borderRadius: 8,
       "*": {
-        fontSize: "13px",
-      },
-      ".twap-small-label p": {
-        fontSize: "14px!important",
+        color: `inherit`,
+        fontWeight: `inherit`,
       },
     },
-    ".MuiLinearProgress-root": {
-      background: "hsla(0,0%,100%,.06)",
-    },
-    ".MuiLinearProgress-bar": {
-      background: "#6034b1",
-    },
-    ".MuiLinearProgress-root::after": {
-      display: "none",
-    },
-  },
-
-  ".twap-orders-header": {
-    ".twap-label": {
-      p: {
-        fontSize: "16px!important",
-        fontWeight: 500,
-      },
-    },
-    ".twap-orders-header-tabs": {
-      border: "2px solid rgba(48,23,71,1)",
-    },
-    ".MuiButtonBase-root": {
-      borderRadius: 4,
-      transition: "0.3s all",
-      color: "inherit",
-    },
-    ".Mui-selected": {
-      background: "unset",
-      color: "white",
-    },
-    ".MuiTabs-indicator": {
-      // display: "none",
-      background: "#e2107b",
-    },
-  },
-}));
-
-export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
-  fontFamily: "Inter",
-
-  ".twap-modal-content": {
-    ".twap-disclaimer-text": {
-      "*": {
-        color: getTextColor(isDarkTheme),
-        fontSize: 14,
-        lineHeight: "18px",
-      },
-    },
-    ".twap-ui-close": {
-      padding: 5,
-      background: "hsla(0,0%,100%,.06)",
-      top: 10,
-      right: 10,
-      svg: {
-        width: 20,
-        height: 20,
-      },
-      "&:hover": {
-        background: "hsla(0,0%,100%,.1)",
-      },
-    },
-    ".twap-order-summary-limit-price": {
-      fontSize: 14,
-      color: getTextColor(isDarkTheme),
-      p: {
-        color: "inherit",
-      },
-    },
-    ".twap-label": {
-      fontSize: 14,
-      fontWeight: 600,
-      color: getTextColor(isDarkTheme),
-      p: {
-        fontSize: "inherit",
-        fontWeight: "inherit",
-        color: "inherit",
-      },
-    },
-    ".twap-order-summary-details-item": {},
-    ".twap-order-summary-details-item-right": {
-      color: getTextColor(isDarkTheme),
-      fontSize: 14,
-      fontWeight: 600,
-      "*": {
-        color: getTextColor(isDarkTheme),
-        fontSize: 14,
-        fontWeight: 600,
-      },
-    },
-  },
-  ".twap-order-summary-output-address": {
-    p: {
-      color: getTextColor(),
+    ".twap-token-display-amount-and-symbol": {
       fontSize: 15,
       fontWeight: 500,
     },
-  },
-  ".twap-orders-summary-token-display": {
-    ".twap-small-label": {
+    ".twap-order": {
+      padding: 20,
+
+      ".twap-label p": {
+        fontSize: 14,
+        fontWeight: 500,
+      },
+
+      ".twap-order-separator": {
+        display: "none",
+      },
+      ".twap-market-price-section": {
+        background: isDarkMode ? "#151519" : "#F4F5F6",
+        width: "100%",
+        padding: "5px 10px",
+        borderRadius: 8,
+        "*": {
+          fontSize: "13px",
+        },
+        ".twap-small-label p": {
+          fontSize: "14px!important",
+        },
+      },
+      ".MuiLinearProgress-root": {
+        background: "hsla(0,0%,100%,.06)",
+      },
+      ".MuiLinearProgress-bar": {
+        background: "#6034b1",
+      },
+      ".MuiLinearProgress-root::after": {
+        display: "none",
+      },
+    },
+
+    ".twap-orders-header": {
+      ".twap-label": {
+        p: {
+          fontSize: "16px!important",
+          fontWeight: 500,
+        },
+      },
+      ".twap-orders-header-tabs": {
+        border: "2px solid rgba(48,23,71,1)",
+      },
+      ".MuiButtonBase-root": {
+        borderRadius: 4,
+        transition: "0.3s all",
+        color: "inherit",
+      },
+      ".Mui-selected": {
+        background: "unset",
+        color: "white",
+      },
+      ".MuiTabs-indicator": {
+        // display: "none",
+        background: "#e2107b",
+      },
+    },
+  };
+});
+
+export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)(({ theme }) => {
+  const styles = baseStyles(theme);
+
+  return {
+    fontFamily: "Inter",
+
+    ".twap-modal-content": {
+      ".twap-disclaimer-text": {
+        "*": {
+          color: styles.textMain,
+          fontSize: 14,
+          lineHeight: "18px",
+        },
+      },
+      ".twap-ui-close": {
+        padding: 5,
+        background: "hsla(0,0%,100%,.06)",
+        top: 10,
+        right: 10,
+        svg: {
+          width: 20,
+          height: 20,
+        },
+        "&:hover": {
+          background: "hsla(0,0%,100%,.1)",
+        },
+      },
+      ".twap-order-summary-limit-price": {
+        fontSize: 14,
+        color: styles.textMain,
+        p: {
+          color: "inherit",
+        },
+      },
+      ".twap-label": {
+        fontSize: 14,
+        fontWeight: 600,
+        color: styles.textMain,
+        p: {
+          fontSize: "inherit",
+          fontWeight: "inherit",
+          color: "inherit",
+        },
+      },
+      ".twap-order-summary-details-item": {},
+      ".twap-order-summary-details-item-right": {
+        color: styles.textMain,
+        fontSize: 14,
+        fontWeight: 600,
+        "*": {
+          color: styles.textMain,
+          fontSize: 14,
+          fontWeight: 600,
+        },
+      },
+    },
+    ".twap-order-summary-output-address": {
       p: {
-        color: getTextColor(),
-        fontSize: 16,
+        color: styles.textMain,
+        fontSize: 15,
         fontWeight: 500,
       },
     },
-    ".twap-token-logo": {
-      width: 45,
-      height: 45,
+    ".twap-orders-summary-token-display": {
+      ".twap-small-label": {
+        p: {
+          color: styles.textMain,
+          fontSize: 16,
+          fontWeight: 500,
+        },
+      },
+      ".twap-token-logo": {
+        width: 45,
+        height: 45,
+      },
     },
-  },
-  "@media(max-width: 600px)": {
-    ".twap-order-summary-details-item": {
-      flexDirection: "column",
-      alignItems: "flex-start",
-    },
-    ".twap-orders-summary-token-display-flex": {
-      "&:last-of-type": {
+    "@media(max-width: 600px)": {
+      ".twap-order-summary-details-item": {
         flexDirection: "column",
         alignItems: "flex-start",
       },
+      ".twap-orders-summary-token-display-flex": {
+        "&:last-of-type": {
+          flexDirection: "column",
+          alignItems: "flex-start",
+        },
+      },
     },
-  },
-}));
+  };
+});
 
-export const StyledAdapter = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  ".MuiSlider-valueLabel": {
-    backgroundColor: "#2D3545",
-    fontSize: 15,
-  },
-  "*": {
-    color: getTextColor(isDarkMode),
-  },
-  ".MuiSlider-thumb ": {
-    background: "rgb(59 130 246/1)",
-  },
-  ".MuiSlider-track": {
-    background: "rgb(59 130 246/1)",
-    border: "1px solid rgb(59 130 246/1)",
-  },
-  ".twap-button-disabled": {
-    pointer: "unset",
-    background: "rgba(21,21,21,0.8)!important",
-    "*": {},
-  },
+export const StyledAdapter = styled(Box)(({ theme }) => {
+  const styles = baseStyles(theme);
 
-  ".twap-label": {
-    p: {
-      color: "inherit",
+  return {
+    ".MuiSlider-valueLabel": {
+      backgroundColor: "#2D3545",
       fontSize: 15,
-      fontWeight: 500,
     },
-  },
-  ".twap-time-selector-list": {
-    background: "#151519",
-    border: "1px solid rgba(191,191,191,1)",
-  },
-  ".twap-time-selector-list-item": {
-    "&:hover": {
-      background: "rgba(255,255,255,0.03)",
+    "*": {
+      color: styles.textMain,
     },
-  },
-}));
+    ".MuiSlider-thumb ": {
+      background: "rgb(59 130 246/1)",
+    },
+    ".MuiSlider-track": {
+      background: "rgb(59 130 246/1)",
+      border: "1px solid rgb(59 130 246/1)",
+    },
+    ".twap-button-disabled": {
+      pointer: "unset",
+      background: "rgba(21,21,21,0.8)!important",
+      "*": {},
+    },
+
+    ".twap-label": {
+      p: {
+        color: "inherit",
+        fontSize: 15,
+        fontWeight: 500,
+      },
+    },
+    ".twap-time-selector-list": {
+      background: "#151519",
+      border: "1px solid rgba(191,191,191,1)",
+    },
+    ".twap-time-selector-list-item": {
+      "&:hover": {
+        background: "rgba(255,255,255,0.03)",
+      },
+    },
+  };
+});
 
 const buttonStyles = {
   borderRadius: 12,
@@ -362,7 +433,9 @@ const buttonStyles = {
   },
 };
 
-export const configureStyles = (isDarkMode?: boolean) => {
+export const configureStyles = (theme: Theme) => {
+  const styles = baseStyles(theme);
+  const isDarkMode = isDark(theme);
   return {
     ".twap-odnp-button": {
       ...buttonStyles,
@@ -377,15 +450,16 @@ export const configureStyles = (isDarkMode?: boolean) => {
     },
     ".twap-modal-content": {
       padding: "56px 16px 16px 16px",
-      background: isDarkMode ? "#222C3D" : "#F4F5F6",
-      border: "unset",
+      background: `${styles.modalBackground}!important`,
+      border: "1px solid rgb(0, 0, 0)",
+      boxShadow: "rgba(0, 0, 0, 0.05) 0px 4px 8px 0px",
       maxHeight: "90vh",
       overflowY: "auto",
       width: "calc(100vw - 40px)",
       borderRadius: 16,
-      color: getTextColor(isDarkMode ? 1 : 0),
+      color: styles.textMain,
       ".twap-ui-close": {
-        color: getTextColor(isDarkMode ? 1 : 0),
+        color: styles.textMain,
       },
     },
     ".twap-input": {
@@ -404,7 +478,7 @@ export const configureStyles = (isDarkMode?: boolean) => {
     },
 
     ".MuiBackdrop-root": {
-      background: isDarkMode ? "rgba(0,0,0,.4)!important" : "rgba(255,255,255,.4)!important",
+      background: styles.backdrop,
       backdropFilter: "blur(10px) saturate(190%) contrast(70%) brightness(80%)",
     },
     ".twap-time-selector": {
@@ -431,10 +505,10 @@ export const configureStyles = (isDarkMode?: boolean) => {
       },
     },
     ".MuiSwitch-thumb ": {
-      background: gradient,
+      background: styles.gradient,
     },
     ".MuiSwitch-track": {
-      background: isDarkMode ? "hsla(0,0%,100%,.3)!important" : "rgba(0,0,0, 0.3)!important",
+      background: `${styles.switchTrack}!important`,
       height: 20,
     },
     ".twap-disclaimer-switch": {

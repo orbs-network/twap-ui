@@ -1,6 +1,6 @@
 import { LinearProgress, Typography, Box, styled } from "@mui/material";
-import { OrderUI, Styles as TwapStyles, useTwapContext } from "../..";
-import { StyledRowFlex, StyledText } from "../../styles";
+import { OrderUI, useTwapContext } from "../..";
+import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { HiOutlineArrowLongRight } from "react-icons/hi2";
 import { FiChevronDown } from "react-icons/fi";
 import { useFormatNumber, useOrderPastEvents } from "../../hooks";
@@ -16,12 +16,12 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
 
   const translations = useTwapContext().translations;
   return (
-    <TwapStyles.StyledColumnFlex gap={0} className="twap-order-preview">
+    <StyledColumnFlex gap={0} className="twap-order-preview">
       <StyledHeader className="twap-order-preview-header">
-        <TwapStyles.StyledRowFlex className="twap-order-preview-info" gap={6} justifyContent="flex-start" style={{ width: "auto" }}>
+        <StyledRowFlex className="twap-order-preview-info" gap={6} justifyContent="flex-start" style={{ width: "auto" }}>
           <StyledHeaderText>#{order.order.id}</StyledHeaderText>
           <StyledHeaderText>{order.ui.isMarketOrder ? translations.marketOrder : translations.limitOrder}</StyledHeaderText>
-        </TwapStyles.StyledRowFlex>
+        </StyledRowFlex>
         <StyledHeaderText className="twap-order-preview-date">{order.ui.createdAtUi}</StyledHeaderText>
       </StyledHeader>
       <Tooltip
@@ -37,12 +37,12 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
       >
         <StyledPreviewLinearProgress variant="determinate" value={order.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
       </Tooltip>
-      <TwapStyles.StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start" }} className="twap-order-preview-tokens" justifyContent="space-between">
+      <StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start" }} className="twap-order-preview-tokens" justifyContent="space-between">
         <OrderTokenDisplay token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
         <Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 30, height: 30 }} />} />
         <OrderTokenDisplay isLoading={isFetching} token={order.ui.dstToken} amount={data?.dstAmountOut} usdValue={data?.dstAmountOutUsdPrice || ""} icon={<FiChevronDown />} />
-      </TwapStyles.StyledRowFlex>
-    </TwapStyles.StyledColumnFlex>
+      </StyledRowFlex>
+    </StyledColumnFlex>
   );
 }
 
@@ -71,7 +71,7 @@ export const StyledPreviewLinearProgress = styled(LinearProgress)({
   },
 });
 
-const StyledHeader = styled(TwapStyles.StyledRowFlex)({
+const StyledHeader = styled(StyledRowFlex)({
   justifyContent: "space-between",
   fontSize: 13,
   fontWeight: 300,
@@ -101,9 +101,9 @@ export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", 
 
   return (
     <StyledTokenDisplay className={`twap-order-token-display ${className}`}>
-      <TwapStyles.StyledRowFlex style={{ alignItems: "flex-start" }}>
+      <StyledRowFlex style={{ alignItems: "flex-start" }}>
         <StyledTokenLogo logo={token?.logoUrl} />
-        <TwapStyles.StyledColumnFlex gap={3} style={{ flex: 1, justifyContent: "flex-start" }}>
+        <StyledColumnFlex gap={3} style={{ flex: 1, justifyContent: "flex-start" }}>
           <StyledRowFlex className="twap-token-display-amount-and-symbol">
             {isLoading && <Loader width={50} />}
             {amount ? (
@@ -119,9 +119,9 @@ export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", 
             )}
           </StyledRowFlex>
           {!alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
-        </TwapStyles.StyledColumnFlex>
+        </StyledColumnFlex>
         {icon && <StyledIcon>{icon}</StyledIcon>}
-      </TwapStyles.StyledRowFlex>
+      </StyledRowFlex>
       {alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
     </StyledTokenDisplay>
   );
@@ -161,7 +161,7 @@ const StyledTokenDisplayUsd = styled(SmallLabel)({
   fontSize: 14,
 });
 
-const StyledTokenDisplay = styled(TwapStyles.StyledColumnFlex)({
+const StyledTokenDisplay = styled(StyledColumnFlex)({
   gap: 3,
   alignItems: "flex-start",
   width: "fit-content",

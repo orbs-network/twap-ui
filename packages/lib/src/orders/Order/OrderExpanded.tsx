@@ -1,12 +1,11 @@
 import { styled } from "@mui/material";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
-import { Styles as TwapStyles } from "../..";
 import { Button, Label, TokenLogo, TokenPriceCompare, Tooltip } from "../../components/base";
 import { useTwapContext } from "../../context";
 import { useCancelOrder, useFormatNumber, useHistoryPrice } from "../../hooks";
 import { fillDelayText, useTwapStore } from "../../store";
-import { StyledColumnFlex } from "../../styles";
+import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { OrderUI } from "../../types";
 
 const OrderExpanded = ({ order }: { order: OrderUI }) => {
@@ -27,7 +26,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
     <StyledContainer className="twap-order-expanded">
       <StyledColumnFlex>
         {order.ui.srcToken && order.ui.dstToken && <OrderPrice order={order} />}
-        <TwapStyles.StyledColumnFlex className="twap-extended-order-info">
+        <StyledColumnFlex className="twap-extended-order-info">
           <Row label={`${translations.totalTrades}`} tooltip={translations.totalTradesTooltip}>
             {totalChunks}
           </Row>
@@ -57,7 +56,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
           <Row label={`${translations.deadline}`} tooltip={translations.maxDurationTooltip}>
             {order.ui.deadlineUi}
           </Row>
-        </TwapStyles.StyledColumnFlex>
+        </StyledColumnFlex>
         {order.ui.status === Status.Open && (
           <div className="twap-order-expanded-cancel-wraper" style={{ marginLeft: "auto", marginRight: "auto" }}>
             <CancelOrderButton orderId={order.order.id} />
@@ -79,7 +78,7 @@ const Row = ({ label, tooltip, children }: { label: string; tooltip: string; chi
   );
 };
 
-export const StyledDetailRowChildren = styled(TwapStyles.StyledRowFlex)({
+export const StyledDetailRowChildren = styled(StyledRowFlex)({
   width: "fit-content",
   gap: 5,
   fontWeight: 300,
@@ -95,7 +94,7 @@ export const StyledDetailRowChildren = styled(TwapStyles.StyledRowFlex)({
   },
 });
 
-export const StyledDetailRow = styled(TwapStyles.StyledRowFlex)({
+export const StyledDetailRow = styled(StyledRowFlex)({
   justifyContent: "space-between",
   "& .twap-label": {
     fontWeight: 400,
@@ -142,7 +141,7 @@ const CancelOrderButton = ({ orderId }: { orderId: number }) => {
   );
 };
 
-const StyledMarketPrice = styled(TwapStyles.StyledRowFlex)({
+const StyledMarketPrice = styled(StyledRowFlex)({
   "@media(max-width: 500px)": {
     flexDirection: "column",
     alignItems: "flex-start",
@@ -163,7 +162,7 @@ export const StyledCancelOrderButton = styled(Button)({
   marginBottom: 20,
 });
 
-export const StyledContainer = styled(TwapStyles.StyledColumnFlex)({
+export const StyledContainer = styled(StyledColumnFlex)({
   width: "100%",
   gap: 15,
   paddingTop: 10,
