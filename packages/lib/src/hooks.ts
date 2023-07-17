@@ -706,7 +706,9 @@ export const useSwitchTokens = () => {
 };
 
 export const useOrdersTabs = () => {
-  const orders = useOrdersHistoryQuery().orders;
+  const { data: orders, dataUpdatedAt } = useOrdersHistoryQuery();
+
+  const _orders = orders || {};
 
   const {
     uiPreferences: { orderTabsToExclude = ["All"] },
@@ -718,11 +720,11 @@ export const useOrdersTabs = () => {
     const res = _.filter(keys, (it) => !orderTabsToExclude?.includes(it));
     const mapped = _.map(res, (it) => {
       if (it === "All") {
-        return { All: _.size(_.flatMap(orders)) || 0 };
+        return { All: _.size(_.flatMap(_orders)) || 0 };
       }
-      return { [it]: _.size(orders[it as Status]) || 0 };
+      return { [it]: _.size(_orders[it as Status]) || 0 };
     });
 
     return _.reduce(mapped, (acc, it) => ({ ...acc, ...it }), {});
-  }, [_.size(orders), orderTabsToExclude]);
+  }, [dataUpdatedAt]);
 };
