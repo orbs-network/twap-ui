@@ -84,6 +84,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { data: dappTokens = [] } = useDappTokens();
   const { isDarkTheme } = useTheme();
 
+  const connector = {
+    getProvider: () => library,
+  };
+
   const getTokenLogoURL = useCallback(
     (symbol: string) => {
       return dappTokens.find((t) => t.symbol === symbol)?.logoURI;
@@ -99,7 +103,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       dstToken={erc20sData.arb.USDC.address}
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
-      provider={library}
+      connector={connector}
       getTokenLogoURL={getTokenLogoURL}
       limit={limit}
       isDarkTheme={isDarkTheme}

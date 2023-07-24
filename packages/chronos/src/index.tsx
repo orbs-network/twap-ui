@@ -81,6 +81,7 @@ interface ChronosTWAPProps extends TWAPProps {
   dappTokens: any[];
   connect?: () => void;
   swapAnimationStart: boolean;
+  connector?: { getProvider: () => any };
 }
 
 const uiPreferences: TwapContextUIPreferences = {
@@ -358,7 +359,28 @@ const Listener = () => {
   return <></>;
 };
 
+const useProvider = (props: ChronosTWAPProps) => {
+  const [provider, setProvider] = useState<any>();
+
+  const chainId = props.connectedChainId;
+  const account = props.account;
+
+  const _getProvider = useCallback(async () => {
+    if (!props.connector) return;
+    const provider = await props.connector.getProvider();
+    setProvider(provider);
+  }, [account, chainId, setProvider, props.connector]);
+
+  useEffect(() => {
+    setProvider(undefined);
+    _getProvider();
+  }, [account, chainId, _getProvider, setProvider]);
+
+  return provider;
+};
+
 const TWAP = (props: ChronosTWAPProps) => {
+  const provider = useProvider(props);
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
@@ -366,12 +388,12 @@ const TWAP = (props: ChronosTWAPProps) => {
   return (
     <Box className="adapter-wrapper">
       <TwapAdapter
-        connect={props.connect ? props.connect : () => {}}
+        connect={props.connect}
         config={config}
         maxFeePerGas={props.maxFeePerGas}
         priorityFeePerGas={props.priorityFeePerGas}
         translations={translations as Translations}
-        provider={props.provider}
+        provider={provider}
         account={props.account}
         dappTokens={props.dappTokens}
         parseToken={(rawToken) => parseToken(props.getTokenLogoURL, rawToken)}
