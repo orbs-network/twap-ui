@@ -5,10 +5,10 @@ import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
-import { erc20s, zeroAddress } from "@defi.org/web3-candies";
+import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
 config.name = "StellaSwap";
@@ -21,17 +21,19 @@ export const useDappTokens = () => {
   return useQuery(
     ["useDappTokens", config.chainId],
     async () => {
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json`);
+      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/moonbeam.json`);
 
       const tokenList = await response.json();
       const parsed = tokenList
         .filter((t: any) => t.chainId === config.chainId)
-        .map(({ symbol, address, decimals, logoURI, name }: any) => ({
+        .map(({ symbol, address, decimals, logoURI, name, chainId }: any) => ({
           decimals,
           symbol,
           name,
+          chainId,
           address,
-          logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"),
+          tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
+          tags: [],
         }));
       const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
 
@@ -45,7 +47,6 @@ export const useDappTokens = () => {
     { enabled: !!account && !isInValidNetwork }
   );
 };
-
 interface TokenSelectModalProps {
   popup: boolean;
   setPopup: (value: boolean) => void;
@@ -61,16 +62,15 @@ const parseList = (rawList?: any): TokenListItem[] => {
   return _.map(rawList, (rawToken) => {
     return {
       token: {
-        address: rawToken.address,
-        decimals: rawToken.decimals,
-        symbol: rawToken.symbol,
-        logoUrl: rawToken.logoURI || nativeTokenLogo,
+        address: rawToken.address ?? rawToken.tokenInfo?.address,
+        decimals: rawToken.decimals ?? rawToken.tokenInfo?.decimals,
+        symbol: rawToken.symbol ?? rawToken.tokenInfo?.symbol,
+        logoUrl: rawToken.tokenInfo?.logoURI || nativeTokenLogo,
       },
       rawToken,
     };
   });
 };
-
 const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
   const tokensListSize = _.size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
@@ -95,7 +95,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       connect={connect}
       account={account}
       srcToken={zeroAddress}
-      dstToken="0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff" //ORBS
+      dstToken={erc20sData.poly.USDC.address} //USDC
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}
@@ -107,7 +107,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
 const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
-
   const { isDarkTheme } = useTheme();
 
   return (
@@ -117,7 +116,6 @@ const DappComponent = () => {
         <StyledStellaSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledStellaSwapBox>
-
         <StyledStellaSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
           <Orders />
         </StyledStellaSwapBox>
@@ -130,7 +128,6 @@ const dapp: Dapp = {
   Component: DappComponent,
   logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/17358.png",
   config,
-  workInProgress: true,
 };
 
 export default dapp;

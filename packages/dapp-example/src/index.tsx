@@ -8,6 +8,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter as Router } from "react-router-dom";
+import "./index.css";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } });
 

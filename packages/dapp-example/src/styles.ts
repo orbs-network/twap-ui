@@ -8,7 +8,7 @@ import { DappLayout } from "./Components";
 import { Configs } from "@orbs-network/twap";
 
 const fonts = {
-  [Configs.Chronos.name]: "TT Firs Neue Trl",
+  [Configs.Chronos.name]: "TT Firs Neue Trial",
   [Configs.SpiritSwap.name]: "Jost",
   [Configs.QuickSwap.name]: "Inter",
   [Configs.Thena.name]: "Figtree",
@@ -16,9 +16,12 @@ const fonts = {
   [Configs.PangolinDaas.name]: "Poppins",
   [Configs.SpookySwap.name]: "Red Hat Display",
   [Configs.PancakeSwap.name]: "Kanit",
+  StellaSwap: "DM Sans",
 };
 
 export const globalStyle = (name?: string) => {
+  console.log(name);
+
   const font = fonts[name || ""];
   return {
     "*, p": {

@@ -9,7 +9,6 @@ import {
   StyledBalance,
   StyledBalanceAndUSD,
   StyledOrderSummary,
-  StyledPanelInput,
   StyledPanelRight,
   StyledTokenChange,
   StyledTokenPanel,
@@ -33,17 +32,8 @@ import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 
 interface ThenaTWAPProps extends TWAPProps {
   connect: () => void;
-  dappTokens: ThenaRawToken[];
+  dappTokens: any;
 }
-
-interface ThenaRawToken {
-  address: string;
-  decimals: number;
-  name: string;
-  symbol: string;
-  logoURI: string;
-}
-
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens } = useAdapterContext();
 
@@ -72,7 +62,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
       isOpen={open}
       onClose={onClose}
       isSrc={isSrcToken}
-      parseToken={(token: ThenaRawToken) => parseToken(token)}
+      parseToken={(token: any) => parseToken(token)}
     />
   );
 };
@@ -112,18 +102,14 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
 
       <StyledTokenPanel className="twap-token-panel">
-        <TwapStyles.StyledColumnFlex gap={14}>
-          <TwapStyles.StyledRowFlex justifyContent="space-between" gap={20}>
-            <TokenSelectButton isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
-            <StyledPanelRight isSrcToken={isSrcToken ? 1 : 0}>
-              <StyledPanelInput placeholder="0" isSrc={isSrcToken} />
-              <StyledBalanceAndUSD>
-                <StyledBalance emptyUi={<div>0.00</div>} isSrc={isSrcToken} />
-                <StyledUSD isSrc={isSrcToken} />
-              </StyledBalanceAndUSD>
-            </StyledPanelRight>
-          </TwapStyles.StyledRowFlex>
-        </TwapStyles.StyledColumnFlex>
+        <TokenSelectButton isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+        <StyledPanelRight isSrcToken={isSrcToken ? 1 : 0} gap={3}>
+          <Components.TokenInput placeholder="0" isSrc={isSrcToken} />
+          <StyledBalanceAndUSD>
+            <StyledUSD isSrc={isSrcToken} />
+            <StyledBalance emptyUi={<div>0.00</div>} isSrc={isSrcToken} />
+          </StyledBalanceAndUSD>
+        </StyledPanelRight>
       </StyledTokenPanel>
     </>
   );
@@ -164,8 +150,8 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 const config = Configs.QuickSwap;
 
-const parseToken = (rawToken: ThenaRawToken): TokenData | undefined => {
-  const { address, decimals, symbol, logoURI } = rawToken;
+const parseToken = (rawToken: any): TokenData | undefined => {
+  const { address, symbol } = rawToken;
   if (!symbol) {
     console.error("Invalid token", rawToken);
     return;
@@ -174,10 +160,10 @@ const parseToken = (rawToken: ThenaRawToken): TokenData | undefined => {
     return config.nativeToken;
   }
   return {
-    address: Web3.utils.toChecksumAddress(address),
-    decimals,
-    symbol,
-    logoUrl: logoURI,
+    address: Web3.utils.toChecksumAddress(rawToken.address),
+    decimals: rawToken.decimals,
+    symbol: rawToken.symbol,
+    logoUrl: rawToken.tokenInfo?.logoURI,
   };
 };
 
@@ -300,10 +286,10 @@ const TradeSize = () => {
     <StyledChunkSize className="twap-chunks-size">
       <TwapStyles.StyledRowFlex justifyContent="space-between">
         <Components.Labels.ChunksAmountLabel />
-        <TwapStyles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto" }}>
+        <TwapStyles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", flex: 1, justifyContent: "flex-end" }}>
           <Components.TokenLogo isSrc={true} />
           <Components.TradeSizeValue />
-          <TwapStyles.StyledRowFlex className="twap-chunks-size-usd" gap={3}>
+          <TwapStyles.StyledRowFlex className="twap-chunks-size-usd" gap={3} style={{ width: "auto" }}>
             <Typography>{"( "}</Typography>
             <Components.ChunksUSD />
             <Typography>{" )"}</Typography>

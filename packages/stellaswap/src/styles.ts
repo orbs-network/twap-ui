@@ -43,15 +43,6 @@ const darkStyles = {
 
 const baseStyles = (theme: Theme) => (isDark(theme) ? darkStyles : lightStyles);
 
-export const StyledPanelInput = styled(Components.TokenInput)({
-  height: "100%",
-  input: {
-    fontSize: 30,
-    height: "100%",
-    fontWeight: 500,
-  },
-});
-
 export const StyledChunkSize = styled(Components.Base.Card)({
   ".twap-token-logo": {
     width: 30,
@@ -64,24 +55,37 @@ export const StyledChunkSize = styled(Components.Base.Card)({
   },
 });
 
-export const StyledPanelRight = styled(Styles.StyledRowFlex)<{ isSrcToken: number }>(({ isSrcToken, theme }) => {
+export const StyledPanelRight = styled(Styles.StyledColumnFlex)<{ isSrcToken: number }>(({ isSrcToken, theme }) => {
   const styles = baseStyles(theme);
   return {
-    background: isSrcToken ? styles.card : styles.disabledCard,
-    borderRadius: 10,
-    padding: 10,
-    minHeight: 60,
-    cursor: isSrcToken ? "auto" : "not-allowed",
+    width: "100%",
+    ".twap-input": {
+      width: "100%",
+      background: isSrcToken ? styles.card : styles.disabledCard,
+      cursor: isSrcToken ? "auto" : "not-allowed",
+      padding: 10,
+      minHeight: 60,
+      borderRadius: 10,
+      height: "100%",
+      input: {
+        paddingTop: 4,
+        height: "100%",
+        fontSize: 25.6,
+        fontWeight: 600,
+      },
+    },
   };
 });
 
-export const StyledBalanceAndUSD = styled(Styles.StyledColumnFlex)({
-  width: "auto",
-  alignItems: "flex-end",
-  gap: 0,
+export const StyledBalanceAndUSD = styled(Styles.StyledRowFlex)({
+  width: "100%",
+  justifyContent: "space-between",
   "*": {
     color: "rgba(87,87,87,1)",
     fontSize: 12,
+  },
+  ".twap-usd": {
+    paddingLeft: 5,
   },
 });
 
@@ -91,17 +95,13 @@ export const StyledUSD = styled(Components.TokenUSD)({
 
 export const StyledBalance = styled(Components.TokenBalance)({
   maxWidth: "unset",
-
-  p: {
-    flexDirection: "column",
-    display: "flex",
-    alignItems: "flex-end",
-  },
+  paddingRight: 5,
 });
 
 export const StyledTop = styled(Styles.StyledColumnFlex)({
   gap: 20,
-  padding: "0px 20px 0px 20px",
+  padding: "0px 30px 0px 20px",
+  marginBottom: 20,
 });
 
 export const StyledMarketPrice = styled(Components.MarketPrice)({
@@ -137,7 +137,9 @@ export const StyledContainer = styled(Styles.StyledColumnFlex)({
   gap: 15,
 });
 
-export const StyledTokenPanel = styled(StyledContainer)({});
+export const StyledTokenPanel = styled(Styles.StyledRowFlex)({
+  justifyContent: "space-between",
+});
 
 export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
   gap: 12,
@@ -157,8 +159,8 @@ export const StyledTokenSelect = styled(Styles.StyledRowFlex)({
     whiteSpace: "nowrap",
   },
   ".twap-token-name": {
-    fontSize: 24,
-    fontWeight: 700,
+    fontSize: 25.6,
+    fontWeight: 600,
   },
   ".twap-token-select-text": {
     fontSize: 24,
@@ -169,8 +171,8 @@ export const StyledTokenSelect = styled(Styles.StyledRowFlex)({
     height: "54px!important",
   },
   ".twap-token-svg": {
-    width: "60px!important",
-    height: "60px!important",
+    width: "55px!important",
+    height: "55px!important",
   },
   cursor: "pointer",
   ".twap-token-select-title": {
