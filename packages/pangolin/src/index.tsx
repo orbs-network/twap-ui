@@ -7,7 +7,6 @@ import React from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
 import { AiOutlineHistory } from "react-icons/ai";
-import { useFormatNumber } from "@orbs-network/twap-ui/dist/hooks";
 import { TokenData, Configs } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
@@ -278,7 +277,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
   const marketPrice = hooks.useMarketPrice().marketPrice;
-  const formattedMarketPrice = useFormatNumber({ value: marketPrice });
+  const formattedMarketPrice = hooks.useFormatNumber({ value: marketPrice });
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);

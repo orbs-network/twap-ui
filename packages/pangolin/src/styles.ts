@@ -9,7 +9,7 @@ interface PangolinStyles extends StylesConfig {
 }
 
 export const StyledOrdersContainer = styled(Components.Base.SwipeContainer)({
-  zIndex: 99
+  zIndex: 99,
 });
 
 const parseTheme = (theme: any): PangolinStyles => {
@@ -401,7 +401,7 @@ export const configureStyles = (theme: any) => {
       color: `black!important`,
       fontWeight: 500,
       minHeight: "unset",
-      border:'unset'
+      border: "unset",
     },
     ".twap-button-disabled": {
       background: "rgb(229, 229, 229)",

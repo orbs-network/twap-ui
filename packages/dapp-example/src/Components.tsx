@@ -31,7 +31,7 @@ import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
 import { dapps } from "./config";
 import { Status } from "./Status";
-import { useBalance, useDebounce, useDisconnectWallet, useNetwork, useSelectedDapp, useTheme } from "./hooks";
+import { useBalance, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { TokenData } from "@orbs-network/twap";
@@ -39,7 +39,6 @@ import { SelectorOption, TokenListItem } from "./types";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";
 import { network } from "@defi.org/web3-candies";
-import { useFormatNumber } from "@orbs-network/twap-ui/dist/hooks";
 
 const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
 
@@ -209,7 +208,7 @@ const Row = (props: any) => {
   const item: TokenListItem = data.tokens[index];
   const { balance, isLoading } = useBalance(item.token);
 
-  const formattedValue = useFormatNumber({ value: balance, decimalScale: 6 });
+  const formattedValue = hooks.useFormatNumber({ value: balance, decimalScale: 6 });
 
   if (!item) return null;
   return (
@@ -276,19 +275,12 @@ export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
   );
 };
 
-interface UIOption {
-  title: string;
-  component?: ReactNode;
-}
-
 export const UISelector = ({
-  options,
   className = "",
   select,
   limit,
   selected,
 }: {
-  options?: UIOption[];
   className?: string;
   select?: (value: SelectorOption) => void;
   limit?: boolean;
