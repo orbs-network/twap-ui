@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-quickswap",
-  "version": "0.8.9",
+  "version": "0.8.10",
   "description": "TWAP UI for Quickswap",
   "license": "MIT",
   "author": "Orbs",
@@ -24,7 +24,7 @@
     "@mui/material": "5.x",
     "@mui/system": "5.x",
     "@orbs-network/twap": "1.x",
-    "@orbs-network/twap-ui": "^0.8.9",
+    "@orbs-network/twap-ui": "^0.8.10",
     "lodash": "4.x",
     "react-icons": "4.x",
     "web3": "1.x"
