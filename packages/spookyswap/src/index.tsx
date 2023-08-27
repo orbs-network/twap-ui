@@ -85,7 +85,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 };
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const { TokenSelectModal, dappTokens } = useAdapterContext();
+  const { TokenSelectModal, dappTokens, account, connectedChainId } = useAdapterContext();
   const { srcToken, dstToken } = store.useTwapStore();
 
   const selectedCurrency = useMemo(() => {
@@ -107,6 +107,8 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
       onCurrencySelect={props.onSelect}
       isOpen={props.isOpen}
       onDismiss={props.onClose}
+      account={account}
+      chainId={connectedChainId}
     />
   );
 };

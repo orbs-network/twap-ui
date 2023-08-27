@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, OrdersPanel } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, OrdersPanel, store } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState, createContext, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
 import * as AdapterStyles from "./styles";
@@ -12,6 +12,13 @@ import { TokenData, Configs } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
+
+const storeOverride = {
+  isLimitOrder: true,
+  chunks: 1,
+  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
+  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
+};
 
 interface PangolinTWAPProps extends TWAPProps {
   theme: any;
@@ -93,6 +100,7 @@ const TWAP = memo((props: PangolinTWAPProps) => {
         <TwapAdapter
           connect={memoizedConnect}
           config={config}
+          storeOverride={props.limit ? storeOverride : undefined}
           maxFeePerGas={props.maxFeePerGas}
           priorityFeePerGas={props.priorityFeePerGas}
           translations={translations as Translations}
@@ -108,18 +116,8 @@ const TWAP = memo((props: PangolinTWAPProps) => {
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
             <div className="twap-container">
-              <TokenPanel isSrcToken={true} />
-              <Components.ChangeTokensOrder />
-              <TokenPanel isSrcToken={false} />
-              <LimitPrice />
-              <TradeSize />
-              <TradeInterval />
-              <MaxDuration />
-              <ShowOrderHistory />
-              <Components.SubmitButton />
-              <OrderSummary />
               <OrdersComponent />
-              <Components.PoweredBy />
+              {props.limit ? <LimitPanel /> : <TWAPPanel />}
             </div>
           </AdapterContextProvider>
         </TwapAdapter>
@@ -127,6 +125,50 @@ const TWAP = memo((props: PangolinTWAPProps) => {
     </Emotion10ThemeProvider>
   );
 });
+
+const TWAPPanel = () => {
+  return (
+    <>
+      <TokenPanel isSrcToken={true} />
+      <Components.ChangeTokensOrder />
+      <TokenPanel isSrcToken={false} />
+      <LimitPrice />
+      <TradeSize />
+      <TradeInterval />
+      <MaxDuration />
+      <ShowOrderHistory />
+      <Components.SubmitButton />
+      <OrderSummary>
+        <Components.OrderSummaryDetails />
+      </OrderSummary>
+
+      <Components.PoweredBy />
+    </>
+  );
+};
+
+const LimitPanel = () => {
+  return (
+    <>
+      <TokenPanel isSrcToken={true} />
+      <Components.ChangeTokensOrder />
+      <TokenPanel />
+      <ShowOrderHistory />
+      <LimitPrice limit={true} />
+
+      <Components.SubmitButton />
+      <OrderSummary>
+        <TwapStyles.StyledColumnFlex>
+          <Components.OrderSummaryDetailsDeadline />
+          <Components.OrderSummaryDetailsOrderType />
+          <Components.OrderSummaryDetailsChunkSize />
+          <Components.OrderSummaryDetailsMinDstAmount />
+        </TwapStyles.StyledColumnFlex>
+      </OrderSummary>
+      <Components.PoweredBy />
+    </>
+  );
+};
 
 const buttons = [
   { text: "25%", value: 0.25 },
@@ -168,13 +210,13 @@ const TradeSize = () => {
   );
 };
 
-const LimitPrice = () => {
+const LimitPrice = ({ limit }: { limit?: boolean }) => {
   return (
     <Components.Base.Card className="twap-limit-price">
       <TwapStyles.StyledColumnFlex>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Labels.LimitPriceLabel />
-          <Components.LimitPriceToggle />
+          {!limit && <Components.LimitPriceToggle />}
         </TwapStyles.StyledRowFlex>
         <Components.LimitPriceInput placeholder="0" />
       </TwapStyles.StyledColumnFlex>
@@ -216,7 +258,7 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
 
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 
-const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken: boolean }) => {
+const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
   const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
 
   return (
@@ -232,7 +274,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
   );
 };
 
-const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
+const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
   const marketPrice = hooks.useMarketPrice().marketPrice;
@@ -272,7 +314,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
   );
 };
 
-const OrderSummary = () => {
+const OrderSummary = ({ children }: { children: ReactNode }) => {
   return (
     <Components.OrderSummarySwipeContainer>
       <TwapStyles.StyledColumnFlex gap={14}>
@@ -287,6 +329,7 @@ const OrderSummary = () => {
           <Components.Base.Card>
             <Components.OrderSummaryDetails />
           </Components.Base.Card>
+          <Components.Base.Card>{children}</Components.Base.Card>
           <Components.Base.Card>
             <TwapStyles.StyledColumnFlex gap={10}>
               <Components.DisclaimerText />
@@ -327,12 +370,14 @@ const ShowOrderHistory = () => {
 const OrdersComponent = () => {
   const args = useAdapterContext();
   return (
-    <Components.Base.SwipeContainer show={args.showOrders} close={args.toggleOrders}>
+    <AdapterStyles.StyledOrdersContainer show={args.showOrders} close={args.toggleOrders}>
       <AdapterStyles.StyledOrders>
         <OrdersPanel noPortal={true} />
       </AdapterStyles.StyledOrders>
-    </Components.Base.SwipeContainer>
+    </AdapterStyles.StyledOrdersContainer>
   );
 };
 
-export { TWAP };
+const memoizedTWAP = memo(TWAP);
+
+export { memoizedTWAP as TWAP };

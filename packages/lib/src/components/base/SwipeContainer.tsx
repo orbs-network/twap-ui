@@ -4,9 +4,9 @@ import { ReactNode } from "react";
 import Icon from "./Icon";
 import { GrClose } from "react-icons/gr";
 
-const SwipeContainer = ({ show, children, close }: { show: boolean; children: ReactNode; close: () => void }) => {
+const SwipeContainer = ({ show, children, close, className }: { show: boolean; children: ReactNode; close: () => void; className?: string }) => {
   return (
-    <Slide direction="left" in={show} className="twap-swipe-container">
+    <Slide direction="left" in={show} className={`twap-swipe-container ${className}`}>
       <StyledSwipeContainer>
         <button onClick={close} className="twap-close">
           <Icon icon={<GrClose style={{ width: 20, height: 20 }} />} />

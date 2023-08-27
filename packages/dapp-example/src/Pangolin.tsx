@@ -1,5 +1,5 @@
 import { TWAP } from "@orbs-network/twap-ui-pangolin";
-import { Popup, TokensList } from "./Components";
+import { Popup, TokensList, UISelector } from "./Components";
 import { StyledModalContent, StyledPangolin, StyledPangolinBox, StyledPangolinDaasBox, StyledPangolinLayout } from "./styles";
 import _ from "lodash";
 import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
@@ -10,7 +10,8 @@ import { Dapp } from "./Components";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { pangolinDarkTheme, pangolinLightTheme } from "./themes";
 import Web3 from "web3";
-import { TokenListItem } from "./types";
+import { SelectorOption, TokenListItem } from "./types";
+import { useState } from "react";
 
 interface TokenSelectModalProps {
   isOpen: boolean;
@@ -97,7 +98,7 @@ const TokenSelectModal = ({ isOpen, onClose, onCurrencySelect }: TokenSelectModa
 };
 const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8422.png";
 
-const TWAPComponent = ({ partnerDaas }: { partnerDaas?: string }) => {
+const TWAPComponent = ({ partnerDaas, limit }: { partnerDaas?: string; limit?: boolean }) => {
   const { account, library: provider, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
@@ -118,18 +119,21 @@ const TWAPComponent = ({ partnerDaas }: { partnerDaas?: string }) => {
       connectedChainId={chainId}
       theme={isDarkTheme ? pangolinDarkTheme : pangolinLightTheme}
       partnerDaas={partnerDaas}
+      limit={limit}
     />
   );
 };
 
 const PangolinComponent = () => {
   const { isDarkTheme } = useTheme();
+  const [selected, setSelected] = useState(SelectorOption.TWAP);
 
   return (
     <StyledPangolin isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledPangolinLayout name={config.name}>
+        <UISelector limit={true} select={setSelected} selected={selected} />
         <StyledPangolinBox>
-          <TWAPComponent />
+          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledPangolinBox>
       </StyledPangolinLayout>
     </StyledPangolin>

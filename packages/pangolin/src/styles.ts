@@ -8,6 +8,10 @@ interface PangolinStyles extends StylesConfig {
   labelColor: string;
 }
 
+export const StyledOrdersContainer = styled(Components.Base.SwipeContainer)({
+  zIndex: 99
+});
+
 const parseTheme = (theme: any): PangolinStyles => {
   const isDarkMode = theme.textInput.backgroundColor !== "#FFFFFF";
 
@@ -300,7 +304,6 @@ export const configureStyles = (theme: any) => {
       position: "relative",
       display: "flex",
       gap: 12,
-      minHeight: 900,
       flexDirection: "column",
       width: "100%",
       background: styles.containerBackground,
@@ -398,6 +401,7 @@ export const configureStyles = (theme: any) => {
       color: `black!important`,
       fontWeight: 500,
       minHeight: "unset",
+      border:'unset'
     },
     ".twap-button-disabled": {
       background: "rgb(229, 229, 229)",

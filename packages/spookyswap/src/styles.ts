@@ -416,8 +416,16 @@ export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContai
     },
   },
   ".twap-modal-content": {
-    paddingTop: "50!important",
-    paddingBottom: "50!important",
+    paddingTop: "50px!important",
+    paddingBottom: "50px!important",
+    ".twap-token-name": {
+      fontSize: 14,
+    },
+    ".twap-order-summary-details-item-right": {
+      "*": {
+        fontSize: 14,
+      },
+    },
     "& a": {
       fontWeight: 500,
       textDecoration: "underline",
@@ -441,8 +449,11 @@ export const configureStyles = (theme: Theme) => {
   return {
     ".twap-modal": {
       color: styles.textColor,
-      fontFamily: "Red Hat Display",
+      "*": {
+        fontFamily: "Red Hat Display",
+      },
       ".twap-modal-content": {
+        fontFamily: "Red Hat Display",
         background: styles.containerBackground,
         overflow: "auto",
         borderRadius: "10px",
