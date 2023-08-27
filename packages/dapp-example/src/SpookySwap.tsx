@@ -1,49 +1,77 @@
 import { StyledModalContent, StyledSpookySwap, StyledSpookySwapBox, StyledSpookySwapLayout } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-spookyswap";
-import { useConnectWallet, useGetTokensFromViaProtocol, useTheme } from "./hooks";
+import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
 import _ from "lodash";
-import { erc20sData, zeroAddress } from "@defi.org/web3-candies";
+import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 const config = Configs.SpookySwap;
 
-const useDappTokens = () => {
-  return useGetTokensFromViaProtocol(config.chainId);
+export const useDappTokens = () => {
+  const { account } = useWeb3React();
+  const { isInValidNetwork } = useNetwork(config.chainId);
+
+  return useQuery(
+    ["useGetTokens", config.chainId],
+    async () => {
+      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/ftm.json`);
+      const tokenList = await response.json();
+      const parsed = tokenList.map(({ symbol, address, decimals, logoURI, name, chainId }: any) => ({
+        decimals,
+        symbol,
+        name,
+        chainId,
+        address,
+        tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
+        tags: [],
+      }));
+      const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
+
+      const _tokens = _.sortBy(parsed, (t: any) => {
+        const index = candiesAddresses.indexOf(t.address);
+        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
+      });
+
+      return { ..._.mapKeys(_tokens, (t) => t.address) } as any;
+    },
+    { enabled: !!account && !isInValidNetwork }
+  );
 };
 
 interface TokenSelectModalProps {
   isOpen: boolean;
-  selectedToken?: any;
-  onSelect: (token: any) => void;
-  onClose: () => void;
+  selectedCurrency?: any;
+  onCurrencySelect: (token: any) => void;
+  onDismiss: () => void;
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
   return _.map(rawList, (rawToken) => {
     return {
       token: {
-        address: rawToken.address,
-        decimals: rawToken.decimals,
-        symbol: rawToken.symbol,
-        logoUrl: rawToken.logoUrl,
+        address: rawToken.address ?? rawToken.tokenInfo?.address,
+        decimals: rawToken.decimals ?? rawToken.tokenInfo?.decimals,
+        symbol: rawToken.symbol ?? rawToken.tokenInfo?.symbol,
+        logoUrl: rawToken.tokenInfo?.logoURI,
       },
       rawToken,
     };
   });
 };
 
-export const TokenSelectModal = ({ isOpen, onSelect, onClose }: TokenSelectModalProps) => {
+export const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectModalProps) => {
   const tokensList = useDappTokens().data;
   const parsedList = parseList(tokensList);
   return (
-    <Popup isOpen={isOpen} onClose={onClose}>
+    <Popup isOpen={isOpen} onClose={onDismiss}>
       <StyledModalContent>
-        <TokensList tokens={parsedList} onClick={onSelect} />
+        <TokensList tokens={parsedList} onClick={onCurrencySelect} />
       </StyledModalContent>
     </Popup>
   );
@@ -54,19 +82,15 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
 
-  const getTokenImageUrl = (symbol: string) => dappTokens?.find((t) => t.symbol === symbol)?.logoUrl;
-
-  const getProvider = () => library;
   const { isDarkTheme } = useTheme();
 
   return (
     <TWAP
-      getProvider={getProvider}
+      provider={library?.givenProvider}
       connect={connect}
       account={account}
       srcToken={zeroAddress}
       dstToken={erc20sData.ftm.USDC.address}
-      getTokenImageUrl={getTokenImageUrl}
       dappTokens={dappTokens}
       onSrcTokenSelected={(token: any) => console.log(token)}
       onDstTokenSelected={(token: any) => console.log(token)}

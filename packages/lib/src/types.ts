@@ -3,6 +3,7 @@ import { Config, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import { Moment } from "moment";
 import { ReactNode } from "react";
 import { Duration, parseOrderUi } from "./store";
+import { IconType } from "react-icons";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -145,6 +146,7 @@ export interface TwapContextUIPreferences {
   inputPlaceholder?: string;
   qrSize?: number;
   orderTabsToExclude?: string[];
+  infoIcon?: IconType;
 }
 
 export interface TwapLibProps extends LibProps {

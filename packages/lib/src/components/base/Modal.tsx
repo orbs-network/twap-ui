@@ -7,7 +7,7 @@ import Backdrop from "@mui/material/Backdrop";
 
 export interface Props {
   open: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   children: ReactNode;
   title?: string;
   className?: string;
@@ -32,9 +32,11 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
     >
       <Fade in={open}>
         <StyledModalContent className="twap-modal-content" id="twap-modal-content">
-          <StyledClose className="twap-ui-close" onClick={onClose}>
-            <IoMdClose />
-          </StyledClose>
+          {onClose && (
+            <StyledClose className="twap-ui-close" onClick={onClose}>
+              <IoMdClose />
+            </StyledClose>
+          )}
           {title && (
             <>
               <StyledTitle>{title}</StyledTitle>

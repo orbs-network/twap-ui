@@ -9,22 +9,23 @@ interface Props {
   className?: string;
   reverse?: boolean;
   singleToken?: boolean;
+  hideSymbol?: boolean;
 }
 
-function TokenDisplay({ symbol, logo, className = "", reverse, singleToken }: Props) {
+function TokenDisplay({ symbol, logo, className = "", reverse, singleToken, hideSymbol }: Props) {
   return (
     <StyledContainer className={`twap-token-display ${className}`}>
       {reverse ? (
         <>
           {singleToken && <StyledText>1</StyledText>}
-          <TokenName name={symbol} />
+          {!hideSymbol && <TokenName name={symbol} />}
           <TokenLogo logo={logo} />
         </>
       ) : (
         <>
           <TokenLogo logo={logo} />
           {singleToken && <StyledText>1</StyledText>}
-          <TokenName name={symbol} />
+          {!hideSymbol && <TokenName name={symbol} />}
         </>
       )}
     </StyledContainer>

@@ -1,6 +1,6 @@
 import { LinearProgress, Typography, Box, styled } from "@mui/material";
 import { OrderUI, useTwapContext } from "../..";
-import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
+import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../../styles";
 import { HiOutlineArrowLongRight } from "react-icons/hi2";
 import { FiChevronDown } from "react-icons/fi";
 import { useFormatNumber, useOrderPastEvents } from "../../hooks";
@@ -37,9 +37,9 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
       >
         <StyledPreviewLinearProgress variant="determinate" value={order.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
       </Tooltip>
-      <StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start" }} className="twap-order-preview-tokens" justifyContent="space-between">
-        <OrderTokenDisplay token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
-        <Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 30, height: 30 }} />} />
+      <StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start", gap: 16 }} className="twap-order-preview-tokens" justifyContent="space-between">
+        <OrderTokenDisplay isMain={true} token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
+        <Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 22, height: 22 }} />} />
         <OrderTokenDisplay isLoading={isFetching} token={order.ui.dstToken} amount={data?.dstAmountOut} usdValue={data?.dstAmountOutUsdPrice || ""} icon={<FiChevronDown />} />
       </StyledRowFlex>
     </StyledColumnFlex>
@@ -94,41 +94,41 @@ interface OrderTokenDisplayProps {
   usdValue: string;
   icon?: ReactNode;
   isLoading?: boolean;
+  isMain?: boolean;
 }
-export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading }: OrderTokenDisplayProps) => {
+export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading, isMain }: OrderTokenDisplayProps) => {
   const tokenAmount = useFormatNumber({ value: amount });
   const tokenAmountTooltip = useFormatNumber({ value: amount, decimalScale: 18 });
 
   return (
     <StyledTokenDisplay className={`twap-order-token-display ${className}`}>
-      <StyledRowFlex style={{ alignItems: "flex-start" }}>
+      <StyledTokenDisplayFlex>
         <StyledTokenLogo logo={token?.logoUrl} />
-        <StyledColumnFlex gap={3} style={{ flex: 1, justifyContent: "flex-start" }}>
-          <StyledRowFlex className="twap-token-display-amount-and-symbol">
-            {isLoading && <Loader width={50} />}
-            {amount ? (
-              <Typography>
-                <Tooltip text={`${tokenAmountTooltip} ${token?.symbol}`}>
-                  {prefix ? `${prefix} ` : ""}
-                  {tokenAmount}
-                  {` ${token?.symbol}`}
-                </Tooltip>
+        <StyledTokenDisplayAmount>
+          {amount ? (
+            <Tooltip text={`${tokenAmountTooltip} ${token?.symbol}`}>
+              <Typography className="twap-order-token-display-amount">
+                {prefix ? `${prefix} ` : ""}
+                {tokenAmount}
+                {` ${token?.symbol}`}
               </Typography>
-            ) : (
-              <Typography>{` ${token?.symbol}`}</Typography>
-            )}
-          </StyledRowFlex>
+            </Tooltip>
+          ) : (
+            <Typography>{` ${token?.symbol}`}</Typography>
+          )}
+
           {!alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
-        </StyledColumnFlex>
+        </StyledTokenDisplayAmount>
         {icon && <StyledIcon>{icon}</StyledIcon>}
-      </StyledRowFlex>
+      </StyledTokenDisplayFlex>
       {alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
     </StyledTokenDisplay>
   );
 };
 
 const StyledIcon = styled("div")({
-  marginTop: 2,
+  position: "relative",
+  top: 2,
   svg: {
     width: 20,
     height: 20,
@@ -158,17 +158,40 @@ export function OrderUsdValue({ usdValue, prefix = "≈", isLoading }: OrderUsdV
 }
 
 const StyledTokenDisplayUsd = styled(SmallLabel)({
-  fontSize: 14,
+  fontSize: 13,
+});
+const StyledTokenDisplayAmount = styled(StyledColumnFlex)({
+  justifyContent: "flex-start",
+  width: "auto",
+  gap: 3,
+  flex: 1,
+  minWidth: 0,
+  fontSize: "14px",
+  ".twap-tooltip-children": {
+    minWidth: 0,
+    ...textOverflow,
+    width: "100%",
+  },
+  p: {
+    fontSize: "inherit",
+    minWidth: 0,
+    ...textOverflow,
+  },
 });
 
-const StyledTokenDisplay = styled(StyledColumnFlex)({
-  gap: 3,
+const StyledTokenDisplayFlex = styled(StyledRowFlex)({
   alignItems: "flex-start",
-  width: "fit-content",
+  flex: 1,
+  gap: 8,
+});
+const StyledTokenDisplay = styled(StyledColumnFlex)({
+  flex: 1,
+  gap: 3,
+  width: "auto",
+  alignItems: "flex-start",
+
   fontSize: 16,
-  "& .twap-token-display-amount-and-symbol": {
-    fontSize: "inherit",
-  },
+  minWidth: 0,
 });
 
 const StyledTokenLogo = styled(TokenLogo)({

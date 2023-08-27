@@ -3,7 +3,7 @@ import { TokenData } from "@orbs-network/twap";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { Loader, Tooltip } from ".";
 import { useFormatNumber } from "../../hooks";
-import { StyledText } from "../../styles";
+import { StyledRowFlex, StyledText } from "../../styles";
 import Icon from "./Icon";
 import IconButton from "./IconButton";
 import TokenLogo from "./TokenLogo";
@@ -39,18 +39,22 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
   }
   return (
     <StyledContainer className={`twap-price-compare ${className}`}>
-      <TokenLogo logo={leftToken?.logoUrl} />
-      <StyledText>1</StyledText>
-      <TokenName name={leftToken?.symbol} />
+      <StyledRowFlex style={{ width: "auto", gap: 5 }}>
+        <TokenLogo logo={leftToken?.logoUrl} />
+        <StyledText className="value">1</StyledText>
+        <TokenName name={leftToken?.symbol} />
+      </StyledRowFlex>
       <IconButton onClick={toggleInverted}>
         <Icon icon={<TbArrowsRightLeft />} />
       </IconButton>
 
-      <TokenLogo logo={rightToken?.logoUrl} />
-      <Tooltip text={`${formattedValueTooltip} ${rightToken.symbol}`}>
-        {`${formattedValue} `}
-        {rightToken?.symbol}
-      </Tooltip>
+      <StyledRowFlex style={{ width: "auto", gap: 5 }}>
+        <TokenLogo logo={rightToken?.logoUrl} />
+        <Tooltip text={`${formattedValueTooltip} ${rightToken.symbol}`}>
+          <span className="value"> {`${formattedValue} `}</span>
+          <span className="symbol"> {rightToken?.symbol}</span>
+        </Tooltip>
+      </StyledRowFlex>
     </StyledContainer>
   );
 }

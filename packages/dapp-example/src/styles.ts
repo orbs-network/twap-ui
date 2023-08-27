@@ -184,7 +184,7 @@ export const StyledPangolin = styled(StyledDapp)<{ isDarkMode: number }>(({ isDa
 }));
 
 export const StyledSpookySwapLayout = styled(DappLayout)({
-  maxWidth: 520,
+  maxWidth: 420,
   width: "calc(100% - 30px)",
 });
 

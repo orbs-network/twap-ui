@@ -5,6 +5,8 @@ import { SlInfo } from "react-icons/sl";
 import Icon from "./Icon";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Typography } from "@mui/material";
+import { useTwapContext } from "../../context";
+import { IconType } from "react-icons";
 
 interface Props {
   children: string | number | ReactNode;
@@ -16,6 +18,9 @@ interface Props {
 }
 
 function Label({ children, tooltipText, className = "", fontSize, placement, subtitle }: Props) {
+  const { uiPreferences } = useTwapContext();
+
+  const InfoIcon = uiPreferences.infoIcon || SlInfo;
   if (subtitle) {
     return (
       <StyledColumnFlex className={`twap-label ${className}`}>
@@ -30,7 +35,7 @@ function Label({ children, tooltipText, className = "", fontSize, placement, sub
       {tooltipText && (
         <Tooltip placement={placement} text={tooltipText}>
           <StyledTooltipContent className={`twap-label-tooltip-content ${className}`}>
-            <Icon icon={<SlInfo className="twap-tooltip-icon" style={{ width: 14, height: 14 }} />} />
+            <Icon icon={<InfoIcon className="twap-tooltip-icon" style={{ width: 14, height: 14 }} />} />
           </StyledTooltipContent>
         </Tooltip>
       )}

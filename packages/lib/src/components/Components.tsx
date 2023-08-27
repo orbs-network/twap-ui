@@ -1,4 +1,4 @@
-import { CSSProperties, FC, ReactElement, ReactNode } from "react";
+import { CSSProperties, FC, ReactElement, ReactNode, useCallback } from "react";
 import {
   Balance,
   Button,
@@ -237,14 +237,17 @@ interface TokenSelectProps extends TWAPTokenSelectProps {
 export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, isSrc = false, onSrcSelect, onDstSelect }: TokenSelectProps) => {
   const onTokenSelectedCallback = useOnTokenSelectCallback();
 
-  const onSelect = (token: any) => {
-    const parsedToken = parseToken ? parseToken(token) : token;
-    onTokenSelectedCallback(isSrc, token, parsedToken, onSrcSelect, onDstSelect);
-    onClose();
-  };
+  const onSelect = useCallback(
+    (token: any) => {
+      const parsedToken = parseToken ? parseToken(token) : token;
+      onTokenSelectedCallback(isSrc, token, parsedToken, onSrcSelect, onDstSelect);
+      onClose();
+    },
+    [onTokenSelectedCallback, onSrcSelect, onDstSelect, isSrc]
+  );
 
-  if (!isOpen || !Component) return null;
-  return <Component isOpen={true} onClose={onClose} onSelect={onSelect} srcTokenSelected={undefined} dstTokenSelected={undefined} />;
+  if (!Component) return null;
+  return <Component isOpen={isOpen} onClose={onClose} onSelect={onSelect} srcTokenSelected={undefined} dstTokenSelected={undefined} />;
 };
 
 export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; style?: CSSProperties }) {
@@ -263,7 +266,7 @@ export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; 
   );
 }
 
-export function LimitPriceRadioGroup() {
+export function LimitPriceRadioGroup({ className }: { className?: string }) {
   const loadingState = useLoadingState();
   const translations = useTwapContext().translations;
   const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
@@ -278,7 +281,7 @@ export function LimitPriceRadioGroup() {
 
   return (
     <Tooltip text={isLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
-      <FormControl disabled={!!selectTokensWarning || isLoading}>
+      <FormControl className={`twap-radio ${className}`} disabled={!!selectTokensWarning || isLoading}>
         <RadioGroup row name="isLimitOrder" value={String(isLimitOrder)} onChange={handleChange}>
           <Radio label="Market Price" value="false" />
           <Radio label="Limit Price" value="true" />
@@ -472,10 +475,14 @@ export const useLimitPriceComponents = ({
   placeholder = "0.00",
   showDefault,
   toggleIcon = <TbArrowsRightLeft style={{ width: 20, height: 20 }} />,
+  hideSymbol,
+  reverse,
 }: {
   placeholder?: string;
   showDefault?: boolean;
   toggleIcon?: ReactElement;
+  hideSymbol?: boolean;
+  reverse?: boolean;
 }) => {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const { leftToken, rightToken, onChange, limitPrice, toggleInverted } = useLimitPrice();
@@ -485,15 +492,27 @@ export const useLimitPriceComponents = ({
   if (!_isLimitOrder || !leftToken || !rightToken) return null;
 
   return {
-    leftToken: <TokenDisplay singleToken symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />,
-    rightToken: <TokenDisplay symbol={rightToken?.symbol} logo={rightToken?.logoUrl} />,
+    leftToken: <TokenDisplay reverse={reverse} hideSymbol={hideSymbol} singleToken symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />,
+    rightToken: <TokenDisplay reverse={reverse} hideSymbol={hideSymbol} symbol={rightToken?.symbol} logo={rightToken?.logoUrl} />,
     input: <NumericInput placeholder={placeholder} onChange={onChange} value={limitPrice} />,
     toggle: <IconButton onClick={toggleInverted} icon={toggleIcon} />,
   };
 };
 
-export function LimitPriceInput({ placeholder = "0.00", className = "", showDefault }: { placeholder?: string; className?: string; showDefault?: boolean }) {
-  const components = useLimitPriceComponents({ placeholder, showDefault });
+export function LimitPriceInput({
+  placeholder = "0.00",
+  className = "",
+  showDefault,
+  hideSymbol,
+  reverse,
+}: {
+  placeholder?: string;
+  className?: string;
+  showDefault?: boolean;
+  hideSymbol?: boolean;
+  reverse?: boolean;
+}) {
+  const components = useLimitPriceComponents({ placeholder, showDefault, hideSymbol, reverse });
 
   if (!components) return null;
   return (
@@ -1001,7 +1020,7 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
   );
 };
 
-export const TradeSize = ({ hideLabel }: { hideLabel?: boolean }) => {
+export const TradeSize = ({ hideLabel, hideSymbol }: { hideLabel?: boolean; hideSymbol?: boolean }) => {
   const srcToken = useTwapStore((store) => store.srcToken);
   const dsToken = useTwapStore((store) => store.dstToken);
 
@@ -1017,7 +1036,7 @@ export const TradeSize = ({ hideLabel }: { hideLabel?: boolean }) => {
       {!hideLabel && <ChunksAmountLabel />}
       <StyledRowFlex gap={7} className="content">
         <TokenLogo isSrc={true} />
-        <TradeSizeValue symbol={true} />
+        <TradeSizeValue symbol={!hideSymbol} />
       </StyledRowFlex>
     </StyledTradeSize>
   );
