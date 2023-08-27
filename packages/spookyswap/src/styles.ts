@@ -380,61 +380,59 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
   };
 });
 
-export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContainer)(({ theme }) => {
-  return {
-    ".twap-card": {
-      paddingBottom: 8,
+export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContainer)({
+  ".twap-card": {
+    paddingBottom: 8,
+  },
+  background: "unset",
+  fontFamily: "Red Hat Display",
+  ".twap-orders-summary-token-display-amount": {
+    fontSize: 17,
+  },
+  "& *": {
+    "&::-webkit-scrollbar": {
+      display: "none",
     },
-    background: "unset",
-    fontFamily: "Red Hat Display",
-    ".twap-orders-summary-token-display-amount": {
-      fontSize: 17,
+  },
+  "& .MuiBackdrop-root": {
+    background: "rgba(18, 17, 34, 0.55)",
+  },
+  ".twap-disclaimer-text": {
+    "*": {
+      fontSize: "14px!important",
+    },
+  },
+  ".twap-disclaimer-switch": {
+    fontSize: 14,
+  },
+  ".twap-order-summary-output-address": {
+    fontSize: 14,
+  },
+  ".twap-order-summary-details": {
+    ".twap-order-summary-details-item": {
+      p: {
+        fontSize: 14,
+      },
+    },
+  },
+  ".twap-modal-content": {
+    paddingTop: "50!important",
+    paddingBottom: "50!important",
+    "& a": {
+      fontWeight: 500,
+      textDecoration: "underline",
+    },
+    "& .MuiIconButton-root": {
+      color: "white",
     },
     "& *": {
-      "&::-webkit-scrollbar": {
-        display: "none",
-      },
+      fontFamily: "inherit",
     },
-    "& .MuiBackdrop-root": {
-      background: "rgba(18, 17, 34, 0.55)",
-    },
-    ".twap-disclaimer-text": {
-      "*": {
-        fontSize: "14px!important",
-      },
-    },
-    ".twap-disclaimer-switch": {
-      fontSize: 14,
-    },
-    ".twap-order-summary-output-address": {
-      fontSize: 14,
-    },
-    ".twap-order-summary-details": {
-      ".twap-order-summary-details-item": {
-        p: {
-          fontSize: 14,
-        },
-      },
-    },
-    ".twap-modal-content": {
-      paddingTop: "50!important",
-      paddingBottom: "50!important",
-      "& a": {
-        fontWeight: 500,
-        textDecoration: "underline",
-      },
-      "& .MuiIconButton-root": {
-        color: "white",
-      },
-      "& *": {
-        fontFamily: "inherit",
-      },
-    },
-    ".twap-button": {
-      marginLeft: "auto",
-      marginRight: "auto",
-    },
-  };
+  },
+  ".twap-button": {
+    marginLeft: "auto",
+    marginRight: "auto",
+  },
 });
 
 export const configureStyles = (theme: Theme) => {

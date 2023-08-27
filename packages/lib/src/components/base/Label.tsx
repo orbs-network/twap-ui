@@ -6,7 +6,6 @@ import Icon from "./Icon";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Typography } from "@mui/material";
 import { useTwapContext } from "../../context";
-import { IconType } from "react-icons";
 
 interface Props {
   children: string | number | ReactNode;

@@ -96,7 +96,7 @@ interface OrderTokenDisplayProps {
   isLoading?: boolean;
   isMain?: boolean;
 }
-export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading, isMain }: OrderTokenDisplayProps) => {
+export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading }: OrderTokenDisplayProps) => {
   const tokenAmount = useFormatNumber({ value: amount });
   const tokenAmountTooltip = useFormatNumber({ value: amount, decimalScale: 18 });
 
