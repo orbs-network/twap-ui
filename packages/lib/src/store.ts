@@ -405,6 +405,39 @@ export const useOrdersStore = create<OrdersStore>((set) => ({
   setTab: (value: number) => set({ tab: value }),
 }));
 
+export enum WizardAction {
+  CREATE_ORDER = "CREATE_ORDER",
+  CANCEL_ORDER = "CANCEL_ORDER",
+  WRAP = "WRAP",
+  APPROVE = "APPROVE",
+}
+
+export enum WizardActionStatus {
+  PENDING = "PENDING",
+  SUCCESS = "SUCCESS",
+  ERROR = "ERROR",
+}
+
+interface WizardStore {
+  error?: string;
+  action?: WizardAction;
+  status?: WizardActionStatus;
+  open: boolean;
+  setAction: (value?: WizardAction) => void;
+  setStatus: (value?: WizardActionStatus, error?: string) => void;
+  setOpen: (value: boolean) => void;
+}
+
+export const useWizardStore = create<WizardStore>((set) => ({
+  action: undefined,
+  status: undefined,
+  error: undefined,
+  open: false,
+  setAction: (action) => set({ action, open: !!action }),
+  setStatus: (status, error) => set({ status, error, open: !!status }),
+  setOpen: (value) => set({ open: value }),
+}));
+
 export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) => {
   if (!tokensList || !addressOrSymbol) return;
 

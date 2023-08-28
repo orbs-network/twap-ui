@@ -458,6 +458,9 @@ export const configureStyles = (theme: Theme) => {
         overflow: "auto",
         borderRadius: "10px",
         padding: 35,
+        a: {
+          color: styles.textColor,
+        },
         ".twap-ui-close": {
           svg: {
             color: styles.iconsColor,

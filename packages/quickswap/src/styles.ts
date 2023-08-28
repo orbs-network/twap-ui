@@ -611,7 +611,6 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         },
         ".twap-label": {
           fontSize: 14,
-          maxWidth: 120,
         },
       },
       ".twap-disclaimer-text p, .twap-disclaimer-text a": {
@@ -620,7 +619,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       maxHeight: "85vh",
       overflow: "auto",
       borderRadius: "24px",
-      paddingTop: 30,
+      paddingTop: 50,
       color: styles.textColor,
       "& a": {
         color: styles.textColor,

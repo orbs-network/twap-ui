@@ -21,3 +21,4 @@ export { default as SwipeContainer } from "./SwipeContainer";
 export { default as Radio } from "./Radio";
 export { default as Portal } from "./Portal";
 export { default as Odnp } from "./Odnp";
+export { default as Spinner } from "./Spinner";

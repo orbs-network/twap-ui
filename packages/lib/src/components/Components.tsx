@@ -39,7 +39,7 @@ import {
   useToken,
   useSwitchTokens,
 } from "../hooks";
-import { useTwapStore, handleFillDelayText } from "../store";
+import { useTwapStore, handleFillDelayText, useWizardStore } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
@@ -384,7 +384,7 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
   const connect = useTwapContext().connect;
-
+  const wizardStore = useWizardStore();
   const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
 
   const getArgs = () => {
@@ -427,11 +427,15 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
       return {
         text: "",
         onClick: () => {
-          setShowConfirmation(true);
+          if (!showConfirmation) {
+            setShowConfirmation(true);
+          } else {
+            wizardStore.setOpen(true);
+          }
           analytics.onOpenConfirmationModal();
         },
         loading: true,
-        disabled: showConfirmation,
+        disabled: false,
       };
     }
     if (allowance.isLoading || srcUsdLoading || dstUsdLoading) {

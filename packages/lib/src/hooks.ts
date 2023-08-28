@@ -8,7 +8,7 @@ import { InitLibProps, OrdersData, OrderUI, State } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
 import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, getPastEvents, findBlock, block } from "@defi.org/web3-candies";
-import { amountUi, getTokenFromTokensList, parseOrderUi, useTwapStore } from "./store";
+import { amountUi, getTokenFromTokensList, parseOrderUi, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
 import moment from "moment";
@@ -44,6 +44,7 @@ export const useWrapToken = () => {
   const srcAmount = useTwapStore((state) => state.getSrcAmount());
   const srcToken = useTwapStore((state) => state.srcToken);
   const dstToken = useTwapStore((state) => state.dstToken);
+  const wizardStore = useWizardStore();
 
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
 
@@ -52,6 +53,8 @@ export const useWrapToken = () => {
 
   return useMutation(
     async () => {
+      wizardStore.setAction(WizardAction.WRAP);
+      wizardStore.setStatus(WizardActionStatus.PENDING);
       analytics.onWrapClick(srcAmount);
       return lib!.wrapNativeToken(srcAmount, priorityFeePerGas, maxFeePerGas);
     },
@@ -60,12 +63,14 @@ export const useWrapToken = () => {
         analytics.onWrapSuccess();
         if (lib?.validateTokens(srcToken!, dstToken!) === TokensValidation.wrapOnly) {
           reset();
+          wizardStore.setStatus(WizardActionStatus.SUCCESS);
           return;
         }
         setSrcToken(lib!.config.wToken);
       },
       onError: (error: Error) => {
         console.log(error.message);
+        wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
         analytics.onWrapError(error.message);
       },
     }
@@ -94,9 +99,11 @@ export const useApproveToken = () => {
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   const srcToken = useTwapStore((state) => state.srcToken);
   const { refetch } = useHasAllowanceQuery();
-
+  const wizardStore = useWizardStore();
   return useMutation(
     async () => {
+      wizardStore.setAction(WizardAction.APPROVE);
+      wizardStore.setStatus(WizardActionStatus.PENDING);
       analytics.onApproveClick(srcAmount);
       await lib?.approve(srcToken!, srcAmount, priorityFeePerGas, maxFeePerGas);
       await refetch();
@@ -104,10 +111,11 @@ export const useApproveToken = () => {
     {
       onSuccess: async () => {
         analytics.onApproveSuccess();
+        wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
         console.log(error.message);
-
+        wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
         analytics.onApproveError(error.message);
       },
     }
@@ -130,11 +138,14 @@ export const useCreateSimpleLimitOrder = () => {
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
+  const wizardStore = useWizardStore();
   const reset = useReset();
   const { askDataParams } = useTwapContext();
   const setTokensFromDapp = useSetTokensFromDapp();
   return useMutation(
     async () => {
+      wizardStore.setAction(WizardAction.CREATE_ORDER);
+      wizardStore.setStatus(WizardActionStatus.PENDING);
       const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
 
       console.log({
@@ -177,12 +188,14 @@ export const useCreateOrder = () => {
         reset();
         store.setOrderCreatedTimestamp(Date.now());
         setTokensFromDapp();
+        wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
         if ((error as any).code === 4001) {
           analytics.onCreateOrderRejected();
         }
+        wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
       },
 
       onSettled: () => {

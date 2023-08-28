@@ -410,7 +410,11 @@ export const configureStyles = (theme: any) => {
         color: "rgb(113, 113, 113)",
       },
     },
-
+    ".twap-modal": {
+      ".MuiBackdrop-root": {
+        backdropFilter: "blur(15px)",
+      },
+    },
     ".twap-modal-content": {
       background: styles.containerBackground,
       maxHeight: "85vh",
