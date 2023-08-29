@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@defi.org/web3-candies": "4.x",
+    "isomorphic-fetch": "3.x",
     "@emotion/react": "11.x",
     "@emotion/styled": "11.x",
     "@mui/material": "5.x",
