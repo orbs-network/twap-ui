@@ -410,6 +410,7 @@ export enum WizardAction {
   CANCEL_ORDER = "CANCEL_ORDER",
   WRAP = "WRAP",
   APPROVE = "APPROVE",
+  UNWRAP = "UNWRAP",
 }
 
 export enum WizardActionStatus {
@@ -423,6 +424,7 @@ interface WizardStore {
   action?: WizardAction;
   status?: WizardActionStatus;
   open: boolean;
+  timeout?: any;
   setAction: (value?: WizardAction) => void;
   setStatus: (value?: WizardActionStatus, error?: string) => void;
   setOpen: (value: boolean) => void;
@@ -433,8 +435,14 @@ export const useWizardStore = create<WizardStore>((set) => ({
   status: undefined,
   error: undefined,
   open: false,
+  timeout: undefined,
   setAction: (action) => set({ action, open: !!action }),
-  setStatus: (status, error) => set({ status, error, open: !!status }),
+  setStatus: (status, error) => {
+    set({ status, error, open: !!status });
+    if (status === WizardActionStatus.SUCCESS) {
+      set({ timeout: setTimeout(() => set({ open: false }), 5000) });
+    }
+  },
   setOpen: (value) => set({ open: value }),
 }));
 

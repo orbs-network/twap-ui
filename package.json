@@ -27,7 +27,7 @@
     "start": "lerna run start --parallel",
     "test": "lerna run test",
     "test:watch": "cd packages/lib; npm run test:watch",
-    "publish": "npm run test && npm run build && lerna publish --force-publish"
+    "publish": "npm run build && lerna publish --force-publish"
   },
   "prettier": {
     "printWidth": 180

@@ -268,7 +268,6 @@ export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; 
 
 export function LimitPriceRadioGroup({ className }: { className?: string }) {
   const loadingState = useLoadingState();
-  const translations = useTwapContext().translations;
   const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
   const { leftToken, rightToken } = useTwapStore((state) => state.getLimitPrice(false));
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
@@ -280,14 +279,12 @@ export function LimitPriceRadioGroup({ className }: { className?: string }) {
   };
 
   return (
-    <Tooltip text={isLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
-      <FormControl className={`twap-radio ${className}`} disabled={!!selectTokensWarning || isLoading}>
-        <RadioGroup row name="isLimitOrder" value={String(isLimitOrder)} onChange={handleChange}>
-          <Radio label="Market Price" value="false" />
-          <Radio label="Limit Price" value="true" />
-        </RadioGroup>
-      </FormControl>
-    </Tooltip>
+    <FormControl className={`twap-radio ${className}`} disabled={!!selectTokensWarning || isLoading}>
+      <RadioGroup row name="isLimitOrder" value={String(isLimitOrder)} onChange={handleChange}>
+        <Radio label="Market Price" value="false" />
+        <Radio label="Limit Price" value="true" />
+      </RadioGroup>
+    </FormControl>
   );
 }
 

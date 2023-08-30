@@ -76,15 +76,13 @@ const TWAPComponent = () => {
 };
 
 const DappComponent = () => {
-  const { isDarkTheme } = useTheme();
-
   return (
-    <StyledSpiritSwap isDarkMode={isDarkTheme ? 1 : 0}>
+    <StyledSpiritSwap>
       <StyledSpiritSwapLayout name={config.name}>
-        <StyledSpiritSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+        <StyledSpiritSwapBox>
           <TWAPComponent />
         </StyledSpiritSwapBox>
-        <StyledSpiritSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
+        <StyledSpiritSwapBox>
           <Orders />
         </StyledSpiritSwapBox>
       </StyledSpiritSwapLayout>

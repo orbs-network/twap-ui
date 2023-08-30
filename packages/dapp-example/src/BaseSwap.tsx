@@ -1,5 +1,5 @@
-import { StyledModalContent, StyledSpookySwap, StyledSpookySwapBox, StyledSpookySwapLayout } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-spookyswap";
+import { StyledBaseSwap, StyledBaseSwapBox, StyledBaseSwapLayout, StyledModalContent } from "./styles";
+import { TWAP, Orders } from "@orbs-network/twap-ui-baseswap";
 import { useConnectWallet, useNetwork, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
@@ -11,8 +11,8 @@ import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-const config = Configs.SpookySwap;
-
+const config = { ...Configs.SpookySwap };
+config.name = "BaseSwap";
 export const useDappTokens = () => {
   const { account } = useWeb3React();
   const { isInValidNetwork } = useNetwork(config.chainId);
@@ -31,7 +31,7 @@ export const useDappTokens = () => {
         tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
         tags: [],
       }));
-      const candiesAddresses = [zeroAddress, ..._.map(erc20s.ftm, (t) => t().address)];
+      const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
 
       const _tokens = _.sortBy(parsed, (t: any) => {
         const index = candiesAddresses.indexOf(t.address);
@@ -101,24 +101,24 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   );
 };
 
-const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/9608.png";
+const logo = "https://baseswap.fi/images/newlogo.png";
 
 const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
 
   return (
-    <StyledSpookySwap>
-      <StyledSpookySwapLayout name={config.name}>
+    <StyledBaseSwap>
+      <StyledBaseSwapLayout name={config.name}>
         <UISelector limit={true} select={setSelected} selected={selected} />
-        <StyledSpookySwapBox>
+        <StyledBaseSwapBox>
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-        </StyledSpookySwapBox>
+        </StyledBaseSwapBox>
 
-        <StyledSpookySwapBox>
+        <StyledBaseSwapBox>
           <Orders />
-        </StyledSpookySwapBox>
-      </StyledSpookySwapLayout>
-    </StyledSpookySwap>
+        </StyledBaseSwapBox>
+      </StyledBaseSwapLayout>
+    </StyledBaseSwap>
   );
 };
 
@@ -126,6 +126,7 @@ const dapp: Dapp = {
   Component: DappComponent,
   logo,
   config,
+  workInProgress: true,
 };
 
 export default dapp;

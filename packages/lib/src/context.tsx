@@ -7,7 +7,7 @@ import { analytics } from "./analytics";
 import { TokenData } from "@orbs-network/twap";
 import { useTwapStore } from "./store";
 import { TwapErrorWrapper } from "./ErrorHandling";
-import { Wizard } from "./components/Wizard";
+import { Wizard } from "./components";
 
 analytics.onModuleLoad();
 

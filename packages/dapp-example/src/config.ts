@@ -7,6 +7,7 @@ import thena from "./Thena";
 import sushiswap from "./SushiSwap";
 import stellaswap from "./StellaSwap";
 import pancake from "./Pancake";
+import baseswap from "./BaseSwap";
 
 export const defaultDapp = quickswap;
-export const dapps = [quickswap, spookyswap, spiritswap, pangolin, pangolinDaas, chronos, thena, pancake, stellaswap, sushiswap];
+export const dapps = [quickswap, spookyswap, spiritswap, pangolin, pangolinDaas, chronos, thena, pancake, stellaswap, baseswap, sushiswap];

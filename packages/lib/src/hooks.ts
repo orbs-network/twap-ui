@@ -61,9 +61,9 @@ export const useWrapToken = () => {
     {
       onSuccess: () => {
         analytics.onWrapSuccess();
+        wizardStore.setStatus(WizardActionStatus.SUCCESS);
         if (lib?.validateTokens(srcToken!, dstToken!) === TokensValidation.wrapOnly) {
           reset();
-          wizardStore.setStatus(WizardActionStatus.SUCCESS);
           return;
         }
         setSrcToken(lib!.config.wToken);
@@ -82,13 +82,21 @@ export const useUnwrapToken = () => {
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   const reset = useReset();
   const srcTokenAmount = useTwapStore((state) => state.getSrcAmount());
-
+  const wizardStore = useWizardStore();
   return useMutation(
     async () => {
+      wizardStore.setAction(WizardAction.UNWRAP);
+      wizardStore.setStatus(WizardActionStatus.PENDING);
       return lib?.unwrapNativeToken(srcTokenAmount, priorityFeePerGas, maxFeePerGas);
     },
     {
-      onSuccess: reset,
+      onSuccess: () => {
+        reset();
+        wizardStore.setStatus(WizardActionStatus.SUCCESS);
+      },
+      onError: (error: Error) => {
+        wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
+      },
     }
   );
 };

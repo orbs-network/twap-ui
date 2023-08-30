@@ -1,4 +1,4 @@
-import { Box, styled } from "@mui/system";
+import { Box, createTheme, styled, Theme } from "@mui/material";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -6,6 +6,24 @@ import IconButton from "@mui/material/IconButton";
 import { Styles as TwapStyles } from "@orbs-network/twap-ui";
 import { DappLayout } from "./Components";
 import { Configs } from "@orbs-network/twap";
+
+const darktheme = createTheme({
+  palette: {
+    mode: "dark",
+  },
+});
+
+const lightTheme = createTheme({
+  palette: {
+    mode: "light",
+  },
+});
+
+export const getTheme = (isDark: boolean) => {
+  return isDark ? darktheme : lightTheme;
+};
+
+const isDarkMode = (theme: Theme) => theme.palette.mode === "dark";
 
 const fonts = {
   [Configs.Chronos.name]: "TT Firs Neue Trial",
@@ -16,12 +34,11 @@ const fonts = {
   [Configs.PangolinDaas.name]: "Poppins",
   [Configs.SpookySwap.name]: "Red Hat Display",
   [Configs.PancakeSwap.name]: "Kanit",
+  BaseSwap: "Outfit",
   StellaSwap: "DM Sans",
 };
 
 export const globalStyle = (name?: string) => {
-  console.log(name);
-
   const font = fonts[name || ""];
   return {
     "*, p": {
@@ -30,8 +47,8 @@ export const globalStyle = (name?: string) => {
   };
 };
 
-export const StyledSpiritSwapBox = styled(Box)(({ isDarkMode }: { isDarkMode: number }) => ({
-  background: isDarkMode ? "rgb(16, 23, 38)" : "#FBFBFB",
+export const StyledSpiritSwapBox = styled(Box)(({ theme }) => ({
+  background: isDarkMode(theme) ? "rgb(16, 23, 38)" : "#FBFBFB",
   border: `1px solid rgb(55, 65, 81)`,
   borderRadius: 10,
   padding: "0.5rem",
@@ -148,12 +165,12 @@ export const StyledQuickswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isD
   },
 }));
 
-export const StyledSpiritSwap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  background: isDarkMode ? "#000315" : "#FBFBFB",
+export const StyledSpiritSwap = styled(StyledDapp)(({ theme }) => ({
+  background: isDarkMode(theme) ? "#000315" : "#FBFBFB",
   ".menu-button": {
     svg: {
       "* ": {
-        color: isDarkMode ? "#FBFBFB" : "#000315",
+        color: isDarkMode(theme) ? "#FBFBFB" : "#000315",
       },
     },
   },
@@ -188,6 +205,11 @@ export const StyledSpookySwapLayout = styled(DappLayout)({
   width: "calc(100% - 30px)",
 });
 
+export const StyledBaseSwapLayout = styled(DappLayout)({
+  maxWidth: 420,
+  width: "calc(100% - 30px)",
+});
+
 export const StyledSpiritSwapLayout = styled(DappLayout)({
   maxWidth: 520,
   width: "calc(100% - 30px)",
@@ -198,21 +220,45 @@ export const StyledStellaSwapLayout = styled(DappLayout)({
   width: "calc(100% - 30px)",
 });
 
-export const StyledSpookySwap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  background: isDarkMode ? "rgb(18, 17, 34)" : "rgb(250, 249, 250)",
+export const StyledSpookySwap = styled(StyledDapp)(({ theme }) => ({
+  background: isDarkMode(theme) ? "rgb(18, 17, 34)" : "rgb(250, 249, 250)",
+  ".ui-selector-btn": {
+    color: isDarkMode(theme) ? "white" : "black",
+  },
   ".menu-button": {
     svg: {
       "* ": {
-        color: isDarkMode ? "rgb(250, 249, 250)" : "rgb(18, 17, 34)",
+        color: isDarkMode(theme) ? "rgb(250, 249, 250)" : "rgb(18, 17, 34)",
       },
     },
   },
 }));
 
-export const StyledSpookySwapBox = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  background: isDarkMode ? "#192239" : "rgb(242, 244, 248)",
+export const StyledBaseSwap = styled(StyledDapp)(({ theme }) => ({
+  background: isDarkMode(theme) ? "rgb(17, 17, 17)" : "rgb(250, 249, 250)",
+  ".ui-selector-btn": {
+    color: isDarkMode(theme) ? "white" : "black",
+  },
+  ".menu-button": {
+    svg: {
+      "* ": {
+        color: isDarkMode(theme) ? "white" : "black",
+      },
+    },
+  },
+}));
+
+export const StyledSpookySwapBox = styled(Box)(({ theme }) => ({
+  background: isDarkMode(theme) ? "#192239" : "rgb(242, 244, 248)",
   borderRadius: 10,
   padding: 24,
+}));
+
+export const StyledBaseSwapBox = styled(Box)(({ theme }) => ({
+  background: isDarkMode(theme) ? "#0D0D0D" : "rgb(242, 244, 248)",
+  borderRadius: 0,
+  padding: 16,
+  border: "4px solid white",
 }));
 
 export const StyledChronos = styled(StyledDapp)(({ isDarkMode }: { isDarkMode: number }) => ({
@@ -310,12 +356,6 @@ export const StyledPangolinLayout = styled(DappLayout)({
   maxWidth: 520,
   width: "calc(100% - 30px)",
 });
-
-export const StyledLayoutSpookyswap = styled(Box)(({ mode }: { mode: string }) => ({
-  background: mode === "dark" ? "#192239" : "rgb(242, 244, 248)",
-  borderRadius: 10,
-  padding: 24,
-}));
 
 export const StyledCloseIcon = styled("button")({
   position: "absolute",

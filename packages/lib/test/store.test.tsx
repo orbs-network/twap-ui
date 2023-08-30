@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { QueryClientProvider } from "@tanstack/react-query";
 import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook, waitFor } from "@testing-library/react";
@@ -134,6 +135,8 @@ describe("store", () => {
     let mockOrder: Order;
 
     beforeEach(async () => {
+      console.log({ tokens });
+
       const { result } = renderHook(() => useTwapStore());
       store = result;
       lib = new TWAPLib(Configs.SpiritSwap, maker, web3());
@@ -230,6 +233,8 @@ describe("store", () => {
       const { result } = renderHook(() => useOrderPastEvents(mockOrderUi, true), {
         wrapper: createQueryProvider(),
       });
+
+      console.log(result);
 
       await waitFor(() => expect(result.current.isLoading).eq(false));
       expect(result.current.data?.dstAmountOut).eq("66.977333");

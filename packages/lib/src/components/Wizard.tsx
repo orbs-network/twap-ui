@@ -4,7 +4,7 @@ import { BsFillCheckCircleFill } from "react-icons/bs";
 import { useWizardStore, WizardAction, WizardActionStatus } from "../store";
 import { StyledColumnFlex, StyledText } from "../styles";
 import { Modal, Spinner } from "./base";
-import { BiSolidErrorCircle } from "react-icons/bi";
+import { MdOutlineError } from "react-icons/md";
 export function Wizard() {
   const store = useWizardStore();
   const content = useContent();
@@ -14,34 +14,53 @@ export function Wizard() {
   }, []);
 
   return (
-    <StyledModal open={store.open} onClose={onClose}>
+    <Modal open={store.open} onClose={onClose}>
       <StyledContainer>{content}</StyledContainer>
-    </StyledModal>
+    </Modal>
   );
 }
 
 const useContent = () => {
   const store = useWizardStore();
   return useMemo(() => {
+    const baseProps = {
+      status: store.status,
+      error: store.error,
+    };
     if (store.action === WizardAction.APPROVE) {
-      return <Approval status={store.status} error={store.error} />;
+      return <Message {...baseProps} errorMsg="Approval failed" pendingMsg="Approving" successMsg="Approval successful" />;
     }
 
     if (store.action === WizardAction.CREATE_ORDER) {
-      return <CreateOrder status={store.status} error={store.error} />;
+      return <Message {...baseProps} errorMsg="Submit order failed" pendingMsg="Submitting order" successMsg="Order submitted successfully" />;
     }
     if (store.action === WizardAction.WRAP) {
-      return <Wrap status={store.status} error={store.error} />;
+      return <Message {...baseProps} errorMsg="Wrap failed" pendingMsg="Wrapping" successMsg="Wrap successful" />;
+    }
+    if (store.action === WizardAction.UNWRAP) {
+      return <Message {...baseProps} errorMsg="Unwrap failed" pendingMsg="Unwrapping" successMsg="Unwrap successful" />;
     }
   }, [store.action, store.status]);
 };
 
-const Wrap = ({ status, error }: { status?: WizardActionStatus; error?: string }) => {
+const Message = ({
+  status,
+  error,
+  successMsg,
+  errorMsg,
+  pendingMsg,
+}: {
+  status?: WizardActionStatus;
+  error?: string;
+  successMsg: string;
+  errorMsg: string;
+  pendingMsg: string;
+}) => {
   if (status === WizardActionStatus.PENDING) {
     return (
       <>
         <StyledSpinner />
-        <StyledTitle>Wrapping</StyledTitle>
+        <StyledTitle>{pendingMsg}</StyledTitle>
       </>
     );
   }
@@ -49,8 +68,8 @@ const Wrap = ({ status, error }: { status?: WizardActionStatus; error?: string }
   if (status === WizardActionStatus.SUCCESS) {
     return (
       <>
-        <StyledSuccessIcon className="twap-icon" />
-        <StyledTitle>Wrap successful</StyledTitle>
+        <BsFillCheckCircleFill className="twap-icon twap-success-icon" />
+        <StyledTitle>{successMsg}</StyledTitle>
       </>
     );
   }
@@ -58,72 +77,8 @@ const Wrap = ({ status, error }: { status?: WizardActionStatus; error?: string }
   if (status === WizardActionStatus.ERROR) {
     return (
       <>
-        <StyledErrorIcon className="twap-icon" />
-        <StyledTitle>Wrap failed</StyledTitle>
-        <StyledMessage>{error}</StyledMessage>
-      </>
-    );
-  }
-
-  return null;
-};
-
-const Approval = ({ status, error }: { status?: WizardActionStatus; error?: string }) => {
-  if (status === WizardActionStatus.PENDING) {
-    return (
-      <>
-        <StyledSpinner />
-        <StyledTitle>Approving</StyledTitle>
-      </>
-    );
-  }
-
-  if (status === WizardActionStatus.SUCCESS) {
-    return (
-      <>
-        <StyledSuccessIcon className="twap-icon" />
-        <StyledTitle>Approval successful</StyledTitle>
-      </>
-    );
-  }
-
-  if (status === WizardActionStatus.ERROR) {
-    return (
-      <>
-        <StyledErrorIcon className="twap-icon" />
-        <StyledTitle>Approval failed</StyledTitle>
-        <StyledMessage>{error}</StyledMessage>
-      </>
-    );
-  }
-
-  return null;
-};
-
-const CreateOrder = ({ status, error }: { status?: WizardActionStatus; error?: string }) => {
-  if (status === WizardActionStatus.PENDING) {
-    return (
-      <>
-        <StyledSpinner />
-        <StyledTitle>Submitting order</StyledTitle>
-      </>
-    );
-  }
-
-  if (status === WizardActionStatus.SUCCESS) {
-    return (
-      <>
-        <StyledSuccessIcon className="twap-icon" />
-        <StyledTitle>Order submitted successfully</StyledTitle>
-      </>
-    );
-  }
-
-  if (status === WizardActionStatus.ERROR) {
-    return (
-      <>
-        <StyledErrorIcon className="twap-icon" />
-        <StyledTitle>Submit order failed</StyledTitle>
+        <MdOutlineError className="twap-icon twap-error-icon" />
+        <StyledTitle>{errorMsg}</StyledTitle>
         <StyledMessage>{error}</StyledMessage>
       </>
     );
@@ -133,25 +88,13 @@ const CreateOrder = ({ status, error }: { status?: WizardActionStatus; error?: s
 };
 
 const StyledSpinner = styled(Spinner)({
-  width: "50px!important",
-  height: "50px!important",
-});
-
-const StyledSuccessIcon = styled(BsFillCheckCircleFill)({
-  "*": {
-    color: "#28a745!important",
-  },
-});
-
-const StyledErrorIcon = styled(BiSolidErrorCircle)({
-  "*": {
-    color: "#FF3233!important",
-  },
+  width: "45px!important",
+  height: "45px!important",
 });
 
 const StyledTitle = styled(StyledText)({
-  fontSize: 23,
-  fontWeight: 600,
+  fontSize: 22,
+  fontWeight: 500,
   textAlign: "center",
   width: "100%",
 });
@@ -163,6 +106,16 @@ const StyledContainer = styled(StyledColumnFlex)({
     width: 60,
     height: 60,
   },
+  ".twap-error-icon": {
+    "*": {
+      color: "#FF3233!important",
+    },
+  },
+  ".twap-success-icon": {
+    "*": {
+      color: "#28a745!important",
+    },
+  },
 });
 
 const StyledMessage = styled(StyledText)({
@@ -171,5 +124,3 @@ const StyledMessage = styled(StyledText)({
   width: "100%",
   marginTop: 10,
 });
-
-const StyledModal = styled(Modal)({});

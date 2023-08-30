@@ -262,6 +262,7 @@ export const StyledTradeSize = styled(Components.Base.Card)({
 
 export const StyledPriceCard = styled(Components.Base.Card)({
   ".twap-radio": {
+    // marginLeft: -4,
     svg: { width: 16, height: 16 },
     ".MuiRadio-root": {
       padding: 7,
@@ -374,6 +375,8 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
       "& .twap-order-progress": {
         "&::after": {
           background: `${styles.progressBarTrackColor}!important`,
+          height: "100%",
+          top: 0,
         },
       },
     },
@@ -543,6 +546,7 @@ export const configureStyles = (theme: Theme) => {
       },
       ".twap-input": {
         input: {
+          fontSize: 16,
           "&::placeholder": {
             color: styles.textColor,
           },

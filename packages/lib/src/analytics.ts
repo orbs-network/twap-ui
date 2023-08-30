@@ -117,22 +117,26 @@ const sendAnalyticsEvent = (category: Category, action: string, data = {} as { [
 
   const lib = useTwapStore.getState().lib;
 
-  fetch("https://bi.orbs.network/putes/twap-ui", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      timestamp: new Date().toISOString(),
-      maker: lib?.maker,
-      partner: lib?.config.partner,
-      chain: lib?.config.chainId,
-      category,
-      action,
-      ...data,
-    }),
-  }).catch();
+  try {
+    fetch("https://bi.orbs.network/putes/twap-ui", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        maker: lib?.maker,
+        partner: lib?.config.partner,
+        chain: lib?.config.chainId,
+        category,
+        action,
+        ...data,
+      }),
+    });
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const analytics = {
