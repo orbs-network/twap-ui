@@ -89,12 +89,12 @@ export const StyledOverflowContainer = styled(StyledRowFlex)({
 export const StyledOrdersTab = styled(Tab)({
   fontSize: 13,
   width: "calc(100% / 4)",
-  padding: "0px",
+  padding:  "0px",
   textTransform: "unset",
   fontFamily: "inherit",
 
   "@media(max-width: 600px)": {
-    padding: "0px 20px",
+    padding: "0px 6px!important",
     width: "unset",
   },
 });

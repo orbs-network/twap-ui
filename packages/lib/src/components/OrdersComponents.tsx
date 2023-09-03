@@ -30,7 +30,8 @@ export const OrdersSelectTabs = ({ className = "" }: { className?: string }) => 
     <StyledOrdersTabs
       variant="scrollable"
       scrollButtons={isMobile}
-      allowScrollButtonsMobile={isMobile}
+      // allowScrollButtonsMobile={isMobile}
+      
       className={`twap-orders-header-tabs ${className}`}
       value={tab}
       onChange={handleChange}
