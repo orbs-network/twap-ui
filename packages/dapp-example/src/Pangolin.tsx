@@ -113,8 +113,8 @@ const TWAPComponent = ({ partnerDaas, limit }: { partnerDaas?: string; limit?: b
       dstToken={erc20sData.avax.USDC.address} // ORBS
       dappTokens={dappTokens}
       provider={provider}
-      onSrcTokenSelected={(token: any) => console.log(token)}
-      onDstTokenSelected={(token: any) => console.log(token)}
+      onSrcTokenSelected={(token: any) => console.log(token, "selected")}
+      onDstTokenSelected={(token: any) => console.log(token, "selected")}
       connect={connect}
       connectedChainId={chainId}
       theme={isDarkTheme ? pangolinDarkTheme : pangolinLightTheme}

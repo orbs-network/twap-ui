@@ -51,19 +51,7 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 
 const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
-  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
-
-  return (
-    <Components.TokenSelectModal
-      Component={memoizedTokenSelect}
-      onSrcSelect={onSrcTokenSelected}
-      onDstSelect={onDstTokenSelected}
-      isOpen={open}
-      onClose={onClose}
-      isSrc={isSrcToken}
-      parseToken={(token: ThenaRawToken) => parseToken(token)}
-    />
-  );
+  return <Components.TokenSelectModal Component={memoizedTokenSelect} isOpen={open} onClose={onClose} isSrc={isSrcToken} />;
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
@@ -216,6 +204,8 @@ const TWAP = (props: ThenaTWAPProps) => {
         srcToken={props.srcToken}
         dstToken={props.dstToken}
         storeOverride={props.limit ? storeOverride : undefined}
+        onDstTokenSelected={props.onDstTokenSelected}
+        onSrcTokenSelected={props.onSrcTokenSelected}
       >
         <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>

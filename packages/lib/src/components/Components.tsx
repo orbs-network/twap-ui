@@ -19,7 +19,6 @@ import {
   Radio,
 } from "./base";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { TokenData } from "@orbs-network/twap";
 import { TbArrowsRightLeft } from "react-icons/tb";
 import { styled } from "@mui/system";
 import { AiOutlineWarning } from "react-icons/ai";
@@ -35,9 +34,9 @@ import {
   useUnwrapToken,
   useWrapToken,
   useFormatNumber,
-  useOnTokenSelectCallback,
   useToken,
   useSwitchTokens,
+  useSelectTokenCallback,
 } from "../hooks";
 import { useTwapStore, handleFillDelayText, useWizardStore } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, textOverflow } from "../styles";
@@ -98,23 +97,11 @@ export function ChunksSliderSelect({ className = "", showDefault }: { className?
   return <StyledChunksSliderSelect className={className} maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />;
 }
 
-export const ChangeTokensOrder = ({
-  children,
-  className = "",
-  icon = <HiOutlineSwitchVertical />,
-  onSrcTokenSelected,
-  onDstTokenSelected,
-}: {
-  children?: ReactNode;
-  className?: string;
-  icon?: ReactNode;
-  onSrcTokenSelected?: (token: any) => void;
-  onDstTokenSelected?: (token: any) => void;
-}) => {
+export const ChangeTokensOrder = ({ children, className = "", icon = <HiOutlineSwitchVertical /> }: { children?: ReactNode; className?: string; icon?: ReactNode }) => {
   const switchTokens = useSwitchTokens();
   return (
     <StyledRowFlex className={`${className} twap-change-tokens-order`}>
-      <IconButton onClick={() => switchTokens(onSrcTokenSelected, onDstTokenSelected)}>{children || <Icon icon={icon} />}</IconButton>
+      <IconButton onClick={switchTokens}>{children || <Icon icon={icon} />}</IconButton>
     </StyledRowFlex>
   );
 };
@@ -226,24 +213,20 @@ export function TradeIntervalSelector({ placeholder }: { placeholder?: string })
 
 interface TokenSelectProps extends TWAPTokenSelectProps {
   Component?: FC<TWAPTokenSelectProps>;
-  onSrcSelect?: (token: any) => void;
-  onDstSelect?: (token: any) => void;
   isOpen: boolean;
   onClose: () => void;
   isSrc?: boolean;
-  parseToken?: (value: any) => TokenData | undefined;
 }
 
-export const TokenSelectModal = ({ Component, isOpen, onClose, parseToken, isSrc = false, onSrcSelect, onDstSelect }: TokenSelectProps) => {
-  const onTokenSelectedCallback = useOnTokenSelectCallback();
+export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: TokenSelectProps) => {
+  const onTokenSelectedCallback = useSelectTokenCallback();
 
   const onSelect = useCallback(
     (token: any) => {
-      const parsedToken = parseToken ? parseToken(token) : token;
-      onTokenSelectedCallback(isSrc, token, parsedToken, onSrcSelect, onDstSelect);
+      onTokenSelectedCallback({ isSrc, token });
       onClose();
     },
-    [onTokenSelectedCallback, onSrcSelect, onDstSelect, isSrc]
+    [onTokenSelectedCallback, isSrc]
   );
 
   if (!Component) return null;

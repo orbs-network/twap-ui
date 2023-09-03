@@ -33,7 +33,7 @@ const baseStyles = (theme: Theme) => {
     tooltipBackground: darkMode ? "white" : "#D8DEEA",
     tooltipTextColor: darkMode ? "rgb(40, 13, 95)" : "rgb(77, 103, 147)",
     spinnerColor: darkMode ? "white" : "rgb(77, 103, 147)",
-    cardBackground: darkMode ? "rgb(18, 17, 34)" : "rgb(228, 233, 241)",
+    cardBackground: darkMode ? "linear-gradient(to bottom,#000 20%,#111)" : "rgb(228, 233, 241)",
     progressBarColor: darkMode ? "rgb(140, 140, 227)" : "rgb(102, 101, 221)",
     progressBarTrackColor: darkMode ? "#373E55" : "#D8DEEA",
     selectTokenBackground: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgb(242, 244, 248)",
@@ -79,7 +79,9 @@ export const StyledTokenBalance = styled(Components.TokenBalance)({
   },
 });
 
-export const StyledTokenPanel = styled(Styles.StyledColumnFlex)();
+export const StyledTokenPanel = styled(Styles.StyledColumnFlex)(({ theme }) => ({
+  background: baseStyles(theme).cardBackground,
+}));
 export const StyledTokenPanelInput = styled(Components.TokenInput)({
   width: "100%",
   ".twap-loader": {
@@ -173,6 +175,7 @@ export const StyledSubmitButton = styled(Components.SubmitButton)({
 export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
+    fontFamily: "Outfit",
     ".twap-order": {
       ".twap-order-expanded-row": {
         flexDirection: "column",
@@ -223,6 +226,7 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-modal": {
       color: styles.textColor,
+      fontFamily: "Outfit",
       ".twap-modal-content": {
         background: styles.mainBackground,
         padding: 20,
@@ -231,6 +235,7 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-card": {
       border: "1px solid white",
+      background: styles.cardBackground,
       padding: "12px 16px",
       ".twap-label": {
         fontSize: 16,
@@ -302,9 +307,10 @@ export const configureStyles = (theme: Theme) => {
       flexDirection: "column" as const,
       gap: 15,
       marginTop: 20,
+      fontFamily: "Outfit",
       "*": {
         color: styles.textColor,
-        fontFamily: "Red Hat Display",
+        fontFamily: "Outfit",
         "&::-webkit-scrollbar": {
           display: "none",
         },

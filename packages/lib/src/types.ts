@@ -158,6 +158,8 @@ export interface TwapLibProps extends LibProps {
   parseToken: (token: any) => TokenData | undefined;
   dappTokens: any;
   uiPreferences?: TwapContextUIPreferences;
+  onSrcTokenSelected?: (token: any) => void;
+  onDstTokenSelected?: (token: any) => void;
 }
 
 export interface InitLibProps {

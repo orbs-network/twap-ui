@@ -8,7 +8,7 @@ import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
 import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
-import { useState } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 const config = { ...Configs.SpookySwap };
@@ -65,16 +65,54 @@ const parseList = (rawList?: any): TokenListItem[] => {
   });
 };
 
-export const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectModalProps) => {
+export const TokenSelectModal = ({ onCurrencySelect }: TokenSelectModalProps) => {
   const tokensList = useDappTokens().data;
   const parsedList = parseList(tokensList);
+  const { close } = useContext(Context);
+
+  const onClick = (token: any) => {
+    onCurrencySelect(token);
+    close();
+  };
+
   return (
-    <Popup isOpen={isOpen} onClose={onDismiss}>
-      <StyledModalContent>
-        <TokensList tokens={parsedList} onClick={onCurrencySelect} />
-      </StyledModalContent>
+    <StyledModalContent>
+      <TokensList tokens={parsedList} onClick={onClick} />
+    </StyledModalContent>
+  );
+};
+
+interface ContextProps {
+  modal: any;
+  open: (modal: any) => void;
+  close: () => void;
+}
+const Context = createContext({} as ContextProps);
+
+const ContextWrapper = ({ children }: { children: ReactNode }) => {
+  const [modal, setModal] = useState<any>(undefined);
+
+  return <Context.Provider value={{ modal, open: (modal: any) => setModal(modal), close: () => setModal(undefined) }}>{children}</Context.Provider>;
+};
+
+const ListPopup = () => {
+  const { modal, close } = useContext(Context);
+
+  return (
+    <Popup isOpen={!!modal} onClose={close}>
+      {modal}
     </Popup>
   );
+};
+
+const useModal = (Component: any) => {
+  const { open } = useContext(Context);
+
+  const onClick = () => {
+    open(Component);
+  };
+
+  return [onClick];
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -97,6 +135,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       TokenSelectModal={TokenSelectModal}
       isDarkTheme={isDarkTheme}
       limit={limit}
+      useModal={useModal}
     />
   );
 };
@@ -107,18 +146,21 @@ const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
 
   return (
-    <StyledBaseSwap>
-      <StyledBaseSwapLayout name={config.name}>
-        <UISelector limit={true} select={setSelected} selected={selected} />
-        <StyledBaseSwapBox>
-          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-        </StyledBaseSwapBox>
+    <ContextWrapper>
+      <ListPopup />
+      <StyledBaseSwap>
+        <StyledBaseSwapLayout name={config.name}>
+          <UISelector limit={true} select={setSelected} selected={selected} />
+          <StyledBaseSwapBox>
+            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+          </StyledBaseSwapBox>
 
-        <StyledBaseSwapBox>
-          <Orders />
-        </StyledBaseSwapBox>
-      </StyledBaseSwapLayout>
-    </StyledBaseSwap>
+          <StyledBaseSwapBox>
+            <Orders />
+          </StyledBaseSwapBox>
+        </StyledBaseSwapLayout>
+      </StyledBaseSwap>
+    </ContextWrapper>
   );
 };
 

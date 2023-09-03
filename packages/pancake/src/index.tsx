@@ -38,7 +38,7 @@ import {
 } from "./styles";
 import { MdArrowDropDown } from "react-icons/md";
 import { AiOutlineArrowDown } from "react-icons/ai";
-import { eqIgnoreCase, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
 import { GrPowerReset } from "react-icons/gr";
@@ -98,62 +98,18 @@ const storeOverride = {
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
-const useOnTokenSelection = (isSrcToken: boolean) => {
-  const onTokenSelectedCallback = useSelectTokenCallback();
-  const { dappTokens } = useAdapterContext();
-  const tokensLength = _.size(dappTokens);
-
-  const srcToken = store.useTwapStore((s) => s.srcToken);
-  const dstToken = store.useTwapStore((s) => s.dstToken);
-
-  const selectedCurrency = useMemo(() => {
-    return store.getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
-  }, [srcToken?.address, srcToken?.symbol, tokensLength]);
-
-  const otherSelectedCurrency = useMemo(() => {
-    return store.getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
-  }, [dstToken?.address, dstToken?.symbol, tokensLength]);
-
-  const selectToken = useCallback(
-    (token: any) => {
-      const parsedToken = parseToken(token);
-      onTokenSelectedCallback(isSrcToken, token, parsedToken);
-    },
-    [onTokenSelectedCallback, isSrcToken]
-  );
-
-  return {
-    selectToken,
-    selectedCurrency,
-    otherSelectedCurrency,
-  };
-};
-
-const useSelectTokenCallback = () => {
-  const srcTokenAddress = store.useTwapStore((s) => s.srcToken)?.address;
-  const dstTokenAddress = store.useTwapStore((s) => s.dstToken)?.address;
-  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
-  const select = hooks.useOnTokenSelectCallback();
-
-  const switchTokens = hooks.useSwitchTokens();
-  return useCallback(
-    (isSrc: boolean, token: any, parsedToken?: TokenData) => {
-      if (eqIgnoreCase(parsedToken?.address || "", srcTokenAddress || "") || eqIgnoreCase(parsedToken?.address || "", dstTokenAddress || "")) {
-        switchTokens(onSrcTokenSelected, onDstTokenSelected);
-        return;
-      }
-      select(isSrc, token, parsedToken, onSrcTokenSelected, onDstTokenSelected);
-    },
-    [select, srcTokenAddress, dstTokenAddress, onSrcTokenSelected, onDstTokenSelected]
-  );
-};
-
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
-  const { selectToken, selectedCurrency, otherSelectedCurrency } = useOnTokenSelection(!!isSrcToken);
-
   const { useModal, TokenSelectModal } = useAdapterContext();
+  const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
+  const selectToken = hooks.useSelectTokenCallback();
 
-  const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={otherSelectedCurrency} selectedCurrency={selectedCurrency} onCurrencySelect={selectToken} />);
+  const onSelect = useCallback(
+    (token: any) => {
+      selectToken({ isSrc: !!isSrcToken, token });
+    },
+    [selectToken, isSrcToken]
+  );
+  const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
 
   return (
     <>
@@ -269,10 +225,9 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 };
 
 const ChangeTokensOrder = () => {
-  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
   return (
     <StyledTokenChangeContainer>
-      <StyledTokenChange onSrcTokenSelected={onSrcTokenSelected} onDstTokenSelected={onDstTokenSelected} icon={<AiOutlineArrowDown />} />
+      <StyledTokenChange icon={<AiOutlineArrowDown />} />
     </StyledTokenChangeContainer>
   );
 };
@@ -327,6 +282,8 @@ const TWAP = memo((props: AdapterProps) => {
         parseToken={parseToken}
         dappTokens={_dappTokens}
         uiPreferences={uiPreferences}
+        onDstTokenSelected={props.onDstTokenSelected}
+        onSrcTokenSelected={props.onSrcTokenSelected}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />

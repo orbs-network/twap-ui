@@ -115,15 +115,7 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 
 const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
-  return (
-    <Components.TokenSelectModal
-      Component={memoizedTokenSelect}
-      isOpen={open}
-      onClose={onClose}
-      isSrc={isSrcToken}
-      parseToken={(token: any) => parseToken(token, getTokenImageUrl)}
-    />
-  );
+  return <Components.TokenSelectModal Component={memoizedTokenSelect} isOpen={open} onClose={onClose} isSrc={isSrcToken} />;
 };
 
 const SrcTokenPercentSelector = () => {
@@ -230,6 +222,8 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       srcToken={props.srcToken}
       dstToken={props.dstToken}
       storeOverride={props.limit ? storeOverride : undefined}
+      onDstTokenSelected={props.onDstTokenSelected}
+      onSrcTokenSelected={props.onSrcTokenSelected}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>

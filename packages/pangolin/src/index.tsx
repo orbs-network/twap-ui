@@ -111,6 +111,8 @@ const TWAP = memo((props: PangolinTWAPProps) => {
           srcToken={props.srcToken}
           dstToken={props.dstToken}
           parseToken={parseToken}
+          onSrcTokenSelected={props.onSrcTokenSelected}
+          onDstTokenSelected={props.onDstTokenSelected}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
@@ -258,19 +260,7 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 
 const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
-  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
-
-  return (
-    <Components.TokenSelectModal
-      Component={memoizedTokenSelect}
-      onSrcSelect={onSrcTokenSelected}
-      onDstSelect={onDstTokenSelected}
-      isOpen={open}
-      onClose={onClose}
-      isSrc={isSrcToken}
-      parseToken={parseToken}
-    />
-  );
+  return <Components.TokenSelectModal Component={memoizedTokenSelect} isOpen={open} onClose={onClose} isSrc={isSrcToken} />;
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {

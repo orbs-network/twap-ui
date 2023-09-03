@@ -53,7 +53,7 @@ export interface Dapp {
 
 export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: ReactNode }) => {
   return (
-    <Modal open={isOpen} onClose={onClose} onBackdropClick={onClose}>
+    <Modal open={isOpen} onClose={onClose}>
       <>
         <StyledCloseIcon onClick={onClose}>
           <AiOutlineClose className="icon" />

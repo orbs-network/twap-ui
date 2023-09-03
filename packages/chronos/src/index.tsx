@@ -135,19 +135,7 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 
 const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
-  const { onSrcTokenSelected, onDstTokenSelected, getTokenLogoURL } = useAdapterContext();
-
-  return (
-    <Components.TokenSelectModal
-      Component={memoizedTokenSelect}
-      onSrcSelect={onSrcTokenSelected}
-      onDstSelect={onDstTokenSelected}
-      isOpen={open}
-      onClose={onClose}
-      isSrc={isSrcToken}
-      parseToken={(token: ChronosRawToken) => parseToken(getTokenLogoURL, token)}
-    />
-  );
+  return <Components.TokenSelectModal Component={memoizedTokenSelect} isOpen={open} onClose={onClose} isSrc={isSrcToken} />;
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
@@ -331,10 +319,9 @@ const TokenSummary = () => {
 };
 
 const ChangeTokensOrder = () => {
-  const context = useAdapterContext();
   return (
     <StyledChangeOrder>
-      <Components.ChangeTokensOrder onDstTokenSelected={context.onDstTokenSelected} onSrcTokenSelected={context.onSrcTokenSelected} />
+      <Components.ChangeTokensOrder />
     </StyledChangeOrder>
   );
 };
@@ -401,6 +388,8 @@ const TWAP = (props: ChronosTWAPProps) => {
         dstToken={props.dstToken}
         storeOverride={props.limit ? limitStoreOverride : undefined}
         uiPreferences={uiPreferences}
+        onDstTokenSelected={props.onDstTokenSelected}
+        onSrcTokenSelected={props.onSrcTokenSelected}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />

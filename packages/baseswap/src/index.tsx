@@ -1,20 +1,8 @@
 import { GlobalStyles, ThemeProvider, useTheme } from "@mui/material";
-import {
-  Components,
-  Styles as TwapStyles,
-  Translations,
-  TwapAdapter,
-  TWAPProps,
-  TWAPTokenSelectProps,
-  useTwapContext,
-  store,
-  Orders,
-  TwapContextUIPreferences,
-  hooks,
-} from "@orbs-network/twap-ui";
+import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, store, Orders, TwapContextUIPreferences, hooks } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Configs, TokenData } from "@orbs-network/twap";
-import { createContext, useContext, useMemo } from "react";
+import { Config, Configs, TokenData } from "@orbs-network/twap";
+import { createContext, useCallback, useContext, useMemo } from "react";
 import Web3 from "web3";
 import {
   configureStyles,
@@ -37,7 +25,7 @@ import {
   StyledTradeSize,
 } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
-import { memo, ReactNode, useCallback, useState } from "react";
+import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "react-icons/bs";
 import { AiOutlineArrowDown } from "react-icons/ai";
 const config = Configs.SpookySwap;
@@ -87,48 +75,6 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
   );
 };
 
-const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const { TokenSelectModal, dappTokens, account, connectedChainId } = useAdapterContext();
-  const { srcToken, dstToken } = store.useTwapStore();
-
-  const selectedCurrency = useMemo(() => {
-    if (!!dappTokens && srcToken) {
-      return dappTokens[srcToken.address];
-    }
-  }, [srcToken?.address]);
-
-  const otherSelectedCurrency = useMemo(() => {
-    if (!!dappTokens && dstToken) {
-      return dappTokens[dstToken.address];
-    }
-  }, [dstToken?.address]);
-
-  return (
-    <TokenSelectModal
-      otherSelectedCurrency={otherSelectedCurrency}
-      selectedCurrency={selectedCurrency}
-      onCurrencySelect={props.onSelect}
-      isOpen={props.isOpen}
-      onDismiss={props.onClose}
-      account={account}
-      chainId={connectedChainId}
-    />
-  );
-};
-const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
-
-const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
-  return (
-    <Components.TokenSelectModal
-      Component={memoizedTokenSelect}
-      isOpen={open}
-      onClose={onClose}
-      isSrc={isSrcToken}
-      parseToken={(token: any) => parseToken(token, getTokenImageUrl)}
-    />
-  );
-};
-
 const MaxButton = () => {
   const { onPercentClick } = hooks.useCustomActions();
   const translations = useTwapContext().translations;
@@ -137,19 +83,26 @@ const MaxButton = () => {
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const [tokenListOpen, setTokenListOpen] = useState(false);
+  const { useModal, TokenSelectModal } = useAdapterContext();
+  const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
+  const selectToken = hooks.useSelectTokenCallback();
+
+  const onSelect = useCallback(
+    (token: any) => {
+      selectToken({ isSrc: !!isSrcToken, token });
+    },
+    [selectToken, isSrcToken]
+  );
+  const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
+
   const theme = useTheme();
-  const onClose = useCallback(() => {
-    setTokenListOpen(false);
-  }, []);
 
   return (
     <>
-      <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
       <StyledTokenPanel theme={theme}>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <StyledTokenSelect theme={theme}>
-            <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+            <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} />
           </StyledTokenSelect>
           <StyledTokenBalance isSrc={isSrcToken} />
         </TwapStyles.StyledRowFlex>
@@ -157,7 +110,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
           <StyledTokenPanelInput isSrc={isSrcToken} />
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <Components.TokenUSD isSrc={isSrcToken} />
-            <MaxButton />
+            {isSrcToken && <MaxButton />}
           </TwapStyles.StyledRowFlex>
         </StyledTokenInputContainer>
       </StyledTokenPanel>
@@ -180,7 +133,7 @@ const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string)
     logoUrl: rawToken.tokenInfo?.logoURI || getTokenLogoURL(rawToken),
   };
 };
-const AdapterContext = createContext({} as SpookySwapTWAPProps);
+const AdapterContext = createContext({} as BaseSwapTWAPProps);
 
 const AdapterContextProvider = AdapterContext.Provider;
 
@@ -190,21 +143,24 @@ const getTokenImageUrl = (token: any) => {
   return token?.logoUri || `https://assets.spooky.fi/tokens/${token?.symbol}.png`;
 };
 
-interface SpookySwapTWAPProps extends TWAPProps {
+interface BaseSwapTWAPProps extends TWAPProps {
   connect: () => void;
   provider?: any;
-  isLimit?: boolean;
+  useModal?: any;
+  ignoreNetwork?: boolean;
 }
 
-const TWAP = (props: SpookySwapTWAPProps) => {
+const TWAP = (props: BaseSwapTWAPProps) => {
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
+  const _config: Config = props.ignoreNetwork ? { ...config, chainId: 8453 } : config;
+
   return (
     <TwapAdapter
       connect={props.connect}
-      config={config}
+      config={_config}
       uiPreferences={uiPreferences}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
@@ -217,6 +173,8 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       srcToken={props.srcToken}
       dstToken={props.dstToken}
       storeOverride={props.limit ? storeOverride : undefined}
+      onDstTokenSelected={props.onDstTokenSelected}
+      onSrcTokenSelected={props.onSrcTokenSelected}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>

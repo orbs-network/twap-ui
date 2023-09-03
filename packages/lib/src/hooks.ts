@@ -1,7 +1,7 @@
 import { Order, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useTwapContext } from "./context";
 import Web3 from "web3";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI, State } from "./types";
@@ -377,8 +377,8 @@ export const useLoadingState = () => {
   const dstBalance = useDstBalance();
 
   return {
-    srcUsdLoading: (srcToken && !srcUSD.data) || srcUSD.isLoading,
-    dstUsdLoading: (dstToken && !dstUSD.data) || dstUSD.isLoading,
+    srcUsdLoading: (!srcToken && false) || srcUSD.isLoading || srcUSD.data?.isZero(),
+    dstUsdLoading: (dstToken && !dstUSD.data) || dstUSD.isLoading || dstUSD.data?.isZero(),
     srcBalanceLoading: srcBalance.isLoading,
     dstBalanceLoading: dstBalance.isLoading,
   };
@@ -435,23 +435,51 @@ const useGetPriceUsdCallback = () => {
 const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => {
   const lib = useTwapStore((state) => state.lib);
   const priceUsd = useGetPriceUsdCallback();
-  const query = useQuery([QueryKeys.GET_USD_VALUE, token?.address], async () => priceUsd(token!), {
-    enabled: !!lib && !!token,
-    onSuccess,
-    refetchInterval: REFETCH_USD,
-  });
+  const address = useRef("");
+  const client = useQueryClient();
+  const key = [QueryKeys.GET_USD_VALUE, token?.address];
+  const query = useQuery(
+    key,
+    async () => {
+      if (address.current !== token?.address) {
+        onSuccess?.(client.getQueryData(key) || BN(0));
+        address.current = token?.address || "";
+      }
+
+      return priceUsd(token!);
+    },
+    {
+      enabled: !!lib && !!token,
+      onSuccess,
+      refetchInterval: REFETCH_USD,
+    }
+  );
 
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 export const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => void, staleTime?: number) => {
   const lib = useTwapStore((state) => state.lib);
+  const key = [QueryKeys.GET_BALANCE, lib?.maker, token?.address];
 
-  const query = useQuery([QueryKeys.GET_BALANCE, lib?.maker, token?.address], () => lib!.makerBalance(token!), {
-    enabled: !!lib && !!token,
-    onSuccess,
-    refetchInterval: REFETCH_BALANCE,
-    staleTime,
-  });
+  const address = useRef("");
+  const client = useQueryClient();
+
+  const query = useQuery(
+    key,
+    () => {
+      if (address.current !== token?.address) {
+        onSuccess?.(client.getQueryData(key) || BN(0));
+        address.current = token?.address || "";
+      }
+      return lib!.makerBalance(token!);
+    },
+    {
+      enabled: !!lib && !!token,
+      onSuccess,
+      refetchInterval: REFETCH_BALANCE,
+      staleTime,
+    }
+  );
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
@@ -682,23 +710,23 @@ export const useResetLimitPrice = () => {
   return useTwapStore((store) => store.setLimitOrderPriceUi);
 };
 
-export const useOnTokenSelectCallback = () => {
-  const setSrcToken = useTwapStore((store) => store.setSrcToken);
-  const setDstToken = useTwapStore((store) => store.setDstToken);
-
+const useTokenSelect = () => {
+  const { onSrcTokenSelected, onDstTokenSelected, parseToken } = useTwapContext();
   return useCallback(
-    (isSrc: boolean, token: any, parsedToken?: TokenData, onSrcSelect?: (token: any) => void, onDstSelect?: (token: any) => void) => {
+    ({ isSrc, token }: { isSrc: boolean; token: any }) => {
+      console.log("test");
+      const parsedToken = parseToken ? parseToken(token) : token;
       if (isSrc) {
         analytics.onSrcTokenClick(parsedToken?.symbol);
-        setSrcToken(parsedToken);
-        onSrcSelect?.(token);
+        useTwapStore.getState().setSrcToken(parsedToken);
+        onSrcTokenSelected?.(token);
       } else {
         analytics.onDstTokenClick(parsedToken?.symbol);
-        setDstToken(parsedToken);
-        onDstSelect?.(token);
+        useTwapStore.getState().setDstToken(parsedToken);
+        onDstTokenSelected?.(token);
       }
     },
-    [setSrcToken, setDstToken]
+    [onSrcTokenSelected, onDstTokenSelected, parseToken]
   );
 };
 
@@ -710,21 +738,18 @@ export const useToken = (isSrc?: boolean) => {
 };
 
 export const useSwitchTokens = () => {
-  const { dappTokens } = useTwapContext();
+  const { dappTokens, onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
   const switchTokens = useTwapStore((s) => s.switchTokens);
   const srcToken = useTwapStore((s) => s.srcToken);
   const dstToken = useTwapStore((s) => s.dstToken);
-  return useCallback(
-    (onSrcTokenSelected?: (token: any) => void, onDstTokenSelected?: (token: any) => void) => {
-      switchTokens();
-      const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
-      const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
+  return useCallback(() => {
+    switchTokens();
+    const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
+    const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
 
-      srcToken && onSrcTokenSelected?.(_dstToken);
-      dstToken && onDstTokenSelected?.(_srcToken);
-    },
-    [_.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol]
-  );
+    srcToken && onSrcTokenSelected?.(_dstToken);
+    dstToken && onDstTokenSelected?.(_srcToken);
+  }, [_.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol, onSrcTokenSelected, onDstTokenSelected]);
 };
 
 export const useOrdersTabs = () => {
@@ -749,4 +774,46 @@ export const useOrdersTabs = () => {
 
     return _.reduce(mapped, (acc, it) => ({ ...acc, ...it }), {});
   }, [dataUpdatedAt]);
+};
+
+export const useSelectTokenCallback = () => {
+  const srcTokenAddress = useTwapStore((s) => s.srcToken)?.address;
+  const dstTokenAddress = useTwapStore((s) => s.dstToken)?.address;
+  const { parseToken } = useTwapContext();
+
+  const onTokenSelect = useTokenSelect();
+
+  const switchTokens = useSwitchTokens();
+  return useCallback(
+    (args: { isSrc: boolean; token: any }) => {
+      const parsedToken = parseToken ? parseToken(args.token) : args.token;
+      if (eqIgnoreCase(parsedToken?.address || "", srcTokenAddress || "") || eqIgnoreCase(parsedToken?.address || "", dstTokenAddress || "")) {
+        switchTokens();
+        return;
+      }
+      onTokenSelect(args);
+    },
+    [srcTokenAddress, dstTokenAddress, switchTokens, parseToken, onTokenSelect]
+  );
+};
+
+export const useDappRawSelectedTokens = () => {
+  const { dappTokens } = useTwapContext();
+  const tokensLength = _.size(dappTokens);
+
+  const srcToken = useTwapStore((s) => s.srcToken);
+  const dstToken = useTwapStore((s) => s.dstToken);
+
+  const _srcToken = useMemo(() => {
+    return getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
+  }, [srcToken?.address, srcToken?.symbol, tokensLength]);
+
+  const _dstToken = useMemo(() => {
+    return getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
+  }, [dstToken?.address, dstToken?.symbol, tokensLength]);
+
+  return {
+    srcToken: _srcToken,
+    dstToken: _dstToken,
+  };
 };
