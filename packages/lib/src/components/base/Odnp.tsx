@@ -51,7 +51,6 @@ function Odnp({ className = "" }: { className?: string }) {
   );
 }
 
-
 const Link = ({ Icon, name, url }: { Icon: IconType; name: string; url: string }) => {
   return (
     <StyledLink href={url} target="_blank" className="twap-button twap-odnp-link">

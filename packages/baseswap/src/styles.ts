@@ -79,9 +79,8 @@ export const StyledTokenBalance = styled(Components.TokenBalance)({
   },
 });
 
-export const StyledTokenPanel = styled(Styles.StyledColumnFlex)(({ theme }) => ({
-  background: baseStyles(theme).cardBackground,
-}));
+export const StyledTokenPanel = styled(Styles.StyledColumnFlex)({});
+
 export const StyledTokenPanelInput = styled(Components.TokenInput)({
   width: "100%",
   ".twap-loader": {
@@ -106,10 +105,11 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
 });
 
 // const getButtonStyles = (theme: Theme) => {};
-export const StyledTokenInputContainer = styled(Styles.StyledColumnFlex)({
+export const StyledTokenInputContainer = styled(Styles.StyledColumnFlex)(({ theme }) => ({
   border: "3px solid white",
   padding: 16,
-});
+  background: baseStyles(theme).cardBackground,
+}));
 export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => {
   return {
     background: baseStyles(theme).secondaryBackground,
@@ -211,11 +211,19 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
   };
 });
 
-export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContainer)({
+export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContainer)(({ theme }) => ({
   ".twap-modal-content": {
     paddingTop: 50,
+    a: {
+      color: baseStyles(theme).textColor,
+    },
+    ".twap-order-summary-details-item-right": {
+      p: {
+        fontSize: 14,
+      },
+    },
   },
-});
+}));
 
 export const configureStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
@@ -306,7 +314,6 @@ export const configureStyles = (theme: Theme) => {
       display: "flex",
       flexDirection: "column" as const,
       gap: 15,
-      marginTop: 20,
       fontFamily: "Outfit",
       "*": {
         color: styles.textColor,

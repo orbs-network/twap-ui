@@ -32,6 +32,7 @@ const config = Configs.SpookySwap;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
+  switchVariant: "ios",
 };
 
 const storeOverride = {
