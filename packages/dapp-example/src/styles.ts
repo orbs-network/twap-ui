@@ -36,6 +36,7 @@ const fonts = {
   [Configs.PancakeSwap.name]: "Kanit",
   BaseSwap: "Outfit",
   StellaSwap: "DM Sans",
+  Lynex: "Montserrat",
 };
 
 export const globalStyle = (name?: string) => {
@@ -210,6 +211,11 @@ export const StyledBaseSwapLayout = styled(DappLayout)({
   width: "calc(100% - 30px)",
 });
 
+export const StyledLynexLayout = styled(DappLayout)({
+  maxWidth: 520,
+  width: "calc(100% - 30px)",
+});
+
 export const StyledSpiritSwapLayout = styled(DappLayout)({
   maxWidth: 520,
   width: "calc(100% - 30px)",
@@ -248,6 +254,20 @@ export const StyledBaseSwap = styled(StyledDapp)(({ theme }) => ({
   },
 }));
 
+export const StyledLynex = styled(StyledDapp)(({ theme }) => ({
+  background: isDarkMode(theme) ? "#1A1918" : "#1A1918",
+  ".ui-selector-btn": {
+    color: isDarkMode(theme) ? "white" : "black",
+  },
+  ".menu-button": {
+    svg: {
+      "* ": {
+        color: isDarkMode(theme) ? "white" : "black",
+      },
+    },
+  },
+}));
+
 export const StyledSpookySwapBox = styled(Box)(({ theme }) => ({
   background: isDarkMode(theme) ? "#192239" : "rgb(242, 244, 248)",
   borderRadius: 10,
@@ -259,6 +279,12 @@ export const StyledBaseSwapBox = styled(Box)(({ theme }) => ({
   borderRadius: 0,
   padding: 16,
   border: "4px solid white",
+}));
+
+export const StyledLynexBox = styled(Box)(({ theme }) => ({
+  background: isDarkMode(theme) ? "#393737" : "#393737",
+  borderRadius: 10,
+  padding: 16,
 }));
 
 export const StyledChronos = styled(StyledDapp)(({ isDarkMode }: { isDarkMode: number }) => ({
