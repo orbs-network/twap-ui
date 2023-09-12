@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/twap-ui/static/css/main.07fe0f69.css",
-    "main.js": "/twap-ui/static/js/main.1ab24427.js",
+    "main.css": "/twap-ui/static/css/main.aad50d6b.css",
+    "main.js": "/twap-ui/static/js/main.7aa12252.js",
     "static/media/light.ttf": "/twap-ui/static/media/light.f724f2e00b1d08f4af2e.ttf",
     "static/media/regular.ttf": "/twap-ui/static/media/regular.cea0a1861f1e4ce9c070.ttf",
     "static/media/medium.ttf": "/twap-ui/static/media/medium.2fc5aa498a558b8eb500.ttf",
@@ -30,6 +30,11 @@
     "static/media/red-hat-display-v14-latin-700.woff2": "/twap-ui/static/media/red-hat-display-v14-latin-700.d7cfac6b29289f09ec6a.woff2",
     "static/media/red-hat-display-v14-latin-500.woff2": "/twap-ui/static/media/red-hat-display-v14-latin-500.153313b169bfcdd1becd.woff2",
     "static/media/red-hat-display-v14-latin-600.woff2": "/twap-ui/static/media/red-hat-display-v14-latin-600.31afa1c3ba898a8622e6.woff2",
+    "static/media/montserrat-v25-latin-700.woff2": "/twap-ui/static/media/montserrat-v25-latin-700.56c09b9a46af6a54eeb3.woff2",
+    "static/media/montserrat-v25-latin-500.woff2": "/twap-ui/static/media/montserrat-v25-latin-500.38a674fae449557fef97.woff2",
+    "static/media/montserrat-v25-latin-regular.woff2": "/twap-ui/static/media/montserrat-v25-latin-regular.acb6629fe45c43ad5d8b.woff2",
+    "static/media/montserrat-v25-latin-600.woff2": "/twap-ui/static/media/montserrat-v25-latin-600.5d6df38dd70f631c488b.woff2",
+    "static/media/montserrat-v25-latin-300.woff2": "/twap-ui/static/media/montserrat-v25-latin-300.0cc3e06704117dcfc367.woff2",
     "static/media/red-hat-display-v14-latin-regular.woff2": "/twap-ui/static/media/red-hat-display-v14-latin-regular.dd3bb1d18125f13110b1.woff2",
     "static/media/red-hat-display-v14-latin-300.woff2": "/twap-ui/static/media/red-hat-display-v14-latin-300.303d23071d15201d863e.woff2",
     "static/media/figtree-v4-latin-600.woff2": "/twap-ui/static/media/figtree-v4-latin-600.94e4e417fd9248dde819.woff2",
@@ -48,11 +53,11 @@
     "static/media/poppins-v20-latin-700.woff2": "/twap-ui/static/media/poppins-v20-latin-700.d86662fe776dae29ea78.woff2",
     "static/media/poppins-v20-latin-500.woff2": "/twap-ui/static/media/poppins-v20-latin-500.08491d3f7fe7ae88ef44.woff2",
     "index.html": "/twap-ui/index.html",
-    "main.07fe0f69.css.map": "/twap-ui/static/css/main.07fe0f69.css.map",
-    "main.1ab24427.js.map": "/twap-ui/static/js/main.1ab24427.js.map"
+    "main.aad50d6b.css.map": "/twap-ui/static/css/main.aad50d6b.css.map",
+    "main.7aa12252.js.map": "/twap-ui/static/js/main.7aa12252.js.map"
   },
   "entrypoints": [
-    "static/css/main.07fe0f69.css",
-    "static/js/main.1ab24427.js"
+    "static/css/main.aad50d6b.css",
+    "static/js/main.7aa12252.js"
   ]
 }
