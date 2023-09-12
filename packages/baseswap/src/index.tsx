@@ -28,7 +28,7 @@ import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "react-icons/bs";
 import { AiOutlineArrowDown } from "react-icons/ai";
-const config = Configs.SpookySwap;
+const config = Configs.BaseSwap;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
@@ -141,14 +141,13 @@ const AdapterContextProvider = AdapterContext.Provider;
 const useAdapterContext = () => useContext(AdapterContext);
 
 const getTokenImageUrl = (token: any) => {
-  return token?.logoUri || `https://assets.spooky.fi/tokens/${token?.symbol}.png`;
+  return token?.logoUri || `https://baseswap.fi/images/tokens/${token.address.toLowerCase()}.png`;
 };
 
 interface BaseSwapTWAPProps extends TWAPProps {
   connect: () => void;
   provider?: any;
   useModal?: any;
-  ignoreNetwork?: boolean;
 }
 
 const TWAP = (props: BaseSwapTWAPProps) => {
@@ -156,12 +155,10 @@ const TWAP = (props: BaseSwapTWAPProps) => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
-  const _config: Config = props.ignoreNetwork ? { ...config, chainId: 8453 } : config;
-
   return (
     <TwapAdapter
       connect={props.connect}
-      config={_config}
+      config={config}
       uiPreferences={uiPreferences}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}

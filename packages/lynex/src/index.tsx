@@ -1,7 +1,7 @@
 import { GlobalStyles, ThemeProvider, Typography, useTheme } from "@mui/material";
 import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, store, Orders, TwapContextUIPreferences, hooks } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Config, Configs, TokenData } from "@orbs-network/twap";
+import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useCallback, useContext, useMemo } from "react";
 import Web3 from "web3";
 import {
@@ -28,7 +28,7 @@ import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "react-icons/bs";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
-const config = Configs.SpookySwap;
+const config = Configs.BaseSwap;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
@@ -166,7 +166,6 @@ interface BaseSwapTWAPProps extends TWAPProps {
   connect: () => void;
   provider?: any;
   useModal?: any;
-  ignoreNetwork?: boolean;
 }
 
 const TWAP = (props: BaseSwapTWAPProps) => {
@@ -174,12 +173,10 @@ const TWAP = (props: BaseSwapTWAPProps) => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
-  const _config: Config = props.ignoreNetwork ? { ...config, chainId: 8453 } : config;
-
   return (
     <TwapAdapter
       connect={props.connect}
-      config={_config}
+      config={config}
       uiPreferences={uiPreferences}
       maxFeePerGas={props.maxFeePerGas}
       priorityFeePerGas={props.priorityFeePerGas}
