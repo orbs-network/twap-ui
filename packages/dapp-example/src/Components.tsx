@@ -169,7 +169,7 @@ export const DappsMenu = () => {
                     <StyledMenuLogo src={network(dapp.config.chainId).logoUrl} style={{ width: 16, height: 16 }} />
                     <StyledMenuLogo src={dapp.logo} width={32} height={32} style={{ filter: dapp.invertLogo ? "invert(100%)" : "unset" }} />
                   </div>
-                  <ListItemText primary={`${dapp.workInProgress ? "[WIP]" : dapp.config.name}`} />
+                  <ListItemText primary={`${dapp.workInProgress ? `[WIP] ${dapp.config.name}` : dapp.config.name}`} />
                 </StyledMenuListItemButton>
               </ListItem>
             ))}
