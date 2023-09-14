@@ -484,18 +484,21 @@ export const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => vo
 };
 
 const useGasPriceQuery = () => {
-  const { maxFeePerGas, priorityFeePerGas } = useTwapContext();
+  const { maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
   const lib = useTwapStore((state) => state.lib);
 
-  const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, priorityFeePerGas, maxFeePerGas], () => estimateGasPrice(), {
-    enabled: !!lib && !BN(maxFeePerGas || 0).gt(0) && !BN(priorityFeePerGas || 0).gt(0),
+  const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(), {
+    enabled: !!lib && BN(contextMax || 0).eq(0) && BN(contextTip || 0).eq(0),
     refetchInterval: REFETCH_GAS_PRICE,
   });
 
+  const priorityFeePerGas = BN.max(data?.fast.tip || 0, contextTip || 0);
+  const maxFeePerGas = BN.max(data?.fast.max || 0, contextMax || 0, priorityFeePerGas);
+
   return {
     isLoading,
-    maxFeePerGas: BN.max(data?.fast.max || 0, maxFeePerGas || 0, priorityFeePerGas || 0),
-    priorityFeePerGas: BN.max(data?.fast.tip || 0, priorityFeePerGas || 0),
+    maxFeePerGas,
+    priorityFeePerGas,
   };
 };
 
