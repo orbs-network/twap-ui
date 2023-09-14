@@ -21,7 +21,7 @@
     "test:watch": "NETWORK=FTM DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors --watch"
   },
   "dependencies": {
-    "@defi.org/web3-candies": "4.x",
+    "@defi.org/web3-candies": "^4.20",
     "@emotion/react": "11.x",
     "@emotion/styled": "11.x",
     "@mui/material": "5.x",
