@@ -1,7 +1,7 @@
 import { GlobalStyles, ThemeProvider, useTheme } from "@mui/material";
 import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, store, Orders, TwapContextUIPreferences, hooks } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Config, Configs, TokenData } from "@orbs-network/twap";
+import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useCallback, useContext, useMemo } from "react";
 import Web3 from "web3";
 import {

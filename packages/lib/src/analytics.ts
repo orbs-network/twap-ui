@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js";
 import { amountUi, useTwapStore } from "./store";
+require("isomorphic-fetch");
 
 enum Category {
   Error = "Error",

@@ -20,17 +20,6 @@ export async function initFixture() {
   setWeb3Instance(new Web3(networkUrl!));
   configure({ asyncUtilTimeout: 10_000 });
 
-  tokens = (erc20sData as any)[network(CHAIN_ID)!.shortname] as TokenData[];
+  tokens = _.map((erc20sData as any)[network(CHAIN_ID)!.shortname], (t) => t);
   maker = web3().eth.accounts.create().address;
 }
-
-// async function baseTokens() {
-//   const tokens = _.get(erc20s, [network(CHAIN_ID)!.shortname]);
-//   return Promise.all(
-//     _.map(tokens, async (token: () => cToken) => {
-//       const t = token();
-
-//       return { decimals: await t.decimals(), symbol: t.name, address: t.address } as TokenData;
-//     })
-//   );
-// }

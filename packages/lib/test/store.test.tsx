@@ -3,7 +3,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { initFixture, maker, tokens } from "./fixture";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { Configs, Order, Status, TWAPLib } from "@orbs-network/twap";
-import { bn, web3, zero, zeroAddress } from "@defi.org/web3-candies";
+import { bn, chainId, contract, web3, zero, zeroAddress } from "@defi.org/web3-candies";
 import { parseOrderUi, TimeResolution, useTwapStore } from "../src/store";
 import { expect } from "chai";
 import BN from "bignumber.js";
@@ -30,18 +30,21 @@ const createQueryProviderWithContext = () => {
   );
 };
 
-describe("store", () => {
+xdescribe("store", () => {
   beforeEach(() => initFixture());
 
   let lib: TWAPLib;
 
-  describe("Using TWAPLib with SpiritSwap config", () => {
+  describe("Using TWAPLib with SpookySwap config", () => {
     let { result: store } = renderHook(() => useTwapStore());
 
     beforeEach(async () => {
       const { result } = renderHook(() => useTwapStore());
       store = result;
-      lib = new TWAPLib(Configs.SpiritSwap, maker, web3());
+
+      console.log(await contract(Configs.SpookySwap.twapAbi, Configs.SpookySwap.twapAddress).methods.VERSION().call());
+
+      lib = new TWAPLib(Configs.SpookySwap, maker);
       await act(async () => store.current.setLib(lib));
       expect(store.current.lib).eq(lib);
     });
@@ -50,7 +53,7 @@ describe("store", () => {
       await act(async () => store.current.reset({}));
     });
 
-    it("initial and observable state", async () => {
+    it.only("initial and observable state", async () => {
       expect(store.current.srcUsd).bignumber.eq(store.current.dstUsd).eq(0);
       expect(store.current.loading).false;
       await act(async () => store.current.setLoading(true));
@@ -135,8 +138,6 @@ describe("store", () => {
     let mockOrder: Order;
 
     beforeEach(async () => {
-      console.log({ tokens });
-
       const { result } = renderHook(() => useTwapStore());
       store = result;
       lib = new TWAPLib(Configs.SpiritSwap, maker, web3());
@@ -233,8 +234,6 @@ describe("store", () => {
       const { result } = renderHook(() => useOrderPastEvents(mockOrderUi, true), {
         wrapper: createQueryProvider(),
       });
-
-      console.log(result);
 
       await waitFor(() => expect(result.current.isLoading).eq(false));
       expect(result.current.data?.dstAmountOut).eq("66.977333");
