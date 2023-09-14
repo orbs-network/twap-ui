@@ -128,6 +128,7 @@ const dapp: Dapp = {
   Component: DappComponent,
   logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/17358.png",
   config,
+  workInProgress: true,
 };
 
 export default dapp;
