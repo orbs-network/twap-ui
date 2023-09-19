@@ -31,7 +31,8 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-dom": "*"
+    "react-dom": "*",
+    "@types/node": "*"
   },
   "publishConfig": {
     "access": "public"

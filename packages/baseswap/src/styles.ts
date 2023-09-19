@@ -249,7 +249,6 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDark(theme);
   return {
     ".twap-submit": {
-    
       marginLeft: "auto",
       marginRight: "auto",
       width: "100%",

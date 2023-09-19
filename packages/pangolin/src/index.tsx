@@ -115,7 +115,7 @@ const TWAP = memo((props: PangolinTWAPProps) => {
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
-            <PangolinOrders />
+            {/* <PangolinOrders /> */}
             <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
           </AdapterContextProvider>
         </TwapAdapter>
