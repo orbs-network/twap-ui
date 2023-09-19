@@ -182,7 +182,7 @@ export const StyledSubmitButton = styled(Components.SubmitButton)({
   width: "100%",
   minHeight: 50,
   height: "auto",
-  padding:'5px 15px',
+  padding: "5px 15px",
   "*": {
     letterSpacing: "0.03em",
     fontWeight: 500,
@@ -275,6 +275,7 @@ export const configureStyles = (theme: Theme) => {
         padding: 20,
         border: `2px solid ${styles.button}`,
         borderRadius: 12,
+        overflowY: "auto",
       },
       ".twap-spinner": {
         color: styles.button,
@@ -461,7 +462,6 @@ export const configureStyles = (theme: Theme) => {
         },
       },
     },
-
 
     ".MuiBackdrop-root": {
       backdropFilter: "blur(15px)",
