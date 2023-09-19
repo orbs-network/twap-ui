@@ -1,16 +1,15 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, OrdersPanel, store } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, store } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState, createContext, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
-import * as AdapterStyles from "./styles";
 import React from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
-import { AiOutlineHistory } from "react-icons/ai";
 import { TokenData, Configs } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
+import { PangolinOrders } from "./Orders";
 
 const storeOverride = {
   isLimitOrder: true,
@@ -116,10 +115,8 @@ const TWAP = memo((props: PangolinTWAPProps) => {
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
-            <div className="twap-container">
-              <OrdersComponent />
-              {props.limit ? <LimitPanel /> : <TWAPPanel />}
-            </div>
+            <PangolinOrders />
+            <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
           </AdapterContextProvider>
         </TwapAdapter>
       </ThemeProvider>
@@ -137,7 +134,6 @@ const TWAPPanel = () => {
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
-      <ShowOrderHistory />
       <Components.SubmitButton />
       <OrderSummary>
         <Components.OrderSummaryDetails />
@@ -154,7 +150,6 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <Components.ChangeTokensOrder />
       <TokenPanel />
-      <ShowOrderHistory />
       <LimitPrice limit={true} />
 
       <Components.SubmitButton />
@@ -334,36 +329,6 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
         <Components.SubmitButton />
       </TwapStyles.StyledColumnFlex>
     </Components.OrderSummarySwipeContainer>
-  );
-};
-
-const ShowOrderHistory = () => {
-  const toggleOrders = useAdapterContext().toggleOrders;
-  const translations = useTwapContext().translations;
-
-  return (
-    <Components.Base.Card>
-      <TwapStyles.StyledRowFlex justifyContent="space-between">
-        <TwapStyles.StyledRowFlex justifyContent="flex-start">
-          <Components.Base.Icon icon={<AiOutlineHistory style={{ width: 23, height: 23 }} />} />
-          <Components.Base.Label>{translations.viewOrders}</Components.Base.Label>
-        </TwapStyles.StyledRowFlex>
-        <AdapterStyles.StyledShowOrdersButton onClick={toggleOrders}>
-          <TwapStyles.StyledText>{translations.view}</TwapStyles.StyledText>
-        </AdapterStyles.StyledShowOrdersButton>
-      </TwapStyles.StyledRowFlex>
-    </Components.Base.Card>
-  );
-};
-
-const OrdersComponent = () => {
-  const args = useAdapterContext();
-  return (
-    <AdapterStyles.StyledOrdersContainer show={args.showOrders} close={args.toggleOrders}>
-      <AdapterStyles.StyledOrders>
-        <OrdersPanel noPortal={true} />
-      </AdapterStyles.StyledOrders>
-    </AdapterStyles.StyledOrdersContainer>
   );
 };
 

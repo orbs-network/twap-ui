@@ -296,9 +296,9 @@ export const StyledSpookySwapBox = styled(Box)(({ theme }) => ({
 
 export const StyledBaseSwapBox = styled(Box)(({ theme }) => ({
   background: isDarkMode(theme) ? "#0D0D0D" : "rgb(242, 244, 248)",
-  borderRadius: 0,
+  borderRadius: 12,
   padding: 16,
-  border: "4px solid white",
+  border: "2px solid rgb(1, 84, 253)",
 }));
 
 export const StyledArbidexBox = styled(Box)(({ theme }) => ({

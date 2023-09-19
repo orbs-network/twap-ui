@@ -25,7 +25,7 @@ const baseStyles = (theme: Theme) => {
   const darkMode = isDark(theme);
   return {
     mainBackground: "#111111",
-    button: "#0154FE",
+    button: "rgb(1, 84, 254)",
     buttonColor: darkMode ? "rgb(18, 17, 34)" : "rgb(49, 65, 94)",
     secondaryBackground: "#333333",
     iconsColor: "white",
@@ -33,7 +33,7 @@ const baseStyles = (theme: Theme) => {
     tooltipBackground: darkMode ? "white" : "#D8DEEA",
     tooltipTextColor: darkMode ? "rgb(40, 13, 95)" : "rgb(77, 103, 147)",
     spinnerColor: darkMode ? "white" : "rgb(77, 103, 147)",
-    cardBackground: darkMode ? "linear-gradient(to bottom,#000 20%,#111)" : "rgb(228, 233, 241)",
+    cardBackground: darkMode ? "linear-gradient(to top, rgb(0, 0, 0), rgb(34, 34, 34))" : "rgb(228, 233, 241)",
     progressBarColor: darkMode ? "rgb(140, 140, 227)" : "rgb(102, 101, 221)",
     progressBarTrackColor: darkMode ? "#373E55" : "#D8DEEA",
     selectTokenBackground: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgb(242, 244, 248)",
@@ -49,24 +49,37 @@ const buttonStyles = (theme: Theme) => {
     color: styles.textColor,
     height: 28,
     padding: "0px 5px",
-    borderRadius: 2,
+    borderRadius: 8,
     fontSize: 16,
     fontWeight: 600,
     cursor: "pointer",
-    border: `2px solid ${styles.button}!important`,
-    transition: "0.2s all",
+    border: `2px solid white!important`,
+    transition: "opacity 0.2s",
     textTransform: "uppercase",
     "&:hover": {
       background: styles.mainBackground,
-      color: styles.button,
+      transform: "translateY(1px)",
     },
   };
 };
 
-export const StyledMaxButton = styled("div")(({ theme }) => ({
-  ...(buttonStyles(theme) as any),
-  color: baseStyles(theme).mainBackground,
-}));
+export const StyledMaxButton = styled("button")(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    color: styles.textColor,
+    border: `2px solid ${styles.button}`,
+    background: "transparent",
+    fontSize: 17,
+    borderRadius: 8,
+    cursor: "pointer",
+    "&:hover": {
+      boxShadow: "rgb(255, 255, 255) 0px 2px 4px, rgb(104, 185, 255) 0px -8px 10px, rgb(1, 84, 253) 8px 0px 12px, rgb(104, 185, 255) -3px 0px 12px",
+      transform: "translateY(1px)",
+      background: styles.button,
+      borderColor: "white",
+    },
+  };
+});
 
 export const StyledTopGrid = styled(Styles.StyledColumnFlex)({
   gap: 8,
@@ -105,11 +118,8 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
 });
 
 // const getButtonStyles = (theme: Theme) => {};
-export const StyledTokenInputContainer = styled(Styles.StyledColumnFlex)(({ theme }) => ({
-  border: "3px solid white",
-  padding: 16,
-  background: baseStyles(theme).cardBackground,
-}));
+export const StyledTokenInputContainer = styled(Components.Base.Card)({});
+
 export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => {
   return {
     background: baseStyles(theme).secondaryBackground,
@@ -142,8 +152,8 @@ export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ t
   const styles = baseStyles(theme);
   return {
     button: {
-      background: styles.button,
-      border: "2px solid white",
+      background: "transparent",
+      border: `2px solid ${styles.button}`,
       borderRadius: 0,
       width: 60,
       height: 40,
@@ -155,7 +165,7 @@ export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ t
         height: 18,
       },
       "&:hover": {
-        background: styles.button,
+        background: "transparent",
         boxShadow: "rgb(255, 255, 255) 0px 0px 4px, rgb(1, 84, 253) 0px 0px 12px",
       },
     },
@@ -238,13 +248,23 @@ export const configureStyles = (theme: Theme) => {
       ".twap-modal-content": {
         background: styles.mainBackground,
         padding: 20,
-        border: "2px solid white",
+        border: `2px solid ${styles.button}`,
+        borderRadius: 12,
+      },
+      ".twap-spinner": {
+        color: styles.button,
+      },
+      "*": {
+        "&::-webkit-scrollbar": {
+          display: "none",
+        },
       },
     },
     ".twap-card": {
-      border: "1px solid white",
+      border: "2px solid white",
       background: styles.cardBackground,
       padding: "12px 16px",
+      borderRadius: 8,
       ".twap-label": {
         fontSize: 16,
         "*": {
@@ -283,7 +303,6 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-button-loader": {
       color: `${styles.spinnerColor}!important`,
-      zoom: `0.55!important`,
     },
     ".twap-time-selector": {
       ".twap-time-selector-selected": {
@@ -324,6 +343,7 @@ export const configureStyles = (theme: Theme) => {
       },
     },
     ".twap-slider": {
+      marginLeft: "10px!important",
       "& .MuiSlider-valueLabel": {
         background: styles.tooltipBackground,
       },
@@ -378,7 +398,8 @@ export const configureStyles = (theme: Theme) => {
 
     ".twap-submit": {
       width: "100%",
-      height: 50,
+      minHeight: 50,
+      height: "auto",
       "*": {
         letterSpacing: "0.03em",
         fontWeight: 500,
@@ -388,16 +409,25 @@ export const configureStyles = (theme: Theme) => {
     ".twap-odnp-link": {
       padding: "10px 20px!important",
       minHeight: 40,
+      "&:hover": {
+        color: styles.textColor,
+      },
     },
     ".twap-odnp-separator": {
       background: `${styles.textColor}!important`,
     },
     ".twap-odnp-button": {
       height: 32,
-      border: "unset",
       background: styles.button,
-      borderRadius: 14,
+      borderRadius: 8,
       fontWeight: 500,
+      padding: "0px 8px!important",
+      border: "1px solid transparent",
+      transition: "0.2s all",
+      "&:hover": {
+        border: "1px solid white",
+        background: "transparent",
+      },
     },
 
     ".twap-button-disabled": {
@@ -405,9 +435,16 @@ export const configureStyles = (theme: Theme) => {
       cursor: "not-allowed!important",
       background: styles.mainBackground,
       opacity: "1!important",
+      transition: "0s all!important",
       "*": {
         color: styles.button,
         textTransform: "uppercase",
+      },
+      "&:hover": {
+        border: `1px solid white!important`,
+        "*": {
+          color: "white",
+        },
       },
     },
 

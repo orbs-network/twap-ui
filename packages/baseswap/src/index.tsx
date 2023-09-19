@@ -108,11 +108,13 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
           <StyledTokenBalance isSrc={isSrcToken} />
         </TwapStyles.StyledRowFlex>
         <StyledTokenInputContainer>
-          <StyledTokenPanelInput isSrc={isSrcToken} />
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <Components.TokenUSD isSrc={isSrcToken} />
-            {isSrcToken && <MaxButton />}
-          </TwapStyles.StyledRowFlex>
+          <TwapStyles.StyledColumnFlex>
+            <StyledTokenPanelInput isSrc={isSrcToken} />
+            <TwapStyles.StyledRowFlex justifyContent="space-between">
+              <Components.TokenUSD isSrc={isSrcToken} />
+              {isSrcToken && <MaxButton />}
+            </TwapStyles.StyledRowFlex>
+          </TwapStyles.StyledColumnFlex>
         </StyledTokenInputContainer>
       </StyledTokenPanel>
     </>
