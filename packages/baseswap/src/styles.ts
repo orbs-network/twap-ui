@@ -176,18 +176,7 @@ export const StyledTradeSize = styled(Components.Base.Card)({});
 export const StyledPriceCard = styled(Components.Base.Card)({});
 
 export const StyledSubmitButton = styled(Components.SubmitButton)({
-  marginTop: 20,
-  marginLeft: "auto",
-  marginRight: "auto",
-  width: "100%",
-  minHeight: 50,
-  height: "auto",
-  padding: "5px 15px",
-  "*": {
-    letterSpacing: "0.03em",
-    fontWeight: 500,
-    fontSize: 16,
-  },
+  marginTop: 10,
 });
 
 export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
@@ -259,6 +248,20 @@ export const configureStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
   const darkMode = isDark(theme);
   return {
+    ".twap-submit": {
+    
+      marginLeft: "auto",
+      marginRight: "auto",
+      width: "100%",
+      minHeight: 50,
+      height: "auto",
+      padding: "5px 15px",
+      "*": {
+        letterSpacing: "0.03em",
+        fontWeight: 500,
+        fontSize: 16,
+      },
+    },
     ".twap-button": {
       ...buttonStyles(theme),
     },
