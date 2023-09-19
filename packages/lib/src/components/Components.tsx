@@ -327,6 +327,7 @@ export function TokenUSD({
   onlyValue,
   prefix,
   suffix,
+  hideIfZero,
 }: {
   isSrc?: boolean;
   emptyUi?: ReactNode;
@@ -334,6 +335,7 @@ export function TokenUSD({
   onlyValue?: boolean;
   prefix?: string;
   suffix?: string;
+  hideIfZero?: boolean;
 }) {
   const srcUSD = useTwapStore((state) => state.getSrcAmountUsdUi());
   const srcLoading = useLoadingState().srcUsdLoading;
@@ -341,6 +343,8 @@ export function TokenUSD({
   const dstLoading = useLoadingState().dstUsdLoading;
   const usd = isSrc ? srcUSD : dstUSD;
   const isLoading = isSrc ? srcLoading : dstLoading;
+
+  if (Number(usd) <= 0 && hideIfZero) return null;
 
   return <USD suffix={suffix} prefix={prefix} onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
 }

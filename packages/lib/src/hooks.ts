@@ -224,7 +224,6 @@ export const useInitLib = () => {
     }
 
     const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
-
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
     setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));

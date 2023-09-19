@@ -22,7 +22,7 @@ function Odnp({ className = "" }: { className?: string }) {
   return (
     <>
       <StyledButton onClick={() => setOpen(true)} className="twap-odnp-button">
-        <StyledRowFlex>
+        <StyledRowFlex className="twap-odnp-button-children">
           <img src={icon} />
           <StyledOneLineText>{translations.notify}</StyledOneLineText>
         </StyledRowFlex>
