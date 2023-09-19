@@ -47,7 +47,6 @@ const buttonStyles = (theme: Theme) => {
   return {
     background: styles.button,
     color: styles.textColor,
-    height: 28,
     padding: "0px 5px",
     borderRadius: 8,
     fontSize: 16,
@@ -180,6 +179,15 @@ export const StyledSubmitButton = styled(Components.SubmitButton)({
   marginTop: 20,
   marginLeft: "auto",
   marginRight: "auto",
+  width: "100%",
+  minHeight: 50,
+  height: "auto",
+  padding:'5px 15px',
+  "*": {
+    letterSpacing: "0.03em",
+    fontWeight: 500,
+    fontSize: 16,
+  },
 });
 
 export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
@@ -191,11 +199,23 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
         flexDirection: "column",
         alignItems: "flex-start",
       },
+      ".twap-order-progress": {
+        height: 4,
+        background: `white!important`,
+        ".MuiLinearProgress-bar": {
+          height: 4,
+          background: `${styles.button}!important`,
+        },
+        "&:after": {
+          display: "none",
+        },
+      },
     },
     ".twap-cancel-order": {
       ...buttonStyles(theme),
       fontWeight: 400,
       fontSize: 16,
+      padding: "5px 15px",
     },
     ".twap-market-price-section": {
       flexDirection: "column",
@@ -241,6 +261,11 @@ export const configureStyles = (theme: Theme) => {
   return {
     ".twap-button": {
       ...buttonStyles(theme),
+    },
+    ".twap-ui-close": {
+      "*": {
+        color: styles.textColor,
+      },
     },
     ".twap-modal": {
       color: styles.textColor,
@@ -395,17 +420,6 @@ export const configureStyles = (theme: Theme) => {
         },
       },
     },
-
-    ".twap-submit": {
-      width: "100%",
-      minHeight: 50,
-      height: "auto",
-      "*": {
-        letterSpacing: "0.03em",
-        fontWeight: 500,
-        fontSize: 16,
-      },
-    },
     ".twap-odnp-link": {
       padding: "10px 20px!important",
       minHeight: 40,
@@ -448,15 +462,7 @@ export const configureStyles = (theme: Theme) => {
       },
     },
 
-    ".twap-order-preview": {
-      ".twap-order-progress": {
-        height: 4,
-        background: "#373E55!important",
-        ".MuiLinearProgress-bar": {
-          height: 4,
-        },
-      },
-    },
+
     ".MuiBackdrop-root": {
       backdropFilter: "blur(15px)",
       background: "rgba(0,0,0,.4)!important",
