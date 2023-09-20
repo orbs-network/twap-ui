@@ -643,13 +643,13 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
       const orderEndDate = Math.min(order.order.ask.deadline, (await block()).timestamp);
       const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order.order.time * 1000), findBlock(orderEndDate * 1000)]);
 
-      logger({
-        order,
-        orderTime: moment(order.order.time * 1000).format("DD/MM/YYYY HH:mm:ss"),
-        orderStartBlock: orderStartBlock.number,
-        orderDeadline: moment(order.order.ask.deadline * 1000).format("DD/MM/YYYY HH:mm:ss"),
-        orderEndBlock: orderEndBlock.number,
-      });
+      // logger({
+      //   order,
+      //   orderTime: moment(order.order.time * 1000).format("DD/MM/YYYY HH:mm:ss"),
+      //   orderStartBlock: orderStartBlock.number,
+      //   orderDeadline: moment(order.order.ask.deadline * 1000).format("DD/MM/YYYY HH:mm:ss"),
+      //   orderEndBlock: orderEndBlock.number,
+      // });
 
       const [events, priceUsd1Token] = await Promise.all([
         getPastEvents({
@@ -716,7 +716,6 @@ const useTokenSelect = () => {
   const { onSrcTokenSelected, onDstTokenSelected, parseToken } = useTwapContext();
   return useCallback(
     ({ isSrc, token }: { isSrc: boolean; token: any }) => {
-      console.log("test");
       const parsedToken = parseToken ? parseToken(token) : token;
       if (isSrc) {
         analytics.onSrcTokenClick(parsedToken?.symbol);

@@ -16,7 +16,6 @@ const config = Configs.BaseSwap;
 export const useDappTokens = () => {
   const { account } = useWeb3React();
   const { isInValidNetwork } = useNetwork(config.chainId);
-  console.log(config.chainId);
 
   return useQuery(
     ["useGetTokens", config.chainId],
