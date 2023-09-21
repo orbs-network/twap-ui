@@ -213,8 +213,11 @@ export const StyledBaseSwapLayout = styled(DappLayout)({
 });
 
 export const StyledArbidexLayout = styled(DappLayout)({
-  maxWidth: 600,
+  maxWidth: 540,
   width: "calc(100% - 30px)",
+  "@media(max-width:1200px)": {
+    maxWidth: 405,
+  },
 });
 
 export const StyledLynexLayout = styled(DappLayout)({

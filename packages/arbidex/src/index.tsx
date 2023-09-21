@@ -109,7 +109,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string): TokenData | undefined => {
+const parseToken = (rawToken: any): TokenData | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
@@ -121,7 +121,7 @@ const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string)
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: rawToken.tokenInfo?.logoURI || getTokenLogoURL(rawToken),
+    logoUrl: getTokenImageUrl(rawToken),
   };
 };
 const AdapterContext = createContext({} as BaseSwapTWAPProps);
@@ -131,7 +131,7 @@ const AdapterContextProvider = AdapterContext.Provider;
 const useAdapterContext = () => useContext(AdapterContext);
 
 const getTokenImageUrl = (token: any) => {
-  return token?.logoUri || `https://baseswap.fi/images/tokens/${token.address.toLowerCase()}.png`;
+  return `https://arbidex.fi/images/tokens/${token.address.toLowerCase()}.png`;
 };
 
 interface BaseSwapTWAPProps extends TWAPProps {
@@ -157,7 +157,7 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       account={props.account}
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
-      parseToken={(rawToken) => parseToken(rawToken, getTokenImageUrl)}
+      parseToken={parseToken}
       srcToken={props.srcToken}
       dstToken={props.dstToken}
       storeOverride={props.limit ? storeOverride : undefined}

@@ -160,9 +160,16 @@ export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme
   return {
     background: baseStyles(theme).mainBackground,
     borderRadius: 12,
-    padding: "3px 5px",
+    padding: "6px",
     input: {
       letterSpacing: "unset",
+    },
+    "*": {
+      fontSize: "18px!important",
+    },
+    ".twap-token-logo": {
+      width: "30px!important",
+      height: "30px!important",
     },
   };
 });
@@ -240,7 +247,18 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
   return {
     fontFamily: "Quicksand",
     ".twap-order": {
-      ".twap-order-expanded-row": {},
+      "@media(max-width:1200px)": {
+        ".twap-market-price-section": {
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 5,
+        },
+        ".twap-order-expanded-row": {
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 5,
+        },
+      },
     },
     ".twap-cancel-order": {
       ...buttonStyles(theme),
@@ -257,6 +275,11 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
     ".twap-orders-header-tabs": {
       background: "black",
       border: "1px solid white",
+      minHeight: 40,
+      button: {
+        minHeight: 40,
+        fontSize: 14,
+      },
       ".Mui-selected": {
         position: "relative",
         fontWeight: 600,
@@ -282,6 +305,11 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
       },
       ".MuiTouchRipple-root": {
         display: "none",
+      },
+      "@media(max-width:1200px)": {
+        button: {
+          fontSize: 12,
+        },
       },
     },
   };
@@ -313,6 +341,11 @@ export const configureStyles = (theme: Theme) => {
     ".twap-modal": {
       color: styles.textColor,
       fontFamily: "Quicksand",
+      ".twap-ui-close": {
+        "*": {
+          color: `${styles.textColor}`,
+        },
+      },
       "*": {
         "&::-webkit-scrollbar": {
           display: "none",
@@ -475,6 +508,9 @@ export const configureStyles = (theme: Theme) => {
       minHeight: 40,
       padding: "5px 10px",
       height: "auto",
+      maxWidth: "90%",
+      marginLeft: "auto",
+      marginRight: "auto",
     },
     ".twap-odnp-link": {
       minHeight: 40,

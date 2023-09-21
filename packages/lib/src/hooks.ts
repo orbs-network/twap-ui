@@ -11,8 +11,6 @@ import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, esti
 import { amountUi, getTokenFromTokensList, parseOrderUi, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
-import moment from "moment";
-import { logger } from "./utils";
 import { useNumericFormat } from "react-number-format";
 
 /**
