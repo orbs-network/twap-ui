@@ -13,6 +13,12 @@ import { SelectorOption, TokenListItem } from "./types";
 
 const config = Configs.Thena;
 
+const testToken = {
+  address: "0xCdC3A010A3473c0C4b2cB03D8489D6BA387B83CD",
+  symbol: "liveThe",
+  decimals: 18,
+};
+
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png";
 export const useDappTokens = () => {
   const { account } = useWeb3React();
@@ -41,7 +47,7 @@ export const useDappTokens = () => {
         return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
       });
 
-      return { ..._.mapKeys(_tokens, (t) => t.address) } as any;
+      return { ..._.mapKeys(_tokens, (t) => t.address), testToken } as any;
     },
     { enabled: !!account && !isInValidNetwork }
   );
