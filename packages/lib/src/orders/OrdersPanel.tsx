@@ -1,4 +1,5 @@
 import { Box, styled } from "@mui/material";
+import { ReactNode } from "react";
 import { ORDERS_CONTAINER_ID } from "..";
 import { Odnp, Portal } from "../components/base";
 import { OrdersLabel } from "../components/Labels";
@@ -22,16 +23,12 @@ function Orders({ className = "" }: { className?: string }) {
   );
 }
 
-export function OrdersPanel({ className, noPortal }: { className?: string; noPortal?: boolean }) {
+export function OrdersPanel({ className, noPortal, children }: { className?: string; noPortal?: boolean; children?: ReactNode }) {
   if (noPortal) {
-    return <Orders className={className} />;
+    return <>{children}</> || <Orders className={className} />;
   }
 
-  return (
-    <Portal id={ORDERS_CONTAINER_ID}>
-      <Orders className={className} />
-    </Portal>
-  );
+  return <Portal id={ORDERS_CONTAINER_ID}>{children ? <>{children}</> : <Orders className={className} />}</Portal>;
 }
 
 const StyledHeader = styled(Box)({

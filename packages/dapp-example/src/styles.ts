@@ -414,6 +414,11 @@ export const StyledPangolinLayout = styled(DappLayout)({
   width: "calc(100% - 30px)",
 });
 
+export const StyledPangolinOrdersLayout = styled(DappLayout)({
+  maxWidth: 800,
+  width: "calc(100% - 30px)",
+});
+
 export const StyledCloseIcon = styled("button")({
   position: "absolute",
   background: "transparent",

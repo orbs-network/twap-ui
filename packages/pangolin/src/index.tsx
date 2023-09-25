@@ -1,5 +1,17 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, store } from "@orbs-network/twap-ui";
+import {
+  Components,
+  hooks,
+  Translations,
+  TwapAdapter,
+  useTwapContext,
+  Styles as TwapStyles,
+  TWAPTokenSelectProps,
+  TWAPProps,
+  store,
+  OrdersPanel,
+  Orders,
+} from "@orbs-network/twap-ui";
 import { memo, useCallback, useState, createContext, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
 import React from "react";
@@ -115,7 +127,10 @@ const TWAP = memo((props: PangolinTWAPProps) => {
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
-            {/* <PangolinOrders /> */}
+            <OrdersPanel>
+              <PangolinOrders limit={props.limit} />
+            </OrdersPanel>
+            <OrdersPanel />
             <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
           </AdapterContextProvider>
         </TwapAdapter>
@@ -334,4 +349,4 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 const memoizedTWAP = memo(TWAP);
 
-export { memoizedTWAP as TWAP };
+export { memoizedTWAP as TWAP, Orders };

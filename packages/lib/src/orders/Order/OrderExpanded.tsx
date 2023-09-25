@@ -124,7 +124,7 @@ const OrderPrice = ({ order }: { order: OrderUI }) => {
   );
 };
 
-const CancelOrderButton = ({ orderId }: { orderId: number }) => {
+export const CancelOrderButton = ({ orderId }: { orderId: number }) => {
   const { isLoading, mutate } = useCancelOrder();
   const translations = useTwapContext().translations;
   return (

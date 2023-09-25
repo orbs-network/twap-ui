@@ -1,6 +1,6 @@
-import { TWAP } from "@orbs-network/twap-ui-pangolin";
+import { Orders, TWAP } from "@orbs-network/twap-ui-pangolin";
 import { Popup, TokensList, UISelector } from "./Components";
-import { StyledModalContent, StyledPangolin, StyledPangolinBox, StyledPangolinDaasBox, StyledPangolinLayout } from "./styles";
+import { StyledModalContent, StyledPangolin, StyledPangolinBox, StyledPangolinDaasBox, StyledPangolinLayout, StyledPangolinOrdersLayout } from "./styles";
 import _ from "lodash";
 import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
@@ -136,6 +136,11 @@ const PangolinComponent = () => {
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledPangolinBox>
       </StyledPangolinLayout>
+      <StyledPangolinOrdersLayout name={config.name}>
+        <StyledPangolinBox>
+          <Orders />
+        </StyledPangolinBox>
+      </StyledPangolinOrdersLayout>
     </StyledPangolin>
   );
 };

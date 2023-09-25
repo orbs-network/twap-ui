@@ -8,3 +8,5 @@ export * as Components from "./components";
 export * from "./ErrorHandling";
 export * from "./orders/OrdersPanel";
 export * from "./orders/Orders";
+
+export * from "./orders/Order/OrderExpanded";
