@@ -23,7 +23,7 @@
     "@defi.org/web3-candies": "^4.20",
     "@mui/material": "5.x",
     "@mui/system": "5.x",
-    "@orbs-network/twap": "1.x",
+    "@orbs-network/twap": "^1.18.0",
     "@orbs-network/twap-ui": "^0.9.10",
     "lodash": "4.x",
     "react-icons": "4.x",
