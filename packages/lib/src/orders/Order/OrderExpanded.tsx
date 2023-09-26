@@ -124,7 +124,7 @@ const OrderPrice = ({ order }: { order: OrderUI }) => {
   );
 };
 
-export const CancelOrderButton = ({ orderId }: { orderId: number }) => {
+export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number; className?: string }) => {
   const { isLoading, mutate } = useCancelOrder();
   const translations = useTwapContext().translations;
   return (
@@ -134,7 +134,7 @@ export const CancelOrderButton = ({ orderId }: { orderId: number }) => {
         e.stopPropagation();
         mutate(orderId);
       }}
-      className="twap-cancel-order"
+      className={`${className} twap-cancel-order`}
     >
       {translations.cancelOrder}
     </StyledCancelOrderButton>

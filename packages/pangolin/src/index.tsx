@@ -130,7 +130,7 @@ const TWAP = memo((props: PangolinTWAPProps) => {
             <OrdersPanel>
               <PangolinOrders limit={props.limit} />
             </OrdersPanel>
-            <OrdersPanel />
+            {/* <OrdersPanel /> */}
             <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
           </AdapterContextProvider>
         </TwapAdapter>

@@ -125,18 +125,17 @@ const TWAPComponent = ({ partnerDaas, limit }: { partnerDaas?: string; limit?: b
 };
 
 const PangolinComponent = () => {
-  const { isDarkTheme } = useTheme();
   const [selected, setSelected] = useState(SelectorOption.TWAP);
 
   return (
-    <StyledPangolin isDarkMode={isDarkTheme ? 1 : 0}>
+    <StyledPangolin>
       <StyledPangolinLayout name={config.name}>
         <UISelector limit={true} select={setSelected} selected={selected} />
         <StyledPangolinBox>
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledPangolinBox>
       </StyledPangolinLayout>
-      <StyledPangolinOrdersLayout name={config.name}>
+      <StyledPangolinOrdersLayout>
         <StyledPangolinBox>
           <Orders />
         </StyledPangolinBox>
@@ -146,10 +145,8 @@ const PangolinComponent = () => {
 };
 
 const PangolinDaasComponent = () => {
-  const { isDarkTheme } = useTheme();
-
   return (
-    <StyledPangolin isDarkMode={isDarkTheme ? 1 : 0}>
+    <StyledPangolin>
       <StyledPangolinLayout name={config.name}>
         <StyledPangolinDaasBox>
           <TWAPComponent partnerDaas="0xFA1c2Ae5c52a02cbaD6A05CdcA89f032Fa3a4D0d" />

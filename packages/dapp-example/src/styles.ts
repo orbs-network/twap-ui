@@ -191,8 +191,11 @@ export const StyledPangolinDaasBox = styled(StyledPangolinBox)({
   border: "1px solid #FFC800",
 });
 
-export const StyledPangolin = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  background: isDarkMode ? "#1c1c1c" : "white",
+export const StyledPangolin = styled(StyledDapp)(({ theme }) => ({
+  background: isDarkMode(theme) ? "#1c1c1c" : "white",
+  ".ui-selector-btn": {
+    color: isDarkMode(theme) ? "white" : "black",
+  },
   ".menu-button": {
     svg: {
       "* ": {
@@ -414,9 +417,10 @@ export const StyledPangolinLayout = styled(DappLayout)({
   width: "calc(100% - 30px)",
 });
 
-export const StyledPangolinOrdersLayout = styled(DappLayout)({
+export const StyledPangolinOrdersLayout = styled("div")({
   maxWidth: 800,
   width: "calc(100% - 30px)",
+  marginTop: 20,
 });
 
 export const StyledCloseIcon = styled("button")({

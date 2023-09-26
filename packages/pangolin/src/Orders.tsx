@@ -5,8 +5,8 @@ import _ from "lodash";
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 interface ContextProps {
-  selectedOrderId?: number;
-  setSelectedOrderId: (id: number) => void;
+  selectedOrder?: OrderUI;
+  setSelectedOrder: (value: OrderUI) => void;
   selectedTab: Status;
   setSelectedTab: (status: Status) => void;
   limit?: boolean;
@@ -16,49 +16,33 @@ const Context = createContext({} as ContextProps);
 
 const useOrdersContext = () => useContext(Context);
 
-const useSelectOrderOnLoad = () => {
-  const { flatOrders, dataUpdatedAt } = useOrders();
-  const { setSelectedOrderId, selectedOrderId, limit } = useOrdersContext();
-  const ref = useRef<boolean | undefined>(false);
-  useEffect(() => {
-    if (selectedOrderId === undefined || ref.current !== limit) {
-      setSelectedOrderId(flatOrders[0]?.order.id);
-      ref.current = limit;
-    }
-  }, [selectedOrderId, dataUpdatedAt, _.size(flatOrders), limit]);
-};
-
 const useOrders = () => {
   const { data, dataUpdatedAt } = hooks.useOrdersHistoryQuery();
   const { limit } = useOrdersContext();
-  const { selectedTab } = useOrdersContext();
 
-  const allOrders = useMemo(() => {
-    return _.groupBy(
-      limit ? _.filter(_.flatMap(data), (order: OrderUI) => order.ui.totalChunks === 1) : _.filter(_.flatMap(data), (order: OrderUI) => order.ui.totalChunks > 1),
-      (order: OrderUI) => order.ui.status
-    );
+  return useMemo(() => {
+    const filterCondition = limit ? (order: OrderUI) => order.ui.totalChunks === 1 : (order: OrderUI) => order.ui.totalChunks > 1;
+    const _orders = _.filter(_.flatMap(data), (it: OrderUI) => it.ui.status !== Status.Expired);
+    const allOrders = _.groupBy(_.filter(_orders, filterCondition), (order: OrderUI) => order.ui.status);
+    const flatOrders = _.flatMap(allOrders);
+    return {
+      allOrders,
+      flatOrders,
+      firstOrder: _.first(flatOrders) as OrderUI,
+    };
   }, [dataUpdatedAt, limit]);
-
-  const selectedOrders = useMemo(() => {
-    return allOrders?.[selectedTab];
-  }, [dataUpdatedAt, selectedTab, limit]);
-
-  const flatOrders = useMemo(() => {
-    return _.flatMap(allOrders);
-  }, [dataUpdatedAt, limit]);
-
-  return { allOrders, dataUpdatedAt, selectedOrders, flatOrders };
 };
 
 const ContextWrapper = ({ children, limit }: { children: ReactNode; limit?: boolean }) => {
-  const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
+  const [selectedOrder, setSelectedOrder] = useState<OrderUI | undefined>(undefined);
   const [selectedTab, setSelectedTab] = useState<Status>(Status.Open);
 
-  return <Context.Provider value={{ limit, selectedOrderId, setSelectedOrderId, selectedTab, setSelectedTab }}>{children}</Context.Provider>;
+  return <Context.Provider value={{ limit, selectedOrder, setSelectedOrder, selectedTab, setSelectedTab }}>{children}</Context.Provider>;
 };
 
 export const PangolinOrders = ({ limit }: { limit?: boolean }) => {
+  const { lib } = store.useTwapStore();
+  if (!lib) return null;
   return (
     <ContextWrapper limit={limit}>
       <Orders />;
@@ -67,12 +51,26 @@ export const PangolinOrders = ({ limit }: { limit?: boolean }) => {
 };
 
 function Orders() {
-  useSelectOrderOnLoad();
+  const { firstOrder } = useOrders();
+  const { setSelectedOrder, limit, selectedOrder } = useOrdersContext();
+  const ref = useRef(limit);
+  const account = useTwapContext().account;
+  useEffect(() => {
+    if (!selectedOrder || limit !== ref.current) {
+      setSelectedOrder(firstOrder);
+      ref.current = limit;
+    }
+  }, [firstOrder, limit, selectedOrder]);
+
+  useEffect(() => {
+    setSelectedOrder(firstOrder);
+  }, [account, firstOrder]);
+
   return (
     <StyledOrders>
       <Header />
       <StyledOrdersFlex>
-        <Order />
+        <SelectedOrder />
         <List />
       </StyledOrdersFlex>
     </StyledOrders>
@@ -87,14 +85,16 @@ const StyledOrdersFlex = styled(Styles.StyledRowFlex)({
 const OrderDetail = ({ label, value, labelTooltip, valueTooltip }: { label: string; labelTooltip?: string; value: ReactNode; valueTooltip?: string }) => {
   return (
     <StyledOrderDetail>
-      <Components.Base.Label tooltipText={labelTooltip}>{label}</Components.Base.Label>
-      <Components.Base.Tooltip text={valueTooltip}>{value}</Components.Base.Tooltip>
+      <StyledOrderDetailLabel tooltipText={labelTooltip}>{label}</StyledOrderDetailLabel>
+      <StyledOrderDetailValue>
+        <Components.Base.Tooltip text={valueTooltip}>{value}</Components.Base.Tooltip>
+      </StyledOrderDetailValue>
     </StyledOrderDetail>
   );
 };
 
 const SrcTokenAmount = () => {
-  const selectedOrder = useSelectedOrder();
+  const selectedOrder = useOrdersContext().selectedOrder;
   const amount = hooks.useFormatNumber({ value: selectedOrder?.ui.srcAmountUi });
 
   return (
@@ -110,17 +110,24 @@ const SrcTokenAmount = () => {
   );
 };
 
+const Progress = () => {
+  const { selectedOrder, limit } = useOrdersContext();
+
+  if (limit) return null;
+  return <OrderDetail label="Progress" value={<Typography>{`${selectedOrder?.ui.progress}%`}</Typography>} />;
+};
+
 const DstTokenAmount = () => {
-  const selectedOrder = useSelectedOrder();
+  const selectedOrder = useOrdersContext().selectedOrder;
   const { data } = hooks.useOrderPastEvents(selectedOrder!, true);
   const amount = hooks.useFormatNumber({ value: data?.dstAmountOut });
 
   return (
     <OrderDetail
-      label="Output Amount"
+      label="Output Amount filled"
       value={
         <Styles.StyledRowFlex justifyContent="flex-start">
-          <Typography>{amount}</Typography>
+          {!data ? <StyledDstAmountLoader /> : <Typography>{amount}</Typography>}
           <Components.Base.TokenLogo logo={selectedOrder?.ui.dstToken.logoUrl} />
         </Styles.StyledRowFlex>
       }
@@ -128,45 +135,55 @@ const DstTokenAmount = () => {
   );
 };
 
+const StyledDstAmountLoader = styled(Components.Base.Loader)({
+  flex: 1,
+  maxWidth: 80,
+});
+
 const MinReceivedPerTrade = () => {
-  const selectedOrder = useSelectedOrder();
+  const selectedOrder = useOrdersContext().selectedOrder;
   const { translations } = useTwapContext();
   const amount = hooks.useFormatNumber({ value: selectedOrder?.ui.dstMinAmountOutUsdUi });
   const tooltip = hooks.useFormatNumber({ value: selectedOrder?.ui.dstMinAmountOutUsdUi, decimalScale: 18 });
+  const { limit } = useOrdersContext();
 
-  if (selectedOrder?.ui.isMarketOrder) return null;
+  if (limit || selectedOrder?.ui.isMarketOrder) return null;
   return <OrderDetail valueTooltip={tooltip} labelTooltip={translations.confirmationMinDstAmountTootipLimit} label={translations.minReceivedPerTrade} value={amount} />;
 };
 
 const TradeSize = () => {
-  const selectedOrder = useSelectedOrder();
+  const selectedOrder = useOrdersContext().selectedOrder;
   const { translations } = useTwapContext();
   const amount = hooks.useFormatNumber({ value: selectedOrder?.ui.srcChunkAmountUi });
   const tooltip = hooks.useFormatNumber({ value: selectedOrder?.ui.srcChunkAmountUi, decimalScale: 18 });
+  const { limit } = useOrdersContext();
 
+  if (limit) return null;
   return <OrderDetail value={amount} valueTooltip={tooltip} label={translations.tradeSize} labelTooltip={translations.tradeSizeTooltip} />;
 };
 
 const OrderStatus = () => {
-  const selectedOrder = useSelectedOrder();
+  const selectedOrder = useOrdersContext().selectedOrder;
 
   return <OrderDetail label="Status" value={getStatusName(selectedOrder!.ui.status)} />;
 };
 
 const TotalTrades = () => {
-  const selectedOrder = useSelectedOrder();
   const { translations } = useTwapContext();
+  const { limit, selectedOrder } = useOrdersContext();
 
   const amount = hooks.useFormatNumber({ value: selectedOrder?.ui.totalChunks });
 
+  if (limit) return null;
   return <OrderDetail labelTooltip={translations.totalTradesTooltip} label={translations.totalTrades} value={amount} />;
 };
 
 const TradeInterval = () => {
-  const selectedOrder = useSelectedOrder();
   const { translations } = useTwapContext();
   const minimumDelayMinutes = store.useTwapStore((state) => state.getMinimumDelayMinutes());
+  const { limit, selectedOrder } = useOrdersContext();
 
+  if (limit) return null;
   return (
     <OrderDetail
       labelTooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}
@@ -177,24 +194,57 @@ const TradeInterval = () => {
 };
 
 const Deadline = () => {
-  const selectedOrder = useSelectedOrder();
   const { translations } = useTwapContext();
+  const { limit, selectedOrder } = useOrdersContext();
 
+  if (limit) return null;
   return <OrderDetail labelTooltip={translations.maxDurationTooltip} label={translations.deadline} value={selectedOrder?.ui.deadlineUi} />;
 };
 
 const CancelOrder = () => {
-  const selectedOrder = useSelectedOrder();
+  const selectedOrder = useOrdersContext().selectedOrder;
 
   if (selectedOrder?.ui.status !== Status.Open) return null;
-  return <CancelOrderButton orderId={selectedOrder!.order.id} />;
+  return <StyledCancelButton orderId={selectedOrder!.order.id} />;
 };
 
+const StyledCancelButton = styled(CancelOrderButton)({
+  background: "#717171",
+  margin: 0,
+  minHeight: 34,
+  padding: "0 20px",
+  marginLeft: "auto",
+  marginRight: "auto",
+  marginTop: 30,
+  minWidth: 200,
+  "*": {
+    color: "white",
+    fontSize: 14,
+  },
+});
+
 const StyledOrderDetail = styled(Styles.StyledColumnFlex)({
+  gap: 5,
   width: "calc(50% - 10px)",
   ".twap-token-logo": {
-    width: 26,
-    height: 26,
+    width: 22,
+    height: 22,
+  },
+});
+
+const StyledOrderDetailLabel = styled(Components.Base.Label)({
+  fontSize: 14,
+  fontWeight: 500,
+  color: "#C3C5CB",
+});
+
+const StyledOrderDetailValue = styled("div")({
+  width: "100%",
+  fontSize: 14,
+  fontWeight: 500,
+  "*": {
+    fontSize: "inherit",
+    fontWeight: "inherit",
   },
 });
 const Header = () => {
@@ -207,19 +257,12 @@ const Header = () => {
   );
 };
 
-const useSelectedOrder = (): OrderUI | undefined => {
-  const { selectedOrderId } = useOrdersContext();
-  const { dataUpdatedAt, flatOrders } = useOrders();
-
-  return useMemo(() => flatOrders.find((order: OrderUI) => order.order.id === selectedOrderId), [dataUpdatedAt, selectedOrderId]);
-};
-const Order = () => {
-  const selectedOrder = useSelectedOrder();
-  console.log(selectedOrder);
+const SelectedOrder = () => {
+  const selectedOrder = useOrdersContext().selectedOrder;
 
   if (!selectedOrder) return null;
   return (
-    <StyledOrder>
+    <StyledSelectedOrder>
       <StyledOrderHeader>
         <StyledLogos>
           <StyledSrcLogo logo={selectedOrder.ui.srcToken.logoUrl} />
@@ -240,10 +283,11 @@ const Order = () => {
         <TotalTrades />
         <TradeInterval />
         <Deadline />
+        <Progress />
         <OrderStatus />
       </StyledDetails>
       <CancelOrder />
-    </StyledOrder>
+    </StyledSelectedOrder>
   );
 };
 
@@ -287,9 +331,8 @@ const StyledOrderHeader = styled(Styles.StyledRowFlex)({
   justifyContent: "flex-start",
 });
 
-const StyledOrder = styled(Styles.StyledColumnFlex)({
-  flex: 1,
-  width: "auto",
+const StyledSelectedOrder = styled(Styles.StyledColumnFlex)({
+  width: "50%",
 });
 
 const StyledHeaderTitle = styled(Typography)({
@@ -310,27 +353,28 @@ const StyledOrders = styled(Styles.StyledColumnFlex)({
 
 const List = () => {
   const { selectedTab } = useOrdersContext();
-  const { selectedOrders } = useOrders();
+  const { allOrders } = useOrders();
 
-  if (!_.size(selectedOrders)) {
-    return (
-      <StyledEmptyList>
-        No <span>{getStatusName(selectedTab)}</span> Order
-      </StyledEmptyList>
-    );
-  }
+  const selectedOrders = allOrders[selectedTab];
+
   return (
     <StyledList>
-      {selectedOrders?.map((o) => {
-        return <ListItem key={o.order.id} order={o} />;
-      })}
+      {!_.size(selectedOrders) ? (
+        <StyledEmptyList>
+          No <span>{getStatusName(selectedTab)}</span> Order
+        </StyledEmptyList>
+      ) : (
+        selectedOrders?.map((o) => {
+          return <ListItem key={o.order.id} order={o} />;
+        })
+      )}
     </StyledList>
   );
 };
 
 const StyledEmptyList = styled(Typography)({
   textAlign: "center",
-  width: "50%",
+  width: "100%",
   marginTop: 30,
   fontSize: 15,
   "& span": {
@@ -339,26 +383,34 @@ const StyledEmptyList = styled(Typography)({
 });
 const decimalScale = 3;
 const ListItem = ({ order }: { order: OrderUI }) => {
-  const { setSelectedOrderId, selectedOrderId } = useOrdersContext();
+  const { setSelectedOrder, selectedOrder } = useOrdersContext();
   const { data } = hooks.useOrderPastEvents(order, true);
   const outAmount = hooks.useFormatNumber({ value: data?.dstAmountOut, decimalScale });
   const srcAmount = hooks.useFormatNumber({ value: order.ui.srcAmountUi, decimalScale });
   return (
-    <StyledListItem selected={order.order.id === selectedOrderId ? 1 : 0} onClick={() => setSelectedOrderId(order.order.id)}>
+    <StyledListItem selected={order.order.id === selectedOrder?.order.id ? 1 : 0} onClick={() => setSelectedOrder(order)}>
       <Styles.StyledRowFlex justifyContent="space-between">
         <Typography>
           Buy {order.ui.dstToken.symbol} with {order.ui.srcToken.symbol}
         </Typography>
         <Styles.StyledColumnFlex style={{ width: "auto", alignItems: "flex-end", gap: 2 }}>
-          <Typography>
-            {srcAmount}/{outAmount}
-          </Typography>
+          {!data ? (
+            <StyledListItemLoader />
+          ) : (
+            <Typography>
+              {srcAmount}/{outAmount}
+            </Typography>
+          )}
           <StyledListItemStatus>{getStatusName(order.ui.status)}</StyledListItemStatus>
         </Styles.StyledColumnFlex>
       </Styles.StyledRowFlex>
     </StyledListItem>
   );
 };
+
+const StyledListItemLoader = styled(Components.Base.Loader)({
+  width: 60,
+});
 
 const tabs = [Status.Open, Status.Completed, Status.Canceled];
 
@@ -426,7 +478,6 @@ const StyledListItem = styled(Styles.StyledRowFlex)<{ selected: number }>(({ sel
 }));
 
 const StyledList = styled(Styles.StyledColumnFlex)({
-  flex: 1,
-  width: "auto",
+  width: "50%",
   gap: 0,
 });
