@@ -22,7 +22,7 @@ const Context = createContext({} as ContextProps);
 const useOrdersContext = () => useContext(Context);
 
 const useOrders = () => {
-  const { data, dataUpdatedAt } = hooks.useOrdersHistoryQuery();
+  const { data, dataUpdatedAt, isLoading } = hooks.useOrdersHistoryQuery();
   const { limit, selectedOrderID } = useOrdersContext();
 
   const orders = useMemo(() => {
@@ -38,6 +38,7 @@ const useOrders = () => {
   return {
     orders,
     selectedOrder,
+    isLoading,
   };
 };
 
@@ -53,13 +54,13 @@ export const PangolinOrders = ({ limit, theme }: { limit?: boolean; theme: any }
   if (!lib) return null;
   return (
     <ContextWrapper limit={limit} theme={theme}>
-      <Orders />;
+      <Orders />
     </ContextWrapper>
   );
 };
 
 function Orders() {
-  const { orders } = useOrders();
+  const { orders, isLoading } = useOrders();
   const { setSelectedOrderID, limit, selectedOrderID, theme } = useOrdersContext();
   const account = useTwapContext().account;
   const mobile = useMobile();
@@ -78,10 +79,23 @@ function Orders() {
   return (
     <StyledOrders theme={theme}>
       <Header />
-      {mobile ? <Mobile /> : <Desktop />}
+      {isLoading ? <OrdersLoader /> : mobile ? <Mobile /> : <Desktop />}
     </StyledOrders>
   );
 }
+
+const OrdersLoader = () => {
+  return (
+    <StyledOrdersLoader>
+      <Components.Base.Spinner />
+    </StyledOrdersLoader>
+  );
+};
+
+const StyledOrdersLoader = styled(Styles.StyledRowFlex)({
+  marginTop: 50,
+  marginBottom: 50,
+});
 
 const Desktop = () => {
   return (
@@ -151,7 +165,7 @@ const SrcTokenAmount = ({ order }: { order: OrderUI }) => {
       label="Input Amount"
       value={
         <Styles.StyledRowFlex justifyContent="flex-start">
-          <Typography>{amount}</Typography>
+          <Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>
           <Components.Base.TokenLogo logo={order?.ui.srcToken.logoUrl} />
         </Styles.StyledRowFlex>
       }
@@ -175,7 +189,7 @@ const DstTokenAmount = ({ order }: { order: OrderUI }) => {
       label="Output Amount filled"
       value={
         <Styles.StyledRowFlex justifyContent="flex-start">
-          {!data ? <StyledDstAmountLoader /> : <Typography>{amount}</Typography>}
+          {!data ? <StyledDstAmountLoader /> : <Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>}
           <Components.Base.TokenLogo logo={order?.ui.dstToken.logoUrl} />
         </Styles.StyledRowFlex>
       }
@@ -190,7 +204,14 @@ const MinReceivedPerTrade = ({ order }: { order: OrderUI }) => {
   const { limit } = useOrdersContext();
 
   if (limit || order?.ui.isMarketOrder) return null;
-  return <OrderDetail valueTooltip={tooltip} labelTooltip={translations.confirmationMinDstAmountTootipLimit} label={translations.minReceivedPerTrade} value={amount} />;
+  return (
+    <OrderDetail
+      valueTooltip={tooltip}
+      labelTooltip={translations.confirmationMinDstAmountTootipLimit}
+      label={translations.minReceivedPerTrade}
+      value={<Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>}
+    />
+  );
 };
 
 const TradeSize = ({ order }: { order: OrderUI }) => {
@@ -200,7 +221,19 @@ const TradeSize = ({ order }: { order: OrderUI }) => {
   const { limit } = useOrdersContext();
 
   if (limit) return null;
-  return <OrderDetail value={amount} valueTooltip={tooltip} label={translations.tradeSize} labelTooltip={translations.tradeSizeTooltip} />;
+  return (
+    <OrderDetail
+      value={
+        <Styles.StyledRowFlex justifyContent="flex-start">
+          <Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>
+          <Components.Base.TokenLogo logo={order?.ui.srcToken.logoUrl} />
+        </Styles.StyledRowFlex>
+      }
+      valueTooltip={tooltip}
+      label={translations.tradeSize}
+      labelTooltip={translations.tradeSizeTooltip}
+    />
+  );
 };
 
 const OrderStatus = ({ order }: { order: OrderUI }) => {
@@ -214,7 +247,7 @@ const TotalTrades = ({ order }: { order: OrderUI }) => {
   const amount = hooks.useFormatNumber({ value: order?.ui.totalChunks });
 
   if (limit) return null;
-  return <OrderDetail labelTooltip={translations.totalTradesTooltip} label={translations.totalTrades} value={amount} />;
+  return <OrderDetail labelTooltip={translations.totalTradesTooltip} label={translations.totalTrades} value={<Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>} />;
 };
 
 const TradeInterval = ({ order }: { order: OrderUI }) => {
@@ -227,7 +260,7 @@ const TradeInterval = ({ order }: { order: OrderUI }) => {
     <OrderDetail
       labelTooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}
       label={translations.tradeInterval}
-      value={store.fillDelayText(order!.ui.fillDelay, translations)}
+      value={<Typography>{store.fillDelayText(order!.ui.fillDelay, translations)}</Typography>}
     />
   );
 };
@@ -237,7 +270,7 @@ const Deadline = ({ order }: { order: OrderUI }) => {
   const { limit } = useOrdersContext();
 
   if (limit) return null;
-  return <OrderDetail labelTooltip={translations.maxDurationTooltip} label={translations.deadline} value={order?.ui.deadlineUi} />;
+  return <OrderDetail labelTooltip={translations.maxDurationTooltip} label={translations.deadline} value={<Typography>{order?.ui.deadlineUi}</Typography>} />;
 };
 
 const CancelOrder = ({ order, className = "" }: { order: OrderUI; className?: string }) => {
@@ -590,6 +623,8 @@ const StyledOrderDetail = styled(Styles.StyledColumnFlex)({
   gap: 5,
   width: "calc(50% - 10px)",
   ".twap-token-logo": {
+    minWidth: 22,
+    minHeight: 22,
     width: 22,
     height: 22,
   },
@@ -662,6 +697,8 @@ const StyledDstAmountLoader = styled(Components.Base.Loader)({
 
 const StyledDestopPairLogos = styled(PairLogos)({
   ".twap-token-logo": {
+    minWidth: 44,
+    minHeight: 44,
     width: 44,
     height: 44,
   },
