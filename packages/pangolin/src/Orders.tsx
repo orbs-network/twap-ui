@@ -118,17 +118,17 @@ const Mobile = () => {
 };
 
 const Select = () => {
-  const { selectedTab, setSelectedTab } = useOrdersContext();
+  const { selectedTab, setSelectedTab, theme } = useOrdersContext();
   const [open, setOpen] = useState(false);
   return (
     <ClickAwayListener onClickAway={() => setOpen(false)}>
       <StyledSelect>
-        <StyledSelectSelected open={open ? 1 : 0} onClick={() => setOpen(!open)}>
+        <StyledSelectSelected theme={theme} open={open ? 1 : 0} onClick={() => setOpen(!open)}>
           <Typography>{selectedTab}</Typography>
           <IoIosArrowDown />
         </StyledSelectSelected>
         {open && (
-          <StyledSelectList>
+          <StyledSelectList theme={theme}>
             {TABS.map((tab) => {
               return (
                 <StyledSelectOption
@@ -150,9 +150,12 @@ const Select = () => {
 };
 
 const OrderDetail = ({ label, value, labelTooltip, valueTooltip }: { label: string; labelTooltip?: string; value: ReactNode; valueTooltip?: string }) => {
+ const {theme} = useOrdersContext()
   return (
     <StyledOrderDetail>
-      <StyledOrderDetailLabel tooltipText={labelTooltip}>{label}</StyledOrderDetailLabel>
+      <StyledOrderDetailLabel theme={theme} tooltipText={labelTooltip}>
+        {label}
+      </StyledOrderDetailLabel>
       <StyledOrderDetailValue>
         <Components.Base.Tooltip text={valueTooltip}>{value}</Components.Base.Tooltip>
       </StyledOrderDetailValue>
@@ -294,7 +297,7 @@ const Header = () => {
 
 const SelectedOrder = () => {
   const { selectedOrder } = useOrders();
-
+  const { theme } = useOrdersContext();
   if (!selectedOrder) return null;
   return (
     <StyledSelectedOrder>
@@ -304,7 +307,7 @@ const SelectedOrder = () => {
           <StyledOrderSymbolsTop>
             {selectedOrder.ui.srcToken.symbol}/{selectedOrder.ui.dstToken.symbol}
           </StyledOrderSymbolsTop>
-          <StyledOrderSymbolsBottom>Buy {selectedOrder.ui.dstToken.symbol}</StyledOrderSymbolsBottom>
+          <StyledOrderSymbolsBottom theme={theme}> Buy {selectedOrder.ui.dstToken.symbol}</StyledOrderSymbolsBottom>
         </StyledOrderSymbols>
       </StyledOrderHeader>
       <OrderDetails order={selectedOrder} />
@@ -353,10 +356,10 @@ const StyledOrderSymbolsTop = styled(Typography)({
   fontSize: 16,
   fontWeight: 500,
 });
-const StyledOrderSymbolsBottom = styled(Typography)({
+const StyledOrderSymbolsBottom = styled(Typography)(({ theme }) => ({
   fontSize: 12,
-  color: "#E5E5E5",
-});
+  color: parseTheme(theme).isDarkMode ?  "#E5E5E5" : 'black',
+}));
 const StyledPairLogos = styled(Box)({
   position: "relative",
 });
@@ -437,10 +440,10 @@ const StyledMobileList = styled(Styles.StyledColumnFlex)({
 });
 
 const MobileListItem = ({ order }: { order: OrderUI }) => {
-  const { selectedOrderID, setSelectedOrderID } = useOrdersContext();
+  const { selectedOrderID, setSelectedOrderID, theme } = useOrdersContext();
   const isSelected = selectedOrderID === order.order.id;
   return (
-    <StyledMobileListItem selected={isSelected ? 1 : 0} gap={20} onClick={() => setSelectedOrderID(order.order.id)}>
+    <StyledMobileListItem theme={theme} selected={isSelected ? 1 : 0} gap={20} onClick={() => setSelectedOrderID(order.order.id)}>
       <StyledMobileListTopFlex>
         <Styles.StyledColumnFlex gap={3} style={{ width: "auto" }}>
           <Styles.StyledRowFlex justifyContent="flex-start" gap={23}>
@@ -508,11 +511,14 @@ const StyledAmounts = styled(Styles.StyledRowFlex)({
   },
 });
 
-const StyledMobileListItem = styled(Styles.StyledColumnFlex)<{ selected: number }>(({ selected }) => ({
-  background: selected ? "#1C1C1C" : "transparent",
-  padding: 10,
-  borderBottom: "1px solid #282828",
-}));
+const StyledMobileListItem = styled(Styles.StyledColumnFlex)<{ selected: number }>(({ selected, theme }) => {
+  const bg = parseTheme(theme).isDarkMode ? "#1C1C1C" : "#E5E5E5";
+  return {
+    background: selected ? bg : "transparent",
+    padding: 10,
+    borderBottom: "1px solid #282828",
+  };
+});
 
 const StyledEmptyList = styled(Typography)({
   textAlign: "center",
@@ -525,10 +531,10 @@ const StyledEmptyList = styled(Typography)({
 });
 const decimalScale = 3;
 const DesktopListItem = ({ order }: { order: OrderUI }) => {
-  const { setSelectedOrderID, selectedOrderID } = useOrdersContext();
+  const { setSelectedOrderID, selectedOrderID, theme } = useOrdersContext();
 
   return (
-    <StyledListItem selected={order.order.id === selectedOrderID ? 1 : 0} onClick={() => setSelectedOrderID(order.order.id)}>
+    <StyledListItem theme={theme} selected={order.order.id === selectedOrderID ? 1 : 0} onClick={() => setSelectedOrderID(order.order.id)}>
       <BuyText order={order} />
       <Styles.StyledColumnFlex style={{ width: "auto", alignItems: "flex-end", gap: 2 }}>
         <Amounts order={order} />
@@ -540,12 +546,12 @@ const DesktopListItem = ({ order }: { order: OrderUI }) => {
 
 const Tabs = () => {
   const { selectedTab, setSelectedTab } = useOrdersContext();
-
+  const {theme} = useOrdersContext()
   return (
-    <StyledTabs>
+    <StyledTabs theme={theme}>
       {TABS.map((it) => {
         return (
-          <StyledTab onClick={() => setSelectedTab(it)} selected={selectedTab === it ? 1 : 0} key={it}>
+          <StyledTab theme={theme} onClick={() => setSelectedTab(it)} selected={selectedTab === it ? 1 : 0} key={it}>
             {getStatusName(it)}
           </StyledTab>
         );
@@ -554,26 +560,30 @@ const Tabs = () => {
   );
 };
 
-const StyledTab = styled("button")<{ selected: number }>(({ selected }) => ({
-  textTransform: "uppercase",
-  background: selected ? "#111111" : "transparent",
-  border: "none",
-  flex: 1,
-  height: "100%",
-  color: "#E5E5E5",
-  borderRadius: 5,
-  padding: "0px 12px",
-  cursor: "pointer",
-  fontSize: 13,
-  transition: "background 0.2s",
-}));
-const StyledTabs = styled(Styles.StyledRowFlex)({
-  background: "#717171",
+const StyledTab = styled("button")<{ selected: number }>(({ selected, theme }) => {
+  const isDarkMode = parseTheme(theme).isDarkMode;
+  const bg = isDarkMode ? "#111111" : "white";
+  return {
+    textTransform: "uppercase",
+    background: selected ? bg : "transparent",
+    border: "none",
+    flex: 1,
+    height: "100%",
+    color: isDarkMode ? "#E5E5E5" : 'black',
+    borderRadius: 5,
+    padding: "0px 12px",
+    cursor: "pointer",
+    fontSize: 13,
+    transition: "background 0.2s",
+  };
+});
+const StyledTabs = styled(Styles.StyledRowFlex)(({ theme }) => ({
+  background: parseTheme(theme).isDarkMode ? "#717171" : "#E5E5E5",
   borderRadius: 8,
   height: 34,
   padding: 2,
   width: "auto",
-});
+}));
 
 const getStatusName = (status: Status) => {
   switch (status) {
@@ -589,19 +599,23 @@ const StyledListItemStatus = styled(Typography)({
   color: "#FFC800",
 });
 
-const StyledListItem = styled(Styles.StyledRowFlex)<{ selected: number }>(({ selected }) => ({
-  padding: "5px 14px",
-  cursor: "pointer",
-  minHeight: 64,
-  justifyContent: "space-between",
-  borderBottom: "1px solid #282828",
-  background: selected ? "#1C1C1C" : "transparent",
-  alignItems: "center",
-  p: {
-    fontSize: 12,
-    fontWeight: 500,
-  },
-}));
+const StyledListItem = styled(Styles.StyledRowFlex)<{ selected: number }>(({ selected, theme }) => {
+  const isDarkMode = parseTheme(theme).isDarkMode;
+  const bg = isDarkMode ? "#1C1C1C" : "#E5E5E5";
+  return {
+    padding: "5px 14px",
+    cursor: "pointer",
+    minHeight: 64,
+    justifyContent: "space-between",
+    borderBottom: "1px solid #282828",
+    background: selected ? bg : "transparent",
+    alignItems: "center",
+    p: {
+      fontSize: 12,
+      fontWeight: 500,
+    },
+  };
+});
 
 const StyledList = styled(Styles.StyledColumnFlex)<{ mobile: number }>(({ mobile }) => ({
   width: mobile ? "100%" : "50%",
@@ -636,11 +650,11 @@ const StyledOrderDetail = styled(Styles.StyledColumnFlex)({
   },
 });
 
-const StyledOrderDetailLabel = styled(Components.Base.Label)({
+const StyledOrderDetailLabel = styled(Components.Base.Label)(({theme}) => ({
   fontSize: 14,
   fontWeight: 500,
-  color: "#C3C5CB",
-});
+  color: parseTheme(theme).isDarkMode ?  "#C3C5CB" : 'black',
+}));
 
 const StyledOrderDetailValue = styled("div")({
   width: "100%",
@@ -652,35 +666,39 @@ const StyledOrderDetailValue = styled("div")({
   },
 });
 
-const StyledSelectSelected = styled(Styles.StyledRowFlex)<{ open: number }>(({ open }) => ({
-  background: "#212427",
-  border: open ? `1px solid #FEC802` : "1px solid white",
-  borderRadius: 4,
-  padding: "6px 10px 6px 10px",
-  cursor: "pointer",
-  p: {
-    fontSize: 14,
-  },
-  "&:hover": {
-    border: `1px solid #FEC802`,
-  },
-}));
+const StyledSelectSelected = styled(Styles.StyledRowFlex)<{ open: number }>(({ open, theme }) => {
+  const isDarkMode = parseTheme(theme).isDarkMode;
+  return {
+    background: isDarkMode ? "#212427" : "white",
+    border: open ? `1px solid #FEC802` : `1px solid ${isDarkMode ? "white" : "hsl(0, 0%, 80%)"}`,
+    borderRadius: 4,
+    padding: "6px 10px 6px 10px",
+    cursor: "pointer",
+    p: {
+      fontSize: 14,
+    },
+    "&:hover": {
+      border: `1px solid #FEC802`,
+    },
+  };
+});
 
 const StyledSelect = styled(Box)({
   position: "relative",
 });
 
-const StyledSelectList = styled("ul")({
+const StyledSelectList = styled("ul")(({ theme }) => ({
   position: "absolute",
   listStyleType: "none",
   width: "auto",
   left: 0,
   padding: 0,
-  background: "#212427",
+  background: parseTheme(theme).isDarkMode ?  "#212427" : 'white',
   top: "calc(100% + 10px)",
   margin: 0,
   minWidth: "100%",
-});
+  border: `1px solid ${parseTheme(theme).isDarkMode ? "white" : "hsl(0, 0%, 80%)"}`,
+}));
 
 const StyledSelectOption = styled("li")({
   padding: "4px 10px",
