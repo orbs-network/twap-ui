@@ -24,9 +24,10 @@ function Orders({ className = "" }: { className?: string }) {
 }
 
 export function OrdersPanel({ className, noPortal, children }: { className?: string; noPortal?: boolean; children?: ReactNode }) {
-  if (noPortal) {
-    return <>{children}</> || <Orders className={className} />;
-  }
+
+    if (noPortal) {
+      return <>{children}</> || <Orders className={className} />;
+    }
 
   return <Portal id={ORDERS_CONTAINER_ID}>{children ? <>{children}</> : <Orders className={className} />}</Portal>;
 }

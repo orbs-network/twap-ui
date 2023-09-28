@@ -1,17 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import {
-  Components,
-  hooks,
-  Translations,
-  TwapAdapter,
-  useTwapContext,
-  Styles as TwapStyles,
-  TWAPTokenSelectProps,
-  TWAPProps,
-  store,
-  OrdersPanel,
-  Orders,
-} from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, store, Orders } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState, createContext, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
 import React from "react";

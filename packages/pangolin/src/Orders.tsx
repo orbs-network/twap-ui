@@ -52,6 +52,7 @@ const ContextWrapper = ({ children, limit, theme }: { children: ReactNode; limit
 
 export const PangolinOrders = ({ limit, theme }: { limit?: boolean; theme: any }) => {
   const { lib } = store.useTwapStore();
+
   if (!lib) return null;
   return (
     <OrdersPanel>
@@ -150,7 +151,7 @@ const Select = () => {
 };
 
 const OrderDetail = ({ label, value, labelTooltip, valueTooltip }: { label: string; labelTooltip?: string; value: ReactNode; valueTooltip?: string }) => {
- const {theme} = useOrdersContext()
+  const { theme } = useOrdersContext();
   return (
     <StyledOrderDetail>
       <StyledOrderDetailLabel theme={theme} tooltipText={labelTooltip}>
@@ -358,7 +359,7 @@ const StyledOrderSymbolsTop = styled(Typography)({
 });
 const StyledOrderSymbolsBottom = styled(Typography)(({ theme }) => ({
   fontSize: 12,
-  color: parseTheme(theme).isDarkMode ?  "#E5E5E5" : 'black',
+  color: parseTheme(theme).isDarkMode ? "#E5E5E5" : "black",
 }));
 const StyledPairLogos = styled(Box)({
   position: "relative",
@@ -546,7 +547,7 @@ const DesktopListItem = ({ order }: { order: OrderUI }) => {
 
 const Tabs = () => {
   const { selectedTab, setSelectedTab } = useOrdersContext();
-  const {theme} = useOrdersContext()
+  const { theme } = useOrdersContext();
   return (
     <StyledTabs theme={theme}>
       {TABS.map((it) => {
@@ -569,7 +570,7 @@ const StyledTab = styled("button")<{ selected: number }>(({ selected, theme }) =
     border: "none",
     flex: 1,
     height: "100%",
-    color: isDarkMode ? "#E5E5E5" : 'black',
+    color: isDarkMode ? "#E5E5E5" : "black",
     borderRadius: 5,
     padding: "0px 12px",
     cursor: "pointer",
@@ -650,10 +651,10 @@ const StyledOrderDetail = styled(Styles.StyledColumnFlex)({
   },
 });
 
-const StyledOrderDetailLabel = styled(Components.Base.Label)(({theme}) => ({
+const StyledOrderDetailLabel = styled(Components.Base.Label)(({ theme }) => ({
   fontSize: 14,
   fontWeight: 500,
-  color: parseTheme(theme).isDarkMode ?  "#C3C5CB" : 'black',
+  color: parseTheme(theme).isDarkMode ? "#C3C5CB" : "black",
 }));
 
 const StyledOrderDetailValue = styled("div")({
@@ -693,7 +694,7 @@ const StyledSelectList = styled("ul")(({ theme }) => ({
   width: "auto",
   left: 0,
   padding: 0,
-  background: parseTheme(theme).isDarkMode ?  "#212427" : 'white',
+  background: parseTheme(theme).isDarkMode ? "#212427" : "white",
   top: "calc(100% + 10px)",
   margin: 0,
   minWidth: "100%",
