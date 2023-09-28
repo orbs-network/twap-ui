@@ -5,6 +5,7 @@ import _ from "lodash";
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { parseTheme } from "./styles";
 import { IoIosArrowDown } from "react-icons/io";
+import { OrdersPanel } from "@orbs-network/twap-ui";
 interface ContextProps {
   selectedOrderID?: number;
   setSelectedOrderID: (value: number) => void;
@@ -53,9 +54,11 @@ export const PangolinOrders = ({ limit, theme }: { limit?: boolean; theme: any }
   const { lib } = store.useTwapStore();
   if (!lib) return null;
   return (
-    <ContextWrapper limit={limit} theme={theme}>
-      <Orders />
-    </ContextWrapper>
+    <OrdersPanel>
+      <ContextWrapper limit={limit} theme={theme}>
+        <Orders />
+      </ContextWrapper>
+    </OrdersPanel>
   );
 };
 

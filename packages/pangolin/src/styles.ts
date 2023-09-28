@@ -14,10 +14,7 @@ export const StyledOrdersContainer = styled(Components.Base.SwipeContainer)({
 });
 
 export const parseTheme = (theme: any): PangolinStyles => {
-  const isDarkMode = theme.textInput.backgroundColor !== "#FFFFFF";
-
-  console.log({ theme });
-  
+  const isDarkMode = theme.textInput.backgroundColor !== "#FFFFFF" || theme.chainInput.text !== "#000000";
 
   return {
     labelColor: theme.textInput.labelText,
