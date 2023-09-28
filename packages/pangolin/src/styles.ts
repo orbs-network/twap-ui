@@ -6,13 +6,14 @@ const mainBorderRadius = 8;
 
 interface PangolinStyles extends StylesConfig {
   labelColor: string;
+  isDarkMode: boolean;
 }
 
 export const StyledOrdersContainer = styled(Components.Base.SwipeContainer)({
   zIndex: 99,
 });
 
-const parseTheme = (theme: any): PangolinStyles => {
+export const parseTheme = (theme: any): PangolinStyles => {
   const isDarkMode = theme.textInput.backgroundColor !== "#FFFFFF";
 
   return {
@@ -39,6 +40,7 @@ const parseTheme = (theme: any): PangolinStyles => {
     selectedTokenBackground: theme.currencySelect.selectedBackgroundColor,
     selectedTokenTextColor: theme.currencySelect.selectedText,
     skeletonLoaderBackground: isDarkMode ? "rgba(255,255,255, 0.1)" : "rgba(0,0,0, 0.1)",
+    isDarkMode,
   };
 };
 

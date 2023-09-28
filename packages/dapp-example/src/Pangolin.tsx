@@ -136,9 +136,7 @@ const PangolinComponent = () => {
         </StyledPangolinBox>
       </StyledPangolinLayout>
       <StyledPangolinOrdersLayout>
-        <StyledPangolinBox>
-          <Orders />
-        </StyledPangolinBox>
+        <Orders />
       </StyledPangolinOrdersLayout>
     </StyledPangolin>
   );

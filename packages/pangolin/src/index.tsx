@@ -128,9 +128,8 @@ const TWAP = memo((props: PangolinTWAPProps) => {
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
             <OrdersPanel>
-              <PangolinOrders limit={props.limit} />
+              <PangolinOrders limit={props.limit} theme={props.theme} />
             </OrdersPanel>
-            {/* <OrdersPanel /> */}
             <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
           </AdapterContextProvider>
         </TwapAdapter>
