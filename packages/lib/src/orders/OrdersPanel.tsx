@@ -4,9 +4,12 @@ import { ORDERS_CONTAINER_ID } from "..";
 import { Odnp, Portal } from "../components/base";
 import { OrdersLabel } from "../components/Labels";
 import { OrdersSelectTabs, SelectedOrders } from "../components/OrdersComponents";
+import { useTwapStore } from "../store";
 import { StyledRowFlex } from "../styles";
 
 function Orders({ className = "" }: { className?: string }) {
+    const { lib } = useTwapStore();
+    if (!lib) return null;
   return (
     <StyledContainer className={`twap-orders twap-orders-wrapper ${className}`}>
       <StyledHeader className="twap-orders-header">
@@ -24,10 +27,9 @@ function Orders({ className = "" }: { className?: string }) {
 }
 
 export function OrdersPanel({ className, noPortal, children }: { className?: string; noPortal?: boolean; children?: ReactNode }) {
-
-    if (noPortal) {
-      return <>{children}</> || <Orders className={className} />;
-    }
+  if (noPortal) {
+    return <>{children}</> || <Orders className={className} />;
+  }
 
   return <Portal id={ORDERS_CONTAINER_ID}>{children ? <>{children}</> : <Orders className={className} />}</Portal>;
 }
