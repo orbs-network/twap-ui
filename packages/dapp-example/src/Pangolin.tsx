@@ -4,10 +4,9 @@ import { StyledModalContent, StyledPangolin, StyledPangolinBox, StyledPangolinDa
 import _ from "lodash";
 import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
-import { useQuery } from "@tanstack/react-query";
 import { Configs } from "@orbs-network/twap";
 import { Dapp } from "./Components";
-import { useConnectWallet, useNetwork, useTheme } from "./hooks";
+import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
 import { pangolinDarkTheme, pangolinLightTheme } from "./themes";
 import Web3 from "web3";
 import { SelectorOption, TokenListItem } from "./types";
@@ -33,41 +32,28 @@ const nativeTokenLogo = "https://raw.githubusercontent.com/pangolindex/sdk/maste
 
 const chainId = config.chainId;
 
+const parseListToken = (list?: any) => {
+  return list.tokens
+    ?.filter((t: any) => t.chainId === config.chainId)
+    .map(({ symbol, address, decimals, logoURI, name }: any) => ({
+      decimals,
+      symbol,
+      name,
+      chainId,
+      address,
+      tokenInfo: { symbol, address, decimals, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"), name, chainId },
+      tags: [],
+    }));
+};
+
 const useDappTokens = () => {
-  const { account } = useWeb3React();
-  const { isInValidNetwork } = useNetwork(chainId);
-
-  return useQuery(
-    ["useDappTokens", chainId],
-    async () => {
-      const response = await fetch(`https://raw.githubusercontent.com/pangolindex/tokenlists/main/pangolin.tokenlist.json`);
-      const tokenList = await response.json();
-
-      const parsed = tokenList.tokens
-        .filter((t: any) => t.chainId === config.chainId)
-        .map(({ symbol, address, decimals, logoURI, name }: any) => ({
-          decimals,
-          symbol,
-          name,
-          chainId,
-          address,
-          tokenInfo: { symbol, address, decimals, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"), name, chainId },
-          tags: [],
-        }));
-
-      const candiesAddresses = _.map(erc20s.avax, (t) => t().address);
-
-      const _tokens = _.sortBy(parsed, (t: any) => {
-        const index = candiesAddresses.indexOf(t.address);
-        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
-      });
-
-      return { native: nativeToken, ..._.mapKeys(_tokens, (t) => t.address) };
-    },
-    {
-      enabled: !!account && !isInValidNetwork,
-    }
-  );
+  return useGetTokens({
+    chainId,
+    url: `https://raw.githubusercontent.com/pangolindex/tokenlists/main/pangolin.tokenlist.json`,
+    parse: parseListToken,
+    modifyList: (tokens) => ({ native: nativeToken, ..._.mapKeys(tokens, (t) => t.address) }),
+    baseAssets: erc20s.avax,
+  });
 };
 
 const parseList = (rawList?: any): TokenListItem[] => {

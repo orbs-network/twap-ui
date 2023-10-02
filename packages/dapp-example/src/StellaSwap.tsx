@@ -1,51 +1,38 @@
 import { StyledModalContent, StyledStella, StyledStellaSwapBox, StyledStellaSwapLayout } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-stellaswap";
-import { useConnectWallet, useNetwork, useTheme } from "./hooks";
+import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useCallback, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import _ from "lodash";
 import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 const config = { ...Configs.QuickSwap };
 config.name = "StellaSwap";
 
+const parseListToken = (tokenList?: any[]) => {
+  return tokenList?.map(({ symbol, address, decimals, logoURI, name, chainId }: any) => ({
+    decimals,
+    symbol,
+    name,
+    chainId,
+    address,
+    tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
+    tags: [],
+  }));
+};
+
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
 export const useDappTokens = () => {
-  const { account } = useWeb3React();
-  const { isInValidNetwork } = useNetwork(config.chainId);
-
-  return useQuery(
-    ["useDappTokens", config.chainId],
-    async () => {
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/moonbeam.json`);
-
-      const tokenList = await response.json();
-      const parsed = tokenList
-        .filter((t: any) => t.chainId === config.chainId)
-        .map(({ symbol, address, decimals, logoURI, name, chainId }: any) => ({
-          decimals,
-          symbol,
-          name,
-          chainId,
-          address,
-          tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
-          tags: [],
-        }));
-      const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
-
-      const _tokens = _.sortBy(parsed, (t: any) => {
-        const index = candiesAddresses.indexOf(t.address);
-        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
-      });
-
-      return { ..._.mapKeys(_tokens, (t) => t.address) } as any;
-    },
-    { enabled: !!account && !isInValidNetwork }
-  );
+  return useGetTokens({
+    chainId: config.chainId,
+    parse: parseListToken,
+    baseAssets: erc20s.poly,
+    url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/moonbeam.json",
+    modifyList: (tokens) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
+  });
 };
 interface TokenSelectModalProps {
   popup: boolean;
@@ -88,6 +75,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
+
+  console.log({ dappTokens });
+
   const { isDarkTheme } = useTheme();
 
   return (

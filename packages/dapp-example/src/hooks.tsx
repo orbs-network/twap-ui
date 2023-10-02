@@ -1,7 +1,6 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
-import { erc20s, networks, zeroAddress, zero } from "@defi.org/web3-candies";
+import { zeroAddress, zero } from "@defi.org/web3-candies";
 import _ from "lodash";
-import Web3 from "web3";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearchParams } from "react-router-dom";
@@ -11,52 +10,59 @@ import { PROVIDER_NAME } from ".";
 import { dapps } from "./config";
 import { TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
+import { usePersistedStore } from "./store";
 
 export const injectedConnector = new InjectedConnector({});
 
-const tokenlistsNetworkNames = {
-  [networks.eth.id]: "ethereum",
-  [networks.ftm.id]: "ftm",
-  [networks.poly.id]: "polygon",
-  [networks.avax.id]: "avax",
-  [networks.bsc.id]: "bsc",
-  [networks.arb.id]: "arbitrum",
-  [networks.oeth.id]: "optimism",
+export const useAddedTokens = () => {
+  const { tokens: persistedTokens } = usePersistedStore();
+  const { chainId } = useWeb3React();
+
+  return useMemo(() => persistedTokens[chainId!] || [], [chainId, persistedTokens]);
 };
 
-export const useGetTokensFromViaProtocol = (chainId: number) => {
+export const useGetTokens = ({
+  chainId,
+  url,
+  parse,
+  baseAssets,
+  tokens,
+  modifyList,
+}: {
+  chainId: number;
+  url?: string;
+  parse?: (t: any) => any;
+  baseAssets?: any;
+  tokens?: any;
+  modifyList?: (list: any) => any;
+}) => {
   const { account } = useWeb3React();
   const { isInValidNetwork } = useNetwork(chainId);
-
+  const addedTokens = useAddedTokens();
+  const lib = store.useTwapStore((s) => s.lib);
   return useQuery(
-    ["useGetTokens", chainId],
+    ["useGetTokens", chainId, _.size(addedTokens)],
     async () => {
-      const name = tokenlistsNetworkNames[chainId!];
-      if (!name) return;
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/${name}.json`);
-      const tokenList = await response.json();
-      const parsed = tokenList.map((token: any) => ({
-        symbol: token.symbol,
-        address: token.address,
-        decimals: token.decimals,
-        logoUrl: token.logoURI?.replace("/logo_24.png", "/logo_48.png"),
-      }));
-      const networkShortName = _.find(networks, (n) => n.id === chainId)!.shortname;
-      const topTokens = [
-        zeroAddress,
-        ..._.chain(erc20s)
-          .find((it: any, k) => k === networkShortName)
-          .map((t: any) => t().address)
-          .value(),
-      ];
+      let tokenList;
+      if (url) {
+        const response = await fetch(url);
+        tokenList = await response.json();
+      } else if (tokens) {
+        tokenList = tokens;
+      }
 
-      const _tokens = _.sortBy(parsed, (t: any) => {
-        const index = topTokens.indexOf(t.address);
+      const candiesAddresses = [zeroAddress, ..._.map(baseAssets, (t) => t().address)];
+      const parsed = parse ? parse(tokenList) : tokenList;
+      let _tokens = _.sortBy(parsed, (t: any) => {
+        const index = candiesAddresses.indexOf(t.address);
         return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
       });
-      return _tokens;
+
+      _tokens = [...addedTokens, ..._tokens];
+
+      return modifyList ? modifyList(_tokens) : _tokens;
     },
-    { enabled: !!account && !isInValidNetwork }
+    { enabled: !!account && !isInValidNetwork && !!lib, staleTime: Infinity }
   );
 };
 
@@ -91,46 +97,6 @@ export const useNetwork = (chainId: number) => {
   const isInValidNetwork = !!(connectedChainId && connectedChainId !== chainId);
 
   return { isInValidNetwork };
-};
-
-export const useChangeNetwork = () => {
-  const { library } = useWeb3React();
-
-  return async (chain: number) => {
-    const web3 = new Web3(library);
-    const provider = web3 ? web3.givenProvider : undefined;
-
-    try {
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: Web3.utils.toHex(chain) }],
-      });
-    } catch (error: any) {
-      // if unknown chain, add chain
-      if (error.code === 4902) {
-        const response = await fetch("https://chainid.network/chains.json");
-        const list = await response.json();
-        const chainArgs = list.find((it: any) => it.chainId === chain);
-        if (!chainArgs) {
-          return;
-        }
-
-        await provider.request({
-          method: "wallet_addEthereumChain",
-          params: [
-            {
-              chainName: chainArgs.name,
-              nativeCurrency: chainArgs.nativeCurrency,
-              rpcUrls: chainArgs.rpc,
-              chainId: Web3.utils.toHex(chain),
-              blockExplorerUrls: [_.get(chainArgs, ["explorers", 0, "url"])],
-              iconUrls: [`https://defillama.com/chain-icons/rsz_${chainArgs.chain}.jpg`],
-            },
-          ],
-        });
-      }
-    }
-  };
 };
 
 export const useEagerlyConnect = () => {

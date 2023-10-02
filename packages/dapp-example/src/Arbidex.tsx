@@ -1,6 +1,6 @@
 import { StyledArbidexSwap, StyledArbidexBox, StyledArbidexLayout, StyledModalContent } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-arbidex";
-import { useConnectWallet, useNetwork, useTheme } from "./hooks";
+import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -9,41 +9,28 @@ import { SelectorOption, TokenListItem } from "./types";
 import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s, isNativeAddress } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useContext, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 const config = Configs.Arbidex;
 
-export const useDappTokens = () => {
-  const { account } = useWeb3React();
-  const { isInValidNetwork } = useNetwork(config.chainId);
-
-  return useQuery(
-    ["useGetTokens", config.chainId],
-    async () => {
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json`);
-
-      const tokens = await response.json();
-
-      const parsed = tokens.map(({ symbol, address, decimals, name, logoURI }: any) => ({
-        decimals,
-        symbol,
-        name,
-        address,
-        logoURI: isNativeAddress(address) ? config.nativeToken.logoUrl : logoURI,
-      }));
-      const candiesAddresses = [zeroAddress, ..._.map(erc20s.arb, (t) => t().address)];
-
-      const _tokens = _.sortBy(parsed, (t: any) => {
-        const index = candiesAddresses.indexOf(t.address);
-        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
-      });
-
-      return { ..._.mapKeys(_tokens, (t) => t.address) } as any;
-    },
-    { enabled: !!account && !isInValidNetwork }
-  );
+const parseListToken = (tokens?: any[]) => {
+  return tokens?.map(({ symbol, address, decimals, name, logoURI }: any) => ({
+    decimals,
+    symbol,
+    name,
+    address,
+    logoURI: isNativeAddress(address) ? config.nativeToken.logoUrl : logoURI,
+  }));
 };
 
+const useDappTokens = () => {
+  return useGetTokens({
+    chainId: config.chainId,
+    url: `https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json`,
+    parse: parseListToken,
+    baseAssets: erc20s.arb,
+    modifyList: (_tokens: any) => ({ ..._.mapKeys(_tokens, (t) => t.address) }),
+  });
+};
 interface TokenSelectModalProps {
   isOpen: boolean;
   selectedCurrency?: any;

@@ -1,12 +1,11 @@
 import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-sushiswap";
-import { useConnectWallet, useNetwork, useTheme } from "./hooks";
+import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
@@ -14,36 +13,26 @@ const config = { ...Configs.QuickSwap };
 config.name = "SushiSwap";
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
+
+const parseListToken = (tokenList?: any[]) => {
+  return tokenList
+    ?.filter((t: any) => t.chainId === config.chainId)
+    .map(({ symbol, address, decimals, logoURI, name }: any) => ({
+      decimals,
+      symbol,
+      name,
+      address,
+      logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"),
+    }));
+};
 export const useDappTokens = () => {
-  const { account } = useWeb3React();
-  const { isInValidNetwork } = useNetwork(config.chainId);
-
-  return useQuery(
-    ["useDappTokens", config.chainId],
-    async () => {
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json`);
-
-      const tokenList = await response.json();
-      const parsed = tokenList
-        .filter((t: any) => t.chainId === config.chainId)
-        .map(({ symbol, address, decimals, logoURI, name }: any) => ({
-          decimals,
-          symbol,
-          name,
-          address,
-          logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"),
-        }));
-      const candiesAddresses = [zeroAddress, ..._.map(erc20s.poly, (t) => t().address)];
-
-      const _tokens = _.sortBy(parsed, (t: any) => {
-        const index = candiesAddresses.indexOf(t.address);
-        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
-      });
-
-      return { ..._.mapKeys(_tokens, (t) => t.address) } as any;
-    },
-    { enabled: !!account && !isInValidNetwork }
-  );
+  return useGetTokens({
+    chainId: config.chainId,
+    parse: parseListToken,
+    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
+    url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json",
+    baseAssets: erc20s.poly,
+  });
 };
 
 interface TokenSelectModalProps {

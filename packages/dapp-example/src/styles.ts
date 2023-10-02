@@ -460,6 +460,7 @@ export const StyledListToken = styled(Box)({
   alignItems: "center",
   padding: "10px 30px",
   transition: "0.2s all",
+  width: "100%",
   "&:hover": {
     background: "rgba(255,255,255, 0.07)",
   },

@@ -8,8 +8,8 @@ import { useTwapStore } from "../store";
 import { StyledRowFlex } from "../styles";
 
 function Orders({ className = "" }: { className?: string }) {
-    const { lib } = useTwapStore();
-    if (!lib) return null;
+  const { lib } = useTwapStore();
+  if (!lib) return null;
   return (
     <StyledContainer className={`twap-orders twap-orders-wrapper ${className}`}>
       <StyledHeader className="twap-orders-header">

@@ -1,19 +1,33 @@
 import { StyledSpiritSwapBox, StyledModalContent, StyledSpiritSwapLayout, StyledSpiritSwap } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-spiritswap";
-import { useConnectWallet, useGetTokensFromViaProtocol, useTheme } from "./hooks";
+import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList } from "./Components";
 import { Popup } from "./Components";
 import { TokenListItem } from "./types";
 import _ from "lodash";
-import { erc20sData, zeroAddress } from "@defi.org/web3-candies";
+import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { useCallback } from "react";
 
 const config = Configs.SpiritSwap;
 
+const parseListToken = (tokenList?: any[]) => {
+  return tokenList?.map((token: any) => ({
+    symbol: token.symbol,
+    address: token.address,
+    decimals: token.decimals,
+    logoUrl: token.logoURI?.replace("/logo_24.png", "/logo_48.png"),
+  }));
+};
+
 const useDappTokens = () => {
-  return useGetTokensFromViaProtocol(config.chainId);
+  return useGetTokens({
+    chainId: config.chainId,
+    url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/ftm.json",
+    baseAssets: erc20s.ftm,
+    parse: parseListToken,
+  });
 };
 
 interface TokenSelectModalProps {
@@ -57,7 +71,7 @@ const TWAPComponent = () => {
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
 
-  const getTokenImageUrl = useCallback((symbol: string) => dappTokens?.find((t) => t.symbol === symbol)?.logoUrl, [_.size(dappTokens)]);
+  const getTokenImageUrl = useCallback((symbol: string) => dappTokens?.find((t: any) => t.symbol === symbol)?.logoUrl, [_.size(dappTokens)]);
   return (
     <TWAP
       getProvider={() => library}

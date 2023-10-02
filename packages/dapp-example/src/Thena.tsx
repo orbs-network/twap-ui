@@ -1,56 +1,36 @@
 import { StyledModalContent, StyledThenaLayout, StyledThenaGradient, StyledThenaBox, StyledThena } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-thena";
-import { useConnectWallet, useNetwork, useTheme } from "./hooks";
+import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
-import { erc20s, zeroAddress, isNativeAddress } from "@defi.org/web3-candies";
+import { erc20s, isNativeAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 
 const config = Configs.Thena;
 
-const testToken = {
-  address: "0xCdC3A010A3473c0C4b2cB03D8489D6BA387B83CD",
-  symbol: "liveThe",
-  decimals: 18,
-};
-
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png";
+
+const pasrseListToken = (tokenList?: any[]) => {
+  return tokenList?.map(({ symbol, address, decimals, logoURI, name }: any) => ({
+    decimals,
+    symbol,
+    name,
+    address,
+    logoURI: isNativeAddress(address) ? nativeTokenLogo : logoURI.replace("_1", ""),
+  }));
+};
 export const useDappTokens = () => {
-  const { account } = useWeb3React();
-
-  const { isInValidNetwork } = useNetwork(config.chainId);
-  return useQuery(
-    ["useDappTokens", config.chainId],
-    async () => {
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/bsc.json`);
-
-      const tokenList = await response.json();
-
-      const tokens = [config.nativeToken, ...tokenList];
-
-      const parsed = tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
-        decimals,
-        symbol,
-        name,
-        address,
-        logoURI: isNativeAddress(address) ? nativeTokenLogo : logoURI.replace("_1", ""),
-      }));
-      const candiesAddresses = [zeroAddress, ..._.map(erc20s.bsc, (t) => t().address)];
-
-      const _tokens = _.sortBy(parsed, (t: any) => {
-        const index = candiesAddresses.indexOf(t.address);
-        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
-      });
-
-      return { ..._.mapKeys(_tokens, (t) => t.address), testToken } as any;
-    },
-    { enabled: !!account && !isInValidNetwork }
-  );
+  return useGetTokens({
+    chainId: config.chainId,
+    parse: pasrseListToken,
+    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
+    url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/bsc.json",
+    baseAssets: erc20s.bsc,
+  });
 };
 
 interface TokenSelectModalProps {
@@ -71,7 +51,7 @@ const parseList = (rawList?: any): TokenListItem[] => {
         address: rawToken.address,
         decimals: rawToken.decimals,
         symbol: rawToken.symbol,
-        logoUrl: rawToken.logoURI || nativeTokenLogo,
+        logoUrl: rawToken.logoURI,
       },
       rawToken,
     };

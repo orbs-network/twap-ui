@@ -1,6 +1,6 @@
 import { StyledModalContent, StyledSpookySwap, StyledSpookySwapBox, StyledSpookySwapLayout } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-spookyswap";
-import { useConnectWallet, useNetwork, useTheme } from "./hooks";
+import { useConnectWallet, useGetTokens, useNetwork, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -13,35 +13,26 @@ import { useQuery } from "@tanstack/react-query";
 
 const config = Configs.SpookySwap;
 
+const parseListToken = (tokenList?: any[]) => {
+  return tokenList?.map(({ symbol, address, decimals, logoURI, name, chainId }: any) => ({
+    decimals,
+    symbol,
+    name,
+    chainId,
+    address,
+    tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
+    tags: [],
+  }));
+};
+
 export const useDappTokens = () => {
-  const { account } = useWeb3React();
-  const { isInValidNetwork } = useNetwork(config.chainId);
-
-  return useQuery(
-    ["useGetTokens", config.chainId],
-    async () => {
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/ftm.json`);
-      const tokenList = await response.json();
-      const parsed = tokenList.map(({ symbol, address, decimals, logoURI, name, chainId }: any) => ({
-        decimals,
-        symbol,
-        name,
-        chainId,
-        address,
-        tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
-        tags: [],
-      }));
-      const candiesAddresses = [zeroAddress, ..._.map(erc20s.ftm, (t) => t().address)];
-
-      const _tokens = _.sortBy(parsed, (t: any) => {
-        const index = candiesAddresses.indexOf(t.address);
-        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
-      });
-
-      return { ..._.mapKeys(_tokens, (t) => t.address) } as any;
-    },
-    { enabled: !!account && !isInValidNetwork }
-  );
+  return useGetTokens({
+    chainId: config.chainId,
+    parse: parseListToken,
+    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
+    url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/ftm.json",
+    baseAssets: erc20s.ftm,
+  });
 };
 
 interface TokenSelectModalProps {
