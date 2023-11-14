@@ -121,6 +121,7 @@ export interface TWAPProps extends BaseProps {
   onDstTokenSelected?: (token: any) => void;
   TokenSelectModal: any;
   limit?: boolean;
+  onTxSubmitted?: (values: OnTxSubmitValues) => void;
 }
 
 interface LibProps {
@@ -149,6 +150,14 @@ export interface TwapContextUIPreferences {
   infoIcon?: IconType;
 }
 
+export type OnTxSubmitValues = {
+  srcToken: TokenData;
+  dstToken: TokenData;
+  srcAmount: string;
+  dstUSD: string;
+  dstAmount: string;
+};
+
 export interface TwapLibProps extends LibProps {
   connect?: () => void;
   askDataParams?: any[];
@@ -160,7 +169,7 @@ export interface TwapLibProps extends LibProps {
   uiPreferences?: TwapContextUIPreferences;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
-  onTxSubmitted?: () => void;
+  onTxSubmitted?: (values: OnTxSubmitValues) => void;
 }
 
 export interface InitLibProps {

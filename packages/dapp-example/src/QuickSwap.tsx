@@ -102,7 +102,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       getTokenLogoURL={getTokenLogoURL}
       isDarkTheme={isDarkTheme}
       limit={limit}
-      onTxSubmitted={() => console.log("submittted")}
+      onTxSubmitted={(args: any) => console.log(args)}
     />
   );
 };

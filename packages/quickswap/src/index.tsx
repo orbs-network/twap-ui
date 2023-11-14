@@ -34,7 +34,6 @@ interface QuickSwapTWAPProps extends TWAPProps {
   getTokenLogoURL: (address: string) => string;
   dappTokens: { [key: string]: QuickSwapRawToken };
   isProMode?: boolean;
-  onTxSubmitted?: () => void;
 }
 
 interface QuickSwapRawToken {

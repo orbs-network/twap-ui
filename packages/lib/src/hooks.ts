@@ -147,26 +147,21 @@ export const useCreateOrder = () => {
   const wizardStore = useWizardStore();
   const reset = useReset();
   const { askDataParams, onTxSubmitted } = useTwapContext();
+  const dstUSD = useTwapStore((state) => state.getDstAmountUsdUi());
   const setTokensFromDapp = useSetTokensFromDapp();
   return useMutation(
     async () => {
-      onTxSubmitted?.();
+      onTxSubmitted?.({
+        srcToken: store.srcToken!,
+        dstToken: store.dstToken!,
+        srcAmount: store.getSrcAmount().toString(),
+        dstUSD,
+        dstAmount: store.getDstAmount().toString(),
+      });
       wizardStore.setAction(WizardAction.CREATE_ORDER);
       wizardStore.setStatus(WizardActionStatus.PENDING);
       const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
 
-      console.log({
-        srcToken: store.srcToken,
-        dstToken: store.dstToken,
-        srcAmount: store.getSrcAmount().toString(),
-        srcChunkAmount: store.getSrcChunkAmount().toString(),
-        dstMinChunkAmountOut: store.getDstMinAmountOut().toString(),
-        deadline: store.getDeadline(),
-        fillDelay: fillDelayMillis,
-        srcUsd: store.srcUsd.toString(),
-        priorityFeePerGas: priorityFeePerGas?.toString(),
-        maxFeePerGas: maxFeePerGas?.toString(),
-      });
       analytics.onConfirmationCreateOrderClick();
       store.setLoading(true);
 
