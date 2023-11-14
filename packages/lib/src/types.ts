@@ -160,6 +160,7 @@ export interface TwapLibProps extends LibProps {
   uiPreferences?: TwapContextUIPreferences;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
+  onTxSubmitted?: () => void;
 }
 
 export interface InitLibProps {

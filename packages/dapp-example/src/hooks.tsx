@@ -28,6 +28,7 @@ export const useGetTokens = ({
   baseAssets,
   tokens,
   modifyList,
+  modifyFetchResponse,
 }: {
   chainId: number;
   url?: string;
@@ -35,6 +36,7 @@ export const useGetTokens = ({
   baseAssets?: any;
   tokens?: any;
   modifyList?: (list: any) => any;
+  modifyFetchResponse?: (res: any) => any;
 }) => {
   const { account } = useWeb3React();
   const { isInValidNetwork } = useNetwork(chainId);
@@ -46,7 +48,10 @@ export const useGetTokens = ({
       let tokenList;
       if (url) {
         const response = await fetch(url);
-        tokenList = await response.json();
+        const _tokenList = await response.json();
+        console.log({ _tokenList });
+
+        tokenList = modifyFetchResponse ? modifyFetchResponse(_tokenList) : _tokenList;
       } else if (tokens) {
         tokenList = tokens;
       }

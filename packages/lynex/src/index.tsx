@@ -1,4 +1,4 @@
-import { GlobalStyles, ThemeProvider, Typography, useTheme } from "@mui/material";
+import { GlobalStyles, ThemeProvider, useTheme } from "@mui/material";
 import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, store, Orders, TwapContextUIPreferences, hooks } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
@@ -28,11 +28,12 @@ import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "react-icons/bs";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
-const config = Configs.BaseSwap;
+const config = Configs.QuickSwap;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
   switchVariant: "ios",
+  inputPlaceholder: "0.00",
 };
 
 const storeOverride = {
@@ -119,7 +120,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     <>
       <StyledTokenPanel theme={theme}>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Base.Label>{isSrcToken ? <Typography>{translations.from}</Typography> : <Typography>{translations.to}</Typography>}</Components.Base.Label>
+          <Components.Base.Label>{isSrcToken ? translations.from : translations.to}</Components.Base.Label>
           {isSrcToken && <PercentSelector />}
           <StyledTokenBalance emptyUi={<>0</>} isSrc={isSrcToken} />
         </TwapStyles.StyledRowFlex>
@@ -137,7 +138,9 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string): TokenData | undefined => {
+const parseToken = (rawToken: any): TokenData | undefined => {
+  console.log(rawToken);
+
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
@@ -149,7 +152,7 @@ const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string)
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: rawToken.tokenInfo?.logoURI || getTokenLogoURL(rawToken),
+    logoUrl: rawToken.logoURI,
   };
 };
 const AdapterContext = createContext({} as BaseSwapTWAPProps);
@@ -157,10 +160,6 @@ const AdapterContext = createContext({} as BaseSwapTWAPProps);
 const AdapterContextProvider = AdapterContext.Provider;
 
 const useAdapterContext = () => useContext(AdapterContext);
-
-const getTokenImageUrl = (token: any) => {
-  return token?.logoUri || `https://assets.spooky.fi/tokens/${token?.symbol}.png`;
-};
 
 interface BaseSwapTWAPProps extends TWAPProps {
   connect: () => void;
@@ -185,7 +184,7 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       account={props.account}
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
-      parseToken={(rawToken) => parseToken(rawToken, getTokenImageUrl)}
+      parseToken={parseToken}
       srcToken={props.srcToken}
       dstToken={props.dstToken}
       storeOverride={props.limit ? storeOverride : undefined}

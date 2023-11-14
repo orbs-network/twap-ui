@@ -1205,6 +1205,7 @@ export const StyledSrcLogo = styled(Components.TokenLogo)({
   position: "absolute",
   right: 0,
   bottom: 8,
+  zIndex: 1,
 });
 export const StyledDstLogo = styled(Components.TokenLogo)({
   width: 58,

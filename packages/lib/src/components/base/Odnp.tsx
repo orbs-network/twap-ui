@@ -10,7 +10,7 @@ import Button from "./Button";
 
 const mobile = 700;
 
-const icon = "https://open-defi-notifications.web.app/widget/assets/icon.png";
+const icon = "https://services-healthpage.orbs.network/img/odnp-logo.png";
 
 function Odnp({ className = "" }: { className?: string }) {
   const { account } = useTwapContext();

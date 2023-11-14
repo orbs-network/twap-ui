@@ -146,10 +146,11 @@ export const useCreateOrder = () => {
   const store = useTwapStore();
   const wizardStore = useWizardStore();
   const reset = useReset();
-  const { askDataParams } = useTwapContext();
+  const { askDataParams, onTxSubmitted } = useTwapContext();
   const setTokensFromDapp = useSetTokensFromDapp();
   return useMutation(
     async () => {
+      onTxSubmitted?.();
       wizardStore.setAction(WizardAction.CREATE_ORDER);
       wizardStore.setStatus(WizardActionStatus.PENDING);
       const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;

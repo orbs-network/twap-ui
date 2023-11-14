@@ -34,6 +34,7 @@ interface QuickSwapTWAPProps extends TWAPProps {
   getTokenLogoURL: (address: string) => string;
   dappTokens: { [key: string]: QuickSwapRawToken };
   isProMode?: boolean;
+  onTxSubmitted?: () => void;
 }
 
 interface QuickSwapRawToken {
@@ -204,8 +205,9 @@ const TWAP = (props: Props) => {
         provider={props.provider}
         account={props.account}
         dappTokens={props.dappTokens}
-        parseToken={(rawToken) => parseToken(props.getTokenLogoURL, rawToken)}
+        parseToken={(rawToken: any) => parseToken(props.getTokenLogoURL, rawToken)}
         srcToken={props.srcToken}
+        onTxSubmitted={props.onTxSubmitted}
         dstToken={props.dstToken}
         storeOverride={props.limit ? storeOverride : undefined}
         onDstTokenSelected={props.onDstTokenSelected}

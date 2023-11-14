@@ -106,10 +106,9 @@ export const StyledTokenPanel = styled(Styles.StyledColumnFlex)({
 
 export const StyledTokenPanelInput = styled(Components.TokenInput)({
   width: "100%",
-
   input: {
     textAlign: "left",
-    fontSize: 20,
+    fontSize: 24,
     height: 40,
   },
 });
