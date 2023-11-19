@@ -26,7 +26,7 @@
     "@emotion/styled": "11.x",
     "@mui/material": "5.x",
     "@mui/system": "5.x",
-    "@orbs-network/twap": "^1.18.0",
+    "@orbs-network/twap": "^1.18.x",
     "@tanstack/react-query": "4.x",
     "@types/async-retry": "^1.4.5",
     "@types/lodash": "4.x",

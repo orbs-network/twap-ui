@@ -106,12 +106,15 @@ export const StyledTokenPanel = styled(Styles.StyledColumnFlex)({
 
 export const StyledTokenPanelInput = styled(Components.TokenInput)({
   width: "100%",
+  ".twap-loader": {
+    backgroundColor: `rgba(0,0,0, 0.2)!important`,
+  },
   input: {
     textAlign: "left",
     fontSize: 24,
     height: 40,
   },
-});
+})
 export const StyledMarketPrice = styled(Components.MarketPrice)({
   ".title": {
     fontSize: 14,

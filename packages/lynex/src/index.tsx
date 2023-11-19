@@ -28,7 +28,8 @@ import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "react-icons/bs";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
-const config = Configs.QuickSwap;
+const config = Configs.Lynex;
+
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,

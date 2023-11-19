@@ -1,17 +1,16 @@
 import { StyledLynex, StyledLynexBox, StyledLynexLayout, StyledModalContent } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-lynex";
-import { useConnectWallet, useGetTokens, useNetwork, useTheme } from "./hooks";
+import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
-import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
 import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useContext, useState } from "react";
+import { Configs } from "@orbs-network/twap";
 
-const config = { ...Configs.QuickSwap };
-config.name = "Lynex";
+const config = Configs.Lynex;
 
 const parseListToken = (tokenList: any) => {
   return tokenList.map(({ symbol, address, decimals, logoURI, name }: any) => ({
