@@ -30,7 +30,6 @@ import { BsQuestionCircle } from "react-icons/bs";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
 const config = Configs.Lynex;
 
-
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
   switchVariant: "ios",
@@ -140,8 +139,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 const parseToken = (rawToken: any): TokenData | undefined => {
-  console.log(rawToken);
-
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
@@ -191,6 +188,7 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
+      priceUsd={props.priceUsd}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>

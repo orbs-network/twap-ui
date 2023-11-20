@@ -76,7 +76,7 @@ export const useConnectWallet = () => {
   return () => {
     activate(injectedConnector);
     console.log(injectedConnector);
-    
+
     window.localStorage.setItem(PROVIDER_NAME, "1");
   };
 };

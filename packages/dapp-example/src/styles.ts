@@ -38,6 +38,7 @@ const fonts = {
   StellaSwap: "DM Sans",
   Lynex: "Montserrat",
   [Configs.Arbidex.name]: "Quicksand",
+  SyncSwap: "Inter",
 };
 
 export const globalStyle = (name?: string) => {
@@ -77,6 +78,11 @@ export const StyledQuickswapBox = styled(Box)(({ isDarkMode }: { isDarkMode: num
   padding: 20,
   borderRadius: 10,
 }));
+
+export const StyledSyncSwapBox = styled(Box)({
+  padding: 20,
+  borderRadius: 10,
+});
 
 export const StyledThenaGradient = styled(Box)({
   background: "transparent linear-gradient(128deg,#ed00c9,#bd00ed) 0 0 no-repeat padding-box",
@@ -158,6 +164,16 @@ export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
 
 export const StyledQuickswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#12131a" : "#F8F7F7",
+  ".ui-selector-btn-selected": {
+    borderBottom: isDarkMode ? "2px solid white" : "2px solid black",
+  },
+  ".ui-selector-btn": {
+    color: isDarkMode ? "white" : "black",
+    borderRadius: "unset",
+  },
+}));
+
+export const StyledSyncSwap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   ".ui-selector-btn-selected": {
     borderBottom: isDarkMode ? "2px solid white" : "2px solid black",
   },

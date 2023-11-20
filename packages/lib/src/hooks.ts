@@ -418,9 +418,13 @@ export const useHasAllowanceQuery = () => {
 
 const useGetPriceUsdCallback = () => {
   const lib = useTwapStore((state) => state.lib);
+  const priceUsd = useTwapContext().priceUsd;
 
   return async (token?: TokenData): Promise<BN> => {
     if (!lib) return BN(0);
+    if (priceUsd) {
+      return new BN(await priceUsd(token!.address));
+    }
     return new BN(await lib?.priceUsd(token!));
   };
 };

@@ -122,6 +122,7 @@ export interface TWAPProps extends BaseProps {
   TokenSelectModal: any;
   limit?: boolean;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
+  priceUsd?: (address: string) => Promise<number>;
 }
 
 interface LibProps {
@@ -170,6 +171,7 @@ export interface TwapLibProps extends LibProps {
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
+  priceUsd?: (address: string) => Promise<number>;
 }
 
 export interface InitLibProps {

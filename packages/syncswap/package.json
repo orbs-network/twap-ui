@@ -1,7 +1,7 @@
 {
-  "name": "@orbs-network/twap-ui-spookyswap",
+  "name": "@orbs-network/twap-ui-syncswap",
   "version": "0.9.25",
-  "description": "TWAP UI for Spookyswap",
+  "description": "TWAP UI for Syncswap",
   "license": "MIT",
   "author": "Orbs",
   "repository": {

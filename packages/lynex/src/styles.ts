@@ -114,7 +114,7 @@ export const StyledTokenPanelInput = styled(Components.TokenInput)({
     fontSize: 24,
     height: 40,
   },
-})
+});
 export const StyledMarketPrice = styled(Components.MarketPrice)({
   ".title": {
     fontSize: 14,
