@@ -24,7 +24,7 @@ import {
   StyledTopGrid,
   StyledTradeSize,
 } from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "react-icons/bs";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
@@ -143,11 +143,12 @@ const parseToken = (rawToken: any): TokenData | undefined => {
     console.error("Invalid token", rawToken);
     return;
   }
-  if (!rawToken.address || isNativeAddress(rawToken.address)) {
+  const address = rawToken.address === "ETH" ? zeroAddress : rawToken.address;
+  if (!address || isNativeAddress(address)) {
     return config.nativeToken;
   }
   return {
-    address: Web3.utils.toChecksumAddress(rawToken.address),
+    address: Web3.utils.toChecksumAddress(address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
     logoUrl: rawToken.logoURI,
@@ -170,6 +171,16 @@ const TWAP = (props: BaseSwapTWAPProps) => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
+  const priceUsd = useCallback(
+    (address: string) => {
+      if (address === zeroAddress) {
+        address = "ETH";
+      }
+      return props.priceUsd!(address);
+    },
+    [props.priceUsd]
+  );
+
   return (
     <TwapAdapter
       connect={props.connect}
@@ -188,7 +199,7 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
-      priceUsd={props.priceUsd}
+      priceUsd={priceUsd}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>

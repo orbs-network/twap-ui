@@ -10,6 +10,8 @@ import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useContext, useState } from "react";
 import { Configs } from "@orbs-network/twap";
 
+const backendApi = "https://lynex-backend-7e21c8e31085.herokuapp.com/api/v1";
+
 const config = Configs.Lynex;
 
 const parseListToken = (tokenList: any) => {
@@ -29,8 +31,8 @@ export const useDappTokens = () => {
     modifyFetchResponse: (response: any) => {
       return response.data;
     },
-    baseAssets: erc20s.linea,
-    url: `https://lynex-backend-7e21c8e31085.herokuapp.com/api/v1/assets`,
+    baseAssets: [],
+    url: `${backendApi}/assets`,
   });
 };
 
@@ -126,6 +128,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       isDarkTheme={isDarkTheme}
       limit={limit}
       useModal={useModal}
+      priceUsd={priceUsd}
     />
   );
 };
@@ -162,3 +165,29 @@ const dapp: Dapp = {
 };
 
 export default dapp;
+
+const priceUsd = async (address: string) => {
+  try {
+    const response = await fetch(`${backendApi}/assets`, {
+      method: "get",
+    });
+    const baseAssetsCall = await response.json();
+    const baseAssets = baseAssetsCall.data;
+
+    const wbnbPrice = baseAssets.find((asset: any) => asset.address.toLowerCase() === "0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f".toLowerCase())?.price;
+
+    const nativeBNB = {
+      address: "ETH",
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
+      price: wbnbPrice,
+    };
+    baseAssets.unshift(nativeBNB);
+    return baseAssets.find((it: any) => it.address.toLowerCase() === address.toLowerCase())?.price;
+  } catch (ex) {
+    console.error("get baseAssets had error", ex);
+    return 0;
+  }
+};
