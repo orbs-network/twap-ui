@@ -10,30 +10,29 @@ import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { TWAP, Orders } from "@orbs-network/twap-ui-syncswap";
 import { createTheme, ThemeProvider } from "@mui/material";
-const config = { ...Configs.QuickSwap };
+const config = { ...Configs.Lynex };
 config.name = "SyncSwap";
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
+const backendApi = "https://lynex-backend-7e21c8e31085.herokuapp.com/api/v1";
 
 const parseListToken = (tokenList: any) => {
-  return tokenList
-    .filter((t: any) => t.chainId === config.chainId)
-    .map(({ symbol, address, decimals, logoURI, name, chainId }: any) => ({
-      decimals,
-      symbol,
-      name,
-      chainId,
-      address,
-      tokenInfo: { address, chainId, decimals, symbol, name, logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png") },
-      tags: [],
-    }));
+  return tokenList.map(({ symbol, address, decimals, logoURI, name }: any) => ({
+    decimals,
+    symbol,
+    name,
+    address,
+    logoURI,
+  }));
 };
 export const useDappTokens = () => {
   return useGetTokens({
     chainId: config.chainId,
     parse: parseListToken,
-    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
-    baseAssets: erc20s.poly,
-    url: `https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json`,
+    modifyFetchResponse: (response: any) => {
+      return response.data;
+    },
+    baseAssets: [],
+    url: `${backendApi}/assets`,
   });
 };
 interface TokenSelectModalProps {
@@ -96,15 +95,13 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       srcToken={zeroAddress}
       dstToken={erc20sData.poly.USDC.address} //USDC
       dappTokens={dappTokens}
-      onSrcTokenSelected={(token: any) => console.log(token)}
-      onDstTokenSelected={(token: any) => console.log(token)}
       TokenSelectModal={TokenSelectModal}
       provider={library}
-      getTokenLogoURL={getTokenLogoURL}
       isDarkTheme={isDarkTheme}
       limit={limit}
       onTxSubmitted={(args: any) => console.log(args)}
       pallete={pallete}
+      priceUsd={priceUsd}
     />
   );
 };
@@ -169,3 +166,30 @@ const theme = createTheme({
     },
   },
 });
+
+
+const priceUsd = async (address: string) => {
+  try {
+    const response = await fetch(`${backendApi}/assets`, {
+      method: "get",
+    });
+    const baseAssetsCall = await response.json();
+    const baseAssets = baseAssetsCall.data;
+
+    const wbnbPrice = baseAssets.find((asset: any) => asset.address.toLowerCase() === "0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f".toLowerCase())?.price;
+
+    const nativeBNB = {
+      address: "ETH",
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
+      price: wbnbPrice,
+    };
+    baseAssets.unshift(nativeBNB);
+    return baseAssets.find((it: any) => it.address.toLowerCase() === address.toLowerCase())?.price;
+  } catch (ex) {
+    console.error("get baseAssets had error", ex);
+    return 0;
+  }
+};

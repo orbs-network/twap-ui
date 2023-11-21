@@ -5,16 +5,17 @@ import Tooltip from "./Tooltip";
 import { useTwapContext } from "../../context";
 import { useTwapStore } from "../../store";
 import { StyledOneLineText, StyledRowFlex } from "../../styles";
-import { ReactNode } from "react";
+import { FC, ReactNode } from "react";
 
 interface Props {
   onClick: () => void;
   className?: string;
   hideArrow?: boolean;
   customUi: ReactNode;
+  customButtonElement?: FC ;
 }
 
-function TokenSelectButton({ className = "", onClick, hideArrow, customUi }: Props) {
+function TokenSelectButton({ className = "", onClick, hideArrow, customUi, customButtonElement }: Props) {
   const translations = useTwapContext().translations;
   const wrongNetwork = useTwapStore((state) => state.wrongNetwork);
   const maker = useTwapStore((state) => state.lib?.maker);
@@ -35,9 +36,11 @@ function TokenSelectButton({ className = "", onClick, hideArrow, customUi }: Pro
     onClick();
   };
 
+  const Btn = customButtonElement || StyledContainer;
+
   return (
     <Tooltip text={warning}>
-      <StyledContainer className={`twap-token-select ${className}`} onClick={_onClick}>
+      <Btn className={`twap-token-select ${className}`} onClick={_onClick}>
         <StyledRowFlex>
           {customUi ? (
             <>{customUi}</>
@@ -48,7 +51,7 @@ function TokenSelectButton({ className = "", onClick, hideArrow, customUi }: Pro
             </>
           )}
         </StyledRowFlex>
-      </StyledContainer>
+      </Btn>
     </Tooltip>
   );
 }

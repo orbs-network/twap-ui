@@ -20,7 +20,7 @@ import {
 } from "./base";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { TbArrowsRightLeft } from "react-icons/tb";
-import { styled } from "@mui/system";
+import { styled, Button as MuiButton } from "@mui/material";
 import { AiOutlineWarning } from "react-icons/ai";
 import { useTwapContext } from "../context";
 import {
@@ -53,7 +53,7 @@ import {
 } from "./Labels";
 import { SwitchVariant, TWAPTokenSelectProps } from "../types";
 import { analytics } from "../analytics";
-import { Fade, FormControl, RadioGroup, Typography } from "@mui/material";
+import { Box, Fade, FormControl, RadioGroup, Typography } from "@mui/material";
 import { IoIosArrowDown } from "react-icons/io";
 import { IconType } from "react-icons";
 import Copy from "./base/Copy";
@@ -162,6 +162,7 @@ export const TokenSelect = ({
   tokenSelectedUi,
   tokenNotSelectedUi,
   CustomArrow,
+  customButtonElement,
 }: {
   onClick: () => void;
   isSrc?: boolean;
@@ -170,33 +171,66 @@ export const TokenSelect = ({
   tokenSelectedUi?: ReactNode;
   tokenNotSelectedUi?: ReactNode;
   CustomArrow?: IconType;
+  customButtonElement?: FC;
 }) => {
   const srcToken = useTwapStore((state) => state.srcToken);
   const dstToken = useTwapStore((state) => state.dstToken);
 
   const token = isSrc ? srcToken : dstToken;
 
-  if (token) {
-    return (
-      <StyledRowFlex
-        gap={5}
-        style={{ cursor: "pointer" }}
-        width="fit-content"
-        onClick={onClick}
-        className={`${className} twap-token-select twap-token-selected ${!!srcToken && !!dstToken ? "twap-token-filled" : ""}`}
-      >
-        {tokenSelectedUi ? (
-          <>{tokenSelectedUi}</>
-        ) : (
-          <>
-            <TokenLogoAndSymbol isSrc={isSrc} />
-            {!hideArrow && <Icon icon={CustomArrow ? <CustomArrow size={20} /> : <IoIosArrowDown size={20} />} />}
-          </>
-        )}
-      </StyledRowFlex>
-    );
-  }
-  return <TokenSelectButton customUi={tokenNotSelectedUi} hideArrow={hideArrow} className={`${className} twap-token-not-selected`} onClick={onClick} />;
+  return (
+    <Box className={`${className} twap-token-select`}>
+      {token ? (
+        <StyledRowFlex gap={5} style={{ cursor: "pointer" }} width="fit-content" onClick={onClick} className={`twap-token-selected`}>
+          {tokenSelectedUi ? (
+            <>{tokenSelectedUi}</>
+          ) : (
+            <>
+              <TokenLogoAndSymbol isSrc={isSrc} />
+              {!hideArrow && <Icon icon={CustomArrow ? <CustomArrow size={20} /> : <IoIosArrowDown size={20} />} />}
+            </>
+          )}
+        </StyledRowFlex>
+      ) : (
+        <TokenSelectButton
+          customButtonElement={customButtonElement}
+          customUi={tokenNotSelectedUi}
+          hideArrow={hideArrow}
+          className={`${className} twap-token-not-selected`}
+          onClick={onClick}
+        />
+      )}
+    </Box>
+  );
+};
+
+export const TokenSelectNew = ({
+  onClick,
+  isSrc,
+  hideArrow = true,
+  className = "",
+  CustomArrow,
+}: {
+  onClick: () => void;
+  isSrc?: boolean;
+  hideArrow?: boolean;
+  className?: string;
+  CustomArrow?: IconType;
+}) => {
+  const srcToken = useTwapStore((state) => state.srcToken);
+  const dstToken = useTwapStore((state) => state.dstToken);
+  const translations = useTwapContext().translations;
+
+  const token = isSrc ? srcToken : dstToken;
+
+  return (
+    <Box className={`${className} twap-token-select`}>
+      <MuiButton onClick={onClick} className={`twap-token-selected`}>
+        {token ? <TokenLogoAndSymbol isSrc={isSrc} /> : <StyledOneLineText>{translations.selectToken}</StyledOneLineText>}
+        {!hideArrow && <Icon icon={CustomArrow ? <CustomArrow size={20} /> : <IoIosArrowDown size={20} />} />}
+      </MuiButton>
+    </Box>
+  );
 };
 
 export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hideNull?: boolean; onClick?: () => void }) => {

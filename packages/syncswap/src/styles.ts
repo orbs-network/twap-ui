@@ -1,4 +1,5 @@
-import { styled } from "@mui/material";
+import { Button, styled } from "@mui/material";
+import { Box } from "@mui/system";
 import { Components, Styles } from "@orbs-network/twap-ui";
 import { SyncSwapPallete } from "./types";
 
@@ -20,9 +21,67 @@ const getButtonStyles = (theme: SyncSwapPallete) => {
   };
 };
 
-export const StyledTokenPanelInput = styled(Components.TokenInput)({
+export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ pallete }: { pallete: SyncSwapPallete }) => ({
+  height: 15,
+  ".twap-icon-btn": {
+    background: pallete.overlay2,
+    overflow: "hidden",
+    width: 32,
+    height: 32,
+    border: `4px solid ${pallete.overlay}`,
+    svg: {
+      color: pallete.primary,
+    },
+  },
+}));
+
+export const StyledTokenPanelUSD = styled(Components.TokenUSD)(({pallete}:{pallete: SyncSwapPallete}) => ({
+  color: pallete.info,
+  fontWeight: 400,
+  fontSize: 13
+}));
+
+export const StyledBalance = styled(Components.TokenBalance)(({ pallete }: { pallete: SyncSwapPallete }) => ({
+  color: pallete.info,
+  fontSize: 13,
+  fontWeight: 500
+}));
+
+export const StyledTokenSelect = styled(Button)(({ pallete }: { pallete: SyncSwapPallete }) => ({
+  borderRadius: 16,
+  minWidth: 110,
+  padding: "0 10px",
+  height: 38,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  boxShadow: "rgb(0 0 0 / 8%) 0 6px 18px",
+  background: pallete.overlay,
+
+  ".twap-token-logo": {
+    width: 26,
+    height: 26,
+  },
+  svg: {
+    color: pallete.info,
+    width: 17,
+  },
+  p: {
+    fontSize: 17,
+    fontWeight: 500,
+    color: pallete.normal,
+  },
+  "&:hover": {},
+}));
+
+export const StyledTokenPanelInput = styled(Components.TokenInput)(({ pallete }: { pallete: SyncSwapPallete }) => ({
   textAlign: "left",
-});
+  input: {
+    fontSize: 28,
+    color: pallete.normal,
+    fontWeight: 500,
+  },
+}));
 
 export const StyledPercentSelect = styled(Styles.StyledRowFlex)({
   width: "100%",
@@ -51,6 +110,9 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
   const styles = getStyles(pallete);
 
   return {
+    ".twap-loader": {
+      opacity: "1!important",
+    },
     ".twap-input": {
       "& input": {
         fontFamily: "inherit",
@@ -61,7 +123,9 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         height: 35,
         color: pallete.normal,
         paddingRight: 0,
-        "&::placeholder": {},
+        "&::placeholder": {
+          opacity: 0.5,
+        },
       },
     },
     ".twap-odnp-button": {
@@ -143,76 +207,8 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       right: 0,
       left: "unset",
     },
-    ".twap-percent-button": {
-      border: "unset",
-      borderRadius: 4,
-      cursor: "pointer",
-      color: `${styles.buttonBackground}!important`,
-      background: "unset",
-      fontSize: 14,
-      fontWeight: 600,
-      textTransform: "uppercase" as const,
-      margin: 0,
-      padding: 0,
-    },
     ".twap-label": {
       fontSize: 16,
-    },
-    ".twap-token-select": {
-      ".twap-icon svg": {
-        color: `${styles.textColor}!important`,
-        fill: `${styles.textColor}!important`,
-        stroke: `${styles.textColor}!important`,
-      },
-      border: "",
-      background: `${styles.selectedTokenBackground}!important`,
-      ".twap-token-name": {
-        fontWeight: "500!important",
-        fontSize: "16px!important",
-      },
-      height: 40,
-      padding: "8px 13px 8px 8px",
-      marginBottom: 2,
-      borderRadius: 38,
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between!important",
-      color: `${styles.selectTokenTextColor}!important`,
-      p: {
-        color: `${styles.textColor}`,
-      },
-      ".twap-token-display": {
-        img: {
-          width: 30,
-          height: 30,
-          minWidth: 30,
-          minHeight: 30,
-        },
-        p: {
-          overflow: "hidden",
-          whiteSpace: "nowrap",
-          textOverflow: "ellipsis",
-        },
-        justifyContent: "start",
-        width: "100%",
-      },
-    },
-    ".twap-token-not-selected": {
-      display: "flex",
-      paddingLeft: 12,
-      justifyContent: "center",
-      backgroundImage: "",
-      p: {
-        fontSize: 16,
-      },
-    },
-
-    ".twap-token-selected": {
-      background: `${styles.selectedTokenBackground}!important`,
-      p: {
-        fontSize: 16,
-      },
     },
     ".twap-market-price": {
       img: {
@@ -264,9 +260,6 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         color: styles.tooltipBackground,
       },
     },
-    ".twap-loader": {
-      backgroundColor: `${styles.skeletonLoaderBackground || "rgba(255,255,255, 0.1)"}!important`,
-    },
 
     ".twap-button-loader": {
       color: styles.spinnerColor,
@@ -285,7 +278,7 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       right: 0,
     },
     ".twap-card": {
-      padding: "16px 14px",
+      padding: "10px 14px",
       background: hexToRGB(pallete.overlay, 0.7),
       borderRadius: 10,
       boxShadow: "0 0 6px rgb(0 0 0/4%), 0 14px 20px rgb(0 0 0/1%), 0 20px 28px rgb(0 0 0/1%)",
@@ -592,18 +585,6 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         padding: "10px 26px",
       },
     },
-    ".twap-change-tokens-order": {
-      position: "absolute",
-      width: "36px!important",
-      height: 36,
-      top: -24,
-      background: styles.wrapperBackground,
-      border: "",
-      borderRadius: 8,
-      button: {
-        padding: "0!important",
-      },
-    },
     ".twap-powered-by": {
       marginTop: "24px!important",
       marginBottom: "0px!important",
@@ -618,11 +599,6 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
     },
     ".twap-input input": {
       paddingRight: "0!important",
-    },
-    ".twap-token-panel .twap-input input": {
-      fontSize: "24px!important",
-      color: pallete.normal,
-      fontWeight: "400!important",
     },
     ".adapter-wrapper": {
       padding: "0px",
@@ -714,12 +690,9 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         },
       },
     },
-    ".twap-order-expanded-row": {},
-
     ".twap-limit-price .twap-label": {
       height: 38,
     },
-    ".twap-token-filled": {},
     ".twap-orders-wrapper": {
       fontFamily: "Inter",
       maxWidth: "100%!important",
@@ -727,9 +700,6 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       "p, span": {
         fontFamily: "Inter",
       },
-    },
-    "p .twap-balance-title": {
-      fontSize: 14,
     },
     ".MuiBackdrop-root": {
       backdropFilter: "blur(15px)",

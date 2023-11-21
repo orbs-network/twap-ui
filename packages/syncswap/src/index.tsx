@@ -14,13 +14,14 @@ import {
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Box } from "@mui/system";
-import { createContext, memo, ReactNode, useCallback, useContext, useState } from "react";
+import { createContext, memo, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
-import { configureStyles, StyledPercentSelect, StyledTokenPanelInput } from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { configureStyles, StyledBalance, StyledChangeTokensOrder, StyledPercentSelect, StyledTokenPanelInput, StyledTokenPanelUSD, StyledTokenSelect } from "./styles";
+import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { SyncSwapPallete } from "./types";
-
+import { StyledOneLineText } from "@orbs-network/twap-ui/dist/styles";
+import { IoIosArrowDown } from "react-icons/io";
 const storeOverride = {
   isLimitOrder: true,
   chunks: 1,
@@ -30,44 +31,26 @@ const storeOverride = {
 
 interface SyncSwapProps extends TWAPProps {
   connect: () => void;
-  onSrcTokenSelected: (value: any) => void;
-  onDstTokenSelected: (value: any) => void;
-  getTokenLogoURL: (address: string) => string;
-  dappTokens: { [key: string]: QuickSwapRawToken };
   pallete: SyncSwapPallete;
 }
 
-interface QuickSwapRawToken {
-  address: string;
-  chainId: number;
-  decimals: number;
-  name: string;
-  symbol: string;
-  tokenInfo: {
-    address: string;
-    chainId: number;
-    decimals: number;
-    logoURI: string;
-    name: string;
-    symbol: string;
-  };
-}
 
-const config = Configs.QuickSwap;
+const config = Configs.Lynex;
 
-const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): TokenData | undefined => {
+const parseToken = (rawToken: any): TokenData | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
-  if (!rawToken.address || isNativeAddress(rawToken.address)) {
+  const address = rawToken.address === "ETH" ? zeroAddress : rawToken.address;
+  if (!address || isNativeAddress(address)) {
     return config.nativeToken;
   }
   return {
-    address: Web3.utils.toChecksumAddress(rawToken.address),
+    address: Web3.utils.toChecksumAddress(address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: rawToken.tokenInfo?.logoURI || getTokenLogoURL(rawToken.address),
+    logoUrl: rawToken.logoURI,
   };
 };
 
@@ -84,7 +67,7 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
 };
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
 
-const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
+const TokenSelectModal = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
   return <Components.TokenSelectModal Component={memoizedTokenSelect} isOpen={open} onClose={onClose} isSrc={isSrcToken} />;
 };
 
@@ -98,24 +81,46 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 
   return (
     <>
-      <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
+      <TokenSelectModal onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
 
       <TwapStyles.StyledColumnFlex gap={0} className="twap-token-panel">
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={16}>
-            <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <StyledTokenPanelInput placeholder="0.00" isSrc={isSrcToken} />
-              <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
-            </TwapStyles.StyledRowFlex>
-            <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenBalance isSrc={isSrcToken} />
-              <Components.TokenUSD isSrc={isSrcToken} />
-            </TwapStyles.StyledRowFlex>
+            <TwapStyles.StyledColumnFlex>
+              <TwapStyles.StyledRowFlex justifyContent="space-between">
+                <StyledTokenPanelInput placeholder="0.0" isSrc={isSrcToken} pallete={pallete} />
+                <TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              </TwapStyles.StyledRowFlex>
+              <TwapStyles.StyledRowFlex justifyContent="space-between">
+                <StyledTokenPanelUSD pallete={pallete} isSrc={isSrcToken} />
+                <StyledBalance pallete={pallete} isSrc={isSrcToken} />
+              </TwapStyles.StyledRowFlex>
+            </TwapStyles.StyledColumnFlex>
             {isSrcToken && <SrcTokenPercentSelector />}
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
       </TwapStyles.StyledColumnFlex>
     </>
+  );
+};
+
+export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: boolean}) => {
+  const { pallete } = useAdapterContext();
+  const { srcToken, dstToken } = store.useTwapStore((state) => ({
+    srcToken: state.srcToken,
+    dstToken: state.dstToken,
+  }));
+  const translations = useTwapContext().translations;
+
+  const token = isSrc ? srcToken : dstToken;
+
+  return (
+    <StyledTokenSelect pallete={pallete} onClick={onClick}>
+      <TwapStyles.StyledRowFlex gap={5}>
+        {token ? <Components.TokenLogoAndSymbol isSrc={isSrc} /> : <StyledOneLineText>{translations.selectToken}</StyledOneLineText>}
+        <Components.Base.Icon icon={<IoIosArrowDown size={20} />} />
+      </TwapStyles.StyledRowFlex>
+    </StyledTokenSelect>
   );
 };
 
@@ -175,13 +180,6 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
   );
 };
 
-const ChangeTokensOrder = () => {
-  return (
-    <Box mt={1.5} sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <Components.ChangeTokensOrder />
-    </Box>
-  );
-};
 
 interface Props extends SyncSwapProps {
   limit?: boolean;
@@ -194,6 +192,17 @@ const TWAP = (props: Props) => {
     props.connect();
   }, []);
 
+    const priceUsd = useCallback(
+      (address: string) => {
+        if (address === zeroAddress) {
+          address = "ETH";
+        }
+        return props.priceUsd!(address);
+      },
+      [props.priceUsd]
+    );
+
+
   return (
     <Box className="adapter-wrapper">
       <TwapAdapter
@@ -205,13 +214,12 @@ const TWAP = (props: Props) => {
         provider={props.provider}
         account={props.account}
         dappTokens={props.dappTokens}
-        parseToken={(rawToken: any) => parseToken(props.getTokenLogoURL, rawToken)}
+        parseToken={parseToken}
         srcToken={props.srcToken}
         onTxSubmitted={props.onTxSubmitted}
         dstToken={props.dstToken}
         storeOverride={props.limit ? storeOverride : undefined}
-        onDstTokenSelected={props.onDstTokenSelected}
-        onSrcTokenSelected={props.onSrcTokenSelected}
+        priceUsd={priceUsd}
       >
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>
@@ -223,14 +231,25 @@ const TWAP = (props: Props) => {
   );
 };
 
+
+const Market = () => {
+  return (
+    <Components.Base.Card>
+      <Components.MarketPrice />
+    </Components.Base.Card>
+  );
+}
+
 const LimitPanel = () => {
   return (
     <div className="twap-container">
-      <TokenPanel isSrcToken={true} />
-      <ChangeTokensOrder />
-      <TokenPanel />
-      <Components.MarketPrice />
-      <TwapStyles.StyledColumnFlex gap={12}>
+      <TwapStyles.StyledColumnFlex gap={16}>
+        <TwapStyles.StyledColumnFlex gap={0}>
+          <TokenPanel isSrcToken={true} />
+          <ChangeTokensOrder />
+          <TokenPanel />
+        </TwapStyles.StyledColumnFlex>
+        <Market />
         <LimitPrice limit={true} />
         <Components.SubmitButton isMain />
       </TwapStyles.StyledColumnFlex>
@@ -247,14 +266,23 @@ const LimitPanel = () => {
   );
 };
 
+
+const ChangeTokensOrder = () => {
+  const pallete = useAdapterContext().pallete;
+
+  return <StyledChangeTokensOrder pallete={pallete} />;
+}
+
 const TWAPPanel = () => {
   return (
     <div className="twap-container">
-      <TokenPanel isSrcToken={true} />
-      <ChangeTokensOrder />
-      <TokenPanel />
-      <Components.MarketPrice />
-      <TwapStyles.StyledColumnFlex gap={12}>
+      <TwapStyles.StyledColumnFlex gap={16}>
+        <TwapStyles.StyledColumnFlex gap={0}>
+          <TokenPanel isSrcToken={true} />
+          <ChangeTokensOrder />
+          <TokenPanel />
+        </TwapStyles.StyledColumnFlex>
+        <Market />
         <LimitPrice />
         <TradeSize />
         <TradeInterval />

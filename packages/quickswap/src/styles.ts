@@ -764,7 +764,6 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
     ".twap-limit-price .twap-label": {
       height: 38,
     },
-    ".twap-token-filled": {},
     ".twap-orders-wrapper": {
       fontFamily: "Inter",
       maxWidth: "100%!important",
