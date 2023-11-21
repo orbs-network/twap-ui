@@ -6,8 +6,8 @@ import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
 import _ from "lodash";
-import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
-import { createContext, ReactNode, useContext, useState } from "react";
+import { erc20sData, zeroAddress } from "@defi.org/web3-candies";
+import { useMemo, useState } from "react";
 import { Configs } from "@orbs-network/twap";
 
 const backendApi = "https://lynex-backend-7e21c8e31085.herokuapp.com/api/v1";
@@ -57,54 +57,28 @@ const parseList = (rawList?: any): TokenListItem[] => {
   });
 };
 
-export const TokenSelectModal = ({ onCurrencySelect }: TokenSelectModalProps) => {
-  const tokensList = useDappTokens().data;
-  const parsedList = parseList(tokensList);
-  const { close } = useContext(Context);
-
-  const onClick = (token: any) => {
-    onCurrencySelect(token);
-    close();
-  };
-
-  return (
-    <StyledModalContent>
-      <TokensList tokens={parsedList} onClick={onClick} />
-    </StyledModalContent>
-  );
-};
-
-interface ContextProps {
-  modal: any;
-  open: (modal: any) => void;
-  close: () => void;
+interface TokenSelectModalProps {
+  popup: boolean;
+  setPopup: (value: boolean) => void;
+  selectedAsset: any;
+  setSelectedAsset: (value: any) => void;
+  otherAsset: any;
+  setOtherAsset: (value: any) => void;
+  baseAssets: any[];
+  onAssetSelect: () => void;
 }
-const Context = createContext({} as ContextProps);
 
-const ContextWrapper = ({ children }: { children: ReactNode }) => {
-  const [modal, setModal] = useState<any>(undefined);
-
-  return <Context.Provider value={{ modal, open: (modal: any) => setModal(modal), close: () => setModal(undefined) }}>{children}</Context.Provider>;
-};
-
-const ListPopup = () => {
-  const { modal, close } = useContext(Context);
+const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
+  const tokensListSize = _.size(baseAssets);
+  const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
   return (
-    <Popup isOpen={!!modal} onClose={close}>
-      {modal}
+    <Popup isOpen={popup} onClose={() => setPopup(true)}>
+      <StyledModalContent>
+        <TokensList tokens={parsedList} onClick={setSelectedAsset} />
+      </StyledModalContent>
     </Popup>
   );
-};
-
-const useModal = (Component: any) => {
-  const { open } = useContext(Context);
-
-  const onClick = () => {
-    open(Component);
-  };
-
-  return [onClick];
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -119,15 +93,14 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library?.givenProvider}
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.ftm.USDC.address}
+      srcToken="ETH"
+      dstToken="USDC"
       dappTokens={dappTokens}
       onSrcTokenSelected={(token: any) => console.log(token)}
       onDstTokenSelected={(token: any) => console.log(token)}
       TokenSelectModal={TokenSelectModal}
       isDarkTheme={isDarkTheme}
       limit={limit}
-      useModal={useModal}
       priceUsd={priceUsd}
     />
   );
@@ -139,21 +112,18 @@ const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
 
   return (
-    <ContextWrapper>
-      <ListPopup />
-      <StyledLynex>
-        <StyledLynexLayout name={config.name}>
-          <UISelector limit={true} select={setSelected} selected={selected} />
-          <StyledLynexBox>
-            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-          </StyledLynexBox>
+    <StyledLynex>
+      <StyledLynexLayout name={config.name}>
+        <UISelector limit={true} select={setSelected} selected={selected} />
+        <StyledLynexBox>
+          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+        </StyledLynexBox>
 
-          <StyledLynexBox>
-            <Orders />
-          </StyledLynexBox>
-        </StyledLynexLayout>
-      </StyledLynex>
-    </ContextWrapper>
+        <StyledLynexBox>
+          <Orders />
+        </StyledLynexBox>
+      </StyledLynexLayout>
+    </StyledLynex>
   );
 };
 

@@ -20,6 +20,7 @@ function Label({ children, tooltipText, className = "", fontSize, placement, sub
   const { uiPreferences } = useTwapContext();
 
   const InfoIcon = uiPreferences.infoIcon || SlInfo;
+
   if (subtitle) {
     return (
       <StyledColumnFlex className={`twap-label ${className}`}>
@@ -29,15 +30,13 @@ function Label({ children, tooltipText, className = "", fontSize, placement, sub
     );
   }
   return (
-    <StyledContainer className={`twap-label ${className}`}>
-      <StyledLabel style={{ fontSize }}>
-        {children}
-        {tooltipText && (
-          <Tooltip placement={placement} text={tooltipText}>
-            <InfoIcon className="twap-icon twap-tooltip-icon" style={{ width: 14, height: 14, position: "relative", top: 2, marginLeft: 5 }} />
-          </Tooltip>
-        )}
-      </StyledLabel>
+    <StyledContainer className={`twap-label ${className}`} style={{ gap: 0 }}>
+      <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
+      {tooltipText && (
+        <Tooltip placement={placement} text={tooltipText}>
+          <InfoIcon className="twap-icon twap-tooltip-icon" style={{ width: 14, height: 14, position: "relative", top: 2, marginLeft: 5 }} />
+        </Tooltip>
+      )}
     </StyledContainer>
   );
 }

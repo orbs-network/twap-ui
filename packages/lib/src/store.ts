@@ -82,7 +82,7 @@ export const useTwapStore = create(
       set({ srcToken });
     },
     setDstToken: (dstToken?: TokenData) => {
-      set({ dstToken, limitPriceUi: initialState.limitPriceUi });
+      set({ dstToken, limitPriceUi: { ...get().limitPriceUi, custom: false } });
     },
     setSrcAmountUi: (srcAmountUi: string) => {
       set({ srcAmountUi });

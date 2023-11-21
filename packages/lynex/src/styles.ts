@@ -204,6 +204,9 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
       border: "2px solid rgb(223 131 47/1)",
       ".twap-order-expanded-row": {
         alignItems: "flex-start",
+        ".twap-label": {
+          flex: 1,
+        },
       },
     },
     svg: {
@@ -295,6 +298,11 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-button": {
       ...buttonStyles(theme),
+    },
+    ".twap-ui-close": {
+      "*": {
+        color: darkMode ? "white" : "black",
+      },
     },
     ".twap-modal": {
       color: styles.textColor,

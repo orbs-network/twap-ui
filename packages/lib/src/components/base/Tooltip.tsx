@@ -54,7 +54,7 @@ function Tooltip({ children, text, placement, childrenStyles = {} }: Props) {
       }}
       placement={placement}
     >
-      <span style={{ ...childrenStyles, ...textOverflow, minWidth: 0 }} className="twap-tooltip-children">
+      <span style={{ ...childrenStyles }} className="twap-tooltip-children">
         {children}
       </span>
     </MuiTooltip>

@@ -1,8 +1,20 @@
 import { GlobalStyles, ThemeProvider, useTheme } from "@mui/material";
-import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, store, Orders, TwapContextUIPreferences, hooks } from "@orbs-network/twap-ui";
+import {
+  Components,
+  Styles as TwapStyles,
+  Translations,
+  TwapAdapter,
+  TWAPProps,
+  useTwapContext,
+  store,
+  Orders,
+  TwapContextUIPreferences,
+  hooks,
+  TWAPTokenSelectProps,
+} from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
-import { createContext, useCallback, useContext, useMemo } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import Web3 from "web3";
 import {
   configureStyles,
@@ -100,24 +112,40 @@ const PercentSelector = () => {
   );
 };
 
-const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const { useModal, TokenSelectModal } = useAdapterContext();
-  const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
-  const selectToken = hooks.useSelectTokenCallback();
-  const translations = useTwapContext().translations;
+const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
+  const { TokenSelectModal, dappTokens } = useAdapterContext();
 
-  const onSelect = useCallback(
-    (token: any) => {
-      selectToken({ isSrc: !!isSrcToken, token });
-    },
-    [selectToken, isSrcToken]
+  return (
+    <TokenSelectModal
+      otherAsset={props.dstTokenSelected}
+      selectedAsset={props.srcTokenSelected}
+      setSelectedAsset={props.onSelect}
+      popup={props.isOpen}
+      setPopup={props.onClose}
+      baseAssets={dappTokens}
+      setOtherAsset={props.onSelect}
+    />
   );
-  const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
+};
+const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
+
+const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
+  return <Components.TokenSelectModal Component={memoizedTokenSelect} isOpen={open} onClose={onClose} isSrc={isSrcToken} />;
+};
+
+const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
+  const translations = useTwapContext().translations;
+  const [tokenListOpen, setTokenListOpen] = useState(false);
+
+  const onClose = useCallback(() => {
+    setTokenListOpen(false);
+  }, []);
 
   const theme = useTheme();
 
   return (
     <>
+      <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
       <StyledTokenPanel theme={theme}>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Base.Label>{isSrcToken ? translations.from : translations.to}</Components.Base.Label>
@@ -125,12 +153,12 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
           <StyledTokenBalance emptyUi={<>0</>} isSrc={isSrcToken} />
         </TwapStyles.StyledRowFlex>
         <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={0}>
+          <TwapStyles.StyledColumnFlex gap={0} style={{ flex: 1, width: "auto", paddingRight: 10 }}>
             <StyledTokenPanelInput isSrc={isSrcToken} />
             <Components.TokenUSD isSrc={isSrcToken} />
           </TwapStyles.StyledColumnFlex>
           <StyledTokenSelect theme={theme}>
-            <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} />
+            <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
           </StyledTokenSelect>
         </Components.Base.Card>
       </StyledTokenPanel>
