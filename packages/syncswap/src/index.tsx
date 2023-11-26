@@ -301,7 +301,6 @@ const ChangeTokensOrder = () => {
 const SubmitButton = ({ isMain }: { isMain?: boolean }) => {
   const { loading, disabled, text, onClick } = hooks.useSubmitButton(isMain);
 
-
   const _onClick = () => {
     if (onClick) return onClick();
     return () => {};

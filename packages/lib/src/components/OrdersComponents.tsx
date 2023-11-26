@@ -27,13 +27,7 @@ export const OrdersSelectTabs = ({ className = "" }: { className?: string }) => 
   };
 
   return (
-    <StyledOrdersTabs
-      variant="scrollable"
-      scrollButtons={isMobile}
-      className={`twap-orders-header-tabs ${className}`}
-      value={tab}
-      onChange={handleChange}
-    >
+    <StyledOrdersTabs variant="scrollable" scrollButtons={isMobile} className={`twap-orders-header-tabs ${className}`} value={tab} onChange={handleChange}>
       {_.keys(tabs).map((key, index) => {
         const name = translations[key as keyof Translations] || key;
         const amount = tabs[key as keyof typeof tabs];

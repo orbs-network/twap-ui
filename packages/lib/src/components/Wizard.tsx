@@ -4,7 +4,8 @@ import { useWizardStore, WizardAction, WizardActionStatus } from "../store";
 import { StyledColumnFlex, StyledText } from "../styles";
 import { Modal, Spinner } from "./base";
 
-import { Md3DRotation } from "@react-icons/all-files/md/Md3DRotation";
+import { FaCheckCircle } from "@react-icons/all-files/fa/FaCheckCircle";
+import { MdError } from "@react-icons/all-files/md/MdError";
 
 export function Wizard() {
   const store = useWizardStore();
@@ -69,7 +70,7 @@ const Message = ({
   if (status === WizardActionStatus.SUCCESS) {
     return (
       <>
-        <Md3DRotation className="twap-icon twap-success-icon" />
+        <FaCheckCircle className="twap-icon twap-success-icon" />
         <StyledTitle>{successMsg}</StyledTitle>
       </>
     );
@@ -78,7 +79,7 @@ const Message = ({
   if (status === WizardActionStatus.ERROR) {
     return (
       <>
-        <Md3DRotation className="twap-icon twap-error-icon" />
+        <MdError className="twap-icon twap-error-icon" />
         <StyledTitle>{errorMsg}</StyledTitle>
         <StyledMessage>{error}</StyledMessage>
       </>

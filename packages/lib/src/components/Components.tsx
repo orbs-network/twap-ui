@@ -25,16 +25,7 @@ import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
 
 import { IconType } from "@react-icons/all-files";
-import {
-  useLoadingState,
-  useLimitPrice,
-  useMarketPrice,
-  useFormatNumber,
-  useToken,
-  useSwitchTokens,
-  useSelectTokenCallback,
-  useSubmitButton,
-} from "../hooks";
+import { useLoadingState, useLimitPrice, useMarketPrice, useFormatNumber, useToken, useSwitchTokens, useSelectTokenCallback, useSubmitButton } from "../hooks";
 import { useTwapStore, handleFillDelayText } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";

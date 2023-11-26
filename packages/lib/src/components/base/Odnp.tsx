@@ -12,12 +12,11 @@ const mobile = 700;
 
 const icon = "https://services-healthpage.orbs.network/img/odnp-logo.png";
 
-function Odnp({ className = "" }: { className?: string; }) {
+function Odnp({ className = "" }: { className?: string }) {
   const { account } = useTwapContext();
 
   const [open, setOpen] = useState(false);
   const { translations } = useTwapContext();
-
 
   if (!account) return null;
   return (
