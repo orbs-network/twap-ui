@@ -1,10 +1,11 @@
 import { styled } from "@mui/material";
 import React, { useCallback, useMemo } from "react";
-import { BsFillCheckCircleFill } from "react-icons/bs";
 import { useWizardStore, WizardAction, WizardActionStatus } from "../store";
 import { StyledColumnFlex, StyledText } from "../styles";
 import { Modal, Spinner } from "./base";
-import { MdOutlineError } from "react-icons/md";
+
+import { Md3DRotation } from "@react-icons/all-files/md/Md3DRotation";
+
 export function Wizard() {
   const store = useWizardStore();
   const content = useContent();
@@ -68,7 +69,7 @@ const Message = ({
   if (status === WizardActionStatus.SUCCESS) {
     return (
       <>
-        <BsFillCheckCircleFill className="twap-icon twap-success-icon" />
+        <Md3DRotation className="twap-icon twap-success-icon" />
         <StyledTitle>{successMsg}</StyledTitle>
       </>
     );
@@ -77,7 +78,7 @@ const Message = ({
   if (status === WizardActionStatus.ERROR) {
     return (
       <>
-        <MdOutlineError className="twap-icon twap-error-icon" />
+        <Md3DRotation className="twap-icon twap-error-icon" />
         <StyledTitle>{errorMsg}</StyledTitle>
         <StyledMessage>{error}</StyledMessage>
       </>

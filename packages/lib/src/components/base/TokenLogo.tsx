@@ -1,6 +1,6 @@
 import { CSSProperties, useEffect, useState } from "react";
-import { AiFillQuestionCircle } from "react-icons/ai";
-import { styled } from "@mui/system";
+import { styled } from "@mui/material";
+import { AiFillQuestionCircle } from "@react-icons/all-files/ai/AiFillQuestionCircle";
 
 function TokenLogo({ logo, className = "", style = {}, alt = "Token logo" }: { logo?: string; className?: string; style?: CSSProperties; alt?: string }) {
   const [error, setError] = useState(false);

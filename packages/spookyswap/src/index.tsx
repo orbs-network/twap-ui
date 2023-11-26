@@ -35,8 +35,9 @@ import {
 } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode, useCallback, useState } from "react";
-import { BsQuestionCircle } from "react-icons/bs";
-import { AiOutlineArrowDown } from "react-icons/ai";
+
+import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
+
 const config = Configs.SpookySwap;
 
 const uiPreferences: TwapContextUIPreferences = {
@@ -256,7 +257,7 @@ const TWAPPanel = () => {
 };
 
 const ChangeTokensOrder = () => {
-  return <StyledChangeTokensOrder icon={<AiOutlineArrowDown />} />;
+  return <StyledChangeTokensOrder icon={<BsQuestionCircle />} />;
 };
 
 const LimitPanel = () => {

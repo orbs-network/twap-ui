@@ -61,16 +61,17 @@ import {
   StyledMobileTabsMenuButton,
   StyledMobileTabsMenu,
 } from "./styles";
-import { IoWalletOutline } from "react-icons/io5";
-import { IoIosArrowDown } from "react-icons/io";
 import { Configs, Status, TokenData } from "@orbs-network/twap";
 import { isNativeAddress } from "@defi.org/web3-candies";
 import Web3 from "web3";
-import { HiArrowsRightLeft } from "react-icons/hi2";
-import { IoMdArrowBack } from "react-icons/io";
 import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 import _ from "lodash";
-import { VscSettings } from "react-icons/vsc";
+
+import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";
+import { IoMdArrowBack } from "@react-icons/all-files/io/IoMdArrowBack";
+import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
+import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 
 const useMobile = () => {
   return useMediaQuery("(max-width:700px)");
@@ -614,7 +615,7 @@ const TradeInterval = () => {
 
 const LimitPrice = ({ limit }: { limit?: boolean }) => {
   const isLimitOrder = store.useTwapStore((s) => s.isLimitOrder);
-  const components = Components.useLimitPriceComponents({ toggleIcon: <HiArrowsRightLeft style={{ width: 20, height: 20 }} />, showDefault: true });
+  const components = Components.useLimitPriceComponents({ toggleIcon: <HiArrowRight style={{ width: 20, height: 20 }} />, showDefault: true });
   const srcAmountNotZero = hooks.useSrcAmountNotZero();
   const disabled = !srcAmountNotZero || !isLimitOrder;
 

@@ -26,7 +26,6 @@
     "@orbs-network/twap": "1.x",
     "@orbs-network/twap-ui": "^0.9.29",
     "lodash": "4.x",
-    "react-icons": "4.x",
     "web3": "1.x"
   },
   "peerDependencies": {

@@ -1,9 +1,9 @@
-import { RxStopwatch } from "react-icons/rx";
 import { Styles } from "..";
 import { useTwapContext } from "../context";
 import { handleFillDelayText, useTwapStore } from "../store";
 import { StyledRowFlex } from "../styles";
 import { Icon, Label } from "./base";
+import { AiOutlineHistory } from "@react-icons/all-files/ai/AiOutlineHistory";
 
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;
@@ -110,7 +110,7 @@ export const OrdersLabel = ({ className = "" }: { className?: string }) => {
 
   return (
     <StyledRowFlex justifyContent="flex-start" style={{ width: "auto" }}>
-      <Icon className="stopwatch-icon" icon={<RxStopwatch style={{ width: 19, height: 19 }} />} />
+      <Icon className="stopwatch-icon" icon={<AiOutlineHistory style={{ width: 19, height: 19 }} />} />
       <Label className={`twap-orders-title ${className}`} tooltipText={translations.ordersTooltip} fontSize={16}>
         {translations.orders}
       </Label>

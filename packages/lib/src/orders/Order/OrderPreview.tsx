@@ -1,12 +1,12 @@
 import { LinearProgress, Typography, Box, styled } from "@mui/material";
 import { OrderUI, useTwapContext } from "../..";
 import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../../styles";
-import { HiOutlineArrowLongRight } from "react-icons/hi2";
-import { FiChevronDown } from "react-icons/fi";
 import { useFormatNumber, useOrderPastEvents } from "../../hooks";
 import { Icon, Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
 import { TokenData } from "@orbs-network/twap";
 import { ReactNode } from "react";
+import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
+import { FiChevronDown } from "@react-icons/all-files/fi/FiChevronDown";
 
 function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }) {
   const { data, isFetching } = useOrderPastEvents(order, expanded);
@@ -39,7 +39,7 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
       </Tooltip>
       <StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start", gap: 16 }} className="twap-order-preview-tokens" justifyContent="space-between">
         <OrderTokenDisplay isMain={true} token={order.ui.srcToken} amount={order.ui.srcAmountUi} usdValue={order.ui.srcAmountUsdUi} />
-        <Icon className="twap-order-preview-icon" icon={<HiOutlineArrowLongRight style={{ width: 22, height: 22 }} />} />
+        <Icon className="twap-order-preview-icon" icon={<HiArrowRight style={{ width: 22, height: 22 }} />} />
         <OrderTokenDisplay isLoading={isFetching} token={order.ui.dstToken} amount={data?.dstAmountOut} usdValue={data?.dstAmountOutUsdPrice || ""} icon={<FiChevronDown />} />
       </StyledRowFlex>
     </StyledColumnFlex>

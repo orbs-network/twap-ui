@@ -816,3 +816,103 @@ export const useDappRawSelectedTokens = () => {
     dstToken: _dstToken,
   };
 };
+
+export const useSubmitButton = (isMain?: boolean) => {
+  const translations = useTwapContext().translations;
+  const shouldUnwrap = useTwapStore((store) => store.shouldUnwrap());
+  const shouldWrap = useTwapStore((store) => store.shouldWrap());
+  const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
+  const maker = useTwapStore((store) => store.lib?.maker);
+  const disclaimerAccepted = useTwapStore((state) => state.disclaimerAccepted);
+  const setShowConfirmation = useTwapStore((state) => state.setShowConfirmation);
+  const showConfirmation = useTwapStore((state) => state.showConfirmation);
+  const warning = useTwapStore((state) => state.getFillWarning(translations));
+  const createOrderLoading = useTwapStore((state) => state.loading);
+  const { srcUsdLoading, dstUsdLoading } = useLoadingState();
+
+  const { mutate: approve, isLoading: approveLoading } = useApproveToken();
+  const { mutate: createOrder } = useCreateOrder();
+  const allowance = useHasAllowanceQuery();
+  const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
+  const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
+  const connect = useTwapContext().connect;
+  const wizardStore = useWizardStore();
+  const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
+
+  if (wrongNetwork)
+    return {
+      text: translations.switchNetwork,
+      onClick: changeNetwork,
+      loading: changeNetworkLoading,
+      disabled: changeNetworkLoading,
+    };
+  if (!maker)
+    return {
+      text: translations.connect,
+      onClick: connect ? connect : undefined,
+      loading: false,
+      disabled: false,
+    };
+  if (warning)
+    return {
+      text: warning,
+      onClick: undefined,
+      disabled: true,
+      loading: false,
+    };
+  if (shouldUnwrap)
+    return {
+      text: translations.unwrap,
+      onClick: unwrap,
+      loading: unwrapLoading,
+      disabled: unwrapLoading,
+    };
+  if (shouldWrap)
+    return {
+      text: translations.wrap,
+      onClick: wrap,
+      loading: wrapLoading,
+      disabled: wrapLoading,
+    };
+  if (createOrderLoading) {
+    return {
+      text: "",
+      onClick: () => {
+        if (!showConfirmation) {
+          setShowConfirmation(true);
+        } else {
+          wizardStore.setOpen(true);
+        }
+        analytics.onOpenConfirmationModal();
+      },
+      loading: true,
+      disabled: false,
+    };
+  }
+  if (allowance.isLoading || srcUsdLoading || dstUsdLoading) {
+    return { text: "", onClick: undefined, loading: true, disabled: true };
+  }
+  if (allowance.data === false)
+    return {
+      text: translations.approve,
+      onClick: approve,
+      loading: approveLoading,
+      disabled: approveLoading,
+    };
+  if (showConfirmation)
+    return {
+      text: translations.confirmOrder,
+      onClick: createOrder,
+      loading: createOrderLoading,
+      disabled: isMain ? true : !disclaimerAccepted || createOrderLoading,
+    };
+  return {
+    text: translations.placeOrder,
+    onClick: () => {
+      setShowConfirmation(true);
+      analytics.onOpenConfirmationModal();
+    },
+    loading: false,
+    disabled: false,
+  };
+};

@@ -24,8 +24,8 @@ import {
 } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
-import { BsQuestionCircle } from "react-icons/bs";
-import { HiArrowsUpDown } from "react-icons/hi2";
+import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
+import { HiArrowDown } from "@react-icons/all-files/hi/HiArrowDown";
 const config = Configs.Arbidex;
 
 const uiPreferences: TwapContextUIPreferences = {
@@ -198,7 +198,7 @@ const TWAPPanel = () => {
 };
 
 const ChangeTokensOrder = () => {
-  return <StyledChangeTokensOrder icon={<HiArrowsUpDown />} />;
+  return <StyledChangeTokensOrder icon={<HiArrowDown />} />;
 };
 
 const LimitPanel = () => {

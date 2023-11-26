@@ -93,7 +93,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       connect={connect}
       account={account}
       srcToken={zeroAddress}
-      dstToken={erc20sData.poly.USDC.address} //USDC
+      dstToken={erc20sData.linea.USDC.address} //USDC
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}
@@ -166,7 +166,6 @@ const theme = createTheme({
     },
   },
 });
-
 
 const priceUsd = async (address: string) => {
   try {

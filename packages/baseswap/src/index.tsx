@@ -26,8 +26,9 @@ import {
 } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
-import { BsQuestionCircle } from "react-icons/bs";
-import { AiOutlineArrowDown } from "react-icons/ai";
+import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
+import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
+
 const config = Configs.BaseSwap;
 
 const uiPreferences: TwapContextUIPreferences = {

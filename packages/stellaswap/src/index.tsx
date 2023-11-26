@@ -27,8 +27,8 @@ import {
   lightTheme,
   StyledChunkSize,
 } from "./styles";
-import { TbArrowsDownUp } from "react-icons/tb";
-import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+
+import { AiFillAccountBook } from "@react-icons/all-files/ai/AiFillAccountBook";
 
 interface ThenaTWAPProps extends TWAPProps {
   connect: () => void;
@@ -56,7 +56,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 };
 
 const TokenChange = () => {
-  return <StyledTokenChange icon={<TbArrowsDownUp />} />;
+  return <StyledTokenChange icon={<AiFillAccountBook />} />;
 };
 
 const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () => void }) => {
@@ -71,7 +71,7 @@ const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () =>
 
         <TwapStyles.StyledRowFlex gap={5} justifyContent="flex-start">
           {notSelected ? <Typography className="twap-token-select-text">Select</Typography> : <Components.TokenSymbol isSrc={isSrc} />}
-          <MdOutlineKeyboardArrowDown className="twap-token-select-icon" />
+          <AiFillAccountBook className="twap-token-select-icon" />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>
     </StyledTokenSelect>

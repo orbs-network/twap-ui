@@ -1,6 +1,5 @@
 import { Box, styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
-import { TbArrowsRightLeft } from "react-icons/tb";
 import { Loader, Tooltip } from ".";
 import { useFormatNumber } from "../../hooks";
 import { StyledRowFlex, StyledText } from "../../styles";
@@ -8,6 +7,7 @@ import Icon from "./Icon";
 import IconButton from "./IconButton";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
+import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
 
 export interface Props {
   leftToken?: TokenData;
@@ -19,9 +19,13 @@ export interface Props {
 }
 
 function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInverted, loading }: Props) {
-  const formattedValue = useFormatNumber({ value: price });
-  const formattedValueTooltip = useFormatNumber({ value: price, decimalScale: 18 });
 
+
+  const _toggleInverted = (e: any) => {
+    e.stopPropagation();
+     toggleInverted();
+  }
+  
   if (loading) {
     return (
       <StyledContainer>
@@ -39,27 +43,40 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
   }
   return (
     <StyledContainer className={`twap-price-compare ${className}`}>
-      <StyledRowFlex style={{ width: "auto", gap: 5 }}>
-        <TokenLogo logo={leftToken?.logoUrl} />
-        <StyledText className="value">1</StyledText>
-        <TokenName name={leftToken?.symbol} />
-      </StyledRowFlex>
-      <IconButton onClick={toggleInverted}>
-        <Icon icon={<TbArrowsRightLeft />} />
-      </IconButton>
-
-      <StyledRowFlex style={{ width: "auto", gap: 5 }}>
-        <TokenLogo logo={rightToken?.logoUrl} />
-        <Tooltip text={`${formattedValueTooltip} ${rightToken.symbol}`}>
-          <span className="value"> {`${formattedValue} `}</span>
-          <span className="symbol"> {rightToken?.symbol}</span>
-        </Tooltip>
-      </StyledRowFlex>
+      <LeftToken token={leftToken} />
+      <IconButton onClick={_toggleInverted}>{<Icon icon={<HiSwitchHorizontal />} />}</IconButton>
+      <RightToken price={price} token={rightToken} />
     </StyledContainer>
   );
 }
 
+const LeftToken = ({ token }: { token?: TokenData }) => {
+  return (
+    <StyledRowFlex style={{ width: "auto", gap: 5 }} className="left-token">
+      <TokenLogo logo={token?.logoUrl} />
+      <StyledText className="value">1</StyledText>
+      <TokenName name={token?.symbol} />
+    </StyledRowFlex>
+  );
+};
+
+const RightToken = ({ token, price }: { token?: TokenData; price?: string }) => {
+  const formattedValue = useFormatNumber({ value: price });
+  const formattedValueTooltip = useFormatNumber({ value: price, decimalScale: 18 });
+  return (
+    <StyledRowFlex style={{ width: "auto", gap: 5 }} className="right-token">
+      <TokenLogo logo={token?.logoUrl} />
+      <Tooltip text={`${formattedValueTooltip} ${token?.symbol}`}>
+        <span className="value"> {`${formattedValue} `}</span>
+        <span className="symbol"> {token?.symbol}</span>
+      </Tooltip>
+    </StyledRowFlex>
+  );
+};
 export default TokenPriceCompare;
+
+TokenPriceCompare.LeftToken = LeftToken;
+TokenPriceCompare.RightToken = RightToken;
 
 const StyledContainer = styled(Box)({
   whiteSpace: "nowrap",
@@ -67,10 +84,13 @@ const StyledContainer = styled(Box)({
   textOverflow: "ellipsis",
   display: "flex",
   justifyContent: "space-between",
-  gap: 5,
+  gap: 3,
   alignItems: "center",
   "& * ": {
     fontSize: 14,
+  },
+  svg: {
+    fontSize: "20px",
   },
   "& .twap-token-logo": {
     width: 22,

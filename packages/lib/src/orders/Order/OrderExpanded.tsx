@@ -24,7 +24,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
 
   return (
     <StyledContainer className="twap-order-expanded">
-      <StyledColumnFlex>
+      <StyledColumnFlex gap={0}>
         {order.ui.srcToken && order.ui.dstToken && <OrderPrice order={order} />}
         <StyledColumnFlex className="twap-extended-order-info">
           <Row label={`${translations.totalTrades}`} tooltip={translations.totalTradesTooltip}>

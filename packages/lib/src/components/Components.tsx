@@ -18,27 +18,24 @@ import {
   Modal,
   Radio,
 } from "./base";
-import { HiOutlineSwitchVertical } from "react-icons/hi";
-import { TbArrowsRightLeft } from "react-icons/tb";
 import { styled, Button as MuiButton } from "@mui/material";
-import { AiOutlineWarning } from "react-icons/ai";
 import { useTwapContext } from "../context";
+import { AiOutlineWarning } from "@react-icons/all-files/ai/AiOutlineWarning";
+import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
+import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
+
+import { IconType } from "@react-icons/all-files";
 import {
   useLoadingState,
   useLimitPrice,
   useMarketPrice,
-  useCreateOrder,
-  useApproveToken,
-  useChangeNetwork,
-  useHasAllowanceQuery,
-  useUnwrapToken,
-  useWrapToken,
   useFormatNumber,
   useToken,
   useSwitchTokens,
   useSelectTokenCallback,
+  useSubmitButton,
 } from "../hooks";
-import { useTwapStore, handleFillDelayText, useWizardStore } from "../store";
+import { useTwapStore, handleFillDelayText } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
@@ -52,16 +49,14 @@ import {
   ChunksAmountLabel,
 } from "./Labels";
 import { SwitchVariant, TWAPTokenSelectProps } from "../types";
-import { analytics } from "../analytics";
 import { Box, Fade, FormControl, RadioGroup, Typography } from "@mui/material";
-import { IoIosArrowDown } from "react-icons/io";
-import { IconType } from "react-icons";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
-import { GrPowerReset } from "react-icons/gr";
 import { Styles } from "..";
 import PendingTxModal from "./base/PendingTxModal";
 import SuccessTxModal from "./base/SuccessTxModal";
+import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
 
 export function ChunksInput({ className = "", showDefault }: { className?: string; showDefault?: boolean }) {
   const translations = useTwapContext().translations;
@@ -97,7 +92,7 @@ export function ChunksSliderSelect({ className = "", showDefault }: { className?
   return <StyledChunksSliderSelect className={className} maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />;
 }
 
-export const ChangeTokensOrder = ({ children, className = "", icon = <HiOutlineSwitchVertical /> }: { children?: ReactNode; className?: string; icon?: ReactNode }) => {
+export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
   return (
     <StyledRowFlex className={`${className} twap-change-tokens-order`}>
@@ -170,7 +165,7 @@ export const TokenSelect = ({
   className?: string;
   tokenSelectedUi?: ReactNode;
   tokenNotSelectedUi?: ReactNode;
-  CustomArrow?: IconType;
+  CustomArrow?: any;
   customButtonElement?: FC;
 }) => {
   const srcToken = useTwapStore((state) => state.srcToken);
@@ -384,111 +379,11 @@ export function TokenUSD({
 }
 
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
-  const translations = useTwapContext().translations;
-  const shouldUnwrap = useTwapStore((store) => store.shouldUnwrap());
-  const shouldWrap = useTwapStore((store) => store.shouldWrap());
-  const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
-  const maker = useTwapStore((store) => store.lib?.maker);
-  const disclaimerAccepted = useTwapStore((state) => state.disclaimerAccepted);
-  const setShowConfirmation = useTwapStore((state) => state.setShowConfirmation);
-  const showConfirmation = useTwapStore((state) => state.showConfirmation);
-  const warning = useTwapStore((state) => state.getFillWarning(translations));
-  const createOrderLoading = useTwapStore((state) => state.loading);
-  const { srcUsdLoading, dstUsdLoading } = useLoadingState();
-
-  const { mutate: approve, isLoading: approveLoading } = useApproveToken();
-  const { mutate: createOrder } = useCreateOrder();
-  const allowance = useHasAllowanceQuery();
-  const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
-  const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
-  const connect = useTwapContext().connect;
-  const wizardStore = useWizardStore();
-  const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
-
-  const getArgs = () => {
-    if (wrongNetwork)
-      return {
-        text: translations.switchNetwork,
-        onClick: changeNetwork,
-        loading: changeNetworkLoading,
-        disabled: changeNetworkLoading,
-      };
-    if (!maker)
-      return {
-        text: translations.connect,
-        onClick: connect ? connect : undefined,
-        loading: false,
-        disabled: false,
-      };
-    if (warning)
-      return {
-        text: warning,
-        onClick: undefined,
-        disabled: true,
-        loading: false,
-      };
-    if (shouldUnwrap)
-      return {
-        text: translations.unwrap,
-        onClick: unwrap,
-        loading: unwrapLoading,
-        disabled: unwrapLoading,
-      };
-    if (shouldWrap)
-      return {
-        text: translations.wrap,
-        onClick: wrap,
-        loading: wrapLoading,
-        disabled: wrapLoading,
-      };
-    if (createOrderLoading) {
-      return {
-        text: "",
-        onClick: () => {
-          if (!showConfirmation) {
-            setShowConfirmation(true);
-          } else {
-            wizardStore.setOpen(true);
-          }
-          analytics.onOpenConfirmationModal();
-        },
-        loading: true,
-        disabled: false,
-      };
-    }
-    if (allowance.isLoading || srcUsdLoading || dstUsdLoading) {
-      return { text: "", onClick: undefined, loading: true, disabled: true };
-    }
-    if (allowance.data === false)
-      return {
-        text: translations.approve,
-        onClick: approve,
-        loading: approveLoading,
-        disabled: approveLoading,
-      };
-    if (showConfirmation)
-      return {
-        text: translations.confirmOrder,
-        onClick: createOrder,
-        loading: createOrderLoading,
-        disabled: isMain ? true : !disclaimerAccepted || createOrderLoading,
-      };
-    return {
-      text: translations.placeOrder,
-      onClick: () => {
-        setShowConfirmation(true);
-        analytics.onOpenConfirmationModal();
-      },
-      loading: false,
-      disabled: false,
-    };
-  };
-
-  const args = getArgs();
+  const { loading, onClick, disabled, text } = useSubmitButton(isMain);
 
   return (
-    <Button className={`twap-submit ${className}`} loading={args.loading} onClick={args.onClick || (() => {})} disabled={args.disabled}>
-      {args.text}
+    <Button className={`twap-submit ${className}`} loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
+      {text}
     </Button>
   );
 };
@@ -496,7 +391,7 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
 export const useLimitPriceComponents = ({
   placeholder = "0.00",
   showDefault,
-  toggleIcon = <TbArrowsRightLeft style={{ width: 20, height: 20 }} />,
+  toggleIcon = <HiSwitchHorizontal style={{ width: 20, height: 20 }} />,
   hideSymbol,
   reverse,
 }: {
@@ -929,7 +824,6 @@ const StyledLimitPriceInput = styled(StyledRowFlex)({
   "& .twap-token-name, p": {
     fontSize: 14,
     position: "relative",
-    top: 2,
   },
 });
 

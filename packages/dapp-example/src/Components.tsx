@@ -1,7 +1,6 @@
 import Modal from "@mui/material/Modal";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet";
-import { AiOutlineClose } from "react-icons/ai";
 import {
   StyledCloseIcon,
   StyledDappLayoutContent,
@@ -22,16 +21,19 @@ import {
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { FiMenu } from "react-icons/fi";
+import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
 import Backdrop from "@mui/material/Backdrop";
 import { Button, Fade, IconButton, styled, TextField, Typography } from "@mui/material";
 import { Config } from "@orbs-network/twap";
 import { Components, hooks, Styles } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
-import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
+import { BsSun } from "@react-icons/all-files/bs/BsSun";
+import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
+import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
+
 import { dapps } from "./config";
 import { Status } from "./Status";
-import { useAddedTokens, useBalance, useDebounce, useDisconnectWallet, useNetwork, useSelectedDapp, useTheme } from "./hooks";
+import { useAddedTokens, useBalance, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { TokenData } from "@orbs-network/twap";
@@ -41,8 +43,9 @@ import { useNavigate } from "react-router-dom";
 import { network } from "@defi.org/web3-candies";
 import { usePersistedStore } from "./store";
 import { useWeb3React } from "@web3-react/core";
-import { BiArrowBack } from "react-icons/bi";
-import { MdDeleteOutline } from "react-icons/md";
+import { MdDeleteSweep } from "@react-icons/all-files/md/MdDeleteSweep";
+import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
+
 const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
 
 export interface Dapp {
@@ -93,7 +96,7 @@ const ToggleTheme = () => {
           }}
           onClick={() => setTheme("light")}
         >
-          <BsFillSunFill style={{ width: size, height: size }} />
+          <BsMoon style={{ width: size, height: size }} />
         </button>
       )}
       {showDark && (
@@ -103,7 +106,7 @@ const ToggleTheme = () => {
           }}
           onClick={() => setTheme("dark")}
         >
-          <BsFillMoonFill style={{ width: size, height: size }} />
+          <BsMoon style={{ width: size, height: size }} />
         </button>
       )}
     </StyledThemeToggle>
@@ -321,7 +324,7 @@ const ManageAddedTokens = () => {
                   {t.symbol}
                 </Styles.StyledRowFlex>
                 <IconButton onClick={() => removeToken(chainId!, t)}>
-                  <MdDeleteOutline />
+                  <MdDeleteSweep />
                 </IconButton>
               </Styles.StyledRowFlex>
             </StyledListToken>

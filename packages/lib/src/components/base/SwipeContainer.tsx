@@ -2,7 +2,7 @@ import { Slide } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { ReactNode } from "react";
 import Icon from "./Icon";
-import { GrClose } from "react-icons/gr";
+import { GrClose } from "@react-icons/all-files/gr/GrClose";
 
 const SwipeContainer = ({ show, children, close, className }: { show: boolean; children: ReactNode; close: () => void; className?: string }) => {
   return (

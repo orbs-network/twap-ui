@@ -23,8 +23,10 @@ import {
   StyledPoweredBy,
   StyledSubmit,
 } from "./styles";
-import { BsArrowDownShort } from "react-icons/bs";
-import { IoWalletSharp } from "react-icons/io5";
+
+import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
+import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
+
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens } = useAdapterContext();
 

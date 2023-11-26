@@ -12,7 +12,7 @@ function IconButton({
 }: {
   children?: ReactNode;
   tooltip?: ReactElement | string;
-  onClick: () => void;
+  onClick: (e: any) => void;
   icon?: ReactElement;
   className?: string;
 }) {

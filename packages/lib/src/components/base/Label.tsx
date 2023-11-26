@@ -1,8 +1,9 @@
 import { Box, styled } from "@mui/system";
 import React, { ReactElement, ReactNode } from "react";
 import Tooltip from "./Tooltip";
-import { SlInfo } from "react-icons/sl";
-import Icon from "./Icon";
+
+import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQuestionCircle";
+
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Typography } from "@mui/material";
 import { useTwapContext } from "../../context";
@@ -19,7 +20,7 @@ interface Props {
 function Label({ children, tooltipText, className = "", fontSize, placement, subtitle }: Props) {
   const { uiPreferences } = useTwapContext();
 
-  const InfoIcon = uiPreferences.infoIcon || SlInfo;
+  const InfoIcon = uiPreferences.infoIcon || AiOutlineQuestionCircle;
 
   if (subtitle) {
     return (
@@ -34,7 +35,7 @@ function Label({ children, tooltipText, className = "", fontSize, placement, sub
       <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
       {tooltipText && (
         <Tooltip placement={placement} text={tooltipText}>
-          <InfoIcon className="twap-icon twap-tooltip-icon" style={{ width: 14, height: 14, position: "relative", top: 2, marginLeft: 5 }} />
+          <InfoIcon className="twap-icon twap-tooltip-icon" style={{ width: 16, height: 16, position: "relative", top: 3, marginLeft: 5 }} />
         </Tooltip>
       )}
     </StyledContainer>
@@ -47,12 +48,6 @@ const StyledContainer = styled(StyledRowFlex)({
   justifyContent: "flex-start",
   gap: 7,
   width: "fit-content",
-});
-
-const StyledTooltipContent = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  gap: 5,
 });
 
 const StyledLabel = styled(StyledText)({

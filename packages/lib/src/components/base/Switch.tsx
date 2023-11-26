@@ -14,6 +14,7 @@ export interface Props {
 
 function Switch({ value, onChange, className = "", disabled = false, variant, style = {} }: Props) {
   const { switchVariant } = useTwapContext().uiPreferences;
+
   const props = {
     style: { pointerEvents: disabled ? "none" : "unset" } as CSSProperties,
     className: `twap-switch ${className}`,

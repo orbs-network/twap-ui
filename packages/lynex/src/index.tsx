@@ -38,8 +38,9 @@ import {
 } from "./styles";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
-import { BsQuestionCircle } from "react-icons/bs";
-import { HiOutlineArrowsUpDown } from "react-icons/hi2";
+import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
+import { AiFillAccountBook } from "@react-icons/all-files/ai/AiFillAccountBook";
+
 const config = Configs.Lynex;
 
 const uiPreferences: TwapContextUIPreferences = {
@@ -263,7 +264,7 @@ const TWAPPanel = () => {
 };
 
 const ChangeTokensOrder = () => {
-  return <StyledChangeTokensOrder icon={<HiOutlineArrowsUpDown />} />;
+  return <StyledChangeTokensOrder icon={<AiFillAccountBook />} />;
 };
 
 const LimitPanel = () => {

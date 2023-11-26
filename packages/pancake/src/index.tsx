@@ -36,14 +36,15 @@ import {
   StyledTokenSelect,
   StyledUSD,
 } from "./styles";
-import { MdArrowDropDown } from "react-icons/md";
-import { AiOutlineArrowDown } from "react-icons/ai";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
-import { GrPowerReset } from "react-icons/gr";
 import Web3 from "web3";
 import _ from "lodash";
+
+import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
+import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
+import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
 
 const uiPreferences: TwapContextUIPreferences = {
   usdSuffix: " USD",

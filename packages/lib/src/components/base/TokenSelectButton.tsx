@@ -1,18 +1,18 @@
 import { styled } from "@mui/material";
 import Icon from "./Icon";
-import { IoIosArrowDown } from "react-icons/io";
 import Tooltip from "./Tooltip";
 import { useTwapContext } from "../../context";
 import { useTwapStore } from "../../store";
 import { StyledOneLineText, StyledRowFlex } from "../../styles";
 import { FC, ReactNode } from "react";
+import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 
 interface Props {
   onClick: () => void;
   className?: string;
   hideArrow?: boolean;
   customUi: ReactNode;
-  customButtonElement?: FC ;
+  customButtonElement?: FC;
 }
 
 function TokenSelectButton({ className = "", onClick, hideArrow, customUi, customButtonElement }: Props) {

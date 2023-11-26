@@ -2,7 +2,8 @@ import React from "react";
 import { styled, Typography } from "@mui/material";
 import Modal from "./Modal";
 import { StyledColumnFlex, StyledText } from "../../styles";
-import { BsCheckCircle } from "react-icons/bs";
+
+import { BsCheckCircle } from "@react-icons/all-files/bs/BsCheckCircle";
 
 function SuccessTxModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (

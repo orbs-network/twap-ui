@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import { Fade, IconButton, Box, styled, Modal as MuiModal, Backdrop } from "@mui/material";
-import { IoMdClose } from "react-icons/io";
+import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 
 export interface Props {
   open: boolean;

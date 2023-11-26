@@ -1,12 +1,12 @@
-import { ClickAwayListener } from "@mui/material";
+import { Button, ClickAwayListener } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useState } from "react";
 import { useTwapContext } from "../../context";
 import { Duration, TimeResolution } from "../../store";
-import { StyledRowFlex, StyledText } from "../../styles";
+import { StyledText } from "../../styles";
 import { Translations } from "../../types";
 import NumericInput from "./NumericInput";
-import { IoIosArrowDown } from "react-icons/io";
+import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 
 const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
   {
@@ -148,7 +148,7 @@ const StyledListItem = styled(Box)({
   },
 });
 
-const StyledSelected = styled(StyledRowFlex)({
+const StyledSelected = styled(Button)({
   cursor: "pointer",
   gap: 5,
   svg: {

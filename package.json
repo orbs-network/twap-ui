@@ -52,7 +52,6 @@
     }
   },
   "dependencies": {
-    "@orbs-network/twap": "^1.18.5",
-    "latest": "^0.2.0"
+    "@orbs-network/twap": "^1.18.5"
   }
 }

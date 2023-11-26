@@ -1,5 +1,4 @@
 import { Button, styled } from "@mui/material";
-import { Box } from "@mui/system";
 import { Components, Styles } from "@orbs-network/twap-ui";
 import { SyncSwapPallete } from "./types";
 
@@ -21,30 +20,109 @@ const getButtonStyles = (theme: SyncSwapPallete) => {
   };
 };
 
+export const StyledSubmitButton = styled(Button)({
+  borderRadius: 10,
+  textTransform: "none",
+});
+
+export const StyledTokenPanel = styled(Components.Base.Card)({
+  padding: "1rem 14px",
+});
+
+export const StyledChunkSize = styled(Styles.StyledRowFlex)(({ pallete }: { pallete: SyncSwapPallete }) => ({
+  justifyContent: "space-between",
+  ".twap-usd": {
+    color: pallete.info,
+  },
+}));
+
+export const StyledLimitPrice = styled(Components.Base.Card)(({ pallete }: { pallete: SyncSwapPallete }) => ({
+  ".twap-limit-price-input": {
+    paddingLeft: 0,
+    input: {
+      fontSize: 17,
+      borderBottom: `1px solid ${pallete.primary}`,
+      borderRadius: 0,
+    },
+  },
+  ".twap-token-display": {
+    display: "flex",
+    alignItems: "center",
+  },
+  ".twap-token-name": {
+    top: 0,
+  },
+}));
+
+export const StyledMarketPrice = styled(Components.Base.Card)(({ pallete }: { pallete: SyncSwapPallete }) => ({
+  display: "flex",
+  gap: 5,
+  padding: 0,
+  button: {
+    padding: "10px 14px",
+    width: "100%",
+    justifyContent: "flex-start",
+    gap: 5,
+  },
+  ".MuiSkeleton-root": {
+    maxWidth: 200,
+  },
+  img: {
+    width: 18,
+    height: 18,
+  },
+  p: {
+    display: "flex",
+    alignItems: "center",
+    fontSize: "13px",
+    fontWeight: "400!important",
+    color: pallete.normal,
+    span: {
+      fontSize: "13px",
+    },
+  },
+  ".right-token": {
+    fontSize: "13px!important",
+    display: "flex",
+    alignItems: "center",
+    color: pallete.normal,
+  },
+}));
+
 export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ pallete }: { pallete: SyncSwapPallete }) => ({
-  height: 15,
+  height: 12,
   ".twap-icon-btn": {
+    padding: 0,
     background: pallete.overlay2,
     overflow: "hidden",
-    width: 32,
-    height: 32,
+    width: 34,
+    height: 34,
     border: `4px solid ${pallete.overlay}`,
+    transition: "0.2s all",
     svg: {
       color: pallete.primary,
+      width: 14,
+      transition: "0.2s all",
+    },
+    "&:hover": {
+      background: pallete.overlay,
+      svg: {
+        transform: "rotateZ(180deg)",
+      },
     },
   },
 }));
 
-export const StyledTokenPanelUSD = styled(Components.TokenUSD)(({pallete}:{pallete: SyncSwapPallete}) => ({
+export const StyledTokenPanelUSD = styled(Components.TokenUSD)(({ pallete }: { pallete: SyncSwapPallete }) => ({
   color: pallete.info,
   fontWeight: 400,
-  fontSize: 13
+  fontSize: 13,
 }));
 
 export const StyledBalance = styled(Components.TokenBalance)(({ pallete }: { pallete: SyncSwapPallete }) => ({
   color: pallete.info,
   fontSize: 13,
-  fontWeight: 500
+  fontWeight: 500,
 }));
 
 export const StyledTokenSelect = styled(Button)(({ pallete }: { pallete: SyncSwapPallete }) => ({
@@ -103,12 +181,7 @@ export function hexToRGB(hex: string, alpha: number) {
   }
 }
 
-const getStyles = (pallete: SyncSwapPallete) => {
-  return {} as any;
-};
 export const configureStyles = (pallete: SyncSwapPallete) => {
-  const styles = getStyles(pallete);
-
   return {
     ".twap-loader": {
       opacity: "1!important",
@@ -150,20 +223,26 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         fontWeight: "400!important",
       },
       input: {
-        textAlign: "end!important",
-        fontSize: "13px!important",
+        textAlign: "center!important",
+        fontSize: "14px!important",
+        borderBottom: `1px solid ${pallete.primary}`,
+        borderRadius: 0,
+        height: 25,
       },
       ".twap-label": {
         fontSize: "14px",
+      },
+      ".MuiSlider-valueLabel": {
+        background: pallete.secondary,
       },
       ".MuiSlider-thumb": {
         background: "white",
       },
       ".MuiSlider-rail": {
-        color: "#40475A",
+        color: pallete.primary,
       },
       ".MuiSlider-track": {
-        color: "#A3A8B8",
+        color: pallete.background,
       },
     },
     ".twap-warning": {
@@ -177,32 +256,6 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         fontSize: 14,
       },
     },
-    ".twap-limit-price-input": {
-      background: styles.wrapperBackground,
-      padding: "5px 10px!important",
-      marginBottom: 8,
-      button: {
-        padding: 0,
-      },
-      justifyContent: "space-between!important",
-      width: "100%",
-      borderRadius: 10,
-      gap: 10,
-      ".twap-input": {
-        textAlign: "center" as const,
-      },
-      p: {
-        fontSize: "13px!important",
-        fontWeight: "400!important",
-      },
-      ".twap-token-display img": {
-        width: 25,
-        height: 25,
-      },
-      div: {
-        paddingLeft: "0!important",
-      },
-    },
     ".twap-input-loader": {
       right: 0,
       left: "unset",
@@ -210,72 +263,48 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
     ".twap-label": {
       fontSize: 16,
     },
-    ".twap-market-price": {
-      img: {
-        width: "25px!important",
-        minWidth: "25px!important",
-        height: "25px!important",
-        minHeight: "25px!important",
-      },
-      p: {
-        display: "flex",
-        alignItems: "center",
-        fontSize: "13px",
-        fontWeight: "400!important",
-        span: {
-          fontSize: "13px",
-        },
-      },
-      "&:nth-of-type(2)": {
-        fontSize: "13px!important",
-        display: "flex",
-        alignItems: "center",
-      },
-      padding: "13px 5px",
-      ".title": {
-        fontSize: 14,
-      },
-    },
-    ".twap-icon": {
-      "& *": {
-        color: `${styles.iconsColor}!important`,
-      },
-    },
+
+    ".twap-icon": {},
     ".twap-tooltip": {
       "& .MuiTooltip-tooltip": {
-        backgroundColor: styles.tooltipBackground,
-        borderRadius: "4px",
-        color: styles.tooltipTextColor,
-        fontSize: 14,
+        borderRadius: 10,
         fontFamily: "inherit",
         lineHeight: 1.5,
         maxWidth: 400,
-        padding: 10,
+        padding: 9,
+        fontSize: 13,
         "& *": {
-          color: styles.tooltipTextColor,
-          fontSize: 14,
+          fontSize: "inherit",
         },
-      },
-      "& .MuiTooltip-arrow": {
-        color: styles.tooltipBackground,
       },
     },
 
-    ".twap-button-loader": {
-      color: styles.spinnerColor,
-    },
+    ".twap-button-loader": {},
     ".twap-time-selector": {
       "& input": {
-        fontSize: "16px!important",
-        // "&::placeholder": {
-        //   color: "rgba(255,255,255, 0.5)!important",
-        // },
+        fontSize: "17px!important",
+        borderBottom: `1px solid ${pallete.primary}`,
+        borderRadius: 0,
+        maxWidth: 80,
+        marginLeft: "auto",
+        "&::placeholder": {
+          color: `${pallete.normal}!important`,
+        },
       },
     },
     ".twap-time-selector-list": {
-      background: styles.selectedTokenBackground ? styles.cardBackground : styles.containerBackground,
-      border: `1px solid ${styles.selectedTokenTextColor}`,
       right: 0,
+      background: pallete.overlay,
+      borderRadius: 10,
+      boxShadow: "0 0 6px rgb(0 0 0/4%), 0 14px 20px rgb(0 0 0/1%), 0 20px 28px rgb(0 0 0/1%)",
+      ".twap-time-selector-list-item": {
+        "&:hover": {
+          background: hexToRGB(pallete.overlay2, 0.7),
+        },
+      },
+    },
+    ".twap-time-selector-selected": {
+      color: pallete.normal,
     },
     ".twap-card": {
       padding: "10px 14px",
@@ -288,7 +317,6 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       width: "100%",
       fontWeight: 500,
       "*": {
-        color: styles.textColor,
         fontFamily: "inherit!important",
         fontWeight: "inherit!important",
         "&::-webkit-scrollbar": {
@@ -300,25 +328,7 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       fontSize: 14,
       fontWeight: "500!important",
     },
-    ".twap-slider": {
-      ".MuiSlider-thumb.Mui-focusVisible, .MuiSlider-thumb:hover": {
-        boxShadow: "none!important",
-      },
-      "& .MuiSlider-valueLabel": {
-        background: styles.tooltipBackground,
-        boxShadow: "none!important",
-      },
-      "& .MuiSlider-valueLabelLabel": {
-        boxShadow: "none!important",
-        color: styles.tooltipTextColor,
-      },
-      "& .MuiSlider-thumb": {
-        boxShadow: "none!important",
-        background: "#D9D9D9",
-        width: 13,
-        height: 13,
-      },
-    },
+    ".twap-slider": {},
     ".twap-change-order": {
       width: 50,
       height: 50,
@@ -330,43 +340,8 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       width: 25,
       height: 25,
     },
-    ".twap-switch": {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "flex-end",
-      padding: "0!important",
-
-      "& .MuiSwitch-thumb": {
-        padding: "0!important",
-        width: 16,
-        height: 16,
-        background: "",
-      },
-      "& .MuiSwitch-track": {
-        padding: "0!important",
-        width: 46,
-        height: 24,
-        borderRadius: 20,
-        border: "",
-        background: styles.wrapperBackground,
-        opacity: "1!important",
-      },
-      "& .Mui-checked+.MuiSwitch-track": {
-        padding: "0!important",
-        backgroundColor: "",
-        opacity: "1!important",
-      },
-      "& .Mui-checked .MuiSwitch-thumb": {
-        padding: "0!important",
-        background: "",
-      },
-      "& .MuiSwitch-switchBase": {
-        top: 11,
-        left: 17,
-        padding: "0!important",
-      },
-    },
     ".twap-order-expanded": {
+      padding: "0px 26px",
       ".twap-market-price-section": {
         p: {
           fontSize: "13px!important",
@@ -419,12 +394,16 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       display: "block!important",
       paddingTop: "0!important",
     },
+
+    ".twap-extended-order-info": {
+      paddingBottom: 26,
+    },
     ".twap-order": {
+      padding: "0px",
       border: "unset",
-      background: styles.cardBackground,
+      color: `${pallete.info}!important`,
       ".twap-order-expanded-colored": {
         padding: "15px 26px",
-        background: styles.cardBackground,
         ".twap-order-expanded-colored-title": {
           fontSize: 16,
         },
@@ -440,41 +419,28 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       },
       ".twap-order-main-progress-bar": {
         height: 8,
-        background: `${styles.progressBarTrackColor}!important`,
       },
       "& .twap-order-progress": {
         height: 8,
-        background: `${styles.progressBarTrackColor}!important`,
-
+      },
+      "& .MuiLinearProgress-root": {
         "&::after": {
-          background: `${styles.progressBarTrackColor}!important`,
+          background: pallete.normal,
         },
       },
       "& .MuiLinearProgress-bar": {
         height: "8px!important",
-        background: "",
+        background: pallete.primary,
       },
     },
     ".twap-chunks-size": {
-      ".twap-label": {
-        fontSize: 14,
-      },
       ".twap-token-logo": {
         width: 20,
         height: 20,
       },
     },
-    ".twap-orders": {
-      paddingBottom: 24,
-      background: styles.wrapperBackground,
-      fontWeight: 500,
-      color: styles.textColor,
-      "*": {
-        fontWeight: "inherit!important",
-        "&::-webkit-scrollbar": {
-          display: "none",
-        },
-      },
+    ".twap-orders-empty-list": {
+      color: pallete.primary,
     },
     ".twap-orders-header": {
       "& .twap-orders-header-tabs": {
@@ -490,28 +456,26 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
           display: "flex",
           alignItems: "center",
           lineHeight: "normal",
-          borderRadius: 100,
-          transition: ".15s all linear",
+          borderRadius: 0,
+          borderBottom: `2px solid transparent`,
+          transition: "0s",
+          width: "auto",
+          padding: "0 10px",
+        },
+        ".MuiTouchRipple-root": {
+          display: "none",
         },
         "& .MuiTabs-indicator": {
           display: "none",
-          minHeight: 38,
-          maxHeight: 38,
-          width: 94,
-          height: 38,
-          borderRadius: 100,
-          background: "#3E4252",
         },
         "& .MuiButtonBase-root": {
-          color: styles.buttonColor,
           fontWeight: 400,
         },
         "& .Mui-selected": {
           minHeight: 38,
           maxHeight: 38,
-          borderRadius: 100,
-          background: "#3E4252",
-          color: styles.orderHistoryTabColor,
+          borderRadius: 0,
+          borderBottom: `2px solid ${pallete.primary}`,
         },
         "& .MuiTabs-flexContainer": {
           height: 38,
@@ -520,28 +484,16 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         },
       },
     },
-    ".twap-token-panel": {
-      ".twap-token-panel-title": {
-        fontSize: 16,
-      },
-    },
     ".twap-button": {
       ...getButtonStyles(pallete),
     },
-    ".twap-submit": {
-      color: "white!important",
-    },
-    ".twap-button-disabled": {
-      background: styles.disabledButtonBackground,
-      color: `${styles.disabledButtonColor}!important`,
-    },
-
     ".twap-modal-content": {
       fontSize: "14px",
       fontFamily: "Inter",
       padding: "40px 20px 20px 20px",
       boxSizing: "border-box",
-      background: "",
+      background: pallete.overlay,
+      borderRadius: "10px",
 
       ".twap-orders-summary-token-display": {
         overflow: "hidden",
@@ -567,16 +519,11 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       },
       maxHeight: "85vh",
       overflow: "auto",
-      borderRadius: "24px",
       paddingTop: 50,
-      color: styles.textColor,
+
       "& a": {
-        color: styles.textColor,
         fontWeight: 500,
         textDecoration: "underline",
-      },
-      "& .MuiIconButton-root": {
-        color: styles.textColor,
       },
       "& *": {
         fontFamily: "inherit",
@@ -597,9 +544,7 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         height: "18px!important",
       },
     },
-    ".twap-input input": {
-      paddingRight: "0!important",
-    },
+
     ".adapter-wrapper": {
       padding: "0px",
       width: "100%!important",
@@ -617,89 +562,28 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       width: "15px!important",
       height: "15px!important",
     },
+
     ".twap-order-preview": {
       padding: "15px 26px",
     },
-    ".twap-order-preview-info": {
-      fontSize: 16,
-    },
     ".twap-order-preview-header": {
-      marginBottom: "15px!important",
-      ".twap-order-preview-date": {
-        fontSize: "14px!important",
-        color: "#696C81!important",
+      p: {
+        color: `${pallete.primary}!important`,
+        fontWeight: 500,
       },
     },
-    ".twap-order-preview-tokens": {
-      paddingTop: "17px!important",
-      paddingRight: "0!important",
-      alingItems: "center!important",
-      ".twap-order-preview-icon": {
-        color: "#636679!important",
-      },
-      ".twap-order-token-display": {
-        ".twap-small-label": {
-          "p, span": {
-            fontSize: "13px!important",
-          },
-        },
-        ".twap-token-logo": {
-          width: 25,
-          height: 25,
-        },
-        ".twap-token-display-amount-and-symbol": {
-          "p, span": {
-            fontSize: "16px!important",
-          },
-        },
+    ".twap-order-preview-info": {
+      p: {
+        fontSize: 16,
       },
     },
-    ".twap-orders-list": {
-      ".twap-order": {
-        padding: 0,
-      },
-    },
+
     ".twap-order-separator": {
       display: "none",
     },
-    ".twap-market-price-section": {
-      background: styles.wrapperBackground,
-      width: "100%",
-      padding: "15px 26px",
-      ".twap-token-logo": {
-        width: "25px!important",
-        height: "25px!important",
-      },
-      ".twap-number-display": {
-        fontSize: 13,
-      },
-    },
-    ".twap-extended-order-info": {
-      gap: "15px!important",
-      padding: "15px 26px",
-      ".twap-order-expanded-row": {
-        ".twap-label, .twap-order-expanded-right": {
-          fontSize: 14,
-          p: {
-            maxWidth: 130,
-          },
-        },
-        ".twap-token-logo": {
-          width: 25,
-          height: 25,
-        },
-      },
-    },
+
     ".twap-limit-price .twap-label": {
       height: 38,
-    },
-    ".twap-orders-wrapper": {
-      fontFamily: "Inter",
-      maxWidth: "100%!important",
-      borderRadius: 10,
-      "p, span": {
-        fontFamily: "Inter",
-      },
     },
     ".MuiBackdrop-root": {
       backdropFilter: "blur(15px)",

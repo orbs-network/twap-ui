@@ -3,20 +3,21 @@ import { ReactNode, useState } from "react";
 import { useTwapContext } from "../../context";
 import { StyledColumnFlex, StyledOneLineText, StyledRowFlex, StyledText } from "../../styles";
 import Modal from "./Modal";
-import { FaApple, FaGooglePlay } from "react-icons/fa";
-import { IconType } from "react-icons";
 import { styled, Typography } from "@mui/material";
 import Button from "./Button";
+import { FaApple } from "@react-icons/all-files/fa/FaApple";
+import { FaGooglePlay } from "@react-icons/all-files/fa/FaGooglePlay";
 
 const mobile = 700;
 
 const icon = "https://services-healthpage.orbs.network/img/odnp-logo.png";
 
-function Odnp({ className = "" }: { className?: string }) {
+function Odnp({ className = "" }: { className?: string; }) {
   const { account } = useTwapContext();
 
   const [open, setOpen] = useState(false);
   const { translations } = useTwapContext();
+
 
   if (!account) return null;
   return (
@@ -51,7 +52,7 @@ function Odnp({ className = "" }: { className?: string }) {
   );
 }
 
-const Link = ({ Icon, name, url }: { Icon: IconType; name: string; url: string }) => {
+const Link = ({ Icon, name, url }: { Icon: any; name: string; url: string }) => {
   return (
     <StyledLink href={url} target="_blank" className="twap-button twap-odnp-link">
       <StyledRowFlex>

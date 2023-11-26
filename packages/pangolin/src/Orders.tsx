@@ -4,7 +4,8 @@ import { CancelOrderButton, Components, hooks, OrderUI, store, Styles, useTwapCo
 import _ from "lodash";
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { parseTheme } from "./styles";
-import { IoIosArrowDown } from "react-icons/io";
+import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+
 import { OrdersPanel } from "@orbs-network/twap-ui";
 interface ContextProps {
   selectedOrderID?: number;
