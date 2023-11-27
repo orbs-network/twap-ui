@@ -26,6 +26,7 @@ import {
   StyledLimitPrice,
   StyledMarketPrice,
   StyledPercentSelect,
+  StyledPoweredBy,
   StyledSubmitButton,
   StyledTokenPanel,
   StyledTokenPanelInput,
@@ -287,7 +288,7 @@ const LimitPanel = () => {
           <Components.OrderSummaryDetailsMinDstAmount />
         </TwapStyles.StyledColumnFlex>
       </OrderSummary>
-      <Components.PoweredBy />
+      <PoweredBy />
     </div>
   );
 };
@@ -333,10 +334,17 @@ const TWAPPanel = () => {
       <OrderSummary>
         <Components.OrderSummaryDetails />
       </OrderSummary>
-      <Components.PoweredBy />
+      <PoweredBy />
     </div>
   );
 };
+
+
+const PoweredBy  = () => {
+  const {pallete} = useAdapterContext();
+
+  return <StyledPoweredBy pallete={pallete} />;
+}
 
 const TradeSize = () => {
   const pallete = useAdapterContext().pallete;

@@ -20,9 +20,25 @@ const getButtonStyles = (theme: SyncSwapPallete) => {
   };
 };
 
+const cardStyles = (pallete: SyncSwapPallete) => ({
+  padding: "10px 14px",
+  background: hexToRGB(pallete.overlay, 0.7),
+  borderRadius: 10,
+  boxShadow: "0 0 6px rgb(0 0 0/4%), 0 14px 20px rgb(0 0 0/1%), 0 20px 28px rgb(0 0 0/1%)",
+});
+
+export const StyledPoweredBy = styled(Components.PoweredBy)(({ pallete }: { pallete: SyncSwapPallete }) => ({
+  color: pallete.primary,
+}));
+
 export const StyledSubmitButton = styled(Button)({
   borderRadius: 10,
   textTransform: "none",
+  ".MuiCircularProgress-root": {
+    position: "absolute",
+    maxWidth: 25,
+    maxHeight: 25,
+  },
 });
 
 export const StyledTokenPanel = styled(Components.Base.Card)({
@@ -307,10 +323,7 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       color: pallete.normal,
     },
     ".twap-card": {
-      padding: "10px 14px",
-      background: hexToRGB(pallete.overlay, 0.7),
-      borderRadius: 10,
-      boxShadow: "0 0 6px rgb(0 0 0/4%), 0 14px 20px rgb(0 0 0/1%), 0 20px 28px rgb(0 0 0/1%)",
+      ...cardStyles(pallete),
     },
     ".twap-container": {
       padding: 0,
@@ -492,7 +505,7 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       fontFamily: "Inter",
       padding: "40px 20px 20px 20px",
       boxSizing: "border-box",
-      background: pallete.overlay,
+      background: pallete.overlay2,
       borderRadius: "10px",
 
       ".twap-orders-summary-token-display": {
@@ -524,12 +537,16 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       "& a": {
         fontWeight: 500,
         textDecoration: "underline",
+        color: pallete.primary,
       },
       "& *": {
         fontFamily: "inherit",
       },
       ".twap-order-summary-limit-price": {
-        padding: "10px 26px",
+        ...cardStyles(pallete),
+        ".twap-label": {
+          fontSize: 14,
+        }
       },
     },
     ".twap-powered-by": {
