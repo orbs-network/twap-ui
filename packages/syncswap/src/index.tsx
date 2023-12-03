@@ -54,6 +54,7 @@ const uiPreferences: TwapContextUIPreferences = {
 interface SyncSwapProps extends TWAPProps {
   connect: () => void;
   pallete: SyncSwapPallete;
+  openTokenSelectModal: (value?: number) => void;
 }
 
 const config = Configs.Lynex;
@@ -81,35 +82,17 @@ const AdapterContextProvider = AdapterContext.Provider;
 
 const useAdapterContext = () => useContext(AdapterContext);
 
-const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const TokenSelectModal = useAdapterContext().TokenSelectModal;
-
-  return <TokenSelectModal tokenSelected={undefined} onCurrencySelect={props.onSelect} isOpen={props.isOpen} onDismiss={props.onClose} />;
-};
-const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
-
-const TokenSelectModal = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
-  return <Components.TokenSelectModal Component={memoizedTokenSelect} isOpen={open} onClose={onClose} isSrc={isSrcToken} />;
-};
-
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const [tokenListOpen, setTokenListOpen] = useState(false);
-  const pallete = useAdapterContext().pallete;
-
-  const onClose = useCallback(() => {
-    setTokenListOpen(false);
-  }, []);
+  const { pallete, openTokenSelectModal } = useAdapterContext();
 
   return (
     <>
-      <TokenSelectModal onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
-
       <StyledTokenPanel>
         <TwapStyles.StyledColumnFlex gap={16}>
           <TwapStyles.StyledColumnFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
               <StyledTokenPanelInput placeholder="0.0" isSrc={isSrcToken} pallete={pallete} />
-              <TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+              <TokenSelect isSrc={isSrcToken} onClick={() => openTokenSelectModal(isSrcToken ? 0 : 1)} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
               <StyledTokenPanelUSD pallete={pallete} isSrc={isSrcToken} />
@@ -339,12 +322,11 @@ const TWAPPanel = () => {
   );
 };
 
-
-const PoweredBy  = () => {
-  const {pallete} = useAdapterContext();
+const PoweredBy = () => {
+  const { pallete } = useAdapterContext();
 
   return <StyledPoweredBy pallete={pallete} />;
-}
+};
 
 const TradeSize = () => {
   const pallete = useAdapterContext().pallete;

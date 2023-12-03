@@ -118,7 +118,7 @@ export interface TWAPProps extends BaseProps {
   dstToken?: string;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
-  TokenSelectModal: any;
+  TokenSelectModal?: any;
   limit?: boolean;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
   priceUsd?: (address: string) => Promise<number>;

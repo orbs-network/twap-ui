@@ -546,7 +546,7 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         ...cardStyles(pallete),
         ".twap-label": {
           fontSize: 14,
-        }
+        },
       },
     },
     ".twap-powered-by": {

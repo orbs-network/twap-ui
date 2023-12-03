@@ -1,15 +1,15 @@
 import { StyledModalContent, StyledQuickswapLayout, StyledSyncSwap, StyledSyncSwapBox } from "./styles";
 import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
-import { Configs } from "@orbs-network/twap";
+import { Configs, TokenData } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import _ from "lodash";
-import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { TWAP, Orders } from "@orbs-network/twap-ui-syncswap";
 import { createTheme, ThemeProvider } from "@mui/material";
+import { create } from "zustand";
 const config = { ...Configs.Lynex };
 config.name = "SyncSwap";
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
@@ -35,12 +35,6 @@ export const useDappTokens = () => {
     url: `${backendApi}/assets`,
   });
 };
-interface TokenSelectModalProps {
-  isOpen: boolean;
-  selectedToken?: any;
-  onCurrencySelect: (token: any) => void;
-  onDismiss: () => void;
-}
 
 const parseList = (rawList?: any): TokenListItem[] => {
   return _.map(rawList, (rawToken) => {
@@ -56,53 +50,76 @@ const parseList = (rawList?: any): TokenListItem[] => {
   });
 };
 
-const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectModalProps) => {
+const TokenSelectModal = () => {
   const { data: tokensList } = useDappTokens();
   const tokensListSize = _.size(tokensList);
   const parsedList = useMemo(() => parseList(tokensList), [tokensListSize]);
+  const store = useStore();
+
+  console.log(store.showTokenSelectModal);
 
   return (
-    <Popup isOpen={isOpen} onClose={onDismiss}>
+    <Popup isOpen={store.showTokenSelectModal} onClose={store.closeTokenSelectModal}>
       <StyledModalContent>
-        <TokensList tokens={parsedList} onClick={onCurrencySelect} />
+        <TokensList
+          tokens={parsedList}
+          onClick={(token) => {
+            if (store.type === 0) store.setSrcToken(token.address);
+            else store.setDstToken(token.address);
+            store.closeTokenSelectModal();
+          }}
+        />
       </StyledModalContent>
     </Popup>
   );
 };
 
+interface UseStore {
+  openTokenSelectModal: (type?: number) => void;
+  closeTokenSelectModal: () => void;
+  showTokenSelectModal: boolean;
+  srcToken?: string;
+  dstToken?: string;
+  setSrcToken: (token: string) => void;
+  setDstToken: (token: string) => void;
+  type: number;
+}
+
+const useStore = create<UseStore>((set) => ({
+  showTokenSelectModal: false,
+  type: 0,
+  openTokenSelectModal: (type) => set({ showTokenSelectModal: true, type }),
+  closeTokenSelectModal: () => set({ showTokenSelectModal: false }),
+  setSrcToken: (token) => set({ srcToken: token }),
+  setDstToken: (token) => set({ dstToken: token }),
+
+  srcToken: undefined,
+  dstToken: undefined,
+}));
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
-  const { isDarkTheme } = useTheme();
 
-  const getTokenLogoURL = useCallback(
-    (address: string) => {
-      if (!dappTokens) return "";
-      const token = dappTokens[address];
-      if (!token) {
-        return null;
-      }
-      return token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
-    },
-    [_.size(dappTokens)]
-  );
+  const store = useStore();
 
   return (
-    <TWAP
-      connect={connect}
-      account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.linea.USDC.address} //USDC
-      dappTokens={dappTokens}
-      TokenSelectModal={TokenSelectModal}
-      provider={library}
-      isDarkTheme={isDarkTheme}
-      limit={limit}
-      onTxSubmitted={(args: any) => console.log(args)}
-      pallete={pallete}
-      priceUsd={priceUsd}
-    />
+    <>
+      <TWAP
+        connect={connect}
+        account={account}
+        srcToken={store.srcToken}
+        dstToken={store.dstToken}
+        dappTokens={dappTokens}
+        provider={library}
+        limit={limit}
+        pallete={pallete}
+        priceUsd={priceUsd}
+        openTokenSelectModal={store.openTokenSelectModal}
+      />
+      <TokenSelectModal />
+    </>
   );
 };
 
