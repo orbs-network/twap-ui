@@ -52,6 +52,6 @@
     }
   },
   "dependencies": {
-    "@orbs-network/twap": "^1.19.1"
+    "@orbs-network/twap": "^1.19.2"
   }
 }
