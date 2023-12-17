@@ -418,7 +418,7 @@ export const useHasAllowanceQuery = () => {
 
 const useGetPriceUsdCallback = () => {
   const lib = useTwapStore((state) => state.lib);
-  const priceUsd = useTwapContext().priceUsd;
+  const { priceUsd } = useTwapContext();
 
   return async (token?: TokenData): Promise<BN> => {
     if (!lib) return BN(0);
@@ -432,6 +432,7 @@ const useGetPriceUsdCallback = () => {
 const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => {
   const lib = useTwapStore((state) => state.lib);
   const priceUsd = useGetPriceUsdCallback();
+  const { disablePriceUsdFetch } = useTwapContext();
   const address = useRef("");
   const client = useQueryClient();
   const key = [QueryKeys.GET_USD_VALUE, token?.address];
@@ -446,7 +447,7 @@ const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) =>
       return priceUsd(token!);
     },
     {
-      enabled: !!lib && !!token,
+      enabled: !!lib && !!token && !!priceUsd && !disablePriceUsdFetch,
       onSuccess,
       refetchInterval: REFETCH_USD,
     }

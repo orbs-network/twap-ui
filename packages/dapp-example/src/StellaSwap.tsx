@@ -75,9 +75,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
-
-  console.log({ dappTokens });
-
   const { isDarkTheme } = useTheme();
 
   return (

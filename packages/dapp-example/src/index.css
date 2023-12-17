@@ -478,3 +478,29 @@
   background-size: 400% 400%;
   animation: portfolio-gradient 12s ease infinite;
 }
+
+
+.theme-background-dark {
+  background: linear-gradient(115deg, #111324 0%, #121326 100%), #111324;
+}
+
+.theme-background-green {
+  background: radial-gradient(
+      153.32% 100% at 47.26% 0%,
+      rgba(11 171 9 / 9%) 0%,
+      rgba(83 187 88 / 5%) 48.19%,
+      rgba(136 213 34 / 2%) 100%
+    ),
+    rgb(255, 255, 255);
+}
+
+.theme-background-pink {
+  background: radial-gradient(
+      153.32% 100% at 47.26% 0%,
+      rgba(255 129 187 / 12%) 0%,
+      rgba(215 74 152 / 11%) 48.19%,
+      rgba(237 113 193 / 4%) 100%
+    ),
+    rgb(255, 255, 255);
+}
+

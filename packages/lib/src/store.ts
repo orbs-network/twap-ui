@@ -441,7 +441,7 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
     clearTimeout(get().timeout);
   },
   setStatus: (status, error) => {
-     clearTimeout(get().timeout);
+    clearTimeout(get().timeout);
     set({ status, error, open: !!status });
     if (status === WizardActionStatus.SUCCESS) {
       set({ timeout: setTimeout(() => set({ open: false }), 5000) });

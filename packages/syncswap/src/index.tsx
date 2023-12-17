@@ -1,21 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { Button, GlobalStyles, Typography } from "@mui/material";
-import {
-  Components,
-  Translations,
-  TwapAdapter,
-  OrdersPanel,
-  useTwapContext,
-  Styles as TwapStyles,
-  TWAPTokenSelectProps,
-  hooks,
-  TWAPProps,
-  store,
-  Orders,
-} from "@orbs-network/twap-ui";
+import { Button, GlobalStyles, ThemeProvider, Typography, createTheme, Box } from "@mui/material";
+import { Components, Translations, TwapAdapter, OrdersPanel, useTwapContext, Styles as TwapStyles, hooks, TWAPProps, Orders, store } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Box } from "@mui/system";
-import { createContext, memo, ReactNode, useCallback, useContext, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import {
@@ -33,13 +20,13 @@ import {
   StyledTokenPanelUSD,
   StyledTokenSelect,
 } from "./styles";
-import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, zero, zeroAddress } from "@defi.org/web3-candies";
 import { SyncSwapPallete } from "./types";
 import { StyledOneLineText } from "@orbs-network/twap-ui/dist/styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
 import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
-
+import BN from "bignumber.js";
 const storeOverride = {
   isLimitOrder: true,
   chunks: 1,
@@ -54,10 +41,10 @@ const uiPreferences: TwapContextUIPreferences = {
 interface SyncSwapProps extends TWAPProps {
   connect: () => void;
   pallete: SyncSwapPallete;
-  openTokenSelectModal: (value?: number) => void;
+  openTokenSelectModal: (value?: any) => void;
 }
 
-const config = Configs.Lynex;
+const config = Configs.SyncSwap;
 
 const parseToken = (rawToken: any): TokenData | undefined => {
   if (!rawToken.symbol) {
@@ -72,7 +59,7 @@ const parseToken = (rawToken: any): TokenData | undefined => {
     address: Web3.utils.toChecksumAddress(address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: rawToken.logoURI,
+    logoUrl: rawToken.logoUrl,
   };
 };
 
@@ -83,7 +70,7 @@ const AdapterContextProvider = AdapterContext.Provider;
 const useAdapterContext = () => useContext(AdapterContext);
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const { pallete, openTokenSelectModal } = useAdapterContext();
+  const { openTokenSelectModal } = useAdapterContext();
 
   return (
     <>
@@ -91,12 +78,12 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <TwapStyles.StyledColumnFlex gap={16}>
           <TwapStyles.StyledColumnFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <StyledTokenPanelInput placeholder="0.0" isSrc={isSrcToken} pallete={pallete} />
+              <StyledTokenPanelInput placeholder="0.0" isSrc={isSrcToken} />
               <TokenSelect isSrc={isSrcToken} onClick={() => openTokenSelectModal(isSrcToken ? 0 : 1)} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <StyledTokenPanelUSD pallete={pallete} isSrc={isSrcToken} />
-              <StyledBalance pallete={pallete} isSrc={isSrcToken} />
+              <StyledTokenPanelUSD isSrc={isSrcToken} />
+              <StyledBalance isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledColumnFlex>
           {isSrcToken && <SrcTokenPercentSelector />}
@@ -107,7 +94,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: boolean }) => {
-  const { pallete } = useAdapterContext();
   const { srcToken, dstToken } = store.useTwapStore((state) => ({
     srcToken: state.srcToken,
     dstToken: state.dstToken,
@@ -117,7 +103,7 @@ export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: b
   const token = isSrc ? srcToken : dstToken;
 
   return (
-    <StyledTokenSelect pallete={pallete} onClick={onClick}>
+    <StyledTokenSelect onClick={onClick}>
       <TwapStyles.StyledRowFlex gap={5}>
         {token ? <Components.TokenLogoAndSymbol isSrc={isSrc} /> : <StyledOneLineText>{translations.selectToken}</StyledOneLineText>}
         <Components.Base.Icon icon={<IoIosArrowDown size={20} />} />
@@ -184,65 +170,88 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 interface Props extends SyncSwapProps {
   limit?: boolean;
+  getProvider: () => any;
+  srcUsd?: string;
+  dstUsd?: string;
+  isPlayground?: boolean;
 }
 
+const useListeners = (args: Props) => {
+  const { setSrcUsd, setDstUsd } = store.useTwapStore();
+  useEffect(() => {
+    setSrcUsd(args.srcUsd ? BN(args.srcUsd) : zero);
+  }, [args.srcUsd]);
+  useEffect(() => {
+    setDstUsd(args.dstUsd ? BN(args.dstUsd) : zero);
+  }, [args.dstUsd]);
+};
+
 const TWAP = (props: Props) => {
+  useListeners(props);
   const globalStyles = configureStyles(props.pallete);
+
+  const provider = useMemo(() => props.getProvider(), [props.account]);
 
   const connect = useCallback(() => {
     props.connect();
   }, []);
 
-  const priceUsd = useCallback(
-    (address: string) => {
-      if (address === zeroAddress) {
-        address = "ETH";
-      }
-      return props.priceUsd!(address);
-    },
-    [props.priceUsd]
-  );
+  const theme = useMemo(() => {
+    const args = {
+      palette: {
+        primary: {
+          main: props.pallete.primary,
+        },
+      },
+      dappStyles: props.pallete,
+    };
+
+    return createTheme(args);
+  }, [props.pallete]);
+
+  console.log(props.dappTokens);
 
   return (
-    <Box className="adapter-wrapper">
-      <TwapAdapter
-        connect={connect}
-        config={config}
-        uiPreferences={uiPreferences}
-        maxFeePerGas={props.maxFeePerGas}
-        priorityFeePerGas={props.priorityFeePerGas}
-        translations={translations as Translations}
-        provider={props.provider}
-        account={props.account}
-        dappTokens={props.dappTokens}
-        parseToken={parseToken}
-        srcToken={props.srcToken}
-        onTxSubmitted={props.onTxSubmitted}
-        dstToken={props.dstToken}
-        storeOverride={props.limit ? storeOverride : undefined}
-        priceUsd={priceUsd}
-      >
-        <GlobalStyles styles={globalStyles as any} />
-        <AdapterContextProvider value={props}>
-          {props.limit ? <LimitPanel /> : <TWAPPanel />}
-          <OrdersPanel />
-        </AdapterContextProvider>
-      </TwapAdapter>
-    </Box>
+    <ThemeProvider theme={theme}>
+      <Box className="adapter-wrapper">
+        <TwapAdapter
+          connect={connect}
+          config={config}
+          uiPreferences={uiPreferences}
+          maxFeePerGas={props.maxFeePerGas}
+          priorityFeePerGas={props.priorityFeePerGas}
+          translations={translations as Translations}
+          provider={provider}
+          account={props.account}
+          dappTokens={props.dappTokens}
+          parseToken={parseToken}
+          srcToken={props.srcToken}
+          onTxSubmitted={props.onTxSubmitted}
+          dstToken={props.dstToken}
+          storeOverride={props.limit ? storeOverride : undefined}
+          disablePriceUsdFetch={props.isPlayground ? false : true}
+        >
+          <GlobalStyles styles={globalStyles as any} />
+          <AdapterContextProvider value={props}>
+            {props.limit ? <LimitPanel /> : <TWAPPanel />}
+            <OrdersPanel />
+          </AdapterContextProvider>
+        </TwapAdapter>
+      </Box>
+    </ThemeProvider>
   );
 };
 
 const Market = () => {
-  const pallete = useAdapterContext().pallete;
   const { toggleInverted, leftToken, rightToken, marketPrice, loading } = hooks.useMarketPrice();
   return (
-    <StyledMarketPrice pallete={pallete}>
+    <StyledMarketPrice>
       {loading ? (
         <Components.Base.Loader />
       ) : (
         <Button onClick={toggleInverted}>
           <Components.Base.TokenPriceCompare.LeftToken token={leftToken} />
-          <Typography color={pallete.info}>=</Typography>
+          <Typography>=</Typography>
           <Components.Base.TokenPriceCompare.RightToken token={rightToken} price={marketPrice} />
         </Button>
       )}
@@ -277,9 +286,7 @@ const LimitPanel = () => {
 };
 
 const ChangeTokensOrder = () => {
-  const pallete = useAdapterContext().pallete;
-
-  return <StyledChangeTokensOrder pallete={pallete} icon={<AiOutlineArrowDown />} />;
+  return <StyledChangeTokensOrder icon={<AiOutlineArrowDown />} />;
 };
 
 const SubmitButton = ({ isMain }: { isMain?: boolean }) => {
@@ -323,13 +330,10 @@ const TWAPPanel = () => {
 };
 
 const PoweredBy = () => {
-  const { pallete } = useAdapterContext();
-
-  return <StyledPoweredBy pallete={pallete} />;
+  return <StyledPoweredBy />;
 };
 
 const TradeSize = () => {
-  const pallete = useAdapterContext().pallete;
   return (
     <Components.Base.Card className="twap-trade-size">
       <TwapStyles.StyledColumnFlex gap={5}>
@@ -338,7 +342,7 @@ const TradeSize = () => {
           <Components.ChunksSliderSelect />
           <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
-        <StyledChunkSize pallete={pallete}>
+        <StyledChunkSize>
           <Components.TradeSize />
           <Components.ChunksUSD />
         </StyledChunkSize>
@@ -375,7 +379,6 @@ const TradeInterval = () => {
 
 const LimitPrice = ({ limit }: { limit?: boolean }) => {
   const isLimitOrder = store.useTwapStore((s) => s.isLimitOrder);
-  const pallete = useAdapterContext().pallete;
   return (
     <>
       <Components.Base.Card className="twap-limit-price">
@@ -385,7 +388,7 @@ const LimitPrice = ({ limit }: { limit?: boolean }) => {
         </TwapStyles.StyledRowFlex>
       </Components.Base.Card>
       {isLimitOrder && (
-        <StyledLimitPrice pallete={pallete}>
+        <StyledLimitPrice>
           <Components.LimitPriceInput placeholder="0" />
         </StyledLimitPrice>
       )}
