@@ -1,4 +1,4 @@
-import { Button, styled, Theme } from "@mui/material";
+import { Box, Button, styled, Theme } from "@mui/material";
 import { Components, Styles, uiHelper } from "@orbs-network/twap-ui";
 import { CustomTheme, SyncSwapPallete } from "./types";
 
@@ -107,6 +107,11 @@ export const StyledMarketPrice = styled(Components.Base.Card)({
     display: "flex",
     alignItems: "center",
   },
+});
+
+export const StyledMarketPriceLoader = styled(Box)({
+  padding: "8px 12px",
+  width: "100%",
 });
 
 export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ theme }) => ({
@@ -228,7 +233,6 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         color: pallete.normal,
         paddingRight: 0,
         "&::placeholder": {
-          opacity: 1,
           color: pallete.normal,
         },
       },
@@ -269,7 +273,7 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         color: pallete.normal,
       },
       ".MuiSlider-valueLabel": {
-        background: pallete.secondary,
+        background: pallete.overlay,
       },
       ".MuiSlider-thumb": {
         background: "white",
@@ -293,8 +297,8 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       },
     },
     ".twap-input-loader": {
-      right: 0,
-      left: "unset",
+      left: 0,
+      right: "unset",
     },
 
     ".twap-tooltip": {
@@ -522,6 +526,10 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
     },
     ".twap-orders": {
       color: pallete.normal,
+      boxSizing: "border-box",
+      "*": {
+        boxSizing: "border-box",
+      },
     },
     ".twap-modal-content": {
       outline: "none",
@@ -533,6 +541,7 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       borderRadius: "10px",
       "*": {
         color: pallete.normal,
+        boxSizing: "border-box",
       },
 
       ".twap-orders-summary-token-display": {
@@ -593,10 +602,13 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
 
     ".adapter-wrapper": {
       padding: "0px",
-      width: "100%!important",
-      maxWidth: "100%!important",
+      width: "100%",
       margin: "auto",
       fontFamily: "Inter",
+      boxSizing: "border-box",
+      "*": {
+        boxSizing: "border-box",
+      },
     },
     ".twap-max-duration-wrapper, .twap-trade-interval-wrapper": {
       ".twap-label": {

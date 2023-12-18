@@ -355,8 +355,6 @@ export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
 
   const onAddToken = (token: TokenData) => {
     setView(TokenListView.DEFAULT);
-    console.log(token);
-
     addToken(chainId!, token);
   };
 

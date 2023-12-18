@@ -378,13 +378,15 @@ export const useLoadingState = () => {
 };
 
 export const useSrcUsd = () => {
-  const state = useTwapStore();
-  return useUsdValueQuery(state.srcToken, state.setSrcUsd);
+  const srcToken = useTwapStore().srcToken;
+  const setSrcUsd = useTwapStore().setSrcUsd;
+  return useUsdValueQuery(srcToken, setSrcUsd);
 };
 
 export const useDstUsd = () => {
-  const state = useTwapStore();
-  return useUsdValueQuery(state.dstToken, state.setDstUsd);
+  const dstToken = useTwapStore().dstToken;
+  const setDstUsd = useTwapStore().setDstUsd;
+  return useUsdValueQuery(dstToken, setDstUsd);
 };
 
 export const useSrcBalance = () => {

@@ -177,25 +177,28 @@ const usePallete = () => {
   };
 };
 
+const useThemeOptions = () => {
+  return usePallete().pallete.options;
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const store = useStore();
-  const { pallete } = usePallete();
   const { data: tokens } = useDappTokens();
+  const palette = usePallete().pallete.options;
   return (
     <>
       <TWAP
         connect={connect}
+        palette={JSON.stringify(palette)}
         account={account}
         srcToken={store.srcToken}
         dstToken={store.dstToken}
         dappTokens={tokens}
         getProvider={() => library}
         limit={limit}
-        pallete={pallete.options}
         openTokenSelectModal={store.openTokenSelectModal}
-        isPlayground={true}
       />
       <TokenSelectModal />
     </>
@@ -209,7 +212,7 @@ const Palletes = () => {
       {palletes.map((it) => {
         const selected = it.name === pallete.name;
         return (
-          <StyledPalleteOption $selected={selected} $color={pallete.options.primary} variant="text" key={it.name} onClick={() => setPallete(it)}>
+          <StyledPalleteOption selected={selected ? 1 : 0} _color={pallete.options.primary} variant="text" key={it.name} onClick={() => setPallete(it)}>
             {it.name}
           </StyledPalleteOption>
         );
@@ -218,12 +221,12 @@ const Palletes = () => {
   );
 };
 
-const StyledPalleteOption = styled(Button)<{ $color: string; $selected: boolean }>(({ $color, $selected }) => ({
+const StyledPalleteOption = styled(Button)<{ _color: string; selected: number }>(({ _color, selected }) => ({
   borderRadius: 0,
   cursor: "pointer",
   margin: 5,
-  color: $color,
-  borderBottom: $selected ? `1px solid ${$color}!important` : "",
+  color: _color,
+  borderBottom: selected ? `1px solid ${_color}!important` : "",
 }));
 
 const logo = "https://syncswap.xyz/images/syncswap.svg";
@@ -232,7 +235,7 @@ const DappComponent = () => {
   const pallete = usePallete().pallete.options;
 
   return (
-    <StyledSyncSwap className={pallete.background} $text={pallete.normal}>
+    <StyledSyncSwap className={pallete.background} color={pallete.normal}>
       <Palletes />
       <StyledQuickswapLayout name={config.name}>
         <UISelector select={setSelected} selected={selected} limit={true} />

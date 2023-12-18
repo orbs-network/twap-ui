@@ -12,6 +12,7 @@ import {
   StyledChunkSize,
   StyledLimitPrice,
   StyledMarketPrice,
+  StyledMarketPriceLoader,
   StyledPercentSelect,
   StyledPoweredBy,
   StyledSubmitButton,
@@ -40,26 +41,26 @@ const uiPreferences: TwapContextUIPreferences = {
 
 interface SyncSwapProps extends TWAPProps {
   connect: () => void;
-  pallete: SyncSwapPallete;
+  palette: string;
   openTokenSelectModal: (value?: any) => void;
 }
 
 const config = Configs.SyncSwap;
-
 const parseToken = (rawToken: any): TokenData | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
-  const address = rawToken.address === "ETH" ? zeroAddress : rawToken.address;
-  if (!address || isNativeAddress(address)) {
+  const isNative = rawToken.symbol === "ETH" || isNativeAddress(rawToken.address);
+
+  if (!rawToken.address || isNative) {
     return config.nativeToken;
   }
   return {
-    address: Web3.utils.toChecksumAddress(address),
+    address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: rawToken.logoUrl,
+    logoUrl: `https://tokens.syncswap.xyz/tokens/${rawToken.address}/logo.png`,
   };
 };
 
@@ -171,26 +172,14 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 interface Props extends SyncSwapProps {
   limit?: boolean;
   getProvider: () => any;
-  srcUsd?: string;
-  dstUsd?: string;
   isPlayground?: boolean;
 }
 
-const useListeners = (args: Props) => {
-  const { setSrcUsd, setDstUsd } = store.useTwapStore();
-  useEffect(() => {
-    setSrcUsd(args.srcUsd ? BN(args.srcUsd) : zero);
-  }, [args.srcUsd]);
-  useEffect(() => {
-    setDstUsd(args.dstUsd ? BN(args.dstUsd) : zero);
-  }, [args.dstUsd]);
-};
-
 const TWAP = (props: Props) => {
-  useListeners(props);
-  const globalStyles = configureStyles(props.pallete);
-
+  const palette = useMemo(() => JSON.parse(props.palette), [props.palette]);
   const provider = useMemo(() => props.getProvider(), [props.account]);
+
+  const globalStyles = configureStyles(palette);
 
   const connect = useCallback(() => {
     props.connect();
@@ -200,16 +189,14 @@ const TWAP = (props: Props) => {
     const args = {
       palette: {
         primary: {
-          main: props.pallete.primary,
+          main: palette.primary,
         },
       },
-      dappStyles: props.pallete,
+      dappStyles: palette,
     };
 
     return createTheme(args);
-  }, [props.pallete]);
-
-  console.log(props.dappTokens);
+  }, [props.palette]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -225,9 +212,9 @@ const TWAP = (props: Props) => {
           account={props.account}
           dappTokens={props.dappTokens}
           parseToken={parseToken}
-          srcToken={props.srcToken}
+          srcToken={props.srcToken === "0x000000000000000000000000000000000000800a" ? zeroAddress : props.srcToken}
           onTxSubmitted={props.onTxSubmitted}
-          dstToken={props.dstToken}
+          dstToken={props.dstToken === "0x000000000000000000000000000000000000800a" ? zeroAddress : props.dstToken}
           storeOverride={props.limit ? storeOverride : undefined}
           disablePriceUsdFetch={props.isPlayground ? false : true}
         >
@@ -247,7 +234,9 @@ const Market = () => {
   return (
     <StyledMarketPrice>
       {loading ? (
-        <Components.Base.Loader />
+        <StyledMarketPriceLoader>
+          <Components.Base.Loader height={26} />
+        </StyledMarketPriceLoader>
       ) : (
         <Button onClick={toggleInverted}>
           <Components.Base.TokenPriceCompare.LeftToken token={leftToken} />

@@ -173,12 +173,12 @@ export const StyledQuickswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isD
   },
 }));
 
-export const StyledSyncSwap = styled(StyledDapp)(({ $text }: { $text: string }) => ({
+export const StyledSyncSwap = styled(StyledDapp)(({ color }: { color: string }) => ({
   ".ui-selector-btn-selected": {
-    borderBottom: `2px solid ${$text}`,
+    borderBottom: `2px solid ${color}`,
   },
   ".ui-selector-btn": {
-    color: $text,
+    color: color,
     borderRadius: "unset",
   },
 }));
