@@ -170,7 +170,7 @@ export interface TwapLibProps extends LibProps {
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  priceUsd?: (address: string) => Promise<number>;
+  priceUsd?: (token: TokenData) => Promise<number>;
   srcUsd?: BN;
   dstUsd?: BN;
   disablePriceUsdFetch?: boolean;

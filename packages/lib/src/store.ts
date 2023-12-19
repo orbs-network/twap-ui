@@ -39,7 +39,7 @@ const initialState: State = {
   isLimitOrder: false,
   confirmationClickTimestamp: moment(),
   showConfirmation: false,
-  disclaimerAccepted: false,
+  disclaimerAccepted: true,
 
   chunks: 0,
   customDuration: { resolution: TimeResolution.Minutes, amount: undefined },
@@ -290,7 +290,7 @@ export const useTwapStore = create(
     shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
 
     isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
-    setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment(), disclaimerAccepted: false }),
+    setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment() }),
     getDeadline: () =>
       moment(get().confirmationClickTimestamp)
         .add(((get() as any).getDurationUi().amount || 0) * (get() as any).getDurationUi().resolution)

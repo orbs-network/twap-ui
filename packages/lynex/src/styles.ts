@@ -259,6 +259,7 @@ export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContai
   return {
     ".twap-modal-content": {
       paddingTop: 50,
+      overflowY: "auto",
       ".twap-card": {
         background: styles.mainBackground,
         "*, svg": {

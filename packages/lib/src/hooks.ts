@@ -7,7 +7,7 @@ import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI, State } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
-import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, getPastEvents, findBlock, block } from "@defi.org/web3-candies";
+import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, getPastEvents, findBlock, block, zero } from "@defi.org/web3-candies";
 import { amountUi, getTokenFromTokensList, parseOrderUi, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
@@ -220,6 +220,7 @@ export const useInitLib = () => {
     const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
+
     setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));
   };
 };
@@ -378,26 +379,28 @@ export const useLoadingState = () => {
 };
 
 export const useSrcUsd = () => {
-  const srcToken = useTwapStore().srcToken;
-  const setSrcUsd = useTwapStore().setSrcUsd;
+  const srcToken = useTwapStore((store) => store.srcToken);
+  const setSrcUsd = useTwapStore((store) => store.setSrcUsd);
   return useUsdValueQuery(srcToken, setSrcUsd);
 };
 
 export const useDstUsd = () => {
-  const dstToken = useTwapStore().dstToken;
-  const setDstUsd = useTwapStore().setDstUsd;
+  const dstToken = useTwapStore((store) => store.dstToken);
+  const setDstUsd = useTwapStore((store) => store.setDstUsd);
   return useUsdValueQuery(dstToken, setDstUsd);
 };
 
 export const useSrcBalance = () => {
-  const state = useTwapStore();
+  const srcToken = useTwapStore((store) => store.srcToken);
+  const setSrcBalance = useTwapStore((store) => store.setSrcBalance);
 
-  return useBalanceQuery(state.srcToken, state.setSrcBalance);
+  return useBalanceQuery(srcToken, setSrcBalance);
 };
 
 export const useDstBalance = () => {
-  const state = useTwapStore();
-  return useBalanceQuery(state.dstToken, state.setDstBalance);
+  const dstToken = useTwapStore((store) => store.dstToken);
+  const setDstBalance = useTwapStore((store) => store.setDstBalance);
+  return useBalanceQuery(dstToken, setDstBalance);
 };
 
 /**
@@ -420,14 +423,26 @@ export const useHasAllowanceQuery = () => {
 
 const useGetPriceUsdCallback = () => {
   const lib = useTwapStore((state) => state.lib);
-  const { priceUsd } = useTwapContext();
+  const { priceUsd: priceUsdFromProps, disablePriceUsdFetch } = useTwapContext();
 
   return async (token?: TokenData): Promise<BN> => {
-    if (!lib) return BN(0);
-    if (priceUsd) {
-      return new BN(await priceUsd(token!.address));
+    if (!lib || !token) return BN(0);
+    if (disablePriceUsdFetch && priceUsdFromProps) {
+      return new BN((await priceUsdFromProps(token)) || zero);
     }
-    return new BN(await lib?.priceUsd(token!));
+    try {
+      const res = new BN(await lib.priceUsd(token));
+      return res;
+    } catch (error) {
+      if (priceUsdFromProps) {
+        try {
+          return new BN(await priceUsdFromProps(token));
+        } catch (error) {
+          throw new Error();
+        }
+      }
+      throw new Error();
+    }
   };
 };
 
@@ -446,7 +461,8 @@ const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) =>
         address.current = token?.address || "";
       }
 
-      return priceUsd(token!);
+      const res = await priceUsd(token!);
+      return res;
     },
     {
       enabled: !!lib && !!token && !!priceUsd && !disablePriceUsdFetch,

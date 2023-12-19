@@ -1,8 +1,20 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { Button, GlobalStyles, ThemeProvider, Typography, createTheme, Box } from "@mui/material";
-import { Components, Translations, TwapAdapter, OrdersPanel, useTwapContext, Styles as TwapStyles, hooks, TWAPProps, Orders, store } from "@orbs-network/twap-ui";
+import {
+  Components,
+  Translations,
+  TwapAdapter,
+  OrdersPanel,
+  useTwapContext,
+  Styles as TwapStyles,
+  hooks,
+  TWAPProps,
+  Orders,
+  store,
+  REFETCH_GAS_PRICE,
+} from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
+import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import {
@@ -20,14 +32,17 @@ import {
   StyledTokenPanelInput,
   StyledTokenPanelUSD,
   StyledTokenSelect,
+  StyledTradeSize,
 } from "./styles";
-import { isNativeAddress, zero, zeroAddress } from "@defi.org/web3-candies";
-import { SyncSwapPallete } from "./types";
+import { eqIgnoreCase, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { StyledOneLineText } from "@orbs-network/twap-ui/dist/styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
 import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
+import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SyncSwapPallete } from "./types";
+
 const storeOverride = {
   isLimitOrder: true,
   chunks: 1,
@@ -41,8 +56,9 @@ const uiPreferences: TwapContextUIPreferences = {
 
 interface SyncSwapProps extends TWAPProps {
   connect: () => void;
-  palette: string;
+  themeOptions: SyncSwapPallete;
   openTokenSelectModal: (value?: any) => void;
+  useGasPrice: () => Promise<any>;
 }
 
 const config = Configs.SyncSwap;
@@ -173,11 +189,29 @@ interface Props extends SyncSwapProps {
   limit?: boolean;
   getProvider: () => any;
   isPlayground?: boolean;
+  priceUsd?: any;
 }
 
-const TWAP = (props: Props) => {
-  const palette = useMemo(() => JSON.parse(props.palette), [props.palette]);
+const useGasPriceQuery = (props: Props) => {
+  return useQuery(
+    ["useGasPriceQuerySynswap"],
+    async () => {
+      const res = await props.useGasPrice();
+      return res?.toString() || "";
+    },
+    {
+      refetchInterval: REFETCH_GAS_PRICE,
+      enabled: !!props.useGasPrice,
+    }
+  );
+};
+
+const SYNCSWAP_ZERO_ADDRESS = "0x000000000000000000000000000000000000800a";
+
+const Adapter = (props: Props) => {
+  const palette = props.themeOptions;
   const provider = useMemo(() => props.getProvider(), [props.account]);
+  const { data: gasPrice } = useGasPriceQuery(props);
 
   const globalStyles = configureStyles(palette);
 
@@ -196,7 +230,16 @@ const TWAP = (props: Props) => {
     };
 
     return createTheme(args);
-  }, [props.palette]);
+  }, [palette]);
+
+  const priceUsd = useCallback(
+    async (token: TokenData) => {
+      const address = eqIgnoreCase(token.address, zeroAddress) ? SYNCSWAP_ZERO_ADDRESS : token.address;
+      const result = await props.priceUsd(address, store.amountBN(token, "1").toString());
+      return Number(result);
+    },
+    [props.priceUsd]
+  );
 
   return (
     <ThemeProvider theme={theme}>
@@ -205,18 +248,18 @@ const TWAP = (props: Props) => {
           connect={connect}
           config={config}
           uiPreferences={uiPreferences}
-          maxFeePerGas={props.maxFeePerGas}
-          priorityFeePerGas={props.priorityFeePerGas}
+          maxFeePerGas={gasPrice}
+          priorityFeePerGas={"0"}
           translations={translations as Translations}
           provider={provider}
           account={props.account}
           dappTokens={props.dappTokens}
           parseToken={parseToken}
-          srcToken={props.srcToken === "0x000000000000000000000000000000000000800a" ? zeroAddress : props.srcToken}
+          srcToken={eqIgnoreCase(props.srcToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.srcToken}
           onTxSubmitted={props.onTxSubmitted}
-          dstToken={props.dstToken === "0x000000000000000000000000000000000000800a" ? zeroAddress : props.dstToken}
+          dstToken={eqIgnoreCase(props.dstToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.dstToken}
           storeOverride={props.limit ? storeOverride : undefined}
-          disablePriceUsdFetch={props.isPlayground ? false : true}
+          priceUsd={props.priceUsd ? priceUsd : undefined}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider value={props}>
@@ -226,6 +269,16 @@ const TWAP = (props: Props) => {
         </TwapAdapter>
       </Box>
     </ThemeProvider>
+  );
+};
+
+const queryClient = new QueryClient();
+
+const TWAP = (props: Props) => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Adapter {...props} />
+    </QueryClientProvider>
   );
 };
 
@@ -324,7 +377,7 @@ const PoweredBy = () => {
 
 const TradeSize = () => {
   return (
-    <Components.Base.Card className="twap-trade-size">
+    <StyledTradeSize>
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
@@ -336,7 +389,7 @@ const TradeSize = () => {
           <Components.ChunksUSD />
         </StyledChunkSize>
       </TwapStyles.StyledColumnFlex>
-    </Components.Base.Card>
+    </StyledTradeSize>
   );
 };
 

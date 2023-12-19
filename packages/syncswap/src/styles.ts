@@ -20,6 +20,62 @@ const getButtonStyles = (theme: SyncSwapPallete) => {
   };
 };
 
+export const StyledTradeSize = styled(Components.Base.Card)(({ theme }) => {
+  const pallete = (theme as CustomTheme).dappStyles;
+  return {
+    ".twap-input": {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "column",
+      borderRadius: 10,
+      input: {
+        textAlign: "center!important",
+        fontSize: "14px!important",
+        borderBottom: `1px solid ${pallete.primary}`,
+        height: 25,
+        padding: "0px 7px",
+      },
+    },
+    paddingTop: "8px!important",
+    paddingBottom: "17px!important",
+    p: {
+      fontSize: "14px!important",
+    },
+    ".twap-token-logo": {
+      width: 18,
+      height: 18,
+    },
+    ".twap-token-name": {
+      fontSize: "13px!important",
+      fontWeight: "400!important",
+    },
+
+    ".twap-label": {
+      fontSize: "14px",
+      color: pallete.normal,
+    },
+    ".MuiSlider-valueLabel": {
+      background: pallete.overlay2,
+    },
+    ".MuiSlider-thumb": {
+      background: "white",
+    },
+    ".MuiSlider-rail": {
+      color: pallete.primary,
+    },
+    ".MuiSlider-track": {
+      color: pallete.background,
+    },
+    "@media(max-width:450px)": {
+      ".twap-chunks-size": {
+        display: "flex",
+        flexDirection: "column",
+      },
+    },
+  };
+});
+
 const cardStyles = (pallete: SyncSwapPallete) => ({
   padding: "10px 14px",
   background: hexToRGB(pallete.overlay, 0.7),
@@ -58,13 +114,12 @@ export const StyledChunkSize = styled(Styles.StyledRowFlex)(({ theme }) => ({
   },
 }));
 
-export const StyledLimitPrice = styled(Components.Base.Card)(({ theme }) => ({
+export const StyledLimitPrice = styled(Components.Base.Card)({
   ".twap-limit-price-input": {
     paddingLeft: 0,
     input: {
-      fontSize: 17,
-      borderBottom: `1px solid ${dappStyles(theme).primary}`,
-      borderRadius: 0,
+      fontSize: 16,
+      padding: "0px 10px",
     },
   },
   ".twap-token-display": {
@@ -74,7 +129,7 @@ export const StyledLimitPrice = styled(Components.Base.Card)(({ theme }) => ({
   ".twap-token-name": {
     top: 0,
   },
-}));
+});
 
 export const StyledMarketPrice = styled(Components.Base.Card)({
   display: "flex",
@@ -185,6 +240,7 @@ export const StyledTokenPanelInput = styled(Components.TokenInput)(({ theme }) =
     fontSize: 28,
     color: dappStyles(theme).normal,
     fontWeight: 500,
+    border: "unset",
   },
 }));
 
@@ -227,13 +283,15 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         fontFamily: "inherit",
         textIndent: 0,
         outline: "1px solid transparent",
-        borderRadius: "0.375rem",
         transition: "0.15s all",
         height: 35,
         color: pallete.normal,
+        border: `1px solid ${pallete.primary}`,
+        borderRadius: 10,
         paddingRight: 0,
         "&::placeholder": {
-          color: pallete.normal,
+          color: pallete.info,
+          opacity: 0.5,
         },
       },
     },
@@ -247,44 +305,7 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
     ".twap-odnp-separator": {
       background: `${pallete.primary}!important`,
     },
-    ".twap-trade-size": {
-      paddingTop: "8px!important",
-      paddingBottom: "17px!important",
-      p: {
-        fontSize: "14px!important",
-      },
-      ".twap-token-logo": {
-        width: 18,
-        height: 18,
-      },
-      ".twap-token-name": {
-        fontSize: "13px!important",
-        fontWeight: "400!important",
-      },
-      input: {
-        textAlign: "center!important",
-        fontSize: "14px!important",
-        borderBottom: `1px solid ${pallete.primary}`,
-        borderRadius: 0,
-        height: 25,
-      },
-      ".twap-label": {
-        fontSize: "14px",
-        color: pallete.normal,
-      },
-      ".MuiSlider-valueLabel": {
-        background: pallete.overlay,
-      },
-      ".MuiSlider-thumb": {
-        background: "white",
-      },
-      ".MuiSlider-rail": {
-        color: pallete.primary,
-      },
-      ".MuiSlider-track": {
-        color: pallete.background,
-      },
-    },
+
     ".twap-warning": {
       fontSize: 14,
       color: "white",
@@ -315,13 +336,10 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       },
     },
 
-    ".twap-button-loader": {},
     ".twap-time-selector": {
       "& input": {
         fontSize: "17px!important",
-        borderBottom: `1px solid ${pallete.primary}`,
-        borderRadius: 0,
-        maxWidth: 80,
+        maxWidth: 100,
         marginLeft: "auto",
         "&::placeholder": {
           color: `${pallete.normal}!important`,
@@ -367,7 +385,10 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       },
     },
 
-    ".twap-slider": {},
+    ".twap-slider": {
+      marginLeft: "20px!important",
+      marginRight: "20px!important",
+    },
     ".twap-change-order": {
       width: 50,
       height: 50,
@@ -655,12 +676,6 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       ".twap-limit-price-input": {
         ".twap-token-display img": {
           display: "none",
-        },
-      },
-      ".twap-trade-size": {
-        ".twap-chunks-size": {
-          display: "flex",
-          flexDirection: "column",
         },
       },
     },

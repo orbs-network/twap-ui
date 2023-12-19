@@ -74,8 +74,6 @@ export const useConnectWallet = () => {
   const { activate } = useWeb3React();
   return () => {
     activate(injectedConnector);
-    console.log(injectedConnector);
-
     window.localStorage.setItem(PROVIDER_NAME, "1");
   };
 };

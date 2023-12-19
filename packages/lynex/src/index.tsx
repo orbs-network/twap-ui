@@ -200,8 +200,9 @@ const TWAP = (props: BaseSwapTWAPProps) => {
   }, [props.isDarkTheme]);
 
   const priceUsd = useCallback(
-    (address: string) => {
-      if (address === zeroAddress) {
+    (token: TokenData) => {
+      let address = token.address;
+      if (token.address === zeroAddress) {
         address = "ETH";
       }
       return props.priceUsd!(address);

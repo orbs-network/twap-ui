@@ -4,7 +4,7 @@ import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import _ from "lodash";
 import { SelectorOption, TokenListItem } from "./types";
 import { TWAP, Orders } from "@orbs-network/twap-ui-syncswap";
@@ -12,8 +12,8 @@ import { erc20s, zeroAddress, isNativeAddress } from "@defi.org/web3-candies";
 import { create } from "zustand";
 import { Styles } from "@orbs-network/twap-ui";
 import { Button, styled } from "@mui/material";
+import BN from "bignumber.js";
 const config = Configs.SyncSwap;
-const nativeTokenLogo = "https://assets.coingecko.com/asset_platforms/images/279/small/ethereum.png?1694050123";
 
 const palletes = [
   {
@@ -117,7 +117,7 @@ export const parseList = (rawList?: any): TokenListItem[] => {
         address: rawToken.address,
         decimals: rawToken.decimals ?? 18,
         symbol: rawToken.symbol,
-        logoUrl: isNativeAddress(rawToken.address) ? nativeTokenLogo : `https://tokens.syncswap.xyz/tokens/${rawToken.address}/logo.png`,
+        logoUrl: isNativeAddress(rawToken.address) ? config.nativeToken.logoUrl : `https://tokens.syncswap.xyz/tokens/${rawToken.address}/logo.png`,
       },
       rawToken,
     };
@@ -177,8 +177,12 @@ const usePallete = () => {
   };
 };
 
-const useThemeOptions = () => {
-  return usePallete().pallete.options;
+const useGasPrice = () => {
+  const { library } = useWeb3React();
+  return useCallback(async () => {
+    if (!library) return;
+    return library.eth.getGasPrice();
+  }, [library]);
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -187,16 +191,18 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const store = useStore();
   const { data: tokens } = useDappTokens();
   const palette = usePallete().pallete.options;
+  const getGasPrice = useGasPrice();
   return (
     <>
       <TWAP
         connect={connect}
-        palette={JSON.stringify(palette)}
+        themeOptions={palette}
         account={account}
         srcToken={store.srcToken}
         dstToken={store.dstToken}
         dappTokens={tokens}
         getProvider={() => library}
+        useGasPrice={getGasPrice}
         limit={limit}
         openTokenSelectModal={store.openTokenSelectModal}
       />
