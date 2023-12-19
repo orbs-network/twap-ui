@@ -356,7 +356,6 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-button-loader": {
       color: `${styles.spinnerColor}!important`,
-      zoom: `0.55!important`,
     },
     ".twap-time-selector": {
       ".twap-time-selector-selected": {
