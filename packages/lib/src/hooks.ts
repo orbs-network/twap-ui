@@ -180,7 +180,7 @@ export const useCreateOrder = () => {
         fillDelayMillis,
         store.srcUsd,
         askDataParams,
-        priorityFeePerGas,
+        priorityFeePerGas || zero,
         maxFeePerGas
       );
     },

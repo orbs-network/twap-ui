@@ -58,7 +58,7 @@ interface SyncSwapProps extends TWAPProps {
   connect: () => void;
   themeOptions: SyncSwapPallete;
   openTokenSelectModal: (value?: any) => void;
-  useGasPrice: () => Promise<any>;
+  useGasPrice?: () => Promise<any>;
 }
 
 const config = Configs.SyncSwap;
@@ -196,7 +196,7 @@ const useGasPriceQuery = (props: Props) => {
   return useQuery(
     ["useGasPriceQuerySynswap"],
     async () => {
-      const res = await props.useGasPrice();
+      const res = await props.useGasPrice?.();
       return res?.toString() || "";
     },
     {
@@ -332,8 +332,7 @@ const ChangeTokensOrder = () => {
 };
 
 const SubmitButton = ({ isMain }: { isMain?: boolean }) => {
-  const { loading, disabled, text, onClick } = hooks.useSubmitButton(isMain);
-
+  const { disabled, loading, text, onClick } = hooks.useSubmitButton(isMain);
   const _onClick = () => {
     if (onClick) return onClick();
     return () => {};

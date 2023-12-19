@@ -94,6 +94,7 @@ export const StyledPoweredBy = styled(Components.PoweredBy)(({ theme }) => ({
 }));
 
 export const StyledSubmitButton = styled(Button)({
+  minHeight: 40,
   borderRadius: 10,
   textTransform: "none",
   ".MuiCircularProgress-root": {
@@ -267,6 +268,11 @@ export function hexToRGB(hex: string, alpha: number) {
 export const configureStyles = (pallete: SyncSwapPallete) => {
   return {
     ...uiHelper.handleSwitchStyles({ thumb: pallete.normal, thumbActive: pallete.primary, track: pallete.light, trackActive: pallete.light }),
+    ".twap-spinner": {
+      "*": {
+        color: `${pallete.primary}!important`,
+      },
+    },
     ".twap-loader": {
       opacity: "1!important",
     },
@@ -561,10 +567,13 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
       background: pallete.overlay2,
       borderRadius: "10px",
       "*": {
-        color: pallete.normal,
         boxSizing: "border-box",
       },
-
+      ".twap-card": {
+        "*": {
+          color: pallete.normal,
+        },
+      },
       ".twap-orders-summary-token-display": {
         overflow: "hidden",
         textOverflow: "ellipsis",

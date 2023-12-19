@@ -17,6 +17,29 @@ const config = Configs.SyncSwap;
 
 const palletes = [
   {
+    name: "light",
+    options: {
+      normal: "#060828",
+      primary: "#5155a6", // #4E529A // zkSync official color darker
+      secondary: "#474ba3", // #4E529A #494c91
+      banner: "#e4e2ff",
+
+      overlay: "#ffffff",
+      overlay2: "#F6F5FA",
+      //overlay3: '#f0f0f5',
+
+      error: "#d50000",
+      info: "#6f7183", // rgb(110, 114, 125)
+      light: "#e5e5e5",
+      light2: "#dbdbdb",
+      disable: "#505050",
+
+      background: "theme-background-light",
+      banner2: "theme-banner-light",
+      portfolio: "theme-portfolio-light",
+    },
+  },
+  {
     name: "bitcoin",
     options: {
       normal: "#000000",
@@ -180,8 +203,7 @@ const usePallete = () => {
 const useGasPrice = () => {
   const { library } = useWeb3React();
   return useCallback(async () => {
-    if (!library) return;
-    return library.eth.getGasPrice();
+    return library?.eth.getGasPrice();
   }, [library]);
 };
 
@@ -202,7 +224,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         dstToken={store.dstToken}
         dappTokens={tokens}
         getProvider={() => library}
-        useGasPrice={getGasPrice}
+        useGasPrice={library ? getGasPrice : undefined}
         limit={limit}
         openTokenSelectModal={store.openTokenSelectModal}
       />
