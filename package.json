@@ -52,6 +52,7 @@
     }
   },
   "dependencies": {
-    "@orbs-network/twap": "^1.21.4"
+    "@defi.org/web3-candies": "^4.20.10",
+    "@orbs-network/twap": "^1.21.6"
   }
 }

@@ -508,6 +508,9 @@ const useGasPriceQuery = () => {
     refetchInterval: REFETCH_GAS_PRICE,
   });
 
+  console.log({data});
+  
+
   const priorityFeePerGas = BN.max(data?.fast.tip || 0, contextTip || 0);
   const maxFeePerGas = BN.max(data?.fast.max || 0, contextMax || 0, priorityFeePerGas);
 
