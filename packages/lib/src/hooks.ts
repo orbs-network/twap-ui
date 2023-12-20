@@ -220,6 +220,7 @@ export const useInitLib = () => {
     const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
+    console.log("props.provider", props.provider);
 
     setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));
   };
@@ -503,13 +504,13 @@ const useGasPriceQuery = () => {
   const { maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
   const lib = useTwapStore((state) => state.lib);
 
+  console.log({ contextMax });
+  
+
   const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(), {
-    enabled: !!lib && BN(contextMax || 0).eq(0) && BN(contextTip || 0).eq(0),
+    enabled: !!lib,
     refetchInterval: REFETCH_GAS_PRICE,
   });
-
-  console.log({data});
-  
 
   const priorityFeePerGas = BN.max(data?.fast.tip || 0, contextTip || 0);
   const maxFeePerGas = BN.max(data?.fast.max || 0, contextMax || 0, priorityFeePerGas);

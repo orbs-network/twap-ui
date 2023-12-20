@@ -8,10 +8,8 @@ const getButtonStyles = (theme: SyncSwapPallete) => {
     width: "100%!important",
     borderRadius: 10,
     background: theme.secondary,
-    color: "white",
     fontWeight: `500!important`,
     fontSize: 15,
-    boxShadow: "rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px",
     "& *": {
       color: "inherit",
       fontWeight: 500,
@@ -422,6 +420,10 @@ export const configureStyles = (pallete: SyncSwapPallete) => {
         width: "100%",
         display: "flex",
         justifyContent: "center",
+        ".twap-button": {
+          ...getButtonStyles(pallete),
+          color: `white!important`,
+        },
       },
       ".twap-button": {
         margin: "15px auto",

@@ -214,6 +214,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { data: tokens } = useDappTokens();
   const palette = usePallete().pallete.options;
   const getGasPrice = useGasPrice();
+
   return (
     <>
       <TWAP
