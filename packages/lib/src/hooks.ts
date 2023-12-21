@@ -432,6 +432,8 @@ const useGetPriceUsdCallback = () => {
       return new BN((await priceUsdFromProps(token)) || zero);
     }
     try {
+      console.log({ token });
+      
       const res = new BN(await lib.priceUsd(token));
       return res;
     } catch (error) {
@@ -503,10 +505,6 @@ export const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => vo
 const useGasPriceQuery = () => {
   const { maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
   const lib = useTwapStore((state) => state.lib);
-
-  console.log({ contextMax });
-  
-
   const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(), {
     enabled: !!lib,
     refetchInterval: REFETCH_GAS_PRICE,
@@ -633,7 +631,6 @@ export const useSetTokensFromDapp = () => {
 
     if (srcTokenAddressOrSymbol) {
       const srcToken = getTokenFromTokensList(tokensList, srcTokenAddressOrSymbol);
-
       setSrcToken(srcToken);
     }
     if (dstTokenAddressOrSymbol) {
