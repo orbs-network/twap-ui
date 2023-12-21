@@ -433,7 +433,7 @@ const useGetPriceUsdCallback = () => {
     }
     try {
       console.log({ token });
-      
+
       const res = new BN(await lib.priceUsd(token));
       return res;
     } catch (error) {
