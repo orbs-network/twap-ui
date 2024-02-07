@@ -56,7 +56,7 @@ export function ChunksInput({ className = "", showDefault }: { className?: strin
   const setChunks = useTwapStore((store) => store.setChunks);
   const getChunksBiggerThanOne = useTwapStore((store) => store.getChunksBiggerThanOne());
   if (!getChunksBiggerThanOne && !showDefault) {
-    return <StyledText className={className}>{chunks || "-"}</StyledText>;
+    return <StyledText className={`${className} twap-chunks-amount-placeholder`}>{chunks || "-"}</StyledText>;
   }
   return (
     <Tooltip text={translations.sliderMinSizeTooltip}>

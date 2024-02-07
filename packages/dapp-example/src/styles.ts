@@ -29,6 +29,7 @@ const fonts = {
   [Configs.Chronos.name]: "TT Firs Neue Trial",
   [Configs.SpiritSwap.name]: "Jost",
   [Configs.QuickSwap.name]: "Inter",
+  Kinetix: "Inter",
   [Configs.Thena.name]: "Figtree",
   [Configs.Pangolin.name]: "Poppins",
   [Configs.PangolinDaas.name]: "Poppins",
@@ -244,6 +245,11 @@ export const StyledLynexLayout = styled(DappLayout)({
   width: "calc(100% - 30px)",
 });
 
+export const StyledKinetixLayout = styled(DappLayout)({
+  maxWidth: 520,
+  width: "calc(100% - 30px)",
+});
+
 export const StyledSpiritSwapLayout = styled(DappLayout)({
   maxWidth: 520,
   width: "calc(100% - 30px)",
@@ -310,6 +316,20 @@ export const StyledLynex = styled(StyledDapp)(({ theme }) => ({
   },
 }));
 
+export const StyledKinetix = styled(StyledDapp)(({ theme }) => ({
+  background: isDarkMode(theme) ? "#000000" : "#000000",
+  ".ui-selector-btn": {
+    color: isDarkMode(theme) ? "white" : "black",
+  },
+  ".menu-button": {
+    svg: {
+      "* ": {
+        color: isDarkMode(theme) ? "white" : "black",
+      },
+    },
+  },
+}));
+
 export const StyledSpookySwapBox = styled(Box)(({ theme }) => ({
   background: isDarkMode(theme) ? "#192239" : "rgb(242, 244, 248)",
   borderRadius: 10,
@@ -333,6 +353,12 @@ export const StyledArbidexBox = styled(Box)(({ theme }) => ({
 
 export const StyledLynexBox = styled(Box)(({ theme }) => ({
   background: isDarkMode(theme) ? "#393737" : "#393737",
+  borderRadius: 10,
+  padding: 16,
+}));
+
+export const StyledKinetixBox = styled(Box)(({ theme }) => ({
+  background: isDarkMode(theme) ? "rgb(19 20 21/1)" : "rgb(19 20 21/1)",
   borderRadius: 10,
   padding: 16,
 }));

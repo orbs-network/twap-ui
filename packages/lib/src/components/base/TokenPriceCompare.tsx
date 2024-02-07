@@ -34,7 +34,7 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
 
   if (!leftToken || !rightToken) {
     return (
-      <StyledContainer>
+      <StyledContainer className="twap-price-compare">
         <StyledText>-</StyledText>
       </StyledContainer>
     );

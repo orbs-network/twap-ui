@@ -1,0 +1,39 @@
+{
+  "name": "@orbs-network/twap-ui-kinetix",
+  "version": "0.9.40",
+  "description": "TWAP UI for Kinetix",
+  "license": "MIT",
+  "author": "Orbs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orbs-network/twap-ui.git"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "./dist"
+  ],
+  "scripts": {
+    "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
+    "build": "npm run prettier && rm -rf dist && tsc",
+    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc",
+    "test": "eslint src"
+  },
+  "dependencies": {
+    "@defi.org/web3-candies": "^4.20",
+    "@mui/material": "5.x",
+    "@mui/system": "5.x",
+    "@orbs-network/twap": "^1.18.x",
+    "@orbs-network/twap-ui": "^0.9.40",
+    "lodash": "4.x",
+    "web3": "1.x"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "11f21ccf5f7568c421c516b09b470b922854b1e0"
+}
