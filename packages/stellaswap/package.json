@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-stellaswap",
-  "version": "0.9.41",
+  "version": "0.9.42",
   "description": "TWAP UI for stellaswap",
   "license": "MIT",
   "author": "Orbs",
@@ -24,7 +24,7 @@
     "@mui/material": "5.x",
     "@mui/system": "5.x",
     "@orbs-network/twap": "1.x",
-    "@orbs-network/twap-ui": "^0.9.41",
+    "@orbs-network/twap-ui": "^0.9.42",
     "lodash": "4.x",
     "web3": "1.x"
   },
