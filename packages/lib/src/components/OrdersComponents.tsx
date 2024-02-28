@@ -1,7 +1,7 @@
 import { useMediaQuery } from "@mui/material";
 import { Status } from "@orbs-network/twap";
 import _ from "lodash";
-import { Translations, useTwapContext } from "..";
+import { ParsedOrder, Translations, useTwapContext } from "..";
 import { useOrdersHistoryQuery, useOrdersTabs } from "../hooks";
 import { useOrdersStore } from "../store";
 import { StyledOrdersLists, StyledOrdersTab, StyledOrdersTabs } from "../styles";
@@ -55,7 +55,7 @@ export const SelectedOrders = ({ className = "" }: { className?: string }) => {
           return <OrdersList key={key} isLoading={isLoading} orders={_.flatMap(orders)} />;
         }
 
-        return <OrdersList key={key} isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status]} />;
+        return <OrdersList key={key} isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status] as ParsedOrder[]} />;
       })}
     </StyledOrdersLists>
   );

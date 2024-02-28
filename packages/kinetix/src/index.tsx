@@ -193,17 +193,6 @@ const TWAP = (props: BaseSwapTWAPProps) => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
-  const priceUsd = useCallback(
-    (token: TokenData) => {
-      let address = token.address;
-      if (token.address === zeroAddress) {
-        address = "ETH";
-      }
-      return props.priceUsd!(address);
-    },
-    [props.priceUsd]
-  );
-
   return (
     <TwapAdapter
       connect={props.connect}
@@ -222,7 +211,7 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
-      priceUsd={priceUsd}
+      priceUsd={props.priceUsd}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>

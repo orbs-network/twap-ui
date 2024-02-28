@@ -211,6 +211,7 @@ const TWAP = (props: Props) => {
         storeOverride={props.limit ? storeOverride : undefined}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
+        usePriceUSD={props.usePriceUSD}
       >
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>

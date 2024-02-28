@@ -1,12 +1,13 @@
 import { Box, ClickAwayListener, styled, Typography, useMediaQuery } from "@mui/material";
 import { Status } from "@orbs-network/twap";
-import { CancelOrderButton, Components, hooks, OrderUI, store, Styles, useTwapContext } from "@orbs-network/twap-ui";
+import { CancelOrderButton, Components, hooks, OrderUI, ParsedOrder, store, Styles, useTwapContext } from "@orbs-network/twap-ui";
 import _ from "lodash";
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { parseTheme } from "./styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 
 import { OrdersPanel } from "@orbs-network/twap-ui";
+import { useParseOrderUi } from "@orbs-network/twap-ui/dist/hooks";
 interface ContextProps {
   selectedOrderID?: number;
   setSelectedOrderID: (value: number) => void;
@@ -28,13 +29,13 @@ const useOrders = () => {
   const { limit, selectedOrderID } = useOrdersContext();
 
   const orders = useMemo(() => {
-    const filterCondition = limit ? (order: OrderUI) => order.ui.totalChunks === 1 : (order: OrderUI) => order.ui.totalChunks > 1;
-    const _orders = _.filter(_.flatMap(data), (it: OrderUI) => it.ui.status !== Status.Expired);
-    return _.groupBy(_.filter(_orders, filterCondition), (order: OrderUI) => order.ui.status);
+    const filterCondition = limit ? (order: ParsedOrder) => order?.ui.totalChunks === 1 : (order: ParsedOrder) => (order?.ui.totalChunks || 0) > 1;
+    const _orders = _.filter(_.flatMap(data), (it: ParsedOrder) => it?.ui.status !== Status.Expired);
+    return _.groupBy(_.filter(_orders, filterCondition), (order: ParsedOrder) => order?.ui.status);
   }, [dataUpdatedAt, limit]);
 
   const selectedOrder = useMemo(() => {
-    return _.find(_.flatMap(orders), (order: OrderUI) => order.order.id === selectedOrderID) as OrderUI | undefined;
+    return _.find(_.flatMap(orders), (order: ParsedOrder) => order?.order.id === selectedOrderID) as ParsedOrder | undefined;
   }, [orders, selectedOrderID]);
 
   return {
@@ -73,9 +74,9 @@ function Orders() {
   const accountRef = useRef(account);
 
   useEffect(() => {
-    const flatOrders = _.flatMap(orders) as OrderUI[];
+    const flatOrders = _.flatMap(orders) as ParsedOrder[];
     if (!selectedOrderID || limit !== limitRef.current || account !== accountRef.current) {
-      setSelectedOrderID(flatOrders[0]?.order.id);
+      flatOrders[0] && setSelectedOrderID(flatOrders[0]?.order.id);
       limitRef.current = limit;
       accountRef.current = account;
     }
@@ -165,8 +166,8 @@ const OrderDetail = ({ label, value, labelTooltip, valueTooltip }: { label: stri
   );
 };
 
-const SrcTokenAmount = ({ order }: { order: OrderUI }) => {
-  const amount = hooks.useFormatNumber({ value: order?.ui.srcAmountUi });
+const SrcTokenAmount = ({ orderUI }: { orderUI: OrderUI }) => {
+  const amount = hooks.useFormatNumber({ value: orderUI?.ui.srcAmountUi });
 
   return (
     <OrderDetail
@@ -174,22 +175,22 @@ const SrcTokenAmount = ({ order }: { order: OrderUI }) => {
       value={
         <Styles.StyledRowFlex justifyContent="flex-start">
           <Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>
-          <Components.Base.TokenLogo logo={order?.ui.srcToken.logoUrl} />
+          <Components.Base.TokenLogo logo={orderUI?.ui.srcToken?.logoUrl} />
         </Styles.StyledRowFlex>
       }
     />
   );
 };
 
-const Progress = ({ order }: { order: OrderUI }) => {
+const Progress = ({ orderUI }: { orderUI: OrderUI }) => {
   const { limit } = useOrdersContext();
 
   if (limit) return null;
-  return <OrderDetail label="Progress" value={<Typography>{`${order?.ui.progress}%`}</Typography>} />;
+  return <OrderDetail label="Progress" value={<Typography>{`${orderUI?.ui.progress}%`}</Typography>} />;
 };
 
-const DstTokenAmount = ({ order }: { order: OrderUI }) => {
-  const { data } = hooks.useOrderPastEvents(order!, true);
+const DstTokenAmount = ({ orderUI }: { orderUI?: OrderUI }) => {
+  const { data } = hooks.useOrderPastEvents(orderUI!, true);
   const amount = hooks.useFormatNumber({ value: data?.dstAmountOut });
 
   return (
@@ -198,20 +199,20 @@ const DstTokenAmount = ({ order }: { order: OrderUI }) => {
       value={
         <Styles.StyledRowFlex justifyContent="flex-start">
           {!data ? <StyledDstAmountLoader /> : <Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>}
-          <Components.Base.TokenLogo logo={order?.ui.dstToken.logoUrl} />
+          <Components.Base.TokenLogo logo={orderUI?.ui.dstToken?.logoUrl} />
         </Styles.StyledRowFlex>
       }
     />
   );
 };
 
-const MinReceivedPerTrade = ({ order }: { order: OrderUI }) => {
+const MinReceivedPerTrade = ({ orderUI }: { orderUI?: OrderUI }) => {
   const { translations } = useTwapContext();
-  const amount = hooks.useFormatNumber({ value: order?.ui.dstMinAmountOutUsdUi });
-  const tooltip = hooks.useFormatNumber({ value: order?.ui.dstMinAmountOutUsdUi, decimalScale: 18 });
+  const amount = hooks.useFormatNumber({ value: orderUI?.ui.dstMinAmountOutUsdUi });
+  const tooltip = hooks.useFormatNumber({ value: orderUI?.ui.dstMinAmountOutUsdUi, decimalScale: 18 });
   const { limit } = useOrdersContext();
 
-  if (limit || order?.ui.isMarketOrder) return null;
+  if (limit || orderUI?.ui.isMarketOrder) return null;
   return (
     <OrderDetail
       valueTooltip={tooltip}
@@ -222,10 +223,10 @@ const MinReceivedPerTrade = ({ order }: { order: OrderUI }) => {
   );
 };
 
-const TradeSize = ({ order }: { order: OrderUI }) => {
+const TradeSize = ({ orderUI }: { orderUI?: OrderUI }) => {
   const { translations } = useTwapContext();
-  const amount = hooks.useFormatNumber({ value: order?.ui.srcChunkAmountUi });
-  const tooltip = hooks.useFormatNumber({ value: order?.ui.srcChunkAmountUi, decimalScale: 18 });
+  const amount = hooks.useFormatNumber({ value: orderUI?.ui.srcChunkAmountUi });
+  const tooltip = hooks.useFormatNumber({ value: orderUI?.ui.srcChunkAmountUi, decimalScale: 18 });
   const { limit } = useOrdersContext();
 
   if (limit) return null;
@@ -234,7 +235,7 @@ const TradeSize = ({ order }: { order: OrderUI }) => {
       value={
         <Styles.StyledRowFlex justifyContent="flex-start">
           <Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>
-          <Components.Base.TokenLogo logo={order?.ui.srcToken.logoUrl} />
+          <Components.Base.TokenLogo logo={orderUI?.ui.srcToken?.logoUrl} />
         </Styles.StyledRowFlex>
       }
       valueTooltip={tooltip}
@@ -244,46 +245,46 @@ const TradeSize = ({ order }: { order: OrderUI }) => {
   );
 };
 
-const OrderStatus = ({ order }: { order: OrderUI }) => {
-  return <OrderDetail label="Status" value={getStatusName(order!.ui.status)} />;
+const OrderStatus = ({ orderUI }: { orderUI: OrderUI }) => {
+  return <OrderDetail label="Status" value={getStatusName(orderUI?.ui.status)} />;
 };
 
-const TotalTrades = ({ order }: { order: OrderUI }) => {
+const TotalTrades = ({ orderUI }: { orderUI: OrderUI }) => {
   const { translations } = useTwapContext();
   const { limit } = useOrdersContext();
 
-  const amount = hooks.useFormatNumber({ value: order?.ui.totalChunks });
+  const amount = hooks.useFormatNumber({ value: orderUI?.ui.totalChunks });
 
   if (limit) return null;
   return <OrderDetail labelTooltip={translations.totalTradesTooltip} label={translations.totalTrades} value={<Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>} />;
 };
 
-const TradeInterval = ({ order }: { order: OrderUI }) => {
+const TradeInterval = ({ orderUI }: { orderUI: OrderUI }) => {
   const { translations } = useTwapContext();
   const minimumDelayMinutes = store.useTwapStore((state) => state.getMinimumDelayMinutes());
   const { limit } = useOrdersContext();
 
-  if (limit) return null;
+  if (limit || !orderUI) return null;
   return (
     <OrderDetail
       labelTooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}
       label={translations.tradeInterval}
-      value={<Typography>{store.fillDelayText(order!.ui.fillDelay, translations)}</Typography>}
+      value={<Typography>{store.fillDelayText(orderUI!.ui.fillDelay, translations)}</Typography>}
     />
   );
 };
 
-const Deadline = ({ order }: { order: OrderUI }) => {
+const Deadline = ({ orderUI }: { orderUI: OrderUI }) => {
   const { translations } = useTwapContext();
   const { limit } = useOrdersContext();
 
   if (limit) return null;
-  return <OrderDetail labelTooltip={translations.maxDurationTooltip} label={translations.deadline} value={<Typography>{order?.ui.deadlineUi}</Typography>} />;
+  return <OrderDetail labelTooltip={translations.maxDurationTooltip} label={translations.deadline} value={<Typography>{orderUI?.ui.deadlineUi}</Typography>} />;
 };
 
-const CancelOrder = ({ order, className = "" }: { order: OrderUI; className?: string }) => {
-  if (order?.ui.status !== Status.Open) return null;
-  return <StyledCancelButton className={className} orderId={order!.order.id} />;
+const CancelOrder = ({ className = "", orderUI }: { className?: string; orderUI?: OrderUI }) => {
+  if (orderUI?.ui.status !== Status.Open) return null;
+  return <StyledCancelButton className={className} orderId={orderUI!.order.id} />;
 };
 
 const Header = () => {
@@ -299,47 +300,56 @@ const Header = () => {
 
 const SelectedOrder = () => {
   const { selectedOrder } = useOrders();
+  const orderUI = useParseOrderUi(selectedOrder);
   const { theme } = useOrdersContext();
-  if (!selectedOrder) return null;
+  if (!orderUI) return null;
   return (
     <StyledSelectedOrder>
       <StyledOrderHeader gap={53}>
-        <StyledDestopPairLogos order={selectedOrder} />
+        <StyledDestopPairLogos orderUI={orderUI} />
         <StyledOrderSymbols>
           <StyledOrderSymbolsTop>
-            {selectedOrder.ui.srcToken.symbol}/{selectedOrder.ui.dstToken.symbol}
+            {orderUI.ui.srcToken?.symbol}/{orderUI.ui.dstToken?.symbol}
           </StyledOrderSymbolsTop>
-          <StyledOrderSymbolsBottom theme={theme}> Buy {selectedOrder.ui.dstToken.symbol}</StyledOrderSymbolsBottom>
+          <StyledOrderSymbolsBottom theme={theme}> Buy {orderUI.ui.dstToken?.symbol}</StyledOrderSymbolsBottom>
         </StyledOrderSymbols>
       </StyledOrderHeader>
-      <OrderDetails order={selectedOrder} />
-      <CancelOrder order={selectedOrder} />
+      <OrderDetails orderUI={orderUI} />
+      <CancelOrder orderUI={orderUI} />
     </StyledSelectedOrder>
   );
 };
 
-const PairLogos = ({ order, className = "" }: { order: OrderUI; className?: string }) => {
+const PairLogos = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: string }) => {
   return (
     <StyledPairLogos className={className}>
-      <Components.Base.TokenLogo className="src" logo={order.ui.srcToken.logoUrl} />
-      <Components.Base.TokenLogo className="dst" logo={order.ui.dstToken.logoUrl} />
+      <Components.Base.TokenLogo className="src" logo={orderUI?.ui.srcToken?.logoUrl} />
+      <Components.Base.TokenLogo className="dst" logo={orderUI?.ui.dstToken?.logoUrl} />
     </StyledPairLogos>
   );
 };
 
-const OrderDetails = ({ order, className = "" }: { order: OrderUI; className?: string }) => {
+interface ISelectedOrderContext {
+  orderUI: OrderUI;
+}
+const useSelectedOrderContext = () => useContext(SelectedOrderContext);
+
+const SelectedOrderContext = createContext<ISelectedOrderContext>({} as ISelectedOrderContext);
+const OrderDetails = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: string }) => {
   return (
-    <StyledDetails className={className}>
-      <SrcTokenAmount order={order} />
-      <DstTokenAmount order={order} />
-      <MinReceivedPerTrade order={order} />
-      <TradeSize order={order} />
-      <TotalTrades order={order} />
-      <TradeInterval order={order} />
-      <Deadline order={order} />
-      <Progress order={order} />
-      <OrderStatus order={order} />
-    </StyledDetails>
+    <SelectedOrderContext.Provider value={{ orderUI }}>
+      <StyledDetails className={className}>
+        <SrcTokenAmount orderUI={orderUI} />
+        <DstTokenAmount orderUI={orderUI} />
+        <MinReceivedPerTrade orderUI={orderUI} />
+        <TradeSize orderUI={orderUI} />
+        <TotalTrades orderUI={orderUI} />
+        <TradeInterval orderUI={orderUI} />
+        <Deadline orderUI={orderUI} />
+        <Progress orderUI={orderUI} />
+        <OrderStatus orderUI={orderUI} />
+      </StyledDetails>
+    </SelectedOrderContext.Provider>
   );
 };
 
@@ -441,27 +451,33 @@ const StyledMobileList = styled(Styles.StyledColumnFlex)({
   gap: 0,
 });
 
-const MobileListItem = ({ order }: { order: OrderUI }) => {
+const MobileListItem = ({ order }: { order: ParsedOrder }) => {
   const { selectedOrderID, setSelectedOrderID, theme } = useOrdersContext();
-  const isSelected = selectedOrderID === order.order.id;
+  const isSelected = selectedOrderID === order?.order.id;
+  const orderUI = useParseOrderUi(order);
   return (
-    <StyledMobileListItem theme={theme} selected={isSelected ? 1 : 0} gap={20} onClick={() => setSelectedOrderID(order.order.id)}>
+    <StyledMobileListItem theme={theme} selected={isSelected ? 1 : 0} gap={20} onClick={() => order?.order.id && setSelectedOrderID(order.order.id)}>
       <StyledMobileListTopFlex>
         <Styles.StyledColumnFlex gap={3} style={{ width: "auto" }}>
           <Styles.StyledRowFlex justifyContent="flex-start" gap={23}>
-            <StyledMobilePairLogos order={order} />
-            <StyledMobilePairSymbols order={order} />
+            <StyledMobilePairLogos orderUI={orderUI} />
+            <StyledMobilePairSymbols orderUI={orderUI} />
           </Styles.StyledRowFlex>
-          <StyledMobileBuyText order={order} />
+          <StyledMobileBuyText orderUI={orderUI} />
         </Styles.StyledColumnFlex>
-        <StyledMobileAmounts order={order} />
+        <StyledMobileAmounts orderUI={orderUI} />
       </StyledMobileListTopFlex>
-      {isSelected && (
-        <>
-          <OrderDetails order={order} /> <CancelOrder order={order} />
-        </>
-      )}
+      {isSelected && <MobileSelectedOrder order={order} />}
     </StyledMobileListItem>
+  );
+};
+
+const MobileSelectedOrder = ({ order }: { order?: ParsedOrder }) => {
+  const orderUI = useParseOrderUi(order);
+  return (
+    <>
+      <OrderDetails orderUI={orderUI} /> <CancelOrder orderUI={orderUI} />
+    </>
   );
 };
 
@@ -473,26 +489,26 @@ const StyledMobileListTopFlex = styled(Styles.StyledRowFlex)({
   },
 });
 
-const BuyText = ({ order, className = "" }: { order: OrderUI; className?: string }) => {
+const BuyText = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: string }) => {
   return (
     <StyledBuyText className={className}>
-      Buy {order.ui.dstToken.symbol} with {order.ui.srcToken.symbol}{" "}
+      Buy {orderUI?.ui.dstToken?.symbol} with {orderUI?.ui.srcToken?.symbol}{" "}
     </StyledBuyText>
   );
 };
 
-const PairSymbols = ({ order, className = "" }: { order: OrderUI; className?: string }) => {
+const PairSymbols = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: string }) => {
   return (
     <StyledPairSymbols className={className}>
-      {order.ui.srcToken.symbol}/{order.ui.dstToken.symbol}
+      {orderUI?.ui.srcToken?.symbol}/{orderUI?.ui.dstToken?.symbol}
     </StyledPairSymbols>
   );
 };
 
-const Amounts = ({ order, className = "" }: { order: OrderUI; className?: string }) => {
-  const { data } = hooks.useOrderPastEvents(order, true);
+const Amounts = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: string }) => {
+  const { data } = hooks.useOrderPastEvents(orderUI, true);
   const outAmount = hooks.useFormatNumber({ value: data?.dstAmountOut, decimalScale });
-  const srcAmount = hooks.useFormatNumber({ value: order.ui.srcAmountUi, decimalScale });
+  const srcAmount = hooks.useFormatNumber({ value: orderUI?.ui.srcAmountUi, decimalScale });
   return (
     <StyledAmounts className={className}>
       {!data ? (
@@ -532,15 +548,16 @@ const StyledEmptyList = styled(Typography)({
   },
 });
 const decimalScale = 3;
-const DesktopListItem = ({ order }: { order: OrderUI }) => {
+const DesktopListItem = ({ order }: { order: ParsedOrder }) => {
   const { setSelectedOrderID, selectedOrderID, theme } = useOrdersContext();
+  const orderUI = useParseOrderUi(order);
 
   return (
-    <StyledListItem theme={theme} selected={order.order.id === selectedOrderID ? 1 : 0} onClick={() => setSelectedOrderID(order.order.id)}>
-      <BuyText order={order} />
+    <StyledListItem theme={theme} selected={orderUI?.order.id === selectedOrderID ? 1 : 0} onClick={() => orderUI && setSelectedOrderID(orderUI.order?.id)}>
+      <BuyText orderUI={orderUI} />
       <Styles.StyledColumnFlex style={{ width: "auto", alignItems: "flex-end", gap: 2 }}>
-        <Amounts order={order} />
-        <StyledListItemStatus>{getStatusName(order.ui.status)}</StyledListItemStatus>
+        <Amounts orderUI={orderUI} />
+        <StyledListItemStatus>{getStatusName(order?.ui.status)}</StyledListItemStatus>
       </Styles.StyledColumnFlex>
     </StyledListItem>
   );
@@ -587,7 +604,8 @@ const StyledTabs = styled(Styles.StyledRowFlex)(({ theme }) => ({
   width: "auto",
 }));
 
-const getStatusName = (status: Status) => {
+const getStatusName = (status?: Status) => {
+  if (!status) return "";
   switch (status) {
     case Status.Completed:
       return "Excecuted";

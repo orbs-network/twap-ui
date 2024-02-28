@@ -233,9 +233,9 @@ const Adapter = (props: Props) => {
   }, [palette]);
 
   const priceUsd = useCallback(
-    async (token: TokenData) => {
-      const address = eqIgnoreCase(token.address, zeroAddress) ? SYNCSWAP_ZERO_ADDRESS : token.address;
-      const result = await props.priceUsd(address, store.amountBN(token, "1").toString());
+    async (address: string, token?: TokenData) => {
+      const _address = eqIgnoreCase(address, zeroAddress) ? SYNCSWAP_ZERO_ADDRESS : address;
+      const result = await props.priceUsd(_address, store.amountBN(token, "1").toString());
       return Number(result);
     },
     [props.priceUsd]
@@ -259,7 +259,7 @@ const Adapter = (props: Props) => {
           onTxSubmitted={props.onTxSubmitted}
           dstToken={eqIgnoreCase(props.dstToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.dstToken}
           storeOverride={props.limit ? storeOverride : undefined}
-          priceUsd={props.priceUsd ? priceUsd : undefined}
+          priceUsd={priceUsd}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider value={props}>

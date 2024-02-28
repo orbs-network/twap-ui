@@ -163,6 +163,7 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
+      priceUsd={props.priceUsd}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>

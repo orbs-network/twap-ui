@@ -1,6 +1,6 @@
 import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeTwap } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-pancake";
-import { useConnectWallet, useNetwork, useTheme } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useNetwork, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -24,11 +24,11 @@ const useDappTokens = () => {
     ["useDappTokens", config.chainId],
     async () => {
       // change api
-      const response = await fetch(`https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/bsc.json`);
+      const response = await fetch(`https://tokens.pancakeswap.finance/pancakeswap-extended.json`);
 
-      const tokens = await response.json();
+      const result = await response.json();
 
-      const parsed = tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
+      const parsed = result.tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
         decimals,
         symbol,
         name,
@@ -131,9 +131,10 @@ const nativeToken = {
   isToken: false,
 };
 
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
-  const { account, library } = useWeb3React();
+  const { account, library, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
 
   const connector = {
@@ -156,6 +157,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         onSrcTokenSelected={() => {}}
         onDstTokenSelected={() => {}}
         nativeToken={nativeToken}
+        usePriceUSD={usePriceUSD}
+        connectedChainId={chainId}
+        useTrade={useTrade}
       />
     </StyledPancakeTwap>
   );

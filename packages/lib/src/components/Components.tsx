@@ -25,7 +25,7 @@ import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
 
 import { IconType } from "@react-icons/all-files";
-import { useLoadingState, useLimitPrice, useMarketPrice, useFormatNumber, useToken, useSwitchTokens, useSelectTokenCallback, useSubmitButton } from "../hooks";
+import { useLoadingState, useLimitPrice, useMarketPrice, useFormatNumber, useToken, useSwitchTokens, useSelectTokenCallback, useSubmitButton, useAmountOut } from "../hooks";
 import { useTwapStore, handleFillDelayText } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
@@ -110,7 +110,9 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
   // dst
   const dstDecimals = useTwapStore((store) => store.dstToken?.decimals);
   const dstUsdLoading = useLoadingState().dstUsdLoading;
-  const dstAmount = useTwapStore((store) => store.getDstAmountUi());
+  const dstAmount = useAmountOut();
+  console.log({ dstAmount });
+  
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const dstInputLoading = (!!dstAmount || dstAmount !== "0") && dstUsdLoading;
 

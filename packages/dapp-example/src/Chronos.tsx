@@ -1,5 +1,5 @@
 import { StyledChronos, StyledStyledChronosPanel, StyledStyledChronosOrders, StyledChronosLayout, StyledModalContent } from "./styles";
-import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { TWAP, Orders } from "@orbs-network/twap-ui-chronos";
 import { useWeb3React } from "@web3-react/core";
@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { erc20s, zeroAddress, erc20sData, isNativeAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
+import { fetchPrice } from "./utils";
 const config = Configs.Chronos;
 
 const tokensURL = "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json";
@@ -69,7 +70,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const connect = useConnectWallet();
   const { data: dappTokens = [] } = useDappTokens();
   const { isDarkTheme } = useTheme();
-
+  const priceUsd = useGetPriceUsdCallback();
   const connector = {
     getProvider: () => library,
   };
@@ -94,6 +95,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       limit={limit}
       isDarkTheme={isDarkTheme}
       swapAnimationStart={false}
+      priceUsd={priceUsd}
     />
   );
 };

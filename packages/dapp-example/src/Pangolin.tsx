@@ -6,7 +6,7 @@ import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp } from "./Components";
-import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
+import { useConnectWallet, useGetTokens, usePriceUSD, useTheme } from "./hooks";
 import { pangolinDarkTheme, pangolinLightTheme } from "./themes";
 import Web3 from "web3";
 import { SelectorOption, TokenListItem } from "./types";
@@ -106,6 +106,7 @@ const TWAPComponent = ({ partnerDaas, limit }: { partnerDaas?: string; limit?: b
       theme={isDarkTheme ? pangolinDarkTheme : pangolinLightTheme}
       partnerDaas={partnerDaas}
       limit={limit}
+      usePriceUSD={usePriceUSD}
     />
   );
 };

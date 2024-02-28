@@ -391,6 +391,7 @@ const TWAP = (props: ChronosTWAPProps) => {
         uiPreferences={uiPreferences}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
+        priceUsd={props.priceUsd}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />

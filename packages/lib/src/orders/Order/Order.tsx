@@ -2,29 +2,42 @@ import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import OrderPreview from "./OrderPreview";
 import OrderExpanded from "./OrderExpanded";
-import { OrderUI } from "../../types";
+import { OrderUI, ParsedOrder } from "../../types";
 import { AccordionSummary, Box, styled } from "@mui/material";
 import { StyledSeperator } from "./styles";
 import { CSSProperties } from "react";
-import { Card } from "../../components/base";
+import { Card, Loader } from "../../components/base";
+import { useParseOrderUi } from "../../hooks";
+import ContentLoader from "../../components/base/ContentLoader";
+
+const StyledLoader = styled(Loader)({
+  width: "100%",
+  height: "100%",
+  position: "absolute",
+  left: 0,
+  top: 0,
+  zIndex: 1,
+});
 
 export interface Props {
-  order: OrderUI;
+  order: ParsedOrder;
   onExpand: () => void;
   expanded: boolean;
 }
 
 function OrderComponent({ order, onExpand, expanded }: Props) {
+  const orderUI = useParseOrderUi(order);
+
   return (
     <StyledContainer onClick={onExpand} className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
       <StyledAccordion expanded={expanded}>
         <StyledAccordionSummary>
-          <OrderPreview order={order} expanded={expanded} />
+          <OrderPreview order={orderUI} expanded={expanded} />
         </StyledAccordionSummary>
         <StyledAccordionDetails className="twap-order-accordion" style={{ padding: 0, paddingTop: 10 }}>
           <OrderSeparator className="twap-order-separator" style={{ marginBottom: 10 }} />
           <Box>
-            <OrderExpanded order={order} />
+            <OrderExpanded order={orderUI} />
           </Box>
         </StyledAccordionDetails>
       </StyledAccordion>

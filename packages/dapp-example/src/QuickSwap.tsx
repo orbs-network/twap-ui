@@ -1,5 +1,5 @@
 import { StyledQuickswapBox, StyledModalContent, StyledQuickswapLayout, StyledQuickswap } from "./styles";
-import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
+import { useConnectWallet, useGetTokens, usePriceUSD, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -9,6 +9,9 @@ import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { TWAP, Orders } from "@orbs-network/twap-ui-quickswap";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPrice } from "./utils";
+import BN from "bignumber.js";
 const config = Configs.QuickSwap;
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
@@ -103,6 +106,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       isDarkTheme={isDarkTheme}
       limit={limit}
       onTxSubmitted={(args: any) => console.log(args)}
+      usePriceUSD={usePriceUSD}
     />
   );
 };
@@ -119,7 +123,6 @@ const DappComponent = () => {
         <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledQuickswapBox>
-
         <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
           <Orders />
         </StyledQuickswapBox>

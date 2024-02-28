@@ -1,5 +1,5 @@
 import { StyledModalContent, StyledQuickswapLayout, StyledSyncSwap, StyledSyncSwapBox } from "./styles";
-import { useConnectWallet, useGetTokens } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -214,6 +214,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { data: tokens } = useDappTokens();
   const palette = usePallete().pallete.options;
   const getGasPrice = useGasPrice();
+  const priceUsd = useGetPriceUsdCallback();
 
   return (
     <>
@@ -228,6 +229,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         useGasPrice={library ? getGasPrice : undefined}
         limit={limit}
         openTokenSelectModal={store.openTokenSelectModal}
+        priceUsd={priceUsd}
       />
       <TokenSelectModal />
     </>

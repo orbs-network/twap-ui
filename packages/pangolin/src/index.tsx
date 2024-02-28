@@ -112,6 +112,7 @@ const TWAP = memo((props: PangolinTWAPProps) => {
           parseToken={parseToken}
           onSrcTokenSelected={props.onSrcTokenSelected}
           onDstTokenSelected={props.onDstTokenSelected}
+          usePriceUSD={props.usePriceUSD}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>

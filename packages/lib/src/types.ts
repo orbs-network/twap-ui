@@ -1,8 +1,9 @@
 import BN from "bignumber.js";
-import { Config, Status, TokenData, TWAPLib } from "@orbs-network/twap";
+import { Config, Order, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import { Moment } from "moment";
 import { ReactNode } from "react";
-import { Duration, parseOrderUi } from "./store";
+import { Duration } from "./store";
+import { useParseOrderUi } from "./hooks";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -121,7 +122,9 @@ export interface TWAPProps extends BaseProps {
   TokenSelectModal?: any;
   limit?: boolean;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  priceUsd?: (address: string) => Promise<number>;
+  priceUsd?: (address: string, token?: TokenData) => Promise<number>;
+  usePriceUSD?: (address?: string, token?: TokenData) => number | undefined;
+  useTrade?: (fromToken?: Token, toToken?: Token, amount?: string) => string;
 }
 
 interface LibProps {
@@ -158,6 +161,16 @@ export type OnTxSubmitValues = {
   dstAmount: string;
 };
 
+export interface ParsedOrder {
+  order: Order;
+  ui: {
+    status: Status;
+    srcToken?: TokenData;
+    dstToken?: TokenData;
+    totalChunks?: number;
+  };
+}
+
 export interface TwapLibProps extends LibProps {
   connect?: () => void;
   askDataParams?: any[];
@@ -170,11 +183,14 @@ export interface TwapLibProps extends LibProps {
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  priceUsd?: (token: TokenData) => Promise<number>;
   srcUsd?: BN;
   dstUsd?: BN;
-  disablePriceUsdFetch?: boolean;
+  usePriceUSD?: (token?: string) => number | undefined;
+  priceUsd?: (token: string) => Promise<number>;
+  useTrade?: (fromToken?: Token, toToken?: Token, amount?: string) => string;
 }
+
+export type Token = TokenData
 
 export interface InitLibProps {
   config: Config;
@@ -184,7 +200,7 @@ export interface InitLibProps {
   storeOverride?: StoreOverride;
 }
 
-export type OrderUI = ReturnType<typeof parseOrderUi>;
+export type OrderUI = ReturnType<typeof useParseOrderUi>;
 
 export interface StylesConfig {
   primaryColor?: string;

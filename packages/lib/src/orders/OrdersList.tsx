@@ -3,10 +3,10 @@ import React, { useState } from "react";
 import Order from "./Order/Order";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useTwapContext } from "../context";
-import { OrderUI } from "../types";
+import { ParsedOrder } from "../types";
 import _ from "lodash";
 
-function OrdersList({ orders, status, isLoading }: { orders?: OrderUI[]; status?: string; isLoading: boolean }) {
+function OrdersList({ orders, status, isLoading }: { orders?: ParsedOrder[]; status?: string; isLoading: boolean }) {
   const [selected, setSelected] = useState<number | undefined>(undefined);
   const translations = useTwapContext().translations;
 

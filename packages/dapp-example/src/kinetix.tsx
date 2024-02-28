@@ -1,6 +1,6 @@
 import { StyledKinetix, StyledKinetixBox, StyledKinetixLayout, StyledLynex, StyledLynexBox, StyledLynexLayout, StyledModalContent } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-kinetix";
-import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
@@ -85,7 +85,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
-
+  const priceUsd = useGetPriceUsdCallback();
   const { isDarkTheme } = useTheme();
 
   return (
@@ -135,29 +135,3 @@ const dapp: Dapp = {
 };
 
 export default dapp;
-
-const priceUsd = async (address: string) => {
-  try {
-    const response = await fetch(`${backendApi}/assets`, {
-      method: "get",
-    });
-    const baseAssetsCall = await response.json();
-    const baseAssets = baseAssetsCall.data;
-
-    const wbnbPrice = baseAssets.find((asset: any) => asset.address.toLowerCase() === "0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f".toLowerCase())?.price;
-
-    const nativeBNB = {
-      address: "ETH",
-      name: "ETH",
-      symbol: "ETH",
-      decimals: 18,
-      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
-      price: wbnbPrice,
-    };
-    baseAssets.unshift(nativeBNB);
-    return baseAssets.find((it: any) => it.address.toLowerCase() === address.toLowerCase())?.price;
-  } catch (ex) {
-    console.error("get baseAssets had error", ex);
-    return 0;
-  }
-};

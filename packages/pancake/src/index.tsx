@@ -36,7 +36,7 @@ import {
   StyledTokenSelect,
   StyledUSD,
 } from "./styles";
-import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
+import { chainId, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
 import Web3 from "web3";
@@ -261,11 +261,7 @@ const TWAP = memo((props: AdapterProps) => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
-  const _dappTokens = useMemo(() => {
-    if (!dappTokens) return {};
 
-    return { [zeroAddress]: nativeToken, ...dappTokens };
-  }, [_.size(props.dappTokens)]);
 
   return (
     <Box className="twap-adapter-wrapper">
@@ -281,14 +277,16 @@ const TWAP = memo((props: AdapterProps) => {
         dstToken={props.dstToken}
         storeOverride={props.limit ? storeOverride : undefined}
         parseToken={parseToken}
-        dappTokens={_dappTokens}
+        dappTokens={dappTokens}
         uiPreferences={uiPreferences}
         onDstTokenSelected={props.onDstTokenSelected}
+        usePriceUSD={props.usePriceUSD}
         onSrcTokenSelected={props.onSrcTokenSelected}
+        useTrade={props.useTrade}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
-          <AdapterContextProvider value={{ ...props, provider, dappTokens: _dappTokens }}>
+          <AdapterContextProvider value={{ ...props, provider, dappTokens }}>
             {props.limit ? <LimitPanel /> : <TWAPPanel />}
             <OrdersPanel />
           </AdapterContextProvider>

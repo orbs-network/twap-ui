@@ -11,16 +11,18 @@ import { OrderUI } from "../../types";
 const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const translations = useTwapContext().translations;
   const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
-  const totalChunks = useFormatNumber({ value: order.ui.totalChunks });
-  const srcChunkAmountUsdUi = useFormatNumber({ value: order.ui.srcChunkAmountUsdUi });
-  const srcChunkAmountUsdUiTooltip = useFormatNumber({ value: order.ui.srcChunkAmountUsdUi, decimalScale: 18 });
+  const totalChunks = useFormatNumber({ value: order?.ui.totalChunks });
+  const srcChunkAmountUsdUi = useFormatNumber({ value: order?.ui.srcChunkAmountUsdUi });
+  const srcChunkAmountUsdUiTooltip = useFormatNumber({ value: order?.ui.srcChunkAmountUsdUi, decimalScale: 18 });
 
-  const srcChunkAmountUi = useFormatNumber({ value: order.ui.srcChunkAmountUi });
-  const srcChunkAmountUiTootlip = useFormatNumber({ value: order.ui.srcChunkAmountUi, decimalScale: 18 });
+  const srcChunkAmountUi = useFormatNumber({ value: order?.ui.srcChunkAmountUi });
+  const srcChunkAmountUiTootlip = useFormatNumber({ value: order?.ui.srcChunkAmountUi, decimalScale: 18 });
 
-  const dstMinAmountOutUi = useFormatNumber({ value: order.ui.dstMinAmountOutUi });
-  const dstMinAmountOutUsdUi = useFormatNumber({ value: order.ui.dstMinAmountOutUsdUi });
-  const dstMinAmountOutUsdUiTooltip = useFormatNumber({ value: order.ui.dstMinAmountOutUsdUi, decimalScale: 18 });
+  const dstMinAmountOutUi = useFormatNumber({ value: order?.ui.dstMinAmountOutUi });
+  const dstMinAmountOutUsdUi = useFormatNumber({ value: order?.ui.dstMinAmountOutUsdUi });
+  const dstMinAmountOutUsdUiTooltip = useFormatNumber({ value: order?.ui.dstMinAmountOutUsdUi, decimalScale: 18 });
+
+  if (!order) return null;
 
   return (
     <StyledContainer className="twap-order-expanded">
@@ -31,20 +33,20 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
             {totalChunks}
           </Row>
           <Row label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
-            <TokenLogo logo={order.ui.srcToken.logoUrl} />
-            <Tooltip text={`${srcChunkAmountUiTootlip} ${order.ui.srcToken.symbol}`}>
+            <TokenLogo logo={order.ui.srcToken?.logoUrl} />
+            <Tooltip text={`${srcChunkAmountUiTootlip} ${order.ui.srcToken?.symbol}`}>
               {srcChunkAmountUi} {order.ui.srcToken?.symbol}
             </Tooltip>
             <Tooltip text={`$ ${srcChunkAmountUsdUiTooltip}`}> ≈ $ {srcChunkAmountUsdUi}</Tooltip>
           </Row>
           {order.ui.isMarketOrder ? (
             <Row label={`${translations.minReceivedPerTrade}`} tooltip={translations.confirmationMinDstAmountTootipMarket}>
-              <TokenLogo logo={order.ui.dstToken.logoUrl} />
+              <TokenLogo logo={order.ui.dstToken?.logoUrl} />
               {translations.none} {order.ui.dstToken?.symbol}
             </Row>
           ) : (
             <Row label={`${translations.minReceivedPerTrade}`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
-              <TokenLogo logo={order.ui.dstToken.logoUrl} />
+              <TokenLogo logo={order.ui.dstToken?.logoUrl} />
               {dstMinAmountOutUi}
               {order.ui.dstToken?.symbol} ≈ $ <Tooltip text={dstMinAmountOutUsdUiTooltip}>{dstMinAmountOutUsdUi}</Tooltip>
             </Row>
@@ -118,7 +120,7 @@ const OrderPrice = ({ order }: { order: OrderUI }) => {
   const translations = useTwapContext().translations;
   return (
     <StyledMarketPrice justifyContent="space-between" className="twap-market-price-section">
-      <Label>{order.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</Label>
+      <Label>{order?.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}</Label>
       <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={priceUi} toggleInverted={toggleInverted} />
     </StyledMarketPrice>
   );

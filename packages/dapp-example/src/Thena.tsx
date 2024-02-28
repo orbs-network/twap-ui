@@ -1,6 +1,6 @@
 import { StyledModalContent, StyledThenaLayout, StyledThenaGradient, StyledThenaBox, StyledThena } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-thena";
-import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -76,7 +76,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
-
+  const priceUsd = useGetPriceUsdCallback();
   return (
     <TWAP
       connect={connect}
@@ -88,6 +88,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library}
       isDarkTheme={isDarkTheme}
       limit={limit}
+      priceUsd={priceUsd}
     />
   );
 };

@@ -1,6 +1,6 @@
 import { StyledBaseSwap, StyledBaseSwapBox, StyledBaseSwapLayout, StyledModalContent } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-baseswap";
-import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -99,7 +99,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
-
+  const priceUsd = useGetPriceUsdCallback();
   const { isDarkTheme } = useTheme();
 
   return (
@@ -116,6 +116,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       isDarkTheme={isDarkTheme}
       limit={limit}
       useModal={useModal}
+      priceUsd={priceUsd}
     />
   );
 };

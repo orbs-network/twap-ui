@@ -69,6 +69,7 @@ const TWAP = memo((props: SpiritSwapTWAPProps) => {
       parseToken={(rawToken) => parseToken(rawToken, props.getTokenImageUrl)}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
+      usePriceUSD={props.usePriceUSD}
     >
       <GlobalStyles styles={globalStyles} />
       <AdapterContextProvider value={props}>

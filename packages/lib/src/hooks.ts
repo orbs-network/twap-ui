@@ -1,17 +1,29 @@
 import { Order, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useTwapContext } from "./context";
 import Web3 from "web3";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { InitLibProps, OrdersData, OrderUI, State } from "./types";
+import { InitLibProps, OrdersData, OrderUI, ParsedOrder, State } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
-import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zeroAddress, estimateGasPrice, getPastEvents, findBlock, block, zero } from "@defi.org/web3-candies";
-import { amountUi, getTokenFromTokensList, parseOrderUi, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
+import {
+  eqIgnoreCase,
+  setWeb3Instance,
+  switchMetaMaskNetwork,
+  zeroAddress,
+  estimateGasPrice,
+  getPastEvents,
+  findBlock,
+  block,
+  zero,
+  isNativeAddress,
+} from "@defi.org/web3-candies";
+import { amountUi, getTokenFromTokensList, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
+import moment from "moment";
 
 /**
  * Actions
@@ -139,6 +151,17 @@ export const useCreateSimpleLimitOrder = () => {
   return useMutation(async () => {
     return useCreateOrder();
   });
+};
+
+export const useAmountOut = () => {
+  const {useTrade} = useTwapContext()
+  const { srcToken, dstToken, srcAmount } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+    srcAmount: s.srcAmountUi,
+  }));
+
+  return useTrade?.(srcToken, dstToken, srcAmount);
 };
 
 export const useCreateOrder = () => {
@@ -351,14 +374,14 @@ export const useCancelOrder = () => {
 export const useHistoryPrice = (order: OrderUI) => {
   const [inverted, setInverted] = useState(false);
 
-  const price = inverted ? BN(1).div(order.ui.dstPriceFor1Src) : order.ui.dstPriceFor1Src;
+  const price = inverted ? BN(1).div(order?.ui.dstPriceFor1Src || "0") : order?.ui.dstPriceFor1Src;
   return {
     inverted,
     toggleInverted: () => setInverted(!inverted),
     price,
-    priceUi: price.toFormat(),
-    leftToken: inverted ? order.ui.dstToken : order.ui.srcToken,
-    rightToken: !inverted ? order.ui.dstToken : order.ui.srcToken,
+    priceUi: price?.toFormat(),
+    leftToken: inverted ? order?.ui.dstToken : order?.ui.srcToken,
+    rightToken: !inverted ? order?.ui.dstToken : order?.ui.srcToken,
   };
 };
 
@@ -372,8 +395,8 @@ export const useLoadingState = () => {
   const dstBalance = useDstBalance();
 
   return {
-    srcUsdLoading: (!srcToken && false) || srcUSD.isLoading || srcUSD.data?.isZero(),
-    dstUsdLoading: (dstToken && !dstUSD.data) || dstUSD.isLoading || dstUSD.data?.isZero(),
+    srcUsdLoading: (!srcToken && false) || srcUSD.isLoading || srcUSD.value?.isZero(),
+    dstUsdLoading: (dstToken && !dstUSD.value) || dstUSD.isLoading || dstUSD.value?.isZero(),
     srcBalanceLoading: srcBalance.isLoading,
     dstBalanceLoading: dstBalance.isLoading,
   };
@@ -382,13 +405,13 @@ export const useLoadingState = () => {
 export const useSrcUsd = () => {
   const srcToken = useTwapStore((store) => store.srcToken);
   const setSrcUsd = useTwapStore((store) => store.setSrcUsd);
-  return useUsdValueQuery(srcToken, setSrcUsd);
+  return usePriceUSD(srcToken?.address, setSrcUsd);
 };
 
 export const useDstUsd = () => {
   const dstToken = useTwapStore((store) => store.dstToken);
   const setDstUsd = useTwapStore((store) => store.setDstUsd);
-  return useUsdValueQuery(dstToken, setDstUsd);
+  return usePriceUSD(dstToken?.address, setDstUsd);
 };
 
 export const useSrcBalance = () => {
@@ -422,60 +445,38 @@ export const useHasAllowanceQuery = () => {
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
-const useGetPriceUsdCallback = () => {
+export const usePriceUSD = (address?: string, onSuccess?: (value: BN) => void) => {
+  const { priceUsd, usePriceUSD: usePriceUSDFromContext } = useTwapContext();
   const lib = useTwapStore((state) => state.lib);
-  const { priceUsd: priceUsdFromProps, disablePriceUsdFetch } = useTwapContext();
+  const _address = address && isNativeAddress(address) ? lib?.config.wToken.address : address;
+  const usd = usePriceUSDFromContext?.(_address);
 
-  return async (token?: TokenData): Promise<BN> => {
-    if (!lib || !token) return BN(0);
-    if (disablePriceUsdFetch && priceUsdFromProps) {
-      return new BN((await priceUsdFromProps(token)) || zero);
-    }
-    try {
-      console.log({ token });
-
-      const res = new BN(await lib.priceUsd(token));
-      return res;
-    } catch (error) {
-      if (priceUsdFromProps) {
-        try {
-          return new BN(await priceUsdFromProps(token));
-        } catch (error) {
-          throw new Error();
-        }
-      }
-      throw new Error();
-    }
-  };
-};
-
-const useUsdValueQuery = (token?: TokenData, onSuccess?: (value: BN) => void) => {
-  const lib = useTwapStore((state) => state.lib);
-  const priceUsd = useGetPriceUsdCallback();
-  const { disablePriceUsdFetch } = useTwapContext();
-  const address = useRef("");
-  const client = useQueryClient();
-  const key = [QueryKeys.GET_USD_VALUE, token?.address];
   const query = useQuery(
-    key,
+    [QueryKeys.GET_USD_VALUE, _address],
     async () => {
-      if (address.current !== token?.address) {
-        onSuccess?.(client.getQueryData(key) || BN(0));
-        address.current = token?.address || "";
-      }
+      const res = await priceUsd!(_address!);
 
-      const res = await priceUsd(token!);
-      return res;
+      return new BN(res);
     },
     {
-      enabled: !!lib && !!token && !!priceUsd && !disablePriceUsdFetch,
+      enabled: !!lib && !!_address && !!priceUsd,
       onSuccess,
       refetchInterval: REFETCH_USD,
     }
   );
 
-  return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
+  useEffect(() => {
+    if (usePriceUSDFromContext && onSuccess) {
+      onSuccess?.(new BN(usd || 0));
+    }
+  }, [onSuccess, usd]);
+
+  return {
+    value: new BN(query.data || usd || 0),
+    isLoading: priceUsd ? query.isLoading && query.fetchStatus !== "idle" : !usd,
+  };
 };
+
 export const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => void, staleTime?: number) => {
   const lib = useTwapStore((state) => state.lib);
   const key = [QueryKeys.GET_BALANCE, lib?.maker, token?.address];
@@ -538,40 +539,34 @@ const useTokenList = () => {
   }, [lib, tokensLength]);
 };
 
-export const useOrdersHistoryQuery = (_priceUsd?: (token: TokenData) => Promise<BN>) => {
+export const useOrdersHistoryQuery = () => {
   const tokenList = useTokenList();
 
   const orderCreatedTimestamp = useTwapStore((state) => state.orderCreatedTimestamp);
   const lib = useTwapStore((state) => state.lib);
-  const getUsdValues = usePrepareUSDValues(_priceUsd);
 
   const query = useQuery<OrdersData>(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId, orderCreatedTimestamp],
     async () => {
       const orders = await lib!.getAllOrders();
 
-      const tokens = _.compact(
-        _.uniqBy(
-          _.concat(
-            _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.srcToken))!),
-            _.map(orders, (o) => _.find(tokenList, (t) => eqIgnoreCase(t.address, o.ask.dstToken))!)
-          ),
-          (t) => (t ? t.address : undefined)
-        )
-      );
-
-      const tokensWithUsd = await getUsdValues(tokens);
-      const parsedOrders = orders.map((o: Order) => {
-        try {
-          return parseOrderUi(lib!, tokensWithUsd, o);
-        } catch (error) {
-          return undefined;
-        }
-      });
+      const parsedOrders = _.map(orders, (o): ParsedOrder => {
+        const progress = lib!.orderProgress(o) < 0.99 ? lib!.orderProgress(o) * 100 : 100;
+        const status = progress === 100 ? Status.Completed : lib!.status(o);
+        return {
+          order: o,
+          ui: {
+            totalChunks: o.ask.srcAmount.div(o.ask.srcBidAmount).integerValue(BN.ROUND_CEIL).toNumber(),
+            status: status,
+            srcToken: tokenList.find((t) => eqIgnoreCase(o.ask.srcToken, t.address)),
+            dstToken: tokenList.find((t) => eqIgnoreCase(o.ask.dstToken, t.address)),
+          },
+        };
+      }).filter((o) => o.ui.srcToken && o.ui.dstToken);
 
       return _.chain(_.compact(parsedOrders))
-        .orderBy((o: OrderUI) => o.order.time, "desc")
-        .groupBy((o: OrderUI) => o.ui.status)
+        .orderBy((o: ParsedOrder) => o.order.time, "desc")
+        .groupBy((o: ParsedOrder) => o.ui.status)
         .value();
     },
     {
@@ -583,33 +578,6 @@ export const useOrdersHistoryQuery = (_priceUsd?: (token: TokenData) => Promise<
     }
   );
   return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };
-};
-
-export const usePrepareUSDValues = (_priceUsd?: (token: TokenData) => Promise<BN>) => {
-  const client = useQueryClient();
-  const priceUsd = useGetPriceUsdCallback();
-
-  const { mutateAsync: fetchUsdMutation } = useMutation(
-    (token: TokenData) => {
-      return _priceUsd ? _priceUsd(token) : priceUsd(token);
-    },
-    {
-      onError: (error: any, token) => console.debug({ error, token }),
-    }
-  );
-
-  return async (tokens: TokenData[] = []) => {
-    return Promise.allSettled(
-      tokens.map((token) =>
-        client
-          .ensureQueryData({
-            queryKey: [QueryKeys.GET_USD_VALUE, token.address],
-            queryFn: () => fetchUsdMutation(token),
-          })
-          .then((usd) => _.merge({}, token, { usd }))
-      )
-    ).then((results) => _.compact(_.map(results, (r) => (r.status === "fulfilled" ? r.value : undefined))));
-  };
 };
 
 export const useSetTokensFromDapp = () => {
@@ -650,39 +618,26 @@ export const useParseTokens = (dappTokens: any, parseToken?: (rawToken: any) => 
 
 export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
   const lib = useTwapStore((store) => store.lib);
-  const getPriceUsd = useGetPriceUsdCallback();
   const [haveValue, setHaveValue] = useState(false);
 
   const _enabled = haveValue ? true : !!enabled;
 
   return useQuery(
-    ["useOrderPastEvents", order.order.id, lib?.maker, order.ui.progress],
+    ["useOrderPastEvents", order?.order.id, lib?.maker, order?.ui.progress],
     async () => {
-      const orderEndDate = Math.min(order.order.ask.deadline, (await block()).timestamp);
-      const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order.order.time * 1000), findBlock(orderEndDate * 1000)]);
-
-      // logger({
-      //   order,
-      //   orderTime: moment(order.order.time * 1000).format("DD/MM/YYYY HH:mm:ss"),
-      //   orderStartBlock: orderStartBlock.number,
-      //   orderDeadline: moment(order.order.ask.deadline * 1000).format("DD/MM/YYYY HH:mm:ss"),
-      //   orderEndBlock: orderEndBlock.number,
-      // });
-
-      const [events, priceUsd1Token] = await Promise.all([
-        getPastEvents({
-          contract: lib!.twap,
-          eventName: "OrderFilled",
-          filter: {
-            maker: lib!.maker,
-            id: order.order.id,
-          },
-          fromBlock: orderStartBlock.number,
-          toBlock: orderEndBlock.number,
-          // maxDistanceBlocks: 2_000,
-        }),
-        getPriceUsd(order.ui.dstToken),
-      ]);
+      const orderEndDate = Math.min(order!.order.ask.deadline, (await block()).timestamp);
+      const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order!.order.time * 1000), findBlock(orderEndDate * 1000)]);
+      const events = await getPastEvents({
+        contract: lib!.twap,
+        eventName: "OrderFilled",
+        filter: {
+          maker: lib!.maker,
+          id: order!.order.id,
+        },
+        fromBlock: orderStartBlock.number,
+        toBlock: orderEndBlock.number,
+        // maxDistanceBlocks: 2_000,
+      });
 
       const dstAmountOut = _.reduce(
         events,
@@ -693,12 +648,12 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
       );
 
       return {
-        dstAmountOut: amountUi(order.ui.dstToken, dstAmountOut),
-        dstAmountOutUsdPrice: amountUi(order.ui.dstToken, dstAmountOut.times(priceUsd1Token)),
+        dstAmountOut: amountUi(order!.ui.dstToken, dstAmountOut),
+        dstAmountOutUsdPrice: amountUi(order!.ui.dstToken, dstAmountOut.times(order!.ui.dstUsd)),
       };
     },
     {
-      enabled: !!lib && !!_enabled,
+      enabled: !!lib && !!_enabled && !!order,
       retry: 5,
       staleTime: Infinity,
       onSuccess: () => setHaveValue(true),
@@ -935,4 +890,50 @@ export const useSubmitButton = (isMain?: boolean) => {
     loading: false,
     disabled: false,
   };
+};
+
+export const useParseOrderUi = (o?: ParsedOrder) => {
+  const lib = useTwapStore((s) => s.lib);
+  const { value: srcUsd = zero } = usePriceUSD(o?.order.ask.srcToken);
+  const { value: dstUsd = zero } = usePriceUSD(o?.order.ask.dstToken);
+
+  return useMemo(() => {
+    if (!lib || !o) return;
+    const srcToken = o.ui.srcToken;
+    const dstToken = o.ui.dstToken;
+    if (!srcToken || !dstToken) return;
+
+    const isMarketOrder = lib.isMarketOrder(o.order);
+    const dstPriceFor1Src = lib.dstPriceFor1Src(srcToken, dstToken, srcUsd, dstUsd, o.order.ask.srcBidAmount, o.order.ask.dstMinAmount);
+    const srcRemainingAmount = o.order.ask.srcAmount.minus(o.order.srcFilledAmount);
+    const progress = lib.orderProgress(o.order) < 0.99 ? lib.orderProgress(o.order) * 100 : 100;
+
+    return {
+      order: o.order,
+      ui: {
+        ...o.ui,
+        progress,
+        isMarketOrder,
+        dstPriceFor1Src,
+        srcUsd,
+        dstUsd,
+        srcUsdUi: srcUsd.toString(),
+        dstUsdUi: dstUsd.toString(),
+        srcAmountUi: amountUi(srcToken, o.order.ask.srcAmount),
+        srcAmountUsdUi: amountUi(srcToken, o.order.ask.srcAmount.times(srcUsd)),
+        srcChunkAmountUi: amountUi(srcToken, o.order.ask.srcBidAmount),
+        srcChunkAmountUsdUi: amountUi(srcToken, o.order.ask.srcBidAmount.times(srcUsd)),
+        srcFilledAmountUi: amountUi(srcToken, o.order.srcFilledAmount),
+        srcFilledAmountUsdUi: amountUi(srcToken, o.order.srcFilledAmount.times(srcUsd)),
+        srcRemainingAmountUi: amountUi(srcToken, srcRemainingAmount),
+        srcRemainingAmountUsdUi: amountUi(srcToken, srcRemainingAmount.times(srcUsd)),
+        dstMinAmountOutUi: amountUi(dstToken, o.order.ask.dstMinAmount),
+        dstMinAmountOutUsdUi: amountUi(dstToken, o.order.ask.dstMinAmount.times(dstUsd)),
+        fillDelay: o.order.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
+        createdAtUi: moment(o.order.time * 1000).format("ll HH:mm"),
+        deadlineUi: moment(o.order.ask.deadline * 1000).format("ll HH:mm"),
+        prefix: isMarketOrder ? "~" : "≥",
+      },
+    };
+  }, [lib, o, srcUsd, dstUsd]);
 };

@@ -309,54 +309,6 @@ export const useTwapStore = create(
   }))
 );
 
-export const parseOrderUi = (lib: TWAPLib, tokensWithUsd: (TokenData & { usd: BN })[], o: Order) => {
-  const srcToken = tokensWithUsd.find((t) => eqIgnoreCase(o.ask.srcToken, t.address));
-  const dstToken = tokensWithUsd.find((t) => eqIgnoreCase(o.ask.dstToken, t.address));
-  const srcUsd = srcToken?.usd;
-  const dstUsd = dstToken?.usd;
-
-  if (!srcToken || !dstToken || !srcUsd || !dstUsd) throw new Error(`parseOrderUi srcToken:${srcToken} dstToken:${dstToken}`);
-
-  const isMarketOrder = lib.isMarketOrder(o);
-  const dstPriceFor1Src = lib.dstPriceFor1Src(srcToken, dstToken, srcUsd, dstUsd, o.ask.srcBidAmount, o.ask.dstMinAmount);
-  const dstAmount = lib.dstAmount(srcToken, dstToken, o.ask.srcAmount, srcUsd, dstUsd, dstPriceFor1Src, isMarketOrder);
-  const srcRemainingAmount = o.ask.srcAmount.minus(o.srcFilledAmount);
-  const progress = lib.orderProgress(o) < 0.99 ? lib.orderProgress(o) * 100 : 100;
-  const status = progress === 100 ? Status.Completed : lib.status(o);
-
-  return {
-    order: o,
-    ui: {
-      srcToken,
-      dstToken,
-      status,
-      progress,
-      isMarketOrder,
-      dstPriceFor1Src,
-      srcUsdUi: srcUsd.toFormat(),
-      dstUsdUi: dstUsd.toFormat(),
-      srcAmountUi: amountUi(srcToken, o.ask.srcAmount),
-      srcAmountUsdUi: amountUi(srcToken, o.ask.srcAmount.times(srcUsd)),
-      dstAmountUi: amountUi(dstToken, dstAmount),
-      dstAmountUsdUi: amountUi(dstToken, dstAmount.times(dstUsd)),
-      dstAmountUsd: dstAmount.times(dstUsd),
-      srcChunkAmountUi: amountUi(srcToken, o.ask.srcBidAmount),
-      srcChunkAmountUsdUi: amountUi(srcToken, o.ask.srcBidAmount.times(srcUsd)),
-      srcFilledAmountUi: amountUi(srcToken, o.srcFilledAmount),
-      srcFilledAmountUsdUi: amountUi(srcToken, o.srcFilledAmount.times(srcUsd)),
-      srcRemainingAmountUi: amountUi(srcToken, srcRemainingAmount),
-      srcRemainingAmountUsdUi: amountUi(srcToken, srcRemainingAmount.times(srcUsd)),
-      dstMinAmountOutUi: amountUi(dstToken, o.ask.dstMinAmount),
-      dstMinAmountOutUsdUi: amountUi(dstToken, o.ask.dstMinAmount.times(dstUsd)),
-      fillDelay: o.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
-      createdAtUi: moment(o.time * 1000).format("ll HH:mm"),
-      deadlineUi: moment(o.ask.deadline * 1000).format("ll HH:mm"),
-      prefix: isMarketOrder ? "~" : "≥",
-      totalChunks: o.ask.srcAmount.div(o.ask.srcBidAmount).integerValue(BN.ROUND_CEIL).toNumber(),
-    },
-  };
-};
-
 export const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));
 export const amountUi = (token: TokenData | undefined, amount: BN) => {
   if (!token) return "";

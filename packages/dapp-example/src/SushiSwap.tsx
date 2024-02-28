@@ -1,6 +1,6 @@
 import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-sushiswap";
-import { useConnectWallet, useGetTokens, useTheme } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -78,6 +78,7 @@ const TWAPComponent = () => {
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
+  const priceUsd = useGetPriceUsdCallback();
 
   return (
     <TWAP
@@ -89,6 +90,7 @@ const TWAPComponent = () => {
       TokenSelectModal={TokenSelectModal}
       provider={library}
       isDarkTheme={isDarkTheme}
+      priceUsd={priceUsd}
     />
   );
 };

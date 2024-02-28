@@ -1,5 +1,5 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
-import { zeroAddress, zero } from "@defi.org/web3-candies";
+import { zeroAddress, zero, convertDecimals, isNativeAddress } from "@defi.org/web3-candies";
 import _ from "lodash";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
@@ -11,7 +11,8 @@ import { dapps } from "./config";
 import { TokenData } from "@orbs-network/twap";
 import { store } from "@orbs-network/twap-ui";
 import { usePersistedStore } from "./store";
-
+import { fetchPrice } from "./utils";
+import BigNumber from "bignumber.js";
 export const injectedConnector = new InjectedConnector({});
 
 export const useAddedTokens = () => {
@@ -166,3 +167,53 @@ export function useDebounce(value: string, delay: number) {
   );
   return debouncedValue;
 }
+
+export const useGetPriceUsdCallback = () => {
+  const { chainId } = useWeb3React();
+  return useCallback(
+    (address: string) => {
+      return fetchPrice(address, chainId);
+    },
+    [chainId]
+  );
+};
+
+export const usePriceUSD = (address?: string) => {
+  const wToken = store.useTwapStore((s) => s.lib)?.config.wToken.address;
+  const { chainId } = useWeb3React();
+  return useQuery<number>({
+    queryKey: ["quickswap-price-usd", address, chainId],
+    queryFn: async () => {
+      const _address = isNativeAddress(address || "") ? wToken : address;
+      return fetchPrice(_address!, chainId!);
+    },
+    refetchInterval: 10_000,
+    enabled: !!address && !!chainId,
+  }).data;
+};
+
+export const useTrade = (fromToken?: TokenData, toToken?: TokenData, srcAmount?: string) => {
+  const fromTokenUsd = usePriceUSD(fromToken?.address);
+  const toTokenUsd = usePriceUSD(toToken?.address);
+  const { isLimitOrder, limitDstPriceFor1Src } = store.useTwapStore((s) => ({
+    isLimitOrder: s.isLimitOrder,
+    limitDstPriceFor1Src: s.getLimitPrice(false).limitPrice,
+  }));
+
+  return useMemo(() => {
+    if (!fromToken || !toToken) {
+      return "0";
+    }
+    return convertDecimals(
+      !isLimitOrder
+        ? BigNumber(srcAmount || "0")
+            .times(fromTokenUsd || "0")
+            .div(toTokenUsd || "0")
+        : BigNumber(srcAmount || "0").times(limitDstPriceFor1Src),
+      fromToken.decimals,
+      toToken.decimals
+    )
+      .integerValue(BigNumber.ROUND_FLOOR)
+      .toString();
+  }, [fromTokenUsd, toTokenUsd, srcAmount, isLimitOrder, limitDstPriceFor1Src]);
+};

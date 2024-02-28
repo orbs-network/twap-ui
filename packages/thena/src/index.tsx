@@ -206,6 +206,7 @@ const TWAP = (props: ThenaTWAPProps) => {
         storeOverride={props.limit ? storeOverride : undefined}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
+        priceUsd={props.priceUsd}
       >
         <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
         <AdapterContextProvider value={props}>

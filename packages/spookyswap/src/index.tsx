@@ -225,6 +225,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
+      usePriceUSD={props.usePriceUSD}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>
