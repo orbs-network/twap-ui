@@ -1,7 +1,7 @@
 import BN from "bignumber.js";
 import { Config, Order, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import { Moment } from "moment";
-import { ReactNode } from "react";
+import { FC, ReactElement, ReactNode } from "react";
 import { Duration } from "./store";
 import { useParseOrderUi } from "./hooks";
 
@@ -122,10 +122,12 @@ export interface TWAPProps extends BaseProps {
   TokenSelectModal?: any;
   limit?: boolean;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  priceUsd?: (address: string, token?: TokenData) => Promise<number>;
+  priceUsd?: PriceUsd;
   usePriceUSD?: (address?: string, token?: TokenData) => number | undefined;
-  useTrade?: (fromToken?: Token, toToken?: Token, amount?: string) => string;
+  useTrade?: UseTrade;
 }
+
+type PriceUsd = (address: string, token?: TokenData) => Promise<number>;
 
 interface LibProps {
   children: ReactNode;
@@ -136,6 +138,7 @@ interface LibProps {
   translations: Translations;
   priorityFeePerGas?: string;
   maxFeePerGas?: string;
+  isDarkTheme?: boolean;
 }
 
 export type StoreOverride = Partial<State>;
@@ -150,7 +153,8 @@ export interface TwapContextUIPreferences {
   inputPlaceholder?: string;
   qrSize?: number;
   orderTabsToExclude?: string[];
-  infoIcon?: any;
+  infoIcon?: FC;
+  inputLoader?: ReactElement;
 }
 
 export type OnTxSubmitValues = {
@@ -171,6 +175,8 @@ export interface ParsedOrder {
   };
 }
 
+type UseTrade = (fromToken?: Token, toToken?: Token, amount?: string) => { isLoading?: boolean; outAmount?: string };
+
 export interface TwapLibProps extends LibProps {
   connect?: () => void;
   askDataParams?: any[];
@@ -186,11 +192,11 @@ export interface TwapLibProps extends LibProps {
   srcUsd?: BN;
   dstUsd?: BN;
   usePriceUSD?: (token?: string) => number | undefined;
-  priceUsd?: (token: string) => Promise<number>;
-  useTrade?: (fromToken?: Token, toToken?: Token, amount?: string) => string;
+  priceUsd?: PriceUsd;
+  useTrade?: UseTrade;
 }
 
-export type Token = TokenData
+export type Token = TokenData;
 
 export interface InitLibProps {
   config: Config;
@@ -273,6 +279,8 @@ export interface State {
 
   showLoadingModal: boolean;
   showSuccessModal: boolean;
+  dstAmount?: string;
+  dstAmountLoading?: boolean;
 }
 
 export type SwitchVariant = "ios" | "default";

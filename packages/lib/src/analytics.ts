@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js";
-import { amountUi, useTwapStore } from "./store";
+import { useTwapStore } from "./store";
+import { amountUi } from "./utils";
 require("isomorphic-fetch");
 
 enum Category {
@@ -58,7 +59,7 @@ const onConfirmationCreateOrderClick = () => {
     dstToken: useTwapStore.getState().dstToken?.address,
     srcTokenAmount: amountUi(srcToken, useTwapStore.getState().getSrcAmount()),
     tradeSize: amountUi(srcToken, useTwapStore.getState().getSrcChunkAmount()),
-    minAmountOut: amountUi(dsToken, useTwapStore.getState().getDstAmount()),
+    minAmountOut: amountUi(dsToken, BigNumber(useTwapStore.getState().dstAmount || "0")),
     deadline: useTwapStore.getState().getDeadline(),
     tradeInterval: useTwapStore.getState().getFillDelayUiMillis(),
     totalTrades: useTwapStore.getState().getChunks(),

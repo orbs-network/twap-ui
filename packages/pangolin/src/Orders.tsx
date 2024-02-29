@@ -1,13 +1,10 @@
 import { Box, ClickAwayListener, styled, Typography, useMediaQuery } from "@mui/material";
 import { Status } from "@orbs-network/twap";
-import { CancelOrderButton, Components, hooks, OrderUI, ParsedOrder, store, Styles, useTwapContext } from "@orbs-network/twap-ui";
+import { CancelOrderButton, Components, hooks, OrderUI, ParsedOrder, store, Styles, useTwapContext, OrdersPanel, fillDelayText } from "@orbs-network/twap-ui";
 import _ from "lodash";
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { parseTheme } from "./styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-
-import { OrdersPanel } from "@orbs-network/twap-ui";
-import { useParseOrderUi } from "@orbs-network/twap-ui/dist/hooks";
 interface ContextProps {
   selectedOrderID?: number;
   setSelectedOrderID: (value: number) => void;
@@ -269,7 +266,7 @@ const TradeInterval = ({ orderUI }: { orderUI: OrderUI }) => {
     <OrderDetail
       labelTooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}
       label={translations.tradeInterval}
-      value={<Typography>{store.fillDelayText(orderUI!.ui.fillDelay, translations)}</Typography>}
+      value={<Typography>{fillDelayText(orderUI!.ui.fillDelay, translations)}</Typography>}
     />
   );
 };
@@ -300,7 +297,7 @@ const Header = () => {
 
 const SelectedOrder = () => {
   const { selectedOrder } = useOrders();
-  const orderUI = useParseOrderUi(selectedOrder);
+  const orderUI = hooks.useParseOrderUi(selectedOrder);
   const { theme } = useOrdersContext();
   if (!orderUI) return null;
   return (
@@ -454,7 +451,7 @@ const StyledMobileList = styled(Styles.StyledColumnFlex)({
 const MobileListItem = ({ order }: { order: ParsedOrder }) => {
   const { selectedOrderID, setSelectedOrderID, theme } = useOrdersContext();
   const isSelected = selectedOrderID === order?.order.id;
-  const orderUI = useParseOrderUi(order);
+  const orderUI = hooks.useParseOrderUi(order);
   return (
     <StyledMobileListItem theme={theme} selected={isSelected ? 1 : 0} gap={20} onClick={() => order?.order.id && setSelectedOrderID(order.order.id)}>
       <StyledMobileListTopFlex>
@@ -473,7 +470,7 @@ const MobileListItem = ({ order }: { order: ParsedOrder }) => {
 };
 
 const MobileSelectedOrder = ({ order }: { order?: ParsedOrder }) => {
-  const orderUI = useParseOrderUi(order);
+  const orderUI = hooks.useParseOrderUi(order);
   return (
     <>
       <OrderDetails orderUI={orderUI} /> <CancelOrder orderUI={orderUI} />
@@ -550,7 +547,7 @@ const StyledEmptyList = styled(Typography)({
 const decimalScale = 3;
 const DesktopListItem = ({ order }: { order: ParsedOrder }) => {
   const { setSelectedOrderID, selectedOrderID, theme } = useOrdersContext();
-  const orderUI = useParseOrderUi(order);
+  const orderUI = hooks.useParseOrderUi(order);
 
   return (
     <StyledListItem theme={theme} selected={orderUI?.order.id === selectedOrderID ? 1 : 0} onClick={() => orderUI && setSelectedOrderID(orderUI.order?.id)}>

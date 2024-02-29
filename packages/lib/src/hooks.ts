@@ -19,11 +19,12 @@ import {
   zero,
   isNativeAddress,
 } from "@defi.org/web3-candies";
-import { amountUi, getTokenFromTokensList, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
+import { getTokenFromTokensList, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
+import { amountUi } from "./utils";
 
 /**
  * Actions
@@ -153,33 +154,28 @@ export const useCreateSimpleLimitOrder = () => {
   });
 };
 
-export const useAmountOut = () => {
-  const {useTrade} = useTwapContext()
-  const { srcToken, dstToken, srcAmount } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-    srcAmount: s.srcAmountUi,
-  }));
-
-  return useTrade?.(srcToken, dstToken, srcAmount);
-};
-
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
+
   const wizardStore = useWizardStore();
   const reset = useReset();
   const { askDataParams, onTxSubmitted } = useTwapContext();
-  const dstUSD = useTwapStore((state) => state.getDstAmountUsdUi());
   const setTokensFromDapp = useSetTokensFromDapp();
+
   return useMutation(
     async () => {
+      const dstToken = {
+        ...store.dstToken!,
+        address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
+      };
+
       onTxSubmitted?.({
         srcToken: store.srcToken!,
-        dstToken: store.dstToken!,
+        dstToken: dstToken!,
         srcAmount: store.getSrcAmount().toString(),
-        dstUSD,
-        dstAmount: store.getDstAmount().toString(),
+        dstUSD: store.getDstAmountUsdUi()!,
+        dstAmount: store.dstAmount!,
       });
       wizardStore.setAction(WizardAction.CREATE_ORDER);
       wizardStore.setStatus(WizardActionStatus.PENDING);
@@ -187,11 +183,6 @@ export const useCreateOrder = () => {
 
       analytics.onConfirmationCreateOrderClick();
       store.setLoading(true);
-
-      const dstToken = {
-        ...store.dstToken!,
-        address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
-      };
 
       return store.lib!.submitOrder(
         store.srcToken!,
@@ -243,7 +234,6 @@ export const useInitLib = () => {
     const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
     const wrongChain = props.config.chainId !== chain;
     setWrongNetwork(wrongChain);
-    console.log("props.provider", props.provider);
 
     setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));
   };
@@ -662,12 +652,30 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
 };
 
 export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
+  const decimals = useMemo(() => {
+    if (!value) return 0;
+    const [, decimal] = value.toString().split(".");
+    if (!decimal) return 0;
+    const arr = decimal.split("");
+    let count = 0;
+
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] === "0") {
+        count++;
+      } else {
+        break;
+      }
+    }
+
+    return !count ? decimalScale : count + decimalScale;
+  }, [value, decimalScale]);
+
   const result = useNumericFormat({
     allowLeadingZeros: true,
     thousandSeparator: ",",
     displayType: "text",
     value: value || "",
-    decimalScale,
+    decimalScale: decimals,
     prefix,
     suffix,
   });
@@ -727,7 +735,7 @@ export const useSwitchTokens = () => {
 };
 
 export const useOrdersTabs = () => {
-  const { data: orders, dataUpdatedAt } = useOrdersHistoryQuery();
+  const { data: orders } = useOrdersHistoryQuery();
 
   const _orders = orders || {};
 
@@ -747,7 +755,7 @@ export const useOrdersTabs = () => {
     });
 
     return _.reduce(mapped, (acc, it) => ({ ...acc, ...it }), {});
-  }, [dataUpdatedAt]);
+  }, [orders]);
 };
 
 export const useSelectTokenCallback = () => {
@@ -797,7 +805,11 @@ export const useSubmitButton = (isMain?: boolean) => {
   const shouldUnwrap = useTwapStore((store) => store.shouldUnwrap());
   const shouldWrap = useTwapStore((store) => store.shouldWrap());
   const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
-  const maker = useTwapStore((store) => store.lib?.maker);
+  const { maker, dstAmount, srcAmount } = useTwapStore((store) => ({
+    maker: store.lib?.maker,
+    dstAmount: store.dstAmount,
+    srcAmount: store.srcAmountUi,
+  }));
   const disclaimerAccepted = useTwapStore((state) => state.disclaimerAccepted);
   const setShowConfirmation = useTwapStore((state) => state.setShowConfirmation);
   const showConfirmation = useTwapStore((state) => state.showConfirmation);
@@ -828,6 +840,9 @@ export const useSubmitButton = (isMain?: boolean) => {
       loading: false,
       disabled: false,
     };
+  if ((srcAmount && dstAmount === "0") || (srcAmount && !dstAmount)) {
+    return { text: "", onClick: undefined, loading: true, disabled: true };
+  }
   if (warning)
     return {
       text: warning,
@@ -864,6 +879,7 @@ export const useSubmitButton = (isMain?: boolean) => {
       disabled: false,
     };
   }
+
   if (allowance.isLoading || srcUsdLoading || dstUsdLoading) {
     return { text: "", onClick: undefined, loading: true, disabled: true };
   }

@@ -83,16 +83,6 @@ xdescribe("store", () => {
       expect(store.current.getIsPartialFillWarning()).eq(false);
     });
 
-    it("isSameNativeBasedToken", async () => {
-      expect(store.current.isSameNativeBasedToken()).false;
-      await act(async () => store.current.setSrcToken(tokens[0]));
-      await act(async () => store.current.setDstToken(tokens[1]));
-      expect(store.current.isSameNativeBasedToken()).false;
-      await act(async () => store.current.setSrcToken({ address: zeroAddress, decimals: 1, symbol: "" }));
-      await act(async () => store.current.setDstToken(lib.config.wToken));
-      expect(store.current.isSameNativeBasedToken()).true;
-    });
-
     it("max possible chunks", async () => {
       expect(store.current.getMaxPossibleChunks()).eq(1);
       await act(async () => store.current.setSrcToken(tokens[0]));

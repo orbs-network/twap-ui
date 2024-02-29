@@ -4,12 +4,12 @@ import _ from "lodash";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearchParams } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
 import { dapps } from "./config";
 import { TokenData } from "@orbs-network/twap";
-import { store } from "@orbs-network/twap-ui";
+import { store, amountBN, amountUi } from "@orbs-network/twap-ui";
 import { usePersistedStore } from "./store";
 import { fetchPrice } from "./utils";
 import BigNumber from "bignumber.js";
@@ -144,7 +144,7 @@ export const useBalanceQuery = (token?: TokenData) => {
 export const useBalance = (token?: TokenData) => {
   const { data = zero, isLoading } = useBalanceQuery(token);
 
-  return { balance: store.amountUi(token, data), isLoading };
+  return { balance: amountUi(token, data), isLoading };
 };
 
 export function useDebounce(value: string, delay: number) {
@@ -191,29 +191,39 @@ export const usePriceUSD = (address?: string) => {
     enabled: !!address && !!chainId,
   }).data;
 };
-
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 export const useTrade = (fromToken?: TokenData, toToken?: TokenData, srcAmount?: string) => {
   const fromTokenUsd = usePriceUSD(fromToken?.address);
   const toTokenUsd = usePriceUSD(toToken?.address);
+  const { chainId } = useWeb3React();
   const { isLimitOrder, limitDstPriceFor1Src } = store.useTwapStore((s) => ({
     isLimitOrder: s.isLimitOrder,
     limitDstPriceFor1Src: s.getLimitPrice(false).limitPrice,
   }));
 
-  return useMemo(() => {
-    if (!fromToken || !toToken) {
-      return "0";
-    }
-    return convertDecimals(
-      !isLimitOrder
-        ? BigNumber(srcAmount || "0")
-            .times(fromTokenUsd || "0")
-            .div(toTokenUsd || "0")
-        : BigNumber(srcAmount || "0").times(limitDstPriceFor1Src),
-      fromToken.decimals,
-      toToken.decimals
-    )
-      .integerValue(BigNumber.ROUND_FLOOR)
-      .toString();
-  }, [fromTokenUsd, toTokenUsd, srcAmount, isLimitOrder, limitDstPriceFor1Src]);
+  const query = useQuery({
+    queryKey: ["useTrade", fromToken?.address, toToken?.address, srcAmount, chainId, isLimitOrder],
+    queryFn: async () => {
+      await delay(1000);
+      const result = convertDecimals(
+        !isLimitOrder
+          ? BigNumber(srcAmount!)
+              .times(fromTokenUsd || "0")
+              .div(toTokenUsd || "0")
+          : BigNumber(srcAmount || "0").times(limitDstPriceFor1Src),
+        fromToken!.decimals,
+        toToken!.decimals
+      ).integerValue(BigNumber.ROUND_FLOOR);
+
+      return result.toString();
+    },
+    enabled: !!fromToken && !!toToken && !!srcAmount && !!fromTokenUsd && !!toTokenUsd,
+  });
+
+  return {
+    isLoading: query.isLoading,
+    outAmount: query.data,
+  };
 };

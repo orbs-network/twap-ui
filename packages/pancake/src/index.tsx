@@ -1,7 +1,8 @@
 import { GlobalStyles, Box, ThemeProvider, Typography, styled } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, TWAPProps, OrdersPanel, Orders, TwapContextUIPreferences } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, Styles as TwapStyles, store, TWAPProps, Orders, TwapContextUIPreferences, Styles } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
+  Card,
   configureStyles,
   darkTheme,
   lightTheme,
@@ -17,13 +18,13 @@ import {
   StyledPoweredBy,
   StyledReset,
   StyledSummaryModal,
+  StyledTotalChunks,
+  StyledTradeSize,
 } from "./styles";
 
-import React, { JSXElementConstructor, memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { JSXElementConstructor, memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import {
   StyledBalance,
-  StyledContainer,
-  StyledContainerContent,
   StyledEmptyUSD,
   StyledMarketPrice,
   StyledPercentSelect,
@@ -32,7 +33,6 @@ import {
   StyledTokenChangeContainer,
   StyledTokenPanel,
   StyledTokenPanelInput,
-  StyledTokenPanelInputContainer,
   StyledTokenSelect,
   StyledUSD,
 } from "./styles";
@@ -41,30 +41,31 @@ import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
 import Web3 from "web3";
 import _ from "lodash";
+import BN from "bignumber.js";
 
 import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
 import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
+import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
+import PancakeOrders from "./PancakeOrders";
+import { amountUi } from "@orbs-network/twap-ui";
 
 const uiPreferences: TwapContextUIPreferences = {
   usdSuffix: " USD",
-  usdPrefix: " ",
+  usdPrefix: "~",
   usdEmptyUI: <></>,
   balanceEmptyUI: <></>,
   switchVariant: "ios",
-  getOrdersTabsLabel: (label: string, amount: number) => `${label} (${amount})`,
   inputPlaceholder: "0.0",
+  infoIcon: BsQuestionCircle,
+  inputLoader: <></>,
 };
 
 interface AdapterProps extends TWAPProps {
   dappTokens: { [key: string]: any };
   isDarkTheme?: boolean;
-  connector?: any;
   ConnectButton: JSXElementConstructor<any>;
   useModal?: any;
-  onSrcTokenSelected: (token: any) => void;
-  onDstTokenSelected: (token: any) => void;
-  nativeToken: any;
 }
 
 const AdapterContext = createContext({} as AdapterProps);
@@ -113,56 +114,21 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
 
   return (
-    <>
-      <StyledTokenPanel>
-        <TwapStyles.StyledColumnFlex gap={8}>
-          <Container
-            viewOnly={!isSrcToken}
-            enabled={isSrcToken ? 1 : 0}
-            label={
-              <StyledSelectAndBalance>
-                <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} />
-                <StyledBalance decimalScale={8} isSrc={isSrcToken} />
-              </StyledSelectAndBalance>
-            }
-          >
-            {" "}
-            <StyledTokenPanelInputContainer>
-              <StyledTokenPanelInput isSrc={isSrcToken} />
-              <StyledUSD isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
-              {isSrcToken && <SrcTokenPercentSelector />}
-            </StyledTokenPanelInputContainer>
-          </Container>
-        </TwapStyles.StyledColumnFlex>
-      </StyledTokenPanel>
-    </>
-  );
-};
-
-const Container = ({
-  label,
-  children,
-  enabled,
-  hideChildren,
-  className = "",
-  viewOnly,
-}: {
-  label: ReactNode;
-  children: ReactNode;
-  enabled?: number;
-  hideChildren?: boolean;
-  className?: string;
-  viewOnly?: boolean;
-}) => {
-  return (
-    <StyledContainer className={className}>
-      {label}
-      {!hideChildren && (
-        <StyledContainerContent view={viewOnly ? 1 : 0} enabled={enabled}>
-          {children}
-        </StyledContainerContent>
-      )}
-    </StyledContainer>
+    <StyledTokenPanel>
+      <Card.Header>
+        <StyledSelectAndBalance>
+          <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} />
+          <StyledBalance isSrc={isSrcToken} />
+        </StyledSelectAndBalance>
+      </Card.Header>
+      <Card.Body editable={isSrcToken}>
+        <Styles.StyledColumnFlex width="auto" gap={1} style={{ alignItems: "flex-end" }}>
+          <StyledTokenPanelInput dstDecimalScale={3} isSrc={isSrcToken} />
+          <StyledUSD isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
+        </Styles.StyledColumnFlex>
+        {isSrcToken && <SrcTokenPercentSelector />}
+      </Card.Body>{" "}
+    </StyledTokenPanel>
   );
 };
 
@@ -194,7 +160,7 @@ const SrcTokenPercentSelector = () => {
 
 const OrderSummary = ({ children }: { children: ReactNode }) => {
   return (
-    <StyledSummaryModal>
+    <StyledSummaryModal title="Review order">
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
           <Components.Base.Card>
@@ -233,35 +199,10 @@ const ChangeTokensOrder = () => {
   );
 };
 
-const useProvider = (props: AdapterProps) => {
-  const [provider, setProvider] = useState<any>();
-
-  const chainId = props.connectedChainId;
-  const account = props.account;
-
-  const _getProvider = useCallback(async () => {
-    if (!props.connector) return;
-    const provider = await props.connector.getProvider();
-    setProvider(provider);
-  }, [account, chainId, setProvider, props.connector]);
-
-  useEffect(() => {
-    setProvider(undefined);
-    _getProvider();
-  }, [account, chainId, _getProvider, setProvider]);
-
-  return provider;
-};
-
 const TWAP = memo((props: AdapterProps) => {
-  const { dappTokens, nativeToken } = props;
-
-  const provider = useProvider(props);
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
-
-
 
   return (
     <Box className="twap-adapter-wrapper">
@@ -271,24 +212,25 @@ const TWAP = memo((props: AdapterProps) => {
         maxFeePerGas={props.maxFeePerGas}
         priorityFeePerGas={props.priorityFeePerGas}
         translations={translations as Translations}
-        provider={provider}
+        provider={props.provider}
         account={props.account}
         srcToken={props.srcToken}
         dstToken={props.dstToken}
         storeOverride={props.limit ? storeOverride : undefined}
         parseToken={parseToken}
-        dappTokens={dappTokens}
+        dappTokens={props.dappTokens}
         uiPreferences={uiPreferences}
         onDstTokenSelected={props.onDstTokenSelected}
         usePriceUSD={props.usePriceUSD}
         onSrcTokenSelected={props.onSrcTokenSelected}
         useTrade={props.useTrade}
+        isDarkTheme={props.isDarkTheme}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
-          <AdapterContextProvider value={{ ...props, provider, dappTokens }}>
+          <AdapterContextProvider value={props}>
             {props.limit ? <LimitPanel /> : <TWAPPanel />}
-            <OrdersPanel />
+            <PancakeOrders />
           </AdapterContextProvider>
         </ThemeProvider>
       </TwapAdapter>
@@ -319,7 +261,7 @@ const StyledButtonContainer = styled("div")({
   "> *": {
     width: "100%",
   },
-  marginTop: 20,
+  marginTop: 10,
 });
 
 const LimitPanel = () => {
@@ -370,64 +312,77 @@ const TWAPPanel = () => {
 };
 
 const TotalTrades = () => {
-  const getChunksBiggerThanOne = store.useTwapStore((store) => store.getChunksBiggerThanOne());
+  const { getChunksBiggerThanOne, srcAmount } = store.useTwapStore((store) => ({
+    getChunksBiggerThanOne: store.getChunksBiggerThanOne(),
+    srcAmount: store.getSrcAmount(),
+  }));
+
+  if (srcAmount.isZero()) return null;
 
   if (!getChunksBiggerThanOne) {
     return (
       <TwapStyles.StyledRowFlex justifyContent="space-between">
         <Components.Labels.TotalTradesLabel />
-        <Typography style={{ fontSize: 14 }}>-</Typography>
+        <Typography style={{ fontSize: 14 }}>1</Typography>
       </TwapStyles.StyledRowFlex>
     );
   }
   return (
-    <StyledTotalChunks enabled={1} label={<Components.Labels.TotalTradesLabel />}>
-      <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between">
-        <StyledChunksSlider />
-        <StyledChunksInput />
-      </TwapStyles.StyledRowFlex>
+    <StyledTotalChunks>
+      <Card.Header>
+        <Components.Labels.TotalTradesLabel />
+      </Card.Header>
+      <Card.Body editable={true}>
+        <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between">
+          <StyledChunksSlider />
+          <StyledChunksInput />
+        </TwapStyles.StyledRowFlex>
+      </Card.Body>
     </StyledTotalChunks>
   );
 };
 
-const StyledTotalChunks = styled(Container)({
-  ".twap-input": {
-    height: 25,
-  },
-});
-
 const TradeSize = () => {
+  const value = store.useTwapStore((store) => store.getSrcChunkAmountUi());
+
+  if (BN(value || "0").isZero()) return null;
   return (
-    <Container label={<Components.Labels.ChunksAmountLabel />} viewOnly={true}>
-      <TwapStyles.StyledRowFlex className="twap-trade-size" justifyContent="flex-end" gap={5}>
-        <Components.TradeSize hideLabel={true} />
-        <TwapStyles.StyledRowFlex gap={2} style={{ width: "auto" }} className="twap-usd">
-          <Components.ChunksUSD prefix="( " suffix=" USD)" />
-        </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledRowFlex>
-    </Container>
+    <StyledTradeSize>
+      <Components.Labels.ChunksAmountLabel />
+      <Components.TradeSize hideLabel={true} hideLogo={true} />
+    </StyledTradeSize>
   );
 };
 
 const MaxDuration = () => {
   return (
-    <Container enabled={1} label={<Components.Labels.MaxDurationLabel />}>
-      <TwapStyles.StyledRowFlex justifyContent="space-between">
-        <Components.PartialFillWarning />
-        <Components.MaxDurationSelector />
-      </TwapStyles.StyledRowFlex>
-    </Container>
+    <Card>
+      <Card.Header>
+        <Components.Labels.MaxDurationLabel />
+      </Card.Header>
+      <Card.Body editable={true}>
+        <TwapStyles.StyledRowFlex justifyContent="space-between">
+          <Components.PartialFillWarning />
+          <Components.MaxDurationSelector />
+        </TwapStyles.StyledRowFlex>
+      </Card.Body>
+    </Card>
   );
 };
 
 const TradeInterval = () => {
   return (
-    <Container enabled={1} label={<Components.Labels.TradeIntervalLabel />}>
-      <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
-        <Components.FillDelayWarning />
-        <Components.TradeIntervalSelector />
-      </TwapStyles.StyledRowFlex>
-    </Container>
+    <Card>
+      <Card.Header>
+        <Components.Labels.TradeIntervalLabel />
+      </Card.Header>
+      <Card.Body editable={true}>
+        <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
+          <Components.FillDelayWarning />
+          <Components.TradeIntervalSelector />
+        </TwapStyles.StyledRowFlex>
+      </Card.Body>
+    </Card>
   );
 };
 
@@ -436,10 +391,8 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
 
   return (
     <StyledLimitPrice>
-      <Container
-        enabled={1}
-        hideChildren={!isLimitOrder}
-        label={
+      <Card>
+        <Card.Header>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <TwapStyles.StyledRowFlex style={{ width: "auto" }}>
               <Components.Labels.LimitPriceLabel />
@@ -454,10 +407,13 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
             </TwapStyles.StyledRowFlex>
             {!limitOnly && <Components.LimitPriceToggle />}
           </TwapStyles.StyledRowFlex>
-        }
-      >
-        <StyledLimitPriceInput placeholder="0" sx={{ pointerEvents: limitOnly ? "all" : isLimitOrder ? "all" : "none" }} />
-      </Container>
+        </Card.Header>
+        {isLimitOrder && (
+          <Card.Body editable={true}>
+            <StyledLimitPriceInput placeholder="0" sx={{ pointerEvents: limitOnly ? "all" : isLimitOrder ? "all" : "none" }} />
+          </Card.Body>
+        )}
+      </Card>
     </StyledLimitPrice>
   );
 };

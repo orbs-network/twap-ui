@@ -7,6 +7,7 @@ import _ from "lodash";
 import { eqIgnoreCase, parsebn, isNativeAddress } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
 import { MIN_NATIVE_BALANCE } from "./consts";
+import { amountBN, amountUi, fillDelayText } from "./utils";
 
 export enum TimeResolution {
   Minutes = 60 * 1000,
@@ -46,6 +47,8 @@ const initialState: State = {
   customFillDelay: { resolution: TimeResolution.Minutes, amount: 2 },
 
   orderCreatedTimestamp: undefined,
+  dstAmount: undefined,
+  dstAmountLoading: false,
 };
 
 export const useTwapStore = create(
@@ -74,6 +77,7 @@ export const useTwapStore = create(
         dstBalance: get().dstBalance,
       });
     },
+    updateState: (values: Partial<State>) => set({ ...values }),
     setOrderCreatedTimestamp: (orderCreatedTimestamp: number) => set({ orderCreatedTimestamp }),
     reset: (storeOverride: StoreOverride) => set({ ...initialState, lib: get().lib, ...storeOverride }),
     setLib: (lib?: TWAPLib) => set({ lib }),
@@ -101,18 +105,6 @@ export const useTwapStore = create(
       }
     },
     getSrcAmount: () => amountBN(get().srcToken, get().srcAmountUi),
-    getDstAmount: () => {
-      if (!get().lib || !get().srcToken || !get().dstToken || get().srcUsd.isZero() || get().dstUsd.isZero()) return BN(0);
-      return get().lib!.dstAmount(
-        get().srcToken!,
-        get().dstToken!,
-        (get() as any).getSrcAmount(),
-        get().srcUsd,
-        get().dstUsd,
-        (get() as any).getLimitPrice(false).limitPrice,
-        !get().isLimitOrder
-      );
-    },
     getFillWarning: (translation?: Translations) => {
       if (!translation) return;
       const chunkSize = (get() as any).getSrcChunkAmount();
@@ -161,14 +153,7 @@ export const useTwapStore = create(
     setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => set({ limitPriceUi: { ...limitPriceUi, custom: true } }),
     setChunks: (chunks: number) => set({ chunks: Math.min(chunks, (get() as any).getMaxPossibleChunks()) }),
     setDuration: (customDuration: Duration) => set({ customDuration }),
-
-    isSameNativeBasedToken: () =>
-      !!get().lib &&
-      !!get().srcToken &&
-      !!get().dstToken &&
-      (get().lib!.isNativeToken(get().srcToken!) || get().lib!.isNativeToken(get().dstToken!)) &&
-      (get().lib!.isWrappedToken(get().srcToken!) || get().lib!.isWrappedToken(get().dstToken!)),
-
+    setDstAmount: (dstAmount: string) => set({ dstAmount }),
     getMaxPossibleChunks: () => (get().lib && get().srcToken ? get().lib!.maxPossibleChunks(get().srcToken!, amountBN(get().srcToken, get().srcAmountUi), get().srcUsd) : 1),
     getChunks: () => {
       const srcUsd = get().srcUsd;
@@ -245,11 +230,11 @@ export const useTwapStore = create(
       const srcToken = get().srcToken!;
       const dstToken = get().dstToken!;
 
-      const dstAmount: BN = (get() as any).getDstAmount();
+      const dstAmount = get().dstAmount;
       const dstAmountUi: string = (get() as any).getDstAmountUi();
 
       (get() as any).setTokens(dstToken, srcToken);
-      (get() as any).setSrcAmountUi(dstAmount.isZero() ? "" : dstAmountUi);
+      (get() as any).setSrcAmountUi(BN(dstAmount || "0").isZero() ? "" : dstAmountUi);
 
       set({
         srcUsd: get().dstUsd,
@@ -297,9 +282,9 @@ export const useTwapStore = create(
         .add(1, "minute")
         .valueOf(),
     getDeadlineUi: () => moment((get() as any).getDeadline()).format("ll HH:mm"),
-    getDstAmountUi: () => amountUi(get().dstToken, (get() as any).getDstAmount()),
+    getDstAmountUi: () => amountUi(get().dstToken, BN(get().dstAmount || "0")),
     getSrcAmountUsdUi: () => amountUi(get().srcToken, (get() as any).getSrcAmount().times(get().srcUsd)),
-    getDstAmountUsdUi: () => amountUi(get().dstToken, (get() as any).getDstAmount().times(get().dstUsd)),
+    getDstAmountUsdUi: () => amountUi(get().dstToken, BN(get().dstAmount || "0").times(get().dstUsd)),
     getSrcBalanceUi: () => amountUi(get().srcToken, get().srcBalance),
     getDstBalanceUi: () => amountUi(get().dstToken, get().dstBalance),
     getSrcChunkAmountUi: () => amountUi(get().srcToken, (get() as any).getSrcChunkAmount()),
@@ -308,44 +293,6 @@ export const useTwapStore = create(
     getChunksBiggerThanOne: () => !!get().srcToken && !!get().srcAmountUi && (get() as any).getMaxPossibleChunks() > 1,
   }))
 );
-
-export const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));
-export const amountUi = (token: TokenData | undefined, amount: BN) => {
-  if (!token) return "";
-  const percision = BN(10).pow(token?.decimals || 0);
-  return amount.times(percision).idiv(percision).div(percision).toFormat();
-};
-
-export const fillDelayText = (value: number, translations: Translations) => {
-  if (!value) {
-    return "0";
-  }
-  const time = moment.duration(value);
-  const days = time.days();
-  const hours = time.hours();
-  const minutes = time.minutes();
-  const seconds = time.seconds();
-
-  const arr: string[] = [];
-
-  if (days) {
-    arr.push(`${days} ${translations.days} `);
-  }
-  if (hours) {
-    arr.push(`${hours} ${translations.hours} `);
-  }
-  if (minutes) {
-    arr.push(`${minutes} ${translations.minutes}`);
-  }
-  if (seconds) {
-    arr.push(`${seconds} ${translations.seconds}`);
-  }
-  return arr.join(" ");
-};
-
-export const handleFillDelayText = (text: string, minutes: number) => {
-  return text.replace("{{minutes}}", minutes.toString());
-};
 
 interface OrdersStore {
   tab: number;

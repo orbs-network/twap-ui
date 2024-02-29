@@ -9,4 +9,6 @@ export * from "./ErrorHandling";
 export * from "./orders/OrdersPanel";
 export * from "./orders/Orders";
 export * from "./orders/Order/OrderExpanded";
+export * from "./components/OrdersComponents";
 export * from "./ui-helper";
+export { amountBN, amountUi, fillDelayText } from "./utils";

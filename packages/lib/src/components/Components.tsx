@@ -25,8 +25,8 @@ import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
 
 import { IconType } from "@react-icons/all-files";
-import { useLoadingState, useLimitPrice, useMarketPrice, useFormatNumber, useToken, useSwitchTokens, useSelectTokenCallback, useSubmitButton, useAmountOut } from "../hooks";
-import { useTwapStore, handleFillDelayText } from "../store";
+import { useLoadingState, useLimitPrice, useMarketPrice, useFormatNumber, useToken, useSwitchTokens, useSelectTokenCallback, useSubmitButton } from "../hooks";
+import { useTwapStore } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
@@ -48,6 +48,7 @@ import PendingTxModal from "./base/PendingTxModal";
 import SuccessTxModal from "./base/SuccessTxModal";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
+import { handleFillDelayText } from "../utils";
 
 export function ChunksInput({ className = "", showDefault }: { className?: string; showDefault?: boolean }) {
   const translations = useTwapContext().translations;
@@ -100,6 +101,30 @@ export function MaxDurationSelector({ placeholder }: { placeholder?: string }) {
   return <TimeSelector placeholder={placeholder} value={duration} onChange={onChange} />;
 }
 
+const Input = (props: {
+  className?: string;
+  decimalScale?: number;
+  loading?: boolean;
+  prefix?: string;
+  disabled?: boolean;
+  placeholder?: string;
+  onChange?: (value: string) => void;
+  value: string;
+}) => {
+  return (
+    <NumericInput
+      className={`${props.className} twap-token-input ${props.loading ? "twap-token-input-loading" : ""}`}
+      decimalScale={props.decimalScale}
+      prefix={props.prefix}
+      loading={props.loading}
+      disabled={props.disabled}
+      placeholder={props.placeholder}
+      onChange={(value) => props.onChange?.(value)}
+      value={props.value}
+    />
+  );
+};
+
 export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boolean; placeholder?: string; className?: string }) => {
   // src
   const srcDecimals = useTwapStore((store) => store.srcToken?.decimals);
@@ -108,11 +133,11 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
   const setSrcAmountUi = useTwapStore((store) => store.setSrcAmountUi);
   const srcInputLoading = (!!srcAmount || srcAmount !== "0") && srcUsdLoading;
   // dst
-  const dstDecimals = useTwapStore((store) => store.dstToken?.decimals);
+  const { dstDecimals, dstAmount } = useTwapStore((store) => ({
+    dstDecimals: store.dstToken?.decimals,
+    dstAmount: store.getDstAmountUi(),
+  }));
   const dstUsdLoading = useLoadingState().dstUsdLoading;
-  const dstAmount = useAmountOut();
-  console.log({ dstAmount });
-  
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const dstInputLoading = (!!dstAmount || dstAmount !== "0") && dstUsdLoading;
 
@@ -126,6 +151,56 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
       placeholder={placeholder}
       onChange={isSrc ? setSrcAmountUi : () => {}}
       value={isSrc ? srcAmount : dstAmount}
+    />
+  );
+};
+
+export const TokenPanelInput = ({
+  isSrc,
+  placeholder,
+  className = "",
+  dstDecimalScale,
+}: {
+  isSrc?: boolean;
+  placeholder?: string;
+  className?: string;
+  dstDecimalScale?: number;
+}) => {
+  if (isSrc) {
+    return <SrcTokenInput className={className} placeholder={placeholder} />;
+  }
+  return <DstTokenInput decimalScale={dstDecimalScale} className={className} placeholder={placeholder} />;
+};
+
+const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
+  const { decimals, amount, onChange } = useTwapStore((store) => ({
+    decimals: store.srcToken?.decimals,
+    amount: store.srcAmountUi,
+    onChange: store.setSrcAmountUi,
+  }));
+
+  return <Input prefix="" onChange={onChange} value={amount || ""} decimalScale={decimals} className={props.className} placeholder={props.placeholder} />;
+};
+
+const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
+  const { token, amount, srcAmount, isLimitOrder } = useTwapStore((store) => ({
+    token: store.dstToken,
+    amount: store.getDstAmountUi(),
+    srcAmount: store.srcAmountUi,
+    isLimitOrder: store.isLimitOrder,
+  }));
+
+  console.log({ amount });
+
+  return (
+    <Input
+      disabled={true}
+      loading={!srcAmount ? false : amount === "0"}
+      prefix={isLimitOrder ? "≥" : SQUIGLE}
+      value={amount}
+      decimalScale={props.decimalScale || token?.decimals}
+      className={props.className}
+      placeholder={props.placeholder}
     />
   );
 };
@@ -659,11 +734,11 @@ export function OrderSummarySwipeContainer({ children }: { children: ReactNode }
   );
 }
 
-export function OrderSummaryModalContainer({ children, className }: { children: ReactNode; className?: string }) {
+export function OrderSummaryModalContainer({ children, className, title }: { children: ReactNode; className?: string; title?: string }) {
   const showConfirmation = useTwapStore((store) => store.showConfirmation);
   const setShowConfirmation = useTwapStore((store) => store.setShowConfirmation);
   return (
-    <Modal open={showConfirmation} className={className} onClose={() => setShowConfirmation(false)}>
+    <Modal title={title} open={showConfirmation} className={className} onClose={() => setShowConfirmation(false)}>
       {children}
     </Modal>
   );
@@ -929,7 +1004,7 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
   );
 };
 
-export const TradeSize = ({ hideLabel, hideSymbol }: { hideLabel?: boolean; hideSymbol?: boolean }) => {
+export const TradeSize = ({ hideLabel, hideSymbol, hideLogo }: { hideLabel?: boolean; hideSymbol?: boolean; hideLogo?: boolean }) => {
   const srcToken = useTwapStore((store) => store.srcToken);
   const dsToken = useTwapStore((store) => store.dstToken);
 
@@ -944,7 +1019,7 @@ export const TradeSize = ({ hideLabel, hideSymbol }: { hideLabel?: boolean; hide
     <StyledTradeSize>
       {!hideLabel && <ChunksAmountLabel />}
       <StyledRowFlex gap={7} className="content">
-        <TokenLogo isSrc={true} />
+        {!hideLogo && <TokenLogo isSrc={true} />}
         <TradeSizeValue symbol={!hideSymbol} />
       </StyledRowFlex>
     </StyledTradeSize>

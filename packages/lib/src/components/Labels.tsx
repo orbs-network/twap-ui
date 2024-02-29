@@ -1,9 +1,10 @@
 import { Styles } from "..";
 import { useTwapContext } from "../context";
-import { handleFillDelayText, useTwapStore } from "../store";
+import { useTwapStore } from "../store";
 import { StyledRowFlex } from "../styles";
 import { Icon, Label } from "./base";
 import { AiOutlineHistory } from "@react-icons/all-files/ai/AiOutlineHistory";
+import { handleFillDelayText } from "../utils";
 
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;

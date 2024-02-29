@@ -83,8 +83,7 @@ const StyledLink = styled("a")({
 const StyledModal = styled(Modal)({
   ".twap-modal-content": {
     maxWidth: 800,
-    paddingTop: 50,
-    paddingBottom: 50,
+    paddingBottom: 30,
   },
   ".twap-odnp-close-btn": {
     display: "none",

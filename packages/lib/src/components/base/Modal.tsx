@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import { Fade, IconButton, Box, styled, Modal as MuiModal, Backdrop } from "@mui/material";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
+import { StyledRowFlex } from "../../styles";
 
 export interface Props {
   open: boolean;
@@ -29,17 +30,19 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
     >
       <Fade in={open}>
         <StyledModalContent className="twap-modal-content" id="twap-modal-content">
-          {onClose && (
-            <StyledClose className="twap-ui-close" onClick={onClose}>
-              <IoMdClose />
-            </StyledClose>
-          )}
-          {title && (
-            <>
-              <StyledTitle>{title}</StyledTitle>
-              <StyledSeparator />
-            </>
-          )}
+          <StyledHeader className="twap-modal-content-header">
+            {title && (
+              <>
+                <StyledTitle className="twap-modal-content-title">{title}</StyledTitle>
+                <StyledSeparator />
+              </>
+            )}
+            {onClose && (
+              <StyledClose className="twap-ui-close" onClick={onClose}>
+                <IoMdClose />
+              </StyledClose>
+            )}
+          </StyledHeader>
 
           {children}
         </StyledModalContent>
@@ -49,6 +52,10 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
 }
 
 export default Modal;
+
+const StyledHeader = styled(StyledRowFlex)({
+  justifyContent: "space-between",
+});
 
 const StyledSeparator = styled(Box)({
   height: 20,
@@ -61,9 +68,7 @@ const StyledTitle = styled(Box)({
 });
 
 const StyledClose = styled(IconButton)({
-  position: "absolute",
-  right: 7,
-  top: 7,
+  marginLeft: "auto",
   svg: {
     width: 25,
     height: 25,

@@ -4,9 +4,10 @@ import { ReactNode } from "react";
 import { Button, Label, TokenLogo, TokenPriceCompare, Tooltip } from "../../components/base";
 import { useTwapContext } from "../../context";
 import { useCancelOrder, useFormatNumber, useHistoryPrice } from "../../hooks";
-import { fillDelayText, useTwapStore } from "../../store";
+import { useTwapStore } from "../../store";
 import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { OrderUI } from "../../types";
+import { fillDelayText } from "../../utils";
 
 const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const translations = useTwapContext().translations;

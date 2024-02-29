@@ -114,7 +114,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
               <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
-              <Components.TokenInput placeholder="0.00" isSrc={isSrcToken} />
+              <Components.TokenPanelInput placeholder="0.00" isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
               <Components.TokenBalance isSrc={isSrcToken} />
@@ -212,6 +212,7 @@ const TWAP = (props: Props) => {
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
         usePriceUSD={props.usePriceUSD}
+        useTrade={props.useTrade}
       >
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>

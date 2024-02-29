@@ -25,7 +25,6 @@ const USD = ({
   prefix?: string;
 }) => {
   const formattedValue = useFormatNumber({ value });
-  const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
 
   const { usdSuffix, usdPrefix, usdEmptyUI } = useTwapContext().uiPreferences;
 
@@ -35,21 +34,19 @@ const USD = ({
 
   if (value == null) return null;
   return (
-    <Tooltip text={`${formattedValueTooltip}`} placement="bottom">
-      <StyledLabel loading={isLoading} className={`twap-usd ${className} ${value === "0" ? "twap-usd-zero" : ""} `}>
-        {value == 0 && emptyUi ? (
-          <>{_emptyUi}</>
-        ) : onlyValue ? (
-          <>{formattedValue}</>
-        ) : (
-          <>
-            {_prefix}
-            <>{formattedValue || "0"}</>
-            {_suffix}
-          </>
-        )}
-      </StyledLabel>
-    </Tooltip>
+    <StyledLabel loading={isLoading} className={`twap-usd ${className} ${value === "0" ? "twap-usd-zero" : ""} `}>
+      {value == 0 && emptyUi ? (
+        <>{_emptyUi}</>
+      ) : onlyValue ? (
+        <>{formattedValue}</>
+      ) : (
+        <>
+          {_prefix}
+          <>{formattedValue || "0"}</>
+          {_suffix}
+        </>
+      )}
+    </StyledLabel>
   );
 };
 

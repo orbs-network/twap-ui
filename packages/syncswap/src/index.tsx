@@ -12,6 +12,7 @@ import {
   Orders,
   store,
   REFETCH_GAS_PRICE,
+  amountBN,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
@@ -235,7 +236,7 @@ const Adapter = (props: Props) => {
   const priceUsd = useCallback(
     async (address: string, token?: TokenData) => {
       const _address = eqIgnoreCase(address, zeroAddress) ? SYNCSWAP_ZERO_ADDRESS : address;
-      const result = await props.priceUsd(_address, store.amountBN(token, "1").toString());
+      const result = await props.priceUsd(_address, amountBN(token, "1").toString());
       return Number(result);
     },
     [props.priceUsd]

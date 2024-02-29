@@ -122,24 +122,10 @@ const TokenSelectModal = ({ onCurrencySelect }: TokenSelectModalProps) => {
   );
 };
 
-const nativeToken = {
-  chainId: 56,
-  decimals: 18,
-  symbol: "BNB",
-  name: "Binance Chain Native Token",
-  isNative: true,
-  isToken: false,
-};
-
-
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
-
-  const connector = {
-    getProvider: () => library,
-  };
 
   return (
     <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
@@ -151,15 +137,12 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         TokenSelectModal={TokenSelectModal}
         isDarkTheme={isDarkTheme}
         limit={limit}
-        connector={connector}
         ConnectButton={ConnectButton}
         useModal={useModal}
-        onSrcTokenSelected={() => {}}
-        onDstTokenSelected={() => {}}
-        nativeToken={nativeToken}
         usePriceUSD={usePriceUSD}
         connectedChainId={chainId}
         useTrade={useTrade}
+        provider={library}
       />
     </StyledPancakeTwap>
   );
@@ -186,7 +169,9 @@ const DappComponent = () => {
       <StyledPancake isDarkTheme={isDarkTheme ? 1 : 0}>
         <StyledPancakeLayout name={config.name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
-          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+          <Wrapper>
+            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+          </Wrapper>
           <StyledPancakeOrders>
             <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
               <Orders />

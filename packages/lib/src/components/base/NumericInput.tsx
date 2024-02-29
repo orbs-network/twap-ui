@@ -20,6 +20,12 @@ export interface Props {
   minAmount?: number;
 }
 
+const InputLoader = () => {
+  const { inputLoader } = useTwapContext().uiPreferences;
+
+  return inputLoader ? inputLoader : <StyledLoader className="twap-input-loader" width="75%" height="60%" />;
+};
+
 function NumericInput({ prefix = "", onChange, value, disabled = false, placeholder, onFocus, onBlur, loading = false, className = "", maxValue, decimalScale, minAmount }: Props) {
   const inputValue = value || minAmount || "";
 
@@ -29,37 +35,35 @@ function NumericInput({ prefix = "", onChange, value, disabled = false, placehol
 
   return (
     <StyledContainer className={`twap-input ${className}`}>
-      {loading && <StyledLoader className="twap-input-loader" width="75%" height="60%" />}
-      <Fade in={!loading} style={{ transition: "0s" }}>
-        <StyledFlex>
-          <NumericFormat
-            allowNegative={false}
-            disabled={disabled}
-            decimalScale={decimalScale}
-            onBlur={onBlur}
-            onFocus={onFocus}
-            placeholder={_placeholder}
-            isAllowed={(values) => {
-              const { floatValue = 0 } = values;
-              return maxValue ? floatValue <= parseFloat(maxValue) : true;
-            }}
-            prefix={prefix ? `${prefix} ` : ""}
-            value={disabled && value === "0" ? "" : inputValue}
-            thousandSeparator=","
-            decimalSeparator="."
-            customInput={StyledInput}
-            type="text"
-            min={minAmount}
-            onValueChange={(values, _sourceInfo) => {
-              if (_sourceInfo.source !== "event") {
-                return;
-              }
+      {loading && <InputLoader />}
+      <StyledFlex>
+        <NumericFormat
+          allowNegative={false}
+          disabled={disabled}
+          decimalScale={decimalScale}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          placeholder={_placeholder}
+          isAllowed={(values) => {
+            const { floatValue = 0 } = values;
+            return maxValue ? floatValue <= parseFloat(maxValue) : true;
+          }}
+          prefix={prefix ? `${prefix} ` : ""}
+          value={disabled && value === "0" ? "" : inputValue}
+          thousandSeparator=","
+          decimalSeparator="."
+          customInput={StyledInput}
+          type="text"
+          min={minAmount}
+          onValueChange={(values, _sourceInfo) => {
+            if (_sourceInfo.source !== "event") {
+              return;
+            }
 
-              onChange(values.formattedValue);
-            }}
-          />
-        </StyledFlex>
-      </Fade>
+            onChange(values.value);
+          }}
+        />
+      </StyledFlex>
     </StyledContainer>
   );
 }

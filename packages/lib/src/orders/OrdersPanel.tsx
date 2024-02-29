@@ -4,39 +4,46 @@ import { ORDERS_CONTAINER_ID } from "..";
 import { Odnp, Portal } from "../components/base";
 import { OrdersLabel } from "../components/Labels";
 import { OrdersSelectTabs, SelectedOrders } from "../components/OrdersComponents";
-import { StyledRowFlex } from "../styles";
+import { StyledColumnFlex, StyledRowFlex } from "../styles";
+
+export function OrdersContainer({ className = "", children }: { className?: string; children?: ReactNode }) {
+  return <StyledContainer className={`twap-orders twap-orders-wrapper ${className}`}>{children}</StyledContainer>;
+}
+
+export const OrdersHeader = () => {
+  return (
+    <StyledHeaderTop className="twap-orders-header">
+      <StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>
+        <OrdersLabel />
+      </StyledRowFlex>
+      <Odnp />
+    </StyledHeaderTop>
+  );
+};
 
 function Orders({ className = "" }: { className?: string }) {
   return (
-    <StyledContainer className={`twap-orders twap-orders-wrapper ${className}`}>
-      <StyledHeader className="twap-orders-header">
-        <StyledHeaderTop>
-          <StyledRowFlex justifyContent="flex-start" gap={5} style={{ width: "auto" }}>
-            <OrdersLabel />
-          </StyledRowFlex>
-          <Odnp />
-        </StyledHeaderTop>
+    <OrdersContainer className={className}>
+      <StyledColumnFlex gap={20}>
+        <OrdersHeader />
         <OrdersSelectTabs />
-      </StyledHeader>
+      </StyledColumnFlex>
       <SelectedOrders />
-    </StyledContainer>
+    </OrdersContainer>
   );
 }
+
+export const OrdersPortal = ({ children, className }: { children?: ReactNode; className?: string }) => {
+  return <Portal id={ORDERS_CONTAINER_ID}>{children ? <>{children}</> : <Orders className={className} />}</Portal>;
+};
 
 export function OrdersPanel({ className, noPortal, children }: { className?: string; noPortal?: boolean; children?: ReactNode }) {
   if (noPortal) {
     return <>{children}</> || <Orders className={className} />;
   }
 
-  return <Portal id={ORDERS_CONTAINER_ID}>{children ? <>{children}</> : <Orders className={className} />}</Portal>;
+  return <OrdersPortal className={className}>{children}</OrdersPortal>;
 }
-
-const StyledHeader = styled(Box)({
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "flex-start",
-  gap: 13,
-});
 
 const StyledContainer = styled("div")({
   width: "100%",

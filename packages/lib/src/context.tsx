@@ -40,38 +40,50 @@ const useLimitPriceUpdater = () => {
   }, [custom, srcUsd, dstUsd, setLimitOrderPriceUi, isLimitOrder]);
 };
 
-const Listener = () => {
+const Listener = (props: TwapLibProps) => {
+  const { srcToken, dstToken, srcAmount, updateState } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+    srcAmount: s.getSrcAmount().toString(),
+
+    updateState: s.updateState,
+  }));
+
   const setTokensFromDappCallback = useSetTokensFromDapp();
+  const initLib = useInitLib();
+  const updateStoreOveride = useUpdateStoreOveride();
+  const result = props.useTrade?.(srcToken, dstToken, srcAmount);
+
+  useEffect(() => {
+    updateState({ dstAmountLoading: result?.isLoading, dstAmount: result?.outAmount });
+  }, [result?.isLoading, result?.outAmount, updateState]);
+
+  useEffect(() => {
+    updateStoreOveride(props.storeOverride);
+  }, [updateStoreOveride, props.storeOverride]);
 
   useLimitPriceUpdater();
   useEffect(() => {
     setTokensFromDappCallback();
   }, [setTokensFromDappCallback]);
 
+  useEffect(() => {
+    // init web3 every time the provider changes
+
+    initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId });
+  }, [props.provider, props.config, props.account, props.connectedChainId]);
+
   return null;
 };
 
 const WrappedTwap = (props: TwapLibProps) => {
-  const updateStoreOveride = useUpdateStoreOveride();
-
-  const initLib = useInitLib();
-
   useEffect(() => {
     analytics.onTwapPageView();
   }, []);
 
-  useEffect(() => {
-    updateStoreOveride(props.storeOverride);
-  }, [updateStoreOveride, props.storeOverride]);
-
-  // init web3 every time the provider changes
-  useEffect(() => {
-    initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId });
-  }, [props.provider, props.config, props.account, props.connectedChainId]);
-
   return (
     <TwapErrorWrapper>
-      <Listener />
+      <Listener {...props} />
       <Wizard />
       {props.children}
     </TwapErrorWrapper>

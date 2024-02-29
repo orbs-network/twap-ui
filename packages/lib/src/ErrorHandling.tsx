@@ -1,9 +1,44 @@
+import { Box, Button, styled } from "@mui/material";
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useTwapContext } from ".";
 import { analytics } from "./analytics";
 
-const FallbackUI = () => {
-  return <div>Something went wrong</div>;
+const StyledContainer = styled(Box)<{ isDarkTheme?: number }>(({ theme, isDarkTheme }) => {
+  return {
+    alignItems: "center",
+    display: "flex",
+    flexDirection: "column",
+    p: {
+      color: isDarkTheme ? "white" : "black",
+      padding: 0,
+      fontSize: 20,
+      textAlign: "center",
+    },
+  };
+});
+
+const TwapFallbackUI = () => {
+  const isDarkTheme = useTwapContext().isDarkTheme;
+
+  return (
+    <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>
+      <p>Something went wrong</p>
+      <Button variant="contained" onClick={() => window.location.reload()}>
+        Reload
+      </Button>
+    </StyledContainer>
+  );
+};
+
+const OrdersFallbackUI = () => {
+  const isDarkTheme = useTwapContext().isDarkTheme;
+
+  return (
+    <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>
+      <p>Error in loading orders</p>
+    </StyledContainer>
+  );
 };
 
 export function TwapErrorWrapper({ children }: { children: React.ReactNode }) {
@@ -15,7 +50,7 @@ export function TwapErrorWrapper({ children }: { children: React.ReactNode }) {
         // logErrorToMyService(error, errorInfo);
         console.error(error);
       }}
-      FallbackComponent={FallbackUI}
+      FallbackComponent={TwapFallbackUI}
     >
       <>{children}</>
     </ErrorBoundary>
@@ -28,7 +63,7 @@ export function OrdersErrorWrapper({ children }: { children: React.ReactNode }) 
       onError={(error) => {
         analytics.uiCrashed("orders", error);
       }}
-      fallbackRender={() => <></>}
+      fallbackRender={OrdersFallbackUI}
     >
       <>{children}</>
     </ErrorBoundary>

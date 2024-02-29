@@ -1,13 +1,13 @@
 import { Box, styled } from "@mui/system";
 import { TokenData } from "@orbs-network/twap";
-import { Loader, Tooltip } from ".";
+import { Loader } from ".";
 import { useFormatNumber } from "../../hooks";
 import { StyledRowFlex, StyledText } from "../../styles";
 import Icon from "./Icon";
 import IconButton from "./IconButton";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
-import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
+import { FaExchangeAlt } from "@react-icons/all-files/fa/FaExchangeAlt";
 
 export interface Props {
   leftToken?: TokenData;
@@ -42,7 +42,7 @@ function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInve
   return (
     <StyledContainer className={`twap-price-compare ${className}`}>
       <LeftToken token={leftToken} />
-      <IconButton onClick={_toggleInverted}>{<Icon icon={<HiSwitchHorizontal />} />}</IconButton>
+      <IconButton onClick={_toggleInverted}>{<Icon icon={<FaExchangeAlt />} />}</IconButton>
       <RightToken price={price} token={rightToken} />
     </StyledContainer>
   );
@@ -60,14 +60,13 @@ const LeftToken = ({ token }: { token?: TokenData }) => {
 
 const RightToken = ({ token, price }: { token?: TokenData; price?: string }) => {
   const formattedValue = useFormatNumber({ value: price });
-  const formattedValueTooltip = useFormatNumber({ value: price, decimalScale: 18 });
   return (
     <StyledRowFlex style={{ width: "auto", gap: 5 }} className="right-token">
       <TokenLogo logo={token?.logoUrl} />
-      <Tooltip text={`${formattedValueTooltip} ${token?.symbol}`}>
+      <StyledRowFlex width="auto" gap={5}>
         <span className="value"> {`${formattedValue} `}</span>
         <span className="symbol"> {token?.symbol}</span>
-      </Tooltip>
+      </StyledRowFlex>
     </StyledRowFlex>
   );
 };
