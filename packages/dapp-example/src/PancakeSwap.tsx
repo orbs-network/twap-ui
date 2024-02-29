@@ -204,8 +204,7 @@ const StyledWrapper = styled(Box)({
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
-  workInProgress: true,
+  config
 };
 
 export default dapp;
