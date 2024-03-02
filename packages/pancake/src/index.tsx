@@ -18,6 +18,10 @@ import {
   StyledPoweredBy,
   StyledReset,
   StyledSummaryModal,
+  StyledTimeSelect,
+  StyledTimeSelectBody,
+  StyledTimeSelectContainer,
+  StyledTimeSelectHeader,
   StyledTotalChunks,
   StyledTradeSize,
 } from "./styles";
@@ -59,13 +63,16 @@ const uiPreferences: TwapContextUIPreferences = {
   inputPlaceholder: "0.0",
   infoIcon: BsQuestionCircle,
   inputLoader: <></>,
+  input: {
+    hideOnLoading: false,
+  },
 };
 
 interface AdapterProps extends TWAPProps {
   dappTokens: { [key: string]: any };
   isDarkTheme?: boolean;
   ConnectButton: JSXElementConstructor<any>;
-  useModal?: any;
+  onTokenSelectClick: (isFrom: boolean) => void;
 }
 
 const AdapterContext = createContext({} as AdapterProps);
@@ -100,31 +107,30 @@ const storeOverride = {
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
-const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
-  const { useModal, TokenSelectModal } = useAdapterContext();
-  const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
-  const selectToken = hooks.useSelectTokenCallback();
+const Balance = ({ isSrc }: { isSrc?: boolean }) => {
+  const onPercentClick = hooks.useCustomActions().onPercentClick;
 
-  const onSelect = useCallback(
-    (token: any) => {
-      selectToken({ isSrc: !!isSrcToken, token });
-    },
-    [selectToken, isSrcToken]
+  return (
+    <div onClick={isSrc ? () => onPercentClick(1) : () => {}}>
+      <StyledBalance isSrc={isSrc} decimalScale={6} />
+    </div>
   );
-  const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
+};
 
+const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
+  const onTokenSelectClick = useAdapterContext().onTokenSelectClick;
   return (
     <StyledTokenPanel>
       <Card.Header>
         <StyledSelectAndBalance>
-          <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} />
-          <StyledBalance isSrc={isSrcToken} />
+          <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={() => onTokenSelectClick(isSrcToken)} />
+          <Balance isSrc={isSrcToken} />
         </StyledSelectAndBalance>
       </Card.Header>
-      <Card.Body editable={isSrcToken}>
+      <Card.Body editable={true}>
         <Styles.StyledColumnFlex width="auto" gap={1} style={{ alignItems: "flex-end" }}>
           <StyledTokenPanelInput dstDecimalScale={3} isSrc={isSrcToken} />
-          <StyledUSD isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
+          <StyledUSD decimalScale={2} isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
         </Styles.StyledColumnFlex>
         {isSrcToken && <SrcTokenPercentSelector />}
       </Card.Body>{" "}
@@ -141,8 +147,24 @@ const CurrentMarketPrice = () => {
   );
 };
 
+const PERCENT = [
+  { text: "25%", value: 0.25 },
+  { text: "50%", value: 0.5 },
+  { text: "75%", value: 0.75 },
+  { text: "MAX", value: 1 },
+];
+
 const SrcTokenPercentSelector = () => {
   const onPercentClick = hooks.useCustomActions().onPercentClick;
+  const { srcAmount, srcBalance, getMaxSrcInputAmount } = store.useTwapStore((state) => ({
+    srcAmount: state.getSrcAmount(),
+    srcBalance: state.srcBalance,
+    getMaxSrcInputAmount: state.getMaxSrcInputAmount(),
+  }));
+
+  const percent = useMemo(() => {
+    return srcAmount.dividedBy(srcBalance).toNumber();
+  }, [srcAmount]);
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -150,10 +172,14 @@ const SrcTokenPercentSelector = () => {
 
   return (
     <StyledPercentSelect>
-      <StyledButton onClick={() => onClick(0.25)}>25%</StyledButton>
-      <StyledButton onClick={() => onClick(0.5)}>50%</StyledButton>
-      <StyledButton onClick={() => onClick(0.75)}>75%</StyledButton>
-      <StyledButton onClick={() => onClick(1)}>MAX</StyledButton>
+      {PERCENT.map((p) => {
+        const selected = percent === p.value || (p.value === 1 && BN(getMaxSrcInputAmount || 0).isEqualTo(srcAmount));
+        return (
+          <StyledButton selected={selected ? 1 : 0} key={p.text} onClick={() => onClick(p.value)}>
+            {p.text}
+          </StyledButton>
+        );
+      })}
     </StyledPercentSelect>
   );
 };
@@ -238,6 +264,16 @@ const TWAP = memo((props: AdapterProps) => {
   );
 });
 
+const TopPanel = () => {
+  return (
+    <Styles.StyledColumnFlex gap={0}>
+      <TokenPanel isSrcToken={true} />
+      <ChangeTokensOrder />
+      <TokenPanel />
+    </Styles.StyledColumnFlex>
+  );
+};
+
 const OpenConfirmationModalButton = () => {
   const { ConnectButton, provider } = useAdapterContext();
 
@@ -268,9 +304,7 @@ const LimitPanel = () => {
   return (
     <div className="twap-container">
       <StyledColumnFlex>
-        <TokenPanel isSrcToken={true} />
-        <ChangeTokensOrder />
-        <TokenPanel />
+        <TopPanel />
         <CurrentMarketPrice />
         <LimitPrice limitOnly={true} />
         <OpenConfirmationModalButton />
@@ -292,9 +326,7 @@ const TWAPPanel = () => {
   return (
     <div className="twap-container">
       <StyledColumnFlex>
-        <TokenPanel isSrcToken={true} />
-        <ChangeTokensOrder />
-        <TokenPanel />
+        <TopPanel />
         <CurrentMarketPrice />
         <LimitPrice />
         <TotalTrades />
@@ -356,33 +388,33 @@ const TradeSize = () => {
 
 const MaxDuration = () => {
   return (
-    <Card>
-      <Card.Header>
+    <StyledTimeSelectContainer>
+      <StyledTimeSelectHeader>
         <Components.Labels.MaxDurationLabel />
-      </Card.Header>
-      <Card.Body editable={true}>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.PartialFillWarning />
+      </StyledTimeSelectHeader>
+      <StyledTimeSelect>
+        <StyledTimeSelectBody editable={true}>
           <Components.MaxDurationSelector />
-        </TwapStyles.StyledRowFlex>
-      </Card.Body>
-    </Card>
+        </StyledTimeSelectBody>
+        <Components.PartialFillWarning />
+      </StyledTimeSelect>
+    </StyledTimeSelectContainer>
   );
 };
 
 const TradeInterval = () => {
   return (
-    <Card>
-      <Card.Header>
+    <StyledTimeSelectContainer>
+      <StyledTimeSelectHeader>
         <Components.Labels.TradeIntervalLabel />
-      </Card.Header>
-      <Card.Body editable={true}>
-        <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
-          <Components.FillDelayWarning />
+      </StyledTimeSelectHeader>
+      <StyledTimeSelect>
+        <StyledTimeSelectBody editable={true}>
           <Components.TradeIntervalSelector />
-        </TwapStyles.StyledRowFlex>
-      </Card.Body>
-    </Card>
+        </StyledTimeSelectBody>
+        <Components.FillDelayWarning />
+      </StyledTimeSelect>
+    </StyledTimeSelectContainer>
   );
 };
 

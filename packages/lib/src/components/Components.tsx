@@ -25,7 +25,7 @@ import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
 
 import { IconType } from "@react-icons/all-files";
-import { useLoadingState, useLimitPrice, useMarketPrice, useFormatNumber, useToken, useSwitchTokens, useSelectTokenCallback, useSubmitButton } from "../hooks";
+import { useLoadingState, useLimitPrice, useMarketPrice, useFormatNumber, useToken, useSwitchTokens, useSelectTokenCallback, useSubmitButton, useOutAmountLoading } from "../hooks";
 import { useTwapStore } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
@@ -189,13 +189,12 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
     srcAmount: store.srcAmountUi,
     isLimitOrder: store.isLimitOrder,
   }));
-
-  console.log({ amount });
+  const outAmountLoading = useOutAmountLoading();
 
   return (
     <Input
       disabled={true}
-      loading={!srcAmount ? false : amount === "0"}
+      loading={outAmountLoading}
       prefix={isLimitOrder ? "≥" : SQUIGLE}
       value={amount}
       decimalScale={props.decimalScale || token?.decimals}
@@ -425,6 +424,7 @@ export function TokenUSD({
   prefix,
   suffix,
   hideIfZero,
+  decimalScale,
 }: {
   isSrc?: boolean;
   emptyUi?: ReactNode;
@@ -433,6 +433,7 @@ export function TokenUSD({
   prefix?: string;
   suffix?: string;
   hideIfZero?: boolean;
+  decimalScale?: number;
 }) {
   const srcUSD = useTwapStore((state) => state.getSrcAmountUsdUi());
   const srcLoading = useLoadingState().srcUsdLoading;
@@ -443,7 +444,7 @@ export function TokenUSD({
 
   if (Number(usd) <= 0 && hideIfZero) return null;
 
-  return <USD suffix={suffix} prefix={prefix} onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
+  return <USD decimalScale={decimalScale} suffix={suffix} prefix={prefix} onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
 }
 
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
@@ -451,7 +452,9 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
 
   return (
     <Button className={`twap-submit ${className}`} loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
-      {text}
+      <p className="twap-submit-text" style={{ margin: 0 }}>
+        {text}
+      </p>
     </Button>
   );
 };

@@ -1,5 +1,6 @@
 import { Tab, Tabs, Typography, Box, styled } from "@mui/material";
 import { CSSProperties } from "react";
+import { Button } from "./components/base";
 export const StyledShadowContainer = styled(Box)({
   boxShadow: "0px 5px 20px rgba(85, 94, 104, 0.13)",
   borderRadius: 25,

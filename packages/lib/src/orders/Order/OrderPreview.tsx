@@ -150,7 +150,7 @@ export function OrderUsdValue({ usdValue, prefix = "≈", isLoading }: OrderUsdV
   const formattedValue = useFormatNumber({ value: usdValue });
   const formattedValueTooltip = useFormatNumber({ value: usdValue, decimalScale: 18 });
 
-  if (isLoading) return <Loader width={100} height={20} />;
+  if (isLoading) return <Loader width={30} height={20} />;
   if (!usdValue) return null;
 
   return (

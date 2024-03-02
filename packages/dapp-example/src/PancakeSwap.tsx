@@ -1,14 +1,13 @@
-import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeTwap } from "./styles";
+import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeOrders, StyledPancakeTwap } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-pancake";
-import { useConnectWallet, useGetPriceUsdCallback, useNetwork, usePriceUSD, useTheme, useTrade } from "./hooks";
+import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { createContext, ReactNode, useContext, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import _ from "lodash";
-import { erc20s, zeroAddress } from "@defi.org/web3-candies";
+import { erc20s } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
 import { styled } from "@mui/material";
@@ -16,42 +15,33 @@ import { Components } from "@orbs-network/twap-ui";
 
 const config = Configs.PancakeSwap;
 
-const useDappTokens = () => {
-  const { account } = useWeb3React();
+let native = {
+  ...config.nativeToken,
+  logoURI: config.nativeToken.logoUrl,
+};
 
-  const { isInValidNetwork } = useNetwork(config.chainId);
-  return useQuery(
-    ["useDappTokens", config.chainId],
-    async () => {
-      // change api
-      const response = await fetch(`https://tokens.pancakeswap.finance/pancakeswap-extended.json`);
+const parseListToken = (tokenList: any) => {
+  const result = tokenList.tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
+    decimals,
+    symbol,
+    name,
+    address,
+    logoURI: logoURI.replace("_1", ""),
+  }));
 
-      const result = await response.json();
-
-      const parsed = result.tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
-        decimals,
-        symbol,
-        name,
-        address,
-        logoURI: logoURI.replace("_1", ""),
-      }));
-
-      const candiesAddresses = [zeroAddress, ..._.map(erc20s.bsc, (t) => t().address)];
-
-      const _tokens = _.sortBy(parsed, (t: any) => {
-        const index = candiesAddresses.indexOf(t.address);
-        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
-      });
-
-      return { ..._.mapKeys(_tokens, (t) => t.address) } as any;
-    },
-    { enabled: !!account && !isInValidNetwork }
-  );
+  return [native, ...result];
+};
+export const useDappTokens = () => {
+  return useGetTokens({
+    chainId: config.chainId,
+    parse: parseListToken,
+    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
+    baseAssets: erc20s.bsc,
+    url: `https://tokens.pancakeswap.finance/pancakeswap-extended.json`,
+  });
 };
 
 interface TokenSelectModalProps {
-  open: boolean;
-  onDismiss: () => null;
   onCurrencySelect: (value: any) => void;
   selectedCurrency?: any;
   otherSelectedCurrency?: any;
@@ -93,31 +83,15 @@ const ContextWrapper = ({ children }: { children: ReactNode }) => {
   return <Context.Provider value={{ modal, open: (modal: any) => setModal(modal), close: () => setModal(undefined) }}>{children}</Context.Provider>;
 };
 
-const useModal = (Component: any) => {
-  const { open } = useContext(Context);
-
-  const onClick = () => {
-    open(Component);
-  };
-
-  return [onClick];
-};
-
 const TokenSelectModal = ({ onCurrencySelect }: TokenSelectModalProps) => {
   const { data: dappTokens } = useDappTokens();
 
   const tokensListSize = _.size(dappTokens);
   const parsedList = useMemo(() => parseList(dappTokens), [tokensListSize]);
-  const { close } = useContext(Context);
-
-  const onSelect = (token: any) => {
-    onCurrencySelect(token);
-    close();
-  };
 
   return (
     <StyledModalContent>
-      <TokensList tokens={parsedList} onClick={onSelect} />
+      <TokensList tokens={parsedList} onClick={onCurrencySelect} />
     </StyledModalContent>
   );
 };
@@ -126,35 +100,45 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
+  const [isFrom, setIsFrom] = useState(true);
+  const [srcToken, setSrcToken] = useState("BNB");
+  const [dstToken, setDstToken] = useState("0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d");
+  const [open, setOpen] = useState(false);
+
+  const onTokenSelectClick = (isFrom: boolean) => {
+    setIsFrom(isFrom);
+    setOpen(true);
+  };
+
+  const onCurrencySelect = (token: any) => {
+    if (isFrom) {
+      setSrcToken(token.address);
+    } else {
+      setDstToken(token.address);
+    }
+    setOpen(false);
+  };
 
   return (
     <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
+      <Popup isOpen={open} onClose={() => setOpen(false)}>
+        <TokenSelectModal selectedCurrency={srcToken} otherSelectedCurrency={dstToken} onCurrencySelect={onCurrencySelect} />
+      </Popup>
       <TWAP
         account={account}
-        srcToken="BNB"
-        dstToken="0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"
+        srcToken={srcToken}
+        dstToken={dstToken}
         dappTokens={dappTokens}
-        TokenSelectModal={TokenSelectModal}
         isDarkTheme={isDarkTheme}
         limit={limit}
         ConnectButton={ConnectButton}
-        useModal={useModal}
         usePriceUSD={usePriceUSD}
         connectedChainId={chainId}
         useTrade={useTrade}
         provider={library}
+        onTokenSelectClick={onTokenSelectClick}
       />
     </StyledPancakeTwap>
-  );
-};
-
-const ListPopup = () => {
-  const { modal, close } = useContext(Context);
-
-  return (
-    <Popup isOpen={!!modal} onClose={close}>
-      {modal}
-    </Popup>
   );
 };
 
@@ -165,19 +149,16 @@ const DappComponent = () => {
 
   return (
     <ContextWrapper>
-      <ListPopup />
       <StyledPancake isDarkTheme={isDarkTheme ? 1 : 0}>
         <StyledPancakeLayout name={config.name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
           <Wrapper>
             <TWAPComponent limit={selected === SelectorOption.LIMIT} />
           </Wrapper>
-          <StyledPancakeOrders>
-            <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
-              <Orders />
-            </StyledPancakeTwap>
-          </StyledPancakeOrders>
         </StyledPancakeLayout>
+        <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
+          <Orders />
+        </StyledPancakeOrders>
       </StyledPancake>
     </ContextWrapper>
   );
@@ -194,8 +175,6 @@ const Wrapper = ({ children, className = "" }: { children: ReactNode; className?
   );
 };
 
-export const StyledPancakeOrders = styled(Wrapper)({});
-
 const StyledWrapper = styled(Box)({
   position: "relative",
   width: "100%",
@@ -204,7 +183,7 @@ const StyledWrapper = styled(Box)({
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config
+  config,
 };
 
 export default dapp;

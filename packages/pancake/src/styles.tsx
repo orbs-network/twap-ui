@@ -19,7 +19,7 @@ export const baseStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
   return {
     primaryColor: "#1fc7d4",
-    cardColor: darkMode ? "#08060B" : "#eee",
+    cardColor: darkMode ? "#362F47" : "#eee",
     primaryTextColor: darkMode ? "#f4eeff" : "#280d5f",
     secondaryColor: darkMode ? "#9a6aff" : "#7645d9",
     cardBox: darkMode ? "#3c3742" : "#EEEAF4",
@@ -76,7 +76,7 @@ export const StyledCardBody = styled(Box)<{ editable?: number }>(({ theme, edita
     width: "100%",
     pointerEvents: editable ? "all" : "none",
     background: editable ? styles.editableCardBox : styles.cardBox,
-    padding: 10,
+    padding: 12,
     borderRadius: 16,
     boxShadow: editable ? styles.inputShadow : "",
   };
@@ -103,15 +103,16 @@ export const configureStyles = (theme: Theme) => {
 
   return {
     ".twap-token-input-loading": {
-      opacity: 0.6,
-    },
-    ".twap-orders-menu": {
-      ".MuiMenu-paper": {
-        background: styles.darkMode ? "#353547" : "",
-      },
+      opacity: 0.5,
     },
     ".twap-odnp-button": {
       ...getButtonStyles(theme),
+      padding: "4px 8px!important",
+      width: "fit-content",
+      marginLeft: "auto",
+      "&-children": {
+        gap: "5px!important",
+      },
     },
     ".twap-label": {
       p: {
@@ -128,8 +129,9 @@ export const configureStyles = (theme: Theme) => {
       color: styles.primaryTextColor,
     },
     ".twap-button": {
-      height: 48,
+      minHeight: 48,
       ...getButtonStyles(theme),
+      padding: "10px",
     },
     ".twap-order-separator": {
       background: `${styles.primaryTextColor}!important`,
@@ -137,6 +139,16 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-spinner": {
       color: `${styles.primaryTextColor}!important`,
+    },
+    ".twap-orders-lists": {
+      width: "100%",
+    },
+    ".twap-orders-list": {
+      padding: 0,
+      width: "100%",
+    },
+    ".twap-order-token-display": {
+      flex: "unset!important",
     },
     ".twap-orders": {
       color: styles.primaryTextColor,
@@ -156,7 +168,7 @@ export const configureStyles = (theme: Theme) => {
     ".twap-modal-content": {
       background: darkMode ? "#27262C" : "white",
       color: styles.primaryTextColor,
-      padding: "24px 24px 24px 24px",
+      padding: "15px 24px 24px 24px",
       maxWidth: 500,
       borderRadius: 32,
       overflowY: "auto",
@@ -246,6 +258,9 @@ export const configureStyles = (theme: Theme) => {
       "*": {
         color: "#bdc2c4!important",
       },
+      p: {
+        opacity: "0.4!important",
+      },
     },
     ".twap-tooltip": {
       ".MuiTooltip-arrow": {
@@ -327,6 +342,7 @@ export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({});
 export const StyledBalance = styled(Components.TokenBalance)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
+    cursor: "pointer",
     fontSize: 12,
     color: styles.subtitle,
     "*": {
@@ -399,7 +415,8 @@ export const StyledTokenChangeContainer = styled(Styles.StyledRowFlex)(({ theme 
 
   const darkMode = isDarkMode(theme);
   return {
-    marginTop: 6,
+    marginTop: 25,
+    marginBottom: 15,
     width: 32,
     height: 32,
     marginLeft: "auto",
@@ -505,8 +522,13 @@ const borderButtonStyles = {
   },
 };
 
-export const StyledButton = styled("button")({
-  ...borderButtonStyles,
+export const StyledButton = styled("button")<{ selected?: number }>(({ theme, selected }) => {
+  const styles = baseStyles(theme);
+  return {
+    ...borderButtonStyles,
+    background: selected ? styles.primaryColor : "unset",
+    color: !selected ? "#1fc7d4" : styles.darkMode ? "#191326" : "white",
+  };
 });
 
 export const StyledReset = styled(StyledButton)({
@@ -553,7 +575,7 @@ export const StyledSummaryModal = styled(Components.OrderSummaryModalContainer)(
     ".twap-card": {
       border: `1px solid ${styles.border}`,
       borderRadius: 16,
-      padding: 15,
+      padding: 12,
       transition: "0.2s all",
 
       background: styles.darkMode ? "#353547" : "#FAF9FA",
@@ -598,12 +620,21 @@ export const Card = ({ children, className = "" }: { children: ReactNode; classN
   );
 };
 
-const CardHeader = ({ children }: { children: ReactNode }) => {
-  return <Styles.StyledRowFlex justifyContent="space-between"> {children}</Styles.StyledRowFlex>;
+const CardHeader = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
+  return (
+    <Styles.StyledRowFlex className={className} justifyContent="space-between">
+      {" "}
+      {children}
+    </Styles.StyledRowFlex>
+  );
 };
 
-const CardBody = ({ children, editable }: { children: ReactNode; editable?: boolean }) => {
-  return <StyledCardBody editable={editable ? 1 : 0}>{children}</StyledCardBody>;
+const CardBody = ({ children, editable, className = "" }: { children: ReactNode; editable?: boolean; className?: string }) => {
+  return (
+    <StyledCardBody className={className} editable={editable ? 1 : 0}>
+      {children}
+    </StyledCardBody>
+  );
 };
 
 Card.Body = CardBody;
@@ -649,9 +680,48 @@ export const StyledOrdersMenuButton = styled(Button)(({ theme }) => ({
 
 export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
   return {
+    gap: 0,
     ".twap-orders-empty-list": {
-      marginBottom: "20px",
-      paddingTop: "10px",
+      marginBottom: "40px",
+      paddingTop: "30px",
     },
   };
+});
+
+export const StyledTimeSelect = styled(Styles.StyledColumnFlex)({
+  display: "flex",
+  alignItems: "center",
+  width: "auto",
+  padding: 2,
+  flex: 1,
+});
+
+export const StyledTimeSelectBody = styled(CardBody)({
+  display: "flex",
+  alignItems: "center",
+
+  padding: "4px 10px",
+  width: "auto",
+});
+
+export const StyledTimeSelectContainer = styled(Styles.StyledRowFlex)({
+  padding: 5,
+  ".MuiButtonBase-root": {
+    padding: "0px!important",
+    background: "unset!important",
+    height: "100%",
+    p: {
+      fontSize: "13px!important",
+    },
+  },
+  ".twap-input": {
+    input: {
+      paddingRight: 6,
+    },
+  },
+});
+
+export const StyledTimeSelectHeader = styled(Card.Header)({
+  marginTop: 1,
+  width: "auto",
 });

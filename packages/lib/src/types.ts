@@ -155,6 +155,9 @@ export interface TwapContextUIPreferences {
   orderTabsToExclude?: string[];
   infoIcon?: FC;
   inputLoader?: ReactElement;
+  input?: {
+    hideOnLoading?: boolean;
+  };
 }
 
 export type OnTxSubmitValues = {

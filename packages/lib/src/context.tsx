@@ -52,7 +52,7 @@ const Listener = (props: TwapLibProps) => {
   const setTokensFromDappCallback = useSetTokensFromDapp();
   const initLib = useInitLib();
   const updateStoreOveride = useUpdateStoreOveride();
-  const result = props.useTrade?.(srcToken, dstToken, srcAmount);
+  const result = props.useTrade?.(srcToken, dstToken, srcAmount === "0" ? undefined : srcAmount);
 
   useEffect(() => {
     updateState({ dstAmountLoading: result?.isLoading, dstAmount: result?.outAmount });

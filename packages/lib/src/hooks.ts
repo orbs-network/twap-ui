@@ -802,21 +802,19 @@ export const useDappRawSelectedTokens = () => {
 
 export const useSubmitButton = (isMain?: boolean) => {
   const translations = useTwapContext().translations;
-  const shouldUnwrap = useTwapStore((store) => store.shouldUnwrap());
-  const shouldWrap = useTwapStore((store) => store.shouldWrap());
-  const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
-  const { maker, dstAmount, srcAmount } = useTwapStore((store) => ({
+  const { maker, shouldWrap, shouldUnwrap, wrongNetwork, disclaimerAccepted, setShowConfirmation, showConfirmation, warning, createOrderLoading } = useTwapStore((store) => ({
     maker: store.lib?.maker,
-    dstAmount: store.dstAmount,
-    srcAmount: store.srcAmountUi,
+    shouldWrap: store.shouldWrap(),
+    shouldUnwrap: store.shouldUnwrap(),
+    wrongNetwork: store.wrongNetwork,
+    disclaimerAccepted: store.disclaimerAccepted,
+    setShowConfirmation: store.setShowConfirmation,
+    showConfirmation: store.showConfirmation,
+    warning: store.getFillWarning(translations),
+    createOrderLoading: store.loading,
   }));
-  const disclaimerAccepted = useTwapStore((state) => state.disclaimerAccepted);
-  const setShowConfirmation = useTwapStore((state) => state.setShowConfirmation);
-  const showConfirmation = useTwapStore((state) => state.showConfirmation);
-  const warning = useTwapStore((state) => state.getFillWarning(translations));
-  const createOrderLoading = useTwapStore((state) => state.loading);
+  const outAmountLoading = useOutAmountLoading();
   const { srcUsdLoading, dstUsdLoading } = useLoadingState();
-
   const { mutate: approve, isLoading: approveLoading } = useApproveToken();
   const { mutate: createOrder } = useCreateOrder();
   const allowance = useHasAllowanceQuery();
@@ -840,7 +838,7 @@ export const useSubmitButton = (isMain?: boolean) => {
       loading: false,
       disabled: false,
     };
-  if ((srcAmount && dstAmount === "0") || (srcAmount && !dstAmount)) {
+  if (outAmountLoading) {
     return { text: "", onClick: undefined, loading: true, disabled: true };
   }
   if (warning)
@@ -952,4 +950,16 @@ export const useParseOrderUi = (o?: ParsedOrder) => {
       },
     };
   }, [lib, o, srcUsd, dstUsd]);
+};
+
+export const useOutAmountLoading = () => {
+  const { dstAmountLoading, srcAmount } = useTwapStore((s) => ({
+    dstAmountLoading: s.dstAmountLoading,
+    srcAmount: s.getSrcAmount(),
+  }));
+
+  return useMemo(() => {
+    if (srcAmount.isZero()) return false;
+    return dstAmountLoading;
+  }, [dstAmountLoading, srcAmount]);
 };

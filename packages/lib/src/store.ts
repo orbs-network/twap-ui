@@ -79,7 +79,8 @@ export const useTwapStore = create(
     },
     updateState: (values: Partial<State>) => set({ ...values }),
     setOrderCreatedTimestamp: (orderCreatedTimestamp: number) => set({ orderCreatedTimestamp }),
-    reset: (storeOverride: StoreOverride) => set({ ...initialState, lib: get().lib, ...storeOverride }),
+    reset: (storeOverride: StoreOverride) =>
+      set({ ...initialState, lib: get().lib, ...storeOverride, srcUsd: get().srcUsd, dstUsd: get().dstUsd, srcBalance: get().srcBalance, dstBalance: get().dstBalance }),
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
@@ -89,7 +90,7 @@ export const useTwapStore = create(
       set({ dstToken, limitPriceUi: { ...get().limitPriceUi, custom: false } });
     },
     setSrcAmountUi: (srcAmountUi: string) => {
-      set({ srcAmountUi });
+      set({ srcAmountUi, dstAmountLoading: true });
       (get() as any).setChunks(get().chunks);
     },
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),

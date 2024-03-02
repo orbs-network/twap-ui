@@ -428,6 +428,15 @@ export const StyledPancakeTwap = styled(Box)<{ isDarkTheme: number }>(({ isDarkT
   width: "100%",
 }));
 
+export const StyledPancakeOrders = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
+  background: isDarkTheme ? "#27262C" : "#FFFFFF",
+  borderRadius: 24,
+  position: "relative",
+  width: "100%",
+  maxWidth: 630,
+  marginTop: 20,
+}));
+
 export const StyledPancakeBackdrop = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
   width: "calc(100% + 2px)",
   height: "calc(100% + 4px)",
@@ -446,7 +455,7 @@ export const StyledPancakeLayout = styled(DappLayout)({
   flexDirection: "column",
   alignItems: "center",
   position: "relative",
-  maxWidth: 412,
+  maxWidth: 326,
 });
 
 export const StyledSushiLayout = styled(DappLayout)({

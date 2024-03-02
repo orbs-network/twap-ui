@@ -42,8 +42,6 @@ xdescribe("store", () => {
       const { result } = renderHook(() => useTwapStore());
       store = result;
 
-      console.log(await contract(Configs.SpookySwap.twapAbi, Configs.SpookySwap.twapAddress).methods.VERSION().call());
-
       lib = new TWAPLib(Configs.SpookySwap, maker);
       await act(async () => store.current.setLib(lib));
       expect(store.current.lib).eq(lib);

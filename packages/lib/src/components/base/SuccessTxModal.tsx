@@ -37,7 +37,7 @@ const StyledClose = styled("button")({
 const StyledModal = styled(Modal)({
   ".twap-modal-content": {
     width: "auto",
-    padding: 30,
+    padding: "0px 30px 30px 30px",
     ".twap-ui-close": {
       display: "none",
     },

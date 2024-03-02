@@ -15,6 +15,7 @@ const USD = ({
   suffix = "",
   emptyUi,
   onlyValue,
+  decimalScale,
 }: {
   isLoading?: boolean;
   value?: string | number;
@@ -23,8 +24,9 @@ const USD = ({
   onlyValue?: boolean;
   suffix?: string;
   prefix?: string;
+  decimalScale?: number;
 }) => {
-  const formattedValue = useFormatNumber({ value });
+  const formattedValue = useFormatNumber({ value, decimalScale });
 
   const { usdSuffix, usdPrefix, usdEmptyUI } = useTwapContext().uiPreferences;
 
