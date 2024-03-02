@@ -12,7 +12,9 @@ import {
   StyledChunksSlider,
   StyledColumnFlex,
   StyledLimitPrice,
-  StyledLimitPriceInput,
+  StyledLimitPriceBody,
+  StyledLimitPriceBottom,
+  StyledLimitPriceLabel,
   StyledMarketPriceContainer,
   StyledOutputAddress,
   StyledPoweredBy,
@@ -25,6 +27,7 @@ import {
   StyledTotalChunks,
   StyledTradeSize,
 } from "./styles";
+import { FaExchangeAlt } from "@react-icons/all-files/fa/FaExchangeAlt";
 
 import { JSXElementConstructor, memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -40,7 +43,7 @@ import {
   StyledTokenSelect,
   StyledUSD,
 } from "./styles";
-import { chainId, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
+import { chainId, isNativeAddress, TokenERC1155, zeroAddress } from "@defi.org/web3-candies";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
 import Web3 from "web3";
@@ -52,7 +55,6 @@ import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown
 import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 import PancakeOrders from "./PancakeOrders";
-import { amountUi } from "@orbs-network/twap-ui";
 
 const uiPreferences: TwapContextUIPreferences = {
   usdSuffix: " USD",
@@ -173,7 +175,9 @@ const SrcTokenPercentSelector = () => {
   return (
     <StyledPercentSelect>
       {PERCENT.map((p) => {
-        const selected = percent === p.value || (p.value === 1 && BN(getMaxSrcInputAmount || 0).isEqualTo(srcAmount));
+        const selected = BN(srcAmount || "0").isZero()
+          ? false
+          : Math.round(percent * 100) === p.value * 100 || (p.value === 1 && BN(getMaxSrcInputAmount || 0).isEqualTo(srcAmount));
         return (
           <StyledButton selected={selected ? 1 : 0} key={p.text} onClick={() => onClick(p.value)}>
             {p.text}
@@ -230,6 +234,15 @@ const TWAP = memo((props: AdapterProps) => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
+  const useTrade = (fromToken?: TokenData, toToken?: TokenData, value?: string) => {
+    const _fromToken = useMemo(() => {
+      if (!fromToken) return undefined;
+      const address = isNativeAddress(fromToken?.address || "") ? "BNB" : fromToken?.address;
+      return fromToken ? { ...fromToken, address } : undefined;
+    }, [fromToken]);
+    return props.useTrade!(_fromToken, toToken, value);
+  };
+
   return (
     <Box className="twap-adapter-wrapper">
       <TwapAdapter
@@ -249,7 +262,7 @@ const TWAP = memo((props: AdapterProps) => {
         onDstTokenSelected={props.onDstTokenSelected}
         usePriceUSD={props.usePriceUSD}
         onSrcTokenSelected={props.onSrcTokenSelected}
-        useTrade={props.useTrade}
+        useTrade={useTrade}
         isDarkTheme={props.isDarkTheme}
       >
         <ThemeProvider theme={theme}>
@@ -420,13 +433,14 @@ const TradeInterval = () => {
 
 const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
   const isLimitOrder = store.useTwapStore((store) => store.isLimitOrder);
+  const { leftToken, rightToken, onChange, limitPrice, toggleInverted } = hooks.useLimitPrice();
 
   return (
     <StyledLimitPrice>
       <Card>
         <Card.Header>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <TwapStyles.StyledRowFlex style={{ width: "auto" }}>
+            <StyledLimitPriceLabel>
               <Components.Labels.LimitPriceLabel />
               <Components.ResetLimitButton>
                 <StyledReset>
@@ -436,18 +450,28 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
                   </TwapStyles.StyledRowFlex>
                 </StyledReset>
               </Components.ResetLimitButton>
-            </TwapStyles.StyledRowFlex>
+            </StyledLimitPriceLabel>
             {!limitOnly && <Components.LimitPriceToggle />}
           </TwapStyles.StyledRowFlex>
         </Card.Header>
         {isLimitOrder && (
-          <Card.Body editable={true}>
-            <StyledLimitPriceInput placeholder="0" sx={{ pointerEvents: limitOnly ? "all" : isLimitOrder ? "all" : "none" }} />
-          </Card.Body>
+          <Styles.StyledColumnFlex>
+            <StyledLimitPriceBody editable={true}>
+              <Components.Base.NumericInput decimalScale={6} placeholder={""} onChange={onChange} value={limitPrice} />
+            </StyledLimitPriceBody>
+            <StyledLimitPriceBottom onClick={toggleInverted}>
+              <p>
+                {rightToken?.symbol} Per {leftToken?.symbol}
+              </p>
+              <FaExchangeAlt style={{ width: 16, height: 16 }} />
+            </StyledLimitPriceBottom>
+          </Styles.StyledColumnFlex>
         )}
       </Card>
     </StyledLimitPrice>
   );
 };
+
+console.log(Components.Base);
 
 export { TWAP, Orders };

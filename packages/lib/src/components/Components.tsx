@@ -183,7 +183,7 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
 };
 
 const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
-  const { token, amount, srcAmount, isLimitOrder } = useTwapStore((store) => ({
+  const { token, amount, isLimitOrder } = useTwapStore((store) => ({
     token: store.dstToken,
     amount: store.getDstAmountUi(),
     srcAmount: store.srcAmountUi,
@@ -755,6 +755,7 @@ export const OrderSummaryTokenDisplay = ({ isSrc, usdSuffix, usdPrefix }: { isSr
 
   const amount = isSrc ? srcAmount : dstAmount;
   const prefix = isSrc ? "" : isLimitOrder ? "≥ " : "~ ";
+  const _amount = useFormatNumber({ value: amount, decimalScale: 5 });
 
   return (
     <StyledOrderSummaryTokenDisplay className="twap-orders-summary-token-display">
@@ -766,7 +767,7 @@ export const OrderSummaryTokenDisplay = ({ isSrc, usdSuffix, usdPrefix }: { isSr
         <TokenLogoAndSymbol isSrc={isSrc} />
         <StyledRowFlex className="twap-orders-summary-token-display-amount">
           {prefix && <StyledText> {prefix}</StyledText>}
-          <StyledOneLineText>{amount}</StyledOneLineText>
+          <StyledOneLineText>{_amount}</StyledOneLineText>
         </StyledRowFlex>
       </StyledRowFlex>
     </StyledOrderSummaryTokenDisplay>
@@ -1092,10 +1093,15 @@ export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
 };
 
 export const ResetLimitButton = ({ children }: { children?: ReactNode }) => {
-  const setLimitOrderPriceUi = useTwapStore((store) => store.setLimitOrderPriceUi);
+  const { setLimitOrderPriceUi, dstAmountFromDex, setOutAmount } = useTwapStore((store) => ({
+    setLimitOrderPriceUi: store.setLimitOrderPriceUi,
+    dstAmountFromDex: store.dstAmountFromDex,
+    setOutAmount: store.setOutAmount,
+  }));
   const { custom } = useLimitPrice();
   const onClick = () => {
     setLimitOrderPriceUi();
+    setOutAmount(dstAmountFromDex);
   };
 
   if (!custom) return null;

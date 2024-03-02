@@ -194,31 +194,31 @@ export const usePriceUSD = (address?: string) => {
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+const handleAddress = (address?: string) => {
+  if (address === "BNB") return zeroAddress;
+  return address;
+};
 export const useTrade = (fromToken?: TokenData, toToken?: TokenData, srcAmount?: string) => {
-  const fromTokenUsd = usePriceUSD(fromToken?.address);
-  const toTokenUsd = usePriceUSD(toToken?.address);
+  const fromTokenUsd = usePriceUSD(handleAddress(fromToken?.address));
+  const toTokenUsd = usePriceUSD(handleAddress(toToken?.address));
   const { chainId } = useWeb3React();
-  const { isLimitOrder, limitDstPriceFor1Src } = store.useTwapStore((s) => ({
-    isLimitOrder: s.isLimitOrder,
-    limitDstPriceFor1Src: s.getLimitPrice(false).limitPrice,
-  }));
 
   const query = useQuery({
-    queryKey: ["useTrade", fromToken?.address, toToken?.address, srcAmount, chainId, isLimitOrder],
+    queryKey: ["useTrade", fromToken?.address, toToken?.address, srcAmount, chainId],
     queryFn: async () => {
       await delay(1000);
       const result = convertDecimals(
-        !isLimitOrder
-          ? BigNumber(srcAmount!)
-              .times(fromTokenUsd || "0")
-              .div(toTokenUsd || "0")
-          : BigNumber(srcAmount || "0").times(limitDstPriceFor1Src),
+        BigNumber(srcAmount!)
+          .times(fromTokenUsd || "0")
+          .div(toTokenUsd || "0"),
         fromToken!.decimals,
         toToken!.decimals
       ).integerValue(BigNumber.ROUND_FLOOR);
 
       return result.toString();
     },
+    refetchInterval: 3_000,
     enabled: !!fromToken && !!toToken && !!srcAmount && !!fromTokenUsd && !!toTokenUsd,
   });
 

@@ -589,6 +589,8 @@ export const useSetTokensFromDapp = () => {
 
     if (srcTokenAddressOrSymbol) {
       const srcToken = getTokenFromTokensList(tokensList, srcTokenAddressOrSymbol);
+      console.log({ srcToken });
+
       setSrcToken(srcToken);
     }
     if (dstTokenAddressOrSymbol) {

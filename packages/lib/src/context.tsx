@@ -41,12 +41,12 @@ const useLimitPriceUpdater = () => {
 };
 
 const Listener = (props: TwapLibProps) => {
-  const { srcToken, dstToken, srcAmount, updateState } = useTwapStore((s) => ({
+  const { srcToken, dstToken, srcAmount, setOutAmount } = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
     srcAmount: s.getSrcAmount().toString(),
 
-    updateState: s.updateState,
+    setOutAmount: s.setOutAmount,
   }));
 
   const setTokensFromDappCallback = useSetTokensFromDapp();
@@ -55,8 +55,8 @@ const Listener = (props: TwapLibProps) => {
   const result = props.useTrade?.(srcToken, dstToken, srcAmount === "0" ? undefined : srcAmount);
 
   useEffect(() => {
-    updateState({ dstAmountLoading: result?.isLoading, dstAmount: result?.outAmount });
-  }, [result?.isLoading, result?.outAmount, updateState]);
+    setOutAmount(result?.outAmount, result?.isLoading);
+  }, [result?.isLoading, result?.outAmount, setOutAmount]);
 
   useEffect(() => {
     updateStoreOveride(props.storeOverride);

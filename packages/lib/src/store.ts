@@ -49,6 +49,7 @@ const initialState: State = {
   orderCreatedTimestamp: undefined,
   dstAmount: undefined,
   dstAmountLoading: false,
+  dstAmountFromDex: undefined,
 };
 
 export const useTwapStore = create(
@@ -75,7 +76,14 @@ export const useTwapStore = create(
         dstUsd: get().dstUsd,
         srcBalance: get().srcBalance,
         dstBalance: get().dstBalance,
+        wrongNetwork: get().wrongNetwork,
       });
+    },
+    setOutAmount: (dstAmount?: string, dstAmountLoading?: boolean) => {
+      set({ dstAmountFromDex: dstAmount });
+      if (!get().limitPriceUi.custom) {
+        set({ dstAmount, dstAmountLoading, limitPriceUi: { ...get().limitPriceUi, priceUi: (get() as any).getMarketPrice(false).marketPriceUi } });
+      }
     },
     updateState: (values: Partial<State>) => set({ ...values }),
     setOrderCreatedTimestamp: (orderCreatedTimestamp: number) => set({ orderCreatedTimestamp }),
@@ -90,7 +98,7 @@ export const useTwapStore = create(
       set({ dstToken, limitPriceUi: { ...get().limitPriceUi, custom: false } });
     },
     setSrcAmountUi: (srcAmountUi: string) => {
-      set({ srcAmountUi, dstAmountLoading: true });
+      set({ srcAmountUi, dstAmountLoading: true, limitPriceUi: { ...get().limitPriceUi, priceUi: "", custom: false } });
       (get() as any).setChunks(get().chunks);
     },
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),
@@ -151,10 +159,15 @@ export const useTwapStore = create(
     getIsPartialFillWarning: () => (get() as any).getChunks() * (get() as any).getFillDelayUiMillis() > (get() as any).getDurationMillis(),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork?: boolean) => set({ wrongNetwork }),
-    setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => set({ limitPriceUi: { ...limitPriceUi, custom: true } }),
+    setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) =>
+      set({
+        limitPriceUi: { ...limitPriceUi, custom: true },
+        dstAmount: BN((get() as any).getSrcAmount() || "0")
+          .times(limitPriceUi.priceUi || "0")
+          .toString(),
+      }),
     setChunks: (chunks: number) => set({ chunks: Math.min(chunks, (get() as any).getMaxPossibleChunks()) }),
     setDuration: (customDuration: Duration) => set({ customDuration }),
-    setDstAmount: (dstAmount: string) => set({ dstAmount }),
     getMaxPossibleChunks: () => (get().lib && get().srcToken ? get().lib!.maxPossibleChunks(get().srcToken!, amountBN(get().srcToken, get().srcAmountUi), get().srcUsd) : 1),
     getChunks: () => {
       const srcUsd = get().srcUsd;

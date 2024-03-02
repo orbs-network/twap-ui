@@ -146,6 +146,7 @@ export const configureStyles = (theme: Theme) => {
     ".twap-orders-list": {
       padding: 0,
       width: "100%",
+      gap: "15px!important",
     },
     ".twap-order-token-display": {
       flex: "unset!important",
@@ -202,7 +203,7 @@ export const configureStyles = (theme: Theme) => {
       padding: 15,
       transition: "0.2s all",
       color: `${styles.primaryTextColor}!important`,
-      background: styles.cardColor,
+      background: darkMode ? "#362F47" : "#EEEAF4",
     },
     ".twap-order-progress": {
       background: darkMode ? "#2D2836!important" : "#eeeaf4!important",
@@ -245,7 +246,8 @@ export const configureStyles = (theme: Theme) => {
       padding: "0px!important",
     },
     ".twap-time-selector-list-item": {
-      p: { color: styles.primaryTextColor },
+      p: { color: styles.primaryTextColor, fontWeight: "400!important" },
+
       "&:hover": {
         background: darkMode ? "rgba(255,255,255, 0.06)" : "rgba(0,0,0, 0.06)",
       },
@@ -490,6 +492,10 @@ export const StyledLimitPrice = styled(Styles.StyledRowFlex)(({ theme }) => {
       "*": {
         color: styles.primaryTextColor,
       },
+      input: {
+        position: "relative",
+        top: -2,
+      },
     },
     ".twap-token-logo": {
       display: "none",
@@ -712,11 +718,12 @@ export const StyledTimeSelectContainer = styled(Styles.StyledRowFlex)({
     height: "100%",
     p: {
       fontSize: "13px!important",
+      fontWeight: 400,
     },
   },
   ".twap-input": {
     input: {
-      paddingRight: 6,
+      paddingRight: 3,
     },
   },
 });
@@ -724,4 +731,69 @@ export const StyledTimeSelectContainer = styled(Styles.StyledRowFlex)({
 export const StyledTimeSelectHeader = styled(Card.Header)({
   marginTop: 1,
   width: "auto",
+});
+
+export const StyledOrdersHeader = styled(Box)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    display: "flex",
+    flexDirection: "column",
+    background: styles.darkMode ? "#372f47" : "#eeeaf4",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    height: 48,
+  };
+});
+
+export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, theme }) => {
+  const styles = baseStyles(theme);
+  const color = styles.darkMode ? "#b8add2" : "#7a6eaa";
+  const selectedColor = styles.darkMode ? "#f4eeff" : "#280d5f";
+  return {
+    cursor: "pointer",
+    background: !selected ? "transparent" : styles.darkMode ? "#27262c" : "white",
+    height: "100%",
+    padding: " 0px 24px",
+    display: "flex",
+    alignItems: "center",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    flex: 1,
+    justifyContent: "center",
+    fontWeight: 500,
+    color: !selected ? color : selectedColor,
+  };
+});
+
+export const StyledOrdersTabs = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  width: "100%",
+  justifyContent: "space-between",
+  height: "100%",
+  flex: 1,
+});
+
+export const StyledLimitPriceBody = styled(Card.Body)({
+  padding: "10px 10px",
+  input: {
+    textAlign: "right",
+  },
+});
+
+export const StyledLimitPriceBottom = styled(Styles.StyledRowFlex)({
+  gap: 10,
+  justifyContent: "flex-end",
+  cursor: "pointer",
+  p: {
+    fontSize: 14,
+    fontWeight: 500,
+    padding: 0,
+    margin: 0,
+  },
+});
+
+export const StyledLimitPriceLabel = styled(Styles.StyledRowFlex)({
+  width: "auto",
+  minHeight: 24,
 });

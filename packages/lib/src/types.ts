@@ -283,6 +283,7 @@ export interface State {
   showLoadingModal: boolean;
   showSuccessModal: boolean;
   dstAmount?: string;
+  dstAmountFromDex?: string;
   dstAmountLoading?: boolean;
 }
 
