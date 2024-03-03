@@ -711,7 +711,7 @@ export const StyledTimeSelectBody = styled(CardBody)({
 });
 
 export const StyledTimeSelectContainer = styled(Styles.StyledRowFlex)({
-  padding: 5,
+  padding: 0,
   ".MuiButtonBase-root": {
     padding: "0px!important",
     background: "unset!important",

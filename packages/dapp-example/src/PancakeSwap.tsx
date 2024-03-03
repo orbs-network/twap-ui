@@ -7,7 +7,7 @@ import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 import _ from "lodash";
-import { erc20s } from "@defi.org/web3-candies";
+import { erc20s, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
 import { styled } from "@mui/material";
@@ -96,6 +96,18 @@ const TokenSelectModal = ({ onCurrencySelect }: TokenSelectModalProps) => {
   );
 };
 
+const useDecimals = (fromToken?: string, toToken?: string) => {
+  const { data: dappTokens } = useDappTokens();
+  const fromTokenDecimals = dappTokens?.[fromToken || ""]?.decimals;
+  const toTokenDecimals = dappTokens?.[toToken || ""]?.decimals;
+
+  return { fromTokenDecimals, toTokenDecimals };
+};
+
+const handleAddress = (address?: string) => {
+  return !address ? "" : "BNB" ? zeroAddress : address;
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
@@ -104,6 +116,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const [srcToken, setSrcToken] = useState("BNB");
   const [dstToken, setDstToken] = useState("0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d");
   const [open, setOpen] = useState(false);
+
+  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
+    const { fromTokenDecimals, toTokenDecimals } = useDecimals(handleAddress(fromToken), handleAddress(toToken));
+    return useTrade(fromToken, toToken, amount, fromTokenDecimals, toTokenDecimals);
+  };
 
   const onTokenSelectClick = (isFrom: boolean) => {
     setIsFrom(isFrom);
@@ -134,7 +151,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         ConnectButton={ConnectButton}
         usePriceUSD={usePriceUSD}
         connectedChainId={chainId}
-        useTrade={useTrade}
+        useTrade={_useTrade}
         provider={library}
         onTokenSelectClick={onTokenSelectClick}
       />

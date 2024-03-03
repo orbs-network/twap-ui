@@ -156,7 +156,7 @@ export interface TwapContextUIPreferences {
   infoIcon?: FC;
   inputLoader?: ReactElement;
   input?: {
-    hideOnLoading?: boolean;
+    showOnLoading?: boolean;
   };
 }
 
@@ -178,7 +178,7 @@ export interface ParsedOrder {
   };
 }
 
-type UseTrade = (fromToken?: Token, toToken?: Token, amount?: string) => { isLoading?: boolean; outAmount?: string };
+type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
 
 export interface TwapLibProps extends LibProps {
   connect?: () => void;

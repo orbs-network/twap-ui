@@ -19,6 +19,7 @@ import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
+import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 
 const storeOverride = {
   isLimitOrder: true,

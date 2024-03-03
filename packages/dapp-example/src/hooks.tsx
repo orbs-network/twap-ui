@@ -199,21 +199,23 @@ const handleAddress = (address?: string) => {
   if (address === "BNB") return zeroAddress;
   return address;
 };
-export const useTrade = (fromToken?: TokenData, toToken?: TokenData, srcAmount?: string) => {
-  const fromTokenUsd = usePriceUSD(handleAddress(fromToken?.address));
-  const toTokenUsd = usePriceUSD(handleAddress(toToken?.address));
+
+export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: string, fromTokenDecimals?: number, toTokenDecimals?: number) => {
+  const fromTokenUsd = usePriceUSD(handleAddress(fromToken));
+  const toTokenUsd = usePriceUSD(handleAddress(toToken));
   const { chainId } = useWeb3React();
 
   const query = useQuery({
-    queryKey: ["useTrade", fromToken?.address, toToken?.address, srcAmount, chainId],
+    queryKey: ["useTrade", fromToken, toToken, srcAmount, chainId],
     queryFn: async () => {
+      if (!fromTokenDecimals || !toTokenDecimals) return "0";
       await delay(1000);
       const result = convertDecimals(
         BigNumber(srcAmount!)
           .times(fromTokenUsd || "0")
           .div(toTokenUsd || "0"),
-        fromToken!.decimals,
-        toToken!.decimals
+        fromTokenDecimals,
+        toTokenDecimals
       ).integerValue(BigNumber.ROUND_FLOOR);
 
       return result.toString();

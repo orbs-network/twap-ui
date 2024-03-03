@@ -36,7 +36,7 @@ function NumericInput({ prefix = "", onChange, value, disabled = false, placehol
   return (
     <StyledContainer className={`twap-input ${className}`}>
       {loading && <InputLoader />}
-      <Fade in={input?.hideOnLoading ? !loading : true}>
+      <Fade in={input?.showOnLoading ? true : !loading}>
         <StyledFlex>
           <NumericFormat
             allowNegative={false}

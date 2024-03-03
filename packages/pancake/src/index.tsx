@@ -66,7 +66,7 @@ const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
   inputLoader: <></>,
   input: {
-    hideOnLoading: false,
+    showOnLoading: true,
   },
 };
 
@@ -234,13 +234,8 @@ const TWAP = memo((props: AdapterProps) => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
-  const useTrade = (fromToken?: TokenData, toToken?: TokenData, value?: string) => {
-    const _fromToken = useMemo(() => {
-      if (!fromToken) return undefined;
-      const address = isNativeAddress(fromToken?.address || "") ? "BNB" : fromToken?.address;
-      return fromToken ? { ...fromToken, address } : undefined;
-    }, [fromToken]);
-    return props.useTrade!(_fromToken, toToken, value);
+  const useTrade = (fromToken?: string, toToken?: string, value?: string) => {
+    return props.useTrade!(isNativeAddress(fromToken || "") ? "BNB" : fromToken, toToken, value);
   };
 
   return (
@@ -471,7 +466,5 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
     </StyledLimitPrice>
   );
 };
-
-console.log(Components.Base);
 
 export { TWAP, Orders };

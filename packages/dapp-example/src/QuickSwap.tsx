@@ -70,6 +70,13 @@ const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectMo
   );
 };
 
+const useDecimals = (fromToken?: string, toToken?: string) => {
+  const { data: dappTokens } = useDappTokens();
+  const fromTokenDecimals = dappTokens?.[fromToken || ""]?.decimals;
+  const toTokenDecimals = dappTokens?.[toToken || ""]?.decimals;
+  return { fromTokenDecimals, toTokenDecimals };
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
@@ -88,6 +95,15 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     [_.size(dappTokens)]
   );
 
+  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
+    console.log("fromToken", fromToken);
+    console.log("toToken", toToken);
+    console.log("amount", amount);
+
+    const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken, toToken);
+    return useTrade(fromToken, toToken, amount, fromTokenDecimals, toTokenDecimals);
+  };
+
   return (
     <TWAP
       connect={connect}
@@ -104,7 +120,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       limit={limit}
       onTxSubmitted={(args: any) => console.log(args)}
       usePriceUSD={usePriceUSD}
-      useTrade={useTrade}
+      useTrade={_useTrade}
     />
   );
 };
