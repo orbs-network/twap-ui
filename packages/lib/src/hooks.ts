@@ -443,34 +443,34 @@ export const useHasAllowanceQuery = () => {
 };
 
 export const usePriceUSD = (address?: string, onSuccess?: (value: BN) => void) => {
-  const { priceUsd, usePriceUSD: usePriceUSDFromContext } = useTwapContext();
+  const context = useTwapContext();
   const lib = useTwapStore((state) => state.lib);
   const _address = address && isNativeAddress(address) ? lib?.config.wToken.address : address;
-  const usd = usePriceUSDFromContext?.(_address);
+  const usd = context.usePriceUSD?.(_address);
 
   const query = useQuery(
     [QueryKeys.GET_USD_VALUE, _address],
     async () => {
-      const res = await priceUsd!(_address!);
+      const res = await context.priceUsd!(_address!);
 
       return new BN(res);
     },
     {
-      enabled: !!lib && !!_address && !!priceUsd,
+      enabled: !!lib && !!_address && !!context.priceUsd,
       onSuccess,
       refetchInterval: REFETCH_USD,
     }
   );
 
   useEffect(() => {
-    if (usePriceUSDFromContext && onSuccess) {
+    if (context.usePriceUSD && onSuccess) {
       onSuccess?.(new BN(usd || 0));
     }
   }, [onSuccess, usd]);
 
   return {
     value: new BN(query.data || usd || 0),
-    isLoading: priceUsd ? query.isLoading && query.fetchStatus !== "idle" : !usd,
+    isLoading: context.priceUsd ? query.isLoading && query.fetchStatus !== "idle" : !usd,
   };
 };
 

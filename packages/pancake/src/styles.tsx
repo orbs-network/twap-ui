@@ -102,14 +102,41 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-cancel-order": {
+      background: "unset!important",
+      borderRadius: "30px!important",
+      fontWeight: 500,
+      fontSize: "14px!important",
+      border: "2px solid #1fc7d4!important",
+
+      padding: "6px 40px!important",
+      transition: "0.2s all",
+      height: "unset!important",
+      cursor: "pointer",
+      marginTop: "20px",
+      minHeight: "unset!important",
+      boxShadow: "unset!important",
+      "&:hover": {
+        opacity: 0.65,
+      },
+      ".twap-button-children": {
+        color: styles.darkMode ? "#b8add2!important" : "#7a6eaa!important",
+      },
+      ".twap-button-loader": {
+        transform: "translate(-50%, -50%) scale(0.6)",
+      },
+    },
     ".twap-token-input-loading": {
       opacity: 0.5,
     },
     ".twap-odnp-button": {
       ...getButtonStyles(theme),
-      padding: "4px 8px!important",
+      background: darkMode ? "#B8ADD2" : "#492F79",
+      padding: "6px 12px!important",
       width: "fit-content",
+      boxShadow: "unset",
       marginLeft: "auto",
+      fontWeight: 500,
       "&-children": {
         gap: "5px!important",
       },

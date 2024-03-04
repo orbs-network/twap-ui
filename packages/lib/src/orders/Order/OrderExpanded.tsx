@@ -152,18 +152,7 @@ const StyledMarketPrice = styled(StyledRowFlex)({
   },
 });
 
-export const StyledCancelOrderButton = styled(Button)({
-  background: "transparent",
-  border: "unset",
-  width: "fit-content",
-  marginTop: 30,
-  fontSize: 15,
-  fontFamily: "inherit",
-  marginLeft: "auto",
-  marginRight: "auto",
-  fontWeight: 300,
-  marginBottom: 20,
-});
+export const StyledCancelOrderButton = styled(Button)({});
 
 export const StyledContainer = styled(StyledColumnFlex)({
   width: "100%",
