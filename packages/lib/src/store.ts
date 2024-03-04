@@ -88,7 +88,18 @@ export const useTwapStore = create(
     updateState: (values: Partial<State>) => set({ ...values }),
     setOrderCreatedTimestamp: (orderCreatedTimestamp: number) => set({ orderCreatedTimestamp }),
     reset: (storeOverride: StoreOverride) =>
-      set({ ...initialState, lib: get().lib, ...storeOverride, srcUsd: get().srcUsd, dstUsd: get().dstUsd, srcBalance: get().srcBalance, dstBalance: get().dstBalance }),
+      set({
+        ...initialState,
+        lib: get().lib,
+        ...storeOverride,
+        srcUsd: get().srcUsd,
+        dstUsd: get().dstUsd,
+        srcBalance: get().srcBalance,
+        dstBalance: get().dstBalance,
+        srcToken: get().srcToken,
+        dstToken: get().dstToken,
+        limitPriceUi: get().limitPriceUi,
+      }),
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
@@ -366,6 +377,6 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
 export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) => {
   if (!tokensList || !addressOrSymbol) return;
 
-  if (_.isArray(tokensList)) return _.find(tokensList, (token) => eqIgnoreCase(addressOrSymbol, token.address) || eqIgnoreCase(addressOrSymbol, token.symbol));
+  if (_.isArray(tokensList)) return _.find(tokensList, (token) => eqIgnoreCase(addressOrSymbol, token.address) || addressOrSymbol === token?.symbol);
   if (_.isObject(tokensList)) return tokensList[addressOrSymbol as keyof typeof tokensList];
 };

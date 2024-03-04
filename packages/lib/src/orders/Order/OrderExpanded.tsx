@@ -48,7 +48,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
           ) : (
             <Row label={`${translations.minReceivedPerTrade}`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
               <TokenLogo logo={order.ui.dstToken?.logoUrl} />
-              {dstMinAmountOutUi}
+              {`${dstMinAmountOutUi} `}
               {order.ui.dstToken?.symbol} ≈ $ <Tooltip text={dstMinAmountOutUsdUiTooltip}>{dstMinAmountOutUsdUi}</Tooltip>
             </Row>
           )}

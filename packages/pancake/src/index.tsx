@@ -7,6 +7,7 @@ import {
   darkTheme,
   lightTheme,
   StyledAcceptDisclaimer,
+  StyledBalanceContainer,
   StyledButton,
   StyledChunksInput,
   StyledChunksSlider,
@@ -74,7 +75,9 @@ interface AdapterProps extends TWAPProps {
   dappTokens: { [key: string]: any };
   isDarkTheme?: boolean;
   ConnectButton: JSXElementConstructor<any>;
-  onTokenSelectClick: (isFrom: boolean) => void;
+  useTokenModal: any;
+  nativeToken: any;
+  connector?: any;
 }
 
 const AdapterContext = createContext({} as AdapterProps);
@@ -85,8 +88,9 @@ const useAdapterContext = () => useContext(AdapterContext);
 
 const config = Configs.PancakeSwap;
 
-const parseToken = (rawToken: any): TokenData | undefined => {
+export const parseToken = (rawToken: any): TokenData | undefined => {
   const { address, decimals, symbol, logoURI } = rawToken;
+
   if (!symbol) {
     console.error("Invalid token", rawToken);
     return;
@@ -113,19 +117,28 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
   const onPercentClick = hooks.useCustomActions().onPercentClick;
 
   return (
-    <div onClick={isSrc ? () => onPercentClick(1) : () => {}}>
+    <StyledBalanceContainer onClick={isSrc ? () => onPercentClick(1) : () => {}}>
       <StyledBalance isSrc={isSrc} decimalScale={6} />
-    </div>
+    </StyledBalanceContainer>
   );
 };
 
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
-  const onTokenSelectClick = useAdapterContext().onTokenSelectClick;
+  const selectToken = hooks.useSelectTokenCallback();
+  const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
+
+  const onSelect = useCallback(
+    (token: any) => {
+      selectToken({ isSrc: !!isSrcToken, token });
+    },
+    [selectToken, isSrcToken]
+  );
+  const onTokenSelectClick = useAdapterContext().useTokenModal(onSelect, srcToken, dstToken, isSrcToken);
   return (
     <StyledTokenPanel>
       <Card.Header>
         <StyledSelectAndBalance>
-          <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={() => onTokenSelectClick(isSrcToken)} />
+          <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onTokenSelectClick} />
           <Balance isSrc={isSrcToken} />
         </StyledSelectAndBalance>
       </Card.Header>
@@ -229,14 +242,38 @@ const ChangeTokensOrder = () => {
   );
 };
 
+const handleAddress = (address?: string) => {
+  return isNativeAddress(address || "") ? "BNB" : address;
+};
+
+const useProvider = (props: AdapterProps) => {
+  const [provider, setProvider] = useState(undefined);
+
+  useEffect(() => {
+    setProvider(props.connector?.options?.getProvider());
+  }, [props.connector, props.connectedChainId, props.account]);
+
+  return provider;
+};
+
 const TWAP = memo((props: AdapterProps) => {
+  const provider = useProvider(props);
+
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
   const useTrade = (fromToken?: string, toToken?: string, value?: string) => {
-    return props.useTrade!(isNativeAddress(fromToken || "") ? "BNB" : fromToken, toToken, value);
+    return props.useTrade!(handleAddress(fromToken), handleAddress(toToken), value);
   };
+
+  const dappTokens = useMemo(() => {
+    if (!props.dappTokens || !props.nativeToken) return undefined;
+    return {
+      ...props.dappTokens,
+      [zeroAddress]: props.nativeToken,
+    };
+  }, [props.dappTokens, props.nativeToken]);
 
   return (
     <Box className="twap-adapter-wrapper">
@@ -246,23 +283,25 @@ const TWAP = memo((props: AdapterProps) => {
         maxFeePerGas={props.maxFeePerGas}
         priorityFeePerGas={props.priorityFeePerGas}
         translations={translations as Translations}
-        provider={props.provider}
+        provider={provider}
         account={props.account}
         srcToken={props.srcToken}
         dstToken={props.dstToken}
         storeOverride={props.limit ? storeOverride : undefined}
         parseToken={parseToken}
-        dappTokens={props.dappTokens}
+        dappTokens={dappTokens}
         uiPreferences={uiPreferences}
         onDstTokenSelected={props.onDstTokenSelected}
         usePriceUSD={props.usePriceUSD}
         onSrcTokenSelected={props.onSrcTokenSelected}
         useTrade={useTrade}
         isDarkTheme={props.isDarkTheme}
+        ordersId={props.ordersId}
+        connectedChainId={props.connectedChainId}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
-          <AdapterContextProvider value={props}>
+          <AdapterContextProvider value={{ ...props, provider }}>
             {props.limit ? <LimitPanel /> : <TWAPPanel />}
             <PancakeOrders />
           </AdapterContextProvider>

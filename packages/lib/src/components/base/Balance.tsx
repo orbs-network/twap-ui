@@ -2,6 +2,7 @@ import { styled } from "@mui/system";
 import React, { ReactNode } from "react";
 import { useTwapContext } from "../../context";
 import { useFormatNumber } from "../../hooks";
+import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
 import Tooltip from "./Tooltip";
 

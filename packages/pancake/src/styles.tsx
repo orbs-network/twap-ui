@@ -204,9 +204,18 @@ export const configureStyles = (theme: Theme) => {
       transition: "0.2s all",
       color: `${styles.primaryTextColor}!important`,
       background: darkMode ? "#362F47" : "#EEEAF4",
+      ".twap-order-expanded-right": {
+        fontWeight: "400!important",
+      },
+      ".twap-market-price-section": {
+        "*": {
+          fontSize: 13,
+          fontWeight: "400!important",
+        },
+      },
     },
     ".twap-order-progress": {
-      background: darkMode ? "#2D2836!important" : "#eeeaf4!important",
+      background: darkMode ? "#2D2836!important" : "#1fc7d4!important",
       "&::after": {
         display: "none!important",
       },
@@ -220,11 +229,11 @@ export const configureStyles = (theme: Theme) => {
         background: darkMode ? `#27262C!important` : "white!important",
       },
       ".MuiSwitch-track": {
-        backgroundColor: darkMode ? `#b8add2!important` : "#1fc7d4!important",
+        backgroundColor: darkMode ? `#b8add2!important` : "#EDEAF4!important",
         opacity: "1!important",
       },
       ".Mui-checked+.MuiSwitch-track": {
-        background: "#31D0AA!important",
+        background: "#32D0AA!important",
       },
     },
     ".twap-time-selector": {
@@ -266,7 +275,7 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-tooltip": {
       ".MuiTooltip-arrow": {
-        color: "white!important",
+        color: darkMode ? "white!important" : "#27262C!important",
       },
       "& .MuiTooltip-tooltip": {
         ...getTootlipStyles(theme),
@@ -318,21 +327,26 @@ export const configureStyles = (theme: Theme) => {
         color: styles.subtitle,
       },
     },
-    "@media (max-width:500px)": {
+    "@media (max-width:600px)": {
       ".twap-orders-title": {
         p: {
           fontSize: "14px!important",
         },
       },
-
+      ".twap-order-expanded": {
+        ".twap-token-logo": {
+          display: "none",
+        },
+      },
       ".twap-order-preview-tokens": {
-        flexDirection: "column",
-        alignItems: "center!important",
-        ".twap-order-preview-icon": {
-          transform: "rotate(90deg)",
+        ".twap-order-preview-icon svg": {
+          width: "16px!important",
+          height: "16px!important",
+          position: "relative",
+          top: 5,
         },
         ".twap-token-logo": {
-          top: 2,
+          display: "none",
         },
       },
     },
@@ -340,7 +354,12 @@ export const configureStyles = (theme: Theme) => {
 };
 
 export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({});
-
+export const StyledBalanceContainer = styled("div")({
+  flex: 1,
+  overflow: "hidden",
+  display: "flex",
+  justifyContent: "flex-end",
+});
 export const StyledBalance = styled(Components.TokenBalance)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
@@ -358,6 +377,9 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
   alignItems: "flex-start",
 
   gap: 5,
+  ".twap-loader": {
+    marginLeft: "auto",
+  },
 
   ".twap-price-compare": {
     justifyContent: "flex-end",
@@ -717,12 +739,13 @@ export const StyledTimeSelectContainer = styled(Styles.StyledRowFlex)({
     background: "unset!important",
     height: "100%",
     p: {
-      fontSize: "13px!important",
+      fontSize: "12px!important",
       fontWeight: 400,
     },
   },
   ".twap-input": {
     input: {
+      fontSize: 14,
       paddingRight: 3,
     },
   },
@@ -762,6 +785,10 @@ export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, th
     justifyContent: "center",
     fontWeight: 500,
     color: !selected ? color : selectedColor,
+    "@media (max-width:700px)": {
+      fontSize: 12,
+      padding: " 0px 14px",
+    },
   };
 });
 
@@ -772,6 +799,7 @@ export const StyledOrdersTabs = styled(Box)({
   justifyContent: "space-between",
   height: "100%",
   flex: 1,
+  "@media (max-width:700px)": {},
 });
 
 export const StyledLimitPriceBody = styled(Card.Body)({

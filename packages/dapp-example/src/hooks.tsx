@@ -184,6 +184,7 @@ export const usePriceUSD = (address?: string) => {
   return useQuery<number>({
     queryKey: ["quickswap-price-usd", address, chainId],
     queryFn: async () => {
+      await delay(1_000);
       const _address = isNativeAddress(address || "") ? wToken : address;
       return fetchPrice(_address!, chainId!);
     },

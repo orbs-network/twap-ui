@@ -125,6 +125,7 @@ export interface TWAPProps extends BaseProps {
   priceUsd?: PriceUsd;
   usePriceUSD?: (address?: string, token?: TokenData) => number | undefined;
   useTrade?: UseTrade;
+  ordersId?: string;
 }
 
 type PriceUsd = (address: string, token?: TokenData) => Promise<number>;
@@ -197,6 +198,7 @@ export interface TwapLibProps extends LibProps {
   usePriceUSD?: (token?: string) => number | undefined;
   priceUsd?: PriceUsd;
   useTrade?: UseTrade;
+  ordersId?: string;
 }
 
 export type Token = TokenData;

@@ -41,7 +41,7 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
           isMain={true}
           token={order?.ui.srcToken}
           amount={order?.ui.srcAmountUi}
-          usdValue={order?.ui.srcAmountUsdUi || ""}
+          usdValue={order?.ui.srcAmountUsdUi || "0"}
           isLoading={!order?.ui.srcAmountUsdUi}
         />
         <Icon className="twap-order-preview-icon" icon={<HiArrowRight style={{ width: 22, height: 22 }} />} />
@@ -207,5 +207,6 @@ const StyledTokenLogo = styled(TokenLogo)({
   "@media(max-width: 600px)": {
     width: 20,
     height: 20,
+    top: 0,
   },
 });

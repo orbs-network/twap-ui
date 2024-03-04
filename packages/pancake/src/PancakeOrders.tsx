@@ -1,15 +1,10 @@
 import * as React from "react";
-import { Box, Fade, styled } from "@mui/material";
+import { styled } from "@mui/material";
 import { hooks, OrdersPortal, SelectedOrders, store } from "@orbs-network/twap-ui";
 import { StyledOrders, StyledOrdersHeader, StyledOrdersTab, StyledOrdersTabs } from "./styles";
 import { Styles } from "@orbs-network/twap-ui";
 
 export default function PancakeOrders() {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const { tab, setTab } = store.useOrdersStore();
-  const open = Boolean(anchorEl);
-  const tabs = hooks.useOrdersTabs();
-
   return (
     <OrdersPortal>
       <StyledOrders>

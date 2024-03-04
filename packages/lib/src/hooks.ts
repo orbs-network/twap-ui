@@ -56,6 +56,7 @@ export const useWrapToken = () => {
   const srcToken = useTwapStore((state) => state.srcToken);
   const dstToken = useTwapStore((state) => state.dstToken);
   const wizardStore = useWizardStore();
+  const { onSrcTokenSelected, dappTokens } = useTwapContext();
 
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
 
@@ -78,6 +79,12 @@ export const useWrapToken = () => {
           return;
         }
         setSrcToken(lib!.config.wToken);
+        const token = getTokenFromTokensList(dappTokens, lib!.config.wToken.address);
+        if (token) {
+          console.log({ token });
+
+          onSrcTokenSelected?.(token);
+        }
       },
       onError: (error: Error) => {
         console.log(error.message);
@@ -693,11 +700,12 @@ export const useResetLimitPrice = () => {
   return useTwapStore((store) => store.setLimitOrderPriceUi);
 };
 
-const useTokenSelect = () => {
+const useTokenSelect = (parseTokenProps?: (token: any) => any) => {
   const { onSrcTokenSelected, onDstTokenSelected, parseToken } = useTwapContext();
   return useCallback(
     ({ isSrc, token }: { isSrc: boolean; token: any }) => {
-      const parsedToken = parseToken ? parseToken(token) : token;
+      const _parsedToken = parseToken || parseTokenProps;
+      const parsedToken = _parsedToken ? _parsedToken(token) : token;
       if (isSrc) {
         analytics.onSrcTokenClick(parsedToken?.symbol);
         useTwapStore.getState().setSrcToken(parsedToken);
@@ -708,7 +716,7 @@ const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onSrcTokenSelected, onDstTokenSelected, parseToken]
+    [onSrcTokenSelected, onDstTokenSelected, parseToken, parseTokenProps]
   );
 };
 
@@ -728,7 +736,6 @@ export const useSwitchTokens = () => {
     switchTokens();
     const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
     const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
-
     srcToken && onSrcTokenSelected?.(_dstToken);
     dstToken && onDstTokenSelected?.(_srcToken);
   }, [_.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol, onSrcTokenSelected, onDstTokenSelected]);
@@ -758,24 +765,25 @@ export const useOrdersTabs = () => {
   }, [orders]);
 };
 
-export const useSelectTokenCallback = () => {
+export const useSelectTokenCallback = (parseTokenProps?: (token: any) => any) => {
   const srcTokenAddress = useTwapStore((s) => s.srcToken)?.address;
   const dstTokenAddress = useTwapStore((s) => s.dstToken)?.address;
   const { parseToken } = useTwapContext();
 
-  const onTokenSelect = useTokenSelect();
+  const onTokenSelect = useTokenSelect(parseTokenProps);
 
   const switchTokens = useSwitchTokens();
   return useCallback(
     (args: { isSrc: boolean; token: any }) => {
-      const parsedToken = parseToken ? parseToken(args.token) : args.token;
+      const _parseToken = parseToken || parseTokenProps;
+      const parsedToken = _parseToken ? _parseToken(args.token) : args.token;
       if (eqIgnoreCase(parsedToken?.address || "", srcTokenAddress || "") || eqIgnoreCase(parsedToken?.address || "", dstTokenAddress || "")) {
         switchTokens();
         return;
       }
       onTokenSelect(args);
     },
-    [srcTokenAddress, dstTokenAddress, switchTokens, parseToken, onTokenSelect]
+    [srcTokenAddress, dstTokenAddress, switchTokens, parseToken, onTokenSelect, parseTokenProps]
   );
 };
 

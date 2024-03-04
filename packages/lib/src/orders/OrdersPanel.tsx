@@ -1,6 +1,6 @@
 import { Box, styled } from "@mui/material";
 import { ReactNode } from "react";
-import { ORDERS_CONTAINER_ID } from "..";
+import { ORDERS_CONTAINER_ID, useTwapContext } from "..";
 import { Odnp, Portal } from "../components/base";
 import { OrdersLabel } from "../components/Labels";
 import { OrdersSelectTabs, SelectedOrders } from "../components/OrdersComponents";
@@ -34,7 +34,8 @@ function Orders({ className = "" }: { className?: string }) {
 }
 
 export const OrdersPortal = ({ children, className }: { children?: ReactNode; className?: string }) => {
-  return <Portal id={ORDERS_CONTAINER_ID}>{children ? <>{children}</> : <Orders className={className} />}</Portal>;
+  const ordersId = useTwapContext().ordersId;
+  return <Portal id={ordersId || ORDERS_CONTAINER_ID}>{children ? <>{children}</> : <Orders className={className} />}</Portal>;
 };
 
 export function OrdersPanel({ className, noPortal, children }: { className?: string; noPortal?: boolean; children?: ReactNode }) {
