@@ -18,9 +18,9 @@ interface Props {
 }
 
 function Label({ children, tooltipText, className = "", fontSize, placement, subtitle }: Props) {
-  const { uiPreferences } = useTwapContext();
+  const uiPreferences = useTwapContext()?.uiPreferences;
 
-  const InfoIcon = uiPreferences.infoIcon || AiOutlineQuestionCircle;
+  const InfoIcon = uiPreferences?.infoIcon || AiOutlineQuestionCircle;
 
   if (subtitle) {
     return (

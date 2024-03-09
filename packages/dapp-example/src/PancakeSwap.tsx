@@ -1,16 +1,16 @@
 import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeOrders, StyledPancakeTwap } from "./styles";
-import { TWAP, Orders, parseToken } from "@orbs-network/twap-ui-pancake";
-import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
+import { TWAP, Orders, parseToken, OrderSummary } from "@orbs-network/twap-ui-pancake";
+import { useConnectWallet, useGetTokens, useIsMobile, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import _ from "lodash";
 import { erc20s, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
-import { styled } from "@mui/material";
+import { Button, styled, Tooltip } from "@mui/material";
 import { Components, hooks } from "@orbs-network/twap-ui";
 
 const config = Configs.PancakeSwap;
@@ -121,10 +121,51 @@ const useTokenModal = (item1: any, item2: any, item3: any, isFrom?: boolean) => 
   return () => context.openModal(!!isFrom);
 };
 
+const useTooltip = (content: ReactNode, options?: any, children?: ReactNode) => {
+  const targetRef = useRef<any>(null);
+
+  const tooltip = (
+    <Tooltip title={content}>
+      <span>{children}</span>
+    </Tooltip>
+  );
+
+  return {
+    targetRef,
+    tooltip,
+  };
+};
+
+const DappButton = ({ isLoading, disabled, children, onClick }: any) => {
+  console.log({ disabled });
+
+  return (
+    <StyledButton variant="contained" fullWidth disabled={isLoading || disabled} onClick={onClick}>
+      {children}
+    </StyledButton>
+  );
+};
+
+const StyledButton = styled(Button)({
+  width: "100%",
+});
+
+const ApproveModalContent = ({ title, isBonus, isMM }: { title: string; isBonus: boolean; isMM: boolean }) => {
+  return <p>Approving</p>;
+};
+
+const SwapTransactionErrorContent = ({ message }: { message: string }) => {
+  return <p>{message}</p>;
+};
+const SwapPendingModalContent = ({ title }: { title: string }) => {
+  return <p>{title}</p>;
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
+  const isMobile = useIsMobile();
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
     const { fromTokenDecimals, toTokenDecimals } = useDecimals(handleAddress(fromToken), handleAddress(toToken));
@@ -156,6 +197,13 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         onDstTokenSelected={(it: any) => console.log(it)}
         nativeToken={native}
         connector={connector}
+        isMobile={isMobile}
+        useTooltip={useTooltip}
+        Button={DappButton}
+        ApproveModalContent={ApproveModalContent}
+        SwapTransactionErrorContent={SwapTransactionErrorContent}
+        SwapPendingModalContent={SwapPendingModalContent}
+        SwapTransactionReceiptModalContent={SwapPendingModalContent}
       />
     </StyledPancakeTwap>
   );
@@ -165,20 +213,27 @@ const logo = "https://assets.coingecko.com/coins/images/12632/small/pancakeswap-
 const DappComponent = () => {
   const { isDarkTheme } = useTheme();
   const [selected, setSelected] = useState(SelectorOption.TWAP);
-
+  const isMobile = useIsMobile();
   return (
     <ContextWrapper>
       <Tokens />
       <StyledPancake isDarkTheme={isDarkTheme ? 1 : 0}>
+        {isMobile && (
+          <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
+            <Orders />
+          </StyledPancakeOrders>
+        )}
         <StyledPancakeLayout name={config.name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
           <Wrapper>
             <TWAPComponent limit={selected === SelectorOption.LIMIT} />
           </Wrapper>
         </StyledPancakeLayout>
-        <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
-          <Orders />
-        </StyledPancakeOrders>
+        {!isMobile && (
+          <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
+            <Orders />
+          </StyledPancakeOrders>
+        )}
       </StyledPancake>
     </ContextWrapper>
   );

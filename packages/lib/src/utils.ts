@@ -1,7 +1,8 @@
-import { TokenData, parsebn } from "@defi.org/web3-candies";
+import { TokenData, parsebn, eqIgnoreCase } from "@defi.org/web3-candies";
 import moment from "moment";
 import { Translations } from ".";
 import BN from "bignumber.js";
+import _ from "lodash";
 export const logger = (...args: any[]) => {
   if (process.env.NODE_ENV === "development") {
     console.log(...args);
@@ -68,4 +69,11 @@ export const fillDelayText = (value: number, translations: Translations) => {
 
 export const handleFillDelayText = (text: string, minutes: number) => {
   return text.replace("{{minutes}}", minutes.toString());
+};
+
+export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) => {
+  if (!tokensList || !addressOrSymbol) return;
+
+  if (_.isArray(tokensList)) return _.find(tokensList, (token) => eqIgnoreCase(addressOrSymbol, token.address) || addressOrSymbol === token?.symbol);
+  if (_.isObject(tokensList)) return tokensList[addressOrSymbol as keyof typeof tokensList];
 };

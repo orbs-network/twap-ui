@@ -1,10 +1,10 @@
-import { Order, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { InitLibProps, OrdersData, OrderUI, ParsedOrder, State } from "./types";
+import { InitLibProps, OrdersData, OrderUI, ParsedOrder, State, Translations } from "./types";
 import _ from "lodash";
 import { analytics } from "./analytics";
 import {
@@ -18,13 +18,16 @@ import {
   block,
   zero,
   isNativeAddress,
+  web3,
+  parseEvents,
+  sendAndWaitForConfirmations,
 } from "@defi.org/web3-candies";
-import { getTokenFromTokensList, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
+import { useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
-import { amountUi } from "./utils";
+import { amountUi, getTokenFromTokensList } from "./utils";
 
 /**
  * Actions
@@ -50,7 +53,7 @@ export const useReset = () => {
   };
 };
 
-export const useWrapToken = () => {
+export const useWrapToken = (disableWizard?: boolean) => {
   const lib = useTwapStore((state) => state.lib);
   const srcAmount = useTwapStore((state) => state.getSrcAmount());
   const srcToken = useTwapStore((state) => state.srcToken);
@@ -65,15 +68,17 @@ export const useWrapToken = () => {
 
   return useMutation(
     async () => {
-      wizardStore.setAction(WizardAction.WRAP);
-      wizardStore.setStatus(WizardActionStatus.PENDING);
+      if (!disableWizard) {
+        wizardStore.setAction(WizardAction.WRAP);
+        wizardStore.setStatus(WizardActionStatus.PENDING);
+      }
       analytics.onWrapClick(srcAmount);
       return lib!.wrapNativeToken(srcAmount, priorityFeePerGas, maxFeePerGas);
     },
     {
       onSuccess: () => {
         analytics.onWrapSuccess();
-        wizardStore.setStatus(WizardActionStatus.SUCCESS);
+        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
         if (lib?.validateTokens(srcToken!, dstToken!) === TokensValidation.wrapOnly) {
           reset();
           return;
@@ -88,14 +93,14 @@ export const useWrapToken = () => {
       },
       onError: (error: Error) => {
         console.log(error.message);
-        wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
+        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
         analytics.onWrapError(error.message);
       },
     }
   );
 };
 
-export const useUnwrapToken = () => {
+export const useUnwrapToken = (disableWizard?: boolean) => {
   const lib = useTwapStore((state) => state.lib);
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   const reset = useReset();
@@ -103,23 +108,26 @@ export const useUnwrapToken = () => {
   const wizardStore = useWizardStore();
   return useMutation(
     async () => {
-      wizardStore.setAction(WizardAction.UNWRAP);
-      wizardStore.setStatus(WizardActionStatus.PENDING);
+      if (!disableWizard) {
+        wizardStore.setAction(WizardAction.UNWRAP);
+        wizardStore.setStatus(WizardActionStatus.PENDING);
+      }
+
       return lib?.unwrapNativeToken(srcTokenAmount, priorityFeePerGas, maxFeePerGas);
     },
     {
       onSuccess: () => {
         reset();
-        wizardStore.setStatus(WizardActionStatus.SUCCESS);
+        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
-        wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
+        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
       },
     }
   );
 };
 
-export const useApproveToken = () => {
+export const useApproveToken = (disableWizard?: boolean) => {
   const lib = useTwapStore((state) => state.lib);
   const srcAmount = useTwapStore((state) => state.getSrcAmount());
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
@@ -128,8 +136,11 @@ export const useApproveToken = () => {
   const wizardStore = useWizardStore();
   return useMutation(
     async () => {
-      wizardStore.setAction(WizardAction.APPROVE);
-      wizardStore.setStatus(WizardActionStatus.PENDING);
+      if (!disableWizard) {
+        wizardStore.setAction(WizardAction.APPROVE);
+        wizardStore.setStatus(WizardActionStatus.PENDING);
+      }
+
       analytics.onApproveClick(srcAmount);
       await lib?.approve(srcToken!, srcAmount, priorityFeePerGas, maxFeePerGas);
       await refetch();
@@ -137,11 +148,11 @@ export const useApproveToken = () => {
     {
       onSuccess: async () => {
         analytics.onApproveSuccess();
-        wizardStore.setStatus(WizardActionStatus.SUCCESS);
+        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
         console.log(error.message);
-        wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
+        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
         analytics.onApproveError(error.message);
       },
     }
@@ -155,20 +166,14 @@ export const useOnTokenSelect = (isSrc?: boolean) => {
   return isSrc ? srcSelect : dstSelect;
 };
 
-export const useCreateSimpleLimitOrder = () => {
-  return useMutation(async () => {
-    return useCreateOrder();
-  });
-};
-
-export const useCreateOrder = () => {
+export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
 
+  const submitOrder = useSubmitOrderCallback();
+
   const wizardStore = useWizardStore();
-  const reset = useReset();
   const { askDataParams, onTxSubmitted } = useTwapContext();
-  const setTokensFromDapp = useSetTokensFromDapp();
 
   return useMutation(
     async () => {
@@ -184,14 +189,18 @@ export const useCreateOrder = () => {
         dstUSD: store.getDstAmountUsdUi()!,
         dstAmount: store.dstAmount!,
       });
-      wizardStore.setAction(WizardAction.CREATE_ORDER);
-      wizardStore.setStatus(WizardActionStatus.PENDING);
+      if (!disableWizard) {
+        wizardStore.setAction(WizardAction.CREATE_ORDER);
+        wizardStore.setStatus(WizardActionStatus.PENDING);
+      }
+
       const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
 
       analytics.onConfirmationCreateOrderClick();
       store.setLoading(true);
 
-      return store.lib!.submitOrder(
+      return submitOrder(
+        store.setTxHash,
         store.srcToken!,
         dstToken,
         store.getSrcAmount(),
@@ -206,19 +215,18 @@ export const useCreateOrder = () => {
       );
     },
     {
-      onSuccess: async (id) => {
-        analytics.onCreateOrderSuccess(id);
-        reset();
+      onSuccess: async (result) => {
+        analytics.onCreateOrderSuccess(result.orderId);
+        onSuccess?.();
         store.setOrderCreatedTimestamp(Date.now());
-        setTokensFromDapp();
-        wizardStore.setStatus(WizardActionStatus.SUCCESS);
+        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
         if ((error as any).code === 4001) {
           analytics.onCreateOrderRejected();
         }
-        wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
+        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
       },
 
       onSettled: () => {
@@ -592,6 +600,8 @@ export const useSetTokensFromDapp = () => {
   const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
 
   return useCallback(() => {
+    console.log({ tokensReady });
+
     if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
 
     if (srcTokenAddressOrSymbol) {
@@ -808,8 +818,8 @@ export const useDappRawSelectedTokens = () => {
   };
 };
 
-export const useSubmitButton = (isMain?: boolean) => {
-  const translations = useTwapContext().translations;
+export const useSubmitButton = (isMain?: boolean, _translations?: Translations) => {
+  const translations = useTwapContext()?.translations || _translations;
   const { maker, shouldWrap, shouldUnwrap, wrongNetwork, disclaimerAccepted, setShowConfirmation, showConfirmation, warning, createOrderLoading } = useTwapStore((store) => ({
     maker: store.lib?.maker,
     shouldWrap: store.shouldWrap(),
@@ -828,7 +838,7 @@ export const useSubmitButton = (isMain?: boolean) => {
   const allowance = useHasAllowanceQuery();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
-  const connect = useTwapContext().connect;
+  const connect = useTwapContext()?.connect;
   const wizardStore = useWizardStore();
   const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
 
@@ -970,4 +980,90 @@ export const useOutAmountLoading = () => {
     if (srcAmount.isZero()) return false;
     return dstAmountLoading;
   }, [dstAmountLoading, srcAmount]);
+};
+
+function useSubmitOrderCallback() {
+  const lib = useTwapStore((s) => s.lib);
+  return async (
+    onTxHash: (txHash: string) => void,
+    srcToken: TokenData,
+    dstToken: TokenData,
+    srcAmount: BN.Value,
+    srcChunkAmount: BN.Value,
+    dstMinChunkAmountOut: BN.Value,
+    deadline: number,
+    fillDelaySeconds: number,
+    srcUsd: BN.Value,
+    askDataParams: any[] = [],
+    maxPriorityFeePerGas?: BN.Value,
+    maxFeePerGas?: BN.Value
+  ): Promise<{ txHash: string; orderId: number }> => {
+    if (!lib) {
+      throw new Error("lib is not defined");
+    }
+
+    const validation = lib?.validateOrderInputs(srcToken, dstToken, srcAmount, srcChunkAmount, dstMinChunkAmountOut, deadline, fillDelaySeconds, srcUsd);
+    if (validation !== OrderInputValidation.valid) throw new Error(`invalid inputs: ${validation}`);
+
+    const askData = lib?.config.exchangeType === "PangolinDaasExchange" ? web3().eth.abi.encodeParameters(["address"], askDataParams) : [];
+
+    const askParams = [
+      lib.config.exchangeAddress,
+      srcToken.address,
+      dstToken.address,
+      BN(srcAmount).toFixed(0),
+      BN(srcChunkAmount).toFixed(0),
+      BN(dstMinChunkAmountOut).toFixed(0),
+      BN(deadline).div(1000).toFixed(0),
+      BN(lib.config.bidDelaySeconds).toFixed(0),
+      BN(fillDelaySeconds).toFixed(0),
+    ];
+
+    let ask: any;
+    if (lib.config.twapVersion > 3) {
+      askParams.push(askData as any);
+      ask = lib.twap.methods.ask(askParams as any);
+    } else {
+      ask = (lib.twap.methods as any).ask(...askParams);
+    }
+
+    const tx = await sendAndWaitForConfirmations(
+      ask,
+      {
+        from: lib.maker,
+        maxPriorityFeePerGas,
+        maxFeePerGas,
+      },
+      undefined,
+      undefined,
+      {
+        onTxHash,
+      }
+    );
+
+    const events = parseEvents(tx, lib.twap.options.jsonInterface);
+    return { txHash: tx.transactionHash, orderId: Number(events[0].returnValues.id) };
+  };
+}
+
+export const usePagination = <T>(list: T[] = [], chunkSize = 5 ) => {
+  const [page, setPage] = useState(0);
+
+  const chunks = useMemo(() => {
+    return _.chunk(list, chunkSize);
+  }, [list, chunkSize]);
+
+  const pageList = useMemo(() => {
+    return chunks[page] || [];
+  }, [chunks, page]);
+
+  return {
+    list: pageList,
+    page: page + 1,
+    prevPage: () => setPage((p) => Math.max(p - 1, 0)),
+    nextPage: () => setPage((p) => Math.min(p + 1, chunks.length - 1)),
+    hasPrevPage: page > 0,
+    hasNextPage: page < chunks.length - 1,
+    text : `Page ${page + 1} of ${chunks.length}`
+  };
 };

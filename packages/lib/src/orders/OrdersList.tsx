@@ -1,18 +1,18 @@
 import { Box, styled } from "@mui/material";
-import React, { useState } from "react";
+import  { useState } from "react";
 import Order from "./Order/Order";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useTwapContext } from "../context";
 import { ParsedOrder } from "../types";
 import _ from "lodash";
+import { usePagination } from "../hooks";
+import { StyledColumnFlex } from "../styles";
+import { Pagination } from "../components/base";
 
 function OrdersList({ orders, status, isLoading }: { orders?: ParsedOrder[]; status?: string; isLoading: boolean }) {
-  const [selected, setSelected] = useState<number | undefined>(undefined);
-  const translations = useTwapContext().translations;
+  const { uiPreferences } = useTwapContext();
 
-  const onSelect = (value: number) => {
-    setSelected((prevState) => (prevState === value ? undefined : value));
-  };
+  const showPagination = uiPreferences.orders?.paginationChunks && _.size(orders) > uiPreferences.orders?.paginationChunks;
 
   if (isLoading) {
     return (
@@ -21,6 +21,33 @@ function OrdersList({ orders, status, isLoading }: { orders?: ParsedOrder[]; sta
       </StyledLoader>
     );
   }
+  if (showPagination) {
+    return <PaginationList orders={orders} status={status} />;
+  }
+  return <List orders={orders} status={status} />;
+}
+
+const PaginationList = ({ orders, status }: { orders?: ParsedOrder[]; status?: string }) => {
+  const paginationChunks = useTwapContext().uiPreferences.orders?.paginationChunks;
+
+  const { list, nextPage, hasNextPage, prevPage, hasPrevPage, text } = usePagination(orders, paginationChunks);
+
+  return (
+    <StyledColumnFlex>
+      <List orders={list} status={status} />
+      <Pagination text={text} hasPrevPage={hasPrevPage} onNext={nextPage} onPrev={prevPage} hasNextPage={hasNextPage} />
+    </StyledColumnFlex>
+  );
+};
+
+const List = ({ orders, status }: { orders?: ParsedOrder[]; status?: string }) => {
+  const [selected, setSelected] = useState<number | undefined>(undefined);
+  const { translations } = useTwapContext();
+
+  const onSelect = (value: number) => {
+    setSelected((prevState) => (prevState === value ? undefined : value));
+  };
+
   return (
     <StyledContainer className="twap-orders-list">
       {_.size(orders) ? (
@@ -34,7 +61,7 @@ function OrdersList({ orders, status, isLoading }: { orders?: ParsedOrder[]; sta
       )}
     </StyledContainer>
   );
-}
+};
 
 export default OrdersList;
 

@@ -10,9 +10,10 @@ export interface Props {
   title?: string;
   className?: string;
   disableBackdropClick?: boolean;
+  header?: ReactNode;
 }
 
-function Modal({ onClose, open, children, title, className = "", disableBackdropClick = false }: Props) {
+function Modal({ onClose, open, children, title, className = "", disableBackdropClick = false, header }: Props) {
   return (
     <StyledModal
       slots={{ backdrop: Backdrop }}
@@ -27,22 +28,27 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
       onClose={!disableBackdropClick ? onClose : () => {}}
       className={`${className} twap-modal`}
       closeAfterTransition={true}
+      style={{ zIndex: 1 }}
     >
       <Fade in={open}>
         <StyledModalContent className="twap-modal-content" id="twap-modal-content">
-          <StyledHeader className="twap-modal-content-header">
-            {title && (
-              <>
-                <StyledTitle className="twap-modal-content-title">{title}</StyledTitle>
-                <StyledSeparator />
-              </>
-            )}
-            {onClose && (
-              <StyledClose className="twap-ui-close" onClick={onClose}>
-                <IoMdClose />
-              </StyledClose>
-            )}
-          </StyledHeader>
+          {!header ? (
+            <StyledHeader className="twap-modal-content-header">
+              {title && (
+                <>
+                  <StyledTitle className="twap-modal-content-title">{title}</StyledTitle>
+                  <StyledSeparator />
+                </>
+              )}
+              {onClose && (
+                <StyledClose className="twap-ui-close" onClick={onClose}>
+                  <IoMdClose />
+                </StyledClose>
+              )}
+            </StyledHeader>
+          ) : (
+            header
+          )}
 
           {children}
         </StyledModalContent>

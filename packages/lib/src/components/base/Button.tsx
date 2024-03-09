@@ -1,15 +1,18 @@
 import { Box, CircularProgress, Fade, styled } from "@mui/material";
-import { CSSProperties, ReactNode } from "react";
+import { useTwapContext } from "../../context";
+import { ButtonProps } from "../../types";
 
-export interface Props extends React.HTMLAttributes<HTMLElement> {
-  children: ReactNode;
-  style?: CSSProperties;
-  disabled?: boolean;
-  onClick: (e: any) => void;
-  loading?: boolean;
-}
+function Button({ children, disabled = false, onClick, loading = false, className = "" }: ButtonProps) {
+  const ContextButton = useTwapContext().uiPreferences.Button;
 
-function Button({ children, disabled = false, onClick, loading = false, className = "" }: Props) {
+  if (ContextButton) {
+    return (
+      <ContextButton disabled={disabled} onClick={onClick} loading={loading} className={className}>
+        {children}
+      </ContextButton>
+    );
+  }
+
   return (
     <StyledContainer onClick={onClick} className={`twap-button ${loading ? "twap-button-loading" : ""} ${disabled ? "twap-button-disabled" : ""} ${className}`} disabled={disabled}>
       {loading && (

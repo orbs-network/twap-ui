@@ -121,3 +121,34 @@ export const StyledOrdersLists = styled(Box)({
   overflow: "auto",
   height: "100%",
 });
+
+export const StyledSummaryRowRight = styled(StyledRowFlex)({
+  width: "unset",
+  justifyContent: "flex-end",
+  flex: 1,
+  ".twap-token-logo": {
+    width: 22,
+    height: 22,
+    minWidth: 22,
+    minHeight: 22,
+  },
+});
+export const StyledSummaryDetails = styled(StyledColumnFlex)({
+  gap: 15,
+});
+
+export const StyledSummaryRow = styled(StyledRowFlex)({
+  justifyContent: "space-between",
+  width: "100%",
+  ".twap-label": {
+    minWidth: 0,
+    maxWidth: "60%",
+  },
+  "@media(max-width: 700px)": {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    ".twap-label": {
+      maxWidth: "unset",
+    },
+  },
+});

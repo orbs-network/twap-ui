@@ -27,7 +27,17 @@ import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal
 import { IconType } from "@react-icons/all-files";
 import { useLoadingState, useLimitPrice, useMarketPrice, useFormatNumber, useToken, useSwitchTokens, useSelectTokenCallback, useSubmitButton, useOutAmountLoading } from "../hooks";
 import { useTwapStore } from "../store";
-import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, StyledOverflowContainer, textOverflow } from "../styles";
+import {
+  StyledText,
+  StyledRowFlex,
+  StyledColumnFlex,
+  StyledOneLineText,
+  StyledOverflowContainer,
+  textOverflow,
+  StyledSummaryDetails,
+  StyledSummaryRow,
+  StyledSummaryRowRight,
+} from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
 import {
@@ -39,7 +49,7 @@ import {
   OrderSummaryMinDstAmountOutLabel,
   ChunksAmountLabel,
 } from "./Labels";
-import { SwitchVariant, TWAPTokenSelectProps } from "../types";
+import { SwitchVariant, Translations, TWAPTokenSelectProps } from "../types";
 import { Box, Fade, FormControl, RadioGroup, Typography } from "@mui/material";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
@@ -48,7 +58,7 @@ import PendingTxModal from "./base/PendingTxModal";
 import SuccessTxModal from "./base/SuccessTxModal";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
-import { handleFillDelayText } from "../utils";
+import { handleFillDelayText, makeElipsisAddress } from "../utils";
 
 export function ChunksInput({ className = "", showDefault }: { className?: string; showDefault?: boolean }) {
   const translations = useTwapContext().translations;
@@ -597,7 +607,7 @@ export function TotalChunks() {
 
 export function ChunksAmount() {
   const value = useTwapStore((store) => store.getSrcChunkAmountUi());
-  const formattedValue = useFormatNumber({ value });
+  const formattedValue = useFormatNumber({ value, decimalScale: 3 });
   if (!value) return null;
   return (
     <Tooltip text={formattedValue}>
@@ -617,16 +627,16 @@ export const OrderType = () => {
   return <StyledOneLineText>{isLimitOrder ? translations.limitOrder : translations.marketOrder}</StyledOneLineText>;
 };
 
-export const TradeIntervalAsText = () => {
+export const TradeIntervalAsText = ({ translations: _translations }: { translations?: Translations }) => {
   const getFillDelayText = useTwapStore((store) => store.getFillDelayText);
-  const translations = useTwapContext().translations;
+  const translations = useTwapContext()?.translations || _translations;
 
   return <StyledOneLineText>{getFillDelayText(translations)}</StyledOneLineText>;
 };
 
-export const MinDstAmountOut = () => {
+export const MinDstAmountOut = ({ translations: _translations }: { translations?: Translations }) => {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const translations = useTwapContext().translations;
+  const translations = useTwapContext()?.translations || _translations;
   const dstMinAmountOutUi = useTwapStore((store) => store.getDstMinAmountOutUi());
 
   const formattedValue = useFormatNumber({ value: dstMinAmountOutUi });
@@ -642,35 +652,35 @@ export const MinDstAmountOut = () => {
   );
 };
 
-export const OrderSummaryDetailsMinDstAmount = ({ subtitle }: { subtitle?: boolean }) => {
+export const OrderSummaryDetailsMinDstAmount = ({ subtitle, translations }: { subtitle?: boolean; translations?: Translations }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryMinDstAmountOutLabel subtitle={subtitle} />
+      <OrderSummaryMinDstAmountOutLabel subtitle={subtitle} translations={translations} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <>
           <TokenLogoAndSymbol isSrc={false} reverse={true} />
-          <MinDstAmountOut />
+          <MinDstAmountOut translations={translations} />
         </>
       </StyledSummaryRowRight>
     </StyledSummaryRow>
   );
 };
 
-export const OrderSummaryDetailsTradeInterval = ({ subtitle }: { subtitle?: boolean }) => {
+export const OrderSummaryDetailsTradeInterval = ({ subtitle, translations }: { subtitle?: boolean; translations?: Translations }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryTradeIntervalLabel subtitle={subtitle} />
+      <OrderSummaryTradeIntervalLabel subtitle={subtitle} translations={translations} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
-        <TradeIntervalAsText />
+        <TradeIntervalAsText translations={translations} />
       </StyledSummaryRowRight>
     </StyledSummaryRow>
   );
 };
 
-export const OrderSummaryDetailsTotalChunks = ({ subtitle }: { subtitle?: boolean }) => {
+export const OrderSummaryDetailsTotalChunks = ({ subtitle, translations }: { subtitle?: boolean; translations?: Translations }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryTotalChunksLabel subtitle={subtitle} />
+      <OrderSummaryTotalChunksLabel subtitle={subtitle} translations={translations} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <TotalChunks />
       </StyledSummaryRowRight>
@@ -678,10 +688,10 @@ export const OrderSummaryDetailsTotalChunks = ({ subtitle }: { subtitle?: boolea
   );
 };
 
-export const OrderSummaryDetailsChunkSize = ({ subtitle }: { subtitle?: boolean }) => {
+export const OrderSummaryDetailsChunkSize = ({ subtitle, translations }: { subtitle?: boolean; translations?: Translations }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryChunkSizeLabel subtitle={subtitle} />
+      <OrderSummaryChunkSizeLabel subtitle={subtitle} translations={translations} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <>
           <TokenLogoAndSymbol isSrc={true} reverse={true} />
@@ -692,10 +702,10 @@ export const OrderSummaryDetailsChunkSize = ({ subtitle }: { subtitle?: boolean 
   );
 };
 
-export const OrderSummaryDetailsOrderType = ({ subtitle }: { subtitle?: boolean }) => {
+export const OrderSummaryDetailsOrderType = ({ subtitle, translations }: { subtitle?: boolean; translations?: Translations }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryOrderTypeLabel subtitle={subtitle} />
+      <OrderSummaryOrderTypeLabel subtitle={subtitle} translations={translations} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <OrderType />
       </StyledSummaryRowRight>
@@ -703,10 +713,10 @@ export const OrderSummaryDetailsOrderType = ({ subtitle }: { subtitle?: boolean 
   );
 };
 
-export const OrderSummaryDetailsDeadline = ({ subtitle }: { subtitle?: boolean }) => {
+export const OrderSummaryDetailsDeadline = ({ subtitle, translations }: { subtitle?: boolean; translations?: Translations }) => {
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
-      <OrderSummaryDeadlineLabel subtitle={subtitle} />
+      <OrderSummaryDeadlineLabel subtitle={subtitle} translations={translations} />
       <StyledSummaryRowRight className="twap-order-summary-details-item-right">
         <Deadline />
       </StyledSummaryRowRight>
@@ -714,15 +724,15 @@ export const OrderSummaryDetailsDeadline = ({ subtitle }: { subtitle?: boolean }
   );
 };
 
-export const OrderSummaryDetails = ({ className = "", subtitle }: { className?: string; subtitle?: boolean }) => {
+export const OrderSummaryDetails = ({ className = "", subtitle, translations }: { className?: string; subtitle?: boolean; translations?: Translations }) => {
   return (
     <StyledSummaryDetails className={`twap-order-summary-details ${className}`}>
-      <OrderSummaryDetailsDeadline subtitle={subtitle} />
-      <OrderSummaryDetailsOrderType subtitle={subtitle} />
-      <OrderSummaryDetailsChunkSize subtitle={subtitle} />
-      <OrderSummaryDetailsTotalChunks subtitle={subtitle} />
-      <OrderSummaryDetailsTradeInterval subtitle={subtitle} />
-      <OrderSummaryDetailsMinDstAmount subtitle={subtitle} />
+      <OrderSummaryDetailsDeadline subtitle={subtitle} translations={translations} />
+      <OrderSummaryDetailsOrderType subtitle={subtitle} translations={translations} />
+      <OrderSummaryDetailsChunkSize subtitle={subtitle} translations={translations} />
+      <OrderSummaryDetailsTotalChunks subtitle={subtitle} translations={translations} />
+      <OrderSummaryDetailsTradeInterval subtitle={subtitle} translations={translations} />
+      <OrderSummaryDetailsMinDstAmount subtitle={subtitle} translations={translations} />
     </StyledSummaryDetails>
   );
 };
@@ -747,8 +757,18 @@ export function OrderSummaryModalContainer({ children, className, title }: { chi
   );
 }
 
-export const OrderSummaryTokenDisplay = ({ isSrc, usdSuffix, usdPrefix }: { isSrc?: boolean; usdSuffix?: string; usdPrefix?: string }) => {
-  const translations = useTwapContext().translations;
+export const OrderSummaryTokenDisplay = ({
+  isSrc,
+  usdSuffix,
+  usdPrefix,
+  translations: _translations,
+}: {
+  isSrc?: boolean;
+  usdSuffix?: string;
+  usdPrefix?: string;
+  translations?: Translations;
+}) => {
+  const translations = useTwapContext()?.translations || _translations;
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const srcAmount = useTwapStore((store) => store.srcAmountUi);
   const dstAmount = useTwapStore((store) => store.getDstAmountUi());
@@ -774,8 +794,8 @@ export const OrderSummaryTokenDisplay = ({ isSrc, usdSuffix, usdPrefix }: { isSr
   );
 };
 
-export const AcceptDisclaimer = ({ variant, className }: { variant?: SwitchVariant; className?: string }) => {
-  const translations = useTwapContext().translations;
+export const AcceptDisclaimer = ({ variant, className, translations: _translations }: { variant?: SwitchVariant; className?: string; translations?: Translations }) => {
+  const translations = useTwapContext()?.translations || _translations;
 
   const setDisclaimerAccepted = useTwapStore((store) => store.setDisclaimerAccepted);
   const disclaimerAccepted = useTwapStore((store) => store.disclaimerAccepted);
@@ -788,29 +808,27 @@ export const AcceptDisclaimer = ({ variant, className }: { variant?: SwitchVaria
   );
 };
 
-export const OutputAddress = ({ className }: { className?: string }) => {
+export const OutputAddress = ({ className, translations: _translations, ellipsis }: { className?: string; translations?: Translations; ellipsis?: number }) => {
   const maker = useTwapStore((store) => store.lib?.maker);
-  const translations = useTwapContext().translations;
+  const translations = useTwapContext()?.translations || _translations;
 
   return (
     <StyledOutputAddress className={`twap-order-summary-output-address ${className}`}>
       <StyledText style={{ textAlign: "center", width: "100%" }} className="text">
         {translations.outputWillBeSentTo}
       </StyledText>
-      <Tooltip childrenStyles={{ width: "100%" }} text={maker}>
-        <StyledOneLineText style={{ textAlign: "center", width: "100%" }} className="address">
-          {maker}
-        </StyledOneLineText>
-      </Tooltip>
+      <StyledOneLineText style={{ textAlign: "center", width: "100%" }} className="address">
+        {ellipsis ? makeElipsisAddress(maker, ellipsis) : maker}
+      </StyledOneLineText>
     </StyledOutputAddress>
   );
 };
 
 const StyledOutputAddress = styled(StyledColumnFlex)({});
 
-export const OrderSummaryLimitPriceToggle = () => {
+export const OrderSummaryLimitPriceToggle = ({ translations: _translations }: { translations?: Translations }) => {
   const { isLimitOrder, toggleInverted, limitPrice, leftToken, rightToken } = useLimitPrice();
-  const translations = useTwapContext().translations;
+  const translations = useTwapContext()?.translations || _translations;
 
   return isLimitOrder ? (
     <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice} toggleInverted={toggleInverted} />
@@ -831,19 +849,19 @@ export const OrderSummaryPriceCompare = () => {
   return <TokenPriceCompare leftToken={market.leftToken} rightToken={market.rightToken} price={market.marketPrice} toggleInverted={market.toggleInverted} />;
 };
 
-export const OrderSummaryLimitPrice = () => {
-  const translations = useTwapContext().translations;
+export const OrderSummaryLimitPrice = ({ translations: _translations }: { translations?: Translations }) => {
+  const translations = useTwapContext()?.translations || _translations;
 
   return (
     <StyledRowFlex className="twap-order-summary-limit-price" justifyContent="space-between">
       <Label tooltipText={translations.confirmationLimitPriceTooltip}>{translations.limitPrice}</Label>
-      <OrderSummaryLimitPriceToggle />
+      <OrderSummaryLimitPriceToggle translations={translations} />
     </StyledRowFlex>
   );
 };
 
-export const DisclaimerText = ({ className = "" }: { className?: string }) => {
-  const translations = useTwapContext().translations;
+export const DisclaimerText = ({ className = "", translations: _translations }: { className?: string; translations?: Translations }) => {
+  const translations = useTwapContext()?.translations || _translations;
   const lib = useTwapStore((state) => state.lib);
   return (
     <StyledTradeInfoExplanation className={`twap-disclaimer-text ${className}`}>
@@ -937,37 +955,6 @@ const StyledOrderSummaryTokenDisplay = styled(StyledColumnFlex)({
   },
   ".twap-orders-summary-token-display-flex": {
     justifyContent: "space-between",
-  },
-});
-
-const StyledSummaryRowRight = styled(StyledOverflowContainer)({
-  flex: 1,
-  width: "unset",
-  justifyContent: "flex-end",
-  ".twap-token-logo": {
-    width: 22,
-    height: 22,
-    minWidth: 22,
-    minHeight: 22,
-  },
-});
-const StyledSummaryDetails = styled(StyledColumnFlex)({
-  gap: 15,
-});
-
-const StyledSummaryRow = styled(StyledRowFlex)({
-  justifyContent: "space-between",
-  width: "100%",
-  ".twap-label": {
-    minWidth: 0,
-    maxWidth: "60%",
-  },
-  "@media(max-width: 700px)": {
-    flexDirection: "column",
-    alignItems: "flex-start",
-    ".twap-label": {
-      maxWidth: "unset",
-    },
   },
 });
 

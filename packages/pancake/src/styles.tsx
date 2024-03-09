@@ -1,6 +1,6 @@
-import { Box, Button, createTheme, styled, Theme } from "@mui/material";
+import { Box, Button, createTheme, styled, Theme, Typography } from "@mui/material";
 import { Components, OrdersContainer, Styles } from "@orbs-network/twap-ui";
-import { ReactNode } from "react";
+import { CSSProperties, ReactNode } from "react";
 const isDarkMode = (theme: Theme) => theme.palette.mode === "dark";
 
 export const darkTheme = createTheme({
@@ -196,10 +196,13 @@ export const configureStyles = (theme: Theme) => {
     ".twap-modal-content": {
       background: darkMode ? "#27262C" : "white",
       color: styles.primaryTextColor,
-      padding: "15px 24px 24px 24px",
-      maxWidth: 500,
+      display: "flex",
+      flexDirection: "column",
+      padding: "0px",
+      maxWidth: "370px!important",
       borderRadius: 32,
-      overflowY: "auto",
+      minHeight: "415px",
+      overflow: "hidden",
       "&::-webkit-scrollbar": {
         display: "none",
       },
@@ -354,7 +357,7 @@ export const configureStyles = (theme: Theme) => {
         color: styles.subtitle,
       },
     },
-    "@media (max-width:600px)": {
+    "@media (max-width:970px)": {
       ".twap-orders-title": {
         p: {
           fontSize: "14px!important",
@@ -418,15 +421,20 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
   },
 });
 
-export const StyledMarketPriceContainer = styled(Styles.StyledRowFlex)({
-  ".twap-token-logo": {
-    display: "none",
-  },
-  ".twap-label": {
-    p: {
-      whiteSpace: "nowrap",
+export const StyledMarketPriceContainer = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const darkMode = baseStyles(theme).darkMode;
+  return {
+    justifyContent: "space-between",
+    p: { color: darkMode ? "#a881fc" : "#7645d9", fontWeight: "600!important" },
+    ".twap-token-logo": {
+      display: "none",
     },
-  },
+    ".twap-label": {
+      p: {
+        whiteSpace: "nowrap",
+      },
+    },
+  };
 });
 
 export const StyledUSD = styled(Components.TokenUSD)({});
@@ -605,9 +613,25 @@ export const StyledOutputAddress = styled(Components.OutputAddress)({
   fontSize: 14,
 });
 
-export const StyledSummaryModal = styled(Components.OrderSummaryModalContainer)(({ theme }) => {
+export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
+    ".twap-order-summary-output-address": {
+      alignItems: "center",
+      fontSize: 14,
+    },
+    ".twap-order-summary-details-item": {
+      flexWrap: "wrap",
+
+      ".twap-label": {
+        maxWidth: "unset",
+        fontSize: 14,
+        fontWeight: 400,
+      },
+      ".twap-token-display": {
+        order: 1,
+      },
+    },
     ".twap-order-summary-limit-price": {
       p: {
         fontSize: 14,
@@ -615,6 +639,7 @@ export const StyledSummaryModal = styled(Components.OrderSummaryModalContainer)(
     },
     ".twap-order-summary-details-item-right": {
       fontSize: 14,
+      gap: 3,
     },
 
     ".twap-disclaimer-text": {
@@ -836,19 +861,70 @@ export const StyledLimitPriceBody = styled(Card.Body)({
   },
 });
 
-export const StyledLimitPriceBottom = styled(Styles.StyledRowFlex)({
-  gap: 10,
-  justifyContent: "flex-end",
-  cursor: "pointer",
-  p: {
-    fontSize: 14,
-    fontWeight: 500,
-    padding: 0,
-    margin: 0,
-  },
-});
-
 export const StyledLimitPriceLabel = styled(Styles.StyledRowFlex)({
   width: "auto",
   minHeight: 24,
+});
+
+export const StyledSubmitButtonContainer = styled(Styles.StyledRowFlex)({
+  button: {
+    width: "100%",
+  },
+});
+
+export const StyledModalHeaderClose = styled("button")(({ theme }) => {
+  const darkMode = baseStyles(theme).darkMode;
+
+  return {
+    margin: 0,
+    marginLeft: "auto",
+    background: "transparent",
+    padding: 0,
+    border: "unset",
+    width: 48,
+    height: 48,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    cursor: "pointer",
+    svg: {
+      color: darkMode ? "#f4eeff" : "#1fc7d4",
+      width: 20,
+      height: 20,
+    },
+    "&:hover": {
+      opacity: 0.8,
+    },
+  };
+});
+
+export const StyledModalHeader = styled(Styles.StyledRowFlex)<{ withTitle: number }>(({ theme, withTitle }) => {
+  const darkMode = baseStyles(theme).darkMode;
+
+  return {
+    justifyContent: "space-between",
+    alignItems: "center",
+    background: !withTitle ? "transparent" : darkMode ? "#3B394D" : "linear-gradient(111.68deg,#f2ecf2,#e8f2f6)",
+    padding: "12px 24px",
+    paddingBottom: !withTitle ? "0" : "12px",
+    borderBottom: !withTitle ? "1px solid transparent" : darkMode ? "1px solid #383241" : "1px solid #e7e3eb",
+    marginBottom: !withTitle ? "0" : "24px",
+  };
+});
+
+export const StyledSwapModalContent = styled(Styles.StyledColumnFlex)<{style: CSSProperties}>(({style}) => ({
+  padding: "0px 24px 24px 24px",
+  flex: 1,
+  overflowY: "auto",
+  alignItems: "center",
+  justifyContent: "center",
+  ...style,
+}));
+export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {
+  const darkMode = baseStyles(theme).darkMode;
+  return {
+    fontSize: 20,
+    fontWeight: 600,
+    color: darkMode ? "#f4eeff" : "#280d5f",
+  };
 });

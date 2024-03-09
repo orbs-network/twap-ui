@@ -28,11 +28,11 @@ const USD = ({
 }) => {
   const formattedValue = useFormatNumber({ value, decimalScale });
 
-  const { usdSuffix, usdPrefix, usdEmptyUI } = useTwapContext().uiPreferences;
+  const context = useTwapContext()?.uiPreferences;
 
-  const _prefix = prefix || usdPrefix || `${SQUIGLE} $ `;
-  const _suffix = suffix || usdSuffix;
-  const _emptyUi = emptyUi || usdEmptyUI;
+  const _prefix = prefix || context?.usdPrefix || `${SQUIGLE} $ `;
+  const _suffix = suffix || context?.usdSuffix;
+  const _emptyUi = emptyUi || context?.usdEmptyUI;
 
   if (value == null) return null;
   return (

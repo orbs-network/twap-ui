@@ -13,6 +13,7 @@ import { store, amountBN, amountUi } from "@orbs-network/twap-ui";
 import { usePersistedStore } from "./store";
 import { fetchPrice } from "./utils";
 import BigNumber from "bignumber.js";
+import { useMediaQuery } from "@mui/material";
 export const injectedConnector = new InjectedConnector({});
 
 export const useAddedTokens = () => {
@@ -230,3 +231,5 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
     outAmount: query.data,
   };
 };
+
+export const useIsMobile = () => useMediaQuery("(max-width:600px)");

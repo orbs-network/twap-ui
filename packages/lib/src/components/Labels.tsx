@@ -1,4 +1,4 @@
-import { Styles } from "..";
+import { Styles, Translations } from "..";
 import { useTwapContext } from "../context";
 import { useTwapStore } from "../store";
 import { StyledRowFlex } from "../styles";
@@ -45,8 +45,8 @@ export const TradeIntervalLabel = () => {
   return <Label tooltipText={handleFillDelayText(translations.tradeIntervalTootlip, getMinimumDelayMinutes)}>{translations.tradeInterval}</Label>;
 };
 
-export const OrderSummaryDeadlineLabel = ({ subtitle }: { subtitle?: boolean }) => {
-  const translations = useTwapContext().translations;
+export const OrderSummaryDeadlineLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
+  const translations = useTwapContext()?.translations || _translations;
 
   return (
     <Label subtitle={subtitle} tooltipText={translations.confirmationDeadlineTooltip}>
@@ -55,8 +55,8 @@ export const OrderSummaryDeadlineLabel = ({ subtitle }: { subtitle?: boolean }) 
   );
 };
 
-export const OrderSummaryOrderTypeLabel = ({ subtitle }: { subtitle?: boolean }) => {
-  const translations = useTwapContext().translations;
+export const OrderSummaryOrderTypeLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
+  const translations = useTwapContext()?.translations || _translations;
 
   return (
     <Label subtitle={subtitle} tooltipText={translations.confirmationOrderType}>
@@ -65,8 +65,8 @@ export const OrderSummaryOrderTypeLabel = ({ subtitle }: { subtitle?: boolean })
   );
 };
 
-export const OrderSummaryChunkSizeLabel = ({ subtitle }: { subtitle?: boolean }) => {
-  const translations = useTwapContext().translations;
+export const OrderSummaryChunkSizeLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
+  const translations = useTwapContext()?.translations || _translations;
 
   return (
     <Label subtitle={subtitle} tooltipText={translations.confirmationTradeSizeTooltip}>
@@ -75,8 +75,8 @@ export const OrderSummaryChunkSizeLabel = ({ subtitle }: { subtitle?: boolean })
   );
 };
 
-export const OrderSummaryTotalChunksLabel = ({ subtitle }: { subtitle?: boolean }) => {
-  const translations = useTwapContext().translations;
+export const OrderSummaryTotalChunksLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
+  const translations = useTwapContext()?.translations || _translations;
 
   return (
     <Label subtitle={subtitle} tooltipText={translations.confirmationTotalTradesTooltip}>
@@ -85,8 +85,8 @@ export const OrderSummaryTotalChunksLabel = ({ subtitle }: { subtitle?: boolean 
   );
 };
 
-export const OrderSummaryTradeIntervalLabel = ({ subtitle }: { subtitle?: boolean }) => {
-  const translations = useTwapContext().translations;
+export const OrderSummaryTradeIntervalLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
+  const translations = useTwapContext()?.translations || _translations;
 
   return (
     <Label subtitle={subtitle} tooltipText={translations.confirmationtradeIntervalTooltip}>
@@ -95,8 +95,8 @@ export const OrderSummaryTradeIntervalLabel = ({ subtitle }: { subtitle?: boolea
   );
 };
 
-export const OrderSummaryMinDstAmountOutLabel = ({ subtitle }: { subtitle?: boolean }) => {
-  const translations = useTwapContext().translations;
+export const OrderSummaryMinDstAmountOutLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
+  const translations = useTwapContext()?.translations || _translations;
 
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   return (

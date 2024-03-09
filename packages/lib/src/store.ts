@@ -3,7 +3,7 @@ import { Order, OrderInputValidation, Status, TokenData, TokensValidation, TWAPL
 import moment from "moment";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import _ from "lodash";
+import _, { get } from "lodash";
 import { eqIgnoreCase, parsebn, isNativeAddress } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
 import { MIN_NATIVE_BALANCE } from "./consts";
@@ -50,10 +50,12 @@ const initialState: State = {
   dstAmount: undefined,
   dstAmountLoading: false,
   dstAmountFromDex: undefined,
+  txHash: undefined,
 };
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
+    setTxHash: (txHash?: string) => set({ txHash }),
     setShowSuccessModal: (showSuccessModal: boolean) => set({ showSuccessModal }),
     setShowLodingModal: (showLoadingModal: boolean) => set({ showLoadingModal }),
     setLimitOrderPriceUi: () => {
@@ -373,10 +375,3 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
   },
   setOpen: (value) => set({ open: value }),
 }));
-
-export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) => {
-  if (!tokensList || !addressOrSymbol) return;
-
-  if (_.isArray(tokensList)) return _.find(tokensList, (token) => eqIgnoreCase(addressOrSymbol, token.address) || addressOrSymbol === token?.symbol);
-  if (_.isObject(tokensList)) return tokensList[addressOrSymbol as keyof typeof tokensList];
-};

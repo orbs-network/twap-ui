@@ -1,21 +1,24 @@
 import { ClickAwayListener, Tooltip as MuiTooltip } from "@mui/material";
-import { CSSProperties, ReactElement, ReactNode, useState } from "react";
+import { useState } from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { textOverflow } from "../../styles";
+import { TooltipProps } from "../../types";
+import { useTwapContext } from "../../context";
 
-interface Props extends React.HTMLAttributes<HTMLElement> {
-  childrenStyles?: CSSProperties;
-  children: ReactNode;
-  text?: string | ReactElement | number;
-  placement?: "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top";
-}
-
-function Tooltip({ children, text, placement, childrenStyles = {} }: Props) {
+function Tooltip({ children, text, placement, childrenStyles = {} }: TooltipProps) {
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
+  const ContextTooltip = useTwapContext().uiPreferences.Tooltip;
 
   if (!text) {
     return <>{children}</>;
+  }
+
+  if (ContextTooltip) {
+    return (
+      <ContextTooltip text={text} placement={placement} childrenStyles={childrenStyles}>
+        {children}
+      </ContextTooltip>
+    );
   }
 
   if (isMobile) {

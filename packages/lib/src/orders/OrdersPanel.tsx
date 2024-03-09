@@ -34,8 +34,7 @@ function Orders({ className = "" }: { className?: string }) {
 }
 
 export const OrdersPortal = ({ children, className }: { children?: ReactNode; className?: string }) => {
-  const ordersId = useTwapContext().ordersId;
-  return <Portal id={ordersId || ORDERS_CONTAINER_ID}>{children ? <>{children}</> : <Orders className={className} />}</Portal>;
+  return <Portal id={ORDERS_CONTAINER_ID}>{children ? <>{children}</> : <Orders className={className} />}</Portal>;
 };
 
 export function OrdersPanel({ className, noPortal, children }: { className?: string; noPortal?: boolean; children?: ReactNode }) {

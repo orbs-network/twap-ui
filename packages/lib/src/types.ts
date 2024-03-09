@@ -1,7 +1,7 @@
 import BN from "bignumber.js";
 import { Config, Order, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import { Moment } from "moment";
-import { FC, ReactElement, ReactNode } from "react";
+import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { Duration } from "./store";
 import { useParseOrderUi } from "./hooks";
 
@@ -125,7 +125,7 @@ export interface TWAPProps extends BaseProps {
   priceUsd?: PriceUsd;
   usePriceUSD?: (address?: string, token?: TokenData) => number | undefined;
   useTrade?: UseTrade;
-  ordersId?: string;
+  isMobile?: boolean;
 }
 
 type PriceUsd = (address: string, token?: TokenData) => Promise<number>;
@@ -159,6 +159,11 @@ export interface TwapContextUIPreferences {
   input?: {
     showOnLoading?: boolean;
   };
+  Tooltip?: FC<TooltipProps>;
+  Button?: FC<ButtonProps>;
+  orders?: {
+    paginationChunks?: number;
+  } 
 }
 
 export type OnTxSubmitValues = {
@@ -198,7 +203,7 @@ export interface TwapLibProps extends LibProps {
   usePriceUSD?: (token?: string) => number | undefined;
   priceUsd?: PriceUsd;
   useTrade?: UseTrade;
-  ordersId?: string;
+  isMobile?: boolean;
 }
 
 export type Token = TokenData;
@@ -287,6 +292,23 @@ export interface State {
   dstAmount?: string;
   dstAmountFromDex?: string;
   dstAmountLoading?: boolean;
+
+  txHash?: string;
 }
 
 export type SwitchVariant = "ios" | "default";
+
+export interface TooltipProps extends React.HTMLAttributes<HTMLElement> {
+  childrenStyles?: CSSProperties;
+  children: ReactNode;
+  text?: string | ReactElement | number;
+  placement?: "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top";
+}
+
+export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
+  children: ReactNode;
+  style?: CSSProperties;
+  disabled?: boolean;
+  onClick: (e: any) => void;
+  loading?: boolean;
+}

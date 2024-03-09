@@ -9,16 +9,18 @@ function IconButton({
   onClick,
   icon,
   className = "",
+  disabled
 }: {
   children?: ReactNode;
   tooltip?: ReactElement | string;
   onClick: (e: any) => void;
   icon?: ReactElement;
   className?: string;
+  disabled?: boolean;
 }) {
   return (
     <Tooltip text={tooltip}>
-      <MuiIconButton onClick={onClick} className={`twap-icon-btn ${className}`}>
+      <MuiIconButton disabled={disabled} onClick={onClick} className={`twap-icon-btn ${className}`}>
         {children}
         {icon && <Icon icon={icon} />}
       </MuiIconButton>

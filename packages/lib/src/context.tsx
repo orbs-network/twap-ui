@@ -8,6 +8,7 @@ import { TokenData } from "@orbs-network/twap";
 import { useTwapStore } from "./store";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import { Wizard } from "./components";
+import { useTranslations } from "./useTranslations";
 
 analytics.onModuleLoad();
 

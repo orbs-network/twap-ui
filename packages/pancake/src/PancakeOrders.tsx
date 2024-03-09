@@ -3,7 +3,6 @@ import { styled } from "@mui/material";
 import { hooks, OrdersPortal, SelectedOrders, store } from "@orbs-network/twap-ui";
 import { StyledOrders, StyledOrdersHeader, StyledOrdersTab, StyledOrdersTabs } from "./styles";
 import { Styles } from "@orbs-network/twap-ui";
-import { Components } from "@orbs-network/twap-ui";
 
 export default function PancakeOrders() {
   return (
@@ -13,7 +12,6 @@ export default function PancakeOrders() {
           <Tabs />
         </StyledOrdersHeader>
         <StyledBody>
-          <Components.Base.Odnp />
           <SelectedOrders />
         </StyledBody>
       </StyledOrders>
@@ -51,3 +49,5 @@ const Tabs = () => {
     </StyledOrdersTabs>
   );
 };
+
+
