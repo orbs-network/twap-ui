@@ -137,8 +137,6 @@ const useTooltip = (content: ReactNode, options?: any, children?: ReactNode) => 
 };
 
 const DappButton = ({ isLoading, disabled, children, onClick }: any) => {
-  console.log({ disabled });
-
   return (
     <StyledButton variant="contained" fullWidth disabled={isLoading || disabled} onClick={onClick}>
       {children}

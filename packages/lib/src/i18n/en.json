@@ -15,7 +15,7 @@
   "tradeIntervalTootlip": "The estimated time that will elapse between each trade in your order. Note that as this time includes an allowance of two minutes for bidder auction and block settlement, which cannot be predicted exactly, actual time may vary.",
   "customIntervalTooltip": "Enable custom interval",
   "totalTradesTooltip": "The total number of individual trades that will be scheduled as part of your order. Note that in limit orders, it is possible that not all scheduled trades will be executed.",
-  "sliderMinSizeTooltip": "Individual trades must have a minimum trade size of $10.00 USD.",
+  "sliderMinSizeTooltip": "Individual trades must have a minimum trade size of ${usd} USD.",
   "connect": "Connect wallet",
   "selectTokens": "Select tokens",
   "acceptDisclaimer": "Accept Disclaimer",

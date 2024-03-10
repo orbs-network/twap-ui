@@ -507,13 +507,10 @@ export enum SwapState {
 const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   const [swapState, setSwapState] = useState(SwapState.REVIEW);
   const { dappTokens, ApproveModalContent, SwapPendingModalContent, SwapTransactionErrorContent, AddToWallet, SwapTransactionReceiptModalContent } = useAdapterContext();
-  const { fromToken, toToken, _inputAmount, _outputAmount, setShowConfirmation, showConfirmation, txHash, isLimitOrder } = store.useTwapStore((s) => ({
+  const { fromToken, setShowConfirmation, showConfirmation, txHash, isLimitOrder } = store.useTwapStore((s) => ({
     fromToken: s.srcToken,
-    toToken: s.dstToken,
     srcBalance: s.srcBalance,
     dstBalance: s.dstBalance,
-    _inputAmount: s.srcAmountUi,
-    _outputAmount: s.getDstAmountUi(),
     setShowConfirmation: s.setShowConfirmation,
     showConfirmation: s.showConfirmation,
     txHash: s.txHash,
@@ -610,13 +607,21 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
       <StyledSwapModalContent
         style={{
           paddingBottom: swapState === SwapState.REVIEW ? "24px" : "55px",
+          paddingTop: title ? "30px" : "24px",
         }}
       >
-        {content}
+        <StyledSwapModalContentChildren>{content}</StyledSwapModalContentChildren>
       </StyledSwapModalContent>
     </Components.Base.Modal>
   );
 };
+
+const StyledSwapModalContentChildren = styled("div")`
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+`;
 
 const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }) => {
   return (
@@ -659,9 +664,16 @@ export const useShowSwapModalButton = () => {
     return { text: "Searching for the best price", onClick: undefined, disabled: true };
   }
 
-  if (!srcAmount || BN(srcAmount || "0").isZero() || !srcUsd || srcUsd.isZero()) {
+  if (!srcAmount || BN(srcAmount || "0").isZero()) {
     return {
       text: translations.enterAmount,
+      disabled: true,
+    };
+  }
+
+  if (!srcUsd || srcUsd.isZero()) {
+    return {
+      text: "Searching for the best price",
       disabled: true,
     };
   }

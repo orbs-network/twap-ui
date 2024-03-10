@@ -96,8 +96,6 @@ export const useWrapToken = (disableWizard?: boolean) => {
         setSrcToken(lib!.config.wToken);
         const token = getTokenFromTokensList(dappTokens, lib!.config.wToken.address);
         if (token) {
-          console.log({ token });
-
           onSrcTokenSelected?.(token);
         }
       },
@@ -621,8 +619,6 @@ export const useSetTokensFromDapp = () => {
   const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
 
   return useCallback(() => {
-    console.log({ tokensReady });
-
     if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
 
     if (srcTokenAddressOrSymbol) {

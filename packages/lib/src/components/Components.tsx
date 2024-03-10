@@ -66,11 +66,16 @@ export function ChunksInput({ className = "", showDefault }: { className?: strin
   const maxPossibleChunks = useTwapStore((store) => store.getMaxPossibleChunks());
   const setChunks = useTwapStore((store) => store.setChunks);
   const getChunksBiggerThanOne = useTwapStore((store) => store.getChunksBiggerThanOne());
+  const lib = useTwapStore().lib;
+
+  const minChunkSizeUsd = lib?.config.minChunkSizeUsd.toString() || "0";
+
   if (!getChunksBiggerThanOne && !showDefault) {
     return <StyledText className={`${className} twap-chunks-amount-placeholder`}>{chunks || "-"}</StyledText>;
   }
+
   return (
-    <Tooltip text={translations.sliderMinSizeTooltip}>
+    <Tooltip text={translations.sliderMinSizeTooltip.replace("{usd}", minChunkSizeUsd)}>
       <StyledChunksInput
         className={className}
         placeholder="0"

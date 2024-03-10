@@ -192,7 +192,7 @@ export const configureStyles = (theme: Theme) => {
       borderRadius: 32,
       minHeight: "415px",
       overflow: "hidden",
-      "&::-webkit-scrollbar": {
+      "*::-webkit-scrollbar": {
         display: "none",
       },
       "&-header": {
@@ -899,16 +899,15 @@ export const StyledModalHeader = styled(Styles.StyledRowFlex)<{ withTitle: numbe
     padding: "12px 24px",
     paddingBottom: !withTitle ? "0" : "12px",
     borderBottom: !withTitle ? "1px solid transparent" : darkMode ? "1px solid #383241" : "1px solid #e7e3eb",
-    marginBottom: !withTitle ? "0" : "24px",
   };
 });
 
 export const StyledSwapModalContent = styled(Styles.StyledColumnFlex)<{ style: CSSProperties }>(({ style }) => ({
   padding: "0px 24px 24px 24px",
-  flex: 1,
-  overflowY: "auto",
   alignItems: "center",
   justifyContent: "center",
+  flex: 1,
+  overflowY: "auto",
   ...style,
 }));
 export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {

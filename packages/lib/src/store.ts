@@ -47,7 +47,7 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     dstBalance: BN(0),
 
     loading: false,
-    isLimitOrder: !queryParamsEnabled ? false : !!limitPriceQueryParam,
+    isLimitOrder: true,
     confirmationClickTimestamp: moment(),
     showConfirmation: false,
     disclaimerAccepted: true,
