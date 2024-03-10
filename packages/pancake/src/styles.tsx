@@ -102,13 +102,17 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-order-expanded-cancel-wraper": {
+      marginTop: "40px",
+      button: {
+        color: !darkMode ? "white!important" : "#191326!important",
+      },
+    },
     ".twap-cancel-order": {
       background: "unset!important",
       borderRadius: "30px!important",
       fontWeight: 500,
       fontSize: "14px!important",
-      border: "2px solid #1fc7d4!important",
-
       padding: "6px 40px!important",
       transition: "0.2s all",
       height: "unset!important",
@@ -116,15 +120,6 @@ export const configureStyles = (theme: Theme) => {
       marginTop: "20px",
       minHeight: "unset!important",
       boxShadow: "unset!important",
-      "&:hover": {
-        opacity: 0.65,
-      },
-      ".twap-button-children": {
-        color: styles.darkMode ? "#b8add2!important" : "#7a6eaa!important",
-      },
-      ".twap-button-loader": {
-        transform: "translate(-50%, -50%) scale(0.6)",
-      },
     },
     ".twap-token-input-loading": {
       opacity: 0.5,
@@ -177,12 +172,6 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-order-token-display": {
       flex: "unset!important",
-    },
-    ".twap-orders": {
-      color: styles.primaryTextColor,
-      "*": {
-        color: styles.primaryTextColor,
-      },
     },
     ".twap-adapter-wrapper": {
       width: "100%",
@@ -759,18 +748,20 @@ export const StyledOrdersMenuButton = styled(Button)(({ theme }) => ({
 }));
 
 export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
+  const styles = baseStyles(theme);
   return {
     gap: 0,
     ".twap-orders-empty-list": {
       marginBottom: "40px",
       paddingTop: "30px",
+      color: styles.primaryTextColor,
     },
   };
 });
 
 export const StyledTimeSelect = styled(Styles.StyledColumnFlex)({
   display: "flex",
-  alignItems: "center",
+  alignItems: "flex-end",
   width: "auto",
   padding: 2,
   flex: 1,
@@ -912,7 +903,7 @@ export const StyledModalHeader = styled(Styles.StyledRowFlex)<{ withTitle: numbe
   };
 });
 
-export const StyledSwapModalContent = styled(Styles.StyledColumnFlex)<{style: CSSProperties}>(({style}) => ({
+export const StyledSwapModalContent = styled(Styles.StyledColumnFlex)<{ style: CSSProperties }>(({ style }) => ({
   padding: "0px 24px 24px 24px",
   flex: 1,
   overflowY: "auto",

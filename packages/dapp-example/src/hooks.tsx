@@ -222,7 +222,7 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
 
       return result.toString();
     },
-    refetchInterval: 3_000,
+    refetchInterval: 30_000,
     enabled: !!fromToken && !!toToken && !!srcAmount && !!fromTokenUsd && !!toTokenUsd,
   });
 

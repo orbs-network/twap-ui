@@ -18,20 +18,20 @@ interface Props {
 function Pagination({ onPrev, onNext, className = "", hasNextPage, hasPrevPage, text }: Props) {
   return (
     <Container className={className}>
-      <StyledIconButton hasNext={!hasPrevPage ? 1 : 0}  onClick={onPrev}>
-      <HiArrowLeft />
+      <StyledIconButton hasNext={!hasPrevPage ? 1 : 0} onClick={onPrev}>
+        <HiArrowLeft />
       </StyledIconButton>
       <StyledText>{text}</StyledText>
-      <StyledIconButton hasNext={!hasNextPage ? 1  :0}onClick={onNext}>
-      <HiArrowRight />
+      <StyledIconButton hasNext={!hasNextPage ? 1 : 0} onClick={onNext}>
+        <HiArrowRight />
       </StyledIconButton>
     </Container>
   );
 }
 
-const StyledIconButton = styled('button')<{hasNext: number}>(({ hasNext }) => {
+const StyledIconButton = styled("button")<{ hasNext: number }>(({ hasNext }) => {
   return {
-    cursor: hasNext ? 'not-allowed' : "pointer",
+    cursor: hasNext ? "not-allowed" : "pointer",
     color: "inherit",
     opacity: hasNext ? 0.5 : 1,
     backgroundColor: "transparent",
@@ -41,10 +41,9 @@ const StyledIconButton = styled('button')<{hasNext: number}>(({ hasNext }) => {
     alignItems: "center",
     justifyContent: "center",
     svg: {
-        width: 20,
-        height: 20,
-    }
-
+      width: 20,
+      height: 20,
+    },
   };
 });
 
@@ -56,5 +55,5 @@ const StyledText = styled(Typography)({
 
 const Container = styled(StyledRowFlex)({
   gap: 20,
-  marginTop: 20
+  marginTop: 20,
 });

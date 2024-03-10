@@ -6,8 +6,8 @@ import { combine } from "zustand/middleware";
 import _, { get } from "lodash";
 import { eqIgnoreCase, parsebn, isNativeAddress } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
-import { MIN_NATIVE_BALANCE } from "./consts";
-import { amountBN, amountUi, fillDelayText } from "./utils";
+import { MIN_NATIVE_BALANCE, QUERY_PARAMS, QUERY_PARAMS_ENABLED } from "./consts";
+import { amountBN, amountUi, fillDelayText, getQueryParam, setQueryParam } from "./utils";
 
 export enum TimeResolution {
   Minutes = 60 * 1000,
@@ -21,37 +21,49 @@ export type Duration = { resolution: TimeResolution; amount?: number };
  * TWAP Store
  */
 
-const initialState: State = {
-  showSuccessModal: true,
-  showLoadingModal: false,
-  lib: undefined,
-  srcToken: undefined,
-  dstToken: undefined,
-  wrongNetwork: undefined,
-  srcAmountUi: "",
+const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
+const tradeIntervalQueryParam = getQueryParam(QUERY_PARAMS.TRADE_INTERVAL);
+const maxDurationQueryParam = getQueryParam(QUERY_PARAMS.MAX_DURATION);
+const srcAmountUi = getQueryParam(QUERY_PARAMS.INPUT_AMOUNT);
+const chunks = getQueryParam(QUERY_PARAMS.TRADES_AMOUNT);
 
-  limitPriceUi: { priceUi: "", inverted: false, custom: false },
-  srcUsd: BN(0),
-  dstUsd: BN(0),
-  srcBalance: BN(0),
-  dstBalance: BN(0),
+const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: 2 };
+const defaultCustomDuration = { resolution: TimeResolution.Minutes, amount: undefined };
 
-  loading: false,
-  isLimitOrder: false,
-  confirmationClickTimestamp: moment(),
-  showConfirmation: false,
-  disclaimerAccepted: true,
+const getInitialState = (queryParamsEnabled?: boolean): State => {
+  return {
+    showSuccessModal: true,
+    showLoadingModal: false,
+    lib: undefined,
+    srcToken: undefined,
+    dstToken: undefined,
+    wrongNetwork: undefined,
+    srcAmountUi: !queryParamsEnabled ? "" : srcAmountUi || "",
 
-  chunks: 0,
-  customDuration: { resolution: TimeResolution.Minutes, amount: undefined },
-  customFillDelay: { resolution: TimeResolution.Minutes, amount: 2 },
+    limitPriceUi: !queryParamsEnabled ? { priceUi: "", inverted: false, custom: false } : { priceUi: limitPriceQueryParam || "", inverted: false, custom: !!limitPriceQueryParam },
+    srcUsd: BN(0),
+    dstUsd: BN(0),
+    srcBalance: BN(0),
+    dstBalance: BN(0),
 
-  orderCreatedTimestamp: undefined,
-  dstAmount: undefined,
-  dstAmountLoading: false,
-  dstAmountFromDex: undefined,
-  txHash: undefined,
+    loading: false,
+    isLimitOrder: !queryParamsEnabled ? false : !!limitPriceQueryParam,
+    confirmationClickTimestamp: moment(),
+    showConfirmation: false,
+    disclaimerAccepted: true,
+
+    chunks: !queryParamsEnabled ? 0 : chunks ? Number(chunks) : 0,
+    customDuration: !queryParamsEnabled ? defaultCustomDuration : { resolution: TimeResolution.Minutes, amount: maxDurationQueryParam ? Number(maxDurationQueryParam) : undefined },
+    customFillDelay: !queryParamsEnabled ? defaultCustomFillDelay : { resolution: TimeResolution.Minutes, amount: tradeIntervalQueryParam ? Number(tradeIntervalQueryParam) : 2 },
+
+    orderCreatedTimestamp: undefined,
+    dstAmount: undefined,
+    dstAmountLoading: !queryParamsEnabled ? false : limitPriceQueryParam ? false : !!srcAmountUi,
+    dstAmountFromDex: undefined,
+    txHash: undefined,
+  };
 };
+const initialState = getInitialState(QUERY_PARAMS_ENABLED);
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
@@ -64,10 +76,15 @@ export const useTwapStore = create(
     setLimitOrder: (isLimitOrder?: boolean) => {
       set({ isLimitOrder });
       if (!isLimitOrder) {
-        set({ limitPriceUi: initialState.limitPriceUi });
+        setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
+        set({ dstAmount: get().dstAmountFromDex, limitPriceUi: { inverted: false, priceUi: "", custom: false } });
       }
     },
     setStoreOverrideValues: (storeOverride: StoreOverride) => {
+      const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
+      const tradeIntervalQueryParam = getQueryParam(QUERY_PARAMS.TRADE_INTERVAL);
+      const maxDurationQueryParam = getQueryParam(QUERY_PARAMS.MAX_DURATION);
+      const srcAmountUi = getQueryParam(QUERY_PARAMS.INPUT_AMOUNT);
       set({
         ...initialState,
         ...storeOverride,
@@ -79,6 +96,18 @@ export const useTwapStore = create(
         srcBalance: get().srcBalance,
         dstBalance: get().dstBalance,
         wrongNetwork: get().wrongNetwork,
+        dstAmount: get().dstAmount,
+        dstAmountFromDex: get().dstAmountFromDex,
+        customDuration: !QUERY_PARAMS_ENABLED
+          ? defaultCustomDuration
+          : { resolution: TimeResolution.Minutes, amount: maxDurationQueryParam ? Number(maxDurationQueryParam) : undefined },
+        customFillDelay: !QUERY_PARAMS_ENABLED
+          ? defaultCustomFillDelay
+          : { resolution: TimeResolution.Minutes, amount: tradeIntervalQueryParam ? Number(tradeIntervalQueryParam) : 2 },
+        srcAmountUi: !QUERY_PARAMS_ENABLED ? "" : srcAmountUi || "",
+        limitPriceUi: !QUERY_PARAMS_ENABLED
+          ? { priceUi: "", inverted: false, custom: false }
+          : { priceUi: limitPriceQueryParam || "", inverted: false, custom: !!limitPriceQueryParam },
       });
     },
     setOutAmount: (dstAmount?: string, dstAmountLoading?: boolean) => {
@@ -89,9 +118,9 @@ export const useTwapStore = create(
     },
     updateState: (values: Partial<State>) => set({ ...values }),
     setOrderCreatedTimestamp: (orderCreatedTimestamp: number) => set({ orderCreatedTimestamp }),
-    reset: (storeOverride: StoreOverride) =>
+    reset: (storeOverride: StoreOverride) => {
       set({
-        ...initialState,
+        ...getInitialState(),
         lib: get().lib,
         ...storeOverride,
         srcUsd: get().srcUsd,
@@ -101,17 +130,29 @@ export const useTwapStore = create(
         srcToken: get().srcToken,
         dstToken: get().dstToken,
         limitPriceUi: get().limitPriceUi,
-      }),
+      });
+    },
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
       set({ srcToken });
     },
     setDstToken: (dstToken?: TokenData) => {
-      set({ dstToken, limitPriceUi: { ...get().limitPriceUi, custom: false } });
+      set({ dstToken, limitPriceUi: { ...get().limitPriceUi, custom: !!limitPriceQueryParam } });
     },
     setSrcAmountUi: (srcAmountUi: string) => {
-      set({ srcAmountUi, dstAmountLoading: true, limitPriceUi: { ...get().limitPriceUi, priceUi: "", custom: false } });
+      setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, !srcAmountUi ? undefined : srcAmountUi);
+      if (get().limitPriceUi.custom && get().limitPriceUi.priceUi) {
+        set({
+          srcAmountUi,
+          dstAmount: amountBN(get().srcToken, srcAmountUi)
+            .times(get().limitPriceUi.priceUi || "0")
+            .toString(),
+        });
+      } else {
+        set({ srcAmountUi, dstAmountLoading: true, limitPriceUi: { ...get().limitPriceUi, priceUi: "", custom: false } });
+      }
+
       (get() as any).setChunks(get().chunks);
     },
     setSrcBalance: (srcBalance: BN) => set({ srcBalance }),
@@ -172,15 +213,24 @@ export const useTwapStore = create(
     getIsPartialFillWarning: () => (get() as any).getChunks() * (get() as any).getFillDelayUiMillis() > (get() as any).getDurationMillis(),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork?: boolean) => set({ wrongNetwork }),
-    setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) =>
+    setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => {
       set({
         limitPriceUi: { ...limitPriceUi, custom: true },
         dstAmount: BN((get() as any).getSrcAmount() || "0")
           .times(limitPriceUi.priceUi || "0")
           .toString(),
-      }),
-    setChunks: (chunks: number) => set({ chunks: Math.min(chunks, (get() as any).getMaxPossibleChunks()) }),
-    setDuration: (customDuration: Duration) => set({ customDuration }),
+      });
+      setQueryParam(QUERY_PARAMS.LIMIT_PRICE, limitPriceUi.priceUi);
+    },
+    setChunks: (chunks: number) => {
+      const _chunks = Math.min(chunks, (get() as any).getMaxPossibleChunks());
+      setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, _chunks > 0 ? _chunks.toString() : undefined);
+      set({ chunks: _chunks });
+    },
+    setDuration: (customDuration: Duration) => {
+      setQueryParam(QUERY_PARAMS.MAX_DURATION, !customDuration.amount ? undefined : customDuration.amount.toString());
+      set({ customDuration });
+    },
     getMaxPossibleChunks: () => (get().lib && get().srcToken ? get().lib!.maxPossibleChunks(get().srcToken!, amountBN(get().srcToken, get().srcAmountUi), get().srcUsd) : 1),
     getChunks: () => {
       const srcUsd = get().srcUsd;
@@ -230,6 +280,7 @@ export const useTwapStore = create(
       (get() as any).setDstToken(dstToken);
     },
     setFillDelay: (fillDelay: Duration) => {
+      setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, !fillDelay.amount ? undefined : fillDelay.amount?.toString());
       set({ customFillDelay: fillDelay });
     },
 

@@ -3,6 +3,7 @@ import moment from "moment";
 import { Translations } from ".";
 import BN from "bignumber.js";
 import _ from "lodash";
+import { QUERY_PARAMS_ENABLED } from "./consts";
 export const logger = (...args: any[]) => {
   if (process.env.NODE_ENV === "development") {
     console.log(...args);
@@ -76,4 +77,27 @@ export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) 
 
   if (_.isArray(tokensList)) return _.find(tokensList, (token) => eqIgnoreCase(addressOrSymbol, token.address) || addressOrSymbol === token?.symbol);
   if (_.isObject(tokensList)) return tokensList[addressOrSymbol as keyof typeof tokensList];
+};
+
+export const getQueryParam = (name: string) => {
+  if (!QUERY_PARAMS_ENABLED) return;
+  const search = window.location.search;
+
+  const params = new URLSearchParams(search);
+
+  return params.get(name);
+};
+
+export const setQueryParam = (name: string, value?: string) => {
+  if (!QUERY_PARAMS_ENABLED) return;
+
+  const search = window.location.search;
+  const params = new URLSearchParams(search);
+  if (!value) {
+    params.delete(name);
+  } else {
+    params.set(name, value);
+  }
+
+  window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
 };

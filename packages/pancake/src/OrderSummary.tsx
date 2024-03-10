@@ -76,16 +76,16 @@ const StyledSummaryDetails = styled(TwapStyles.StyledColumnFlex)({
 });
 
 const TokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
-  const { token, srcAmount } = store.useTwapStore((store) => ({
+  const { token, _amount } = store.useTwapStore((store) => ({
     token: isSrc ? store.srcToken : store.dstToken,
-    srcAmount: store.srcAmountUi,
+    _amount: isSrc ? store.srcAmountUi : store.getDstAmountUi(),
   }));
 
-  const amount = hooks.useFormatNumber({ value: srcAmount, decimalScale: 3 });
+  const amount = hooks.useFormatNumber({ value: _amount, decimalScale: 3 });
 
   return (
     <StyledTokenDisplay>
-      <StyledTokenDisplayAmount>{amount || 20.2}</StyledTokenDisplayAmount>
+      <StyledTokenDisplayAmount>{amount}</StyledTokenDisplayAmount>
       <StyledTokenDisplayRight>
         <TwapStyles.StyledText>{token?.symbol}</TwapStyles.StyledText>
         <Components.Base.TokenLogo logo={token?.logoUrl} />
@@ -123,7 +123,3 @@ const StyledTokenDisplay = styled(TwapStyles.StyledRowFlex)({
   justifyContent: "space-between",
   gap: 30,
 });
-
-const SummaryRow = ({ children }: { children: ReactNode }) => {
-  return <TwapStyles.StyledSummaryRow className="twap-order-summary-details-item">{children}</TwapStyles.StyledSummaryRow>;
-};

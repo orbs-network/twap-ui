@@ -8,7 +8,8 @@ import { TokenData } from "@orbs-network/twap";
 import { useTwapStore } from "./store";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import { Wizard } from "./components";
-import { useTranslations } from "./useTranslations";
+import { getQueryParam } from "./utils";
+import { QUERY_PARAMS, QUERY_PARAMS_ENABLED } from "./consts";
 
 analytics.onModuleLoad();
 
@@ -27,11 +28,12 @@ const queryClient = new QueryClient({
 });
 
 const useLimitPriceUpdater = () => {
-  const setLimitOrderPriceUi = useTwapStore((store) => store.setLimitOrderPriceUi);
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const custom = useLimitPrice().custom;
-
-  const srcUsd = useTwapStore((store) => store.srcUsd);
+  const { srcUsd, isLimitOrder, setLimitOrderPriceUi } = useTwapStore((store) => ({
+    srcUsd: store.srcUsd,
+    isLimitOrder: store.isLimitOrder,
+    setLimitOrderPriceUi: store.setLimitOrderPriceUi,
+  }));
   const dstUsd = useTwapStore((store) => store.dstUsd);
 
   useEffect(() => {
@@ -42,13 +44,21 @@ const useLimitPriceUpdater = () => {
 };
 
 const Listener = (props: TwapLibProps) => {
-  const { srcToken, dstToken, srcAmount, setOutAmount } = useTwapStore((s) => ({
+  const { srcToken, dstToken, srcAmount, setOutAmount, setLimitPriceUi, dstAmount } = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
     srcAmount: s.getSrcAmount().toString(),
-
     setOutAmount: s.setOutAmount,
+    setLimitPriceUi: s.setLimitPriceUi,
+    dstAmount: s.dstAmount,
   }));
+
+  useEffect(() => {
+    const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
+    if (!QUERY_PARAMS_ENABLED || !limitPriceQueryParam || !srcAmount || dstAmount || !srcToken) return;
+
+    setLimitPriceUi({ priceUi: limitPriceQueryParam, inverted: false });
+  }, [srcAmount, setLimitPriceUi, dstAmount, srcToken]);
 
   const setTokensFromDappCallback = useSetTokensFromDapp();
   const initLib = useInitLib();
@@ -56,7 +66,7 @@ const Listener = (props: TwapLibProps) => {
   const result = props.useTrade?.(srcToken?.address, dstToken?.address, srcAmount === "0" ? undefined : srcAmount);
 
   useEffect(() => {
-    setOutAmount(result?.outAmount, result?.isLoading);
+    !result?.isLoading && setOutAmount(result?.outAmount, result?.isLoading);
   }, [result?.isLoading, result?.outAmount, setOutAmount]);
 
   useEffect(() => {

@@ -163,7 +163,7 @@ export interface TwapContextUIPreferences {
   Button?: FC<ButtonProps>;
   orders?: {
     paginationChunks?: number;
-  } 
+  };
 }
 
 export type OnTxSubmitValues = {

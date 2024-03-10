@@ -440,13 +440,25 @@ export const UISelector = ({
   limit?: boolean;
   selected?: SelectorOption;
 }) => {
+  const reset = hooks.useResetStore();
   const tabs = limit ? [SelectorOption.TWAP, SelectorOption.LIMIT] : [SelectorOption.TWAP];
-
+  const onSelect = (value: SelectorOption) => {
+    select?.(value);
+    reset();
+    const search = window.location.search;
+    const params = new URLSearchParams(search);
+    const theme = params.get("theme");
+    if (theme) {
+      window.history.replaceState({}, "", `${window.location.pathname}?theme=${theme}`);
+    } else {
+      window.history.replaceState({}, "", `${window.location.pathname}`);
+    }
+  };
   return (
     <StyledUISelector className={`ui-selector ${className}`}>
       {tabs.map((it) => {
         return (
-          <StyledUISelectorButton className={`${selected === it ? " ui-selector-btn-selected" : ""} ui-selector-btn`} key={it} onClick={() => select?.(it)}>
+          <StyledUISelectorButton className={`${selected === it ? " ui-selector-btn-selected" : ""} ui-selector-btn`} key={it} onClick={() => onSelect?.(it)}>
             {it}
           </StyledUISelectorButton>
         );

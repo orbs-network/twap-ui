@@ -35,7 +35,7 @@ function Label({ children, tooltipText, className = "", fontSize, placement, sub
       <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
       {tooltipText && (
         <Tooltip placement={placement} text={tooltipText}>
-          <InfoIcon className="twap-icon twap-tooltip-icon" style={{ width: 16, height: 16, position: "relative", top: 3, marginLeft: 5 }} />
+          <InfoIcon className="twap-icon twap-tooltip-icon" style={{ width: 16, position: "relative", top: 3, marginLeft: 5 }} />
         </Tooltip>
       )}
     </StyledContainer>

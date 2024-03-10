@@ -23,11 +23,11 @@ import {
   sendAndWaitForConfirmations,
 } from "@defi.org/web3-candies";
 import { useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
-import { REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
+import { QUERY_PARAMS, REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
-import { amountUi, getTokenFromTokensList } from "./utils";
+import { amountUi, getTokenFromTokensList, setQueryParam } from "./utils";
 
 /**
  * Actions
@@ -39,6 +39,11 @@ export const useResetStore = () => {
 
   return () => {
     resetTwapStore(storeOverride || {});
+    setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
+    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
+    setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
+    setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, undefined);
+    setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
   };
 };
 
@@ -50,6 +55,11 @@ export const useReset = () => {
   return () => {
     client && client.invalidateQueries();
     resetTwapStore(storeOverride || {});
+    setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
+    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
+    setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
+    setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, undefined);
+    setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
   };
 };
 
@@ -181,6 +191,17 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
         ...store.dstToken!,
         address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
       };
+
+      console.log({
+        srcToken: store.srcToken!,
+        dstToken: dstToken,
+        srcAmount: store.getSrcAmount().toString(),
+        dstAmount: store.dstAmount!,
+        dstUSD: store.getDstAmountUsdUi()!,
+        getSrcChunkAmount: store.getSrcChunkAmount(),
+        getDeadline: store.getDeadline(),
+        fillDelayMillis: store.getFillDelayUiMillis(),
+      });
 
       onTxSubmitted?.({
         srcToken: store.srcToken!,
@@ -1046,7 +1067,7 @@ function useSubmitOrderCallback() {
   };
 }
 
-export const usePagination = <T>(list: T[] = [], chunkSize = 5 ) => {
+export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
   const [page, setPage] = useState(0);
 
   const chunks = useMemo(() => {
@@ -1064,6 +1085,6 @@ export const usePagination = <T>(list: T[] = [], chunkSize = 5 ) => {
     nextPage: () => setPage((p) => Math.min(p + 1, chunks.length - 1)),
     hasPrevPage: page > 0,
     hasNextPage: page < chunks.length - 1,
-    text : `Page ${page + 1} of ${chunks.length}`
+    text: `Page ${page + 1} of ${chunks.length}`,
   };
 };

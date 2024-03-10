@@ -9,7 +9,7 @@ function IconButton({
   onClick,
   icon,
   className = "",
-  disabled
+  disabled,
 }: {
   children?: ReactNode;
   tooltip?: ReactElement | string;

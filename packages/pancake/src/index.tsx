@@ -94,7 +94,7 @@ const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
   const useTooltip = useAdapterContext().useTooltip;
   const { targetRef, tooltip, tooltipVisible } = useTooltip(text, { placement: "top", hideTimeout: 0 });
   return (
-    <span ref={targetRef} style={childrenStyles}>
+    <span ref={targetRef} style={{ ...childrenStyles }}>
       {children} {tooltipVisible && tooltip}
     </span>
   );
@@ -107,7 +107,6 @@ const uiPreferences: TwapContextUIPreferences = {
   balanceEmptyUI: <></>,
   switchVariant: "ios",
   inputPlaceholder: "0.0",
-  infoIcon: BsQuestionCircle,
   inputLoader: <></>,
   input: {
     showOnLoading: true,
@@ -115,8 +114,8 @@ const uiPreferences: TwapContextUIPreferences = {
   Tooltip,
   Button,
   orders: {
-    paginationChunks: 4
-  }
+    paginationChunks: 4,
+  },
 };
 
 const config = Configs.PancakeSwap;
@@ -526,10 +525,7 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   const { data: allowance, isLoading } = hooks.useHasAllowanceQuery();
   const { mutateAsync: createOrder } = hooks.useCreateOrder(true);
   const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
-  const outputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, toToken?.address), [dappTokens, toToken]);
   const [error, setError] = useState("");
-  const inputAmount = hooks.useFormatNumber({ value: _inputAmount, decimalScale: 5 });
-  const outputAmount = hooks.useFormatNumber({ value: _outputAmount, decimalScale: 5 });
 
   const onSubmit = useCallback(async () => {
     try {
@@ -611,9 +607,13 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
 
   return (
     <Components.Base.Modal header={<ModalHeader title={title} onClose={onClose} />} title={title} onClose={onClose} open={showConfirmation}>
-      <StyledSwapModalContent style={{
-        paddingBottom: swapState === SwapState.REVIEW ? "24px" : "55px",
-      }}>{content}</StyledSwapModalContent>
+      <StyledSwapModalContent
+        style={{
+          paddingBottom: swapState === SwapState.REVIEW ? "24px" : "55px",
+        }}
+      >
+        {content}
+      </StyledSwapModalContent>
     </Components.Base.Modal>
   );
 };
@@ -631,7 +631,7 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
 
 export const useShowSwapModalButton = () => {
   const translations = useTwapContext()?.translations;
-  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd } = store.useTwapStore((store) => ({
+  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount } = store.useTwapStore((store) => ({
     maker: store.lib?.maker,
     shouldWrap: store.shouldWrap(),
     shouldUnwrap: store.shouldUnwrap(),
@@ -640,6 +640,7 @@ export const useShowSwapModalButton = () => {
     warning: store.getFillWarning(translations),
     createOrderLoading: store.loading,
     srcUsd: store.srcUsd,
+    srcAmount: store.srcAmountUi,
   }));
   const outAmountLoading = useOutAmountLoading();
   const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken(true);
@@ -658,6 +659,21 @@ export const useShowSwapModalButton = () => {
     return { text: "Searching for the best price", onClick: undefined, disabled: true };
   }
 
+  if (!srcAmount || BN(srcAmount || "0").isZero() || !srcUsd || srcUsd.isZero()) {
+    return {
+      text: translations.enterAmount,
+      disabled: true,
+    };
+  }
+
+  if (warning)
+    return {
+      text: warning,
+      onClick: undefined,
+      disabled: true,
+      loading: false,
+    };
+
   if (shouldUnwrap)
     return {
       text: translations.unwrap,
@@ -671,21 +687,6 @@ export const useShowSwapModalButton = () => {
       onClick: wrap,
       loading: wrapLoading,
       disabled: wrapLoading,
-    };
-
-  if (!srcUsd || srcUsd.isZero()) {
-    return {
-      text: translations.enterAmount,
-      disabled: true,
-    };
-  }
-
-  if (warning)
-    return {
-      text: warning,
-      onClick: undefined,
-      disabled: true,
-      loading: false,
     };
 
   if (createOrderLoading) {
