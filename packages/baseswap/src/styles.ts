@@ -63,25 +63,23 @@ const buttonStyles = (theme: Theme) => {
 };
 
 export const StyledMaxButton = styled("button")(({ theme }) => {
-  const styles = baseStyles(theme);
   return {
-    color: styles.textColor,
-    border: `2px solid ${styles.button}`,
+    color: "rgb(55, 192, 223)",
     background: "transparent",
-    fontSize: 17,
-    borderRadius: 8,
+    border: "none",
+    fontSize: 14,
     cursor: "pointer",
+    fontWeight: 600,
+    padding: 0,
     "&:hover": {
-      boxShadow: "rgb(255, 255, 255) 0px 2px 4px, rgb(104, 185, 255) 0px -8px 10px, rgb(1, 84, 253) 8px 0px 12px, rgb(104, 185, 255) -3px 0px 12px",
-      transform: "translateY(1px)",
-      background: styles.button,
-      borderColor: "white",
+      color: "white",
+      textDecoration: "underline",
     },
   };
 });
 
 export const StyledTopGrid = styled(Styles.StyledColumnFlex)({
-  gap: 8,
+  gap: 3,
 });
 export const StyledTokenBalance = styled(Components.TokenBalance)({
   "*": {
@@ -91,9 +89,21 @@ export const StyledTokenBalance = styled(Components.TokenBalance)({
   },
 });
 
-export const StyledTokenPanel = styled(Styles.StyledColumnFlex)({});
+export const StyledTokenPanel = styled(Components.Base.Card)({
+  display: "flex",
+  flexDirection: "column",
+});
+export const StyledTokenPanelBalanceAndMax = styled(Styles.StyledRowFlex)({
+  width: "auto",
+  alignItems: "center",
+});
+export const StyledTokenPanelBottom = styled(Styles.StyledRowFlex)({
+  justifyContent: "space-between",
+});
 
-export const StyledTokenPanelInput = styled(Components.TokenInput)({
+export const StyledInputAndSelect = styled(Styles.StyledRowFlex)({});
+
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({
   width: "100%",
   ".twap-loader": {
     left: "auto",
@@ -101,7 +111,7 @@ export const StyledTokenPanelInput = styled(Components.TokenInput)({
   },
   input: {
     textAlign: "right",
-    fontSize: 28,
+    fontSize: 24,
   },
 });
 export const StyledMarketPrice = styled(Components.MarketPrice)({
@@ -110,6 +120,10 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
     color: "rgb(204, 204, 204)",
     fontWeight: 600,
   },
+  svg: {
+    width: 15,
+    height: 15,
+  },
   [`@media(max-width:${MOBILE}px)`]: {
     flexDirection: "column",
     alignItems: "flex-start",
@@ -117,7 +131,6 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
 });
 
 // const getButtonStyles = (theme: Theme) => {};
-export const StyledTokenInputContainer = styled(Components.Base.Card)({});
 
 export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => {
   return {
@@ -131,15 +144,12 @@ export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme
 });
 
 export const StyledTokenSelect = styled(Box)({
-  paddingLeft: 20,
   ".twap-token-logo": {
-    width: 60,
-    height: 60,
-    boxShadow: "rgb(0, 0, 0) 0px 1px 4px, rgb(104, 185, 255) 0px 4px 12px, rgb(255, 255, 255) 0px 4px 4px, rgb(1, 84, 253) 4px 0px 12px, rgb(104, 185, 255) -4px 0px 12px",
+    width: 40,
+    height: 40,
   },
   ".twap-token-name": {
-    fontSize: 22.4,
-    fontWeight: 600,
+    fontSize: 28,
   },
   svg: {
     width: 15,
@@ -148,14 +158,18 @@ export const StyledTokenSelect = styled(Box)({
 });
 
 export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ theme }) => {
-  const styles = baseStyles(theme);
   return {
+    height: 0,
+    zIndex: 1,
     button: {
-      background: "transparent",
-      border: `2px solid ${styles.button}`,
-      borderRadius: 0,
-      width: 60,
+      transition: "0s all",
+      boxShadow: "rgba(14, 14, 44, 0.4) 0px -1px 0px 0px inset",
+      background: "linear-gradient(rgb(1, 84, 254), rgb(55, 192, 223))",
+      border: `1px solid rgb(204, 204, 204)`,
+      borderRadius: 8,
+      width: 40,
       height: 40,
+      color: "rgb(204, 204, 204)",
       ".MuiTouchRipple-root": {
         display: "none",
       },
@@ -164,8 +178,7 @@ export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ t
         height: 18,
       },
       "&:hover": {
-        background: "transparent",
-        boxShadow: "rgb(255, 255, 255) 0px 0px 4px, rgb(1, 84, 253) 0px 0px 12px",
+        background: "black",
       },
     },
   };
@@ -182,7 +195,7 @@ export const StyledSubmitButton = styled(Components.SubmitButton)({
 export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    fontFamily: "Outfit",
+    fontFamily: "Alegreya Sans",
     ".twap-order": {
       ".twap-order-expanded-row": {
         flexDirection: "column",
@@ -271,11 +284,11 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-modal": {
       color: styles.textColor,
-      fontFamily: "Outfit",
+      fontFamily: "Alegreya Sans",
       ".twap-modal-content": {
         background: styles.mainBackground,
         padding: 20,
-        border: `2px solid ${styles.button}`,
+        border: `2px solid white`,
         borderRadius: 12,
         overflowY: "auto",
       },
@@ -289,10 +302,10 @@ export const configureStyles = (theme: Theme) => {
       },
     },
     ".twap-card": {
-      border: "2px solid white",
+      border: "1px solid rgb(55, 192, 223)",
       background: styles.cardBackground,
-      padding: "12px 16px",
-      borderRadius: 8,
+      padding: "8px",
+      borderRadius: 12,
       ".twap-label": {
         fontSize: 16,
         "*": {
@@ -314,7 +327,7 @@ export const configureStyles = (theme: Theme) => {
         borderRadius: "10px",
         color: styles.tooltipTextColor,
         fontSize: 16,
-        fontFamily: "Outfit",
+        fontFamily: "Alegreya Sans",
         lineHeight: "24px",
         padding: 16,
         "& *": {
@@ -361,10 +374,10 @@ export const configureStyles = (theme: Theme) => {
       display: "flex",
       flexDirection: "column" as const,
       gap: 15,
-      fontFamily: "Outfit",
+      fontFamily: "Alegreya Sans",
       "*": {
         color: styles.textColor,
-        fontFamily: "Outfit",
+        fontFamily: "Alegreya Sans",
         "&::-webkit-scrollbar": {
           display: "none",
         },
@@ -406,7 +419,7 @@ export const configureStyles = (theme: Theme) => {
         opacity: "1!important",
       },
       "& .Mui-checked .MuiSwitch-thumb": {
-        background: styles.button,
+        background: "linear-gradient(rgb(1, 84, 254), rgb(55, 192, 223))",
       },
     },
 

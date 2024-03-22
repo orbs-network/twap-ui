@@ -466,7 +466,7 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
   const { loading, onClick, disabled, text } = useSubmitButton(isMain);
 
   return (
-    <Button className={`twap-submit ${className}`} loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
+    <Button text={text} className={`twap-submit ${className}`} loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
       <p className="twap-submit-text" style={{ margin: 0 }}>
         {text}
       </p>

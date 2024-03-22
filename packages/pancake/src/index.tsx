@@ -81,11 +81,10 @@ const PERCENT = [
 
 const Button = (props: any) => {
   const DappButton = useAdapterContext().Button;
-  const dstAmountLoading = store.useTwapStore((s: any) => s.dstAmountLoading);
-  const submittingOrder = store.useTwapStore((s: any) => s.loading);
+
   return (
-    <DappButton onClick={props.onClick} disabled={props.disabled || props.loading || dstAmountLoading}>
-      {dstAmountLoading ? "Searching For The Best Price" : submittingOrder ? "Submitting order" : props.children}
+    <DappButton onClick={props.onClick} disabled={props.disabled || props.loading}>
+      {props.children}
     </DappButton>
   );
 };
@@ -296,6 +295,7 @@ const TWAP = memo((props: AdapterProps) => {
         isDarkTheme={props.isDarkTheme}
         isMobile={props.isMobile}
         connectedChainId={props.connectedChainId}
+        enableQueryParams={true}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -321,7 +321,7 @@ const TopPanel = () => {
 
 const OpenConfirmationModalButton = () => {
   const { ConnectButton, provider, Button } = useAdapterContext();
-  const { onClick, text, disabled, loading } = useShowSwapModalButton();
+  const { onClick, text, disabled } = useShowSwapModalButton();
   if (!provider) {
     return (
       <StyledButtonContainer>
@@ -516,7 +516,7 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
     txHash: s.txHash,
     isLimitOrder: s.isLimitOrder,
   }));
-  const reset = hooks.useReset();
+  const reset = hooks.useResetStore();
 
   const { mutateAsync: approveCallback } = hooks.useApproveToken(true);
   const { data: allowance, isLoading } = hooks.useHasAllowanceQuery();

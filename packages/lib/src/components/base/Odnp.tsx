@@ -41,9 +41,6 @@ function Odnp({ className = "" }: { className?: string }) {
               <StyledSeparator className="twap-odnp-separator" />
               <RightSection />
             </StyledFlex>
-            <StyledCloseButton className="twap-odnp-close-btn" onClick={() => setOpen(false)}>
-              Close
-            </StyledCloseButton>
           </StyledColumnFlex>
         </StyledOdnp>
       </StyledModal>

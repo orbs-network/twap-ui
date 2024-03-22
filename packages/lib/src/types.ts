@@ -126,9 +126,10 @@ export interface TWAPProps extends BaseProps {
   usePriceUSD?: (address?: string, token?: TokenData) => number | undefined;
   useTrade?: UseTrade;
   isMobile?: boolean;
+  enableQueryParams?: boolean;
 }
 
-type PriceUsd = (address: string, token?: TokenData) => Promise<number>;
+type PriceUsd = (address: string, token?: TokenData) => any;
 
 interface LibProps {
   children: ReactNode;
@@ -204,6 +205,7 @@ export interface TwapLibProps extends LibProps {
   priceUsd?: PriceUsd;
   useTrade?: UseTrade;
   isMobile?: boolean;
+  enableQueryParams?: boolean;
 }
 
 export type Token = TokenData;
@@ -294,6 +296,7 @@ export interface State {
   dstAmountLoading?: boolean;
 
   txHash?: string;
+  enableQueryParams?: boolean;
 }
 
 export type SwitchVariant = "ios" | "default";
@@ -311,4 +314,5 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
   disabled?: boolean;
   onClick: (e: any) => void;
   loading?: boolean;
+  text?: string;
 }

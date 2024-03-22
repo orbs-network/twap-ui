@@ -9,6 +9,7 @@ import {
   darkTheme,
   lightTheme,
   StyledChangeTokensOrder,
+  StyledInputAndSelect,
   StyledLimitPriceInput,
   StyledMarketPrice,
   StyledMaxButton,
@@ -17,8 +18,9 @@ import {
   StyledPriceCard,
   StyledSubmitButton,
   StyledTokenBalance,
-  StyledTokenInputContainer,
   StyledTokenPanel,
+  StyledTokenPanelBalanceAndMax,
+  StyledTokenPanelBottom,
   StyledTokenPanelInput,
   StyledTokenSelect,
   StyledTopGrid,
@@ -31,9 +33,20 @@ import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown
 
 const config = Configs.BaseSwap;
 
+const Button = (props: any) => {
+  const DappButton = useAdapterContext().Button;
+
+  return (
+    <DappButton text={props.text} onClick={props.onClick} disabled={props.disabled || props.loading} isLoading={props.loading}>
+      {props.children}
+    </DappButton>
+  );
+};
+
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
   switchVariant: "ios",
+  Button,
 };
 
 const storeOverride = {
@@ -102,21 +115,19 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   return (
     <>
       <StyledTokenPanel theme={theme}>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
+        <StyledInputAndSelect>
           <StyledTokenSelect theme={theme}>
             <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} />
           </StyledTokenSelect>
-          <StyledTokenBalance isSrc={isSrcToken} />
-        </TwapStyles.StyledRowFlex>
-        <StyledTokenInputContainer>
-          <TwapStyles.StyledColumnFlex>
-            <StyledTokenPanelInput isSrc={isSrcToken} />
-            <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenUSD isSrc={isSrcToken} />
-              {isSrcToken && <MaxButton />}
-            </TwapStyles.StyledRowFlex>
-          </TwapStyles.StyledColumnFlex>
-        </StyledTokenInputContainer>
+          <StyledTokenPanelInput dstDecimalScale={3} isSrc={isSrcToken} />
+        </StyledInputAndSelect>
+        <StyledTokenPanelBottom>
+          <StyledTokenPanelBalanceAndMax>
+            <StyledTokenBalance isSrc={isSrcToken} />
+            {isSrcToken && <MaxButton />}
+          </StyledTokenPanelBalanceAndMax>
+          <Components.TokenUSD isSrc={isSrcToken} />
+        </StyledTokenPanelBottom>
       </StyledTokenPanel>
     </>
   );
@@ -151,6 +162,7 @@ interface BaseSwapTWAPProps extends TWAPProps {
   connect: () => void;
   provider?: any;
   useModal?: any;
+  Button: any;
 }
 
 const TWAP = (props: BaseSwapTWAPProps) => {
@@ -177,6 +189,7 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
       priceUsd={props.priceUsd}
+      useTrade={props.useTrade}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>

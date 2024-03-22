@@ -35,7 +35,7 @@ const fonts = {
   [Configs.PangolinDaas.name]: "Poppins",
   [Configs.SpookySwap.name]: "Red Hat Display",
   [Configs.PancakeSwap.name]: "Kanit",
-  [Configs.BaseSwap.name]: "Outfit",
+  [Configs.BaseSwap.name]: "Alegreya Sans",
   StellaSwap: "DM Sans",
   Lynex: "Montserrat",
   [Configs.Arbidex.name]: "Quicksand",

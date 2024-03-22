@@ -3,7 +3,7 @@ import moment from "moment";
 import { Translations } from ".";
 import BN from "bignumber.js";
 import _ from "lodash";
-import { QUERY_PARAMS_ENABLED } from "./consts";
+import { useTwapStore } from "./store";
 export const logger = (...args: any[]) => {
   if (process.env.NODE_ENV === "development") {
     console.log(...args);
@@ -80,7 +80,6 @@ export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) 
 };
 
 export const getQueryParam = (name: string) => {
-  if (!QUERY_PARAMS_ENABLED) return;
   const search = window.location.search;
 
   const params = new URLSearchParams(search);
@@ -89,7 +88,7 @@ export const getQueryParam = (name: string) => {
 };
 
 export const setQueryParam = (name: string, value?: string) => {
-  if (!QUERY_PARAMS_ENABLED) return;
+  if (!useTwapStore.getState().enableQueryParams) return;
 
   const search = window.location.search;
   const params = new URLSearchParams(search);

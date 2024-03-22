@@ -2,12 +2,12 @@ import { Box, CircularProgress, Fade, styled } from "@mui/material";
 import { useTwapContext } from "../../context";
 import { ButtonProps } from "../../types";
 
-function Button({ children, disabled = false, onClick, loading = false, className = "" }: ButtonProps) {
+function Button({ children, disabled = false, onClick, loading = false, className = "", text }: ButtonProps) {
   const ContextButton = useTwapContext().uiPreferences.Button;
 
   if (ContextButton) {
     return (
-      <ContextButton disabled={disabled} onClick={onClick} loading={loading} className={className}>
+      <ContextButton text={text} disabled={disabled} onClick={onClick} loading={loading} className={className}>
         {children}
       </ContextButton>
     );

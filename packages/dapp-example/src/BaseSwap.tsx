@@ -1,6 +1,6 @@
 import { StyledBaseSwap, StyledBaseSwapBox, StyledBaseSwapLayout, StyledModalContent } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-baseswap";
-import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -9,6 +9,7 @@ import { SelectorOption, TokenListItem } from "./types";
 import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useContext, useState } from "react";
+import { Button, styled, Typography } from "@mui/material";
 
 const config = Configs.BaseSwap;
 
@@ -95,6 +96,34 @@ const useModal = (Component: any) => {
   return [onClick];
 };
 
+const TwapButton = ({ onClick, children, disabled, isLoading }: { onClick: () => void; children: ReactNode; disabled?: boolean; isLoading?: boolean }) => {
+  return (
+    <StyledButton disabled={disabled} variant="contained" onClick={onClick}>
+      {isLoading ? <Typography>Loading...</Typography> : children}
+    </StyledButton>
+  );
+};
+
+const StyledButton = styled(Button)({
+  background: "linear-gradient(to left, rgb(1, 84, 254), rgb(55, 192, 223))!important",
+  p: {
+    color: "rgb(0, 0, 0)!important",
+  },
+});
+
+const useDecimals = (fromToken?: string, toToken?: string) => {
+  const { data: dappTokens } = useDappTokens();
+
+  const fromTokenDecimals = _.find(dappTokens, { address: fromToken })?.decimals;
+  const toTokenDecimals = _.find(dappTokens, { address: toToken })?.decimals;
+  return { fromTokenDecimals, toTokenDecimals };
+};
+
+const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
+  const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken, toToken);
+  return useTrade(fromToken, toToken, amount, fromTokenDecimals, toTokenDecimals);
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
@@ -117,6 +146,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       limit={limit}
       useModal={useModal}
       priceUsd={priceUsd}
+      Button={TwapButton}
+      useTrade={_useTrade}
     />
   );
 };
