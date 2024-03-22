@@ -1,12 +1,16 @@
 {
   "files": {
-    "main.css": "/twap-ui/static/css/main.16262771.css",
-    "main.js": "/twap-ui/static/js/main.17567d73.js",
+    "main.css": "/twap-ui/static/css/main.946e5d54.css",
+    "main.js": "/twap-ui/static/js/main.26d18773.js",
     "static/media/light.ttf": "/twap-ui/static/media/light.f724f2e00b1d08f4af2e.ttf",
     "static/media/regular.ttf": "/twap-ui/static/media/regular.cea0a1861f1e4ce9c070.ttf",
     "static/media/medium.ttf": "/twap-ui/static/media/medium.2fc5aa498a558b8eb500.ttf",
     "static/media/bold.ttf": "/twap-ui/static/media/bold.64ed5da0d878344b6f5a.ttf",
     "static/media/extraBold.ttf": "/twap-ui/static/media/extraBold.66c23043984eadfbd4c4.ttf",
+    "static/media/alegreya-sans-v24-latin-800.woff2": "/twap-ui/static/media/alegreya-sans-v24-latin-800.17e5e06aae89de30ae93.woff2",
+    "static/media/alegreya-sans-v24-latin-500.woff2": "/twap-ui/static/media/alegreya-sans-v24-latin-500.9d5cc2c3f7b62605d784.woff2",
+    "static/media/alegreya-sans-v24-latin-700.woff2": "/twap-ui/static/media/alegreya-sans-v24-latin-700.6a70ec80a3435ce74c12.woff2",
+    "static/media/alegreya-sans-v24-latin-regular.woff2": "/twap-ui/static/media/alegreya-sans-v24-latin-regular.67ff02a5fea098127dc9.woff2",
     "static/media/kanit-v13-latin-600.woff2": "/twap-ui/static/media/kanit-v13-latin-600.45b6a8ca0d052bbd1cba.woff2",
     "static/media/kanit-v13-latin-regular.woff2": "/twap-ui/static/media/kanit-v13-latin-regular.9d9bac2b2b927039baa5.woff2",
     "static/media/kanit-v13-latin-700.woff2": "/twap-ui/static/media/kanit-v13-latin-700.da5a35d44b608fbd380f.woff2",
@@ -21,16 +25,11 @@
     "static/media/dm-sans-v14-latin-500.woff2": "/twap-ui/static/media/dm-sans-v14-latin-500.96091d87ee864e1a75e0.woff2",
     "static/media/dm-sans-v14-latin-600.woff2": "/twap-ui/static/media/dm-sans-v14-latin-600.ff36f0caaa4a1325841e.woff2",
     "static/media/dm-sans-v14-latin-regular.woff2": "/twap-ui/static/media/dm-sans-v14-latin-regular.8aae4f3d5a6a62dc3dae.woff2",
-    "static/media/outfit-v11-latin-600.woff2": "/twap-ui/static/media/outfit-v11-latin-600.d2aa5090a9f7ea25367e.woff2",
-    "static/media/outfit-v11-latin-regular.woff2": "/twap-ui/static/media/outfit-v11-latin-regular.8f48df74b0b71f7810ab.woff2",
-    "static/media/outfit-v11-latin-700.woff2": "/twap-ui/static/media/outfit-v11-latin-700.016948b6e141358baa7b.woff2",
     "static/media/quicksand-v30-latin-600.woff2": "/twap-ui/static/media/quicksand-v30-latin-600.831009144d1a4098d945.woff2",
-    "static/media/outfit-v11-latin-300.woff2": "/twap-ui/static/media/outfit-v11-latin-300.dd3eda2b78e4e9453f3c.woff2",
     "static/media/quicksand-v30-latin-500.woff2": "/twap-ui/static/media/quicksand-v30-latin-500.2325761279c985580f3c.woff2",
     "static/media/quicksand-v30-latin-regular.woff2": "/twap-ui/static/media/quicksand-v30-latin-regular.cef2e5802d843cf31dba.woff2",
     "static/media/dm-sans-v14-latin-300.woff2": "/twap-ui/static/media/dm-sans-v14-latin-300.44e9686372bdcba08d65.woff2",
     "static/media/quicksand-v30-latin-700.woff2": "/twap-ui/static/media/quicksand-v30-latin-700.81492e5c850f70b1d3cc.woff2",
-    "static/media/outfit-v11-latin-500.woff2": "/twap-ui/static/media/outfit-v11-latin-500.95db0e5561d6034e7cb8.woff2",
     "static/media/red-hat-display-v14-latin-700.woff2": "/twap-ui/static/media/red-hat-display-v14-latin-700.d7cfac6b29289f09ec6a.woff2",
     "static/media/red-hat-display-v14-latin-500.woff2": "/twap-ui/static/media/red-hat-display-v14-latin-500.153313b169bfcdd1becd.woff2",
     "static/media/red-hat-display-v14-latin-600.woff2": "/twap-ui/static/media/red-hat-display-v14-latin-600.31afa1c3ba898a8622e6.woff2",
@@ -57,11 +56,11 @@
     "static/media/poppins-v20-latin-700.woff2": "/twap-ui/static/media/poppins-v20-latin-700.d86662fe776dae29ea78.woff2",
     "static/media/poppins-v20-latin-500.woff2": "/twap-ui/static/media/poppins-v20-latin-500.08491d3f7fe7ae88ef44.woff2",
     "index.html": "/twap-ui/index.html",
-    "main.16262771.css.map": "/twap-ui/static/css/main.16262771.css.map",
-    "main.17567d73.js.map": "/twap-ui/static/js/main.17567d73.js.map"
+    "main.946e5d54.css.map": "/twap-ui/static/css/main.946e5d54.css.map",
+    "main.26d18773.js.map": "/twap-ui/static/js/main.26d18773.js.map"
   },
   "entrypoints": [
-    "static/css/main.16262771.css",
-    "static/js/main.17567d73.js"
+    "static/css/main.946e5d54.css",
+    "static/js/main.26d18773.js"
   ]
 }
