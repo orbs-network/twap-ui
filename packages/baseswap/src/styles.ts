@@ -52,7 +52,6 @@ const buttonStyles = (theme: Theme) => {
     fontSize: 16,
     fontWeight: 600,
     cursor: "pointer",
-    border: `2px solid white!important`,
     transition: "opacity 0.2s",
     textTransform: "uppercase",
     "&:hover": {
@@ -130,8 +129,6 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
   },
 });
 
-// const getButtonStyles = (theme: Theme) => {};
-
 export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => {
   return {
     background: baseStyles(theme).secondaryBackground,
@@ -176,9 +173,17 @@ export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ t
       svg: {
         width: 18,
         height: 18,
+        "*": {
+          color: "black!important",
+        },
       },
       "&:hover": {
         background: "black",
+        svg: {
+          "*": {
+            color: "white!important",
+          },
+        },
       },
     },
   };
@@ -187,10 +192,6 @@ export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ t
 export const StyledTradeSize = styled(Components.Base.Card)({});
 
 export const StyledPriceCard = styled(Components.Base.Card)({});
-
-export const StyledSubmitButton = styled(Components.SubmitButton)({
-  marginTop: 10,
-});
 
 export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
   const styles = baseStyles(theme);
@@ -206,7 +207,7 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
         background: `white!important`,
         ".MuiLinearProgress-bar": {
           height: 4,
-          background: `${styles.button}!important`,
+          background: `linear-gradient(to top, rgb(1, 84, 254), rgb(55, 192, 223))!important`,
         },
         "&:after": {
           display: "none",
@@ -229,9 +230,11 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
     color: styles.textColor,
     ".twap-orders-header-tabs": {
       border: "1px solid white",
+      borderRadius: 12,
       ".Mui-selected": {
-        background: styles.button,
+        background: "linear-gradient(to top, rgb(1, 84, 254), rgb(55, 192, 223))",
         color: styles.textColor,
+        borderRadius: 8,
       },
       ".MuiTabs-indicator": {
         display: "none",
@@ -245,7 +248,6 @@ export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
 
 export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContainer)(({ theme }) => ({
   ".twap-modal-content": {
-    paddingTop: 50,
     a: {
       color: baseStyles(theme).textColor,
     },
@@ -261,6 +263,16 @@ export const configureStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
   const darkMode = isDark(theme);
   return {
+    ".twap-usd": {
+      fontSize: 12,
+      "*": {
+        color: "#ccc!important",
+      },
+    },
+    ".twap-order-expanded-cancel-wraper": {
+      marginTop: 30,
+      marginBottom: 30,
+    },
     ".twap-submit": {
       marginLeft: "auto",
       marginRight: "auto",
@@ -349,7 +361,6 @@ export const configureStyles = (theme: Theme) => {
       ".twap-time-selector-selected": {
         padding: ".5rem",
         border: darkMode ? "1px solid white" : "1px solid rgba(0,0,0,0.5)",
-        marginBottom: "5px",
         borderRadius: "8px",
       },
       ".twap-input": {
@@ -497,3 +508,36 @@ export const configureStyles = (theme: Theme) => {
     },
   };
 };
+
+export const StyledReset = styled("div")(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    border: "1px solid #fff",
+    padding: "0px 10px",
+    borderRadius: 12,
+    cursor: "pointer",
+    color: styles.textColor,
+    p: {
+      fontSize: 13,
+    },
+    svg: {
+      width: 12,
+      height: 12,
+      path: {
+        stroke: styles.iconsColor,
+      },
+    },
+    "&:hover": {
+      opacity: 0.8,
+    },
+  };
+});
+
+export const StyledSubmitContainer = styled("div")({
+  width: "100%",
+  button: {
+    width: "100%",
+    boxShadow: "none!important",
+    border: "unset!important",
+  },
+});

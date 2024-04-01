@@ -658,6 +658,10 @@ export const MinDstAmountOut = ({ translations: _translations }: { translations?
 };
 
 export const OrderSummaryDetailsMinDstAmount = ({ subtitle, translations }: { subtitle?: boolean; translations?: Translations }) => {
+  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+
+  if (!isLimitOrder) return null;
+
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
       <OrderSummaryMinDstAmountOutLabel subtitle={subtitle} translations={translations} />
@@ -944,7 +948,12 @@ const StyledTradeInfoExplanation = styled(StyledColumnFlex)({
   overflow: "auto",
   gap: 10,
   "*": {
-    fontSize: 16,
+    fontSize: 14,
+  },
+  "@media (max-width: 700px)": {
+    "*": {
+      fontSize: 12,
+    },
   },
 });
 

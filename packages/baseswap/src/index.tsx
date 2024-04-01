@@ -1,4 +1,4 @@
-import { GlobalStyles, ThemeProvider, useTheme } from "@mui/material";
+import { GlobalStyles, styled, ThemeProvider, Typography, useTheme } from "@mui/material";
 import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, store, Orders, TwapContextUIPreferences, hooks } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
@@ -16,7 +16,8 @@ import {
   StyledOrdersPanel,
   StyledOrderSummaryModal,
   StyledPriceCard,
-  StyledSubmitButton,
+  StyledReset,
+  StyledSubmitContainer,
   StyledTokenBalance,
   StyledTokenPanel,
   StyledTokenPanelBalanceAndMax,
@@ -30,6 +31,7 @@ import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
+import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
 
 const config = Configs.BaseSwap;
 
@@ -37,8 +39,8 @@ const Button = (props: any) => {
   const DappButton = useAdapterContext().Button;
 
   return (
-    <DappButton text={props.text} onClick={props.onClick} disabled={props.disabled || props.loading} isLoading={props.loading}>
-      {props.children}
+    <DappButton text={props.text} onClick={props.onClick} disabled={props.disabled} isLoading={props.loading}>
+      {props.loading ? "Loading..." : props.children}
     </DappButton>
   );
 };
@@ -47,6 +49,8 @@ const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
   switchVariant: "ios",
   Button,
+  usdSuffix: " USD",
+  usdPrefix: `≈ `,
 };
 
 const storeOverride = {
@@ -59,7 +63,7 @@ const storeOverride = {
 const OrderSummary = ({ children }: { children: ReactNode }) => {
   const theme = useTheme();
   return (
-    <StyledOrderSummaryModal theme={theme}>
+    <StyledOrderSummaryModal theme={theme} title="Review order">
       <TwapStyles.StyledColumnFlex gap={14}>
         <TwapStyles.StyledColumnFlex gap={14}>
           <Components.Base.Card>
@@ -84,7 +88,9 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
             <Components.OutputAddress />
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
-        <Components.SubmitButton />
+        <StyledSubmitContainer>
+          <StyledSubmitButton />
+        </StyledSubmitContainer>
       </TwapStyles.StyledColumnFlex>
     </StyledOrderSummaryModal>
   );
@@ -215,7 +221,7 @@ const TWAPPanel = () => {
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
-      <StyledSubmitButton />
+      <StyledSubmitButton isMain={true} />
       <OrderSummary>
         <Components.OrderSummaryDetails />
       </OrderSummary>
@@ -238,7 +244,7 @@ const LimitPanel = () => {
       </StyledTopGrid>
       <StyledMarketPrice />
       <LimitPrice limit={true} />
-      <StyledSubmitButton />
+      <StyledSubmitButton isMain={true} />
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
           <Components.OrderSummaryDetailsDeadline />
@@ -276,7 +282,17 @@ const LimitPrice = ({ limit }: { limit?: boolean }) => {
     <StyledPriceCard>
       <TwapStyles.StyledColumnFlex>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel />
+          <TwapStyles.StyledRowFlex style={{ width: "auto" }}>
+            <Components.Labels.LimitPriceLabel />
+            <Components.ResetLimitButton>
+              <StyledReset>
+                <TwapStyles.StyledRowFlex gap={8}>
+                  <Components.Base.Icon icon={<GrPowerReset />} />
+                  <Typography>Reset</Typography>
+                </TwapStyles.StyledRowFlex>
+              </StyledReset>
+            </Components.ResetLimitButton>
+          </TwapStyles.StyledRowFlex>
           {!limit && <Components.LimitPriceToggle variant="ios" />}
         </TwapStyles.StyledRowFlex>
         <StyledLimitPriceInput reverse={true} placeholder="0" theme={theme} hideSymbol={true} />
@@ -313,3 +329,23 @@ const TradeInterval = () => {
 const memoizedTWAP = memo(TWAP);
 const memoizedOrders = memo(Orders);
 export { memoizedOrders as Orders, memoizedTWAP as TWAP };
+
+export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
+  const { loading, onClick, disabled, text } = hooks.useSubmitButton(isMain);
+  const createOrderLoading = store.useTwapStore((state) => state.loading);
+  return (
+    <Button
+      text={text}
+      className={`twap-submit ${className}`}
+      loading={createOrderLoading ? false : loading}
+      onClick={onClick || (() => {})}
+      disabled={createOrderLoading ? false : disabled}
+    >
+      {text}
+    </Button>
+  );
+};
+
+export const StyledSubmitButton = styled(SubmitButton)({
+  marginTop: 10,
+});

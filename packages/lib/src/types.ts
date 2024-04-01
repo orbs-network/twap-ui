@@ -164,6 +164,7 @@ export interface TwapContextUIPreferences {
   Button?: FC<ButtonProps>;
   orders?: {
     paginationChunks?: number;
+    hideUsd?: boolean;
   };
 }
 

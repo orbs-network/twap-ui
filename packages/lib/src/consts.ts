@@ -1,4 +1,4 @@
-export const REFETCH_ORDER_HISTORY = 10_000;
+export const REFETCH_ORDER_HISTORY = 20_000;
 export const REFETCH_USD = 10_000;
 export const REFETCH_BALANCE = 10_000;
 export const REFETCH_GAS_PRICE = 10_000;
@@ -14,5 +14,3 @@ export const QUERY_PARAMS = {
   INPUT_AMOUNT: "inputAmount",
   TRADES_AMOUNT: "tradesAmount",
 };
-
-export const QUERY_PARAMS_ENABLED = true;

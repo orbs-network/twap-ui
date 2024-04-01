@@ -9,7 +9,7 @@ import { useTwapStore } from "./store";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import { Wizard } from "./components";
 import { getQueryParam } from "./utils";
-import { QUERY_PARAMS, QUERY_PARAMS_ENABLED } from "./consts";
+import { QUERY_PARAMS } from "./consts";
 
 analytics.onModuleLoad();
 
@@ -55,10 +55,10 @@ const Listener = (props: TwapLibProps) => {
 
   useEffect(() => {
     const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
-    if (!QUERY_PARAMS_ENABLED || !limitPriceQueryParam || !srcAmount || dstAmount || !srcToken) return;
+    if (!props.enableQueryParams || !limitPriceQueryParam || !srcAmount || dstAmount || !srcToken) return;
 
     setLimitPriceUi({ priceUi: limitPriceQueryParam, inverted: false });
-  }, [srcAmount, setLimitPriceUi, dstAmount, srcToken]);
+  }, [srcAmount, setLimitPriceUi, dstAmount, srcToken, props.enableQueryParams]);
 
   const setTokensFromDappCallback = useSetTokensFromDapp();
   const initLib = useInitLib();
@@ -66,8 +66,10 @@ const Listener = (props: TwapLibProps) => {
   const result = props.useTrade?.(srcToken?.address, dstToken?.address, srcAmount === "0" ? undefined : srcAmount);
 
   useEffect(() => {
-    !result?.isLoading && setOutAmount(result?.outAmount, result?.isLoading);
-  }, [result?.isLoading, result?.outAmount, setOutAmount]);
+    const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
+    const custom = props.enableQueryParams && !!limitPriceQueryParam;
+    !result?.isLoading && setOutAmount(result?.outAmount, result?.isLoading, custom);
+  }, [result?.isLoading, result?.outAmount, setOutAmount, props.enableQueryParams]);
 
   useEffect(() => {
     updateStoreOveride(props.storeOverride);

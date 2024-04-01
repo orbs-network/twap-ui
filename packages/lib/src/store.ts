@@ -6,7 +6,7 @@ import { combine } from "zustand/middleware";
 import _, { get } from "lodash";
 import { eqIgnoreCase, parsebn, isNativeAddress } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
-import { MIN_NATIVE_BALANCE, QUERY_PARAMS, QUERY_PARAMS_ENABLED } from "./consts";
+import { MIN_NATIVE_BALANCE, QUERY_PARAMS } from "./consts";
 import { amountBN, amountUi, fillDelayText, getQueryParam, setQueryParam } from "./utils";
 
 export enum TimeResolution {
@@ -21,16 +21,15 @@ export type Duration = { resolution: TimeResolution; amount?: number };
  * TWAP Store
  */
 
-const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
-const tradeIntervalQueryParam = getQueryParam(QUERY_PARAMS.TRADE_INTERVAL);
-const maxDurationQueryParam = getQueryParam(QUERY_PARAMS.MAX_DURATION);
-const srcAmountUi = getQueryParam(QUERY_PARAMS.INPUT_AMOUNT);
-const chunks = getQueryParam(QUERY_PARAMS.TRADES_AMOUNT);
-
 const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: 2 };
 const defaultCustomDuration = { resolution: TimeResolution.Minutes, amount: undefined };
 
 const getInitialState = (queryParamsEnabled?: boolean): State => {
+  const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
+  const tradeIntervalQueryParam = getQueryParam(QUERY_PARAMS.TRADE_INTERVAL);
+  const maxDurationQueryParam = getQueryParam(QUERY_PARAMS.MAX_DURATION);
+  const srcAmountUi = getQueryParam(QUERY_PARAMS.INPUT_AMOUNT);
+  const chunks = getQueryParam(QUERY_PARAMS.TRADES_AMOUNT);
   return {
     showSuccessModal: true,
     showLoadingModal: false,
@@ -61,9 +60,11 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     dstAmountLoading: !queryParamsEnabled ? false : limitPriceQueryParam ? false : !!srcAmountUi,
     dstAmountFromDex: undefined,
     txHash: undefined,
+
+    enableQueryParams: false,
   };
 };
-const initialState = getInitialState(QUERY_PARAMS_ENABLED);
+const initialState = getInitialState();
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
@@ -71,6 +72,7 @@ export const useTwapStore = create(
     setShowSuccessModal: (showSuccessModal: boolean) => set({ showSuccessModal }),
     setShowLodingModal: (showLoadingModal: boolean) => set({ showLoadingModal }),
     setLimitOrderPriceUi: () => {
+      setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
       set({ limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false, custom: false } });
     },
     setLimitOrder: (isLimitOrder?: boolean) => {
@@ -80,14 +82,11 @@ export const useTwapStore = create(
         set({ dstAmount: get().dstAmountFromDex, limitPriceUi: { inverted: false, priceUi: "", custom: false } });
       }
     },
-    setStoreOverrideValues: (storeOverride: StoreOverride) => {
-      const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
-      const tradeIntervalQueryParam = getQueryParam(QUERY_PARAMS.TRADE_INTERVAL);
-      const maxDurationQueryParam = getQueryParam(QUERY_PARAMS.MAX_DURATION);
-      const srcAmountUi = getQueryParam(QUERY_PARAMS.INPUT_AMOUNT);
+    setStoreOverrideValues: (storeOverride: StoreOverride, enableQueryParams?: boolean) => {
       set({
-        ...initialState,
+        ...getInitialState(enableQueryParams),
         ...storeOverride,
+        enableQueryParams,
         lib: get().lib,
         srcToken: get().srcToken,
         dstToken: get().dstToken,
@@ -98,21 +97,11 @@ export const useTwapStore = create(
         wrongNetwork: get().wrongNetwork,
         dstAmount: get().dstAmount,
         dstAmountFromDex: get().dstAmountFromDex,
-        customDuration: !QUERY_PARAMS_ENABLED
-          ? defaultCustomDuration
-          : { resolution: TimeResolution.Minutes, amount: maxDurationQueryParam ? Number(maxDurationQueryParam) : undefined },
-        customFillDelay: !QUERY_PARAMS_ENABLED
-          ? defaultCustomFillDelay
-          : { resolution: TimeResolution.Minutes, amount: tradeIntervalQueryParam ? Number(tradeIntervalQueryParam) : 2 },
-        srcAmountUi: !QUERY_PARAMS_ENABLED ? "" : srcAmountUi || "",
-        limitPriceUi: !QUERY_PARAMS_ENABLED
-          ? { priceUi: "", inverted: false, custom: false }
-          : { priceUi: limitPriceQueryParam || "", inverted: false, custom: !!limitPriceQueryParam },
       });
     },
-    setOutAmount: (dstAmount?: string, dstAmountLoading?: boolean) => {
+    setOutAmount: (dstAmount?: string, dstAmountLoading?: boolean, custom?: boolean) => {
       set({ dstAmountFromDex: dstAmount });
-      if (!get().limitPriceUi.custom) {
+      if (!custom && !get().limitPriceUi.custom) {
         set({ dstAmount, dstAmountLoading, limitPriceUi: { ...get().limitPriceUi, priceUi: (get() as any).getMarketPrice(false).marketPriceUi } });
       }
     },
@@ -138,10 +127,16 @@ export const useTwapStore = create(
       set({ srcToken });
     },
     setDstToken: (dstToken?: TokenData) => {
+      const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
+
       set({ dstToken, limitPriceUi: { ...get().limitPriceUi, custom: !!limitPriceQueryParam } });
     },
     setSrcAmountUi: (srcAmountUi: string) => {
       setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, !srcAmountUi ? undefined : srcAmountUi);
+      if (!srcAmountUi) {
+        set({ srcAmountUi, dstAmount: undefined, limitPriceUi: { ...get().limitPriceUi, priceUi: "", custom: false } });
+        return;
+      }
       if (get().limitPriceUi.custom && get().limitPriceUi.priceUi) {
         set({
           srcAmountUi,
@@ -424,5 +419,7 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
       set({ timeout: setTimeout(() => set({ open: false }), 5000) });
     }
   },
-  setOpen: (value) => set({ open: value }),
+  setOpen: (value) => {
+    set({ open: value });
+  },
 }));

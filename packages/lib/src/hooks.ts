@@ -21,6 +21,7 @@ import {
   web3,
   parseEvents,
   sendAndWaitForConfirmations,
+  networks,
 } from "@defi.org/web3-candies";
 import { useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import { QUERY_PARAMS, REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
@@ -28,6 +29,9 @@ import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
 import { amountUi, getTokenFromTokensList, setQueryParam } from "./utils";
+import { ContractCallContext, Multicall } from "ethereum-multicall";
+import { mock } from "./mock";
+import lib from "qrcode.react";
 
 /**
  * Actions
@@ -177,6 +181,8 @@ export const useOnTokenSelect = (isSrc?: boolean) => {
 export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
+  const { refetch } = useOrdersHistoryQuery();
+  const setShowConfirmation = useTwapStore((store) => store.setShowConfirmation);
 
   const submitOrder = useSubmitOrderCallback();
 
@@ -199,6 +205,7 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
         getSrcChunkAmount: store.getSrcChunkAmount(),
         getDeadline: store.getDeadline(),
         fillDelayMillis: store.getFillDelayUiMillis(),
+        isLimit: store.isLimitOrder,
       });
 
       onTxSubmitted?.({
@@ -218,7 +225,7 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
       analytics.onConfirmationCreateOrderClick();
       store.setLoading(true);
 
-      return submitOrder(
+      const order = await submitOrder(
         store.setTxHash,
         store.srcToken!,
         dstToken,
@@ -232,12 +239,15 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
         priorityFeePerGas || zero,
         maxFeePerGas
       );
+
+      await refetch();
+      return order;
     },
     {
       onSuccess: async (result) => {
         analytics.onCreateOrderSuccess(result.orderId);
         onSuccess?.();
-        store.setOrderCreatedTimestamp(Date.now());
+        setShowConfirmation(false);
         !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
@@ -275,12 +285,12 @@ export const useInitLib = () => {
 
 export const useUpdateStoreOveride = () => {
   const setStoreOverrideValues = useTwapStore((state) => state.setStoreOverrideValues);
-
+  const enableQueryParams = useTwapContext().enableQueryParams;
   return useCallback(
     (values?: Partial<State>) => {
-      setStoreOverrideValues(values || {});
+      setStoreOverrideValues(values || {}, enableQueryParams);
     },
-    [setStoreOverrideValues]
+    [setStoreOverrideValues, enableQueryParams]
   );
 };
 
@@ -475,11 +485,18 @@ export const usePriceUSD = (address?: string, onSuccess?: (value: BN) => void) =
   const _address = address && isNativeAddress(address) ? lib?.config.wToken.address : address;
   const usd = context.usePriceUSD?.(_address);
 
+  const [priceUsdPointer, setPriceUsdPointer] = useState(0);
+
+  useEffect(() => {
+    if (context.priceUsd) {
+      setPriceUsdPointer((prev) => prev + 1);
+    }
+  }, [context.priceUsd, setPriceUsdPointer]);
+
   const query = useQuery(
-    [QueryKeys.GET_USD_VALUE, _address],
+    [QueryKeys.GET_USD_VALUE, _address, priceUsdPointer],
     async () => {
       const res = await context.priceUsd!(_address!);
-
       return new BN(res);
     },
     {
@@ -566,11 +583,10 @@ const useTokenList = () => {
 export const useOrdersHistoryQuery = () => {
   const tokenList = useTokenList();
 
-  const orderCreatedTimestamp = useTwapStore((state) => state.orderCreatedTimestamp);
   const lib = useTwapStore((state) => state.lib);
 
   const query = useQuery<OrdersData>(
-    [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId, orderCreatedTimestamp],
+    [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
     async () => {
       const orders = await lib!.getAllOrders();
 
@@ -599,6 +615,7 @@ export const useOrdersHistoryQuery = () => {
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,
       retry: 5,
+      staleTime: Infinity,
     }
   );
   return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };
@@ -671,13 +688,10 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
         BN(0)
       );
 
-      return {
-        dstAmountOut: amountUi(order!.ui.dstToken, dstAmountOut),
-        dstAmountOutUsdPrice: amountUi(order!.ui.dstToken, dstAmountOut.times(order!.ui.dstUsd)),
-      };
+      return amountUi(order!.ui.dstToken, dstAmountOut);
     },
     {
-      enabled: !!lib && !!_enabled && !!order,
+      enabled: !!lib && !!_enabled && !!order && lib.config.chainId !== networks.bsc.id,
       retry: 5,
       staleTime: Infinity,
       onSuccess: () => setHaveValue(true),
@@ -685,7 +699,19 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
   );
 };
 
-export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
+export const useFormatNumber = ({
+  value,
+  decimalScale = 3,
+  prefix,
+  suffix,
+  disableDynamicDecimals = true,
+}: {
+  value?: string | number;
+  decimalScale?: number;
+  prefix?: string;
+  suffix?: string;
+  disableDynamicDecimals?: boolean;
+}) => {
   const decimals = useMemo(() => {
     if (!value) return 0;
     const [, decimal] = value.toString().split(".");
@@ -709,7 +735,7 @@ export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { v
     thousandSeparator: ",",
     displayType: "text",
     value: value || "",
-    decimalScale: decimals,
+    decimalScale: disableDynamicDecimals ? decimalScale : decimals,
     prefix,
     suffix,
   });
@@ -848,16 +874,19 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
     warning: store.getFillWarning(translations),
     createOrderLoading: store.loading,
   }));
+  const reset = useResetStore();
   const outAmountLoading = useOutAmountLoading();
   const { srcUsdLoading, dstUsdLoading } = useLoadingState();
   const { mutate: approve, isLoading: approveLoading } = useApproveToken();
-  const { mutate: createOrder } = useCreateOrder();
+  const { mutate: createOrder } = useCreateOrder(false, reset);
   const allowance = useHasAllowanceQuery();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
   const connect = useTwapContext()?.connect;
   const wizardStore = useWizardStore();
   const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
+  const { custom, limitPrice } = useLimitPrice();
+  const waitForLimitPrice = !custom && !limitPrice;
 
   if (wrongNetwork)
     return {
@@ -873,7 +902,7 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
       loading: false,
       disabled: false,
     };
-  if (outAmountLoading) {
+  if (outAmountLoading || waitForLimitPrice) {
     return { text: "", onClick: undefined, loading: true, disabled: true };
   }
   if (warning)
@@ -899,7 +928,7 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
     };
   if (createOrderLoading) {
     return {
-      text: "",
+      text: translations.confirmOrder,
       onClick: () => {
         if (!showConfirmation) {
           setShowConfirmation(true);
@@ -945,7 +974,6 @@ export const useParseOrderUi = (o?: ParsedOrder) => {
   const lib = useTwapStore((s) => s.lib);
   const { value: srcUsd = zero } = usePriceUSD(o?.order.ask.srcToken);
   const { value: dstUsd = zero } = usePriceUSD(o?.order.ask.dstToken);
-
   return useMemo(() => {
     if (!lib || !o) return;
     const srcToken = o.ui.srcToken;
@@ -1082,5 +1110,102 @@ export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
     hasPrevPage: page > 0,
     hasNextPage: page < chunks.length - 1,
     text: `Page ${page + 1} of ${chunks.length}`,
+  };
+};
+
+export const useGetFills = () => {
+  const lib = useTwapStore((s) => s.lib);
+  const { dataUpdatedAt } = useOrdersHistoryQuery();
+
+  return useQuery(
+    ["useGetFills", lib?.config.chainId, lib?.maker, dataUpdatedAt],
+    async ({ signal }) => {
+      const response = await fetch(
+        `https://api.bscscan.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=0x25a0A78f5ad07b2474D3D42F1c1432178465936d&topic0=0xc7529bc0224b03ba593d84e2064baeac956a4221ca93d37af0f1810ad17df7a9&topic0_2_opr=and&topic2=0x000000000000000000000000${lib?.maker.replace(
+          "0x",
+          ""
+        )}`,
+        {
+          signal,
+        }
+      );
+      const fills = await response.json();
+      // const fills = mock;
+
+      const parsedFills = fills.result.map((fill: any) => {
+        try {
+          const parsedData = _.values(web3().eth.abi.decodeParameters(["uint256", "uint256", "uint256", "uint256"], fill.data));
+          const dstAmount = parsedData[2];
+          const orderId = web3().utils.hexToNumber(fill.topics[1]);
+
+          return {
+            dstAmount,
+            orderId,
+          };
+        } catch (error) {
+          return undefined;
+        }
+      });
+
+      const grouped = _.map(
+        _.groupBy(
+          _.filter(parsedFills, (it) => !!it),
+          "orderId"
+        ),
+        (fills, orderId) => {
+          return {
+            orderId: Number(orderId),
+            dstAmount: _.reduce(fills, (acc, it) => acc.plus(it!.dstAmount), BN(0)).toString(),
+          };
+        }
+      );
+
+      const result = _.mapValues(_.keyBy(grouped, "orderId"), "dstAmount");
+      console.log({ result });
+      return result;
+    },
+    {
+      enabled: !!lib && lib.config.chainId === networks.bsc.id && !!dataUpdatedAt,
+      staleTime: Infinity,
+      keepPreviousData: true,
+    }
+  );
+};
+
+export const useOrderAmountOut = (order: OrderUI) => {
+  const { data: fills } = useGetFills();
+
+  return useMemo(() => {
+    if (!order || !fills) return undefined;
+    const dstAmount = fills[order.order.id];
+    if (!dstAmount) {
+      return {
+        dstAmountOut: "0",
+        dstAmountOutUsdPrice: "0",
+      };
+    }
+    return {
+      dstAmountOut: amountUi(order?.ui.dstToken, BN(dstAmount)),
+      dstAmountOutUsdPrice: amountUi(order!.ui.dstToken, BN(dstAmount).times(order!.ui.dstUsd)),
+    };
+  }, [fills, order]);
+};
+
+export const useDstAmountOut = (order: OrderUI, expanded?: boolean) => {
+  const { data, isLoading } = useOrderPastEvents(order, expanded);
+  const orderAmountOut = useOrderAmountOut(order);
+  const chainId = useTwapStore((s) => s.lib?.config.chainId);
+  const dstAmountOut = data || orderAmountOut?.dstAmountOut;
+
+  const dstAmoutOutUsd = useMemo(() => {
+    if (!dstAmountOut || !order?.ui.dstUsdUi) return undefined;
+    return BN(dstAmountOut).times(order?.ui.dstUsdUi).toString();
+  }, [dstAmountOut, order]);
+
+  return {
+    dstAmountOut,
+    dstAmoutOutUsd,
+    amountOutLoading: chainId === networks.bsc.id ? !dstAmountOut : expanded && isLoading,
+    usdLoading: chainId === networks.bsc.id ? !dstAmoutOutUsd : expanded && isLoading,
   };
 };

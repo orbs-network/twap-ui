@@ -145,10 +145,16 @@ export const StyledSummaryRow = styled(StyledRowFlex)({
     maxWidth: "60%",
   },
   "@media(max-width: 700px)": {
-    flexDirection: "column",
-    alignItems: "flex-start",
+    ".twap-order-summary-details-item-right": {
+      p: {
+        fontSize: 12,
+      },
+    },
     ".twap-label": {
       maxWidth: "unset",
+      p: {
+        fontSize: 12,
+      },
     },
   },
 });

@@ -89,7 +89,6 @@ export const getQueryParam = (name: string) => {
 
 export const setQueryParam = (name: string, value?: string) => {
   if (!useTwapStore.getState().enableQueryParams) return;
-
   const search = window.location.search;
   const params = new URLSearchParams(search);
   if (!value) {
@@ -99,4 +98,17 @@ export const setQueryParam = (name: string, value?: string) => {
   }
 
   window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+};
+
+export const parseError = (error?: any) => {
+  const defaultText = "An error occurred.";
+  if (!error || !error.message) return defaultText;
+  try {
+    if (error.message.toLowerCase().indexOf("rejected")) {
+      return "Transaction Rejected";
+    }
+    return defaultText;
+  } catch (error) {
+    return defaultText;
+  }
 };

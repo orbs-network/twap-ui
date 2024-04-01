@@ -423,6 +423,13 @@ export const StyledMarketPriceContainer = styled(Styles.StyledRowFlex)(({ theme 
         whiteSpace: "nowrap",
       },
     },
+    "@media(max-width: 700px)": {
+      ".twap-label": {
+        p: {
+          fontSize: "12px!important",
+        },
+      },
+    },
   };
 });
 
@@ -610,8 +617,6 @@ export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) =>
       fontSize: 14,
     },
     ".twap-order-summary-details-item": {
-      flexWrap: "wrap",
-
       ".twap-label": {
         maxWidth: "unset",
         fontSize: 14,
@@ -629,12 +634,6 @@ export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) =>
     ".twap-order-summary-details-item-right": {
       fontSize: 14,
       gap: 3,
-    },
-
-    ".twap-disclaimer-text": {
-      "*": {
-        fontSize: 14,
-      },
     },
     ".twap-ui-close": {
       "*": {
@@ -672,10 +671,11 @@ export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) =>
         height: 35,
       },
     },
-    "@media (max-width:500px)": {
-      ".twap-order-summary-details-item": {
-        flexDirection: "column",
-        alignItems: "flex-start",
+    "@media (max-width:700px)": {
+      ".twap-order-summary-limit-price": {
+        "*": {
+          fontSize: "12px!important",
+        },
       },
     },
   };
@@ -829,8 +829,8 @@ export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, th
     fontWeight: 500,
     color: !selected ? color : selectedColor,
     "@media (max-width:700px)": {
-      fontSize: 12,
-      padding: " 0px 14px",
+      fontSize: 11,
+      padding: " 0px 10px",
     },
   };
 });

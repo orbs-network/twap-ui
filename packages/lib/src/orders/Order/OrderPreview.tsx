@@ -1,15 +1,16 @@
 import { LinearProgress, Typography, Box, styled } from "@mui/material";
 import { OrderUI, useTwapContext } from "../..";
 import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../../styles";
-import { useFormatNumber, useOrderPastEvents } from "../../hooks";
+import { useDstAmountOut, useFormatNumber } from "../../hooks";
 import { Icon, Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
 import { TokenData } from "@orbs-network/twap";
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { FiChevronDown } from "@react-icons/all-files/fi/FiChevronDown";
 
 function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }) {
-  const { data, isFetching } = useOrderPastEvents(order, expanded);
+  const { dstAmountOut, dstAmoutOutUsd, usdLoading, amountOutLoading } = useDstAmountOut(order, expanded);
+
   const srcFilledAmountUi = useFormatNumber({ value: order?.ui.srcFilledAmountUi });
   const progress = useFormatNumber({ value: order?.ui.progress, decimalScale: 1, suffix: "%" });
   const translations = useTwapContext().translations;
@@ -45,7 +46,14 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
           isLoading={!order?.ui.srcAmountUsdUi}
         />
         <Icon className="twap-order-preview-icon" icon={<HiArrowRight style={{ width: 22, height: 22 }} />} />
-        <OrderTokenDisplay isLoading={isFetching} token={order?.ui.dstToken} amount={data?.dstAmountOut} usdValue={data?.dstAmountOutUsdPrice || ""} icon={<FiChevronDown />} />
+        <OrderTokenDisplay
+          usdLoading={usdLoading}
+          isLoading={amountOutLoading}
+          token={order?.ui.dstToken}
+          amount={dstAmountOut}
+          usdValue={dstAmoutOutUsd}
+          icon={<FiChevronDown />}
+        />
       </StyledRowFlex>
     </StyledColumnFlex>
   );
@@ -96,14 +104,14 @@ interface OrderTokenDisplayProps {
   className?: string;
   alighLeft?: boolean;
   usdPrefix?: string;
-  usdValue: string;
+  usdValue?: string;
   icon?: ReactNode;
   isLoading?: boolean;
   isMain?: boolean;
+  usdLoading?: boolean;
 }
-export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading }: OrderTokenDisplayProps) => {
-  const tokenAmount = useFormatNumber({ value: amount });
-  const tokenAmountTooltip = useFormatNumber({ value: amount, decimalScale: 18 });
+export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading, usdLoading }: OrderTokenDisplayProps) => {
+  const tokenAmount = useFormatNumber({ value: amount, disableDynamicDecimals: true });
 
   return (
     <StyledTokenDisplay className={`twap-order-token-display ${className}`}>
@@ -111,22 +119,20 @@ export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", 
         <StyledTokenLogo logo={token?.logoUrl} />
         <StyledTokenDisplayAmount>
           {amount ? (
-            <Tooltip text={`${tokenAmountTooltip} ${token?.symbol}`}>
-              <Typography className="twap-order-token-display-amount">
-                {prefix ? `${prefix} ` : ""}
-                {tokenAmount}
-                {` ${token?.symbol}`}
-              </Typography>
-            </Tooltip>
+            <Typography className="twap-order-token-display-amount">
+              {prefix ? `${prefix} ` : ""}
+              {tokenAmount}
+              {` ${token?.symbol}`}
+            </Typography>
           ) : (
             <Typography>{` ${token?.symbol}`}</Typography>
           )}
 
-          {!alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
+          {!alighLeft && <OrderUsdValue isLoading={usdLoading} usdValue={usdValue} prefix={usdPrefix} />}
         </StyledTokenDisplayAmount>
         {icon && <StyledIcon>{icon}</StyledIcon>}
       </StyledTokenDisplayFlex>
-      {alighLeft && <OrderUsdValue isLoading={isLoading} usdValue={usdValue} prefix={usdPrefix} />}
+      {alighLeft && <OrderUsdValue isLoading={usdLoading} usdValue={usdValue} prefix={usdPrefix} />}
     </StyledTokenDisplay>
   );
 };
@@ -142,22 +148,19 @@ const StyledIcon = styled("div")({
 
 interface OrderUsdValueProps {
   prefix?: string;
-  usdValue: string;
+  usdValue?: string;
   isLoading?: boolean;
 }
 
 export function OrderUsdValue({ usdValue, prefix = "≈", isLoading }: OrderUsdValueProps) {
-  const formattedValue = useFormatNumber({ value: usdValue });
-  const formattedValueTooltip = useFormatNumber({ value: usdValue, decimalScale: 18 });
+  const formattedValue = useFormatNumber({ value: usdValue, disableDynamicDecimals: true });
 
   if (isLoading) return <Loader width={30} height={20} />;
   if (!usdValue) return null;
 
   return (
     <StyledTokenDisplayUsd loading={false} className="twap-order-token-display-usd">
-      <Tooltip text={`$ ${formattedValueTooltip}`}>
-        {prefix} $ {formattedValue}
-      </Tooltip>
+      {prefix} $ {formattedValue}
     </StyledTokenDisplayUsd>
   );
 }

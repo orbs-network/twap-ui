@@ -11,6 +11,7 @@ import {
   TwapContextUIPreferences,
   Styles,
   TooltipProps,
+  parseError,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -114,6 +115,7 @@ const uiPreferences: TwapContextUIPreferences = {
   Button,
   orders: {
     paginationChunks: 4,
+    hideUsd: true,
   },
 };
 
@@ -493,7 +495,7 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
   );
 };
 
-export { TWAP, Orders, OrderSummary };
+export { TWAP, Orders };
 
 export enum SwapState {
   REVIEW,
@@ -507,7 +509,7 @@ export enum SwapState {
 const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   const [swapState, setSwapState] = useState(SwapState.REVIEW);
   const { dappTokens, ApproveModalContent, SwapPendingModalContent, SwapTransactionErrorContent, AddToWallet, SwapTransactionReceiptModalContent } = useAdapterContext();
-  const { fromToken, setShowConfirmation, showConfirmation, txHash, isLimitOrder } = store.useTwapStore((s) => ({
+  const { fromToken, setShowConfirmation, showConfirmation, txHash, isLimitOrder, disclaimerAccepted } = store.useTwapStore((s) => ({
     fromToken: s.srcToken,
     srcBalance: s.srcBalance,
     dstBalance: s.dstBalance,
@@ -515,6 +517,7 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
     showConfirmation: s.showConfirmation,
     txHash: s.txHash,
     isLimitOrder: s.isLimitOrder,
+    disclaimerAccepted: s.disclaimerAccepted,
   }));
   const reset = hooks.useResetStore();
 
@@ -535,11 +538,7 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
       setSwapState(SwapState.COMPLETED);
     } catch (error) {
       setSwapState(SwapState.ERROR);
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("An error occurred");
-      }
+      setError(parseError(error) || "An error occurred");
     }
   }, [allowance, approveCallback, createOrder, setSwapState, setError]);
 
@@ -567,7 +566,7 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
 
   if (swapState === SwapState.REVIEW) {
     title = "Confirm Order";
-    content = <OrderSummary disabled={isLoading} onSubmit={onSubmit} />;
+    content = <OrderSummary isLimitPanel={limitPanel} disabled={isLoading || !disclaimerAccepted} onSubmit={onSubmit} />;
   }
 
   if (swapState === SwapState.APPROVE) {
@@ -636,7 +635,7 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
 
 export const useShowSwapModalButton = () => {
   const translations = useTwapContext()?.translations;
-  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount } = store.useTwapStore((store) => ({
+  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount, disclaimerAccepted } = store.useTwapStore((store) => ({
     maker: store.lib?.maker,
     shouldWrap: store.shouldWrap(),
     shouldUnwrap: store.shouldUnwrap(),
@@ -646,6 +645,7 @@ export const useShowSwapModalButton = () => {
     createOrderLoading: store.loading,
     srcUsd: store.srcUsd,
     srcAmount: store.srcAmountUi,
+    disclaimerAccepted: store.disclaimerAccepted,
   }));
   const outAmountLoading = useOutAmountLoading();
   const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken(true);
@@ -703,7 +703,7 @@ export const useShowSwapModalButton = () => {
 
   if (createOrderLoading) {
     return {
-      text: "",
+      text: translations.placeOrder,
       loading: true,
       disabled: false,
     };

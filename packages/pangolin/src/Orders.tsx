@@ -188,7 +188,7 @@ const Progress = ({ orderUI }: { orderUI: OrderUI }) => {
 
 const DstTokenAmount = ({ orderUI }: { orderUI?: OrderUI }) => {
   const { data } = hooks.useOrderPastEvents(orderUI!, true);
-  const amount = hooks.useFormatNumber({ value: data?.dstAmountOut });
+  const amount = hooks.useFormatNumber({ value: "" });
 
   return (
     <OrderDetail
@@ -504,7 +504,7 @@ const PairSymbols = ({ orderUI, className = "" }: { orderUI: OrderUI; className?
 
 const Amounts = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: string }) => {
   const { data } = hooks.useOrderPastEvents(orderUI, true);
-  const outAmount = hooks.useFormatNumber({ value: data?.dstAmountOut, decimalScale });
+  const outAmount = hooks.useFormatNumber({ value: "", decimalScale });
   const srcAmount = hooks.useFormatNumber({ value: orderUI?.ui.srcAmountUi, decimalScale });
   return (
     <StyledAmounts className={className}>

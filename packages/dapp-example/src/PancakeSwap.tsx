@@ -1,5 +1,5 @@
 import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeOrders, StyledPancakeTwap } from "./styles";
-import { TWAP, Orders, parseToken, OrderSummary } from "@orbs-network/twap-ui-pancake";
+import { TWAP, Orders, parseToken } from "@orbs-network/twap-ui-pancake";
 import { useConnectWallet, useGetTokens, useIsMobile, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";

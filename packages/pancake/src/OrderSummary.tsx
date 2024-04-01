@@ -1,4 +1,4 @@
-import { styled, Typography } from "@mui/material";
+import { styled } from "@mui/material";
 import { Styles as TwapStyles, Components, store, hooks } from "@orbs-network/twap-ui";
 import { StyledOrderSummary } from "./styles";
 import { MdArrowDownward } from "@react-icons/all-files/md/MdArrowDownward";
@@ -6,8 +6,7 @@ import { ReactNode } from "react";
 import { useAdapterContext } from "./context";
 import { Price } from "./components";
 
-export const OrderSummary = ({ onSubmit, disabled }: { onSubmit: () => void; disabled?: boolean }) => {
-  const limit = store.useTwapStore((store) => store.isLimitOrder);
+export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: () => void; disabled?: boolean; isLimitPanel?: boolean }) => {
   const Button = useAdapterContext().Button;
   return (
     <StyledOrderSummary gap={14}>
@@ -19,7 +18,7 @@ export const OrderSummary = ({ onSubmit, disabled }: { onSubmit: () => void; dis
         </StyledTokens>
         <Components.Base.Card>
           <StyledSummaryDetails>
-            {limit ? (
+            {isLimitPanel ? (
               <>
                 <Price />
                 <Components.OrderSummaryDetailsDeadline />
@@ -72,6 +71,9 @@ const StyledSummaryDetails = styled(TwapStyles.StyledColumnFlex)({
   gap: 9,
   ".twap-token-logo": {
     display: "none",
+  },
+  "@media(max-width: 700px)": {
+    gap: 6,
   },
 });
 

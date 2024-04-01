@@ -11,9 +11,7 @@ export function Wizard() {
   const store = useWizardStore();
   const content = useContent();
 
-  const onClose = useCallback(() => {
-    store.setOpen(false);
-  }, []);
+  const onClose = () => store.setOpen(false);
 
   return (
     <Modal open={store.open} onClose={onClose}>

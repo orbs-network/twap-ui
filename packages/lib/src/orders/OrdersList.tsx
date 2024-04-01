@@ -52,7 +52,7 @@ const List = ({ orders, status }: { orders?: ParsedOrder[]; status?: string }) =
     <StyledContainer className="twap-orders-list">
       {_.size(orders) ? (
         orders?.map((order, index) => {
-          return <Order order={order} key={index} expanded={index === selected} onExpand={() => onSelect(index)} />;
+          return <Order order={order} key={index} expanded={order.order.id === selected} onExpand={() => onSelect(order.order.id)} />;
         })
       ) : (
         <StyledEmptyList className="twap-orders-empty-list">

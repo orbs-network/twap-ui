@@ -61,6 +61,7 @@ export default Modal;
 
 const StyledHeader = styled(StyledRowFlex)({
   justifyContent: "space-between",
+  marginBottom: 10,
 });
 
 const StyledSeparator = styled(Box)({
