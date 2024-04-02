@@ -26,13 +26,13 @@ export interface Props {
 }
 
 function OrderComponent({ order, onExpand, expanded }: Props) {
-  const orderUI = useParseOrderUi(order);
+  const orderUI = useParseOrderUi(order, expanded);
 
   return (
     <StyledContainer onClick={onExpand} className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
       <StyledAccordion expanded={expanded}>
         <StyledAccordionSummary>
-          <OrderPreview order={orderUI} expanded={expanded} />
+          <OrderPreview order={orderUI} />
         </StyledAccordionSummary>
         <StyledAccordionDetails className="twap-order-accordion" style={{ padding: 0, paddingTop: 10 }}>
           <OrderSeparator className="twap-order-separator" style={{ marginBottom: 10 }} />

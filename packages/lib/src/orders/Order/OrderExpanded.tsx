@@ -1,9 +1,9 @@
 import { styled } from "@mui/material";
 import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
-import { Button, Label, TokenLogo, TokenPriceCompare, Tooltip } from "../../components/base";
+import { Button, Label, TokenLogo, TokenPriceCompare } from "../../components/base";
 import { useTwapContext } from "../../context";
-import { useCancelOrder, useFormatNumber, useHistoryPrice, useOrderAmountOut } from "../../hooks";
+import { useCancelOrder, useFormatNumber, useHistoryPrice } from "../../hooks";
 import { useTwapStore } from "../../store";
 import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { OrderUI } from "../../types";

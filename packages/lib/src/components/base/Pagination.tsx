@@ -17,7 +17,7 @@ interface Props {
 
 function Pagination({ onPrev, onNext, className = "", hasNextPage, hasPrevPage, text }: Props) {
   return (
-    <Container className={className}>
+    <Container className={`twap-orders-pagination ${className}`}>
       <StyledIconButton hasNext={!hasPrevPage ? 1 : 0} onClick={onPrev}>
         <HiArrowLeft />
       </StyledIconButton>

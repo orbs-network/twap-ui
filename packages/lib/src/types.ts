@@ -183,6 +183,9 @@ export interface ParsedOrder {
     srcToken?: TokenData;
     dstToken?: TokenData;
     totalChunks?: number;
+    dstAmount?: string;
+    progress?: number;
+    srcFilledAmount?: string;
   };
 }
 

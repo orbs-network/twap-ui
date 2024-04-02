@@ -1,7 +1,7 @@
 import { TokenData, parsebn, eqIgnoreCase } from "@defi.org/web3-candies";
 import moment from "moment";
 import { Translations } from "./types";
-import {QUERY_PARAMS} from "./consts";
+import { QUERY_PARAMS } from "./consts";
 import BN from "bignumber.js";
 import _ from "lodash";
 import { useTwapStore } from "./store";

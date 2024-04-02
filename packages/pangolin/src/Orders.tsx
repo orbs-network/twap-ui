@@ -506,6 +506,7 @@ const Amounts = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: st
   const { data } = hooks.useOrderPastEvents(orderUI, true);
   const outAmount = hooks.useFormatNumber({ value: "", decimalScale });
   const srcAmount = hooks.useFormatNumber({ value: orderUI?.ui.srcAmountUi, decimalScale });
+
   return (
     <StyledAmounts className={className}>
       {!data ? (

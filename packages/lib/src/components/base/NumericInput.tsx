@@ -29,8 +29,6 @@ const InputLoader = () => {
 function NumericInput({ prefix = "", onChange, value, disabled = false, placeholder, onFocus, onBlur, loading = false, className = "", maxValue, decimalScale, minAmount }: Props) {
   const inputValue = value || minAmount || "";
 
-  console.log({ inputValue });
-
   const { inputPlaceholder, input } = useTwapContext().uiPreferences;
 
   const _placeholder = placeholder || inputPlaceholder || "0.0";

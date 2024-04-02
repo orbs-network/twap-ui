@@ -29,9 +29,6 @@ import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
 import { amountUi, getTokenFromTokensList, setQueryParam } from "./utils";
-import { ContractCallContext, Multicall } from "ethereum-multicall";
-import { mock } from "./mock";
-import lib from "qrcode.react";
 
 /**
  * Actions
@@ -471,11 +468,20 @@ export const useHasAllowanceQuery = () => {
     amount: state.getSrcAmount(),
     srcToken: state.srcToken,
   }));
-  const query = useQuery([QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, amount.toString()], () => lib!.hasAllowance(srcToken!, amount), {
-    enabled: !!lib && !!srcToken && amount.gt(0),
-    staleTime: STALE_ALLOWANCE,
-    refetchOnWindowFocus: true,
-  });
+  const query = useQuery(
+    [QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, amount.toString()],
+    async () => {
+      const result = await lib!.hasAllowance(srcToken!, amount);
+      console.log(srcToken?.address, lib?.config.twapAddress);
+
+      return result;
+    },
+    {
+      enabled: !!lib && !!srcToken && amount.gt(0),
+      staleTime: STALE_ALLOWANCE,
+      refetchOnWindowFocus: true,
+    }
+  );
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
@@ -582,24 +588,39 @@ const useTokenList = () => {
 
 export const useOrdersHistoryQuery = () => {
   const tokenList = useTokenList();
-
   const lib = useTwapStore((state) => state.lib);
 
+  const getFills = useGetFillsCallback();
   const query = useQuery<OrdersData>(
     [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
-    async () => {
-      const orders = await lib!.getAllOrders();
+    async ({ signal }) => {
+      const [orders, fills] = await Promise.all([lib!.getAllOrders(), getFills(signal)]);
 
       const parsedOrders = _.map(orders, (o): ParsedOrder => {
-        const progress = lib!.orderProgress(o) < 0.99 ? lib!.orderProgress(o) * 100 : 100;
+        const dstAmount = fills?.[o.id]?.dstAmountOut;
+        const srcFilled = fills?.[o.id]?.srcAmountIn;
+        const srcAmountIn = o.ask.srcAmount;
+        const bscProgress =
+          !srcFilled || !srcAmountIn
+            ? 0
+            : BN(srcFilled || "0")
+                .dividedBy(srcAmountIn || "0")
+                .toNumber();
+        const _progress = lib?.config.chainId === networks.bsc.id ? bscProgress : lib!.orderProgress(o);
+        const progress = _progress < 0.99 ? _progress * 100 : 100;
         const status = progress === 100 ? Status.Completed : lib!.status(o);
+
+        const dstToken = tokenList.find((t) => eqIgnoreCase(o.ask.dstToken, t.address));
         return {
           order: o,
           ui: {
             totalChunks: o.ask.srcAmount.div(o.ask.srcBidAmount).integerValue(BN.ROUND_CEIL).toNumber(),
             status: status,
             srcToken: tokenList.find((t) => eqIgnoreCase(o.ask.srcToken, t.address)),
-            dstToken: tokenList.find((t) => eqIgnoreCase(o.ask.dstToken, t.address)),
+            dstToken,
+            dstAmount,
+            progress,
+            srcFilledAmount: srcFilled,
           },
         };
       }).filter((o) => o.ui.srcToken && o.ui.dstToken);
@@ -657,7 +678,7 @@ export const useParseTokens = (dappTokens: any, parseToken?: (rawToken: any) => 
   return useMemo(() => _.compact(_.map(dappTokens, parse)), [listLength]);
 };
 
-export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
+export const useOrderPastEvents = (order?: ParsedOrder, enabled?: boolean) => {
   const lib = useTwapStore((store) => store.lib);
   const [haveValue, setHaveValue] = useState(false);
 
@@ -688,7 +709,7 @@ export const useOrderPastEvents = (order: OrderUI, enabled?: boolean) => {
         BN(0)
       );
 
-      return amountUi(order!.ui.dstToken, dstAmountOut);
+      return dstAmountOut;
     },
     {
       enabled: !!lib && !!_enabled && !!order && lib.config.chainId !== networks.bsc.id,
@@ -970,10 +991,13 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
   };
 };
 
-export const useParseOrderUi = (o?: ParsedOrder) => {
+export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
   const lib = useTwapStore((s) => s.lib);
   const { value: srcUsd = zero } = usePriceUSD(o?.order.ask.srcToken);
   const { value: dstUsd = zero } = usePriceUSD(o?.order.ask.dstToken);
+
+  const { data: dstAmountOutFromEvents } = useOrderPastEvents(o, expanded);
+
   return useMemo(() => {
     if (!lib || !o) return;
     const srcToken = o.ui.srcToken;
@@ -982,14 +1006,12 @@ export const useParseOrderUi = (o?: ParsedOrder) => {
 
     const isMarketOrder = lib.isMarketOrder(o.order);
     const dstPriceFor1Src = lib.dstPriceFor1Src(srcToken, dstToken, srcUsd, dstUsd, o.order.ask.srcBidAmount, o.order.ask.dstMinAmount);
-    const srcRemainingAmount = o.order.ask.srcAmount.minus(o.order.srcFilledAmount);
-    const progress = lib.orderProgress(o.order) < 0.99 ? lib.orderProgress(o.order) * 100 : 100;
-
+    const dstAmount = dstAmountOutFromEvents || o.ui.dstAmount;
+    const srcFilledAmount = o.ui.srcFilledAmount || o.order.srcFilledAmount;
     return {
       order: o.order,
       ui: {
         ...o.ui,
-        progress,
         isMarketOrder,
         dstPriceFor1Src,
         srcUsd,
@@ -1000,19 +1022,21 @@ export const useParseOrderUi = (o?: ParsedOrder) => {
         srcAmountUsdUi: amountUi(srcToken, o.order.ask.srcAmount.times(srcUsd)),
         srcChunkAmountUi: amountUi(srcToken, o.order.ask.srcBidAmount),
         srcChunkAmountUsdUi: amountUi(srcToken, o.order.ask.srcBidAmount.times(srcUsd)),
-        srcFilledAmountUi: amountUi(srcToken, o.order.srcFilledAmount),
-        srcFilledAmountUsdUi: amountUi(srcToken, o.order.srcFilledAmount.times(srcUsd)),
-        srcRemainingAmountUi: amountUi(srcToken, srcRemainingAmount),
-        srcRemainingAmountUsdUi: amountUi(srcToken, srcRemainingAmount.times(srcUsd)),
+        srcFilledAmountUi: amountUi(srcToken, BN(srcFilledAmount || "0")),
+        srcFilledAmountUsdUi: amountUi(srcToken, BN(srcFilledAmount || "0").times(srcUsd)),
         dstMinAmountOutUi: amountUi(dstToken, o.order.ask.dstMinAmount),
         dstMinAmountOutUsdUi: amountUi(dstToken, o.order.ask.dstMinAmount.times(dstUsd)),
         fillDelay: o.order.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
         createdAtUi: moment(o.order.time * 1000).format("ll HH:mm"),
         deadlineUi: moment(o.order.ask.deadline * 1000).format("ll HH:mm"),
         prefix: isMarketOrder ? "~" : "≥",
+        dstAmount: !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0")),
+        dstAmountUsd: !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0").times(dstUsd)),
+        dstUsdLoading: !dstUsd,
+        progress: o?.ui.progress,
       },
     };
-  }, [lib, o, srcUsd, dstUsd]);
+  }, [lib, o, srcUsd, dstUsd, dstAmountOutFromEvents]);
 };
 
 export const useOutAmountLoading = () => {
@@ -1113,99 +1137,43 @@ export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
   };
 };
 
-export const useGetFills = () => {
+const useGetFillsCallback = () => {
   const lib = useTwapStore((s) => s.lib);
-  const { dataUpdatedAt } = useOrdersHistoryQuery();
+  return useCallback(
+    async (signal?: AbortSignal) => {
+      if (lib?.config.chainId !== networks.bsc.id) return;
 
-  return useQuery(
-    ["useGetFills", lib?.config.chainId, lib?.maker, dataUpdatedAt],
-    async ({ signal }) => {
-      const response = await fetch(
-        `https://api.bscscan.com/api?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address=0x25a0A78f5ad07b2474D3D42F1c1432178465936d&topic0=0xc7529bc0224b03ba593d84e2064baeac956a4221ca93d37af0f1810ad17df7a9&topic0_2_opr=and&topic2=0x000000000000000000000000${lib?.maker.replace(
-          "0x",
-          ""
-        )}`,
-        {
-          signal,
-        }
-      );
-      const fills = await response.json();
-      // const fills = mock;
+      const query = `{
+    orderFilleds(where:{userAddress:"${lib.maker}"}) {
+    id
+    dstAmountOut
+    dstFee
+    srcFilledAmount,
+    TWAP_id,
+    srcAmountIn
+  }
+}
+`;
+      const payload = await fetch("https://hub.orbs.network/api/apikey/subgraphs/id/4NfXEi8rreQsnAr4aJ45RLCKgnjcWX46Lbt9SadiCcz6", {
+        method: "POST",
+        body: JSON.stringify({ query }),
+        signal,
+      });
+      const response = await payload.json();
 
-      const parsedFills = fills.result.map((fill: any) => {
-        try {
-          const parsedData = _.values(web3().eth.abi.decodeParameters(["uint256", "uint256", "uint256", "uint256"], fill.data));
-          const dstAmount = parsedData[2];
-          const orderId = web3().utils.hexToNumber(fill.topics[1]);
-
-          return {
-            dstAmount,
-            orderId,
-          };
-        } catch (error) {
-          return undefined;
-        }
+      const grouped = _.map(_.groupBy(response.data.orderFilleds, "TWAP_id"), (fills, orderId) => {
+        return {
+          TWAP_id: Number(orderId),
+          dstAmountOut: _.reduce(fills, (acc, it) => acc.plus(it!.dstAmountOut), BN(0)).toString(),
+          srcAmountIn: _.reduce(fills, (acc, it) => acc.plus(it!.srcAmountIn), BN(0)).toString(),
+        };
       });
 
-      const grouped = _.map(
-        _.groupBy(
-          _.filter(parsedFills, (it) => !!it),
-          "orderId"
-        ),
-        (fills, orderId) => {
-          return {
-            orderId: Number(orderId),
-            dstAmount: _.reduce(fills, (acc, it) => acc.plus(it!.dstAmount), BN(0)).toString(),
-          };
-        }
-      );
-
-      const result = _.mapValues(_.keyBy(grouped, "orderId"), "dstAmount");
+      const result = _.mapValues(_.keyBy(grouped, "TWAP_id"));
       console.log({ result });
+
       return result;
     },
-    {
-      enabled: !!lib && lib.config.chainId === networks.bsc.id && !!dataUpdatedAt,
-      staleTime: Infinity,
-      keepPreviousData: true,
-    }
+    [lib]
   );
-};
-
-export const useOrderAmountOut = (order: OrderUI) => {
-  const { data: fills } = useGetFills();
-
-  return useMemo(() => {
-    if (!order || !fills) return undefined;
-    const dstAmount = fills[order.order.id];
-    if (!dstAmount) {
-      return {
-        dstAmountOut: "0",
-        dstAmountOutUsdPrice: "0",
-      };
-    }
-    return {
-      dstAmountOut: amountUi(order?.ui.dstToken, BN(dstAmount)),
-      dstAmountOutUsdPrice: amountUi(order!.ui.dstToken, BN(dstAmount).times(order!.ui.dstUsd)),
-    };
-  }, [fills, order]);
-};
-
-export const useDstAmountOut = (order: OrderUI, expanded?: boolean) => {
-  const { data, isLoading } = useOrderPastEvents(order, expanded);
-  const orderAmountOut = useOrderAmountOut(order);
-  const chainId = useTwapStore((s) => s.lib?.config.chainId);
-  const dstAmountOut = data || orderAmountOut?.dstAmountOut;
-
-  const dstAmoutOutUsd = useMemo(() => {
-    if (!dstAmountOut || !order?.ui.dstUsdUi) return undefined;
-    return BN(dstAmountOut).times(order?.ui.dstUsdUi).toString();
-  }, [dstAmountOut, order]);
-
-  return {
-    dstAmountOut,
-    dstAmoutOutUsd,
-    amountOutLoading: chainId === networks.bsc.id ? !dstAmountOut : expanded && isLoading,
-    usdLoading: chainId === networks.bsc.id ? !dstAmoutOutUsd : expanded && isLoading,
-  };
 };

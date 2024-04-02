@@ -1,16 +1,14 @@
-import { LinearProgress, Typography, Box, styled } from "@mui/material";
+import { LinearProgress, Typography, Box, styled, Fade } from "@mui/material";
 import { OrderUI, useTwapContext } from "../..";
 import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../../styles";
-import { useDstAmountOut, useFormatNumber } from "../../hooks";
+import { useFormatNumber } from "../../hooks";
 import { Icon, Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
 import { TokenData } from "@orbs-network/twap";
 import { ReactNode, useMemo } from "react";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { FiChevronDown } from "@react-icons/all-files/fi/FiChevronDown";
 
-function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }) {
-  const { dstAmountOut, dstAmoutOutUsd, usdLoading, amountOutLoading } = useDstAmountOut(order, expanded);
-
+function OrderPreview({ order }: { order: OrderUI }) {
   const srcFilledAmountUi = useFormatNumber({ value: order?.ui.srcFilledAmountUi });
   const progress = useFormatNumber({ value: order?.ui.progress, decimalScale: 1, suffix: "%" });
   const translations = useTwapContext().translations;
@@ -47,11 +45,11 @@ function OrderPreview({ order, expanded }: { order: OrderUI; expanded: boolean }
         />
         <Icon className="twap-order-preview-icon" icon={<HiArrowRight style={{ width: 22, height: 22 }} />} />
         <OrderTokenDisplay
-          usdLoading={usdLoading}
-          isLoading={amountOutLoading}
+          usdLoading={order?.ui.dstUsdLoading}
+          isLoading={false}
           token={order?.ui.dstToken}
-          amount={dstAmountOut}
-          usdValue={dstAmoutOutUsd}
+          amount={order?.ui.dstAmount}
+          usdValue={order?.ui.dstAmountUsd}
           icon={<FiChevronDown />}
         />
       </StyledRowFlex>
@@ -118,7 +116,11 @@ export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", 
       <StyledTokenDisplayFlex>
         <StyledTokenLogo logo={token?.logoUrl} />
         <StyledTokenDisplayAmount>
-          {amount ? (
+          {isLoading ? (
+            <StyledLoader className="twap-small-label-loader">
+              <Loader width="100%" height="100%" />
+            </StyledLoader>
+          ) : amount ? (
             <Typography className="twap-order-token-display-amount">
               {prefix ? `${prefix} ` : ""}
               {tokenAmount}
@@ -136,6 +138,11 @@ export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", 
     </StyledTokenDisplay>
   );
 };
+
+const StyledLoader = styled(Box)({
+  width: 50,
+  height: 20,
+});
 
 const StyledIcon = styled("div")({
   position: "relative",

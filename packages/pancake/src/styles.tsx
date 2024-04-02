@@ -756,6 +756,12 @@ export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
       paddingTop: "30px",
       color: styles.primaryTextColor,
     },
+    ".twap-orders-pagination": {
+      color: styles.primaryTextColor,
+      "*": {
+        color: styles.primaryTextColor,
+      },
+    },
   };
 });
 
