@@ -1,6 +1,7 @@
 import { TokenData, parsebn, eqIgnoreCase } from "@defi.org/web3-candies";
 import moment from "moment";
-import { Translations } from ".";
+import { Translations } from "./types";
+import {QUERY_PARAMS} from "./consts";
 import BN from "bignumber.js";
 import _ from "lodash";
 import { useTwapStore } from "./store";
@@ -83,8 +84,12 @@ export const getQueryParam = (name: string) => {
   const search = window.location.search;
 
   const params = new URLSearchParams(search);
+  const result = params.get(name);
+  if (name === QUERY_PARAMS.LIMIT_PRICE && result === ".") {
+    return "0.1";
+  }
 
-  return params.get(name);
+  return result;
 };
 
 export const setQueryParam = (name: string, value?: string) => {
