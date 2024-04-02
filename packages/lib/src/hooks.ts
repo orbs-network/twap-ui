@@ -179,8 +179,6 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
   const { refetch } = useOrdersHistoryQuery();
-  const setShowConfirmation = useTwapStore((store) => store.setShowConfirmation);
-
   const submitOrder = useSubmitOrderCallback();
 
   const wizardStore = useWizardStore();
@@ -244,7 +242,6 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
       onSuccess: async (result) => {
         analytics.onCreateOrderSuccess(result.orderId);
         onSuccess?.();
-        setShowConfirmation(false);
         !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
@@ -472,8 +469,6 @@ export const useHasAllowanceQuery = () => {
     [QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, amount.toString()],
     async () => {
       const result = await lib!.hasAllowance(srcToken!, amount);
-      console.log(srcToken?.address, lib?.config.twapAddress);
-
       return result;
     },
     {
@@ -607,15 +602,21 @@ export const useOrdersHistoryQuery = () => {
                 .dividedBy(srcAmountIn || "0")
                 .toNumber();
         const _progress = lib?.config.chainId === networks.bsc.id ? bscProgress : lib!.orderProgress(o);
-        const progress = _progress < 0.99 ? _progress * 100 : 100;
-        const status = progress === 100 ? Status.Completed : lib!.status(o);
+        const progress = !_progress ? 0 : _progress < 0.99 ? _progress * 100 : 100;
+        const status = () => {
+          if (progress === 100) return Status.Completed;
+          if (lib?.config.chainId === networks.bsc.id) {
+            if (o.status === 2 && progress < 100) return Status.Open;
+          }
+          return lib!.status(o);
+        };
 
         const dstToken = tokenList.find((t) => eqIgnoreCase(o.ask.dstToken, t.address));
         return {
           order: o,
           ui: {
             totalChunks: o.ask.srcAmount.div(o.ask.srcBidAmount).integerValue(BN.ROUND_CEIL).toNumber(),
-            status: status,
+            status: status(),
             srcToken: tokenList.find((t) => eqIgnoreCase(o.ask.srcToken, t.address)),
             dstToken,
             dstAmount,
@@ -1006,8 +1007,8 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
 
     const isMarketOrder = lib.isMarketOrder(o.order);
     const dstPriceFor1Src = lib.dstPriceFor1Src(srcToken, dstToken, srcUsd, dstUsd, o.order.ask.srcBidAmount, o.order.ask.dstMinAmount);
-    const dstAmount = dstAmountOutFromEvents || o.ui.dstAmount;
-    const srcFilledAmount = o.ui.srcFilledAmount || o.order.srcFilledAmount;
+    const dstAmount = lib.config.chainId === networks.bsc.id ? o.ui.dstAmount : dstAmountOutFromEvents?.toString();
+    const srcFilledAmount = lib.config.chainId === networks.bsc.id ? o.ui.srcFilledAmount : o.order.srcFilledAmount;
     return {
       order: o.order,
       ui: {
