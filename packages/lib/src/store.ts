@@ -62,6 +62,7 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     txHash: undefined,
 
     enableQueryParams: false,
+    waitingForOrdersUpdate: false,
   };
 };
 const initialState = getInitialState();
@@ -73,7 +74,9 @@ export const useTwapStore = create(
     setShowLodingModal: (showLoadingModal: boolean) => set({ showLoadingModal }),
     setLimitOrderPriceUi: () => {
       setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-      set({ limitPriceUi: { priceUi: (get() as any).getMarketPrice(false).marketPriceUi, inverted: false, custom: false } });
+      let price = (get() as any).getMarketPrice(false).marketPriceUi;
+      price = BN(price).times(0.95).toString();
+      set({ limitPriceUi: { priceUi: price, inverted: false, custom: false } });
     },
     setLimitOrder: (isLimitOrder?: boolean) => {
       set({ isLimitOrder });
@@ -102,7 +105,8 @@ export const useTwapStore = create(
     setOutAmount: (dstAmount?: string, dstAmountLoading?: boolean, custom?: boolean) => {
       set({ dstAmountFromDex: dstAmount });
       if (!custom && !get().limitPriceUi.custom) {
-        set({ dstAmount, dstAmountLoading, limitPriceUi: { ...get().limitPriceUi, priceUi: (get() as any).getMarketPrice(false).marketPriceUi } });
+        set({ dstAmount, dstAmountLoading });
+        (get() as any).setLimitOrderPriceUi();
       }
     },
     updateState: (values: Partial<State>) => set({ ...values }),

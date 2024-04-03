@@ -123,7 +123,7 @@ export const StyledOrdersLists = styled(Box)({
 });
 
 export const StyledSummaryRowRight = styled(StyledRowFlex)({
-  width: "unset",
+  width: "auto",
   justifyContent: "flex-end",
   flex: 1,
   ".twap-token-logo": {

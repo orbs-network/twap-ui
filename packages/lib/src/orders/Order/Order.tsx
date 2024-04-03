@@ -9,6 +9,7 @@ import { CSSProperties } from "react";
 import { Card, Loader } from "../../components/base";
 import { useParseOrderUi } from "../../hooks";
 import ContentLoader from "../../components/base/ContentLoader";
+import { StyledColumnFlex } from "../../styles";
 
 const StyledLoader = styled(Loader)({
   width: "100%",
@@ -44,6 +45,21 @@ function OrderComponent({ order, onExpand, expanded }: Props) {
     </StyledContainer>
   );
 }
+
+export const OrderLoader = ({ status }: { status?: string }) => {
+  if (status !== "Open") return null;
+  return (
+    <StyledOrderLoader className="twap-pending-order-loader twap-order">
+      <StyledColumnFlex gap={10}>
+        <Loader width="30%" height={20} />
+        <Loader width="40%" height={20} />
+        <Loader width="50%" height={20} />
+      </StyledColumnFlex>
+    </StyledOrderLoader>
+  );
+};
+
+const StyledOrderLoader = styled(Card)({});
 
 const OrderSeparator = ({ className = "", style }: { className?: string; style?: CSSProperties }) => {
   return <StyledSeperator className={`twap-order-separator ${className}`} style={style} />;

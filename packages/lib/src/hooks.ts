@@ -23,12 +23,12 @@ import {
   sendAndWaitForConfirmations,
   networks,
 } from "@defi.org/web3-candies";
-import { useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
+import { useOrdersStore, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import { QUERY_PARAMS, REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
-import { amountUi, getTokenFromTokensList, setQueryParam } from "./utils";
+import { amountBN, amountUi, getTokenFromTokensList, setQueryParam } from "./utils";
 
 /**
  * Actions
@@ -36,10 +36,10 @@ import { amountUi, getTokenFromTokensList, setQueryParam } from "./utils";
 
 export const useResetStore = () => {
   const resetTwapStore = useTwapStore((state) => state.reset);
-  const storeOverride = useTwapContext().storeOverride;
+  const storeOverride = useTwapContext().storeOverride || {};
 
-  return () => {
-    resetTwapStore(storeOverride || {});
+  return (args: Partial<State> = {}) => {
+    resetTwapStore({ ...storeOverride, ...args });
     setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
     setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
     setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
@@ -137,7 +137,11 @@ export const useUnwrapToken = (disableWizard?: boolean) => {
 };
 
 export const useApproveToken = (disableWizard?: boolean) => {
-  const lib = useTwapStore((state) => state.lib);
+  const { lib, setLoading } = useTwapStore((state) => ({
+    lib: state.lib,
+    setLoading: state.setLoading,
+  }));
+
   const srcAmount = useTwapStore((state) => state.getSrcAmount());
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   const srcToken = useTwapStore((state) => state.srcToken);
@@ -145,6 +149,7 @@ export const useApproveToken = (disableWizard?: boolean) => {
   const wizardStore = useWizardStore();
   return useMutation(
     async () => {
+      setLoading(true);
       if (!disableWizard) {
         wizardStore.setAction(WizardAction.APPROVE);
         wizardStore.setStatus(WizardActionStatus.PENDING);
@@ -164,6 +169,9 @@ export const useApproveToken = (disableWizard?: boolean) => {
         !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
         analytics.onApproveError(error.message);
       },
+      onSettled: () => {
+        setLoading(false);
+      },
     }
   );
 };
@@ -175,11 +183,30 @@ export const useOnTokenSelect = (isSrc?: boolean) => {
   return isSrc ? srcSelect : dstSelect;
 };
 
+export const useHasMinNativeTokenBalance = (minTokenAmount?: string) => {
+  const { lib } = useTwapStore((s) => ({
+    lib: s.lib,
+  }));
+
+  return useQuery(
+    ["useHasMinNativeTokenBalance", lib?.maker, lib?.config.chainId, minTokenAmount],
+    async () => {
+      const balance = await web3().eth.getBalance(lib!.maker);
+      return BN(balance).gte(amountBN(lib?.config.nativeToken, minTokenAmount!));
+    },
+    {
+      enabled: !!lib?.maker && !!minTokenAmount,
+      staleTime: Infinity,
+    }
+  );
+};
+
 export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
   const { refetch } = useOrdersHistoryQuery();
   const submitOrder = useSubmitOrderCallback();
+  const { setTab } = useOrdersStore();
 
   const wizardStore = useWizardStore();
   const { askDataParams, onTxSubmitted } = useTwapContext();
@@ -203,13 +230,6 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
         isLimit: store.isLimitOrder,
       });
 
-      onTxSubmitted?.({
-        srcToken: store.srcToken!,
-        dstToken: dstToken!,
-        srcAmount: store.getSrcAmount().toString(),
-        dstUSD: store.getDstAmountUsdUi()!,
-        dstAmount: store.dstAmount!,
-      });
       if (!disableWizard) {
         wizardStore.setAction(WizardAction.CREATE_ORDER);
         wizardStore.setStatus(WizardActionStatus.PENDING);
@@ -220,8 +240,16 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
       analytics.onConfirmationCreateOrderClick();
       store.setLoading(true);
 
+      const onTxHash = (txHash: string) => {
+        setTab(0);
+        store.updateState({
+          waitingForOrdersUpdate: true,
+          txHash,
+        });
+      };
+
       const order = await submitOrder(
-        store.setTxHash,
+        onTxHash,
         store.srcToken!,
         dstToken,
         store.getSrcAmount(),
@@ -234,6 +262,15 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
         priorityFeePerGas || zero,
         maxFeePerGas
       );
+
+      onTxSubmitted?.({
+        srcToken: store.srcToken!,
+        dstToken: dstToken!,
+        srcAmount: store.getSrcAmount().toString(),
+        dstUSD: store.getDstAmountUsdUi()!,
+        dstAmount: store.dstAmount!,
+        txHash: order.txHash,
+      });
 
       await refetch();
       return order;
@@ -253,7 +290,9 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
       },
 
       onSettled: () => {
-        store.setLoading(false);
+        store.updateState({
+          loading: false,
+        });
       },
     }
   );
@@ -583,7 +622,11 @@ const useTokenList = () => {
 
 export const useOrdersHistoryQuery = () => {
   const tokenList = useTokenList();
-  const lib = useTwapStore((state) => state.lib);
+  const { lib, updateState, showConfirmation } = useTwapStore((state) => ({
+    lib: state.lib,
+    updateState: state.updateState,
+    showConfirmation: state.showConfirmation,
+  }));
 
   const getFills = useGetFillsCallback();
   const query = useQuery<OrdersData>(
@@ -606,7 +649,8 @@ export const useOrdersHistoryQuery = () => {
         const status = () => {
           if (progress === 100) return Status.Completed;
           if (lib?.config.chainId === networks.bsc.id) {
-            if (o.status === 2 && progress < 100) return Status.Open;
+            // Temporary fix to show open order until the graph is synced.
+            if (o.status === 2 && progress < 100 && o.status > Date.now() / 1000) return Status.Open;
           }
           return lib!.status(o);
         };
@@ -625,14 +669,14 @@ export const useOrdersHistoryQuery = () => {
           },
         };
       }).filter((o) => o.ui.srcToken && o.ui.dstToken);
-
+      updateState({ waitingForOrdersUpdate: false });
       return _.chain(_.compact(parsedOrders))
         .orderBy((o: ParsedOrder) => o.order.time, "desc")
         .groupBy((o: ParsedOrder) => o.ui.status)
         .value();
     },
     {
-      enabled: !!lib && _.size(tokenList) > 0,
+      enabled: !!lib && _.size(tokenList) > 0 && !showConfirmation,
       refetchInterval: REFETCH_ORDER_HISTORY,
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,
@@ -1030,10 +1074,10 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
         fillDelay: o.order.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
         createdAtUi: moment(o.order.time * 1000).format("ll HH:mm"),
         deadlineUi: moment(o.order.ask.deadline * 1000).format("ll HH:mm"),
-        prefix: isMarketOrder ? "~" : "≥",
+        prefix: isMarketOrder ? "~" : "~",
         dstAmount: !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0")),
         dstAmountUsd: !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0").times(dstUsd)),
-        dstUsdLoading: !dstUsd,
+        dstUsdLoading: !dstUsd || dstUsd.isZero(),
         progress: o?.ui.progress,
       },
     };
@@ -1171,8 +1215,6 @@ const useGetFillsCallback = () => {
       });
 
       const result = _.mapValues(_.keyBy(grouped, "TWAP_id"));
-      console.log({ result });
-
       return result;
     },
     [lib]

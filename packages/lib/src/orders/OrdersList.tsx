@@ -1,6 +1,6 @@
 import { Box, styled } from "@mui/material";
 import { useState } from "react";
-import Order from "./Order/Order";
+import Order, { OrderLoader } from "./Order/Order";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useTwapContext } from "../context";
 import { ParsedOrder } from "../types";
@@ -8,6 +8,7 @@ import _ from "lodash";
 import { usePagination } from "../hooks";
 import { StyledColumnFlex } from "../styles";
 import { Pagination } from "../components/base";
+import { useTwapStore } from "../store";
 
 function OrdersList({ orders, status, isLoading }: { orders?: ParsedOrder[]; status?: string; isLoading: boolean }) {
   const { uiPreferences } = useTwapContext();
@@ -43,22 +44,30 @@ const PaginationList = ({ orders, status }: { orders?: ParsedOrder[]; status?: s
 const List = ({ orders, status }: { orders?: ParsedOrder[]; status?: string }) => {
   const [selected, setSelected] = useState<number | undefined>(undefined);
   const { translations } = useTwapContext();
+  const waitingForOrdersUpdate = useTwapStore((s) => s.waitingForOrdersUpdate);
 
   const onSelect = (value: number) => {
     setSelected((prevState) => (prevState === value ? undefined : value));
   };
 
-  return (
-    <StyledContainer className="twap-orders-list">
-      {_.size(orders) ? (
-        orders?.map((order, index) => {
-          return <Order order={order} key={index} expanded={order.order.id === selected} onExpand={() => onSelect(order.order.id)} />;
-        })
-      ) : (
+  if (!_.size(orders)) {
+    return waitingForOrdersUpdate ? (
+      <OrderLoader status={status} />
+    ) : (
+      <StyledContainer className="twap-orders-list">
         <StyledEmptyList className="twap-orders-empty-list">
           {!status ? "You currently don't have orders" : `${translations.noOrdersFound} ${(translations as any)["noOrdersFound_" + status]} ${translations.noOrdersFound1}`}
         </StyledEmptyList>
-      )}
+      </StyledContainer>
+    );
+  }
+
+  return (
+    <StyledContainer className="twap-orders-list">
+      {waitingForOrdersUpdate && <OrderLoader status={status} />}
+      {orders?.map((order, index) => {
+        return <Order order={order} key={index} expanded={order.order.id === selected} onExpand={() => onSelect(order.order.id)} />;
+      })}
     </StyledContainer>
   );
 };

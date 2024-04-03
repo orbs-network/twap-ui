@@ -1,4 +1,4 @@
-import { GlobalStyles, Box, ThemeProvider, Typography, styled, Modal } from "@mui/material";
+import { GlobalStyles, Box, ThemeProvider, Typography, styled } from "@mui/material";
 import {
   Components,
   hooks,
@@ -73,6 +73,8 @@ import { useTwapContext } from "@orbs-network/twap-ui";
 import { useOutAmountLoading } from "@orbs-network/twap-ui/dist/hooks";
 import { useAdapterContext, AdapterContextProvider, AdapterProps } from "./context";
 import { Price } from "./components";
+import { create } from "zustand";
+
 const PERCENT = [
   { text: "25%", value: 0.25 },
   { text: "50%", value: 0.5 },
@@ -324,6 +326,7 @@ const TopPanel = () => {
 const OpenConfirmationModalButton = () => {
   const { ConnectButton, provider, Button } = useAdapterContext();
   const { onClick, text, disabled } = useShowSwapModalButton();
+
   if (!provider) {
     return (
       <StyledButtonContainer>
@@ -506,8 +509,18 @@ export enum SwapState {
   COMPLETED,
 }
 
+interface Store {
+  swapState: SwapState;
+  setSwapState: (value: SwapState) => void;
+}
+
+export const useOrdersStore = create<Store>((set) => ({
+  swapState: SwapState.REVIEW,
+  setSwapState: (swapState) => set({ swapState }),
+}));
+
 const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
-  const [swapState, setSwapState] = useState(SwapState.REVIEW);
+  const { swapState, setSwapState } = useOrdersStore();
   const { dappTokens, ApproveModalContent, SwapPendingModalContent, SwapTransactionErrorContent, AddToWallet, SwapTransactionReceiptModalContent } = useAdapterContext();
   const { fromToken, setShowConfirmation, showConfirmation, txHash, isLimitOrder, disclaimerAccepted } = store.useTwapStore((s) => ({
     fromToken: s.srcToken,
@@ -526,9 +539,15 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   const { mutateAsync: createOrder } = hooks.useCreateOrder(true);
   const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
   const [error, setError] = useState("");
+  const { data: hasNativeBalance } = hooks.useHasMinNativeTokenBalance("0.0035");
 
   const onSubmit = useCallback(async () => {
     try {
+      if (!hasNativeBalance) {
+        setError(`Insufficient BNB balance, you need at least 0.0035BNB to cover the transaction fees.`);
+        setSwapState(SwapState.ERROR);
+        return;
+      }
       if (!allowance) {
         setSwapState(SwapState.APPROVE);
         await approveCallback();
@@ -540,20 +559,31 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
       setSwapState(SwapState.ERROR);
       setError(parseError(error) || "An error occurred");
     }
-  }, [allowance, approveCallback, createOrder, setSwapState, setError]);
+  }, [allowance, approveCallback, createOrder, setSwapState, setError, hasNativeBalance]);
 
   const wrongNetwork = store.useTwapStore((store) => store.wrongNetwork);
   let content = null;
   let title: string | undefined = undefined;
 
-  const onClose = () => {
-    setShowConfirmation(false);
-    if (swapState === SwapState.COMPLETED) {
-      reset();
-    }
+  const resetPoupupState = () => {
     setTimeout(() => {
       setSwapState(SwapState.REVIEW);
     }, 300);
+  };
+
+  const onClose = () => {
+    setShowConfirmation(false);
+    if (txHash) {
+      reset({ waitingForOrdersUpdate: true });
+      resetPoupupState();
+    }
+    if (swapState === SwapState.COMPLETED) {
+      reset();
+      resetPoupupState();
+    }
+    if (swapState === SwapState.ERROR) {
+      resetPoupupState();
+    }
   };
 
   useEffect(() => {
@@ -620,6 +650,7 @@ const StyledSwapModalContentChildren = styled("div")`
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  width: 100%;
 `;
 
 const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }) => {
@@ -635,7 +666,7 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
 
 export const useShowSwapModalButton = () => {
   const translations = useTwapContext()?.translations;
-  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount, disclaimerAccepted } = store.useTwapStore((store) => ({
+  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount } = store.useTwapStore((store) => ({
     maker: store.lib?.maker,
     shouldWrap: store.shouldWrap(),
     shouldUnwrap: store.shouldUnwrap(),
@@ -645,7 +676,6 @@ export const useShowSwapModalButton = () => {
     createOrderLoading: store.loading,
     srcUsd: store.srcUsd,
     srcAmount: store.srcAmountUi,
-    disclaimerAccepted: store.disclaimerAccepted,
   }));
   const outAmountLoading = useOutAmountLoading();
   const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken(true);
@@ -704,8 +734,9 @@ export const useShowSwapModalButton = () => {
   if (createOrderLoading) {
     return {
       text: translations.placeOrder,
-      loading: true,
-      disabled: false,
+      onClick: () => {
+        setShowConfirmation(true);
+      },
     };
   }
 

@@ -174,6 +174,7 @@ export type OnTxSubmitValues = {
   srcAmount: string;
   dstUSD: string;
   dstAmount: string;
+  txHash: string;
 };
 
 export interface ParsedOrder {
@@ -301,6 +302,7 @@ export interface State {
 
   txHash?: string;
   enableQueryParams?: boolean;
+  waitingForOrdersUpdate: boolean;
 }
 
 export type SwitchVariant = "ios" | "default";

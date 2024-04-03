@@ -160,7 +160,7 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
     <NumericInput
       className={`${className} twap-token-input`}
       decimalScale={isSrc ? srcDecimals : dstDecimals}
-      prefix={isSrc ? "" : isLimitOrder ? "≥" : SQUIGLE}
+      prefix={isSrc ? "" : isLimitOrder ? "~" : SQUIGLE}
       loading={isSrc ? srcInputLoading : dstInputLoading}
       disabled={!isSrc}
       placeholder={placeholder}
@@ -210,7 +210,7 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
     <Input
       disabled={true}
       loading={outAmountLoading}
-      prefix={isLimitOrder ? "≥" : SQUIGLE}
+      prefix={isLimitOrder ? "~" : SQUIGLE}
       value={amount}
       decimalScale={props.decimalScale || token?.decimals}
       className={props.className}
@@ -783,7 +783,7 @@ export const OrderSummaryTokenDisplay = ({
   const dstAmount = useTwapStore((store) => store.getDstAmountUi());
 
   const amount = isSrc ? srcAmount : dstAmount;
-  const prefix = isSrc ? "" : isLimitOrder ? "≥ " : "~ ";
+  const prefix = isSrc ? "" : isLimitOrder ? "~ " : "~ ";
   const _amount = useFormatNumber({ value: amount, decimalScale: 5 });
 
   return (
@@ -1104,8 +1104,6 @@ export const ResetLimitButton = ({ children }: { children?: ReactNode }) => {
     setLimitOrderPriceUi();
     setOutAmount(dstAmountFromDex);
   };
-
-  if (!custom) return null;
 
   return (
     <Tooltip text="Reset to market price">
