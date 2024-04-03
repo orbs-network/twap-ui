@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-dapp-example",
-  "version": "0.9.86",
+  "version": "0.9.87",
   "private": true,
   "license": "MIT",
   "homepage": "https://orbs-network.github.io/twap-ui/",
@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@mui/material": "^5.13.2",
-    "@orbs-network/twap-ui-pangolin": "^0.9.86",
-    "@orbs-network/twap-ui-spiritswap": "^0.9.86",
-    "@orbs-network/twap-ui-spookyswap": "^0.9.86",
+    "@orbs-network/twap-ui-pangolin": "^0.9.87",
+    "@orbs-network/twap-ui-spiritswap": "^0.9.87",
+    "@orbs-network/twap-ui-spookyswap": "^0.9.87",
     "@tanstack/react-query": "4.x",
     "@tanstack/react-query-devtools": "4.x",
     "@types/react": "18.x",
