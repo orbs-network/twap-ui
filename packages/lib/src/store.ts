@@ -74,8 +74,8 @@ export const useTwapStore = create(
     setShowLodingModal: (showLoadingModal: boolean) => set({ showLoadingModal }),
     setLimitOrderPriceUi: () => {
       setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-      let price = (get() as any).getMarketPrice(false).marketPriceUi;
-      price = BN(price).times(0.95).toString();
+      let price = (get() as any).getMarketPrice(false).marketPrice;
+      price = BN(price).times(0.95).toFixed(4);
       set({ limitPriceUi: { priceUi: price, inverted: false, custom: false } });
     },
     setLimitOrder: (isLimitOrder?: boolean) => {
@@ -249,7 +249,7 @@ export const useTwapStore = create(
       const leftUsd = inverted ? get().dstUsd : get().srcUsd;
       const rightUsd = !inverted ? get().dstUsd : get().srcUsd;
       const marketPrice = !leftUsd.isZero() && !rightUsd.isZero() ? leftUsd.div(rightUsd) : BN(0);
-
+      
       return {
         leftToken,
         rightToken,

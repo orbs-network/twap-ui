@@ -4,6 +4,7 @@ import { Moment } from "moment";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { Duration } from "./store";
 import { useParseOrderUi } from "./hooks";
+import { CSSObject } from "@mui/system";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -166,6 +167,9 @@ export interface TwapContextUIPreferences {
     paginationChunks?: number;
     hideUsd?: boolean;
   };
+  modal?: {
+    styles?: CSSProperties
+  }
 }
 
 export type OnTxSubmitValues = {

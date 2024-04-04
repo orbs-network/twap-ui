@@ -2,6 +2,7 @@ import React, { ReactNode } from "react";
 import { Fade, IconButton, Box, styled, Modal as MuiModal, Backdrop } from "@mui/material";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { StyledRowFlex } from "../../styles";
+import { useTwapContext } from "../../context";
 
 export interface Props {
   open: boolean;
@@ -14,6 +15,7 @@ export interface Props {
 }
 
 function Modal({ onClose, open, children, title, className = "", disableBackdropClick = false, header }: Props) {
+  const modalStyles = useTwapContext().uiPreferences.modal?.styles || {}
   return (
     <StyledModal
       slots={{ backdrop: Backdrop }}
@@ -28,7 +30,7 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
       onClose={!disableBackdropClick ? onClose : () => {}}
       className={`${className} twap-modal`}
       closeAfterTransition={true}
-      style={{ zIndex: 1 }}
+      style={{zIndex: 999, ...modalStyles}}
     >
       <Fade in={open}>
         <StyledModalContent className="twap-modal-content" id="twap-modal-content">

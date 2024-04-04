@@ -119,6 +119,11 @@ const uiPreferences: TwapContextUIPreferences = {
     paginationChunks: 4,
     hideUsd: true,
   },
+  modal: {
+    styles: {
+      zIndex: 1
+    }
+  }
 };
 
 const config = Configs.PancakeSwap;
