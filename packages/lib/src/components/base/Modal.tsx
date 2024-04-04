@@ -15,7 +15,7 @@ export interface Props {
 }
 
 function Modal({ onClose, open, children, title, className = "", disableBackdropClick = false, header }: Props) {
-  const modalStyles = useTwapContext().uiPreferences.modal?.styles || {}
+  const modalStyles = useTwapContext().uiPreferences.modal?.styles || {};
   return (
     <StyledModal
       slots={{ backdrop: Backdrop }}
@@ -30,7 +30,7 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
       onClose={!disableBackdropClick ? onClose : () => {}}
       className={`${className} twap-modal`}
       closeAfterTransition={true}
-      style={{zIndex: 999, ...modalStyles}}
+      style={{ zIndex: 999, ...modalStyles }}
     >
       <Fade in={open}>
         <StyledModalContent className="twap-modal-content" id="twap-modal-content">

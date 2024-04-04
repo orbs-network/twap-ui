@@ -249,7 +249,7 @@ export const useTwapStore = create(
       const leftUsd = inverted ? get().dstUsd : get().srcUsd;
       const rightUsd = !inverted ? get().dstUsd : get().srcUsd;
       const marketPrice = !leftUsd.isZero() && !rightUsd.isZero() ? leftUsd.div(rightUsd) : BN(0);
-      
+
       return {
         leftToken,
         rightToken,

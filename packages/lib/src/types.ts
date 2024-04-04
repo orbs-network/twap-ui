@@ -168,8 +168,8 @@ export interface TwapContextUIPreferences {
     hideUsd?: boolean;
   };
   modal?: {
-    styles?: CSSProperties
-  }
+    styles?: CSSProperties;
+  };
 }
 
 export type OnTxSubmitValues = {

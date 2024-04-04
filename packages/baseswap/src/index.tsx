@@ -333,6 +333,7 @@ export { memoizedOrders as Orders, memoizedTWAP as TWAP };
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
   const { loading, onClick, disabled, text } = hooks.useSubmitButton(isMain);
   const createOrderLoading = store.useTwapStore((state) => state.loading);
+
   return (
     <Button
       text={text}

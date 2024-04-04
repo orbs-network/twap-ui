@@ -929,17 +929,20 @@ export const useDappRawSelectedTokens = () => {
 
 export const useSubmitButton = (isMain?: boolean, _translations?: Translations) => {
   const translations = useTwapContext()?.translations || _translations;
-  const { maker, shouldWrap, shouldUnwrap, wrongNetwork, disclaimerAccepted, setShowConfirmation, showConfirmation, warning, createOrderLoading } = useTwapStore((store) => ({
-    maker: store.lib?.maker,
-    shouldWrap: store.shouldWrap(),
-    shouldUnwrap: store.shouldUnwrap(),
-    wrongNetwork: store.wrongNetwork,
-    disclaimerAccepted: store.disclaimerAccepted,
-    setShowConfirmation: store.setShowConfirmation,
-    showConfirmation: store.showConfirmation,
-    warning: store.getFillWarning(translations),
-    createOrderLoading: store.loading,
-  }));
+  const { maker, shouldWrap, shouldUnwrap, wrongNetwork, disclaimerAccepted, setShowConfirmation, showConfirmation, warning, createOrderLoading, isLimitOrder } = useTwapStore(
+    (store) => ({
+      maker: store.lib?.maker,
+      shouldWrap: store.shouldWrap(),
+      shouldUnwrap: store.shouldUnwrap(),
+      wrongNetwork: store.wrongNetwork,
+      disclaimerAccepted: store.disclaimerAccepted,
+      setShowConfirmation: store.setShowConfirmation,
+      showConfirmation: store.showConfirmation,
+      warning: store.getFillWarning(translations),
+      createOrderLoading: store.loading,
+      isLimitOrder: store.isLimitOrder,
+    })
+  );
   const reset = useResetStore();
   const outAmountLoading = useOutAmountLoading();
   const { srcUsdLoading, dstUsdLoading } = useLoadingState();
@@ -952,7 +955,7 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
   const wizardStore = useWizardStore();
   const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
   const { custom, limitPrice } = useLimitPrice();
-  const waitForLimitPrice = !custom && !limitPrice;
+  const waitForLimitPrice = !custom && !limitPrice && isLimitOrder;
 
   if (wrongNetwork)
     return {

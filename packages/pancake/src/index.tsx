@@ -121,9 +121,9 @@ const uiPreferences: TwapContextUIPreferences = {
   },
   modal: {
     styles: {
-      zIndex: 1
-    }
-  }
+      zIndex: 1,
+    },
+  },
 };
 
 const config = Configs.PancakeSwap;
