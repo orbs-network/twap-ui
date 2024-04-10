@@ -41,7 +41,7 @@ import {
   StyledSwapModalContent,
   StyledModalHeaderTitle,
 } from "./styles";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   StyledBalance,
   StyledEmptyUSD,
@@ -64,7 +64,6 @@ import BN from "bignumber.js";
 import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
 import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
-import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 import PancakeOrders from "./PancakeOrders";
 import { getTokenFromTokensList } from "@orbs-network/twap-ui";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
@@ -231,7 +230,7 @@ const SrcTokenPercentSelector = () => {
           ? false
           : Math.round(percent * 100) === p.value * 100 || (p.value === 1 && BN(getMaxSrcInputAmount || 0).isEqualTo(srcAmount));
         return (
-          <StyledButton selected={selected ? 1 : 0} key={p.text} onClick={() => onClick(p.value)}>
+          <StyledButton selected={selected ? 1 : 0} key={p.text} onClick={() => (selected ? () => {} : onClick(p.value))}>
             {p.text}
           </StyledButton>
         );
@@ -519,7 +518,7 @@ interface Store {
   setSwapState: (value: SwapState) => void;
 }
 
-export const useOrdersStore = create<Store>((set) => ({
+export const useOrdersStore = create<Store>((set, get) => ({
   swapState: SwapState.REVIEW,
   setSwapState: (swapState) => set({ swapState }),
 }));
@@ -545,9 +544,13 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
   const [error, setError] = useState("");
   const { data: hasNativeBalance } = hooks.useHasMinNativeTokenBalance("0.0035");
+  const id = useRef(1);
 
   const onSubmit = useCallback(async () => {
+    let _id = id.current;
     try {
+      console.log("start", _id);
+
       if (!hasNativeBalance) {
         setError(`Insufficient BNB balance, you need at least 0.0035BNB to cover the transaction fees.`);
         setSwapState(SwapState.ERROR);
@@ -557,14 +560,22 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
         setSwapState(SwapState.APPROVE);
         await approveCallback();
       }
-      setSwapState(SwapState.ATTEMTPING_TX);
+      if (id.current === _id) {
+        setSwapState(SwapState.ATTEMTPING_TX);
+      }
       await createOrder();
-      setSwapState(SwapState.COMPLETED);
+      console.log("id", id.current, _id);
+
+      if (id.current === _id) {
+        setSwapState(SwapState.COMPLETED);
+      }
     } catch (error) {
-      setSwapState(SwapState.ERROR);
-      setError(parseError(error) || "An error occurred");
+      if (id.current === _id) {
+        setSwapState(SwapState.ERROR);
+        setError(parseError(error) || "An error occurred");
+      }
     }
-  }, [allowance, approveCallback, createOrder, setSwapState, setError, hasNativeBalance]);
+  }, [allowance, approveCallback, createOrder, setSwapState, setError, hasNativeBalance, id]);
 
   const wrongNetwork = store.useTwapStore((store) => store.wrongNetwork);
   let content = null;
@@ -577,17 +588,14 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   };
 
   const onClose = () => {
+    id.current = id.current + 1;
     setShowConfirmation(false);
+    resetPoupupState();
     if (txHash) {
       reset({ waitingForOrdersUpdate: true });
-      resetPoupupState();
     }
     if (swapState === SwapState.COMPLETED) {
       reset();
-      resetPoupupState();
-    }
-    if (swapState === SwapState.ERROR) {
-      resetPoupupState();
     }
   };
 
@@ -671,21 +679,31 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
 
 export const useShowSwapModalButton = () => {
   const translations = useTwapContext()?.translations;
-  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount } = store.useTwapStore((store) => ({
-    maker: store.lib?.maker,
-    shouldWrap: store.shouldWrap(),
-    shouldUnwrap: store.shouldUnwrap(),
-    wrongNetwork: store.wrongNetwork,
-    setShowConfirmation: store.setShowConfirmation,
-    warning: store.getFillWarning(translations),
-    createOrderLoading: store.loading,
-    srcUsd: store.srcUsd,
-    srcAmount: store.srcAmountUi,
-  }));
+  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount, dstAmount, dstAmountLoading, dstUsd } = store.useTwapStore(
+    (store) => ({
+      maker: store.lib?.maker,
+      shouldWrap: store.shouldWrap(),
+      shouldUnwrap: store.shouldUnwrap(),
+      wrongNetwork: store.wrongNetwork,
+      setShowConfirmation: store.setShowConfirmation,
+      warning: store.getFillWarning(translations),
+      createOrderLoading: store.loading,
+      srcUsd: store.srcUsd,
+      srcAmount: store.srcAmountUi,
+      dstAmount: store.dstAmount,
+      dstAmountLoading: store.dstAmountLoading,
+      dstUsd: store.dstUsd,
+    })
+  );
   const outAmountLoading = useOutAmountLoading();
   const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken(true);
   const { mutate: wrap, isLoading: wrapLoading } = hooks.useWrapToken(true);
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();
+
+  const noLiquidity = useMemo(() => {
+    if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;
+    return !dstAmount || BN(dstAmount).isZero();
+  }, [dstAmount, dstAmountLoading, srcAmount]);
 
   if (wrongNetwork)
     return {
@@ -706,7 +724,15 @@ export const useShowSwapModalButton = () => {
     };
   }
 
-  if (!srcUsd || srcUsd.isZero()) {
+  if (noLiquidity) {
+    return {
+      text: "Insufficient liquidity for this trade.",
+      disabled: true,
+      loading: false,
+    };
+  }
+
+  if (!srcUsd || srcUsd.isZero() || !dstUsd || dstUsd.isZero()) {
     return {
       text: "Searching for the best price",
       disabled: true,

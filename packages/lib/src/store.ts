@@ -75,7 +75,7 @@ export const useTwapStore = create(
     setLimitOrderPriceUi: () => {
       setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
       let price = (get() as any).getMarketPrice(false).marketPrice;
-      price = BN(price).times(0.95).toFixed(4);
+      price = BN(price).times(0.95).toString();
       set({ limitPriceUi: { priceUi: price, inverted: false, custom: false } });
     },
     setLimitOrder: (isLimitOrder?: boolean) => {

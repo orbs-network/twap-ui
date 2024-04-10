@@ -22,6 +22,7 @@ import {
   parseEvents,
   sendAndWaitForConfirmations,
   networks,
+  maxUint256,
 } from "@defi.org/web3-candies";
 import { useOrdersStore, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import { QUERY_PARAMS, REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE } from "./consts";
@@ -156,7 +157,7 @@ export const useApproveToken = (disableWizard?: boolean) => {
       }
 
       analytics.onApproveClick(srcAmount);
-      await lib?.approve(srcToken!, srcAmount, priorityFeePerGas, maxFeePerGas);
+      await lib?.approve(srcToken!, maxUint256, priorityFeePerGas, maxFeePerGas);
       await refetch();
     },
     {
@@ -650,7 +651,7 @@ export const useOrdersHistoryQuery = () => {
           if (progress === 100) return Status.Completed;
           if (lib?.config.chainId === networks.bsc.id) {
             // Temporary fix to show open order until the graph is synced.
-            if (o.status === 2 && progress < 100 && o.status > Date.now() / 1000) return Status.Open;
+            if ((o.status === 2 && progress < 100) || o.status > Date.now() / 1000) return Status.Open;
           }
           return lib!.status(o);
         };
