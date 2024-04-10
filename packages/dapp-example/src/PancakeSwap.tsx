@@ -182,8 +182,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
       <TWAP
         account={account}
-        srcToken="CAKE"
-        dstToken={config.wToken.address}
+        srcToken={config.wToken.address}
+        dstToken="CAKE" 
         dappTokens={dappTokens}
         isDarkTheme={isDarkTheme}
         limit={limit}

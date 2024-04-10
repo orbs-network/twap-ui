@@ -1094,15 +1094,11 @@ export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
 };
 
 export const ResetLimitButton = ({ children }: { children?: ReactNode }) => {
-  const { setLimitOrderPriceUi, dstAmountFromDex, setOutAmount } = useTwapStore((store) => ({
+  const { setLimitOrderPriceUi } = useTwapStore((store) => ({
     setLimitOrderPriceUi: store.setLimitOrderPriceUi,
-    dstAmountFromDex: store.dstAmountFromDex,
-    setOutAmount: store.setOutAmount,
   }));
-  const { custom } = useLimitPrice();
   const onClick = () => {
     setLimitOrderPriceUi();
-    setOutAmount(dstAmountFromDex);
   };
 
   return (

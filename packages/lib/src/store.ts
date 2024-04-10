@@ -76,7 +76,12 @@ export const useTwapStore = create(
       setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
       let price = (get() as any).getMarketPrice(false).marketPrice;
       price = BN(price).times(0.95).toString();
-      set({ limitPriceUi: { priceUi: price, inverted: false, custom: false } });
+      set({
+        limitPriceUi: { priceUi: price, inverted: false, custom: false },
+        dstAmount: BN((get() as any).getSrcAmount() || "0")
+          .times(price || "0")
+          .toString(),
+      });
     },
     setLimitOrder: (isLimitOrder?: boolean) => {
       set({ isLimitOrder });
@@ -213,6 +218,11 @@ export const useTwapStore = create(
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork?: boolean) => set({ wrongNetwork }),
     setLimitPriceUi: (limitPriceUi: { priceUi: string; inverted: boolean }) => {
+      let price = (get() as any).getMarketPrice(false).marketPrice;
+      price = BN(price).times(0.95).toString();
+      const isDefaultPrice = BN(limitPriceUi.priceUi).eq(price);
+      console.log({ isDefaultPrice });
+
       set({
         limitPriceUi: { ...limitPriceUi, custom: true },
         dstAmount: BN((get() as any).getSrcAmount() || "0")

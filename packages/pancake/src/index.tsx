@@ -482,7 +482,7 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
                 <StyledReset>
                   <TwapStyles.StyledRowFlex gap={8}>
                     <GrPowerReset />
-                    <Typography>Market</Typography>
+                    <Typography>Reset</Typography>
                   </TwapStyles.StyledRowFlex>
                 </StyledReset>
               </Components.ResetLimitButton>
@@ -679,7 +679,7 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
 
 export const useShowSwapModalButton = () => {
   const translations = useTwapContext()?.translations;
-  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount, dstAmount, dstAmountLoading, dstUsd } = store.useTwapStore(
+  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount, dstAmount, dstAmountLoading, dstUsd, dstAmountFromDex } = store.useTwapStore(
     (store) => ({
       maker: store.lib?.maker,
       shouldWrap: store.shouldWrap(),
@@ -693,6 +693,7 @@ export const useShowSwapModalButton = () => {
       dstAmount: store.dstAmount,
       dstAmountLoading: store.dstAmountLoading,
       dstUsd: store.dstUsd,
+      dstAmountFromDex: store.dstAmountFromDex,
     })
   );
   const outAmountLoading = useOutAmountLoading();
@@ -700,10 +701,11 @@ export const useShowSwapModalButton = () => {
   const { mutate: wrap, isLoading: wrapLoading } = hooks.useWrapToken(true);
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();
 
+
   const noLiquidity = useMemo(() => {
     if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;
-    return !dstAmount || BN(dstAmount).isZero();
-  }, [dstAmount, dstAmountLoading, srcAmount]);
+    return !dstAmountFromDex || BN(dstAmountFromDex).isZero();
+  }, [dstAmountFromDex, dstAmountLoading, srcAmount]);
 
   if (wrongNetwork)
     return {

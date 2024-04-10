@@ -37,7 +37,7 @@ const useLimitPriceUpdater = () => {
   const dstUsd = useTwapStore((store) => store.dstUsd);
 
   useEffect(() => {
-    if (isLimitOrder && !custom && !srcUsd.isZero() && !dstUsd.isZero()) {
+    if (isLimitOrder && !custom && srcUsd && dstUsd && srcUsd.gt(0) && dstUsd.gt(0)) {
       setLimitOrderPriceUi();
     }
   }, [custom, srcUsd, dstUsd, setLimitOrderPriceUi, isLimitOrder]);
