@@ -12,7 +12,7 @@ export function Price() {
     srcToken: s.srcToken,
     dstToken: s.dstToken,
     srcAmount: s.getSrcAmount()?.toString(),
-    dstAmount: s.dstAmount,
+    dstAmount: s.getDstAmount(),
   }));
 
   const { inputCurrency, outputCurrency } = useMemo(() => {
@@ -40,9 +40,7 @@ export function Price() {
         inputAmount={BN(srcAmount || "0")
           .decimalPlaces(0)
           .toString()}
-        outAmount={BN(dstAmount || "0")
-          .decimalPlaces(0)
-          .toString()}
+        outAmount={dstAmount}
       />
     </StyledMarketPriceContainer>
   );

@@ -539,7 +539,7 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   const reset = hooks.useResetStore();
 
   const { mutateAsync: approveCallback } = hooks.useApproveToken(true);
-  const { data: allowance, isLoading } = hooks.useHasAllowanceQuery();
+  const { data: allowance, isLoading, refetch: refetchAllowance } = hooks.useHasAllowanceQuery();
   const { mutateAsync: createOrder } = hooks.useCreateOrder(true);
   const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
   const [error, setError] = useState("");
@@ -549,8 +549,6 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   const onSubmit = useCallback(async () => {
     let _id = id.current;
     try {
-      console.log("start", _id);
-
       if (!hasNativeBalance) {
         setError(`Insufficient BNB balance, you need at least 0.0035BNB to cover the transaction fees.`);
         setSwapState(SwapState.ERROR);
@@ -559,12 +557,17 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
       if (!allowance) {
         setSwapState(SwapState.APPROVE);
         await approveCallback();
+        const approved = await refetchAllowance();
+        if (!approved.data) {
+          setError("Insufficient allowance to perform the swap. Please approve the token first.");
+          setSwapState(SwapState.ERROR);
+          return;
+        }
       }
       if (id.current === _id) {
         setSwapState(SwapState.ATTEMTPING_TX);
       }
       await createOrder();
-      console.log("id", id.current, _id);
 
       if (id.current === _id) {
         setSwapState(SwapState.COMPLETED);
@@ -679,8 +682,8 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
 
 export const useShowSwapModalButton = () => {
   const translations = useTwapContext()?.translations;
-  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount, dstAmount, dstAmountLoading, dstUsd, dstAmountFromDex } = store.useTwapStore(
-    (store) => ({
+  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount, dstAmount, dstAmountLoading, dstUsd, dstAmountFromDex } =
+    store.useTwapStore((store) => ({
       maker: store.lib?.maker,
       shouldWrap: store.shouldWrap(),
       shouldUnwrap: store.shouldUnwrap(),
@@ -694,13 +697,11 @@ export const useShowSwapModalButton = () => {
       dstAmountLoading: store.dstAmountLoading,
       dstUsd: store.dstUsd,
       dstAmountFromDex: store.dstAmountFromDex,
-    })
-  );
+    }));
   const outAmountLoading = useOutAmountLoading();
   const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken(true);
   const { mutate: wrap, isLoading: wrapLoading } = hooks.useWrapToken(true);
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();
-
 
   const noLiquidity = useMemo(() => {
     if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;

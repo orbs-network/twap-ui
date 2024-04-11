@@ -1102,7 +1102,7 @@ export const ResetLimitButton = ({ children }: { children?: ReactNode }) => {
   };
 
   return (
-    <Tooltip text="Reset to market price">
+    <Tooltip text="Reset to default price">
       {children ? (
         <span onClick={onClick} className="twap-limit-reset">
           {children}

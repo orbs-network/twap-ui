@@ -3,8 +3,8 @@ import { Order, OrderInputValidation, Status, TokenData, TokensValidation, TWAPL
 import moment from "moment";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import _, { get } from "lodash";
-import { eqIgnoreCase, parsebn, isNativeAddress } from "@defi.org/web3-candies";
+import _ from "lodash";
+import { parsebn, isNativeAddress, maxUint256 } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
 import { MIN_NATIVE_BALANCE, QUERY_PARAMS } from "./consts";
 import { amountBN, amountUi, fillDelayText, getQueryParam, setQueryParam } from "./utils";
@@ -171,7 +171,7 @@ export const useTwapStore = create(
         return BN.max(0, BN.min(balance.minus(srcTokenMinimum)));
       }
     },
-    getSrcAmount: () => amountBN(get().srcToken, get().srcAmountUi),
+    getSrcAmount: () => BN.min(amountBN(get().srcToken, get().srcAmountUi), maxUint256).decimalPlaces(0),
     getFillWarning: (translation?: Translations) => {
       if (!translation) return;
       const chunkSize = (get() as any).getSrcChunkAmount();
@@ -221,7 +221,6 @@ export const useTwapStore = create(
       let price = (get() as any).getMarketPrice(false).marketPrice;
       price = BN(price).times(0.95).toString();
       const isDefaultPrice = BN(limitPriceUi.priceUi).eq(price);
-      console.log({ isDefaultPrice });
 
       set({
         limitPriceUi: { ...limitPriceUi, custom: true },
@@ -313,6 +312,10 @@ export const useTwapStore = create(
     getFillDelayWarning: () => {
       return get().lib && (get() as any).getFillDelayUiMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000;
     },
+    getDstAmount: () =>
+      BN.min(BN(get().dstAmount || "0").toString(), maxUint256)
+        .decimalPlaces(0)
+        .toString(),
     switchTokens: () => {
       const srcToken = get().srcToken!;
       const dstToken = get().dstToken!;

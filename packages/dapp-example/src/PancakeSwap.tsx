@@ -183,7 +183,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       <TWAP
         account={account}
         srcToken={config.wToken.address}
-        dstToken="CAKE" 
+        dstToken="CAKE"
         dappTokens={dappTokens}
         isDarkTheme={isDarkTheme}
         limit={limit}

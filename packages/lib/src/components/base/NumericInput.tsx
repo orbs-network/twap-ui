@@ -3,7 +3,8 @@ import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";
 import { useTwapContext } from "../../context";
-
+import { maxUint256 } from "@defi.org/web3-candies";
+import BN from "bignumber.js";
 export interface Props {
   onChange: (value: string) => void;
   value?: string | number;
@@ -47,7 +48,7 @@ function NumericInput({ prefix = "", onChange, value, disabled = false, placehol
             placeholder={_placeholder}
             isAllowed={(values) => {
               const { floatValue = 0 } = values;
-              return maxValue ? floatValue <= parseFloat(maxValue) : true;
+              return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
             }}
             prefix={prefix ? `${prefix} ` : ""}
             value={disabled && value === "0" ? "" : inputValue}
