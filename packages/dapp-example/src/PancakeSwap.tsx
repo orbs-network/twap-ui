@@ -172,9 +172,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   const connector = useMemo(() => {
     return {
-      options: {
-        getProvider: () => library,
-      },
+      getProvider: () => library,
     };
   }, [library]);
 

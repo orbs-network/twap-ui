@@ -33,15 +33,7 @@ export function Price() {
   return (
     <StyledMarketPriceContainer>
       <Components.Base.Label>Price</Components.Base.Label>
-      <DappTradePrice
-        loading={outAmountLoading}
-        inputCurrency={inputCurrency}
-        outputCurrency={outputCurrency}
-        inputAmount={BN(srcAmount || "0")
-          .decimalPlaces(0)
-          .toString()}
-        outAmount={dstAmount}
-      />
+      <DappTradePrice loading={outAmountLoading} inputCurrency={inputCurrency} outputCurrency={outputCurrency} inputAmount={srcAmount} outAmount={dstAmount} />
     </StyledMarketPriceContainer>
   );
 }

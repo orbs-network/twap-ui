@@ -251,12 +251,17 @@ const handleAddress = (address?: string) => {
   return isNativeAddress(address || "") ? "BNB" : address;
 };
 
-const useProvider = (props: AdapterProps) => {
-  const [provider, setProvider] = useState(undefined);
+export const useProvider = (props: AdapterProps) => {
+  const [provider, setProvider] = useState<any>(undefined);
+
+  const setProviderFromConnector = useCallback(async () => {
+    const res = await props.connector?.getProvider();
+    setProvider(res);
+  }, [setProvider, props.connector]);
 
   useEffect(() => {
-    setProvider(props.connector?.options?.getProvider());
-  }, [props.connector, props.connectedChainId, props.account]);
+    setProviderFromConnector();
+  }, [props.account, props.connectedChainId, setProviderFromConnector]);
 
   return provider;
 };

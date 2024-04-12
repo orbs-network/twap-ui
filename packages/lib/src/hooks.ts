@@ -387,7 +387,7 @@ export const useLimitPrice = () => {
   const { limitPriceUi: limitPrice, leftToken, rightToken } = useTwapStore((state) => state.getLimitPrice(inverted));
 
   const onChange = useCallback(
-    (amountUi = "") => {      
+    (amountUi = "") => {
       setLimitPrice({ priceUi: amountUi, inverted });
     },
     [inverted]
