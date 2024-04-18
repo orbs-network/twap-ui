@@ -47,7 +47,17 @@ const onWrapSuccess = () => {
   sendAnalyticsEvent(Category.TWAPPanel, "onWrapSuccess");
 };
 
-const onConfirmationCreateOrderClick = () => {
+const onConfirmationCreateOrderClick = ({
+  minAmountOut,
+  totalTrades,
+  tradeSize,
+  deadline,
+}: {
+  minAmountOut: string;
+  totalTrades: number;
+  tradeSize: BigNumber;
+  deadline: number;
+}) => {
   const lib = useTwapStore.getState().lib;
 
   const srcToken = useTwapStore.getState().srcToken;
@@ -58,11 +68,11 @@ const onConfirmationCreateOrderClick = () => {
     srcToken: useTwapStore.getState().srcToken?.address,
     dstToken: useTwapStore.getState().dstToken?.address,
     srcTokenAmount: amountUi(srcToken, useTwapStore.getState().getSrcAmount()),
-    tradeSize: amountUi(srcToken, useTwapStore.getState().getSrcChunkAmount()),
-    minAmountOut: amountUi(dsToken, BigNumber(useTwapStore.getState().dstAmount || "0")),
-    deadline: useTwapStore.getState().getDeadline(),
+    tradeSize: amountUi(srcToken, tradeSize),
+    minAmountOut,
+    deadline,
     tradeInterval: useTwapStore.getState().getFillDelayUiMillis(),
-    totalTrades: useTwapStore.getState().getChunks(),
+    totalTrades,
   });
 };
 

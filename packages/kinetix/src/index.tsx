@@ -92,7 +92,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 };
 
 const MaxSelector = () => {
-  const onPercentClick = hooks.useCustomActions().onPercentClick;
+  const onPercentClick = hooks.useCustomActions();
 
   const onClick = (value: number) => {
     onPercentClick(value);

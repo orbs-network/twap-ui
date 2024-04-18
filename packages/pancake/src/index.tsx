@@ -69,7 +69,6 @@ import { getTokenFromTokensList } from "@orbs-network/twap-ui";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { OrderSummary } from "./OrderSummary";
 import { useTwapContext } from "@orbs-network/twap-ui";
-import { useOutAmountLoading } from "@orbs-network/twap-ui/dist/hooks";
 import { useAdapterContext, AdapterContextProvider, AdapterProps } from "./context";
 import { Price } from "./components";
 import { create } from "zustand";
@@ -123,6 +122,7 @@ const uiPreferences: TwapContextUIPreferences = {
       zIndex: 1,
     },
   },
+  limitPriceInvertedByDefault: true,
 };
 
 const config = Configs.PancakeSwap;
@@ -153,7 +153,7 @@ const storeOverride = {
 };
 
 const Balance = ({ isSrc }: { isSrc?: boolean }) => {
-  const onPercentClick = hooks.useCustomActions().onPercentClick;
+  const onPercentClick = hooks.useCustomActions();
 
   return (
     <StyledBalanceContainer onClick={isSrc ? () => onPercentClick(1) : () => {}}>
@@ -192,32 +192,19 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   );
 };
 
-const PriceDisplay = () => {
-  const { TradePrice } = useAdapterContext();
-
-  if (!TradePrice) {
-    return (
-      <StyledMarketPriceContainer justifyContent="space-between">
-        <Components.Base.Label>Market price</Components.Base.Label>
-        <StyledMarketPrice hideLabel={true} />
-      </StyledMarketPriceContainer>
-    );
-  }
-
-  return <Price />;
-};
-
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions().onPercentClick;
-  const { srcAmount, srcBalance, getMaxSrcInputAmount } = store.useTwapStore((state) => ({
+  const onPercentClick = hooks.useCustomActions();
+  const { srcAmount } = store.useTwapStore((state) => ({
     srcAmount: state.getSrcAmount(),
-    srcBalance: state.srcBalance,
-    getMaxSrcInputAmount: state.getMaxSrcInputAmount(),
   }));
 
+  const srcBalance = hooks.useSrcBalance().data;
+
+  const maxSrcInputAmount = hooks.useMaxSrcInputAmount();
+
   const percent = useMemo(() => {
-    return srcAmount.dividedBy(srcBalance).toNumber();
-  }, [srcAmount]);
+    return srcAmount.dividedBy(srcBalance || "0").toNumber();
+  }, [srcAmount, srcBalance]);
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -226,9 +213,7 @@ const SrcTokenPercentSelector = () => {
   return (
     <StyledPercentSelect>
       {PERCENT.map((p) => {
-        const selected = BN(srcAmount || "0").isZero()
-          ? false
-          : Math.round(percent * 100) === p.value * 100 || (p.value === 1 && BN(getMaxSrcInputAmount || 0).isEqualTo(srcAmount));
+        const selected = BN(srcAmount || "0").isZero() ? false : Math.round(percent * 100) === p.value * 100 || (p.value === 1 && BN(maxSrcInputAmount || 0).isEqualTo(srcAmount));
         return (
           <StyledButton selected={selected ? 1 : 0} key={p.text} onClick={() => (selected ? () => {} : onClick(p.value))}>
             {p.text}
@@ -266,16 +251,39 @@ export const useProvider = (props: AdapterProps) => {
   return provider;
 };
 
+const useTrade = (props: AdapterProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { srcToken, toToken, srcAmount } = store.useTwapStore((s) => ({
+    srcToken: s.srcToken?.address,
+    toToken: s.dstToken?.address,
+    srcAmount: s.getSrcAmount().toString(),
+  }));
+
+  const res = props.useTrade!(handleAddress(srcToken), handleAddress(toToken), srcAmount === "0" ? undefined : srcAmount);
+
+  useEffect(() => {
+    setIsLoading(true);
+  }, [srcAmount]);
+
+  useEffect(() => {
+    if (res?.outAmount && BN(res?.outAmount).gt(0)) {
+      setIsLoading(false);
+    }
+  }, [res?.outAmount]);
+
+  return {
+    outAmount: res?.outAmount,
+    isLoading,
+  };
+};
+
 const TWAP = memo((props: AdapterProps) => {
   const provider = useProvider(props);
+  const trade = useTrade(props);
 
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
-
-  const useTrade = (fromToken?: string, toToken?: string, value?: string) => {
-    return props.useTrade!(handleAddress(fromToken), handleAddress(toToken), value);
-  };
 
   const dappTokens = useMemo(() => {
     if (!props.dappTokens || !props.nativeToken) return undefined;
@@ -304,11 +312,12 @@ const TWAP = memo((props: AdapterProps) => {
         onDstTokenSelected={props.onDstTokenSelected}
         usePriceUSD={props.usePriceUSD}
         onSrcTokenSelected={props.onSrcTokenSelected}
-        useTrade={useTrade}
         isDarkTheme={props.isDarkTheme}
         isMobile={props.isMobile}
         connectedChainId={props.connectedChainId}
         enableQueryParams={true}
+        dstAmountOut={trade?.outAmount}
+        dstAmountLoading={trade?.isLoading}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -362,13 +371,15 @@ const StyledButtonContainer = styled("div")({
 });
 
 const LimitPanel = () => {
+  const { onInvert } = hooks.useLimitPriceV2();
+
   return (
     <div className="twap-container">
       <StyledColumnFlex>
         <TopPanel />
         <TwapStyles.StyledColumnFlex>
           <LimitPrice limitOnly={true} />
-          <PriceDisplay />
+          <Price onClick={onInvert} />
         </TwapStyles.StyledColumnFlex>
         <OpenConfirmationModalButton />
       </StyledColumnFlex>
@@ -379,12 +390,14 @@ const LimitPanel = () => {
 };
 
 const TWAPPanel = () => {
+  const { onInvert } = hooks.useLimitPriceV2();
+
   return (
     <div className="twap-container">
       <StyledColumnFlex>
         <TopPanel />
         <LimitPrice />
-        <PriceDisplay />
+        <Price onClick={onInvert} />
         <TotalTrades />
         <TradeSize />
         <TradeInterval />
@@ -398,10 +411,11 @@ const TWAPPanel = () => {
 };
 
 const TotalTrades = () => {
-  const { getChunksBiggerThanOne, srcAmount } = store.useTwapStore((store) => ({
-    getChunksBiggerThanOne: store.getChunksBiggerThanOne(),
+  const { srcAmount } = store.useTwapStore((store) => ({
     srcAmount: store.getSrcAmount(),
   }));
+
+  const getChunksBiggerThanOne = hooks.useChunksBiggerThanOne();
 
   if (srcAmount.isZero()) return null;
 
@@ -429,7 +443,7 @@ const TotalTrades = () => {
 };
 
 const TradeSize = () => {
-  const value = store.useTwapStore((store) => store.getSrcChunkAmountUi());
+  const value = hooks.useSrcChunkAmountUi();
 
   if (BN(value || "0").isZero()) return null;
   return (
@@ -474,7 +488,7 @@ const TradeInterval = () => {
 
 const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
   const isLimitOrder = store.useTwapStore((store) => store.isLimitOrder);
-  const { onChange, limitPrice } = hooks.useLimitPrice();
+  const { onChange, limitPrice } = hooks.useLimitPriceV2();
 
   return (
     <StyledLimitPrice>
@@ -498,7 +512,7 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
         {isLimitOrder && (
           <Styles.StyledColumnFlex>
             <StyledLimitPriceBody editable={true}>
-              <Components.Base.NumericInput decimalScale={6} placeholder={""} onChange={onChange} value={limitPrice} />
+              <Components.LimitInputV2 />
             </StyledLimitPriceBody>
           </Styles.StyledColumnFlex>
         )}
@@ -533,8 +547,6 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   const { dappTokens, ApproveModalContent, SwapPendingModalContent, SwapTransactionErrorContent, AddToWallet, SwapTransactionReceiptModalContent } = useAdapterContext();
   const { fromToken, setShowConfirmation, showConfirmation, txHash, isLimitOrder, disclaimerAccepted } = store.useTwapStore((s) => ({
     fromToken: s.srcToken,
-    srcBalance: s.srcBalance,
-    dstBalance: s.dstBalance,
     setShowConfirmation: s.setShowConfirmation,
     showConfirmation: s.showConfirmation,
     txHash: s.txHash,
@@ -613,7 +625,7 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
     }
   }, [txHash, swapState]);
 
-  const addToWallet = <AddToWallet logo={fromToken?.logoUrl} symbol={fromToken?.symbol} address={fromToken?.address} decimals={fromToken?.decimals} />;
+  const addToWallet = !AddToWallet ? null : <AddToWallet logo={fromToken?.logoUrl} symbol={fromToken?.symbol} address={fromToken?.address} decimals={fromToken?.decimals} />;
 
   if (swapState === SwapState.REVIEW) {
     title = "Confirm Order";
@@ -621,15 +633,17 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   }
 
   if (swapState === SwapState.APPROVE) {
-    content = <ApproveModalContent title={`Enable spending ${inputCurrency?.symbol}`} isBonus={false} isMM={false} />;
+    content = !ApproveModalContent ? null : <ApproveModalContent title={`Enable spending ${inputCurrency?.symbol}`} isBonus={false} isMM={false} />;
   }
 
   if (swapState === SwapState.ERROR) {
-    content = <SwapTransactionErrorContent openSettingModal={() => {}} onDismiss={onClose} message={error} />;
+    content = !SwapTransactionErrorContent ? null : <SwapTransactionErrorContent openSettingModal={() => {}} onDismiss={onClose} message={error} />;
   }
 
   if (swapState === SwapState.ATTEMTPING_TX) {
-    content = <SwapPendingModalContent title={`Create ${limitPanel ? "" : "TWAP"} ${isLimitOrder ? "Limit" : "Market"} Order`}>{addToWallet}</SwapPendingModalContent>;
+    content = !SwapPendingModalContent ? null : (
+      <SwapPendingModalContent title={`Create ${limitPanel ? "" : "TWAP"} ${isLimitOrder ? "Limit" : "Market"} Order`}>{addToWallet}</SwapPendingModalContent>
+    );
   }
 
   if (swapState === SwapState.PENDING_CONFIRMATION) {
@@ -687,31 +701,26 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
 
 export const useShowSwapModalButton = () => {
   const translations = useTwapContext()?.translations;
-  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, warning, createOrderLoading, srcUsd, srcAmount, dstAmount, dstAmountLoading, dstUsd, dstAmountFromDex } =
-    store.useTwapStore((store) => ({
-      maker: store.lib?.maker,
-      shouldWrap: store.shouldWrap(),
-      shouldUnwrap: store.shouldUnwrap(),
-      wrongNetwork: store.wrongNetwork,
-      setShowConfirmation: store.setShowConfirmation,
-      warning: store.getFillWarning(translations),
-      createOrderLoading: store.loading,
-      srcUsd: store.srcUsd,
-      srcAmount: store.srcAmountUi,
-      dstAmount: store.dstAmount,
-      dstAmountLoading: store.dstAmountLoading,
-      dstUsd: store.dstUsd,
-      dstAmountFromDex: store.dstAmountFromDex,
-    }));
-  const outAmountLoading = useOutAmountLoading();
+  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, createOrderLoading, srcAmount } = store.useTwapStore((store) => ({
+    maker: store.lib?.maker,
+    shouldWrap: store.shouldWrap(),
+    shouldUnwrap: store.shouldUnwrap(),
+    wrongNetwork: store.wrongNetwork,
+    setShowConfirmation: store.setShowConfirmation,
+    createOrderLoading: store.loading,
+    srcAmount: store.srcAmountUi,
+  }));
+  const warning = hooks.useFillWarning();
+  const { isLoading: dstAmountLoading, dexAmounOut } = hooks.useDstAmount();
   const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken(true);
   const { mutate: wrap, isLoading: wrapLoading } = hooks.useWrapToken(true);
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();
-
+  const srcUsd = hooks.useSrcUsd().value;
+  const dstUsd = hooks.useDstUsd().value;
   const noLiquidity = useMemo(() => {
     if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;
-    return !dstAmountFromDex || BN(dstAmountFromDex).isZero();
-  }, [dstAmountFromDex, dstAmountLoading, srcAmount]);
+    return !dexAmounOut.raw || BN(dexAmounOut.raw).isZero();
+  }, [dexAmounOut.raw, dstAmountLoading, srcAmount]);
 
   if (wrongNetwork)
     return {
@@ -721,15 +730,14 @@ export const useShowSwapModalButton = () => {
       disabled: changeNetworkLoading,
     };
 
-  if (outAmountLoading) {
-    return { text: "Searching for the best price", onClick: undefined, disabled: true };
-  }
-
   if (!srcAmount || BN(srcAmount || "0").isZero()) {
     return {
       text: translations.enterAmount,
       disabled: true,
     };
+  }
+  if (dstAmountLoading) {
+    return { text: "Searching for the best price", onClick: undefined, disabled: true };
   }
 
   if (noLiquidity) {

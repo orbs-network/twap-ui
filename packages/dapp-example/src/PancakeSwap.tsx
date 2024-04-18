@@ -10,9 +10,9 @@ import _ from "lodash";
 import { erc20s, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
-import { Button, styled, Tooltip } from "@mui/material";
-import { Components, hooks } from "@orbs-network/twap-ui";
-
+import { Button, styled, Tooltip, Typography } from "@mui/material";
+import { Components, hooks, Styles } from "@orbs-network/twap-ui";
+import BN from "bignumber.js";
 const config = Configs.PancakeSwap;
 
 let native = {
@@ -200,6 +200,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         SwapTransactionErrorContent={SwapTransactionErrorContent}
         SwapPendingModalContent={SwapPendingModalContent}
         SwapTransactionReceiptModalContent={SwapPendingModalContent}
+        TradePrice={TradePrice}
       />
     </StyledPancakeTwap>
   );
@@ -277,3 +278,39 @@ const dapp: Dapp = {
 };
 
 export default dapp;
+
+const TradePrice = (props: { inputCurrency: any; outputCurrency: any; inputAmount: string; outAmount: string; onClick: any }) => {
+  const [inverted, setInverted] = useState(false);
+
+  const { price, leftToken, rightToken } = useMemo(() => {
+    const inputAmount = amountUi(props.inputCurrency.decimals, BN(props.inputAmount));
+    const outAmount = amountUi(props.outputCurrency.decimals, BN(props.outAmount));
+
+    return {
+      price: inverted ? BN(outAmount).dividedBy(inputAmount).toString() : BN(inputAmount).dividedBy(outAmount).toNumber(),
+      leftToken: inverted ? props.inputCurrency.symbol : props.outputCurrency.symbol,
+      rightToken: inverted ? props.outputCurrency.symbol : props.inputCurrency.symbol,
+    };
+  }, [props.inputAmount, props.outAmount, props.inputCurrency, props.outputCurrency, inverted]);
+
+  const priceUi = hooks.useFormatNumber({ value: price });
+
+  const onClick = () => {
+    setInverted(!inverted);
+    props.onClick();
+  };
+
+  return (
+    <div onClick={onClick}>
+      <Typography>
+        1 {leftToken} = {priceUi} {rightToken}
+      </Typography>
+    </div>
+  );
+};
+
+export const amountUi = (decimals?: number, amount?: BN) => {
+  if (!decimals || !amount) return "";
+  const percision = BN(10).pow(decimals || 0);
+  return amount.times(percision).idiv(percision).div(percision).toString();
+};

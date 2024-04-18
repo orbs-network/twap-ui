@@ -1,4 +1,4 @@
-import { TokenData, parsebn, eqIgnoreCase } from "@defi.org/web3-candies";
+import { TokenData, parsebn, eqIgnoreCase, maxUint256 } from "@defi.org/web3-candies";
 import moment from "moment";
 import { Translations } from "./types";
 import { QUERY_PARAMS } from "./consts";
@@ -6,7 +6,9 @@ import BN from "bignumber.js";
 import _ from "lodash";
 import { useTwapStore } from "./store";
 export const logger = (...args: any[]) => {
-  if (process.env.NODE_ENV === "development") {
+  const query = new URLSearchParams(window.location.search);
+  const debug = query.get("debug");
+  if (process.env.NODE_ENV === "development" || debug) {
     console.log(...args);
   }
 };
@@ -40,6 +42,12 @@ export const amountUi = (token: TokenData | undefined, amount: BN) => {
   if (!token) return "";
   const percision = BN(10).pow(token?.decimals || 0);
   return amount.times(percision).idiv(percision).div(percision).toFormat();
+};
+
+export const amountUiV2 = (decimals?: number, amount?: string) => {
+  if (!decimals || !amount) return "";
+  const percision = BN(10).pow(decimals || 0);
+  return BN(amount).times(percision).idiv(percision).div(percision).toString();
 };
 
 export const fillDelayText = (value: number, translations: Translations) => {
@@ -116,4 +124,10 @@ export const parseError = (error?: any) => {
   } catch (error) {
     return defaultText;
   }
+};
+
+export const safeInteger = (value?: string) => {
+  return BN.min(BN(value || "0").toString(), maxUint256)
+    .decimalPlaces(0)
+    .toString();
 };

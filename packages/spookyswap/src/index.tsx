@@ -120,7 +120,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 };
 
 const SrcTokenPercentSelector = () => {
-  const { onPercentClick } = hooks.useCustomActions();
+  const onPercentClick = hooks.useCustomActions();
   const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {

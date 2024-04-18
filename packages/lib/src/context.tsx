@@ -1,16 +1,14 @@
-import { createContext, useContext, useEffect, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import { TwapContextUIPreferences, TwapLibProps } from "./types";
-import { useInitLib, useLimitPrice, useParseTokens, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
+import { useInitLib, useLimitPriceV2, useParseTokens, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
 import { TokenData } from "@orbs-network/twap";
-import { useTwapStore } from "./store";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import { Wizard } from "./components";
-import { getQueryParam } from "./utils";
-import { QUERY_PARAMS } from "./consts";
-import BN from "bignumber.js";
+import { useLimitPriceStore } from "./store";
+
 analytics.onModuleLoad();
 
 export interface TWAPContextProps extends TwapLibProps {
@@ -27,57 +25,29 @@ const queryClient = new QueryClient({
   },
 });
 
-const useLimitPriceUpdater = () => {
-  const custom = useLimitPrice().custom;
-  const { srcUsd, isLimitOrder, setLimitOrderPriceUi } = useTwapStore((store) => ({
-    srcUsd: store.srcUsd,
-    isLimitOrder: store.isLimitOrder,
-    setLimitOrderPriceUi: store.setLimitOrderPriceUi,
-  }));
-  const dstUsd = useTwapStore((store) => store.dstUsd);
-
-  useEffect(() => {
-    if (isLimitOrder && !custom && srcUsd && dstUsd && srcUsd.gt(0) && dstUsd.gt(0)) {
-      setLimitOrderPriceUi();
-    }
-  }, [custom, srcUsd, dstUsd, setLimitOrderPriceUi, isLimitOrder]);
-};
-
 const Listener = (props: TwapLibProps) => {
-  const { srcToken, dstToken, srcAmount, setOutAmount, setLimitPriceUi, dstAmount, srcUsd, dstUsd } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-    srcAmount: s.getSrcAmount().toString(),
-    setOutAmount: s.setOutAmount,
-    setLimitPriceUi: s.setLimitPriceUi,
-    dstAmount: s.dstAmount,
-    srcUsd: s.srcUsd,
-    dstUsd: s.dstUsd,
-  }));
-
-  useEffect(() => {
-    const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
-    if (!props.enableQueryParams || !limitPriceQueryParam || !srcAmount || dstAmount || !srcToken) return;
-
-    setLimitPriceUi({ priceUi: limitPriceQueryParam, inverted: false });
-  }, [srcAmount, setLimitPriceUi, dstAmount, srcToken, props.enableQueryParams]);
-
   const setTokensFromDappCallback = useSetTokensFromDapp();
   const initLib = useInitLib();
   const updateStoreOveride = useUpdateStoreOveride();
-  const result = props.useTrade?.(srcToken?.address, dstToken?.address, srcAmount === "0" ? undefined : srcAmount);
+  const { onInvert, limitPrice } = useLimitPriceV2();
+  const setHide = useLimitPriceStore((s) => s.setHide);
+  const invertedOnce = useRef(false);
+  useEffect(() => {
+    if (props.uiPreferences?.limitPriceInvertedByDefault && !invertedOnce.current && limitPrice) {
+      onInvert();
+      invertedOnce.current = true;
+    }
+  }, [props.uiPreferences?.limitPriceInvertedByDefault, onInvert, limitPrice]);
 
   useEffect(() => {
-    const limitPriceQueryParam = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
-    const custom = props.enableQueryParams && !!limitPriceQueryParam;
-    !result?.isLoading && setOutAmount(result?.outAmount, result?.isLoading, custom);
-  }, [result?.isLoading, result?.outAmount, setOutAmount, props.enableQueryParams, dstUsd]);
+    if (props.dstAmountOut) {
+      setHide(false);
+    }
+  }, [props.dstAmountOut, setHide]);
 
   useEffect(() => {
     updateStoreOveride(props.storeOverride);
   }, [updateStoreOveride, props.storeOverride]);
-
-  useLimitPriceUpdater();
   useEffect(() => {
     setTokensFromDappCallback();
   }, [setTokensFromDappCallback]);

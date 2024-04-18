@@ -1,4 +1,4 @@
-import { CSSProperties, FC, ReactElement, ReactNode, useCallback } from "react";
+import { CSSProperties, FC, ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Balance,
   Button,
@@ -25,8 +25,36 @@ import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
 
 import { IconType } from "@react-icons/all-files";
-import { useLoadingState, useLimitPrice, useMarketPrice, useFormatNumber, useToken, useSwitchTokens, useSelectTokenCallback, useSubmitButton, useOutAmountLoading } from "../hooks";
-import { useTwapStore } from "../store";
+import {
+  useLoadingState,
+  useFormatNumber,
+  useToken,
+  useSwitchTokens,
+  useSelectTokenCallback,
+  useSubmitButton,
+  useLimitPriceV2,
+  useDstMinAmountOut,
+  useFillWarning,
+  useSrcAmountUsdUi,
+  useDstAmountUsdUi,
+  useMarketPriceV2,
+  useDstAmount,
+  useChunks,
+  useMaxPossibleChunks,
+  useSetChunks,
+  useSrcChunkAmountUsdUi,
+  useSrcBalance,
+  useAmountUi,
+  useDstBalance,
+  useIsPartialFillWarning,
+  useChunksBiggerThanOne,
+  useSrcChunkAmountUi,
+  useDurationUi,
+  useDeadlineUi,
+  useSetSrcAmountUi,
+  useDebounce,
+} from "../hooks";
+import { useLimitPriceStore, useTwapStore } from "../store";
 import {
   StyledText,
   StyledRowFlex,
@@ -58,14 +86,14 @@ import PendingTxModal from "./base/PendingTxModal";
 import SuccessTxModal from "./base/SuccessTxModal";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
-import { handleFillDelayText, makeElipsisAddress } from "../utils";
-
+import { amountUi, handleFillDelayText, makeElipsisAddress } from "../utils";
+import BN from "bignumber.js";
 export function ChunksInput({ className = "", showDefault }: { className?: string; showDefault?: boolean }) {
   const translations = useTwapContext().translations;
-  const chunks = useTwapStore((store) => store.getChunks());
-  const maxPossibleChunks = useTwapStore((store) => store.getMaxPossibleChunks());
-  const setChunks = useTwapStore((store) => store.setChunks);
-  const getChunksBiggerThanOne = useTwapStore((store) => store.getChunksBiggerThanOne());
+  const chunks = useChunks();
+  const maxPossibleChunks = useMaxPossibleChunks();
+  const setChunks = useSetChunks();
+  const getChunksBiggerThanOne = useChunksBiggerThanOne();
   const lib = useTwapStore().lib;
 
   const minChunkSizeUsd = lib?.config.minChunkSizeUsd.toString() || "0";
@@ -89,11 +117,11 @@ export function ChunksInput({ className = "", showDefault }: { className?: strin
 }
 
 export function ChunksSliderSelect({ className = "", showDefault }: { className?: string; showDefault?: boolean }) {
-  const getChunksBiggerThanOne = useTwapStore((store) => store.getChunksBiggerThanOne());
+  const getChunksBiggerThanOne = useChunksBiggerThanOne();
 
-  const maxPossibleChunks = useTwapStore((store) => store.getMaxPossibleChunks());
-  const chunks = useTwapStore((store) => store.getChunks());
-  const setChunks = useTwapStore((store) => store.setChunks);
+  const maxPossibleChunks = useMaxPossibleChunks();
+  const chunks = useChunks();
+  const setChunks = useSetChunks();
 
   if (!getChunksBiggerThanOne && !showDefault) return null;
   return <StyledChunksSliderSelect className={className} maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />;
@@ -109,7 +137,7 @@ export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpD
 };
 
 export function MaxDurationSelector({ placeholder }: { placeholder?: string }) {
-  const duration = useTwapStore((store) => store.getDurationUi());
+  const duration = useDurationUi();
 
   const onChange = useTwapStore((store) => store.setDuration);
 
@@ -142,30 +170,28 @@ const Input = (props: {
 
 export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boolean; placeholder?: string; className?: string }) => {
   // src
-  const srcDecimals = useTwapStore((store) => store.srcToken?.decimals);
-  const srcUsdLoading = useLoadingState().srcUsdLoading;
-  const srcAmount = useTwapStore((store) => store.srcAmountUi);
-  const setSrcAmountUi = useTwapStore((store) => store.setSrcAmountUi);
-  const srcInputLoading = (!!srcAmount || srcAmount !== "0") && srcUsdLoading;
-  // dst
-  const { dstDecimals, dstAmount } = useTwapStore((store) => ({
-    dstDecimals: store.dstToken?.decimals,
-    dstAmount: store.getDstAmountUi(),
+  const { srcDecimals, srcAmount, dstDecimals, isLimitOrder } = useTwapStore((s) => ({
+    srcDecimals: s.srcToken?.decimals,
+    srcAmount: s.srcAmountUi,
+    dstDecimals: s.dstToken?.decimals,
+    isLimitOrder: s.isLimitOrder,
   }));
-  const dstUsdLoading = useLoadingState().dstUsdLoading;
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const dstInputLoading = (!!dstAmount || dstAmount !== "0") && dstUsdLoading;
+  const setSrcAmountUi = useSetSrcAmountUi();
+  const srcUsdLoading = useLoadingState().srcUsdLoading;
+  const srcInputLoading = (!!srcAmount || srcAmount !== "0") && srcUsdLoading;
+
+  const { outAmount, isLoading: dstAmountLoading } = useDstAmount();
 
   return (
     <NumericInput
       className={`${className} twap-token-input`}
       decimalScale={isSrc ? srcDecimals : dstDecimals}
       prefix={isSrc ? "" : isLimitOrder ? "~" : SQUIGLE}
-      loading={isSrc ? srcInputLoading : dstInputLoading}
+      loading={isSrc ? srcInputLoading : dstAmountLoading}
       disabled={!isSrc}
       placeholder={placeholder}
       onChange={isSrc ? setSrcAmountUi : () => {}}
-      value={isSrc ? srcAmount : dstAmount}
+      value={isSrc ? srcAmount : outAmount.ui}
     />
   );
 };
@@ -188,30 +214,27 @@ export const TokenPanelInput = ({
 };
 
 const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
-  const { decimals, amount, onChange } = useTwapStore((store) => ({
+  const { decimals, amount } = useTwapStore((store) => ({
     decimals: store.srcToken?.decimals,
     amount: store.srcAmountUi,
-    onChange: store.setSrcAmountUi,
   }));
-
+  const onChange = useSetSrcAmountUi();
   return <Input prefix="" onChange={onChange} value={amount || ""} decimalScale={decimals} className={props.className} placeholder={props.placeholder} />;
 };
 
 const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
-  const { token, amount, isLimitOrder } = useTwapStore((store) => ({
+  const { token, isLimitOrder } = useTwapStore((store) => ({
     token: store.dstToken,
-    amount: store.getDstAmountUi(),
     srcAmount: store.srcAmountUi,
     isLimitOrder: store.isLimitOrder,
   }));
-  const outAmountLoading = useOutAmountLoading();
-
+  const { outAmount, isLoading } = useDstAmount();
   return (
     <Input
       disabled={true}
-      loading={outAmountLoading}
+      loading={isLoading}
       prefix={isLimitOrder ? "~" : SQUIGLE}
-      value={amount}
+      value={outAmount.ui}
       decimalScale={props.decimalScale || token?.decimals}
       className={props.className}
       placeholder={props.placeholder}
@@ -348,14 +371,22 @@ export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; 
   const loadingState = useLoadingState();
   const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
   const translations = useTwapContext().translations;
-  const { leftToken, rightToken } = useTwapStore((state) => state.getLimitPrice(false));
+  const { leftToken, rightToken, onReset } = useLimitPriceV2();
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const setLimitOrder = useTwapStore((store) => store.setLimitOrder);
   const selectTokensWarning = !leftToken || !rightToken;
 
+  const onSetLimitOrder = useCallback(
+    (value?: boolean) => {
+      setLimitOrder(value);
+      if (!value) onReset();
+    },
+    [setLimitOrder, onReset]
+  );
+
   return (
     <Tooltip text={isLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
-      <Switch style={style} variant={variant} disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={(value: boolean) => setLimitOrder(value)} />
+      <Switch style={style} variant={variant} disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={onSetLimitOrder} />
     </Tooltip>
   );
 }
@@ -363,13 +394,15 @@ export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; 
 export function LimitPriceRadioGroup({ className }: { className?: string }) {
   const loadingState = useLoadingState();
   const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
-  const { leftToken, rightToken } = useTwapStore((state) => state.getLimitPrice(false));
+  const { leftToken, rightToken, onReset } = useLimitPriceV2();
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const setLimitOrder = useTwapStore((store) => store.setLimitOrder);
   const selectTokensWarning = !leftToken || !rightToken;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLimitOrder(String(event.target.value) === "true");
+    const value = String(event.target.value) === "true";
+    setLimitOrder(value);
+    if (!value) onReset();
   };
 
   return (
@@ -383,7 +416,7 @@ export function LimitPriceRadioGroup({ className }: { className?: string }) {
 }
 
 export function ChunksUSD({ onlyValue, emptyUi, suffix, prefix }: { onlyValue?: boolean; emptyUi?: React.ReactNode; suffix?: string; prefix?: string }) {
-  const usd = useTwapStore((state) => state.getSrcChunkAmountUsdUi());
+  const usd = useSrcChunkAmountUsdUi();
   const loading = useLoadingState().srcUsdLoading;
 
   return <USD prefix={prefix} suffix={suffix} value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={loading} />;
@@ -406,16 +439,18 @@ export const TokenBalance = ({
   emptyUi?: ReactNode;
   decimalScale?: number;
 }) => {
-  const srcBalance = useTwapStore((state) => state.getSrcBalanceUi());
   const srcLoading = useLoadingState().srcBalanceLoading;
-  const dstBalance = useTwapStore((state) => state.getDstBalanceUi());
   const dstLoading = useLoadingState().dstBalanceLoading;
   const srcToken = useTwapStore((state) => state.srcToken);
   const dstToken = useTwapStore((state) => state.dstToken);
-  const balance = isSrc ? srcBalance : dstBalance;
   const isLoading = isSrc ? srcLoading : dstLoading;
   const symbol = isSrc ? srcToken?.symbol : dstToken?.symbol;
   const suffix = !showSymbol ? undefined : isSrc ? srcToken?.symbol : dstToken?.symbol;
+
+  const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
+  const dstBalance = useAmountUi(dstToken?.decimals, useDstBalance().data?.toString());
+  const balance = isSrc ? srcBalance : dstBalance;
+
   return (
     <Balance
       symbol={symbol || ""}
@@ -450,9 +485,9 @@ export function TokenUSD({
   hideIfZero?: boolean;
   decimalScale?: number;
 }) {
-  const srcUSD = useTwapStore((state) => state.getSrcAmountUsdUi());
+  const srcUSD = useSrcAmountUsdUi();
   const srcLoading = useLoadingState().srcUsdLoading;
-  const dstUSD = useTwapStore((state) => state.getDstAmountUsdUi());
+  const dstUSD = useDstAmountUsdUi();
   const dstLoading = useLoadingState().dstUsdLoading;
   const usd = isSrc ? srcUSD : dstUSD;
   const isLoading = isSrc ? srcLoading : dstLoading;
@@ -488,7 +523,7 @@ export const useLimitPriceComponents = ({
   reverse?: boolean;
 }) => {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const { leftToken, rightToken, onChange, limitPrice, toggleInverted } = useLimitPrice();
+  const { leftToken, rightToken, onChange, limitPrice, onInvert } = useLimitPriceV2();
 
   const _isLimitOrder = isLimitOrder || showDefault;
 
@@ -498,7 +533,7 @@ export const useLimitPriceComponents = ({
     leftToken: <TokenDisplay reverse={reverse} hideSymbol={hideSymbol} singleToken symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />,
     rightToken: <TokenDisplay reverse={reverse} hideSymbol={hideSymbol} symbol={rightToken?.symbol} logo={rightToken?.logoUrl} />,
     input: <NumericInput placeholder={placeholder} onChange={onChange} value={limitPrice} />,
-    toggle: <IconButton onClick={toggleInverted} icon={toggleIcon} />,
+    toggle: <IconButton onClick={onInvert} icon={toggleIcon} />,
   };
 };
 
@@ -535,12 +570,12 @@ export function LimitPriceInput({
 }
 
 export const MarketPrice = ({ className = "", hideLabel }: { className?: string; hideLabel?: boolean }) => {
-  const { toggleInverted, leftToken, rightToken, marketPrice, loading } = useMarketPrice();
+  const { invert, leftToken, rightToken, marketPrice, loading } = useMarketPriceV2();
   const translations = useTwapContext().translations;
   return (
     <StyledMarketPrice justifyContent="space-between" className={`twap-market-price ${className}`}>
       {!hideLabel && <StyledText className="title">{translations.currentMarketPrice}</StyledText>}
-      <TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={toggleInverted} />
+      <TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice} toggleInverted={invert} />
     </StyledMarketPrice>
   );
 };
@@ -579,7 +614,7 @@ const Warning = ({ tootlip, warning }: { tootlip: string; warning: string }) => 
 
 export const PartialFillWarning = () => {
   const translations = useTwapContext().translations;
-  const isWarning = useTwapStore((state) => state.getIsPartialFillWarning());
+  const isWarning = useIsPartialFillWarning();
   const lib = useTwapStore((state) => state.lib);
   if (!isWarning || !lib) return null;
 
@@ -600,8 +635,8 @@ export const FillDelayWarning = () => {
 /// --- order summary ---- ///
 
 export function TotalChunks() {
-  const value = useTwapStore((store) => store.getChunks());
-  const formattedValue = useFormatNumber({ value });
+  const chunks = useChunks();
+  const formattedValue = useFormatNumber({ value: chunks });
 
   return (
     <Tooltip text={formattedValue}>
@@ -611,7 +646,7 @@ export function TotalChunks() {
 }
 
 export function ChunksAmount() {
-  const value = useTwapStore((store) => store.getSrcChunkAmountUi());
+  const value = useSrcChunkAmountUi();
   const formattedValue = useFormatNumber({ value, decimalScale: 3 });
   if (!value) return null;
   return (
@@ -622,7 +657,7 @@ export function ChunksAmount() {
 }
 
 export const Deadline = () => {
-  const deadline = useTwapStore((store) => store.getDeadlineUi());
+  const deadline = useDeadlineUi();
   return <StyledOneLineText>{deadline}</StyledOneLineText>;
 };
 
@@ -640,9 +675,18 @@ export const TradeIntervalAsText = ({ translations: _translations }: { translati
 };
 
 export const MinDstAmountOut = ({ translations: _translations }: { translations?: Translations }) => {
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+  const { isLimitOrder, dstToken } = useTwapStore((store) => ({
+    isLimitOrder: store.isLimitOrder,
+    dstToken: store.dstToken,
+  }));
   const translations = useTwapContext()?.translations || _translations;
-  const dstMinAmountOutUi = useTwapStore((store) => store.getDstMinAmountOutUi());
+  const dstMinAmountOut = useDstMinAmountOut();
+
+  const dstMinAmountOutUi = useMemo(() => {
+    if (BN(dstMinAmountOut || "0").eq(1)) return "";
+
+    return amountUi(dstToken, BN(dstMinAmountOut || "0"));
+  }, [dstMinAmountOut, dstToken]);
 
   const formattedValue = useFormatNumber({ value: dstMinAmountOutUi });
 
@@ -780,7 +824,7 @@ export const OrderSummaryTokenDisplay = ({
   const translations = useTwapContext()?.translations || _translations;
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const srcAmount = useTwapStore((store) => store.srcAmountUi);
-  const dstAmount = useTwapStore((store) => store.getDstAmountUi());
+  const dstAmount = useDstAmount().outAmount.ui;
 
   const amount = isSrc ? srcAmount : dstAmount;
   const prefix = isSrc ? "" : isLimitOrder ? "~ " : "~ ";
@@ -836,26 +880,28 @@ export const OutputAddress = ({ className, translations: _translations, ellipsis
 const StyledOutputAddress = styled(StyledColumnFlex)({});
 
 export const OrderSummaryLimitPriceToggle = ({ translations: _translations }: { translations?: Translations }) => {
-  const { isLimitOrder, toggleInverted, limitPrice, leftToken, rightToken } = useLimitPrice();
+  const { onInvert, limitPrice, leftToken, rightToken } = useLimitPriceV2();
+  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const translations = useTwapContext()?.translations || _translations;
 
   return isLimitOrder ? (
-    <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice} toggleInverted={toggleInverted} />
+    <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice} toggleInverted={onInvert} />
   ) : (
     <StyledText>{translations.none}</StyledText>
   );
 };
 
 export const OrderSummaryPriceCompare = () => {
-  const { isLimitOrder, toggleInverted, limitPrice, leftToken, rightToken } = useLimitPrice();
+  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+  const { onInvert, limitPrice, leftToken, rightToken } = useLimitPriceV2();
 
-  const market = useMarketPrice();
+  const market = useMarketPriceV2();
 
   if (isLimitOrder) {
-    return <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice} toggleInverted={toggleInverted} />;
+    return <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice} toggleInverted={onInvert} />;
   }
 
-  return <TokenPriceCompare leftToken={market.leftToken} rightToken={market.rightToken} price={market.marketPrice} toggleInverted={market.toggleInverted} />;
+  return <TokenPriceCompare leftToken={market.leftToken} rightToken={market.rightToken} price={market.marketPrice} toggleInverted={market.invert} />;
 };
 
 export const OrderSummaryLimitPrice = ({ translations: _translations }: { translations?: Translations }) => {
@@ -993,7 +1039,7 @@ const StyledPoweredBy = styled(StyledRowFlex)({
 });
 
 export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
-  const value = useTwapStore((store) => store.getSrcChunkAmountUi());
+  const value = useSrcChunkAmountUi();
   const formattedValue = useFormatNumber({ value });
   const srcToken = useTwapStore((store) => store.srcToken);
 
@@ -1061,7 +1107,7 @@ const StyledTradeSize = styled(StyledRowFlex)({
 export const WarningMessage = ({ className }: { className?: string }) => {
   const translations = useTwapContext().translations;
 
-  const warning = useTwapStore((state) => state.getFillWarning(translations));
+  const warning = useFillWarning();
 
   if (!warning) return null;
   if (warning === translations.selectTokens || warning === translations.enterAmount) {
@@ -1094,21 +1140,19 @@ export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
 };
 
 export const ResetLimitButton = ({ children }: { children?: ReactNode }) => {
-  const { setLimitOrderPriceUi } = useTwapStore((store) => ({
-    setLimitOrderPriceUi: store.setLimitOrderPriceUi,
-  }));
-  const onClick = () => {
-    setLimitOrderPriceUi();
-  };
+  const onReset = useLimitPriceV2().onReset;
+  const isLimitOrder = useTwapStore((s) => s.isLimitOrder);
+
+  if (!isLimitOrder) return null;
 
   return (
     <Tooltip text="Reset to default price">
       {children ? (
-        <span onClick={onClick} className="twap-limit-reset">
+        <span onClick={onReset} className="twap-limit-reset">
           {children}
         </span>
       ) : (
-        <IconButton onClick={onClick} className="twap-limit-reset">
+        <IconButton onClick={onReset} className="twap-limit-reset">
           <Icon icon={<GrPowerReset style={{ width: 18, height: 18 }} />} />
         </IconButton>
       )}
@@ -1144,4 +1188,11 @@ export const TxSuccess = () => {
   const { showSuccessModal, setShowSuccessModal } = useTwapStore();
 
   return <SuccessTxModal open={showSuccessModal} onClose={() => setShowSuccessModal(false)} />;
+};
+
+export const LimitInputV2 = () => {
+  const { onChange, limitPrice, isLoading } = useLimitPriceV2();
+  const hide = useLimitPriceStore((s) => s.hide);
+
+  return <NumericInput decimalScale={6} placeholder={""} onChange={onChange} value={hide ? "" : limitPrice} />;
 };

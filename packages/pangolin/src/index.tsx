@@ -174,7 +174,7 @@ const buttons = [
   { text: "100%", value: 1 },
 ];
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions().onPercentClick;
+  const onPercentClick = hooks.useCustomActions();
 
   return (
     <TwapStyles.StyledRowFlex gap={5} style={{ width: "auto" }}>
@@ -262,7 +262,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
-  const marketPrice = hooks.useMarketPrice().marketPrice;
+  const marketPrice = hooks.useMarketPriceV2().marketPrice;
   const formattedMarketPrice = hooks.useFormatNumber({ value: marketPrice });
 
   const onClose = useCallback(() => {

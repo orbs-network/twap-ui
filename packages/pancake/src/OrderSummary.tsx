@@ -2,7 +2,6 @@ import { styled } from "@mui/material";
 import { Styles as TwapStyles, Components, store, hooks } from "@orbs-network/twap-ui";
 import { StyledOrderSummary } from "./styles";
 import { MdArrowDownward } from "@react-icons/all-files/md/MdArrowDownward";
-import { ReactNode } from "react";
 import { useAdapterContext } from "./context";
 import { Price } from "./components";
 
@@ -78,10 +77,14 @@ const StyledSummaryDetails = styled(TwapStyles.StyledColumnFlex)({
 });
 
 const TokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
-  const { token, _amount } = store.useTwapStore((store) => ({
+  const { token, srcAmount } = store.useTwapStore((store) => ({
     token: isSrc ? store.srcToken : store.dstToken,
-    _amount: isSrc ? store.srcAmountUi : store.getDstAmountUi(),
+    srcAmount: store.srcAmountUi,
   }));
+
+  const dstAmount = hooks.useDstAmount().outAmount.ui;
+
+  const _amount = isSrc ? srcAmount : dstAmount;
 
   const amount = hooks.useFormatNumber({ value: _amount, decimalScale: 3 });
 
