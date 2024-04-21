@@ -131,7 +131,7 @@ export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: b
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions().onPercentClick;
+  const onPercentClick = hooks.useCustomActions();
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -284,7 +284,7 @@ const TWAP = (props: Props) => {
 };
 
 const Market = () => {
-  const { toggleInverted, leftToken, rightToken, marketPrice, loading } = hooks.useMarketPrice();
+  const { invert, leftToken, rightToken, marketPrice, loading } = hooks.useMarketPriceV2();
   return (
     <StyledMarketPrice>
       {loading ? (
@@ -292,10 +292,10 @@ const Market = () => {
           <Components.Base.Loader height={26} />
         </StyledMarketPriceLoader>
       ) : (
-        <Button onClick={toggleInverted}>
+        <Button onClick={invert}>
           <Components.Base.TokenPriceCompare.LeftToken token={leftToken} />
           <Typography>=</Typography>
-          <Components.Base.TokenPriceCompare.RightToken token={rightToken} price={marketPrice} />
+          <Components.Base.TokenPriceCompare.RightToken token={rightToken} price={marketPrice?.original} />
         </Button>
       )}
     </StyledMarketPrice>

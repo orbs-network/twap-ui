@@ -198,7 +198,7 @@ const USD = ({ children, disabled }: { children: ReactNode; disabled: boolean })
 const percent = [0.25, 0.5, 0.75, 1];
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions().onPercentClick;
+  const onPercentClick = hooks.useCustomActions();
   const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {
@@ -278,10 +278,12 @@ const Recipient = () => {
 };
 
 const TokenSummary = () => {
-  const srcAmount = store.useTwapStore((store) => store.srcAmountUi);
-  const dstAmount = store.useTwapStore((store) => store.getDstAmountUi());
-  const srcToken = store.useTwapStore((store) => store.srcToken);
-  const dstToken = store.useTwapStore((store) => store.dstToken);
+  const { srcAmount, srcToken, dstToken } = store.useTwapStore((store) => ({
+    srcAmount: store.srcAmountUi,
+    srcToken: store.srcToken,
+    dstToken: store.dstToken,
+  }));
+  const dstAmount = hooks.useDstAmount().outAmount.ui;
 
   const srcAmountFormatted = hooks.useFormatNumber({ value: srcAmount });
   const srcAmountFormattedTooltip = hooks.useFormatNumber({ value: srcAmount, decimalScale: 18 });
@@ -654,7 +656,7 @@ const BigBorder = ({ children, style = {}, className = "" }: { children?: ReactN
 };
 
 const ChunksSlider = () => {
-  const show = store.useTwapStore((s) => s.getChunksBiggerThanOne());
+  const show = hooks.useChunksBiggerThanOne();
 
   if (!show) return null;
   return (

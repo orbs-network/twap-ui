@@ -90,7 +90,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 };
 
 const PercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions().onPercentClick;
+  const onPercentClick = hooks.useCustomActions();
   const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {

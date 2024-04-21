@@ -5,6 +5,7 @@ import { NumericFormat } from "react-number-format";
 import { useTwapContext } from "../../context";
 import { maxUint256 } from "@defi.org/web3-candies";
 import BN from "bignumber.js";
+import { CSSProperties } from "react";
 export interface Props {
   onChange: (value: string) => void;
   value?: string | number;
@@ -19,6 +20,7 @@ export interface Props {
   prefix?: string;
   decimalScale?: number;
   minAmount?: number;
+  style?: CSSProperties;
 }
 
 const InputLoader = () => {
@@ -27,7 +29,21 @@ const InputLoader = () => {
   return inputLoader ? inputLoader : <StyledLoader className="twap-input-loader" width="75%" height="60%" />;
 };
 
-function NumericInput({ prefix = "", onChange, value, disabled = false, placeholder, onFocus, onBlur, loading = false, className = "", maxValue, decimalScale, minAmount }: Props) {
+function NumericInput({
+  style = {},
+  prefix = "",
+  onChange,
+  value,
+  disabled = false,
+  placeholder,
+  onFocus,
+  onBlur,
+  loading = false,
+  className = "",
+  maxValue,
+  decimalScale,
+  minAmount,
+}: Props) {
   const inputValue = value || minAmount || "";
 
   const { inputPlaceholder, input } = useTwapContext().uiPreferences;
@@ -35,9 +51,9 @@ function NumericInput({ prefix = "", onChange, value, disabled = false, placehol
   const _placeholder = placeholder || inputPlaceholder || "0.0";
 
   return (
-    <StyledContainer className={`twap-input ${className}`}>
+    <StyledContainer className={`twap-input ${className}`} style={style}>
       {loading && <InputLoader />}
-      <Fade in={input?.showOnLoading ? true : !loading}>
+      <Fade in={input?.showOnLoading ? true : !loading} timeout={0}>
         <StyledFlex>
           <NumericFormat
             allowNegative={false}

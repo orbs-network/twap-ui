@@ -12,7 +12,7 @@ import { FaExchangeAlt } from "@react-icons/all-files/fa/FaExchangeAlt";
 export interface Props {
   leftToken?: TokenData;
   rightToken?: TokenData;
-  price?: string;
+  price?: string | number;
   className?: string;
   toggleInverted: () => void;
   loading?: boolean;
@@ -58,7 +58,7 @@ const LeftToken = ({ token }: { token?: TokenData }) => {
   );
 };
 
-const RightToken = ({ token, price }: { token?: TokenData; price?: string }) => {
+const RightToken = ({ token, price }: { token?: TokenData; price?: string | number }) => {
   const formattedValue = useFormatNumber({ value: price });
   return (
     <StyledRowFlex style={{ width: "auto", gap: 5 }} className="right-token">

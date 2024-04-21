@@ -12,7 +12,6 @@ import { erc20s, zeroAddress, isNativeAddress } from "@defi.org/web3-candies";
 import { create } from "zustand";
 import { Styles } from "@orbs-network/twap-ui";
 import { Button, styled } from "@mui/material";
-import BN from "bignumber.js";
 const config = Configs.SyncSwap;
 
 const palletes = [

@@ -211,7 +211,7 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
     queryKey: ["useTrade", fromToken, toToken, srcAmount, chainId],
     queryFn: async () => {
       if (!fromTokenDecimals || !toTokenDecimals) return "0";
-      await delay(1000);
+      await delay(2_000);
       const result = convertDecimals(
         BigNumber(srcAmount!)
           .times(fromTokenUsd || "0")

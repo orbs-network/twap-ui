@@ -92,7 +92,7 @@ const TWAP = memo((props: SpiritSwapTWAPProps) => {
 });
 
 const SrcTokenPercentSelector = () => {
-  const { onPercentClick } = hooks.useCustomActions();
+  const onPercentClick = hooks.useCustomActions();
   const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {

@@ -413,6 +413,7 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
 export const StyledMarketPriceContainer = styled(Styles.StyledRowFlex)(({ theme }) => {
   const darkMode = baseStyles(theme).darkMode;
   return {
+    position: "relative",
     justifyContent: "space-between",
     p: { color: darkMode ? "#a881fc" : "#7645d9", fontWeight: "600!important" },
     ".twap-token-logo": {

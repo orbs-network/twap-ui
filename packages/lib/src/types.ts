@@ -128,6 +128,8 @@ export interface TWAPProps extends BaseProps {
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
+  dstAmountOut?: string;
+  dstAmountLoading?: boolean;
 }
 
 type PriceUsd = (address: string, token?: TokenData) => any;
@@ -170,6 +172,7 @@ export interface TwapContextUIPreferences {
   modal?: {
     styles?: CSSProperties;
   };
+  limitPriceInvertedByDefault?: boolean;
 }
 
 export type OnTxSubmitValues = {
@@ -191,6 +194,8 @@ export interface ParsedOrder {
     dstAmount?: string;
     progress?: number;
     srcFilledAmount?: string;
+    dollarValueIn?: string;
+    dollarValueOut?: string;
   };
 }
 
@@ -215,6 +220,8 @@ export interface TwapLibProps extends LibProps {
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
+  dstAmountOut?: string;
+  dstAmountLoading?: boolean;
 }
 
 export type Token = TokenData;
@@ -280,12 +287,6 @@ export interface State {
   wrongNetwork: undefined | boolean;
   srcAmountUi: string;
 
-  limitPriceUi: { priceUi: string; inverted: boolean; custom?: boolean };
-  srcUsd: BN;
-  dstUsd: BN;
-  srcBalance: BN;
-  dstBalance: BN;
-
   loading: boolean;
   isLimitOrder: boolean;
   confirmationClickTimestamp: Moment;
@@ -300,9 +301,6 @@ export interface State {
 
   showLoadingModal: boolean;
   showSuccessModal: boolean;
-  dstAmount?: string;
-  dstAmountFromDex?: string;
-  dstAmountLoading?: boolean;
 
   txHash?: string;
   enableQueryParams?: boolean;

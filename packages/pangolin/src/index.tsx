@@ -174,7 +174,7 @@ const buttons = [
   { text: "100%", value: 1 },
 ];
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions().onPercentClick;
+  const onPercentClick = hooks.useCustomActions();
 
   return (
     <TwapStyles.StyledRowFlex gap={5} style={{ width: "auto" }}>
@@ -262,8 +262,8 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
-  const marketPrice = hooks.useMarketPrice().marketPrice;
-  const formattedMarketPrice = hooks.useFormatNumber({ value: marketPrice });
+  const marketPrice = hooks.useMarketPriceV2().marketPrice;
+  const formattedMarketPrice = hooks.useFormatNumber({ value: marketPrice?.original });
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -276,7 +276,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>
           {isSrcToken && <SrcTokenPercentSelector />}
-          {!isSrcToken && marketPrice !== "0" && (
+          {!isSrcToken && marketPrice?.original !== "0" && (
             <TwapStyles.StyledRowFlex className="twap-token-panel-price">
               <TwapStyles.StyledText>Price</TwapStyles.StyledText> {formattedMarketPrice} <Components.TokenSymbol isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>

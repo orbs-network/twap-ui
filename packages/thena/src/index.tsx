@@ -100,7 +100,7 @@ const Card = ({ children, className = "" }: { children: ReactNode; className?: s
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions().onPercentClick;
+  const onPercentClick = hooks.useCustomActions();
 
   const onClick = (value: number) => {
     onPercentClick(value);
