@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/twap-ui/static/css/main.946e5d54.css",
-    "main.js": "/twap-ui/static/js/main.bbe374e0.js",
+    "main.js": "/twap-ui/static/js/main.ac9a3966.js",
     "static/media/light.ttf": "/twap-ui/static/media/light.f724f2e00b1d08f4af2e.ttf",
     "static/media/regular.ttf": "/twap-ui/static/media/regular.cea0a1861f1e4ce9c070.ttf",
     "static/media/medium.ttf": "/twap-ui/static/media/medium.2fc5aa498a558b8eb500.ttf",
@@ -57,10 +57,10 @@
     "static/media/poppins-v20-latin-500.woff2": "/twap-ui/static/media/poppins-v20-latin-500.08491d3f7fe7ae88ef44.woff2",
     "index.html": "/twap-ui/index.html",
     "main.946e5d54.css.map": "/twap-ui/static/css/main.946e5d54.css.map",
-    "main.bbe374e0.js.map": "/twap-ui/static/js/main.bbe374e0.js.map"
+    "main.ac9a3966.js.map": "/twap-ui/static/js/main.ac9a3966.js.map"
   },
   "entrypoints": [
     "static/css/main.946e5d54.css",
-    "static/js/main.bbe374e0.js"
+    "static/js/main.ac9a3966.js"
   ]
 }
