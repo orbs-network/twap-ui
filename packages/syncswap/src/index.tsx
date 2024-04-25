@@ -15,7 +15,7 @@ import {
   amountBN,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
+import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import {
@@ -284,7 +284,8 @@ const TWAP = (props: Props) => {
 };
 
 const Market = () => {
-  const { invert, leftToken, rightToken, marketPrice, loading } = hooks.useMarketPriceV2();
+  const [inverted, setInverted] = useState(false);
+  const { leftToken, rightToken, marketPrice, loading } = hooks.useMarketPriceV2(inverted);
   return (
     <StyledMarketPrice>
       {loading ? (
@@ -292,7 +293,7 @@ const Market = () => {
           <Components.Base.Loader height={26} />
         </StyledMarketPriceLoader>
       ) : (
-        <Button onClick={invert}>
+        <Button onClick={() => setInverted(!inverted)}>
           <Components.Base.TokenPriceCompare.LeftToken token={leftToken} />
           <Typography>=</Typography>
           <Components.Base.TokenPriceCompare.RightToken token={rightToken} price={marketPrice?.original} />

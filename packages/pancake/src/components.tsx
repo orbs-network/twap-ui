@@ -1,62 +1,40 @@
-import { Components, getTokenFromTokensList, hooks, store } from "@orbs-network/twap-ui";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Components, hooks, store } from "@orbs-network/twap-ui";
 import { useAdapterContext } from "./context";
 import BN from "bignumber.js";
 import { StyledMarketPriceContainer } from "./styles";
-import { safeInteger } from "@orbs-network/twap-ui";
 import { styled } from "@mui/material";
+import { useMemo } from "react";
 
 export function Price({ onClick }: { onClick?: () => void }) {
-  const { TradePrice: DappTradePrice, dappTokens } = useAdapterContext();
-  const { srcToken, dstToken, isLimitOrder, srcAmount } = store.useTwapStore((s) => ({
+  const { TradePrice: DappTradePrice } = useAdapterContext();
+  const { srcToken, dstToken, srcAmount, isLimitOrder } = store.useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
-    updateState: s.updateState,
-    isLimitOrder: s.isLimitOrder,
     srcAmount: s.getSrcAmount().toString(),
+    isLimitOrder: s.isLimitOrder,
   }));
 
-  const { outAmount, isLoading } = hooks.useDstAmount();
+  const { limitPrice, isLoading, inverted } = hooks.useLimitPriceV2();
+  const { marketPrice } = hooks.useMarketPriceV2(inverted);
 
-  const { limitPrice, inverted, isCustom } = hooks.useLimitPriceV2();
-  const limitStore = store.useLimitPriceStore();
-
-  useEffect(() => {
-    if (BN(srcAmount || "0").isZero() && !inverted) {
-      limitStore.setInvertedByDefault();
-    }
-  }, [srcAmount, inverted, limitStore]);
-
-  const { inputCurrency, outputCurrency } = useMemo(() => {
-    return {
-      inputCurrency: getTokenFromTokensList(dappTokens, srcToken?.address) || getTokenFromTokensList(dappTokens, srcToken?.symbol),
-      outputCurrency: getTokenFromTokensList(dappTokens, dstToken?.address) || getTokenFromTokensList(dappTokens, dstToken?.symbol),
-    };
-  }, [srcToken, dstToken, dappTokens]);
-
-  const amounts = hooks.useSrcAndDstAmounts();
-  console.log({ amounts });
+  const price = hooks.useFormatNumber({ value: isLimitOrder ? limitPrice?.toggled : marketPrice?.toggled, decimalScale: 4 });
 
   if (!DappTradePrice) {
     return <Components.OrderSummaryLimitPrice />;
   }
 
-  if (!inputCurrency || !outputCurrency || BN(amounts.inputAmount || "0").isZero() || BN(amounts.outAmount || "0").isZero()) {
+  if (!srcToken || !dstToken || BN(srcAmount || "0").isZero()) {
     return null;
   }
+
+  const leftSymbol = inverted ? dstToken?.symbol : srcToken?.symbol;
+  const rightSymbol = inverted ? srcToken?.symbol : dstToken?.symbol;
 
   return (
     <StyledMarketPriceContainer>
       <Components.Base.Label>Price</Components.Base.Label>
       <div style={{ opacity: isLoading ? 0 : 1 }}>
-        <DappTradePrice
-          onClick={onClick || (() => {})}
-          loading={isLoading}
-          inputCurrency={inputCurrency}
-          outputCurrency={outputCurrency}
-          inputAmount={amounts.inputAmount}
-          outAmount={amounts.outAmount}
-        />
+        <DappTradePrice onClick={onClick || (() => {})} loading={isLoading} leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={price} />
       </div>
       <StyledLoader loading={isLoading ? 1 : 0} />
     </StyledMarketPriceContainer>

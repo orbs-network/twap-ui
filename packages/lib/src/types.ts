@@ -172,7 +172,6 @@ export interface TwapContextUIPreferences {
   modal?: {
     styles?: CSSProperties;
   };
-  limitPriceInvertedByDefault?: boolean;
 }
 
 export type OnTxSubmitValues = {
@@ -305,6 +304,10 @@ export interface State {
   txHash?: string;
   enableQueryParams?: boolean;
   waitingForOrdersUpdate: boolean;
+  srcUsd?: BN;
+  dstUsd?: BN;
+  srcUsdLoading?: boolean;
+  dstUsdLoading?: boolean;
 }
 
 export type SwitchVariant = "ios" | "default";

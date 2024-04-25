@@ -1,14 +1,16 @@
-import { createContext, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { TwapContextUIPreferences, TwapLibProps } from "./types";
-import { useInitLib, useLimitPriceV2, useParseTokens, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
+import { useInitLib, useLimitPriceV2, useParseTokens, usePriceUSD, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { analytics } from "./analytics";
 import { TokenData } from "@orbs-network/twap";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import { Wizard } from "./components";
-import { useLimitPriceStore } from "./store";
-
+import { useLimitPriceStore, useTwapStore } from "./store";
+import BN from "bignumber.js";
+import { getQueryParam } from "./utils";
+import { QUERY_PARAMS } from "./consts";
 analytics.onModuleLoad();
 
 export interface TWAPContextProps extends TwapLibProps {
@@ -29,15 +31,16 @@ const Listener = (props: TwapLibProps) => {
   const setTokensFromDappCallback = useSetTokensFromDapp();
   const initLib = useInitLib();
   const updateStoreOveride = useUpdateStoreOveride();
-  const { onDefaultInverted, limitPrice } = useLimitPriceV2();
-  const invertedOnce = useRef(false);
+  const limitStore = useLimitPriceStore();
+  const enableQueryParams = props.enableQueryParams;
   useEffect(() => {
-    if (props.uiPreferences?.limitPriceInvertedByDefault && !invertedOnce.current && limitPrice) {
-      onDefaultInverted();
-      invertedOnce.current = true;
+    if (enableQueryParams) {
+      limitStore.setPriceFromQueryParams(getQueryParam(QUERY_PARAMS.LIMIT_PRICE));
     }
-  }, [props.uiPreferences?.limitPriceInvertedByDefault, onDefaultInverted, limitPrice]);
+  }, [enableQueryParams, limitStore.setPriceFromQueryParams]);
 
+  useSrcUsd();
+  useDstUsd();
   useEffect(() => {
     updateStoreOveride(props.storeOverride);
   }, [updateStoreOveride, props.storeOverride]);
@@ -83,4 +86,30 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
 export const useTwapContext = () => {
   return useContext(TwapContext);
+};
+
+export const useSrcUsd = () => {
+  const { srcToken, updateState } = useTwapStore((store) => ({
+    srcToken: store.srcToken,
+    updateState: store.updateState,
+  }));
+
+  const onSuccess = useCallback((srcUsd: BN, srcUsdLoading: boolean) => {
+    updateState({ srcUsd, srcUsdLoading });
+  }, []);
+
+  return usePriceUSD(srcToken?.address, onSuccess);
+};
+
+export const useDstUsd = () => {
+  const { dstToken, updateState } = useTwapStore((store) => ({
+    dstToken: store.dstToken,
+    updateState: store.updateState,
+  }));
+
+  const onSuccess = useCallback((dstUsd: BN, dstUsdLoading: boolean) => {
+    updateState({ dstUsd, dstUsdLoading });
+  }, []);
+
+  return usePriceUSD(dstToken?.address, onSuccess);
 };

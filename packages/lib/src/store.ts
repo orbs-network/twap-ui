@@ -52,6 +52,8 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
 
     enableQueryParams: false,
     waitingForOrdersUpdate: false,
+    srcUsd: undefined,
+    dstUsd: undefined,
   };
 };
 const initialState = getInitialState();
@@ -79,6 +81,8 @@ export const useTwapStore = create(
         srcToken: get().srcToken,
         dstToken: get().dstToken,
         wrongNetwork: get().wrongNetwork,
+        srcUsd: get().srcUsd,
+        dstUsd: get().dstUsd,
       });
     },
     updateState: (values: Partial<State>) => set({ ...values }),
@@ -90,6 +94,8 @@ export const useTwapStore = create(
         ...storeOverride,
         srcToken: get().srcToken,
         dstToken: get().dstToken,
+        srcUsd: get().srcUsd,
+        dstUsd: get().dstUsd,
       });
     },
     setLib: (lib?: TWAPLib) => set({ lib }),
@@ -193,8 +199,8 @@ interface LimitPriceStore {
   isCustom: boolean;
   hide: boolean;
   setHide: (value: boolean) => void;
-  setInvertedByDefault: (limitPrice?: string) => void;
-  defaultInverted?: boolean;
+  priceFromQueryParams: string | undefined;
+  setPriceFromQueryParams: (value?: string | null) => void;
 }
 
 export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
@@ -202,12 +208,11 @@ export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
   inverted: false,
   hide: false,
   limitPrice: undefined,
-  defaultInverted: false,
-  setInvertedByDefault: () => {
-    set({
-      inverted: true,
-      defaultInverted: true,
-    });
+  priceFromQueryParams: undefined,
+  setPriceFromQueryParams: (price) => {
+    if (price) {
+      set({ priceFromQueryParams: price });
+    }
   },
 
   setHide: (hide) => {
@@ -230,7 +235,7 @@ export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
       limitPrice,
       isCustom: true,
     });
-    const inverted = get().inverted && !get().defaultInverted;
+    const inverted = get().inverted;
     setQueryParam(
       QUERY_PARAMS.LIMIT_PRICE,
       !limitPrice || BN(limitPrice).isZero()
@@ -248,6 +253,7 @@ export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
     set({
       limitPrice: undefined,
       isCustom: false,
+      priceFromQueryParams: undefined,
     });
   },
 }));

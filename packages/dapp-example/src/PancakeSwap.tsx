@@ -279,31 +279,11 @@ const dapp: Dapp = {
 
 export default dapp;
 
-const TradePrice = (props: { inputCurrency: any; outputCurrency: any; inputAmount: string; outAmount: string; onClick: any }) => {
-  const [inverted, setInverted] = useState(false);
-
-  const { price, leftToken, rightToken } = useMemo(() => {
-    const inputAmount = amountUi(props.inputCurrency.decimals, BN(props.inputAmount));
-    const outAmount = amountUi(props.outputCurrency.decimals, BN(props.outAmount));
-
-    return {
-      price: inverted ? BN(outAmount).div(inputAmount).toNumber() : BN(inputAmount).div(outAmount).toNumber(),
-      leftToken: inverted ? props.inputCurrency.symbol : props.outputCurrency.symbol,
-      rightToken: inverted ? props.outputCurrency.symbol : props.inputCurrency.symbol,
-    };
-  }, [props.inputAmount, props.outAmount, props.inputCurrency, props.outputCurrency, inverted]);
-
-  const priceUi = hooks.useFormatNumber({ value: price });
-
-  const onClick = () => {
-    setInverted(!inverted);
-    props.onClick();
-  };
-
+const TradePrice = (props: { leftSymbol?: string; rightSymbol?: string; price?: string; onClick?: () => void }) => {
   return (
-    <div onClick={onClick}>
+    <div onClick={props.onClick}>
       <Typography>
-        1 {leftToken} = {priceUi} {rightToken}
+        1 {props.leftSymbol} = {props.price} {props.rightSymbol}
       </Typography>
     </div>
   );

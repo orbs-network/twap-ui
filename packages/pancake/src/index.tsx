@@ -118,7 +118,6 @@ const uiPreferences: TwapContextUIPreferences = {
       zIndex: 1,
     },
   },
-  limitPriceInvertedByDefault: true,
 };
 
 const config = Configs.PancakeSwap;
@@ -258,7 +257,7 @@ const useTrade = (props: AdapterProps) => {
 
   return {
     outAmount: res?.outAmount,
-    isLoading: res?.isLoading,
+    isLoading: BN(srcAmount || "0").gt(0) && res?.isLoading,
   };
 };
 
@@ -702,6 +701,7 @@ export const useShowSwapModalButton = () => {
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();
   const srcUsd = hooks.useSrcUsd().value;
   const dstUsd = hooks.useDstUsd().value;
+
   const noLiquidity = useMemo(() => {
     if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;
     return !dexAmounOut.raw || BN(dexAmounOut.raw).isZero();

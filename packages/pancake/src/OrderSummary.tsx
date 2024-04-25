@@ -1,9 +1,9 @@
 import { styled } from "@mui/material";
 import { Styles as TwapStyles, Components, store, hooks } from "@orbs-network/twap-ui";
-import { StyledOrderSummary } from "./styles";
+import { StyledMarketPriceContainer, StyledOrderSummary } from "./styles";
 import { MdArrowDownward } from "@react-icons/all-files/md/MdArrowDownward";
 import { useAdapterContext } from "./context";
-import { Price } from "./components";
+import { useCallback, useState } from "react";
 
 export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: () => void; disabled?: boolean; isLimitPanel?: boolean }) => {
   const Button = useAdapterContext().Button;
@@ -19,7 +19,7 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
           <StyledSummaryDetails>
             {isLimitPanel ? (
               <>
-                <Price />
+                <SummaryPrice />
                 <Components.OrderSummaryDetailsDeadline />
                 <Components.OrderSummaryDetailsOrderType />
                 <Components.OrderSummaryDetailsChunkSize />
@@ -27,7 +27,7 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
               </>
             ) : (
               <>
-                <Price />
+                <SummaryPrice />
                 <Components.OrderSummaryDetailsDeadline />
                 <Components.OrderSummaryDetailsOrderType />
                 <Components.OrderSummaryDetailsChunkSize />
@@ -59,6 +59,34 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
   );
 };
 
+const SummaryPrice = () => {
+  const { TradePrice: DappTradePrice } = useAdapterContext();
+  const [inverted, setInvert] = useState(false);
+  const { isLimitOrder, srcToken, dstToken } = store.useTwapStore((store) => ({
+    isLimitOrder: store.isLimitOrder,
+    srcToken: store.srcToken,
+    dstToken: store.dstToken,
+  }));
+  const { isLoading, getToggled } = hooks.useLimitPriceV2();
+  const { marketPrice } = hooks.useMarketPriceV2(inverted);
+  const price = isLimitOrder ? getToggled(inverted, true) : marketPrice?.original;
+  const value = hooks.useFormatNumber({ value: price || "", decimalScale: 5 });
+
+  const onInvert = useCallback(() => {
+    setInvert((prev) => !prev);
+  }, [setInvert]);
+
+  const leftSymbol = inverted ? dstToken?.symbol : srcToken?.symbol;
+  const rightSymbol = inverted ? srcToken?.symbol : dstToken?.symbol;
+
+  return (
+    <StyledMarketPriceContainer>
+      <Components.Base.Label>Price</Components.Base.Label>
+      <DappTradePrice onClick={onInvert} loading={isLoading} leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={value} />
+    </StyledMarketPriceContainer>
+  );
+};
+
 const StyledButtonContainer = styled(TwapStyles.StyledRowFlex)({
   width: "100%",
   button: {
@@ -81,7 +109,6 @@ const TokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
     token: isSrc ? store.srcToken : store.dstToken,
     srcAmount: store.srcAmountUi,
   }));
-  const la = hooks.useDstAmount();
   const dstAmount = hooks.useDstAmount().outAmount.ui;
 
   const _amount = isSrc ? srcAmount : dstAmount;

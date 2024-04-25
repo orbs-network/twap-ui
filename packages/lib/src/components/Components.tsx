@@ -570,12 +570,13 @@ export function LimitPriceInput({
 }
 
 export const MarketPrice = ({ className = "", hideLabel }: { className?: string; hideLabel?: boolean }) => {
-  const { invert, leftToken, rightToken, marketPrice, loading } = useMarketPriceV2();
+  const [inverted, setInverted] = useState(false);
+  const { leftToken, rightToken, marketPrice, loading } = useMarketPriceV2(inverted);
   const translations = useTwapContext().translations;
   return (
     <StyledMarketPrice justifyContent="space-between" className={`twap-market-price ${className}`}>
       {!hideLabel && <StyledText className="title">{translations.currentMarketPrice}</StyledText>}
-      <TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice?.original} toggleInverted={invert} />
+      <TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice?.original} toggleInverted={() => setInverted(!inverted)} />
     </StyledMarketPrice>
   );
 };
@@ -893,15 +894,16 @@ export const OrderSummaryLimitPriceToggle = ({ translations: _translations }: { 
 
 export const OrderSummaryPriceCompare = () => {
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+  const [inverted, setInverted] = useState(false);
   const { onInvert, limitPrice, leftToken, rightToken } = useLimitPriceV2();
 
-  const market = useMarketPriceV2();
+  const market = useMarketPriceV2(inverted);
 
   if (isLimitOrder) {
     return <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice?.original} toggleInverted={onInvert} />;
   }
 
-  return <TokenPriceCompare leftToken={market.leftToken} rightToken={market.rightToken} price={market.marketPrice?.original} toggleInverted={market.invert} />;
+  return <TokenPriceCompare leftToken={market.leftToken} rightToken={market.rightToken} price={market.marketPrice?.original} toggleInverted={() => setInverted(!inverted)} />;
 };
 
 export const OrderSummaryLimitPrice = ({ translations: _translations }: { translations?: Translations }) => {
@@ -1193,7 +1195,5 @@ export const TxSuccess = () => {
 export const LimitInputV2 = () => {
   const { onChange, limitPrice, isLoading } = useLimitPriceV2();
 
-  console.log(limitPrice.toggled);
-
-  return <NumericInput loading={isLoading} decimalScale={6} placeholder={""} onChange={onChange} value={limitPrice?.toggled} />;
+  return <NumericInput loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice?.toggled} />;
 };
