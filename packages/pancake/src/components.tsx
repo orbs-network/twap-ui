@@ -5,7 +5,7 @@ import { StyledMarketPriceContainer } from "./styles";
 import { styled } from "@mui/material";
 import { useMemo } from "react";
 
-export function Price({ onClick }: { onClick?: () => void }) {
+export function Price() {
   const { TradePrice: DappTradePrice } = useAdapterContext();
   const { srcToken, dstToken, srcAmount, isLimitOrder } = store.useTwapStore((s) => ({
     srcToken: s.srcToken,
@@ -17,7 +17,7 @@ export function Price({ onClick }: { onClick?: () => void }) {
   const { limitPrice, isLoading, inverted } = hooks.useLimitPriceV2();
   const { marketPrice } = hooks.useMarketPriceV2(inverted);
 
-  const price = hooks.useFormatNumber({ value: isLimitOrder ? limitPrice?.toggled : marketPrice?.toggled, decimalScale: 4 });
+  const price = hooks.useFormatNumber({ value: isLimitOrder ? limitPrice?.toggled : marketPrice?.toggled, decimalScale: 3, disableDynamicDecimals: false });
 
   if (!DappTradePrice) {
     return <Components.OrderSummaryLimitPrice />;
@@ -34,7 +34,7 @@ export function Price({ onClick }: { onClick?: () => void }) {
     <StyledMarketPriceContainer>
       <Components.Base.Label>Price</Components.Base.Label>
       <div style={{ opacity: isLoading ? 0 : 1 }}>
-        <DappTradePrice onClick={onClick || (() => {})} loading={isLoading} leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={price} />
+        <DappTradePrice leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={price} />
       </div>
       <StyledLoader loading={isLoading ? 1 : 0} />
     </StyledMarketPriceContainer>

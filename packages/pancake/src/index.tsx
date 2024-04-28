@@ -178,7 +178,7 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
       </Card.Header>
       <Card.Body editable={true}>
         <Styles.StyledColumnFlex width="auto" gap={1} style={{ alignItems: "flex-end" }}>
-          <StyledTokenPanelInput dstDecimalScale={3} isSrc={isSrcToken} />
+          <StyledTokenPanelInput dstDecimalScale={dstToken?.decimals || 3} isSrc={isSrcToken} />
           <StyledUSD decimalScale={2} isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
         </Styles.StyledColumnFlex>
         {isSrcToken && <SrcTokenPercentSelector />}
@@ -363,7 +363,7 @@ const LimitPanel = () => {
         <TopPanel />
         <TwapStyles.StyledColumnFlex>
           <LimitPrice limitOnly={true} />
-          <Price onClick={onInvert} />
+          <Price />
         </TwapStyles.StyledColumnFlex>
         <OpenConfirmationModalButton />
       </StyledColumnFlex>
@@ -374,14 +374,12 @@ const LimitPanel = () => {
 };
 
 const TWAPPanel = () => {
-  const { onInvert } = hooks.useLimitPriceV2();
-
   return (
     <div className="twap-container">
       <StyledColumnFlex>
         <TopPanel />
         <LimitPrice />
-        <Price onClick={onInvert} />
+        <Price />
         <TotalTrades />
         <TradeSize />
         <TradeInterval />
@@ -472,7 +470,8 @@ const TradeInterval = () => {
 
 const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
   const isLimitOrder = store.useTwapStore((store) => store.isLimitOrder);
-  const { onChange, limitPrice } = hooks.useLimitPriceV2();
+  const { onInvert, isLoading } = hooks.useLimitPriceV2();
+  const { TradePriceToggle } = useAdapterContext();
 
   return (
     <StyledLimitPrice>
@@ -490,7 +489,10 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
                 </StyledReset>
               </Components.ResetLimitButton>
             </StyledLimitPriceLabel>
-            {!limitOnly && <Components.LimitPriceToggle />}
+            <TwapStyles.StyledRowFlex style={{ width: "auto", gap: 0 }}>
+              {!limitOnly && <Components.LimitPriceToggle />}
+              <TradePriceToggle onClick={onInvert} loading={!!isLoading} />
+            </TwapStyles.StyledRowFlex>
           </TwapStyles.StyledRowFlex>
         </Card.Header>
         {isLimitOrder && (

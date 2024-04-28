@@ -17,6 +17,7 @@ export interface AdapterProps extends TWAPProps {
   SwapTransactionReceiptModalContent?: any;
   AddToWallet?: any;
   TradePrice?: any;
+  TradePriceToggle: FC<{ onClick: () => void; loading: boolean }>;
 }
 
 const AdapterContext = createContext({} as AdapterProps);

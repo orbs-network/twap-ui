@@ -201,6 +201,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         SwapPendingModalContent={SwapPendingModalContent}
         SwapTransactionReceiptModalContent={SwapPendingModalContent}
         TradePrice={TradePrice}
+        TradePriceToggle={TradePriceToggle}
       />
     </StyledPancakeTwap>
   );
@@ -279,13 +280,15 @@ const dapp: Dapp = {
 
 export default dapp;
 
-const TradePrice = (props: { leftSymbol?: string; rightSymbol?: string; price?: string; onClick?: () => void }) => {
+const TradePriceToggle = ({ onClick }: { onClick: () => void }) => {
+  return <button onClick={onClick}>T</button>;
+};
+
+const TradePrice = (props: { leftSymbol?: string; rightSymbol?: string; price?: string }) => {
   return (
-    <div onClick={props.onClick}>
-      <Typography>
-        1 {props.leftSymbol} = {props.price} {props.rightSymbol}
-      </Typography>
-    </div>
+    <Typography>
+      1 {props.leftSymbol} = {props.price} {props.rightSymbol}
+    </Typography>
   );
 };
 

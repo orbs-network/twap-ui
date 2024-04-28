@@ -767,12 +767,18 @@ export const useFormatNumber = ({
     return !count ? decimalScale : count + decimalScale;
   }, [value, decimalScale]);
 
+  const isBiggerThan1 = useMemo(() => {
+    return BN(value || "0").gt(1);
+  }, [value]);
+
+  const _disableDynamicDecimals = disableDynamicDecimals || isBiggerThan1;
+
   const result = useNumericFormat({
     allowLeadingZeros: true,
     thousandSeparator: ",",
     displayType: "text",
     value: value || "",
-    decimalScale: disableDynamicDecimals ? decimalScale : decimals,
+    decimalScale: _disableDynamicDecimals ? decimalScale : decimals,
     prefix,
     suffix,
   });
@@ -1338,9 +1344,9 @@ export const useLimitPriceV2 = () => {
 
   const limitPrice = useMemo(() => {
     const getOriginal = (percent: number) => {
-      if (limitPriceStore.isCustom && limitPriceStore.inverted) {
+      if (limitPriceStore.limitPrice && limitPriceStore.isCustom && limitPriceStore.inverted) {
         return BN(1)
-          .dividedBy(limitPriceStore.limitPrice || "0")
+          .dividedBy(limitPriceStore.limitPrice || "")
           .toString();
       }
       if (limitPriceStore.isCustom) {
@@ -1357,17 +1363,12 @@ export const useLimitPriceV2 = () => {
     const toggled = getToggled(limitPriceStore.inverted);
     const original = getOriginal(0.95);
     return {
-      toggled: BN(toggled || "0").isZero()
-        ? ""
-        : limitPriceStore.isCustom
-        ? toggled
-        : BN(toggled || "")
-            .decimalPlaces(6)
-            .toString(),
+      toggled: BN(toggled || "0").isZero() ? "" : toggled,
       original: BN(original || "0").isZero() ? "" : original,
     };
   }, [marketPrice, enableQueryParams, limitPriceStore.inverted, limitPriceStore.limitPrice, limitPriceStore.isCustom, limitPriceStore.priceFromQueryParams]);
-
+  console.log({limitPrice});
+  
   const onInvert = useCallback(() => {
     limitPriceStore.toggleInverted();
   }, [limitPriceStore.toggleInverted, limitPrice]);
@@ -1441,7 +1442,7 @@ export const useFillWarning = () => {
     if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) return translation.insufficientFunds;
     if (chunkSize.isZero()) return translation.enterTradeSize;
     if (durationUi.amount === 0) return translation.enterMaxDuration;
-    if (isLimitOrder && BN(dstAmountOut || "").gt(0) && BN(limitPrice?.original || "0").isZero()) return translation.insertLimitPriceWarning;
+    if (isLimitOrder && BN(dstAmountOut || "").gt(0) && BN(limitPrice?.original || "0").isZero()) return translation.placeOrder || "Place order";
     const valuesValidation = lib?.validateOrderInputs(srcToken!, dstToken!, srcAmount, chunkSize, dstMinAmountOut, deadline, fillDelayMillis, srcUsd);
 
     if (valuesValidation === OrderInputValidation.invalidTokens) {
@@ -1638,20 +1639,22 @@ export const useSrcChunkAmount = () => {
 };
 
 export const useDurationUi = () => {
-  const { lib, fillDelayUiMillis } = useTwapStore((s) => ({
+  const { lib, fillDelayUiMillis, customDuration } = useTwapStore((s) => ({
     lib: s.lib,
     fillDelayUiMillis: s.getFillDelayUiMillis(),
+    customDuration: s.customDuration,
   }));
   const chunks = useChunks();
   return useMemo(() => {
     if (!lib) {
       return { resolution: TimeResolution.Minutes, amount: 0 };
     }
+    if (customDuration.amount !== undefined) return customDuration;
 
     const _millis = fillDelayUiMillis * 2 * chunks;
     const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= _millis) || TimeResolution.Minutes;
     return { resolution, amount: Number(BN(_millis / resolution).toFixed(2)) };
-  }, [lib, chunks, fillDelayUiMillis]);
+  }, [lib, chunks, fillDelayUiMillis, customDuration]);
 };
 
 export const useDurationMillis = () => {
