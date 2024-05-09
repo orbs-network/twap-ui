@@ -1,4 +1,4 @@
-import { GlobalStyles } from "@mui/material";
+import { GlobalStyles, Typography } from "@mui/material";
 import {
   Components,
   Translations,
@@ -17,10 +17,12 @@ import { Box } from "@mui/system";
 import { createContext, memo, ReactNode, useCallback, useContext, useState } from "react";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
-import { configureStyles } from "./styles";
+import { configureStyles, StyledLimitPrice, StyledLimitPriceInput, StyledLimitPriceInverter, StyledReset, StyledTradePrice } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
-import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
+import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
+import { TiArrowSync } from "@react-icons/all-files/ti/TiArrowSync";
 
+import BN from "bignumber.js";
 const storeOverride = {
   isLimitOrder: true,
   chunks: 1,
@@ -187,12 +189,29 @@ interface Props extends QuickSwapTWAPProps {
   limit?: boolean;
 }
 
+const useTrade = (props: Props) => {
+  const { srcToken, toToken, srcAmount } = store.useTwapStore((s) => ({
+    srcToken: s.srcToken?.address,
+    toToken: s.dstToken?.address,
+    srcAmount: s.getSrcAmount().toString(),
+  }));
+
+  const res = props.useTrade!(srcToken, toToken, srcAmount === "0" ? undefined : srcAmount);
+
+  return {
+    outAmount: res?.outAmount,
+    isLoading: BN(srcAmount || "0").gt(0) && res?.isLoading,
+  };
+};
+
 const TWAP = (props: Props) => {
   const globalStyles = useGlobalStyles(props.isProMode, props.isDarkTheme);
 
   const connect = useCallback(() => {
     props.connect();
   }, []);
+
+  const trade = useTrade(props);
 
   return (
     <Box className="adapter-wrapper">
@@ -213,7 +232,8 @@ const TWAP = (props: Props) => {
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
         usePriceUSD={props.usePriceUSD}
-        useTrade={props.useTrade}
+        dstAmountOut={trade.outAmount}
+        dstAmountLoading={trade.isLoading}
       >
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>
@@ -231,9 +251,8 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <Components.MarketPrice />
       <TwapStyles.StyledColumnFlex gap={12}>
-        <LimitPrice limit={true} />
+        <LimitPrice limitOnly={true} />
         <Components.SubmitButton isMain />
       </TwapStyles.StyledColumnFlex>
       <OrderSummary>
@@ -255,7 +274,6 @@ const TWAPPanel = () => {
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <Components.MarketPrice />
       <TwapStyles.StyledColumnFlex gap={12}>
         <LimitPrice />
         <TradeSize />
@@ -315,20 +333,34 @@ const TradeInterval = () => {
   );
 };
 
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
+export { Orders, TWAP };
+
+const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
+  const isLimitOrder = store.useTwapStore((store) => store.isLimitOrder);
+  const { onInvert } = hooks.useLimitPriceV2();
+  const isDarkMode = useAdapterContext().isDarkTheme;
+
   return (
-    <>
-      <Components.Base.Card className="twap-limit-price">
-        <TwapStyles.StyledColumnFlex>
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <Components.Labels.LimitPriceLabel />
-            {!limit && <Components.LimitPriceToggle />}
-          </TwapStyles.StyledRowFlex>
-          <Components.LimitPriceInput placeholder="0" />
-        </TwapStyles.StyledColumnFlex>
-      </Components.Base.Card>
-    </>
+    <StyledLimitPrice>
+      <TwapStyles.StyledRowFlex justifyContent="space-between">
+        <TwapStyles.StyledRowFlex style={{ width: "auto", minHeight: 35 }}>
+          <Components.Labels.LimitPriceLabel />
+          <Components.ResetLimitButton>
+            <StyledReset isDarkMode={isDarkMode ? 1 : 0}>
+              <Typography>Reset</Typography>
+            </StyledReset>
+          </Components.ResetLimitButton>
+        </TwapStyles.StyledRowFlex>
+        <TwapStyles.StyledRowFlex style={{ width: "auto", gap: 14, alignItems: "center" }}>
+          {!limitOnly && <Components.LimitPriceToggle />}
+          <StyledLimitPriceInverter onClick={onInvert}>
+            <TiArrowSync />
+          </StyledLimitPriceInverter>
+        </TwapStyles.StyledRowFlex>
+      </TwapStyles.StyledRowFlex>
+
+      {isLimitOrder && <StyledLimitPriceInput />}
+      <StyledTradePrice />
+    </StyledLimitPrice>
   );
 };
-
-export { Orders, TWAP };

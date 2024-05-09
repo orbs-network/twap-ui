@@ -77,6 +77,11 @@ const useDecimals = (fromToken?: string, toToken?: string) => {
   return { fromTokenDecimals, toTokenDecimals };
 };
 
+const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
+  const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken, toToken);
+  return useTrade(fromToken, toToken, amount, fromTokenDecimals, toTokenDecimals);
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
@@ -94,11 +99,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     },
     [_.size(dappTokens)]
   );
-
-  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
-    const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken, toToken);
-    return useTrade(fromToken, toToken, amount, fromTokenDecimals, toTokenDecimals);
-  };
 
   return (
     <TWAP

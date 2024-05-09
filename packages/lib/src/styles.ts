@@ -94,9 +94,9 @@ export const StyledOrdersTab = styled(Tab)({
   textTransform: "unset",
   fontFamily: "inherit",
 
-  "@media(max-width: 600px)": {
-    padding: "0px 6px!important",
-    width: "unset",
+  "@media(max-width: 500px)": {
+    padding: "0px 3px!important",
+    fontSize: 12,
   },
 });
 

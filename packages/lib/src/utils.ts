@@ -5,6 +5,7 @@ import { QUERY_PARAMS } from "./consts";
 import BN from "bignumber.js";
 import _ from "lodash";
 import { useTwapStore } from "./store";
+import { CHAINS_SUPPORTS_GRAPH_HISTORY } from "./config";
 export const logger = (...args: any[]) => {
   const query = new URLSearchParams(window.location.search);
   const debug = query.get("debug");
@@ -49,6 +50,10 @@ export const amountUiV2 = (decimals?: number, amount?: string) => {
   const percision = BN(10).pow(decimals || 0);
   return BN(amount).times(percision).idiv(percision).div(percision).toString();
 };
+export const amountBNV2 = (decimals?: number, amount?: string) => {
+  if (!decimals || !amount) return "";
+  return parsebn(amount).times(BN(10).pow(decimals)).decimalPlaces(0).toString();
+};
 
 export const fillDelayText = (value: number, translations: Translations) => {
   if (!value) {
@@ -84,7 +89,7 @@ export const handleFillDelayText = (text: string, minutes: number) => {
 export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) => {
   if (!tokensList || !addressOrSymbol) return;
 
-  if (_.isArray(tokensList)) return _.find(tokensList, (token) => eqIgnoreCase(addressOrSymbol, token.address) || addressOrSymbol === token?.symbol);
+  if (_.isArray(tokensList)) return _.find(tokensList, (token) => eqIgnoreCase(addressOrSymbol, token.address) || addressOrSymbol.toLowerCase() === token?.symbol.toLowerCase());
   if (_.isObject(tokensList)) return tokensList[addressOrSymbol as keyof typeof tokensList];
 };
 
@@ -140,4 +145,8 @@ export const devideCurrencyAmounts = ({ srcAmount, dstAmount, srcToken, dstToken
   if (!_dstAmount || !_srcAmount || _srcAmount?.isZero() || _dstAmount?.isZero()) return;
 
   return BN(_dstAmount).div(_srcAmount).toString();
+};
+
+export const supportsTheGraphHistory = (chainId?: number) => {
+  return chainId ? CHAINS_SUPPORTS_GRAPH_HISTORY.includes(chainId) : false;
 };

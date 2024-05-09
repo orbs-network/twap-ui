@@ -30,7 +30,7 @@ import { MIN_NATIVE_BALANCE, QUERY_PARAMS, REFETCH_BALANCE, REFETCH_GAS_PRICE, R
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
-import { amountBN, amountUi, amountUiV2, devideCurrencyAmounts, getQueryParam, getTokenFromTokensList, logger, safeInteger, setQueryParam } from "./utils";
+import { amountBN, amountBNV2, amountUi, amountUiV2, devideCurrencyAmounts, getTokenFromTokensList, safeInteger, setQueryParam, supportsTheGraphHistory } from "./utils";
 
 /**
  * Actions
@@ -412,42 +412,39 @@ export const useHistoryPrice = (order: OrderUI) => {
 };
 
 export const useLoadingState = () => {
-  const srcToken = useTwapStore((store) => store.srcToken);
-  const dstToken = useTwapStore((store) => store.dstToken);
   const srcUSD = useSrcUsd();
   const dstUSD = useDstUsd();
   const srcBalance = useSrcBalance();
-
   const dstBalance = useDstBalance();
 
   return {
-    srcUsdLoading: (!srcToken && false) || srcUSD.isLoading || srcUSD.value?.isZero(),
-    dstUsdLoading: (dstToken && !dstUSD.value) || dstUSD.isLoading || dstUSD.value?.isZero(),
+    srcUsdLoading: srcUSD.isLoading,
+    dstUsdLoading: dstUSD.isLoading,
     srcBalanceLoading: srcBalance.isLoading,
     dstBalanceLoading: dstBalance.isLoading,
   };
 };
 
 export const useSrcUsd = () => {
-  const { value } = useTwapStore((store) => ({
+  const { value, lib } = useTwapStore((store) => ({
     value: store.srcUsd || zero,
-    isLoading: store.srcUsdLoading,
+    lib: store.lib,
   }));
 
   return {
     value,
-    isLoading: value.isZero(),
+    isLoading: value.isZero() && !!lib,
   };
 };
 
 export const useDstUsd = () => {
-  const { value } = useTwapStore((store) => ({
+  const { value, lib } = useTwapStore((store) => ({
     value: store.dstUsd || zero,
-    isLoading: store.dstUsdLoading,
+    lib: store.lib,
   }));
   return {
     value,
-    isLoading: value.isZero(),
+    isLoading: value.isZero() && !!lib,
   };
 };
 
@@ -599,13 +596,14 @@ export const useOrdersHistoryQuery = () => {
     QUERY_KEY,
     async ({ signal }) => {
       const [orders, fills] = await Promise.all([lib!.getAllOrders(), getFills(signal)]);
-      const isBsc = lib?.config.chainId === networks.bsc.id;
+      const isTheGrapth = supportsTheGraphHistory(lib?.config.chainId);
 
       const parsedOrders = _.map(orders, (o): ParsedOrder => {
         const dstAmount = fills?.[o.id]?.dstAmountOut;
         const srcFilled = fills?.[o.id]?.srcAmountIn;
         const dollarValueIn = fills?.[o.id]?.dollarValueIn;
         const dollarValueOut = fills?.[o.id]?.dollarValueOut;
+
         const srcAmountIn = o.ask.srcAmount;
         const bscProgress =
           !srcFilled || !srcAmountIn
@@ -613,11 +611,11 @@ export const useOrdersHistoryQuery = () => {
             : BN(srcFilled || "0")
                 .dividedBy(srcAmountIn || "0")
                 .toNumber();
-        const _progress = isBsc ? bscProgress : lib!.orderProgress(o);
+        const _progress = isTheGrapth ? bscProgress : lib!.orderProgress(o);
         const progress = !_progress ? 0 : _progress < 0.99 ? _progress * 100 : 100;
         const status = () => {
           if (progress === 100) return Status.Completed;
-          if (isBsc) {
+          if (isTheGrapth) {
             // Temporary fix to show open order until the graph is synced.
             if ((o.status === 2 && progress < 100) || o.status > Date.now() / 1000) return Status.Open;
           }
@@ -660,28 +658,25 @@ export const useOrdersHistoryQuery = () => {
 
 export const useSetTokensFromDapp = () => {
   const context = useTwapContext();
-
   const srcTokenAddressOrSymbol = context.srcToken;
   const dstTokenAddressOrSymbol = context.dstToken;
 
-  const setSrcToken = useTwapStore((state) => state.setSrcToken);
-  const setDstToken = useTwapStore((state) => state.setDstToken);
+  const { setSrcToken, setDstToken } = useTwapStore((state) => ({
+    setSrcToken: state.setSrcToken,
+    setDstToken: state.setDstToken,
+  }));
   const tokensList = useTokenList();
-
   const tokensReady = _.size(tokensList) > 0;
-
   const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
 
   return useCallback(() => {
     if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
 
     if (srcTokenAddressOrSymbol) {
-      const srcToken = getTokenFromTokensList(tokensList, srcTokenAddressOrSymbol);
-      setSrcToken(srcToken);
+      setSrcToken(getTokenFromTokensList(tokensList, srcTokenAddressOrSymbol));
     }
     if (dstTokenAddressOrSymbol) {
-      const dstToken = getTokenFromTokensList(tokensList, dstTokenAddressOrSymbol);
-      setDstToken(dstToken);
+      setDstToken(getTokenFromTokensList(tokensList, dstTokenAddressOrSymbol));
     }
   }, [srcTokenAddressOrSymbol, dstTokenAddressOrSymbol, tokensReady, wrongNetwork]);
 };
@@ -699,7 +694,7 @@ export const useOrderPastEvents = (order?: ParsedOrder, enabled?: boolean) => {
   const [haveValue, setHaveValue] = useState(false);
 
   const _enabled = haveValue ? true : !!enabled;
-
+  const disableEvents = supportsTheGraphHistory(lib?.config.chainId);
   return useQuery(
     ["useOrderPastEvents", order?.order.id, lib?.maker, order?.ui.progress],
     async () => {
@@ -728,7 +723,7 @@ export const useOrderPastEvents = (order?: ParsedOrder, enabled?: boolean) => {
       return dstAmountOut;
     },
     {
-      enabled: !!lib && !!_enabled && !!order && lib.config.chainId !== networks.bsc.id,
+      enabled: !!lib && !!_enabled && !!order && !disableEvents,
       retry: 5,
       staleTime: Infinity,
       onSuccess: () => setHaveValue(true),
@@ -837,8 +832,8 @@ export const useSwitchTokens = () => {
       srcAmountUi: "",
     });
     onReset();
-    const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
-    const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
+    const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address) || getTokenFromTokensList(dappTokens, srcToken?.symbol);
+    const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address) || getTokenFromTokensList(dappTokens, dstToken?.symbol);
     srcToken && onSrcTokenSelected?.(_dstToken);
     dstToken && onDstTokenSelected?.(_srcToken);
   }, [dstAmount, _.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol, onSrcTokenSelected, onDstTokenSelected, onReset, onInvert]);
@@ -913,20 +908,23 @@ export const useDappRawSelectedTokens = () => {
 
 export const useSubmitButton = (isMain?: boolean, _translations?: Translations) => {
   const translations = useTwapContext()?.translations || _translations;
-  const { maker, shouldWrap, shouldUnwrap, wrongNetwork, disclaimerAccepted, setShowConfirmation, showConfirmation, createOrderLoading, isLimitOrder } = useTwapStore((store) => ({
-    maker: store.lib?.maker,
-    shouldWrap: store.shouldWrap(),
-    shouldUnwrap: store.shouldUnwrap(),
-    wrongNetwork: store.wrongNetwork,
-    disclaimerAccepted: store.disclaimerAccepted,
-    setShowConfirmation: store.setShowConfirmation,
-    showConfirmation: store.showConfirmation,
-    createOrderLoading: store.loading,
-    isLimitOrder: store.isLimitOrder,
-  }));
+  const { maker, shouldWrap, shouldUnwrap, wrongNetwork, disclaimerAccepted, setShowConfirmation, showConfirmation, createOrderLoading, srcAmount, srcUsd, dstUsd } = useTwapStore(
+    (store) => ({
+      maker: store.lib?.maker,
+      shouldWrap: store.shouldWrap(),
+      shouldUnwrap: store.shouldUnwrap(),
+      wrongNetwork: store.wrongNetwork,
+      disclaimerAccepted: store.disclaimerAccepted,
+      setShowConfirmation: store.setShowConfirmation,
+      showConfirmation: store.showConfirmation,
+      createOrderLoading: store.loading,
+      srcAmount: store.getSrcAmount().toString(),
+      srcUsd: store.srcUsd?.toString(),
+      dstUsd: store.dstUsd?.toString(),
+    })
+  );
   const reset = useResetStore();
   const outAmountLoading = useDstAmount().isLoading;
-  const { srcUsdLoading, dstUsdLoading } = useLoadingState();
   const { mutate: approve, isLoading: approveLoading } = useApproveToken();
   const { mutate: createOrder } = useCreateOrder(false, reset);
   const allowance = useHasAllowanceQuery();
@@ -935,9 +933,8 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
   const connect = useTwapContext()?.connect;
   const wizardStore = useWizardStore();
   const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
-  const { limitPrice } = useLimitPriceV2();
-  const waitForLimitPrice = !limitPrice && isLimitOrder;
   const warning = useFillWarning();
+  const noLiquidity = useNoLiquidity();
 
   if (wrongNetwork)
     return {
@@ -953,9 +950,26 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
       loading: false,
       disabled: false,
     };
-  if (outAmountLoading || waitForLimitPrice) {
-    return { text: "", onClick: undefined, loading: true, disabled: true };
+
+  if (!srcAmount || BN(srcAmount || "0").isZero()) {
+    return {
+      text: translations.enterAmount,
+      disabled: true,
+    };
   }
+
+  if (outAmountLoading || BN(srcUsd || "0").isZero() || BN(dstUsd || "0").isZero() || allowance.isLoading) {
+    return { text: translations.outAmountLoading, onClick: undefined, disabled: true };
+  }
+
+  if (noLiquidity) {
+    return {
+      text: translations.noLiquidity,
+      disabled: true,
+      loading: false,
+    };
+  }
+
   if (warning)
     return {
       text: warning,
@@ -993,9 +1007,6 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
     };
   }
 
-  if (allowance.isLoading || srcUsdLoading || dstUsdLoading) {
-    return { text: "", onClick: undefined, loading: true, disabled: true };
-  }
   if (allowance.data === false)
     return {
       text: translations.approve,
@@ -1033,12 +1044,12 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
     const srcToken = o.ui.srcToken;
     const dstToken = o.ui.dstToken;
     if (!srcToken || !dstToken) return;
-    const isBsc = lib.config.chainId === networks.bsc.id;
+    const isTheGrapth = supportsTheGraphHistory(lib.config.chainId);
 
     const isMarketOrder = lib.isMarketOrder(o.order);
     const dstPriceFor1Src = lib.dstPriceFor1Src(srcToken, dstToken, srcUsd, dstUsd, o.order.ask.srcBidAmount, o.order.ask.dstMinAmount);
-    const dstAmount = isBsc ? o.ui.dstAmount : dstAmountOutFromEvents?.toString();
-    const srcFilledAmount = isBsc ? o.ui.srcFilledAmount : o.order.srcFilledAmount;
+    const dstAmount = isTheGrapth ? o.ui.dstAmount : dstAmountOutFromEvents?.toString();
+    const srcFilledAmount = isTheGrapth ? o.ui.srcFilledAmount : o.order.srcFilledAmount;
 
     return {
       order: o.order,
@@ -1201,6 +1212,7 @@ const useGetFillsCallback = () => {
 
         fills.push(...grouped);
 
+
         if (orderFilleds.length >= LIMIT) {
           page++;
           await fetchFills();
@@ -1212,7 +1224,6 @@ const useGetFillsCallback = () => {
       await fetchFills();
 
       const res = _.mapValues(_.keyBy(fills, "TWAP_id"));
-      logger("fills", res);
       return res;
     },
     [lib]
@@ -1284,24 +1295,6 @@ export const useMarketPriceV2 = (inverted?: boolean) => {
   };
 };
 
-export const usePriceDisplay = (price?: string | number) => {
-  const [inverted, setInverted] = useState(false);
-
-  const invert = useCallback(() => {
-    setInverted((prev) => !prev);
-  }, [price]);
-
-  const _price = useMemo(() => {
-    if (!price) return;
-    return inverted ? BN(1).div(price).toString() : price;
-  }, [inverted, price]);
-
-  return {
-    invert,
-    price: _price,
-  };
-};
-
 export const useLimitPriceV2 = () => {
   const limitPriceStore = useLimitPriceStore();
   const { enableQueryParams, dstAmountLoading } = useTwapContext();
@@ -1367,8 +1360,7 @@ export const useLimitPriceV2 = () => {
       original: BN(original || "0").isZero() ? "" : original,
     };
   }, [marketPrice, enableQueryParams, limitPriceStore.inverted, limitPriceStore.limitPrice, limitPriceStore.isCustom, limitPriceStore.priceFromQueryParams]);
-  console.log({limitPrice});
-  
+
   const onInvert = useCallback(() => {
     limitPriceStore.toggleInverted();
   }, [limitPriceStore.toggleInverted, limitPrice]);
@@ -1449,8 +1441,8 @@ export const useFillWarning = () => {
       return translation.selectTokens;
     }
 
-    if (valuesValidation === OrderInputValidation.invalidSmallestSrcChunkUsd) {
-      return translation.tradeSizeMustBeEqual;
+    if (valuesValidation === OrderInputValidation.invalidSmallestSrcChunkUsd && !!lib) {
+      return translation.tradeSizeMustBeEqual.replace("{minChunkSizeUsd}", lib.config.minChunkSizeUsd.toString());
     }
     if (fillDelayWarning) {
       return translation.fillDelayWarning;
@@ -1481,6 +1473,13 @@ export const useAmountUi = (decimals?: number, value?: string) => {
   return useMemo(() => {
     if (!decimals || !value) return;
     return amountUiV2(decimals, value);
+  }, [decimals, value]);
+};
+
+export const useAmountBN = (decimals?: number, value?: string) => {
+  return useMemo(() => {
+    if (!decimals || !value) return;
+    return amountBNV2(decimals, value);
   }, [decimals, value]);
 };
 
@@ -1771,4 +1770,46 @@ export const useSrcAmountWaitForDst = () => {
   }, [dstAmountOut, dstAmountLoading]);
 
   return value;
+};
+
+export const useNoLiquidity = () => {
+  const { srcAmount } = useTwapStore((s) => ({
+    srcAmount: s.getSrcAmount().toString(),
+  }));
+  const { isLoading: dstAmountLoading, dexAmounOut } = useDstAmount();
+
+  return useMemo(() => {
+    if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;
+    return !dexAmounOut.raw || BN(dexAmounOut.raw).isZero();
+  }, [dexAmounOut.raw, dstAmountLoading, srcAmount]);
+};
+
+export const usePriceDisplay = () => {
+  const [inverted, setInvert] = useState(false);
+
+  const { isLimitOrder, srcToken, dstToken } = useTwapStore((store) => ({
+    isLimitOrder: store.isLimitOrder,
+    srcToken: store.srcToken,
+    dstToken: store.dstToken,
+  }));
+  const { getToggled, isLoading } = useLimitPriceV2();
+  const { marketPrice } = useMarketPriceV2(inverted);
+  const price = isLimitOrder ? getToggled(inverted, true) : marketPrice?.original;
+  const value = useFormatNumber({ value: price || "", decimalScale: 5 });
+
+  const onInvert = useCallback(() => {
+    setInvert((prev) => !prev);
+  }, [setInvert]);
+
+  const leftToken = inverted ? dstToken : srcToken;
+  const rightToken = inverted ? srcToken : dstToken;
+
+  return {
+    price: value,
+    leftToken,
+    rightToken,
+    inverted,
+    onInvert,
+    isLoading,
+  };
 };

@@ -56,9 +56,7 @@ export const StyledPreview = styled(Box)({
   "& .usd": {
     fontSize: 14,
   },
-  "@media(max-width: 600px)": {
-    zoom: 0.85,
-  },
+  "@media(max-width: 600px)": {},
 });
 
 export const StyledSeperator = styled(Box)({

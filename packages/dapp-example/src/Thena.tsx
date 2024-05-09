@@ -1,34 +1,38 @@
-import { StyledModalContent, StyledThenaLayout, StyledThenaGradient, StyledThenaBox, StyledThena } from "./styles";
+import { StyledModalContent, StyledThenaLayout, StyledThenaBox, StyledThena } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-thena";
-import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
+import { hooks } from "@orbs-network/twap-ui";
+
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { erc20s, isNativeAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
-
+import BN from "bignumber.js";
 const config = Configs.Thena;
-
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png";
 
-const pasrseListToken = (tokenList?: any[]) => {
-  return tokenList?.map(({ symbol, address, decimals, logoURI, name }: any) => ({
+const pasrseListToken = (tokenList?: any) => {
+  return tokenList?.tokens.map(({ symbol, address, decimals, logoURI, name, price }: any) => ({
     decimals,
     symbol,
     name,
     address,
-    logoURI: isNativeAddress(address) ? nativeTokenLogo : logoURI.replace("_1", ""),
+    logoURI: isNativeAddress(address) ? nativeTokenLogo : logoURI,
+    price,
   }));
 };
 export const useDappTokens = () => {
   return useGetTokens({
     chainId: config.chainId,
     parse: pasrseListToken,
-    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
-    url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/bsc.json",
+    modifyList: (tokens: any) => {
+      return [config.nativeToken, ...tokens];
+    },
+    url: "https://lhthena.s3.us-east-2.amazonaws.com/token-list-lh.json",
     baseAssets: erc20s.bsc,
   });
 };
@@ -71,24 +75,58 @@ const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: Tok
   );
 };
 
+const _useTrade = (fromToken?: any, toToken?: any, amount?: string) => {
+  const _amount = hooks.useAmountBN(fromToken?.decimals, amount);
+
+  return useTrade(fromToken?.address, toToken?.address, _amount, fromToken?.decimals, toToken?.decimals);
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
   const priceUsd = useGetPriceUsdCallback();
+  const [fromToken, setFromToken] = useState<any>(undefined);
+  const [dstToken, setDstToken] = useState<any>(undefined);
+  const [amount, setAmount] = useState("");
+
+  useEffect(() => {
+    if (!dappTokens) return;
+    if (!fromToken) {
+      setFromToken(dappTokens[1]);
+    }
+    if (!dstToken) {
+      setDstToken(dappTokens[2]);
+    }
+  }, [dappTokens, fromToken, dstToken]);
+
+  const connector = useMemo(() => {
+    return {
+      getProvider: () => library,
+    };
+  }, [library]);
+
+  const trade = _useTrade(fromToken, dstToken, amount);
+
   return (
     <TWAP
       connect={connect}
       account={account}
-      srcToken="BNB"
-      dstToken="0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"
+      srcToken={fromToken?.address}
+      dstToken={dstToken?.address}
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}
       isDarkTheme={isDarkTheme}
       limit={limit}
       priceUsd={priceUsd}
+      connector={connector}
+      onSrcTokenSelected={setFromToken}
+      onDstTokenSelected={setDstToken}
+      setFromAmount={setAmount}
+      outAmount={trade.outAmount}
+      outAmountLoading={BN(amount || "0").gt(0) && trade.isLoading}
     />
   );
 };
@@ -104,17 +142,14 @@ const DappComponent = () => {
     <StyledThena isDarkMode={isDarkTheme ? 1 : 0}>
       <StyledThenaLayout name={config.name}>
         <UISelector select={setSelected} selected={selected} limit={true} />
-        <StyledThenaGradient>
-          <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0}>
-            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-          </StyledThenaBox>
-        </StyledThenaGradient>
 
-        <StyledThenaGradient>
-          <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0}>
-            <Orders />
-          </StyledThenaBox>
-        </StyledThenaGradient>
+        <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0}>
+          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+        </StyledThenaBox>
+
+        <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0}>
+          <Orders />
+        </StyledThenaBox>
       </StyledThenaLayout>
     </StyledThena>
   );

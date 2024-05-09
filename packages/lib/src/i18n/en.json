@@ -44,7 +44,7 @@
   "enterTradeSize": "Enter trade size",
   "enterMaxDuration": "Enter max duration",
   "enterTradeInterval": "Enter trade interval",
-  "tradeSizeMustBeEqual": "Trade size must be equal to at least 10 USD",
+  "tradeSizeMustBeEqual": "Trade size must be equal to at least {minChunkSizeUsd} USD",
   "tradeSize": "Trade size",
   "tradeInterval": "Trade interval",
   "maxDuration": "Max duration",
@@ -58,7 +58,7 @@
   "limitPrice": "Limit price",
   "marketPrice": "Market Price",
   "max": "Max",
-  "currentMarketPrice": "Current market price",
+  "currentMarketPrice": "Market price",
   "from": "From",
   "to": "To",
   "none": "None",
@@ -94,5 +94,7 @@
   "fillDelayWarning": "Invalid trade interval",
   "fillDelayWarningTooltip": "Trade interval must be higher than {{minutes}} minutes to allow time for bidder auction and block settlement.",
   "viewOrders": "View Order History",
-  "view": "View"
+  "view": "View",
+  "noLiquidity": "Insufficient liquidity for this trade",
+  "outAmountLoading": "Searching for the best price"
 }

@@ -1,11 +1,15 @@
-import { useMediaQuery } from "@mui/material";
+import { Menu, styled, useMediaQuery } from "@mui/material";
 import { Status } from "@orbs-network/twap";
 import _ from "lodash";
-import { ParsedOrder, Translations, useTwapContext } from "..";
+import * as React from "react";
+import MenuItem from "@mui/material/MenuItem";
+import { ParsedOrder, Styles, Translations, useTwapContext } from "..";
 import { useOrdersHistoryQuery, useOrdersTabs } from "../hooks";
 import { useOrdersStore } from "../store";
-import { StyledOrdersLists, StyledOrdersTab, StyledOrdersTabs } from "../styles";
+import { StyledOrdersLists, StyledOrdersTab, StyledOrdersTabs, StyledRowFlex } from "../styles";
 import OrdersList from "../orders/OrdersList";
+import { Button } from "./base";
+import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 
 function a11yProps(index: number) {
   return {
@@ -16,26 +20,44 @@ function a11yProps(index: number) {
 
 export const OrdersSelectTabs = ({ className = "" }: { className?: string }) => {
   const {
-    translations,
     uiPreferences: { getOrdersTabsLabel },
   } = useTwapContext();
   const { tab, setTab } = useOrdersStore();
   const isMobile = useMediaQuery("(max-width:600px)");
   const tabs = useOrdersTabs();
+  const getName = useGetOrderNameCallback();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
   };
 
-  return (
-    <StyledOrdersTabs variant="scrollable" scrollButtons={isMobile} className={`twap-orders-header-tabs ${className}`} value={tab} onChange={handleChange}>
-      {_.keys(tabs).map((key, index) => {
-        const name = translations[key as keyof Translations] || key;
-        const amount = tabs[key as keyof typeof tabs];
-        const label = getOrdersTabsLabel ? getOrdersTabsLabel(name, amount) : `${amount} ${name}`;
+  if (isMobile) {
+    return <MobileMenu />;
+  }
 
+  return (
+    <StyledOrdersTabs className={`twap-orders-header-tabs ${className}`} value={tab} onChange={handleChange}>
+      {_.keys(tabs).map((key, index) => {
+        const label = getName(key);
         return <StyledOrdersTab className="twap-orders-header-tabs-tab" key={key} label={label} {...a11yProps(index)} />;
       })}
     </StyledOrdersTabs>
+  );
+};
+
+const useGetOrderNameCallback = () => {
+  const {
+    translations,
+    uiPreferences: { getOrdersTabsLabel },
+  } = useTwapContext();
+  const tabs = useOrdersTabs();
+
+  return React.useCallback(
+    (key: string) => {
+      const name = translations[key as keyof Translations] || key;
+      const amount = tabs[key as keyof typeof tabs];
+      return getOrdersTabsLabel ? getOrdersTabsLabel(name, amount) : `${amount} ${name}`;
+    },
+    [tabs, translations, getOrdersTabsLabel]
   );
 };
 
@@ -60,3 +82,57 @@ export const SelectedOrders = ({ className = "" }: { className?: string }) => {
     </StyledOrdersLists>
   );
 };
+
+function MobileMenu() {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const tabs = useOrdersTabs();
+  const { tab } = useOrdersStore();
+  const getName = useGetOrderNameCallback();
+
+  const selected = _.keys(tabs)[tab];
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <div>
+      <StyledMobileButton className="twap-orders-mobile-button" onClick={handleClick}>
+        <StyledRowFlex>
+          {selected}
+          <IoIosArrowDown />
+        </StyledRowFlex>
+      </StyledMobileButton>
+      <Menu
+        className="twap-orders-mobile-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        MenuListProps={{
+          "aria-labelledby": "basic-button",
+        }}
+      >
+        {_.keys(tabs).map((key, index) => {
+          return (
+            <MenuItem
+              key={key}
+              onClick={() => {
+                setAnchorEl(null);
+                useOrdersStore.getState().setTab(index);
+              }}
+            >
+              {getName(key)}
+            </MenuItem>
+          );
+        })}
+      </Menu>
+    </div>
+  );
+}
+
+const StyledMobileButton = styled(Button)({
+  minWidth: 100,
+});

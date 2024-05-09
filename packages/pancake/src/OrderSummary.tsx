@@ -61,28 +61,12 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
 
 const SummaryPrice = () => {
   const { TradePrice: DappTradePrice } = useAdapterContext();
-  const [inverted, setInvert] = useState(false);
-  const { isLimitOrder, srcToken, dstToken } = store.useTwapStore((store) => ({
-    isLimitOrder: store.isLimitOrder,
-    srcToken: store.srcToken,
-    dstToken: store.dstToken,
-  }));
-  const { isLoading, getToggled } = hooks.useLimitPriceV2();
-  const { marketPrice } = hooks.useMarketPriceV2(inverted);
-  const price = isLimitOrder ? getToggled(inverted, true) : marketPrice?.original;
-  const value = hooks.useFormatNumber({ value: price || "", decimalScale: 5 });
-
-  const onInvert = useCallback(() => {
-    setInvert((prev) => !prev);
-  }, [setInvert]);
-
-  const leftSymbol = inverted ? dstToken?.symbol : srcToken?.symbol;
-  const rightSymbol = inverted ? srcToken?.symbol : dstToken?.symbol;
+  const { leftToken, rightToken, onInvert, price, isLoading } = hooks.usePriceDisplay();
 
   return (
     <StyledMarketPriceContainer>
       <Components.Base.Label>Price</Components.Base.Label>
-      <DappTradePrice onClick={onInvert} loading={isLoading} leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={value} />
+      <DappTradePrice onClick={onInvert} loading={isLoading} leftSymbol={leftToken?.symbol} rightSymbol={rightToken?.symbol} price={price} />
     </StyledMarketPriceContainer>
   );
 };

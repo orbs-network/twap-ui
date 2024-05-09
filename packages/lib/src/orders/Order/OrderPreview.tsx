@@ -35,7 +35,7 @@ function OrderPreview({ order }: { order: OrderUI }) {
       >
         <StyledPreviewLinearProgress variant="determinate" value={order?.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
       </Tooltip>
-      <StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start", gap: 16 }} className="twap-order-preview-tokens" justifyContent="space-between">
+      <StyledOrderTokensDisplay className="twap-order-preview-tokens" justifyContent="space-between">
         <OrderTokenDisplay
           isMain={true}
           token={order?.ui.srcToken}
@@ -52,10 +52,24 @@ function OrderPreview({ order }: { order: OrderUI }) {
           usdValue={order?.ui.dstAmountUsd}
           icon={<FiChevronDown />}
         />
-      </StyledRowFlex>
+      </StyledOrderTokensDisplay>
     </StyledColumnFlex>
   );
 }
+
+const StyledOrderTokensDisplay = styled(StyledRowFlex)({
+  paddingTop: 18,
+  paddingRight: 10,
+  alignItems: "flex-start",
+  gap: 16,
+  "@media(max-width: 600px)": {
+    flexDirection: "column",
+    alignItems: "center",
+    ".twap-order-preview-icon": {
+      transform: "rotate(90deg)",
+    },
+  },
+});
 
 export default OrderPreview;
 

@@ -355,8 +355,6 @@ const StyledButtonContainer = styled("div")({
 });
 
 const LimitPanel = () => {
-  const { onInvert } = hooks.useLimitPriceV2();
-
   return (
     <div className="twap-container">
       <StyledColumnFlex>
@@ -703,11 +701,7 @@ export const useShowSwapModalButton = () => {
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();
   const srcUsd = hooks.useSrcUsd().value;
   const dstUsd = hooks.useDstUsd().value;
-
-  const noLiquidity = useMemo(() => {
-    if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;
-    return !dexAmounOut.raw || BN(dexAmounOut.raw).isZero();
-  }, [dexAmounOut.raw, dstAmountLoading, srcAmount]);
+  const noLiquidity = hooks.useNoLiquidity();
 
   if (wrongNetwork)
     return {

@@ -1,4 +1,5 @@
-import { StylesConfig } from "@orbs-network/twap-ui";
+import { styled } from "@mui/material";
+import { Components, Styles, StylesConfig } from "@orbs-network/twap-ui";
 
 export const darkModeStylesConfig: StylesConfig = {
   iconsColor: "rgb(105, 108, 128)",
@@ -308,6 +309,11 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       background: styles.selectedTokenBackground ? styles.cardBackground : styles.containerBackground,
       border: `1px solid ${styles.selectedTokenTextColor}`,
       right: 0,
+      "&-item": {
+        "&:hover": {
+          background: "rgba(255,255,255, 0.05)",
+        },
+      },
     },
     ".twap-card": {
       padding: "16px",
@@ -385,12 +391,13 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       },
       "& .Mui-checked+.MuiSwitch-track": {
         padding: "0!important",
-        backgroundColor: `${isDarkMode ? styles.containerBackground : styles.wrapperBackground}!important`,
+        backgroundColor: `${isDarkMode ? "#0fc67933" : styles.wrapperBackground}!important`,
         opacity: "1!important",
+        border: "1px solid transparent",
       },
       "& .Mui-checked .MuiSwitch-thumb": {
         padding: "0!important",
-        background: isDarkMode ? "#D9D9D9" : styles.selectedTokenBorderColor,
+        background: isDarkMode ? "#0fc679" : styles.selectedTokenBorderColor,
       },
       "& .MuiSwitch-switchBase": {
         top: 11,
@@ -508,50 +515,59 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         },
       },
     },
-    ".twap-orders-header": {
-      "& .twap-orders-header-tabs": {
-        display: "flex",
-        justifyContent: "space-between",
-        marginTop: 2,
-        border: "none",
-        minHeight: 38,
-        maxHeight: 38,
-        alignItems: "center",
-
-        "& .twap-orders-header-tabs-tab": {
-          display: "flex",
-          alignItems: "center",
-          lineHeight: "normal",
-          borderRadius: 100,
-          transition: ".15s all linear",
-        },
-        "& .MuiTabs-indicator": {
-          display: "none",
-          minHeight: 38,
-          maxHeight: 38,
-          width: 94,
-          height: 38,
-          borderRadius: 100,
-          background: "#3E4252",
-        },
-        "& .MuiButtonBase-root": {
-          color: styles.buttonColor,
-          fontWeight: 400,
-        },
-        "& .Mui-selected": {
-          minHeight: 38,
-          maxHeight: 38,
-          borderRadius: 100,
-          background: "#3E4252",
-          color: styles.orderHistoryTabColor,
-        },
-        "& .MuiTabs-flexContainer": {
-          height: 38,
-          alignItems: "center",
-          justifyContent: "space-between",
-        },
+    ".twap-orders-mobile-button": {
+      padding: "10px",
+      height: "auto!important",
+      "*": {
+        color: "white!important",
       },
     },
+
+    ".twap-orders-header-tabs": {
+      display: "flex",
+      justifyContent: "space-between",
+      marginTop: 2,
+      border: "none",
+      minHeight: 38,
+      maxHeight: 38,
+      alignItems: "center",
+
+      ".Mui-selected": {
+        minHeight: 38,
+        maxHeight: 38,
+        borderRadius: 100,
+        background: "#3E4252!important",
+      },
+
+      "& .twap-orders-header-tabs-tab": {
+        display: "flex",
+        alignItems: "center",
+        lineHeight: "normal",
+        borderRadius: 100,
+        transition: ".15s all linear",
+        color: "white!important",
+      },
+      "& .MuiTabs-indicator": {
+        display: "none",
+        minHeight: 38,
+        maxHeight: 38,
+        width: 94,
+        height: 38,
+        borderRadius: 100,
+        background: "#3E4252",
+      },
+      "& .MuiButtonBase-root": {
+        color: styles.buttonColor,
+        fontWeight: 400,
+      },
+
+      "& .MuiTabs-flexContainer": {
+        height: 38,
+        alignItems: "center",
+        justifyContent: "space-between",
+      },
+    },
+
     ".twap-token-panel": {
       ".twap-token-panel-title": {
         fontSize: 16,
@@ -798,3 +814,76 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
     },
   };
 };
+
+export const StyledReset = styled("button")<{ isDarkMode: number }>(({ isDarkMode }) => {
+  return {
+    ...getButtonStyles(isDarkMode),
+    border: "unset",
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    height: "auto",
+    padding: "5px 10px",
+    cursor: "pointer",
+    p: {
+      fontSize: 13,
+    },
+    svg: {
+      width: 12,
+      height: 12,
+      path: {
+        color: "white!important",
+      },
+    },
+  };
+});
+
+export const StyledLimitPriceInverter = styled("div")(({ theme }) => {
+  return {
+    cursor: "pointer",
+    position: "relative",
+    top: 2,
+    svg: {
+      width: 22,
+      height: 22,
+    },
+  };
+});
+
+export const StyledLimitPriceInput = styled(Components.LimitInputV2)(({ theme }) => {
+  return {
+    width: "100%",
+    maxWidth: 280,
+    borderRadius: 8,
+    padding: "4px 10px",
+    marginLeft: "auto",
+    background: "#12131a",
+    border: "1px solid rgba(255,255,255,0.2)",
+    input: {
+      textAlign: "right",
+    },
+    ".twap-loader": {
+      right: 10,
+    },
+  };
+});
+
+export const StyledTradePrice = styled(Components.TradePrice)(() => {
+  return {
+    width: "100%",
+    justifyContent: "flex-end",
+    ".twap-label": {
+      display: "none",
+    },
+    ".limit-price-text": {
+      fontSize: 14,
+    },
+  };
+});
+
+export const StyledLimitPrice = styled(Components.Base.Card)({
+  marginTop: 12,
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+});

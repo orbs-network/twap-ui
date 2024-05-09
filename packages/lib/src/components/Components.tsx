@@ -23,6 +23,7 @@ import { useTwapContext } from "../context";
 import { AiOutlineWarning } from "@react-icons/all-files/ai/AiOutlineWarning";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
+import { TiArrowSync } from "@react-icons/all-files/ti/TiArrowSync";
 
 import { IconType } from "@react-icons/all-files";
 import {
@@ -53,6 +54,7 @@ import {
   useDeadlineUi,
   useSetSrcAmountUi,
   useDebounce,
+  usePriceDisplay,
 } from "../hooks";
 import { useLimitPriceStore, useTwapStore } from "../store";
 import {
@@ -76,6 +78,7 @@ import {
   OrderSummaryTradeIntervalLabel,
   OrderSummaryMinDstAmountOutLabel,
   ChunksAmountLabel,
+  LimitPriceLabel,
 } from "./Labels";
 import { SwitchVariant, Translations, TWAPTokenSelectProps } from "../types";
 import { Box, Fade, FormControl, RadioGroup, Typography } from "@mui/material";
@@ -279,9 +282,9 @@ export const TokenSelect = ({
   const token = isSrc ? srcToken : dstToken;
 
   return (
-    <Box className={`${className} twap-token-select`}>
+    <div className={`${className} twap-token-select`} onClick={onClick} style={{ cursor: "pointer" }}>
       {token ? (
-        <StyledRowFlex gap={5} style={{ cursor: "pointer" }} width="fit-content" onClick={onClick} className={`twap-token-selected`}>
+        <StyledRowFlex gap={5} style={{ cursor: "pointer" }} width="fit-content" className={`twap-token-selected`}>
           {tokenSelectedUi ? (
             <>{tokenSelectedUi}</>
           ) : (
@@ -300,7 +303,7 @@ export const TokenSelect = ({
           onClick={onClick}
         />
       )}
-    </Box>
+    </div>
   );
 };
 
@@ -486,11 +489,11 @@ export function TokenUSD({
   decimalScale?: number;
 }) {
   const srcUSD = useSrcAmountUsdUi();
-  const srcLoading = useLoadingState().srcUsdLoading;
+  const { srcUsdLoading, dstUsdLoading } = useLoadingState();
   const dstUSD = useDstAmountUsdUi();
-  const dstLoading = useLoadingState().dstUsdLoading;
+
   const usd = isSrc ? srcUSD : dstUSD;
-  const isLoading = isSrc ? srcLoading : dstLoading;
+  const isLoading = isSrc ? srcUsdLoading : dstUsdLoading;
 
   if (Number(usd) <= 0 && hideIfZero) return null;
 
@@ -881,15 +884,13 @@ export const OutputAddress = ({ className, translations: _translations, ellipsis
 const StyledOutputAddress = styled(StyledColumnFlex)({});
 
 export const OrderSummaryLimitPriceToggle = ({ translations: _translations }: { translations?: Translations }) => {
-  const { onInvert, limitPrice, leftToken, rightToken } = useLimitPriceV2();
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+  const { leftToken, rightToken, price, onInvert } = usePriceDisplay();
   const translations = useTwapContext()?.translations || _translations;
 
-  return isLimitOrder ? (
-    <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice?.original} toggleInverted={onInvert} />
-  ) : (
-    <StyledText>{translations.none}</StyledText>
-  );
+  if (!isLimitOrder) return <>-</>;
+
+  return <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={price} toggleInverted={onInvert} />;
 };
 
 export const OrderSummaryPriceCompare = () => {
@@ -1143,9 +1144,12 @@ export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
 
 export const ResetLimitButton = ({ children }: { children?: ReactNode }) => {
   const onReset = useLimitPriceV2().onReset;
-  const isLimitOrder = useTwapStore((s) => s.isLimitOrder);
+  const { isLimitOrder, srcAmountTyped } = useTwapStore((s) => ({
+    isLimitOrder: s.isLimitOrder,
+    srcAmountTyped: s.getSrcAmount().gt("0"),
+  }));
 
-  if (!isLimitOrder) return null;
+  if (!isLimitOrder || !srcAmountTyped) return null;
 
   return (
     <Tooltip text="Reset to default price">
@@ -1192,8 +1196,47 @@ export const TxSuccess = () => {
   return <SuccessTxModal open={showSuccessModal} onClose={() => setShowSuccessModal(false)} />;
 };
 
-export const LimitInputV2 = () => {
+export const LimitInputV2 = ({ className = "" }: { className?: string }) => {
   const { onChange, limitPrice, isLoading } = useLimitPriceV2();
+  const srcAmount = useTwapStore((s) => s.getSrcAmount().toString());
 
-  return <NumericInput loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice?.toggled} />;
+  if (BN(srcAmount || "0").isZero()) return null;
+
+  return <NumericInput className={className} loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice?.toggled} />;
 };
+
+export const TradePrice = ({ className = "" }: { className?: string }) => {
+  const { srcToken, dstToken, srcAmount, isLimitOrder } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+    srcAmount: s.getSrcAmount().toString(),
+    isLimitOrder: s.isLimitOrder,
+  }));
+  const dstAmountOut = useTwapContext().dstAmountOut;
+
+  const { limitPrice, inverted } = useLimitPriceV2();
+  const { marketPrice } = useMarketPriceV2(inverted);
+
+  const price = useFormatNumber({ value: isLimitOrder ? limitPrice?.toggled : marketPrice?.toggled, decimalScale: 3, disableDynamicDecimals: false });
+
+  if (!srcToken || !dstToken || BN(srcAmount || "0").isZero() || BN(dstAmountOut || "0").isZero()) {
+    return null;
+  }
+
+  const leftSymbol = inverted ? dstToken?.symbol : srcToken?.symbol;
+  const rightSymbol = inverted ? srcToken?.symbol : dstToken?.symbol;
+
+  return (
+    <StyledTradePrice className={className}>
+      <Label>Price</Label>
+      <Typography className="limit-price-text">
+        1 {leftSymbol} = {price} {rightSymbol}
+      </Typography>
+    </StyledTradePrice>
+  );
+};
+
+const StyledTradePrice = styled(StyledRowFlex)({
+  width: "100%",
+  justifyContent: "space-between",
+});

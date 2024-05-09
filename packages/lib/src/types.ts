@@ -98,6 +98,8 @@ export interface Translations {
   viewOrders: string;
   view: string;
   estimate: string;
+  noLiquidity: string;
+  outAmountLoading: string;
 }
 
 export interface BaseComponentProps {

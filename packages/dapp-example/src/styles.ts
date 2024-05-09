@@ -30,7 +30,7 @@ const fonts = {
   [Configs.SpiritSwap.name]: "Jost",
   [Configs.QuickSwap.name]: "Inter",
   Kinetix: "Inter",
-  [Configs.Thena.name]: "Figtree",
+  [Configs.Thena.name]: "Inter",
   [Configs.Pangolin.name]: "Poppins",
   [Configs.PangolinDaas.name]: "Poppins",
   [Configs.SpookySwap.name]: "Red Hat Display",
@@ -85,16 +85,10 @@ export const StyledSyncSwapBox = styled(Box)({
   borderRadius: 10,
 });
 
-export const StyledThenaGradient = styled(Box)({
-  background: "transparent linear-gradient(128deg,#ed00c9,#bd00ed) 0 0 no-repeat padding-box",
-  padding: 1,
-  borderRadius: 10,
-});
-
 export const StyledThenaBox = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  background: isDarkMode ? "transparent linear-gradient(90deg,#1d023b,#17023e) 0 0 no-repeat padding-box" : "white",
+  background: "rgb(26 18 30/1)",
   padding: 20,
-  borderRadius: 10,
+  borderRadius: 12,
 }));
 
 export const StyledStellaSwapBox = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }) => ({
@@ -104,7 +98,7 @@ export const StyledStellaSwapBox = styled(Box)<{ isDarkMode: number }>(({ isDark
 }));
 
 export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  background: isDarkMode ? "#090333" : "#F4F5F6",
+  background: "rgb(13 9 15/1)",
   ".ui-selector-btn": {
     background: isDarkMode ? "rgba(255,255,255, 0.1)" : "white",
     color: isDarkMode ? "white" : "black",

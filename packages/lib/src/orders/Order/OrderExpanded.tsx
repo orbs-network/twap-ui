@@ -90,6 +90,7 @@ export const StyledDetailRowChildren = styled(StyledRowFlex)({
 
 export const StyledDetailRow = styled(StyledRowFlex)({
   justifyContent: "space-between",
+  flexWrap: "wrap",
   "& .twap-label": {
     fontWeight: 400,
     fontSize: 14,
