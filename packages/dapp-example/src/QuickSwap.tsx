@@ -90,7 +90,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   useEffect(() => {
     if (!dappTokens) return;
-    if (!fromToken) setFromToken(Object.values(dappTokens).find((it: any) => it.symbol === "WMATIC"));
+    if (!fromToken) setFromToken(Object.values(dappTokens).find((it: any) => it.symbol === "WBTC"));
     if (!toToken) setToToken(Object.values(dappTokens).find((it: any) => it.symbol === "USDC"));
   }, [dappTokens, fromToken, toToken]);
 

@@ -55,6 +55,7 @@ import {
   useSetSrcAmountUi,
   useDebounce,
   usePriceDisplay,
+  useFeeOnTranserWarning,
 } from "../hooks";
 import { useLimitPriceStore, useTwapStore } from "../store";
 import {
@@ -510,6 +511,14 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
       </p>
     </Button>
   );
+};
+
+export const FeeOnTranferWarning = ({className = ''}:{className?: string}) => {
+  const {  hasFeeOnTransfer } = useFeeOnTranserWarning();
+
+  if (!hasFeeOnTransfer) return null;
+
+  return <StyledText className={`${className} twap-fee-on-transfer-warning`}>Fee on transfer tokens are not supported</StyledText>;
 };
 
 export const useLimitPriceComponents = ({

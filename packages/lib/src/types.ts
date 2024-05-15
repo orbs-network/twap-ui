@@ -100,6 +100,7 @@ export interface Translations {
   estimate: string;
   noLiquidity: string;
   outAmountLoading: string;
+  feeOnTranferWarning: string;
 }
 
 export interface BaseComponentProps {

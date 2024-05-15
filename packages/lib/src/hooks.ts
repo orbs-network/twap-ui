@@ -25,13 +25,24 @@ import {
   parsebn,
 } from "@defi.org/web3-candies";
 import { TimeResolution, useLimitPriceStore, useOrdersStore, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
-import { MIN_NATIVE_BALANCE, QUERY_PARAMS, REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE, SUGGEST_CHUNK_VALUE } from "./consts";
+import {
+  AMOUNT_TO_BORROW,
+  feeOnTransferDetectorAddresses,
+  MIN_NATIVE_BALANCE,
+  QUERY_PARAMS,
+  REFETCH_BALANCE,
+  REFETCH_GAS_PRICE,
+  REFETCH_ORDER_HISTORY,
+  REFETCH_USD,
+  STALE_ALLOWANCE,
+  SUGGEST_CHUNK_VALUE,
+} from "./consts";
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
 import { amountBN, amountBNV2, amountUi, amountUiV2, devideCurrencyAmounts, getTokenFromTokensList, safeInteger, setQueryParam, supportsTheGraphHistory } from "./utils";
-import { getOrderFills, getUserOrders } from "./helper";
-
+import { getOrderFills } from "./helper";
+import FEE_ON_TRANSFER_ABI from "./abi/FEE_ON_TRANSFER.json";
 /**
  * Actions
  */
@@ -586,11 +597,14 @@ const useTokenList = () => {
 
 export const useOrdersHistoryQuery = () => {
   const tokenList = useTokenList();
-  const { lib, updateState, showConfirmation } = useTwapStore((state) => ({
+  const { lib, updateState, showConfirmation, srcToken } = useTwapStore((state) => ({
     lib: state.lib,
     updateState: state.updateState,
     showConfirmation: state.showConfirmation,
+    srcToken: state.srcToken,
   }));
+  const { error, data } = useFeeOnTransfer(srcToken?.address);
+  console.log({ error, data });
   const QUERY_KEY = [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId];
 
   const query = useQuery<OrdersData>(
@@ -917,8 +931,8 @@ export const useDappRawSelectedTokens = () => {
 
 export const useSubmitButton = (isMain?: boolean, _translations?: Translations) => {
   const translations = useTwapContext()?.translations || _translations;
-  const { maker, shouldWrap, shouldUnwrap, wrongNetwork, disclaimerAccepted, setShowConfirmation, showConfirmation, createOrderLoading, srcAmount, srcUsd, dstUsd } = useTwapStore(
-    (store) => ({
+  const { maker, shouldWrap, shouldUnwrap, wrongNetwork, disclaimerAccepted, setShowConfirmation, srcToken, showConfirmation, createOrderLoading, srcAmount, srcUsd, dstUsd } =
+    useTwapStore((store) => ({
       maker: store.lib?.maker,
       shouldWrap: store.shouldWrap(),
       shouldUnwrap: store.shouldUnwrap(),
@@ -930,8 +944,8 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
       srcAmount: store.getSrcAmount().toString(),
       srcUsd: store.srcUsd?.toString(),
       dstUsd: store.dstUsd?.toString(),
-    })
-  );
+      srcToken: store.srcToken,
+    }));
   const reset = useResetStore();
   const outAmountLoading = useDstAmount().isLoading;
   const { mutate: approve, isLoading: approveLoading } = useApproveToken();
@@ -1373,11 +1387,15 @@ export const useFillWarning = () => {
   const deadline = useDeadline();
 
   const maxSrcInputAmount = useMaxSrcInputAmount();
+  const { isLoading: feeOnTraferLoading, hasFeeOnTransfer } = useFeeOnTranserWarning();
 
   const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount?.gt(maxSrcInputAmount);
   return useMemo(() => {
     if (!translation) return;
     if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) return translation.selectTokens;
+    if (hasFeeOnTransfer) {
+      return translation.feeOnTranferWarning;
+    }
     if (srcAmount.isZero()) return translation.enterAmount;
     if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) return translation.insufficientFunds;
     if (chunkSize.isZero()) return translation.enterTradeSize;
@@ -1395,6 +1413,10 @@ export const useFillWarning = () => {
     if (fillDelayWarning) {
       return translation.fillDelayWarning;
     }
+    if (feeOnTraferLoading) {
+      return translation.loading;
+    }
+   
   }, [
     srcToken,
     dstToken,
@@ -1414,6 +1436,8 @@ export const useFillWarning = () => {
     maxSrcInputAmount,
     lib,
     dstAmountOut,
+    feeOnTraferLoading,
+    hasFeeOnTransfer,
   ]);
 };
 
@@ -1759,5 +1783,57 @@ export const usePriceDisplay = () => {
     inverted,
     onInvert,
     isLoading,
+  };
+};
+
+const useFeeOnTransferContract = () => {
+  const provider = useTwapContext().provider;
+  const lib = useTwapStore((s) => s.lib);
+
+  const address = useMemo(() => {
+    const chainId = lib?.config.chainId;
+    if (!chainId) return undefined;
+    return feeOnTransferDetectorAddresses[chainId as keyof typeof feeOnTransferDetectorAddresses];
+  }, [lib?.config.chainId]);
+
+  return useMemo(() => {
+    if (!provider || !address) return;
+
+    const web3 = new Web3(provider);
+
+    return new web3.eth.Contract(FEE_ON_TRANSFER_ABI as any, address);
+  }, [provider, address]);
+};
+
+const useFeeOnTransfer = (tokenAddress?: string) => {
+  const lib = useTwapStore((s) => s.lib);
+  const contract = useFeeOnTransferContract();
+
+  return useQuery({
+    queryFn: async () => {
+      const res = await contract?.methods.validate(tokenAddress, lib?.config.wToken.address, AMOUNT_TO_BORROW).call();
+      return {
+        buyFee: res.buyFeeBps,
+        sellFee: res.sellFeeBps,
+        hasFeeOnTranfer: BN(res.buyFeeBps).gt(0) || BN(res.sellFeeBps).gt(0),
+      };
+    },
+    queryKey: ["useFeeOnTransfer", tokenAddress, lib?.config.chainId],
+    enabled: !!contract && !!tokenAddress && !!lib,
+  });
+};
+
+export const useFeeOnTranserWarning = () => {
+  const { srcToken, dstToken } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+  }));
+
+  const srcTokenFeeOnTranfer = useFeeOnTransfer(srcToken?.address);
+  const dstTokenFeeOnTranfer = useFeeOnTransfer(dstToken?.address);
+
+  return {
+    isLoading: srcTokenFeeOnTranfer.isLoading || dstTokenFeeOnTranfer.isLoading,
+    hasFeeOnTransfer: srcTokenFeeOnTranfer.data?.hasFeeOnTranfer || dstTokenFeeOnTranfer.data?.hasFeeOnTranfer,
   };
 };
