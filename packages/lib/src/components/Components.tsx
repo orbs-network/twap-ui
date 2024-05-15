@@ -513,8 +513,8 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
   );
 };
 
-export const FeeOnTranferWarning = ({className = ''}:{className?: string}) => {
-  const {  hasFeeOnTransfer } = useFeeOnTranserWarning();
+export const FeeOnTranferWarning = ({ className = "" }: { className?: string }) => {
+  const { hasFeeOnTransfer } = useFeeOnTranserWarning();
 
   if (!hasFeeOnTransfer) return null;
 

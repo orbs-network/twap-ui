@@ -925,5 +925,3 @@ export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {
     color: darkMode ? "#f4eeff" : "#280d5f",
   };
 });
-
-

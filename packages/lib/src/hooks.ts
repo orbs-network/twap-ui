@@ -1416,7 +1416,6 @@ export const useFillWarning = () => {
     if (feeOnTraferLoading) {
       return translation.loading;
     }
-   
   }, [
     srcToken,
     dstToken,

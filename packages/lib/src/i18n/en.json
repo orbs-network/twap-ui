@@ -97,5 +97,5 @@
   "view": "View",
   "noLiquidity": "Insufficient liquidity for this trade",
   "outAmountLoading": "Searching for the best price",
-  "feeOnTranferWarning":"Fee on transfer tokens are not supported"
+  "feeOnTranferWarning": "Fee on transfer tokens are not supported"
 }
