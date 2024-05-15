@@ -223,6 +223,7 @@ export interface TwapLibProps extends LibProps {
   enableQueryParams?: boolean;
   dstAmountOut?: string;
   dstAmountLoading?: boolean;
+  defaultLimitPriceDecreasePercent?: number;
 }
 
 export type Token = TokenData;
@@ -328,4 +329,29 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
   onClick: (e: any) => void;
   loading?: boolean;
   text?: string;
+}
+
+export interface OrderCreated {
+  Contract_id: string;
+  ask_bidDelay: string;
+  ask_data: string;
+  ask_deadline: string;
+  ask_dstMinAmount: string;
+  ask_dstToken: string;
+  ask_exchange: string;
+  ask_fillDelay: string;
+  ask_srcAmount: string;
+  ask_srcBidAmount: string;
+  ask_srcToken: string;
+  blockNumber: string;
+  blockTimestamp: string;
+  dex: string;
+  dollarValueIn: string;
+  dstTokenSymbol: string;
+  exchange: string;
+  id: string;
+  maker: string;
+  srcTokenSymbol: string;
+  timestamp: string;
+  transactionHash: string;
 }

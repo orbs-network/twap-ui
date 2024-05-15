@@ -18,7 +18,7 @@ export interface Props {
   loading?: boolean;
 }
 
-function TokenPriceCompare({ leftToken, rightToken, price, className, toggleInverted, loading }: Props) {
+function TokenPriceCompare({ leftToken, rightToken, price, className = "", toggleInverted, loading }: Props) {
   const _toggleInverted = (e: any) => {
     e.stopPropagation();
     toggleInverted();

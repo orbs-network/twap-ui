@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, OrdersData, OrderUI, ParsedOrder, State, Translations } from "./types";
-import _, { constant } from "lodash";
+import _ from "lodash";
 import { analytics } from "./analytics";
 import {
   eqIgnoreCase,
@@ -21,7 +21,6 @@ import {
   web3,
   parseEvents,
   sendAndWaitForConfirmations,
-  networks,
   maxUint256,
   parsebn,
 } from "@defi.org/web3-candies";
@@ -31,6 +30,7 @@ import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
 import { amountBN, amountBNV2, amountUi, amountUiV2, devideCurrencyAmounts, getTokenFromTokensList, safeInteger, setQueryParam, supportsTheGraphHistory } from "./utils";
+import { getOrderFills, getUserOrders } from "./helper";
 
 /**
  * Actions
@@ -485,6 +485,7 @@ export const useHasAllowanceQuery = () => {
 
 export const usePriceUSD = (address?: string, onSuccess?: (value: BN, isLoading: boolean) => void) => {
   const context = useTwapContext();
+
   const lib = useTwapStore((state) => state.lib);
   const _address = address && isNativeAddress(address) ? lib?.config.wToken.address : address;
 
@@ -544,7 +545,7 @@ export const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => vo
       staleTime,
     }
   );
-  return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
+  return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
 };
 
 const useGasPriceQuery = () => {
@@ -591,12 +592,19 @@ export const useOrdersHistoryQuery = () => {
     showConfirmation: state.showConfirmation,
   }));
   const QUERY_KEY = [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId];
-  const getFills = useGetFillsCallback();
+
   const query = useQuery<OrdersData>(
     QUERY_KEY,
     async ({ signal }) => {
-      const [orders, fills] = await Promise.all([lib!.getAllOrders(), getFills(signal)]);
       const isTheGrapth = supportsTheGraphHistory(lib?.config.chainId);
+      let fills = {} as any;
+      let orders = [] as any;
+
+      if (isTheGrapth) {
+        [orders, fills] = await Promise.all([lib!.getAllOrders(), getOrderFills(lib!.maker, lib!.config.chainId, signal)]);
+      } else {
+        orders = await lib!.getAllOrders();
+      }
 
       const parsedOrders = _.map(orders, (o): ParsedOrder => {
         const dstAmount = fills?.[o.id]?.dstAmountOut;
@@ -695,6 +703,7 @@ export const useOrderPastEvents = (order?: ParsedOrder, enabled?: boolean) => {
 
   const _enabled = haveValue ? true : !!enabled;
   const disableEvents = supportsTheGraphHistory(lib?.config.chainId);
+
   return useQuery(
     ["useOrderPastEvents", order?.order.id, lib?.maker, order?.ui.progress],
     async () => {
@@ -1167,69 +1176,6 @@ export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
   };
 };
 
-const useGetFillsCallback = () => {
-  const lib = useTwapStore((s) => s.lib);
-  return useCallback(
-    async (signal?: AbortSignal) => {
-      if (!lib) return {};
-      const LIMIT = 1_000;
-      let page = 0;
-      let fills: any = [];
-      const API_URL = "https://hub.orbs.network/api/apikey/subgraphs/id/4NfXEi8rreQsnAr4aJ45RLCKgnjcWX46Lbt9SadiCcz6";
-
-      const fetchFills = async () => {
-        const query = `
-    {
-      orderFilleds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, where: { userAddress: "${lib.maker}" }) {
-        id
-        dstAmountOut
-        dstFee
-        srcFilledAmount
-        TWAP_id
-        srcAmountIn
-        timestamp
-        dollarValueIn
-        dollarValueOut
-      }
-    }
-  `;
-
-        const payload = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({ query }),
-          signal,
-        });
-        const response = await payload.json();
-        const orderFilleds = response.data.orderFilleds;
-
-        const grouped = _.map(_.groupBy(orderFilleds, "TWAP_id"), (fills, orderId) => ({
-          TWAP_id: Number(orderId),
-          dstAmountOut: fills.reduce((acc, it) => acc.plus(BN(it.dstAmountOut)), BN(0)).toString(),
-          srcAmountIn: fills.reduce((acc, it) => acc.plus(BN(it.srcAmountIn)), BN(0)).toString(),
-          dollarValueIn: fills.reduce((acc, it) => acc.plus(BN(it.dollarValueIn)), BN(0)).toString(),
-          dollarValueOut: fills.reduce((acc, it) => acc.plus(BN(it.dollarValueOut)), BN(0)).toString(),
-        }));
-
-        fills.push(...grouped);
-
-
-        if (orderFilleds.length >= LIMIT) {
-          page++;
-          await fetchFills();
-        } else {
-          return fills;
-        }
-      };
-
-      await fetchFills();
-
-      const res = _.mapValues(_.keyBy(fills, "TWAP_id"));
-      return res;
-    },
-    [lib]
-  );
-};
-
 export const useDstAmount = () => {
   const { dstAmountOut, dstAmountLoading } = useTwapContext();
   const { dstToken, isLimitOrder, srcToken, srcAmount } = useTwapStore((s) => ({
@@ -1297,12 +1243,14 @@ export const useMarketPriceV2 = (inverted?: boolean) => {
 
 export const useLimitPriceV2 = () => {
   const limitPriceStore = useLimitPriceStore();
-  const { enableQueryParams, dstAmountLoading } = useTwapContext();
+  const { enableQueryParams, dstAmountLoading, defaultLimitPriceDecreasePercent = 5 } = useTwapContext();
   const marketPrice = useMarketPriceV2().marketPrice?.original;
   const twapStore = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
   }));
+
+  const limitPercent = (100 - defaultLimitPriceDecreasePercent) / 100;
 
   const getToggled = useCallback(
     (inverted: boolean, invertCustom?: boolean) => {
@@ -1324,12 +1272,12 @@ export const useLimitPriceV2 = () => {
       if (!marketPrice || BN(marketPrice).isZero()) return;
 
       if (inverted) {
-        return BN(0.95)
+        return BN(limitPercent)
           .dividedBy(marketPrice || "0")
           .toString();
       }
       return BN(marketPrice || "0")
-        .times(0.95)
+        .times(limitPercent)
         .toString();
     },
     [marketPrice, limitPriceStore.priceFromQueryParams, limitPriceStore.isCustom, limitPriceStore.limitPrice]
@@ -1354,7 +1302,7 @@ export const useLimitPriceV2 = () => {
         .toString();
     };
     const toggled = getToggled(limitPriceStore.inverted);
-    const original = getOriginal(0.95);
+    const original = getOriginal(limitPercent);
     return {
       toggled: BN(toggled || "0").isZero() ? "" : toggled,
       original: BN(original || "0").isZero() ? "" : original,

@@ -484,6 +484,12 @@ export const configureStyles = (theme: Theme) => {
       ".twap-input": {
         input: {
           height: 30,
+          background: styles.secondaryBg,
+          borderRadius: 8,
+          padding: "12px 10px 12px 10px",
+          paddingRight: "13px!important",
+          maxWidth: 170,
+          marginLeft: "auto",
         },
       },
       ".twap-loader": {

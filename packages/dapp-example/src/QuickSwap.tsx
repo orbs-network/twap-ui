@@ -4,11 +4,13 @@ import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
-import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
+import { erc20s } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { TWAP, Orders } from "@orbs-network/twap-ui-quickswap";
+import BN from "bignumber.js";
+import { hooks } from "@orbs-network/twap-ui";
 const config = Configs.QuickSwap;
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
@@ -77,16 +79,20 @@ const useDecimals = (fromToken?: string, toToken?: string) => {
   return { fromTokenDecimals, toTokenDecimals };
 };
 
-const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
-  const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken, toToken);
-  return useTrade(fromToken, toToken, amount, fromTokenDecimals, toTokenDecimals);
-};
-
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
+  const [fromAmount, setFromAmount] = useState("");
+  const [fromToken, setFromToken] = useState<any>(undefined);
+  const [toToken, setToToken] = useState<any>(undefined);
+
+  useEffect(() => {
+    if (!dappTokens) return;
+    if (!fromToken) setFromToken(Object.values(dappTokens).find((it: any) => it.symbol === "WMATIC"));
+    if (!toToken) setToToken(Object.values(dappTokens).find((it: any) => it.symbol === "USDC"));
+  }, [dappTokens, fromToken, toToken]);
 
   const getTokenLogoURL = useCallback(
     (address: string) => {
@@ -100,15 +106,24 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     [_.size(dappTokens)]
   );
 
+  const onInputChange = (e: any) => {
+    setFromAmount(e);
+  };
+
+  const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken?.address, toToken?.address);
+
+  const trade = useTrade(fromToken?.address, toToken?.address, fromAmount, fromTokenDecimals, toTokenDecimals);
+  console.log({ trade: trade.outAmount });
+
   return (
     <TWAP
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.poly.USDC.address} //USDC
+      srcToken={fromToken?.address}
+      dstToken={toToken?.address}
       dappTokens={dappTokens}
-      onSrcTokenSelected={(token: any) => console.log(token)}
-      onDstTokenSelected={(token: any) => console.log(token)}
+      onSrcTokenSelected={(token: any) => setFromToken(token)}
+      onDstTokenSelected={(token: any) => setToToken(token)}
       TokenSelectModal={TokenSelectModal}
       provider={library}
       getTokenLogoURL={getTokenLogoURL}
@@ -116,7 +131,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       limit={limit}
       onTxSubmitted={(args: any) => console.log(args)}
       usePriceUSD={usePriceUSD}
-      useTrade={_useTrade}
+      onInputChange={onInputChange}
+      dstAmountOut={trade.outAmount}
+      dstAmountLoading={BN(fromAmount).gt(0) && trade.isLoading}
     />
   );
 };

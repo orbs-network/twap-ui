@@ -47,6 +47,9 @@ const uiPreferences: TwapContextUIPreferences = {
   usdPrefix: "$",
   inputPlaceholder: "0.0",
   switchVariant: "ios",
+  orders: {
+    paginationChunks: 4,
+  },
 };
 
 const MemoizedTokenModal = memo((props: TWAPTokenSelectProps) => {
@@ -314,9 +317,6 @@ const LimitPanel = () => {
           <StyledTokenChange />
           <TokenPanel />
         </StyledTopColumn>
-        <StyledCard>
-          <Components.MarketPrice />
-        </StyledCard>
         <LimitPrice limitOnly={true} />
         <MainSubmit />
       </StyledColumnFlex>

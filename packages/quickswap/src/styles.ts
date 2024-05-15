@@ -77,6 +77,9 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       border: "unset",
       color: "white!important",
     },
+    ".twap-odnp-link": {
+      color: "white!important",
+    },
     ".twap-trade-size": {
       paddingTop: "8px!important",
       paddingBottom: "17px!important",
@@ -228,7 +231,6 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       display: "flex",
       paddingLeft: 12,
       justifyContent: "center",
-      backgroundImage: isDarkMode ? "linear-gradient(105deg,#448aff 3%,#004ce6)!important" : styles.selectedTokenBackground,
       p: {
         fontSize: 16,
       },
@@ -300,6 +302,11 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
     ".twap-time-selector": {
       "& input": {
         fontSize: "16px!important",
+        background: "#12131a",
+        border: "1px solid rgba(255,255,255,0.2)",
+        width: "160px!important",
+        marginLeft: "auto",
+        paddingRight: 10,
         "&::placeholder": {
           color: "rgba(255,255,255, 0.5)!important",
         },
@@ -606,7 +613,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
     ".twap-modal-content": {
       fontSize: "14px",
       fontFamily: "Inter",
-      padding: "40px 20px 20px 20px",
+      padding: "20px 20px 20px 20px",
       boxSizing: "border-box",
       background: isDarkMode ? styles.containerBackground : styles.wrapperBackground,
 
@@ -635,7 +642,6 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       maxHeight: "85vh",
       overflow: "auto",
       borderRadius: "24px",
-      paddingTop: 50,
       color: styles.textColor,
       "& a": {
         color: styles.textColor,
@@ -649,7 +655,14 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         fontFamily: "inherit",
       },
       ".twap-order-summary-limit-price": {
-        padding: "10px 26px",
+        ".twap-label": {
+          fontSize: 14,
+        },
+        ".twap-price-compare": {
+          "*": {
+            fontSize: 13,
+          },
+        },
       },
     },
     ".twap-change-tokens-order": {
@@ -668,7 +681,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       marginTop: "24px!important",
       marginBottom: "0px!important",
       p: {
-        fontSize: "11px!important",
+        fontSize: "13px!important",
         fontWeight: "400!important",
       },
       img: {
@@ -676,15 +689,12 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         height: "18px!important",
       },
     },
-    ".twap-input input": {
-      paddingRight: "0!important",
-    },
+
     ".twap-token-panel .twap-input input": {
       fontSize: "24px!important",
       color: `#696c80!important`,
       fontWeight: "400!important",
     },
-    ".twap-balance": {},
     ".adapter-wrapper": {
       padding: "0px",
       width: "100%!important",
@@ -886,4 +896,7 @@ export const StyledLimitPrice = styled(Components.Base.Card)({
   display: "flex",
   flexDirection: "column",
   gap: 12,
+  ".twap-label": {
+    fontSize: 14,
+  },
 });

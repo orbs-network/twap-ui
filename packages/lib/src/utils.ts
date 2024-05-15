@@ -5,7 +5,7 @@ import { QUERY_PARAMS } from "./consts";
 import BN from "bignumber.js";
 import _ from "lodash";
 import { useTwapStore } from "./store";
-import { CHAINS_SUPPORTS_GRAPH_HISTORY } from "./config";
+import { THE_GRAPH_ORDERS_API } from "./config";
 export const logger = (...args: any[]) => {
   const query = new URLSearchParams(window.location.search);
   const debug = query.get("debug");
@@ -148,5 +148,10 @@ export const devideCurrencyAmounts = ({ srcAmount, dstAmount, srcToken, dstToken
 };
 
 export const supportsTheGraphHistory = (chainId?: number) => {
-  return chainId ? CHAINS_SUPPORTS_GRAPH_HISTORY.includes(chainId) : false;
+  return chainId ? !!getTheGraphUrl(chainId) : false;
+};
+
+export const getTheGraphUrl = (chainId?: number) => {
+  if (!chainId) return;
+  return THE_GRAPH_ORDERS_API[chainId];
 };

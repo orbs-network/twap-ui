@@ -14,12 +14,11 @@ import {
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Box } from "@mui/system";
-import { createContext, memo, ReactNode, useCallback, useContext, useState } from "react";
+import { createContext, memo, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles, StyledLimitPrice, StyledLimitPriceInput, StyledLimitPriceInverter, StyledReset, StyledTradePrice } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
-import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
 import { TiArrowSync } from "@react-icons/all-files/ti/TiArrowSync";
 
 import BN from "bignumber.js";
@@ -37,6 +36,7 @@ interface QuickSwapTWAPProps extends TWAPProps {
   getTokenLogoURL: (address: string) => string;
   dappTokens: { [key: string]: QuickSwapRawToken };
   isProMode?: boolean;
+  onInputChange: (value: string) => void;
 }
 
 interface QuickSwapRawToken {
@@ -157,7 +157,9 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
           <Components.Base.Card>
             <Components.OrderSummaryTokenDisplay />
           </Components.Base.Card>
-          <Components.OrderSummaryLimitPrice />
+          <Components.Base.Card>
+            <Components.OrderSummaryLimitPrice />
+          </Components.Base.Card>
           <Components.Base.Card>{children}</Components.Base.Card>
           <Components.Base.Card>
             <TwapStyles.StyledColumnFlex gap={10}>
@@ -189,19 +191,15 @@ interface Props extends QuickSwapTWAPProps {
   limit?: boolean;
 }
 
-const useTrade = (props: Props) => {
-  const { srcToken, toToken, srcAmount } = store.useTwapStore((s) => ({
-    srcToken: s.srcToken?.address,
-    toToken: s.dstToken?.address,
-    srcAmount: s.getSrcAmount().toString(),
-  }));
+const AmountUpdater = () => {
+  const srcAmount = store.useTwapStore((state) => state.getSrcAmount().toString());
 
-  const res = props.useTrade!(srcToken, toToken, srcAmount === "0" ? undefined : srcAmount);
+  const onInputChange = useAdapterContext().onInputChange;
+  useEffect(() => {
+    onInputChange(srcAmount || "0");
+  }, [onInputChange, srcAmount]);
 
-  return {
-    outAmount: res?.outAmount,
-    isLoading: BN(srcAmount || "0").gt(0) && res?.isLoading,
-  };
+  return null;
 };
 
 const TWAP = (props: Props) => {
@@ -210,8 +208,6 @@ const TWAP = (props: Props) => {
   const connect = useCallback(() => {
     props.connect();
   }, []);
-
-  const trade = useTrade(props);
 
   return (
     <Box className="adapter-wrapper">
@@ -232,11 +228,12 @@ const TWAP = (props: Props) => {
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
         usePriceUSD={props.usePriceUSD}
-        dstAmountOut={trade.outAmount}
-        dstAmountLoading={trade.isLoading}
+        dstAmountOut={props.dstAmountOut}
+        dstAmountLoading={props.dstAmountLoading}
       >
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>
+          <AmountUpdater />
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
           <OrdersPanel />
         </AdapterContextProvider>

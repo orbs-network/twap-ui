@@ -183,9 +183,10 @@ export const usePriceUSD = (address?: string) => {
   const wToken = store.useTwapStore((s) => s.lib)?.config.wToken.address;
   const { chainId } = useWeb3React();
   return useQuery<number>({
-    queryKey: ["quickswap-price-usd", address, chainId],
+    queryKey: ["usePriceUSD", address, chainId],
     queryFn: async () => {
       await delay(1_000);
+
       const _address = isNativeAddress(address || "") ? wToken : address;
       return fetchPrice(_address!, chainId!);
     },

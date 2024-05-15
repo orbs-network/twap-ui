@@ -12,8 +12,8 @@ import { useTwapStore } from "../store";
 
 function OrdersList({ orders, status, isLoading }: { orders?: ParsedOrder[]; status?: string; isLoading: boolean }) {
   const { uiPreferences } = useTwapContext();
-
-  const showPagination = uiPreferences.orders?.paginationChunks && _.size(orders) > uiPreferences.orders?.paginationChunks;
+  const paginationChunks = uiPreferences.orders?.paginationChunks || 5;
+  const showPagination = _.size(orders) > paginationChunks;
 
   if (isLoading) {
     return (
