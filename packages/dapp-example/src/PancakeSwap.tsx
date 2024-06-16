@@ -33,7 +33,6 @@ const parseListToken = (tokenList: any) => {
 };
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseListToken,
     modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
     baseAssets: erc20s.bsc,

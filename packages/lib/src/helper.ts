@@ -1,10 +1,10 @@
-import { networks } from "@defi.org/web3-candies";
 import { Order, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import BN from "bignumber.js";
 import _ from "lodash";
 import moment from "moment";
 import { OrderCreated } from "./types";
 import { amountUi, getTheGraphUrl } from "./utils";
+import { networks } from "./web3-candies/networks";
 
 export const parseOrder = ({
   order,

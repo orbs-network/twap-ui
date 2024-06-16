@@ -11,6 +11,8 @@ import {
   TwapContextUIPreferences,
   hooks,
   TWAPTokenSelectProps,
+  isNativeAddress,
+  zeroAddress,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
@@ -36,7 +38,6 @@ import {
   StyledTopGrid,
   StyledTradeSize,
 } from "./styles";
-import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 

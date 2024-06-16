@@ -26,6 +26,7 @@ import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 import { HiArrowDown } from "@react-icons/all-files/hi/HiArrowDown";
+import _ from "lodash";
 const config = Configs.Arbidex;
 
 const uiPreferences: TwapContextUIPreferences = {
@@ -177,9 +178,22 @@ const TWAP = (props: BaseSwapTWAPProps) => {
 };
 
 const TWAPPanel = () => {
+  const { dappTokens } = useAdapterContext();
+  const loop = hooks.useLoopFeeOnTransfer();
+
+  const onClick = async () => {
+    const tokens = await fetch("https://lhthena.s3.us-east-2.amazonaws.com/uniswap-list.json").then((res) =>
+      res.json().then((res) => res.tokens.filter((it: any) => it.chainId === 42161).map((it: any) => it.address))
+    );
+    const res = await loop(tokens);
+
+    console.log({ res });
+  };
+
   return (
     <>
       <StyledTopGrid>
+        <button onClick={onClick}>Click</button>
         <TokenPanel isSrcToken={true} />
         <ChangeTokensOrder />
         <TokenPanel />

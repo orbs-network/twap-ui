@@ -48,7 +48,6 @@ const parseListToken = (list?: any) => {
 
 const useDappTokens = () => {
   return useGetTokens({
-    chainId,
     url: `https://raw.githubusercontent.com/pangolindex/tokenlists/main/pangolin.tokenlist.json`,
     parse: parseListToken,
     modifyList: (tokens) => ({ native: nativeToken, ..._.mapKeys(tokens, (t) => t.address) }),

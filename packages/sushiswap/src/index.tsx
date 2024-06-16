@@ -1,10 +1,9 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, TWAPTokenSelectProps, Translations, TwapAdapter, Styles as TwapStyles, Orders, store, TWAPProps } from "@orbs-network/twap-ui";
+import { Components, TWAPTokenSelectProps, Translations, TwapAdapter, Styles as TwapStyles, Orders, store, TWAPProps, isNativeAddress } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext } from "react";
 import Web3 from "web3";
-import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode, useCallback, useState } from "react";
 import {
   StyledBalance,

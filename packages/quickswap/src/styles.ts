@@ -498,7 +498,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       },
       "& .MuiLinearProgress-bar": {
         height: "8px!important",
-        background: isDarkMode ? "#1A5366" : "#4387F9",
+        background: isDarkMode ? "#448aff" : "#4387F9",
       },
     },
     ".twap-chunks-size": {

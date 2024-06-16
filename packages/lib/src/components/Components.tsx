@@ -56,6 +56,7 @@ import {
   useDebounce,
   usePriceDisplay,
   useFeeOnTranserWarning,
+  useSrcAmount,
 } from "../hooks";
 import { useLimitPriceStore, useTwapStore } from "../store";
 import {
@@ -928,8 +929,9 @@ export const OrderSummaryLimitPrice = ({ translations: _translations }: { transl
 };
 
 export const DisclaimerText = ({ className = "", translations: _translations }: { className?: string; translations?: Translations }) => {
-  const translations = useTwapContext()?.translations || _translations;
-  const lib = useTwapStore((state) => state.lib);
+    const context = useTwapContext() 
+  const translations = context?.translations || _translations;
+  const lib = context.lib
   return (
     <StyledTradeInfoExplanation className={`twap-disclaimer-text ${className}`}>
       <StyledText>{translations.disclaimer1}</StyledText>
@@ -1153,10 +1155,11 @@ export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
 
 export const ResetLimitButton = ({ children }: { children?: ReactNode }) => {
   const onReset = useLimitPriceV2().onReset;
-  const { isLimitOrder, srcAmountTyped } = useTwapStore((s) => ({
+  const { isLimitOrder } = useTwapStore((s) => ({
     isLimitOrder: s.isLimitOrder,
-    srcAmountTyped: s.getSrcAmount().gt("0"),
   }));
+
+  const srcAmountTyped = useSrcAmount().gt(0)
 
   if (!isLimitOrder || !srcAmountTyped) return null;
 
@@ -1207,7 +1210,7 @@ export const TxSuccess = () => {
 
 export const LimitInputV2 = ({ className = "" }: { className?: string }) => {
   const { onChange, limitPrice, isLoading } = useLimitPriceV2();
-  const srcAmount = useTwapStore((s) => s.getSrcAmount().toString());
+  const srcAmount = useSrcAmount().toString();
 
   if (BN(srcAmount || "0").isZero()) return null;
 
@@ -1215,12 +1218,13 @@ export const LimitInputV2 = ({ className = "" }: { className?: string }) => {
 };
 
 export const TradePrice = ({ className = "" }: { className?: string }) => {
-  const { srcToken, dstToken, srcAmount, isLimitOrder } = useTwapStore((s) => ({
+  const { srcToken, dstToken, isLimitOrder } = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
-    srcAmount: s.getSrcAmount().toString(),
     isLimitOrder: s.isLimitOrder,
   }));
+  const srcAmount = useSrcAmount().toString();
+
   const dstAmountOut = useTwapContext().dstAmountOut;
 
   const { limitPrice, inverted } = useLimitPriceV2();

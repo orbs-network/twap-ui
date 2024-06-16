@@ -1,177 +1,210 @@
-import BigNumber from "bignumber.js";
+import { useCallback } from "react";
+import { useTwapContext } from "./context";
+import { useChunks, useDeadline, useDstAmount, useDstAmountUsdUi, useFillDelayUiMillis, useSrcAmountUsdUi, useSrcChunkAmount } from "./hooks";
 import { useTwapStore } from "./store";
-import { amountUi } from "./utils";
+
 require("isomorphic-fetch");
+const BI_ENDPOINT = "https://bi.orbs.network/putes/twap-ui";
 
-enum Category {
-  Error = "Error",
-  TWAPPanel = "TWAPPanel",
-  OrdersPanel = "OrdersPanel",
-  ConfirmationPanel = "ConfirmationPanel",
-  PageView = "onTwapPageView",
-}
-
-const onLimitToggleClick = (isLimitOrder: boolean) => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onLimitToggleClick", { isLimitOrder });
-};
-
-const uiCrashed = (location: "orders" | "twap", error: Error) => {
-  sendAnalyticsEvent(Category.Error, "UI crashed", { location, message: error.message, stack: error.stack });
-};
-
-const onSrcTokenClick = (symbol?: string) => {
-  sendAnalyticsEvent(Category.TWAPPanel, `onSrcTokenClick`, { symbol });
-};
-
-const onDstTokenClick = (symbol?: string) => {
-  sendAnalyticsEvent(Category.TWAPPanel, `onDstTokenClick`, { symbol });
-};
-
-const onCustomIntervalClick = () => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onCustomIntervalClick");
-};
-
-const onApproveClick = (amount: BigNumber) => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onApproveClick", { amount: amount.toString() });
-};
-
-const onApproveSuccess = () => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onApproveSuccess");
-};
-
-const onWrapClick = (amount: BigNumber) => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onWrapClick", { amount: amount.toString() });
-};
-
-const onWrapSuccess = () => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onWrapSuccess");
-};
-
-const onConfirmationCreateOrderClick = ({
-  minAmountOut,
-  totalTrades,
-  tradeSize,
-  deadline,
-}: {
-  minAmountOut: string;
-  totalTrades: number;
-  tradeSize: BigNumber;
-  deadline: number;
-}) => {
-  const lib = useTwapStore.getState().lib;
-
-  const srcToken = useTwapStore.getState().srcToken;
-  const dsToken = useTwapStore.getState().dstToken;
-
-  sendAnalyticsEvent(Category.ConfirmationPanel, `onConfirmationCreateOrderClick`, {
-    exchangeAddress: lib?.config.exchangeAddress,
-    srcToken: useTwapStore.getState().srcToken?.address,
-    dstToken: useTwapStore.getState().dstToken?.address,
-    srcTokenAmount: amountUi(srcToken, useTwapStore.getState().getSrcAmount()),
-    tradeSize: amountUi(srcToken, tradeSize),
-    minAmountOut,
-    deadline,
-    tradeInterval: useTwapStore.getState().getFillDelayUiMillis(),
-    totalTrades,
-  });
-};
-
-const onODNPClick = () => {
-  sendAnalyticsEvent(Category.OrdersPanel, "onODNPClick");
-};
-
-const onModuleLoad = () => {
-  sendAnalyticsEvent(Category.PageView, "onModuleLoad");
-};
-
-const onTwapPageView = () => {
-  sendAnalyticsEvent(Category.PageView, "onTwapPageView");
-};
-
-const onCreateOrderSuccess = (orderId: number) => {
-  sendAnalyticsEvent(Category.ConfirmationPanel, `onCreateOrderSuccess`, { orderId });
-};
-
-const onCreateOrderError = (message: string) => {
-  sendAnalyticsEvent(Category.Error, `onCreateOrderError`, { message });
-};
-
-const onWrapError = (message: string) => {
-  sendAnalyticsEvent(Category.Error, "onWrapError", { message });
-};
-
-const onApproveError = (message: string) => {
-  sendAnalyticsEvent(Category.Error, "onApproveError", { message });
-};
-
-const onCancelOrderClick = (orderId: number) => {
-  sendAnalyticsEvent(Category.OrdersPanel, "onCancelOrderClick", { orderId });
-};
-
-const onCancelOrderSuccess = (orderId: string) => {
-  sendAnalyticsEvent(Category.OrdersPanel, "onCancelOrderSuccess", { orderId });
-};
-
-const onCancelOrderError = (error: string) => {
-  sendAnalyticsEvent(Category.Error, `onCancelOrderError`, { error });
-};
-
-const onCreateOrderRejected = () => {
-  sendAnalyticsEvent(Category.Error, `onCreateOrderRejected`);
-};
-
-const onOpenConfirmationModal = () => {
-  sendAnalyticsEvent(Category.ConfirmationPanel, `onOpenConfirmationModal`);
-};
-
-const sendAnalyticsEvent = (category: Category, action: string, data = {} as { [key: string]: any }) => {
-  if (process.env.NODE_ENV === "development") return;
-
-  const lib = useTwapStore.getState().lib;
-
+const sendBI = async (data: Partial<StateData>) => {
   try {
-    fetch("https://bi.orbs.network/putes/twap-ui", {
+    await fetch(BI_ENDPOINT, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        timestamp: new Date().toISOString(),
-        maker: lib?.maker,
-        partner: lib?.config.partner,
-        chain: lib?.config.chainId,
-        category,
-        action,
-        ...data,
-      }),
-    });
-  } catch (error) {
-    console.error(error);
-  }
+      body: JSON.stringify(data),
+    })
+      .then()
+      .catch();
+  } catch (error) {}
 };
 
-export const analytics = {
-  onLimitToggleClick,
-  onSrcTokenClick,
-  onDstTokenClick,
-  onCustomIntervalClick,
-  onApproveClick,
-  onApproveSuccess,
-  onWrapClick,
-  onWrapSuccess,
-  onConfirmationCreateOrderClick,
-  onODNPClick,
-  onCreateOrderSuccess,
-  onCreateOrderError,
-  onWrapError,
-  onApproveError,
-  onCancelOrderClick,
-  onCancelOrderSuccess,
-  onCancelOrderError,
-  onTwapPageView,
-  onCreateOrderRejected,
-  onModuleLoad,
-  onOpenConfirmationModal,
-  uiCrashed,
+type Status = "pending" | "error" | "success";
+
+interface StateData {
+  _id: string;
+  maker?: string;
+  chainId?: number;
+  partner?: string;
+  srcTokenAddress?: string;
+  dstTokenAddress?: string;
+  srcTokenSymbol?: string;
+  dstTokenSymbol?: string;
+  srcUsd?: string;
+  dstUsd?: string;
+  srcAmount?: string;
+  minAmountOut?: string;
+  exchangeAddress?: string;
+  chunkSize?: number;
+  deadline?: number;
+  tradeInterval?: number;
+  totalChunks?: number;
+  name?: string;
+  isLimit?: boolean;
+  uiCrashedError?: string;
+  uiCrashedStack?: string;
+  approvalStatus?: Status;
+  wrapStatus?: Status;
+  createOrderStatus?: Status;
+  error?: string;
+  twapLoaded?: boolean;
+  orderId?: number;
+  txHash?: string;
+}
+
+class Analytics {
+  initialTimestamp = Date.now();
+  data: StateData = {
+    _id: crypto.randomUUID(),
+  };
+  timeout: any = undefined;
+
+  public async updateAndSend(values = {} as Partial<StateData>) {
+    this.data = {
+      ...this.data,
+      ...values,
+    };
+    clearTimeout(this.timeout);
+    this.timeout = setTimeout(() => {
+      sendBI(this.data);
+    }, 1_000);
+  }
+
+  public reset() {
+    this.data = {
+      _id: crypto.randomUUID(),
+    };
+  }
+
+  public resetOrderId() {
+    this.data = {
+      ...this.data,
+      _id: crypto.randomUUID(),
+    };
+  }
+}
+
+const analytics = new Analytics();
+
+const useSubmitOrder = () => {
+  const { lib } = useTwapContext();
+  const tradeInterval = useFillDelayUiMillis();
+  const deadline = useDeadline();
+  const totalChunks = useChunks();
+  const srcUsd = useSrcAmountUsdUi();
+  const dstUsd = useDstAmountUsdUi();
+  const minAmountOut = useDstAmount().outAmount.ui;
+  const chunkSize = useSrcChunkAmount().toNumber();
+
+  const { isLimit, srcAmount, srcToken, dstToken } = useTwapStore((s) => ({
+    isLimit: s.isLimitOrder,
+    srcAmount: s.srcAmountUi,
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+  }));
+
+  return useCallback(() => {
+    analytics.updateAndSend({
+      partner: lib?.config.partner,
+      maker: lib?.maker,
+      chainId: lib?.config.chainId,
+      exchangeAddress: lib?.config.exchangeAddress,
+      name: lib?.config.name,
+      tradeInterval,
+      isLimit,
+      deadline,
+      totalChunks,
+      srcUsd,
+      dstUsd,
+      srcAmount,
+      minAmountOut,
+      srcTokenAddress: srcToken?.address,
+      srcTokenSymbol: srcToken?.symbol,
+      dstTokenAddress: dstToken?.address,
+      dstTokenSymbol: dstToken?.symbol,
+      chunkSize,
+      approvalStatus: "pending",
+    });
+  }, [lib, tradeInterval, isLimit, deadline, totalChunks, srcUsd, dstUsd, srcAmount, minAmountOut, srcToken, dstToken, chunkSize]);
 };
+
+const onApprovalError = (error: any) => {
+  analytics.updateAndSend({
+    error: handleError(error),
+    approvalStatus: "error",
+  });
+};
+const onApprovalSucess = () => {
+  analytics.updateAndSend({
+    approvalStatus: "success",
+  });
+};
+
+const handleError = (error: any) => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "";
+};
+
+const onWrapError = (error: any) => {
+  analytics.updateAndSend({
+    error: handleError(error),
+    wrapStatus: "error",
+  });
+};
+const onWrapSucess = () => {
+  analytics.updateAndSend({
+    wrapStatus: "success",
+  });
+};
+
+const onCreateOrderFailed = (error: any) => {
+  analytics.updateAndSend({
+    error: handleError(error),
+    createOrderStatus: "error",
+  });
+  analytics.resetOrderId();
+};
+
+const onCreateOrderSuccess = (orderId: number, txHash: string) => {
+  analytics.updateAndSend({
+    createOrderStatus: "success",
+    orderId,
+    txHash,
+  });
+
+  analytics.reset();
+};
+
+const onUiCrashed = (error: Error) => {
+  analytics.updateAndSend({
+    uiCrashedError: error.message,
+    uiCrashedStack: error.stack,
+  });
+};
+
+const onModuleLoaded = () => {
+  analytics.updateAndSend({});
+};
+
+const onTwapLoaded = () => {
+  analytics.updateAndSend({ twapLoaded: true });
+};
+
+const _analytics = {
+  onUiCrashed,
+  onCreateOrderFailed,
+  onCreateOrderSuccess,
+  onApprovalError,
+  onApprovalSucess,
+  onModuleLoaded,
+  onTwapLoaded,
+  onWrapError,
+  onWrapSucess,
+  useSubmitOrder,
+};
+
+export { _analytics as Analytics };

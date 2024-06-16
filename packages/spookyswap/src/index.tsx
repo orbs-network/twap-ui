@@ -11,6 +11,7 @@ import {
   store,
   Orders,
   TwapContextUIPreferences,
+  isNativeAddress,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
@@ -33,7 +34,6 @@ import {
   StyledTokenSelect,
   StyledTradeSize,
 } from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode, useCallback, useState } from "react";
 
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";

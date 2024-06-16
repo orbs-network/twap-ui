@@ -4,16 +4,17 @@ import _ from "lodash";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearchParams } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
 import { dapps } from "./config";
-import { TokenData } from "@orbs-network/twap";
-import { store, amountBN, amountUi } from "@orbs-network/twap-ui";
+import { Config, Configs, TokenData, TWAPLib } from "@orbs-network/twap";
+import { amountUi } from "@orbs-network/twap-ui";
 import { usePersistedStore } from "./store";
 import { fetchPrice } from "./utils";
 import BigNumber from "bignumber.js";
 import { useMediaQuery } from "@mui/material";
+import Web3 from 'web3'
 export const injectedConnector = new InjectedConnector({});
 
 export const useAddedTokens = () => {
@@ -23,8 +24,20 @@ export const useAddedTokens = () => {
   return useMemo(() => persistedTokens[chainId!] || [], [chainId, persistedTokens]);
 };
 
+export const useLib = () => {
+  const { account, library, chainId } = useWeb3React();
+  const { isInValidNetwork } = useNetwork(chainId);
+  const config = _.find(Configs, config => config.chainId === chainId)
+
+  return useMemo(() => {
+    if (!account || !library || isInValidNetwork || !config) {
+      return undefined;
+    }
+    return new TWAPLib(config, account, library);
+  }, [config, account, library, isInValidNetwork]);
+};
+
 export const useGetTokens = ({
-  chainId,
   url,
   parse,
   baseAssets,
@@ -32,7 +45,6 @@ export const useGetTokens = ({
   modifyList,
   modifyFetchResponse,
 }: {
-  chainId: number;
   url?: string;
   parse?: (t: any) => any;
   baseAssets?: any;
@@ -40,12 +52,12 @@ export const useGetTokens = ({
   modifyList?: (list: any) => any;
   modifyFetchResponse?: (res: any) => any;
 }) => {
-  const { account } = useWeb3React();
+  const { account, chainId } = useWeb3React();
   const { isInValidNetwork } = useNetwork(chainId);
   const addedTokens = useAddedTokens();
-  const lib = store.useTwapStore((s) => s.lib);
+
   return useQuery(
-    ["useGetTokens", chainId, _.size(addedTokens)],
+    ["useGetTokens",chainId, _.size(addedTokens)],
     async () => {
       let tokenList;
       if (url) {
@@ -68,7 +80,7 @@ export const useGetTokens = ({
 
       return modifyList ? modifyList(_tokens) : _tokens;
     },
-    { enabled: !!account && !isInValidNetwork && !!lib, staleTime: Infinity }
+    { enabled: !!account && !isInValidNetwork, staleTime: Infinity }
   );
 };
 
@@ -97,7 +109,7 @@ export const useSelectedDapp = () => {
   return { isSelected, selectedDapp };
 };
 
-export const useNetwork = (chainId: number) => {
+export const useNetwork = (chainId?: number) => {
   const { chainId: connectedChainId } = useWeb3React();
 
   const isInValidNetwork = !!(connectedChainId && connectedChainId !== chainId);
@@ -132,8 +144,7 @@ export const useTheme = () => {
 };
 
 export const useBalanceQuery = (token?: TokenData) => {
-  const lib = store.useTwapStore().lib;
-
+  const lib = useLib()
   const query = useQuery(["useDappExampleBalance", lib?.maker, token?.address, lib?.config.chainId], () => lib!.makerBalance(token!), {
     enabled: !!lib && !!token,
     refetchInterval: 20_000,
@@ -180,7 +191,7 @@ export const useGetPriceUsdCallback = () => {
 };
 
 export const usePriceUSD = (address?: string) => {
-  const wToken = store.useTwapStore((s) => s.lib)?.config.wToken.address;
+  const wToken = useLib()?.config.wToken.address
   const { chainId } = useWeb3React();
   return useQuery<number>({
     queryKey: ["usePriceUSD", address, chainId],

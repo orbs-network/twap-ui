@@ -1,4 +1,3 @@
-import { TokenData, parsebn, eqIgnoreCase, maxUint256, Token } from "@defi.org/web3-candies";
 import moment from "moment";
 import { Translations } from "./types";
 import { QUERY_PARAMS } from "./consts";
@@ -6,6 +5,9 @@ import BN from "bignumber.js";
 import _ from "lodash";
 import { useTwapStore } from "./store";
 import { THE_GRAPH_ORDERS_API } from "./config";
+import { eqIgnoreCase, parsebn } from "./web3-candies";
+import { TokenData } from "./web3-candies/types";
+import { maxUint256 } from "./web3-candies/consts";
 export const logger = (...args: any[]) => {
   const query = new URLSearchParams(window.location.search);
   const debug = query.get("debug");

@@ -229,14 +229,6 @@ export interface TwapLibProps extends LibProps {
 
 export type Token = TokenData;
 
-export interface InitLibProps {
-  config: Config;
-  provider?: any;
-  account?: string;
-  connectedChainId?: number;
-  storeOverride?: StoreOverride;
-}
-
 export type OrderUI = ReturnType<typeof useParseOrderUi>;
 
 export interface StylesConfig {
@@ -283,14 +275,23 @@ export interface OrdersData {
   [Status.Completed]?: OrderUI[];
 }
 
+export enum SwapState {
+  APPROVE = "APPROVE",
+  APPROVAL_PENDING = "APPROVAL_PENDING",
+  WRAP = "WRAP",
+  WRAP_PENDING = "WRAP_PENDING",
+  CREATE = "CREATE",
+  PENDING_CONFIRMATION = 'PENDING_CONFIRMATION',
+  ERROR = "ERROR",
+  COMPLETED = "COMPLETED",
+}
+
 export interface State {
-  lib: TWAPLib | undefined;
   srcToken: TokenData | undefined;
   dstToken: TokenData | undefined;
-  wrongNetwork: undefined | boolean;
   srcAmountUi: string;
-
-  loading: boolean;
+  createOrderLoading: boolean;
+  createOrderError?: string;
   isLimitOrder: boolean;
   confirmationClickTimestamp: Moment;
   showConfirmation: boolean;
@@ -312,6 +313,8 @@ export interface State {
   dstUsd?: BN;
   srcUsdLoading?: boolean;
   dstUsdLoading?: boolean;
+
+  swapState?: SwapState;
 }
 
 export type SwitchVariant = "ios" | "default";

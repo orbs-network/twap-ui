@@ -13,6 +13,9 @@ import {
   store,
   REFETCH_GAS_PRICE,
   amountBN,
+  isNativeAddress,
+  eqIgnoreCase,
+  zeroAddress,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
@@ -35,7 +38,6 @@ import {
   StyledTokenSelect,
   StyledTradeSize,
 } from "./styles";
-import { eqIgnoreCase, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { StyledOneLineText } from "@orbs-network/twap-ui/dist/styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
@@ -314,7 +316,7 @@ const LimitPanel = () => {
         </TwapStyles.StyledColumnFlex>
         <Market />
         <LimitPrice limit={true} />
-        <SubmitButton isMain />
+        <ShowConfirmationButton />
       </TwapStyles.StyledColumnFlex>
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
@@ -333,8 +335,8 @@ const ChangeTokensOrder = () => {
   return <StyledChangeTokensOrder icon={<AiOutlineArrowDown />} />;
 };
 
-const SubmitButton = ({ isMain }: { isMain?: boolean }) => {
-  const { disabled, loading, text, onClick } = hooks.useSubmitButton(isMain);
+const SubmitButton = () => {
+  const { disabled, loading, text, onClick } = hooks.useSubmitSwapButton();
   const _onClick = () => {
     if (onClick) return onClick();
     return () => {};
@@ -347,6 +349,22 @@ const SubmitButton = ({ isMain }: { isMain?: boolean }) => {
     </StyledSubmitButton>
   );
 };
+
+const ShowConfirmationButton = () => {
+  const { disabled, loading, text, onClick } = hooks.useShowConfirmationModalButton();
+  const _onClick = () => {
+    if (onClick) return onClick();
+    return () => {};
+  };
+
+  return (
+    <StyledSubmitButton variant={loading || disabled ? "outlined" : "contained"} fullWidth size="large" onClick={_onClick}>
+      <div style={{ opacity: loading ? 0 : 1 }}>{text}</div>
+      {loading && <Components.Base.Spinner />}
+    </StyledSubmitButton>
+  );
+};
+
 
 const TWAPPanel = () => {
   return (
@@ -362,7 +380,7 @@ const TWAPPanel = () => {
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
-        <SubmitButton isMain />
+        <ShowConfirmationButton />
       </TwapStyles.StyledColumnFlex>
       <OrderSummary>
         <Components.OrderSummaryDetails />

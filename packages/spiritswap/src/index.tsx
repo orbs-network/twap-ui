@@ -1,12 +1,11 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, OrdersPanel, TWAPProps, Orders } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, OrdersPanel, TWAPProps, Orders, isNativeAddress } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useMemo } from "react";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
 const config = Configs.SpiritSwap;
 
 const useGetProvider = (getProvider: () => any, account?: string) => {

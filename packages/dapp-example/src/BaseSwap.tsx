@@ -15,7 +15,6 @@ const config = Configs.BaseSwap;
 
 const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     tokens,
     baseAssets: erc20s.base,
   });

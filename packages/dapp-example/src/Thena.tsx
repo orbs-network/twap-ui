@@ -27,7 +27,6 @@ const pasrseListToken = (tokenList?: any) => {
 };
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: pasrseListToken,
     modifyList: (tokens: any) => {
       return [config.nativeToken, ...tokens];

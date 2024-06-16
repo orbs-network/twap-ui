@@ -24,7 +24,6 @@ const parseListToken = (tokens?: any[]) => {
 
 const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     url: `https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json`,
     parse: parseListToken,
     baseAssets: erc20s.arb,

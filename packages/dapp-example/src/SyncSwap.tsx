@@ -624,7 +624,6 @@ const parsedList = parseList(dappTokens);
 
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseList,
     baseAssets: erc20s.SyncSwap,
     tokens: dappTokens,

@@ -26,7 +26,6 @@ const parseListToken = (tokenList: any) => {
 
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseListToken,
     modifyFetchResponse: (response: any) => {
       return response.data;

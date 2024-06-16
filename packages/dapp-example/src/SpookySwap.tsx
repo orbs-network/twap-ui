@@ -27,7 +27,6 @@ const parseListToken = (tokenList?: any[]) => {
 
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseListToken,
     modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
     url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/ftm.json",

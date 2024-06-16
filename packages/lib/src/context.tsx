@@ -1,21 +1,25 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { TwapContextUIPreferences, TwapLibProps } from "./types";
-import { useInitLib, useLimitPriceV2, useParseTokens, usePriceUSD, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
+import { useParseTokens, usePriceUSD, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { analytics } from "./analytics";
-import { TokenData } from "@orbs-network/twap";
+import { TokenData, TWAPLib } from "@orbs-network/twap";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import { Wizard } from "./components";
 import { useLimitPriceStore, useTwapStore } from "./store";
 import BN from "bignumber.js";
 import { getQueryParam } from "./utils";
 import { QUERY_PARAMS } from "./consts";
-analytics.onModuleLoad();
+import Web3 from "web3";
+import { Analytics } from "./analytics";
+Analytics.onModuleLoaded();
 
 export interface TWAPContextProps extends TwapLibProps {
   tokenList: TokenData[];
   uiPreferences: TwapContextUIPreferences;
+  web3?: Web3;
+  lib?: TWAPLib;
+  isWrongChain?: boolean;
 }
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -29,7 +33,6 @@ const queryClient = new QueryClient({
 
 const Listener = (props: TwapLibProps) => {
   const setTokensFromDappCallback = useSetTokensFromDapp();
-  const initLib = useInitLib();
   const updateStoreOveride = useUpdateStoreOveride();
   const limitStore = useLimitPriceStore();
   const enableQueryParams = props.enableQueryParams;
@@ -48,18 +51,12 @@ const Listener = (props: TwapLibProps) => {
     setTokensFromDappCallback();
   }, [setTokensFromDappCallback]);
 
-  useEffect(() => {
-    // init web3 every time the provider changes
-
-    initLib({ config: props.config, provider: props.provider, account: props.account, connectedChainId: props.connectedChainId });
-  }, [props.provider, props.config, props.account, props.connectedChainId]);
-
   return null;
 };
 
 const WrappedTwap = (props: TwapLibProps) => {
   useEffect(() => {
-    analytics.onTwapPageView();
+    Analytics.onTwapLoaded();
   }, []);
 
   return (
@@ -71,13 +68,40 @@ const WrappedTwap = (props: TwapLibProps) => {
   );
 };
 
+const useChainId = (web3?: Web3, connectedChainId?: number) => {
+  const [chainId, setChainId] = useState<number | undefined>(undefined);
+
+  const getChainId = useCallback(async () => {
+    const result = connectedChainId || (await web3?.eth.getChainId());
+    setChainId(result);
+  }, [connectedChainId, web3]);
+
+  useEffect(() => {
+    getChainId();
+  }, [getChainId]);
+
+  return chainId;
+};
+
 export const TwapAdapter = (props: TwapLibProps) => {
   const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
   const tokenList = useParseTokens(props.dappTokens, props.parseToken);
+  const web3 = useMemo(() => {
+    return props.provider ? new Web3(props.provider) : undefined;
+  }, [props.provider]);
+  const chainId = useChainId(web3, props.connectedChainId);
+  const isWrongChain = props.config.chainId !== chainId;
+
+  const lib = useMemo(() => {
+    if (!props.account || !props.provider || isWrongChain) {
+      return undefined;
+    }
+    return new TWAPLib(props.config, props.account, props.provider);
+  }, [props.config, props.account, props.provider, isWrongChain]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TwapContext.Provider value={{ ...props, translations, tokenList, uiPreferences: props.uiPreferences || {} }}>
+      <TwapContext.Provider value={{ ...props, translations, tokenList, uiPreferences: props.uiPreferences || {}, web3, lib, isWrongChain }}>
         <WrappedTwap {...props} />
       </TwapContext.Provider>
     </QueryClientProvider>

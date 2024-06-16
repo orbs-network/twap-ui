@@ -1,13 +1,12 @@
 import BN from "bignumber.js";
-import { TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { TokenData } from "@orbs-network/twap";
 import moment from "moment";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import _ from "lodash";
-import { maxUint256 } from "@defi.org/web3-candies";
-import { State, StoreOverride, Translations } from "./types";
+import { State, StoreOverride, SwapState } from "./types";
 import { QUERY_PARAMS } from "./consts";
-import { amountBN, amountUi, fillDelayText, getQueryParam, setQueryParam } from "./utils";
+import { getQueryParam, setQueryParam } from "./utils";
 
 export enum TimeResolution {
   Minutes = 60 * 1000,
@@ -31,13 +30,10 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
   return {
     showSuccessModal: true,
     showLoadingModal: false,
-    lib: undefined,
     srcToken: undefined,
     dstToken: undefined,
-    wrongNetwork: undefined,
     srcAmountUi: !queryParamsEnabled ? "" : srcAmountUi || "",
-
-    loading: false,
+    createOrderLoading: false,
     isLimitOrder: true,
     confirmationClickTimestamp: moment(),
     showConfirmation: false,
@@ -54,6 +50,7 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     waitingForOrdersUpdate: false,
     srcUsd: undefined,
     dstUsd: undefined,
+    swapState: undefined,
   };
 };
 const initialState = getInitialState();
@@ -77,10 +74,8 @@ export const useTwapStore = create(
         ...getInitialState(enableQueryParams),
         ...storeOverride,
         enableQueryParams,
-        lib: get().lib,
         srcToken: get().srcToken,
         dstToken: get().dstToken,
-        wrongNetwork: get().wrongNetwork,
         srcUsd: get().srcUsd,
         dstUsd: get().dstUsd,
       });
@@ -90,7 +85,6 @@ export const useTwapStore = create(
     reset: (storeOverride: StoreOverride) => {
       set({
         ...getInitialState(),
-        lib: get().lib,
         ...storeOverride,
         srcToken: get().srcToken,
         dstToken: get().dstToken,
@@ -98,15 +92,11 @@ export const useTwapStore = create(
         dstUsd: get().dstUsd,
       });
     },
-    setLib: (lib?: TWAPLib) => set({ lib }),
-    setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
       set({ srcToken });
     },
     setDstToken: (dstToken?: TokenData) => set({ dstToken }),
-    getSrcAmount: () => BN.min(amountBN(get().srcToken, get().srcAmountUi), maxUint256).decimalPlaces(0),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
-    setWrongNetwork: (wrongNetwork?: boolean) => set({ wrongNetwork }),
     setDuration: (customDuration: Duration) => {
       setQueryParam(QUERY_PARAMS.MAX_DURATION, !customDuration.amount ? undefined : customDuration.amount.toString());
       set({ customDuration });
@@ -115,20 +105,6 @@ export const useTwapStore = create(
       setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, !fillDelay.amount ? undefined : fillDelay.amount?.toString());
       set({ customFillDelay: fillDelay });
     },
-    getFillDelayText: (translations: Translations) => fillDelayText((get() as any).getFillDelayUiMillis(), translations),
-    getFillDelayUiMillis: () => get().customFillDelay.amount! * get().customFillDelay.resolution,
-    getMinimumDelayMinutes: () => (get().lib?.estimatedDelayBetweenChunksMillis() || 0) / 1000 / 60,
-    getFillDelayWarning: () => {
-      return get().lib && (get() as any).getFillDelayUiMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000;
-    },
-    shouldWrap: () =>
-      get().lib &&
-      get().srcToken &&
-      get().dstToken &&
-      [TokensValidation.wrapAndOrder, TokensValidation.wrapOnly].includes(get().lib!.validateTokens(get().srcToken!, get().dstToken!)),
-
-    shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
-    isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
     setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment() }),
   }))
 );

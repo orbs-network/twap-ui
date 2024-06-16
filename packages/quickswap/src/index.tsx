@@ -11,6 +11,7 @@ import {
   TWAPProps,
   store,
   Orders,
+  isNativeAddress,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Box } from "@mui/system";
@@ -18,7 +19,6 @@ import { createContext, memo, ReactNode, useCallback, useContext, useEffect, use
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles, StyledLimitPrice, StyledLimitPriceInput, StyledLimitPriceInverter, StyledReset, StyledTradePrice } from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
 import { TiArrowSync } from "@react-icons/all-files/ti/TiArrowSync";
 
 import BN from "bignumber.js";
@@ -192,7 +192,7 @@ interface Props extends QuickSwapTWAPProps {
 }
 
 const AmountUpdater = () => {
-  const srcAmount = store.useTwapStore((state) => state.getSrcAmount().toString());
+  const srcAmount = hooks.useSrcAmount().toString()
 
   const onInputChange = useAdapterContext().onInputChange;
   useEffect(() => {
