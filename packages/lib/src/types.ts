@@ -131,8 +131,6 @@ export interface TWAPProps extends BaseProps {
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
-  dstAmountOut?: string;
-  dstAmountLoading?: boolean;
 }
 
 type PriceUsd = (address: string, token?: TokenData) => any;

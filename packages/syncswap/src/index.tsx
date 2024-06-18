@@ -285,10 +285,11 @@ const TWAP = (props: Props) => {
 
 const Market = () => {
   const [inverted, setInverted] = useState(false);
-  const { leftToken, rightToken, marketPrice, loading } = hooks.useMarketPriceV2(inverted);
+  const marketPrice = hooks.useMarketPrice().marketPriceUi;
+  const { leftToken, rightToken, price } = hooks.useInvertPrice(marketPrice);
   return (
     <StyledMarketPrice>
-      {loading ? (
+      {!marketPrice ? (
         <StyledMarketPriceLoader>
           <Components.Base.Loader height={26} />
         </StyledMarketPriceLoader>
@@ -296,7 +297,7 @@ const Market = () => {
         <Button onClick={() => setInverted(!inverted)}>
           <Components.Base.TokenPriceCompare.LeftToken token={leftToken} />
           <Typography>=</Typography>
-          <Components.Base.TokenPriceCompare.RightToken token={rightToken} price={marketPrice?.original} />
+          <Components.Base.TokenPriceCompare.RightToken token={rightToken} price={price} />
         </Button>
       )}
     </StyledMarketPrice>
@@ -313,7 +314,6 @@ const LimitPanel = () => {
           <TokenPanel />
         </TwapStyles.StyledColumnFlex>
         <Market />
-        <LimitPrice limit={true} />
         <SubmitButton isMain />
       </TwapStyles.StyledColumnFlex>
       <OrderSummary>
@@ -358,7 +358,6 @@ const TWAPPanel = () => {
           <TokenPanel />
         </TwapStyles.StyledColumnFlex>
         <Market />
-        <LimitPrice />
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
@@ -417,25 +416,6 @@ const TradeInterval = () => {
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
-  );
-};
-
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
-  const isLimitOrder = store.useTwapStore((s) => s.isLimitOrder);
-  return (
-    <>
-      <Components.Base.Card className="twap-limit-price">
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel />
-          {!limit && <Components.LimitPriceToggle />}
-        </TwapStyles.StyledRowFlex>
-      </Components.Base.Card>
-      {isLimitOrder && (
-        <StyledLimitPrice>
-          <Components.LimitPriceInput placeholder="0" />
-        </StyledLimitPrice>
-      )}
-    </>
   );
 };
 

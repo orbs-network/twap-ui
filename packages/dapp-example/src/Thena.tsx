@@ -125,8 +125,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       onSrcTokenSelected={setFromToken}
       onDstTokenSelected={setDstToken}
       setFromAmount={setAmount}
-      outAmount={trade.outAmount}
-      outAmountLoading={BN(amount || "0").gt(0) && trade.isLoading}
     />
   );
 };

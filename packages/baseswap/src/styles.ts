@@ -129,17 +129,6 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
   },
 });
 
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => {
-  return {
-    background: baseStyles(theme).secondaryBackground,
-    borderRadius: 5,
-    padding: "3px 5px",
-    input: {
-      letterSpacing: "unset",
-    },
-  };
-});
-
 export const StyledTokenSelect = styled(Box)({
   ".twap-token-logo": {
     width: 40,

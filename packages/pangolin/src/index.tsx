@@ -131,7 +131,6 @@ const TWAPPanel = () => {
       <TokenPanel isSrcToken={true} />
       <Components.ChangeTokensOrder />
       <TokenPanel isSrcToken={false} />
-      <LimitPrice />
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
@@ -151,8 +150,6 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <Components.ChangeTokensOrder />
       <TokenPanel />
-      <LimitPrice limit={true} />
-
       <Components.SubmitButton />
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
@@ -207,20 +204,6 @@ const TradeSize = () => {
   );
 };
 
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
-  return (
-    <Components.Base.Card className="twap-limit-price">
-      <TwapStyles.StyledColumnFlex>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel />
-          {!limit && <Components.LimitPriceToggle />}
-        </TwapStyles.StyledRowFlex>
-        <Components.LimitPriceInput placeholder="0" />
-      </TwapStyles.StyledColumnFlex>
-    </Components.Base.Card>
-  );
-};
-
 const MaxDuration = () => {
   return (
     <Components.Base.Card>
@@ -262,8 +245,8 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
-  const marketPrice = hooks.useMarketPriceV2().marketPrice;
-  const formattedMarketPrice = hooks.useFormatNumber({ value: marketPrice?.original });
+  const marketPrice = hooks.useMarketPrice().marketPriceUi;
+  const formattedMarketPrice = hooks.useFormatNumber({ value: marketPrice });
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -276,7 +259,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>
           {isSrcToken && <SrcTokenPercentSelector />}
-          {!isSrcToken && marketPrice?.original !== "0" && (
+          {!isSrcToken && marketPrice !== "0" && (
             <TwapStyles.StyledRowFlex className="twap-token-panel-price">
               <TwapStyles.StyledText>Price</TwapStyles.StyledText> {formattedMarketPrice} <Components.TokenSymbol isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>

@@ -25,12 +25,7 @@ import {
   StyledChunksInput,
   StyledChunksSlider,
   StyledColumnFlex,
-  StyledLimitPrice,
-  StyledLimitPriceBody,
-  StyledLimitPriceLabel,
-  StyledMarketPriceContainer,
   StyledPoweredBy,
-  StyledReset,
   StyledTimeSelect,
   StyledTimeSelectBody,
   StyledTimeSelectContainer,
@@ -44,6 +39,7 @@ import {
   StyledResetLimitButtonContainer,
   StyledResetLimitButtonLeft,
   StyledResetLimitButtonRight,
+  StyledLimit,
 } from "./styles";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -60,13 +56,11 @@ import {
 } from "./styles";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { Configs, TokenData } from "@orbs-network/twap";
-import { createContext, useContext } from "react";
 import Web3 from "web3";
 import _ from "lodash";
 import BN from "bignumber.js";
 import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
-import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
 import PancakeOrders from "./PancakeOrders";
 import { getTokenFromTokensList } from "@orbs-network/twap-ui";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
@@ -254,20 +248,6 @@ const useTrade = (props: AdapterProps, amount?: string) => {
     isLoading: BN(amount || 0).gt(0) && res?.isLoading,
   };
 };
-const useOutAmount = (props: AdapterProps) => {
-  const { srcAmount } = store.useTwapStore((s) => ({
-    srcAmount: s.getSrcAmount(),
-    isLimitOrder: s.isLimitOrder,
-  }));
-
-  const { result, isLoading } = useTrade(props, srcAmount.toString());
-
-  const amount = adapterHooks.useAmountOut(result, 1);
-  return {
-    result: amount,
-    isLoading,
-  };
-};
 
 const useMarketPrice = (props: AdapterProps) => {
   const { srcToken } = store.useTwapStore((s) => ({
@@ -280,7 +260,6 @@ const useMarketPrice = (props: AdapterProps) => {
 
 const TWAP = memo((props: AdapterProps) => {
   const provider = useProvider(props);
-  const outAmount = useOutAmount(props);
   const marketPrice = useMarketPrice(props);
 
   const theme = useMemo(() => {
@@ -318,8 +297,6 @@ const TWAP = memo((props: AdapterProps) => {
         isMobile={props.isMobile}
         connectedChainId={props.connectedChainId}
         enableQueryParams={true}
-        dstAmountOut={outAmount?.result}
-        dstAmountLoading={outAmount?.isLoading}
         marketPrice={marketPrice.result}
       >
         <ThemeProvider theme={theme}>
@@ -379,9 +356,9 @@ const LimitPanel = () => {
       <StyledColumnFlex>
         <TopPanel />
         <TwapStyles.StyledColumnFlex>
-          <LimitPrice limitOnly={true} />
           <Price />
         </TwapStyles.StyledColumnFlex>
+        <LimitPrice />
         <OpenConfirmationModalButton />
       </StyledColumnFlex>
       <SwapModal limitPanel={true} />
@@ -425,22 +402,26 @@ const CustomPercent = ({ text, onClick }: { text: string; onClick: () => void })
   );
 };
 
-const LimitPriceCard = () => {
+const LimitPrice = () => {
   const onSrcSelect = useTokenSelectClick(true);
   const onDstSelect = useTokenSelectClick(false);
 
   return (
-    <Components.LimitPanel
-      onSrcSelect={onSrcSelect}
-      onDstSelect={onDstSelect}
-      styles={{
-        percentButtonsGap: "5px",
-      }}
-      Components={{
-        PercentButton,
-        CustomPercent,
-      }}
-    />
+    <Card>
+      <Card.Body editable={true}>
+        <Components.LimitPanel
+          onSrcSelect={onSrcSelect}
+          onDstSelect={onDstSelect}
+          styles={{
+            percentButtonsGap: "5px",
+          }}
+          Components={{
+            PercentButton,
+            CustomPercent,
+          }}
+        />
+      </Card.Body>
+    </Card>
   );
 };
 
@@ -448,16 +429,16 @@ const TWAPPanel = () => {
   return (
     <div className="twap-container">
       <StyledColumnFlex>
-        <LimitPriceCard />
         <TopPanel />
         <LimitPrice />
-        <Price />
         <TotalTrades />
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
+        
         <SwapModal limitPanel={false} />
         <OpenConfirmationModalButton />
+       
       </StyledColumnFlex>
       <StyledPoweredBy />
     </div>
@@ -537,45 +518,6 @@ const TradeInterval = () => {
         <Components.FillDelayWarning />
       </StyledTimeSelect>
     </StyledTimeSelectContainer>
-  );
-};
-
-const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
-  const isLimitOrder = store.useTwapStore((store) => store.isLimitOrder);
-  const { onInvert, isLoading } = hooks.useLimitPriceV2();
-  const { TradePriceToggle } = useAdapterContext();
-
-  return (
-    <StyledLimitPrice>
-      <Card>
-        <Card.Header>
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <StyledLimitPriceLabel>
-              <Components.Labels.LimitPriceLabel />
-              <Components.ResetLimitButton>
-                <StyledReset>
-                  <TwapStyles.StyledRowFlex gap={8}>
-                    <GrPowerReset />
-                    <Typography>Reset</Typography>
-                  </TwapStyles.StyledRowFlex>
-                </StyledReset>
-              </Components.ResetLimitButton>
-            </StyledLimitPriceLabel>
-            <TwapStyles.StyledRowFlex style={{ width: "auto", gap: 0 }}>
-              {!limitOnly && <Components.LimitPriceToggle />}
-              <TradePriceToggle onClick={onInvert} loading={!!isLoading} />
-            </TwapStyles.StyledRowFlex>
-          </TwapStyles.StyledRowFlex>
-        </Card.Header>
-        {isLimitOrder && (
-          <Styles.StyledColumnFlex>
-            <StyledLimitPriceBody editable={true}>
-              <Components.LimitInputV2 />
-            </StyledLimitPriceBody>
-          </Styles.StyledColumnFlex>
-        )}
-      </Card>
-    </StyledLimitPrice>
   );
 };
 
@@ -769,7 +711,7 @@ export const useShowSwapModalButton = () => {
     srcAmount: store.srcAmountUi,
   }));
   const warning = hooks.useFillWarning();
-  const { isLoading: dstAmountLoading, dexAmounOut } = hooks.useDstAmount();
+  const { isLoading: dstAmountLoading } = hooks.useOutAmount();
   const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken(true);
   const { mutate: wrap, isLoading: wrapLoading } = hooks.useWrapToken(true);
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();

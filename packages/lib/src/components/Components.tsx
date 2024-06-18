@@ -1,4 +1,4 @@
-import { CSSProperties, FC, ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, ReactNode, useCallback, useMemo } from "react";
 import {
   Balance,
   Button,
@@ -16,15 +16,11 @@ import {
   Label,
   SwipeContainer,
   Modal,
-  Radio,
 } from "./base";
 import { styled, Button as MuiButton } from "@mui/material";
 import { useTwapContext } from "../context";
 import { AiOutlineWarning } from "@react-icons/all-files/ai/AiOutlineWarning";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
-import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
-import { TiArrowSync } from "@react-icons/all-files/ti/TiArrowSync";
-
 import { IconType } from "@react-icons/all-files";
 import {
   useLoadingState,
@@ -33,13 +29,11 @@ import {
   useSwitchTokens,
   useSelectTokenCallback,
   useSubmitButton,
-  useLimitPriceV2,
+  useLimitPrice,
   useDstMinAmountOut,
   useFillWarning,
   useSrcAmountUsdUi,
   useDstAmountUsdUi,
-  useMarketPriceV2,
-  useDstAmount,
   useChunks,
   useMaxPossibleChunks,
   useSetChunks,
@@ -53,22 +47,13 @@ import {
   useDurationUi,
   useDeadlineUi,
   useSetSrcAmountUi,
-  useDebounce,
-  usePriceDisplay,
   useFeeOnTranserWarning,
+  useOutAmount,
+  useInvertPrice,
+  useMarketPrice,
 } from "../hooks";
-import { useLimitPriceStore, useTwapStore } from "../store";
-import {
-  StyledText,
-  StyledRowFlex,
-  StyledColumnFlex,
-  StyledOneLineText,
-  StyledOverflowContainer,
-  textOverflow,
-  StyledSummaryDetails,
-  StyledSummaryRow,
-  StyledSummaryRowRight,
-} from "../styles";
+import { useTwapStore } from "../store";
+import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, textOverflow, StyledSummaryDetails, StyledSummaryRow, StyledSummaryRowRight } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
 import {
@@ -79,19 +64,18 @@ import {
   OrderSummaryTradeIntervalLabel,
   OrderSummaryMinDstAmountOutLabel,
   ChunksAmountLabel,
-  LimitPriceLabel,
 } from "./Labels";
 import { SwitchVariant, Translations, TWAPTokenSelectProps } from "../types";
-import { Box, Fade, FormControl, RadioGroup, Typography } from "@mui/material";
+import { Box, Fade, Typography } from "@mui/material";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
 import { Styles } from "..";
 import PendingTxModal from "./base/PendingTxModal";
 import SuccessTxModal from "./base/SuccessTxModal";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
 import { amountUi, handleFillDelayText, makeElipsisAddress } from "../utils";
 import BN from "bignumber.js";
+
 export function ChunksInput({ className = "", showDefault }: { className?: string; showDefault?: boolean }) {
   const translations = useTwapContext().translations;
   const chunks = useChunks();
@@ -184,7 +168,7 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
   const srcUsdLoading = useLoadingState().srcUsdLoading;
   const srcInputLoading = (!!srcAmount || srcAmount !== "0") && srcUsdLoading;
 
-  const { outAmount, isLoading: dstAmountLoading } = useDstAmount();
+  const { outAmountUi, isLoading: dstAmountLoading } = useOutAmount();
 
   return (
     <NumericInput
@@ -195,7 +179,7 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
       disabled={!isSrc}
       placeholder={placeholder}
       onChange={isSrc ? setSrcAmountUi : () => {}}
-      value={isSrc ? srcAmount : outAmount.ui}
+      value={isSrc ? srcAmount : outAmountUi}
     />
   );
 };
@@ -232,13 +216,13 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
     srcAmount: store.srcAmountUi,
     isLimitOrder: store.isLimitOrder,
   }));
-  const { outAmount, isLoading } = useDstAmount();
+  const { outAmountUi, isLoading } = useOutAmount();
   return (
     <Input
       disabled={true}
       loading={isLoading}
       prefix={isLimitOrder ? "~" : SQUIGLE}
-      value={outAmount.ui}
+      value={outAmountUi}
       decimalScale={props.decimalScale || token?.decimals}
       className={props.className}
       placeholder={props.placeholder}
@@ -371,54 +355,6 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: 
   return <Component isOpen={isOpen} onClose={onClose} onSelect={onSelect} srcTokenSelected={undefined} dstTokenSelected={undefined} />;
 };
 
-export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; style?: CSSProperties }) {
-  const { leftToken, rightToken, onReset } = useLimitPriceV2();
-  const loadingState = useLoadingState();
-  const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
-  const { translations, dstAmountLoading } = useTwapContext();
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const setLimitOrder = useTwapStore((store) => store.setLimitOrder);
-  const selectTokensWarning = !leftToken || !rightToken;
-
-  const onSetLimitOrder = useCallback(
-    (value?: boolean) => {
-      setLimitOrder(value);
-      if (!value) onReset();
-    },
-    [setLimitOrder, onReset]
-  );
-
-  return (
-    <Tooltip text={dstAmountLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
-      <Switch style={style} variant={variant} disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={onSetLimitOrder} />
-    </Tooltip>
-  );
-}
-
-export function LimitPriceRadioGroup({ className }: { className?: string }) {
-  const loadingState = useLoadingState();
-  const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
-  const { leftToken, rightToken, onReset } = useLimitPriceV2();
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const setLimitOrder = useTwapStore((store) => store.setLimitOrder);
-  const selectTokensWarning = !leftToken || !rightToken;
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = String(event.target.value) === "true";
-    setLimitOrder(value);
-    if (!value) onReset();
-  };
-
-  return (
-    <FormControl className={`twap-radio ${className}`} disabled={!!selectTokensWarning || isLoading}>
-      <RadioGroup row name="isLimitOrder" value={String(isLimitOrder)} onChange={handleChange}>
-        <Radio label="Market Price" value="false" />
-        <Radio label="Limit Price" value="true" />
-      </RadioGroup>
-    </FormControl>
-  );
-}
-
 export function ChunksUSD({ onlyValue, emptyUi, suffix, prefix }: { onlyValue?: boolean; emptyUi?: React.ReactNode; suffix?: string; prefix?: string }) {
   const usd = useSrcChunkAmountUsdUi();
   const loading = useLoadingState().srcUsdLoading;
@@ -521,74 +457,14 @@ export const FeeOnTranferWarning = ({ className = "" }: { className?: string }) 
   return <StyledText className={`${className} twap-fee-on-transfer-warning`}>Fee on transfer tokens are not supported</StyledText>;
 };
 
-export const useLimitPriceComponents = ({
-  placeholder = "0.00",
-  showDefault,
-  toggleIcon = <HiSwitchHorizontal style={{ width: 20, height: 20 }} />,
-  hideSymbol,
-  reverse,
-}: {
-  placeholder?: string;
-  showDefault?: boolean;
-  toggleIcon?: ReactElement;
-  hideSymbol?: boolean;
-  reverse?: boolean;
-}) => {
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const { leftToken, rightToken, onChange, limitPrice, onInvert } = useLimitPriceV2();
-
-  const _isLimitOrder = isLimitOrder || showDefault;
-
-  if (!_isLimitOrder || !leftToken || !rightToken) return null;
-
-  return {
-    leftToken: <TokenDisplay reverse={reverse} hideSymbol={hideSymbol} singleToken symbol={leftToken?.symbol} logo={leftToken?.logoUrl} />,
-    rightToken: <TokenDisplay reverse={reverse} hideSymbol={hideSymbol} symbol={rightToken?.symbol} logo={rightToken?.logoUrl} />,
-    input: <NumericInput placeholder={placeholder} onChange={onChange} value={limitPrice?.toggled} />,
-    toggle: <IconButton onClick={onInvert} icon={toggleIcon} />,
-  };
-};
-
-export function LimitPriceInput({
-  placeholder = "0.00",
-  className = "",
-  showDefault,
-  hideSymbol,
-  reverse,
-}: {
-  placeholder?: string;
-  className?: string;
-  showDefault?: boolean;
-  hideSymbol?: boolean;
-  reverse?: boolean;
-}) {
-  const components = useLimitPriceComponents({ placeholder, showDefault, hideSymbol, reverse });
-
-  if (!components) return null;
-  return (
-    <StyledLimitPriceInput className={`twap-limit-price-input ${className}`}>
-      <StyledRowFlex gap={10} style={{ paddingLeft: 5 }} width="fit-content">
-        {components.leftToken}
-        <StyledText>=</StyledText>
-      </StyledRowFlex>
-      {components.input}
-
-      <StyledRowFlex gap={10} width="fit-content">
-        {components.rightToken}
-        {components.toggle}
-      </StyledRowFlex>
-    </StyledLimitPriceInput>
-  );
-}
-
 export const MarketPrice = ({ className = "", hideLabel }: { className?: string; hideLabel?: boolean }) => {
-  const [inverted, setInverted] = useState(false);
-  const { leftToken, rightToken, marketPrice, loading } = useMarketPriceV2(inverted);
+  const { isLoading, marketPriceUi } = useMarketPrice();
+  const { leftToken, rightToken, price, onInvert } = useInvertPrice(marketPriceUi);
   const translations = useTwapContext().translations;
   return (
     <StyledMarketPrice justifyContent="space-between" className={`twap-market-price ${className}`}>
       {!hideLabel && <StyledText className="title">{translations.currentMarketPrice}</StyledText>}
-      <TokenPriceCompare loading={loading} leftToken={leftToken} rightToken={rightToken} price={marketPrice?.original} toggleInverted={() => setInverted(!inverted)} />
+      <TokenPriceCompare loading={isLoading} leftToken={leftToken} rightToken={rightToken} price={price} toggleInverted={onInvert} />
     </StyledMarketPrice>
   );
 };
@@ -837,7 +713,7 @@ export const OrderSummaryTokenDisplay = ({
   const translations = useTwapContext()?.translations || _translations;
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const srcAmount = useTwapStore((store) => store.srcAmountUi);
-  const dstAmount = useDstAmount().outAmount.ui;
+  const dstAmount = useOutAmount().outAmountUi;
 
   const amount = isSrc ? srcAmount : dstAmount;
   const prefix = isSrc ? "" : isLimitOrder ? "~ " : "~ ";
@@ -893,27 +769,18 @@ export const OutputAddress = ({ className, translations: _translations, ellipsis
 const StyledOutputAddress = styled(StyledColumnFlex)({});
 
 export const OrderSummaryLimitPriceToggle = ({ translations: _translations }: { translations?: Translations }) => {
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const { leftToken, rightToken, price, onInvert } = usePriceDisplay();
+  const limitPriceUi = useLimitPrice().limitPriceUi;
+  const { leftToken, rightToken, price, onInvert } = useInvertPrice(limitPriceUi);
   const translations = useTwapContext()?.translations || _translations;
-
-  if (!isLimitOrder) return <>-</>;
 
   return <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={price} toggleInverted={onInvert} />;
 };
 
 export const OrderSummaryPriceCompare = () => {
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  const [inverted, setInverted] = useState(false);
-  const { onInvert, limitPrice, leftToken, rightToken } = useLimitPriceV2();
+  const limitPrice = useLimitPrice().limitPriceUi;
+  const { onInvert, price, leftToken, rightToken } = useInvertPrice(limitPrice);
 
-  const market = useMarketPriceV2(inverted);
-
-  if (isLimitOrder) {
-    return <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={limitPrice?.original} toggleInverted={onInvert} />;
-  }
-
-  return <TokenPriceCompare leftToken={market.leftToken} rightToken={market.rightToken} price={market.marketPrice?.original} toggleInverted={() => setInverted(!inverted)} />;
+  return <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={price} toggleInverted={onInvert} />;
 };
 
 export const OrderSummaryLimitPrice = ({ translations: _translations }: { translations?: Translations }) => {
@@ -962,25 +829,6 @@ const StyledWarning = styled(StyledRowFlex)({
   },
   "& *": {
     fill: "#E23D5B",
-  },
-});
-
-const StyledLimitPriceInput = styled(StyledRowFlex)({
-  paddingLeft: 10,
-  "& .twap-input": {
-    flex: 1,
-    "& input": {
-      fontSize: 16,
-      textAlign: "center",
-    },
-  },
-  ".twap-token-logo": {
-    width: 24,
-    height: 24,
-  },
-  "& .twap-token-name, p": {
-    fontSize: 14,
-    position: "relative",
   },
 });
 
@@ -1151,30 +999,6 @@ export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
   return <Copy value={address} />;
 };
 
-export const ResetLimitButton = ({ children }: { children?: ReactNode }) => {
-  const onReset = useLimitPriceV2().onReset;
-  const { isLimitOrder, srcAmountTyped } = useTwapStore((s) => ({
-    isLimitOrder: s.isLimitOrder,
-    srcAmountTyped: s.getSrcAmount().gt("0"),
-  }));
-
-  if (!isLimitOrder || !srcAmountTyped) return null;
-
-  return (
-    <Tooltip text="Reset to default price">
-      {children ? (
-        <span onClick={onReset} className="twap-limit-reset">
-          {children}
-        </span>
-      ) : (
-        <IconButton onClick={onReset} className="twap-limit-reset">
-          <Icon icon={<GrPowerReset style={{ width: 18, height: 18 }} />} />
-        </IconButton>
-      )}
-    </Tooltip>
-  );
-};
-
 export const SrcToken = () => {
   return (
     <Styles.StyledRowFlex style={{ width: "auto" }}>
@@ -1206,46 +1030,10 @@ export const TxSuccess = () => {
 };
 
 export const LimitInputV2 = ({ className = "" }: { className?: string }) => {
-  const { onChange, limitPrice, isLoading } = useLimitPriceV2();
+  const { onChange, limitPriceUi, isLoading } = useLimitPrice();
   const srcAmount = useTwapStore((s) => s.getSrcAmount().toString());
 
   if (BN(srcAmount || "0").isZero()) return null;
 
-  return <NumericInput className={className} loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice?.toggled} />;
+  return <NumericInput className={className} loading={isLoading} placeholder={""} onChange={onChange} value={limitPriceUi} />;
 };
-
-export const TradePrice = ({ className = "" }: { className?: string }) => {
-  const { srcToken, dstToken, srcAmount, isLimitOrder } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-    srcAmount: s.getSrcAmount().toString(),
-    isLimitOrder: s.isLimitOrder,
-  }));
-  const dstAmountOut = useTwapContext().dstAmountOut;
-
-  const { limitPrice, inverted } = useLimitPriceV2();
-  const { marketPrice } = useMarketPriceV2(inverted);
-
-  const price = useFormatNumber({ value: isLimitOrder ? limitPrice?.toggled : marketPrice?.toggled, decimalScale: 3, disableDynamicDecimals: false });
-
-  if (!srcToken || !dstToken || BN(srcAmount || "0").isZero() || BN(dstAmountOut || "0").isZero()) {
-    return null;
-  }
-
-  const leftSymbol = inverted ? dstToken?.symbol : srcToken?.symbol;
-  const rightSymbol = inverted ? srcToken?.symbol : dstToken?.symbol;
-
-  return (
-    <StyledTradePrice className={className}>
-      <Label>Price</Label>
-      <Typography className="limit-price-text">
-        1 {leftSymbol} = {price} {rightSymbol}
-      </Typography>
-    </StyledTradePrice>
-  );
-};
-
-const StyledTradePrice = styled(StyledRowFlex)({
-  width: "100%",
-  justifyContent: "space-between",
-});

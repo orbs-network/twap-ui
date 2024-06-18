@@ -17,7 +17,6 @@ import {
   configureStyles,
   StyledAdapter,
   StyledColumnFlex,
-  StyledLimitPrice,
   StyledMarketPrice,
   StyledOrders,
   StyledPoweredBy,
@@ -216,7 +215,6 @@ const TWAPPanel = () => {
         <Components.Base.Card>
           <StyledMarketPrice />
         </Components.Base.Card>
-        <LimitPrice />
         <TotalTrades />
         <TradeSize />
         <TradeInterval />
@@ -243,8 +241,6 @@ const LimitPanel = () => {
         <Components.Base.Card>
           <Components.MarketPrice />
         </Components.Base.Card>
-
-        <LimitPrice limit={true} />
         <StyledSubmit isMain />
       </StyledColumnFlex>
       <OrderSummary>
@@ -314,22 +310,6 @@ const TradeInterval = () => {
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
-  );
-};
-
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
-  return (
-    <>
-      <Components.Base.Card className="twap-limit-price">
-        <TwapStyles.StyledColumnFlex alignItems="center">
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <Components.Labels.LimitPriceLabel />
-            {!limit && <Components.LimitPriceToggle />}
-          </TwapStyles.StyledRowFlex>
-          <StyledLimitPrice placeholder="0" />
-        </TwapStyles.StyledColumnFlex>
-      </Components.Base.Card>
-    </>
   );
 };
 

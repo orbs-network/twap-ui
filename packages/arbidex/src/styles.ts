@@ -156,23 +156,6 @@ export const StyledTokenInputContainer = styled(Styles.StyledColumnFlex)(({ them
   padding: 16,
   background: baseStyles(theme).cardBackground,
 }));
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => {
-  return {
-    background: baseStyles(theme).mainBackground,
-    borderRadius: 12,
-    padding: "6px",
-    input: {
-      letterSpacing: "unset",
-    },
-    "*": {
-      fontSize: "18px!important",
-    },
-    ".twap-token-logo": {
-      width: "30px!important",
-      height: "30px!important",
-    },
-  };
-});
 
 export const StyledTokenSelect = styled(Box)({
   marginRight: 10,

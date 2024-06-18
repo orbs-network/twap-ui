@@ -129,20 +129,6 @@ export const StyledMarketPrice = styled(Components.MarketPrice)({
   },
 });
 
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => {
-  return {
-    background: "transparent",
-    borderRadius: 5,
-    padding: "3px 5px",
-    border: "2px solid rgb(223 131 47/1)",
-    svg: {
-      "*": {
-        color: baseStyles(theme).cardTextColor,
-      },
-    },
-  };
-});
-
 export const StyledTokenSelect = styled(Box)(({ theme }) => ({
   "*": {
     fontSize: 15,

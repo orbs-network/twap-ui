@@ -164,24 +164,6 @@ const getButtonStyles = (theme: Theme) => {
   };
 };
 
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => ({
-  background: `${baseStyles(theme).containerBackground}!important`,
-  borderRadius: 10,
-  gap: 10,
-  padding: "5px",
-  ".twap-token-display": {
-    p: {
-      fontSize: 16,
-    },
-  },
-  ".twap-input": {
-    "& input": {
-      fontSize: 16,
-      textAlign: "center" as const,
-    },
-  },
-}));
-
 export const StyledTokenSelect = styled(Box)(({ theme }) => {
   const darkMode = isDark(theme);
   const styles = baseStyles(theme);

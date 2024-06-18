@@ -34,7 +34,6 @@ import {
   StyledTokenSelect,
   StyledUSD,
   StyledBigBorder,
-  StyledLimitPriceInput,
   StyledTimeSelectCard,
   StyledCardColumn,
   StyledChunksSlider,
@@ -283,7 +282,7 @@ const TokenSummary = () => {
     srcToken: store.srcToken,
     dstToken: store.dstToken,
   }));
-  const dstAmount = hooks.useDstAmount().outAmount.ui;
+  const dstAmount = hooks.useOutAmount().outAmountUi;
 
   const srcAmountFormatted = hooks.useFormatNumber({ value: srcAmount });
   const srcAmountFormattedTooltip = hooks.useFormatNumber({ value: srcAmount, decimalScale: 18 });
@@ -478,7 +477,6 @@ const TWAPPanel = () => {
         </StyledTopColumnFlex>
         <StyledColumnFlex>
           <MarketPrice />
-          <LimitPrice />
           <TradeSize />
           <TradeInterval />
           <MaxDuration />
@@ -506,8 +504,6 @@ const LimitPanel = () => {
         </StyledTopColumnFlex>
         <StyledColumnFlex>
           <MarketPrice />
-          <LimitPrice limit={true} />
-
           <StyledSubmit isMain />
         </StyledColumnFlex>
       </StyledColumnFlex>
@@ -613,37 +609,6 @@ const TradeInterval = () => {
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
     </StyledTimeSelectCard>
-  );
-};
-
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
-  const isLimitOrder = store.useTwapStore((s) => s.isLimitOrder);
-  const components = Components.useLimitPriceComponents({ toggleIcon: <HiArrowRight style={{ width: 20, height: 20 }} />, showDefault: true });
-  const srcAmountNotZero = hooks.useSrcAmountNotZero();
-  const disabled = !srcAmountNotZero || !isLimitOrder;
-
-  return (
-    <StyledLimitPrice disabled={disabled ? 1 : 0} className="twap-limit-price">
-      <StyledCardColumn>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel />
-          {!limit && <Components.LimitPriceToggle variant="ios" />}
-        </TwapStyles.StyledRowFlex>
-        {components && (
-          <StyledLimitPriceInput className="twap-card-children">
-            <BigBorder style={{ gap: 4 }}>
-              {components?.leftToken} <Typography>=</Typography>
-            </BigBorder>
-
-            <BigBorder className="twap-limit-price-middle">
-              {components?.input}
-              {components?.rightToken}
-            </BigBorder>
-            <BigBorder className="twap-limit-price-right">{components?.toggle}</BigBorder>
-          </StyledLimitPriceInput>
-        )}
-      </StyledCardColumn>
-    </StyledLimitPrice>
   );
 };
 

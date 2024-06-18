@@ -61,7 +61,8 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
 
 const SummaryPrice = () => {
   const { TradePrice: DappTradePrice } = useAdapterContext();
-  const { leftToken, rightToken, onInvert, price, isLoading } = hooks.usePriceDisplay();
+  const { limitPriceRaw, isLoading } = hooks.useLimitPrice();
+  const { leftToken, rightToken, onInvert, price } = hooks.useInvertPrice(limitPriceRaw);
 
   return (
     <StyledMarketPriceContainer>
@@ -93,7 +94,7 @@ const TokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
     token: isSrc ? store.srcToken : store.dstToken,
     srcAmount: store.srcAmountUi,
   }));
-  const dstAmount = hooks.useDstAmount().outAmount.ui;
+  const dstAmount = hooks.useOutAmount().outAmountUi;
 
   const _amount = isSrc ? srcAmount : dstAmount;
 

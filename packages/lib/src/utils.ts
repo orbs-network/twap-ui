@@ -6,6 +6,7 @@ import BN from "bignumber.js";
 import _ from "lodash";
 import { useTwapStore } from "./store";
 import { THE_GRAPH_ORDERS_API } from "./config";
+import { numericFormatter } from "react-number-format";
 export const logger = (...args: any[]) => {
   const query = new URLSearchParams(window.location.search);
   const debug = query.get("debug");
@@ -154,4 +155,12 @@ export const supportsTheGraphHistory = (chainId?: number) => {
 export const getTheGraphUrl = (chainId?: number) => {
   if (!chainId) return;
   return THE_GRAPH_ORDERS_API[chainId];
+};
+
+export const formatNumber = (value?: string | number, decimalScale?: number) => {
+  return numericFormatter(value?.toString() || "", {
+    decimalScale: decimalScale,
+    allowLeadingZeros: true,
+    thousandSeparator: ",",
+  });
 };

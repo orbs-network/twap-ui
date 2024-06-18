@@ -1,16 +1,15 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { TwapContextUIPreferences, TwapLibProps } from "./types";
-import { useInitLib, useLimitPriceV2, useParseTokens, usePriceUSD, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
+import { useInitLib, useParseTokens, usePriceUSD, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
 import { TokenData } from "@orbs-network/twap";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import { Wizard } from "./components";
-import { useLimitPriceStore, useTwapStore } from "./store";
+import { useTwapStore } from "./store";
 import BN from "bignumber.js";
-import { getQueryParam } from "./utils";
-import { QUERY_PARAMS } from "./consts";
+
 analytics.onModuleLoad();
 
 export interface TWAPContextProps extends TwapLibProps {
@@ -31,14 +30,6 @@ const Listener = (props: TwapLibProps) => {
   const setTokensFromDappCallback = useSetTokensFromDapp();
   const initLib = useInitLib();
   const updateStoreOveride = useUpdateStoreOveride();
-  const limitStore = useLimitPriceStore();
-  const enableQueryParams = props.enableQueryParams;
-  useEffect(() => {
-    if (enableQueryParams) {
-      limitStore.setPriceFromQueryParams(getQueryParam(QUERY_PARAMS.LIMIT_PRICE));
-    }
-  }, [enableQueryParams, limitStore.setPriceFromQueryParams]);
-
   useSrcUsd();
   useDstUsd();
   useEffect(() => {

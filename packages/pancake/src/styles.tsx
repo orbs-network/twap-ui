@@ -538,35 +538,6 @@ export const StyledChunksSlider = styled(Components.ChunksSliderSelect)(({ theme
   };
 });
 
-export const StyledLimitPrice = styled(Styles.StyledRowFlex)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    justifyContent: "space-between",
-    ".twap-limit-price-input": {
-      "*": {
-        color: styles.primaryTextColor,
-      },
-      input: {
-        position: "relative",
-        top: -2,
-      },
-    },
-    ".twap-token-logo": {
-      display: "none",
-    },
-    ".twap-limit-reset": {
-      left: 10,
-      "*": {
-        stroke: styles.primaryColor,
-      },
-    },
-  };
-});
-
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)({
-  paddingLeft: 0,
-});
-
 const borderButtonStyles = {
   background: "unset",
   borderRadius: 16,
@@ -740,6 +711,8 @@ export const StyledTokenPanel = styled(Card)({
   },
 });
 
+export const StyledLimit = styled(Card)({});
+
 export const StyledTradeSize = styled(Styles.StyledRowFlex)({
   justifyContent: "space-between",
   flexWrap: "wrap",
@@ -865,18 +838,6 @@ export const StyledOrdersTabs = styled(Box)({
   height: "100%",
   flex: 1,
   "@media (max-width:700px)": {},
-});
-
-export const StyledLimitPriceBody = styled(Card.Body)({
-  padding: "10px 10px",
-  input: {
-    textAlign: "right",
-  },
-});
-
-export const StyledLimitPriceLabel = styled(Styles.StyledRowFlex)({
-  width: "auto",
-  minHeight: 24,
 });
 
 export const StyledSubmitButtonContainer = styled(Styles.StyledRowFlex)({

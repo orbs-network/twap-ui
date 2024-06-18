@@ -21,12 +21,9 @@ import {
   darkTheme,
   lightTheme,
   StyledChangeTokensOrder,
-  StyledLimitPriceInput,
-  StyledMarketPrice,
   StyledOrdersPanel,
   StyledOrderSummaryModal,
   StyledPercentSelector,
-  StyledPriceCard,
   StyledSubmitButton,
   StyledTokenBalance,
   StyledTokenPanel,
@@ -244,7 +241,6 @@ const TWAPPanel = () => {
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <LimitPrice />
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
@@ -267,7 +263,6 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <LimitPrice limit={true} />
       <StyledSubmitButton />
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
@@ -300,21 +295,6 @@ const TradeSize = () => {
   );
 };
 
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
-  const theme = useTheme();
-  return (
-    <StyledPriceCard>
-      <TwapStyles.StyledColumnFlex>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel custom={!limit ? "Price" : ""} />
-        </TwapStyles.StyledRowFlex>
-        {!limit && <Components.LimitPriceRadioGroup />}
-        <StyledLimitPriceInput reverse={true} placeholder="0" theme={theme} hideSymbol={true} />
-        <StyledMarketPrice />
-      </TwapStyles.StyledColumnFlex>
-    </StyledPriceCard>
-  );
-};
 const MaxDuration = () => {
   return (
     <Components.Base.Card>

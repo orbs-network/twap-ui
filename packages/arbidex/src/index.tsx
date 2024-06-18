@@ -9,11 +9,9 @@ import {
   darkTheme,
   lightTheme,
   StyledChangeTokensOrder,
-  StyledLimitPriceInput,
   StyledMarketPrice,
   StyledOrdersPanel,
   StyledOrderSummaryModal,
-  StyledPriceCard,
   StyledSubmitButton,
   StyledTokenBalance,
   StyledTokenPanel,
@@ -185,7 +183,6 @@ const TWAPPanel = () => {
         <TokenPanel />
       </StyledTopGrid>
       <StyledMarketPrice />
-      <LimitPrice />
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
@@ -211,7 +208,6 @@ const LimitPanel = () => {
         <TokenPanel />
       </StyledTopGrid>
       <StyledMarketPrice />
-      <LimitPrice limit={true} />
       <StyledSubmitButton />
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
@@ -244,20 +240,6 @@ const TradeSize = () => {
   );
 };
 
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
-  const theme = useTheme();
-  return (
-    <StyledPriceCard>
-      <TwapStyles.StyledColumnFlex>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel />
-          {!limit && <Components.LimitPriceToggle variant="ios" />}
-        </TwapStyles.StyledRowFlex>
-        <StyledLimitPriceInput reverse={true} placeholder="0" theme={theme} hideSymbol={true} />
-      </TwapStyles.StyledColumnFlex>
-    </StyledPriceCard>
-  );
-};
 const MaxDuration = () => {
   return (
     <Components.Base.Card>

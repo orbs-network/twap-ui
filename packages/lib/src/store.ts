@@ -191,85 +191,17 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
 }));
 
 interface LimitPriceStore {
-  limitPrice?: string;
-  inverted: boolean;
-  toggleInverted: () => void;
-  onLimitInput: (limitPrice?: string) => void;
-  onReset: () => void;
-  isCustom: boolean;
-  hide: boolean;
-  setHide: (value: boolean) => void;
-  priceFromQueryParams: string | undefined;
-  setPriceFromQueryParams: (value?: string | null) => void;
-}
-
-export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
-  isCustom: false,
-  inverted: false,
-  hide: false,
-  limitPrice: undefined,
-  priceFromQueryParams: undefined,
-  setPriceFromQueryParams: (price) => {
-    if (price) {
-      set({ priceFromQueryParams: price });
-    }
-  },
-
-  setHide: (hide) => {
-    set({ hide });
-  },
-
-  toggleInverted: () => {
-    set({
-      inverted: !get().inverted,
-    });
-    const limitPrice = get().limitPrice;
-    if (limitPrice) {
-      set({
-        limitPrice: BN(1).div(limitPrice).toString(),
-      });
-    }
-  },
-  onLimitInput: (limitPrice) => {
-    set({
-      limitPrice,
-      isCustom: true,
-    });
-    const inverted = get().inverted;
-    setQueryParam(
-      QUERY_PARAMS.LIMIT_PRICE,
-      !limitPrice || BN(limitPrice).isZero()
-        ? undefined
-        : inverted
-        ? BN(1)
-            .div(limitPrice || "0")
-            .decimalPlaces(8)
-            .toString()
-        : limitPrice
-    );
-  },
-  onReset: () => {
-    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-    set({
-      limitPrice: undefined,
-      isCustom: false,
-      priceFromQueryParams: undefined,
-    });
-  },
-}));
-
-interface LimitPriceStoreV2 {
   isCustom: boolean;
   customPrice?: string;
   inverted: boolean;
   percentage?: string;
   invert: () => void;
-  updateState: (state: Partial<LimitPriceStoreV2>) => void;
+  updateState: (state: Partial<LimitPriceStore>) => void;
 }
 
 const limitPriceFromQueryParams = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
 
-export const useLimitPriceStoreV2 = create<LimitPriceStoreV2>((set, get) => ({
+export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
   isCustom: BN(limitPriceFromQueryParams || 0).gt(0),
   percentage: undefined,
   inverted: false,

@@ -77,7 +77,6 @@ const TWAP = memo((props: SpiritSwapTWAPProps) => {
           <TokenPanel isSrcToken={true} />
           <Components.ChangeTokensOrder />
           <TokenPanel />
-          <LimitPrice />
           <TradeSize />
           <TradeInterval />
           <MaxDuration />
@@ -127,19 +126,6 @@ const TradeSize = () => {
   );
 };
 
-const LimitPrice = () => {
-  return (
-    <Components.Base.Card className="twap-limit-price">
-      <TwapStyles.StyledColumnFlex>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel />
-          <Components.LimitPriceToggle />
-        </TwapStyles.StyledRowFlex>
-        <Components.LimitPriceInput placeholder="0" />
-      </TwapStyles.StyledColumnFlex>
-    </Components.Base.Card>
-  );
-};
 const MaxDuration = () => {
   return (
     <Components.Base.Card>

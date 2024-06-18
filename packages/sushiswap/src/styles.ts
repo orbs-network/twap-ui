@@ -148,22 +148,6 @@ export const StyledTokenSelect = styled(Components.TokenSelect)<{ isDarkMode: nu
   },
 }));
 
-export const StyledLimitPrice = styled(Components.LimitPriceInput)({
-  background: "hsla(0,0%,100%,.06)",
-  borderRadius: 12,
-  padding: 5,
-  "*": {
-    fontSize: `14px!important`,
-    fontWeight: 500,
-  },
-  ".twap-input": {
-    height: "auto",
-    input: {
-      fontSize: `15px!important`,
-    },
-  },
-});
-
 export const StyledOrders = styled(OrdersPanel)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   maxWidth: "unset!important",
   "*": {

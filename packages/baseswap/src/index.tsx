@@ -10,7 +10,6 @@ import {
   lightTheme,
   StyledChangeTokensOrder,
   StyledInputAndSelect,
-  StyledLimitPriceInput,
   StyledMarketPrice,
   StyledMaxButton,
   StyledOrdersPanel,
@@ -217,7 +216,6 @@ const TWAPPanel = () => {
         <TokenPanel />
       </StyledTopGrid>
       <StyledMarketPrice />
-      <LimitPrice />
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
@@ -243,7 +241,6 @@ const LimitPanel = () => {
         <TokenPanel />
       </StyledTopGrid>
       <StyledMarketPrice />
-      <LimitPrice limit={true} />
       <StyledSubmitButton isMain={true} />
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
@@ -276,30 +273,6 @@ const TradeSize = () => {
   );
 };
 
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
-  const theme = useTheme();
-  return (
-    <StyledPriceCard>
-      <TwapStyles.StyledColumnFlex>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <TwapStyles.StyledRowFlex style={{ width: "auto" }}>
-            <Components.Labels.LimitPriceLabel />
-            <Components.ResetLimitButton>
-              <StyledReset>
-                <TwapStyles.StyledRowFlex gap={8}>
-                  <Components.Base.Icon icon={<GrPowerReset />} />
-                  <Typography>Reset</Typography>
-                </TwapStyles.StyledRowFlex>
-              </StyledReset>
-            </Components.ResetLimitButton>
-          </TwapStyles.StyledRowFlex>
-          {!limit && <Components.LimitPriceToggle variant="ios" />}
-        </TwapStyles.StyledRowFlex>
-        <StyledLimitPriceInput reverse={true} placeholder="0" theme={theme} hideSymbol={true} />
-      </TwapStyles.StyledColumnFlex>
-    </StyledPriceCard>
-  );
-};
 const MaxDuration = () => {
   return (
     <Components.Base.Card>

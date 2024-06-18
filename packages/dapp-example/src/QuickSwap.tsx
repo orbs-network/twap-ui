@@ -112,8 +112,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken?.address, toToken?.address);
 
-  const trade = useTrade(fromToken?.address, toToken?.address, fromAmount, fromTokenDecimals, toTokenDecimals);
-
   return (
     <TWAP
       connect={connect}
@@ -131,8 +129,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       onTxSubmitted={(args: any) => console.log(args)}
       usePriceUSD={usePriceUSD}
       onInputChange={onInputChange}
-      dstAmountOut={trade.outAmount}
-      dstAmountLoading={BN(fromAmount).gt(0) && trade.isLoading}
+      useTrade={useTrade}
     />
   );
 };

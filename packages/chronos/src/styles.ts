@@ -568,29 +568,6 @@ export const StyledLimitPrice = styled(StyledDisabledCard)({
   },
 });
 
-export const StyledLimitPriceInput = styled(Styles.StyledRowFlex)({
-  ".twap-limit-price-middle": {
-    gap: 20,
-    flex: 1,
-    padding: "0px 19px",
-  },
-  ".twap-limit-price-right": {
-    width: 60,
-    padding: 0,
-  },
-  [`@media(max-width: ${mobile}px)`]: {
-    ".twap-limit-price-right": {
-      width: 40,
-    },
-    ".twap-limit-price-middle": {
-      gap: 5,
-      flex: 1,
-      padding: "0px 10px",
-    },
-    ".MuiButtonBase-root": {},
-  },
-});
-
 export const StyledTradeSize = styled(StyledDisabledCard)({
   paddingBottom: 30,
   paddingTop: 25,

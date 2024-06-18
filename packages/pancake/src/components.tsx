@@ -3,21 +3,19 @@ import { useAdapterContext } from "./context";
 import BN from "bignumber.js";
 import { StyledMarketPriceContainer } from "./styles";
 import { styled } from "@mui/material";
-import { useMemo } from "react";
 
 export function Price() {
   const { TradePrice: DappTradePrice } = useAdapterContext();
-  const { srcToken, dstToken, srcAmount, isLimitOrder } = store.useTwapStore((s) => ({
+  const { srcToken, dstToken, srcAmount } = store.useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
     srcAmount: s.getSrcAmount().toString(),
     isLimitOrder: s.isLimitOrder,
   }));
 
-  const { limitPrice, isLoading, inverted } = hooks.useLimitPriceV2();
-  const { marketPrice } = hooks.useMarketPriceV2(inverted);
+  const { limitPriceUi, isLoading, inverted } = hooks.useLimitPrice();
 
-  const price = hooks.useFormatNumber({ value: isLimitOrder ? limitPrice?.toggled : marketPrice?.toggled, decimalScale: 3, disableDynamicDecimals: false });
+  const price = hooks.useFormatNumber({ value: limitPriceUi, decimalScale: 3, disableDynamicDecimals: false });
 
   if (!DappTradePrice) {
     return <Components.OrderSummaryLimitPrice />;
