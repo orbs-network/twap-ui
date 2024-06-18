@@ -12,6 +12,7 @@ import {
   Styles,
   TooltipProps,
   parseError,
+  adapterHooks,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -20,7 +21,7 @@ import {
   darkTheme,
   lightTheme,
   StyledBalanceContainer,
-  StyledButton,
+  StyledPercentButton,
   StyledChunksInput,
   StyledChunksSlider,
   StyledColumnFlex,
@@ -40,12 +41,14 @@ import {
   StyledModalHeader,
   StyledSwapModalContent,
   StyledModalHeaderTitle,
+  StyledResetLimitButtonContainer,
+  StyledResetLimitButtonLeft,
+  StyledResetLimitButtonRight,
 } from "./styles";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   StyledBalance,
   StyledEmptyUSD,
-  StyledMarketPrice,
   StyledPercentSelect,
   StyledSelectAndBalance,
   StyledTokenChange,
@@ -158,16 +161,8 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
 };
 
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
-  const selectToken = hooks.useSelectTokenCallback();
-  const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
-
-  const onSelect = useCallback(
-    (token: any) => {
-      selectToken({ isSrc: !!isSrcToken, token });
-    },
-    [selectToken, isSrcToken]
-  );
-  const onTokenSelectClick = useAdapterContext().useTokenModal(onSelect, srcToken, dstToken, isSrcToken);
+  const { dstToken } = hooks.useDappRawSelectedTokens();
+  const onTokenSelectClick = useTokenSelectClick();
   return (
     <StyledTokenPanel>
       <Card.Header>
@@ -210,9 +205,9 @@ const SrcTokenPercentSelector = () => {
       {PERCENT.map((p) => {
         const selected = BN(srcAmount || "0").isZero() ? false : Math.round(percent * 100) === p.value * 100 || (p.value === 1 && BN(maxSrcInputAmount || 0).isEqualTo(srcAmount));
         return (
-          <StyledButton selected={selected ? 1 : 0} key={p.text} onClick={() => (selected ? () => {} : onClick(p.value))}>
+          <StyledPercentButton selected={selected ? 1 : 0} key={p.text} onClick={() => (selected ? () => {} : onClick(p.value))}>
             {p.text}
-          </StyledButton>
+          </StyledPercentButton>
         );
       })}
     </StyledPercentSelect>
@@ -246,24 +241,47 @@ export const useProvider = (props: AdapterProps) => {
   return provider;
 };
 
-const useTrade = (props: AdapterProps) => {
-  const { srcToken, toToken, srcAmount } = store.useTwapStore((s) => ({
-    srcToken: s.srcToken?.address,
-    toToken: s.dstToken?.address,
-    srcAmount: s.getSrcAmount().toString(),
+const useTrade = (props: AdapterProps, amount?: string) => {
+  const { srcToken, toToken } = store.useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    toToken: s.dstToken,
   }));
 
-  const res = props.useTrade!(handleAddress(srcToken), handleAddress(toToken), srcAmount === "0" ? undefined : srcAmount);
+  const res = props.useTrade!(handleAddress(srcToken?.address), handleAddress(toToken?.address), BN(amount || 0).isZero() ? undefined : amount);
 
   return {
-    outAmount: res?.outAmount,
-    isLoading: BN(srcAmount || "0").gt(0) && res?.isLoading,
+    result: res?.outAmount,
+    isLoading: BN(amount || 0).gt(0) && res?.isLoading,
   };
+};
+const useOutAmount = (props: AdapterProps) => {
+  const { srcAmount } = store.useTwapStore((s) => ({
+    srcAmount: s.getSrcAmount(),
+    isLimitOrder: s.isLimitOrder,
+  }));
+
+  const { result, isLoading } = useTrade(props, srcAmount.toString());
+
+  const amount = adapterHooks.useAmountOut(result, 1);
+  return {
+    result: amount,
+    isLoading,
+  };
+};
+
+const useMarketPrice = (props: AdapterProps) => {
+  const { srcToken } = store.useTwapStore((s) => ({
+    srcToken: s.srcToken,
+  }));
+
+  const amount = hooks.useAmountBN(srcToken?.decimals, "1");
+  return useTrade(props, amount);
 };
 
 const TWAP = memo((props: AdapterProps) => {
   const provider = useProvider(props);
-  const trade = useTrade(props);
+  const outAmount = useOutAmount(props);
+  const marketPrice = useMarketPrice(props);
 
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
@@ -300,8 +318,9 @@ const TWAP = memo((props: AdapterProps) => {
         isMobile={props.isMobile}
         connectedChainId={props.connectedChainId}
         enableQueryParams={true}
-        dstAmountOut={trade?.outAmount}
-        dstAmountLoading={trade?.isLoading}
+        dstAmountOut={outAmount?.result}
+        dstAmountLoading={outAmount?.isLoading}
+        marketPrice={marketPrice.result}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -371,10 +390,65 @@ const LimitPanel = () => {
   );
 };
 
+const useTokenSelectClick = (isSrcToken?: boolean) => {
+  const selectToken = hooks.useSelectTokenCallback();
+  const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
+
+  const onSelect = useCallback(
+    (token: any, isSrcToken?: boolean) => {
+      selectToken({ isSrc: !!isSrcToken, token });
+    },
+    [selectToken, isSrcToken]
+  );
+
+  return useAdapterContext().useTokenModal(onSelect, srcToken, dstToken, isSrcToken);
+};
+
+const PercentButton = ({ selected, text, onClick }: { selected: boolean; text: string; onClick: () => void }) => {
+  return (
+    <StyledPercentButton onClick={onClick} selected={selected ? 1 : 0}>
+      {text}
+    </StyledPercentButton>
+  );
+};
+
+const CustomPercent = ({ text, onClick }: { text: string; onClick: () => void }) => {
+  return (
+    <StyledResetLimitButtonContainer>
+      <StyledResetLimitButtonLeft selected={1} onClick={onClick}>
+        {text}
+      </StyledResetLimitButtonLeft>
+      <StyledResetLimitButtonRight selected={1} onClick={onClick}>
+        X
+      </StyledResetLimitButtonRight>
+    </StyledResetLimitButtonContainer>
+  );
+};
+
+const LimitPriceCard = () => {
+  const onSrcSelect = useTokenSelectClick(true);
+  const onDstSelect = useTokenSelectClick(false);
+
+  return (
+    <Components.LimitPanel
+      onSrcSelect={onSrcSelect}
+      onDstSelect={onDstSelect}
+      styles={{
+        percentButtonsGap: "5px",
+      }}
+      Components={{
+        PercentButton,
+        CustomPercent,
+      }}
+    />
+  );
+};
+
 const TWAPPanel = () => {
   return (
     <div className="twap-container">
       <StyledColumnFlex>
+        <LimitPriceCard />
         <TopPanel />
         <LimitPrice />
         <Price />

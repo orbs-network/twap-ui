@@ -257,3 +257,30 @@ export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
     });
   },
 }));
+
+interface LimitPriceStoreV2 {
+  isCustom: boolean;
+  customPrice?: string;
+  inverted: boolean;
+  percentage?: string;
+  invert: () => void;
+  updateState: (state: Partial<LimitPriceStoreV2>) => void;
+}
+
+const limitPriceFromQueryParams = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
+
+export const useLimitPriceStoreV2 = create<LimitPriceStoreV2>((set, get) => ({
+  isCustom: BN(limitPriceFromQueryParams || 0).gt(0),
+  percentage: undefined,
+  inverted: false,
+  customPrice: limitPriceFromQueryParams && BN(limitPriceFromQueryParams || 0).gt(0) ? limitPriceFromQueryParams : undefined,
+  invert: () => {
+    set({
+      inverted: !get().inverted,
+      customPrice: undefined,
+      percentage: undefined,
+      isCustom: false,
+    });
+  },
+  updateState: (state) => set({ ...state }),
+}));

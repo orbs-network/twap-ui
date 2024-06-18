@@ -113,7 +113,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken?.address, toToken?.address);
 
   const trade = useTrade(fromToken?.address, toToken?.address, fromAmount, fromTokenDecimals, toTokenDecimals);
-  console.log({ trade: trade.outAmount });
 
   return (
     <TWAP

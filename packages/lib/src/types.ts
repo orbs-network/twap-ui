@@ -224,7 +224,7 @@ export interface TwapLibProps extends LibProps {
   enableQueryParams?: boolean;
   dstAmountOut?: string;
   dstAmountLoading?: boolean;
-  defaultLimitPriceDecreasePercent?: number;
+  marketPrice?: string;
 }
 
 export type Token = TokenData;

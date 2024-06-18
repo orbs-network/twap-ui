@@ -23,8 +23,9 @@ import {
   sendAndWaitForConfirmations,
   maxUint256,
   parsebn,
+  convertDecimals,
 } from "@defi.org/web3-candies";
-import { TimeResolution, useLimitPriceStore, useOrdersStore, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
+import { TimeResolution, useLimitPriceStore, useLimitPriceStoreV2, useOrdersStore, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import {
   AMOUNT_TO_BORROW,
   feeOnTransferDetectorAddresses,
@@ -40,7 +41,18 @@ import {
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
-import { amountBN, amountBNV2, amountUi, amountUiV2, devideCurrencyAmounts, getTokenFromTokensList, safeInteger, setQueryParam, supportsTheGraphHistory } from "./utils";
+import {
+  amountBN,
+  amountBNV2,
+  amountUi,
+  amountUiV2,
+  devideCurrencyAmounts,
+  getQueryParam,
+  getTokenFromTokensList,
+  safeInteger,
+  setQueryParam,
+  supportsTheGraphHistory,
+} from "./utils";
 import { getOrderFills } from "./helper";
 import FEE_ON_TRANSFER_ABI from "./abi/FEE_ON_TRANSFER.json";
 /**
@@ -604,7 +616,6 @@ export const useOrdersHistoryQuery = () => {
     srcToken: state.srcToken,
   }));
   const { error, data } = useFeeOnTransfer(srcToken?.address);
-  console.log({ error, data });
   const QUERY_KEY = [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId];
 
   const query = useQuery<OrdersData>(
@@ -1255,16 +1266,120 @@ export const useMarketPriceV2 = (inverted?: boolean) => {
   };
 };
 
+const handleLimitPriceQueryParam = (value?: string, inverted?: boolean) => {
+  let queryParamValue = value;
+  if (BN(value || 0).isZero()) {
+    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
+  } else if (inverted) {
+    setQueryParam(
+      QUERY_PARAMS.LIMIT_PRICE,
+      (queryParamValue = BN(1)
+        .div(value || "0")
+        .decimalPlaces(0)
+        .toString())
+    );
+  } else {
+    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, value);
+  }
+};
+export const useLimitPriceV3 = () => {
+  const marketPriceBN = useTwapContext().marketPrice;
+  const store = useLimitPriceStoreV2();
+  const dstToken = useTwapStore((s) => s.dstToken);
+
+  const marketPriceUi = useMemo(() => {
+    if (!marketPriceBN || BN(marketPriceBN).isZero()) return;
+    const value = amountUiV2(dstToken?.decimals, marketPriceBN);
+    return store.inverted ? BN(1).div(value).toString() : value;
+  }, [marketPriceBN, store.inverted, dstToken?.decimals]);
+
+  const onChange = useCallback(
+    (customPrice: string) => {
+      store.updateState({
+        customPrice,
+        isCustom: true,
+        percentage: undefined,
+      });
+      handleLimitPriceQueryParam(customPrice, store.inverted);
+    },
+    [store.inverted, store.updateState]
+  );
+
+  const onResetToMarket = useCallback(() => {
+    store.updateState({
+      isCustom: false,
+      customPrice: undefined,
+      percentage: "0",
+    });
+    handleLimitPriceQueryParam();
+  }, [store.updateState]);
+
+  const onPercentChange = useCallback(
+    (percent: string) => {
+      if (!marketPriceUi) return;
+      store.updateState({
+        percentage: percent,
+        isCustom: true,
+      });
+
+      const p = BN(percent || 0)
+        .div(100)
+        .plus(1)
+        .toString();
+
+      const value = BN(marketPriceUi || "0")
+        .times(p)
+        .toString();
+      store.updateState({
+        customPrice: value,
+      });
+      handleLimitPriceQueryParam(value, store.inverted);
+    },
+    [marketPriceUi, store.updateState, store.inverted]
+  );
+  const limitPrice = store.isCustom ? store.customPrice : marketPriceUi;
+
+  const priceDeltaPercentage = useMemo(() => {
+    if (store.percentage) {
+      return store.percentage;
+    }
+    if (!limitPrice || !marketPriceUi) return "0";
+    const diff = BN(limitPrice || 0)
+      .div(marketPriceUi || "0")
+      .minus(1)
+      .times(100)
+      .decimalPlaces(2)
+      .toString();
+
+    return diff;
+  }, [limitPrice, marketPriceUi, store.percentage]);
+
+  const invert = useCallback(() => {
+    handleLimitPriceQueryParam();
+    store.invert();
+  }, [store.invert]);
+
+  return {
+    limitPrice,
+    onChange,
+    isLoading: BN(marketPriceBN || 0).isZero(),
+    inverted: store.inverted,
+    invert,
+    onPercentChange,
+    priceDeltaPercentage,
+    onResetToMarket,
+  };
+};
+
 export const useLimitPriceV2 = () => {
   const limitPriceStore = useLimitPriceStore();
-  const { enableQueryParams, dstAmountLoading, defaultLimitPriceDecreasePercent = 5 } = useTwapContext();
+  const { enableQueryParams, dstAmountLoading } = useTwapContext();
   const marketPrice = useMarketPriceV2().marketPrice?.original;
+
   const twapStore = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
   }));
-
-  const limitPercent = (100 - defaultLimitPriceDecreasePercent) / 100;
 
   const getToggled = useCallback(
     (inverted: boolean, invertCustom?: boolean) => {
@@ -1286,19 +1401,19 @@ export const useLimitPriceV2 = () => {
       if (!marketPrice || BN(marketPrice).isZero()) return;
 
       if (inverted) {
-        return BN(limitPercent)
+        return BN(1)
           .dividedBy(marketPrice || "0")
           .toString();
       }
       return BN(marketPrice || "0")
-        .times(limitPercent)
+        .times(1)
         .toString();
     },
     [marketPrice, limitPriceStore.priceFromQueryParams, limitPriceStore.isCustom, limitPriceStore.limitPrice]
   );
 
   const limitPrice = useMemo(() => {
-    const getOriginal = (percent: number) => {
+    const getOriginal = () => {
       if (limitPriceStore.limitPrice && limitPriceStore.isCustom && limitPriceStore.inverted) {
         return BN(1)
           .dividedBy(limitPriceStore.limitPrice || "")
@@ -1312,14 +1427,18 @@ export const useLimitPriceV2 = () => {
       }
       if (!marketPrice || BN(marketPrice).isZero()) return;
       return BN(marketPrice || "0")
-        .times(percent)
+        .times(1)
         .toString();
     };
     const toggled = getToggled(limitPriceStore.inverted);
-    const original = getOriginal(limitPercent);
+    const original = getOriginal();
     return {
       toggled: BN(toggled || "0").isZero() ? "" : toggled,
       original: BN(original || "0").isZero() ? "" : original,
+      ui: {
+        toggled: amountUiV2(twapStore.srcToken?.decimals, toggled),
+        original: amountUiV2(twapStore.srcToken?.decimals, original),
+      },
     };
   }, [marketPrice, enableQueryParams, limitPriceStore.inverted, limitPriceStore.limitPrice, limitPriceStore.isCustom, limitPriceStore.priceFromQueryParams]);
 

@@ -582,7 +582,7 @@ const borderButtonStyles = {
   },
 };
 
-export const StyledButton = styled("button")<{ selected?: number }>(({ theme, selected }) => {
+export const StyledPercentButton = styled("button")<{ selected?: number }>(({ theme, selected }) => {
   const styles = baseStyles(theme);
   return {
     ...borderButtonStyles,
@@ -591,7 +591,22 @@ export const StyledButton = styled("button")<{ selected?: number }>(({ theme, se
   };
 });
 
-export const StyledReset = styled(StyledButton)({
+export const StyledResetLimitButtonContainer = styled(Styles.StyledRowFlex)({
+  gap: 2,
+  width: "auto",
+});
+
+export const StyledResetLimitButtonLeft = styled(StyledPercentButton)({
+  borderTopRightRadius: 0,
+  borderBottomRightRadius: 0,
+});
+
+export const StyledResetLimitButtonRight = styled(StyledPercentButton)({
+  borderTopLeftRadius: 0,
+  borderBottomLeftRadius: 0,
+});
+
+export const StyledReset = styled(StyledPercentButton)({
   p: {
     fontSize: 13,
   },
