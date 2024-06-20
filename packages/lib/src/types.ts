@@ -106,7 +106,6 @@ export interface Translations {
   weeks: string;
 }
 
-
 export interface BaseComponentProps {
   className?: string;
 }
@@ -293,7 +292,6 @@ export interface State {
   srcAmountUi: string;
 
   loading: boolean;
-  isLimitOrder: boolean;
   confirmationClickTimestamp: Moment;
   showConfirmation: boolean;
   disclaimerAccepted: boolean;
@@ -319,6 +317,8 @@ export interface State {
   customLimitPrice?: string;
   isInvertedLimitPrice?: boolean;
   limitPricePercent?: string;
+
+  isMarketOrder?: boolean;
 }
 
 export type SwitchVariant = "ios" | "default";
@@ -381,7 +381,6 @@ export type LimitPriceTitleProps = {
   token?: TokenData;
   onTokenClick: () => void;
 };
-
 
 export type LimitPriceTokenSelectProps = {
   token?: TokenData;

@@ -124,7 +124,6 @@ export const StyledTokenPanelHeader = styled(Styles.StyledRowFlex)(({ theme }) =
 
 export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({});
 
-
 export const StyledTokenSelect = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);
   return {

@@ -57,7 +57,6 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
   );
 };
 
-
 const StyledButtonContainer = styled(TwapStyles.StyledRowFlex)({
   width: "100%",
   button: {

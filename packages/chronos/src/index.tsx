@@ -174,7 +174,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-
 const USD = ({ children, disabled }: { children: ReactNode; disabled: boolean }) => {
   return (
     <StyledUSD disabled={disabled ? 1 : 0}>

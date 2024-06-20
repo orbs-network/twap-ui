@@ -2,8 +2,6 @@ import MuiSlider from "@mui/material/Slider";
 import { styled } from "@mui/system";
 import { useCallback, useEffect, useState } from "react";
 
-
-
 function calculateValue(value: number) {
   return value;
 }
@@ -13,9 +11,8 @@ export interface Props {
   value: number;
   maxTrades: number;
   className?: string;
-  label?: string
+  label?: string;
 }
-
 
 const Slider = ({ onChange, value, maxTrades, className = "", label }: Props) => {
   const handleChange = (_event: Event, newValue: number | number[]) => {

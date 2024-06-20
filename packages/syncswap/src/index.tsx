@@ -23,7 +23,6 @@ import {
   StyledBalance,
   StyledChangeTokensOrder,
   StyledChunkSize,
-
   StyledPercentSelect,
   StyledPoweredBy,
   StyledSubmitButton,
@@ -280,7 +279,6 @@ const TWAP = (props: Props) => {
     </QueryClientProvider>
   );
 };
-
 
 const LimitPanel = () => {
   return (

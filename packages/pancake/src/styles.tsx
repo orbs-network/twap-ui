@@ -73,15 +73,15 @@ export const StyledCard = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);
 
   return {
-   display: "flex",
+    display: "flex",
     flexDirection: "column",
-    gap:'0px!important',
+    gap: "0px!important",
     width: "100%",
     pointerEvents: "all",
     background: styles.editableCardBox,
     padding: 12,
     borderRadius: 16,
-    boxShadow: styles.inputShadow ,
+    boxShadow: styles.inputShadow,
   };
 });
 
@@ -383,8 +383,6 @@ export const StyledBalance = styled(Components.TokenBalance)(({ theme }) => {
   };
 });
 
-
-
 export const StyledUSD = styled(Components.TokenUSD)({});
 
 export const StyledEmptyUSD = styled(Box)({
@@ -460,7 +458,7 @@ export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }
   };
 });
 
-export const StyledChunksSelect = styled(Components.ChunkSelector)(({theme}) => {
+export const StyledChunksSelect = styled(Components.ChunkSelector)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     marginLeft: 10,
@@ -477,7 +475,6 @@ export const StyledChunksSelect = styled(Components.ChunkSelector)(({theme}) => 
   };
 });
 
-
 const borderButtonStyles = {
   background: "unset",
   borderRadius: 16,
@@ -493,7 +490,6 @@ const borderButtonStyles = {
   },
 };
 
-
 export const StyledMenuButton = styled("button")<{ selected?: number }>(({ theme, selected }) => {
   const styles = baseStyles(theme);
   return {
@@ -507,10 +503,9 @@ export const StyledMenuButton = styled("button")<{ selected?: number }>(({ theme
 });
 
 export const StyledChunkSelectMaxButton = styled(StyledMenuButton)({
-    fontSize: 11,
-    marginLeft: 5
+  fontSize: 11,
+  marginLeft: 5,
 });
-
 
 export const StyledResetLimitButtonContainer = styled(Styles.StyledRowFlex)({
   gap: 2,
@@ -619,26 +614,17 @@ export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) =>
 });
 
 export const Card = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  return (
-    <StyledCard className={className}>
-      {children}
-    </StyledCard>
-  );
+  return <StyledCard className={className}>{children}</StyledCard>;
 };
 
 const CardHeader = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  return (
-    <StyledCardHeader className={className}>
-      {" "}
-      {children}
-    </StyledCardHeader>
-  );
+  return <StyledCardHeader className={className}> {children}</StyledCardHeader>;
 };
 
 const StyledCardHeader = styled(Styles.StyledRowFlex)({
   marginBottom: 14,
   justifyContent: "space-between",
-})
+});
 
 Card.Header = CardHeader;
 
@@ -718,7 +704,6 @@ export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
     },
   };
 });
-
 
 export const StyledOrdersHeader = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);
@@ -828,17 +813,12 @@ export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {
   };
 });
 
-
-
 export const StyledTradeIntervalSelectCard = styled(Card)({
-  
   display: "flex",
   alignItems: "center",
   flexDirection: "column",
   gap: 10,
-  minHeight:84
-})
+  minHeight: 84,
+});
 
-export const StyledTradeIntervalSelect  = styled(StyledColumnFlex)({
-
-})
+export const StyledTradeIntervalSelect = styled(StyledColumnFlex)({});

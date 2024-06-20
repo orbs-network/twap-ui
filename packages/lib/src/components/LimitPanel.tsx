@@ -1,7 +1,7 @@
 import { Box, styled } from "@mui/material";
-import { StyledColumnFlex, StyledRowFlex } from "../styles";
+import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
 import { useTwapStore } from "../store";
-import { Icon, NumericInput } from "./base";
+import { Icon, Label, NumericInput, Tooltip } from "./base";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
 import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
@@ -44,7 +44,7 @@ export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Component
 
   return (
     <Context.Provider value={{ onSrcSelect, onDstSelect, Components, styles, limitPricePanel, isTWAP }}>
-      <Container className={className}>
+      <Container className={`twap-limit-panel ${className}`}>
         <StyledRowFlex justifyContent="flex-start">
           <Title />
           <InvertPrice />
@@ -61,15 +61,41 @@ export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Component
 
 const Input = () => {
   const { limitPricePanel, Components } = useLimitPanelContext();
-  const { onChange, limitPriceUi, isLoading } = limitPricePanel;
+  const { onChange, limitPriceUi, isLoading, isMarketOrder } = limitPricePanel;
   const [value, setValue] = useState("");
 
   useEffect(() => {
     setValue(limitPriceUi || "");
   }, [limitPriceUi]);
 
-  return <Components.Input isLoading={isLoading} onChange={onChange} value={value} />;
+  return (
+    <StyledInputContainer>
+      {isMarketOrder && (
+        <StyledAnyPrice className="twap-limit-panel-market">
+          <Label tooltipText="Any price">Any price</Label>
+        </StyledAnyPrice>
+      )}
+      <div style={{ opacity: isMarketOrder ? 0 : 1, pointerEvents: isMarketOrder ? "none" : "all" }}>
+        <Components.Input isLoading={isLoading} onChange={onChange} value={value} />
+      </div>
+    </StyledInputContainer>
+  );
 };
+
+const StyledInputContainer = styled('div')({
+    position: "relative",
+})
+
+const StyledAnyPrice = styled(StyledRowFlex)({
+  width: "auto",
+  flex: 1,
+  justifyContent: "flex-start",
+  position: "absolute",
+  left: 0,
+  top: '50%',
+    transform: 'translateY(-50%)',
+  alignItems: "center",
+});
 
 const usePercent = () => {
   const { inverted } = useLimitPanelContext().limitPricePanel;
@@ -87,6 +113,7 @@ const PercentSelector = () => {
   const disabled = useLimitPanelContext().limitPricePanel.isLoading;
   return (
     <StyledPercentContainer style={{ pointerEvents: disabled ? "none" : "all", gap: styles?.percentButtonsGap || 5, opacity: disabled ? 0.8 : 1 }}>
+      <MarketButton />
       <ZeroButton />
       {percent.map((it) => {
         return <PercentButton percent={it} key={it} />;
@@ -96,10 +123,10 @@ const PercentSelector = () => {
 };
 
 const PercentButton = ({ percent }: { percent: string }) => {
-  const { inverted, onPercentChange, priceDeltaPercentage } = useLimitPanelContext().limitPricePanel;
+  const { inverted, onPercentChange, priceDeltaPercentage, isMarketOrder } = useLimitPanelContext().limitPricePanel;
   const Components = useLimitPanelContext().Components;
 
-  const selected = useMemo(() => BN(priceDeltaPercentage).eq(percent), [priceDeltaPercentage]);
+  const selected = useMemo(() => (isMarketOrder ? false : BN(priceDeltaPercentage).eq(percent)), [priceDeltaPercentage, percent, isMarketOrder]);
 
   const prefix = inverted ? "" : !inverted && "+";
 
@@ -107,27 +134,25 @@ const PercentButton = ({ percent }: { percent: string }) => {
 };
 
 const ZeroButton = () => {
-  const { onMarket, priceDeltaPercentage } = useLimitPanelContext().limitPricePanel;
+  const { onPercentChange, priceDeltaPercentage, isMarketOrder } = useLimitPanelContext().limitPricePanel;
   const Components = useLimitPanelContext().Components;
   const percent = usePercent();
   if (BN(priceDeltaPercentage).isZero() || percent.includes(priceDeltaPercentage)) {
-    return <PercentButton percent='0' />;
+    return <PercentButton percent="0" />;
   }
 
-  return <Components.ZeroButton onClick={onMarket} text={`${priceDeltaPercentage}%`} />;
+  return <Components.ZeroButton onClick={() => onPercentChange("0")} text={`${priceDeltaPercentage}%`} />;
 };
 
 const MarketButton = () => {
-  const { onMarket, priceDeltaPercentage, limitPriceUi, isLoading } = useLimitPanelContext().limitPricePanel;
+  const { limitPricePanel, isTWAP } = useLimitPanelContext();
+  const { onMarket, priceDeltaPercentage, limitPriceUi, isLoading, isMarketOrder } = limitPricePanel;
   const Components = useLimitPanelContext().Components;
-  const percent = usePercent();
   const selected = useMemo(() => !isLoading && BN(limitPriceUi || 0).gt(0) && BN(priceDeltaPercentage).isZero(), [priceDeltaPercentage, limitPriceUi, isLoading]);
 
-  if (BN(priceDeltaPercentage).isZero() || percent.includes(priceDeltaPercentage)) {
-    return <Components.PercentButton onClick={onMarket} selected={selected} text="Market" />;
-  }
+  if (!isTWAP) return null;
 
-  return <Components.CustomPercent onClick={onMarket} text={`${priceDeltaPercentage}%`} />;
+  return <Components.PercentButton onClick={onMarket} selected={isMarketOrder} text="Market" />;
 };
 
 const TokenSelect = () => {

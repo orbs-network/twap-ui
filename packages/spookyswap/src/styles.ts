@@ -124,7 +124,6 @@ export const StyledTokenPanel = styled(Components.Base.Card)(({ theme }) => ({
   },
 }));
 
-
 const getButtonStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
   const darkMode = isDark(theme);

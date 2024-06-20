@@ -19,6 +19,7 @@ export type Duration = { resolution: TimeResolution; amount?: number };
 
 const handleLimitPriceQueryParam = (value?: string, inverted?: boolean) => {
   let newValue = value;
+
   if (BN(newValue || 0).isZero()) {
     setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
   }
@@ -27,7 +28,7 @@ const handleLimitPriceQueryParam = (value?: string, inverted?: boolean) => {
       .div(value || "0")
       .toString();
   }
-  setQueryParam(QUERY_PARAMS.LIMIT_PRICE, formatDecimals(newValue));
+  setQueryParam(QUERY_PARAMS.LIMIT_PRICE, newValue);
 };
 
 const limitPriceFromQueryParams = () => {
@@ -59,7 +60,6 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     srcAmountUi: !queryParamsEnabled ? "" : srcAmountUi || "",
 
     loading: false,
-    isLimitOrder: true,
     confirmationClickTimestamp: moment(),
     showConfirmation: false,
     disclaimerAccepted: true,
@@ -89,12 +89,6 @@ export const useTwapStore = create(
     setShowLodingModal: (showLoadingModal: boolean) => set({ showLoadingModal }),
     setLimitOrderPriceUi: () => {
       setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-    },
-    setLimitOrder: (isLimitOrder?: boolean) => {
-      set({ isLimitOrder });
-      if (!isLimitOrder) {
-        setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-      }
     },
     setStoreOverrideValues: (storeOverride: StoreOverride, enableQueryParams?: boolean) => {
       set({
@@ -167,12 +161,13 @@ export const useTwapStore = create(
       set({
         customLimitPrice,
         isCustomLimitPrice: true,
+        isMarketOrder: false,
       });
     },
     setLimitPricePercent: (limitPricePercent?: string) => {
       set({
-        limitPricePercent
-      })
+        limitPricePercent,
+      });
     },
     onResetCustomLimit: () => {
       handleLimitPriceQueryParam();
@@ -190,7 +185,7 @@ export const useTwapStore = create(
         isInvertedLimitPrice: false,
         limitPricePercent: undefined,
       });
-    }
+    },
   }))
 );
 

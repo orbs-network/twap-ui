@@ -8,8 +8,7 @@ function Tooltip({ children, text, placement, childrenStyles = {} }: TooltipProp
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
   const ContextTooltip = useTwapContext().uiPreferences.Tooltip;
- 
-  
+
   if (!text) {
     return <>{children}</>;
   }

@@ -131,8 +131,6 @@ export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number
   );
 };
 
-
-
 export const StyledCancelOrderButton = styled(Button)({});
 
 export const StyledContainer = styled(StyledColumnFlex)({

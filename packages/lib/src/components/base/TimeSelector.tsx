@@ -78,11 +78,7 @@ function TimeSelector({ value, onChange, disabled = false, className = "", onFoc
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         {timeArr.map((item) => {
           return (
-            <StyledMenuItem
-              className='twap-time-selector-menu-item'
-              key={item.value}
-              onClick={() => onSelect(item.value)}
-            >
+            <StyledMenuItem className="twap-time-selector-menu-item" key={item.value} onClick={() => onSelect(item.value)}>
               {translations[item.text]}
             </StyledMenuItem>
           );
@@ -109,16 +105,16 @@ const StyledInput = styled(NumericInput)({
 
 const StyledContainer = styled(StyledRowFlex)({});
 
-const StyledMenuItem  = styled(MenuItem)({
+const StyledMenuItem = styled(MenuItem)({
   fontSize: 14,
-})
+});
 
 const StyledSelected = styled(Button)({
   gap: 5,
   padding: "0px",
   fontSize: 14,
   textTransform: "none",
-  color:'inherit',
+  color: "inherit",
   marginRight: 10,
   ".MuiTouchRipple-root": {
     display: "none",

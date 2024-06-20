@@ -139,7 +139,6 @@ export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({
   },
 });
 
-
 // const getButtonStyles = (theme: Theme) => {};
 export const StyledTokenInputContainer = styled(Styles.StyledColumnFlex)(({ theme }) => ({
   border: "3px solid white",

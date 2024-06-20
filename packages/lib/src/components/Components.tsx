@@ -985,7 +985,7 @@ export const TxSuccess = () => {
 
 interface TradeIntervalSelectProps {
   Components: {
-    Button: FC<{ text: string; onClick: () => void; selected?: boolean}>;
+    Button: FC<{ text: string; onClick: () => void; selected?: boolean }>;
   };
 }
 
@@ -1005,21 +1005,17 @@ export const TRADE_INTERVAL_OPTIONS = [
 ];
 
 export const TradeIntervalSelect = ({ Components }: TradeIntervalSelectProps) => {
-  const {setFillDelay, fillDelayMillis, fillDelay} = useTwapStore((s) =>({
+  const { setFillDelay, fillDelayMillis, fillDelay } = useTwapStore((s) => ({
     setFillDelay: s.setFillDelay,
     fillDelayMillis: s.getFillDelayUiMillis(),
-    fillDelay: s.customFillDelay
+    fillDelay: s.customFillDelay,
   }));
   const [custom, setCustom] = useState(false);
 
-  const onClose = useCallback(
-    () => {
-      setFillDelay(TRADE_INTERVAL_OPTIONS[0].value)
-      setCustom(false)
-    },
-    [setFillDelay, setCustom],
-  )
-  
+  const onClose = useCallback(() => {
+    setFillDelay(TRADE_INTERVAL_OPTIONS[0].value);
+    setCustom(false);
+  }, [setFillDelay, setCustom]);
 
   return (
     <StyledTradeIntervalSelect>
@@ -1028,8 +1024,8 @@ export const TradeIntervalSelect = ({ Components }: TradeIntervalSelectProps) =>
           const selected = fillDelayMillis === it.value.amount * it.value.resolution;
           return <Components.Button key={it.text} text={it.text} onClick={() => setFillDelay(it.value)} selected={selected} />;
         })}
-        {custom && <TimeSelector value={fillDelay} onChange={setFillDelay} />}
-      {custom ? <Components.Button text='Reset' selected={true} onClick={onClose} />: <Components.Button text="custom" onClick={() => setCustom(true)}  />}
+      {custom && <TimeSelector value={fillDelay} onChange={setFillDelay} />}
+      {custom ? <Components.Button text="Reset" selected={true} onClick={onClose} /> : <Components.Button text="custom" onClick={() => setCustom(true)} />}
     </StyledTradeIntervalSelect>
   );
 };

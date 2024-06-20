@@ -11,6 +11,7 @@ import {
   Styles,
   TooltipProps,
   parseError,
+  StoreOverride,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -105,11 +106,11 @@ export const parseToken = (rawToken: any): TokenData | undefined => {
   };
 };
 
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
+const storeOverride: StoreOverride = {
+  customChunks: 1,
   customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
+  isMarketOrder: false
 };
 
 const Balance = ({ isSrc }: { isSrc?: boolean }) => {
@@ -133,11 +134,11 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
           <Balance isSrc={isSrcToken} />
         </StyledSelectAndBalance>
       </Card.Header>
-        <Styles.StyledColumnFlex width="auto" gap={1} style={{ alignItems: "flex-end" }}>
-          <StyledTokenPanelInput dstDecimalScale={dstToken?.decimals || 3} isSrc={isSrcToken} />
-          <StyledUSD decimalScale={2} isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
-        </Styles.StyledColumnFlex>
-        {isSrcToken && <SrcTokenPercentSelector />}
+      <Styles.StyledColumnFlex width="auto" gap={1} style={{ alignItems: "flex-end" }}>
+        <StyledTokenPanelInput dstDecimalScale={dstToken?.decimals || 3} isSrc={isSrcToken} />
+        <StyledUSD decimalScale={2} isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
+      </Styles.StyledColumnFlex>
+      {isSrcToken && <SrcTokenPercentSelector />}
     </StyledTokenPanel>
   );
 };
@@ -400,32 +401,31 @@ const LimitTokenSelect = ({ token, onClick }: LimitPriceTokenSelectProps) => {
   return <StyledLimitPriceTokenSelect onClick={onClick} symbol={token?.symbol} logo={token?.logoUrl} />;
 };
 
-
 const LimitPriceInput = ({ value, onChange, isLoading }: any) => {
+  return <Components.Base.NumericInput value={value} onChange={onChange} loading={isLoading} />;
+};
 
-  return  <Components.Base.NumericInput value={value} onChange={onChange} loading={isLoading} />
-}
-
-const LimitPrice = () => {
+const LimitPrice = ({isTWAP}:{isTWAP?: boolean}) => {
   const onSrcSelect = useTokenSelectClick(true);
   const onDstSelect = useTokenSelectClick(false);
 
   return (
     <Card>
-        <Components.LimitPanel
-          onSrcSelect={onSrcSelect}
-          onDstSelect={onDstSelect}
-          styles={{
-            percentButtonsGap: "5px",
-          }}
-          Components={{
-            PercentButton,
-            ZeroButton,
-            Title: LimitPriceTitle,
-            TokenSelect: LimitTokenSelect,
-            Input: LimitPriceInput
-          }}
-        />
+      <Components.LimitPanel
+        onSrcSelect={onSrcSelect}
+        onDstSelect={onDstSelect}
+        styles={{
+          percentButtonsGap: "5px",
+        }}
+        isTWAP={isTWAP}
+        Components={{
+          PercentButton,
+          ZeroButton,
+          Title: LimitPriceTitle,
+          TokenSelect: LimitTokenSelect,
+          Input: LimitPriceInput,
+        }}
+      />
     </Card>
   );
 };
@@ -435,7 +435,7 @@ const TWAPPanel = () => {
     <div className="twap-container">
       <StyledColumnFlex>
         <TopPanel />
-        <LimitPrice />
+        <LimitPrice isTWAP={true} />
         <TotalTrades />
         <TradeIntervalSelect />
         <SwapModal limitPanel={false} />
@@ -446,7 +446,7 @@ const TWAPPanel = () => {
   );
 };
 
-const MenuButton = ({ text, selected, onClick }: { text: string; selected: boolean; onClick: () => void}) => {
+const MenuButton = ({ text, selected, onClick }: { text: string; selected: boolean; onClick: () => void }) => {
   return (
     <StyledMenuButton selected={selected ? 1 : 0} onClick={onClick}>
       {text}
@@ -482,10 +482,10 @@ const TradeIntervalSelect = () => {
         <Components.Labels.TradeIntervalLabel />
       </Card.Header>
       <StyledTradeIntervalSelect>
-      <Components.TradeIntervalSelect Components={{ Button: MenuButton }} />
+        <Components.TradeIntervalSelect Components={{ Button: MenuButton }} />
       </StyledTradeIntervalSelect>
     </StyledTradeIntervalSelectCard>
-  )
+  );
 };
 
 export { TWAP, Orders };

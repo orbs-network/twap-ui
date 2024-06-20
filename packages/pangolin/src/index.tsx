@@ -245,7 +245,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
-  
+
   const onClose = useCallback(() => {
     setTokenListOpen(false);
   }, []);
@@ -257,7 +257,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>
           {isSrcToken && <SrcTokenPercentSelector />}
-
         </TwapStyles.StyledRowFlex>
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={15}>

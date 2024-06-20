@@ -31,10 +31,8 @@ export const feeOnTransferDetectorAddresses = {
 
 export const MIN_CHUNKS = 2;
 
- enum TimeResolution {
+enum TimeResolution {
   Minutes = 60 * 1000,
   Hours = Minutes * 60,
   Days = Hours * 24,
 }
-
-

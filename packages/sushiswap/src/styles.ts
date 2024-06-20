@@ -61,8 +61,6 @@ export const StyledEmpty = styled(Typography)({
   },
 });
 
-
-
 export const StyledTokenChange = styled(Components.ChangeTokensOrder)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
   button: {
     position: "absolute",

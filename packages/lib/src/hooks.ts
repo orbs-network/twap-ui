@@ -1195,9 +1195,10 @@ export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
 
 export const useOutAmount = () => {
   const { limitPriceUi: limitPriceV2, isLoading } = useLimitPrice();
-  const { srcAmountUi, dstToken } = useTwapStore((s) => ({
+  const { srcAmountUi, dstToken, wrongNetwork } = useTwapStore((s) => ({
     srcAmountUi: s.srcAmountUi,
     dstToken: s.dstToken,
+    wrongNetwork: s.wrongNetwork,
   }));
 
   const outAmountUi = useMemo(() => {
@@ -1206,7 +1207,7 @@ export const useOutAmount = () => {
   }, [limitPriceV2, srcAmountUi]);
 
   return {
-    isLoading,
+    isLoading: wrongNetwork ? false : isLoading,
     outAmountUi: outAmountUi || "",
     outAmountRaw: useAmountBN(dstToken?.decimals, outAmountUi) || "",
   };
@@ -1406,7 +1407,6 @@ export const useChunks = () => {
   }));
   const maxPossibleChunks = useMaxPossibleChunks();
   const srcAmountUsd = useSrcAmountUsdUi();
-  console.log({ customChunks });
 
   return useMemo(() => {
     if (!srcUsd || !srcToken) return 1;
@@ -1430,11 +1430,8 @@ export const useMaxChunksWarning = () => {
     return chunks > maxPossibleChunks ? translations.maxChunksWarning.replace("{maxChunks}", maxPossibleChunks.toString()) : undefined;
   }, [chunks, maxPossibleChunks]);
 
-
-
-  return warning
+  return warning;
 };
-
 
 export const useSetChunks = () => {
   const updateState = useTwapStore((s) => s.updateState);
@@ -1752,7 +1749,7 @@ export const useFeeOnTranserWarning = () => {
 
 export const useLimitPricePanel = () => {
   const { marketPriceUi, isLoading } = useMarketPrice();
-  const { isCustom, onChange, inverted, onResetCustom, invert, customPrice, setLimitPricePercent, limitPercent } = useTwapStore((s) => ({
+  const { isCustom, onChange, inverted, onResetCustom, invert, customPrice, setLimitPricePercent, limitPercent, wrongNetwork, isMarketOrder, updateState } = useTwapStore((s) => ({
     isCustom: s.isCustomLimitPrice,
     onChange: s.onLimitChange,
     inverted: s.isInvertedLimitPrice,
@@ -1761,6 +1758,9 @@ export const useLimitPricePanel = () => {
     customPrice: s.customLimitPrice,
     setLimitPricePercent: s.setLimitPricePercent,
     limitPercent: s.limitPricePercent,
+    wrongNetwork: s.wrongNetwork,
+    isMarketOrder: s.isMarketOrder,
+    updateState: s.updateState,
   }));
   const marketPrice = useFormatDecimals(useInvertedPrice(marketPriceUi, inverted));
 
@@ -1774,8 +1774,8 @@ export const useLimitPricePanel = () => {
 
   const onMarket = useCallback(() => {
     onResetCustom();
-    setLimitPricePercent("0");
-  }, [onResetCustom, setLimitPricePercent]);
+    updateState({ isMarketOrder: true, limitPricePercent: '0' });
+  }, [onResetCustom, updateState]);
 
   const onPercentChange = useCallback(
     (percent: string) => {
@@ -1814,14 +1814,16 @@ export const useLimitPricePanel = () => {
     setLimitPricePercent("0");
   }, [invert, setLimitPricePercent]);
 
+
   return {
     priceDeltaPercentage,
     onPercentChange,
     onMarket,
     onChange: onChangeCallback,
     inverted,
-    isLoading,
+    isLoading: wrongNetwork ? false : isLoading,
     limitPriceUi,
     onInvert,
+    isMarketOrder: !!isMarketOrder,
   };
 };

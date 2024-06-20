@@ -49,5 +49,3 @@ const StyledLoader = styled(Components.Base.Loader)<{ loading: number }>(({ load
   display: loading ? "block" : ("none" as const),
   posinterEvents: "none",
 }));
-
-
