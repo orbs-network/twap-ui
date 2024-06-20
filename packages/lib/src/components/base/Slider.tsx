@@ -1,9 +1,8 @@
 import MuiSlider from "@mui/material/Slider";
 import { styled } from "@mui/system";
+import { useCallback, useEffect, useState } from "react";
 
-function valueLabelFormat(value: number) {
-  return value.toLocaleString();
-}
+
 
 function calculateValue(value: number) {
   return value;
@@ -14,14 +13,23 @@ export interface Props {
   value: number;
   maxTrades: number;
   className?: string;
+  label?: string
 }
 
-const Slider = ({ onChange, value, maxTrades, className = "" }: Props) => {
+
+const Slider = ({ onChange, value, maxTrades, className = "", label }: Props) => {
   const handleChange = (_event: Event, newValue: number | number[]) => {
     if (typeof newValue === "number") {
       onChange(newValue);
     }
   };
+
+  const valueLabelFormat = useCallback(
+    (value: number) => {
+      return label || value.toLocaleString();
+    },
+    [label]
+  );
 
   return (
     <StyledSlider

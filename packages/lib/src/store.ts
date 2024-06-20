@@ -7,14 +7,35 @@ import _ from "lodash";
 import { maxUint256 } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
 import { QUERY_PARAMS } from "./consts";
-import { amountBN, amountUi, fillDelayText, getQueryParam, setQueryParam } from "./utils";
+import { amountBN, fillDelayText, formatDecimals, getQueryParam, setQueryParam } from "./utils";
 
 export enum TimeResolution {
   Minutes = 60 * 1000,
   Hours = Minutes * 60,
+  Weeks = 7 * 24 * Hours,
   Days = Hours * 24,
 }
 export type Duration = { resolution: TimeResolution; amount?: number };
+
+const handleLimitPriceQueryParam = (value?: string, inverted?: boolean) => {
+  let newValue = value;
+  if (BN(newValue || 0).isZero()) {
+    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
+  }
+  if (inverted) {
+    newValue = BN(1)
+      .div(value || "0")
+      .toString();
+  }
+  setQueryParam(QUERY_PARAMS.LIMIT_PRICE, formatDecimals(newValue));
+};
+
+const limitPriceFromQueryParams = () => {
+  const price = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
+  if (price && BN(price).gt(0)) {
+    return formatDecimals(price);
+  }
+};
 
 /**
  * TWAP Store
@@ -43,7 +64,7 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     showConfirmation: false,
     disclaimerAccepted: true,
 
-    chunks: !queryParamsEnabled ? 0 : chunks ? Number(chunks) : 0,
+    customChunks: !queryParamsEnabled ? undefined : chunks ? Number(chunks) : undefined,
     customDuration: !queryParamsEnabled ? defaultCustomDuration : { resolution: TimeResolution.Minutes, amount: maxDurationQueryParam ? Number(maxDurationQueryParam) : undefined },
     customFillDelay: !queryParamsEnabled ? defaultCustomFillDelay : { resolution: TimeResolution.Minutes, amount: tradeIntervalQueryParam ? Number(tradeIntervalQueryParam) : 2 },
 
@@ -54,6 +75,9 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     waitingForOrdersUpdate: false,
     srcUsd: undefined,
     dstUsd: undefined,
+
+    isCustomLimitPrice: !!limitPriceFromQueryParams(),
+    customLimitPrice: limitPriceFromQueryParams(),
   };
 };
 const initialState = getInitialState();
@@ -130,6 +154,43 @@ export const useTwapStore = create(
     shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
     isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
     setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment() }),
+    invertLimit: () => {
+      handleLimitPriceQueryParam();
+      set({
+        isInvertedLimitPrice: !get().isInvertedLimitPrice,
+        customLimitPrice: undefined,
+        isCustomLimitPrice: false,
+      });
+    },
+    onLimitChange: (customLimitPrice: string) => {
+      handleLimitPriceQueryParam(customLimitPrice, get().isInvertedLimitPrice);
+      set({
+        customLimitPrice,
+        isCustomLimitPrice: true,
+      });
+    },
+    setLimitPricePercent: (limitPricePercent?: string) => {
+      set({
+        limitPricePercent
+      })
+    },
+    onResetCustomLimit: () => {
+      handleLimitPriceQueryParam();
+      set({
+        isCustomLimitPrice: false,
+        customLimitPrice: undefined,
+      });
+    },
+
+    resetLimit: () => {
+      handleLimitPriceQueryParam();
+      set({
+        isCustomLimitPrice: false,
+        customLimitPrice: undefined,
+        isInvertedLimitPrice: false,
+        limitPricePercent: undefined,
+      });
+    }
   }))
 );
 
@@ -188,31 +249,4 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
   setOpen: (value) => {
     set({ open: value });
   },
-}));
-
-interface LimitPriceStore {
-  isCustom: boolean;
-  customPrice?: string;
-  inverted: boolean;
-  percentage?: string;
-  invert: () => void;
-  updateState: (state: Partial<LimitPriceStore>) => void;
-}
-
-const limitPriceFromQueryParams = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
-
-export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
-  isCustom: BN(limitPriceFromQueryParams || 0).gt(0),
-  percentage: undefined,
-  inverted: false,
-  customPrice: limitPriceFromQueryParams && BN(limitPriceFromQueryParams || 0).gt(0) ? limitPriceFromQueryParams : undefined,
-  invert: () => {
-    set({
-      inverted: !get().inverted,
-      customPrice: undefined,
-      percentage: undefined,
-      isCustom: false,
-    });
-  },
-  updateState: (state) => set({ ...state }),
 }));

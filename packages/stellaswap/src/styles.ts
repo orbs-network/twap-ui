@@ -104,13 +104,6 @@ export const StyledTop = styled(Styles.StyledColumnFlex)({
   marginBottom: 20,
 });
 
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  "> p": {
-    fontSize: 15,
-    fontWeight: 500,
-  },
-});
-
 export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }) => {
   const isDarkTheme = isDark(theme);
   return {

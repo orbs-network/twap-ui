@@ -194,7 +194,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         nativeToken={native}
         connector={connector}
         isMobile={isMobile}
-        useTooltip={useTooltip}
         Button={DappButton}
         ApproveModalContent={ApproveModalContent}
         SwapTransactionErrorContent={SwapTransactionErrorContent}

@@ -131,9 +131,7 @@ export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number
   );
 };
 
-const StyledMarketPrice = styled(StyledRowFlex)({
-  "@media(max-width: 500px)": {},
-});
+
 
 export const StyledCancelOrderButton = styled(Button)({});
 

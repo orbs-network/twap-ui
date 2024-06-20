@@ -17,7 +17,6 @@ import {
   configureStyles,
   StyledAdapter,
   StyledColumnFlex,
-  StyledMarketPrice,
   StyledOrders,
   StyledPoweredBy,
   StyledSubmit,
@@ -91,7 +90,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       <StyledTokenPanel className="twap-token-panel">
         <TokenSelectButton isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
         <StyledPanelRight isSrcToken={isSrcToken ? 1 : 0} gap={3}>
-          <Components.TokenInput placeholder="0" isSrc={isSrcToken} />
+          <Components.TokenPanelInput placeholder="0" isSrc={isSrcToken} />
           <StyledBalanceAndUSD>
             <StyledUSD isSrc={isSrcToken} />
             <StyledBalance emptyUi={<div>0.00</div>} isSrc={isSrcToken} />
@@ -212,9 +211,6 @@ const TWAPPanel = () => {
           <TokenChange />
           <TokenPanel />
         </StyledTop>
-        <Components.Base.Card>
-          <StyledMarketPrice />
-        </Components.Base.Card>
         <TotalTrades />
         <TradeSize />
         <TradeInterval />
@@ -238,9 +234,6 @@ const LimitPanel = () => {
           <TokenChange />
           <TokenPanel />
         </StyledTop>
-        <Components.Base.Card>
-          <Components.MarketPrice />
-        </Components.Base.Card>
         <StyledSubmit isMain />
       </StyledColumnFlex>
       <OrderSummary>

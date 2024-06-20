@@ -245,9 +245,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
-  const marketPrice = hooks.useMarketPrice().marketPriceUi;
-  const formattedMarketPrice = hooks.useFormatNumber({ value: marketPrice });
-
+  
   const onClose = useCallback(() => {
     setTokenListOpen(false);
   }, []);
@@ -259,16 +257,12 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>
           {isSrcToken && <SrcTokenPercentSelector />}
-          {!isSrcToken && marketPrice !== "0" && (
-            <TwapStyles.StyledRowFlex className="twap-token-panel-price">
-              <TwapStyles.StyledText>Price</TwapStyles.StyledText> {formattedMarketPrice} <Components.TokenSymbol isSrc={isSrcToken} />
-            </TwapStyles.StyledRowFlex>
-          )}
+
         </TwapStyles.StyledRowFlex>
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={15}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenInput isSrc={isSrcToken} />
+              <Components.TokenPanelInput isSrc={isSrcToken} />
               <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">

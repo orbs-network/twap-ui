@@ -9,7 +9,7 @@ export interface AdapterProps extends TWAPProps {
   nativeToken: any;
   connector?: any;
   isMobile?: boolean;
-  useTooltip: any;
+  useTooltip?: any;
   Button: any;
   ApproveModalContent?: any;
   SwapTransactionErrorContent?: any;

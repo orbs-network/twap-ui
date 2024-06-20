@@ -2,7 +2,7 @@ import { Box, styled, Typography } from "@mui/material";
 import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
 const gradient = "linear-gradient(to right,rgba(59,130,246,.15),rgba(236,72,153,.15))";
 
-export const StyledPanelInput = styled(Components.TokenInput)({
+export const StyledPanelInput = styled(Components.TokenPanelInput)({
   input: {
     fontSize: 30,
     height: 44,
@@ -61,15 +61,7 @@ export const StyledEmpty = styled(Typography)({
   },
 });
 
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  background: gradient,
-  padding: 12,
-  borderRadius: 12,
-  "> p": {
-    fontSize: 15,
-    fontWeight: 500,
-  },
-});
+
 
 export const StyledTokenChange = styled(Components.ChangeTokensOrder)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
   button: {

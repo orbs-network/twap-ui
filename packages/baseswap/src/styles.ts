@@ -113,21 +113,6 @@ export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({
     fontSize: 24,
   },
 });
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  ".title": {
-    fontSize: 12,
-    color: "rgb(204, 204, 204)",
-    fontWeight: 600,
-  },
-  svg: {
-    width: 15,
-    height: 15,
-  },
-  [`@media(max-width:${MOBILE}px)`]: {
-    flexDirection: "column",
-    alignItems: "flex-start",
-  },
-});
 
 export const StyledTokenSelect = styled(Box)({
   ".twap-token-logo": {

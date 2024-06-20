@@ -6,13 +6,11 @@ import {
   TwapAdapter,
   Styles as TwapStyles,
   store,
-  TWAPProps,
   Orders,
   TwapContextUIPreferences,
   Styles,
   TooltipProps,
   parseError,
-  adapterHooks,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -21,17 +19,9 @@ import {
   darkTheme,
   lightTheme,
   StyledBalanceContainer,
-  StyledPercentButton,
-  StyledChunksInput,
-  StyledChunksSlider,
+  StyledMenuButton,
   StyledColumnFlex,
   StyledPoweredBy,
-  StyledTimeSelect,
-  StyledTimeSelectBody,
-  StyledTimeSelectContainer,
-  StyledTimeSelectHeader,
-  StyledTotalChunks,
-  StyledTradeSize,
   StyledModalHeaderClose,
   StyledModalHeader,
   StyledSwapModalContent,
@@ -39,9 +29,14 @@ import {
   StyledResetLimitButtonContainer,
   StyledResetLimitButtonLeft,
   StyledResetLimitButtonRight,
-  StyledLimit,
+  StyledLimitPriceTitle,
+  StyledLimitPriceTokenSelect,
+  StyledChunksSelect,
+  StyledChunkSelectMaxButton,
+  StyledTradeIntervalSelect,
+  StyledTradeIntervalSelectCard,
 } from "./styles";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   StyledBalance,
   StyledEmptyUSD,
@@ -65,10 +60,11 @@ import PancakeOrders from "./PancakeOrders";
 import { getTokenFromTokensList } from "@orbs-network/twap-ui";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { OrderSummary } from "./OrderSummary";
-import { useTwapContext } from "@orbs-network/twap-ui";
+import { useTwapContext, LimitPriceCustomPercentProps, LimitPricePercentProps } from "@orbs-network/twap-ui";
 import { useAdapterContext, AdapterContextProvider, AdapterProps } from "./context";
-import { Price } from "./components";
 import { create } from "zustand";
+import { LimitPriceTitleProps } from "@orbs-network/twap-ui";
+import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
 
 const PERCENT = [
   { text: "25%", value: 0.25 },
@@ -77,44 +73,16 @@ const PERCENT = [
   { text: "MAX", value: 1 },
 ];
 
-const Button = (props: any) => {
-  const DappButton = useAdapterContext().Button;
-
-  return (
-    <DappButton onClick={props.onClick} disabled={props.disabled || props.loading}>
-      {props.children}
-    </DappButton>
-  );
-};
-
 const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
   const useTooltip = useAdapterContext().useTooltip;
-  const { targetRef, tooltip, tooltipVisible } = useTooltip(text, { placement: "top", hideTimeout: 0 });
+  const tooltip = useTooltip?.(text, { placement: "top", hideTimeout: 0 });
+
+  if (!tooltip) return null;
   return (
-    <span ref={targetRef} style={{ ...childrenStyles }}>
-      {children} {tooltipVisible && tooltip}
+    <span ref={tooltip.targetRef} style={{ ...childrenStyles }}>
+      {children} {tooltip.tooltipVisible && tooltip.tooltip}
     </span>
   );
-};
-
-const uiPreferences: TwapContextUIPreferences = {
-  usdSuffix: " USD",
-  usdPrefix: "~",
-  usdEmptyUI: <></>,
-  balanceEmptyUI: <></>,
-  switchVariant: "ios",
-  inputPlaceholder: "0.0",
-  Tooltip,
-  Button,
-  orders: {
-    paginationChunks: 4,
-    hideUsd: true,
-  },
-  modal: {
-    styles: {
-      zIndex: 1,
-    },
-  },
 };
 
 const config = Configs.PancakeSwap;
@@ -165,13 +133,11 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
           <Balance isSrc={isSrcToken} />
         </StyledSelectAndBalance>
       </Card.Header>
-      <Card.Body editable={true}>
         <Styles.StyledColumnFlex width="auto" gap={1} style={{ alignItems: "flex-end" }}>
           <StyledTokenPanelInput dstDecimalScale={dstToken?.decimals || 3} isSrc={isSrcToken} />
           <StyledUSD decimalScale={2} isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
         </Styles.StyledColumnFlex>
         {isSrcToken && <SrcTokenPercentSelector />}
-      </Card.Body>{" "}
     </StyledTokenPanel>
   );
 };
@@ -199,9 +165,9 @@ const SrcTokenPercentSelector = () => {
       {PERCENT.map((p) => {
         const selected = BN(srcAmount || "0").isZero() ? false : Math.round(percent * 100) === p.value * 100 || (p.value === 1 && BN(maxSrcInputAmount || 0).isEqualTo(srcAmount));
         return (
-          <StyledPercentButton selected={selected ? 1 : 0} key={p.text} onClick={() => (selected ? () => {} : onClick(p.value))}>
+          <StyledMenuButton selected={selected ? 1 : 0} key={p.text} onClick={() => (selected ? () => {} : onClick(p.value))}>
             {p.text}
-          </StyledPercentButton>
+          </StyledMenuButton>
         );
       })}
     </StyledPercentSelect>
@@ -273,6 +239,27 @@ const TWAP = memo((props: AdapterProps) => {
       [zeroAddress]: props.nativeToken,
     };
   }, [props.dappTokens, props.nativeToken]);
+
+  const uiPreferences = useMemo((): TwapContextUIPreferences => {
+    return {
+      usdSuffix: " USD",
+      usdPrefix: "~",
+      usdEmptyUI: <></>,
+      balanceEmptyUI: <></>,
+      switchVariant: "ios",
+      inputPlaceholder: "0.0",
+      Tooltip: props.useTooltip ? Tooltip : undefined,
+      orders: {
+        paginationChunks: 4,
+        hideUsd: true,
+      },
+      modal: {
+        styles: {
+          zIndex: 1,
+        },
+      },
+    };
+  }, [props.useTooltip]);
 
   return (
     <Box className="twap-adapter-wrapper">
@@ -355,9 +342,6 @@ const LimitPanel = () => {
     <div className="twap-container">
       <StyledColumnFlex>
         <TopPanel />
-        <TwapStyles.StyledColumnFlex>
-          <Price />
-        </TwapStyles.StyledColumnFlex>
         <LimitPrice />
         <OpenConfirmationModalButton />
       </StyledColumnFlex>
@@ -381,15 +365,15 @@ const useTokenSelectClick = (isSrcToken?: boolean) => {
   return useAdapterContext().useTokenModal(onSelect, srcToken, dstToken, isSrcToken);
 };
 
-const PercentButton = ({ selected, text, onClick }: { selected: boolean; text: string; onClick: () => void }) => {
+const PercentButton = ({ selected, text, onClick }: LimitPricePercentProps) => {
   return (
-    <StyledPercentButton onClick={onClick} selected={selected ? 1 : 0}>
+    <StyledMenuButton onClick={onClick} selected={selected ? 1 : 0}>
       {text}
-    </StyledPercentButton>
+    </StyledMenuButton>
   );
 };
 
-const CustomPercent = ({ text, onClick }: { text: string; onClick: () => void }) => {
+const ZeroButton = ({ text, onClick }: LimitPriceCustomPercentProps) => {
   return (
     <StyledResetLimitButtonContainer>
       <StyledResetLimitButtonLeft selected={1} onClick={onClick}>
@@ -402,13 +386,32 @@ const CustomPercent = ({ text, onClick }: { text: string; onClick: () => void })
   );
 };
 
+const LimitPriceTitle = ({ textLeft, textRight, token, onTokenClick }: LimitPriceTitleProps) => {
+  return (
+    <StyledLimitPriceTitle>
+      <span>{textLeft}</span>
+      <StyledLimitPriceTokenSelect onClick={onTokenClick} symbol={token?.symbol} logo={token?.logoUrl} />
+      <span>{textRight}</span>
+    </StyledLimitPriceTitle>
+  );
+};
+
+const LimitTokenSelect = ({ token, onClick }: LimitPriceTokenSelectProps) => {
+  return <StyledLimitPriceTokenSelect onClick={onClick} symbol={token?.symbol} logo={token?.logoUrl} />;
+};
+
+
+const LimitPriceInput = ({ value, onChange, isLoading }: any) => {
+
+  return  <Components.Base.NumericInput value={value} onChange={onChange} loading={isLoading} />
+}
+
 const LimitPrice = () => {
   const onSrcSelect = useTokenSelectClick(true);
   const onDstSelect = useTokenSelectClick(false);
 
   return (
     <Card>
-      <Card.Body editable={true}>
         <Components.LimitPanel
           onSrcSelect={onSrcSelect}
           onDstSelect={onDstSelect}
@@ -417,10 +420,12 @@ const LimitPrice = () => {
           }}
           Components={{
             PercentButton,
-            CustomPercent,
+            ZeroButton,
+            Title: LimitPriceTitle,
+            TokenSelect: LimitTokenSelect,
+            Input: LimitPriceInput
           }}
         />
-      </Card.Body>
     </Card>
   );
 };
@@ -432,93 +437,55 @@ const TWAPPanel = () => {
         <TopPanel />
         <LimitPrice />
         <TotalTrades />
-        <TradeSize />
-        <TradeInterval />
-        <MaxDuration />
-        
+        <TradeIntervalSelect />
         <SwapModal limitPanel={false} />
         <OpenConfirmationModalButton />
-       
       </StyledColumnFlex>
       <StyledPoweredBy />
     </div>
   );
 };
 
-const TotalTrades = () => {
-  const { srcAmount } = store.useTwapStore((store) => ({
-    srcAmount: store.getSrcAmount(),
-  }));
-
-  const getChunksBiggerThanOne = hooks.useChunksBiggerThanOne();
-
-  if (srcAmount.isZero()) return null;
-
-  if (!getChunksBiggerThanOne) {
-    return (
-      <TwapStyles.StyledRowFlex justifyContent="space-between">
-        <Components.Labels.TotalTradesLabel />
-        <Typography style={{ fontSize: 14 }}>1</Typography>
-      </TwapStyles.StyledRowFlex>
-    );
-  }
+const MenuButton = ({ text, selected, onClick }: { text: string; selected: boolean; onClick: () => void}) => {
   return (
-    <StyledTotalChunks>
+    <StyledMenuButton selected={selected ? 1 : 0} onClick={onClick}>
+      {text}
+    </StyledMenuButton>
+  );
+};
+
+const TotalTradesWarningButton = ({ onClick, text }: { onClick: () => void; text: string }) => {
+  return (
+    <StyledChunkSelectMaxButton selected={1} onClick={onClick}>
+      {text}
+    </StyledChunkSelectMaxButton>
+  );
+};
+
+const TotalTrades = () => {
+  const show = hooks.useChunksBiggerThanOne();
+  if (!show) return null;
+  return (
+    <Card>
       <Card.Header>
         <Components.Labels.TotalTradesLabel />
       </Card.Header>
-      <Card.Body editable={true}>
-        <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between">
-          <StyledChunksSlider />
-          <StyledChunksInput />
-        </TwapStyles.StyledRowFlex>
-      </Card.Body>
-    </StyledTotalChunks>
+      <StyledChunksSelect Components={{ MenuButton: MenuButton, WarningButton: TotalTradesWarningButton }} />
+    </Card>
   );
 };
 
-const TradeSize = () => {
-  const value = hooks.useSrcChunkAmountUi();
-
-  if (BN(value || "0").isZero()) return null;
+const TradeIntervalSelect = () => {
   return (
-    <StyledTradeSize>
-      <Components.Labels.ChunksAmountLabel />
-      <Components.TradeSize hideLabel={true} hideLogo={true} />
-    </StyledTradeSize>
-  );
-};
-
-const MaxDuration = () => {
-  return (
-    <StyledTimeSelectContainer>
-      <StyledTimeSelectHeader>
-        <Components.Labels.MaxDurationLabel />
-      </StyledTimeSelectHeader>
-      <StyledTimeSelect>
-        <StyledTimeSelectBody editable={true}>
-          <Components.MaxDurationSelector />
-        </StyledTimeSelectBody>
-        <Components.PartialFillWarning />
-      </StyledTimeSelect>
-    </StyledTimeSelectContainer>
-  );
-};
-
-const TradeInterval = () => {
-  return (
-    <StyledTimeSelectContainer>
-      <StyledTimeSelectHeader>
+    <StyledTradeIntervalSelectCard>
+      <Card.Header>
         <Components.Labels.TradeIntervalLabel />
-      </StyledTimeSelectHeader>
-      <StyledTimeSelect>
-        <StyledTimeSelectBody editable={true}>
-          <Components.TradeIntervalSelector />
-        </StyledTimeSelectBody>
-        <Components.FillDelayWarning />
-      </StyledTimeSelect>
-    </StyledTimeSelectContainer>
-  );
+      </Card.Header>
+      <StyledTradeIntervalSelect>
+      <Components.TradeIntervalSelect Components={{ Button: MenuButton }} />
+      </StyledTradeIntervalSelect>
+    </StyledTradeIntervalSelectCard>
+  )
 };
 
 export { TWAP, Orders };

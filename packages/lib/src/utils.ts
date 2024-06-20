@@ -157,10 +157,36 @@ export const getTheGraphUrl = (chainId?: number) => {
   return THE_GRAPH_ORDERS_API[chainId];
 };
 
-export const formatNumber = (value?: string | number, decimalScale?: number) => {
-  return numericFormatter(value?.toString() || "", {
-    decimalScale: decimalScale,
-    allowLeadingZeros: true,
-    thousandSeparator: ",",
-  });
+function indexWhereZerosEnd(numberStr?: string) {
+  if (!numberStr) return 0;
+
+  // Split the number into the integer and decimal parts
+  let parts = numberStr.split(".");
+  if (parts.length < 2) {
+    return -1; // No decimal part
+  }
+
+  let decimalPart = parts[1];
+
+  // Match leading zeros in the decimal part
+  const match = decimalPart.match(/^(0+)/);
+
+  if (match) {
+    // Return the length of the leading zeros (index where zeros end in decimal part)
+    return match[1].length;
+  } else {
+    // If there are no leading zeros, return 0
+    return 0;
+  }
+}
+
+export const formatDecimals = (value?: string | BN | number, decimalPlaces?: number) => {
+  if (!value) return "";
+  const index = indexWhereZerosEnd(BN(value).toString());
+
+  const max = decimalPlaces || 6;
+
+  return BN(value)
+    .decimalPlaces(index + max, BN.ROUND_DOWN)
+    .toString();
 };

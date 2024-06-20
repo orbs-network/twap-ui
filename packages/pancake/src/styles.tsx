@@ -69,16 +69,19 @@ const getButtonStyles = (theme: Theme) => {
   };
 };
 
-export const StyledCardBody = styled(Box)<{ editable?: number }>(({ theme, editable }) => {
+export const StyledCard = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);
 
   return {
+   display: "flex",
+    flexDirection: "column",
+    gap:'0px!important',
     width: "100%",
-    pointerEvents: editable ? "all" : "none",
-    background: editable ? styles.editableCardBox : styles.cardBox,
+    pointerEvents: "all",
+    background: styles.editableCardBox,
     padding: 12,
     borderRadius: 16,
-    boxShadow: editable ? styles.inputShadow : "",
+    boxShadow: styles.inputShadow ,
   };
 });
 
@@ -197,17 +200,6 @@ export const configureStyles = (theme: Theme) => {
       },
       "&-header": {
         marginBottom: 10,
-      },
-    },
-    ".twap-trade-size": {
-      ".twap-label": {
-        whiteSpace: "nowrap",
-      },
-      ".twap-token-logo": {
-        display: "none",
-      },
-      "*": {
-        color: styles.primaryTextColor,
       },
     },
     ".twap-orders-title": {
@@ -391,48 +383,7 @@ export const StyledBalance = styled(Components.TokenBalance)(({ theme }) => {
   };
 });
 
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  flexDirection: "column",
-  alignItems: "flex-start",
 
-  gap: 5,
-  ".twap-loader": {
-    marginLeft: "auto",
-  },
-
-  ".twap-price-compare": {
-    justifyContent: "flex-end",
-    width: "auto",
-    marginLeft: "auto",
-    "*": {
-      fontSize: 13,
-    },
-  },
-});
-
-export const StyledMarketPriceContainer = styled(Styles.StyledRowFlex)(({ theme }) => {
-  const darkMode = baseStyles(theme).darkMode;
-  return {
-    position: "relative",
-    justifyContent: "space-between",
-    p: { color: darkMode ? "#a881fc" : "#7645d9", fontWeight: "600!important" },
-    ".twap-token-logo": {
-      display: "none",
-    },
-    ".twap-label": {
-      p: {
-        whiteSpace: "nowrap",
-      },
-    },
-    "@media(max-width: 700px)": {
-      ".twap-label": {
-        p: {
-          fontSize: "12px!important",
-        },
-      },
-    },
-  };
-});
 
 export const StyledUSD = styled(Components.TokenUSD)({});
 
@@ -509,19 +460,7 @@ export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }
   };
 });
 
-export const StyledChunksInput = styled(Components.ChunksInput)({
-  marginLeft: "auto",
-  fontWeight: 600,
-  color: "#1fc7d4",
-  div: {
-    height: "100%",
-  },
-  input: {
-    height: "100%",
-  },
-});
-
-export const StyledChunksSlider = styled(Components.ChunksSliderSelect)(({ theme }) => {
+export const StyledChunksSelect = styled(Components.ChunkSelector)(({theme}) => {
   const styles = baseStyles(theme);
   return {
     marginLeft: 10,
@@ -538,6 +477,7 @@ export const StyledChunksSlider = styled(Components.ChunksSliderSelect)(({ theme
   };
 });
 
+
 const borderButtonStyles = {
   background: "unset",
   borderRadius: 16,
@@ -553,31 +493,41 @@ const borderButtonStyles = {
   },
 };
 
-export const StyledPercentButton = styled("button")<{ selected?: number }>(({ theme, selected }) => {
+
+export const StyledMenuButton = styled("button")<{ selected?: number }>(({ theme, selected }) => {
   const styles = baseStyles(theme);
   return {
     ...borderButtonStyles,
     background: selected ? styles.primaryColor : "unset",
     color: !selected ? "#1fc7d4" : styles.darkMode ? "#191326" : "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   };
 });
+
+export const StyledChunkSelectMaxButton = styled(StyledMenuButton)({
+    fontSize: 11,
+    marginLeft: 5
+});
+
 
 export const StyledResetLimitButtonContainer = styled(Styles.StyledRowFlex)({
   gap: 2,
   width: "auto",
 });
 
-export const StyledResetLimitButtonLeft = styled(StyledPercentButton)({
+export const StyledResetLimitButtonLeft = styled(StyledMenuButton)({
   borderTopRightRadius: 0,
   borderBottomRightRadius: 0,
 });
 
-export const StyledResetLimitButtonRight = styled(StyledPercentButton)({
+export const StyledResetLimitButtonRight = styled(StyledMenuButton)({
   borderTopLeftRadius: 0,
   borderBottomLeftRadius: 0,
 });
 
-export const StyledReset = styled(StyledPercentButton)({
+export const StyledReset = styled(StyledMenuButton)({
   p: {
     fontSize: 13,
   },
@@ -670,30 +620,26 @@ export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) =>
 
 export const Card = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   return (
-    <StyledColumnFlex gap={5} className={className}>
+    <StyledCard className={className}>
       {children}
-    </StyledColumnFlex>
+    </StyledCard>
   );
 };
 
 const CardHeader = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   return (
-    <Styles.StyledRowFlex className={className} justifyContent="space-between">
+    <StyledCardHeader className={className}>
       {" "}
       {children}
-    </Styles.StyledRowFlex>
+    </StyledCardHeader>
   );
 };
 
-const CardBody = ({ children, editable, className = "" }: { children: ReactNode; editable?: boolean; className?: string }) => {
-  return (
-    <StyledCardBody className={className} editable={editable ? 1 : 0}>
-      {children}
-    </StyledCardBody>
-  );
-};
+const StyledCardHeader = styled(Styles.StyledRowFlex)({
+  marginBottom: 14,
+  justifyContent: "space-between",
+})
 
-Card.Body = CardBody;
 Card.Header = CardHeader;
 
 export const StyledTokenPanel = styled(Card)({
@@ -711,7 +657,26 @@ export const StyledTokenPanel = styled(Card)({
   },
 });
 
-export const StyledLimit = styled(Card)({});
+export const StyledLimitPriceTokenSelect = styled(Components.Base.TokenDisplay)({
+  gap: 6,
+  cursor: "pointer",
+  "&:hover": {
+    opacity: 0.8,
+  },
+  ".twap-token-logo": {
+    width: 16,
+    height: 16,
+  },
+  fontSize: 14,
+});
+export const StyledLimitPriceTitle = styled(Styles.StyledRowFlex)({
+  justifyContent: "flex-start",
+  gap: 8,
+  fontSize: 14,
+  span: {
+    opacity: 0.7,
+  },
+});
 
 export const StyledTradeSize = styled(Styles.StyledRowFlex)({
   justifyContent: "space-between",
@@ -754,45 +719,6 @@ export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
   };
 });
 
-export const StyledTimeSelect = styled(Styles.StyledColumnFlex)({
-  display: "flex",
-  alignItems: "flex-end",
-  width: "auto",
-  padding: 2,
-  flex: 1,
-});
-
-export const StyledTimeSelectBody = styled(CardBody)({
-  display: "flex",
-  alignItems: "center",
-
-  padding: "4px 10px",
-  width: "auto",
-});
-
-export const StyledTimeSelectContainer = styled(Styles.StyledRowFlex)({
-  padding: 0,
-  ".MuiButtonBase-root": {
-    padding: "0px!important",
-    background: "unset!important",
-    height: "100%",
-    p: {
-      fontSize: "12px!important",
-      fontWeight: 400,
-    },
-  },
-  ".twap-input": {
-    input: {
-      fontSize: 14,
-      paddingRight: 3,
-    },
-  },
-});
-
-export const StyledTimeSelectHeader = styled(Card.Header)({
-  marginTop: 1,
-  width: "auto",
-});
 
 export const StyledOrdersHeader = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);
@@ -901,3 +827,18 @@ export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {
     color: darkMode ? "#f4eeff" : "#280d5f",
   };
 });
+
+
+
+export const StyledTradeIntervalSelectCard = styled(Card)({
+  
+  display: "flex",
+  alignItems: "center",
+  flexDirection: "column",
+  gap: 10,
+  minHeight:84
+})
+
+export const StyledTradeIntervalSelect  = styled(StyledColumnFlex)({
+
+})

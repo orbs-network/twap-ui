@@ -17,7 +17,6 @@ import {
   configureStyles,
   StyledAdapter,
   StyledColumnFlex,
-  StyledMarketPrice,
   StyledOrders,
   StyledPoweredBy,
   StyledSubmit,
@@ -213,7 +212,6 @@ const TWAPPanel = () => {
           <TokenChange />
           <TokenPanel />
         </TwapStyles.StyledColumnFlex>
-        <StyledMarketPrice />
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
@@ -236,9 +234,7 @@ const LimitPanel = () => {
           <TokenChange />
           <TokenPanel />
         </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
-          <Components.MarketPrice />
-        </Components.Base.Card>
+
         <StyledSubmit isMain />
       </StyledColumnFlex>
       <OrderSummary>

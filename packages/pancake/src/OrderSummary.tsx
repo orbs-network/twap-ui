@@ -1,6 +1,6 @@
 import { styled } from "@mui/material";
 import { Styles as TwapStyles, Components, store, hooks } from "@orbs-network/twap-ui";
-import { StyledMarketPriceContainer, StyledOrderSummary } from "./styles";
+import { StyledOrderSummary } from "./styles";
 import { MdArrowDownward } from "@react-icons/all-files/md/MdArrowDownward";
 import { useAdapterContext } from "./context";
 import { useCallback, useState } from "react";
@@ -19,7 +19,6 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
           <StyledSummaryDetails>
             {isLimitPanel ? (
               <>
-                <SummaryPrice />
                 <Components.OrderSummaryDetailsDeadline />
                 <Components.OrderSummaryDetailsOrderType />
                 <Components.OrderSummaryDetailsChunkSize />
@@ -27,7 +26,6 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
               </>
             ) : (
               <>
-                <SummaryPrice />
                 <Components.OrderSummaryDetailsDeadline />
                 <Components.OrderSummaryDetailsOrderType />
                 <Components.OrderSummaryDetailsChunkSize />
@@ -59,18 +57,6 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
   );
 };
 
-const SummaryPrice = () => {
-  const { TradePrice: DappTradePrice } = useAdapterContext();
-  const { limitPriceRaw, isLoading } = hooks.useLimitPrice();
-  const { leftToken, rightToken, onInvert, price } = hooks.useInvertPrice(limitPriceRaw);
-
-  return (
-    <StyledMarketPriceContainer>
-      <Components.Base.Label>Price</Components.Base.Label>
-      <DappTradePrice onClick={onInvert} loading={isLoading} leftSymbol={leftToken?.symbol} rightSymbol={rightToken?.symbol} price={price} />
-    </StyledMarketPriceContainer>
-  );
-};
 
 const StyledButtonContainer = styled(TwapStyles.StyledRowFlex)({
   width: "100%",

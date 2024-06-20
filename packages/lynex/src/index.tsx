@@ -21,7 +21,6 @@ import {
   darkTheme,
   lightTheme,
   StyledChangeTokensOrder,
-  StyledMarketPrice,
   StyledOrdersPanel,
   StyledOrderSummaryModal,
   StyledPercentSelect,
@@ -236,7 +235,6 @@ const TWAPPanel = () => {
         <ChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
-      <StyledMarketPrice />
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
@@ -261,7 +259,6 @@ const LimitPanel = () => {
         <ChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
-      <StyledMarketPrice />
       <StyledSubmitButton />
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>

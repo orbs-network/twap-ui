@@ -130,44 +130,6 @@ export const StyledLimitPrice = styled(Components.Base.Card)({
   },
 });
 
-export const StyledMarketPrice = styled(Components.Base.Card)({
-  display: "flex",
-  gap: 5,
-  padding: 0,
-  button: {
-    padding: "10px 14px",
-    width: "100%",
-    justifyContent: "flex-start",
-    gap: 5,
-  },
-  ".MuiSkeleton-root": {
-    maxWidth: 200,
-  },
-  img: {
-    width: 18,
-    height: 18,
-  },
-  p: {
-    display: "flex",
-    alignItems: "center",
-    fontSize: "13px",
-    fontWeight: "400!important",
-    span: {
-      fontSize: "13px",
-    },
-  },
-  ".right-token": {
-    fontSize: "13px!important",
-    display: "flex",
-    alignItems: "center",
-  },
-});
-
-export const StyledMarketPriceLoader = styled(Box)({
-  padding: "8px 12px",
-  width: "100%",
-});
-
 export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ theme }) => ({
   height: 12,
   ".twap-icon-btn": {
@@ -233,7 +195,7 @@ export const StyledTokenSelect = styled(Button)(({ theme }) => ({
   "&:hover": {},
 }));
 
-export const StyledTokenPanelInput = styled(Components.TokenInput)(({ theme }) => ({
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)(({ theme }) => ({
   textAlign: "left",
   input: {
     fontSize: 28,

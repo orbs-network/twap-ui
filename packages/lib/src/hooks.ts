@@ -24,10 +24,11 @@ import {
   maxUint256,
   parsebn,
 } from "@defi.org/web3-candies";
-import { TimeResolution, useLimitPriceStore, useOrdersStore, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
+import { TimeResolution, useOrdersStore, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
 import {
   AMOUNT_TO_BORROW,
   feeOnTransferDetectorAddresses,
+  MIN_CHUNKS,
   MIN_NATIVE_BALANCE,
   QUERY_PARAMS,
   REFETCH_BALANCE,
@@ -40,36 +41,27 @@ import {
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
-import {
-  amountBN,
-  amountBNV2,
-  amountUi,
-  amountUiV2,
-  devideCurrencyAmounts,
-  formatNumber,
-  getQueryParam,
-  getTokenFromTokensList,
-  safeInteger,
-  setQueryParam,
-  supportsTheGraphHistory,
-} from "./utils";
+import { amountBN, amountBNV2, amountUi, amountUiV2, formatDecimals, getTokenFromTokensList, setQueryParam, supportsTheGraphHistory } from "./utils";
 import { getOrderFills } from "./helper";
 import FEE_ON_TRANSFER_ABI from "./abi/FEE_ON_TRANSFER.json";
 /**
  * Actions
  */
 
+const resetQueryParams = () => {
+  setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
+  setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
+  setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
+  setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, undefined);
+  setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
+};
 export const useResetStore = () => {
   const resetTwapStore = useTwapStore((state) => state.reset);
   const storeOverride = useTwapContext().storeOverride || {};
 
   return (args: Partial<State> = {}) => {
     resetTwapStore({ ...storeOverride, ...args });
-    setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
-    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-    setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
-    setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, undefined);
-    setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
+    resetQueryParams();
   };
 };
 
@@ -849,14 +841,15 @@ export const useToken = (isSrc?: boolean) => {
 
 export const useSwitchTokens = () => {
   const { dappTokens, onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
-  const { invert } = useLimitPrice();
 
-  const { srcToken, dstToken, updateState } = useTwapStore((s) => ({
+  const { srcToken, dstToken, updateState, resetLimit } = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
     srcAmountUi: s.srcAmountUi,
     updateState: s.updateState,
+    resetLimit: s.resetLimit,
   }));
+  resetQueryParams();
   const dstAmount = useOutAmount().outAmountUi;
   return useCallback(() => {
     updateState({
@@ -864,12 +857,12 @@ export const useSwitchTokens = () => {
       dstToken: srcToken,
       srcAmountUi: "",
     });
-    invert();
+    resetLimit();
     const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address) || getTokenFromTokensList(dappTokens, srcToken?.symbol);
     const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address) || getTokenFromTokensList(dappTokens, dstToken?.symbol);
     srcToken && onSrcTokenSelected?.(_dstToken);
     dstToken && onDstTokenSelected?.(_srcToken);
-  }, [dstAmount, _.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol, onSrcTokenSelected, onDstTokenSelected, invert]);
+  }, [dstAmount, _.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol, onSrcTokenSelected, onDstTokenSelected, resetLimit]);
 };
 
 export const useOrdersTabs = () => {
@@ -1224,118 +1217,31 @@ export const useMarketPrice = () => {
   const dstToken = useTwapStore((s) => s.dstToken);
 
   return {
-    marketPriceRaw,
+    marketPriceRaw: marketPriceRaw,
     marketPriceUi: useAmountUi(dstToken?.decimals, marketPriceRaw),
     isLoading: BN(marketPriceRaw || 0).isZero(),
   };
 };
 
-const handleLimitPriceQueryParam = (value?: string, inverted?: boolean) => {
-  let queryParamValue = value;
-  if (BN(value || 0).isZero()) {
-    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-  } else if (inverted) {
-    setQueryParam(
-      QUERY_PARAMS.LIMIT_PRICE,
-      (queryParamValue = BN(1)
-        .div(value || "0")
-        .decimalPlaces(0)
-        .toString())
-    );
-  } else {
-    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, value);
-  }
+export const useFormatDecimals = (value?: string | BN | number, decimalPlaces?: number) => {
+  return useMemo(() => formatDecimals(value, decimalPlaces), [value, decimalPlaces]);
 };
+
 export const useLimitPrice = () => {
-  const marketPriceBN = useTwapContext().marketPrice;
-  const store = useLimitPriceStore();
-  const dstToken = useTwapStore((s) => s.dstToken);
-
-  const marketPriceUi = useMemo(() => {
-    if (!marketPriceBN || BN(marketPriceBN).isZero()) return;
-    const value = amountUiV2(dstToken?.decimals, marketPriceBN);
-    const inverted = BN(1).div(value).toString();
-    return BN(store.inverted ? inverted : value)
-      .decimalPlaces(4, BN.ROUND_DOWN)
-      .toString();
-  }, [marketPriceBN, store.inverted, dstToken?.decimals]);
-
-  const onChange = useCallback(
-    (customPrice: string) => {
-      store.updateState({
-        customPrice,
-        isCustom: true,
-        percentage: undefined,
-      });
-      handleLimitPriceQueryParam(customPrice, store.inverted);
-    },
-    [store.inverted, store.updateState]
-  );
-
-  const onResetToMarket = useCallback(() => {
-    store.updateState({
-      isCustom: false,
-      customPrice: undefined,
-      percentage: "0",
-    });
-    handleLimitPriceQueryParam();
-  }, [store.updateState]);
-
-  const onPercentChange = useCallback(
-    (percent: string) => {
-      if (!marketPriceUi) return;
-      store.updateState({
-        percentage: percent,
-        isCustom: true,
-      });
-
-      const p = BN(percent || 0)
-        .div(100)
-        .plus(1)
-        .toString();
-
-      const value = BN(marketPriceUi || "0")
-        .times(p)
-        .toString();
-      store.updateState({
-        customPrice: value,
-      });
-      handleLimitPriceQueryParam(value, store.inverted);
-    },
-    [marketPriceUi, store.updateState, store.inverted]
-  );
-  const limitPriceUi = store.isCustom ? store.customPrice : marketPriceUi;
-
-  const priceDeltaPercentage = useMemo(() => {
-    if (store.percentage) {
-      return store.percentage;
-    }
-    if (!limitPriceUi || !marketPriceUi) return "0";
-    const diff = BN(limitPriceUi || 0)
-      .div(marketPriceUi || "0")
-      .minus(1)
-      .times(100)
-      .decimalPlaces(2)
-      .toString();
-
-    return diff;
-  }, [limitPriceUi, marketPriceUi, store.percentage]);
-
-  const invert = useCallback(() => {
-    handleLimitPriceQueryParam();
-    store.invert();
-  }, [store.invert]);
+  const { marketPriceUi, isLoading } = useMarketPrice();
+  const { dstToken, isCustom, customLimitPrice, inverted } = useTwapStore((s) => ({
+    dstToken: s.dstToken,
+    isCustom: s.isCustomLimitPrice,
+    customLimitPrice: s.customLimitPrice,
+    inverted: s.isInvertedLimitPrice,
+  }));
+  const marketPrice = useInvertedPrice(marketPriceUi, inverted);
+  const limitPriceUi = useInvertedPrice(isCustom ? customLimitPrice : marketPrice, inverted);
 
   return {
+    isLoading,
     limitPriceUi,
     limitPriceRaw: useAmountBN(dstToken?.decimals, limitPriceUi),
-    onChange,
-    isLoading: BN(marketPriceBN || 0).isZero(),
-    inverted: store.inverted,
-    invert,
-    onPercentChange,
-    priceDeltaPercentage,
-    onResetToMarket,
   };
 };
 
@@ -1365,6 +1271,7 @@ export const useFillWarning = () => {
   const dstMinAmountOut = useDstMinAmountOut();
   const srcUsd = useSrcUsd().value.toString();
   const srcBalance = useSrcBalance().data?.toString();
+  const maxChunksWarning = useMaxChunksWarning();
 
   const chunkSize = useSrcChunkAmount();
   const durationUi = useDurationUi();
@@ -1393,6 +1300,7 @@ export const useFillWarning = () => {
     if (srcAmount.isZero()) return translation.enterAmount;
     if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) return translation.insufficientFunds;
     if (chunkSize.isZero()) return translation.enterTradeSize;
+    if (maxChunksWarning) return maxChunksWarning;
     if (durationUi.amount === 0) return translation.enterMaxDuration;
     if (isLimitOrder && BN(dstAmountOut || "").gt(0) && BN(limitPriceUi || "0").isZero()) return translation.placeOrder || "Place order";
     const valuesValidation = lib?.validateOrderInputs(srcToken!, dstToken!, srcAmount, chunkSize, dstMinAmountOut, deadline, fillDelayMillis, srcUsd);
@@ -1431,6 +1339,7 @@ export const useFillWarning = () => {
     dstAmountOut,
     feeOnTraferLoading,
     hasFeeOnTransfer,
+    maxChunksWarning,
   ]);
 };
 
@@ -1491,35 +1400,53 @@ export const useMaxPossibleChunks = () => {
 
 export const useChunks = () => {
   const srcUsd = useSrcUsd().value.toString();
-  const { srcToken, chunks } = useTwapStore((s) => ({
+  const { srcToken, customChunks } = useTwapStore((s) => ({
     srcToken: s.srcToken,
-    chunks: s.chunks,
+    customChunks: s.customChunks,
   }));
   const maxPossibleChunks = useMaxPossibleChunks();
   const srcAmountUsd = useSrcAmountUsdUi();
+  console.log({ customChunks });
 
   return useMemo(() => {
     if (!srcUsd || !srcToken) return 1;
-    if (chunks >= 1) return chunks;
+    if (typeof customChunks === "number") return customChunks;
     return Math.min(
       maxPossibleChunks,
       BN(srcAmountUsd || "0")
         .idiv(SUGGEST_CHUNK_VALUE)
         .toNumber() || 1
     );
-  }, [srcUsd, srcToken, chunks, maxPossibleChunks, srcAmountUsd]);
+  }, [srcUsd, srcToken, customChunks, maxPossibleChunks, srcAmountUsd]);
 };
 
-export const useSetChunks = () => {
+export const useMaxChunksWarning = () => {
   const maxPossibleChunks = useMaxPossibleChunks();
+  const translations = useTwapContext().translations;
+  const chunks = useChunks();
+
+  const warning = useMemo(() => {
+    if (chunks < MIN_CHUNKS) return;
+    return chunks > maxPossibleChunks ? translations.maxChunksWarning.replace("{maxChunks}", maxPossibleChunks.toString()) : undefined;
+  }, [chunks, maxPossibleChunks]);
+
+
+
+  return warning
+};
+
+
+export const useSetChunks = () => {
   const updateState = useTwapStore((s) => s.updateState);
+  const maxPossibleChunks = useMaxPossibleChunks();
   return useCallback(
     (chunks: number) => {
-      const _chunks = Math.min(chunks, maxPossibleChunks);
-      setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, _chunks > 0 ? _chunks.toString() : undefined);
-      updateState({ chunks: _chunks });
+      if (chunks > 0 && chunks <= maxPossibleChunks) {
+        setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, chunks.toString());
+      }
+      updateState({ customChunks: chunks });
     },
-    [maxPossibleChunks, updateState]
+    [updateState]
   );
 };
 
@@ -1597,7 +1524,7 @@ export const useSrcChunkAmount = () => {
   const chunks = useChunks();
 
   return useMemo(() => {
-    return lib?.srcChunkAmount(srcAmount, chunks) || BN(0);
+    return chunks === 0 ? BN(0) : lib?.srcChunkAmount(srcAmount, chunks) || BN(0);
   }, [lib, srcAmount, chunks]);
 };
 
@@ -1632,7 +1559,7 @@ export const useSrcChunkAmountUi = () => {
   const srcToken = useTwapStore((s) => s.srcToken);
   const srcChunksAmount = useSrcChunkAmount();
 
-  return useAmountUi(srcToken?.decimals, srcChunksAmount.toString());
+  return useFormatDecimals(useAmountUi(srcToken?.decimals, srcChunksAmount.toString()), 2);
 };
 
 export const useChunksBiggerThanOne = () => {
@@ -1680,9 +1607,6 @@ export const useSetSrcAmountUi = () => {
 
   return useCallback(
     (srcAmountUi: string) => {
-      const srcAmount = amountBN(srcToken, srcAmountUi);
-      const srcAmountUsd = amountUiV2(srcToken?.decimals, srcAmount.times(srcUsd).toString());
-      const maxPossibleChunks = (srcToken && lib?.maxPossibleChunks(srcToken, srcAmount, srcUsd)) || 1;
       setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, !srcAmountUi ? undefined : srcAmountUi);
       if (!srcAmountUi) {
         setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
@@ -1692,12 +1616,6 @@ export const useSetSrcAmountUi = () => {
 
       updateState({
         srcAmountUi,
-        chunks: Math.min(
-          maxPossibleChunks,
-          BN(srcAmountUsd || "0")
-            .idiv(SUGGEST_CHUNK_VALUE)
-            .toNumber() || 1
-        ),
       });
     },
     [updateState, srcToken, srcUsd, lib]
@@ -1747,6 +1665,13 @@ export const useNoLiquidity = () => {
   }, [outAmountRaw, dstAmountLoading, srcAmount, limitPrice]);
 };
 
+export const useInvertedPrice = (price?: string, inverted?: boolean) => {
+  return useMemo(() => {
+    if (!price) return "";
+    return inverted ? BN(1).div(price).toString() : price;
+  }, [price, inverted]);
+};
+
 export const useInvertPrice = (price?: string) => {
   const [inverted, setInvert] = useState(false);
 
@@ -1754,7 +1679,8 @@ export const useInvertPrice = (price?: string) => {
     srcToken: store.srcToken,
     dstToken: store.dstToken,
   }));
-  const value = useFormatNumber({ value: price || "", decimalScale: 5 });
+  const invertedPrice = useInvertedPrice(price, inverted);
+  const value = useFormatNumber({ value: invertedPrice || "", decimalScale: 5 });
 
   const onInvert = useCallback(() => {
     setInvert((prev) => !prev);
@@ -1821,5 +1747,81 @@ export const useFeeOnTranserWarning = () => {
   return {
     isLoading: srcTokenFeeOnTranfer.isLoading || dstTokenFeeOnTranfer.isLoading,
     hasFeeOnTransfer: srcTokenFeeOnTranfer.data?.hasFeeOnTranfer || dstTokenFeeOnTranfer.data?.hasFeeOnTranfer,
+  };
+};
+
+export const useLimitPricePanel = () => {
+  const { marketPriceUi, isLoading } = useMarketPrice();
+  const { isCustom, onChange, inverted, onResetCustom, invert, customPrice, setLimitPricePercent, limitPercent } = useTwapStore((s) => ({
+    isCustom: s.isCustomLimitPrice,
+    onChange: s.onLimitChange,
+    inverted: s.isInvertedLimitPrice,
+    onResetCustom: s.onResetCustomLimit,
+    invert: s.invertLimit,
+    customPrice: s.customLimitPrice,
+    setLimitPricePercent: s.setLimitPricePercent,
+    limitPercent: s.limitPricePercent,
+  }));
+  const marketPrice = useFormatDecimals(useInvertedPrice(marketPriceUi, inverted));
+
+  const onChangeCallback = useCallback(
+    (customPrice: string) => {
+      onChange(customPrice);
+      setLimitPricePercent(undefined);
+    },
+    [onChange, setLimitPricePercent]
+  );
+
+  const onMarket = useCallback(() => {
+    onResetCustom();
+    setLimitPricePercent("0");
+  }, [onResetCustom, setLimitPricePercent]);
+
+  const onPercentChange = useCallback(
+    (percent: string) => {
+      setLimitPricePercent(percent);
+      const p = BN(percent || 0)
+        .div(100)
+        .plus(1)
+        .toString();
+
+      const value = BN(marketPrice || "0")
+        .times(p)
+        .toString();
+      onChange(formatDecimals(value));
+    },
+    [marketPrice, onChange, setLimitPricePercent]
+  );
+  const limitPriceUi = isCustom ? customPrice : marketPrice;
+
+  const priceDeltaPercentage = useMemo(() => {
+    if (limitPercent) {
+      return limitPercent;
+    }
+    if (!limitPriceUi || !marketPrice || BN(limitPriceUi).isZero() || BN(marketPrice).isZero()) return "0";
+    const diff = BN(limitPriceUi || 0)
+      .div(marketPrice || "0")
+      .minus(1)
+      .times(100)
+      .decimalPlaces(0)
+      .toString();
+
+    return diff;
+  }, [limitPriceUi, marketPrice, limitPercent]);
+
+  const onInvert = useCallback(() => {
+    invert();
+    setLimitPricePercent("0");
+  }, [invert, setLimitPricePercent]);
+
+  return {
+    priceDeltaPercentage,
+    onPercentChange,
+    onMarket,
+    onChange: onChangeCallback,
+    inverted,
+    isLoading,
+    limitPriceUi,
+    onInvert,
   };
 };

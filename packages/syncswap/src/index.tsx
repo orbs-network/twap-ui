@@ -23,9 +23,7 @@ import {
   StyledBalance,
   StyledChangeTokensOrder,
   StyledChunkSize,
-  StyledLimitPrice,
-  StyledMarketPrice,
-  StyledMarketPriceLoader,
+
   StyledPercentSelect,
   StyledPoweredBy,
   StyledSubmitButton,
@@ -283,26 +281,6 @@ const TWAP = (props: Props) => {
   );
 };
 
-const Market = () => {
-  const [inverted, setInverted] = useState(false);
-  const marketPrice = hooks.useMarketPrice().marketPriceUi;
-  const { leftToken, rightToken, price } = hooks.useInvertPrice(marketPrice);
-  return (
-    <StyledMarketPrice>
-      {!marketPrice ? (
-        <StyledMarketPriceLoader>
-          <Components.Base.Loader height={26} />
-        </StyledMarketPriceLoader>
-      ) : (
-        <Button onClick={() => setInverted(!inverted)}>
-          <Components.Base.TokenPriceCompare.LeftToken token={leftToken} />
-          <Typography>=</Typography>
-          <Components.Base.TokenPriceCompare.RightToken token={rightToken} price={price} />
-        </Button>
-      )}
-    </StyledMarketPrice>
-  );
-};
 
 const LimitPanel = () => {
   return (
@@ -357,7 +335,6 @@ const TWAPPanel = () => {
           <ChangeTokensOrder />
           <TokenPanel />
         </TwapStyles.StyledColumnFlex>
-        <Market />
         <TradeSize />
         <TradeInterval />
         <MaxDuration />

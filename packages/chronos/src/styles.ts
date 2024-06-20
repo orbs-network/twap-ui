@@ -121,7 +121,7 @@ export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ t
   };
 });
 
-export const StyledTokenPanelInput = styled(Components.TokenInput)({
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({
   width: "100%",
   input: {
     fontSize: 30,

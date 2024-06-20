@@ -1,12 +1,12 @@
-import { Button, ClickAwayListener } from "@mui/material";
+import { Button, Menu, MenuItem } from "@mui/material";
 import { Box, styled } from "@mui/system";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTwapContext } from "../../context";
 import { Duration, TimeResolution } from "../../store";
-import { StyledText } from "../../styles";
 import { Translations } from "../../types";
 import NumericInput from "./NumericInput";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+import { StyledRowFlex } from "../../styles";
 
 const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
   {
@@ -16,6 +16,10 @@ const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
   {
     text: "hours",
     value: TimeResolution.Hours,
+  },
+  {
+    text: "weeks",
+    value: TimeResolution.Weeks,
   },
   {
     text: "days",
@@ -38,120 +42,90 @@ interface Props {
 }
 
 function TimeSelector({ value, onChange, disabled = false, className = "", onFocus, onBlur, placeholder = "0" }: Props) {
-  const [showList, setShowList] = useState(false);
   const translations = useTwapContext().translations;
-
-  const onTimeFormatChange = (resolution: TimeResolution) => {
-    onChange({ resolution, amount: value.amount });
-    setShowList(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
   };
 
-  const onOpenListClick = () => {
-    if (disabled) return;
-    setShowList(true);
-  };
+  const onSelect = useCallback(
+    (resolution: TimeResolution) => {
+      handleClose();
+      onChange({ resolution, amount: value.amount });
+    },
+    [handleClose, onChange, value.amount]
+  );
 
   return (
     <StyledContainer className={`twap-time-selector ${className}`} style={{ pointerEvents: disabled ? "none" : "unset" }}>
-      <StyledInput>
-        <NumericInput
-          onBlur={onBlur}
-          onFocus={onFocus}
-          disabled={disabled}
-          value={value.amount}
-          onChange={(v) => onChange({ resolution: value.resolution, amount: Number(v) })}
-          placeholder={placeholder}
-        />
-      </StyledInput>
+      <StyledInput
+        onBlur={onBlur}
+        onFocus={onFocus}
+        disabled={disabled}
+        value={value.amount}
+        onChange={(v) => onChange({ resolution: value.resolution, amount: Number(v) })}
+        placeholder={placeholder}
+      />
 
-      <StyledTimeSelect>
-        <StyledSelected onClick={onOpenListClick} className="twap-time-selector-selected">
-          <StyledText> {translations[findSelectedResolutionText(value.resolution)]}</StyledText>
-          <IoIosArrowDown />
-        </StyledSelected>
-        {showList && (
-          <ClickAwayListener onClickAway={() => setShowList(false)}>
-            <StyledList className="twap-time-selector-list">
-              {timeArr.map((item) => {
-                const selected = item.value === value.resolution;
-                return (
-                  <StyledListItem
-                    className={`twap-time-selector-list-item ${selected ? "twap-time-selector-list-item-selected" : ""}`}
-                    onClick={() => onTimeFormatChange(item.value)}
-                    key={item.value}
-                  >
-                    <StyledText>{translations[item.text]}</StyledText>
-                  </StyledListItem>
-                );
-              })}
-            </StyledList>
-          </ClickAwayListener>
-        )}
-      </StyledTimeSelect>
+      <StyledSelected onClick={handleClick} className="twap-time-selector-menu-button">
+        {translations[findSelectedResolutionText(value.resolution)]}
+        <IoIosArrowDown />
+      </StyledSelected>
+      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        {timeArr.map((item) => {
+          return (
+            <StyledMenuItem
+              className='twap-time-selector-menu-item'
+              key={item.value}
+              onClick={() => onSelect(item.value)}
+            >
+              {translations[item.text]}
+            </StyledMenuItem>
+          );
+        })}
+      </Menu>
     </StyledContainer>
   );
 }
 
 export default TimeSelector;
 
-const StyledInput = styled(Box)({
+const StyledInput = styled(NumericInput)({
   flex: 1,
-  ".twap-input": {
-    input: {
-      textAlign: "right",
-      paddingRight: 10,
-      flex: "unset",
-      width: "100%",
-      "&::placeholder": {
-        color: "white",
-      },
+  input: {
+    textAlign: "left",
+    paddingLeft: 10,
+    flex: "unset",
+    width: "100%",
+    "&::placeholder": {
+      color: "white",
     },
   },
 });
 
-const StyledTimeSelect = styled(Box)({
-  position: "relative",
-  display: "flex",
-  "& p": {
-    fontSize: 14,
-    fontWeight: 600,
-  },
-});
+const StyledContainer = styled(StyledRowFlex)({});
 
-const StyledContainer = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  flex: 1,
-  gap: 10,
-});
-
-const StyledList = styled(Box)({
-  zIndex: 99,
-  position: "absolute",
-  top: "-50%",
-  right: -18,
-  borderRadius: 20,
-  padding: "11px 0px",
-  width: 150,
-  overflow: "hidden",
-});
-
-const StyledListItem = styled(Box)({
-  padding: "0px 24px",
-  textAlign: "left",
-  height: 36,
-  display: "flex",
-  alignItems: "center",
-  cursor: "pointer",
-  transition: "0.2s all",
-  "& p": {
-    fontSize: 14,
-  },
-});
+const StyledMenuItem  = styled(MenuItem)({
+  fontSize: 14,
+})
 
 const StyledSelected = styled(Button)({
-  cursor: "pointer",
   gap: 5,
+  padding: "0px",
+  fontSize: 14,
+  textTransform: "none",
+  color:'inherit',
+  marginRight: 10,
+  ".MuiTouchRipple-root": {
+    display: "none",
+  },
+  "&:hover": {
+    backgroundColor: "transparent",
+  },
   svg: {
     width: 14,
     height: 14,

@@ -1,8 +1,8 @@
 import { Components, hooks, store } from "@orbs-network/twap-ui";
 import { useAdapterContext } from "./context";
 import BN from "bignumber.js";
-import { StyledMarketPriceContainer } from "./styles";
 import { styled } from "@mui/material";
+import { StyledMarketPriceContainer } from "./styles";
 
 export function Price() {
   const { TradePrice: DappTradePrice } = useAdapterContext();
@@ -49,3 +49,5 @@ const StyledLoader = styled(Components.Base.Loader)<{ loading: number }>(({ load
   display: loading ? "block" : ("none" as const),
   posinterEvents: "none",
 }));
+
+

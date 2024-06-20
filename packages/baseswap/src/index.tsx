@@ -10,7 +10,6 @@ import {
   lightTheme,
   StyledChangeTokensOrder,
   StyledInputAndSelect,
-  StyledMarketPrice,
   StyledMaxButton,
   StyledOrdersPanel,
   StyledOrderSummaryModal,
@@ -215,7 +214,6 @@ const TWAPPanel = () => {
         <ChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
-      <StyledMarketPrice />
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
@@ -240,7 +238,6 @@ const LimitPanel = () => {
         <ChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
-      <StyledMarketPrice />
       <StyledSubmitButton isMain={true} />
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>

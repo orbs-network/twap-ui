@@ -25,7 +25,6 @@ import {
   StyledTradeSize,
   StyledWarningMsg,
   StyledChangeOrder,
-  StyledMarketPrice,
   StyledPanelRight,
   StyledPercentSelect,
   StyledTokenInputBalance,
@@ -175,15 +174,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-const MarketPrice = () => {
-  const srcAmountNotZero = hooks.useSrcAmountNotZero();
-
-  return (
-    <StyledMarketPrice disabled={srcAmountNotZero ? 0 : 1}>
-      <Components.MarketPrice />
-    </StyledMarketPrice>
-  );
-};
 
 const USD = ({ children, disabled }: { children: ReactNode; disabled: boolean }) => {
   return (
@@ -476,7 +466,6 @@ const TWAPPanel = () => {
           <TokenPanel />
         </StyledTopColumnFlex>
         <StyledColumnFlex>
-          <MarketPrice />
           <TradeSize />
           <TradeInterval />
           <MaxDuration />
@@ -503,7 +492,6 @@ const LimitPanel = () => {
           <TokenPanel />
         </StyledTopColumnFlex>
         <StyledColumnFlex>
-          <MarketPrice />
           <StyledSubmit isMain />
         </StyledColumnFlex>
       </StyledColumnFlex>

@@ -28,3 +28,13 @@ export const feeOnTransferDetectorAddresses = {
   324: "0xED87D01674199355CEfC05648d17E037306d7962",
   59144: "0xD8b14F915b1b4b1c4EE4bF8321Bea018E72E5cf3",
 };
+
+export const MIN_CHUNKS = 2;
+
+ enum TimeResolution {
+  Minutes = 60 * 1000,
+  Hours = Minutes * 60,
+  Days = Hours * 24,
+}
+
+

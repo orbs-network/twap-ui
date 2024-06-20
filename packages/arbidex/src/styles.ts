@@ -130,7 +130,7 @@ export const StyledTokenBalance = styled(Components.TokenBalance)({
 
 export const StyledTokenPanel = styled(Components.Base.Card)({});
 
-export const StyledTokenPanelInput = styled(Components.TokenInput)({
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({
   width: "100%",
   ".twap-loader": {},
   input: {
@@ -138,17 +138,7 @@ export const StyledTokenPanelInput = styled(Components.TokenInput)({
     fontSize: 28,
   },
 });
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  padding: "0px 12px",
-  ".title": {
-    fontSize: 12,
-    fontWeight: 600,
-  },
-  [`@media(max-width:${MOBILE}px)`]: {
-    flexDirection: "column",
-    alignItems: "flex-start",
-  },
-});
+
 
 // const getButtonStyles = (theme: Theme) => {};
 export const StyledTokenInputContainer = styled(Styles.StyledColumnFlex)(({ theme }) => ({

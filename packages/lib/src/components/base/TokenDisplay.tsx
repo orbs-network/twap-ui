@@ -10,11 +10,12 @@ interface Props {
   reverse?: boolean;
   singleToken?: boolean;
   hideSymbol?: boolean;
+  onClick?: () => void;
 }
 
-function TokenDisplay({ symbol, logo, className = "", reverse, singleToken, hideSymbol }: Props) {
+function TokenDisplay({ symbol, logo, className = "", reverse, singleToken, hideSymbol, onClick }: Props) {
   return (
-    <StyledContainer className={`twap-token-display ${className}`}>
+    <StyledContainer className={`twap-token-display ${className}`} onClick={onClick}>
       {reverse ? (
         <>
           {singleToken && <StyledText>1</StyledText>}

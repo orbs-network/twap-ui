@@ -124,20 +124,6 @@ export const StyledTokenPanel = styled(Components.Base.Card)(({ theme }) => ({
   },
 }));
 
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  ".symbol": {
-    display: "none",
-  },
-  ".twap-token-logo": {
-    order: 2,
-  },
-  ".twap-token-name": {
-    display: "none",
-  },
-  ".value": {
-    order: 1,
-  },
-});
 
 const getButtonStyles = (theme: Theme) => {
   const styles = baseStyles(theme);

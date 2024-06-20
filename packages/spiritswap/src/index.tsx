@@ -175,7 +175,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={10}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenInput isSrc={isSrcToken} placeholder="0" />
+              <Components.TokenPanelInput isSrc={isSrcToken} placeholder="0" />
               <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
@@ -185,7 +185,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             {isSrcToken && <SrcTokenPercentSelector />}
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
-        {!isSrcToken && <Components.MarketPrice />}
       </TwapStyles.StyledColumnFlex>
     </>
   );

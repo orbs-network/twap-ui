@@ -122,25 +122,8 @@ export const StyledTokenPanelHeader = styled(Styles.StyledRowFlex)(({ theme }) =
   };
 });
 
-export const StyledTokenPanelInput = styled(Components.TokenInput)({});
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({});
 
-export const StyledMarketPrice = styled(Components.MarketPrice)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    ".title": {
-      fontSize: 15,
-      fontWeight: 500,
-      color: styles.labelColor,
-    },
-    ".twap-price-compare": {
-      color: styles.textColorMain,
-    },
-    [`@media(max-width:${MOBILE}px)`]: {
-      flexDirection: "column",
-      alignItems: "flex-start",
-    },
-  };
-});
 
 export const StyledTokenSelect = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);

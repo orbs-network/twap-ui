@@ -101,7 +101,11 @@ export interface Translations {
   noLiquidity: string;
   outAmountLoading: string;
   feeOnTranferWarning: string;
+  maxChunksWarning: string;
+  minChunksWarning: string;
+  weeks: string;
 }
+
 
 export interface BaseComponentProps {
   className?: string;
@@ -294,7 +298,7 @@ export interface State {
   showConfirmation: boolean;
   disclaimerAccepted: boolean;
 
-  chunks: number;
+  customChunks?: number;
   customFillDelay: Duration;
   customDuration: Duration;
 
@@ -310,6 +314,11 @@ export interface State {
   dstUsd?: BN;
   srcUsdLoading?: boolean;
   dstUsdLoading?: boolean;
+
+  isCustomLimitPrice?: boolean;
+  customLimitPrice?: string;
+  isInvertedLimitPrice?: boolean;
+  limitPricePercent?: string;
 }
 
 export type SwitchVariant = "ios" | "default";
@@ -354,3 +363,27 @@ export interface OrderCreated {
   timestamp: string;
   transactionHash: string;
 }
+
+export type LimitPricePercentProps = {
+  text: string;
+  selected: boolean;
+  onClick: () => void;
+};
+
+export type LimitPriceZeroButtonProps = {
+  text: string;
+  onClick: () => void;
+};
+
+export type LimitPriceTitleProps = {
+  textLeft: string;
+  textRight?: string;
+  token?: TokenData;
+  onTokenClick: () => void;
+};
+
+
+export type LimitPriceTokenSelectProps = {
+  token?: TokenData;
+  onClick: () => void;
+};
