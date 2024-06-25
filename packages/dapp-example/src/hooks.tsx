@@ -14,6 +14,7 @@ import { usePersistedStore } from "./store";
 import { fetchPrice } from "./utils";
 import BigNumber from "bignumber.js";
 import { useMediaQuery } from "@mui/material";
+import { useDappContext } from "./context";
 export const injectedConnector = new InjectedConnector({});
 
 export const useAddedTokens = () => {
@@ -43,7 +44,7 @@ export const useGetTokens = ({
   const { account } = useWeb3React();
   const { isInValidNetwork } = useNetwork(chainId);
   const addedTokens = useAddedTokens();
-  const lib = store.useTwapStore((s) => s.lib);
+  const lib = useDappContext().lib;
   return useQuery(
     ["useGetTokens", chainId, _.size(addedTokens)],
     async () => {
@@ -132,7 +133,7 @@ export const useTheme = () => {
 };
 
 export const useBalanceQuery = (token?: TokenData) => {
-  const lib = store.useTwapStore().lib;
+  const lib = useDappContext().lib;
 
   const query = useQuery(["useDappExampleBalance", lib?.maker, token?.address, lib?.config.chainId], () => lib!.makerBalance(token!), {
     enabled: !!lib && !!token,
@@ -180,7 +181,9 @@ export const useGetPriceUsdCallback = () => {
 };
 
 export const usePriceUSD = (address?: string) => {
-  const wToken = store.useTwapStore((s) => s.lib)?.config.wToken.address;
+  const lib = useDappContext().lib;
+
+  const wToken = lib?.config.wToken.address;
   const { chainId } = useWeb3React();
   return useQuery<number>({
     queryKey: ["usePriceUSD", address, chainId],

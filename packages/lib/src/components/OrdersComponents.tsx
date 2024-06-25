@@ -3,13 +3,14 @@ import { Status } from "@orbs-network/twap";
 import _ from "lodash";
 import * as React from "react";
 import MenuItem from "@mui/material/MenuItem";
-import { ParsedOrder, Styles, Translations, useTwapContext } from "..";
-import { useOrdersHistoryQuery, useOrdersTabs } from "../hooks";
+import { ParsedOrder, Translations, useTwapContext } from "..";
+import { useOrdersTabs } from "../hooks";
 import { useOrdersStore } from "../store";
 import { StyledOrdersLists, StyledOrdersTab, StyledOrdersTabs, StyledRowFlex } from "../styles";
 import OrdersList from "../orders/OrdersList";
 import { Button } from "./base";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+import { query } from "../query";
 
 function a11yProps(index: number) {
   return {
@@ -62,7 +63,7 @@ const useGetOrderNameCallback = () => {
 };
 
 export const SelectedOrders = ({ className = "" }: { className?: string }) => {
-  const { orders, isLoading } = useOrdersHistoryQuery();
+  const { orders, isLoading } = query.useOrdersHistory();
   const { tab } = useOrdersStore();
   const tabs = useOrdersTabs();
   return (

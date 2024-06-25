@@ -1,11 +1,9 @@
-import { FC, ReactNode, useCallback, useMemo, useState } from "react";
+import { FC, ReactNode, useCallback, useMemo } from "react";
 import {
   Balance,
-  Button,
   Icon,
   IconButton,
   NumericInput,
-  Slider,
   Switch,
   TimeSelector,
   TokenName,
@@ -16,23 +14,21 @@ import {
   Label,
   SwipeContainer,
   Modal,
+  Message,
+  Button,
 } from "./base";
 import { styled } from "@mui/material";
 import { useTwapContext } from "../context";
 import { AiOutlineWarning } from "@react-icons/all-files/ai/AiOutlineWarning";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
-import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 
 import {
   useLoadingState,
   useFormatNumber,
   useToken,
   useSwitchTokens,
-  useSelectTokenCallback,
-  useSubmitButton,
   useLimitPrice,
   useDstMinAmountOut,
-  useFillWarning,
   useSrcAmountUsdUi,
   useDstAmountUsdUi,
   useChunks,
@@ -41,19 +37,19 @@ import {
   useSrcBalance,
   useAmountUi,
   useDstBalance,
-  useIsPartialFillWarning,
-  useChunksBiggerThanOne,
   useSrcChunkAmountUi,
-  useDurationUi,
   useDeadlineUi,
   useSetSrcAmountUi,
   useOutAmount,
   useInvertPrice,
   useFormatDecimals,
-  useMaxPossibleChunks,
-  useMaxChunksWarning,
+  useFillDelayText,
+  useSwapWarning,
+  useTokenSelect,
+  useIsMarketOrder,
+  useConfirmationButton,
 } from "../hooks";
-import { Duration, TimeResolution, useTwapStore } from "../store";
+import { useTwapStore } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, textOverflow, StyledSummaryDetails, StyledSummaryRow, StyledSummaryRowRight } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
@@ -74,88 +70,8 @@ import { Styles } from "..";
 import PendingTxModal from "./base/PendingTxModal";
 import SuccessTxModal from "./base/SuccessTxModal";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { amountUi, handleFillDelayText, makeElipsisAddress } from "../utils";
+import { amountUi, makeElipsisAddress } from "../utils";
 import BN from "bignumber.js";
-
-interface ChunkSelectorProps {
-  className?: string;
-  Components: {
-    MenuButton: FC<{ onClick: () => void; text: string; selected?: boolean }>;
-    WarningButton: FC<{ onClick: () => void; text: string }>;
-  };
-}
-
-export const ChunkSelector = ({ className, Components }: ChunkSelectorProps) => {
-  const [slider, setSlider] = useState(true);
-  const getChunksBiggerThanOne = useChunksBiggerThanOne();
-  const chunkSize = useSrcChunkAmountUi();
-  const chunkSizeFormatted = useFormatNumber({ value: chunkSize });
-  const chunks = useChunks();
-  const setChunks = useSetChunks();
-  const srcToken = useTwapStore((s) => s.srcToken);
-  const formattedChunks = useFormatNumber({ value: chunks });
-  const maxChunksWarning = useMaxChunksWarning();
-  const maxPossibleChunks = useMaxPossibleChunks();
-
-  if (!getChunksBiggerThanOne) return null;
-  return (
-    <StyledChunkSelector>
-      <StyledChunksMenu className="twap-chunks-menu">
-        <Components.MenuButton selected={slider} onClick={() => setSlider(true)} text="Slider" />
-        <Components.MenuButton selected={!slider} onClick={() => setSlider(false)} text="Input" />
-      </StyledChunksMenu>
-      {slider && <Slider label={`${formattedChunks} trades`} className={className} maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />}
-      {!slider && <StyledChunksInput className={className} placeholder="0" value={chunks} decimalScale={0} onChange={(value) => setChunks(Number(value))} />}
-
-      {maxChunksWarning ? (
-        <StyledChunksWarning className="twap-chunks-bottom-warning">
-          <AiOutlineWarning /> <StyledText>{maxChunksWarning}</StyledText>
-          <Components.WarningButton text="Max" onClick={() => setChunks(maxPossibleChunks)} />
-        </StyledChunksWarning>
-      ) : (
-        <StyledChunksText className="twap-chunks-bottom-text">
-          {chunkSizeFormatted} {srcToken?.symbol} per trade
-        </StyledChunksText>
-      )}
-    </StyledChunkSelector>
-  );
-};
-
-const StyledChunksMenu = styled(StyledRowFlex)({
-  justifyContent: "flex-start",
-  marginBottom: 5,
-});
-
-const StyledChunksWarning = styled(StyledRowFlex)({
-  gap: 5,
-  justifyContent: "flex-end",
-  p: {
-    fontSize: 13,
-    opacity: 0.8,
-  },
-  svg: {
-    fontSize: 13,
-    position: "relative",
-    top: -1,
-  },
-});
-
-const StyledChunksText = styled(StyledText)({
-  fontSize: 13,
-  textAlign: "right",
-  opacity: 0.8,
-  width: "100%",
-});
-
-const StyledChunkSelector = styled(StyledColumnFlex)({
-  gap: 5,
-  ".twap-slider": {
-    flex: 1,
-    marginLeft: "auto",
-    marginRight: "auto",
-    width: "calc(100% - 20px)",
-  },
-});
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -165,14 +81,6 @@ export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpD
     </StyledRowFlex>
   );
 };
-
-export function MaxDurationSelector({ placeholder }: { placeholder?: string }) {
-  const duration = useDurationUi();
-
-  const onChange = useTwapStore((store) => store.setDuration);
-
-  return <TimeSelector placeholder={placeholder} value={duration} onChange={onChange} />;
-}
 
 const Input = (props: {
   className?: string;
@@ -225,17 +133,16 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
 };
 
 const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
-  const { token, isLimitOrder } = useTwapStore((store) => ({
+  const { token } = useTwapStore((store) => ({
     token: store.dstToken,
     srcAmount: store.srcAmountUi,
-    isLimitOrder: store.isLimitOrder,
   }));
   const { outAmountUi, isLoading } = useOutAmount();
   return (
     <Input
       disabled={true}
       loading={isLoading}
-      prefix={isLimitOrder ? "~" : SQUIGLE}
+      prefix={SQUIGLE}
       value={useFormatDecimals(outAmountUi)}
       decimalScale={props.decimalScale || token?.decimals}
       className={props.className}
@@ -326,7 +233,7 @@ interface TokenSelectProps extends TWAPTokenSelectProps {
 }
 
 export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: TokenSelectProps) => {
-  const onTokenSelectedCallback = useSelectTokenCallback();
+  const onTokenSelectedCallback = useTokenSelect();
 
   const onSelect = useCallback(
     (token: any) => {
@@ -423,15 +330,17 @@ export function TokenUSD({
 }
 
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
-  const { loading, onClick, disabled, text } = useSubmitButton(isMain);
+  // const { loading, onClick, disabled, text } = useSubmitButton(isMain);
 
-  return (
-    <Button text={text} className={`twap-submit ${className}`} loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
-      <p className="twap-submit-text" style={{ margin: 0 }}>
-        {text}
-      </p>
-    </Button>
-  );
+  // return (
+  //   <Button text={text} className={`twap-submit ${className}`} loading={loading} onClick={onClick || (() => {})} disabled={disabled}>
+  //     <p className="twap-submit-text" style={{ margin: 0 }}>
+  //       {text}
+  //     </p>
+  //   </Button>
+  // );
+
+  return null;
 };
 
 export function PoweredBy({ className = "" }: { className?: string }) {
@@ -445,39 +354,6 @@ export function PoweredBy({ className = "" }: { className?: string }) {
     </StyledPoweredBy>
   );
 }
-
-// --- warnings --- //
-
-const Warning = ({ tootlip, warning }: { tootlip: string; warning: string }) => {
-  return (
-    <Tooltip text={tootlip}>
-      <StyledWarning justifyContent="flex-start" gap={5} className="twap-warning">
-        <StyledText>{warning}</StyledText>
-        <AiOutlineWarning />
-      </StyledWarning>
-    </Tooltip>
-  );
-};
-
-export const PartialFillWarning = () => {
-  const translations = useTwapContext().translations;
-  const isWarning = useIsPartialFillWarning();
-  const lib = useTwapStore((state) => state.lib);
-  if (!isWarning || !lib) return null;
-
-  return <Warning tootlip={translations.prtialFillWarningTooltip} warning={translations.prtialFillWarning} />;
-};
-
-export const FillDelayWarning = () => {
-  const translations = useTwapContext().translations;
-  const fillDelayWarning = useTwapStore((store) => store.getFillDelayWarning());
-  const minimumDelayMinutes = useTwapStore((store) => store.getMinimumDelayMinutes());
-  const lib = useTwapStore((state) => state.lib);
-
-  if (!fillDelayWarning || !lib) return null;
-
-  return <Warning tootlip={handleFillDelayText(translations.fillDelayWarningTooltip, minimumDelayMinutes)} warning={translations.invalid} />;
-};
 
 /// --- order summary ---- ///
 
@@ -509,21 +385,19 @@ export const Deadline = () => {
 };
 
 export const OrderType = () => {
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+  const isMarketOrder = useTwapStore((store) => store.isMarketOrder);
   const translations = useTwapContext().translations;
-  return <StyledOneLineText>{isLimitOrder ? translations.limitOrder : translations.marketOrder}</StyledOneLineText>;
+  return <StyledOneLineText>{!isMarketOrder ? translations.limitOrder : translations.marketOrder}</StyledOneLineText>;
 };
 
 export const TradeIntervalAsText = ({ translations: _translations }: { translations?: Translations }) => {
-  const getFillDelayText = useTwapStore((store) => store.getFillDelayText);
-  const translations = useTwapContext()?.translations || _translations;
+  const fillDelayText = useFillDelayText();
 
-  return <StyledOneLineText>{getFillDelayText(translations)}</StyledOneLineText>;
+  return <StyledOneLineText>{fillDelayText}</StyledOneLineText>;
 };
 
 export const MinDstAmountOut = ({ translations: _translations }: { translations?: Translations }) => {
-  const { isLimitOrder, dstToken } = useTwapStore((store) => ({
-    isLimitOrder: store.isLimitOrder,
+  const { dstToken } = useTwapStore((store) => ({
     dstToken: store.dstToken,
   }));
   const translations = useTwapContext()?.translations || _translations;
@@ -537,10 +411,6 @@ export const MinDstAmountOut = ({ translations: _translations }: { translations?
 
   const formattedValue = useFormatNumber({ value: dstMinAmountOutUi });
 
-  if (!isLimitOrder) {
-    return <StyledOneLineText>{translations.none}</StyledOneLineText>;
-  }
-
   return (
     <Tooltip text={formattedValue}>
       <StyledOneLineText>{formattedValue}</StyledOneLineText>
@@ -549,10 +419,6 @@ export const MinDstAmountOut = ({ translations: _translations }: { translations?
 };
 
 export const OrderSummaryDetailsMinDstAmount = ({ subtitle, translations }: { subtitle?: boolean; translations?: Translations }) => {
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-
-  if (!isLimitOrder) return null;
-
   return (
     <StyledSummaryRow className="twap-order-summary-details-item">
       <OrderSummaryMinDstAmountOutLabel subtitle={subtitle} translations={translations} />
@@ -669,12 +535,11 @@ export const OrderSummaryTokenDisplay = ({
   translations?: Translations;
 }) => {
   const translations = useTwapContext()?.translations || _translations;
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const srcAmount = useTwapStore((store) => store.srcAmountUi);
   const dstAmount = useOutAmount().outAmountUi;
 
   const amount = isSrc ? srcAmount : dstAmount;
-  const prefix = isSrc ? "" : isLimitOrder ? "~ " : "~ ";
+  const prefix = "";
   const _amount = useFormatNumber({ value: amount, decimalScale: 5 });
 
   return (
@@ -709,8 +574,7 @@ export const AcceptDisclaimer = ({ variant, className, translations: _translatio
 };
 
 export const OutputAddress = ({ className, translations: _translations, ellipsis }: { className?: string; translations?: Translations; ellipsis?: number }) => {
-  const maker = useTwapStore((store) => store.lib?.maker);
-  const translations = useTwapContext()?.translations || _translations;
+  const { translations, lib } = useTwapContext();
 
   return (
     <StyledOutputAddress className={`twap-order-summary-output-address ${className}`}>
@@ -718,7 +582,7 @@ export const OutputAddress = ({ className, translations: _translations, ellipsis
         {translations.outputWillBeSentTo}
       </StyledText>
       <StyledOneLineText style={{ textAlign: "center", width: "100%" }} className="address">
-        {ellipsis ? makeElipsisAddress(maker, ellipsis) : maker}
+        {ellipsis ? makeElipsisAddress(lib?.maker, ellipsis) : lib?.maker}
       </StyledOneLineText>
     </StyledOutputAddress>
   );
@@ -753,8 +617,8 @@ export const OrderSummaryLimitPrice = ({ translations: _translations }: { transl
 };
 
 export const DisclaimerText = ({ className = "", translations: _translations }: { className?: string; translations?: Translations }) => {
-  const translations = useTwapContext()?.translations || _translations;
-  const lib = useTwapStore((state) => state.lib);
+  const { translations, lib } = useTwapContext();
+
   return (
     <StyledTradeInfoExplanation className={`twap-disclaimer-text ${className}`}>
       <StyledText>{translations.disclaimer1}</StyledText>
@@ -918,32 +782,6 @@ const StyledTradeSize = styled(StyledRowFlex)({
   },
 });
 
-export const WarningMessage = ({ className }: { className?: string }) => {
-  const translations = useTwapContext().translations;
-
-  const warning = useFillWarning();
-
-  if (!warning) return null;
-  if (warning === translations.selectTokens || warning === translations.enterAmount) {
-    return null;
-  }
-
-  return (
-    <Fade in={true}>
-      <StyledMsg className={`twap-warning-msg ${className}`}>
-        <AiOutlineWarning />
-        <Typography>{warning}</Typography>
-      </StyledMsg>
-    </Fade>
-  );
-};
-
-const StyledMsg = styled(StyledRowFlex)({
-  flexWrap: "wrap",
-  justifyContent: "flex-start",
-  padding: "10px 12px",
-});
-
 export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
   const srcToken = useTwapStore((store) => store.srcToken);
   const dstToken = useTwapStore((store) => store.dstToken);
@@ -983,54 +821,52 @@ export const TxSuccess = () => {
   return <SuccessTxModal open={showSuccessModal} onClose={() => setShowSuccessModal(false)} />;
 };
 
-interface TradeIntervalSelectProps {
-  Components: {
-    Button: FC<{ text: string; onClick: () => void; selected?: boolean }>;
-  };
-}
+export const PanelWarning = ({ className = "" }: { className?: string }) => {
+  const { feeOnTransferWarning } = useSwapWarning();
+  const { translations } = useTwapContext();
+  const isMarketOrder = useIsMarketOrder();
 
-export const TRADE_INTERVAL_OPTIONS = [
-  {
-    text: "2 mins",
-    value: { resolution: TimeResolution.Minutes, amount: 2 },
-  },
-  {
-    text: "30 mins",
-    value: { resolution: TimeResolution.Minutes, amount: 30 },
-  },
-  {
-    text: "3 hrs",
-    value: { resolution: TimeResolution.Hours, amount: 3 },
-  },
-];
+  const marketOrderWarning = useMemo(() => {
+    return isMarketOrder ? translations?.marketOrderWarning : undefined;
+  }, [translations, isMarketOrder]);
 
-export const TradeIntervalSelect = ({ Components }: TradeIntervalSelectProps) => {
-  const { setFillDelay, fillDelayMillis, fillDelay } = useTwapStore((s) => ({
-    setFillDelay: s.setFillDelay,
-    fillDelayMillis: s.getFillDelayUiMillis(),
-    fillDelay: s.customFillDelay,
-  }));
-  const [custom, setCustom] = useState(false);
+  const warning = feeOnTransferWarning || marketOrderWarning;
 
-  const onClose = useCallback(() => {
-    setFillDelay(TRADE_INTERVAL_OPTIONS[0].value);
-    setCustom(false);
-  }, [setFillDelay, setCustom]);
+  if (!warning) return null;
 
-  return (
-    <StyledTradeIntervalSelect>
-      {!custom &&
-        TRADE_INTERVAL_OPTIONS.map((it) => {
-          const selected = fillDelayMillis === it.value.amount * it.value.resolution;
-          return <Components.Button key={it.text} text={it.text} onClick={() => setFillDelay(it.value)} selected={selected} />;
-        })}
-      {custom && <TimeSelector value={fillDelay} onChange={setFillDelay} />}
-      {custom ? <Components.Button text="Reset" selected={true} onClick={onClose} /> : <Components.Button text="custom" onClick={() => setCustom(true)} />}
-    </StyledTradeIntervalSelect>
-  );
+  return <StyledPanelWarning text={warning} type="warning" />;
 };
 
-const StyledTradeIntervalSelect = styled(StyledRowFlex)({
-  justifyContent: "flex-start",
-  gap: 5,
+const StyledPanelWarning = styled(Message)({
+  textAlign: "center",
+  width: "100%",
 });
+
+export const LimitSwitch = () => {
+  const isLimitOrder = useTwapContext().isLimitOrder;
+
+  const { isMarketOrder, updateState } = useTwapStore((s) => ({
+    isMarketOrder: s.isMarketOrder,
+    updateState: s.updateState,
+  }));
+
+  const onToggle = useCallback(() => {
+    updateState({
+      isMarketOrder: !isMarketOrder,
+    });
+  }, [isMarketOrder, updateState]);
+
+  if (isLimitOrder) return null;
+
+  return <Switch value={!isMarketOrder} onChange={onToggle} />;
+};
+
+export const ShowConfirmationButton = () => {
+  const { onClick, text, disabled, loading } = useConfirmationButton();
+
+  return (
+    <Button allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
+      {loading ? 'Loading...' : text}
+    </Button>
+  );
+};

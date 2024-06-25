@@ -16,9 +16,8 @@ export const StyledShadowContainer = styled(Box)({
   },
 });
 
-export const StyledText = styled(Typography)({
-  fontFamily: "inherit",
-  fontSize: "inherit",
+export const StyledText = styled("p")({
+  margin: 0,
 });
 
 export const StyledColumnFlex = styled(Box)(({ gap = 10 }: { gap?: number }) => ({

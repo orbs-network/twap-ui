@@ -63,7 +63,7 @@ const MemoizedTokenModal = memo((props: TWAPTokenSelectProps) => {
 
 const TokenSelectModal = ({ onClose, isSrc, isOpen }: any) => {
   const { dappTokens } = useAdapterContext();
-  const onTokenSelectedCallback = hooks.useSelectTokenCallback();
+  const onTokenSelectedCallback = hooks.useTokenSelect();
 
   const onSelect = useCallback(
     (token: any) => {

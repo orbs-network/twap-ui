@@ -12,9 +12,10 @@ export interface Props {
   maxTrades: number;
   className?: string;
   label?: string;
+  min?: number;
 }
 
-const Slider = ({ onChange, value, maxTrades, className = "", label }: Props) => {
+const Slider = ({ onChange, value, maxTrades, className = "", label, min }: Props) => {
   const handleChange = (_event: Event, newValue: number | number[]) => {
     if (typeof newValue === "number") {
       onChange(newValue);
@@ -31,7 +32,7 @@ const Slider = ({ onChange, value, maxTrades, className = "", label }: Props) =>
   return (
     <StyledSlider
       value={value}
-      min={1}
+      min={min || 1}
       step={1}
       // marks={getMarks(maxTrades)}
       max={maxTrades}

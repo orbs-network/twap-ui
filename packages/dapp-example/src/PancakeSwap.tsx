@@ -3,16 +3,16 @@ import { TWAP, Orders, parseToken } from "@orbs-network/twap-ui-pancake";
 import { useConnectWallet, useGetTokens, useIsMobile, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
-import { Dapp, TokensList, UISelector } from "./Components";
-import { Popup } from "./Components";
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Dapp, Popup, TokensList, UISelector } from "./Components";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import _ from "lodash";
-import { erc20s, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
+import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
-import { Button, styled, Tooltip, Typography } from "@mui/material";
-import { Components, hooks, Styles } from "@orbs-network/twap-ui";
+import { Button, styled, Typography } from "@mui/material";
+import { Components } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
+import { DappProvider } from "./context";
 const config = Configs.PancakeSwap;
 
 let native = {
@@ -70,40 +70,6 @@ const ConnectButton = () => {
   );
 };
 
-interface ContextProps {
-  openModal: (value: boolean) => void;
-  close: () => void;
-  showModal?: boolean;
-  isFrom?: boolean;
-  setIsFrom?: (value: boolean) => void;
-}
-const Context = createContext({} as ContextProps);
-
-const ContextWrapper = ({ children }: { children: ReactNode }) => {
-  const [showModal, setShowModal] = useState(false);
-  const [isFrom, setIsFrom] = useState(true);
-
-  const openModal = (value: boolean) => {
-    setIsFrom(value);
-    setShowModal(true);
-  };
-
-  return <Context.Provider value={{ isFrom, setIsFrom, showModal, openModal, close: () => setShowModal(false) }}>{children}</Context.Provider>;
-};
-
-const TokenSelectModal = ({ onCurrencySelect }: TokenSelectModalProps) => {
-  const { data: dappTokens } = useDappTokens();
-
-  const tokensListSize = _.size(dappTokens);
-  const parsedList = useMemo(() => parseList(dappTokens), [tokensListSize]);
-
-  return (
-    <StyledModalContent>
-      <TokensList tokens={parsedList} onClick={onCurrencySelect} />
-    </StyledModalContent>
-  );
-};
-
 const useDecimals = (fromToken?: string, toToken?: string) => {
   const { data: dappTokens } = useDappTokens();
   const fromTokenDecimals = dappTokens?.[fromToken || ""]?.decimals;
@@ -114,26 +80,6 @@ const useDecimals = (fromToken?: string, toToken?: string) => {
 
 const handleAddress = (address?: string) => {
   return !address ? "" : "BNB" ? zeroAddress : address;
-};
-
-const useTokenModal = (item1: any, item2: any, item3: any, isFrom?: boolean) => {
-  const context = useContext(Context);
-  return () => context.openModal(!!isFrom);
-};
-
-const useTooltip = (content: ReactNode, options?: any, children?: ReactNode) => {
-  const targetRef = useRef<any>(null);
-
-  const tooltip = (
-    <Tooltip title={content}>
-      <span>{children}</span>
-    </Tooltip>
-  );
-
-  return {
-    targetRef,
-    tooltip,
-  };
 };
 
 const DappButton = ({ isLoading, disabled, children, onClick }: any) => {
@@ -159,10 +105,34 @@ const SwapPendingModalContent = ({ title }: { title: string }) => {
   return <p>{title}</p>;
 };
 
+interface TokenSelectModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedAsset: any;
+  onSelect: (value: any) => void;
+  otherAsset: any;
+}
+
+const TokenSelectModal = ({ isOpen, onClose, onSelect }: TokenSelectModalProps) => {
+  const { data: dappTokens } = useDappTokens();
+
+  const parsedList = useMemo(() => parseList(dappTokens), [dappTokens]);
+
+  return (
+    <Popup isOpen={isOpen} onClose={onClose}>
+      <StyledModalContent>
+        <TokensList tokens={parsedList} onClick={onSelect} />
+      </StyledModalContent>
+    </Popup>
+  );
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
+  const [srcToken] = useState("BNB");
+  const [dstToken] = useState("CAKE");
   const isMobile = useIsMobile();
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
@@ -180,8 +150,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
       <TWAP
         account={account}
-        srcToken="CAKE"
-        dstToken={config.wToken.address}
+        srcToken={srcToken}
+        dstToken={dstToken}
         dappTokens={dappTokens}
         isDarkTheme={isDarkTheme}
         limit={limit}
@@ -189,8 +159,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         usePriceUSD={usePriceUSD}
         connectedChainId={chainId}
         useTrade={_useTrade}
-        useTokenModal={useTokenModal}
-        onDstTokenSelected={(it: any) => console.log(it)}
+        TokenSelectModal={TokenSelectModal}
+        Modal={Components.Base.Modal}
         nativeToken={native}
         connector={connector}
         isMobile={isMobile}
@@ -211,9 +181,9 @@ const DappComponent = () => {
   const { isDarkTheme } = useTheme();
   const [selected, setSelected] = useState(SelectorOption.TWAP);
   const isMobile = useIsMobile();
+
   return (
-    <ContextWrapper>
-      <Tokens />
+    <DappProvider config={config}>
       <StyledPancake isDarkTheme={isDarkTheme ? 1 : 0}>
         {isMobile && (
           <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
@@ -232,29 +202,10 @@ const DappComponent = () => {
           </StyledPancakeOrders>
         )}
       </StyledPancake>
-    </ContextWrapper>
+    </DappProvider>
   );
 };
 
-const Tokens = () => {
-  const context = useContext(Context);
-
-  const selectToken = hooks.useSelectTokenCallback(parseToken);
-
-  const onSelect = useCallback(
-    (token: any) => {
-      selectToken({ isSrc: !!context.isFrom, token });
-      context.close();
-    },
-    [selectToken, context.isFrom, context.close]
-  );
-
-  return (
-    <Popup isOpen={!!context.showModal} onClose={context.close}>
-      <TokenSelectModal onCurrencySelect={onSelect} />;
-    </Popup>
-  );
-};
 const Wrapper = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   const { isDarkTheme } = useTheme();
 

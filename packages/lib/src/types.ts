@@ -5,6 +5,7 @@ import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { Duration } from "./store";
 import { useParseOrderUi } from "./hooks";
 import { CSSObject } from "@mui/system";
+import { IconType } from "@react-icons/all-files";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -104,6 +105,12 @@ export interface Translations {
   maxChunksWarning: string;
   minChunksWarning: string;
   weeks: string;
+  price: string;
+  minTradeIntervalWarning: string;
+  recipient: string;
+  accept: string;
+  disclaimer: string;
+  marketOrderWarning: string;
 }
 
 export interface BaseComponentProps {
@@ -134,6 +141,7 @@ export interface TWAPProps extends BaseProps {
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
+  parsedTokens?: TokenData[];
 }
 
 type PriceUsd = (address: string, token?: TokenData) => any;
@@ -210,7 +218,6 @@ export interface TwapLibProps extends LibProps {
   storeOverride?: StoreOverride;
   srcToken?: string;
   dstToken?: string;
-  parseToken: (token: any) => TokenData | undefined;
   dappTokens: any;
   uiPreferences?: TwapContextUIPreferences;
   onSrcTokenSelected?: (token: any) => void;
@@ -223,20 +230,13 @@ export interface TwapLibProps extends LibProps {
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
-  dstAmountOut?: string;
-  dstAmountLoading?: boolean;
   marketPrice?: string;
+  minNativeTokenBalance?: string;
+  isLimitOrder?: boolean;
+  parsedTokens: TokenData[];
 }
 
 export type Token = TokenData;
-
-export interface InitLibProps {
-  config: Config;
-  provider?: any;
-  account?: string;
-  connectedChainId?: number;
-  storeOverride?: StoreOverride;
-}
 
 export type OrderUI = ReturnType<typeof useParseOrderUi>;
 
@@ -284,41 +284,45 @@ export interface OrdersData {
   [Status.Completed]?: OrderUI[];
 }
 
+export type SwapState = "loading" | "success" | "failed";
+export type SwapStep = "createOrder" | "wrap" | "approve";
+
 export interface State {
-  lib: TWAPLib | undefined;
+  swapStep?: SwapStep;
+  swapState?: SwapState;
+  swapFailed?: boolean;
+
   srcToken: TokenData | undefined;
   dstToken: TokenData | undefined;
-  wrongNetwork: undefined | boolean;
   srcAmountUi: string;
 
-  loading: boolean;
   confirmationClickTimestamp: Moment;
   showConfirmation: boolean;
   disclaimerAccepted: boolean;
 
   customChunks?: number;
   customFillDelay: Duration;
-  customDuration: Duration;
 
   orderCreatedTimestamp?: number;
 
   showLoadingModal: boolean;
   showSuccessModal: boolean;
 
-  txHash?: string;
+  createOrdertxHash?: string;
+  wrapTxHash?: string;
+  approveTxHash?: string;
   enableQueryParams?: boolean;
   waitingForOrdersUpdate: boolean;
-  srcUsd?: BN;
-  dstUsd?: BN;
-  srcUsdLoading?: boolean;
-  dstUsdLoading?: boolean;
-
   isCustomLimitPrice?: boolean;
   customLimitPrice?: string;
   isInvertedLimitPrice?: boolean;
   limitPricePercent?: string;
 
   isMarketOrder?: boolean;
+
+  createOrderSuccess?: boolean;
+  wrapSuccess?: boolean;
+  approveSuccess?: boolean;
 }
 
 export type SwitchVariant = "ios" | "default";
@@ -337,6 +341,7 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
   onClick: (e: any) => void;
   loading?: boolean;
   text?: string;
+  allowClickWhileLoading?: boolean;
 }
 
 export interface OrderCreated {
@@ -385,4 +390,16 @@ export type LimitPriceTitleProps = {
 export type LimitPriceTokenSelectProps = {
   token?: TokenData;
   onClick: () => void;
+};
+
+export type Step = {
+  title: string;
+  description?: string;
+  link?: {
+    url: string;
+    text: string;
+  };
+  Icon: IconType;
+  image?: string;
+  status: "pending" | "loading" | "completed" | "disabled";
 };

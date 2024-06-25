@@ -18,10 +18,6 @@ const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
     value: TimeResolution.Hours,
   },
   {
-    text: "weeks",
-    value: TimeResolution.Weeks,
-  },
-  {
     text: "days",
     value: TimeResolution.Days,
   },
@@ -41,23 +37,12 @@ interface Props {
   placeholder?: string;
 }
 
-function TimeSelector({ value, onChange, disabled = false, className = "", onFocus, onBlur, placeholder = "0" }: Props) {
-  const translations = useTwapContext().translations;
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const onSelect = useCallback(
+export function TimeSelector({ value, onChange, disabled = false, className = "", onFocus, onBlur, placeholder = "0" }: Props) {
+  const onResolutionSelect = useCallback(
     (resolution: TimeResolution) => {
-      handleClose();
       onChange({ resolution, amount: value.amount });
     },
-    [handleClose, onChange, value.amount]
+    [onChange]
   );
 
   return (
@@ -71,8 +56,35 @@ function TimeSelector({ value, onChange, disabled = false, className = "", onFoc
         placeholder={placeholder}
       />
 
+      <TimeSelectMenu resolution={value.resolution} onChange={onResolutionSelect} />
+    </StyledContainer>
+  );
+}
+
+export const TimeSelectMenu = ({ onChange, resolution }: { onChange: (resolution: TimeResolution) => void; resolution: TimeResolution }) => {
+  const translations = useTwapContext().translations;
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const onSelect = useCallback(
+    (resolution: TimeResolution) => {
+      handleClose();
+      onChange(resolution);
+    },
+    [handleClose, onChange]
+  );
+
+  return (
+    <>
       <StyledSelected onClick={handleClick} className="twap-time-selector-menu-button">
-        {translations[findSelectedResolutionText(value.resolution)]}
+        {translations[findSelectedResolutionText(resolution)]}
         <IoIosArrowDown />
       </StyledSelected>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
@@ -84,11 +96,9 @@ function TimeSelector({ value, onChange, disabled = false, className = "", onFoc
           );
         })}
       </Menu>
-    </StyledContainer>
+    </>
   );
-}
-
-export default TimeSelector;
+};
 
 const StyledInput = styled(NumericInput)({
   flex: 1,

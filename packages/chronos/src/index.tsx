@@ -23,7 +23,6 @@ import {
   StyledSubmit,
   StyledTopColumnFlex,
   StyledTradeSize,
-  StyledWarningMsg,
   StyledChangeOrder,
   StyledPanelRight,
   StyledPercentSelect,
@@ -458,7 +457,6 @@ const TWAPPanel = () => {
   return (
     <div className="twap-container">
       <StyledColumnFlex>
-        <StyledWarningMsg />
         <StyledTopColumnFlex gap={6.5}>
           <TokenPanel isSrcToken={true} />
           <ChangeTokensOrder />

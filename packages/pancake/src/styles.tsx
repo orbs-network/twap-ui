@@ -69,19 +69,22 @@ const getButtonStyles = (theme: Theme) => {
   };
 };
 
-export const StyledCard = styled(Box)(({ theme }) => {
+export const StyledCardBody = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);
 
   return {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0px!important",
     width: "100%",
-    pointerEvents: "all",
     background: styles.editableCardBox,
     padding: 12,
     borderRadius: 16,
     boxShadow: styles.inputShadow,
+  };
+});
+
+export const StyledCard = styled(Styles.StyledColumnFlex)(({ theme }) => {
+  return {
+    width: "100%",
+    gap: 10,
   };
 });
 
@@ -105,6 +108,15 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-warning": {
+      color: "rgb(155, 155, 155)",
+    },
+    ".twap-message": {
+      fontSize: "14px",
+      small: {
+        opacity: 0.7,
+      },
+    },
     ".twap-order-expanded-cancel-wraper": {
       marginTop: "40px",
       button: {
@@ -193,7 +205,7 @@ export const configureStyles = (theme: Theme) => {
       padding: "0px",
       maxWidth: "370px!important",
       borderRadius: 32,
-      minHeight: "415px",
+
       overflow: "hidden",
       "*::-webkit-scrollbar": {
         display: "none",
@@ -621,12 +633,16 @@ const CardHeader = ({ children, className = "" }: { children: ReactNode; classNa
   return <StyledCardHeader className={className}> {children}</StyledCardHeader>;
 };
 
+const CardBody = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
+  return <StyledCardBody className={className}> {children}</StyledCardBody>;
+};
+
 const StyledCardHeader = styled(Styles.StyledRowFlex)({
-  marginBottom: 14,
   justifyContent: "space-between",
 });
 
 Card.Header = CardHeader;
+Card.Body = CardBody;
 
 export const StyledTokenPanel = styled(Card)({
   width: "100%",
@@ -813,12 +829,22 @@ export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {
   };
 });
 
-export const StyledTradeIntervalSelectCard = styled(Card)({
-  display: "flex",
-  alignItems: "center",
-  flexDirection: "column",
-  gap: 10,
-  minHeight: 84,
+export const StyledTradeIntervalResolution = styled(CardBody)({
+  width: "50%",
 });
 
-export const StyledTradeIntervalSelect = styled(StyledColumnFlex)({});
+export const StyledTradeIntervalInput = styled(CardBody)({
+  width: "50%",
+});
+
+export const StyledChunksSelectSlider = styled(CardBody)({
+  flex: 1,
+  width: "auto",
+  padding: "10px 16px 0px 16px",
+});
+
+export const StyledChunksSelectInput = styled(CardBody)({
+  width: 80,
+});
+
+export const StyledPanelWarning = styled(Components.PanelWarning)({});

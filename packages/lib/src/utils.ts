@@ -1,12 +1,13 @@
-import { TokenData, parsebn, eqIgnoreCase, maxUint256, Token } from "@defi.org/web3-candies";
+import { TokenData, parsebn, eqIgnoreCase, maxUint256, Token, isNativeAddress } from "@defi.org/web3-candies";
 import moment from "moment";
 import { Translations } from "./types";
-import { QUERY_PARAMS } from "./consts";
+import { EXPLORER_URLS, QUERY_PARAMS } from "./consts";
 import BN from "bignumber.js";
 import _ from "lodash";
 import { useTwapStore } from "./store";
 import { THE_GRAPH_ORDERS_API } from "./config";
 import { numericFormatter } from "react-number-format";
+import { Config } from "@orbs-network/twap";
 export const logger = (...args: any[]) => {
   const query = new URLSearchParams(window.location.search);
   const debug = query.get("debug");
@@ -189,4 +190,29 @@ export const formatDecimals = (value?: string | BN | number, decimalPlaces?: num
   return BN(value)
     .decimalPlaces(index + max, BN.ROUND_DOWN)
     .toString();
+};
+
+export const addMissingTokens = (config: Config, tokens: TokenData[]) => {
+  if (!tokens.find((it: TokenData) => isNativeAddress(it.address))) {
+    tokens.push(config.nativeToken);
+  }
+  if (!tokens.find((it: TokenData) => eqIgnoreCase(it.address, config.wToken.address))) {
+    tokens.push(config.wToken);
+  }
+  return tokens;
+};
+
+export const getExplorerUrl = (chainId?: number) => {
+  if (!chainId) return;
+  return EXPLORER_URLS[chainId as keyof typeof EXPLORER_URLS];
+};
+
+
+export const isTxRejected = (error: any) => {  
+  if (error?.message) {
+    return (
+      error.message?.toLowerCase()?.includes("rejected") ||
+      error.message?.toLowerCase()?.includes("denied")
+    );
+  }
 };

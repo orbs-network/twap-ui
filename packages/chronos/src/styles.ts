@@ -696,22 +696,6 @@ const buttonStyles = (theme: Theme) => {
 
 export const StyledSubmit = styled(Components.SubmitButton)({});
 
-export const StyledWarningMsg = styled(Components.WarningMessage)({
-  background: "#DF3C64F5",
-  borderRadius: 15,
-  svg: {
-    width: 22,
-    height: 22,
-    "*": {
-      color: "white",
-    },
-  },
-  p: {
-    fontSize: 14,
-    color: "white",
-  },
-});
-
 export const StyledBigBorder = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {

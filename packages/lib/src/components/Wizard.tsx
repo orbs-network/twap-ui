@@ -65,15 +65,6 @@ const Message = ({
     );
   }
 
-  if (status === WizardActionStatus.SUCCESS) {
-    return (
-      <>
-        <FaCheckCircle className="twap-icon twap-success-icon" />
-        <StyledTitle>{successMsg}</StyledTitle>
-      </>
-    );
-  }
-
   if (status === WizardActionStatus.ERROR) {
     return (
       <>

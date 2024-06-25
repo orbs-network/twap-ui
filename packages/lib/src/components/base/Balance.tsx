@@ -1,7 +1,7 @@
 import { styled } from "@mui/system";
 import React, { ReactNode } from "react";
 import { useTwapContext } from "../../context";
-import { useFormatNumber } from "../../hooks";
+import { useFormatNumber, useFormatNumberV2 } from "../../hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
 import Tooltip from "./Tooltip";
@@ -24,7 +24,7 @@ function Balance({ isLoading, value, className = "", label, suffix, hideLabel, e
 
   const args = { value: value, suffix: suffix ? ` ${suffix}` : undefined };
 
-  const formattedValue = useFormatNumber({ ...args, decimalScale });
+  const formattedValue = useFormatNumberV2({ ...args, decimalScale });
 
   if (value == null) {
     return null;

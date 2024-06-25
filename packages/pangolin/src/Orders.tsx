@@ -1,6 +1,6 @@
 import { Box, ClickAwayListener, styled, Typography, useMediaQuery } from "@mui/material";
 import { Status } from "@orbs-network/twap";
-import { CancelOrderButton, Components, hooks, OrderUI, ParsedOrder, store, Styles, useTwapContext, OrdersPanel, fillDelayText } from "@orbs-network/twap-ui";
+import { CancelOrderButton, Components, hooks, OrderUI, ParsedOrder, store, Styles, useTwapContext, OrdersPanel, fillDelayText, query } from "@orbs-network/twap-ui";
 import _ from "lodash";
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { parseTheme } from "./styles";
@@ -22,7 +22,7 @@ const Context = createContext({} as ContextProps);
 const useOrdersContext = () => useContext(Context);
 
 const useOrders = () => {
-  const { data, dataUpdatedAt, isLoading } = hooks.useOrdersHistoryQuery();
+  const { data, dataUpdatedAt, isLoading } = query.useOrdersHistory();
   const { limit, selectedOrderID } = useOrdersContext();
 
   const orders = useMemo(() => {

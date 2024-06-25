@@ -47,39 +47,6 @@ const onWrapSuccess = () => {
   sendAnalyticsEvent(Category.TWAPPanel, "onWrapSuccess");
 };
 
-const onConfirmationCreateOrderClick = ({
-  minAmountOut,
-  totalTrades,
-  tradeSize,
-  deadline,
-}: {
-  minAmountOut: string;
-  totalTrades: number;
-  tradeSize: BigNumber;
-  deadline: number;
-}) => {
-  const lib = useTwapStore.getState().lib;
-
-  const srcToken = useTwapStore.getState().srcToken;
-  const dsToken = useTwapStore.getState().dstToken;
-
-  sendAnalyticsEvent(Category.ConfirmationPanel, `onConfirmationCreateOrderClick`, {
-    exchangeAddress: lib?.config.exchangeAddress,
-    srcToken: useTwapStore.getState().srcToken?.address,
-    dstToken: useTwapStore.getState().dstToken?.address,
-    srcTokenAmount: amountUi(srcToken, useTwapStore.getState().getSrcAmount()),
-    tradeSize: amountUi(srcToken, tradeSize),
-    minAmountOut,
-    deadline,
-    tradeInterval: useTwapStore.getState().getFillDelayUiMillis(),
-    totalTrades,
-  });
-};
-
-const onODNPClick = () => {
-  sendAnalyticsEvent(Category.OrdersPanel, "onODNPClick");
-};
-
 const onModuleLoad = () => {
   sendAnalyticsEvent(Category.PageView, "onModuleLoad");
 };
@@ -127,28 +94,27 @@ const onOpenConfirmationModal = () => {
 const sendAnalyticsEvent = (category: Category, action: string, data = {} as { [key: string]: any }) => {
   if (process.env.NODE_ENV === "development") return;
 
-  const lib = useTwapStore.getState().lib;
 
-  try {
-    fetch("https://bi.orbs.network/putes/twap-ui", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        timestamp: new Date().toISOString(),
-        maker: lib?.maker,
-        partner: lib?.config.partner,
-        chain: lib?.config.chainId,
-        category,
-        action,
-        ...data,
-      }),
-    });
-  } catch (error) {
-    console.error(error);
-  }
+  // try {
+  //   fetch("https://bi.orbs.network/putes/twap-ui", {
+  //     method: "POST",
+  //     headers: {
+  //       Accept: "application/json",
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       timestamp: new Date().toISOString(),
+  //       maker: lib?.maker,
+  //       partner: lib?.config.partner,
+  //       chain: lib?.config.chainId,
+  //       category,
+  //       action,
+  //       ...data,
+  //     }),
+  //   });
+  // } catch (error) {
+  //   console.error(error);
+  // }
 };
 
 export const analytics = {
@@ -160,8 +126,6 @@ export const analytics = {
   onApproveSuccess,
   onWrapClick,
   onWrapSuccess,
-  onConfirmationCreateOrderClick,
-  onODNPClick,
   onCreateOrderSuccess,
   onCreateOrderError,
   onWrapError,

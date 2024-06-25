@@ -1,13 +1,13 @@
 import BN from "bignumber.js";
-import { TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { TokenData } from "@orbs-network/twap";
 import moment from "moment";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import _ from "lodash";
 import { maxUint256 } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
-import { QUERY_PARAMS } from "./consts";
-import { amountBN, fillDelayText, formatDecimals, getQueryParam, setQueryParam } from "./utils";
+import { MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "./consts";
+import { amountBN, formatDecimals, getQueryParam, setQueryParam } from "./utils";
 
 export enum TimeResolution {
   Minutes = 60 * 1000,
@@ -42,40 +42,32 @@ const limitPriceFromQueryParams = () => {
  * TWAP Store
  */
 
-const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: 2 };
-const defaultCustomDuration = { resolution: TimeResolution.Minutes, amount: undefined };
+const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED };
 
 const getInitialState = (queryParamsEnabled?: boolean): State => {
   const tradeIntervalQueryParam = getQueryParam(QUERY_PARAMS.TRADE_INTERVAL);
-  const maxDurationQueryParam = getQueryParam(QUERY_PARAMS.MAX_DURATION);
   const srcAmountUi = getQueryParam(QUERY_PARAMS.INPUT_AMOUNT);
   const chunks = getQueryParam(QUERY_PARAMS.TRADES_AMOUNT);
   return {
-    showSuccessModal: true,
+    showSuccessModal: false,
     showLoadingModal: false,
-    lib: undefined,
     srcToken: undefined,
     dstToken: undefined,
-    wrongNetwork: undefined,
     srcAmountUi: !queryParamsEnabled ? "" : srcAmountUi || "",
 
-    loading: false,
     confirmationClickTimestamp: moment(),
     showConfirmation: false,
     disclaimerAccepted: true,
 
     customChunks: !queryParamsEnabled ? undefined : chunks ? Number(chunks) : undefined,
-    customDuration: !queryParamsEnabled ? defaultCustomDuration : { resolution: TimeResolution.Minutes, amount: maxDurationQueryParam ? Number(maxDurationQueryParam) : undefined },
-    customFillDelay: !queryParamsEnabled ? defaultCustomFillDelay : { resolution: TimeResolution.Minutes, amount: tradeIntervalQueryParam ? Number(tradeIntervalQueryParam) : 2 },
+    customFillDelay: !queryParamsEnabled
+      ? defaultCustomFillDelay
+      : { resolution: TimeResolution.Minutes, amount: tradeIntervalQueryParam ? Number(tradeIntervalQueryParam) : MIN_TRADE_INTERVAL_FORMATTED },
 
     orderCreatedTimestamp: undefined,
-    txHash: undefined,
-
     enableQueryParams: false,
     waitingForOrdersUpdate: false,
-    srcUsd: undefined,
-    dstUsd: undefined,
-
+    isMarketOrder: false,
     isCustomLimitPrice: !!limitPriceFromQueryParams(),
     customLimitPrice: limitPriceFromQueryParams(),
   };
@@ -84,7 +76,6 @@ const initialState = getInitialState();
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
-    setTxHash: (txHash?: string) => set({ txHash }),
     setShowSuccessModal: (showSuccessModal: boolean) => set({ showSuccessModal }),
     setShowLodingModal: (showLoadingModal: boolean) => set({ showLoadingModal }),
     setLimitOrderPriceUi: () => {
@@ -95,12 +86,8 @@ export const useTwapStore = create(
         ...getInitialState(enableQueryParams),
         ...storeOverride,
         enableQueryParams,
-        lib: get().lib,
         srcToken: get().srcToken,
         dstToken: get().dstToken,
-        wrongNetwork: get().wrongNetwork,
-        srcUsd: get().srcUsd,
-        dstUsd: get().dstUsd,
       });
     },
     updateState: (values: Partial<State>) => set({ ...values }),
@@ -108,45 +95,23 @@ export const useTwapStore = create(
     reset: (storeOverride: StoreOverride) => {
       set({
         ...getInitialState(),
-        lib: get().lib,
         ...storeOverride,
         srcToken: get().srcToken,
         dstToken: get().dstToken,
-        srcUsd: get().srcUsd,
-        dstUsd: get().dstUsd,
+        waitingForOrdersUpdate: get().waitingForOrdersUpdate,
       });
     },
-    setLib: (lib?: TWAPLib) => set({ lib }),
-    setLoading: (loading: boolean) => set({ loading }),
     setSrcToken: (srcToken?: TokenData) => {
       set({ srcToken });
     },
     setDstToken: (dstToken?: TokenData) => set({ dstToken }),
     getSrcAmount: () => BN.min(amountBN(get().srcToken, get().srcAmountUi), maxUint256).decimalPlaces(0),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
-    setWrongNetwork: (wrongNetwork?: boolean) => set({ wrongNetwork }),
-    setDuration: (customDuration: Duration) => {
-      setQueryParam(QUERY_PARAMS.MAX_DURATION, !customDuration.amount ? undefined : customDuration.amount.toString());
-      set({ customDuration });
-    },
     setFillDelay: (fillDelay: Duration) => {
       setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, !fillDelay.amount ? undefined : fillDelay.amount?.toString());
       set({ customFillDelay: fillDelay });
     },
-    getFillDelayText: (translations: Translations) => fillDelayText((get() as any).getFillDelayUiMillis(), translations),
-    getFillDelayUiMillis: () => get().customFillDelay.amount! * get().customFillDelay.resolution,
-    getMinimumDelayMinutes: () => (get().lib?.estimatedDelayBetweenChunksMillis() || 0) / 1000 / 60,
-    getFillDelayWarning: () => {
-      return get().lib && (get() as any).getFillDelayUiMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000;
-    },
-    shouldWrap: () =>
-      get().lib &&
-      get().srcToken &&
-      get().dstToken &&
-      [TokensValidation.wrapAndOrder, TokensValidation.wrapOnly].includes(get().lib!.validateTokens(get().srcToken!, get().dstToken!)),
 
-    shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
-    isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
     setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment() }),
     invertLimit: () => {
       handleLimitPriceQueryParam();
@@ -237,9 +202,6 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
   setStatus: (status, error) => {
     clearTimeout(get().timeout);
     set({ status, error, open: !!status });
-    if (status === WizardActionStatus.SUCCESS) {
-      set({ timeout: setTimeout(() => set({ open: false }), 5000) });
-    }
   },
   setOpen: (value) => {
     set({ open: value });

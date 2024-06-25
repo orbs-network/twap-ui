@@ -3,7 +3,7 @@ import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { Button, Label, TokenLogo, TokenPriceCompare } from "../../components/base";
 import { useTwapContext } from "../../context";
-import { useCancelOrder, useFormatNumber, useHistoryPrice } from "../../hooks";
+import { useCancelOrder, useFormatNumber, useHistoryPrice, useMinimumDelayMinutes } from "../../hooks";
 import { useTwapStore } from "../../store";
 import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { OrderUI } from "../../types";
@@ -12,7 +12,7 @@ import { fillDelayText } from "../../utils";
 const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const { translations, uiPreferences } = useTwapContext();
   const hideUsd = uiPreferences.orders?.hideUsd;
-  const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
+  const minimumDelayMinutes = useMinimumDelayMinutes();
   const totalChunks = useFormatNumber({ value: order?.ui.totalChunks, disableDynamicDecimals: true });
   const srcChunkAmountUsdUi = useFormatNumber({ value: order?.ui.srcChunkAmountUsdUi, disableDynamicDecimals: true });
 

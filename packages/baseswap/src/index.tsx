@@ -104,7 +104,7 @@ const MaxButton = () => {
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const { useModal, TokenSelectModal } = useAdapterContext();
   const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
-  const selectToken = hooks.useSelectTokenCallback();
+  const selectToken = hooks.useTokenSelect();
 
   const onSelect = useCallback(
     (token: any) => {

@@ -3,7 +3,7 @@ import { StyledRowFlex, StyledText } from "../../styles";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
 
-interface Props {
+export interface Props {
   symbol?: string;
   logo?: string;
   className?: string;

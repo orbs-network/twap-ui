@@ -1,10 +1,12 @@
-import { OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { OrderInputValidation, Status, TokenData, TokensValidation } from "@orbs-network/twap";
 import { useTwapContext } from "./context";
 import Web3 from "web3";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { InitLibProps, OrdersData, OrderUI, ParsedOrder, State, Translations } from "./types";
+import { OrderUI, ParsedOrder, State, Step, SwapState, SwapStep } from "./types";
+import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
+
 import _ from "lodash";
 import { analytics } from "./analytics";
 import {
@@ -12,10 +14,6 @@ import {
   setWeb3Instance,
   switchMetaMaskNetwork,
   zeroAddress,
-  estimateGasPrice,
-  getPastEvents,
-  findBlock,
-  block,
   zero,
   isNativeAddress,
   web3,
@@ -23,27 +21,15 @@ import {
   sendAndWaitForConfirmations,
   maxUint256,
   parsebn,
+  erc20,
+  iwethabi,
 } from "@defi.org/web3-candies";
-import { TimeResolution, useOrdersStore, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
-import {
-  AMOUNT_TO_BORROW,
-  feeOnTransferDetectorAddresses,
-  MIN_CHUNKS,
-  MIN_NATIVE_BALANCE,
-  QUERY_PARAMS,
-  REFETCH_BALANCE,
-  REFETCH_GAS_PRICE,
-  REFETCH_ORDER_HISTORY,
-  REFETCH_USD,
-  STALE_ALLOWANCE,
-  SUGGEST_CHUNK_VALUE,
-} from "./consts";
-import { QueryKeys } from "./enums";
+import { TimeResolution, useOrdersStore, useTwapStore} from "./store";
+import { MIN_NATIVE_BALANCE, MIN_TRADE_INTERVAL, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "./consts";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
-import { amountBN, amountBNV2, amountUi, amountUiV2, formatDecimals, getTokenFromTokensList, setQueryParam, supportsTheGraphHistory } from "./utils";
-import { getOrderFills } from "./helper";
-import FEE_ON_TRANSFER_ABI from "./abi/FEE_ON_TRANSFER.json";
+import { amountBN, amountBNV2, amountUi, amountUiV2, fillDelayText, formatDecimals, getExplorerUrl, getTokenFromTokensList, isTxRejected, setQueryParam, supportsTheGraphHistory } from "./utils";
+import { query } from "./query";
 /**
  * Actions
  */
@@ -73,40 +59,33 @@ export const useReset = () => {
   return () => {
     client && client.invalidateQueries();
     resetTwapStore(storeOverride || {});
-    setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
-    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-    setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
-    setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, undefined);
-    setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
+    resetQueryParams();
   };
 };
 
-export const useWrapToken = (disableWizard?: boolean) => {
-  const lib = useTwapStore((state) => state.lib);
-  const srcAmount = useTwapStore((state) => state.getSrcAmount());
-  const srcToken = useTwapStore((state) => state.srcToken);
-  const dstToken = useTwapStore((state) => state.dstToken);
-  const wizardStore = useWizardStore();
-  const { onSrcTokenSelected, dappTokens } = useTwapContext();
-
-  const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
+export const useWrapToken = () => {
+  const { srcAmount, srcToken, dstToken, updateState } = useTwapStore((state) => ({
+    srcAmount: state.getSrcAmount(),
+    srcToken: state.srcToken,
+    dstToken: state.dstToken,
+    updateState: state.updateState,
+  }));
+  const { onSrcTokenSelected, dappTokens, lib } = useTwapContext();
+  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
 
   const setSrcToken = useTwapStore((state) => state.setSrcToken);
   const reset = useReset();
 
   return useMutation(
     async () => {
-      if (!disableWizard) {
-        wizardStore.setAction(WizardAction.WRAP);
-        wizardStore.setStatus(WizardActionStatus.PENDING);
-      }
+      updateState({ swapStep: "wrap" });
       analytics.onWrapClick(srcAmount);
       return lib!.wrapNativeToken(srcAmount, priorityFeePerGas, maxFeePerGas);
     },
     {
       onSuccess: () => {
         analytics.onWrapSuccess();
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
+        updateState({ wrapSuccess: true });
         if (lib?.validateTokens(srcToken!, dstToken!) === TokensValidation.wrapOnly) {
           reset();
           return;
@@ -119,114 +98,108 @@ export const useWrapToken = (disableWizard?: boolean) => {
       },
       onError: (error: Error) => {
         console.log(error.message);
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
         analytics.onWrapError(error.message);
+        throw error;
       },
     }
   );
 };
 
-export const useUnwrapToken = (disableWizard?: boolean) => {
-  const lib = useTwapStore((state) => state.lib);
-  const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
+export const useUnwrapToken = () => {
+  const lib = useTwapContext().lib;
+  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
   const reset = useReset();
-  const srcTokenAmount = useTwapStore((state) => state.getSrcAmount());
-  const wizardStore = useWizardStore();
+  const { srcTokenAmount, updateState } = useTwapStore((state) => ({
+    srcTokenAmount: state.getSrcAmount(),
+    updateState: state.updateState,
+  }));
+
   return useMutation(
     async () => {
-      if (!disableWizard) {
-        wizardStore.setAction(WizardAction.UNWRAP);
-        wizardStore.setStatus(WizardActionStatus.PENDING);
+      if (!lib) {
+        throw new Error("Lib not initialized");
       }
-
-      return lib?.unwrapNativeToken(srcTokenAmount, priorityFeePerGas, maxFeePerGas);
+      await sendAndWaitForConfirmations(
+        erc20<any>(lib.config.wToken.symbol, lib.config.wToken.address, lib.config.wToken.decimals, iwethabi).methods.deposit(),
+        { from: lib.maker, maxPriorityFeePerGas: priorityFeePerGas, maxFeePerGas, value: srcTokenAmount },
+        undefined,
+        undefined,
+        {
+          onTxHash: (wrapTxHash) => {
+            updateState({ wrapTxHash });
+          },
+        }
+      );
     },
     {
       onSuccess: () => {
         reset();
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
-      onError: (error: Error) => {
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
-      },
+      onError: (error: Error) => {},
     }
   );
 };
 
-export const useApproveToken = (disableWizard?: boolean) => {
-  const { lib, setLoading } = useTwapStore((state) => ({
-    lib: state.lib,
-    setLoading: state.setLoading,
+export const useApproveToken = () => {
+  const { srcAmount, updateState } = useTwapStore((state) => ({
+    srcAmount: state.getSrcAmount(),
+    updateState: state.updateState,
   }));
 
-  const srcAmount = useTwapStore((state) => state.getSrcAmount());
-  const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
-  const srcToken = useTwapStore((state) => state.srcToken);
-  const { refetch } = useHasAllowanceQuery();
-  const wizardStore = useWizardStore();
-  return useMutation(
-    async () => {
-      setLoading(true);
-      if (!disableWizard) {
-        wizardStore.setAction(WizardAction.APPROVE);
-        wizardStore.setStatus(WizardActionStatus.PENDING);
-      }
+  const lib = useTwapContext().lib;
 
+  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
+  const { refetch } = query.useAllowance();
+  return useMutation(
+    async (token?: TokenData) => {
+      updateState({ swapStep: "approve" });
+      if (!token) {
+        throw new Error("Token is not defined");
+      }
+      if (!lib) {
+        throw new Error("Lib is not defined");
+      }
       analytics.onApproveClick(srcAmount);
-      await lib?.approve(srcToken!, maxUint256, priorityFeePerGas, maxFeePerGas);
+      const _token = erc20(token.symbol, token.address, token.decimals);
+      await sendAndWaitForConfirmations(
+        _token.methods.approve(lib.config.twapAddress, BN(maxUint256).toFixed(0)),
+        {
+          from: lib.maker,
+          maxPriorityFeePerGas: priorityFeePerGas,
+          maxFeePerGas,
+        },
+        undefined,
+        undefined,
+        {
+          onTxHash: (approveTxHash) => {
+            updateState({ approveTxHash });
+          },
+        }
+      );
       await refetch();
     },
     {
       onSuccess: async () => {
         analytics.onApproveSuccess();
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
+        updateState({ approveSuccess: true });
       },
       onError: (error: Error) => {
         console.log(error.message);
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
         analytics.onApproveError(error.message);
-      },
-      onSettled: () => {
-        setLoading(false);
+        throw error;
       },
     }
   );
 };
 
-export const useOnTokenSelect = (isSrc?: boolean) => {
-  const srcSelect = useTwapStore((store) => store.setSrcToken);
-  const dstSelect = useTwapStore((store) => store.setDstToken);
-
-  return isSrc ? srcSelect : dstSelect;
-};
-
-export const useHasMinNativeTokenBalance = (minTokenAmount?: string) => {
-  const { lib } = useTwapStore((s) => ({
-    lib: s.lib,
-  }));
-
-  return useQuery(
-    ["useHasMinNativeTokenBalance", lib?.maker, lib?.config.chainId, minTokenAmount],
-    async () => {
-      const balance = await web3().eth.getBalance(lib!.maker);
-      return BN(balance).gte(amountBN(lib?.config.nativeToken, minTokenAmount!));
-    },
-    {
-      enabled: !!lib?.maker && !!minTokenAmount,
-      staleTime: Infinity,
-    }
-  );
-};
-
-export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) => {
-  const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
+export const useCreateOrder = () => {
+  const { maxFeePerGas, priorityFeePerGas } = query.useGasPrice();
   const store = useTwapStore();
-  const { refetch } = useOrdersHistoryQuery();
+  const { refetch } = query.useOrdersHistory();
   const submitOrder = useSubmitOrderCallback();
   const { setTab } = useOrdersStore();
 
-  const wizardStore = useWizardStore();
-  const { askDataParams, onTxSubmitted } = useTwapContext();
+  const { askDataParams, onTxSubmitted, lib } = useTwapContext();
   const dstMinAmountOut = useDstMinAmountOut();
   const dstAmountUsdUi = useDstAmountUsdUi();
   const { outAmountRaw, outAmountUi } = useOutAmount();
@@ -235,12 +208,12 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
   const tradeSize = useSrcChunkAmount();
   const srcChunkAmount = useSrcChunkAmount();
   const deadline = useDeadline();
-
+  const fillDelayMillisUi = useFillDelayMillis();
   return useMutation(
     async () => {
       const dstToken = {
         ...store.dstToken!,
-        address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
+        address: lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
       };
 
       console.log({
@@ -251,25 +224,18 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
         dstUSD: dstAmountUsdUi!,
         getSrcChunkAmount: tradeSize.toString(),
         getDeadline: deadline,
-        fillDelayMillis: store.getFillDelayUiMillis(),
-        isLimit: store.isLimitOrder,
+        fillDelayMillis: fillDelayMillisUi,
       });
 
-      if (!disableWizard) {
-        wizardStore.setAction(WizardAction.CREATE_ORDER);
-        wizardStore.setStatus(WizardActionStatus.PENDING);
-      }
+      const fillDelayMillis = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
 
-      const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
+      store.updateState({ swapStep: "createOrder" });
 
-      analytics.onConfirmationCreateOrderClick({ minAmountOut: outAmountUi || "", totalTrades, tradeSize, deadline });
-      store.setLoading(true);
-
-      const onTxHash = (txHash: string) => {
+      const onTxHash = (createOrdertxHash: string) => {
         setTab(0);
         store.updateState({
           waitingForOrdersUpdate: true,
-          txHash,
+          createOrdertxHash,
         });
       };
 
@@ -303,42 +269,17 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
     {
       onSuccess: async (result) => {
         analytics.onCreateOrderSuccess(result.orderId);
-        onSuccess?.();
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
+        store.updateState({ createOrderSuccess: true });
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
         if ((error as any).code === 4001) {
           analytics.onCreateOrderRejected();
         }
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
-      },
-
-      onSettled: () => {
-        store.updateState({
-          loading: false,
-        });
+        throw error;
       },
     }
   );
-};
-
-export const useInitLib = () => {
-  const setTwapLib = useTwapStore((state) => state.setLib);
-  const setWrongNetwork = useTwapStore((state) => state.setWrongNetwork);
-  return async (props: InitLibProps) => {
-    if (!props.provider || !props.account) {
-      setTwapLib(undefined);
-      setWrongNetwork(undefined);
-      return;
-    }
-
-    const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
-    const wrongChain = props.config.chainId !== chain;
-    setWrongNetwork(wrongChain);
-
-    setTwapLib(wrongChain ? undefined : new TWAPLib(props.config, props.account!, props.provider));
-  };
 };
 
 export const useUpdateStoreOveride = () => {
@@ -353,10 +294,8 @@ export const useUpdateStoreOveride = () => {
 };
 
 export const useChangeNetwork = () => {
-  const { config, provider: _provider, account, storeOverride } = useTwapContext();
+  const { config, provider: _provider } = useTwapContext();
   const [loading, setLoading] = useState(false);
-  const initLib = useInitLib();
-  const setInvalidChain = useTwapStore((state) => state.setWrongNetwork);
 
   const changeNetwork = async (onSuccess: () => void, onError: () => void) => {
     setWeb3Instance(new Web3(_provider));
@@ -370,9 +309,7 @@ export const useChangeNetwork = () => {
 
   const onChangeNetwork = async () => {
     const onSuccess = () => {
-      setInvalidChain(false);
       setLoading(false);
-      initLib({ config, provider: _provider, account, storeOverride });
     };
     const onError = () => {
       setLoading(false);
@@ -391,9 +328,9 @@ export const useCustomActions = () => {
 };
 
 export const useCancelOrder = () => {
-  const lib = useTwapStore((state) => state.lib);
-  const { refetch } = useOrdersHistoryQuery();
-  const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
+  const { refetch } = query.useOrdersHistory();
+  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
+  const lib = useTwapContext().lib;
   return useMutation(
     async (orderId: number) => {
       analytics.onCancelOrderClick(orderId);
@@ -440,320 +377,49 @@ export const useLoadingState = () => {
 };
 
 export const useSrcUsd = () => {
-  const { value, lib } = useTwapStore((store) => ({
-    value: store.srcUsd || zero,
-    lib: store.lib,
+  const { srcToken } = useTwapStore((store) => ({
+    srcToken: store.srcToken,
   }));
 
-  return {
-    value,
-    isLoading: value.isZero() && !!lib,
-  };
+  return query.usePriceUSD(srcToken?.address);
 };
 
 export const useDstUsd = () => {
-  const { value, lib } = useTwapStore((store) => ({
-    value: store.dstUsd || zero,
-    lib: store.lib,
+  const { dstToken } = useTwapStore((store) => ({
+    dstToken: store.dstToken,
   }));
-  return {
-    value,
-    isLoading: value.isZero() && !!lib,
-  };
+
+  return query.usePriceUSD(dstToken?.address);
 };
 
 export const useSrcBalance = () => {
   const srcToken = useTwapStore((store) => store.srcToken);
-  return useBalanceQuery(srcToken);
+  return query.useBalance(srcToken);
 };
 
 export const useDstBalance = () => {
   const dstToken = useTwapStore((store) => store.dstToken);
-  return useBalanceQuery(dstToken);
-};
-
-/**
- * Queries
- */
-
-export const useHasAllowanceQuery = () => {
-  const { lib, amount, srcToken } = useTwapStore((state) => ({
-    lib: state.lib,
-    amount: state.getSrcAmount(),
-    srcToken: state.srcToken,
-  }));
-  const query = useQuery(
-    [QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, amount.toString()],
-    async () => {
-      const result = await lib!.hasAllowance(srcToken!, amount);
-      return result;
-    },
-    {
-      enabled: !!lib && !!srcToken && amount.gt(0),
-      staleTime: STALE_ALLOWANCE,
-      refetchOnWindowFocus: true,
-    }
-  );
-  return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
-};
-
-export const usePriceUSD = (address?: string, onSuccess?: (value: BN, isLoading: boolean) => void) => {
-  const context = useTwapContext();
-
-  const lib = useTwapStore((state) => state.lib);
-  const _address = address && isNativeAddress(address) ? lib?.config.wToken.address : address;
-
-  const usd = context.usePriceUSD?.(_address);
-
-  const [priceUsdPointer, setPriceUsdPointer] = useState(0);
-
-  useEffect(() => {
-    if (context.priceUsd) {
-      setPriceUsdPointer((prev) => prev + 1);
-    }
-  }, [context.priceUsd, setPriceUsdPointer]);
-
-  const query = useQuery(
-    [QueryKeys.GET_USD_VALUE, _address, priceUsdPointer],
-    async () => {
-      const res = await context.priceUsd!(_address!);
-      return new BN(res);
-    },
-    {
-      enabled: !!lib && !!_address && !!context.priceUsd,
-      refetchInterval: REFETCH_USD,
-    }
-  );
-  const value = new BN(query.data || usd || 0).toString();
-  const isLoading = context.priceUsd ? query.isLoading && query.fetchStatus !== "idle" : !usd;
-  useEffect(() => {
-    onSuccess?.(BN(value), isLoading);
-  }, [value, _address, isLoading, onSuccess]);
-
-  return {
-    value: new BN(value),
-    isLoading,
-  };
-};
-
-export const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => void, staleTime?: number) => {
-  const lib = useTwapStore((state) => state.lib);
-  const key = [QueryKeys.GET_BALANCE, lib?.maker, token?.address];
-
-  const address = useRef("");
-  const client = useQueryClient();
-
-  const query = useQuery(
-    key,
-    () => {
-      if (address.current !== token?.address) {
-        onSuccess?.(client.getQueryData(key) || BN(0));
-        address.current = token?.address || "";
-      }
-      return lib!.makerBalance(token!);
-    },
-    {
-      enabled: !!lib && !!token,
-      onSuccess,
-      refetchInterval: REFETCH_BALANCE,
-      staleTime,
-    }
-  );
-  return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
-};
-
-const useGasPriceQuery = () => {
-  const { maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
-  const lib = useTwapStore((state) => state.lib);
-  const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(), {
-    enabled: !!lib,
-    refetchInterval: REFETCH_GAS_PRICE,
-  });
-
-  const priorityFeePerGas = BN.max(data?.fast.tip || 0, contextTip || 0);
-  const maxFeePerGas = BN.max(data?.fast.max || 0, contextMax || 0, priorityFeePerGas);
-
-  return {
-    isLoading,
-    maxFeePerGas,
-    priorityFeePerGas,
-  };
-};
-
-const useTokenList = () => {
-  const tokens = useTwapContext().tokenList || [];
-  const lib = useTwapStore((store) => store.lib);
-
-  const tokensLength = _.size(tokens);
-
-  return useMemo(() => {
-    if (!lib || !tokensLength) return [];
-    if (!tokens.find((it: TokenData) => lib.isNativeToken(it))) {
-      tokens.push(lib.config.nativeToken);
-    }
-    if (!tokens.find((it: TokenData) => lib.isWrappedToken(it))) {
-      tokens.push(lib.config.wToken);
-    }
-    return tokens;
-  }, [lib, tokensLength]);
-};
-
-export const useOrdersHistoryQuery = () => {
-  const tokenList = useTokenList();
-  const { lib, updateState, showConfirmation, srcToken } = useTwapStore((state) => ({
-    lib: state.lib,
-    updateState: state.updateState,
-    showConfirmation: state.showConfirmation,
-    srcToken: state.srcToken,
-  }));
-  const { error, data } = useFeeOnTransfer(srcToken?.address);
-  const QUERY_KEY = [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId];
-
-  const query = useQuery<OrdersData>(
-    QUERY_KEY,
-    async ({ signal }) => {
-      const isTheGrapth = supportsTheGraphHistory(lib?.config.chainId);
-      let fills = {} as any;
-      let orders = [] as any;
-
-      if (isTheGrapth) {
-        [orders, fills] = await Promise.all([lib!.getAllOrders(), getOrderFills(lib!.maker, lib!.config.chainId, signal)]);
-      } else {
-        orders = await lib!.getAllOrders();
-      }
-
-      const parsedOrders = _.map(orders, (o): ParsedOrder => {
-        const dstAmount = fills?.[o.id]?.dstAmountOut;
-        const srcFilled = fills?.[o.id]?.srcAmountIn;
-        const dollarValueIn = fills?.[o.id]?.dollarValueIn;
-        const dollarValueOut = fills?.[o.id]?.dollarValueOut;
-
-        const srcAmountIn = o.ask.srcAmount;
-        const bscProgress =
-          !srcFilled || !srcAmountIn
-            ? 0
-            : BN(srcFilled || "0")
-                .dividedBy(srcAmountIn || "0")
-                .toNumber();
-        const _progress = isTheGrapth ? bscProgress : lib!.orderProgress(o);
-        const progress = !_progress ? 0 : _progress < 0.99 ? _progress * 100 : 100;
-        const status = () => {
-          if (progress === 100) return Status.Completed;
-          if (isTheGrapth) {
-            // Temporary fix to show open order until the graph is synced.
-            if ((o.status === 2 && progress < 100) || o.status > Date.now() / 1000) return Status.Open;
-          }
-          return lib!.status(o);
-        };
-
-        const dstToken = tokenList.find((t) => eqIgnoreCase(o.ask.dstToken, t.address));
-        return {
-          order: o,
-          ui: {
-            totalChunks: o.ask.srcAmount.div(o.ask.srcBidAmount).integerValue(BN.ROUND_CEIL).toNumber(),
-            status: status(),
-            srcToken: tokenList.find((t) => eqIgnoreCase(o.ask.srcToken, t.address)),
-            dstToken,
-            dstAmount,
-            progress,
-            srcFilledAmount: srcFilled,
-            dollarValueIn,
-            dollarValueOut,
-          },
-        };
-      }).filter((o) => o.ui.srcToken && o.ui.dstToken);
-      updateState({ waitingForOrdersUpdate: false });
-      return _.chain(_.compact(parsedOrders))
-        .orderBy((o: ParsedOrder) => o.order.time, "desc")
-        .groupBy((o: ParsedOrder) => o.ui.status)
-        .value();
-    },
-    {
-      enabled: !!lib && _.size(tokenList) > 0 && !showConfirmation,
-      refetchInterval: REFETCH_ORDER_HISTORY,
-      onError: (error: any) => console.log(error),
-      refetchOnWindowFocus: true,
-      retry: 5,
-      staleTime: Infinity,
-    }
-  );
-  return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };
+  return query.useBalance(dstToken);
 };
 
 export const useSetTokensFromDapp = () => {
-  const context = useTwapContext();
-  const srcTokenAddressOrSymbol = context.srcToken;
-  const dstTokenAddressOrSymbol = context.dstToken;
+  const { srcToken, dstToken, isWrongChain, parsedTokens } = useTwapContext();
 
   const { setSrcToken, setDstToken } = useTwapStore((state) => ({
     setSrcToken: state.setSrcToken,
     setDstToken: state.setDstToken,
   }));
-  const tokensList = useTokenList();
-  const tokensReady = _.size(tokensList) > 0;
-  const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
 
   return useCallback(() => {
-    if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
+    if (isWrongChain || isWrongChain == null) return;
 
-    if (srcTokenAddressOrSymbol) {
-      setSrcToken(getTokenFromTokensList(tokensList, srcTokenAddressOrSymbol));
+    if (srcToken) {
+      setSrcToken(getTokenFromTokensList(parsedTokens, srcToken));
     }
-    if (dstTokenAddressOrSymbol) {
-      setDstToken(getTokenFromTokensList(tokensList, dstTokenAddressOrSymbol));
+    if (dstToken) {
+      setDstToken(getTokenFromTokensList(parsedTokens, dstToken));
     }
-  }, [srcTokenAddressOrSymbol, dstTokenAddressOrSymbol, tokensReady, wrongNetwork]);
-};
-
-export const useParseTokens = (dappTokens: any, parseToken?: (rawToken: any) => TokenData | undefined): TokenData[] => {
-  const listLength = _.size(dappTokens);
-
-  const parse = parseToken ? parseToken : (t: any) => t;
-
-  return useMemo(() => _.compact(_.map(dappTokens, parse)), [listLength]);
-};
-
-export const useOrderPastEvents = (order?: ParsedOrder, enabled?: boolean) => {
-  const lib = useTwapStore((store) => store.lib);
-  const [haveValue, setHaveValue] = useState(false);
-
-  const _enabled = haveValue ? true : !!enabled;
-  const disableEvents = supportsTheGraphHistory(lib?.config.chainId);
-
-  return useQuery(
-    ["useOrderPastEvents", order?.order.id, lib?.maker, order?.ui.progress],
-    async () => {
-      const orderEndDate = Math.min(order!.order.ask.deadline, (await block()).timestamp);
-      const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order!.order.time * 1000), findBlock(orderEndDate * 1000)]);
-      const events = await getPastEvents({
-        contract: lib!.twap,
-        eventName: "OrderFilled",
-        filter: {
-          maker: lib!.maker,
-          id: order!.order.id,
-        },
-        fromBlock: orderStartBlock.number,
-        toBlock: orderEndBlock.number,
-        // maxDistanceBlocks: 2_000,
-      });
-
-      const dstAmountOut = _.reduce(
-        events,
-        (sum, event) => {
-          return sum.plus(event.returnValues.dstAmountOut);
-        },
-        BN(0)
-      );
-
-      return dstAmountOut;
-    },
-    {
-      enabled: !!lib && !!_enabled && !!order && !disableEvents,
-      retry: 5,
-      staleTime: Infinity,
-      onSuccess: () => setHaveValue(true),
-    }
-  );
+  }, [srcToken, dstToken, isWrongChain, parsedTokens, setSrcToken, setDstToken]);
 };
 
 export const useFormatNumber = ({
@@ -769,36 +435,16 @@ export const useFormatNumber = ({
   suffix?: string;
   disableDynamicDecimals?: boolean;
 }) => {
-  const decimals = useMemo(() => {
-    if (!value) return 0;
-    const [, decimal] = value.toString().split(".");
-    if (!decimal) return 0;
-    const arr = decimal.split("");
-    let count = 0;
-
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i] === "0") {
-        count++;
-      } else {
-        break;
-      }
-    }
-
-    return !count ? decimalScale : count + decimalScale;
-  }, [value, decimalScale]);
-
   const isBiggerThan1 = useMemo(() => {
     return BN(value || "0").gt(1);
   }, [value]);
-
-  const _disableDynamicDecimals = disableDynamicDecimals || isBiggerThan1;
 
   const result = useNumericFormat({
     allowLeadingZeros: true,
     thousandSeparator: ",",
     displayType: "text",
     value: value || "",
-    decimalScale: _disableDynamicDecimals ? decimalScale : decimals,
+    decimalScale: 18,
     prefix,
     suffix,
   });
@@ -806,29 +452,73 @@ export const useFormatNumber = ({
   return result.value?.toString();
 };
 
+export const useFormatNumberV2 = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
+  const _value = useFormatDecimals(value, decimalScale);
+
+  const result = useNumericFormat({
+    allowLeadingZeros: true,
+    thousandSeparator: ",",
+    displayType: "text",
+    value: _value || "",
+    decimalScale: 18,
+    prefix,
+    suffix,
+  });
+
+  return result.value?.toString();
+};
 export const useSrcAmountNotZero = () => {
   const value = useTwapStore((store) => store.getSrcAmount());
 
   return value.gt(0);
 };
 
-const useTokenSelect = (parseTokenProps?: (token: any) => any) => {
-  const { onSrcTokenSelected, onDstTokenSelected, parseToken } = useTwapContext();
+export const useTokenSelect = (parsedTokens?: TokenData[]) => {
+  const { onSrcTokenSelected, onDstTokenSelected, parsedTokens: _parsedTokens } = useTwapContext();
+  const context = useTwapContext();
+
+  const switchTokens = useSwitchTokens();
+  const { setSrcToken, setDstToken, dstToken, srcToken } = useTwapStore((store) => ({
+    setSrcToken: store.setSrcToken,
+    setDstToken: store.setDstToken,
+    srcToken: store.srcToken,
+    dstToken: store.dstToken,
+  }));
+
+  const tokens = parsedTokens || _parsedTokens;
+
   return useCallback(
     ({ isSrc, token }: { isSrc: boolean; token: any }) => {
-      const _parsedToken = parseToken || parseTokenProps;
-      const parsedToken = _parsedToken ? _parsedToken(token) : token;
-      if (isSrc) {
+      const parsedToken = _.find(tokens, (t) => eqIgnoreCase(t.address, token.address) || t.symbol.toLowerCase() === token.symbol.toLowerCase());
+
+      if (!parsedToken) return;
+
+      const onSrc = () => {
         analytics.onSrcTokenClick(parsedToken?.symbol);
-        useTwapStore.getState().setSrcToken(parsedToken);
+        setSrcToken(parsedToken);
         onSrcTokenSelected?.(token);
-      } else {
+      };
+
+      const onDst = () => {
         analytics.onDstTokenClick(parsedToken?.symbol);
-        useTwapStore.getState().setDstToken(parsedToken);
+        setDstToken(parsedToken);
         onDstTokenSelected?.(token);
+      };
+      if ((srcToken && isSrc && eqIgnoreCase(srcToken?.address, token.address)) || (dstToken && !isSrc && eqIgnoreCase(dstToken?.address, token.address))) {
+        return;
+      }
+      if ((srcToken && !isSrc && eqIgnoreCase(srcToken?.address, token.address)) || (dstToken && isSrc && eqIgnoreCase(dstToken?.address, token.address))) {
+        switchTokens();
+        return;
+      }
+
+      if (isSrc) {
+        onSrc();
+      } else {
+        onDst();
       }
     },
-    [onSrcTokenSelected, onDstTokenSelected, parseToken, parseTokenProps]
+    [onSrcTokenSelected, onDstTokenSelected, tokens, setSrcToken, setDstToken, srcToken, dstToken, switchTokens]
   );
 };
 
@@ -866,7 +556,7 @@ export const useSwitchTokens = () => {
 };
 
 export const useOrdersTabs = () => {
-  const { data: orders } = useOrdersHistoryQuery();
+  const { data: orders } = query.useOrdersHistory();
 
   const _orders = orders || {};
 
@@ -887,28 +577,6 @@ export const useOrdersTabs = () => {
 
     return _.reduce(mapped, (acc, it) => ({ ...acc, ...it }), {});
   }, [orders]);
-};
-
-export const useSelectTokenCallback = (parseTokenProps?: (token: any) => any) => {
-  const srcTokenAddress = useTwapStore((s) => s.srcToken)?.address;
-  const dstTokenAddress = useTwapStore((s) => s.dstToken)?.address;
-  const { parseToken } = useTwapContext();
-
-  const onTokenSelect = useTokenSelect(parseTokenProps);
-
-  const switchTokens = useSwitchTokens();
-  return useCallback(
-    (args: { isSrc: boolean; token: any }) => {
-      const _parseToken = parseToken || parseTokenProps;
-      const parsedToken = _parseToken ? _parseToken(args.token) : args.token;
-      if (eqIgnoreCase(parsedToken?.address || "", srcTokenAddress || "") || eqIgnoreCase(parsedToken?.address || "", dstTokenAddress || "")) {
-        switchTokens();
-        return;
-      }
-      onTokenSelect(args);
-    },
-    [srcTokenAddress, dstTokenAddress, switchTokens, parseToken, onTokenSelect, parseTokenProps]
-  );
 };
 
 export const useDappRawSelectedTokens = () => {
@@ -932,138 +600,240 @@ export const useDappRawSelectedTokens = () => {
   };
 };
 
-export const useSubmitButton = (isMain?: boolean, _translations?: Translations) => {
-  const translations = useTwapContext()?.translations || _translations;
-  const { maker, shouldWrap, shouldUnwrap, wrongNetwork, disclaimerAccepted, setShowConfirmation, srcToken, showConfirmation, createOrderLoading, srcAmount, srcUsd, dstUsd } =
-    useTwapStore((store) => ({
-      maker: store.lib?.maker,
-      shouldWrap: store.shouldWrap(),
-      shouldUnwrap: store.shouldUnwrap(),
-      wrongNetwork: store.wrongNetwork,
-      disclaimerAccepted: store.disclaimerAccepted,
-      setShowConfirmation: store.setShowConfirmation,
-      showConfirmation: store.showConfirmation,
-      createOrderLoading: store.loading,
-      srcAmount: store.getSrcAmount().toString(),
-      srcUsd: store.srcUsd?.toString(),
-      dstUsd: store.dstUsd?.toString(),
-      srcToken: store.srcToken,
-    }));
-  const reset = useResetStore();
-  const outAmountLoading = useOutAmount().isLoading;
-  const { mutate: approve, isLoading: approveLoading } = useApproveToken();
-  const { mutate: createOrder } = useCreateOrder(false, reset);
-  const allowance = useHasAllowanceQuery();
-  const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
-  const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
-  const connect = useTwapContext()?.connect;
-  const wizardStore = useWizardStore();
-  const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
-  const warning = useFillWarning();
-  const noLiquidity = useNoLiquidity();
+export const useOneWaySubmit = () => {
+  const { srcToken, swapState, updateState, swapStep } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    swapState: s.swapState,
+    updateState: s.updateState,
+    swapStep: s.swapStep,
+  }));
+  const { refetch: refetchAllowance } = query.useAllowance();
+  const { mutateAsync: approve } = useApproveToken();
+  const { lib, minNativeTokenBalance } = useTwapContext();
+  const reset = useReset()
+  const { refetch: refetchNativeBalance } = query.useMinNativeTokenBalance(minNativeTokenBalance);
 
-  if (wrongNetwork)
-    return {
-      text: translations.switchNetwork,
-      onClick: changeNetwork,
-      loading: changeNetworkLoading,
-      disabled: changeNetworkLoading,
-    };
-  if (!maker)
-    return {
-      text: translations.connect,
-      onClick: connect ? connect : undefined,
-      loading: false,
-      disabled: false,
-    };
+  const shouldWrap = useShouldWrap();
+  const { mutateAsync: wrapToken } = useWrapToken();
+  const { mutateAsync: createOrder } = useCreateOrder();
+  const wToken = lib?.config.wToken;
+  const nativeSymbol = lib?.config.nativeToken.symbol;
+  const mutate = useMutation(
+    async () => {
+      updateState({ swapState: "loading" });
 
-  if (!srcAmount || BN(srcAmount || "0").isZero()) {
-    return {
-      text: translations.enterAmount,
-      disabled: true,
-    };
-  }
-
-  if (outAmountLoading || BN(srcUsd || "0").isZero() || BN(dstUsd || "0").isZero() || allowance.isLoading) {
-    return { text: translations.outAmountLoading, onClick: undefined, disabled: true };
-  }
-
-  if (noLiquidity) {
-    return {
-      text: translations.noLiquidity,
-      disabled: true,
-      loading: false,
-    };
-  }
-
-  if (warning)
-    return {
-      text: warning,
-      onClick: undefined,
-      disabled: true,
-      loading: false,
-    };
-  if (shouldUnwrap)
-    return {
-      text: translations.unwrap,
-      onClick: unwrap,
-      loading: unwrapLoading,
-      disabled: unwrapLoading,
-    };
-  if (shouldWrap)
-    return {
-      text: translations.wrap,
-      onClick: wrap,
-      loading: wrapLoading,
-      disabled: wrapLoading,
-    };
-  if (createOrderLoading) {
-    return {
-      text: translations.confirmOrder,
-      onClick: () => {
-        if (!showConfirmation) {
-          setShowConfirmation(true);
-        } else {
-          wizardStore.setOpen(true);
+      if (minNativeTokenBalance) {
+        const hasMinNativeTokenBalance = await refetchNativeBalance();
+        if (!hasMinNativeTokenBalance) {
+          throw new Error(`Insufficient ${nativeSymbol} balance, you need at least ${minNativeTokenBalance}${nativeSymbol} to cover the transaction fees.`);
         }
-        analytics.onOpenConfirmationModal();
-      },
-      loading: true,
-      disabled: false,
-    };
-  }
+      }
 
-  if (allowance.data === false)
-    return {
-      text: translations.approve,
-      onClick: approve,
-      loading: approveLoading,
-      disabled: approveLoading,
-    };
-  if (showConfirmation)
-    return {
-      text: translations.confirmOrder,
-      onClick: createOrder,
-      loading: createOrderLoading,
-      disabled: isMain ? true : !disclaimerAccepted || createOrderLoading,
-    };
-  return {
-    text: translations.placeOrder,
-    onClick: () => {
-      setShowConfirmation(true);
-      analytics.onOpenConfirmationModal();
+      let token = srcToken;
+
+      if (shouldWrap) {
+        await wrapToken();
+        token = wToken;
+      }
+      const hasAllowance = await refetchAllowance();
+      
+      if (!hasAllowance.data) {
+        await approve(token);
+        const res = await refetchAllowance();
+        if (!res.data) {
+          throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
+        }
+      }
+      return createOrder();
     },
-    loading: false,
-    disabled: false,
+    {
+      onError(error, variables, context) {
+        if(isTxRejected(error)) {
+          updateState({ swapState: undefined });
+        }else{
+          updateState({ swapState: "failed" });
+        }
+       
+      },
+      onSuccess(data, variables, context) {
+        updateState({ swapState: "success" });
+        reset();
+      },
+    }
+  );
+
+  const error = !mutate.error ? undefined : (mutate.error as any).message || "Failed to create order";
+
+  return {
+    ...mutate,
+    swapState,
+    error,
+    swapStep,
   };
 };
 
-export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
-  const lib = useTwapStore((s) => s.lib);
-  const { value: srcUsd = zero } = usePriceUSD(o?.order.ask.srcToken);
-  const { value: dstUsd = zero } = usePriceUSD(o?.order.ask.dstToken);
+export const useSwapConfirmationModal = (props?: { closeDalay?: number }) => {
+  const closeDalay = props?.closeDalay || 0;
+  const { swapState, updateState, showConfirmation } = useTwapStore((s) => ({
+    swapState: s.swapState,
+    updateState: s.updateState,
+    showConfirmation: s.showConfirmation,
+  }));
+  const reset = useReset();
 
-  const { data: dstAmountOutFromEvents } = useOrderPastEvents(o, expanded);
+  const onClose = useCallback(() => {
+    updateState({ showConfirmation: false });
+    if (swapState === "success") {
+      setTimeout(() => {
+        reset();
+      }, closeDalay);
+    }
+    if (swapState === "failed") {
+      setTimeout(() => {
+        updateState({ swapState: undefined });
+      }, closeDalay);
+    }
+  }, [reset, swapState]);
+
+  const onOpen = useCallback(() => {
+    updateState({ showConfirmation: true });
+  }, [updateState]);
+
+  const title = useMemo(() => {
+    if (!swapState) {
+      return "Review swap";
+    }
+  }, [swapState]);
+
+  return {
+    onClose,
+    onOpen,
+    isOpen: showConfirmation,
+    title,
+    swapState,
+  };
+};
+
+export const useConfirmationButton = () => {
+  const { translations, lib, isWrongChain, connect } = useTwapContext();
+  const { createOrderLoading, srcAmount, srcToken, dstToken } = useTwapStore((s) => ({
+    createOrderLoading: s.swapState === "loading",
+    srcAmount: s.getSrcAmount().toString(),
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+  }));
+  const { onOpen } = useSwapConfirmationModal();
+  const outAmountLoading = useOutAmount().isLoading;
+  const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
+  const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
+  const noLiquidity = useNoLiquidity();
+  const shouldUnwrap = useShouldUnwrap();
+  const srcUsd = useSrcUsd().value;
+  const dstUsd = useDstUsd().value;
+  const nativeSymbol = lib?.config.nativeToken.symbol;
+  const usdLoading = useMemo(() => BN(srcUsd || "0").isZero() || BN(dstUsd || "0").isZero(), [srcUsd.toString(), dstUsd.toString()]);
+  const { isLoading: srcBalanceLoading } = useSrcBalance();
+  const warning = useSwapWarning();
+  const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);
+  const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(dstToken?.address);
+
+  const maker = lib?.maker;
+
+  return useMemo(() => {
+    if (isWrongChain)
+      return {
+        text: translations.switchNetwork,
+        onClick: changeNetwork,
+        loading: changeNetworkLoading,
+        disabled: changeNetworkLoading,
+      };
+    if (!maker)
+      return {
+        text: translations.connect,
+        onClick: connect ? connect : undefined,
+        loading: false,
+        disabled: false,
+      };
+
+    if (warning.invalidTokens)
+      return {
+        text: warning.invalidTokens,
+        onClick: undefined,
+        disabled: true,
+        loading: false,
+      };
+
+    if (warning.zeroSrcAmount)
+      return {
+        text: warning.zeroSrcAmount,
+        onClick: undefined,
+        disabled: true,
+        loading: false,
+      };
+
+    if (outAmountLoading || usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading) {
+      return { text: undefined, onClick: undefined, loading: true };
+    }
+
+    if (noLiquidity) {
+      return {
+        text: translations.noLiquidity,
+        disabled: true,
+        loading: false,
+      };
+    }
+
+    if (warning.warning)
+      return {
+        text: warning.balance || translations.placeOrder,
+        onClick: undefined,
+        disabled: true,
+        loading: false,
+      };
+    if (shouldUnwrap)
+      return {
+        text: translations.unwrap,
+        onClick: unwrap,
+        loading: unwrapLoading,
+        disabled: unwrapLoading,
+      };
+
+    return {
+      text: createOrderLoading ? translations.placeOrder : translations.placeOrder,
+      onClick: onOpen,
+      loading: createOrderLoading,
+      disabled: false,
+    };
+  }, [
+    createOrderLoading,
+    srcAmount,
+    outAmountLoading,
+    usdLoading,
+    noLiquidity,
+    shouldUnwrap,
+    unwrap,
+    unwrapLoading,
+    onOpen,
+    translations,
+    nativeSymbol,
+    changeNetwork,
+    changeNetworkLoading,
+    connect,
+    maker,
+    warning,
+    isWrongChain,
+    srcBalanceLoading,
+    srcTokenFeeLoading,
+    dstTokenFeeLoading,
+  ]);
+};
+
+export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
+  const lib = useTwapContext()?.lib;
+  const { value: srcUsd = zero } = query.usePriceUSD(o?.order.ask.srcToken);
+  const { value: dstUsd = zero } = query.usePriceUSD(o?.order.ask.dstToken);
+
+  const { data: dstAmountOutFromEvents } = query.useOrderPastEvents(o, expanded);
 
   return useMemo(() => {
     if (!lib || !o) return;
@@ -1108,7 +878,7 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
 };
 
 function useSubmitOrderCallback() {
-  const lib = useTwapStore((s) => s.lib);
+  const lib = useTwapContext()?.lib;
   return async (
     onTxHash: (txHash: string) => void,
     srcToken: TokenData,
@@ -1195,11 +965,12 @@ export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
 
 export const useOutAmount = () => {
   const { limitPriceUi: limitPriceV2, isLoading } = useLimitPrice();
-  const { srcAmountUi, dstToken, wrongNetwork } = useTwapStore((s) => ({
+  const { srcAmountUi, dstToken } = useTwapStore((s) => ({
     srcAmountUi: s.srcAmountUi,
     dstToken: s.dstToken,
-    wrongNetwork: s.wrongNetwork,
   }));
+
+  const wrongNetwork = useTwapContext().isWrongChain;
 
   const outAmountUi = useMemo(() => {
     if (!srcAmountUi || !limitPriceV2) return;
@@ -1249,99 +1020,19 @@ export const useLimitPrice = () => {
 export const useDstMinAmountOut = () => {
   const { limitPriceUi } = useLimitPrice();
   const srcChunkAmount = useSrcChunkAmount();
-  const { srcToken, dstToken, lib, isLimitOrder } = useTwapStore((s) => ({
+  const { srcToken, dstToken } = useTwapStore((s) => ({
     srcToken: s.srcToken,
-    lib: s.lib,
     dstToken: s.dstToken,
-    isLimitOrder: s.isLimitOrder,
   }));
-
+  const lib = useTwapContext().lib;
   return useMemo(() => {
     if (lib && srcToken && dstToken && limitPriceUi && BN(limitPriceUi || "0").gt(0)) {
-      const res = lib.dstMinAmountOut(srcToken!, dstToken!, srcChunkAmount, parsebn(limitPriceUi || "0"), !isLimitOrder).toString();
+      const res = lib.dstMinAmountOut(srcToken!, dstToken!, srcChunkAmount, parsebn(limitPriceUi || "0"), false).toString();
 
       return res;
     }
     return BN(1).toString();
-  }, [srcToken, dstToken, lib, srcChunkAmount, limitPriceUi, isLimitOrder]);
-};
-
-export const useFillWarning = () => {
-  const { translations: translation, dstAmountOut } = useTwapContext();
-  const { limitPriceUi } = useLimitPrice();
-  const dstMinAmountOut = useDstMinAmountOut();
-  const srcUsd = useSrcUsd().value.toString();
-  const srcBalance = useSrcBalance().data?.toString();
-  const maxChunksWarning = useMaxChunksWarning();
-
-  const chunkSize = useSrcChunkAmount();
-  const durationUi = useDurationUi();
-  const { fillDelayWarning, srcAmount, dstToken, srcToken, lib, isLimitOrder, fillDelayMillis } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-    srcAmount: s.getSrcAmount(),
-    isLimitOrder: s.isLimitOrder,
-    lib: s.lib,
-    fillDelayMillis: s.getFillDelayUiMillis() / 1000,
-    fillDelayWarning: s.getFillDelayWarning(),
-  }));
-
-  const deadline = useDeadline();
-
-  const maxSrcInputAmount = useMaxSrcInputAmount();
-  const { isLoading: feeOnTraferLoading, hasFeeOnTransfer } = useFeeOnTranserWarning();
-
-  const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount?.gt(maxSrcInputAmount);
-  return useMemo(() => {
-    if (!translation) return;
-    if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) return translation.selectTokens;
-    if (hasFeeOnTransfer) {
-      return translation.feeOnTranferWarning;
-    }
-    if (srcAmount.isZero()) return translation.enterAmount;
-    if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) return translation.insufficientFunds;
-    if (chunkSize.isZero()) return translation.enterTradeSize;
-    if (maxChunksWarning) return maxChunksWarning;
-    if (durationUi.amount === 0) return translation.enterMaxDuration;
-    if (isLimitOrder && BN(dstAmountOut || "").gt(0) && BN(limitPriceUi || "0").isZero()) return translation.placeOrder || "Place order";
-    const valuesValidation = lib?.validateOrderInputs(srcToken!, dstToken!, srcAmount, chunkSize, dstMinAmountOut, deadline, fillDelayMillis, srcUsd);
-
-    if (valuesValidation === OrderInputValidation.invalidTokens) {
-      return translation.selectTokens;
-    }
-
-    if (valuesValidation === OrderInputValidation.invalidSmallestSrcChunkUsd && !!lib) {
-      return translation.tradeSizeMustBeEqual.replace("{minChunkSizeUsd}", lib.config.minChunkSizeUsd.toString());
-    }
-    if (fillDelayWarning) {
-      return translation.fillDelayWarning;
-    }
-    if (feeOnTraferLoading) {
-      return translation.loading;
-    }
-  }, [
-    srcToken,
-    dstToken,
-    srcAmount,
-    srcBalance,
-    chunkSize,
-    dstMinAmountOut,
-    deadline,
-    fillDelayMillis,
-    durationUi,
-    isLimitOrder,
-    limitPriceUi,
-    translation,
-    isNativeTokenAndValueBiggerThanMax,
-    srcUsd,
-    fillDelayWarning,
-    maxSrcInputAmount,
-    lib,
-    dstAmountOut,
-    feeOnTraferLoading,
-    hasFeeOnTransfer,
-    maxChunksWarning,
-  ]);
+  }, [srcToken, dstToken, lib, srcChunkAmount, limitPriceUi]);
 };
 
 export const useAmountUi = (decimals?: number, value?: string) => {
@@ -1385,17 +1076,19 @@ export const useDstAmountUsdUi = () => {
 };
 
 export const useMaxPossibleChunks = () => {
-  const { lib, srcAmount, srcToken } = useTwapStore((s) => ({
+  const { srcAmount, srcToken } = useTwapStore((s) => ({
     srcAmount: s.getSrcAmount().toString(),
-    lib: s.lib,
     srcToken: s.srcToken,
   }));
+
+  const lib = useTwapContext().lib;
 
   const srcUsd = useSrcUsd().value.toString();
 
   return useMemo(() => {
     if (!lib || !srcToken || !srcAmount || !srcUsd) return 1;
-    return lib.maxPossibleChunks(srcToken, srcAmount, srcUsd);
+    const res = lib.maxPossibleChunks(srcToken, srcAmount, srcUsd);
+    return res > 1 ? res : 1;
   }, [srcAmount, srcToken, srcUsd]);
 };
 
@@ -1405,32 +1098,78 @@ export const useChunks = () => {
     srcToken: s.srcToken,
     customChunks: s.customChunks,
   }));
+  const { isLimitOrder } = useTwapContext();
   const maxPossibleChunks = useMaxPossibleChunks();
-  const srcAmountUsd = useSrcAmountUsdUi();
 
   return useMemo(() => {
+    if (isLimitOrder) return 1;
     if (!srcUsd || !srcToken) return 1;
     if (typeof customChunks === "number") return customChunks;
-    return Math.min(
-      maxPossibleChunks,
-      BN(srcAmountUsd || "0")
-        .idiv(SUGGEST_CHUNK_VALUE)
-        .toNumber() || 1
-    );
-  }, [srcUsd, srcToken, customChunks, maxPossibleChunks, srcAmountUsd]);
+    return maxPossibleChunks;
+  }, [srcUsd, srcToken, customChunks, maxPossibleChunks, isLimitOrder]);
 };
 
-export const useMaxChunksWarning = () => {
-  const maxPossibleChunks = useMaxPossibleChunks();
-  const translations = useTwapContext().translations;
+export const useSwapWarning = () => {
+  const { translations, lib } = useTwapContext();
   const chunks = useChunks();
+  const singleChunksUsd = useSrcChunkAmountUsdUi();
+  const { srcAmount, srcToken, dstToken } = useTwapStore((s) => ({
+    srcAmount: s.getSrcAmount(),
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+  }));
+  const { data: srcBalance } = useSrcBalance();
+  const maxSrcInputAmount = useMaxSrcInputAmount();
+  const fillDelayMillis = useFillDelayMillis();
 
-  const warning = useMemo(() => {
-    if (chunks < MIN_CHUNKS) return;
-    return chunks > maxPossibleChunks ? translations.maxChunksWarning.replace("{maxChunks}", maxPossibleChunks.toString()) : undefined;
-  }, [chunks, maxPossibleChunks]);
+  const { data: srcTokenFeeOnTransfer } = query.useFeeOnTransfer(srcToken?.address);
+  const { data: dstTokenFeeOnTransfer } = query.useFeeOnTransfer(dstToken?.address);
 
-  return warning;
+  const feeOnTransferWarning = useMemo(() => {
+    if (srcTokenFeeOnTransfer?.hasFeeOnTranfer || dstTokenFeeOnTransfer?.hasFeeOnTranfer) {
+      return translations.feeOnTranferWarning;
+    }
+  }, [srcTokenFeeOnTransfer, dstTokenFeeOnTransfer, translations]);
+
+  const tradeSize = useMemo(() => {
+    if (BN(singleChunksUsd || 0).isZero()) return;
+
+    const minTradeSizeUsd = BN(lib?.config.minChunkSizeUsd || 0);
+    if (BN(chunks).isZero()) return translations.enterTradeSize;
+    if (BN(singleChunksUsd || 0).isLessThan(minTradeSizeUsd)) {
+      return translations.tradeSizeMustBeEqual.replace("{minChunkSizeUsd}", minTradeSizeUsd.toString());
+    }
+  }, [chunks, translations, singleChunksUsd, lib]);
+
+  const fillDelay = useMemo(() => {
+    if (fillDelayMillis < MIN_TRADE_INTERVAL) {
+      return translations.minTradeIntervalWarning.replace("{minTradeInterval}", MIN_TRADE_INTERVAL_FORMATTED.toString());
+    }
+  }, [fillDelayMillis, translations]);
+
+  const invalidTokens = useMemo(() => {
+    if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) {
+      return translations.selectTokens;
+    }
+  }, [srcToken, dstToken, translations]);
+
+  const zeroSrcAmount = useMemo(() => {
+    if (srcAmount.isZero()) {
+      return translations.enterAmount;
+    }
+  }, [srcAmount.toString(), translations]);
+
+  const balance = useMemo(() => {
+    const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount?.gt(maxSrcInputAmount);
+
+    if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
+      return translations.insufficientFunds;
+    }
+  }, [srcBalance?.toString(), srcAmount.toString(), maxSrcInputAmount?.toString(), translations]);
+
+  const warning = tradeSize || invalidTokens || zeroSrcAmount || balance || fillDelay || feeOnTransferWarning;
+
+  return { tradeSize, invalidTokens, zeroSrcAmount, balance, fillDelay, warning, feeOnTransferWarning };
 };
 
 export const useSetChunks = () => {
@@ -1503,9 +1242,7 @@ export const useSrcChunkAmountUsdUi = () => {
 export const useIsPartialFillWarning = () => {
   const chunks = useChunks();
 
-  const { fillDelayUiMillis } = useTwapStore((s) => ({
-    fillDelayUiMillis: s.getFillDelayUiMillis(),
-  }));
+  const fillDelayUiMillis = useFillDelayMillis();
   const durationMillis = useDurationMillis();
 
   return useMemo(() => {
@@ -1514,34 +1251,34 @@ export const useIsPartialFillWarning = () => {
 };
 
 export const useSrcChunkAmount = () => {
-  const { lib, srcAmount } = useTwapStore((s) => ({
-    lib: s.lib,
+  const { srcAmount } = useTwapStore((s) => ({
     srcAmount: s.getSrcAmount(),
   }));
   const chunks = useChunks();
-
+  const lib = useTwapContext().lib;
   return useMemo(() => {
     return chunks === 0 ? BN(0) : lib?.srcChunkAmount(srcAmount, chunks) || BN(0);
   }, [lib, srcAmount, chunks]);
 };
 
 export const useDurationUi = () => {
-  const { lib, fillDelayUiMillis, customDuration } = useTwapStore((s) => ({
-    lib: s.lib,
-    fillDelayUiMillis: s.getFillDelayUiMillis(),
-    customDuration: s.customDuration,
-  }));
+  const fillDelayUiMillis = useFillDelayMillis();
   const chunks = useChunks();
+
+  const { lib, isLimitOrder } = useTwapContext();
+
   return useMemo(() => {
     if (!lib) {
       return { resolution: TimeResolution.Minutes, amount: 0 };
     }
-    if (customDuration.amount !== undefined) return customDuration;
+    if (isLimitOrder) {
+      return { resolution: TimeResolution.Days, amount: 7 };
+    }
 
     const _millis = fillDelayUiMillis * 2 * chunks;
     const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= _millis) || TimeResolution.Minutes;
     return { resolution, amount: Number(BN(_millis / resolution).toFixed(2)) };
-  }, [lib, chunks, fillDelayUiMillis, customDuration]);
+  }, [lib, chunks, fillDelayUiMillis, isLimitOrder]);
 };
 
 export const useDurationMillis = () => {
@@ -1595,11 +1332,11 @@ export const useDeadlineUi = () => {
 };
 
 export const useSetSrcAmountUi = () => {
-  const { updateState, lib, srcToken } = useTwapStore((s) => ({
+  const { updateState, srcToken } = useTwapStore((s) => ({
     updateState: s.updateState,
-    lib: s.lib,
     srcToken: s.srcToken,
   }));
+  const lib = useTwapContext().lib;
   const srcUsd = useSrcUsd().value.toString();
 
   return useCallback(
@@ -1613,6 +1350,8 @@ export const useSetSrcAmountUi = () => {
 
       updateState({
         srcAmountUi,
+        customFillDelay: { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED },
+        customChunks: undefined,
       });
     },
     [updateState, srcToken, srcUsd, lib]
@@ -1632,24 +1371,6 @@ export function useDebounce<T>(value: T, delay?: number): T {
 
   return debouncedValue;
 }
-
-export const useSrcAmountWaitForDst = () => {
-  const srcAmount = useTwapStore((s) => s.getSrcAmount().toString());
-  const { dstAmountLoading, dstAmountOut } = useTwapContext();
-  const srcAmountRef = useRef("");
-  const [value, setValue] = useState("");
-
-  useEffect(() => {
-    srcAmountRef.current = srcAmount;
-  }, [srcAmount]);
-
-  useEffect(() => {
-    if (dstAmountLoading || BN(dstAmountOut || "0").isZero()) return;
-    setValue(srcAmountRef.current);
-  }, [dstAmountOut, dstAmountLoading]);
-
-  return value;
-};
 
 export const useNoLiquidity = () => {
   const srcAmount = useTwapStore((s) => s.getSrcAmount().toString());
@@ -1695,61 +1416,9 @@ export const useInvertPrice = (price?: string) => {
   };
 };
 
-const useFeeOnTransferContract = () => {
-  const provider = useTwapContext().provider;
-  const lib = useTwapStore((s) => s.lib);
-
-  const address = useMemo(() => {
-    const chainId = lib?.config.chainId;
-    if (!chainId) return undefined;
-    return feeOnTransferDetectorAddresses[chainId as keyof typeof feeOnTransferDetectorAddresses];
-  }, [lib?.config.chainId]);
-
-  return useMemo(() => {
-    if (!provider || !address) return;
-
-    const web3 = new Web3(provider);
-
-    return new web3.eth.Contract(FEE_ON_TRANSFER_ABI as any, address);
-  }, [provider, address]);
-};
-
-const useFeeOnTransfer = (tokenAddress?: string) => {
-  const lib = useTwapStore((s) => s.lib);
-  const contract = useFeeOnTransferContract();
-
-  return useQuery({
-    queryFn: async () => {
-      const res = await contract?.methods.validate(tokenAddress, lib?.config.wToken.address, AMOUNT_TO_BORROW).call();
-      return {
-        buyFee: res.buyFeeBps,
-        sellFee: res.sellFeeBps,
-        hasFeeOnTranfer: BN(res.buyFeeBps).gt(0) || BN(res.sellFeeBps).gt(0),
-      };
-    },
-    queryKey: ["useFeeOnTransfer", tokenAddress, lib?.config.chainId],
-    enabled: !!contract && !!tokenAddress && !!lib,
-  });
-};
-
-export const useFeeOnTranserWarning = () => {
-  const { srcToken, dstToken } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-  }));
-
-  const srcTokenFeeOnTranfer = useFeeOnTransfer(srcToken?.address);
-  const dstTokenFeeOnTranfer = useFeeOnTransfer(dstToken?.address);
-
-  return {
-    isLoading: srcTokenFeeOnTranfer.isLoading || dstTokenFeeOnTranfer.isLoading,
-    hasFeeOnTransfer: srcTokenFeeOnTranfer.data?.hasFeeOnTranfer || dstTokenFeeOnTranfer.data?.hasFeeOnTranfer,
-  };
-};
-
 export const useLimitPricePanel = () => {
   const { marketPriceUi, isLoading } = useMarketPrice();
-  const { isCustom, onChange, inverted, onResetCustom, invert, customPrice, setLimitPricePercent, limitPercent, wrongNetwork, isMarketOrder, updateState } = useTwapStore((s) => ({
+  const { isCustom, onChange, inverted, onResetCustom, invert, customPrice, setLimitPricePercent, limitPercent, updateState } = useTwapStore((s) => ({
     isCustom: s.isCustomLimitPrice,
     onChange: s.onLimitChange,
     inverted: s.isInvertedLimitPrice,
@@ -1758,10 +1427,10 @@ export const useLimitPricePanel = () => {
     customPrice: s.customLimitPrice,
     setLimitPricePercent: s.setLimitPricePercent,
     limitPercent: s.limitPricePercent,
-    wrongNetwork: s.wrongNetwork,
-    isMarketOrder: s.isMarketOrder,
     updateState: s.updateState,
   }));
+  const isMarketOrder = useIsMarketOrder();
+  const isWrongChain = useTwapContext().isWrongChain;
   const marketPrice = useFormatDecimals(useInvertedPrice(marketPriceUi, inverted));
 
   const onChangeCallback = useCallback(
@@ -1774,7 +1443,7 @@ export const useLimitPricePanel = () => {
 
   const onMarket = useCallback(() => {
     onResetCustom();
-    updateState({ isMarketOrder: true, limitPricePercent: '0' });
+    updateState({ isMarketOrder: true, limitPricePercent: "0" });
   }, [onResetCustom, updateState]);
 
   const onPercentChange = useCallback(
@@ -1814,16 +1483,153 @@ export const useLimitPricePanel = () => {
     setLimitPricePercent("0");
   }, [invert, setLimitPricePercent]);
 
-
   return {
     priceDeltaPercentage,
     onPercentChange,
     onMarket,
     onChange: onChangeCallback,
     inverted,
-    isLoading: wrongNetwork ? false : isLoading,
+    isLoading: isWrongChain ? false : isLoading,
     limitPriceUi,
     onInvert,
     isMarketOrder: !!isMarketOrder,
+  };
+};
+
+export const useShouldWrap = () => {
+  const { lib } = useTwapContext();
+  const { srcToken, dstToken } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+  }));
+
+  return useMemo(() => {
+    if (!lib || !srcToken || !dstToken) return;
+
+    return [TokensValidation.wrapAndOrder, TokensValidation.wrapOnly].includes(lib.validateTokens(srcToken, dstToken!));
+  }, [lib, srcToken, dstToken]);
+};
+
+export const useShouldUnwrap = () => {
+  const { lib } = useTwapContext();
+  const { srcToken, dstToken } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+  }));
+
+  return useMemo(() => {
+    if (!lib || !srcToken || !dstToken) return;
+
+    return lib.validateTokens(srcToken, dstToken) === TokensValidation.unwrapOnly;
+  }, [lib, srcToken, dstToken]);
+};
+
+export const useIsInvalidTokens = () => {
+  const { lib } = useTwapContext();
+  const { srcToken, dstToken } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+  }));
+  return useMemo(() => {
+    if (!lib || !srcToken || !dstToken) return;
+
+    return lib.validateTokens(srcToken, dstToken) === TokensValidation.invalid;
+  }, [lib, srcToken, dstToken]);
+};
+
+export const useMinimumDelayMinutes = () => {
+  const { lib } = useTwapContext();
+
+  return useMemo(() => (lib?.estimatedDelayBetweenChunksMillis() || 0) / 1000 / 60, [lib]);
+};
+
+const useFillDelayMillis = () => {
+  const customFillDelay = useTwapStore((s) => s.customFillDelay);
+  const { isLimitOrder } = useTwapContext();
+
+  return useMemo(() => {
+    if (isLimitOrder) {
+      return TimeResolution.Minutes * MIN_TRADE_INTERVAL_FORMATTED;
+    }
+    return customFillDelay.amount! * customFillDelay.resolution;
+  }, [customFillDelay, isLimitOrder]);
+};
+
+export const useFillDelayText = () => {
+  const fillDelayMillis = useFillDelayMillis();
+  const { translations } = useTwapContext();
+  return useMemo(() => fillDelayText(fillDelayMillis, translations), [fillDelayMillis, translations]);
+};
+
+export const useIsMarketOrder = () => {
+  const isLimitOrder = useTwapContext().isLimitOrder;
+  const isMarketOrder = useTwapStore((s) => s.isMarketOrder);
+
+  return isLimitOrder ? false : isMarketOrder;
+};
+
+export const useExplorerUrl = () => {
+  const lib = useTwapContext().lib;
+
+  return useMemo(() => getExplorerUrl(lib?.config.chainId), [lib?.config.chainId]);
+};
+
+export const useSwapSteps = () => {
+  const { data: hasAllowance, isLoading: allowanceLoading } = query.useAllowance();
+  
+  const { lib } = useTwapContext();
+  const shouldWrap = useShouldWrap();
+  const { srcToken, createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    createOrdertxHash: s.createOrdertxHash,
+    approveTxHash: s.approveTxHash,
+    wrapTxHash: s.wrapTxHash,
+    swapStep: s.swapStep,
+    createOrderSuccess: s.createOrderSuccess,
+    approveSuccess: s.approveSuccess,
+    wrapSuccess: s.wrapSuccess,
+  }));
+  console.log({swapStep});
+  
+  const steps = useMemo(() => {
+    let swapSteps: Step[] = [];
+
+    if (shouldWrap) {
+      const isPending = swapStep === "wrap" && !wrapTxHash && !wrapSuccess;
+      const isLoading = swapStep === "wrap" && wrapTxHash && !wrapSuccess;
+      swapSteps.push({
+        title: isLoading ? "Wrapping..." : `Wrap ${lib?.config.nativeToken.symbol} in wallet`,
+        Icon: RiSwapFill,
+        image: lib?.config.nativeToken.logoUrl,
+        status: wrapSuccess ? "completed" : isLoading ? "loading" : isPending ? "pending" : "disabled",
+      });
+    }
+
+    if (!hasAllowance) {
+      const isPending = swapStep === "approve" && !approveTxHash && !approveSuccess;
+      const isLoading = swapStep === "approve" && approveTxHash && !approveSuccess;
+      swapSteps.push({
+        title: isLoading ? "Approving..." : `Approve ${srcToken?.symbol} in wallet`,
+        Icon: RiSwapFill,
+        link: {
+          url: "/",
+          text: "Some text",
+        },
+        status: approveSuccess ? "completed" : isLoading ? "loading" : isPending ? "pending" : "disabled",
+      });
+    }
+    const isPending = swapStep === "createOrder" && !createOrdertxHash && !createOrderSuccess;
+    const isLoading = swapStep === "createOrder" && createOrdertxHash && !createOrderSuccess;
+    swapSteps.push({
+      title: isLoading ? "Creating order..." : "Create Order in wallet",
+      Icon: RiSwapFill,
+      status: createOrderSuccess ? "completed" : isLoading ? "loading" : isPending ? "pending" : "disabled",
+    });
+    return swapSteps;
+  }, [hasAllowance, shouldWrap, lib, srcToken, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, createOrderSuccess, approveSuccess, wrapSuccess]);
+
+  return {
+    steps,
+    isLoading: allowanceLoading,
   };
 };
