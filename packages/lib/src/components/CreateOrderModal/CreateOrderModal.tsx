@@ -1,17 +1,14 @@
 import { styled } from "@mui/material";
 import _ from "lodash";
-import { useTwapContext } from "../../context";
-import { useOneWaySubmit, useSwapSteps } from "../../hooks";
+import { useSubmitOrderButton } from "../../hooks/useSubmitOrderButton";
+import { useSubmitOrderOneFlow } from "../../hooks/useTransactions";
 import { useTwapStore } from "../../store";
 import { StyledColumnFlex } from "../../styles";
 import { Button } from "../base";
 import { Separator, TokensPreview } from "./Components";
-import { ConfirmOrder } from "./ConfirmOrder";
 import { AcceptDisclaimer, ChunksAmount, ChunkSize, Details, Expiry, LimitDetails, MinDestAmount, Price, Recipient, TradeInterval, TwapDetails } from "./Details";
-import { OrderSubmitted } from "./OrderSubmitted";
+import { OrderSubmitted, ConfirmOrder, Failed } from "./states";
 import { Steps } from "./Steps";
-import { SwapFailed } from "./SwapFailed";
-import { TokenDisplay } from "./TokenDisplay";
 
 export function Review({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) {
   return (
@@ -39,41 +36,34 @@ const StyledReview = styled(StyledColumnFlex)({
   },
 });
 
-const SubmitButton = ({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) => {
-  const t = useTwapContext().translations;
-  const { isLoading, disclaimerAccepted } = useTwapStore((s) => ({
-    isLoading: s.swapState === "loading",
-    disclaimerAccepted: s.disclaimerAccepted,
-  }));
+const SubmitButton = ({ onClick }: { onClick: () => void }) => {
+  const button = useSubmitOrderButton(onClick);
+
   return (
-    <Button onClick={onClick} loading={isLoading} disabled={!disclaimerAccepted}>
-      {t.placeOrder}
+    <Button onClick={button.onClick} loading={button.loading} disabled={button.disabled}>
+      {button.text}
     </Button>
   );
 };
 
 export const CreateOrderModal = () => {
-  const { swapState, mutate: onSubmit } = useOneWaySubmit();
-  const { createOrdertxHash } = useTwapStore((s) => ({
-    createOrdertxHash: s.createOrdertxHash,
-  }));
+  const { mutate: onSubmit, swapState, createOrdertxHash } = useSubmitOrderOneFlow();
 
   let content = <Review onSubmit={onSubmit} />;
   if (swapState === "failed") {
-    content = <SwapFailed />;
+    content = <Failed />;
   }
 
-  if (swapState === "loading" && !createOrdertxHash) {
+  if (swapState === "loading") {
     content = <SwapPending />;
   }
-  if (createOrdertxHash) {
+  if (swapState === "success") {
     content = <OrderSubmitted />;
   }
 
   return <StyledContainer>{content}</StyledContainer>;
 };
 
-CreateOrderModal.TokenDisplay = TokenDisplay;
 CreateOrderModal.Price = Price;
 CreateOrderModal.Expiry = Expiry;
 CreateOrderModal.ChunksAmount = ChunksAmount;
@@ -87,9 +77,9 @@ CreateOrderModal.SubmitButton = SubmitButton;
 CreateOrderModal.Review = Review;
 
 export const SwapPending = () => {
-  const { steps } = useSwapSteps();
+  const swapSteps = useTwapStore((s) => s.swapSteps);
 
-  if (_.size(steps) === 1) {
+  if (_.size(swapSteps) === 1) {
     return <ConfirmOrder />;
   }
 

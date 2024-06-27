@@ -1,11 +1,10 @@
-import { Box, styled } from "@mui/material";
-import React from "react";
-import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
+import { styled } from "@mui/material";
+import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
-import { useTwapContext } from "../../context";
-import { SmallTokens } from "./Components";
+import { SmallTokens } from "../Components";
+import { useOrderType } from "../hooks";
 
-export function SwapFailed() {
+export function Failed() {
   return (
     <StyledContainer>
       <Logo />
@@ -15,21 +14,20 @@ export function SwapFailed() {
   );
 }
 
-
-
 const Title = () => {
-  const { isLimitOrder } = useTwapContext();
+  const type = useOrderType();
 
-  return <StyledTitle>{isLimitOrder ? "Limit failed" : "Twap failed"}</StyledTitle>;
+  return <StyledTitle className="twap-order-modal-failed-title">{`${type} order failed`}</StyledTitle>;
 };
 
 const StyledTitle = styled(StyledText)({
-    fontSize: 24
+  fontSize: 24,
+  textTransform: "capitalize",
 });
 
 const Logo = () => {
   return (
-    <StyledLogo>
+    <StyledLogo className="twap-order-modal-failed-logo">
       <IoIosWarning />
     </StyledLogo>
   );

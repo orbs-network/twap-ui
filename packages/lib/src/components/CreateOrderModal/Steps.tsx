@@ -1,20 +1,21 @@
-import { useSwapSteps } from "../../hooks";
-import { Border } from "./Components";
 import _ from "lodash";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { FaCheck } from "@react-icons/all-files/fa/FaCheck";
 import { styled } from "@mui/material";
 import { Spinner } from "../base";
-import { Step, SwapState } from "../../types";
+import { Step, SwapStep } from "../../types";
 import { useTwapStore } from "../../store";
+import { useMemo } from "react";
+import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
+import { useTwapContext } from "../../context";
 
 export const Steps = () => {
-  const { steps } = useSwapSteps();
+  const steps = useTwapStore((s) => s.swapSteps);
   return (
     <StepsContainer>
       <StyledSteps>
-        {steps.map((step, index) => (
-          <StepComponent key={step.title} step={step} />
+        {steps?.map((step, index) => (
+          <StepComponent key={step} stepType={step} />
         ))}
       </StyledSteps>
     </StepsContainer>
@@ -34,7 +35,9 @@ interface Props {
   step: Step;
 }
 
-export function StepComponent({ step }: Props) {
+export function StepComponent({ stepType }: { stepType: SwapStep }) {
+  const step = useStep(stepType);
+  if (!step) return null;
   return (
     <StepContainer className="twap-step" selected={step.status !== "disabled" ? 1 : 0}>
       <StyledStep>
@@ -57,6 +60,60 @@ export function StepComponent({ step }: Props) {
     </StepContainer>
   );
 }
+
+const useStep = (step?: SwapStep) => {
+  const { lib } = useTwapContext();
+  const { srcToken, createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    createOrdertxHash: s.createOrdertxHash,
+    approveTxHash: s.approveTxHash,
+    wrapTxHash: s.wrapTxHash,
+    swapStep: s.swapStep,
+    createOrderSuccess: s.createOrderSuccess,
+    approveSuccess: s.approveSuccess,
+    wrapSuccess: s.wrapSuccess,
+    swapSteps: s.swapSteps,
+  }));
+
+  return useMemo((): Step | undefined => {
+    if (!step) return;
+    const isWrapPending = swapStep === "wrap" && !wrapTxHash && !wrapSuccess;
+    const isWrapLoading = swapStep === "wrap" && wrapTxHash && !wrapSuccess;
+    const isApprovePending = swapStep === "approve" && !approveTxHash && !approveSuccess;
+    const isApproveLoading = swapStep === "approve" && approveTxHash && !approveSuccess;
+    const isCreatePending = swapStep === "createOrder" && !createOrdertxHash && !createOrderSuccess;
+    const isCreateLoading = swapStep === "createOrder" && createOrdertxHash && !createOrderSuccess;
+
+    if (step === "wrap") {
+      return {
+        title: isWrapLoading ? "Wrapping..." : `Wrap ${lib?.config.nativeToken.symbol} in wallet`,
+        Icon: RiSwapFill,
+        image: lib?.config.nativeToken.logoUrl,
+        status: wrapSuccess ? "completed" : isWrapLoading ? "loading" : isWrapPending ? "pending" : "disabled",
+      };
+    }
+
+    if (step === "approve") {
+      return {
+        title: isApproveLoading ? "Approving..." : `Approve ${srcToken?.symbol} in wallet`,
+        Icon: RiSwapFill,
+        link: {
+          url: "/",
+          text: "Some text",
+        },
+        status: approveSuccess ? "completed" : isApproveLoading ? "loading" : isApprovePending ? "pending" : "disabled",
+      };
+    }
+
+    if (step === "createOrder") {
+      return {
+        title: isCreateLoading ? "Creating order..." : "Create Order in wallet",
+        Icon: RiSwapFill,
+        status: createOrderSuccess ? "completed" : isCreateLoading ? "loading" : isCreatePending ? "pending" : "disabled",
+      };
+    }
+  }, [step, lib, srcToken, createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps]);
+};
 
 const StepContainer = styled(StyledColumnFlex)<{ selected: number }>(({ selected }) => ({
   gap: 0,
@@ -87,13 +144,9 @@ const StyledTitleAndLink = styled(StyledColumnFlex)({
 });
 
 const Logo = ({ step }: { step: Step }) => {
-  const { swapState } = useTwapStore((s) => ({
-    swapState: s.swapState,
-  }));
-
   return (
     <StyledStepLogo className="twap-step-logo">
-      {swapState === "loading" ? <Spinner size={26} /> : step.image ? <img src={step.image} alt={step.title} /> : step.Icon ? <step.Icon className="twap-step-icon" /> : null}
+      {step.status === "loading" ? <Spinner size={26} /> : step.image ? <img src={step.image} alt={step.title} /> : step.Icon ? <step.Icon className="twap-step-icon" /> : null}
     </StyledStepLogo>
   );
 };
@@ -104,7 +157,6 @@ const StyledLink = styled("a")({
   lineHeight: "16px",
   textDecoration: "unset",
 });
-
 
 const StyledStep = styled(StyledRowFlex)`
   width: 100%;

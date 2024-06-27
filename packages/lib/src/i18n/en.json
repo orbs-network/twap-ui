@@ -105,5 +105,9 @@
   "recipient": "Recipient",
   "accept": "Accept",
   "disclaimer": "Disclaimer",
-  "marketOrderWarning": "Market orders are executed at the current market price and may result in a higher price than the limit price you have set."
+  "marketOrderWarning": "Market orders are executed at the current market price and may result in a higher price than the limit price you have set.",
+  "limitPriceWarningTitle": "Selling {symbol} below market price",
+  "limitPriceWarningTitleInverted": "Buying {symbol} above market price",
+  "limitPriceWarningSubtitle": "Your limit price is {percent}% lower than market. Adjust your limit price to proceed.",
+  "limitPriceWarningSubtileInverted": "Your limit price is {percent}% higher than market. Adjust your limit price to proceed."
 }

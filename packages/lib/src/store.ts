@@ -1,11 +1,10 @@
 import BN from "bignumber.js";
-import { TokenData } from "@orbs-network/twap";
 import moment from "moment";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import _ from "lodash";
 import { maxUint256 } from "@defi.org/web3-candies";
-import { State, StoreOverride, Translations } from "./types";
+import { ConfirmationDetails, State, StoreOverride, Translations } from "./types";
 import { MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "./consts";
 import { amountBN, formatDecimals, getQueryParam, setQueryParam } from "./utils";
 
@@ -42,15 +41,13 @@ const limitPriceFromQueryParams = () => {
  * TWAP Store
  */
 
-const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED };
+export const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED };
 
 const getInitialState = (queryParamsEnabled?: boolean): State => {
   const tradeIntervalQueryParam = getQueryParam(QUERY_PARAMS.TRADE_INTERVAL);
   const srcAmountUi = getQueryParam(QUERY_PARAMS.INPUT_AMOUNT);
   const chunks = getQueryParam(QUERY_PARAMS.TRADES_AMOUNT);
   return {
-    showSuccessModal: false,
-    showLoadingModal: false,
     srcToken: undefined,
     dstToken: undefined,
     srcAmountUi: !queryParamsEnabled ? "" : srcAmountUi || "",
@@ -76,8 +73,27 @@ const initialState = getInitialState();
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
-    setShowSuccessModal: (showSuccessModal: boolean) => set({ showSuccessModal }),
-    setShowLodingModal: (showLoadingModal: boolean) => set({ showLoadingModal }),
+    onModalCloseAfterTx: () => {
+      set({ swapSteps: undefined, swapState: undefined, swapStep: undefined });
+    },
+    setConfirmationDetails: (confirmationDetails: ConfirmationDetails) => {
+      if (get().confirmationDetails) {
+        set({ confirmationDetails: { ...get().confirmationDetails, ...confirmationDetails } });
+      } else {
+        set({ confirmationDetails });
+      }
+    },
+    resetAfterSwap: () =>
+      set({
+        srcAmountUi: "",
+        limitPricePercent: undefined,
+        customLimitPrice: undefined,
+        isCustomLimitPrice: false,
+        isInvertedLimitPrice: false,
+        customChunks: undefined,
+        customFillDelay: defaultCustomFillDelay,
+        isMarketOrder: false,
+      }),
     setLimitOrderPriceUi: () => {
       setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
     },
@@ -101,10 +117,6 @@ export const useTwapStore = create(
         waitingForOrdersUpdate: get().waitingForOrdersUpdate,
       });
     },
-    setSrcToken: (srcToken?: TokenData) => {
-      set({ srcToken });
-    },
-    setDstToken: (dstToken?: TokenData) => set({ dstToken }),
     getSrcAmount: () => BN.min(amountBN(get().srcToken, get().srcAmountUi), maxUint256).decimalPlaces(0),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setFillDelay: (fillDelay: Duration) => {
@@ -139,6 +151,7 @@ export const useTwapStore = create(
       set({
         isCustomLimitPrice: false,
         customLimitPrice: undefined,
+        limitPricePercent: undefined,
       });
     },
 
@@ -162,48 +175,4 @@ interface OrdersStore {
 export const useOrdersStore = create<OrdersStore>((set) => ({
   tab: 0,
   setTab: (value: number) => set({ tab: value }),
-}));
-
-export enum WizardAction {
-  CREATE_ORDER = "CREATE_ORDER",
-  CANCEL_ORDER = "CANCEL_ORDER",
-  WRAP = "WRAP",
-  APPROVE = "APPROVE",
-  UNWRAP = "UNWRAP",
-}
-
-export enum WizardActionStatus {
-  PENDING = "PENDING",
-  SUCCESS = "SUCCESS",
-  ERROR = "ERROR",
-}
-
-interface WizardStore {
-  error?: string;
-  action?: WizardAction;
-  status?: WizardActionStatus;
-  open: boolean;
-  timeout?: any;
-  setAction: (value?: WizardAction) => void;
-  setStatus: (value?: WizardActionStatus, error?: string) => void;
-  setOpen: (value: boolean) => void;
-}
-
-export const useWizardStore = create<WizardStore>((set, get) => ({
-  action: undefined,
-  status: undefined,
-  error: undefined,
-  open: false,
-  timeout: undefined,
-  setAction: (action) => {
-    set({ action, open: !!action });
-    clearTimeout(get().timeout);
-  },
-  setStatus: (status, error) => {
-    clearTimeout(get().timeout);
-    set({ status, error, open: !!status });
-  },
-  setOpen: (value) => {
-    set({ open: value });
-  },
 }));

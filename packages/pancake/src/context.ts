@@ -10,7 +10,7 @@ export interface PancakeProps extends TWAPProps {
   connector?: any;
   isMobile?: boolean;
   useTooltip?: any;
-  Button: FC<{ isLoading:boolean, disabled: boolean, children: ReactNode, onClick: () => void}>;
+  Button: FC<{ isLoading: boolean; disabled: boolean; children: ReactNode; onClick: () => void }>;
   ApproveModalContent?: any;
   SwapTransactionErrorContent?: any;
   SwapPendingModalContent?: any;

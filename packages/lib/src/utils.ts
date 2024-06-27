@@ -207,12 +207,14 @@ export const getExplorerUrl = (chainId?: number) => {
   return EXPLORER_URLS[chainId as keyof typeof EXPLORER_URLS];
 };
 
-
-export const isTxRejected = (error: any) => {  
+export const isTxRejected = (error: any) => {
   if (error?.message) {
-    return (
-      error.message?.toLowerCase()?.includes("rejected") ||
-      error.message?.toLowerCase()?.includes("denied")
-    );
+    return error.message?.toLowerCase()?.includes("rejected") || error.message?.toLowerCase()?.includes("denied");
+  }
+};
+
+export const isNativeBalanceError = (error: any) => {
+  if (error?.message) {
+    return error.message?.toLowerCase()?.includes("insufficient") || error.message?.toLowerCase()?.includes("gas required exceeds allowance");
   }
 };

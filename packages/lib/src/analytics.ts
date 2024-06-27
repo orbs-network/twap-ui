@@ -94,7 +94,6 @@ const onOpenConfirmationModal = () => {
 const sendAnalyticsEvent = (category: Category, action: string, data = {} as { [key: string]: any }) => {
   if (process.env.NODE_ENV === "development") return;
 
-
   // try {
   //   fetch("https://bi.orbs.network/putes/twap-ui", {
   //     method: "POST",

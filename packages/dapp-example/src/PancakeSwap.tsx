@@ -64,9 +64,9 @@ const parseList = (rawList?: any): TokenListItem[] => {
 const ConnectButton = () => {
   const connect = useConnectWallet();
   return (
-    <div onClick={connect}>
-      <Components.SubmitButton isMain={true} />
-    </div>
+    <Components.Base.Button onClick={connect}>
+        Connect Wallet
+      </Components.Base.Button>
   );
 };
 
@@ -131,8 +131,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
-  const [srcToken] = useState("BNB");
-  const [dstToken] = useState("CAKE");
+  const [srcToken] = useState("WBNB");
+  const [dstToken] = useState("USDC");
   const isMobile = useIsMobile();
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {

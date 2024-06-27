@@ -309,7 +309,7 @@ const TWAP = memo((props: PancakeProps) => {
         enableQueryParams={true}
         marketPrice={marketPrice.result}
         minNativeTokenBalance="0.0035"
-        isLimitOrder={props.limit}
+        isLimitPanel={props.limit}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -448,6 +448,8 @@ const LimitPrice = ({ isTwap }: { isTwap?: boolean }) => {
   const [isSrc, setIsSrc] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  const hide = hooks.useShouldWrapOrUnwrapOnly();
+
   const onSrcTokenSelected = useCallback(() => {
     setIsSrc(true);
     setIsOpen(true);
@@ -459,6 +461,8 @@ const LimitPrice = ({ isTwap }: { isTwap?: boolean }) => {
     setIsOpen(true);
     onDstSelect?.();
   }, [setIsSrc, setIsOpen, onDstSelect]);
+
+  if (hide) return null;
 
   return (
     <>
@@ -507,13 +511,17 @@ const TWAPPanel = () => {
 
 const SubmitOrderModal = () => {
   const { Modal } = useAdapterContext();
-  const { isOpen, onClose, title, swapState } = hooks.useSwapConfirmationModal();
+  const { isOpen, onClose, title } = hooks.useConfirmationModal();
+
+  const onCloseWithDelay = useCallback(() => {
+    onClose(500);
+  }, [onClose]);
 
   return (
-    <Modal open={isOpen} onClose={onClose} header={<ModalHeader title={title} onClose={onClose} />}>
+    <Modal open={isOpen} onClose={onCloseWithDelay} header={<ModalHeader title={title} onClose={onCloseWithDelay} />}>
       <StyledSwapModalContent
         style={{
-          paddingBottom: '24px',
+          paddingBottom: "24px",
           paddingTop: title ? "30px" : "0px",
         }}
       >
@@ -542,6 +550,9 @@ const TotalTradesWarningButton = ({ onClick, text }: { onClick: () => void; text
 };
 
 const TotalTrades = () => {
+  const hide = hooks.useShouldWrapOrUnwrapOnly();
+
+  if (hide) return null;
   return (
     <Card>
       <Card.Header>
@@ -562,6 +573,9 @@ const TotalTrades = () => {
 };
 
 const TradeIntervalSelect = () => {
+  const hide = hooks.useShouldWrapOrUnwrapOnly();
+
+  if (hide) return null;
   return (
     <Card>
       <Card.Header>
@@ -596,9 +610,14 @@ const SwapModal = () => {
   }));
 
   const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
-  const { mutate: createOrder, swapState, error } = hooks.useOneWaySubmit();
+  const { mutate: createOrder, error, swapState } = hooks.useSubmitOrderOneFlow();
 
-  const { onClose } = hooks.useSwapConfirmationModal({ closeDalay: 300 });
+  const { onClose } = hooks.useConfirmationModal();
+
+  const onCloseWithDelay = useCallback(() => {
+    onClose(500);
+  }, [onClose]);
+
   const wrongNetwork = useTwapContext().isWrongChain;
   let content = null;
   let title: string | undefined = undefined;
@@ -620,7 +639,7 @@ const SwapModal = () => {
   }
 
   if (swapState === "failed") {
-    content = !SwapTransactionErrorContent ? null : <SwapTransactionErrorContent openSettingModal={() => {}} onDismiss={onClose} message={error} />;
+    content = !SwapTransactionErrorContent ? null : <SwapTransactionErrorContent openSettingModal={() => {}} onDismiss={onCloseWithDelay} message={error} />;
   }
 
   if (!swapState) {
@@ -651,7 +670,7 @@ const SwapModal = () => {
   }
 
   return (
-    <Components.Base.Modal header={<ModalHeader title={title} onClose={onClose} />} title={title} onClose={onClose} open={showConfirmation}>
+    <Components.Base.Modal header={<ModalHeader title={title} onClose={onCloseWithDelay} />} title={title} onClose={onCloseWithDelay} open={showConfirmation}>
       <StyledSwapModalContent
         style={{
           paddingBottom: !swapState ? "24px" : "55px",

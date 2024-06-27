@@ -1,21 +1,32 @@
-import { useOutAmount, useFormatNumberV2, useSrcAmountUsdUi, useDstAmountUsdUi } from "../../hooks";
+import { useMemo } from "react";
+import { useTwapContext } from "../../context";
+import { useConfirmationModal, useFormatNumberV2 } from "../../hooks/hooks";
 import { useTwapStore } from "../../store";
 
 export const useTokenDisplay = (isSrc?: boolean) => {
-  const { token, srcAmount } = useTwapStore((s) => ({
-    token: isSrc ? s.srcToken : s.dstToken,
-    srcAmount: s.srcAmountUi,
-  }));
-  const outAmount = useOutAmount().outAmountUi;
+  const { outAmount, srcAmount, srcToken, dstToken, srcUsd, dstUsd } = useConfirmationModal();
+  const token = isSrc ? srcToken : dstToken;
   const amount = useFormatNumberV2({ value: isSrc ? srcAmount : outAmount, decimalScale: 4 });
-  const srcUsd = useSrcAmountUsdUi();
-  const dstUsd = useDstAmountUsdUi();
   const usd = useFormatNumberV2({ value: isSrc ? srcUsd : dstUsd, decimalScale: 2 });
   const title = isSrc ? "From" : "To";
   return {
     token,
     amount,
     usd,
-    title
+    title,
   };
+};
+
+export const useOrderType = () => {
+  const isLimitPanel = useTwapContext().isLimitPanel;
+  const isMarketOrder = useTwapStore((s) => s.isMarketOrder);
+  return useMemo(() => {
+    if (isLimitPanel) {
+      return "limit";
+    }
+    if (isMarketOrder) {
+      return "market";
+    }
+    return "twap";
+  }, [isLimitPanel, isMarketOrder]);
 };

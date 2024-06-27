@@ -77,7 +77,7 @@ export const Expiry = () => {
 export const ChunkSize = () => {
   const value = useSrcChunkAmountUi();
   const translations = useTwapContext().translations;
-  const srcToken = useTwapStore(s => s.srcToken);
+  const srcToken = useTwapStore((s) => s.srcToken);
   return (
     <DetailRow title={translations.tradeSize} tooltip={translations.confirmationTradeSizeTooltip}>
       {`${value} ${srcToken?.symbol}`}
@@ -93,13 +93,10 @@ export const MinDestAmount = () => {
   const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, dstMinAmountOut);
   const formattedValue = useFormatNumberV2({ value: dstMinAmountOutUi });
 
-  if(isMarketOrder) return null
+  if (isMarketOrder) return null;
 
   return (
-    <DetailRow
-      title={translations.minReceivedPerTrade}
-      tooltip={translations.confirmationMinDstAmountTootipLimit}
-    >
+    <DetailRow title={translations.minReceivedPerTrade} tooltip={translations.confirmationMinDstAmountTootipLimit}>
       {`${formattedValue} ${dstToken?.symbol}`}
     </DetailRow>
   );
@@ -174,15 +171,13 @@ export const LimitDetails = () => {
   );
 };
 
-export const Details = ({className = ''}:{className?: string}) => {
-  const { isLimitOrder } = useTwapContext();
+export const Details = ({ className = "" }: { className?: string }) => {
+  const { isLimitPanel } = useTwapContext();
 
-  return <StyledDetails className={`twap-order-modal-details ${className}`}>{isLimitOrder ? <LimitDetails /> : <TwapDetails />}</StyledDetails>;
+  return <StyledDetails className={`twap-order-modal-details ${className}`}>{isLimitPanel ? <LimitDetails /> : <TwapDetails />}</StyledDetails>;
 };
 
-
-const StyledDetails = styled(StyledColumnFlex)({})
-
+const StyledDetails = styled(StyledColumnFlex)({});
 
 const DetailRow = ({ title, tooltip, children, className = "" }: { title: ReactNode; tooltip?: string; children: React.ReactNode; className?: string }) => {
   return (
@@ -204,9 +199,9 @@ const StyledDetailRow = styled(StyledRowFlex)({
   justifyContent: "space-between",
 });
 const StyledDetailRowChildren = styled(StyledRowFlex)({
-  width:'auto',
+  width: "auto",
   justifyContent: "flex-end",
-  marginLeft:'auto',
+  marginLeft: "auto",
   fontSize: 14,
   "*": {
     fontSize: "inherit",

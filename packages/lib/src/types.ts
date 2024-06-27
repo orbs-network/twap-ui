@@ -111,6 +111,10 @@ export interface Translations {
   accept: string;
   disclaimer: string;
   marketOrderWarning: string;
+  limitPriceWarningTitle: string;
+  limitPriceWarningTitleInverted: string;
+  limitPriceWarningSubtitle: string;
+  limitPriceWarningSubtileInverted: string;
 }
 
 export interface BaseComponentProps {
@@ -232,7 +236,7 @@ export interface TwapLibProps extends LibProps {
   enableQueryParams?: boolean;
   marketPrice?: string;
   minNativeTokenBalance?: string;
-  isLimitOrder?: boolean;
+  isLimitPanel?: boolean;
   parsedTokens: TokenData[];
 }
 
@@ -287,10 +291,11 @@ export interface OrdersData {
 export type SwapState = "loading" | "success" | "failed";
 export type SwapStep = "createOrder" | "wrap" | "approve";
 
+export type ConfirmationDetails = { outAmount?: string; srcAmount?: string; srcUsd?: string; dstUsd?: string; srcToken?: TokenData; dstToken?: TokenData };
 export interface State {
   swapStep?: SwapStep;
+  swapSteps?: SwapStep[];
   swapState?: SwapState;
-  swapFailed?: boolean;
 
   srcToken: TokenData | undefined;
   dstToken: TokenData | undefined;
@@ -305,12 +310,10 @@ export interface State {
 
   orderCreatedTimestamp?: number;
 
-  showLoadingModal: boolean;
-  showSuccessModal: boolean;
-
   createOrdertxHash?: string;
   wrapTxHash?: string;
   approveTxHash?: string;
+  unwrapTxHash?: string;
   enableQueryParams?: boolean;
   waitingForOrdersUpdate: boolean;
   isCustomLimitPrice?: boolean;
@@ -323,6 +326,8 @@ export interface State {
   createOrderSuccess?: boolean;
   wrapSuccess?: boolean;
   approveSuccess?: boolean;
+
+  confirmationDetails?: ConfirmationDetails;
 }
 
 export type SwitchVariant = "ios" | "default";
@@ -338,7 +343,7 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
   children: ReactNode;
   style?: CSSProperties;
   disabled?: boolean;
-  onClick: (e: any) => void;
+  onClick: () => void;
   loading?: boolean;
   text?: string;
   allowClickWhileLoading?: boolean;

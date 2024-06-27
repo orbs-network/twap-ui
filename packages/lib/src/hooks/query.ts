@@ -2,16 +2,16 @@ import { block, contract, eqIgnoreCase, estimateGasPrice, findBlock, getPastEven
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_USD, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "./consts";
-import { useTwapContext } from "./context";
-import { QueryKeys } from "./enums";
-import FEE_ON_TRANSFER_ABI from "./abi/FEE_ON_TRANSFER.json";
-import { amountBN, supportsTheGraphHistory } from "./utils";
-import { useTwapStore } from "./store";
+import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_USD, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
+import { useTwapContext } from "../context";
+import { QueryKeys } from "../enums";
+import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
+import { amountBN, supportsTheGraphHistory } from "../utils";
+import { useTwapStore } from "../store";
 import { Status, TokenData } from "@orbs-network/twap";
 import _ from "lodash";
-import { getOrderFills } from "./helper";
-import { OrdersData, ParsedOrder } from "./types";
+import { getOrderFills } from "../helper";
+import { OrdersData, ParsedOrder } from "../types";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const lib = useTwapContext().lib;
@@ -40,16 +40,18 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
 
   return useQuery({
     queryFn: async () => {
-      const _contract = contract(FEE_ON_TRANSFER_ABI as any, address!);
-      if (!_contract) {
-        return null;
-      }
-      const res = await _contract?.methods.validate(tokenAddress, lib?.config.wToken.address, AMOUNT_TO_BORROW).call();
-      return {
-        buyFee: res.buyFeeBps,
-        sellFee: res.sellFeeBps,
-        hasFeeOnTranfer: BN(res.buyFeeBps).gt(0) || BN(res.sellFeeBps).gt(0),
-      };
+      try {
+        const _contract = contract(FEE_ON_TRANSFER_ABI as any, address!);
+        if (!_contract) {
+          return null;
+        }
+        const res = await _contract?.methods.validate(tokenAddress, lib?.config.wToken.address, AMOUNT_TO_BORROW).call();
+        return {
+          buyFee: res.buyFeeBps,
+          sellFee: res.sellFeeBps,
+          hasFeeOnTranfer: BN(res.buyFeeBps).gt(0) || BN(res.sellFeeBps).gt(0),
+        };
+      } catch (error) {}
     },
     queryKey: ["useFeeOnTransfer", tokenAddress, lib?.config.chainId, address],
     enabled: !!tokenAddress && !!lib && !!address,
@@ -74,25 +76,28 @@ export const useGasPrice = () => {
   };
 };
 
-export const useAllowance = () => {
+const useAllowance = () => {
   const { amount, srcToken } = useTwapStore((state) => ({
     amount: state.getSrcAmount(),
     srcToken: state.srcToken,
   }));
 
   const lib = useTwapContext().lib;
+  const wToken = lib?.config.wToken;
   const query = useQuery(
     [QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, amount.toString()],
     async () => {
-      const result = await lib!.hasAllowance(srcToken!, amount);
-      return result;
+      const isNative = srcToken && isNativeAddress(srcToken?.address);
+      return lib!.hasAllowance(isNative ? wToken! : srcToken!, amount);
     },
     {
-      enabled: !!lib && !!srcToken && amount.gt(0),
+      enabled: !!lib && !!srcToken && amount.gt(0) && !!wToken,
       staleTime: STALE_ALLOWANCE,
       refetchOnWindowFocus: true,
     }
   );
+  console.log(query.error);
+
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
@@ -290,9 +295,9 @@ export const query = {
   useFeeOnTransfer,
   useGasPrice,
   useMinNativeTokenBalance,
-  useAllowance,
   usePriceUSD,
   useBalance,
   useOrdersHistory,
   useOrderPastEvents,
+  useAllowance,
 };

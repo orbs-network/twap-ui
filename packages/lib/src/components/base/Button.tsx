@@ -6,15 +6,10 @@ import { ButtonProps } from "../../types";
 function Button(props: ButtonProps) {
   const { children, disabled = false, onClick, loading = false, className = "", allowClickWhileLoading } = props;
   const ContextButton = useTwapContext().uiPreferences.Button;
-  
-  if (ContextButton) {
-    return (
-      <ContextButton {...props}>
-        {children}
-      </ContextButton>
-    );
-  }
 
+  if (ContextButton) {
+    return <ContextButton {...props}>{children}</ContextButton>;
+  }
 
   const _disabled = useMemo(() => {
     if (disabled) {
@@ -26,7 +21,11 @@ function Button(props: ButtonProps) {
     return false;
   }, [allowClickWhileLoading, disabled, loading]);
   return (
-    <StyledContainer onClick={onClick} className={`twap-button ${loading ? "twap-button-loading" : ""} ${disabled ? "twap-button-disabled" : ""} ${className}`} disabled={_disabled}>
+    <StyledContainer
+      onClick={onClick}
+      className={`twap-button ${loading ? "twap-button-loading" : ""} ${disabled ? "twap-button-disabled" : ""} ${className}`}
+      disabled={_disabled}
+    >
       {loading && (
         <StyledLoader className="twap-button-loader">
           <CircularProgress className="twap-button-loader" />

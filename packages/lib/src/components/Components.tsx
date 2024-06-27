@@ -19,7 +19,6 @@ import {
 } from "./base";
 import { styled } from "@mui/material";
 import { useTwapContext } from "../context";
-import { AiOutlineWarning } from "@react-icons/all-files/ai/AiOutlineWarning";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 
 import {
@@ -32,7 +31,6 @@ import {
   useSrcAmountUsdUi,
   useDstAmountUsdUi,
   useChunks,
-  useSetChunks,
   useSrcChunkAmountUsdUi,
   useSrcBalance,
   useAmountUi,
@@ -44,11 +42,12 @@ import {
   useInvertPrice,
   useFormatDecimals,
   useFillDelayText,
-  useSwapWarning,
   useTokenSelect,
   useIsMarketOrder,
   useConfirmationButton,
-} from "../hooks";
+  useFeeOnTransferWarning,
+  useLowPriceWarning,
+} from "../hooks/index";
 import { useTwapStore } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, textOverflow, StyledSummaryDetails, StyledSummaryRow, StyledSummaryRowRight } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
@@ -63,15 +62,14 @@ import {
   ChunksAmountLabel,
 } from "./Labels";
 import { SwitchVariant, Translations, TWAPTokenSelectProps } from "../types";
-import { Fade, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
 import { Styles } from "..";
-import PendingTxModal from "./base/PendingTxModal";
-import SuccessTxModal from "./base/SuccessTxModal";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { amountUi, makeElipsisAddress } from "../utils";
 import BN from "bignumber.js";
+import { AiOutlineWarning } from "@react-icons/all-files/ai/AiOutlineWarning";
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -135,7 +133,6 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
 const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
   const { token } = useTwapStore((store) => ({
     token: store.dstToken,
-    srcAmount: store.srcAmountUi,
   }));
   const { outAmountUi, isLoading } = useOutAmount();
   return (
@@ -809,20 +806,9 @@ export const DstToken = () => {
   );
 };
 
-export const TxLoading = () => {
-  const { showLoadingModal, setShowLodingModal } = useTwapStore();
-
-  return <PendingTxModal open={showLoadingModal} onClose={() => setShowLodingModal(false)} />;
-};
-
-export const TxSuccess = () => {
-  const { showSuccessModal, setShowSuccessModal } = useTwapStore();
-
-  return <SuccessTxModal open={showSuccessModal} onClose={() => setShowSuccessModal(false)} />;
-};
-
 export const PanelWarning = ({ className = "" }: { className?: string }) => {
-  const { feeOnTransferWarning } = useSwapWarning();
+  const feeOnTranferWarning = useFeeOnTransferWarning();
+  const lowPriceWarning = useLowPriceWarning();
   const { translations } = useTwapContext();
   const isMarketOrder = useIsMarketOrder();
 
@@ -830,20 +816,31 @@ export const PanelWarning = ({ className = "" }: { className?: string }) => {
     return isMarketOrder ? translations?.marketOrderWarning : undefined;
   }, [translations, isMarketOrder]);
 
-  const warning = feeOnTransferWarning || marketOrderWarning;
+  const warning = feeOnTranferWarning || marketOrderWarning || lowPriceWarning;
+  const title = feeOnTranferWarning || marketOrderWarning || lowPriceWarning?.title;
+  const subtitle = lowPriceWarning?.subTitle;
 
   if (!warning) return null;
 
-  return <StyledPanelWarning text={warning} type="warning" />;
+  return (
+    <StyledPanelWarning className={`${className} twap-panel-warning`}>
+      <AiOutlineWarning />
+      <StyledText className="twap-panel-warning-title">{title}</StyledText>
+      <StyledText className="twap-panel-warning-subtitle">{subtitle}</StyledText>
+    </StyledPanelWarning>
+  );
 };
-
-const StyledPanelWarning = styled(Message)({
+const StyledPanelWarning = styled(StyledColumnFlex)({
   textAlign: "center",
   width: "100%",
+  svg: {
+    position: "relative",
+    top: 2,
+  },
 });
 
 export const LimitSwitch = () => {
-  const isLimitOrder = useTwapContext().isLimitOrder;
+  const isLimitPanel = useTwapContext().isLimitPanel;
 
   const { isMarketOrder, updateState } = useTwapStore((s) => ({
     isMarketOrder: s.isMarketOrder,
@@ -856,7 +853,7 @@ export const LimitSwitch = () => {
     });
   }, [isMarketOrder, updateState]);
 
-  if (isLimitOrder) return null;
+  if (isLimitPanel) return null;
 
   return <Switch value={!isMarketOrder} onChange={onToggle} />;
 };
@@ -866,7 +863,7 @@ export const ShowConfirmationButton = () => {
 
   return (
     <Button allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
-      {loading ? 'Loading...' : text}
+      {loading ? "Loading..." : text}
     </Button>
   );
 };

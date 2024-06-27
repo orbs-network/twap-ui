@@ -1,15 +1,14 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { TwapContextUIPreferences, TwapLibProps } from "./types";
 import { useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
-import { TokenData, TWAPLib } from "@orbs-network/twap";
+import { TWAPLib } from "@orbs-network/twap";
 import { TwapErrorWrapper } from "./ErrorHandling";
-import { Wizard } from "./components";
 import Web3 from "web3";
 import { useTwapStore } from "./store";
-import { query } from "./query";
+import { query } from "./hooks/query";
 
 analytics.onModuleLoad();
 
@@ -56,7 +55,6 @@ const WrappedTwap = (props: TwapLibProps) => {
   return (
     <TwapErrorWrapper>
       <Listener {...props} />
-      <Wizard />
       {props.children}
     </TwapErrorWrapper>
   );

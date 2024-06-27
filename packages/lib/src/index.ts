@@ -1,4 +1,4 @@
-export * as hooks from "./hooks";
+export * as hooks from "./hooks/index";
 export * as store from "./store";
 export * from "./types";
 export * as Styles from "./styles";
@@ -13,4 +13,4 @@ export * from "./components/OrdersComponents";
 export * from "./ui-helper";
 export * from "./utils";
 export { default as translations } from "./i18n/en.json";
-export * from "./query";
+export * from "./hooks/query";

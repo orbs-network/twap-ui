@@ -10,7 +10,7 @@ import { StyledOrdersLists, StyledOrdersTab, StyledOrdersTabs, StyledRowFlex } f
 import OrdersList from "../orders/OrdersList";
 import { Button } from "./base";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { query } from "../query";
+import { query } from "../hooks/query";
 
 function a11yProps(index: number) {
   return {
