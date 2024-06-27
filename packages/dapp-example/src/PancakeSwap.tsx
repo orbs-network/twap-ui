@@ -63,11 +63,7 @@ const parseList = (rawList?: any): TokenListItem[] => {
 
 const ConnectButton = () => {
   const connect = useConnectWallet();
-  return (
-    <Components.Base.Button onClick={connect}>
-        Connect Wallet
-      </Components.Base.Button>
-  );
+  return <Components.Base.Button onClick={connect}>Connect Wallet</Components.Base.Button>;
 };
 
 const useDecimals = (fromToken?: string, toToken?: string) => {

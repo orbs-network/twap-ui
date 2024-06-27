@@ -1,14 +1,15 @@
 import { Box, styled } from "@mui/material";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { useTwapStore } from "../../store";
-import { Icon, NumericInput, Switch, Tooltip } from "../base";
+import { Icon, NumericInput } from "../base";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
 import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
-import { useLimitPricePanel } from "../../hooks/hooks";
+import { useLimitPrice, useLimitPricePercentDiffFromMarket } from "../../hooks/hooks";
 import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps } from "../../types";
-import { useOnLimitPercentageClick } from "./hooks";
+import { useOnLimitPercentageClick, onCustomChange } from "./hooks";
+import { amountUiV2, formatDecimals } from "../../utils";
 
 interface Shared {
   onSrcSelect: () => void;
@@ -29,25 +30,20 @@ interface Props extends Shared {
   className?: string;
 }
 
-interface ContextProps extends Shared {
-  limitPricePanel: ReturnType<typeof useLimitPricePanel>;
-}
-
 const defaultPercent = [1, 5, 10];
 
-const Context = createContext({} as ContextProps);
+const Context = createContext({} as Shared);
 
 const useLimitPanelContext = () => useContext(Context);
 
 export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Components, styles }: Props) {
-  const limitPricePanel = useLimitPricePanel();
-  
-  if (limitPricePanel.isMarketOrder) {
+  const isMarketOrder = useTwapStore((state) => state.isMarketOrder);
+  if (isMarketOrder) {
     return <StyledText>Some text</StyledText>;
   }
 
   return (
-    <Context.Provider value={{ onSrcSelect, onDstSelect, Components, styles, limitPricePanel }}>
+    <Context.Provider value={{ onSrcSelect, onDstSelect, Components, styles }}>
       <Container className={`twap-limit-panel ${className}`}>
         <StyledRowFlex justifyContent="flex-start">
           <Title />
@@ -64,9 +60,35 @@ export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Component
 }
 
 const Input = () => {
-  const { limitPricePanel, Components } = useLimitPanelContext();
-  const { onChange, limitPriceUi, isLoading, isMarketOrder } = limitPricePanel;
+  const { Components } = useLimitPanelContext();
+  const { isMarketOrder, isInvertedLimitPrice, isCustom, customLimitPrice, dstToken } = useTwapStore((s) => ({
+    isInvertedLimitPrice: s.isInvertedLimitPrice,
+    isMarketOrder: s.isMarketOrder,
+    isCustom: s.customLimitPrice,
+    customLimitPrice: s.customLimitPrice,
+    dstToken: s.dstToken,
+  }));
+  const { isLoading, limitPrice } = useLimitPrice();  
+  
+  
+  const limitPriceUi = useMemo(() => {
+    if (isCustom) {
+      return customLimitPrice;
+    }
+    let res = amountUiV2(dstToken?.decimals, limitPrice)
+
+    if (isInvertedLimitPrice) {
+      res = BN(1)
+        .div(res || 0)
+        .toString();
+    }
+
+    return formatDecimals(res)
+  }, [customLimitPrice, isCustom, isInvertedLimitPrice, limitPrice, dstToken]);
+
+  
   const [value, setValue] = useState("");
+  const onChange = onCustomChange();
 
   useEffect(() => {
     setValue(limitPriceUi || "");
@@ -99,7 +121,7 @@ const StyledAnyPrice = styled(StyledText)({
 });
 
 const usePercent = () => {
-  const { inverted } = useLimitPanelContext().limitPricePanel;
+  const inverted = useTwapStore((s) => s.isInvertedLimitPrice);
   return useMemo(() => {
     if (inverted) {
       return defaultPercent.map((it) => -it).map((it) => it.toString());
@@ -111,7 +133,7 @@ const usePercent = () => {
 const PercentSelector = () => {
   const percent = usePercent();
   const styles = useLimitPanelContext().styles;
-  const disabled = useLimitPanelContext().limitPricePanel.isLoading;
+  const disabled = useLimitPrice().isLoading;
   return (
     <StyledPercentContainer style={{ pointerEvents: disabled ? "none" : "all", gap: styles?.percentButtonsGap || 5, opacity: disabled ? 0.8 : 1 }}>
       <ZeroButton />
@@ -123,11 +145,16 @@ const PercentSelector = () => {
 };
 
 const PercentButton = ({ percent }: { percent: string }) => {
-  const { inverted, priceDeltaPercentage, isMarketOrder } = useLimitPanelContext().limitPricePanel;
+  const { inverted, isMarketOrder } = useTwapStore((s) => ({
+    inverted: s.isInvertedLimitPrice,
+    isMarketOrder: s.isMarketOrder,
+  }));
   const Components = useLimitPanelContext().Components;
-  const onPercentageChange = useOnLimitPercentageClick()
+  const limitPricePercent = useTwapStore((s) => s.limitPricePercent);
 
-  const selected = useMemo(() => (isMarketOrder ? false : BN(priceDeltaPercentage).eq(percent)), [priceDeltaPercentage, percent, isMarketOrder]);
+  const onPercentageChange = useOnLimitPercentageClick();
+
+  const selected = useMemo(() => (isMarketOrder ? false : BN(limitPricePercent || 0).eq(percent)), [limitPricePercent, percent, isMarketOrder]);
 
   const prefix = percent === "0" ? "" : inverted ? "-" : !inverted && "+";
 
@@ -135,8 +162,8 @@ const PercentButton = ({ percent }: { percent: string }) => {
 };
 
 const ZeroButton = () => {
-  const { priceDeltaPercentage } = useLimitPanelContext().limitPricePanel;
-  const onPercentageChange = useOnLimitPercentageClick()
+  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
+  const onPercentageChange = useOnLimitPercentageClick();
 
   const Components = useLimitPanelContext().Components;
   const percent = usePercent();
@@ -148,7 +175,9 @@ const ZeroButton = () => {
 };
 
 const TokenSelect = () => {
-  const { inverted } = useLimitPanelContext().limitPricePanel;
+  const { inverted } = useTwapStore((s) => ({
+    inverted: s.isInvertedLimitPrice,
+  }));
   const Components = useLimitPanelContext().Components;
   const token = useTwapStore((s) => (inverted ? s.srcToken : s.dstToken));
   const { onDstSelect, onSrcSelect } = useLimitPanelContext();
@@ -157,7 +186,7 @@ const TokenSelect = () => {
 };
 
 const InvertPrice = () => {
-  const { onInvert } = useLimitPanelContext().limitPricePanel;
+  const onInvert = useTwapStore((s) => s.invertLimit);
 
   return (
     <StyledInvertprice onClick={onInvert}>
@@ -167,10 +196,12 @@ const InvertPrice = () => {
 };
 
 const Title = () => {
-  const { onDstSelect, onSrcSelect, limitPricePanel } = useLimitPanelContext();
+  const { onDstSelect, onSrcSelect } = useLimitPanelContext();
   const Components = useLimitPanelContext().Components;
 
-  const { inverted } = limitPricePanel;
+  const { inverted } = useTwapStore((s) => ({
+    inverted: s.isInvertedLimitPrice,
+  }));
   const token = useTwapStore((s) => (inverted ? s.dstToken : s.srcToken));
 
   return <Components.Title textLeft="When 1" textRight="is worth" token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;

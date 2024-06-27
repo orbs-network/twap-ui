@@ -33,6 +33,15 @@ export const useCreateOrder = () => {
       });
     };
 
+
+    console.log({
+      srcChunkAmount:srcChunkAmount.toString(),
+      dstMinAmountOut,
+      deadline,
+      fillDelayMillis
+    });
+    
+
     return createOrder(
       onTxHash,
       srcToken!,
@@ -171,7 +180,7 @@ export const useUnwrapToken = () => {
     if (!lib) {
       throw new Error("Lib not initialized");
     }
-    console.log({ srcAmount: srcAmount.toString() });
+
 
     await sendAndWaitForConfirmations(
       erc20<any>(lib.config.wToken.symbol, lib.config.wToken.address, lib.config.wToken.decimals, iwethabi).methods.withdraw(BN(srcAmount).toFixed(0)),
@@ -255,7 +264,7 @@ const useSwitchNativeToWrapped = () => {
     }
   }, [lib, dappTokens, onSrcTokenSelected, updateState]);
 };
-export const useSubmitOrderOneFlow = () => {
+export const useSubmitOrderFlow = () => {
   const { srcToken, swapState, updateState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, wrapSuccess, srcAmount } = useTwapStore((s) => ({
     srcToken: s.srcToken,
     swapState: s.swapState,

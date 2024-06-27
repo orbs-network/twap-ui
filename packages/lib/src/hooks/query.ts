@@ -96,7 +96,6 @@ const useAllowance = () => {
       refetchOnWindowFocus: true,
     }
   );
-  console.log(query.error);
 
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };

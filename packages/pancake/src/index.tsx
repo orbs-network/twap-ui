@@ -610,7 +610,7 @@ const SwapModal = () => {
   }));
 
   const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
-  const { mutate: createOrder, error, swapState } = hooks.useSubmitOrderOneFlow();
+  const { mutate: createOrder, error, swapState } = hooks.useSubmitOrderFlow();
 
   const { onClose } = hooks.useConfirmationModal();
 

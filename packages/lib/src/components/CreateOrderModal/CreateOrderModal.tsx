@@ -1,7 +1,7 @@
 import { styled } from "@mui/material";
 import _ from "lodash";
 import { useSubmitOrderButton } from "../../hooks/useSubmitOrderButton";
-import { useSubmitOrderOneFlow } from "../../hooks/useTransactions";
+import { useSubmitOrderFlow } from "../../hooks/useTransactions";
 import { useTwapStore } from "../../store";
 import { StyledColumnFlex } from "../../styles";
 import { Button } from "../base";
@@ -47,7 +47,7 @@ const SubmitButton = ({ onClick }: { onClick: () => void }) => {
 };
 
 export const CreateOrderModal = () => {
-  const { mutate: onSubmit, swapState, createOrdertxHash } = useSubmitOrderOneFlow();
+  const { mutate: onSubmit, swapState } = useSubmitOrderFlow();
 
   let content = <Review onSubmit={onSubmit} />;
   if (swapState === "failed") {

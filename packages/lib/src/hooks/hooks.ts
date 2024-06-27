@@ -4,7 +4,7 @@ import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { OrderUI, ParsedOrder, State, Step, SwapStep } from "../types";
+import { OrderUI, ParsedOrder, State, SwapStep } from "../types";
 import _ from "lodash";
 import { analytics } from "../analytics";
 import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zero, isNativeAddress, parsebn } from "@defi.org/web3-candies";
@@ -519,7 +519,7 @@ export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
 };
 
 export const useOutAmount = () => {
-  const { limitPriceUi: limitPriceV2, isLoading } = useLimitPrice();
+  const { limitPrice, isLoading } = useLimitPrice();
   const { srcAmountUi, dstToken } = useTwapStore((s) => ({
     srcAmountUi: s.srcAmountUi,
     dstToken: s.dstToken,
@@ -529,19 +529,18 @@ export const useOutAmount = () => {
 
   const wrongNetwork = useTwapContext().isWrongChain;
 
-  const outAmountUi = useMemo(() => {
+  const outAmount = useMemo(() => {
     if (!srcAmountUi) return;
     if (wrapOrUnwrapOnly) {
       return srcAmountUi;
     }
-    if (!limitPriceV2) return;
-    return BN(limitPriceV2).multipliedBy(srcAmountUi).toString();
-  }, [limitPriceV2, srcAmountUi, wrapOrUnwrapOnly]);
+    return !limitPrice ? undefined : BN(limitPrice).multipliedBy(srcAmountUi).toString();
+  }, [limitPrice, srcAmountUi, wrapOrUnwrapOnly]);
 
   return {
     isLoading: wrongNetwork ? false : wrapOrUnwrapOnly ? false : isLoading,
-    outAmountUi: outAmountUi || "",
-    outAmountRaw: useAmountBN(dstToken?.decimals, outAmountUi) || "",
+    outAmountUi: useAmountUi(dstToken?.decimals, outAmount) || "",
+    outAmountRaw: outAmount || "",
   };
 };
 
@@ -550,7 +549,7 @@ export const useMarketPrice = () => {
   const dstToken = useTwapStore((s) => s.dstToken);
 
   return {
-    marketPriceRaw: marketPriceRaw,
+    marketPrice: marketPriceRaw,
     marketPriceUi: useAmountUi(dstToken?.decimals, marketPriceRaw),
     isLoading: BN(marketPriceRaw || 0).isZero(),
   };
@@ -561,35 +560,34 @@ export const useFormatDecimals = (value?: string | BN | number, decimalPlaces?: 
 };
 
 export const useLimitPrice = () => {
-  const { isLoading, marketPriceRaw } = useMarketPrice();
-  const { dstToken, isCustom, customLimitPrice, inverted } = useTwapStore((s) => ({
+  const { isLoading, marketPrice } = useMarketPrice();
+  const { dstToken, isCustom, customLimitPrice, inverted, isMarketOrder } = useTwapStore((s) => ({
     dstToken: s.dstToken,
     isCustom: s.isCustomLimitPrice,
     customLimitPrice: s.customLimitPrice,
     inverted: s.isInvertedLimitPrice,
+    isMarketOrder: s.isMarketOrder,
   }));
-  const marketPrice = useMemo(() => {
-    if (inverted) {
-      return BN(1)
-        .div(marketPriceRaw || 0)
-        .toString();
-    }
-    return marketPriceRaw;
-  }, [marketPriceRaw, inverted]);
-
+  
   const limitPrice = useMemo(() => {
     if (!marketPrice) return;
-    const price = isCustom ? amountBNV2(dstToken?.decimals, customLimitPrice) : marketPrice;
-    if (inverted) {
-      return BN(1).div(price).toString();
-    }
-    return price;
-  }, [isCustom, customLimitPrice, dstToken?.decimals, marketPrice, inverted]);
 
+    if (!isCustom || isMarketOrder) {
+      return marketPrice;
+    }
+    let result = customLimitPrice;
+    if (inverted) {
+      result = BN(1)
+        .div(customLimitPrice || 0)
+        .toString();
+    }
+    return amountBNV2(dstToken?.decimals, result);
+  }, [isCustom, customLimitPrice, dstToken?.decimals, inverted, marketPrice, isMarketOrder]);
+  
   return {
     isLoading,
+    limitPrice,
     limitPriceUi: useAmountUi(dstToken?.decimals, limitPrice),
-    limitPriceRaw: limitPrice,
   };
 };
 
@@ -776,9 +774,9 @@ const useBalanceWarning = () => {
 
 export const useLowPriceWarning = () => {
   const { isLimitPanel, translations: t } = useTwapContext();
-  const marketPrice = useMarketPrice().marketPriceRaw;
-  const limitPrice = useLimitPrice().limitPriceRaw;
-  const priceDeltaPercentage = useLimitPricePanel().priceDeltaPercentage;
+  const { marketPrice } = useMarketPrice();
+  const { limitPrice } = useLimitPrice();
+  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
   const { isInvertedLimitPrice, srcToken, dstToken } = useTwapStore((s) => ({
     isInvertedLimitPrice: s.isInvertedLimitPrice,
     srcToken: s.srcToken,
@@ -1028,7 +1026,7 @@ export function useDebounce<T>(value: T, delay?: number): T {
 export const useNoLiquidity = () => {
   const srcAmount = useTwapStore((s) => s.getSrcAmount().toString());
   const { isLoading: dstAmountLoading, outAmountRaw } = useOutAmount();
-  const limitPrice = useLimitPrice().limitPriceRaw;
+  const limitPrice = useLimitPrice().limitPrice;
 
   return useMemo(() => {
     if (BN(limitPrice || 0).isZero() || BN(srcAmount || 0).isZero() || dstAmountLoading) return false;
@@ -1069,71 +1067,22 @@ export const useInvertPrice = (price?: string) => {
   };
 };
 
-
-export const useLimitPricePanel = () => {
-  const { marketPriceUi, isLoading } = useMarketPrice();
-  const { isCustom, onChange, inverted, onResetCustom, invert, customPrice, setLimitPricePercent, limitPercent, updateState } = useTwapStore((s) => ({
-    isCustom: s.isCustomLimitPrice,
-    onChange: s.onLimitChange,
-    inverted: s.isInvertedLimitPrice,
-    onResetCustom: s.onResetCustomLimit,
-    invert: s.invertLimit,
-    customPrice: s.customLimitPrice,
-    setLimitPricePercent: s.setLimitPricePercent,
-    limitPercent: s.limitPricePercent,
-    updateState: s.updateState,
+export const useLimitPricePercentDiffFromMarket = () => {
+  const limitPrice = useLimitPrice().limitPrice;
+  const marketPrice = useMarketPrice().marketPrice;
+  const { isInvertedLimitPrice } = useTwapStore((s) => ({
+    isInvertedLimitPrice: s.isInvertedLimitPrice,
   }));
-  const isMarketOrder = useIsMarketOrder();
-  const isWrongChain = useTwapContext().isWrongChain;
-  const marketPrice = useFormatDecimals(useInvertedPrice(marketPriceUi, inverted));
 
-  const onChangeCallback = useCallback(
-    (customPrice: string) => {
-      onChange(customPrice);
-      setLimitPricePercent(undefined);
-    },
-    [onChange, setLimitPricePercent]
-  );
-
-  const onMarket = useCallback(() => {
-    onResetCustom();
-    updateState({ isMarketOrder: true });
-  }, [onResetCustom, updateState]);
-
-
-  const limitPriceUi = isCustom ? customPrice : marketPrice;
-
-  const priceDeltaPercentage = useMemo(() => {
-    if (limitPercent) {
-      return limitPercent;
-    }
-    if (!limitPriceUi || !marketPrice || BN(limitPriceUi).isZero() || BN(marketPrice).isZero()) return "0";
-    const diff = BN(limitPriceUi || 0)
-      .div(marketPrice || "0")
-      .minus(1)
-      .times(100)
-      .decimalPlaces(0)
-      .toString();
-
-    return diff;
-  }, [limitPriceUi, marketPrice, limitPercent]);
-
-  const onInvert = useCallback(() => {
-    invert();
-    setLimitPricePercent("0");
-  }, [invert, setLimitPricePercent]);
-
-  return {
-    priceDeltaPercentage,
-    onMarket,
-    onChange: onChangeCallback,
-    inverted,
-    isLoading: isWrongChain ? false : isLoading,
-    limitPriceUi,
-    onInvert,
-    isMarketOrder: !!isMarketOrder,
-  };
+  return useMemo(() => {
+    if (!limitPrice || !marketPrice || BN(limitPrice).isZero() || BN(limitPrice).isZero()) return "0";
+    const from = isInvertedLimitPrice ? marketPrice : limitPrice;
+    const to = isInvertedLimitPrice ? limitPrice : marketPrice;
+    return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(0, BN.ROUND_HALF_UP).toString();
+  }, [limitPrice, marketPrice, isInvertedLimitPrice]);
 };
+
+
 
 export const useShouldWrap = () => {
   const { lib } = useTwapContext();

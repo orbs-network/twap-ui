@@ -846,7 +846,6 @@ export const LimitSwitch = () => {
     isMarketOrder: s.isMarketOrder,
     updateState: s.updateState,
   }));
-
   const onToggle = useCallback(() => {
     updateState({
       isMarketOrder: !isMarketOrder,

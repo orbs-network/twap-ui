@@ -131,6 +131,7 @@ export const useTwapStore = create(
         isInvertedLimitPrice: !get().isInvertedLimitPrice,
         customLimitPrice: undefined,
         isCustomLimitPrice: false,
+        limitPricePercent: undefined,
       });
     },
     onLimitChange: (customLimitPrice: string) => {
