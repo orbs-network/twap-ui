@@ -5,7 +5,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - master
+      - limit-price-v2
 
 jobs:
   build:
