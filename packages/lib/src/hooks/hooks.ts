@@ -9,7 +9,7 @@ import _ from "lodash";
 import { analytics } from "../analytics";
 import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zero, isNativeAddress, parsebn } from "@defi.org/web3-candies";
 import { TimeResolution, useTwapStore } from "../store";
-import { MIN_NATIVE_BALANCE, MIN_TRADE_INTERVAL, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "../consts";
+import { MAX_TRADE_INTERVAL, MAX_TRADE_INTERVAL_FORMATTED, MIN_NATIVE_BALANCE, MIN_TRADE_INTERVAL, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS, STABLE_TOKENS } from "../consts";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
 import {
@@ -21,6 +21,7 @@ import {
   formatDecimals,
   getExplorerUrl,
   getTokenFromTokensList,
+  isStableCoin,
   setQueryParam,
   supportsTheGraphHistory,
 } from "../utils";
@@ -322,7 +323,6 @@ export const useSwitchTokens = () => {
     updateState({
       srcToken: dstToken,
       dstToken: srcToken,
-      srcAmountUi: "",
     });
     resetLimit();
     const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address) || getTokenFromTokensList(dappTokens, srcToken?.symbol);
@@ -568,7 +568,7 @@ export const useLimitPrice = () => {
     inverted: s.isInvertedLimitPrice,
     isMarketOrder: s.isMarketOrder,
   }));
-  
+
   const limitPrice = useMemo(() => {
     if (!marketPrice) return;
 
@@ -583,7 +583,7 @@ export const useLimitPrice = () => {
     }
     return amountBNV2(dstToken?.decimals, result);
   }, [isCustom, customLimitPrice, dstToken?.decimals, inverted, marketPrice, isMarketOrder]);
-  
+
   return {
     isLoading,
     limitPrice,
@@ -598,9 +598,10 @@ export const useDstMinAmountOut = () => {
     srcToken: s.srcToken,
     dstToken: s.dstToken,
   }));
+  const isMarketOrder = useIsMarketOrder();
   const lib = useTwapContext().lib;
   return useMemo(() => {
-    if (lib && srcToken && dstToken && limitPriceUi && BN(limitPriceUi || "0").gt(0)) {
+    if (!isMarketOrder && lib && srcToken && dstToken && limitPriceUi && BN(limitPriceUi || "0").gt(0)) {
       const res = lib.dstMinAmountOut(srcToken!, dstToken!, srcChunkAmount, parsebn(limitPriceUi || "0"), false).toString();
 
       return res;
@@ -685,13 +686,16 @@ export const useChunks = () => {
 
 // Warnigns //
 
-const useFillDelayWarning = () => {
+export const useFillDelayWarning = () => {
   const fillDelayMillis = useFillDelayMillis();
   const { translations } = useTwapContext();
 
   return useMemo(() => {
     if (fillDelayMillis < MIN_TRADE_INTERVAL) {
-      return translations.minTradeIntervalWarning.replace("{minTradeInterval}", MIN_TRADE_INTERVAL_FORMATTED.toString());
+      return translations.minTradeIntervalWarning.replace("{tradeInterval}", MIN_TRADE_INTERVAL_FORMATTED.toString());
+    }
+    if (fillDelayMillis > MAX_TRADE_INTERVAL) {
+      return translations.maxTradeIntervalWarning.replace("{tradeInterval}", MAX_TRADE_INTERVAL_FORMATTED.toString());
     }
   }, [fillDelayMillis, translations]);
 };
@@ -712,20 +716,19 @@ export const useFeeOnTransferWarning = () => {
   }, [srcTokenFeeOnTransfer, dstTokenFeeOnTransfer, translations]);
 };
 
-const useTradeSizeWarning = () => {
+export const useTradeSizeWarning = () => {
   const singleChunksUsd = useSrcChunkAmountUsdUi();
   const chunks = useChunks();
+  const srcAmount = useTwapStore((s) => s.getSrcAmount());
 
   const { lib, translations } = useTwapContext();
   return useMemo(() => {
-    if (BN(singleChunksUsd || 0).isZero()) return;
-
+    if (srcAmount.isZero()) return;
     const minTradeSizeUsd = BN(lib?.config.minChunkSizeUsd || 0);
-    if (BN(chunks).isZero()) return translations.enterTradeSize;
-    if (BN(singleChunksUsd || 0).isLessThan(minTradeSizeUsd)) {
+    if (BN(chunks).isZero() || BN(singleChunksUsd || 0).isLessThan(minTradeSizeUsd)) {
       return translations.tradeSizeMustBeEqual.replace("{minChunkSizeUsd}", minTradeSizeUsd.toString());
     }
-  }, [chunks, translations, singleChunksUsd, lib]);
+  }, [chunks, translations, singleChunksUsd, lib, srcAmount.toString()]);
 };
 
 const useInvalidTokensWarning = () => {
@@ -777,6 +780,7 @@ export const useLowPriceWarning = () => {
   const { marketPrice } = useMarketPrice();
   const { limitPrice } = useLimitPrice();
   const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
+
   const { isInvertedLimitPrice, srcToken, dstToken } = useTwapStore((s) => ({
     isInvertedLimitPrice: s.isInvertedLimitPrice,
     srcToken: s.srcToken,
@@ -784,10 +788,11 @@ export const useLowPriceWarning = () => {
   }));
 
   return useMemo(() => {
-    if (!srcToken || !dstToken) {
+    if (!srcToken || !dstToken || !isLimitPanel) {
       return;
     }
-    const isWarning = BN(limitPrice || 0).isLessThan(marketPrice || 0);
+    const isWarning = isInvertedLimitPrice ? BN(priceDeltaPercentage).isGreaterThan(0) : BN(priceDeltaPercentage).isLessThan(0);
+
     if (!isWarning) {
       return;
     }
@@ -803,7 +808,7 @@ export const useLowPriceWarning = () => {
           .toString()
       ),
     };
-  }, [isLimitPanel, limitPrice, marketPrice, isInvertedLimitPrice, srcToken, dstToken, t]);
+  }, [isLimitPanel, limitPrice, marketPrice, isInvertedLimitPrice, srcToken, dstToken, t, priceDeltaPercentage]);
 };
 
 export const useSwapWarning = () => {
@@ -1078,11 +1083,9 @@ export const useLimitPricePercentDiffFromMarket = () => {
     if (!limitPrice || !marketPrice || BN(limitPrice).isZero() || BN(limitPrice).isZero()) return "0";
     const from = isInvertedLimitPrice ? marketPrice : limitPrice;
     const to = isInvertedLimitPrice ? limitPrice : marketPrice;
-    return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(0, BN.ROUND_HALF_UP).toString();
+    return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_HALF_UP).toString();
   }, [limitPrice, marketPrice, isInvertedLimitPrice]);
 };
-
-
 
 export const useShouldWrap = () => {
   const { lib } = useTwapContext();
@@ -1196,4 +1199,15 @@ export const useShouldWrapOrUnwrapOnly = () => {
   const unwrap = useShouldUnwrap();
 
   return wrap || unwrap;
+};
+
+export const useIsSwapWithStableCoin = () => {
+  const { srcToken, dstToken } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+  }));
+
+  return useMemo(() => {
+    return isStableCoin(srcToken) || isStableCoin(dstToken);
+  }, [srcToken, dstToken]);
 };

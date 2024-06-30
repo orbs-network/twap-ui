@@ -109,10 +109,10 @@ const TWAP = memo((props: PangolinTWAPProps) => {
           dappTokens={props.dappTokens}
           srcToken={props.srcToken}
           dstToken={props.dstToken}
-          parseToken={parseToken}
           onSrcTokenSelected={props.onSrcTokenSelected}
           onDstTokenSelected={props.onDstTokenSelected}
           usePriceUSD={props.usePriceUSD}
+          parsedTokens={[]}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
@@ -192,8 +192,6 @@ const TradeSize = () => {
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
-          <Components.ChunksSliderSelect />
-          <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <Components.TradeSize />
@@ -209,8 +207,6 @@ const MaxDuration = () => {
     <Components.Base.Card>
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Labels.MaxDurationLabel />
-        <Components.PartialFillWarning />
-        <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
   );
@@ -221,7 +217,6 @@ const TradeInterval = () => {
     <Components.Base.Card>
       <TwapStyles.StyledRowFlex>
         <Components.Labels.TradeIntervalLabel />
-        <Components.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>

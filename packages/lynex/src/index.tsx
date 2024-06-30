@@ -208,13 +208,13 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       account={props.account}
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
-      parseToken={parseToken}
       srcToken={props.srcToken}
       dstToken={props.dstToken}
       storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
       priceUsd={props.priceUsd}
+      parsedTokens={[]}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>
@@ -279,8 +279,6 @@ const TradeSize = () => {
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
-          <Components.ChunksSliderSelect />
-          <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <Components.TradeSize hideSymbol={true} />
@@ -296,8 +294,6 @@ const MaxDuration = () => {
     <Components.Base.Card>
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Labels.MaxDurationLabel />
-        <Components.PartialFillWarning />
-        <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
   );
@@ -308,7 +304,6 @@ const TradeInterval = () => {
     <Components.Base.Card>
       <TwapStyles.StyledRowFlex>
         <Components.Labels.TradeIntervalLabel />
-        <Components.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>

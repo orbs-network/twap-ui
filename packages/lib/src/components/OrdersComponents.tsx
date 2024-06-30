@@ -92,9 +92,7 @@ function MobileMenu() {
   const getName = useGetOrderNameCallback();
 
   const selected = _.keys(tabs)[tab];
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleClick = () => {};
   const handleClose = () => {
     setAnchorEl(null);
   };

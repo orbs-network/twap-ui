@@ -115,7 +115,11 @@ export interface Translations {
   limitPriceWarningTitleInverted: string;
   limitPriceWarningSubtitle: string;
   limitPriceWarningSubtileInverted: string;
+  limitPriceMessage: string;
+  maxTradeIntervalWarning: string;
 }
+
+export type MessageVariant = "error" | "warning" | "info";
 
 export interface BaseComponentProps {
   className?: string;
@@ -320,7 +324,6 @@ export interface State {
   customLimitPrice?: string;
   isInvertedLimitPrice?: boolean;
   limitPricePercent?: string;
-
   isMarketOrder?: boolean;
 
   createOrderSuccess?: boolean;
@@ -407,4 +410,10 @@ export type Step = {
   Icon: IconType;
   image?: string;
   status: "pending" | "loading" | "completed" | "disabled";
+};
+
+export type LimitSwitchArgs = {
+  options: [{ label: "Market"; value: "market" }, { label: "Limit"; value: "limit" }];
+  selected: "limit" | "market";
+  onClick: (value: "limit" | "market") => void;
 };

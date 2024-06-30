@@ -1,7 +1,7 @@
 import { Box, styled } from "@mui/material";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { useTwapStore } from "../../store";
-import { Icon, NumericInput } from "../base";
+import { Icon, Message } from "../base";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
 import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
@@ -39,7 +39,7 @@ const useLimitPanelContext = () => useContext(Context);
 export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Components, styles }: Props) {
   const isMarketOrder = useTwapStore((state) => state.isMarketOrder);
   if (isMarketOrder) {
-    return <StyledText>Some text</StyledText>;
+    return <Message title="Some text" variant="info" />;
   }
 
   return (
@@ -68,14 +68,13 @@ const Input = () => {
     customLimitPrice: s.customLimitPrice,
     dstToken: s.dstToken,
   }));
-  const { isLoading, limitPrice } = useLimitPrice();  
-  
-  
+  const { isLoading, limitPrice } = useLimitPrice();
+
   const limitPriceUi = useMemo(() => {
     if (isCustom) {
       return customLimitPrice;
     }
-    let res = amountUiV2(dstToken?.decimals, limitPrice)
+    let res = amountUiV2(dstToken?.decimals, limitPrice);
 
     if (isInvertedLimitPrice) {
       res = BN(1)
@@ -83,10 +82,9 @@ const Input = () => {
         .toString();
     }
 
-    return formatDecimals(res)
+    return formatDecimals(res);
   }, [customLimitPrice, isCustom, isInvertedLimitPrice, limitPrice, dstToken]);
 
-  
   const [value, setValue] = useState("");
   const onChange = onCustomChange();
 
@@ -149,12 +147,22 @@ const PercentButton = ({ percent }: { percent: string }) => {
     inverted: s.isInvertedLimitPrice,
     isMarketOrder: s.isMarketOrder,
   }));
+  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
+
+  const limitPrice = useLimitPrice().limitPrice;
   const Components = useLimitPanelContext().Components;
   const limitPricePercent = useTwapStore((s) => s.limitPricePercent);
 
   const onPercentageChange = useOnLimitPercentageClick();
 
-  const selected = useMemo(() => (isMarketOrder ? false : BN(limitPricePercent || 0).eq(percent)), [limitPricePercent, percent, isMarketOrder]);
+  const selected = useMemo(() => {
+    const p = limitPricePercent || priceDeltaPercentage;
+    if (BN(limitPrice || 0).isZero()) {
+      return false;
+    }
+
+    return BN(p || 0).eq(percent);
+  }, [limitPricePercent, percent, isMarketOrder, limitPrice, priceDeltaPercentage]);
 
   const prefix = percent === "0" ? "" : inverted ? "-" : !inverted && "+";
 
@@ -162,16 +170,34 @@ const PercentButton = ({ percent }: { percent: string }) => {
 };
 
 const ZeroButton = () => {
+  const limitPricePercent = useTwapStore((s) => s.limitPricePercent);
   const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
   const onPercentageChange = useOnLimitPercentageClick();
-
   const Components = useLimitPanelContext().Components;
   const percent = usePercent();
-  if (BN(priceDeltaPercentage).isZero() || percent.includes(priceDeltaPercentage)) {
-    return <PercentButton percent="0" />;
-  }
+  const showZero = useMemo(() => {
+    if (BN(priceDeltaPercentage).isZero()) {
+      return false;
+    }
 
-  return <Components.ZeroButton onClick={() => onPercentageChange("0")} text={`${priceDeltaPercentage}%`} />;
+    if (BN(limitPricePercent || 0).gt(0)) {
+      return false;
+    }
+
+    if (limitPricePercent && percent.includes(limitPricePercent)) {
+      return false;
+    }
+    if (priceDeltaPercentage && percent.includes(priceDeltaPercentage)) {
+      return false;
+    }
+
+    return true;
+  }, [priceDeltaPercentage, limitPricePercent, percent]);
+
+  if (showZero) {
+    return <Components.ZeroButton onClick={() => onPercentageChange("0")} text={`${priceDeltaPercentage}%`} />;
+  }
+  return <PercentButton percent="0" />;
 };
 
 const TokenSelect = () => {
@@ -217,10 +243,7 @@ const StyledInvertprice = styled(Box)({
 const StyledPercentContainer = styled(StyledRowFlex)({
   justifyContent: "flex-start",
   alignItems: "center",
-});
-
-const StyledInput = styled(NumericInput)({
-  flex: 1,
+  flexWrap: "wrap",
 });
 
 LimitPanel.Input = Input;

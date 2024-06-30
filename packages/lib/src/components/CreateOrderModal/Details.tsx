@@ -1,4 +1,5 @@
 import { styled } from "@mui/material";
+import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { makeElipsisAddress, useTwapContext } from "../..";
 import {
@@ -40,7 +41,7 @@ export const Price = () => {
     return res.toString();
   }, [srcUsd.toString(), dstUsd.toString()]);
 
-  const price = useFormatNumberV2({ value: useInvertedPrice(amount, inverted) });
+  const price = useFormatNumberV2({ value: useInvertedPrice(amount, inverted), decimalScale: 2 });
 
   const leftToken = inverted ? dstToken : srcToken;
   const rightToken = inverted ? srcToken : dstToken;
@@ -147,10 +148,26 @@ export const TradeInterval = () => {
   );
 };
 
+const MarketPriceWarning = () => {
+  const isMarketOrder = useTwapStore((s) => s.isMarketOrder);
+
+  if (!isMarketOrder) return null;
+
+  return (
+    <StyledWarning className="twap-order-modal-market-warning">
+      <Label tooltipText="some text">
+        <IoIosWarning className="twap-order-modal-market-warning-logo" />
+        Price may change
+      </Label>
+    </StyledWarning>
+  );
+};
+
 export const TwapDetails = () => {
   return (
     <>
       <Price />
+      <MarketPriceWarning />
       <Expiry />
       <ChunksAmount />
       <ChunkSize />
@@ -179,10 +196,24 @@ export const Details = ({ className = "" }: { className?: string }) => {
 
 const StyledDetails = styled(StyledColumnFlex)({});
 
-const DetailRow = ({ title, tooltip, children, className = "" }: { title: ReactNode; tooltip?: string; children: React.ReactNode; className?: string }) => {
+const DetailRow = ({
+  title,
+  tooltip,
+  children,
+  className = "",
+  startLogo,
+}: {
+  title: ReactNode;
+  tooltip?: string;
+  children?: React.ReactNode;
+  className?: string;
+  startLogo?: ReactNode;
+}) => {
   return (
     <StyledDetailRow className={className}>
-      <StyledLabel tooltipText={tooltip}>{title}</StyledLabel>
+      <StyledLabel tooltipText={tooltip}>
+        {startLogo} {title}
+      </StyledLabel>
       <StyledDetailRowChildren>{children}</StyledDetailRowChildren>
     </StyledDetailRow>
   );
@@ -191,6 +222,21 @@ const DetailRow = ({ title, tooltip, children, className = "" }: { title: ReactN
 const StyledLabel = styled(Label)({
   ".twap-label-text": {
     fontSize: 14,
+  },
+});
+const StyledWarning = styled(StyledRowFlex)({
+  justifyContent: "flex-start",
+  background: "rgb(27, 27, 27)",
+  padding: 8,
+  borderRadius: 12,
+  ".twap-label-text": {
+    fontSize: 14,
+  },
+  ".twap-order-modal-market-warning-logo": {
+    top: 3,
+    position: "relative",
+    marginRight: 5,
+    color: "rgb(255, 95, 82)!important",
   },
 });
 

@@ -31,7 +31,13 @@ export const feeOnTransferDetectorAddresses = {
 
 export const MIN_CHUNKS = 1;
 export const MIN_TRADE_INTERVAL = 5 * 60 * 1000;
+
+export const MAX_TRADE_INTERVAL = 30 * 24 * 60 * 60 * 1000;
+
+const millisInADay = 24 * 60 * 60 * 1000;
+
 export const MIN_TRADE_INTERVAL_FORMATTED = new Date(MIN_TRADE_INTERVAL).getMinutes();
+export const MAX_TRADE_INTERVAL_FORMATTED = MAX_TRADE_INTERVAL / millisInADay;
 
 export const EXPLORER_URLS = {
   1: "https://etherscan.io",
@@ -42,3 +48,5 @@ export const EXPLORER_URLS = {
   8453: "https://basescan.org",
   42161: "https://arbiscan.io",
 };
+
+export const STABLE_TOKENS = ["usdc", "dai", "usdt", "busd", "tusd", "susd"];

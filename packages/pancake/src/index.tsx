@@ -12,6 +12,7 @@ import {
   addMissingTokens,
   TWAPTokenSelectProps,
   ButtonProps,
+  LimitSwitchArgs,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -38,7 +39,8 @@ import {
   StyledTradeIntervalInput,
   StyledChunksSelectSlider,
   StyledChunksSelectInput,
-  StyledPanelWarning,
+  StyledLimitSwitch,
+  StyledShowConfirmation,
 } from "./styles";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -315,10 +317,9 @@ const TWAP = memo((props: PancakeProps) => {
           <GlobalStyles styles={configureStyles(theme) as any} />
           <AdapterContextProvider value={props}>
             {props.children}
+            <PancakeOrders />
             {props.limit ? <LimitPanel /> : <TWAPPanel />}
             <SubmitOrderModal />
-
-            <PancakeOrders />
           </AdapterContextProvider>
         </ThemeProvider>
       </TwapAdapter>
@@ -350,7 +351,7 @@ const OpenConfirmationModalButton = () => {
 
   return (
     <StyledButtonContainer>
-      <Components.ShowConfirmationButton />
+      <StyledShowConfirmation />
     </StyledButtonContainer>
   );
 };
@@ -369,7 +370,6 @@ const LimitPanel = () => {
       <StyledColumnFlex>
         <TopPanel />
         <LimitPrice />
-        <StyledPanelWarning />
         <OpenConfirmationModalButton />
       </StyledColumnFlex>
 
@@ -470,7 +470,7 @@ const LimitPrice = ({ isTwap }: { isTwap?: boolean }) => {
       <Card>
         <Card.Header>
           <Components.Labels.LimitPriceLabel isTwap={isTwap} />
-          <Components.LimitSwitch />
+          <StyledLimitSwitch Component={CustomPriceToggle} />
         </Card.Header>
         <Card.Body>
           <Components.LimitPanel
@@ -493,6 +493,22 @@ const LimitPrice = ({ isTwap }: { isTwap?: boolean }) => {
   );
 };
 
+const CustomPriceToggle = ({ onClick, options, selected }: LimitSwitchArgs) => {
+  return (
+    <StyledCustomPriceToggle>
+      {options.map((it) => {
+        return <PercentButton text={it.label} selected={it.value === selected} onClick={() => onClick(it.value)} />;
+      })}
+    </StyledCustomPriceToggle>
+  );
+};
+
+const StyledCustomPriceToggle = styled(Styles.StyledRowFlex)({
+  width: "auto",
+  gap: 5,
+  justifyContent: "flex-end",
+});
+
 const TWAPPanel = () => {
   return (
     <div className="twap-container">
@@ -502,7 +518,6 @@ const TWAPPanel = () => {
         <TotalTrades />
         <TradeIntervalSelect />
         <OpenConfirmationModalButton />
-        <StyledPanelWarning />
       </StyledColumnFlex>
       <StyledPoweredBy />
     </div>

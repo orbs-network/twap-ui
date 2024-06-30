@@ -3,6 +3,7 @@ import { styled } from "@mui/material";
 import { hooks, OrdersPortal, SelectedOrders, store } from "@orbs-network/twap-ui";
 import { StyledOrders, StyledOrdersHeader, StyledOrdersTab, StyledOrdersTabs } from "./styles";
 import { Styles } from "@orbs-network/twap-ui";
+import { useAdapterContext } from "./context";
 
 export default function PancakeOrders() {
   return (

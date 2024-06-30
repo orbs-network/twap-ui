@@ -120,8 +120,7 @@ export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number
   return (
     <StyledCancelOrderButton
       loading={isLoading}
-      onClick={(e: any) => {
-        e.stopPropagation();
+      onClick={() => {
         mutate(orderId);
       }}
       className={`${className} twap-cancel-order`}

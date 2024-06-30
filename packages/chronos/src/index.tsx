@@ -249,15 +249,14 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 };
 
 const Recipient = () => {
-  const maker = store.useTwapStore((store) => store.lib?.maker);
-  const translations = useTwapContext().translations;
+  const { lib, translations } = useTwapContext();
 
   return (
     <StyledRecipient>
       <TwapStyles.StyledRowFlex justifyContent="space-between" className="twap-recipient-flex">
         <Components.Base.Label>{translations.outputWillBeSentTo}</Components.Base.Label>
-        <Components.Base.Tooltip text={maker}>
-          <Typography>{makeElipsisAddress(maker)}</Typography>
+        <Components.Base.Tooltip text={lib?.maker}>
+          <Typography>{makeElipsisAddress(lib?.maker)}</Typography>
         </Components.Base.Tooltip>
       </TwapStyles.StyledRowFlex>
     </StyledRecipient>
@@ -373,7 +372,6 @@ const TWAP = (props: ChronosTWAPProps) => {
         provider={provider}
         account={props.account}
         dappTokens={props.dappTokens}
-        parseToken={(rawToken) => parseToken(props.getTokenLogoURL, rawToken)}
         srcToken={props.srcToken}
         dstToken={props.dstToken}
         storeOverride={props.limit ? limitStoreOverride : undefined}
@@ -381,6 +379,7 @@ const TWAP = (props: ChronosTWAPProps) => {
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
         priceUsd={props.priceUsd}
+        parsedTokens={[]}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -482,7 +481,6 @@ const LimitPanel = () => {
   return (
     <div className="twap-container">
       <StyledColumnFlex>
-        <StyledWarningMsg />
         <StyledTopColumnFlex gap={6.5}>
           <TokenPanel isSrcToken={true} />
           <ChangeTokensOrder />
@@ -517,7 +515,6 @@ const ChunksLeft = () => {
 const ChunksMiddle = () => {
   return (
     <StyledBigBorder style={{ flex: 1 }} justifyContent="space-between" className="twap-chunks-middle">
-      <Components.ChunksInput />
       <Components.SrcToken />
     </StyledBigBorder>
   );
@@ -571,11 +568,8 @@ const MaxDuration = () => {
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between" className="twap-max-duration-flex">
         <TwapStyles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto" }}>
           <Components.Labels.MaxDurationLabel />
-          <Components.PartialFillWarning />
         </TwapStyles.StyledRowFlex>
-        <TwapStyles.StyledRowFlex style={{ flex: 1 }} className="twap-card-children">
-          <Components.MaxDurationSelector />
-        </TwapStyles.StyledRowFlex>
+        <TwapStyles.StyledRowFlex style={{ flex: 1 }} className="twap-card-children"></TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
     </StyledTimeSelectCard>
   );
@@ -588,7 +582,6 @@ const TradeInterval = () => {
     <StyledTimeSelectCard className="twap-trade-interval" disabled={!srcAmountNotZero ? 1 : 0}>
       <TwapStyles.StyledRowFlex className="twap-trade-interval-flex">
         <Components.Labels.TradeIntervalLabel />
-        <Components.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }} className="twap-card-children">
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>
@@ -611,7 +604,7 @@ const ChunksSlider = () => {
   if (!show) return null;
   return (
     <StyledChunksSlider>
-      <Components.ChunksSliderSelect />
+      <div></div>
     </StyledChunksSlider>
   );
 };

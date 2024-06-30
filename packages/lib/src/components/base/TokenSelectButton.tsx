@@ -16,12 +16,11 @@ interface Props {
 }
 
 function TokenSelectButton({ className = "", onClick, hideArrow, customUi, customButtonElement }: Props) {
-  const translations = useTwapContext().translations;
-  const wrongNetwork = useTwapStore((state) => state.wrongNetwork);
-  const maker = useTwapStore((state) => state.lib?.maker);
+  const { translations, isWrongChain, lib } = useTwapContext();
+  const maker = lib?.maker;
 
   const selectTokenWarning = () => {
-    if (wrongNetwork) {
+    if (isWrongChain) {
       return translations.switchNetwork;
     }
     if (!maker) {

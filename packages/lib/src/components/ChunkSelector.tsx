@@ -7,14 +7,13 @@ import {
   useSetChunks,
   useMaxPossibleChunks,
   useSrcChunkAmountUsdUi,
-  useFormatDecimals,
-  useSwapWarning,
   useFormatNumberV2,
   useSrcUsd,
-} from "../hooks";
+  useTradeSizeWarning,
+} from "../hooks/hooks";
 import { useTwapStore } from "../store";
 import { StyledColumnFlex } from "../styles";
-import { Message, NumericInput, Slider } from "./base";
+import { BottomContent, Message, NumericInput, Slider } from "./base";
 
 const ChunkSelector = ({ className = "", children }: { className?: string; children: ReactNode }) => {
   return (
@@ -27,7 +26,7 @@ const ChunkSelector = ({ className = "", children }: { className?: string; child
 const Text = () => {
   const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmountUi() });
   const srcToken = useTwapStore((s) => s.srcToken);
-  const warning = useSwapWarning();
+  const warning = useTradeSizeWarning();
   const srcUsdLoading = useSrcUsd().isLoading;
   const _usd = useFormatNumberV2({ value: useSrcChunkAmountUsdUi(), decimalScale: 2 });
 
@@ -36,16 +35,16 @@ const Text = () => {
   if (srcUsdLoading) return null;
 
   return (
-    <>
+    <BottomContent>
       <StyledMessage
-        text={
+        title={
           <>
             {chunkSizeFormatted} {srcToken?.symbol} per trade <span>{usd}</span>
           </>
         }
       />
-      {warning.tradeSize && <StyledWarning type="warning" text={warning.tradeSize} />}
-    </>
+      {warning && <StyledWarning variant="warning" title={warning} />}
+    </BottomContent>
   );
 };
 

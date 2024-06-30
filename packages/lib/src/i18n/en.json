@@ -101,7 +101,8 @@
   "minChunksWarning": "Minimum trades amount is {minChunks}",
   "weeks": "Weeks",
   "price": "Price",
-  "minTradeIntervalWarning": "Minimum trade interval is {minTradeInterval} minutes",
+  "minTradeIntervalWarning": "Minimum trade interval is {tradeInterval} minutes",
+  "maxTradeIntervalWarning": "Maximum trade interval is {tradeInterval} days",
   "recipient": "Recipient",
   "accept": "Accept",
   "disclaimer": "Disclaimer",
@@ -109,5 +110,6 @@
   "limitPriceWarningTitle": "Selling {symbol} below market price",
   "limitPriceWarningTitleInverted": "Buying {symbol} above market price",
   "limitPriceWarningSubtitle": "Your limit price is {percent}% lower than market. Adjust your limit price to proceed.",
-  "limitPriceWarningSubtileInverted": "Your limit price is {percent}% higher than market. Adjust your limit price to proceed."
+  "limitPriceWarningSubtileInverted": "Your limit price is {percent}% higher than market. Adjust your limit price to proceed.",
+  "limitPriceMessage": "Limits may not execute exactly when tokens reach the specified price."
 }

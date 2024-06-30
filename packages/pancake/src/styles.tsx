@@ -220,23 +220,7 @@ export const configureStyles = (theme: Theme) => {
         color: `${styles.primaryTextColor}!important`,
       },
     },
-    ".twap-order": {
-      border: `1px solid ${styles.border}`,
-      borderRadius: 16,
-      padding: 15,
-      transition: "0.2s all",
-      color: `${styles.primaryTextColor}!important`,
-      background: darkMode ? "#362F47" : "#EEEAF4",
-      ".twap-order-expanded-right": {
-        fontWeight: "400!important",
-      },
-      ".twap-market-price-section": {
-        "*": {
-          fontSize: 13,
-          fontWeight: "400!important",
-        },
-      },
-    },
+    ".twap-order": {},
     ".twap-order-progress": {
       background: darkMode ? "#2D2836!important" : "#1fc7d4!important",
       "&::after": {
@@ -847,4 +831,29 @@ export const StyledChunksSelectInput = styled(CardBody)({
   width: 80,
 });
 
-export const StyledPanelWarning = styled(Components.PanelWarning)({});
+export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    background: "#372f47",
+    ".MuiTabs-indicator": {
+      background: "#27262c",
+    },
+    ".MuiButtonBase-root": {
+      padding: "6px 0px",
+      minWidth: 80,
+      minHeight: "unset",
+      zIndex: 1,
+      color: "white!important",
+      fontSize: 13,
+      fontWeight: 400,
+    },
+  };
+});
+
+export const StyledShowConfirmation = styled(Components.ShowConfirmation)({
+  ".twap-warning-message": {
+    borderRadius: 12,
+    padding: "8px 10px",
+    border: "1px solid #383241",
+  },
+});

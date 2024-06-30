@@ -159,8 +159,6 @@ export const useTwapStore = create(
     resetLimit: () => {
       handleLimitPriceQueryParam();
       set({
-        isCustomLimitPrice: false,
-        customLimitPrice: undefined,
         isInvertedLimitPrice: false,
         limitPricePercent: undefined,
       });

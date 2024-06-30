@@ -16,8 +16,9 @@ import {
   Modal,
   Message,
   Button,
+  Portal,
 } from "./base";
-import { styled } from "@mui/material";
+import { styled, Tab, Tabs } from "@mui/material";
 import { useTwapContext } from "../context";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 
@@ -61,7 +62,7 @@ import {
   OrderSummaryMinDstAmountOutLabel,
   ChunksAmountLabel,
 } from "./Labels";
-import { SwitchVariant, Translations, TWAPTokenSelectProps } from "../types";
+import { LimitSwitchArgs, MessageVariant, SwitchVariant, Translations, TWAPTokenSelectProps } from "../types";
 import { Typography } from "@mui/material";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
@@ -69,7 +70,6 @@ import { Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { amountUi, makeElipsisAddress } from "../utils";
 import BN from "bignumber.js";
-import { AiOutlineWarning } from "@react-icons/all-files/ai/AiOutlineWarning";
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -816,53 +816,136 @@ export const PanelWarning = ({ className = "" }: { className?: string }) => {
     return isMarketOrder ? translations?.marketOrderWarning : undefined;
   }, [translations, isMarketOrder]);
 
-  const warning = feeOnTranferWarning || marketOrderWarning || lowPriceWarning;
+  const show = feeOnTranferWarning || marketOrderWarning || lowPriceWarning;
   const title = feeOnTranferWarning || marketOrderWarning || lowPriceWarning?.title;
-  const subtitle = lowPriceWarning?.subTitle;
+  const text = lowPriceWarning?.subTitle;
 
-  if (!warning) return null;
+  const variant = useMemo((): MessageVariant => {
+    if (marketOrderWarning) return "warning";
+    return "error";
+  }, [marketOrderWarning]);
 
-  return (
-    <StyledPanelWarning className={`${className} twap-panel-warning`}>
-      <AiOutlineWarning />
-      <StyledText className="twap-panel-warning-title">{title}</StyledText>
-      <StyledText className="twap-panel-warning-subtitle">{subtitle}</StyledText>
-    </StyledPanelWarning>
-  );
+  if (!show) return null;
+
+  return <Message className={className} title={title} text={text} variant={variant} />;
 };
-const StyledPanelWarning = styled(StyledColumnFlex)({
-  textAlign: "center",
-  width: "100%",
-  svg: {
-    position: "relative",
-    top: 2,
-  },
-});
 
-export const LimitSwitch = () => {
+export const LimitSwitch = ({ className = "", Component }: { className?: string; Component?: FC<LimitSwitchArgs> }) => {
   const isLimitPanel = useTwapContext().isLimitPanel;
 
   const { isMarketOrder, updateState } = useTwapStore((s) => ({
     isMarketOrder: s.isMarketOrder,
     updateState: s.updateState,
   }));
-  const onToggle = useCallback(() => {
+
+  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     updateState({
-      isMarketOrder: !isMarketOrder,
+      isMarketOrder: newValue === "market" ? true : false,
     });
-  }, [isMarketOrder, updateState]);
+  };
+
+  const onSelect = useCallback(
+    (value: "limit" | "market") => {
+      updateState({
+        isMarketOrder: value === "market" ? true : false,
+      });
+    },
+    [updateState]
+  );
 
   if (isLimitPanel) return null;
 
-  return <Switch value={!isMarketOrder} onChange={onToggle} />;
+  if (Component) {
+    return (
+      <Component
+        onClick={onSelect}
+        options={[
+          { label: "Market", value: "market" },
+          { label: "Limit", value: "limit" },
+        ]}
+        selected={isMarketOrder ? "market" : "limit"}
+      />
+    );
+  }
+
+  return (
+    <StyledLimitSwitch className={className}>
+      <Tabs selectionFollowsFocus={true} onChange={handleChange} value={isMarketOrder ? "market" : "limit"}>
+        <Tab value="market" label="Market" />
+        <Tab value="limit" label="Limit" />
+      </Tabs>
+    </StyledLimitSwitch>
+  );
 };
 
-export const ShowConfirmationButton = () => {
+const StyledLimitSwitch = styled(StyledRowFlex)({
+  padding: 3,
+  overflow: "hidden",
+  width: "auto",
+  borderRadius: 20,
+  ".MuiTouchRipple-root": {
+    display: "none",
+  },
+  ".MuiTabs-root": {
+    minHeight: "unset",
+  },
+  ".MuiTabs-indicator": {
+    height: "100%",
+    borderRadius: 20,
+  },
+  ".MuiButtonBase-root": {},
+});
+
+export const ShowConfirmation = ({ className = "" }: { className?: string }) => {
   const { onClick, text, disabled, loading } = useConfirmationButton();
 
   return (
-    <Button allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
-      {loading ? "Loading..." : text}
-    </Button>
+    <StyledShowConfirmation className={className}>
+      <PanelWarning />
+      <Button allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
+        {loading ? "Loading..." : text}
+      </Button>
+    </StyledShowConfirmation>
   );
 };
+
+const StyledShowConfirmation = styled(StyledColumnFlex)({
+  gap: 20,
+});
+
+export const LimitPriceMessageContent = ({ className }: { className?: string }) => {
+  const { translations: t } = useTwapContext();
+
+  return (
+    <Portal id="twap-limit-price-mesage">
+      <StyledLimitPriceMessage
+        className={className}
+        variant="warning"
+        title={
+          <>
+            {t.limitPriceMessage}{" "}
+            <a href="/" target="_blank">
+              Learn more.
+            </a>
+          </>
+        }
+      />
+    </Portal>
+  );
+};
+
+export const LimitPriceMessage = ({ Container }: { Container: FC<{ children: ReactNode }> }) => {
+  const isMarketOrder = useTwapStore((s) => s.isMarketOrder);
+
+  if (isMarketOrder) return null;
+
+  return (
+    <Container>
+      <div id="twap-limit-price-mesage" />
+    </Container>
+  );
+};
+
+const StyledLimitPriceMessage = styled(Message)({
+  color: "white",
+});

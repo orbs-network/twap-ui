@@ -50,7 +50,7 @@ const ContextWrapper = ({ children, limit, theme }: { children: ReactNode; limit
 };
 
 export const PangolinOrders = ({ limit, theme }: { limit?: boolean; theme: any }) => {
-  const { lib } = store.useTwapStore();
+  const { lib } = useTwapContext();
 
   if (!lib) return null;
   return (
@@ -258,7 +258,7 @@ const TotalTrades = ({ orderUI }: { orderUI: OrderUI }) => {
 
 const TradeInterval = ({ orderUI }: { orderUI: OrderUI }) => {
   const { translations } = useTwapContext();
-  const minimumDelayMinutes = store.useTwapStore((state) => state.getMinimumDelayMinutes());
+  const minimumDelayMinutes = hooks.useFillDelayMillis() / 60000;
   const { limit } = useOrdersContext();
 
   if (limit || !orderUI) return null;

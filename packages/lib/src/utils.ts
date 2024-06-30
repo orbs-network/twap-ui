@@ -1,7 +1,7 @@
 import { TokenData, parsebn, eqIgnoreCase, maxUint256, Token, isNativeAddress } from "@defi.org/web3-candies";
 import moment from "moment";
 import { Translations } from "./types";
-import { EXPLORER_URLS, QUERY_PARAMS } from "./consts";
+import { EXPLORER_URLS, QUERY_PARAMS, STABLE_TOKENS } from "./consts";
 import BN from "bignumber.js";
 import _ from "lodash";
 import { useTwapStore } from "./store";
@@ -218,3 +218,5 @@ export const isNativeBalanceError = (error: any) => {
     return error.message?.toLowerCase()?.includes("insufficient") || error.message?.toLowerCase()?.includes("gas required exceeds allowance");
   }
 };
+
+export const isStableCoin = (token?: TokenData) => STABLE_TOKENS.includes(token?.symbol.toLowerCase() || "");

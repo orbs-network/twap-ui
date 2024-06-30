@@ -13,6 +13,7 @@ import {
   store,
   REFETCH_GAS_PRICE,
   amountBN,
+  addMissingTokens,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
@@ -40,6 +41,7 @@ import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
 import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SyncSwapPallete } from "./types";
+import _ from "lodash";
 
 const storeOverride = {
   isLimitOrder: true,
@@ -239,10 +241,20 @@ const Adapter = (props: Props) => {
     [props.priceUsd]
   );
 
+  const parsedTokens = useMemo((): TokenData[] => {
+    if (_.isEmpty(props.dappTokens)) return [];
+    const res = _.map(props.dappTokens, (token) => {
+      return parseToken(token);
+    });
+
+    return addMissingTokens(config, _.compact(res));
+  }, [props.dappTokens]);
+
   return (
     <ThemeProvider theme={theme}>
       <Box className="adapter-wrapper">
         <TwapAdapter
+          parsedTokens={parsedTokens}
           connect={connect}
           config={config}
           uiPreferences={uiPreferences}
@@ -252,7 +264,6 @@ const Adapter = (props: Props) => {
           provider={provider}
           account={props.account}
           dappTokens={props.dappTokens}
-          parseToken={parseToken}
           srcToken={eqIgnoreCase(props.srcToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.srcToken}
           onTxSubmitted={props.onTxSubmitted}
           dstToken={eqIgnoreCase(props.dstToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.dstToken}
@@ -289,8 +300,6 @@ const LimitPanel = () => {
           <ChangeTokensOrder />
           <TokenPanel />
         </TwapStyles.StyledColumnFlex>
-        <Market />
-        <SubmitButton isMain />
       </TwapStyles.StyledColumnFlex>
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
@@ -309,8 +318,8 @@ const ChangeTokensOrder = () => {
   return <StyledChangeTokensOrder icon={<AiOutlineArrowDown />} />;
 };
 
-const SubmitButton = ({ isMain }: { isMain?: boolean }) => {
-  const { disabled, loading, text, onClick } = hooks.useSubmitButton(isMain);
+const SubmitButton = () => {
+  const { disabled, loading, text, onClick } = hooks.useSubmitOrderButton();
   const _onClick = () => {
     if (onClick) return onClick();
     return () => {};
@@ -336,7 +345,6 @@ const TWAPPanel = () => {
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
-        <SubmitButton isMain />
       </TwapStyles.StyledColumnFlex>
       <OrderSummary>
         <Components.OrderSummaryDetails />
@@ -356,8 +364,6 @@ const TradeSize = () => {
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
-          <Components.ChunksSliderSelect />
-          <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <StyledChunkSize>
           <Components.TradeSize />
@@ -373,8 +379,6 @@ const MaxDuration = () => {
     <Components.Base.Card className="twap-max-duration-wrapper">
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Labels.MaxDurationLabel />
-        <Components.PartialFillWarning />
-        <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
   );
@@ -385,7 +389,6 @@ const TradeInterval = () => {
     <Components.Base.Card className="twap-trade-interval-wrapper">
       <TwapStyles.StyledRowFlex>
         <Components.Labels.TradeIntervalLabel />
-        <Components.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>

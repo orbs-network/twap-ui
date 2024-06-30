@@ -1,9 +1,9 @@
 import { styled } from "@mui/material";
 import { ReactNode, useCallback } from "react";
-import { useSwapWarning } from "../hooks";
+import { useFillDelayWarning } from "../hooks/hooks";
 import { TimeResolution, useTwapStore } from "../store";
 import { StyledColumnFlex } from "../styles";
-import { Message, NumericInput, TimeSelectMenu } from "./base";
+import { BottomContent, Message, NumericInput, TimeSelectMenu } from "./base";
 
 const Input = ({ placeholder = "0" }: { placeholder?: string }) => {
   const { setFillDelay, fillDelay } = useTwapStore((s) => ({
@@ -40,11 +40,15 @@ export const TradeInterval = ({ children }: { children: ReactNode }) => {
 };
 
 const WarningComponent = () => {
-  const warning = useSwapWarning();
+  const warning = useFillDelayWarning();
 
-  if (!warning.fillDelay) return null;
+  if (!warning) return null;
 
-  return <Message text={warning.fillDelay} type="warning" />;
+  return (
+    <BottomContent>
+      <Message title={warning} variant="warning" />
+    </BottomContent>
+  );
 };
 
 TradeInterval.Resolution = Resolution;

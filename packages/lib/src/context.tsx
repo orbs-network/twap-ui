@@ -9,6 +9,7 @@ import { TwapErrorWrapper } from "./ErrorHandling";
 import Web3 from "web3";
 import { useTwapStore } from "./store";
 import { query } from "./hooks/query";
+import { LimitPriceMessage, LimitPriceMessageContent } from "./components";
 
 analytics.onModuleLoad();
 
@@ -98,6 +99,7 @@ export const TwapAdapter = (props: TwapLibProps) => {
     <QueryClientProvider client={queryClient}>
       <TwapContext.Provider value={{ ...props, translations, uiPreferences: props.uiPreferences || {}, lib, isWrongChain }}>
         <WrappedTwap {...props} />
+        <LimitPriceMessageContent />
       </TwapContext.Provider>
     </QueryClientProvider>
   );

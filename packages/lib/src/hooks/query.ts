@@ -51,7 +51,9 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
           sellFee: res.sellFeeBps,
           hasFeeOnTranfer: BN(res.buyFeeBps).gt(0) || BN(res.sellFeeBps).gt(0),
         };
-      } catch (error) {}
+      } catch (error) {
+        return null;
+      }
     },
     queryKey: ["useFeeOnTransfer", tokenAddress, lib?.config.chainId, address],
     enabled: !!tokenAddress && !!lib && !!address,
