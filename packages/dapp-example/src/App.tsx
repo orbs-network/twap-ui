@@ -7,7 +7,7 @@ import { useMemo } from "react";
 
 const useGlobalStyles = () => {
   const dapp = useSelectedDapp();
-  return globalStyle(dapp.selectedDapp?.config.name);
+  return globalStyle(dapp.selectedDapp?.path);
 };
 
 function App() {
@@ -22,10 +22,10 @@ function App() {
       <StyledApp>
         <GlobalStyles styles={styles} />
         <Routes>
-          {dapps.map(({ config, Component }) => {
-            return <Route path={config.name.toLowerCase()} element={<Component />} key={config.name} />;
+          {dapps.map(({ path, Component }) => {
+            return <Route path={path} element={<Component />} key={path} />;
           })}
-          <Route path="*" element={<Navigate to={defaultDapp.config.name.toLowerCase()} />} />
+          <Route path="*" element={<Navigate to={defaultDapp.path} />} />
         </Routes>
       </StyledApp>
     </ThemeProvider>

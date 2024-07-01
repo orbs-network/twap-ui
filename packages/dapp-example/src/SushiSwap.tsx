@@ -1,37 +1,53 @@
 import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
 import { TWAP, Orders } from "@orbs-network/twap-ui-sushiswap";
-import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import _ from "lodash";
-import { erc20s, zeroAddress } from "@defi.org/web3-candies";
+import { zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
-const config = { ...Configs.QuickSwap };
-config.name = "SushiSwap";
+import { Components, getConfig } from "@orbs-network/twap-ui";
+import { DappProvider } from "./context";
 
-const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
+const name = "SushiSwap";
+const configs = [Configs.SushiArb, Configs.SushiBase];
 
-const parseListToken = (tokenList?: any[]) => {
-  return tokenList
-    ?.filter((t: any) => t.chainId === config.chainId)
-    .map(({ symbol, address, decimals, logoURI, name }: any) => ({
-      decimals,
-      symbol,
-      name,
-      address,
-      logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"),
-    }));
-};
 export const useDappTokens = () => {
+  const config = useConfig();
+
+  const parseListToken = useCallback(
+    (tokenList?: any) => {
+      console.log(tokenList);
+
+      const res = tokenList?.tokens
+        .filter((it: any) => it.chainId === config?.chainId)
+        .map(({ symbol, address, decimals, logoURI, name }: any) => ({
+          decimals,
+          symbol,
+          name,
+          address,
+          logoURI,
+        }));
+
+      const native = {
+        decimals: config?.nativeToken.decimals,
+        symbol: config?.nativeToken.symbol,
+        address: config?.nativeToken.address,
+        logoURI: config?.nativeToken.logoUrl,
+      };
+
+      return config ? [native, ...res] : res;
+    },
+    [config?.nativeToken, config?.chainId]
+  );
+
   return useGetTokens({
-    chainId: config.chainId,
+    url: "https://token-list.sushi.com/",
     parse: parseListToken,
-    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
-    url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json",
-    baseAssets: erc20s.poly,
+    modifyList: (tokens: any) => tokens.slice(0, 20),
   });
 };
 
@@ -53,7 +69,7 @@ const parseList = (rawList?: any): TokenListItem[] => {
         address: rawToken.address,
         decimals: rawToken.decimals,
         symbol: rawToken.symbol,
-        logoUrl: rawToken.logoURI || nativeTokenLogo,
+        logoUrl: rawToken.logoURI,
       },
       rawToken,
     };
@@ -73,48 +89,67 @@ const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: Tok
   );
 };
 
-const TWAPComponent = () => {
+const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
   const priceUsd = useGetPriceUsdCallback();
 
+  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
+    return useTrade(fromToken, toToken, amount, dappTokens);
+  };
+
   return (
     <TWAP
       connect={connect}
       account={account}
       srcToken={zeroAddress}
-      dstToken="0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff" //ORBS
+      dstToken="DAI"
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}
       isDarkTheme={isDarkTheme}
       priceUsd={priceUsd}
+      useTrade={_useTrade}
+      limit={limit}
+      Modal={Components.Base.Modal}
     />
   );
+};
+
+const useConfig = () => {
+  const { chainId } = useWeb3React();
+
+  return useMemo(() => getConfig(configs, chainId), [chainId]);
 };
 
 const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
   const { isDarkTheme } = useTheme();
 
-  return (
-    <StyledSushi isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledSushiLayout name={config.name}>
-        <UISelector selected={selected} select={setSelected} limit={true} />
+  const config = useConfig();
 
-        <TWAPComponent />
-        <Orders />
-      </StyledSushiLayout>
-    </StyledSushi>
+  return (
+    <DappProvider config={config}>
+      <StyledSushi isDarkMode={isDarkTheme ? 1 : 0}>
+        <StyledSushiLayout name={name}>
+          <UISelector selected={selected} select={setSelected} limit={true} />
+
+          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+
+          <Orders />
+        </StyledSushiLayout>
+      </StyledSushi>
+    </DappProvider>
   );
 };
 
 const dapp: Dapp = {
   Component: DappComponent,
   logo: "https://cdn.cdnlogo.com/logos/s/10/sushiswap.svg",
-  config,
+  configs: [Configs.SushiArb, Configs.SushiBase],
+  path: name.toLowerCase(),
   workInProgress: true,
 };
 

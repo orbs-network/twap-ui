@@ -5,16 +5,23 @@ import { TimeResolution, useTwapStore } from "../store";
 import { StyledColumnFlex } from "../styles";
 import { BottomContent, Message, NumericInput, TimeSelectMenu } from "./base";
 
-const Input = ({ placeholder = "0" }: { placeholder?: string }) => {
+const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const { setFillDelay, fillDelay } = useTwapStore((s) => ({
     setFillDelay: s.setFillDelay,
     fillDelay: s.customFillDelay,
   }));
 
-  return <NumericInput value={fillDelay.amount} onChange={(v) => setFillDelay({ resolution: fillDelay.resolution, amount: Number(v) })} placeholder={placeholder} />;
+  return (
+    <NumericInput
+      className={className}
+      value={fillDelay.amount}
+      onChange={(v) => setFillDelay({ resolution: fillDelay.resolution, amount: Number(v) })}
+      placeholder={placeholder}
+    />
+  );
 };
 
-export const Resolution = ({ placeholder }: { placeholder?: string }) => {
+export const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
   const { setFillDelay, fillDelay } = useTwapStore((s) => ({
     setFillDelay: s.setFillDelay,
     fillDelay: s.customFillDelay,
@@ -27,7 +34,7 @@ export const Resolution = ({ placeholder }: { placeholder?: string }) => {
     [fillDelay.amount, setFillDelay]
   );
 
-  return <TimeSelectMenu resolution={fillDelay.resolution} onChange={onChange} />;
+  return <TimeSelectMenu className={className} resolution={fillDelay.resolution} onChange={onChange} />;
 };
 
 export const TradeInterval = ({ children }: { children: ReactNode }) => {

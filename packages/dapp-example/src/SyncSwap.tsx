@@ -283,7 +283,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
   workInProgress: true,
 };
 
@@ -624,7 +625,6 @@ const parsedList = parseList(dappTokens);
 
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseList,
     baseAssets: erc20s.SyncSwap,
     tokens: dappTokens,

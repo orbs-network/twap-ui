@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { TwapContextUIPreferences, TwapLibProps } from "./types";
-import { useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
+import { useAmountBN, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
@@ -9,8 +9,8 @@ import { TwapErrorWrapper } from "./ErrorHandling";
 import Web3 from "web3";
 import { useTwapStore } from "./store";
 import { query } from "./hooks/query";
-import { LimitPriceMessage, LimitPriceMessageContent } from "./components";
-
+import { LimitPriceMessageContent } from "./components";
+import BN from "bignumber.js";
 analytics.onModuleLoad();
 
 export interface TWAPContextProps extends TwapLibProps {

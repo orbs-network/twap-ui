@@ -26,24 +26,25 @@ export const getTheme = (isDark: boolean) => {
 const isDarkMode = (theme: Theme) => theme.palette.mode === "dark";
 
 const fonts = {
-  [Configs.Chronos.name]: "TT Firs Neue Trial",
-  [Configs.SpiritSwap.name]: "Jost",
-  [Configs.QuickSwap.name]: "Inter",
+  [Configs.Chronos.name.toLowerCase()]: "TT Firs Neue Trial",
+  [Configs.SpiritSwap.name.toLowerCase()]: "Jost",
+  [Configs.QuickSwap.name.toLowerCase()]: "Inter",
   Kinetix: "Inter",
-  [Configs.Thena.name]: "Inter",
-  [Configs.Pangolin.name]: "Poppins",
-  [Configs.PangolinDaas.name]: "Poppins",
-  [Configs.SpookySwap.name]: "Red Hat Display",
-  [Configs.PancakeSwap.name]: "Kanit",
-  [Configs.BaseSwap.name]: "Alegreya Sans",
+  [Configs.Thena.name.toLowerCase()]: "Inter",
+  sushiswap: "Inter",
+  [Configs.Pangolin.name.toLowerCase()]: "Poppins",
+  [Configs.PangolinDaas.name.toLowerCase()]: "Poppins",
+  [Configs.SpookySwap.name.toLowerCase()]: "Red Hat Display",
+  [Configs.PancakeSwap.name.toLowerCase()]: "Kanit",
+  [Configs.BaseSwap.name.toLowerCase()]: "Alegreya Sans",
   StellaSwap: "DM Sans",
   Lynex: "Montserrat",
-  [Configs.Arbidex.name]: "Quicksand",
+  [Configs.Arbidex.name.toLowerCase()]: "Quicksand",
   SyncSwap: "Inter",
 };
 
 export const globalStyle = (name?: string) => {
-  const font = fonts[name || ""];
+  const font = fonts[(name || "") as keyof typeof fonts];
   return {
     "*, p": {
       fontFamily: `${font || "Helvetica"}!important`,

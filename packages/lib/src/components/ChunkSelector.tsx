@@ -67,7 +67,7 @@ const SliderComponent = ({ className }: { className?: string }) => {
 
   return (
     <Slider
-      label={`${formattedChunks} trades`}
+      label={`${formattedChunks ? formattedChunks : "0"} trades`}
       className={className}
       maxTrades={maxPossibleChunks === 1 ? maxPossibleChunks + 0.0001 : maxPossibleChunks}
       value={chunks}

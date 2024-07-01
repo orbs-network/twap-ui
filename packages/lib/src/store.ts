@@ -83,7 +83,7 @@ export const useTwapStore = create(
         wrapTxHash: undefined,
         unwrapTxHash: undefined,
         approveTxHash: undefined,
-        createOrderSuccess: undefined
+        createOrderSuccess: undefined,
       });
     },
     setConfirmationDetails: (confirmationDetails: ConfirmationDetails) => {

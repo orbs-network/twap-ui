@@ -349,7 +349,7 @@ export const useOrdersTabs = () => {
       if (it === "All") {
         return { All: _.size(_.flatMap(_orders)) || 0 };
       }
-      return { [it]: _.size(_orders[it as Status]) || 0 };
+      return { [it]: _.size((_orders as any)[it as Status]) || 0 };
     });
 
     return _.reduce(mapped, (acc, it) => ({ ...acc, ...it }), {});
@@ -378,18 +378,20 @@ export const useDappRawSelectedTokens = () => {
 };
 
 export const useConfirmationModal = () => {
-  const { swapState, updateState, showConfirmation, srcAmount, srcToken, dstToken, confirmationDetails, onModalClose, setConfirmationDetails, wrapSuccess } = useTwapStore((s) => ({
-    swapState: s.swapState,
-    updateState: s.updateState,
-    showConfirmation: s.showConfirmation,
-    srcAmount: s.srcAmountUi,
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-    confirmationDetails: s.confirmationDetails,
-    onModalClose: s.onModalClose,
-    setConfirmationDetails: s.setConfirmationDetails,
-    wrapSuccess: s.wrapSuccess,
-  }));
+  const { swapState, updateState, showConfirmation, srcAmount, srcToken, dstToken, confirmationDetails, onModalClose, setConfirmationDetails, wrapSuccess, setShowConfirmation } =
+    useTwapStore((s) => ({
+      swapState: s.swapState,
+      updateState: s.updateState,
+      showConfirmation: s.showConfirmation,
+      srcAmount: s.srcAmountUi,
+      srcToken: s.srcToken,
+      dstToken: s.dstToken,
+      confirmationDetails: s.confirmationDetails,
+      onModalClose: s.onModalClose,
+      setConfirmationDetails: s.setConfirmationDetails,
+      wrapSuccess: s.wrapSuccess,
+      setShowConfirmation: s.setShowConfirmation,
+    }));
 
   const outAmount = useOutAmount().outAmountUi;
   const srcUsd = useSrcAmountUsdUi();
@@ -424,10 +426,8 @@ export const useConfirmationModal = () => {
   }, [srcAmount, srcToken, dstToken, outAmount, srcUsd, dstUsd, setConfirmationDetails, swapState, updateState]);
 
   const onOpen = useCallback(() => {
-    updateState({
-      showConfirmation: true,
-    });
-  }, [updateState]);
+    setShowConfirmation(true);
+  }, [setShowConfirmation]);
 
   const title = useMemo(() => {
     if (!swapState) {
@@ -773,7 +773,7 @@ const useSrcAmountWarning = () => {
   }, [srcAmount.toString(), translations]);
 };
 
-const useBalanceWarning = () => {
+export const useBalanceWarning = () => {
   const { data: srcBalance } = useSrcBalance();
   const maxSrcInputAmount = useMaxSrcInputAmount();
   const { srcAmount } = useTwapStore((s) => ({
@@ -1225,4 +1225,21 @@ export const useIsSwapWithStableCoin = () => {
   return useMemo(() => {
     return isStableCoin(srcToken) || isStableCoin(dstToken);
   }, [srcToken, dstToken]);
+};
+
+export const useTokenBalance = (isSrc?: boolean) => {
+  const { srcToken, dstToken } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+  }));
+  const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
+  const dstBalance = useAmountUi(dstToken?.decimals, useDstBalance().data?.toString());
+  return isSrc ? srcBalance : dstBalance;
+};
+
+export const useTokenUsd = (isSrc?: boolean) => {
+  const srcUSD = useSrcAmountUsdUi();
+  const dstUSD = useDstAmountUsdUi();
+
+  return isSrc ? srcUSD : dstUSD;
 };

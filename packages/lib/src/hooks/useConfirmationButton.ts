@@ -55,7 +55,7 @@ export const useConfirmationButton = () => {
   return useMemo(() => {
     if (createOrderLoading) {
       return {
-        text: translations.placeOrder,
+        text: translations.placingOrder,
         onClick: onOpen,
         loading: false,
         disabled: false,

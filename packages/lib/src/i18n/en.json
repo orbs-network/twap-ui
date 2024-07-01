@@ -114,5 +114,6 @@
   "limitPriceMessage": "Limit orders may not execute exactly when tokens reach the specified limit price.",
   "learnMore": "Learn more",
   "swapOne": "Swap 1",
-  "isWorth": "for"
+  "isWorth": "for",
+  "placingOrder": "Placing order"
 }

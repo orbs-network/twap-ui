@@ -77,8 +77,6 @@ const PERCENT = [
   { text: "MAX", value: 1 },
 ];
 
-
-
 const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
   const useTooltip = useAdapterContext().useTooltip;
   const tooltip = useTooltip?.(text, { placement: "top", hideTimeout: 0 });
@@ -444,7 +442,7 @@ const LimitPriceInput = ({ value, onChange, isLoading }: any) => {
   return <Components.Base.NumericInput value={value} onChange={onChange} loading={isLoading} />;
 };
 
-const LimitPrice = ({ isTwap }: { isTwap?: boolean }) => {
+const LimitPrice = () => {
   const onSrcSelect = useTokenSelectClick(true);
   const onDstSelect = useTokenSelectClick(false);
   const [isSrc, setIsSrc] = useState(false);
@@ -471,7 +469,7 @@ const LimitPrice = ({ isTwap }: { isTwap?: boolean }) => {
       <TokenSelect isSrcToken={isSrc} onClose={() => setIsOpen(false)} open={isOpen} />
       <Card>
         <Card.Header>
-          <Components.Labels.LimitPriceLabel isTwap={isTwap} />
+          <Components.Labels.LimitPriceLabel />
           <StyledLimitSwitch Component={CustomPriceToggle} />
         </Card.Header>
         <Card.Body>
@@ -516,7 +514,7 @@ const TWAPPanel = () => {
     <div className="twap-container">
       <StyledColumnFlex>
         <TopPanel />
-        <LimitPrice isTwap={true} />
+        <LimitPrice />
         <TotalTrades />
         <TradeIntervalSelect />
         <OpenConfirmationModalButton />
@@ -718,5 +716,3 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
     </StyledModalHeader>
   );
 };
-
-

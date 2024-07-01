@@ -6,8 +6,8 @@ import { useOrderType } from "../hooks";
 
 export function OrderSubmitted() {
   return (
-    <StyledContainer>
-      <Logo>
+    <StyledContainer className="twap-order-modal-submitted">
+      <Logo className="twap-order-modal-submitted-logo">
         <HiArrowCircleUp />
       </Logo>
       <Title />

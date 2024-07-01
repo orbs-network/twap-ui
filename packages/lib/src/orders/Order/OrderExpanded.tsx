@@ -3,8 +3,7 @@ import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { Button, Label, TokenLogo, TokenPriceCompare } from "../../components/base";
 import { useTwapContext } from "../../context";
-import { useCancelOrder, useFormatNumber, useHistoryPrice, useMinimumDelayMinutes } from "../../hooks";
-import { useTwapStore } from "../../store";
+import { useCancelOrder, useFormatNumberV2, useHistoryPrice, useMinimumDelayMinutes } from "../../hooks";
 import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { OrderUI } from "../../types";
 import { fillDelayText } from "../../utils";
@@ -13,13 +12,13 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const { translations, uiPreferences } = useTwapContext();
   const hideUsd = uiPreferences.orders?.hideUsd;
   const minimumDelayMinutes = useMinimumDelayMinutes();
-  const totalChunks = useFormatNumber({ value: order?.ui.totalChunks, disableDynamicDecimals: true });
-  const srcChunkAmountUsdUi = useFormatNumber({ value: order?.ui.srcChunkAmountUsdUi, disableDynamicDecimals: true });
+  const totalChunks = useFormatNumberV2({ value: order?.ui.totalChunks });
+  const srcChunkAmountUsdUi = useFormatNumberV2({ value: order?.ui.srcChunkAmountUsdUi });
 
-  const srcChunkAmountUi = useFormatNumber({ value: order?.ui.srcChunkAmountUi, disableDynamicDecimals: true });
+  const srcChunkAmountUi = useFormatNumberV2({ value: order?.ui.srcChunkAmountUi });
 
-  const dstMinAmountOutUi = useFormatNumber({ value: order?.ui.dstMinAmountOutUi, disableDynamicDecimals: true });
-  const dstMinAmountOutUsdUi = useFormatNumber({ value: order?.ui.dstMinAmountOutUsdUi, disableDynamicDecimals: true });
+  const dstMinAmountOutUi = useFormatNumberV2({ value: order?.ui.dstMinAmountOutUi });
+  const dstMinAmountOutUsdUi = useFormatNumberV2({ value: order?.ui.dstMinAmountOutUsdUi });
 
   if (!order) return null;
 
@@ -27,7 +26,7 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
     <StyledContainer className="twap-order-expanded">
       <StyledColumnFlex gap={0}>
         <StyledColumnFlex className="twap-extended-order-info">
-          {order.ui.srcToken && order.ui.dstToken && <OrderPrice order={order} />}
+          {/* {order.ui.srcToken && order.ui.dstToken && <OrderPrice order={order} />} */}
           <Row label={`${translations.totalTrades}`} tooltip={translations.totalTradesTooltip}>
             {totalChunks}
           </Row>

@@ -1,16 +1,16 @@
 import { LinearProgress, Typography, Box, styled, Fade } from "@mui/material";
 import { OrderUI, useTwapContext } from "../..";
 import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../../styles";
-import { useFormatNumber } from "../../hooks";
+import { useFormatNumberV2 } from "../../hooks";
 import { Icon, Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
 import { TokenData } from "@orbs-network/twap";
 import { ReactNode, useMemo } from "react";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { FiChevronDown } from "@react-icons/all-files/fi/FiChevronDown";
 
-function OrderPreview({ order }: { order: OrderUI }) {
-  const srcFilledAmountUi = useFormatNumber({ value: order?.ui.srcFilledAmountUi });
-  const progress = useFormatNumber({ value: order?.ui.progress, decimalScale: 1, suffix: "%" });
+function OrderPreview({ order, onExpand }: { order: OrderUI; onExpand: () => void }) {
+  const srcFilledAmountUi = useFormatNumberV2({ value: order?.ui.srcFilledAmountUi });
+  const progress = useFormatNumberV2({ value: order?.ui.progress, decimalScale: 1, suffix: "%" });
   const translations = useTwapContext().translations;
 
   return (
@@ -50,7 +50,7 @@ function OrderPreview({ order }: { order: OrderUI }) {
           token={order?.ui.dstToken}
           amount={order?.ui.dstAmount}
           usdValue={order?.ui.dstAmountUsd}
-          icon={<FiChevronDown />}
+          icon={<FiChevronDown onClick={onExpand} />}
         />
       </StyledOrderTokensDisplay>
     </StyledColumnFlex>
@@ -123,7 +123,7 @@ interface OrderTokenDisplayProps {
   usdLoading?: boolean;
 }
 export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading, usdLoading }: OrderTokenDisplayProps) => {
-  const tokenAmount = useFormatNumber({ value: amount, disableDynamicDecimals: true });
+  const tokenAmount = useFormatNumberV2({ value: amount });
 
   return (
     <StyledTokenDisplay className={`twap-order-token-display ${className}`}>
@@ -174,7 +174,7 @@ interface OrderUsdValueProps {
 }
 
 export function OrderUsdValue({ usdValue, prefix = "≈", isLoading }: OrderUsdValueProps) {
-  const formattedValue = useFormatNumber({ value: usdValue, disableDynamicDecimals: true });
+  const formattedValue = useFormatNumberV2({ value: usdValue });
 
   if (isLoading) return <Loader width={30} height={20} />;
   if (!usdValue) return null;

@@ -6,8 +6,7 @@ import BN from "bignumber.js";
 import _ from "lodash";
 import { useTwapStore } from "./store";
 import { THE_GRAPH_ORDERS_API } from "./config";
-import { numericFormatter } from "react-number-format";
-import { Config } from "@orbs-network/twap";
+import { Config, Configs } from "@orbs-network/twap";
 export const logger = (...args: any[]) => {
   const query = new URLSearchParams(window.location.search);
   const debug = query.get("debug");
@@ -220,3 +219,7 @@ export const isNativeBalanceError = (error: any) => {
 };
 
 export const isStableCoin = (token?: TokenData) => STABLE_TOKENS.includes(token?.symbol.toLowerCase() || "");
+
+export const getConfig = (configs: Config[], chainId?: number): Config => {
+  return _.find(configs, { chainId }) || configs[0];
+};

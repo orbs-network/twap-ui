@@ -61,7 +61,7 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
   );
 }
 
-export const TimeSelectMenu = ({ onChange, resolution }: { onChange: (resolution: TimeResolution) => void; resolution: TimeResolution }) => {
+export const TimeSelectMenu = ({ onChange, resolution, className = "" }: { onChange: (resolution: TimeResolution) => void; resolution: TimeResolution; className?: string }) => {
   const translations = useTwapContext().translations;
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -83,7 +83,7 @@ export const TimeSelectMenu = ({ onChange, resolution }: { onChange: (resolution
 
   return (
     <>
-      <StyledSelected onClick={handleClick} className="twap-time-selector-menu-button">
+      <StyledSelected onClick={handleClick} className={`${className} twap-time-selector-menu-button`}>
         {translations[findSelectedResolutionText(resolution)]}
         <IoIosArrowDown />
       </StyledSelected>

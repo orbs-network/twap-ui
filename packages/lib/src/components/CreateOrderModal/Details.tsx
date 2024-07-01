@@ -13,8 +13,6 @@ import {
   useFormatNumberV2,
   useInvertedPrice,
   useIsMarketOrder,
-  useLimitPrice,
-  useLimitPricePercentDiffFromMarket,
   useOutAmount,
   useSrcChunkAmountUi,
   useSrcUsd,
@@ -60,7 +58,7 @@ export const Price = () => {
   const usd = useFormatNumberV2({ value: usdAmount, decimalScale: 2 });
   const title = isMarketOrder ? "Market Price" : "Limit Price";
   return (
-    <DetailRow title={title} tooltip="">
+    <DetailRow title={title}>
       <StyledPrice onClick={toggle}>
         1 {leftToken?.symbol} = {price} {rightToken?.symbol} <span>{`($${usd})`}</span>
       </StyledPrice>
@@ -70,8 +68,10 @@ export const Price = () => {
 
 const StyledPrice = styled(StyledText)({
   cursor: "pointer",
+  fontSize: 13,
   span: {
     opacity: 0.6,
+    fontSize: 12,
   },
 });
 

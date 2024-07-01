@@ -4,7 +4,7 @@ import { network } from "@defi.org/web3-candies";
 import { Dapp } from "./Components";
 import moment from "moment";
 import BN from "bignumber.js";
-import { useSelectedDapp } from "./hooks";
+import { useSelectedDapp, useSelectedDappConfig } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
 import { useEffect, useState } from "react";
 
@@ -18,69 +18,80 @@ const chainNames = {
 
 const MIN_BALANCE = 0.001;
 
-function useConfig(dapp?: Dapp) {
-  const twapVersion = dapp?.config.twapVersion || "?";
+function useConfig() {
+  const config = useSelectedDappConfig();
+  const twapVersion = config?.twapVersion || "?";
   const twapLibVersion = require("@orbs-network/twap/package.json").version || "?";
   const twapUiVersion = require("@orbs-network/twap-ui/package.json").version || "?";
-  const info = network(dapp?.config.chainId || 0) || {};
-  return { twapVersion, twapLibVersion, twapUiVersion, info };
+  const info = network(config?.chainId || 0) || {};
+  return { twapVersion, twapLibVersion, twapUiVersion, info, ...config };
 }
 
-function useBackupTakersStatus(dapp?: Dapp) {
+function useBackupTakersStatus() {
+  const config = useSelectedDappConfig();
+
   return useQuery(
-    ["useBackupTakersStatus", dapp?.config.chainId],
+    ["useBackupTakersStatus", config?.chainId],
     async () =>
       fetch("https://wallet-manager-1-a1922d7bed1d.herokuapp.com/health")
         .then((x) => x.json())
         .then(async (s: any) => {
           return {
-            status: s.networks[(chainNames as any)[dapp!.config.chainName]].status === "OK",
+            status: s.networks[(chainNames as any)[config!.chainName]].status === "OK",
             balances: [
-              BN(s.networks[(chainNames as any)[dapp!.config.chainName]].wallets.treasury.balanceInWU)
+              BN(s.networks[(chainNames as any)[config!.chainName]].wallets.treasury.balanceInWU)
                 .times(1e3)
                 .integerValue()
                 .div(1e3)
                 .toNumber(),
             ],
-            count: _.size(s.networks[(chainNames as any)[dapp!.config.chainName]].wallets.availableWallets),
+            count: _.size(s.networks[(chainNames as any)[config!.chainName]].wallets.availableWallets),
           };
         })
         .catch(() => ({ status: false, balances: [] as number[], count: 0 })),
     {
-      enabled: !!dapp,
+      enabled: !!config,
       refetchInterval: 60_000,
     }
   ).data;
 }
 
 function useOrbsL3TakersStatus(dapp?: Dapp) {
-  return useQuery(["useOrbsL3TakersStatus", dapp?.config.chainId], async () => {
-    const orbsStatus = await (await fetch("https://status.orbs.network/json-full")).json();
-    const result = _.map(orbsStatus.CommitteeNodes, (node) => {
-      try {
-        const nodeStatus = _.get(node, ["NodeServices", "vm-twap", "VMStatusJson"]);
-        const balance = BN(_.values(nodeStatus.takersWallets[(chainNames as any)[dapp!.config.chainName]])[0].balance)
-          .times(1e3)
-          .integerValue()
-          .div(1e3)
-          .toNumber();
-        return {
-          status: balance > MIN_BALANCE,
-          balance,
-        };
-      } catch (e) {
-        return {
-          status: false,
-          balance: 0,
-        };
-      }
-    });
-    const online = _.sortBy(
-      _.filter(result, (r) => r.status),
-      (r) => r.balance
-    );
-    return { status: online.length >= 10, balances: online.map((n) => n.balance) };
-  }).data;
+  const config = useSelectedDappConfig();
+
+  return useQuery(
+    ["useOrbsL3TakersStatus", config?.chainId],
+    async () => {
+      const orbsStatus = await (await fetch("https://status.orbs.network/json-full")).json();
+      const result = _.map(orbsStatus.CommitteeNodes, (node) => {
+        try {
+          const nodeStatus = _.get(node, ["NodeServices", "vm-twap", "VMStatusJson"]);
+          const balance = BN(_.values(nodeStatus.takersWallets[(chainNames as any)[config!.chainName]])[0].balance)
+            .times(1e3)
+            .integerValue()
+            .div(1e3)
+            .toNumber();
+          return {
+            status: balance > MIN_BALANCE,
+            balance,
+          };
+        } catch (e) {
+          return {
+            status: false,
+            balance: 0,
+          };
+        }
+      });
+      const online = _.sortBy(
+        _.filter(result, (r) => r.status),
+        (r) => r.balance
+      );
+      return { status: online.length >= 10, balances: online.map((n) => n.balance) };
+    },
+    {
+      enabled: !!config,
+    }
+  ).data;
 }
 
 const Image = ({ logo }: { logo?: string }) => {
@@ -95,10 +106,10 @@ const Image = ({ logo }: { logo?: string }) => {
 
 export function Status() {
   const { selectedDapp: dapp } = useSelectedDapp();
-  const config = useConfig(dapp);
+  const config = useConfig();
 
   const orbsTakers = useOrbsL3TakersStatus(dapp);
-  const backupTakers = useBackupTakersStatus(dapp);
+  const backupTakers = useBackupTakersStatus();
   return (
     <>
       {dapp && (
@@ -130,31 +141,31 @@ export function Status() {
           <StyledStatusSection>
             <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <Image logo={config?.info?.logoUrl} /> {config?.info?.name} {dapp.config.chainId}
+              <Image logo={config?.info?.logoUrl} /> {config?.info?.name} {config.chainId}
             </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle>TWAP:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <a href={config ? `${config.info?.explorer}/address/${dapp.config.twapAddress}` : ""} target={"_blank"}>
-                {dapp.config.twapAddress}
+              <a href={config ? `${config.info?.explorer}/address/${config.twapAddress}` : ""} target={"_blank"}>
+                {config?.twapAddress}
               </a>
             </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle> Lens:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              <a href={config ? `${config.info?.explorer}/address/${dapp.config.lensAddress}` : ""} target={"_blank"}>
-                {dapp.config.lensAddress}
+              <a href={config ? `${config.info?.explorer}/address/${config.lensAddress}` : ""} target={"_blank"}>
+                {config.lensAddress}
               </a>
             </StyledStatusSectionText>
           </StyledStatusSection>
           <StyledStatusSection>
             <StyledStatusSectionTitle>Exchange:</StyledStatusSectionTitle>
             <StyledStatusSectionText>
-              {dapp.config.exchangeType}{" "}
-              <a href={config ? `${config.info?.explorer}/address/${dapp.config.exchangeAddress}` : ""} target={"_blank"}>
-                {dapp.config.exchangeAddress}
+              {config?.exchangeType}{" "}
+              <a href={config ? `${config.info?.explorer}/address/${config?.exchangeAddress}` : ""} target={"_blank"}>
+                {config?.exchangeAddress}
               </a>
             </StyledStatusSectionText>
           </StyledStatusSection>

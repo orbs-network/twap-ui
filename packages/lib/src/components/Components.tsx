@@ -136,11 +136,12 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
     token: store.dstToken,
   }));
   const { outAmountUi, isLoading } = useOutAmount();
+  const isMarketOrder = useIsMarketOrder();
   return (
     <Input
       disabled={true}
       loading={isLoading}
-      prefix={SQUIGLE}
+      prefix={isMarketOrder ? SQUIGLE : ""}
       value={useFormatDecimals(outAmountUi)}
       decimalScale={props.decimalScale || token?.decimals}
       className={props.className}
@@ -320,6 +321,7 @@ export function TokenUSD({
   const dstUSD = useDstAmountUsdUi();
 
   const usd = isSrc ? srcUSD : dstUSD;
+
   const isLoading = isSrc ? srcUsdLoading : dstUsdLoading;
 
   if (Number(usd) <= 0 && hideIfZero) return null;
@@ -950,10 +952,7 @@ export const LimitPriceMessageContent = ({ className }: { className?: string }) 
 };
 
 export const LimitPriceMessage = () => {
-
-  return (
-    <div id="twap-limit-price-message-container" />
-  );
+  return <div id="twap-limit-price-message-container" />;
 };
 
 const StyledLimitPriceMessage = styled(Message)({

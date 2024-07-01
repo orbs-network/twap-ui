@@ -1,34 +1,83 @@
 import { Box, styled } from "@mui/material";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { useTwapStore } from "../../store";
-import { Icon, Message } from "../base";
+import { Icon, NumericInput, TokenDisplay } from "../base";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
 import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket } from "../../hooks/hooks";
-import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps } from "../../types";
+import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps, LimitPriceInputProps } from "../../types";
 import { useOnLimitPercentageClick, onCustomChange } from "./hooks";
 import { amountUiV2, formatDecimals } from "../../utils";
 import { useTwapContext } from "../../context";
 import { MarketPriceWarning } from "../Components";
 
-interface Shared {
+export interface Shared {
   onSrcSelect: () => void;
   onDstSelect: () => void;
-  Components: {
-    PercentButton: FC<LimitPricePercentProps>;
-    ZeroButton: FC<LimitPriceZeroButtonProps>;
-    Title: FC<LimitPriceTitleProps>;
-    TokenSelect: FC<LimitPriceTokenSelectProps>;
-    Input: FC<{ isLoading: boolean; onChange: (value: string) => void; value: string }>;
+  Components?: {
+    PercentButton?: FC<LimitPricePercentProps>;
+    ZeroButton?: FC<LimitPriceZeroButtonProps>;
+    Title?: FC<LimitPriceTitleProps>;
+    TokenSelect?: FC<LimitPriceTokenSelectProps>;
+    Input?: FC<LimitPriceInputProps>;
   };
   styles?: {
     percentButtonsGap: string;
   };
 }
 
-interface Props extends Shared {
+const DefaultInput = ({ isLoading, onChange, value }: { isLoading: boolean; onChange: (value: string) => void; value: string }) => {
+  return <NumericInput disabled={isLoading} onChange={onChange} value={value} />;
+};
+
+const DefaultTokenSelect = (props: LimitPriceTokenSelectProps) => {
+  return <StyledTokenSelect className="twap-limit-panel-token-select" logo={props.token?.logoUrl} symbol={props.token?.symbol} onClick={props.onClick} />;
+};
+
+const StyledTokenSelect = styled(TokenDisplay)({
+  fontSize: 14,
+  cursor: "pointer",
+  ".twap-token-logo": {
+    width: "20px",
+    height: "20px",
+  },
+});
+
+const DefaultTitle = (props: LimitPriceTitleProps) => {
+  return (
+    <StyledDefaultTitle className="twap-limit-panel-title">
+      <StyledText>{props.textLeft}</StyledText>
+      <TokenDisplay symbol={props.token?.symbol} logo={props.token?.logoUrl} onClick={props.onTokenClick} />
+      <StyledText>{props.textRight}</StyledText>
+    </StyledDefaultTitle>
+  );
+};
+const StyledDefaultTitle = styled(StyledRowFlex)({
+  width: "auto",
+  flex: 1,
+  gap: 5,
+  justifyContent: "flex-start",
+  fontSize: 14,
+  ".twap-token-display": {
+    cursor: "pointer",
+  },
+  ".twap-token-logo": {
+    width: "20px",
+    height: "20px",
+  },
+});
+
+const DefaultZeroButton = ({ onClick, text }: LimitPriceZeroButtonProps) => {
+  return <button onClick={onClick}>{text}</button>;
+};
+
+const DefaultPercentButton = ({ text, onClick, selected }: LimitPricePercentProps) => {
+  return <button onClick={onClick}>{text}</button>;
+};
+
+export interface Props extends Shared {
   className?: string;
 }
 
@@ -47,11 +96,11 @@ export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Component
   return (
     <Context.Provider value={{ onSrcSelect, onDstSelect, Components, styles }}>
       <Container className={`twap-limit-panel ${className}`}>
-        <StyledRowFlex justifyContent="flex-start">
+        <StyledRowFlex justifyContent="space-between">
           <Title />
           <InvertPrice />
         </StyledRowFlex>
-        <StyledRowFlex>
+        <StyledRowFlex justifyContent="space-between">
           <Input />
           <TokenSelect />
         </StyledRowFlex>
@@ -98,7 +147,11 @@ const Input = () => {
     <StyledInputContainer>
       {isMarketOrder && <StyledAnyPrice className="twap-limit-panel-market-price">Get text from Eran</StyledAnyPrice>}
       <div style={{ opacity: isMarketOrder ? 0 : 1, pointerEvents: isMarketOrder ? "none" : "all" }}>
-        <Components.Input isLoading={isLoading} onChange={onChange} value={value} />
+        {Components?.Input ? (
+          <Components.Input isLoading={isLoading} onChange={onChange} value={value} />
+        ) : (
+          <DefaultInput isLoading={isLoading} onChange={onChange} value={value} />
+        )}
       </div>
     </StyledInputContainer>
   );
@@ -167,8 +220,10 @@ const PercentButton = ({ percent }: { percent: string }) => {
   }, [limitPricePercent, percent, isMarketOrder, limitPrice, priceDeltaPercentage]);
 
   const prefix = percent === "0" ? "" : inverted ? "-" : !inverted && "+";
-
-  return <Components.PercentButton onClick={() => onPercentageChange(percent)} selected={selected} text={`${prefix}${Math.abs(Number(percent))}%`} />;
+  if (Components?.PercentButton) {
+    return <Components.PercentButton onClick={() => onPercentageChange(percent)} selected={selected} text={`${prefix}${Math.abs(Number(percent))}%`} />;
+  }
+  return <DefaultPercentButton onClick={() => onPercentageChange(percent)} selected={selected} text={`${prefix}${Math.abs(Number(percent))}%`} />;
 };
 
 const ZeroButton = () => {
@@ -197,7 +252,11 @@ const ZeroButton = () => {
   }, [priceDeltaPercentage, limitPricePercent, percent]);
 
   if (showZero) {
-    return <Components.ZeroButton onClick={() => onPercentageChange("0")} text={`${priceDeltaPercentage}%`} />;
+    return Components?.ZeroButton ? (
+      <Components.ZeroButton onClick={() => onPercentageChange("0")} text={`${priceDeltaPercentage}%`} />
+    ) : (
+      <DefaultZeroButton onClick={() => onPercentageChange("0")} text={`${priceDeltaPercentage}%`} />
+    );
   }
   return <PercentButton percent="0" />;
 };
@@ -209,8 +268,10 @@ const TokenSelect = () => {
   const Components = useLimitPanelContext().Components;
   const token = useTwapStore((s) => (inverted ? s.srcToken : s.dstToken));
   const { onDstSelect, onSrcSelect } = useLimitPanelContext();
-
-  return <Components.TokenSelect token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
+  if (Components?.TokenSelect) {
+    return <Components.TokenSelect token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
+  }
+  return <DefaultTokenSelect token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
 };
 
 const InvertPrice = () => {
@@ -231,8 +292,11 @@ const Title = () => {
     inverted: s.isInvertedLimitPrice,
   }));
   const token = useTwapStore((s) => (inverted ? s.dstToken : s.srcToken));
+  if (Components?.Title) {
+    return <Components.Title textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
+  }
 
-  return <Components.Title textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
+  return <DefaultTitle textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
 };
 
 const StyledInvertprice = styled(Box)({

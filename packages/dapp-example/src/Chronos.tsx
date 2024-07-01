@@ -26,7 +26,7 @@ const parseListToken = (item?: any[]) => {
   });
 };
 const useDappTokens = () => {
-  return useGetTokens({ chainId: config.chainId, url: tokensURL, parse: parseListToken, baseAssets: erc20s.arb });
+  return useGetTokens({ url: tokensURL, parse: parseListToken, baseAssets: erc20s.arb });
 };
 
 interface TokenSelectModalProps {
@@ -132,7 +132,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;

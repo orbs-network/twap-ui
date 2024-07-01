@@ -27,7 +27,6 @@ const pasrseListToken = (tokenList?: any) => {
 };
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: pasrseListToken,
     modifyList: (tokens: any) => {
       return [config.nativeToken, ...tokens];
@@ -77,8 +76,8 @@ const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: Tok
 
 const _useTrade = (fromToken?: any, toToken?: any, amount?: string) => {
   const _amount = hooks.useAmountBN(fromToken?.decimals, amount);
-
-  return useTrade(fromToken?.address, toToken?.address, _amount, fromToken?.decimals, toToken?.decimals);
+  const tokens = useDappTokens().data;
+  return useTrade(fromToken?.address, toToken?.address, _amount, tokens);
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -156,7 +155,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;

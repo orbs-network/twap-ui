@@ -15,7 +15,6 @@ const config = Configs.BaseSwap;
 
 const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     tokens,
     baseAssets: erc20s.base,
   });
@@ -120,8 +119,8 @@ const useDecimals = (fromToken?: string, toToken?: string) => {
 };
 
 const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
-  const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken, toToken);
-  return useTrade(fromToken, toToken, amount, fromTokenDecimals, toTokenDecimals);
+  const tokens = useDappTokens().data;
+  return useTrade(fromToken, toToken, amount, tokens);
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -179,7 +178,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;

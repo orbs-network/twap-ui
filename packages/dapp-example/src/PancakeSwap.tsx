@@ -33,7 +33,6 @@ const parseListToken = (tokenList: any) => {
 };
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseListToken,
     modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
     baseAssets: erc20s.bsc,
@@ -132,8 +131,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const isMobile = useIsMobile();
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
-    const { fromTokenDecimals, toTokenDecimals } = useDecimals(handleAddress(fromToken), handleAddress(toToken));
-    return useTrade(fromToken, toToken, amount, fromTokenDecimals, toTokenDecimals);
+    return useTrade(fromToken, toToken, amount, dappTokens);
   };
 
   const connector = useMemo(() => {
@@ -203,7 +201,6 @@ const DappComponent = () => {
   );
 };
 
-
 const Wrapper = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   const { isDarkTheme } = useTheme();
 
@@ -223,7 +220,8 @@ const StyledWrapper = styled(Box)({
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;

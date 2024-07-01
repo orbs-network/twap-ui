@@ -248,7 +248,6 @@ const useOnSuccessCallback = () => {
   );
 };
 
-
 export const useSubmitOrderFlow = () => {
   const { srcToken, swapState, updateState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, wrapSuccess, srcAmount } = useTwapStore((s) => ({
     srcToken: s.srcToken,
@@ -322,7 +321,7 @@ export const useSubmitOrderFlow = () => {
     {
       onError(error) {
         if (isTxRejected(error)) {
-          updateState({ swapState: 'rejected' });
+          updateState({ swapState: "rejected" });
         } else {
           updateState({ swapState: "failed" });
         }

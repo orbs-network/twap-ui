@@ -26,7 +26,6 @@ const parseListToken = (tokenList: any) => {
 
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseListToken,
     modifyFetchResponse: (response: any) => {
       return response.data;
@@ -130,7 +129,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
   workInProgress: true,
 };
 

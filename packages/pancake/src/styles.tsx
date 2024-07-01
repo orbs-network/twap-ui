@@ -109,7 +109,7 @@ export const configureStyles = (theme: Theme) => {
 
   return {
     ".twap-limit-price-message": {
-      background: '#27262C',
+      background: "#27262C",
       padding: 16,
       borderRadius: 24,
     },

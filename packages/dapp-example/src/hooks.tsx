@@ -1,5 +1,5 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
-import { zeroAddress, zero, convertDecimals, isNativeAddress } from "@defi.org/web3-candies";
+import { zeroAddress, zero, convertDecimals, isNativeAddress, networks, erc20s, eqIgnoreCase } from "@defi.org/web3-candies";
 import _ from "lodash";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
@@ -9,7 +9,7 @@ import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
 import { dapps } from "./config";
 import { TokenData } from "@orbs-network/twap";
-import { store, amountBN, amountUi } from "@orbs-network/twap-ui";
+import { amountUi } from "@orbs-network/twap-ui";
 import { usePersistedStore } from "./store";
 import { fetchPrice } from "./utils";
 import BigNumber from "bignumber.js";
@@ -25,15 +25,12 @@ export const useAddedTokens = () => {
 };
 
 export const useGetTokens = ({
-  chainId,
   url,
   parse,
-  baseAssets,
   tokens,
   modifyList,
   modifyFetchResponse,
 }: {
-  chainId: number;
   url?: string;
   parse?: (t: any) => any;
   baseAssets?: any;
@@ -41,6 +38,9 @@ export const useGetTokens = ({
   modifyList?: (list: any) => any;
   modifyFetchResponse?: (res: any) => any;
 }) => {
+  const chainId = useSelectedDappConfig()?.chainId;
+  const baseAssets = useBaseAssets();
+
   const { account } = useWeb3React();
   const { isInValidNetwork } = useNetwork(chainId);
   const addedTokens = useAddedTokens();
@@ -93,12 +93,12 @@ export const useDisconnectWallet = () => {
 export const useSelectedDapp = () => {
   const location = useLocation();
   const selected = location.pathname.split("/")[1];
-  const isSelected = useCallback((dapp: Dapp) => selected === dapp.config.name.toLowerCase(), [selected]);
-  const selectedDapp = useMemo(() => dapps.find((dapp) => dapp.config.name.toLowerCase() === selected), [selected]);
+  const isSelected = useCallback((dapp: Dapp) => selected === dapp.path, [selected]);
+  const selectedDapp = useMemo(() => dapps.find((dapp) => dapp.path === selected), [selected]);
   return { isSelected, selectedDapp };
 };
 
-export const useNetwork = (chainId: number) => {
+export const useNetwork = (chainId?: number) => {
   const { chainId: connectedChainId } = useWeb3React();
 
   const isInValidNetwork = !!(connectedChainId && connectedChainId !== chainId);
@@ -206,10 +206,16 @@ const handleAddress = (address?: string) => {
   return address;
 };
 
-export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: string, fromTokenDecimals?: number, toTokenDecimals?: number) => {
+export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: string, tokens?: any) => {
   const fromTokenUsd = usePriceUSD(handleAddress(fromToken));
   const toTokenUsd = usePriceUSD(handleAddress(toToken));
   const { chainId } = useWeb3React();
+  const { fromTokenDecimals, toTokenDecimals } = useMemo(() => {
+    return {
+      fromTokenDecimals: _.find(tokens, (it) => eqIgnoreCase(it.address, fromToken || ""))?.decimals,
+      toTokenDecimals: _.find(tokens, (it) => eqIgnoreCase(it.address, toToken || ""))?.decimals,
+    };
+  }, [fromToken, toToken, tokens]);
 
   const query = useQuery({
     queryKey: ["useTrade", fromToken, toToken, srcAmount, chainId],
@@ -237,3 +243,34 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
 };
 
 export const useIsMobile = () => useMediaQuery("(max-width:600px)");
+
+export const useSelectedDappConfig = () => {
+  const { chainId } = useWeb3React();
+  const configs = useSelectedDapp().selectedDapp?.configs;
+
+  return _.find(configs, { chainId });
+};
+
+export const useBaseAssets = () => {
+  const { chainId } = useWeb3React();
+  return useMemo(() => {
+    switch (chainId) {
+      case networks.arb.id:
+        return erc20s.arb;
+      case networks.base.id:
+        return erc20s.base;
+      case networks.poly.id:
+        return erc20s.poly;
+      case networks.bsc.id:
+        return erc20s.bsc;
+      case networks.blast.id:
+        return erc20s.blast;
+      case networks.ftm.id:
+        return erc20s.ftm;
+      case networks.linea.id:
+        return erc20s.linea;
+      default:
+        break;
+    }
+  }, [chainId]);
+};

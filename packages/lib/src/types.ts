@@ -120,6 +120,7 @@ export interface Translations {
   learnMore: string;
   swapOne: string;
   isWorth: string;
+  placingOrder: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";
@@ -295,7 +296,7 @@ export interface OrdersData {
   [Status.Completed]?: OrderUI[];
 }
 
-export type SwapState = "loading" | "success" | "failed" | 'rejected';
+export type SwapState = "loading" | "success" | "failed" | "rejected";
 export type SwapStep = "createOrder" | "wrap" | "approve";
 
 export type ConfirmationDetails = { outAmount?: string; srcAmount?: string; srcUsd?: string; dstUsd?: string; srcToken?: TokenData; dstToken?: TokenData };
@@ -402,6 +403,8 @@ export type LimitPriceTokenSelectProps = {
   token?: TokenData;
   onClick: () => void;
 };
+
+export type LimitPriceInputProps = { isLoading: boolean; onChange: (value: string) => void; value: string };
 
 export type Step = {
   title: string;

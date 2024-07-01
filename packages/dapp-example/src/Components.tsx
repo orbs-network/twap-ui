@@ -49,12 +49,13 @@ import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
 const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
 
 export interface Dapp {
-  config: Config;
   logo: string;
   Component: any;
   invertLogo?: boolean;
   theme?: "light" | "dark";
   workInProgress?: boolean;
+  configs: Config[];
+  path: string;
 }
 
 export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: ReactNode }) => {
@@ -126,7 +127,7 @@ export const DappsMenu = () => {
   const onSelect = (dapp: Dapp) => {
     reset();
     disconnect();
-    navigate(`/${dapp.config.name.toLowerCase()}`);
+    navigate(`/${dapp.path}`);
   };
 
   const open = !isMobile ? true : isMobile && isOpen;
@@ -169,13 +170,13 @@ export const DappsMenu = () => {
           <ToggleTheme />
           <StyledMenuList>
             {dapps.map((dapp) => (
-              <ListItem onClick={() => onSelectClick(dapp)} key={dapp.config.name.toLowerCase()} disablePadding selected={isSelected(dapp)}>
+              <ListItem onClick={() => onSelectClick(dapp)} key={dapp.path} disablePadding selected={isSelected(dapp)}>
                 <StyledMenuListItemButton>
                   <div>
-                    <StyledMenuLogo src={network(dapp.config.chainId).logoUrl} style={{ width: 16, height: 16 }} />
+                    {/* <StyledMenuLogo src={network(dapp.config.chainId).logoUrl} style={{ width: 16, height: 16 }} /> */}
                     <StyledMenuLogo src={dapp.logo} width={32} height={32} style={{ filter: dapp.invertLogo ? "invert(100%)" : "unset" }} />
                   </div>
-                  <ListItemText primary={`${dapp.workInProgress ? `[WIP] ${dapp.config.name}` : dapp.config.name}`} />
+                  <ListItemText primary={`${dapp.workInProgress ? `[WIP] ${dapp.path}` : dapp.path}`} />
                 </StyledMenuListItemButton>
               </ListItem>
             ))}
