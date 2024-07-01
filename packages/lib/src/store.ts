@@ -73,8 +73,18 @@ const initialState = getInitialState();
 
 export const useTwapStore = create(
   combine(initialState, (set, get) => ({
-    onModalCloseAfterTx: () => {
-      set({ swapSteps: undefined, swapState: undefined, swapStep: undefined });
+    onModalClose: () => {
+      set({
+        swapSteps: undefined,
+        swapState: undefined,
+        swapStep: undefined,
+        approveSuccess: undefined,
+        wrapSuccess: undefined,
+        wrapTxHash: undefined,
+        unwrapTxHash: undefined,
+        approveTxHash: undefined,
+        createOrderSuccess: undefined
+      });
     },
     setConfirmationDetails: (confirmationDetails: ConfirmationDetails) => {
       if (get().confirmationDetails) {

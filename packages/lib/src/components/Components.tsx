@@ -45,10 +45,11 @@ import {
   useFillDelayText,
   useTokenSelect,
   useIsMarketOrder,
-  useConfirmationButton,
   useFeeOnTransferWarning,
   useLowPriceWarning,
-} from "../hooks/index";
+  useShouldWrapOrUnwrapOnly,
+} from "../hooks/hooks";
+import { useConfirmationButton } from "../hooks/useConfirmationButton";
 import { useTwapStore } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, textOverflow, StyledSummaryDetails, StyledSummaryRow, StyledSummaryRowRight } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
@@ -806,28 +807,39 @@ export const DstToken = () => {
   );
 };
 
+export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
+  const isMarketOrder = useIsMarketOrder();
+  const { translations: t } = useTwapContext();
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+
+  if (!isMarketOrder || isWrapOrUnwrapOnly) return null;
+
+  return (
+    <Message
+      className={className}
+      title={
+        <>
+          {t?.marketOrderWarning}
+          <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">{` ${t.learnMore}`}</a>
+        </>
+      }
+      variant="warning"
+    />
+  );
+};
+
 export const PanelWarning = ({ className = "" }: { className?: string }) => {
   const feeOnTranferWarning = useFeeOnTransferWarning();
   const lowPriceWarning = useLowPriceWarning();
-  const { translations } = useTwapContext();
-  const isMarketOrder = useIsMarketOrder();
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
 
-  const marketOrderWarning = useMemo(() => {
-    return isMarketOrder ? translations?.marketOrderWarning : undefined;
-  }, [translations, isMarketOrder]);
-
-  const show = feeOnTranferWarning || marketOrderWarning || lowPriceWarning;
-  const title = feeOnTranferWarning || marketOrderWarning || lowPriceWarning?.title;
+  const show = feeOnTranferWarning || lowPriceWarning;
+  const title = feeOnTranferWarning || lowPriceWarning?.title;
   const text = lowPriceWarning?.subTitle;
 
-  const variant = useMemo((): MessageVariant => {
-    if (marketOrderWarning) return "warning";
-    return "error";
-  }, [marketOrderWarning]);
+  if (!show || isWrapOrUnwrapOnly) return null;
 
-  if (!show) return null;
-
-  return <Message className={className} title={title} text={text} variant={variant} />;
+  return <Message className={className} title={title} text={text} variant="error" />;
 };
 
 export const LimitSwitch = ({ className = "", Component }: { className?: string; Component?: FC<LimitSwitchArgs> }) => {
@@ -915,17 +927,20 @@ const StyledShowConfirmation = styled(StyledColumnFlex)({
 
 export const LimitPriceMessageContent = ({ className }: { className?: string }) => {
   const { translations: t } = useTwapContext();
+  const isMarketOrder = useTwapStore((s) => s.isMarketOrder);
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+  if (isMarketOrder || isWrapOrUnwrapOnly) return null;
 
   return (
-    <Portal id="twap-limit-price-mesage">
+    <Portal id="twap-limit-price-message-container">
       <StyledLimitPriceMessage
-        className={className}
+        className={`${className} twap-limit-price-message`}
         variant="warning"
         title={
           <>
             {t.limitPriceMessage}{" "}
-            <a href="/" target="_blank">
-              Learn more.
+            <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">
+              {t.learnMore}
             </a>
           </>
         }
@@ -934,15 +949,10 @@ export const LimitPriceMessageContent = ({ className }: { className?: string }) 
   );
 };
 
-export const LimitPriceMessage = ({ Container }: { Container: FC<{ children: ReactNode }> }) => {
-  const isMarketOrder = useTwapStore((s) => s.isMarketOrder);
-
-  if (isMarketOrder) return null;
+export const LimitPriceMessage = () => {
 
   return (
-    <Container>
-      <div id="twap-limit-price-mesage" />
-    </Container>
+    <div id="twap-limit-price-message-container" />
   );
 };
 

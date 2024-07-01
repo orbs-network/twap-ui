@@ -191,7 +191,7 @@ const DappComponent = () => {
           <Wrapper>
             <TWAPComponent limit={selected === SelectorOption.LIMIT} />
           </Wrapper>
-          <Components.LimitPriceMessage Container={LimitPriceMessageContainer} />
+          <Components.LimitPriceMessage />
         </StyledPancakeLayout>
         {!isMobile && (
           <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
@@ -203,10 +203,6 @@ const DappComponent = () => {
   );
 };
 
-const LimitPriceMessageContainer = ({ children }: { children: ReactNode }) => {
-  const { isDarkTheme } = useTheme();
-  return <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>{children}</StyledPancakeTwap>;
-};
 
 const Wrapper = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   const { isDarkTheme } = useTheme();

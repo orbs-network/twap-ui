@@ -77,6 +77,8 @@ const PERCENT = [
   { text: "MAX", value: 1 },
 ];
 
+
+
 const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
   const useTooltip = useAdapterContext().useTooltip;
   const tooltip = useTooltip?.(text, { placement: "top", hideTimeout: 0 });
@@ -716,3 +718,5 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
     </StyledModalHeader>
   );
 };
+
+

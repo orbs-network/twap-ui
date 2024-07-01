@@ -4,9 +4,9 @@ import { VariableSizeList as List } from "react-window";
 import { useOrdersHistory } from "../../hooks/query";
 import { StyledColumnFlex } from "../../styles";
 import AutoSizer from "react-virtualized-auto-sizer";
-import { SingleOrder } from "./SingleOrder";
 import { ParsedOrder } from "../../types";
 import { OrderPreview } from "./OrderPreview";
+import { SingleOrder } from "./Order";
 
 export function OrderHistoryList() {
   const { data: orders } = useOrdersHistory();

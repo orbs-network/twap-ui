@@ -13,17 +13,23 @@ import {
   useFormatNumberV2,
   useInvertedPrice,
   useIsMarketOrder,
+  useLimitPrice,
+  useLimitPricePercentDiffFromMarket,
+  useOutAmount,
   useSrcChunkAmountUi,
   useSrcUsd,
 } from "../../hooks";
 import { useTwapStore } from "../../store";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Label, Switch, Tooltip } from "../base";
+import BN from "bignumber.js";
+import { MarketPriceWarning } from "../Components";
 export const Price = () => {
   const [inverted, setInverted] = useState(false);
   const srcUsd = useSrcUsd().value;
   const dstUsd = useDstUsd().value;
-
+  const srcAmount = useTwapStore((s) => s.srcAmountUi);
+  const outAmount = useOutAmount().outAmountUi;
   const { srcToken, dstToken } = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
@@ -36,17 +42,22 @@ export const Price = () => {
   }, []);
 
   const amount = useMemo(() => {
-    const res = srcUsd.dividedBy(dstUsd);
+    return BN(outAmount).dividedBy(srcAmount).toString();
+  }, [srcAmount, outAmount]);
 
-    return res.toString();
-  }, [srcUsd.toString(), dstUsd.toString()]);
-
-  const price = useFormatNumberV2({ value: useInvertedPrice(amount, inverted), decimalScale: 2 });
+  const invertedAmount = useInvertedPrice(amount, inverted);
+  const price = useFormatNumberV2({ value: invertedAmount, decimalScale: 2 });
 
   const leftToken = inverted ? dstToken : srcToken;
   const rightToken = inverted ? srcToken : dstToken;
 
-  const usd = useFormatNumberV2({ value: inverted ? dstUsd.toString() : srcUsd.toString(), decimalScale: 2 });
+  const usdAmount = useMemo(() => {
+    return BN(!inverted ? dstUsd : srcUsd)
+      .multipliedBy(invertedAmount)
+      .toString();
+  }, [invertedAmount, srcUsd, dstUsd]);
+
+  const usd = useFormatNumberV2({ value: usdAmount, decimalScale: 2 });
   const title = isMarketOrder ? "Market Price" : "Limit Price";
   return (
     <DetailRow title={title} tooltip="">
@@ -148,26 +159,19 @@ export const TradeInterval = () => {
   );
 };
 
-const MarketPriceWarning = () => {
+const MarketWarning = () => {
   const isMarketOrder = useTwapStore((s) => s.isMarketOrder);
 
   if (!isMarketOrder) return null;
 
-  return (
-    <StyledWarning className="twap-order-modal-market-warning">
-      <Label tooltipText="some text">
-        <IoIosWarning className="twap-order-modal-market-warning-logo" />
-        Price may change
-      </Label>
-    </StyledWarning>
-  );
+  return <StyledWarning className="twap-order-modal-market-warning" />;
 };
 
 export const TwapDetails = () => {
   return (
     <>
       <Price />
-      <MarketPriceWarning />
+      <MarketWarning />
       <Expiry />
       <ChunksAmount />
       <ChunkSize />
@@ -224,19 +228,19 @@ const StyledLabel = styled(Label)({
     fontSize: 14,
   },
 });
-const StyledWarning = styled(StyledRowFlex)({
+const StyledWarning = styled(MarketPriceWarning)({
   justifyContent: "flex-start",
   background: "rgb(27, 27, 27)",
   padding: 8,
   borderRadius: 12,
-  ".twap-label-text": {
+
+  ".twap-warning-message": {
+    gap: 5,
     fontSize: 14,
   },
-  ".twap-order-modal-market-warning-logo": {
-    top: 3,
-    position: "relative",
-    marginRight: 5,
-    color: "rgb(255, 95, 82)!important",
+  ".twap-warning-message-icon": {
+    width: 15,
+    height: 15,
   },
 });
 

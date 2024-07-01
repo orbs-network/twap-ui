@@ -6,10 +6,12 @@ import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
 import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
-import { useLimitPrice, useLimitPricePercentDiffFromMarket } from "../../hooks/hooks";
+import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket } from "../../hooks/hooks";
 import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps } from "../../types";
 import { useOnLimitPercentageClick, onCustomChange } from "./hooks";
 import { amountUiV2, formatDecimals } from "../../utils";
+import { useTwapContext } from "../../context";
+import { MarketPriceWarning } from "../Components";
 
 interface Shared {
   onSrcSelect: () => void;
@@ -37,9 +39,9 @@ const Context = createContext({} as Shared);
 const useLimitPanelContext = () => useContext(Context);
 
 export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Components, styles }: Props) {
-  const isMarketOrder = useTwapStore((state) => state.isMarketOrder);
+  const isMarketOrder = useIsMarketOrder();
   if (isMarketOrder) {
-    return <Message title="Some text" variant="info" />;
+    return <MarketPriceWarning />;
   }
 
   return (
@@ -224,13 +226,13 @@ const InvertPrice = () => {
 const Title = () => {
   const { onDstSelect, onSrcSelect } = useLimitPanelContext();
   const Components = useLimitPanelContext().Components;
-
+  const t = useTwapContext().translations;
   const { inverted } = useTwapStore((s) => ({
     inverted: s.isInvertedLimitPrice,
   }));
   const token = useTwapStore((s) => (inverted ? s.dstToken : s.srcToken));
 
-  return <Components.Title textLeft="When 1" textRight="is worth" token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
+  return <Components.Title textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
 };
 
 const StyledInvertprice = styled(Box)({

@@ -1,8 +1,8 @@
-import { GlobalStyles } from "@mui/material";
+import { GlobalStyles, ThemeProvider } from "@mui/material";
 import { Components, TWAPTokenSelectProps, Translations, TwapAdapter, Styles as TwapStyles, Orders, store, TWAPProps } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useMemo } from "react";
 import Web3 from "web3";
 import { isNativeAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode, useCallback, useState } from "react";
@@ -20,10 +20,14 @@ import {
   StyledOrders,
   StyledPoweredBy,
   StyledSubmit,
+  darkTheme,
+  lightTheme,
 } from "./styles";
 
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
+import _ from "lodash";
+import { addMissingTokens } from "@orbs-network/twap-ui";
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens } = useAdapterContext();
@@ -175,6 +179,22 @@ const storeOverride = {
 };
 
 const TWAP = (props: TWAPProps) => {
+  const theme = useMemo(() => {
+    return props.isDarkTheme ? darkTheme : lightTheme;
+  }, [props.isDarkTheme]);
+
+  const parsedTokens = useMemo(() => {
+    if (!_.size(props.dappTokens)) {
+      return [];
+    }
+
+    const tokens = _.map(props.dappTokens, (token) => {
+      return parseToken(token);
+    });
+
+    return addMissingTokens(config, _.compact(tokens));
+  }, [props.dappTokens]);
+
   return (
     <StyledAdapter isDarkMode={props.isDarkTheme ? 1 : 0} className="twap-adapter-wrapper">
       <TwapAdapter
@@ -186,18 +206,20 @@ const TWAP = (props: TWAPProps) => {
         provider={props.provider}
         account={props.account}
         dappTokens={props.dappTokens}
-        parsedTokens={[]}
+        parsedTokens={parsedTokens}
         srcToken={props.srcToken}
         dstToken={props.dstToken}
         storeOverride={props.limit ? storeOverride : undefined}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
       >
-        <GlobalStyles styles={configureStyles(props.isDarkTheme) as any} />
-        <AdapterContextProvider value={props}>
-          {props.limit ? <LimitPanel /> : <TWAPPanel />}
-          <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0} />
-        </AdapterContextProvider>
+        <ThemeProvider theme={theme}>
+          <GlobalStyles styles={configureStyles(theme) as any} />
+          <AdapterContextProvider value={props}>
+            {props.limit ? <LimitPanel /> : <TWAPPanel />}
+            <StyledOrders isDarkMode={props.isDarkTheme ? 1 : 0} />
+          </AdapterContextProvider>
+        </ThemeProvider>
       </TwapAdapter>
     </StyledAdapter>
   );
@@ -215,11 +237,9 @@ const TWAPPanel = () => {
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
-        <StyledSubmit isMain />
+        <Components.ShowConfirmation />
       </StyledColumnFlex>
-      <OrderSummary>
-        <Components.OrderSummaryDetails />
-      </OrderSummary>
+
       <StyledPoweredBy />
     </div>
   );
@@ -235,16 +255,9 @@ const LimitPanel = () => {
           <TokenPanel />
         </TwapStyles.StyledColumnFlex>
 
-        <StyledSubmit isMain />
+        <Components.ShowConfirmation />
       </StyledColumnFlex>
-      <OrderSummary>
-        <TwapStyles.StyledColumnFlex>
-          <Components.OrderSummaryDetailsDeadline />
-          <Components.OrderSummaryDetailsOrderType />
-          <Components.OrderSummaryDetailsChunkSize />
-          <Components.OrderSummaryDetailsMinDstAmount />
-        </TwapStyles.StyledColumnFlex>
-      </OrderSummary>
+
       <StyledPoweredBy />
     </div>
   );

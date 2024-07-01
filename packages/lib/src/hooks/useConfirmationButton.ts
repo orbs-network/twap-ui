@@ -53,6 +53,14 @@ export const useConfirmationButton = () => {
   const disableWhileLaoding = outAmountLoading || usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading;
 
   return useMemo(() => {
+    if (createOrderLoading) {
+      return {
+        text: translations.placeOrder,
+        onClick: onOpen,
+        loading: false,
+        disabled: false,
+      };
+    }
     if (isWrongChain)
       return {
         text: translations.switchNetwork,
@@ -105,9 +113,9 @@ export const useConfirmationButton = () => {
     }
 
     return {
-      text: createOrderLoading ? translations.placeOrder : translations.placeOrder,
+      text: translations.placeOrder,
       onClick: onOpen,
-      loading: createOrderLoading,
+      loading: false,
       disabled: false,
     };
   }, [

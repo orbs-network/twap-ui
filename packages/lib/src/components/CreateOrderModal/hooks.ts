@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useTwapContext } from "../../context";
-import { useConfirmationModal, useFormatNumberV2 } from "../../hooks/hooks";
+import { useConfirmationModal, useFormatNumberV2, useIsMarketOrder } from "../../hooks/hooks";
 import { useTwapStore } from "../../store";
 
 export const useTokenDisplay = (isSrc?: boolean) => {
@@ -19,14 +19,14 @@ export const useTokenDisplay = (isSrc?: boolean) => {
 
 export const useOrderType = () => {
   const isLimitPanel = useTwapContext().isLimitPanel;
-  const isMarketOrder = useTwapStore((s) => s.isMarketOrder);
+  const isMarketOrder = useIsMarketOrder();
   return useMemo(() => {
     if (isLimitPanel) {
-      return "limit";
+      return "Limit";
     }
     if (isMarketOrder) {
-      return "market";
+      return "Twap market";
     }
-    return "twap";
+    return "Twap limit";
   }, [isLimitPanel, isMarketOrder]);
 };

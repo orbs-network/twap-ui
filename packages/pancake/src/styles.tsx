@@ -108,6 +108,11 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-limit-price-message": {
+      background: '#27262C',
+      padding: 16,
+      borderRadius: 24,
+    },
     ".twap-warning": {
       color: "rgb(155, 155, 155)",
     },

@@ -1,6 +1,26 @@
-import { Box, styled, Typography } from "@mui/material";
+import { Box, createTheme, styled, Theme, Typography } from "@mui/material";
 import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
 const gradient = "linear-gradient(to right,rgba(59,130,246,.15),rgba(236,72,153,.15))";
+
+export const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+  },
+});
+
+export const lightTheme = createTheme({
+  palette: {
+    mode: "light",
+  },
+});
+
+const getStyles = (theme?: Theme) => {
+  const isDarkMode = theme?.palette.mode === "dark" ? 1 : 0;
+
+  return {
+    isDarkMode,
+  };
+};
 
 export const StyledPanelInput = styled(Components.TokenPanelInput)({
   input: {
@@ -347,7 +367,8 @@ export const StyledAdapter = styled(Box)<{ isDarkMode: number }>(({ isDarkMode }
   },
 }));
 
-export const configureStyles = (isDarkMode?: boolean) => {
+export const configureStyles = (theme?: Theme) => {
+  const isDarkMode = getStyles(theme).isDarkMode;
   return {
     ".twap-modal-content": {
       padding: "56px 16px 16px 16px",

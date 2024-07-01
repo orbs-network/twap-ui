@@ -248,19 +248,7 @@ const useOnSuccessCallback = () => {
   );
 };
 
-const useSwitchNativeToWrapped = () => {
-  const { updateState } = useTwapStore((s) => ({
-    updateState: s.updateState,
-  }));
-  const { lib, dappTokens, onSrcTokenSelected } = useTwapContext();
-  return useCallback(() => {
-    updateState({ srcToken: lib!.config.wToken });
-    const token = getTokenFromTokensList(dappTokens, lib!.config.wToken.address);
-    if (token) {
-      onSrcTokenSelected?.(token);
-    }
-  }, [lib, dappTokens, onSrcTokenSelected, updateState]);
-};
+
 export const useSubmitOrderFlow = () => {
   const { srcToken, swapState, updateState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, wrapSuccess, srcAmount } = useTwapStore((s) => ({
     srcToken: s.srcToken,
@@ -285,7 +273,6 @@ export const useSubmitOrderFlow = () => {
   const onSuccessCallback = useOnSuccessCallback();
   const wToken = lib?.config.wToken;
   const nativeSymbol = lib?.config.nativeToken.symbol;
-  const nativeToWrapped = useSwitchNativeToWrapped();
   const { refetch: refetchAllowance } = query.useAllowance();
   const reset = useResetAfterSwap();
 
@@ -314,7 +301,6 @@ export const useSubmitOrderFlow = () => {
         updateState({ swapStep: "wrap" });
         await wrapToken();
         updateState({ wrapSuccess: true });
-
         token = wToken;
       }
 
@@ -336,12 +322,9 @@ export const useSubmitOrderFlow = () => {
     {
       onError(error) {
         if (isTxRejected(error)) {
-          updateState({ swapState: undefined });
+          updateState({ swapState: 'rejected' });
         } else {
           updateState({ swapState: "failed" });
-        }
-        if (wrapSuccess) {
-          nativeToWrapped();
         }
       },
       onSuccess(data) {

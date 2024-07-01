@@ -378,7 +378,7 @@ export const useDappRawSelectedTokens = () => {
 };
 
 export const useConfirmationModal = () => {
-  const { swapState, updateState, showConfirmation, srcAmount, srcToken, dstToken, confirmationDetails, onModalCloseAfterTx, setConfirmationDetails } = useTwapStore((s) => ({
+  const { swapState, updateState, showConfirmation, srcAmount, srcToken, dstToken, confirmationDetails, onModalClose, setConfirmationDetails, wrapSuccess } = useTwapStore((s) => ({
     swapState: s.swapState,
     updateState: s.updateState,
     showConfirmation: s.showConfirmation,
@@ -386,28 +386,28 @@ export const useConfirmationModal = () => {
     srcToken: s.srcToken,
     dstToken: s.dstToken,
     confirmationDetails: s.confirmationDetails,
-    onModalCloseAfterTx: s.onModalCloseAfterTx,
+    onModalClose: s.onModalClose,
     setConfirmationDetails: s.setConfirmationDetails,
+    wrapSuccess: s.wrapSuccess,
   }));
 
   const outAmount = useOutAmount().outAmountUi;
   const srcUsd = useSrcAmountUsdUi();
   const dstUsd = useDstAmountUsdUi();
+  const nativeToWrapped = useSwitchNativeToWrapped();
 
   const onClose = useCallback(
     (closeDalay?: number) => {
       updateState({ showConfirmation: false });
-
+      if (swapState === "loading") return;
       setTimeout(() => {
-        if (swapState === "success") {
-          onModalCloseAfterTx();
+        if (swapState === "rejected" && wrapSuccess) {
+          nativeToWrapped();
         }
-        if (swapState === "failed") {
-          updateState({ swapState: undefined });
-        }
+        onModalClose();
       }, closeDalay || 0);
     },
-    [onModalCloseAfterTx, swapState, updateState]
+    [onModalClose, swapState, updateState, nativeToWrapped, wrapSuccess]
   );
 
   useEffect(() => {
@@ -421,7 +421,7 @@ export const useConfirmationModal = () => {
         dstUsd,
       });
     }
-  }, [srcAmount, srcToken, dstToken, outAmount, srcUsd, dstUsd, setConfirmationDetails, swapState]);
+  }, [srcAmount, srcToken, dstToken, outAmount, srcUsd, dstUsd, setConfirmationDetails, swapState, updateState]);
 
   const onOpen = useCallback(() => {
     updateState({
@@ -431,7 +431,7 @@ export const useConfirmationModal = () => {
 
   const title = useMemo(() => {
     if (!swapState) {
-      return "Review swap";
+      return "Review order";
     }
   }, [swapState]);
 
@@ -518,11 +518,26 @@ export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
   };
 };
 
+export const useSwitchNativeToWrapped = () => {
+  const { updateState } = useTwapStore((s) => ({
+    updateState: s.updateState,
+  }));
+  const { lib, dappTokens, onSrcTokenSelected } = useTwapContext();
+  return useCallback(() => {
+    updateState({ srcToken: lib!.config.wToken });
+    const token = getTokenFromTokensList(dappTokens, lib!.config.wToken.address);
+    if (token) {
+      onSrcTokenSelected?.(token);
+    }
+  }, [lib, dappTokens, onSrcTokenSelected, updateState]);
+};
+
 export const useOutAmount = () => {
   const { limitPrice, isLoading } = useLimitPrice();
-  const { srcAmountUi, dstToken } = useTwapStore((s) => ({
+  const { srcAmountUi, dstToken, srcAmountBn } = useTwapStore((s) => ({
     srcAmountUi: s.srcAmountUi,
     dstToken: s.dstToken,
+    srcAmountBn: s.getSrcAmount().toString(),
   }));
 
   const wrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
@@ -532,10 +547,10 @@ export const useOutAmount = () => {
   const outAmount = useMemo(() => {
     if (!srcAmountUi) return;
     if (wrapOrUnwrapOnly) {
-      return srcAmountUi;
+      return srcAmountBn;
     }
     return !limitPrice ? undefined : BN(limitPrice).multipliedBy(srcAmountUi).toString();
-  }, [limitPrice, srcAmountUi, wrapOrUnwrapOnly]);
+  }, [limitPrice, srcAmountUi, wrapOrUnwrapOnly, srcAmountBn]);
 
   return {
     isLoading: wrongNetwork ? false : wrapOrUnwrapOnly ? false : isLoading,

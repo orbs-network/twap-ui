@@ -3,7 +3,6 @@
   "version": "0.10.23",
   "private": true,
   "license": "MIT",
-  "homepage": "https://orbs-network.github.io/twap-ui/",
   "scripts": {
     "prettier": "prettier -w 'src/**/*.{ts,tsx,js,jsx,json,sol}'",
     "start": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts start",
