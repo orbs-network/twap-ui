@@ -46,7 +46,7 @@ function NumericInput({
 }: Props) {
   const inputValue = value || minAmount || "";
 
-  const { inputPlaceholder, input, disableThousandSeparator} = useTwapContext().uiPreferences;
+  const { inputPlaceholder, input, disableThousandSeparator } = useTwapContext().uiPreferences;
 
   const _placeholder = placeholder || inputPlaceholder || "0.0";
 
@@ -68,7 +68,7 @@ function NumericInput({
             }}
             prefix={prefix ? `${prefix} ` : ""}
             value={disabled && value === "0" ? "" : inputValue}
-            thousandSeparator={disableThousandSeparator  ? undefined :  ","}
+            thousandSeparator={disableThousandSeparator ? undefined : ","}
             decimalSeparator="."
             customInput={StyledInput}
             type="text"

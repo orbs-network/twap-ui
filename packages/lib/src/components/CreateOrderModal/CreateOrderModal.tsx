@@ -11,9 +11,8 @@ import { OrderSubmitted, ConfirmOrder, Failed } from "./states";
 import { ReviewOrder } from "./states/ReviewOrder";
 import { Steps } from "./Steps";
 
-
 interface Props extends CreateOrderModalArgs {
-  className?: string
+  className?: string;
 }
 export const CreateOrderModal = ({ className = "", ...rest }: Props) => {
   const { mutate: onSubmit, swapState } = useSubmitOrderFlow();

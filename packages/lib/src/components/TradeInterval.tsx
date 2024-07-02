@@ -37,7 +37,7 @@ export const Resolution = ({ placeholder, className = "" }: { placeholder?: stri
   return <TimeSelectMenu className={className} resolution={fillDelay.resolution} onChange={onChange} />;
 };
 
-export const TradeInterval = ({ children, className = '' }: { children: ReactNode, className?: string }) => {
+export const TradeInterval = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   return (
     <Container className={className}>
       {children}

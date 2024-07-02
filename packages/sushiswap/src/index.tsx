@@ -114,7 +114,7 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
   const balance = hooks.useFormatDecimals(_balance, 2);
 
   return (
-    <StyledBalance onClick={!isZeroBalance ? () => onClick(1) : () => {}}>
+    <StyledBalance disabled={!isSrc} onClick={!isZeroBalance ? () => onClick(1) : () => {}}>
       <IoWalletSharp />
       <SmallText value={isZeroBalance ? "0.00" : balance} />
     </StyledBalance>
@@ -133,7 +133,7 @@ const TokenPanelUsd = ({ isSrc, exceedsBalance }: { isSrc?: boolean; exceedsBala
     return <StyledBalanceWarning>Exceeds Balance</StyledBalanceWarning>;
   }
 
-  return <USD usd={usd} />
+  return <USD usd={usd} />;
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
@@ -271,14 +271,13 @@ const TWAP = (props: SushiProps) => {
   );
 };
 
-const USD = ({usd, className = ''}:{usd?: string, className?: string}) => {
+const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
   return (
-    <StyledUSD className='twap-custom-usd'>
+    <StyledUSD className="twap-custom-usd">
       <SmallText prefix="$ " value={BN(usd || 0).isZero() ? "0.00" : usd} />
     </StyledUSD>
   );
 };
-
 
 const SubmitOrderModal = () => {
   const { Modal } = useAdapterContext();
@@ -291,7 +290,7 @@ const SubmitOrderModal = () => {
   return (
     <Modal title={title} open={isOpen} onClose={onCloseWithDelay}>
       <StyledSwapModalContent>
-        <StyledCreateOrderModal  Components={{USD}} />
+        <StyledCreateOrderModal Components={{ USD }} />
       </StyledSwapModalContent>
     </Modal>
   );

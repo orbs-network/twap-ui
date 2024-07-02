@@ -1,7 +1,6 @@
 import { Box, createTheme, styled, Theme, Typography } from "@mui/material";
 import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
-import { CSSProperties, ReactNode } from "react";
-const gradient = "linear-gradient(to right,rgba(59,130,246,.15),rgba(236,72,153,.15))";
+import { ReactNode } from "react";
 
 export const darkTheme = createTheme({
   palette: {
@@ -20,11 +19,12 @@ const getStyles = (theme?: Theme) => {
 
   return {
     isDarkMode,
-    accent: isDarkMode ? "#ffffff14" : "",
-    darkText: isDarkMode ? "rgb(148 163 184/1)" : "",
-    darkTextHover: "rgb(203 213 225/1)",
+    accent: isDarkMode ? "#ffffff14" : "#00000014",
+    darkText: isDarkMode ? "rgb(148 163 184/1)" : "rgb(107 114 128/1)",
+    darkTextHover: isDarkMode ? "rgb(203 213 225/1)" : "rgb(37 99 235/1)",
     warningText: "rgb(239 68 68/1)",
-    textColor: isDarkMode ? "rgb(248 250 252/1)" : "rgb(107 114 128/1)",
+    textColor: isDarkMode ? "rgb(248 250 252/1)" : "rgb(17 24 39/1)",
+    messageText: isDarkMode ?  "#94a3b8" : '#6b7280'
   };
 };
 
@@ -50,14 +50,24 @@ export const StyledSmallText = styled("span")(({ theme }) => {
   };
 });
 
-export const StyledBalance = styled(Styles.StyledText)(({ theme }) => {
+export const StyledBalance = styled(Styles.StyledText)<{ disabled?: number }>(({ theme, disabled }) => {
   const styles = getStyles(theme);
+  const darkDisabled = disabled ? "rgb(100 116 139/1)" : styles.darkText;
+  const lightDisabled = disabled ? "rgb(107 114 128/1)" : 'rgb(59 130 246/1)';
+  const color = styles.isDarkMode ? darkDisabled : lightDisabled;
+  const hover = disabled ? '' : styles.darkTextHover;
 
   return {
-    cursor: "pointer",
+    cursor: disabled ? "auto" : "pointer",
     width: "auto",
+    "*": {
+      color:color
+    },
+    "small": {
+      color:color
+    },
     svg: {
-      fill: styles.darkText,
+      fill: color,
       width: 20,
       height: 20,
       position: "relative",
@@ -66,10 +76,10 @@ export const StyledBalance = styled(Styles.StyledText)(({ theme }) => {
     },
     "&:hover": {
       "*": {
-        color: styles.darkTextHover,
+        color: hover,
       },
       svg: {
-        fill: styles.darkTextHover,
+        fill: hover,
       },
     },
   };
@@ -83,29 +93,33 @@ export const StyledUSD = styled(Styles.StyledText)(({ theme }) => {
   };
 });
 
-export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }) => ({
-  height: 0,
-  button: {
-    position: "absolute",
-    border: "1px solid #ffffff14",
-    background: "#0f172a",
-    width: 30,
-    height: 30,
-    borderRadius: "50%",
-    "&:hover": {
-      background: "#0f172a",
-      svg: {
-        transform: "rotate(180deg)",
+export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }) => {
+  const styles = getStyles(theme);
+  const bg = styles.isDarkMode ? "#0f172a" : "#f4f5f6";
+  return {
+    height: 0,
+    button: {
+      position: "absolute",
+      border: `1px solid ${styles.accent}`,
+      background:bg ,
+      width: 30,
+      height: 30,
+      borderRadius: "50%",
+      "&:hover": {
+        background: bg,
+        svg: {
+          transform: "rotate(180deg)",
+        },
       },
     },
-  },
-  svg: {
-    transition: "0.2s all",
-    width: 27,
-    height: 27,
-    fill: "rgb(59 130 246/1)",
-  },
-}));
+    svg: {
+      transition: "0.2s all",
+      width: 27,
+      height: 27,
+      fill: "rgb(59 130 246/1)",
+    },
+  }
+});
 
 export const StyledContainer = styled(Styles.StyledColumnFlex)({
   gap: 15,
@@ -138,73 +152,54 @@ export const StyledPoweredBy = styled(Components.PoweredBy)({
   marginTop: 20,
 });
 
+
+const selectTokenStyles = (theme: Theme) => {
+  const styles = getStyles(theme);
+
+  return {
+    gap: 8,
+    background: styles.isDarkMode ? "#ffffff0a" : "#0000000a",
+    padding: 8,
+    borderRadius: 30,
+    color: styles.textColor,
+    "*": {
+      color: "inherit",
+    },
+    svg: {
+      width: 15,
+      height: 15,
+    },
+
+    ".twap-token-logo": {
+      width: 28,
+      height: 28,
+    },
+    ".twap-token-name": {
+      fontSize: 18,
+      fontWeight: 500,
+    },
+    p: {
+      fontSize: 16,
+      fontWeight: 600,
+    },
+    ".twap-token-display": {
+      gap: 8,
+    },
+  }
+}
+
 export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
   const styles = getStyles(theme);
   return {
-    gap: 8,
-    background: styles.isDarkMode ? "#ffffff0a" : "rgba(0,0,0,.06)",
-    padding: 8,
-    borderRadius: 30,
-    color: styles.textColor,
-    "*": {
-      color: "inherit",
-    },
-    svg: {
-      width: 15,
-      height: 15,
-    },
-
-    ".twap-token-logo": {
-      width: 28,
-      height: 28,
-    },
-    ".twap-token-name": {
-      fontSize: 18,
-      fontWeight: 500,
-    },
-    p: {
-      fontSize: 16,
-      fontWeight: 600,
-    },
-    ".twap-token-display": {
-      gap: 8,
-    },
-  };
+    ...selectTokenStyles(theme),
+  }
 });
 
 export const StyledTokenSelectLimit = styled(Styles.StyledRowFlex)(({ theme }) => {
-  const styles = getStyles(theme);
-  return {
-    width: "auto",
-    gap: 8,
-    background: styles.isDarkMode ? "#ffffff0a" : "rgba(0,0,0,.06)",
-    padding: 8,
-    borderRadius: 30,
-    color: styles.textColor,
-    cursor: "pointer",
-    "*": {
-      color: "inherit",
-    },
-    svg: {
-      width: 15,
-      height: 15,
-    },
 
-    ".twap-token-logo": {
-      width: 28,
-      height: 28,
-    },
-    ".twap-token-name": {
-      fontSize: 18,
-      fontWeight: 500,
-    },
-    p: {
-      fontSize: 16,
-      fontWeight: 600,
-    },
-    ".twap-token-display": {
-      gap: 8,
-    },
+  return {
+    ...selectTokenStyles(theme),
+    width: "auto",
   };
 });
 
@@ -302,7 +297,7 @@ const cardBodyStyles = (theme?: Theme) => {
     background: styles.isDarkMode ? "rgb(30 41 59/1)" : "white",
     borderRadius: 12,
     padding: 12,
-    border: styles.isDarkMode ? "1px solid #ffffff14" : "1px solid #3b82f6",
+    border: `1px solid ${styles.accent}`,
   };
 };
 
@@ -331,6 +326,7 @@ export const configureStyles = (theme?: Theme) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+
     ".twap-order-modal-submitted-logo": {
       svg: {
         fill: "rgb(59 130 246/1)",
@@ -339,17 +335,14 @@ export const configureStyles = (theme?: Theme) => {
     ".twap-limit-price-message": {
       ...cardBodyStyles(theme),
       marginTop: 20,
+      "*":{
+        color: styles.messageText
+      }
     },
     "*": {
       color: styles.textColor,
     },
-    ".MuiSlider-thumb ": {
-      background: "rgb(59 130 246/1)",
-    },
-    ".MuiSlider-track": {
-      background: "rgb(59 130 246/1)",
-      border: "unset!important",
-    },
+
     ".twap-button-disabled": {
       opacity: 0.7,
       pointer: "disabled",
@@ -419,10 +412,10 @@ export const configureStyles = (theme?: Theme) => {
     },
 
     ".MuiSwitch-thumb": {
-      color: 'rgb(15 23 42/1)!important',
+      color: isDarkMode ?  "rgb(15 23 42/1)!important" : 'rgb(249 250 251/1)!important',
     },
     ".MuiSwitch-track": {
-      background: isDarkMode ? "hsla(0,0%,100%,.1)!important" : "rgba(0,0,0, 0.3)!important",
+      background: isDarkMode ? "hsla(0,0%,100%,.1)!important" : "rgba(0,0,0,.1)!important",
       height: 20,
     },
     ".twap-disclaimer-switch": {
@@ -460,15 +453,16 @@ export const configureStyles = (theme?: Theme) => {
 
 export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
   const styles = getStyles(theme);
+  const isDarkMode = styles.isDarkMode;
   return {
-    background: "transparent",
-    border: "1px solid #ffffff14",
+    background:isDarkMode ?  "transparent"  :'white',
+    border: `1px solid ${styles.accent}`,
     borderRadius: 8,
     padding: 2,
     ".MuiTabs-indicator": {
-      background: "#ffffff14",
+      background: isDarkMode ?  "#ffffff14" : '#0000000a',
       borderRadius: 6,
-      border: "1px solid #ffffff14",
+      border: `1px solid ${styles.accent}`,
       transitionDuration: "0.2s",
     },
     ".MuiButtonBase-root": {
@@ -477,7 +471,7 @@ export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
       minWidth: 80,
       minHeight: "unset",
       zIndex: 1,
-      color: "white!important",
+      color: isDarkMode ?  "white" : '#000',
       fontSize: 13,
       fontWeight: 500,
       opacity: 0.6,
@@ -498,7 +492,7 @@ export const StyledCard = styled(StyledColumnFlex)(({ theme }) => {
     width: "100%",
     gap: 6,
     ".twap-message": {
-      color: "#94a3b8",
+      color: styles.messageText,
       fontSize: 14,
       lineHeight: "20px",
     },
@@ -533,7 +527,7 @@ export const StyledCardBody = styled(Box)(({ theme }) => {
 
 export const StyledTokenPanel = styled(CardBody)<{ error?: number }>(({ theme, error }) => {
   const isDarkMode = getStyles(theme).isDarkMode;
-  const bg = isDarkMode ? "rgba(239,68,68,.2)" : "white";
+  const bg = isDarkMode ? "rgba(239,68,68,.2)" : "rgba(239,68,68,.2)";
   return {
     background: error ? bg : "",
   };
@@ -547,9 +541,13 @@ export const StyledLimitInput = styled(Components.Base.NumericInput)({
   },
 });
 
-export const StyledSelectButton = styled("button")<{ selected: number }>(({ selected }) => {
+export const StyledSelectButton = styled("button")<{ selected: number }>(({ selected, theme }) => {
+  const styles = getStyles(theme);
+  const selectedBg = styles.isDarkMode ? "rgba(255,255,255, 0.15) " : 'rgb(59 130 246/1)';
+  const selectedColor = styles.isDarkMode ? '' : 'white';
   return {
-    background: selected ? "rgba(255,255,255, 0.15) " : "#ffffff0a",
+    background: selected ? selectedBg : "#0000000a",
+    color: selected ? selectedColor : "",
     fontWeight: 500,
     padding: "5px 7px",
     borderRadius: 8,
@@ -559,11 +557,15 @@ export const StyledSelectButton = styled("button")<{ selected: number }>(({ sele
     justifyContent: "center",
     minWidth: 50,
     transition: "0.2s all",
-    border: selected ? "1px solid transparent" : "1px solid #ffffff14",
+    border: selected ? "1px solid transparent" : `1px solid ${styles.isDarkMode ?  styles.accent : 'transparent'}`,
     height: 28,
+    svg: {
+      fill: selectedColor,
+    },
     "&:hover": {
-      background: "rgba(255,255,255, 0.15) ",
+      background: selectedBg,
       border: "1px solid transparent",
+      color: selectedColor,
     },
   };
 });
@@ -653,9 +655,11 @@ export const StyledChunksSelectSlider = styled(CardBody)(({ theme }) => {
     },
     ".MuiSlider-track": {
       background: "rgb(59 130 246/1)",
+      border:'none!important'
     },
     ".MuiSlider-rail": {
-      backgroundColor: "rgba(255, 255, 255, 0.3)",
+      backgroundColor: styles.accent,
+    
     },
     ".MuiSlider-valueLabel": {
       ...tooltipStyles(theme),
@@ -696,48 +700,50 @@ export const StyledSwapModalContent = styled(StyledColumnFlex)({
   },
 });
 
-
-export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({theme}) => {
+export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ theme }) => {
   const styles = getStyles(theme);
   return {
     ".twap-token-logo": {
-      width: '50px!important',
-      height: '50px!important',
+      width: "50px!important",
+      height: "50px!important",
     },
     ".twap-custom-usd": {
-      position:'relative',
-      top: -6
+      position: "relative",
+      top: -6,
     },
     ".twap-order-modal-token-amount": {
       fontWeight: 500,
     },
     ".twap-order-modal-market-warning": {
-      background: '#ffffff0a',
+      background: styles.accent,
     },
     ".twap-order-modal-details": {
       ...cardBodyStyles(theme),
-      background:'#ffffff0a',
-      gap: 10
+      background:styles.isDarkMode ?  "#ffffff0a" : 'white',
+      gap: 10,
     },
     ".twap-order-modal-detail-row-right": {
-      color: '#94a3b8',
+      color: styles.isDarkMode ?  "#94a3b8" : '#6b7280',
       fontSize: 13,
       "*": {
-        color: '#94a3b8',
+        color: styles.isDarkMode ?  "#94a3b8" : '#6b7280',
         fontSize: 13,
-      }
+      },
     },
     ".twap-order-modal-separator": {
-     background:'unset',
-     margin:'8px 0px!important'
+      background: "unset",
+      margin: "8px 0px!important",
     },
     ".twap-order-modal-disclaimer": {
       ...cardBodyStyles(theme),
-      background:'#ffffff0a'
+      background:styles.isDarkMode ?  "#ffffff0a" : 'white',
     },
     ".twap-label-text": {
-      color:'rgb(226 232 240/1)',
+      color: styles.textColor,
       fontWeight: 500,
+    },
+    a: {
+      color: styles.textColor,
     }
-  }
-})
+  };
+});

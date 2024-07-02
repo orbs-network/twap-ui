@@ -11,7 +11,7 @@ export const TokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
   const { amount, token, usd, title } = useTokenDisplay(isSrc);
 
   return (
-    <StyledTokenDisplay  className="twap-order-modal-token">
+    <StyledTokenDisplay className="twap-order-modal-token">
       <StyledText className="twap-order-modal-token-title">{title}</StyledText>
       <StyledMiddle>
         <StyledText className="twap-order-modal-token-amount">

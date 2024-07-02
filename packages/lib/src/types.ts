@@ -187,7 +187,6 @@ export interface TwapContextUIPreferences {
   disableThousandSeparator?: boolean;
   input?: {
     showOnLoading?: boolean;
- 
   };
   Tooltip?: FC<TooltipProps>;
   Button?: FC<ButtonProps>;
@@ -426,9 +425,8 @@ export type LimitSwitchArgs = {
   onClick: (value: "limit" | "market") => void;
 };
 
-
 export type CreateOrderModalArgs = {
   Components?: {
-      USD?: FC<{usd?: string}>
-  }
-}
+    USD?: FC<{ usd?: string }>;
+  };
+};
