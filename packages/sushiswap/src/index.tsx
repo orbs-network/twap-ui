@@ -52,16 +52,26 @@ import {
   StyledBalanceWarning,
   StyledSwapModalContent,
   StyledTop,
+  StyledTokenSelectLimit,
+  StyledCreateOrderModal,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
+import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 
 import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
 import _ from "lodash";
 import { addMissingTokens } from "@orbs-network/twap-ui";
+import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
+import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
+
+const uiPreferences: TwapContextUIPreferences = {
+  disableThousandSeparator: true,
+  switchVariant: "ios",
+};
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens } = useAdapterContext();
@@ -115,24 +125,15 @@ const TokenChange = () => {
   return <StyledTokenChange icon={<BsArrowDownShort />} />;
 };
 
-const TokenPanelUsd = ({ isSrc }: { isSrc?: boolean }) => {
+const TokenPanelUsd = ({ isSrc, exceedsBalance }: { isSrc?: boolean; exceedsBalance?: boolean }) => {
   const _usd = hooks.useTokenUsd(isSrc);
   const usd = hooks.useFormatDecimals(_usd, 2);
 
-  const isZeroUsd = BN(_usd || 0).eq(0);
-
-  const balanceWarning = hooks.useBalanceWarning();
-
-  const warning = !isSrc ? undefined : balanceWarning;
-  if (warning) {
+  if (exceedsBalance) {
     return <StyledBalanceWarning>Exceeds Balance</StyledBalanceWarning>;
   }
 
-  return (
-    <StyledUSD>
-      <SmallText prefix="$ " value={isZeroUsd ? "0.00" : usd} />
-    </StyledUSD>
-  );
+  return <USD usd={usd} />
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
@@ -142,18 +143,22 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     setTokenListOpen(false);
   }, []);
 
+  const insufficientFunds = hooks.useBalanceWarning();
+
+  const exceedsBalance = !isSrcToken ? undefined : insufficientFunds;
+
   return (
     <>
       <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
 
-      <StyledTokenPanel>
+      <StyledTokenPanel error={exceedsBalance ? 1 : 0}>
         <TwapStyles.StyledColumnFlex gap={10}>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <StyledPanelInput placeholder="0" isSrc={isSrcToken} />
             <StyledTokenSelect hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <TokenPanelUsd isSrc={isSrcToken} />
+            <TokenPanelUsd exceedsBalance={exceedsBalance} isSrc={isSrcToken} />
             <Balance isSrc={isSrcToken} />
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
@@ -248,6 +253,7 @@ const TWAP = (props: SushiProps) => {
         marketPrice={marketPrice}
         isLimitPanel={props.limit}
         priceUsd={props.priceUsd}
+        uiPreferences={uiPreferences}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -265,6 +271,15 @@ const TWAP = (props: SushiProps) => {
   );
 };
 
+const USD = ({usd, className = ''}:{usd?: string, className?: string}) => {
+  return (
+    <StyledUSD className='twap-custom-usd'>
+      <SmallText prefix="$ " value={BN(usd || 0).isZero() ? "0.00" : usd} />
+    </StyledUSD>
+  );
+};
+
+
 const SubmitOrderModal = () => {
   const { Modal } = useAdapterContext();
   const { isOpen, onClose, title } = hooks.useConfirmationModal();
@@ -276,7 +291,7 @@ const SubmitOrderModal = () => {
   return (
     <Modal title={title} open={isOpen} onClose={onCloseWithDelay}>
       <StyledSwapModalContent>
-        <Components.CreateOrderModal />
+        <StyledCreateOrderModal  Components={{USD}} />
       </StyledSwapModalContent>
     </Modal>
   );
@@ -307,7 +322,16 @@ const LimitPriceZeroButton = ({ text, onClick }: LimitPriceZeroButtonProps) => {
   );
 };
 
-const LimitPrice = ({ isTwap }: { isTwap?: boolean }) => {
+const LimitPriceTokenSelect = (props: LimitPriceTokenSelectProps) => {
+  return (
+    <StyledTokenSelectLimit onClick={props.onClick}>
+      <Components.Base.TokenDisplay logo={props.token?.logoUrl} symbol={props.token?.symbol} />
+      <IoIosArrowDown size={20} />
+    </StyledTokenSelectLimit>
+  );
+};
+
+const LimitPrice = () => {
   const [isSrc, setIsSrc] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -336,7 +360,7 @@ const LimitPrice = ({ isTwap }: { isTwap?: boolean }) => {
         <Card.Body>
           <StyledLimitPanel
             onSrcSelect={onSrcSelect}
-            Components={{ Input: LimitInput, PercentButton: LimitPercentButton, ZeroButton: LimitPriceZeroButton }}
+            Components={{ Input: LimitInput, PercentButton: LimitPercentButton, ZeroButton: LimitPriceZeroButton, TokenSelect: LimitPriceTokenSelect }}
             onDstSelect={onDstSelect}
             styles={{
               percentButtonsGap: "5px",

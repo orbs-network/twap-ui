@@ -96,7 +96,7 @@ const useStep = (step?: SwapStep) => {
     if (step === "approve") {
       return {
         title: isApproveLoading ? "Approving..." : `Approve ${srcToken?.symbol} in wallet`,
-        Icon: RiSwapFill,
+        image: srcToken?.logoUrl,
         link: {
           url: "/",
           text: "Some text",
@@ -170,6 +170,7 @@ const StyledStepLogo = styled("div")`
   border-radius: 50%;
   width: 26px;
   height: 26px;
+  overflow: hidden;
   img {
     width: 100%;
     height: 100%;

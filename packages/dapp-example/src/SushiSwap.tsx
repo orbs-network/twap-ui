@@ -17,7 +17,7 @@ const configs = [Configs.SushiArb, Configs.SushiBase];
 
 export const useDappTokens = () => {
   const config = useConfig();
-
+  const { chainId } = useWeb3React();
   const parseListToken = useCallback(
     (tokenList?: any) => {
       console.log(tokenList);
@@ -44,10 +44,21 @@ export const useDappTokens = () => {
     [config?.nativeToken, config?.chainId]
   );
 
+  const url = useMemo(() => {
+    switch (chainId) {
+      case Configs.SushiArb.chainId:
+        return "https://token-list.sushi.com/";
+      case Configs.SushiBase.chainId:
+        return "https://tokens.coingecko.com/base/all.json";
+      default:
+        break;
+    }
+  }, [chainId]);
+
   return useGetTokens({
-    url: "https://token-list.sushi.com/",
+    url,
     parse: parseListToken,
-    modifyList: (tokens: any) => tokens.slice(0, 20),
+    // modifyList: (tokens: any) => tokens.slice(0, 20),
   });
 };
 

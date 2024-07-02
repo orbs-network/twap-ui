@@ -184,8 +184,10 @@ export interface TwapContextUIPreferences {
   orderTabsToExclude?: string[];
   infoIcon?: FC;
   inputLoader?: ReactElement;
+  disableThousandSeparator?: boolean;
   input?: {
     showOnLoading?: boolean;
+ 
   };
   Tooltip?: FC<TooltipProps>;
   Button?: FC<ButtonProps>;
@@ -413,7 +415,7 @@ export type Step = {
     url: string;
     text: string;
   };
-  Icon: IconType;
+  Icon?: IconType;
   image?: string;
   status: "pending" | "loading" | "completed" | "disabled";
 };
@@ -423,3 +425,10 @@ export type LimitSwitchArgs = {
   selected: "limit" | "market";
   onClick: (value: "limit" | "market") => void;
 };
+
+
+export type CreateOrderModalArgs = {
+  Components?: {
+      USD?: FC<{usd?: string}>
+  }
+}

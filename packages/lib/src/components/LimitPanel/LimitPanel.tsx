@@ -278,7 +278,7 @@ const InvertPrice = () => {
   const onInvert = useTwapStore((s) => s.invertLimit);
 
   return (
-    <StyledInvertprice onClick={onInvert}>
+    <StyledInvertprice onClick={onInvert} className='twap-limit-panel-invert-button'>
       <Icon icon={<RiArrowUpDownLine size="16px" />} />
     </StyledInvertprice>
   );

@@ -218,9 +218,10 @@ export const useFormatNumber = ({
   suffix?: string;
   disableDynamicDecimals?: boolean;
 }) => {
+  const {disableThousandSeparator} =useTwapContext().uiPreferences
   const result = useNumericFormat({
     allowLeadingZeros: true,
-    thousandSeparator: ",",
+    thousandSeparator: disableThousandSeparator ? '' :  ",",
     displayType: "text",
     value: value || "",
     decimalScale: 18,
@@ -233,10 +234,10 @@ export const useFormatNumber = ({
 
 export const useFormatNumberV2 = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
   const _value = useFormatDecimals(value, decimalScale);
-
+  const {disableThousandSeparator} = useTwapContext().uiPreferences;
   const result = useNumericFormat({
     allowLeadingZeros: true,
-    thousandSeparator: ",",
+    thousandSeparator:disableThousandSeparator ? '' :  ",",
     displayType: "text",
     value: _value || "",
     decimalScale: 18,
@@ -576,6 +577,7 @@ export const useFormatDecimals = (value?: string | BN | number, decimalPlaces?: 
 
 export const useLimitPrice = () => {
   const { isLoading, marketPrice } = useMarketPrice();
+  const {isWrongChain} = useTwapContext()
   const { dstToken, isCustom, customLimitPrice, inverted, isMarketOrder } = useTwapStore((s) => ({
     dstToken: s.dstToken,
     isCustom: s.isCustomLimitPrice,
@@ -600,7 +602,7 @@ export const useLimitPrice = () => {
   }, [isCustom, customLimitPrice, dstToken?.decimals, inverted, marketPrice, isMarketOrder]);
 
   return {
-    isLoading,
+    isLoading: isWrongChain ? false : isLoading,
     limitPrice,
     limitPriceUi: useAmountUi(dstToken?.decimals, limitPrice),
   };

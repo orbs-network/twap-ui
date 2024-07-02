@@ -41,7 +41,7 @@ export const StyledSmallText = styled("span")(({ theme }) => {
   return {
     color: styles.darkText,
     fontWeight: "500!important",
-    fontSize: 18,
+    fontSize: 17,
     small: {
       fontSize: 14,
       color: styles.darkText,
@@ -141,13 +141,17 @@ export const StyledPoweredBy = styled(Components.PoweredBy)({
 export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
   const styles = getStyles(theme);
   return {
-    gap: 6,
-    background: styles.isDarkMode ? "hsla(0,0%,100%,.06)" : "rgba(0,0,0,.06)",
+    gap: 8,
+    background: styles.isDarkMode ? "#ffffff0a" : "rgba(0,0,0,.06)",
     padding: 8,
     borderRadius: 30,
     color: styles.textColor,
     "*": {
       color: "inherit",
+    },
+    svg: {
+      width: 15,
+      height: 15,
     },
 
     ".twap-token-logo": {
@@ -155,7 +159,7 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
       height: 28,
     },
     ".twap-token-name": {
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: 500,
     },
     p: {
@@ -163,7 +167,43 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
       fontWeight: 600,
     },
     ".twap-token-display": {
-      gap: 5,
+      gap: 8,
+    },
+  };
+});
+
+export const StyledTokenSelectLimit = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    width: "auto",
+    gap: 8,
+    background: styles.isDarkMode ? "#ffffff0a" : "rgba(0,0,0,.06)",
+    padding: 8,
+    borderRadius: 30,
+    color: styles.textColor,
+    cursor: "pointer",
+    "*": {
+      color: "inherit",
+    },
+    svg: {
+      width: 15,
+      height: 15,
+    },
+
+    ".twap-token-logo": {
+      width: 28,
+      height: 28,
+    },
+    ".twap-token-name": {
+      fontSize: 18,
+      fontWeight: 500,
+    },
+    p: {
+      fontSize: 16,
+      fontWeight: 600,
+    },
+    ".twap-token-display": {
+      gap: 8,
     },
   };
 });
@@ -270,14 +310,16 @@ const tooltipStyles = (theme?: Theme) => {
   const styles = getStyles(theme);
 
   return {
-    backgroundColor: styles.isDarkMode ? "#283449" : "#F9F9FA",
-    borderRadius: "4px",
-    fontSize: 12,
-    padding: 10,
+    backgroundColor: styles.isDarkMode ? "rgba(30,41,59,.5)" : "#F9F9FA",
+    backdropFilter: "blur(10px) saturate(190%) contrast(70%) brightness(80%)",
+    borderRadius: "12px",
+    fontSize: 14,
+    padding: 16,
     fontFamily: "Inter",
-    fontWeight: 500,
-    color: styles.isDarkMode ? "rgb(148 163 184/1)" : "rgb(107 114 128/1)",
-    lineHeight: "16px",
+    fontWeight: 400,
+    color: styles.isDarkMode ? "#94a3b8" : "rgb(107 114 128/1)",
+    border: `1px solid ${styles.accent}`,
+    lineHeight: "20px",
     "& *": {
       color: "inherit",
       fontSize: "inherit",
@@ -316,12 +358,13 @@ export const configureStyles = (theme?: Theme) => {
       p: {
         color: "inherit",
         fontSize: 15,
-        fontWeight: 500,
+        fontWeight: 600,
+        letterSpacing: "-.025em",
       },
     },
     ".twap-modal-content": {
       padding: "10px 16px 16px 16px",
-      background: isDarkMode ? "#222C3D" : "#F4F5F6",
+      background: isDarkMode ? "rgb(30 41 59/1)" : "#F4F5F6",
       border: "unset",
       maxHeight: "90vh",
       overflowY: "auto",
@@ -375,11 +418,11 @@ export const configureStyles = (theme?: Theme) => {
       background: "rgba(255,255,255,0.1)!important",
     },
 
-    ".MuiSwitch-thumb ": {
-      background: gradient,
+    ".MuiSwitch-thumb": {
+      color: 'rgb(15 23 42/1)!important',
     },
     ".MuiSwitch-track": {
-      background: isDarkMode ? "hsla(0,0%,100%,.3)!important" : "rgba(0,0,0, 0.3)!important",
+      background: isDarkMode ? "hsla(0,0%,100%,.1)!important" : "rgba(0,0,0, 0.3)!important",
       height: 20,
     },
     ".twap-disclaimer-switch": {
@@ -391,6 +434,9 @@ export const configureStyles = (theme?: Theme) => {
     ".Mui-checked+.MuiSwitch-track": {
       background: "rgb(59 130 246/1)!important",
       opacity: "1!important",
+    },
+    ".Mui-checked .MuiSwitch-thumb": {
+      color: "white!important",
     },
     ".twap-tooltip": {
       "& .MuiTooltip-tooltip": {
@@ -446,10 +492,18 @@ const StyledCardHeader = styled(Styles.StyledRowFlex)({
   justifyContent: "space-between",
 });
 
-export const StyledCard = styled(StyledColumnFlex)(({ theme }) => ({
-  width: "100%",
-  gap: 6,
-}));
+export const StyledCard = styled(StyledColumnFlex)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    width: "100%",
+    gap: 6,
+    ".twap-message": {
+      color: "#94a3b8",
+      fontSize: 14,
+      lineHeight: "20px",
+    },
+  };
+});
 
 export const Card = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   return <StyledCard className={className}>{children}</StyledCard>;
@@ -477,7 +531,13 @@ export const StyledCardBody = styled(Box)(({ theme }) => {
   };
 });
 
-export const StyledTokenPanel = styled(CardBody)({});
+export const StyledTokenPanel = styled(CardBody)<{ error?: number }>(({ theme, error }) => {
+  const isDarkMode = getStyles(theme).isDarkMode;
+  const bg = isDarkMode ? "rgba(239,68,68,.2)" : "white";
+  return {
+    background: error ? bg : "",
+  };
+});
 
 export const StyledLimitInput = styled(Components.Base.NumericInput)({
   input: {
@@ -534,21 +594,33 @@ export const StyledLimitPanel = styled(Components.LimitPanel)({
     fontWeight: 500,
     fontSize: 15,
     gap: 2,
-  },
-  ".twap-token-display": {
-    padding: "3px 6px",
-    borderRadius: 8,
-    "&:hover": {
-      background: "#ffffff0f",
+    ".twap-token-display": {
+      padding: "3px 5px",
     },
   },
+
   ".twap-limit-panel-token-select": {
     fontWeight: 500,
     fontSize: 15,
   },
+  ".twap-limit-panel-invert-button": {
+    svg: {
+      width: 20,
+      height: 20,
+    },
+  },
 });
 
-export const StyledTradeInterval = styled(Components.TradeInterval)({});
+export const StyledTradeInterval = styled(Components.TradeInterval)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    ".twap-warning-message": {
+      "*": {
+        color: styles.warningText,
+      },
+    },
+  };
+});
 export const StyledTradeIntervalInput = styled(CardBody)({
   input: {
     fontSize: 18,
@@ -559,7 +631,16 @@ export const StyledTradeIntervalResolution = styled(CardBody)({
   display: "flex",
 });
 
-export const StyledChunksSelect = styled(Components.ChunkSelector)({});
+export const StyledChunksSelect = styled(Components.ChunkSelector)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    ".twap-warning-message": {
+      "*": {
+        color: styles.warningText,
+      },
+    },
+  };
+});
 
 export const StyledChunksSelectSlider = styled(CardBody)(({ theme }) => {
   const styles = getStyles(theme);
@@ -605,7 +686,7 @@ export const StyledBalanceWarning = styled(Styles.StyledText)(({ theme }) => {
   return {
     color: styles.warningText,
     fontWeight: 500,
-    fontSize: 18,
+    fontSize: 17,
   };
 });
 
@@ -614,3 +695,49 @@ export const StyledSwapModalContent = styled(StyledColumnFlex)({
     color: "white",
   },
 });
+
+
+export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({theme}) => {
+  const styles = getStyles(theme);
+  return {
+    ".twap-token-logo": {
+      width: '50px!important',
+      height: '50px!important',
+    },
+    ".twap-custom-usd": {
+      position:'relative',
+      top: -6
+    },
+    ".twap-order-modal-token-amount": {
+      fontWeight: 500,
+    },
+    ".twap-order-modal-market-warning": {
+      background: '#ffffff0a',
+    },
+    ".twap-order-modal-details": {
+      ...cardBodyStyles(theme),
+      background:'#ffffff0a',
+      gap: 10
+    },
+    ".twap-order-modal-detail-row-right": {
+      color: '#94a3b8',
+      fontSize: 13,
+      "*": {
+        color: '#94a3b8',
+        fontSize: 13,
+      }
+    },
+    ".twap-order-modal-separator": {
+     background:'unset',
+     margin:'8px 0px!important'
+    },
+    ".twap-order-modal-disclaimer": {
+      ...cardBodyStyles(theme),
+      background:'#ffffff0a'
+    },
+    ".twap-label-text": {
+      color:'rgb(226 232 240/1)',
+      fontWeight: 500,
+    }
+  }
+})

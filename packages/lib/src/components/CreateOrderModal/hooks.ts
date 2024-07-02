@@ -25,8 +25,8 @@ export const useOrderType = () => {
       return "Limit";
     }
     if (isMarketOrder) {
-      return "Twap market";
+      return "dTWAP Market";
     }
-    return "Twap limit";
+    return "dTWAP Limit";
   }, [isLimitPanel, isMarketOrder]);
 };

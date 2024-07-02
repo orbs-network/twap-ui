@@ -17,7 +17,7 @@ import { BottomContent, Message, NumericInput, Slider } from "./base";
 
 const ChunkSelector = ({ className = "", children }: { className?: string; children: ReactNode }) => {
   return (
-    <StyledChunkSelector>
+    <StyledChunkSelector className={className}>
       {children}
       <Text />
     </StyledChunkSelector>

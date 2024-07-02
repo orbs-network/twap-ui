@@ -63,7 +63,7 @@ import {
   OrderSummaryMinDstAmountOutLabel,
   ChunksAmountLabel,
 } from "./Labels";
-import { LimitSwitchArgs, MessageVariant, SwitchVariant, Translations, TWAPTokenSelectProps } from "../types";
+import { LimitSwitchArgs, SwitchVariant, Translations, TWAPTokenSelectProps } from "../types";
 import { Typography } from "@mui/material";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
@@ -167,8 +167,6 @@ export const TokenSelect = ({
   isSrc,
   hideArrow = true,
   className = "",
-  tokenSelectedUi,
-  tokenNotSelectedUi,
   CustomArrow,
   customButtonElement,
 }: {
@@ -176,38 +174,15 @@ export const TokenSelect = ({
   isSrc?: boolean;
   hideArrow?: boolean;
   className?: string;
-  tokenSelectedUi?: ReactNode;
-  tokenNotSelectedUi?: ReactNode;
   CustomArrow?: any;
   customButtonElement?: FC;
 }) => {
-  const srcToken = useTwapStore((state) => state.srcToken);
-  const dstToken = useTwapStore((state) => state.dstToken);
-
-  const token = isSrc ? srcToken : dstToken;
-
   return (
     <div className={`${className} twap-token-select`} onClick={onClick} style={{ cursor: "pointer" }}>
-      {token ? (
-        <StyledRowFlex gap={5} style={{ cursor: "pointer" }} width="fit-content" className={`twap-token-selected`}>
-          {tokenSelectedUi ? (
-            <>{tokenSelectedUi}</>
-          ) : (
-            <>
-              <TokenLogoAndSymbol isSrc={isSrc} />
-              {!hideArrow && <Icon icon={CustomArrow ? <CustomArrow size={20} /> : <IoIosArrowDown size={20} />} />}
-            </>
-          )}
-        </StyledRowFlex>
-      ) : (
-        <TokenSelectButton
-          customButtonElement={customButtonElement}
-          customUi={tokenNotSelectedUi}
-          hideArrow={hideArrow}
-          className={`${className} twap-token-not-selected`}
-          onClick={onClick}
-        />
-      )}
+      <StyledRowFlex gap={5} style={{ cursor: "pointer" }} width="fit-content" className={`twap-token-selected`}>
+        <TokenLogoAndSymbol isSrc={isSrc} />
+        {!hideArrow && <Icon icon={CustomArrow ? <CustomArrow size={20} /> : <IoIosArrowDown size={20} />} />}
+      </StyledRowFlex>
     </div>
   );
 };

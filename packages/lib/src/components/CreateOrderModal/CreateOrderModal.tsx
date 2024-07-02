@@ -1,55 +1,24 @@
 import { styled } from "@mui/material";
 import _ from "lodash";
-import { useSubmitOrderButton } from "../../hooks/useSubmitOrderButton";
 import { useSubmitOrderFlow } from "../../hooks/useTransactions";
 import { useTwapStore } from "../../store";
 import { StyledColumnFlex } from "../../styles";
-import { Button } from "../base";
-import { Separator, TokensPreview } from "./Components";
-import { AcceptDisclaimer, ChunksAmount, ChunkSize, Details, Expiry, LimitDetails, MinDestAmount, Price, Recipient, TradeInterval, TwapDetails } from "./Details";
+import { CreateOrderModalArgs } from "../../types";
+import { Separator, SubmitButton, TokensPreview } from "./Components";
+import { CreateOrderModalContext } from "./context";
+import { ChunksAmount, ChunkSize, Expiry, LimitDetails, MinDestAmount, Price, Recipient, TradeInterval, TwapDetails } from "./Details";
 import { OrderSubmitted, ConfirmOrder, Failed } from "./states";
+import { ReviewOrder } from "./states/ReviewOrder";
 import { Steps } from "./Steps";
 
-export function Review({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) {
-  return (
-    <StyledReview className={className}>
-      <TokensPreview />
-      <Separator />
-      <Details />
-      <Separator />
-      <AcceptDisclaimer />
-      <SubmitButton onClick={onSubmit} />
-    </StyledReview>
-  );
+
+interface Props extends CreateOrderModalArgs {
+  className?: string
 }
-
-const StyledReview = styled(StyledColumnFlex)({
-  gap: 0,
-  ".twap-order-modal-separator": {
-    margin: "20px 0px",
-  },
-  ".twap-order-modal-details": {
-    gap: 5,
-  },
-  ".twap-order-modal-disclaimer": {
-    marginBottom: 20,
-  },
-});
-
-const SubmitButton = ({ onClick }: { onClick: () => void }) => {
-  const button = useSubmitOrderButton(onClick);
-
-  return (
-    <Button onClick={button.onClick} loading={button.loading} disabled={button.disabled}>
-      {button.text}
-    </Button>
-  );
-};
-
-export const CreateOrderModal = () => {
+export const CreateOrderModal = ({ className = "", ...rest }: Props) => {
   const { mutate: onSubmit, swapState } = useSubmitOrderFlow();
 
-  let content = <Review onSubmit={onSubmit} />;
+  let content = <ReviewOrder onSubmit={onSubmit} />;
   if (swapState === "failed") {
     content = <Failed />;
   }
@@ -61,7 +30,11 @@ export const CreateOrderModal = () => {
     content = <OrderSubmitted />;
   }
 
-  return <StyledContainer>{content}</StyledContainer>;
+  return (
+    <CreateOrderModalContext.Provider value={rest}>
+      <StyledContainer className={className}>{content}</StyledContainer>
+    </CreateOrderModalContext.Provider>
+  );
 };
 
 CreateOrderModal.Price = Price;
@@ -74,7 +47,7 @@ CreateOrderModal.Recipient = Recipient;
 CreateOrderModal.TwapDetails = TwapDetails;
 CreateOrderModal.LimitDetails = LimitDetails;
 CreateOrderModal.SubmitButton = SubmitButton;
-CreateOrderModal.Review = Review;
+CreateOrderModal.Review = ReviewOrder;
 
 export const SwapPending = () => {
   const swapSteps = useTwapStore((s) => s.swapSteps);

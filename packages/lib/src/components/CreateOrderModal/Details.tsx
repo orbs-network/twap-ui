@@ -214,11 +214,11 @@ const DetailRow = ({
   startLogo?: ReactNode;
 }) => {
   return (
-    <StyledDetailRow className={className}>
+    <StyledDetailRow className={`${className} twap-order-modal-detail-row`}>
       <StyledLabel tooltipText={tooltip}>
         {startLogo} {title}
       </StyledLabel>
-      <StyledDetailRowChildren>{children}</StyledDetailRowChildren>
+      <StyledDetailRowChildren className="twap-order-modal-detail-row-right">{children}</StyledDetailRowChildren>
     </StyledDetailRow>
   );
 };

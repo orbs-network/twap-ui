@@ -1,15 +1,17 @@
 import { Box, styled } from "@mui/material";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
-import { TokenLogo } from "../base";
+import { Button, TokenLogo } from "../base";
 import { useTokenDisplay } from "./hooks";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode } from "react";
+import { useSubmitOrderButton } from "../../hooks";
+import { useCreateOrderModalContext } from "./context";
 
 export const TokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
   const { amount, token, usd, title } = useTokenDisplay(isSrc);
 
   return (
-    <StyledTokenDisplay>
+    <StyledTokenDisplay  className="twap-order-modal-token">
       <StyledText className="twap-order-modal-token-title">{title}</StyledText>
       <StyledMiddle>
         <StyledText className="twap-order-modal-token-amount">
@@ -17,9 +19,18 @@ export const TokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
         </StyledText>
         <TokenLogo className="twap-order-modal-token-logo" logo={token?.logoUrl} />
       </StyledMiddle>
-      <StyledText className="twap-order-modal-token-usd">${usd}</StyledText>
+      <USD usd={usd} />
     </StyledTokenDisplay>
   );
+};
+
+const USD = ({ usd }: { usd?: string }) => {
+  const { Components } = useCreateOrderModalContext();
+
+  if (Components?.USD) {
+    return <Components.USD usd={usd} />;
+  }
+  return <StyledText className="twap-order-modal-token-usd">${usd}</StyledText>;
 };
 
 export const TokensPreview = () => {
@@ -28,6 +39,16 @@ export const TokensPreview = () => {
       <TokenDisplay isSrc={true} />
       <TokenDisplay />
     </StyledTokens>
+  );
+};
+
+export const SubmitButton = ({ onClick }: { onClick: () => void }) => {
+  const button = useSubmitOrderButton(onClick);
+
+  return (
+    <Button onClick={button.onClick} loading={button.loading} disabled={button.disabled}>
+      {button.text}
+    </Button>
   );
 };
 
