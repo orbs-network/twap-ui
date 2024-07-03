@@ -71,6 +71,7 @@ import { Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { amountUi, makeElipsisAddress } from "../utils";
 import BN from "bignumber.js";
+import { TokenData } from "@defi.org/web3-candies";
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -932,4 +933,14 @@ export const LimitPriceMessage = () => {
 
 const StyledLimitPriceMessage = styled(Message)({
   color: "white",
+});
+
+export const Separator = ({ className = "" }: { className?: string }) => {
+  return <StyledSeparator className={`${className} twap-separator`} />;
+};
+
+const StyledSeparator = styled("div")({
+  width: "100%",
+  height: "1px",
+  background: "rgba(255, 255, 255, 0.07)",
 });

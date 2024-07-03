@@ -34,7 +34,6 @@ const StyledContainer = styled(StyledColumnFlex)({
   alignItems: "center",
   ".twap-order-modal-submitted-title": {
     fontSize: 16,
-    textTransform: "capitalize",
   },
   ".twap-order-modal-link": {
     marginTop: 30,

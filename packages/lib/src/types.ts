@@ -185,6 +185,9 @@ export interface TwapContextUIPreferences {
   infoIcon?: FC;
   inputLoader?: ReactElement;
   disableThousandSeparator?: boolean;
+  Components?: {
+    USD?: FC<{ usd?: string }>;
+  };
   input?: {
     showOnLoading?: boolean;
   };

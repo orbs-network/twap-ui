@@ -1,18 +1,27 @@
 import { styled } from "@mui/material";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
-import { SmallTokens } from "../Components";
+import { BottomContent, SmallTokens } from "../Components";
 import { useOrderType } from "../hooks";
+import { useMemo } from "react";
+import { isNativeBalanceError } from "../../../utils";
+import { useTwapContext } from "../../../context";
 
-export function Failed() {
+export function Failed({ error }: { error?: any }) {
+  const nativeBalance = useMemo(() => isNativeBalanceError(error), [error]);
+  
+  const nativeToken = useTwapContext().lib?.config.nativeToken.symbol;
   return (
-    <StyledContainer>
+    <StyledContainer className="twap-order-modal-failed">
       <Logo />
       <Title />
+      {nativeBalance && <StyledText className="twap-order-modal-failed-subtitle">Insufficient {nativeToken} balance</StyledText>}
       <SmallTokens />
+      <BottomContent text="Learn more" href="/" />
     </StyledContainer>
   );
 }
+
 
 const Title = () => {
   const type = useOrderType();
@@ -22,7 +31,6 @@ const Title = () => {
 
 const StyledTitle = styled(StyledText)({
   fontSize: 24,
-  textTransform: "capitalize",
 });
 
 const Logo = () => {
@@ -47,4 +55,8 @@ const StyledLogo = styled(StyledRowFlex)({
 
 const StyledContainer = styled(StyledColumnFlex)({
   alignItems: "center",
+  ".twap-order-modal-failed-subtitle": {
+    fontSize: 15,
+    fontWeight: 500,
+  }
 });

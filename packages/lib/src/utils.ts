@@ -56,8 +56,8 @@ export const amountBNV2 = (decimals?: number, amount?: string) => {
   return parsebn(amount).times(BN(10).pow(decimals)).decimalPlaces(0).toString();
 };
 
-export const fillDelayText = (value: number, translations: Translations) => {
-  if (!value) {
+export const fillDelayText = (value?: number, translations?: Translations) => {
+  if (!value || !translations) {
     return "0";
   }
   const time = moment.duration(value);
@@ -212,9 +212,12 @@ export const isTxRejected = (error: any) => {
 };
 
 export const isNativeBalanceError = (error: any) => {
-  if (error?.message) {
-    return error.message?.toLowerCase()?.includes("insufficient") || error.message?.toLowerCase()?.includes("gas required exceeds allowance");
-  }
+  try {
+    if (error) {
+      const message = error?.message?.toLowerCase() || error?.toLowerCase();
+      return message?.includes("insufficient") || message?.includes("gas required exceeds allowance");
+    }
+  } catch (error) {}
 };
 
 export const isStableCoin = (token?: TokenData) => STABLE_TOKENS.includes(token?.symbol.toLowerCase() || "");

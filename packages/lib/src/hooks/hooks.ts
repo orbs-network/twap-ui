@@ -255,13 +255,13 @@ export const useSrcAmountNotZero = () => {
 
 export const useTokenSelect = (parsedTokens?: TokenData[]) => {
   const { onSrcTokenSelected, onDstTokenSelected, parsedTokens: _parsedTokens } = useTwapContext();
-  const context = useTwapContext();
 
   const switchTokens = useSwitchTokens();
-  const { updateState, dstToken, srcToken } = useTwapStore((store) => ({
+  const { updateState, dstToken, srcToken, resetLimitPrice } = useTwapStore((store) => ({
     updateState: store.updateState,
     srcToken: store.srcToken,
     dstToken: store.dstToken,
+    resetLimitPrice: store.resetLimitPrice,
   }));
 
   const tokens = parsedTokens || _parsedTokens;
@@ -290,6 +290,7 @@ export const useTokenSelect = (parsedTokens?: TokenData[]) => {
         switchTokens();
         return;
       }
+      resetLimitPrice();
 
       if (isSrc) {
         onSrc();
@@ -297,7 +298,7 @@ export const useTokenSelect = (parsedTokens?: TokenData[]) => {
         onDst();
       }
     },
-    [onSrcTokenSelected, onDstTokenSelected, tokens, updateState, srcToken, dstToken, switchTokens]
+    [onSrcTokenSelected, onDstTokenSelected, tokens, updateState, srcToken, dstToken, switchTokens, resetLimitPrice]
   );
 };
 
@@ -311,12 +312,12 @@ export const useToken = (isSrc?: boolean) => {
 export const useSwitchTokens = () => {
   const { dappTokens, onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
 
-  const { srcToken, dstToken, updateState, resetLimit } = useTwapStore((s) => ({
+  const { srcToken, dstToken, updateState, onTokensSwitch } = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
     srcAmountUi: s.srcAmountUi,
     updateState: s.updateState,
-    resetLimit: s.resetLimit,
+    onTokensSwitch: s.onTokensSwitch,
   }));
   resetQueryParams();
   const dstAmount = useOutAmount().outAmountUi;
@@ -325,12 +326,12 @@ export const useSwitchTokens = () => {
       srcToken: dstToken,
       dstToken: srcToken,
     });
-    resetLimit();
+    onTokensSwitch();
     const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address) || getTokenFromTokensList(dappTokens, srcToken?.symbol);
     const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address) || getTokenFromTokensList(dappTokens, dstToken?.symbol);
     srcToken && onSrcTokenSelected?.(_dstToken);
     dstToken && onDstTokenSelected?.(_srcToken);
-  }, [dstAmount, _.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol, onSrcTokenSelected, onDstTokenSelected, resetLimit]);
+  }, [dstAmount, _.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol, onSrcTokenSelected, onDstTokenSelected, onTokensSwitch]);
 };
 
 export const useOrdersTabs = () => {
@@ -487,6 +488,7 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
         fillDelay: o.order.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
         createdAtUi: moment(o.order.time * 1000).format("ll HH:mm"),
         deadlineUi: moment(o.order.ask.deadline * 1000).format("ll HH:mm"),
+        deadline: o.order.ask.deadline * 1000,
         prefix: isMarketOrder ? "~" : "~",
         dstAmount: !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0")),
         dstAmountUsd: o.ui.dollarValueOut ? o.ui.dollarValueOut : !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0").times(dstUsd)),
@@ -625,6 +627,12 @@ export const useDstMinAmountOut = () => {
     }
     return BN(1).toString();
   }, [srcToken, dstToken, lib, srcChunkAmount, limitPriceUi]);
+};
+
+export const useDstMinAmountOutUi = () => {
+  const dstMinAmountOut = useDstMinAmountOut();
+  const dstToken = useTwapStore((s) => s.dstToken);
+  return useAmountUi(dstToken?.decimals, dstMinAmountOut);
 };
 
 export const useAmountUi = (decimals?: number, value?: string) => {
@@ -842,7 +850,7 @@ export const useSwapWarning = () => {
     return { balance, zeroSrcAmount };
   }
 
-  return { tradeSize, invalidTokens, zeroSrcAmount, balance, fillDelay, feeOnTranfer, lowPrice };
+  return { tradeSize, invalidTokens, zeroSrcAmount, fillDelay, feeOnTranfer, lowPrice };
 };
 
 export const useSetChunks = () => {

@@ -13,7 +13,8 @@ import {
 } from "../hooks/hooks";
 import { useTwapStore } from "../store";
 import { StyledColumnFlex } from "../styles";
-import { BottomContent, Message, NumericInput, Slider } from "./base";
+import { BottomContent, Loader, Message, NumericInput, Slider } from "./base";
+import ContentLoader from "./base/ContentLoader";
 
 const ChunkSelector = ({ className = "", children }: { className?: string; children: ReactNode }) => {
   return (
@@ -55,6 +56,11 @@ const StyledWarning = styled(Message)({
 const Input = ({ className }: { className?: string }) => {
   const chunks = useChunks();
   const setChunks = useSetChunks();
+  const srcUsdLoading = useSrcUsd().isLoading;
+
+  if (srcUsdLoading) {
+    return <Loader height="100%" />;
+  }
 
   return <StyledChunksInput className={className} placeholder="0" value={chunks} decimalScale={0} onChange={(value) => setChunks(Number(value))} />;
 };
@@ -64,6 +70,11 @@ const SliderComponent = ({ className }: { className?: string }) => {
   const setChunks = useSetChunks();
   const formattedChunks = useFormatNumber({ value: chunks });
   const maxPossibleChunks = useMaxPossibleChunks();
+  const srcUsdLoading = useSrcUsd().isLoading;
+
+  if (srcUsdLoading) {
+    return <Loader height="100%" />;
+  }
 
   return (
     <Slider

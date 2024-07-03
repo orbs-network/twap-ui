@@ -15,6 +15,7 @@ import { fetchPrice } from "./utils";
 import BigNumber from "bignumber.js";
 import { useMediaQuery } from "@mui/material";
 import { useDappContext } from "./context";
+import BN from "bignumber.js";
 export const injectedConnector = new InjectedConnector({});
 
 export const useAddedTokens = () => {
@@ -235,6 +236,8 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
     refetchInterval: 30_000,
     enabled: !!fromToken && !!toToken && !!srcAmount && !!fromTokenUsd && !!toTokenUsd,
   });
+
+  console.log(query.data, fromTokenUsd);
 
   return {
     isLoading: query.isLoading,

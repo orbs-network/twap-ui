@@ -31,20 +31,26 @@ export function OrderHistoryList() {
 
   return (
     <Container>
-      {selected && <OrderPreview order={selected} />}
-      <StyledList style={{ opacity: selected ? 0 : 1 }}>
-        <AutoSizer>
-          {({ height, width }: any) => (
-            <List ref={listRef} height={height} itemCount={orders?.Completed?.length || 0} itemSize={getSize} width={width} itemData={{ orders: orders?.Completed, setSize }}>
-              {({ index, style }) => (
-                <div style={style}>
-                  <SingleOrder onSelect={onSelect} setSize={setSize} index={index} order={orders?.Completed?.[index]} />
-                </div>
-              )}
-            </List>
-          )}
-        </AutoSizer>
-      </StyledList>
+      {selected ? (
+        <StyledColumnFlex>
+          <button onClick={() => setSelected(undefined)}>Back</button>
+          <OrderPreview order={selected} />
+        </StyledColumnFlex>
+      ) : (
+        <StyledList style={{ opacity: selected ? 0 : 1 }}>
+          <AutoSizer>
+            {({ height, width }: any) => (
+              <List ref={listRef} height={height} itemCount={orders?.Expired?.length || 0} itemSize={getSize} width={width} itemData={{ orders: orders?.Expired, setSize }}>
+                {({ index, style }) => (
+                  <div style={style}>
+                    <SingleOrder onSelect={onSelect} setSize={setSize} index={index} order={orders?.Expired?.[index]} />
+                  </div>
+                )}
+              </List>
+            )}
+          </AutoSizer>
+        </StyledList>
+      )}
     </Container>
   );
 }

@@ -5,7 +5,6 @@ import {
   Translations,
   TwapAdapter,
   Styles as TwapStyles,
-  Orders,
   store,
   TWAPProps,
   getConfig,
@@ -29,7 +28,6 @@ import {
   StyledTokenSelect,
   StyledUSD,
   configureStyles,
-  StyledOrders,
   StyledPoweredBy,
   darkTheme,
   lightTheme,
@@ -68,9 +66,20 @@ import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
 
+const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
+  return (
+    <StyledUSD className="twap-custom-usd">
+      <SmallText prefix="$ " value={BN(usd || 0).isZero() ? "0.00" : usd} />
+    </StyledUSD>
+  );
+};
+
 const uiPreferences: TwapContextUIPreferences = {
   disableThousandSeparator: true,
   switchVariant: "ios",
+  Components: {
+    USD
+  }
 };
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
@@ -262,7 +271,7 @@ const TWAP = (props: SushiProps) => {
             <Components.LimitPriceMessage />
             <StyledPoweredBy />
 
-            <StyledOrders />
+            {/* <Orders /> */}
             <SubmitOrderModal />
           </AdapterContextProvider>
         </ThemeProvider>
@@ -271,13 +280,18 @@ const TWAP = (props: SushiProps) => {
   );
 };
 
-const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
+function Orders() {
+  const Modal = useAdapterContext().Modal;
   return (
-    <StyledUSD className="twap-custom-usd">
-      <SmallText prefix="$ " value={BN(usd || 0).isZero() ? "0.00" : usd} />
-    </StyledUSD>
+    <Modal open={true} title="Submit Order">
+      <div>
+        <Components.OrderHistoryList />
+      </div>
+    </Modal>
   );
-};
+}
+
+
 
 const SubmitOrderModal = () => {
   const { Modal } = useAdapterContext();
@@ -456,4 +470,4 @@ export const useIsSupportedChain = (chainId?: number) => {
   return _.find(configs, (config: Config) => config.chainId === chainId);
 };
 
-export { Orders, TWAP };
+export { TWAP };

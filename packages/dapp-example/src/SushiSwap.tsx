@@ -1,5 +1,5 @@
 import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-sushiswap";
+import { TWAP } from "@orbs-network/twap-ui-sushiswap";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -20,8 +20,6 @@ export const useDappTokens = () => {
   const { chainId } = useWeb3React();
   const parseListToken = useCallback(
     (tokenList?: any) => {
-      console.log(tokenList);
-
       const res = tokenList?.tokens
         .filter((it: any) => it.chainId === config?.chainId)
         .map(({ symbol, address, decimals, logoURI, name }: any) => ({
@@ -148,8 +146,6 @@ const DappComponent = () => {
           <UISelector selected={selected} select={setSelected} limit={true} />
 
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-
-          <Orders />
         </StyledSushiLayout>
       </StyledSushi>
     </DappProvider>

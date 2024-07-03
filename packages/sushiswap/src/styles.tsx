@@ -324,6 +324,45 @@ export const configureStyles = (theme?: Theme) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-order-summary": {
+      ".twap-token-logo": {
+        width: "50px!important",
+        height: "50px!important",
+      },
+      ".twap-custom-usd": {
+
+      },
+      ".twap-order-summary-token-amount": {
+        fontWeight: 500,
+        fontSize: 20,
+      },
+      ".twap-order-summary-market-warning": {
+        background: styles.accent,
+      },
+      ".twap-order-summary-details": {
+        ...cardBodyStyles(theme),
+        background: styles.isDarkMode ? "#ffffff0a" : "white",
+        gap: 10,
+      },
+      ".twap-order-summary-detail-row-right": {
+        color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
+        fontSize: 13,
+        "*": {
+          color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
+          fontSize: 13,
+        },
+      },
+      ".twap-order-summary-separator": {
+        background: "unset",
+        margin: "8px 0px!important",
+      },
+    },
+    ".twap-time-selector-menu": {
+      ".MuiMenu-paper": {
+        ...cardBodyStyles(theme),
+        padding: 0,
+      },
+    },
     ".twap-order-modal-submitted-logo": {
       svg: {
         fill: "rgb(59 130 246/1)",
@@ -691,45 +730,12 @@ export const StyledBalanceWarning = styled(Styles.StyledText)(({ theme }) => {
 });
 
 export const StyledSwapModalContent = styled(StyledColumnFlex)({
-  a: {
-    color: "white",
-  },
+
 });
 
 export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ theme }) => {
   const styles = getStyles(theme);
   return {
-    ".twap-token-logo": {
-      width: "50px!important",
-      height: "50px!important",
-    },
-    ".twap-custom-usd": {
-      position: "relative",
-      top: -6,
-    },
-    ".twap-order-modal-token-amount": {
-      fontWeight: 500,
-    },
-    ".twap-order-modal-market-warning": {
-      background: styles.accent,
-    },
-    ".twap-order-modal-details": {
-      ...cardBodyStyles(theme),
-      background: styles.isDarkMode ? "#ffffff0a" : "white",
-      gap: 10,
-    },
-    ".twap-order-modal-detail-row-right": {
-      color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
-      fontSize: 13,
-      "*": {
-        color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
-        fontSize: 13,
-      },
-    },
-    ".twap-order-modal-separator": {
-      background: "unset",
-      margin: "8px 0px!important",
-    },
     ".twap-order-modal-disclaimer": {
       ...cardBodyStyles(theme),
       background: styles.isDarkMode ? "#ffffff0a" : "white",
@@ -737,9 +743,6 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
     ".twap-label-text": {
       color: styles.textColor,
       fontWeight: 500,
-    },
-    a: {
-      color: styles.textColor,
     },
   };
 });
