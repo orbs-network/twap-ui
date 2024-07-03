@@ -1,4 +1,4 @@
-import { TokenData, parsebn, eqIgnoreCase, maxUint256, Token, isNativeAddress } from "@defi.org/web3-candies";
+import { TokenData, parsebn, eqIgnoreCase, maxUint256, Token, isNativeAddress, bn } from "@defi.org/web3-candies";
 import moment from "moment";
 import { Translations } from "./types";
 import { EXPLORER_URLS, QUERY_PARAMS, STABLE_TOKENS } from "./consts";
@@ -183,12 +183,11 @@ function indexWhereZerosEnd(numberStr?: string) {
 export const formatDecimals = (value?: string | BN | number, decimalPlaces?: number) => {
   if (!value) return "";
   const index = indexWhereZerosEnd(BN(value).toString());
+  const decimals = decimalPlaces || 6;
 
-  const max = decimalPlaces || 6;
+  const res = BN(value).gt(1) && index > 1 ? 0 : index > 8 ? 0 : index + decimals;
 
-  return BN(value)
-    .decimalPlaces(index + max, BN.ROUND_DOWN)
-    .toString();
+  return BN(value).decimalPlaces(res, BN.ROUND_DOWN).toString();
 };
 
 export const addMissingTokens = (config: Config, tokens: TokenData[]) => {
@@ -222,4 +221,15 @@ export const isStableCoin = (token?: TokenData) => STABLE_TOKENS.includes(token?
 
 export const getConfig = (configs: Config[], chainId?: number): Config => {
   return _.find(configs, { chainId }) || configs[0];
+};
+
+export const invertBN = (value?: string) => {
+  if (!value) return "";
+
+  return bn(1).multipliedBy(1e18).dividedBy(value).multipliedBy(1e18).decimalPlaces(0).toString();
+};
+
+export const invert = (value?: string) => {
+  if (!value) return "";
+  return BN(1).div(value).toString();
 };

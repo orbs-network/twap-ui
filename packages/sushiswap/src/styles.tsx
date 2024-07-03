@@ -24,7 +24,7 @@ const getStyles = (theme?: Theme) => {
     darkTextHover: isDarkMode ? "rgb(203 213 225/1)" : "rgb(37 99 235/1)",
     warningText: "rgb(239 68 68/1)",
     textColor: isDarkMode ? "rgb(248 250 252/1)" : "rgb(17 24 39/1)",
-    messageText: isDarkMode ?  "#94a3b8" : '#6b7280'
+    messageText: isDarkMode ? "#94a3b8" : "#6b7280",
   };
 };
 
@@ -53,18 +53,18 @@ export const StyledSmallText = styled("span")(({ theme }) => {
 export const StyledBalance = styled(Styles.StyledText)<{ disabled?: number }>(({ theme, disabled }) => {
   const styles = getStyles(theme);
   const darkDisabled = disabled ? "rgb(100 116 139/1)" : styles.darkText;
-  const lightDisabled = disabled ? "rgb(107 114 128/1)" : 'rgb(59 130 246/1)';
+  const lightDisabled = disabled ? "rgb(107 114 128/1)" : "rgb(59 130 246/1)";
   const color = styles.isDarkMode ? darkDisabled : lightDisabled;
-  const hover = disabled ? '' : styles.darkTextHover;
+  const hover = disabled ? "" : styles.darkTextHover;
 
   return {
     cursor: disabled ? "auto" : "pointer",
     width: "auto",
     "*": {
-      color:color
+      color: color,
     },
-    "small": {
-      color:color
+    small: {
+      color: color,
     },
     svg: {
       fill: color,
@@ -101,7 +101,7 @@ export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }
     button: {
       position: "absolute",
       border: `1px solid ${styles.accent}`,
-      background:bg ,
+      background: bg,
       width: 30,
       height: 30,
       borderRadius: "50%",
@@ -118,7 +118,7 @@ export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }
       height: 27,
       fill: "rgb(59 130 246/1)",
     },
-  }
+  };
 });
 
 export const StyledContainer = styled(Styles.StyledColumnFlex)({
@@ -152,7 +152,6 @@ export const StyledPoweredBy = styled(Components.PoweredBy)({
   marginTop: 20,
 });
 
-
 const selectTokenStyles = (theme: Theme) => {
   const styles = getStyles(theme);
 
@@ -185,18 +184,17 @@ const selectTokenStyles = (theme: Theme) => {
     ".twap-token-display": {
       gap: 8,
     },
-  }
-}
+  };
+};
 
 export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
   const styles = getStyles(theme);
   return {
     ...selectTokenStyles(theme),
-  }
+  };
 });
 
 export const StyledTokenSelectLimit = styled(Styles.StyledRowFlex)(({ theme }) => {
-
   return {
     ...selectTokenStyles(theme),
     width: "auto",
@@ -326,7 +324,6 @@ export const configureStyles = (theme?: Theme) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
-
     ".twap-order-modal-submitted-logo": {
       svg: {
         fill: "rgb(59 130 246/1)",
@@ -335,9 +332,9 @@ export const configureStyles = (theme?: Theme) => {
     ".twap-limit-price-message": {
       ...cardBodyStyles(theme),
       marginTop: 20,
-      "*":{
-        color: styles.messageText
-      }
+      "*": {
+        color: styles.messageText,
+      },
     },
     "*": {
       color: styles.textColor,
@@ -412,7 +409,7 @@ export const configureStyles = (theme?: Theme) => {
     },
 
     ".MuiSwitch-thumb": {
-      color: isDarkMode ?  "rgb(15 23 42/1)!important" : 'rgb(249 250 251/1)!important',
+      color: isDarkMode ? "rgb(15 23 42/1)!important" : "rgb(249 250 251/1)!important",
     },
     ".MuiSwitch-track": {
       background: isDarkMode ? "hsla(0,0%,100%,.1)!important" : "rgba(0,0,0,.1)!important",
@@ -455,12 +452,12 @@ export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
-    background:isDarkMode ?  "transparent"  :'white',
+    background: isDarkMode ? "transparent" : "white",
     border: `1px solid ${styles.accent}`,
     borderRadius: 8,
     padding: 2,
     ".MuiTabs-indicator": {
-      background: isDarkMode ?  "#ffffff14" : '#0000000a',
+      background: isDarkMode ? "#ffffff14" : "#0000000a",
       borderRadius: 6,
       border: `1px solid ${styles.accent}`,
       transitionDuration: "0.2s",
@@ -471,7 +468,7 @@ export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
       minWidth: 80,
       minHeight: "unset",
       zIndex: 1,
-      color: isDarkMode ?  "white" : '#000',
+      color: isDarkMode ? "white" : "#000",
       fontSize: 13,
       fontWeight: 500,
       opacity: 0.6,
@@ -543,8 +540,8 @@ export const StyledLimitInput = styled(Components.Base.NumericInput)({
 
 export const StyledSelectButton = styled("button")<{ selected: number }>(({ selected, theme }) => {
   const styles = getStyles(theme);
-  const selectedBg = styles.isDarkMode ? "rgba(255,255,255, 0.15) " : 'rgb(59 130 246/1)';
-  const selectedColor = styles.isDarkMode ? '' : 'white';
+  const selectedBg = styles.isDarkMode ? "rgba(255,255,255, 0.15) " : "rgb(59 130 246/1)";
+  const selectedColor = styles.isDarkMode ? "" : "white";
   return {
     background: selected ? selectedBg : "#0000000a",
     color: selected ? selectedColor : "",
@@ -557,7 +554,7 @@ export const StyledSelectButton = styled("button")<{ selected: number }>(({ sele
     justifyContent: "center",
     minWidth: 50,
     transition: "0.2s all",
-    border: selected ? "1px solid transparent" : `1px solid ${styles.isDarkMode ?  styles.accent : 'transparent'}`,
+    border: selected ? "1px solid transparent" : `1px solid ${styles.isDarkMode ? styles.accent : "transparent"}`,
     height: 28,
     svg: {
       fill: selectedColor,
@@ -655,11 +652,10 @@ export const StyledChunksSelectSlider = styled(CardBody)(({ theme }) => {
     },
     ".MuiSlider-track": {
       background: "rgb(59 130 246/1)",
-      border:'none!important'
+      border: "none!important",
     },
     ".MuiSlider-rail": {
       backgroundColor: styles.accent,
-    
     },
     ".MuiSlider-valueLabel": {
       ...tooltipStyles(theme),
@@ -719,14 +715,14 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
     },
     ".twap-order-modal-details": {
       ...cardBodyStyles(theme),
-      background:styles.isDarkMode ?  "#ffffff0a" : 'white',
+      background: styles.isDarkMode ? "#ffffff0a" : "white",
       gap: 10,
     },
     ".twap-order-modal-detail-row-right": {
-      color: styles.isDarkMode ?  "#94a3b8" : '#6b7280',
+      color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
       fontSize: 13,
       "*": {
-        color: styles.isDarkMode ?  "#94a3b8" : '#6b7280',
+        color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
         fontSize: 13,
       },
     },
@@ -736,7 +732,7 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
     },
     ".twap-order-modal-disclaimer": {
       ...cardBodyStyles(theme),
-      background:styles.isDarkMode ?  "#ffffff0a" : 'white',
+      background: styles.isDarkMode ? "#ffffff0a" : "white",
     },
     ".twap-label-text": {
       color: styles.textColor,
@@ -744,6 +740,6 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
     },
     a: {
       color: styles.textColor,
-    }
+    },
   };
 });

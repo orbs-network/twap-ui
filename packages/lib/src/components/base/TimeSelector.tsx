@@ -87,7 +87,7 @@ export const TimeSelectMenu = ({ onChange, resolution, className = "" }: { onCha
         {translations[findSelectedResolutionText(resolution)]}
         <IoIosArrowDown />
       </StyledSelected>
-      <Menu anchorEl={anchorEl} open={open} onClose={handleClose} onBlurCapture={handleClose} hideBackdrop>
+      <Menu className="twap-time-selector-menu" anchorEl={anchorEl} open={open} onClose={handleClose} onBlurCapture={handleClose} hideBackdrop>
         {timeArr.map((item) => {
           return (
             <StyledMenuItem className="twap-time-selector-menu-item" key={item.value} onClick={() => onSelect(item.value)}>
