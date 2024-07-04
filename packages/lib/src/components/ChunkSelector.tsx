@@ -1,5 +1,6 @@
 import { styled } from "@mui/material";
 import { ReactNode } from "react";
+import { useTwapContext } from "../context";
 import {
   useSrcChunkAmountUi,
   useFormatNumber,
@@ -14,7 +15,6 @@ import {
 import { useTwapStore } from "../store";
 import { StyledColumnFlex } from "../styles";
 import { BottomContent, Loader, Message, NumericInput, Slider } from "./base";
-import ContentLoader from "./base/ContentLoader";
 
 const ChunkSelector = ({ className = "", children }: { className?: string; children: ReactNode }) => {
   return (
@@ -30,10 +30,10 @@ const Text = () => {
   const warning = useTradeSizeWarning();
   const srcUsdLoading = useSrcUsd().isLoading;
   const _usd = useFormatNumberV2({ value: useSrcChunkAmountUsdUi(), decimalScale: 2 });
-
+  const isWrongChain = useTwapContext().isWrongChain;
   const usd = _usd ? `($${_usd})` : "";
 
-  if (srcUsdLoading) return null;
+  if (srcUsdLoading || isWrongChain) return null;
 
   return (
     <BottomContent>

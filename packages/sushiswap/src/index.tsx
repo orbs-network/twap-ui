@@ -52,6 +52,9 @@ import {
   StyledTop,
   StyledTokenSelectLimit,
   StyledCreateOrderModal,
+  StyledOpenOrdersButton,
+  StyledShowOrdersButton,
+  StyledTwap,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
@@ -78,8 +81,8 @@ const uiPreferences: TwapContextUIPreferences = {
   disableThousandSeparator: true,
   switchVariant: "ios",
   Components: {
-    USD
-  }
+    USD,
+  },
 };
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
@@ -123,7 +126,7 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
   const balance = hooks.useFormatDecimals(_balance, 2);
 
   return (
-    <StyledBalance disabled={!isSrc} onClick={!isZeroBalance ? () => onClick(1) : () => {}}>
+    <StyledBalance disabled={!isSrc ? 1 : 0} onClick={!isZeroBalance ? () => onClick(1) : () => {}}>
       <IoWalletSharp />
       <SmallText value={isZeroBalance ? "0.00" : balance} />
     </StyledBalance>
@@ -167,7 +170,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             <StyledTokenSelect hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <TokenPanelUsd exceedsBalance={exceedsBalance} isSrc={isSrcToken} />
+            <TokenPanelUsd exceedsBalance={!!exceedsBalance} isSrc={isSrcToken} />
             <Balance isSrc={isSrcToken} />
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
@@ -243,7 +246,7 @@ const TWAP = (props: SushiProps) => {
   const marketPrice = useMarketPrice(props);
 
   return (
-    <div className="twap-adapter-wrapper">
+    <StyledTwap className="twap-adapter-wrapper">
       <TwapAdapter
         connect={props.connect}
         config={config}
@@ -267,31 +270,33 @@ const TWAP = (props: SushiProps) => {
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
           <AdapterContextProvider value={props}>
-            {props.limit ? <LimitPanel /> : <TWAPPanel />}
-            <Components.LimitPriceMessage />
-            <StyledPoweredBy />
-
-            {/* <Orders /> */}
+            <StyledContent>
+              {props.limit ? <LimitPanel /> : <TWAPPanel />}
+              <Orders />
+              <Components.LimitPriceMessage />
+              <StyledPoweredBy />
+            </StyledContent>
             <SubmitOrderModal />
           </AdapterContextProvider>
         </ThemeProvider>
       </TwapAdapter>
-    </div>
+    </StyledTwap>
   );
 };
 
 function Orders() {
   const Modal = useAdapterContext().Modal;
+  const isOpen = store.useOrdersStore((s: any) => s.showOrders);
+
   return (
-    <Modal open={true} title="Submit Order">
-      <div>
-        <Components.OrderHistoryList />
-      </div>
-    </Modal>
+    <>
+      <StyledShowOrdersButton />
+      <Modal open={isOpen}>
+        <Components.OrderHistory />
+      </Modal>
+    </>
   );
 }
-
-
 
 const SubmitOrderModal = () => {
   const { Modal } = useAdapterContext();
@@ -387,36 +392,32 @@ const LimitPrice = () => {
 
 const TWAPPanel = () => {
   return (
-    <div className="twap-container">
-      <StyledContent>
-        <StyledTop>
-          <TokenPanel isSrcToken={true} />
-          <TokenChange />
-          <TokenPanel />
-        </StyledTop>
-        <LimitPrice />
-        <TotalTrades />
-        <TradeIntervalSelect />
+    <StyledContent>
+      <StyledTop>
+        <TokenPanel isSrcToken={true} />
+        <TokenChange />
+        <TokenPanel />
+      </StyledTop>
+      <LimitPrice />
+      <TotalTrades />
+      <TradeIntervalSelect />
 
-        <Components.ShowConfirmation />
-      </StyledContent>
-    </div>
+      <Components.ShowConfirmation />
+    </StyledContent>
   );
 };
 
 const LimitPanel = () => {
   return (
-    <div className="twap-container">
-      <StyledContent>
-        <StyledTop>
-          <TokenPanel isSrcToken={true} />
-          <TokenChange />
-          <TokenPanel />
-        </StyledTop>
-        <LimitPrice />
-        <Components.ShowConfirmation />
-      </StyledContent>
-    </div>
+    <StyledContent>
+      <StyledTop>
+        <TokenPanel isSrcToken={true} />
+        <TokenChange />
+        <TokenPanel />
+      </StyledTop>
+      <LimitPrice />
+      <Components.ShowConfirmation />
+    </StyledContent>
   );
 };
 

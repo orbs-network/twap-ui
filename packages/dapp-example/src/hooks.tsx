@@ -237,8 +237,6 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
     enabled: !!fromToken && !!toToken && !!srcAmount && !!fromTokenUsd && !!toTokenUsd,
   });
 
-  console.log(query.data, fromTokenUsd);
-
   return {
     isLoading: query.isLoading,
     outAmount: query.data,

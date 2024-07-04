@@ -48,7 +48,6 @@ const Container = styled(StyledColumnFlex)({
   ".twap-order-summary-details": {
     gap: 8,
   },
-
 });
 
 OrderSummary.Details = Details;

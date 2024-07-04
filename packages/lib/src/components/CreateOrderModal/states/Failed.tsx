@@ -9,10 +9,10 @@ import { useTwapContext } from "../../../context";
 
 export function Failed({ error }: { error?: any }) {
   const nativeBalance = useMemo(() => isNativeBalanceError(error), [error]);
-  
+
   const nativeToken = useTwapContext().lib?.config.nativeToken.symbol;
   return (
-    <StyledContainer className="twap-order-modal-failed">
+    <StyledContainer className="twap-create-order-failed">
       <Logo />
       <Title />
       {nativeBalance && <StyledText className="twap-order-modal-failed-subtitle">Insufficient {nativeToken} balance</StyledText>}
@@ -21,7 +21,6 @@ export function Failed({ error }: { error?: any }) {
     </StyledContainer>
   );
 }
-
 
 const Title = () => {
   const type = useOrderType();
@@ -58,5 +57,5 @@ const StyledContainer = styled(StyledColumnFlex)({
   ".twap-order-modal-failed-subtitle": {
     fontSize: 15,
     fontWeight: 500,
-  }
+  },
 });

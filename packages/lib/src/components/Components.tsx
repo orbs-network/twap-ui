@@ -17,6 +17,8 @@ import {
   Message,
   Button,
   Portal,
+  Loader,
+  Spinner,
 } from "./base";
 import { styled, Tab, Tabs } from "@mui/material";
 import { useTwapContext } from "../context";
@@ -48,9 +50,10 @@ import {
   useFeeOnTransferWarning,
   useLowPriceWarning,
   useShouldWrapOrUnwrapOnly,
+  useOpenOrders,
 } from "../hooks/hooks";
 import { useConfirmationButton } from "../hooks/useConfirmationButton";
-import { useTwapStore } from "../store";
+import { useOrdersStore, useTwapStore } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, textOverflow, StyledSummaryDetails, StyledSummaryRow, StyledSummaryRowRight } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import TokenSelectButton from "./base/TokenSelectButton";
@@ -67,11 +70,13 @@ import { LimitSwitchArgs, SwitchVariant, Translations, TWAPTokenSelectProps } fr
 import { Typography } from "@mui/material";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
-import { Styles } from "..";
+import { query, Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { amountUi, makeElipsisAddress } from "../utils";
 import BN from "bignumber.js";
 import { TokenData } from "@defi.org/web3-candies";
+import _ from "lodash";
+import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -620,29 +625,6 @@ export const DisclaimerText = ({ className = "", translations: _translations }: 
 
 //---- styles -----//
 
-const StyledWarning = styled(StyledRowFlex)({
-  p: {
-    fontSize: 14,
-    color: "#E23D5B",
-  },
-  "& *": {
-    fill: "#E23D5B",
-  },
-});
-
-const StyledChunksInput = styled(NumericInput)({
-  width: "100%",
-
-  height: 35,
-  padding: "0px 10px",
-  input: {
-    fontSize: 16,
-    textAlign: "right",
-    width: "100%",
-    transition: "0.2s all",
-  },
-});
-
 const StyledTradeInfoExplanation = styled(StyledColumnFlex)({
   maxHeight: 140,
   overflow: "auto",
@@ -810,12 +792,13 @@ export const PanelWarning = ({ className = "" }: { className?: string }) => {
   const feeOnTranferWarning = useFeeOnTransferWarning();
   const lowPriceWarning = useLowPriceWarning();
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+  const isWrongChain = useTwapContext().isWrongChain;
 
   const show = feeOnTranferWarning || lowPriceWarning;
   const title = feeOnTranferWarning || lowPriceWarning?.title;
   const text = lowPriceWarning?.subTitle;
 
-  if (!show || isWrapOrUnwrapOnly) return null;
+  if (!show || isWrapOrUnwrapOnly || isWrongChain) return null;
 
   return <Message className={className} title={title} text={text} variant="error" />;
 };
@@ -942,5 +925,31 @@ export const Separator = ({ className = "" }: { className?: string }) => {
 const StyledSeparator = styled("div")({
   width: "100%",
   height: "1px",
-  background: "rgba(255, 255, 255, 0.07)",
+});
+
+export const OrderHistoryButton = ({ className = "" }: { className?: string }) => {
+  const { data } = query.useOrdersHistory();
+  const { account, isWrongChain } = useTwapContext();
+  const s = useTwapStore((s) => s.waitingForOrdersUpdate);
+  const onOpen = useOrdersStore((s) => s.onOpen);
+  const openOrder = useOpenOrders();
+
+  const isLoading = !data || s;
+
+  if (!account || isWrongChain) return null;
+
+  return (
+    <StyledOrderHistoryButton className={`${className} twap-show-orders-btn`} onClick={onOpen}>
+      {isLoading && <Spinner size={20} />}
+      <span>{isLoading ? "Orders" : `${_.size(openOrder)} Open orders`}</span>
+      <FaArrowRight className="twap-show-orders-btn-arrow" />
+    </StyledOrderHistoryButton>
+  );
+};
+
+const StyledOrderHistoryButton = styled(StyledRowFlex)({
+  justifyContent: "flex-start",
+  ".twap-show-orders-btn-arrow": {
+    marginLeft: "auto",
+  },
 });

@@ -5,15 +5,15 @@ import { StyledColumnFlex } from "../../styles";
 import { CreateOrderModalArgs } from "../../types";
 import { CreateOrderModalContext } from "./context";
 import { OrderSubmitted, Failed } from "./states";
-import { ReviewOrder } from "./states/ReviewOrder";
+import { Main } from "./states/Main";
 
-interface Props extends CreateOrderModalArgs {
+export interface Props extends CreateOrderModalArgs {
   className?: string;
 }
 export const CreateOrderModal = ({ className = "", ...rest }: Props) => {
   const { mutate: onSubmit, swapState, error } = useSubmitOrderFlow();
 
-  let content = <ReviewOrder onSubmit={onSubmit} />;
+  let content = <Main onSubmit={onSubmit} />;
   if (swapState === "failed") {
     content = <Failed error={error} />;
   }
@@ -24,7 +24,7 @@ export const CreateOrderModal = ({ className = "", ...rest }: Props) => {
 
   return (
     <CreateOrderModalContext.Provider value={rest}>
-      <StyledContainer className={className}>{content}</StyledContainer>
+      <StyledContainer className={`${className} twap-create-order-content`}>{content}</StyledContainer>
     </CreateOrderModalContext.Provider>
   );
 };
@@ -32,3 +32,5 @@ export const CreateOrderModal = ({ className = "", ...rest }: Props) => {
 const StyledContainer = styled(StyledColumnFlex)({
   gap: 0,
 });
+
+CreateOrderModal.Main = Main;

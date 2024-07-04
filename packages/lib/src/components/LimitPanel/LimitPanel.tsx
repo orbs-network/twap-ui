@@ -12,8 +12,7 @@ import { useOnLimitPercentageClick, onCustomChange } from "./hooks";
 import { amountUiV2, formatDecimals } from "../../utils";
 import { useTwapContext } from "../../context";
 import { MarketPriceWarning } from "../Components";
-
-export interface Shared {
+interface Shared {
   onSrcSelect: () => void;
   onDstSelect: () => void;
   Components?: {
@@ -77,7 +76,7 @@ const DefaultPercentButton = ({ text, onClick, selected }: LimitPricePercentProp
   return <button onClick={onClick}>{text}</button>;
 };
 
-export interface Props extends Shared {
+export interface LimitPanelProps extends Shared {
   className?: string;
 }
 
@@ -87,7 +86,7 @@ const Context = createContext({} as Shared);
 
 const useLimitPanelContext = () => useContext(Context);
 
-export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Components, styles }: Props) {
+export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Components, styles }: LimitPanelProps) {
   const isMarketOrder = useIsMarketOrder();
   if (isMarketOrder) {
     return <MarketPriceWarning />;

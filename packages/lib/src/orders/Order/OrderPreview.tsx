@@ -45,7 +45,6 @@ function OrderPreview({ order, onExpand }: { order: OrderUI; onExpand: () => voi
         />
         <Icon className="twap-order-preview-icon" icon={<HiArrowRight style={{ width: 22, height: 22 }} />} />
         <OrderTokenDisplay
-          usdLoading={order?.ui.dstUsdLoading}
           isLoading={false}
           token={order?.ui.dstToken}
           amount={order?.ui.dstAmount}

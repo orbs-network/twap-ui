@@ -1,64 +1,34 @@
 import { styled } from "@mui/material";
-import React, { useCallback, useEffect, useState } from "react";
-import { VariableSizeList as List } from "react-window";
-import { useOrdersHistory } from "../../hooks/query";
 import { StyledColumnFlex } from "../../styles";
-import AutoSizer from "react-virtualized-auto-sizer";
-import { ParsedOrder } from "../../types";
-import { OrderPreview } from "./OrderPreview";
-import { SingleOrder } from "./Order";
+import { SelectedOrder } from "./SelectedOrder";
+import { OrderHistoryHeader } from "./OrderHistoryHeader";
+import _ from "lodash";
+import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
+import { List } from "./List";
 
-export function OrderHistoryList() {
-  const { data: orders } = useOrdersHistory();
-  const [selected, setSelected] = useState<ParsedOrder | undefined>(undefined);
-
-  const onSelect = useCallback(
-    (o: ParsedOrder | undefined) => {
-      setSelected(o);
-    },
-    [setSelected]
-  );
-
-  const sizeMap = React.useRef({} as any);
-  const listRef = React.useRef<any>();
-  const setSize = React.useCallback((index: number, size: number) => {
-    sizeMap.current = { ...sizeMap.current, [index]: size };
-    listRef.current.resetAfterIndex(0);
-  }, []);
-  const getSize = React.useCallback((index: number): number => {
-    return sizeMap.current[index] || 50;
-  }, []);
-
+export function OrderHistory() {
   return (
-    <Container>
-      {selected ? (
-        <StyledColumnFlex>
-          <button onClick={() => setSelected(undefined)}>Back</button>
-          <OrderPreview order={selected} />
-        </StyledColumnFlex>
-      ) : (
-        <StyledList style={{ opacity: selected ? 0 : 1 }}>
-          <AutoSizer>
-            {({ height, width }: any) => (
-              <List ref={listRef} height={height} itemCount={orders?.Expired?.length || 0} itemSize={getSize} width={width} itemData={{ orders: orders?.Expired, setSize }}>
-                {({ index, style }) => (
-                  <div style={style}>
-                    <SingleOrder onSelect={onSelect} setSize={setSize} index={index} order={orders?.Expired?.[index]} />
-                  </div>
-                )}
-              </List>
-            )}
-          </AutoSizer>
-        </StyledList>
-      )}
-    </Container>
+    <OrderHistoryContextProvider>
+      <Content />
+    </OrderHistoryContextProvider>
   );
 }
 
-const StyledList = styled(StyledColumnFlex)({
-  height: 400,
-});
+const Content = () => {
+  const order = useOrderHistoryContext().order;
+  return (
+    <Container order={order ? 1 : 0}>
+      <OrderHistoryHeader />
+      <SelectedOrder />
+      <List />
+    </Container>
+  );
+};
 
-const Container = styled(StyledColumnFlex)({
-  position: "relative",
+const Container = styled(StyledColumnFlex)<{ order: number }>(({ order }) => {
+  return {
+    position: "relative",
+    height: order ? "auto" : "500px",
+    maxHeight: "90vh",
+  };
 });

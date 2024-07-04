@@ -31,8 +31,8 @@ import { useOrderType } from "../hooks";
 
 const Price = () => {
   const { srcAmount, outAmount, isMarketOrder, srcToken, dstToken } = useOrderSummaryContext();
-    const srcUsd = useSrcUsd().value
-    const dstUsd = useDstUsd().value
+  const srcUsd = useSrcUsd().value;
+  const dstUsd = useDstUsd().value;
   const [inverted, setInverted] = useState(false);
 
   const toggle = useCallback(() => {
@@ -126,7 +126,31 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   );
 };
 
-export function ReviewOrder({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) {
+export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) => {
+  const { swapState, swapSteps } = useTwapStore((s) => ({
+    swapState: s.swapState,
+    swapSteps: s.swapSteps,
+  }));
+
+  if (_.size(swapSteps) === 1) {
+    return <ConfirmOrder />;
+  }
+  return (
+    <>
+      <ReviewOrder className={className} />
+      {swapState === "loading" ? (
+        <>
+          <StyledSwapPendingBorder />
+          <Steps />
+        </>
+      ) : (
+        <SubmitButton onClick={onSubmit} />
+      )}
+    </>
+  );
+};
+
+function ReviewOrder({ className = "" }: { className?: string }) {
   const chunks = useChunks();
   const { srcToken, dstToken, srcAmount } = useTwapStore((s) => ({
     srcToken: s.srcToken,
@@ -142,9 +166,7 @@ export function ReviewOrder({ onSubmit, className = "" }: { onSubmit: () => void
   const dstMinAmountOut = useDstMinAmountOutUi();
   const fillDelayMillis = useFillDelayMillis();
   const isLimitPanel = useTwapContext().isLimitPanel;
-  const { swapState } = useTwapStore((s) => ({
-    swapState: s.swapState,
-  }));
+
   return (
     <StyledReview
       className={className}
@@ -162,20 +184,13 @@ export function ReviewOrder({ onSubmit, className = "" }: { onSubmit: () => void
       fillDelayMillis={fillDelayMillis}
     >
       <OrderSummary.Tokens />
-      {swapState === "loading" ? (
-        <LoadingContent />
-      ) : (
-        <>
-          <Separator />
-          <OrderSummary.Details>
-            <Price />
-            {isLimitPanel ? <LimitPanelDetails /> : <TwapPanelDetails />}
-          </OrderSummary.Details>
-          <Separator />
-          <AcceptDisclaimer />
-          <SubmitButton onClick={onSubmit} />
-        </>
-      )}
+      <Separator />
+      <OrderSummary.Details>
+        <Price />
+        {isLimitPanel ? <LimitPanelDetails /> : <TwapPanelDetails />}
+      </OrderSummary.Details>
+      <Separator />
+      <AcceptDisclaimer />
     </StyledReview>
   );
 }
@@ -217,21 +232,6 @@ const LimitPanelDetails = () => {
   );
 };
 
-const LoadingContent = () => {
-  const swapSteps = useTwapStore((s) => s.swapSteps);
-
-  if (_.size(swapSteps) === 1) {
-    return <ConfirmOrder />;
-  }
-
-  return (
-    <>
-      <StyledSwapPendingBorder />
-      <Steps />
-    </>
-  );
-};
-
 const StyledReview = styled(OrderSummary)({});
 const StyledSwapPendingBorder = styled(Separator)({
   margin: "20px 0px",
@@ -239,11 +239,11 @@ const StyledSwapPendingBorder = styled(Separator)({
 
 export function ConfirmOrder() {
   return (
-    <StyledContainer>
+    <StyledContainer className="twap-create-order-confirm">
       <Spinner size={55} />
       <Title />
       <SmallTokens />
-      <BottomContent text='Proceed in your wallet' />
+      <BottomContent text="Proceed in your wallet" />
     </StyledContainer>
   );
 }

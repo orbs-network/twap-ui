@@ -102,7 +102,6 @@ export const useTwapStore = create(
         isInvertedLimitPrice: false,
         customChunks: undefined,
         customFillDelay: defaultCustomFillDelay,
-        isMarketOrder: false,
       }),
     setLimitOrderPriceUi: () => {
       setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
@@ -186,9 +185,22 @@ export const useTwapStore = create(
 interface OrdersStore {
   tab: number;
   setTab: (value: number) => void;
+  updateState: (values: Partial<OrdersStore>) => void;
+  showOrders?: boolean;
+  onOpen: () => void;
+  onClose: () => void;
 }
 
 export const useOrdersStore = create<OrdersStore>((set) => ({
   tab: 0,
   setTab: (value: number) => set({ tab: value }),
+  updateState: (values: Partial<OrdersStore>) => {
+    set({ ...values });
+  },
+  onOpen: () => {
+    set({ showOrders: true });
+  },
+  onClose: () => {
+    set({ showOrders: false });
+  },
 }));

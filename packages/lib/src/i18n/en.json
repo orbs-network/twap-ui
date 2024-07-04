@@ -115,5 +115,7 @@
   "learnMore": "Learn more",
   "swapOne": "Swap when 1",
   "isWorth": "is worth",
-  "placingOrder": "Placing order"
+  "placingOrder": "Placing order",
+  "market": "market",
+  "limit": "limit"
 }

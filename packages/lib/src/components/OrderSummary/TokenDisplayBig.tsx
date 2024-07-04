@@ -14,9 +14,9 @@ export const TokenDisplay = ({ amount, token, usd, title }: { amount?: string; t
       <StyledRight className="twap-order-summary-token-right">
         <StyledText className="twap-order-summary-token-usd-title">{title}</StyledText>
         <StyledText className="twap-order-summary-token-amount">
-          {_amount} {token?.symbol}
+          {amount ? _amount : ""} {token?.symbol}
         </StyledText>
-        <USD usd={_usd} />
+        {usd && <USD usd={_usd} />}
       </StyledRight>
       <TokenLogo className="twap-order-summary-token-usd-logo" logo={token?.logoUrl} />
     </StyledTokenDisplay>
@@ -34,9 +34,9 @@ const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
 
 const StyledRight = styled(StyledColumnFlex)({
   width: "auto",
-  flex:1,
+  flex: 1,
   justifyContent: "space-between",
-  gap: 4
+  gap: 4,
 });
 const StyledTokenDisplay = styled(StyledRowFlex)({
   alignItems: "center",

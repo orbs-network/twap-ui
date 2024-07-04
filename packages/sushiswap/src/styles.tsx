@@ -1,4 +1,4 @@
-import { Box, createTheme, styled, Theme, Typography } from "@mui/material";
+import { Box, createTheme, styled, Theme } from "@mui/material";
 import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
 import { ReactNode } from "react";
 
@@ -25,6 +25,7 @@ const getStyles = (theme?: Theme) => {
     warningText: "rgb(239 68 68/1)",
     textColor: isDarkMode ? "rgb(248 250 252/1)" : "rgb(17 24 39/1)",
     messageText: isDarkMode ? "#94a3b8" : "#6b7280",
+    boxHover: isDarkMode ? "rgba(255,255,255, 0.09)" : "rgba(0,0,0, 0.03)",
   };
 };
 
@@ -324,25 +325,37 @@ export const configureStyles = (theme?: Theme) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-order-container": {
+      ...cardBodyStyles(theme),
+      background: styles.isDarkMode ? "#ffffff0a" : "white",
+      transition: "0.2s all",
+      "&:hover": {
+        background: styles.boxHover,
+      },
+    },
+    ".twap-separator": {
+      background: isDarkMode ? "rgba(255, 255, 255, 0.07)" : "rgba(0, 0, 0, 0.07)",
+    },
     ".twap-order-summary": {
       ".twap-token-logo": {
         width: "50px!important",
         height: "50px!important",
       },
-      ".twap-custom-usd": {
-
-      },
+      ".twap-custom-usd": {},
       ".twap-order-summary-token-amount": {
         fontWeight: 500,
         fontSize: 20,
       },
-      ".twap-order-summary-market-warning": {
+      ".twap-order-modal-market-warning": {
         background: styles.accent,
       },
       ".twap-order-summary-details": {
         ...cardBodyStyles(theme),
         background: styles.isDarkMode ? "#ffffff0a" : "white",
         gap: 10,
+      },
+      ".twap-label p": {
+        fontWeight: 500,
       },
       ".twap-order-summary-detail-row-right": {
         color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
@@ -370,7 +383,6 @@ export const configureStyles = (theme?: Theme) => {
     },
     ".twap-limit-price-message": {
       ...cardBodyStyles(theme),
-      marginTop: 20,
       "*": {
         color: styles.messageText,
       },
@@ -718,6 +730,7 @@ export const StyledChunksSelectInput = styled(CardBody)({
 
 export const StyledContent = styled(StyledColumnFlex)({
   gap: 16,
+  width: "100%",
 });
 
 export const StyledBalanceWarning = styled(Styles.StyledText)(({ theme }) => {
@@ -729,20 +742,46 @@ export const StyledBalanceWarning = styled(Styles.StyledText)(({ theme }) => {
   };
 });
 
-export const StyledSwapModalContent = styled(StyledColumnFlex)({
-
-});
+export const StyledSwapModalContent = styled(StyledColumnFlex)({});
 
 export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ theme }) => {
   const styles = getStyles(theme);
+  const summaryModalStyles = {
+    ...cardBodyStyles(theme),
+    background: styles.isDarkMode ? "#ffffff0a" : "white",
+  };
+
   return {
     ".twap-order-modal-disclaimer": {
-      ...cardBodyStyles(theme),
-      background: styles.isDarkMode ? "#ffffff0a" : "white",
+      ...summaryModalStyles,
     },
     ".twap-label-text": {
       color: styles.textColor,
       fontWeight: 500,
     },
+    ".twap-create-order-confirm": {},
   };
+});
+
+export const StyledOpenOrdersButton = styled(StyledCardBody)({
+  cursor: "pointer",
+  marginTop: 20,
+});
+
+export const StyledShowOrdersButton = styled(Components.OrderHistoryButton)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    ...cardBodyStyles(theme),
+    transition: "0.2s all",
+    cursor: "pointer",
+    fontSize: 15,
+    fontWeight: 500,
+    "&:hover": {
+      background: styles.boxHover,
+    },
+  };
+});
+
+export const StyledTwap = styled("div")({
+  width: "100%",
 });

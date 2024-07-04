@@ -102,7 +102,7 @@ const useAllowance = () => {
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
-export const usePriceUSD = (address?: string, onSuccess?: (value: BN, isLoading: boolean) => void) => {
+export const usePriceUSD = (address?: string) => {
   const context = useTwapContext();
 
   const { lib } = context;
@@ -132,9 +132,6 @@ export const usePriceUSD = (address?: string, onSuccess?: (value: BN, isLoading:
   );
   const value = new BN(query.data || usd || 0).toString();
   const isLoading = context.priceUsd ? query.isLoading && query.fetchStatus !== "idle" : !usd;
-  useEffect(() => {
-    onSuccess?.(BN(value), isLoading);
-  }, [value, _address, isLoading, onSuccess]);
 
   return {
     value: new BN(value),

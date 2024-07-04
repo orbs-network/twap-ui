@@ -659,7 +659,7 @@ const SwapModal = () => {
 
   if (!swapState) {
     title = "Confirm Order";
-    content = <Components.CreateOrderModal.Review onSubmit={createOrder} />;
+    content = <Components.CreateOrderModal.Main onSubmit={createOrder} />;
   }
 
   if (swapStep) {

@@ -3,7 +3,7 @@ import { Status } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { Button, Label, TokenLogo, TokenPriceCompare } from "../../components/base";
 import { useTwapContext } from "../../context";
-import { useCancelOrder, useFormatNumberV2, useHistoryPrice, useMinimumDelayMinutes } from "../../hooks";
+import { useCancelOrder, useFormatNumberV2, useMinimumDelayMinutes } from "../../hooks";
 import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { OrderUI } from "../../types";
 import { fillDelayText } from "../../utils";
@@ -102,16 +102,6 @@ export const StyledDetailRow = styled(StyledRowFlex)({
   },
   "@media(max-width: 500px)": {},
 });
-
-const OrderPrice = ({ order }: { order: OrderUI }) => {
-  const { leftToken, rightToken, priceUi, toggleInverted } = useHistoryPrice(order);
-  const translations = useTwapContext().translations;
-  return (
-    <Row className="twap-market-price-section" label={order?.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}>
-      <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={priceUi} toggleInverted={toggleInverted} />
-    </Row>
-  );
-};
 
 export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number; className?: string }) => {
   const { isLoading, mutate } = useCancelOrder();

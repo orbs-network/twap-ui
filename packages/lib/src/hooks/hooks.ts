@@ -130,20 +130,6 @@ export const useCancelOrder = () => {
   );
 };
 
-export const useHistoryPrice = (order: OrderUI) => {
-  const [inverted, setInverted] = useState(false);
-
-  const price = inverted ? BN(1).div(order?.ui.dstPriceFor1Src || "0") : order?.ui.dstPriceFor1Src;
-  return {
-    inverted,
-    toggleInverted: () => setInverted(!inverted),
-    price,
-    priceUi: price?.toFormat(),
-    leftToken: inverted ? order?.ui.dstToken : order?.ui.srcToken,
-    rightToken: !inverted ? order?.ui.dstToken : order?.ui.srcToken,
-  };
-};
-
 export const useLoadingState = () => {
   const srcUSD = useSrcUsd();
   const dstUSD = useDstUsd();
@@ -451,8 +437,6 @@ export const useConfirmationModal = () => {
 
 export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
   const lib = useTwapContext()?.lib;
-  const { value: srcUsd = zero } = query.usePriceUSD(o?.order.ask.srcToken);
-  const { value: dstUsd = zero } = query.usePriceUSD(o?.order.ask.dstToken);
 
   const { data: dstAmountOutFromEvents } = query.useOrderPastEvents(o, expanded);
 
@@ -462,9 +446,7 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
     const dstToken = o.ui.dstToken;
     if (!srcToken || !dstToken) return;
     const isTheGrapth = supportsTheGraphHistory(lib.config.chainId);
-
     const isMarketOrder = lib.isMarketOrder(o.order);
-    const dstPriceFor1Src = lib.dstPriceFor1Src(srcToken, dstToken, srcUsd, dstUsd, o.order.ask.srcBidAmount, o.order.ask.dstMinAmount);
     const dstAmount = isTheGrapth ? o.ui.dstAmount : dstAmountOutFromEvents?.toString();
     const srcFilledAmount = isTheGrapth ? o.ui.srcFilledAmount : o.order.srcFilledAmount;
 
@@ -473,30 +455,24 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
       ui: {
         ...o.ui,
         isMarketOrder,
-        dstPriceFor1Src,
-        srcUsd,
-        dstUsd,
-        srcUsdUi: srcUsd.toString(),
-        dstUsdUi: dstUsd.toString(),
         srcAmountUi: amountUi(srcToken, o.order.ask.srcAmount),
-        srcAmountUsdUi: o.ui.dollarValueIn || amountUi(srcToken, o.order.ask.srcAmount.times(srcUsd)),
+        srcAmountUsdUi: o.ui.dollarValueIn || amountUi(srcToken, o.order.ask.srcAmount.times(0)),
         srcChunkAmountUi: amountUi(srcToken, o.order.ask.srcBidAmount),
-        srcChunkAmountUsdUi: amountUi(srcToken, o.order.ask.srcBidAmount.times(srcUsd)),
+        srcChunkAmountUsdUi: amountUi(srcToken, o.order.ask.srcBidAmount.times(0)),
         srcFilledAmountUi: amountUi(srcToken, BN(srcFilledAmount || "0")),
         dstMinAmountOutUi: amountUi(dstToken, o.order.ask.dstMinAmount),
-        dstMinAmountOutUsdUi: amountUi(dstToken, o.order.ask.dstMinAmount.times(dstUsd)),
+        dstMinAmountOutUsdUi: amountUi(dstToken, o.order.ask.dstMinAmount.times(0)),
         fillDelay: o.order.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
         createdAtUi: moment(o.order.time * 1000).format("ll HH:mm"),
         deadlineUi: moment(o.order.ask.deadline * 1000).format("ll HH:mm"),
         deadline: o.order.ask.deadline * 1000,
         prefix: isMarketOrder ? "~" : "~",
         dstAmount: !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0")),
-        dstAmountUsd: o.ui.dollarValueOut ? o.ui.dollarValueOut : !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0").times(dstUsd)),
-        dstUsdLoading: !dstUsd || dstUsd.isZero(),
+        dstAmountUsd: o.ui.dollarValueOut ? o.ui.dollarValueOut : !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0").times(0)),
         progress: o?.ui.progress,
       },
     };
-  }, [lib, o, srcUsd, dstUsd, dstAmountOutFromEvents]);
+  }, [lib, o, dstAmountOutFromEvents?.toString()]);
 };
 
 export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
@@ -850,7 +826,7 @@ export const useSwapWarning = () => {
     return { balance, zeroSrcAmount };
   }
 
-  return { tradeSize, invalidTokens, zeroSrcAmount, fillDelay, feeOnTranfer, lowPrice };
+  return { tradeSize, invalidTokens, zeroSrcAmount, fillDelay, feeOnTranfer, lowPrice, balance };
 };
 
 export const useSetChunks = () => {
@@ -1252,4 +1228,12 @@ export const useTokenUsd = (isSrc?: boolean) => {
   const dstUSD = useDstAmountUsdUi();
 
   return isSrc ? srcUSD : dstUSD;
+};
+
+export const useOpenOrders = () => {
+  const { data } = query.useOrdersHistory();
+
+  return useMemo(() => {
+    return !data ? undefined : data[Status.Open as keyof typeof data];
+  }, [data]);
 };

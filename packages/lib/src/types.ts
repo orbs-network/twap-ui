@@ -121,6 +121,8 @@ export interface Translations {
   swapOne: string;
   isWorth: string;
   placingOrder: string;
+  market: string;
+  limit: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";

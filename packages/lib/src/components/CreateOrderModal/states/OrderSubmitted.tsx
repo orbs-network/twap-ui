@@ -6,8 +6,8 @@ import { useOrderType } from "../hooks";
 
 export function OrderSubmitted() {
   return (
-    <StyledContainer className="twap-order-modal-submitted">
-      <Logo className="twap-order-modal-submitted-logo">
+    <StyledContainer className="twap-create-order-submitted">
+      <Logo className="twap-create-order-submitted-logo">
         <HiArrowCircleUp />
       </Logo>
       <Title />
@@ -26,7 +26,7 @@ const Logo = styled(StyledRowFlex)({
 
 const Title = () => {
   const type = useOrderType();
-  return <StyledText className="twap-order-modal-submitted-title">{type} order submitted</StyledText>;
+  return <StyledText className="twap-create-order-submitted-title">{type} order submitted</StyledText>;
 };
 
 const StyledContainer = styled(StyledColumnFlex)({
