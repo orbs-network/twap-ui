@@ -132,7 +132,7 @@ export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; class
     swapSteps: s.swapSteps,
   }));
 
-  if (_.size(swapSteps) === 1) {
+  if (swapState === "loading" && _.size(swapSteps) === 1) {
     return <ConfirmOrder />;
   }
   return (

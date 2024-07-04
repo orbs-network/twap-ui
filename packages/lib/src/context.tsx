@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { TwapContextUIPreferences, TwapLibProps } from "./types";
-import { useAmountBN, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
+import { useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "./analytics";
@@ -10,8 +10,7 @@ import Web3 from "web3";
 import { useTwapStore } from "./store";
 import { query } from "./hooks/query";
 import { LimitPriceMessageContent } from "./components";
-import BN from "bignumber.js";
-analytics.onModuleLoad();
+analytics.onModuleImported();
 
 export interface TWAPContextProps extends TwapLibProps {
   uiPreferences: TwapContextUIPreferences;
@@ -50,7 +49,7 @@ const Listener = (props: TwapLibProps) => {
 
 const WrappedTwap = (props: TwapLibProps) => {
   useEffect(() => {
-    analytics.onTwapPageView();
+    analytics.onPageView();
   }, []);
 
   return (
@@ -94,6 +93,14 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
     return new TWAPLib(props.config, props.account!, props.provider);
   }, [isWrongChain, props.config, props.account, props.provider]);
+
+  useEffect(() => {
+    if (lib) {
+      analytics.onLibInit(lib);
+    } else {
+      analytics.reset();
+    }
+  }, [lib]);
 
   return (
     <QueryClientProvider client={queryClient}>

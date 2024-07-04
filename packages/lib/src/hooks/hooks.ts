@@ -8,23 +8,11 @@ import { OrderUI, ParsedOrder, State, SwapStep } from "../types";
 import _ from "lodash";
 import { analytics } from "../analytics";
 import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, zero, isNativeAddress, parsebn } from "@defi.org/web3-candies";
-import { TimeResolution, useTwapStore } from "../store";
+import { setQueryParam, TimeResolution, useTwapStore } from "../store";
 import { MAX_TRADE_INTERVAL, MAX_TRADE_INTERVAL_FORMATTED, MIN_NATIVE_BALANCE, MIN_TRADE_INTERVAL, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS, STABLE_TOKENS } from "../consts";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
-import {
-  amountBN,
-  amountBNV2,
-  amountUi,
-  amountUiV2,
-  fillDelayText,
-  formatDecimals,
-  getExplorerUrl,
-  getTokenFromTokensList,
-  isStableCoin,
-  setQueryParam,
-  supportsTheGraphHistory,
-} from "../utils";
+import { amountBN, amountBNV2, amountUi, amountUiV2, fillDelayText, formatDecimals, getExplorerUrl, getTokenFromTokensList, isStableCoin, supportsTheGraphHistory } from "../utils";
 import { query } from "./query";
 
 const resetQueryParams = () => {
@@ -115,16 +103,16 @@ export const useCancelOrder = () => {
   const lib = useTwapContext().lib;
   return useMutation(
     async (orderId: number) => {
-      analytics.onCancelOrderClick(orderId);
+      analytics.onCancelOrder(orderId);
       return lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
     },
     {
-      onSuccess: (_result, orderId) => {
-        analytics.onCancelOrderSuccess(orderId.toString());
+      onSuccess: (_result) => {
+        analytics.onCancelOrderSuccess();
         refetch();
       },
       onError: (error: Error) => {
-        analytics.onCancelOrderError(error.message);
+        analytics.onTxError(error, "cancel");
       },
     }
   );
@@ -259,13 +247,11 @@ export const useTokenSelect = (parsedTokens?: TokenData[]) => {
       if (!parsedToken) return;
 
       const onSrc = () => {
-        analytics.onSrcTokenClick(parsedToken?.symbol);
         updateState({ srcToken: parsedToken });
         onSrcTokenSelected?.(token);
       };
 
       const onDst = () => {
-        analytics.onDstTokenClick(parsedToken?.symbol);
         updateState({ dstToken: parsedToken });
         onDstTokenSelected?.(token);
       };
@@ -528,7 +514,7 @@ export const useOutAmount = () => {
     if (wrapOrUnwrapOnly) {
       return srcAmountBn;
     }
-    return !limitPrice ? undefined : BN(limitPrice).multipliedBy(srcAmountUi).toString();
+    return !limitPrice ? undefined : BN(limitPrice).multipliedBy(srcAmountUi).decimalPlaces(0).toString();
   }, [limitPrice, srcAmountUi, wrapOrUnwrapOnly, srcAmountBn]);
 
   return {

@@ -6,7 +6,32 @@ import _ from "lodash";
 import { maxUint256 } from "@defi.org/web3-candies";
 import { ConfirmationDetails, State, StoreOverride, Translations } from "./types";
 import { MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "./consts";
-import { amountBN, formatDecimals, getQueryParam, setQueryParam } from "./utils";
+import { amountBN, formatDecimals } from "./utils";
+
+export const getQueryParam = (name: string) => {
+  const search = window.location.search;
+
+  const params = new URLSearchParams(search);
+  const result = params.get(name);
+  if (name === QUERY_PARAMS.LIMIT_PRICE && result === ".") {
+    return "0.1";
+  }
+
+  return result;
+};
+
+export const setQueryParam = (name: string, value?: string) => {
+  if (!useTwapStore.getState().enableQueryParams) return;
+  const search = window.location.search;
+  const params = new URLSearchParams(search);
+  if (!value) {
+    params.delete(name);
+  } else {
+    params.set(name, value);
+  }
+
+  window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+};
 
 export enum TimeResolution {
   Minutes = 60 * 1000,

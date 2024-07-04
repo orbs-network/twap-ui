@@ -1,140 +1,197 @@
-import BigNumber from "bignumber.js";
-import { useTwapStore } from "./store";
-import { amountUi } from "./utils";
+import { TWAPLib } from "@orbs-network/twap";
+import { isTxRejected, logger } from "./utils";
+
 require("isomorphic-fetch");
 
-enum Category {
-  Error = "Error",
-  TWAPPanel = "TWAPPanel",
-  OrdersPanel = "OrdersPanel",
-  ConfirmationPanel = "ConfirmationPanel",
-  PageView = "onTwapPageView",
+const Version = 0.1;
+
+const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
+
+type Action = "cancel" | "create" | "wrap-only" | "wrap" | "unwrap" | "approve";
+
+interface LibConfig {
+  bidDelaySeconds?: number;
+  chainId?: number;
+  chainName?: string;
+  exchangeAddress?: string;
+  exchangeType?: string;
+  lensAddress?: string;
+  name?: string;
+  partner?: string;
+  twapAddress?: string;
+  twapVersion?: number;
 }
 
-const onLimitToggleClick = (isLimitOrder: boolean) => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onLimitToggleClick", { isLimitOrder });
+interface CreateOrderArgs {
+  fromTokenAddress?: string;
+  toTokenAddress?: string;
+  fromTokenSymbol?: string;
+  toTokenSymbol?: string;
+  fromTokenAmount?: string;
+  fromTokenAmountUi?: string;
+  toTokenAmount?: string;
+  toTokenAmountUi?: string;
+  chunksAmount?: number;
+  minDstAmountOut?: string;
+  minDstAmountOutUi?: string;
+  walletAddress?: string;
+  deadline?: number;
+  deadlineUi?: string;
+  fillDelay?: number;
+  fillDelayUi?: string;
+}
+
+interface Data extends CreateOrderArgs, LibConfig {
+  _id: string;
+  uiCrashedErrorMessage?: string;
+  uiCrashedErrorStack?: string;
+  actionError?: string;
+  newOrderId?: number;
+  pageLoaded?: boolean;
+  moduleImported?: boolean;
+  cancelOrderSuccess?: boolean;
+  cancelOrderId?: number;
+  action?: Action;
+  createOrderTxHash?: string;
+  failedAction?: Action;
+  wrapTxHash?: string;
+  unwrapTxHash?: string;
+  approvalTxHash?: string;
+}
+
+const sendBI = async (data: Partial<Data>) => {
+  try {
+    logger(data);
+    await fetch(BI_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }).then();
+  } catch (error) {
+    logger(`Analytics error: ${error}`);
+  }
 };
 
-const uiCrashed = (location: "orders" | "twap", error: Error) => {
-  sendAnalyticsEvent(Category.Error, "UI crashed", { location, message: error.message, stack: error.stack });
-};
+class Analytics {
+  timeout: any = undefined;
+  data: Data = {
+    _id: crypto.randomUUID(),
+  };
 
-const onSrcTokenClick = (symbol?: string) => {
-  sendAnalyticsEvent(Category.TWAPPanel, `onSrcTokenClick`, { symbol });
-};
+  updateAndSend(values = {} as Partial<Data>) {
+    this.data = {
+      ...this.data,
+      ...values,
+    };
+    clearTimeout(this.timeout);
+    this.timeout = setTimeout(() => {
+      sendBI(this.data);
+    }, 1_000);
 
-const onDstTokenClick = (symbol?: string) => {
-  sendAnalyticsEvent(Category.TWAPPanel, `onDstTokenClick`, { symbol });
-};
+    if (process.env.NODE_ENV === "development") return;
+  }
 
-const onCustomIntervalClick = () => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onCustomIntervalClick");
-};
+  reset() {
+    setTimeout(() => {
+      this.data = {
+        _id: crypto.randomUUID(),
+        pageLoaded: this.data.pageLoaded,
+        moduleImported: this.data.moduleImported,
+      };
+    }, 1_000);
+  }
 
-const onApproveClick = (amount: BigNumber) => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onApproveClick", { amount: amount.toString() });
-};
+  onLibInit(lib: TWAPLib) {
+    const config = lib.config;
+    this.updateAndSend({
+      bidDelaySeconds: config.bidDelaySeconds,
+      chainId: config.chainId,
+      chainName: config.chainName,
+      exchangeAddress: config.exchangeAddress,
+      exchangeType: config.exchangeType,
+      lensAddress: config.lensAddress,
+      name: config.name,
+      partner: config.partner,
+      twapAddress: config.twapAddress,
+      twapVersion: config.twapVersion,
+    });
+  }
 
-const onApproveSuccess = () => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onApproveSuccess");
-};
+  onCancelOrder(cancelOrderId: number) {
+    this.updateAndSend({ cancelOrderId });
+  }
 
-const onWrapClick = (amount: BigNumber) => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onWrapClick", { amount: amount.toString() });
-};
+  onCancelOrderSuccess() {
+    this.updateAndSend({ cancelOrderSuccess: true });
+  }
 
-const onWrapSuccess = () => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onWrapSuccess");
-};
+  onSubmitOrder(data: CreateOrderArgs) {
+    this.updateAndSend({
+      ...data,
+      action: "create",
+    });
+  }
 
-const onModuleLoad = () => {
-  sendAnalyticsEvent(Category.PageView, "onModuleLoad");
-};
+  updateAction(action: Action) {
+    this.updateAndSend({
+      action,
+    });
+  }
 
-const onTwapPageView = () => {
-  sendAnalyticsEvent(Category.PageView, "onTwapPageView");
-};
+  onTxError(error: any, failedAction: Action) {
+    if (isTxRejected(error)) {
+      this.updateAndSend({ actionError: "rejected" });
+    } else {
+      const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
+      this.updateAndSend({ actionError, failedAction });
+      analytics.reset();
+    }
+  }
+  onWrapSuccess(wrapTxHash: string) {
+    this.updateAndSend({
+      wrapTxHash,
+    });
+  }
 
-const onCreateOrderSuccess = (orderId: number) => {
-  sendAnalyticsEvent(Category.ConfirmationPanel, `onCreateOrderSuccess`, { orderId });
-};
+  onUnwrapSuccess(unwrapTxHash: string) {
+    this.updateAndSend({
+      unwrapTxHash,
+    });
+  }
 
-const onCreateOrderError = (message: string) => {
-  sendAnalyticsEvent(Category.Error, `onCreateOrderError`, { message });
-};
+  onApproveSuccess(approvalTxHash: string) {
+    this.updateAndSend({
+      approvalTxHash,
+    });
+  }
 
-const onWrapError = (message: string) => {
-  sendAnalyticsEvent(Category.Error, "onWrapError", { message });
-};
+  onCreateOrderSuccess(newOrderId: number, createOrderTxHash: string) {
+    this.updateAndSend({
+      newOrderId,
+      createOrderTxHash,
+    });
+    this.reset();
+  }
+  onPageView() {
+    this.updateAndSend({
+      pageLoaded: true,
+    });
+  }
+  onModuleImported() {
+    this.updateAndSend({
+      moduleImported: true,
+    });
+  }
 
-const onApproveError = (message: string) => {
-  sendAnalyticsEvent(Category.Error, "onApproveError", { message });
-};
+  onUiCreashed(error: Error) {
+    this.updateAndSend({
+      uiCrashedErrorMessage: error.message,
+      uiCrashedErrorStack: error.stack,
+    });
+  }
+}
 
-const onCancelOrderClick = (orderId: number) => {
-  sendAnalyticsEvent(Category.OrdersPanel, "onCancelOrderClick", { orderId });
-};
-
-const onCancelOrderSuccess = (orderId: string) => {
-  sendAnalyticsEvent(Category.OrdersPanel, "onCancelOrderSuccess", { orderId });
-};
-
-const onCancelOrderError = (error: string) => {
-  sendAnalyticsEvent(Category.Error, `onCancelOrderError`, { error });
-};
-
-const onCreateOrderRejected = () => {
-  sendAnalyticsEvent(Category.Error, `onCreateOrderRejected`);
-};
-
-const onOpenConfirmationModal = () => {
-  sendAnalyticsEvent(Category.ConfirmationPanel, `onOpenConfirmationModal`);
-};
-
-const sendAnalyticsEvent = (category: Category, action: string, data = {} as { [key: string]: any }) => {
-  if (process.env.NODE_ENV === "development") return;
-
-  // try {
-  //   fetch("https://bi.orbs.network/putes/twap-ui", {
-  //     method: "POST",
-  //     headers: {
-  //       Accept: "application/json",
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       timestamp: new Date().toISOString(),
-  //       maker: lib?.maker,
-  //       partner: lib?.config.partner,
-  //       chain: lib?.config.chainId,
-  //       category,
-  //       action,
-  //       ...data,
-  //     }),
-  //   });
-  // } catch (error) {
-  //   console.error(error);
-  // }
-};
-
-export const analytics = {
-  onLimitToggleClick,
-  onSrcTokenClick,
-  onDstTokenClick,
-  onCustomIntervalClick,
-  onApproveClick,
-  onApproveSuccess,
-  onWrapClick,
-  onWrapSuccess,
-  onCreateOrderSuccess,
-  onCreateOrderError,
-  onWrapError,
-  onApproveError,
-  onCancelOrderClick,
-  onCancelOrderSuccess,
-  onCancelOrderError,
-  onTwapPageView,
-  onCreateOrderRejected,
-  onModuleLoad,
-  onOpenConfirmationModal,
-  uiCrashed,
-};
+export const analytics = new Analytics();

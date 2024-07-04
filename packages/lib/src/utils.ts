@@ -94,31 +94,6 @@ export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) 
   if (_.isObject(tokensList)) return tokensList[addressOrSymbol as keyof typeof tokensList];
 };
 
-export const getQueryParam = (name: string) => {
-  const search = window.location.search;
-
-  const params = new URLSearchParams(search);
-  const result = params.get(name);
-  if (name === QUERY_PARAMS.LIMIT_PRICE && result === ".") {
-    return "0.1";
-  }
-
-  return result;
-};
-
-export const setQueryParam = (name: string, value?: string) => {
-  if (!useTwapStore.getState().enableQueryParams) return;
-  const search = window.location.search;
-  const params = new URLSearchParams(search);
-  if (!value) {
-    params.delete(name);
-  } else {
-    params.set(name, value);
-  }
-
-  window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
-};
-
 export const parseError = (error?: any) => {
   const defaultText = "An error occurred.";
   if (!error || !error.message) return defaultText;

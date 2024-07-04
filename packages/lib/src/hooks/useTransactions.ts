@@ -3,11 +3,27 @@ import { OrderInputValidation, TokensValidation } from "@orbs-network/twap";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context";
 import { useTwapStore, useOrdersStore } from "../store";
-import { useDeadline, useDstAmountUsdUi, useDstMinAmountOut, useFillDelayMillis, useOutAmount, useResetAfterSwap, useShouldWrap, useSrcChunkAmount, useSrcUsd } from "./hooks";
+import {
+  useChunks,
+  useDeadline,
+  useDeadlineUi,
+  useDstAmountUsdUi,
+  useDstMinAmountOut,
+  useDstMinAmountOutUi,
+  useFillDelayMillis,
+  useFillDelayText,
+  useOutAmount,
+  useResetAfterSwap,
+  useShouldOnlyWrap,
+  useShouldWrap,
+  useSrcChunkAmount,
+  useSrcUsd,
+} from "./hooks";
 import { query } from "./query";
 import BN from "bignumber.js";
-import { getTokenFromTokensList, isTxRejected } from "../utils";
+import { isTxRejected } from "../utils";
 import { useCallback } from "react";
+import { analytics } from "../analytics";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = query.useGasPrice();
@@ -19,42 +35,53 @@ export const useCreateOrder = () => {
   const srcChunkAmount = useSrcChunkAmount();
   const deadline = useDeadline();
   const fillDelayMillisUi = useFillDelayMillis();
-  return useMutation(async (srcToken: TokenData) => {
-    const dstToken = {
-      ...store.dstToken!,
-      address: lib!.validateTokens(srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
-    };
+  return useMutation(
+    async (srcToken: TokenData) => {
+      analytics.updateAction("create");
 
-    const fillDelayMillis = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
+      const dstToken = {
+        ...store.dstToken!,
+        address: lib!.validateTokens(srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
+      };
 
-    const onTxHash = (createOrdertxHash: string) => {
-      store.updateState({
-        createOrdertxHash,
+      const fillDelayMillis = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
+
+      const onTxHash = (createOrdertxHash: string) => {
+        store.updateState({
+          createOrdertxHash,
+        });
+      };
+
+      console.log({
+        srcChunkAmount: srcChunkAmount.toString(),
+        dstMinAmountOut,
+        deadline,
+        fillDelayMillis,
       });
-    };
 
-    console.log({
-      srcChunkAmount: srcChunkAmount.toString(),
-      dstMinAmountOut,
-      deadline,
-      fillDelayMillis,
-    });
-
-    return createOrder(
-      onTxHash,
-      srcToken!,
-      dstToken,
-      store.getSrcAmount(),
-      srcChunkAmount,
-      dstMinAmountOut,
-      deadline,
-      fillDelayMillis,
-      srcUsd,
-      askDataParams,
-      priorityFeePerGas || zero,
-      maxFeePerGas
-    );
-  });
+      const data = await createOrder(
+        onTxHash,
+        srcToken!,
+        dstToken,
+        store.getSrcAmount(),
+        srcChunkAmount,
+        dstMinAmountOut,
+        deadline,
+        fillDelayMillis,
+        srcUsd,
+        askDataParams,
+        priorityFeePerGas || zero,
+        maxFeePerGas
+      );
+      analytics.onCreateOrderSuccess(data.orderId, data.txHash);
+      return data;
+    },
+    {
+      onError: (error) => {
+        analytics.onTxError(error, "create");
+      },
+    }
+  );
 };
 
 function useCreateOrderCallback() {
@@ -129,29 +156,41 @@ export const useWrapToken = () => {
     updateState: state.updateState,
   }));
   const { lib } = useTwapContext();
+  const useWrapOnly = useShouldOnlyWrap();
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
 
-  return useMutation(async () => {
-    if (!lib) {
-      throw new Error("lib is not defined");
-    }
-    await sendAndWaitForConfirmations(
-      erc20<any>(lib.config.wToken.symbol, lib.config.wToken.address, lib.config.wToken.decimals, iwethabi).methods.deposit(),
-      {
-        from: lib.maker,
-        maxPriorityFeePerGas: priorityFeePerGas,
-        maxFeePerGas,
-        value: srcAmount,
-      },
-      undefined,
-      undefined,
-      {
-        onTxHash: (txHash: string) => {
-          updateState({ wrapTxHash: txHash });
-        },
+  return useMutation(
+    async () => {
+      let txHash: string = "";
+      if (!lib) {
+        throw new Error("lib is not defined");
       }
-    );
-  });
+      analytics.updateAction(useWrapOnly ? "wrap-only" : "wrap");
+      await sendAndWaitForConfirmations(
+        erc20<any>(lib.config.wToken.symbol, lib.config.wToken.address, lib.config.wToken.decimals, iwethabi).methods.deposit(),
+        {
+          from: lib.maker,
+          maxPriorityFeePerGas: priorityFeePerGas,
+          maxFeePerGas,
+          value: srcAmount,
+        },
+        undefined,
+        undefined,
+        {
+          onTxHash: (txHash: string) => {
+            txHash = txHash;
+            updateState({ wrapTxHash: txHash });
+          },
+        }
+      );
+      analytics.onWrapSuccess(txHash);
+    },
+    {
+      onError: (error) => {
+        analytics.onTxError(error, useWrapOnly ? "wrap-only" : "wrap");
+      },
+    }
+  );
 };
 
 export const useWrapOnly = () => {
@@ -159,6 +198,7 @@ export const useWrapOnly = () => {
   const onSuccess = useResetAfterSwap();
 
   return useMutation(async () => {
+    analytics.updateAction("wrap-only");
     await mutateAsync();
     await onSuccess();
   });
@@ -174,24 +214,35 @@ export const useUnwrapToken = () => {
     updateState: state.updateState,
   }));
 
-  return useMutation(async () => {
-    if (!lib) {
-      throw new Error("Lib not initialized");
-    }
-
-    await sendAndWaitForConfirmations(
-      erc20<any>(lib.config.wToken.symbol, lib.config.wToken.address, lib.config.wToken.decimals, iwethabi).methods.withdraw(BN(srcAmount).toFixed(0)),
-      { from: lib.maker, maxPriorityFeePerGas: priorityFeePerGas, maxFeePerGas },
-      undefined,
-      undefined,
-      {
-        onTxHash: (txHash: string) => {
-          updateState({ unwrapTxHash: txHash });
-        },
+  return useMutation(
+    async () => {
+      let txHash: string = "";
+      if (!lib) {
+        throw new Error("Lib not initialized");
       }
-    );
-    await onSuccess();
-  });
+      analytics.updateAction("unwrap");
+
+      await sendAndWaitForConfirmations(
+        erc20<any>(lib.config.wToken.symbol, lib.config.wToken.address, lib.config.wToken.decimals, iwethabi).methods.withdraw(BN(srcAmount).toFixed(0)),
+        { from: lib.maker, maxPriorityFeePerGas: priorityFeePerGas, maxFeePerGas },
+        undefined,
+        undefined,
+        {
+          onTxHash: (txHash: string) => {
+            txHash = txHash;
+            updateState({ unwrapTxHash: txHash });
+          },
+        }
+      );
+      analytics.onUnwrapSuccess(txHash);
+      await onSuccess();
+    },
+    {
+      onError: (error) => {
+        analytics.onTxError(error, "unwrap");
+      },
+    }
+  );
 };
 
 export const useApproveToken = () => {
@@ -200,27 +251,39 @@ export const useApproveToken = () => {
   const lib = useTwapContext().lib;
 
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
-  return useMutation(async (token: TokenData) => {
-    if (!lib) {
-      throw new Error("Lib is not defined");
-    }
-    const _token = erc20(token.symbol, token.address, token.decimals);
-    await sendAndWaitForConfirmations(
-      _token.methods.approve(lib.config.twapAddress, BN(maxUint256).toFixed(0)),
-      {
-        from: lib.maker,
-        maxPriorityFeePerGas: priorityFeePerGas,
-        maxFeePerGas,
-      },
-      undefined,
-      undefined,
-      {
-        onTxHash: (approveTxHash) => {
-          updateState({ approveTxHash });
-        },
+  return useMutation(
+    async (token: TokenData) => {
+      if (!lib) {
+        throw new Error("Lib is not defined");
       }
-    );
-  });
+      analytics.updateAction("approve");
+
+      let txHash: string = "";
+      const _token = erc20(token.symbol, token.address, token.decimals);
+      await sendAndWaitForConfirmations(
+        _token.methods.approve(lib.config.twapAddress, BN(maxUint256).toFixed(0)),
+        {
+          from: lib.maker,
+          maxPriorityFeePerGas: priorityFeePerGas,
+          maxFeePerGas,
+        },
+        undefined,
+        undefined,
+        {
+          onTxHash: (approveTxHash) => {
+            txHash = approveTxHash;
+            updateState({ approveTxHash });
+          },
+        }
+      );
+      analytics.onApproveSuccess(txHash);
+    },
+    {
+      onError: (error) => {
+        analytics.onTxError(error, "approve");
+      },
+    }
+  );
 };
 const useOnSuccessCallback = () => {
   const { srcAmount, srcToken, dstToken } = useTwapStore((s) => ({
@@ -248,8 +311,47 @@ const useOnSuccessCallback = () => {
   );
 };
 
+const useSubmitAnalytics = () => {
+  const { srcToken, srcAmount, dstToken, srcAmountUi } = useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+    srcAmount: s.getSrcAmount().toString(),
+    srcAmountUi: s.srcAmountUi,
+  }));
+  const { lib } = useTwapContext();
+  const { outAmountRaw, outAmountUi } = useOutAmount();
+  const chunks = useChunks();
+  const minDstAmountOutUi = useDstMinAmountOutUi();
+  const minDstAmountOut = useDstMinAmountOut();
+  const fillDelay = useFillDelayMillis();
+  const deadline = useDeadline();
+  const deadlineUi = useDeadlineUi();
+  const fillDelayUi = useFillDelayText();
+
+  return useCallback(() => {
+    analytics.onSubmitOrder({
+      fromTokenAddress: srcToken?.address,
+      toTokenAddress: dstToken?.address,
+      fromTokenSymbol: srcToken?.symbol,
+      toTokenSymbol: dstToken?.symbol,
+      fromTokenAmount: srcAmount,
+      fromTokenAmountUi: srcAmountUi,
+      toTokenAmount: outAmountRaw,
+      toTokenAmountUi: outAmountUi,
+      chunksAmount: chunks,
+      minDstAmountOut,
+      minDstAmountOutUi,
+      walletAddress: lib?.maker,
+      fillDelay,
+      fillDelayUi,
+      deadline,
+      deadlineUi,
+    });
+  }, [srcToken, dstToken, srcAmount, srcAmountUi, outAmountRaw, outAmountUi, chunks, minDstAmountOut, lib?.maker, fillDelay, fillDelayUi, deadline, deadlineUi, minDstAmountOutUi]);
+};
+
 export const useSubmitOrderFlow = () => {
-  const { srcToken, swapState, updateState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, wrapSuccess, srcAmount } = useTwapStore((s) => ({
+  const { srcToken, swapState, updateState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, srcAmount } = useTwapStore((s) => ({
     srcToken: s.srcToken,
     swapState: s.swapState,
     updateState: s.updateState,
@@ -257,7 +359,6 @@ export const useSubmitOrderFlow = () => {
     createOrdertxHash: s.createOrdertxHash,
     approveTxHash: s.approveTxHash,
     wrapTxHash: s.wrapTxHash,
-    wrapSuccess: s.wrapSuccess,
     srcAmount: s.getSrcAmount().toString(),
   }));
   const { data: haveAllowance } = query.useAllowance();
@@ -274,6 +375,7 @@ export const useSubmitOrderFlow = () => {
   const nativeSymbol = lib?.config.nativeToken.symbol;
   const { refetch: refetchAllowance } = query.useAllowance();
   const reset = useResetAfterSwap();
+  const submitAnalytics = useSubmitAnalytics();
 
   const mutate = useMutation(
     async () => {
@@ -284,7 +386,7 @@ export const useSubmitOrderFlow = () => {
       if (!wToken) {
         throw new Error("WToken not defined");
       }
-
+      submitAnalytics();
       updateState({ swapState: "loading" });
 
       if (minNativeTokenBalance) {
@@ -305,7 +407,6 @@ export const useSubmitOrderFlow = () => {
 
       if (!haveAllowance) {
         updateState({ swapStep: "approve" });
-
         await approve(token);
         const res = await lib.hasAllowance(token, srcAmount);
         if (!res) {
@@ -315,7 +416,6 @@ export const useSubmitOrderFlow = () => {
       }
 
       updateState({ swapStep: "createOrder" });
-
       return createOrder(token);
     },
     {
