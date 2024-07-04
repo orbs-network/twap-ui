@@ -52,7 +52,6 @@ import {
   StyledTop,
   StyledTokenSelectLimit,
   StyledCreateOrderModal,
-  StyledOpenOrdersButton,
   StyledShowOrdersButton,
   StyledTwap,
 } from "./styles";
@@ -203,7 +202,16 @@ const parseTokens = (rawTokens: any[], config: Config): TokenData[] => {
 };
 
 interface SushiProps extends TWAPProps {
-  Modal: FC<{ open: boolean; onClose?: () => void; children: ReactNode; title?: string; className?: string; disableBackdropClick?: boolean; header?: ReactNode }>;
+  Modal: FC<{
+    open: boolean;
+    onClose?: () => void;
+    children: ReactNode;
+    title?: string;
+    className?: string;
+    disableBackdropClick?: boolean;
+    header?: ReactNode;
+    hideHeader?: boolean;
+  }>;
 }
 
 const AdapterContext = createContext({} as SushiProps);
@@ -286,12 +294,15 @@ const TWAP = (props: SushiProps) => {
 
 function Orders() {
   const Modal = useAdapterContext().Modal;
-  const isOpen = store.useOrdersStore((s: any) => s.showOrders);
+  const { isOpen, onClose } = store.useOrdersStore((s: any) => ({
+    isOpen: s.showOrders,
+    onClose: s.onClose,
+  }));
 
   return (
     <>
       <StyledShowOrdersButton />
-      <Modal open={isOpen}>
+      <Modal hideHeader={true} open={isOpen} onClose={onClose}>
         <Components.OrderHistory />
       </Modal>
     </>

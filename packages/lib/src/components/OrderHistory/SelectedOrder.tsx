@@ -1,8 +1,8 @@
 import { Fade, styled } from "@mui/material";
 import { useTwapContext } from "../../context";
-import { useCancelOrder } from "../../hooks";
-import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
-import { Button, IconButton } from "../base";
+import { useCancelOrder } from "../../hooks/useTransactions";
+import { StyledColumnFlex, StyledText } from "../../styles";
+import { Button } from "../base";
 import { Separator } from "../Components";
 import { OrderSummary } from "../OrderSummary/OrderSummary";
 import { Status } from "@orbs-network/twap";
@@ -53,17 +53,17 @@ const Container = styled(StyledColumnFlex)({});
 
 export const CancelOrderButton = () => {
   const { isLoading, mutateAsync } = useCancelOrder();
-  const { order, closePreview } = useOrderHistoryContext();
+  const { order, onOrderCanceled } = useOrderHistoryContext();
   const translations = useTwapContext().translations;
 
   const onSubmit = useCallback(
     async (id: number) => {
       try {
         await mutateAsync(id);
-        closePreview();
+        onOrderCanceled();
       } catch (error) {}
     },
-    [mutateAsync, closePreview]
+    [mutateAsync, onOrderCanceled]
   );
 
   if (!order || order.ui.status !== Status.Open) return null;

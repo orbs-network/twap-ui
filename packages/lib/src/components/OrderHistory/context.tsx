@@ -16,6 +16,7 @@ interface OrderHistoryContextType {
   closePreview: () => void;
   selectedTab?: OrdersMenuTab;
   isLoading: boolean;
+  onOrderCanceled: () => void;
 }
 
 export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
@@ -27,6 +28,19 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
   const order = useParseOrderUi(selectedOrder);
   const waitingForOrdersUpdate = useTwapStore((s) => s.waitingForOrdersUpdate);
   const isLoading = !data || waitingForOrdersUpdate;
+
+  const onOrderCanceled = useCallback(() => {
+    setSelectedOrder((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        ui: {
+          ...prev.ui,
+          status: Status.Canceled,
+        },
+      };
+    });
+  }, [setSelectedOrder]);
 
   const selectOrder = useCallback(
     (o: ParsedOrder | undefined) => {
@@ -66,7 +80,11 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
   }, [data, tab]);
   const selectedTab = useMemo(() => _.find(tabs, (it) => it.key === tab), [tabs, tab]);
 
-  return <OrderHistoryContext.Provider value={{ tabs, selectOrder, order, orders, setTab, closePreview, selectedTab, isLoading }}>{children}</OrderHistoryContext.Provider>;
+  return (
+    <OrderHistoryContext.Provider value={{ tabs, selectOrder, order, orders, setTab, closePreview, selectedTab, isLoading, onOrderCanceled }}>
+      {children}
+    </OrderHistoryContext.Provider>
+  );
 };
 
 export const useOrderHistoryContext = () => {

@@ -97,27 +97,6 @@ export const useCustomActions = () => {
   return useSetSrcAmountPercent();
 };
 
-export const useCancelOrder = () => {
-  const { refetch } = query.useOrdersHistory();
-  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
-  const lib = useTwapContext().lib;
-  return useMutation(
-    async (orderId: number) => {
-      analytics.onCancelOrder(orderId);
-      return lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
-    },
-    {
-      onSuccess: (_result) => {
-        analytics.onCancelOrderSuccess();
-        refetch();
-      },
-      onError: (error: Error) => {
-        analytics.onTxError(error, "cancel");
-      },
-    }
-  );
-};
-
 export const useLoadingState = () => {
   const srcUSD = useSrcUsd();
   const dstUSD = useDstUsd();
@@ -507,8 +486,6 @@ export const useOutAmount = () => {
 
   const wrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
 
-  const wrongNetwork = useTwapContext().isWrongChain;
-
   const outAmount = useMemo(() => {
     if (!srcAmountUi) return;
     if (wrapOrUnwrapOnly) {
@@ -518,7 +495,7 @@ export const useOutAmount = () => {
   }, [limitPrice, srcAmountUi, wrapOrUnwrapOnly, srcAmountBn]);
 
   return {
-    isLoading: wrongNetwork ? false : wrapOrUnwrapOnly ? false : isLoading,
+    isLoading,
     outAmountUi: useAmountUi(dstToken?.decimals, outAmount) || "",
     outAmountRaw: outAmount || "",
   };
@@ -527,11 +504,19 @@ export const useOutAmount = () => {
 export const useMarketPrice = () => {
   const marketPriceRaw = useTwapContext().marketPrice;
   const dstToken = useTwapStore((s) => s.dstToken);
+  const { isWrongChain, account } = useTwapContext();
+
+  const invalidInputs = isWrongChain || !account;
+
+  const isLoading = useMemo(() => {
+    if (invalidInputs) return false;
+    return BN(marketPriceRaw || 0).isZero();
+  }, [marketPriceRaw, invalidInputs]);
 
   return {
     marketPrice: marketPriceRaw,
     marketPriceUi: useAmountUi(dstToken?.decimals, marketPriceRaw),
-    isLoading: BN(marketPriceRaw || 0).isZero(),
+    isLoading,
   };
 };
 
@@ -541,7 +526,6 @@ export const useFormatDecimals = (value?: string | BN | number, decimalPlaces?: 
 
 export const useLimitPrice = () => {
   const { isLoading, marketPrice } = useMarketPrice();
-  const { isWrongChain } = useTwapContext();
   const { dstToken, isCustom, customLimitPrice, inverted, isMarketOrder } = useTwapStore((s) => ({
     dstToken: s.dstToken,
     isCustom: s.isCustomLimitPrice,
@@ -566,7 +550,7 @@ export const useLimitPrice = () => {
   }, [isCustom, customLimitPrice, dstToken?.decimals, inverted, marketPrice, isMarketOrder]);
 
   return {
-    isLoading: isWrongChain ? false : isLoading,
+    isLoading,
     limitPrice,
     limitPriceUi: useAmountUi(dstToken?.decimals, limitPrice),
   };

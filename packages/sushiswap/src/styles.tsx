@@ -404,6 +404,7 @@ export const configureStyles = (theme?: Theme) => {
       },
     },
     ".twap-modal-content": {
+      outline: "none!important",
       padding: "10px 16px 16px 16px",
       background: isDarkMode ? "rgb(30 41 59/1)" : "#F4F5F6",
       border: "unset",

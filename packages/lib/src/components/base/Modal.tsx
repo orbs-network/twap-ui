@@ -12,9 +12,10 @@ export interface Props {
   className?: string;
   disableBackdropClick?: boolean;
   header?: ReactNode;
+  hideHeader?: boolean;
 }
 
-function Modal({ onClose, open, children, title, className = "", disableBackdropClick = false, header }: Props) {
+function Modal({ onClose, open, children, title, className = "", disableBackdropClick = false, header, hideHeader }: Props) {
   const modalStyles = useTwapContext().uiPreferences.modal?.styles || {};
   return (
     <StyledModal
@@ -34,7 +35,7 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
     >
       <Fade in={open}>
         <StyledModalContent className="twap-modal-content" id="twap-modal-content">
-          {!header ? (
+          {!header && !hideHeader ? (
             <StyledHeader className="twap-modal-content-header">
               {title && (
                 <>

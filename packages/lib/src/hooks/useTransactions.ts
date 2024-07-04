@@ -17,6 +17,7 @@ import {
   useShouldOnlyWrap,
   useShouldWrap,
   useSrcChunkAmount,
+  useSrcChunkAmountUi,
   useSrcUsd,
 } from "./hooks";
 import { query } from "./query";
@@ -51,13 +52,6 @@ export const useCreateOrder = () => {
           createOrdertxHash,
         });
       };
-
-      console.log({
-        srcChunkAmount: srcChunkAmount.toString(),
-        dstMinAmountOut,
-        deadline,
-        fillDelayMillis,
-      });
 
       const data = await createOrder(
         onTxHash,
@@ -327,8 +321,17 @@ const useSubmitAnalytics = () => {
   const deadline = useDeadline();
   const deadlineUi = useDeadlineUi();
   const fillDelayUi = useFillDelayText();
+  const srcChunkAmount = useSrcChunkAmount().toString();
+  const srcChunkAmountUi = useSrcChunkAmountUi();
 
   return useCallback(() => {
+    console.log({
+      srcChunkAmount: srcChunkAmount.toString(),
+      minDstAmountOut,
+      deadline,
+      fillDelayMillis: fillDelay,
+    });
+
     analytics.onSubmitOrder({
       fromTokenAddress: srcToken?.address,
       toTokenAddress: dstToken?.address,
@@ -341,13 +344,31 @@ const useSubmitAnalytics = () => {
       chunksAmount: chunks,
       minDstAmountOut,
       minDstAmountOutUi,
-      walletAddress: lib?.maker,
       fillDelay,
       fillDelayUi,
       deadline,
       deadlineUi,
+      srcChunkAmount,
+      srcChunkAmountUi,
     });
-  }, [srcToken, dstToken, srcAmount, srcAmountUi, outAmountRaw, outAmountUi, chunks, minDstAmountOut, lib?.maker, fillDelay, fillDelayUi, deadline, deadlineUi, minDstAmountOutUi]);
+  }, [
+    srcToken,
+    dstToken,
+    srcAmount,
+    srcAmountUi,
+    outAmountRaw,
+    outAmountUi,
+    chunks,
+    minDstAmountOut,
+    fillDelay,
+    fillDelayUi,
+    deadline,
+    deadlineUi,
+    minDstAmountOutUi,
+    srcChunkAmount,
+    srcChunkAmountUi,
+    fillDelay,
+  ]);
 };
 
 export const useSubmitOrderFlow = () => {
@@ -450,4 +471,25 @@ export const useSubmitOrderFlow = () => {
     approveTxHash,
     wrapTxHash,
   };
+};
+
+export const useCancelOrder = () => {
+  const { refetch } = query.useOrdersHistory();
+  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
+  const lib = useTwapContext().lib;
+  return useMutation(
+    async (orderId: number) => {
+      analytics.onCancelOrder(orderId);
+      return lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
+    },
+    {
+      onSuccess: (_result) => {
+        analytics.onCancelOrderSuccess();
+        refetch();
+      },
+      onError: (error: Error) => {
+        analytics.onTxError(error, "cancel");
+      },
+    }
+  );
 };

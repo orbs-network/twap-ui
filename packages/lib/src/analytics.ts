@@ -3,7 +3,7 @@ import { isTxRejected, logger } from "./utils";
 
 require("isomorphic-fetch");
 
-const Version = 0.1;
+const Version = 0.2;
 
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
 
@@ -22,7 +22,7 @@ interface LibConfig {
   twapVersion?: number;
 }
 
-interface CreateOrderArgs {
+interface SubmitOrderArgs {
   fromTokenAddress?: string;
   toTokenAddress?: string;
   fromTokenSymbol?: string;
@@ -34,14 +34,15 @@ interface CreateOrderArgs {
   chunksAmount?: number;
   minDstAmountOut?: string;
   minDstAmountOutUi?: string;
-  walletAddress?: string;
   deadline?: number;
   deadlineUi?: string;
   fillDelay?: number;
   fillDelayUi?: string;
+  srcChunkAmount?: string;
+  srcChunkAmountUi?: string;
 }
 
-interface Data extends CreateOrderArgs, LibConfig {
+interface Data extends SubmitOrderArgs, LibConfig {
   _id: string;
   uiCrashedErrorMessage?: string;
   uiCrashedErrorStack?: string;
@@ -57,6 +58,7 @@ interface Data extends CreateOrderArgs, LibConfig {
   wrapTxHash?: string;
   unwrapTxHash?: string;
   approvalTxHash?: string;
+  walletAddress?: string;
 }
 
 const sendBI = async (data: Partial<Data>) => {
@@ -86,12 +88,14 @@ class Analytics {
       ...this.data,
       ...values,
     };
+    if (process.env.NODE_ENV === "development") {
+      console.log("BI", this.data);
+      return;
+    }
     clearTimeout(this.timeout);
     this.timeout = setTimeout(() => {
       sendBI(this.data);
     }, 1_000);
-
-    if (process.env.NODE_ENV === "development") return;
   }
 
   reset() {
@@ -117,6 +121,7 @@ class Analytics {
       partner: config.partner,
       twapAddress: config.twapAddress,
       twapVersion: config.twapVersion,
+      walletAddress: lib.maker,
     });
   }
 
@@ -128,7 +133,7 @@ class Analytics {
     this.updateAndSend({ cancelOrderSuccess: true });
   }
 
-  onSubmitOrder(data: CreateOrderArgs) {
+  onSubmitOrder(data: SubmitOrderArgs) {
     this.updateAndSend({
       ...data,
       action: "create",
