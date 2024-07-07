@@ -105,7 +105,7 @@ const useAllowance = () => {
 export const usePriceUSD = (address?: string) => {
   const context = useTwapContext();
 
-  const { lib } = context;
+  const { lib, account, isWrongChain } = context;
 
   const _address = address && isNativeAddress(address) ? lib?.config.wToken.address : address;
 
@@ -135,7 +135,7 @@ export const usePriceUSD = (address?: string) => {
 
   return {
     value: new BN(value),
-    isLoading,
+    isLoading: !account || isWrongChain ? false : isLoading,
   };
 };
 

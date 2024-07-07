@@ -1,4 +1,4 @@
-import { GlobalStyles, styled, ThemeProvider } from "@mui/material";
+import { GlobalStyles, ThemeProvider } from "@mui/material";
 import {
   Components,
   TWAPTokenSelectProps,
@@ -57,7 +57,6 @@ import {
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-
 import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";

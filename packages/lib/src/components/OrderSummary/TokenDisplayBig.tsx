@@ -12,7 +12,7 @@ export const TokenDisplay = ({ amount, token, usd, title }: { amount?: string; t
   return (
     <StyledTokenDisplay className="twap-order-summary-token-usd">
       <StyledRight className="twap-order-summary-token-right">
-        <StyledText className="twap-order-summary-token-usd-title">{title}</StyledText>
+        <StyledText className="twap-order-summary-token-title">{title}</StyledText>
         <StyledText className="twap-order-summary-token-amount">
           {amount ? _amount : ""} {token?.symbol}
         </StyledText>

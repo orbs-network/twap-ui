@@ -144,6 +144,9 @@ const StyledHeader = styled(StyledRowFlex)({
     fontSize: 12,
     opacity: 0.7,
   },
+  "@media(max-width: 1000px)": {
+    fontSize: 12,
+  },
 });
 
 const Wrapper = styled(StyledColumnFlex)({
@@ -185,5 +188,10 @@ const StyledTokenDisplay = styled(StyledRowFlex)({
   ".twap-order-token-text": {
     fontSize: 14,
     opacity: 0.8,
+  },
+  "@media(max-width: 1000px)": {
+    ".twap-order-token-text": {
+      fontSize: 12,
+    },
   },
 });

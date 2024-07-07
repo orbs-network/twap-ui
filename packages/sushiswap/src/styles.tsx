@@ -34,6 +34,9 @@ export const StyledPanelInput = styled(Components.TokenPanelInput)({
     fontSize: 30,
     height: 44,
     fontWeight: 500,
+    "@media (max-width: 600px)": {
+      fontSize: 24,
+    },
   },
 });
 
@@ -118,6 +121,12 @@ export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }
       width: 27,
       height: 27,
       fill: "rgb(59 130 246/1)",
+    },
+    "@media(max-width: 1000px)": {
+      height: "auto",
+      button: {
+        position: "static",
+      },
     },
   };
 });
@@ -497,6 +506,20 @@ export const configureStyles = (theme?: Theme) => {
     ".twap-orders-header": {
       padding: "0px!important",
     },
+    "@media (max-width: 600px)": {
+      ".twap-order-summary": {
+        ".twap-token-logo": {
+          width: "30px!important",
+          height: "30px!important",
+        },
+        ".twap-order-summary-token-amount": {
+          fontSize: 17,
+        },
+        ".twap-order-summary-token-title": {
+          fontSize: 14,
+        },
+      },
+    },
   };
 };
 
@@ -587,6 +610,9 @@ export const StyledLimitInput = styled(Components.Base.NumericInput)({
     fontSize: 30,
     height: 44,
     fontWeight: 500,
+    "@media (max-width: 600px)": {
+      fontSize: 24,
+    },
   },
 });
 
@@ -717,6 +743,9 @@ export const StyledChunksSelectSlider = styled(CardBody)(({ theme }) => {
 
 export const StyledTop = styled(Styles.StyledColumnFlex)({
   gap: 4,
+  "@media(max-width: 1000px)": {
+    gap: 16,
+  },
 });
 
 export const StyledChunksSelectInput = styled(CardBody)({
