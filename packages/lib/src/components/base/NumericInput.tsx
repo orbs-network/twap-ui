@@ -2,7 +2,7 @@ import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 import { maxUint256 } from "@defi.org/web3-candies";
 import BN from "bignumber.js";
 import { CSSProperties } from "react";

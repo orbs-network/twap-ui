@@ -1,9 +1,8 @@
 import { Button, Menu, MenuItem } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useCallback, useState } from "react";
-import { useTwapContext } from "../../context";
-import { Duration, TimeResolution } from "../../store";
-import { Translations } from "../../types";
+import { useTwapContext } from "../../context/context";
+import { Duration, TimeResolution, Translations } from "../../types";
 import NumericInput from "./NumericInput";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { StyledRowFlex } from "../../styles";

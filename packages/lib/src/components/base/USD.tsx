@@ -1,7 +1,7 @@
 import { styled } from "@mui/material";
 import React from "react";
 import { SQUIGLE } from "../../config";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 import { useFormatNumber, useFormatNumberV2 } from "../../hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";

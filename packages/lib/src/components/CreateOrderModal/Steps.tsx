@@ -4,13 +4,12 @@ import { FaCheck } from "@react-icons/all-files/fa/FaCheck";
 import { styled } from "@mui/material";
 import { Spinner } from "../base";
 import { Step, SwapStep } from "../../types";
-import { useTwapStore } from "../../store";
 import { useMemo } from "react";
 import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 
 export const Steps = () => {
-  const steps = useTwapStore((s) => s.swapSteps);
+  const steps = useTwapContext().state.swapSteps;
   return (
     <StepsContainer>
       <StyledSteps>
@@ -62,18 +61,8 @@ export function StepComponent({ stepType }: { stepType: SwapStep }) {
 }
 
 const useStep = (step?: SwapStep) => {
-  const { lib } = useTwapContext();
-  const { srcToken, createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    createOrdertxHash: s.createOrdertxHash,
-    approveTxHash: s.approveTxHash,
-    wrapTxHash: s.wrapTxHash,
-    swapStep: s.swapStep,
-    createOrderSuccess: s.createOrderSuccess,
-    approveSuccess: s.approveSuccess,
-    wrapSuccess: s.wrapSuccess,
-    swapSteps: s.swapSteps,
-  }));
+  const { lib, state } = useTwapContext();
+  const { srcToken, createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps } = state;
 
   return useMemo((): Step | undefined => {
     if (!step) return;

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { useTwapContext } from "../../context";
-import { useConfirmationModal, useFormatNumberV2, useIsMarketOrder } from "../../hooks/hooks";
-import { useTwapStore } from "../../store";
+import { useTwapContext } from "../../context/context";
+import { useConfirmationModal } from "../../hooks/useConfirmationModal";
+import { useFormatNumberV2, useIsMarketOrder } from "../../hooks/hooks";
 
 export const useTokenDisplay = (isSrc?: boolean) => {
   const { outAmount, srcAmount, srcToken, dstToken, srcUsd, dstUsd } = useConfirmationModal();
@@ -18,7 +18,7 @@ export const useTokenDisplay = (isSrc?: boolean) => {
 };
 
 export const useOrderType = () => {
-  const isLimitPanel = useTwapContext().isLimitPanel;
+  const isLimitPanel = useTwapContext().dappProps.isLimitPanel;
   const isMarketOrder = useIsMarketOrder();
   return useMemo(() => {
     if (isLimitPanel) {

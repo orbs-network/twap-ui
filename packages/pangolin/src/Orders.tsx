@@ -1,6 +1,6 @@
 import { Box, ClickAwayListener, styled, Typography, useMediaQuery } from "@mui/material";
 import { Status } from "@orbs-network/twap";
-import { CancelOrderButton, Components, hooks, OrderUI, ParsedOrder, store, Styles, useTwapContext, OrdersPanel, fillDelayText, query } from "@orbs-network/twap-ui";
+import { CancelOrderButton, Components, hooks, OrderUI, ParsedOrder, Styles, useTwapContext, OrdersPanel, fillDelayText, query } from "@orbs-network/twap-ui";
 import _ from "lodash";
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { parseTheme } from "./styles";
@@ -65,7 +65,7 @@ export const PangolinOrders = ({ limit, theme }: { limit?: boolean; theme: any }
 function Orders() {
   const { orders, isLoading } = useOrders();
   const { setSelectedOrderID, limit, selectedOrderID, theme } = useOrdersContext();
-  const account = useTwapContext().account;
+  const account = useTwapContext().dappProps.account;
   const mobile = useMobile();
   const limitRef = useRef(limit);
   const accountRef = useRef(account);

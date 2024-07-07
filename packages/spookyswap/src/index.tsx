@@ -8,7 +8,6 @@ import {
   hooks,
   TWAPTokenSelectProps,
   useTwapContext,
-  store,
   Orders,
   TwapContextUIPreferences,
 } from "@orbs-network/twap-ui";
@@ -39,13 +38,6 @@ const config = Configs.SpookySwap;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
-};
-
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
 const OrderSummary = ({ children }: { children: ReactNode }) => {
@@ -84,7 +76,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens, account, connectedChainId } = useAdapterContext();
-  const { srcToken, dstToken } = store.useTwapStore();
+  const { srcToken, dstToken } = useTwapContext().state;
 
   const selectedCurrency = useMemo(() => {
     if (!!dappTokens && srcToken) {
@@ -219,10 +211,10 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       parsedTokens={[]}
       srcToken={props.srcToken}
       dstToken={props.dstToken}
-      storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
       usePriceUSD={props.usePriceUSD}
+      isLimitPanel={props.isLimit}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>

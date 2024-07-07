@@ -1,3 +1,5 @@
+import { TimeResolution } from "./types";
+
 export const REFETCH_ORDER_HISTORY = 20_000;
 export const REFETCH_USD = 10_000;
 export const REFETCH_BALANCE = 10_000;
@@ -50,3 +52,5 @@ export const EXPLORER_URLS = {
 };
 
 export const STABLE_TOKENS = ["usdc", "dai", "usdt", "busd", "tusd", "susd"];
+
+export const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED };

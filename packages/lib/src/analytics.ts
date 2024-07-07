@@ -88,10 +88,7 @@ class Analytics {
       ...this.data,
       ...values,
     };
-    if (process.env.NODE_ENV === "development") {
-      console.log("BI", this.data);
-      return;
-    }
+    logger(this.data);
     clearTimeout(this.timeout);
     this.timeout = setTimeout(() => {
       sendBI(this.data);

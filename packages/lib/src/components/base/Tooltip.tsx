@@ -2,7 +2,7 @@ import { ClickAwayListener, Tooltip as MuiTooltip } from "@mui/material";
 import { useState } from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { TooltipProps } from "../../types";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 
 function Tooltip({ children, text, placement, childrenStyles = {} }: TooltipProps) {
   const [open, setOpen] = useState(false);

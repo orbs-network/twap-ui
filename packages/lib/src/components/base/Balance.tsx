@@ -1,6 +1,6 @@
 import { styled } from "@mui/system";
 import React, { ReactNode } from "react";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 import { useFormatNumber, useFormatNumberV2 } from "../../hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";

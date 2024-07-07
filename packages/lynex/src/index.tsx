@@ -6,7 +6,6 @@ import {
   TwapAdapter,
   TWAPProps,
   useTwapContext,
-  store,
   Orders,
   TwapContextUIPreferences,
   hooks,
@@ -43,13 +42,6 @@ const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
   switchVariant: "ios",
   inputPlaceholder: "0.00",
-};
-
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
 const OrderSummary = ({ children }: { children: ReactNode }) => {
@@ -210,7 +202,6 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       dappTokens={props.dappTokens}
       srcToken={props.srcToken}
       dstToken={props.dstToken}
-      storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
       priceUsd={props.priceUsd}

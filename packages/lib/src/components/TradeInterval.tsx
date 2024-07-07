@@ -1,15 +1,15 @@
 import { styled } from "@mui/material";
 import { ReactNode, useCallback } from "react";
+import { stateActions } from "../context/actions";
+import { useTwapContext } from "../context/context";
 import { useFillDelayWarning } from "../hooks/hooks";
-import { TimeResolution, useTwapStore } from "../store";
 import { StyledColumnFlex } from "../styles";
+import { TimeResolution } from "../types";
 import { BottomContent, Message, NumericInput, TimeSelectMenu } from "./base";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const { setFillDelay, fillDelay } = useTwapStore((s) => ({
-    setFillDelay: s.setFillDelay,
-    fillDelay: s.customFillDelay,
-  }));
+  const fillDelay = useTwapContext().state.customFillDelay;
+  const setFillDelay = stateActions.useSetCustomFillDelay();
 
   return (
     <NumericInput
@@ -22,10 +22,8 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
 };
 
 export const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
-  const { setFillDelay, fillDelay } = useTwapStore((s) => ({
-    setFillDelay: s.setFillDelay,
-    fillDelay: s.customFillDelay,
-  }));
+  const fillDelay = useTwapContext().state.customFillDelay;
+  const setFillDelay = stateActions.useSetCustomFillDelay();
 
   const onChange = useCallback(
     (resolution: TimeResolution) => {

@@ -19,7 +19,7 @@ const StyledContainer = styled(Box)<{ isDarkTheme?: number }>(({ theme, isDarkTh
 });
 
 const TwapFallbackUI = () => {
-  const isDarkTheme = useTwapContext().isDarkTheme;
+  const isDarkTheme = useTwapContext().dappProps.isDarkTheme;
 
   return (
     <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>
@@ -32,7 +32,7 @@ const TwapFallbackUI = () => {
 };
 
 const OrdersFallbackUI = () => {
-  const isDarkTheme = useTwapContext().isDarkTheme;
+  const isDarkTheme = useTwapContext().dappProps.isDarkTheme;
 
   return (
     <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>

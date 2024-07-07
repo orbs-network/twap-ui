@@ -128,7 +128,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       onTxSubmitted={(args: any) => console.log(args)}
       usePriceUSD={usePriceUSD}
       onInputChange={onInputChange}
-      useTrade={useTrade}
     />
   );
 };

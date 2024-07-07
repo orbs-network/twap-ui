@@ -7,10 +7,10 @@ import { useOrderHistoryContext } from "./context";
 import { StyledRowFlex, StyledText } from "../../styles";
 import { IconButton } from "../base";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
-import { useOrdersStore } from "../../store";
 import { Translations } from "../../types";
+import { stateActions } from "../../context/actions";
 
 export function OrderHistoryMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -72,18 +72,13 @@ const StyledMenuItem = styled(MenuItem)({
 
 export const OrderHistoryHeader = () => {
   const { closePreview, order, isLoading } = useOrderHistoryContext();
-  const store = useOrdersStore((s) => ({
-    onClose: s.onClose,
-  }));
-  const onClose = useCallback(() => {
-    store.onClose();
-  }, [store.onClose]);
+  const onShowOrders = stateActions.useOnShowOrders();
 
   const t = useTwapContext().translations;
   const status = order && t[order.ui.status as keyof Translations];
   return (
     <StyledHeader className="twap-order-modal-header">
-      <StyledClose onClick={onClose}>
+      <StyledClose onClick={() => onShowOrders(false)}>
         <IoMdClose />
       </StyledClose>
       {isLoading ? null : !order ? (

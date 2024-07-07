@@ -1,11 +1,10 @@
 import _ from "lodash";
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 import { useOrdersHistory, useParseOrderUi } from "../../hooks";
 import { ParsedOrder, Translations } from "../../types";
 import { OrdersMenuTab } from "./types";
 import { Status } from "@orbs-network/twap";
-import { useTwapStore } from "../../store";
 
 interface OrderHistoryContextType {
   order?: ReturnType<typeof useParseOrderUi>;
@@ -26,7 +25,7 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
   const [tab, setTab] = useState<Status | undefined>(undefined);
   const [selectedOrder, setSelectedOrder] = useState<ParsedOrder | undefined>(undefined);
   const order = useParseOrderUi(selectedOrder);
-  const waitingForOrdersUpdate = useTwapStore((s) => s.waitingForOrdersUpdate);
+  const waitingForOrdersUpdate = useTwapContext().state.waitingForOrdersUpdate;
   const isLoading = !data || waitingForOrdersUpdate;
 
   const onOrderCanceled = useCallback(() => {

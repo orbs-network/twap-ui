@@ -1,31 +1,19 @@
-import { useCallback, useMemo } from "react";
-import { useTwapContext } from "../context";
-import {
-  useOutAmount,
-  useChangeNetwork,
-  useNoLiquidity,
-  useShouldUnwrap,
-  useSrcUsd,
-  useDstUsd,
-  useSrcBalance,
-  useSwapWarning,
-  useShouldOnlyWrap,
-  useConfirmationModal,
-} from "./hooks";
+import { useMemo } from "react";
+import { useTwapContext } from "../context/context";
+import { useOutAmount, useChangeNetwork, useNoLiquidity, useShouldUnwrap, useSrcUsd, useDstUsd, useSrcBalance, useSwapWarning, useShouldOnlyWrap, useSrcAmount } from "./hooks";
 import { query } from "./query";
-import { useTwapStore } from "../store";
 import BN from "bignumber.js";
-import { useUnwrapToken, useWrapOnly, useWrapToken } from "./useTransactions";
+import { useUnwrapToken, useWrapOnly } from "./useTransactions";
 import _ from "lodash";
+import { useConfirmationModal } from "./useConfirmationModal";
 
 export const useConfirmationButton = () => {
-  const { translations, lib, isWrongChain, connect } = useTwapContext();
-  const { createOrderLoading, srcAmount, srcToken, dstToken } = useTwapStore((s) => ({
-    createOrderLoading: s.swapState === "loading",
-    srcAmount: s.getSrcAmount().toString(),
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-  }));
+  const { translations, lib, isWrongChain, dappProps, state } = useTwapContext();
+  const { connect } = dappProps;
+  const srcAmount = useSrcAmount().srcAmountBN.toString();
+  const { swapState, srcToken, dstToken } = state;
+  const createOrderLoading = swapState === "loading";
+
   const { onOpen } = useConfirmationModal();
   const outAmountLoading = useOutAmount().isLoading;
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
@@ -36,7 +24,6 @@ export const useConfirmationButton = () => {
   const nativeSymbol = lib?.config.nativeToken.symbol;
   const usdLoading = useMemo(() => BN(srcUsd || "0").isZero() || BN(dstUsd || "0").isZero(), [srcUsd.toString(), dstUsd.toString()]);
   const { isLoading: srcBalanceLoading } = useSrcBalance();
-  query.useAllowance();
   const warning = useSwapWarning();
   const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);
   const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(dstToken?.address);
@@ -44,6 +31,8 @@ export const useConfirmationButton = () => {
   const shoouldOnlyUnwrap = useShouldUnwrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
+
+  console.log("render 1");
 
   const hasWarning = useMemo(() => {
     return !_.every(warning, (value) => _.isNil(value));

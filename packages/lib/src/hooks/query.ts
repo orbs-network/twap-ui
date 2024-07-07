@@ -3,15 +3,16 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_USD, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
 import { amountBN, supportsTheGraphHistory } from "../utils";
-import { useTwapStore } from "../store";
 import { Status, TokenData } from "@orbs-network/twap";
 import _ from "lodash";
 import { getOrderFills } from "../helper";
 import { OrdersData, ParsedOrder } from "../types";
+import { useSrcAmount } from "./hooks";
+import { stateActions } from "../context/actions";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const lib = useTwapContext().lib;
@@ -62,7 +63,8 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
 };
 
 export const useGasPrice = () => {
-  const { maxFeePerGas: contextMax, priorityFeePerGas: contextTip, lib } = useTwapContext();
+  const { dappProps, lib } = useTwapContext();
+  const { maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = dappProps;
   const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(), {
     enabled: !!lib,
     refetchInterval: REFETCH_GAS_PRICE,
@@ -79,12 +81,10 @@ export const useGasPrice = () => {
 };
 
 const useAllowance = () => {
-  const { amount, srcToken } = useTwapStore((state) => ({
-    amount: state.getSrcAmount(),
-    srcToken: state.srcToken,
-  }));
+  const { lib, state } = useTwapContext();
+  const { srcToken } = state;
+  const amount = useSrcAmount().srcAmountBN;
 
-  const lib = useTwapContext().lib;
   const wToken = lib?.config.wToken;
   const query = useQuery(
     [QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, amount.toString()],
@@ -105,37 +105,37 @@ const useAllowance = () => {
 export const usePriceUSD = (address?: string) => {
   const context = useTwapContext();
 
-  const { lib, account, isWrongChain } = context;
+  const { lib, isWrongChain, dappProps } = context;
 
   const _address = address && isNativeAddress(address) ? lib?.config.wToken.address : address;
 
-  const usd = context.usePriceUSD?.(_address);
+  const usd = dappProps.usePriceUSD?.(_address);
 
   const [priceUsdPointer, setPriceUsdPointer] = useState(0);
 
   useEffect(() => {
-    if (context.priceUsd) {
+    if (dappProps.priceUsd) {
       setPriceUsdPointer((prev) => prev + 1);
     }
-  }, [context.priceUsd, setPriceUsdPointer]);
+  }, [dappProps.priceUsd, setPriceUsdPointer]);
 
   const query = useQuery(
     [QueryKeys.GET_USD_VALUE, _address, priceUsdPointer],
     async () => {
-      const res = await context.priceUsd!(_address!);
+      const res = await dappProps.priceUsd!(_address!);
       return new BN(res);
     },
     {
-      enabled: !!lib && !!_address && !!context.priceUsd,
+      enabled: !!lib && !!_address && !!dappProps.priceUsd,
       refetchInterval: REFETCH_USD,
     }
   );
   const value = new BN(query.data || usd || 0).toString();
-  const isLoading = context.priceUsd ? query.isLoading && query.fetchStatus !== "idle" : !usd;
+  const isLoading = dappProps.priceUsd ? query.isLoading && query.fetchStatus !== "idle" : !usd;
 
   return {
     value: new BN(value),
-    isLoading: !account || isWrongChain ? false : isLoading,
+    isLoading: !dappProps.account || isWrongChain ? false : isLoading,
   };
 };
 
@@ -166,12 +166,9 @@ export const useBalance = (token?: TokenData, onSuccess?: (value: BN) => void, s
 };
 
 export const useOrdersHistory = () => {
-  const tokenList = useTwapContext().parsedTokens;
-  const { updateState, showConfirmation } = useTwapStore((state) => ({
-    updateState: state.updateState,
-    showConfirmation: state.showConfirmation,
-    srcToken: state.srcToken,
-  }));
+  const { dappProps, state } = useTwapContext();
+  const { parsedTokens } = dappProps;
+  const onUpdated = stateActions.useOnOrdersUpdated();
   const lib = useTwapContext().lib;
   const QUERY_KEY = [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId];
 
@@ -212,13 +209,13 @@ export const useOrdersHistory = () => {
           return lib!.status(o);
         };
 
-        const dstToken = tokenList.find((t) => eqIgnoreCase(o.ask.dstToken, t.address));
+        const dstToken = parsedTokens.find((t) => eqIgnoreCase(o.ask.dstToken, t.address));
         return {
           order: o,
           ui: {
             totalChunks: o.ask.srcAmount.div(o.ask.srcBidAmount).integerValue(BN.ROUND_CEIL).toNumber(),
             status: status(),
-            srcToken: tokenList.find((t) => eqIgnoreCase(o.ask.srcToken, t.address)),
+            srcToken: parsedTokens.find((t) => eqIgnoreCase(o.ask.srcToken, t.address)),
             dstToken,
             dstAmount,
             progress,
@@ -228,14 +225,14 @@ export const useOrdersHistory = () => {
           },
         };
       }).filter((o) => o.ui.srcToken && o.ui.dstToken);
-      updateState({ waitingForOrdersUpdate: false });
+      onUpdated();
       return _.chain(_.compact(parsedOrders))
         .orderBy((o: ParsedOrder) => o.order.time, "desc")
         .groupBy((o: ParsedOrder) => o.ui.status)
         .value();
     },
     {
-      enabled: !!lib && _.size(tokenList) > 0 && !showConfirmation,
+      enabled: !!lib && _.size(parsedTokens) > 0 && !state.showConfirmation,
       refetchInterval: REFETCH_ORDER_HISTORY,
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,

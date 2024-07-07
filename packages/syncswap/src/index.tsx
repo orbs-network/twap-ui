@@ -10,7 +10,6 @@ import {
   hooks,
   TWAPProps,
   Orders,
-  store,
   REFETCH_GAS_PRICE,
   amountBN,
   addMissingTokens,
@@ -42,13 +41,6 @@ import BN from "bignumber.js";
 import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SyncSwapPallete } from "./types";
 import _ from "lodash";
-
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
-};
 
 const uiPreferences: TwapContextUIPreferences = {
   switchVariant: "default",
@@ -111,11 +103,9 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: boolean }) => {
-  const { srcToken, dstToken } = store.useTwapStore((state) => ({
-    srcToken: state.srcToken,
-    dstToken: state.dstToken,
-  }));
-  const translations = useTwapContext().translations;
+  const { translations, state } = useTwapContext();
+
+  const { srcToken, dstToken } = state;
 
   const token = isSrc ? srcToken : dstToken;
 
@@ -267,8 +257,8 @@ const Adapter = (props: Props) => {
           srcToken={eqIgnoreCase(props.srcToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.srcToken}
           onTxSubmitted={props.onTxSubmitted}
           dstToken={eqIgnoreCase(props.dstToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.dstToken}
-          storeOverride={props.limit ? storeOverride : undefined}
           priceUsd={priceUsd}
+          isLimitPanel={props.limit}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider value={props}>

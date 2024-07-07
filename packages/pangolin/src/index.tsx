@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, store, Orders } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, Orders } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState, createContext, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
 import React from "react";
@@ -10,13 +10,6 @@ import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
 import { PangolinOrders } from "./Orders";
-
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
-};
 
 interface PangolinTWAPProps extends TWAPProps {
   theme: any;
@@ -98,7 +91,6 @@ const TWAP = memo((props: PangolinTWAPProps) => {
         <TwapAdapter
           connect={memoizedConnect}
           config={config}
-          storeOverride={props.limit ? storeOverride : undefined}
           maxFeePerGas={props.maxFeePerGas}
           priorityFeePerGas={props.priorityFeePerGas}
           translations={translations as Translations}
@@ -113,6 +105,7 @@ const TWAP = memo((props: PangolinTWAPProps) => {
           onDstTokenSelected={props.onDstTokenSelected}
           usePriceUSD={props.usePriceUSD}
           parsedTokens={[]}
+          isLimitPanel={props.limit}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>

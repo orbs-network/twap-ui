@@ -4,7 +4,6 @@ import {
   hooks,
   Translations,
   TwapAdapter,
-  store,
   Orders,
   TwapContextUIPreferences,
   Styles,
@@ -13,6 +12,7 @@ import {
   TWAPTokenSelectProps,
   ButtonProps,
   LimitSwitchArgs,
+  UseMarketPriceProps,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -69,6 +69,7 @@ import { useTwapContext, LimitPriceZeroButtonProps, LimitPricePercentProps } fro
 import { useAdapterContext, AdapterContextProvider, PancakeProps } from "./context";
 import { LimitPriceTitleProps } from "@orbs-network/twap-ui";
 import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
+import { Token } from "@orbs-network/twap-ui";
 
 const PERCENT = [
   { text: "25%", value: 0.25 },
@@ -120,7 +121,7 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
 };
 
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
-  const dstToken = store.useTwapStore((s) => s.dstToken);
+  const dstToken = useTwapContext().state.dstToken;
   const onTokenSelectClick = useTokenSelectClick();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -151,9 +152,7 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
 
 const SrcTokenPercentSelector = () => {
   const onPercentClick = hooks.useCustomActions();
-  const { srcAmount } = store.useTwapStore((state) => ({
-    srcAmount: state.getSrcAmount(),
-  }));
+  const srcAmount = hooks.useSrcAmount().srcAmountBN;
 
   const srcBalance = hooks.useSrcBalance().data;
 
@@ -161,7 +160,7 @@ const SrcTokenPercentSelector = () => {
 
   const percent = useMemo(() => {
     return srcAmount.dividedBy(srcBalance || "0").toNumber();
-  }, [srcAmount, srcBalance]);
+  }, [srcAmount.toString(), srcBalance]);
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -208,27 +207,11 @@ export const useProvider = (props: PancakeProps) => {
   return provider;
 };
 
-const useTrade = (props: PancakeProps, amount?: string) => {
-  const { srcToken, toToken } = store.useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    toToken: s.dstToken,
-  }));
+const useMarketPrice = ({ srcToken, dstToken, amount }: UseMarketPriceProps) => {
+  const context = useAdapterContext();
+  const res = context.useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), BN(amount || 0).isZero() ? undefined : amount);
 
-  const res = props.useTrade!(handleAddress(srcToken?.address), handleAddress(toToken?.address), BN(amount || 0).isZero() ? undefined : amount);
-
-  return {
-    result: res?.outAmount,
-    isLoading: BN(amount || 0).gt(0) && res?.isLoading,
-  };
-};
-
-const useMarketPrice = (props: PancakeProps) => {
-  const { srcToken } = store.useTwapStore((s) => ({
-    srcToken: s.srcToken,
-  }));
-
-  const amount = hooks.useAmountBN(srcToken?.decimals, "1");
-  return useTrade(props, amount);
+  return res?.outAmount;
 };
 
 const Button = (props: ButtonProps) => {
@@ -240,9 +223,8 @@ const Button = (props: ButtonProps) => {
   );
 };
 
-const TWAP = memo((props: PancakeProps) => {
+const TWAPContent = memo((props: PancakeProps) => {
   const provider = useProvider(props);
-  const marketPrice = useMarketPrice(props);
 
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
@@ -309,23 +291,30 @@ const TWAP = memo((props: PancakeProps) => {
         isMobile={props.isMobile}
         connectedChainId={props.connectedChainId}
         enableQueryParams={true}
-        marketPrice={marketPrice.result}
         minNativeTokenBalance="0.0035"
         isLimitPanel={props.limit}
+        useMarketPrice={useMarketPrice}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
-          <AdapterContextProvider value={props}>
-            {props.children}
-            <PancakeOrders />
-            {props.limit ? <LimitPanel /> : <TWAPPanel />}
-            <SubmitOrderModal />
-          </AdapterContextProvider>
+
+          {props.children}
+          <PancakeOrders />
+          {props.limit ? <LimitPanel /> : <TWAPPanel />}
+          <SubmitOrderModal />
         </ThemeProvider>
       </TwapAdapter>
     </Box>
   );
 });
+
+const TWAP = (props: PancakeProps) => {
+  return (
+    <AdapterContextProvider value={props}>
+      <TWAPContent {...props} />
+    </AdapterContextProvider>
+  );
+};
 
 const TopPanel = () => {
   return (
@@ -339,7 +328,7 @@ const TopPanel = () => {
 
 const OpenConfirmationModalButton = () => {
   const { ConnectButton } = useAdapterContext();
-  const provider = useTwapContext().provider;
+  const provider = useTwapContext().dappProps.provider;
 
   if (!provider) {
     return (
@@ -615,14 +604,7 @@ export { TWAP, Orders };
 const SwapModal = () => {
   const limitPanel = useAdapterContext().limit;
   const { dappTokens, ApproveModalContent, SwapPendingModalContent, SwapTransactionErrorContent, AddToWallet, SwapTransactionReceiptModalContent } = useAdapterContext();
-  const { fromToken, showConfirmation, isMarketOrder, swapStep, createOrdertxHash } = store.useTwapStore((s) => ({
-    fromToken: s.srcToken,
-    showConfirmation: s.showConfirmation,
-    isMarketOrder: s.isMarketOrder,
-    disclaimerAccepted: s.disclaimerAccepted,
-    createOrdertxHash: s.createOrdertxHash,
-    swapStep: s.swapStep,
-  }));
+  const { srcToken: fromToken, showConfirmation, isMarketOrder, swapStep, createOrdertxHash } = useTwapContext().state;
 
   const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
   const { mutate: createOrder, error, swapState } = hooks.useSubmitOrderFlow();

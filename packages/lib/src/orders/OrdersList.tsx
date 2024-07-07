@@ -2,13 +2,12 @@ import { Box, styled } from "@mui/material";
 import { useState } from "react";
 import Order, { OrderLoader } from "./Order/Order";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useTwapContext } from "../context";
+import { useTwapContext } from "../context/context";
 import { ParsedOrder } from "../types";
 import _ from "lodash";
 import { usePagination } from "../hooks";
 import { StyledColumnFlex } from "../styles";
 import { Pagination } from "../components/base";
-import { useTwapStore } from "../store";
 
 function OrdersList({ orders, status, isLoading }: { orders?: ParsedOrder[]; status?: string; isLoading: boolean }) {
   const { uiPreferences } = useTwapContext();
@@ -43,8 +42,8 @@ const PaginationList = ({ orders, status }: { orders?: ParsedOrder[]; status?: s
 
 const List = ({ orders, status }: { orders?: ParsedOrder[]; status?: string }) => {
   const [selected, setSelected] = useState<number | undefined>(undefined);
-  const { translations } = useTwapContext();
-  const waitingForOrdersUpdate = useTwapStore((s) => s.waitingForOrdersUpdate);
+  const { translations, state } = useTwapContext();
+  const { waitingForOrdersUpdate } = state;
 
   const onSelect = (value: number) => {
     setSelected((prevState) => (prevState === value ? undefined : value));

@@ -1,8 +1,7 @@
 export * as hooks from "./hooks/index";
-export * as store from "./store";
 export * from "./types";
 export * as Styles from "./styles";
-export * from "./context";
+export * from "./context/context";
 export * from "./consts";
 export * as Components from "./components";
 export * from "./ErrorHandling";

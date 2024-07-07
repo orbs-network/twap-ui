@@ -2,7 +2,7 @@ import React, { ReactNode } from "react";
 import { Fade, IconButton, Box, styled, Modal as MuiModal, Backdrop } from "@mui/material";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { StyledRowFlex } from "../../styles";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 
 export interface Props {
   open: boolean;

@@ -1,8 +1,7 @@
 import { zeroAddress, zero, parseEvents, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256 } from "@defi.org/web3-candies";
 import { OrderInputValidation, TokensValidation } from "@orbs-network/twap";
 import { useMutation } from "@tanstack/react-query";
-import { useTwapContext } from "../context";
-import { useTwapStore, useOrdersStore } from "../store";
+import { useTwapContext } from "../context/context";
 import {
   useChunks,
   useDeadline,
@@ -16,6 +15,7 @@ import {
   useResetAfterSwap,
   useShouldOnlyWrap,
   useShouldWrap,
+  useSrcAmount,
   useSrcChunkAmount,
   useSrcChunkAmountUi,
   useSrcUsd,
@@ -25,39 +25,38 @@ import BN from "bignumber.js";
 import { isTxRejected } from "../utils";
 import { useCallback } from "react";
 import { analytics } from "../analytics";
+import { stateActions } from "../context/actions";
+import moment from "moment";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = query.useGasPrice();
-  const store = useTwapStore();
   const createOrder = useCreateOrderCallback();
-  const { askDataParams, lib } = useTwapContext();
+  const { dappProps, lib, state } = useTwapContext();
+  const { askDataParams } = dappProps;
   const dstMinAmountOut = useDstMinAmountOut();
   const srcUsd = useSrcUsd().value.toString();
   const srcChunkAmount = useSrcChunkAmount();
   const deadline = useDeadline();
   const fillDelayMillisUi = useFillDelayMillis();
+  const srcAmount = useSrcAmount().srcAmountBN;
+  const onTxHash = stateActions.useOnTxHash().onCreateOrderTxHash;
+
   return useMutation(
     async (srcToken: TokenData) => {
       analytics.updateAction("create");
 
       const dstToken = {
-        ...store.dstToken!,
-        address: lib!.validateTokens(srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
+        ...state.dstToken!,
+        address: lib!.validateTokens(srcToken!, state.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : state.dstToken!.address,
       };
 
       const fillDelayMillis = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
-
-      const onTxHash = (createOrdertxHash: string) => {
-        store.updateState({
-          createOrdertxHash,
-        });
-      };
 
       const data = await createOrder(
         onTxHash,
         srcToken!,
         dstToken,
-        store.getSrcAmount(),
+        srcAmount,
         srcChunkAmount,
         dstMinAmountOut,
         deadline,
@@ -143,14 +142,12 @@ function useCreateOrderCallback() {
 }
 
 export const useWrapToken = () => {
-  const { srcAmount, updateState } = useTwapStore((state) => ({
-    srcAmount: state.getSrcAmount(),
-    srcToken: state.srcToken,
-    dstToken: state.dstToken,
-    updateState: state.updateState,
-  }));
-  const { lib } = useTwapContext();
+  const srcAmount = useSrcAmount().srcAmountBN;
+  const { lib, state } = useTwapContext();
+
+  const { srcToken, dstToken } = state;
   const useWrapOnly = useShouldOnlyWrap();
+  const onTxHash = stateActions.useOnTxHash().onWrapTxHash;
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
 
   return useMutation(
@@ -171,10 +168,7 @@ export const useWrapToken = () => {
         undefined,
         undefined,
         {
-          onTxHash: (txHash: string) => {
-            txHash = txHash;
-            updateState({ wrapTxHash: txHash });
-          },
+          onTxHash,
         }
       );
       analytics.onWrapSuccess(txHash);
@@ -202,11 +196,8 @@ export const useUnwrapToken = () => {
   const lib = useTwapContext().lib;
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
   const onSuccess = useResetAfterSwap();
-
-  const { srcAmount, updateState } = useTwapStore((state) => ({
-    srcAmount: state.getSrcAmount(),
-    updateState: state.updateState,
-  }));
+  const srcAmount = useSrcAmount().srcAmountBN;
+  const onTxHash = stateActions.useOnTxHash().onUnwrapTxHash;
 
   return useMutation(
     async () => {
@@ -222,10 +213,7 @@ export const useUnwrapToken = () => {
         undefined,
         undefined,
         {
-          onTxHash: (txHash: string) => {
-            txHash = txHash;
-            updateState({ unwrapTxHash: txHash });
-          },
+          onTxHash,
         }
       );
       analytics.onUnwrapSuccess(txHash);
@@ -240,7 +228,7 @@ export const useUnwrapToken = () => {
 };
 
 export const useApproveToken = () => {
-  const updateState = useTwapStore((s) => s.updateState);
+  const onTxHash = stateActions.useOnTxHash().onApproveTxHash;
 
   const lib = useTwapContext().lib;
 
@@ -264,10 +252,7 @@ export const useApproveToken = () => {
         undefined,
         undefined,
         {
-          onTxHash: (approveTxHash) => {
-            txHash = approveTxHash;
-            updateState({ approveTxHash });
-          },
+          onTxHash,
         }
       );
       analytics.onApproveSuccess(txHash);
@@ -280,16 +265,13 @@ export const useApproveToken = () => {
   );
 };
 const useOnSuccessCallback = () => {
-  const { srcAmount, srcToken, dstToken } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-    srcAmount: s.getSrcAmount().toString(),
-  }));
-
+  const { dappProps, state } = useTwapContext();
+  const { onTxSubmitted } = dappProps;
+  const { srcToken, dstToken } = state;
+  const srcAmount = useSrcAmount().srcAmountBN.toString();
   const dstAmountUsdUi = useDstAmountUsdUi();
   const outAmountRaw = useOutAmount().outAmountRaw;
 
-  const { onTxSubmitted } = useTwapContext();
   return useCallback(
     (order: { txHash: string; orderId: number }) => {
       onTxSubmitted?.({
@@ -306,13 +288,9 @@ const useOnSuccessCallback = () => {
 };
 
 const useSubmitAnalytics = () => {
-  const { srcToken, srcAmount, dstToken, srcAmountUi } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-    srcAmount: s.getSrcAmount().toString(),
-    srcAmountUi: s.srcAmountUi,
-  }));
-  const { lib } = useTwapContext();
+  const srcAmount = useSrcAmount();
+  const state = useTwapContext().state;
+  const { srcToken, dstToken } = state;
   const { outAmountRaw, outAmountUi } = useOutAmount();
   const chunks = useChunks();
   const minDstAmountOutUi = useDstMinAmountOutUi();
@@ -337,8 +315,8 @@ const useSubmitAnalytics = () => {
       toTokenAddress: dstToken?.address,
       fromTokenSymbol: srcToken?.symbol,
       toTokenSymbol: dstToken?.symbol,
-      fromTokenAmount: srcAmount,
-      fromTokenAmountUi: srcAmountUi,
+      fromTokenAmount: srcAmount.srcAmountBN.toString(),
+      fromTokenAmountUi: srcAmount.srcAmountUi,
       toTokenAmount: outAmountRaw,
       toTokenAmountUi: outAmountUi,
       chunksAmount: chunks,
@@ -355,7 +333,6 @@ const useSubmitAnalytics = () => {
     srcToken,
     dstToken,
     srcAmount,
-    srcAmountUi,
     outAmountRaw,
     outAmountUi,
     chunks,
@@ -367,27 +344,23 @@ const useSubmitAnalytics = () => {
     minDstAmountOutUi,
     srcChunkAmount,
     srcChunkAmountUi,
-    fillDelay,
+    srcAmount.srcAmountUi,
+    srcAmount.srcAmountBN.toString(),
   ]);
 };
 
 export const useSubmitOrderFlow = () => {
-  const { srcToken, swapState, updateState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, srcAmount } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    swapState: s.swapState,
-    updateState: s.updateState,
-    swapStep: s.swapStep,
-    createOrdertxHash: s.createOrdertxHash,
-    approveTxHash: s.approveTxHash,
-    wrapTxHash: s.wrapTxHash,
-    srcAmount: s.getSrcAmount().toString(),
-  }));
+  const srcAmount = useSrcAmount().srcAmountBN.toString();
+  const { lib, dappProps, updateState, state } = useTwapContext();
+
+  const { minNativeTokenBalance } = dappProps;
+
+  const { srcToken, swapState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash } = state;
   const { data: haveAllowance } = query.useAllowance();
   const { mutateAsync: approve } = useApproveToken();
-  const { lib, minNativeTokenBalance } = useTwapContext();
   const { refetch: refetchNativeBalance } = query.useMinNativeTokenBalance(minNativeTokenBalance);
   const { refetch: refetchOrderHistory } = query.useOrdersHistory();
-  const { setTab } = useOrdersStore();
+  const setTab = stateActions.useSelectOrdersTab();
   const shouldWrap = useShouldWrap();
   const { mutateAsync: wrapToken } = useWrapToken();
   const { mutateAsync: createOrder } = useCreateOrder();

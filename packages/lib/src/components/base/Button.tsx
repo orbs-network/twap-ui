@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Fade, styled } from "@mui/material";
 import { useMemo } from "react";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 import { ButtonProps } from "../../types";
 
 function Button(props: ButtonProps) {

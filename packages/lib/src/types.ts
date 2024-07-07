@@ -2,7 +2,6 @@ import BN from "bignumber.js";
 import { Config, Order, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import { Moment } from "moment";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
-import { Duration } from "./store";
 import { useParseOrderUi } from "./hooks";
 import { CSSObject } from "@mui/system";
 import { IconType } from "@react-icons/all-files";
@@ -229,7 +228,7 @@ export interface ParsedOrder {
 }
 
 type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
-
+export type UseMarketPriceProps = { srcToken?: Token; dstToken?: Token; amount?: string };
 export interface TwapLibProps extends LibProps {
   connect?: () => void;
   askDataParams?: any[];
@@ -245,13 +244,12 @@ export interface TwapLibProps extends LibProps {
   dstUsd?: BN;
   usePriceUSD?: (token?: string) => number | undefined;
   priceUsd?: PriceUsd;
-  useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
-  marketPrice?: string;
   minNativeTokenBalance?: string;
   isLimitPanel?: boolean;
   parsedTokens: TokenData[];
+  useMarketPrice?: (props: UseMarketPriceProps) => string | undefined;
 }
 
 export type Token = TokenData;
@@ -305,7 +303,6 @@ export interface OrdersData {
 export type SwapState = "loading" | "success" | "failed" | "rejected";
 export type SwapStep = "createOrder" | "wrap" | "approve";
 
-export type ConfirmationDetails = { outAmount?: string; srcAmount?: string; srcUsd?: string; dstUsd?: string; srcToken?: TokenData; dstToken?: TokenData };
 export interface State {
   swapStep?: SwapStep;
   swapSteps?: SwapStep[];
@@ -321,8 +318,6 @@ export interface State {
 
   customChunks?: number;
   customFillDelay: Duration;
-
-  orderCreatedTimestamp?: number;
 
   createOrdertxHash?: string;
   wrapTxHash?: string;
@@ -340,7 +335,8 @@ export interface State {
   wrapSuccess?: boolean;
   approveSuccess?: boolean;
 
-  confirmationDetails?: ConfirmationDetails;
+  selectedOrdersTab: number;
+  showOrders?: boolean;
 }
 
 export type SwitchVariant = "ios" | "default";
@@ -435,3 +431,22 @@ export type CreateOrderModalArgs = {
     USD?: FC<{ usd?: string }>;
   };
 };
+
+export enum TimeResolution {
+  Minutes = 60 * 1000,
+  Hours = Minutes * 60,
+  Weeks = 7 * 24 * Hours,
+  Days = Hours * 24,
+}
+export type Duration = { resolution: TimeResolution; amount?: number };
+
+export interface TWAPContextProps {
+  dappProps: TwapLibProps;
+  lib?: TWAPLib;
+  marketPrice?: string;
+  translations: Translations;
+  isWrongChain: boolean;
+  state: State;
+  updateState: (state: Partial<State>) => void;
+  uiPreferences: TwapContextUIPreferences;
+}

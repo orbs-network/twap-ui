@@ -1,15 +1,13 @@
 import React, { useCallback } from "react";
-import { useTwapContext } from "../context";
-import { useTwapStore } from "../store";
+import { useTwapContext } from "../context/context";
 import { useSetSwapSteps } from "./hooks";
 import { query } from "./query";
 
 export function useSubmitOrderButton(onClick?: () => void) {
-  const t = useTwapContext().translations;
-  const { isLoading, disclaimerAccepted } = useTwapStore((s) => ({
-    isLoading: s.swapState === "loading",
-    disclaimerAccepted: s.disclaimerAccepted,
-  }));
+  const { translations: t, state } = useTwapContext();
+  const { swapState, disclaimerAccepted } = state;
+  const isLoading = swapState === "loading";
+
   const setSwapSteps = useSetSwapSteps();
   const { isLoading: allowanceLoading } = query.useAllowance();
 

@@ -1,9 +1,9 @@
 import * as React from "react";
 import { styled } from "@mui/material";
-import { hooks, OrdersPortal, SelectedOrders, store } from "@orbs-network/twap-ui";
+import { hooks, OrdersPortal, SelectedOrders } from "@orbs-network/twap-ui";
 import { StyledOrders, StyledOrdersHeader, StyledOrdersTab, StyledOrdersTabs } from "./styles";
 import { Styles } from "@orbs-network/twap-ui";
-import { useAdapterContext } from "./context";
+import { useTwapContext } from "@orbs-network/twap-ui";
 
 export default function PancakeOrders() {
   return (
@@ -27,7 +27,8 @@ const StyledBody = styled(Styles.StyledColumnFlex)({
 });
 
 const Tabs = () => {
-  const { tab, setTab } = store.useOrdersStore();
+  const tab = useTwapContext().state.selectedOrdersTab;
+  const setTab = hooks.stateActions.useSelectOrdersTab();
 
   const tabs = hooks.useOrdersTabs();
   const selectedTab = React.useMemo(() => {

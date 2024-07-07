@@ -4,7 +4,6 @@ import { Translations } from "./types";
 import { EXPLORER_URLS, QUERY_PARAMS, STABLE_TOKENS } from "./consts";
 import BN from "bignumber.js";
 import _ from "lodash";
-import { useTwapStore } from "./store";
 import { THE_GRAPH_ORDERS_API } from "./config";
 import { Config, Configs } from "@orbs-network/twap";
 export const logger = (...args: any[]) => {
@@ -92,6 +91,18 @@ export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) 
 
   if (_.isArray(tokensList)) return _.find(tokensList, (token) => eqIgnoreCase(addressOrSymbol, token.address) || addressOrSymbol.toLowerCase() === token?.symbol.toLowerCase());
   if (_.isObject(tokensList)) return tokensList[addressOrSymbol as keyof typeof tokensList];
+};
+
+export const getTokenFromTokensListV2 = (tokensList?: any, values?: (string | undefined)[]) => {
+  if (!tokensList || !values || values.length === 0) return;
+
+  if (Array.isArray(tokensList)) {
+    return tokensList.find((token) => values.some((value) => eqIgnoreCase(value || "", token.address) || eqIgnoreCase(value || "", token.symbol)));
+  }
+
+  if (typeof tokensList === "object") {
+    return values.map((value) => (value ? tokensList[value as keyof typeof tokensList] : undefined)).find((token) => token !== undefined);
+  }
 };
 
 export const parseError = (error?: any) => {
@@ -210,4 +221,43 @@ export const invertBN = (value?: string) => {
 export const invert = (value?: string) => {
   if (!value) return "";
   return BN(1).div(value).toString();
+};
+
+export const getQueryParam = (name: string) => {
+  const search = window.location.search;
+
+  const params = new URLSearchParams(search);
+  const result = params.get(name);
+  if (name === QUERY_PARAMS.LIMIT_PRICE && result === ".") {
+    return "0.1";
+  }
+
+  return result;
+};
+
+export const setQueryParam = (name: string, value?: string) => {
+  const search = window.location.search;
+  const params = new URLSearchParams(search);
+  if (!value) {
+    params.delete(name);
+  } else {
+    params.set(name, value);
+  }
+
+  window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+};
+
+export const limitPriceFromQueryParams = () => {
+  const price = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
+  if (price && BN(price).gt(0)) {
+    return formatDecimals(price);
+  }
+};
+
+export const resetQueryParams = () => {
+  setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
+  setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
+  setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
+  setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, undefined);
+  setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
 };

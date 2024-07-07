@@ -123,9 +123,7 @@ export const DappsMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const disconnect = useDisconnectWallet();
-  const reset = hooks.useResetStore();
   const onSelect = (dapp: Dapp) => {
-    reset();
     disconnect();
     navigate(`/${dapp.path}`);
   };
@@ -441,11 +439,9 @@ export const UISelector = ({
   limit?: boolean;
   selected?: SelectorOption;
 }) => {
-  const reset = hooks.useResetStore();
   const tabs = limit ? [SelectorOption.TWAP, SelectorOption.LIMIT] : [SelectorOption.TWAP];
   const onSelect = (value: SelectorOption) => {
     select?.(value);
-    reset();
     const search = window.location.search;
     const params = new URLSearchParams(search);
     const theme = params.get("theme");

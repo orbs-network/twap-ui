@@ -8,7 +8,6 @@ import {
   TWAPTokenSelectProps,
   hooks,
   TWAPProps,
-  store,
   Orders,
   ORDERS_CONTAINER_ID,
 } from "@orbs-network/twap-ui";
@@ -18,7 +17,6 @@ import { Box } from "@mui/system";
 import {
   configureStyles,
   StyledColumnFlex,
-  StyledLimitPrice,
   StyledPoweredByOrbs,
   StyledSubmit,
   StyledTopColumnFlex,
@@ -138,7 +136,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const srcAmount = store.useTwapStore((s) => s.srcAmountUi);
+  const srcAmount = hooks.useSrcAmount().srcAmountUi;
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -208,7 +206,7 @@ const SrcTokenPercentSelector = () => {
 };
 
 const OrderSummary = ({ children }: { children: ReactNode }) => {
-  const setShowConfirmation = store.useTwapStore((store) => store.setShowConfirmation);
+  const { onClose } = hooks.useConfirmationModal();
 
   const { limit } = useAdapterContext();
 
@@ -216,7 +214,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
     <StyledOrderSummaryModal className="twap-ui-chronos-modal">
       <StyledOrderSummaryModalPadding>
         <StyledOrderSummaryModalHeader>
-          <Components.Base.IconButton onClick={() => setShowConfirmation(false)} icon={<IoMdArrowBack />} />
+          <Components.Base.IconButton onClick={onClose} icon={<IoMdArrowBack />} />
 
           <Typography>Confirm {limit ? "Limit" : "TWAP"} Operation</Typography>
         </StyledOrderSummaryModalHeader>
@@ -264,11 +262,8 @@ const Recipient = () => {
 };
 
 const TokenSummary = () => {
-  const { srcAmount, srcToken, dstToken } = store.useTwapStore((store) => ({
-    srcAmount: store.srcAmountUi,
-    srcToken: store.srcToken,
-    dstToken: store.dstToken,
-  }));
+  const srcAmount = hooks.useSrcAmount().srcAmountUi;
+  const { srcToken, dstToken } = useTwapContext().state;
   const dstAmount = hooks.useOutAmount().outAmountUi;
 
   const srcAmountFormatted = hooks.useFormatNumber({ value: srcAmount });
@@ -313,13 +308,6 @@ const ChangeTokensOrder = () => {
       <Components.ChangeTokensOrder />
     </StyledChangeOrder>
   );
-};
-
-const limitStoreOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
 const Listener = () => {
@@ -374,7 +362,7 @@ const TWAP = (props: ChronosTWAPProps) => {
         dappTokens={props.dappTokens}
         srcToken={props.srcToken}
         dstToken={props.dstToken}
-        storeOverride={props.limit ? limitStoreOverride : undefined}
+        isLimitPanel={props.limit}
         uiPreferences={uiPreferences}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
@@ -398,7 +386,8 @@ const TWAP = (props: ChronosTWAPProps) => {
 
 const MobileTabs = () => {
   const tabs = hooks.useOrdersTabs();
-  const { setTab, tab } = store.useOrdersStore((store) => store);
+  const setTab = hooks.stateActions.useSelectOrdersTab();
+  const tab = useTwapContext().state.selectedOrdersTab;
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);

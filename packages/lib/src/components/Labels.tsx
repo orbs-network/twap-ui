@@ -1,11 +1,10 @@
 import { Styles, Translations } from "..";
-import { useTwapContext } from "../context";
-import { useTwapStore } from "../store";
+import { useTwapContext } from "../context/context";
 import { StyledRowFlex } from "../styles";
 import { Icon, Label } from "./base";
 import { AiOutlineHistory } from "@react-icons/all-files/ai/AiOutlineHistory";
 import { handleFillDelayText } from "../utils";
-import { useMinimumDelayMinutes } from "../hooks";
+import { useIsMarketOrder, useMinimumDelayMinutes } from "../hooks";
 
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;
@@ -25,8 +24,9 @@ export const CurrentMarketPriceLabel = () => {
 };
 
 export const LimitPriceLabel = () => {
-  const { translations, isLimitPanel } = useTwapContext();
-  const isMarketOrder = useTwapStore((store) => store.isMarketOrder);
+  const { translations, dappProps, state } = useTwapContext();
+  const isLimitPanel = dappProps?.isLimitPanel;
+  const isMarketOrder = useIsMarketOrder();
 
   return (
     <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", position: "relative" }} gap={3}>
@@ -99,7 +99,7 @@ export const OrderSummaryTradeIntervalLabel = ({ subtitle, translations: _transl
 export const OrderSummaryMinDstAmountOutLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
   const translations = useTwapContext()?.translations || _translations;
 
-  const isMarketOrder = useTwapStore((store) => store.isMarketOrder);
+  const isMarketOrder = useIsMarketOrder();
   return (
     <Label subtitle={subtitle} tooltipText={!isMarketOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
       {translations.minReceivedPerTrade}

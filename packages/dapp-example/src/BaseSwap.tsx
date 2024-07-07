@@ -146,7 +146,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       useModal={useModal}
       priceUsd={priceUsd}
       Button={TwapButton}
-      useTrade={_useTrade}
     />
   );
 };

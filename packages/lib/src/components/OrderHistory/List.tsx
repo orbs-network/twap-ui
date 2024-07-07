@@ -4,7 +4,7 @@ import _ from "lodash";
 import { useCallback, useEffect, useRef } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList } from "react-window";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 import { useParseOrderUi, useFormatNumberV2 } from "../../hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { ParsedOrder, Token, Translations } from "../../types";

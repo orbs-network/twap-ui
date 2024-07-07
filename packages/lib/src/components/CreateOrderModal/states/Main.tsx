@@ -1,6 +1,6 @@
 import { styled } from "@mui/material";
 import { useState, useCallback, useMemo } from "react";
-import { useTwapContext } from "../../../context";
+import { useTwapContext } from "../../../context/context";
 import {
   useChunks,
   useDeadline,
@@ -12,12 +12,12 @@ import {
   useInvertedPrice,
   useIsMarketOrder,
   useOutAmount,
+  useSrcAmount,
   useSrcAmountUsdUi,
   useSrcChunkAmountUi,
   useSrcUsd,
   useSubmitOrderButton,
 } from "../../../hooks";
-import { useTwapStore } from "../../../store";
 import { Button, Spinner, Switch } from "../../base";
 import { MarketPriceWarning, Separator } from "../../Components";
 import { useOrderSummaryContext } from "../../OrderSummary/context";
@@ -28,6 +28,7 @@ import { StyledColumnFlex, StyledText } from "../../../styles";
 import { Steps } from "../Steps";
 import _ from "lodash";
 import { useOrderType } from "../hooks";
+import { stateActions } from "../../../context/actions";
 
 const Price = () => {
   const { srcAmount, outAmount, isMarketOrder, srcToken, dstToken } = useOrderSummaryContext();
@@ -102,12 +103,9 @@ const MarketWarning = () => {
 };
 
 export const AcceptDisclaimer = ({ className }: { className?: string }) => {
-  const { translations: t, uiPreferences } = useTwapContext();
-
-  const { setDisclaimerAccepted, disclaimerAccepted } = useTwapStore((store) => ({
-    setDisclaimerAccepted: store.setDisclaimerAccepted,
-    disclaimerAccepted: store.disclaimerAccepted,
-  }));
+  const { translations: t, uiPreferences, state } = useTwapContext();
+  const handleDisclaimer = stateActions.useHandleDisclaimer();
+  const { disclaimerAccepted } = state;
 
   return (
     <OrderSummary.Details.DetailRow
@@ -121,16 +119,13 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
         </>
       }
     >
-      <Switch variant={uiPreferences.switchVariant} value={disclaimerAccepted} onChange={() => setDisclaimerAccepted(!disclaimerAccepted)} />
+      <Switch variant={uiPreferences.switchVariant} value={disclaimerAccepted} onChange={handleDisclaimer} />
     </OrderSummary.Details.DetailRow>
   );
 };
 
 export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) => {
-  const { swapState, swapSteps } = useTwapStore((s) => ({
-    swapState: s.swapState,
-    swapSteps: s.swapSteps,
-  }));
+  const { swapState, swapSteps } = useTwapContext().state;
 
   if (swapState === "loading" && _.size(swapSteps) === 1) {
     return <ConfirmOrder />;
@@ -152,11 +147,10 @@ export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; class
 
 function ReviewOrder({ className = "" }: { className?: string }) {
   const chunks = useChunks();
-  const { srcToken, dstToken, srcAmount } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-    srcAmount: s.srcAmountUi,
-  }));
+  const srcAmount = useSrcAmount().srcAmountUi;
+  const { dappProps, state } = useTwapContext();
+  const { isLimitPanel } = dappProps;
+  const { srcToken, dstToken } = state;
   const srcUsd = useSrcAmountUsdUi();
   const dstUsd = useDstAmountUsdUi();
   const outAmount = useOutAmount().outAmountUi;
@@ -165,7 +159,6 @@ function ReviewOrder({ className = "" }: { className?: string }) {
   const isMarketOrder = useIsMarketOrder();
   const dstMinAmountOut = useDstMinAmountOutUi();
   const fillDelayMillis = useFillDelayMillis();
-  const isLimitPanel = useTwapContext().isLimitPanel;
 
   return (
     <StyledReview

@@ -1,5 +1,5 @@
 import { GlobalStyles, ThemeProvider, Typography } from "@mui/material";
-import { Translations, TwapAdapter, Components, Styles as TwapStyles, TWAPTokenSelectProps, store, TWAPProps, Orders } from "@orbs-network/twap-ui";
+import { Translations, TwapAdapter, Components, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, Orders } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
@@ -27,6 +27,7 @@ import {
 } from "./styles";
 
 import { AiFillAccountBook } from "@react-icons/all-files/ai/AiFillAccountBook";
+import { useTwapContext } from "@orbs-network/twap-ui";
 
 interface ThenaTWAPProps extends TWAPProps {
   connect: () => void;
@@ -58,7 +59,7 @@ const TokenChange = () => {
 };
 
 const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () => void }) => {
-  const { srcToken, dstToken } = store.useTwapStore();
+  const { srcToken, dstToken } = useTwapContext().state;
 
   const notSelected = (isSrc && !srcToken) || (!isSrc && !dstToken);
   return (
@@ -159,13 +160,6 @@ const AdapterContextProvider = AdapterContext.Provider;
 
 const useAdapterContext = () => useContext(AdapterContext);
 
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
-};
-
 const TWAP = (props: ThenaTWAPProps) => {
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
@@ -186,10 +180,10 @@ const TWAP = (props: ThenaTWAPProps) => {
           parsedTokens={[]}
           srcToken={props.srcToken}
           dstToken={props.dstToken}
-          storeOverride={props.limit ? storeOverride : undefined}
           onDstTokenSelected={props.onDstTokenSelected}
           onSrcTokenSelected={props.onSrcTokenSelected}
           priceUsd={props.priceUsd}
+          isLimitPanel={props.limit}
         >
           <GlobalStyles styles={configureStyles(theme) as any} />
           <AdapterContextProvider value={props}>

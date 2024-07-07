@@ -1,18 +1,16 @@
 import BN from "bignumber.js";
 import { useCallback } from "react";
+import { stateActions } from "../../context/actions";
+import { useTwapContext } from "../../context/context";
 import { useMarketPrice } from "../../hooks/hooks";
-import { useTwapStore } from "../../store";
 import { amountUiV2, formatDecimals } from "../../utils";
 
 export const useOnLimitPercentageClick = () => {
   const { marketPrice } = useMarketPrice();
-  const { onChange, onResetCustomLimit, setLimitPricePercent, dstToken, inverted } = useTwapStore((s) => ({
-    onChange: s.onLimitChange,
-    onResetCustomLimit: s.onResetCustomLimit,
-    setLimitPricePercent: s.setLimitPricePercent,
-    dstToken: s.dstToken,
-    inverted: s.isInvertedLimitPrice,
-  }));
+  const { state } = useTwapContext();
+  const onChange = stateActions.useOnLimitChange();
+  const onResetCustomLimit = stateActions.useResetCustomLimit();
+  const { dstToken, isInvertedLimitPrice } = state;
 
   return useCallback(
     (percent: string) => {
@@ -26,7 +24,7 @@ export const useOnLimitPercentageClick = () => {
         .toString();
       let price = amountUiV2(dstToken?.decimals, marketPrice);
 
-      if (inverted) {
+      if (isInvertedLimitPrice) {
         price = BN(1)
           .div(price || "0")
           .toString();
@@ -35,26 +33,8 @@ export const useOnLimitPercentageClick = () => {
       const value = BN(price || "0")
         .times(p)
         .toString();
-      setLimitPricePercent(percent);
-
-      onChange(formatDecimals(value));
+      onChange(formatDecimals(value), percent);
     },
-    [marketPrice, onChange, setLimitPricePercent, onResetCustomLimit, dstToken, inverted]
-  );
-};
-
-export const onCustomChange = () => {
-  const { onChange, setLimitPricePercent } = useTwapStore((s) => ({
-    onChange: s.onLimitChange,
-
-    setLimitPricePercent: s.setLimitPricePercent,
-  }));
-
-  return useCallback(
-    (customPrice: string) => {
-      onChange(customPrice);
-      setLimitPricePercent(undefined);
-    },
-    [onChange, setLimitPricePercent]
+    [marketPrice, onChange, onResetCustomLimit, dstToken, isInvertedLimitPrice]
   );
 };

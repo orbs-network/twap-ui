@@ -1,8 +1,7 @@
 import { styled } from "@mui/material";
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";
-import { useTwapContext } from "../../context";
-import { useTwapStore } from "../../store";
+import { useTwapContext } from "../../context/context";
 import { StyledOneLineText, StyledRowFlex } from "../../styles";
 import { FC, ReactNode } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";

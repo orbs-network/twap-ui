@@ -1,17 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import {
-  Components,
-  Translations,
-  TwapAdapter,
-  OrdersPanel,
-  useTwapContext,
-  Styles as TwapStyles,
-  TWAPTokenSelectProps,
-  hooks,
-  TWAPProps,
-  store,
-  Orders,
-} from "@orbs-network/twap-ui";
+import { Components, Translations, TwapAdapter, OrdersPanel, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, TWAPProps, Orders } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Box } from "@mui/system";
 import { createContext, memo, ReactNode, useCallback, useContext, useEffect, useState } from "react";
@@ -19,13 +7,6 @@ import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
-
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
-};
 
 interface QuickSwapTWAPProps extends TWAPProps {
   connect: () => void;
@@ -190,7 +171,7 @@ interface Props extends QuickSwapTWAPProps {
 }
 
 const AmountUpdater = () => {
-  const srcAmount = store.useTwapStore((state) => state.getSrcAmount().toString());
+  const srcAmount = hooks.useSrcAmount().srcAmountBN?.toString();
 
   const onInputChange = useAdapterContext().onInputChange;
   useEffect(() => {
@@ -222,10 +203,10 @@ const TWAP = (props: Props) => {
         srcToken={props.srcToken}
         onTxSubmitted={props.onTxSubmitted}
         dstToken={props.dstToken}
-        storeOverride={props.limit ? storeOverride : undefined}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
         usePriceUSD={props.usePriceUSD}
+        isLimitPanel={props.limit}
       >
         <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>

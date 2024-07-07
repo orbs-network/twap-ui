@@ -5,7 +5,7 @@ import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
 import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
-import { TWAPProps, store } from "@orbs-network/twap-ui";
+import { TWAPProps } from "@orbs-network/twap-ui";
 import { memo, ReactNode, useCallback, useState } from "react";
 import {
   StyledBalance,
@@ -29,12 +29,6 @@ import {
 } from "./styles";
 
 import { useTwapContext } from "@orbs-network/twap-ui";
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
-};
 
 const uiPreferences: TwapContextUIPreferences = {
   usdPrefix: "$",
@@ -72,17 +66,14 @@ const TokenSelectModal = ({ onClose, isSrc, isOpen }: any) => {
     },
     [onTokenSelectedCallback, isSrc]
   );
-  const { srcTokenAddress, dstTokenAddress } = store.useTwapStore((s) => ({
-    srcTokenAddress: s.srcToken?.address,
-    dstTokenAddress: s.dstToken?.address,
-  }));
+  const { srcToken, dstToken } = useTwapContext().state;
 
   const { srcTokenSelected, dstTokenSelected } = useMemo(() => {
     return {
-      srcTokenSelected: dappTokens?.find((it) => eqIgnoreCase(it.address, srcTokenAddress || "")),
-      dstTokenSelected: dappTokens?.find((it) => eqIgnoreCase(it.address, dstTokenAddress || "")),
+      srcTokenSelected: dappTokens?.find((it) => eqIgnoreCase(it.address, srcToken?.address || "")),
+      dstTokenSelected: dappTokens?.find((it) => eqIgnoreCase(it.address, dstToken?.address || "")),
     };
-  }, [dappTokens, srcTokenAddress, dstTokenAddress]);
+  }, [dappTokens, srcToken, dstToken]);
 
   return <MemoizedTokenModal onClose={onClose} isOpen={isOpen} onSelect={onSelect} srcTokenSelected={srcTokenSelected} dstTokenSelected={dstTokenSelected} />;
 };
@@ -214,7 +205,7 @@ export const useProvider = (props: ThenaTWAPProps) => {
 };
 
 const AmountUpdater = () => {
-  const srcAmount = store.useTwapStore((state) => state.srcAmountUi);
+  const srcAmount = hooks.useSrcAmount().srcAmountUi;
   const setFromAmount = useAdapterContext().setFromAmount;
   useEffect(() => {
     setFromAmount(srcAmount || "0");
@@ -224,7 +215,7 @@ const AmountUpdater = () => {
 };
 
 const usePriceUSD = (address?: string) => {
-  const dappTokens = useTwapContext().dappTokens;
+  const dappTokens = useTwapContext().dappProps.dappTokens;
   return useMemo(() => {
     if (!address) return undefined;
     const token = dappTokens?.find((it: any) => eqIgnoreCase(it.address, address));
@@ -252,12 +243,12 @@ const TWAP = (props: ThenaTWAPProps) => {
         dappTokens={props.dappTokens}
         srcToken={props.srcToken}
         dstToken={props.dstToken}
-        storeOverride={props.limit ? storeOverride : undefined}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
         usePriceUSD={usePriceUSD}
         uiPreferences={uiPreferences}
         parsedTokens={[]}
+        isLimitPanel={props.limit}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />

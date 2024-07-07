@@ -6,7 +6,7 @@ import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQues
 
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Typography } from "@mui/material";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 
 interface Props {
   children: string | number | ReactNode;

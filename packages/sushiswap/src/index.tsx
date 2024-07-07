@@ -5,7 +5,6 @@ import {
   Translations,
   TwapAdapter,
   Styles as TwapStyles,
-  store,
   TWAPProps,
   getConfig,
   hooks,
@@ -64,6 +63,8 @@ import _ from "lodash";
 import { addMissingTokens } from "@orbs-network/twap-ui";
 import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
 import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
+import { useTwapContext } from "@orbs-network/twap-ui";
+import { UseMarketPriceProps } from "@orbs-network/twap-ui";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
 
@@ -219,18 +220,15 @@ const AdapterContextProvider = AdapterContext.Provider;
 
 const useAdapterContext = () => useContext(AdapterContext);
 
-const useMarketPrice = (props: SushiProps) => {
-  const { srcToken, dstToken } = store.useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-  }));
+const useMarketPrice = (props: UseMarketPriceProps) => {
+  const { srcToken, dstToken, amount } = props;
+  const useTrade = useAdapterContext().useTrade;
 
-  const amount = hooks.useAmountBN(srcToken?.decimals, "1");
-  const trade = props.useTrade!(srcToken?.address, dstToken?.address, BN(amount || 0).isZero() ? undefined : amount);
+  const trade = useTrade!(srcToken?.address, dstToken?.address, BN(amount || 0).isZero() ? undefined : amount);
   return trade?.outAmount;
 };
 
-const TWAP = (props: SushiProps) => {
+const TWAPContent = (props: SushiProps) => {
   const chainId = hooks.useChainId(props.provider, props.connectedChainId);
   const config = useMemo(() => {
     return getConfig(configs, chainId);
@@ -250,8 +248,6 @@ const TWAP = (props: SushiProps) => {
     return addMissingTokens(config, tokens);
   }, [props.dappTokens]);
 
-  const marketPrice = useMarketPrice(props);
-
   return (
     <StyledTwap className="twap-adapter-wrapper">
       <TwapAdapter
@@ -269,10 +265,10 @@ const TWAP = (props: SushiProps) => {
         dstToken={props.dstToken}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
-        marketPrice={marketPrice}
         isLimitPanel={props.limit}
         priceUsd={props.priceUsd}
         uiPreferences={uiPreferences}
+        useMarketPrice={useMarketPrice}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -291,17 +287,23 @@ const TWAP = (props: SushiProps) => {
   );
 };
 
+const TWAP = (props: SushiProps) => {
+  return (
+    <AdapterContextProvider value={props}>
+      <TWAPContent {...props} />
+    </AdapterContextProvider>
+  );
+};
+
 function Orders() {
   const Modal = useAdapterContext().Modal;
-  const { isOpen, onClose } = store.useOrdersStore((s: any) => ({
-    isOpen: s.showOrders,
-    onClose: s.onClose,
-  }));
+  const onShow = hooks.stateActions.useOnShowOrders();
+  const isOpen = useTwapContext().state.showOrders;
 
   return (
     <>
       <StyledShowOrdersButton />
-      <Modal hideHeader={true} open={isOpen} onClose={onClose}>
+      <Modal hideHeader={true} open={!!isOpen} onClose={() => onShow(false)}>
         <Components.OrderHistory />
       </Modal>
     </>

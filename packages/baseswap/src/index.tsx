@@ -1,5 +1,5 @@
 import { GlobalStyles, styled, ThemeProvider, Typography, useTheme } from "@mui/material";
-import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, store, Orders, TwapContextUIPreferences, hooks } from "@orbs-network/twap-ui";
+import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, Orders, TwapContextUIPreferences, hooks } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useCallback, useContext, useMemo } from "react";
@@ -13,8 +13,6 @@ import {
   StyledMaxButton,
   StyledOrdersPanel,
   StyledOrderSummaryModal,
-  StyledPriceCard,
-  StyledReset,
   StyledSubmitContainer,
   StyledTokenBalance,
   StyledTokenPanel,
@@ -49,13 +47,6 @@ const uiPreferences: TwapContextUIPreferences = {
   Button,
   usdSuffix: " USD",
   usdPrefix: `≈ `,
-};
-
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
 const OrderSummary = ({ children }: { children: ReactNode }) => {
@@ -188,12 +179,11 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       dappTokens={props.dappTokens}
       srcToken={props.srcToken}
       dstToken={props.dstToken}
-      storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
       priceUsd={props.priceUsd}
-      useTrade={props.useTrade}
       parsedTokens={[]}
+      isLimitPanel={props.limit}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>
