@@ -3,7 +3,7 @@ import { Status } from "@orbs-network/twap";
 import _ from "lodash";
 import * as React from "react";
 import MenuItem from "@mui/material/MenuItem";
-import { ParsedOrder, Translations, useTwapContext } from "..";
+import { HistoryOrder, Translations, useTwapContext } from "..";
 import { useOrdersTabs } from "../hooks";
 import { StyledOrdersLists, StyledOrdersTab, StyledOrdersTabs, StyledRowFlex } from "../styles";
 import OrdersList from "../orders/OrdersList";
@@ -80,7 +80,7 @@ export const SelectedOrders = ({ className = "" }: { className?: string }) => {
           return <OrdersList key={key} isLoading={isLoading} orders={_.flatMap(orders)} />;
         }
 
-        return <OrdersList key={key} isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status] as ParsedOrder[]} />;
+        return <OrdersList key={key} isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status] as any} />;
       })}
     </StyledOrdersLists>
   );

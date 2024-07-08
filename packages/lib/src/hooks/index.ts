@@ -6,3 +6,4 @@ export * from "./useSubmitOrderButton";
 export * from "./adapter-hooks";
 export * from "./useConfirmationModal";
 export * from "../context/actions";
+export * from "./orders";

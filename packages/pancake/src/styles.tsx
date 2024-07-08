@@ -862,3 +862,17 @@ export const StyledShowConfirmation = styled(Components.ShowConfirmation)({
     border: "1px solid #383241",
   },
 });
+
+export const StyledShowOrdersButton = styled(Components.OrderHistoryButton)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    background: styles.editableCardBox,
+    padding: 12,
+    borderRadius: 16,
+    boxShadow: styles.inputShadow,
+    transition: "0.2s all",
+    cursor: "pointer",
+    fontSize: 15,
+    fontWeight: 500,
+  };
+});

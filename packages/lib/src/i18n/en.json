@@ -117,5 +117,6 @@
   "isWorth": "is worth",
   "placingOrder": "Placing order",
   "market": "market",
-  "limit": "limit"
+  "limit": "limit",
+  "txHash": "Transaction Hash"
 }

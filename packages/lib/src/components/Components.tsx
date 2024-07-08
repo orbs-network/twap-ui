@@ -914,18 +914,33 @@ export const OrderHistoryButton = ({ className = "" }: { className?: string }) =
   const { data } = query.useOrdersHistory();
   const { dappProps, isWrongChain, state } = useTwapContext();
   const { account } = dappProps;
-  const { waitingForOrdersUpdate } = state;
+  const { waitForOrderId } = state;
   const onShowOrders = stateActions.useOnShowOrders();
-  const openOrder = useOpenOrders();
+  const openOrders = useOpenOrders();
 
-  const isLoading = !data || waitingForOrdersUpdate;
+  const isLoading = waitForOrderId || !data;
+
+  const text = useMemo(() => {
+    if (!data) {
+      return "Loading orders";
+    }
+    if (waitForOrderId) {
+      return "Updating orders";
+    }
+    return `${_.size(openOrders)} Open orders`;
+  }, [data, waitForOrderId, openOrders]);
+
+  const onClick = useCallback(() => {
+    if (isLoading) return;
+    onShowOrders(true);
+  }, [onShowOrders, isLoading]);
 
   if (!account || isWrongChain) return null;
 
   return (
-    <StyledOrderHistoryButton className={`${className} twap-show-orders-btn`} onClick={() => onShowOrders(true)}>
+    <StyledOrderHistoryButton className={`${className} twap-show-orders-btn`} onClick={onClick}>
       {isLoading && <Spinner size={20} />}
-      <span>{isLoading ? "Orders" : `${_.size(openOrder)} Open orders`}</span>
+      <span>{text}</span>
       <FaArrowRight className="twap-show-orders-btn-arrow" />
     </StyledOrderHistoryButton>
   );

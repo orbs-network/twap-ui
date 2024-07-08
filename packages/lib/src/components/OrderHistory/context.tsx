@@ -1,56 +1,41 @@
 import _ from "lodash";
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { useTwapContext } from "../../context/context";
-import { useOrdersHistory, useParseOrderUi } from "../../hooks";
-import { ParsedOrder, Translations } from "../../types";
+import { useOrdersHistory } from "../../hooks";
+import { HistoryOrder, OrderUI, Translations } from "../../types";
 import { OrdersMenuTab } from "./types";
 import { Status } from "@orbs-network/twap";
+import { useParseOrderUi } from "../../hooks/orders";
 
 interface OrderHistoryContextType {
-  order?: ReturnType<typeof useParseOrderUi>;
   tabs: OrdersMenuTab[];
-  selectOrder: (o: ParsedOrder | undefined) => void;
-  orders: ParsedOrder[];
+  selectOrder: (id: number | undefined) => void;
+  orders: HistoryOrder[];
   setTab: (tab?: Status) => void;
   closePreview: () => void;
   selectedTab?: OrdersMenuTab;
   isLoading: boolean;
-  onOrderCanceled: () => void;
+  selectedOrderId?: number;
 }
-
 export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
 export const OrderHistoryContextProvider = ({ children }: { children: ReactNode }) => {
   const { data } = useOrdersHistory();
   const [tab, setTab] = useState<Status | undefined>(undefined);
-  const [selectedOrder, setSelectedOrder] = useState<ParsedOrder | undefined>(undefined);
-  const order = useParseOrderUi(selectedOrder);
-  const waitingForOrdersUpdate = useTwapContext().state.waitingForOrdersUpdate;
+  const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
+  const waitingForOrdersUpdate = !!useTwapContext().state.waitForOrderId;
   const isLoading = !data || waitingForOrdersUpdate;
 
-  const onOrderCanceled = useCallback(() => {
-    setSelectedOrder((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        ui: {
-          ...prev.ui,
-          status: Status.Canceled,
-        },
-      };
-    });
-  }, [setSelectedOrder]);
-
   const selectOrder = useCallback(
-    (o: ParsedOrder | undefined) => {
-      setSelectedOrder(o);
+    (id: number | undefined) => {
+      setSelectedOrderId(id);
     },
-    [setSelectedOrder]
+    [setSelectedOrderId]
   );
 
   const closePreview = useCallback(() => {
-    setSelectedOrder(undefined);
-  }, [setSelectedOrder]);
+    setSelectedOrderId(undefined);
+  }, [setSelectedOrderId]);
 
   const { translations } = useTwapContext();
   const tabs = useMemo(() => {
@@ -73,16 +58,14 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
   const orders = useMemo(() => {
     if (!data) return [];
     if (!tab) {
-      return _.sortBy(Object.values(data).flat(), (it) => it.order.time).reverse();
+      return _.sortBy(Object.values(data).flat(), (it) => it.createdAt).reverse();
     }
     return data[tab as keyof typeof data] || [];
   }, [data, tab]);
   const selectedTab = useMemo(() => _.find(tabs, (it) => it.key === tab), [tabs, tab]);
 
   return (
-    <OrderHistoryContext.Provider value={{ tabs, selectOrder, order, orders, setTab, closePreview, selectedTab, isLoading, onOrderCanceled }}>
-      {children}
-    </OrderHistoryContext.Provider>
+    <OrderHistoryContext.Provider value={{ selectedOrderId, tabs, selectOrder, orders, setTab, closePreview, selectedTab, isLoading }}>{children}</OrderHistoryContext.Provider>
   );
 };
 

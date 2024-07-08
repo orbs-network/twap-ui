@@ -8,40 +8,46 @@ import { OrderSummary } from "../OrderSummary/OrderSummary";
 import { Status } from "@orbs-network/twap";
 import { useOrderHistoryContext } from "./context";
 import { useCallback } from "react";
+import { useFormatNumberV2, useOrderById } from "../../hooks";
+import { OrderUI } from "../../types";
 
 export const SelectedOrder = () => {
-  const { order } = useOrderHistoryContext();
+  const { selectedOrderId } = useOrderHistoryContext();
+  const order = useOrderById(selectedOrderId);
+
   if (!order) return null;
-  const singleChunk = order.ui.totalChunks === 1;
+  const singleChunk = order.totalChunks === 1;
 
   return (
     <Fade in={true}>
       <Container>
         <StyledOrderPreview>
           <OrderSummary
-            fillDelayMillis={order.ui.fillDelay}
-            chunks={order.ui.totalChunks}
-            dstMinAmountOut={order.ui.dstMinAmountOutUi}
-            isMarketOrder={order.ui.isMarketOrder}
-            srcChunkAmount={order.ui.srcChunkAmountUi}
-            deadline={order.ui.deadline}
-            srcAmount={order?.ui.srcAmountUi}
-            srcToken={order?.ui.srcToken}
-            dstToken={order?.ui.dstToken}
+            fillDelayMillis={order.fillDelay}
+            chunks={order.totalChunks}
+            dstMinAmountOut={order.dstMinAmountOutUi}
+            isMarketOrder={order.isMarketOrder}
+            srcChunkAmount={order.srcChunkAmountUi}
+            deadline={order.deadline}
+            srcAmount={order.srcAmountUi}
+            srcToken={order.srcToken}
+            dstToken={order.dstToken}
+            txHash={order.txHash}
           >
             <OrderSummary.Tokens />
             <Separator />
             <OrderSummary.Details>
-              <CreatedAt />
+              <CreatedAt order={order} />
               <OrderSummary.Details.Expiry />
-              {!singleChunk && <Filled />}
+              {!singleChunk && <Filled order={order} />}
               {!singleChunk && <OrderSummary.Details.ChunkSize />}
               {!singleChunk && <OrderSummary.Details.ChunksAmount />}
               {!singleChunk && <OrderSummary.Details.MinDestAmount />}
               {!singleChunk && <OrderSummary.Details.TradeInterval />}
               <OrderSummary.Details.Recipient />
+              <OrderSummary.Details.TxHash />
             </OrderSummary.Details>
-            <CancelOrderButton />
+            <CancelOrderButton order={order} />
           </OrderSummary>
         </StyledOrderPreview>
       </Container>
@@ -51,28 +57,17 @@ export const SelectedOrder = () => {
 
 const Container = styled(StyledColumnFlex)({});
 
-export const CancelOrderButton = () => {
-  const { isLoading, mutateAsync } = useCancelOrder();
-  const { order, onOrderCanceled } = useOrderHistoryContext();
+export const CancelOrderButton = ({ order }: { order: OrderUI }) => {
+  const { isLoading, mutate: cancel } = useCancelOrder();
   const translations = useTwapContext().translations;
 
-  const onSubmit = useCallback(
-    async (id: number) => {
-      try {
-        await mutateAsync(id);
-        onOrderCanceled();
-      } catch (error) {}
-    },
-    [mutateAsync, onOrderCanceled]
-  );
-
-  if (!order || order.ui.status !== Status.Open) return null;
+  if (!order || order.status !== Status.Open) return null;
 
   return (
     <StyledCancelOrderButton
       loading={isLoading}
       onClick={() => {
-        onSubmit(order.order.id);
+        cancel(order.id);
       }}
       className="twap-cancel-order"
     >
@@ -85,27 +80,23 @@ const StyledCancelOrderButton = styled(Button)({
   marginTop: 20,
 });
 
-const CreatedAt = () => {
-  const { order } = useOrderHistoryContext();
-
+const CreatedAt = ({ order }: { order: OrderUI }) => {
   return (
     <OrderSummary.Details.DetailRow title="Created At">
-      <StyledText>{order?.ui.createdAtUi}</StyledText>
+      <StyledText>{order?.createdAtUi}</StyledText>
     </OrderSummary.Details.DetailRow>
   );
 };
 
-const Filled = () => {
-  const { order } = useOrderHistoryContext();
-
-  const progress = order?.ui.progress || 0;
-  const dstAmount = order?.ui.dstAmount || 0;
+const Filled = ({ order }: { order: OrderUI }) => {
+  const progress = useFormatNumberV2({ value: order?.progress, decimalScale: 2 });
+  const dstAmount = useFormatNumberV2({ value: order?.dstAmount, decimalScale: 2 });
 
   return (
     <OrderSummary.Details.DetailRow title="Filled">
       <StyledText>
-        {`${dstAmount} ${order?.ui.dstToken?.symbol}`}
-        <small>{` (${progress}%)`}</small>
+        {`${dstAmount || 0} ${order?.dstToken?.symbol}`}
+        <small>{` (${progress || 0}%)`}</small>
       </StyledText>
     </OrderSummary.Details.DetailRow>
   );

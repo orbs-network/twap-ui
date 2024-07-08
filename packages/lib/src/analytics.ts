@@ -88,7 +88,11 @@ class Analytics {
       ...this.data,
       ...values,
     };
-    logger(this.data);
+
+    if (process.env.NODE_ENV === "development") {
+      logger(this.data);
+      return;
+    }
     clearTimeout(this.timeout);
     this.timeout = setTimeout(() => {
       sendBI(this.data);
@@ -99,26 +103,28 @@ class Analytics {
     setTimeout(() => {
       this.data = {
         _id: crypto.randomUUID(),
-        pageLoaded: this.data.pageLoaded,
-        moduleImported: this.data.moduleImported,
+        pageLoaded: true,
+        moduleImported: true,
       };
     }, 1_000);
   }
 
-  onLibInit(lib: TWAPLib) {
-    const config = lib.config;
+  onLibInit(lib?: TWAPLib) {
+    const config = lib?.config;
+
     this.updateAndSend({
-      bidDelaySeconds: config.bidDelaySeconds,
-      chainId: config.chainId,
-      chainName: config.chainName,
-      exchangeAddress: config.exchangeAddress,
-      exchangeType: config.exchangeType,
-      lensAddress: config.lensAddress,
-      name: config.name,
-      partner: config.partner,
-      twapAddress: config.twapAddress,
-      twapVersion: config.twapVersion,
-      walletAddress: lib.maker,
+      bidDelaySeconds: config?.bidDelaySeconds,
+      chainId: config?.chainId,
+      chainName: config?.chainName,
+      exchangeAddress: config?.exchangeAddress,
+      exchangeType: config?.exchangeType,
+      lensAddress: config?.lensAddress,
+      name: config?.name,
+      partner: config?.partner,
+      twapAddress: config?.twapAddress,
+      twapVersion: config?.twapVersion,
+      walletAddress: lib?.maker,
+      pageLoaded: true,
     });
   }
 
@@ -177,11 +183,7 @@ class Analytics {
     });
     this.reset();
   }
-  onPageView() {
-    this.updateAndSend({
-      pageLoaded: true,
-    });
-  }
+
   onModuleImported() {
     this.updateAndSend({
       moduleImported: true,

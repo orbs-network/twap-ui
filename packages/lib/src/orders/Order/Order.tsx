@@ -2,22 +2,22 @@ import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import OrderPreview from "./OrderPreview";
 import OrderExpanded from "./OrderExpanded";
-import { OrderUI, ParsedOrder } from "../../types";
 import { AccordionSummary, Box, styled } from "@mui/material";
 import { StyledSeperator } from "./styles";
 import { CSSProperties } from "react";
 import { Card, Loader } from "../../components/base";
 import { useParseOrderUi } from "../../hooks";
 import { StyledColumnFlex } from "../../styles";
+import { HistoryOrder } from "../../types";
 
 export interface Props {
-  order: ParsedOrder;
+  order: HistoryOrder;
   onExpand: () => void;
   expanded: boolean;
 }
 
 function OrderComponent({ order, onExpand, expanded }: Props) {
-  const orderUI = useParseOrderUi(order, expanded);
+  const orderUI = useParseOrderUi(order);
   return (
     <StyledContainer className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
       <StyledAccordion expanded={expanded}>

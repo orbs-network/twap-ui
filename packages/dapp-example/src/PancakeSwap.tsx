@@ -1,5 +1,5 @@
 import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeOrders, StyledPancakeTwap } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-pancake";
+import { TWAP } from "@orbs-network/twap-ui-pancake";
 import { useConnectWallet, useGetTokens, useIsMobile, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -179,11 +179,6 @@ const DappComponent = () => {
   return (
     <DappProvider config={config}>
       <StyledPancake isDarkTheme={isDarkTheme ? 1 : 0}>
-        {isMobile && (
-          <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
-            <Orders />
-          </StyledPancakeOrders>
-        )}
         <StyledPancakeLayout name={config.name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
           <Wrapper>
@@ -191,11 +186,6 @@ const DappComponent = () => {
           </Wrapper>
           <Components.LimitPriceMessage />
         </StyledPancakeLayout>
-        {!isMobile && (
-          <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
-            <Orders />
-          </StyledPancakeOrders>
-        )}
       </StyledPancake>
     </DappProvider>
   );

@@ -32,8 +32,6 @@ export const useConfirmationButton = () => {
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
 
-  console.log("render 1");
-
   const hasWarning = useMemo(() => {
     return !_.every(warning, (value) => _.isNil(value));
   }, [warning]);

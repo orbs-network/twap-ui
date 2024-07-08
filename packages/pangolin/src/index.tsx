@@ -9,7 +9,6 @@ import { TokenData, Configs } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
-import { PangolinOrders } from "./Orders";
 
 interface PangolinTWAPProps extends TWAPProps {
   theme: any;
@@ -109,7 +108,6 @@ const TWAP = memo((props: PangolinTWAPProps) => {
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
-            <PangolinOrders limit={props.limit} theme={props.theme} />
             <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
           </AdapterContextProvider>
         </TwapAdapter>

@@ -56,7 +56,7 @@ export const useDappTokens = () => {
   return useGetTokens({
     url,
     parse: parseListToken,
-    // modifyList: (tokens: any) => tokens.slice(0, 20),
+    modifyList: (tokens: any) => tokens.slice(0, 20),
   });
 };
 

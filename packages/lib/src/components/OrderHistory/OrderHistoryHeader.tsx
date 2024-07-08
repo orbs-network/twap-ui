@@ -11,6 +11,7 @@ import { useTwapContext } from "../../context/context";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { Translations } from "../../types";
 import { stateActions } from "../../context/actions";
+import { useOrderById } from "../../hooks";
 
 export function OrderHistoryMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -71,11 +72,12 @@ const StyledMenuItem = styled(MenuItem)({
 });
 
 export const OrderHistoryHeader = () => {
-  const { closePreview, order, isLoading } = useOrderHistoryContext();
+  const { closePreview, selectedOrderId, isLoading } = useOrderHistoryContext();
   const onShowOrders = stateActions.useOnShowOrders();
+  const order = useOrderById(selectedOrderId);
 
   const t = useTwapContext().translations;
-  const status = order && t[order.ui.status as keyof Translations];
+  const status = order && t[order.status as keyof Translations];
   return (
     <StyledHeader className="twap-order-modal-header">
       <StyledClose onClick={() => onShowOrders(false)}>
@@ -89,7 +91,7 @@ export const OrderHistoryHeader = () => {
             <HiArrowLeft />
           </StyledBack>
           <StyledTitle className="twap-order-modal-header-title">
-            #{order?.order.id} {order?.ui.isMarketOrder ? t.marketOrder : t.limitOrder} <span>{`(${status})`}</span>
+            #{order?.id} {order?.isMarketOrder ? t.marketOrder : t.limitOrder} <span>{`(${status})`}</span>
           </StyledTitle>
         </StyledOrderDetails>
       )}

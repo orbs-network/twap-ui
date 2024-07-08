@@ -5,14 +5,15 @@ import { useCallback, useEffect, useRef } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList } from "react-window";
 import { useTwapContext } from "../../context/context";
-import { useParseOrderUi, useFormatNumberV2 } from "../../hooks";
+import { useFormatNumberV2 } from "../../hooks";
+import { useParseOrderUi } from "../../hooks/orders";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
-import { ParsedOrder, Token, Translations } from "../../types";
+import { HistoryOrder, OrderUI, Token, Translations } from "../../types";
 import { Loader, TokenLogo } from "../base";
 import { useOrderHistoryContext } from "./context";
 
 export function List() {
-  const { selectOrder, orders, order, isLoading, selectedTab } = useOrderHistoryContext();
+  const { selectOrder, orders, selectedOrderId, isLoading } = useOrderHistoryContext();
   const sizeMap = useRef({} as any);
   const listRef = useRef<any>();
   const setSize = useCallback((index: number, size: number) => {
@@ -32,13 +33,13 @@ export function List() {
   }
 
   return (
-    <ListContainer style={{ opacity: order ? 0 : 1, pointerEvents: order ? "none" : "all" }}>
+    <ListContainer style={{ opacity: selectedOrderId ? 0 : 1, pointerEvents: selectedOrderId ? "none" : "all" }}>
       <AutoSizer>
         {({ height, width }: any) => (
           <VariableSizeList ref={listRef} height={height} itemCount={_.size(orders)} itemSize={getSize} width={width} itemData={{ setSize }}>
             {({ index, style }) => (
               <div style={style}>
-                <ListOrder onSelect={selectOrder} setSize={setSize} index={index} order={orders[index]} showStatus={!selectedTab?.key} />
+                <ListOrder onSelect={selectOrder} setSize={setSize} index={index} order={orders[index]} />
               </div>
             )}
           </VariableSizeList>
@@ -85,13 +86,11 @@ export function ListOrder({
   index,
   setSize,
   onSelect,
-  showStatus,
 }: {
-  order?: ParsedOrder;
+  order?: HistoryOrder;
   index: number;
   setSize: (index: number, value: number) => void;
-  onSelect: (o?: ParsedOrder) => void;
-  showStatus?: boolean;
+  onSelect: (id?: number) => void;
 }) {
   const order = useParseOrderUi(parsedOrder);
   const root = useRef<any>();
@@ -102,28 +101,28 @@ export function ListOrder({
   if (!order) return null;
 
   return (
-    <Wrapper className="twap-order" ref={root} onClick={() => onSelect(parsedOrder)}>
+    <Wrapper className="twap-order" ref={root} onClick={() => onSelect(parsedOrder?.id)}>
       <StyledListOrder className="twap-order-container">
-        <ListItemHeader order={order} showStatus={showStatus} />
+        <ListItemHeader order={order} />
         <StyledRowFlex className="twap-order-tokens">
-          <TokenDisplay token={order.ui.srcToken} amount={order.ui.srcAmountUi} />
+          <TokenDisplay token={order.srcToken} amount={order.srcAmountUi} />
           <HiArrowRight className="twap-order-tokens-arrow" />
-          <TokenDisplay token={order.ui.dstToken} />
+          <TokenDisplay token={order.dstToken} />
         </StyledRowFlex>
       </StyledListOrder>
     </Wrapper>
   );
 }
 
-const ListItemHeader = ({ order, showStatus }: { order: ReturnType<typeof useParseOrderUi>; showStatus?: boolean }) => {
+const ListItemHeader = ({ order }: { order: OrderUI }) => {
   const t = useTwapContext().translations;
-  const status = order && t[order.ui.status as keyof Translations];
+  const status = order && t[order.status as keyof Translations];
 
   return (
     <StyledHeader className="twap-order-header">
       <StyledText className="twap-order-header-text">
         {" "}
-        #{order?.order.id} {order?.ui.isMarketOrder ? t.market : t.limit} <span>{`(${order?.ui.createdAtUi})`}</span>
+        #{order?.id} {order?.isMarketOrder ? t.market : t.limit} <span>{`(${order?.createdAtUi})`}</span>
       </StyledText>
       <StyledText className="twap-order-header-status">{status}</StyledText>
     </StyledHeader>

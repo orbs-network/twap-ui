@@ -15,7 +15,7 @@ export function OrderHistory() {
 }
 
 const Content = () => {
-  const order = useOrderHistoryContext().order;
+  const order = useOrderHistoryContext().selectedOrderId;
   return (
     <Container order={order ? 1 : 0}>
       <OrderHistoryHeader />

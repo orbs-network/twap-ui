@@ -14,6 +14,7 @@ export interface OrderSummaryContextArgs {
   dstMinAmountOut?: string;
   chunks?: number;
   fillDelayMillis?: number;
+  txHash?: string;
 }
 
 export const OrderSummaryContext = createContext({} as OrderSummaryContextArgs);

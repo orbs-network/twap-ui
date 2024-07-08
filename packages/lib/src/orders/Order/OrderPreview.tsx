@@ -9,18 +9,18 @@ import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { FiChevronDown } from "@react-icons/all-files/fi/FiChevronDown";
 
 function OrderPreview({ order, onExpand }: { order: OrderUI; onExpand: () => void }) {
-  const srcFilledAmountUi = useFormatNumberV2({ value: order?.ui.srcFilledAmountUi });
-  const progress = useFormatNumberV2({ value: order?.ui.progress, decimalScale: 1, suffix: "%" });
+  const srcFilledAmountUi = useFormatNumberV2({ value: order?.srcFilledAmountUi });
+  const progress = useFormatNumberV2({ value: order?.progress, decimalScale: 1, suffix: "%" });
   const translations = useTwapContext().translations;
 
   return (
     <StyledColumnFlex gap={0} className="twap-order-preview">
       <StyledHeader className="twap-order-preview-header">
         <StyledRowFlex className="twap-order-preview-info" gap={6} justifyContent="flex-start" style={{ width: "auto" }}>
-          <StyledHeaderText>#{order?.order.id}</StyledHeaderText>
-          <StyledHeaderText>{order?.ui.isMarketOrder ? translations.marketOrder : translations.limitOrder}</StyledHeaderText>
+          <StyledHeaderText>#{order?.id}</StyledHeaderText>
+          <StyledHeaderText>{order?.isMarketOrder ? translations.marketOrder : translations.limitOrder}</StyledHeaderText>
         </StyledRowFlex>
-        <StyledHeaderText className="twap-order-preview-date">{order?.ui.createdAtUi}</StyledHeaderText>
+        <StyledHeaderText className="twap-order-preview-date">{order?.createdAtUi}</StyledHeaderText>
       </StyledHeader>
       <Tooltip
         childrenStyles={{ width: "100%" }}
@@ -28,29 +28,17 @@ function OrderPreview({ order, onExpand }: { order: OrderUI; onExpand: () => voi
         text={
           <Box>
             {srcFilledAmountUi}
-            {" " + order?.ui.srcToken?.symbol + " "}
+            {" " + order?.srcToken?.symbol + " "}
             {`(${progress ? progress : "0%"})`}
           </Box>
         }
       >
-        <StyledPreviewLinearProgress variant="determinate" value={order?.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
+        <StyledPreviewLinearProgress variant="determinate" value={order?.progress || 1} className="twap-order-progress twap-order-preview-progress" />
       </Tooltip>
       <StyledOrderTokensDisplay className="twap-order-preview-tokens" justifyContent="space-between">
-        <OrderTokenDisplay
-          isMain={true}
-          token={order?.ui.srcToken}
-          amount={order?.ui.srcAmountUi}
-          usdValue={order?.ui.srcAmountUsdUi || "0"}
-          isLoading={!order?.ui.srcAmountUsdUi}
-        />
+        <OrderTokenDisplay isMain={true} token={order?.srcToken} amount={order?.srcAmountUi} usdValue={order?.srcAmountUsdUi || "0"} isLoading={!order?.srcAmountUsdUi} />
         <Icon className="twap-order-preview-icon" icon={<HiArrowRight style={{ width: 22, height: 22 }} />} />
-        <OrderTokenDisplay
-          isLoading={false}
-          token={order?.ui.dstToken}
-          amount={order?.ui.dstAmount}
-          usdValue={order?.ui.dstAmountUsd}
-          icon={<FiChevronDown onClick={onExpand} />}
-        />
+        <OrderTokenDisplay isLoading={false} token={order?.dstToken} amount={order?.dstAmount} usdValue={order?.dstAmountUsd} icon={<FiChevronDown onClick={onExpand} />} />
       </StyledOrderTokensDisplay>
     </StyledColumnFlex>
   );

@@ -1,18 +1,19 @@
-import { block, contract, eqIgnoreCase, estimateGasPrice, findBlock, getPastEvents, isNativeAddress, web3 } from "@defi.org/web3-candies";
+import { contract, eqIgnoreCase, estimateGasPrice, isNativeAddress, web3 } from "@defi.org/web3-candies";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_USD, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
 import { useTwapContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
-import { amountBN, supportsTheGraphHistory } from "../utils";
-import { Status, TokenData } from "@orbs-network/twap";
+import { amountBN, logger } from "../utils";
+import { Configs, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import _ from "lodash";
-import { getOrderFills } from "../helper";
-import { OrdersData, ParsedOrder } from "../types";
+import { getOrders, waitForOrder } from "../helper";
+import { HistoryOrder, OrdersData, TwapLibProps } from "../types";
 import { useSrcAmount } from "./hooks";
 import { stateActions } from "../context/actions";
+import moment from "moment";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const lib = useTwapContext().lib;
@@ -165,126 +166,63 @@ export const useBalance = (token?: TokenData, onSuccess?: (value: BN) => void, s
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
 };
 
+const filterByDex = (lib: TWAPLib, orders: HistoryOrder[]) => {
+  let dex = "";
+
+  switch (lib.config.partner) {
+    case Configs.SushiArb.partner:
+    case Configs.SushiBase.partner:
+      dex = "sushiswap";
+      break;
+
+    default:
+      break;
+  }
+
+  if (dex) {
+    return orders.filter((order) => order.dex === dex);
+  }
+  return orders;
+};
+
 export const useOrdersHistory = () => {
   const { dappProps, state } = useTwapContext();
   const { parsedTokens } = dappProps;
-  const onUpdated = stateActions.useOnOrdersUpdated();
   const lib = useTwapContext().lib;
-  const QUERY_KEY = [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId];
+  const QUERY_KEY = [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.partner, lib?.config.chainId];
 
   const query = useQuery<OrdersData>(
     QUERY_KEY,
     async ({ signal }) => {
-      const isTheGrapth = supportsTheGraphHistory(lib?.config.chainId);
-      let fills = {} as any;
-      let orders = [] as any;
-
-      if (isTheGrapth) {
-        [orders, fills] = await Promise.all([lib!.getAllOrders(), getOrderFills(lib!.maker, lib!.config.chainId, signal)]);
-      } else {
-        orders = await lib!.getAllOrders();
-      }
-
-      const parsedOrders = _.map(orders, (o): ParsedOrder => {
-        const dstAmount = fills?.[o.id]?.dstAmountOut;
-        const srcFilled = fills?.[o.id]?.srcAmountIn;
-        const dollarValueIn = fills?.[o.id]?.dollarValueIn;
-        const dollarValueOut = fills?.[o.id]?.dollarValueOut;
-
-        const srcAmountIn = o.ask.srcAmount;
-        const bscProgress =
-          !srcFilled || !srcAmountIn
-            ? 0
-            : BN(srcFilled || "0")
-                .dividedBy(srcAmountIn || "0")
-                .toNumber();
-        const _progress = isTheGrapth ? bscProgress : lib!.orderProgress(o);
-        const progress = !_progress ? 0 : _progress < 0.99 ? _progress * 100 : 100;
-        const status = () => {
-          if (progress === 100) return Status.Completed;
-          if (isTheGrapth) {
-            // Temporary fix to show open order until the graph is synced.
-            if ((o.status === 2 && progress < 100) || o.status > Date.now() / 1000) return Status.Open;
-          }
-          return lib!.status(o);
-        };
-
-        const dstToken = parsedTokens.find((t) => eqIgnoreCase(o.ask.dstToken, t.address));
+      let orders = await getOrders(lib!, signal);
+      orders = filterByDex(lib!, orders).map((order) => {
+        const srcToken = _.find(parsedTokens, (t) => eqIgnoreCase(t.address, order.srcTokenAddress || ""));
+        const dstToken = _.find(parsedTokens, (t) => eqIgnoreCase(t.address, order.dstTokenAddress || ""));
         return {
-          order: o,
-          ui: {
-            totalChunks: o.ask.srcAmount.div(o.ask.srcBidAmount).integerValue(BN.ROUND_CEIL).toNumber(),
-            status: status(),
-            srcToken: parsedTokens.find((t) => eqIgnoreCase(o.ask.srcToken, t.address)),
-            dstToken,
-            dstAmount,
-            progress,
-            srcFilledAmount: srcFilled,
-            dollarValueIn,
-            dollarValueOut,
-          },
+          ...order,
+          srcToken,
+          dstToken,
         };
-      }).filter((o) => o.ui.srcToken && o.ui.dstToken);
-      onUpdated();
-      return _.chain(_.compact(parsedOrders))
-        .orderBy((o: ParsedOrder) => o.order.time, "desc")
-        .groupBy((o: ParsedOrder) => o.ui.status)
+      });
+
+      return _.chain(_.compact(orders.filter((o) => o.srcToken && o.dstToken)))
+        .orderBy((o) => o.createdAt, "desc")
+        .groupBy((o) => o.status)
         .value();
     },
     {
       enabled: !!lib && _.size(parsedTokens) > 0 && !state.showConfirmation,
-      refetchInterval: REFETCH_ORDER_HISTORY,
+      refetchInterval: state.waitForOrderId ? undefined : REFETCH_ORDER_HISTORY,
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,
       retry: 5,
       staleTime: Infinity,
     }
   );
+
   return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
-export const useOrderPastEvents = (order?: ParsedOrder, enabled?: boolean) => {
-  const lib = useTwapContext().lib;
-  const [haveValue, setHaveValue] = useState(false);
-
-  const _enabled = haveValue ? true : !!enabled;
-  const disableEvents = supportsTheGraphHistory(lib?.config.chainId);
-
-  return useQuery(
-    ["useOrderPastEvents", order?.order.id, lib?.maker, order?.ui.progress],
-    async () => {
-      const orderEndDate = Math.min(order!.order.ask.deadline, (await block()).timestamp);
-      const [orderStartBlock, orderEndBlock] = await Promise.all([findBlock(order!.order.time * 1000), findBlock(orderEndDate * 1000)]);
-      const events = await getPastEvents({
-        contract: lib!.twap,
-        eventName: "OrderFilled",
-        filter: {
-          maker: lib!.maker,
-          id: order!.order.id,
-        },
-        fromBlock: orderStartBlock.number,
-        toBlock: orderEndBlock.number,
-        // maxDistanceBlocks: 2_000,
-      });
-
-      const dstAmountOut = _.reduce(
-        events,
-        (sum, event) => {
-          return sum.plus(event.returnValues.dstAmountOut);
-        },
-        BN(0)
-      );
-
-      return dstAmountOut;
-    },
-    {
-      enabled: !!lib && !!_enabled && !!order && !disableEvents,
-      retry: 5,
-      staleTime: Infinity,
-      onSuccess: () => setHaveValue(true),
-    }
-  );
-};
 
 export const query = {
   useFeeOnTransfer,
@@ -293,6 +231,5 @@ export const query = {
   usePriceUSD,
   useBalance,
   useOrdersHistory,
-  useOrderPastEvents,
   useAllowance,
 };

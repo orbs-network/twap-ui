@@ -26,7 +26,6 @@ import { isTxRejected } from "../utils";
 import { useCallback } from "react";
 import { analytics } from "../analytics";
 import { stateActions } from "../context/actions";
-import moment from "moment";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = query.useGasPrice();
@@ -50,7 +49,7 @@ export const useCreateOrder = () => {
         address: lib!.validateTokens(srcToken!, state.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : state.dstToken!.address,
       };
 
-      const fillDelayMillis = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
+      const fillDelaySeconds = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
 
       const data = await createOrder(
         onTxHash,
@@ -60,7 +59,7 @@ export const useCreateOrder = () => {
         srcChunkAmount,
         dstMinAmountOut,
         deadline,
-        fillDelayMillis,
+        fillDelaySeconds,
         srcUsd,
         askDataParams,
         priorityFeePerGas || zero,
@@ -303,13 +302,6 @@ const useSubmitAnalytics = () => {
   const srcChunkAmountUi = useSrcChunkAmountUi();
 
   return useCallback(() => {
-    console.log({
-      srcChunkAmount: srcChunkAmount.toString(),
-      minDstAmountOut,
-      deadline,
-      fillDelayMillis: fillDelay,
-    });
-
     analytics.onSubmitOrder({
       fromTokenAddress: srcToken?.address,
       toTokenAddress: dstToken?.address,
@@ -359,8 +351,6 @@ export const useSubmitOrderFlow = () => {
   const { data: haveAllowance } = query.useAllowance();
   const { mutateAsync: approve } = useApproveToken();
   const { refetch: refetchNativeBalance } = query.useMinNativeTokenBalance(minNativeTokenBalance);
-  const { refetch: refetchOrderHistory } = query.useOrdersHistory();
-  const setTab = stateActions.useSelectOrdersTab();
   const shouldWrap = useShouldWrap();
   const { mutateAsync: wrapToken } = useWrapToken();
   const { mutateAsync: createOrder } = useCreateOrder();
@@ -370,6 +360,7 @@ export const useSubmitOrderFlow = () => {
   const { refetch: refetchAllowance } = query.useAllowance();
   const reset = useResetAfterSwap();
   const submitAnalytics = useSubmitAnalytics();
+  const onOrderCreated = stateActions.useOnOrderCreated();
 
   const mutate = useMutation(
     async () => {
@@ -421,10 +412,8 @@ export const useSubmitOrderFlow = () => {
         }
       },
       onSuccess(data) {
-        setTab(0);
         onSuccessCallback(data);
-        refetchOrderHistory();
-        updateState({ swapState: "success", createOrderSuccess: true, waitingForOrdersUpdate: true });
+        onOrderCreated(data.orderId);
         reset();
       },
       onSettled() {
@@ -432,6 +421,8 @@ export const useSubmitOrderFlow = () => {
       },
     }
   );
+
+  
 
   const error = !mutate.error ? undefined : (mutate.error as any).message || "Failed to create order";
 
@@ -453,12 +444,12 @@ export const useCancelOrder = () => {
   return useMutation(
     async (orderId: number) => {
       analytics.onCancelOrder(orderId);
-      return lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
+      await lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
+      await refetch();
     },
     {
-      onSuccess: (_result) => {
+      onSuccess: () => {
         analytics.onCancelOrderSuccess();
-        refetch();
       },
       onError: (error: Error) => {
         analytics.onTxError(error, "cancel");

@@ -3,13 +3,13 @@ import { useState } from "react";
 import Order, { OrderLoader } from "./Order/Order";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useTwapContext } from "../context/context";
-import { ParsedOrder } from "../types";
 import _ from "lodash";
 import { usePagination } from "../hooks";
 import { StyledColumnFlex } from "../styles";
 import { Pagination } from "../components/base";
+import { HistoryOrder } from "../types";
 
-function OrdersList({ orders, status, isLoading }: { orders?: ParsedOrder[]; status?: string; isLoading: boolean }) {
+function OrdersList({ orders, status, isLoading }: { orders?: HistoryOrder[]; status?: string; isLoading: boolean }) {
   const { uiPreferences } = useTwapContext();
   const paginationChunks = uiPreferences.orders?.paginationChunks || 5;
   const showPagination = _.size(orders) > paginationChunks;
@@ -27,7 +27,7 @@ function OrdersList({ orders, status, isLoading }: { orders?: ParsedOrder[]; sta
   return <List orders={orders} status={status} />;
 }
 
-const PaginationList = ({ orders, status }: { orders?: ParsedOrder[]; status?: string }) => {
+const PaginationList = ({ orders, status }: { orders?: HistoryOrder[]; status?: string }) => {
   const paginationChunks = useTwapContext().uiPreferences.orders?.paginationChunks;
 
   const { list, nextPage, hasNextPage, prevPage, hasPrevPage, text } = usePagination(orders, paginationChunks);
@@ -40,17 +40,17 @@ const PaginationList = ({ orders, status }: { orders?: ParsedOrder[]; status?: s
   );
 };
 
-const List = ({ orders, status }: { orders?: ParsedOrder[]; status?: string }) => {
+const List = ({ orders, status }: { orders?: HistoryOrder[]; status?: string }) => {
   const [selected, setSelected] = useState<number | undefined>(undefined);
   const { translations, state } = useTwapContext();
-  const { waitingForOrdersUpdate } = state;
+  const { waitForOrderId } = state;
 
   const onSelect = (value: number) => {
     setSelected((prevState) => (prevState === value ? undefined : value));
   };
 
   if (!_.size(orders)) {
-    return waitingForOrdersUpdate ? (
+    return waitForOrderId ? (
       <OrderLoader status={status} />
     ) : (
       <StyledContainer className="twap-orders-list">
@@ -63,9 +63,9 @@ const List = ({ orders, status }: { orders?: ParsedOrder[]; status?: string }) =
 
   return (
     <StyledContainer className="twap-orders-list">
-      {waitingForOrdersUpdate && <OrderLoader status={status} />}
+      {waitForOrderId && <OrderLoader status={status} />}
       {orders?.map((order, index) => {
-        return <Order order={order} key={index} expanded={order.order.id === selected} onExpand={() => onSelect(order.order.id)} />;
+        return <Order order={order} key={index} expanded={order.id === selected} onExpand={() => onSelect(order.id)} />;
       })}
     </StyledContainer>
   );

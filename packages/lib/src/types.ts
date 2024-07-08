@@ -2,9 +2,8 @@ import BN from "bignumber.js";
 import { Config, Order, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import { Moment } from "moment";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
-import { useParseOrderUi } from "./hooks";
-import { CSSObject } from "@mui/system";
 import { IconType } from "@react-icons/all-files";
+import { useParseOrderUi } from "./hooks/orders";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -122,6 +121,7 @@ export interface Translations {
   placingOrder: string;
   market: string;
   limit: string;
+  txHash: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";
@@ -212,19 +212,27 @@ export type OnTxSubmitValues = {
   txHash: string;
 };
 
-export interface ParsedOrder {
-  order: Order;
-  ui: {
-    status: Status;
-    srcToken?: TokenData;
-    dstToken?: TokenData;
-    totalChunks?: number;
-    dstAmount?: string;
-    progress?: number;
-    srcFilledAmount?: string;
-    dollarValueIn?: string;
-    dollarValueOut?: string;
-  };
+export interface HistoryOrder {
+  id: number;
+  deadline: number;
+  createdAt: number;
+  srcAmount: string;
+  dstMinAmount: string;
+  status?: Status;
+  srcBidAmount: string;
+  fillDelay?: number;
+  txHash?: string;
+  dstAmount?: string;
+  srcFilledAmount?: string;
+  dollarValueIn?: string;
+  dollarValueOut?: string;
+  progress?: number;
+  srcTokenAddress?: string;
+  dstTokenAddress?: string;
+  totalChunks?: number;
+  srcToken?: TokenData;
+  dstToken?: TokenData;
+  dex?: string;
 }
 
 type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
@@ -294,10 +302,10 @@ export interface TWAPTokenSelectProps {
 }
 
 export interface OrdersData {
-  [Status.Open]?: OrderUI[];
-  [Status.Canceled]?: OrderUI[];
-  [Status.Expired]?: OrderUI[];
-  [Status.Completed]?: OrderUI[];
+  [Status.Open]?: HistoryOrder[];
+  [Status.Canceled]?: HistoryOrder[];
+  [Status.Expired]?: HistoryOrder[];
+  [Status.Completed]?: HistoryOrder[];
 }
 
 export type SwapState = "loading" | "success" | "failed" | "rejected";
@@ -324,7 +332,7 @@ export interface State {
   approveTxHash?: string;
   unwrapTxHash?: string;
   enableQueryParams?: boolean;
-  waitingForOrdersUpdate: boolean;
+
   isCustomLimitPrice?: boolean;
   customLimitPrice?: string;
   isInvertedLimitPrice?: boolean;
@@ -337,6 +345,8 @@ export interface State {
 
   selectedOrdersTab: number;
   showOrders?: boolean;
+
+  waitForOrderId?: number;
 }
 
 export type SwitchVariant = "ios" | "default";

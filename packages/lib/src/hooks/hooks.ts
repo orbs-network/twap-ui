@@ -4,7 +4,7 @@ import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { ParsedOrder, State, SwapStep, TimeResolution } from "../types";
+import { HistoryOrder, State, SwapStep, TimeResolution } from "../types";
 import _ from "lodash";
 import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, isNativeAddress, parsebn, maxUint256 } from "@defi.org/web3-candies";
 import { MAX_TRADE_INTERVAL, MAX_TRADE_INTERVAL_FORMATTED, MIN_NATIVE_BALANCE, MIN_TRADE_INTERVAL, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS, STABLE_TOKENS } from "../consts";
@@ -254,46 +254,6 @@ export const useDappRawSelectedTokens = () => {
       dstToken: getTokenFromTokensListV2(dappTokens, [dstToken?.address, dstToken?.symbol]),
     };
   }, [srcToken?.address, srcToken?.symbol, dappTokens, dstToken?.address, dstToken?.symbol]);
-};
-
-export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
-  const lib = useTwapContext()?.lib;
-
-  const { data: dstAmountOutFromEvents } = query.useOrderPastEvents(o, expanded);
-
-  return useMemo(() => {
-    if (!lib || !o) return;
-    const srcToken = o.ui.srcToken;
-    const dstToken = o.ui.dstToken;
-    if (!srcToken || !dstToken) return;
-    const isTheGrapth = supportsTheGraphHistory(lib.config.chainId);
-    const isMarketOrder = lib.isMarketOrder(o.order);
-    const dstAmount = isTheGrapth ? o.ui.dstAmount : dstAmountOutFromEvents?.toString();
-    const srcFilledAmount = isTheGrapth ? o.ui.srcFilledAmount : o.order.srcFilledAmount;
-
-    return {
-      order: o.order,
-      ui: {
-        ...o.ui,
-        isMarketOrder,
-        srcAmountUi: amountUi(srcToken, o.order.ask.srcAmount),
-        srcAmountUsdUi: o.ui.dollarValueIn || amountUi(srcToken, o.order.ask.srcAmount.times(0)),
-        srcChunkAmountUi: amountUi(srcToken, o.order.ask.srcBidAmount),
-        srcChunkAmountUsdUi: amountUi(srcToken, o.order.ask.srcBidAmount.times(0)),
-        srcFilledAmountUi: amountUi(srcToken, BN(srcFilledAmount || "0")),
-        dstMinAmountOutUi: amountUi(dstToken, o.order.ask.dstMinAmount),
-        dstMinAmountOutUsdUi: amountUi(dstToken, o.order.ask.dstMinAmount.times(0)),
-        fillDelay: o.order.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
-        createdAtUi: moment(o.order.time * 1000).format("ll HH:mm"),
-        deadlineUi: moment(o.order.ask.deadline * 1000).format("ll HH:mm"),
-        deadline: o.order.ask.deadline * 1000,
-        prefix: isMarketOrder ? "~" : "~",
-        dstAmount: !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0")),
-        dstAmountUsd: o.ui.dollarValueOut ? o.ui.dollarValueOut : !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0").times(0)),
-        progress: o?.ui.progress,
-      },
-    };
-  }, [lib, o, dstAmountOutFromEvents?.toString()]);
 };
 
 export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {

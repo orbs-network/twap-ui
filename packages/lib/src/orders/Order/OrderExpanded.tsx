@@ -13,13 +13,13 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const { translations, uiPreferences } = useTwapContext();
   const hideUsd = uiPreferences.orders?.hideUsd;
   const minimumDelayMinutes = useMinimumDelayMinutes();
-  const totalChunks = useFormatNumberV2({ value: order?.ui.totalChunks });
-  const srcChunkAmountUsdUi = useFormatNumberV2({ value: order?.ui.srcChunkAmountUsdUi });
+  const totalChunks = useFormatNumberV2({ value: order?.totalChunks });
+  const srcChunkAmountUsdUi = useFormatNumberV2({ value: order?.srcChunkAmountUsdUi });
 
-  const srcChunkAmountUi = useFormatNumberV2({ value: order?.ui.srcChunkAmountUi });
+  const srcChunkAmountUi = useFormatNumberV2({ value: order?.srcChunkAmountUi });
 
-  const dstMinAmountOutUi = useFormatNumberV2({ value: order?.ui.dstMinAmountOutUi });
-  const dstMinAmountOutUsdUi = useFormatNumberV2({ value: order?.ui.dstMinAmountOutUsdUi });
+  const dstMinAmountOutUi = useFormatNumberV2({ value: order?.dstMinAmountOutUi });
+  const dstMinAmountOutUsdUi = useFormatNumberV2({ value: order?.dstMinAmountOutUsdUi });
 
   if (!order) return null;
 
@@ -32,27 +32,27 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
             {totalChunks}
           </Row>
           <Row label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
-            <TokenLogo logo={order.ui.srcToken?.logoUrl} />
-            {srcChunkAmountUi} {order.ui.srcToken?.symbol} {hideUsd ? null : `≈ $${srcChunkAmountUsdUi}`}
+            <TokenLogo logo={order?.srcToken?.logoUrl} />
+            {srcChunkAmountUi} {order?.srcToken?.symbol} {hideUsd ? null : `≈ $${srcChunkAmountUsdUi}`}
           </Row>
-          {order.ui.isMarketOrder ? null : (
+          {order.isMarketOrder ? null : (
             <Row label={`${translations.minReceivedPerTrade}`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
-              <TokenLogo logo={order.ui.dstToken?.logoUrl} />
+              <TokenLogo logo={order.dstToken?.logoUrl} />
               {`${dstMinAmountOutUi} `}
-              {order.ui.dstToken?.symbol} {hideUsd ? null : `≈ $${dstMinAmountOutUsdUi}`}
+              {order.dstToken?.symbol} {hideUsd ? null : `≈ $${dstMinAmountOutUsdUi}`}
             </Row>
           )}
 
           <Row label={`${translations.tradeInterval}`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
-            {fillDelayText(order.ui.fillDelay, translations)}
+            {fillDelayText(order.fillDelay, translations)}
           </Row>
           <Row label={`${translations.deadline}`} tooltip={translations.maxDurationTooltip}>
-            {order.ui.deadlineUi}
+            {order.deadlineUi}
           </Row>
         </StyledColumnFlex>
-        {order.ui.status === Status.Open && (
+        {order.status === Status.Open && (
           <div className="twap-order-expanded-cancel-wraper" style={{ marginLeft: "auto", marginRight: "auto" }}>
-            <CancelOrderButton orderId={order.order.id} />
+            <CancelOrderButton orderId={order.id} />
           </div>
         )}
       </StyledColumnFlex>

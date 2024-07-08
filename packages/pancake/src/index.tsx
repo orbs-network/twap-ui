@@ -4,7 +4,6 @@ import {
   hooks,
   Translations,
   TwapAdapter,
-  Orders,
   TwapContextUIPreferences,
   Styles,
   TooltipProps,
@@ -41,6 +40,7 @@ import {
   StyledChunksSelectInput,
   StyledLimitSwitch,
   StyledShowConfirmation,
+  StyledShowOrdersButton,
 } from "./styles";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -62,7 +62,6 @@ import _ from "lodash";
 import BN from "bignumber.js";
 import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
-import PancakeOrders from "./PancakeOrders";
 import { getTokenFromTokensList } from "@orbs-network/twap-ui";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { useTwapContext, LimitPriceZeroButtonProps, LimitPricePercentProps } from "@orbs-network/twap-ui";
@@ -248,10 +247,7 @@ const TWAPContent = memo((props: PancakeProps) => {
       inputPlaceholder: "0.0",
       Tooltip: props.useTooltip ? Tooltip : undefined,
       Button,
-      orders: {
-        paginationChunks: 4,
-        hideUsd: true,
-      },
+
       modal: {
         styles: {
           zIndex: 1,
@@ -297,9 +293,8 @@ const TWAPContent = memo((props: PancakeProps) => {
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
-
+          <Orders />
           {props.children}
-          <PancakeOrders />
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
           <SubmitOrderModal />
         </ThemeProvider>
@@ -307,6 +302,21 @@ const TWAPContent = memo((props: PancakeProps) => {
     </Box>
   );
 });
+
+function Orders() {
+  const Modal = useAdapterContext().Modal;
+
+  const onShow = hooks.stateActions.useOnShowOrders();
+  const isOpen = useTwapContext().state.showOrders;
+  return (
+    <>
+      <StyledShowOrdersButton />
+      <Modal open={!!isOpen} onClose={() => onShow(false)}>
+        <Components.OrderHistory />
+      </Modal>
+    </>
+  );
+}
 
 const TWAP = (props: PancakeProps) => {
   return (
@@ -599,7 +609,7 @@ const TradeIntervalSelect = () => {
   );
 };
 
-export { TWAP, Orders };
+export { TWAP };
 
 const SwapModal = () => {
   const limitPanel = useAdapterContext().limit;

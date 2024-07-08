@@ -145,6 +145,33 @@ const StyledDetailRowChildren = styled(StyledRowFlex)({
   },
 });
 
+export const TxHash = () => {
+  const { translations: t } = useTwapContext();
+  const { txHash } = useOrderSummaryContext();
+
+  const explorerUrl = useExplorerUrl();
+
+  if (!txHash) return null;
+
+  const address = (
+    <Tooltip text={txHash} placement="bottom">
+      {makeElipsisAddress(txHash, 8)}
+    </Tooltip>
+  );
+
+  return (
+    <DetailRow title={t.txHash}>
+      {!explorerUrl ? (
+        address
+      ) : (
+        <a href={`${explorerUrl}/tx/${txHash}`} target="_blank">
+          {address}
+        </a>
+      )}
+    </DetailRow>
+  );
+};
+
 Details.Expiry = Expiry;
 Details.ChunkSize = ChunkSize;
 Details.MinDestAmount = MinDestAmount;
@@ -152,3 +179,4 @@ Details.ChunksAmount = ChunksAmount;
 Details.Recipient = Recipient;
 Details.TradeInterval = TradeInterval;
 Details.DetailRow = DetailRow;
+Details.TxHash = TxHash;

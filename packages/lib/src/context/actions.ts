@@ -4,7 +4,9 @@ import {
   defaultCustomFillDelay,
   Duration,
   getTokenFromTokensListV2,
+  logger,
   MIN_TRADE_INTERVAL_FORMATTED,
+  query,
   QUERY_PARAMS,
   resetQueryParams,
   setQueryParam,
@@ -14,6 +16,8 @@ import {
 } from "..";
 import { useTwapContext } from "./context";
 import BN from "bignumber.js";
+import { waitForOrder } from "../helper";
+
 const useHandleLimitPriceQueryParam = () => {
   const setQueryParam = useSetQueryParams();
   return useCallback(
@@ -94,13 +98,6 @@ const useSwapModalActions = () => {
     onClose,
     onOpen,
   };
-};
-
-export const useOnOrdersUpdated = () => {
-  const { updateState } = useTwapContext();
-  return useCallback(() => {
-    updateState({ waitingForOrdersUpdate: false });
-  }, [updateState]);
 };
 
 // Hook for handling swap reset
@@ -330,6 +327,24 @@ const useOnLimitMarketSwitch = () => {
   );
 };
 
+const useOnOrderCreated = () => {
+  const { updateState } = useTwapContext();
+  const { lib } = useTwapContext();
+  const { refetch: refetchOrderHistory } = query.useOrdersHistory();
+
+  return useCallback(
+    async (orderId: number) => {
+      updateState({ waitForOrderId: orderId, swapState: "success", createOrderSuccess: true, selectedOrdersTab: 0 });
+      logger(`useWaitForOrder, ${orderId}`);
+      await waitForOrder(lib!, orderId!);
+      logger(`useWaitForOrder, ${orderId} done`);
+      await refetchOrderHistory();
+      updateState({ waitForOrderId: undefined });
+    },
+    [updateState, lib, refetchOrderHistory]
+  );
+};
+
 export const stateActions = {
   useSwapModalActions,
   useSwapReset,
@@ -341,11 +356,11 @@ export const stateActions = {
   useOnTokensSwitch,
   useSelectOrdersTab,
   useOnShowOrders,
-  useOnOrdersUpdated,
   useOnTxHash,
   useUpdateSwapStep,
   useUpdateSwapState,
   useSetSrcAmount,
   useHandleDisclaimer,
   useOnLimitMarketSwitch,
+  useOnOrderCreated,
 };

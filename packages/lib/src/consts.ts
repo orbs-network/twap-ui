@@ -54,3 +54,5 @@ export const EXPLORER_URLS = {
 export const STABLE_TOKENS = ["usdc", "dai", "usdt", "busd", "tusd", "susd"];
 
 export const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED };
+
+export const WAIT_FOR_ORDER_LOCAL_STORAGE = "WAIT_FOR_ORDER";
