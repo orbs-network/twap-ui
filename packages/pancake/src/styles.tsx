@@ -863,16 +863,18 @@ export const StyledShowConfirmation = styled(Components.ShowConfirmation)({
   },
 });
 
-export const StyledShowOrdersButton = styled(Components.OrderHistoryButton)(({ theme }) => {
+export const StyledShowOrdersButton = styled(Components.OrderHistory)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    background: styles.editableCardBox,
-    padding: 12,
-    borderRadius: 16,
-    boxShadow: styles.inputShadow,
-    transition: "0.2s all",
-    cursor: "pointer",
-    fontSize: 15,
-    fontWeight: 500,
+    ".twap-show-orders-btn": {
+      background: styles.editableCardBox,
+      padding: 12,
+      borderRadius: 16,
+      boxShadow: styles.inputShadow,
+      transition: "0.2s all",
+      cursor: "pointer",
+      fontSize: 15,
+      fontWeight: 500,
+    },
   };
 });

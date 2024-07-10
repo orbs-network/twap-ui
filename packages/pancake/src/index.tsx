@@ -293,7 +293,7 @@ const TWAPContent = memo((props: PancakeProps) => {
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
-          <Orders />
+          {/* <StyledShowOrdersButton /> */}
           {props.children}
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
           <SubmitOrderModal />
@@ -302,21 +302,6 @@ const TWAPContent = memo((props: PancakeProps) => {
     </Box>
   );
 });
-
-function Orders() {
-  const Modal = useAdapterContext().Modal;
-
-  const onShow = hooks.stateActions.useOnShowOrders();
-  const isOpen = useTwapContext().state.showOrders;
-  return (
-    <>
-      <StyledShowOrdersButton />
-      <Modal open={!!isOpen} onClose={() => onShow(false)}>
-        <Components.OrderHistory />
-      </Modal>
-    </>
-  );
-}
 
 const TWAP = (props: PancakeProps) => {
   return (
@@ -525,7 +510,7 @@ const TWAPPanel = () => {
 
 const SubmitOrderModal = () => {
   const { Modal } = useAdapterContext();
-  const { isOpen, onClose, title } = hooks.useConfirmationModal();
+  const { isOpen, onClose, title } = hooks.useSwapModal();
 
   const onCloseWithDelay = useCallback(() => {
     onClose(500);
@@ -619,7 +604,7 @@ const SwapModal = () => {
   const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
   const { mutate: createOrder, error, swapState } = hooks.useSubmitOrderFlow();
 
-  const { onClose } = hooks.useConfirmationModal();
+  const { onClose } = hooks.useSwapModal();
 
   const onCloseWithDelay = useCallback(() => {
     onClose(500);

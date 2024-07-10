@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { useTwapContext } from "../../context/context";
-import { useConfirmationModal } from "../../hooks/useConfirmationModal";
+import { useSwapModal } from "../../hooks/useSwapModal";
 import { useFormatNumberV2, useIsMarketOrder } from "../../hooks/hooks";
 
 export const useTokenDisplay = (isSrc?: boolean) => {
-  const { outAmount, srcAmount, srcToken, dstToken, srcUsd, dstUsd } = useConfirmationModal();
+  const { outAmount, srcAmount, srcToken, dstToken, srcUsd, dstUsd } = useSwapModal();
   const token = isSrc ? srcToken : dstToken;
   const amount = useFormatNumberV2({ value: isSrc ? srcAmount : outAmount, decimalScale: 3 });
   const usd = useFormatNumberV2({ value: isSrc ? srcUsd : dstUsd, decimalScale: 2 });

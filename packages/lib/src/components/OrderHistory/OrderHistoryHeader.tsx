@@ -73,16 +73,11 @@ const StyledMenuItem = styled(MenuItem)({
 
 export const OrderHistoryHeader = () => {
   const { closePreview, selectedOrderId, isLoading } = useOrderHistoryContext();
-  const onShowOrders = stateActions.useOnShowOrders();
   const order = useOrderById(selectedOrderId);
-
   const t = useTwapContext().translations;
   const status = order && t[order.status as keyof Translations];
   return (
     <StyledHeader className="twap-order-modal-header">
-      <StyledClose onClick={() => onShowOrders(false)}>
-        <IoMdClose />
-      </StyledClose>
       {isLoading ? null : !order ? (
         <OrderHistoryMenu />
       ) : (

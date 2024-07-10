@@ -4,6 +4,6 @@ export * from "./hooks";
 export * from "./query";
 export * from "./useSubmitOrderButton";
 export * from "./adapter-hooks";
-export * from "./useConfirmationModal";
+export * from "./useSwapModal";
 export * from "../context/actions";
 export * from "./orders";

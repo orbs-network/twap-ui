@@ -2,10 +2,11 @@ import { styled } from "@mui/material";
 import { ReactNode, useCallback } from "react";
 import { stateActions } from "../context/actions";
 import { useTwapContext } from "../context/context";
-import { useFillDelayWarning } from "../hooks/hooks";
+import { useFillDelayWarning, useMinimumDelayMinutes, useShouldWrapOrUnwrapOnly } from "../hooks/hooks";
 import { StyledColumnFlex } from "../styles";
 import { TimeResolution } from "../types";
-import { BottomContent, Message, NumericInput, TimeSelectMenu } from "./base";
+import { handleFillDelayText } from "../utils";
+import { BottomContent, Label, Message, NumericInput, TimeSelectMenu } from "./base";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const fillDelay = useTwapContext().state.customFillDelay;
@@ -21,7 +22,7 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
   );
 };
 
-export const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
+const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
   const fillDelay = useTwapContext().state.customFillDelay;
   const setFillDelay = stateActions.useSetCustomFillDelay();
 
@@ -36,6 +37,12 @@ export const Resolution = ({ placeholder, className = "" }: { placeholder?: stri
 };
 
 export const TradeInterval = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
+  const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+
+  if (shouldWrapOrUnwrapOnly) {
+    return null;
+  }
+
   return (
     <Container className={className}>
       {children}
@@ -56,8 +63,15 @@ const WarningComponent = () => {
   );
 };
 
+const TradeIntervalLabel = () => {
+  const translations = useTwapContext().translations;
+  const getMinimumDelayMinutes = useMinimumDelayMinutes();
+  return <Label tooltipText={handleFillDelayText(translations.tradeIntervalTootlip, getMinimumDelayMinutes)}>{translations.tradeInterval}</Label>;
+};
+
 TradeInterval.Resolution = Resolution;
 TradeInterval.Input = Input;
+TradeInterval.Label = TradeIntervalLabel;
 
 const Container = styled(StyledColumnFlex)({
   gap: 0,

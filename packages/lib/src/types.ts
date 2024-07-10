@@ -46,12 +46,10 @@ export interface Translations {
   enterAmount: string;
   insufficientFunds: string;
   enterTradeSize: string;
-  enterMaxDuration: string;
   enterTradeInterval: string;
   tradeSizeMustBeEqual: string;
   tradeSize: string;
   tradeInterval: string;
-  maxDuration: string;
   totalTrades: string;
   deadline: string;
   filled: string;
@@ -122,6 +120,11 @@ export interface Translations {
   market: string;
   limit: string;
   txHash: string;
+  maxDurationWarning: string;
+  minDurationWarning: string;
+  expiry: string;
+  individualTradeSize: string;
+numberOfTrades: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";
@@ -299,6 +302,7 @@ export interface TWAPTokenSelectProps {
   onClose: () => void;
   srcTokenSelected?: any;
   dstTokenSelected?: any;
+  isSrc?: boolean;
 }
 
 export interface OrdersData {
@@ -326,12 +330,12 @@ export interface State {
 
   customChunks?: number;
   customFillDelay: Duration;
+  customDuration?: Duration;
 
   createOrdertxHash?: string;
   wrapTxHash?: string;
   approveTxHash?: string;
   unwrapTxHash?: string;
-  enableQueryParams?: boolean;
 
   isCustomLimitPrice?: boolean;
   customLimitPrice?: string;
@@ -344,9 +348,16 @@ export interface State {
   approveSuccess?: boolean;
 
   selectedOrdersTab: number;
-  showOrders?: boolean;
-
   waitForOrderId?: number;
+
+  swapData?: {
+    srcAmount: string;
+    outAmount: string;
+    dstToken: TokenData;
+    srcToken: TokenData;
+    srcAmountUsd?: string;
+    dstAmountUsd?: string;
+  }
 }
 
 export type SwitchVariant = "ios" | "default";

@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import { Fade, IconButton, Box, styled, Modal as MuiModal, Backdrop } from "@mui/material";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
-import { StyledRowFlex } from "../../styles";
+import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { useTwapContext } from "../../context/context";
 
 export interface Props {
@@ -43,17 +43,16 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
                   <StyledSeparator />
                 </>
               )}
-              {onClose && (
-                <StyledClose className="twap-ui-close" onClick={onClose}>
-                  <IoMdClose />
-                </StyledClose>
-              )}
             </StyledHeader>
           ) : (
             header
           )}
-
-          {children}
+          {onClose && (
+            <StyledClose className="twap-ui-close" onClick={onClose}>
+              <IoMdClose />
+            </StyledClose>
+          )}
+          <StyledChildren>{children}</StyledChildren>
         </StyledModalContent>
       </Fade>
     </StyledModal>
@@ -61,6 +60,11 @@ function Modal({ onClose, open, children, title, className = "", disableBackdrop
 }
 
 export default Modal;
+
+const StyledChildren = styled(StyledColumnFlex)({
+  flex: 1,
+  paddingTop: 20,
+});
 
 const StyledHeader = styled(StyledRowFlex)({
   justifyContent: "space-between",
@@ -78,6 +82,9 @@ const StyledTitle = styled(Box)({
 });
 
 const StyledClose = styled(IconButton)({
+  position: "absolute",
+  right: 10,
+  top: 10,
   marginLeft: "auto",
   svg: {
     width: 25,

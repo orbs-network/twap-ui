@@ -486,15 +486,10 @@ export const StyledCloseIcon = styled("button")({
 });
 
 export const StyledModalContent = styled(Box)({
-  width: "calc(100vw - 20px)",
+  width: "100%",
   height: 500,
   border: "1px solid rgb(55, 65, 81)",
   background: "black",
-  maxWidth: 500,
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
   display: "flex",
   flexDirection: "column",
 });

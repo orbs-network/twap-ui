@@ -1,13 +1,23 @@
-import { Status, TokenData, TokensValidation } from "@orbs-network/twap";
+import { Status, TokensValidation } from "@orbs-network/twap";
 import { useTwapContext } from "../context/context";
 import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { HistoryOrder, State, SwapStep, TimeResolution } from "../types";
+import { SwapStep, TimeResolution } from "../types";
 import _ from "lodash";
 import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, isNativeAddress, parsebn, maxUint256 } from "@defi.org/web3-candies";
-import { MAX_TRADE_INTERVAL, MAX_TRADE_INTERVAL_FORMATTED, MIN_NATIVE_BALANCE, MIN_TRADE_INTERVAL, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS, STABLE_TOKENS } from "../consts";
+import {
+  MAX_DURATION_MILLIS,
+  MAX_TRADE_INTERVAL,
+  MAX_TRADE_INTERVAL_FORMATTED,
+  MIN_DURATION_MILLIS,
+  MIN_DURATION_MILLIS_FORMATTED,
+  MIN_NATIVE_BALANCE,
+  MIN_TRADE_INTERVAL,
+  MIN_TRADE_INTERVAL_FORMATTED,
+  QUERY_PARAMS,
+  STABLE_TOKENS,
+} from "../consts";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
 import {
@@ -454,6 +464,21 @@ export const useFillDelayWarning = () => {
   }, [fillDelayMillis, translations]);
 };
 
+export const useTradeDurationWarning = () => {
+  const durationMillis = useDuration().millis;
+  const { translations, state } = useTwapContext();
+
+  return useMemo(() => {
+    if (!state.customDuration) return;
+    if (durationMillis < MIN_DURATION_MILLIS) {
+      return translations.minDurationWarning.replace("{duration}", MIN_DURATION_MILLIS_FORMATTED.toString());
+    }
+    if (durationMillis > MAX_DURATION_MILLIS) {
+      return translations.maxDurationWarning;
+    }
+  }, [durationMillis, translations, state.customDuration]);
+};
+
 export const useFeeOnTransferWarning = () => {
   const { translations, state } = useTwapContext();
 
@@ -563,12 +588,13 @@ export const useSwapWarning = () => {
   const zeroSrcAmount = useSrcAmountWarning();
   const balance = useBalanceWarning();
   const lowPrice = useLowPriceWarning();
+  const duration = useTradeDurationWarning();
 
   if (shouldWrapOrUnwrapOnly) {
     return { balance, zeroSrcAmount };
   }
 
-  return { tradeSize, invalidTokens, zeroSrcAmount, fillDelay, feeOnTranfer, lowPrice, balance };
+  return { tradeSize, invalidTokens, zeroSrcAmount, fillDelay, feeOnTranfer, lowPrice, balance, duration };
 };
 
 export const useSetChunks = () => {
@@ -638,7 +664,7 @@ export const useIsPartialFillWarning = () => {
   const chunks = useChunks();
 
   const fillDelayUiMillis = useFillDelayMillis();
-  const durationMillis = useDurationMillis();
+  const durationMillis = useDuration().millis;
 
   return useMemo(() => {
     return chunks * fillDelayUiMillis > durationMillis;
@@ -655,33 +681,47 @@ export const useSrcChunkAmount = () => {
   }, [lib, srcAmount.toString(), chunks]);
 };
 
-export const useDurationUi = () => {
+export const useMinDuration = () => {
   const fillDelayUiMillis = useFillDelayMillis();
   const chunks = useChunks();
 
-  const { lib, dappProps } = useTwapContext();
+  return useMemo(() => {
+    const _millis = fillDelayUiMillis * 2 * chunks;
+    const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= _millis) || TimeResolution.Minutes;
+    const duration = { resolution, amount: Number(BN(_millis / resolution).toFixed(2)) };
+
+    return {
+      duration,
+      millis: (duration.amount || 0) * duration.resolution,
+    };
+  }, [fillDelayUiMillis, chunks]);
+};
+
+export const useDuration = () => {
+  const { duration: minDuration } = useMinDuration();
+
+  const { lib, dappProps, state } = useTwapContext();
   const { isLimitPanel } = dappProps;
 
-  return useMemo(() => {
+  const duration = useMemo(() => {
     if (!lib) {
       return { resolution: TimeResolution.Minutes, amount: 0 };
     }
     if (isLimitPanel) {
       return { resolution: TimeResolution.Days, amount: 7 };
     }
+    if (state.customDuration) {
+      return state.customDuration;
+    }
+    return minDuration;
+  }, [lib, isLimitPanel, state.customDuration, minDuration]);
 
-    const _millis = fillDelayUiMillis * 2 * chunks;
-    const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= _millis) || TimeResolution.Minutes;
-    return { resolution, amount: Number(BN(_millis / resolution).toFixed(2)) };
-  }, [lib, chunks, fillDelayUiMillis, isLimitPanel]);
-};
+  const millis = useMemo(() => (duration.amount || 0) * duration.resolution, [duration]);
 
-export const useDurationMillis = () => {
-  const durationUi = useDurationUi();
-
-  return useMemo(() => {
-    return (durationUi.amount || 0) * durationUi.resolution;
-  }, [durationUi]);
+  return {
+    duration,
+    millis,
+  };
 };
 
 export const useSrcChunkAmountUi = () => {
@@ -706,20 +746,18 @@ export const useChunksBiggerThanOne = () => {
 export const useDeadline = () => {
   const confirmationClickTimestamp = useTwapContext().state.confirmationClickTimestamp;
 
-  const durationUi = useDurationUi();
+  const { duration: durationUi } = useDuration();
 
   return useMemo(() => {
-    return moment(confirmationClickTimestamp)
+    const millis = moment(confirmationClickTimestamp)
       .add((durationUi.amount || 0) * durationUi.resolution)
       .add(1, "minute")
       .valueOf();
+    return {
+      millis,
+      text: moment(millis).format("ll HH:mm"),
+    };
   }, [durationUi, confirmationClickTimestamp]);
-};
-
-export const useDeadlineUi = () => {
-  const deadline = useDeadline();
-
-  return useMemo(() => moment(deadline).format("ll HH:mm"), [deadline]);
 };
 
 export function useDebounce<T>(value: T, delay?: number): T {

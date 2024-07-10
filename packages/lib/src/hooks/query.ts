@@ -223,7 +223,6 @@ export const useOrdersHistory = () => {
   return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
-
 export const query = {
   useFeeOnTransfer,
   useGasPrice,

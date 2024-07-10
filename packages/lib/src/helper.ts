@@ -304,26 +304,19 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const waitForOrder = async (lib: TWAPLib, orderId: number) => {
-  
   const maxRetries = 30,
     delayMs = 5_000;
-    const endpoint = getTheGraphUrl(lib.config.chainId);
+  const endpoint = getTheGraphUrl(lib.config.chainId);
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     logger("Checking order", orderId, "attempt", attempt + 1, "of", maxRetries);
     let ids: number[] = [];
     if (!endpoint) {
       const orders = await lensOrders(lib);
       ids = orders.map((order) => order.id);
-    }else {
-      console.log({endpoint});
-      
-      const orders = await graphOrders({lib, endpoint});
+    } else {
+      const orders = await graphOrders({ lib, endpoint });
       ids = orders.map((order: any) => Number(order.Contract_id));
     }
-
-    console.log(ids,orderId );
-    
-   
     if (ids.includes(orderId)) {
       logger("Order ID", orderId, "found");
       return true;

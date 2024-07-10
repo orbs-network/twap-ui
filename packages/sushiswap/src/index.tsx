@@ -12,6 +12,10 @@ import {
   LimitPricePercentProps,
   Styles,
   LimitPriceZeroButtonProps,
+  addMissingTokens,
+  TwapContextUIPreferences,
+  LimitPriceTokenSelectProps,
+  UseMarketPriceProps,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData, Config } from "@orbs-network/twap";
@@ -51,8 +55,11 @@ import {
   StyledTop,
   StyledTokenSelectLimit,
   StyledCreateOrderModal,
-  StyledShowOrdersButton,
   StyledTwap,
+  StyledTradeDuration,
+  StyledTradeDurationRight,
+  StyledOrders,
+  StyledOrdersContent,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
@@ -60,15 +67,10 @@ import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
 import _ from "lodash";
-import { addMissingTokens } from "@orbs-network/twap-ui";
-import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
-import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
-import { useTwapContext } from "@orbs-network/twap-ui";
-import { UseMarketPriceProps } from "@orbs-network/twap-ui";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
 
-const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
+const USD = ({ usd }: { usd?: string }) => {
   return (
     <StyledUSD className="twap-custom-usd">
       <SmallText prefix="$ " value={BN(usd || 0).isZero() ? "0.00" : usd} />
@@ -85,18 +87,12 @@ const uiPreferences: TwapContextUIPreferences = {
 };
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const { TokenSelectModal, dappTokens } = useAdapterContext();
+  const { TokenSelectModal } = useAdapterContext();
 
   return (
-    <TokenSelectModal
-      otherAsset={props.dstTokenSelected}
-      selectedAsset={props.srcTokenSelected}
-      setSelectedAsset={props.onSelect}
-      popup={props.isOpen}
-      setPopup={props.onClose}
-      baseAssets={dappTokens}
-      setOtherAsset={props.onSelect}
-    />
+    <TokenSelectModal selected={props.isSrc ? props.srcTokenSelected : props.dstTokenSelected} onSelect={props.onSelect!}>
+      <StyledTokenSelect hideArrow={false} isSrc={props.isSrc} onClick={() => {}} />
+    </TokenSelectModal>
   );
 };
 const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
@@ -160,13 +156,11 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 
   return (
     <>
-      <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
-
       <StyledTokenPanel error={exceedsBalance ? 1 : 0}>
         <TwapStyles.StyledColumnFlex gap={10}>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <StyledPanelInput placeholder="0" isSrc={isSrcToken} />
-            <StyledTokenSelect hideArrow={false} isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
+            <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
             <TokenPanelUsd exceedsBalance={!!exceedsBalance} isSrc={isSrcToken} />
@@ -202,16 +196,8 @@ const parseTokens = (rawTokens: any[], config: Config): TokenData[] => {
 };
 
 interface SushiProps extends TWAPProps {
-  Modal: FC<{
-    open: boolean;
-    onClose?: () => void;
-    children: ReactNode;
-    title?: string;
-    className?: string;
-    disableBackdropClick?: boolean;
-    header?: ReactNode;
-    hideHeader?: boolean;
-  }>;
+  TokenSelectModal: FC<{ children: ReactNode; onSelect: (value: any) => void; selected: any }>;
+  Modal: FC<{ open: boolean; onClose: () => void; title?: string; children: ReactNode; header?: ReactNode }>;
 }
 
 const AdapterContext = createContext({} as SushiProps);
@@ -233,6 +219,7 @@ const TWAPContent = (props: SushiProps) => {
   const config = useMemo(() => {
     return getConfig(configs, chainId);
   }, [chainId]);
+  
 
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
@@ -287,6 +274,24 @@ const TWAPContent = (props: SushiProps) => {
   );
 };
 
+const Orders = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const Modal = useAdapterContext().Modal;
+
+  const onClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  return (
+    <StyledOrders>
+      <Components.OrderHistory.Button onClick={() => setIsOpen(true)} />
+      <Modal open={isOpen} onClose={onClose} header={<Components.OrderHistory.Header />}>
+        <StyledOrdersContent />
+      </Modal>
+    </StyledOrders>
+  );
+};
+
 const TWAP = (props: SushiProps) => {
   return (
     <AdapterContextProvider value={props}>
@@ -295,35 +300,15 @@ const TWAP = (props: SushiProps) => {
   );
 };
 
-function Orders() {
-  const Modal = useAdapterContext().Modal;
-  const onShow = hooks.stateActions.useOnShowOrders();
-  const isOpen = useTwapContext().state.showOrders;
-
-  return (
-    <>
-      <StyledShowOrdersButton />
-      <Modal hideHeader={true} open={!!isOpen} onClose={() => onShow(false)}>
-        <Components.OrderHistory />
-      </Modal>
-    </>
-  );
-}
-
 const SubmitOrderModal = () => {
-  const { Modal } = useAdapterContext();
-  const { isOpen, onClose, title } = hooks.useConfirmationModal();
-
-  const onCloseWithDelay = useCallback(() => {
-    onClose(500);
-  }, [onClose]);
+  const { isOpen, onClose } = hooks.useSwapModal();
 
   return (
-    <Modal title={title} open={isOpen} onClose={onCloseWithDelay}>
+    <Components.Base.Modal open={isOpen} onClose={() => onClose()}>
       <StyledSwapModalContent>
         <StyledCreateOrderModal Components={{ USD }} />
       </StyledSwapModalContent>
-    </Modal>
+    </Components.Base.Modal>
   );
 };
 
@@ -413,7 +398,7 @@ const TWAPPanel = () => {
       <LimitPrice />
       <TotalTrades />
       <TradeIntervalSelect />
-
+      <TradeDurationSelect />
       <Components.ShowConfirmation />
     </StyledContent>
   );
@@ -434,15 +419,12 @@ const LimitPanel = () => {
 };
 
 const TotalTrades = () => {
-  const hide = hooks.useShouldWrapOrUnwrapOnly();
-
-  if (hide) return null;
   return (
-    <Card>
-      <Card.Header>
-        <Components.Labels.TotalTradesLabel />
-      </Card.Header>
-      <StyledChunksSelect>
+    <StyledChunksSelect>
+      <Card>
+        <Card.Header>
+          <Components.Labels.TotalTradesLabel />
+        </Card.Header>
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
           <StyledChunksSelectInput>
             <Components.ChunkSelector.Input />
@@ -451,21 +433,18 @@ const TotalTrades = () => {
             <Components.ChunkSelector.Slider />
           </StyledChunksSelectSlider>
         </Styles.StyledRowFlex>
-      </StyledChunksSelect>
-    </Card>
+      </Card>
+    </StyledChunksSelect>
   );
 };
 
 const TradeIntervalSelect = () => {
-  const hide = hooks.useShouldWrapOrUnwrapOnly();
-
-  if (hide) return null;
   return (
-    <Card>
-      <Card.Header>
-        <Components.Labels.TradeIntervalLabel />
-      </Card.Header>
-      <StyledTradeInterval>
+    <StyledTradeInterval>
+      <Card>
+        <Card.Header>
+          <Components.TradeInterval.Label />
+        </Card.Header>
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
           <StyledTradeIntervalInput>
             <Components.TradeInterval.Input />
@@ -474,8 +453,29 @@ const TradeIntervalSelect = () => {
             <Components.TradeInterval.Resolution />
           </StyledTradeIntervalResolution>
         </Styles.StyledRowFlex>
-      </StyledTradeInterval>
-    </Card>
+      </Card>
+    </StyledTradeInterval>
+  );
+};
+
+const TradeDurationSelect = () => {
+  return (
+    <StyledTradeDuration>
+      <Card>
+        <Card.Header>
+          <Components.TradeDuration.Label />
+        </Card.Header>
+        <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
+          <StyledTradeDurationRight>
+            <Components.TradeDuration.Input />
+            <Components.TradeDuration.Reset />
+          </StyledTradeDurationRight>
+          <StyledTradeIntervalResolution>
+            <Components.TradeDuration.Resolution />
+          </StyledTradeIntervalResolution>
+        </Styles.StyledRowFlex>
+      </Card>
+    </StyledTradeDuration>
   );
 };
 

@@ -33,7 +33,7 @@ export function List() {
   }
 
   return (
-    <ListContainer style={{ opacity: selectedOrderId ? 0 : 1, pointerEvents: selectedOrderId ? "none" : "all" }}>
+    <ListContainer style={{ opacity: selectedOrderId ? 0 : 1, pointerEvents: selectedOrderId ? "none" : "all" }} className="twap-orders-list">
       <AutoSizer>
         {({ height, width }: any) => (
           <VariableSizeList ref={listRef} height={height} itemCount={_.size(orders)} itemSize={getSize} width={width} itemData={{ setSize }}>

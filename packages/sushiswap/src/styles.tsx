@@ -1,5 +1,5 @@
 import { Box, createTheme, styled, Theme } from "@mui/material";
-import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
+import { Components, Styles } from "@orbs-network/twap-ui";
 import { ReactNode } from "react";
 
 export const darkTheme = createTheme({
@@ -211,94 +211,6 @@ export const StyledTokenSelectLimit = styled(Styles.StyledRowFlex)(({ theme }) =
   };
 });
 
-export const StyledOrders = styled(OrdersPanel)(({ theme }) => {
-  const styles = getStyles(theme);
-
-  return {
-    ".MuiTabs-indicator": {
-      display: "none",
-    },
-    ".MuiButtonBase-root": {
-      minHeight: "38px",
-      borderRadius: 12,
-      transition: "0.3s all",
-      color: "inherit",
-      background: "transparent",
-    },
-
-    maxWidth: "unset!important",
-    "*": {
-      color: styles.textColor,
-    },
-    ".Mui-selected": {
-      background: `#282D3E!important`,
-      color: "white",
-      borderRadius: 12,
-    },
-
-    ".twap-orders-header-tabs": {
-      minHeight: "unset",
-      border: styles.isDarkMode ? "1px solid hsla(0,0%,100%,.06)" : "1px solid rgb(59 130 246/1)",
-    },
-    ".twap-orders-list": {
-      gap: 16,
-    },
-    ".twap-order-expanded-right": {
-      color: `${styles.darkText}!important`,
-      fontWeight: 500,
-      "*": {
-        color: `inherit`,
-        fontWeight: `inherit`,
-      },
-    },
-    ".twap-token-display-amount-and-symbol": {
-      fontSize: 15,
-      fontWeight: 500,
-    },
-    ".twap-order": {
-      padding: 20,
-
-      ".twap-label p": {
-        fontSize: 14,
-        fontWeight: 500,
-      },
-
-      ".twap-order-separator": {
-        display: "none",
-      },
-      ".twap-market-price-section": {
-        background: styles.isDarkMode ? "hsla(0,0%,100%,.06)" : "#F4F5F6",
-        width: "100%",
-        padding: "5px 10px",
-        borderRadius: 8,
-        "*": {
-          fontSize: "13px",
-        },
-        ".twap-small-label p": {
-          fontSize: "14px!important",
-        },
-      },
-      ".MuiLinearProgress-root": {
-        background: "hsla(0,0%,100%,.06)",
-      },
-      ".MuiLinearProgress-bar": {
-        background: "rgb(59 130 246/1)",
-      },
-      ".MuiLinearProgress-root::after": {
-        display: "none",
-      },
-    },
-    ".twap-orders-header": {
-      ".twap-label": {
-        p: {
-          fontSize: "16px!important",
-          fontWeight: 500,
-        },
-      },
-    },
-  };
-});
-
 const cardBodyStyles = (theme?: Theme) => {
   const styles = getStyles(theme);
   return {
@@ -345,20 +257,20 @@ export const configureStyles = (theme?: Theme) => {
     ".twap-separator": {
       background: isDarkMode ? "rgba(255, 255, 255, 0.07)" : "rgba(0, 0, 0, 0.07)",
     },
-    ".twap-order-summary": {
+    ".twap-order-display": {
       ".twap-token-logo": {
         width: "50px!important",
         height: "50px!important",
       },
       ".twap-custom-usd": {},
-      ".twap-order-summary-token-amount": {
+      ".twap-order-display-token-amount": {
         fontWeight: 500,
         fontSize: 20,
       },
       ".twap-order-modal-market-warning": {
         background: styles.accent,
       },
-      ".twap-order-summary-details": {
+      ".twap-order-display-details": {
         ...cardBodyStyles(theme),
         background: styles.isDarkMode ? "#ffffff0a" : "white",
         gap: 10,
@@ -366,7 +278,7 @@ export const configureStyles = (theme?: Theme) => {
       ".twap-label p": {
         fontWeight: 500,
       },
-      ".twap-order-summary-detail-row-right": {
+      ".twap-order-display-details-row-right": {
         color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
         fontSize: 13,
         "*": {
@@ -374,7 +286,7 @@ export const configureStyles = (theme?: Theme) => {
           fontSize: 13,
         },
       },
-      ".twap-order-summary-separator": {
+      ".twap-order-display-separator": {
         background: "unset",
         margin: "8px 0px!important",
       },
@@ -507,15 +419,15 @@ export const configureStyles = (theme?: Theme) => {
       padding: "0px!important",
     },
     "@media (max-width: 600px)": {
-      ".twap-order-summary": {
+      ".twap-order-display": {
         ".twap-token-logo": {
           width: "30px!important",
           height: "30px!important",
         },
-        ".twap-order-summary-token-amount": {
+        ".twap-order-display-token-amount": {
           fontSize: 17,
         },
-        ".twap-order-summary-token-title": {
+        ".twap-order-display-token-title": {
           fontSize: 14,
         },
       },
@@ -698,7 +610,39 @@ export const StyledTradeInterval = styled(Components.TradeInterval)(({ theme }) 
     },
   };
 });
+
+export const StyledTradeDuration = styled(Components.TradeDuration)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    ".twap-warning-message": {
+      "*": {
+        color: styles.warningText,
+      },
+    },
+  };
+});
+
 export const StyledTradeIntervalInput = styled(CardBody)({
+  input: {
+    fontSize: 18,
+  },
+});
+
+export const StyledTradeDurationRight = styled(CardBody)({
+  display: "flex",
+  flexDirection: "row",
+  ".twap-duration-reset": {
+    fontSize: 12,
+    width: "auto",
+    height: "auto",
+    minHeight: "unset",
+    padding: "2px 7px",
+    fontWeight: 400,
+  },
+  ".twap-input": {
+    flex: 1,
+    width: "auto",
+  },
   input: {
     fontSize: 18,
   },
@@ -798,18 +742,29 @@ export const StyledOpenOrdersButton = styled(StyledCardBody)({
   marginTop: 20,
 });
 
-export const StyledShowOrdersButton = styled(Components.OrderHistoryButton)(({ theme }) => {
+export const StyledOrders = styled(Components.OrderHistory)(({ theme }) => {
   const styles = getStyles(theme);
   return {
-    ...cardBodyStyles(theme),
-    transition: "0.2s all",
-    cursor: "pointer",
-    fontSize: 15,
-    fontWeight: 500,
-    "&:hover": {
-      background: styles.boxHover,
+    ".twap-show-orders-btn": {
+      width: "100%",
+      ...cardBodyStyles(theme),
+      transition: "0.2s all",
+      cursor: "pointer",
+      fontSize: 15,
+      fontWeight: 500,
+      "&:hover": {
+        background: styles.boxHover,
+      },
     },
   };
+});
+
+export const StyledOrdersContent = styled(Components.OrderHistory.Content)({
+  ".twap-orders-list": {
+    top: 0,
+    height: "100%",
+  },
+  ".twap-orders-selected-order": {},
 });
 
 export const StyledTwap = styled("div")({

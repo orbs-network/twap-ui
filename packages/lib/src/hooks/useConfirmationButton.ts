@@ -5,7 +5,7 @@ import { query } from "./query";
 import BN from "bignumber.js";
 import { useUnwrapToken, useWrapOnly } from "./useTransactions";
 import _ from "lodash";
-import { useConfirmationModal } from "./useConfirmationModal";
+import { useSwapModal } from "./useSwapModal";
 
 export const useConfirmationButton = () => {
   const { translations, lib, isWrongChain, dappProps, state } = useTwapContext();
@@ -14,7 +14,7 @@ export const useConfirmationButton = () => {
   const { swapState, srcToken, dstToken } = state;
   const createOrderLoading = swapState === "loading";
 
-  const { onOpen } = useConfirmationModal();
+  const { onOpen } = useSwapModal();
   const outAmountLoading = useOutAmount().isLoading;
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
   const noLiquidity = useNoLiquidity();

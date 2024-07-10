@@ -1,4 +1,3 @@
-import moment from "moment";
 import { useCallback } from "react";
 import {
   defaultCustomFillDelay,
@@ -17,6 +16,7 @@ import {
 import { useTwapContext } from "./context";
 import BN from "bignumber.js";
 import { waitForOrder } from "../helper";
+import { useDstAmountUsdUi, useOutAmount, useSrcAmount, useSrcAmountUsdUi } from "../hooks";
 
 const useHandleLimitPriceQueryParam = () => {
   const setQueryParam = useSetQueryParams();
@@ -65,15 +65,11 @@ export const useSwitchNativeToWrapped = () => {
 const useSwapModalActions = () => {
   const { updateState, state } = useTwapContext();
   const { swapState, wrapSuccess } = state;
-  const nativeToWrapped = useSwitchNativeToWrapped();
   const onClose = useCallback(
     (closeDalay?: number) => {
       updateState({ showConfirmation: false });
       if (swapState === "loading") return;
       setTimeout(() => {
-        if (swapState === "rejected" && wrapSuccess) {
-          nativeToWrapped();
-        }
         updateState({
           swapSteps: undefined,
           swapState: undefined,
@@ -84,10 +80,11 @@ const useSwapModalActions = () => {
           unwrapTxHash: undefined,
           approveTxHash: undefined,
           createOrderSuccess: undefined,
+          swapData: undefined,
         });
-      }, closeDalay || 0);
+      }, closeDalay || 300);
     },
-    [updateState, swapState, wrapSuccess, nativeToWrapped]
+    [updateState, swapState, wrapSuccess]
   );
 
   const onOpen = useCallback(() => {
@@ -117,6 +114,18 @@ const useSwapReset = () => {
   }, [updateState]);
 };
 
+const useOnSubmitSwap = () => {
+  const { updateState, state } = useTwapContext();
+  const outAmount = useOutAmount().outAmountUi;
+  const srcAmountUsd = useSrcAmountUsdUi();
+  const dstAmountUsd = useDstAmountUsdUi();
+
+  return useCallback(() => {
+    if (!state.srcToken || !state.dstToken) return;
+    updateState({ swapState: "loading", swapData: { srcAmount: state.srcAmountUi, outAmount, srcToken: state.srcToken, dstToken: state.dstToken, srcAmountUsd, dstAmountUsd } });
+  }, [updateState, outAmount, state.srcToken, state.dstToken, state.srcAmountUi, srcAmountUsd, dstAmountUsd]);
+};
+
 // Hook for setting custom fill delay
 const useSetCustomFillDelay = () => {
   const { updateState } = useTwapContext();
@@ -125,6 +134,18 @@ const useSetCustomFillDelay = () => {
     (customFillDelay: Duration) => {
       setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, !customFillDelay.amount ? undefined : customFillDelay.amount?.toString());
       updateState({ customFillDelay });
+    },
+    [updateState, setQueryParam]
+  );
+};
+
+const useSetCustomDuration = () => {
+  const { updateState } = useTwapContext();
+  const setQueryParam = useSetQueryParams();
+  return useCallback(
+    (customDuration?: Duration) => {
+      setQueryParam(QUERY_PARAMS.MAX_DURATION, !customDuration ? undefined : customDuration.amount?.toString());
+      updateState({ customDuration });
     },
     [updateState, setQueryParam]
   );
@@ -222,16 +243,6 @@ const useSelectOrdersTab = () => {
 };
 
 // Hook for showing/hiding orders
-const useOnShowOrders = () => {
-  const { updateState } = useTwapContext();
-
-  return useCallback(
-    (showOrders: boolean) => {
-      updateState({ showOrders });
-    },
-    [updateState]
-  );
-};
 
 const useOnTxHash = () => {
   const { updateState } = useTwapContext();
@@ -355,7 +366,6 @@ export const stateActions = {
   useResetLimitPrice,
   useOnTokensSwitch,
   useSelectOrdersTab,
-  useOnShowOrders,
   useOnTxHash,
   useUpdateSwapStep,
   useUpdateSwapState,
@@ -363,4 +373,6 @@ export const stateActions = {
   useHandleDisclaimer,
   useOnLimitMarketSwitch,
   useOnOrderCreated,
+  useSetCustomDuration,
+  useOnSubmitSwap,
 };

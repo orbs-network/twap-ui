@@ -4,6 +4,7 @@ export * from "./Components";
 export * as Orders from "./OrdersComponents";
 export * from "./LimitPanel/LimitPanel";
 export * from "./TradeInterval";
-export { default as ChunkSelector } from "./ChunkSelector";
+export * from "./TradeDuration";
+export * from "./ChunkSelector";
 export * from "./CreateOrderModal/CreateOrderModal";
 export * from "./OrderHistory/OrderHistory";

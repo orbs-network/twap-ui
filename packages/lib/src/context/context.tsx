@@ -3,15 +3,16 @@ import { State, TimeResolution, TWAPContextProps, TwapLibProps } from "../types"
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "../analytics";
-import { TWAPLib } from "@orbs-network/twap";
+import { Status, TWAPLib } from "@orbs-network/twap";
 import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
-import { defaultCustomFillDelay, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS, WAIT_FOR_ORDER_LOCAL_STORAGE } from "../consts";
+import { defaultCustomFillDelay, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "../consts";
 import { getQueryParam, getTokenFromTokensList, limitPriceFromQueryParams } from "../utils";
 import moment from "moment";
 import { useAmountBN } from "../hooks";
+import _ from "lodash";
 analytics.onModuleImported();
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -71,11 +72,10 @@ const useLib = (props: TwapLibProps) => {
   return lib;
 };
 
-const getInitialState = ({ storeOverride = {}, isQueryParamsEnabled }: { storeOverride?: Partial<State>; isQueryParamsEnabled?: boolean }): State => {
+export const getInitialState = ({ storeOverride = {}, isQueryParamsEnabled }: { storeOverride?: Partial<State>; isQueryParamsEnabled?: boolean }): State => {
   const tradeIntervalQueryParam = getQueryParam(QUERY_PARAMS.TRADE_INTERVAL);
   const srcAmountUi = getQueryParam(QUERY_PARAMS.INPUT_AMOUNT);
   const chunks = getQueryParam(QUERY_PARAMS.TRADES_AMOUNT);
-  const waitForOrderId = localStorage.getItem(WAIT_FOR_ORDER_LOCAL_STORAGE);
   return {
     srcToken: undefined,
     dstToken: undefined,
@@ -90,11 +90,9 @@ const getInitialState = ({ storeOverride = {}, isQueryParamsEnabled }: { storeOv
       ? defaultCustomFillDelay
       : { resolution: TimeResolution.Minutes, amount: tradeIntervalQueryParam ? Number(tradeIntervalQueryParam) : MIN_TRADE_INTERVAL_FORMATTED },
 
-    enableQueryParams: false,
     isMarketOrder: false,
     isCustomLimitPrice: !!limitPriceFromQueryParams(),
     customLimitPrice: limitPriceFromQueryParams(),
-    showOrders: false,
     selectedOrdersTab: 0,
     ...storeOverride,
   };
@@ -115,10 +113,9 @@ const contextReducer = (state: State, action: Action): State => {
   }
 };
 
-const useStore = (props: TwapLibProps, isWrongChain?: boolean) => {
+const useStore = (props: TwapLibProps) => {
   const [state, dispatch] = useReducer(contextReducer, getInitialState({ storeOverride: props.storeOverride, isQueryParamsEnabled: props.enableQueryParams }));
   const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
-
   return {
     updateState,
     state,
@@ -148,24 +145,14 @@ const useDeadlineUpdater = (state: State, updateState: (value: Partial<State>) =
 
 const useMarket = (props: TwapLibProps, state: State) => {
   const amount = useAmountBN(state.srcToken?.decimals, "1");
-  const _marketPrice = props.useMarketPrice?.({ srcToken: state.srcToken, dstToken: state.dstToken, amount });
-  const [marketPrice, setMarketPrice] = useState<string | undefined>(undefined);
-
-  // prevent market price from updating when swap is in progress
-  useEffect(() => {
-    if (!state.swapState) {
-      setMarketPrice(_marketPrice);
-    }
-  }, [_marketPrice, state.swapState]);
-
-  return marketPrice;
+  return props.useMarketPrice?.({ srcToken: state.srcToken, dstToken: state.dstToken, amount });
 };
 
 export const TwapAdapter = (props: TwapLibProps) => {
   const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
   const isWrongChain = useIsWrongChain(props);
   const lib = useLib(props);
-  const { updateState, state } = useStore(props, isWrongChain);
+  const { updateState, state } = useStore(props);
   useDeadlineUpdater(state, updateState);
   useDappDefaultTokens(props, updateState);
   const marketPrice = useMarket(props, state);

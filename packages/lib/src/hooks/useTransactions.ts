@@ -5,7 +5,6 @@ import { useTwapContext } from "../context/context";
 import {
   useChunks,
   useDeadline,
-  useDeadlineUi,
   useDstAmountUsdUi,
   useDstMinAmountOut,
   useDstMinAmountOutUi,
@@ -25,17 +24,16 @@ import BN from "bignumber.js";
 import { isTxRejected } from "../utils";
 import { useCallback } from "react";
 import { analytics } from "../analytics";
-import { stateActions } from "../context/actions";
+import { stateActions, useSwitchNativeToWrapped } from "../context/actions";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = query.useGasPrice();
-  const createOrder = useCreateOrderCallback();
   const { dappProps, lib, state } = useTwapContext();
   const { askDataParams } = dappProps;
   const dstMinAmountOut = useDstMinAmountOut();
   const srcUsd = useSrcUsd().value.toString();
   const srcChunkAmount = useSrcChunkAmount();
-  const deadline = useDeadline();
+  const deadline = useDeadline().millis;
   const fillDelayMillisUi = useFillDelayMillis();
   const srcAmount = useSrcAmount().srcAmountBN;
   const onTxHash = stateActions.useOnTxHash().onCreateOrderTxHash;
@@ -51,20 +49,53 @@ export const useCreateOrder = () => {
 
       const fillDelaySeconds = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
 
-      const data = await createOrder(
-        onTxHash,
-        srcToken!,
-        dstToken,
-        srcAmount,
-        srcChunkAmount,
-        dstMinAmountOut,
-        deadline,
-        fillDelaySeconds,
-        srcUsd,
-        askDataParams,
-        priorityFeePerGas || zero,
-        maxFeePerGas
+      if (!lib) {
+        throw new Error("lib is not defined");
+      }
+
+      const validation = lib?.validateOrderInputs(srcToken, dstToken, srcAmount, srcChunkAmount, dstMinAmountOut, deadline, fillDelaySeconds, srcUsd);
+      if (validation !== OrderInputValidation.valid) throw new Error(`invalid inputs: ${validation}`);
+
+      const askData = lib?.config.exchangeType === "PangolinDaasExchange" ? web3().eth.abi.encodeParameters(["address"], askDataParams || []) : [];
+      console.log({lib});
+      
+      const askParams = [
+        lib.config.exchangeAddress,
+        srcToken.address,
+        dstToken.address,
+        BN(srcAmount).toFixed(0),
+        BN(srcChunkAmount).toFixed(0),
+        BN(dstMinAmountOut).toFixed(0),
+        BN(deadline).div(1000).toFixed(0),
+        BN(lib.config.bidDelaySeconds).toFixed(0),
+        BN(fillDelaySeconds).toFixed(0),
+      ];
+
+      let ask: any;
+      if (lib.config.twapVersion > 3) {
+        askParams.push(askData as any);
+        ask = lib.twap.methods.ask(askParams as any);
+      } else {
+        ask = (lib.twap.methods as any).ask(...askParams);
+      }
+
+      const tx = await sendAndWaitForConfirmations(
+        ask,
+        {
+          from: lib.maker,
+          maxPriorityFeePerGas: priorityFeePerGas || zero,
+          maxFeePerGas,
+        },
+        undefined,
+        undefined,
+        {
+          onTxHash,
+        }
       );
+
+      const events = parseEvents(tx, lib.twap.options.jsonInterface);
+      const data = { txHash: tx.transactionHash, orderId: Number(events[0].returnValues.id) };
+
       analytics.onCreateOrderSuccess(data.orderId, data.txHash);
       return data;
     },
@@ -76,69 +107,6 @@ export const useCreateOrder = () => {
   );
 };
 
-function useCreateOrderCallback() {
-  const lib = useTwapContext()?.lib;
-  return async (
-    onTxHash: (txHash: string) => void,
-    srcToken: TokenData,
-    dstToken: TokenData,
-    srcAmount: BN.Value,
-    srcChunkAmount: BN.Value,
-    dstMinChunkAmountOut: BN.Value,
-    deadline: number,
-    fillDelaySeconds: number,
-    srcUsd: BN.Value,
-    askDataParams: any[] = [],
-    maxPriorityFeePerGas?: BN.Value,
-    maxFeePerGas?: BN.Value
-  ): Promise<{ txHash: string; orderId: number }> => {
-    if (!lib) {
-      throw new Error("lib is not defined");
-    }
-
-    const validation = lib?.validateOrderInputs(srcToken, dstToken, srcAmount, srcChunkAmount, dstMinChunkAmountOut, deadline, fillDelaySeconds, srcUsd);
-    if (validation !== OrderInputValidation.valid) throw new Error(`invalid inputs: ${validation}`);
-
-    const askData = lib?.config.exchangeType === "PangolinDaasExchange" ? web3().eth.abi.encodeParameters(["address"], askDataParams) : [];
-
-    const askParams = [
-      lib.config.exchangeAddress,
-      srcToken.address,
-      dstToken.address,
-      BN(srcAmount).toFixed(0),
-      BN(srcChunkAmount).toFixed(0),
-      BN(dstMinChunkAmountOut).toFixed(0),
-      BN(deadline).div(1000).toFixed(0),
-      BN(lib.config.bidDelaySeconds).toFixed(0),
-      BN(fillDelaySeconds).toFixed(0),
-    ];
-
-    let ask: any;
-    if (lib.config.twapVersion > 3) {
-      askParams.push(askData as any);
-      ask = lib.twap.methods.ask(askParams as any);
-    } else {
-      ask = (lib.twap.methods as any).ask(...askParams);
-    }
-
-    const tx = await sendAndWaitForConfirmations(
-      ask,
-      {
-        from: lib.maker,
-        maxPriorityFeePerGas,
-        maxFeePerGas,
-      },
-      undefined,
-      undefined,
-      {
-        onTxHash,
-      }
-    );
-
-    const events = parseEvents(tx, lib.twap.options.jsonInterface);
-    return { txHash: tx.transactionHash, orderId: Number(events[0].returnValues.id) };
-  };
-}
 
 export const useWrapToken = () => {
   const srcAmount = useSrcAmount().srcAmountBN;
@@ -295,8 +263,8 @@ const useSubmitAnalytics = () => {
   const minDstAmountOutUi = useDstMinAmountOutUi();
   const minDstAmountOut = useDstMinAmountOut();
   const fillDelay = useFillDelayMillis();
-  const deadline = useDeadline();
-  const deadlineUi = useDeadlineUi();
+  const { millis: deadline, text: deadlineUi } = useDeadline();
+
   const fillDelayUi = useFillDelayText();
   const srcChunkAmount = useSrcChunkAmount().toString();
   const srcChunkAmountUi = useSrcChunkAmountUi();
@@ -344,10 +312,8 @@ const useSubmitAnalytics = () => {
 export const useSubmitOrderFlow = () => {
   const srcAmount = useSrcAmount().srcAmountBN.toString();
   const { lib, dappProps, updateState, state } = useTwapContext();
-
   const { minNativeTokenBalance } = dappProps;
-
-  const { srcToken, swapState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash } = state;
+  const { srcToken, swapState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, wrapSuccess } = state;
   const { data: haveAllowance } = query.useAllowance();
   const { mutateAsync: approve } = useApproveToken();
   const { refetch: refetchNativeBalance } = query.useMinNativeTokenBalance(minNativeTokenBalance);
@@ -361,6 +327,8 @@ export const useSubmitOrderFlow = () => {
   const reset = useResetAfterSwap();
   const submitAnalytics = useSubmitAnalytics();
   const onOrderCreated = stateActions.useOnOrderCreated();
+  const onSubmitSwap = stateActions.useOnSubmitSwap();
+  const nativeToWrapped = useSwitchNativeToWrapped();
 
   const mutate = useMutation(
     async () => {
@@ -371,8 +339,8 @@ export const useSubmitOrderFlow = () => {
       if (!wToken) {
         throw new Error("WToken not defined");
       }
+      onSubmitSwap();
       submitAnalytics();
-      updateState({ swapState: "loading" });
 
       if (minNativeTokenBalance) {
         const hasMinNativeTokenBalance = await refetchNativeBalance();
@@ -405,8 +373,11 @@ export const useSubmitOrderFlow = () => {
     },
     {
       onError(error) {
+        if (wrapSuccess) {
+          nativeToWrapped();
+        }
         if (isTxRejected(error)) {
-          updateState({ swapState: "rejected" });
+          updateState({ swapState: undefined });
         } else {
           updateState({ swapState: "failed" });
         }
@@ -421,8 +392,6 @@ export const useSubmitOrderFlow = () => {
       },
     }
   );
-
-  
 
   const error = !mutate.error ? undefined : (mutate.error as any).message || "Failed to create order";
 

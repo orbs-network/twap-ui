@@ -39,7 +39,6 @@ import {
   useAmountUi,
   useDstBalance,
   useSrcChunkAmountUi,
-  useDeadlineUi,
   useOutAmount,
   useInvertPrice,
   useFormatDecimals,
@@ -51,6 +50,7 @@ import {
   useShouldWrapOrUnwrapOnly,
   useOpenOrders,
   useSrcAmount,
+  useDeadline,
 } from "../hooks/hooks";
 import { useConfirmationButton } from "../hooks/useConfirmationButton";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, textOverflow, StyledSummaryDetails, StyledSummaryRow, StyledSummaryRowRight } from "../styles";
@@ -75,7 +75,9 @@ import BN from "bignumber.js";
 import _ from "lodash";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { stateActions } from "../context/actions";
-import { useConfirmationModal } from "../hooks/useConfirmationModal";
+import { useSwapModal } from "../hooks/useSwapModal";
+import { OrderHistory } from "./OrderHistory";
+import { CreateOrderModal } from "./CreateOrderModal/CreateOrderModal";
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -221,7 +223,7 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: 
   );
 
   if (!Component) return null;
-  return <Component isOpen={isOpen} onClose={onClose} onSelect={onSelect} srcTokenSelected={undefined} dstTokenSelected={undefined} />;
+  return <Component isSrc={isSrc} isOpen={isOpen} onClose={onClose} onSelect={onSelect} srcTokenSelected={undefined} dstTokenSelected={undefined} />;
 };
 
 export function ChunksUSD({ onlyValue, emptyUi, suffix, prefix }: { onlyValue?: boolean; emptyUi?: React.ReactNode; suffix?: string; prefix?: string }) {
@@ -357,7 +359,7 @@ export function ChunksAmount() {
 }
 
 export const Deadline = () => {
-  const deadline = useDeadlineUi();
+  const deadline = useDeadline().text;
   return <StyledOneLineText>{deadline}</StyledOneLineText>;
 };
 
@@ -479,7 +481,7 @@ export const OrderSummaryDetails = ({ className = "", subtitle, translations }: 
 
 export function OrderSummarySwipeContainer({ children }: { children: ReactNode }) {
   const { showConfirmation } = useTwapContext().state;
-  const { onClose } = useConfirmationModal();
+  const { onClose } = useSwapModal();
   return (
     <SwipeContainer show={showConfirmation} close={onClose}>
       {children}
@@ -489,7 +491,7 @@ export function OrderSummarySwipeContainer({ children }: { children: ReactNode }
 
 export function OrderSummaryModalContainer({ children, className, title }: { children: ReactNode; className?: string; title?: string }) {
   const { showConfirmation } = useTwapContext().state;
-  const { onClose } = useConfirmationModal();
+  const { onClose } = useSwapModal();
   return (
     <Modal title={title} open={showConfirmation} className={className} onClose={onClose}>
       {children}
@@ -856,12 +858,14 @@ export const ShowConfirmation = ({ className = "" }: { className?: string }) => 
   const { onClick, text, disabled, loading } = useConfirmationButton();
 
   return (
-    <StyledShowConfirmation className={className}>
-      <PanelWarning />
-      <Button allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
-        {loading ? "Loading..." : text}
-      </Button>
-    </StyledShowConfirmation>
+    <>
+      <StyledShowConfirmation className={className}>
+        <PanelWarning />
+        <Button allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
+          {loading ? "Loading..." : text}
+        </Button>
+      </StyledShowConfirmation>
+    </>
   );
 };
 
@@ -908,47 +912,4 @@ export const Separator = ({ className = "" }: { className?: string }) => {
 const StyledSeparator = styled("div")({
   width: "100%",
   height: "1px",
-});
-
-export const OrderHistoryButton = ({ className = "" }: { className?: string }) => {
-  const { data } = query.useOrdersHistory();
-  const { dappProps, isWrongChain, state } = useTwapContext();
-  const { account } = dappProps;
-  const { waitForOrderId } = state;
-  const onShowOrders = stateActions.useOnShowOrders();
-  const openOrders = useOpenOrders();
-
-  const isLoading = waitForOrderId || !data;
-
-  const text = useMemo(() => {
-    if (!data) {
-      return "Loading orders";
-    }
-    if (waitForOrderId) {
-      return "Updating orders";
-    }
-    return `${_.size(openOrders)} Open orders`;
-  }, [data, waitForOrderId, openOrders]);
-
-  const onClick = useCallback(() => {
-    if (isLoading) return;
-    onShowOrders(true);
-  }, [onShowOrders, isLoading]);
-
-  if (!account || isWrongChain) return null;
-
-  return (
-    <StyledOrderHistoryButton className={`${className} twap-show-orders-btn`} onClick={onClick}>
-      {isLoading && <Spinner size={20} />}
-      <span>{text}</span>
-      <FaArrowRight className="twap-show-orders-btn-arrow" />
-    </StyledOrderHistoryButton>
-  );
-};
-
-const StyledOrderHistoryButton = styled(StyledRowFlex)({
-  justifyContent: "flex-start",
-  ".twap-show-orders-btn-arrow": {
-    marginLeft: "auto",
-  },
 });

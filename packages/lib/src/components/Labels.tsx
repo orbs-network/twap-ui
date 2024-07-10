@@ -37,7 +37,7 @@ export const LimitPriceLabel = () => {
 
 export const MaxDurationLabel = () => {
   const translations = useTwapContext().translations;
-  return <Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Label>;
+  return <Label tooltipText={translations.maxDurationTooltip}>{translations.expiry}</Label>;
 };
 
 export const TradeIntervalLabel = () => {

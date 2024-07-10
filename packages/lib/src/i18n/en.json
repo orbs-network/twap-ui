@@ -11,7 +11,7 @@
   "marketPriceTooltip": "You have the option to set a “limit price” for your order. If you do not select this option, each trade in your order will execute at the available market price.",
   "limitPriceTooltip": "Trades will only execute if the available market price is better than the limit price, potentially resulting in partial fills or orders remaining unfilled upon expiration.",
   "tradeSizeTooltip": "This sets the size of each individual trade that will be executed over the duration of your order.",
-  "maxDurationTooltip": "The maximum time during which the total amount of individual trades making up your full order can be executed. Note that depending on your parameters, your order may be filled earlier than this time, partially filled or not filled at all.",
+  "maxDurationTooltip": "This is the date when the order will expire. Please note that orders may be completed earlier than this time, partially filled, or remain unfilled based on the specified parameters.",
   "tradeIntervalTootlip": "The estimated time that will elapse between each trade in your order. Note that as this time includes an allowance of two minutes for bidder auction and block settlement, which cannot be predicted exactly, actual time may vary.",
   "customIntervalTooltip": "Enable custom interval",
   "totalTradesTooltip": "The total number of individual trades that will be scheduled as part of your order. Note that in limit orders, it is possible that not all scheduled trades will be executed.",
@@ -42,12 +42,10 @@
   "enterAmount": "Enter amount",
   "insufficientFunds": "Insufficient funds",
   "enterTradeSize": "Enter trade size",
-  "enterMaxDuration": "Enter max duration",
   "enterTradeInterval": "Enter trade interval",
   "tradeSizeMustBeEqual": "Trade size must be at least ${minChunkSizeUsd}",
   "tradeSize": "Trade size",
   "tradeInterval": "Trade interval",
-  "maxDuration": "Max duration ",
   "totalTrades": "Total trades",
   "deadline": "Deadline",
   "filled": "Filled",
@@ -76,7 +74,7 @@
   "confirmTx": "Confirm Transaction",
   "expiration": "Expiry",
   "orderType": "Order type",
-  "minReceivedPerTrade": "Min received per trade",
+  "minReceivedPerTrade": "Min. received per trade",
   "confirmationLimitPriceTooltip": "Trades will only be executed when the available market price is equal to or better than this limit price. Your order may only be partially filled.",
   "ordersTooltip": "The below shows your wallet's order history and current status.",
   "poweredBy": "Powered by Orbs",
@@ -118,5 +116,11 @@
   "placingOrder": "Placing order",
   "market": "market",
   "limit": "limit",
-  "txHash": "Transaction Hash"
+  "txHash": "Transaction Hash",
+  "maxDurationWarning": "Max. expiry is 30 days",
+  "minDurationWarning": "Min. expiry is {duration} minutes",
+  "expiry": "Expiry",
+  "individualTradeSize": "Individual trade size",
+  "numberOfTrades": "Num. of trades"
+
 }

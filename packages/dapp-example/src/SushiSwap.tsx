@@ -4,8 +4,7 @@ import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTr
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
-import { Popup } from "./Components";
-import { useCallback, useMemo, useState } from "react";
+import { ReactNode, useCallback, useMemo, useState } from "react";
 import _ from "lodash";
 import { zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
@@ -60,17 +59,6 @@ export const useDappTokens = () => {
   });
 };
 
-interface TokenSelectModalProps {
-  popup: boolean;
-  setPopup: (value: boolean) => void;
-  selectedAsset: any;
-  setSelectedAsset: (value: any) => void;
-  otherAsset: any;
-  setOtherAsset: (value: any) => void;
-  baseAssets: any[];
-  onAssetSelect: () => void;
-}
-
 const parseList = (rawList?: any): TokenListItem[] => {
   return _.map(rawList, (rawToken) => {
     return {
@@ -85,16 +73,27 @@ const parseList = (rawList?: any): TokenListItem[] => {
   });
 };
 
-const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
+const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNode; onSelect: (value: any) => void; selected: any }) => {
+  const { data: baseAssets } = useDappTokens();
+  const [open, setOpen] = useState(false);
+
   const tokensListSize = _.size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
+  const _onSelect = (value: any) => {
+    setOpen(false);
+    onSelect(value);
+  };
+
   return (
-    <Popup isOpen={popup} onClose={() => setPopup(true)}>
-      <StyledModalContent>
-        <TokensList tokens={parsedList} onClick={setSelectedAsset} />
-      </StyledModalContent>
-    </Popup>
+    <>
+      <Components.Base.Modal open={open} onClose={() => setOpen(false)}>
+        <StyledModalContent>
+          <TokensList tokens={parsedList} onClick={_onSelect} />
+        </StyledModalContent>
+      </Components.Base.Modal>
+      <div onClick={() => setOpen(true)}>{children}</div>
+    </>
   );
 };
 
@@ -122,8 +121,16 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       priceUsd={priceUsd}
       useTrade={_useTrade}
       limit={limit}
-      Modal={Components.Base.Modal}
+      Modal={SushiModal}
     />
+  );
+};
+
+const SushiModal = ({ children, title, header, open, onClose }: { open: boolean; onClose: () => void; title?: string; children: ReactNode; header?: ReactNode }) => {
+  return (
+    <Components.Base.Modal header={header} hideHeader={!title && !header} title={title} open={open} onClose={onClose}>
+      {children}
+    </Components.Base.Modal>
   );
 };
 

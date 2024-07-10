@@ -11,11 +11,18 @@ import {
   useFormatNumberV2,
   useSrcUsd,
   useTradeSizeWarning,
+  useShouldWrapOrUnwrapOnly,
 } from "../hooks/hooks";
 import { StyledColumnFlex } from "../styles";
-import { BottomContent, Loader, Message, NumericInput, Slider } from "./base";
+import { BottomContent, Label, Loader, Message, NumericInput, Slider } from "./base";
 
-const ChunkSelector = ({ className = "", children }: { className?: string; children: ReactNode }) => {
+export const ChunkSelector = ({ className = "", children }: { className?: string; children: ReactNode }) => {
+  const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+
+  if (shouldWrapOrUnwrapOnly) {
+    return null;
+  }
+
   return (
     <StyledChunkSelector className={className}>
       {children}
@@ -94,10 +101,15 @@ const StyledMessage = styled(Message)({
   },
 });
 
+export const TotalTradesLabel = () => {
+  const translations = useTwapContext().translations;
+
+  return <Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Label>;
+};
+
 ChunkSelector.Slider = SliderComponent;
 ChunkSelector.Input = Input;
-
-export default ChunkSelector;
+ChunkSelector.Label = TotalTradesLabel;
 
 const StyledChunksInput = styled(NumericInput)({
   width: "100%",

@@ -206,7 +206,7 @@ const SrcTokenPercentSelector = () => {
 };
 
 const OrderSummary = ({ children }: { children: ReactNode }) => {
-  const { onClose } = hooks.useConfirmationModal();
+  const { onClose } = hooks.useSwapModal();
 
   const { limit } = useAdapterContext();
 

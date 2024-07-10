@@ -16,12 +16,10 @@ import {
   useSrcAmountUsdUi,
   useSrcChunkAmountUi,
   useSrcUsd,
-  useSubmitOrderButton,
-} from "../../../hooks";
+} from "../../../hooks/hooks";
+import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
 import { Button, Spinner, Switch } from "../../base";
 import { MarketPriceWarning, Separator } from "../../Components";
-import { useOrderSummaryContext } from "../../OrderSummary/context";
-import { OrderSummary } from "../../OrderSummary/OrderSummary";
 import { BottomContent, SmallTokens } from "../Components";
 import BN from "bignumber.js";
 import { StyledColumnFlex, StyledText } from "../../../styles";
@@ -29,12 +27,18 @@ import { Steps } from "../Steps";
 import _ from "lodash";
 import { useOrderType } from "../hooks";
 import { stateActions } from "../../../context/actions";
+import { OrderDisplay } from "../../OrderDisplay";
 
 const Price = () => {
-  const { srcAmount, outAmount, isMarketOrder, srcToken, dstToken } = useOrderSummaryContext();
   const srcUsd = useSrcUsd().value;
   const dstUsd = useDstUsd().value;
   const [inverted, setInverted] = useState(false);
+  const srcAmount = useSrcAmount().srcAmountUi;
+  const { state } = useTwapContext();
+  const { srcToken, dstToken } = state;
+  const outAmount = useOutAmount().outAmountUi;
+
+  const isMarketOrder = useIsMarketOrder();
 
   const toggle = useCallback(() => {
     setInverted((prev) => !prev);
@@ -61,11 +65,11 @@ const Price = () => {
   const usd = useFormatNumberV2({ value: usdAmount, decimalScale: 2 });
   const title = isMarketOrder ? "Market Price" : "Limit Price";
   return (
-    <OrderSummary.Details.DetailRow title={title}>
+    <OrderDisplay.DetailRow title={title}>
       <StyledPrice onClick={toggle}>
         1 {leftToken?.symbol} = {price} {rightToken?.symbol} <span>{`($${usd})`}</span>
       </StyledPrice>
-    </OrderSummary.Details.DetailRow>
+    </OrderDisplay.DetailRow>
   );
 };
 
@@ -94,9 +98,7 @@ const StyledWarning = styled(MarketPriceWarning)({
   },
 });
 
-const MarketWarning = () => {
-  const isMarketOrder = useOrderSummaryContext().isMarketOrder;
-
+const MarketWarning = ({ isMarketOrder }: { isMarketOrder?: boolean }) => {
   if (!isMarketOrder) return null;
 
   return <StyledWarning className="twap-order-modal-market-warning" />;
@@ -108,7 +110,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   const { disclaimerAccepted } = state;
 
   return (
-    <OrderSummary.Details.DetailRow
+    <OrderDisplay.DetailRow
       className={`twap-order-modal-disclaimer ${className}`}
       title={
         <>
@@ -120,112 +122,107 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
       }
     >
       <Switch variant={uiPreferences.switchVariant} value={disclaimerAccepted} onChange={handleDisclaimer} />
-    </OrderSummary.Details.DetailRow>
+    </OrderDisplay.DetailRow>
   );
 };
 
 export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) => {
   const { swapState, swapSteps } = useTwapContext().state;
 
-  if (swapState === "loading" && _.size(swapSteps) === 1) {
+  const shouldOnlyConfirm = swapState === "loading" && _.size(swapSteps) === 1;
+
+  if (shouldOnlyConfirm) {
     return <ConfirmOrder />;
   }
+
   return (
-    <>
-      <ReviewOrder className={className} />
+    <StyledReview className={className}>
+      <Tokens />
       {swapState === "loading" ? (
         <>
           <StyledSwapPendingBorder />
           <Steps />
         </>
       ) : (
-        <SubmitButton onClick={onSubmit} />
+        <>
+          <Details />
+          <AcceptDisclaimer />
+          <SubmitButton onClick={onSubmit} />
+        </>
       )}
-    </>
+    </StyledReview>
   );
 };
 
-function ReviewOrder({ className = "" }: { className?: string }) {
-  const chunks = useChunks();
-  const srcAmount = useSrcAmount().srcAmountUi;
-  const { dappProps, state } = useTwapContext();
-  const { isLimitPanel } = dappProps;
+const Tokens = () => {
+  const { state } = useTwapContext();
+
   const { srcToken, dstToken } = state;
   const srcUsd = useSrcAmountUsdUi();
   const dstUsd = useDstAmountUsdUi();
+  const srcAmount = useSrcAmount().srcAmountUi;
   const outAmount = useOutAmount().outAmountUi;
-  const deadline = useDeadline();
+
+  return (
+    <OrderDisplay.Tokens>
+      <OrderDisplay.SrcToken token={srcToken} amount={srcAmount} usd={srcUsd} />
+      <OrderDisplay.SrcToken token={dstToken} amount={outAmount} usd={dstUsd} />
+    </OrderDisplay.Tokens>
+  );
+};
+
+const Details = () => {
+  const chunks = useChunks();
+  const { dappProps, state } = useTwapContext();
+  const { isLimitPanel } = dappProps;
+  const { srcToken, dstToken } = state;
+  const deadline = useDeadline().millis;
   const srcChunkAmount = useSrcChunkAmountUi();
   const isMarketOrder = useIsMarketOrder();
   const dstMinAmountOut = useDstMinAmountOutUi();
   const fillDelayMillis = useFillDelayMillis();
 
   return (
-    <StyledReview
-      className={className}
-      deadline={deadline}
-      srcAmount={srcAmount}
-      outAmount={outAmount}
-      srcUsd={srcUsd}
-      dstUsd={dstUsd}
-      chunks={chunks}
-      srcChunkAmount={srcChunkAmount}
-      srcToken={srcToken}
-      dstToken={dstToken}
-      isMarketOrder={isMarketOrder}
-      dstMinAmountOut={dstMinAmountOut}
-      fillDelayMillis={fillDelayMillis}
-    >
-      <OrderSummary.Tokens />
+    <>
       <Separator />
-      <OrderSummary.Details>
+      <OrderDisplay.DetailsContainer>
         <Price />
-        {isLimitPanel ? <LimitPanelDetails /> : <TwapPanelDetails />}
-      </OrderSummary.Details>
-      <Separator />
-      <AcceptDisclaimer />
-    </StyledReview>
+        {isLimitPanel ? (
+          <>
+            <OrderDisplay.Expiry deadline={deadline} />
+            <OrderDisplay.Recipient />
+          </>
+        ) : (
+          <>
+            <OrderDisplay.Expiry deadline={deadline} />
+            <MarketWarning isMarketOrder={isMarketOrder} />
+            <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmount} srcToken={srcToken} />
+            <OrderDisplay.ChunksAmount chunks={chunks} />
+            <OrderDisplay.MinDestAmount dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={dstMinAmountOut} />
+            <OrderDisplay.TradeInterval fillDelayMillis={fillDelayMillis} />
+            <OrderDisplay.Recipient />
+          </>
+        )}
+      </OrderDisplay.DetailsContainer>
+    </>
   );
-}
+};
 
 export const SubmitButton = ({ onClick }: { onClick: () => void }) => {
   const button = useSubmitOrderButton(onClick);
 
   return (
-    <StyledButton onClick={button.onClick} loading={button.loading} disabled={button.disabled}>
+    <Button className="twap-order-modal-submit-btn" onClick={button.onClick} loading={button.loading} disabled={button.disabled}>
       {button.text}
-    </StyledButton>
+    </Button>
   );
 };
 
-const StyledButton = styled(Button)({
-  marginTop: 20,
+
+const StyledReview = styled(OrderDisplay)({
+  ".twap-order-modal-disclaimer": { marginTop: 20 },
+  ".twap-order-modal-submit-btn": { marginTop: 20 },
 });
-
-const TwapPanelDetails = () => {
-  return (
-    <>
-      <OrderSummary.Details.Expiry />
-      <MarketWarning />
-      <OrderSummary.Details.ChunkSize />
-      <OrderSummary.Details.ChunksAmount />
-      <OrderSummary.Details.MinDestAmount />
-      <OrderSummary.Details.TradeInterval />
-      <OrderSummary.Details.Recipient />
-    </>
-  );
-};
-
-const LimitPanelDetails = () => {
-  return (
-    <>
-      <OrderSummary.Details.Expiry />
-      <OrderSummary.Details.Recipient />
-    </>
-  );
-};
-
-const StyledReview = styled(OrderSummary)({});
 const StyledSwapPendingBorder = styled(Separator)({
   margin: "20px 0px",
 });
