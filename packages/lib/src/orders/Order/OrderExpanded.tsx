@@ -14,12 +14,12 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
   const hideUsd = uiPreferences.orders?.hideUsd;
   const minimumDelayMinutes = useMinimumDelayMinutes();
   const totalChunks = useFormatNumberV2({ value: order?.totalChunks });
-  const srcChunkAmountUsdUi = useFormatNumberV2({ value: order?.srcChunkAmountUsdUi });
+  const srcChunkAmountUsdUi = 0;
 
   const srcChunkAmountUi = useFormatNumberV2({ value: order?.srcChunkAmountUi });
 
   const dstMinAmountOutUi = useFormatNumberV2({ value: order?.dstMinAmountOutUi });
-  const dstMinAmountOutUsdUi = useFormatNumberV2({ value: order?.dstMinAmountOutUsdUi });
+  const dstMinAmountOutUsdUi = 0;
 
   if (!order) return null;
 

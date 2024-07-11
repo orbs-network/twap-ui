@@ -1214,3 +1214,31 @@ export const StyledMobileTabsMenu = styled(Menu)(({ theme }) => {
     },
   };
 });
+
+export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
+  const isDarkMode = true;
+  return {
+    background: isDarkMode ? "transparent" : "white",
+    borderRadius: 8,
+    padding: 2,
+    ".MuiTabs-indicator": {
+      background: isDarkMode ? "#ffffff14" : "#0000000a",
+      borderRadius: 6,
+      transitionDuration: "0.2s",
+    },
+    ".MuiButtonBase-root": {
+      padding: "6px 0px",
+      textTransform: "none",
+      minWidth: 80,
+      minHeight: "unset",
+      zIndex: 1,
+      color: isDarkMode ? "white" : "#000",
+      fontSize: 13,
+      fontWeight: 500,
+      opacity: 0.6,
+    },
+    ".Mui-selected": {
+      opacity: 1,
+    },
+  };
+});

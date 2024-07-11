@@ -3,8 +3,13 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { Link, SmallTokens } from "../Components";
 import { HiArrowCircleUp } from "@react-icons/all-files/hi/HiArrowCircleUp";
 import { useOrderType } from "../hooks";
+import { useTwapContext } from "../../../context/context";
+import { useExplorerUrl } from "../../../hooks";
 
 export function OrderSubmitted() {
+  const { createOrdertxHash } = useTwapContext().state;
+  const explorerUrl = useExplorerUrl();
+
   return (
     <StyledContainer className="twap-create-order-submitted">
       <Logo className="twap-create-order-submitted-logo">
@@ -12,7 +17,7 @@ export function OrderSubmitted() {
       </Logo>
       <Title />
       <SmallTokens />
-      <Link href="/">Learn more</Link>
+      {createOrdertxHash && <Link href={`${explorerUrl}/tx/${createOrdertxHash}`}>View explorer</Link>}
     </StyledContainer>
   );
 }

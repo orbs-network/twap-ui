@@ -73,11 +73,12 @@ const StyledLoader = styled(Loader)({
   transformOrigin: "top",
 });
 
-const StyledEmpty = styled(ListContainer)({
+const StyledEmpty = styled(StyledColumnFlex)({
   alignItems: "center",
   justifyContent: "flex-start",
-  paddingTop: 50,
-  fontSize: 20,
+  paddingTop: 30,
+  paddingBottom: 30,
+  fontSize: 18,
   fontWeight: 500,
 });
 
@@ -105,7 +106,7 @@ export function ListOrder({
       <StyledListOrder className="twap-order-container">
         <ListItemHeader order={order} />
         <StyledRowFlex className="twap-order-tokens">
-          <TokenDisplay token={order.srcToken} amount={order.srcAmountUi} />
+          <TokenDisplay token={order.srcToken} />
           <HiArrowRight className="twap-order-tokens-arrow" />
           <TokenDisplay token={order.dstToken} />
         </StyledRowFlex>
@@ -122,7 +123,7 @@ const ListItemHeader = ({ order }: { order: OrderUI }) => {
     <StyledHeader className="twap-order-header">
       <StyledText className="twap-order-header-text">
         {" "}
-        #{order?.id} {order?.isMarketOrder ? t.market : t.limit} <span>{`(${order?.createdAtUi})`}</span>
+        #{order?.id} {order?.isMarketOrder ? t.twapMarket : t.limit} <span>{`(${order?.createdAtUi})`}</span>
       </StyledText>
       <StyledText className="twap-order-header-status">{status}</StyledText>
     </StyledHeader>

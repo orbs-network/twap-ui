@@ -75,7 +75,7 @@ const useStep = (step?: SwapStep) => {
 
     if (step === "wrap") {
       return {
-        title: isWrapLoading ? "Wrapping..." : `Wrap ${lib?.config.nativeToken.symbol} in wallet`,
+        title: isWrapLoading ? "Wrapping..." : `Wrap ${lib?.config.nativeToken.symbol}`,
         Icon: RiSwapFill,
         image: lib?.config.nativeToken.logoUrl,
         status: wrapSuccess ? "completed" : isWrapLoading ? "loading" : isWrapPending ? "pending" : "disabled",
@@ -84,19 +84,16 @@ const useStep = (step?: SwapStep) => {
 
     if (step === "approve") {
       return {
-        title: isApproveLoading ? "Approving..." : `Approve ${srcToken?.symbol} in wallet`,
+        title: isApproveLoading ? "Approving..." : `Approve ${srcToken?.symbol}`,
         image: srcToken?.logoUrl,
-        link: {
-          url: "/",
-          text: "Some text",
-        },
+
         status: approveSuccess ? "completed" : isApproveLoading ? "loading" : isApprovePending ? "pending" : "disabled",
       };
     }
 
     if (step === "createOrder") {
       return {
-        title: isCreateLoading ? "Creating order..." : "Create Order in wallet",
+        title: isCreateLoading ? "Creating order..." : "Create Order",
         Icon: RiSwapFill,
         status: createOrderSuccess ? "completed" : isCreateLoading ? "loading" : isCreatePending ? "pending" : "disabled",
       };
@@ -115,8 +112,10 @@ const StepContainer = styled(StyledColumnFlex)<{ selected: number }>(({ selected
     color: selected ? "white" : "rgb(155, 155, 155)",
   },
   ".twap-step-icon": {
-    filter: `grayScale(${selected ? 0 : 1})`,
-    opacity: selected ? 1 : 0.5,
+    svg: {
+      filter: `grayScale(${selected ? 0 : 1})`,
+      opacity: selected ? 1 : 0.5,
+    },
   },
   img: {
     filter: `grayScale(${selected ? 0 : 1})!important`,
@@ -135,7 +134,15 @@ const StyledTitleAndLink = styled(StyledColumnFlex)({
 const Logo = ({ step }: { step: Step }) => {
   return (
     <StyledStepLogo className="twap-step-logo">
-      {step.status === "loading" ? <Spinner size={26} /> : step.image ? <img src={step.image} alt={step.title} /> : step.Icon ? <step.Icon className="twap-step-icon" /> : null}
+      {step.status === "loading" ? (
+        <Spinner size={26} />
+      ) : step.image ? (
+        <img src={step.image} alt={step.title} />
+      ) : step.Icon ? (
+        <div className="twap-step-icon">
+          <step.Icon />
+        </div>
+      ) : null}
     </StyledStepLogo>
   );
 };
@@ -168,9 +175,11 @@ const StyledStepLogo = styled("div")`
     z-index: 1;
   }
   .twap-step-icon {
-    width: 26px;
-    height: 26px;
-    fill: rgb(76, 130, 251);
+    svg: {
+      width: 26px;
+      height: 26px;
+      fill: rgb(76, 130, 251);
+    }
   }
 `;
 

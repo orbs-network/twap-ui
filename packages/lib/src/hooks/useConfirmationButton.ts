@@ -19,10 +19,10 @@ export const useConfirmationButton = () => {
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
   const noLiquidity = useNoLiquidity();
   const shouldUnwrap = useShouldUnwrap();
-  const srcUsd = useSrcUsd().value;
-  const dstUsd = useDstUsd().value;
+  const srcUsd = useSrcUsd().value.toString();
+  const dstUsd = useDstUsd().value.toString();
   const nativeSymbol = lib?.config.nativeToken.symbol;
-  const usdLoading = useMemo(() => BN(srcUsd || "0").isZero() || BN(dstUsd || "0").isZero(), [srcUsd.toString(), dstUsd.toString()]);
+  const usdLoading = BN(srcUsd || "0").isZero() || BN(dstUsd || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
   const warning = useSwapWarning();
   const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);

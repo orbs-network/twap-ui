@@ -16,6 +16,8 @@ import {
   TwapContextUIPreferences,
   LimitPriceTokenSelectProps,
   UseMarketPriceProps,
+  LimitPriceTitleProps,
+  useTwapContext,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData, Config } from "@orbs-network/twap";
@@ -53,13 +55,13 @@ import {
   StyledBalanceWarning,
   StyledSwapModalContent,
   StyledTop,
-  StyledTokenSelectLimit,
   StyledCreateOrderModal,
   StyledTwap,
   StyledTradeDuration,
   StyledTradeDurationRight,
   StyledOrders,
   StyledOrdersContent,
+  StyledLimitPriceTitle,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
@@ -172,22 +174,25 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-const parseTokens = (rawTokens: any[], config: Config): TokenData[] => {
-  const result = rawTokens.map((rawToken) => {
-    const { address, decimals, symbol, logoURI } = rawToken;
+const parseTokens = (props: SushiProps, config: Config): TokenData[] => {
+  const result = props.dappTokens.map((rawToken: any) => {
+    const { address, decimals, symbol } = rawToken;
     try {
       if (!symbol) {
         console.error("Invalid token", rawToken);
         return;
       }
-      if (!address || isNativeAddress(address) || address === "BNB") {
-        return config.nativeToken;
+      if (!address || isNativeAddress(address)) {
+        return {
+          ...config.nativeToken,
+          logoUrl: props.getTokenLogo(rawToken),
+        };
       }
       return {
         address: Web3.utils.toChecksumAddress(address),
         decimals,
         symbol,
-        logoUrl: logoURI,
+        logoUrl: props.getTokenLogo(rawToken),
       };
     } catch (error) {}
   });
@@ -198,6 +203,7 @@ const parseTokens = (rawTokens: any[], config: Config): TokenData[] => {
 interface SushiProps extends TWAPProps {
   TokenSelectModal: FC<{ children: ReactNode; onSelect: (value: any) => void; selected: any }>;
   Modal: FC<{ open: boolean; onClose: () => void; title?: string; children: ReactNode; header?: ReactNode }>;
+  getTokenLogo: (token: any) => string;
 }
 
 const AdapterContext = createContext({} as SushiProps);
@@ -214,12 +220,13 @@ const useMarketPrice = (props: UseMarketPriceProps) => {
   return trade?.outAmount;
 };
 
+
 const TWAPContent = (props: SushiProps) => {
+
   const chainId = hooks.useChainId(props.provider, props.connectedChainId);
   const config = useMemo(() => {
     return getConfig(configs, chainId);
   }, [chainId]);
-  
 
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
@@ -230,7 +237,7 @@ const TWAPContent = (props: SushiProps) => {
       return [];
     }
 
-    const tokens = parseTokens(props.dappTokens, config);
+    const tokens = parseTokens(props, config);
 
     return addMissingTokens(config, tokens);
   }, [props.dappTokens]);
@@ -283,7 +290,7 @@ const Orders = () => {
   }, []);
 
   return (
-    <StyledOrders>
+    <StyledOrders isOpen={isOpen}>
       <Components.OrderHistory.Button onClick={() => setIsOpen(true)} />
       <Modal open={isOpen} onClose={onClose} header={<Components.OrderHistory.Header />}>
         <StyledOrdersContent />
@@ -306,7 +313,7 @@ const SubmitOrderModal = () => {
   return (
     <Components.Base.Modal open={isOpen} onClose={() => onClose()}>
       <StyledSwapModalContent>
-        <StyledCreateOrderModal Components={{ USD }} />
+        <StyledCreateOrderModal />
       </StyledSwapModalContent>
     </Components.Base.Modal>
   );
@@ -338,35 +345,42 @@ const LimitPriceZeroButton = ({ text, onClick }: LimitPriceZeroButtonProps) => {
 };
 
 const LimitPriceTokenSelect = (props: LimitPriceTokenSelectProps) => {
+  return <TokenSelect onClose={() => {}} open={true} isSrcToken={props.isSrcToken} />;
+};
+
+const LimitPriceTitleTokenSelectModal = (props: TWAPTokenSelectProps) => {
+  const { srcToken, dstToken } = useTwapContext().state;
+  const token = props.isSrc ? srcToken : dstToken;
+  const { TokenSelectModal } = useAdapterContext();
+
   return (
-    <StyledTokenSelectLimit onClick={props.onClick}>
-      <Components.Base.TokenDisplay logo={props.token?.logoUrl} symbol={props.token?.symbol} />
-      <IoIosArrowDown size={20} />
-    </StyledTokenSelectLimit>
+    <TokenSelectModal selected={props.isSrc ? props.srcTokenSelected : props.dstTokenSelected} onSelect={props.onSelect!}>
+      <Components.Base.TokenDisplay symbol={token?.symbol} logo={token?.logoUrl} />
+    </TokenSelectModal>
+  );
+};
+
+const LimitPriceTitleTokenSelect = (props: LimitPriceTitleProps) => {
+  return <Components.TokenSelectModal Component={LimitPriceTitleTokenSelectModal} isOpen={false} onClose={() => {}} isSrc={props.isSrcToken} />;
+};
+
+const LimitPriceTitle = (props: LimitPriceTitleProps) => {
+  return (
+    <StyledLimitPriceTitle>
+      <span>{props.textLeft}</span>
+      <LimitPriceTitleTokenSelect {...props} />
+      <span>{props.textRight}</span>
+    </StyledLimitPriceTitle>
   );
 };
 
 const LimitPrice = () => {
-  const [isSrc, setIsSrc] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-
-  const onSrcSelect = useCallback(() => {
-    setIsSrc(true);
-    setIsOpen(true);
-  }, []);
-
-  const onDstSelect = useCallback(() => {
-    setIsSrc(false);
-    setIsOpen(true);
-  }, []);
-
   const hide = hooks.useShouldWrapOrUnwrapOnly();
 
   if (hide) return null;
 
   return (
     <>
-      <TokenSelect onClose={() => setIsOpen(false)} open={isOpen} isSrcToken={isSrc} />
       <Card>
         <Card.Header>
           <Components.Labels.LimitPriceLabel />
@@ -374,9 +388,9 @@ const LimitPrice = () => {
         </Card.Header>
         <Card.Body>
           <StyledLimitPanel
-            onSrcSelect={onSrcSelect}
-            Components={{ Input: LimitInput, PercentButton: LimitPercentButton, ZeroButton: LimitPriceZeroButton, TokenSelect: LimitPriceTokenSelect }}
-            onDstSelect={onDstSelect}
+            onSrcSelect={() => {}}
+            Components={{ Input: LimitInput, PercentButton: LimitPercentButton, ZeroButton: LimitPriceZeroButton, TokenSelect: LimitPriceTokenSelect, Title: LimitPriceTitle }}
+            onDstSelect={() => {}}
             styles={{
               percentButtonsGap: "5px",
             }}

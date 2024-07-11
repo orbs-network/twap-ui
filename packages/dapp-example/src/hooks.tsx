@@ -44,6 +44,7 @@ export const useGetTokens = ({
 
   const { account } = useWeb3React();
   const { isInValidNetwork } = useNetwork(chainId);
+
   const addedTokens = useAddedTokens();
   const lib = useDappContext().lib;
   return useQuery(

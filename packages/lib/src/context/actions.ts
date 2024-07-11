@@ -81,6 +81,7 @@ const useSwapModalActions = () => {
           approveTxHash: undefined,
           createOrderSuccess: undefined,
           swapData: undefined,
+          newOrderId: undefined,
         });
       }, closeDalay || 300);
     },
@@ -340,19 +341,12 @@ const useOnLimitMarketSwitch = () => {
 
 const useOnOrderCreated = () => {
   const { updateState } = useTwapContext();
-  const { lib } = useTwapContext();
-  const { refetch: refetchOrderHistory } = query.useOrdersHistory();
 
   return useCallback(
-    async (orderId: number) => {
-      updateState({ waitForOrderId: orderId, swapState: "success", createOrderSuccess: true, selectedOrdersTab: 0 });
-      logger(`useWaitForOrder, ${orderId}`);
-      await waitForOrder(lib!, orderId!);
-      logger(`useWaitForOrder, ${orderId} done`);
-      await refetchOrderHistory();
-      updateState({ waitForOrderId: undefined });
+    (newOrderId: number) => {
+      updateState({ swapState: "success", createOrderSuccess: true, selectedOrdersTab: 0, newOrderId });
     },
-    [updateState, lib, refetchOrderHistory]
+    [updateState]
   );
 };
 

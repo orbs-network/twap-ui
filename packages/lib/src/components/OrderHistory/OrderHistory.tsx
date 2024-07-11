@@ -14,18 +14,15 @@ import { query, useOpenOrders } from "../../hooks";
 const OrderHistoryButton = ({ onClick }: { onClick: () => void }) => {
   const { data } = query.useOrdersHistory();
   const { state } = useTwapContext();
-  const { waitForOrderId } = state;
   const openOrders = useOpenOrders();
-  const isLoading = waitForOrderId || !data;
+  const isLoading = !data;
   const text = useMemo(() => {
     if (!data) {
       return "Loading orders";
     }
-    if (waitForOrderId) {
-      return "Updating orders";
-    }
+
     return `${_.size(openOrders)} Open orders`;
-  }, [data, waitForOrderId, openOrders]);
+  }, [data, openOrders]);
 
   const _onClick = useCallback(() => {
     if (!isLoading) {
@@ -42,14 +39,14 @@ const OrderHistoryButton = ({ onClick }: { onClick: () => void }) => {
   );
 };
 
-export const OrderHistory = ({ className = "", children }: { className?: string; children: ReactNode }) => {
+export const OrderHistory = ({ className = "", children, isOpen }: { className?: string; children: ReactNode; isOpen: boolean }) => {
   const { dappProps, isWrongChain } = useTwapContext();
   const { account } = dappProps;
 
   if (!account || isWrongChain) return null;
 
   return (
-    <OrderHistoryContextProvider>
+    <OrderHistoryContextProvider isOpen={isOpen}>
       <StyledOrderHistory className={className}>{children}</StyledOrderHistory>
     </OrderHistoryContextProvider>
   );
@@ -67,9 +64,10 @@ const StyledOrderHistoryButton = styled(StyledRowFlex)({
 });
 
 const Content = ({ className = "" }: { className?: string }) => {
+  const selectedOrderId = useOrderHistoryContext().selectedOrderId;
   return (
     <Container className={className}>
-      <SelectedOrder />
+      <SelectedOrder selectedOrderId={selectedOrderId} />
       <List />
     </Container>
   );

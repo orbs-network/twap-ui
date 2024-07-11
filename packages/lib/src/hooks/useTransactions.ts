@@ -1,5 +1,5 @@
 import { zeroAddress, zero, parseEvents, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256 } from "@defi.org/web3-candies";
-import { OrderInputValidation, TokensValidation } from "@orbs-network/twap";
+import { OrderInputValidation, Status, TokensValidation } from "@orbs-network/twap";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context/context";
 import {
@@ -21,10 +21,11 @@ import {
 } from "./hooks";
 import { query } from "./query";
 import BN from "bignumber.js";
-import { isTxRejected } from "../utils";
+import { isTxRejected, logger } from "../utils";
 import { useCallback } from "react";
 import { analytics } from "../analytics";
 import { stateActions, useSwitchNativeToWrapped } from "../context/actions";
+import moment from "moment";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = query.useGasPrice();
@@ -53,12 +54,11 @@ export const useCreateOrder = () => {
         throw new Error("lib is not defined");
       }
 
-      const validation = lib?.validateOrderInputs(srcToken, dstToken, srcAmount, srcChunkAmount, dstMinAmountOut, deadline, fillDelaySeconds, srcUsd);
+      const validation = lib?.validateOrderInputs(srcToken, dstToken, srcAmount, srcChunkAmount, dstMinAmountOut, deadline, fillDelaySeconds, srcUsd || "1");
       if (validation !== OrderInputValidation.valid) throw new Error(`invalid inputs: ${validation}`);
 
       const askData = lib?.config.exchangeType === "PangolinDaasExchange" ? web3().eth.abi.encodeParameters(["address"], askDataParams || []) : [];
-      console.log({lib});
-      
+
       const askParams = [
         lib.config.exchangeAddress,
         srcToken.address,
@@ -70,6 +70,8 @@ export const useCreateOrder = () => {
         BN(lib.config.bidDelaySeconds).toFixed(0),
         BN(fillDelaySeconds).toFixed(0),
       ];
+
+      logger({ askParams });
 
       let ask: any;
       if (lib.config.twapVersion > 3) {
@@ -107,12 +109,10 @@ export const useCreateOrder = () => {
   );
 };
 
-
 export const useWrapToken = () => {
   const srcAmount = useSrcAmount().srcAmountBN;
-  const { lib, state } = useTwapContext();
+  const { lib } = useTwapContext();
 
-  const { srcToken, dstToken } = state;
   const useWrapOnly = useShouldOnlyWrap();
   const onTxHash = stateActions.useOnTxHash().onWrapTxHash;
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
@@ -135,7 +135,10 @@ export const useWrapToken = () => {
         undefined,
         undefined,
         {
-          onTxHash,
+          onTxHash: (hash) => {
+            txHash = hash;
+            onTxHash(hash);
+          },
         }
       );
       analytics.onWrapSuccess(txHash);
@@ -180,7 +183,10 @@ export const useUnwrapToken = () => {
         undefined,
         undefined,
         {
-          onTxHash,
+          onTxHash: (hash) => {
+            txHash = hash;
+            onTxHash(hash);
+          },
         }
       );
       analytics.onUnwrapSuccess(txHash);
@@ -219,7 +225,10 @@ export const useApproveToken = () => {
         undefined,
         undefined,
         {
-          onTxHash,
+          onTxHash: (value) => {
+            onTxHash(value);
+            txHash = value;
+          },
         }
       );
       analytics.onApproveSuccess(txHash);
@@ -232,15 +241,42 @@ export const useApproveToken = () => {
   );
 };
 const useOnSuccessCallback = () => {
-  const { dappProps, state } = useTwapContext();
+  const { dappProps, state, lib } = useTwapContext();
   const { onTxSubmitted } = dappProps;
-  const { srcToken, dstToken } = state;
+  const { srcToken, dstToken, srcAmountUi } = state;
   const srcAmount = useSrcAmount().srcAmountBN.toString();
   const dstAmountUsdUi = useDstAmountUsdUi();
   const outAmountRaw = useOutAmount().outAmountRaw;
+  const addOrder = query.useAddNewOrder();
+  const deadline = useDeadline().millis;
+  const srcBidAmount = useSrcChunkAmount().toString();
+  const dstMinAmount = useDstMinAmountOut();
+  const fillDelayMillisUi = useFillDelayMillis();
+  const totalChunks = useChunks();
+  const onOrderCreated = stateActions.useOnOrderCreated();
+  const reset = useResetAfterSwap();
 
   return useCallback(
     (order: { txHash: string; orderId: number }) => {
+      const fillDelaySeconds = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
+
+      onOrderCreated(order.orderId);
+      addOrder({
+        srcTokenAddress: srcToken?.address,
+        dstTokenAddress: dstToken?.address,
+        srcAmount,
+        createdAt: moment().unix().valueOf(),
+        id: order.orderId,
+        txHash: order.txHash,
+        deadline: moment(deadline).unix(),
+        srcBidAmount,
+        dstMinAmount,
+        fillDelay: fillDelaySeconds,
+        totalChunks,
+        status: Status.Open,
+        srcToken,
+        dstToken,
+      });
       onTxSubmitted?.({
         srcToken: srcToken!,
         dstToken: dstToken!,
@@ -249,8 +285,25 @@ const useOnSuccessCallback = () => {
         dstAmount: outAmountRaw || "",
         txHash: order.txHash,
       });
+      reset();
     },
-    [srcToken, dstToken, srcAmount, dstAmountUsdUi, outAmountRaw, onTxSubmitted]
+    [
+      srcToken,
+      dstToken,
+      srcAmount,
+      dstAmountUsdUi,
+      outAmountRaw,
+      onTxSubmitted,
+      srcAmountUi,
+      deadline,
+      srcBidAmount,
+      dstMinAmount,
+      fillDelayMillisUi,
+      totalChunks,
+      onOrderCreated,
+      reset,
+      lib,
+    ]
   );
 };
 
@@ -324,9 +377,7 @@ export const useSubmitOrderFlow = () => {
   const wToken = lib?.config.wToken;
   const nativeSymbol = lib?.config.nativeToken.symbol;
   const { refetch: refetchAllowance } = query.useAllowance();
-  const reset = useResetAfterSwap();
   const submitAnalytics = useSubmitAnalytics();
-  const onOrderCreated = stateActions.useOnOrderCreated();
   const onSubmitSwap = stateActions.useOnSubmitSwap();
   const nativeToWrapped = useSwitchNativeToWrapped();
 
@@ -377,15 +428,13 @@ export const useSubmitOrderFlow = () => {
           nativeToWrapped();
         }
         if (isTxRejected(error)) {
-          updateState({ swapState: undefined });
+          updateState({ swapState: undefined, swapData: undefined });
         } else {
           updateState({ swapState: "failed" });
         }
       },
       onSuccess(data) {
         onSuccessCallback(data);
-        onOrderCreated(data.orderId);
-        reset();
       },
       onSettled() {
         refetchAllowance();

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { stateActions } from "../context/actions";
 import { useTwapContext } from "../context/context";
 import { useDstAmountUsdUi, useOutAmount, useSrcAmount, useSrcAmountUsdUi } from "./hooks";
@@ -9,9 +10,9 @@ export const useSwapModal = () => {
   const { srcAmountUi } = useSrcAmount();
   const srcUsd = useSrcAmountUsdUi();
   const dstUsd = useDstAmountUsdUi();
-  const outAmount = useOutAmount().outAmountUi;  
+  const outAmount = useOutAmount().outAmountUi;
 
-  return {  
+  return {
     onClose,
     onOpen,
     isOpen,

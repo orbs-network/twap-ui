@@ -43,16 +43,13 @@ const PaginationList = ({ orders, status }: { orders?: HistoryOrder[]; status?: 
 const List = ({ orders, status }: { orders?: HistoryOrder[]; status?: string }) => {
   const [selected, setSelected] = useState<number | undefined>(undefined);
   const { translations, state } = useTwapContext();
-  const { waitForOrderId } = state;
 
   const onSelect = (value: number) => {
     setSelected((prevState) => (prevState === value ? undefined : value));
   };
 
   if (!_.size(orders)) {
-    return waitForOrderId ? (
-      <OrderLoader status={status} />
-    ) : (
+    return (
       <StyledContainer className="twap-orders-list">
         <StyledEmptyList className="twap-orders-empty-list">
           {!status ? "You currently don't have orders" : `${translations.noOrdersFound} ${(translations as any)["noOrdersFound_" + status]} ${translations.noOrdersFound1}`}
@@ -63,7 +60,6 @@ const List = ({ orders, status }: { orders?: HistoryOrder[]; status?: string }) 
 
   return (
     <StyledContainer className="twap-orders-list">
-      {waitForOrderId && <OrderLoader status={status} />}
       {orders?.map((order, index) => {
         return <Order order={order} key={index} expanded={order.id === selected} onExpand={() => onSelect(order.id)} />;
       })}

@@ -510,7 +510,13 @@ const TWAPPanel = () => {
 
 const SubmitOrderModal = () => {
   const { Modal } = useAdapterContext();
-  const { isOpen, onClose, title } = hooks.useSwapModal();
+  const { isOpen, onClose, swapState } = hooks.useSwapModal();
+
+  const title = useMemo(() => {
+    if (!swapState) {
+      return "Review order";
+    }
+  }, [swapState]);
 
   const onCloseWithDelay = useCallback(() => {
     onClose(500);

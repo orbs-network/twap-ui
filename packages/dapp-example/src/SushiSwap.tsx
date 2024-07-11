@@ -10,15 +10,28 @@ import { zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Components, getConfig } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
+import { baseSwapTokens } from "./BaseSwap";
 
 const name = "SushiSwap";
 const configs = [Configs.SushiArb, Configs.SushiBase];
 
 export const useDappTokens = () => {
   const config = useConfig();
+  const isBase = config?.chainId === Configs.SushiBase.chainId;
   const { chainId } = useWeb3React();
   const parseListToken = useCallback(
     (tokenList?: any) => {
+      if (isBase) {
+        return _.map(baseSwapTokens, (it, key) => {
+          return {
+            address: key,
+            decimals: it.decimals,
+            symbol: it.symbol,
+            logoURI: it.tokenInfo.logoURI,
+          };
+        });
+      }
+
       const res = tokenList?.tokens
         .filter((it: any) => it.chainId === config?.chainId)
         .map(({ symbol, address, decimals, logoURI, name }: any) => ({
@@ -45,8 +58,6 @@ export const useDappTokens = () => {
     switch (chainId) {
       case Configs.SushiArb.chainId:
         return "https://token-list.sushi.com/";
-      case Configs.SushiBase.chainId:
-        return "https://tokens.coingecko.com/base/all.json";
       default:
         break;
     }
@@ -55,6 +66,7 @@ export const useDappTokens = () => {
   return useGetTokens({
     url,
     parse: parseListToken,
+    tokens: isBase ? baseSwapTokens : undefined,
     modifyList: (tokens: any) => tokens.slice(0, 20),
   });
 };
@@ -97,8 +109,12 @@ const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNod
   );
 };
 
+const getTokenLogo = (token: any) => {
+  return token.logoURI;
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
-  const { account, library } = useWeb3React();
+  const { account, library, chainId } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
@@ -113,7 +129,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       connect={connect}
       account={account}
       srcToken={zeroAddress}
-      dstToken="DAI"
+      dstToken={chainId === Configs.SushiBase.chainId ? "BSWAP" : "DAI"}
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}
@@ -122,6 +138,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       useTrade={_useTrade}
       limit={limit}
       Modal={SushiModal}
+      getTokenLogo={getTokenLogo}
     />
   );
 };

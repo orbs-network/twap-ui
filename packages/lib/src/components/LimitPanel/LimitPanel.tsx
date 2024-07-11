@@ -258,9 +258,9 @@ const TokenSelect = () => {
   const token = inverted ? srcToken : dstToken;
   const { onDstSelect, onSrcSelect } = useLimitPanelContext();
   if (Components?.TokenSelect) {
-    return <Components.TokenSelect token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
+    return <Components.TokenSelect isSrcToken={!!inverted} token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
   }
-  return <DefaultTokenSelect token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
+  return <DefaultTokenSelect isSrcToken={!!inverted} token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
 };
 
 const InvertPrice = () => {
@@ -280,10 +280,10 @@ const Title = () => {
   const { isInvertedLimitPrice: inverted, srcToken, dstToken } = state;
   const token = inverted ? dstToken : srcToken;
   if (Components?.Title) {
-    return <Components.Title textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
+    return <Components.Title isSrcToken={!inverted} textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
   }
 
-  return <DefaultTitle textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
+  return <DefaultTitle isSrcToken={!inverted} textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
 };
 
 const StyledInvertprice = styled(Box)({

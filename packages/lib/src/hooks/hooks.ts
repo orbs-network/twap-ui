@@ -192,7 +192,7 @@ export const useTokenSelect = () => {
         switchTokens();
         return;
       }
-      resetLimitPrice();
+      // resetLimitPrice();
 
       if (isSrc) {
         updateState({ srcToken: parsedToken });

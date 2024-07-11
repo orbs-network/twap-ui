@@ -75,7 +75,7 @@ export const OrderHistoryHeader = () => {
   const { closePreview, selectedOrderId, isLoading } = useOrderHistoryContext();
   const order = useOrderById(selectedOrderId);
   const t = useTwapContext().translations;
-  const status = order && t[order.status as keyof Translations];
+
   return (
     <StyledHeader className="twap-order-modal-header">
       {isLoading ? null : !order ? (
@@ -86,7 +86,7 @@ export const OrderHistoryHeader = () => {
             <HiArrowLeft />
           </StyledBack>
           <StyledTitle className="twap-order-modal-header-title">
-            #{order?.id} {order?.isMarketOrder ? t.marketOrder : t.limitOrder} <span>{`(${status})`}</span>
+            #{order?.id} {order?.isMarketOrder ? t.twapMarket : t.limitOrder}
           </StyledTitle>
         </StyledOrderDetails>
       )}

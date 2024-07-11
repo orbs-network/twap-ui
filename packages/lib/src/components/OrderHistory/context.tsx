@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTwapContext } from "../../context/context";
 import { useOrdersHistory } from "../../hooks";
 import { HistoryOrder, OrderUI, Translations } from "../../types";
@@ -19,12 +19,20 @@ interface OrderHistoryContextType {
 }
 export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
-export const OrderHistoryContextProvider = ({ children }: { children: ReactNode }) => {
+export const OrderHistoryContextProvider = ({ children, isOpen }: { children: ReactNode; isOpen: boolean }) => {
   const { data } = useOrdersHistory();
   const [tab, setTab] = useState<Status | undefined>(undefined);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
-  const waitingForOrdersUpdate = !!useTwapContext().state.waitForOrderId;
-  const isLoading = !data || waitingForOrdersUpdate;
+  const isLoading = !data;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setTimeout(() => {
+        setSelectedOrderId(undefined);
+        setTab(undefined);
+      }, 300);
+    }
+  }, [isOpen]);
 
   const selectOrder = useCallback(
     (id: number | undefined) => {

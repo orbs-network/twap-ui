@@ -55,9 +55,9 @@ const StyledSmallTokens = styled(StyledRowFlex)({
   alignItems: "center",
 });
 
-export const Link = ({ href, children }: { href: string; children: ReactNode }) => {
+export const Link = ({ href, children, onClick }: { href?: string; children: ReactNode; onClick?: () => void }) => {
   return (
-    <StyledLink href={href} target="_blank" className="twap-order-modal-link">
+    <StyledLink onClick={onClick} href={href} target="_blank" className="twap-order-modal-link">
       {children}
     </StyledLink>
   );

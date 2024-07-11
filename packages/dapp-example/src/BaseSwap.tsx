@@ -15,7 +15,7 @@ const config = Configs.BaseSwap;
 
 const useDappTokens = () => {
   return useGetTokens({
-    tokens,
+    tokens: baseSwapTokens,
     baseAssets: erc20s.base,
   });
 };
@@ -183,7 +183,7 @@ const dapp: Dapp = {
 
 export default dapp;
 
-const tokens = {
+export const baseSwapTokens = {
   "0x78a087d713Be963Bf307b18F2Ff8122EF9A63ae9": {
     decimals: 18,
     symbol: "BSWAP",

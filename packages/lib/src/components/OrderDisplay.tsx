@@ -22,7 +22,7 @@ const Expiry = ({ deadline }: { deadline?: number }) => {
 const ChunkSize = ({ srcChunkAmount, srcToken }: { srcChunkAmount?: string; srcToken?: Token }) => {
   const translations = useTwapContext().translations;
 
-  const _srcChunkAmount = useFormatNumberV2({ value: srcChunkAmount, decimalScale: 2 });
+  const _srcChunkAmount = useFormatNumberV2({ value: srcChunkAmount, decimalScale: 3 });
   return (
     <DetailRow title={translations.individualTradeSize} tooltip={translations.confirmationTradeSizeTooltip}>
       {`${_srcChunkAmount} ${srcToken?.symbol}`}
@@ -171,7 +171,6 @@ const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
   return <StyledText className={`twap-order-display-token-usd ${className}`}>${usd}</StyledText>;
 };
 
-
 const SrcToken = ({ amount, token, usd }: { amount?: string; token?: Token; usd?: string }) => {
   return <TokenDisplay amount={amount} token={token} usd={usd} title="From" />;
 };
@@ -180,12 +179,9 @@ const DstToken = ({ amount, token, usd }: { amount?: string; token?: Token; usd?
   return <TokenDisplay amount={amount} token={token} usd={usd} title="To" />;
 };
 
-
-
 const TokensContainer = ({ className = "", children }: { className?: string; children?: ReactNode }) => {
   return <StyledTokens className={`twap-order-display-tokens ${className}`}>{children}</StyledTokens>;
 };
-
 
 OrderDisplay.DetailsContainer = Details;
 OrderDisplay.Tokens = TokensContainer;
@@ -199,8 +195,6 @@ OrderDisplay.Recipient = Recipient;
 OrderDisplay.TradeInterval = TradeInterval;
 OrderDisplay.DetailRow = DetailRow;
 OrderDisplay.TxHash = TxHash;
-
-
 
 const StyledLabel = styled(Label)({
   ".twap-label-text": {
@@ -242,7 +236,6 @@ const StyledDetailRowChildren = styled(StyledRowFlex)({
     },
   },
 });
-
 
 const StyledTokenRight = styled(StyledColumnFlex)({
   width: "auto",

@@ -171,7 +171,7 @@ export const formatDecimals = (value?: string | BN | number, decimalPlaces?: num
   const index = indexWhereZerosEnd(BN(value).toString());
   const decimals = decimalPlaces || 6;
 
-  const res = BN(value).gt(1) && index > 1 ? 0 : index > 8 ? 0 : index + decimals;
+  const res = BN(value).gt(1) && index >= 1 ? 0 : index > 8 ? 0 : index + decimals;
 
   return BN(value).decimalPlaces(res, BN.ROUND_DOWN).toString();
 };

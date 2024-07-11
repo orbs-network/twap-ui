@@ -10,6 +10,9 @@ import {
   TWAPProps,
   Orders,
   ORDERS_CONTAINER_ID,
+  addMissingTokens,
+  UseMarketPriceProps,
+  Styles,
 } from "@orbs-network/twap-ui";
 import { memo, ReactNode, useCallback, useState, createContext, useContext, CSSProperties, useMemo, useEffect } from "react";
 import translations from "./i18n/en.json";
@@ -55,13 +58,14 @@ import {
   StyledBuyTokenText,
   StyledMobileTabsMenuButton,
   StyledMobileTabsMenu,
+  StyledLimitSwitch,
 } from "./styles";
 import { Configs, Status, TokenData } from "@orbs-network/twap";
 import { isNativeAddress } from "@defi.org/web3-candies";
 import Web3 from "web3";
 import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 import _ from "lodash";
-
+import BN from "bignumber.js";
 import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";
 import { IoMdArrowBack } from "@react-icons/all-files/io/IoMdArrowBack";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
@@ -115,6 +119,20 @@ const parseToken = (getTokenLogoURL: (symbol: string) => string, rawToken: Chron
     symbol: rawToken.symbol,
     logoUrl: getTokenLogoURL(rawToken.symbol),
   };
+};
+
+const useParsedTokens = (props: TWAPProps): TokenData[] => {
+  const { getTokenLogoURL, dappTokens } = useAdapterContext();
+
+  return useMemo(() => {
+    if (!_.size(props.dappTokens) || !config) {
+      return [];
+    }
+
+    const tokens = _.compact(_.map(dappTokens, (rawToken) => parseToken(getTokenLogoURL, rawToken)));
+
+    return addMissingTokens(config, tokens);
+  }, [props.dappTokens, getTokenLogoURL]);
 };
 
 const AdapterContext = createContext({} as ChronosTWAPProps);
@@ -343,11 +361,21 @@ const useProvider = (props: ChronosTWAPProps) => {
   return provider;
 };
 
-const TWAP = (props: ChronosTWAPProps) => {
+const useMarketPrice = (props: UseMarketPriceProps) => {
+  const { srcToken, dstToken, amount } = props;
+  const useTrade = useAdapterContext().useTrade;
+
+  const trade = useTrade!(srcToken?.address, dstToken?.address, BN(amount || 0).isZero() ? undefined : amount);
+  return trade?.outAmount;
+};
+
+const Wrapped = (props: ChronosTWAPProps) => {
   const provider = useProvider(props);
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
+
+  const parsedTokens = useParsedTokens(props);
 
   return (
     <Box className="adapter-wrapper">
@@ -367,20 +395,68 @@ const TWAP = (props: ChronosTWAPProps) => {
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
         priceUsd={props.priceUsd}
-        parsedTokens={[]}
+        parsedTokens={parsedTokens}
+        useMarketPrice={useMarketPrice}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
-          <AdapterContextProvider value={props}>
-            <Listener />
-            {props.limit ? <LimitPanel /> : <TWAPPanel />}
-            <Components.Base.Portal id={ORDERS_CONTAINER_ID}>
-              <OrdersLayout />
-            </Components.Base.Portal>
-          </AdapterContextProvider>
+          <Listener />
+          {props.limit ? <LimitPanel /> : <TWAPPanel />}
+          <SubmitOrderModal />
+          <Components.Base.Portal id={ORDERS_CONTAINER_ID}>
+            <OrdersLayout />
+          </Components.Base.Portal>
         </ThemeProvider>
       </TwapAdapter>
     </Box>
+  );
+};
+
+const LimitPrice = () => {
+  const [isSrc, setIsSrc] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const onSrcSelect = useCallback(() => {
+    setIsSrc(true);
+    setIsOpen(true);
+  }, []);
+
+  const onDstSelect = useCallback(() => {
+    setIsSrc(false);
+    setIsOpen(true);
+  }, []);
+
+  const hide = hooks.useShouldWrapOrUnwrapOnly();
+
+  if (hide) return null;
+
+  return (
+    <>
+      <TokenSelect onClose={() => setIsOpen(false)} open={isOpen} isSrcToken={isSrc} />
+      <Box>
+        <Box>
+          <Components.Labels.LimitPriceLabel />
+          <StyledLimitSwitch />
+        </Box>
+        <Box>
+          <Components.LimitPanel
+            onSrcSelect={onSrcSelect}
+            onDstSelect={onDstSelect}
+            styles={{
+              percentButtonsGap: "5px",
+            }}
+          />
+        </Box>
+      </Box>
+    </>
+  );
+};
+
+const TWAP = (props: ChronosTWAPProps) => {
+  return (
+    <AdapterContextProvider value={props}>
+      <Wrapped {...props} />
+    </AdapterContextProvider>
   );
 };
 
@@ -451,18 +527,26 @@ const TWAPPanel = () => {
           <TokenPanel />
         </StyledTopColumnFlex>
         <StyledColumnFlex>
-          <TradeSize />
-          <TradeInterval />
+          <TotalTrades />
+          <TradeIntervalSelect />
           <MaxDuration />
-
+          <LimitPrice />
           <StyledSubmit isMain />
         </StyledColumnFlex>
       </StyledColumnFlex>
-      <OrderSummary>
-        <Components.OrderSummaryDetails />
-      </OrderSummary>
+      <Components.ShowConfirmation />
       <StyledPoweredByOrbs />
     </div>
+  );
+};
+
+const SubmitOrderModal = () => {
+  const { isOpen, onClose } = hooks.useSwapModal();
+
+  return (
+    <Components.Base.Modal open={isOpen} onClose={() => onClose()}>
+      <Components.CreateOrderModal />
+    </Components.Base.Modal>
   );
 };
 
@@ -492,60 +576,19 @@ const LimitPanel = () => {
   );
 };
 
-const ChunksLeft = () => {
+const TotalTrades = () => {
   return (
-    <StyledBigBorder style={{ gap: 5 }} className="twap-chunks-left">
-      <Components.Labels.ChunksAmountLabel />
-      <Components.TradeSizeValue />
-    </StyledBigBorder>
-  );
-};
-
-const ChunksMiddle = () => {
-  return (
-    <StyledBigBorder style={{ flex: 1 }} justifyContent="space-between" className="twap-chunks-middle">
-      <Components.SrcToken />
-    </StyledBigBorder>
-  );
-};
-
-const ChunksRight = () => {
-  return (
-    <StyledBigBorder style={{ width: 90 }} className="twap-chunks-right">
-      <Components.ChunksUSD prefix="≈$" />
-    </StyledBigBorder>
-  );
-};
-
-const TradeSize = () => {
-  const srcAmountNotZero = hooks.useSrcAmountNotZero();
-  const mobile = useMediaQuery("(max-width:600px)");
-
-  return (
-    <>
-      <StyledTradeSize className="twap-trade-size" disabled={!srcAmountNotZero ? 0 : 1}>
-        <StyledCardColumn className="twap-trade-size-flex">
+    <Components.ChunkSelector>
+      <Box>
+        <Box>
           <Components.Labels.TotalTradesLabel />
-          <ChunksSlider />
-
-          {!mobile ? (
-            <TwapStyles.StyledRowFlex className="twap-card-children">
-              <ChunksLeft />
-              <ChunksMiddle />
-              <ChunksRight />
-            </TwapStyles.StyledRowFlex>
-          ) : (
-            <TwapStyles.StyledColumnFlex className="twap-card-children">
-              <ChunksMiddle />
-              <TwapStyles.StyledRowFlex>
-                <ChunksLeft />
-                <ChunksRight />
-              </TwapStyles.StyledRowFlex>
-            </TwapStyles.StyledColumnFlex>
-          )}
-        </StyledCardColumn>
-      </StyledTradeSize>
-    </>
+        </Box>
+        <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
+          <Components.ChunkSelector.Input />
+          <Components.ChunkSelector.Slider />
+        </Styles.StyledRowFlex>
+      </Box>
+    </Components.ChunkSelector>
   );
 };
 
@@ -564,18 +607,19 @@ const MaxDuration = () => {
   );
 };
 
-const TradeInterval = () => {
-  const srcAmountNotZero = hooks.useSrcAmountNotZero();
-
+const TradeIntervalSelect = () => {
   return (
-    <StyledTimeSelectCard className="twap-trade-interval" disabled={!srcAmountNotZero ? 1 : 0}>
-      <TwapStyles.StyledRowFlex className="twap-trade-interval-flex">
-        <Components.Labels.TradeIntervalLabel />
-        <TwapStyles.StyledRowFlex style={{ flex: 1 }} className="twap-card-children">
-          <Components.TradeIntervalSelector />
-        </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledRowFlex>
-    </StyledTimeSelectCard>
+    <Components.TradeInterval>
+      <Box>
+        <Box>
+          <Components.TradeInterval.Label />
+        </Box>
+        <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
+          <Components.TradeInterval.Input />
+          <Components.TradeInterval.Resolution />
+        </Styles.StyledRowFlex>
+      </Box>
+    </Components.TradeInterval>
   );
 };
 

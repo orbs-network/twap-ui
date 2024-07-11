@@ -59,6 +59,7 @@ interface Data extends SubmitOrderArgs, LibConfig {
   unwrapTxHash?: string;
   approvalTxHash?: string;
   walletAddress?: string;
+  walletConnectName?: string;
 }
 
 const sendBI = async (data: Partial<Data>) => {
@@ -111,6 +112,26 @@ class Analytics {
 
   onLibInit(lib?: TWAPLib) {
     const config = lib?.config;
+    const provider = lib?.provider;
+    let walletConnectName;
+
+    try {
+      if (provider.isRabby) {
+        walletConnectName = "Rabby Wallet";
+      } else if (provider.isWalletConnect) {
+        walletConnectName = "WalletConnect";
+      } else if (provider.isCoinbaseWallet) {
+        return "Coinbase Wallet";
+      } else if (provider.isOkxWallet) {
+        return "OKX Wallet";
+      } else if (provider.isTrustWallet) {
+        return "Trust Wallet";
+      } else if (provider.isMetaMask) {
+        return "MetaMask";
+      } else {
+        walletConnectName = (provider as any)?.session?.peer.metadata.name;
+      }
+    } catch (error) {}
 
     this.updateAndSend({
       bidDelaySeconds: config?.bidDelaySeconds,
@@ -125,6 +146,7 @@ class Analytics {
       twapVersion: config?.twapVersion,
       walletAddress: lib?.maker,
       pageLoaded: true,
+      walletConnectName,
     });
   }
 

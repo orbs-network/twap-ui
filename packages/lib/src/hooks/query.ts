@@ -7,13 +7,12 @@ import { useTwapContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
 import { amountBN, logger } from "../utils";
-import { Configs, Status, TokenData, TWAPLib } from "@orbs-network/twap";
+import { Configs, TokenData, TWAPLib } from "@orbs-network/twap";
 import _ from "lodash";
-import { getOrders, waitForOrder } from "../helper";
-import { HistoryOrder, OrdersData, TwapLibProps } from "../types";
+import { getOrders } from "../helper";
+import { HistoryOrder, OrdersData } from "../types";
 import { useSrcAmount } from "./hooks";
-import { stateActions } from "../context/actions";
-import moment from "moment";
+import { useOrdersStore } from "../store";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const lib = useTwapContext().lib;
@@ -185,16 +184,66 @@ const filterByDex = (lib: TWAPLib, orders: HistoryOrder[]) => {
   return orders;
 };
 
+const useOrderHistoryKey = () => {
+  const lib = useTwapContext().lib;
+
+  return [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.partner, lib?.config.chainId];
+};
+
+const useAddNewOrder = () => {
+  const QUERY_KEY = useOrderHistoryKey();
+  const queryClient = useQueryClient();
+  const lib = useTwapContext().lib;
+  const addOrder = useOrdersStore().addOrder;
+
+  return useCallback(
+    (order: HistoryOrder) => {
+      try {
+        if (!lib) return;
+        logger({ newOrderAddres: order });
+        addOrder(lib.config.chainId, order);
+        queryClient.setQueryData(QUERY_KEY, (prev?: OrdersData) => {
+          const updatedOpenOrders = prev?.Open ? [order, ...prev.Open] : [order];
+          if (!prev) {
+            return {
+              Open: updatedOpenOrders,
+            };
+          }
+          return {
+            ...prev,
+            Open: updatedOpenOrders,
+          };
+        });
+      } catch (error) {}
+    },
+    [QUERY_KEY, queryClient, lib, addOrder]
+  );
+};
+
 export const useOrdersHistory = () => {
   const { dappProps, state } = useTwapContext();
   const { parsedTokens } = dappProps;
   const lib = useTwapContext().lib;
-  const QUERY_KEY = [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.partner, lib?.config.chainId];
+  const QUERY_KEY = useOrderHistoryKey();
+  const localStorageOrders = useOrdersStore().orders;
+  const deleteOrder = useOrdersStore().deleteOrder;
 
   const query = useQuery<OrdersData>(
     QUERY_KEY,
     async ({ signal }) => {
       let orders = await getOrders(lib!, signal);
+      try {
+        const ids = orders.map((o) => o.id);
+        let chainOrders = localStorageOrders[lib!.config.chainId];
+        chainOrders.forEach((o) => {
+          if (!ids.includes(o.id)) {
+            orders.push(o);
+          } else {
+            deleteOrder(lib!.config.chainId, o.id);
+          }
+        });
+      } catch (error) {}
+
       orders = filterByDex(lib!, orders).map((order) => {
         const srcToken = _.find(parsedTokens, (t) => eqIgnoreCase(t.address, order.srcTokenAddress || ""));
         const dstToken = _.find(parsedTokens, (t) => eqIgnoreCase(t.address, order.dstTokenAddress || ""));
@@ -212,7 +261,7 @@ export const useOrdersHistory = () => {
     },
     {
       enabled: !!lib && _.size(parsedTokens) > 0 && !state.showConfirmation,
-      refetchInterval: state.waitForOrderId ? undefined : REFETCH_ORDER_HISTORY,
+      refetchInterval: REFETCH_ORDER_HISTORY,
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,
       retry: 5,
@@ -231,4 +280,5 @@ export const query = {
   useBalance,
   useOrdersHistory,
   useAllowance,
+  useAddNewOrder,
 };

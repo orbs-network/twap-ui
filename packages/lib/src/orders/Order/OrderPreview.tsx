@@ -4,7 +4,7 @@ import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../..
 import { useFormatNumberV2 } from "../../hooks";
 import { Icon, Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
 import { TokenData } from "@orbs-network/twap";
-import { ReactNode, useMemo } from "react";
+import { ReactNode } from "react";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { FiChevronDown } from "@react-icons/all-files/fi/FiChevronDown";
 

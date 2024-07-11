@@ -121,6 +121,7 @@
   "minDurationWarning": "Min. expiry is {duration} minutes",
   "expiry": "Expiry",
   "individualTradeSize": "Individual trade size",
-  "numberOfTrades": "Num. of trades"
-
+  "numberOfTrades": "No. of trades",
+  "AverageExecutionPrice": "Avg. execution price",
+  "twapMarket": "TWAP-market"
 }

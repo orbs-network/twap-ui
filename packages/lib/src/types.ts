@@ -124,7 +124,9 @@ export interface Translations {
   minDurationWarning: string;
   expiry: string;
   individualTradeSize: string;
-numberOfTrades: string;
+  numberOfTrades: string;
+  AverageExecutionPrice: string;
+  twapMarket: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";
@@ -348,7 +350,7 @@ export interface State {
   approveSuccess?: boolean;
 
   selectedOrdersTab: number;
-  waitForOrderId?: number;
+  newOrderId?: number;
 
   swapData?: {
     srcAmount: string;
@@ -357,7 +359,7 @@ export interface State {
     srcToken: TokenData;
     srcAmountUsd?: string;
     dstAmountUsd?: string;
-  }
+  };
 }
 
 export type SwitchVariant = "ios" | "default";
@@ -420,11 +422,13 @@ export type LimitPriceTitleProps = {
   textRight?: string;
   token?: TokenData;
   onTokenClick: () => void;
+  isSrcToken: boolean;
 };
 
 export type LimitPriceTokenSelectProps = {
   token?: TokenData;
   onClick: () => void;
+  isSrcToken: boolean;
 };
 
 export type LimitPriceInputProps = { isLoading: boolean; onChange: (value: string) => void; value: string };
@@ -445,12 +449,6 @@ export type LimitSwitchArgs = {
   options: [{ label: "Market"; value: "market" }, { label: "Limit"; value: "limit" }];
   selected: "limit" | "market";
   onClick: (value: "limit" | "market") => void;
-};
-
-export type CreateOrderModalArgs = {
-  Components?: {
-    USD?: FC<{ usd?: string }>;
-  };
 };
 
 export enum TimeResolution {

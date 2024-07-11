@@ -54,7 +54,7 @@ export const StyledSmallText = styled("span")(({ theme }) => {
   };
 });
 
-export const StyledBalance = styled(Styles.StyledText)<{ disabled?: number }>(({ theme, disabled }) => {
+export const StyledBalance = styled(Styles.StyledRowFlex)<{ disabled?: number }>(({ theme, disabled }) => {
   const styles = getStyles(theme);
   const darkDisabled = disabled ? "rgb(100 116 139/1)" : styles.darkText;
   const lightDisabled = disabled ? "rgb(107 114 128/1)" : "rgb(59 130 246/1)";
@@ -62,6 +62,7 @@ export const StyledBalance = styled(Styles.StyledText)<{ disabled?: number }>(({
   const hover = disabled ? "" : styles.darkTextHover;
 
   return {
+    gap: 5,
     cursor: disabled ? "auto" : "pointer",
     width: "auto",
     "*": {
@@ -74,9 +75,6 @@ export const StyledBalance = styled(Styles.StyledText)<{ disabled?: number }>(({
       fill: color,
       width: 20,
       height: 20,
-      position: "relative",
-      top: 3,
-      marginRight: 4,
     },
     "&:hover": {
       "*": {
@@ -259,13 +257,13 @@ export const configureStyles = (theme?: Theme) => {
     },
     ".twap-order-display": {
       ".twap-token-logo": {
-        width: "50px!important",
-        height: "50px!important",
+        width: "40px!important",
+        height: "40px!important",
       },
       ".twap-custom-usd": {},
       ".twap-order-display-token-amount": {
         fontWeight: 500,
-        fontSize: 20,
+        fontSize: 17,
       },
       ".twap-order-modal-market-warning": {
         background: styles.accent,
@@ -378,7 +376,7 @@ export const configureStyles = (theme?: Theme) => {
       },
     },
     ".twap-loader": {
-      background: "rgba(255,255,255,0.1)!important",
+      background: isDarkMode ? "rgba(255,255,255,0.1)!important" : "rgba(0,0,0,0.1)!important",
     },
 
     ".MuiSwitch-thumb": {
@@ -764,9 +762,42 @@ export const StyledOrdersContent = styled(Components.OrderHistory.Content)({
     top: 0,
     height: "100%",
   },
-  ".twap-orders-selected-order": {},
+  ".twap-order-display-details": {
+    padding: 0,
+  },
+  ".MuiAccordionSummary-content": {
+    padding: 12,
+  },
+  ".MuiAccordionDetails-root": {
+    padding: "0px 12px 12px 12px!important",
+  },
 });
 
 export const StyledTwap = styled("div")({
   width: "100%",
+});
+
+export const StyledLimitPriceTitle = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    fontSize: 14,
+    gap: 3,
+    justifyContent: "flex-start",
+    span: {
+      opacity: 0.8,
+    },
+    ".twap-token-display": {
+      cursor: "pointer",
+      transition: "0.2s all",
+      borderRadius: 10,
+      padding: "3px 5px",
+      "&:hover": {
+        background: styles.boxHover,
+      },
+    },
+    ".twap-token-logo": {
+      width: 20,
+      height: 20,
+    },
+  };
 });

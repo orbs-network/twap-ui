@@ -95,6 +95,8 @@ const StyledWarning = styled(MarketPriceWarning)({
   ".twap-warning-message-icon": {
     width: 15,
     height: 15,
+    top: 3,
+    position: "relative",
   },
 });
 
@@ -194,8 +196,8 @@ const Details = () => {
           </>
         ) : (
           <>
-            <OrderDisplay.Expiry deadline={deadline} />
             <MarketWarning isMarketOrder={isMarketOrder} />
+            <OrderDisplay.Expiry deadline={deadline} />
             <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmount} srcToken={srcToken} />
             <OrderDisplay.ChunksAmount chunks={chunks} />
             <OrderDisplay.MinDestAmount dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={dstMinAmountOut} />
@@ -217,7 +219,6 @@ export const SubmitButton = ({ onClick }: { onClick: () => void }) => {
     </Button>
   );
 };
-
 
 const StyledReview = styled(OrderDisplay)({
   ".twap-order-modal-disclaimer": { marginTop: 20 },
