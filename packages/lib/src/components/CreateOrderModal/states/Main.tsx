@@ -168,7 +168,7 @@ const Tokens = () => {
   return (
     <OrderDisplay.Tokens>
       <OrderDisplay.SrcToken token={srcToken} amount={srcAmount} usd={srcUsd} />
-      <OrderDisplay.SrcToken token={dstToken} amount={outAmount} usd={dstUsd} />
+      <OrderDisplay.DstToken token={dstToken} amount={outAmount} usd={dstUsd} />
     </OrderDisplay.Tokens>
   );
 };

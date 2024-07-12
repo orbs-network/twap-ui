@@ -182,7 +182,7 @@ const parseTokens = (props: SushiProps, config: Config): TokenData[] => {
         console.error("Invalid token", rawToken);
         return;
       }
-      if (!address || isNativeAddress(address)) {
+      if (!address || isNativeAddress(address) || rawToken.isNative) {
         return {
           ...config.nativeToken,
           logoUrl: props.getTokenLogo(rawToken),
@@ -217,12 +217,11 @@ const useMarketPrice = (props: UseMarketPriceProps) => {
   const useTrade = useAdapterContext().useTrade;
 
   const trade = useTrade!(srcToken?.address, dstToken?.address, BN(amount || 0).isZero() ? undefined : amount);
+
   return trade?.outAmount;
 };
 
-
 const TWAPContent = (props: SushiProps) => {
-
   const chainId = hooks.useChainId(props.provider, props.connectedChainId);
   const config = useMemo(() => {
     return getConfig(configs, chainId);
@@ -260,9 +259,10 @@ const TWAPContent = (props: SushiProps) => {
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
         isLimitPanel={props.limit}
-        priceUsd={props.priceUsd}
         uiPreferences={uiPreferences}
         useMarketPrice={useMarketPrice}
+        usePriceUSD={props.usePriceUSD}
+        onSwitchTokens={props.onSwitchTokens}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />

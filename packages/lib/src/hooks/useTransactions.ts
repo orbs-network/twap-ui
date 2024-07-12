@@ -10,6 +10,7 @@ import {
   useDstMinAmountOutUi,
   useFillDelayMillis,
   useFillDelayText,
+  useIsMarketOrder,
   useOutAmount,
   useResetAfterSwap,
   useShouldOnlyWrap,
@@ -42,7 +43,6 @@ export const useCreateOrder = () => {
   return useMutation(
     async (srcToken: TokenData) => {
       analytics.updateAction("create");
-
       const dstToken = {
         ...state.dstToken!,
         address: lib!.validateTokens(srcToken!, state.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : state.dstToken!.address,
@@ -71,7 +71,19 @@ export const useCreateOrder = () => {
         BN(fillDelaySeconds).toFixed(0),
       ];
 
-      logger({ askParams });
+      logger("create order args:", {
+        exchangeAddress: lib.config.exchangeAddress,
+        srcToken: srcToken.address,
+        dstToken: dstToken.address,
+        srcAmount: BN(srcAmount).toFixed(0),
+        srcChunkAmount: BN(srcChunkAmount).toFixed(0),
+        dstMinAmountOut: BN(dstMinAmountOut).toFixed(0),
+        deadline: BN(deadline).div(1000).toFixed(0),
+        bidDelaySeconds: BN(lib.config.bidDelaySeconds).toFixed(0),
+        fillDelaySeconds: BN(fillDelaySeconds).toFixed(0),
+        priorityFeePerGas: priorityFeePerGas.toString(),
+        maxFeePerGas: maxFeePerGas.toString(),
+      });
 
       let ask: any;
       if (lib.config.twapVersion > 3) {
@@ -99,10 +111,12 @@ export const useCreateOrder = () => {
       const data = { txHash: tx.transactionHash, orderId: Number(events[0].returnValues.id) };
 
       analytics.onCreateOrderSuccess(data.orderId, data.txHash);
+      logger("order created:", "orderId:", data.orderId, "txHash:", data.txHash);
       return data;
     },
     {
       onError: (error) => {
+        logger("order create failed:", error);
         analytics.onTxError(error, "create");
       },
     }
@@ -123,6 +137,7 @@ export const useWrapToken = () => {
       if (!lib) {
         throw new Error("lib is not defined");
       }
+      logger("wrapping token");
       analytics.updateAction(useWrapOnly ? "wrap-only" : "wrap");
       await sendAndWaitForConfirmations(
         erc20<any>(lib.config.wToken.symbol, lib.config.wToken.address, lib.config.wToken.decimals, iwethabi).methods.deposit(),
@@ -141,10 +156,12 @@ export const useWrapToken = () => {
           },
         }
       );
+      logger("token wrap success:", txHash);
       analytics.onWrapSuccess(txHash);
     },
     {
       onError: (error) => {
+        logger("token wrap failed:", error);
         analytics.onTxError(error, useWrapOnly ? "wrap-only" : "wrap");
       },
     }
@@ -211,6 +228,7 @@ export const useApproveToken = () => {
       if (!lib) {
         throw new Error("Lib is not defined");
       }
+      logger("approving token...");
       analytics.updateAction("approve");
 
       let txHash: string = "";
@@ -231,10 +249,12 @@ export const useApproveToken = () => {
           },
         }
       );
+      logger("token approve success:", txHash);
       analytics.onApproveSuccess(txHash);
     },
     {
       onError: (error) => {
+        logger("token approve failed:", error);
         analytics.onTxError(error, "approve");
       },
     }
@@ -276,6 +296,7 @@ const useOnSuccessCallback = () => {
         status: Status.Open,
         srcToken,
         dstToken,
+        exchange: lib?.config.exchangeAddress,
       });
       onTxSubmitted?.({
         srcToken: srcToken!,
@@ -390,6 +411,7 @@ export const useSubmitOrderFlow = () => {
       if (!wToken) {
         throw new Error("WToken not defined");
       }
+      logger(`Create order request`);
       onSubmitSwap();
       submitAnalytics();
 
@@ -461,15 +483,19 @@ export const useCancelOrder = () => {
   const lib = useTwapContext().lib;
   return useMutation(
     async (orderId: number) => {
+      logger(`canceling order...`, orderId);
+
       analytics.onCancelOrder(orderId);
       await lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
       await refetch();
     },
     {
       onSuccess: () => {
+        logger(`order canceled`);
         analytics.onCancelOrderSuccess();
       },
       onError: (error: Error) => {
+        logger(`cancel error order`, error);
         analytics.onTxError(error, "cancel");
       },
     }

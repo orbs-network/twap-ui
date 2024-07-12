@@ -6,11 +6,11 @@ import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, ST
 import { useTwapContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
-import { amountBN, logger } from "../utils";
+import { amountBN, getTokenFromTokensListV2, logger } from "../utils";
 import { Configs, TokenData, TWAPLib } from "@orbs-network/twap";
 import _ from "lodash";
 import { getOrders } from "../helper";
-import { HistoryOrder, OrdersData } from "../types";
+import { HistoryOrder, OrdersData, Token } from "../types";
 import { useSrcAmount } from "./hooks";
 import { useOrdersStore } from "../store";
 
@@ -102,14 +102,12 @@ const useAllowance = () => {
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
-export const usePriceUSD = (address?: string) => {
+export const usePriceUSD = (token?: Token) => {
   const context = useTwapContext();
-
   const { lib, isWrongChain, dappProps } = context;
-
-  const _address = address && isNativeAddress(address) ? lib?.config.wToken.address : address;
-
-  const usd = dappProps.usePriceUSD?.(_address);
+  const _token = token?.address && isNativeAddress(token?.address) ? lib?.config.wToken : token;
+  const address = _token?.address;
+  const usd = dappProps.usePriceUSD?.(address, _token);
 
   const [priceUsdPointer, setPriceUsdPointer] = useState(0);
 
@@ -120,13 +118,13 @@ export const usePriceUSD = (address?: string) => {
   }, [dappProps.priceUsd, setPriceUsdPointer]);
 
   const query = useQuery(
-    [QueryKeys.GET_USD_VALUE, _address, priceUsdPointer],
+    [QueryKeys.GET_USD_VALUE, address, priceUsdPointer],
     async () => {
-      const res = await dappProps.priceUsd!(_address!);
+      const res = await dappProps.priceUsd!(address!);
       return new BN(res);
     },
     {
-      enabled: !!lib && !!_address && !!dappProps.priceUsd,
+      enabled: !!lib && !!address && !!dappProps.priceUsd,
       refetchInterval: REFETCH_USD,
     }
   );
@@ -165,29 +163,10 @@ export const useBalance = (token?: TokenData, onSuccess?: (value: BN) => void, s
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
 };
 
-const filterByDex = (lib: TWAPLib, orders: HistoryOrder[]) => {
-  let dex = "";
-
-  switch (lib.config.partner) {
-    case Configs.SushiArb.partner:
-    case Configs.SushiBase.partner:
-      dex = "sushiswap";
-      break;
-
-    default:
-      break;
-  }
-
-  if (dex) {
-    return orders.filter((order) => order.dex === dex);
-  }
-  return orders;
-};
-
 const useOrderHistoryKey = () => {
   const lib = useTwapContext().lib;
 
-  return [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.partner, lib?.config.chainId];
+  return [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.exchangeAddress, lib?.config.chainId];
 };
 
 const useAddNewOrder = () => {
@@ -200,7 +179,6 @@ const useAddNewOrder = () => {
     (order: HistoryOrder) => {
       try {
         if (!lib) return;
-        logger({ newOrderAddres: order });
         addOrder(lib.config.chainId, order);
         queryClient.setQueryData(QUERY_KEY, (prev?: OrdersData) => {
           const updatedOpenOrders = prev?.Open ? [order, ...prev.Open] : [order];
@@ -232,6 +210,7 @@ export const useOrdersHistory = () => {
     QUERY_KEY,
     async ({ signal }) => {
       let orders = await getOrders(lib!, signal);
+      logger("all orders", orders);
       try {
         const ids = orders.map((o) => o.id);
         let chainOrders = localStorageOrders[lib!.config.chainId];
@@ -244,13 +223,13 @@ export const useOrdersHistory = () => {
         });
       } catch (error) {}
 
-      orders = filterByDex(lib!, orders).map((order) => {
-        const srcToken = _.find(parsedTokens, (t) => eqIgnoreCase(t.address, order.srcTokenAddress || ""));
-        const dstToken = _.find(parsedTokens, (t) => eqIgnoreCase(t.address, order.dstTokenAddress || ""));
+      orders = _.filter(orders, (it) => eqIgnoreCase(lib!.config.exchangeAddress, it.exchange || ""));
+      logger("filtered orders by exchange address", lib!.config.exchangeAddress, orders);
+      orders = orders.map((order) => {
         return {
           ...order,
-          srcToken,
-          dstToken,
+          srcToken: getTokenFromTokensListV2(parsedTokens, [order.srcTokenAddress]),
+          dstToken: getTokenFromTokensListV2(parsedTokens, [order.dstTokenAddress]),
         };
       });
 

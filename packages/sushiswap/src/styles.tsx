@@ -244,6 +244,14 @@ export const configureStyles = (theme?: Theme) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-adapter-wrapper": {
+      ".MuiTouchRipple-root": {
+        display: "none",
+      },
+      "*": {
+        fontFamily: "inherit",
+      },
+    },
     ".twap-order-container": {
       ...cardBodyStyles(theme),
       background: styles.isDarkMode ? "#ffffff0a" : "white",
@@ -405,11 +413,6 @@ export const configureStyles = (theme?: Theme) => {
       },
       "& .MuiTooltip-arrow": {
         display: "none",
-      },
-    },
-    ".twap-adapter-wrapper": {
-      "*": {
-        fontFamily: "inherit",
       },
     },
 
@@ -771,6 +774,7 @@ export const StyledOrdersContent = styled(Components.OrderHistory.Content)({
   ".MuiAccordionDetails-root": {
     padding: "0px 12px 12px 12px!important",
   },
+  ".twap-order-display-details-row": {},
 });
 
 export const StyledTwap = styled("div")({

@@ -9,10 +9,11 @@ import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
 import { defaultCustomFillDelay, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "../consts";
-import { getQueryParam, getTokenFromTokensList, limitPriceFromQueryParams } from "../utils";
+import { getQueryParam, getTokenFromTokensListV2, limitPriceFromQueryParams } from "../utils";
 import moment from "moment";
 import { useAmountBN } from "../hooks";
 import _ from "lodash";
+import { isNativeAddress } from "@defi.org/web3-candies";
 analytics.onModuleImported();
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -124,8 +125,8 @@ const useStore = (props: TwapLibProps) => {
 
 const useDappDefaultTokens = (props: TwapLibProps, updateState: (value: Partial<State>) => void) => {
   useEffect(() => {
-    if (props.srcToken) updateState({ srcToken: getTokenFromTokensList(props.parsedTokens, props.srcToken) });
-    if (props.dstToken) updateState({ dstToken: getTokenFromTokensList(props.parsedTokens, props.dstToken) });
+    if (props.srcToken) updateState({ srcToken: getTokenFromTokensListV2(props.parsedTokens, [props.srcToken]) });
+    if (props.dstToken) updateState({ dstToken: getTokenFromTokensListV2(props.parsedTokens, [props.dstToken]) });
   }, [props.srcToken, props.dstToken, props.parsedTokens, updateState]);
 };
 
@@ -145,7 +146,10 @@ const useDeadlineUpdater = (state: State, updateState: (value: Partial<State>) =
 
 const useMarket = (props: TwapLibProps, state: State) => {
   const amount = useAmountBN(state.srcToken?.decimals, "1");
-  return props.useMarketPrice?.({ srcToken: state.srcToken, dstToken: state.dstToken, amount });
+  const srcToken = isNativeAddress(state.srcToken?.address || "") ? props.config.wToken : state.srcToken;
+  const dstToken = isNativeAddress(state.dstToken?.address || "") ? props.config.wToken : state.dstToken;
+
+  return props.useMarketPrice?.({ srcToken, dstToken, amount });
 };
 
 export const TwapAdapter = (props: TwapLibProps) => {
@@ -156,6 +160,7 @@ export const TwapAdapter = (props: TwapLibProps) => {
   useDeadlineUpdater(state, updateState);
   useDappDefaultTokens(props, updateState);
   const marketPrice = useMarket(props, state);
+
   const uiPreferences = props.uiPreferences || {};
 
   return (

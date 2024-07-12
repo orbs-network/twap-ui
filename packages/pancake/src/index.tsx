@@ -62,13 +62,13 @@ import _ from "lodash";
 import BN from "bignumber.js";
 import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
-import { getTokenFromTokensList } from "@orbs-network/twap-ui";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { useTwapContext, LimitPriceZeroButtonProps, LimitPricePercentProps } from "@orbs-network/twap-ui";
 import { useAdapterContext, AdapterContextProvider, PancakeProps } from "./context";
 import { LimitPriceTitleProps } from "@orbs-network/twap-ui";
 import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
 import { Token } from "@orbs-network/twap-ui";
+import { getTokenFromTokensListV2 } from "@orbs-network/twap-ui";
 
 const PERCENT = [
   { text: "25%", value: 0.25 },
@@ -607,7 +607,7 @@ const SwapModal = () => {
   const { dappTokens, ApproveModalContent, SwapPendingModalContent, SwapTransactionErrorContent, AddToWallet, SwapTransactionReceiptModalContent } = useAdapterContext();
   const { srcToken: fromToken, showConfirmation, isMarketOrder, swapStep, createOrdertxHash } = useTwapContext().state;
 
-  const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
+  const inputCurrency = useMemo(() => getTokenFromTokensListV2(dappTokens, [fromToken?.address]), [dappTokens, fromToken]);
   const { mutate: createOrder, error, swapState } = hooks.useSubmitOrderFlow();
 
   const { onClose } = hooks.useSwapModal();

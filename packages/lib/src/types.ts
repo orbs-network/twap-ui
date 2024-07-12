@@ -155,12 +155,15 @@ export interface TWAPProps extends BaseProps {
   limit?: boolean;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
   priceUsd?: PriceUsd;
-  usePriceUSD?: (address?: string, token?: TokenData) => number | undefined;
+  usePriceUSD?: UsePriceUSD;
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
   parsedTokens?: TokenData[];
+  onSwitchTokens?: () => void;
 }
+
+type UsePriceUSD = (address?: string, token?: TokenData) => number | string | undefined;
 
 type PriceUsd = (address: string, token?: TokenData) => any;
 
@@ -238,6 +241,7 @@ export interface HistoryOrder {
   srcToken?: TokenData;
   dstToken?: TokenData;
   dex?: string;
+  exchange?: string;
 }
 
 type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
@@ -255,7 +259,7 @@ export interface TwapLibProps extends LibProps {
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
   srcUsd?: BN;
   dstUsd?: BN;
-  usePriceUSD?: (token?: string) => number | undefined;
+  usePriceUSD?: UsePriceUSD;
   priceUsd?: PriceUsd;
   isMobile?: boolean;
   enableQueryParams?: boolean;
@@ -263,6 +267,7 @@ export interface TwapLibProps extends LibProps {
   isLimitPanel?: boolean;
   parsedTokens: TokenData[];
   useMarketPrice?: (props: UseMarketPriceProps) => string | undefined;
+  onSwitchTokens?: () => void;
 }
 
 export type Token = TokenData;

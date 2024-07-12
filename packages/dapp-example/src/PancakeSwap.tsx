@@ -174,7 +174,6 @@ const logo = "https://assets.coingecko.com/coins/images/12632/small/pancakeswap-
 const DappComponent = () => {
   const { isDarkTheme } = useTheme();
   const [selected, setSelected] = useState(SelectorOption.TWAP);
-  const isMobile = useIsMobile();
 
   return (
     <DappProvider config={config}>

@@ -27,7 +27,7 @@ import { Button, Fade, IconButton, styled, TextField, Typography } from "@mui/ma
 import { Config } from "@orbs-network/twap";
 import { Components, hooks, Styles } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
-import { BsSun } from "@react-icons/all-files/bs/BsSun";
+
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
 import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
 

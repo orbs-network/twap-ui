@@ -59,7 +59,7 @@ export const StyledSpiritSwapBox = styled(Box)(({ theme }) => ({
   padding: "0.5rem",
 }));
 
-export const StyledDapp = styled(Box)({
+export const StyledDapp = styled("div")({
   width: "100%",
   display: "flex",
   flexDirection: "column",

@@ -1,6 +1,6 @@
 import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
 import { TWAP } from "@orbs-network/twap-ui-sushiswap";
-import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
@@ -11,6 +11,7 @@ import { SelectorOption, TokenListItem } from "./types";
 import { Components, getConfig } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
 import { baseSwapTokens } from "./BaseSwap";
+import { amountBNV2 } from "@orbs-network/twap-ui";
 
 const name = "SushiSwap";
 const configs = [Configs.SushiArb, Configs.SushiBase];
@@ -113,12 +114,17 @@ const getTokenLogo = (token: any) => {
   return token.logoURI;
 };
 
+const _usePriceUSD = (address?: string) => {
+  const res = usePriceUSD(address);
+
+  return res?.toString();
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
-  const priceUsd = useGetPriceUsdCallback();
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
     return useTrade(fromToken, toToken, amount, dappTokens);
@@ -134,11 +140,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       TokenSelectModal={TokenSelectModal}
       provider={library}
       isDarkTheme={isDarkTheme}
-      priceUsd={priceUsd}
       useTrade={_useTrade}
       limit={limit}
       Modal={SushiModal}
       getTokenLogo={getTokenLogo}
+      usePriceUSD={_usePriceUSD}
     />
   );
 };

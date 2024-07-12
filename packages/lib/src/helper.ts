@@ -1,10 +1,9 @@
-import { networks } from "@defi.org/web3-candies";
-import { Order, Status, TokenData, TWAPLib } from "@orbs-network/twap";
+import { Status, TWAPLib } from "@orbs-network/twap";
 import BN from "bignumber.js";
 import _ from "lodash";
 import moment from "moment";
 import { HistoryOrder } from "./types";
-import { amountUi, getTheGraphUrl, logger } from "./utils";
+import { getTheGraphUrl, logger } from "./utils";
 
 export type ParsedOrder = ReturnType<any>;
 
@@ -69,6 +68,7 @@ const lensOrders = async (lib: TWAPLib): Promise<HistoryOrder[]> => {
     let progress = lib.orderProgress(order);
     progress = !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
     return {
+      exchange: order.ask.exchange,
       id: order.id,
       deadline: order.ask.deadline,
       createdAt: moment(order.time).unix().valueOf(),
@@ -127,6 +127,7 @@ export const getOrders = async (lib: TWAPLib, signal?: AbortSignal): Promise<His
 
     return {
       id: Number(order.Contract_id),
+      exchange: order.exchange,
       dex: order.dex.toLowerCase(),
       deadline: Number(order.ask_deadline),
       createdAt: moment(order.timestamp).unix().valueOf(),

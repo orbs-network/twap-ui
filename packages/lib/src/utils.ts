@@ -5,11 +5,14 @@ import { EXPLORER_URLS, QUERY_PARAMS, STABLE_TOKENS } from "./consts";
 import BN from "bignumber.js";
 import _ from "lodash";
 import { THE_GRAPH_ORDERS_API } from "./config";
-import { Config, Configs } from "@orbs-network/twap";
+import { Config } from "@orbs-network/twap";
 export const logger = (...args: any[]) => {
   const query = new URLSearchParams(window.location.search);
-  const debug = query.get("debug");
-  if (process.env.NODE_ENV === "development" || debug) {
+  const fromLocalStore = localStorage.getItem("twap-debug");
+  const debug = query.get("twap-debug");
+  if (process.env.NODE_ENV !== "development") return;
+
+  if (fromLocalStore || debug) {
     console.log(...args);
   }
 };
@@ -86,18 +89,11 @@ export const handleFillDelayText = (text: string, minutes: number) => {
   return text.replace("{{minutes}}", minutes.toString());
 };
 
-export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) => {
-  if (!tokensList || !addressOrSymbol) return;
-
-  if (_.isArray(tokensList)) return _.find(tokensList, (token) => eqIgnoreCase(addressOrSymbol, token.address) || addressOrSymbol.toLowerCase() === token?.symbol.toLowerCase());
-  if (_.isObject(tokensList)) return tokensList[addressOrSymbol as keyof typeof tokensList];
-};
-
 export const getTokenFromTokensListV2 = (tokensList?: any, values?: (string | undefined)[]) => {
   if (!tokensList || !values || values.length === 0) return;
 
   if (Array.isArray(tokensList)) {
-    return tokensList.find((token) => values.some((value) => eqIgnoreCase(value || "", token.address) || eqIgnoreCase(value || "", token.symbol)));
+    return tokensList.find((token) => values.some((value) => eqIgnoreCase(value || "", token.address || "") || eqIgnoreCase(value || "", token.symbol || "")));
   }
 
   if (typeof tokensList === "object") {

@@ -106,13 +106,13 @@ export const useLoadingState = () => {
 
 export const useSrcUsd = () => {
   const srcToken = useTwapContext().state.srcToken;
-  return query.usePriceUSD(srcToken?.address);
+  return query.usePriceUSD(srcToken);
 };
 
 export const useDstUsd = () => {
   const dstToken = useTwapContext().state.dstToken;
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  const dstUsd = query.usePriceUSD(dstToken?.address);
+  const dstUsd = query.usePriceUSD(dstToken);
   const srcUsd = useSrcUsd();
   return shouldWrapOrUnwrapOnly ? srcUsd : dstUsd;
 };
@@ -184,11 +184,11 @@ export const useTokenSelect = () => {
 
   return useCallback(
     ({ isSrc, token }: { isSrc: boolean; token: any }) => {
-      const parsedToken = _.find(parsedTokens, (t) => eqIgnoreCase(t.address, token.address) || t.symbol.toLowerCase() === token.symbol.toLowerCase());
+      const parsedToken = getTokenFromTokensListV2(parsedTokens, [token?.address, token?.symbol]);
 
       if (!parsedToken) return;
 
-      if (eqIgnoreCase(isSrc ? dstToken?.address || "" : srcToken?.address || "", token.address)) {
+      if (eqIgnoreCase(isSrc ? dstToken?.address || "" : srcToken?.address || "", parsedToken.address)) {
         switchTokens();
         return;
       }
@@ -214,19 +214,24 @@ export const useToken = (isSrc?: boolean) => {
 
 export const useSwitchTokens = () => {
   const { dappProps, state } = useTwapContext();
-  const { dappTokens, onSrcTokenSelected, onDstTokenSelected } = dappProps;
+  const { dappTokens, onSrcTokenSelected, onDstTokenSelected, onSwitchTokens } = dappProps;
   const { srcToken, dstToken } = state;
   const onTokensSwitch = stateActions.useOnTokensSwitch();
   const dstAmount = useOutAmount().outAmountUi;
 
   return useCallback(() => {
+    if (onSwitchTokens) {
+      onSwitchTokens();
+    } else {
+      const srcTokenFromList = getTokenFromTokensListV2(dappTokens, [srcToken?.address, srcToken?.symbol]);
+      const dstTokenFromList = getTokenFromTokensListV2(dappTokens, [dstToken?.address, dstToken?.symbol]);
+      srcTokenFromList && onSrcTokenSelected?.(srcTokenFromList);
+      dstTokenFromList && onDstTokenSelected?.(srcTokenFromList);
+    }
+
     onTokensSwitch();
-    resetQueryParams();
-    const srcTokenFromList = getTokenFromTokensListV2(dappTokens, [srcToken?.address, srcToken?.symbol]);
-    const dstTokenFromList = getTokenFromTokensListV2(dappTokens, [dstToken?.address, dstToken?.symbol]);
-    srcTokenFromList && onSrcTokenSelected?.(srcTokenFromList);
-    dstTokenFromList && onDstTokenSelected?.(dstTokenFromList);
-  }, [onTokensSwitch, srcToken, dstToken, onSrcTokenSelected, onDstTokenSelected, dappTokens, dstAmount]);
+    // resetQueryParams();
+  }, [onTokensSwitch, srcToken, dstToken, onSrcTokenSelected, onDstTokenSelected, dappTokens, dstAmount, onSwitchTokens]);
 };
 
 export const useOrdersTabs = () => {
