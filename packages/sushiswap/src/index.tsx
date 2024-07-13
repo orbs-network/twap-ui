@@ -204,6 +204,7 @@ interface SushiProps extends TWAPProps {
   TokenSelectModal: FC<{ children: ReactNode; onSelect: (value: any) => void; selected: any }>;
   Modal: FC<{ open: boolean; onClose: () => void; title?: string; children: ReactNode; header?: ReactNode }>;
   getTokenLogo: (token: any) => string;
+  useUSD: (address?: string) =>  string | undefined;
 }
 
 const AdapterContext = createContext({} as SushiProps);
@@ -261,7 +262,7 @@ const TWAPContent = (props: SushiProps) => {
         isLimitPanel={props.limit}
         uiPreferences={uiPreferences}
         useMarketPrice={useMarketPrice}
-        usePriceUSD={props.usePriceUSD}
+        usePriceUSD={props.useUSD}
         onSwitchTokens={props.onSwitchTokens}
       >
         <ThemeProvider theme={theme}>
