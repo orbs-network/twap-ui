@@ -10,8 +10,6 @@ import {
   TWAPProps,
   Orders,
   ORDERS_CONTAINER_ID,
-  addMissingTokens,
-  UseMarketPriceProps,
   Styles,
 } from "@orbs-network/twap-ui";
 import { memo, ReactNode, useCallback, useState, createContext, useContext, CSSProperties, useMemo, useEffect } from "react";
@@ -131,7 +129,7 @@ const useParsedTokens = (props: TWAPProps): TokenData[] => {
 
     const tokens = _.compact(_.map(dappTokens, (rawToken) => parseToken(getTokenLogoURL, rawToken)));
 
-    return addMissingTokens(config, tokens);
+    return tokens;
   }, [props.dappTokens, getTokenLogoURL]);
 };
 
@@ -281,7 +279,7 @@ const Recipient = () => {
 
 const TokenSummary = () => {
   const srcAmount = hooks.useSrcAmount().srcAmountUi;
-  const { srcToken, dstToken } = useTwapContext().state;
+  const { srcToken, dstToken } = useTwapContext();
   const dstAmount = hooks.useOutAmount().outAmountUi;
 
   const srcAmountFormatted = hooks.useFormatNumber({ value: srcAmount });
@@ -361,13 +359,13 @@ const useProvider = (props: ChronosTWAPProps) => {
   return provider;
 };
 
-const useMarketPrice = (props: UseMarketPriceProps) => {
-  const { srcToken, dstToken, amount } = props;
-  const useTrade = useAdapterContext().useTrade;
+// const useMarketPrice = (props: UseMarketPriceProps) => {
+//   const { srcToken, dstToken, amount } = props;
+//   const useTrade = useAdapterContext().useTrade;
 
-  const trade = useTrade!(srcToken?.address, dstToken?.address, BN(amount || 0).isZero() ? undefined : amount);
-  return trade?.outAmount;
-};
+//   const trade = useTrade!(srcToken?.address, dstToken?.address, BN(amount || 0).isZero() ? undefined : amount);
+//   return trade?.outAmount;
+// };
 
 const Wrapped = (props: ChronosTWAPProps) => {
   const provider = useProvider(props);
@@ -388,15 +386,11 @@ const Wrapped = (props: ChronosTWAPProps) => {
         provider={provider}
         account={props.account}
         dappTokens={props.dappTokens}
-        srcToken={props.srcToken}
-        dstToken={props.dstToken}
         isLimitPanel={props.limit}
         uiPreferences={uiPreferences}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
-        priceUsd={props.priceUsd}
         parsedTokens={parsedTokens}
-        useMarketPrice={useMarketPrice}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />

@@ -25,7 +25,6 @@ import { useTwapContext } from "../context/context";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 
 import {
-  useLoadingState,
   useFormatNumber,
   useToken,
   useSwitchTokens,
@@ -68,16 +67,13 @@ import { LimitSwitchArgs, SwitchVariant, Translations, TWAPTokenSelectProps } fr
 import { Typography } from "@mui/material";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
-import { query, Styles } from "..";
+import { Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { amountUi, makeElipsisAddress } from "../utils";
 import BN from "bignumber.js";
 import _ from "lodash";
-import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { stateActions } from "../context/actions";
 import { useSwapModal } from "../hooks/useSwapModal";
-import { OrderHistory } from "./OrderHistory";
-import { CreateOrderModal } from "./CreateOrderModal/CreateOrderModal";
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -130,16 +126,15 @@ export const TokenPanelInput = ({
 };
 
 const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
-  const { state } = useTwapContext();
+  const { srcToken } = useTwapContext();
   const srcAmountUi = useSrcAmount().srcAmountUi;
-  const { srcToken } = state;
 
   const onChange = stateActions.useSetSrcAmount();
   return <Input prefix="" onChange={onChange} value={srcAmountUi || ""} decimalScale={srcToken?.decimals} className={props.className} placeholder={props.placeholder} />;
 };
 
 const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
-  const { dstToken: token } = useTwapContext().state;
+  const { dstToken: token } = useTwapContext();
   const { outAmountUi, isLoading } = useOutAmount();
   const isMarketOrder = useIsMarketOrder();
   return (
@@ -228,9 +223,8 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: 
 
 export function ChunksUSD({ onlyValue, emptyUi, suffix, prefix }: { onlyValue?: boolean; emptyUi?: React.ReactNode; suffix?: string; prefix?: string }) {
   const usd = useSrcChunkAmountUsdUi();
-  const loading = useLoadingState().srcUsdLoading;
 
-  return <USD prefix={prefix} suffix={suffix} value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={loading} />;
+  return <USD prefix={prefix} suffix={suffix} value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={!usd} />;
 }
 
 export const TokenBalance = ({
@@ -250,15 +244,13 @@ export const TokenBalance = ({
   emptyUi?: ReactNode;
   decimalScale?: number;
 }) => {
-  const srcLoading = useLoadingState().srcBalanceLoading;
-  const dstLoading = useLoadingState().dstBalanceLoading;
-  const { srcToken, dstToken } = useTwapContext().state;
-  const isLoading = isSrc ? srcLoading : dstLoading;
+  const { srcToken, dstToken } = useTwapContext();
   const symbol = isSrc ? srcToken?.symbol : dstToken?.symbol;
   const suffix = !showSymbol ? undefined : isSrc ? srcToken?.symbol : dstToken?.symbol;
 
   const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
   const dstBalance = useAmountUi(dstToken?.decimals, useDstBalance().data?.toString());
+
   const balance = isSrc ? srcBalance : dstBalance;
 
   return (
@@ -271,7 +263,7 @@ export const TokenBalance = ({
       suffix={suffix}
       label={label}
       value={balance}
-      isLoading={isLoading}
+      isLoading={!balance}
     />
   );
 };
@@ -296,16 +288,13 @@ export function TokenUSD({
   decimalScale?: number;
 }) {
   const srcUSD = useSrcAmountUsdUi();
-  const { srcUsdLoading, dstUsdLoading } = useLoadingState();
   const dstUSD = useDstAmountUsdUi();
 
   const usd = isSrc ? srcUSD : dstUSD;
 
-  const isLoading = isSrc ? srcUsdLoading : dstUsdLoading;
-
   if (Number(usd) <= 0 && hideIfZero) return null;
 
-  return <USD decimalScale={decimalScale} suffix={suffix} prefix={prefix} onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
+  return <USD decimalScale={decimalScale} suffix={suffix} prefix={prefix} onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={!usd} />;
 }
 
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
@@ -377,7 +366,7 @@ export const TradeIntervalAsText = () => {
 };
 
 export const MinDstAmountOut = () => {
-  const { dstToken } = useTwapContext().state;
+  const { dstToken } = useTwapContext();
   const dstMinAmountOut = useDstMinAmountOut();
   const dstMinAmountOutUi = useMemo(() => {
     if (BN(dstMinAmountOut || "0").eq(1)) return "";
@@ -670,7 +659,7 @@ const StyledPoweredBy = styled(StyledRowFlex)({
 export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
   const value = useSrcChunkAmountUi();
   const formattedValue = useFormatNumber({ value });
-  const srcToken = useTwapContext().state.srcToken;
+  const srcToken = useTwapContext().srcToken;
 
   const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
 
@@ -685,7 +674,7 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
 };
 
 export const TradeSize = ({ hideLabel, hideSymbol, hideLogo }: { hideLabel?: boolean; hideSymbol?: boolean; hideLogo?: boolean }) => {
-  const { srcToken, dstToken } = useTwapContext().state;
+  const { srcToken, dstToken } = useTwapContext();
 
   if (!srcToken && !dstToken) {
     return <span>0</span>;
@@ -733,7 +722,7 @@ const StyledTradeSize = styled(StyledRowFlex)({
 });
 
 export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
-  const { srcToken, dstToken } = useTwapContext().state;
+  const { srcToken, dstToken } = useTwapContext();
 
   const address = isSrc ? srcToken?.address : dstToken?.address;
 

@@ -9,7 +9,6 @@ import {
   useMaxPossibleChunks,
   useSrcChunkAmountUsdUi,
   useFormatNumberV2,
-  useSrcUsd,
   useTradeSizeWarning,
   useShouldWrapOrUnwrapOnly,
 } from "../hooks/hooks";
@@ -31,16 +30,16 @@ export const ChunkSelector = ({ className = "", children }: { className?: string
   );
 };
 const Text = () => {
-  const { isWrongChain, state } = useTwapContext();
+  const { isWrongChain, srcToken, srcUsd } = useTwapContext();
 
   const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmountUi() });
-  const srcToken = state.srcToken;
+
   const warning = useTradeSizeWarning();
-  const srcUsdLoading = useSrcUsd().isLoading;
+
   const _usd = useFormatNumberV2({ value: useSrcChunkAmountUsdUi(), decimalScale: 2 });
   const usd = _usd ? `($${_usd})` : "";
 
-  if (srcUsdLoading || isWrongChain) return null;
+  if (!srcUsd || isWrongChain) return null;
 
   return (
     <BottomContent>
@@ -63,9 +62,9 @@ const StyledWarning = styled(Message)({
 const Input = ({ className }: { className?: string }) => {
   const chunks = useChunks();
   const setChunks = useSetChunks();
-  const srcUsdLoading = useSrcUsd().isLoading;
+  const srcUsd = useTwapContext().srcUsd;
 
-  if (srcUsdLoading) {
+  if (!srcUsd) {
     return <Loader height="100%" />;
   }
 
@@ -77,9 +76,9 @@ const SliderComponent = ({ className }: { className?: string }) => {
   const setChunks = useSetChunks();
   const formattedChunks = useFormatNumber({ value: chunks });
   const maxPossibleChunks = useMaxPossibleChunks();
-  const srcUsdLoading = useSrcUsd().isLoading;
+  const srcUsd = useTwapContext().srcUsd;
 
-  if (srcUsdLoading) {
+  if (!srcUsd) {
     return <Loader height="100%" />;
   }
 

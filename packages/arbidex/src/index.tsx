@@ -1,5 +1,5 @@
 import { GlobalStyles, ThemeProvider, useTheme } from "@mui/material";
-import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, Orders, TwapContextUIPreferences, hooks } from "@orbs-network/twap-ui";
+import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, Orders, TwapContextUIPreferences, hooks, useTwapContext } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useCallback, useContext, useMemo } from "react";
@@ -68,7 +68,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const { useModal, TokenSelectModal } = useAdapterContext();
-  const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
+  // const { rawDstToken: dstToken, rawSrcToken: srcToken } = useTwapContext();
   const selectToken = hooks.useTokenSelect();
 
   const onSelect = useCallback(
@@ -77,7 +77,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     },
     [selectToken, isSrcToken]
   );
-  const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
+  // const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
 
   const theme = useTheme();
 
@@ -90,9 +90,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             <Components.TokenUSD isSrc={isSrcToken} hideIfZero={true} />
             <StyledTokenBalance isSrc={isSrcToken} />
           </TwapStyles.StyledColumnFlex>
-          <StyledTokenSelect theme={theme}>
-            <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} />
-          </StyledTokenSelect>
+          <StyledTokenSelect theme={theme}>{/* <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} /> */}</StyledTokenSelect>
         </TwapStyles.StyledRowFlex>
       </StyledTokenPanel>
     </>
@@ -148,11 +146,8 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
       parsedTokens={[]}
-      srcToken={props.srcToken}
-      dstToken={props.dstToken}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
-      priceUsd={props.priceUsd}
       isLimitPanel={props.limit}
     >
       <AdapterContextProvider value={props}>

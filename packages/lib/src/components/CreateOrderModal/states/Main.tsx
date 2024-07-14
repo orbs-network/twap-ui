@@ -6,7 +6,6 @@ import {
   useDeadline,
   useDstAmountUsdUi,
   useDstMinAmountOutUi,
-  useDstUsd,
   useFillDelayMillis,
   useFormatNumberV2,
   useInvertedPrice,
@@ -15,7 +14,6 @@ import {
   useSrcAmount,
   useSrcAmountUsdUi,
   useSrcChunkAmountUi,
-  useSrcUsd,
 } from "../../../hooks/hooks";
 import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
 import { Button, Spinner, Switch } from "../../base";
@@ -30,12 +28,9 @@ import { stateActions } from "../../../context/actions";
 import { OrderDisplay } from "../../OrderDisplay";
 
 const Price = () => {
-  const srcUsd = useSrcUsd().value;
-  const dstUsd = useDstUsd().value;
   const [inverted, setInverted] = useState(false);
   const srcAmount = useSrcAmount().srcAmountUi;
-  const { state } = useTwapContext();
-  const { srcToken, dstToken } = state;
+  const { srcToken, dstToken, srcUsd, dstUsd } = useTwapContext();
   const outAmount = useOutAmount().outAmountUi;
 
   const isMarketOrder = useIsMarketOrder();
@@ -157,9 +152,8 @@ export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; class
 };
 
 const Tokens = () => {
-  const { state } = useTwapContext();
+  const { srcToken, dstToken } = useTwapContext();
 
-  const { srcToken, dstToken } = state;
   const srcUsd = useSrcAmountUsdUi();
   const dstUsd = useDstAmountUsdUi();
   const srcAmount = useSrcAmount().srcAmountUi;
@@ -175,9 +169,8 @@ const Tokens = () => {
 
 const Details = () => {
   const chunks = useChunks();
-  const { dappProps, state } = useTwapContext();
+  const { dappProps, srcToken, dstToken } = useTwapContext();
   const { isLimitPanel } = dappProps;
-  const { srcToken, dstToken } = state;
   const deadline = useDeadline().millis;
   const srcChunkAmount = useSrcChunkAmountUi();
   const isMarketOrder = useIsMarketOrder();

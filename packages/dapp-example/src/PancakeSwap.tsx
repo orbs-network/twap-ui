@@ -144,8 +144,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
       <TWAP
         account={account}
-        srcToken={srcToken}
-        dstToken={dstToken}
+        // srcToken={srcToken}
+        // dstToken={dstToken}
         dappTokens={dappTokens}
         isDarkTheme={isDarkTheme}
         limit={limit}
@@ -165,6 +165,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         SwapTransactionReceiptModalContent={SwapPendingModalContent}
         TradePrice={TradePrice}
         TradePriceToggle={TradePriceToggle}
+        onSrcTokenSelected={(token: any) => console.log(token)}
+        onDstTokenSelected={(token: any) => console.log(token)}
       />
     </StyledPancakeTwap>
   );

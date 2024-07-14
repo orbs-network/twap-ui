@@ -228,7 +228,6 @@ const tooltipStyles = (theme?: Theme) => {
     borderRadius: "12px",
     fontSize: 14,
     padding: 16,
-    fontFamily: "Inter",
     fontWeight: 400,
     color: styles.isDarkMode ? "#94a3b8" : "rgb(107 114 128/1)",
     border: `1px solid ${styles.accent}`,
@@ -244,6 +243,21 @@ export const configureStyles = (theme?: Theme) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-order-menu": {
+      ...cardBodyStyles(theme),
+      minWidth: "100%",
+      borderRadius: 6,
+      overflow: "hidden",
+      padding: 0,
+      top: "calc(100% + 4px)",
+      "&-item": {
+        fontSize: 14,
+        padding: "7px 10px",
+        "&:hover": {
+          background: isDarkMode ? "#ffffff0a" : "#0000000a",
+        },
+      },
+    },
     ".twap-adapter-wrapper": {
       ".MuiTouchRipple-root": {
         display: "none",
@@ -355,6 +369,9 @@ export const configureStyles = (theme?: Theme) => {
 
     ".twap-input": {
       input: {
+        boxShadow: "none!important",
+        border: "none!important",
+        outline: "none!important",
         "&::placeholder": {
           color: isDarkMode ? "white!important" : "rgb(17 24 39/1)!important",
           opacity: 0.4,

@@ -111,8 +111,8 @@ export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Component
 
 const Input = () => {
   const { Components } = useLimitPanelContext();
-  const { state } = useTwapContext();
-  const { isMarketOrder, isInvertedLimitPrice, isCustomLimitPrice, customLimitPrice, dstToken } = state;
+  const { state, dstToken } = useTwapContext();
+  const { isMarketOrder, isInvertedLimitPrice, isCustomLimitPrice, customLimitPrice } = state;
   const { isLoading, limitPrice } = useLimitPrice();
   const onChange = stateActions.useOnLimitChange();
 
@@ -253,7 +253,8 @@ const ZeroButton = () => {
 };
 
 const TokenSelect = () => {
-  const { isInvertedLimitPrice: inverted, srcToken, dstToken } = useTwapContext().state;
+  const { state, srcToken, dstToken } = useTwapContext();
+  const { isInvertedLimitPrice: inverted } = state;
   const Components = useLimitPanelContext().Components;
   const token = inverted ? srcToken : dstToken;
   const { onDstSelect, onSrcSelect } = useLimitPanelContext();
@@ -276,9 +277,11 @@ const InvertPrice = () => {
 const Title = () => {
   const { onDstSelect, onSrcSelect } = useLimitPanelContext();
   const Components = useLimitPanelContext().Components;
-  const { translations: t, state } = useTwapContext();
-  const { isInvertedLimitPrice: inverted, srcToken, dstToken } = state;
+  const { translations: t, state, srcToken, dstToken } = useTwapContext();
+
+  const { isInvertedLimitPrice: inverted } = state;
   const token = inverted ? dstToken : srcToken;
+
   if (Components?.Title) {
     return <Components.Title isSrcToken={!inverted} textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
   }

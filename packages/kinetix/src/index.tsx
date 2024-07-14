@@ -194,12 +194,9 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       account={props.account}
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
-      srcToken={props.srcToken}
       parsedTokens={[]}
-      dstToken={props.dstToken}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
-      priceUsd={props.priceUsd}
       isLimitPanel={props.limit}
     >
       <AdapterContextProvider value={props}>

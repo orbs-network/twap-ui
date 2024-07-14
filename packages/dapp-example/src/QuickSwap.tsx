@@ -115,8 +115,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <TWAP
       connect={connect}
       account={account}
-      srcToken={fromToken?.address}
-      dstToken={toToken?.address}
+      // srcToken={fromToken?.address}
+      // dstToken={toToken?.address}
       dappTokens={dappTokens}
       onSrcTokenSelected={(token: any) => setFromToken(token)}
       onDstTokenSelected={(token: any) => setToToken(token)}

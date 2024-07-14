@@ -147,14 +147,11 @@ interface BaseProps {
 }
 export interface TWAPProps extends BaseProps {
   connect?: () => void;
-  srcToken?: string;
-  dstToken?: string;
-  onSrcTokenSelected?: (token: any) => void;
-  onDstTokenSelected?: (token: any) => void;
+  onSrcTokenSelected: (token: any) => void;
+  onDstTokenSelected: (token: any) => void;
   TokenSelectModal?: any;
   limit?: boolean;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  priceUsd?: PriceUsd;
   usePriceUSD?: UsePriceUSD;
   useTrade?: UseTrade;
   isMobile?: boolean;
@@ -164,8 +161,6 @@ export interface TWAPProps extends BaseProps {
 }
 
 type UsePriceUSD = (address?: string, token?: TokenData) => number | string | undefined;
-
-type PriceUsd = (address: string, token?: TokenData) => any;
 
 interface LibProps {
   children: ReactNode;
@@ -245,28 +240,25 @@ export interface HistoryOrder {
 }
 
 type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
-export type UseMarketPriceProps = { srcToken?: Token; dstToken?: Token; amount?: string };
 export interface TwapLibProps extends LibProps {
   connect?: () => void;
   askDataParams?: any[];
   storeOverride?: StoreOverride;
-  srcToken?: string;
-  dstToken?: string;
+  srcToken?: Token;
+  dstToken?: Token;
   dappTokens: any;
   uiPreferences?: TwapContextUIPreferences;
-  onSrcTokenSelected?: (token: any) => void;
-  onDstTokenSelected?: (token: any) => void;
+  onSrcTokenSelected: (token: any) => void;
+  onDstTokenSelected: (token: any) => void;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  srcUsd?: BN;
-  dstUsd?: BN;
-  usePriceUSD?: UsePriceUSD;
-  priceUsd?: PriceUsd;
+  srcUsd?: string | number;
+  dstUsd?: string | number;
+  marketPrice?: string;
   isMobile?: boolean;
   enableQueryParams?: boolean;
   minNativeTokenBalance?: string;
   isLimitPanel?: boolean;
   parsedTokens: TokenData[];
-  useMarketPrice?: (props: UseMarketPriceProps) => string | undefined;
   onSwitchTokens?: () => void;
 }
 
@@ -326,9 +318,6 @@ export interface State {
   swapStep?: SwapStep;
   swapSteps?: SwapStep[];
   swapState?: SwapState;
-
-  srcToken: TokenData | undefined;
-  dstToken: TokenData | undefined;
   srcAmountUi: string;
 
   confirmationClickTimestamp: Moment;
@@ -467,10 +456,14 @@ export type Duration = { resolution: TimeResolution; amount?: number };
 export interface TWAPContextProps {
   dappProps: TwapLibProps;
   lib?: TWAPLib;
-  marketPrice?: string;
   translations: Translations;
   isWrongChain: boolean;
   state: State;
   updateState: (state: Partial<State>) => void;
   uiPreferences: TwapContextUIPreferences;
+  srcToken?: TokenData;
+  dstToken?: TokenData;
+  srcUsd: string | number;
+  dstUsd: string | number;
+  marketPrice?: string;
 }

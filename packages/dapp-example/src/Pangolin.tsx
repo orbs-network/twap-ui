@@ -94,8 +94,8 @@ const TWAPComponent = ({ partnerDaas, limit }: { partnerDaas?: string; limit?: b
     <TWAP
       account={account}
       TokenSelectModal={TokenSelectModal}
-      srcToken={zeroAddress} //AVAX
-      dstToken={erc20sData.avax.USDC.address} // ORBS
+      // srcToken={zeroAddress} //AVAX
+      // dstToken={erc20sData.avax.USDC.address} // ORBS
       dappTokens={dappTokens}
       provider={provider}
       onSrcTokenSelected={(token: any) => console.log(token, "selected")}

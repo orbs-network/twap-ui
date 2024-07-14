@@ -1,17 +1,17 @@
 import { contract, eqIgnoreCase, estimateGasPrice, isNativeAddress, web3 } from "@defi.org/web3-candies";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_USD, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
 import { useTwapContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
-import { amountBN, getTokenFromTokensListV2, logger } from "../utils";
-import { Configs, TokenData, TWAPLib } from "@orbs-network/twap";
+import { amountBN, logger } from "../utils";
+import { TokenData } from "@orbs-network/twap";
 import _ from "lodash";
 import { getOrders } from "../helper";
-import { HistoryOrder, OrdersData, Token } from "../types";
-import { useSrcAmount } from "./hooks";
+import { HistoryOrder, OrdersData } from "../types";
+import { useGetTokenFromParsedTokensList, useSrcAmount } from "./hooks";
 import { useOrdersStore } from "../store";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
@@ -81,8 +81,7 @@ export const useGasPrice = () => {
 };
 
 const useAllowance = () => {
-  const { lib, state } = useTwapContext();
-  const { srcToken } = state;
+  const { lib, srcToken } = useTwapContext();
   const amount = useSrcAmount().srcAmountBN;
 
   const wToken = lib?.config.wToken;
@@ -100,41 +99,6 @@ const useAllowance = () => {
   );
 
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
-};
-
-export const usePriceUSD = (token?: Token) => {
-  const context = useTwapContext();
-  const { lib, isWrongChain, dappProps } = context;
-  const _token = token?.address && isNativeAddress(token?.address) ? lib?.config.wToken : token;
-  const address = _token?.address;
-  const usd = dappProps.usePriceUSD?.(address, _token);
-
-  const [priceUsdPointer, setPriceUsdPointer] = useState(0);
-
-  useEffect(() => {
-    if (dappProps.priceUsd) {
-      setPriceUsdPointer((prev) => prev + 1);
-    }
-  }, [dappProps.priceUsd, setPriceUsdPointer]);
-
-  const query = useQuery(
-    [QueryKeys.GET_USD_VALUE, address, priceUsdPointer],
-    async () => {
-      const res = await dappProps.priceUsd!(address!);
-      return new BN(res);
-    },
-    {
-      enabled: !!lib && !!address && !!dappProps.priceUsd,
-      refetchInterval: REFETCH_USD,
-    }
-  );
-  const value = new BN(query.data || usd || 0).toString();
-  const isLoading = dappProps.priceUsd ? query.isLoading && query.fetchStatus !== "idle" : !usd;
-
-  return {
-    value: new BN(value),
-    isLoading: !dappProps.account || isWrongChain ? false : isLoading,
-  };
 };
 
 export const useBalance = (token?: TokenData, onSuccess?: (value: BN) => void, staleTime?: number) => {
@@ -205,7 +169,7 @@ export const useOrdersHistory = () => {
   const QUERY_KEY = useOrderHistoryKey();
   const localStorageOrders = useOrdersStore().orders;
   const deleteOrder = useOrdersStore().deleteOrder;
-
+  const getTokensFromTokensList = useGetTokenFromParsedTokensList();
   const query = useQuery<OrdersData>(
     QUERY_KEY,
     async ({ signal }) => {
@@ -228,8 +192,8 @@ export const useOrdersHistory = () => {
       orders = orders.map((order) => {
         return {
           ...order,
-          srcToken: getTokenFromTokensListV2(parsedTokens, [order.srcTokenAddress]),
-          dstToken: getTokenFromTokensListV2(parsedTokens, [order.dstTokenAddress]),
+          srcToken: getTokensFromTokensList(order.srcTokenAddress),
+          dstToken: getTokensFromTokensList(order.dstTokenAddress),
         };
       });
 
@@ -255,7 +219,6 @@ export const query = {
   useFeeOnTransfer,
   useGasPrice,
   useMinNativeTokenBalance,
-  usePriceUSD,
   useBalance,
   useOrdersHistory,
   useAllowance,

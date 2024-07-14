@@ -7,10 +7,10 @@ import { amountUiV2, formatDecimals } from "../../utils";
 
 export const useOnLimitPercentageClick = () => {
   const { marketPrice } = useMarketPrice();
-  const { state } = useTwapContext();
+  const { state, dstToken } = useTwapContext();
   const onChange = stateActions.useOnLimitChange();
   const onResetCustomLimit = stateActions.useResetCustomLimit();
-  const { dstToken, isInvertedLimitPrice } = state;
+  const { isInvertedLimitPrice } = state;
 
   return useCallback(
     (percent: string) => {

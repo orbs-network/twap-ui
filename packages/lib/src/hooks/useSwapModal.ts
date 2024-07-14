@@ -4,7 +4,7 @@ import { useTwapContext } from "../context/context";
 import { useDstAmountUsdUi, useOutAmount, useSrcAmount, useSrcAmountUsdUi } from "./hooks";
 
 export const useSwapModal = () => {
-  const state = useTwapContext().state;
+  const { state, srcToken, dstToken } = useTwapContext();
   const { swapState, showConfirmation: isOpen, swapData } = state;
   const { onClose, onOpen } = stateActions.useSwapModalActions();
   const { srcAmountUi } = useSrcAmount();
@@ -21,7 +21,7 @@ export const useSwapModal = () => {
     srcUsd: swapData?.srcAmountUsd || srcUsd,
     dstUsd: swapData?.dstAmountUsd || dstUsd,
     outAmount: swapData?.outAmount || outAmount,
-    srcToken: swapData?.srcToken || state.srcToken,
-    dstToken: swapData?.dstToken || state.dstToken,
+    srcToken: swapData?.srcToken || srcToken,
+    dstToken: swapData?.dstToken || dstToken,
   };
 };

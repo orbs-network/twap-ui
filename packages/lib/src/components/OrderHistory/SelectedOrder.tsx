@@ -1,12 +1,11 @@
 import { Fade, styled } from "@mui/material";
 import { useTwapContext } from "../../context/context";
 import { useCancelOrder } from "../../hooks/useTransactions";
-import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
+import { StyledColumnFlex, StyledText } from "../../styles";
 import { Button } from "../base";
 import { Separator } from "../Components";
 import { Status } from "@orbs-network/twap";
-import { useOrderHistoryContext } from "./context";
-import { useFormatNumberV2, useInvertedPrice } from "../../hooks/hooks";
+import { useFormatNumberV2 } from "../../hooks/hooks";
 import { useOrderById } from "../../hooks/orders";
 import { OrderUI, Token } from "../../types";
 import { OrderDisplay } from "../OrderDisplay";

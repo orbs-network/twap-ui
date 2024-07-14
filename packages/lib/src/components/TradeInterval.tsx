@@ -13,14 +13,15 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
   const setFillDelay = stateActions.useSetCustomFillDelay();
 
   return (
-    <NumericInput
-      className={className}
-      value={fillDelay.amount}
-      onChange={(v) => setFillDelay({ resolution: fillDelay.resolution, amount: Number(v) })}
-      placeholder={placeholder}
-    />
+    <StyledInput className={className} value={fillDelay.amount} onChange={(v) => setFillDelay({ resolution: fillDelay.resolution, amount: Number(v) })} placeholder={placeholder} />
   );
 };
+
+const StyledInput = styled(NumericInput)({
+  input: {
+    padding: "0px",
+  },
+});
 
 const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
   const fillDelay = useTwapContext().state.customFillDelay;

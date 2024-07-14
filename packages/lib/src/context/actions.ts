@@ -1,22 +1,9 @@
 import { useCallback } from "react";
-import {
-  defaultCustomFillDelay,
-  Duration,
-  getTokenFromTokensListV2,
-  logger,
-  MIN_TRADE_INTERVAL_FORMATTED,
-  query,
-  QUERY_PARAMS,
-  resetQueryParams,
-  setQueryParam,
-  SwapState,
-  SwapStep,
-  TimeResolution,
-} from "..";
+import { defaultCustomFillDelay, Duration, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS, resetQueryParams, setQueryParam, SwapState, SwapStep, TimeResolution } from "..";
 import { useTwapContext } from "./context";
 import BN from "bignumber.js";
 import { waitForOrder } from "../helper";
-import { useDstAmountUsdUi, useOutAmount, useSrcAmount, useSrcAmountUsdUi } from "../hooks";
+import { useDstAmountUsdUi, useGetTokenFromParsedTokensList, useOutAmount, useSrcAmount, useSrcAmountUsdUi } from "../hooks";
 
 const useHandleLimitPriceQueryParam = () => {
   const setQueryParam = useSetQueryParams();
@@ -50,15 +37,15 @@ export const useSetQueryParams = () => {
 };
 
 export const useSwitchNativeToWrapped = () => {
-  const { updateState, dappProps, lib } = useTwapContext();
-  const { dappTokens, onSrcTokenSelected } = dappProps;
+  const { dappProps, lib } = useTwapContext();
+  const { onSrcTokenSelected } = dappProps;
+  const getTokenFromList = useGetTokenFromParsedTokensList();
   return useCallback(() => {
-    updateState({ srcToken: lib!.config.wToken });
-    const token = getTokenFromTokensListV2(dappTokens, [lib!.config.wToken.address]);
+    const token = getTokenFromList(lib!.config.wToken.address);
     if (token) {
       onSrcTokenSelected?.(token);
     }
-  }, [lib, dappTokens, onSrcTokenSelected, updateState]);
+  }, [lib, onSrcTokenSelected, getTokenFromList]);
 };
 
 // Hook for handling modal close
@@ -116,15 +103,15 @@ const useSwapReset = () => {
 };
 
 const useOnSubmitSwap = () => {
-  const { updateState, state } = useTwapContext();
+  const { updateState, state, srcToken, dstToken } = useTwapContext();
   const outAmount = useOutAmount().outAmountUi;
   const srcAmountUsd = useSrcAmountUsdUi();
   const dstAmountUsd = useDstAmountUsdUi();
 
   return useCallback(() => {
-    if (!state.srcToken || !state.dstToken) return;
-    updateState({ swapState: "loading", swapData: { srcAmount: state.srcAmountUi, outAmount, srcToken: state.srcToken, dstToken: state.dstToken, srcAmountUsd, dstAmountUsd } });
-  }, [updateState, outAmount, state.srcToken, state.dstToken, state.srcAmountUi, srcAmountUsd, dstAmountUsd]);
+    if (!srcToken || !dstToken) return;
+    updateState({ swapState: "loading", swapData: { srcAmount: state.srcAmountUi, outAmount, srcToken: srcToken, dstToken: dstToken, srcAmountUsd, dstAmountUsd } });
+  }, [updateState, outAmount, srcToken, dstToken, state.srcAmountUi, srcAmountUsd, dstAmountUsd]);
 };
 
 // Hook for setting custom fill delay
@@ -222,18 +209,16 @@ const useResetLimitPrice = () => {
 };
 
 // Hook for handling token switch
-const useOnTokensSwitch = () => {
-  const { updateState, state } = useTwapContext();
+const useResetLimitAfterTokenSwitch = () => {
+  const { updateState } = useTwapContext();
   const handleLimitPriceQueryParam = useHandleLimitPriceQueryParam();
   return useCallback(() => {
     handleLimitPriceQueryParam();
     updateState({
-      srcToken: state.dstToken,
-      dstToken: state.srcToken,
       isInvertedLimitPrice: false,
       limitPricePercent: undefined,
     });
-  }, [updateState, state.dstToken, state.srcToken, handleLimitPriceQueryParam]);
+  }, [updateState, handleLimitPriceQueryParam]);
 };
 
 // Hook for selecting orders tab
@@ -358,7 +343,7 @@ export const stateActions = {
   useOnLimitChange,
   useResetCustomLimit,
   useResetLimitPrice,
-  useOnTokensSwitch,
+  useResetLimitAfterTokenSwitch,
   useSelectOrdersTab,
   useOnTxHash,
   useUpdateSwapStep,

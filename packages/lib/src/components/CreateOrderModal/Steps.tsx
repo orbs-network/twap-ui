@@ -61,8 +61,8 @@ export function StepComponent({ stepType }: { stepType: SwapStep }) {
 }
 
 const useStep = (step?: SwapStep) => {
-  const { lib, state } = useTwapContext();
-  const { srcToken, createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps } = state;
+  const { lib, state, srcToken } = useTwapContext();
+  const { createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps } = state;
 
   return useMemo((): Step | undefined => {
     if (!step) return;

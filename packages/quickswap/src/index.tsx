@@ -200,12 +200,9 @@ const TWAP = (props: Props) => {
         account={props.account}
         dappTokens={props.dappTokens}
         parsedTokens={[]}
-        srcToken={props.srcToken}
         onTxSubmitted={props.onTxSubmitted}
-        dstToken={props.dstToken}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
-        usePriceUSD={props.usePriceUSD}
         isLimitPanel={props.limit}
       >
         <GlobalStyles styles={globalStyles as any} />

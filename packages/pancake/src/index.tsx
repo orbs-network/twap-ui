@@ -7,11 +7,9 @@ import {
   TwapContextUIPreferences,
   Styles,
   TooltipProps,
-  addMissingTokens,
   TWAPTokenSelectProps,
   ButtonProps,
   LimitSwitchArgs,
-  UseMarketPriceProps,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -60,15 +58,12 @@ import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import _ from "lodash";
 import BN from "bignumber.js";
-import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { useTwapContext, LimitPriceZeroButtonProps, LimitPricePercentProps } from "@orbs-network/twap-ui";
 import { useAdapterContext, AdapterContextProvider, PancakeProps } from "./context";
 import { LimitPriceTitleProps } from "@orbs-network/twap-ui";
 import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
-import { Token } from "@orbs-network/twap-ui";
-import { getTokenFromTokensListV2 } from "@orbs-network/twap-ui";
 
 const PERCENT = [
   { text: "25%", value: 0.25 },
@@ -120,21 +115,21 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
 };
 
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
-  const dstToken = useTwapContext().state.dstToken;
-  const onTokenSelectClick = useTokenSelectClick();
+  const dstToken = useTwapContext().dstToken;
+  // const onTokenSelectClick = useTokenSelectClick();
   const [isOpen, setIsOpen] = useState(false);
 
-  const onSrcTokenSelected = useCallback(() => {
-    setIsOpen(true);
-    onTokenSelectClick?.();
-  }, [onTokenSelectClick]);
+  // const onSrcTokenSelected = useCallback(() => {
+  //   setIsOpen(true);
+  //   onTokenSelectClick?.();
+  // }, [onTokenSelectClick]);
 
   return (
     <StyledTokenPanel>
       <TokenSelect isSrcToken={isSrcToken} onClose={() => setIsOpen(false)} open={isOpen} />
       <Card.Header>
         <StyledSelectAndBalance>
-          <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onSrcTokenSelected} />
+          {/* <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onSrcTokenSelected} /> */}
           <Balance isSrc={isSrcToken} />
         </StyledSelectAndBalance>
       </Card.Header>
@@ -206,12 +201,12 @@ export const useProvider = (props: PancakeProps) => {
   return provider;
 };
 
-const useMarketPrice = ({ srcToken, dstToken, amount }: UseMarketPriceProps) => {
-  const context = useAdapterContext();
-  const res = context.useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), BN(amount || 0).isZero() ? undefined : amount);
+// const useMarketPrice = ({ srcToken, dstToken, amount }: UseMarketPriceProps) => {
+//   const context = useAdapterContext();
+//   const res = context.useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), BN(amount || 0).isZero() ? undefined : amount);
 
-  return res?.outAmount;
-};
+//   return res?.outAmount;
+// };
 
 const Button = (props: ButtonProps) => {
   const ButtonComponent = useAdapterContext().Button;
@@ -262,7 +257,7 @@ const TWAPContent = memo((props: PancakeProps) => {
       return parseToken(token);
     });
 
-    return addMissingTokens(config, _.compact(res));
+    return _.compact(res);
   }, [dappTokens]);
 
   return (
@@ -275,13 +270,10 @@ const TWAPContent = memo((props: PancakeProps) => {
         translations={translations as Translations}
         provider={provider}
         account={props.account}
-        srcToken={props.srcToken}
-        dstToken={props.dstToken}
         parsedTokens={parsedTokens}
         dappTokens={dappTokens}
         uiPreferences={uiPreferences}
         onDstTokenSelected={props.onDstTokenSelected}
-        usePriceUSD={props.usePriceUSD}
         onSrcTokenSelected={props.onSrcTokenSelected}
         isDarkTheme={props.isDarkTheme}
         isMobile={props.isMobile}
@@ -289,7 +281,6 @@ const TWAPContent = memo((props: PancakeProps) => {
         enableQueryParams={true}
         minNativeTokenBalance="0.0035"
         isLimitPanel={props.limit}
-        useMarketPrice={useMarketPrice}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -362,19 +353,20 @@ const LimitPanel = () => {
   );
 };
 
-const useTokenSelectClick = (isSrcToken?: boolean) => {
-  const selectToken = hooks.useTokenSelect();
-  const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
+// const useTokenSelectClick = (isSrcToken?: boolean) => {
+//   const selectToken = hooks.useTokenSelect();
+//   const { rawDstToken: srcToken, rawSrcToken: dstToken } = useTwapContext();
+//   const rawDstToken = undefined
+//   const rawSrcToken = undefined
+//   const onSelect = useCallback(
+//     (token: any, isSrcToken?: boolean) => {
+//       selectToken({ isSrc: !!isSrcToken, token });
+//     },
+//     [selectToken, isSrcToken]
+//   );
 
-  const onSelect = useCallback(
-    (token: any, isSrcToken?: boolean) => {
-      selectToken({ isSrc: !!isSrcToken, token });
-    },
-    [selectToken, isSrcToken]
-  );
-
-  return useAdapterContext().useTokenModal?.(onSelect, srcToken, dstToken, isSrcToken);
-};
+//   return useAdapterContext().useTokenModal?.(onSelect, srcToken, dstToken, isSrcToken);
+// };
 
 const PercentButton = ({ selected, text, onClick }: LimitPricePercentProps) => {
   return (
@@ -427,8 +419,8 @@ const LimitPriceInput = ({ value, onChange, isLoading }: any) => {
 };
 
 const LimitPrice = () => {
-  const onSrcSelect = useTokenSelectClick(true);
-  const onDstSelect = useTokenSelectClick(false);
+  // const onSrcSelect = useTokenSelectClick(true);
+  // const onDstSelect = useTokenSelectClick(false);
   const [isSrc, setIsSrc] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -437,14 +429,14 @@ const LimitPrice = () => {
   const onSrcTokenSelected = useCallback(() => {
     setIsSrc(true);
     setIsOpen(true);
-    onSrcSelect?.();
-  }, [setIsSrc, setIsOpen, onSrcSelect]);
+    // onSrcSelect?.();
+  }, [setIsSrc, setIsOpen]);
 
   const onDstTokenSelected = useCallback(() => {
     setIsSrc(false);
     setIsOpen(true);
-    onDstSelect?.();
-  }, [setIsSrc, setIsOpen, onDstSelect]);
+    // onDstSelect?.();
+  }, [setIsSrc, setIsOpen]);
 
   if (hide) return null;
 
@@ -603,11 +595,13 @@ const TradeIntervalSelect = () => {
 export { TWAP };
 
 const SwapModal = () => {
-  const limitPanel = useAdapterContext().limit;
-  const { dappTokens, ApproveModalContent, SwapPendingModalContent, SwapTransactionErrorContent, AddToWallet, SwapTransactionReceiptModalContent } = useAdapterContext();
-  const { srcToken: fromToken, showConfirmation, isMarketOrder, swapStep, createOrdertxHash } = useTwapContext().state;
+  const context = useAdapterContext();
 
-  const inputCurrency = useMemo(() => getTokenFromTokensListV2(dappTokens, [fromToken?.address]), [dappTokens, fromToken]);
+  const limitPanel = context.limit;
+  const { ApproveModalContent, SwapPendingModalContent, SwapTransactionErrorContent, AddToWallet, SwapTransactionReceiptModalContent } = useAdapterContext();
+  const { state, srcToken: fromToken } = useTwapContext();
+  const { showConfirmation, isMarketOrder, swapStep, createOrdertxHash } = state;
+
   const { mutate: createOrder, error, swapState } = hooks.useSubmitOrderFlow();
 
   const { onClose } = hooks.useSwapModal();
@@ -646,7 +640,7 @@ const SwapModal = () => {
   }
 
   if (swapStep) {
-    content = !ApproveModalContent ? null : <ApproveModalContent title={`Enable spending ${inputCurrency?.symbol}`} isBonus={false} isMM={false} />;
+    content = !ApproveModalContent ? null : <ApproveModalContent title={`Enable spending ${context.srcToken?.symbol}`} isBonus={false} isMM={false} />;
   }
 
   if (swapStep === "createOrder" && !createOrdertxHash) {

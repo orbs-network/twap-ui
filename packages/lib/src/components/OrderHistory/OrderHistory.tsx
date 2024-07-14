@@ -13,7 +13,6 @@ import { query, useOpenOrders } from "../../hooks";
 
 const OrderHistoryButton = ({ onClick }: { onClick: () => void }) => {
   const { data } = query.useOrdersHistory();
-  const { state } = useTwapContext();
   const openOrders = useOpenOrders();
   const isLoading = !data;
   const text = useMemo(() => {

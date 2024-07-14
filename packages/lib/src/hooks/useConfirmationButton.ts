@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useTwapContext } from "../context/context";
-import { useOutAmount, useChangeNetwork, useNoLiquidity, useShouldUnwrap, useSrcUsd, useDstUsd, useSrcBalance, useSwapWarning, useShouldOnlyWrap, useSrcAmount } from "./hooks";
+import { useOutAmount, useChangeNetwork, useNoLiquidity, useShouldUnwrap, useSrcBalance, useSwapWarning, useShouldOnlyWrap, useSrcAmount } from "./hooks";
 import { query } from "./query";
 import BN from "bignumber.js";
 import { useUnwrapToken, useWrapOnly } from "./useTransactions";
@@ -8,10 +8,10 @@ import _ from "lodash";
 import { useSwapModal } from "./useSwapModal";
 
 export const useConfirmationButton = () => {
-  const { translations, lib, isWrongChain, dappProps, state } = useTwapContext();
+  const { translations, lib, isWrongChain, dappProps, state, srcToken, dstToken, srcUsd, dstUsd } = useTwapContext();
   const { connect } = dappProps;
   const srcAmount = useSrcAmount().srcAmountBN.toString();
-  const { swapState, srcToken, dstToken } = state;
+  const { swapState } = state;
   const createOrderLoading = swapState === "loading";
 
   const { onOpen } = useSwapModal();
@@ -19,10 +19,8 @@ export const useConfirmationButton = () => {
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
   const noLiquidity = useNoLiquidity();
   const shouldUnwrap = useShouldUnwrap();
-  const srcUsd = useSrcUsd().value.toString();
-  const dstUsd = useDstUsd().value.toString();
   const nativeSymbol = lib?.config.nativeToken.symbol;
-  const usdLoading = BN(srcUsd || "0").isZero() || BN(dstUsd || "0").isZero();
+  const usdLoading = BN(srcUsd || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
   const warning = useSwapWarning();
   const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);

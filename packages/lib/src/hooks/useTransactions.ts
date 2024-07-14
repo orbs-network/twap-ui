@@ -18,7 +18,6 @@ import {
   useSrcAmount,
   useSrcChunkAmount,
   useSrcChunkAmountUi,
-  useSrcUsd,
 } from "./hooks";
 import { query } from "./query";
 import BN from "bignumber.js";
@@ -30,10 +29,9 @@ import moment from "moment";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = query.useGasPrice();
-  const { dappProps, lib, state } = useTwapContext();
+  const { dappProps, lib, srcUsd, dstToken: _dstToken } = useTwapContext();
   const { askDataParams } = dappProps;
   const dstMinAmountOut = useDstMinAmountOut();
-  const srcUsd = useSrcUsd().value.toString();
   const srcChunkAmount = useSrcChunkAmount();
   const deadline = useDeadline().millis;
   const fillDelayMillisUi = useFillDelayMillis();
@@ -44,8 +42,8 @@ export const useCreateOrder = () => {
     async (srcToken: TokenData) => {
       analytics.updateAction("create");
       const dstToken = {
-        ...state.dstToken!,
-        address: lib!.validateTokens(srcToken!, state.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : state.dstToken!.address,
+        ..._dstToken!,
+        address: lib!.validateTokens(srcToken!, _dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : _dstToken!.address,
       };
 
       const fillDelaySeconds = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
@@ -261,9 +259,9 @@ export const useApproveToken = () => {
   );
 };
 const useOnSuccessCallback = () => {
-  const { dappProps, state, lib } = useTwapContext();
+  const { dappProps, state, lib, srcToken, dstToken } = useTwapContext();
   const { onTxSubmitted } = dappProps;
-  const { srcToken, dstToken, srcAmountUi } = state;
+  const { srcAmountUi } = state;
   const srcAmount = useSrcAmount().srcAmountBN.toString();
   const dstAmountUsdUi = useDstAmountUsdUi();
   const outAmountRaw = useOutAmount().outAmountRaw;
@@ -330,8 +328,7 @@ const useOnSuccessCallback = () => {
 
 const useSubmitAnalytics = () => {
   const srcAmount = useSrcAmount();
-  const state = useTwapContext().state;
-  const { srcToken, dstToken } = state;
+  const { srcToken, dstToken } = useTwapContext();
   const { outAmountRaw, outAmountUi } = useOutAmount();
   const chunks = useChunks();
   const minDstAmountOutUi = useDstMinAmountOutUi();
@@ -385,9 +382,9 @@ const useSubmitAnalytics = () => {
 
 export const useSubmitOrderFlow = () => {
   const srcAmount = useSrcAmount().srcAmountBN.toString();
-  const { lib, dappProps, updateState, state } = useTwapContext();
+  const { lib, dappProps, updateState, state, srcToken } = useTwapContext();
   const { minNativeTokenBalance } = dappProps;
-  const { srcToken, swapState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, wrapSuccess } = state;
+  const { swapState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, wrapSuccess } = state;
   const { data: haveAllowance } = query.useAllowance();
   const { mutateAsync: approve } = useApproveToken();
   const { refetch: refetchNativeBalance } = query.useMinNativeTokenBalance(minNativeTokenBalance);

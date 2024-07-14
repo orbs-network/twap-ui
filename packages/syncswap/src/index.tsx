@@ -12,7 +12,6 @@ import {
   Orders,
   REFETCH_GAS_PRICE,
   amountBN,
-  addMissingTokens,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
@@ -103,9 +102,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: boolean }) => {
-  const { translations, state } = useTwapContext();
-
-  const { srcToken, dstToken } = state;
+  const { translations, srcToken, dstToken } = useTwapContext();
 
   const token = isSrc ? srcToken : dstToken;
 
@@ -237,7 +234,7 @@ const Adapter = (props: Props) => {
       return parseToken(token);
     });
 
-    return addMissingTokens(config, _.compact(res));
+    return _.compact(res);
   }, [props.dappTokens]);
 
   return (
@@ -254,11 +251,10 @@ const Adapter = (props: Props) => {
           provider={provider}
           account={props.account}
           dappTokens={props.dappTokens}
-          srcToken={eqIgnoreCase(props.srcToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.srcToken}
           onTxSubmitted={props.onTxSubmitted}
-          dstToken={eqIgnoreCase(props.dstToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.dstToken}
-          priceUsd={priceUsd}
           isLimitPanel={props.limit}
+          onSrcTokenSelected={props.onSrcTokenSelected}
+          onDstTokenSelected={props.onDstTokenSelected}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider value={props}>

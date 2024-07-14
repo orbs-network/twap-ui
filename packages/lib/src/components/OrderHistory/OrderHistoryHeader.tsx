@@ -1,6 +1,6 @@
-import { Button, Menu, MenuItem, styled } from "@mui/material";
+import { Box, Button, ClickAwayListener, Fade, Menu, MenuItem, styled } from "@mui/material";
 import _ from "lodash";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Status } from "@orbs-network/twap";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { useOrderHistoryContext } from "./context";
@@ -8,67 +8,79 @@ import { StyledRowFlex, StyledText } from "../../styles";
 import { IconButton } from "../base";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { useTwapContext } from "../../context/context";
-import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
-import { Translations } from "../../types";
-import { stateActions } from "../../context/actions";
 import { useOrderById } from "../../hooks";
 
 export function OrderHistoryMenu() {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+  const [open, setOpen] = useState(false);
   const { setTab, selectedTab, tabs } = useOrderHistoryContext();
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+  const onClose = () => {
+    setOpen(false);
   };
-  const handleClose = () => {
-    setAnchorEl(null);
+  const onOpen = () => {
+    setOpen(true);
   };
 
   const onClick = useCallback(
     (key?: Status) => {
-      setAnchorEl(null);
+      onClose();
       setTab(key);
     },
     [setTab, setTab]
   );
 
   return (
-    <>
-      <StyledButton variant="outlined" onClick={handleClick}>
+    <StyledContainer>
+      <StyledButton variant="outlined" onClick={onOpen}>
         {selectedTab?.name} Orders <small>{`(${selectedTab?.amount})`}</small> <IoIosArrowDown />
       </StyledButton>
-      <StyledMenu className="twap-time-selector-menu" anchorEl={anchorEl} open={open} onClose={handleClose}>
-        {tabs.map((it) => {
-          return (
-            <StyledMenuItem key={it.name} onClick={() => onClick(it.key)}>
-              {it.name} <small>{` (${it.amount})`}</small>
-            </StyledMenuItem>
-          );
-        })}
-      </StyledMenu>
-    </>
+
+      {open && (
+        <ClickAwayListener onClickAway={onClose}>
+          <StyledMenu className="twap-order-menu">
+            {tabs.map((it) => {
+              return (
+                <StyledMenuItem className="twap-order-menu-item" key={it.name} onClick={() => onClick(it.key)}>
+                  <StyledText>
+                    {it.name} <small>{` (${it.amount})`}</small>
+                  </StyledText>
+                </StyledMenuItem>
+              );
+            })}
+          </StyledMenu>
+        </ClickAwayListener>
+      )}
+    </StyledContainer>
   );
 }
 
-const StyledMenu = styled(Menu)({
-  ".MuiBackdrop-root": {
-    opacity: "0!important",
-  },
+const StyledContainer = styled(Box)({
+  position: "relative",
+  zIndex: 10,
+});
+
+const StyledMenu = styled("div")({
+  position: "absolute",
 });
 
 const StyledButton = styled(Button)({
   display: "flex",
   gap: 5,
   textTransform: "none",
+  color: "inherit",
+
   small: {
     opacity: 0.7,
   },
+  ".MuiTouchRipple-root": {
+    display: "none",
+  },
 });
 
-const StyledMenuItem = styled(MenuItem)({
-  height: 40,
+const StyledMenuItem = styled("div")({
+  cursor: "pointer",
   display: "flex",
-  gap: 5,
+  alignItems: "center",
+  justifyContent: "flex-start",
 });
 
 export const OrderHistoryHeader = () => {

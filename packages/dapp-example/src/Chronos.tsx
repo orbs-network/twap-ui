@@ -91,8 +91,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <TWAP
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.arb.USDC.address}
+      // srcToken={zeroAddress}
+      // dstToken={erc20sData.arb.USDC.address}
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       connector={connector}
@@ -100,8 +100,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       limit={limit}
       isDarkTheme={isDarkTheme}
       swapAnimationStart={false}
-      priceUsd={priceUsd}
       useTrade={_useTrade}
+      onSrcTokenSelected={(token: any) => console.log(token)}
+      onDstTokenSelected={(token: any) => console.log(token)}
     />
   );
 };

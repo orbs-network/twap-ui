@@ -76,7 +76,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens, account, connectedChainId } = useAdapterContext();
-  const { srcToken, dstToken } = useTwapContext().state;
+  const { srcToken, dstToken } = useTwapContext();
 
   const selectedCurrency = useMemo(() => {
     if (!!dappTokens && srcToken) {
@@ -209,11 +209,8 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
       parsedTokens={[]}
-      srcToken={props.srcToken}
-      dstToken={props.dstToken}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
-      usePriceUSD={props.usePriceUSD}
       isLimitPanel={props.isLimit}
     >
       <AdapterContextProvider value={props}>

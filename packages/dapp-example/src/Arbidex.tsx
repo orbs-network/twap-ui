@@ -117,8 +117,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library?.givenProvider}
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.arb.USDC.address}
+      // srcToken={zeroAddress}
+      // dstToken={erc20sData.arb.USDC.address}
       dappTokens={dappTokens}
       onSrcTokenSelected={(token: any) => console.log(token)}
       onDstTokenSelected={(token: any) => console.log(token)}
@@ -126,7 +126,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       isDarkTheme={isDarkTheme}
       limit={limit}
       useModal={useModal}
-      priceUsd={priceUsd}
     />
   );
 };

@@ -12,7 +12,7 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
   const setCustomDuration = stateActions.useSetCustomDuration();
 
   return (
-    <NumericInput
+    <StyledInput
       className={className}
       value={duration.amount}
       onChange={(v) => setCustomDuration({ resolution: duration.resolution, amount: Number(v) })}
@@ -20,6 +20,12 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
     />
   );
 };
+
+const StyledInput = styled(NumericInput)({
+  input: {
+    padding: "0px",
+  },
+});
 
 const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
   const duration = useDuration().duration;

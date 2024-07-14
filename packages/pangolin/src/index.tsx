@@ -98,11 +98,8 @@ const TWAP = memo((props: PangolinTWAPProps) => {
           connectedChainId={props.connectedChainId}
           askDataParams={[partnerDaas]}
           dappTokens={props.dappTokens}
-          srcToken={props.srcToken}
-          dstToken={props.dstToken}
           onSrcTokenSelected={props.onSrcTokenSelected}
           onDstTokenSelected={props.onDstTokenSelected}
-          usePriceUSD={props.usePriceUSD}
           parsedTokens={[]}
           isLimitPanel={props.limit}
         >

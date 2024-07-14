@@ -112,14 +112,13 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <TWAP
       connect={connect}
       account={account}
-      srcToken={fromToken?.address}
-      dstToken={dstToken?.address}
+      // srcToken={fromToken?.address}
+      // dstToken={dstToken?.address}
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}
       isDarkTheme={isDarkTheme}
       limit={limit}
-      priceUsd={priceUsd}
       connector={connector}
       onSrcTokenSelected={setFromToken}
       onDstTokenSelected={setDstToken}

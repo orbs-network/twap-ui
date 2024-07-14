@@ -1,17 +1,15 @@
 import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
 import { TWAP } from "@orbs-network/twap-ui-sushiswap";
-import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
+import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
-import { zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Components, getConfig } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
 import { baseSwapTokens } from "./BaseSwap";
-import { amountBNV2 } from "@orbs-network/twap-ui";
 
 const name = "SushiSwap";
 const configs = [Configs.SushiArb, Configs.SushiBase];
@@ -114,9 +112,8 @@ const getTokenLogo = (token: any) => {
   return token.logoURI;
 };
 
-const _usePriceUSD = (address?: string) => {
+const useUSD = (address?: string) => {
   const res = usePriceUSD(address);
-
   return res?.toString();
 };
 
@@ -125,17 +122,38 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
+  const [fromToken, setFromToken] = useState(undefined);
+  const [toToken, setToToken] = useState(undefined);
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
     return useTrade(fromToken, toToken, amount, dappTokens);
+  };
+
+  useEffect(() => {
+    setFromToken(undefined);
+    setToToken(undefined);
+  }, [chainId]);
+
+  useEffect(() => {
+    if (!fromToken) {
+      setFromToken(dappTokens?.[1]);
+    }
+    if (!toToken) {
+      setToToken(dappTokens?.[2]);
+    }
+  }, [dappTokens, toToken]);
+
+  const onSwitchTokens = () => {
+    setFromToken(toToken);
+    setToToken(fromToken);
   };
 
   return (
     <TWAP
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={chainId === Configs.SushiBase.chainId ? "BSWAP" : "DAI"}
+      srcToken={fromToken}
+      dstToken={toToken}
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}
@@ -144,7 +162,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       limit={limit}
       Modal={SushiModal}
       getTokenLogo={getTokenLogo}
-      usePriceUSD={_usePriceUSD}
+      useUSD={useUSD}
+      onSrcTokenSelected={(it: any) => setFromToken(it)}
+      onDstTokenSelected={(it: any) => setToToken(it)}
+      onSwitchTokens={onSwitchTokens}
     />
   );
 };

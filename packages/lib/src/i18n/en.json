@@ -11,7 +11,7 @@
   "marketPriceTooltip": "You have the option to set a “limit price” for your order. If you do not select this option, each trade in your order will execute at the available market price.",
   "limitPriceTooltip": "Trades will only execute if the available market price is better than the limit price, potentially resulting in partial fills or orders remaining unfilled upon expiration.",
   "tradeSizeTooltip": "This sets the size of each individual trade that will be executed over the duration of your order.",
-  "maxDurationTooltip": "This is the date when the order will expire. Please note that orders may be completed earlier than this time, partially filled, or remain unfilled based on the specified parameters.",
+  "maxDurationTooltip": "This is the time to order expiration. Please note that orders may be completed earlier than this time, partially filled, or remain unfilled based on the specified parameters.",
   "tradeIntervalTootlip": "The estimated time that will elapse between each trade in your order. Note that as this time includes an allowance of two minutes for bidder auction and block settlement, which cannot be predicted exactly, actual time may vary.",
   "customIntervalTooltip": "Enable custom interval",
   "totalTradesTooltip": "The total number of individual trades that will be scheduled as part of your order. Note that in limit orders, it is possible that not all scheduled trades will be executed.",

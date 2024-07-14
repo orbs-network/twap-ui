@@ -89,18 +89,6 @@ export const handleFillDelayText = (text: string, minutes: number) => {
   return text.replace("{{minutes}}", minutes.toString());
 };
 
-export const getTokenFromTokensListV2 = (tokensList?: any, values?: (string | undefined)[]) => {
-  if (!tokensList || !values || values.length === 0) return;
-
-  if (Array.isArray(tokensList)) {
-    return tokensList.find((token) => values.some((value) => eqIgnoreCase(value || "", token.address || "") || eqIgnoreCase(value || "", token.symbol || "")));
-  }
-
-  if (typeof tokensList === "object") {
-    return values.map((value) => (value ? tokensList[value as keyof typeof tokensList] : undefined)).find((token) => token !== undefined);
-  }
-};
-
 export const parseError = (error?: any) => {
   const defaultText = "An error occurred.";
   if (!error || !error.message) return defaultText;
@@ -170,16 +158,6 @@ export const formatDecimals = (value?: string | BN | number, decimalPlaces?: num
   const res = BN(value).gt(1) && index >= 1 ? 0 : index > 8 ? 0 : index + decimals;
 
   return BN(value).decimalPlaces(res, BN.ROUND_DOWN).toString();
-};
-
-export const addMissingTokens = (config: Config, tokens: TokenData[]) => {
-  if (!tokens.find((it: TokenData) => isNativeAddress(it.address))) {
-    tokens.push(config.nativeToken);
-  }
-  if (!tokens.find((it: TokenData) => eqIgnoreCase(it.address, config.wToken.address))) {
-    tokens.push(config.wToken);
-  }
-  return tokens;
 };
 
 export const getExplorerUrl = (chainId?: number) => {

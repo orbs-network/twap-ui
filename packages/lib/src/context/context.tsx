@@ -3,17 +3,15 @@ import { State, TimeResolution, TWAPContextProps, TwapLibProps } from "../types"
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "../analytics";
-import { Status, TWAPLib } from "@orbs-network/twap";
+import { TWAPLib } from "@orbs-network/twap";
 import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
 import { defaultCustomFillDelay, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "../consts";
-import { getQueryParam, getTokenFromTokensListV2, limitPriceFromQueryParams } from "../utils";
+import { getQueryParam, limitPriceFromQueryParams } from "../utils";
 import moment from "moment";
-import { useAmountBN } from "../hooks";
 import _ from "lodash";
-import { isNativeAddress } from "@defi.org/web3-candies";
 analytics.onModuleImported();
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -26,7 +24,7 @@ const queryClient = new QueryClient({
 });
 
 const WrappedTwap = (props: TwapLibProps) => {
-  const { srcToken, dstToken } = useTwapContext().state;
+  const { srcToken, dstToken } = useTwapContext();
   query.useFeeOnTransfer(srcToken?.address);
   query.useFeeOnTransfer(dstToken?.address);
   query.useAllowance();
@@ -78,8 +76,6 @@ export const getInitialState = ({ storeOverride = {}, isQueryParamsEnabled }: { 
   const srcAmountUi = getQueryParam(QUERY_PARAMS.INPUT_AMOUNT);
   const chunks = getQueryParam(QUERY_PARAMS.TRADES_AMOUNT);
   return {
-    srcToken: undefined,
-    dstToken: undefined,
     srcAmountUi: !isQueryParamsEnabled ? "" : srcAmountUi || "",
 
     confirmationClickTimestamp: moment(),
@@ -123,13 +119,6 @@ const useStore = (props: TwapLibProps) => {
   };
 };
 
-const useDappDefaultTokens = (props: TwapLibProps, updateState: (value: Partial<State>) => void) => {
-  useEffect(() => {
-    if (props.srcToken) updateState({ srcToken: getTokenFromTokensListV2(props.parsedTokens, [props.srcToken]) });
-    if (props.dstToken) updateState({ dstToken: getTokenFromTokensListV2(props.parsedTokens, [props.dstToken]) });
-  }, [props.srcToken, props.dstToken, props.parsedTokens, updateState]);
-};
-
 const useDeadlineUpdater = (state: State, updateState: (value: Partial<State>) => void) => {
   const interval = useRef<any>();
 
@@ -144,31 +133,41 @@ const useDeadlineUpdater = (state: State, updateState: (value: Partial<State>) =
   }, [state.showConfirmation, state.swapState, updateState]);
 };
 
-const useMarket = (props: TwapLibProps, state: State) => {
-  const amount = useAmountBN(state.srcToken?.decimals, "1");
-  const srcToken = isNativeAddress(state.srcToken?.address || "") ? props.config.wToken : state.srcToken;
-  const dstToken = isNativeAddress(state.dstToken?.address || "") ? props.config.wToken : state.dstToken;
-
-  return props.useMarketPrice?.({ srcToken, dstToken, amount });
-};
-
-export const TwapAdapter = (props: TwapLibProps) => {
+export const Content = (props: TwapLibProps) => {
   const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
   const isWrongChain = useIsWrongChain(props);
   const lib = useLib(props);
   const { updateState, state } = useStore(props);
   useDeadlineUpdater(state, updateState);
-  useDappDefaultTokens(props, updateState);
-  const marketPrice = useMarket(props, state);
-
   const uiPreferences = props.uiPreferences || {};
 
   return (
+    <TwapContext.Provider
+      value={{
+        dappProps: props,
+        translations,
+        lib,
+        isWrongChain,
+        state,
+        updateState,
+        marketPrice: props.marketPrice,
+        uiPreferences,
+        srcToken: props.srcToken,
+        dstToken: props.dstToken,
+        srcUsd: props.srcUsd || 0,
+        dstUsd: props.dstUsd || 0,
+      }}
+    >
+      <WrappedTwap {...props} />
+      <LimitPriceMessageContent />
+    </TwapContext.Provider>
+  );
+};
+
+export const TwapAdapter = (props: TwapLibProps) => {
+  return (
     <QueryClientProvider client={queryClient}>
-      <TwapContext.Provider value={{ dappProps: props, translations, lib, isWrongChain, state, updateState, marketPrice, uiPreferences }}>
-        <WrappedTwap {...props} />
-        <LimitPriceMessageContent />
-      </TwapContext.Provider>
+      <Content {...props} />
     </QueryClientProvider>
   );
 };

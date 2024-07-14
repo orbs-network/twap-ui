@@ -94,7 +94,7 @@ const MaxButton = () => {
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const { useModal, TokenSelectModal } = useAdapterContext();
-  const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
+  // const { rawDstToken: dstToken, rawSrcToken: srcToken } = useTwapContext();
   const selectToken = hooks.useTokenSelect();
 
   const onSelect = useCallback(
@@ -103,7 +103,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     },
     [selectToken, isSrcToken]
   );
-  const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
+  // const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
 
   const theme = useTheme();
 
@@ -111,9 +111,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     <>
       <StyledTokenPanel theme={theme}>
         <StyledInputAndSelect>
-          <StyledTokenSelect theme={theme}>
-            <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} />
-          </StyledTokenSelect>
+          <StyledTokenSelect theme={theme}>{/* <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} /> */}</StyledTokenSelect>
           <StyledTokenPanelInput dstDecimalScale={3} isSrc={isSrcToken} />
         </StyledInputAndSelect>
         <StyledTokenPanelBottom>
@@ -177,11 +175,8 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       account={props.account}
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
-      srcToken={props.srcToken}
-      dstToken={props.dstToken}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
-      priceUsd={props.priceUsd}
       parsedTokens={[]}
       isLimitPanel={props.limit}
     >

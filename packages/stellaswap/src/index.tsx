@@ -59,7 +59,7 @@ const TokenChange = () => {
 };
 
 const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () => void }) => {
-  const { srcToken, dstToken } = useTwapContext().state;
+  const { srcToken, dstToken } = useTwapContext();
 
   const notSelected = (isSrc && !srcToken) || (!isSrc && !dstToken);
   return (
@@ -178,11 +178,8 @@ const TWAP = (props: ThenaTWAPProps) => {
           account={props.account}
           dappTokens={props.dappTokens}
           parsedTokens={[]}
-          srcToken={props.srcToken}
-          dstToken={props.dstToken}
           onDstTokenSelected={props.onDstTokenSelected}
           onSrcTokenSelected={props.onSrcTokenSelected}
-          priceUsd={props.priceUsd}
           isLimitPanel={props.limit}
         >
           <GlobalStyles styles={configureStyles(theme) as any} />

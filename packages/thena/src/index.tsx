@@ -66,7 +66,7 @@ const TokenSelectModal = ({ onClose, isSrc, isOpen }: any) => {
     },
     [onTokenSelectedCallback, isSrc]
   );
-  const { srcToken, dstToken } = useTwapContext().state;
+  const { srcToken, dstToken } = useTwapContext();
 
   const { srcTokenSelected, dstTokenSelected } = useMemo(() => {
     return {
@@ -241,11 +241,8 @@ const TWAP = (props: ThenaTWAPProps) => {
         provider={provider}
         account={props.account}
         dappTokens={props.dappTokens}
-        srcToken={props.srcToken}
-        dstToken={props.dstToken}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
-        usePriceUSD={usePriceUSD}
         uiPreferences={uiPreferences}
         parsedTokens={[]}
         isLimitPanel={props.limit}
