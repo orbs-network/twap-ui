@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-spookyswap",
-  "version": "1.0.35-alpha.0",
+  "version": "1.0.36-alpha.0",
   "description": "TWAP UI for Spookyswap",
   "license": "MIT",
   "author": "Orbs",
@@ -24,7 +24,7 @@
     "@mui/material": "5.x",
     "@mui/system": "5.x",
     "@orbs-network/twap": "^1.18.x",
-    "@orbs-network/twap-ui": "^1.0.35-alpha.0",
+    "@orbs-network/twap-ui": "^1.0.36-alpha.0",
     "lodash": "4.x",
     "web3": "1.x"
   },
