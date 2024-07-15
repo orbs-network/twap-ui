@@ -449,8 +449,6 @@ const useSrcAmountWarning = () => {
 export const useBalanceWarning = () => {
   const { data: srcBalance } = useSrcBalance();
   const maxSrcInputAmount = useMaxSrcInputAmount();
-  console.log({ maxSrcInputAmount:maxSrcInputAmount?.toString() });
-
   const srcAmount = useSrcAmount().srcAmountBN;
 
   const { translations } = useTwapContext();

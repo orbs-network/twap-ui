@@ -37,12 +37,13 @@ interface Props {
 export function StepComponent({ stepType }: { stepType: SwapStep }) {
   const step = useStep(stepType);
   if (!step) return null;
+  const selected = step.status !== "disabled" ? 1 : 0;
   return (
-    <StepContainer className="twap-step" selected={step.status !== "disabled" ? 1 : 0}>
+    <StepContainer className="twap-step" selected={selected}>
       <StyledStep>
         <Logo step={step} />
         <StyledTitleAndLink>
-          <StyledTitle className="twap-step-title">{step.title}</StyledTitle>
+          <StyledTitle className={`twap-step-title ${selected ? "twap-step-title-selected" : ""}`}>{step.title}</StyledTitle>
           {step.link && (
             <StyledLink href={step.link.url} target="_blank" className="twap-step-link">
               {step.link.text}
@@ -108,9 +109,7 @@ const StepContainer = styled(StyledColumnFlex)<{ selected: number }>(({ selected
       display: "none",
     },
   },
-  ".twap-step-title": {
-    color: selected ? "white" : "rgb(155, 155, 155)",
-  },
+
   ".twap-step-icon": {
     svg: {
       filter: `grayScale(${selected ? 0 : 1})`,
@@ -175,7 +174,7 @@ const StyledStepLogo = styled("div")`
     z-index: 1;
   }
   .twap-step-icon {
-    svg: {
+    svg {
       width: 26px;
       height: 26px;
       fill: rgb(76, 130, 251);

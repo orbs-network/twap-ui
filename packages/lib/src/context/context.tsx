@@ -32,32 +32,24 @@ const WrappedTwap = (props: TwapLibProps) => {
   return <TwapErrorWrapper>{props.children}</TwapErrorWrapper>;
 };
 
-const useIsWrongChain = (props: TwapLibProps) => {
-  const [isWrongChain, setIsWrongChain] = useState(false);
-  const validateChain = useCallback(async () => {
+const useChainId = (props: TwapLibProps) => {
+  const [chainId, setChainId] = useState<number | undefined>(undefined);
+  const getChain = useCallback(async () => {
+    setChainId(undefined);
     if (!props.provider) {
-      setIsWrongChain(false);
       return;
     }
-    const chain = props.connectedChainId || (await new Web3(props.provider).eth.getChainId());
-    if (!chain) {
-      setIsWrongChain(false);
-      return;
-    }
-
-    setIsWrongChain(props.config.chainId !== chain);
-  }, [props.connectedChainId, props.provider, props.config.chainId]);
+    setChainId(props.connectedChainId || (await new Web3(props.provider).eth.getChainId()));
+  }, [props.connectedChainId, props.provider]);
 
   useEffect(() => {
-    validateChain();
-  }, [validateChain]);
+    getChain();
+  }, [getChain]);
 
-  return isWrongChain;
+  return chainId;
 };
 
-const useLib = (props: TwapLibProps) => {
-  const isWrongChain = useIsWrongChain(props);
-
+const useLib = (props: TwapLibProps, isWrongChain?: boolean) => {
   const lib = useMemo(() => {
     if (isWrongChain || !props.account || !props.provider || !props.config) return;
 
@@ -135,8 +127,9 @@ const useDeadlineUpdater = (state: State, updateState: (value: Partial<State>) =
 
 export const Content = (props: TwapLibProps) => {
   const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
-  const isWrongChain = useIsWrongChain(props);
-  const lib = useLib(props);
+  const chainId = useChainId(props);
+  const isWrongChain = !chainId ? false :  chainId !== props.config?.chainId;
+  const lib = useLib(props, isWrongChain);
   const { updateState, state } = useStore(props);
   useDeadlineUpdater(state, updateState);
   const uiPreferences = props.uiPreferences || {};

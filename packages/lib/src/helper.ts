@@ -124,7 +124,6 @@ export const getOrders = async (lib: TWAPLib, signal?: AbortSignal): Promise<His
   return orders.map((order: any) => {
     const orderFill = fills[order.Contract_id];
     const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
-
     return {
       id: Number(order.Contract_id),
       exchange: order.exchange,

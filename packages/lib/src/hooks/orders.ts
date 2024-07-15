@@ -7,6 +7,8 @@ import BN from "bignumber.js";
 import { query } from "./query";
 import _ from "lodash";
 
+
+
 export const useParseOrderUi = (order?: HistoryOrder) => {
   const lib = useTwapContext()?.lib;
 
@@ -19,6 +21,10 @@ export const useParseOrderUi = (order?: HistoryOrder) => {
     const dstMinAmountOutUi = amountUiV2(dstToken.decimals, dstMinAmount) || "0";
     const dstAmount = amountUiV2(dstToken.decimals, order.dstAmount) || "0";
     const srcFilledAmountUi = amountUiV2(srcToken.decimals, srcFilledAmount) || "0";
+    const totalChunks = order.totalChunks || 0;
+
+
+
     return {
       id: order.id,
       createdAt,
@@ -38,7 +44,7 @@ export const useParseOrderUi = (order?: HistoryOrder) => {
       progress,
       srcToken,
       dstToken,
-      totalChunks: order.totalChunks,
+      totalChunks,
       status: order.status,
       txHash: order.txHash,
       limitPrice: isMarketOrder ? undefined : BN(dstMinAmountOutUi).div(srcChunkAmountUi).toString() || "0",

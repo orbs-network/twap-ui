@@ -150,6 +150,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   return (
     <TWAP
+      configChainId={chainId}
       connect={connect}
       account={account}
       srcToken={fromToken}
@@ -159,6 +160,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library}
       isDarkTheme={isDarkTheme}
       useTrade={_useTrade}
+      connectedChainId={chainId}
       limit={limit}
       Modal={SushiModal}
       getTokenLogo={getTokenLogo}

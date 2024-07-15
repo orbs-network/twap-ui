@@ -64,6 +64,7 @@ import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
+import {MdInfo} from "@react-icons/all-files/md/MdInfo";
 import _ from "lodash";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
@@ -84,6 +85,7 @@ const uiPreferences: TwapContextUIPreferences = {
   Components: {
     USD,
   },
+  tooltipIcon: <MdInfo size={15} />,
 };
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
@@ -202,10 +204,10 @@ interface SushiProps extends TWAPProps {
   useUSD: (address?: string) => string | undefined;
   srcToken?: any;
   dstToken?: any;
+  configChainId?: number;
 }
 
 interface AdapterContextProps extends SushiProps {
-  chainId?: number;
   config: Config;
 }
 
@@ -291,7 +293,6 @@ const TWAPContent = () => {
         provider={context.provider}
         account={context.account}
         dappTokens={context.dappTokens}
-        connectedChainId={context.chainId}
         parsedTokens={parsedTokens}
         srcToken={srcToken}
         dstToken={dstToken}
@@ -303,6 +304,7 @@ const TWAPContent = () => {
         srcUsd={srcUsd}
         dstUsd={dstUsd}
         marketPrice={marketPrice}
+        connectedChainId={context.connectedChainId}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -320,13 +322,12 @@ const TWAPContent = () => {
 };
 
 const TWAP = (props: SushiProps) => {
-  const chainId = hooks.useChainId(props.provider, props.connectedChainId);
   const config = useMemo(() => {
-    return getConfig(configs, chainId);
-  }, [chainId]);
+    return getConfig(configs, props.configChainId);
+  }, [props.configChainId]);
 
   return (
-    <AdapterContextProvider value={{ ...props, chainId, config }}>
+    <AdapterContextProvider value={{ ...props, config }}>
       <TWAPContent />
     </AdapterContextProvider>
   );

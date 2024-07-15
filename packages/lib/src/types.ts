@@ -127,6 +127,7 @@ export interface Translations {
   numberOfTrades: string;
   AverageExecutionPrice: string;
   twapMarket: string;
+  limitPriceTooltipLimitPanel: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";
@@ -195,6 +196,7 @@ export interface TwapContextUIPreferences {
   input?: {
     showOnLoading?: boolean;
   };
+  tooltipIcon?: IconType;
   Tooltip?: FC<TooltipProps>;
   Button?: FC<ButtonProps>;
   orders?: {

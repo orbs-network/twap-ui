@@ -746,6 +746,18 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
   return {
     ".twap-order-modal-disclaimer": {
       ...summaryModalStyles,
+      a: {
+        textDecoration: "underline",
+        color: styles.textColor,
+      },
+    },
+    ".twap-step-title": {
+      color: styles.textColor,
+      opacity: 0.7,
+    },
+    ".twap-step-title-selected": {
+      color: styles.textColor,
+      opacity: 1,
     },
     ".twap-label-text": {
       color: styles.textColor,

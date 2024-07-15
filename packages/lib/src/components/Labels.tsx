@@ -24,13 +24,15 @@ export const CurrentMarketPriceLabel = () => {
 };
 
 export const LimitPriceLabel = () => {
-  const { translations, dappProps, state } = useTwapContext();
+  const { translations: t, dappProps, state } = useTwapContext();
   const isLimitPanel = dappProps?.isLimitPanel;
   const isMarketOrder = useIsMarketOrder();
 
   return (
     <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", position: "relative" }} gap={3}>
-      <Label tooltipText={!isMarketOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{!isLimitPanel ? translations.price : translations.limitPrice}</Label>{" "}
+      <Label tooltipText={isMarketOrder ? t.marketPriceTooltip : isLimitPanel ? t.limitPriceTooltipLimitPanel : t.limitPriceTooltip}>
+        {!isLimitPanel ? t.price : t.limitPrice}
+      </Label>{" "}
     </Styles.StyledRowFlex>
   );
 };

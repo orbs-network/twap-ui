@@ -196,7 +196,6 @@ export const useOrdersHistory = () => {
           dstToken: getTokensFromTokensList(order.dstTokenAddress),
         };
       });
-
       return _.chain(_.compact(orders.filter((o) => o.srcToken && o.dstToken)))
         .orderBy((o) => o.createdAt, "desc")
         .groupBy((o) => o.status)

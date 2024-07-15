@@ -69,16 +69,17 @@ const AccordionContainer = ({ expanded, handleChange, children, title }: { expan
 };
 
 const OrderInfo = ({ order }: { order: OrderUI }) => {
+  const isTwap = (order?.totalChunks || 0) > 1;
   return (
     <>
       <LimitPrice order={order} />
       <CreatedAt order={order} />
       <OrderDisplay.Expiry deadline={order?.deadline} />
       <AmountIn order={order} />
-      <OrderDisplay.ChunkSize srcChunkAmount={order?.srcChunkAmountUi} srcToken={order?.srcToken} />
-      <OrderDisplay.ChunksAmount chunks={order?.totalChunks} />
-      <OrderDisplay.MinDestAmount dstToken={order?.dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={order?.dstMinAmountOutUi} />
-      <OrderDisplay.TradeInterval fillDelayMillis={order?.fillDelay} />
+      {isTwap && <OrderDisplay.ChunkSize srcChunkAmount={order?.srcChunkAmountUi} srcToken={order?.srcToken} />}
+      {isTwap && <OrderDisplay.ChunksAmount chunks={order?.totalChunks} />}
+      <OrderDisplay.MinDestAmount totalChunks={order?.totalChunks} dstToken={order?.dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={order?.dstMinAmountOutUi} />
+      {isTwap && <OrderDisplay.TradeInterval fillDelayMillis={order?.fillDelay} />}
       <OrderDisplay.Recipient />
       <OrderDisplay.TxHash txHash={order?.txHash} />
     </>
@@ -124,7 +125,7 @@ const StyledCancelOrderButton = styled(Button)({
 
 const CreatedAt = ({ order }: { order: OrderUI }) => {
   return (
-    <OrderDisplay.DetailRow title="Created At">
+    <OrderDisplay.DetailRow title="Created at">
       <StyledText>{order?.createdAtUi}</StyledText>
     </OrderDisplay.DetailRow>
   );
@@ -179,7 +180,7 @@ const OrderStatus = ({ order }: { order: OrderUI }) => {
 
 const Progress = ({ order }: { order: OrderUI }) => {
   const progress = useFormatNumberV2({ value: order?.progress, decimalScale: 2 });
-
+  if(order?.totalChunks === 1) return null;
   return (
     <OrderDisplay.DetailRow title="Progress">
       <StyledText>{progress || 0}%</StyledText>
@@ -189,12 +190,12 @@ const Progress = ({ order }: { order: OrderUI }) => {
 
 const LimitPrice = ({ order }: { order: OrderUI }) => {
   if (order?.isMarketOrder) return null;
-  return <Price title="LimitPrice" price={order?.limitPrice} srcToken={order?.srcToken} dstToken={order?.dstToken} />;
+  return <Price title="Limit price" price={order?.limitPrice} srcToken={order?.srcToken} dstToken={order?.dstToken} />;
 };
 
 const AvgExcecutionPrice = ({ order }: { order: OrderUI }) => {
   const t = useTwapContext().translations;
-  return <Price title={t.AverageExecutionPrice} price={order?.excecutionPrice} srcToken={order?.srcToken} dstToken={order?.dstToken} />;
+  return <Price title={ order?.totalChunks === 1 ?  'Final execution price'  :  t.AverageExecutionPrice} price={order?.excecutionPrice} srcToken={order?.srcToken} dstToken={order?.dstToken} />;
 };
 
 const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?: Token; dstToken?: Token; title: string }) => {

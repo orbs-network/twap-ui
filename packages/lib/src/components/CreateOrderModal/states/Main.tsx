@@ -112,7 +112,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
       title={
         <>
           {`${t.accept} `}
-          <a href="/" target="_blank">
+          <a href="https://www.orbs.com/dtwap-dlimit-disclaimer" target="_blank">
             {t.disclaimer}
           </a>
         </>
