@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-pangolin",
-  "version": "1.0.28-alpha.0",
+  "version": "1.0.29-alpha.0",
   "description": "TWAP UI for Pangolin",
   "license": "MIT",
   "author": "Orbs",
@@ -25,7 +25,7 @@
     "@mui/material": "5.x",
     "@mui/system": "5.x",
     "@orbs-network/twap": "^1.18.x",
-    "@orbs-network/twap-ui": "^1.0.28-alpha.0",
+    "@orbs-network/twap-ui": "^1.0.29-alpha.0",
     "lodash": "4.x",
     "web3": "1.x"
   },
