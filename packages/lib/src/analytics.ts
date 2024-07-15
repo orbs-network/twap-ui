@@ -1,5 +1,6 @@
 import { TWAPLib } from "@orbs-network/twap";
 import { isTxRejected, logger } from "./utils";
+import { v4 as uuidv4 } from "uuid";
 
 require("isomorphic-fetch");
 
@@ -81,7 +82,7 @@ const sendBI = async (data: Partial<Data>) => {
 class Analytics {
   timeout: any = undefined;
   data: Data = {
-    _id: crypto.randomUUID(),
+    _id: uuidv4(),
   };
 
   updateAndSend(values = {} as Partial<Data>) {
@@ -103,7 +104,7 @@ class Analytics {
   reset() {
     setTimeout(() => {
       this.data = {
-        _id: crypto.randomUUID(),
+        _id: uuidv4(),
         pageLoaded: true,
         moduleImported: true,
       };

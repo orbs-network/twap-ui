@@ -1,4 +1,4 @@
-import { TokenData, parsebn, eqIgnoreCase, maxUint256, Token, isNativeAddress, bn } from "@defi.org/web3-candies";
+import { TokenData, parsebn, maxUint256, bn } from "@defi.org/web3-candies";
 import moment from "moment";
 import { Translations } from "./types";
 import { EXPLORER_URLS, QUERY_PARAMS, STABLE_TOKENS } from "./consts";
@@ -7,14 +7,16 @@ import _ from "lodash";
 import { THE_GRAPH_ORDERS_API } from "./config";
 import { Config } from "@orbs-network/twap";
 export const logger = (...args: any[]) => {
-  const query = new URLSearchParams(window.location.search);
-  const fromLocalStore = localStorage.getItem("twap-debug");
-  const debug = query.get("twap-debug");
-  if (process.env.NODE_ENV !== "development") return;
-
-  if (fromLocalStore || debug) {
-    console.log(...args);
-  }
+  // let debug;
+  // if (window) {
+  //   const query = new URLSearchParams(window.location.search);
+  //   debug = query?.get("twap-debug");
+  // }
+  // const fromLocalStore = localStorage.getItem("twap-debug");
+  // if (process.env.NODE_ENV !== "development") return;
+  // if (fromLocalStore) {
+  //   console.log(...args);
+  // }
 };
 
 type CopyFn = (text: string) => Promise<boolean>; // Return success
@@ -198,27 +200,29 @@ export const invert = (value?: string) => {
 };
 
 export const getQueryParam = (name: string) => {
-  const search = window.location.search;
+  return undefined;
+  // if (!window) return;
+  // const search = window.location.search;
 
-  const params = new URLSearchParams(search);
-  const result = params.get(name);
-  if (name === QUERY_PARAMS.LIMIT_PRICE && result === ".") {
-    return "0.1";
-  }
+  // const params = new URLSearchParams(search);
+  // const result = params.get(name);
+  // if (name === QUERY_PARAMS.LIMIT_PRICE && result === ".") {
+  //   return "0.1";
+  // }
 
-  return result;
+  // return result;
 };
 
 export const setQueryParam = (name: string, value?: string) => {
-  const search = window.location.search;
-  const params = new URLSearchParams(search);
-  if (!value) {
-    params.delete(name);
-  } else {
-    params.set(name, value);
-  }
-
-  window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+  // if (!window) return;
+  // const search = window.location.search;
+  // const params = new URLSearchParams(search);
+  // if (!value) {
+  //   params.delete(name);
+  // } else {
+  //   params.set(name, value);
+  // }
+  // window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
 };
 
 export const limitPriceFromQueryParams = () => {

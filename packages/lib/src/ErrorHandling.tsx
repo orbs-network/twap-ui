@@ -24,9 +24,9 @@ const TwapFallbackUI = () => {
   return (
     <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>
       <p>Something went wrong</p>
-      <Button variant="contained" onClick={() => window.location.reload()}>
+      {/* <Button variant="contained" onClick={() => window.location.reload()}>
         Reload
-      </Button>
+      </Button> */}
     </StyledContainer>
   );
 };
