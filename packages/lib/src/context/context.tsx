@@ -128,7 +128,17 @@ const useDeadlineUpdater = (state: State, updateState: (value: Partial<State>) =
 export const Content = (props: TwapLibProps) => {
   const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
   const chainId = useChainId(props);
-  const isWrongChain = !chainId ? false :  chainId !== props.config?.chainId;
+  const isWrongChain = useMemo(() => {
+    if (props.isWrongChain) {
+      return true;
+    }
+    if (!chainId) {
+      return false;
+    }
+
+    return chainId !== props.config?.chainId;
+  }, [chainId, props.config?.chainId, props.isWrongChain]);
+
   const lib = useLib(props, isWrongChain);
   const { updateState, state } = useStore(props);
   useDeadlineUpdater(state, updateState);

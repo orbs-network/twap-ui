@@ -64,7 +64,7 @@ import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
-import {MdInfo} from "@react-icons/all-files/md/MdInfo";
+import { MdInfo } from "@react-icons/all-files/md/MdInfo";
 import _ from "lodash";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
@@ -261,6 +261,8 @@ const useSelectedParsedTokens = () => {
   }, [context.config, context.srcToken, context.dstToken, context.getTokenLogo]);
 };
 
+const supportedChains = configs.map((config) => config.chainId);
+
 const TWAPContent = () => {
   const context = useAdapterContext();
 
@@ -281,6 +283,13 @@ const TWAPContent = () => {
   const { srcToken, dstToken } = useSelectedParsedTokens();
   const { srcUsd, dstUsd } = useUsd();
   const marketPrice = useMarketPrice();
+
+  const isWrongChain = useMemo(() => {
+    if (!context.configChainId) {
+      return false;
+    }
+    return !supportedChains.includes(context.configChainId);
+  }, [context.configChainId]);
 
   return (
     <StyledTwap className="twap-adapter-wrapper">
@@ -305,6 +314,7 @@ const TWAPContent = () => {
         dstUsd={dstUsd}
         marketPrice={marketPrice}
         connectedChainId={context.connectedChainId}
+        isWrongChain={isWrongChain}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -537,8 +547,8 @@ const TradeDurationSelect = () => {
   );
 };
 
-const useIsSupportedChain = (chainId?: number) => {
+const isSupportedChain = (chainId?: number) => {
   return Boolean(_.find(configs, (config: Config) => config.chainId === chainId));
 };
 
-export { TWAP, useIsSupportedChain };
+export { TWAP, isSupportedChain };

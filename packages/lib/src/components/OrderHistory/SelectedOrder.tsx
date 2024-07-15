@@ -180,7 +180,7 @@ const OrderStatus = ({ order }: { order: OrderUI }) => {
 
 const Progress = ({ order }: { order: OrderUI }) => {
   const progress = useFormatNumberV2({ value: order?.progress, decimalScale: 2 });
-  if(order?.totalChunks === 1) return null;
+  if (order?.totalChunks === 1) return null;
   return (
     <OrderDisplay.DetailRow title="Progress">
       <StyledText>{progress || 0}%</StyledText>
@@ -195,7 +195,14 @@ const LimitPrice = ({ order }: { order: OrderUI }) => {
 
 const AvgExcecutionPrice = ({ order }: { order: OrderUI }) => {
   const t = useTwapContext().translations;
-  return <Price title={ order?.totalChunks === 1 ?  'Final execution price'  :  t.AverageExecutionPrice} price={order?.excecutionPrice} srcToken={order?.srcToken} dstToken={order?.dstToken} />;
+  return (
+    <Price
+      title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice}
+      price={order?.excecutionPrice}
+      srcToken={order?.srcToken}
+      dstToken={order?.dstToken}
+    />
+  );
 };
 
 const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?: Token; dstToken?: Token; title: string }) => {

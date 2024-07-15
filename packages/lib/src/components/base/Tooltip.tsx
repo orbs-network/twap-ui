@@ -38,7 +38,7 @@ function Tooltip({ children, text, placement, childrenStyles = {} }: TooltipProp
           }}
           placement={placement}
         >
-          <StyledContent  className="twap-tooltip-children" onClick={() => setOpen(true)} style={{ ...childrenStyles, minWidth: 0 }}>
+          <StyledContent className="twap-tooltip-children" onClick={() => setOpen(true)} style={{ ...childrenStyles, minWidth: 0 }}>
             <>
               {children}
               {icon}
@@ -62,19 +62,19 @@ function Tooltip({ children, text, placement, childrenStyles = {} }: TooltipProp
       placement={placement}
     >
       <StyledContent style={{ ...childrenStyles }} className="twap-tooltip-children">
-       <>
-       {children}
-        {icon}
-       </>
+        <>
+          {children}
+          {icon}
+        </>
       </StyledContent>
     </MuiTooltip>
   );
 }
 
-const StyledContent = styled('span')({
+const StyledContent = styled("span")({
   display: "flex",
   alignItems: "center",
   gap: 5,
-})
+});
 
 export default Tooltip;

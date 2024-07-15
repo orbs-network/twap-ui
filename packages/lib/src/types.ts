@@ -196,7 +196,7 @@ export interface TwapContextUIPreferences {
   input?: {
     showOnLoading?: boolean;
   };
-  tooltipIcon?: IconType;
+  tooltipIcon?: ReactNode;
   Tooltip?: FC<TooltipProps>;
   Button?: FC<ButtonProps>;
   orders?: {
@@ -262,6 +262,7 @@ export interface TwapLibProps extends LibProps {
   isLimitPanel?: boolean;
   parsedTokens: TokenData[];
   onSwitchTokens?: () => void;
+  isWrongChain?: boolean;
 }
 
 export type Token = TokenData;
