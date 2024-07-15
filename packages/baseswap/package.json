@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-baseswap",
-  "version": "1.0.33-alpha.0",
+  "version": "1.0.34-alpha.0",
   "description": "TWAP UI for BaseSwap",
   "license": "MIT",
   "author": "Orbs",
@@ -24,7 +24,7 @@
     "@mui/material": "5.x",
     "@mui/system": "5.x",
     "@orbs-network/twap": "^1.18.x",
-    "@orbs-network/twap-ui": "^1.0.33-alpha.0",
+    "@orbs-network/twap-ui": "^1.0.34-alpha.0",
     "lodash": "4.x",
     "web3": "1.x"
   },
