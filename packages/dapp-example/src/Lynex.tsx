@@ -25,7 +25,6 @@ const parseListToken = (tokenList: any) => {
 
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseListToken,
     modifyFetchResponse: (response: any) => {
       return response.data;
@@ -93,15 +92,14 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library?.givenProvider}
       connect={connect}
       account={account}
-      srcToken="ETH"
-      dstToken="USDC"
+      // srcToken="ETH"
+      // dstToken="USDC"
       dappTokens={dappTokens}
       onSrcTokenSelected={(token: any) => console.log(token)}
       onDstTokenSelected={(token: any) => console.log(token)}
       TokenSelectModal={TokenSelectModal}
       isDarkTheme={isDarkTheme}
       limit={limit}
-      priceUsd={priceUsd}
     />
   );
 };
@@ -130,7 +128,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;

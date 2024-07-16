@@ -1,9 +1,8 @@
 {
   "name": "@orbs-network/twap-ui-dapp-example",
-  "version": "0.10.23",
+  "version": "1.0.38-alpha.0",
   "private": true,
   "license": "MIT",
-  "homepage": "https://orbs-network.github.io/twap-ui/",
   "scripts": {
     "prettier": "prettier -w 'src/**/*.{ts,tsx,js,jsx,json,sol}'",
     "start": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts start",
@@ -11,9 +10,9 @@
   },
   "dependencies": {
     "@mui/material": "^5.13.2",
-    "@orbs-network/twap-ui-pangolin": "^0.10.23",
-    "@orbs-network/twap-ui-spiritswap": "^0.10.23",
-    "@orbs-network/twap-ui-spookyswap": "^0.10.23",
+    "@orbs-network/twap-ui-pangolin": "^1.0.38-alpha.0",
+    "@orbs-network/twap-ui-spiritswap": "^1.0.38-alpha.0",
+    "@orbs-network/twap-ui-spookyswap": "^1.0.38-alpha.0",
     "@tanstack/react-query": "4.x",
     "@tanstack/react-query-devtools": "4.x",
     "@types/react": "18.x",

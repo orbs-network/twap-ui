@@ -1,4 +1,4 @@
-import { IconButton as MuiIconButton } from "@mui/material";
+import { IconButton as MuiIconButton, styled } from "@mui/material";
 import { ReactElement, ReactNode } from "react";
 import Icon from "./Icon";
 import Tooltip from "./Tooltip";

@@ -15,8 +15,7 @@ const config = Configs.BaseSwap;
 
 const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
-    tokens,
+    tokens: baseSwapTokens,
     baseAssets: erc20s.base,
   });
 };
@@ -120,8 +119,8 @@ const useDecimals = (fromToken?: string, toToken?: string) => {
 };
 
 const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
-  const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken, toToken);
-  return useTrade(fromToken, toToken, amount, fromTokenDecimals, toTokenDecimals);
+  const tokens = useDappTokens().data;
+  return useTrade(fromToken, toToken, amount, tokens);
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -136,8 +135,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library?.givenProvider}
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.base.USDC.address}
+      // srcToken={zeroAddress}
+      // dstToken={erc20sData.base.USDC.address}
       dappTokens={dappTokens}
       onSrcTokenSelected={(token: any) => console.log(token)}
       onDstTokenSelected={(token: any) => console.log(token)}
@@ -145,9 +144,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       isDarkTheme={isDarkTheme}
       limit={limit}
       useModal={useModal}
-      priceUsd={priceUsd}
       Button={TwapButton}
-      useTrade={_useTrade}
     />
   );
 };
@@ -179,12 +176,13 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;
 
-const tokens = {
+export const baseSwapTokens = {
   "0x78a087d713Be963Bf307b18F2Ff8122EF9A63ae9": {
     decimals: 18,
     symbol: "BSWAP",

@@ -1,14 +1,14 @@
-import { ClickAwayListener, Tooltip as MuiTooltip } from "@mui/material";
+import { ClickAwayListener, styled, Tooltip as MuiTooltip } from "@mui/material";
 import { useState } from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { TooltipProps } from "../../types";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 
-function Tooltip({ children, text, placement, childrenStyles = {} }: TooltipProps) {
+function Tooltip({ children, text, placement, childrenStyles = {},hideIcon }: TooltipProps) {
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
-  const ContextTooltip = useTwapContext().uiPreferences.Tooltip;
-
+  const uiPreferences = useTwapContext().uiPreferences;
+  const ContextTooltip = uiPreferences?.Tooltip;
   if (!text) {
     return <>{children}</>;
   }
@@ -37,9 +37,9 @@ function Tooltip({ children, text, placement, childrenStyles = {} }: TooltipProp
           }}
           placement={placement}
         >
-          <span onClick={() => setOpen(true)} style={{ ...childrenStyles, minWidth: 0 }}>
-            {children}
-          </span>
+          <StyledContent className="twap-tooltip-children" onClick={() => setOpen(true)} style={{ ...childrenStyles, minWidth: 0 }}>
+          {children}
+          </StyledContent>
         </MuiTooltip>
       </ClickAwayListener>
     );
@@ -57,11 +57,17 @@ function Tooltip({ children, text, placement, childrenStyles = {} }: TooltipProp
       }}
       placement={placement}
     >
-      <span style={{ ...childrenStyles }} className="twap-tooltip-children">
-        {children}
-      </span>
+      <StyledContent style={{ ...childrenStyles }} className="twap-tooltip-children">
+      {children}
+      </StyledContent>
     </MuiTooltip>
   );
 }
+
+const StyledContent = styled("span")({
+  display: "flex",
+  alignItems: "center",
+  gap: 5,
+});
 
 export default Tooltip;

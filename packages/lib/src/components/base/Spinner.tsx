@@ -1,8 +1,8 @@
 import { CircularProgress } from "@mui/material";
 import React from "react";
 
-function Spinner({ className }: { className?: string }) {
-  return <CircularProgress className={`twap-spinner ${className}`} />;
+function Spinner({ className, size }: { className?: string; size?: number }) {
+  return <CircularProgress size={size} className={`twap-spinner ${className}`} />;
 }
 
 export default Spinner;

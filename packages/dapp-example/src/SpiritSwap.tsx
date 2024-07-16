@@ -23,7 +23,6 @@ const parseListToken = (tokenList?: any[]) => {
 
 const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/ftm.json",
     baseAssets: erc20s.ftm,
     parse: parseListToken,
@@ -77,8 +76,8 @@ const TWAPComponent = () => {
       getProvider={() => library}
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.ftm.USDC.address}
+      // srcToken={zeroAddress}
+      // dstToken={erc20sData.ftm.USDC.address}
       getTokenImageUrl={getTokenImageUrl}
       dappTokens={dappTokens}
       onSrcTokenSelected={(token: any) => console.log(token)}
@@ -108,7 +107,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;

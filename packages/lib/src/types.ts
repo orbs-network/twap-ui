@@ -2,9 +2,8 @@ import BN from "bignumber.js";
 import { Config, Order, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import { Moment } from "moment";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
-import { Duration } from "./store";
-import { useParseOrderUi } from "./hooks";
-import { CSSObject } from "@mui/system";
+import { IconType } from "@react-icons/all-files";
+import { useParseOrderUi } from "./hooks/orders";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -47,12 +46,10 @@ export interface Translations {
   enterAmount: string;
   insufficientFunds: string;
   enterTradeSize: string;
-  enterMaxDuration: string;
   enterTradeInterval: string;
   tradeSizeMustBeEqual: string;
   tradeSize: string;
   tradeInterval: string;
-  maxDuration: string;
   totalTrades: string;
   deadline: string;
   filled: string;
@@ -101,7 +98,39 @@ export interface Translations {
   noLiquidity: string;
   outAmountLoading: string;
   feeOnTranferWarning: string;
+  maxChunksWarning: string;
+  minChunksWarning: string;
+  weeks: string;
+  price: string;
+  minTradeIntervalWarning: string;
+  recipient: string;
+  accept: string;
+  disclaimer: string;
+  marketOrderWarning: string;
+  limitPriceWarningTitle: string;
+  limitPriceWarningTitleInverted: string;
+  limitPriceWarningSubtitle: string;
+  limitPriceWarningSubtileInverted: string;
+  limitPriceMessage: string;
+  maxTradeIntervalWarning: string;
+  learnMore: string;
+  swapOne: string;
+  isWorth: string;
+  placingOrder: string;
+  market: string;
+  limit: string;
+  txHash: string;
+  maxDurationWarning: string;
+  minDurationWarning: string;
+  expiry: string;
+  individualTradeSize: string;
+  numberOfTrades: string;
+  AverageExecutionPrice: string;
+  twapMarket: string;
+  limitPriceTooltipLimitPanel: string;
 }
+
+export type MessageVariant = "error" | "warning" | "info";
 
 export interface BaseComponentProps {
   className?: string;
@@ -119,23 +148,20 @@ interface BaseProps {
 }
 export interface TWAPProps extends BaseProps {
   connect?: () => void;
-  srcToken?: string;
-  dstToken?: string;
-  onSrcTokenSelected?: (token: any) => void;
-  onDstTokenSelected?: (token: any) => void;
+  onSrcTokenSelected: (token: any) => void;
+  onDstTokenSelected: (token: any) => void;
   TokenSelectModal?: any;
   limit?: boolean;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  priceUsd?: PriceUsd;
-  usePriceUSD?: (address?: string, token?: TokenData) => number | undefined;
+  usePriceUSD?: UsePriceUSD;
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
-  dstAmountOut?: string;
-  dstAmountLoading?: boolean;
+  parsedTokens?: TokenData[];
+  onSwitchTokens?: () => void;
 }
 
-type PriceUsd = (address: string, token?: TokenData) => any;
+type UsePriceUSD = (address?: string, token?: TokenData) => number | string | undefined;
 
 interface LibProps {
   children: ReactNode;
@@ -163,9 +189,14 @@ export interface TwapContextUIPreferences {
   orderTabsToExclude?: string[];
   infoIcon?: FC;
   inputLoader?: ReactElement;
+  disableThousandSeparator?: boolean;
+  Components?: {
+    USD?: FC<{ usd?: string }>;
+  };
   input?: {
     showOnLoading?: boolean;
   };
+  tooltipIcon?: ReactNode;
   Tooltip?: FC<TooltipProps>;
   Button?: FC<ButtonProps>;
   orders?: {
@@ -186,56 +217,55 @@ export type OnTxSubmitValues = {
   txHash: string;
 };
 
-export interface ParsedOrder {
-  order: Order;
-  ui: {
-    status: Status;
-    srcToken?: TokenData;
-    dstToken?: TokenData;
-    totalChunks?: number;
-    dstAmount?: string;
-    progress?: number;
-    srcFilledAmount?: string;
-    dollarValueIn?: string;
-    dollarValueOut?: string;
-  };
+export interface HistoryOrder {
+  id: number;
+  deadline: number;
+  createdAt: number;
+  srcAmount: string;
+  dstMinAmount: string;
+  status?: Status;
+  srcBidAmount: string;
+  fillDelay?: number;
+  txHash?: string;
+  dstAmount?: string;
+  srcFilledAmount?: string;
+  dollarValueIn?: string;
+  dollarValueOut?: string;
+  progress?: number;
+  srcTokenAddress?: string;
+  dstTokenAddress?: string;
+  totalChunks?: number;
+  srcToken?: TokenData;
+  dstToken?: TokenData;
+  dex?: string;
+  exchange?: string;
 }
 
 type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
-
 export interface TwapLibProps extends LibProps {
   connect?: () => void;
   askDataParams?: any[];
   storeOverride?: StoreOverride;
-  srcToken?: string;
-  dstToken?: string;
-  parseToken: (token: any) => TokenData | undefined;
+  srcToken?: Token;
+  dstToken?: Token;
   dappTokens: any;
   uiPreferences?: TwapContextUIPreferences;
-  onSrcTokenSelected?: (token: any) => void;
-  onDstTokenSelected?: (token: any) => void;
+  onSrcTokenSelected: (token: any) => void;
+  onDstTokenSelected: (token: any) => void;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  srcUsd?: BN;
-  dstUsd?: BN;
-  usePriceUSD?: (token?: string) => number | undefined;
-  priceUsd?: PriceUsd;
-  useTrade?: UseTrade;
+  srcUsd?: string | number;
+  dstUsd?: string | number;
+  marketPrice?: string;
   isMobile?: boolean;
   enableQueryParams?: boolean;
-  dstAmountOut?: string;
-  dstAmountLoading?: boolean;
-  defaultLimitPriceDecreasePercent?: number;
+  minNativeTokenBalance?: string;
+  isLimitPanel?: boolean;
+  parsedTokens: TokenData[];
+  onSwitchTokens?: () => void;
+  isWrongChain?: boolean;
 }
 
 export type Token = TokenData;
-
-export interface InitLibProps {
-  config: Config;
-  provider?: any;
-  account?: string;
-  connectedChainId?: number;
-  storeOverride?: StoreOverride;
-}
 
 export type OrderUI = ReturnType<typeof useParseOrderUi>;
 
@@ -274,49 +304,65 @@ export interface TWAPTokenSelectProps {
   onClose: () => void;
   srcTokenSelected?: any;
   dstTokenSelected?: any;
+  isSrc?: boolean;
 }
 
 export interface OrdersData {
-  [Status.Open]?: OrderUI[];
-  [Status.Canceled]?: OrderUI[];
-  [Status.Expired]?: OrderUI[];
-  [Status.Completed]?: OrderUI[];
+  [Status.Open]?: HistoryOrder[];
+  [Status.Canceled]?: HistoryOrder[];
+  [Status.Expired]?: HistoryOrder[];
+  [Status.Completed]?: HistoryOrder[];
 }
 
+export type SwapState = "loading" | "success" | "failed" | "rejected";
+export type SwapStep = "createOrder" | "wrap" | "approve";
+
 export interface State {
-  lib: TWAPLib | undefined;
-  srcToken: TokenData | undefined;
-  dstToken: TokenData | undefined;
-  wrongNetwork: undefined | boolean;
+  swapStep?: SwapStep;
+  swapSteps?: SwapStep[];
+  swapState?: SwapState;
   srcAmountUi: string;
 
-  loading: boolean;
-  isLimitOrder: boolean;
   confirmationClickTimestamp: Moment;
   showConfirmation: boolean;
   disclaimerAccepted: boolean;
 
-  chunks: number;
+  customChunks?: number;
   customFillDelay: Duration;
-  customDuration: Duration;
+  customDuration?: Duration;
 
-  orderCreatedTimestamp?: number;
+  createOrdertxHash?: string;
+  wrapTxHash?: string;
+  approveTxHash?: string;
+  unwrapTxHash?: string;
 
-  showLoadingModal: boolean;
-  showSuccessModal: boolean;
+  isCustomLimitPrice?: boolean;
+  customLimitPrice?: string;
+  isInvertedLimitPrice?: boolean;
+  limitPricePercent?: string;
+  isMarketOrder?: boolean;
 
-  txHash?: string;
-  enableQueryParams?: boolean;
-  waitingForOrdersUpdate: boolean;
-  srcUsd?: BN;
-  dstUsd?: BN;
-  srcUsdLoading?: boolean;
-  dstUsdLoading?: boolean;
+  createOrderSuccess?: boolean;
+  wrapSuccess?: boolean;
+  approveSuccess?: boolean;
+
+  selectedOrdersTab: number;
+  newOrderId?: number;
+
+  swapData?: {
+    srcAmount: string;
+    outAmount: string;
+    dstToken: TokenData;
+    srcToken: TokenData;
+    srcAmountUsd?: string;
+    dstAmountUsd?: string;
+  };
 }
 
 export type SwitchVariant = "ios" | "default";
 
 export interface TooltipProps extends React.HTMLAttributes<HTMLElement> {
+  hideIcon?: boolean;
   childrenStyles?: CSSProperties;
   children: ReactNode;
   text?: string | ReactElement | number;
@@ -327,9 +373,10 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
   children: ReactNode;
   style?: CSSProperties;
   disabled?: boolean;
-  onClick: (e: any) => void;
+  onClick: () => void;
   loading?: boolean;
   text?: string;
+  allowClickWhileLoading?: boolean;
 }
 
 export interface OrderCreated {
@@ -355,4 +402,72 @@ export interface OrderCreated {
   srcTokenSymbol: string;
   timestamp: string;
   transactionHash: string;
+}
+
+export type LimitPricePercentProps = {
+  text: string;
+  selected: boolean;
+  onClick: () => void;
+};
+
+export type LimitPriceZeroButtonProps = {
+  text: string;
+  onClick: () => void;
+};
+
+export type LimitPriceTitleProps = {
+  textLeft: string;
+  textRight?: string;
+  token?: TokenData;
+  onTokenClick: () => void;
+  isSrcToken: boolean;
+};
+
+export type LimitPriceTokenSelectProps = {
+  token?: TokenData;
+  onClick: () => void;
+  isSrcToken: boolean;
+};
+
+export type LimitPriceInputProps = { isLoading: boolean; onChange: (value: string) => void; value: string };
+
+export type Step = {
+  title: string;
+  description?: string;
+  link?: {
+    url: string;
+    text: string;
+  };
+  Icon?: IconType;
+  image?: string;
+  status: "pending" | "loading" | "completed" | "disabled";
+};
+
+export type LimitSwitchArgs = {
+  options: [{ label: "Market"; value: "market" }, { label: "Limit"; value: "limit" }];
+  selected: "limit" | "market";
+  onClick: (value: "limit" | "market") => void;
+};
+
+export enum TimeResolution {
+  Minutes = 60 * 1000,
+  Hours = Minutes * 60,
+  Weeks = 7 * 24 * Hours,
+  Days = Hours * 24,
+}
+export type Duration = { resolution: TimeResolution; amount?: number };
+
+export interface TWAPContextProps {
+  dappProps: TwapLibProps;
+  lib?: TWAPLib;
+  translations: Translations;
+  isWrongChain: boolean;
+  state: State;
+  updateState: (state: Partial<State>) => void;
+  uiPreferences: TwapContextUIPreferences;
+  srcToken?: TokenData;
+  dstToken?: TokenData;
+  srcUsd: string | number;
+  dstUsd: string | number;
+  marketPrice?: string;
 }

@@ -69,16 +69,22 @@ const getButtonStyles = (theme: Theme) => {
   };
 };
 
-export const StyledCardBody = styled(Box)<{ editable?: number }>(({ theme, editable }) => {
+export const StyledCardBody = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);
 
   return {
     width: "100%",
-    pointerEvents: editable ? "all" : "none",
-    background: editable ? styles.editableCardBox : styles.cardBox,
+    background: styles.editableCardBox,
     padding: 12,
     borderRadius: 16,
-    boxShadow: editable ? styles.inputShadow : "",
+    boxShadow: styles.inputShadow,
+  };
+});
+
+export const StyledCard = styled(Styles.StyledColumnFlex)(({ theme }) => {
+  return {
+    width: "100%",
+    gap: 10,
   };
 });
 
@@ -102,6 +108,20 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-limit-price-message": {
+      background: "#27262C",
+      padding: 16,
+      borderRadius: 24,
+    },
+    ".twap-warning": {
+      color: "rgb(155, 155, 155)",
+    },
+    ".twap-message": {
+      fontSize: "14px",
+      small: {
+        opacity: 0.7,
+      },
+    },
     ".twap-order-expanded-cancel-wraper": {
       marginTop: "40px",
       button: {
@@ -190,7 +210,7 @@ export const configureStyles = (theme: Theme) => {
       padding: "0px",
       maxWidth: "370px!important",
       borderRadius: 32,
-      minHeight: "415px",
+
       overflow: "hidden",
       "*::-webkit-scrollbar": {
         display: "none",
@@ -199,40 +219,13 @@ export const configureStyles = (theme: Theme) => {
         marginBottom: 10,
       },
     },
-    ".twap-trade-size": {
-      ".twap-label": {
-        whiteSpace: "nowrap",
-      },
-      ".twap-token-logo": {
-        display: "none",
-      },
-      "*": {
-        color: styles.primaryTextColor,
-      },
-    },
     ".twap-orders-title": {
       p: {
         fontWeight: 600,
         color: `${styles.primaryTextColor}!important`,
       },
     },
-    ".twap-order": {
-      border: `1px solid ${styles.border}`,
-      borderRadius: 16,
-      padding: 15,
-      transition: "0.2s all",
-      color: `${styles.primaryTextColor}!important`,
-      background: darkMode ? "#362F47" : "#EEEAF4",
-      ".twap-order-expanded-right": {
-        fontWeight: "400!important",
-      },
-      ".twap-market-price-section": {
-        "*": {
-          fontSize: 13,
-          fontWeight: "400!important",
-        },
-      },
-    },
+    ".twap-order": {},
     ".twap-order-progress": {
       background: darkMode ? "#2D2836!important" : "#1fc7d4!important",
       "&::after": {
@@ -391,49 +384,6 @@ export const StyledBalance = styled(Components.TokenBalance)(({ theme }) => {
   };
 });
 
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  flexDirection: "column",
-  alignItems: "flex-start",
-
-  gap: 5,
-  ".twap-loader": {
-    marginLeft: "auto",
-  },
-
-  ".twap-price-compare": {
-    justifyContent: "flex-end",
-    width: "auto",
-    marginLeft: "auto",
-    "*": {
-      fontSize: 13,
-    },
-  },
-});
-
-export const StyledMarketPriceContainer = styled(Styles.StyledRowFlex)(({ theme }) => {
-  const darkMode = baseStyles(theme).darkMode;
-  return {
-    position: "relative",
-    justifyContent: "space-between",
-    p: { color: darkMode ? "#a881fc" : "#7645d9", fontWeight: "600!important" },
-    ".twap-token-logo": {
-      display: "none",
-    },
-    ".twap-label": {
-      p: {
-        whiteSpace: "nowrap",
-      },
-    },
-    "@media(max-width: 700px)": {
-      ".twap-label": {
-        p: {
-          fontSize: "12px!important",
-        },
-      },
-    },
-  };
-});
-
 export const StyledUSD = styled(Components.TokenUSD)({});
 
 export const StyledEmptyUSD = styled(Box)({
@@ -509,19 +459,7 @@ export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }
   };
 });
 
-export const StyledChunksInput = styled(Components.ChunksInput)({
-  marginLeft: "auto",
-  fontWeight: 600,
-  color: "#1fc7d4",
-  div: {
-    height: "100%",
-  },
-  input: {
-    height: "100%",
-  },
-});
-
-export const StyledChunksSlider = styled(Components.ChunksSliderSelect)(({ theme }) => {
+export const StyledChunksSelect = styled(Components.ChunkSelector)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     marginLeft: 10,
@@ -536,35 +474,6 @@ export const StyledChunksSlider = styled(Components.ChunksSliderSelect)(({ theme
       ...getTootlipStyles(theme),
     },
   };
-});
-
-export const StyledLimitPrice = styled(Styles.StyledRowFlex)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    justifyContent: "space-between",
-    ".twap-limit-price-input": {
-      "*": {
-        color: styles.primaryTextColor,
-      },
-      input: {
-        position: "relative",
-        top: -2,
-      },
-    },
-    ".twap-token-logo": {
-      display: "none",
-    },
-    ".twap-limit-reset": {
-      left: 10,
-      "*": {
-        stroke: styles.primaryColor,
-      },
-    },
-  };
-});
-
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)({
-  paddingLeft: 0,
 });
 
 const borderButtonStyles = {
@@ -582,16 +491,39 @@ const borderButtonStyles = {
   },
 };
 
-export const StyledButton = styled("button")<{ selected?: number }>(({ theme, selected }) => {
+export const StyledMenuButton = styled("button")<{ selected?: number }>(({ theme, selected }) => {
   const styles = baseStyles(theme);
   return {
     ...borderButtonStyles,
     background: selected ? styles.primaryColor : "unset",
     color: !selected ? "#1fc7d4" : styles.darkMode ? "#191326" : "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   };
 });
 
-export const StyledReset = styled(StyledButton)({
+export const StyledChunkSelectMaxButton = styled(StyledMenuButton)({
+  fontSize: 11,
+  marginLeft: 5,
+});
+
+export const StyledResetLimitButtonContainer = styled(Styles.StyledRowFlex)({
+  gap: 2,
+  width: "auto",
+});
+
+export const StyledResetLimitButtonLeft = styled(StyledMenuButton)({
+  borderTopRightRadius: 0,
+  borderBottomRightRadius: 0,
+});
+
+export const StyledResetLimitButtonRight = styled(StyledMenuButton)({
+  borderTopLeftRadius: 0,
+  borderBottomLeftRadius: 0,
+});
+
+export const StyledReset = styled(StyledMenuButton)({
   p: {
     fontSize: 13,
   },
@@ -683,32 +615,23 @@ export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) =>
 });
 
 export const Card = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  return (
-    <StyledColumnFlex gap={5} className={className}>
-      {children}
-    </StyledColumnFlex>
-  );
+  return <StyledCard className={className}>{children}</StyledCard>;
 };
 
 const CardHeader = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  return (
-    <Styles.StyledRowFlex className={className} justifyContent="space-between">
-      {" "}
-      {children}
-    </Styles.StyledRowFlex>
-  );
+  return <StyledCardHeader className={className}> {children}</StyledCardHeader>;
 };
 
-const CardBody = ({ children, editable, className = "" }: { children: ReactNode; editable?: boolean; className?: string }) => {
-  return (
-    <StyledCardBody className={className} editable={editable ? 1 : 0}>
-      {children}
-    </StyledCardBody>
-  );
+const CardBody = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
+  return <StyledCardBody className={className}> {children}</StyledCardBody>;
 };
 
-Card.Body = CardBody;
+const StyledCardHeader = styled(Styles.StyledRowFlex)({
+  justifyContent: "space-between",
+});
+
 Card.Header = CardHeader;
+Card.Body = CardBody;
 
 export const StyledTokenPanel = styled(Card)({
   width: "100%",
@@ -722,6 +645,27 @@ export const StyledTokenPanel = styled(Card)({
   ".twap-token-logo": {
     width: 24,
     height: 24,
+  },
+});
+
+export const StyledLimitPriceTokenSelect = styled(Components.Base.TokenDisplay)({
+  gap: 6,
+  cursor: "pointer",
+  "&:hover": {
+    opacity: 0.8,
+  },
+  ".twap-token-logo": {
+    width: 16,
+    height: 16,
+  },
+  fontSize: 14,
+});
+export const StyledLimitPriceTitle = styled(Styles.StyledRowFlex)({
+  justifyContent: "flex-start",
+  gap: 8,
+  fontSize: 14,
+  span: {
+    opacity: 0.7,
   },
 });
 
@@ -764,46 +708,6 @@ export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
       },
     },
   };
-});
-
-export const StyledTimeSelect = styled(Styles.StyledColumnFlex)({
-  display: "flex",
-  alignItems: "flex-end",
-  width: "auto",
-  padding: 2,
-  flex: 1,
-});
-
-export const StyledTimeSelectBody = styled(CardBody)({
-  display: "flex",
-  alignItems: "center",
-
-  padding: "4px 10px",
-  width: "auto",
-});
-
-export const StyledTimeSelectContainer = styled(Styles.StyledRowFlex)({
-  padding: 0,
-  ".MuiButtonBase-root": {
-    padding: "0px!important",
-    background: "unset!important",
-    height: "100%",
-    p: {
-      fontSize: "12px!important",
-      fontWeight: 400,
-    },
-  },
-  ".twap-input": {
-    input: {
-      fontSize: 14,
-      paddingRight: 3,
-    },
-  },
-});
-
-export const StyledTimeSelectHeader = styled(Card.Header)({
-  marginTop: 1,
-  width: "auto",
 });
 
 export const StyledOrdersHeader = styled(Box)(({ theme }) => {
@@ -850,18 +754,6 @@ export const StyledOrdersTabs = styled(Box)({
   height: "100%",
   flex: 1,
   "@media (max-width:700px)": {},
-});
-
-export const StyledLimitPriceBody = styled(Card.Body)({
-  padding: "10px 10px",
-  input: {
-    textAlign: "right",
-  },
-});
-
-export const StyledLimitPriceLabel = styled(Styles.StyledRowFlex)({
-  width: "auto",
-  minHeight: 24,
 });
 
 export const StyledSubmitButtonContainer = styled(Styles.StyledRowFlex)({
@@ -923,5 +815,66 @@ export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {
     fontSize: 20,
     fontWeight: 600,
     color: darkMode ? "#f4eeff" : "#280d5f",
+  };
+});
+
+export const StyledTradeIntervalResolution = styled(CardBody)({
+  width: "50%",
+});
+
+export const StyledTradeIntervalInput = styled(CardBody)({
+  width: "50%",
+});
+
+export const StyledChunksSelectSlider = styled(CardBody)({
+  flex: 1,
+  width: "auto",
+  padding: "10px 16px 0px 16px",
+});
+
+export const StyledChunksSelectInput = styled(CardBody)({
+  width: 80,
+});
+
+export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    background: "#372f47",
+    ".MuiTabs-indicator": {
+      background: "#27262c",
+    },
+    ".MuiButtonBase-root": {
+      padding: "6px 0px",
+      minWidth: 80,
+      minHeight: "unset",
+      zIndex: 1,
+      color: "white!important",
+      fontSize: 13,
+      fontWeight: 400,
+    },
+  };
+});
+
+export const StyledShowConfirmation = styled(Components.ShowConfirmation)({
+  ".twap-warning-message": {
+    borderRadius: 12,
+    padding: "8px 10px",
+    border: "1px solid #383241",
+  },
+});
+
+export const StyledShowOrdersButton = styled(Components.OrderHistory)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    ".twap-show-orders-btn": {
+      background: styles.editableCardBox,
+      padding: 12,
+      borderRadius: 16,
+      boxShadow: styles.inputShadow,
+      transition: "0.2s all",
+      cursor: "pointer",
+      fontSize: 15,
+      fontWeight: 500,
+    },
   };
 });

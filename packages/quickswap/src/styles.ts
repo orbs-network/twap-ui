@@ -860,37 +860,6 @@ export const StyledLimitPriceInverter = styled("div")(({ theme }) => {
   };
 });
 
-export const StyledLimitPriceInput = styled(Components.LimitInputV2)(({ theme }) => {
-  return {
-    width: "100%",
-    maxWidth: 280,
-    borderRadius: 8,
-    padding: "4px 10px",
-    marginLeft: "auto",
-    background: "#12131a",
-    border: "1px solid rgba(255,255,255,0.2)",
-    input: {
-      textAlign: "right",
-    },
-    ".twap-loader": {
-      right: 10,
-    },
-  };
-});
-
-export const StyledTradePrice = styled(Components.TradePrice)(() => {
-  return {
-    width: "100%",
-    justifyContent: "flex-end",
-    ".twap-label": {
-      display: "none",
-    },
-    ".limit-price-text": {
-      fontSize: 14,
-    },
-  };
-});
-
 export const StyledLimitPrice = styled(Components.Base.Card)({
   marginTop: 12,
   display: "flex",

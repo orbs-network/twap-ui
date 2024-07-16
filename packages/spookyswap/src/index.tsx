@@ -8,7 +8,6 @@ import {
   hooks,
   TWAPTokenSelectProps,
   useTwapContext,
-  store,
   Orders,
   TwapContextUIPreferences,
 } from "@orbs-network/twap-ui";
@@ -21,12 +20,9 @@ import {
   darkTheme,
   lightTheme,
   StyledChangeTokensOrder,
-  StyledLimitPriceInput,
-  StyledMarketPrice,
   StyledOrdersPanel,
   StyledOrderSummaryModal,
   StyledPercentSelector,
-  StyledPriceCard,
   StyledSubmitButton,
   StyledTokenBalance,
   StyledTokenPanel,
@@ -42,13 +38,6 @@ const config = Configs.SpookySwap;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
-};
-
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
 const OrderSummary = ({ children }: { children: ReactNode }) => {
@@ -87,7 +76,7 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens, account, connectedChainId } = useAdapterContext();
-  const { srcToken, dstToken } = store.useTwapStore();
+  const { srcToken, dstToken } = useTwapContext();
 
   const selectedCurrency = useMemo(() => {
     if (!!dappTokens && srcToken) {
@@ -157,7 +146,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
           </StyledTokenSelect>
           <TwapStyles.StyledOverflowContainer style={{ width: "fit-content", flex: 1 }}>
             <TwapStyles.StyledColumnFlex style={{ alignItems: "flex-end" }} gap={2}>
-              <Components.TokenInput isSrc={isSrcToken} />
+              <Components.TokenPanelInput isSrc={isSrcToken} />
               <Components.TokenUSD isSrc={isSrcToken} />
             </TwapStyles.StyledColumnFlex>
           </TwapStyles.StyledOverflowContainer>
@@ -219,13 +208,10 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       account={props.account}
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
-      parseToken={(rawToken) => parseToken(rawToken, getTokenImageUrl)}
-      srcToken={props.srcToken}
-      dstToken={props.dstToken}
-      storeOverride={props.limit ? storeOverride : undefined}
+      parsedTokens={[]}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
-      usePriceUSD={props.usePriceUSD}
+      isLimitPanel={props.isLimit}
     >
       <AdapterContextProvider value={props}>
         <ThemeProvider theme={theme}>
@@ -244,7 +230,6 @@ const TWAPPanel = () => {
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <LimitPrice />
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
@@ -267,7 +252,6 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <LimitPrice limit={true} />
       <StyledSubmitButton />
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
@@ -288,8 +272,6 @@ const TradeSize = () => {
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
-          <Components.ChunksSliderSelect />
-          <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <Components.TradeSize hideSymbol={true} />
@@ -300,28 +282,11 @@ const TradeSize = () => {
   );
 };
 
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
-  const theme = useTheme();
-  return (
-    <StyledPriceCard>
-      <TwapStyles.StyledColumnFlex>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel custom={!limit ? "Price" : ""} />
-        </TwapStyles.StyledRowFlex>
-        {!limit && <Components.LimitPriceRadioGroup />}
-        <StyledLimitPriceInput reverse={true} placeholder="0" theme={theme} hideSymbol={true} />
-        <StyledMarketPrice />
-      </TwapStyles.StyledColumnFlex>
-    </StyledPriceCard>
-  );
-};
 const MaxDuration = () => {
   return (
     <Components.Base.Card>
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Labels.MaxDurationLabel />
-        <Components.PartialFillWarning />
-        <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
   );
@@ -332,7 +297,6 @@ const TradeInterval = () => {
     <Components.Base.Card>
       <TwapStyles.StyledRowFlex>
         <Components.Labels.TradeIntervalLabel />
-        <Components.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>

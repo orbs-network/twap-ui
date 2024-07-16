@@ -121,7 +121,7 @@ export const StyledUSD = styled(Styles.StyledRowFlex)<{ disabled: number }>(({ t
   };
 });
 
-export const StyledTokenPanelInput = styled(Components.TokenInput)({
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({
   width: "100%",
   input: {
     fontSize: 30,
@@ -568,29 +568,6 @@ export const StyledLimitPrice = styled(StyledDisabledCard)({
   },
 });
 
-export const StyledLimitPriceInput = styled(Styles.StyledRowFlex)({
-  ".twap-limit-price-middle": {
-    gap: 20,
-    flex: 1,
-    padding: "0px 19px",
-  },
-  ".twap-limit-price-right": {
-    width: 60,
-    padding: 0,
-  },
-  [`@media(max-width: ${mobile}px)`]: {
-    ".twap-limit-price-right": {
-      width: 40,
-    },
-    ".twap-limit-price-middle": {
-      gap: 5,
-      flex: 1,
-      padding: "0px 10px",
-    },
-    ".MuiButtonBase-root": {},
-  },
-});
-
 export const StyledTradeSize = styled(StyledDisabledCard)({
   paddingBottom: 30,
   paddingTop: 25,
@@ -718,22 +695,6 @@ const buttonStyles = (theme: Theme) => {
 };
 
 export const StyledSubmit = styled(Components.SubmitButton)({});
-
-export const StyledWarningMsg = styled(Components.WarningMessage)({
-  background: "#DF3C64F5",
-  borderRadius: 15,
-  svg: {
-    width: 22,
-    height: 22,
-    "*": {
-      color: "white",
-    },
-  },
-  p: {
-    fontSize: 14,
-    color: "white",
-  },
-});
 
 export const StyledBigBorder = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
@@ -1250,6 +1211,34 @@ export const StyledMobileTabsMenu = styled(Menu)(({ theme }) => {
     },
     ".MuiMenuItem-root": {
       fontSize: 14,
+    },
+  };
+});
+
+export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
+  const isDarkMode = true;
+  return {
+    background: isDarkMode ? "transparent" : "white",
+    borderRadius: 8,
+    padding: 2,
+    ".MuiTabs-indicator": {
+      background: isDarkMode ? "#ffffff14" : "#0000000a",
+      borderRadius: 6,
+      transitionDuration: "0.2s",
+    },
+    ".MuiButtonBase-root": {
+      padding: "6px 0px",
+      textTransform: "none",
+      minWidth: 80,
+      minHeight: "unset",
+      zIndex: 1,
+      color: isDarkMode ? "white" : "#000",
+      fontSize: 13,
+      fontWeight: 500,
+      opacity: 0.6,
+    },
+    ".Mui-selected": {
+      opacity: 1,
     },
   };
 });

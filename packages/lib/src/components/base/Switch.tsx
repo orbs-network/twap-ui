@@ -1,6 +1,6 @@
 import { styled, Switch as MuiSwitch, SwitchProps } from "@mui/material";
 import { CSSProperties } from "react";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 import { SwitchVariant } from "../../types";
 export interface Props {
   defaultChecked?: boolean;

@@ -3,13 +3,14 @@ import { Status } from "@orbs-network/twap";
 import _ from "lodash";
 import * as React from "react";
 import MenuItem from "@mui/material/MenuItem";
-import { ParsedOrder, Styles, Translations, useTwapContext } from "..";
-import { useOrdersHistoryQuery, useOrdersTabs } from "../hooks";
-import { useOrdersStore } from "../store";
+import { HistoryOrder, Translations, useTwapContext } from "..";
+import { useOrdersTabs } from "../hooks";
 import { StyledOrdersLists, StyledOrdersTab, StyledOrdersTabs, StyledRowFlex } from "../styles";
 import OrdersList from "../orders/OrdersList";
 import { Button } from "./base";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+import { query } from "../hooks/query";
+import { stateActions } from "../context/actions";
 
 function a11yProps(index: number) {
   return {
@@ -21,8 +22,10 @@ function a11yProps(index: number) {
 export const OrdersSelectTabs = ({ className = "" }: { className?: string }) => {
   const {
     uiPreferences: { getOrdersTabsLabel },
+    state,
   } = useTwapContext();
-  const { tab, setTab } = useOrdersStore();
+  const tab = state.selectedOrdersTab;
+  const setTab = stateActions.useSelectOrdersTab();
   const isMobile = useMediaQuery("(max-width:600px)");
   const tabs = useOrdersTabs();
   const getName = useGetOrderNameCallback();
@@ -62,8 +65,8 @@ const useGetOrderNameCallback = () => {
 };
 
 export const SelectedOrders = ({ className = "" }: { className?: string }) => {
-  const { orders, isLoading } = useOrdersHistoryQuery();
-  const { tab } = useOrdersStore();
+  const { orders, isLoading } = query.useOrdersHistory();
+  const tab = useTwapContext().state.selectedOrdersTab;
   const tabs = useOrdersTabs();
   return (
     <StyledOrdersLists className={`twap-orders-lists ${className}`}>
@@ -77,7 +80,7 @@ export const SelectedOrders = ({ className = "" }: { className?: string }) => {
           return <OrdersList key={key} isLoading={isLoading} orders={_.flatMap(orders)} />;
         }
 
-        return <OrdersList key={key} isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status] as ParsedOrder[]} />;
+        return <OrdersList key={key} isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status] as any} />;
       })}
     </StyledOrdersLists>
   );
@@ -87,13 +90,12 @@ function MobileMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const tabs = useOrdersTabs();
-  const { tab } = useOrdersStore();
+  const tab = useTwapContext().state.selectedOrdersTab;
   const getName = useGetOrderNameCallback();
+  const setTab = stateActions.useSelectOrdersTab();
 
   const selected = _.keys(tabs)[tab];
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleClick = () => {};
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -121,7 +123,7 @@ function MobileMenu() {
               key={key}
               onClick={() => {
                 setAnchorEl(null);
-                useOrdersStore.getState().setTab(index);
+                setTab(index);
               }}
             >
               {getName(key)}

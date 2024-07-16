@@ -64,12 +64,9 @@ const TWAP = memo((props: SpiritSwapTWAPProps) => {
       provider={provider}
       account={props.account}
       dappTokens={props.dappTokens}
-      srcToken={props.srcToken}
-      dstToken={props.dstToken}
-      parseToken={(rawToken) => parseToken(rawToken, props.getTokenImageUrl)}
+      parsedTokens={[]}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
-      usePriceUSD={props.usePriceUSD}
     >
       <GlobalStyles styles={globalStyles} />
       <AdapterContextProvider value={props}>
@@ -77,7 +74,6 @@ const TWAP = memo((props: SpiritSwapTWAPProps) => {
           <TokenPanel isSrcToken={true} />
           <Components.ChangeTokensOrder />
           <TokenPanel />
-          <LimitPrice />
           <TradeSize />
           <TradeInterval />
           <MaxDuration />
@@ -115,8 +111,6 @@ const TradeSize = () => {
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
-          <Components.ChunksSliderSelect />
-          <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <Components.TradeSize />
@@ -127,26 +121,11 @@ const TradeSize = () => {
   );
 };
 
-const LimitPrice = () => {
-  return (
-    <Components.Base.Card className="twap-limit-price">
-      <TwapStyles.StyledColumnFlex>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel />
-          <Components.LimitPriceToggle />
-        </TwapStyles.StyledRowFlex>
-        <Components.LimitPriceInput placeholder="0" />
-      </TwapStyles.StyledColumnFlex>
-    </Components.Base.Card>
-  );
-};
 const MaxDuration = () => {
   return (
     <Components.Base.Card>
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Labels.MaxDurationLabel />
-        <Components.PartialFillWarning />
-        <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
   );
@@ -157,7 +136,6 @@ const TradeInterval = () => {
     <Components.Base.Card>
       <TwapStyles.StyledRowFlex>
         <Components.Labels.TradeIntervalLabel />
-        <Components.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>
@@ -189,7 +167,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={10}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenInput isSrc={isSrcToken} placeholder="0" />
+              <Components.TokenPanelInput isSrc={isSrcToken} placeholder="0" />
               <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
@@ -199,7 +177,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             {isSrcToken && <SrcTokenPercentSelector />}
           </TwapStyles.StyledColumnFlex>
         </Components.Base.Card>
-        {!isSrcToken && <Components.MarketPrice />}
       </TwapStyles.StyledColumnFlex>
     </>
   );

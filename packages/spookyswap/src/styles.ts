@@ -124,21 +124,6 @@ export const StyledTokenPanel = styled(Components.Base.Card)(({ theme }) => ({
   },
 }));
 
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  ".symbol": {
-    display: "none",
-  },
-  ".twap-token-logo": {
-    order: 2,
-  },
-  ".twap-token-name": {
-    display: "none",
-  },
-  ".value": {
-    order: 1,
-  },
-});
-
 const getButtonStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
   const darkMode = isDark(theme);
@@ -163,24 +148,6 @@ const getButtonStyles = (theme: Theme) => {
     },
   };
 };
-
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => ({
-  background: `${baseStyles(theme).containerBackground}!important`,
-  borderRadius: 10,
-  gap: 10,
-  padding: "5px",
-  ".twap-token-display": {
-    p: {
-      fontSize: 16,
-    },
-  },
-  ".twap-input": {
-    "& input": {
-      fontSize: 16,
-      textAlign: "center" as const,
-    },
-  },
-}));
 
 export const StyledTokenSelect = styled(Box)(({ theme }) => {
   const darkMode = isDark(theme);

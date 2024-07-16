@@ -1,10 +1,10 @@
 import { Styles, Translations } from "..";
-import { useTwapContext } from "../context";
-import { useTwapStore } from "../store";
+import { useTwapContext } from "../context/context";
 import { StyledRowFlex } from "../styles";
 import { Icon, Label } from "./base";
 import { AiOutlineHistory } from "@react-icons/all-files/ai/AiOutlineHistory";
 import { handleFillDelayText } from "../utils";
+import { useIsMarketOrder, useMinimumDelayMinutes } from "../hooks";
 
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;
@@ -23,25 +23,28 @@ export const CurrentMarketPriceLabel = () => {
   return <Label>{translations.currentMarketPrice}</Label>;
 };
 
-export const LimitPriceLabel = ({ custom }: { custom?: string }) => {
-  const translations = useTwapContext().translations;
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+export const LimitPriceLabel = () => {
+  const { translations: t, dappProps, state } = useTwapContext();
+  const isLimitPanel = dappProps?.isLimitPanel;
+  const isMarketOrder = useIsMarketOrder();
 
   return (
     <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", position: "relative" }} gap={3}>
-      <Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{custom || translations.limitPrice}</Label>{" "}
+      <Label tooltipText={isMarketOrder ? t.marketPriceTooltip : isLimitPanel ? t.limitPriceTooltipLimitPanel : t.limitPriceTooltip}>
+        {!isLimitPanel ? t.price : t.limitPrice}
+      </Label>{" "}
     </Styles.StyledRowFlex>
   );
 };
 
 export const MaxDurationLabel = () => {
   const translations = useTwapContext().translations;
-  return <Label tooltipText={translations.maxDurationTooltip}>{translations.maxDuration}</Label>;
+  return <Label tooltipText={translations.maxDurationTooltip}>{translations.expiry}</Label>;
 };
 
 export const TradeIntervalLabel = () => {
   const translations = useTwapContext().translations;
-  const getMinimumDelayMinutes = useTwapStore((store) => store.getMinimumDelayMinutes());
+  const getMinimumDelayMinutes = useMinimumDelayMinutes();
   return <Label tooltipText={handleFillDelayText(translations.tradeIntervalTootlip, getMinimumDelayMinutes)}>{translations.tradeInterval}</Label>;
 };
 
@@ -98,9 +101,9 @@ export const OrderSummaryTradeIntervalLabel = ({ subtitle, translations: _transl
 export const OrderSummaryMinDstAmountOutLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
   const translations = useTwapContext()?.translations || _translations;
 
-  const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
+  const isMarketOrder = useIsMarketOrder();
   return (
-    <Label subtitle={subtitle} tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
+    <Label subtitle={subtitle} tooltipText={!isMarketOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
       {translations.minReceivedPerTrade}
     </Label>
   );

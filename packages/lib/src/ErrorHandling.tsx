@@ -19,20 +19,20 @@ const StyledContainer = styled(Box)<{ isDarkTheme?: number }>(({ theme, isDarkTh
 });
 
 const TwapFallbackUI = () => {
-  const isDarkTheme = useTwapContext().isDarkTheme;
+  const isDarkTheme = useTwapContext().dappProps.isDarkTheme;
 
   return (
     <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>
       <p>Something went wrong</p>
-      <Button variant="contained" onClick={() => window.location.reload()}>
+      {/* <Button variant="contained" onClick={() => window.location.reload()}>
         Reload
-      </Button>
+      </Button> */}
     </StyledContainer>
   );
 };
 
 const OrdersFallbackUI = () => {
-  const isDarkTheme = useTwapContext().isDarkTheme;
+  const isDarkTheme = useTwapContext().dappProps.isDarkTheme;
 
   return (
     <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>
@@ -45,7 +45,7 @@ export function TwapErrorWrapper({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundary
       onError={(error) => {
-        analytics.uiCrashed("twap", error);
+        analytics.onUiCreashed(error);
         // You can also log the error to an error reporting service like AppSignal
         // logErrorToMyService(error, errorInfo);
         console.error(error);
@@ -61,7 +61,7 @@ export function OrdersErrorWrapper({ children }: { children: React.ReactNode }) 
   return (
     <ErrorBoundary
       onError={(error) => {
-        analytics.uiCrashed("orders", error);
+        analytics.onUiCreashed(error);
       }}
       fallbackRender={OrdersFallbackUI}
     >

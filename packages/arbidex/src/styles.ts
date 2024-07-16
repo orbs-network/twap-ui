@@ -130,23 +130,12 @@ export const StyledTokenBalance = styled(Components.TokenBalance)({
 
 export const StyledTokenPanel = styled(Components.Base.Card)({});
 
-export const StyledTokenPanelInput = styled(Components.TokenInput)({
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({
   width: "100%",
   ".twap-loader": {},
   input: {
     textAlign: "left",
     fontSize: 28,
-  },
-});
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  padding: "0px 12px",
-  ".title": {
-    fontSize: 12,
-    fontWeight: 600,
-  },
-  [`@media(max-width:${MOBILE}px)`]: {
-    flexDirection: "column",
-    alignItems: "flex-start",
   },
 });
 
@@ -156,23 +145,6 @@ export const StyledTokenInputContainer = styled(Styles.StyledColumnFlex)(({ them
   padding: 16,
   background: baseStyles(theme).cardBackground,
 }));
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => {
-  return {
-    background: baseStyles(theme).mainBackground,
-    borderRadius: 12,
-    padding: "6px",
-    input: {
-      letterSpacing: "unset",
-    },
-    "*": {
-      fontSize: "18px!important",
-    },
-    ".twap-token-logo": {
-      width: "30px!important",
-      height: "30px!important",
-    },
-  };
-});
 
 export const StyledTokenSelect = styled(Box)({
   marginRight: 10,

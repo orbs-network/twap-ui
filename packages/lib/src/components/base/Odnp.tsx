@@ -1,6 +1,6 @@
 import { QRCodeSVG } from "qrcode.react";
 import { ReactNode, useState } from "react";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 import { StyledColumnFlex, StyledOneLineText, StyledRowFlex, StyledText } from "../../styles";
 import Modal from "./Modal";
 import { styled, Typography } from "@mui/material";
@@ -13,7 +13,7 @@ const mobile = 700;
 const icon = "https://services-healthpage.orbs.network/img/odnp-logo.png";
 
 function Odnp({ className = "" }: { className?: string }) {
-  const { account } = useTwapContext();
+  const { account } = useTwapContext().dappProps;
 
   const [open, setOpen] = useState(false);
   const { translations } = useTwapContext();
@@ -250,9 +250,11 @@ const StyledOdnp = styled(StyledColumnFlex)({
 
 const QR = () => {
   const {
-    account,
     uiPreferences: { qrSize },
+    dappProps,
   } = useTwapContext();
+
+  const account = dappProps.account;
 
   if (!account) return null;
   return (

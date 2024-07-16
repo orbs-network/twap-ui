@@ -6,7 +6,7 @@ import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQues
 
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Typography } from "@mui/material";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 
 interface Props {
   children: string | number | ReactNode;
@@ -17,32 +17,49 @@ interface Props {
   placement?: "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top";
 }
 
-function Label({ children, tooltipText, className = "", fontSize, placement, subtitle }: Props) {
+function Label({ children, tooltipText, className = "", fontSize, placement = "right", subtitle }: Props) {
   const uiPreferences = useTwapContext()?.uiPreferences;
 
-  const InfoIcon = uiPreferences?.infoIcon || AiOutlineQuestionCircle;
+  const InfoIcon = uiPreferences?.infoIcon || <AiOutlineQuestionCircle />;
 
   if (subtitle) {
     return (
       <StyledColumnFlex className={`twap-label ${className}`}>
-        <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
+        <StyledLabel style={{ fontSize }} className="twap-label-text">
+          {children}
+        </StyledLabel>
         <Typography>{tooltipText}</Typography>
       </StyledColumnFlex>
     );
   }
   return (
     <StyledContainer className={`twap-label ${className}`} style={{ gap: 0 }}>
-      <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
-      {tooltipText && (
+      {tooltipText ? (
         <Tooltip placement={placement} text={tooltipText}>
-          <InfoIcon className="twap-icon twap-tooltip-icon" style={{ width: 16, position: "relative", top: 3, marginLeft: 5 }} />
+          <StyledTooltipContent>
+            <>
+              <StyledLabel className="twap-label-text" style={{ fontSize }}>
+                {children}
+              </StyledLabel>
+              {InfoIcon}
+            </>
+          </StyledTooltipContent>
         </Tooltip>
+      ) : (
+        <StyledLabel className="twap-label-text" style={{ fontSize }}>
+          {children}
+        </StyledLabel>
       )}
     </StyledContainer>
   );
 }
 
 export default Label;
+
+const StyledTooltipContent = styled(StyledRowFlex)({
+  alignItems: "center",
+  gap: 5
+});
 
 const StyledContainer = styled(StyledRowFlex)({
   justifyContent: "flex-start",

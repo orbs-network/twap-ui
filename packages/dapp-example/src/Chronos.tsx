@@ -1,5 +1,5 @@
 import { StyledChronos, StyledStyledChronosPanel, StyledStyledChronosOrders, StyledChronosLayout, StyledModalContent } from "./styles";
-import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { TWAP, Orders } from "@orbs-network/twap-ui-chronos";
 import { useWeb3React } from "@web3-react/core";
@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { erc20s, zeroAddress, erc20sData, isNativeAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
-import { fetchPrice } from "./utils";
+import { DappProvider } from "./context";
 const config = Configs.Chronos;
 
 const tokensURL = "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json";
@@ -26,7 +26,7 @@ const parseListToken = (item?: any[]) => {
   });
 };
 const useDappTokens = () => {
-  return useGetTokens({ chainId: config.chainId, url: tokensURL, parse: parseListToken, baseAssets: erc20s.arb });
+  return useGetTokens({ url: tokensURL, parse: parseListToken, baseAssets: erc20s.arb });
 };
 
 interface TokenSelectModalProps {
@@ -69,10 +69,15 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   const connect = useConnectWallet();
   const { data: dappTokens = [] } = useDappTokens();
+
   const { isDarkTheme } = useTheme();
   const priceUsd = useGetPriceUsdCallback();
   const connector = {
     getProvider: () => library,
+  };
+
+  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
+    return useTrade(fromToken, toToken, amount, dappTokens);
   };
 
   const getTokenLogoURL = useCallback(
@@ -86,8 +91,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <TWAP
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.arb.USDC.address}
+      // srcToken={zeroAddress}
+      // dstToken={erc20sData.arb.USDC.address}
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       connector={connector}
@@ -95,7 +100,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       limit={limit}
       isDarkTheme={isDarkTheme}
       swapAnimationStart={false}
-      priceUsd={priceUsd}
+      useTrade={_useTrade}
+      onSrcTokenSelected={(token: any) => console.log(token)}
+      onDstTokenSelected={(token: any) => console.log(token)}
     />
   );
 };
@@ -114,25 +121,28 @@ const DappComponent = () => {
   }, [isDarkTheme]);
 
   return (
-    <StyledChronos isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledChronosLayout name={config.name}>
-        <UISelector selected={selected} select={setSelected} limit={true} />
-        <StyledStyledChronosPanel>
-          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-        </StyledStyledChronosPanel>
+    <DappProvider config={config}>
+      <StyledChronos isDarkMode={isDarkTheme ? 1 : 0}>
+        <StyledChronosLayout name={config.name}>
+          <UISelector selected={selected} select={setSelected} limit={true} />
+          <StyledStyledChronosPanel>
+            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+          </StyledStyledChronosPanel>
 
-        <StyledStyledChronosOrders>
-          <Orders />
-        </StyledStyledChronosOrders>
-      </StyledChronosLayout>
-    </StyledChronos>
+          <StyledStyledChronosOrders>
+            <Orders />
+          </StyledStyledChronosOrders>
+        </StyledChronosLayout>
+      </StyledChronos>
+    </DappProvider>
   );
 };
 
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;

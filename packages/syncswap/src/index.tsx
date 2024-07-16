@@ -10,7 +10,6 @@ import {
   hooks,
   TWAPProps,
   Orders,
-  store,
   REFETCH_GAS_PRICE,
   amountBN,
 } from "@orbs-network/twap-ui";
@@ -23,9 +22,6 @@ import {
   StyledBalance,
   StyledChangeTokensOrder,
   StyledChunkSize,
-  StyledLimitPrice,
-  StyledMarketPrice,
-  StyledMarketPriceLoader,
   StyledPercentSelect,
   StyledPoweredBy,
   StyledSubmitButton,
@@ -43,13 +39,7 @@ import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
 import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SyncSwapPallete } from "./types";
-
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
-};
+import _ from "lodash";
 
 const uiPreferences: TwapContextUIPreferences = {
   switchVariant: "default",
@@ -112,11 +102,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: boolean }) => {
-  const { srcToken, dstToken } = store.useTwapStore((state) => ({
-    srcToken: state.srcToken,
-    dstToken: state.dstToken,
-  }));
-  const translations = useTwapContext().translations;
+  const { translations, srcToken, dstToken } = useTwapContext();
 
   const token = isSrc ? srcToken : dstToken;
 
@@ -242,10 +228,20 @@ const Adapter = (props: Props) => {
     [props.priceUsd]
   );
 
+  const parsedTokens = useMemo((): TokenData[] => {
+    if (_.isEmpty(props.dappTokens)) return [];
+    const res = _.map(props.dappTokens, (token) => {
+      return parseToken(token);
+    });
+
+    return _.compact(res);
+  }, [props.dappTokens]);
+
   return (
     <ThemeProvider theme={theme}>
       <Box className="adapter-wrapper">
         <TwapAdapter
+          parsedTokens={parsedTokens}
           connect={connect}
           config={config}
           uiPreferences={uiPreferences}
@@ -255,12 +251,10 @@ const Adapter = (props: Props) => {
           provider={provider}
           account={props.account}
           dappTokens={props.dappTokens}
-          parseToken={parseToken}
-          srcToken={eqIgnoreCase(props.srcToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.srcToken}
           onTxSubmitted={props.onTxSubmitted}
-          dstToken={eqIgnoreCase(props.dstToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.dstToken}
-          storeOverride={props.limit ? storeOverride : undefined}
-          priceUsd={priceUsd}
+          isLimitPanel={props.limit}
+          onSrcTokenSelected={props.onSrcTokenSelected}
+          onDstTokenSelected={props.onDstTokenSelected}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider value={props}>
@@ -283,26 +277,6 @@ const TWAP = (props: Props) => {
   );
 };
 
-const Market = () => {
-  const [inverted, setInverted] = useState(false);
-  const { leftToken, rightToken, marketPrice, loading } = hooks.useMarketPriceV2(inverted);
-  return (
-    <StyledMarketPrice>
-      {loading ? (
-        <StyledMarketPriceLoader>
-          <Components.Base.Loader height={26} />
-        </StyledMarketPriceLoader>
-      ) : (
-        <Button onClick={() => setInverted(!inverted)}>
-          <Components.Base.TokenPriceCompare.LeftToken token={leftToken} />
-          <Typography>=</Typography>
-          <Components.Base.TokenPriceCompare.RightToken token={rightToken} price={marketPrice?.original} />
-        </Button>
-      )}
-    </StyledMarketPrice>
-  );
-};
-
 const LimitPanel = () => {
   return (
     <div className="twap-container">
@@ -312,9 +286,6 @@ const LimitPanel = () => {
           <ChangeTokensOrder />
           <TokenPanel />
         </TwapStyles.StyledColumnFlex>
-        <Market />
-        <LimitPrice limit={true} />
-        <SubmitButton isMain />
       </TwapStyles.StyledColumnFlex>
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
@@ -333,8 +304,8 @@ const ChangeTokensOrder = () => {
   return <StyledChangeTokensOrder icon={<AiOutlineArrowDown />} />;
 };
 
-const SubmitButton = ({ isMain }: { isMain?: boolean }) => {
-  const { disabled, loading, text, onClick } = hooks.useSubmitButton(isMain);
+const SubmitButton = () => {
+  const { disabled, loading, text, onClick } = hooks.useSubmitOrderButton();
   const _onClick = () => {
     if (onClick) return onClick();
     return () => {};
@@ -357,12 +328,9 @@ const TWAPPanel = () => {
           <ChangeTokensOrder />
           <TokenPanel />
         </TwapStyles.StyledColumnFlex>
-        <Market />
-        <LimitPrice />
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
-        <SubmitButton isMain />
       </TwapStyles.StyledColumnFlex>
       <OrderSummary>
         <Components.OrderSummaryDetails />
@@ -382,8 +350,6 @@ const TradeSize = () => {
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
-          <Components.ChunksSliderSelect />
-          <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <StyledChunkSize>
           <Components.TradeSize />
@@ -399,8 +365,6 @@ const MaxDuration = () => {
     <Components.Base.Card className="twap-max-duration-wrapper">
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Labels.MaxDurationLabel />
-        <Components.PartialFillWarning />
-        <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
   );
@@ -411,31 +375,11 @@ const TradeInterval = () => {
     <Components.Base.Card className="twap-trade-interval-wrapper">
       <TwapStyles.StyledRowFlex>
         <Components.Labels.TradeIntervalLabel />
-        <Components.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
-  );
-};
-
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
-  const isLimitOrder = store.useTwapStore((s) => s.isLimitOrder);
-  return (
-    <>
-      <Components.Base.Card className="twap-limit-price">
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel />
-          {!limit && <Components.LimitPriceToggle />}
-        </TwapStyles.StyledRowFlex>
-      </Components.Base.Card>
-      {isLimitOrder && (
-        <StyledLimitPrice>
-          <Components.LimitPriceInput placeholder="0" />
-        </StyledLimitPrice>
-      )}
-    </>
   );
 };
 

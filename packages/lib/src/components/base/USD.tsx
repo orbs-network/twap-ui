@@ -1,8 +1,8 @@
 import { styled } from "@mui/material";
 import React from "react";
 import { SQUIGLE } from "../../config";
-import { useTwapContext } from "../../context";
-import { useFormatNumber } from "../../hooks";
+import { useTwapContext } from "../../context/context";
+import { useFormatNumber, useFormatNumberV2 } from "../../hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
 import Tooltip from "./Tooltip";
@@ -26,7 +26,7 @@ const USD = ({
   prefix?: string;
   decimalScale?: number;
 }) => {
-  const formattedValue = useFormatNumber({ value, decimalScale });
+  const formattedValue = useFormatNumberV2({ value, decimalScale });
 
   const context = useTwapContext()?.uiPreferences;
 

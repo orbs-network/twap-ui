@@ -1,26 +1,26 @@
 import { LinearProgress, Typography, Box, styled, Fade } from "@mui/material";
 import { OrderUI, useTwapContext } from "../..";
 import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../../styles";
-import { useFormatNumber } from "../../hooks";
+import { useFormatNumberV2 } from "../../hooks";
 import { Icon, Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
 import { TokenData } from "@orbs-network/twap";
-import { ReactNode, useMemo } from "react";
+import { ReactNode } from "react";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { FiChevronDown } from "@react-icons/all-files/fi/FiChevronDown";
 
-function OrderPreview({ order }: { order: OrderUI }) {
-  const srcFilledAmountUi = useFormatNumber({ value: order?.ui.srcFilledAmountUi });
-  const progress = useFormatNumber({ value: order?.ui.progress, decimalScale: 1, suffix: "%" });
+function OrderPreview({ order, onExpand }: { order: OrderUI; onExpand: () => void }) {
+  const srcFilledAmountUi = useFormatNumberV2({ value: order?.srcFilledAmountUi });
+  const progress = useFormatNumberV2({ value: order?.progress, decimalScale: 1, suffix: "%" });
   const translations = useTwapContext().translations;
 
   return (
     <StyledColumnFlex gap={0} className="twap-order-preview">
       <StyledHeader className="twap-order-preview-header">
         <StyledRowFlex className="twap-order-preview-info" gap={6} justifyContent="flex-start" style={{ width: "auto" }}>
-          <StyledHeaderText>#{order?.order.id}</StyledHeaderText>
-          <StyledHeaderText>{order?.ui.isMarketOrder ? translations.marketOrder : translations.limitOrder}</StyledHeaderText>
+          <StyledHeaderText>#{order?.id}</StyledHeaderText>
+          <StyledHeaderText>{order?.isMarketOrder ? translations.marketOrder : translations.limitOrder}</StyledHeaderText>
         </StyledRowFlex>
-        <StyledHeaderText className="twap-order-preview-date">{order?.ui.createdAtUi}</StyledHeaderText>
+        <StyledHeaderText className="twap-order-preview-date">{order?.createdAtUi}</StyledHeaderText>
       </StyledHeader>
       <Tooltip
         childrenStyles={{ width: "100%" }}
@@ -28,30 +28,17 @@ function OrderPreview({ order }: { order: OrderUI }) {
         text={
           <Box>
             {srcFilledAmountUi}
-            {" " + order?.ui.srcToken?.symbol + " "}
+            {" " + order?.srcToken?.symbol + " "}
             {`(${progress ? progress : "0%"})`}
           </Box>
         }
       >
-        <StyledPreviewLinearProgress variant="determinate" value={order?.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
+        <StyledPreviewLinearProgress variant="determinate" value={order?.progress || 1} className="twap-order-progress twap-order-preview-progress" />
       </Tooltip>
       <StyledOrderTokensDisplay className="twap-order-preview-tokens" justifyContent="space-between">
-        <OrderTokenDisplay
-          isMain={true}
-          token={order?.ui.srcToken}
-          amount={order?.ui.srcAmountUi}
-          usdValue={order?.ui.srcAmountUsdUi || "0"}
-          isLoading={!order?.ui.srcAmountUsdUi}
-        />
+        <OrderTokenDisplay isMain={true} token={order?.srcToken} amount={order?.srcAmountUi} usdValue={order?.srcAmountUsdUi || "0"} isLoading={!order?.srcAmountUsdUi} />
         <Icon className="twap-order-preview-icon" icon={<HiArrowRight style={{ width: 22, height: 22 }} />} />
-        <OrderTokenDisplay
-          usdLoading={order?.ui.dstUsdLoading}
-          isLoading={false}
-          token={order?.ui.dstToken}
-          amount={order?.ui.dstAmount}
-          usdValue={order?.ui.dstAmountUsd}
-          icon={<FiChevronDown />}
-        />
+        <OrderTokenDisplay isLoading={false} token={order?.dstToken} amount={order?.dstAmount} usdValue={order?.dstAmountUsd} icon={<FiChevronDown onClick={onExpand} />} />
       </StyledOrderTokensDisplay>
     </StyledColumnFlex>
   );
@@ -123,7 +110,7 @@ interface OrderTokenDisplayProps {
   usdLoading?: boolean;
 }
 export const OrderTokenDisplay = ({ token, amount, prefix = "", className = "", usdValue, alighLeft, usdPrefix, icon, isLoading, usdLoading }: OrderTokenDisplayProps) => {
-  const tokenAmount = useFormatNumber({ value: amount, disableDynamicDecimals: true });
+  const tokenAmount = useFormatNumberV2({ value: amount });
 
   return (
     <StyledTokenDisplay className={`twap-order-token-display ${className}`}>
@@ -174,7 +161,7 @@ interface OrderUsdValueProps {
 }
 
 export function OrderUsdValue({ usdValue, prefix = "≈", isLoading }: OrderUsdValueProps) {
-  const formattedValue = useFormatNumber({ value: usdValue, disableDynamicDecimals: true });
+  const formattedValue = useFormatNumberV2({ value: usdValue });
 
   if (isLoading) return <Loader width={30} height={20} />;
   if (!usdValue) return null;

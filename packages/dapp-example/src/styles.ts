@@ -26,24 +26,25 @@ export const getTheme = (isDark: boolean) => {
 const isDarkMode = (theme: Theme) => theme.palette.mode === "dark";
 
 const fonts = {
-  [Configs.Chronos.name]: "TT Firs Neue Trial",
-  [Configs.SpiritSwap.name]: "Jost",
-  [Configs.QuickSwap.name]: "Inter",
+  [Configs.Chronos.name.toLowerCase()]: "TT Firs Neue Trial",
+  [Configs.SpiritSwap.name.toLowerCase()]: "Jost",
+  [Configs.QuickSwap.name.toLowerCase()]: "Inter",
   Kinetix: "Inter",
-  [Configs.Thena.name]: "Inter",
-  [Configs.Pangolin.name]: "Poppins",
-  [Configs.PangolinDaas.name]: "Poppins",
-  [Configs.SpookySwap.name]: "Red Hat Display",
-  [Configs.PancakeSwap.name]: "Kanit",
-  [Configs.BaseSwap.name]: "Alegreya Sans",
+  [Configs.Thena.name.toLowerCase()]: "Inter",
+  sushiswap: "Inter",
+  [Configs.Pangolin.name.toLowerCase()]: "Poppins",
+  [Configs.PangolinDaas.name.toLowerCase()]: "Poppins",
+  [Configs.SpookySwap.name.toLowerCase()]: "Red Hat Display",
+  [Configs.PancakeSwap.name.toLowerCase()]: "Kanit",
+  [Configs.BaseSwap.name.toLowerCase()]: "Alegreya Sans",
   StellaSwap: "DM Sans",
   Lynex: "Montserrat",
-  [Configs.Arbidex.name]: "Quicksand",
+  [Configs.Arbidex.name.toLowerCase()]: "Quicksand",
   SyncSwap: "Inter",
 };
 
 export const globalStyle = (name?: string) => {
-  const font = fonts[name || ""];
+  const font = fonts[(name || "") as keyof typeof fonts];
   return {
     "*, p": {
       fontFamily: `${font || "Helvetica"}!important`,
@@ -58,7 +59,7 @@ export const StyledSpiritSwapBox = styled(Box)(({ theme }) => ({
   padding: "0.5rem",
 }));
 
-export const StyledDapp = styled(Box)({
+export const StyledDapp = styled("div")({
   width: "100%",
   display: "flex",
   flexDirection: "column",
@@ -485,15 +486,10 @@ export const StyledCloseIcon = styled("button")({
 });
 
 export const StyledModalContent = styled(Box)({
-  width: "calc(100vw - 20px)",
+  width: "100%",
   height: 500,
   border: "1px solid rgb(55, 65, 81)",
   background: "black",
-  maxWidth: 500,
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
   display: "flex",
   flexDirection: "column",
 });

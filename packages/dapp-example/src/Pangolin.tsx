@@ -48,7 +48,6 @@ const parseListToken = (list?: any) => {
 
 const useDappTokens = () => {
   return useGetTokens({
-    chainId,
     url: `https://raw.githubusercontent.com/pangolindex/tokenlists/main/pangolin.tokenlist.json`,
     parse: parseListToken,
     modifyList: (tokens) => ({ native: nativeToken, ..._.mapKeys(tokens, (t) => t.address) }),
@@ -95,8 +94,8 @@ const TWAPComponent = ({ partnerDaas, limit }: { partnerDaas?: string; limit?: b
     <TWAP
       account={account}
       TokenSelectModal={TokenSelectModal}
-      srcToken={zeroAddress} //AVAX
-      dstToken={erc20sData.avax.USDC.address} // ORBS
+      // srcToken={zeroAddress} //AVAX
+      // dstToken={erc20sData.avax.USDC.address} // ORBS
       dappTokens={dappTokens}
       provider={provider}
       onSrcTokenSelected={(token: any) => console.log(token, "selected")}
@@ -144,13 +143,15 @@ const PangolinDaasComponent = () => {
 const pangolin: Dapp = {
   Component: PangolinComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 const pangolinDaas: Dapp = {
   Component: PangolinDaasComponent,
   logo,
-  config: Configs.PangolinDaas,
+  configs: [Configs.PangolinDaas],
+  path: Configs.PangolinDaas.name.toLowerCase(),
   invertLogo: true,
 };
 

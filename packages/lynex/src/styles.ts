@@ -104,7 +104,7 @@ export const StyledTokenPanel = styled(Styles.StyledColumnFlex)({
   },
 });
 
-export const StyledTokenPanelInput = styled(Components.TokenInput)({
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({
   width: "100%",
   ".twap-loader": {
     backgroundColor: `rgba(0,0,0, 0.2)!important`,
@@ -114,33 +114,6 @@ export const StyledTokenPanelInput = styled(Components.TokenInput)({
     fontSize: 24,
     height: 40,
   },
-});
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  ".title": {
-    fontSize: 14,
-    color: "rgb(184 182 203/1)",
-  },
-  ".twap-price-compare": {
-    color: "white",
-  },
-  [`@media(max-width:${MOBILE}px)`]: {
-    flexDirection: "column",
-    alignItems: "flex-start",
-  },
-});
-
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => {
-  return {
-    background: "transparent",
-    borderRadius: 5,
-    padding: "3px 5px",
-    border: "2px solid rgb(223 131 47/1)",
-    svg: {
-      "*": {
-        color: baseStyles(theme).cardTextColor,
-      },
-    },
-  };
 });
 
 export const StyledTokenSelect = styled(Box)(({ theme }) => ({

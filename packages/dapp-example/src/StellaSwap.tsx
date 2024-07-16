@@ -27,7 +27,6 @@ const parseListToken = (tokenList?: any[]) => {
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseListToken,
     baseAssets: erc20s.poly,
     url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/moonbeam.json",
@@ -82,14 +81,15 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <TWAP
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.poly.USDC.address} //USDC
+      // srcToken={zeroAddress}
+      // dstToken={erc20sData.poly.USDC.address} //USDC
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}
       isDarkTheme={isDarkTheme}
       limit={limit}
-      priceUsd={priceUsd}
+      onSrcTokenSelected={(token: any) => console.log(token)}
+      onDstTokenSelected={(token: any) => console.log(token)}
     />
   );
 };
@@ -116,7 +116,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/17358.png",
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
   workInProgress: true,
 };
 

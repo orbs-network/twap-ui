@@ -27,7 +27,7 @@ import { Button, Fade, IconButton, styled, TextField, Typography } from "@mui/ma
 import { Config } from "@orbs-network/twap";
 import { Components, hooks, Styles } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
-import { BsSun } from "@react-icons/all-files/bs/BsSun";
+
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
 import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
 
@@ -49,12 +49,13 @@ import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
 const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
 
 export interface Dapp {
-  config: Config;
   logo: string;
   Component: any;
   invertLogo?: boolean;
   theme?: "light" | "dark";
   workInProgress?: boolean;
+  configs: Config[];
+  path: string;
 }
 
 export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: ReactNode }) => {
@@ -122,11 +123,9 @@ export const DappsMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const disconnect = useDisconnectWallet();
-  const reset = hooks.useResetStore();
   const onSelect = (dapp: Dapp) => {
-    reset();
     disconnect();
-    navigate(`/${dapp.config.name.toLowerCase()}`);
+    navigate(`/${dapp.path}`);
   };
 
   const open = !isMobile ? true : isMobile && isOpen;
@@ -169,13 +168,13 @@ export const DappsMenu = () => {
           <ToggleTheme />
           <StyledMenuList>
             {dapps.map((dapp) => (
-              <ListItem onClick={() => onSelectClick(dapp)} key={dapp.config.name.toLowerCase()} disablePadding selected={isSelected(dapp)}>
+              <ListItem onClick={() => onSelectClick(dapp)} key={dapp.path} disablePadding selected={isSelected(dapp)}>
                 <StyledMenuListItemButton>
                   <div>
-                    <StyledMenuLogo src={network(dapp.config.chainId).logoUrl} style={{ width: 16, height: 16 }} />
+                    {/* <StyledMenuLogo src={network(dapp.config.chainId).logoUrl} style={{ width: 16, height: 16 }} /> */}
                     <StyledMenuLogo src={dapp.logo} width={32} height={32} style={{ filter: dapp.invertLogo ? "invert(100%)" : "unset" }} />
                   </div>
-                  <ListItemText primary={`${dapp.workInProgress ? `[WIP] ${dapp.config.name}` : dapp.config.name}`} />
+                  <ListItemText primary={`${dapp.workInProgress ? `[WIP] ${dapp.path}` : dapp.path}`} />
                 </StyledMenuListItemButton>
               </ListItem>
             ))}
@@ -440,11 +439,9 @@ export const UISelector = ({
   limit?: boolean;
   selected?: SelectorOption;
 }) => {
-  const reset = hooks.useResetStore();
   const tabs = limit ? [SelectorOption.TWAP, SelectorOption.LIMIT] : [SelectorOption.TWAP];
   const onSelect = (value: SelectorOption) => {
     select?.(value);
-    reset();
     const search = window.location.search;
     const params = new URLSearchParams(search);
     const theme = params.get("theme");

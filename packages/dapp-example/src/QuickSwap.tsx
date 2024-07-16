@@ -30,7 +30,6 @@ const parseListToken = (tokenList: any) => {
 };
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseListToken,
     modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
     baseAssets: erc20s.poly,
@@ -112,15 +111,12 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken?.address, toToken?.address);
 
-  const trade = useTrade(fromToken?.address, toToken?.address, fromAmount, fromTokenDecimals, toTokenDecimals);
-  console.log({ trade: trade.outAmount });
-
   return (
     <TWAP
       connect={connect}
       account={account}
-      srcToken={fromToken?.address}
-      dstToken={toToken?.address}
+      // srcToken={fromToken?.address}
+      // dstToken={toToken?.address}
       dappTokens={dappTokens}
       onSrcTokenSelected={(token: any) => setFromToken(token)}
       onDstTokenSelected={(token: any) => setToToken(token)}
@@ -132,8 +128,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       onTxSubmitted={(args: any) => console.log(args)}
       usePriceUSD={usePriceUSD}
       onInputChange={onInputChange}
-      dstAmountOut={trade.outAmount}
-      dstAmountLoading={BN(fromAmount).gt(0) && trade.isLoading}
     />
   );
 };
@@ -161,7 +155,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;

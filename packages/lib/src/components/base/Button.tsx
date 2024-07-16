@@ -1,20 +1,31 @@
 import { Box, CircularProgress, Fade, styled } from "@mui/material";
-import { useTwapContext } from "../../context";
+import { useMemo } from "react";
+import { useTwapContext } from "../../context/context";
 import { ButtonProps } from "../../types";
 
-function Button({ children, disabled = false, onClick, loading = false, className = "", text }: ButtonProps) {
+function Button(props: ButtonProps) {
+  const { children, disabled = false, onClick, loading = false, className = "", allowClickWhileLoading } = props;
   const ContextButton = useTwapContext().uiPreferences.Button;
 
   if (ContextButton) {
-    return (
-      <ContextButton text={text} disabled={disabled} onClick={onClick} loading={loading} className={className}>
-        {children}
-      </ContextButton>
-    );
+    return <ContextButton {...props}>{children}</ContextButton>;
   }
 
+  const _disabled = useMemo(() => {
+    if (disabled) {
+      return true;
+    }
+    if (loading && !allowClickWhileLoading) {
+      return true;
+    }
+    return false;
+  }, [allowClickWhileLoading, disabled, loading]);
   return (
-    <StyledContainer onClick={onClick} className={`twap-button ${loading ? "twap-button-loading" : ""} ${disabled ? "twap-button-disabled" : ""} ${className}`} disabled={disabled}>
+    <StyledContainer
+      onClick={onClick}
+      className={`twap-button ${loading ? "twap-button-loading" : ""} ${disabled ? "twap-button-disabled" : ""} ${className}`}
+      disabled={_disabled}
+    >
       {loading && (
         <StyledLoader className="twap-button-loader">
           <CircularProgress className="twap-button-loader" />

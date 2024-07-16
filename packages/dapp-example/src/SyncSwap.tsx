@@ -221,14 +221,15 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         connect={connect}
         themeOptions={palette}
         account={account}
-        srcToken={store.srcToken}
-        dstToken={store.dstToken}
+        // srcToken={store.srcToken}
+        // dstToken={store.dstToken}
         dappTokens={tokens}
         getProvider={() => library}
         useGasPrice={library ? getGasPrice : undefined}
         limit={limit}
         openTokenSelectModal={store.openTokenSelectModal}
-        priceUsd={priceUsd}
+        onSrcTokenSelected={(token: any) => console.log(token)}
+        onDstTokenSelected={(token: any) => console.log(token)}
       />
       <TokenSelectModal />
     </>
@@ -283,7 +284,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
   workInProgress: true,
 };
 
@@ -624,7 +626,6 @@ const parsedList = parseList(dappTokens);
 
 export const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     parse: parseList,
     baseAssets: erc20s.SyncSwap,
     tokens: dappTokens,

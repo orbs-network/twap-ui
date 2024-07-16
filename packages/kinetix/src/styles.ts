@@ -122,39 +122,7 @@ export const StyledTokenPanelHeader = styled(Styles.StyledRowFlex)(({ theme }) =
   };
 });
 
-export const StyledTokenPanelInput = styled(Components.TokenInput)({});
-
-export const StyledMarketPrice = styled(Components.MarketPrice)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    ".title": {
-      fontSize: 15,
-      fontWeight: 500,
-      color: styles.labelColor,
-    },
-    ".twap-price-compare": {
-      color: styles.textColorMain,
-    },
-    [`@media(max-width:${MOBILE}px)`]: {
-      flexDirection: "column",
-      alignItems: "flex-start",
-    },
-  };
-});
-
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)(({ theme }) => {
-  return {
-    background: "transparent",
-    borderRadius: 5,
-    padding: "3px 5px",
-    border: "2px solid rgb(223 131 47/1)",
-    svg: {
-      "*": {
-        color: baseStyles(theme).textColorMain,
-      },
-    },
-  };
-});
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({});
 
 export const StyledTokenSelect = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);

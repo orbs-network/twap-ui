@@ -24,7 +24,6 @@ const parseListToken = (tokens?: any[]) => {
 
 const useDappTokens = () => {
   return useGetTokens({
-    chainId: config.chainId,
     url: `https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json`,
     parse: parseListToken,
     baseAssets: erc20s.arb,
@@ -118,8 +117,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       provider={library?.givenProvider}
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.arb.USDC.address}
+      // srcToken={zeroAddress}
+      // dstToken={erc20sData.arb.USDC.address}
       dappTokens={dappTokens}
       onSrcTokenSelected={(token: any) => console.log(token)}
       onDstTokenSelected={(token: any) => console.log(token)}
@@ -127,7 +126,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       isDarkTheme={isDarkTheme}
       limit={limit}
       useModal={useModal}
-      priceUsd={priceUsd}
     />
   );
 };
@@ -159,7 +157,8 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  configs: [config],
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;

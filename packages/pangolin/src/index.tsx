@@ -1,5 +1,5 @@
 import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, store, Orders } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, Orders } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState, createContext, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
 import React from "react";
@@ -9,14 +9,6 @@ import { TokenData, Configs } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
 import { isNativeAddress } from "@defi.org/web3-candies";
-import { PangolinOrders } from "./Orders";
-
-const storeOverride = {
-  isLimitOrder: true,
-  chunks: 1,
-  customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
-  customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
-};
 
 interface PangolinTWAPProps extends TWAPProps {
   theme: any;
@@ -98,7 +90,6 @@ const TWAP = memo((props: PangolinTWAPProps) => {
         <TwapAdapter
           connect={memoizedConnect}
           config={config}
-          storeOverride={props.limit ? storeOverride : undefined}
           maxFeePerGas={props.maxFeePerGas}
           priorityFeePerGas={props.priorityFeePerGas}
           translations={translations as Translations}
@@ -107,16 +98,13 @@ const TWAP = memo((props: PangolinTWAPProps) => {
           connectedChainId={props.connectedChainId}
           askDataParams={[partnerDaas]}
           dappTokens={props.dappTokens}
-          srcToken={props.srcToken}
-          dstToken={props.dstToken}
-          parseToken={parseToken}
           onSrcTokenSelected={props.onSrcTokenSelected}
           onDstTokenSelected={props.onDstTokenSelected}
-          usePriceUSD={props.usePriceUSD}
+          parsedTokens={[]}
+          isLimitPanel={props.limit}
         >
           <GlobalStyles styles={globalStyles as any} />
           <AdapterContextProvider twapProps={props}>
-            <PangolinOrders limit={props.limit} theme={props.theme} />
             <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
           </AdapterContextProvider>
         </TwapAdapter>
@@ -131,7 +119,6 @@ const TWAPPanel = () => {
       <TokenPanel isSrcToken={true} />
       <Components.ChangeTokensOrder />
       <TokenPanel isSrcToken={false} />
-      <LimitPrice />
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
@@ -151,8 +138,6 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <Components.ChangeTokensOrder />
       <TokenPanel />
-      <LimitPrice limit={true} />
-
       <Components.SubmitButton />
       <OrderSummary>
         <TwapStyles.StyledColumnFlex>
@@ -195,8 +180,6 @@ const TradeSize = () => {
       <TwapStyles.StyledColumnFlex gap={5}>
         <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
           <Components.Labels.TotalTradesLabel />
-          <Components.ChunksSliderSelect />
-          <Components.ChunksInput />
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
           <Components.TradeSize />
@@ -207,27 +190,11 @@ const TradeSize = () => {
   );
 };
 
-const LimitPrice = ({ limit }: { limit?: boolean }) => {
-  return (
-    <Components.Base.Card className="twap-limit-price">
-      <TwapStyles.StyledColumnFlex>
-        <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <Components.Labels.LimitPriceLabel />
-          {!limit && <Components.LimitPriceToggle />}
-        </TwapStyles.StyledRowFlex>
-        <Components.LimitPriceInput placeholder="0" />
-      </TwapStyles.StyledColumnFlex>
-    </Components.Base.Card>
-  );
-};
-
 const MaxDuration = () => {
   return (
     <Components.Base.Card>
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
         <Components.Labels.MaxDurationLabel />
-        <Components.PartialFillWarning />
-        <Components.MaxDurationSelector />
       </TwapStyles.StyledRowFlex>
     </Components.Base.Card>
   );
@@ -238,7 +205,6 @@ const TradeInterval = () => {
     <Components.Base.Card>
       <TwapStyles.StyledRowFlex>
         <Components.Labels.TradeIntervalLabel />
-        <Components.FillDelayWarning />
         <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
           <Components.TradeIntervalSelector />
         </TwapStyles.StyledRowFlex>
@@ -262,8 +228,6 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
-  const marketPrice = hooks.useMarketPriceV2().marketPrice;
-  const formattedMarketPrice = hooks.useFormatNumber({ value: marketPrice?.original });
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -276,16 +240,11 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>
           {isSrcToken && <SrcTokenPercentSelector />}
-          {!isSrcToken && marketPrice?.original !== "0" && (
-            <TwapStyles.StyledRowFlex className="twap-token-panel-price">
-              <TwapStyles.StyledText>Price</TwapStyles.StyledText> {formattedMarketPrice} <Components.TokenSymbol isSrc={isSrcToken} />
-            </TwapStyles.StyledRowFlex>
-          )}
         </TwapStyles.StyledRowFlex>
         <Components.Base.Card>
           <TwapStyles.StyledColumnFlex gap={15}>
             <TwapStyles.StyledRowFlex justifyContent="space-between">
-              <Components.TokenInput isSrc={isSrcToken} />
+              <Components.TokenPanelInput isSrc={isSrcToken} />
               <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
             </TwapStyles.StyledRowFlex>
             <TwapStyles.StyledRowFlex justifyContent="space-between">

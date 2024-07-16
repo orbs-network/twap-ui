@@ -2,7 +2,7 @@ import { Box, Fade } from "@mui/material";
 import { styled } from "@mui/system";
 import Loader from "./Loader";
 import { NumericFormat } from "react-number-format";
-import { useTwapContext } from "../../context";
+import { useTwapContext } from "../../context/context";
 import { maxUint256 } from "@defi.org/web3-candies";
 import BN from "bignumber.js";
 import { CSSProperties } from "react";
@@ -46,7 +46,7 @@ function NumericInput({
 }: Props) {
   const inputValue = value || minAmount || "";
 
-  const { inputPlaceholder, input } = useTwapContext().uiPreferences;
+  const { inputPlaceholder, input, disableThousandSeparator } = useTwapContext().uiPreferences;
 
   const _placeholder = placeholder || inputPlaceholder || "0.0";
 
@@ -54,7 +54,7 @@ function NumericInput({
     <StyledContainer className={`twap-input ${className}`} style={style}>
       {loading && <InputLoader />}
       <Fade in={input?.showOnLoading ? true : !loading} timeout={0}>
-        <StyledFlex>
+        <StyledFlex style={{ height: "100%" }}>
           <NumericFormat
             allowNegative={false}
             disabled={disabled}
@@ -68,7 +68,7 @@ function NumericInput({
             }}
             prefix={prefix ? `${prefix} ` : ""}
             value={disabled && value === "0" ? "" : inputValue}
-            thousandSeparator=","
+            thousandSeparator={disableThousandSeparator ? undefined : ","}
             decimalSeparator="."
             customInput={StyledInput}
             type="text"

@@ -1,50 +1,74 @@
 import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-sushiswap";
-import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
+import { TWAP } from "@orbs-network/twap-ui-sushiswap";
+import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
-import { Popup } from "./Components";
-import { useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
-import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
-const config = { ...Configs.QuickSwap };
-config.name = "SushiSwap";
+import { Components, getConfig } from "@orbs-network/twap-ui";
+import { DappProvider } from "./context";
+import { baseSwapTokens } from "./BaseSwap";
 
-const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
+const name = "SushiSwap";
+const configs = [Configs.SushiArb, Configs.SushiBase];
 
-const parseListToken = (tokenList?: any[]) => {
-  return tokenList
-    ?.filter((t: any) => t.chainId === config.chainId)
-    .map(({ symbol, address, decimals, logoURI, name }: any) => ({
-      decimals,
-      symbol,
-      name,
-      address,
-      logoURI: (logoURI as string)?.replace("/logo_24.png", "/logo_48.png"),
-    }));
-};
 export const useDappTokens = () => {
+  const config = useConfig();
+  const isBase = config?.chainId === Configs.SushiBase.chainId;
+  const { chainId } = useWeb3React();
+  const parseListToken = useCallback(
+    (tokenList?: any) => {
+      if (isBase) {
+        return _.map(baseSwapTokens, (it, key) => {
+          return {
+            address: key,
+            decimals: it.decimals,
+            symbol: it.symbol,
+            logoURI: it.tokenInfo.logoURI,
+          };
+        });
+      }
+
+      const res = tokenList?.tokens
+        .filter((it: any) => it.chainId === config?.chainId)
+        .map(({ symbol, address, decimals, logoURI, name }: any) => ({
+          decimals,
+          symbol,
+          name,
+          address,
+          logoURI,
+        }));
+
+      const native = {
+        decimals: config?.nativeToken.decimals,
+        symbol: config?.nativeToken.symbol,
+        address: config?.nativeToken.address,
+        logoURI: config?.nativeToken.logoUrl,
+      };
+
+      return config ? [native, ...res] : res;
+    },
+    [config?.nativeToken, config?.chainId]
+  );
+
+  const url = useMemo(() => {
+    switch (chainId) {
+      case Configs.SushiArb.chainId:
+        return "https://token-list.sushi.com/";
+      default:
+        break;
+    }
+  }, [chainId]);
+
   return useGetTokens({
-    chainId: config.chainId,
+    url,
     parse: parseListToken,
-    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
-    url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json",
-    baseAssets: erc20s.poly,
+    tokens: isBase ? baseSwapTokens : undefined,
+    modifyList: (tokens: any) => tokens.slice(0, 20),
   });
 };
-
-interface TokenSelectModalProps {
-  popup: boolean;
-  setPopup: (value: boolean) => void;
-  selectedAsset: any;
-  setSelectedAsset: (value: any) => void;
-  otherAsset: any;
-  setOtherAsset: (value: any) => void;
-  baseAssets: any[];
-  onAssetSelect: () => void;
-}
 
 const parseList = (rawList?: any): TokenListItem[] => {
   return _.map(rawList, (rawToken) => {
@@ -53,68 +77,139 @@ const parseList = (rawList?: any): TokenListItem[] => {
         address: rawToken.address,
         decimals: rawToken.decimals,
         symbol: rawToken.symbol,
-        logoUrl: rawToken.logoURI || nativeTokenLogo,
+        logoUrl: rawToken.logoURI,
       },
       rawToken,
     };
   });
 };
 
-const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
+const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNode; onSelect: (value: any) => void; selected: any }) => {
+  const { data: baseAssets } = useDappTokens();
+  const [open, setOpen] = useState(false);
+
   const tokensListSize = _.size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
+  const _onSelect = (value: any) => {
+    setOpen(false);
+    onSelect(value);
+  };
+
   return (
-    <Popup isOpen={popup} onClose={() => setPopup(true)}>
-      <StyledModalContent>
-        <TokensList tokens={parsedList} onClick={setSelectedAsset} />
-      </StyledModalContent>
-    </Popup>
+    <>
+      <Components.Base.Modal open={open} onClose={() => setOpen(false)}>
+        <StyledModalContent>
+          <TokensList tokens={parsedList} onClick={_onSelect} />
+        </StyledModalContent>
+      </Components.Base.Modal>
+      <div onClick={() => setOpen(true)}>{children}</div>
+    </>
   );
 };
 
-const TWAPComponent = () => {
-  const { account, library } = useWeb3React();
+const getTokenLogo = (token: any) => {
+  return token.logoURI;
+};
+
+const useUSD = (address?: string) => {
+  const res = usePriceUSD(address);
+  return res?.toString();
+};
+
+const TWAPComponent = ({ limit }: { limit?: boolean }) => {
+  const { account, library, chainId } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
-  const priceUsd = useGetPriceUsdCallback();
+  const [fromToken, setFromToken] = useState(undefined);
+  const [toToken, setToToken] = useState(undefined);
+
+  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
+    return useTrade(fromToken, toToken, amount, dappTokens);
+  };
+
+  useEffect(() => {
+    setFromToken(undefined);
+    setToToken(undefined);
+  }, [chainId]);
+
+  useEffect(() => {
+    if (!fromToken) {
+      setFromToken(dappTokens?.[1]);
+    }
+    if (!toToken) {
+      setToToken(dappTokens?.[2]);
+    }
+  }, [dappTokens, toToken]);
+
+  const onSwitchTokens = () => {
+    setFromToken(toToken);
+    setToToken(fromToken);
+  };
 
   return (
     <TWAP
+      configChainId={chainId}
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken="0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff" //ORBS
+      srcToken={fromToken}
+      dstToken={toToken}
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}
       isDarkTheme={isDarkTheme}
-      priceUsd={priceUsd}
+      useTrade={_useTrade}
+      connectedChainId={chainId}
+      limit={limit}
+      Modal={SushiModal}
+      getTokenLogo={getTokenLogo}
+      useUSD={useUSD}
+      onSrcTokenSelected={(it: any) => setFromToken(it)}
+      onDstTokenSelected={(it: any) => setToToken(it)}
+      onSwitchTokens={onSwitchTokens}
     />
   );
+};
+
+const SushiModal = ({ children, title, header, open, onClose }: { open: boolean; onClose: () => void; title?: string; children: ReactNode; header?: ReactNode }) => {
+  return (
+    <Components.Base.Modal header={header} hideHeader={!title && !header} title={title} open={open} onClose={onClose}>
+      {children}
+    </Components.Base.Modal>
+  );
+};
+
+const useConfig = () => {
+  const { chainId } = useWeb3React();
+
+  return useMemo(() => getConfig(configs, chainId), [chainId]);
 };
 
 const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
   const { isDarkTheme } = useTheme();
 
-  return (
-    <StyledSushi isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledSushiLayout name={config.name}>
-        <UISelector selected={selected} select={setSelected} limit={true} />
+  const config = useConfig();
 
-        <TWAPComponent />
-        <Orders />
-      </StyledSushiLayout>
-    </StyledSushi>
+  return (
+    <DappProvider config={config}>
+      <StyledSushi isDarkMode={isDarkTheme ? 1 : 0}>
+        <StyledSushiLayout name={name}>
+          <UISelector selected={selected} select={setSelected} limit={true} />
+
+          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+        </StyledSushiLayout>
+      </StyledSushi>
+    </DappProvider>
   );
 };
 
 const dapp: Dapp = {
   Component: DappComponent,
   logo: "https://cdn.cdnlogo.com/logos/s/10/sushiswap.svg",
-  config,
+  configs: [Configs.SushiArb, Configs.SushiBase],
+  path: name.toLowerCase(),
   workInProgress: true,
 };
 

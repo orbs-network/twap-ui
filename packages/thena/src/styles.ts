@@ -152,37 +152,6 @@ export const StyledLimitPriceInverter = styled("div")(({ theme }) => {
   };
 });
 
-export const StyledLimitPriceInput = styled(Components.LimitInputV2)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    width: "100%",
-    maxWidth: 280,
-    background: styles.secondaryBg,
-    borderRadius: 8,
-    padding: "12px 10px",
-    marginLeft: "auto",
-    input: {
-      textAlign: "right",
-    },
-    ".twap-loader": {
-      right: 10,
-    },
-  };
-});
-
-export const StyledTradePrice = styled(Components.TradePrice)(() => {
-  return {
-    width: "100%",
-    justifyContent: "flex-end",
-    ".twap-label": {
-      display: "none",
-    },
-    ".limit-price-text": {
-      fontSize: 14,
-    },
-  };
-});
-
 export const StyledButton = styled("button")(({ theme }) => {
   return {
     ...buttonStyles(theme),

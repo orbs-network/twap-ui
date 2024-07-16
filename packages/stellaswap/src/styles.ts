@@ -104,13 +104,6 @@ export const StyledTop = styled(Styles.StyledColumnFlex)({
   marginBottom: 20,
 });
 
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  "> p": {
-    fontSize: 15,
-    fontWeight: 500,
-  },
-});
-
 export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }) => {
   const isDarkTheme = isDark(theme);
   return {
@@ -182,22 +175,6 @@ export const StyledTokenSelect = styled(Styles.StyledRowFlex)({
   ".twap-token-select-icon": {
     width: 23,
     height: 23,
-  },
-});
-
-export const StyledLimitPrice = styled(Components.LimitPriceInput)({
-  background: "#151519",
-  borderRadius: 12,
-  padding: "5px 10px 5px 10px",
-  "*": {
-    fontSize: `14px!important`,
-    fontWeight: 500,
-  },
-  ".twap-input": {
-    height: "auto",
-    input: {
-      fontSize: `15px!important`,
-    },
   },
 });
 
