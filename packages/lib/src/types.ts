@@ -187,7 +187,7 @@ export interface TwapContextUIPreferences {
   inputPlaceholder?: string;
   qrSize?: number;
   orderTabsToExclude?: string[];
-  infoIcon?: FC;
+  infoIcon?: any;
   inputLoader?: ReactElement;
   disableThousandSeparator?: boolean;
   Components?: {

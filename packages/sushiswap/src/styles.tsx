@@ -789,21 +789,29 @@ export const StyledOrders = styled(Components.OrderHistory)(({ theme }) => {
   };
 });
 
-export const StyledOrdersContent = styled(Components.OrderHistory.Content)({
-  ".twap-orders-list": {
-    top: 0,
-    height: "100%",
-  },
-  ".twap-order-display-details": {
-    padding: 0,
-  },
-  ".MuiAccordionSummary-content": {
-    padding: 12,
-  },
-  ".MuiAccordionDetails-root": {
-    padding: "0px 12px 12px 12px!important",
-  },
-  ".twap-order-display-details-row": {},
+export const StyledOrdersContent = styled(Components.OrderHistory.Content)(({ theme }) => {
+  const styled = getStyles(theme);
+  return {
+    ".twap-orders-list": {
+      top: 0,
+      height: "100%",
+    },
+    ".twap-order-display-details": {
+      padding: 0,
+    },
+    ".twap-order-token-progress": {
+      ".MuiLinearProgress-bar": {
+        background: "rgb(59 130 246/1)",
+      },
+    },
+    ".MuiAccordionSummary-content": {
+      padding: 12,
+    },
+    ".MuiAccordionDetails-root": {
+      padding: "0px 12px 12px 12px!important",
+    },
+    ".twap-order-display-details-row": {},
+  };
 });
 
 export const StyledTwap = styled("div")({

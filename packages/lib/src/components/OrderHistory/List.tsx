@@ -11,6 +11,10 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { HistoryOrder, OrderUI, Token, Translations } from "../../types";
 import { Loader, TokenLogo } from "../base";
 import { useOrderHistoryContext } from "./context";
+import * as React from "react";
+import LinearProgress, { LinearProgressProps } from "@mui/material/LinearProgress";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 export function List() {
   const { selectOrder, orders, selectedOrderId, isLoading } = useOrderHistoryContext();
@@ -105,6 +109,8 @@ export function ListOrder({
     <Wrapper className="twap-order" ref={root} onClick={() => onSelect(parsedOrder?.id)}>
       <StyledListOrder className="twap-order-container">
         <ListItemHeader order={order} />
+        <LinearProgressWithLabel value={order.progress || 0} />
+
         <StyledRowFlex className="twap-order-tokens">
           <TokenDisplay token={order.srcToken} />
           <HiArrowRight className="twap-order-tokens-arrow" />
@@ -193,5 +199,28 @@ const StyledTokenDisplay = styled(StyledRowFlex)({
     ".twap-order-token-text": {
       fontSize: 12,
     },
+  },
+});
+
+function LinearProgressWithLabel(props: LinearProgressProps & { value: number }) {
+  return (
+    <StyledProgress className="twap-order-token-progress">
+      <Box sx={{ width: "100%", mr: 1 }}>
+        <LinearProgress variant="determinate" {...props} />
+      </Box>
+      <Box sx={{ minWidth: 35 }}>
+        <StyledText>{`${Math.round(props.value)}%`}</StyledText>
+      </Box>
+    </StyledProgress>
+  );
+}
+
+const StyledProgress = styled(StyledRowFlex)({
+  width: "100%",
+  gap: 0,
+  p: {
+    fontSize: 12,
+    opacity: 0.8,
+    textAlign: "right",
   },
 });

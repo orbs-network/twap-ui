@@ -58,7 +58,7 @@ export default Label;
 
 const StyledTooltipContent = styled(StyledRowFlex)({
   alignItems: "center",
-  gap: 5
+  gap: 5,
 });
 
 const StyledContainer = styled(StyledRowFlex)({

@@ -4,7 +4,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { TooltipProps } from "../../types";
 import { useTwapContext } from "../../context/context";
 
-function Tooltip({ children, text, placement, childrenStyles = {},hideIcon }: TooltipProps) {
+function Tooltip({ children, text, placement, childrenStyles = {}, hideIcon }: TooltipProps) {
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
   const uiPreferences = useTwapContext().uiPreferences;
@@ -38,7 +38,7 @@ function Tooltip({ children, text, placement, childrenStyles = {},hideIcon }: To
           placement={placement}
         >
           <StyledContent className="twap-tooltip-children" onClick={() => setOpen(true)} style={{ ...childrenStyles, minWidth: 0 }}>
-          {children}
+            {children}
           </StyledContent>
         </MuiTooltip>
       </ClickAwayListener>
@@ -58,7 +58,7 @@ function Tooltip({ children, text, placement, childrenStyles = {},hideIcon }: To
       placement={placement}
     >
       <StyledContent style={{ ...childrenStyles }} className="twap-tooltip-children">
-      {children}
+        {children}
       </StyledContent>
     </MuiTooltip>
   );
