@@ -88,7 +88,7 @@ const onTwapPageView = () => {
   sendAnalyticsEvent(Category.PageView, "onTwapPageView");
 };
 
-const onCreateOrderSuccess = (orderId: number) => {
+const onCreateOrderSuccess = (orderId?: number) => {
   sendAnalyticsEvent(Category.ConfirmationPanel, `onCreateOrderSuccess`, { orderId });
 };
 

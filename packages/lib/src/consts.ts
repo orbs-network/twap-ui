@@ -17,3 +17,4 @@ export const QUERY_PARAMS = {
 };
 
 export const SUGGEST_CHUNK_VALUE = 100;
+export const RABBY_GET_RECEIPT_ERROR = "Failed to check for transaction receipt".toLowerCase();

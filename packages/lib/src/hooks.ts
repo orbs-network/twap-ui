@@ -26,7 +26,17 @@ import {
   parsebn,
 } from "@defi.org/web3-candies";
 import { TimeResolution, useLimitPriceStore, useOrdersStore, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
-import { MIN_NATIVE_BALANCE, QUERY_PARAMS, REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE, SUGGEST_CHUNK_VALUE } from "./consts";
+import {
+  MIN_NATIVE_BALANCE,
+  QUERY_PARAMS,
+  RABBY_GET_RECEIPT_ERROR,
+  REFETCH_BALANCE,
+  REFETCH_GAS_PRICE,
+  REFETCH_ORDER_HISTORY,
+  REFETCH_USD,
+  STALE_ALLOWANCE,
+  SUGGEST_CHUNK_VALUE,
+} from "./consts";
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
@@ -257,21 +267,27 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
           txHash,
         });
       };
-
-      const order = await submitOrder(
-        onTxHash,
-        store.srcToken!,
-        dstToken,
-        store.getSrcAmount(),
-        srcChunkAmount,
-        dstMinAmountOut,
-        deadline,
-        fillDelayMillis,
-        srcUsd,
-        askDataParams,
-        priorityFeePerGas || zero,
-        maxFeePerGas
-      );
+      let order;
+      try {
+        order = await submitOrder(
+          onTxHash,
+          store.srcToken!,
+          dstToken,
+          store.getSrcAmount(),
+          srcChunkAmount,
+          dstMinAmountOut,
+          deadline,
+          fillDelayMillis,
+          srcUsd,
+          askDataParams,
+          priorityFeePerGas || zero,
+          maxFeePerGas
+        );
+      } catch (error) {
+        if (!(error as any).message?.toLowerCase().includes(RABBY_GET_RECEIPT_ERROR)) {
+          throw error;
+        }
+      }
 
       onTxSubmitted?.({
         srcToken: store.srcToken!,
@@ -279,7 +295,7 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
         srcAmount: store.getSrcAmount().toString(),
         dstUSD: dstAmountUsdUi!,
         dstAmount: dstAmount.raw,
-        txHash: order.txHash,
+        txHash: order?.txHash || "",
       });
 
       await refetch();
@@ -287,7 +303,7 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
     },
     {
       onSuccess: async (result) => {
-        analytics.onCreateOrderSuccess(result.orderId);
+        analytics.onCreateOrderSuccess(result?.orderId);
         onSuccess?.();
         onResetLimitPrice();
         !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
@@ -1367,8 +1383,7 @@ export const useLimitPriceV2 = () => {
       original: BN(original || "0").isZero() ? "" : original,
     };
   }, [marketPrice, enableQueryParams, limitPriceStore.inverted, limitPriceStore.limitPrice, limitPriceStore.isCustom, limitPriceStore.priceFromQueryParams]);
-  console.log({limitPrice});
-  
+
   const onInvert = useCallback(() => {
     limitPriceStore.toggleInverted();
   }, [limitPriceStore.toggleInverted, limitPrice]);
