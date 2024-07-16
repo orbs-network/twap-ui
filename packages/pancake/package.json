@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-pancake",
-  "version": "0.10.14",
+  "version": "0.10.15",
   "description": "TWAP UI for Pancake",
   "license": "MIT",
   "author": "Orbs",
@@ -24,7 +24,7 @@
     "@mui/material": "5.x",
     "@mui/system": "5.x",
     "@orbs-network/twap": "^1.18.x",
-    "@orbs-network/twap-ui": "^0.10.14",
+    "@orbs-network/twap-ui": "^0.10.15",
     "lodash": "4.x",
     "web3": "1.x"
   },
