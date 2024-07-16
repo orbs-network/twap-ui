@@ -39,7 +39,7 @@ export const SelectedOrder = ({ selectedOrderId }: { selectedOrderId?: number })
           </OrderDisplay.Tokens>
           <Separator />
           <StyledColumnFlex>
-            <AccordionContainer title="Excecution summary" handleChange={() => handleChange("panel1")} expanded={expanded === "panel1"}>
+            <AccordionContainer title="Execution summary" handleChange={() => handleChange("panel1")} expanded={expanded === "panel1"}>
               <ExcecutionSummary order={order} />
             </AccordionContainer>
             <AccordionContainer title="Order info" expanded={expanded === "panel2"} handleChange={() => handleChange("panel2")}>

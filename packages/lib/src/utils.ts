@@ -1,6 +1,6 @@
 import { TokenData, parsebn, maxUint256, bn } from "@defi.org/web3-candies";
 import moment from "moment";
-import { Translations } from "./types";
+import { AddressPadding, Translations } from "./types";
 import { EXPLORER_URLS, QUERY_PARAMS, STABLE_TOKENS } from "./consts";
 import BN from "bignumber.js";
 import _ from "lodash";
@@ -38,9 +38,9 @@ export const copy: CopyFn = async (text) => {
   }
 };
 
-export const makeElipsisAddress = (address?: string, padding = 6): string => {
+export const makeElipsisAddress = (address?: string, padding?: AddressPadding): string => {
   if (!address) return "";
-  return `${address.substring(0, padding)}...${address.substring(address.length - padding)}`;
+  return `${address.substring(0, padding?.start || 4)}...${address.substring(address.length - (padding?.end || 3))}`;
 };
 
 export const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));

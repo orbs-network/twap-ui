@@ -19,7 +19,7 @@ import {
 } from "../consts";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
-import { amountBN, amountBNV2, amountUi, amountUiV2, fillDelayText, formatDecimals, getExplorerUrl, isStableCoin, resetQueryParams } from "../utils";
+import { amountBN, amountBNV2, amountUi, amountUiV2, fillDelayText, formatDecimals, getExplorerUrl, isStableCoin, makeElipsisAddress, resetQueryParams } from "../utils";
 import { query } from "./query";
 import { stateActions, useSetQueryParams } from "../context/actions";
 
@@ -896,4 +896,12 @@ export const useGetTokenFromParsedTokensList = () => {
     },
     [parsedTokens]
   );
+};
+
+export const usemElipsisAddress = (address?: string) => {
+  const { addressPadding } = useTwapContext().uiPreferences;
+
+  return useMemo(() => {
+    return makeElipsisAddress(address, addressPadding);
+  }, [addressPadding, address]);
 };

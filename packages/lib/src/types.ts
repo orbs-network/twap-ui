@@ -196,6 +196,7 @@ export interface TwapContextUIPreferences {
   input?: {
     showOnLoading?: boolean;
   };
+  addressPadding?: AddressPadding;
   tooltipIcon?: ReactNode;
   Tooltip?: FC<TooltipProps>;
   Button?: FC<ButtonProps>;
@@ -207,6 +208,11 @@ export interface TwapContextUIPreferences {
     styles?: CSSProperties;
   };
 }
+
+export type AddressPadding = {
+  start: number;
+  end: number;
+};
 
 export type OnTxSubmitValues = {
   srcToken: TokenData;

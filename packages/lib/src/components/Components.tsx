@@ -50,6 +50,7 @@ import {
   useOpenOrders,
   useSrcAmount,
   useDeadline,
+  usemElipsisAddress,
 } from "../hooks/hooks";
 import { useConfirmationButton } from "../hooks/useConfirmationButton";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, textOverflow, StyledSummaryDetails, StyledSummaryRow, StyledSummaryRowRight } from "../styles";
@@ -69,7 +70,7 @@ import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
 import { Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { amountUi, makeElipsisAddress } from "../utils";
+import { amountUi } from "../utils";
 import BN from "bignumber.js";
 import _ from "lodash";
 import { stateActions } from "../context/actions";
@@ -538,6 +539,7 @@ export const AcceptDisclaimer = ({ variant, className, translations: _translatio
 
 export const OutputAddress = ({ className, translations: _translations, ellipsis }: { className?: string; translations?: Translations; ellipsis?: number }) => {
   const { translations, lib } = useTwapContext();
+  const makerAddress = usemElipsisAddress(lib?.maker);
 
   return (
     <StyledOutputAddress className={`twap-order-summary-output-address ${className}`}>
@@ -545,7 +547,7 @@ export const OutputAddress = ({ className, translations: _translations, ellipsis
         {translations.outputWillBeSentTo}
       </StyledText>
       <StyledOneLineText style={{ textAlign: "center", width: "100%" }} className="address">
-        {ellipsis ? makeElipsisAddress(lib?.maker, ellipsis) : lib?.maker}
+        {makerAddress}
       </StyledOneLineText>
     </StyledOutputAddress>
   );

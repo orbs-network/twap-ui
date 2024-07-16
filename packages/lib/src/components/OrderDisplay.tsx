@@ -1,11 +1,11 @@
 import { styled } from "@mui/material";
 import { ReactNode, useMemo } from "react";
-import { useExplorerUrl, useFormatNumberV2 } from "../hooks/hooks";
+import { useExplorerUrl, useFormatNumberV2, usemElipsisAddress } from "../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
 import { Label, TokenLogo, Tooltip } from "./base";
 import moment from "moment";
 import { useTwapContext } from "../context/context";
-import { fillDelayText, makeElipsisAddress } from "../utils";
+import { fillDelayText } from "../utils";
 import { Token } from "../types";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
@@ -65,9 +65,11 @@ const ChunksAmount = ({ chunks }: { chunks?: number }) => {
 const Recipient = () => {
   const { translations: t, lib } = useTwapContext();
   const explorerUrl = useExplorerUrl();
+  const makerAddress = usemElipsisAddress(lib?.maker);
+
   const address = (
     <Tooltip text={lib?.maker} placement="bottom">
-      {makeElipsisAddress(lib?.maker, 8)}
+      {makerAddress}
     </Tooltip>
   );
 
@@ -122,14 +124,14 @@ const DetailRow = ({
 
 const TxHash = ({ txHash }: { txHash?: string }) => {
   const { translations: t } = useTwapContext();
-
+  const txHashAddress = usemElipsisAddress(txHash);
   const explorerUrl = useExplorerUrl();
 
   if (!txHash) return null;
 
   const address = (
     <Tooltip text={txHash} placement="bottom">
-      {makeElipsisAddress(txHash, 8)}
+      {txHashAddress}
     </Tooltip>
   );
 

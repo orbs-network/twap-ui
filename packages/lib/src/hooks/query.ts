@@ -202,7 +202,7 @@ export const useOrdersHistory = () => {
         .value();
     },
     {
-      enabled: !!lib && _.size(parsedTokens) > 0 && !state.showConfirmation,
+      enabled: !!lib && _.size(parsedTokens) > 10 && !state.showConfirmation,
       refetchInterval: REFETCH_ORDER_HISTORY,
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,

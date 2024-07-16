@@ -33,6 +33,7 @@ export const StyledPanelInput = styled(Components.TokenPanelInput)({
   input: {
     fontSize: 30,
     height: 44,
+    padding: "0px!important",
     fontWeight: 500,
     "@media (max-width: 600px)": {
       fontSize: 24,
@@ -264,6 +265,7 @@ export const configureStyles = (theme?: Theme) => {
       },
       "*": {
         fontFamily: "inherit",
+        color: styles.textColor,
       },
     },
     ".twap-order-container": {
@@ -327,9 +329,6 @@ export const configureStyles = (theme?: Theme) => {
       "*": {
         color: styles.messageText,
       },
-    },
-    "*": {
-      color: styles.textColor,
     },
 
     ".twap-button-disabled": {
@@ -696,6 +695,7 @@ export const StyledChunksSelectSlider = styled(CardBody)(({ theme }) => {
     },
     ".MuiSlider-rail": {
       backgroundColor: styles.accent,
+      borderRadius: 12,
     },
     ".MuiSlider-valueLabel": {
       ...tooltipStyles(theme),
@@ -799,6 +799,9 @@ export const StyledOrdersContent = styled(Components.OrderHistory.Content)(({ th
     ".twap-order-display-details": {
       padding: 0,
     },
+    ".MuiLinearProgress-root": {
+      borderRadius: 12,
+    },
     ".twap-order-token-progress": {
       ".MuiLinearProgress-bar": {
         background: "rgb(59 130 246/1)",
@@ -822,7 +825,7 @@ export const StyledLimitPriceTitle = styled(Styles.StyledRowFlex)(({ theme }) =>
   const styles = getStyles(theme);
   return {
     fontSize: 14,
-    gap: 3,
+    gap: 0,
     justifyContent: "flex-start",
     span: {
       opacity: 0.8,
@@ -831,14 +834,16 @@ export const StyledLimitPriceTitle = styled(Styles.StyledRowFlex)(({ theme }) =>
       cursor: "pointer",
       transition: "0.2s all",
       borderRadius: 10,
-      padding: "3px 5px",
+      padding: "2px 2px",
+      margin: "0px 2px",
+      gap: 5,
       "&:hover": {
         background: styles.boxHover,
       },
     },
     ".twap-token-logo": {
-      width: 20,
-      height: 20,
+      width: 19,
+      height: 19,
     },
   };
 });

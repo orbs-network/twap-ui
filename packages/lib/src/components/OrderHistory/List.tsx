@@ -55,9 +55,17 @@ export function List() {
 
 const EmptyList = () => {
   const tab = useOrderHistoryContext().selectedTab;
+
+  const name = React.useMemo(() => {
+    if (tab?.name === "All") {
+      return "";
+    }
+    return tab?.name;
+  }, [tab]);
+
   return (
     <StyledEmpty>
-      <StyledText>No {tab?.name} Orders</StyledText>
+      <StyledText>No {name} Orders</StyledText>
     </StyledEmpty>
   );
 };

@@ -19,7 +19,7 @@ import {
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, Config } from "@orbs-network/twap";
-import { createContext, FC, useContext, useMemo } from "react";
+import { createContext, FC, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
 import { memo, ReactNode, useCallback, useState } from "react";
 import {
@@ -84,6 +84,10 @@ const uiPreferences: TwapContextUIPreferences = {
   switchVariant: "ios",
   Components: {
     USD,
+  },
+  addressPadding: {
+    start: 5,
+    end: 3,
   },
   infoIcon: <MdInfo size={15} />,
 };
@@ -161,7 +165,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       <StyledTokenPanel error={exceedsBalance ? 1 : 0}>
         <TwapStyles.StyledColumnFlex gap={10}>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <StyledPanelInput placeholder="0" isSrc={isSrcToken} />
+            <StyledPanelInput placeholder="0.0" isSrc={isSrcToken} />
             <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
@@ -201,10 +205,11 @@ interface SushiProps extends TWAPProps {
   TokenSelectModal: FC<{ children: ReactNode; onSelect: (value: any) => void; selected: any }>;
   Modal: FC<{ open: boolean; onClose: () => void; title?: string; children: ReactNode; header?: ReactNode }>;
   getTokenLogo: (token: any) => string;
-  useUSD: (address?: string) => string | undefined;
+  useUSD: (address?: any) => string | undefined;
   srcToken?: any;
   dstToken?: any;
   configChainId?: number;
+  connector?: any;
 }
 
 interface AdapterContextProps extends SushiProps {
@@ -263,8 +268,29 @@ const useSelectedParsedTokens = () => {
 
 const supportedChains = configs.map((config) => config.chainId);
 
+export const useProvider = () => {
+  const context = useAdapterContext();
+
+  const [provider, setProvider] = useState<any>(undefined);
+
+  const setProviderFromConnector = useCallback(async () => {
+    setProvider(undefined);
+    try {
+      const res = await context.connector?.getProvider();
+      setProvider(res);
+    } catch (error) {}
+  }, [setProvider, context.connector, context.connectedChainId, context.account]);
+
+  useEffect(() => {
+    setProviderFromConnector();
+  }, [setProviderFromConnector]);
+
+  return provider;
+};
+
 const TWAPContent = () => {
   const context = useAdapterContext();
+  const provider = useProvider();
 
   const theme = useMemo(() => {
     return context.isDarkTheme ? darkTheme : lightTheme;
@@ -299,8 +325,8 @@ const TWAPContent = () => {
         maxFeePerGas={context.maxFeePerGas}
         priorityFeePerGas={context.priorityFeePerGas}
         translations={translations as Translations}
-        provider={context.provider}
-        account={context.account}
+        provider={provider}
+        account={!context.configChainId ? undefined : context.account}
         dappTokens={context.dappTokens}
         parsedTokens={parsedTokens}
         srcToken={srcToken}

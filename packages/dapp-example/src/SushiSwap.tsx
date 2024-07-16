@@ -129,6 +129,12 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     return useTrade(fromToken, toToken, amount, dappTokens);
   };
 
+  const connector = useMemo(() => {
+    return {
+      getProvider: () => library,
+    };
+  }, [library]);
+
   useEffect(() => {
     setFromToken(undefined);
     setToToken(undefined);
@@ -153,11 +159,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       configChainId={chainId}
       connect={connect}
       account={account}
+      connector={connector}
       srcToken={fromToken}
       dstToken={toToken}
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
-      provider={library}
       isDarkTheme={isDarkTheme}
       useTrade={_useTrade}
       connectedChainId={chainId}
