@@ -85,7 +85,7 @@ const uiPreferences: TwapContextUIPreferences = {
   Components: {
     USD,
   },
-  tooltipIcon: <MdInfo size={15} />,
+  infoIcon: <MdInfo size={15} />,
 };
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {

@@ -20,7 +20,7 @@ interface Props {
 function Label({ children, tooltipText, className = "", fontSize, placement = "right", subtitle }: Props) {
   const uiPreferences = useTwapContext()?.uiPreferences;
 
-  const InfoIcon = uiPreferences?.infoIcon || AiOutlineQuestionCircle;
+  const InfoIcon = uiPreferences?.infoIcon || <AiOutlineQuestionCircle />;
 
   if (subtitle) {
     return (
@@ -36,10 +36,14 @@ function Label({ children, tooltipText, className = "", fontSize, placement = "r
     <StyledContainer className={`twap-label ${className}`} style={{ gap: 0 }}>
       {tooltipText ? (
         <Tooltip placement={placement} text={tooltipText}>
-          <StyledLabel className="twap-label-text" style={{ fontSize }}>
-            {children}
-          </StyledLabel>
-          {/* <InfoIcon className="twap-icon twap-tooltip-icon" style={{ width: 16, position: "relative", top: 3, marginLeft: 5 }} /> */}
+          <StyledTooltipContent>
+            <>
+              <StyledLabel className="twap-label-text" style={{ fontSize }}>
+                {children}
+              </StyledLabel>
+              {InfoIcon}
+            </>
+          </StyledTooltipContent>
         </Tooltip>
       ) : (
         <StyledLabel className="twap-label-text" style={{ fontSize }}>
@@ -51,6 +55,11 @@ function Label({ children, tooltipText, className = "", fontSize, placement = "r
 }
 
 export default Label;
+
+const StyledTooltipContent = styled(StyledRowFlex)({
+  alignItems: "center",
+  gap: 5
+});
 
 const StyledContainer = styled(StyledRowFlex)({
   justifyContent: "flex-start",

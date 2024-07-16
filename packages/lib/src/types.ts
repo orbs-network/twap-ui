@@ -362,6 +362,7 @@ export interface State {
 export type SwitchVariant = "ios" | "default";
 
 export interface TooltipProps extends React.HTMLAttributes<HTMLElement> {
+  hideIcon?: boolean;
   childrenStyles?: CSSProperties;
   children: ReactNode;
   text?: string | ReactElement | number;
