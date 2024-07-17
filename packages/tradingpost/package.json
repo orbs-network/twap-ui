@@ -1,0 +1,35 @@
+{
+  "name": "@orbs-network/twap-ui-tradingpost",
+  "version": "1.0.0",
+  "description": "TWAP UI for Trading Post",
+  "author": "TradingPost",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orbs-network/twap-ui.git"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "./dist"
+  ],
+  "scripts": {
+    "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
+    "build": "npm run prettier && rm -rf dist && tsc",
+    "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc",
+    "test": "eslint src"
+  },
+  "dependencies": {
+    "@defi.org/web3-candies": "^4.20",
+    "@mui/material": "5.x",
+    "@mui/system": "5.x",
+    "@orbs-network/twap": "^1.18.x",
+    "@orbs-network/twap-ui": "^0.10.14",
+    "lodash": "4.x",
+    "web3": "1.x"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*"
+  }
+}
