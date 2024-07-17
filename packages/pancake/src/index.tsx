@@ -39,6 +39,8 @@ import {
   StyledLimitSwitch,
   StyledShowConfirmation,
   StyledShowOrdersButton,
+  StyledOrders,
+  StyledOrdersContent,
 } from "./styles";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -53,7 +55,7 @@ import {
   StyledTokenSelect,
   StyledUSD,
 } from "./styles";
-import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
+import { eqIgnoreCase, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import _ from "lodash";
@@ -64,7 +66,7 @@ import { useTwapContext, LimitPriceZeroButtonProps, LimitPricePercentProps } fro
 import { useAdapterContext, AdapterContextProvider, PancakeProps } from "./context";
 import { LimitPriceTitleProps } from "@orbs-network/twap-ui";
 import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
-
+import {MdArrowDropDown} from "@react-icons/all-files/md/MdArrowDropDown";
 const PERCENT = [
   { text: "25%", value: 0.25 },
   { text: "50%", value: 0.5 },
@@ -87,8 +89,11 @@ const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
 const config = Configs.PancakeSwap;
 
 export const parseToken = (rawToken: any): TokenData | undefined => {
-  const { address, decimals, symbol, logoURI } = rawToken;
+ 
+  if(!rawToken) return
 
+  const { address, decimals, symbol, logoURI } = rawToken;
+  
   if (!symbol) {
     console.error("Invalid token", rawToken);
     return;
@@ -116,20 +121,20 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
 
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   const dstToken = useTwapContext().dstToken;
-  // const onTokenSelectClick = useTokenSelectClick();
+  const onTokenSelectClick = useTokenSelectClick();
   const [isOpen, setIsOpen] = useState(false);
 
-  // const onSrcTokenSelected = useCallback(() => {
-  //   setIsOpen(true);
-  //   onTokenSelectClick?.();
-  // }, [onTokenSelectClick]);
+  const onSrcTokenSelected = useCallback(() => {
+    setIsOpen(true);
+    onTokenSelectClick?.();
+  }, [onTokenSelectClick]);
 
   return (
     <StyledTokenPanel>
       <TokenSelect isSrcToken={isSrcToken} onClose={() => setIsOpen(false)} open={isOpen} />
       <Card.Header>
         <StyledSelectAndBalance>
-          {/* <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onSrcTokenSelected} /> */}
+          <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onSrcTokenSelected} />
           <Balance isSrc={isSrcToken} />
         </StyledSelectAndBalance>
       </Card.Header>
@@ -182,9 +187,6 @@ const ChangeTokensOrder = () => {
   );
 };
 
-const handleAddress = (address?: string) => {
-  return isNativeAddress(address || "") ? "BNB" : address;
-};
 
 export const useProvider = (props: PancakeProps) => {
   const [provider, setProvider] = useState<any>(undefined);
@@ -201,12 +203,55 @@ export const useProvider = (props: PancakeProps) => {
   return provider;
 };
 
-// const useMarketPrice = ({ srcToken, dstToken, amount }: UseMarketPriceProps) => {
-//   const context = useAdapterContext();
-//   const res = context.useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), BN(amount || 0).isZero() ? undefined : amount);
 
-//   return res?.outAmount;
-// };
+const useSelectedParsedTokens = () => {
+  const context = useAdapterContext();
+  
+  return useMemo(() => {
+    return {
+      srcToken: parseToken(context.srcToken),
+      dstToken: parseToken(context.dstToken),
+    };
+  }, [context.srcToken, context.dstToken]);
+};
+
+const useMarketPrice = () => {
+  const { useTrade } = useAdapterContext();
+
+  const { srcAddress, dstAddress } = useAddresses();
+  const { srcToken } = useSelectedParsedTokens();
+  const amount = hooks.useAmountBN(srcToken?.decimals, "1");
+
+  const trade = useTrade!(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
+
+  return trade?.outAmount;
+};
+
+const useAddresses = () => {
+  const context = useAdapterContext();
+  const wrappedAddress = useMemo(() => {
+    return _.find(context.dappTokens, (it) => eqIgnoreCase(it.address || "", config.wToken.address || ""))?.address;
+  }, [context.srcToken, context.dappTokens]);
+
+  return useMemo(() => {
+    const srcAddress = context.srcToken?.address;
+    const dstAddress = context.dstToken?.address;
+    return {
+      srcAddress: isNativeAddress(srcAddress || "") || srcAddress === "BNB" ? wrappedAddress : srcAddress,
+      dstAddress: isNativeAddress(dstAddress || "") || dstAddress === "BNB" ? wrappedAddress : dstAddress,
+    };
+  }, [context.srcToken, wrappedAddress, context.dstToken]);
+};
+
+const useUsd = () => {
+  const context = useAdapterContext();
+  const { srcAddress, dstAddress } = useAddresses();
+
+  return {
+    srcUsd: context.usePriceUSD?.(srcAddress),
+    dstUsd: context.usePriceUSD?.(dstAddress),
+  };
+};
 
 const Button = (props: ButtonProps) => {
   const ButtonComponent = useAdapterContext().Button;
@@ -260,6 +305,10 @@ const TWAPContent = memo((props: PancakeProps) => {
     return _.compact(res);
   }, [dappTokens]);
 
+const marketPrice = useMarketPrice();
+const usd = useUsd();
+const { srcToken, dstToken } = useSelectedParsedTokens();
+
   return (
     <Box className="twap-adapter-wrapper">
       <TwapAdapter
@@ -281,18 +330,44 @@ const TWAPContent = memo((props: PancakeProps) => {
         enableQueryParams={true}
         minNativeTokenBalance="0.0035"
         isLimitPanel={props.limit}
+        marketPrice={marketPrice}
+        srcUsd={usd.srcUsd}
+        dstUsd={usd.dstUsd}
+        srcToken={srcToken}
+        dstToken={dstToken}
+        onSwitchTokens={props.onSwitchTokens}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
-          {/* <StyledShowOrdersButton /> */}
+        
           {props.children}
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
+          <Orders />
           <SubmitOrderModal />
         </ThemeProvider>
       </TwapAdapter>
     </Box>
   );
 });
+
+const Orders = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const Modal = useAdapterContext().Modal;
+
+  const onClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  return (
+    <StyledOrders isOpen={isOpen}>
+      <Components.OrderHistory.Button onClick={() => setIsOpen(true)} />
+      <Modal open={isOpen} onClose={onClose} header={<Components.OrderHistory.Header />}>
+        <StyledOrdersContent />
+      </Modal>
+    </StyledOrders>
+  );
+};
+
 
 const TWAP = (props: PancakeProps) => {
   return (
@@ -353,20 +428,18 @@ const LimitPanel = () => {
   );
 };
 
-// const useTokenSelectClick = (isSrcToken?: boolean) => {
-//   const selectToken = hooks.useTokenSelect();
-//   const { rawDstToken: srcToken, rawSrcToken: dstToken } = useTwapContext();
-//   const rawDstToken = undefined
-//   const rawSrcToken = undefined
-//   const onSelect = useCallback(
-//     (token: any, isSrcToken?: boolean) => {
-//       selectToken({ isSrc: !!isSrcToken, token });
-//     },
-//     [selectToken, isSrcToken]
-//   );
+const useTokenSelectClick = (isSrcToken?: boolean) => {
+  const selectToken = hooks.useTokenSelect();
+  const { srcToken, dstToken } = useAdapterContext();
+  const onSelect = useCallback(
+    (token: any, isSrcToken?: boolean) => {
+      selectToken({ isSrc: !!isSrcToken, token });
+    },
+    [selectToken, isSrcToken]
+  );
 
-//   return useAdapterContext().useTokenModal?.(onSelect, srcToken, dstToken, isSrcToken);
-// };
+  return useAdapterContext().useTokenModal?.(onSelect, srcToken, dstToken, isSrcToken);
+};
 
 const PercentButton = ({ selected, text, onClick }: LimitPricePercentProps) => {
   return (
@@ -419,8 +492,6 @@ const LimitPriceInput = ({ value, onChange, isLoading }: any) => {
 };
 
 const LimitPrice = () => {
-  // const onSrcSelect = useTokenSelectClick(true);
-  // const onDstSelect = useTokenSelectClick(false);
   const [isSrc, setIsSrc] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -429,13 +500,11 @@ const LimitPrice = () => {
   const onSrcTokenSelected = useCallback(() => {
     setIsSrc(true);
     setIsOpen(true);
-    // onSrcSelect?.();
   }, [setIsSrc, setIsOpen]);
 
   const onDstTokenSelected = useCallback(() => {
     setIsSrc(false);
     setIsOpen(true);
-    // onDstSelect?.();
   }, [setIsSrc, setIsOpen]);
 
   if (hide) return null;
@@ -473,7 +542,7 @@ const CustomPriceToggle = ({ onClick, options, selected }: LimitSwitchArgs) => {
   return (
     <StyledCustomPriceToggle>
       {options.map((it) => {
-        return <PercentButton text={it.label} selected={it.value === selected} onClick={() => onClick(it.value)} />;
+        return <PercentButton key={it.label} text={it.label} selected={it.value === selected} onClick={() => onClick(it.value)} />;
       })}
     </StyledCustomPriceToggle>
   );
@@ -493,6 +562,7 @@ const TWAPPanel = () => {
         <LimitPrice />
         <TotalTrades />
         <TradeIntervalSelect />
+        <DurationSelect />
         <OpenConfirmationModalButton />
       </StyledColumnFlex>
       <StyledPoweredBy />
@@ -585,6 +655,29 @@ const TradeIntervalSelect = () => {
           </StyledTradeIntervalInput>
           <StyledTradeIntervalResolution>
             <Components.TradeInterval.Resolution />
+          </StyledTradeIntervalResolution>
+        </Styles.StyledRowFlex>
+      </Components.TradeInterval>
+    </Card>
+  );
+};
+
+const DurationSelect = () => {
+  const hide = hooks.useShouldWrapOrUnwrapOnly();
+
+  if (hide) return null;
+  return (
+    <Card>
+      <Card.Header>
+        <Components.Labels.MaxDurationLabel />
+      </Card.Header>
+      <Components.TradeInterval>
+        <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
+          <StyledTradeIntervalInput>
+            <Components.TradeDuration.Input />
+          </StyledTradeIntervalInput>
+          <StyledTradeIntervalResolution>
+            <Components.TradeDuration.Resolution />
           </StyledTradeIntervalResolution>
         </Styles.StyledRowFlex>
       </Components.TradeInterval>

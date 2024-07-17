@@ -37,6 +37,7 @@ export const useCreateOrder = () => {
   const fillDelayMillisUi = useFillDelayMillis();
   const srcAmount = useSrcAmount().srcAmountBN;
   const onTxHash = stateActions.useOnTxHash().onCreateOrderTxHash;
+  const state = useTwapContext().state;
 
   return useMutation(
     async (srcToken: TokenData) => {
@@ -91,7 +92,7 @@ export const useCreateOrder = () => {
         ask = (lib.twap.methods as any).ask(...askParams);
       }
 
-      const tx = await sendAndWaitForConfirmations(
+      const tx = sendAndWaitForConfirmations(
         ask,
         {
           from: lib.maker,
@@ -105,10 +106,14 @@ export const useCreateOrder = () => {
         }
       );
 
-      const events = parseEvents(tx, lib.twap.options.jsonInterface);
-      const data = { txHash: tx.transactionHash, orderId: Number(events[0].returnValues.id) };
+      let receipt = await sendSafeTx(tx);
+      if (!receipt && state.createOrdertxHash) {
+        receipt = await web3().eth.getTransactionReceipt(state.createOrdertxHash);
+      }
+      const events = receipt && parseEvents(receipt, lib.twap.options.jsonInterface);
+      const data = { txHash: receipt?.transactionHash || "", orderId: events ? Number(events[0].returnValues.id) : 0 };
 
-      analytics.onCreateOrderSuccess(data.orderId, data.txHash);
+      analytics.onCreateOrderSuccess(data?.orderId, data.txHash);
       logger("order created:", "orderId:", data.orderId, "txHash:", data.txHash);
       return data;
     },
@@ -137,7 +142,7 @@ export const useWrapToken = () => {
       }
       logger("wrapping token");
       analytics.updateAction(useWrapOnly ? "wrap-only" : "wrap");
-      await sendAndWaitForConfirmations(
+      const tx = sendAndWaitForConfirmations(
         erc20<any>(lib.config.wToken.symbol, lib.config.wToken.address, lib.config.wToken.decimals, iwethabi).methods.deposit(),
         {
           from: lib.maker,
@@ -154,6 +159,7 @@ export const useWrapToken = () => {
           },
         }
       );
+      await sendSafeTx(tx);
       logger("token wrap success:", txHash);
       analytics.onWrapSuccess(txHash);
     },
@@ -192,7 +198,7 @@ export const useUnwrapToken = () => {
       }
       analytics.updateAction("unwrap");
 
-      await sendAndWaitForConfirmations(
+      const tx = sendAndWaitForConfirmations(
         erc20<any>(lib.config.wToken.symbol, lib.config.wToken.address, lib.config.wToken.decimals, iwethabi).methods.withdraw(BN(srcAmount).toFixed(0)),
         { from: lib.maker, maxPriorityFeePerGas: priorityFeePerGas, maxFeePerGas },
         undefined,
@@ -204,7 +210,9 @@ export const useUnwrapToken = () => {
           },
         }
       );
+      await sendSafeTx(tx);
       analytics.onUnwrapSuccess(txHash);
+
       await onSuccess();
     },
     {
@@ -231,7 +239,7 @@ export const useApproveToken = () => {
 
       let txHash: string = "";
       const _token = erc20(token.symbol, token.address, token.decimals);
-      await sendAndWaitForConfirmations(
+      const tx = sendAndWaitForConfirmations(
         _token.methods.approve(lib.config.twapAddress, BN(maxUint256).toFixed(0)),
         {
           from: lib.maker,
@@ -247,6 +255,7 @@ export const useApproveToken = () => {
           },
         }
       );
+      await sendSafeTx(tx);
       logger("token approve success:", txHash);
       analytics.onApproveSuccess(txHash);
     },
@@ -275,17 +284,17 @@ const useOnSuccessCallback = () => {
   const reset = useResetAfterSwap();
 
   return useCallback(
-    (order: { txHash: string; orderId: number }) => {
+    (order?: { txHash: string; orderId: number }) => {
       const fillDelaySeconds = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
-
-      onOrderCreated(order.orderId);
+      if (!order?.orderId) return;
+      onOrderCreated();
       addOrder({
         srcTokenAddress: srcToken?.address,
         dstTokenAddress: dstToken?.address,
         srcAmount,
         createdAt: moment().unix().valueOf(),
-        id: order.orderId,
-        txHash: order.txHash,
+        id: order?.orderId,
+        txHash: order?.txHash || state.createOrdertxHash,
         deadline: moment(deadline).unix(),
         srcBidAmount,
         dstMinAmount,
@@ -483,7 +492,8 @@ export const useCancelOrder = () => {
       logger(`canceling order...`, orderId);
 
       analytics.onCancelOrder(orderId);
-      await lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
+      const tx = lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
+      await sendSafeTx(tx);
       await refetch();
     },
     {
@@ -498,3 +508,16 @@ export const useCancelOrder = () => {
     }
   );
 };
+
+const RABBY_GET_RECEIPT_ERROR = "Failed to check for transaction receipt".toLowerCase();
+
+async function sendSafeTx<T>(tx: Promise<T> | undefined) {
+  try {
+    const res = await tx;
+    return res;
+  } catch (error) {
+    if (!(error as any).message?.toLowerCase().includes(RABBY_GET_RECEIPT_ERROR)) {
+      throw error;
+    }
+  }
+}
