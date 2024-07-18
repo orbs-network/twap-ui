@@ -1367,8 +1367,7 @@ export const useLimitPriceV2 = () => {
       original: BN(original || "0").isZero() ? "" : original,
     };
   }, [marketPrice, enableQueryParams, limitPriceStore.inverted, limitPriceStore.limitPrice, limitPriceStore.isCustom, limitPriceStore.priceFromQueryParams]);
-  console.log({limitPrice});
-  
+
   const onInvert = useCallback(() => {
     limitPriceStore.toggleInverted();
   }, [limitPriceStore.toggleInverted, limitPrice]);
