@@ -4,7 +4,7 @@ import { useConnectWallet, useGetTokens, useIsMobile, usePriceUSD, useTheme, use
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, Popup, TokensList, UISelector } from "./Components";
-import { ReactNode, useMemo, useRef, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
@@ -65,18 +65,6 @@ const ConnectButton = () => {
   return <Components.Base.Button onClick={connect}>Connect Wallet</Components.Base.Button>;
 };
 
-const useDecimals = (fromToken?: string, toToken?: string) => {
-  const { data: dappTokens } = useDappTokens();
-  const fromTokenDecimals = dappTokens?.[fromToken || ""]?.decimals;
-  const toTokenDecimals = dappTokens?.[toToken || ""]?.decimals;
-
-  return { fromTokenDecimals, toTokenDecimals };
-};
-
-const handleAddress = (address?: string) => {
-  return !address ? "" : "BNB" ? zeroAddress : address;
-};
-
 const DappButton = ({ isLoading, disabled, children, onClick }: any) => {
   return (
     <StyledButton variant="contained" fullWidth disabled={isLoading || disabled} onClick={onClick}>
@@ -126,13 +114,28 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
-  const [srcToken] = useState("WBNB");
-  const [dstToken] = useState("USDC");
+  const [fromToken, setFromToken] = useState(undefined);
+  const [toToken, setToToken] = useState(undefined);
   const isMobile = useIsMobile();
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
     return useTrade(fromToken, toToken, amount, dappTokens);
   };
+  useEffect(() => {
+    setFromToken(undefined);
+    setToToken(undefined);
+  }, [chainId]);
+
+  useEffect(() => {
+    const arr = _.values(dappTokens);
+
+    if (!fromToken) {
+      setFromToken(arr[1]);
+    }
+    if (!toToken) {
+      setToToken(arr[2]);
+    }
+  }, [dappTokens, toToken, fromToken]);
 
   const connector = useMemo(() => {
     return {
@@ -140,12 +143,17 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     };
   }, [library]);
 
+  const onSwitchTokens = () => {
+    setFromToken(toToken);
+    setToToken(fromToken);
+  };
+
   return (
     <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
       <TWAP
         account={account}
-        // srcToken={srcToken}
-        // dstToken={dstToken}
+        srcToken={fromToken}
+        dstToken={toToken}
         dappTokens={dappTokens}
         isDarkTheme={isDarkTheme}
         limit={limit}
@@ -165,8 +173,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         SwapTransactionReceiptModalContent={SwapPendingModalContent}
         TradePrice={TradePrice}
         TradePriceToggle={TradePriceToggle}
-        onSrcTokenSelected={(token: any) => console.log(token)}
-        onDstTokenSelected={(token: any) => console.log(token)}
+        onSrcTokenSelected={(token: any) => setFromToken(token)}
+        onDstTokenSelected={(token: any) => setToToken(token)}
+        onSwitchTokens={onSwitchTokens}
       />
     </StyledPancakeTwap>
   );

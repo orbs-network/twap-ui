@@ -353,7 +353,6 @@ export interface State {
   approveSuccess?: boolean;
 
   selectedOrdersTab: number;
-  newOrderId?: number;
 
   swapData?: {
     srcAmount: string;

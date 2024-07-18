@@ -68,7 +68,6 @@ const useSwapModalActions = () => {
           approveTxHash: undefined,
           createOrderSuccess: undefined,
           swapData: undefined,
-          newOrderId: undefined,
         });
       }, closeDalay || 300);
     },
@@ -327,12 +326,9 @@ const useOnLimitMarketSwitch = () => {
 const useOnOrderCreated = () => {
   const { updateState } = useTwapContext();
 
-  return useCallback(
-    (newOrderId: number) => {
-      updateState({ swapState: "success", createOrderSuccess: true, selectedOrdersTab: 0, newOrderId });
-    },
-    [updateState]
-  );
+  return useCallback(() => {
+    updateState({ swapState: "success", createOrderSuccess: true, selectedOrdersTab: 0 });
+  }, [updateState]);
 };
 
 export const stateActions = {

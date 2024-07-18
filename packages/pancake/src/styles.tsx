@@ -692,24 +692,6 @@ export const StyledOrdersMenuButton = styled(Button)(({ theme }) => ({
   background: baseStyles(theme).darkMode ? "#353547" : "",
 }));
 
-export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    gap: 0,
-    ".twap-orders-empty-list": {
-      marginBottom: "40px",
-      paddingTop: "30px",
-      color: styles.primaryTextColor,
-    },
-    ".twap-orders-pagination": {
-      color: styles.primaryTextColor,
-      "*": {
-        color: styles.primaryTextColor,
-      },
-    },
-  };
-});
-
 export const StyledOrdersHeader = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
@@ -876,5 +858,46 @@ export const StyledShowOrdersButton = styled(Components.OrderHistory)(({ theme }
       fontSize: 15,
       fontWeight: 500,
     },
+  };
+});
+
+export const StyledOrders = styled(Components.OrderHistory)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    ".twap-show-orders-btn": {
+      width: "100%",
+      transition: "0.2s all",
+      cursor: "pointer",
+      fontSize: 15,
+      fontWeight: 500,
+    },
+  };
+});
+
+export const StyledOrdersContent = styled(Components.OrderHistory.Content)(({ theme }) => {
+  const styled = baseStyles(theme);
+  return {
+    ".twap-orders-list": {
+      top: 0,
+      height: "100%",
+    },
+    ".twap-order-display-details": {
+      padding: 0,
+    },
+    ".MuiLinearProgress-root": {
+      borderRadius: 12,
+    },
+    ".twap-order-token-progress": {
+      ".MuiLinearProgress-bar": {
+        background: "rgb(59 130 246/1)",
+      },
+    },
+    ".MuiAccordionSummary-content": {
+      padding: 12,
+    },
+    ".MuiAccordionDetails-root": {
+      padding: "0px 12px 12px 12px!important",
+    },
+    ".twap-order-display-details-row": {},
   };
 });
