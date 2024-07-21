@@ -16,7 +16,6 @@
     "jsx": "react-jsx",
     "outDir": "dist",
     "declaration": true,
-    
   },
-  "include": ["./src"]
+  "include": ["./src/**/*", "declarations.d.ts"],
 }
