@@ -1,11 +1,10 @@
-import _ from "lodash";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTwapContext } from "../../context/context";
 import { useOrdersHistory } from "../../hooks";
-import { HistoryOrder, OrderUI, Translations } from "../../types";
+import { HistoryOrder, OrdersData, OrderUI, Translations } from "../../types";
 import { OrdersMenuTab } from "./types";
 import { Status } from "@orbs-network/twap";
-import { useParseOrderUi } from "../../hooks/orders";
+import { flatMap, mapCollection, size, sortBy } from "../../utils";
 
 interface OrderHistoryContextType {
   tabs: OrdersMenuTab[];
@@ -47,17 +46,17 @@ export const OrderHistoryContextProvider = ({ children, isOpen }: { children: Re
 
   const { translations } = useTwapContext();
   const tabs = useMemo(() => {
-    const res = _.map(Status, (it) => {
+    const res = mapCollection(Status, (it) => {
       return {
         name: translations[it as keyof Translations],
-        amount: _.size(data?.[it as keyof typeof data]),
+        amount: size(data?.[it as keyof typeof data]),
         key: it,
       };
     });
 
     res.unshift({
       name: "All",
-      amount: _.size(_.flatMap(data)),
+      amount: !data ? 0 : size(Object.values(data).flat()),
       key: undefined as any,
     });
     return res;
@@ -66,11 +65,11 @@ export const OrderHistoryContextProvider = ({ children, isOpen }: { children: Re
   const orders = useMemo(() => {
     if (!data) return [];
     if (!tab) {
-      return _.sortBy(Object.values(data).flat(), (it) => it.createdAt).reverse();
+      return sortBy(Object.values(data).flat(), (it) => it.createdAt).reverse();
     }
     return data[tab as keyof typeof data] || [];
   }, [data, tab]);
-  const selectedTab = useMemo(() => _.find(tabs, (it) => it.key === tab), [tabs, tab]);
+  const selectedTab = useMemo(() => tabs.find((it) => it.key === tab), [tabs, tab]);
 
   return (
     <OrderHistoryContext.Provider value={{ selectedOrderId, tabs, selectOrder, orders, setTab, closePreview, selectedTab, isLoading }}>{children}</OrderHistoryContext.Provider>

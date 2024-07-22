@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { useState, useCallback, useMemo } from "react";
 import { useTwapContext } from "../../../context/context";
 import {
@@ -22,10 +22,10 @@ import { BottomContent, SmallTokens } from "../Components";
 import BN from "bignumber.js";
 import { StyledColumnFlex, StyledText } from "../../../styles";
 import { Steps } from "../Steps";
-import _ from "lodash";
 import { useOrderType } from "../hooks";
 import { stateActions } from "../../../context/actions";
 import { OrderDisplay } from "../../OrderDisplay";
+import { size } from "../../../utils";
 
 const Price = () => {
   const [inverted, setInverted] = useState(false);
@@ -118,7 +118,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
         </>
       }
     >
-      <Switch variant={uiPreferences.switchVariant} value={disclaimerAccepted} onChange={handleDisclaimer} />
+      <Switch checked={disclaimerAccepted} onChange={handleDisclaimer} />
     </OrderDisplay.DetailRow>
   );
 };
@@ -126,7 +126,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
 export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) => {
   const { swapState, swapSteps } = useTwapContext().state;
 
-  const shouldOnlyConfirm = swapState === "loading" && _.size(swapSteps) === 1;
+  const shouldOnlyConfirm = swapState === "loading" && size(swapSteps) === 1;
 
   if (shouldOnlyConfirm) {
     return <ConfirmOrder />;

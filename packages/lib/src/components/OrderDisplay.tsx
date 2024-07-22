@@ -1,8 +1,8 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { ReactNode, useMemo } from "react";
 import { useExplorerUrl, useFormatNumberV2, usemElipsisAddress } from "../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
-import { Label, TokenLogo, Tooltip } from "./base";
+import { Label, TokenLogo } from "./base";
 import moment from "moment";
 import { useTwapContext } from "../context/context";
 import { fillDelayText } from "../utils";
@@ -63,12 +63,16 @@ const ChunksAmount = ({ chunks }: { chunks?: number }) => {
 };
 
 const Recipient = () => {
-  const { translations: t, lib } = useTwapContext();
+  const {
+    translations: t,
+    lib,
+    Components: { Tooltip },
+  } = useTwapContext();
   const explorerUrl = useExplorerUrl();
   const makerAddress = usemElipsisAddress(lib?.maker);
 
   const address = (
-    <Tooltip text={lib?.maker} placement="bottom">
+    <Tooltip tooltipText={lib?.maker} placement="bottom">
       {makerAddress}
     </Tooltip>
   );
@@ -123,14 +127,17 @@ const DetailRow = ({
 };
 
 const TxHash = ({ txHash }: { txHash?: string }) => {
-  const { translations: t } = useTwapContext();
+  const {
+    translations: t,
+    Components: { Tooltip },
+  } = useTwapContext();
   const txHashAddress = usemElipsisAddress(txHash);
   const explorerUrl = useExplorerUrl();
 
   if (!txHash) return null;
 
   const address = (
-    <Tooltip text={txHash} placement="bottom">
+    <Tooltip tooltipText={txHash} placement="bottom">
       {txHashAddress}
     </Tooltip>
   );
@@ -175,10 +182,12 @@ const TokenDisplay = ({ amount, token, usd, title }: { amount?: string; token?: 
 };
 
 const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
-  const { Components } = useTwapContext().uiPreferences;
+  const {
+    Components: { USD },
+  } = useTwapContext();
 
-  if (Components?.USD) {
-    return <Components.USD usd={usd} />;
+  if (USD) {
+    return <USD value={usd} />;
   }
   return <StyledText className={`twap-order-display-token-usd ${className}`}>${usd}</StyledText>;
 };

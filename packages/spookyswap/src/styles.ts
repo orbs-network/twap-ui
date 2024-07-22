@@ -1,7 +1,7 @@
-import { Box, createTheme, styled, Theme } from "@mui/material";
-import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
+import { Components, Styles } from "@orbs-network/twap-ui";
+import { DefaultTheme, styled } from "styled-components";
 
-export const lightTheme = createTheme({
+export const lightTheme = {
   palette: {
     mode: "light",
   },
@@ -9,19 +9,19 @@ export const lightTheme = createTheme({
   typography: {
     fontFamily: "inherit",
   },
-});
-const isDark = (theme: Theme) => theme.palette.mode === "dark";
+};
+const isDark = (theme: DefaultTheme) => theme.palette.mode === "dark";
 
-export const darkTheme = createTheme({
+export const darkTheme = {
   palette: {
     mode: "dark",
   },
   typography: {
     fontFamily: "inherit",
   },
-});
+};
 
-const baseStyles = (theme: Theme) => {
+const baseStyles = (theme: DefaultTheme) => {
   const darkMode = isDark(theme);
   return {
     iconsColor: "rgb(140, 140, 227)",
@@ -124,7 +124,7 @@ export const StyledTokenPanel = styled(Components.Base.Card)(({ theme }) => ({
   },
 }));
 
-const getButtonStyles = (theme: Theme) => {
+const getButtonStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   const darkMode = isDark(theme);
   return {
@@ -149,7 +149,7 @@ const getButtonStyles = (theme: Theme) => {
   };
 };
 
-export const StyledTokenSelect = styled(Box)(({ theme }) => {
+export const StyledTokenSelect = styled("div")(({ theme }) => {
   const darkMode = isDark(theme);
   const styles = baseStyles(theme);
   return {
@@ -246,174 +246,7 @@ export const StyledSubmitButton = styled(Components.SubmitButton)({
   marginRight: "auto",
 });
 
-export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
-  const styles = baseStyles(theme);
-  const darkMode = isDark(theme);
-  return {
-    fontFamily: "Red Hat Display",
-    gap: "0!important",
-    color: styles.textColor,
-    ".twap-spinner": {
-      color: `${styles.textColor}!important`,
-    },
-
-    ".twap-orders-header": {
-      ".twap-label p": {
-        fontWeight: 700,
-        color: `${styles.textColor}!important`,
-      },
-      padding: 0,
-      "& .twap-orders-header-tabs": {
-        borderRadius: 0,
-        padding: 0,
-        minHeight: 28,
-        ".twap-orders-header-tabs-tab": {
-          background: "none",
-          padding: 0,
-          minHeight: 28,
-          minWidth: 0,
-          transition: ".15s all linear",
-          borderBottom: darkMode ? `2px solid ${styles.textColor}` : "2px solid #BCC8DC",
-        },
-        border: "unset",
-        "& .MuiTabs-indicator": {
-          backgroundColor: "transparent",
-        },
-        "& .MuiButtonBase-root": {
-          color: `${styles.textColor}!important`,
-          fontWeight: 400,
-        },
-        "& .Mui-selected": {
-          color: `${styles.orderHistorySelectedTabBackground}!important`,
-          borderBottom: `2px solid ${styles.orderHistorySelectedTabBackground}`,
-          fontWeight: 700,
-        },
-      },
-    },
-    ".twap-orders-list": {
-      paddingTop: 20,
-      gap: 14,
-    },
-    ".twap-order": {
-      paddingBottom: 10,
-      color: `${styles.textColor}!important`,
-      ".twap-market-price-section": {
-        flexDirection: "column",
-        alignItems: "flex-start",
-      },
-      ".twap-order-expanded-row": {
-        flexDirection: "column",
-        alignItems: "flex-start",
-      },
-      ".twap-order-separator": {
-        background: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0,0,0, 0.1)",
-      },
-      ".twap-price-compare": {
-        "*": {
-          fontSize: 12,
-          fontWeight: 400,
-        },
-      },
-      ".twap-order-token-display": {
-        ".twap-token-logo": {
-          width: 22,
-          height: 22,
-        },
-      },
-      ".twap-order-expanded-right": {
-        fontWeight: "400!important",
-        fontSize: 12,
-        "*, p": {
-          fontWeight: "inherit",
-          fontSize: "inherit",
-        },
-      },
-      ".twap-label": {
-        p: {
-          fontWeight: "bold",
-        },
-      },
-      "& .twap-order-main-progress-bar": {
-        background: `${styles.progressBarTrackColor}!important`,
-      },
-      "& .MuiLinearProgress-bar": {
-        background: styles.orderHistorySelectedTabBackground,
-      },
-      "& .twap-order-progress": {
-        "&::after": {
-          background: `${styles.progressBarTrackColor}!important`,
-          height: "100%",
-          top: 0,
-        },
-      },
-    },
-  };
-});
-
-export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContainer)({
-  ".twap-card": {
-    paddingBottom: 8,
-  },
-  background: "unset",
-  fontFamily: "Red Hat Display",
-  ".twap-orders-summary-token-display-amount": {
-    fontSize: 17,
-  },
-  "& *": {
-    "&::-webkit-scrollbar": {
-      display: "none",
-    },
-  },
-  "& .MuiBackdrop-root": {
-    background: "rgba(18, 17, 34, 0.55)",
-  },
-  ".twap-disclaimer-text": {
-    "*": {
-      fontSize: "14px!important",
-    },
-  },
-  ".twap-disclaimer-switch": {
-    fontSize: 14,
-  },
-  ".twap-order-summary-output-address": {
-    fontSize: 14,
-  },
-  ".twap-order-summary-details": {
-    ".twap-order-summary-details-item": {
-      p: {
-        fontSize: 14,
-      },
-    },
-  },
-  ".twap-modal-content": {
-    paddingTop: "50px!important",
-    paddingBottom: "50px!important",
-    ".twap-token-name": {
-      fontSize: 14,
-    },
-    ".twap-order-summary-details-item-right": {
-      "*": {
-        fontSize: 14,
-      },
-    },
-    "& a": {
-      fontWeight: 500,
-      textDecoration: "underline",
-    },
-    "& .MuiIconButton-root": {
-      color: "white",
-    },
-    "& *": {
-      fontFamily: "inherit",
-    },
-  },
-  ".twap-button": {
-    marginLeft: "auto",
-    marginRight: "auto",
-  },
-});
-
-export const configureStyles = (theme: Theme) => {
+export const configureStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   const darkMode = isDark(theme);
   return {

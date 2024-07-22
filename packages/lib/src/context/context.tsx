@@ -11,7 +11,7 @@ import { LimitPriceMessageContent } from "../components";
 import { defaultCustomFillDelay, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "../consts";
 import { getQueryParam, limitPriceFromQueryParams } from "../utils";
 import moment from "moment";
-import _ from "lodash";
+import { setWeb3Instance } from "@defi.org/web3-candies";
 analytics.onModuleImported();
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -143,6 +143,11 @@ export const Content = (props: TwapLibProps) => {
   const { updateState, state } = useStore(props);
   useDeadlineUpdater(state, updateState);
   const uiPreferences = props.uiPreferences || {};
+  const web3 = useMemo(() => (!props.provider ? undefined : new Web3(props.provider)), [props.provider]);
+
+  useEffect(() => {
+    setWeb3Instance(web3);
+  }, [web3]);
 
   return (
     <TwapContext.Provider
@@ -159,6 +164,8 @@ export const Content = (props: TwapLibProps) => {
         dstToken: props.dstToken,
         srcUsd: props.srcUsd || 0,
         dstUsd: props.dstUsd || 0,
+        Components: props.Components,
+        web3,
       }}
     >
       <WrappedTwap {...props} />

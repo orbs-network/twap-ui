@@ -1,5 +1,5 @@
-import { Box, styled } from "@mui/system";
 import { Components, StylesConfig } from "@orbs-network/twap-ui";
+import { styled } from "styled-components";
 
 const mainPadding = 10;
 const mainBorderRadius = 8;
@@ -8,10 +8,6 @@ interface PangolinStyles extends StylesConfig {
   labelColor: string;
   isDarkMode: boolean;
 }
-
-export const StyledOrdersContainer = styled(Components.Base.SwipeContainer)({
-  zIndex: 99,
-});
 
 export const parseTheme = (theme: any): PangolinStyles => {
   const isDarkMode = theme.chainInput.text !== "#000000";
@@ -463,7 +459,7 @@ export const configureStyles = (theme: any) => {
   };
 };
 
-export const StyledOrders = styled(Box)({
+export const StyledOrders = styled("div")({
   width: "100%",
   height: "100%",
   ".twap-orders": {

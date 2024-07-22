@@ -4,6 +4,7 @@ import { Moment } from "moment";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
 import { useParseOrderUi } from "./hooks/orders";
+import Web3 from "web3";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -145,6 +146,7 @@ interface BaseProps {
   maxFeePerGas?: string;
   priorityFeePerGas?: string;
   isDarkTheme?: boolean;
+  Components?: TwapComponents;
 }
 export interface TWAPProps extends BaseProps {
   connect?: () => void;
@@ -173,6 +175,7 @@ interface LibProps {
   priorityFeePerGas?: string;
   maxFeePerGas?: string;
   isDarkTheme?: boolean;
+  Components?: TwapComponents;
 }
 
 export type StoreOverride = Partial<State>;
@@ -190,20 +193,11 @@ export interface TwapContextUIPreferences {
   infoIcon?: any;
   inputLoader?: ReactElement;
   disableThousandSeparator?: boolean;
-  Components?: {
-    USD?: FC<{ usd?: string }>;
-  };
   input?: {
     showOnLoading?: boolean;
   };
   addressPadding?: AddressPadding;
   tooltipIcon?: ReactNode;
-  Tooltip?: FC<TooltipProps>;
-  Button?: FC<ButtonProps>;
-  orders?: {
-    paginationChunks?: number;
-    hideUsd?: boolean;
-  };
   modal?: {
     styles?: CSSProperties;
   };
@@ -366,11 +360,9 @@ export interface State {
 
 export type SwitchVariant = "ios" | "default";
 
-export interface TooltipProps extends React.HTMLAttributes<HTMLElement> {
-  hideIcon?: boolean;
-  childrenStyles?: CSSProperties;
+export interface TooltipProps {
   children: ReactNode;
-  text?: string | ReactElement | number;
+  tooltipText?: string | ReactElement | number;
   placement?: "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top";
 }
 
@@ -462,6 +454,12 @@ export enum TimeResolution {
 }
 export type Duration = { resolution: TimeResolution; amount?: number };
 
+interface TwapComponents {
+  Tooltip: FC<TooltipProps>;
+  Button?: FC<ButtonProps>;
+  USD?: FC<{ value?: string | number }>;
+}
+
 export interface TWAPContextProps {
   dappProps: TwapLibProps;
   lib?: TWAPLib;
@@ -470,9 +468,11 @@ export interface TWAPContextProps {
   state: State;
   updateState: (state: Partial<State>) => void;
   uiPreferences: TwapContextUIPreferences;
+  Components?: TwapComponents;
   srcToken?: TokenData;
   dstToken?: TokenData;
   srcUsd: string | number;
   dstUsd: string | number;
   marketPrice?: string;
+  web3?: Web3;
 }

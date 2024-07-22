@@ -1,4 +1,4 @@
-import { Box, styled } from "@mui/system";
+import { styled } from "styled-components";
 import { ReactNode } from "react";
 
 const Icon = ({ icon, className = "" }: { icon: ReactNode; className?: string }) => {
@@ -7,7 +7,7 @@ const Icon = ({ icon, className = "" }: { icon: ReactNode; className?: string })
 
 export default Icon;
 
-const StyledContainer = styled(Box)({
+const StyledContainer = styled("div")({
   height: "fit-content",
   display: "flex",
   alignItems: "center",

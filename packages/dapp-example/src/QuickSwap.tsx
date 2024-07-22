@@ -5,12 +5,10 @@ import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import _ from "lodash";
 import { erc20s } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
-import { TWAP, Orders } from "@orbs-network/twap-ui-quickswap";
-import BN from "bignumber.js";
-import { hooks } from "@orbs-network/twap-ui";
+import { TWAP } from "@orbs-network/twap-ui-quickswap";
+import { mapKeys, size } from "@orbs-network/twap-ui";
 const config = Configs.QuickSwap;
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
@@ -31,7 +29,7 @@ const parseListToken = (tokenList: any) => {
 export const useDappTokens = () => {
   return useGetTokens({
     parse: parseListToken,
-    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
+    modifyList: (tokens: any) => ({ ...mapKeys(tokens, (t: any) => t.address) }),
     baseAssets: erc20s.poly,
     url: `https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/polygon.json`,
   });
@@ -44,7 +42,7 @@ interface TokenSelectModalProps {
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return rawList.map((rawToken: any) => {
     return {
       token: {
         address: rawToken.address ?? rawToken.tokenInfo?.address,
@@ -59,7 +57,7 @@ const parseList = (rawList?: any): TokenListItem[] => {
 
 const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectModalProps) => {
   const { data: tokensList } = useDappTokens();
-  const tokensListSize = _.size(tokensList);
+  const tokensListSize = size(tokensList);
   const parsedList = useMemo(() => parseList(tokensList), [tokensListSize]);
 
   return (
@@ -69,13 +67,6 @@ const TokenSelectModal = ({ isOpen, onCurrencySelect, onDismiss }: TokenSelectMo
       </StyledModalContent>
     </Popup>
   );
-};
-
-const useDecimals = (fromToken?: string, toToken?: string) => {
-  const { data: dappTokens } = useDappTokens();
-  const fromTokenDecimals = dappTokens?.[fromToken || ""]?.decimals;
-  const toTokenDecimals = dappTokens?.[toToken || ""]?.decimals;
-  return { fromTokenDecimals, toTokenDecimals };
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -102,14 +93,12 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       }
       return token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
     },
-    [_.size(dappTokens)]
+    [dappTokens]
   );
 
   const onInputChange = (e: any) => {
     setFromAmount(e);
   };
-
-  const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromToken?.address, toToken?.address);
 
   return (
     <TWAP
@@ -144,9 +133,7 @@ const DappComponent = () => {
         <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledQuickswapBox>
-        <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}>
-          <Orders />
-        </StyledQuickswapBox>
+        <StyledQuickswapBox isDarkMode={isDarkTheme ? 1 : 0}></StyledQuickswapBox>
       </StyledQuickswapLayout>
     </StyledQuickswap>
   );

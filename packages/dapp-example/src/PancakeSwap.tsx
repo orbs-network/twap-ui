@@ -5,12 +5,11 @@ import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, Popup, TokensList, UISelector } from "./Components";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import _ from "lodash";
 import { erc20s, zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
 import { Button, styled, Typography } from "@mui/material";
-import { Components } from "@orbs-network/twap-ui";
+import { Components, mapKeys } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
 import { DappProvider } from "./context";
 const config = Configs.PancakeSwap;
@@ -34,7 +33,7 @@ const parseListToken = (tokenList: any) => {
 export const useDappTokens = () => {
   return useGetTokens({
     parse: parseListToken,
-    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
+    modifyList: (tokens: any) => ({ ...mapKeys(tokens, (t: any) => t.address) }),
     baseAssets: erc20s.bsc,
     url: `https://tokens.pancakeswap.finance/pancakeswap-extended.json`,
   });
@@ -47,7 +46,7 @@ interface TokenSelectModalProps {
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return rawList.map((rawToken: any) => {
     return {
       token: {
         address: rawToken.address,
@@ -127,7 +126,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   }, [chainId]);
 
   useEffect(() => {
-    const arr = _.values(dappTokens);
+    const arr = Object.values(dappTokens) as any;
 
     if (!fromToken) {
       setFromToken(arr[1]);
@@ -162,7 +161,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         connectedChainId={chainId}
         useTrade={_useTrade}
         TokenSelectModal={TokenSelectModal}
-        Modal={Components.Base.Modal}
+        Modal={Popup}
         nativeToken={native}
         connector={connector}
         isMobile={isMobile}

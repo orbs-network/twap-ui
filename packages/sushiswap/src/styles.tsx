@@ -1,20 +1,20 @@
-import { Box, createTheme, styled, Theme } from "@mui/material";
 import { Components, Styles } from "@orbs-network/twap-ui";
 import { ReactNode } from "react";
+import { DefaultTheme, styled, createGlobalStyle } from "styled-components";
 
-export const darkTheme = createTheme({
+export const darkTheme = {
   palette: {
     mode: "dark",
   },
-});
+};
 
-export const lightTheme = createTheme({
+export const lightTheme = {
   palette: {
     mode: "light",
   },
-});
+};
 
-const getStyles = (theme?: Theme) => {
+const getStyles = (theme?: DefaultTheme) => {
   const isDarkMode = theme?.palette.mode === "dark" ? 1 : 0;
 
   return {
@@ -55,192 +55,7 @@ export const StyledSmallText = styled("span")(({ theme }) => {
   };
 });
 
-export const StyledBalance = styled(Styles.StyledRowFlex)<{ disabled?: number }>(({ theme, disabled }) => {
-  const styles = getStyles(theme);
-  const darkDisabled = disabled ? "rgb(100 116 139/1)" : styles.darkText;
-  const lightDisabled = disabled ? "rgb(107 114 128/1)" : "rgb(59 130 246/1)";
-  const color = styles.isDarkMode ? darkDisabled : lightDisabled;
-  const hover = disabled ? "" : styles.darkTextHover;
-
-  return {
-    gap: 5,
-    cursor: disabled ? "auto" : "pointer",
-    width: "auto",
-    "*": {
-      color: color,
-    },
-    small: {
-      color: color,
-    },
-    svg: {
-      fill: color,
-      width: 20,
-      height: 20,
-    },
-    "&:hover": {
-      "*": {
-        color: hover,
-      },
-      svg: {
-        fill: hover,
-      },
-    },
-  };
-});
-
-export const StyledUSD = styled(Styles.StyledText)(({ theme }) => {
-  const styles = getStyles(theme);
-  return {
-    color: styles.darkText,
-    fontWeight: 500,
-  };
-});
-
-export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }) => {
-  const styles = getStyles(theme);
-  const bg = styles.isDarkMode ? "#0f172a" : "#f4f5f6";
-  return {
-    height: 0,
-    button: {
-      position: "absolute",
-      border: `1px solid ${styles.accent}`,
-      background: bg,
-      width: 30,
-      height: 30,
-      borderRadius: "50%",
-      "&:hover": {
-        background: bg,
-        svg: {
-          transform: "rotate(180deg)",
-        },
-      },
-    },
-    svg: {
-      transition: "0.2s all",
-      width: 27,
-      height: 27,
-      fill: "rgb(59 130 246/1)",
-    },
-    "@media(max-width: 1000px)": {
-      height: "auto",
-      button: {
-        position: "static",
-      },
-    },
-  };
-});
-
-export const StyledContainer = styled(Styles.StyledColumnFlex)({
-  gap: 15,
-});
-
-export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
-  gap: 16,
-});
-
-const buttonStyles = {
-  borderRadius: 12,
-  background: "rgb(59 130 246/1)",
-  minHeight: 52,
-  fontWeight: 500,
-  fontSize: 16,
-  lineHeight: "24px",
-  padding: 10,
-  color: "white",
-  "*": {
-    fontWeight: "inherit",
-    fontSize: "inherit",
-    lineHeight: "inherit",
-    color: "white!important",
-  },
-};
-
-export const StyledSubmit = styled(Components.SubmitButton)({});
-
-export const StyledPoweredBy = styled(Components.PoweredBy)({
-  marginTop: 20,
-});
-
-const selectTokenStyles = (theme: Theme) => {
-  const styles = getStyles(theme);
-
-  return {
-    gap: 8,
-    background: styles.isDarkMode ? "#ffffff0a" : "#0000000a",
-    padding: 8,
-    borderRadius: 30,
-    color: styles.textColor,
-    "*": {
-      color: "inherit",
-    },
-    svg: {
-      width: 15,
-      height: 15,
-    },
-
-    ".twap-token-logo": {
-      width: 28,
-      height: 28,
-    },
-    ".twap-token-name": {
-      fontSize: 18,
-      fontWeight: 500,
-    },
-    p: {
-      fontSize: 16,
-      fontWeight: 600,
-    },
-    ".twap-token-display": {
-      gap: 8,
-    },
-  };
-};
-
-export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
-  const styles = getStyles(theme);
-  return {
-    ...selectTokenStyles(theme),
-  };
-});
-
-export const StyledTokenSelectLimit = styled(Styles.StyledRowFlex)(({ theme }) => {
-  return {
-    ...selectTokenStyles(theme),
-    width: "auto",
-  };
-});
-
-const cardBodyStyles = (theme?: Theme) => {
-  const styles = getStyles(theme);
-  return {
-    background: styles.isDarkMode ? "rgb(30 41 59/1)" : "white",
-    borderRadius: 12,
-    padding: 12,
-    border: `1px solid ${styles.accent}`,
-  };
-};
-
-const tooltipStyles = (theme?: Theme) => {
-  const styles = getStyles(theme);
-
-  return {
-    backgroundColor: styles.isDarkMode ? "rgba(30,41,59,.5)" : "#F9F9FA",
-    backdropFilter: "blur(10px) saturate(190%) contrast(70%) brightness(80%)",
-    borderRadius: "12px",
-    fontSize: 14,
-    padding: 16,
-    fontWeight: 400,
-    color: styles.isDarkMode ? "#94a3b8" : "rgb(107 114 128/1)",
-    border: `1px solid ${styles.accent}`,
-    lineHeight: "20px",
-    "& *": {
-      color: "inherit",
-      fontSize: "inherit",
-      fontWeight: "inherit",
-    },
-  };
-};
-export const configureStyles = (theme?: Theme) => {
+export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
@@ -450,6 +265,192 @@ export const configureStyles = (theme?: Theme) => {
       },
     },
   };
+});
+
+export const StyledBalance = styled(Styles.StyledRowFlex)<{ disabled?: number }>(({ theme, disabled }) => {
+  const styles = getStyles(theme);
+  const darkDisabled = disabled ? "rgb(100 116 139/1)" : styles.darkText;
+  const lightDisabled = disabled ? "rgb(107 114 128/1)" : "rgb(59 130 246/1)";
+  const color = styles.isDarkMode ? darkDisabled : lightDisabled;
+  const hover = disabled ? "" : styles.darkTextHover;
+
+  return {
+    gap: 5,
+    cursor: disabled ? "auto" : "pointer",
+    width: "auto",
+    "*": {
+      color: color,
+    },
+    small: {
+      color: color,
+    },
+    svg: {
+      fill: color,
+      width: 20,
+      height: 20,
+    },
+    "&:hover": {
+      "*": {
+        color: hover,
+      },
+      svg: {
+        fill: hover,
+      },
+    },
+  };
+});
+
+export const StyledUSD = styled(Styles.StyledText)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    color: styles.darkText,
+    fontWeight: 500,
+  };
+});
+
+export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }) => {
+  const styles = getStyles(theme);
+  const bg = styles.isDarkMode ? "#0f172a" : "#f4f5f6";
+  return {
+    height: 0,
+    button: {
+      position: "absolute",
+      border: `1px solid ${styles.accent}`,
+      background: bg,
+      width: 30,
+      height: 30,
+      borderRadius: "50%",
+      "&:hover": {
+        background: bg,
+        svg: {
+          transform: "rotate(180deg)",
+        },
+      },
+    },
+    svg: {
+      transition: "0.2s all",
+      width: 27,
+      height: 27,
+      fill: "rgb(59 130 246/1)",
+    },
+    "@media(max-width: 1000px)": {
+      height: "auto",
+      button: {
+        position: "static",
+      },
+    },
+  };
+});
+
+export const StyledContainer = styled(Styles.StyledColumnFlex)({
+  gap: 15,
+});
+
+export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
+  gap: 16,
+});
+
+const buttonStyles = {
+  borderRadius: 12,
+  background: "rgb(59 130 246/1)",
+  minHeight: 52,
+  fontWeight: 500,
+  fontSize: 16,
+  lineHeight: "24px",
+  padding: 10,
+  color: "white",
+  "*": {
+    fontWeight: "inherit",
+    fontSize: "inherit",
+    lineHeight: "inherit",
+    color: "white!important",
+  },
+};
+
+export const StyledSubmit = styled(Components.SubmitButton)({});
+
+export const StyledPoweredBy = styled(Components.PoweredBy)({
+  marginTop: 20,
+});
+
+const selectTokenStyles = (theme: DefaultTheme) => {
+  const styles = getStyles(theme);
+
+  return {
+    gap: 8,
+    background: styles.isDarkMode ? "#ffffff0a" : "#0000000a",
+    padding: 8,
+    borderRadius: 30,
+    color: styles.textColor,
+    "*": {
+      color: "inherit",
+    },
+    svg: {
+      width: 15,
+      height: 15,
+    },
+
+    ".twap-token-logo": {
+      width: 28,
+      height: 28,
+    },
+    ".twap-token-name": {
+      fontSize: 18,
+      fontWeight: 500,
+    },
+    p: {
+      fontSize: 16,
+      fontWeight: 600,
+    },
+    ".twap-token-display": {
+      gap: 8,
+    },
+  };
+};
+
+export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    ...selectTokenStyles(theme),
+  };
+});
+
+export const StyledTokenSelectLimit = styled(Styles.StyledRowFlex)(({ theme }) => {
+  return {
+    ...selectTokenStyles(theme),
+    width: "auto",
+  };
+});
+
+const cardBodyStyles = (theme?: DefaultTheme) => {
+  const styles = getStyles(theme);
+  return {
+    background: styles.isDarkMode ? "rgb(30 41 59/1)" : "white",
+    borderRadius: 12,
+    padding: 12,
+    border: `1px solid ${styles.accent}`,
+  };
+};
+
+const tooltipStyles = (theme?: DefaultTheme) => {
+  const styles = getStyles(theme);
+
+  return {
+    backgroundColor: styles.isDarkMode ? "rgba(30,41,59,.5)" : "#F9F9FA",
+    backdropFilter: "blur(10px) saturate(190%) contrast(70%) brightness(80%)",
+    borderRadius: "12px",
+    fontSize: 14,
+    padding: 16,
+    fontWeight: 400,
+    color: styles.isDarkMode ? "#94a3b8" : "rgb(107 114 128/1)",
+    border: `1px solid ${styles.accent}`,
+    lineHeight: "20px",
+    "& *": {
+      color: "inherit",
+      fontSize: "inherit",
+      fontWeight: "inherit",
+    },
+  };
 };
 
 export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
@@ -515,7 +516,7 @@ export const CardBody = ({ children, className = "" }: { children: ReactNode; cl
 Card.Header = CardHeader;
 Card.Body = CardBody;
 
-export const StyledCardBody = styled(Box)(({ theme }) => {
+export const StyledCardBody = styled("div")(({ theme }) => {
   return {
     ...cardBodyStyles(theme),
     width: "100%",
@@ -710,14 +711,16 @@ export const StyledTop = styled(Styles.StyledColumnFlex)({
   },
 });
 
-export const StyledChunksSelectInput = styled(CardBody)({
-  width: "25%",
-  minWidth: 100,
-  input: {
-    fontSize: 18,
-    textAlign: "left!important",
-    height: "100%",
-  },
+export const StyledChunksSelectInput = styled(CardBody)(() => {
+  return {
+    width: "100%",
+    minWidth: 100,
+    input: {
+      fontSize: 18,
+      textAlign: "left!important" as any,
+      height: "100%",
+    },
+  };
 });
 
 export const StyledContent = styled(StyledColumnFlex)({

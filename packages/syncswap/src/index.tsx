@@ -1,18 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { Button, GlobalStyles, ThemeProvider, Typography, createTheme, Box } from "@mui/material";
-import {
-  Components,
-  Translations,
-  TwapAdapter,
-  OrdersPanel,
-  useTwapContext,
-  Styles as TwapStyles,
-  hooks,
-  TWAPProps,
-  Orders,
-  REFETCH_GAS_PRICE,
-  amountBN,
-} from "@orbs-network/twap-ui";
+import { Components, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, hooks, TWAPProps, REFETCH_GAS_PRICE, amountBN } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { Configs, TokenData } from "@orbs-network/twap";
@@ -35,11 +22,9 @@ import { eqIgnoreCase, isNativeAddress, zeroAddress } from "@defi.org/web3-candi
 import { StyledOneLineText } from "@orbs-network/twap-ui/dist/styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
-import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
-import BN from "bignumber.js";
+import { TwapContextUIPreferences, compact, isEmpty } from "@orbs-network/twap-ui";
 import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SyncSwapPallete } from "./types";
-import _ from "lodash";
 
 const uiPreferences: TwapContextUIPreferences = {
   switchVariant: "default",
@@ -125,50 +110,11 @@ const SrcTokenPercentSelector = () => {
 
   return (
     <StyledPercentSelect>
-      <Button fullWidth size="small" variant="outlined" onClick={() => onClick(0.25)}>
-        25%
-      </Button>
-      <Button fullWidth size="small" variant="outlined" onClick={() => onClick(0.5)}>
-        50%
-      </Button>
-      <Button fullWidth size="small" variant="outlined" onClick={() => onClick(0.75)}>
-        75%
-      </Button>
-      <Button fullWidth size="small" variant="outlined" onClick={() => onClick(1)}>
-        100%
-      </Button>
+      <button onClick={() => onClick(0.25)}>25%</button>
+      <button onClick={() => onClick(0.5)}>50%</button>
+      <button onClick={() => onClick(0.75)}>75%</button>
+      <button onClick={() => onClick(1)}>100%</button>
     </StyledPercentSelect>
-  );
-};
-
-const OrderSummary = ({ children }: { children: ReactNode }) => {
-  return (
-    <Components.OrderSummaryModalContainer>
-      <TwapStyles.StyledColumnFlex gap={14}>
-        <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay />
-          </Components.Base.Card>
-          <Components.OrderSummaryLimitPrice />
-          <Components.Base.Card>{children}</Components.Base.Card>
-          <Components.Base.Card>
-            <TwapStyles.StyledColumnFlex gap={10}>
-              <Components.DisclaimerText />
-            </TwapStyles.StyledColumnFlex>
-          </Components.Base.Card>
-        </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={12}>
-            <Components.AcceptDisclaimer />
-            <Components.OutputAddress />
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-        <SubmitButton />
-      </TwapStyles.StyledColumnFlex>
-    </Components.OrderSummaryModalContainer>
   );
 };
 
@@ -195,6 +141,10 @@ const useGasPriceQuery = (props: Props) => {
 
 const SYNCSWAP_ZERO_ADDRESS = "0x000000000000000000000000000000000000800a";
 
+const Tooltip = () => {
+  return <div></div>;
+};
+
 const Adapter = (props: Props) => {
   const palette = props.themeOptions;
   const provider = useMemo(() => props.getProvider(), [props.account]);
@@ -206,18 +156,18 @@ const Adapter = (props: Props) => {
     props.connect();
   }, []);
 
-  const theme = useMemo(() => {
-    const args = {
-      palette: {
-        primary: {
-          main: palette.primary,
-        },
-      },
-      dappStyles: palette,
-    };
+  // const theme = useMemo(() => {
+  //   const args = {
+  //     palette: {
+  //       primary: {
+  //         main: palette.primary,
+  //       },
+  //     },
+  //     dappStyles: palette,
+  //   };
 
-    return createTheme(args);
-  }, [palette]);
+  //   return createTheme(args);
+  // }, [palette]);
 
   const priceUsd = useCallback(
     async (address: string, token?: TokenData) => {
@@ -229,41 +179,37 @@ const Adapter = (props: Props) => {
   );
 
   const parsedTokens = useMemo((): TokenData[] => {
-    if (_.isEmpty(props.dappTokens)) return [];
-    const res = _.map(props.dappTokens, (token) => {
+    if (isEmpty(props.dappTokens)) return [];
+    const res = props.dappTokens.map((token: any) => {
       return parseToken(token);
     });
 
-    return _.compact(res);
+    return compact(res);
   }, [props.dappTokens]);
 
   return (
-    <ThemeProvider theme={theme}>
-      <Box className="adapter-wrapper">
-        <TwapAdapter
-          parsedTokens={parsedTokens}
-          connect={connect}
-          config={config}
-          uiPreferences={uiPreferences}
-          maxFeePerGas={gasPrice}
-          priorityFeePerGas={"0"}
-          translations={translations as Translations}
-          provider={provider}
-          account={props.account}
-          dappTokens={props.dappTokens}
-          onTxSubmitted={props.onTxSubmitted}
-          isLimitPanel={props.limit}
-          onSrcTokenSelected={props.onSrcTokenSelected}
-          onDstTokenSelected={props.onDstTokenSelected}
-        >
-          <GlobalStyles styles={globalStyles as any} />
-          <AdapterContextProvider value={props}>
-            {props.limit ? <LimitPanel /> : <TWAPPanel />}
-            <OrdersPanel />
-          </AdapterContextProvider>
-        </TwapAdapter>
-      </Box>
-    </ThemeProvider>
+    <div className="adapter-wrapper">
+      <TwapAdapter
+        parsedTokens={parsedTokens}
+        connect={connect}
+        config={config}
+        uiPreferences={uiPreferences}
+        maxFeePerGas={gasPrice}
+        priorityFeePerGas={"0"}
+        translations={translations as Translations}
+        provider={provider}
+        account={props.account}
+        dappTokens={props.dappTokens}
+        onTxSubmitted={props.onTxSubmitted}
+        isLimitPanel={props.limit}
+        onSrcTokenSelected={props.onSrcTokenSelected}
+        onDstTokenSelected={props.onDstTokenSelected}
+        Components={{ Tooltip }}
+      >
+        {/* <GlobalStyles styles={globalStyles as any} /> */}
+        <AdapterContextProvider value={props}>{props.limit ? <LimitPanel /> : <TWAPPanel />}</AdapterContextProvider>
+      </TwapAdapter>
+    </div>
   );
 };
 
@@ -287,14 +233,7 @@ const LimitPanel = () => {
           <TokenPanel />
         </TwapStyles.StyledColumnFlex>
       </TwapStyles.StyledColumnFlex>
-      <OrderSummary>
-        <TwapStyles.StyledColumnFlex>
-          <Components.OrderSummaryDetailsDeadline />
-          <Components.OrderSummaryDetailsOrderType />
-          <Components.OrderSummaryDetailsChunkSize />
-          <Components.OrderSummaryDetailsMinDstAmount />
-        </TwapStyles.StyledColumnFlex>
-      </OrderSummary>
+
       <PoweredBy />
     </div>
   );
@@ -312,7 +251,7 @@ const SubmitButton = () => {
   };
 
   return (
-    <StyledSubmitButton variant={loading || disabled ? "outlined" : "contained"} fullWidth size="large" onClick={_onClick}>
+    <StyledSubmitButton onClick={_onClick}>
       <div style={{ opacity: loading ? 0 : 1 }}>{text}</div>
       {loading && <Components.Base.Spinner />}
     </StyledSubmitButton>
@@ -332,9 +271,7 @@ const TWAPPanel = () => {
         <TradeInterval />
         <MaxDuration />
       </TwapStyles.StyledColumnFlex>
-      <OrderSummary>
-        <Components.OrderSummaryDetails />
-      </OrderSummary>
+
       <PoweredBy />
     </div>
   );
@@ -383,4 +320,4 @@ const TradeInterval = () => {
   );
 };
 
-export { Orders, TWAP };
+export { TWAP };

@@ -1,5 +1,4 @@
-import { GlobalStyles, styled, ThemeProvider, Typography, useTheme } from "@mui/material";
-import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, Orders, TwapContextUIPreferences, hooks } from "@orbs-network/twap-ui";
+import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, TwapContextUIPreferences, hooks, TooltipProps } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useCallback, useContext, useMemo } from "react";
@@ -11,9 +10,6 @@ import {
   StyledChangeTokensOrder,
   StyledInputAndSelect,
   StyledMaxButton,
-  StyledOrdersPanel,
-  StyledOrderSummaryModal,
-  StyledSubmitContainer,
   StyledTokenBalance,
   StyledTokenPanel,
   StyledTokenPanelBalanceAndMax,
@@ -28,6 +24,7 @@ import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
 import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
+import { styled } from "styled-components";
 
 const config = Configs.BaseSwap;
 
@@ -44,45 +41,8 @@ const Button = (props: any) => {
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
   switchVariant: "ios",
-  Button,
   usdSuffix: " USD",
   usdPrefix: `≈ `,
-};
-
-const OrderSummary = ({ children }: { children: ReactNode }) => {
-  const theme = useTheme();
-  return (
-    <StyledOrderSummaryModal theme={theme} title="Review order">
-      <TwapStyles.StyledColumnFlex gap={14}>
-        <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryLimitPrice />
-          </Components.Base.Card>
-          <Components.Base.Card>{children}</Components.Base.Card>
-          <Components.Base.Card>
-            <TwapStyles.StyledColumnFlex gap={10}>
-              <Components.DisclaimerText />
-            </TwapStyles.StyledColumnFlex>
-          </Components.Base.Card>
-        </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={12}>
-            <Components.AcceptDisclaimer />
-            <Components.OutputAddress />
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-        <StyledSubmitContainer>
-          <StyledSubmitButton />
-        </StyledSubmitContainer>
-      </TwapStyles.StyledColumnFlex>
-    </StyledOrderSummaryModal>
-  );
 };
 
 const MaxButton = () => {
@@ -105,13 +65,11 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
   // const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
 
-  const theme = useTheme();
-
   return (
     <>
-      <StyledTokenPanel theme={theme}>
+      <StyledTokenPanel>
         <StyledInputAndSelect>
-          <StyledTokenSelect theme={theme}>{/* <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} /> */}</StyledTokenSelect>
+          <StyledTokenSelect>{/* <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} /> */}</StyledTokenSelect>
           <StyledTokenPanelInput dstDecimalScale={3} isSrc={isSrcToken} />
         </StyledInputAndSelect>
         <StyledTokenPanelBottom>
@@ -124,6 +82,10 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       </StyledTokenPanel>
     </>
   );
+};
+
+const Tooltip = (props: TooltipProps) => {
+  return <div></div>;
 };
 
 const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string): TokenData | undefined => {
@@ -146,10 +108,6 @@ const AdapterContext = createContext({} as BaseSwapTWAPProps);
 const AdapterContextProvider = AdapterContext.Provider;
 
 const useAdapterContext = () => useContext(AdapterContext);
-
-const getTokenImageUrl = (token: any) => {
-  return token?.logoUri || `https://baseswap.fi/images/tokens/${token.address.toLowerCase()}.png`;
-};
 
 interface BaseSwapTWAPProps extends TWAPProps {
   connect: () => void;
@@ -179,13 +137,13 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       onSrcTokenSelected={props.onSrcTokenSelected}
       parsedTokens={[]}
       isLimitPanel={props.limit}
+      Components={{ Tooltip }}
     >
       <AdapterContextProvider value={props}>
-        <ThemeProvider theme={theme}>
+        {/* <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme)} />
           <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
-          <StyledOrdersPanel theme={theme} />
-        </ThemeProvider>
+        </ThemeProvider> */}
       </AdapterContextProvider>
     </TwapAdapter>
   );
@@ -203,9 +161,6 @@ const TWAPPanel = () => {
       <TradeInterval />
       <MaxDuration />
       <StyledSubmitButton isMain={true} />
-      <OrderSummary>
-        <Components.OrderSummaryDetails />
-      </OrderSummary>
       <Components.PoweredBy />
     </>
   );
@@ -224,14 +179,6 @@ const LimitPanel = () => {
         <TokenPanel />
       </StyledTopGrid>
       <StyledSubmitButton isMain={true} />
-      <OrderSummary>
-        <TwapStyles.StyledColumnFlex>
-          <Components.OrderSummaryDetailsDeadline />
-          <Components.OrderSummaryDetailsOrderType />
-          <Components.OrderSummaryDetailsChunkSize />
-          <Components.OrderSummaryDetailsMinDstAmount />
-        </TwapStyles.StyledColumnFlex>
-      </OrderSummary>
       <Components.PoweredBy />
     </>
   );
@@ -277,8 +224,7 @@ const TradeInterval = () => {
 };
 
 const memoizedTWAP = memo(TWAP);
-const memoizedOrders = memo(Orders);
-export { memoizedOrders as Orders, memoizedTWAP as TWAP };
+export { memoizedTWAP as TWAP };
 
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
   const { loading, onClick, disabled, text } = hooks.useSubmitOrderButton();

@@ -1,11 +1,11 @@
-import { Box, Button, ClickAwayListener, Fade, Menu, MenuItem, styled } from "@mui/material";
-import _ from "lodash";
+import styled from "styled-components";
+
 import React, { useCallback, useState } from "react";
 import { Status } from "@orbs-network/twap";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { useOrderHistoryContext } from "./context";
 import { StyledRowFlex, StyledText } from "../../styles";
-import { IconButton } from "../base";
+import { Button, ClickAwayListener } from "../base";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { useTwapContext } from "../../context/context";
 import { useOrderById } from "../../hooks";
@@ -30,7 +30,7 @@ export function OrderHistoryMenu() {
 
   return (
     <StyledContainer>
-      <StyledButton variant="outlined" onClick={onOpen}>
+      <StyledButton onClick={onOpen}>
         {selectedTab?.name} Orders <small>{`(${selectedTab?.amount})`}</small> <IoIosArrowDown />
       </StyledButton>
 
@@ -53,7 +53,7 @@ export function OrderHistoryMenu() {
   );
 }
 
-const StyledContainer = styled(Box)({
+const StyledContainer = styled("div")({
   position: "relative",
   zIndex: 10,
 });
@@ -62,7 +62,7 @@ const StyledMenu = styled("div")({
   position: "absolute",
 });
 
-const StyledButton = styled(Button)({
+const StyledButton = styled("button")({
   display: "flex",
   gap: 5,
   textTransform: "none",
@@ -106,7 +106,7 @@ export const OrderHistoryHeader = () => {
   );
 };
 
-const StyledClose = styled(IconButton)({
+const StyledClose = styled(Button)({
   position: "absolute",
   right: -10,
   top: -10,
@@ -129,7 +129,7 @@ const StyledHeader = styled(StyledRowFlex)({
   justifyContent: "flex-start",
   height: 40,
 });
-const StyledBack = styled(IconButton)({
+const StyledBack = styled(Button)({
   svg: {
     width: 18,
     height: 18,

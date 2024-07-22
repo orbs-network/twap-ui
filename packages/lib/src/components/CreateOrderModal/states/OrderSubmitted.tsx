@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { Link, SmallTokens } from "../Components";
 import { HiArrowCircleUp } from "@react-icons/all-files/hi/HiArrowCircleUp";

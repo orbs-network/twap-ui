@@ -1,7 +1,7 @@
-import { Box, createTheme, styled, Theme } from "@mui/material";
-import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
+import { Components, Styles } from "@orbs-network/twap-ui";
+import { DefaultTheme, styled } from "styled-components";
 const MOBILE = 500;
-export const lightTheme = createTheme({
+export const lightTheme = {
   palette: {
     mode: "light",
   },
@@ -9,19 +9,19 @@ export const lightTheme = createTheme({
   typography: {
     fontFamily: "inherit",
   },
-});
-const isDark = (theme: Theme) => theme.palette.mode === "dark";
+};
+const isDark = (theme: DefaultTheme) => theme.palette.mode === "dark";
 
-export const darkTheme = createTheme({
+export const darkTheme = {
   palette: {
     mode: "dark",
   },
   typography: {
     fontFamily: "inherit",
   },
-});
+};
 
-const baseStyles = (theme: Theme) => {
+const baseStyles = (theme: DefaultTheme) => {
   const darkMode = isDark(theme);
   return {
     mainBackground: "#111111",
@@ -42,7 +42,7 @@ const baseStyles = (theme: Theme) => {
   };
 };
 
-const buttonStyles = (theme: Theme) => {
+const buttonStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   return {
     background: styles.button,
@@ -114,7 +114,7 @@ export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({
   },
 });
 
-export const StyledTokenSelect = styled(Box)({
+export const StyledTokenSelect = styled("div")({
   ".twap-token-logo": {
     width: 40,
     height: 40,
@@ -167,73 +167,7 @@ export const StyledTradeSize = styled(Components.Base.Card)({});
 
 export const StyledPriceCard = styled(Components.Base.Card)({});
 
-export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    fontFamily: "Alegreya Sans",
-    ".twap-order": {
-      ".twap-order-expanded-row": {
-        flexDirection: "column",
-        alignItems: "flex-start",
-      },
-      ".twap-order-progress": {
-        height: 4,
-        background: `white!important`,
-        ".MuiLinearProgress-bar": {
-          height: 4,
-          background: `linear-gradient(to top, rgb(1, 84, 254), rgb(55, 192, 223))!important`,
-        },
-        "&:after": {
-          display: "none",
-        },
-      },
-    },
-    ".twap-cancel-order": {
-      ...buttonStyles(theme),
-      fontWeight: 400,
-      fontSize: 16,
-      padding: "5px 15px",
-    },
-    ".twap-market-price-section": {
-      flexDirection: "column",
-      alignItems: "flex-start",
-      ".twap-label": {
-        fontSize: 14,
-      },
-    },
-    color: styles.textColor,
-    ".twap-orders-header-tabs": {
-      border: "1px solid white",
-      borderRadius: 12,
-      ".Mui-selected": {
-        background: "linear-gradient(to top, rgb(1, 84, 254), rgb(55, 192, 223))",
-        color: styles.textColor,
-        borderRadius: 8,
-      },
-      ".MuiTabs-indicator": {
-        display: "none",
-      },
-      ".MuiTouchRipple-root": {
-        display: "none",
-      },
-    },
-  };
-});
-
-export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContainer)(({ theme }) => ({
-  ".twap-modal-content": {
-    a: {
-      color: baseStyles(theme).textColor,
-    },
-    ".twap-order-summary-details-item-right": {
-      p: {
-        fontSize: 14,
-      },
-    },
-  },
-}));
-
-export const configureStyles = (theme: Theme) => {
+export const configureStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   const darkMode = isDark(theme);
   return {

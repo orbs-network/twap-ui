@@ -1,28 +1,8 @@
 import { FC, ReactNode, useCallback, useMemo } from "react";
-import {
-  Balance,
-  Icon,
-  IconButton,
-  NumericInput,
-  Switch,
-  TimeSelector,
-  TokenName,
-  TokenPriceCompare,
-  Tooltip,
-  USD,
-  TokenLogo as Logo,
-  Label,
-  SwipeContainer,
-  Modal,
-  Message,
-  Button,
-  Portal,
-  Loader,
-  Spinner,
-} from "./base";
-import { styled, Tab, Tabs } from "@mui/material";
+import { Balance, Icon, NumericInput, Switch, TimeSelector, TokenName, TokenPriceCompare, USD, TokenLogo as Logo, Label, Message, Button, Portal } from "./base";
 import { useTwapContext } from "../context/context";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
+import styled from "styled-components";
 
 import {
   useFormatNumber,
@@ -47,7 +27,6 @@ import {
   useFeeOnTransferWarning,
   useLowPriceWarning,
   useShouldWrapOrUnwrapOnly,
-  useOpenOrders,
   useSrcAmount,
   useDeadline,
   usemElipsisAddress,
@@ -65,14 +44,12 @@ import {
   ChunksAmountLabel,
 } from "./Labels";
 import { LimitSwitchArgs, SwitchVariant, Translations, TWAPTokenSelectProps } from "../types";
-import { Typography } from "@mui/material";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
 import { Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { amountUi } from "../utils";
 import BN from "bignumber.js";
-import _ from "lodash";
 import { stateActions } from "../context/actions";
 import { useSwapModal } from "../hooks/useSwapModal";
 
@@ -80,7 +57,7 @@ export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpD
   const switchTokens = useSwitchTokens();
   return (
     <StyledRowFlex className={`${className} twap-change-tokens-order`}>
-      <IconButton onClick={switchTokens}>{children || <Icon icon={icon} />}</IconButton>
+      <Button onClick={switchTokens}>{children || <Icon icon={icon} />}</Button>
     </StyledRowFlex>
   );
 };
@@ -329,9 +306,10 @@ export function PoweredBy({ className = "" }: { className?: string }) {
 export function TotalChunks() {
   const chunks = useChunks();
   const formattedValue = useFormatNumber({ value: chunks });
+  const Tooltip = useTwapContext().Components.Tooltip;
 
   return (
-    <Tooltip text={formattedValue}>
+    <Tooltip tooltipText={formattedValue}>
       <StyledOneLineText>{formattedValue}</StyledOneLineText>
     </Tooltip>
   );
@@ -339,10 +317,12 @@ export function TotalChunks() {
 
 export function ChunksAmount() {
   const value = useSrcChunkAmountUi();
+  const Tooltip = useTwapContext().Components.Tooltip;
+
   const formattedValue = useFormatNumber({ value, decimalScale: 3 });
   if (!value) return null;
   return (
-    <Tooltip text={formattedValue}>
+    <Tooltip tooltipText={formattedValue}>
       <StyledOneLineText className="twap-chunks-amount">{formattedValue}</StyledOneLineText>
     </Tooltip>
   );
@@ -367,7 +347,11 @@ export const TradeIntervalAsText = () => {
 };
 
 export const MinDstAmountOut = () => {
-  const { dstToken } = useTwapContext();
+  const {
+    dstToken,
+    Components: { Tooltip },
+  } = useTwapContext();
+
   const dstMinAmountOut = useDstMinAmountOut();
   const dstMinAmountOutUi = useMemo(() => {
     if (BN(dstMinAmountOut || "0").eq(1)) return "";
@@ -378,7 +362,7 @@ export const MinDstAmountOut = () => {
   const formattedValue = useFormatNumber({ value: dstMinAmountOutUi });
 
   return (
-    <Tooltip text={formattedValue}>
+    <Tooltip tooltipText={formattedValue}>
       <StyledOneLineText>{formattedValue}</StyledOneLineText>
     </Tooltip>
   );
@@ -469,26 +453,6 @@ export const OrderSummaryDetails = ({ className = "", subtitle, translations }: 
   );
 };
 
-export function OrderSummarySwipeContainer({ children }: { children: ReactNode }) {
-  const { showConfirmation } = useTwapContext().state;
-  const { onClose } = useSwapModal();
-  return (
-    <SwipeContainer show={showConfirmation} close={onClose}>
-      {children}
-    </SwipeContainer>
-  );
-}
-
-export function OrderSummaryModalContainer({ children, className, title }: { children: ReactNode; className?: string; title?: string }) {
-  const { showConfirmation } = useTwapContext().state;
-  const { onClose } = useSwapModal();
-  return (
-    <Modal title={title} open={showConfirmation} className={className} onClose={onClose}>
-      {children}
-    </Modal>
-  );
-}
-
 export const OrderSummaryTokenDisplay = ({
   isSrc,
   usdSuffix,
@@ -532,7 +496,7 @@ export const AcceptDisclaimer = ({ variant, className, translations: _translatio
   return (
     <StyledRowFlex gap={5} justifyContent="space-between" className={`twap-disclaimer-switch ${className}`}>
       <Label>{translations.acceptDisclaimer}</Label>
-      <Switch variant={variant} value={disclaimerAccepted} onChange={handleDisclaimer} />
+      <Switch checked={disclaimerAccepted} onChange={handleDisclaimer} />
     </StyledRowFlex>
   );
 };
@@ -661,16 +625,19 @@ const StyledPoweredBy = styled(StyledRowFlex)({
 export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
   const value = useSrcChunkAmountUi();
   const formattedValue = useFormatNumber({ value });
-  const srcToken = useTwapContext().srcToken;
+  const {
+    srcToken,
+    Components: { Tooltip },
+  } = useTwapContext();
 
   const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
 
   if (!formattedValue || formattedValue === "0") {
-    return <Typography className="twap-trade-size-value">-</Typography>;
+    return <p className="twap-trade-size-value">-</p>;
   }
   return (
-    <Tooltip text={`${symbol ? `${formattedValueTooltip} ${srcToken?.symbol}` : formattedValueTooltip}`}>
-      <Typography className="twap-trade-size-value">{`${symbol ? `${formattedValue} ${srcToken?.symbol}` : formattedValue}`}</Typography>
+    <Tooltip tooltipText={`${symbol ? `${formattedValueTooltip} ${srcToken?.symbol}` : formattedValueTooltip}`}>
+      <p className="twap-trade-size-value">{`${symbol ? `${formattedValue} ${srcToken?.symbol}` : formattedValue}`}</p>
     </Tooltip>
   );
 };
@@ -819,10 +786,10 @@ export const LimitSwitch = ({ className = "", Component }: { className?: string;
 
   return (
     <StyledLimitSwitch className={className}>
-      <Tabs selectionFollowsFocus={true} onChange={handleChange} value={isMarketOrder ? "market" : "limit"}>
+      {/* <Tabs selectionFollowsFocus={true} onChange={handleChange} value={isMarketOrder ? "market" : "limit"}>
         <Tab value="market" label="Market" />
         <Tab value="limit" label="Limit" />
-      </Tabs>
+      </Tabs> */}
     </StyledLimitSwitch>
   );
 };
@@ -871,7 +838,7 @@ export const LimitPriceMessageContent = ({ className }: { className?: string }) 
   if (isMarketOrder || isWrapOrUnwrapOnly) return null;
 
   return (
-    <Portal id="twap-limit-price-message-container">
+    <Portal containerId="twap-limit-price-message-container">
       <StyledLimitPriceMessage
         className={`${className} twap-limit-price-message`}
         variant="warning"

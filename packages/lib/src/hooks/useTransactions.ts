@@ -278,7 +278,7 @@ const useOnSuccessCallback = () => {
     (order: { txHash: string; orderId: number }) => {
       const fillDelaySeconds = (fillDelayMillisUi - lib!.estimatedDelayBetweenChunksMillis()) / 1000;
 
-      onOrderCreated(order.orderId);
+      onOrderCreated();
       addOrder({
         srcTokenAddress: srcToken?.address,
         dstTokenAddress: dstToken?.address,

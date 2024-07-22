@@ -1,10 +1,9 @@
-import { Box, styled } from "@mui/system";
+import { styled } from "styled-components";
 import { TokenData } from "@orbs-network/twap";
-import { Loader } from ".";
+import { Button, Loader } from ".";
 import { useFormatNumber } from "../../hooks";
 import { StyledRowFlex, StyledText } from "../../styles";
 import Icon from "./Icon";
-import IconButton from "./IconButton";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
 import { FaExchangeAlt } from "@react-icons/all-files/fa/FaExchangeAlt";
@@ -19,8 +18,7 @@ export interface Props {
 }
 
 function TokenPriceCompare({ leftToken, rightToken, price, className = "", toggleInverted, loading }: Props) {
-  const _toggleInverted = (e: any) => {
-    e.stopPropagation();
+  const _toggleInverted = () => {
     toggleInverted();
   };
 
@@ -42,7 +40,9 @@ function TokenPriceCompare({ leftToken, rightToken, price, className = "", toggl
   return (
     <StyledContainer className={`twap-price-compare ${className}`}>
       <LeftToken token={leftToken} />
-      <IconButton onClick={_toggleInverted}>{<Icon icon={<FaExchangeAlt />} />}</IconButton>
+      <Button onClick={_toggleInverted}>
+        <FaExchangeAlt />
+      </Button>
       <RightToken price={price} token={rightToken} />
     </StyledContainer>
   );
@@ -75,7 +75,7 @@ export default TokenPriceCompare;
 TokenPriceCompare.LeftToken = LeftToken;
 TokenPriceCompare.RightToken = RightToken;
 
-const StyledContainer = styled(Box)({
+const StyledContainer = styled("div")({
   whiteSpace: "nowrap",
   overflow: "hidden",
   textOverflow: "ellipsis",

@@ -20,12 +20,8 @@
     "test": "eslint src"
   },
   "dependencies": {
-    "@defi.org/web3-candies": "^4.20",
-    "@mui/material": "5.x",
-    "@mui/system": "5.x",
     "@orbs-network/twap": "^1.18.x",
     "@orbs-network/twap-ui": "^1.1.5",
-    "lodash": "4.x",
     "web3": "1.x"
   },
   "peerDependencies": {

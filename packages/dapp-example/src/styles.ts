@@ -470,12 +470,10 @@ export const StyledPangolinOrdersLayout = styled("div")({
 });
 
 export const StyledCloseIcon = styled("button")({
-  position: "absolute",
   background: "transparent",
-  top: 30,
-  right: 30,
   border: "unset",
   cursor: "pointer",
+  marginLeft: "auto",
   "& .icon": {
     width: 20,
     height: 20,
@@ -492,6 +490,11 @@ export const StyledModalContent = styled(Box)({
   background: "black",
   display: "flex",
   flexDirection: "column",
+  maxWidth: 600,
+  position: "relative",
+  transform: "translate(-50%, -50%)",
+  top: "50%",
+  left: "50%",
 });
 
 export const StyledListToken = styled(Box)({

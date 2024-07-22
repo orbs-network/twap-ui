@@ -4,8 +4,8 @@ import { useOutAmount, useChangeNetwork, useNoLiquidity, useShouldUnwrap, useSrc
 import { query } from "./query";
 import BN from "bignumber.js";
 import { useUnwrapToken, useWrapOnly } from "./useTransactions";
-import _ from "lodash";
 import { useSwapModal } from "./useSwapModal";
+import { isNil } from "../utils";
 
 export const useConfirmationButton = () => {
   const { translations, lib, isWrongChain, dappProps, state, srcToken, dstToken, srcUsd, dstUsd } = useTwapContext();
@@ -31,7 +31,7 @@ export const useConfirmationButton = () => {
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
 
   const hasWarning = useMemo(() => {
-    return !_.every(warning, (value) => _.isNil(value));
+    return !Object.values(warning).every((value) => isNil(value));
   }, [warning]);
 
   const maker = lib?.maker;

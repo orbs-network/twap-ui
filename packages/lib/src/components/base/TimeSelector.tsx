@@ -1,5 +1,4 @@
-import { Button, Menu, MenuItem } from "@mui/material";
-import { Box, styled } from "@mui/system";
+import { styled } from "styled-components";
 import { useCallback, useState } from "react";
 import { useTwapContext } from "../../context/context";
 import { Duration, TimeResolution, Translations } from "../../types";
@@ -86,7 +85,7 @@ export const TimeSelectMenu = ({ onChange, resolution, className = "" }: { onCha
         {translations[findSelectedResolutionText(resolution)]}
         <IoIosArrowDown />
       </StyledSelected>
-      <Menu className="twap-time-selector-menu" anchorEl={anchorEl} open={open} onClose={handleClose} onBlurCapture={handleClose} hideBackdrop>
+      {/* <Menu className="twap-time-selector-menu" anchorEl={anchorEl} open={open} onClose={handleClose} onBlurCapture={handleClose} hideBackdrop>
         {timeArr.map((item) => {
           return (
             <StyledMenuItem className="twap-time-selector-menu-item" key={item.value} onClick={() => onSelect(item.value)}>
@@ -94,7 +93,7 @@ export const TimeSelectMenu = ({ onChange, resolution, className = "" }: { onCha
             </StyledMenuItem>
           );
         })}
-      </Menu>
+      </Menu> */}
     </>
   );
 };
@@ -114,11 +113,11 @@ const StyledInput = styled(NumericInput)({
 
 const StyledContainer = styled(StyledRowFlex)({});
 
-const StyledMenuItem = styled(MenuItem)({
-  fontSize: 14,
-});
+// const StyledMenuItem = styled(MenuItem)({
+//   fontSize: 14,
+// });
 
-const StyledSelected = styled(Button)({
+const StyledSelected = styled("button")({
   gap: 5,
   padding: "0px",
   fontSize: 14,

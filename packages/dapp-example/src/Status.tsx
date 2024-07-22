@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import _ from "lodash";
 import { network } from "@defi.org/web3-candies";
 import { Dapp } from "./Components";
-import moment from "moment";
 import BN from "bignumber.js";
 import { useSelectedDapp, useSelectedDappConfig } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
 import { useEffect, useState } from "react";
+import { get, size, sortBy } from "@orbs-network/twap-ui";
 
 const chainNames = {
   ftm: "fantom",
@@ -45,7 +44,7 @@ function useBackupTakersStatus() {
                 .div(1e3)
                 .toNumber(),
             ],
-            count: _.size(s.networks[(chainNames as any)[config!.chainName]].wallets.availableWallets),
+            count: size(s.networks[(chainNames as any)[config!.chainName]].wallets.availableWallets),
           };
         })
         .catch(() => ({ status: false, balances: [] as number[], count: 0 })),
@@ -63,10 +62,10 @@ function useOrbsL3TakersStatus(dapp?: Dapp) {
     ["useOrbsL3TakersStatus", config?.chainId],
     async () => {
       const orbsStatus = await (await fetch("https://status.orbs.network/json-full")).json();
-      const result = _.map(orbsStatus.CommitteeNodes, (node) => {
+      const result = orbsStatus.CommitteeNodes.map((node: any) => {
         try {
-          const nodeStatus = _.get(node, ["NodeServices", "vm-twap", "VMStatusJson"]);
-          const balance = BN(_.values(nodeStatus.takersWallets[(chainNames as any)[config!.chainName]])[0].balance)
+          const nodeStatus = get(node, ["NodeServices", "vm-twap", "VMStatusJson"]);
+          const balance = BN((Object.values(nodeStatus.takersWallets[(chainNames as any)[config!.chainName]])[0] as any).balance)
             .times(1e3)
             .integerValue()
             .div(1e3)
@@ -82,14 +81,15 @@ function useOrbsL3TakersStatus(dapp?: Dapp) {
           };
         }
       });
-      const online = _.sortBy(
-        _.filter(result, (r) => r.status),
-        (r) => r.balance
+      const online = sortBy(
+        result.filter((r: any) => r.status),
+        (r: any) => r.balance
       );
-      return { status: online.length >= 10, balances: online.map((n) => n.balance) };
+      return { status: online.length >= 10, balances: online.map((n: any) => n.balance) };
     },
     {
-      enabled: !!config,
+      // enabled: !!config,
+      enabled: false,
     }
   ).data;
 }

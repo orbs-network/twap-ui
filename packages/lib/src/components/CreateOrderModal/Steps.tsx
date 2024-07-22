@@ -1,7 +1,6 @@
-import _ from "lodash";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { FaCheck } from "@react-icons/all-files/fa/FaCheck";
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { Spinner } from "../base";
 import { Step, SwapStep } from "../../types";
 import { useMemo } from "react";

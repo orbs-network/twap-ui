@@ -19,7 +19,7 @@ export interface PancakeProps extends TWAPProps {
   TradePrice?: any;
   TradePriceToggle: FC<{ onClick: () => void; loading: boolean }>;
   children?: ReactNode;
-  Modal: FC<{ open: boolean; onClose?: () => void; children: ReactNode; title?: string; className?: string; disableBackdropClick?: boolean; header?: ReactNode }>;
+  Modal: FC<{ isOpen: boolean; onClose: () => void; children: ReactNode; className?: string }>;
   srcToken?: any;
   dstToken?: any;
 }

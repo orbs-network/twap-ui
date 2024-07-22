@@ -2,10 +2,9 @@ import moment from "moment";
 import { useMemo } from "react";
 import { useTwapContext } from "../context/context";
 import { HistoryOrder } from "../types";
-import { amountUiV2 } from "../utils";
+import { amountUiV2, flatMap, flatMapObject } from "../utils";
 import BN from "bignumber.js";
 import { query } from "./query";
-import _ from "lodash";
 
 export const useParseOrderUi = (order?: HistoryOrder) => {
   const lib = useTwapContext()?.lib;
@@ -53,7 +52,10 @@ export const useOrderById = (id?: number) => {
   const { data } = query.useOrdersHistory();
 
   const order = useMemo(() => {
-    return _.flatMap(data).find((it) => it.id === id);
+    if (!data) return;
+    return Object.keys(data)
+      .flatMap((key) => data[key as keyof typeof data])
+      .find((it: any) => it.id === id);
   }, [data, id]);
 
   return useParseOrderUi(order);

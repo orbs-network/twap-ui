@@ -4,8 +4,7 @@ import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
 import { SwapStep, TimeResolution } from "../types";
-import _ from "lodash";
-import { eqIgnoreCase, setWeb3Instance, switchMetaMaskNetwork, isNativeAddress, parsebn, maxUint256 } from "@defi.org/web3-candies";
+import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, parsebn, maxUint256 } from "@defi.org/web3-candies";
 import {
   MAX_DURATION_MILLIS,
   MAX_TRADE_INTERVAL,
@@ -48,7 +47,6 @@ export const useChangeNetwork = () => {
   const [loading, setLoading] = useState(false);
 
   const changeNetwork = async (onSuccess: () => void, onError: () => void) => {
-    setWeb3Instance(new Web3(_provider));
     try {
       await switchMetaMaskNetwork(config.chainId);
       onSuccess();
@@ -166,52 +164,6 @@ export const useSwitchTokens = () => {
     onSwitchTokens?.();
     resetLimit();
   }, [resetLimit, onSwitchTokens]);
-};
-
-export const useOrdersTabs = () => {
-  const { data: orders } = query.useOrdersHistory();
-
-  const _orders = orders || {};
-
-  const {
-    uiPreferences: { orderTabsToExclude = ["All"] },
-  } = useTwapContext();
-
-  return useMemo(() => {
-    const keys = ["All", ..._.keys(Status)];
-
-    const res = _.filter(keys, (it) => !orderTabsToExclude?.includes(it));
-    const mapped = _.map(res, (it) => {
-      if (it === "All") {
-        return { All: _.size(_.flatMap(_orders)) || 0 };
-      }
-      return { [it]: _.size((_orders as any)[it as Status]) || 0 };
-    });
-
-    return _.reduce(mapped, (acc, it) => ({ ...acc, ...it }), {});
-  }, [orders]);
-};
-
-export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
-  const [page, setPage] = useState(0);
-
-  const chunks = useMemo(() => {
-    return _.chunk(list, chunkSize);
-  }, [list, chunkSize]);
-
-  const pageList = useMemo(() => {
-    return chunks[page] || [];
-  }, [chunks, page]);
-
-  return {
-    list: pageList,
-    page: page + 1,
-    prevPage: () => setPage((p) => Math.max(p - 1, 0)),
-    nextPage: () => setPage((p) => Math.min(p + 1, chunks.length - 1)),
-    hasPrevPage: page > 0,
-    hasNextPage: page < chunks.length - 1,
-    text: `Page ${page + 1} of ${chunks.length}`,
-  };
 };
 
 export const useOutAmount = () => {
@@ -599,7 +551,7 @@ export const useMinDuration = () => {
 
   return useMemo(() => {
     const _millis = fillDelayUiMillis * 2 * chunks;
-    const resolution = _.find([TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes], (r) => r <= _millis) || TimeResolution.Minutes;
+    const resolution = [TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes].find((r) => r <= _millis) || TimeResolution.Minutes;
     const duration = { resolution, amount: Number(BN(_millis / resolution).toFixed(2)) };
 
     return {

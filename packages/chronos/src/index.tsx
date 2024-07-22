@@ -1,4 +1,3 @@
-import { GlobalStyles, MenuItem, ThemeProvider, Typography, useMediaQuery } from "@mui/material";
 import {
   Components,
   Translations,
@@ -8,20 +7,19 @@ import {
   TWAPTokenSelectProps,
   hooks,
   TWAPProps,
-  Orders,
   ORDERS_CONTAINER_ID,
   Styles,
+  size,
+  compact,
+  TooltipProps,
 } from "@orbs-network/twap-ui";
 import { memo, ReactNode, useCallback, useState, createContext, useContext, CSSProperties, useMemo, useEffect } from "react";
 import translations from "./i18n/en.json";
-import { Box } from "@mui/system";
 import {
-  configureStyles,
   StyledColumnFlex,
   StyledPoweredByOrbs,
   StyledSubmit,
   StyledTopColumnFlex,
-  StyledTradeSize,
   StyledChangeOrder,
   StyledPanelRight,
   StyledPercentSelect,
@@ -32,46 +30,30 @@ import {
   StyledUSD,
   StyledBigBorder,
   StyledTimeSelectCard,
-  StyledCardColumn,
   StyledChunksSlider,
-  StyledOrderSummaryModal,
-  StyledDisclaimerText,
-  StyledStyledDisclaimerTextCard,
-  StyledOrderSummaryModalHeader,
-  StyledRecipient,
-  StyledOrderSummaryModalPadding,
-  StyledDisclaimer,
   StyledOrders,
-  StyledOrdersList,
-  StyledOrdersTabs,
   StyledOrdersHeader,
   lightTheme,
   darkTheme,
   StyledOrderHeaderRight,
   StyledDstLogo,
-  StyledSellTokenText,
   StyledSrcLogo,
   StyledTokenSummaryDisplay,
   StyledTokenSummaryLogos,
-  StyledBuyTokenText,
   StyledMobileTabsMenuButton,
-  StyledMobileTabsMenu,
   StyledLimitSwitch,
 } from "./styles";
 import { Configs, Status, TokenData } from "@orbs-network/twap";
 import { isNativeAddress } from "@defi.org/web3-candies";
 import Web3 from "web3";
 import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
-import _ from "lodash";
-import BN from "bignumber.js";
 import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";
-import { IoMdArrowBack } from "@react-icons/all-files/io/IoMdArrowBack";
-import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
+import { ThemeProvider } from "styled-components";
 
 const useMobile = () => {
-  return useMediaQuery("(max-width:700px)");
+  return hooks.useWindowWidth() < 768;
 };
 
 interface ChronosTWAPProps extends TWAPProps {
@@ -123,11 +105,11 @@ const useParsedTokens = (props: TWAPProps): TokenData[] => {
   const { getTokenLogoURL, dappTokens } = useAdapterContext();
 
   return useMemo(() => {
-    if (!_.size(props.dappTokens) || !config) {
+    if (!size(props.dappTokens) || !config) {
       return [];
     }
 
-    const tokens = _.compact(_.map(dappTokens, (rawToken) => parseToken(getTokenLogoURL, rawToken)));
+    const tokens = compact<TokenData>(dappTokens.map((rawToken) => parseToken(getTokenLogoURL, rawToken)));
 
     return tokens;
   }, [props.dappTokens, getTokenLogoURL]);
@@ -213,67 +195,11 @@ const SrcTokenPercentSelector = () => {
         const text = it === 1 ? translations.max : `${it * 100}%`;
         return (
           <button key={it} onClick={() => onClick(it)}>
-            <Typography>{text}</Typography>
+            {/* <Typography>{text}</Typography> */}
           </button>
         );
       })}
     </StyledPercentSelect>
-  );
-};
-
-const OrderSummary = ({ children }: { children: ReactNode }) => {
-  const { onClose } = hooks.useSwapModal();
-
-  const { limit } = useAdapterContext();
-
-  return (
-    <StyledOrderSummaryModal className="twap-ui-chronos-modal">
-      <StyledOrderSummaryModalPadding>
-        <StyledOrderSummaryModalHeader>
-          <Components.Base.IconButton onClick={onClose} icon={<IoMdArrowBack />} />
-
-          <Typography>Confirm {limit ? "Limit" : "TWAP"} Operation</Typography>
-        </StyledOrderSummaryModalHeader>
-      </StyledOrderSummaryModalPadding>
-
-      <TwapStyles.StyledColumnFlex gap={40}>
-        <StyledOrderSummaryModalPadding>
-          <TwapStyles.StyledColumnFlex gap={40}>
-            <TokenSummary />
-            <TwapStyles.StyledColumnFlex gap={20}>
-              {children}
-              <StyledStyledDisclaimerTextCard>
-                <StyledDisclaimerText />
-              </StyledStyledDisclaimerTextCard>
-            </TwapStyles.StyledColumnFlex>
-          </TwapStyles.StyledColumnFlex>
-        </StyledOrderSummaryModalPadding>
-        <TwapStyles.StyledColumnFlex gap={12}>
-          <Recipient />
-          <StyledOrderSummaryModalPadding>
-            <StyledDisclaimer />
-          </StyledOrderSummaryModalPadding>
-        </TwapStyles.StyledColumnFlex>
-        <StyledOrderSummaryModalPadding>
-          <StyledSubmit />
-        </StyledOrderSummaryModalPadding>
-      </TwapStyles.StyledColumnFlex>
-    </StyledOrderSummaryModal>
-  );
-};
-
-const Recipient = () => {
-  const { lib, translations } = useTwapContext();
-
-  return (
-    <StyledRecipient>
-      <TwapStyles.StyledRowFlex justifyContent="space-between" className="twap-recipient-flex">
-        <Components.Base.Label>{translations.outputWillBeSentTo}</Components.Base.Label>
-        <Components.Base.Tooltip text={lib?.maker}>
-          <Typography>{makeElipsisAddress(lib?.maker)}</Typography>
-        </Components.Base.Tooltip>
-      </TwapStyles.StyledRowFlex>
-    </StyledRecipient>
   );
 };
 
@@ -297,18 +223,18 @@ const TokenSummary = () => {
           <StyledDstLogo />
         </StyledTokenSummaryLogos>
         <TwapStyles.StyledColumnFlex style={{ gap: 1, width: "calc(100%  - 58px)", paddingLeft: 20 }}>
-          <Components.Base.Tooltip text={`Buy ${dstAmountFormattedTooltip} ${dstToken?.symbol}`}>
+          {/* <Components.Base.Tooltip text={`Buy ${dstAmountFormattedTooltip} ${dstToken?.symbol}`}>
             <StyledBuyTokenText>
               Buy {dstAmountFormatted} {dstToken?.symbol}
             </StyledBuyTokenText>
-          </Components.Base.Tooltip>
+          </Components.Base.Tooltip> */}
 
           <TwapStyles.StyledRowFlex justifyContent="flex-start">
-            <Components.Base.Tooltip text={`Sell ${srcAmountFormattedTooltip} ${srcToken?.symbol}`}>
+            {/* <Components.Base.Tooltip text={`Sell ${srcAmountFormattedTooltip} ${srcToken?.symbol}`}>
               <StyledSellTokenText>
                 Sell {srcAmountFormatted} {srcToken?.symbol}
               </StyledSellTokenText>
-            </Components.Base.Tooltip>
+            </Components.Base.Tooltip> */}
             {!mobile && <Components.OrderSummaryPriceCompare />}
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
@@ -367,6 +293,10 @@ const useProvider = (props: ChronosTWAPProps) => {
 //   return trade?.outAmount;
 // };
 
+const Tooltip = (props: TooltipProps) => {
+  return <div>{props.children}</div>;
+};
+
 const Wrapped = (props: ChronosTWAPProps) => {
   const provider = useProvider(props);
   const theme = useMemo(() => {
@@ -376,7 +306,7 @@ const Wrapped = (props: ChronosTWAPProps) => {
   const parsedTokens = useParsedTokens(props);
 
   return (
-    <Box className="adapter-wrapper">
+    <div className="adapter-wrapper">
       <TwapAdapter
         connect={props.connect}
         config={config}
@@ -384,6 +314,9 @@ const Wrapped = (props: ChronosTWAPProps) => {
         priorityFeePerGas={props.priorityFeePerGas}
         translations={translations as Translations}
         provider={provider}
+        Components={{
+          Tooltip,
+        }}
         account={props.account}
         dappTokens={props.dappTokens}
         isLimitPanel={props.limit}
@@ -393,16 +326,12 @@ const Wrapped = (props: ChronosTWAPProps) => {
         parsedTokens={parsedTokens}
       >
         <ThemeProvider theme={theme}>
-          <GlobalStyles styles={configureStyles(theme) as any} />
+          {/* <GlobalStyles styles={configureStyles(theme) as any} /> */}
           <Listener />
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
-          <SubmitOrderModal />
-          <Components.Base.Portal id={ORDERS_CONTAINER_ID}>
-            <OrdersLayout />
-          </Components.Base.Portal>
         </ThemeProvider>
       </TwapAdapter>
-    </Box>
+    </div>
   );
 };
 
@@ -427,12 +356,12 @@ const LimitPrice = () => {
   return (
     <>
       <TokenSelect onClose={() => setIsOpen(false)} open={isOpen} isSrcToken={isSrc} />
-      <Box>
-        <Box>
+      <div>
+        <div>
           <Components.Labels.LimitPriceLabel />
           <StyledLimitSwitch />
-        </Box>
-        <Box>
+        </div>
+        <div>
           <Components.LimitPanel
             onSrcSelect={onSrcSelect}
             onDstSelect={onDstSelect}
@@ -440,8 +369,8 @@ const LimitPrice = () => {
               percentButtonsGap: "5px",
             }}
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
     </>
   );
 };
@@ -455,7 +384,6 @@ const TWAP = (props: ChronosTWAPProps) => {
 };
 
 const MobileTabs = () => {
-  const tabs = hooks.useOrdersTabs();
   const setTab = hooks.stateActions.useSelectOrdersTab();
   const tab = useTwapContext().state.selectedOrdersTab;
 
@@ -478,18 +406,8 @@ const MobileTabs = () => {
       <StyledMobileTabsMenuButton aria-controls={open ? "basic-menu" : undefined} aria-expanded={open ? "true" : undefined} onClick={handleClick}>
         <TwapStyles.StyledRowFlex gap={5}>
           <VscSettings />
-          <Typography> {_.keys(tabs)[tab]}</Typography>
         </TwapStyles.StyledRowFlex>
       </StyledMobileTabsMenuButton>
-      <StyledMobileTabsMenu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        {_.keys(tabs).map((key, index) => {
-          return (
-            <MenuItem key={key} onClick={() => onSelected(index)}>
-              {key}
-            </MenuItem>
-          );
-        })}
-      </StyledMobileTabsMenu>
     </>
   );
 };
@@ -502,11 +420,9 @@ const OrdersLayout = () => {
       <StyledOrdersHeader className="twap-chronos-orders-header">
         <Components.Labels.OrdersLabel />
         <StyledOrderHeaderRight className="twap-chronos-orders-header-right">
-          {!mobile ? <StyledOrdersTabs /> : <MobileTabs />}
           <Components.Base.Odnp />
         </StyledOrderHeaderRight>
       </StyledOrdersHeader>
-      <StyledOrdersList />
     </StyledOrders>
   );
 };
@@ -534,16 +450,6 @@ const TWAPPanel = () => {
   );
 };
 
-const SubmitOrderModal = () => {
-  const { isOpen, onClose } = hooks.useSwapModal();
-
-  return (
-    <Components.Base.Modal open={isOpen} onClose={() => onClose()}>
-      <Components.CreateOrderModal />
-    </Components.Base.Modal>
-  );
-};
-
 const LimitPanel = () => {
   return (
     <div className="twap-container">
@@ -557,14 +463,7 @@ const LimitPanel = () => {
           <StyledSubmit isMain />
         </StyledColumnFlex>
       </StyledColumnFlex>
-      <OrderSummary>
-        <TwapStyles.StyledColumnFlex>
-          <Components.OrderSummaryDetailsDeadline />
-          <Components.OrderSummaryDetailsOrderType />
-          <Components.OrderSummaryDetailsChunkSize />
-          <Components.OrderSummaryDetailsMinDstAmount />
-        </TwapStyles.StyledColumnFlex>
-      </OrderSummary>
+
       <StyledPoweredByOrbs />
     </div>
   );
@@ -573,15 +472,15 @@ const LimitPanel = () => {
 const TotalTrades = () => {
   return (
     <Components.ChunkSelector>
-      <Box>
-        <Box>
+      <div>
+        <div>
           <Components.Labels.TotalTradesLabel />
-        </Box>
+        </div>
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
           <Components.ChunkSelector.Input />
           <Components.ChunkSelector.Slider />
         </Styles.StyledRowFlex>
-      </Box>
+      </div>
     </Components.ChunkSelector>
   );
 };
@@ -604,15 +503,15 @@ const MaxDuration = () => {
 const TradeIntervalSelect = () => {
   return (
     <Components.TradeInterval>
-      <Box>
-        <Box>
+      <div>
+        <div>
           <Components.TradeInterval.Label />
-        </Box>
+        </div>
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
           <Components.TradeInterval.Input />
           <Components.TradeInterval.Resolution />
         </Styles.StyledRowFlex>
-      </Box>
+      </div>
     </Components.TradeInterval>
   );
 };
@@ -636,4 +535,4 @@ const ChunksSlider = () => {
   );
 };
 
-export { Orders, TWAP };
+export { TWAP };

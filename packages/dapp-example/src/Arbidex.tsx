@@ -1,14 +1,14 @@
 import { StyledArbidexSwap, StyledArbidexBox, StyledArbidexLayout, StyledModalContent } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-arbidex";
+import { TWAP } from "@orbs-network/twap-ui-arbidex";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
-import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s, isNativeAddress } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useContext, useState } from "react";
+import { mapKeys } from "@orbs-network/twap-ui";
 
 const config = Configs.Arbidex;
 
@@ -27,7 +27,7 @@ const useDappTokens = () => {
     url: `https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json`,
     parse: parseListToken,
     baseAssets: erc20s.arb,
-    modifyList: (_tokens: any) => ({ ..._.mapKeys(_tokens, (t) => t.address) }),
+    modifyList: (_tokens: any) => ({ ...mapKeys(_tokens, (t: any) => t.address) }),
   });
 };
 interface TokenSelectModalProps {
@@ -42,7 +42,7 @@ const getTokenLogoURL = (address: string) => {
 };
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return rawList.map((rawToken: any) => {
     return {
       token: {
         address: rawToken.address ?? rawToken.tokenInfo?.address,
@@ -145,9 +145,7 @@ const DappComponent = () => {
             <TWAPComponent limit={selected === SelectorOption.LIMIT} />
           </StyledArbidexBox>
 
-          <StyledArbidexBox>
-            <Orders />
-          </StyledArbidexBox>
+          <StyledArbidexBox></StyledArbidexBox>
         </StyledArbidexLayout>
       </StyledArbidexSwap>
     </ContextWrapper>

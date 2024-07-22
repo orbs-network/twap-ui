@@ -1,13 +1,14 @@
 import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
-import { TWAP } from "@orbs-network/twap-ui-sushiswap";
+import { SushiModalProps, TWAP } from "@orbs-network/twap-ui-sushiswap";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
-import { Dapp, TokensList, UISelector } from "./Components";
+import { Dapp, Popup, TokensList, UISelector } from "./Components";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
-import _ from "lodash";
+import MuiTooltip from "@mui/material/Tooltip";
+
 import { SelectorOption, TokenListItem } from "./types";
-import { Components, getConfig } from "@orbs-network/twap-ui";
+import { Components, getConfig, mapCollection, size, TooltipProps } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
 import { baseSwapTokens } from "./BaseSwap";
 
@@ -21,7 +22,7 @@ export const useDappTokens = () => {
   const parseListToken = useCallback(
     (tokenList?: any) => {
       if (isBase) {
-        return _.map(baseSwapTokens, (it, key) => {
+        return mapCollection(baseSwapTokens, (it, key) => {
           return {
             address: key,
             decimals: it.decimals,
@@ -71,7 +72,8 @@ export const useDappTokens = () => {
 };
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+
+  return mapCollection(rawList, (rawToken: any) => {
     return {
       token: {
         address: rawToken.address,
@@ -88,7 +90,7 @@ const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNod
   const { data: baseAssets } = useDappTokens();
   const [open, setOpen] = useState(false);
 
-  const tokensListSize = _.size(baseAssets);
+  const tokensListSize = size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
   const _onSelect = (value: any) => {
@@ -98,11 +100,11 @@ const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNod
 
   return (
     <>
-      <Components.Base.Modal open={open} onClose={() => setOpen(false)}>
+      <Popup isOpen={open} onClose={() => setOpen(false)}>
         <StyledModalContent>
           <TokensList tokens={parsedList} onClick={_onSelect} />
         </StyledModalContent>
-      </Components.Base.Modal>
+      </Popup>
       <div onClick={() => setOpen(true)}>{children}</div>
     </>
   );
@@ -115,6 +117,14 @@ const getTokenLogo = (token: any) => {
 const useUSD = (address?: string) => {
   const res = usePriceUSD(address);
   return res?.toString();
+};
+
+const Tooltip = (props: TooltipProps) => {
+  return (
+    <MuiTooltip title={props.tooltipText} arrow>
+      <span>{props.children}</span>
+    </MuiTooltip>
+  );
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -174,15 +184,19 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       onSrcTokenSelected={(it: any) => setFromToken(it)}
       onDstTokenSelected={(it: any) => setToToken(it)}
       onSwitchTokens={onSwitchTokens}
+      Components={{ Tooltip }}
     />
   );
 };
 
-const SushiModal = ({ children, title, header, open, onClose }: { open: boolean; onClose: () => void; title?: string; children: ReactNode; header?: ReactNode }) => {
+const SushiModal = (props: SushiModalProps) => {
   return (
-    <Components.Base.Modal header={header} hideHeader={!title && !header} title={title} open={open} onClose={onClose}>
-      {children}
-    </Components.Base.Modal>
+    <Popup isOpen={props.open} onClose={props.onClose}>
+      <Popup.Content>
+        <Popup.Header title={props.title} Component={props.header} onClose={props.onClose} />
+        <Popup.Body>{props.children}</Popup.Body>
+      </Popup.Content>
+    </Popup>
   );
 };
 

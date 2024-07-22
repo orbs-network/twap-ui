@@ -1,4 +1,5 @@
-import { Fade, styled } from "@mui/material";
+import styled from "styled-components";
+
 import { useTwapContext } from "../../context/context";
 import { useCancelOrder } from "../../hooks/useTransactions";
 import { StyledColumnFlex, StyledText } from "../../styles";
@@ -9,9 +10,6 @@ import { useFormatNumberV2 } from "../../hooks/hooks";
 import { useOrderById } from "../../hooks/orders";
 import { OrderUI, Token } from "../../types";
 import { OrderDisplay } from "../OrderDisplay";
-import MuiAccordion from "@mui/material/Accordion";
-import MuiAccordionSummary from "@mui/material/AccordionSummary";
-import MuiAccordionDetails from "@mui/material/AccordionDetails";
 import { ReactNode, useEffect, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
@@ -30,39 +28,37 @@ export const SelectedOrder = ({ selectedOrderId }: { selectedOrderId?: number })
   if (!order) return null;
 
   return (
-    <Fade in={true}>
-      <Container className="twap-orders-selected-order">
-        <OrderDisplay>
-          <OrderDisplay.Tokens>
-            <OrderDisplay.SrcToken token={order.srcToken} />
-            <OrderDisplay.DstToken token={order.dstToken} />
-          </OrderDisplay.Tokens>
-          <Separator />
-          <StyledColumnFlex>
-            <AccordionContainer title="Execution summary" handleChange={() => handleChange("panel1")} expanded={expanded === "panel1"}>
-              <ExcecutionSummary order={order} />
-            </AccordionContainer>
-            <AccordionContainer title="Order info" expanded={expanded === "panel2"} handleChange={() => handleChange("panel2")}>
-              <OrderInfo order={order} />
-            </AccordionContainer>
-          </StyledColumnFlex>
+    <Container className="twap-orders-selected-order">
+      <OrderDisplay>
+        <OrderDisplay.Tokens>
+          <OrderDisplay.SrcToken token={order.srcToken} />
+          <OrderDisplay.DstToken token={order.dstToken} />
+        </OrderDisplay.Tokens>
+        <Separator />
+        <StyledColumnFlex>
+          <AccordionContainer title="Execution summary" handleChange={() => handleChange("panel1")} expanded={expanded === "panel1"}>
+            <ExcecutionSummary order={order} />
+          </AccordionContainer>
+          <AccordionContainer title="Order info" expanded={expanded === "panel2"} handleChange={() => handleChange("panel2")}>
+            <OrderInfo order={order} />
+          </AccordionContainer>
+        </StyledColumnFlex>
 
-          <CancelOrderButton order={order} />
-        </OrderDisplay>
-      </Container>
-    </Fade>
+        <CancelOrderButton order={order} />
+      </OrderDisplay>
+    </Container>
   );
 };
 
 const AccordionContainer = ({ expanded, handleChange, children, title }: { expanded: boolean; handleChange: () => void; children: ReactNode; title: string }) => {
   return (
     <OrderDisplay.DetailsContainer>
-      <StyledAccordion expanded={expanded} onChange={handleChange}>
-        <MuiAccordionSummary>
+      <StyledAccordion onChange={handleChange}>
+        {/* <MuiAccordionSummary>
           <StyledText>{title}</StyledText>
           <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
         </MuiAccordionSummary>
-        <MuiAccordionDetails>{children}</MuiAccordionDetails>
+        <MuiAccordionDetails>{children}</MuiAccordionDetails> */}
       </StyledAccordion>
     </OrderDisplay.DetailsContainer>
   );
@@ -220,7 +216,7 @@ const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?
   );
 };
 
-const StyledAccordion = styled(MuiAccordion)({
+const StyledAccordion = styled("div")({
   backgroundColor: "transparent",
   backgroundImage: "unset",
   boxShadow: "unset",

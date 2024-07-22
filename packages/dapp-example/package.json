@@ -9,7 +9,9 @@
     "build": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts build && cp build/index.html build/404.html"
   },
   "dependencies": {
-    "@mui/material": "^5.13.2",
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^5.16.4",
     "@orbs-network/twap-ui": "^1.1.5",
     "@orbs-network/twap-ui-arbidex": "^1.1.5",
     "@orbs-network/twap-ui-baseswap": "^1.1.5",
@@ -39,6 +41,7 @@
     "react-router-dom": "6.x",
     "react-virtualized-auto-sizer": "^1.0.7",
     "react-window": "^1.8.8"
+    
   },
   "browserslist": {
     "production": [

@@ -1,6 +1,5 @@
-import { Box, Fade } from "@mui/material";
-import { styled } from "@mui/system";
-import Loader from "./Loader";
+import styled from "styled-components";
+
 import { NumericFormat } from "react-number-format";
 import { useTwapContext } from "../../context/context";
 import { maxUint256 } from "@defi.org/web3-candies";
@@ -26,7 +25,8 @@ export interface Props {
 const InputLoader = () => {
   const { inputLoader } = useTwapContext().uiPreferences;
 
-  return inputLoader ? inputLoader : <StyledLoader className="twap-input-loader" width="75%" height="60%" />;
+  return null;
+  // return inputLoader ? inputLoader : <StyledLoader className="twap-input-loader" width="75%" height="60%" />;
 };
 
 function NumericInput({
@@ -53,55 +53,54 @@ function NumericInput({
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>
       {loading && <InputLoader />}
-      <Fade in={input?.showOnLoading ? true : !loading} timeout={0}>
-        <StyledFlex style={{ height: "100%" }}>
-          <NumericFormat
-            allowNegative={false}
-            disabled={disabled}
-            decimalScale={decimalScale}
-            onBlur={onBlur}
-            onFocus={onFocus}
-            placeholder={_placeholder}
-            isAllowed={(values) => {
-              const { floatValue = 0 } = values;
-              return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
-            }}
-            prefix={prefix ? `${prefix} ` : ""}
-            value={disabled && value === "0" ? "" : inputValue}
-            thousandSeparator={disableThousandSeparator ? undefined : ","}
-            decimalSeparator="."
-            customInput={StyledInput}
-            type="text"
-            min={minAmount}
-            onValueChange={(values, _sourceInfo) => {
-              if (_sourceInfo.source !== "event") {
-                return;
-              }
 
-              onChange(values.value === "." ? "0." : values.value);
-            }}
-          />
-        </StyledFlex>
-      </Fade>
+      <StyledFlex style={{ height: "100%" }}>
+        <NumericFormat
+          allowNegative={false}
+          disabled={disabled}
+          decimalScale={decimalScale}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          placeholder={_placeholder}
+          isAllowed={(values) => {
+            const { floatValue = 0 } = values;
+            return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
+          }}
+          prefix={prefix ? `${prefix} ` : ""}
+          value={disabled && value === "0" ? "" : inputValue}
+          thousandSeparator={disableThousandSeparator ? undefined : ","}
+          decimalSeparator="."
+          customInput={StyledInput}
+          type="text"
+          min={minAmount}
+          onValueChange={(values, _sourceInfo) => {
+            if (_sourceInfo.source !== "event") {
+              return;
+            }
+
+            onChange(values.value === "." ? "0." : values.value);
+          }}
+        />
+      </StyledFlex>
     </StyledContainer>
   );
 }
 
 export default NumericInput;
 
-const StyledLoader = styled(Loader)({
-  position: "absolute",
-  top: "50%",
-  transform: "translate(0, -50%)",
-});
+// const StyledLoader = styled(Loader)({
+//   position: "absolute",
+//   top: "50%",
+//   transform: "translate(0, -50%)",
+// });
 
-const StyledContainer = styled(Box)({
+const StyledContainer = styled("div")({
   flex: 1,
   height: "100%",
   position: "relative",
 });
 
-const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
+const StyledInput = styled("input")<{ disabled: boolean }>(({ disabled }) => ({
   pointerEvents: disabled ? "none" : "unset",
   height: "100%",
   width: "100%",
@@ -112,7 +111,7 @@ const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   fontWeight: 500,
 }));
 
-const StyledFlex = styled(Box)({
+const StyledFlex = styled("div")({
   display: "flex",
   alignItems: "center",
 });

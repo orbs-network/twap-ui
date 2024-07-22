@@ -1,21 +1,21 @@
-import { Box, Button, createTheme, styled, Theme, Typography } from "@mui/material";
-import { Components, OrdersContainer, Styles } from "@orbs-network/twap-ui";
+import { DefaultTheme, styled } from "styled-components";
+import { Components, Styles } from "@orbs-network/twap-ui";
 import { CSSProperties, ReactNode } from "react";
-const isDarkMode = (theme: Theme) => theme.palette.mode === "dark";
+const isDarkMode = (theme: DefaultTheme) => theme.palette.mode === "dark";
 
-export const darkTheme = createTheme({
+export const darkTheme = {
   palette: {
     mode: "dark",
   },
-});
+};
 
-export const lightTheme = createTheme({
+export const lightTheme = {
   palette: {
     mode: "light",
   },
-});
+};
 
-export const baseStyles = (theme: Theme) => {
+export const baseStyles = (theme: DefaultTheme) => {
   const darkMode = isDarkMode(theme);
   return {
     primaryColor: "#1fc7d4",
@@ -32,7 +32,7 @@ export const baseStyles = (theme: Theme) => {
   };
 };
 
-const getTootlipStyles = (theme: Theme) => {
+const getTootlipStyles = (theme: DefaultTheme) => {
   const darkTheme = isDarkMode(theme);
 
   return {
@@ -49,7 +49,7 @@ const getTootlipStyles = (theme: Theme) => {
   };
 };
 
-const getButtonStyles = (theme: Theme) => {
+const getButtonStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   return {
     fontWeight: 600,
@@ -69,7 +69,7 @@ const getButtonStyles = (theme: Theme) => {
   };
 };
 
-export const StyledCardBody = styled(Box)(({ theme }) => {
+export const StyledCardBody = styled("div")(({ theme }) => {
   const styles = baseStyles(theme);
 
   return {
@@ -102,7 +102,7 @@ export const StyledPoweredBy = styled(Components.PoweredBy)(({ theme }) => {
   };
 });
 
-export const configureStyles = (theme: Theme) => {
+export const configureStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
 
   const darkMode = isDarkMode(theme);
@@ -386,7 +386,7 @@ export const StyledBalance = styled(Components.TokenBalance)(({ theme }) => {
 
 export const StyledUSD = styled(Components.TokenUSD)({});
 
-export const StyledEmptyUSD = styled(Box)({
+export const StyledEmptyUSD = styled("div")({
   height: 18,
   opacity: 0,
 });
@@ -687,12 +687,12 @@ export const StyledTradeSizeRight = styled(Styles.StyledColumnFlex)({
   alignItems: "center",
 });
 
-export const StyledOrdersMenuButton = styled(Button)(({ theme }) => ({
+export const StyledOrdersMenuButton = styled(Components.Base.Button)(({ theme }) => ({
   width: "auto!important",
   background: baseStyles(theme).darkMode ? "#353547" : "",
 }));
 
-export const StyledOrdersHeader = styled(Box)(({ theme }) => {
+export const StyledOrdersHeader = styled("div")(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     display: "flex",
@@ -704,7 +704,7 @@ export const StyledOrdersHeader = styled(Box)(({ theme }) => {
   };
 });
 
-export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, theme }) => {
+export const StyledOrdersTab = styled("div")<{ selected: number }>(({ selected, theme }) => {
   const styles = baseStyles(theme);
   const color = styles.darkMode ? "#b8add2" : "#7a6eaa";
   const selectedColor = styles.darkMode ? "#f4eeff" : "#280d5f";
@@ -728,7 +728,7 @@ export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, th
   };
 });
 
-export const StyledOrdersTabs = styled(Box)({
+export const StyledOrdersTabs = styled("div")({
   display: "flex",
   alignItems: "center",
   width: "100%",
@@ -791,7 +791,7 @@ export const StyledSwapModalContent = styled(Styles.StyledColumnFlex)<{ style: C
   overflowY: "auto",
   ...style,
 }));
-export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {
+export const StyledModalHeaderTitle = styled("p")(({ theme }) => {
   const darkMode = baseStyles(theme).darkMode;
   return {
     fontSize: 20,

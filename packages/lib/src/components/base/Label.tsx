@@ -1,11 +1,7 @@
-import { styled } from "@mui/system";
 import { ReactElement, ReactNode } from "react";
-import Tooltip from "./Tooltip";
-
+import styled from "styled-components";
 import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQuestionCircle";
-
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
-import { Typography } from "@mui/material";
 import { useTwapContext } from "../../context/context";
 
 interface Props {
@@ -18,7 +14,10 @@ interface Props {
 }
 
 function Label({ children, tooltipText, className = "", fontSize, placement = "right", subtitle }: Props) {
-  const uiPreferences = useTwapContext()?.uiPreferences;
+  const {
+    uiPreferences,
+    Components: { Tooltip },
+  } = useTwapContext();
 
   const InfoIcon = uiPreferences?.infoIcon || <AiOutlineQuestionCircle />;
 
@@ -28,14 +27,14 @@ function Label({ children, tooltipText, className = "", fontSize, placement = "r
         <StyledLabel style={{ fontSize }} className="twap-label-text">
           {children}
         </StyledLabel>
-        <Typography>{tooltipText}</Typography>
+        <p>{tooltipText}</p>
       </StyledColumnFlex>
     );
   }
   return (
     <StyledContainer className={`twap-label ${className}`} style={{ gap: 0 }}>
       {tooltipText ? (
-        <Tooltip placement={placement} text={tooltipText}>
+        <Tooltip placement={placement} tooltipText={tooltipText}>
           <StyledTooltipContent>
             <>
               <StyledLabel className="twap-label-text" style={{ fontSize }}>

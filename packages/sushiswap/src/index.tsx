@@ -1,4 +1,3 @@
-import { GlobalStyles, ThemeProvider } from "@mui/material";
 import {
   Components,
   TWAPTokenSelectProps,
@@ -16,6 +15,8 @@ import {
   LimitPriceTokenSelectProps,
   LimitPriceTitleProps,
   useTwapContext,
+  compact,
+  size,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, Config } from "@orbs-network/twap";
@@ -29,7 +30,6 @@ import {
   StyledTokenPanel,
   StyledTokenSelect,
   StyledUSD,
-  configureStyles,
   StyledPoweredBy,
   darkTheme,
   lightTheme,
@@ -59,15 +59,16 @@ import {
   StyledOrders,
   StyledOrdersContent,
   StyledLimitPriceTitle,
+  GlobalStyles,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
 import { MdInfo } from "@react-icons/all-files/md/MdInfo";
-import _ from "lodash";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
+import { ThemeProvider } from "styled-components";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
 
@@ -82,9 +83,7 @@ const USD = ({ usd }: { usd?: string }) => {
 const uiPreferences: TwapContextUIPreferences = {
   disableThousandSeparator: true,
   switchVariant: "ios",
-  Components: {
-    USD,
-  },
+
   addressPadding: {
     start: 5,
     end: 3,
@@ -201,9 +200,17 @@ const parseToken = (config: Config, getTokenLogo: (token?: any) => string, rawTo
   }
 };
 
+export type SushiModalProps = {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  children?: ReactNode;
+  header?: ReactNode;
+};
+
 interface SushiProps extends TWAPProps {
   TokenSelectModal: FC<{ children: ReactNode; onSelect: (value: any) => void; selected: any }>;
-  Modal: FC<{ open: boolean; onClose: () => void; title?: string; children: ReactNode; header?: ReactNode }>;
+  Modal: FC<SushiModalProps>;
   getTokenLogo: (token: any) => string;
   useUSD: (address?: any) => string | undefined;
   srcToken?: any;
@@ -223,7 +230,7 @@ const useAdapterContext = () => useContext(AdapterContext);
 const useAddresses = () => {
   const context = useAdapterContext();
   const wrappedAddress = useMemo(() => {
-    return _.find(context.dappTokens, (it) => eqIgnoreCase(it.address || "", context.config.wToken.address || ""))?.address;
+    return context.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", context.config.wToken.address || ""))?.address;
   }, [context.srcToken, context.dappTokens, context.config.wToken.address]);
 
   return useMemo(() => {
@@ -297,13 +304,13 @@ const TWAPContent = () => {
   }, [context.isDarkTheme]);
 
   const parsedTokens = useMemo(() => {
-    if (!_.size(context.dappTokens) || !context.config) {
+    if (!size(context.dappTokens) || !context.config) {
       return [];
     }
     let parsed = context.dappTokens.map((rawToken: any) => {
       return parseToken(context.config, context.getTokenLogo, rawToken);
     });
-    return _.compact(parsed) as Token[];
+    return compact(parsed) as Token[];
   }, [context.dappTokens, context.config, context.getTokenLogo]);
 
   const { srcToken, dstToken } = useSelectedParsedTokens();
@@ -341,9 +348,10 @@ const TWAPContent = () => {
         marketPrice={marketPrice}
         connectedChainId={context.connectedChainId}
         isWrongChain={isWrongChain}
+        Components={context.Components}
       >
         <ThemeProvider theme={theme}>
-          <GlobalStyles styles={configureStyles(theme) as any} />
+          <GlobalStyles />
           <StyledContent>
             {context.limit ? <LimitPanel /> : <TWAPPanel />}
             <Orders />
@@ -390,13 +398,15 @@ const Orders = () => {
 const SubmitOrderModal = () => {
   const { isOpen, onClose } = hooks.useSwapModal();
 
-  return (
-    <Components.Base.Modal open={isOpen} onClose={() => onClose()}>
-      <StyledSwapModalContent>
-        <StyledCreateOrderModal />
-      </StyledSwapModalContent>
-    </Components.Base.Modal>
-  );
+  return null;
+
+  // return (
+  //   <Components.Base.Modal open={isOpen} onClose={() => onClose()}>
+  //     <StyledSwapModalContent>
+  //       <StyledCreateOrderModal />
+  //     </StyledSwapModalContent>
+  //   </Components.Base.Modal>
+  // );
 };
 
 const LimitInput = (props: LimitPriceInputProps) => {
@@ -523,9 +533,6 @@ const TotalTrades = () => {
           <StyledChunksSelectInput>
             <Components.ChunkSelector.Input />
           </StyledChunksSelectInput>
-          <StyledChunksSelectSlider>
-            <Components.ChunkSelector.Slider />
-          </StyledChunksSelectSlider>
         </Styles.StyledRowFlex>
       </Card>
     </StyledChunksSelect>
@@ -574,7 +581,7 @@ const TradeDurationSelect = () => {
 };
 
 const isSupportedChain = (chainId?: number) => {
-  return Boolean(_.find(configs, (config: Config) => config.chainId === chainId));
+  return Boolean(configs.find((config: Config) => config.chainId === chainId));
 };
 
 export { TWAP, isSupportedChain };

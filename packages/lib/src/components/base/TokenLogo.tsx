@@ -1,5 +1,5 @@
 import { CSSProperties, useEffect, useState } from "react";
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { AiFillQuestionCircle } from "@react-icons/all-files/ai/AiFillQuestionCircle";
 
 function TokenLogo({ logo, className = "", style = {}, alt = "Token logo" }: { logo?: string; className?: string; style?: CSSProperties; alt?: string }) {

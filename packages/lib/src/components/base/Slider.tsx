@@ -1,7 +1,5 @@
-import MuiSlider from "@mui/material/Slider";
-import { styled } from "@mui/system";
 import { useCallback, useEffect, useState } from "react";
-
+import styled from "styled-components";
 function calculateValue(value: number) {
   return value;
 }
@@ -14,45 +12,87 @@ export interface Props {
   label?: string;
   min?: number;
 }
+const SliderContainer = styled.div`
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 5px;
+  margin: 20px 0;
+`;
 
-const Slider = ({ onChange, value, maxTrades, className = "", label, min }: Props) => {
-  const handleChange = (_event: Event, newValue: number | number[]) => {
-    if (typeof newValue === "number") {
-      onChange(newValue);
-    }
+const SliderTrack = styled.div<{ width: number }>`
+  position: absolute;
+  height: 100%;
+  background: #3f51b5;
+  border-radius: 5px;
+  width: ${(props) => props.width}%;
+`;
+
+const SliderThumb = styled.div<{ left: number }>`
+  position: absolute;
+  top: -5px;
+  width: 16px;
+  height: 16px;
+  background: #3f51b5;
+  border-radius: 50%;
+  cursor: pointer;
+  left: ${(props) => props.left}%;
+  transform: translateX(-50%);
+`;
+
+interface SliderProps {
+  min: number;
+  max: number;
+  value: number;
+  onChange: (value: number) => void;
+  className?: string;
+}
+
+// Slider component
+export const Slider: React.FC<SliderProps> = ({ min, max, value, onChange, className = "" }) => {
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleMouseDown = () => {
+    setIsDragging(true);
   };
 
-  const valueLabelFormat = useCallback(
-    (value: number) => {
-      return label || value.toLocaleString();
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (isDragging) {
+        const sliderRect = (e.target as HTMLDivElement).getBoundingClientRect();
+        const newValue = Math.min(max, Math.max(min, min + ((e.clientX - sliderRect.left) / sliderRect.width) * (max - min)));
+        onChange(newValue);
+      }
     },
-    [label]
+    [isDragging, max, min, onChange]
   );
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    } else {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove]);
+
+  const valuePercentage = ((value - min) / (max - min)) * 100;
 
   return (
-    <StyledSlider
-      value={value}
-      min={min || 1}
-      step={1}
-      // marks={getMarks(maxTrades)}
-      max={maxTrades}
-      scale={calculateValue}
-      getAriaValueText={valueLabelFormat}
-      valueLabelFormat={valueLabelFormat}
-      onChange={handleChange}
-      valueLabelDisplay="auto"
-      className={`twap-slider ${className}`}
-    />
+    <SliderContainer className={`twap-slider ${className}`} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
+      <SliderTrack width={valuePercentage} />
+      <SliderThumb left={valuePercentage} />
+    </SliderContainer>
   );
 };
-
-export default Slider;
-
-const StyledSlider = styled(MuiSlider)({
-  "& .MuiSlider-markLabel": {
-    maxWidth: 50,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
-});

@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import styled from "styled-components";
 import { ReactNode } from "react";
 import { useTwapContext } from "../context/context";
 import {
@@ -82,15 +82,7 @@ const SliderComponent = ({ className }: { className?: string }) => {
     return <Loader height="100%" />;
   }
 
-  return (
-    <Slider
-      label={`${formattedChunks ? formattedChunks : "0"} trades`}
-      className={className}
-      maxTrades={maxPossibleChunks === 1 ? maxPossibleChunks + 0.0001 : maxPossibleChunks}
-      value={chunks}
-      onChange={setChunks}
-    />
-  );
+  return <Slider className={className} min={1} max={maxPossibleChunks === 1 ? maxPossibleChunks + 0.0001 : maxPossibleChunks} value={chunks} onChange={setChunks} />;
 };
 
 const StyledMessage = styled(Message)({

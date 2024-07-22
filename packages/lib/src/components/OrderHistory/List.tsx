@@ -1,6 +1,5 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
-import _ from "lodash";
 import { useCallback, useEffect, useRef } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList } from "react-window";
@@ -9,12 +8,11 @@ import { useFormatNumberV2 } from "../../hooks";
 import { useParseOrderUi } from "../../hooks/orders";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { HistoryOrder, OrderUI, Token, Translations } from "../../types";
-import { Loader, TokenLogo } from "../base";
+import { LinearProgress, Loader, TokenLogo } from "../base";
 import { useOrderHistoryContext } from "./context";
 import * as React from "react";
-import LinearProgress, { LinearProgressProps } from "@mui/material/LinearProgress";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
+
+import { size } from "../../utils";
 
 export function List() {
   const { selectOrder, orders, selectedOrderId, isLoading } = useOrderHistoryContext();
@@ -32,7 +30,7 @@ export function List() {
     return <StyledLoader height={120} />;
   }
 
-  if (!_.size(orders)) {
+  if (!size(orders)) {
     return <EmptyList />;
   }
 
@@ -40,7 +38,7 @@ export function List() {
     <ListContainer style={{ opacity: selectedOrderId ? 0 : 1, pointerEvents: selectedOrderId ? "none" : "all" }} className="twap-orders-list">
       <AutoSizer>
         {({ height, width }: any) => (
-          <VariableSizeList ref={listRef} height={height} itemCount={_.size(orders)} itemSize={getSize} width={width} itemData={{ setSize }}>
+          <VariableSizeList ref={listRef} height={height} itemCount={size(orders)} itemSize={getSize} width={width} itemData={{ setSize }}>
             {({ index, style }) => (
               <div style={style}>
                 <ListOrder onSelect={selectOrder} setSize={setSize} index={index} order={orders[index]} />
@@ -210,15 +208,15 @@ const StyledTokenDisplay = styled(StyledRowFlex)({
   },
 });
 
-function LinearProgressWithLabel(props: LinearProgressProps & { value: number }) {
+function LinearProgressWithLabel(props: { value: number }) {
   return (
     <StyledProgress className="twap-order-token-progress">
-      <Box sx={{ width: "100%", mr: 1 }}>
+      <div style={{ width: "100%" }}>
         <LinearProgress variant="determinate" {...props} />
-      </Box>
-      <Box sx={{ minWidth: 35 }}>
+      </div>
+      <div style={{ minWidth: 35 }}>
         <StyledText>{`${Math.round(props.value)}%`}</StyledText>
-      </Box>
+      </div>
     </StyledProgress>
   );
 }

@@ -1,4 +1,4 @@
-import { Theme } from "@mui/material";
+import { DefaultTheme } from "styled-components";
 
 export interface SyncSwapPallete {
   normal: string;
@@ -20,6 +20,6 @@ export interface SyncSwapPallete {
   portfolio: string;
 }
 
-export interface CustomTheme extends Theme {
+export interface CustomTheme extends DefaultTheme {
   dappStyles: SyncSwapPallete;
 }

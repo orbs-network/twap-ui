@@ -1,5 +1,5 @@
-import { Box, Button, styled, Theme } from "@mui/material";
 import { Components, Styles, uiHelper } from "@orbs-network/twap-ui";
+import { DefaultTheme, styled } from "styled-components";
 import { CustomTheme, SyncSwapPallete } from "./types";
 
 const getButtonStyles = (theme: SyncSwapPallete) => {
@@ -28,7 +28,7 @@ export const StyledTradeSize = styled(Components.Base.Card)(({ theme }) => {
       flexDirection: "column",
       borderRadius: 10,
       input: {
-        textAlign: "center!important",
+        textAlign: "center!important" as any,
         fontSize: "14px!important",
         borderBottom: `1px solid ${pallete.primary}`,
         height: 25,
@@ -91,7 +91,7 @@ export const StyledPoweredBy = styled(Components.PoweredBy)(({ theme }) => ({
   },
 }));
 
-export const StyledSubmitButton = styled(Button)({
+export const StyledSubmitButton = styled("button")({
   minHeight: 40,
   borderRadius: 10,
   textTransform: "none",
@@ -154,7 +154,7 @@ export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ t
   },
 }));
 
-const dappStyles = (theme: Theme) => (theme as CustomTheme).dappStyles;
+const dappStyles = (theme: DefaultTheme) => (theme as CustomTheme).dappStyles;
 
 export const StyledTokenPanelUSD = styled(Components.TokenUSD)(({ theme }) => ({
   color: dappStyles(theme).info,
@@ -168,7 +168,7 @@ export const StyledBalance = styled(Components.TokenBalance)(({ theme }) => ({
   fontWeight: 500,
 }));
 
-export const StyledTokenSelect = styled(Button)(({ theme }) => ({
+export const StyledTokenSelect = styled("button")(({ theme }) => ({
   borderRadius: 16,
   minWidth: 110,
   padding: "0 10px",

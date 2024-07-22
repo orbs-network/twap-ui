@@ -1,6 +1,5 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { zeroAddress, zero, convertDecimals, isNativeAddress, networks, erc20s, eqIgnoreCase } from "@defi.org/web3-candies";
-import _ from "lodash";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearchParams } from "react-router-dom";
@@ -9,8 +8,7 @@ import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
 import { dapps } from "./config";
 import { TokenData } from "@orbs-network/twap";
-import { amountUi } from "@orbs-network/twap-ui";
-import { usePersistedStore } from "./store";
+import { amountUi, size, sortBy } from "@orbs-network/twap-ui";
 import { fetchPrice } from "./utils";
 import BigNumber from "bignumber.js";
 import { useMediaQuery } from "@mui/material";
@@ -19,10 +17,11 @@ import BN from "bignumber.js";
 export const injectedConnector = new InjectedConnector({});
 
 export const useAddedTokens = () => {
-  const { tokens: persistedTokens } = usePersistedStore();
-  const { chainId } = useWeb3React();
+  // const { tokens: persistedTokens } = usePersistedStore();
+  // const { chainId } = useWeb3React();
 
-  return useMemo(() => persistedTokens[chainId!] || [], [chainId, persistedTokens]);
+  // return useMemo(() => persistedTokens[chainId!] || [], [chainId, persistedTokens]);
+  return [];
 };
 
 export const useGetTokens = ({
@@ -48,7 +47,7 @@ export const useGetTokens = ({
   const addedTokens = useAddedTokens();
   const lib = useDappContext().lib;
   return useQuery(
-    ["useGetTokens", chainId, _.size(addedTokens)],
+    ["useGetTokens", chainId, size(addedTokens)],
     async () => {
       let tokenList;
       if (url) {
@@ -59,10 +58,11 @@ export const useGetTokens = ({
       } else if (tokens) {
         tokenList = tokens;
       }
+      const base = baseAssets && Object.values(baseAssets).map((t: any) => t().address);
 
-      const candiesAddresses = [zeroAddress, ..._.map(baseAssets, (t) => t().address)];
+      const candiesAddresses = base ? [zeroAddress, ...base] : [zeroAddress];
       const parsed = parse ? parse(tokenList) : tokenList;
-      let _tokens = _.sortBy(parsed, (t: any) => {
+      let _tokens = sortBy(parsed, (t: any) => {
         const index = candiesAddresses.indexOf(t.address);
         return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
       });
@@ -214,8 +214,8 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
   const { chainId } = useWeb3React();
   const { fromTokenDecimals, toTokenDecimals } = useMemo(() => {
     return {
-      fromTokenDecimals: _.find(tokens, (it) => eqIgnoreCase(it.address, fromToken || ""))?.decimals,
-      toTokenDecimals: _.find(tokens, (it) => eqIgnoreCase(it.address, toToken || ""))?.decimals,
+      fromTokenDecimals: tokens?.find((it: any) => eqIgnoreCase(it.address, fromToken || ""))?.decimals,
+      toTokenDecimals: tokens?.find((it: any) => eqIgnoreCase(it.address, toToken || ""))?.decimals,
     };
   }, [fromToken, toToken, tokens]);
 
@@ -250,7 +250,7 @@ export const useSelectedDappConfig = () => {
   const { chainId } = useWeb3React();
   const configs = useSelectedDapp().selectedDapp?.configs;
 
-  return _.find(configs, { chainId });
+  return configs?.find((it) => it.chainId === chainId);
 };
 
 export const useBaseAssets = () => {

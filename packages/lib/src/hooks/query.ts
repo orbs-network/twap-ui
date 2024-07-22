@@ -1,18 +1,17 @@
-import { contract, eqIgnoreCase, estimateGasPrice, isNativeAddress, web3 } from "@defi.org/web3-candies";
+import { Abi, eqIgnoreCase, estimateGasPrice, isNativeAddress, web3 } from "@defi.org/web3-candies";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
 import { useTwapContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
-import { amountBN, logger } from "../utils";
+import { amountBN, compact, groupBy, logger, orderBy } from "../utils";
 import { TokenData } from "@orbs-network/twap";
-import _ from "lodash";
 import { getOrders } from "../helper";
 import { HistoryOrder, OrdersData } from "../types";
 import { useGetTokenFromParsedTokensList, useSrcAmount } from "./hooks";
-import { useOrdersStore } from "../store";
+import { ordersStore } from "../store";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const lib = useTwapContext().lib;
@@ -30,6 +29,18 @@ export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   );
 };
 
+const useGetContract = () => {
+  const web3 = useTwapContext().web3;
+
+  return useCallback(
+    (abi: Abi, address: string) => {
+      if (!web3) return undefined;
+      return new web3.eth.Contract(abi as any, address);
+    },
+    [web3]
+  );
+};
+
 export const useFeeOnTransfer = (tokenAddress?: string) => {
   const { lib } = useTwapContext();
 
@@ -39,14 +50,16 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
     return feeOnTransferDetectorAddresses[chainId as keyof typeof feeOnTransferDetectorAddresses];
   }, [lib?.config.chainId]);
 
+  const getContract = useGetContract();
+
   return useQuery({
     queryFn: async () => {
       try {
-        const _contract = contract(FEE_ON_TRANSFER_ABI as any, address!);
-        if (!_contract) {
+        const contract = getContract(FEE_ON_TRANSFER_ABI as any, address!);
+        if (!contract) {
           return null;
         }
-        const res = await _contract?.methods.validate(tokenAddress, lib?.config.wToken.address, AMOUNT_TO_BORROW).call();
+        const res = await contract?.methods.validate(tokenAddress, lib?.config.wToken.address, AMOUNT_TO_BORROW).call();
         return {
           buyFee: res.buyFeeBps,
           sellFee: res.sellFeeBps,
@@ -63,10 +76,10 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
 };
 
 export const useGasPrice = () => {
-  const { dappProps, lib } = useTwapContext();
+  const { dappProps, lib, web3 } = useTwapContext();
   const { maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = dappProps;
-  const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(), {
-    enabled: !!lib,
+  const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(undefined, undefined, web3), {
+    enabled: !!lib && !!web3,
     refetchInterval: REFETCH_GAS_PRICE,
   });
 
@@ -137,13 +150,12 @@ const useAddNewOrder = () => {
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
   const lib = useTwapContext().lib;
-  const addOrder = useOrdersStore().addOrder;
 
   return useCallback(
     (order: HistoryOrder) => {
       try {
         if (!lib) return;
-        addOrder(lib.config.chainId, order);
+        ordersStore.addOrder(lib.config.chainId, order);
         queryClient.setQueryData(QUERY_KEY, (prev?: OrdersData) => {
           const updatedOpenOrders = prev?.Open ? [order, ...prev.Open] : [order];
           if (!prev) {
@@ -158,7 +170,7 @@ const useAddNewOrder = () => {
         });
       } catch (error) {}
     },
-    [QUERY_KEY, queryClient, lib, addOrder]
+    [QUERY_KEY, queryClient, lib]
   );
 };
 
@@ -167,8 +179,6 @@ export const useOrdersHistory = () => {
   const { parsedTokens } = dappProps;
   const lib = useTwapContext().lib;
   const QUERY_KEY = useOrderHistoryKey();
-  const localStorageOrders = useOrdersStore().orders;
-  const deleteOrder = useOrdersStore().deleteOrder;
   const getTokensFromTokensList = useGetTokenFromParsedTokensList();
   const query = useQuery<OrdersData>(
     QUERY_KEY,
@@ -177,17 +187,16 @@ export const useOrdersHistory = () => {
       logger("all orders", orders);
       try {
         const ids = orders.map((o) => o.id);
-        let chainOrders = localStorageOrders[lib!.config.chainId];
-        chainOrders.forEach((o) => {
+        let chainOrders = ordersStore.orders[lib!.config.chainId];
+        chainOrders.forEach((o: any) => {
           if (!ids.includes(o.id)) {
             orders.push(o);
           } else {
-            deleteOrder(lib!.config.chainId, o.id);
+            ordersStore.deleteOrder(lib!.config.chainId, o.id);
           }
         });
       } catch (error) {}
-
-      orders = _.filter(orders, (it) => eqIgnoreCase(lib!.config.exchangeAddress, it.exchange || ""));
+      orders = orders.filter((o) => eqIgnoreCase(lib!.config.exchangeAddress, o.exchange || ""));
       logger("filtered orders by exchange address", lib!.config.exchangeAddress, orders);
       orders = orders.map((order) => {
         return {
@@ -196,13 +205,14 @@ export const useOrdersHistory = () => {
           dstToken: getTokensFromTokensList(order.dstTokenAddress),
         };
       });
-      return _.chain(_.compact(orders.filter((o) => o.srcToken && o.dstToken)))
-        .orderBy((o) => o.createdAt, "desc")
-        .groupBy((o) => o.status)
-        .value();
+      let result = compact(orders.filter((o) => o.srcToken && o.dstToken));
+      result = orderBy(result, (o) => o.createdAt, "desc");
+      result = groupBy(result, "status");
+
+      return result as any;
     },
     {
-      enabled: !!lib && _.size(parsedTokens) > 10 && !state.showConfirmation,
+      enabled: !!lib && parsedTokens?.length > 10 && !state.showConfirmation,
       refetchInterval: REFETCH_ORDER_HISTORY,
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,

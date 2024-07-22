@@ -1,10 +1,10 @@
-import { Box, Button, styled } from "@mui/material";
+import { styled } from "styled-components";
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTwapContext } from ".";
 import { analytics } from "./analytics";
 
-const StyledContainer = styled(Box)<{ isDarkTheme?: number }>(({ theme, isDarkTheme }) => {
+const StyledContainer = styled("div")<{ isDarkTheme?: number }>(({ theme, isDarkTheme }) => {
   return {
     alignItems: "center",
     display: "flex",

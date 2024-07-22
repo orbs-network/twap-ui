@@ -1,11 +1,20 @@
 import { Status, TWAPLib } from "@orbs-network/twap";
 import BN from "bignumber.js";
-import _ from "lodash";
 import moment from "moment";
 import { HistoryOrder } from "./types";
-import { getTheGraphUrl, logger } from "./utils";
+import { getTheGraphUrl, groupBy, keyBy, logger, mapValues } from "./utils";
 
 export type ParsedOrder = ReturnType<any>;
+
+const getOrderFills = (orderId: number, fills?: any) => {
+  return {
+    TWAP_id: Number(orderId),
+    dstAmountOut: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dstAmountOut)), BN(0)).toString(),
+    srcAmountIn: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.srcAmountIn)), BN(0)).toString(),
+    dollarValueIn: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dollarValueIn)), BN(0)).toString(),
+    dollarValueOut: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dollarValueOut)), BN(0)).toString(),
+  };
+};
 
 export const graphOrderFills = async ({ lib, endpoint, signal }: { lib: TWAPLib; endpoint: string; signal?: AbortSignal }) => {
   const LIMIT = 1_000;
@@ -35,15 +44,11 @@ export const graphOrderFills = async ({ lib, endpoint, signal }: { lib: TWAPLib;
       signal,
     });
     const response = await payload.json();
-    const orderFilleds = response.data.orderFilleds;
+    let orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
+    const grouped = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
 
-    const grouped = _.map(_.groupBy(orderFilleds, "TWAP_id"), (fills, orderId) => ({
-      TWAP_id: Number(orderId),
-      dstAmountOut: fills.reduce((acc, it) => acc.plus(BN(it.dstAmountOut)), BN(0)).toString(),
-      srcAmountIn: fills.reduce((acc, it) => acc.plus(BN(it.srcAmountIn)), BN(0)).toString(),
-      dollarValueIn: fills.reduce((acc, it) => acc.plus(BN(it.dollarValueIn)), BN(0)).toString(),
-      dollarValueOut: fills.reduce((acc, it) => acc.plus(BN(it.dollarValueOut)), BN(0)).toString(),
-    }));
+      return getOrderFills(orderId, fills);
+    });
 
     fills.push(...grouped);
 
@@ -57,14 +62,13 @@ export const graphOrderFills = async ({ lib, endpoint, signal }: { lib: TWAPLib;
 
   await fetchFills();
 
-  const res = _.mapValues(_.keyBy(fills, "TWAP_id"));
-  return res;
+  return keyBy<ReturnType<typeof getOrderFills>>(fills, "TWAP_id");
 };
 
 const lensOrders = async (lib: TWAPLib): Promise<HistoryOrder[]> => {
   const orders = await lib.getAllOrders();
 
-  return _.map(orders, (order): HistoryOrder => {
+  return orders.map((order): ParsedOrder => {
     let progress = lib.orderProgress(order);
     progress = !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
     return {
@@ -234,14 +238,10 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
     });
     const payload = await response.json();
 
-    return _.reduce(
-      payload.data.statuses,
-      (result, item) => {
-        result[item.id] = item.status;
-        return result;
-      },
-      {} as any
-    );
+    return payload.data.statuses.reduce((result: { [key: string]: string }, item: any) => {
+      result[item.id] = item.status;
+      return result;
+    }, {});
   } catch (error) {}
 };
 

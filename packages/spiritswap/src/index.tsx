@@ -1,5 +1,4 @@
-import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, OrdersPanel, TWAPProps, Orders } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState } from "react";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
@@ -46,6 +45,10 @@ interface SpiritSwapTWAPProps extends TWAPProps {
   getProvider: () => any;
 }
 
+const Tooltip = () => {
+  return <div></div>;
+};
+
 const TWAP = memo((props: SpiritSwapTWAPProps) => {
   const provider = useGetProvider(props.getProvider, props.account);
   const globalStyles = useGlobalStyles(props.isDarkTheme);
@@ -66,9 +69,9 @@ const TWAP = memo((props: SpiritSwapTWAPProps) => {
       dappTokens={props.dappTokens}
       parsedTokens={[]}
       onDstTokenSelected={props.onDstTokenSelected}
+      Components={{ Tooltip }}
       onSrcTokenSelected={props.onSrcTokenSelected}
     >
-      <GlobalStyles styles={globalStyles} />
       <AdapterContextProvider value={props}>
         <div className="twap-container">
           <TokenPanel isSrcToken={true} />
@@ -78,10 +81,8 @@ const TWAP = memo((props: SpiritSwapTWAPProps) => {
           <TradeInterval />
           <MaxDuration />
           <Components.SubmitButton />
-          <OrderSummary />
           <Components.PoweredBy />
         </div>
-        <OrdersPanel />
       </AdapterContextProvider>
     </TwapAdapter>
   );
@@ -182,37 +183,4 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-const OrderSummary = () => {
-  return (
-    <Components.OrderSummaryModalContainer>
-      <TwapStyles.StyledColumnFlex gap={14}>
-        <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay />
-          </Components.Base.Card>
-          <Components.OrderSummaryLimitPrice />
-          <Components.Base.Card>
-            <Components.OrderSummaryDetails />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <TwapStyles.StyledColumnFlex gap={10}>
-              <Components.DisclaimerText />
-            </TwapStyles.StyledColumnFlex>
-          </Components.Base.Card>
-        </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={12}>
-            <Components.AcceptDisclaimer />
-            <Components.OutputAddress />
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-        <Components.SubmitButton />
-      </TwapStyles.StyledColumnFlex>
-    </Components.OrderSummaryModalContainer>
-  );
-};
-
-export { Orders, TWAP };
+export { TWAP };

@@ -1,14 +1,14 @@
 import { StyledModalContent, StyledStella, StyledStellaSwapBox, StyledStellaSwapLayout } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-stellaswap";
+import { TWAP } from "@orbs-network/twap-ui-stellaswap";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { useMemo, useState } from "react";
-import _ from "lodash";
 import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
+import { mapKeys, size } from "@orbs-network/twap-ui";
 const config = { ...Configs.QuickSwap };
 config.name = "StellaSwap";
 
@@ -30,7 +30,7 @@ export const useDappTokens = () => {
     parse: parseListToken,
     baseAssets: erc20s.poly,
     url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/moonbeam.json",
-    modifyList: (tokens) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
+    modifyList: (tokens) => ({ ...mapKeys(tokens, (t: any) => t.address) }),
   });
 };
 interface TokenSelectModalProps {
@@ -45,7 +45,7 @@ interface TokenSelectModalProps {
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return rawList.map((rawToken: any) => {
     return {
       token: {
         address: rawToken.address ?? rawToken.tokenInfo?.address,
@@ -58,7 +58,7 @@ const parseList = (rawList?: any): TokenListItem[] => {
   });
 };
 const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
-  const tokensListSize = _.size(baseAssets);
+  const tokensListSize = size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
   return (
@@ -105,9 +105,7 @@ const DappComponent = () => {
         <StyledStellaSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledStellaSwapBox>
-        <StyledStellaSwapBox isDarkMode={isDarkTheme ? 1 : 0}>
-          <Orders />
-        </StyledStellaSwapBox>
+        <StyledStellaSwapBox isDarkMode={isDarkTheme ? 1 : 0}></StyledStellaSwapBox>
       </StyledStellaSwapLayout>
     </StyledStella>
   );

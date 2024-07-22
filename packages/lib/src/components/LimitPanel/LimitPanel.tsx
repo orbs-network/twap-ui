@@ -1,10 +1,9 @@
-import { Box, styled } from "@mui/material";
+import { styled } from "styled-components";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Icon, NumericInput, TokenDisplay } from "../base";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
 import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
-import _ from "lodash";
 import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket } from "../../hooks/hooks";
 import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps, LimitPriceInputProps } from "../../types";
 import { useOnLimitPercentageClick } from "./hooks";
@@ -289,7 +288,7 @@ const Title = () => {
   return <DefaultTitle isSrcToken={!inverted} textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;
 };
 
-const StyledInvertprice = styled(Box)({
+const StyledInvertprice = styled("div")({
   cursor: "pointer",
   "&:hover": {
     opacity: 0.8,

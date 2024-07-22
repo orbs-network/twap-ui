@@ -1,14 +1,17 @@
-import { Box, CircularProgress, Fade, styled } from "@mui/material";
 import { useMemo } from "react";
+import { styled } from "styled-components";
 import { useTwapContext } from "../../context/context";
 import { ButtonProps } from "../../types";
+import { Spinner } from "./Spinner";
 
 function Button(props: ButtonProps) {
   const { children, disabled = false, onClick, loading = false, className = "", allowClickWhileLoading } = props;
-  const ContextButton = useTwapContext().uiPreferences.Button;
+  const {
+    Components: { Button },
+  } = useTwapContext();
 
-  if (ContextButton) {
-    return <ContextButton {...props}>{children}</ContextButton>;
+  if (Button) {
+    return <Button {...props}>{children}</Button>;
   }
 
   const _disabled = useMemo(() => {
@@ -28,24 +31,22 @@ function Button(props: ButtonProps) {
     >
       {loading && (
         <StyledLoader className="twap-button-loader">
-          <CircularProgress className="twap-button-loader" />
+          <Spinner className="twap-button-loader" />
         </StyledLoader>
       )}
-      <Fade in={!loading}>
-        <StyledChildren className="twap-button-children">{children}</StyledChildren>
-      </Fade>
+      <StyledChildren className="twap-button-children">{children}</StyledChildren>
     </StyledContainer>
   );
 }
 
-const StyledLoader = styled(Box)({
+const StyledLoader = styled("div")({
   left: "50%",
   top: "55%",
   transform: "translate(-50%, -50%) scale(0.8)",
   position: "absolute",
 });
 
-const StyledContainer = styled("button")(({ disabled }: { disabled: boolean }) => ({
+const StyledContainer = styled("button")<{ disabled: boolean }>(({ disabled }) => ({
   position: "relative",
   width: "100%",
   border: "unset",
@@ -56,6 +57,6 @@ const StyledContainer = styled("button")(({ disabled }: { disabled: boolean }) =
   transition: "0.2s all",
 }));
 
-const StyledChildren = styled(Box)({});
+const StyledChildren = styled("div")({});
 
 export default Button;

@@ -1,10 +1,8 @@
-import { styled } from "@mui/system";
+import { styled } from "styled-components";
 import React, { ReactNode } from "react";
 import { useTwapContext } from "../../context/context";
-import { useFormatNumber, useFormatNumberV2 } from "../../hooks";
-import { textOverflow } from "../../styles";
+import { useFormatNumberV2 } from "../../hooks";
 import SmallLabel from "./SmallLabel";
-import Tooltip from "./Tooltip";
 
 interface Props {
   isLoading: boolean;

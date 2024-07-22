@@ -1,15 +1,15 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { SelectedOrder } from "./SelectedOrder";
 import { OrderHistoryHeader } from "./OrderHistoryHeader";
-import _ from "lodash";
 import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
 import { List } from "./List";
-import { Modal, Spinner } from "../base";
+import { Spinner } from "../base";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../../context/context";
 import { query, useOpenOrders } from "../../hooks";
+import { size } from "../../utils";
 
 const OrderHistoryButton = ({ onClick }: { onClick: () => void }) => {
   const { data } = query.useOrdersHistory();
@@ -20,7 +20,7 @@ const OrderHistoryButton = ({ onClick }: { onClick: () => void }) => {
       return "Loading orders";
     }
 
-    return `${_.size(openOrders)} Open orders`;
+    return `${size(openOrders)} Open orders`;
   }, [data, openOrders]);
 
   const _onClick = useCallback(() => {
@@ -72,29 +72,6 @@ const Content = ({ className = "" }: { className?: string }) => {
   );
 };
 
-const OrderHistoryModal = ({ className = "" }: { className?: string }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const onClose = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  const onOpen = useCallback(() => {
-    setIsOpen(true);
-  }, []);
-
-  return (
-    <>
-      <OrderHistoryButton onClick={onOpen} />
-      <Modal open={isOpen} onClose={onClose}>
-        <Container className={className}>
-          <OrderHistoryHeader />
-          <Content />
-        </Container>
-      </Modal>
-    </>
-  );
-};
-
 const Container = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   const order = useOrderHistoryContext().selectedOrderId;
 
@@ -106,7 +83,6 @@ const Container = ({ children, className = "" }: { children: ReactNode; classNam
 };
 
 OrderHistory.Button = OrderHistoryButton;
-OrderHistory.Modal = OrderHistoryModal;
 OrderHistory.Content = Content;
 OrderHistory.Header = OrderHistoryHeader;
 OrderHistory.Container = Container;

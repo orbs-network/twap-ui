@@ -1,5 +1,5 @@
-import { styled } from "@mui/material";
 import { Components, Styles, StylesConfig } from "@orbs-network/twap-ui";
+import { styled } from "styled-components";
 
 export const darkModeStylesConfig: StylesConfig = {
   iconsColor: "rgb(105, 108, 128)",

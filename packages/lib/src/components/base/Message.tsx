@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { AiOutlineWarning } from "@react-icons/all-files/ai/AiOutlineWarning";
 import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
 import { ReactNode } from "react";

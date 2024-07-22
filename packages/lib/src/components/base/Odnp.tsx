@@ -2,11 +2,10 @@ import { QRCodeSVG } from "qrcode.react";
 import { ReactNode, useState } from "react";
 import { useTwapContext } from "../../context/context";
 import { StyledColumnFlex, StyledOneLineText, StyledRowFlex, StyledText } from "../../styles";
-import Modal from "./Modal";
-import { styled, Typography } from "@mui/material";
 import Button from "./Button";
 import { FaApple } from "@react-icons/all-files/fa/FaApple";
 import { FaGooglePlay } from "@react-icons/all-files/fa/FaGooglePlay";
+import { styled } from "styled-components";
 
 const mobile = 700;
 
@@ -27,23 +26,19 @@ function Odnp({ className = "" }: { className?: string }) {
           <StyledOneLineText>{translations.notify}</StyledOneLineText>
         </StyledRowFlex>
       </StyledButton>
-      <StyledModal open={open} onClose={() => setOpen(false)} className="twap-odnp-modal">
-        <StyledOdnp className={`twap-odnp ${className}`}>
-          <StyledColumnFlex gap={20} style={{ alignItems: "center" }} className="twap-odnp-header">
-            <Typography className="twap-odnp-title" variant="h2">
-              Get free mobile alerts for on-chain events
-            </Typography>
-            <StyledText className="twap-odnp-subtitle">Get a push notification or even a phone call to make sure you never lose your funds and you're always up to date</StyledText>
-          </StyledColumnFlex>
-          <StyledColumnFlex gap={30} style={{ alignItems: "center" }}>
-            <StyledFlex className="twap-odnp-sections">
-              <LeftSection />
-              <StyledSeparator className="twap-odnp-separator" />
-              <RightSection />
-            </StyledFlex>
-          </StyledColumnFlex>
-        </StyledOdnp>
-      </StyledModal>
+      <StyledOdnp className={`twap-odnp ${className}`}>
+        <StyledColumnFlex gap={20} style={{ alignItems: "center" }} className="twap-odnp-header">
+          <p className="twap-odnp-title">Get free mobile alerts for on-chain events</p>
+          <StyledText className="twap-odnp-subtitle">Get a push notification or even a phone call to make sure you never lose your funds and you're always up to date</StyledText>
+        </StyledColumnFlex>
+        <StyledColumnFlex gap={30} style={{ alignItems: "center" }}>
+          <StyledFlex className="twap-odnp-sections">
+            <LeftSection />
+            <StyledSeparator className="twap-odnp-separator" />
+            <RightSection />
+          </StyledFlex>
+        </StyledColumnFlex>
+      </StyledOdnp>
     </>
   );
 }
@@ -53,7 +48,7 @@ const Link = ({ Icon, name, url }: { Icon: any; name: string; url: string }) => 
     <StyledLink href={url} target="_blank" className="twap-button twap-odnp-link">
       <StyledRowFlex>
         <Icon style={{ width: 20, height: 25 }} />
-        <Typography>Download on {name}</Typography>
+        <p>Download on {name}</p>
       </StyledRowFlex>
     </StyledLink>
   );
@@ -74,16 +69,6 @@ const StyledLink = styled("a")({
   },
   [`@media(max-width: ${mobile}px)`]: {
     padding: "5px 10px",
-  },
-});
-
-const StyledModal = styled(Modal)({
-  ".twap-modal-content": {
-    maxWidth: 800,
-    paddingBottom: 30,
-  },
-  ".twap-odnp-close-btn": {
-    display: "none",
   },
 });
 
@@ -125,7 +110,7 @@ const RightSection = () => {
     >
       <StyledColumnFlex style={{ alignItems: "center" }} className="twap-odnp-section-right-flex" gap={20}>
         <QR />
-        <Typography className="twap-odnp-section-right-bottom-text">and Scan the QR Code to select what to monitor</Typography>
+        <p className="twap-odnp-section-right-bottom-text">and Scan the QR Code to select what to monitor</p>
       </StyledColumnFlex>
     </StyledRight>
   );

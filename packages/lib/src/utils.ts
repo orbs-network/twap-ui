@@ -3,7 +3,6 @@ import moment from "moment";
 import { AddressPadding, Translations } from "./types";
 import { EXPLORER_URLS, QUERY_PARAMS, STABLE_TOKENS } from "./consts";
 import BN from "bignumber.js";
-import _ from "lodash";
 import { THE_GRAPH_ORDERS_API } from "./config";
 import { Config } from "@orbs-network/twap";
 export const logger = (...args: any[]) => {
@@ -105,7 +104,7 @@ export const parseError = (error?: any) => {
 };
 
 export const safeInteger = (value?: string) => {
-  if (_.isNaN(value) || value === "NaN") return "0";
+  if (isNaN(value) || value === "NaN") return "0";
   return BN.min(BN(value || "0").toString(), maxUint256)
     .decimalPlaces(0)
     .toString();
@@ -185,7 +184,7 @@ export const isNativeBalanceError = (error: any) => {
 export const isStableCoin = (token?: TokenData) => STABLE_TOKENS.includes(token?.symbol.toLowerCase() || "");
 
 export const getConfig = (configs: Config[], chainId?: number): Config => {
-  return _.find(configs, { chainId }) || configs[0];
+  return configs.find((it) => it.chainId === chainId) || configs[0];
 };
 
 export const invertBN = (value?: string) => {
@@ -238,4 +237,166 @@ export const resetQueryParams = () => {
   setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
   setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, undefined);
   setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
+};
+
+export const groupBy = (array: any = [], key: string) => {
+  return array.reduce((result: any, currentItem: any) => {
+    const groupKey = currentItem[key];
+    if (!result[groupKey]) {
+      result[groupKey] = [];
+    }
+    result[groupKey].push(currentItem);
+    return result;
+  }, {});
+};
+
+type KeyByArray<T> = {
+  [key: string]: T;
+};
+
+export const keyBy = <T>(array: T[], key: keyof T): KeyByArray<T> => {
+  return array.reduce((result, currentItem) => {
+    const groupKey = currentItem[key] as unknown as string;
+    result[groupKey] = currentItem;
+    return result;
+  }, {} as KeyByArray<T>);
+};
+
+type MapValuesResult<T> = {
+  [key: string]: T;
+};
+
+export const mapValues = <T, U>(obj: { [key: string]: T }, iteratee: (value: T, key: string) => U): MapValuesResult<U> => {
+  return Object.keys(obj).reduce((result, key) => {
+    result[key] = iteratee(obj[key], key);
+    return result;
+  }, {} as MapValuesResult<U>);
+};
+
+export const compact = <T>(array: (T | null | undefined | false | "")[]): T[] => {
+  return array.filter((value): value is T => Boolean(value));
+};
+export function isEmpty(value: any): boolean {
+  if (value == null) {
+    // Check for null or undefined
+    return true;
+  }
+
+  if (typeof value === "object") {
+    if (Array.isArray(value)) {
+      // Check for empty array
+      return value.length === 0;
+    } else if (value instanceof Map || value instanceof Set) {
+      // Check for empty Map or Set
+      return value.size === 0;
+    } else {
+      // Check for empty object
+      return Object.keys(value).length === 0;
+    }
+  }
+
+  return false;
+}
+
+export const isNil = (value: any): boolean => value == null;
+
+export const orderBy = <T>(array: T[], key: (item: T) => any, order: "asc" | "desc" = "asc"): T[] => {
+  return array.slice().sort((a, b) => {
+    const valueA = key(a);
+    const valueB = key(b);
+
+    if (valueA < valueB) return order === "asc" ? -1 : 1;
+    if (valueA > valueB) return order === "asc" ? 1 : -1;
+    return 0;
+  });
+};
+
+export const size = (value: any): number => {
+  if (value == null) {
+    return 0;
+  }
+  if (Array.isArray(value) || typeof value === "string") {
+    return value.length;
+  }
+  if (typeof value === "object") {
+    return Object.keys(value).length;
+  }
+  return 0;
+};
+
+export const mapKeys = <T>(obj: { [key: string]: T }, keyMapper: (value: T, key: string) => string): { [key: string]: T } => {
+  return Object.keys(obj).reduce((result, key) => {
+    const newKey = keyMapper(obj[key], key);
+    result[newKey] = obj[key];
+    return result;
+  }, {} as { [key: string]: T });
+};
+
+export const sortBy = <T>(array: T[], iteratee: (item: T) => number): T[] => {
+  return array.slice().sort((a, b) => {
+    const valueA = iteratee(a);
+    const valueB = iteratee(b);
+    return valueA - valueB;
+  });
+};
+
+export const get = (obj: any, path: string[]): any => {
+  return path.reduce((acc, key) => acc && acc[key], obj);
+};
+
+type Collection<T> = { [key: string]: T } | T[];
+
+export const mapCollection = <T, U>(collection?: Collection<T>, iteratee?: (item: T, key: string) => U): U[] => {
+  if (!collection || !iteratee) {
+    return [];
+  }
+
+  if (Array.isArray(collection)) {
+    // Handle case when collection is an array
+    return collection.map((item, index) => iteratee(item, index.toString()));
+  } else {
+    // Handle case when collection is an object
+    return Object.entries(collection).map(([key, item]) => iteratee(item, key));
+  }
+};
+
+export const isNaN = (value: any): boolean => {
+  return typeof value === "number" && Number.isNaN(value);
+};
+
+type FlatCollection<T> = { [key: string]: T } | T[];
+
+export const flatMap = <T, U = T>(collection: FlatCollection<T> | undefined, iteratee?: (value: T, key: string | number) => U[]): U[] => {
+  const result: U[] = [];
+
+  if (!collection) {
+    return result; // Return empty array if collection is undefined
+  }
+
+  if (Array.isArray(collection)) {
+    // Handle case when collection is an array
+    for (let index = 0; index < collection.length; index++) {
+      const mapped = iteratee ? iteratee(collection[index], index) : [collection[index] as unknown as U];
+      result.push(...mapped);
+    }
+  } else {
+    // Handle case when collection is an object
+    for (const key in collection) {
+      if (collection.hasOwnProperty(key)) {
+        const mapped = iteratee ? iteratee(collection[key], key) : [collection[key] as unknown as U];
+        result.push(...mapped);
+      }
+    }
+  }
+
+  return result;
+};
+
+export const flatMapObject = <T, U = T>(obj?: T, iteratee?: (value: T, key: string) => U[]): U[] => {
+  if (!obj) {
+    return [];
+  }
+  return Object.entries(obj).flatMap(([key, value]) => {
+    return iteratee ? iteratee(value as any, key) : [value as unknown as U];
+  });
 };

@@ -1,15 +1,15 @@
 import { StyledModalContent, StyledSpookySwap, StyledSpookySwapBox, StyledSpookySwapLayout } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-spookyswap";
+import { TWAP } from "@orbs-network/twap-ui-spookyswap";
 import { useConnectWallet, useGetTokens, useNetwork, usePriceUSD, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
-import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { mapKeys } from "@orbs-network/twap-ui";
 
 const config = Configs.SpookySwap;
 
@@ -28,7 +28,7 @@ const parseListToken = (tokenList?: any[]) => {
 export const useDappTokens = () => {
   return useGetTokens({
     parse: parseListToken,
-    modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
+    modifyList: (tokens: any) => ({ ...mapKeys(tokens, (t: any) => t.address) }),
     url: "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/ftm.json",
     baseAssets: erc20s.ftm,
   });
@@ -42,7 +42,7 @@ interface TokenSelectModalProps {
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return rawList.map((rawToken: any) => {
     return {
       token: {
         address: rawToken.address ?? rawToken.tokenInfo?.address,
@@ -103,10 +103,6 @@ const DappComponent = () => {
         <UISelector limit={true} select={setSelected} selected={selected} />
         <StyledSpookySwapBox>
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-        </StyledSpookySwapBox>
-
-        <StyledSpookySwapBox>
-          <Orders />
         </StyledSpookySwapBox>
       </StyledSpookySwapLayout>
     </StyledSpookySwap>

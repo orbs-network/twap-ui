@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { ReactNode, useCallback } from "react";
 import { stateActions } from "../context/actions";
 import { useTwapContext } from "../context/context";

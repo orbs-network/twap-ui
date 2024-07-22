@@ -1,10 +1,7 @@
-import { GlobalStyles } from "@mui/material";
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, Orders } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState, createContext, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
 import React from "react";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { ThemeProvider as Emotion10ThemeProvider } from "@emotion/react";
 import { TokenData, Configs } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
@@ -74,8 +71,9 @@ const getConfig = (partnerDaas?: string) => {
   };
 };
 
-const defaultTheme = createTheme();
-
+const Tooltip = () => {
+  return <div></div>;
+};
 const TWAP = memo((props: PangolinTWAPProps) => {
   const globalStyles = useGlobalStyles(props.theme);
   const memoizedConnect = useCallback(() => {
@@ -85,31 +83,27 @@ const TWAP = memo((props: PangolinTWAPProps) => {
   const { partnerDaas, config } = getConfig(props.partnerDaas);
 
   return (
-    <Emotion10ThemeProvider theme={defaultTheme}>
-      <ThemeProvider theme={defaultTheme}>
-        <TwapAdapter
-          connect={memoizedConnect}
-          config={config}
-          maxFeePerGas={props.maxFeePerGas}
-          priorityFeePerGas={props.priorityFeePerGas}
-          translations={translations as Translations}
-          provider={props.provider}
-          account={props.account}
-          connectedChainId={props.connectedChainId}
-          askDataParams={[partnerDaas]}
-          dappTokens={props.dappTokens}
-          onSrcTokenSelected={props.onSrcTokenSelected}
-          onDstTokenSelected={props.onDstTokenSelected}
-          parsedTokens={[]}
-          isLimitPanel={props.limit}
-        >
-          <GlobalStyles styles={globalStyles as any} />
-          <AdapterContextProvider twapProps={props}>
-            <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
-          </AdapterContextProvider>
-        </TwapAdapter>
-      </ThemeProvider>
-    </Emotion10ThemeProvider>
+    <TwapAdapter
+      connect={memoizedConnect}
+      config={config}
+      maxFeePerGas={props.maxFeePerGas}
+      priorityFeePerGas={props.priorityFeePerGas}
+      translations={translations as Translations}
+      provider={props.provider}
+      account={props.account}
+      connectedChainId={props.connectedChainId}
+      askDataParams={[partnerDaas]}
+      dappTokens={props.dappTokens}
+      onSrcTokenSelected={props.onSrcTokenSelected}
+      onDstTokenSelected={props.onDstTokenSelected}
+      parsedTokens={[]}
+      isLimitPanel={props.limit}
+      Components={{ Tooltip }}
+    >
+      <AdapterContextProvider twapProps={props}>
+        <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
+      </AdapterContextProvider>
+    </TwapAdapter>
   );
 });
 
@@ -123,9 +117,6 @@ const TWAPPanel = () => {
       <TradeInterval />
       <MaxDuration />
       <Components.SubmitButton />
-      <OrderSummary>
-        <Components.OrderSummaryDetails />
-      </OrderSummary>
 
       <Components.PoweredBy />
     </>
@@ -139,14 +130,6 @@ const LimitPanel = () => {
       <Components.ChangeTokensOrder />
       <TokenPanel />
       <Components.SubmitButton />
-      <OrderSummary>
-        <TwapStyles.StyledColumnFlex>
-          <Components.OrderSummaryDetailsDeadline />
-          <Components.OrderSummaryDetailsOrderType />
-          <Components.OrderSummaryDetailsChunkSize />
-          <Components.OrderSummaryDetailsMinDstAmount />
-        </TwapStyles.StyledColumnFlex>
-      </OrderSummary>
       <Components.PoweredBy />
     </>
   );
@@ -258,40 +241,6 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-const OrderSummary = ({ children }: { children: ReactNode }) => {
-  return (
-    <Components.OrderSummarySwipeContainer>
-      <TwapStyles.StyledColumnFlex gap={14}>
-        <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay />
-          </Components.Base.Card>
-          <Components.OrderSummaryLimitPrice />
-          <Components.Base.Card>
-            <Components.OrderSummaryDetails />
-          </Components.Base.Card>
-          <Components.Base.Card>{children}</Components.Base.Card>
-          <Components.Base.Card>
-            <TwapStyles.StyledColumnFlex gap={10}>
-              <Components.DisclaimerText />
-            </TwapStyles.StyledColumnFlex>
-          </Components.Base.Card>
-        </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={12}>
-            <Components.AcceptDisclaimer />
-            <Components.OutputAddress />
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-        <Components.SubmitButton />
-      </TwapStyles.StyledColumnFlex>
-    </Components.OrderSummarySwipeContainer>
-  );
-};
-
 const memoizedTWAP = memo(TWAP);
 
-export { memoizedTWAP as TWAP, Orders };
+export { memoizedTWAP as TWAP };

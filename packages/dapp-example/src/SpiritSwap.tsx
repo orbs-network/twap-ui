@@ -1,12 +1,11 @@
 import { StyledSpiritSwapBox, StyledModalContent, StyledSpiritSwapLayout, StyledSpiritSwap } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-spiritswap";
+import { TWAP } from "@orbs-network/twap-ui-spiritswap";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList } from "./Components";
 import { Popup } from "./Components";
 import { TokenListItem } from "./types";
-import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { useCallback } from "react";
 
@@ -37,7 +36,7 @@ interface TokenSelectModalProps {
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return rawList.map((rawToken: any) => {
     return {
       token: {
         address: rawToken.address,
@@ -70,7 +69,7 @@ const TWAPComponent = () => {
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
 
-  const getTokenImageUrl = useCallback((symbol: string) => dappTokens?.find((t: any) => t.symbol === symbol)?.logoUrl, [_.size(dappTokens)]);
+  const getTokenImageUrl = useCallback((symbol: string) => dappTokens?.find((t: any) => t.symbol === symbol)?.logoUrl, [dappTokens]);
   return (
     <TWAP
       getProvider={() => library}
@@ -96,9 +95,7 @@ const DappComponent = () => {
         <StyledSpiritSwapBox>
           <TWAPComponent />
         </StyledSpiritSwapBox>
-        <StyledSpiritSwapBox>
-          <Orders />
-        </StyledSpiritSwapBox>
+        <StyledSpiritSwapBox></StyledSpiritSwapBox>
       </StyledSpiritSwapLayout>
     </StyledSpiritSwap>
   );

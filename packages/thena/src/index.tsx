@@ -1,5 +1,4 @@
-import { GlobalStyles, Box, ThemeProvider } from "@mui/material";
-import { Components, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, Orders, TwapContextUIPreferences } from "@orbs-network/twap-ui";
+import { Components, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, TwapContextUIPreferences } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useEffect, useMemo } from "react";
@@ -11,13 +10,11 @@ import {
   StyledBalance,
   StyledCard,
   StyledContainer,
-  StyledOrderSummary,
   StyledPanelInput,
   StyledPercentSelector,
   StyledTokenSelect,
   configureStyles,
   StyledColumnFlex,
-  StyledOrders,
   StyledPoweredBy,
   StyledSubmit,
   StyledTokenChange,
@@ -34,9 +31,6 @@ const uiPreferences: TwapContextUIPreferences = {
   usdPrefix: "$",
   inputPlaceholder: "0.0",
   switchVariant: "ios",
-  orders: {
-    paginationChunks: 4,
-  },
 };
 
 const MemoizedTokenModal = memo((props: TWAPTokenSelectProps) => {
@@ -124,39 +118,6 @@ const SrcTokenPercentSelector = () => {
   );
 };
 
-const OrderSummary = ({ children }: { children: ReactNode }) => {
-  return (
-    <StyledOrderSummary>
-      <TwapStyles.StyledColumnFlex gap={14}>
-        <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryLimitPrice />
-          </Components.Base.Card>
-          <Components.Base.Card>{children}</Components.Base.Card>
-          <Components.Base.Card>
-            <TwapStyles.StyledColumnFlex gap={10}>
-              <StyledDisclaimerText />
-            </TwapStyles.StyledColumnFlex>
-          </Components.Base.Card>
-        </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={12}>
-            <Components.AcceptDisclaimer />
-            <Components.OutputAddress />
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-        <StyledSubmit />
-      </TwapStyles.StyledColumnFlex>
-    </StyledOrderSummary>
-  );
-};
-
 const config = Configs.Thena;
 
 interface ThenaTWAPProps extends TWAPProps {
@@ -223,6 +184,10 @@ const usePriceUSD = (address?: string) => {
   }, [address, dappTokens]);
 };
 
+const Tooltip = () => {
+  return <div></div>;
+};
+
 const TWAP = (props: ThenaTWAPProps) => {
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
@@ -231,7 +196,7 @@ const TWAP = (props: ThenaTWAPProps) => {
   const provider = useProvider(props);
 
   return (
-    <Box className="twap-adapter-wrapper">
+    <div className="twap-adapter-wrapper">
       <TwapAdapter
         connect={props.connect}
         config={config}
@@ -246,18 +211,16 @@ const TWAP = (props: ThenaTWAPProps) => {
         uiPreferences={uiPreferences}
         parsedTokens={[]}
         isLimitPanel={props.limit}
+        Components={{ Tooltip }}
       >
-        <ThemeProvider theme={theme}>
-          <GlobalStyles styles={configureStyles(theme) as any} />
+        {/* <ThemeProvider theme={theme}>
           <AdapterContextProvider value={props}>
             <AmountUpdater />
             {props.limit ? <LimitPanel /> : <TWAPPanel />}
-
-            <StyledOrders />
           </AdapterContextProvider>
-        </ThemeProvider>
+        </ThemeProvider> */}
       </TwapAdapter>
-    </Box>
+    </div>
   );
 };
 
@@ -275,9 +238,7 @@ const TWAPPanel = () => {
         <MaxDuration />
         <MainSubmit />
       </StyledColumnFlex>
-      <OrderSummary>
-        <Components.OrderSummaryDetails />
-      </OrderSummary>
+
       <StyledPoweredBy />
     </div>
   );
@@ -294,14 +255,7 @@ const LimitPanel = () => {
         </StyledTopColumn>
         <MainSubmit />
       </StyledColumnFlex>
-      <OrderSummary>
-        <TwapStyles.StyledColumnFlex>
-          <Components.OrderSummaryDetailsDeadline />
-          <Components.OrderSummaryDetailsOrderType />
-          <Components.OrderSummaryDetailsChunkSize />
-          <Components.OrderSummaryDetailsMinDstAmount />
-        </TwapStyles.StyledColumnFlex>
-      </OrderSummary>
+
       <StyledPoweredBy />
     </div>
   );
@@ -352,4 +306,4 @@ const TradeInterval = () => {
   );
 };
 
-export { TWAP, Orders };
+export { TWAP };
