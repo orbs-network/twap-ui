@@ -1,23 +1,19 @@
 import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeOrders, StyledPancakeTwap } from "./styles";
 import { TWAP } from "@orbs-network/twap-ui-pancake";
 import { useConnectWallet, useGetTokens, useIsMobile, usePriceUSD, useTheme, useTrade } from "./hooks";
-import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, Popup, TokensList, UISelector } from "./Components";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { erc20s, zeroAddress } from "@defi.org/web3-candies";
+import { erc20s, network, zeroAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
 import { Button, styled, Typography } from "@mui/material";
-import { Components, mapKeys } from "@orbs-network/twap-ui";
+import { Components, Configs, mapKeys } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
 import { DappProvider } from "./context";
 const config = Configs.PancakeSwap;
 
-let native = {
-  ...config.nativeToken,
-  logoURI: config.nativeToken.logoUrl,
-};
+let native = network(config.chainId).native;
 
 const parseListToken = (tokenList: any) => {
   const result = tokenList.tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({

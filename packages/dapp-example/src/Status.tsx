@@ -51,7 +51,7 @@ function useBackupTakersStatus() {
     {
       enabled: !!config,
       refetchInterval: 60_000,
-    }
+    },
   ).data;
 }
 
@@ -83,14 +83,14 @@ function useOrbsL3TakersStatus(dapp?: Dapp) {
       });
       const online = sortBy(
         result.filter((r: any) => r.status),
-        (r: any) => r.balance
+        (r: any) => r.balance,
       );
       return { status: online.length >= 10, balances: online.map((n: any) => n.balance) };
     },
     {
       // enabled: !!config,
       enabled: false,
-    }
+    },
   ).data;
 }
 

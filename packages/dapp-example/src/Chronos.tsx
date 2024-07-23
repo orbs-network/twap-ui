@@ -1,18 +1,21 @@
 import { StyledChronos, StyledStyledChronosPanel, StyledStyledChronosOrders, StyledChronosLayout, StyledModalContent } from "./styles";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
-import { Configs } from "@orbs-network/twap";
+import { Configs } from "@orbs-network/twap-ui";
+
 import { TWAP } from "@orbs-network/twap-ui-chronos";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { erc20s, zeroAddress, erc20sData, isNativeAddress } from "@defi.org/web3-candies";
+import { erc20s, zeroAddress, erc20sData, isNativeAddress, network } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { DappProvider } from "./context";
 import { size } from "@orbs-network/twap-ui";
 const config = Configs.Chronos;
 
 const tokensURL = "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json";
+
+const nativeToken = network(config.chainId).native;
 
 const parseListToken = (item?: any[]) => {
   return item?.map((token: any) => {
@@ -21,7 +24,7 @@ const parseListToken = (item?: any[]) => {
       symbol: token.symbol,
       name: token.name,
       address: token.address,
-      logoURI: isNativeAddress(token.address) ? config.nativeToken.logoUrl : token.logoURI,
+      logoURI: isNativeAddress(token.address) ? nativeToken.logoUrl : token.logoURI,
     };
   });
 };
@@ -84,7 +87,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     (symbol: string) => {
       return dappTokens.find((t: any) => t.symbol === symbol)?.logoURI;
     },
-    [dappTokens]
+    [dappTokens],
   );
 
   return (

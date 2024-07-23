@@ -24,5 +24,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       </Router>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </QueryClientProvider>
-  </Web3ReactProvider>
+  </Web3ReactProvider>,
 );

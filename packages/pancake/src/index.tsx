@@ -11,6 +11,8 @@ import {
   LimitSwitchArgs,
   compact,
   isEmpty,
+  Configs,
+  Token,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -56,8 +58,7 @@ import {
   StyledTokenSelect,
   StyledUSD,
 } from "./styles";
-import { eqIgnoreCase, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
-import { Configs, TokenData } from "@orbs-network/twap";
+import { eqIgnoreCase, isNativeAddress, network, zeroAddress } from "@defi.org/web3-candies";
 import Web3 from "web3";
 import BN from "bignumber.js";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
@@ -80,7 +81,6 @@ const uiPreferences: TwapContextUIPreferences = {
   usdPrefix: "~",
   usdEmptyUI: <></>,
   balanceEmptyUI: <></>,
-  switchVariant: "ios",
   inputPlaceholder: "0.0",
 };
 
@@ -98,7 +98,7 @@ const Tooltip = ({ tooltipText, children }: TooltipProps) => {
 
 const config = Configs.PancakeSwap;
 
-export const parseToken = (rawToken: any): TokenData | undefined => {
+export const parseToken = (rawToken: any): Token | undefined => {
   if (!rawToken) return;
 
   const { address, decimals, symbol, logoURI } = rawToken;
@@ -108,7 +108,7 @@ export const parseToken = (rawToken: any): TokenData | undefined => {
     return;
   }
   if (!address || isNativeAddress(address) || address === "BNB") {
-    return config.nativeToken;
+    return network(config.chainId).native;
   }
   return {
     address: Web3.utils.toChecksumAddress(address),
@@ -119,7 +119,7 @@ export const parseToken = (rawToken: any): TokenData | undefined => {
 };
 
 const Balance = ({ isSrc }: { isSrc?: boolean }) => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
 
   return (
     <StyledBalanceContainer onClick={isSrc ? () => onPercentClick(1) : () => {}}>
@@ -159,16 +159,18 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
-  const srcAmount = hooks.useSrcAmount().srcAmountBN;
+  const onPercentClick = hooks.useOnSrcAmountPercent();
+  const srcAmount = hooks.useSrcAmount().amount;
 
   const srcBalance = hooks.useSrcBalance().data;
 
   const maxSrcInputAmount = hooks.useMaxSrcInputAmount();
 
   const percent = useMemo(() => {
-    return srcAmount.dividedBy(srcBalance || "0").toNumber();
-  }, [srcAmount.toString(), srcBalance]);
+    return BN(srcAmount)
+      .dividedBy(srcBalance || "0")
+      .toNumber();
+  }, [srcAmount, srcBalance]);
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -236,9 +238,10 @@ const useMarketPrice = () => {
 
 const useAddresses = () => {
   const context = useAdapterContext();
+  const wTokenAddress = hooks.useNetwork()?.wToken.address;
   const wrappedAddress = useMemo(() => {
-    return context.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", config.wToken.address || ""))?.address;
-  }, [context.srcToken, context.dappTokens]);
+    return context.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""))?.address;
+  }, [context.srcToken, context.dappTokens, wTokenAddress]);
 
   return useMemo(() => {
     const srcAddress = context.srcToken?.address;
@@ -284,7 +287,7 @@ const TWAPContent = memo((props: PancakeProps) => {
     };
   }, [props.dappTokens, props.nativeToken]);
 
-  const parsedTokens = useMemo((): TokenData[] => {
+  const parsedTokens = useMemo((): Token[] => {
     if (!dappTokens || isEmpty(dappTokens)) return [];
     const res = Object.values(dappTokens)?.map((token: any) => {
       return parseToken(token);
@@ -312,9 +315,8 @@ const TWAPContent = memo((props: PancakeProps) => {
         uiPreferences={uiPreferences}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
-        isDarkTheme={props.isDarkTheme}
         isMobile={props.isMobile}
-        connectedChainId={props.connectedChainId}
+        chainId={props.connectedChainId}
         enableQueryParams={true}
         minNativeTokenBalance="0.0035"
         isLimitPanel={props.limit}
@@ -377,7 +379,7 @@ const TopPanel = () => {
 
 const OpenConfirmationModalButton = () => {
   const { ConnectButton } = useAdapterContext();
-  const provider = useTwapContext().dappProps.provider;
+  const provider = useAdapterContext().provider;
 
   if (!provider) {
     return (
@@ -423,7 +425,7 @@ const useTokenSelectClick = (isSrcToken?: boolean) => {
     (token: any, isSrcToken?: boolean) => {
       selectToken({ isSrc: !!isSrcToken, token });
     },
-    [selectToken, isSrcToken]
+    [selectToken, isSrcToken],
   );
 
   return useAdapterContext().useTokenModal?.(onSelect, srcToken, dstToken, isSrcToken);

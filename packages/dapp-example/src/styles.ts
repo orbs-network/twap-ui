@@ -3,9 +3,8 @@ import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import IconButton from "@mui/material/IconButton";
-import { Styles as TwapStyles } from "@orbs-network/twap-ui";
+import { Styles as TwapStyles, Configs } from "@orbs-network/twap-ui";
 import { DappLayout } from "./Components";
-import { Configs } from "@orbs-network/twap";
 
 const darktheme = createTheme({
   palette: {
@@ -27,7 +26,6 @@ const isDarkMode = (theme: Theme) => theme.palette.mode === "dark";
 
 const fonts = {
   [Configs.Chronos.name.toLowerCase()]: "TT Firs Neue Trial",
-  [Configs.SpiritSwap.name.toLowerCase()]: "Jost",
   [Configs.QuickSwap.name.toLowerCase()]: "Inter",
   Kinetix: "Inter",
   [Configs.Thena.name.toLowerCase()]: "Inter",
@@ -454,7 +452,7 @@ export const StyledPancakeLayout = styled(DappLayout)({
 });
 
 export const StyledSushiLayout = styled(DappLayout)({
-  maxWidth: 490,
+  maxWidth: 480,
   width: "calc(100% - 30px)",
 });
 
@@ -485,7 +483,7 @@ export const StyledCloseIcon = styled("button")({
 
 export const StyledModalContent = styled(Box)({
   width: "100%",
-  height: 500,
+
   border: "1px solid rgb(55, 65, 81)",
   background: "black",
   display: "flex",
@@ -497,6 +495,13 @@ export const StyledModalContent = styled(Box)({
   left: "50%",
 });
 
+export const StyledSushiModalContent = styled(StyledModalContent)({
+background:'rgb(30 41 59/1)',
+padding: 20,
+border:'unset',
+borderRadius: 16
+})
+
 export const StyledListToken = styled(Box)({
   cursor: "pointer",
   display: "flex",
@@ -505,6 +510,7 @@ export const StyledListToken = styled(Box)({
   padding: "10px 30px",
   transition: "0.2s all",
   width: "100%",
+  justifyContent: "space-between",
   "&:hover": {
     background: "rgba(255,255,255, 0.07)",
   },

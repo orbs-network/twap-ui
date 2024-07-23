@@ -1,6 +1,17 @@
-import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, useTwapContext, TwapContextUIPreferences, hooks, TooltipProps } from "@orbs-network/twap-ui";
+import {
+  Components,
+  Styles as TwapStyles,
+  Translations,
+  TwapAdapter,
+  TWAPProps,
+  useTwapContext,
+  TwapContextUIPreferences,
+  hooks,
+  TooltipProps,
+  Configs,
+  Token,
+} from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useCallback, useContext, useMemo } from "react";
 import Web3 from "web3";
 import {
@@ -19,7 +30,7 @@ import {
   StyledTopGrid,
   StyledTradeSize,
 } from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, network } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
@@ -40,13 +51,12 @@ const Button = (props: any) => {
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
-  switchVariant: "ios",
   usdSuffix: " USD",
   usdPrefix: `≈ `,
 };
 
 const MaxButton = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
   const translations = useTwapContext().translations;
 
   return <StyledMaxButton onClick={() => onPercentClick(1)}>{translations.max.toUpperCase()}</StyledMaxButton>;
@@ -61,7 +71,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     (token: any) => {
       selectToken({ isSrc: !!isSrcToken, token });
     },
-    [selectToken, isSrcToken]
+    [selectToken, isSrcToken],
   );
   // const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
 
@@ -88,13 +98,15 @@ const Tooltip = (props: TooltipProps) => {
   return <div></div>;
 };
 
-const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string): TokenData | undefined => {
+const nativeToken = network(config.chainId).native;
+
+const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string): Token | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!rawToken.address || isNativeAddress(rawToken.address)) {
-    return config.nativeToken;
+    return nativeToken;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
@@ -131,7 +143,7 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       translations={translations as Translations}
       provider={props.provider}
       account={props.account}
-      connectedChainId={props.connectedChainId}
+      chainId={props.connectedChainId}
       dappTokens={props.dappTokens}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}

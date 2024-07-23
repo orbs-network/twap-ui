@@ -4,7 +4,7 @@ import { Icon, NumericInput, TokenDisplay } from "../base";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
 import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
-import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket } from "../../hooks/hooks";
+import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket } from "../../hooks/lib";
 import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps, LimitPriceInputProps } from "../../types";
 import { useOnLimitPercentageClick } from "./hooks";
 import { amountUiV2, formatDecimals } from "../../utils";
@@ -112,14 +112,14 @@ const Input = () => {
   const { Components } = useLimitPanelContext();
   const { state, dstToken } = useTwapContext();
   const { isMarketOrder, isInvertedLimitPrice, isCustomLimitPrice, customLimitPrice } = state;
-  const { isLoading, limitPrice } = useLimitPrice();
+  const { isLoading, priceUi } = useLimitPrice();
   const onChange = stateActions.useOnLimitChange();
 
   const limitPriceUi = useMemo(() => {
     if (isCustomLimitPrice) {
       return customLimitPrice;
     }
-    let res = amountUiV2(dstToken?.decimals, limitPrice);
+    let res = priceUi;
 
     if (isInvertedLimitPrice) {
       res = BN(1)
@@ -128,7 +128,7 @@ const Input = () => {
     }
 
     return formatDecimals(res);
-  }, [customLimitPrice, isCustomLimitPrice, isInvertedLimitPrice, limitPrice, dstToken]);
+  }, [customLimitPrice, isCustomLimitPrice, isInvertedLimitPrice, priceUi, dstToken]);
 
   const [value, setValue] = useState("");
 
@@ -195,7 +195,7 @@ const PercentButton = ({ percent }: { percent: string }) => {
   const { isInvertedLimitPrice: inverted, isMarketOrder, limitPricePercent } = state;
   const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
 
-  const limitPrice = useLimitPrice().limitPrice;
+  const limitPrice = useLimitPrice().price;
   const Components = useLimitPanelContext().Components;
 
   const onPercentageChange = useOnLimitPercentageClick();

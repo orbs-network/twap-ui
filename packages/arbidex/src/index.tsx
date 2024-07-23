@@ -1,6 +1,17 @@
-import { Components, Styles as TwapStyles, Translations, TwapAdapter, TWAPProps, TwapContextUIPreferences, hooks, useTwapContext, TooltipProps } from "@orbs-network/twap-ui";
+import {
+  Components,
+  Styles as TwapStyles,
+  Translations,
+  TwapAdapter,
+  TWAPProps,
+  TwapContextUIPreferences,
+  hooks,
+  useTwapContext,
+  TooltipProps,
+  Token,
+  Configs,
+} from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useCallback, useContext, useMemo } from "react";
 import Web3 from "web3";
 import {
@@ -16,7 +27,7 @@ import {
   StyledTopGrid,
   StyledTradeSize,
 } from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, network } from "@defi.org/web3-candies";
 import { memo } from "react";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 import { HiArrowDown } from "@react-icons/all-files/hi/HiArrowDown";
@@ -24,7 +35,6 @@ const config = Configs.Arbidex;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
-  switchVariant: "ios",
   usdSuffix: " USD",
   usdPrefix: "≈ ",
 };
@@ -38,7 +48,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     (token: any) => {
       selectToken({ isSrc: !!isSrcToken, token });
     },
-    [selectToken, isSrcToken]
+    [selectToken, isSrcToken],
   );
   // const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
 
@@ -57,14 +67,14 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     </>
   );
 };
-
-const parseToken = (rawToken: any): TokenData | undefined => {
+const nativeToken = network(config.chainId).native;
+const parseToken = (rawToken: any): Token | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!rawToken.address || isNativeAddress(rawToken.address)) {
-    return config.nativeToken;
+    return nativeToken;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
@@ -108,7 +118,7 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       translations={translations as Translations}
       provider={props.provider}
       account={props.account}
-      connectedChainId={props.connectedChainId}
+      chainId={props.connectedChainId}
       dappTokens={props.dappTokens}
       parsedTokens={[]}
       onDstTokenSelected={props.onDstTokenSelected}

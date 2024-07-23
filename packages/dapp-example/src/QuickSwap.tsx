@@ -1,6 +1,5 @@
 import { StyledQuickswapBox, StyledModalContent, StyledQuickswapLayout, StyledQuickswap } from "./styles";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
-import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
@@ -8,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { erc20s } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { TWAP } from "@orbs-network/twap-ui-quickswap";
-import { mapKeys, size } from "@orbs-network/twap-ui";
+import { mapKeys, size, Configs } from "@orbs-network/twap-ui";
 const config = Configs.QuickSwap;
 
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/3890.png";
@@ -42,7 +41,8 @@ interface TokenSelectModalProps {
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return rawList.map((rawToken: any) => {
+
+  return rawList?.map((rawToken: any) => {
     return {
       token: {
         address: rawToken.address ?? rawToken.tokenInfo?.address,
@@ -93,7 +93,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       }
       return token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
     },
-    [dappTokens]
+    [dappTokens],
   );
 
   const onInputChange = (e: any) => {

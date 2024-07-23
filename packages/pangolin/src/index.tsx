@@ -1,11 +1,9 @@
-import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps } from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, Configs, Token } from "@orbs-network/twap-ui";
 import { memo, useCallback, useState, createContext, ReactNode, useContext } from "react";
 import translations from "./i18n/en.json";
-import React from "react";
-import { TokenData, Configs } from "@orbs-network/twap";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, network } from "@defi.org/web3-candies";
 
 interface PangolinTWAPProps extends TWAPProps {
   theme: any;
@@ -38,7 +36,7 @@ const AdapterContextProvider = ({ twapProps, children }: ContextProps) => {
 
 const useAdapterContext = () => useContext(Context);
 
-const parseToken = (rawToken: any): TokenData | undefined => {
+const parseToken = (rawToken: any): Token | undefined => {
   const { config } = getConfig();
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
@@ -46,7 +44,7 @@ const parseToken = (rawToken: any): TokenData | undefined => {
   }
 
   if (!rawToken.address || isNativeAddress(rawToken.address)) {
-    return config.nativeToken;
+    return network(config.chainId).native;
   }
 
   return {
@@ -91,7 +89,7 @@ const TWAP = memo((props: PangolinTWAPProps) => {
       translations={translations as Translations}
       provider={props.provider}
       account={props.account}
-      connectedChainId={props.connectedChainId}
+      chainId={props.connectedChainId}
       askDataParams={[partnerDaas]}
       dappTokens={props.dappTokens}
       onSrcTokenSelected={props.onSrcTokenSelected}
@@ -116,7 +114,7 @@ const TWAPPanel = () => {
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
-      <Components.SubmitButton />
+      {/* <Components.SubmitButton /> */}
 
       <Components.PoweredBy />
     </>
@@ -129,7 +127,7 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <Components.ChangeTokensOrder />
       <TokenPanel />
-      <Components.SubmitButton />
+      {/* <Components.SubmitButton /> */}
       <Components.PoweredBy />
     </>
   );
@@ -142,7 +140,7 @@ const buttons = [
   { text: "100%", value: 1 },
 ];
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
 
   return (
     <TwapStyles.StyledRowFlex gap={5} style={{ width: "auto" }}>

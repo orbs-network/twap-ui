@@ -1,11 +1,10 @@
-import { Components, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, TWAPProps } from "@orbs-network/twap-ui";
+import { Components, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, TWAPProps, Configs, Token } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 
-import { createContext, memo, ReactNode, useCallback, useContext, useEffect, useState } from "react";
-import { Configs, TokenData } from "@orbs-network/twap";
+import { createContext, memo, useCallback, useContext, useEffect, useState } from "react";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, network } from "@defi.org/web3-candies";
 
 interface QuickSwapTWAPProps extends TWAPProps {
   connect: () => void;
@@ -34,14 +33,15 @@ interface QuickSwapRawToken {
 }
 
 const config = Configs.QuickSwap;
+const nativeToken = network(config.chainId).native;
 
-const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): TokenData | undefined => {
+const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): Token | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!rawToken.address || isNativeAddress(rawToken.address)) {
-    return config.nativeToken;
+    return nativeToken;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
@@ -109,7 +109,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
   const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {
@@ -137,7 +137,7 @@ interface Props extends QuickSwapTWAPProps {
 }
 
 const AmountUpdater = () => {
-  const srcAmount = hooks.useSrcAmount().srcAmountBN?.toString();
+  const srcAmount = hooks.useSrcAmount().amount;
 
   const onInputChange = useAdapterContext().onInputChange;
   useEffect(() => {
@@ -189,9 +189,7 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <TwapStyles.StyledColumnFlex gap={12}>
-        <Components.SubmitButton isMain />
-      </TwapStyles.StyledColumnFlex>
+      <TwapStyles.StyledColumnFlex gap={12}></TwapStyles.StyledColumnFlex>
 
       <Components.PoweredBy />
     </div>
@@ -208,7 +206,6 @@ const TWAPPanel = () => {
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
-        <Components.SubmitButton isMain />
       </TwapStyles.StyledColumnFlex>
 
       <Components.PoweredBy />

@@ -1,10 +1,9 @@
 import { TokenData, parsebn, maxUint256, bn } from "@defi.org/web3-candies";
 import moment from "moment";
-import { AddressPadding, Translations } from "./types";
+import { AddressPadding, Config, Translations } from "./types";
 import { EXPLORER_URLS, QUERY_PARAMS, STABLE_TOKENS } from "./consts";
 import BN from "bignumber.js";
 import { THE_GRAPH_ORDERS_API } from "./config";
-import { Config } from "@orbs-network/twap";
 export const logger = (...args: any[]) => {
   // let debug;
   // if (window) {
@@ -325,11 +324,14 @@ export const size = (value: any): number => {
 };
 
 export const mapKeys = <T>(obj: { [key: string]: T }, keyMapper: (value: T, key: string) => string): { [key: string]: T } => {
-  return Object.keys(obj).reduce((result, key) => {
-    const newKey = keyMapper(obj[key], key);
-    result[newKey] = obj[key];
-    return result;
-  }, {} as { [key: string]: T });
+  return Object.keys(obj).reduce(
+    (result, key) => {
+      const newKey = keyMapper(obj[key], key);
+      result[newKey] = obj[key];
+      return result;
+    },
+    {} as { [key: string]: T },
+  );
 };
 
 export const sortBy = <T>(array: T[], iteratee: (item: T) => number): T[] => {

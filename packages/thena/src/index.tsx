@@ -1,9 +1,8 @@
-import { Components, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, TwapContextUIPreferences } from "@orbs-network/twap-ui";
+import { Components, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, TwapContextUIPreferences, Configs, Token } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
-import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
+import { eqIgnoreCase, isNativeAddress, network, networks } from "@defi.org/web3-candies";
 import { TWAPProps } from "@orbs-network/twap-ui";
 import { memo, ReactNode, useCallback, useState } from "react";
 import {
@@ -18,7 +17,6 @@ import {
   StyledPoweredBy,
   StyledSubmit,
   StyledTokenChange,
-  StyledDisclaimerText,
   darkTheme,
   lightTheme,
   StyledTokenPanelUsd,
@@ -30,7 +28,6 @@ import { useTwapContext } from "@orbs-network/twap-ui";
 const uiPreferences: TwapContextUIPreferences = {
   usdPrefix: "$",
   inputPlaceholder: "0.0",
-  switchVariant: "ios",
 };
 
 const MemoizedTokenModal = memo((props: TWAPTokenSelectProps) => {
@@ -58,7 +55,7 @@ const TokenSelectModal = ({ onClose, isSrc, isOpen }: any) => {
       onTokenSelectedCallback({ isSrc, token });
       onClose();
     },
-    [onTokenSelectedCallback, isSrc]
+    [onTokenSelectedCallback, isSrc],
   );
   const { srcToken, dstToken } = useTwapContext();
 
@@ -102,7 +99,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -127,14 +124,14 @@ interface ThenaTWAPProps extends TWAPProps {
   setFromAmount: (amount: string) => void;
 }
 
-const parseToken = (rawToken: any): TokenData | undefined => {
+const parseToken = (rawToken: any): Token | undefined => {
   const { address, decimals, symbol, logoURI } = rawToken;
   if (!symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!address || isNativeAddress(address) || address === "BNB") {
-    return config.nativeToken;
+    return network(config.chainId).native;
   }
   return {
     address: Web3.utils.toChecksumAddress(address),
@@ -166,7 +163,7 @@ export const useProvider = (props: ThenaTWAPProps) => {
 };
 
 const AmountUpdater = () => {
-  const srcAmount = hooks.useSrcAmount().srcAmountUi;
+  const srcAmount = hooks.useSrcAmount().amountUi;
   const setFromAmount = useAdapterContext().setFromAmount;
   useEffect(() => {
     setFromAmount(srcAmount || "0");
@@ -176,7 +173,7 @@ const AmountUpdater = () => {
 };
 
 const usePriceUSD = (address?: string) => {
-  const dappTokens = useTwapContext().dappProps.dappTokens;
+  const dappTokens = useAdapterContext().dappTokens;
   return useMemo(() => {
     if (!address) return undefined;
     const token = dappTokens?.find((it: any) => eqIgnoreCase(it.address, address));
@@ -263,7 +260,7 @@ const LimitPanel = () => {
 
 const MainSubmit = () => {
   const account = useAdapterContext().account;
-  return <StyledSubmit isMain connected={account ? 1 : 0} />;
+  return <StyledSubmit connected={account ? 1 : 0} />;
 };
 
 const TradeSize = () => {

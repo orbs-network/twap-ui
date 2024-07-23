@@ -1,8 +1,20 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { Components, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, hooks, TWAPProps, REFETCH_GAS_PRICE, amountBN } from "@orbs-network/twap-ui";
+import {
+  Components,
+  Translations,
+  TwapAdapter,
+  useTwapContext,
+  Styles as TwapStyles,
+  hooks,
+  TWAPProps,
+  REFETCH_GAS_PRICE,
+  amountBN,
+  Configs,
+  Token,
+  Styles,
+} from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
-import { Configs, TokenData } from "@orbs-network/twap";
+import { createContext, useCallback, useContext, useMemo } from "react";
 import Web3 from "web3";
 import {
   configureStyles,
@@ -18,17 +30,12 @@ import {
   StyledTokenSelect,
   StyledTradeSize,
 } from "./styles";
-import { eqIgnoreCase, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
-import { StyledOneLineText } from "@orbs-network/twap-ui/dist/styles";
+import { eqIgnoreCase, isNativeAddress, network, zeroAddress } from "@defi.org/web3-candies";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
-import { TwapContextUIPreferences, compact, isEmpty } from "@orbs-network/twap-ui";
+import { compact, isEmpty } from "@orbs-network/twap-ui";
 import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SyncSwapPallete } from "./types";
-
-const uiPreferences: TwapContextUIPreferences = {
-  switchVariant: "default",
-};
 
 interface SyncSwapProps extends TWAPProps {
   connect: () => void;
@@ -38,7 +45,7 @@ interface SyncSwapProps extends TWAPProps {
 }
 
 const config = Configs.SyncSwap;
-const parseToken = (rawToken: any): TokenData | undefined => {
+const parseToken = (rawToken: any): Token | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
@@ -46,7 +53,7 @@ const parseToken = (rawToken: any): TokenData | undefined => {
   const isNative = rawToken.symbol === "ETH" || isNativeAddress(rawToken.address);
 
   if (!rawToken.address || isNative) {
-    return config.nativeToken;
+    return network(config.chainId).native;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
@@ -94,7 +101,7 @@ export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: b
   return (
     <StyledTokenSelect onClick={onClick}>
       <TwapStyles.StyledRowFlex gap={5}>
-        {token ? <Components.TokenLogoAndSymbol isSrc={isSrc} /> : <StyledOneLineText>{translations.selectToken}</StyledOneLineText>}
+        {token ? <Components.TokenLogoAndSymbol isSrc={isSrc} /> : <Styles.StyledOneLineText>{translations.selectToken}</Styles.StyledOneLineText>}
         <Components.Base.Icon icon={<IoIosArrowDown size={20} />} />
       </TwapStyles.StyledRowFlex>
     </StyledTokenSelect>
@@ -102,7 +109,7 @@ export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: b
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -135,7 +142,7 @@ const useGasPriceQuery = (props: Props) => {
     {
       refetchInterval: REFETCH_GAS_PRICE,
       enabled: !!props.useGasPrice,
-    }
+    },
   );
 };
 
@@ -170,15 +177,15 @@ const Adapter = (props: Props) => {
   // }, [palette]);
 
   const priceUsd = useCallback(
-    async (address: string, token?: TokenData) => {
+    async (address: string, token?: Token) => {
       const _address = eqIgnoreCase(address, zeroAddress) ? SYNCSWAP_ZERO_ADDRESS : address;
       const result = await props.priceUsd(_address, amountBN(token, "1").toString());
       return Number(result);
     },
-    [props.priceUsd]
+    [props.priceUsd],
   );
 
-  const parsedTokens = useMemo((): TokenData[] => {
+  const parsedTokens = useMemo((): Token[] => {
     if (isEmpty(props.dappTokens)) return [];
     const res = props.dappTokens.map((token: any) => {
       return parseToken(token);
@@ -193,7 +200,6 @@ const Adapter = (props: Props) => {
         parsedTokens={parsedTokens}
         connect={connect}
         config={config}
-        uiPreferences={uiPreferences}
         maxFeePerGas={gasPrice}
         priorityFeePerGas={"0"}
         translations={translations as Translations}

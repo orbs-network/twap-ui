@@ -12,6 +12,9 @@ import {
   size,
   compact,
   TooltipProps,
+  Status,
+  Configs,
+  Token,
 } from "@orbs-network/twap-ui";
 import { memo, ReactNode, useCallback, useState, createContext, useContext, CSSProperties, useMemo, useEffect } from "react";
 import translations from "./i18n/en.json";
@@ -30,7 +33,6 @@ import {
   StyledUSD,
   StyledBigBorder,
   StyledTimeSelectCard,
-  StyledChunksSlider,
   StyledOrders,
   StyledOrdersHeader,
   lightTheme,
@@ -43,8 +45,7 @@ import {
   StyledMobileTabsMenuButton,
   StyledLimitSwitch,
 } from "./styles";
-import { Configs, Status, TokenData } from "@orbs-network/twap";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, network } from "@defi.org/web3-candies";
 import Web3 from "web3";
 import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";
@@ -67,7 +68,6 @@ interface ChronosTWAPProps extends TWAPProps {
 const uiPreferences: TwapContextUIPreferences = {
   getOrdersTabsLabel: (name: string, amount: number) => `${name} (${amount})`,
   qrSize: 120,
-  switchVariant: "ios",
   orderTabsToExclude: [Status.Canceled],
 };
 
@@ -84,14 +84,15 @@ interface ChronosRawToken {
 }
 
 const config = Configs.Chronos;
+const nativeToken = network(config.chainId).native;
 
-const parseToken = (getTokenLogoURL: (symbol: string) => string, rawToken: ChronosRawToken): TokenData | undefined => {
+const parseToken = (getTokenLogoURL: (symbol: string) => string, rawToken: ChronosRawToken): Token | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!rawToken.address || isNativeAddress(rawToken.address)) {
-    return config.nativeToken;
+    return nativeToken;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
@@ -101,7 +102,7 @@ const parseToken = (getTokenLogoURL: (symbol: string) => string, rawToken: Chron
   };
 };
 
-const useParsedTokens = (props: TWAPProps): TokenData[] => {
+const useParsedTokens = (props: TWAPProps): Token[] => {
   const { getTokenLogoURL, dappTokens } = useAdapterContext();
 
   return useMemo(() => {
@@ -109,7 +110,7 @@ const useParsedTokens = (props: TWAPProps): TokenData[] => {
       return [];
     }
 
-    const tokens = compact<TokenData>(dappTokens.map((rawToken) => parseToken(getTokenLogoURL, rawToken)));
+    const tokens = compact<Token>(dappTokens.map((rawToken) => parseToken(getTokenLogoURL, rawToken)));
 
     return tokens;
   }, [props.dappTokens, getTokenLogoURL]);
@@ -134,7 +135,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
-  const srcAmount = hooks.useSrcAmount().srcAmountUi;
+  const srcAmount = hooks.useSrcAmount().amountUi;
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -181,7 +182,7 @@ const USD = ({ children, disabled }: { children: ReactNode; disabled: boolean })
 const percent = [0.25, 0.5, 0.75, 1];
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
   const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {
@@ -204,9 +205,9 @@ const SrcTokenPercentSelector = () => {
 };
 
 const TokenSummary = () => {
-  const srcAmount = hooks.useSrcAmount().srcAmountUi;
+  const srcAmount = hooks.useSrcAmount().amountUi;
   const { srcToken, dstToken } = useTwapContext();
-  const dstAmount = hooks.useOutAmount().outAmountUi;
+  const dstAmount = hooks.useOutAmount().amountUi;
 
   const srcAmountFormatted = hooks.useFormatNumber({ value: srcAmount });
   const srcAmountFormattedTooltip = hooks.useFormatNumber({ value: srcAmount, decimalScale: 18 });
@@ -235,11 +236,9 @@ const TokenSummary = () => {
                 Sell {srcAmountFormatted} {srcToken?.symbol}
               </StyledSellTokenText>
             </Components.Base.Tooltip> */}
-            {!mobile && <Components.OrderSummaryPriceCompare />}
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
       </StyledTokenSummaryDisplay>
-      {mobile && <Components.OrderSummaryPriceCompare />}
     </TwapStyles.StyledColumnFlex>
   );
 };
@@ -284,14 +283,6 @@ const useProvider = (props: ChronosTWAPProps) => {
 
   return provider;
 };
-
-// const useMarketPrice = (props: UseMarketPriceProps) => {
-//   const { srcToken, dstToken, amount } = props;
-//   const useTrade = useAdapterContext().useTrade;
-
-//   const trade = useTrade!(srcToken?.address, dstToken?.address, BN(amount || 0).isZero() ? undefined : amount);
-//   return trade?.outAmount;
-// };
 
 const Tooltip = (props: TooltipProps) => {
   return <div>{props.children}</div>;
@@ -418,7 +409,6 @@ const OrdersLayout = () => {
   return (
     <StyledOrders className="twap-orders">
       <StyledOrdersHeader className="twap-chronos-orders-header">
-        <Components.Labels.OrdersLabel />
         <StyledOrderHeaderRight className="twap-chronos-orders-header-right">
           <Components.Base.Odnp />
         </StyledOrderHeaderRight>
@@ -441,10 +431,9 @@ const TWAPPanel = () => {
           <TradeIntervalSelect />
           <MaxDuration />
           <LimitPrice />
-          <StyledSubmit isMain />
         </StyledColumnFlex>
       </StyledColumnFlex>
-      <Components.ShowConfirmation />
+      {/* <Components.ShowConfirmation connect={} /> */}
       <StyledPoweredByOrbs />
     </div>
   );
@@ -459,9 +448,7 @@ const LimitPanel = () => {
           <ChangeTokensOrder />
           <TokenPanel />
         </StyledTopColumnFlex>
-        <StyledColumnFlex>
-          <StyledSubmit isMain />
-        </StyledColumnFlex>
+        <StyledColumnFlex></StyledColumnFlex>
       </StyledColumnFlex>
 
       <StyledPoweredByOrbs />
@@ -486,10 +473,8 @@ const TotalTrades = () => {
 };
 
 const MaxDuration = () => {
-  const srcAmountNotZero = hooks.useSrcAmountNotZero();
-
   return (
-    <StyledTimeSelectCard className="twap-max-duration" disabled={!srcAmountNotZero ? 1 : 0}>
+    <StyledTimeSelectCard className="twap-max-duration" disabled={1}>
       <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between" className="twap-max-duration-flex">
         <TwapStyles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto" }}>
           <Components.Labels.MaxDurationLabel />
@@ -521,17 +506,6 @@ const BigBorder = ({ children, style = {}, className = "" }: { children?: ReactN
     <StyledBigBorder style={style} className={className}>
       {children}
     </StyledBigBorder>
-  );
-};
-
-const ChunksSlider = () => {
-  const show = hooks.useChunksBiggerThanOne();
-
-  if (!show) return null;
-  return (
-    <StyledChunksSlider>
-      <div></div>
-    </StyledChunksSlider>
   );
 };
 

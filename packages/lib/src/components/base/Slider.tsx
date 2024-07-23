@@ -69,7 +69,7 @@ export const Slider: React.FC<SliderProps> = ({ min, max, value, onChange, class
         onChange(newValue);
       }
     },
-    [isDragging, max, min, onChange]
+    [isDragging, max, min, onChange],
   );
 
   useEffect(() => {

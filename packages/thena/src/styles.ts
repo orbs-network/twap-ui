@@ -198,7 +198,7 @@ export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
   gap: 8,
 });
 
-export const StyledSubmit = styled(Components.SubmitButton)<{ connected?: number }>(({ theme, connected }) => {
+export const StyledSubmit = styled("button")<{ connected?: number }>(({ theme, connected }) => {
   return {
     ...buttonStyles(theme),
     background: connected ? "rgb(53 36 61/1)" : "rgb(220 0 212/1)",
@@ -386,7 +386,3 @@ export const configureStyles = (theme: DefaultTheme) => {
     },
   };
 };
-
-export const StyledDisclaimerText = styled(Components.DisclaimerText)(({}) => ({
-  "*": {},
-}));

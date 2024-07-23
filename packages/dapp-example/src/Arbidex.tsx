@@ -2,15 +2,16 @@ import { StyledArbidexSwap, StyledArbidexBox, StyledArbidexLayout, StyledModalCo
 import { TWAP } from "@orbs-network/twap-ui-arbidex";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
-import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
-import { erc20sData, zeroAddress, erc20s, isNativeAddress } from "@defi.org/web3-candies";
+import { erc20sData, zeroAddress, erc20s, isNativeAddress, network } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useContext, useState } from "react";
-import { mapKeys } from "@orbs-network/twap-ui";
+import { Configs, mapKeys } from "@orbs-network/twap-ui";
 
 const config = Configs.Arbidex;
+
+const nativeToken = network(config.chainId).native;
 
 const parseListToken = (tokens?: any[]) => {
   return tokens?.map(({ symbol, address, decimals, name, logoURI }: any) => ({
@@ -18,7 +19,7 @@ const parseListToken = (tokens?: any[]) => {
     symbol,
     name,
     address,
-    logoURI: isNativeAddress(address) ? config.nativeToken.logoUrl : logoURI,
+    logoURI: isNativeAddress(address) ? nativeToken.logoUrl : logoURI,
   }));
 };
 

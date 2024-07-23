@@ -1,14 +1,10 @@
-import { StyledModalContent, StyledQuickswapLayout, StyledSyncSwap, StyledSyncSwapBox } from "./styles";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens } from "./hooks";
-import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
-import { Dapp, TokensList, UISelector } from "./Components";
-import { Popup } from "./Components";
+import { Dapp } from "./Components";
 import { useCallback, useEffect, useState } from "react";
 import { SelectorOption, TokenListItem } from "./types";
-import { TWAP } from "@orbs-network/twap-ui-syncswap";
-import { erc20s, zeroAddress, isNativeAddress } from "@defi.org/web3-candies";
-import { mapCollection, Styles } from "@orbs-network/twap-ui";
+import { erc20s, zeroAddress, isNativeAddress, network } from "@defi.org/web3-candies";
+import { mapCollection, Configs } from "@orbs-network/twap-ui";
 const config = Configs.SyncSwap;
 
 const palletes = [
@@ -136,7 +132,7 @@ export const parseList = (rawList?: any): TokenListItem[] => {
         address: rawToken.address,
         decimals: rawToken.decimals ?? 18,
         symbol: rawToken.symbol,
-        logoUrl: isNativeAddress(rawToken.address) ? config.nativeToken.logoUrl : `https://tokens.syncswap.xyz/tokens/${rawToken.address}/logo.png`,
+        logoUrl: isNativeAddress(rawToken.address) ? network(config.chainId).native.logoUrl : `https://tokens.syncswap.xyz/tokens/${rawToken.address}/logo.png`,
       },
       rawToken,
     };

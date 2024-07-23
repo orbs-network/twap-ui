@@ -5,6 +5,7 @@ import { useTwapContext } from "../../context/context";
 import { maxUint256 } from "@defi.org/web3-candies";
 import BN from "bignumber.js";
 import { CSSProperties } from "react";
+import { Loader } from "./Loader";
 export interface Props {
   onChange: (value: string) => void;
   value?: string | number;
@@ -21,13 +22,6 @@ export interface Props {
   minAmount?: number;
   style?: CSSProperties;
 }
-
-const InputLoader = () => {
-  const { inputLoader } = useTwapContext().uiPreferences;
-
-  return null;
-  // return inputLoader ? inputLoader : <StyledLoader className="twap-input-loader" width="75%" height="60%" />;
-};
 
 function NumericInput({
   style = {},
@@ -46,15 +40,15 @@ function NumericInput({
 }: Props) {
   const inputValue = value || minAmount || "";
 
-  const { inputPlaceholder, input, disableThousandSeparator } = useTwapContext().uiPreferences;
+  const { inputPlaceholder, disableThousandSeparator } = useTwapContext().uiPreferences;
 
   const _placeholder = placeholder || inputPlaceholder || "0.0";
 
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>
-      {loading && <InputLoader />}
+      {loading && <StyledLoader className="twap-input-loader" width="75%" height="60%" />}
 
-      <StyledFlex style={{ height: "100%" }}>
+      <StyledFlex style={{ height: "100%" }} className={`${loading ? 'twap-input-loading' : ''}`}>
         <NumericFormat
           allowNegative={false}
           disabled={disabled}
@@ -88,11 +82,11 @@ function NumericInput({
 
 export default NumericInput;
 
-// const StyledLoader = styled(Loader)({
-//   position: "absolute",
-//   top: "50%",
-//   transform: "translate(0, -50%)",
-// });
+const StyledLoader = styled(Loader)({
+  position: "absolute",
+  top: "50%",
+  transform: "translate(0, -50%)",
+});
 
 const StyledContainer = styled("div")({
   flex: 1,

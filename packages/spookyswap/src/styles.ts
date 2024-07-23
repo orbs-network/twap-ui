@@ -240,12 +240,6 @@ export const StyledPriceCard = styled(Components.Base.Card)({
   },
 });
 
-export const StyledSubmitButton = styled(Components.SubmitButton)({
-  marginTop: 20,
-  marginLeft: "auto",
-  marginRight: "auto",
-});
-
 export const configureStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   const darkMode = isDark(theme);

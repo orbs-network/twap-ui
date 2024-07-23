@@ -2,7 +2,7 @@ import { StyledBaseSwap, StyledBaseSwapBox, StyledBaseSwapLayout, StyledModalCon
 import { TWAP } from "@orbs-network/twap-ui-baseswap";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
-import { Configs } from "@orbs-network/twap";
+import { Configs } from "@orbs-network/twap-ui";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";

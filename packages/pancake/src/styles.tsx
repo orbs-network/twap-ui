@@ -533,15 +533,6 @@ export const StyledReset = styled(StyledMenuButton)({
   },
 });
 
-export const StyledAcceptDisclaimer = styled(Components.AcceptDisclaimer)({
-  justifyContent: "space-between",
-});
-
-export const StyledOutputAddress = styled(Components.OutputAddress)({
-  marginTop: 20,
-  fontSize: 14,
-});
-
 export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {

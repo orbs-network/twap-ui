@@ -44,7 +44,7 @@ export const StyledPanelInput = styled(Components.TokenPanelInput)({
 export const StyledSmallText = styled("span")(({ theme }) => {
   const styles = getStyles(theme);
   return {
-    color: styles.darkText,
+    color: `${styles.darkText}`,
     fontWeight: "500!important",
     fontSize: 17,
     small: {
@@ -59,6 +59,20 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-input-loading": {
+      opacity: 0
+    },
+    ".twap-adapter-wrapper": {
+      ".MuiTouchRipple-root": {
+        display: "none",
+      },
+      "*": {
+        fontFamily: "inherit",
+      },
+    },
+    ".twap-spinner": {
+      borderTop: '3px solid white'
+    },
     ".twap-order-menu": {
       ...cardBodyStyles(theme),
       minWidth: "100%",
@@ -74,15 +88,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         },
       },
     },
-    ".twap-adapter-wrapper": {
-      ".MuiTouchRipple-root": {
-        display: "none",
-      },
-      "*": {
-        fontFamily: "inherit",
-        color: styles.textColor,
-      },
-    },
+ 
     ".twap-order-container": {
       ...cardBodyStyles(theme),
       background: styles.isDarkMode ? "#ffffff0a" : "white",
@@ -112,8 +118,10 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         background: styles.isDarkMode ? "#ffffff0a" : "white",
         gap: 10,
       },
+
       ".twap-label p": {
         fontWeight: 500,
+
       },
       ".twap-order-display-details-row-right": {
         color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
@@ -134,6 +142,23 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         padding: 0,
       },
     },
+    ".twap-time-selector-button": {
+
+      ...selectTokenStyles(theme),
+      border:'unset',
+      borderRadius: 12,
+      padding: "8px 13px",
+
+      background: styles.isDarkMode ? "#ffffff0a" : "white",
+      color: styles.textColor,
+      p :{
+        fontSize: 14,
+        fontWeight: 500,
+        color:'inherit',
+        margin: 0
+      }
+
+    },
     ".twap-order-modal-submitted-logo": {
       svg: {
         fill: "rgb(59 130 246/1)",
@@ -152,11 +177,14 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-label": {
       p: {
-        color: "inherit",
         fontSize: 15,
         fontWeight: 600,
         letterSpacing: "-.025em",
+
       },
+      "*": {
+        color: styles.textColor,
+      }
     },
     ".twap-modal-content": {
       outline: "none!important",
@@ -172,9 +200,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         color: styles.textColor,
       },
     },
-    ".twap-button": {
-      ...buttonStyles,
-    },
     ".twap-odnp-button": {
       ...buttonStyles,
       minHeight: "unset",
@@ -186,11 +211,15 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         boxShadow: "none!important",
         border: "none!important",
         outline: "none!important",
+        color: styles.textColor,
         "&::placeholder": {
           color: isDarkMode ? "white!important" : "rgb(17 24 39/1)!important",
           opacity: 0.4,
         },
       },
+    },
+    ".twap-submit-button": {
+      ...buttonStyles,
     },
     ".twap-card": {
       background: isDarkMode ? "rgb(30 41 59/1)" : "white",
@@ -278,6 +307,7 @@ export const StyledBalance = styled(Styles.StyledRowFlex)<{ disabled?: number }>
     gap: 5,
     cursor: disabled ? "auto" : "pointer",
     width: "auto",
+    color: color,
     "*": {
       color: color,
     },
@@ -320,6 +350,7 @@ export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }
       width: 30,
       height: 30,
       borderRadius: "50%",
+    
       "&:hover": {
         background: bg,
         svg: {
@@ -329,8 +360,8 @@ export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }
     },
     svg: {
       transition: "0.2s all",
-      width: 27,
-      height: 27,
+      width: 20,
+      height: 20,
       fill: "rgb(59 130 246/1)",
     },
     "@media(max-width: 1000px)": {
@@ -367,7 +398,7 @@ const buttonStyles = {
   },
 };
 
-export const StyledSubmit = styled(Components.SubmitButton)({});
+export const StyledSubmit = styled("button")({});
 
 export const StyledPoweredBy = styled(Components.PoweredBy)({
   marginTop: 20,
@@ -377,6 +408,7 @@ const selectTokenStyles = (theme: DefaultTheme) => {
   const styles = getStyles(theme);
 
   return {
+    transition:'0.1s all',
     gap: 8,
     background: styles.isDarkMode ? "#ffffff0a" : "#0000000a",
     padding: 8,
@@ -405,6 +437,9 @@ const selectTokenStyles = (theme: DefaultTheme) => {
     ".twap-token-display": {
       gap: 8,
     },
+    "&:hover": {
+      background: styles.isDarkMode ? "#ffffff0f" : "#0000000a",
+    }
   };
 };
 
@@ -552,7 +587,7 @@ export const StyledSelectButton = styled("button")<{ selected: number }>(({ sele
   const selectedColor = styles.isDarkMode ? "" : "white";
   return {
     background: selected ? selectedBg : "#0000000a",
-    color: selected ? selectedColor : "",
+    color: styles.textColor,
     fontWeight: 500,
     padding: "5px 7px",
     borderRadius: 8,
@@ -596,26 +631,31 @@ export const StyledResetLimitButtonRight = styled(StyledSelectButton)({
   },
 });
 
-export const StyledLimitPanel = styled(Components.LimitPanel)({
-  ".twap-limit-panel-title": {
-    fontWeight: 500,
-    fontSize: 15,
-    gap: 2,
-    ".twap-token-display": {
-      padding: "3px 5px",
+export const StyledLimitPanel = styled(Components.LimitPanel)(({theme}) => {
+  const styles = getStyles(theme);
+  return {
+  
+    ".twap-limit-panel-title": {
+      fontWeight: 500,
+      fontSize: 15,
+      gap: 2,
+      ".twap-token-display": {
+        padding: "3px 5px",
+      },
     },
-  },
-
-  ".twap-limit-panel-token-select": {
-    fontWeight: 500,
-    fontSize: 15,
-  },
-  ".twap-limit-panel-invert-button": {
-    svg: {
-      width: 20,
-      height: 20,
+  
+    ".twap-limit-panel-token-select": {
+      fontWeight: 500,
+      fontSize: 15,
     },
-  },
+    ".twap-limit-panel-invert-button": {
+      svg: {
+        width: 20,
+        height: 20,
+        color: styles.textColor
+      },
+    },
+  }
 });
 
 export const StyledTradeInterval = styled(Components.TradeInterval)(({ theme }) => {
@@ -668,6 +708,8 @@ export const StyledTradeDurationRight = styled(CardBody)({
 export const StyledTradeIntervalResolution = styled(CardBody)({
   alignItems: "flex-end",
   display: "flex",
+  paddingTop: 0,
+  paddingBottom: 0, 
 });
 
 export const StyledChunksSelect = styled(Components.ChunkSelector)(({ theme }) => {
@@ -770,31 +812,37 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
   };
 });
 
-export const StyledOpenOrdersButton = styled(StyledCardBody)({
-  cursor: "pointer",
-  marginTop: 20,
-});
 
+
+export const StyledOrdersButton = styled(Components.OrderHistory.Button)(({theme}) => {
+  const styles = getStyles(theme);
+  return {
+    width: "100%",
+    ...cardBodyStyles(theme),
+    transition: "0.2s all",
+    cursor: "pointer",
+    fontSize: 15,
+    fontWeight: 500,
+    color: styles.textColor,
+    "&:hover": {
+      background: styles.boxHover,
+    },
+  }
+})
 export const StyledOrders = styled(Components.OrderHistory)(({ theme }) => {
   const styles = getStyles(theme);
   return {
-    ".twap-show-orders-btn": {
-      width: "100%",
-      ...cardBodyStyles(theme),
-      transition: "0.2s all",
-      cursor: "pointer",
-      fontSize: 15,
-      fontWeight: 500,
-      "&:hover": {
-        background: styles.boxHover,
-      },
-    },
+    "*": {
+    }
   };
 });
 
 export const StyledOrdersContent = styled(Components.OrderHistory.Content)(({ theme }) => {
-  const styled = getStyles(theme);
+  const styles = getStyles(theme);
   return {
+    "*": {
+      color: styles.textColor,
+    },
     ".twap-orders-list": {
       top: 0,
       height: "100%",
@@ -805,7 +853,7 @@ export const StyledOrdersContent = styled(Components.OrderHistory.Content)(({ th
     ".MuiLinearProgress-root": {
       borderRadius: 12,
     },
-    ".twap-order-token-progress": {
+    ".twap-order-token-progress": { 
       ".MuiLinearProgress-bar": {
         background: "rgb(59 130 246/1)",
       },
@@ -827,6 +875,7 @@ export const StyledTwap = styled("div")({
 export const StyledLimitPriceTitle = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = getStyles(theme);
   return {
+    color: styles.textColor,
     fontSize: 14,
     gap: 0,
     justifyContent: "flex-start",

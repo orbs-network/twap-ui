@@ -1,4 +1,4 @@
-import { Abi, eqIgnoreCase, estimateGasPrice, isNativeAddress, web3 } from "@defi.org/web3-candies";
+import { Abi, eqIgnoreCase, erc20, estimateGasPrice, isNativeAddress } from "@defi.org/web3-candies";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { useCallback, useMemo, useRef } from "react";
@@ -6,27 +6,38 @@ import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, ST
 import { useTwapContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
-import { amountBN, compact, groupBy, logger, orderBy } from "../utils";
-import { TokenData } from "@orbs-network/twap";
-import { getOrders } from "../helper";
-import { HistoryOrder, OrdersData } from "../types";
-import { useGetTokenFromParsedTokensList, useSrcAmount } from "./hooks";
+import { amountBNV2, compact, getTheGraphUrl, groupBy, logger, orderBy } from "../utils";
+import { HistoryOrder, OrdersData, Token } from "../types";
+import { useGetHasAllowance, useGetTokenFromParsedTokensList, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
+import { getGraphOrders } from "../order-history";
+import { useSrcAmount } from "./lib";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
-  const lib = useTwapContext().lib;
-
-  return useQuery(
-    ["useHasMinNativeTokenBalance", lib?.maker, lib?.config.chainId, minNativeTokenBalance],
+  const { web3, account, config } = useTwapContext();
+  const network = useNetwork();
+  const key = ["useHasMinNativeTokenBalance", account, config.chainId, minNativeTokenBalance];
+  const queryClient = useQueryClient();
+  const query = useQuery(
+    key,
     async () => {
-      const balance = await web3().eth.getBalance(lib!.maker);
-      return BN(balance).gte(amountBN(lib?.config.nativeToken, minNativeTokenBalance!));
+      const balance = await web3!.eth.getBalance(account!);
+      return BN(balance).gte(amountBNV2(network?.native.decimals, minNativeTokenBalance!));
     },
     {
-      enabled: !!lib?.maker && !!minNativeTokenBalance,
+      enabled: !!web3 && !!minNativeTokenBalance && !!account && !!config && !!network,
       staleTime: Infinity,
     }
   );
+
+  const ensureData = useCallback(() => {
+    return queryClient.ensureQueryData<ReturnType<typeof query.refetch>>(key);
+  }, [queryClient, key]);
+
+  return {
+    ...query,
+    ensureData
+  };
 };
 
 const useGetContract = () => {
@@ -42,13 +53,14 @@ const useGetContract = () => {
 };
 
 export const useFeeOnTransfer = (tokenAddress?: string) => {
-  const { lib } = useTwapContext();
+  const { config } = useTwapContext();
 
   const address = useMemo(() => {
-    const chainId = lib?.config.chainId;
-    if (!chainId) return undefined;
-    return feeOnTransferDetectorAddresses[chainId as keyof typeof feeOnTransferDetectorAddresses];
-  }, [lib?.config.chainId]);
+    if (!config.chainId) return undefined;
+    return feeOnTransferDetectorAddresses[config.chainId as keyof typeof feeOnTransferDetectorAddresses];
+  }, [config.chainId]);
+
+  const network = useNetwork();
 
   const getContract = useGetContract();
 
@@ -59,7 +71,7 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
         if (!contract) {
           return null;
         }
-        const res = await contract?.methods.validate(tokenAddress, lib?.config.wToken.address, AMOUNT_TO_BORROW).call();
+        const res = await contract?.methods.validate(tokenAddress, network?.wToken.address, AMOUNT_TO_BORROW).call();
         return {
           buyFee: res.buyFeeBps,
           sellFee: res.sellFeeBps,
@@ -69,17 +81,16 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
         return null;
       }
     },
-    queryKey: ["useFeeOnTransfer", tokenAddress, lib?.config.chainId, address],
-    enabled: !!tokenAddress && !!lib && !!address,
+    queryKey: ["useFeeOnTransfer", tokenAddress, config.chainId, address],
+    enabled: !!tokenAddress && !!config && !!address && !!network,
     staleTime: Infinity,
   });
 };
 
 export const useGasPrice = () => {
-  const { dappProps, lib, web3 } = useTwapContext();
-  const { maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = dappProps;
+  const { web3, maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
   const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(undefined, undefined, web3), {
-    enabled: !!lib && !!web3,
+    enabled: !!web3,
     refetchInterval: REFETCH_GAS_PRICE,
   });
 
@@ -94,18 +105,17 @@ export const useGasPrice = () => {
 };
 
 const useAllowance = () => {
-  const { lib, srcToken } = useTwapContext();
-  const amount = useSrcAmount().srcAmountBN;
+  const { srcToken, config, account } = useTwapContext();
+  const srcAmount = useSrcAmount().amount;
+  const getHasAllowance = useGetHasAllowance();
 
-  const wToken = lib?.config.wToken;
   const query = useQuery(
-    [QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, amount.toString()],
+    [QueryKeys.GET_ALLOWANCE, config.chainId, srcToken?.address, srcAmount],
     async () => {
-      const isNative = srcToken && isNativeAddress(srcToken?.address);
-      return lib!.hasAllowance(isNative ? wToken! : srcToken!, amount);
+      return getHasAllowance(srcToken!, srcAmount);
     },
     {
-      enabled: !!lib && !!srcToken && amount.gt(0) && !!wToken,
+      enabled: !!srcToken && BN(srcAmount).gt(0) && !!account && !!config,
       staleTime: STALE_ALLOWANCE,
       refetchOnWindowFocus: true,
     }
@@ -114,24 +124,17 @@ const useAllowance = () => {
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
-export const useBalance = (token?: TokenData, onSuccess?: (value: BN) => void, staleTime?: number) => {
-  const lib = useTwapContext().lib;
-  const key = [QueryKeys.GET_BALANCE, lib?.maker, token?.address];
-
-  const address = useRef("");
-  const client = useQueryClient();
+export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, staleTime?: number) => {
+  const { web3, account } = useTwapContext();
 
   const query = useQuery(
-    key,
+    [QueryKeys.GET_BALANCE, account, token?.address],
     () => {
-      if (address.current !== token?.address) {
-        onSuccess?.(client.getQueryData(key) || BN(0));
-        address.current = token?.address || "";
-      }
-      return lib!.makerBalance(token!);
+      if (isNativeAddress(token!.address)) return web3!.eth.getBalance(account!).then(BN);
+      else return erc20(token!.symbol, token!.address, token!.decimals).methods.balanceOf(account!).call().then(BN);
     },
     {
-      enabled: !!lib && !!token,
+      enabled: !!web3 && !!token && !!account,
       onSuccess,
       refetchInterval: REFETCH_BALANCE,
       staleTime,
@@ -141,21 +144,21 @@ export const useBalance = (token?: TokenData, onSuccess?: (value: BN) => void, s
 };
 
 const useOrderHistoryKey = () => {
-  const lib = useTwapContext().lib;
+  const { config, account } = useTwapContext();
 
-  return [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.exchangeAddress, lib?.config.chainId];
+  return [QueryKeys.GET_ORDER_HISTORY, account, config.exchangeAddress, config.chainId];
 };
 
 const useAddNewOrder = () => {
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
-  const lib = useTwapContext().lib;
+  const config = useTwapContext().config;
 
   return useCallback(
     (order: HistoryOrder) => {
       try {
-        if (!lib) return;
-        ordersStore.addOrder(lib.config.chainId, order);
+        if (!config) return;
+        ordersStore.addOrder(config.chainId, order);
         queryClient.setQueryData(QUERY_KEY, (prev?: OrdersData) => {
           const updatedOpenOrders = prev?.Open ? [order, ...prev.Open] : [order];
           if (!prev) {
@@ -170,34 +173,40 @@ const useAddNewOrder = () => {
         });
       } catch (error) {}
     },
-    [QUERY_KEY, queryClient, lib]
+    [QUERY_KEY, queryClient, config]
   );
 };
 
 export const useOrdersHistory = () => {
-  const { dappProps, state } = useTwapContext();
-  const { parsedTokens } = dappProps;
-  const lib = useTwapContext().lib;
+  const { tokens, state, config, account } = useTwapContext();
+
   const QUERY_KEY = useOrderHistoryKey();
   const getTokensFromTokensList = useGetTokenFromParsedTokensList();
+
   const query = useQuery<OrdersData>(
     QUERY_KEY,
     async ({ signal }) => {
-      let orders = await getOrders(lib!, signal);
-      logger("all orders", orders);
+      const endpoint = getTheGraphUrl(config.chainId);
+      if (!endpoint) {
+        return [];
+      }
+      let orders = await getGraphOrders(endpoint, account!, signal);
+
       try {
         const ids = orders.map((o) => o.id);
-        let chainOrders = ordersStore.orders[lib!.config.chainId];
+        let chainOrders = ordersStore.orders[config.chainId];
         chainOrders.forEach((o: any) => {
           if (!ids.includes(o.id)) {
             orders.push(o);
           } else {
-            ordersStore.deleteOrder(lib!.config.chainId, o.id);
+            ordersStore.deleteOrder(config.chainId, o.id);
           }
         });
       } catch (error) {}
-      orders = orders.filter((o) => eqIgnoreCase(lib!.config.exchangeAddress, o.exchange || ""));
-      logger("filtered orders by exchange address", lib!.config.exchangeAddress, orders);
+      logger("all orders", orders);
+
+      orders = orders.filter((o) => eqIgnoreCase(config.exchangeAddress, o.exchange || ""));
+      logger("filtered orders by exchange address", config.exchangeAddress, orders);
       orders = orders.map((order) => {
         return {
           ...order,
@@ -212,7 +221,7 @@ export const useOrdersHistory = () => {
       return result as any;
     },
     {
-      enabled: !!lib && parsedTokens?.length > 10 && !state.showConfirmation,
+      enabled: !!config && tokens?.length > 10 && !state.showConfirmation && !!account,
       refetchInterval: REFETCH_ORDER_HISTORY,
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,

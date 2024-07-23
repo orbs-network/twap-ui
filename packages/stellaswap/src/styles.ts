@@ -138,7 +138,7 @@ export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
   gap: 12,
 });
 
-export const StyledSubmit = styled(Components.SubmitButton)({});
+export const StyledSubmit = styled("button")({});
 
 export const StyledPoweredBy = styled(Components.PoweredBy)({
   marginTop: 20,

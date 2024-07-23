@@ -2,7 +2,7 @@ import BN from "bignumber.js";
 import { useCallback } from "react";
 import { stateActions } from "../../context/actions";
 import { useTwapContext } from "../../context/context";
-import { useMarketPrice } from "../../hooks/hooks";
+import { useMarketPrice } from "../../hooks/lib";
 import { amountUiV2, formatDecimals } from "../../utils";
 
 export const useOnLimitPercentageClick = () => {
@@ -35,6 +35,6 @@ export const useOnLimitPercentageClick = () => {
         .toString();
       onChange(formatDecimals(value), percent);
     },
-    [marketPrice, onChange, onResetCustomLimit, dstToken, isInvertedLimitPrice]
+    [marketPrice, onChange, onResetCustomLimit, dstToken, isInvertedLimitPrice],
   );
 };

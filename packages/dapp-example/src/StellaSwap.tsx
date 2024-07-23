@@ -1,14 +1,13 @@
 import { StyledModalContent, StyledStella, StyledStellaSwapBox, StyledStellaSwapLayout } from "./styles";
 import { TWAP } from "@orbs-network/twap-ui-stellaswap";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
-import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { useMemo, useState } from "react";
-import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
+import { erc20s } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
-import { mapKeys, size } from "@orbs-network/twap-ui";
+import { mapKeys, size, Configs } from "@orbs-network/twap-ui";
 const config = { ...Configs.QuickSwap };
 config.name = "StellaSwap";
 

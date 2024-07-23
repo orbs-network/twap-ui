@@ -1,16 +1,18 @@
-import { StyledModalContent, StyledSushiLayout, StyledSushi } from "./styles";
+import { StyledModalContent, StyledSushiLayout, StyledSushi, StyledSushiModalContent } from "./styles";
 import { SushiModalProps, TWAP } from "@orbs-network/twap-ui-sushiswap";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
-import { Configs } from "@orbs-network/twap";
+
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, Popup, TokensList, UISelector } from "./Components";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 
 import { SelectorOption, TokenListItem } from "./types";
-import { Components, getConfig, mapCollection, size, TooltipProps } from "@orbs-network/twap-ui";
+import { Components, getConfig, mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
 import { baseSwapTokens } from "./BaseSwap";
+import { network } from "@defi.org/web3-candies";
+import { styled } from "styled-components";
 
 const name = "SushiSwap";
 const configs = [Configs.SushiArb, Configs.SushiBase];
@@ -19,6 +21,7 @@ export const useDappTokens = () => {
   const config = useConfig();
   const isBase = config?.chainId === Configs.SushiBase.chainId;
   const { chainId } = useWeb3React();
+  const nativeToken = network(config.chainId).native;
   const parseListToken = useCallback(
     (tokenList?: any) => {
       if (isBase) {
@@ -43,15 +46,15 @@ export const useDappTokens = () => {
         }));
 
       const native = {
-        decimals: config?.nativeToken.decimals,
-        symbol: config?.nativeToken.symbol,
-        address: config?.nativeToken.address,
-        logoURI: config?.nativeToken.logoUrl,
+        decimals: nativeToken.decimals,
+        symbol: nativeToken.symbol,
+        address: nativeToken.address,
+        logoURI: nativeToken.logoUrl,
       };
 
       return config ? [native, ...res] : res;
     },
-    [config?.nativeToken, config?.chainId]
+    [nativeToken, config?.chainId],
   );
 
   const url = useMemo(() => {
@@ -72,7 +75,6 @@ export const useDappTokens = () => {
 };
 
 const parseList = (rawList?: any): TokenListItem[] => {
-
   return mapCollection(rawList, (rawToken: any) => {
     return {
       token: {
@@ -101,9 +103,9 @@ const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNod
   return (
     <>
       <Popup isOpen={open} onClose={() => setOpen(false)}>
-        <StyledModalContent>
+        <StyledSushiModalContent>
           <TokensList tokens={parsedList} onClick={_onSelect} />
-        </StyledModalContent>
+        </StyledSushiModalContent>
       </Popup>
       <div onClick={() => setOpen(true)}>{children}</div>
     </>
@@ -113,6 +115,8 @@ const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNod
 const getTokenLogo = (token: any) => {
   return token.logoURI;
 };
+
+
 
 const useUSD = (address?: string) => {
   const res = usePriceUSD(address);
@@ -192,10 +196,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 const SushiModal = (props: SushiModalProps) => {
   return (
     <Popup isOpen={props.open} onClose={props.onClose}>
-      <Popup.Content>
+      <StyledSushiModalContent>
         <Popup.Header title={props.title} Component={props.header} onClose={props.onClose} />
         <Popup.Body>{props.children}</Popup.Body>
-      </Popup.Content>
+      </StyledSushiModalContent>
     </Popup>
   );
 };

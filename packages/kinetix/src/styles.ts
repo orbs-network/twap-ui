@@ -205,17 +205,6 @@ export const StyledTradeSize = styled(Components.Base.Card)(({ theme }) => {
 
 export const StyledPriceCard = styled(Components.Base.Card)({});
 
-export const StyledSubmitButton = styled(Components.SubmitButton)({
-  marginTop: 0,
-  height: 48,
-  marginLeft: "auto",
-  marginRight: "auto",
-  "*": {
-    fontSize: 16,
-    fontWeight: 500,
-  },
-});
-
 export const configureStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   const darkMode = isDark(theme);

@@ -9,9 +9,11 @@ import {
   hooks,
   TWAPTokenSelectProps,
   TooltipProps,
+  Configs,
+  Token,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Configs, TokenData } from "@orbs-network/twap";
+
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import Web3 from "web3";
 import {
@@ -21,7 +23,6 @@ import {
   StyledChangeTokensOrder,
   StyledMaxButton,
   StyledPoweredBy,
-  StyledSubmitButton,
   StyledTokenBalance,
   StyledTokenPanel,
   StyledTokenPanelHeader,
@@ -30,7 +31,7 @@ import {
   StyledTopGrid,
   StyledTradeSize,
 } from "./styles";
-import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, network, zeroAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
@@ -39,12 +40,11 @@ const config = Configs.Lynex;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
-  switchVariant: "ios",
   inputPlaceholder: "0.00",
 };
 
 const MaxSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -109,15 +109,15 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     </>
   );
 };
-
-const parseToken = (rawToken: any): TokenData | undefined => {
+const nativeToken = network(config.chainId).native;
+const parseToken = (rawToken: any): Token | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   const address = rawToken.address === "ETH" ? zeroAddress : rawToken.address;
   if (!address || isNativeAddress(address)) {
-    return config.nativeToken;
+    return nativeToken;
   }
   return {
     address: Web3.utils.toChecksumAddress(address),
@@ -157,7 +157,7 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       translations={translations as Translations}
       provider={props.provider}
       account={props.account}
-      connectedChainId={props.connectedChainId}
+      chainId={props.connectedChainId}
       dappTokens={props.dappTokens}
       parsedTokens={[]}
       onDstTokenSelected={props.onDstTokenSelected}
@@ -186,7 +186,6 @@ const TWAPPanel = () => {
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
-      <StyledSubmitButton />
 
       <StyledPoweredBy />
     </>
@@ -205,7 +204,6 @@ const LimitPanel = () => {
         <ChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
-      <StyledSubmitButton />
 
       <StyledPoweredBy />
     </>

@@ -11,7 +11,7 @@ import { useTwapContext } from "../../context/context";
 import { query, useOpenOrders } from "../../hooks";
 import { size } from "../../utils";
 
-const OrderHistoryButton = ({ onClick }: { onClick: () => void }) => {
+const OrderHistoryButton = ({ onClick, className = '' }: { onClick: () => void, className?: string }) => {
   const { data } = query.useOrdersHistory();
   const openOrders = useOpenOrders();
   const isLoading = !data;
@@ -30,7 +30,7 @@ const OrderHistoryButton = ({ onClick }: { onClick: () => void }) => {
   }, [isLoading, onClick]);
 
   return (
-    <StyledOrderHistoryButton className="twap-show-orders-btn" onClick={_onClick}>
+    <StyledOrderHistoryButton className={`twap-show-orders-btn ${className}`} onClick={_onClick}>
       {isLoading && <Spinner size={20} />}
       <span>{text}</span>
       <FaArrowRight className="twap-show-orders-btn-arrow" />
@@ -39,8 +39,7 @@ const OrderHistoryButton = ({ onClick }: { onClick: () => void }) => {
 };
 
 export const OrderHistory = ({ className = "", children, isOpen }: { className?: string; children: ReactNode; isOpen: boolean }) => {
-  const { dappProps, isWrongChain } = useTwapContext();
-  const { account } = dappProps;
+  const { account, isWrongChain } = useTwapContext();
 
   if (!account || isWrongChain) return null;
 

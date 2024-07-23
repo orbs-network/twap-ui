@@ -1,10 +1,9 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTwapContext } from "../../context/context";
 import { useOrdersHistory } from "../../hooks";
-import { HistoryOrder, OrdersData, OrderUI, Translations } from "../../types";
+import { HistoryOrder, OrdersData, OrderUI, Status, Translations } from "../../types";
 import { OrdersMenuTab } from "./types";
-import { Status } from "@orbs-network/twap";
-import { flatMap, mapCollection, size, sortBy } from "../../utils";
+import { mapCollection, size, sortBy } from "../../utils";
 
 interface OrderHistoryContextType {
   tabs: OrdersMenuTab[];
@@ -37,7 +36,7 @@ export const OrderHistoryContextProvider = ({ children, isOpen }: { children: Re
     (id: number | undefined) => {
       setSelectedOrderId(id);
     },
-    [setSelectedOrderId]
+    [setSelectedOrderId],
   );
 
   const closePreview = useCallback(() => {

@@ -21,7 +21,7 @@
     "test:watch": "NETWORK=FTM DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors --watch"
   },
   "dependencies": {
-    "@orbs-network/twap": "^1.18.x",
+    "@orbs-network/twap": "^2.0.1",
     "@react-icons/all-files": "^4.1.0",
     "@tanstack/react-query": "4.x",
     "bignumber.js": "9.x",

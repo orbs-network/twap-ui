@@ -2,14 +2,13 @@ import { StyledModalContent, StyledSpookySwap, StyledSpookySwapBox, StyledSpooky
 import { TWAP } from "@orbs-network/twap-ui-spookyswap";
 import { useConnectWallet, useGetTokens, useNetwork, usePriceUSD, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
-import { Configs } from "@orbs-network/twap";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
 import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { mapKeys } from "@orbs-network/twap-ui";
+import { mapKeys, Configs } from "@orbs-network/twap-ui";
 
 const config = Configs.SpookySwap;
 

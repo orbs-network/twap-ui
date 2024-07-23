@@ -1,7 +1,6 @@
 import styled from "styled-components";
 
 import React, { useCallback, useState } from "react";
-import { Status } from "@orbs-network/twap";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { useOrderHistoryContext } from "./context";
 import { StyledRowFlex, StyledText } from "../../styles";
@@ -9,6 +8,7 @@ import { Button, ClickAwayListener } from "../base";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { useTwapContext } from "../../context/context";
 import { useOrderById } from "../../hooks";
+import { Status } from "../../types";
 
 export function OrderHistoryMenu() {
   const [open, setOpen] = useState(false);
@@ -25,7 +25,7 @@ export function OrderHistoryMenu() {
       onClose();
       setTab(key);
     },
-    [setTab, setTab]
+    [setTab, setTab],
   );
 
   return (

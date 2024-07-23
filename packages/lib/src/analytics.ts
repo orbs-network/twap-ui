@@ -1,8 +1,7 @@
-import { TWAPLib } from "@orbs-network/twap";
 import { isTxRejected, logger } from "./utils";
 import { v4 as uuidv4 } from "uuid";
-
-require("isomorphic-fetch");
+import { useSwapData } from "./hooks";
+import { Config } from "./types";
 
 const Version = 0.2;
 
@@ -111,9 +110,8 @@ class Analytics {
     }, 1_000);
   }
 
-  onLibInit(lib?: TWAPLib) {
-    const config = lib?.config;
-    const provider = lib?.provider;
+  onLibInit(config?: Config, provider?: any, account?: string) {
+    if (!config || !provider || !account) return;
     let walletConnectName;
 
     try {
@@ -145,7 +143,7 @@ class Analytics {
       partner: config?.partner,
       twapAddress: config?.twapAddress,
       twapVersion: config?.twapVersion,
-      walletAddress: lib?.maker,
+      walletAddress: account,
       pageLoaded: true,
       walletConnectName,
     });
@@ -159,9 +157,25 @@ class Analytics {
     this.updateAndSend({ cancelOrderSuccess: true });
   }
 
-  onSubmitOrder(data: SubmitOrderArgs) {
+  onSubmitOrder(swapData: ReturnType<typeof useSwapData>) {
     this.updateAndSend({
-      ...data,
+      fromTokenAddress: swapData.srcToken?.address,
+      toTokenAddress: swapData.dstToken?.address,
+      fromTokenSymbol: swapData.srcToken?.symbol,
+      toTokenSymbol: swapData.dstToken?.symbol,
+      fromTokenAmount: swapData.srcAmount.amount,
+      fromTokenAmountUi: swapData.srcAmount.amountUi,
+      toTokenAmount: swapData.outAmount.amount,
+      toTokenAmountUi: swapData.outAmount.amountUi,
+      chunksAmount: swapData.chunks,
+      minDstAmountOut: swapData.dstMinAmount.amount,
+      minDstAmountOutUi: swapData.dstMinAmount.amountUi,
+      fillDelay: swapData.fillDelay.millis,
+      fillDelayUi: swapData.fillDelay.text,
+      deadline: swapData.deadline.millis,
+      deadlineUi: swapData.deadline.text,
+      srcChunkAmount: swapData.srcChunkAmount.amount,
+      srcChunkAmountUi: swapData.srcChunkAmount.amountUi,
       action: "create",
     });
   }

@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@defi.org/web3-candies": "^5.0.0",
-    "@orbs-network/twap": "^1.21.6",
+    "@orbs-network/twap": "^2.0.1",
     "styled-components": "^6.1.12",
     "uuid": "^10.0.0"
   }

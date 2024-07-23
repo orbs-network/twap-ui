@@ -208,7 +208,7 @@ export const StyledTradeSize = styled(Components.Base.Card)({});
 
 export const StyledPriceCard = styled(Components.Base.Card)({});
 
-export const StyledSubmitButton = styled(Components.SubmitButton)({
+export const StyledSubmitButton = styled("button")({
   marginTop: 20,
   marginLeft: "auto",
   marginRight: "auto",

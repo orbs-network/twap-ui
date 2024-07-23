@@ -2,11 +2,11 @@ import { styled } from "styled-components";
 import { ReactNode, useCallback } from "react";
 import { stateActions } from "../context/actions";
 import { useTwapContext } from "../context/context";
-import { useFillDelayWarning, useMinimumDelayMinutes, useShouldWrapOrUnwrapOnly } from "../hooks/hooks";
 import { StyledColumnFlex } from "../styles";
 import { TimeResolution } from "../types";
 import { handleFillDelayText } from "../utils";
-import { BottomContent, Label, Message, NumericInput, TimeSelectMenu } from "./base";
+import { BottomContent, Label, Message, NumericInput, ResolutionSelect } from "./base";
+import { useFillDelayWarning, useMinimumDelayMinutes, useShouldWrapOrUnwrapOnly } from "../hooks/lib";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const fillDelay = useTwapContext().state.customFillDelay;
@@ -34,7 +34,7 @@ const Resolution = ({ placeholder, className = "" }: { placeholder?: string; cla
     [fillDelay.amount, setFillDelay]
   );
 
-  return <TimeSelectMenu className={className} resolution={fillDelay.resolution} onChange={onChange} />;
+  return <ResolutionSelect className={className} resolution={fillDelay.resolution} onChange={onChange} />;
 };
 
 export const TradeInterval = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
@@ -67,7 +67,12 @@ const WarningComponent = () => {
 const TradeIntervalLabel = () => {
   const translations = useTwapContext().translations;
   const getMinimumDelayMinutes = useMinimumDelayMinutes();
-  return <Label tooltipText={handleFillDelayText(translations.tradeIntervalTootlip, getMinimumDelayMinutes)}>{translations.tradeInterval}</Label>;
+  return (
+    <Label>
+      <Label.Text text={translations.tradeInterval} />
+      <Label.Info text={handleFillDelayText(translations.tradeIntervalTootlip, getMinimumDelayMinutes)} />
+    </Label>
+  );
 };
 
 TradeInterval.Resolution = Resolution;

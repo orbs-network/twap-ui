@@ -625,7 +625,7 @@ const buttonStyles = (theme: DefaultTheme) => {
   };
 };
 
-export const StyledSubmit = styled(Components.SubmitButton)({});
+export const StyledSubmit = styled("button")({});
 
 export const StyledBigBorder = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
@@ -694,14 +694,6 @@ export const StyledStyledDisclaimerTextCard = styled(Components.Base.Card)(({ th
   };
 });
 
-export const StyledDisclaimerText = styled(Components.DisclaimerText)({
-  maxHeight: 200,
-  paddingRight: 10,
-  "*": {
-    opacity: 0.7,
-  },
-});
-
 export const StyledOrderSummaryModalHeader = styled(Styles.StyledRowFlex)({
   justifyContent: "flex-start",
   borderBottom: `2px solid ${darkStyles.confirmationBorder}`,
@@ -728,9 +720,6 @@ export const StyledOrderSummaryModalHeader = styled(Styles.StyledRowFlex)({
   },
 });
 
-export const StyledDisclaimer = styled(Components.AcceptDisclaimer)({
-  marginTop: 20,
-});
 export const StyledOrderSummaryModalPadding = styled("div")({
   padding: "0px 30px",
   width: "100%",

@@ -6,16 +6,13 @@ import { Step, SwapStep } from "../../types";
 import { useMemo } from "react";
 import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
 import { useTwapContext } from "../../context/context";
+import { useNetwork } from "../../hooks";
 
 export const Steps = () => {
   const steps = useTwapContext().state.swapSteps;
   return (
     <StepsContainer>
-      <StyledSteps>
-        {steps?.map((step, index) => (
-          <StepComponent key={step} stepType={step} />
-        ))}
-      </StyledSteps>
+      <StyledSteps>{steps?.map((step, index) => <StepComponent key={step} stepType={step} />)}</StyledSteps>
     </StepsContainer>
   );
 };
@@ -61,9 +58,9 @@ export function StepComponent({ stepType }: { stepType: SwapStep }) {
 }
 
 const useStep = (step?: SwapStep) => {
-  const { lib, state, srcToken } = useTwapContext();
+  const { state, srcToken } = useTwapContext();
   const { createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps } = state;
-
+  const nativeToken = useNetwork()?.native;
   return useMemo((): Step | undefined => {
     if (!step) return;
     const isWrapPending = swapStep === "wrap" && !wrapTxHash && !wrapSuccess;
@@ -75,9 +72,9 @@ const useStep = (step?: SwapStep) => {
 
     if (step === "wrap") {
       return {
-        title: isWrapLoading ? "Wrapping..." : `Wrap ${lib?.config.nativeToken.symbol}`,
+        title: isWrapLoading ? "Wrapping..." : `Wrap ${nativeToken?.symbol}`,
         Icon: RiSwapFill,
-        image: lib?.config.nativeToken.logoUrl,
+        image: nativeToken?.logoUrl,
         status: wrapSuccess ? "completed" : isWrapLoading ? "loading" : isWrapPending ? "pending" : "disabled",
       };
     }
@@ -98,7 +95,7 @@ const useStep = (step?: SwapStep) => {
         status: createOrderSuccess ? "completed" : isCreateLoading ? "loading" : isCreatePending ? "pending" : "disabled",
       };
     }
-  }, [step, lib, srcToken, createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps]);
+  }, [step, nativeToken, srcToken, createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps]);
 };
 
 const StepContainer = styled(StyledColumnFlex)<{ selected: number }>(({ selected }) => ({

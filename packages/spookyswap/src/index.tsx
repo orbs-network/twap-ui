@@ -8,25 +8,15 @@ import {
   TWAPTokenSelectProps,
   useTwapContext,
   TwapContextUIPreferences,
+  Token,
+  Configs,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useMemo } from "react";
 import Web3 from "web3";
-import {
-  configureStyles,
-  darkTheme,
-  lightTheme,
-  StyledChangeTokensOrder,
-  StyledPercentSelector,
-  StyledSubmitButton,
-  StyledTokenBalance,
-  StyledTokenPanel,
-  StyledTokenSelect,
-  StyledTradeSize,
-} from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
-import { memo, ReactNode, useCallback, useState } from "react";
+import { darkTheme, lightTheme, StyledChangeTokensOrder, StyledPercentSelector, StyledTokenBalance, StyledTokenPanel, StyledTokenSelect, StyledTradeSize } from "./styles";
+import { isNativeAddress, network } from "@defi.org/web3-candies";
+import { memo, useCallback, useState } from "react";
 
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 
@@ -71,7 +61,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
   const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {
@@ -120,14 +110,14 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     </>
   );
 };
-
-const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string): TokenData | undefined => {
+const nativeToken = network(config.chainId).native;
+const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string): Token | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!rawToken.address || isNativeAddress(rawToken.address)) {
-    return config.nativeToken;
+    return nativeToken;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
@@ -171,7 +161,7 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       translations={translations as Translations}
       provider={props.provider}
       account={props.account}
-      connectedChainId={props.connectedChainId}
+      chainId={props.connectedChainId}
       dappTokens={props.dappTokens}
       parsedTokens={[]}
       onDstTokenSelected={props.onDstTokenSelected}
@@ -198,7 +188,7 @@ const TWAPPanel = () => {
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
-      <StyledSubmitButton />
+      {/* <StyledSubmitButton /> */}
 
       <Components.PoweredBy />
     </>
@@ -215,7 +205,7 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <StyledSubmitButton />
+      {/* <StyledSubmitButton /> */}
 
       <Components.PoweredBy />
     </>

@@ -5,12 +5,14 @@ import { HistoryOrder } from "../types";
 import { amountUiV2, flatMap, flatMapObject } from "../utils";
 import BN from "bignumber.js";
 import { query } from "./query";
+import { useEstimatedDelayBetweenChunksMillis } from "./hooks";
 
 export const useParseOrderUi = (order?: HistoryOrder) => {
-  const lib = useTwapContext()?.lib;
+  const config = useTwapContext()?.config;
+  const estimatedDelayBetweenChunksMillis = useEstimatedDelayBetweenChunksMillis();
 
   return useMemo(() => {
-    if (!lib || !order) return;
+    if (!config || !order) return;
     const { srcToken, dstToken, srcAmount, srcBidAmount, dstMinAmount, srcFilledAmount, fillDelay, createdAt, deadline, dollarValueOut, progress } = order;
     if (!srcToken || !dstToken) return;
     const isMarketOrder = BN(dstMinAmount || 0).lte(1);
@@ -31,7 +33,7 @@ export const useParseOrderUi = (order?: HistoryOrder) => {
       srcChunkAmountUi,
       srcFilledAmountUi,
       dstMinAmountOutUi,
-      fillDelay: (fillDelay || 0) * 1000 + lib.estimatedDelayBetweenChunksMillis(),
+      fillDelay: (fillDelay || 0) * 1000 + estimatedDelayBetweenChunksMillis,
       deadline: deadline * 1000,
       prefix: isMarketOrder ? "~" : "~",
       dstAmount,
@@ -45,7 +47,7 @@ export const useParseOrderUi = (order?: HistoryOrder) => {
       limitPrice: isMarketOrder ? undefined : BN(dstMinAmountOutUi).div(srcChunkAmountUi).toString() || "0",
       excecutionPrice: BN(dstAmount).gt(0) && BN(srcFilledAmountUi).gt(0) ? BN(dstAmount).div(srcFilledAmountUi).toString() : undefined,
     };
-  }, [lib, order]);
+  }, [config, order, estimatedDelayBetweenChunksMillis]);
 };
 
 export const useOrderById = (id?: number) => {

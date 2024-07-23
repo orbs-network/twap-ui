@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useTwapContext } from "../context/context";
-import { useSetSwapSteps } from "./hooks";
+import { useSetSwapSteps } from "./lib";
 import { query } from "./query";
 
 export function useSubmitOrderButton(onClick?: () => void) {

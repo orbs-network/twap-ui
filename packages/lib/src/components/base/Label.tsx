@@ -1,67 +1,55 @@
-import { ReactElement, ReactNode } from "react";
+import { ReactNode } from "react";
 import styled from "styled-components";
 import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQuestionCircle";
-import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
+import { StyledRowFlex, StyledText } from "../../styles";
 import { useTwapContext } from "../../context/context";
+import { Tooltip } from "../Components";
 
 interface Props {
   children: string | number | ReactNode;
-  tooltipText?: string | ReactElement;
   className?: string;
-  fontSize?: number;
-  subtitle?: boolean;
-  placement?: "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top";
 }
 
-function Label({ children, tooltipText, className = "", fontSize, placement = "right", subtitle }: Props) {
-  const {
-    uiPreferences,
-    Components: { Tooltip },
-  } = useTwapContext();
-
-  const InfoIcon = uiPreferences?.infoIcon || <AiOutlineQuestionCircle />;
-
-  if (subtitle) {
-    return (
-      <StyledColumnFlex className={`twap-label ${className}`}>
-        <StyledLabel style={{ fontSize }} className="twap-label-text">
-          {children}
-        </StyledLabel>
-        <p>{tooltipText}</p>
-      </StyledColumnFlex>
-    );
-  }
+export function Label({ children, className = "" }: Props) {
   return (
-    <StyledContainer className={`twap-label ${className}`} style={{ gap: 0 }}>
-      {tooltipText ? (
-        <Tooltip placement={placement} tooltipText={tooltipText}>
-          <StyledTooltipContent>
-            <>
-              <StyledLabel className="twap-label-text" style={{ fontSize }}>
-                {children}
-              </StyledLabel>
-              {InfoIcon}
-            </>
-          </StyledTooltipContent>
-        </Tooltip>
-      ) : (
-        <StyledLabel className="twap-label-text" style={{ fontSize }}>
-          {children}
-        </StyledLabel>
-      )}
+    <StyledContainer className={`twap-label ${className}`}>
+      {children}
     </StyledContainer>
   );
 }
 
-export default Label;
+const Text = ({ text, fontSize }: { text: string; fontSize?: string }) => {
+  return (
+    <StyledLabel className="twap-label-text" style={{ fontSize }}>
+      {text}
+    </StyledLabel>
+  );
+};
 
-const StyledTooltipContent = styled(StyledRowFlex)({
-  alignItems: "center",
-  gap: 5,
-});
+const Info = ({ text }: { text: string }) => {
+  const { uiPreferences } = useTwapContext();
+  const InfoIcon = uiPreferences?.infoIcon || <AiOutlineQuestionCircle />;
+
+  return (
+    <Tooltip tooltipText={text}>
+      <StyledInfo> {InfoIcon}</StyledInfo>
+     
+    </Tooltip>
+  );
+};
+
+Label.Text = Text;
+Label.Info = Info;
+
+
+const StyledInfo = styled(StyledRowFlex)({
+  position: "relative",
+  top: 1
+})
+
 
 const StyledContainer = styled(StyledRowFlex)({
-  justifyContent: "flex-start",
+  justifyContent: "center",
   gap: 7,
   width: "fit-content",
 });

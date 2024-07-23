@@ -6,8 +6,7 @@ import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
 import { useMemo, useState } from "react";
-import { Configs } from "@orbs-network/twap";
-import { size } from "@orbs-network/twap-ui";
+import { size, Configs } from "@orbs-network/twap-ui";
 
 const backendApi = "https://lynex-backend-7e21c8e31085.herokuapp.com/api/v1";
 

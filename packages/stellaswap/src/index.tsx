@@ -1,8 +1,8 @@
-import { Translations, TwapAdapter, Components, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps } from "@orbs-network/twap-ui";
+import { Translations, TwapAdapter, Components, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, Configs, Token } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Configs, TokenData } from "@orbs-network/twap";
+
 import Web3 from "web3";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, network } from "@defi.org/web3-candies";
 import { memo, ReactNode, useCallback, useState, createContext, useContext, useMemo } from "react";
 import {
   StyledBalance,
@@ -101,14 +101,14 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 
 const config = Configs.QuickSwap;
 
-const parseToken = (rawToken: any): TokenData | undefined => {
+const parseToken = (rawToken: any): Token | undefined => {
   const { address, symbol } = rawToken;
   if (!symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!address || isNativeAddress(address) || address === "BNB") {
-    return config.nativeToken;
+    return network(config.chainId).native;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
@@ -168,7 +168,6 @@ const TWAPPanel = () => {
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
-        <StyledSubmit isMain />
       </StyledColumnFlex>
 
       <StyledPoweredBy />
@@ -185,7 +184,6 @@ const LimitPanel = () => {
           <TokenChange />
           <TokenPanel />
         </StyledTop>
-        <StyledSubmit isMain />
       </StyledColumnFlex>
 
       <StyledPoweredBy />

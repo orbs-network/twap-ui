@@ -23,9 +23,8 @@ import ListItemText from "@mui/material/ListItemText";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
 import Backdrop from "@mui/material/Backdrop";
-import { Button, Fade, IconButton, styled, TextField, Typography } from "@mui/material";
-import { Config } from "@orbs-network/twap";
-import { Components, hooks, isEmpty, size, Styles } from "@orbs-network/twap-ui";
+import { Button, styled, TextField, Typography } from "@mui/material";
+import { Components, Config, hooks, isEmpty, size, Styles, Token } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
@@ -36,7 +35,6 @@ import { Status } from "./Status";
 import { useAddedTokens, useBalance, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
-import { TokenData } from "@orbs-network/twap";
 import { SelectorOption, TokenListItem } from "./types";
 import { useNavigate } from "react-router-dom";
 import { useWeb3React } from "@web3-react/core";
@@ -55,16 +53,16 @@ export interface Dapp {
   path: string;
 }
 
-export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: ReactNode }) => {
+export const Popup = ({ isOpen, onClose, children, className = '' }: { isOpen: boolean; onClose: () => void; children: ReactNode, className?: string}) => {
   return (
-    <Modal open={isOpen} onClose={onClose}>
+    <Modal open={isOpen} onClose={onClose} className={className} >
       <>{children}</>
     </Modal>
   );
 };
 
-const PopupContent = ({ children }: { children: ReactNode }) => {
-  return <StyledPoupContent>{children}</StyledPoupContent>;
+const PopupContent = ({ children, className = '' }: { children: ReactNode, className?: string }) => {
+  return <StyledPoupContent className={className}>{children}</StyledPoupContent>;
 };
 
 const PopupHeader = ({ onClose, title, Component }: { onClose: () => void; title?: string; Component?: ReactNode }) => {
@@ -251,13 +249,13 @@ const Row = (props: any) => {
   const item: TokenListItem = data.tokens[index];
   const { balance, isLoading } = useBalance(item.token);
 
-  const formattedValue = hooks.useFormatNumber({ value: balance, decimalScale: 6 });
+  const formattedValue = hooks.useFormatNumberV2({ value: balance, decimalScale: 6 });
 
   if (!item) return null;
   return (
     <div style={style}>
-      <StyledListToken onClick={() => data.onClick(item.rawToken)}>
-        <Styles.StyledRowFlex  style={{ width: "unset", flex: 1 }}>
+      <StyledListToken onClick={() => data.onClick(item.rawToken)} className='twap-tokens-list-item'>
+        <StyledListTokenLeft>
           <Components.Base.TokenLogo
             logo={item.token.logoUrl}
             alt={item.token.symbol}
@@ -267,7 +265,7 @@ const Row = (props: any) => {
             }}
           />
           {item.token.symbol}
-        </Styles.StyledRowFlex>
+        </StyledListTokenLeft>
         <Components.Base.SmallLabel loading={isLoading} className="balance">
           {formattedValue}
         </Components.Base.SmallLabel>
@@ -275,6 +273,12 @@ const Row = (props: any) => {
     </div>
   );
 };
+
+const StyledListTokenLeft = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10
+})
 
 const filterTokens = (list: TokenListItem[], filterValue: string) => {
   if (!filterValue) return list;
@@ -285,11 +289,11 @@ const filterTokens = (list: TokenListItem[], filterValue: string) => {
 
 interface TokensListProps {
   tokens?: TokenListItem[];
-  onClick: (token: TokenData) => void;
+  onClick: (token: Token) => void;
 }
 
-const AddToken = ({ onAddToken }: { onAddToken: (token: TokenData) => void }) => {
-  const [data, setData] = useState({ address: "", symbol: "", decimals: 18, logoUrl: "" } as TokenData);
+const AddToken = ({ onAddToken }: { onAddToken: (token: Token) => void }) => {
+  const [data, setData] = useState({ address: "", symbol: "", decimals: 18, logoUrl: "" } as Token);
 
   const onChange = (e: any) => {
     const { name, value } = e.target;
@@ -345,7 +349,7 @@ const ManageAddedTokens = () => {
       {isEmpty(addedTokens) ? (
         <Typography style={{ textAlign: "center", width: "100%" }}>No tokens</Typography>
       ) : (
-        addedTokens.map((t: TokenData) => {
+        addedTokens.map((t: Token) => {
           return (
             <StyledListToken>
               <Styles.StyledRowFlex justifyContent="space-between">
@@ -389,7 +393,7 @@ export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
   const [view, setView] = useState(TokenListView.DEFAULT);
   // const { addToken } = usePersistedStore();
 
-  const onAddToken = (token: TokenData) => {
+  const onAddToken = (token: Token) => {
     setView(TokenListView.DEFAULT);
     // addToken(chainId!, token);
   };

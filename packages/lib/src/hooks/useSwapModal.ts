@@ -1,16 +1,14 @@
-import { useMemo } from "react";
 import { stateActions } from "../context/actions";
 import { useTwapContext } from "../context/context";
-import { useDstAmountUsdUi, useOutAmount, useSrcAmount, useSrcAmountUsdUi } from "./hooks";
+import { useOutAmount, useSrcAmount, useUsdAmount } from "./lib";
 
 export const useSwapModal = () => {
   const { state, srcToken, dstToken } = useTwapContext();
   const { swapState, showConfirmation: isOpen, swapData } = state;
   const { onClose, onOpen } = stateActions.useSwapModalActions();
-  const { srcAmountUi } = useSrcAmount();
-  const srcUsd = useSrcAmountUsdUi();
-  const dstUsd = useDstAmountUsdUi();
-  const outAmount = useOutAmount().outAmountUi;
+  const srcAmountUi = useSrcAmount().amountUi;
+  const {srcUsd, dstUsd} = useUsdAmount();
+  const outAmount = useOutAmount().amountUi;
 
   return {
     onClose,
@@ -18,8 +16,8 @@ export const useSwapModal = () => {
     isOpen,
     swapState,
     srcAmount: swapData?.srcAmount || srcAmountUi,
-    srcUsd: swapData?.srcAmountUsd || srcUsd,
-    dstUsd: swapData?.dstAmountUsd || dstUsd,
+    srcUsd: swapData?.amountUsd.srcUsd || srcUsd,
+    dstUsd: swapData?.amountUsd.dstUsd || dstUsd,
     outAmount: swapData?.outAmount || outAmount,
     srcToken: swapData?.srcToken || srcToken,
     dstToken: swapData?.dstToken || dstToken,
