@@ -54,6 +54,8 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     waitingForOrdersUpdate: false,
     srcUsd: undefined,
     dstUsd: undefined,
+
+    priceImpact: 0,
   };
 };
 const initialState = getInitialState();
@@ -114,6 +116,10 @@ export const useTwapStore = create(
     setFillDelay: (fillDelay: Duration) => {
       setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, !fillDelay.amount ? undefined : fillDelay.amount?.toString());
       set({ customFillDelay: fillDelay });
+    },
+    setPriceImpact: (priceImpact: number) => {},
+    getPriceImpact: () => {
+      return get().priceImpact;
     },
     getFillDelayText: (translations: Translations) => fillDelayText((get() as any).getFillDelayUiMillis(), translations),
     getFillDelayUiMillis: () => get().customFillDelay.amount! * get().customFillDelay.resolution,

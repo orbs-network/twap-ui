@@ -21,6 +21,12 @@ export const StyledText = styled(Typography)({
   fontSize: "inherit",
 });
 
+export const StyledPriceImpactText = styled(Typography)({
+  fontFamily: "inherit",
+  fontSize: 16,
+  fontWeight: 600,
+});
+
 export const StyledColumnFlex = styled(Box)(({ gap = 10 }: { gap?: number }) => ({
   display: "flex",
   flexDirection: "column",
