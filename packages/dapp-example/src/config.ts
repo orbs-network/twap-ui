@@ -12,6 +12,24 @@ import lynex from "./Lynex";
 import arbidex from "./Arbidex";
 import syncswap from "./SyncSwap";
 import kinetix from "./kinetix";
+import tradingpost from "./TradingPost";
 
-export const defaultDapp = quickswap;
-export const dapps = [quickswap, spookyswap, spiritswap, pangolin, pangolinDaas, chronos, thena, baseswap, arbidex, lynex, stellaswap, pancake, sushiswap, syncswap, kinetix];
+export const defaultDapp = tradingpost;
+export const dapps = [
+  quickswap,
+  spookyswap,
+  spiritswap,
+  pangolin,
+  pangolinDaas,
+  chronos,
+  thena,
+  baseswap,
+  arbidex,
+  lynex,
+  stellaswap,
+  pancake,
+  tradingpost,
+  sushiswap,
+  syncswap,
+  kinetix,
+];

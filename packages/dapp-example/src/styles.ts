@@ -134,6 +134,25 @@ export const StyledPancake = styled(StyledDapp)<{ isDarkTheme: number }>(({ isDa
   },
 }));
 
+export const StyledTradingPost = styled(StyledDapp)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
+  background: isDarkTheme ? "#131311" : "#F7E4D4",
+  ".ui-selector-btn": {
+    background: "#1fc7d4",
+    color: isDarkTheme ? "white" : "black",
+  },
+  ".ui-selector-btn-selected": {
+    background: "#7a6eaa",
+    color: "white",
+  },
+  ".menu-button": {
+    svg: {
+      "* ": {
+        color: isDarkTheme ? "#FBFBFB" : "#000315",
+      },
+    },
+  },
+}));
+
 export const StyledStella = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#251842" : "#F4F5F6",
   ".ui-selector-btn": {
@@ -421,7 +440,7 @@ export const StyledThenaLayout = styled(DappLayout)({
 });
 
 export const StyledPancakeTwap = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
-  background: isDarkTheme ? "#27262C" : "#FFFFFF",
+  background: isDarkTheme ? "#27262C" : "#F7E4D4",
   padding: 16,
   borderRadius: 24,
   position: "relative",
@@ -456,6 +475,15 @@ export const StyledPancakeLayout = styled(DappLayout)({
   alignItems: "center",
   position: "relative",
   maxWidth: 326,
+});
+
+export const StyledTradingPostLayout = styled(DappLayout)({
+  width: "calc(100% - 30px)",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  position: "relative",
+  maxWidth: 540,
 });
 
 export const StyledSushiLayout = styled(DappLayout)({
