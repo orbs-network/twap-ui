@@ -340,20 +340,16 @@ const LimitPrice = () => {
     setIsOpen(true);
   }, []);
 
-  const hide = hooks.useShouldWrapOrUnwrapOnly();
-
-  if (hide) return null;
-
   return (
-    <>
+    <Components.LimitPanel>
       <TokenSelect onClose={() => setIsOpen(false)} open={isOpen} isSrcToken={isSrc} />
       <div>
         <div>
-          <Components.Labels.LimitPriceLabel />
+          <Components.LimitPanel.Label />
           <StyledLimitSwitch />
         </div>
         <div>
-          <Components.LimitPanel
+          <Components.LimitPanel.Main
             onSrcSelect={onSrcSelect}
             onDstSelect={onDstSelect}
             styles={{
@@ -362,7 +358,7 @@ const LimitPrice = () => {
           />
         </div>
       </div>
-    </>
+    </Components.LimitPanel>
   );
 };
 

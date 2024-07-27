@@ -83,20 +83,6 @@ export const useFormatNumberV2 = ({ value, decimalScale = 3, prefix, suffix }: {
   return result.value?.toString();
 };
 
-export const useTokenSelect = () => {
-  const { onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
-  return useCallback(
-    ({ isSrc, token }: { isSrc: boolean; token: any }) => {
-      if (isSrc) {
-        onSrcTokenSelected?.(token);
-      } else {
-        onDstTokenSelected?.(token);
-      }
-    },
-    [onDstTokenSelected, onSrcTokenSelected],
-  );
-};
-
 export const useFormatDecimals = (value?: string | BN | number, decimalPlaces?: number) => {
   return useMemo(() => formatDecimals(value, decimalPlaces), [value, decimalPlaces]);
 };

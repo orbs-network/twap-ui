@@ -11,14 +11,10 @@ interface Props {
 }
 
 export function Label({ children, className = "" }: Props) {
-  return (
-    <StyledContainer className={`twap-label ${className}`}>
-      {children}
-    </StyledContainer>
-  );
+  return <StyledContainer className={`twap-label ${className}`}>{children}</StyledContainer>;
 }
 
-const Text = ({ text, fontSize }: { text: string; fontSize?: string }) => {
+const Text = ({ text, fontSize }: { text: ReactNode; fontSize?: string }) => {
   return (
     <StyledLabel className="twap-label-text" style={{ fontSize }}>
       {text}
@@ -33,7 +29,6 @@ const Info = ({ text }: { text: string }) => {
   return (
     <Tooltip tooltipText={text}>
       <StyledInfo> {InfoIcon}</StyledInfo>
-     
     </Tooltip>
   );
 };
@@ -41,12 +36,10 @@ const Info = ({ text }: { text: string }) => {
 Label.Text = Text;
 Label.Info = Info;
 
-
 const StyledInfo = styled(StyledRowFlex)({
   position: "relative",
-  top: 1
-})
-
+  top: 1,
+});
 
 const StyledContainer = styled(StyledRowFlex)({
   justifyContent: "center",

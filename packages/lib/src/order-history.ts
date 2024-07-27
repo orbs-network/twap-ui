@@ -90,9 +90,7 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
       result[item.id] = item.status;
       return result;
     }, {});
-  } catch (error) {
-   
-  }
+  } catch (error) {}
 };
 
 export type ParsedOrder = ReturnType<any>;
@@ -156,7 +154,7 @@ const graphOrderFills = async ({ account, endpoint, signal }: { account: string;
 };
 
 const getStatus = (progress = 0, order: any, statuses?: any) => {
-  let status = statuses?.[order.Contract_id].toLowerCase();
+  let status = statuses?.[order.Contract_id]?.toLowerCase();
 
   if (progress === 100 || status === "completed") {
     return Status.Completed;
@@ -180,6 +178,7 @@ export const getGraphOrders = async (endpoint: string, account: string, signal?:
   try {
     statuses = await getOrderStatuses(ids, endpoint, signal);
   } catch (error) {}
+
   return orders.map((order: any) => {
     const orderFill = fills[order.Contract_id];
 

@@ -14,7 +14,7 @@ import * as React from "react";
 
 import { size } from "../../utils";
 
-export function List() {
+export const OrderHistoryList = () => {
   const { selectOrder, orders, selectedOrderId, isLoading } = useOrderHistoryContext();
   const sizeMap = useRef({} as any);
   const listRef = useRef<any>();
@@ -22,6 +22,7 @@ export function List() {
     sizeMap.current = { ...sizeMap.current, [index]: size };
     listRef.current.resetAfterIndex(0);
   }, []);
+
   const getSize = useCallback((index: number): number => {
     return sizeMap.current[index] || 50;
   }, []);
@@ -38,18 +39,25 @@ export function List() {
     <ListContainer style={{ opacity: selectedOrderId ? 0 : 1, pointerEvents: selectedOrderId ? "none" : "all" }} className="twap-orders-list">
       <AutoSizer>
         {({ height, width }: any) => (
-          <VariableSizeList ref={listRef} height={height} itemCount={size(orders)} itemSize={getSize} width={width} itemData={{ setSize }}>
-            {({ index, style }) => (
-              <div style={style}>
-                <ListOrder onSelect={selectOrder} setSize={setSize} index={index} order={orders[index]} />
-              </div>
-            )}
+          <VariableSizeList ref={listRef} height={height} itemCount={size(orders)} itemSize={getSize} width={width} itemData={{ setSize, selectOrder, orders }}>
+            {Comp}
           </VariableSizeList>
         )}
       </AutoSizer>
     </ListContainer>
   );
-}
+};
+
+const Comp = (props: any) => {
+  const { style, data, index } = props;
+
+  const { selectOrder, setSize, orders } = data;
+  return (
+    <div style={style}>
+      <ListOrder onSelect={selectOrder} setSize={setSize} index={index} order={orders[index]} />
+    </div>
+  );
+};
 
 const EmptyList = () => {
   const tab = useOrderHistoryContext().selectedTab;
@@ -92,40 +100,32 @@ const StyledEmpty = styled(StyledColumnFlex)({
   fontWeight: 500,
 });
 
-export function ListOrder({
-  order: parsedOrder,
-  index,
-  setSize,
-  onSelect,
-}: {
-  order?: HistoryOrder;
-  index: number;
-  setSize: (index: number, value: number) => void;
-  onSelect: (id?: number) => void;
-}) {
-  const order = useParseOrderUi(parsedOrder);
-  const root = useRef<any>();
-  useEffect(() => {
-    setSize(index, root.current.getBoundingClientRect().height);
-  }, [index]);
+const ListOrder = React.memo(
+  ({ order: parsedOrder, index, setSize, onSelect }: { order?: HistoryOrder; index: number; setSize: (index: number, value: number) => void; onSelect: (id?: number) => void }) => {
+    const order = useParseOrderUi(parsedOrder);
+    const root = useRef<any>();
+    useEffect(() => {
+      setSize(index, root.current.getBoundingClientRect().height);
+    }, [index]);
 
-  if (!order) return null;
+    if (!order) return null;
 
-  return (
-    <Wrapper className="twap-order" ref={root} onClick={() => onSelect(parsedOrder?.id)}>
-      <StyledListOrder className="twap-order-container">
-        <ListItemHeader order={order} />
-        <LinearProgressWithLabel value={order.progress || 0} />
+    return (
+      <Wrapper className="twap-order" ref={root} onClick={() => onSelect(parsedOrder?.id)}>
+        <StyledListOrder className="twap-order-container">
+          <ListItemHeader order={order} />
+          <LinearProgressWithLabel value={order.progress || 0} />
 
-        <StyledRowFlex className="twap-order-tokens">
-          <TokenDisplay token={order.srcToken} />
-          <HiArrowRight className="twap-order-tokens-arrow" />
-          <TokenDisplay token={order.dstToken} />
-        </StyledRowFlex>
-      </StyledListOrder>
-    </Wrapper>
-  );
-}
+          <StyledRowFlex className="twap-order-tokens">
+            <TokenDisplay token={order.srcToken} />
+            <HiArrowRight className="twap-order-tokens-arrow" />
+            <TokenDisplay token={order.dstToken} />
+          </StyledRowFlex>
+        </StyledListOrder>
+      </Wrapper>
+    );
+  },
+);
 
 const ListItemHeader = ({ order }: { order: OrderUI }) => {
   const t = useTwapContext().translations;
@@ -214,7 +214,7 @@ function LinearProgressWithLabel(props: { value: number }) {
       <div style={{ width: "100%" }}>
         <LinearProgress variant="determinate" {...props} />
       </div>
-      <div style={{ minWidth: 35 }}>
+      <div className="twap-order-token-progress-label">
         <StyledText>{`${Math.round(props.value)}%`}</StyledText>
       </div>
     </StyledProgress>
@@ -228,5 +228,8 @@ const StyledProgress = styled(StyledRowFlex)({
     fontSize: 12,
     opacity: 0.8,
     textAlign: "right",
+  },
+  ".twap-order-token-progress-label": {
+    minWidth: 40,
   },
 });

@@ -1,16 +1,17 @@
 import { styled } from "styled-components";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
-import { Icon, NumericInput, TokenDisplay } from "../base";
+import { Icon, Label, NumericInput, TokenDisplay } from "../base";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
-import { createContext, FC, useContext, useEffect, useMemo, useState } from "react";
-import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket } from "../../hooks/lib";
+import { createContext, FC, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket, useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
 import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps, LimitPriceInputProps } from "../../types";
 import { useOnLimitPercentageClick } from "./hooks";
 import { amountUiV2, formatDecimals } from "../../utils";
 import { useTwapContext } from "../../context/context";
-import { MarketPriceWarning } from "../Components";
 import { stateActions } from "../../context/actions";
+import { LimitSwitch } from "./LimitSwitch";
+import { MarketPriceWarning } from "../Components";
 interface Shared {
   onSrcSelect: () => void;
   onDstSelect: () => void;
@@ -85,8 +86,21 @@ const Context = createContext({} as Shared);
 
 const useLimitPanelContext = () => useContext(Context);
 
-export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Components, styles }: LimitPanelProps) {
+export const LimitPanel = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
+  const hide = useShouldWrapOrUnwrapOnly();
+
+  if (hide) return null;
+
+  return <StyledContainer className={className}>{children}</StyledContainer>;
+};
+
+const StyledContainer = styled("div")({
+  width: "100%",
+});
+
+function Main({ className = "", onSrcSelect, onDstSelect, Components, styles }: LimitPanelProps) {
   const isMarketOrder = useIsMarketOrder();
+
   if (isMarketOrder) {
     return <MarketPriceWarning />;
   }
@@ -111,9 +125,10 @@ export function LimitPanel({ className = "", onSrcSelect, onDstSelect, Component
 const Input = () => {
   const { Components } = useLimitPanelContext();
   const { state, dstToken } = useTwapContext();
-  const { isMarketOrder, isInvertedLimitPrice, isCustomLimitPrice, customLimitPrice } = state;
+  const { isInvertedLimitPrice, isCustomLimitPrice, customLimitPrice } = state;
   const { isLoading, priceUi } = useLimitPrice();
   const onChange = stateActions.useOnLimitChange();
+  const isMarketOrder = useIsMarketOrder();
 
   const limitPriceUi = useMemo(() => {
     if (isCustomLimitPrice) {
@@ -138,7 +153,6 @@ const Input = () => {
 
   return (
     <StyledInputContainer>
-      {isMarketOrder && <StyledAnyPrice className="twap-limit-panel-market-price">Get text from Eran</StyledAnyPrice>}
       <div style={{ opacity: isMarketOrder ? 0 : 1, pointerEvents: isMarketOrder ? "none" : "all" }}>
         {Components?.Input ? (
           <Components.Input isLoading={isLoading} onChange={onChange} value={value} />
@@ -153,17 +167,6 @@ const Input = () => {
 const StyledInputContainer = styled("div")({
   position: "relative",
   flex: 1,
-});
-
-const StyledAnyPrice = styled(StyledText)({
-  width: "auto",
-  flex: 1,
-  justifyContent: "flex-start",
-  position: "absolute",
-  left: 0,
-  top: "50%",
-  transform: "translateY(-50%)",
-  alignItems: "center",
 });
 
 const usePercent = () => {
@@ -301,10 +304,26 @@ const StyledPercentContainer = styled(StyledRowFlex)({
   flexWrap: "wrap",
 });
 
+const LimitPriceLabel = () => {
+  const { translations: t, isLimitPanel } = useTwapContext();
+  const isMarketOrder = useIsMarketOrder();
+
+  return (
+    <Label>
+      <Label.Text text={!isLimitPanel ? t.price : t.limitPrice} />
+      <Label.Info text={isMarketOrder ? t.marketPriceTooltip : isLimitPanel ? t.limitPriceTooltipLimitPanel : t.limitPriceTooltip} />
+    </Label>
+  );
+};
+
 LimitPanel.Input = Input;
 LimitPanel.TokenSelect = TokenSelect;
 LimitPanel.PercentSelector = PercentSelector;
 LimitPanel.Title = Title;
+LimitPanel.Switch = LimitSwitch;
+LimitPanel.InvertPrice = InvertPrice;
+LimitPanel.Label = LimitPriceLabel;
+LimitPanel.Main = Main;
 
 const Container = styled(StyledColumnFlex)({
   ".MuiSkeleton-root": {

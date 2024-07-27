@@ -1,3 +1,5 @@
+import { Status } from "./types";
+
 interface HistoryOrder {
   id: number;
   // Add other properties as needed
@@ -28,6 +30,20 @@ class OrdersStore implements OrdersState {
 
   private saveOrders(): void {
     localStorage.setItem("twap-orders", JSON.stringify(this.orders));
+  }
+  cancelOrder(chainId: number, orderId: number): void {
+    console.log("Cancelling order", orderId);
+
+    const chainOrders = this.orders[chainId.toString()] || [];
+    this.orders[chainId.toString()] = chainOrders.map((order) => {
+      if (order.id === orderId) {
+        return {
+          ...order,
+          status: Status.Canceled,
+        };
+      }
+      return order;
+    });
   }
 
   private loadOrders(): void {

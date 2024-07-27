@@ -809,7 +809,7 @@ export const StyledChunksSelectInput = styled(CardBody)({
   width: 80,
 });
 
-export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
+export const StyledLimitSwitch = styled(Components.LimitPanel.Switch)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     background: "#372f47",

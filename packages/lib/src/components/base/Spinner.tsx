@@ -10,7 +10,7 @@ const rotate = keyframes`
   }
 `;
 
-const CircularContainer = styled.div<{ size: number, color?: string }>`
+const CircularContainer = styled.div<{ size: number; color?: string }>`
   display: inline-block;
   width: ${(props) => props.size}px;
   height: ${(props) => props.size}px;
@@ -28,5 +28,5 @@ interface CircularProgressProps {
 
 // Circular Progress component
 export const Spinner: React.FC<CircularProgressProps> = ({ size = 40, className = "", color }) => {
-return <CircularContainer size={size} className={`twap-spinner ${className}`} color={color} />;
+  return <CircularContainer size={size} className={`twap-spinner ${className}`} color={color} />;
 };

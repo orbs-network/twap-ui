@@ -46,16 +46,33 @@ export function StepComponent({ stepType }: { stepType: SwapStep }) {
             </StyledLink>
           )}
         </StyledTitleAndLink>
-        {step.status === "completed" && (
-          <StyledSuccess>
-            <FaCheck />
-          </StyledSuccess>
-        )}
+        <StepStatus step={step} />
       </StyledStep>
       <StepDivider className="twap-step-divider" />
     </StepContainer>
   );
 }
+
+const StepStatus = ({ step }: { step: Step }) => {
+  if (step.status === "completed") {
+    return (
+      <StyledSuccess>
+        <FaCheck />
+      </StyledSuccess>
+    );
+  }
+
+  if (step.status === "pending") {
+    return <StyledSpinner />;
+  }
+
+  return null;
+};
+
+const StyledSpinner = styled(Spinner)({
+  width: 27,
+  height: 27,
+});
 
 const useStep = (step?: SwapStep) => {
   const { state, srcToken } = useTwapContext();

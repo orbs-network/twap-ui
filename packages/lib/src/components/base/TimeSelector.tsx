@@ -3,9 +3,8 @@ import { useCallback, useState } from "react";
 import { useTwapContext } from "../../context/context";
 import { Duration, TimeResolution, Translations } from "../../types";
 import NumericInput from "./NumericInput";
-import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { StyledRowFlex } from "../../styles";
-import { ClickAwayListener } from "./ClickAwayListener";
+import { SelectMenu } from "./SelectMenu";
 
 const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
   {
@@ -41,7 +40,7 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
     (resolution: TimeResolution) => {
       onChange({ resolution, amount: value.amount });
     },
-    [onChange]
+    [onChange],
   );
 
   return (
@@ -70,33 +69,11 @@ export const ResolutionSelect = ({ onChange, resolution, className = "" }: { onC
       setOpen(false);
       onChange(resolution);
     },
-    [onChange]
+    [onChange],
   );
 
-  return (
-    <ClickAwayListener onClickAway={() => setOpen(false)}>
-      <Container className="twap-time-selector">
-        <StyledSelected onClick={() => setOpen(!open)} className={`${className} twap-time-selector-button`}>
-         <p> {translations[findSelectedResolutionText(resolution)]}</p>
-          <IoIosArrowDown />
-        </StyledSelected>
-        {open && (
-          <Menu className="twap-time-selector-menu">
-            {timeArr.map((item) => (
-              <StyledMenuItem className="twap-time-selector-menu-item" key={item.value} onClick={() => onSelect(item.value)}>
-                {translations[item.text]}
-              </StyledMenuItem>
-            ))}
-          </Menu>
-        )}
-      </Container>
-    </ClickAwayListener>
-  );
+  return <SelectMenu onSelect={(it) => onSelect(it.value as number)} items={timeArr} selected={resolution} />;
 };
-
-const Container = styled.div`
-  position: relative;
-`;
 
 const StyledInput = styled(NumericInput)({
   flex: 1,
@@ -112,37 +89,3 @@ const StyledInput = styled(NumericInput)({
 });
 
 const StyledContainer = styled(StyledRowFlex)({});
-
-const StyledSelected = styled("button")({
-  display: "flex",
-  alignItems: "center",
-  gap: 5,
-  padding: "0px",
-  fontSize: 14,
-  textTransform: "none",
-  color: "inherit",
-  cursor: "pointer",
-  svg: {
-    width: 14,
-    height: 14,
-  },
-});
-
-const Menu = styled.div`
-  position: absolute;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  margin-top: 5px;
-  top: 100%;
-`;
-
-const StyledMenuItem = styled.div`
-  padding: 10px;
-  cursor: pointer;
-  &:hover {
-    background-color: #f0f0f0;
-  }
-`;

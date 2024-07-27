@@ -32,7 +32,9 @@ function Button(props: ButtonProps) {
           <Spinner className="twap-button-loader" />
         </StyledLoader>
       )}
-      <StyledChildren className="twap-button-children" style={{opacity: loading ? 0  :1}}>{children}</StyledChildren>
+      <StyledChildren className="twap-button-children" style={{ opacity: loading ? 0 : 1 }}>
+        {children}
+      </StyledChildren>
     </StyledContainer>
   );
 }
@@ -44,7 +46,6 @@ const StyledLoader = styled("div")({
   position: "absolute",
 });
 
-
 const StyledContainer = styled("button")<{ disabled: boolean }>(({ disabled }) => ({
   position: "relative",
   width: "100%",
@@ -54,7 +55,7 @@ const StyledContainer = styled("button")<{ disabled: boolean }>(({ disabled }) =
   fontSize: 16,
   opacity: disabled ? 0.6 : 1,
   transition: "0.2s all",
-  padding: 0
+  padding: 0,
 }));
 
 const StyledChildren = styled("div")({});

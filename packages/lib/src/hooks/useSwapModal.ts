@@ -7,7 +7,7 @@ export const useSwapModal = () => {
   const { swapState, showConfirmation: isOpen, swapData } = state;
   const { onClose, onOpen } = stateActions.useSwapModalActions();
   const srcAmountUi = useSrcAmount().amountUi;
-  const {srcUsd, dstUsd} = useUsdAmount();
+  const { srcUsd, dstUsd } = useUsdAmount();
   const outAmount = useOutAmount().amountUi;
 
   return {
@@ -15,10 +15,10 @@ export const useSwapModal = () => {
     onOpen,
     isOpen,
     swapState,
-    srcAmount: swapData?.srcAmount || srcAmountUi,
+    srcAmount: swapData?.srcAmount.amountUi || srcAmountUi,
     srcUsd: swapData?.amountUsd.srcUsd || srcUsd,
     dstUsd: swapData?.amountUsd.dstUsd || dstUsd,
-    outAmount: swapData?.outAmount || outAmount,
+    outAmount: swapData?.outAmount.amountUi || outAmount,
     srcToken: swapData?.srcToken || srcToken,
     dstToken: swapData?.dstToken || dstToken,
   };

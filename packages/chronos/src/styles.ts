@@ -1088,7 +1088,7 @@ export const StyledMobileTabsMenuButton = styled("button")(({ theme }) => {
   };
 });
 
-export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
+export const StyledLimitSwitch = styled(Components.LimitPanel.Switch)(({ theme }) => {
   const isDarkMode = true;
   return {
     background: isDarkMode ? "transparent" : "white",

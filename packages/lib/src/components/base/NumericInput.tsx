@@ -48,7 +48,7 @@ function NumericInput({
     <StyledContainer className={`twap-input ${className}`} style={style}>
       {loading && <StyledLoader className="twap-input-loader" width="75%" height="60%" />}
 
-      <StyledFlex style={{ height: "100%" }} className={`${loading ? 'twap-input-loading' : ''}`}>
+      <StyledFlex style={{ height: "100%" }} className={`${loading ? "twap-input-loading" : ""}`}>
         <NumericFormat
           allowNegative={false}
           disabled={disabled}

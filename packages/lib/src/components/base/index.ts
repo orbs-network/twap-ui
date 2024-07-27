@@ -23,3 +23,4 @@ export * from "./Message";
 export * from "./Comopnents";
 export * from "./ClickAwayListener";
 export * from "./Progress";
+export * from "./SelectMenu";

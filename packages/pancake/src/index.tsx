@@ -485,8 +485,6 @@ const LimitPrice = () => {
   const [isSrc, setIsSrc] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const hide = hooks.useShouldWrapOrUnwrapOnly();
-
   const onSrcTokenSelected = useCallback(() => {
     setIsSrc(true);
     setIsOpen(true);
@@ -497,10 +495,8 @@ const LimitPrice = () => {
     setIsOpen(true);
   }, [setIsSrc, setIsOpen]);
 
-  if (hide) return null;
-
   return (
-    <>
+    <Components.LimitPanel>
       <TokenSelect isSrcToken={isSrc} onClose={() => setIsOpen(false)} open={isOpen} />
       <Card>
         <Card.Header>
@@ -508,7 +504,7 @@ const LimitPrice = () => {
           <StyledLimitSwitch Component={CustomPriceToggle} />
         </Card.Header>
         <Card.Body>
-          <Components.LimitPanel
+          <Components.LimitPanel.Main
             onSrcSelect={onSrcTokenSelected}
             onDstSelect={onDstTokenSelected}
             styles={{
@@ -524,7 +520,7 @@ const LimitPrice = () => {
           />
         </Card.Body>
       </Card>
-    </>
+    </Components.LimitPanel>
   );
 };
 

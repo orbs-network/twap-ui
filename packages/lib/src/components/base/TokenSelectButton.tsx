@@ -4,6 +4,7 @@ import { useTwapContext } from "../../context/context";
 import { StyledOneLineText, StyledRowFlex } from "../../styles";
 import { FC, ReactNode } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+import { Tooltip } from "../Components";
 
 interface Props {
   onClick: () => void;
@@ -14,13 +15,8 @@ interface Props {
 }
 
 function TokenSelectButton({ className = "", onClick, hideArrow, customUi, customButtonElement }: Props) {
-  const {
-    translations,
-    isWrongChain,
-    lib,
-    Components: { Tooltip },
-  } = useTwapContext();
-  const maker = lib?.maker;
+  const { translations, isWrongChain, account } = useTwapContext();
+  const maker = account;
 
   const selectTokenWarning = () => {
     if (isWrongChain) {

@@ -57,18 +57,19 @@ export const useShouldWrapOrUnwrapOnly = () => {
 };
 
 export const useDstMinAmountOut = () => {
-  const { price } = useLimitPrice();
+  const { priceUi } = useLimitPrice();
   const { srcToken, dstToken } = useTwapContext();
   const srcChunkAmount = useSrcChunkAmount().amount;
 
   const isMarketOrder = useIsMarketOrder();
   const amount = useMemo(() => {
     let amount = BN(1).toString();
-    if (!isMarketOrder && srcToken && dstToken && BN(price || "0").gt(0)) {
-      amount = BN.max(1, convertDecimals(BN(srcChunkAmount).times(parsebn(price || "0")), srcToken.decimals, dstToken.decimals).integerValue(BN.ROUND_FLOOR)).toString();
+    if (!isMarketOrder && srcToken && dstToken && BN(priceUi || "0").gt(0)) {
+      amount = BN.max(1, convertDecimals(BN(srcChunkAmount).times(parsebn(priceUi || "0")), srcToken.decimals, dstToken.decimals).integerValue(BN.ROUND_FLOOR)).toString();
     }
     return amount;
-  }, [srcToken, dstToken, srcChunkAmount, price, isMarketOrder]);
+  }, [srcToken, dstToken, srcChunkAmount, priceUi, isMarketOrder]);
+  console.log({ amount });
 
   return {
     amount,
@@ -163,7 +164,7 @@ export const useSetChunks = () => {
       }
       updateState({ customChunks: chunks });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -360,6 +361,35 @@ export const useSwitchTokens = () => {
   }, [resetLimit, onSwitchTokens]);
 };
 
+const isEqual = (tokenA?: any, tokenB?: any) => {
+  return eqIgnoreCase(tokenA?.address || "", tokenB?.address || "") || eqIgnoreCase(tokenA?.symbol, tokenB?.symbol);
+};
+
+export const useTokenSelect = () => {
+  const switchTokens = useSwitchTokens();
+  const { onSrcTokenSelected, onDstTokenSelected, srcToken, dstToken } = useTwapContext();
+  return useCallback(
+    ({ isSrc, token }: { isSrc: boolean; token: any }) => {
+      if (isSrc && isEqual(token, dstToken)) {
+        switchTokens?.();
+        return;
+      }
+
+      if (!isSrc && isEqual(token, srcToken)) {
+        switchTokens?.();
+        return;
+      }
+
+      if (isSrc) {
+        onSrcTokenSelected?.(token);
+      } else {
+        onDstTokenSelected?.(token);
+      }
+    },
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
+  );
+};
+
 // Warnigns //
 
 export const useFillDelayWarning = () => {
@@ -423,7 +453,6 @@ const useSrcAmountWarning = () => {
   const { translations } = useTwapContext();
 
   return useMemo(() => {
-    
     if (BN(srcAmount).isZero()) {
       return translations.enterAmount;
     }
@@ -471,7 +500,7 @@ export const useLowPriceWarning = () => {
         "{percent}",
         BN(priceDeltaPercentage || 0)
           .abs()
-          .toString()
+          .toString(),
       ),
     };
   }, [isLimitPanel, marketPrice, isInvertedLimitPrice, srcToken, dstToken, t, priceDeltaPercentage]);
@@ -486,8 +515,6 @@ export const useSwapWarning = () => {
   const balance = useBalanceWarning();
   const lowPrice = useLowPriceWarning();
   const duration = useTradeDurationWarning();
-
-  
 
   if (shouldWrapOrUnwrapOnly) {
     return { balance, zeroSrcAmount };
@@ -594,7 +621,7 @@ export const useOnSrcAmountPercent = () => {
       const value = amountUiV2(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       setSrcAmountUi(value);
     },
-    [srcToken, maxAmount, srcBalance, setSrcAmountUi]
+    [srcToken, maxAmount, srcBalance, setSrcAmountUi],
   );
 };
 

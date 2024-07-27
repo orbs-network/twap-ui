@@ -3,7 +3,7 @@ import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { SelectedOrder } from "./SelectedOrder";
 import { OrderHistoryHeader } from "./OrderHistoryHeader";
 import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
-import { List } from "./List";
+import { OrderHistoryList } from "./OrderHistoryList";
 import { Spinner } from "../base";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode, useCallback, useMemo, useState } from "react";
@@ -11,7 +11,7 @@ import { useTwapContext } from "../../context/context";
 import { query, useOpenOrders } from "../../hooks";
 import { size } from "../../utils";
 
-const OrderHistoryButton = ({ onClick, className = '' }: { onClick: () => void, className?: string }) => {
+const OrderHistoryButton = ({ onClick, className = "" }: { onClick: () => void; className?: string }) => {
   const { data } = query.useOrdersHistory();
   const openOrders = useOpenOrders();
   const isLoading = !data;
@@ -66,7 +66,7 @@ const Content = ({ className = "" }: { className?: string }) => {
   return (
     <Container className={className}>
       <SelectedOrder selectedOrderId={selectedOrderId} />
-      <List />
+      <OrderHistoryList />
     </Container>
   );
 };

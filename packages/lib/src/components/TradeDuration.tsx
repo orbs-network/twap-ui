@@ -35,7 +35,7 @@ const Resolution = ({ placeholder, className = "" }: { placeholder?: string; cla
     (resolution: TimeResolution) => {
       setCustomDuration({ resolution, amount: duration.amount });
     },
-    [duration.amount, setCustomDuration]
+    [duration.amount, setCustomDuration],
   );
 
   return <ResolutionSelect className={className} resolution={duration.resolution} onChange={onChange} />;

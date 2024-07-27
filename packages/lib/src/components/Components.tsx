@@ -4,7 +4,7 @@ import { Message } from "./base/Message";
 import { useTwapContext } from "../context/context";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import styled from "styled-components";
-import { useFormatNumber, useSrcBalance, useAmountUi, useDstBalance, useFormatDecimals, useTokenSelect } from "../hooks/hooks";
+import { useFormatNumber, useSrcBalance, useAmountUi, useDstBalance, useFormatDecimals } from "../hooks/hooks";
 import { useConfirmationButton } from "../hooks/useConfirmationButton";
 import { StyledText, StyledRowFlex, StyledColumnFlex, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
@@ -26,6 +26,7 @@ import {
   useSrcChunkAmountUsd,
   useSwitchTokens,
   useToken,
+  useTokenSelect,
   useUsdAmount,
 } from "../hooks/lib";
 
@@ -177,7 +178,7 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: 
       onTokenSelectedCallback({ isSrc, token });
       onClose();
     },
-    [onTokenSelectedCallback, isSrc]
+    [onTokenSelectedCallback, isSrc],
   );
 
   if (!Component) return null;
@@ -392,7 +393,7 @@ export const MarketPriceWarning = ({ className = "" }: { className?: string }) =
 
   return (
     <Message
-      className={className}
+      className={`twap-market-price-warning ${className}`}
       title={
         <>
           {t?.marketOrderWarning}
@@ -418,65 +419,6 @@ export const PanelWarning = ({ className = "" }: { className?: string }) => {
 
   return <Message className={className} title={title} text={text} variant="error" />;
 };
-
-export const LimitSwitch = ({ className = "", Component }: { className?: string; Component?: FC<LimitSwitchArgs> }) => {
-  const { state, isLimitPanel } = useTwapContext();
-
-  const { isMarketOrder } = state;
-  const onChange = stateActions.useOnLimitMarketSwitch();
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-    onChange(newValue === "market" ? true : false);
-  };
-
-  const onSelect = useCallback(
-    (value: "limit" | "market") => {
-      onChange(value === "market" ? true : false);
-    },
-    [onChange]
-  );
-
-  if (isLimitPanel) return null;
-
-  if (Component) {
-    return (
-      <Component
-        onClick={onSelect}
-        options={[
-          { label: "Market", value: "market" },
-          { label: "Limit", value: "limit" },
-        ]}
-        selected={isMarketOrder ? "market" : "limit"}
-      />
-    );
-  }
-
-  return (
-    <StyledLimitSwitch className={className}>
-      {/* <Tabs selectionFollowsFocus={true} onChange={handleChange} value={isMarketOrder ? "market" : "limit"}>
-        <Tab value="market" label="Market" />
-        <Tab value="limit" label="Limit" />
-      </Tabs> */}
-    </StyledLimitSwitch>
-  );
-};
-
-const StyledLimitSwitch = styled(StyledRowFlex)({
-  padding: 3,
-  overflow: "hidden",
-  width: "auto",
-  borderRadius: 20,
-  ".MuiTouchRipple-root": {
-    display: "none",
-  },
-  ".MuiTabs-root": {
-    minHeight: "unset",
-  },
-  ".MuiTabs-indicator": {
-    height: "100%",
-    borderRadius: 20,
-  },
-  ".MuiButtonBase-root": {},
-});
 
 export const ShowConfirmation = ({ className = "", connect }: { className?: string; connect?: () => void }) => {
   const { onClick, text, disabled, loading } = useConfirmationButton(connect);

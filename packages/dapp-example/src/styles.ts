@@ -495,12 +495,18 @@ export const StyledModalContent = styled(Box)({
   left: "50%",
 });
 
-export const StyledSushiModalContent = styled(StyledModalContent)({
-background:'rgb(30 41 59/1)',
-padding: 20,
-border:'unset',
-borderRadius: 16
-})
+export const StyledSushiModalContent = styled(StyledModalContent)<{ isDarkTheme?: number }>(({ isDarkTheme }) => {
+  return {
+    background: isDarkTheme ? "rgb(30 41 59/1)" : "rgb(243 244 246/1)",
+    color: isDarkTheme ? "white" : "black",
+    padding: 20,
+    border: "unset",
+    borderRadius: 16,
+    "*": {
+      color: isDarkTheme ? "white" : "black",
+    },
+  };
+});
 
 export const StyledListToken = styled(Box)({
   cursor: "pointer",
@@ -626,7 +632,7 @@ export const StyledSearchInput = styled("input")({
 export const StyledTokens = styled(Box)({
   display: "flex",
   flexDirection: "column",
-  flex: 1,
+  height: 500,
   padding: 0,
   width: "100%",
   margin: 0,
@@ -637,11 +643,11 @@ export const StyledTokens = styled(Box)({
 });
 
 export const StyledTokensList = styled(Box)({
-  flex: 1,
   display: "flex",
   overflow: "auto",
   width: "100%",
   paddingTop: 10,
+  height: "100%",
 });
 
 export const StyledUISelector = styled(TwapStyles.StyledRowFlex)({});

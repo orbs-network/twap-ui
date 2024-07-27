@@ -29,18 +29,17 @@ const Price = () => {
   const swapPrice = useSwapPrice();
   const isMarketOrder = useIsMarketOrder();
   const usd = useFormatNumberV2({ value: swapPrice.usd, decimalScale: 2 });
-
+  const price = useFormatNumberV2({ value: swapPrice.price, decimalScale: 4 });
   return (
     <OrderDisplay.DetailRow title={isMarketOrder ? "Market Price" : "Limit Price"}>
       <StyledPrice>
-        1 {srcToken?.symbol} = {swapPrice.price} {dstToken?.symbol} <span>{`($${usd})`}</span>
+        1 {srcToken?.symbol} = {price} {dstToken?.symbol} <span>{`($${usd})`}</span>
       </StyledPrice>
     </OrderDisplay.DetailRow>
   );
 };
 
 const StyledPrice = styled(StyledText)({
-  cursor: "pointer",
   fontSize: 13,
   span: {
     opacity: 0.6,
@@ -176,7 +175,7 @@ export const SubmitButton = ({ onClick }: { onClick: () => void }) => {
   const button = useSubmitOrderButton(onClick);
 
   return (
-    <Button className="twap-order-modal-submit-btn" onClick={button.onClick} loading={button.loading} disabled={button.disabled}>
+    <Button className="twap-order-modal-submit-btn twap-submit-button" onClick={button.onClick} loading={button.loading} disabled={button.disabled}>
       {button.text}
     </Button>
   );

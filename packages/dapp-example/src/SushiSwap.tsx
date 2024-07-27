@@ -1,18 +1,15 @@
-import { StyledModalContent, StyledSushiLayout, StyledSushi, StyledSushiModalContent } from "./styles";
+import { StyledSushiLayout, StyledSushi, StyledSushiModalContent } from "./styles";
 import { SushiModalProps, TWAP } from "@orbs-network/twap-ui-sushiswap";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
-
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, Popup, TokensList, UISelector } from "./Components";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-
 import { SelectorOption, TokenListItem } from "./types";
 import { Components, getConfig, mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
 import { baseSwapTokens } from "./BaseSwap";
 import { network } from "@defi.org/web3-candies";
-import { styled } from "styled-components";
 
 const name = "SushiSwap";
 const configs = [Configs.SushiArb, Configs.SushiBase];
@@ -44,7 +41,6 @@ export const useDappTokens = () => {
           address,
           logoURI,
         }));
-
       const native = {
         decimals: nativeToken.decimals,
         symbol: nativeToken.symbol,
@@ -91,7 +87,7 @@ const parseList = (rawList?: any): TokenListItem[] => {
 const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNode; onSelect: (value: any) => void; selected: any }) => {
   const { data: baseAssets } = useDappTokens();
   const [open, setOpen] = useState(false);
-
+  const { isDarkTheme } = useTheme();
   const tokensListSize = size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
@@ -103,7 +99,7 @@ const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNod
   return (
     <>
       <Popup isOpen={open} onClose={() => setOpen(false)}>
-        <StyledSushiModalContent>
+        <StyledSushiModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
           <TokensList tokens={parsedList} onClick={_onSelect} />
         </StyledSushiModalContent>
       </Popup>
@@ -115,8 +111,6 @@ const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNod
 const getTokenLogo = (token: any) => {
   return token.logoURI;
 };
-
-
 
 const useUSD = (address?: string) => {
   const res = usePriceUSD(address);
@@ -194,9 +188,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 };
 
 const SushiModal = (props: SushiModalProps) => {
+  const { isDarkTheme } = useTheme();
+
   return (
     <Popup isOpen={props.open} onClose={props.onClose}>
-      <StyledSushiModalContent>
+      <StyledSushiModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
         <Popup.Header title={props.title} Component={props.header} onClose={props.onClose} />
         <Popup.Body>{props.children}</Popup.Body>
       </StyledSushiModalContent>

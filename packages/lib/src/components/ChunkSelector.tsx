@@ -53,9 +53,9 @@ const StyledWarning = styled(Message)({
 const Input = ({ className }: { className?: string }) => {
   const chunks = useChunks();
   const setChunks = useSetChunks();
-  const srcUsd = useTwapContext().srcUsd;
+  const { srcUsd, srcToken } = useTwapContext();
 
-  if (!srcUsd) {
+  if (srcToken && !srcUsd) {
     return <Loader height="100%" />;
   }
 

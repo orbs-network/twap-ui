@@ -148,7 +148,9 @@ export interface TWAPProps {
   maxFeePerGas?: string;
   priorityFeePerGas?: string;
   isDarkTheme?: boolean;
-  Components?: TwapComponents;
+  Tooltip: FC<TooltipProps>;
+  Button?: FC<ButtonProps>;
+  USD?: FC<{ value?: string | number }>;
   onSrcTokenSelected: (token: any) => void;
   onDstTokenSelected: (token: any) => void;
   TokenSelectModal?: any;
@@ -162,6 +164,8 @@ export interface TWAPProps {
   onSwitchTokens?: () => void;
   connect?: () => void;
 }
+
+export type SelectMeuItem = { text: string; value: string | number };
 
 type UsePriceUSD = (address?: string, token?: Token) => number | string | undefined;
 
@@ -229,6 +233,8 @@ export interface HistoryOrder {
 
 type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
 export interface TwapLibProps {
+  srcUsd?: string | number;
+  dstUsd?: string | number;
   children: ReactNode;
   chainId?: number;
   account?: any;
@@ -249,8 +255,6 @@ export interface TwapLibProps {
   onSrcTokenSelected: (token: any) => void;
   onDstTokenSelected: (token: any) => void;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  srcUsd?: string | number;
-  dstUsd?: string | number;
   marketPrice?: string;
   isMobile?: boolean;
   enableQueryParams?: boolean;
@@ -432,9 +436,9 @@ export type Step = {
 };
 
 export type LimitSwitchArgs = {
-  options: [{ label: "Market"; value: "market" }, { label: "Limit"; value: "limit" }];
-  selected: "limit" | "market";
-  onClick: (value: "limit" | "market") => void;
+  options: [{ label: "Market"; value: boolean }, { label: "Limit"; value: boolean }];
+  selected: boolean;
+  onClick: (value: boolean) => void;
 };
 
 export enum TimeResolution {

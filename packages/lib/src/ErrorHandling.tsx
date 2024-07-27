@@ -19,10 +19,8 @@ const StyledContainer = styled("div")<{ isDarkTheme?: number }>(({ theme, isDark
 });
 
 const TwapFallbackUI = () => {
-  const isDarkTheme = useTwapContext().dappProps.isDarkTheme;
-
   return (
-    <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>
+    <StyledContainer>
       <p>Something went wrong</p>
       {/* <Button variant="contained" onClick={() => window.location.reload()}>
         Reload
@@ -32,10 +30,8 @@ const TwapFallbackUI = () => {
 };
 
 const OrdersFallbackUI = () => {
-  const isDarkTheme = useTwapContext().dappProps.isDarkTheme;
-
   return (
-    <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>
+    <StyledContainer>
       <p>Error in loading orders</p>
     </StyledContainer>
   );

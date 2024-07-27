@@ -43,7 +43,7 @@ export const OrderHistoryContextProvider = ({ children, isOpen }: { children: Re
     setSelectedOrderId(undefined);
   }, [setSelectedOrderId]);
 
-  const { translations } = useTwapContext();
+  const translations = useTwapContext().translations;
   const tabs = useMemo(() => {
     const res = mapCollection(Status, (it) => {
       return {

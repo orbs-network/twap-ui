@@ -26,9 +26,9 @@ export const useConfirmationButton = (connect?: () => void) => {
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
 
-  const hasWarning = useMemo(() => {    
-    return !Object.values(warning).every(value => value === undefined);
-  }, [warning]);  
+  const hasWarning = useMemo(() => {
+    return !Object.values(warning).every((value) => value === undefined);
+  }, [warning]);
 
   const maker = account;
   const disableWhileLaoding = outAmountLoading || usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading;
@@ -55,7 +55,7 @@ export const useConfirmationButton = (connect?: () => void) => {
       loading: false,
       disabled: false,
     };
-    
+
   if (hasWarning)
     return {
       text: warning.zeroSrcAmount ? warning.zeroSrcAmount : warning.balance || translations.placeOrder,

@@ -1,4 +1,4 @@
-import { zero, parseEvents, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256 } from "@defi.org/web3-candies";
+import { zero, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256 } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context/context";
 import { useEstimatedDelayBetweenChunksMillis, useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } from "./hooks";
@@ -57,7 +57,7 @@ export const useCreateOrder = () => {
         askData,
       ];
 
-      logger("create order args:", {
+      console.log("create order args:", {
         exchangeAddress: config.exchangeAddress,
         srcToken: srcToken.address,
         dstToken: dstToken.address,
@@ -87,12 +87,14 @@ export const useCreateOrder = () => {
         },
       );
 
-      const events = parseEvents(tx, twapContract.options.jsonInterface);
-      const data = { txHash: tx.transactionHash, orderId: Number(events[0].returnValues.id) };
-
-      analytics.onCreateOrderSuccess(data.orderId, data.txHash);
-      logger("order created:", "orderId:", data.orderId, "txHash:", data.txHash);
-      return data;
+      const orderId = Number(tx.events.OrderCreated.returnValues.id);
+      const txHash = tx.transactionHash;
+      analytics.onCreateOrderSuccess(orderId, txHash);
+      logger("order created:", "orderId:", orderId, "txHash:", txHash);
+      return {
+        orderId,
+        txHash,
+      };
     },
     {
       onError: (error) => {
@@ -405,6 +407,7 @@ export const useCancelOrder = () => {
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
   const { account } = useTwapContext();
   const twapContract = useTwapContract();
+  const onCancelOrder = query.useUpdateOrderStatusToCanceled();
   return useMutation(
     async (orderId: number) => {
       if (!twapContract) {
@@ -423,15 +426,16 @@ export const useCancelOrder = () => {
         maxPriorityFeePerGas: priorityFeePerGas,
         maxFeePerGas,
       });
-      await refetch();
+      console.log(`order canceled`);
     },
     {
-      onSuccess: () => {
+      onSuccess: (_, orderId) => {
         logger(`order canceled`);
         analytics.onCancelOrderSuccess();
+        onCancelOrder(orderId);
       },
       onError: (error: Error) => {
-        logger(`cancel error order`, error);
+        console.log(`cancel error order`, error);
         analytics.onTxError(error, "cancel");
       },
     },

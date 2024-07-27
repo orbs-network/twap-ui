@@ -46,23 +46,20 @@ import {
   StyledResetLimitButtonLeft,
   StyledResetLimitButtonRight,
   StyledChunksSelect,
-  StyledChunksSelectSlider,
   StyledChunksSelectInput,
   StyledContent,
   StyledSmallText,
   StyledBalanceWarning,
-  StyledSwapModalContent,
   StyledTop,
-  StyledCreateOrderModal,
   StyledTwap,
   StyledTradeDuration,
   StyledTradeDurationRight,
-  StyledOrders,
   StyledOrdersContent,
   StyledLimitPriceTitle,
   GlobalStyles,
   StyledOrdersButton,
-
+  StyledCreateOrderModal,
+  StyledOrdersHeader,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
@@ -164,7 +161,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     <>
       <StyledTokenPanel error={exceedsBalance ? 1 : 0}>
         <TwapStyles.StyledColumnFlex gap={10}>
-          <TwapStyles.StyledRowFlex justifyContent="space-between" style={{marginTop:8}}>
+          <TwapStyles.StyledRowFlex justifyContent="space-between" style={{ marginTop: 8 }}>
             <StyledPanelInput placeholder="0.0" isSrc={isSrcToken} />
             <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
           </TwapStyles.StyledRowFlex>
@@ -305,15 +302,9 @@ export const useProvider = () => {
   return provider;
 };
 
-const TWAPContent = () => {
+const useParsedTokens = () => {
   const context = useAdapterContext();
-  const provider = useProvider();
-
-  const theme = useMemo(() => {
-    return context.isDarkTheme ? darkTheme : lightTheme;
-  }, [context.isDarkTheme]);
-
-  const parsedTokens = useMemo(() => {
+  return useMemo(() => {
     if (!size(context.dappTokens) || !context.config) {
       return [];
     }
@@ -322,17 +313,32 @@ const TWAPContent = () => {
     });
     return compact(parsed) as Token[];
   }, [context.dappTokens, context.config, context.getTokenLogo]);
+};
 
-  const { srcToken, dstToken } = useSelectedParsedTokens();
-  const { srcUsd, dstUsd } = useUsd();
-  const marketPrice = useMarketPrice();
+const useIsWrongChain = () => {
+  const context = useAdapterContext();
 
-  const isWrongChain = useMemo(() => {
+  return useMemo(() => {
     if (!context.configChainId) {
       return false;
     }
     return !supportedChains.includes(context.configChainId);
   }, [context.configChainId]);
+};
+
+const TWAPContent = () => {
+  const context = useAdapterContext();
+  const provider = useProvider();
+
+  const theme = useMemo(() => {
+    return context.isDarkTheme ? darkTheme : lightTheme;
+  }, [context.isDarkTheme]);
+
+  const parsedTokens = useParsedTokens();
+  const { srcToken, dstToken } = useSelectedParsedTokens();
+  const { srcUsd, dstUsd } = useUsd();
+  const marketPrice = useMarketPrice();
+  const isWrongChain = useIsWrongChain();
 
   const dappWToken = useWToken();
 
@@ -366,8 +372,8 @@ const TWAPContent = () => {
           <GlobalStyles />
           <StyledContent>
             {context.limit ? <LimitPanel /> : <TWAPPanel />}
-            <Orders />
             <Components.LimitPriceMessage />
+            <Orders />
             <StyledPoweredBy />
           </StyledContent>
           <SubmitOrderModal />
@@ -398,27 +404,24 @@ const Orders = () => {
   }, []);
 
   return (
-    <StyledOrders isOpen={isOpen}>
+    <Components.OrderHistory isOpen={isOpen}>
       <StyledOrdersButton onClick={() => setIsOpen(true)} />
-      <Modal open={isOpen} onClose={onClose} header={<Components.OrderHistory.Header />}>
+      <Modal open={isOpen} onClose={onClose} header={<StyledOrdersHeader />}>
         <StyledOrdersContent />
       </Modal>
-    </StyledOrders>
+    </Components.OrderHistory>
   );
 };
 
 const SubmitOrderModal = () => {
-  const { isOpen, onClose } = hooks.useSwapModal();
+  const { isOpen, onClose, swapState } = hooks.useSwapModal();
+  const Modal = useAdapterContext().Modal;
 
-  return null;
-
-  // return (
-  //   <Components.Base.Modal open={isOpen} onClose={() => onClose()}>
-  //     <StyledSwapModalContent>
-  //       <StyledCreateOrderModal />
-  //     </StyledSwapModalContent>
-  //   </Components.Base.Modal>
-  // );
+  return (
+    <Modal open={isOpen} onClose={() => onClose()} title={!swapState ? "Review order" : ""}>
+      <StyledCreateOrderModal />
+    </Modal>
+  );
 };
 
 const LimitInput = (props: LimitPriceInputProps) => {
@@ -477,19 +480,15 @@ const LimitPriceTitle = (props: LimitPriceTitleProps) => {
 };
 
 const LimitPrice = () => {
-  const hide = hooks.useShouldWrapOrUnwrapOnly();
-
-  if (hide) return null;
-
   return (
-    <>
+    <StyledLimitPanel>
       <Card>
         <Card.Header>
-          <Components.Labels.LimitPriceLabel />
+          <Components.LimitPanel.Label />
           <StyledLimitSwitch />
         </Card.Header>
         <Card.Body>
-          <StyledLimitPanel
+          <Components.LimitPanel.Main
             onSrcSelect={() => {}}
             Components={{ Input: LimitInput, PercentButton: LimitPercentButton, ZeroButton: LimitPriceZeroButton, TokenSelect: LimitPriceTokenSelect, Title: LimitPriceTitle }}
             onDstSelect={() => {}}
@@ -499,7 +498,7 @@ const LimitPrice = () => {
           />
         </Card.Body>
       </Card>
-    </>
+    </StyledLimitPanel>
   );
 };
 

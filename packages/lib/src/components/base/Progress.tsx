@@ -42,13 +42,13 @@ const ProgressBarContainer = styled.div`
   height: 4px;
   background-color: #e0e0e0;
   overflow: hidden;
+  border-radius: 10px;
 `;
 
 const ProgressBarDeterminate = styled.div<{ value: number }>`
   width: ${(props) => props.value}%;
   height: 100%;
   background-color: #3f51b5;
-  transition: width 0.3s linear;
 `;
 
 const ProgressBarIndeterminate1 = styled.div`
@@ -67,9 +67,9 @@ const ProgressBarIndeterminate2 = styled.div`
 
 export const LinearProgress: React.FC<LinearProgressProps> = ({ value = 0, variant = "indeterminate" }) => {
   return (
-    <ProgressBarContainer>
+    <ProgressBarContainer className="twap-linear-progress">
       {variant === "determinate" ? (
-        <ProgressBarDeterminate value={value} />
+        <ProgressBarDeterminate value={value} className="twap-linear-progress-filled" />
       ) : (
         <>
           <ProgressBarIndeterminate1 />

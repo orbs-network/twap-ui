@@ -53,15 +53,15 @@ export interface Dapp {
   path: string;
 }
 
-export const Popup = ({ isOpen, onClose, children, className = '' }: { isOpen: boolean; onClose: () => void; children: ReactNode, className?: string}) => {
+export const Popup = ({ isOpen, onClose, children, className = "" }: { isOpen: boolean; onClose: () => void; children: ReactNode; className?: string }) => {
   return (
-    <Modal open={isOpen} onClose={onClose} className={className} >
+    <Modal open={isOpen} onClose={onClose} className={className}>
       <>{children}</>
     </Modal>
   );
 };
 
-const PopupContent = ({ children, className = '' }: { children: ReactNode, className?: string }) => {
+const PopupContent = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   return <StyledPoupContent className={className}>{children}</StyledPoupContent>;
 };
 
@@ -254,7 +254,7 @@ const Row = (props: any) => {
   if (!item) return null;
   return (
     <div style={style}>
-      <StyledListToken onClick={() => data.onClick(item.rawToken)} className='twap-tokens-list-item'>
+      <StyledListToken onClick={() => data.onClick(item.rawToken)} className="twap-tokens-list-item">
         <StyledListTokenLeft>
           <Components.Base.TokenLogo
             logo={item.token.logoUrl}
@@ -274,11 +274,11 @@ const Row = (props: any) => {
   );
 };
 
-const StyledListTokenLeft = styled('div')({
-  display: 'flex',
-  alignItems: 'center',
-  gap: 10
-})
+const StyledListTokenLeft = styled("div")({
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+});
 
 const filterTokens = (list: TokenListItem[], filterValue: string) => {
   if (!filterValue) return list;

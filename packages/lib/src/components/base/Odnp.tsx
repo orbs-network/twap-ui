@@ -12,7 +12,7 @@ const mobile = 700;
 const icon = "https://services-healthpage.orbs.network/img/odnp-logo.png";
 
 function Odnp({ className = "" }: { className?: string }) {
-  const { account } = useTwapContext().dappProps;
+  const { account } = useTwapContext();
 
   const [open, setOpen] = useState(false);
   const { translations } = useTwapContext();
@@ -236,10 +236,8 @@ const StyledOdnp = styled(StyledColumnFlex)({
 const QR = () => {
   const {
     uiPreferences: { qrSize },
-    dappProps,
+    account,
   } = useTwapContext();
-
-  const account = dappProps.account;
 
   if (!account) return null;
   return (

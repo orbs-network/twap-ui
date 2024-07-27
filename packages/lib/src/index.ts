@@ -11,5 +11,6 @@ export * from "./ui-helper";
 export * from "./utils";
 export { default as translations } from "./i18n/en.json";
 export * from "./hooks/query";
+export * from "./components/LimitPanel/hooks";
 
 export { Configs };
