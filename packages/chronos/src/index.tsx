@@ -48,9 +48,9 @@ import {
 import { isNativeAddress, network } from "@defi.org/web3-candies";
 import Web3 from "web3";
 import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
-import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";
-import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
+// import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";
+// import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+// import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 import { ThemeProvider } from "styled-components";
 
 const useMobile = () => {
@@ -149,7 +149,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <Components.TokenLogo isSrc={isSrcToken} />
         <TwapStyles.StyledRowFlex gap={6}>
           <Components.TokenSymbol isSrc={isSrcToken} />
-          <IoIosArrowDown size={12} />
+          {/* <IoIosArrowDown size={12} /> */}
         </TwapStyles.StyledRowFlex>
       </StyledTokenSelect>
       <StyledPanelRight>
@@ -163,7 +163,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         </TwapStyles.StyledRowFlex>
       </StyledPanelRight>
       <StyledTokenInputBalance>
-        <IoWalletOutline />
+        {/* <IoWalletOutline /> */}
         <Components.TokenBalance emptyUi={<>0.00</>} label="Balance:" showSymbol={true} isSrc={isSrcToken} />
       </StyledTokenInputBalance>
     </StyledTokenPanel>
@@ -391,9 +391,7 @@ const MobileTabs = () => {
   return (
     <>
       <StyledMobileTabsMenuButton aria-controls={open ? "basic-menu" : undefined} aria-expanded={open ? "true" : undefined} onClick={handleClick}>
-        <TwapStyles.StyledRowFlex gap={5}>
-          <VscSettings />
-        </TwapStyles.StyledRowFlex>
+        <TwapStyles.StyledRowFlex gap={5}>{/* <VscSettings /> */}</TwapStyles.StyledRowFlex>
       </StyledMobileTabsMenuButton>
     </>
   );

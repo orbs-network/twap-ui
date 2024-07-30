@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import styled from "styled-components";
-import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQuestionCircle";
+// import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQuestionCircle";
 import { StyledRowFlex, StyledText } from "../../styles";
 import { useTwapContext } from "../../context/context";
 import { Tooltip } from "../Components";
@@ -24,7 +24,7 @@ const Text = ({ text, fontSize }: { text: ReactNode; fontSize?: string }) => {
 
 const Info = ({ text }: { text: string }) => {
   const { uiPreferences } = useTwapContext();
-  const InfoIcon = uiPreferences?.infoIcon || <AiOutlineQuestionCircle />;
+  const InfoIcon = uiPreferences?.infoIcon;
 
   return (
     <Tooltip tooltipText={text}>

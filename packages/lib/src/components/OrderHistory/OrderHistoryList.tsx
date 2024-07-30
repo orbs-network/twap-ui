@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
+// import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { useCallback, useEffect, useRef } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList } from "react-window";
@@ -118,7 +118,7 @@ const ListOrder = React.memo(
 
           <StyledRowFlex className="twap-order-tokens">
             <TokenDisplay token={order.srcToken} />
-            <HiArrowRight className="twap-order-tokens-arrow" />
+            {/* <HiArrowRight className="twap-order-tokens-arrow" /> */}
             <TokenDisplay token={order.dstToken} />
           </StyledRowFlex>
         </StyledListOrder>

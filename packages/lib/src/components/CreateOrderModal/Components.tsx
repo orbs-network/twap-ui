@@ -1,7 +1,7 @@
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Button, TokenLogo } from "../base";
 import { useTokenDisplay } from "./hooks";
-import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
+// import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode } from "react";
 import { useSubmitOrderButton } from "../../hooks";
 import { styled } from "styled-components";
@@ -33,9 +33,7 @@ export const SmallTokens = () => {
   return (
     <StyledSmallTokens>
       <TokenDispalySmall isSrc={true} />
-      <StyledSmallTokensArrow>
-        <FaArrowRight />
-      </StyledSmallTokensArrow>
+      <StyledSmallTokensArrow>{/* <FaArrowRight /> */}</StyledSmallTokensArrow>
       <TokenDispalySmall />
     </StyledSmallTokens>
   );

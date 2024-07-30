@@ -1,10 +1,10 @@
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
-import { FaCheck } from "@react-icons/all-files/fa/FaCheck";
+// import { FaCheck } from "@react-icons/all-files/fa/FaCheck";
 import { styled } from "styled-components";
 import { Spinner } from "../base";
 import { Step, SwapStep } from "../../types";
 import { useMemo } from "react";
-import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
+// import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
 import { useTwapContext } from "../../context/context";
 import { useNetwork } from "../../hooks";
 
@@ -55,11 +55,7 @@ export function StepComponent({ stepType }: { stepType: SwapStep }) {
 
 const StepStatus = ({ step }: { step: Step }) => {
   if (step.status === "completed") {
-    return (
-      <StyledSuccess>
-        <FaCheck />
-      </StyledSuccess>
-    );
+    return <StyledSuccess>{/* <FaCheck /> */}</StyledSuccess>;
   }
 
   if (step.status === "pending") {
@@ -90,7 +86,7 @@ const useStep = (step?: SwapStep) => {
     if (step === "wrap") {
       return {
         title: isWrapLoading ? "Wrapping..." : `Wrap ${nativeToken?.symbol}`,
-        Icon: RiSwapFill,
+        // Icon: RiSwapFill,
         image: nativeToken?.logoUrl,
         status: wrapSuccess ? "completed" : isWrapLoading ? "loading" : isWrapPending ? "pending" : "disabled",
       };
@@ -108,7 +104,7 @@ const useStep = (step?: SwapStep) => {
     if (step === "createOrder") {
       return {
         title: isCreateLoading ? "Creating order..." : "Create Order",
-        Icon: RiSwapFill,
+        // Icon: RiSwapFill,
         status: createOrderSuccess ? "completed" : isCreateLoading ? "loading" : isCreatePending ? "pending" : "disabled",
       };
     }

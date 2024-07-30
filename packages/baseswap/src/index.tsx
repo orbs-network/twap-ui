@@ -32,9 +32,9 @@ import {
 } from "./styles";
 import { isNativeAddress, network } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
-import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
-import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
-import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
+// import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
+// import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
+// import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
 import { styled } from "styled-components";
 
 const config = Configs.BaseSwap;
@@ -50,7 +50,7 @@ const Button = (props: any) => {
 };
 
 const uiPreferences: TwapContextUIPreferences = {
-  infoIcon: BsQuestionCircle,
+  // infoIcon: BsQuestionCircle,
   usdSuffix: " USD",
   usdPrefix: `≈ `,
 };
@@ -179,7 +179,8 @@ const TWAPPanel = () => {
 };
 
 const ChangeTokensOrder = () => {
-  return <StyledChangeTokensOrder icon={<AiOutlineArrowDown />} />;
+  return null;
+  // return <StyledChangeTokensOrder icon={<AiOutlineArrowDown />} />;
 };
 
 const LimitPanel = () => {

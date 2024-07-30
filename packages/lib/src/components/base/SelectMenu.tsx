@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import { FC, useCallback, useMemo, useState } from "react";
-import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+// import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { ClickAwayListener } from "./ClickAwayListener";
 import { SelectMeuItem } from "../../types";
 
@@ -37,7 +37,7 @@ export const SelectMenu = (props: Props) => {
           ) : (
             <>
               <p> {selected?.text}</p>
-              <IoIosArrowDown />
+              {/* <IoIosArrowDown /> */}
             </>
           )}
         </StyledSelected>

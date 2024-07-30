@@ -61,11 +61,11 @@ import {
   StyledCreateOrderModal,
   StyledOrdersHeader,
 } from "./styles";
-import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
+// import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
-import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
-import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
-import { MdInfo } from "@react-icons/all-files/md/MdInfo";
+// import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
+// import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
+// import { MdInfo } from "@react-icons/all-files/md/MdInfo";
 import { eqIgnoreCase, network } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
@@ -86,7 +86,7 @@ const uiPreferences: TwapContextUIPreferences = {
     start: 5,
     end: 3,
   },
-  infoIcon: <MdInfo size={15} />,
+  // infoIcon: <MdInfo size={15} />,
 };
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
@@ -125,14 +125,15 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
 
   return (
     <StyledBalance disabled={!isSrc ? 1 : 0} onClick={!isZeroBalance ? () => onClick(1) : () => {}}>
-      <IoWalletSharp />
+      {/* <IoWalletSharp /> */}
       <SmallText value={isZeroBalance ? "0.00" : balance} />
     </StyledBalance>
   );
 };
 
 const TokenChange = () => {
-  return <StyledTokenChange icon={<BsArrowDownShort />} />;
+  return null;
+  // return <StyledTokenChange icon={<BsArrowDownShort />} />;
 };
 
 const TokenPanelUsd = ({ isSrc, exceedsBalance }: { isSrc?: boolean; exceedsBalance?: boolean }) => {
@@ -465,7 +466,7 @@ const LimitPriceZeroButton = ({ text, onClick }: LimitPriceZeroButtonProps) => {
         {text}
       </StyledResetLimitButtonLeft>
       <StyledResetLimitButtonRight selected={1} onClick={onClick}>
-        <IoMdClose />
+        {/* <IoMdClose /> */}
       </StyledResetLimitButtonRight>
     </StyledResetLimitButtonContainer>
   );

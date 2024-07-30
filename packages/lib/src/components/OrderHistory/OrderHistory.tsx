@@ -5,7 +5,7 @@ import { OrderHistoryHeader } from "./OrderHistoryHeader";
 import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
 import { OrderHistoryList } from "./OrderHistoryList";
 import { Spinner } from "../base";
-import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
+// import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../../context/context";
 import { query, useOpenOrders } from "../../hooks";
@@ -33,7 +33,7 @@ const OrderHistoryButton = ({ onClick, className = "" }: { onClick: () => void; 
     <StyledOrderHistoryButton className={`twap-show-orders-btn ${className}`} onClick={_onClick}>
       {isLoading && <Spinner size={20} />}
       <span>{text}</span>
-      <FaArrowRight className="twap-show-orders-btn-arrow" />
+      {/* <FaArrowRight className="twap-show-orders-btn-arrow" /> */}
     </StyledOrderHistoryButton>
   );
 };

@@ -23,7 +23,7 @@ import {
   StyledChunkSize,
 } from "./styles";
 
-import { AiFillAccountBook } from "@react-icons/all-files/ai/AiFillAccountBook";
+// import { AiFillAccountBook } from "@react-icons/all-files/ai/AiFillAccountBook";
 import { useTwapContext } from "@orbs-network/twap-ui";
 
 interface ThenaTWAPProps extends TWAPProps {
@@ -52,7 +52,8 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 };
 
 const TokenChange = () => {
-  return <StyledTokenChange icon={<AiFillAccountBook />} />;
+  // return <StyledTokenChange icon={<AiFillAccountBook />} />;
+  return null;
 };
 
 const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () => void }) => {
@@ -67,7 +68,7 @@ const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () =>
 
         <TwapStyles.StyledRowFlex gap={5} justifyContent="flex-start">
           {notSelected ? <p className="twap-token-select-text">Select</p> : <Components.TokenSymbol isSrc={isSrc} />}
-          <AiFillAccountBook className="twap-token-select-icon" />
+          {/* <AiFillAccountBook className="twap-token-select-icon" /> */}
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>
     </StyledTokenSelect>

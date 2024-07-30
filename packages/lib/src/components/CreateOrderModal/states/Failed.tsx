@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
-import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
+// import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
 import { BottomContent, SmallTokens } from "../Components";
 import { useOrderType } from "../hooks";
 import { useMemo } from "react";
@@ -34,11 +34,7 @@ const StyledTitle = styled(StyledText)({
 });
 
 const Logo = () => {
-  return (
-    <StyledLogo className="twap-order-modal-failed-logo">
-      <IoIosWarning />
-    </StyledLogo>
-  );
+  return <StyledLogo className="twap-order-modal-failed-logo">{/* <IoIosWarning /> */}</StyledLogo>;
 };
 
 const StyledLogo = styled(StyledRowFlex)({

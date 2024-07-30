@@ -2,7 +2,7 @@ import { FC, ReactNode, useCallback } from "react";
 import { Balance, Icon, NumericInput, TimeSelector, TokenName, USD, TokenLogo as Logo, Button, Portal } from "./base";
 import { Message } from "./base/Message";
 import { useTwapContext } from "../context/context";
-import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
+// import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import styled from "styled-components";
 import { useFormatNumber, useSrcBalance, useAmountUi, useDstBalance, useFormatDecimals } from "../hooks/hooks";
 import { useConfirmationButton } from "../hooks/useConfirmationButton";
@@ -13,7 +13,7 @@ import { LimitSwitchArgs, TooltipProps, TWAPTokenSelectProps } from "../types";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
 import { Styles } from "..";
-import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+// import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { stateActions } from "../context/actions";
 import {
   useFeeOnTransferWarning,
@@ -30,7 +30,7 @@ import {
   useUsdAmount,
 } from "../hooks/lib";
 
-export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
+export const ChangeTokensOrder = ({ children, className = "", icon }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
   return (
     <StyledChangeTokens className={`${className} twap-change-tokens-order`}>
@@ -145,7 +145,7 @@ export const TokenSelect = ({
     <div className={`${className} twap-token-select`} onClick={onClick} style={{ cursor: "pointer" }}>
       <StyledRowFlex gap={5} style={{ cursor: "pointer" }} width="fit-content" className={`twap-token-selected`}>
         <TokenLogoAndSymbol isSrc={isSrc} />
-        {!hideArrow && <Icon icon={CustomArrow ? <CustomArrow size={20} /> : <IoIosArrowDown size={20} />} />}
+        {/* {!hideArrow && <Icon icon={CustomArrow ? <CustomArrow size={20} /> : <IoIosArrowDown size={20} />} />} */}
       </StyledRowFlex>
     </div>
   );

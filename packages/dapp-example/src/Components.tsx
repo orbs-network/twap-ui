@@ -21,14 +21,14 @@ import {
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
+// import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
 import Backdrop from "@mui/material/Backdrop";
 import { Button, styled, TextField, Typography } from "@mui/material";
 import { Components, Config, hooks, isEmpty, size, Styles, Token } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 
-import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
-import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
+// import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
+// import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
 
 import { dapps } from "./config";
 import { Status } from "./Status";
@@ -38,8 +38,8 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import { SelectorOption, TokenListItem } from "./types";
 import { useNavigate } from "react-router-dom";
 import { useWeb3React } from "@web3-react/core";
-import { MdDeleteSweep } from "@react-icons/all-files/md/MdDeleteSweep";
-import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
+// import { MdDeleteSweep } from "@react-icons/all-files/md/MdDeleteSweep";
+// import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
 
 const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
 
@@ -69,9 +69,7 @@ const PopupHeader = ({ onClose, title, Component }: { onClose: () => void; title
   return (
     <StyledPopupHeader>
       {Component ? Component : title && <p className="twap-popup-title">{title}</p>}
-      <StyledCloseIcon onClick={onClose}>
-        <AiOutlineClose className="icon" />
-      </StyledCloseIcon>
+      <StyledCloseIcon onClick={onClose}>{/* <AiOutlineClose className="icon" /> */}</StyledCloseIcon>
     </StyledPopupHeader>
   );
 };
@@ -133,7 +131,7 @@ const ToggleTheme = () => {
           }}
           onClick={() => setTheme("light")}
         >
-          <BsMoon style={{ width: size, height: size }} />
+          {/* <BsMoon style={{ width: size, height: size }} /> */}
         </button>
       )}
       {showDark && (
@@ -143,7 +141,7 @@ const ToggleTheme = () => {
           }}
           onClick={() => setTheme("dark")}
         >
-          <BsMoon style={{ width: size, height: size }} />
+          {/* <BsMoon style={{ width: size, height: size }} /> */}
         </button>
       )}
     </StyledThemeToggle>
@@ -181,7 +179,7 @@ export const DappsMenu = () => {
     <>
       {isMobile && (
         <StyledMenuMobileToggle className="menu-button" color="inherit" edge="start" onClick={handleDrawerToggle}>
-          <FiMenu />
+          {/* <FiMenu /> */}
         </StyledMenuMobileToggle>
       )}
       <StyledMenuDrawer
@@ -404,7 +402,7 @@ export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
     <StyledTokens>
       {view !== TokenListView.DEFAULT && (
         <StyledListBackBtn onClick={() => setView(TokenListView.DEFAULT)}>
-          <BiArrowBack />
+          {/* <BiArrowBack /> */}
           Back
         </StyledListBackBtn>
       )}

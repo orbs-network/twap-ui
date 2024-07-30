@@ -31,8 +31,8 @@ import {
   StyledTradeSize,
 } from "./styles";
 import { eqIgnoreCase, isNativeAddress, network, zeroAddress } from "@defi.org/web3-candies";
-import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
+// import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+// import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";/
 import { compact, isEmpty } from "@orbs-network/twap-ui";
 import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SyncSwapPallete } from "./types";
@@ -102,7 +102,7 @@ export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: b
     <StyledTokenSelect onClick={onClick}>
       <TwapStyles.StyledRowFlex gap={5}>
         {token ? <Components.TokenLogoAndSymbol isSrc={isSrc} /> : <Styles.StyledOneLineText>{translations.selectToken}</Styles.StyledOneLineText>}
-        <Components.Base.Icon icon={<IoIosArrowDown size={20} />} />
+        {/* <Components.Base.Icon icon={<IoIosArrowDown size={20} />} /> */}
       </TwapStyles.StyledRowFlex>
     </StyledTokenSelect>
   );
@@ -246,7 +246,8 @@ const LimitPanel = () => {
 };
 
 const ChangeTokensOrder = () => {
-  return <StyledChangeTokensOrder icon={<AiOutlineArrowDown />} />;
+  return null;
+  // return <StyledChangeTokensOrder icon={<AiOutlineArrowDown />} />;
 };
 
 const SubmitButton = () => {

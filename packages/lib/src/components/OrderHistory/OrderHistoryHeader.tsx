@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useOrderHistoryContext } from "./context";
 import { StyledRowFlex, StyledText } from "../../styles";
 import { Button, SelectMenu } from "../base";
-import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
+// import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { useTwapContext } from "../../context/context";
 import { useOrderById } from "../../hooks";
 import { SelectMeuItem, Status } from "../../types";
@@ -44,7 +44,7 @@ export const OrderHistoryHeader = ({ className = "" }: { className?: string }) =
       ) : (
         <StyledOrderDetails>
           <StyledBack onClick={closePreview} className="twap-order-modal-header-back">
-            <HiArrowLeft />
+            {/* <HiArrowLeft /> */}
           </StyledBack>
           <StyledTitle className="twap-order-modal-header-title">
             #{order?.id} {order?.isMarketOrder ? t.twapMarket : t.limitOrder}

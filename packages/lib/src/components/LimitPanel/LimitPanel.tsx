@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Icon, Label, NumericInput, TokenDisplay } from "../base";
-import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
+// import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
 import { createContext, FC, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket, useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
@@ -271,7 +271,7 @@ const InvertPrice = () => {
 
   return (
     <StyledInvertprice onClick={onInvert} className="twap-limit-panel-invert-button">
-      <Icon icon={<RiArrowUpDownLine size="16px" />} />
+      {/* <Icon icon={<RiArrowUpDownLine size="16px" />} /> */}
     </StyledInvertprice>
   );
 };

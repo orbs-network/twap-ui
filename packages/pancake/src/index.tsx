@@ -61,13 +61,13 @@ import {
 import { eqIgnoreCase, isNativeAddress, network, zeroAddress } from "@defi.org/web3-candies";
 import Web3 from "web3";
 import BN from "bignumber.js";
-import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
-import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
+// import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
+// import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { useTwapContext, LimitPriceZeroButtonProps, LimitPricePercentProps } from "@orbs-network/twap-ui";
 import { useAdapterContext, AdapterContextProvider, PancakeProps } from "./context";
 import { LimitPriceTitleProps } from "@orbs-network/twap-ui";
 import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
-import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
+// import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
 import { styled } from "styled-components";
 const PERCENT = [
   { text: "25%", value: 0.25 },
@@ -143,7 +143,7 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
       <TokenSelect isSrcToken={isSrcToken} onClose={() => setIsOpen(false)} open={isOpen} />
       <Card.Header>
         <StyledSelectAndBalance>
-          <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onSrcTokenSelected} />
+          <StyledTokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onSrcTokenSelected} />
           <Balance isSrc={isSrcToken} />
         </StyledSelectAndBalance>
       </Card.Header>
@@ -191,11 +191,7 @@ const SrcTokenPercentSelector = () => {
 };
 
 const ChangeTokensOrder = () => {
-  return (
-    <StyledTokenChangeContainer>
-      <StyledTokenChange icon={<AiOutlineArrowDown />} />
-    </StyledTokenChangeContainer>
-  );
+  return <StyledTokenChangeContainer>{/* <StyledTokenChange icon={<AiOutlineArrowDown />} /> */}</StyledTokenChangeContainer>;
 };
 
 export const useProvider = (props: PancakeProps) => {
@@ -768,7 +764,7 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
     <StyledModalHeader withTitle={title ? 1 : 0}>
       {title && <StyledModalHeaderTitle>{title}</StyledModalHeaderTitle>}
       <StyledModalHeaderClose className="twap-ui-close" onClick={onClose}>
-        <IoMdClose />
+        {/* <IoMdClose /> */}
       </StyledModalHeaderClose>
     </StyledModalHeader>
   );

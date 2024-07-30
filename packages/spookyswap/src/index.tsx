@@ -18,12 +18,12 @@ import { darkTheme, lightTheme, StyledChangeTokensOrder, StyledPercentSelector, 
 import { isNativeAddress, network } from "@defi.org/web3-candies";
 import { memo, useCallback, useState } from "react";
 
-import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
+// import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 
 const config = Configs.SpookySwap;
 
 const uiPreferences: TwapContextUIPreferences = {
-  infoIcon: BsQuestionCircle,
+  // infoIcon: BsQuestionCircle,
 };
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
@@ -196,7 +196,8 @@ const TWAPPanel = () => {
 };
 
 const ChangeTokensOrder = () => {
-  return <StyledChangeTokensOrder icon={<BsQuestionCircle />} />;
+  return null;
+  // return <StyledChangeTokensOrder icon={<BsQuestionCircle />} />;
 };
 
 const LimitPanel = () => {

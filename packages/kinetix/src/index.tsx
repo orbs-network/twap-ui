@@ -34,12 +34,10 @@ import {
 import { isNativeAddress, network, zeroAddress } from "@defi.org/web3-candies";
 import { memo, ReactNode } from "react";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 
 const config = Configs.Lynex;
 
 const uiPreferences: TwapContextUIPreferences = {
-  infoIcon: BsQuestionCircle,
   inputPlaceholder: "0.00",
 };
 

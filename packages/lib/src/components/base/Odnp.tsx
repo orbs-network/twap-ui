@@ -3,8 +3,8 @@ import { ReactNode, useState } from "react";
 import { useTwapContext } from "../../context/context";
 import { StyledColumnFlex, StyledOneLineText, StyledRowFlex, StyledText } from "../../styles";
 import Button from "./Button";
-import { FaApple } from "@react-icons/all-files/fa/FaApple";
-import { FaGooglePlay } from "@react-icons/all-files/fa/FaGooglePlay";
+// import { FaApple } from "@react-icons/all-files/fa/FaApple";
+// import { FaGooglePlay } from "@react-icons/all-files/fa/FaGooglePlay";
 import { styled } from "styled-components";
 
 const mobile = 700;
@@ -86,8 +86,8 @@ const LeftSection = () => {
         <img className="twap-odnp-left-logo" src={icon} />
       </StyledColumnFlex>
       <StyledColumnFlex style={{ alignItems: "center" }} className="twap-odnp-left-buttons">
-        <Link name="Apple" Icon={FaApple} url="https://apps.apple.com/us/app/defi-notifications/id1588243632" />
-        <Link name="Android" Icon={FaGooglePlay} url="https://play.google.com/store/apps/details?id=com.orbs.openDefiNotificationsApp" />
+        {/* <Link name="Apple" Icon={FaApple} url="https://apps.apple.com/us/app/defi-notifications/id1588243632" /> */}
+        {/* <Link name="Android" Icon={FaGooglePlay} url="https://play.google.com/store/apps/details?id=com.orbs.openDefiNotificationsApp" /> */}
       </StyledColumnFlex>
     </StyledLeft>
   );

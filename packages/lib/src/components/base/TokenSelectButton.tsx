@@ -3,7 +3,7 @@ import Icon from "./Icon";
 import { useTwapContext } from "../../context/context";
 import { StyledOneLineText, StyledRowFlex } from "../../styles";
 import { FC, ReactNode } from "react";
-import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+// import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { Tooltip } from "../Components";
 
 interface Props {
@@ -45,7 +45,7 @@ function TokenSelectButton({ className = "", onClick, hideArrow, customUi, custo
           ) : (
             <>
               <StyledOneLineText>{translations.selectToken}</StyledOneLineText>
-              {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
+              {/* {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />} */}
             </>
           )}
         </StyledRowFlex>

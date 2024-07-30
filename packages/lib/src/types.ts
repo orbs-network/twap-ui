@@ -1,7 +1,7 @@
 import ConfigJson from "@orbs-network/twap/configs.json";
 import { Moment } from "moment";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
-import { IconType } from "@react-icons/all-files";
+// import { IconType } from "@react-icons/all-files";
 import { useParseOrderUi } from "./hooks/orders";
 import Web3 from "web3";
 import { useSwapData } from "./hooks";
@@ -429,7 +429,7 @@ export type Step = {
     url: string;
     text: string;
   };
-  Icon?: IconType;
+  Icon?: any;
   image?: string;
   status: "pending" | "loading" | "completed" | "disabled";
 };

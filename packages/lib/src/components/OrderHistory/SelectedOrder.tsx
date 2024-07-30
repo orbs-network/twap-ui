@@ -10,7 +10,7 @@ import { useOrderById } from "../../hooks/orders";
 import { OrderUI, Status, Token } from "../../types";
 import { OrderDisplay } from "../OrderDisplay";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+// import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
 export const SelectedOrder = ({ selectedOrderId }: { selectedOrderId?: number }) => {
   const order = useOrderById(selectedOrderId);
@@ -55,7 +55,7 @@ const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: 
       <StyledAccordion>
         <StyledSummary onClick={onClick} className="twap-orders-selected-order-summary">
           <StyledText>{title}</StyledText>
-          <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
+          {/* <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} /> */}
         </StyledSummary>
         <StyledDetails style={{ height: expanded ? "auto" : 0 }} className="twap-orders-selected-order-details">
           <>

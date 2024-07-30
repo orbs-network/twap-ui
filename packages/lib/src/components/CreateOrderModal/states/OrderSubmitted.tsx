@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { Link, SmallTokens } from "../Components";
-import { HiArrowCircleUp } from "@react-icons/all-files/hi/HiArrowCircleUp";
+// import { HiArrowCircleUp } from "@react-icons/all-files/hi/HiArrowCircleUp";
 import { useOrderType } from "../hooks";
 import { useTwapContext } from "../../../context/context";
 import { useExplorerUrl } from "../../../hooks";
@@ -12,9 +12,7 @@ export function OrderSubmitted() {
 
   return (
     <StyledContainer className="twap-create-order-submitted">
-      <Logo className="twap-create-order-submitted-logo">
-        <HiArrowCircleUp />
-      </Logo>
+      <Logo className="twap-create-order-submitted-logo">{/* <HiArrowCircleUp /> */}</Logo>
       <Title />
       <SmallTokens />
       {createOrdertxHash && <Link href={`${explorerUrl}/tx/${createOrdertxHash}`}>View explorer</Link>}

@@ -29,12 +29,12 @@ import {
 } from "./styles";
 import { isNativeAddress, network } from "@defi.org/web3-candies";
 import { memo } from "react";
-import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
-import { HiArrowDown } from "@react-icons/all-files/hi/HiArrowDown";
+// import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
+// import { HiArrowDown } from "@react-icons/all-files/hi/HiArrowDown";
 const config = Configs.Arbidex;
 
 const uiPreferences: TwapContextUIPreferences = {
-  infoIcon: BsQuestionCircle,
+  // infoIcon: BsQuestionCircle,
   usdSuffix: " USD",
   usdPrefix: "≈ ",
 };
@@ -155,7 +155,8 @@ const TWAPPanel = () => {
 };
 
 const ChangeTokensOrder = () => {
-  return <StyledChangeTokensOrder icon={<HiArrowDown />} />;
+  return null;
+  // return <StyledChangeTokensOrder icon={<HiArrowDown />} />;
 };
 
 const LimitPanel = () => {
