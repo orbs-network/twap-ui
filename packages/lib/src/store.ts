@@ -15,14 +15,14 @@ class OrdersStore implements OrdersState {
   orders: { [key: string]: HistoryOrder[] } = {};
 
   addOrder(chainId: number, order: HistoryOrder): void {
-    console.log("Adding order to localstorage", order, "to chain", chainId);
+    // console.log("Adding order to localstorage", order, "to chain", chainId);
     const chainOrders = this.orders[chainId.toString()] || [];
     this.orders[chainId.toString()] = [order, ...chainOrders];
     this.saveOrders();
   }
 
   deleteOrder(chainId: number, orderId: number): void {
-    console.log("Got order from api, Deleting order from localstorage", orderId, "from chain", chainId);
+    // console.log("Got order from api, Deleting order from localstorage", orderId, "from chain", chainId);
     const chainOrders = this.orders[chainId.toString()] || [];
     this.orders[chainId.toString()] = chainOrders.filter((order) => order.id !== orderId);
     this.saveOrders();
