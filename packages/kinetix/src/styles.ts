@@ -1,8 +1,8 @@
-import { Box, createTheme, styled, Theme } from "@mui/material";
-import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
+import { Components, Styles } from "@orbs-network/twap-ui";
+import { DefaultTheme, styled } from "styled-components";
 const MOBILE = 500;
 
-export const lightTheme = createTheme({
+export const lightTheme = {
   palette: {
     mode: "light",
   },
@@ -10,17 +10,17 @@ export const lightTheme = createTheme({
   typography: {
     fontFamily: "inherit",
   },
-});
-const isDark = (theme: Theme) => theme.palette.mode === "dark";
+};
+const isDark = (theme: DefaultTheme) => theme.palette.mode === "dark";
 
-export const darkTheme = createTheme({
+export const darkTheme = {
   palette: {
     mode: "dark",
   },
   typography: {
     fontFamily: "inherit",
   },
-});
+};
 
 export const StyledMaxButton = styled("button")({
   background: "rgb(194 194 194/1)",
@@ -33,7 +33,7 @@ export const StyledMaxButton = styled("button")({
   cursor: "pointer",
 });
 
-const baseStyles = (theme: Theme) => {
+const baseStyles = (theme: DefaultTheme) => {
   const darkMode = isDark(theme);
   return {
     mainBackground: "#3C3837",
@@ -55,7 +55,7 @@ const baseStyles = (theme: Theme) => {
   };
 };
 
-const buttonStyles = (theme: Theme) => {
+const buttonStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   return {
     color: styles.buttonColor,
@@ -124,7 +124,7 @@ export const StyledTokenPanelHeader = styled(Styles.StyledRowFlex)(({ theme }) =
 
 export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({});
 
-export const StyledTokenSelect = styled(Box)(({ theme }) => {
+export const StyledTokenSelect = styled("div")(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     ".twap-token-select": {
@@ -205,134 +205,7 @@ export const StyledTradeSize = styled(Components.Base.Card)(({ theme }) => {
 
 export const StyledPriceCard = styled(Components.Base.Card)({});
 
-export const StyledSubmitButton = styled(Components.SubmitButton)({
-  marginTop: 0,
-  height: 48,
-  marginLeft: "auto",
-  marginRight: "auto",
-  "*": {
-    fontSize: 16,
-    fontWeight: 500,
-  },
-});
-
-export const StyledOrdersPanel = styled(OrdersPanel)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    fontFamily: "Montserrat",
-    ".twap-order": {
-      ".twap-order-expanded-row": {
-        alignItems: "flex-start",
-        ".twap-label": {
-          flex: 1,
-          p: {
-            color: `${styles.labelColor}!important`,
-            fontWeight: 500,
-          },
-        },
-      },
-    },
-    ".twap-cancel-order": {
-      ...buttonStyles(theme),
-      fontWeight: 400,
-      fontSize: 16,
-    },
-    ".twap-price-compare": {
-      "*, p": {
-        fontSize: 13,
-      },
-    },
-    ".twap-market-price-section": {
-      alignItems: "flex-start",
-      ".twap-label": {
-        fontSize: 13,
-      },
-    },
-    ".twap-order-expanded-right": {
-      fontWeight: 400,
-    },
-    ".twap-order-expanded-row": {
-      ".twap-label": {
-        fontSize: 13,
-      },
-    },
-    color: styles.textColorMain,
-
-    ".twap-orders-header-tabs": {
-      background: styles.cardBackground,
-      borderRadius: 12,
-      ".MuiTab-root": {
-        borderRadius: 9,
-        position: "relative",
-        "&::after": {
-          content: "''",
-          position: "absolute",
-          width: "95%",
-          height: "90%",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          borderRadius: 9,
-          background: "#43464A",
-          zIndex: -1,
-          opacity: 0,
-        },
-        "&:hover": {
-          "&::after": {
-            opacity: 1,
-          },
-        },
-      },
-      ".Mui-selected": {
-        color: styles.textColorMain,
-        "&::after": {
-          opacity: 1,
-        },
-      },
-      ".MuiTabs-indicator": {
-        display: "none",
-      },
-      ".MuiTouchRipple-root": {
-        display: "none",
-      },
-    },
-  };
-});
-
-export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContainer)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    ".twap-modal-content": {
-      paddingTop: 50,
-      overflowY: "auto",
-      ".twap-card": {
-        background: styles.mainBackground,
-        "*, svg": {
-          color: styles,
-          fill: styles,
-        },
-        ".twap-label": {
-          fontSize: 14,
-        },
-      },
-      a: {
-        color: baseStyles(theme),
-      },
-      ".twap-order-summary-details-item-right": {
-        p: {
-          fontSize: 14,
-        },
-      },
-      ".twap-disclaimer-text": {
-        "*": {
-          fontSize: 14,
-        },
-      },
-    },
-  };
-});
-
-export const configureStyles = (theme: Theme) => {
+export const configureStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   const darkMode = isDark(theme);
   return {

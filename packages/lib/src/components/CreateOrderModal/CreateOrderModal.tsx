@@ -1,5 +1,4 @@
-import { styled } from "@mui/material";
-import _ from "lodash";
+import { styled } from "styled-components";
 import { useSubmitOrderFlow } from "../../hooks/useTransactions";
 import { StyledColumnFlex } from "../../styles";
 import { OrderSubmitted, Failed } from "./states";

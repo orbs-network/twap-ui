@@ -8,7 +8,7 @@ export const showTokenInList = (symbol: string, filter: string) => {
 
 async function fetchPriceParaswap(chainId: number, inToken: string, inTokenDecimals: number) {
   const url = `https://apiv5.paraswap.io/prices/?srcToken=${inToken}&destToken=0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c&amount=${BN(
-    `1e${inTokenDecimals}`
+    `1e${inTokenDecimals}`,
   ).toString()}&srcDecimals=${inTokenDecimals}&destDecimals=18&side=SELL&network=${chainId}`;
   try {
     const res = await axios.get(url);

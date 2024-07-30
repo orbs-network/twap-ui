@@ -1,6 +1,4 @@
-import { styled } from "@mui/material";
-import React from "react";
-
+import { styled } from "styled-components";
 import { Md3DRotation } from "@react-icons/all-files/md/Md3DRotation";
 
 import { copy } from "../../utils";

@@ -1,10 +1,10 @@
-import { Box, styled } from "@mui/material";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Button, TokenLogo } from "../base";
 import { useTokenDisplay } from "./hooks";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode } from "react";
 import { useSubmitOrderButton } from "../../hooks";
+import { styled } from "styled-components";
 
 export const TokenDispalySmall = ({ isSrc }: { isSrc?: boolean }) => {
   const { amount, token } = useTokenDisplay(isSrc);
@@ -41,7 +41,7 @@ export const SmallTokens = () => {
   );
 };
 
-const StyledSmallTokensArrow = styled(Box)({
+const StyledSmallTokensArrow = styled("div")({
   display: "flex",
   alignItems: "center",
   svg: {

@@ -1,4 +1,4 @@
-import { Box, styled } from "@mui/system";
+import { styled } from "styled-components";
 import { CSSProperties, ReactNode } from "react";
 
 const Card = ({ children, className = "", style = {}, onClick = () => {} }: { children: ReactNode; className?: string; style?: CSSProperties; onClick?: () => void }) => {
@@ -11,7 +11,7 @@ const Card = ({ children, className = "", style = {}, onClick = () => {} }: { ch
 
 export default Card;
 
-const StyledContainer = styled(Box)({
+const StyledContainer = styled("div")({
   display: "flex",
   alignItems: "center",
   width: "100%",

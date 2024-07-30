@@ -1,12 +1,13 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { ReactNode, useMemo } from "react";
 import { useExplorerUrl, useFormatNumberV2, usemElipsisAddress } from "../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
-import { Label, TokenLogo, Tooltip } from "./base";
+import { Label, TokenLogo } from "./base";
 import moment from "moment";
 import { useTwapContext } from "../context/context";
 import { fillDelayText } from "../utils";
 import { Token } from "../types";
+import { Tooltip } from "./Components";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useTwapContext()?.translations;
@@ -63,22 +64,18 @@ const ChunksAmount = ({ chunks }: { chunks?: number }) => {
 };
 
 const Recipient = () => {
-  const { translations: t, lib } = useTwapContext();
+  const { translations: t, account } = useTwapContext();
   const explorerUrl = useExplorerUrl();
-  const makerAddress = usemElipsisAddress(lib?.maker);
+  const makerAddress = usemElipsisAddress(account);
 
-  const address = (
-    <Tooltip text={lib?.maker} placement="bottom">
-      {makerAddress}
-    </Tooltip>
-  );
+  const address = <Tooltip tooltipText={account}>{makerAddress}</Tooltip>;
 
   return (
     <DetailRow title={t.recipient}>
       {!explorerUrl ? (
         address
       ) : (
-        <a href={`${explorerUrl}/address/${lib?.maker}`} target="_blank">
+        <a href={`${explorerUrl}/address/${account}`} target="_blank">
           {address}
         </a>
       )}
@@ -114,8 +111,15 @@ const DetailRow = ({
 }) => {
   return (
     <StyledDetailRow className={`${className} twap-order-display-details-row`}>
-      <StyledLabel tooltipText={tooltip}>
-        {startLogo} {title}
+      <StyledLabel>
+        <Label.Text
+          text={
+            <>
+              {startLogo} {title}
+            </>
+          }
+        />
+        {tooltip && <Label.Info text={tooltip} />}
       </StyledLabel>
       <StyledDetailRowChildren className="twap-order-display-details-row-right">{children}</StyledDetailRowChildren>
     </StyledDetailRow>
@@ -129,11 +133,7 @@ const TxHash = ({ txHash }: { txHash?: string }) => {
 
   if (!txHash) return null;
 
-  const address = (
-    <Tooltip text={txHash} placement="bottom">
-      {txHashAddress}
-    </Tooltip>
-  );
+  const address = <Tooltip tooltipText={txHash}>{txHashAddress}</Tooltip>;
 
   return (
     <DetailRow title={t.txHash}>
@@ -148,8 +148,12 @@ const TxHash = ({ txHash }: { txHash?: string }) => {
   );
 };
 
-const Details = ({ className = "", children }: { className?: string; children?: ReactNode }) => {
-  return <StyledDetails className={`twap-order-display-details ${className}`}>{children}</StyledDetails>;
+const Details = ({ className = "", children, onClick }: { className?: string; children?: ReactNode; onClick?: () => void }) => {
+  return (
+    <StyledDetails onClick={onClick} className={`twap-order-display-details ${className}`}>
+      {children}
+    </StyledDetails>
+  );
 };
 
 export function OrderDisplay({ children, className = "" }: { children?: ReactNode; className?: string }) {
@@ -175,10 +179,10 @@ const TokenDisplay = ({ amount, token, usd, title }: { amount?: string; token?: 
 };
 
 const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
-  const { Components } = useTwapContext().uiPreferences;
+  const Components = useTwapContext().Components;
 
   if (Components?.USD) {
-    return <Components.USD usd={usd} />;
+    return <Components.USD value={usd} />;
   }
   return <StyledText className={`twap-order-display-token-usd ${className}`}>${usd}</StyledText>;
 };

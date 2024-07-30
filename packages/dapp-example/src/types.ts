@@ -1,7 +1,7 @@
-import { TokenData } from "@orbs-network/twap";
+import { Token } from "@orbs-network/twap-ui";
 
 export interface TokenListItem {
-  token: TokenData;
+  token: Token;
   rawToken: any;
 }
 

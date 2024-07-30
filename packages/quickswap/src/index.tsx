@@ -1,12 +1,10 @@
-import { GlobalStyles } from "@mui/material";
-import { Components, Translations, TwapAdapter, OrdersPanel, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, TWAPProps, Orders } from "@orbs-network/twap-ui";
+import { Components, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, TWAPProps, Configs, Token } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Box } from "@mui/system";
-import { createContext, memo, ReactNode, useCallback, useContext, useEffect, useState } from "react";
-import { Configs, TokenData } from "@orbs-network/twap";
+
+import { createContext, memo, useCallback, useContext, useEffect, useState } from "react";
 import Web3 from "web3";
 import { configureStyles } from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, network } from "@defi.org/web3-candies";
 
 interface QuickSwapTWAPProps extends TWAPProps {
   connect: () => void;
@@ -35,14 +33,15 @@ interface QuickSwapRawToken {
 }
 
 const config = Configs.QuickSwap;
+const nativeToken = network(config.chainId).native;
 
-const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): TokenData | undefined => {
+const parseToken = (getTokenLogoURL: (address: string) => string, rawToken: QuickSwapRawToken): Token | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!rawToken.address || isNativeAddress(rawToken.address)) {
-    return config.nativeToken;
+    return nativeToken;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
@@ -110,7 +109,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
   const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {
@@ -125,44 +124,11 @@ const SrcTokenPercentSelector = () => {
   );
 };
 
-const OrderSummary = ({ children }: { children: ReactNode }) => {
-  return (
-    <Components.OrderSummaryModalContainer>
-      <TwapStyles.StyledColumnFlex gap={14}>
-        <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryLimitPrice />
-          </Components.Base.Card>
-          <Components.Base.Card>{children}</Components.Base.Card>
-          <Components.Base.Card>
-            <TwapStyles.StyledColumnFlex gap={10}>
-              <Components.DisclaimerText />
-            </TwapStyles.StyledColumnFlex>
-          </Components.Base.Card>
-        </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={12}>
-            <Components.AcceptDisclaimer />
-            <Components.OutputAddress />
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-        <Components.SubmitButton />
-      </TwapStyles.StyledColumnFlex>
-    </Components.OrderSummaryModalContainer>
-  );
-};
-
 const ChangeTokensOrder = () => {
   return (
-    <Box mt={1.5} sx={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
+    <div>
       <Components.ChangeTokensOrder />
-    </Box>
+    </div>
   );
 };
 
@@ -171,7 +137,7 @@ interface Props extends QuickSwapTWAPProps {
 }
 
 const AmountUpdater = () => {
-  const srcAmount = hooks.useSrcAmount().srcAmountBN?.toString();
+  const srcAmount = hooks.useSrcAmount().amount;
 
   const onInputChange = useAdapterContext().onInputChange;
   useEffect(() => {
@@ -181,15 +147,17 @@ const AmountUpdater = () => {
   return null;
 };
 
-const TWAP = (props: Props) => {
-  const globalStyles = useGlobalStyles(props.isProMode, props.isDarkTheme);
+const Tooltip = () => {
+  return <div></div>;
+};
 
+const TWAP = (props: Props) => {
   const connect = useCallback(() => {
     props.connect();
   }, []);
 
   return (
-    <Box className="adapter-wrapper">
+    <div className="adapter-wrapper">
       <TwapAdapter
         connect={connect}
         config={config}
@@ -204,15 +172,14 @@ const TWAP = (props: Props) => {
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
         isLimitPanel={props.limit}
+        Components={{ Tooltip }}
       >
-        <GlobalStyles styles={globalStyles as any} />
         <AdapterContextProvider value={props}>
           <AmountUpdater />
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
-          <OrdersPanel />
         </AdapterContextProvider>
       </TwapAdapter>
-    </Box>
+    </div>
   );
 };
 
@@ -222,17 +189,8 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <TwapStyles.StyledColumnFlex gap={12}>
-        <Components.SubmitButton isMain />
-      </TwapStyles.StyledColumnFlex>
-      <OrderSummary>
-        <TwapStyles.StyledColumnFlex>
-          <Components.OrderSummaryDetailsDeadline />
-          <Components.OrderSummaryDetailsOrderType />
-          <Components.OrderSummaryDetailsChunkSize />
-          <Components.OrderSummaryDetailsMinDstAmount />
-        </TwapStyles.StyledColumnFlex>
-      </OrderSummary>
+      <TwapStyles.StyledColumnFlex gap={12}></TwapStyles.StyledColumnFlex>
+
       <Components.PoweredBy />
     </div>
   );
@@ -248,11 +206,8 @@ const TWAPPanel = () => {
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
-        <Components.SubmitButton isMain />
       </TwapStyles.StyledColumnFlex>
-      <OrderSummary>
-        <Components.OrderSummaryDetails />
-      </OrderSummary>
+
       <Components.PoweredBy />
     </div>
   );
@@ -297,4 +252,4 @@ const TradeInterval = () => {
   );
 };
 
-export { Orders, TWAP };
+export { TWAP };

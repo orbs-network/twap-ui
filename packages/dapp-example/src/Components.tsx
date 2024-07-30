@@ -23,9 +23,8 @@ import ListItemText from "@mui/material/ListItemText";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
 import Backdrop from "@mui/material/Backdrop";
-import { Button, Fade, IconButton, styled, TextField, Typography } from "@mui/material";
-import { Config } from "@orbs-network/twap";
-import { Components, hooks, Styles } from "@orbs-network/twap-ui";
+import { Button, styled, TextField, Typography } from "@mui/material";
+import { Components, Config, hooks, isEmpty, size, Styles, Token } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
@@ -36,12 +35,8 @@ import { Status } from "./Status";
 import { useAddedTokens, useBalance, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
-import { TokenData } from "@orbs-network/twap";
 import { SelectorOption, TokenListItem } from "./types";
-import _ from "lodash";
 import { useNavigate } from "react-router-dom";
-import { network } from "@defi.org/web3-candies";
-import { usePersistedStore } from "./store";
 import { useWeb3React } from "@web3-react/core";
 import { MdDeleteSweep } from "@react-icons/all-files/md/MdDeleteSweep";
 import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
@@ -58,20 +53,61 @@ export interface Dapp {
   path: string;
 }
 
-export const Popup = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: ReactNode }) => {
+export const Popup = ({ isOpen, onClose, children, className = "" }: { isOpen: boolean; onClose: () => void; children: ReactNode; className?: string }) => {
   return (
-    <Modal open={isOpen} onClose={onClose}>
-      <>
-        <StyledCloseIcon onClick={onClose}>
-          <AiOutlineClose className="icon" />
-        </StyledCloseIcon>
-        <Fade in={isOpen}>
-          <div>{children}</div>
-        </Fade>
-      </>
+    <Modal open={isOpen} onClose={onClose} className={className}>
+      <>{children}</>
     </Modal>
   );
 };
+
+const PopupContent = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
+  return <StyledPoupContent className={className}>{children}</StyledPoupContent>;
+};
+
+const PopupHeader = ({ onClose, title, Component }: { onClose: () => void; title?: string; Component?: ReactNode }) => {
+  return (
+    <StyledPopupHeader>
+      {Component ? Component : title && <p className="twap-popup-title">{title}</p>}
+      <StyledCloseIcon onClick={onClose}>
+        <AiOutlineClose className="icon" />
+      </StyledCloseIcon>
+    </StyledPopupHeader>
+  );
+};
+
+const PopupBody = ({ children }: { children: ReactNode }) => {
+  return <StyledPoupBody>{children}</StyledPoupBody>;
+};
+
+Popup.Header = PopupHeader;
+Popup.Content = PopupContent;
+Popup.Body = PopupBody;
+const StyledPoupBody = styled("div")({
+  width: "100%",
+  flex: 1,
+});
+const StyledPoupContent = styled("div")({
+  maxWidth: 600,
+  maxHeight: 600,
+  position: "relative",
+  left: "50%",
+  top: "50%",
+  transform: "translate(-50%, -50%)",
+  background: "rgba(0, 0, 0, 0.5)",
+  padding: 15,
+  borderRadius: 10,
+  display: "flex",
+  flexDirection: "column",
+});
+
+const StyledPopupHeader = styled("div")({
+  display: "flex",
+  justifyContent: "space-between",
+  height: 50,
+  alignItems: "center",
+  ".twap-popup-title": {},
+});
 
 export const MetaTags = ({ title }: { title: string }) => {
   return (
@@ -204,7 +240,7 @@ export const TokenSearchInput = ({ setValue }: { value: string; setValue: (value
     setValue(debouncedValue);
   }, [debouncedValue]);
 
-  return <StyledSearchInput placeholder="Insert token name..." value={localValue} onChange={(e) => setLocalValue(e.target.value)} />;
+  return <StyledSearchInput placeholder="Insert token name..." value={localValue} onChange={(e: any) => setLocalValue(e.target.value)} />;
 };
 
 const Row = (props: any) => {
@@ -213,13 +249,13 @@ const Row = (props: any) => {
   const item: TokenListItem = data.tokens[index];
   const { balance, isLoading } = useBalance(item.token);
 
-  const formattedValue = hooks.useFormatNumber({ value: balance, decimalScale: 6 });
+  const formattedValue = hooks.useFormatNumberV2({ value: balance, decimalScale: 6 });
 
   if (!item) return null;
   return (
     <div style={style}>
-      <StyledListToken onClick={() => data.onClick(item.rawToken)}>
-        <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "unset", flex: 1 }}>
+      <StyledListToken onClick={() => data.onClick(item.rawToken)} className="twap-tokens-list-item">
+        <StyledListTokenLeft>
           <Components.Base.TokenLogo
             logo={item.token.logoUrl}
             alt={item.token.symbol}
@@ -229,7 +265,7 @@ const Row = (props: any) => {
             }}
           />
           {item.token.symbol}
-        </Styles.StyledRowFlex>
+        </StyledListTokenLeft>
         <Components.Base.SmallLabel loading={isLoading} className="balance">
           {formattedValue}
         </Components.Base.SmallLabel>
@@ -238,20 +274,26 @@ const Row = (props: any) => {
   );
 };
 
+const StyledListTokenLeft = styled("div")({
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+});
+
 const filterTokens = (list: TokenListItem[], filterValue: string) => {
   if (!filterValue) return list;
-  return _.filter(list, (it) => {
+  return list.filter((it) => {
     return it.token.symbol.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0 || eqIgnoreCase(it.token.address, filterValue);
   });
 };
 
 interface TokensListProps {
   tokens?: TokenListItem[];
-  onClick: (token: TokenData) => void;
+  onClick: (token: Token) => void;
 }
 
-const AddToken = ({ onAddToken }: { onAddToken: (token: TokenData) => void }) => {
-  const [data, setData] = useState({ address: "", symbol: "", decimals: 18, logoUrl: "" } as TokenData);
+const AddToken = ({ onAddToken }: { onAddToken: (token: Token) => void }) => {
+  const [data, setData] = useState({ address: "", symbol: "", decimals: 18, logoUrl: "" } as Token);
 
   const onChange = (e: any) => {
     const { name, value } = e.target;
@@ -300,14 +342,14 @@ const testToken = {
 const ManageAddedTokens = () => {
   const addedTokens = useAddedTokens();
   const { chainId } = useWeb3React();
-  const { removeToken } = usePersistedStore();
+  // const { removeToken } = usePersistedStore();
 
   return (
     <StyledManageTokens>
-      {_.isEmpty(addedTokens) ? (
+      {isEmpty(addedTokens) ? (
         <Typography style={{ textAlign: "center", width: "100%" }}>No tokens</Typography>
       ) : (
-        addedTokens.map((t: TokenData) => {
+        addedTokens.map((t: Token) => {
           return (
             <StyledListToken>
               <Styles.StyledRowFlex justifyContent="space-between">
@@ -322,9 +364,9 @@ const ManageAddedTokens = () => {
                   />
                   {t.symbol}
                 </Styles.StyledRowFlex>
-                <IconButton onClick={() => removeToken(chainId!, t)}>
+                {/* <IconButton onClick={() => removeToken(chainId!, t)}>
                   <MdDeleteSweep />
-                </IconButton>
+                </IconButton> */}
               </Styles.StyledRowFlex>
             </StyledListToken>
           );
@@ -347,14 +389,13 @@ enum TokenListView {
 
 export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
   const [filterValue, setFilterValue] = useState("");
-  const tokensLength = _.size(tokens);
+  const tokensLength = size(tokens);
   const [view, setView] = useState(TokenListView.DEFAULT);
-  const { addToken } = usePersistedStore();
-  const { chainId } = useWeb3React();
+  // const { addToken } = usePersistedStore();
 
-  const onAddToken = (token: TokenData) => {
+  const onAddToken = (token: Token) => {
     setView(TokenListView.DEFAULT);
-    addToken(chainId!, token);
+    // addToken(chainId!, token);
   };
 
   const filteredTokens = useMemo(() => filterTokens(tokens, filterValue), [filterValue, tokensLength]);

@@ -1,16 +1,15 @@
-import { Orders, TWAP } from "@orbs-network/twap-ui-pangolin";
+import { TWAP } from "@orbs-network/twap-ui-pangolin";
 import { Popup, TokensList, UISelector } from "./Components";
 import { StyledModalContent, StyledPangolin, StyledPangolinBox, StyledPangolinDaasBox, StyledPangolinLayout, StyledPangolinOrdersLayout } from "./styles";
-import _ from "lodash";
 import { erc20s, zeroAddress, erc20sData } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
-import { Configs } from "@orbs-network/twap";
 import { Dapp } from "./Components";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme } from "./hooks";
 import { pangolinDarkTheme, pangolinLightTheme } from "./themes";
 import Web3 from "web3";
 import { SelectorOption, TokenListItem } from "./types";
 import { useState } from "react";
+import { mapKeys, Configs } from "@orbs-network/twap-ui";
 
 interface TokenSelectModalProps {
   isOpen: boolean;
@@ -50,13 +49,13 @@ const useDappTokens = () => {
   return useGetTokens({
     url: `https://raw.githubusercontent.com/pangolindex/tokenlists/main/pangolin.tokenlist.json`,
     parse: parseListToken,
-    modifyList: (tokens) => ({ native: nativeToken, ..._.mapKeys(tokens, (t) => t.address) }),
+    modifyList: (tokens) => ({ native: nativeToken, ...mapKeys(tokens, (t: any) => t.address) }),
     baseAssets: erc20s.avax,
   });
 };
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return rawList.map((rawToken: any) => {
     return {
       token: {
         address: rawToken.address ?? rawToken.tokenInfo?.address,
@@ -121,9 +120,7 @@ const PangolinComponent = () => {
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledPangolinBox>
       </StyledPangolinLayout>
-      <StyledPangolinOrdersLayout>
-        <Orders />
-      </StyledPangolinOrdersLayout>
+      <StyledPangolinOrdersLayout></StyledPangolinOrdersLayout>
     </StyledPangolin>
   );
 };

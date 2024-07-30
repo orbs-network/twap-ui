@@ -1,100 +1,49 @@
-import { Box, Button, ClickAwayListener, Fade, Menu, MenuItem, styled } from "@mui/material";
-import _ from "lodash";
-import React, { useCallback, useState } from "react";
-import { Status } from "@orbs-network/twap";
-import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+import styled from "styled-components";
+
+import { useCallback, useMemo, useState } from "react";
 import { useOrderHistoryContext } from "./context";
 import { StyledRowFlex, StyledText } from "../../styles";
-import { IconButton } from "../base";
+import { Button, SelectMenu } from "../base";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { useTwapContext } from "../../context/context";
 import { useOrderById } from "../../hooks";
+import { SelectMeuItem, Status } from "../../types";
 
 export function OrderHistoryMenu() {
   const [open, setOpen] = useState(false);
   const { setTab, selectedTab, tabs } = useOrderHistoryContext();
-  const onClose = () => {
-    setOpen(false);
-  };
-  const onOpen = () => {
-    setOpen(true);
-  };
 
-  const onClick = useCallback(
-    (key?: Status) => {
-      onClose();
-      setTab(key);
+  const onSelect = useCallback(
+    (item: SelectMeuItem) => {
+      setTab(item?.value as Status);
     },
-    [setTab, setTab]
+    [setTab, setTab],
   );
 
-  return (
-    <StyledContainer>
-      <StyledButton variant="outlined" onClick={onOpen}>
-        {selectedTab?.name} Orders <small>{`(${selectedTab?.amount})`}</small> <IoIosArrowDown />
-      </StyledButton>
+  const items = useMemo(() => {
+    return tabs.map((it) => {
+      return {
+        text: it.name,
+        value: it.key,
+      };
+    });
+  }, [tabs]);
 
-      {open && (
-        <ClickAwayListener onClickAway={onClose}>
-          <StyledMenu className="twap-order-menu">
-            {tabs.map((it) => {
-              return (
-                <StyledMenuItem className="twap-order-menu-item" key={it.name} onClick={() => onClick(it.key)}>
-                  <StyledText>
-                    {it.name} <small>{` (${it.amount})`}</small>
-                  </StyledText>
-                </StyledMenuItem>
-              );
-            })}
-          </StyledMenu>
-        </ClickAwayListener>
-      )}
-    </StyledContainer>
-  );
+  return <SelectMenu onSelect={onSelect} selected={selectedTab?.key} items={items} />;
 }
 
-const StyledContainer = styled(Box)({
-  position: "relative",
-  zIndex: 10,
-});
-
-const StyledMenu = styled("div")({
-  position: "absolute",
-});
-
-const StyledButton = styled(Button)({
-  display: "flex",
-  gap: 5,
-  textTransform: "none",
-  color: "inherit",
-
-  small: {
-    opacity: 0.7,
-  },
-  ".MuiTouchRipple-root": {
-    display: "none",
-  },
-});
-
-const StyledMenuItem = styled("div")({
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-});
-
-export const OrderHistoryHeader = () => {
+export const OrderHistoryHeader = ({ className = "" }: { className?: string }) => {
   const { closePreview, selectedOrderId, isLoading } = useOrderHistoryContext();
   const order = useOrderById(selectedOrderId);
   const t = useTwapContext().translations;
 
   return (
-    <StyledHeader className="twap-order-modal-header">
+    <StyledHeader className={`twap-order-modal-header ${className}`}>
       {isLoading ? null : !order ? (
         <OrderHistoryMenu />
       ) : (
         <StyledOrderDetails>
-          <StyledBack onClick={closePreview}>
+          <StyledBack onClick={closePreview} className="twap-order-modal-header-back">
             <HiArrowLeft />
           </StyledBack>
           <StyledTitle className="twap-order-modal-header-title">
@@ -105,12 +54,6 @@ export const OrderHistoryHeader = () => {
     </StyledHeader>
   );
 };
-
-const StyledClose = styled(IconButton)({
-  position: "absolute",
-  right: -10,
-  top: -10,
-});
 
 const StyledOrderDetails = styled(StyledRowFlex)({
   justifyContent: "flex-start",
@@ -129,7 +72,10 @@ const StyledHeader = styled(StyledRowFlex)({
   justifyContent: "flex-start",
   height: 40,
 });
-const StyledBack = styled(IconButton)({
+const StyledBack = styled("button")({
+  background: "none",
+  border: "none",
+  cursor: "pointer",
   svg: {
     width: 18,
     height: 18,

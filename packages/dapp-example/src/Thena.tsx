@@ -1,17 +1,15 @@
 import { StyledModalContent, StyledThenaLayout, StyledThenaBox, StyledThena } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-thena";
-import { hooks } from "@orbs-network/twap-ui";
+import { TWAP } from "@orbs-network/twap-ui-thena";
+import { hooks, mapCollection, size, Configs } from "@orbs-network/twap-ui";
 
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
-import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { useEffect, useMemo, useState } from "react";
-import _ from "lodash";
-import { erc20s, isNativeAddress } from "@defi.org/web3-candies";
+import { erc20s, isNativeAddress, network } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
-import BN from "bignumber.js";
+
 const config = Configs.Thena;
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png";
 
@@ -29,7 +27,7 @@ export const useDappTokens = () => {
   return useGetTokens({
     parse: pasrseListToken,
     modifyList: (tokens: any) => {
-      return [config.nativeToken, ...tokens];
+      return [network(config.chainId).native, ...tokens];
     },
     url: "https://lhthena.s3.us-east-2.amazonaws.com/token-list-lh.json",
     baseAssets: erc20s.bsc,
@@ -48,7 +46,7 @@ interface TokenSelectModalProps {
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return mapCollection(rawList, (rawToken: any) => {
     return {
       token: {
         address: rawToken.address,
@@ -62,7 +60,7 @@ const parseList = (rawList?: any): TokenListItem[] => {
 };
 
 const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
-  const tokensListSize = _.size(baseAssets);
+  const tokensListSize = size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
   return (
@@ -143,9 +141,7 @@ const DappComponent = () => {
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledThenaBox>
 
-        <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0}>
-          <Orders />
-        </StyledThenaBox>
+        <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0}></StyledThenaBox>
       </StyledThenaLayout>
     </StyledThena>
   );

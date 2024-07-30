@@ -1,14 +1,12 @@
-import { GlobalStyles, ThemeProvider, Typography } from "@mui/material";
-import { Translations, TwapAdapter, Components, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, Orders } from "@orbs-network/twap-ui";
+import { Translations, TwapAdapter, Components, Styles as TwapStyles, TWAPTokenSelectProps, TWAPProps, Configs, Token } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Configs, TokenData } from "@orbs-network/twap";
+
 import Web3 from "web3";
-import { isNativeAddress } from "@defi.org/web3-candies";
+import { isNativeAddress, network } from "@defi.org/web3-candies";
 import { memo, ReactNode, useCallback, useState, createContext, useContext, useMemo } from "react";
 import {
   StyledBalance,
   StyledBalanceAndUSD,
-  StyledOrderSummary,
   StyledPanelRight,
   StyledTokenChange,
   StyledTokenPanel,
@@ -17,7 +15,6 @@ import {
   configureStyles,
   StyledAdapter,
   StyledColumnFlex,
-  StyledOrders,
   StyledPoweredBy,
   StyledSubmit,
   StyledTop,
@@ -65,11 +62,11 @@ const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () =>
   return (
     <StyledTokenSelect onClick={onClick}>
       <Components.TokenLogo isSrc={isSrc} />
-      <TwapStyles.StyledColumnFlex style={{ flex: 1 }} alignItems="flex-start" gap={1}>
-        <Typography className="twap-token-select-title">Swap {isSrc ? "From" : "To"}</Typography>
+      <TwapStyles.StyledColumnFlex style={{ flex: 1 }} gap={1}>
+        <p className="twap-token-select-title">Swap {isSrc ? "From" : "To"}</p>
 
         <TwapStyles.StyledRowFlex gap={5} justifyContent="flex-start">
-          {notSelected ? <Typography className="twap-token-select-text">Select</Typography> : <Components.TokenSymbol isSrc={isSrc} />}
+          {notSelected ? <p className="twap-token-select-text">Select</p> : <Components.TokenSymbol isSrc={isSrc} />}
           <AiFillAccountBook className="twap-token-select-icon" />
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledColumnFlex>
@@ -102,49 +99,16 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-const OrderSummary = ({ children }: { children: ReactNode }) => {
-  return (
-    <StyledOrderSummary>
-      <TwapStyles.StyledColumnFlex gap={14}>
-        <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryLimitPrice />
-          </Components.Base.Card>
-          <Components.Base.Card>{children}</Components.Base.Card>
-          <Components.Base.Card>
-            <TwapStyles.StyledColumnFlex gap={10}>
-              <Components.DisclaimerText />
-            </TwapStyles.StyledColumnFlex>
-          </Components.Base.Card>
-        </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={12}>
-            <Components.AcceptDisclaimer />
-            <Components.OutputAddress />
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-        <StyledSubmit />
-      </TwapStyles.StyledColumnFlex>
-    </StyledOrderSummary>
-  );
-};
-
 const config = Configs.QuickSwap;
 
-const parseToken = (rawToken: any): TokenData | undefined => {
+const parseToken = (rawToken: any): Token | undefined => {
   const { address, symbol } = rawToken;
   if (!symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!address || isNativeAddress(address) || address === "BNB") {
-    return config.nativeToken;
+    return network(config.chainId).native;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
@@ -159,37 +123,35 @@ const AdapterContext = createContext({} as ThenaTWAPProps);
 const AdapterContextProvider = AdapterContext.Provider;
 
 const useAdapterContext = () => useContext(AdapterContext);
-
+const Tooltip = () => {
+  return <div>Tooltip</div>;
+};
 const TWAP = (props: ThenaTWAPProps) => {
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
   return (
-    <ThemeProvider theme={theme}>
-      <StyledAdapter className="twap-adapter-wrapper">
-        <TwapAdapter
-          connect={props.connect}
-          config={config}
-          maxFeePerGas={props.maxFeePerGas}
-          priorityFeePerGas={props.priorityFeePerGas}
-          translations={translations as Translations}
-          provider={props.provider}
-          account={props.account}
-          dappTokens={props.dappTokens}
-          parsedTokens={[]}
-          onDstTokenSelected={props.onDstTokenSelected}
-          onSrcTokenSelected={props.onSrcTokenSelected}
-          isLimitPanel={props.limit}
-        >
-          <GlobalStyles styles={configureStyles(theme) as any} />
-          <AdapterContextProvider value={props}>
-            {props.limit ? <LimitPanel /> : <TWAPPanel />}
-            <StyledOrders />
-          </AdapterContextProvider>
-        </TwapAdapter>
-      </StyledAdapter>
-    </ThemeProvider>
+    <StyledAdapter className="twap-adapter-wrapper">
+      <TwapAdapter
+        connect={props.connect}
+        config={config}
+        maxFeePerGas={props.maxFeePerGas}
+        priorityFeePerGas={props.priorityFeePerGas}
+        translations={translations as Translations}
+        provider={props.provider}
+        account={props.account}
+        dappTokens={props.dappTokens}
+        parsedTokens={[]}
+        onDstTokenSelected={props.onDstTokenSelected}
+        onSrcTokenSelected={props.onSrcTokenSelected}
+        isLimitPanel={props.limit}
+        Components={{ Tooltip }}
+      >
+        {/* <GlobalStyles styles={configureStyles(theme) as any} /> */}
+        <AdapterContextProvider value={props}>{props.limit ? <LimitPanel /> : <TWAPPanel />}</AdapterContextProvider>
+      </TwapAdapter>
+    </StyledAdapter>
   );
 };
 
@@ -206,11 +168,8 @@ const TWAPPanel = () => {
         <TradeSize />
         <TradeInterval />
         <MaxDuration />
-        <StyledSubmit isMain />
       </StyledColumnFlex>
-      <OrderSummary>
-        <Components.OrderSummaryDetails />
-      </OrderSummary>
+
       <StyledPoweredBy />
     </div>
   );
@@ -225,16 +184,8 @@ const LimitPanel = () => {
           <TokenChange />
           <TokenPanel />
         </StyledTop>
-        <StyledSubmit isMain />
       </StyledColumnFlex>
-      <OrderSummary>
-        <TwapStyles.StyledColumnFlex>
-          <Components.OrderSummaryDetailsDeadline />
-          <Components.OrderSummaryDetailsOrderType />
-          <Components.OrderSummaryDetailsChunkSize />
-          <Components.OrderSummaryDetailsMinDstAmount />
-        </TwapStyles.StyledColumnFlex>
-      </OrderSummary>
+
       <StyledPoweredBy />
     </div>
   );
@@ -259,9 +210,9 @@ const TradeSize = () => {
           <Components.TokenLogo isSrc={true} />
           <Components.TradeSizeValue />
           <TwapStyles.StyledRowFlex className="twap-chunks-size-usd" gap={3} style={{ width: "auto" }}>
-            <Typography>{"( "}</Typography>
+            <p>{"( "}</p>
             <Components.ChunksUSD />
-            <Typography>{" )"}</Typography>
+            <p>{" )"}</p>
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledRowFlex>
       </TwapStyles.StyledRowFlex>
@@ -292,4 +243,4 @@ const TradeInterval = () => {
   );
 };
 
-export { TWAP, Orders };
+export { TWAP };

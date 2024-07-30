@@ -1,7 +1,7 @@
-import { Box, createTheme, styled, Theme } from "@mui/material";
-import { Components, OrdersPanel, Styles } from "@orbs-network/twap-ui";
+import { Components, Styles } from "@orbs-network/twap-ui";
+import { DefaultTheme, styled } from "styled-components";
 
-export const lightTheme = createTheme({
+export const lightTheme = {
   palette: {
     mode: "light",
   },
@@ -9,17 +9,17 @@ export const lightTheme = createTheme({
   typography: {
     fontFamily: "inherit",
   },
-});
-const isDark = (theme: Theme) => theme.palette.mode === "dark";
+};
+const isDark = (theme: DefaultTheme) => theme.palette.mode === "dark";
 
-export const darkTheme = createTheme({
+export const darkTheme = {
   palette: {
     mode: "dark",
   },
   typography: {
     fontFamily: "inherit",
   },
-});
+};
 
 const lightStyles = {
   gradient: "linear-gradient(to right,rgba(59,130,246,.15),rgba(236,72,153,.15))",
@@ -41,7 +41,7 @@ const darkStyles = {
   switchTrack: "hsla(0,0%,100%,.3)",
 };
 
-const baseStyles = (theme: Theme) => (isDark(theme) ? darkStyles : lightStyles);
+const baseStyles = (theme: DefaultTheme) => (isDark(theme) ? darkStyles : lightStyles);
 
 export const StyledChunkSize = styled(Components.Base.Card)({
   ".twap-token-logo": {
@@ -138,7 +138,7 @@ export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
   gap: 12,
 });
 
-export const StyledSubmit = styled(Components.SubmitButton)({});
+export const StyledSubmit = styled("button")({});
 
 export const StyledPoweredBy = styled(Components.PoweredBy)({
   marginTop: 20,
@@ -178,181 +178,7 @@ export const StyledTokenSelect = styled(Styles.StyledRowFlex)({
   },
 });
 
-export const StyledOrders = styled(OrdersPanel)(({ theme }) => {
-  const styles = baseStyles(theme);
-  const isDarkMode = isDark(theme);
-
-  return {
-    maxWidth: "unset!important",
-    color: styles.textMain,
-    ".twap-orders-list": {
-      gap: 16,
-    },
-    ".twap-order-expanded-right": {
-      color: `${styles.textMain}!important`,
-      fontWeight: 500,
-      "*": {
-        color: `inherit`,
-        fontWeight: `inherit`,
-      },
-    },
-    ".twap-token-display-amount-and-symbol": {
-      fontSize: 15,
-      fontWeight: 500,
-    },
-    ".twap-order": {
-      padding: 20,
-
-      ".twap-label p": {
-        fontSize: 14,
-        fontWeight: 500,
-      },
-
-      ".twap-order-separator": {
-        display: "none",
-      },
-      ".twap-market-price-section": {
-        background: isDarkMode ? "#151519" : "#F4F5F6",
-        width: "100%",
-        padding: "5px 10px",
-        borderRadius: 8,
-        "*": {
-          fontSize: "13px",
-        },
-        ".twap-small-label p": {
-          fontSize: "14px!important",
-        },
-      },
-      ".MuiLinearProgress-root": {
-        background: "hsla(0,0%,100%,.06)",
-      },
-      ".MuiLinearProgress-bar": {
-        background: "#6034b1",
-      },
-      ".MuiLinearProgress-root::after": {
-        display: "none",
-      },
-    },
-
-    ".twap-orders-header": {
-      ".twap-label": {
-        p: {
-          fontSize: "16px!important",
-          fontWeight: 500,
-        },
-      },
-      ".twap-orders-header-tabs": {
-        border: "2px solid rgba(48,23,71,1)",
-      },
-      ".MuiButtonBase-root": {
-        borderRadius: 4,
-        transition: "0.3s all",
-        color: "inherit",
-      },
-      ".Mui-selected": {
-        background: "unset",
-        color: "white",
-      },
-      ".MuiTabs-indicator": {
-        // display: "none",
-        background: "#e2107b",
-      },
-    },
-  };
-});
-
-export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)(({ theme }) => {
-  const styles = baseStyles(theme);
-
-  return {
-    fontFamily: "Inter",
-
-    ".twap-modal-content": {
-      ".twap-disclaimer-text": {
-        "*": {
-          color: styles.textMain,
-          fontSize: 14,
-          lineHeight: "18px",
-        },
-      },
-      ".twap-ui-close": {
-        padding: 5,
-        background: "hsla(0,0%,100%,.06)",
-        top: 10,
-        right: 10,
-        svg: {
-          width: 20,
-          height: 20,
-        },
-        "&:hover": {
-          background: "hsla(0,0%,100%,.1)",
-        },
-      },
-      ".twap-order-summary-limit-price": {
-        fontSize: 14,
-        color: styles.textMain,
-        p: {
-          color: "inherit",
-        },
-      },
-      ".twap-label": {
-        fontSize: 14,
-        fontWeight: 600,
-        color: styles.textMain,
-        p: {
-          fontSize: "inherit",
-          fontWeight: "inherit",
-          color: "inherit",
-        },
-      },
-      ".twap-order-summary-details-item": {},
-      ".twap-order-summary-details-item-right": {
-        color: styles.textMain,
-        fontSize: 14,
-        fontWeight: 600,
-        "*": {
-          color: styles.textMain,
-          fontSize: 14,
-          fontWeight: 600,
-        },
-      },
-    },
-    ".twap-order-summary-output-address": {
-      p: {
-        color: styles.textMain,
-        fontSize: 15,
-        fontWeight: 500,
-      },
-    },
-    ".twap-orders-summary-token-display": {
-      ".twap-small-label": {
-        p: {
-          color: styles.textMain,
-          fontSize: 16,
-          fontWeight: 500,
-        },
-      },
-      ".twap-token-logo": {
-        width: 45,
-        height: 45,
-      },
-    },
-    "@media(max-width: 600px)": {
-      ".twap-order-summary-details-item": {
-        flexDirection: "column",
-        alignItems: "flex-start",
-      },
-      ".twap-orders-summary-token-display-flex": {
-        "&:last-of-type": {
-          flexDirection: "column",
-          alignItems: "flex-start",
-        },
-      },
-    },
-  };
-});
-
-export const StyledAdapter = styled(Box)(({ theme }) => {
+export const StyledAdapter = styled("div")(({ theme }) => {
   const styles = baseStyles(theme);
 
   return {
@@ -412,7 +238,7 @@ const buttonStyles = {
   },
 };
 
-export const configureStyles = (theme: Theme) => {
+export const configureStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   const isDarkMode = isDark(theme);
   return {

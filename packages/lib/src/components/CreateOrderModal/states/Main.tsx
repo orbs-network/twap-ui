@@ -1,75 +1,45 @@
-import { styled } from "@mui/material";
-import { useState, useCallback, useMemo } from "react";
+import { styled } from "styled-components";
 import { useTwapContext } from "../../../context/context";
-import {
-  useChunks,
-  useDeadline,
-  useDstAmountUsdUi,
-  useDstMinAmountOutUi,
-  useFillDelayMillis,
-  useFormatNumberV2,
-  useInvertedPrice,
-  useIsMarketOrder,
-  useOutAmount,
-  useSrcAmount,
-  useSrcAmountUsdUi,
-  useSrcChunkAmountUi,
-} from "../../../hooks/hooks";
+import { useFormatNumberV2 } from "../../../hooks/hooks";
 import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
 import { Button, Spinner, Switch } from "../../base";
 import { MarketPriceWarning, Separator } from "../../Components";
 import { BottomContent, SmallTokens } from "../Components";
-import BN from "bignumber.js";
 import { StyledColumnFlex, StyledText } from "../../../styles";
 import { Steps } from "../Steps";
-import _ from "lodash";
 import { useOrderType } from "../hooks";
 import { stateActions } from "../../../context/actions";
 import { OrderDisplay } from "../../OrderDisplay";
+import { size } from "../../../utils";
+import {
+  useChunks,
+  useDeadline,
+  useDstMinAmountOut,
+  useFillDelay,
+  useIsMarketOrder,
+  useOutAmount,
+  useSrcAmount,
+  useSrcChunkAmount,
+  useSwapPrice,
+  useUsdAmount,
+} from "../../../hooks/lib";
 
 const Price = () => {
-  const [inverted, setInverted] = useState(false);
-  const srcAmount = useSrcAmount().srcAmountUi;
-  const { srcToken, dstToken, srcUsd, dstUsd } = useTwapContext();
-  const outAmount = useOutAmount().outAmountUi;
-
+  const { srcToken, dstToken } = useTwapContext();
+  const swapPrice = useSwapPrice();
   const isMarketOrder = useIsMarketOrder();
-
-  const toggle = useCallback(() => {
-    setInverted((prev) => !prev);
-  }, []);
-
-  const amount = useMemo(() => {
-    if (!outAmount || !srcAmount) return "0";
-    return BN(outAmount).dividedBy(srcAmount).toString();
-  }, [srcAmount, outAmount]);
-
-  const invertedAmount = useInvertedPrice(amount, inverted);
-  const price = useFormatNumberV2({ value: invertedAmount, decimalScale: 2 });
-
-  const leftToken = inverted ? dstToken : srcToken;
-  const rightToken = inverted ? srcToken : dstToken;
-
-  const usdAmount = useMemo(() => {
-    if (!dstUsd || !srcUsd) return "0";
-    return BN(!inverted ? dstUsd : srcUsd)
-      .multipliedBy(invertedAmount)
-      .toString();
-  }, [invertedAmount, srcUsd, dstUsd]);
-
-  const usd = useFormatNumberV2({ value: usdAmount, decimalScale: 2 });
-  const title = isMarketOrder ? "Market Price" : "Limit Price";
+  const usd = useFormatNumberV2({ value: swapPrice.usd, decimalScale: 2 });
+  const price = useFormatNumberV2({ value: swapPrice.price, decimalScale: 4 });
   return (
-    <OrderDisplay.DetailRow title={title}>
-      <StyledPrice onClick={toggle}>
-        1 {leftToken?.symbol} = {price} {rightToken?.symbol} <span>{`($${usd})`}</span>
+    <OrderDisplay.DetailRow title={isMarketOrder ? "Market Price" : "Limit Price"}>
+      <StyledPrice>
+        1 {srcToken?.symbol} = {price} {dstToken?.symbol} <span>{`($${usd})`}</span>
       </StyledPrice>
     </OrderDisplay.DetailRow>
   );
 };
 
 const StyledPrice = styled(StyledText)({
-  cursor: "pointer",
   fontSize: 13,
   span: {
     opacity: 0.6,
@@ -118,7 +88,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
         </>
       }
     >
-      <Switch variant={uiPreferences.switchVariant} value={disclaimerAccepted} onChange={handleDisclaimer} />
+      <Switch checked={disclaimerAccepted} onChange={handleDisclaimer} />
     </OrderDisplay.DetailRow>
   );
 };
@@ -126,7 +96,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
 export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) => {
   const { swapState, swapSteps } = useTwapContext().state;
 
-  const shouldOnlyConfirm = swapState === "loading" && _.size(swapSteps) === 1;
+  const shouldOnlyConfirm = swapState === "loading" && size(swapSteps) === 1;
 
   if (shouldOnlyConfirm) {
     return <ConfirmOrder />;
@@ -154,10 +124,9 @@ export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; class
 const Tokens = () => {
   const { srcToken, dstToken } = useTwapContext();
 
-  const srcUsd = useSrcAmountUsdUi();
-  const dstUsd = useDstAmountUsdUi();
-  const srcAmount = useSrcAmount().srcAmountUi;
-  const outAmount = useOutAmount().outAmountUi;
+  const { srcUsd, dstUsd } = useUsdAmount();
+  const srcAmount = useSrcAmount().amountUi;
+  const outAmount = useOutAmount().amountUi;
 
   return (
     <OrderDisplay.Tokens>
@@ -169,13 +138,12 @@ const Tokens = () => {
 
 const Details = () => {
   const chunks = useChunks();
-  const { dappProps, srcToken, dstToken } = useTwapContext();
-  const { isLimitPanel } = dappProps;
+  const { isLimitPanel, srcToken, dstToken } = useTwapContext();
   const deadline = useDeadline().millis;
-  const srcChunkAmount = useSrcChunkAmountUi();
+  const srcChunkAmount = useSrcChunkAmount().amountUi;
   const isMarketOrder = useIsMarketOrder();
-  const dstMinAmountOut = useDstMinAmountOutUi();
-  const fillDelayMillis = useFillDelayMillis();
+  const dstMinAmountOut = useDstMinAmountOut().amountUi;
+  const fillDelayMillis = useFillDelay().millis;
 
   return (
     <>
@@ -207,7 +175,7 @@ export const SubmitButton = ({ onClick }: { onClick: () => void }) => {
   const button = useSubmitOrderButton(onClick);
 
   return (
-    <Button className="twap-order-modal-submit-btn" onClick={button.onClick} loading={button.loading} disabled={button.disabled}>
+    <Button className="twap-order-modal-submit-btn twap-submit-button" onClick={button.onClick} loading={button.loading} disabled={button.disabled}>
       {button.text}
     </Button>
   );

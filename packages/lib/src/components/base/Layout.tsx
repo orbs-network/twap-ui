@@ -1,5 +1,5 @@
-import { Box, styled } from "@mui/system";
 import React, { ReactNode } from "react";
+import { styled } from "styled-components";
 
 function Layout({ children }: { children: ReactNode }) {
   return <StyledContainer>{children}</StyledContainer>;
@@ -7,7 +7,7 @@ function Layout({ children }: { children: ReactNode }) {
 
 export default Layout;
 
-const StyledContainer = styled(Box)({
+const StyledContainer = styled("div")({
   background: "#FFFFFF",
   boxShadow: "0px 10px 100px rgba(85, 94, 104, 0.1)",
   borderRadius: 30,

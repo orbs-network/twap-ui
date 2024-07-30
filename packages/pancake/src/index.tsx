@@ -1,4 +1,3 @@
-import { GlobalStyles, Box, ThemeProvider, styled } from "@mui/material";
 import {
   Components,
   hooks,
@@ -10,6 +9,10 @@ import {
   TWAPTokenSelectProps,
   ButtonProps,
   LimitSwitchArgs,
+  compact,
+  isEmpty,
+  Configs,
+  Token,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -55,10 +58,8 @@ import {
   StyledTokenSelect,
   StyledUSD,
 } from "./styles";
-import { eqIgnoreCase, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
-import { Configs, TokenData } from "@orbs-network/twap";
+import { eqIgnoreCase, isNativeAddress, network, zeroAddress } from "@defi.org/web3-candies";
 import Web3 from "web3";
-import _ from "lodash";
 import BN from "bignumber.js";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
@@ -67,6 +68,7 @@ import { useAdapterContext, AdapterContextProvider, PancakeProps } from "./conte
 import { LimitPriceTitleProps } from "@orbs-network/twap-ui";
 import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
 import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
+import { styled } from "styled-components";
 const PERCENT = [
   { text: "25%", value: 0.25 },
   { text: "50%", value: 0.5 },
@@ -74,13 +76,21 @@ const PERCENT = [
   { text: "MAX", value: 1 },
 ];
 
-const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
+const uiPreferences: TwapContextUIPreferences = {
+  usdSuffix: " USD",
+  usdPrefix: "~",
+  usdEmptyUI: <></>,
+  balanceEmptyUI: <></>,
+  inputPlaceholder: "0.0",
+};
+
+const Tooltip = ({ tooltipText, children }: TooltipProps) => {
   const useTooltip = useAdapterContext().useTooltip;
-  const tooltip = useTooltip?.(text, { placement: "top", hideTimeout: 0 });
+  const tooltip = useTooltip?.(tooltipText, { placement: "top", hideTimeout: 0 });
 
   if (!tooltip) return null;
   return (
-    <span ref={tooltip.targetRef} style={{ ...childrenStyles }}>
+    <span ref={tooltip.targetRef}>
       {children} {tooltip.tooltipVisible && tooltip.tooltip}
     </span>
   );
@@ -88,7 +98,7 @@ const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
 
 const config = Configs.PancakeSwap;
 
-export const parseToken = (rawToken: any): TokenData | undefined => {
+export const parseToken = (rawToken: any): Token | undefined => {
   if (!rawToken) return;
 
   const { address, decimals, symbol, logoURI } = rawToken;
@@ -98,7 +108,7 @@ export const parseToken = (rawToken: any): TokenData | undefined => {
     return;
   }
   if (!address || isNativeAddress(address) || address === "BNB") {
-    return config.nativeToken;
+    return network(config.chainId).native;
   }
   return {
     address: Web3.utils.toChecksumAddress(address),
@@ -109,7 +119,7 @@ export const parseToken = (rawToken: any): TokenData | undefined => {
 };
 
 const Balance = ({ isSrc }: { isSrc?: boolean }) => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
 
   return (
     <StyledBalanceContainer onClick={isSrc ? () => onPercentClick(1) : () => {}}>
@@ -138,7 +148,7 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
         </StyledSelectAndBalance>
       </Card.Header>
       <Card.Body>
-        <Styles.StyledColumnFlex width="auto" gap={1} style={{ alignItems: "flex-end" }}>
+        <Styles.StyledColumnFlex gap={1} style={{ alignItems: "flex-end" }}>
           <StyledTokenPanelInput dstDecimalScale={dstToken?.decimals || 3} isSrc={isSrcToken} />
           <StyledUSD decimalScale={2} isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
         </Styles.StyledColumnFlex>
@@ -149,16 +159,18 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
-  const srcAmount = hooks.useSrcAmount().srcAmountBN;
+  const onPercentClick = hooks.useOnSrcAmountPercent();
+  const srcAmount = hooks.useSrcAmount().amount;
 
   const srcBalance = hooks.useSrcBalance().data;
 
   const maxSrcInputAmount = hooks.useMaxSrcInputAmount();
 
   const percent = useMemo(() => {
-    return srcAmount.dividedBy(srcBalance || "0").toNumber();
-  }, [srcAmount.toString(), srcBalance]);
+    return BN(srcAmount)
+      .dividedBy(srcBalance || "0")
+      .toNumber();
+  }, [srcAmount, srcBalance]);
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -226,9 +238,10 @@ const useMarketPrice = () => {
 
 const useAddresses = () => {
   const context = useAdapterContext();
+  const wTokenAddress = hooks.useNetwork()?.wToken.address;
   const wrappedAddress = useMemo(() => {
-    return _.find(context.dappTokens, (it) => eqIgnoreCase(it.address || "", config.wToken.address || ""))?.address;
-  }, [context.srcToken, context.dappTokens]);
+    return context.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""))?.address;
+  }, [context.srcToken, context.dappTokens, wTokenAddress]);
 
   return useMemo(() => {
     const srcAddress = context.srcToken?.address;
@@ -274,32 +287,13 @@ const TWAPContent = memo((props: PancakeProps) => {
     };
   }, [props.dappTokens, props.nativeToken]);
 
-  const uiPreferences = useMemo((): TwapContextUIPreferences => {
-    return {
-      usdSuffix: " USD",
-      usdPrefix: "~",
-      usdEmptyUI: <></>,
-      balanceEmptyUI: <></>,
-      switchVariant: "ios",
-      inputPlaceholder: "0.0",
-      Tooltip: props.useTooltip ? Tooltip : undefined,
-      Button,
-
-      modal: {
-        styles: {
-          zIndex: 1,
-        },
-      },
-    };
-  }, [props.useTooltip]);
-
-  const parsedTokens = useMemo((): TokenData[] => {
-    if (_.isEmpty(dappTokens)) return [];
-    const res = _.map(dappTokens, (token) => {
+  const parsedTokens = useMemo((): Token[] => {
+    if (!dappTokens || isEmpty(dappTokens)) return [];
+    const res = Object.values(dappTokens)?.map((token: any) => {
       return parseToken(token);
     });
 
-    return _.compact(res);
+    return compact(res);
   }, [dappTokens]);
 
   const marketPrice = useMarketPrice();
@@ -307,7 +301,7 @@ const TWAPContent = memo((props: PancakeProps) => {
   const { srcToken, dstToken } = useSelectedParsedTokens();
 
   return (
-    <Box className="twap-adapter-wrapper">
+    <div className="twap-adapter-wrapper">
       <TwapAdapter
         connect={props.connect}
         config={config}
@@ -321,9 +315,8 @@ const TWAPContent = memo((props: PancakeProps) => {
         uiPreferences={uiPreferences}
         onDstTokenSelected={props.onDstTokenSelected}
         onSrcTokenSelected={props.onSrcTokenSelected}
-        isDarkTheme={props.isDarkTheme}
         isMobile={props.isMobile}
-        connectedChainId={props.connectedChainId}
+        chainId={props.connectedChainId}
         enableQueryParams={true}
         minNativeTokenBalance="0.0035"
         isLimitPanel={props.limit}
@@ -333,17 +326,18 @@ const TWAPContent = memo((props: PancakeProps) => {
         srcToken={srcToken}
         dstToken={dstToken}
         onSwitchTokens={props.onSwitchTokens}
+        Components={{ Tooltip, Button }}
       >
-        <ThemeProvider theme={theme}>
+        {/* <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
 
           {props.children}
           {props.limit ? <LimitPanel /> : <TWAPPanel />}
           <Orders />
           <SubmitOrderModal />
-        </ThemeProvider>
+        </ThemeProvider> */}
       </TwapAdapter>
-    </Box>
+    </div>
   );
 });
 
@@ -358,7 +352,7 @@ const Orders = () => {
   return (
     <StyledOrders isOpen={isOpen}>
       <Components.OrderHistory.Button onClick={() => setIsOpen(true)} />
-      <Modal open={isOpen} onClose={onClose} header={<Components.OrderHistory.Header />}>
+      <Modal isOpen={isOpen} onClose={onClose}>
         <StyledOrdersContent />
       </Modal>
     </StyledOrders>
@@ -385,7 +379,7 @@ const TopPanel = () => {
 
 const OpenConfirmationModalButton = () => {
   const { ConnectButton } = useAdapterContext();
-  const provider = useTwapContext().dappProps.provider;
+  const provider = useAdapterContext().provider;
 
   if (!provider) {
     return (
@@ -431,7 +425,7 @@ const useTokenSelectClick = (isSrcToken?: boolean) => {
     (token: any, isSrcToken?: boolean) => {
       selectToken({ isSrc: !!isSrcToken, token });
     },
-    [selectToken, isSrcToken]
+    [selectToken, isSrcToken],
   );
 
   return useAdapterContext().useTokenModal?.(onSelect, srcToken, dstToken, isSrcToken);
@@ -491,8 +485,6 @@ const LimitPrice = () => {
   const [isSrc, setIsSrc] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const hide = hooks.useShouldWrapOrUnwrapOnly();
-
   const onSrcTokenSelected = useCallback(() => {
     setIsSrc(true);
     setIsOpen(true);
@@ -503,10 +495,8 @@ const LimitPrice = () => {
     setIsOpen(true);
   }, [setIsSrc, setIsOpen]);
 
-  if (hide) return null;
-
   return (
-    <>
+    <Components.LimitPanel>
       <TokenSelect isSrcToken={isSrc} onClose={() => setIsOpen(false)} open={isOpen} />
       <Card>
         <Card.Header>
@@ -514,7 +504,7 @@ const LimitPrice = () => {
           <StyledLimitSwitch Component={CustomPriceToggle} />
         </Card.Header>
         <Card.Body>
-          <Components.LimitPanel
+          <Components.LimitPanel.Main
             onSrcSelect={onSrcTokenSelected}
             onDstSelect={onDstTokenSelected}
             styles={{
@@ -530,7 +520,7 @@ const LimitPrice = () => {
           />
         </Card.Body>
       </Card>
-    </>
+    </Components.LimitPanel>
   );
 };
 
@@ -581,7 +571,7 @@ const SubmitOrderModal = () => {
   }, [onClose]);
 
   return (
-    <Modal open={isOpen} onClose={onCloseWithDelay} header={<ModalHeader title={title} onClose={onCloseWithDelay} />}>
+    <Modal isOpen={isOpen} onClose={onCloseWithDelay}>
       <StyledSwapModalContent
         style={{
           paddingBottom: "24px",
@@ -750,18 +740,19 @@ const SwapModal = () => {
     content = null;
   }
 
-  return (
-    <Components.Base.Modal header={<ModalHeader title={title} onClose={onCloseWithDelay} />} title={title} onClose={onCloseWithDelay} open={showConfirmation}>
-      <StyledSwapModalContent
-        style={{
-          paddingBottom: !swapState ? "24px" : "55px",
-          paddingTop: title ? "30px" : "24px",
-        }}
-      >
-        <StyledSwapModalContentChildren>{content}</StyledSwapModalContentChildren>
-      </StyledSwapModalContent>
-    </Components.Base.Modal>
-  );
+  return null;
+  // return (
+  //   <Components.Base.Modal header={<ModalHeader title={title} onClose={onCloseWithDelay} />} title={title} onClose={onCloseWithDelay} open={showConfirmation}>
+  //     <StyledSwapModalContent
+  //       style={{
+  //         paddingBottom: !swapState ? "24px" : "55px",
+  //         paddingTop: title ? "30px" : "24px",
+  //       }}
+  //     >
+  //       <StyledSwapModalContentChildren>{content}</StyledSwapModalContentChildren>
+  //     </StyledSwapModalContent>
+  //   </Components.Base.Modal>
+  // );
 };
 
 const StyledSwapModalContentChildren = styled("div")`

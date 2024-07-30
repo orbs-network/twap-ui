@@ -1,11 +1,11 @@
-import { Box, createTheme, Menu, styled, Theme } from "@mui/material";
+import { styled, DefaultTheme } from "styled-components";
 import { Components, Styles } from "@orbs-network/twap-ui";
 
 const mobile = 700;
 
 const MOBILE_FONT_SIZE = 11;
 
-export const lightTheme = createTheme({
+export const lightTheme = {
   palette: {
     mode: "light",
     text: {
@@ -16,10 +16,10 @@ export const lightTheme = createTheme({
   typography: {
     fontFamily: "inherit",
   },
-});
-const isDark = (theme: Theme) => theme.palette.mode === "dark";
+};
+const isDark = (theme: DefaultTheme) => theme.palette.mode === "dark";
 
-export const darkTheme = createTheme({
+export const darkTheme = {
   palette: {
     mode: "dark",
     text: {
@@ -29,7 +29,7 @@ export const darkTheme = createTheme({
   typography: {
     fontFamily: "inherit",
   },
-});
+};
 
 const darkStyles = {
   textColor: "white",
@@ -51,7 +51,7 @@ const lightStyles = {
   cardBg: "rgba(255,255,255, 0.5)",
 };
 
-const baseStyles = (theme: Theme) => {
+const baseStyles = (theme: DefaultTheme) => {
   return isDark(theme) ? darkStyles : lightStyles;
 };
 
@@ -232,22 +232,26 @@ export const StyledOrders = styled(Styles.StyledColumnFlex)(({ theme }) => ({
   },
 }));
 
-export const StyledOrdersHeader = styled(Styles.StyledRowFlex)({
-  [`@media(max-width: ${mobile}px)`]: {
-    flexDirection: "row!important",
-    justifyContent: "space-between",
-    alignItems: "center!important",
-    ".twap-label": {
-      p: {
-        fontSize: "11px!important",
-      },
-    },
-    ".twap-icon": {
-      width: 20,
-      height: 20,
-    },
-  },
-});
+export const StyledOrdersHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  @media (max-width: ${mobile}px) {
+    flex-direction: row !important;
+    justify-content: space-between;
+    align-items: center !important;
+
+    .twap-label {
+      p {
+        font-size: 11px !important;
+      }
+    }
+
+    .twap-icon {
+      width: 20px;
+      height: 20px;
+    }
+  }
+`;
 
 export const StyledOrderHeaderRight = styled(Styles.StyledRowFlex)({
   height: 38,
@@ -259,85 +263,6 @@ export const StyledOrderHeaderRight = styled(Styles.StyledRowFlex)({
   },
 });
 
-export const StyledOrdersTabs = styled(Components.Orders.OrdersSelectTabs)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    marginLeft: "auto",
-    minHeight: "unset",
-    padding: "unset",
-    border: "unset",
-    height: "100%",
-    width: "auto",
-    ".MuiTabs-flexContainer": {
-      height: "100%",
-    },
-    ".MuiTabs-indicator, .MuiTouchRipple-root": {
-      display: "none",
-    },
-    ".MuiTab-root": {
-      minHeight: "unset",
-      height: "100%",
-      background: isDark(theme) ? "rgba(85, 88, 121, 0.30)" : "rgba(255, 255, 255, 0.5)",
-      borderRadius: 20,
-      fontSize: 14,
-      width: "auto",
-      padding: "0px 20px",
-      marginLeft: 10,
-      lineHeight: "normal",
-      fontWeight: 400,
-      color: styles.textColor,
-      position: "relative",
-      "&:hover": {
-        background: styles.gradient,
-      },
-    },
-    ".Mui-selected": {
-      background: styles.gradient,
-      color: "white!important",
-    },
-  };
-});
-
-export const StyledOrdersList = styled(Components.Orders.SelectedOrders)(({ theme }) => {
-  const darkTheme = isDark(theme);
-  const styles = baseStyles(theme);
-  return {
-    width: "100%",
-    ".twap-orders-empty-list": {
-      background: styles.cardBg,
-      borderRadius: 30,
-      paddingBottom: 40,
-    },
-    ".twap-order": {
-      padding: 25,
-      ".MuiLinearProgress-root": {
-        borderRadius: 30,
-        background: darkTheme ? darkStyles.cardBg : "#F5F9FE",
-        "&::after": {
-          display: "none",
-        },
-      },
-      ".MuiLinearProgress-bar": {
-        background: darkTheme ? "#5253BD" : "#A2A6C3",
-      },
-      ".twap-market-price-section": {
-        marginBottom: 5,
-      },
-      ".twap-extended-order-info": {
-        gap: 15,
-      },
-      ".twap-label p": {
-        fontSize: 15,
-        fontWeight: 500,
-      },
-      [`@media(max-width: ${mobile}px)`]: {
-        "*": {
-          fontSize: "11px!important",
-        },
-      },
-    },
-  };
-});
 export const StyledTokenSelect = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
 
@@ -487,7 +412,7 @@ export const StyledMarketPrice = styled(Components.Base.Card)<{ disabled: number
   },
 }));
 
-export const StyledChangeOrder = styled(Box)(({ theme }) => ({
+export const StyledChangeOrder = styled("div")(({ theme }) => ({
   position: "relative",
   height: 0,
   display: "flex",
@@ -568,46 +493,52 @@ export const StyledLimitPrice = styled(StyledDisabledCard)({
   },
 });
 
-export const StyledTradeSize = styled(StyledDisabledCard)({
-  paddingBottom: 30,
-  paddingTop: 25,
-  ".twap-tooltip-children": {
-    flex: 1,
-  },
+export const StyledTradeSize = styled(StyledDisabledCard)`
+  padding-bottom: 30px;
+  padding-top: 25px;
 
-  ".twap-trade-size-value": {
-    fontSize: 14,
-    position: "relative",
-    top: 2,
-  },
-  ".twap-input": {
-    width: "100%",
-    height: "100%",
-    input: {
-      fontSize: 14,
-      textAlign: "left!important",
-    },
-  },
-  [`@media(max-width: ${mobile}px)`]: {
-    fontSize: MOBILE_FONT_SIZE,
-    minWidth: "unset",
-    paddingBottom: 17,
-    paddingTop: 17,
-    ".twap-chunks-left": {
-      width: "65%",
-      justifyContent: "flex-start",
-    },
-    ".twap-chunks-right": {
-      width: "35%!important",
-    },
-    ".twap-chunks-middle": {
-      width: "100%",
-      height: "auto",
-      padding: "10px 20px",
-    },
-  },
-});
+  .twap-tooltip-children {
+    flex: 1;
+  }
 
+  .twap-trade-size-value {
+    font-size: 14px;
+    position: relative;
+    top: 2px;
+  }
+
+  .twap-input {
+    width: 100%;
+    height: 100%;
+
+    input {
+      font-size: 14px;
+      text-align: left !important;
+    }
+  }
+
+  @media (max-width: ${mobile}px) {
+    font-size: ${MOBILE_FONT_SIZE};
+    min-width: unset;
+    padding-bottom: 17px;
+    padding-top: 17px;
+
+    .twap-chunks-left {
+      width: 65%;
+      justify-content: flex-start;
+    }
+
+    .twap-chunks-right {
+      width: 35% !important;
+    }
+
+    .twap-chunks-middle {
+      width: 100%;
+      height: auto;
+      padding: 10px 20px;
+    }
+  }
+`;
 export const StyledTimeSelectCard = styled(StyledDisabledCard)(({ theme }) => {
   const darkTheme = isDark(theme);
   const styles = baseStyles(theme);
@@ -621,7 +552,7 @@ export const StyledTimeSelectCard = styled(StyledDisabledCard)(({ theme }) => {
       },
       input: {
         height: "100%",
-        textAlign: "left!important",
+        textAlign: "left!important" as any,
         fontSize: 14,
         border: `1px solid ${styles.border}`,
         borderRadius: 20,
@@ -659,7 +590,7 @@ export const StyledTimeSelectCard = styled(StyledDisabledCard)(({ theme }) => {
   };
 });
 
-const buttonStyles = (theme: Theme) => {
+const buttonStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   return {
     background: `${styles.gradient}!important`,
@@ -694,7 +625,7 @@ const buttonStyles = (theme: Theme) => {
   };
 };
 
-export const StyledSubmit = styled(Components.SubmitButton)({});
+export const StyledSubmit = styled("button")({});
 
 export const StyledBigBorder = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
@@ -763,14 +694,6 @@ export const StyledStyledDisclaimerTextCard = styled(Components.Base.Card)(({ th
   };
 });
 
-export const StyledDisclaimerText = styled(Components.DisclaimerText)({
-  maxHeight: 200,
-  paddingRight: 10,
-  "*": {
-    opacity: 0.7,
-  },
-});
-
 export const StyledOrderSummaryModalHeader = styled(Styles.StyledRowFlex)({
   justifyContent: "flex-start",
   borderBottom: `2px solid ${darkStyles.confirmationBorder}`,
@@ -797,50 +720,15 @@ export const StyledOrderSummaryModalHeader = styled(Styles.StyledRowFlex)({
   },
 });
 
-export const StyledDisclaimer = styled(Components.AcceptDisclaimer)({
-  marginTop: 20,
-});
-export const StyledOrderSummaryModalPadding = styled(Box)({
+export const StyledOrderSummaryModalPadding = styled("div")({
   padding: "0px 30px",
   width: "100%",
   "@media(max-width: 600px)": {
     padding: "0px 15px",
   },
 });
-export const StyledOrderSummaryModal = styled(Components.OrderSummaryModalContainer)({
-  ".twap-ui-close": {
-    display: "none",
-  },
-  ".twap-modal-content": {
-    padding: "30px 0px 30px 0px",
-    ".twap-label": {
-      p: {
-        fontWeight: 500,
-        fontSize: 15,
-      },
-    },
-  },
 
-  ".twap-order-summary-details": {
-    gap: 20,
-  },
-  ".twap-order-summary-details-item": {
-    borderBottom: `2px solid ${darkStyles.confirmationBorder}`,
-    paddingBottom: 15,
-
-    "&-right": {
-      "*": {
-        fontSize: 17,
-        fontWeight: 300,
-      },
-    },
-    "&:last-child": {
-      border: "unset",
-    },
-  },
-});
-
-export const configureStyles = (theme: Theme) => {
+export const configureStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
 
   const darkTheme = isDark(theme);
@@ -1134,7 +1022,7 @@ export const configureStyles = (theme: Theme) => {
   };
 };
 
-export const StyledSeparator = styled(Box)({
+export const StyledSeparator = styled("div")({
   width: "100%",
   height: 2,
   background: darkStyles.cardBg,
@@ -1173,7 +1061,7 @@ export const StyledDstLogo = styled(Components.TokenLogo)({
   height: 58,
 });
 
-export const StyledTokenSummaryLogos = styled(Box)({
+export const StyledTokenSummaryLogos = styled("div")({
   position: "relative",
 });
 
@@ -1200,22 +1088,7 @@ export const StyledMobileTabsMenuButton = styled("button")(({ theme }) => {
   };
 });
 
-export const StyledMobileTabsMenu = styled(Menu)(({ theme }) => {
-  const darkTheme = isDark(theme);
-  return {
-    ".MuiTouchRipple-root": {
-      display: "none",
-    },
-    ".MuiPaper-root": {
-      background: darkTheme ? "#38354E" : "white",
-    },
-    ".MuiMenuItem-root": {
-      fontSize: 14,
-    },
-  };
-});
-
-export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
+export const StyledLimitSwitch = styled(Components.LimitPanel.Switch)(({ theme }) => {
   const isDarkMode = true;
   return {
     background: isDarkMode ? "transparent" : "white",

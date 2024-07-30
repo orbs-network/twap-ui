@@ -1,123 +1,82 @@
 import { Styles, Translations } from "..";
 import { useTwapContext } from "../context/context";
-import { StyledRowFlex } from "../styles";
-import { Icon, Label } from "./base";
-import { AiOutlineHistory } from "@react-icons/all-files/ai/AiOutlineHistory";
+import { Label } from "./base";
 import { handleFillDelayText } from "../utils";
-import { useIsMarketOrder, useMinimumDelayMinutes } from "../hooks";
+import { useIsMarketOrder, useMinimumDelayMinutes } from "../hooks/lib";
 
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;
 
-  return <Label tooltipText={translations.tradeSizeTooltip}>{translations.tradeSize} </Label>;
+  return (
+    <Label>
+      <Label.Text text={translations.tradeSize} />
+      <Label.Info text={translations.tradeSizeTooltip} />
+    </Label>
+  );
 }
 
 export const TotalTradesLabel = () => {
   const translations = useTwapContext().translations;
 
-  return <Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Label>;
+  return (
+    <Label>
+      <Label.Text text={translations.totalTrades} />
+      <Label.Info text={translations.totalTradesTooltip} />
+    </Label>
+  );
 };
 
 export const CurrentMarketPriceLabel = () => {
   const translations = useTwapContext().translations;
-  return <Label>{translations.currentMarketPrice}</Label>;
+  return (
+    <Label>
+      <Label.Text text={translations.currentMarketPrice} />
+    </Label>
+  );
 };
 
 export const LimitPriceLabel = () => {
-  const { translations: t, dappProps, state } = useTwapContext();
-  const isLimitPanel = dappProps?.isLimitPanel;
+  const { translations: t, isLimitPanel } = useTwapContext();
   const isMarketOrder = useIsMarketOrder();
 
   return (
     <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", position: "relative" }} gap={3}>
-      <Label tooltipText={isMarketOrder ? t.marketPriceTooltip : isLimitPanel ? t.limitPriceTooltipLimitPanel : t.limitPriceTooltip}>
-        {!isLimitPanel ? t.price : t.limitPrice}
-      </Label>{" "}
+      <Label>
+        <Label.Text text={!isLimitPanel ? t.price : t.limitPrice} />
+        <Label.Info text={isMarketOrder ? t.marketPriceTooltip : isLimitPanel ? t.limitPriceTooltipLimitPanel : t.limitPriceTooltip} />
+      </Label>
     </Styles.StyledRowFlex>
   );
 };
 
 export const MaxDurationLabel = () => {
   const translations = useTwapContext().translations;
-  return <Label tooltipText={translations.maxDurationTooltip}>{translations.expiry}</Label>;
+  return (
+    <Label>
+      <Label.Text text={translations.expiry} />
+      <Label.Info text={translations.maxDurationTooltip} />
+    </Label>
+  );
 };
 
 export const TradeIntervalLabel = () => {
   const translations = useTwapContext().translations;
   const getMinimumDelayMinutes = useMinimumDelayMinutes();
-  return <Label tooltipText={handleFillDelayText(translations.tradeIntervalTootlip, getMinimumDelayMinutes)}>{translations.tradeInterval}</Label>;
+  return (
+    <Label>
+      <Label.Text text={translations.tradeInterval} />
+      <Label.Info text={handleFillDelayText(translations.tradeIntervalTootlip, getMinimumDelayMinutes)} />
+    </Label>
+  );
 };
 
 export const OrderSummaryDeadlineLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
   const translations = useTwapContext()?.translations || _translations;
 
   return (
-    <Label subtitle={subtitle} tooltipText={translations.confirmationDeadlineTooltip}>
-      {translations.expiration}
+    <Label>
+      <Label.Text text={translations.expiration} />
+      <Label.Info text={translations.confirmationDeadlineTooltip} />
     </Label>
-  );
-};
-
-export const OrderSummaryOrderTypeLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
-  const translations = useTwapContext()?.translations || _translations;
-
-  return (
-    <Label subtitle={subtitle} tooltipText={translations.confirmationOrderType}>
-      {translations.orderType}
-    </Label>
-  );
-};
-
-export const OrderSummaryChunkSizeLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
-  const translations = useTwapContext()?.translations || _translations;
-
-  return (
-    <Label subtitle={subtitle} tooltipText={translations.confirmationTradeSizeTooltip}>
-      {translations.tradeSize}
-    </Label>
-  );
-};
-
-export const OrderSummaryTotalChunksLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
-  const translations = useTwapContext()?.translations || _translations;
-
-  return (
-    <Label subtitle={subtitle} tooltipText={translations.confirmationTotalTradesTooltip}>
-      {translations.totalTrades}
-    </Label>
-  );
-};
-
-export const OrderSummaryTradeIntervalLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
-  const translations = useTwapContext()?.translations || _translations;
-
-  return (
-    <Label subtitle={subtitle} tooltipText={translations.confirmationtradeIntervalTooltip}>
-      {translations.tradeInterval}
-    </Label>
-  );
-};
-
-export const OrderSummaryMinDstAmountOutLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
-  const translations = useTwapContext()?.translations || _translations;
-
-  const isMarketOrder = useIsMarketOrder();
-  return (
-    <Label subtitle={subtitle} tooltipText={!isMarketOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
-      {translations.minReceivedPerTrade}
-    </Label>
-  );
-};
-
-export const OrdersLabel = ({ className = "" }: { className?: string }) => {
-  const translations = useTwapContext().translations;
-
-  return (
-    <StyledRowFlex justifyContent="flex-start" style={{ width: "auto" }}>
-      <Icon className="stopwatch-icon" icon={<AiOutlineHistory style={{ width: 19, height: 19 }} />} />
-      <Label className={`twap-orders-title ${className}`} tooltipText={translations.ordersTooltip} fontSize={16}>
-        {translations.orders}
-      </Label>
-    </StyledRowFlex>
   );
 };

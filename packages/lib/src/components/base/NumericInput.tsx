@@ -1,11 +1,11 @@
-import { Box, Fade } from "@mui/material";
-import { styled } from "@mui/system";
-import Loader from "./Loader";
+import styled from "styled-components";
+
 import { NumericFormat } from "react-number-format";
 import { useTwapContext } from "../../context/context";
 import { maxUint256 } from "@defi.org/web3-candies";
 import BN from "bignumber.js";
 import { CSSProperties } from "react";
+import { Loader } from "./Loader";
 export interface Props {
   onChange: (value: string) => void;
   value?: string | number;
@@ -22,12 +22,6 @@ export interface Props {
   minAmount?: number;
   style?: CSSProperties;
 }
-
-const InputLoader = () => {
-  const { inputLoader } = useTwapContext().uiPreferences;
-
-  return inputLoader ? inputLoader : <StyledLoader className="twap-input-loader" width="75%" height="60%" />;
-};
 
 function NumericInput({
   style = {},
@@ -46,43 +40,42 @@ function NumericInput({
 }: Props) {
   const inputValue = value || minAmount || "";
 
-  const { inputPlaceholder, input, disableThousandSeparator } = useTwapContext().uiPreferences;
+  const { inputPlaceholder, disableThousandSeparator } = useTwapContext().uiPreferences;
 
   const _placeholder = placeholder || inputPlaceholder || "0.0";
 
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>
-      {loading && <InputLoader />}
-      <Fade in={input?.showOnLoading ? true : !loading} timeout={0}>
-        <StyledFlex style={{ height: "100%" }}>
-          <NumericFormat
-            allowNegative={false}
-            disabled={disabled}
-            decimalScale={decimalScale}
-            onBlur={onBlur}
-            onFocus={onFocus}
-            placeholder={_placeholder}
-            isAllowed={(values) => {
-              const { floatValue = 0 } = values;
-              return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
-            }}
-            prefix={prefix ? `${prefix} ` : ""}
-            value={disabled && value === "0" ? "" : inputValue}
-            thousandSeparator={disableThousandSeparator ? undefined : ","}
-            decimalSeparator="."
-            customInput={StyledInput}
-            type="text"
-            min={minAmount}
-            onValueChange={(values, _sourceInfo) => {
-              if (_sourceInfo.source !== "event") {
-                return;
-              }
+      {loading && <StyledLoader className="twap-input-loader" width="75%" height="60%" />}
 
-              onChange(values.value === "." ? "0." : values.value);
-            }}
-          />
-        </StyledFlex>
-      </Fade>
+      <StyledFlex style={{ height: "100%" }} className={`${loading ? "twap-input-loading" : ""}`}>
+        <NumericFormat
+          allowNegative={false}
+          disabled={disabled}
+          decimalScale={decimalScale}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          placeholder={_placeholder}
+          isAllowed={(values) => {
+            const { floatValue = 0 } = values;
+            return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
+          }}
+          prefix={prefix ? `${prefix} ` : ""}
+          value={disabled && value === "0" ? "" : inputValue}
+          thousandSeparator={disableThousandSeparator ? undefined : ","}
+          decimalSeparator="."
+          customInput={StyledInput}
+          type="text"
+          min={minAmount}
+          onValueChange={(values, _sourceInfo) => {
+            if (_sourceInfo.source !== "event") {
+              return;
+            }
+
+            onChange(values.value === "." ? "0." : values.value);
+          }}
+        />
+      </StyledFlex>
     </StyledContainer>
   );
 }
@@ -95,13 +88,13 @@ const StyledLoader = styled(Loader)({
   transform: "translate(0, -50%)",
 });
 
-const StyledContainer = styled(Box)({
+const StyledContainer = styled("div")({
   flex: 1,
   height: "100%",
   position: "relative",
 });
 
-const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
+const StyledInput = styled("input")<{ disabled: boolean }>(({ disabled }) => ({
   pointerEvents: disabled ? "none" : "unset",
   height: "100%",
   width: "100%",
@@ -112,7 +105,7 @@ const StyledInput = styled("input")(({ disabled }: { disabled: boolean }) => ({
   fontWeight: 500,
 }));
 
-const StyledFlex = styled(Box)({
+const StyledFlex = styled("div")({
   display: "flex",
   alignItems: "center",
 });

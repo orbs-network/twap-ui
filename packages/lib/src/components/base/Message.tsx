@@ -1,5 +1,4 @@
-import { styled } from "@mui/material";
-import { AiOutlineWarning } from "@react-icons/all-files/ai/AiOutlineWarning";
+import { styled } from "styled-components";
 import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
 import { ReactNode } from "react";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
@@ -17,7 +16,7 @@ export function Message({ text, className = "", variant, title }: Props) {
     return (
       <Container className={className}>
         <StyledError className="twap-error-message">
-          <AiOutlineWarning className="twap-error-message-icon" />
+          <IoIosWarning className="twap-error-message-icon" />
           <StyledColumnFlex className="twap-error-message-right">
             <StyledText className="twap-error-message-title">{title}</StyledText>
             {text && <StyledText className="twap-error-message-text">{text}</StyledText>}
@@ -79,7 +78,6 @@ const StyledError = styled(StyledRowFlex)({
   ".twap-error-message-text": {
     fontSize: 14,
     lineHeight: "19px",
-    color: "rgb(155, 155, 155)",
   },
 });
 

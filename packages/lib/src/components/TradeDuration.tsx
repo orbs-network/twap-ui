@@ -1,11 +1,11 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { FC, ReactNode, useCallback, useMemo } from "react";
 import { stateActions } from "../context/actions";
 import { useTwapContext } from "../context/context";
-import { useDuration, useShouldWrapOrUnwrapOnly, useMinDuration, useTradeDurationWarning } from "../hooks/hooks";
+import { useDuration, useShouldWrapOrUnwrapOnly, useMinDuration, useTradeDurationWarning } from "../hooks/lib";
 import { StyledColumnFlex } from "../styles";
 import { TimeResolution } from "../types";
-import { BottomContent, Button, Label, Message, NumericInput, TimeSelectMenu } from "./base";
+import { BottomContent, Button, Label, Message, NumericInput, ResolutionSelect } from "./base";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const duration = useDuration().duration;
@@ -35,10 +35,10 @@ const Resolution = ({ placeholder, className = "" }: { placeholder?: string; cla
     (resolution: TimeResolution) => {
       setCustomDuration({ resolution, amount: duration.amount });
     },
-    [duration.amount, setCustomDuration]
+    [duration.amount, setCustomDuration],
   );
 
-  return <TimeSelectMenu className={className} resolution={duration.resolution} onChange={onChange} />;
+  return <ResolutionSelect className={className} resolution={duration.resolution} onChange={onChange} />;
 };
 
 export const TradeDuration = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
@@ -84,7 +84,12 @@ const WarningComponent = () => {
 };
 const MaxDurationLabel = () => {
   const translations = useTwapContext().translations;
-  return <Label tooltipText={translations.maxDurationTooltip}>{translations.expiry}</Label>;
+  return (
+    <Label>
+      <Label.Text text={translations.expiry} />
+      <Label.Info text={translations.maxDurationTooltip} />
+    </Label>
+  );
 };
 
 const Reset = ({ Component }: { Component?: FC<{ onClick: () => void }> }) => {

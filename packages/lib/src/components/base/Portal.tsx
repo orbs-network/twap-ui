@@ -1,8 +1,20 @@
-import { Portal as MuiPortal } from "@mui/material";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
-function Portal({ children, id }: { children: React.ReactNode; id?: string }) {
-  if (!id) return null;
-  return <MuiPortal container={() => document.getElementById(id)}>{children}</MuiPortal>;
+interface PortalProps {
+  children: React.ReactNode;
+  containerId?: string;
 }
 
-export default Portal;
+export const Portal: React.FC<PortalProps> = ({ children, containerId }) => {
+  const [portalContainer, setPortalContainer] = useState<Element | null>(null);
+
+  useEffect(() => {
+    const containerElement = containerId ? document.getElementById(containerId) : document.body;
+    setPortalContainer(containerElement);
+  }, [containerId]);
+
+  if (!portalContainer) return null;
+
+  return createPortal(children, portalContainer);
+};

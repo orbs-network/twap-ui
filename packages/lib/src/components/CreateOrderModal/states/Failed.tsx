@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
 import { BottomContent, SmallTokens } from "../Components";
@@ -6,11 +6,12 @@ import { useOrderType } from "../hooks";
 import { useMemo } from "react";
 import { isNativeBalanceError } from "../../../utils";
 import { useTwapContext } from "../../../context/context";
+import { useNetwork } from "../../../hooks";
 
 export function Failed({ error }: { error?: any }) {
   const nativeBalance = useMemo(() => isNativeBalanceError(error), [error]);
 
-  const nativeToken = useTwapContext().lib?.config.nativeToken.symbol;
+  const nativeToken = useNetwork()?.native.symbol;
   return (
     <StyledContainer className="twap-create-order-failed">
       <Logo />

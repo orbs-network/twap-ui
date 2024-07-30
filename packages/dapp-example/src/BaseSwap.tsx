@@ -1,12 +1,11 @@
 import { StyledBaseSwap, StyledBaseSwapBox, StyledBaseSwapLayout, StyledModalContent } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-baseswap";
+import { TWAP } from "@orbs-network/twap-ui-baseswap";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
-import { Configs } from "@orbs-network/twap";
+import { Configs } from "@orbs-network/twap-ui";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
-import _ from "lodash";
 import { erc20sData, zeroAddress, erc20s } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useContext, useState } from "react";
 import { Button, styled, Typography } from "@mui/material";
@@ -32,7 +31,7 @@ const getTokenLogoURL = (address: string) => {
 };
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return rawList.map((rawToken: any) => {
     return {
       token: {
         address: rawToken.address ?? rawToken.tokenInfo?.address,
@@ -110,14 +109,6 @@ const StyledButton = styled(Button)({
   },
 });
 
-const useDecimals = (fromToken?: string, toToken?: string) => {
-  const { data: dappTokens } = useDappTokens();
-
-  const fromTokenDecimals = _.find(dappTokens, { address: fromToken })?.decimals;
-  const toTokenDecimals = _.find(dappTokens, { address: toToken })?.decimals;
-  return { fromTokenDecimals, toTokenDecimals };
-};
-
 const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
   const tokens = useDappTokens().data;
   return useTrade(fromToken, toToken, amount, tokens);
@@ -164,9 +155,7 @@ const DappComponent = () => {
             <TWAPComponent limit={selected === SelectorOption.LIMIT} />
           </StyledBaseSwapBox>
 
-          <StyledBaseSwapBox>
-            <Orders />
-          </StyledBaseSwapBox>
+          <StyledBaseSwapBox></StyledBaseSwapBox>
         </StyledBaseSwapLayout>
       </StyledBaseSwap>
     </ContextWrapper>

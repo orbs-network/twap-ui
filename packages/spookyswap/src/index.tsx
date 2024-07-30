@@ -1,4 +1,3 @@
-import { GlobalStyles, ThemeProvider, useTheme } from "@mui/material";
 import {
   Components,
   Styles as TwapStyles,
@@ -8,29 +7,16 @@ import {
   hooks,
   TWAPTokenSelectProps,
   useTwapContext,
-  Orders,
   TwapContextUIPreferences,
+  Token,
+  Configs,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useMemo } from "react";
 import Web3 from "web3";
-import {
-  configureStyles,
-  darkTheme,
-  lightTheme,
-  StyledChangeTokensOrder,
-  StyledOrdersPanel,
-  StyledOrderSummaryModal,
-  StyledPercentSelector,
-  StyledSubmitButton,
-  StyledTokenBalance,
-  StyledTokenPanel,
-  StyledTokenSelect,
-  StyledTradeSize,
-} from "./styles";
-import { isNativeAddress } from "@defi.org/web3-candies";
-import { memo, ReactNode, useCallback, useState } from "react";
+import { darkTheme, lightTheme, StyledChangeTokensOrder, StyledPercentSelector, StyledTokenBalance, StyledTokenPanel, StyledTokenSelect, StyledTradeSize } from "./styles";
+import { isNativeAddress, network } from "@defi.org/web3-candies";
+import { memo, useCallback, useState } from "react";
 
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 
@@ -38,40 +24,6 @@ const config = Configs.SpookySwap;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
-};
-
-const OrderSummary = ({ children }: { children: ReactNode }) => {
-  const theme = useTheme();
-  return (
-    <StyledOrderSummaryModal theme={theme}>
-      <TwapStyles.StyledColumnFlex gap={14}>
-        <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryLimitPrice />
-          </Components.Base.Card>
-          <Components.Base.Card>{children}</Components.Base.Card>
-          <Components.Base.Card>
-            <TwapStyles.StyledColumnFlex gap={10}>
-              <Components.DisclaimerText />
-            </TwapStyles.StyledColumnFlex>
-          </Components.Base.Card>
-        </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={12}>
-            <Components.AcceptDisclaimer />
-            <Components.OutputAddress />
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-        <Components.SubmitButton />
-      </TwapStyles.StyledColumnFlex>
-    </StyledOrderSummaryModal>
-  );
 };
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
@@ -109,7 +61,7 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
   const translations = useTwapContext().translations;
 
   const onClick = (value: number) => {
@@ -127,7 +79,6 @@ const SrcTokenPercentSelector = () => {
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
-  const theme = useTheme();
   const onClose = useCallback(() => {
     setTokenListOpen(false);
   }, []);
@@ -135,13 +86,13 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   return (
     <>
       <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
-      <StyledTokenPanel theme={theme}>
+      <StyledTokenPanel>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (estimated)`}</Components.Base.SmallLabel>
           {isSrcToken && <SrcTokenPercentSelector />}
         </TwapStyles.StyledRowFlex>
         <TwapStyles.StyledRowFlex justifyContent="space-between">
-          <StyledTokenSelect theme={theme}>
+          <StyledTokenSelect>
             <Components.TokenSelect isSrc={isSrcToken} onClick={() => setTokenListOpen(true)} />
           </StyledTokenSelect>
           <TwapStyles.StyledOverflowContainer style={{ width: "fit-content", flex: 1 }}>
@@ -159,14 +110,14 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     </>
   );
 };
-
-const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string): TokenData | undefined => {
+const nativeToken = network(config.chainId).native;
+const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string): Token | undefined => {
   if (!rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!rawToken.address || isNativeAddress(rawToken.address)) {
-    return config.nativeToken;
+    return nativeToken;
   }
   return {
     address: Web3.utils.toChecksumAddress(rawToken.address),
@@ -191,6 +142,10 @@ interface SpookySwapTWAPProps extends TWAPProps {
   isLimit?: boolean;
 }
 
+const Tooltip = () => {
+  return <div></div>;
+};
+
 const TWAP = (props: SpookySwapTWAPProps) => {
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
@@ -206,19 +161,19 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       translations={translations as Translations}
       provider={props.provider}
       account={props.account}
-      connectedChainId={props.connectedChainId}
+      chainId={props.connectedChainId}
       dappTokens={props.dappTokens}
       parsedTokens={[]}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}
       isLimitPanel={props.isLimit}
+      Components={{ Tooltip }}
     >
       <AdapterContextProvider value={props}>
-        <ThemeProvider theme={theme}>
+        {/* <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme)} />
           <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
-          <StyledOrdersPanel theme={theme} />
-        </ThemeProvider>
+        </ThemeProvider> */}
       </AdapterContextProvider>
     </TwapAdapter>
   );
@@ -233,10 +188,8 @@ const TWAPPanel = () => {
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
-      <StyledSubmitButton />
-      <OrderSummary>
-        <Components.OrderSummaryDetails />
-      </OrderSummary>
+      {/* <StyledSubmitButton /> */}
+
       <Components.PoweredBy />
     </>
   );
@@ -252,15 +205,8 @@ const LimitPanel = () => {
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <StyledSubmitButton />
-      <OrderSummary>
-        <TwapStyles.StyledColumnFlex>
-          <Components.OrderSummaryDetailsDeadline />
-          <Components.OrderSummaryDetailsOrderType />
-          <Components.OrderSummaryDetailsChunkSize />
-          <Components.OrderSummaryDetailsMinDstAmount />
-        </TwapStyles.StyledColumnFlex>
-      </OrderSummary>
+      {/* <StyledSubmitButton /> */}
+
       <Components.PoweredBy />
     </>
   );
@@ -306,5 +252,4 @@ const TradeInterval = () => {
 };
 
 const memoizedTWAP = memo(TWAP);
-const memoizedOrders = memo(Orders);
-export { memoizedOrders as Orders, memoizedTWAP as TWAP };
+export { memoizedTWAP as TWAP };

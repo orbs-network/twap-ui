@@ -1,14 +1,12 @@
 import { StyledKinetix, StyledKinetixBox, StyledKinetixLayout, StyledLynex, StyledLynexBox, StyledLynexLayout, StyledModalContent } from "./styles";
-import { TWAP, Orders } from "@orbs-network/twap-ui-kinetix";
+import { TWAP } from "@orbs-network/twap-ui-kinetix";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
-import _ from "lodash";
-import { erc20sData, zeroAddress } from "@defi.org/web3-candies";
 import { useMemo, useState } from "react";
-import { Configs } from "@orbs-network/twap";
+import { size, Configs } from "@orbs-network/twap-ui";
 
 const backendApi = "https://lynex-backend-7e21c8e31085.herokuapp.com/api/v1";
 
@@ -43,7 +41,7 @@ interface TokenSelectModalProps {
 }
 
 const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return rawList.map((rawToken: any) => {
     return {
       token: {
         address: rawToken.address,
@@ -68,7 +66,7 @@ interface TokenSelectModalProps {
 }
 
 const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
-  const tokensListSize = _.size(baseAssets);
+  const tokensListSize = size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
   return (
@@ -117,9 +115,7 @@ const DappComponent = () => {
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledKinetixBox>
 
-        <StyledKinetixBox>
-          <Orders />
-        </StyledKinetixBox>
+        <StyledKinetixBox></StyledKinetixBox>
       </StyledKinetixLayout>
     </StyledKinetix>
   );

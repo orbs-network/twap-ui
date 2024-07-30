@@ -1,10 +1,10 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import Icon from "./Icon";
-import Tooltip from "./Tooltip";
 import { useTwapContext } from "../../context/context";
 import { StyledOneLineText, StyledRowFlex } from "../../styles";
 import { FC, ReactNode } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+import { Tooltip } from "../Components";
 
 interface Props {
   onClick: () => void;
@@ -15,8 +15,8 @@ interface Props {
 }
 
 function TokenSelectButton({ className = "", onClick, hideArrow, customUi, customButtonElement }: Props) {
-  const { translations, isWrongChain, lib } = useTwapContext();
-  const maker = lib?.maker;
+  const { translations, isWrongChain, account } = useTwapContext();
+  const maker = account;
 
   const selectTokenWarning = () => {
     if (isWrongChain) {
@@ -37,7 +37,7 @@ function TokenSelectButton({ className = "", onClick, hideArrow, customUi, custo
   const Btn = customButtonElement || StyledContainer;
 
   return (
-    <Tooltip text={warning}>
+    <Tooltip tooltipText={warning}>
       <Btn className={`twap-token-select ${className}`} onClick={_onClick}>
         <StyledRowFlex>
           {customUi ? (

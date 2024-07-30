@@ -1,42 +1,61 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { HistoryOrder } from "./types";
-import { logger } from "./utils";
+import { Status } from "./types";
+
+interface HistoryOrder {
+  id: number;
+  // Add other properties as needed
+}
 
 interface OrdersState {
   orders: { [key: string]: HistoryOrder[] };
   addOrder: (chainId: number, order: HistoryOrder) => void;
   deleteOrder: (chainId: number, orderId: number) => void;
 }
-export const useOrdersStore = create(
-  persist<OrdersState>(
-    (set, get) => ({
-      orders: {},
-      addOrder: (chainId: number, order: HistoryOrder) => {
-        logger("Adding order to localstorage", order, "to chain", chainId);
-        let chainOdrers = get().orders[chainId.toString()] || [];
-        chainOdrers = [order, ...chainOdrers];
-        set({
-          orders: {
-            ...get().orders,
-            [chainId.toString()]: chainOdrers,
-          },
-        });
-      },
-      deleteOrder: (chainId: number, orderId: number) => {
-        logger("Got order from api, Deleting order from localstorage", orderId, "from chain", chainId);
-        const chainOdrers = get().orders[chainId.toString()] || [];
-        const newOrders = chainOdrers.filter((order) => order.id !== orderId);
-        set({
-          orders: {
-            ...get().orders,
-            [chainId.toString()]: newOrders,
-          },
-        });
-      },
-    }),
-    {
-      name: "twap-orders",
+
+class OrdersStore implements OrdersState {
+  orders: { [key: string]: HistoryOrder[] } = {};
+
+  addOrder(chainId: number, order: HistoryOrder): void {
+    console.log("Adding order to localstorage", order, "to chain", chainId);
+    const chainOrders = this.orders[chainId.toString()] || [];
+    this.orders[chainId.toString()] = [order, ...chainOrders];
+    this.saveOrders();
+  }
+
+  deleteOrder(chainId: number, orderId: number): void {
+    console.log("Got order from api, Deleting order from localstorage", orderId, "from chain", chainId);
+    const chainOrders = this.orders[chainId.toString()] || [];
+    this.orders[chainId.toString()] = chainOrders.filter((order) => order.id !== orderId);
+    this.saveOrders();
+  }
+
+  private saveOrders(): void {
+    localStorage.setItem("twap-orders", JSON.stringify(this.orders));
+  }
+  cancelOrder(chainId: number, orderId: number): void {
+    console.log("Cancelling order", orderId);
+
+    const chainOrders = this.orders[chainId.toString()] || [];
+    this.orders[chainId.toString()] = chainOrders.map((order) => {
+      if (order.id === orderId) {
+        return {
+          ...order,
+          status: Status.Canceled,
+        };
+      }
+      return order;
+    });
+  }
+
+  private loadOrders(): void {
+    const storedOrders = localStorage.getItem("twap-orders");
+    if (storedOrders) {
+      this.orders = JSON.parse(storedOrders);
     }
-  )
-);
+  }
+
+  constructor() {
+    this.loadOrders();
+  }
+}
+
+export const ordersStore = new OrdersStore();

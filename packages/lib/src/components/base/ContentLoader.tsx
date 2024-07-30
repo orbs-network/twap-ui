@@ -1,6 +1,6 @@
-import { styled } from "@mui/system";
+import { styled } from "styled-components";
 import React, { ReactNode } from "react";
-import Loader from "./Loader";
+import { Loader } from "./Loader";
 
 function ContentLoader({ children, loading }: { children: ReactNode; loading: boolean }) {
   return <>{loading ? <StyledLoader /> : children}</>;

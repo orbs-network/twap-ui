@@ -1,11 +1,10 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import React from "react";
 import { SQUIGLE } from "../../config";
 import { useTwapContext } from "../../context/context";
-import { useFormatNumber, useFormatNumberV2 } from "../../hooks";
+import { useFormatNumberV2 } from "../../hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
-import Tooltip from "./Tooltip";
 
 const USD = ({
   isLoading = false,

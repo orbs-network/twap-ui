@@ -1,19 +1,10 @@
-import { styled } from "@mui/material";
+import styled from "styled-components";
 import { ReactNode } from "react";
 import { useTwapContext } from "../context/context";
-import {
-  useSrcChunkAmountUi,
-  useFormatNumber,
-  useChunks,
-  useSetChunks,
-  useMaxPossibleChunks,
-  useSrcChunkAmountUsdUi,
-  useFormatNumberV2,
-  useTradeSizeWarning,
-  useShouldWrapOrUnwrapOnly,
-} from "../hooks/hooks";
+import { useFormatNumberV2 } from "../hooks/hooks";
 import { StyledColumnFlex } from "../styles";
 import { BottomContent, Label, Loader, Message, NumericInput, Slider } from "./base";
+import { useChunks, useMaxPossibleChunks, useSetChunks, useShouldWrapOrUnwrapOnly, useSrcChunkAmount, useSrcChunkAmountUsd, useTradeSizeWarning } from "../hooks/lib";
 
 export const ChunkSelector = ({ className = "", children }: { className?: string; children: ReactNode }) => {
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
@@ -32,11 +23,11 @@ export const ChunkSelector = ({ className = "", children }: { className?: string
 const Text = () => {
   const { isWrongChain, srcToken, srcUsd } = useTwapContext();
 
-  const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmountUi() });
+  const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmount().amountUi });
 
   const warning = useTradeSizeWarning();
 
-  const _usd = useFormatNumberV2({ value: useSrcChunkAmountUsdUi(), decimalScale: 2 });
+  const _usd = useFormatNumberV2({ value: useSrcChunkAmountUsd(), decimalScale: 2 });
   const usd = _usd ? `($${_usd})` : "";
 
   if (!srcUsd || isWrongChain) return null;
@@ -62,9 +53,9 @@ const StyledWarning = styled(Message)({
 const Input = ({ className }: { className?: string }) => {
   const chunks = useChunks();
   const setChunks = useSetChunks();
-  const srcUsd = useTwapContext().srcUsd;
+  const { srcUsd, srcToken } = useTwapContext();
 
-  if (!srcUsd) {
+  if (srcToken && !srcUsd) {
     return <Loader height="100%" />;
   }
 
@@ -74,7 +65,6 @@ const Input = ({ className }: { className?: string }) => {
 const SliderComponent = ({ className }: { className?: string }) => {
   const chunks = useChunks();
   const setChunks = useSetChunks();
-  const formattedChunks = useFormatNumber({ value: chunks });
   const maxPossibleChunks = useMaxPossibleChunks();
   const srcUsd = useTwapContext().srcUsd;
 
@@ -82,15 +72,7 @@ const SliderComponent = ({ className }: { className?: string }) => {
     return <Loader height="100%" />;
   }
 
-  return (
-    <Slider
-      label={`${formattedChunks ? formattedChunks : "0"} trades`}
-      className={className}
-      maxTrades={maxPossibleChunks === 1 ? maxPossibleChunks + 0.0001 : maxPossibleChunks}
-      value={chunks}
-      onChange={setChunks}
-    />
-  );
+  return <Slider className={className} min={1} max={maxPossibleChunks === 1 ? maxPossibleChunks + 0.0001 : maxPossibleChunks} value={chunks} onChange={setChunks} />;
 };
 
 const StyledMessage = styled(Message)({
@@ -103,7 +85,12 @@ const StyledMessage = styled(Message)({
 export const TotalTradesLabel = () => {
   const translations = useTwapContext().translations;
 
-  return <Label tooltipText={translations.totalTradesTooltip}>{translations.totalTrades}</Label>;
+  return (
+    <Label>
+      <Label.Text text={translations.totalTrades} />
+      <Label.Info text={translations.totalTradesTooltip} />
+    </Label>
+  );
 };
 
 ChunkSelector.Slider = SliderComponent;

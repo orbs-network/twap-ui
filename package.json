@@ -8,6 +8,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "5.x",
     "@testing-library/react": "13.x",
+    "@types/styled-components": "^5.1.34",
     "@types/uuid": "^10.0.0",
     "@types/web3-provider-engine": "^14.0.1",
     "@typescript-eslint/eslint-plugin": "5.x",
@@ -53,10 +54,9 @@
     }
   },
   "dependencies": {
-    "@defi.org/web3-candies": "^4.20.24",
-    "@orbs-network/twap": "^1.21.6",
-    "react-virtualized-auto-sizer": "^1.0.24",
-    "react-window": "^1.8.10",
+    "@defi.org/web3-candies": "^5.0.0",
+    "@orbs-network/twap": "^2.0.1",
+    "styled-components": "^6.1.12",
     "uuid": "^10.0.0"
   }
 }

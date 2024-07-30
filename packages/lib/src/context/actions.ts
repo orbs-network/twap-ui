@@ -2,8 +2,8 @@ import { useCallback } from "react";
 import { defaultCustomFillDelay, Duration, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS, resetQueryParams, setQueryParam, SwapState, SwapStep, TimeResolution } from "..";
 import { useTwapContext } from "./context";
 import BN from "bignumber.js";
-import { waitForOrder } from "../helper";
-import { useDstAmountUsdUi, useGetTokenFromParsedTokensList, useOutAmount, useSrcAmount, useSrcAmountUsdUi } from "../hooks";
+import { useSwapData } from "../hooks/lib";
+import { useGetTokenFromParsedTokensList, useNetwork } from "../hooks";
 
 const useHandleLimitPriceQueryParam = () => {
   const setQueryParam = useSetQueryParams();
@@ -21,31 +21,28 @@ const useHandleLimitPriceQueryParam = () => {
       }
       setQueryParam(QUERY_PARAMS.LIMIT_PRICE, newValue);
     },
-    [setQueryParam]
+    [setQueryParam],
   );
 };
 
 export const useSetQueryParams = () => {
-  const enableQueryParams = useTwapContext().dappProps.enableQueryParams;
+  const enableQueryParams = useTwapContext().enableQueryParams;
   return useCallback(
     (name: string, value?: string) => {
       if (!enableQueryParams) return;
       setQueryParam(name, value);
     },
-    [enableQueryParams]
+    [enableQueryParams],
   );
 };
 
 export const useSwitchNativeToWrapped = () => {
-  const { dappProps, lib } = useTwapContext();
-  const { onSrcTokenSelected } = dappProps;
-  const getTokenFromList = useGetTokenFromParsedTokensList();
+  const { onSrcTokenSelected, dappWToken } = useTwapContext();
   return useCallback(() => {
-    const token = getTokenFromList(lib!.config.wToken.address);
-    if (token) {
-      onSrcTokenSelected?.(token);
+    if (dappWToken) {
+      onSrcTokenSelected?.(dappWToken);
     }
-  }, [lib, onSrcTokenSelected, getTokenFromList]);
+  }, [onSrcTokenSelected, dappWToken]);
 };
 
 // Hook for handling modal close
@@ -71,7 +68,7 @@ const useSwapModalActions = () => {
         });
       }, closeDalay || 300);
     },
-    [updateState, swapState, wrapSuccess]
+    [updateState, swapState, wrapSuccess],
   );
 
   const onOpen = useCallback(() => {
@@ -101,18 +98,6 @@ const useSwapReset = () => {
   }, [updateState]);
 };
 
-const useOnSubmitSwap = () => {
-  const { updateState, state, srcToken, dstToken } = useTwapContext();
-  const outAmount = useOutAmount().outAmountUi;
-  const srcAmountUsd = useSrcAmountUsdUi();
-  const dstAmountUsd = useDstAmountUsdUi();
-
-  return useCallback(() => {
-    if (!srcToken || !dstToken) return;
-    updateState({ swapState: "loading", swapData: { srcAmount: state.srcAmountUi, outAmount, srcToken: srcToken, dstToken: dstToken, srcAmountUsd, dstAmountUsd } });
-  }, [updateState, outAmount, srcToken, dstToken, state.srcAmountUi, srcAmountUsd, dstAmountUsd]);
-};
-
 // Hook for setting custom fill delay
 const useSetCustomFillDelay = () => {
   const { updateState } = useTwapContext();
@@ -122,7 +107,7 @@ const useSetCustomFillDelay = () => {
       setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, !customFillDelay.amount ? undefined : customFillDelay.amount?.toString());
       updateState({ customFillDelay });
     },
-    [updateState, setQueryParam]
+    [updateState, setQueryParam],
   );
 };
 
@@ -134,7 +119,7 @@ const useSetCustomDuration = () => {
       setQueryParam(QUERY_PARAMS.MAX_DURATION, !customDuration ? undefined : customDuration.amount?.toString());
       updateState({ customDuration });
     },
-    [updateState, setQueryParam]
+    [updateState, setQueryParam],
   );
 };
 
@@ -175,7 +160,7 @@ const useOnLimitChange = () => {
         limitPricePercent,
       });
     },
-    [state.isInvertedLimitPrice, updateState, handleLimitPriceQueryParam]
+    [state.isInvertedLimitPrice, updateState, handleLimitPriceQueryParam],
   );
 };
 
@@ -236,28 +221,28 @@ const useOnTxHash = () => {
     (createOrdertxHash: string) => {
       updateState({ createOrdertxHash });
     },
-    [updateState]
+    [updateState],
   );
 
   const onWrapTxHash = useCallback(
     (wrapTxHash: string) => {
       updateState({ wrapTxHash });
     },
-    [updateState]
+    [updateState],
   );
 
   const onUnwrapTxHash = useCallback(
     (unwrapTxHash: string) => {
       updateState({ unwrapTxHash });
     },
-    [updateState]
+    [updateState],
   );
 
   const onApproveTxHash = useCallback(
     (approveTxHash: string) => {
       updateState({ approveTxHash });
     },
-    [updateState]
+    [updateState],
   );
 
   return {
@@ -275,7 +260,7 @@ const useUpdateSwapStep = () => {
     (swapStep: SwapStep) => {
       updateState({ swapStep });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -286,12 +271,12 @@ const useUpdateSwapState = () => {
     (swapState: SwapState) => {
       updateState({ swapState });
     },
-    [updateState]
+    [updateState],
   );
 };
 
 export const useSetSrcAmount = () => {
-  const { updateState, lib } = useTwapContext();
+  const { updateState } = useTwapContext();
   const setQueryParam = useSetQueryParams();
   return useCallback(
     (srcAmountUi: string) => {
@@ -307,7 +292,7 @@ export const useSetSrcAmount = () => {
         customChunks: undefined,
       });
     },
-    [updateState, lib, setQueryParam]
+    [updateState, setQueryParam],
   );
 };
 
@@ -319,7 +304,7 @@ const useOnLimitMarketSwitch = () => {
         isMarketOrder,
       });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -349,5 +334,4 @@ export const stateActions = {
   useOnLimitMarketSwitch,
   useOnOrderCreated,
   useSetCustomDuration,
-  useOnSubmitSwap,
 };

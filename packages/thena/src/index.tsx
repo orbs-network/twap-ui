@@ -1,27 +1,22 @@
-import { GlobalStyles, Box, ThemeProvider } from "@mui/material";
-import { Components, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, Orders, TwapContextUIPreferences } from "@orbs-network/twap-ui";
+import { Components, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, TwapContextUIPreferences, Configs, Token } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
-import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
+import { eqIgnoreCase, isNativeAddress, network, networks } from "@defi.org/web3-candies";
 import { TWAPProps } from "@orbs-network/twap-ui";
 import { memo, ReactNode, useCallback, useState } from "react";
 import {
   StyledBalance,
   StyledCard,
   StyledContainer,
-  StyledOrderSummary,
   StyledPanelInput,
   StyledPercentSelector,
   StyledTokenSelect,
   configureStyles,
   StyledColumnFlex,
-  StyledOrders,
   StyledPoweredBy,
   StyledSubmit,
   StyledTokenChange,
-  StyledDisclaimerText,
   darkTheme,
   lightTheme,
   StyledTokenPanelUsd,
@@ -33,10 +28,6 @@ import { useTwapContext } from "@orbs-network/twap-ui";
 const uiPreferences: TwapContextUIPreferences = {
   usdPrefix: "$",
   inputPlaceholder: "0.0",
-  switchVariant: "ios",
-  orders: {
-    paginationChunks: 4,
-  },
 };
 
 const MemoizedTokenModal = memo((props: TWAPTokenSelectProps) => {
@@ -64,7 +55,7 @@ const TokenSelectModal = ({ onClose, isSrc, isOpen }: any) => {
       onTokenSelectedCallback({ isSrc, token });
       onClose();
     },
-    [onTokenSelectedCallback, isSrc]
+    [onTokenSelectedCallback, isSrc],
   );
   const { srcToken, dstToken } = useTwapContext();
 
@@ -108,7 +99,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 const SrcTokenPercentSelector = () => {
-  const onPercentClick = hooks.useCustomActions();
+  const onPercentClick = hooks.useOnSrcAmountPercent();
 
   const onClick = (value: number) => {
     onPercentClick(value);
@@ -124,39 +115,6 @@ const SrcTokenPercentSelector = () => {
   );
 };
 
-const OrderSummary = ({ children }: { children: ReactNode }) => {
-  return (
-    <StyledOrderSummary>
-      <TwapStyles.StyledColumnFlex gap={14}>
-        <TwapStyles.StyledColumnFlex gap={14}>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay isSrc={true} />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryTokenDisplay />
-          </Components.Base.Card>
-          <Components.Base.Card>
-            <Components.OrderSummaryLimitPrice />
-          </Components.Base.Card>
-          <Components.Base.Card>{children}</Components.Base.Card>
-          <Components.Base.Card>
-            <TwapStyles.StyledColumnFlex gap={10}>
-              <StyledDisclaimerText />
-            </TwapStyles.StyledColumnFlex>
-          </Components.Base.Card>
-        </TwapStyles.StyledColumnFlex>
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={12}>
-            <Components.AcceptDisclaimer />
-            <Components.OutputAddress />
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-        <StyledSubmit />
-      </TwapStyles.StyledColumnFlex>
-    </StyledOrderSummary>
-  );
-};
-
 const config = Configs.Thena;
 
 interface ThenaTWAPProps extends TWAPProps {
@@ -166,14 +124,14 @@ interface ThenaTWAPProps extends TWAPProps {
   setFromAmount: (amount: string) => void;
 }
 
-const parseToken = (rawToken: any): TokenData | undefined => {
+const parseToken = (rawToken: any): Token | undefined => {
   const { address, decimals, symbol, logoURI } = rawToken;
   if (!symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
   if (!address || isNativeAddress(address) || address === "BNB") {
-    return config.nativeToken;
+    return network(config.chainId).native;
   }
   return {
     address: Web3.utils.toChecksumAddress(address),
@@ -205,7 +163,7 @@ export const useProvider = (props: ThenaTWAPProps) => {
 };
 
 const AmountUpdater = () => {
-  const srcAmount = hooks.useSrcAmount().srcAmountUi;
+  const srcAmount = hooks.useSrcAmount().amountUi;
   const setFromAmount = useAdapterContext().setFromAmount;
   useEffect(() => {
     setFromAmount(srcAmount || "0");
@@ -215,12 +173,16 @@ const AmountUpdater = () => {
 };
 
 const usePriceUSD = (address?: string) => {
-  const dappTokens = useTwapContext().dappProps.dappTokens;
+  const dappTokens = useAdapterContext().dappTokens;
   return useMemo(() => {
     if (!address) return undefined;
     const token = dappTokens?.find((it: any) => eqIgnoreCase(it.address, address));
     return token?.price;
   }, [address, dappTokens]);
+};
+
+const Tooltip = () => {
+  return <div></div>;
 };
 
 const TWAP = (props: ThenaTWAPProps) => {
@@ -231,7 +193,7 @@ const TWAP = (props: ThenaTWAPProps) => {
   const provider = useProvider(props);
 
   return (
-    <Box className="twap-adapter-wrapper">
+    <div className="twap-adapter-wrapper">
       <TwapAdapter
         connect={props.connect}
         config={config}
@@ -246,18 +208,16 @@ const TWAP = (props: ThenaTWAPProps) => {
         uiPreferences={uiPreferences}
         parsedTokens={[]}
         isLimitPanel={props.limit}
+        Components={{ Tooltip }}
       >
-        <ThemeProvider theme={theme}>
-          <GlobalStyles styles={configureStyles(theme) as any} />
+        {/* <ThemeProvider theme={theme}>
           <AdapterContextProvider value={props}>
             <AmountUpdater />
             {props.limit ? <LimitPanel /> : <TWAPPanel />}
-
-            <StyledOrders />
           </AdapterContextProvider>
-        </ThemeProvider>
+        </ThemeProvider> */}
       </TwapAdapter>
-    </Box>
+    </div>
   );
 };
 
@@ -275,9 +235,7 @@ const TWAPPanel = () => {
         <MaxDuration />
         <MainSubmit />
       </StyledColumnFlex>
-      <OrderSummary>
-        <Components.OrderSummaryDetails />
-      </OrderSummary>
+
       <StyledPoweredBy />
     </div>
   );
@@ -294,14 +252,7 @@ const LimitPanel = () => {
         </StyledTopColumn>
         <MainSubmit />
       </StyledColumnFlex>
-      <OrderSummary>
-        <TwapStyles.StyledColumnFlex>
-          <Components.OrderSummaryDetailsDeadline />
-          <Components.OrderSummaryDetailsOrderType />
-          <Components.OrderSummaryDetailsChunkSize />
-          <Components.OrderSummaryDetailsMinDstAmount />
-        </TwapStyles.StyledColumnFlex>
-      </OrderSummary>
+
       <StyledPoweredBy />
     </div>
   );
@@ -309,7 +260,7 @@ const LimitPanel = () => {
 
 const MainSubmit = () => {
   const account = useAdapterContext().account;
-  return <StyledSubmit isMain connected={account ? 1 : 0} />;
+  return <StyledSubmit connected={account ? 1 : 0} />;
 };
 
 const TradeSize = () => {
@@ -352,4 +303,4 @@ const TradeInterval = () => {
   );
 };
 
-export { TWAP, Orders };
+export { TWAP };

@@ -1,21 +1,21 @@
-import { createTheme, styled, Theme } from "@mui/material";
-import { Components, Styles, OrdersPanel } from "@orbs-network/twap-ui";
+import { Components, Styles } from "@orbs-network/twap-ui";
+import { DefaultTheme, styled } from "styled-components";
 
-const isDarkMode = (theme: Theme) => theme.palette.mode === "dark";
+const isDarkMode = (theme: DefaultTheme) => theme.palette.mode === "dark";
 
-export const darkTheme = createTheme({
+export const darkTheme = {
   palette: {
     mode: "dark",
   },
-});
+};
 
-export const lightTheme = createTheme({
+export const lightTheme = {
   palette: {
     mode: "light",
   },
-});
+};
 
-export const baseStyles = (theme: Theme) => {
+export const baseStyles = (theme: DefaultTheme) => {
   return {
     secondaryBg: "rgb(66 45 76/1)",
     borderMain: "1px solid rgb(53 36 61/1)",
@@ -25,7 +25,7 @@ export const baseStyles = (theme: Theme) => {
   };
 };
 
-const cardStyles = (theme: Theme) => {
+const cardStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   return {
     width: "100%",
@@ -111,7 +111,7 @@ export const StyledTopColumn = styled(Styles.StyledColumnFlex)({
   gap: 4,
 });
 
-const buttonStyles = (theme: Theme) => {
+const buttonStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   return {
     background: "rgb(53 36 61/1)",
@@ -132,7 +132,7 @@ const buttonStyles = (theme: Theme) => {
     },
     "&:disabled": {
       background: "rgb(53 36 61/1)",
-      pointerEvents: "none",
+      pointerEvents: "none" as any,
       color: "rgb(104 87 112/1)",
       cursor: "not-allowed",
       opacity: 1,
@@ -198,7 +198,7 @@ export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
   gap: 8,
 });
 
-export const StyledSubmit = styled(Components.SubmitButton)<{ connected?: number }>(({ theme, connected }) => {
+export const StyledSubmit = styled("button")<{ connected?: number }>(({ theme, connected }) => {
   return {
     ...buttonStyles(theme),
     background: connected ? "rgb(53 36 61/1)" : "rgb(220 0 212/1)",
@@ -244,142 +244,7 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
   };
 });
 
-export const StyledOrders = styled(OrdersPanel)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    color: styles.colorMain,
-    ".twap-odnp-button": {
-      ...buttonStyles(theme),
-      background: "rgb(220 0 212/1)",
-      "&:hover": {
-        background: "rgb(220 0 212/1)",
-      },
-    },
-    ".twap-orders-mobile-button": {
-      ...buttonStyles(theme),
-    },
-
-    ".twap-cancel-order": {
-      ...buttonStyles(theme),
-      fontSize: 14,
-      minWidth: 160,
-      marginTop: 40,
-    },
-    ".twap-order-expanded-wrapper": {
-      background: "rgb(40 27 46/1)!important",
-    },
-    ".twap-order": {
-      ...cardStyles(theme),
-
-      ".twap-label p": {
-        fontSize: 14,
-      },
-
-      ".twap-order-separator": {
-        display: "none",
-      },
-      ".twap-market-price-section": {
-        width: "100%",
-        borderRadius: 8,
-        "*": {
-          fontSize: "13px",
-        },
-        ".twap-small-label p": {
-          fontSize: "14px!important",
-        },
-      },
-      ".MuiLinearProgress-root": {
-        background: styles.secondaryBg,
-      },
-      ".MuiLinearProgress-bar": {
-        background: "rgb(220 0 212/1)",
-      },
-      ".MuiLinearProgress-root::after": {
-        display: "none",
-      },
-      "&:hover": {
-        background: "rgb(40 27 46/1)",
-      },
-    },
-    ".twap-orders-header-tabs": {
-      background: "rgb(40 27 46/1)!important",
-      border: "unset",
-    },
-    ".Mui-selected": {
-      background: "rgb(53 36 61/1)!important",
-      color: `${styles.colorMain}!important`,
-    },
-    ".MuiTouchRipple-root": {
-      display: "none",
-    },
-    ".MuiTabs-indicator": {
-      display: "none!important",
-    },
-    ".MuiButtonBase-root": {
-      borderRadius: 4,
-      transition: "0.3s all",
-      color: "rgb(179 171 183/1)",
-    },
-    ".twap-orders-header": {
-      ".twap-label": {
-        p: {
-          fontSize: "16px!important",
-        },
-      },
-    },
-    "@media(min-width: 600px)": {
-      ".twap-time-selector-list": {
-        "&-item": {
-          "&:hover": {
-            background: "rgba(255,255,255,0.05)",
-          },
-        },
-      },
-    },
-  };
-});
-
-export const StyledOrderSummary = styled(Components.OrderSummaryModalContainer)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    fontFamily: styles.fontFamily,
-
-    ".twap-modal-content": {
-      ".twap-card": {
-        ...cardStyles(theme),
-      },
-      svg: {
-        color: styles.colorMain,
-      },
-      "twap-order-summary-details": {},
-      ".twap-order-summary-details-item": {
-        flexWrap: "wrap",
-        div: {
-          "&:last-of-type": {
-            "*": {
-              fontSize: 14,
-            },
-          },
-        },
-      },
-    },
-    ".twap-price-compare": {
-      fontSize: 14,
-      "*": {
-        fontSize: 14,
-      },
-    },
-    ".twap-orders-summary-token-display": {
-      ".twap-token-logo": {
-        width: 45,
-        height: 45,
-      },
-    },
-    "@media(max-width: 600px)": {},
-  };
-});
-
-export const configureStyles = (theme: Theme) => {
+export const configureStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   return {
     ".twap-orders-mobile-menu": {
@@ -521,7 +386,3 @@ export const configureStyles = (theme: Theme) => {
     },
   };
 };
-
-export const StyledDisclaimerText = styled(Components.DisclaimerText)(({}) => ({
-  "*": {},
-}));

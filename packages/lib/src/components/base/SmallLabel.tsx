@@ -1,24 +1,14 @@
-import { Box, Fade, styled } from "@mui/material";
 import { CSSProperties, ReactNode } from "react";
+import { styled } from "styled-components";
 import { StyledOneLineText } from "../../styles";
-import Loader from "./Loader";
+import { Loader } from "./Loader";
 
 function SmallLabel({ children, style, loading = false, className = "" }: { children?: string | ReactNode; style?: CSSProperties; loading?: boolean; className?: string }) {
   return (
     <StyledContainer style={style} className={`twap-small-label ${className}`}>
-      {loading && (
-        <Fade in={loading}>
-          <StyledLoader className="twap-small-label-loader">
-            <Loader width="100%" height="100%" />
-          </StyledLoader>
-        </Fade>
-      )}
+      {loading && <Loader width="100%" height="100%" />}
 
-      {!loading && (
-        <Fade in={!loading}>
-          <StyledChildren>{children}</StyledChildren>
-        </Fade>
-      )}
+      {!loading && <StyledChildren>{children}</StyledChildren>}
     </StyledContainer>
   );
 }
@@ -30,12 +20,12 @@ const StyledChildren = styled(StyledOneLineText)({
   fontFamily: "inherit",
 });
 
-const StyledLoader = styled(Box)({
+const StyledLoader = styled(Loader)({
   width: 50,
   height: 20,
 });
 
-const StyledContainer = styled(Box)({
+const StyledContainer = styled("div")({
   position: "relative",
   display: "flex",
   alignItems: "center",

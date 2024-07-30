@@ -1,18 +1,15 @@
-import { Fade, styled } from "@mui/material";
+import styled from "styled-components";
+
 import { useTwapContext } from "../../context/context";
 import { useCancelOrder } from "../../hooks/useTransactions";
 import { StyledColumnFlex, StyledText } from "../../styles";
 import { Button } from "../base";
 import { Separator } from "../Components";
-import { Status } from "@orbs-network/twap";
 import { useFormatNumberV2 } from "../../hooks/hooks";
 import { useOrderById } from "../../hooks/orders";
-import { OrderUI, Token } from "../../types";
+import { OrderUI, Status, Token } from "../../types";
 import { OrderDisplay } from "../OrderDisplay";
-import MuiAccordion from "@mui/material/Accordion";
-import MuiAccordionSummary from "@mui/material/AccordionSummary";
-import MuiAccordionDetails from "@mui/material/AccordionDetails";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
 export const SelectedOrder = ({ selectedOrderId }: { selectedOrderId?: number }) => {
@@ -30,43 +27,59 @@ export const SelectedOrder = ({ selectedOrderId }: { selectedOrderId?: number })
   if (!order) return null;
 
   return (
-    <Fade in={true}>
-      <Container className="twap-orders-selected-order">
-        <OrderDisplay>
-          <OrderDisplay.Tokens>
-            <OrderDisplay.SrcToken token={order.srcToken} />
-            <OrderDisplay.DstToken token={order.dstToken} />
-          </OrderDisplay.Tokens>
-          <Separator />
-          <StyledColumnFlex>
-            <AccordionContainer title="Execution summary" handleChange={() => handleChange("panel1")} expanded={expanded === "panel1"}>
-              <ExcecutionSummary order={order} />
-            </AccordionContainer>
-            <AccordionContainer title="Order info" expanded={expanded === "panel2"} handleChange={() => handleChange("panel2")}>
-              <OrderInfo order={order} />
-            </AccordionContainer>
-          </StyledColumnFlex>
+    <Container className="twap-orders-selected-order">
+      <OrderDisplay>
+        <OrderDisplay.Tokens>
+          <OrderDisplay.SrcToken token={order.srcToken} />
+          <OrderDisplay.DstToken token={order.dstToken} />
+        </OrderDisplay.Tokens>
+        <Separator />
+        <StyledColumnFlex>
+          <AccordionContainer title="Execution summary" onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
+            <ExcecutionSummary order={order} />
+          </AccordionContainer>
+          <AccordionContainer title="Order info" expanded={expanded === "panel2"} onClick={() => handleChange("panel2")}>
+            <OrderInfo order={order} />
+          </AccordionContainer>
+        </StyledColumnFlex>
 
-          <CancelOrderButton order={order} />
-        </OrderDisplay>
-      </Container>
-    </Fade>
+        <CancelOrderButton order={order} />
+      </OrderDisplay>
+    </Container>
   );
 };
 
-const AccordionContainer = ({ expanded, handleChange, children, title }: { expanded: boolean; handleChange: () => void; children: ReactNode; title: string }) => {
+const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: boolean; onClick: () => void; children: ReactNode; title: string }) => {
   return (
     <OrderDisplay.DetailsContainer>
-      <StyledAccordion expanded={expanded} onChange={handleChange}>
-        <MuiAccordionSummary>
+      <StyledAccordion>
+        <StyledSummary onClick={onClick} className="twap-orders-selected-order-summary">
           <StyledText>{title}</StyledText>
           <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
-        </MuiAccordionSummary>
-        <MuiAccordionDetails>{children}</MuiAccordionDetails>
+        </StyledSummary>
+        <StyledDetails style={{ height: expanded ? "auto" : 0 }} className="twap-orders-selected-order-details">
+          <>
+            {children}
+            <div className="twap-orders-selected-order-details-margin" />
+          </>
+        </StyledDetails>
       </StyledAccordion>
     </OrderDisplay.DetailsContainer>
   );
 };
+
+const StyledSummary = styled.div({
+  display: "flex",
+  justifyContent: "space-between",
+  cursor: "pointer",
+  alignItems: "center",
+});
+
+const StyledDetails = styled.div({
+  overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
+});
 
 const OrderInfo = ({ order }: { order: OrderUI }) => {
   const isTwap = (order?.totalChunks || 0) > 1;
@@ -112,7 +125,7 @@ export const CancelOrderButton = ({ order }: { order: OrderUI }) => {
       onClick={() => {
         cancel(order.id);
       }}
-      className="twap-cancel-order"
+      className="twap-cancel-order twap-submit-button"
     >
       {translations.cancelOrder}
     </StyledCancelOrderButton>
@@ -220,35 +233,9 @@ const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?
   );
 };
 
-const StyledAccordion = styled(MuiAccordion)({
+const StyledAccordion = styled("div")({
   backgroundColor: "transparent",
   backgroundImage: "unset",
   boxShadow: "unset",
   width: "100%",
-  ".MuiAccordionSummary-root": {
-    minHeight: "unset!important",
-    padding: 0,
-  },
-  ".MuiAccordionSummary-content": {
-    margin: "0px!important",
-    fontSize: "14px",
-    fontWeight: "500",
-    opacity: 0.7,
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    svg: {
-      width: 16,
-      height: 16,
-      transition: "0.2s all",
-    },
-  },
-
-  ".MuiAccordionDetails-root": {
-    padding: 0,
-    display: "flex",
-    flexDirection: "column",
-    gap: "5px",
-    paddingTop: 10,
-  },
 });

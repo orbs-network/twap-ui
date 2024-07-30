@@ -1,17 +1,10 @@
-import { StyledModalContent, StyledQuickswapLayout, StyledSyncSwap, StyledSyncSwapBox } from "./styles";
 import { useConnectWallet, useGetPriceUsdCallback, useGetTokens } from "./hooks";
-import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
-import { Dapp, TokensList, UISelector } from "./Components";
-import { Popup } from "./Components";
+import { Dapp } from "./Components";
 import { useCallback, useEffect, useState } from "react";
-import _ from "lodash";
 import { SelectorOption, TokenListItem } from "./types";
-import { TWAP, Orders } from "@orbs-network/twap-ui-syncswap";
-import { erc20s, zeroAddress, isNativeAddress } from "@defi.org/web3-candies";
-import { create } from "zustand";
-import { Styles } from "@orbs-network/twap-ui";
-import { Button, styled } from "@mui/material";
+import { erc20s, zeroAddress, isNativeAddress, network } from "@defi.org/web3-candies";
+import { mapCollection, Configs } from "@orbs-network/twap-ui";
 const config = Configs.SyncSwap;
 
 const palletes = [
@@ -133,13 +126,13 @@ const palletes = [
 ];
 
 export const parseList = (rawList?: any): TokenListItem[] => {
-  return _.map(rawList, (rawToken) => {
+  return mapCollection(rawList, (rawToken: any) => {
     return {
       token: {
         address: rawToken.address,
         decimals: rawToken.decimals ?? 18,
         symbol: rawToken.symbol,
-        logoUrl: isNativeAddress(rawToken.address) ? config.nativeToken.logoUrl : `https://tokens.syncswap.xyz/tokens/${rawToken.address}/logo.png`,
+        logoUrl: isNativeAddress(rawToken.address) ? network(config.chainId).native.logoUrl : `https://tokens.syncswap.xyz/tokens/${rawToken.address}/logo.png`,
       },
       rawToken,
     };
@@ -147,22 +140,23 @@ export const parseList = (rawList?: any): TokenListItem[] => {
 };
 
 const TokenSelectModal = () => {
-  const store = useStore();
+  // const store = useStore();
 
-  return (
-    <Popup isOpen={store.showTokenSelectModal} onClose={store.closeTokenSelectModal}>
-      <StyledModalContent>
-        <TokensList
-          tokens={parsedList}
-          onClick={(token) => {
-            if (store.type === 0) store.setSrcToken(token.address);
-            else store.setDstToken(token.address);
-            store.closeTokenSelectModal();
-          }}
-        />
-      </StyledModalContent>
-    </Popup>
-  );
+  return null;
+  // return (
+  //   <Popup isOpen={store.showTokenSelectModal} onClose={store.closeTokenSelectModal}>
+  //     <StyledModalContent>
+  //       <TokensList
+  //         tokens={parsedList}
+  //         onClick={(token) => {
+  //           if (store.type === 0) store.setSrcToken(token.address);
+  //           else store.setDstToken(token.address);
+  //           store.closeTokenSelectModal();
+  //         }}
+  //       />
+  //     </StyledModalContent>
+  //   </Popup>
+  // );
 };
 
 interface UseStore {
@@ -178,27 +172,6 @@ interface UseStore {
   setSelectedPallete: (pallete: any) => void;
 }
 
-const useStore = create<UseStore>((set) => ({
-  showTokenSelectModal: false,
-  type: 0,
-  openTokenSelectModal: (type) => set({ showTokenSelectModal: true, type }),
-  closeTokenSelectModal: () => set({ showTokenSelectModal: false }),
-  setSrcToken: (token) => set({ srcToken: token }),
-  setDstToken: (token) => set({ dstToken: token }),
-  setSelectedPallete: (pallete) => set({ selectedPallete: pallete }),
-  srcToken: "ETH",
-  dstToken: "USDC",
-  selectedPallete: palletes[0],
-}));
-
-const usePallete = () => {
-  const { setSelectedPallete, selectedPallete } = useStore();
-  return {
-    pallete: selectedPallete,
-    setPallete: setSelectedPallete,
-  };
-};
-
 const useGasPrice = () => {
   const { library } = useWeb3React();
   return useCallback(async () => {
@@ -209,17 +182,15 @@ const useGasPrice = () => {
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library } = useWeb3React();
   const connect = useConnectWallet();
-  const store = useStore();
   const { data: tokens } = useDappTokens();
-  const palette = usePallete().pallete.options;
   const getGasPrice = useGasPrice();
   const priceUsd = useGetPriceUsdCallback();
 
   return (
     <>
-      <TWAP
+      {/* <TWAP
         connect={connect}
-        themeOptions={palette}
+        themeOptions={{} as any}
         account={account}
         // srcToken={store.srcToken}
         // dstToken={store.dstToken}
@@ -227,58 +198,50 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         getProvider={() => library}
         useGasPrice={library ? getGasPrice : undefined}
         limit={limit}
-        openTokenSelectModal={store.openTokenSelectModal}
+        // openTokenSelectModal={store.openTokenSelectModal}
         onSrcTokenSelected={(token: any) => console.log(token)}
         onDstTokenSelected={(token: any) => console.log(token)}
       />
-      <TokenSelectModal />
+      <TokenSelectModal /> */}
     </>
   );
 };
 
-const Palletes = () => {
-  const { setPallete, pallete } = usePallete();
-  return (
-    <Styles.StyledRowFlex>
-      {palletes.map((it) => {
-        const selected = it.name === pallete.name;
-        return (
-          <StyledPalleteOption selected={selected ? 1 : 0} _color={pallete.options.primary} variant="text" key={it.name} onClick={() => setPallete(it)}>
-            {it.name}
-          </StyledPalleteOption>
-        );
-      })}
-    </Styles.StyledRowFlex>
-  );
-};
-
-const StyledPalleteOption = styled(Button)<{ _color: string; selected: number }>(({ _color, selected }) => ({
-  borderRadius: 0,
-  cursor: "pointer",
-  margin: 5,
-  color: _color,
-  borderBottom: selected ? `1px solid ${_color}!important` : "",
-}));
+// const Palletes = () => {
+//   const { setPallete, pallete } = usePallete();
+//   return (
+//     <Styles.StyledRowFlex>
+//       {palletes.map((it) => {
+//         const selected = it.name === pallete.name;
+//         return (
+//           <StyledPalleteOption selected={selected ? 1 : 0} _color={pallete.options.primary} variant="text" key={it.name} onClick={() => setPallete(it)}>
+//             {it.name}
+//           </StyledPalleteOption>
+//         );
+//       })}
+//     </Styles.StyledRowFlex>
+//   );
+// };
 
 const logo = "https://syncswap.xyz/images/syncswap.svg";
 const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
-  const pallete = usePallete().pallete.options;
+  // const pallete = usePallete().pallete.options;
+  return null;
+  // return (
+  //   <StyledSyncSwap className={pallete.background} color={pallete.normal}>
 
-  return (
-    <StyledSyncSwap className={pallete.background} color={pallete.normal}>
-      <Palletes />
-      <StyledQuickswapLayout name={config.name}>
-        <UISelector select={setSelected} selected={selected} limit={true} />
-        <StyledSyncSwapBox>
-          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-        </StyledSyncSwapBox>
-        <StyledSyncSwapBox>
-          <Orders />
-        </StyledSyncSwapBox>
-      </StyledQuickswapLayout>
-    </StyledSyncSwap>
-  );
+  //     <StyledQuickswapLayout name={config.name}>
+  //       <UISelector select={setSelected} selected={selected} limit={true} />
+  //       <StyledSyncSwapBox>
+  //         <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+  //       </StyledSyncSwapBox>
+  //       <StyledSyncSwapBox>
+
+  //       </StyledSyncSwapBox>
+  //     </StyledQuickswapLayout>
+  //   </StyledSyncSwap>
+  // );
 };
 
 const dapp: Dapp = {

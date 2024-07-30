@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { styled } from "styled-components";
 import { ReactNode } from "react";
 import { StyledColumnFlex } from "../../styles";
 

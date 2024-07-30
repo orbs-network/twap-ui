@@ -1,10 +1,10 @@
-import { Box, Button, styled } from "@mui/material";
+import { styled } from "styled-components";
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTwapContext } from ".";
 import { analytics } from "./analytics";
 
-const StyledContainer = styled(Box)<{ isDarkTheme?: number }>(({ theme, isDarkTheme }) => {
+const StyledContainer = styled("div")<{ isDarkTheme?: number }>(({ theme, isDarkTheme }) => {
   return {
     alignItems: "center",
     display: "flex",
@@ -19,10 +19,8 @@ const StyledContainer = styled(Box)<{ isDarkTheme?: number }>(({ theme, isDarkTh
 });
 
 const TwapFallbackUI = () => {
-  const isDarkTheme = useTwapContext().dappProps.isDarkTheme;
-
   return (
-    <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>
+    <StyledContainer>
       <p>Something went wrong</p>
       {/* <Button variant="contained" onClick={() => window.location.reload()}>
         Reload
@@ -32,10 +30,8 @@ const TwapFallbackUI = () => {
 };
 
 const OrdersFallbackUI = () => {
-  const isDarkTheme = useTwapContext().dappProps.isDarkTheme;
-
   return (
-    <StyledContainer isDarkTheme={isDarkTheme ? 1 : 0}>
+    <StyledContainer>
       <p>Error in loading orders</p>
     </StyledContainer>
   );
