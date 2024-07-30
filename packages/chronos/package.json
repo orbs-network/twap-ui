@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-chronos",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "description": "TWAP UI for Chronos",
   "license": "MIT",
   "author": "Orbs",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^1.1.13",
+    "@orbs-network/twap-ui": "^1.1.14",
     "web3": "1.x"
   },
   "peerDependencies": {
