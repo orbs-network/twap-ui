@@ -175,28 +175,34 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-const parseToken = (config: Config, getTokenLogo: (token?: any) => string, rawToken?: any): Token | undefined => {
-  const nativeToken = network(config.chainId).native;
-  try {
-    if (!rawToken || !rawToken.symbol) {
-      return;
-    }
+const useParseToken = () => {
+  const { config, getTokenLogo } = useAdapterContext();
+  return useCallback(
+    (token?: any) => {
+      const nativeToken = network(config.chainId).native;
+      try {
+        if (!token || !token.symbol) {
+          return;
+        }
 
-    if (rawToken.isNative) {
-      return {
-        ...nativeToken,
-        logoUrl: getTokenLogo(rawToken) || nativeToken.logoUrl,
-      };
-    }
-    return {
-      address: Web3.utils.toChecksumAddress(rawToken.address),
-      decimals: rawToken.decimals,
-      symbol: rawToken.symbol,
-      logoUrl: getTokenLogo(rawToken),
-    };
-  } catch (error) {
-    console.error("Invalid token", rawToken);
-  }
+        if (token.isNative) {
+          return {
+            ...nativeToken,
+            logoUrl: getTokenLogo(token) || nativeToken.logoUrl,
+          };
+        }
+        return {
+          address: Web3.utils.toChecksumAddress(token.address),
+          decimals: token.decimals,
+          symbol: token.symbol,
+          logoUrl: getTokenLogo(token),
+        };
+      } catch (error) {
+        console.error("Invalid token", token);
+      }
+    },
+    [config.chainId, getTokenLogo],
+  );
 };
 
 export type SushiModalProps = {
@@ -232,20 +238,34 @@ const useWToken = () => {
 
   return useMemo(() => {
     const wTokenAddress = network(context.config.chainId).wToken.address;
-    return context.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""))?.address;
-  }, [context.srcToken, context.dappTokens, context.config]);
+    return context.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
+  }, [context.dappTokens, context.config]);
+};
+
+const useIsNative = () => {
+  const context = useAdapterContext();
+
+  return useCallback(
+    (token?: any) => {
+      if (token?.isNative || token?.symbol === network(context.config.chainId).native.symbol) {
+        return true;
+      }
+    },
+    [context.config.chainId],
+  );
 };
 
 const useAddresses = () => {
   const context = useAdapterContext();
   const wrappedAddress = useWToken()?.address;
+  const isNative = useIsNative();
 
   return useMemo(() => {
     return {
-      srcAddress: context.srcToken?.isNative ? wrappedAddress : context.srcToken?.address,
-      dstAddress: context.dstToken?.isNative ? wrappedAddress : context.dstToken?.address,
+      srcAddress: isNative(context.srcToken) ? wrappedAddress : context.srcToken?.address,
+      dstAddress: isNative(context.dstToken) ? wrappedAddress : context.dstToken?.address,
     };
-  }, [context.srcToken, wrappedAddress, context.dstToken]);
+  }, [context.srcToken, context.dstToken, isNative, wrappedAddress]);
 };
 
 const useMarketPrice = () => {
@@ -272,12 +292,13 @@ const useUsd = () => {
 
 const useSelectedParsedTokens = () => {
   const context = useAdapterContext();
+  const parseToken = useParseToken();
   return useMemo(() => {
     return {
-      srcToken: parseToken(context.config, context.getTokenLogo, context.srcToken),
-      dstToken: parseToken(context.config, context.getTokenLogo, context.dstToken),
+      srcToken: parseToken(context.srcToken),
+      dstToken: parseToken(context.dstToken),
     };
-  }, [context.config, context.srcToken, context.dstToken, context.getTokenLogo]);
+  }, [context.srcToken, context.dstToken, parseToken]);
 };
 
 const supportedChains = configs.map((config) => config.chainId);
@@ -304,15 +325,16 @@ export const useProvider = () => {
 
 const useParsedTokens = () => {
   const context = useAdapterContext();
+  const parseToken = useParseToken();
   return useMemo(() => {
-    if (!size(context.dappTokens) || !context.config) {
+    if (!size(context.dappTokens)) {
       return [];
     }
     let parsed = context.dappTokens.map((rawToken: any) => {
-      return parseToken(context.config, context.getTokenLogo, rawToken);
+      return parseToken(rawToken);
     });
     return compact(parsed) as Token[];
-  }, [context.dappTokens, context.config, context.getTokenLogo]);
+  }, [context.dappTokens, parseToken]);
 };
 
 const useIsWrongChain = () => {
@@ -366,7 +388,7 @@ const TWAPContent = () => {
           marketPrice={marketPrice}
           chainId={context.connectedChainId}
           isWrongChain={isWrongChain}
-          Components={context.Components}
+          Components={{ Tooltip: context.Tooltip }}
           dappWToken={dappWToken}
         >
           <GlobalStyles />

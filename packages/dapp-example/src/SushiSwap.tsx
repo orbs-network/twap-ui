@@ -182,7 +182,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       onSrcTokenSelected={(it: any) => setFromToken(it)}
       onDstTokenSelected={(it: any) => setToToken(it)}
       onSwitchTokens={onSwitchTokens}
-      Components={{ Tooltip }}
+      Tooltip={Tooltip}
     />
   );
 };

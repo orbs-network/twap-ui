@@ -148,8 +148,7 @@ export interface TWAPProps {
   maxFeePerGas?: string;
   priorityFeePerGas?: string;
   isDarkTheme?: boolean;
-  Tooltip: FC<TooltipProps>;
-  Button?: FC<ButtonProps>;
+  Tooltip?: FC<TooltipProps>;
   USD?: FC<{ value?: string | number }>;
   onSrcTokenSelected: (token: any) => void;
   onDstTokenSelected: (token: any) => void;
@@ -450,7 +449,7 @@ export enum TimeResolution {
 export type Duration = { resolution: TimeResolution; amount?: number };
 
 interface TwapComponents {
-  Tooltip: FC<TooltipProps>;
+  Tooltip?: FC<TooltipProps>;
   Button?: FC<ButtonProps>;
   USD?: FC<{ value?: string | number }>;
 }

@@ -1,4 +1,4 @@
-import { Abi, eqIgnoreCase, erc20, estimateGasPrice, isNativeAddress } from "@defi.org/web3-candies";
+import { Abi, eqIgnoreCase, erc20, estimateGasPrice, isNativeAddress, setWeb3Instance } from "@defi.org/web3-candies";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { useCallback, useMemo, useRef } from "react";
@@ -130,6 +130,7 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
   const query = useQuery(
     [QueryKeys.GET_BALANCE, account, token?.address],
     () => {
+      setWeb3Instance(web3);
       if (isNativeAddress(token!.address)) return web3!.eth.getBalance(account!).then(BN);
       else return erc20(token!.symbol, token!.address, token!.decimals).methods.balanceOf(account!).call().then(BN);
     },

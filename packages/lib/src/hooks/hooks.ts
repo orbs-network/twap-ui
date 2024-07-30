@@ -200,7 +200,7 @@ export const usemElipsisAddress = (address?: string) => {
 export const useContract = (abi?: Abi, address?: string) => {
   const { config, web3 } = useTwapContext();
   return useMemo(() => {
-    if (!web3 || !address || !config || !abi) return;
+    if (!web3 || !address || !config || !abi || isNativeAddress(address)) return;
     return new web3.eth.Contract(abi || [], address);
   }, [abi, address, config, web3]);
 };
