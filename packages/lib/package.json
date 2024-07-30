@@ -23,6 +23,7 @@
   "dependencies": {
     "@defi.org/web3-candies": "^5.0.0",
     "@orbs-network/twap": "^2.0.1",
+    "@react-icons/all-files": "^4.1.0",
     "@tanstack/react-query": "4.x",
     "bignumber.js": "9.x",
     "moment": "2.x",
