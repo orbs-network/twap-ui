@@ -9,7 +9,7 @@ import { useCallback } from "react";
 import { analytics } from "../analytics";
 import { stateActions, useSwitchNativeToWrapped } from "../context/actions";
 import moment from "moment";
-import { useDeadline, useDstMinAmountOut, useFillDelay, useOutAmount, useShouldOnlyWrap, useShouldWrap, useSrcAmount, useSrcChunkAmount, useSwapData } from "./lib";
+import { useDeadline, useDstMinAmountOut, useFillDelay, useShouldOnlyWrap, useShouldWrap, useSrcAmount, useSrcChunkAmount, useSwapData } from "./lib";
 import { Status } from "../types";
 
 export const useCreateOrder = () => {
@@ -262,10 +262,10 @@ const useOnSuccessCallback = () => {
   const swapData = useSwapData();
   const onOrderCreated = stateActions.useOnOrderCreated();
   const reset = useResetAfterSwap();
-
+  const estimatedDelayBetweenChunksMillis = useEstimatedDelayBetweenChunksMillis();
   return useCallback(
     (order: { txHash: string; orderId: number }) => {
-      const fillDelaySeconds = swapData.fillDelay.millis - config!.bidDelaySeconds / 1000;
+      const fillDelaySeconds = (swapData.fillDelay.millis - estimatedDelayBetweenChunksMillis) / 1000;
 
       onOrderCreated();
       addOrder({
@@ -295,7 +295,7 @@ const useOnSuccessCallback = () => {
       });
       reset();
     },
-    [srcToken, dstToken, onTxSubmitted, onOrderCreated, reset, config, swapData],
+    [srcToken, dstToken, onTxSubmitted, onOrderCreated, reset, config, swapData, estimatedDelayBetweenChunksMillis],
   );
 };
 

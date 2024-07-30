@@ -68,15 +68,13 @@ const Recipient = () => {
   const explorerUrl = useExplorerUrl();
   const makerAddress = usemElipsisAddress(account);
 
-  const address = <Tooltip tooltipText={account}>{makerAddress}</Tooltip>;
-
   return (
     <DetailRow title={t.recipient}>
       {!explorerUrl ? (
-        address
+        makerAddress
       ) : (
         <a href={`${explorerUrl}/address/${account}`} target="_blank">
-          {address}
+          {makerAddress}
         </a>
       )}
     </DetailRow>
@@ -133,15 +131,13 @@ const TxHash = ({ txHash }: { txHash?: string }) => {
 
   if (!txHash) return null;
 
-  const address = <Tooltip tooltipText={txHash}>{txHashAddress}</Tooltip>;
-
   return (
     <DetailRow title={t.txHash}>
       {!explorerUrl ? (
-        address
+        txHashAddress
       ) : (
         <a href={`${explorerUrl}/tx/${txHash}`} target="_blank">
-          {address}
+          {txHashAddress}
         </a>
       )}
     </DetailRow>

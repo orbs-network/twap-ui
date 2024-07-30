@@ -69,7 +69,6 @@ export const useDstMinAmountOut = () => {
     }
     return amount;
   }, [srcToken, dstToken, srcChunkAmount, priceUi, isMarketOrder]);
-  console.log({ amount });
 
   return {
     amount,

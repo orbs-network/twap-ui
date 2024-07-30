@@ -665,6 +665,11 @@ export const StyledResetLimitButtonRight = styled(StyledSelectButton)({
 export const StyledLimitPanel = styled(Components.LimitPanel)(({ theme }) => {
   const styles = getStyles(theme);
   return {
+    ".twap-input": {
+      input: {
+        padding: 0,
+      },
+    },
     ".twap-market-price-warning": {
       color: styles.messageText,
     },
