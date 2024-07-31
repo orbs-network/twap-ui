@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-arbidex",
-  "version": "1.1.20",
+  "version": "1.1.21",
   "description": "TWAP UI for Arbidex",
   "license": "MIT",
   "author": "Orbs",
@@ -20,7 +20,7 @@
     "test": "eslint src"
   },
   "dependencies": {
-    "@orbs-network/twap-ui": "^1.1.20",
+    "@orbs-network/twap-ui": "^1.1.21",
     "web3": "1.x"
   },
   "peerDependencies": {
