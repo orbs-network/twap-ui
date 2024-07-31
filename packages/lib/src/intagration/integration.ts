@@ -1,20 +1,30 @@
 import { useCallback, useMemo } from "react";
-import { TimeResolution, Token } from "../types";
+import { TimeResolution } from "../types";
 import * as libHooks from "../hooks/lib";
-import { MAX_DURATION_MILLIS, MIN_DURATION_MILLIS, MIN_DURATION_MILLIS_FORMATTED, MIN_TRADE_INTERVAL_FORMATTED } from "../consts";
-import { amountBN, fillDelayText } from "../utils";
+import {
+  MAX_DURATION_MILLIS,
+  MAX_TRADE_INTERVAL,
+  MAX_TRADE_INTERVAL_FORMATTED,
+  MIN_DURATION_MILLIS,
+  MIN_DURATION_MILLIS_FORMATTED,
+  MIN_TRADE_INTERVAL,
+  MIN_TRADE_INTERVAL_FORMATTED,
+} from "../consts";
+import { amountBNV2, amountUiV2, fillDelayText, formatDecimals } from "../utils";
 import { useIntegrationContext } from "./context";
 import BN from "bignumber.js";
 import { useIntegrationStore } from "./store";
 import { useAmountUi, useFormatDecimals } from "../hooks";
-import { convertDecimals, eqIgnoreCase, isNativeAddress, maxUint256, parsebn } from "@defi.org/web3-candies";
+import { convertDecimals, eqIgnoreCase, isNativeAddress, networks, parsebn } from "@defi.org/web3-candies";
 import moment from "moment";
+import TwapAbi from "@orbs-network/twap/twap.abi.json";
 
-export const useFillDelay = () => {
+export const useTradeInterval = () => {
   const {
     state: { customFillDelay },
     isLimitPanel,
     translations,
+    updateState,
   } = useIntegrationContext();
 
   const millis = useMemo(() => {
@@ -24,9 +34,35 @@ export const useFillDelay = () => {
     return customFillDelay.amount! * customFillDelay.resolution;
   }, [customFillDelay, isLimitPanel]);
 
+  const warning = useMemo(() => {
+    if (millis < MIN_TRADE_INTERVAL) {
+      return translations.minTradeIntervalWarning.replace("{tradeInterval}", MIN_TRADE_INTERVAL_FORMATTED.toString());
+    }
+    if (millis > MAX_TRADE_INTERVAL) {
+      return translations.maxTradeIntervalWarning.replace("{tradeInterval}", MAX_TRADE_INTERVAL_FORMATTED.toString());
+    }
+  }, [millis, translations]);
+
+  const onResolution = useCallback(
+    (resolution: TimeResolution) => {
+      updateState({ customFillDelay: { resolution, amount: customFillDelay.amount } });
+    },
+    [customFillDelay, updateState],
+  );
+
+  const onChange = useCallback(
+    (millis: number | string) => {
+      updateState({ customFillDelay: { resolution: customFillDelay.resolution, amount: Number(millis) } });
+    },
+    [updateState, customFillDelay],
+  );
+
   return {
     millis,
     text: useMemo(() => fillDelayText(millis, translations), [millis, translations]),
+    onResolution,
+    onChange,
+    warning,
   };
 };
 
@@ -46,7 +82,7 @@ export const useTotalTradesAmount = () => {
 };
 
 const useMinDuration = () => {
-  const fillDelayUiMillis = useFillDelay().millis;
+  const fillDelayUiMillis = useTradeInterval().millis;
   const chunks = useTotalTradesAmount();
 
   return useMemo(() => {
@@ -92,26 +128,26 @@ export const useTradeDuration = () => {
     }
   }, [customDuration, millis, translations]);
 
-  const onResolutionChange = useCallback(
+  const onResolution = useCallback(
     (resolution: TimeResolution) => {
       updateState({ customDuration: { resolution, amount: duration.amount } });
     },
-    [duration.amount, updateState]
+    [duration.amount, updateState],
   );
 
-  const onInputChange = useCallback(
+  const onChange = useCallback(
     (amount: string | number) => {
       updateState({ customDuration: { resolution: duration.resolution, amount: Number(amount) } });
     },
-    [duration.resolution, updateState]
+    [duration.resolution, updateState],
   );
 
   return {
     millis,
     duration,
     warning,
-    onResolutionChange,
-    onInputChange,
+    onResolution,
+    onChange,
   };
 };
 
@@ -136,7 +172,7 @@ export const useSingleTradeSize = () => {
     config,
     translations,
   } = useIntegrationContext();
-  const chunks = useTotalTrades();
+  const { trades: chunks } = useTotalTrades();
 
   const singleChunksUsd = useMemo(() => {
     if (!srcAmount || !chunks) return "0";
@@ -190,15 +226,27 @@ export const useMaxPossibleChunks = () => {
 };
 
 const useTotalTrades = () => {
-  const { isLimitPanel, state } = useIntegrationContext();
+  const { isLimitPanel, state, updateState } = useIntegrationContext();
   const { customChunks } = state;
   const maxPossibleChunks = useMaxPossibleChunks();
 
-  return useMemo(() => {
+  const trades = useMemo(() => {
     if (isLimitPanel) return 1;
     if (typeof customChunks === "number") return customChunks;
     return maxPossibleChunks;
   }, [customChunks, maxPossibleChunks, isLimitPanel]);
+
+  const onChange = useCallback(
+    (chunks: number) => {
+      updateState({ customChunks: chunks });
+    },
+    [updateState],
+  );
+
+  return {
+    trades,
+    onChange,
+  };
 };
 
 const useOnSrcAmount = () => {
@@ -210,19 +258,19 @@ const useOnSrcAmount = () => {
     (srcAmountUi: string) => {
       updateState({
         srcAmountUi,
-        srcAmount: amountBN(srcToken?.decimals, srcAmountUi),
+        srcAmount: amountBNV2(srcToken?.decimals, srcAmountUi),
       });
     },
-    [updateState, srcToken]
+    [updateState, srcToken],
   );
 };
 
 export const useMinAmountOut = () => {
-  const { priceUi } = libHooks.useLimitPrice();
+  const { priceUi } = useLimitPrice();
   const { srcToken, dstToken } = useIntegrationContext();
   const srcChunkAmount = useSingleTradeSize().amount;
 
-  const isMarketOrder = libHooks.useIsMarketOrder();
+  const isMarketOrder = useIsMarketOrder();
   const amount = useMemo(() => {
     let amount = BN(1).toString();
     if (!isMarketOrder && srcToken && dstToken && BN(priceUi || "0").gt(0)) {
@@ -264,7 +312,7 @@ const useEstimatedDelayBetweenChunksMillis = () => {
 };
 
 export const useOutAmount = () => {
-  const { price, isLoading } = libHooks.useLimitPrice();
+  const { price, isLoading } = useLimitPrice();
   const {
     dstToken,
     state: { srcAmount },
@@ -319,7 +367,7 @@ export const useSwapData = () => {
   const deadline = useDeadline();
   const srcChunkAmount = useSingleTradeSize();
   const dstMinAmount = useMinAmountOut();
-  const fillDelay = useFillDelay();
+  const fillDelay = useTradeInterval();
   const chunks = useTotalTrades();
   const {
     srcToken,
@@ -341,49 +389,6 @@ export const useSwapData = () => {
   };
 };
 
-const useOnOrderCreated = () => {
-  const { onTxSubmitted, config, srcToken, dstToken } = useTwapContext();
-  const addOrder = query.useAddNewOrder();
-  const swapData = useSwapData();
-  const onOrderCreated = stateActions.useOnOrderCreated();
-  const reset = useResetAfterSwap();
-  const estimatedDelayBetweenChunksMillis = useEstimatedDelayBetweenChunksMillis();
-  return useCallback(
-    (order: { txHash: string; orderId: number }) => {
-      const fillDelaySeconds = (swapData.fillDelay.millis - estimatedDelayBetweenChunksMillis) / 1000;
-
-      onOrderCreated();
-      addOrder({
-        srcTokenAddress: srcToken?.address,
-        dstTokenAddress: dstToken?.address,
-        srcAmount: swapData.srcAmount.amount,
-        createdAt: moment().unix().valueOf(),
-        id: order.orderId,
-        txHash: order.txHash,
-        deadline: moment(swapData.deadline.millis).unix(),
-        srcBidAmount: swapData.srcChunkAmount.amount,
-        dstMinAmount: swapData.dstMinAmount.amount,
-        fillDelay: fillDelaySeconds,
-        totalChunks: swapData.chunks,
-        status: Status.Open,
-        srcToken,
-        dstToken,
-        exchange: config.exchangeAddress,
-      });
-      onTxSubmitted?.({
-        srcToken: srcToken!,
-        dstToken: dstToken!,
-        srcAmount: swapData.srcAmount.amount,
-        dstUSD: swapData.amountUsd.dstUsd || "",
-        dstAmount: swapData.outAmount.amount || "",
-        txHash: order.txHash,
-      });
-      reset();
-    },
-    [srcToken, dstToken, onTxSubmitted, onOrderCreated, reset, config, swapData, estimatedDelayBetweenChunksMillis]
-  );
-};
-
 export const useCreateOrder = () => {
   const {
     askDataParams,
@@ -395,7 +400,7 @@ export const useCreateOrder = () => {
   const minAmountOut = useMinAmountOut().amount;
   const singleTradeSize = useSingleTradeSize().amount;
   const deadline = useDeadline().millis;
-  const fillDelayMillisUi = useFillDelay().millis;
+  const fillDelayMillisUi = useTradeInterval().millis;
 
   const estimatedDelayBetweenChunksMillis = useEstimatedDelayBetweenChunksMillis();
   const fillDelaySeconds = (fillDelayMillisUi - estimatedDelayBetweenChunksMillis) / 1000;
@@ -415,85 +420,322 @@ export const useCreateOrder = () => {
       askDataParams,
     ];
     const twapContract = config.twapAddress;
+
+    return {
+      askParams,
+      twapContract,
+      abi: TwapAbi,
+    };
   }, [srcToken, dstToken, srcAmount, singleTradeSize, minAmountOut, deadline, fillDelaySeconds, askDataParams, config]);
+};
 
-  return useMutation(
-    async (srcToken: TokenData) => {
-      analytics.updateAction("create");
+export const useMarketPrice = () => {
+  const { marketPrice: marketPriceRaw, dstToken } = useIntegrationContext();
 
-      const fillDelaySeconds = (fillDelayMillisUi - estimatedDelayBetweenChunksMillis) / 1000;
+  const isLoading = useMemo(() => {
+    return BN(marketPriceRaw || 0).isZero();
+  }, [marketPriceRaw]);
 
-      if (!dstToken) {
-        throw new Error("dstToken is not defined");
+  return {
+    marketPrice: marketPriceRaw,
+    marketPriceUi: useAmountUi(dstToken?.decimals, marketPriceRaw),
+    isLoading,
+  };
+};
+
+// Limit price
+export const useOnLimitPercentageClick = () => {
+  const { marketPrice } = useMarketPrice();
+  const { state, dstToken, updateState } = useIntegrationContext();
+  const { isInvertedLimitPrice } = state;
+
+  return useCallback(
+    (percent: string) => {
+      if (BN(percent).isZero()) {
+        updateState({
+          isCustomLimitPrice: false,
+          customLimitPrice: undefined,
+          limitPricePercent: undefined,
+        });
+        return;
+      }
+      const p = BN(percent || 0)
+        .div(100)
+        .plus(1)
+        .toString();
+      let price = amountUiV2(dstToken?.decimals, marketPrice);
+
+      if (isInvertedLimitPrice) {
+        price = BN(1)
+          .div(price || "0")
+          .toString();
       }
 
-      if (!twapContract) {
-        throw new Error("twapContract is not defined");
-      }
+      const value = BN(price || "0")
+        .times(p)
+        .toString();
 
-      if (!account) {
-        throw new Error("account is not defined");
-      }
-
-      const askData = config.exchangeType === "PangolinDaasExchange" ? web3().eth.abi.encodeParameters(["address"], askDataParams || []) : [];
-
-      const askParams = [
-        config.exchangeAddress,
-        srcToken.address,
-        dstToken.address,
-        BN(srcAmount).toFixed(0),
-        BN(srcChunkAmount).toFixed(0),
-        BN(dstMinAmountOut).toFixed(0),
-        BN(deadline).div(1000).toFixed(0),
-        BN(config.bidDelaySeconds).toFixed(0),
-        BN(fillDelaySeconds).toFixed(0),
-        askData,
-      ];
-
-      console.log("create order args:", {
-        exchangeAddress: config.exchangeAddress,
-        srcToken: srcToken.address,
-        dstToken: dstToken.address,
-        srcAmount: BN(srcAmount).toFixed(0),
-        srcChunkAmount: BN(srcChunkAmount).toFixed(0),
-        dstMinAmountOut: BN(dstMinAmountOut).toFixed(0),
-        deadline: BN(deadline).div(1000).toFixed(0),
-        bidDelaySeconds: BN(config.bidDelaySeconds).toFixed(0),
-        fillDelaySeconds: BN(fillDelaySeconds).toFixed(0),
-        priorityFeePerGas: priorityFeePerGas.toString(),
-        maxFeePerGas: maxFeePerGas.toString(),
+      updateState({
+        customLimitPrice: formatDecimals(value),
+        isCustomLimitPrice: true,
+        isMarketOrder: false,
+        limitPricePercent: percent,
       });
-
-      const ask = twapContract.methods.ask(askParams as any);
-
-      const tx = await sendAndWaitForConfirmations(
-        ask,
-        {
-          from: account,
-          maxPriorityFeePerGas: priorityFeePerGas || zero,
-          maxFeePerGas,
-        },
-        undefined,
-        undefined,
-        {
-          onTxHash,
-        }
-      );
-
-      const orderId = Number(tx.events.OrderCreated.returnValues.id);
-      const txHash = tx.transactionHash;
-      analytics.onCreateOrderSuccess(orderId, txHash);
-      logger("order created:", "orderId:", orderId, "txHash:", txHash);
-      return {
-        orderId,
-        txHash,
-      };
     },
-    {
-      onError: (error) => {
-        logger("order create failed:", error);
-        analytics.onTxError(error, "create");
-      },
-    }
+    [marketPrice, dstToken, isInvertedLimitPrice, updateState],
   );
+};
+
+export const useLimitPrice = () => {
+  const { isLoading, marketPrice } = useMarketPrice();
+  const { state, dstToken } = useIntegrationContext();
+  const { isCustomLimitPrice, customLimitPrice, isInvertedLimitPrice, isMarketOrder } = state;
+
+  const price = useMemo(() => {
+    if (!marketPrice) return;
+
+    if (!isCustomLimitPrice || isMarketOrder) {
+      return marketPrice;
+    }
+    let result = customLimitPrice;
+    if (isInvertedLimitPrice) {
+      result = BN(1)
+        .div(customLimitPrice || 0)
+        .toString();
+    }
+    return amountBNV2(dstToken?.decimals, result);
+  }, [isCustomLimitPrice, customLimitPrice, dstToken?.decimals, isInvertedLimitPrice, marketPrice, isMarketOrder]);
+
+  return {
+    isLoading,
+    price,
+    priceUi: useAmountUi(dstToken?.decimals, price),
+  };
+};
+
+export const useLimitInput = () => {
+  const { state, dstToken, updateState } = useIntegrationContext();
+  const { isInvertedLimitPrice, isCustomLimitPrice, customLimitPrice } = state;
+  const { priceUi, isLoading } = useLimitPrice();
+
+  const value = useMemo(() => {
+    if (isCustomLimitPrice) {
+      return customLimitPrice;
+    }
+    let res = priceUi;
+
+    if (isInvertedLimitPrice) {
+      res = BN(1)
+        .div(res || 0)
+        .toString();
+    }
+
+    return formatDecimals(res);
+  }, [customLimitPrice, isCustomLimitPrice, isInvertedLimitPrice, priceUi, dstToken]);
+
+  const onChange = useCallback(() => {
+    updateState({
+      customLimitPrice,
+      isCustomLimitPrice: true,
+      isMarketOrder: false,
+      limitPricePercent: undefined,
+    });
+  }, [customLimitPrice, updateState]);
+
+  return {
+    value: value || "",
+    onChange,
+    isLoading,
+  };
+};
+const defaultPercent = [1, 5, 10];
+
+const useList = () => {
+  const { isInvertedLimitPrice } = useIntegrationContext().state;
+
+  return useMemo(() => {
+    if (isInvertedLimitPrice) {
+      return defaultPercent.map((it) => -it).map((it) => it.toString());
+    }
+    return defaultPercent.map((it) => it.toString());
+  }, [isInvertedLimitPrice]);
+};
+
+export const useLimitPricePercentDiffFromMarket = () => {
+  const limitPrice = useLimitPrice().price;
+  const marketPrice = useMarketPrice().marketPrice;
+  const isInvertedLimitPrice = useIntegrationContext().state.isInvertedLimitPrice;
+
+  return useMemo(() => {
+    if (!limitPrice || !marketPrice || BN(limitPrice).isZero() || BN(limitPrice).isZero()) return "0";
+    const from = isInvertedLimitPrice ? marketPrice : limitPrice;
+    const to = isInvertedLimitPrice ? limitPrice : marketPrice;
+    return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_HALF_UP).toString();
+  }, [limitPrice, marketPrice, isInvertedLimitPrice]);
+};
+
+const useCustomPercent = () => {
+  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
+  const { limitPricePercent } = useIntegrationContext().state;
+
+  const formatted = useList();
+
+  const custom = useMemo(() => {
+    if (BN(priceDeltaPercentage).isZero()) {
+      return false;
+    }
+
+    if (BN(limitPricePercent || 0).gt(0)) {
+      return false;
+    }
+
+    if (limitPricePercent && formatted.includes(limitPricePercent)) {
+      return false;
+    }
+    if (priceDeltaPercentage && formatted.includes(priceDeltaPercentage)) {
+      return false;
+    }
+
+    return true;
+  }, [priceDeltaPercentage, limitPricePercent, formatted]);
+
+  return custom ? priceDeltaPercentage : undefined;
+};
+
+export const useLimitPercentList = () => {
+  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
+  const formatted = useList();
+  const custom = useCustomPercent();
+
+  return useMemo(() => {
+    if (!custom) {
+      return ["0", ...formatted];
+    }
+    return formatted;
+  }, [formatted, custom, priceDeltaPercentage]);
+};
+
+export const useLimitTokens = () => {
+  const { translations: t, state, srcToken, dstToken } = useIntegrationContext();
+
+  const { isInvertedLimitPrice: inverted } = state;
+  return useMemo(() => {
+    return {
+      srcToken: inverted ? dstToken : srcToken,
+      dstToken: inverted ? srcToken : dstToken,
+    };
+  }, [srcToken, dstToken, inverted]);
+};
+
+export const useIsLimitInverted = () => {
+  const { isInvertedLimitPrice: inverted } = useIntegrationContext().state;
+  return inverted;
+};
+
+export const useLimitResetButton = () => {
+  const customPercent = useCustomPercent();
+  const onSelectCallback = useOnLimitPercentageClick();
+  const onReset = useCallback(() => {
+    onSelectCallback("0");
+  }, [onSelectCallback]);
+
+  return {
+    value: customPercent,
+    onReset,
+  };
+};
+
+export const useInvertLimit = () => {
+  const { state, updateState } = useIntegrationContext();
+  return useCallback(() => {
+    updateState({
+      isInvertedLimitPrice: !state.isInvertedLimitPrice,
+      customLimitPrice: undefined,
+      isCustomLimitPrice: false,
+      limitPricePercent: undefined,
+    });
+  }, [state, updateState]);
+};
+
+export const useLimitPercentButton = (percent: string) => {
+  const { isInvertedLimitPrice: inverted, limitPricePercent } = useIntegrationContext().state;
+  const { price: limitPrice } = useLimitPrice();
+
+  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
+
+  const isSelected = useMemo(() => {
+    const p = limitPricePercent || priceDeltaPercentage;
+    if (BN(limitPrice || 0).isZero()) {
+      return false;
+    }
+
+    return BN(p || 0).eq(percent);
+  }, [limitPricePercent, limitPrice, priceDeltaPercentage, percent]);
+
+  const text = useMemo(() => {
+    return `${BN(percent || 0).isZero() ? "" : inverted ? "-" : !inverted && "+"} ${Math.abs(Number(percent))} %`;
+  }, [inverted, percent]);
+
+  const onSelectCallback = useOnLimitPercentageClick();
+
+  const onSelect = useCallback(() => {
+    onSelectCallback(percent);
+  }, [onSelectCallback, percent]);
+
+  return {
+    value: percent,
+    isSelected,
+    onSelect,
+    text,
+  };
+};
+
+export const useIsMarketOrder = () => {
+  const { isLimitPanel, state } = useIntegrationContext();
+  const isMarketOrder = state.isMarketOrder;
+
+  return isLimitPanel ? false : isMarketOrder;
+};
+
+export const useNetwork = () => {
+  const { config } = useIntegrationContext();
+
+  return useMemo(() => {
+    return Object.values(networks).find((network) => network.id === config.chainId);
+  }, [config]);
+};
+
+export const useShouldOnlyWrap = () => {
+  const { srcToken, dstToken } = useIntegrationContext();
+  const network = useNetwork();
+
+  return useMemo(() => {
+    return isNativeAddress(srcToken?.address || "") && eqIgnoreCase(dstToken?.address || "", network?.wToken.address || "");
+  }, [srcToken, dstToken, network]);
+};
+
+export const useShouldUnwrap = () => {
+  const { srcToken, dstToken } = useIntegrationContext();
+  const network = useNetwork();
+
+  return useMemo(() => {
+    return eqIgnoreCase(srcToken?.address || "", network?.wToken.address || "") && isNativeAddress(dstToken?.address || "");
+  }, [srcToken, dstToken, network]);
+};
+
+export const useShouldWrapOrUnwrapOnly = () => {
+  const wrap = useShouldOnlyWrap();
+  const unwrap = useShouldUnwrap();
+
+  return wrap || unwrap;
+};
+
+export const useLimitPricePanel = () => {
+  const isMarket = useIsMarketOrder();
+  const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+
+  return {
+    showWarning: isMarket,
+    hidePanel: shouldWrapOrUnwrapOnly,
+  };
 };

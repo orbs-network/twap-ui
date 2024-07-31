@@ -1,8 +1,7 @@
 import { styled } from "styled-components";
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useTwapContext } from ".";
-import { analytics } from "./analytics";
+import { analytics } from "@orbs-network/twap-ui/src/analytics";
 
 const StyledContainer = styled("div")<{ isDarkTheme?: number }>(({ theme, isDarkTheme }) => {
   return {

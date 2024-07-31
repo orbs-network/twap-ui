@@ -19,6 +19,7 @@ import {
   size,
   Configs,
   Config,
+  IntergarionProvider,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, FC, useContext, useEffect, useMemo } from "react";
@@ -66,9 +67,10 @@ import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
 import { MdInfo } from "@react-icons/all-files/md/MdInfo";
-import { eqIgnoreCase, network } from "@defi.org/web3-candies";
+import { eqIgnoreCase, erc20, isNativeAddress, network, setWeb3Instance } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
 
@@ -277,7 +279,7 @@ const useMarketPrice = () => {
 
   const trade = useTrade!(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
 
-  return trade?.outAmount;
+  return trade?.outAmount || "";
 };
 
 const useUsd = () => {
@@ -348,60 +350,107 @@ const useIsWrongChain = () => {
   }, [context.configChainId]);
 };
 
-const TWAPContent = () => {
-  const context = useAdapterContext();
+const queryClient = new QueryClient();
+
+const useWeb3 = () => {
   const provider = useProvider();
+  return useMemo(() => {
+    return provider ? new Web3(provider) : undefined;
+  }, [provider]);
+};
 
-  const theme = useMemo(() => {
-    return context.isDarkTheme ? darkTheme : lightTheme;
-  }, [context.isDarkTheme]);
+export const useBalance = (token?: Token) => {
+  const { account } = useAdapterContext();
+  const web3 = useWeb3();
+  const query = useQuery<string>(
+    ["GET_BALANCE", account, token?.address],
+    async () => {
+      let res;
+      setWeb3Instance(web3);
+      if (isNativeAddress(token!.address)) {
+        res = await web3!.eth.getBalance(account!);
+      } else {
+        res = await erc20(token!.symbol, token!.address, token!.decimals).methods.balanceOf(account!).call();
+      }
+      return res.toString() as string;
+    },
+    {
+      enabled: !!web3 && !!token && !!account,
+      refetchInterval: 30_000,
+    },
+  );
+  return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
+};
 
-  const parsedTokens = useParsedTokens();
-  const { srcToken, dstToken } = useSelectedParsedTokens();
-  const { srcUsd, dstUsd } = useUsd();
+const useParsedToken = (token?: any) => {
+  const parseToken = useParseToken();
+
+  return useMemo(() => parseToken(token), [parseToken, token]);
+};
+
+const Integration = () => {
+  const { config, limit } = useAdapterContext();
+  const [srcToken, setSrcToken] = useState(undefined);
+  const [dstToken, setDstToken] = useState(undefined);
   const marketPrice = useMarketPrice();
-  const isWrongChain = useIsWrongChain();
+  const { srcUsd, dstUsd } = useUsd();
 
-  const dappWToken = useWToken();
+  const parsedSrcToken = useParsedToken(srcToken);
+  const parsedDstToken = useParsedToken(dstToken);
+
+  const srcBalance = useBalance(parsedSrcToken).data;
+  const dstBalance = useBalance(parsedDstToken).data;
+
+  return (
+    <IntergarionProvider
+      askDataParams={[]}
+      config={config}
+      marketPrice={marketPrice}
+      srcUsdPrice={srcUsd}
+      dstUsdPrice={dstUsd}
+      dstToken={parsedDstToken}
+      srcToken={parsedSrcToken}
+      srcBalance={srcBalance}
+      dstBalance={dstBalance}
+      isLimitPanel={false}
+    >
+      <TwapContent onSrcTokenSelect={setSrcToken} onDstTokenSelect={setDstToken} />
+    </IntergarionProvider>
+  );
+};
+
+interface TwapContentProps {
+  onSrcTokenSelect: (token: any) => void;
+  onDstTokenSelect: (token: any) => void;
+}
+
+const TwapContent = (props: TwapContentProps) => {
+  const { limit, isDarkTheme } = useAdapterContext();
+  const theme = useMemo(() => {
+    return isDarkTheme ? darkTheme : lightTheme;
+  }, [isDarkTheme]);
 
   return (
     <ThemeProvider theme={theme}>
       <StyledTwap className="twap-adapter-wrapper">
-        <TwapAdapter
-          config={context.config}
-          maxFeePerGas={context.maxFeePerGas}
-          priorityFeePerGas={context.priorityFeePerGas}
-          translations={translations as Translations}
-          provider={provider}
-          account={!context.configChainId ? undefined : context.account}
-          dappTokens={context.dappTokens}
-          parsedTokens={parsedTokens}
-          srcToken={srcToken}
-          dstToken={dstToken}
-          onDstTokenSelected={context.onDstTokenSelected}
-          onSrcTokenSelected={context.onSrcTokenSelected}
-          isLimitPanel={context.limit}
-          uiPreferences={uiPreferences}
-          onSwitchTokens={context.onSwitchTokens}
-          srcUsd={srcUsd}
-          dstUsd={dstUsd}
-          marketPrice={marketPrice}
-          chainId={context.connectedChainId}
-          isWrongChain={isWrongChain}
-          Components={{ Tooltip: context.Tooltip }}
-          dappWToken={dappWToken}
-        >
-          <GlobalStyles />
-          <StyledContent>
-            {context.limit ? <LimitPanel /> : <TWAPPanel />}
-            <Components.LimitPriceMessage />
-            <Orders />
-            <StyledPoweredBy />
-          </StyledContent>
-          <SubmitOrderModal />
-        </TwapAdapter>
+        <GlobalStyles />
+        <StyledContent>
+          {limit ? <LimitPanel /> : <TWAPPanel />}
+          <Components.LimitPriceMessage />
+          <Orders />
+          <StyledPoweredBy />
+        </StyledContent>
+        <SubmitOrderModal />
       </StyledTwap>
     </ThemeProvider>
+  );
+};
+
+const Provider = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Integration />
+    </QueryClientProvider>
   );
 };
 
@@ -412,7 +461,7 @@ const TWAP = (props: SushiProps) => {
 
   return (
     <AdapterContextProvider value={{ ...props, config }}>
-      <TWAPContent />
+      <Provider />
     </AdapterContextProvider>
   );
 };

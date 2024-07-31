@@ -1,7 +1,8 @@
+import { eqIgnoreCase } from "@defi.org/web3-candies";
 import BN from "bignumber.js";
 import moment from "moment";
-import { HistoryOrder, Status } from "./types";
-import { groupBy, keyBy } from "./utils";
+import { Config, HistoryOrder, Status, Token } from "./types";
+import { compact, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
 
 const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
   if (!srcFilled || !srcAmountIn) return 0;
@@ -209,3 +210,28 @@ export const getGraphOrders = async (endpoint: string, account: string, signal?:
     };
   });
 };
+
+export const getOrders = async ({ config, account, signal, tokens }: { config: Config; account?: string; signal?: AbortSignal; tokens?: Token[] }) => {
+  const endpoint = getTheGraphUrl(config.chainId);
+  if (!endpoint) {
+    return [];
+  }
+  let orders = await getGraphOrders(endpoint, account!, signal);
+  orders = orders.filter((o) => eqIgnoreCase(config.exchangeAddress, o.exchange || ""));
+  orders = orders.map((order) => {
+    return {
+      ...order,
+      srcToken: tokens?.find((token) => eqIgnoreCase(order.srcTokenAddress || "", token.address || "")),
+      dstToken: tokens?.find((token) => eqIgnoreCase(order.dstTokenAddress || "", token.address || "")),
+    };
+  });
+  return orders;
+};
+
+
+export const groupOrders = (orders: HistoryOrder[]) => {
+  let result = compact(orders.filter((o) => o.srcToken && o.dstToken));
+  result = orderBy(result, (o) => o.createdAt, "desc");
+  return  groupBy(result, "status");
+  
+}

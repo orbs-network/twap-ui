@@ -1,6 +1,6 @@
 import { Moment } from "moment";
-import { useSwapData } from "../hooks";
 import { Config, Duration, Token, Translations } from "../types";
+import { useSwapData } from "./integration";
 
 export interface ItegrationState {
   // swapStep?: SwapStep;
@@ -46,4 +46,6 @@ export interface IntegrationProps {
   dstUsdPrice?: string;
   srcToken?: Token;
   dstToken?: Token;
+  srcBalance?: string;
+  dstBalance?: string;
 }

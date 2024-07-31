@@ -3,18 +3,20 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { useCallback, useMemo, useRef } from "react";
 import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
-import { useTwapContext } from "../context/context";
+
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
 import { amountBNV2, compact, getTheGraphUrl, groupBy, logger, orderBy } from "../utils";
 import { HistoryOrder, OrdersData, Status, Token } from "../types";
 import { useGetHasAllowance, useGetTokenFromParsedTokensList, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
-import { getGraphOrders } from "../order-history";
-import { useSrcAmount } from "./lib";
+import { getOrders, groupOrders } from "@orbs-network/twap-ui";
+import { useIntegrationContext } from "../intagration";
+import Web3 from "web3";
+import { useIntegrationHelperContext } from "../context/context";
 
-export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
-  const { web3, account, config } = useTwapContext();
+export const useMinNativeTokenBalance = () => {
+  const { config, web3, account, minNativeTokenBalance } = useIntegrationContext();
   const network = useNetwork();
   const key = ["useHasMinNativeTokenBalance", account, config.chainId, minNativeTokenBalance];
   const queryClient = useQueryClient();
@@ -27,7 +29,7 @@ export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
     {
       enabled: !!web3 && !!minNativeTokenBalance && !!account && !!config && !!network,
       staleTime: Infinity,
-    },
+    }
   );
 
   const ensureData = useCallback(() => {
@@ -41,19 +43,19 @@ export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
 };
 
 const useGetContract = () => {
-  const web3 = useTwapContext().web3;
+  const web3 = useIntegrationHelperContext().web3;
 
   return useCallback(
     (abi: Abi, address: string) => {
       if (!web3) return undefined;
       return new web3.eth.Contract(abi as any, address);
     },
-    [web3],
+    [web3]
   );
 };
 
 export const useFeeOnTransfer = (tokenAddress?: string) => {
-  const { config } = useTwapContext();
+  const { config } = useIntegrationHelperContext();
 
   const address = useMemo(() => {
     if (!config.chainId) return undefined;
@@ -88,7 +90,7 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
 };
 
 export const useGasPrice = () => {
-  const { web3, maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
+  const { web3, maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useIntegrationHelperContext();
   const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(undefined, undefined, web3), {
     enabled: !!web3,
     refetchInterval: REFETCH_GAS_PRICE,
@@ -105,8 +107,8 @@ export const useGasPrice = () => {
 };
 
 const useAllowance = () => {
-  const { srcToken, config, account } = useTwapContext();
-  const srcAmount = useSrcAmount().amount;
+  const { srcToken, config, account, state: {srcAmount} } = useIntegrationHelperContext();
+
   const getHasAllowance = useGetHasAllowance();
 
   const query = useQuery(
@@ -118,14 +120,14 @@ const useAllowance = () => {
       enabled: !!srcToken && BN(srcAmount).gt(0) && !!account && !!config,
       staleTime: STALE_ALLOWANCE,
       refetchOnWindowFocus: true,
-    },
+    }
   );
 
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
 export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, staleTime?: number) => {
-  const { web3, account } = useTwapContext();
+  const { web3, account } = useIntegrationHelperContext();
 
   const query = useQuery(
     [QueryKeys.GET_BALANCE, account, token?.address],
@@ -139,13 +141,13 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
       onSuccess,
       refetchInterval: REFETCH_BALANCE,
       staleTime,
-    },
+    }
   );
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
 };
 
 const useOrderHistoryKey = () => {
-  const { config, account } = useTwapContext();
+  const { config, account } = useIntegrationHelperContext();
 
   return [QueryKeys.GET_ORDER_HISTORY, account, config.exchangeAddress, config.chainId];
 };
@@ -153,7 +155,7 @@ const useOrderHistoryKey = () => {
 const useAddNewOrder = () => {
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
-  const config = useTwapContext().config;
+  const config = useIntegrationHelperContext().config;
 
   return useCallback(
     (order: HistoryOrder) => {
@@ -174,14 +176,14 @@ const useAddNewOrder = () => {
         });
       } catch (error) {}
     },
-    [QUERY_KEY, queryClient, config],
+    [QUERY_KEY, queryClient, config]
   );
 };
 
 const useUpdateOrderStatusToCanceled = () => {
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
-  const config = useTwapContext().config;
+  const config = useIntegrationHelperContext().config;
 
   return useCallback(
     (orderId: number) => {
@@ -206,12 +208,12 @@ const useUpdateOrderStatusToCanceled = () => {
         console.error(error);
       }
     },
-    [QUERY_KEY, queryClient, config],
+    [QUERY_KEY, queryClient, config]
   );
 };
 
 export const useOrdersHistory = () => {
-  const { tokens, state, config, account } = useTwapContext();
+  const { tokens = [], state, config, account } = useIntegrationHelperContext();
 
   const QUERY_KEY = useOrderHistoryKey();
   const getTokensFromTokensList = useGetTokenFromParsedTokensList();
@@ -220,10 +222,10 @@ export const useOrdersHistory = () => {
     QUERY_KEY,
     async ({ signal }) => {
       const endpoint = getTheGraphUrl(config.chainId);
-      if (!endpoint) {
+      if (!endpoint || !account || !config || !tokens) {
         return [];
       }
-      let orders = await getGraphOrders(endpoint, account!, signal);
+      let orders = await getOrders({ config, account, signal, tokens});
 
       try {
         const ids = orders.map((o) => o.id);
@@ -239,20 +241,7 @@ export const useOrdersHistory = () => {
       } catch (error) {}
       logger("all orders", orders);
 
-      orders = orders.filter((o) => eqIgnoreCase(config.exchangeAddress, o.exchange || ""));
-      logger("filtered orders by exchange address", config.exchangeAddress, orders);
-      orders = orders.map((order) => {
-        return {
-          ...order,
-          srcToken: getTokensFromTokensList(order.srcTokenAddress),
-          dstToken: getTokensFromTokensList(order.dstTokenAddress),
-        };
-      });
-      let result = compact(orders.filter((o) => o.srcToken && o.dstToken));
-      result = orderBy(result, (o) => o.createdAt, "desc");
-      result = groupBy(result, "status");
-
-      return result as any;
+      return groupOrders(orders)
     },
     {
       enabled: !!config && tokens?.length > 10 && !state.showConfirmation && !!account,
@@ -261,7 +250,7 @@ export const useOrdersHistory = () => {
       refetchOnWindowFocus: true,
       retry: 5,
       staleTime: Infinity,
-    },
+    }
   );
 
   return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };
