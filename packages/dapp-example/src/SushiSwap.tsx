@@ -187,6 +187,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   );
 };
 
+const NetworkSelector = ({ children }: { children: ReactNode }) => {
+  return <>{children}</>;
+};
+
 const SushiModal = (props: SushiModalProps) => {
   const { isDarkTheme } = useTheme();
 

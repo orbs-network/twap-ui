@@ -19,7 +19,7 @@ export function useSubmitOrderButton(onClick?: () => void) {
   }, [setSwapSteps, onClick]);
 
   return {
-    text: loading ? "Loading..." : t.placeOrder,
+    text: t.placeOrder,
     onClick: _onClick,
     loading,
     disabled: loading || !disclaimerAccepted,

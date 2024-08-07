@@ -64,7 +64,7 @@ export const useConfirmationButton = (connect?: () => void) => {
       loading: false,
     };
   if (disableWhileLaoding) {
-    return { text: undefined, onClick: undefined, loading: true };
+    return { text: translations.placeOrder, onClick: undefined, loading: true };
   }
 
   if (noLiquidity) {

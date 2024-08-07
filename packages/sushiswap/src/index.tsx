@@ -60,6 +60,7 @@ import {
   StyledOrdersButton,
   StyledCreateOrderModal,
   StyledOrdersHeader,
+  StyledNetworkSelect,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
@@ -69,6 +70,7 @@ import { MdInfo } from "@react-icons/all-files/md/MdInfo";
 import { eqIgnoreCase, network } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
+import { ButtonProps } from "@orbs-network/twap-ui";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
 
@@ -222,6 +224,8 @@ interface SushiProps extends TWAPProps {
   dstToken?: any;
   configChainId?: number;
   connector?: any;
+  NetworkSelector?: FC<{ children: ReactNode }>;
+  Button?: FC<{ children: ReactNode; disabled?: boolean }>;
 }
 
 interface AdapterContextProps extends SushiProps {
@@ -348,6 +352,18 @@ const useIsWrongChain = () => {
   }, [context.configChainId]);
 };
 
+const CustomButton = (props: ButtonProps) => {
+  const context = useAdapterContext();
+  if (context.Button) {
+    return (
+      <div onClick={props.onClick} style={{ width: "100%" }} className="twap-custom-button">
+        <context.Button disabled={props.disabled || props.loading}>{props.children}</context.Button>
+      </div>
+    );
+  }
+  return null;
+};
+
 const TWAPContent = () => {
   const context = useAdapterContext();
   const provider = useProvider();
@@ -388,7 +404,7 @@ const TWAPContent = () => {
           marketPrice={marketPrice}
           chainId={context.connectedChainId}
           isWrongChain={isWrongChain}
-          Components={{ Tooltip: context.Tooltip }}
+          Components={{ Tooltip: context.Tooltip, Button: context.Button && CustomButton }}
           dappWToken={dappWToken}
         >
           <GlobalStyles />
@@ -526,6 +542,19 @@ const LimitPrice = () => {
 
 const ShowConfirmationButton = () => {
   const context = useAdapterContext();
+  const isWrongChain = useTwapContext().isWrongChain;
+
+  if (isWrongChain && context.NetworkSelector) {
+    return (
+      <context.NetworkSelector>
+        <StyledNetworkSelect>
+          <Components.Base.Button className="twap-submit-button" onClick={() => {}}>
+            Switch network
+          </Components.Base.Button>
+        </StyledNetworkSelect>
+      </context.NetworkSelector>
+    );
+  }
 
   return <Components.ShowConfirmation connect={context.connect} />;
 };
@@ -623,4 +652,4 @@ const isSupportedChain = (chainId?: number) => {
   return Boolean(configs.find((config: Config) => config.chainId === chainId));
 };
 
-export { TWAP, isSupportedChain };
+export { TWAP, isSupportedChain, supportedChains };

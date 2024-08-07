@@ -831,8 +831,12 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
   };
 
   return {
+    paddingTop: 12,
     "*": {
       color: styles.textColor,
+    },
+    ".twap-custom-button": {
+      marginTop: 20,
     },
     ".twap-order-modal-disclaimer": {
       ...summaryModalStyles,
@@ -959,4 +963,8 @@ export const StyledLimitPriceTitle = styled(Styles.StyledRowFlex)(({ theme }) =>
       height: 19,
     },
   };
+});
+
+export const StyledNetworkSelect = styled("div")({
+  width: "100%",
 });

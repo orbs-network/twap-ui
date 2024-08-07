@@ -102,6 +102,9 @@ const useStore = (props: TwapLibProps) => {
 
 const useIsWrongChain = (props: TwapLibProps, chainId?: number) => {
   return useMemo(() => {
+    if (!props.account) {
+      return false;
+    }
     if (props.isWrongChain) {
       return true;
     }

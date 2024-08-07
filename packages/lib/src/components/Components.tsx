@@ -34,7 +34,7 @@ export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpD
   const switchTokens = useSwitchTokens();
   return (
     <StyledChangeTokens className={`${className} twap-change-tokens-order`}>
-      <Button onClick={switchTokens}>{children || <Icon icon={icon} />}</Button>
+      <button onClick={switchTokens}>{children || <Icon icon={icon} />}</button>
     </StyledChangeTokens>
   );
 };
@@ -428,7 +428,7 @@ export const ShowConfirmation = ({ className = "", connect }: { className?: stri
       <StyledShowConfirmation className={className}>
         <PanelWarning />
         <Button className="twap-submit-button" allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
-          {loading ? "Loading..." : text}
+          {text}
         </Button>
       </StyledShowConfirmation>
     </>
