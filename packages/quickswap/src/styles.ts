@@ -1,5 +1,16 @@
 import { Components, Styles, StylesConfig } from "@orbs-network/twap-ui";
-import { styled } from "styled-components";
+import { createGlobalStyle, styled } from "styled-components";
+export const darkTheme = {
+  palette: {
+    mode: "dark",
+  },
+};
+
+export const lightTheme = {
+  palette: {
+    mode: "light",
+  },
+};
 
 export const darkModeStylesConfig: StylesConfig = {
   iconsColor: "rgb(105, 108, 128)",
@@ -66,7 +77,10 @@ const getButtonStyles = (isDarkMode?: number | boolean) => {
     },
   };
 };
-export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
+
+export const GlobalStyles = createGlobalStyle(({ theme }) => {
+  const isDarkMode = theme?.palette.mode === "dark" ? 1 : 0;
+  const isProMode = theme?.isProMode ? 1 : 0;
   const styles = isDarkMode ? darkModeStylesConfig : lightModeStylesConfig;
   const cardBackground = isProMode ? styles.selectedTokenBackground : styles.cardBackground;
   return {
@@ -95,7 +109,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         fontWeight: "400!important",
       },
       input: {
-        textAlign: "end!important",
+        textAlign: "right",
         fontSize: "13px!important",
       },
       ".twap-label": {
@@ -576,6 +590,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
     },
 
     ".twap-token-panel": {
+      marginBottom: 12,
       ".twap-token-panel-title": {
         fontSize: 16,
       },
@@ -665,16 +680,30 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
         },
       },
     },
+    ".twap-change-tokens-order-wrapper": {
+      position: "relative",
+      width: "100%",
+    },
     ".twap-change-tokens-order": {
       position: "absolute",
       width: "36px!important",
       height: 36,
       top: -24,
+      left: "50%",
+      transform: "translateX(-50%)",
       background: styles.wrapperBackground,
       border: isDarkMode ? `3px solid ${styles.cardBackground}` : `1px solid ${styles.selectedTokenBorderColor}`,
       borderRadius: 8,
       button: {
         padding: "0!important",
+        background: "none",
+        border: "none",
+        ".twap-icon": {
+          svg: {
+            width: 24,
+            height: 24,
+          },
+        },
       },
     },
     ".twap-powered-by": {
@@ -701,6 +730,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       maxWidth: "100%!important",
       margin: "auto",
       fontFamily: "Inter",
+      color: styles.textColor,
     },
     ".twap-max-duration-wrapper, .twap-trade-interval-wrapper": {
       ".twap-label": {
@@ -805,6 +835,27 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       backdropFilter: "blur(15px)",
       background: "rgba(0,0,0,.4)!important",
     },
+    ".twap-select-menu": {
+      button: {
+        background: "none",
+        border: "none",
+        textTransform: "uppercase",
+      },
+    },
+    ".twap-select-menu-list": {
+      background: "rgb(35, 39, 52)",
+      border: "1px solid rgb(199, 202, 217)",
+      borderRadius: "20px",
+      padding: "11px 0px",
+      width: "150px",
+      textTransform: "capitalize",
+
+      ".twap-select-menu-list-item": {
+        paddingLeft: "20px",
+        paddingRight: "20px",
+      },
+    },
+
     "@media(max-width:450px)": {
       ".twap-market-price": {
         display: "flex",
@@ -823,7 +874,7 @@ export const configureStyles = (isProMode?: boolean, isDarkMode?: boolean) => {
       },
     },
   };
-};
+});
 
 export const StyledReset = styled("button")<{ isDarkMode: number }>(({ isDarkMode }) => {
   return {
