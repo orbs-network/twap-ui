@@ -11,6 +11,7 @@ import { defaultCustomFillDelay, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } fr
 import { getQueryParam, limitPriceFromQueryParams } from "../utils";
 import moment from "moment";
 import { setWeb3Instance } from "@defi.org/web3-candies";
+import { stateActions } from "./actions";
 analytics.onModuleImported();
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -33,7 +34,16 @@ const WrappedTwap = (props: TwapLibProps) => {
 
 const Listener = (props: TwapLibProps) => {
   const interval = useRef<any>();
-  const { state, updateState, account } = useTwapContext();
+  const { state, updateState } = useTwapContext();
+  const setCustomDuration = stateActions.useSetCustomDuration();
+
+  useEffect(() => {
+    if (props.isLimitPanel) {
+      setCustomDuration({ resolution: TimeResolution.Days, amount: 7 });
+    } else {
+      setCustomDuration(undefined);
+    }
+  }, [props.isLimitPanel]);
 
   useEffect(() => {
     if (state.showConfirmation && !state.swapState) {
@@ -156,6 +166,7 @@ export const Content = (props: TwapLibProps) => {
         onTxSubmitted: props.onTxSubmitted,
         minNativeTokenBalance: props.minNativeTokenBalance,
         enableQueryParams: props.enableQueryParams,
+        isExactAppoval: props.isExactAppoval,
       }}
     >
       <WrappedTwap {...props} />

@@ -525,17 +525,14 @@ export const useSwapWarning = () => {
 export const useDuration = () => {
   const { duration: minDuration } = useMinDuration();
 
-  const { isLimitPanel, state } = useTwapContext();
+  const { state } = useTwapContext();
 
   const duration = useMemo(() => {
-    if (isLimitPanel) {
-      return { resolution: TimeResolution.Days, amount: 7 };
-    }
     if (state.customDuration) {
       return state.customDuration;
     }
     return minDuration;
-  }, [isLimitPanel, state.customDuration, minDuration]);
+  }, [state.customDuration, minDuration]);
 
   const millis = useMemo(() => (duration.amount || 0) * duration.resolution, [duration]);
 

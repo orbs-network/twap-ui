@@ -4,14 +4,7 @@ import { ReactNode } from "react";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { MessageVariant } from "../../types";
 
-interface Props {
-  variant?: MessageVariant;
-  title: ReactNode;
-  text?: ReactNode;
-  className?: string;
-}
-
-export function Message({ text, className = "", variant, title }: Props) {
+export function Message({ text, className = "", variant, title }: { variant?: MessageVariant; title: ReactNode; text?: ReactNode; className?: string }) {
   if (variant === "error") {
     return (
       <Container className={className}>

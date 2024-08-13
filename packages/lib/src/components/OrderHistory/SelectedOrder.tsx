@@ -34,16 +34,15 @@ export const SelectedOrder = ({ selectedOrderId }: { selectedOrderId?: number })
           <OrderDisplay.DstToken token={order.dstToken} />
         </OrderDisplay.Tokens>
         <Separator />
-        <StyledColumnFlex>
+        <StyledColumnFlex gap={15}>
           <AccordionContainer title="Execution summary" onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
             <ExcecutionSummary order={order} />
           </AccordionContainer>
           <AccordionContainer title="Order info" expanded={expanded === "panel2"} onClick={() => handleChange("panel2")}>
             <OrderInfo order={order} />
           </AccordionContainer>
+          <CancelOrderButton order={order} />
         </StyledColumnFlex>
-
-        <CancelOrderButton order={order} />
       </OrderDisplay>
     </Container>
   );
@@ -133,7 +132,7 @@ export const CancelOrderButton = ({ order }: { order: OrderUI }) => {
 };
 
 const StyledCancelOrderButton = styled(Button)({
-  marginTop: 20,
+  marginTop: 0,
 });
 
 const CreatedAt = ({ order }: { order: OrderUI }) => {

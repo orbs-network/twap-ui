@@ -215,9 +215,13 @@ export const useUnwrapToken = () => {
 export const useApproveToken = () => {
   const onTxHash = stateActions.useOnTxHash().onApproveTxHash;
 
-  const { config, account } = useTwapContext();
+  const { config, account, isExactAppoval } = useTwapContext();
+  const srcAmount = useSrcAmount().amount;
 
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
+
+  const approvalAmount = isExactAppoval ? srcAmount : maxUint256;
+
   return useMutation(
     async (token: TokenData) => {
       if (!account) {
@@ -229,8 +233,9 @@ export const useApproveToken = () => {
 
       let txHash: string = "";
       const contract = erc20(token.symbol, token.address, token.decimals);
+
       await sendAndWaitForConfirmations(
-        contract.methods.approve(config.twapAddress, BN(maxUint256).toFixed(0)),
+        contract.methods.approve(config.twapAddress, BN(approvalAmount).toFixed(0)),
         {
           from: account,
           maxPriorityFeePerGas: priorityFeePerGas,

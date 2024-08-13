@@ -2,8 +2,6 @@ import { useCallback } from "react";
 import { defaultCustomFillDelay, Duration, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS, resetQueryParams, setQueryParam, SwapState, SwapStep, TimeResolution } from "..";
 import { useTwapContext } from "./context";
 import BN from "bignumber.js";
-import { useSwapData } from "../hooks/lib";
-import { useGetTokenFromParsedTokensList, useNetwork } from "../hooks";
 
 const useHandleLimitPriceQueryParam = () => {
   const setQueryParam = useSetQueryParams();
@@ -288,7 +286,6 @@ export const useSetSrcAmount = () => {
       }
       updateState({
         srcAmountUi,
-        customFillDelay: { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED },
         customChunks: undefined,
       });
     },

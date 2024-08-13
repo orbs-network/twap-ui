@@ -10,9 +10,6 @@ export const LimitSwitch = ({ className = "", Component }: { className?: string;
 
   const { isMarketOrder } = state;
   const onChange = stateActions.useOnLimitMarketSwitch();
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-    onChange(newValue === "market" ? true : false);
-  };
 
   const onSelect = useCallback(
     (value: boolean) => {

@@ -440,30 +440,36 @@ const StyledShowConfirmation = styled(StyledColumnFlex)({
 });
 
 export const LimitPriceMessageContent = ({ className }: { className?: string }) => {
+  return (
+    <Portal containerId="twap-limit-price-message-container">
+      <LimitPriceMessage className={className} />
+    </Portal>
+  );
+};
+
+export const LimitPriceMessage = ({ className }: { className?: string }) => {
   const { translations: t } = useTwapContext();
   const isMarketOrder = useIsMarketOrder();
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
   if (isMarketOrder || isWrapOrUnwrapOnly) return null;
 
   return (
-    <Portal containerId="twap-limit-price-message-container">
-      <StyledLimitPriceMessage
-        className={`${className} twap-limit-price-message`}
-        variant="warning"
-        title={
-          <>
-            {t.limitPriceMessage}{" "}
-            <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">
-              {t.learnMore}
-            </a>
-          </>
-        }
-      />
-    </Portal>
+    <StyledLimitPriceMessage
+      className={`${className} twap-limit-price-message`}
+      variant="warning"
+      title={
+        <>
+          {t.limitPriceMessage}{" "}
+          <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">
+            {t.learnMore}
+          </a>
+        </>
+      }
+    />
   );
 };
 
-export const LimitPriceMessage = () => {
+export const LimitPriceMessagePortal = () => {
   return <div id="twap-limit-price-message-container" />;
 };
 

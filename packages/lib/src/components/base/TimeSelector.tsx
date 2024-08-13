@@ -21,10 +21,6 @@ const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
   },
 ];
 
-const findSelectedResolutionText = (resolution: TimeResolution) => {
-  return timeArr.find((t) => t.value === resolution)!.text;
-};
-
 interface Props {
   value: Duration;
   onChange: ({ resolution, amount }: Duration) => void;

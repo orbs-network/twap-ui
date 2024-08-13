@@ -1,3 +1,5 @@
 {
-  "insufficientFunds": "Insufficient Balance"
+  "insufficientFunds": "Insufficient Balance",
+  "tradeInterval": "Every",
+  "totalTrades": "Over"
 }

@@ -19,6 +19,7 @@ import {
   size,
   Configs,
   Config,
+  stateActions,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, FC, useContext, useEffect, useMemo } from "react";
@@ -61,6 +62,12 @@ import {
   StyledCreateOrderModal,
   StyledOrdersHeader,
   StyledNetworkSelect,
+  StyledLimitAndInputs,
+  StyledChunksWarning,
+  StyledLimitPanelExpiration,
+  StyledLimitPanelExpirationButtons,
+  StyledLimitPanelExpirationButton,
+  StyledTokenPanelLabel,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
@@ -71,6 +78,7 @@ import { eqIgnoreCase, network } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
+import { TimeResolution } from "@orbs-network/twap-ui";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
 
@@ -162,7 +170,8 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   return (
     <>
       <StyledTokenPanel error={exceedsBalance ? 1 : 0}>
-        <TwapStyles.StyledColumnFlex gap={10}>
+        <StyledTokenPanelLabel>{isSrcToken ? "Sell" : "Buy"}</StyledTokenPanelLabel>
+        <TwapStyles.StyledColumnFlex gap={12}>
           <TwapStyles.StyledRowFlex justifyContent="space-between" style={{ marginTop: 8 }}>
             <StyledPanelInput placeholder="0.0" isSrc={isSrcToken} />
             <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
@@ -406,6 +415,7 @@ const TWAPContent = () => {
           isWrongChain={isWrongChain}
           Components={{ Tooltip: context.Tooltip, Button: context.Button && CustomButton }}
           dappWToken={dappWToken}
+          isExactAppoval={true}
         >
           <GlobalStyles />
           <StyledContent>
@@ -469,7 +479,7 @@ const LimitInput = (props: LimitPriceInputProps) => {
 const LimitPercentButton = (props: LimitPricePercentProps) => {
   return (
     <StyledSelectButton onClick={props.onClick} selected={props.selected ? 1 : 0}>
-      {props.text}
+      {props.text === "0%" ? "Market" : props.text}
     </StyledSelectButton>
   );
 };
@@ -522,7 +532,7 @@ const LimitPrice = () => {
     <StyledLimitPanel>
       <Card>
         <Card.Header>
-          <Components.LimitPanel.Label />
+          {/* <Components.LimitPanel.Label /> */}
           <StyledLimitSwitch />
         </Card.Header>
         <Card.Body>
@@ -559,18 +569,26 @@ const ShowConfirmationButton = () => {
   return <Components.ShowConfirmation connect={context.connect} />;
 };
 
+const TwapListener = () => {
+  const onChange = stateActions.useOnLimitMarketSwitch();
+  useEffect(() => {
+    onChange(true);
+  }, [onChange]);
+  return null;
+};
+
 const TWAPPanel = () => {
   return (
     <StyledContent>
+      <TwapListener />
       <StyledTop>
         <TokenPanel isSrcToken={true} />
         <TokenChange />
         <TokenPanel />
       </StyledTop>
-      <LimitPrice />
-      <TotalTrades />
       <TradeIntervalSelect />
-      <TradeDurationSelect />
+      <TotalTrades />
+
       <ShowConfirmationButton />
     </StyledContent>
   );
@@ -579,15 +597,70 @@ const TWAPPanel = () => {
 const LimitPanel = () => {
   return (
     <StyledContent>
-      <StyledTop>
-        <TokenPanel isSrcToken={true} />
-        <TokenChange />
-        <TokenPanel />
-      </StyledTop>
-      <LimitPrice />
+      <StyledLimitAndInputs>
+        <LimitPrice />
+        <StyledTop>
+          <TokenPanel isSrcToken={true} />
+          <TokenChange />
+          <TokenPanel />
+        </StyledTop>
+      </StyledLimitAndInputs>
+      <LimitPanelExpiration />
+      <TradeSizeWarning />
       <ShowConfirmationButton />
     </StyledContent>
   );
+};
+const LimitPanelExpirationOptions = [
+  {
+    text: "1 Day",
+    value: TimeResolution.Days,
+  },
+  {
+    text: "1 Week",
+    value: TimeResolution.Weeks,
+  },
+  {
+    text: "1 Month",
+    value: TimeResolution.Months,
+  },
+  {
+    text: "1 Year",
+    value: TimeResolution.Years,
+  },
+];
+
+const LimitPanelExpiration = () => {
+  const selectedExpiry = hooks.useDuration().millis;
+
+  const setCustomDuration = stateActions.useSetCustomDuration();
+  const onChange = useCallback(
+    (resolution: TimeResolution) => {
+      setCustomDuration({ resolution, amount: 1 });
+    },
+    [setCustomDuration],
+  );
+
+  return (
+    <StyledLimitPanelExpiration>
+      <Components.Labels.MaxDurationLabel />
+      <StyledLimitPanelExpirationButtons>
+        {LimitPanelExpirationOptions.map((it) => {
+          return (
+            <StyledLimitPanelExpirationButton key={it.value} onClick={() => onChange(it.value)} selected={selectedExpiry === it.value ? 1 : 0}>
+              {it.text}
+            </StyledLimitPanelExpirationButton>
+          );
+        })}
+      </StyledLimitPanelExpirationButtons>
+    </StyledLimitPanelExpiration>
+  );
+};
+
+const TradeSizeWarning = () => {
+  const warning = hooks.useTradeSizeWarning();
+  if (!warning) return null;
+  return <StyledChunksWarning title={warning} variant="warning" />;
 };
 
 const TotalTrades = () => {

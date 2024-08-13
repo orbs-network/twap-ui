@@ -61,6 +61,7 @@ export const StyledOrdersHeader = styled(Components.OrderHistory.Header)(({ them
     "*": {
       color: styles.textColor,
     },
+
     ".twap-order-modal-header-title": {
       fontWeight: 500,
     },
@@ -87,6 +88,12 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-custom-button": {
+      color: "white!important",
+      "*": {
+        color: "white!important",
+      },
+    },
     ".twap-error-message": {
       color: styles.messageText,
       ...cardBodyStyles(theme),
@@ -414,7 +421,7 @@ const buttonStyles = {
   fontSize: 16,
   lineHeight: "24px",
   padding: 10,
-  color: "white",
+  color: "white!important",
   "*": {
     fontWeight: "inherit",
     fontSize: "inherit",
@@ -520,10 +527,17 @@ const tooltipStyles = (theme?: DefaultTheme) => {
   };
 };
 
+export const StyledLimitAndInputs = styled(Styles.StyledColumnFlex)(({ theme }) => {
+  return {
+    gap: 8,
+  };
+});
+
 export const StyledLimitSwitch = styled(Components.LimitPanel.Switch)(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    marginLeft: "auto",
     background: isDarkMode ? "#ffffff0a" : "white",
     border: `1px solid ${styles.accent}`,
     borderRadius: 10,
@@ -593,6 +607,16 @@ export const StyledCardBody = styled("div")(({ theme }) => {
   };
 });
 
+export const StyledTokenPanelLabel = styled("p")(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    margin: 0,
+    fontSize: 14,
+    color: styles.messageText,
+    lineHeight: "20px",
+  };
+});
+
 export const StyledTokenPanel = styled(CardBody)<{ error?: number }>(({ theme, error }) => {
   const isDarkMode = getStyles(theme).isDarkMode;
   const bg = isDarkMode ? "rgba(239,68,68,.2)" : "rgba(239,68,68,.2)";
@@ -630,6 +654,7 @@ export const StyledSelectButton = styled("button")<{ selected?: number }>(({ sel
     transition: "0.2s all",
     border: selected ? "1px solid transparent" : `1px solid ${styles.isDarkMode ? styles.accent : "transparent"}`,
     height: 28,
+    fontSize: 14,
     svg: {
       fill: selectedColor,
     },
@@ -835,9 +860,6 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
     "*": {
       color: styles.textColor,
     },
-    ".twap-custom-button": {
-      marginTop: 20,
-    },
     ".twap-order-modal-disclaimer": {
       ...summaryModalStyles,
       a: {
@@ -858,6 +880,31 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
       fontWeight: 500,
     },
     ".twap-create-order-confirm": {},
+  };
+});
+
+export const StyledLimitPanelExpiration = styled(Styles.StyledRowFlex)({
+  justifyContent: "space-between",
+});
+
+export const StyledLimitPanelExpirationButtons = styled(Styles.StyledRowFlex)({
+  marginLeft: "auto",
+  width: "auto",
+  gap: 5,
+});
+
+export const StyledLimitPanelExpirationButton = styled(StyledSelectButton)(({ theme, selected }) => {
+  const styles = getStyles(theme);
+  const bg = styles.isDarkMode ? "rgba(255, 255, 255, 0.05)" : "";
+  return {
+    background: !selected ? bg : "",
+  };
+});
+
+export const StyledChunksWarning = styled(Components.Base.Message)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    color: styles.warningText,
   };
 });
 

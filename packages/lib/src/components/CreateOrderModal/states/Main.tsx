@@ -111,11 +111,11 @@ export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; class
           <Steps />
         </>
       ) : (
-        <>
+        <StyledColumnFlex gap={15}>
           <Details />
           <AcceptDisclaimer />
           <SubmitButton onClick={onSubmit} />
-        </>
+        </StyledColumnFlex>
       )}
     </StyledReview>
   );
@@ -181,10 +181,7 @@ export const SubmitButton = ({ onClick }: { onClick: () => void }) => {
   );
 };
 
-const StyledReview = styled(OrderDisplay)({
-  ".twap-order-modal-disclaimer": { marginTop: 20 },
-  ".twap-order-modal-submit-btn": { marginTop: 20 },
-});
+const StyledReview = styled(OrderDisplay)({});
 const StyledSwapPendingBorder = styled(Separator)({
   margin: "20px 0px",
 });

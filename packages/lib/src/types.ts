@@ -162,6 +162,7 @@ export interface TWAPProps {
   parsedTokens?: Token[];
   onSwitchTokens?: () => void;
   connect?: () => void;
+  isExactAppoval?: boolean;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -262,6 +263,7 @@ export interface TwapLibProps {
   parsedTokens: Token[];
   onSwitchTokens?: () => void;
   isWrongChain?: boolean;
+  isExactAppoval?: boolean;
 }
 
 export type Token = {
@@ -445,6 +447,8 @@ export enum TimeResolution {
   Hours = Minutes * 60,
   Weeks = 7 * 24 * Hours,
   Days = Hours * 24,
+  Months = 30 * Days,
+  Years = 365 * Days,
 }
 export type Duration = { resolution: TimeResolution; amount?: number };
 
@@ -481,6 +485,7 @@ export interface TWAPContextProps {
   minNativeTokenBalance?: string;
   enableQueryParams?: boolean;
   dappWToken?: Token;
+  isExactAppoval?: boolean;
 }
 
 export enum Status {
