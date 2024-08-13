@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-quickswap",
-  "version": "1.1.25",
+  "version": "1.1.26",
   "description": "TWAP UI for Quickswap",
   "license": "MIT",
   "author": "Orbs",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^1.1.25",
+    "@orbs-network/twap-ui": "^1.1.26",
     "web3": "1.x"
   },
   "peerDependencies": {
