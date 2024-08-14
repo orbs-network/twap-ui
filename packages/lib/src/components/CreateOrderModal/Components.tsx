@@ -2,24 +2,34 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Button, TokenLogo } from "../base";
 import { useTokenDisplay } from "./hooks";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
-import { ReactNode } from "react";
-import { useSubmitOrderButton } from "../../hooks";
+import { ReactNode, useMemo } from "react";
+import { useIsMarketOrder, useSubmitOrderButton } from "../../hooks";
 import { styled } from "styled-components";
+import { useTwapContext } from "../../context/context";
 
 export const TokenDispalySmall = ({ isSrc }: { isSrc?: boolean }) => {
   const { amount, token } = useTokenDisplay(isSrc);
+  const isMarketOrder = useIsMarketOrder();
+  const { swapState } = useTwapContext().state;
+
+  const prefix = useMemo(() => {
+    if (!isSrc || !isMarketOrder) return "";
+    return swapState === "success" ? "Allocated" : "Allocate";
+  }, [isSrc, isMarketOrder]);
 
   return (
     <StyledTokenDispalySmall className="twap-order-modal-token-small">
+      {prefix && <StyledText>{prefix}</StyledText>}
+
+      <StyledText className="twap-order-modal-token-small-text">{`${!isSrc && isMarketOrder ? "" : amount} ${token?.symbol}`}</StyledText>
       <TokenLogo logo={token?.logoUrl} />
-      <StyledText className="twap-order-modal-token-small-text">{`${amount} ${token?.symbol}`}</StyledText>
     </StyledTokenDispalySmall>
   );
 };
 
 const StyledTokenDispalySmall = styled(StyledRowFlex)({
   width: "auto",
-  gap: 8,
+  gap: 6,
   ".twap-token-logo": {
     width: 18,
     height: 18,

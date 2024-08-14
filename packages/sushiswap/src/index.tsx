@@ -70,6 +70,7 @@ import {
   StyledTokenPanelLabel,
   StyledFee,
   StyledShowConfirmationButtonContainer,
+  StyledChunksSelectText,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
@@ -160,6 +161,7 @@ const TokenPanelUsd = ({ isSrc, exceedsBalance }: { isSrc?: boolean; exceedsBala
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
+  const { isLimitPanel } = useTwapContext();
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -172,7 +174,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   return (
     <>
       <StyledTokenPanel error={exceedsBalance ? 1 : 0}>
-        <StyledTokenPanelLabel>{isSrcToken ? "Sell" : "Buy"}</StyledTokenPanelLabel>
+        <StyledTokenPanelLabel>{isSrcToken ? (!isLimitPanel ? "Allocate" : "Sell") : "Buy"}</StyledTokenPanelLabel>
         <TwapStyles.StyledColumnFlex gap={12}>
           <TwapStyles.StyledRowFlex justifyContent="space-between" style={{ marginTop: 8 }}>
             <StyledPanelInput placeholder="0.0" isSrc={isSrcToken} />
@@ -680,6 +682,7 @@ const TotalTrades = () => {
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
           <StyledChunksSelectInput>
             <Components.ChunkSelector.Input />
+            <StyledChunksSelectText>Orders</StyledChunksSelectText>
           </StyledChunksSelectInput>
         </Styles.StyledRowFlex>
       </StyledChunksSelect>

@@ -8,6 +8,7 @@ import { useTwapContext } from "../context/context";
 import { fillDelayText } from "../utils";
 import { Token } from "../types";
 import { Tooltip } from "./Components";
+import { useChunks, useDuration, useFillDelay, useIsMarketOrder } from "../hooks";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useTwapContext()?.translations;
@@ -156,7 +157,7 @@ export function OrderDisplay({ children, className = "" }: { children?: ReactNod
   return <Container className={`${className} twap-order-display`}>{children}</Container>;
 }
 
-const TokenDisplay = ({ amount, token, usd, title }: { amount?: string; token?: Token; usd?: string; title?: string }) => {
+const TokenDisplay = ({ amount, token, usd, title, content }: { amount?: string; token?: Token; usd?: string; title?: string; content?: ReactNode }) => {
   const _usd = useFormatNumberV2({ value: usd, decimalScale: 2 });
   const _amount = useFormatNumberV2({ value: amount });
 
@@ -168,6 +169,7 @@ const TokenDisplay = ({ amount, token, usd, title }: { amount?: string; token?: 
           {amount ? _amount : ""} {token?.symbol}
         </StyledText>
         {usd && <USD usd={_usd} />}
+        {content}
       </StyledTokenRight>
       <TokenLogo className="twap-order-display-token-usd-logo" logo={token?.logoUrl} />
     </StyledTokenDisplay>
@@ -180,16 +182,46 @@ const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
   if (Components?.USD) {
     return <Components.USD value={usd} />;
   }
-  return <StyledText className={`twap-order-display-token-usd ${className}`}>${usd}</StyledText>;
+  return <StyledSmallText className={`twap-order-display-token-usd ${className}`}>${usd}</StyledSmallText>;
 };
 
 const SrcToken = ({ amount, token, usd }: { amount?: string; token?: Token; usd?: string }) => {
-  return <TokenDisplay amount={amount} token={token} usd={usd} title="From" />;
+  const isLimitPanel = useTwapContext().isLimitPanel;
+  return <TokenDisplay amount={amount} token={token} usd={usd} title={isLimitPanel ? "From" : "Allocate"} />;
 };
 
-const DstToken = ({ amount, token, usd }: { amount?: string; token?: Token; usd?: string }) => {
-  return <TokenDisplay amount={amount} token={token} usd={usd} title="To" />;
+const DstToken = ({
+  amount,
+  token,
+  usd,
+  isMarketOrder,
+  fillDelayMillis,
+  chunks,
+}: {
+  amount?: string;
+  token?: Token;
+  usd?: string;
+  isMarketOrder?: boolean;
+  fillDelayMillis?: number;
+  chunks?: number;
+}) => {
+  const t = useTwapContext().translations;
+
+  const content = useMemo(() => {
+    if (!isMarketOrder) return null;
+    return (
+      <StyledSmallText className="twap-small-text">
+        Every {fillDelayText(fillDelayMillis, t).toLowerCase()} Over {chunks} Orders
+      </StyledSmallText>
+    );
+  }, [chunks, isMarketOrder, fillDelayMillis, t]);
+
+  return <TokenDisplay content={content} amount={!isMarketOrder ? amount : ""} token={token} usd={!isMarketOrder ? usd : ""} title={!isMarketOrder ? "To" : "Buy"} />;
 };
+
+const StyledSmallText = styled(StyledText)({
+  fontSize: 14,
+});
 
 const TokensContainer = ({ className = "", children }: { className?: string; children?: ReactNode }) => {
   return <StyledTokens className={`twap-order-display-tokens ${className}`}>{children}</StyledTokens>;

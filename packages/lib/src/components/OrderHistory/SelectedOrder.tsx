@@ -31,7 +31,7 @@ export const SelectedOrder = ({ selectedOrderId }: { selectedOrderId?: number })
       <OrderDisplay>
         <OrderDisplay.Tokens>
           <OrderDisplay.SrcToken token={order.srcToken} />
-          <OrderDisplay.DstToken token={order.dstToken} />
+          <OrderDisplay.DstToken token={order.dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={order.fillDelay} />
         </OrderDisplay.Tokens>
         <Separator />
         <StyledColumnFlex gap={15}>

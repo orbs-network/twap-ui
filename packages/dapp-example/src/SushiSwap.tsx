@@ -207,7 +207,7 @@ const useConfig = () => {
 };
 
 const DappComponent = () => {
-  const [selected, setSelected] = useState(SelectorOption.TWAP);
+  const [selected, setSelected] = useState(SelectorOption.LIMIT);
   const { isDarkTheme } = useTheme();
 
   const config = useConfig();

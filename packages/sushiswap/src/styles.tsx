@@ -841,13 +841,28 @@ export const StyledTop = styled(Styles.StyledColumnFlex)({
 
 export const StyledChunksSelectInput = styled(CardBody)(() => {
   return {
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "row",
     width: "100%",
-    minWidth: 100,
-    input: {
-      fontSize: 18,
-      textAlign: "left!important" as any,
-      height: "100%",
+    paddingRight: 20,
+    gap: 20,
+    ".twap-input": {
+      flex: 1,
+      input: {
+        fontSize: 18,
+        textAlign: "left!important" as any,
+        height: "100%",
+      },
     },
+  };
+});
+
+export const StyledChunksSelectText = styled(Styles.StyledText)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    color: styles.messageText,
+    fontSize: 15,
   };
 });
 
@@ -902,6 +917,10 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
 
 export const StyledLimitPanelExpiration = styled(Styles.StyledRowFlex)({
   justifyContent: "space-between",
+  ".twap-label": {
+    position: "relative",
+    top: -1,
+  },
 });
 
 export const StyledLimitPanelExpirationButtons = styled(Styles.StyledRowFlex)({

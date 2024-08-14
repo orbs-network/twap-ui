@@ -127,11 +127,14 @@ const Tokens = () => {
   const { srcUsd, dstUsd } = useUsdAmount();
   const srcAmount = useSrcAmount().amountUi;
   const outAmount = useOutAmount().amountUi;
+  const fillDelayMillis = useFillDelay().millis;
+  const isMarketOrder = useIsMarketOrder();
+  const chunks = useChunks();
 
   return (
     <OrderDisplay.Tokens>
       <OrderDisplay.SrcToken token={srcToken} amount={srcAmount} usd={srcUsd} />
-      <OrderDisplay.DstToken token={dstToken} amount={outAmount} usd={dstUsd} />
+      <OrderDisplay.DstToken token={dstToken} amount={outAmount} usd={dstUsd} fillDelayMillis={fillDelayMillis} isMarketOrder={isMarketOrder} chunks={chunks} />
     </OrderDisplay.Tokens>
   );
 };

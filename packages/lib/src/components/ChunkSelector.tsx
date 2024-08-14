@@ -53,11 +53,6 @@ const StyledWarning = styled(Message)({
 const Input = ({ className }: { className?: string }) => {
   const chunks = useChunks();
   const setChunks = useSetChunks();
-  const { srcUsd, srcToken } = useTwapContext();
-
-  if (srcToken && !srcUsd) {
-    return <Loader height="100%" />;
-  }
 
   return <StyledChunksInput className={className} placeholder="0" value={chunks} decimalScale={0} onChange={(value) => setChunks(Number(value))} />;
 };
