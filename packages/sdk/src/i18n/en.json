@@ -1,0 +1,6 @@
+{
+  "tradeSizeMustBeEqual": "Trade size must be equal to at least 100 USD",
+  "from": "Pay",
+  "to": "Receive",
+  "currentMarketPrice": "Market price"
+}
