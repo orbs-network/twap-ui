@@ -125,5 +125,7 @@
   "individualTradeSize": "Individual trade size",
   "numberOfTrades": "No. of trades",
   "AverageExecutionPrice": "Avg. execution price",
-  "twapMarket": "TWAP-market"
+  "twapMarket": "TWAP-market",
+  "twapMarketOrder": "TWAP-market order",
+  "twapLimit": "dTWAP Limit"
 }

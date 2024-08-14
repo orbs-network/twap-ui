@@ -68,6 +68,8 @@ import {
   StyledLimitPanelExpirationButtons,
   StyledLimitPanelExpirationButton,
   StyledTokenPanelLabel,
+  StyledFee,
+  StyledShowConfirmationButtonContainer,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
@@ -566,7 +568,12 @@ const ShowConfirmationButton = () => {
     );
   }
 
-  return <Components.ShowConfirmation connect={context.connect} />;
+  return (
+    <StyledShowConfirmationButtonContainer>
+      <StyledFee>Fee: 0.25%</StyledFee>
+      <Components.ShowConfirmation connect={context.connect} />
+    </StyledShowConfirmationButtonContainer>
+  );
 };
 
 const TwapListener = () => {
@@ -696,27 +703,6 @@ const TradeIntervalSelect = () => {
           </StyledTradeIntervalResolution>
         </Styles.StyledRowFlex>
       </StyledTradeInterval>
-    </Card>
-  );
-};
-
-const TradeDurationSelect = () => {
-  return (
-    <Card>
-      <Card.Header>
-        <Components.TradeDuration.Label />
-      </Card.Header>
-      <StyledTradeDuration>
-        <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
-          <StyledTradeDurationRight>
-            <Components.TradeDuration.Input />
-            <Components.TradeDuration.Reset />
-          </StyledTradeDurationRight>
-          <StyledTradeIntervalResolution>
-            <Components.TradeDuration.Resolution />
-          </StyledTradeIntervalResolution>
-        </Styles.StyledRowFlex>
-      </StyledTradeDuration>
     </Card>
   );
 };

@@ -607,6 +607,23 @@ export const StyledCardBody = styled("div")(({ theme }) => {
   };
 });
 
+export const StyledFee = styled("p")(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    fontSize: 14,
+    color: styles.messageText,
+    lineHeight: "20px",
+    margin: 0,
+    textAlign: "left",
+    width: "100%",
+  };
+});
+
+export const StyledShowConfirmationButtonContainer = styled(Styles.StyledColumnFlex)({
+  gap: 10,
+  justifyContent: "center",
+});
+
 export const StyledTokenPanelLabel = styled("p")(({ theme }) => {
   const styles = getStyles(theme);
   return {

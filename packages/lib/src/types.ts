@@ -131,6 +131,8 @@ export interface Translations {
   AverageExecutionPrice: string;
   twapMarket: string;
   limitPriceTooltipLimitPanel: string;
+  twapLimit: string;
+  twapMarketOrder: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";

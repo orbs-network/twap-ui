@@ -47,7 +47,7 @@ export const OrderHistoryHeader = ({ className = "" }: { className?: string }) =
             <HiArrowLeft />
           </StyledBack>
           <StyledTitle className="twap-order-modal-header-title">
-            #{order?.id} {order?.isMarketOrder ? t.twapMarket : t.limitOrder}
+            #{order?.id} {order?.isMarketOrder ? t.twapMarketOrder : t.limitOrder}
           </StyledTitle>
         </StyledOrderDetails>
       )}

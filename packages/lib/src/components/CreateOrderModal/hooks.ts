@@ -19,15 +19,16 @@ export const useTokenDisplay = (isSrc?: boolean) => {
 };
 
 export const useOrderType = () => {
-  const isLimitPanel = useTwapContext().isLimitPanel;
+  const { isLimitPanel, translations: t } = useTwapContext();
   const isMarketOrder = useIsMarketOrder();
+
   return useMemo(() => {
     if (isLimitPanel) {
-      return "Limit";
+      return t.limit;
     }
     if (isMarketOrder) {
-      return "dTWAP Market";
+      return t.twapMarket;
     }
-    return "dTWAP Limit";
-  }, [isLimitPanel, isMarketOrder]);
+    return t.twapLimit;
+  }, [isLimitPanel, isMarketOrder, t]);
 };
