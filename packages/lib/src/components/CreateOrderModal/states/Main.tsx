@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import { useTwapContext } from "../../../context/context";
-import { useFormatNumberV2 } from "../../../hooks/hooks";
+import { useAmountUi, useFormatNumber, useFormatNumberV2 } from "../../../hooks/hooks";
 import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
 import { Button, Spinner, Switch } from "../../base";
 import { MarketPriceWarning, Separator } from "../../Components";
@@ -11,6 +11,7 @@ import { useOrderType } from "../hooks";
 import { stateActions } from "../../../context/actions";
 import { OrderDisplay } from "../../OrderDisplay";
 import { size } from "../../../utils";
+import BN from "bignumber.js";
 import {
   useChunks,
   useDeadline,
@@ -23,6 +24,7 @@ import {
   useSwapPrice,
   useUsdAmount,
 } from "../../../hooks/lib";
+import { useMemo } from "react";
 
 const Price = () => {
   const { srcToken, dstToken } = useTwapContext();
@@ -157,6 +159,7 @@ const Details = () => {
           <>
             <OrderDisplay.Expiry deadline={deadline} />
             <OrderDisplay.Recipient />
+            <Fee />
           </>
         ) : (
           <>
@@ -167,11 +170,28 @@ const Details = () => {
             <OrderDisplay.MinDestAmount dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={dstMinAmountOut} />
             <OrderDisplay.TradeInterval fillDelayMillis={fillDelayMillis} />
             <OrderDisplay.Recipient />
+            <Fee />
           </>
         )}
       </OrderDisplay.DetailsContainer>
     </>
   );
+};
+
+const Fee = () => {
+  const { fee, dstToken } = useTwapContext();
+  const outAmount = useOutAmount().amount;
+  const isMarketOrder = useIsMarketOrder();
+
+  const amount = useMemo(() => {
+    if (!fee || !outAmount || isMarketOrder) return "";
+    return BN(outAmount).multipliedBy(fee).dividedBy(100).toFixed().toString();
+  }, [fee, outAmount, isMarketOrder]);
+
+  const amountUi = useFormatNumber({ value: useAmountUi(dstToken?.decimals, amount), decimalScale: 3 });
+
+  if (!fee) return null;
+  return <OrderDisplay.DetailRow title={`Fee (${fee}%)`}>{amountUi ? `${amountUi} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>;
 };
 
 export const SubmitButton = ({ onClick }: { onClick: () => void }) => {

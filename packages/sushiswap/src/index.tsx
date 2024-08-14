@@ -170,6 +170,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const insufficientFunds = hooks.useBalanceWarning();
 
   const exceedsBalance = !isSrcToken ? undefined : insufficientFunds;
+  const hideAmounts = !isSrcToken && !isLimitPanel;
 
   return (
     <>
@@ -177,11 +178,11 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <StyledTokenPanelLabel>{isSrcToken ? (!isLimitPanel ? "Allocate" : "Sell") : "Buy"}</StyledTokenPanelLabel>
         <TwapStyles.StyledColumnFlex gap={12}>
           <TwapStyles.StyledRowFlex justifyContent="space-between" style={{ marginTop: 8 }}>
-            <StyledPanelInput placeholder="0.0" isSrc={isSrcToken} />
+            <StyledPanelInput placeholder="0.0" isSrc={isSrcToken} hide={hideAmounts ? 1 : 0} />
             <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <TokenPanelUsd exceedsBalance={!!exceedsBalance} isSrc={isSrcToken} />
+            {!hideAmounts && <TokenPanelUsd exceedsBalance={!!exceedsBalance} isSrc={isSrcToken} />}
             <Balance isSrc={isSrcToken} />
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
@@ -420,6 +421,7 @@ const TWAPContent = () => {
           Components={{ Tooltip: context.Tooltip, Button: context.Button && CustomButton }}
           dappWToken={dappWToken}
           isExactAppoval={true}
+          fee={"0.25"}
         >
           <GlobalStyles />
           <StyledContent>
@@ -570,12 +572,7 @@ const ShowConfirmationButton = () => {
     );
   }
 
-  return (
-    <StyledShowConfirmationButtonContainer>
-      <StyledFee>Fee: 0.25%</StyledFee>
-      <Components.ShowConfirmation connect={context.connect} />
-    </StyledShowConfirmationButtonContainer>
-  );
+  return <Components.ShowConfirmation connect={context.connect} />;
 };
 
 const TwapListener = () => {

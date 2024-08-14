@@ -59,7 +59,7 @@ export const useFormatNumber = ({
     thousandSeparator: disableThousandSeparator ? "" : ",",
     displayType: "text",
     value: value || "",
-    decimalScale: 18,
+    decimalScale: decimalScale || 18,
     prefix,
     suffix,
   });

@@ -29,7 +29,9 @@ const getStyles = (theme?: DefaultTheme) => {
   };
 };
 
-export const StyledPanelInput = styled(Components.TokenPanelInput)({
+export const StyledPanelInput = styled(Components.TokenPanelInput)<{ hide?: number }>(({ hide }) => ({
+  opacity: hide ? 0 : 1,
+  pointerEvents: hide ? "none" : "all",
   input: {
     fontSize: 30,
     height: 44,
@@ -39,7 +41,7 @@ export const StyledPanelInput = styled(Components.TokenPanelInput)({
       fontSize: 24,
     },
   },
-});
+}));
 
 export const StyledSmallText = styled("span")(({ theme }) => {
   const styles = getStyles(theme);
@@ -336,6 +338,7 @@ export const StyledBalance = styled(Styles.StyledRowFlex)<{ disabled?: number }>
   const hover = disabled ? "" : styles.darkTextHover;
 
   return {
+    marginLeft: "auto",
     gap: 5,
     cursor: disabled ? "auto" : "pointer",
     width: "auto",

@@ -165,6 +165,7 @@ export interface TWAPProps {
   onSwitchTokens?: () => void;
   connect?: () => void;
   isExactAppoval?: boolean;
+  fee?: string;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -266,6 +267,7 @@ export interface TwapLibProps {
   onSwitchTokens?: () => void;
   isWrongChain?: boolean;
   isExactAppoval?: boolean;
+  fee?: string;
 }
 
 export type Token = {
@@ -488,6 +490,7 @@ export interface TWAPContextProps {
   enableQueryParams?: boolean;
   dappWToken?: Token;
   isExactAppoval?: boolean;
+  fee?: string;
 }
 
 export enum Status {

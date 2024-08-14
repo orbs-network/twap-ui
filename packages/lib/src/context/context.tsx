@@ -167,6 +167,7 @@ export const Content = (props: TwapLibProps) => {
         minNativeTokenBalance: props.minNativeTokenBalance,
         enableQueryParams: props.enableQueryParams,
         isExactAppoval: props.isExactAppoval,
+        fee: props.fee,
       }}
     >
       <WrappedTwap {...props} />
