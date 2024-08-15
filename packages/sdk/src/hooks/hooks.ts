@@ -1,12 +1,10 @@
 import { useCallback, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { convertDecimals, eqIgnoreCase, estimateGasPrice, isNativeAddress, maxUint256, parsebn } from "@defi.org/web3-candies";
+import { convertDecimals, eqIgnoreCase, parsebn } from "@defi.org/web3-candies";
 import moment from "moment";
-import { useTwapContext } from "../providers/main-provider";
 import { amountBN } from "../utils";
 import { useAmountUi } from "./util-hooks";
-import { Config, Duration, TimeResolution, Token } from "../types";
+import { Duration, TimeResolution, Token } from "../types";
 import { useMainStore } from "../store/main-store";
 import {
   MAX_DURATION_MILLIS,
@@ -16,10 +14,9 @@ import {
   MIN_DURATION_MILLIS_FORMATTED,
   MIN_TRADE_INTERVAL,
   MIN_TRADE_INTERVAL_FORMATTED,
-  REFETCH_GAS_PRICE,
 } from "../consts";
 import translations from "../i18n/en.json";
-import Web3 from "web3";
+import { useMainContext } from "../providers/main-provider";
 
 export const useLimitPrice = (marketPrice?: string, dstToken?: Token) => {
   const { isCustomLimitPrice, customLimitPrice, isInvertedLimitPrice, isMarketOrder } = useMainStore();
@@ -93,7 +90,7 @@ export const useMinDuration = (chunks?: number) => {
 };
 
 export const useChunks = (maxPossibleChunks = 1) => {
-  const { isLimitPanel } = useTwapContext();
+  const { isLimitPanel } = useMainContext();
   const { customChunks } = useMainStore();
 
   return useMemo(() => {
@@ -103,7 +100,8 @@ export const useChunks = (maxPossibleChunks = 1) => {
   }, [customChunks, maxPossibleChunks, isLimitPanel]);
 };
 
-export const useMaxPossibleChunks = (config?: Config, typedValue?: string, srcUsd?: string | number) => {
+export const useMaxPossibleChunks = (typedValue?: string, srcUsd?: string | number) => {
+  const config = useMainContext().config;
   return useMemo(() => {
     if (!config || !typedValue || !srcUsd) return 1;
     const res = BN.max(1, BN(typedValue).div(srcUsd).times(config.minChunkSizeUsd)).integerValue(BN.ROUND_FLOOR).toNumber();
@@ -112,7 +110,7 @@ export const useMaxPossibleChunks = (config?: Config, typedValue?: string, srcUs
 };
 
 export const useFillDelay = () => {
-  const { isLimitPanel } = useTwapContext();
+  const { isLimitPanel } = useMainContext();
   const { customFillDelay } = useMainStore();
 
   const millis = useMemo(() => {
@@ -126,30 +124,14 @@ export const useFillDelay = () => {
 };
 
 export const useIsMarketOrder = () => {
-  const { isLimitPanel } = useTwapContext();
+  const { isLimitPanel } = useMainContext();
   const { isMarketOrder } = useMainStore();
 
   return isLimitPanel ? false : isMarketOrder;
 };
 
-export const useGasPrice = (web3?: Web3, maxFeePerGasProps?: string, priorityFeePerGasProps?: string) => {
-  const { isLoading, data } = useQuery(["GET_GAS_PRICE_TWAP", priorityFeePerGasProps, maxFeePerGasProps], () => estimateGasPrice(undefined, undefined, web3), {
-    enabled: !!web3,
-    refetchInterval: REFETCH_GAS_PRICE,
-  });
-
-  const priorityFeePerGas = BN.max(data?.fast.tip || 0, priorityFeePerGasProps || 0);
-  const maxFeePerGas = BN.max(data?.fast.max || 0, maxFeePerGasProps || 0, priorityFeePerGas);
-
-  return {
-    isLoading,
-    maxFeePerGas,
-    priorityFeePerGas,
-  };
-};
-
-export const useMinimumDelayMinutes = (config?: Config) => {
-  const estimatedDelayBetweenChunksMillis = useEstimatedDelayBetweenChunksMillis(config);
+export const useMinimumDelayMinutes = () => {
+  const estimatedDelayBetweenChunksMillis = useEstimatedDelayBetweenChunksMillis();
   return useMemo(() => estimatedDelayBetweenChunksMillis / 1000 / 60, [estimatedDelayBetweenChunksMillis]);
 };
 
@@ -188,7 +170,7 @@ export const useSrcChunkAmount = (srcAmount?: string, chunks?: number) => {
 };
 
 // export const useShouldOnlyWrap = () => {
-//   const { srcToken, dstToken } = useTwapContext();
+//   const { srcToken, dstToken } = useMainContext();
 //   const network = useNetwork();
 
 //   return useMemo(() => {
@@ -197,7 +179,7 @@ export const useSrcChunkAmount = (srcAmount?: string, chunks?: number) => {
 // };
 
 // export const useShouldUnwrap = () => {
-//   const { srcToken, dstToken } = useTwapContext();
+//   const { srcToken, dstToken } = useMainContext();
 //   const network = useNetwork();
 
 //   return useMemo(() => {
@@ -206,7 +188,7 @@ export const useSrcChunkAmount = (srcAmount?: string, chunks?: number) => {
 // };
 
 // export const useSwitchTokens = () => {
-//   const { onSwitchTokens } = useTwapContext();
+//   const { onSwitchTokens } = useMainContext();
 //   const resetLimit = stateActions.useResetLimitAfterTokenSwitch();
 
 //   return useCallback(() => {
@@ -221,7 +203,7 @@ const isEqual = (tokenA?: any, tokenB?: any) => {
 
 // export const useTokenSelect = () => {
 //   const switchTokens = useSwitchTokens();
-//   const { onSrcTokenSelected, onDstTokenSelected, srcToken, dstToken } = useTwapContext();
+//   const { onSrcTokenSelected, onDstTokenSelected, srcToken, dstToken } = useMainContext();
 //   return useCallback(
 //     ({ isSrc, token }: { isSrc: boolean; token: any }) => {
 //       if (isSrc && isEqual(token, dstToken)) {
@@ -294,7 +276,10 @@ export const useSrcChunkAmountUsd = (srcChunksAmount?: string, singleTokenUsd?: 
   }, [srcChunksAmount, singleTokenUsd]);
 };
 
-export const useTradeSizeWarning = (config?: Config, srcChunkAmountUsd?: string, srcAmount?: string, chunks?: number) => {
+export const useTradeSizeWarning = ( srcChunkAmountUsd?: string, srcAmount?: string, chunks?: number) => {
+  const config = useMainContext().config;
+
+  
   return useMemo(() => {
     if (BN(srcAmount || 0).isZero() || !config || !chunks || !srcChunkAmountUsd) return;
     const minTradeSizeUsd = BN(config.minChunkSizeUsd || 0);
@@ -308,7 +293,7 @@ export const useTradeSizeWarning = (config?: Config, srcChunkAmountUsd?: string,
 };
 
 export const useLowPriceWarning = (srcToken?: Token, dstToken?: Token, marketPrice?: string) => {
-  const { isLimitPanel } = useTwapContext();
+  const { isLimitPanel } = useMainContext();
   const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
 
   const { isInvertedLimitPrice } = useMainStore();
@@ -357,7 +342,7 @@ export const useDuration = (chunks?: number) => {
 };
 
 // export const useShouldWrap = () => {
-//   const { srcToken } = useTwapContext();
+//   const { srcToken } = useMainContext();
 
 //   return useMemo(() => {
 //     return isNativeAddress(srcToken?.address || "");
@@ -367,7 +352,7 @@ export const useDuration = (chunks?: number) => {
 // export const useSetSwapSteps = () => {
 //   const shouldWrap = useShouldWrap();
 //   const { data: haveAllowance } = query.useAllowance();
-//   const updateState = useTwapContext().updateState;
+//   const updateState = useMainContext().updateState;
 //   return useCallback(() => {
 //     let swapSteps: SwapStep[] = [];
 //     if (shouldWrap) {
@@ -383,7 +368,7 @@ export const useDuration = (chunks?: number) => {
 
 // export const useSwapPrice = () => {
 //   const srcAmount = useSrcAmount().amountUi;
-//   const { srcUsd, dstUsd } = useTwapContext();
+//   const { srcUsd, dstUsd } = useMainContext();
 //   const outAmount = useOutAmount().amountUi;
 
 //   const price = useMemo(() => {
@@ -402,7 +387,9 @@ export const useDuration = (chunks?: number) => {
 //   };
 // };
 
-export const useEstimatedDelayBetweenChunksMillis = (config?: Config) => {
+export const useEstimatedDelayBetweenChunksMillis = () => {
+  const config = useMainContext().config;
+
   return useMemo(() => {
     if (!config) return 0;
     return config.bidDelaySeconds * 1000 * 2;
@@ -512,20 +499,20 @@ export const useResetLimitPrice = () => {
   }, [updateState]);
 };
 
-// const useOnLimitMarketSwitch = () => {
-//   const { updateState } = useTwapContext();
-//   return useCallback(
-//     (isMarketOrder: boolean) => {
-//       updateState({
-//         isMarketOrder,
-//       });
-//     },
-//     [updateState]
-//   );
-// };
+export const useOnMarket = () => {
+  const { updateState } = useMainStore();
+  return useCallback(
+    (isMarketOrder: boolean) => {
+      updateState({
+        isMarketOrder,
+      });
+    },
+    [updateState]
+  );
+};
 
 // const useOnOrderCreated = () => {
-//   const { updateState } = useTwapContext();
+//   const { updateState } = useMainContext();
 
 //   return useCallback(() => {
 //     updateState({ swapState: "success", createOrderSuccess: true, selectedOrdersTab: 0 });

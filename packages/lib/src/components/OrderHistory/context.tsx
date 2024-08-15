@@ -1,9 +1,10 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTwapContext } from "../../context/context";
-import { useOrdersHistory } from "../../hooks";
-import { HistoryOrder, OrdersData, OrderUI, Status, Translations } from "../../types";
+import { HistoryOrder, Translations } from "../../types";
 import { OrdersMenuTab } from "./types";
 import { mapCollection, size, sortBy } from "../../utils";
+import { Status } from "@orbs-network/twap-ui-sdk";
+import { useTwapOrders } from "../../hooks";
 
 interface OrderHistoryContextType {
   tabs: OrdersMenuTab[];
@@ -18,7 +19,7 @@ interface OrderHistoryContextType {
 export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
 export const OrderHistoryContextProvider = ({ children, isOpen }: { children: ReactNode; isOpen: boolean }) => {
-  const { data } = useOrdersHistory();
+  const { data } = useTwapOrders();
   const [tab, setTab] = useState<Status | undefined>(undefined);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
   const isLoading = !data;
@@ -64,7 +65,7 @@ export const OrderHistoryContextProvider = ({ children, isOpen }: { children: Re
   const orders = useMemo(() => {
     if (!data) return [];
     if (!tab) {
-      return sortBy(Object.values(data).flat(), (it) => it.createdAt).reverse();
+      return sortBy(Object.values(data).flat(), (it: any) => it.createdAt).reverse();
     }
     return data[tab as keyof typeof data] || [];
   }, [data, tab]);

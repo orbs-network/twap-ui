@@ -4,7 +4,6 @@ import { IconType } from "@react-icons/all-files";
 export type Config = typeof ConfigJson.Arbidex;
 export type StoreOverride = Partial<State>;
 
-
 export interface HistoryOrder {
   id: number;
   deadline: number;
@@ -37,11 +36,11 @@ export type Token = {
 };
 
 export interface OrdersData {
-  [Status.All]?: HistoryOrder[];
-  [Status.Open]?: HistoryOrder[];
-  [Status.Canceled]?: HistoryOrder[];
-  [Status.Expired]?: HistoryOrder[];
-  [Status.Completed]?: HistoryOrder[];
+  [Status.All]?: any[];
+  [Status.Open]?: any[];
+  [Status.Canceled]?: any[];
+  [Status.Expired]?: any[];
+  [Status.Completed]?: any[];
 }
 
 export type SwapState = "loading" | "success" | "failed" | "rejected";
@@ -79,9 +78,6 @@ export interface State {
   selectedOrdersTab: number;
 }
 
-
-
-
 export interface OrderCreated {
   Contract_id: string;
   ask_bidDelay: string;
@@ -107,8 +103,6 @@ export interface OrderCreated {
   transactionHash: string;
 }
 
-
-
 export type Step = {
   title: string;
   description?: string;
@@ -121,8 +115,6 @@ export type Step = {
   status: "pending" | "loading" | "completed" | "disabled";
 };
 
-
-
 export enum TimeResolution {
   Minutes = 60 * 1000,
   Hours = Minutes * 60,
@@ -132,7 +124,6 @@ export enum TimeResolution {
   Years = 365 * Days,
 }
 export type Duration = { resolution: TimeResolution; amount?: number };
-
 
 export enum Status {
   All = "All",

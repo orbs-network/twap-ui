@@ -8,7 +8,6 @@ import { useTwapContext } from "../context/context";
 import { fillDelayText } from "../utils";
 import { Token } from "../types";
 import { Tooltip } from "./Components";
-import { useChunks, useDuration, useFillDelay, useIsMarketOrder } from "../hooks";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useTwapContext()?.translations;

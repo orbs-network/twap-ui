@@ -33,14 +33,20 @@ export const useDstMinAmountOut = () => {
 export const useLimitPrice = () => {
   const { dstToken, marketPrice } = useTwapContext();
 
-  return SDK.useLimitPrice(marketPrice, dstToken);
+  const limitPrice =  SDK.useLimitPrice(marketPrice, dstToken);
+
+  return {
+    limitPrice,
+    limitPriceUi: useAmountUi(dstToken?.decimals, limitPrice),
+    isLoading: !limitPrice,
+  }
 };
 
 export const useOutAmount = () => {
   const { amountUi } = useSrcAmount();
   const { dstToken } = useTwapContext();
 
-  const limitPrice = useLimitPrice();
+  const limitPrice = useLimitPrice().limitPrice;
   const outAmount = SDK.useOutAmount(amountUi, limitPrice);
   return {
     amount: outAmount,
@@ -112,7 +118,7 @@ export const useMaxPossibleChunks = () => {
   const amountUi = useSrcAmount().amountUi;
   const { config, srcUsd } = useTwapContext();
 
-  return SDK.useMaxPossibleChunks(config, amountUi, srcUsd);
+  return SDK.useMaxPossibleChunks(amountUi, srcUsd);
 };
 
 export const useSrcAmount = () => {
@@ -144,12 +150,12 @@ export const useFillDelay = () => {
 
 export const useMinimumDelayMinutes = () => {
   const { config } = useTwapContext();
-  return SDK.useEstimatedDelayBetweenChunksMillis(config);
+  return SDK.useEstimatedDelayBetweenChunksMillis();
 };
 
 export const useNoLiquidity = () => {
   const srcAmount = useSrcAmount().amount;
-  const limitPrice = useLimitPrice();
+  const {limitPrice} = useLimitPrice();
   const outAmount = useOutAmount().amount;
 
   return useMemo(() => {
@@ -159,7 +165,7 @@ export const useNoLiquidity = () => {
 };
 
 export const useLimitPricePercentDiffFromMarket = () => {
-  const limitPrice = useLimitPrice();
+  const {limitPrice} = useLimitPrice();
   const { marketPrice } = useTwapContext();
 
   return SDK.useLimitPricePercentDiffFromMarket(limitPrice, marketPrice);
@@ -274,9 +280,8 @@ export const useTradeSizeWarning = () => {
   const srcChunkAmountUsd = useSrcChunkAmountUsd();
   const chunks = useChunks();
   const srcAmount = useSrcAmount().amount;
-  const { config } = useTwapContext();
 
-  return SDK.useTradeSizeWarning(config, srcChunkAmountUsd, srcAmount, chunks);
+  return SDK.useTradeSizeWarning(srcChunkAmountUsd, srcAmount, chunks);
 };
 
 const useSrcAmountWarning = () => {

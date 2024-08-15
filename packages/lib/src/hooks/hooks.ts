@@ -151,8 +151,15 @@ export const useTokenBalance = (isSrc?: boolean) => {
   return isSrc ? srcBalance : dstBalance;
 };
 
+
+export const useTwapOrders = () => {
+  const {tokens} = useTwapContext()
+
+  return useOrders(tokens);
+}
+
 export const useOpenOrders = () => {
-  const { data } = useOrders();
+  const { data } = useTwapOrders();
 
   return useMemo(() => {
     return !data ? undefined : data[Status.Open as keyof typeof data];

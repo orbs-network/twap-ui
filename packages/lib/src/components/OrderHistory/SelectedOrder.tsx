@@ -5,15 +5,15 @@ import { useCancelOrder } from "../../hooks/useTransactions";
 import { StyledColumnFlex, StyledText } from "../../styles";
 import { Button } from "../base";
 import { Separator } from "../Components";
-import { useFormatNumberV2 } from "../../hooks/hooks";
-import { useOrderById } from "../../hooks/orders";
-import { OrderUI, Status, Token } from "../../types";
+import { useFormatNumberV2, useTwapOrders } from "../../hooks/hooks";
+import { OrderUI, Token } from "../../types";
 import { OrderDisplay } from "../OrderDisplay";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
+import { Status } from "@orbs-network/twap-ui-sdk";
 export const SelectedOrder = ({ selectedOrderId }: { selectedOrderId?: number }) => {
-  const order = useOrderById(selectedOrderId);
+  const order = useTwapOrders().data?.All.find((it) => it.id === selectedOrderId);
   const [expanded, setExpanded] = useState<string | false>("panel1");
 
   useEffect(() => {

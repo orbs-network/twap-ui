@@ -6,13 +6,13 @@ import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
 import { OrderHistoryList } from "./OrderHistoryList";
 import { Spinner } from "../base";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ReactNode, useCallback, useMemo } from "react";
 import { useTwapContext } from "../../context/context";
-import { query, useOpenOrders } from "../../hooks";
+import { query, useOpenOrders, useTwapOrders } from "../../hooks";
 import { size } from "../../utils";
 
 const OrderHistoryButton = ({ onClick, className = "" }: { onClick: () => void; className?: string }) => {
-  const { data } = query.useOrdersHistory();
+  const { data } = useTwapOrders();
   const openOrders = useOpenOrders();
   const isLoading = !data;
   const text = useMemo(() => {

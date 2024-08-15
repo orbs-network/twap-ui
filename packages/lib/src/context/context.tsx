@@ -10,6 +10,7 @@ import { LimitPriceMessageContent } from "../components";
 import { getQueryParam, limitPriceFromQueryParams } from "../utils";
 import moment from "moment";
 import { setWeb3Instance } from "@defi.org/web3-candies";
+import { MainProvider } from "@orbs-network/twap-ui-sdk";
 analytics.onModuleImported();
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -27,7 +28,13 @@ const WrappedTwap = (props: TwapLibProps) => {
   query.useFeeOnTransfer(dstToken?.address);
   query.useAllowance();
 
-  return <TwapErrorWrapper>{props.children}</TwapErrorWrapper>;
+  return (
+    <TwapErrorWrapper>
+      <MainProvider config={props.config} account={props.account} isLimitPanel={props.isLimitPanel}>
+        {props.children}
+      </MainProvider>
+    </TwapErrorWrapper>
+  );
 };
 
 export const getInitialState = ({ storeOverride = {}, isQueryParamsEnabled }: { storeOverride?: Partial<TwapState>; isQueryParamsEnabled?: boolean }): TwapState => {

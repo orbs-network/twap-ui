@@ -1,22 +1,31 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { TimeResolution } from "../types";
+import { createContext, useContext, useEffect, useRef } from "react";
+import { Config, TimeResolution } from "../types";
 import { analytics } from "../analytics";
 import moment from "moment";
 import { useMainStore } from "../store/main-store";
 import { useOnDuration } from "../hooks/hooks";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 analytics.onModuleImported();
 
 interface Shared {
-  maxFeePerGas?: string;
-  priorityFeePerGas?: string;
   isLimitPanel?: boolean;
+  config?: Config
+  account?: string;
 }
 
 interface TwapProviderProps extends Shared {
   children: React.ReactNode;
 }
 
-export const TwapContext = createContext({} as Shared);
+export const MainContent = createContext({} as Shared);
 
 const Listener = (props: TwapProviderProps) => {
   const interval = useRef<any>();
@@ -44,21 +53,23 @@ const Listener = (props: TwapProviderProps) => {
   return null;
 };
 
-export const TwapProvider = (props: TwapProviderProps) => {
+export const MainProvider = (props: TwapProviderProps) => {
   return (
-    <TwapContext.Provider
-      value={{
-        maxFeePerGas: props.maxFeePerGas,
-        priorityFeePerGas: props.priorityFeePerGas,
-        isLimitPanel: !!props.isLimitPanel,
-      }}
-    >
-      {props.children}
-      <Listener {...props} />
-    </TwapContext.Provider>
+    <QueryClientProvider client={queryClient}>
+      <MainContent.Provider
+        value={{
+          isLimitPanel: !!props.isLimitPanel,
+          config: props.config,
+          account: props.account,
+        }}
+      >
+        {props.children}
+        <Listener {...props} />
+      </MainContent.Provider>
+    </QueryClientProvider>
   );
 };
 
-export const useTwapContext = () => {
-  return useContext(TwapContext);
+export const useMainContext = () => {
+  return useContext(MainContent);
 };

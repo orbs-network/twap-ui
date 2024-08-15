@@ -141,9 +141,6 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
 };
 
-
-
-
 export const query = {
   useFeeOnTransfer,
   useMinNativeTokenBalance,

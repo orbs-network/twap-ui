@@ -16,13 +16,13 @@ import {
   useDeadline,
   useDstMinAmountOut,
   useFillDelay,
-  useIsMarketOrder,
   useOutAmount,
   useSrcAmount,
   useSrcChunkAmount,
   useSwapPrice,
   useUsdAmount,
 } from "../../../hooks/lib";
+import { useIsMarketOrder } from "@orbs-network/twap-ui-sdk";
 
 const Price = () => {
   const { srcToken, dstToken } = useTwapContext();
@@ -72,7 +72,7 @@ const MarketWarning = ({ isMarketOrder }: { isMarketOrder?: boolean }) => {
 };
 
 export const AcceptDisclaimer = ({ className }: { className?: string }) => {
-  const { translations: t, uiPreferences, state } = useTwapContext();
+  const { translations: t, state } = useTwapContext();
   const handleDisclaimer = stateActions.useHandleDisclaimer();
   const { disclaimerAccepted } = state;
 
@@ -88,7 +88,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
         </>
       }
     >
-      <Switch checked={disclaimerAccepted} onChange={handleDisclaimer} />
+      <Switch checked={!!disclaimerAccepted} onChange={handleDisclaimer} />
     </OrderDisplay.DetailRow>
   );
 };

@@ -7,12 +7,10 @@ import {
   TWAPTokenSelectProps,
   hooks,
   TWAPProps,
-  ORDERS_CONTAINER_ID,
   Styles,
   size,
   compact,
   TooltipProps,
-  Status,
   Configs,
   Token,
 } from "@orbs-network/twap-ui";
@@ -52,6 +50,7 @@ import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 import { ThemeProvider } from "styled-components";
+import { Status } from "@orbs-network/twap-ui-sdk";
 
 const useMobile = () => {
   return hooks.useWindowWidth() < 768;

@@ -2,7 +2,8 @@ import { Styles, Translations } from "..";
 import { useTwapContext } from "../context/context";
 import { Label } from "./base";
 import { handleFillDelayText } from "../utils";
-import { useIsMarketOrder, useMinimumDelayMinutes } from "../hooks/lib";
+import { useMinimumDelayMinutes } from "../hooks/lib";
+import { useIsMarketOrder } from "@orbs-network/twap-ui-sdk";
 
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;

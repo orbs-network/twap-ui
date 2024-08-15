@@ -81,7 +81,7 @@ import { eqIgnoreCase, network } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
-import { TimeResolution } from "@orbs-network/twap-ui";
+import { TimeResolution, useAmountBN, useOnDuration, useOnMarket } from "@orbs-network/twap-ui-sdk";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
 
@@ -290,7 +290,7 @@ const useMarketPrice = () => {
 
   const { srcAddress, dstAddress } = useAddresses();
   const { srcToken } = useSelectedParsedTokens();
-  const amount = hooks.useAmountBN(srcToken?.decimals, "1");
+  const amount = useAmountBN(srcToken?.decimals, "1");
 
   const trade = useTrade!(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
 
@@ -470,7 +470,7 @@ const SubmitOrderModal = () => {
   const Modal = useAdapterContext().Modal;
 
   return (
-    <Modal open={isOpen} onClose={() => onClose()} title={!swapState ? "Review order" : ""}>
+    <Modal open={!!isOpen} onClose={() => onClose()} title={!swapState ? "Review order" : ""}>
       <StyledCreateOrderModal />
     </Modal>
   );
@@ -579,7 +579,7 @@ const ShowConfirmationButton = () => {
 };
 
 const TwapListener = () => {
-  const onChange = stateActions.useOnLimitMarketSwitch();
+  const onChange = useOnMarket();
   useEffect(() => {
     onChange(true);
   }, [onChange]);
@@ -642,7 +642,7 @@ const LimitPanelExpirationOptions = [
 const LimitPanelExpiration = () => {
   const selectedExpiry = hooks.useDuration().millis;
 
-  const setCustomDuration = stateActions.useSetCustomDuration();
+  const setCustomDuration = useOnDuration();
   const onChange = useCallback(
     (resolution: TimeResolution) => {
       setCustomDuration({ resolution, amount: 1 });
@@ -667,7 +667,7 @@ const LimitPanelExpiration = () => {
 };
 
 const TradeSizeWarning = () => {
-  const warning = hooks.useTradeSizeWarning();
+  const warning = hooks.useTradeSizeWarning()?.text;
   if (!warning) return null;
   return <StyledChunksWarning title={warning} variant="warning" />;
 };

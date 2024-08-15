@@ -1,7 +1,7 @@
-import { zero, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256 } from "@defi.org/web3-candies";
-import { useMutation } from "@tanstack/react-query";
+import { zero, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256, estimateGasPrice } from "@defi.org/web3-candies";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTwapContext } from "../context/context";
-import { useEstimatedDelayBetweenChunksMillis, useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } from "./hooks";
+import { useEstimatedDelayBetweenChunksMillis, useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract, useTwapOrders } from "./hooks";
 import { query } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
@@ -10,10 +10,10 @@ import { analytics } from "../analytics";
 import { stateActions, useSwitchNativeToWrapped } from "../context/actions";
 import moment from "moment";
 import { useDeadline, useDstMinAmountOut, useFillDelay, useShouldOnlyWrap, useShouldWrap, useSrcAmount, useSrcChunkAmount, useSwapData } from "./lib";
-import { Status } from "../types";
+import { REFETCH_GAS_PRICE, Status } from "@orbs-network/twap-ui-sdk";
 
 export const useCreateOrder = () => {
-  const { maxFeePerGas, priorityFeePerGas } = query.useGasPrice();
+  const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
   const { askDataParams, account, dstToken, config } = useTwapContext();
   const dstMinAmountOut = useDstMinAmountOut().amount;
   const srcChunkAmount = useSrcChunkAmount().amount;
@@ -111,7 +111,7 @@ export const useWrapToken = () => {
   const network = useNetwork();
   const wrapOnly = useShouldOnlyWrap();
   const onTxHash = stateActions.useOnTxHash().onWrapTxHash;
-  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
+  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
 
   return useMutation(
     async () => {
@@ -168,9 +168,27 @@ export const useWrapOnly = () => {
   });
 };
 
+export const useGasPrice = () => {
+  const { web3, maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
+  const { isLoading, data } = useQuery(['GET_GAS_PRICE', contextTip, contextMax], () => estimateGasPrice(undefined, undefined, web3), {
+    enabled: !!web3,
+    refetchInterval: REFETCH_GAS_PRICE,
+  });
+
+  const priorityFeePerGas = BN.max(data?.fast.tip || 0, contextTip || 0);
+  const maxFeePerGas = BN.max(data?.fast.max || 0, contextMax || 0, priorityFeePerGas);
+
+  return {
+    isLoading,
+    maxFeePerGas,
+    priorityFeePerGas,
+  };
+};
+
+
 export const useUnwrapToken = () => {
   const { account } = useTwapContext();
-  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
+  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
   const onSuccess = useResetAfterSwap();
   const srcAmount = useSrcAmount().amount;
   const onTxHash = stateActions.useOnTxHash().onUnwrapTxHash;
@@ -218,7 +236,7 @@ export const useApproveToken = () => {
   const { config, account, isExactAppoval } = useTwapContext();
   const srcAmount = useSrcAmount().amount;
 
-  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
+  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
 
   const approvalAmount = isExactAppoval ? srcAmount : maxUint256;
 
@@ -263,7 +281,7 @@ export const useApproveToken = () => {
 };
 const useOnSuccessCallback = () => {
   const { onTxSubmitted, config, srcToken, dstToken } = useTwapContext();
-  const addOrder = query.useAddNewOrder();
+  const addOrder = useTwapOrders().addOrder;
   const swapData = useSwapData();
   const onOrderCreated = stateActions.useOnOrderCreated();
   const reset = useResetAfterSwap();
@@ -408,11 +426,10 @@ export const useSubmitOrderFlow = () => {
 };
 
 export const useCancelOrder = () => {
-  const { refetch } = query.useOrdersHistory();
-  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
+  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
   const { account } = useTwapContext();
   const twapContract = useTwapContract();
-  const onCancelOrder = query.useUpdateOrderStatusToCanceled();
+  const {refetch} = useTwapOrders();
   return useMutation(
     async (orderId: number) => {
       if (!twapContract) {
@@ -434,10 +451,10 @@ export const useCancelOrder = () => {
       console.log(`order canceled`);
     },
     {
-      onSuccess: (_, orderId) => {
+      onSuccess: () => {
         logger(`order canceled`);
         analytics.onCancelOrderSuccess();
-        onCancelOrder(orderId);
+        refetch();
       },
       onError: (error: Error) => {
         console.log(`cancel error order`, error);

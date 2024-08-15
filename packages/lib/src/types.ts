@@ -2,7 +2,6 @@ import ConfigJson from "@orbs-network/twap/configs.json";
 import { Moment } from "moment";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
-import { useParseOrderUi } from "./hooks/orders";
 import Web3 from "web3";
 import { useSwapData } from "./hooks";
 import { Status } from "@orbs-network/twap-ui-sdk";
@@ -276,7 +275,7 @@ export type Token = {
   logoUrl: string;
 };
 
-export type OrderUI = ReturnType<typeof useParseOrderUi>;
+export type OrderUI = any
 
 export interface StylesConfig {
   primaryColor?: string;
