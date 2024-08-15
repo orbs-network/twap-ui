@@ -4,12 +4,12 @@ import { stateActions } from "../context/actions";
 import { useTwapContext } from "../context/context";
 import { useDuration, useShouldWrapOrUnwrapOnly, useMinDuration, useTradeDurationWarning } from "../hooks/lib";
 import { StyledColumnFlex } from "../styles";
-import { TimeResolution } from "../types";
 import { BottomContent, Button, Label, Message, NumericInput, ResolutionSelect } from "./base";
+import { TimeResolution, useMainStore, useOnDuration } from "@orbs-network/twap-ui-sdk";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const duration = useDuration().duration;
-  const setCustomDuration = stateActions.useSetCustomDuration();
+  const setCustomDuration = useOnDuration();
 
   return (
     <StyledInput
@@ -29,7 +29,7 @@ const StyledInput = styled(NumericInput)({
 
 const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
   const duration = useDuration().duration;
-  const setCustomDuration = stateActions.useSetCustomDuration();
+  const setCustomDuration = useOnDuration();
 
   const onChange = useCallback(
     (resolution: TimeResolution) => {
@@ -70,7 +70,7 @@ const usePartialFillWarning = () => {
 };
 
 const WarningComponent = () => {
-  const durationWarning = useTradeDurationWarning();
+  const durationWarning = useTradeDurationWarning()?.text;
   const partialFillWarning = usePartialFillWarning();
   const warning = durationWarning || partialFillWarning;
 
@@ -93,8 +93,8 @@ const MaxDurationLabel = () => {
 };
 
 const Reset = ({ Component }: { Component?: FC<{ onClick: () => void }> }) => {
-  const setCustomDuration = stateActions.useSetCustomDuration();
-  const customDuration = useTwapContext().state.customDuration;
+  const setCustomDuration = useOnDuration();
+  const customDuration = useMainStore((state) => state.customDuration);
 
   if (!customDuration) return null;
 

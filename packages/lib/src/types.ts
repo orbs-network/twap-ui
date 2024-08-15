@@ -5,6 +5,7 @@ import { IconType } from "@react-icons/all-files";
 import { useParseOrderUi } from "./hooks/orders";
 import Web3 from "web3";
 import { useSwapData } from "./hooks";
+import { Status } from "@orbs-network/twap-ui-sdk";
 
 export type Config = typeof ConfigJson.Arbidex;
 
@@ -171,7 +172,7 @@ export type SelectMeuItem = { text: string; value: string | number };
 
 type UsePriceUSD = (address?: string, token?: Token) => number | string | undefined;
 
-export type StoreOverride = Partial<State>;
+export type StoreOverride = Partial<TwapState>;
 
 export interface TwapContextUIPreferences {
   usdSuffix?: string;
@@ -315,46 +316,28 @@ export interface TWAPTokenSelectProps {
   isSrc?: boolean;
 }
 
-export interface OrdersData {
-  [Status.Open]?: HistoryOrder[];
-  [Status.Canceled]?: HistoryOrder[];
-  [Status.Expired]?: HistoryOrder[];
-  [Status.Completed]?: HistoryOrder[];
-}
-
 export type SwapState = "loading" | "success" | "failed" | "rejected";
 export type SwapStep = "createOrder" | "wrap" | "approve";
 
-export interface State {
+export interface TwapState {
   swapStep?: SwapStep;
   swapSteps?: SwapStep[];
   swapState?: SwapState;
-  srcAmountUi: string;
+  srcAmountUi?: string;
 
-  confirmationClickTimestamp: Moment;
-  showConfirmation: boolean;
-  disclaimerAccepted: boolean;
-
-  customChunks?: number;
-  customFillDelay: Duration;
-  customDuration?: Duration;
+  showConfirmation?: boolean;
+  disclaimerAccepted?: boolean;
 
   createOrdertxHash?: string;
   wrapTxHash?: string;
   approveTxHash?: string;
   unwrapTxHash?: string;
 
-  isCustomLimitPrice?: boolean;
-  customLimitPrice?: string;
-  isInvertedLimitPrice?: boolean;
-  limitPricePercent?: string;
-  isMarketOrder?: boolean;
-
   createOrderSuccess?: boolean;
   wrapSuccess?: boolean;
   approveSuccess?: boolean;
 
-  selectedOrdersTab: number;
+  selectedOrdersTab?: number;
 
   swapData?: ReturnType<typeof useSwapData>;
 }
@@ -444,16 +427,6 @@ export type LimitSwitchArgs = {
   onClick: (value: boolean) => void;
 };
 
-export enum TimeResolution {
-  Minutes = 60 * 1000,
-  Hours = Minutes * 60,
-  Weeks = 7 * 24 * Hours,
-  Days = Hours * 24,
-  Months = 30 * Days,
-  Years = 365 * Days,
-}
-export type Duration = { resolution: TimeResolution; amount?: number };
-
 interface TwapComponents {
   Tooltip?: FC<TooltipProps>;
   Button?: FC<ButtonProps>;
@@ -463,8 +436,8 @@ interface TwapComponents {
 export interface TWAPContextProps {
   translations: Translations;
   isWrongChain: boolean;
-  state: State;
-  updateState: (state: Partial<State>) => void;
+  state: TwapState;
+  updateState: (state: Partial<TwapState>) => void;
   uiPreferences: TwapContextUIPreferences;
   Components?: TwapComponents;
   srcToken?: Token;
@@ -488,11 +461,4 @@ export interface TWAPContextProps {
   enableQueryParams?: boolean;
   dappWToken?: Token;
   isExactAppoval?: boolean;
-}
-
-export enum Status {
-  Open = "Open",
-  Canceled = "Canceled",
-  Completed = "Completed",
-  Expired = "Expired",
 }

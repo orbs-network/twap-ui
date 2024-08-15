@@ -1,6 +1,4 @@
-import { isTxRejected, logger } from "./utils";
 import { v4 as uuidv4 } from "uuid";
-import { useSwapData } from "./hooks";
 import { Config } from "./types";
 
 const Version = 0.2;
@@ -64,7 +62,6 @@ interface Data extends SubmitOrderArgs, LibConfig {
 
 const sendBI = async (data: Partial<Data>) => {
   try {
-    logger(data);
     await fetch(BI_ENDPOINT, {
       method: "POST",
       headers: {
@@ -74,7 +71,7 @@ const sendBI = async (data: Partial<Data>) => {
       body: JSON.stringify(data),
     }).then();
   } catch (error) {
-    logger(`Analytics error: ${error}`);
+    console.error("Failed to send BI", error);
   }
 };
 
@@ -91,7 +88,6 @@ class Analytics {
     };
 
     if (process.env.NODE_ENV === "development") {
-      logger(this.data);
       return;
     }
     clearTimeout(this.timeout);
@@ -110,27 +106,8 @@ class Analytics {
     }, 1_000);
   }
 
-  onLibInit(config?: Config, provider?: any, account?: string) {
-    if (!config || !provider || !account) return;
-    let walletConnectName;
-
-    try {
-      if (provider.isRabby) {
-        walletConnectName = "Rabby Wallet";
-      } else if (provider.isWalletConnect) {
-        walletConnectName = "WalletConnect";
-      } else if (provider.isCoinbaseWallet) {
-        return "Coinbase Wallet";
-      } else if (provider.isOkxWallet) {
-        return "OKX Wallet";
-      } else if (provider.isTrustWallet) {
-        return "Trust Wallet";
-      } else if (provider.isMetaMask) {
-        return "MetaMask";
-      } else {
-        walletConnectName = (provider as any)?.session?.peer.metadata.name;
-      }
-    } catch (error) {}
+  onLibInit(config?: Config, account?: string) {
+    if (!config || !account) return;
 
     this.updateAndSend({
       bidDelaySeconds: config?.bidDelaySeconds,
@@ -145,7 +122,6 @@ class Analytics {
       twapVersion: config?.twapVersion,
       walletAddress: account,
       pageLoaded: true,
-      walletConnectName,
     });
   }
 
@@ -157,7 +133,7 @@ class Analytics {
     this.updateAndSend({ cancelOrderSuccess: true });
   }
 
-  onSubmitOrder(swapData: ReturnType<typeof useSwapData>) {
+  onSubmitOrder(swapData: any) {
     this.updateAndSend({
       fromTokenAddress: swapData.srcToken?.address,
       toTokenAddress: swapData.dstToken?.address,
@@ -187,13 +163,9 @@ class Analytics {
   }
 
   onTxError(error: any, failedAction: Action) {
-    if (isTxRejected(error)) {
-      this.updateAndSend({ actionError: "rejected" });
-    } else {
-      const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
-      this.updateAndSend({ actionError, failedAction });
-      analytics.reset();
-    }
+    const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
+    this.updateAndSend({ actionError, failedAction });
+    analytics.reset();
   }
   onWrapSuccess(wrapTxHash: string) {
     this.updateAndSend({

@@ -9,6 +9,7 @@ import { Popup } from "./Components";
 import { useEffect, useMemo, useState } from "react";
 import { erc20s, isNativeAddress, network } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
+import { useAmountBN } from "@orbs-network/twap-ui-sdk";
 
 const config = Configs.Thena;
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png";
@@ -73,7 +74,7 @@ const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: Tok
 };
 
 const _useTrade = (fromToken?: any, toToken?: any, amount?: string) => {
-  const _amount = hooks.useAmountBN(fromToken?.decimals, amount);
+  const _amount = useAmountBN(fromToken?.decimals, amount);
   const tokens = useDappTokens().data;
   return useTrade(fromToken?.address, toToken?.address, _amount, tokens);
 };

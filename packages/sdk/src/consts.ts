@@ -1,3 +1,4 @@
+import { networks } from "@defi.org/web3-candies";
 import { TimeResolution } from "./types";
 
 export const REFETCH_ORDER_HISTORY = 40_000;
@@ -55,6 +56,10 @@ export const EXPLORER_URLS = {
   42161: "https://arbiscan.io",
 };
 
-export const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED };
-
 export const WAIT_FOR_ORDER_LOCAL_STORAGE = "WAIT_FOR_ORDER";
+export const THE_GRAPH_ORDERS_API = {
+  [networks.bsc.id]: "https://hub.orbs.network/api/apikey/subgraphs/id/4NfXEi8rreQsnAr4aJ45RLCKgnjcWX46Lbt9SadiCcz6",
+  [networks.poly.id]: "https://hub.orbs.network/api/apikey/subgraphs/id/3PyRPWSvDnMowGbeBy7aNsvUkD5ZuxdXQw2RdJq4NdXi",
+  [networks.arb.id]: "https://hub.orbs.network/api/apikey/subgraphs/id/83bpQexEaqBjHaQbKoFTbtvCXuo5RudRkfLgtRUYqo2c",
+  [networks.base.id]: "https://hub.orbs.network/api/apikey/subgraphs/id/DFhaPQb3HATXkpsWNZw3gydYHehLBVEDiSk4iBdZJyps",
+};

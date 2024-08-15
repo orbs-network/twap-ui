@@ -4,7 +4,7 @@ import { Message } from "./base/Message";
 import { useTwapContext } from "../context/context";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import styled from "styled-components";
-import { useFormatNumber, useSrcBalance, useAmountUi, useDstBalance, useFormatDecimals } from "../hooks/hooks";
+import { useFormatNumber, useSrcBalance, useDstBalance, useFormatDecimals } from "../hooks/hooks";
 import { useConfirmationButton } from "../hooks/useConfirmationButton";
 import { StyledText, StyledRowFlex, StyledColumnFlex, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
@@ -17,7 +17,7 @@ import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { stateActions } from "../context/actions";
 import {
   useFeeOnTransferWarning,
-  useIsMarketOrder,
+  useFillDelay,
   useLowPriceWarning,
   useOutAmount,
   useShouldWrapOrUnwrapOnly,
@@ -29,6 +29,7 @@ import {
   useTokenSelect,
   useUsdAmount,
 } from "../hooks/lib";
+import { useAmountUi, useIsMarketOrder, useMainStore, useOnFillDelay } from "@orbs-network/twap-ui-sdk";
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -157,8 +158,8 @@ export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hid
 };
 
 export function TradeIntervalSelector({ placeholder }: { placeholder?: string }) {
-  const setFillDelay = stateActions.useSetCustomFillDelay();
-  const fillDelay = useTwapContext().state.customFillDelay;
+  const setFillDelay = useOnFillDelay();
+  const fillDelay = useMainStore((state) => state.customFillDelay);
 
   return <TimeSelector placeholder={placeholder} onChange={setFillDelay} value={fillDelay} />;
 }

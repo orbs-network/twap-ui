@@ -1,10 +1,10 @@
 import { styled } from "styled-components";
 import { useCallback, useState } from "react";
-import { useTwapContext } from "../../context/context";
-import { Duration, TimeResolution, Translations } from "../../types";
+import { Translations } from "../../types";
 import NumericInput from "./NumericInput";
 import { StyledRowFlex } from "../../styles";
 import { SelectMenu } from "./SelectMenu";
+import { Duration, TimeResolution } from "@orbs-network/twap-ui-sdk";
 
 const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
   {
@@ -56,13 +56,8 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
 }
 
 export const ResolutionSelect = ({ onChange, resolution, className = "" }: { onChange: (resolution: TimeResolution) => void; resolution: TimeResolution; className?: string }) => {
-  const translations = useTwapContext().translations;
-
-  const [open, setOpen] = useState<boolean>(false);
-
   const onSelect = useCallback(
     (resolution: TimeResolution) => {
-      setOpen(false);
       onChange(resolution);
     },
     [onChange],

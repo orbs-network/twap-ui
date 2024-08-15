@@ -26,7 +26,9 @@
     "moment": "2.x",
     "react-number-format": "5.x",
     "styled-components": "^6.1.12",
-    "web3": "1.x"
+    "web3": "1.x",
+    "zustand": "^4.5.5"
+
   },
   "peerDependencies": {
     "react": "*",

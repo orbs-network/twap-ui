@@ -1,9 +1,9 @@
 import { TokenData, parsebn, maxUint256, bn } from "@defi.org/web3-candies";
 import moment from "moment";
 import { AddressPadding, Config, Translations } from "./types";
-import { EXPLORER_URLS, QUERY_PARAMS, STABLE_TOKENS } from "./consts";
 import BN from "bignumber.js";
 import { THE_GRAPH_ORDERS_API } from "./config";
+import { EXPLORER_URLS, QUERY_PARAMS } from "@orbs-network/twap-ui-sdk";
 export const logger = (...args: any[]) => {
   // let debug;
   // if (window) {
@@ -179,8 +179,6 @@ export const isNativeBalanceError = (error: any) => {
     }
   } catch (error) {}
 };
-
-export const isStableCoin = (token?: TokenData) => STABLE_TOKENS.includes(token?.symbol.toLowerCase() || "");
 
 export const getConfig = (configs: Config[], chainId?: number): Config => {
   return configs.find((it) => it.chainId === chainId) || configs[0];

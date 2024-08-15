@@ -1,14 +1,14 @@
 import { useTwapContext } from "../context/context";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
-import { Status, Token } from "../types";
+import { Token } from "../types";
 import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, maxUint256, networks, Abi, erc20 } from "@defi.org/web3-candies";
-import { MIN_NATIVE_BALANCE } from "../consts";
+import * as SDK from "@orbs-network/twap-ui-sdk";
 import TwapAbi from "@orbs-network/twap/twap.abi.json";
 import { useNumericFormat } from "react-number-format";
-import { amountBN, amountBNV2, amountUi, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress, resetQueryParams } from "../utils";
+import { formatDecimals, getExplorerUrl, makeElipsisAddress, resetQueryParams } from "../utils";
 import { query } from "./query";
-import { stateActions } from "../context/actions";
+import { Status, useAmountUi, useOrders } from "@orbs-network/twap-ui-sdk";
 
 export const useRefetchBalances = () => {
   const { refetch: refetchSrcBalance } = useSrcBalance();
@@ -20,12 +20,11 @@ export const useRefetchBalances = () => {
 };
 
 export const useResetAfterSwap = () => {
-  const resetAfterSwap = stateActions.useSwapReset();
+  const resetAfterSwap = SDK.useResetStore();
   const refetchBalances = useRefetchBalances();
 
   return useCallback(async () => {
     resetAfterSwap();
-    resetQueryParams();
     await refetchBalances();
   }, [resetAfterSwap, refetchBalances]);
 };
@@ -85,20 +84,6 @@ export const useFormatNumberV2 = ({ value, decimalScale = 3, prefix, suffix }: {
 
 export const useFormatDecimals = (value?: string | BN | number, decimalPlaces?: number) => {
   return useMemo(() => formatDecimals(value, decimalPlaces), [value, decimalPlaces]);
-};
-
-export const useAmountUi = (decimals?: number, value?: string) => {
-  return useMemo(() => {
-    if (!decimals || !value) return;
-    return amountUiV2(decimals, value);
-  }, [decimals, value]);
-};
-
-export const useAmountBN = (decimals?: number, value?: string) => {
-  return useMemo(() => {
-    if (!decimals || !value) return;
-    return amountBNV2(decimals, value);
-  }, [decimals, value]);
 };
 
 export function useDebounce<T>(value: T, delay?: number): T {
@@ -167,7 +152,7 @@ export const useTokenBalance = (isSrc?: boolean) => {
 };
 
 export const useOpenOrders = () => {
-  const { data } = query.useOrdersHistory();
+  const { data } = useOrders();
 
   return useMemo(() => {
     return !data ? undefined : data[Status.Open as keyof typeof data];

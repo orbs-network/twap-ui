@@ -1,34 +1,14 @@
 import { useCallback } from "react";
-import { defaultCustomFillDelay, Duration, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS, resetQueryParams, setQueryParam, SwapState, SwapStep, TimeResolution } from "..";
 import { useTwapContext } from "./context";
 import BN from "bignumber.js";
-
-const useHandleLimitPriceQueryParam = () => {
-  const setQueryParam = useSetQueryParams();
-  return useCallback(
-    (value?: string, inverted?: boolean) => {
-      let newValue = value;
-
-      if (BN(newValue || 0).isZero()) {
-        setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-      }
-      if (inverted) {
-        newValue = BN(1)
-          .div(value || "0")
-          .toString();
-      }
-      setQueryParam(QUERY_PARAMS.LIMIT_PRICE, newValue);
-    },
-    [setQueryParam],
-  );
-};
+import * as SDK from "@orbs-network/twap-ui-sdk";
+import { SwapState, SwapStep } from "@orbs-network/twap-ui-sdk";
 
 export const useSetQueryParams = () => {
   const enableQueryParams = useTwapContext().enableQueryParams;
   return useCallback(
     (name: string, value?: string) => {
       if (!enableQueryParams) return;
-      setQueryParam(name, value);
     },
     [enableQueryParams],
   );
@@ -86,39 +66,9 @@ const useSwapReset = () => {
   return useCallback(() => {
     updateState({
       srcAmountUi: "",
-      limitPricePercent: undefined,
-      customLimitPrice: undefined,
-      isCustomLimitPrice: false,
-      isInvertedLimitPrice: false,
-      customChunks: undefined,
-      customFillDelay: defaultCustomFillDelay,
     });
-  }, [updateState]);
-};
-
-// Hook for setting custom fill delay
-const useSetCustomFillDelay = () => {
-  const { updateState } = useTwapContext();
-  const setQueryParam = useSetQueryParams();
-  return useCallback(
-    (customFillDelay: Duration) => {
-      setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, !customFillDelay.amount ? undefined : customFillDelay.amount?.toString());
-      updateState({ customFillDelay });
-    },
-    [updateState, setQueryParam],
-  );
-};
-
-const useSetCustomDuration = () => {
-  const { updateState } = useTwapContext();
-  const setQueryParam = useSetQueryParams();
-  return useCallback(
-    (customDuration?: Duration) => {
-      setQueryParam(QUERY_PARAMS.MAX_DURATION, !customDuration ? undefined : customDuration.amount?.toString());
-      updateState({ customDuration });
-    },
-    [updateState, setQueryParam],
-  );
+    SDK.useResetStore();
+  }, [updateState, SDK.useResetStore]);
 };
 
 const useHandleDisclaimer = () => {
@@ -126,81 +76,6 @@ const useHandleDisclaimer = () => {
   return useCallback(() => {
     updateState({ disclaimerAccepted: !state.disclaimerAccepted });
   }, [updateState, state.disclaimerAccepted]);
-};
-
-// Hook for inverting limit price
-const useInvertLimit = () => {
-  const { state, updateState } = useTwapContext();
-  const handleLimitPriceQueryParam = useHandleLimitPriceQueryParam();
-
-  return useCallback(() => {
-    handleLimitPriceQueryParam();
-    updateState({
-      isInvertedLimitPrice: !state.isInvertedLimitPrice,
-      customLimitPrice: undefined,
-      isCustomLimitPrice: false,
-      limitPricePercent: undefined,
-    });
-  }, [state.isInvertedLimitPrice, updateState, handleLimitPriceQueryParam]);
-};
-
-// Hook for handling limit change
-const useOnLimitChange = () => {
-  const { state, updateState } = useTwapContext();
-  const handleLimitPriceQueryParam = useHandleLimitPriceQueryParam();
-  return useCallback(
-    (customLimitPrice: string, limitPricePercent?: string) => {
-      handleLimitPriceQueryParam(customLimitPrice, state.isInvertedLimitPrice);
-      updateState({
-        customLimitPrice,
-        isCustomLimitPrice: true,
-        isMarketOrder: false,
-        limitPricePercent,
-      });
-    },
-    [state.isInvertedLimitPrice, updateState, handleLimitPriceQueryParam],
-  );
-};
-
-// Hook for resetting custom limit
-const useResetCustomLimit = () => {
-  const { updateState } = useTwapContext();
-  const handleLimitPriceQueryParam = useHandleLimitPriceQueryParam();
-  return useCallback(() => {
-    handleLimitPriceQueryParam();
-    updateState({
-      isCustomLimitPrice: false,
-      customLimitPrice: undefined,
-      limitPricePercent: undefined,
-    });
-  }, [updateState, handleLimitPriceQueryParam]);
-};
-
-// Hook for resetting limit price
-const useResetLimitPrice = () => {
-  const { updateState } = useTwapContext();
-
-  return useCallback(() => {
-    updateState({
-      isCustomLimitPrice: false,
-      customLimitPrice: undefined,
-      limitPricePercent: undefined,
-      isInvertedLimitPrice: false,
-    });
-  }, [updateState]);
-};
-
-// Hook for handling token switch
-const useResetLimitAfterTokenSwitch = () => {
-  const { updateState } = useTwapContext();
-  const handleLimitPriceQueryParam = useHandleLimitPriceQueryParam();
-  return useCallback(() => {
-    handleLimitPriceQueryParam();
-    updateState({
-      isInvertedLimitPrice: false,
-      limitPricePercent: undefined,
-    });
-  }, [updateState, handleLimitPriceQueryParam]);
 };
 
 // Hook for selecting orders tab
@@ -275,30 +150,10 @@ const useUpdateSwapState = () => {
 
 export const useSetSrcAmount = () => {
   const { updateState } = useTwapContext();
-  const setQueryParam = useSetQueryParams();
   return useCallback(
     (srcAmountUi: string) => {
-      setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, !srcAmountUi ? undefined : srcAmountUi);
-      if (!srcAmountUi) {
-        resetQueryParams();
-      } else {
-        setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, srcAmountUi);
-      }
       updateState({
         srcAmountUi,
-        customChunks: undefined,
-      });
-    },
-    [updateState, setQueryParam],
-  );
-};
-
-const useOnLimitMarketSwitch = () => {
-  const { updateState } = useTwapContext();
-  return useCallback(
-    (isMarketOrder: boolean) => {
-      updateState({
-        isMarketOrder,
       });
     },
     [updateState],
@@ -316,19 +171,11 @@ const useOnOrderCreated = () => {
 export const stateActions = {
   useSwapModalActions,
   useSwapReset,
-  useSetCustomFillDelay,
-  useInvertLimit,
-  useOnLimitChange,
-  useResetCustomLimit,
-  useResetLimitPrice,
-  useResetLimitAfterTokenSwitch,
   useSelectOrdersTab,
   useOnTxHash,
   useUpdateSwapStep,
   useUpdateSwapState,
   useSetSrcAmount,
   useHandleDisclaimer,
-  useOnLimitMarketSwitch,
   useOnOrderCreated,
-  useSetCustomDuration,
 };

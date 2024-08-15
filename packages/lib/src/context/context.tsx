@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { State, TimeResolution, TWAPContextProps, TwapLibProps } from "../types";
+import { TWAPContextProps, TwapLibProps, TwapState } from "../types";
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { analytics } from "../analytics";
@@ -7,11 +7,9 @@ import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
-import { defaultCustomFillDelay, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "../consts";
 import { getQueryParam, limitPriceFromQueryParams } from "../utils";
 import moment from "moment";
 import { setWeb3Instance } from "@defi.org/web3-candies";
-import { stateActions } from "./actions";
 analytics.onModuleImported();
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -32,56 +30,9 @@ const WrappedTwap = (props: TwapLibProps) => {
   return <TwapErrorWrapper>{props.children}</TwapErrorWrapper>;
 };
 
-const Listener = (props: TwapLibProps) => {
-  const interval = useRef<any>();
-  const { state, updateState } = useTwapContext();
-  const setCustomDuration = stateActions.useSetCustomDuration();
-
-  useEffect(() => {
-    if (props.isLimitPanel) {
-      setCustomDuration({ resolution: TimeResolution.Days, amount: 7 });
-    } else {
-      setCustomDuration(undefined);
-    }
-  }, [props.isLimitPanel]);
-
-  useEffect(() => {
-    if (state.showConfirmation && !state.swapState) {
-      updateState({ confirmationClickTimestamp: moment() });
-      interval.current = setInterval(() => {
-        updateState({ confirmationClickTimestamp: moment() });
-      }, 10_000);
-    }
-    return () => clearInterval(interval.current);
-  }, [state.showConfirmation, state.swapState, updateState]);
-
-  useEffect(() => {
-    analytics.onLibInit(props.config, props.provider, props.account);
-  }, [props.config, props.provider, props.account]);
-
-  return null;
-};
-
-export const getInitialState = ({ storeOverride = {}, isQueryParamsEnabled }: { storeOverride?: Partial<State>; isQueryParamsEnabled?: boolean }): State => {
-  const tradeIntervalQueryParam = getQueryParam(QUERY_PARAMS.TRADE_INTERVAL);
-  const srcAmountUi = getQueryParam(QUERY_PARAMS.INPUT_AMOUNT);
-  const chunks = getQueryParam(QUERY_PARAMS.TRADES_AMOUNT);
+export const getInitialState = ({ storeOverride = {}, isQueryParamsEnabled }: { storeOverride?: Partial<TwapState>; isQueryParamsEnabled?: boolean }): TwapState => {
   return {
-    srcAmountUi: !isQueryParamsEnabled ? "" : srcAmountUi || "",
-
-    confirmationClickTimestamp: moment(),
-    showConfirmation: false,
-    disclaimerAccepted: true,
-
-    customChunks: !isQueryParamsEnabled ? undefined : chunks ? Number(chunks) : undefined,
-    customFillDelay: !isQueryParamsEnabled
-      ? defaultCustomFillDelay
-      : { resolution: TimeResolution.Minutes, amount: tradeIntervalQueryParam ? Number(tradeIntervalQueryParam) : MIN_TRADE_INTERVAL_FORMATTED },
-
-    isMarketOrder: false,
-    isCustomLimitPrice: !!limitPriceFromQueryParams(),
-    customLimitPrice: limitPriceFromQueryParams(),
-    selectedOrdersTab: 0,
+    srcAmountUi: "",
     ...storeOverride,
   };
 };
@@ -90,9 +41,9 @@ enum ActionType {
   UPDATED_STATE = "UPDATED_STATE",
 }
 
-type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> };
+type Action = { type: ActionType.UPDATED_STATE; value: Partial<TwapState> };
 
-const contextReducer = (state: State, action: Action): State => {
+const contextReducer = (state: TwapState, action: Action): TwapState => {
   switch (action.type) {
     case ActionType.UPDATED_STATE:
       return { ...state, ...action.value };
@@ -103,7 +54,7 @@ const contextReducer = (state: State, action: Action): State => {
 
 const useStore = (props: TwapLibProps) => {
   const [state, dispatch] = useReducer(contextReducer, getInitialState({ storeOverride: props.storeOverride, isQueryParamsEnabled: props.enableQueryParams }));
-  const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
+  const updateState = useCallback((value: Partial<TwapState>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
   return {
     updateState,
     state,
@@ -171,7 +122,6 @@ export const Content = (props: TwapLibProps) => {
     >
       <WrappedTwap {...props} />
       <LimitPriceMessageContent />
-      <Listener {...props} />
     </TwapContext.Provider>
   );
 };
