@@ -309,6 +309,11 @@ export const useDeadline = () => {
       .add((durationUi.amount || 0) * durationUi.resolution)
       .add(1, "minute")
       .valueOf();
+      // return {
+      //   millis: moment().add(2, 'months').valueOf(),
+      //   text: moment(moment().add(2, 'months').valueOf()).format("ll HH:mm"),
+      // };
+
     return {
       millis,
       text: moment(millis).format("ll HH:mm"),

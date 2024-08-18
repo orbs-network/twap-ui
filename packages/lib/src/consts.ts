@@ -60,3 +60,6 @@ export const STABLE_TOKENS = ["usdc", "dai", "usdt", "busd", "tusd", "susd"];
 export const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED };
 
 export const WAIT_FOR_ORDER_LOCAL_STORAGE = "WAIT_FOR_ORDER";
+
+export const ORBS_LOGO = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/orbslogo.svg";
+export const ORBS_LOGO_FALLBACK = "https://www.orbs.com/assets/img/common/logo.svg";

@@ -1,4 +1,4 @@
-import { FC, ReactNode, useCallback } from "react";
+import { FC, ReactNode, useCallback, useState } from "react";
 import { Balance, Icon, NumericInput, TimeSelector, TokenName, USD, TokenLogo as Logo, Button, Portal } from "./base";
 import { Message } from "./base/Message";
 import { useTwapContext } from "../context/context";
@@ -12,7 +12,7 @@ import { ChunksAmountLabel } from "./Labels";
 import { LimitSwitchArgs, TooltipProps, TWAPTokenSelectProps } from "../types";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
-import { Styles } from "..";
+import { ORBS_LOGO, ORBS_LOGO_FALLBACK, Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { stateActions } from "../context/actions";
 import {
@@ -261,12 +261,18 @@ export function TokenUSD({
 }
 
 export function PoweredBy({ className = "" }: { className?: string }) {
+  const [url, setUrl] = useState(ORBS_LOGO);
   const translations = useTwapContext().translations;
+
+  const onError = () => {
+    setUrl(ORBS_LOGO_FALLBACK);
+  };
+
   return (
     <StyledPoweredBy className={`${className} twap-powered-by`}>
       <a href="https://www.orbs.com/" target="_blank">
         <StyledText>{translations.poweredBy}</StyledText>
-        <img src="https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/orbslogo.svg" />
+        <img src={url} onError={onError} />
       </a>
     </StyledPoweredBy>
   );
