@@ -80,6 +80,8 @@ export interface Translations {
   confirmationLimitPriceTooltip: string;
   ordersTooltip: string;
   noOrdersFound1: string;
+  noOrdersFound2: string;
+  noOrdersFound_Swap: string;
   poweredBy: string;
   insertLimitPriceWarning: string;
   unwrap: string;
@@ -98,6 +100,8 @@ export interface Translations {
   viewOrders: string;
   view: string;
   estimate: string;
+  partDuration: string;
+  totalDuration: string;
 }
 
 export interface BaseComponentProps {
@@ -308,6 +312,8 @@ export interface State {
   dstUsd?: BN;
   srcUsdLoading?: boolean;
   dstUsdLoading?: boolean;
+
+  priceImpact: number;
 }
 
 export type SwitchVariant = "ios" | "default";

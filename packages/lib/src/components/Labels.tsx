@@ -118,3 +118,18 @@ export const OrdersLabel = ({ className = "" }: { className?: string }) => {
     </StyledRowFlex>
   );
 };
+
+export const PartDurationLabel = () => {
+  const translations = useTwapContext().translations;
+  return <Styles.StyledH1>{translations.partDuration}</Styles.StyledH1>;
+}
+
+export const TotalDuarationLabel = () => {
+  const translations = useTwapContext().translations;
+  return <Styles.StyledH1>{translations.totalDuration}</Styles.StyledH1>;
+}
+
+export const TradingPostLimitPriceLabel = () => {
+  const translations = useTwapContext().translations;
+  return <Styles.StyledH1>{translations.limitPrice}</Styles.StyledH1>;
+}

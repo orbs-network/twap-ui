@@ -164,3 +164,9 @@ export const StyledSummaryRow = styled(StyledRowFlex)({
     },
   },
 });
+
+export const StyledH1 = styled(Typography)(({ theme }) => ({
+  fontSize: 16,
+  fontWeight: 400,
+  color: theme.palette.mode === "dark" ? "#767676" : "#866C65",
+}));
