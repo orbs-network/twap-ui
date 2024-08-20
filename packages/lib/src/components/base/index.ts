@@ -5,7 +5,6 @@ export { default as Label } from "./Label";
 export { default as SmallLabel } from "./SmallLabel";
 export * from "./Switch";
 export { default as TimeSelector } from "./TimeSelector";
-export { default as PriceImpactSelector } from "./PriceImpactSelector";
 export { default as TokenLogo } from "./TokenLogo";
 export { default as TokenName } from "./TokenName";
 export { default as Layout } from "./Layout";

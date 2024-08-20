@@ -8,7 +8,6 @@ import {
   Slider,
   Switch,
   TimeSelector,
-  PriceImpactSelector,
   TokenName,
   TokenPriceCompare,
   Tooltip,
@@ -345,13 +344,6 @@ export function TradeIntervalSelector({ placeholder }: { placeholder?: string })
 
   return <TimeSelector placeholder={placeholder} onChange={setFillDelay} value={fillDelay} />;
 }
-
-export const PriceProtectionSelector = ({ placeholder, icon }: { placeholder?: string; icon?: any }) => {
-  const setPriceImpact = useTwapStore((store) => store.setPriceImpact);
-  const priceImpact = useTwapStore((store) => store.getPriceImpact)();
-
-  return <PriceImpactSelector placeholder={placeholder} onChange={setPriceImpact} value={priceImpact} icon={icon} />;
-};
 
 interface TokenSelectProps extends TWAPTokenSelectProps {
   Component?: FC<TWAPTokenSelectProps>;
