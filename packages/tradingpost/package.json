@@ -15,6 +15,7 @@
   ],
   "scripts": {
     "prettier": "prettier -w '{src,test}/**/*.{ts,tsx,js,jsx,json,sol}'",
+    "transform-svg": "ts-node transform-svg.ts",
     "build": "npm run prettier && rm -rf dist && tsc && npm run copy-assets",
     "start": "npm run prettier && nodemon --ext js,jsx,ts,tsx,json --watch ./src --exec tsc",
     "test": "eslint src",
@@ -33,7 +34,12 @@
     "react": "*",
     "react-dom": "*"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
+    "@svgr/cli": "^8.1.0",
+    "@types/node": "^22.0.2",
     "copyfiles": "^2.4.1"
   }
 }
