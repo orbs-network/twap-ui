@@ -6,6 +6,7 @@ import { useOrdersHistoryQuery, useOrdersTabs } from "../hooks";
 import { useOrdersStore } from "../store";
 import { StyledOrdersLists, StyledOrdersTab, StyledOrdersTabs } from "../styles";
 import OrdersList from "../orders/OrdersList";
+import { Dex } from "../consts";
 
 function a11yProps(index: number) {
   return {
@@ -39,7 +40,26 @@ export const OrdersSelectTabs = ({ className = "" }: { className?: string }) => 
   );
 };
 
-export const SelectedOrders = ({ className = "" }: { className?: string }) => {
+/**
+ * The `SelectedOrders` component renders a list of `OrdersList` components based on the selected tab
+ * and the specified decentralized exchange (DEX).
+ *
+ * This component dynamically selects and renders the appropriate `OrdersList` based on the selected
+ * tab and the `dex` prop. If the `dex` is `TradingPost`, a specific `OrdersList` with customized
+ * props is rendered.
+ *
+ * @param {string} [className=""] - Optional additional class names for styling the component.
+ * @param {Dex} [dex] - The decentralized exchange (DEX) being used. This prop controls the behavior
+ *                      of the component. The available options for `dex` are:
+ *                      - `Dex.Uniswap` ("uniswap")
+ *                      - `Dex.Sushiswap` ("sushiswap")
+ *                      - `Dex.Quickswap` ("quickswap")
+ *                      - `Dex.TradingPost` ("tradingpost")
+ *
+ * @returns {JSX.Element} A list of `OrdersList` components rendered based on the selected tab value
+ *                        and the specified `dex`.
+ */
+export const SelectedOrders = ({ className = "", dex }: { className?: string, dex?: string }) => {
   const { orders, isLoading } = useOrdersHistoryQuery();
   const { tab } = useOrdersStore();
   const tabs = useOrdersTabs();
@@ -54,7 +74,9 @@ export const SelectedOrders = ({ className = "" }: { className?: string }) => {
         if (tabValue === "All") {
           return <OrdersList key={key} isLoading={isLoading} orders={_.flatMap(orders)} />;
         }
-
+        if (dex === Dex.TradingPost) {
+          return <OrdersList key={key} isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status] as ParsedOrder[]} dex={Dex.TradingPost}/>;
+        }
         return <OrdersList key={key} isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status] as ParsedOrder[]} />;
       })}
     </StyledOrdersLists>

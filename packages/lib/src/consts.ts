@@ -17,3 +17,10 @@ export const QUERY_PARAMS = {
 };
 
 export const SUGGEST_CHUNK_VALUE = 100;
+
+export enum Dex {
+  Uniswap = "uniswap",
+  Sushiswap = "sushiswap",
+  Quickswap = "quickswap",
+  TradingPost = "tradingpost",
+}
