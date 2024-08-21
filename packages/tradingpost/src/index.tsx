@@ -22,30 +22,29 @@ import {
   StyledColumnFlex,
   StyledLimitPrice,
   StyledLimitPriceBody,
-  StyledLimitPriceLabel,
+  StyledModalHeader,
+  StyledModalHeaderClose,
+  StyledModalHeaderTitle,
   StyledPoweredBy,
   StyledReset,
-  StyledModalHeaderClose,
-  StyledModalHeader,
+  StyledResetLimitButton,
   StyledSwapModalContent,
-  StyledModalHeaderTitle,
   StyledText,
-  StyledTimingAndDistribution,
-  StyledValue,
+  StyledTimeSelect,
+  StyledTimeSelectBody,
+  StyledTimeSelectContainer,
+  StyledTimeSelectHeader,
 } from "./styles";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { StyledBalance, StyledTokenChange, StyledTokenChangeContainer, StyledTokenPanel, StyledPriceImpactPanel, StyledTokenPanelInput, StyledTokenSelect } from "./styles";
+import { StyledBalance, StyledTokenChange, StyledTokenChangeContainer, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect } from "./styles";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { Configs, TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import _ from "lodash";
 import BN from "bignumber.js";
 import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
-import { ReactComponent as TwapDropDpwn } from "./assets/twap-dropdown.svg";
-import { ReactComponent as Arrow } from "./assets/arrow.svg";
-import { ReactComponent as PriceImpactArrow } from "./assets/price-protection-arrow-selector.svg";
-import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
-import PancakeOrders from "./TradingPostOrders";
+import Arrow from "./assets/components/Arrow";
+import TradingPostOrders from "./TradingPostOrders";
 import { getTokenFromTokensList } from "@orbs-network/twap-ui";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { OrderSummary } from "./OrderSummary";
@@ -53,18 +52,14 @@ import { useTwapContext } from "@orbs-network/twap-ui";
 import { useAdapterContext, AdapterContextProvider, AdapterProps } from "./context";
 import { Price } from "./components";
 import { create } from "zustand";
-import { TradeStatCardProps } from "./types";
-
 const Button = (props: any) => {
   const DappButton = useAdapterContext().Button;
-
   return (
     <DappButton onClick={props.onClick} disabled={props.disabled || props.loading}>
       {props.children}
     </DappButton>
   );
 };
-
 const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
   const useTooltip = useAdapterContext().useTooltip;
   const { targetRef, tooltip, tooltipVisible } = useTooltip(text, { placement: "top", hideTimeout: 0 });
@@ -74,7 +69,6 @@ const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
     </span>
   );
 };
-
 const uiPreferences: TwapContextUIPreferences = {
   usdSuffix: " USD",
   usdPrefix: "~",
@@ -94,12 +88,9 @@ const uiPreferences: TwapContextUIPreferences = {
     },
   },
 };
-
 const config = Configs.PancakeSwap;
-
 export const parseToken = (rawToken: any): TokenData | undefined => {
   const { address, decimals, symbol, logoURI } = rawToken;
-
   if (!symbol) {
     console.error("Invalid token", rawToken);
     return;
@@ -114,17 +105,14 @@ export const parseToken = (rawToken: any): TokenData | undefined => {
     logoUrl: logoURI,
   };
 };
-
 const storeOverride = {
   isLimitOrder: true,
   chunks: 1,
   customDuration: { resolution: store.TimeResolution.Days, amount: 7 },
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
-
 const Balance = ({ isSrc }: { isSrc?: boolean }) => {
   const onPercentClick = hooks.useCustomActions();
-
   return (
     <StyledBalanceContainer onClick={isSrc ? () => onPercentClick(1) : () => {}}>
       <StyledBalance isSrc={isSrc} decimalScale={6} />
@@ -132,28 +120,9 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
   );
 };
 
-const PriceProtection = () => {
-  return (
-    <StyledPriceImpactPanel>
-      <Card.Body editable={true}>
-        <Styles.StyledRowFlex style={{ width: "100%", justifyContent: "space-between" }}>
-          <TwapStyles.StyledColumnFlex>
-            <StyledText>Price Protection</StyledText>
-            <StyledTokenPanelInput dstDecimalScale={3} isSrc={true} />
-          </TwapStyles.StyledColumnFlex>
-          <TwapStyles.StyledColumnFlex style={{ alignItems: "end" }}>
-            <Components.PriceProtectionSelector icon={<PriceImpactArrow />} />
-          </TwapStyles.StyledColumnFlex>
-        </Styles.StyledRowFlex>
-      </Card.Body>
-    </StyledPriceImpactPanel>
-  );
-};
-
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   const selectToken = hooks.useSelectTokenCallback();
   const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
-
   const onSelect = useCallback(
     (token: any) => {
       selectToken({ isSrc: !!isSrcToken, token });
@@ -179,50 +148,6 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   );
 };
 
-const TotalDuration = () => {
-  return (
-    <Card.Body editable={true}>
-      <Styles.StyledRowFlex style={{ width: "100%", justifyContent: "space-between" }}>
-        <TwapStyles.StyledColumnFlex style={{ justifyContent: "space-between" }}>
-          <StyledText>Total Duration</StyledText>
-          <StyledValue>1 h</StyledValue>
-        </TwapStyles.StyledColumnFlex>
-        <TwapDropDpwn />
-      </Styles.StyledRowFlex>
-    </Card.Body>
-  );
-};
-
-const TradeStatCard: React.FC<TradeStatCardProps> = ({ title, value, editable = true, opacity = 40 }) => {
-  return (
-    <Card.Body editable={true} opacity={65}>
-      <Styles.StyledRowFlex style={{ width: "100%", justifyContent: "space-between" }}>
-        <TwapStyles.StyledColumnFlex style={{ justifyContent: "space-between" }}>
-          <StyledText>{title}</StyledText>
-          <StyledValue>{value}</StyledValue>
-        </TwapStyles.StyledColumnFlex>
-      </Styles.StyledRowFlex>
-    </Card.Body>
-  );
-};
-
-const TradeTimingAndDistribution = () => {
-  return (
-    <StyledTimingAndDistribution>
-      <Styles.StyledRowFlex style={{ width: "100%" }}>
-        <TwapStyles.StyledColumnFlex>
-          <TotalDuration />
-          <TradeStatCard title="Sell per part (1/2)" value="496 USDC" />
-        </TwapStyles.StyledColumnFlex>
-        <TwapStyles.StyledColumnFlex>
-          <TradeStatCard title="Part Duration" value="3 m" />
-          <TradeStatCard title="Buy per part (1/2)" value="540 USDC" />
-        </TwapStyles.StyledColumnFlex>
-      </Styles.StyledRowFlex>
-    </StyledTimingAndDistribution>
-  );
-};
-
 const ChangeTokensOrder = () => {
   return (
     <StyledTokenChangeContainer>
@@ -230,49 +155,38 @@ const ChangeTokensOrder = () => {
     </StyledTokenChangeContainer>
   );
 };
-
 const handleAddress = (address?: string) => {
   return isNativeAddress(address || "") ? "BNB" : address;
 };
-
 export const useProvider = (props: AdapterProps) => {
   const [provider, setProvider] = useState<any>(undefined);
-
   const setProviderFromConnector = useCallback(async () => {
     const res = await props.connector?.getProvider();
     setProvider(res);
   }, [setProvider, props.connector]);
-
   useEffect(() => {
     setProviderFromConnector();
   }, [props.account, props.connectedChainId, setProviderFromConnector]);
-
   return provider;
 };
-
 const useTrade = (props: AdapterProps) => {
   const { srcToken, toToken, srcAmount } = store.useTwapStore((s) => ({
     srcToken: s.srcToken?.address,
     toToken: s.dstToken?.address,
     srcAmount: s.getSrcAmount().toString(),
   }));
-
   const res = props.useTrade!(handleAddress(srcToken), handleAddress(toToken), srcAmount === "0" ? undefined : srcAmount);
-
   return {
     outAmount: res?.outAmount,
     isLoading: BN(srcAmount || "0").gt(0) && res?.isLoading,
   };
 };
-
 const TWAP = memo((props: AdapterProps) => {
   const provider = useProvider(props);
   const trade = useTrade(props);
-
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
-
   const dappTokens = useMemo(() => {
     if (!props.dappTokens || !props.nativeToken) return undefined;
     return {
@@ -280,7 +194,6 @@ const TWAP = memo((props: AdapterProps) => {
       [zeroAddress]: props.nativeToken,
     };
   }, [props.dappTokens, props.nativeToken]);
-
   return (
     <Box className="twap-adapter-wrapper">
       <TwapAdapter
@@ -311,29 +224,36 @@ const TWAP = memo((props: AdapterProps) => {
           <GlobalStyles styles={configureStyles(theme) as any} />
           <AdapterContextProvider value={{ ...props, provider, dappTokens }}>
             {props.limit ? <LimitPanel /> : <TWAPPanel />}
-            <PancakeOrders />
+            <TradingPostOrders />
           </AdapterContextProvider>
         </ThemeProvider>
       </TwapAdapter>
     </Box>
   );
 });
-
 const TopPanel = () => {
   return (
     <Styles.StyledColumnFlex gap={0}>
       <TokenPanel isSrcToken={true} />
       <ChangeTokensOrder />
       <TokenPanel />
-      <PriceProtection />
     </Styles.StyledColumnFlex>
   );
 };
 
+const LimitTopPanel = () => {
+  return (
+    <Styles.StyledColumnFlex gap={0}>
+      <TokenPanel isSrcToken={true} />
+      <LimitPrice limitOnly={true} />
+      <ChangeTokensOrder />
+      <TokenPanel />
+    </Styles.StyledColumnFlex>
+  );
+};
 const OpenConfirmationModalButton = () => {
   const { ConnectButton, provider, Button } = useAdapterContext();
   const { onClick, text, disabled } = useShowSwapModalButton();
-
   if (!provider) {
     return (
       <StyledButtonContainer>
@@ -341,7 +261,6 @@ const OpenConfirmationModalButton = () => {
       </StyledButtonContainer>
     );
   }
-
   return (
     <StyledButtonContainer>
       <Button onClick={onClick} disabled={disabled}>
@@ -350,7 +269,6 @@ const OpenConfirmationModalButton = () => {
     </StyledButtonContainer>
   );
 };
-
 const StyledButtonContainer = styled("div")({
   width: "100%",
   "> *": {
@@ -359,15 +277,45 @@ const StyledButtonContainer = styled("div")({
   marginTop: 10,
 });
 
+const PartDuration = () => {
+  return (
+    <StyledTimeSelectContainer>
+      <StyledTimeSelectHeader>
+        <Components.Labels.PartDurationLabel />
+      </StyledTimeSelectHeader>
+      <StyledTimeSelect>
+        <StyledTimeSelectBody editable={true}>
+          <Components.TradeIntervalSelector />
+        </StyledTimeSelectBody>
+        <Components.FillDelayWarning />
+      </StyledTimeSelect>
+    </StyledTimeSelectContainer>
+  );
+};
+
+const TotalDuration = () => {
+  return (
+    <StyledTimeSelectContainer>
+      <StyledTimeSelectHeader>
+        <Components.Labels.TotalDuarationLabel />
+      </StyledTimeSelectHeader>
+      <StyledTimeSelect>
+        <StyledTimeSelectBody editable={true}>
+          <Components.MaxDurationSelector />
+        </StyledTimeSelectBody>
+        <Components.PartialFillWarning />
+      </StyledTimeSelect>
+    </StyledTimeSelectContainer>
+  );
+};
+
 const LimitPanel = () => {
   const { onInvert } = hooks.useLimitPriceV2();
-
   return (
     <div className="twap-container">
       <StyledColumnFlex>
-        <TopPanel />
+        <LimitTopPanel />
         <TwapStyles.StyledColumnFlex>
-          <LimitPrice limitOnly={true} />
           <Price />
         </TwapStyles.StyledColumnFlex>
         <OpenConfirmationModalButton />
@@ -377,13 +325,13 @@ const LimitPanel = () => {
     </div>
   );
 };
-
 const TWAPPanel = () => {
   return (
     <div className="twap-container">
       <StyledColumnFlex>
         <TopPanel />
-        <TradeTimingAndDistribution />
+        <PartDuration />
+        <TotalDuration />
         <Price />
         <OpenConfirmationModalButton />
       </StyledColumnFlex>
@@ -391,37 +339,25 @@ const TWAPPanel = () => {
     </div>
   );
 };
-
 const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
   const isLimitOrder = store.useTwapStore((store) => store.isLimitOrder);
   const { onInvert, isLoading } = hooks.useLimitPriceV2();
   const { TradePriceToggle } = useAdapterContext();
-
   return (
     <StyledLimitPrice>
       <Card>
-        <Card.Header>
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <StyledLimitPriceLabel>
-              <Components.Labels.LimitPriceLabel />
-              <Components.ResetLimitButton>
-                <StyledReset>
-                  <TwapStyles.StyledRowFlex gap={8}>
-                    <GrPowerReset />
-                    <Typography>Reset</Typography>
-                  </TwapStyles.StyledRowFlex>
-                </StyledReset>
-              </Components.ResetLimitButton>
-            </StyledLimitPriceLabel>
-            <TwapStyles.StyledRowFlex style={{ width: "auto", gap: 0 }}>
-              {!limitOnly && <Components.LimitPriceToggle />}
-              <TradePriceToggle onClick={onInvert} loading={!!isLoading} />
-            </TwapStyles.StyledRowFlex>
-          </TwapStyles.StyledRowFlex>
-        </Card.Header>
         {isLimitOrder && (
           <Styles.StyledColumnFlex>
             <StyledLimitPriceBody editable={true}>
+              <div style={{ position: "relative", top: "0px" }}>
+                <StyledResetLimitButton>
+                  <StyledReset>
+                    <Typography>Set To Market</Typography>
+                  </StyledReset>
+                </StyledResetLimitButton>
+
+                <Components.Labels.TradingPostLimitPriceLabel />
+              </div>
               <Components.LimitInputV2 />
             </StyledLimitPriceBody>
           </Styles.StyledColumnFlex>
@@ -430,9 +366,7 @@ const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
     </StyledLimitPrice>
   );
 };
-
 export { TWAP, Orders };
-
 export enum SwapState {
   REVIEW,
   APPROVE,
@@ -441,17 +375,14 @@ export enum SwapState {
   ERROR,
   COMPLETED,
 }
-
 interface Store {
   swapState: SwapState;
   setSwapState: (value: SwapState) => void;
 }
-
 export const useOrdersStore = create<Store>((set, get) => ({
   swapState: SwapState.REVIEW,
   setSwapState: (swapState) => set({ swapState }),
 }));
-
 const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   const { swapState, setSwapState } = useOrdersStore();
   const { dappTokens, ApproveModalContent, SwapPendingModalContent, SwapTransactionErrorContent, AddToWallet, SwapTransactionReceiptModalContent } = useAdapterContext();
@@ -464,7 +395,6 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
     disclaimerAccepted: s.disclaimerAccepted,
   }));
   const reset = hooks.useResetStore();
-
   const { mutateAsync: approveCallback } = hooks.useApproveToken(true);
   const { data: allowance, isLoading, refetch: refetchAllowance } = hooks.useHasAllowanceQuery();
   const { mutateAsync: createOrder } = hooks.useCreateOrder(true);
@@ -472,7 +402,6 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
   const [error, setError] = useState("");
   const { data: hasNativeBalance } = hooks.useHasMinNativeTokenBalance("0.0035");
   const id = useRef(1);
-
   const onSubmit = useCallback(async () => {
     let _id = id.current;
     try {
@@ -495,7 +424,6 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
         setSwapState(SwapState.ATTEMTPING_TX);
       }
       await createOrder();
-
       if (id.current === _id) {
         setSwapState(SwapState.COMPLETED);
       }
@@ -506,17 +434,14 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
       }
     }
   }, [allowance, approveCallback, createOrder, setSwapState, setError, hasNativeBalance, id]);
-
   const wrongNetwork = store.useTwapStore((store) => store.wrongNetwork);
   let content = null;
   let title: string | undefined = undefined;
-
   const resetPoupupState = () => {
     setTimeout(() => {
       setSwapState(SwapState.REVIEW);
     }, 300);
   };
-
   const onClose = () => {
     id.current = id.current + 1;
     setShowConfirmation(false);
@@ -528,34 +453,27 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
       reset();
     }
   };
-
   useEffect(() => {
     if (txHash && swapState === SwapState.ATTEMTPING_TX) {
       setSwapState(SwapState.PENDING_CONFIRMATION);
     }
   }, [txHash, swapState]);
-
   const addToWallet = !AddToWallet ? null : <AddToWallet logo={fromToken?.logoUrl} symbol={fromToken?.symbol} address={fromToken?.address} decimals={fromToken?.decimals} />;
-
   if (swapState === SwapState.REVIEW) {
     title = "Confirm Order";
     content = <OrderSummary isLimitPanel={limitPanel} disabled={isLoading || !disclaimerAccepted} onSubmit={onSubmit} />;
   }
-
   if (swapState === SwapState.APPROVE) {
     content = !ApproveModalContent ? null : <ApproveModalContent title={`Enable spending ${inputCurrency?.symbol}`} isBonus={false} isMM={false} />;
   }
-
   if (swapState === SwapState.ERROR) {
     content = !SwapTransactionErrorContent ? null : <SwapTransactionErrorContent openSettingModal={() => {}} onDismiss={onClose} message={error} />;
   }
-
   if (swapState === SwapState.ATTEMTPING_TX) {
     content = !SwapPendingModalContent ? null : (
       <SwapPendingModalContent title={`Create ${limitPanel ? "" : "TWAP"} ${isLimitOrder ? "Limit" : "Market"} Order`}>{addToWallet}</SwapPendingModalContent>
     );
   }
-
   if (swapState === SwapState.PENDING_CONFIRMATION) {
     content = (
       <SwapPendingModalContent showIcon={true} title="Transaction Submitted">
@@ -563,7 +481,6 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
       </SwapPendingModalContent>
     );
   }
-
   if (swapState === SwapState.COMPLETED) {
     content = (
       <SwapTransactionReceiptModalContent txHash={txHash} address={fromToken?.address} symbol={fromToken?.symbol} decimals={fromToken?.decimals} logo={fromToken?.logoUrl}>
@@ -571,11 +488,9 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
       </SwapTransactionReceiptModalContent>
     );
   }
-
   if (wrongNetwork) {
     content = null;
   }
-
   return (
     <Components.Base.Modal header={<ModalHeader title={title} onClose={onClose} />} title={title} onClose={onClose} open={showConfirmation}>
       <StyledSwapModalContent
@@ -589,7 +504,6 @@ const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
     </Components.Base.Modal>
   );
 };
-
 const StyledSwapModalContentChildren = styled("div")`
   flex: 1;
   overflow-y: auto;
@@ -597,7 +511,6 @@ const StyledSwapModalContentChildren = styled("div")`
   flex-direction: column;
   width: 100%;
 `;
-
 const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }) => {
   return (
     <StyledModalHeader withTitle={title ? 1 : 0}>
@@ -608,7 +521,6 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
     </StyledModalHeader>
   );
 };
-
 export const useShowSwapModalButton = () => {
   const translations = useTwapContext()?.translations;
   const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, createOrderLoading, srcAmount } = store.useTwapStore((store) => ({
@@ -627,12 +539,10 @@ export const useShowSwapModalButton = () => {
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();
   const srcUsd = hooks.useSrcUsd().value;
   const dstUsd = hooks.useDstUsd().value;
-
   const noLiquidity = useMemo(() => {
     if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;
     return !dexAmounOut.raw || BN(dexAmounOut.raw).isZero();
   }, [dexAmounOut.raw, dstAmountLoading, srcAmount]);
-
   if (wrongNetwork)
     return {
       text: translations.switchNetwork,
@@ -640,7 +550,6 @@ export const useShowSwapModalButton = () => {
       loading: changeNetworkLoading,
       disabled: changeNetworkLoading,
     };
-
   if (!srcAmount || BN(srcAmount || "0").isZero()) {
     return {
       text: translations.enterAmount,
@@ -650,7 +559,6 @@ export const useShowSwapModalButton = () => {
   if (dstAmountLoading) {
     return { text: "Searching for the best price", onClick: undefined, disabled: true };
   }
-
   if (noLiquidity) {
     return {
       text: "Insufficient liquidity for this trade.",
@@ -658,14 +566,12 @@ export const useShowSwapModalButton = () => {
       loading: false,
     };
   }
-
   if (!srcUsd || srcUsd.isZero() || !dstUsd || dstUsd.isZero()) {
     return {
       text: "Searching for the best price",
       disabled: true,
     };
   }
-
   if (warning)
     return {
       text: warning,
@@ -673,7 +579,6 @@ export const useShowSwapModalButton = () => {
       disabled: true,
       loading: false,
     };
-
   if (shouldUnwrap)
     return {
       text: translations.unwrap,
@@ -688,7 +593,6 @@ export const useShowSwapModalButton = () => {
       loading: wrapLoading,
       disabled: wrapLoading,
     };
-
   if (createOrderLoading) {
     return {
       text: translations.placeOrder,
@@ -697,7 +601,6 @@ export const useShowSwapModalButton = () => {
       },
     };
   }
-
   return {
     text: translations.placeOrder,
     onClick: () => {

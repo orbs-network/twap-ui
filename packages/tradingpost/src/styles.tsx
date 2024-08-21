@@ -1,5 +1,5 @@
 import { Box, Button, createTheme, styled, Theme, Typography } from "@mui/material";
-import { border, fontSize, fontWeight, padding, width } from "@mui/system";
+import { display } from "@mui/system";
 import { Components, OrdersContainer, Styles } from "@orbs-network/twap-ui";
 import { CSSProperties, ReactNode } from "react";
 const isDarkMode = (theme: Theme) => theme.palette.mode === "dark";
@@ -22,7 +22,7 @@ export const baseStyles = (theme: Theme) => {
     primaryColor: "#1fc7d4",
     cardColor: darkMode ? "#362F47" : "#eee",
     primaryTextColor: darkMode ? "#FBF4EF" : "#453936",
-    secondaryColor: darkMode ? "#866C65" : "#767676",
+    secondaryColor: darkMode ? "#767676" : "#866C65",
     secondarySubTextColor: darkMode ? "#866C65" : "#767676",
     cardBox: darkMode ? "#2A2A27" : "#E4CAB4",
     editableCardBox: darkMode ? "#20201D" : "#EFD9C7",
@@ -399,15 +399,6 @@ export const StyledText = styled(Styles.StyledText)(({ theme }) => {
   };
 });
 
-export const StyledValue = styled(Styles.StyledText)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    color: styles.subValue,
-    fontSize: 24,
-    fontWeight: 700,
-  };
-});
-
 export const StyledTokenPanelInput = styled(Components.TokenPanelInput)({
   input: {
     width: "100%",
@@ -480,13 +471,6 @@ export const StyledMarketPriceContainer = styled(Styles.StyledRowFlex)(({ theme 
   };
 });
 
-export const StyledUSD = styled(Components.TokenUSD)({});
-
-export const StyledEmptyUSD = styled(Box)({
-  height: 18,
-  opacity: 0,
-});
-
 export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
@@ -500,10 +484,6 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
       color: styles.primaryTextColor,
     },
   };
-});
-
-export const StyledSelectAndBalance = styled(Styles.StyledRowFlex)({
-  justifyContent: "space-between",
 });
 
 export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
@@ -550,39 +530,11 @@ export const StyledTokenChange = styled(Components.ChangeTokensOrder)(({ theme }
   };
 });
 
-export const StyledChunksInput = styled(Components.ChunksInput)({
-  marginLeft: "auto",
-  fontWeight: 600,
-  color: "#1fc7d4",
-  div: {
-    height: "100%",
-  },
-  input: {
-    height: "100%",
-  },
-});
-
-export const StyledChunksSlider = styled(Components.ChunksSliderSelect)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    marginLeft: 10,
-    ".MuiSlider-thumb": {
-      background: styles.darkMode ? styles.primaryTextColor : "#1fc7d4",
-    },
-    ".MuiSlider-track": {
-      background: styles.primaryColor,
-      border: `1px solid ${styles.primaryColor}`,
-    },
-    ".MuiSlider-valueLabel": {
-      ...getTootlipStyles(theme),
-    },
-  };
-});
-
 export const StyledLimitPrice = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     justifyContent: "space-between",
+    marginTop: 10,
     ".twap-limit-price-input": {
       "*": {
         color: styles.primaryTextColor,
@@ -635,11 +587,10 @@ export const StyledButton = styled("button")<{ selected?: number }>(({ theme, se
 export const StyledReset = styled(StyledButton)({
   p: {
     fontSize: 13,
+    color: "#DE7F3B",
   },
-  svg: {
-    width: 12,
-    height: 12,
-  },
+  border: "none",
+  padding: "0px",
 });
 
 export const StyledAcceptDisclaimer = styled(Components.AcceptDisclaimer)({
@@ -770,49 +721,11 @@ export const StyledTokenPanel = styled(Card)({
   },
 });
 
-export const StyledTimingAndDistribution = styled(Card)({
-  width: "100%",
-  gap: 7,
-  ".twap-input": {
-    width: "100%",
-    input: {
-      textAlign: "left",
-    },
-  },
-});
-
-export const StyledPriceImpactPanel = styled(Card)({
-  width: "100%",
-  marginTop: 20,
-  ".twap-input": {
-    input: {
-      textAlign: "left",
-    },
-  },
-});
-
 export const StyledTradeSize = styled(Styles.StyledRowFlex)({
   justifyContent: "space-between",
   flexWrap: "wrap",
   alignItems: "center",
 });
-
-export const StyledTotalChunks = styled(Card)({
-  ".twap-input": {
-    height: 25,
-  },
-});
-
-export const StyledTradeSizeRight = styled(Styles.StyledColumnFlex)({
-  gap: 0,
-  width: "auto",
-  alignItems: "center",
-});
-
-export const StyledOrdersMenuButton = styled(Button)(({ theme }) => ({
-  width: "auto!important",
-  background: baseStyles(theme).darkMode ? "#353547" : "",
-}));
 
 export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
   const styles = baseStyles(theme);
@@ -822,6 +735,10 @@ export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
       marginBottom: "40px",
       paddingTop: "30px",
       color: styles.primaryTextColor,
+      justifyContent: "center",
+      alignItems: "center",
+      display: "flex",
+      flexDirection: "column",
     },
     ".twap-orders-pagination": {
       color: styles.primaryTextColor,
@@ -840,40 +757,38 @@ export const StyledTimeSelect = styled(Styles.StyledColumnFlex)({
   flex: 1,
 });
 
-export const StyledPriceImpactSelect = styled(Components.PriceProtectionSelector)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    background: styles.cardBox,
-    borderRadius: 16,
-    padding: 12,
-  };
-});
-
 export const StyledTimeSelectBody = styled(CardBody)({
   display: "flex",
   alignItems: "center",
 
   padding: "4px 10px",
   width: "auto",
+  boxShadow: "none",
 });
 
-export const StyledTimeSelectContainer = styled(Styles.StyledRowFlex)({
-  padding: 0,
-  ".MuiButtonBase-root": {
-    padding: "0px!important",
-    background: "unset!important",
-    height: "100%",
-    p: {
-      fontSize: "12px!important",
-      fontWeight: 400,
+export const StyledTimeSelectContainer = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+
+  return {
+    background: styles.editableCardBox,
+    borderRadius: 16,
+    padding: 16,
+    ".MuiButtonBase-root": {
+      padding: "0px!important",
+      background: "unset!important",
+      height: "100%",
+      p: {
+        fontSize: "12px!important",
+        fontWeight: 400,
+      },
     },
-  },
-  ".twap-input": {
-    input: {
-      fontSize: 14,
-      paddingRight: 3,
+    ".twap-input": {
+      input: {
+        fontSize: 14,
+        paddingRight: 3,
+      },
     },
-  },
+  };
 });
 
 export const StyledTimeSelectHeader = styled(Card.Header)({
@@ -885,53 +800,70 @@ export const StyledOrdersHeader = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     display: "flex",
-    flexDirection: "column",
-    background: styles.darkMode ? "#372f47" : "#eeeaf4",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    background: styles.darkMode ? "#20201D" : "#EFD9C7",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    height: 48,
+    height: 60,
+    width: "100%",
+    padding: "0px 0px",
+    position: "relative",
   };
 });
 
 export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, theme }) => {
   const styles = baseStyles(theme);
-  const color = styles.darkMode ? "#b8add2" : "#7a6eaa";
-  const selectedColor = styles.darkMode ? "#f4eeff" : "#280d5f";
+  const selectedColor = styles.darkMode ? "#FBF4EF" : "#453936";
   return {
     cursor: "pointer",
-    background: !selected ? "transparent" : styles.darkMode ? "#27262c" : "white",
+    background: selected ? (theme.palette.mode === "dark" ? "#2A2A27" : "#E4CAB4") : "transparent",
     height: "100%",
-    padding: " 0px 24px",
+    padding: "0px 24px",
     display: "flex",
     alignItems: "center",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderRadius: "16px",
     flex: 1,
     justifyContent: "center",
-    fontWeight: 500,
-    color: !selected ? color : selectedColor,
+    color: selectedColor,
     "@media (max-width:700px)": {
-      fontSize: 11,
-      padding: " 0px 10px",
+      fontSize: 12,
+      padding: "0px 10px",
     },
   };
 });
 
-export const StyledOrdersTabs = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  width: "100%",
-  justifyContent: "space-between",
-  height: "100%",
-  flex: 1,
-  "@media (max-width:700px)": {},
+export const StyledOrdersTabs = styled(Box)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    display: "flex",
+    flex: 1,
+    border: `1px solid ${styles.darkMode ? "#353531" : "#D5BAA5"}`,
+    alignItems: "center",
+    padding: "2px",
+    borderRadius: 16,
+    justifyContent: "space-between",
+    height: "100%",
+
+    "@media (max-width:700px)": {},
+  };
 });
 
 export const StyledLimitPriceBody = styled(Card.Body)({
   padding: "10px 10px",
+  alignItems: "center",
+  position: "relative",
   input: {
     textAlign: "right",
   },
+});
+
+export const StyledResetLimitButton = styled(Components.ResetLimitButton)({
+  position: "absolute",
+  top: "0",
+  right: "0",
+  zIndex: 1,
 });
 
 export const StyledLimitPriceLabel = styled(Styles.StyledRowFlex)({
@@ -998,5 +930,50 @@ export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {
     fontSize: 20,
     fontWeight: 600,
     color: darkMode ? "#f4eeff" : "#280d5f",
+  };
+});
+
+export const StyledBody = styled(Styles.StyledColumnFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    padding: "15px 20px 20px 20px",
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    alignItems: "center",
+    gap: 15,
+    backgroundColor: styles.darkMode ? "#20201D" : "#EFD9C7",
+  };
+});
+
+export const StyledButtonTab = styled("button")<{ selected?: boolean }>(({ selected, theme }) => {
+  const styles = baseStyles(theme);
+
+  let color;
+
+  if (styles.darkMode) {
+    color = selected ? "#DE7F3B" : "#767676";
+  } else {
+    color = selected ? "#DE7F3B" : "#866C65";
+  }
+
+  return {
+    color: color,
+    backgroundColor: "inherit",
+    border: "none",
+    padding: "5px",
+    cursor: "pointer",
+    outline: "none",
+    fontSize: 16,
+    fontWeight: 700,
+  };
+});
+
+export const StyledLine = styled(Box)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    height: "1px",
+    backgroundColor: styles.darkMode ? "#FBF4EF" : "#D5BAA5",
+    width: "95%",
+    margin: "0 auto",
   };
 });

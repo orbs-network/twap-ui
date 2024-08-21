@@ -1,31 +1,28 @@
 import * as React from "react";
-import { styled } from "@mui/material";
+import { useMediaQuery } from "@mui/material";
 import { hooks, OrdersPortal, SelectedOrders, store } from "@orbs-network/twap-ui";
-import { StyledOrders, StyledOrdersHeader, StyledOrdersTab, StyledOrdersTabs } from "./styles";
-import { Styles } from "@orbs-network/twap-ui";
+import { StyledOrders, StyledOrdersHeader, StyledOrdersTab, StyledOrdersTabs, StyledBody } from "./styles";
 
-export default function PancakeOrders() {
+const useMobile = () => {
+  return useMediaQuery("(max-width:700px)");
+};
+
+export default function TradingPostOrders() {
   return (
     <OrdersPortal>
       <StyledOrders>
-        <StyledOrdersHeader>
-          <Tabs />
-        </StyledOrdersHeader>
+        <OrdersHeaderLayout />
         <StyledBody>
-          <SelectedOrders />
+          <SelectedOrders dex="tradingpost"/>
         </StyledBody>
       </StyledOrders>
     </OrdersPortal>
   );
 }
 
-const StyledBody = styled(Styles.StyledColumnFlex)({
-  padding: "15px 20px 20px 20px",
-  alignItems: "center",
-  gap: 15,
-});
+const OrdersHeaderLayout = () => {
+  const mobile = useMobile();
 
-const Tabs = () => {
   const { tab, setTab } = store.useOrdersStore();
 
   const tabs = hooks.useOrdersTabs();
@@ -38,14 +35,19 @@ const Tabs = () => {
   };
 
   return (
-    <StyledOrdersTabs>
-      {Object.keys(tabs).map((key, index) => {
-        return (
-          <StyledOrdersTab selected={key === selectedTab ? 1 : 0} key={key} onClick={() => onSelect(index)}>
-            {key}
-          </StyledOrdersTab>
-        );
-      })}
-    </StyledOrdersTabs>
+    <>
+      <StyledOrdersHeader>
+        <StyledOrdersTabs>
+          {Object.keys(tabs)
+            .map((key, index) => {
+              return (
+                <StyledOrdersTab selected={key === selectedTab ? 1 : 0} key={key} onClick={() => onSelect(index)}>
+                  {key}
+                </StyledOrdersTab>
+              );
+            })}
+        </StyledOrdersTabs>
+      </StyledOrdersHeader>
+    </>
   );
 };
