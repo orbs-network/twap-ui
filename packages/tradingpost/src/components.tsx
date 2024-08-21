@@ -36,7 +36,6 @@ export function Price() {
         <DappTradePrice leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={price} />
       </div>
       <StyledLoader loading={isLoading ? 1 : 0} />
-      <Components.Base.Label>$3.05 $8.72</Components.Base.Label>
     </StyledMarketPriceContainer>
   );
 }
