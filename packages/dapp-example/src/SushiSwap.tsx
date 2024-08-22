@@ -13,7 +13,6 @@ import { network } from "@defi.org/web3-candies";
 
 const name = "SushiSwap";
 const configs = [Configs.SushiArb, Configs.SushiBase];
-
 export const useDappTokens = () => {
   const config = useConfig();
   const isBase = config?.chainId === Configs.SushiBase.chainId;

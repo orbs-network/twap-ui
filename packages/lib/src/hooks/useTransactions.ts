@@ -5,11 +5,11 @@ import { useEstimatedDelayBetweenChunksMillis, useGetHasAllowance, useNetwork, u
 import { query } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { analytics } from "../analytics";
 import { stateActions, useSwitchNativeToWrapped } from "../context/actions";
 import moment from "moment";
-import { useDeadline, useDstMinAmountOut, useFillDelay, useShouldOnlyWrap, useShouldWrap, useSrcAmount, useSrcChunkAmount, useSwapData } from "./lib";
+import { useDeadline, useDstMinAmountOut, useFillDelay, useIsMarketOrder, useShouldOnlyWrap, useShouldWrap, useSrcAmount, useSrcChunkAmount, useSwapData } from "./lib";
 import { Status } from "../types";
 
 export const useCreateOrder = () => {
@@ -26,7 +26,7 @@ export const useCreateOrder = () => {
 
   return useMutation(
     async (srcToken: TokenData) => {
-      analytics.updateAction("create");
+      analytics.updateAction("create-order");
 
       const fillDelaySeconds = (fillDelayMillisUi - estimatedDelayBetweenChunksMillis) / 1000;
 
@@ -99,7 +99,7 @@ export const useCreateOrder = () => {
     {
       onError: (error) => {
         logger("order create failed:", error);
-        analytics.onTxError(error, "create");
+        analytics.onTxError(error, "create-order");
       },
     },
   );
@@ -306,10 +306,19 @@ const useOnSuccessCallback = () => {
 
 const useSubmitAnalytics = () => {
   const swapData = useSwapData();
+  const isMarket = useIsMarketOrder();
+  const { isLimitPanel } = useTwapContext();
+
+  const orderType = useMemo(() => {
+    if (isLimitPanel) {
+      return "limit";
+    }
+    return isMarket ? "twap-market" : "twap-limit";
+  }, [isLimitPanel, isMarket]);
 
   return useCallback(() => {
-    analytics.onSubmitOrder(swapData);
-  }, [swapData]);
+    analytics.onSubmitOrder(swapData, orderType);
+  }, [swapData, orderType]);
 };
 
 export const useSubmitOrderFlow = () => {
