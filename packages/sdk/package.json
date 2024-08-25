@@ -1,6 +1,6 @@
 {
-  "name": "@orbs-network/twap-ui-sdk",
-  "version": "1.1.35",
+  "name": "@orbs-network/twap-sdk",
+  "version": "2.0.0",
   "description": "TWAP UI SDK",
   "license": "MIT",
   "author": "Orbs",
@@ -24,15 +24,7 @@
     "@orbs-network/twap": "^2.0.1",
     "bignumber.js": "9.x",
     "moment": "2.x",
-    "react-number-format": "5.x",
-    "styled-components": "^6.1.12",
-    "web3": "1.x",
-    "zustand": "^4.5.5"
-
-  },
-  "peerDependencies": {
-    "react": "*",
-    "react-dom": "*"
+    "web3": "1.x"
   },
   "publishConfig": {
     "access": "public"
