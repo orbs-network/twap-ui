@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-syncswap",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "TWAP UI for Syncswap",
   "license": "MIT",
   "author": "Orbs",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^2.0.1",
+    "@orbs-network/twap-ui": "^2.0.2",
     "web3": "1.x"
   },
   "peerDependencies": {
