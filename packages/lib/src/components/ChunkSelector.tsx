@@ -52,6 +52,7 @@ const StyledWarning = styled(Message)({
 
 const Input = ({ className }: { className?: string }) => {
   const chunks = useChunks();
+
   const setChunks = useSetChunks();
 
   return <StyledChunksInput className={className} placeholder="0" value={chunks} decimalScale={0} onChange={(value) => setChunks(Number(value))} />;
@@ -67,7 +68,7 @@ const SliderComponent = ({ className }: { className?: string }) => {
     return <Loader height="100%" />;
   }
 
-  return <Slider className={className} min={1} max={maxPossibleChunks === 1 ? maxPossibleChunks + 0.0001 : maxPossibleChunks} value={chunks} onChange={setChunks} />;
+  return <></>;
 };
 
 const StyledMessage = styled(Message)({

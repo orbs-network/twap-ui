@@ -1,100 +1,46 @@
-import { zero, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256, estimateGasPrice } from "@defi.org/web3-candies";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { sendAndWaitForConfirmations, web3, erc20, iwethabi, maxUint256, isNativeAddress } from "@defi.org/web3-candies";
+import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context/context";
-import { useEstimatedDelayBetweenChunksMillis, useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract, useTwapOrders } from "./hooks";
-import { query } from "./query";
+import { useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } from "./hooks";
+import { query, useGasPrice, useOrdersHistory } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
 import { useCallback } from "react";
 import { analytics } from "../analytics";
-import { stateActions, useSwitchNativeToWrapped } from "../context/actions";
-import moment from "moment";
+import { useSwitchNativeToWrapped } from "../context/actions";
 import { useDeadline, useDstMinAmountOut, useFillDelay, useShouldOnlyWrap, useShouldWrap, useSrcAmount, useSrcChunkAmount, useSwapData } from "./lib";
-import { REFETCH_GAS_PRICE, Status } from "@orbs-network/twap-ui-sdk";
+import { approveToken, wrapToken, createOrder, waitForUpdatedOrders } from "@orbs-network/twap-sdk";
 
 export const useCreateOrder = () => {
-  const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
-  const { askDataParams, account, dstToken, config } = useTwapContext();
+  const { account, dstToken, srcToken, config, updateState, web3 } = useTwapContext();
   const dstMinAmountOut = useDstMinAmountOut().amount;
   const srcChunkAmount = useSrcChunkAmount().amount;
   const deadline = useDeadline().millis;
   const fillDelayMillisUi = useFillDelay().millis;
   const srcAmount = useSrcAmount().amount;
-  const onTxHash = stateActions.useOnTxHash().onCreateOrderTxHash;
-  const twapContract = useTwapContract();
-  const estimatedDelayBetweenChunksMillis = useEstimatedDelayBetweenChunksMillis();
+  const wToken = useNetwork()?.wToken;
 
   return useMutation(
-    async (srcToken: TokenData) => {
-      analytics.updateAction("create");
+    async () => {
+      const srcTokenAddress = isNativeAddress(srcToken?.address || "") ? wToken?.address : srcToken?.address;
 
-      const fillDelaySeconds = (fillDelayMillisUi - estimatedDelayBetweenChunksMillis) / 1000;
-
-      if (!dstToken) {
-        throw new Error("dstToken is not defined");
+      if (!srcTokenAddress || !dstToken || !web3 || !account) {
+        throw new Error("srcToken, dstToken, web3 or account is not defined");
       }
-
-      if (!twapContract) {
-        throw new Error("twapContract is not defined");
-      }
-
-      if (!account) {
-        throw new Error("account is not defined");
-      }
-
-      const askData = config.exchangeType === "PangolinDaasExchange" ? web3().eth.abi.encodeParameters(["address"], askDataParams || []) : [];
-
-      const askParams = [
-        config.exchangeAddress,
-        srcToken.address,
-        dstToken.address,
-        BN(srcAmount).toFixed(0),
-        BN(srcChunkAmount).toFixed(0),
-        BN(dstMinAmountOut).toFixed(0),
-        BN(deadline).div(1000).toFixed(0),
-        BN(config.bidDelaySeconds).toFixed(0),
-        BN(fillDelaySeconds).toFixed(0),
-        askData,
-      ];
-
-      console.log("create order args:", {
-        exchangeAddress: config.exchangeAddress,
-        srcToken: srcToken.address,
-        dstToken: dstToken.address,
-        srcAmount: BN(srcAmount).toFixed(0),
-        srcChunkAmount: BN(srcChunkAmount).toFixed(0),
-        dstMinAmountOut: BN(dstMinAmountOut).toFixed(0),
-        deadline: BN(deadline).div(1000).toFixed(0),
-        bidDelaySeconds: BN(config.bidDelaySeconds).toFixed(0),
-        fillDelaySeconds: BN(fillDelaySeconds).toFixed(0),
-        priorityFeePerGas: priorityFeePerGas.toString(),
-        maxFeePerGas: maxFeePerGas.toString(),
+      const order = await createOrder({
+        account,
+        dstTokenMinAmount: dstMinAmountOut,
+        srcChunkAmount,
+        deadlineMillis: deadline,
+        fillDelayMillis: fillDelayMillisUi,
+        srcAmount,
+        srcTokenAddress,
+        dstTokenAddress: dstToken.address,
+        config,
+        onTxHash: (createOrdertxHash: string) => updateState({ createOrdertxHash }),
+        provider: web3.givenProvider,
       });
-
-      const ask = twapContract.methods.ask(askParams as any);
-
-      const tx = await sendAndWaitForConfirmations(
-        ask,
-        {
-          from: account,
-          maxPriorityFeePerGas: priorityFeePerGas || zero,
-          maxFeePerGas,
-        },
-        undefined,
-        undefined,
-        {
-          onTxHash,
-        },
-      );
-
-      const orderId = Number(tx.events.OrderCreated.returnValues.id);
-      const txHash = tx.transactionHash;
-      analytics.onCreateOrderSuccess(orderId, txHash);
-      logger("order created:", "orderId:", orderId, "txHash:", txHash);
-      return {
-        orderId,
-        txHash,
-      };
+      return order;
     },
     {
       onError: (error) => {
@@ -107,46 +53,24 @@ export const useCreateOrder = () => {
 
 export const useWrapToken = () => {
   const srcAmount = useSrcAmount().amount;
-  const { config, account } = useTwapContext();
+  const { config, account, updateState, web3 } = useTwapContext();
   const network = useNetwork();
   const wrapOnly = useShouldOnlyWrap();
-  const onTxHash = stateActions.useOnTxHash().onWrapTxHash;
-  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
 
   return useMutation(
     async () => {
-      let txHash: string = "";
-      if (!config) {
-        throw new Error("config is not defined");
-      }
-      if (!network) {
-        throw new Error("network is not defined");
-      }
-      if (!account) {
+      if (!account || !web3) {
         throw new Error("account is not defined");
       }
 
-      logger("wrapping token");
-      analytics.updateAction(wrapOnly ? "wrap-only" : "wrap");
-      await sendAndWaitForConfirmations(
-        erc20<any>(network.wToken.symbol, network.wToken.address, network.wToken.decimals, iwethabi).methods.deposit(),
-        {
-          from: account,
-          maxPriorityFeePerGas: priorityFeePerGas,
-          maxFeePerGas,
-          value: srcAmount,
-        },
-        undefined,
-        undefined,
-        {
-          onTxHash: (hash) => {
-            txHash = hash;
-            onTxHash(hash);
-          },
-        },
-      );
-      logger("token wrap success:", txHash);
+      const txHash = await wrapToken({
+        config,
+        provider: web3.givenProvider,
+        srcAmount,
+        account,
+      });
       analytics.onWrapSuccess(txHash);
+      return txHash;
     },
     {
       onError: (error) => {
@@ -168,30 +92,11 @@ export const useWrapOnly = () => {
   });
 };
 
-export const useGasPrice = () => {
-  const { web3, maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
-  const { isLoading, data } = useQuery(['GET_GAS_PRICE', contextTip, contextMax], () => estimateGasPrice(undefined, undefined, web3), {
-    enabled: !!web3,
-    refetchInterval: REFETCH_GAS_PRICE,
-  });
-
-  const priorityFeePerGas = BN.max(data?.fast.tip || 0, contextTip || 0);
-  const maxFeePerGas = BN.max(data?.fast.max || 0, contextMax || 0, priorityFeePerGas);
-
-  return {
-    isLoading,
-    maxFeePerGas,
-    priorityFeePerGas,
-  };
-};
-
-
 export const useUnwrapToken = () => {
-  const { account } = useTwapContext();
+  const { account, updateState } = useTwapContext();
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
   const onSuccess = useResetAfterSwap();
   const srcAmount = useSrcAmount().amount;
-  const onTxHash = stateActions.useOnTxHash().onUnwrapTxHash;
   const network = useNetwork();
 
   return useMutation(
@@ -215,7 +120,7 @@ export const useUnwrapToken = () => {
         {
           onTxHash: (hash) => {
             txHash = hash;
-            onTxHash(hash);
+            updateState({ unwrapTxHash: hash });
           },
         },
       );
@@ -231,43 +136,32 @@ export const useUnwrapToken = () => {
 };
 
 export const useApproveToken = () => {
-  const onTxHash = stateActions.useOnTxHash().onApproveTxHash;
-
-  const { config, account, isExactAppoval } = useTwapContext();
+  const { config, account, isExactAppoval, web3, srcToken } = useTwapContext();
   const srcAmount = useSrcAmount().amount;
-
-  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
+  const network = useNetwork();
 
   const approvalAmount = isExactAppoval ? srcAmount : maxUint256;
 
   return useMutation(
-    async (token: TokenData) => {
+    async () => {
       if (!account) {
         throw new Error("account is not defined");
       }
 
+      const srcTokenAddress = isNativeAddress(srcToken?.address || "") ? network?.wToken?.address : srcToken?.address;
+      if (!srcTokenAddress || !web3) {
+        throw new Error("srcTokenAddress is not defined");
+      }
       logger("approving token...");
       analytics.updateAction("approve");
 
-      let txHash: string = "";
-      const contract = erc20(token.symbol, token.address, token.decimals);
-
-      await sendAndWaitForConfirmations(
-        contract.methods.approve(config.twapAddress, BN(approvalAmount).toFixed(0)),
-        {
-          from: account,
-          maxPriorityFeePerGas: priorityFeePerGas,
-          maxFeePerGas,
-        },
-        undefined,
-        undefined,
-        {
-          onTxHash: (value) => {
-            onTxHash(value);
-            txHash = value;
-          },
-        },
-      );
+      const txHash = await approveToken({
+        config,
+        account,
+        approvalAmount,
+        srcTokenAddress,
+        provider: web3?.givenProvider,
+      });
       logger("token approve success:", txHash);
       analytics.onApproveSuccess(txHash);
     },
@@ -277,48 +171,6 @@ export const useApproveToken = () => {
         analytics.onTxError(error, "approve");
       },
     },
-  );
-};
-const useOnSuccessCallback = () => {
-  const { onTxSubmitted, config, srcToken, dstToken } = useTwapContext();
-  const addOrder = useTwapOrders().addOrder;
-  const swapData = useSwapData();
-  const onOrderCreated = stateActions.useOnOrderCreated();
-  const reset = useResetAfterSwap();
-  const estimatedDelayBetweenChunksMillis = useEstimatedDelayBetweenChunksMillis();
-  return useCallback(
-    (order: { txHash: string; orderId: number }) => {
-      const fillDelaySeconds = (swapData.fillDelay.millis - estimatedDelayBetweenChunksMillis) / 1000;
-
-      onOrderCreated();
-      addOrder({
-        srcTokenAddress: srcToken?.address,
-        dstTokenAddress: dstToken?.address,
-        srcAmount: swapData.srcAmount.amount,
-        createdAt: moment().unix().valueOf(),
-        id: order.orderId,
-        txHash: order.txHash,
-        deadline: moment(swapData.deadline.millis).unix(),
-        srcBidAmount: swapData.srcChunkAmount.amount,
-        dstMinAmount: swapData.dstMinAmount.amount,
-        fillDelay: fillDelaySeconds,
-        totalChunks: swapData.chunks,
-        status: Status.Open,
-        srcToken,
-        dstToken,
-        exchange: config.exchangeAddress,
-      });
-      onTxSubmitted?.({
-        srcToken: srcToken!,
-        dstToken: dstToken!,
-        srcAmount: swapData.srcAmount.amount,
-        dstUSD: swapData.amountUsd.dstUsd || "",
-        dstAmount: swapData.outAmount.amount || "",
-        txHash: order.txHash,
-      });
-      reset();
-    },
-    [srcToken, dstToken, onTxSubmitted, onOrderCreated, reset, config, swapData, estimatedDelayBetweenChunksMillis],
   );
 };
 
@@ -331,16 +183,16 @@ const useSubmitAnalytics = () => {
 };
 
 export const useSubmitOrderFlow = () => {
-  const { minNativeTokenBalance, updateState, state, srcToken } = useTwapContext();
+  const { minNativeTokenBalance, updateState, state, srcToken, config, account } = useTwapContext();
   const { swapState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, wrapSuccess } = state;
   const { data: haveAllowance } = query.useAllowance();
   const { ensureData: ensureNativeBalance } = query.useMinNativeTokenBalance(minNativeTokenBalance);
   const shouldWrap = useShouldWrap();
-  const onSuccessCallback = useOnSuccessCallback();
   const network = useNetwork();
   const wToken = network?.wToken;
   const nativeSymbol = network?.native.symbol;
   const { refetch: refetchAllowance } = query.useAllowance();
+  const { updateData: updateOrders } = useOrdersHistory();
   const submitAnalytics = useSubmitAnalytics();
   const nativeToWrapped = useSwitchNativeToWrapped();
   const approve = useApproveToken().mutateAsync;
@@ -381,7 +233,7 @@ export const useSubmitOrderFlow = () => {
 
       if (!haveAllowance) {
         updateState({ swapStep: "approve" });
-        await approve(token);
+        await approve();
         const res = await getHasAllowance(token, srcAmount.amount);
         if (!res) {
           throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
@@ -390,9 +242,15 @@ export const useSubmitOrderFlow = () => {
       }
 
       updateState({ swapStep: "createOrder" });
-      return createOrder(token);
+      const order = await createOrder();
+      const res = await waitForUpdatedOrders(config, order.id, account!);
+      updateOrders(res?.orders);
     },
+
     {
+      onSuccess: () => {
+        updateState({ swapState: "success", createOrderSuccess: true, selectedOrdersTab: 0, srcAmountUi: "" });
+      },
       onError(error) {
         if (wrapSuccess) {
           nativeToWrapped();
@@ -402,9 +260,6 @@ export const useSubmitOrderFlow = () => {
         } else {
           updateState({ swapState: "failed" });
         }
-      },
-      onSuccess(data) {
-        onSuccessCallback(data);
       },
       onSettled() {
         refetchAllowance();
@@ -429,7 +284,7 @@ export const useCancelOrder = () => {
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
   const { account } = useTwapContext();
   const twapContract = useTwapContract();
-  const {refetch} = useTwapOrders();
+  const { refetch } = useOrdersHistory();
   return useMutation(
     async (orderId: number) => {
       if (!twapContract) {

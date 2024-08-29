@@ -571,7 +571,7 @@ const SubmitOrderModal = () => {
   }, [onClose]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onCloseWithDelay}>
+    <Modal isOpen={!!isOpen} onClose={onCloseWithDelay}>
       <StyledSwapModalContent
         style={{
           paddingBottom: "24px",

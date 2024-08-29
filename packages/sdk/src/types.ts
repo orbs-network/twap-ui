@@ -4,44 +4,12 @@ import { IconType } from "@react-icons/all-files";
 export type Config = typeof ConfigJson.Arbidex;
 export type StoreOverride = Partial<State>;
 
-export interface HistoryOrder {
-  id: number;
-  deadline: number;
-  createdAt: number;
-  srcAmount: string;
-  dstMinAmount: string;
-  status?: Status;
-  srcBidAmount: string;
-  fillDelay?: number;
-  txHash?: string;
-  dstAmount?: string;
-  srcFilledAmount?: string;
-  dollarValueIn?: string;
-  dollarValueOut?: string;
-  progress?: number;
-  srcTokenAddress?: string;
-  dstTokenAddress?: string;
-  totalChunks?: number;
-  srcToken?: Token;
-  dstToken?: Token;
-  dex?: string;
-  exchange?: string;
-}
-
 export type Token = {
   address: string;
   symbol: string;
   decimals: number;
   logoUrl: string;
 };
-
-export interface OrdersData {
-  [Status.All]?: any[];
-  [Status.Open]?: any[];
-  [Status.Canceled]?: any[];
-  [Status.Expired]?: any[];
-  [Status.Completed]?: any[];
-}
 
 export type SwapState = "loading" | "success" | "failed" | "rejected";
 export type SwapStep = "createOrder" | "wrap" | "approve";
@@ -50,32 +18,17 @@ export interface State {
   swapStep?: SwapStep;
   swapSteps?: SwapStep[];
   swapState?: SwapState;
-  srcAmountUi: string;
 
   confirmationClickTimestamp: Moment;
-  showConfirmation: boolean;
-  disclaimerAccepted: boolean;
 
   customChunks?: number;
   customFillDelay: Duration;
   customDuration?: Duration;
 
-  createOrdertxHash?: string;
-  wrapTxHash?: string;
-  approveTxHash?: string;
-  unwrapTxHash?: string;
-
-  isCustomLimitPrice?: boolean;
   customLimitPrice?: string;
   isInvertedLimitPrice?: boolean;
   limitPricePercent?: string;
   isMarketOrder?: boolean;
-
-  createOrderSuccess?: boolean;
-  wrapSuccess?: boolean;
-  approveSuccess?: boolean;
-
-  selectedOrdersTab: number;
 }
 
 export interface OrderCreated {
@@ -123,7 +76,7 @@ export enum TimeResolution {
   Months = 30 * Days,
   Years = 365 * Days,
 }
-export type Duration = { resolution: TimeResolution; amount?: number };
+export type Duration = { resolution: TimeResolution; amount: number };
 
 export enum Status {
   All = "All",

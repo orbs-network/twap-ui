@@ -1,7 +1,10 @@
-import BN from "bignumber.js";
 import moment from "moment";
-import { HistoryOrder, Status } from "../types";
-import { groupBy, keyBy } from "../utils";
+import { Config, Status, Token } from "../types";
+import BN from "bignumber.js";
+import { getTheGraphUrl, groupBy, keyBy, orderBy } from "../utils";
+import { delay, eqIgnoreCase } from "@defi.org/web3-candies";
+import { getEstimatedDelayBetweenChunksMillis } from "./lib";
+
 const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
   if (!srcFilled || !srcAmountIn) return 0;
   let progress = BN(srcFilled || "0")
@@ -11,7 +14,7 @@ const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
   return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
 };
 
-export const graphCreatedOrders = async ({ account, endpoint, signal }: { account: string; endpoint: string; signal?: AbortSignal }) => {
+const graphCreatedOrders = async (account: string, endpoint: string, signal?: AbortSignal) => {
   const LIMIT = 1_000;
   let page = 0;
   let orders: any = [];
@@ -92,8 +95,6 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
   } catch (error) {}
 };
 
-export type ParsedOrder = ReturnType<any>;
-
 const getOrderFills = (orderId: number, fills?: any) => {
   return {
     TWAP_id: Number(orderId),
@@ -104,7 +105,7 @@ const getOrderFills = (orderId: number, fills?: any) => {
   };
 };
 
-const graphOrderFills = async ({ account, endpoint, signal }: { account: string; endpoint: string; signal?: AbortSignal }) => {
+const graphOrderFills = async (account: string, endpoint: string, signal?: AbortSignal) => {
   const LIMIT = 1_000;
   let page = 0;
   let fills: any = [];
@@ -168,9 +169,53 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
   return Status.Expired;
 };
 
-export const getOrders = async (endpoint: string, account: string, signal?: AbortSignal): Promise<HistoryOrder[]> => {
-  const args = { account, endpoint, signal };
-  const [orders, fills] = await Promise.all([graphCreatedOrders(args), graphOrderFills(args)]);
+const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) => {
+  const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
+  const isMarketOrder = BN(order.dstMinAmount || 0).lte(1);
+
+  return {
+    id: Number(order.Contract_id),
+    exchange: order.exchange,
+    dex: order.dex.toLowerCase(),
+    deadline: Number(order.ask_deadline) * 1000,
+    createdAt: moment(order.timestamp).valueOf(),
+    srcAmount: order.ask_srcAmount,
+    dstMinAmount: order.ask_dstMinAmount,
+    status: getStatus(progress, order, statuses),
+    srcBidAmount: order.ask_srcBidAmount,
+    txHash: order.transactionHash,
+    dstAmount: orderFill?.dstAmountOut,
+    srcFilledAmount: orderFill?.srcAmountIn,
+    srcAmountUsd: orderFill?.dollarValueIn || "0",
+    dstAmountUsd: orderFill?.dollarValueOut || "0",
+    progress,
+    srcTokenAddress: order.ask_srcToken,
+    dstTokenAddress: order.ask_dstToken,
+    totalChunks: BN(order.ask_srcAmount || 0)
+      .div(order.ask_srcBidAmount || 0)
+      .integerValue(BN.ROUND_CEIL)
+      .toNumber(),
+    isMarketOrder,
+    limitPrice: isMarketOrder ? undefined : BN(order.dstMinAmount).div(order.srcBidAmount).toString() || "0",
+    excecutionPrice: BN(order.dstAmount).gt(0) && BN(order.srcFilledAmount).gt(0) ? BN(order.dstAmount).div(order.srcFilledAmount).toString() : undefined,
+    fillDelay: (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config),
+  };
+};
+
+type PrasedOrder = ReturnType<typeof parseOrder>;
+
+export interface Order extends PrasedOrder {
+  srcToken?: Token;
+  dstToken?: Token;
+}
+
+const fetchOrders = async (config: Config, account: string, signal?: AbortSignal): Promise<Order[]> => {
+  const endpoint = getTheGraphUrl(config!.chainId);
+  if (!endpoint) {
+    return [];
+  }
+
+  const [orders, fills] = await Promise.all([graphCreatedOrders(account, endpoint, signal), graphOrderFills(account, endpoint, signal)]);
   const ids = orders.map((order: any) => order.Contract_id);
   let statuses: any = {};
 
@@ -180,31 +225,41 @@ export const getOrders = async (endpoint: string, account: string, signal?: Abor
 
   return orders.map((order: any) => {
     const orderFill = fills[order.Contract_id];
-
-    const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
-    return {
-      id: Number(order.Contract_id),
-      exchange: order.exchange,
-      dex: order.dex.toLowerCase(),
-      deadline: Number(order.ask_deadline),
-      createdAt: moment(order.timestamp).unix().valueOf(),
-      srcAmount: order.ask_srcAmount,
-      dstMinAmount: order.ask_dstMinAmount,
-      status: getStatus(progress, order, statuses),
-      srcBidAmount: order.ask_srcBidAmount,
-      fillDelay: order.ask_fillDelay,
-      txHash: order.transactionHash,
-      dstAmount: orderFill?.dstAmountOut,
-      srcFilledAmount: orderFill?.srcAmountIn,
-      dollarValueIn: orderFill?.dollarValueIn,
-      dollarValueOut: orderFill?.dollarValueOut,
-      progress,
-      srcTokenAddress: order.ask_srcToken,
-      dstTokenAddress: order.ask_dstToken,
-      totalChunks: BN(order.ask_srcAmount || 0)
-        .div(order.ask_srcBidAmount || 0)
-        .integerValue(BN.ROUND_CEIL)
-        .toNumber(),
-    };
+    return parseOrder(order, config, orderFill, statuses);
   });
 };
+
+export const getOrders = async (config: Config, account: string, signal?: AbortSignal) => {
+  let orders = await fetchOrders(config, account!, signal);
+  orders = orders.filter((o) => eqIgnoreCase(config!.exchangeAddress, o.exchange || ""));
+  return orderBy(orders, (o) => o.createdAt, "desc");
+};
+
+export const groupOrdersByStatus = (orders?: Order[]) => {
+  if (!orders) return undefined;
+  const grouped = groupBy(orders, "status");
+  grouped[Status.All] = orders;
+  return grouped as GroupedOrders;
+};
+
+export const waitForUpdatedOrders = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
+  for (let i = 0; i < 20; i++) {
+    const orders = await getOrders(config, account!, signal);
+    const order = orders.find((o) => o.id === orderId);
+    if (order) {
+      return {
+        order,
+        orders,
+      };
+    }
+    await delay(3_000);
+  }
+};
+
+export interface GroupedOrders {
+  [Status.All]?: Order[];
+  [Status.Open]?: Order[];
+  [Status.Canceled]?: Order[];
+  [Status.Expired]?: Order[];
+  [Status.Completed]?: Order[];
+}

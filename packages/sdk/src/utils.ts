@@ -1,6 +1,7 @@
 import { networks, parsebn } from "@defi.org/web3-candies";
 import { THE_GRAPH_ORDERS_API } from "./consts";
 import BN from "bignumber.js";
+import { Config } from "./types";
 
 export const getNetwork = (chainId?: number) => {
   if (!chainId) return undefined;

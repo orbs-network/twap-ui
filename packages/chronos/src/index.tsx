@@ -50,7 +50,7 @@ import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 import { ThemeProvider } from "styled-components";
-import { Status } from "@orbs-network/twap-ui-sdk";
+import { Status } from "@orbs-network/twap-sdk";
 
 const useMobile = () => {
   return hooks.useWindowWidth() < 768;
@@ -366,49 +366,6 @@ const TWAP = (props: ChronosTWAPProps) => {
     <AdapterContextProvider value={props}>
       <Wrapped {...props} />
     </AdapterContextProvider>
-  );
-};
-
-const MobileTabs = () => {
-  const setTab = hooks.stateActions.useSelectOrdersTab();
-  const tab = useTwapContext().state.selectedOrdersTab;
-
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const onSelected = (value: number) => {
-    setTab(value);
-    setAnchorEl(null);
-  };
-
-  return (
-    <>
-      <StyledMobileTabsMenuButton aria-controls={open ? "basic-menu" : undefined} aria-expanded={open ? "true" : undefined} onClick={handleClick}>
-        <TwapStyles.StyledRowFlex gap={5}>
-          <VscSettings />
-        </TwapStyles.StyledRowFlex>
-      </StyledMobileTabsMenuButton>
-    </>
-  );
-};
-
-const OrdersLayout = () => {
-  const mobile = useMobile();
-
-  return (
-    <StyledOrders className="twap-orders">
-      <StyledOrdersHeader className="twap-chronos-orders-header">
-        <StyledOrderHeaderRight className="twap-chronos-orders-header-right">
-          <Components.Base.Odnp />
-        </StyledOrderHeaderRight>
-      </StyledOrdersHeader>
-    </StyledOrders>
   );
 };
 

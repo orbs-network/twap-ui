@@ -3,12 +3,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
 import { Token } from "../types";
 import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, maxUint256, networks, Abi, erc20 } from "@defi.org/web3-candies";
-import * as SDK from "@orbs-network/twap-ui-sdk";
+import { groupOrdersByStatus } from "@orbs-network/twap-sdk";
 import TwapAbi from "@orbs-network/twap/twap.abi.json";
 import { useNumericFormat } from "react-number-format";
-import { formatDecimals, getExplorerUrl, makeElipsisAddress, resetQueryParams } from "../utils";
-import { query } from "./query";
-import { Status, useAmountUi, useOrders } from "@orbs-network/twap-ui-sdk";
+import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress } from "../utils";
+import { query, useOrdersHistory } from "./query";
 
 export const useRefetchBalances = () => {
   const { refetch: refetchSrcBalance } = useSrcBalance();
@@ -20,13 +19,12 @@ export const useRefetchBalances = () => {
 };
 
 export const useResetAfterSwap = () => {
-  const resetAfterSwap = SDK.useResetStore();
   const refetchBalances = useRefetchBalances();
 
   return useCallback(async () => {
-    resetAfterSwap();
+    // resetAfterSwap();
     await refetchBalances();
-  }, [resetAfterSwap, refetchBalances]);
+  }, [refetchBalances]);
 };
 
 export const useSrcBalance = () => {
@@ -143,6 +141,14 @@ export const useExplorerUrl = () => {
   return useMemo(() => getExplorerUrl(config.chainId), [config.chainId]);
 };
 
+export const useAmountBN = (decimals?: number, value?: string) => {
+  return useMemo(() => amountBNV2(decimals, value), [decimals, value]);
+};
+
+export const useAmountUi = (decimals?: number, value?: string) => {
+  return useMemo(() => amountUiV2(decimals, value), [decimals, value]);
+};
+
 export const useTokenBalance = (isSrc?: boolean) => {
   const { srcToken, dstToken } = useTwapContext();
 
@@ -151,18 +157,11 @@ export const useTokenBalance = (isSrc?: boolean) => {
   return isSrc ? srcBalance : dstBalance;
 };
 
-
-export const useTwapOrders = () => {
-  const {tokens} = useTwapContext()
-
-  return useOrders(tokens);
-}
-
 export const useOpenOrders = () => {
-  const { data } = useTwapOrders();
+  const { data } = useOrdersHistory();
 
   return useMemo(() => {
-    return !data ? undefined : data[Status.Open as keyof typeof data];
+    return groupOrdersByStatus(data)?.Open || [];
   }, [data]);
 };
 

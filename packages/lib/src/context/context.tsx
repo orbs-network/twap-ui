@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
 import { TWAPContextProps, TwapLibProps, TwapState } from "../types";
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -7,10 +7,8 @@ import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
-import { getQueryParam, limitPriceFromQueryParams } from "../utils";
-import moment from "moment";
 import { setWeb3Instance } from "@defi.org/web3-candies";
-import { MainProvider } from "@orbs-network/twap-ui-sdk";
+import { DEFAULT_FILL_DELAY, TimeResolution } from "@orbs-network/twap-sdk";
 analytics.onModuleImported();
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -23,23 +21,27 @@ const queryClient = new QueryClient({
 });
 
 const WrappedTwap = (props: TwapLibProps) => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { srcToken, dstToken, updateState, isLimitPanel } = useTwapContext();
   query.useFeeOnTransfer(srcToken?.address);
   query.useFeeOnTransfer(dstToken?.address);
   query.useAllowance();
 
-  return (
-    <TwapErrorWrapper>
-      <MainProvider config={props.config} account={props.account} isLimitPanel={props.isLimitPanel}>
-        {props.children}
-      </MainProvider>
-    </TwapErrorWrapper>
-  );
+  useEffect(() => {
+    if (isLimitPanel) {
+      updateState({ typedDuration: { resolution: TimeResolution.Days, amount: 7 } });
+    } else {
+      updateState({ typedDuration: undefined });
+    }
+  }, [isLimitPanel]);
+
+  return <TwapErrorWrapper>{props.children}</TwapErrorWrapper>;
 };
 
 export const getInitialState = ({ storeOverride = {}, isQueryParamsEnabled }: { storeOverride?: Partial<TwapState>; isQueryParamsEnabled?: boolean }): TwapState => {
   return {
     srcAmountUi: "",
+    typedFillDelay: DEFAULT_FILL_DELAY,
+    disclaimerAccepted: true,
     ...storeOverride,
   };
 };

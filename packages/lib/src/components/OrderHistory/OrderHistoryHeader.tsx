@@ -1,17 +1,16 @@
 import styled from "styled-components";
 
 import { useCallback, useMemo, useState } from "react";
-import { useOrderHistoryContext } from "./context";
+import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import { StyledRowFlex, StyledText } from "../../styles";
 import { Button, SelectMenu } from "../base";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { useTwapContext } from "../../context/context";
 import { SelectMeuItem } from "../../types";
-import { Status } from "@orbs-network/twap-ui-sdk";
-import { useTwapOrders } from "../../hooks";
+import { Status } from "@orbs-network/twap-sdk";
+import { useOrdersHistory } from "../../hooks";
 
 export function OrderHistoryMenu() {
-  const [open, setOpen] = useState(false);
   const { setTab, selectedTab, tabs } = useOrderHistoryContext();
 
   const onSelect = useCallback(
@@ -34,8 +33,8 @@ export function OrderHistoryMenu() {
 }
 
 export const OrderHistoryHeader = ({ className = "" }: { className?: string }) => {
-  const { closePreview, selectedOrderId, isLoading } = useOrderHistoryContext();
-  const order = useTwapOrders().data?.All?.find((it) => it.id === selectedOrderId);
+  const { closePreview, isLoading } = useOrderHistoryContext();
+  const order = useSelectedOrder();
   const t = useTwapContext().translations;
 
   return (

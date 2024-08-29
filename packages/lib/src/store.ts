@@ -1,4 +1,4 @@
-import { Status } from "./types";
+import { Status } from "@orbs-network/twap-sdk";
 
 interface HistoryOrder {
   id: number;

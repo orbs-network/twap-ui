@@ -4,7 +4,7 @@ import { Translations } from "../../types";
 import NumericInput from "./NumericInput";
 import { StyledRowFlex } from "../../styles";
 import { SelectMenu } from "./SelectMenu";
-import { Duration, TimeResolution } from "@orbs-network/twap-ui-sdk";
+import { Duration, TimeResolution } from "@orbs-network/twap-sdk";
 
 const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
   {

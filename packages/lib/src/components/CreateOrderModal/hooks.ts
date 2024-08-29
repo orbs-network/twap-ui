@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTwapContext } from "../../context/context";
 import { useSwapModal } from "../../hooks/useSwapModal";
 import { useFormatNumberV2 } from "../../hooks/hooks";
-import { useIsMarketOrder } from "@orbs-network/twap-ui-sdk";
+import { useIsMarketOrder } from "../../hooks";
 
 export const useTokenDisplay = (isSrc?: boolean) => {
   const { outAmount, srcAmount, srcToken, dstToken, srcUsd, dstUsd } = useSwapModal();

@@ -6,7 +6,7 @@ import { Dapp, Popup, TokensList, UISelector } from "./Components";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { SelectorOption, TokenListItem } from "./types";
-import { Components, getConfig, mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
+import { getConfig, mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
 import { baseSwapTokens } from "./BaseSwap";
 import { network } from "@defi.org/web3-candies";

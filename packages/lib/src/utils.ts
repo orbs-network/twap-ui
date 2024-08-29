@@ -1,9 +1,10 @@
 import { TokenData, parsebn, maxUint256, bn } from "@defi.org/web3-candies";
 import moment from "moment";
-import { AddressPadding, Config, Translations } from "./types";
+import { AddressPadding, Translations } from "./types";
 import BN from "bignumber.js";
 import { THE_GRAPH_ORDERS_API } from "./config";
-import { EXPLORER_URLS, QUERY_PARAMS } from "@orbs-network/twap-ui-sdk";
+import { EXPLORER_URLS } from "@orbs-network/twap-sdk";
+import { Config } from "@orbs-network/twap-sdk";
 export const logger = (...args: any[]) => {
   // let debug;
   // if (window) {
@@ -221,20 +222,9 @@ export const setQueryParam = (name: string, value?: string) => {
   // window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
 };
 
-export const limitPriceFromQueryParams = () => {
-  const price = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
-  if (price && BN(price).gt(0)) {
-    return formatDecimals(price);
-  }
-};
+export const limitPriceFromQueryParams = () => {};
 
-export const resetQueryParams = () => {
-  setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
-  setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-  setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
-  setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, undefined);
-  setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
-};
+export const resetQueryParams = () => {};
 
 export const groupBy = (array: any = [], key: string) => {
   return array.reduce((result: any, currentItem: any) => {

@@ -4,7 +4,7 @@ import { Message } from "./base/Message";
 import { useTwapContext } from "../context/context";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import styled from "styled-components";
-import { useFormatNumber, useSrcBalance, useDstBalance, useFormatDecimals } from "../hooks/hooks";
+import { useFormatNumber, useSrcBalance, useDstBalance, useFormatDecimals, useAmountUi } from "../hooks/hooks";
 import { useConfirmationButton } from "../hooks/useConfirmationButton";
 import { StyledText, StyledRowFlex, StyledColumnFlex, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
@@ -14,10 +14,10 @@ import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
 import { Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { stateActions } from "../context/actions";
 import {
   useFeeOnTransferWarning,
   useFillDelay,
+  useIsMarketOrder,
   useLowPriceWarning,
   useOutAmount,
   useShouldWrapOrUnwrapOnly,
@@ -29,7 +29,7 @@ import {
   useTokenSelect,
   useUsdAmount,
 } from "../hooks/lib";
-import { useAmountUi, useIsMarketOrder, useMainStore, useOnFillDelay } from "@orbs-network/twap-ui-sdk";
+import { Duration } from "@orbs-network/twap-sdk";
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -91,10 +91,16 @@ export const TokenPanelInput = ({
 };
 
 const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
-  const { srcToken } = useTwapContext();
+  const { srcToken, updateState } = useTwapContext();
   const srcAmountUi = useSrcAmount().amountUi;
 
-  const onChange = stateActions.useSetSrcAmount();
+  const onChange = useCallback(
+    (srcAmountUi: string) => {
+      updateState({ srcAmountUi });
+    },
+    [updateState, srcAmountUi],
+  );
+
   return <Input prefix="" onChange={onChange} value={srcAmountUi || ""} decimalScale={srcToken?.decimals} className={props.className} placeholder={props.placeholder} />;
 };
 
@@ -158,10 +164,18 @@ export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hid
 };
 
 export function TradeIntervalSelector({ placeholder }: { placeholder?: string }) {
-  const setFillDelay = useOnFillDelay();
-  const fillDelay = useMainStore((state) => state.customFillDelay);
+  const {
+    state: { typedFillDelay },
+    updateState,
+  } = useTwapContext();
+  const setFillDelay = useCallback(
+    (typedFillDelay: Duration) => {
+      updateState({ typedFillDelay });
+    },
+    [updateState, typedFillDelay],
+  );
 
-  return <TimeSelector placeholder={placeholder} onChange={setFillDelay} value={fillDelay} />;
+  return <TimeSelector placeholder={placeholder} onChange={setFillDelay} value={typedFillDelay} />;
 }
 
 interface TokenSelectProps extends TWAPTokenSelectProps {

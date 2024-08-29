@@ -3,16 +3,14 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Icon, Label, NumericInput, TokenDisplay } from "../base";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
-import { createContext, FC, ReactNode, useContext, useEffect, useMemo, useState } from "react";
-import { useLimitPrice, useLimitPricePercentDiffFromMarket, useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
+import { createContext, FC, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket, useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
 import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps, LimitPriceInputProps } from "../../types";
-import { useOnLimitPercentageClick } from "./hooks";
-import { amountUiV2, formatDecimals } from "../../utils";
+import { useLimitInput, useOnLimitPercentageClick } from "./hooks";
 import { useTwapContext } from "../../context/context";
-import { stateActions } from "../../context/actions";
+
 import { LimitSwitch } from "./LimitSwitch";
 import { MarketPriceWarning } from "../Components";
-import { useInvertLimit, useIsMarketOrder, useMainStore, useOnLimitChange } from "@orbs-network/twap-ui-sdk";
 interface Shared {
   onSrcSelect: () => void;
   onDstSelect: () => void;
@@ -125,32 +123,8 @@ function Main({ className = "", onSrcSelect, onDstSelect, Components, styles }: 
 
 const Input = () => {
   const { Components } = useLimitPanelContext();
-  const { state, dstToken } = useTwapContext();
-  const { isInvertedLimitPrice, isCustomLimitPrice, customLimitPrice } = useMainStore();
-  const { isLoading, limitPriceUi: priceUi } = useLimitPrice();
-  const onChange = useOnLimitChange();
+  const { value, onChange, isLoading } = useLimitInput();
   const isMarketOrder = useIsMarketOrder();
-
-  const limitPriceUi = useMemo(() => {
-    if (isCustomLimitPrice) {
-      return customLimitPrice;
-    }
-    let res = priceUi;
-
-    if (isInvertedLimitPrice) {
-      res = BN(1)
-        .div(res || 0)
-        .toString();
-    }
-
-    return formatDecimals(res);
-  }, [customLimitPrice, isCustomLimitPrice, isInvertedLimitPrice, priceUi, dstToken]);
-
-  const [value, setValue] = useState("");
-
-  useEffect(() => {
-    setValue(limitPriceUi || "");
-  }, [limitPriceUi]);
 
   return (
     <StyledInputContainer>
@@ -171,7 +145,7 @@ const StyledInputContainer = styled("div")({
 });
 
 const usePercent = () => {
-  const inverted = useMainStore((state) => state.isInvertedLimitPrice);
+  const inverted = useTwapContext().state.isInvertedLimitPrice;
   return useMemo(() => {
     if (inverted) {
       return defaultPercent.map((it) => -it).map((it) => it.toString());
@@ -196,22 +170,22 @@ const PercentSelector = () => {
 
 const PercentButton = ({ percent }: { percent: string }) => {
   const { state } = useTwapContext();
-  const { isInvertedLimitPrice: inverted, isMarketOrder, limitPricePercent } = useMainStore();
+  const { isInvertedLimitPrice: inverted, isMarketOrder, limitPricePercent } = state;
   const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
 
-  const { limitPrice } = useLimitPrice();
+  const { price } = useLimitPrice();
   const Components = useLimitPanelContext().Components;
 
   const onPercentageChange = useOnLimitPercentageClick();
 
   const selected = useMemo(() => {
     const p = limitPricePercent || priceDeltaPercentage;
-    if (BN(limitPrice || 0).isZero()) {
+    if (BN(price || 0).isZero()) {
       return false;
     }
 
     return BN(p || 0).eq(percent);
-  }, [limitPricePercent, percent, isMarketOrder, limitPrice, priceDeltaPercentage]);
+  }, [limitPricePercent, percent, isMarketOrder, price, priceDeltaPercentage]);
 
   const prefix = percent === "0" ? "" : inverted ? "-" : !inverted && "+";
   if (Components?.PercentButton) {
@@ -221,7 +195,7 @@ const PercentButton = ({ percent }: { percent: string }) => {
 };
 
 const ZeroButton = () => {
-  const limitPricePercent = useMainStore((state) => state.limitPricePercent);
+  const limitPricePercent = useTwapContext().state.limitPricePercent;
   const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
   const onPercentageChange = useOnLimitPercentageClick();
   const Components = useLimitPanelContext().Components;
@@ -257,7 +231,7 @@ const ZeroButton = () => {
 
 const TokenSelect = () => {
   const { state, srcToken, dstToken } = useTwapContext();
-  const inverted = useMainStore((state) => state.isInvertedLimitPrice);
+  const inverted = state.isInvertedLimitPrice;
   const Components = useLimitPanelContext().Components;
   const token = inverted ? srcToken : dstToken;
   const { onDstSelect, onSrcSelect } = useLimitPanelContext();
@@ -265,6 +239,17 @@ const TokenSelect = () => {
     return <Components.TokenSelect isSrcToken={!!inverted} token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
   }
   return <DefaultTokenSelect isSrcToken={!!inverted} token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
+};
+
+const useInvertLimit = () => {
+  const { state, updateState } = useTwapContext();
+
+  return useCallback(() => {
+    updateState({
+      isInvertedLimitPrice: !state.isInvertedLimitPrice,
+      limitPricePercent: undefined,
+    });
+  }, [state.isInvertedLimitPrice, updateState]);
 };
 
 const InvertPrice = () => {
@@ -282,7 +267,7 @@ const Title = () => {
   const Components = useLimitPanelContext().Components;
   const { translations: t, state, srcToken, dstToken } = useTwapContext();
 
-  const { isInvertedLimitPrice: inverted } = useMainStore();
+  const { isInvertedLimitPrice: inverted } = state;
   const token = inverted ? dstToken : srcToken;
 
   if (Components?.Title) {

@@ -1,15 +1,15 @@
-import { useMainStore, useOnMarket } from "@orbs-network/twap-ui-sdk";
 import { FC, useCallback } from "react";
 import styled from "styled-components";
 import { useTwapContext } from "../../context/context";
+import { useSetIsMarket } from "../../hooks";
 import { StyledRowFlex } from "../../styles";
 import { LimitSwitchArgs } from "../../types";
 
 export const LimitSwitch = ({ className = "", Component }: { className?: string; Component?: FC<LimitSwitchArgs> }) => {
-  const { isLimitPanel } = useTwapContext();
+  const { isLimitPanel, state } = useTwapContext();
 
-  const { isMarketOrder } = useMainStore();
-  const onChange = useOnMarket();
+  const { isMarketOrder } = state;
+  const onChange = useSetIsMarket();
 
   const onSelect = useCallback(
     (value: boolean) => {

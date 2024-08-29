@@ -1,16 +1,15 @@
 import { styled } from "styled-components";
-import { ReactNode, useCallback } from "react";
-import { stateActions } from "../context/actions";
+import { ReactNode, useCallback, useMemo } from "react";
 import { useTwapContext } from "../context/context";
 import { StyledColumnFlex } from "../styles";
-import { TimeResolution } from "../types";
 import { handleFillDelayText } from "../utils";
 import { BottomContent, Label, Message, NumericInput, ResolutionSelect } from "./base";
-import { useFillDelayWarning, useMinimumDelayMinutes, useShouldWrapOrUnwrapOnly } from "../hooks/lib";
+import { useIsFillDelayMaxWarning, useIsFillDelayMinWarning, useMinimumDelayMinutes, useSetFillDelay, useShouldWrapOrUnwrapOnly } from "../hooks/lib";
+import { MAX_TRADE_INTERVAL_FORMATTED, MIN_TRADE_INTERVAL_FORMATTED, TimeResolution } from "@orbs-network/twap-sdk";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const fillDelay = useTwapContext().state.customFillDelay;
-  const setFillDelay = stateActions.useSetCustomFillDelay();
+  const fillDelay = useTwapContext().state.typedFillDelay;
+  const setFillDelay = useSetFillDelay();
 
   return (
     <StyledInput className={className} value={fillDelay.amount} onChange={(v) => setFillDelay({ resolution: fillDelay.resolution, amount: Number(v) })} placeholder={placeholder} />
@@ -24,8 +23,8 @@ const StyledInput = styled(NumericInput)({
 });
 
 const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
-  const fillDelay = useTwapContext().state.customFillDelay;
-  const setFillDelay = stateActions.useSetCustomFillDelay();
+  const fillDelay = useTwapContext().state.typedFillDelay;
+  const setFillDelay = useSetFillDelay();
 
   const onChange = useCallback(
     (resolution: TimeResolution) => {
@@ -53,7 +52,18 @@ export const TradeInterval = ({ children, className = "" }: { children: ReactNod
 };
 
 const WarningComponent = () => {
-  const warning = useFillDelayWarning();
+  const { translations: t } = useTwapContext();
+  const minFillDelayWarning = useIsFillDelayMinWarning();
+  const maxFillDelayWarning = useIsFillDelayMaxWarning();
+
+  const warning = useMemo(() => {
+    if (minFillDelayWarning) {
+      return t.minTradeIntervalWarning.replace("{tradeInterval}", MIN_TRADE_INTERVAL_FORMATTED.toString());
+    }
+    if (maxFillDelayWarning) {
+      return t.maxTradeIntervalWarning.replace("{tradeInterval}", MAX_TRADE_INTERVAL_FORMATTED.toString());
+    }
+  }, [minFillDelayWarning, maxFillDelayWarning]);
 
   if (!warning) return null;
 

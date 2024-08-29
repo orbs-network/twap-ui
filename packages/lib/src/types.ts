@@ -1,12 +1,11 @@
 import ConfigJson from "@orbs-network/twap/configs.json";
-import { Moment } from "moment";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
 import Web3 from "web3";
 import { useSwapData } from "./hooks";
-import { Status } from "@orbs-network/twap-ui-sdk";
-
-export type Config = typeof ConfigJson.Arbidex;
+import { Duration, Status } from "@orbs-network/twap-sdk";
+import { Moment } from "moment";
+import { Config } from "@orbs-network/twap-sdk";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -209,30 +208,6 @@ export type OnTxSubmitValues = {
   txHash: string;
 };
 
-export interface HistoryOrder {
-  id: number;
-  deadline: number;
-  createdAt: number;
-  srcAmount: string;
-  dstMinAmount: string;
-  status?: Status;
-  srcBidAmount: string;
-  fillDelay?: number;
-  txHash?: string;
-  dstAmount?: string;
-  srcFilledAmount?: string;
-  dollarValueIn?: string;
-  dollarValueOut?: string;
-  progress?: number;
-  srcTokenAddress?: string;
-  dstTokenAddress?: string;
-  totalChunks?: number;
-  srcToken?: Token;
-  dstToken?: Token;
-  dex?: string;
-  exchange?: string;
-}
-
 type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
 export interface TwapLibProps {
   srcUsd?: string | number;
@@ -274,8 +249,6 @@ export type Token = {
   decimals: number;
   logoUrl: string;
 };
-
-export type OrderUI = any
 
 export interface StylesConfig {
   primaryColor?: string;
@@ -324,13 +297,23 @@ export interface TwapState {
   swapState?: SwapState;
   srcAmountUi?: string;
 
+  confirmationClickTimestamp?: Moment;
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
+
+  typedChunks?: number;
+  typedFillDelay: Duration;
+  typedDuration?: Duration;
 
   createOrdertxHash?: string;
   wrapTxHash?: string;
   approveTxHash?: string;
   unwrapTxHash?: string;
+
+  typedLimitPrice?: string;
+  isInvertedLimitPrice?: boolean;
+  limitPricePercent?: string;
+  isMarketOrder?: boolean;
 
   createOrderSuccess?: boolean;
   wrapSuccess?: boolean;

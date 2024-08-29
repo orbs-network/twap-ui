@@ -1,14 +1,16 @@
-import { Abi, erc20, estimateGasPrice, isNativeAddress, setWeb3Instance } from "@defi.org/web3-candies";
+import { Abi, eqIgnoreCase, erc20, estimateGasPrice, isNativeAddress, setWeb3Instance } from "@defi.org/web3-candies";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { useCallback, useMemo } from "react";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
-import { amountBNV2, compact, getTheGraphUrl, groupBy, logger, orderBy } from "../utils";
-import { useGetHasAllowance, useGetTokenFromParsedTokensList, useNetwork } from "./hooks";
+import { amountBNV2 } from "../utils";
+import { useGetHasAllowance, useNetwork } from "./hooks";
 import { useSrcAmount } from "./lib";
-import { AMOUNT_TO_BORROW, feeOnTransferDetectorAddresses, REFETCH_BALANCE, REFETCH_GAS_PRICE, STALE_ALLOWANCE, Token } from "@orbs-network/twap-ui-sdk";
+import { AMOUNT_TO_BORROW, getOrders, Order, Status, Token, groupOrdersByStatus } from "@orbs-network/twap-sdk";
 import { useTwapContext } from "../context/context";
+import { feeOnTransferDetectorAddresses, REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, STALE_ALLOWANCE } from "../consts";
+import { ordersStore } from "../store";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const { web3, account, config } = useTwapContext();
@@ -139,6 +141,80 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
     },
   );
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
+};
+
+const useOrderHistoryKey = () => {
+  const { config, account } = useTwapContext();
+
+  return [QueryKeys.GET_ORDER_HISTORY, account, config.exchangeAddress, config.chainId];
+};
+
+const useUpdateOrderStatusToCanceled = () => {
+  const QUERY_KEY = useOrderHistoryKey();
+  const queryClient = useQueryClient();
+  const config = useTwapContext().config;
+
+  return useCallback(
+    (orderId: number) => {
+      try {
+        ordersStore.cancelOrder(config.chainId, orderId);
+        queryClient.setQueryData(QUERY_KEY, (prev?: any) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            [Status.Open]: prev[Status.Open].map((o: Order) => {
+              if (o.id === orderId) {
+                return {
+                  ...o,
+                  status: Status.Canceled,
+                };
+              }
+              return o;
+            }),
+          };
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [QUERY_KEY, queryClient, config],
+  );
+};
+
+export const useOrdersHistory = () => {
+  const { state, config, account, tokens } = useTwapContext();
+
+  const QUERY_KEY = useOrderHistoryKey();
+  const queryClient = useQueryClient();
+  const query = useQuery(
+    QUERY_KEY,
+    async ({ signal }) => {
+      return getOrders(config, account!, signal);
+    },
+    {
+      enabled: !!config && !state.showConfirmation && !!account,
+      refetchInterval: REFETCH_ORDER_HISTORY,
+      onError: (error: any) => console.log(error),
+      refetchOnWindowFocus: true,
+      retry: 5,
+      staleTime: Infinity,
+    },
+  );
+
+  const updateData = useCallback(
+    (orders?: Order[]) => {
+      if (!orders) return;
+      queryClient.setQueryData(QUERY_KEY, orders);
+    },
+    [QUERY_KEY, queryClient],
+  );
+
+  return useMemo(() => {
+    return {
+      ...query,
+      updateData,
+    };
+  }, [query, updateData]);
 };
 
 export const query = {

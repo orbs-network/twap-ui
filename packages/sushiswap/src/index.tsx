@@ -18,9 +18,8 @@ import {
   compact,
   size,
   Configs,
-  Config,
-  stateActions,
 } from "@orbs-network/twap-ui";
+import { Config } from "@orbs-network/twap-sdk";
 import translations from "./i18n/en.json";
 import { createContext, FC, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
@@ -81,9 +80,10 @@ import { eqIgnoreCase, network } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
-import { TimeResolution, useAmountBN, useOnDuration, useOnMarket } from "@orbs-network/twap-ui-sdk";
+import { TimeResolution } from "@orbs-network/twap-sdk";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
+console.log({configs});
 
 const USD = ({ usd }: { usd?: string }) => {
   return (
@@ -290,7 +290,7 @@ const useMarketPrice = () => {
 
   const { srcAddress, dstAddress } = useAddresses();
   const { srcToken } = useSelectedParsedTokens();
-  const amount = useAmountBN(srcToken?.decimals, "1");
+  const amount = hooks.useAmountBN(srcToken?.decimals, "1");
 
   const trade = useTrade!(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
 
@@ -579,7 +579,7 @@ const ShowConfirmationButton = () => {
 };
 
 const TwapListener = () => {
-  const onChange = useOnMarket();
+  const onChange = hooks.useSetIsMarket();
   useEffect(() => {
     onChange(true);
   }, [onChange]);
@@ -597,7 +597,6 @@ const TWAPPanel = () => {
       </StyledTop>
       <TradeIntervalSelect />
       <TotalTrades />
-
       <ShowConfirmationButton />
     </StyledContent>
   );
@@ -642,7 +641,7 @@ const LimitPanelExpirationOptions = [
 const LimitPanelExpiration = () => {
   const selectedExpiry = hooks.useDuration().millis;
 
-  const setCustomDuration = useOnDuration();
+  const setCustomDuration = hooks.useSetDuration();
   const onChange = useCallback(
     (resolution: TimeResolution) => {
       setCustomDuration({ resolution, amount: 1 });
@@ -667,7 +666,7 @@ const LimitPanelExpiration = () => {
 };
 
 const TradeSizeWarning = () => {
-  const warning = hooks.useTradeSizeWarning()?.text;
+  const warning = hooks.useTradeSizeWarning();
   if (!warning) return null;
   return <StyledChunksWarning title={warning} variant="warning" />;
 };

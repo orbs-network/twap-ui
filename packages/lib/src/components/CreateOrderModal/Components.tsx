@@ -5,7 +5,7 @@ import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode, useMemo } from "react";
 import { styled } from "styled-components";
 import { useTwapContext } from "../../context/context";
-import { useIsMarketOrder } from "@orbs-network/twap-ui-sdk";
+import { useIsMarketOrder } from "../../hooks";
 
 export const TokenDispalySmall = ({ isSrc }: { isSrc?: boolean }) => {
   const { amount, token } = useTokenDisplay(isSrc);

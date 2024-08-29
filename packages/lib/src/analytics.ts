@@ -1,7 +1,7 @@
 import { isTxRejected, logger } from "./utils";
 import { v4 as uuidv4 } from "uuid";
 import { useSwapData } from "./hooks";
-import { Config } from "./types";
+import { Config } from "@orbs-network/twap-sdk";
 
 const Version = 0.2;
 

@@ -8,11 +8,11 @@ import { Spinner } from "../base";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode, useCallback, useMemo } from "react";
 import { useTwapContext } from "../../context/context";
-import { query, useOpenOrders, useTwapOrders } from "../../hooks";
+import { query, useOpenOrders, useOrdersHistory } from "../../hooks";
 import { size } from "../../utils";
 
 const OrderHistoryButton = ({ onClick, className = "" }: { onClick: () => void; className?: string }) => {
-  const { data } = useTwapOrders();
+  const { data } = useOrdersHistory();
   const openOrders = useOpenOrders();
   const isLoading = !data;
   const text = useMemo(() => {
@@ -62,10 +62,9 @@ const StyledOrderHistoryButton = styled(StyledRowFlex)({
 });
 
 const Content = ({ className = "" }: { className?: string }) => {
-  const selectedOrderId = useOrderHistoryContext().selectedOrderId;
   return (
     <Container className={className}>
-      <SelectedOrder selectedOrderId={selectedOrderId} />
+      <SelectedOrder />
       <OrderHistoryList />
     </Container>
   );
