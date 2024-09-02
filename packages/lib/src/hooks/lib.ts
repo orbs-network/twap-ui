@@ -214,17 +214,23 @@ export const useToken = (isSrc?: boolean) => {
   return isSrc ? srcToken : dstToken;
 };
 
+export const useMinChunkSizeUsd = () => {
+  const { state, config } = useTwapContext();
+  return Math.max(state.minChunkSizeUsd || 0, config?.minChunkSizeUsd || 0);
+};
+
 export const useMaxPossibleChunks = () => {
   const srcAmount = useSrcAmount().amount;
   const { config, srcToken, srcUsd } = useTwapContext();
 
+  const minChunkSizeUsd = useMinChunkSizeUsd();
   return useMemo(() => {
     if (!config || !srcToken || !srcAmount || !srcUsd) return 1;
-    const res = BN.max(1, BN(srcAmount).div(BN(10).pow(srcToken.decimals).div(srcUsd).times(config.minChunkSizeUsd)))
+    const res = BN.max(1, BN(srcAmount).div(BN(10).pow(srcToken.decimals).div(srcUsd).times(minChunkSizeUsd)))
       .integerValue(BN.ROUND_FLOOR)
       .toNumber();
     return res > 1 ? res : 1;
-  }, [srcAmount, srcToken, srcUsd, config]);
+  }, [srcAmount, srcToken, srcUsd, config, minChunkSizeUsd]);
 };
 
 export const useSrcAmount = () => {
@@ -441,15 +447,16 @@ export const useTradeSizeWarning = () => {
   const singleChunksUsd = useSrcChunkAmountUsd();
   const chunks = useChunks();
   const srcAmount = useSrcAmount().amount;
+  const minChunkSizeUsd = useMinChunkSizeUsd();
 
-  const { config, translations } = useTwapContext();
+  const { translations } = useTwapContext();
   return useMemo(() => {
     if (BN(srcAmount).isZero()) return;
-    const minTradeSizeUsd = BN(config.minChunkSizeUsd || 0);
+    const minTradeSizeUsd = BN(minChunkSizeUsd || 0);
     if (BN(chunks).isZero() || BN(singleChunksUsd || 0).isLessThan(minTradeSizeUsd)) {
       return translations.tradeSizeMustBeEqual.replace("{minChunkSizeUsd}", minTradeSizeUsd.toString());
     }
-  }, [chunks, translations, singleChunksUsd, config, srcAmount]);
+  }, [chunks, translations, singleChunksUsd, minChunkSizeUsd, srcAmount]);
 };
 
 const useSrcAmountWarning = () => {

@@ -5,6 +5,8 @@ import { Spinner } from "../base";
 import { Step, SwapStep } from "../../types";
 import { useMemo } from "react";
 import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
+import { FaCheckCircle } from "@react-icons/all-files/fa/FaCheckCircle";
+
 import { useTwapContext } from "../../context/context";
 import { useNetwork } from "../../hooks";
 
@@ -99,8 +101,7 @@ const useStep = (step?: SwapStep) => {
     if (step === "approve") {
       return {
         title: isApproveLoading ? "Approving..." : `Approve ${srcToken?.symbol}`,
-        image: srcToken?.logoUrl,
-
+        Icon: FaCheckCircle,
         status: approveSuccess ? "completed" : isApproveLoading ? "loading" : isApprovePending ? "pending" : "disabled",
       };
     }

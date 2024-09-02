@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
 import { Status, Token } from "../types";
 import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, maxUint256, networks, Abi, erc20 } from "@defi.org/web3-candies";
-import { MIN_NATIVE_BALANCE } from "../consts";
 import TwapAbi from "@orbs-network/twap/twap.abi.json";
 import { useNumericFormat } from "react-number-format";
 import { amountBN, amountBNV2, amountUi, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress, resetQueryParams } from "../utils";

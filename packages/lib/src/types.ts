@@ -268,6 +268,7 @@ export interface TwapLibProps {
   isWrongChain?: boolean;
   isExactAppoval?: boolean;
   fee?: string;
+  nativeUsd?: string;
 }
 
 export type Token = {
@@ -359,6 +360,8 @@ export interface State {
   selectedOrdersTab: number;
 
   swapData?: ReturnType<typeof useSwapData>;
+
+  minChunkSizeUsd?: number;
 }
 
 export interface TooltipProps {
@@ -491,6 +494,7 @@ export interface TWAPContextProps {
   dappWToken?: Token;
   isExactAppoval?: boolean;
   fee?: string;
+  nativeUsd?: string;
 }
 
 export enum Status {

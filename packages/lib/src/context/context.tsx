@@ -7,11 +7,12 @@ import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
-import { defaultCustomFillDelay, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS } from "../consts";
+import { defaultCustomFillDelay, MIN_TRADE_INTERVAL_FORMATTED, QUERY_PARAMS, TX_GAS_COST } from "../consts";
 import { getQueryParam, limitPriceFromQueryParams } from "../utils";
 import moment from "moment";
 import { setWeb3Instance } from "@defi.org/web3-candies";
 import { stateActions } from "./actions";
+import BN from "bignumber.js";
 analytics.onModuleImported();
 
 export const TwapContext = createContext({} as TWAPContextProps);
@@ -36,6 +37,7 @@ const Listener = (props: TwapLibProps) => {
   const interval = useRef<any>();
   const { state, updateState } = useTwapContext();
   const setCustomDuration = stateActions.useSetCustomDuration();
+  useMinChunksSizeUpdater();
 
   useEffect(() => {
     if (props.isLimitPanel) {
@@ -168,6 +170,7 @@ export const Content = (props: TwapLibProps) => {
         enableQueryParams: props.enableQueryParams,
         isExactAppoval: props.isExactAppoval,
         fee: props.fee,
+        nativeUsd: props.nativeUsd,
       }}
     >
       <WrappedTwap {...props} />
@@ -187,4 +190,31 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
 export const useTwapContext = () => {
   return useContext(TwapContext);
+};
+
+const useMinChunksSizeUpdater = () => {
+  const { maxFeePerGas } = query.useGasPrice();
+  const {
+    updateState,
+    state: { minChunkSizeUsd },
+    config,
+    nativeUsd,
+  } = useTwapContext();
+
+  const calculate = useCallback(() => {
+    const result = BN(TX_GAS_COST)
+      .multipliedBy(maxFeePerGas)
+      .multipliedBy(nativeUsd || "0")
+      .dividedBy(1e18)
+      .dividedBy(0.05)
+      .decimalPlaces(0)
+      .toNumber();
+    return updateState({ minChunkSizeUsd: result });
+  }, [maxFeePerGas.toString(), updateState, config.minChunkSizeUsd, nativeUsd]);
+
+  useEffect(() => {
+    if (maxFeePerGas.gt(0) && !minChunkSizeUsd && nativeUsd) {
+      calculate();
+    }
+  }, [maxFeePerGas.toString(), calculate, minChunkSizeUsd, nativeUsd]);
 };

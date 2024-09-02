@@ -294,7 +294,6 @@ const useMarketPrice = () => {
   const amount = hooks.useAmountBN(srcToken?.decimals, "1");
 
   const trade = useTrade!(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
-  console.log(trade?.outAmount);
 
   return trade?.outAmount;
 };
@@ -302,10 +301,12 @@ const useMarketPrice = () => {
 const useUsd = () => {
   const context = useAdapterContext();
   const { srcAddress, dstAddress } = useAddresses();
+  const wTokenAddress = network(context.config.chainId).wToken.address;
 
   return {
     srcUsd: context.useUSD(srcAddress),
     dstUsd: context.useUSD(dstAddress),
+    nativeUsd: context.useUSD(wTokenAddress),
   };
 };
 
@@ -389,7 +390,8 @@ const TWAPContent = () => {
 
   const parsedTokens = useParsedTokens();
   const { srcToken, dstToken } = useSelectedParsedTokens();
-  const { srcUsd, dstUsd } = useUsd();
+  const { srcUsd, dstUsd, nativeUsd } = useUsd();
+
   const marketPrice = useMarketPrice();
   const isWrongChain = useIsWrongChain();
 
@@ -423,6 +425,7 @@ const TWAPContent = () => {
           dappWToken={dappWToken}
           isExactAppoval={true}
           fee={"0.25"}
+          nativeUsd={nativeUsd}
         >
           <GlobalStyles />
           <StyledContent>

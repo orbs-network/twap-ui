@@ -63,3 +63,5 @@ export const WAIT_FOR_ORDER_LOCAL_STORAGE = "WAIT_FOR_ORDER";
 
 export const ORBS_LOGO = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/orbslogo.svg";
 export const ORBS_LOGO_FALLBACK = "https://www.orbs.com/assets/img/common/logo.svg";
+
+export const TX_GAS_COST = 500_000;

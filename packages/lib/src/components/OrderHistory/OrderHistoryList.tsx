@@ -16,7 +16,7 @@ import { size } from "../../utils";
 
 export const OrderHistoryList = () => {
   const { selectOrder, orders, selectedOrderId, isLoading } = useOrderHistoryContext();
-  
+
   const sizeMap = useRef({} as any);
   const listRef = useRef<any>();
   const setSize = useCallback((index: number, size: number) => {
