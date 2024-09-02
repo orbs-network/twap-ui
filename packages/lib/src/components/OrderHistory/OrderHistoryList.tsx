@@ -16,6 +16,7 @@ import { size } from "../../utils";
 
 export const OrderHistoryList = () => {
   const { selectOrder, orders, selectedOrderId, isLoading } = useOrderHistoryContext();
+  
   const sizeMap = useRef({} as any);
   const listRef = useRef<any>();
   const setSize = useCallback((index: number, size: number) => {
@@ -36,7 +37,7 @@ export const OrderHistoryList = () => {
   }
 
   return (
-    <ListContainer style={{ opacity: selectedOrderId ? 0 : 1, pointerEvents: selectedOrderId ? "none" : "all" }} className="twap-orders-list">
+    <ListContainer style={{ opacity: selectedOrderId !== undefined ? 0 : 1, pointerEvents: selectedOrderId !== undefined ? "none" : "all" }} className="twap-orders-list">
       <AutoSizer>
         {({ height, width }: any) => (
           <VariableSizeList ref={listRef} height={height} itemCount={size(orders)} itemSize={getSize} width={width} itemData={{ setSize, selectOrder, orders }}>
