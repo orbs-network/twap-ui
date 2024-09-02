@@ -83,7 +83,7 @@ import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
 import { TimeResolution } from "@orbs-network/twap-ui";
 
-const configs = [Configs.SushiArb, Configs.SushiBase];
+const configs = [Configs.SushiArb, Configs.SushiBase, Configs.SushiEth];
 
 const USD = ({ usd }: { usd?: string }) => {
   return (
@@ -294,6 +294,7 @@ const useMarketPrice = () => {
   const amount = hooks.useAmountBN(srcToken?.decimals, "1");
 
   const trade = useTrade!(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
+  console.log(trade?.outAmount);
 
   return trade?.outAmount;
 };
