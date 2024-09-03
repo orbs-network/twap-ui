@@ -152,9 +152,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     if (!fromToken) {
       setFromToken(dappTokens?.[1]);
     }
-    if (!toToken) {
-      setToToken(dappTokens?.[2]);
-    }
+    // if (!toToken) {
+    //   setToToken(dappTokens?.[2]);
+    // }
   }, [dappTokens, toToken]);
 
   const onSwitchTokens = () => {

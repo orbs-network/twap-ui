@@ -141,6 +141,16 @@ export const TokenSelect = ({
   CustomArrow?: any;
   customButtonElement?: FC;
 }) => {
+  const token = useToken(isSrc);
+
+  if (!token) {
+    return (
+      <div className={`${className} twap-token-not-selected`} onClick={onClick} style={{ cursor: "pointer" }}>
+        <StyledText>Select token</StyledText>
+      </div>
+    );
+  }
+
   return (
     <div className={`${className} twap-token-select`} onClick={onClick} style={{ cursor: "pointer" }}>
       <StyledRowFlex gap={5} style={{ cursor: "pointer" }} width="fit-content" className={`twap-token-selected`}>

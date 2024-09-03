@@ -90,6 +90,14 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-token-not-selected": {
+      paddingLeft: "20px!important",
+      paddingRight: "20px!important",
+      background: "rgb(59 130 246 / 1)!important",
+      "& p": {
+        fontWeight: "500!important",
+      },
+    },
     ".twap-custom-button": {
       color: "white!important",
       "*": {

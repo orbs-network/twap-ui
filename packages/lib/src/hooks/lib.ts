@@ -372,7 +372,8 @@ export const useSwitchTokens = () => {
 };
 
 const isEqual = (tokenA?: any, tokenB?: any) => {
-  return eqIgnoreCase(tokenA?.address || "", tokenB?.address || "") || eqIgnoreCase(tokenA?.symbol, tokenB?.symbol);
+  if (!tokenA || !tokenB) return false;
+  return eqIgnoreCase(tokenA?.address || "", tokenB?.address || "") || eqIgnoreCase(tokenA?.symbol || "", tokenB?.symbol || "");
 };
 
 export const useTokenSelect = () => {
