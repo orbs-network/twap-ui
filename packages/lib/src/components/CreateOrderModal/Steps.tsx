@@ -13,11 +13,7 @@ export const Steps = () => {
   const steps = useTwapContext().state.swapSteps;
   return (
     <StepsContainer>
-      <StyledSteps>
-        {steps?.map((step, index) => (
-          <StepComponent key={step} stepType={step} />
-        ))}
-      </StyledSteps>
+      <StyledSteps>{steps?.map((step, index) => <StepComponent key={step} stepType={step} />)}</StyledSteps>
     </StepsContainer>
   );
 };

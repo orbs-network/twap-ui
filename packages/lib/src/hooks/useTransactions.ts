@@ -1,8 +1,8 @@
-import { zero, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256 } from "@defi.org/web3-candies";
+import { zero, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256, hasWeb3Instance, setWeb3Instance } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context/context";
 import { useEstimatedDelayBetweenChunksMillis, useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } from "./hooks";
-import { query } from "./query";
+import { query, useOrdersHistory } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
 import { useCallback, useMemo } from "react";
@@ -215,7 +215,7 @@ export const useUnwrapToken = () => {
 export const useApproveToken = () => {
   const onTxHash = stateActions.useOnTxHash().onApproveTxHash;
 
-  const { config, account, isExactAppoval } = useTwapContext();
+  const { config, account, isExactAppoval, web3 } = useTwapContext();
   const srcAmount = useSrcAmount().amount;
 
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
@@ -232,6 +232,9 @@ export const useApproveToken = () => {
       analytics.updateAction("approve");
 
       let txHash: string = "";
+      if (!hasWeb3Instance()) {
+        setWeb3Instance(web3);
+      }
       const contract = erc20(token.symbol, token.address, token.decimals);
 
       await sendAndWaitForConfirmations(
@@ -266,10 +269,15 @@ const useOnSuccessCallback = () => {
   const addOrder = query.useAddNewOrder();
   const swapData = useSwapData();
   const onOrderCreated = stateActions.useOnOrderCreated();
+  const { refetch } = useOrdersHistory();
   const reset = useResetAfterSwap();
   const estimatedDelayBetweenChunksMillis = useEstimatedDelayBetweenChunksMillis();
   return useCallback(
-    (order: { txHash: string; orderId: number }) => {
+    (order: { txHash: string; orderId?: number }) => {
+      if (!order.orderId) {
+        return refetch();
+      }
+
       const fillDelaySeconds = (swapData.fillDelay.millis - estimatedDelayBetweenChunksMillis) / 1000;
 
       onOrderCreated();
@@ -300,7 +308,7 @@ const useOnSuccessCallback = () => {
       });
       reset();
     },
-    [srcToken, dstToken, onTxSubmitted, onOrderCreated, reset, config, swapData, estimatedDelayBetweenChunksMillis],
+    [srcToken, dstToken, onTxSubmitted, onOrderCreated, reset, config, swapData, estimatedDelayBetweenChunksMillis, refetch, addOrder],
   );
 };
 
@@ -381,7 +389,8 @@ export const useSubmitOrderFlow = () => {
       }
 
       updateState({ swapStep: "createOrder" });
-      return createOrder(token);
+      const order = await createOrder(token);
+      await onSuccessCallback(order);
     },
     {
       onError(error) {
@@ -394,9 +403,7 @@ export const useSubmitOrderFlow = () => {
           updateState({ swapState: "failed" });
         }
       },
-      onSuccess(data) {
-        onSuccessCallback(data);
-      },
+
       onSettled() {
         refetchAllowance();
       },
@@ -417,7 +424,6 @@ export const useSubmitOrderFlow = () => {
 };
 
 export const useCancelOrder = () => {
-  const { refetch } = query.useOrdersHistory();
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
   const { account } = useTwapContext();
   const twapContract = useTwapContract();

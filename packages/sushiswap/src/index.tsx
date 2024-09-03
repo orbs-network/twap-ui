@@ -85,8 +85,6 @@ import { TimeResolution } from "@orbs-network/twap-ui";
 
 const configs = [Configs.SushiArb, Configs.SushiBase, Configs.SushiEth];
 
-
-
 const USD = ({ usd }: { usd?: string }) => {
   return (
     <StyledUSD className="twap-custom-usd">

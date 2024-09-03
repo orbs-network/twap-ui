@@ -2,10 +2,10 @@ import { useTwapContext } from "../context/context";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
 import { Status, Token } from "../types";
-import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, maxUint256, networks, Abi, erc20 } from "@defi.org/web3-candies";
+import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, networks, Abi, erc20, network } from "@defi.org/web3-candies";
 import TwapAbi from "@orbs-network/twap/twap.abi.json";
 import { useNumericFormat } from "react-number-format";
-import { amountBN, amountBNV2, amountUi, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress, resetQueryParams } from "../utils";
+import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress, resetQueryParams } from "../utils";
 import { query } from "./query";
 import { stateActions } from "../context/actions";
 
@@ -198,10 +198,15 @@ export const usemElipsisAddress = (address?: string) => {
 
 export const useContract = (abi?: Abi, address?: string) => {
   const { config, web3 } = useTwapContext();
+
+  const wTokenAddress = network(config.chainId)?.wToken.address;
   return useMemo(() => {
-    if (!web3 || !address || !config || !abi || isNativeAddress(address)) return;
+    if (!web3 || !address || !config || !abi) return;
+    if (isNativeAddress(address)) {
+      return new web3.eth.Contract(abi || [], wTokenAddress);
+    }
     return new web3.eth.Contract(abi || [], address);
-  }, [abi, address, config, web3]);
+  }, [abi, address, config, web3, wTokenAddress]);
 };
 
 export const useTwapContract = () => {
