@@ -216,7 +216,7 @@ export const useToken = (isSrc?: boolean) => {
 
 export const useMinChunkSizeUsd = () => {
   const { state, config } = useTwapContext();
-  return Math.max(state.minChunkSizeUsd || 0, config?.minChunkSizeUsd || 0);
+  return 100
 };
 
 export const useMaxPossibleChunks = () => {

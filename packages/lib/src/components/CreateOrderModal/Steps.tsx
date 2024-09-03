@@ -5,8 +5,7 @@ import { Spinner } from "../base";
 import { Step, SwapStep } from "../../types";
 import { useMemo } from "react";
 import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
-import { FaCheckCircle } from "@react-icons/all-files/fa/FaCheckCircle";
-
+import { RiCheckboxCircleFill } from "@react-icons/all-files/ri/RiCheckboxCircleFill";
 import { useTwapContext } from "../../context/context";
 import { useNetwork } from "../../hooks";
 
@@ -14,7 +13,11 @@ export const Steps = () => {
   const steps = useTwapContext().state.swapSteps;
   return (
     <StepsContainer>
-      <StyledSteps>{steps?.map((step, index) => <StepComponent key={step} stepType={step} />)}</StyledSteps>
+      <StyledSteps>
+        {steps?.map((step, index) => (
+          <StepComponent key={step} stepType={step} />
+        ))}
+      </StyledSteps>
     </StepsContainer>
   );
 };
@@ -27,10 +30,6 @@ const StepsContainer = styled(StyledColumnFlex)({
   position: "relative",
   gap: 0,
 });
-
-interface Props {
-  step: Step;
-}
 
 export function StepComponent({ stepType }: { stepType: SwapStep }) {
   const step = useStep(stepType);
@@ -91,7 +90,7 @@ const useStep = (step?: SwapStep) => {
 
     if (step === "wrap") {
       return {
-        title: isWrapLoading ? "Wrapping..." : `Wrap ${nativeToken?.symbol}`,
+        title: `Wrap ${nativeToken?.symbol}`,
         Icon: RiSwapFill,
         image: nativeToken?.logoUrl,
         status: wrapSuccess ? "completed" : isWrapLoading ? "loading" : isWrapPending ? "pending" : "disabled",
@@ -100,15 +99,15 @@ const useStep = (step?: SwapStep) => {
 
     if (step === "approve") {
       return {
-        title: isApproveLoading ? "Approving..." : `Approve ${srcToken?.symbol}`,
-        Icon: FaCheckCircle,
+        title: `Approve ${srcToken?.symbol}`,
+        Icon: RiCheckboxCircleFill,
         status: approveSuccess ? "completed" : isApproveLoading ? "loading" : isApprovePending ? "pending" : "disabled",
       };
     }
 
     if (step === "createOrder") {
       return {
-        title: isCreateLoading ? "Creating order..." : "Create Order",
+        title: "Create Order",
         Icon: RiSwapFill,
         status: createOrderSuccess ? "completed" : isCreateLoading ? "loading" : isCreatePending ? "pending" : "disabled",
       };
@@ -147,9 +146,7 @@ const StyledTitleAndLink = styled(StyledColumnFlex)({
 const Logo = ({ step }: { step: Step }) => {
   return (
     <StyledStepLogo className="twap-step-logo">
-      {step.status === "loading" ? (
-        <Spinner size={26} />
-      ) : step.image ? (
+      {step.image ? (
         <img src={step.image} alt={step.title} />
       ) : step.Icon ? (
         <div className="twap-step-icon">
