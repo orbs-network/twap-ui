@@ -19,7 +19,7 @@ import {
   size,
   Configs,
 } from "@orbs-network/twap-ui";
-import { Config } from "@orbs-network/twap-sdk";
+import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import translations from "./i18n/en.json";
 import { createContext, FC, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
@@ -80,7 +80,6 @@ import { eqIgnoreCase, network } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
-import { TimeResolution } from "@orbs-network/twap-sdk";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
 console.log({ configs });
@@ -622,19 +621,19 @@ const LimitPanel = () => {
 const LimitPanelExpirationOptions = [
   {
     text: "1 Day",
-    value: TimeResolution.Days,
+    value: TimeUnit.Days,
   },
   {
     text: "1 Week",
-    value: TimeResolution.Weeks,
+    value: TimeUnit.Weeks,
   },
   {
     text: "1 Month",
-    value: TimeResolution.Months,
+    value: TimeUnit.Months,
   },
   {
     text: "1 Year",
-    value: TimeResolution.Years,
+    value: TimeUnit.Years,
   },
 ];
 
@@ -643,8 +642,8 @@ const LimitPanelExpiration = () => {
 
   const setCustomDuration = hooks.useSetDuration();
   const onChange = useCallback(
-    (resolution: TimeResolution) => {
-      setCustomDuration({ resolution, amount: 1 });
+    (unit: TimeUnit) => {
+      setCustomDuration({ unit, value: 1 });
     },
     [setCustomDuration],
   );

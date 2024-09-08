@@ -1,10 +1,10 @@
 import TwapAbi from "@orbs-network/twap/twap.abi.json";
 import BN from "bignumber.js";
-import { MIN_TRADE_INTERVAL_FORMATTED } from "./consts";
-import { Config, Duration, TimeResolution, Token } from "./types";
-import { convertDecimals, parsebn } from "./utils";
+import { MIN_FILL_DELAY_MINUTES } from "./consts";
+import { Config, TimeDuration, TimeUnit, Token } from "./types";
+import { convertDecimals, findTimeUnit, getTimeDurationMillis, parsebn } from "./utils";
 
-export const DEFAULT_FILL_DELAY = { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED } as Duration;
+export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
 export const getDstTokenMinAmount = (srcToken?: Token, dstToken?: Token, srcChunkAmount?: string, limitPrice?: string, isMarketOrder?: boolean) => {
   let amount = BN(1).toString();
@@ -21,10 +21,10 @@ export const getDstTokenAmount = (typedValue?: string, limitPrice?: string) => {
   return BN(limitPrice).multipliedBy(typedValue).decimalPlaces(0).toString();
 };
 
-export const getMinDuration = (chunks = 1, fillDelayMillis = 0): Duration => {
-  const _millis = fillDelayMillis * 2 * chunks;
-  const resolution = [TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes].find((r) => r <= _millis) || TimeResolution.Minutes;
-  return { resolution, amount: Number(BN(_millis / resolution).toFixed(2)) };
+export const getDuration = (chunks = 1, fillDelay?: TimeDuration, customDuration?: TimeDuration): TimeDuration => {
+  const minDuration = getTimeDurationMillis(fillDelay) * 2 * chunks;
+  const unit = findTimeUnit(minDuration);
+  return customDuration || { unit, value: Number(BN(minDuration / unit).toFixed(2)) };
 };
 
 export const getChunks = (maxPossibleChunks = 1, typedChunks?: number, isLimitPanel?: boolean) => {
@@ -41,11 +41,11 @@ export const getMaxPossibleChunks = (config: Config, srcAmountUi?: string, oneSr
   return res > 1 ? res : 1;
 };
 
-export const getFillDelay = (isLimitPanel?: boolean, typedFillDelay?: Duration) => {
-  if (isLimitPanel || !typedFillDelay) {
+export const getFillDelay = (isLimitPanel?: boolean, customFillDelay?: TimeDuration) => {
+  if (isLimitPanel || !customFillDelay) {
     return DEFAULT_FILL_DELAY;
   }
-  return typedFillDelay;
+  return customFillDelay;
 };
 
 export const getMinimumDelayMinutes = (config?: Config) => {
@@ -59,18 +59,11 @@ export const getLimitPricePercentDiffFromMarket = (limitPrice?: string, marketPr
   return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_HALF_UP).toString();
 };
 
-export const getDuration = (minDuration: Duration, typedDuration?: Duration) => {
-  return typedDuration || minDuration;
-};
 
-export const getDurationMillis = (duration: Duration) => {
-  return duration.amount * duration.resolution;
-};
 
-export const getDeadline = (duration: Duration) => {
-  const durationMillis = getDurationMillis(duration)
+export const getDeadline = (duration: TimeDuration) => {
   const minute = 60_000;
-  return Date.now() + durationMillis + minute;
+  return Date.now() + getTimeDurationMillis(duration) + minute;
 };
 
 export const getSrcChunkAmountUsd = (srcChunkAmount?: string, oneSrcTokenUsd?: string | number) => {

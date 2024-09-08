@@ -1,20 +1,20 @@
 import { styled } from "styled-components";
 import { FC, ReactNode, useCallback, useMemo } from "react";
 import { useTwapContext } from "../context/context";
-import { useDuration, useShouldWrapOrUnwrapOnly, useSetDuration, useIsMinTradeDurationWarning, useIsMaxTradeDurationWarning, useIsPartialFillWarning } from "../hooks/lib";
+import { useDuration, useShouldWrapOrUnwrapOnly, useSetDuration, useIsPartialFillWarning } from "../hooks/lib";
 import { StyledColumnFlex } from "../styles";
 import { BottomContent, Button, Label, Message, NumericInput, ResolutionSelect } from "./base";
-import { MIN_DURATION_MILLIS_FORMATTED, TimeResolution } from "@orbs-network/twap-sdk";
+import { MIN_DURATION_MINUTES, TimeUnit } from "@orbs-network/twap-sdk";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const duration = useDuration().duration;
+  const duration = useDuration().timeDuration;
   const setCustomDuration = useSetDuration();
 
   return (
     <StyledInput
       className={className}
-      value={duration.amount}
-      onChange={(v) => setCustomDuration({ resolution: duration.resolution, amount: Number(v) })}
+      value={duration.value}
+      onChange={(v) => setCustomDuration({ unit: duration.unit, value: Number(v) })}
       placeholder={placeholder}
     />
   );
@@ -27,17 +27,17 @@ const StyledInput = styled(NumericInput)({
 });
 
 const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
-  const duration = useDuration().duration;
+  const duration = useDuration().timeDuration;
   const setCustomDuration = useSetDuration();
 
   const onChange = useCallback(
-    (resolution: TimeResolution) => {
-      setCustomDuration({ resolution, amount: duration.amount });
+    (unit: TimeUnit) => {
+      setCustomDuration({ unit, value: duration.value });
     },
-    [duration.amount, setCustomDuration],
+    [duration.value, setCustomDuration],
   );
 
-  return <ResolutionSelect className={className} resolution={duration.resolution} onChange={onChange} />;
+  return <ResolutionSelect className={className} unit={duration.unit} onChange={onChange} />;
 };
 
 export const TradeDuration = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
@@ -57,21 +57,18 @@ export const TradeDuration = ({ children, className = "" }: { children: ReactNod
 
 const WarningComponent = () => {
   const { translations: t } = useTwapContext();
-  const minDurationWarning = useIsMinTradeDurationWarning();
-  const maxDurationWarning = useIsMaxTradeDurationWarning();
+  const durationWarning = useDuration().warning;
   const partialFillWarning = useIsPartialFillWarning();
 
   const warning = useMemo(() => {
-    if (minDurationWarning) {
-      return t.minDurationWarning.replace("{duration}", MIN_DURATION_MILLIS_FORMATTED.toString());
+    if (durationWarning) {
+      return durationWarning
     }
-    if (maxDurationWarning) {
-      return t.maxDurationWarning;
-    }
+
     if (partialFillWarning) {
       return t.partialFillWarning;
     }
-  }, [minDurationWarning, maxDurationWarning, partialFillWarning, t]);
+  }, [durationWarning, partialFillWarning, t]);
 
   if (!warning) return null;
 

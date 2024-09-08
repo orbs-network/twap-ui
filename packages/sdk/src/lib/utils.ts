@@ -1,5 +1,6 @@
 import { nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
 import BN from "bignumber.js";
+import { TimeDuration, TimeUnit } from "./types";
 
 export const getTheGraphUrl = (chainId?: number) => {
   if (!chainId) return;
@@ -90,3 +91,14 @@ export const isNativeAddress = (address: string) => !!nativeTokenAddresses.find(
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+
+export function findTimeUnit(_millis: number): TimeUnit {
+  const units = [TimeUnit.Years, TimeUnit.Months, TimeUnit.Weeks, TimeUnit.Days, TimeUnit.Hours, TimeUnit.Minutes];
+  return units.find((unit) => unit <= _millis) || TimeUnit.Minutes;
+}
+
+export const getTimeDurationMillis = (duration?: TimeDuration) => {
+  if (!duration) return 0;
+  return duration.value * duration.unit;
+};

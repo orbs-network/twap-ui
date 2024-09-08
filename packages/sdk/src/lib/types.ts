@@ -8,42 +8,6 @@ export type Token = {
   logoUrl: string;
 };
 
-
-export interface OrderCreated {
-  Contract_id: string;
-  ask_bidDelay: string;
-  ask_data: string;
-  ask_deadline: string;
-  ask_dstMinAmount: string;
-  ask_dstToken: string;
-  ask_exchange: string;
-  ask_fillDelay: string;
-  ask_srcAmount: string;
-  ask_srcBidAmount: string;
-  ask_srcToken: string;
-  blockNumber: string;
-  blockTimestamp: string;
-  dex: string;
-  dollarValueIn: string;
-  dstTokenSymbol: string;
-  exchange: string;
-  id: string;
-  maker: string;
-  srcTokenSymbol: string;
-  timestamp: string;
-  transactionHash: string;
-}
-
-export enum TimeResolution {
-  Minutes = 60 * 1000,
-  Hours = Minutes * 60,
-  Weeks = 7 * 24 * Hours,
-  Days = Hours * 24,
-  Months = 30 * Days,
-  Years = 365 * Days,
-}
-export type Duration = { resolution: TimeResolution; amount: number };
-
 export enum Status {
   All = "All",
   Open = "Open",
@@ -51,3 +15,15 @@ export enum Status {
   Completed = "Completed",
   Expired = "Expired",
 }
+
+
+export enum TimeUnit {
+  Minutes = 60 * 1000,
+  Hours = Minutes * 60,
+  Weeks = 7 * 24 * Hours,
+  Days = Hours * 24,
+  Months = 30 * Days,
+  Years = 365 * Days,
+}
+
+export type TimeDuration = { unit: TimeUnit; value: number };

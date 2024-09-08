@@ -2,18 +2,18 @@ export const SUGGEST_CHUNK_VALUE = 100;
 export const AMOUNT_TO_BORROW = 10000; // smallest amount that has full precision over bps
 
 export const MIN_CHUNKS = 1;
-export const MIN_TRADE_INTERVAL = 5 * 60 * 1000;
+export const MIN_FILL_DELAY_MILLIS = 5 * 60 * 1000;
 
-export const MAX_TRADE_INTERVAL = 30 * 24 * 60 * 60 * 1000;
+export const MAX_FILL_DELAY_MILLIS = 30 * 24 * 60 * 60 * 1000;
 
-const millisInADay = 24 * 60 * 60 * 1000;
+const day = 24 * 60 * 60 * 1000;
 
-export const MIN_TRADE_INTERVAL_FORMATTED = new Date(MIN_TRADE_INTERVAL).getMinutes();
-export const MAX_TRADE_INTERVAL_FORMATTED = MAX_TRADE_INTERVAL / millisInADay;
+export const MIN_FILL_DELAY_MINUTES = new Date(MIN_FILL_DELAY_MILLIS).getMinutes();
+export const MAX_FILL_DELAY_FORMATTED = MAX_FILL_DELAY_MILLIS / day;
 
 export const MAX_DURATION_MILLIS = 30 * 24 * 60 * 60 * 1000;
 export const MIN_DURATION_MILLIS = 5 * 60 * 1000;
-export const MIN_DURATION_MILLIS_FORMATTED = new Date(MIN_DURATION_MILLIS).getMinutes();
+export const MIN_DURATION_MINUTES = new Date(MIN_DURATION_MILLIS).getMinutes();
 
 export const EXPLORER_URLS = {
   1: "https://etherscan.io",

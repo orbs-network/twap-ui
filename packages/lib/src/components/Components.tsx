@@ -16,7 +16,6 @@ import { Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import {
   useFeeOnTransferWarning,
-  useFillDelay,
   useIsMarketOrder,
   useLowPriceWarning,
   useOutAmount,
@@ -29,7 +28,7 @@ import {
   useTokenSelect,
   useUsdAmount,
 } from "../hooks/lib";
-import { Duration } from "@orbs-network/twap-sdk";
+import { TimeDuration } from "@orbs-network/twap-sdk";
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -169,7 +168,7 @@ export function TradeIntervalSelector({ placeholder }: { placeholder?: string })
     updateState,
   } = useTwapContext();
   const setFillDelay = useCallback(
-    (typedFillDelay: Duration) => {
+    (typedFillDelay: TimeDuration) => {
       updateState({ typedFillDelay });
     },
     [updateState, typedFillDelay],

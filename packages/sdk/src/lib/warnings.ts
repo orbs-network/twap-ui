@@ -1,26 +1,26 @@
-import { MIN_TRADE_INTERVAL, MAX_TRADE_INTERVAL } from "./consts";
-import { Config, Duration } from "./types";
+import { Config, TimeDuration } from "./types";
 import BN from "bignumber.js";
-import { getDurationMillis } from "./lib";
+import { MAX_DURATION_MILLIS, MAX_FILL_DELAY_MILLIS, MIN_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS } from "./consts";
+import { getTimeDurationMillis } from "./utils";
 
 export const getPartialFillWarning = (chunks = 1, durationMillis: number, fillDelayUiMillis: number) => {
   return chunks * fillDelayUiMillis > durationMillis;
 };
 
-export const getMinFillDelayWarning = (fillDelay: Duration) => {
-  return getDurationMillis(fillDelay) < MIN_TRADE_INTERVAL;
+export const getMinFillDelayWarning = (fillDelay: TimeDuration) => {
+  return getTimeDurationMillis(fillDelay) < MIN_FILL_DELAY_MILLIS;
 };
 
-export const getMaxFillDelayWarning = (fillDelay: Duration) => {
-  return getDurationMillis(fillDelay) > MAX_TRADE_INTERVAL;
+export const getMaxFillDelayWarning = (fillDelay: TimeDuration) => {
+  return getTimeDurationMillis(fillDelay) > MAX_FILL_DELAY_MILLIS;
 };
 
-export const getMinTradeDurationWarning = (duration: Duration) => {
-  return getDurationMillis(duration) < MIN_TRADE_INTERVAL;
+export const getMinTradeDurationWarning = (duration: TimeDuration) => {
+  return getTimeDurationMillis(duration) < MIN_DURATION_MILLIS;
 };
 
-export const getMaxTradeDurationWarning = (duration: Duration) => {
-  return getDurationMillis(duration) > MAX_TRADE_INTERVAL;
+export const getMaxTradeDurationWarning = (duration: TimeDuration) => {
+  return getTimeDurationMillis(duration) > MAX_DURATION_MILLIS;
 };
 
 export const getTradeSizeWarning = (config: Config, srcChunkAmountUsd = "", chunks = 1) => {

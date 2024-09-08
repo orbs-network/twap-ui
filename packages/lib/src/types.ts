@@ -3,9 +3,8 @@ import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
 import Web3 from "web3";
 import { useSwapData } from "./hooks";
-import { Duration, Status } from "@orbs-network/twap-sdk";
 import { Moment } from "moment";
-import { Config } from "@orbs-network/twap-sdk";
+import { Config, TimeDuration } from "@orbs-network/twap-sdk";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -302,8 +301,8 @@ export interface TwapState {
   disclaimerAccepted?: boolean;
 
   typedChunks?: number;
-  typedFillDelay: Duration;
-  typedDuration?: Duration;
+  typedFillDelay: TimeDuration;
+  typedDuration?: TimeDuration;
 
   createOrdertxHash?: string;
   wrapTxHash?: string;

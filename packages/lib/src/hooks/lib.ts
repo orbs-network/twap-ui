@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { amountBN, amountBNV2, amountUi, amountUiV2, fillDelayText, query, stateActions, SwapStep, useTwapContext } from "..";
+import { amountBNV2, amountUiV2, fillDelayText, query, SwapStep, useTwapContext } from "..";
 import BN from "bignumber.js";
 import { useFormatDecimals, useNetwork, useSrcBalance } from "./hooks";
 import { eqIgnoreCase, isNativeAddress, maxUint256 } from "@defi.org/web3-candies";
@@ -7,14 +7,13 @@ import moment from "moment";
 import * as SDK from "@orbs-network/twap-sdk";
 import {
   getLowLimitPriceWarning,
-  Duration,
-  MAX_TRADE_INTERVAL_FORMATTED,
   getMaxFillDelayWarning,
   getMinTradeDurationWarning,
-  MIN_DURATION_MILLIS_FORMATTED,
-  MIN_TRADE_INTERVAL_FORMATTED,
-  getDurationMillis,
+  MIN_DURATION_MINUTES,
   getMinFillDelayWarning,
+  getMaxTradeDurationWarning,
+  TimeDuration,
+  getTimeDurationMillis,
 } from "@orbs-network/twap-sdk";
 const MIN_NATIVE_BALANCE = 0.01;
 export const useShouldWrapOrUnwrapOnly = () => {
@@ -124,7 +123,7 @@ export const useUsdAmount = () => {
 
 export const useIsPartialFillWarning = () => {
   const chunks = useChunks();
-  const durationMillis = useDuration();
+  const durationMillis = useDuration().millis;
   const fillDelayMillis = useFillDelay().millis;
   return SDK.getPartialFillWarning(chunks, durationMillis, fillDelayMillis);
 };
@@ -150,12 +149,6 @@ export const useSrcChunkAmountUsd = () => {
   const result = SDK.getSrcChunkAmountUsd(srcChunksAmount, srcUsd);
 
   return useAmountUi(srcToken?.decimals, result);
-};
-
-export const useMinDuration = () => {
-  const chunks = useChunks();
-  const fillDelay = useFillDelay();
-  return SDK.getMinDuration(chunks, fillDelay.millis);
 };
 
 export const useChunks = () => {
@@ -205,19 +198,21 @@ export const useFillDelay = () => {
     state: { typedFillDelay },
   } = useTwapContext();
 
-  const fillDelay = SDK.getFillDelay(isLimitPanel, typedFillDelay);
-  const millis = getDurationMillis(fillDelay);
+  const timeDuration = SDK.getFillDelay(isLimitPanel, typedFillDelay);
 
   const warning = useMemo(() => {
-    if (getMaxFillDelayWarning(fillDelay)) {
+    if (getMaxFillDelayWarning(timeDuration)) {
       return t.maxDurationWarning;
     }
-    if (getMinFillDelayWarning(fillDelay)) {
-      return t.minDurationWarning.replace("{duration}", MIN_DURATION_MILLIS_FORMATTED.toString());
+    if (getMinFillDelayWarning(timeDuration)) {
+      return t.minDurationWarning.replace("{duration}", MIN_DURATION_MINUTES.toString());
     }
-  }, [fillDelay, t]);
+  }, [timeDuration, t]);
+
+  const millis = getTimeDurationMillis(typedFillDelay);
 
   return {
+    timeDuration,
     millis,
     text: useMemo(() => fillDelayText(millis, t), [millis, t]),
     warning,
@@ -252,7 +247,7 @@ export const useLimitPricePercentDiffFromMarket = () => {
 
 export const useDeadline = () => {
   const duration = useDuration();
-  const millis = SDK.getDeadline(duration);
+  const millis = SDK.getDeadline(duration.timeDuration);
 
   return useMemo(() => {
     return {
@@ -332,16 +327,6 @@ export const useTokenSelect = () => {
 
 // Warnigns //
 
-export const useIsMinTradeDurationWarning = () => {
-  const t = useTwapContext().translations;
-  const duration = useDuration();
-  const warning = SDK.getMinFillDelayWarning(duration);
-
-  if (!warning) return;
-
-  return t.minDurationWarning.replace("{duration}", MIN_DURATION_MILLIS_FORMATTED.toString());
-};
-
 export const useFeeOnTransferWarning = () => {
   const { translations, srcToken, dstToken } = useTwapContext();
   const { data: srcTokenFeeOnTransfer } = query.useFeeOnTransfer(srcToken?.address);
@@ -381,7 +366,6 @@ export const useBalanceWarning = () => {
   }, [srcBalance?.toString(), srcAmount, maxSrcInputAmount?.toString(), translations]);
 };
 
-
 export const useSetIsMarket = () => {
   const { updateState } = useTwapContext();
   return useCallback(
@@ -395,7 +379,7 @@ export const useSetIsMarket = () => {
 export const useSetFillDelay = () => {
   const { updateState } = useTwapContext();
   return useCallback(
-    (typedFillDelay?: Duration) => {
+    (typedFillDelay?: TimeDuration) => {
       updateState({ typedFillDelay });
     },
     [updateState]
@@ -405,7 +389,7 @@ export const useSetFillDelay = () => {
 export const useSetDuration = () => {
   const { updateState } = useTwapContext();
   return useCallback(
-    (typedDuration?: Duration) => {
+    (typedDuration?: TimeDuration) => {
       updateState({ typedDuration });
     },
     [updateState]
@@ -488,10 +472,8 @@ export const useTradeSizeWarning = () => {
 };
 
 export const useSwapWarning = () => {
-  const fillDelayMinWarning = useIsFillDelayMinWarning();
-  const fillDelayMaxWarning = useIsFillDelayMaxWarning();
-  const tradeDurationMinWarning = useIsMaxTradeDurationWarning();
-  const tradeDurationMaxWarning = useIsMinTradeDurationWarning();
+  const { warning: fillDelayWarning } = useFillDelay();
+  const { warning: durationWarning } = useDuration();
   const feeOnTranfer = useFeeOnTransferWarning();
   const tradeSize = useTradeSizeWarning();
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
@@ -503,13 +485,32 @@ export const useSwapWarning = () => {
     return { balance, zeroSrcAmount };
   }
 
-  return { tradeSize, zeroSrcAmount, feeOnTranfer, lowPrice, balance, fillDelayMinWarning, fillDelayMaxWarning, tradeDurationMinWarning, tradeDurationMaxWarning };
+  return { tradeSize, zeroSrcAmount, feeOnTranfer, lowPrice, balance, fillDelayWarning, durationWarning };
 };
 
 export const useDuration = () => {
-  const minDuration = useMinDuration();
-  const typedDuration = useTwapContext().state.typedDuration;
-  return SDK.getDuration(minDuration, typedDuration);
+  const chunks = useChunks();
+  const fillDelay = useFillDelay();
+  const {
+    state: { typedDuration },
+    translations: t,
+  } = useTwapContext();
+  const timeDuration = SDK.getDuration(chunks, fillDelay.timeDuration, typedDuration);
+
+  const warning = useMemo(() => {
+    if (getMinTradeDurationWarning(timeDuration)) {
+      return t.minDurationWarning.replace("{duration}", MIN_DURATION_MINUTES.toString());
+    }
+    if (getMaxTradeDurationWarning(timeDuration)) {
+      return t.maxDurationWarning;
+    }
+  }, [timeDuration, t]);
+
+  return {
+    timeDuration,
+    millis: getTimeDurationMillis(timeDuration),
+    warning,
+  };
 };
 
 export const useShouldWrap = () => {
