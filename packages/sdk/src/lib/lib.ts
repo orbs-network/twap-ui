@@ -1,9 +1,8 @@
-import { convertDecimals, erc20, isNativeAddress, parsebn } from "@defi.org/web3-candies";
+import TwapAbi from "@orbs-network/twap/twap.abi.json";
 import BN from "bignumber.js";
-import moment from "moment";
-import { MIN_TRADE_INTERVAL_FORMATTED } from "../consts";
-import { Config, Duration, TimeResolution, Token } from "../types";
-import { amountBN, getNetwork } from "../utils";
+import { MIN_TRADE_INTERVAL_FORMATTED } from "./consts";
+import { Config, Duration, TimeResolution, Token } from "./types";
+import { convertDecimals, parsebn } from "./utils";
 
 export const DEFAULT_FILL_DELAY = { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED } as Duration;
 
@@ -22,15 +21,10 @@ export const getDstTokenAmount = (typedValue?: string, limitPrice?: string) => {
   return BN(limitPrice).multipliedBy(typedValue).decimalPlaces(0).toString();
 };
 
-export const getMinDuration = (chunks = 1, fillDelayMillis = 0) => {
+export const getMinDuration = (chunks = 1, fillDelayMillis = 0): Duration => {
   const _millis = fillDelayMillis * 2 * chunks;
   const resolution = [TimeResolution.Days, TimeResolution.Hours, TimeResolution.Minutes].find((r) => r <= _millis) || TimeResolution.Minutes;
-  const duration = { resolution, amount: Number(BN(_millis / resolution).toFixed(2)) };
-
-  return {
-    duration: duration,
-    millis: duration.amount * duration.resolution,
-  };
+  return { resolution, amount: Number(BN(_millis / resolution).toFixed(2)) };
 };
 
 export const getChunks = (maxPossibleChunks = 1, typedChunks?: number, isLimitPanel?: boolean) => {
@@ -49,15 +43,9 @@ export const getMaxPossibleChunks = (config: Config, srcAmountUi?: string, oneSr
 
 export const getFillDelay = (isLimitPanel?: boolean, typedFillDelay?: Duration) => {
   if (isLimitPanel || !typedFillDelay) {
-    return {
-      duration: DEFAULT_FILL_DELAY,
-      millis: DEFAULT_FILL_DELAY.amount * DEFAULT_FILL_DELAY.resolution,
-    };
+    return DEFAULT_FILL_DELAY;
   }
-  return {
-    duration: typedFillDelay,
-    millis: typedFillDelay.amount * typedFillDelay.resolution,
-  };
+  return typedFillDelay;
 };
 
 export const getMinimumDelayMinutes = (config?: Config) => {
@@ -72,16 +60,17 @@ export const getLimitPricePercentDiffFromMarket = (limitPrice?: string, marketPr
 };
 
 export const getDuration = (minDuration: Duration, typedDuration?: Duration) => {
-  const duration = typedDuration || minDuration;
-
-  return {
-    duration,
-    millis: duration?.amount * duration?.resolution,
-  };
+  return typedDuration || minDuration;
 };
 
-export const getDeadline = (durationMillis: number) => {
-  return moment().add(durationMillis).add(1, "minute").valueOf();
+export const getDurationMillis = (duration: Duration) => {
+  return duration.amount * duration.resolution;
+};
+
+export const getDeadline = (duration: Duration) => {
+  const durationMillis = getDurationMillis(duration)
+  const minute = 60_000;
+  return Date.now() + durationMillis + minute;
 };
 
 export const getSrcChunkAmountUsd = (srcChunkAmount?: string, oneSrcTokenUsd?: string | number) => {
@@ -103,60 +92,46 @@ export const getSrcChunkAmount = (srcAmount = "", chunks = 1) => {
   return BN(srcAmount).div(chunks).integerValue(BN.ROUND_FLOOR).toString();
 };
 
-export const getSwapData = (args: {
-  srcAmount: string;
-  srcAmountUi?: string;
-  chunks?: number;
+export const getIsMarketOrder = (isLimitPanel?: boolean, isMarketOrder?: boolean) => {
+  return isLimitPanel ? false : isMarketOrder;
+};
+
+export const getCreateOrderParams = (args: {
   config: Config;
-  oneSrcTokenUsd?: string | number;
-  isLimitPanel?: boolean;
-  fillDelay?: Duration;
-  duration?: Duration;
-  limitPrice?: string;
-  srcToken?: Token;
-  dstToken?: Token;
-  isMaketOrder?: boolean;
-  marketPrice?: string;
-  isLimitPriceInverted?: boolean;
+  dstTokenMinAmount: string;
+  srcChunkAmount: string;
+  deadlineMillis: number;
+  fillDelayMillis: number;
+  srcAmount: string;
+  srcTokenAddress: string;
+  dstTokenAddress: string;
 }) => {
-  const maxPossibleChunks = getMaxPossibleChunks(args.config, args.srcAmountUi, args.oneSrcTokenUsd);
-  const chunks = getChunks(1, args.chunks, args.isLimitPanel);
-  const srcChunkAmount = getSrcChunkAmount(args.srcAmount, chunks);
-  const srcChunkAmountUsd = getSrcChunkAmountUsd(srcChunkAmount, args.oneSrcTokenUsd);
-  const fillDelay = getFillDelay(args.isLimitPanel, args.fillDelay);
-  const minDuration = getMinDuration(chunks, fillDelay.millis);
-  const duration = getDuration(minDuration.duration, args.duration);
-  const deadline = getDeadline(duration.millis);
-  const dstAmount = getDstTokenAmount(args.srcAmountUi, args.limitPrice);
-  const dstTokenMinAmount = getDstTokenMinAmount(args.srcToken, args.dstToken, srcChunkAmount, args.limitPrice, args.isMaketOrder);
-  const priceDeltaPercentage = getLimitPricePercentDiffFromMarket(args.limitPrice, args.marketPrice, args.isLimitPriceInverted);
+  const fillDelaySeconds = (args.fillDelayMillis - getEstimatedDelayBetweenChunksMillis(args.config)) / 1000;
+
+  const values = [
+    args.config.exchangeAddress,
+    args.srcTokenAddress,
+    args.dstTokenAddress,
+    BN(args.srcAmount).toFixed(0),
+    BN(args.srcChunkAmount).toFixed(0),
+    BN(args.dstTokenMinAmount).toFixed(0),
+    BN(args.deadlineMillis).div(1000).toFixed(0),
+    BN(args.config.bidDelaySeconds).toFixed(0),
+    BN(fillDelaySeconds).toFixed(0),
+    [],
+  ];
+
   return {
-    maxPossibleChunks,
-    chunks,
-    srcChunkAmount,
-    srcChunkAmountUsd,
-    fillDelay,
-    minDuration,
-    duration,
-    deadline,
-    dstAmount,
-    dstTokenMinAmount,
-    priceDeltaPercentage,
+    contractAddress: args.config.twapAddress,
+    Abi: TwapAbi,
+    values,
   };
 };
 
-export const getHasAllowance = async (args: { srcToken: Token; config: Config; account: string; srcAmount: string }) => {
-  const wToken = getNetwork(args.config.chainId)?.wToken;
-
-  if (!wToken) {
-    throw new Error("wToken not found");
-  }
-  const token = isNativeAddress(args.srcToken.address) ? wToken : args.srcToken;
-  const contract = erc20(token.symbol, token.address, token.decimals);
-  const allowance = BN(await contract.methods.allowance(args.account, args.config.twapAddress).call());
-  return allowance.gte(args.srcAmount);
-};
-
-export const getIsMarketOrder = (isLimitPanel?: boolean, isMarketOrder?: boolean) => {
-  return isLimitPanel ? false : isMarketOrder;
+export const getCancelOrderParams = async (config: Config, orderId: number) => {
+  return {
+    contractAddress: config.twapAddress,
+    Abi: TwapAbi,
+    value: orderId,
+  };
 };

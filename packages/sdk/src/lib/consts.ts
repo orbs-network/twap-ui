@@ -1,4 +1,3 @@
-import { networks } from "@defi.org/web3-candies";
 export const SUGGEST_CHUNK_VALUE = 100;
 export const AMOUNT_TO_BORROW = 10000; // smallest amount that has full precision over bps
 
@@ -27,8 +26,20 @@ export const EXPLORER_URLS = {
 };
 
 export const THE_GRAPH_ORDERS_API = {
-  [networks.bsc.id]: "https://hub.orbs.network/api/apikey/subgraphs/id/4NfXEi8rreQsnAr4aJ45RLCKgnjcWX46Lbt9SadiCcz6",
-  [networks.poly.id]: "https://hub.orbs.network/api/apikey/subgraphs/id/3PyRPWSvDnMowGbeBy7aNsvUkD5ZuxdXQw2RdJq4NdXi",
-  [networks.arb.id]: "https://hub.orbs.network/api/apikey/subgraphs/id/83bpQexEaqBjHaQbKoFTbtvCXuo5RudRkfLgtRUYqo2c",
-  [networks.base.id]: "https://hub.orbs.network/api/apikey/subgraphs/id/DFhaPQb3HATXkpsWNZw3gydYHehLBVEDiSk4iBdZJyps",
+  56: "https://hub.orbs.network/api/apikey/subgraphs/id/4NfXEi8rreQsnAr4aJ45RLCKgnjcWX46Lbt9SadiCcz6",
+  137: "https://hub.orbs.network/api/apikey/subgraphs/id/3PyRPWSvDnMowGbeBy7aNsvUkD5ZuxdXQw2RdJq4NdXi",
+  42161: "https://hub.orbs.network/api/apikey/subgraphs/id/83bpQexEaqBjHaQbKoFTbtvCXuo5RudRkfLgtRUYqo2c",
+  8453: "https://hub.orbs.network/api/apikey/subgraphs/id/DFhaPQb3HATXkpsWNZw3gydYHehLBVEDiSk4iBdZJyps",
 };
+
+export const zeroAddress = "0x0000000000000000000000000000000000000000";
+
+export const nativeTokenAddresses = [
+  zeroAddress,
+  "0x0000000000000000000000000000000000001010",
+  "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+  "0x000000000000000000000000000000000000dEaD",
+  "0x000000000000000000000000000000000000800A",
+];
+
+export const maxUint256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935";

@@ -1,16 +1,9 @@
-import { networks, parsebn } from "@defi.org/web3-candies";
-import { THE_GRAPH_ORDERS_API } from "./consts";
+import { nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
 import BN from "bignumber.js";
-import { Config } from "./types";
-
-export const getNetwork = (chainId?: number) => {
-  if (!chainId) return undefined;
-  return Object.values(networks).find((network) => network.id === chainId);
-};
 
 export const getTheGraphUrl = (chainId?: number) => {
   if (!chainId) return;
-  return THE_GRAPH_ORDERS_API[chainId];
+  return THE_GRAPH_ORDERS_API[chainId as keyof typeof THE_GRAPH_ORDERS_API];
 };
 
 export const groupBy = (array: any = [], key: string) => {
@@ -61,3 +54,39 @@ export const amountBN = (decimals?: number, amount?: string) => {
   if (!decimals || !amount) return "";
   return parsebn(amount).times(BN(10).pow(decimals)).decimalPlaces(0).toString();
 };
+export const zero = BN(0);
+export const one = BN(1);
+export const ten = BN(10);
+export const ether = BN(1e18);
+
+export function bn(n: BN.Value, base?: number): BN {
+  if (n instanceof BN) return n;
+  if (!n) return zero;
+  return BN(n, base);
+}
+
+export function convertDecimals(n: BN.Value, sourceDecimals: number, targetDecimals: number): BN {
+  if (sourceDecimals === targetDecimals) return bn(n);
+  else if (sourceDecimals > targetDecimals) return bn(n).idiv(ten.pow(sourceDecimals - targetDecimals));
+  else return bn(n).times(ten.pow(targetDecimals - sourceDecimals));
+}
+
+export function eqIgnoreCase(a: string, b: string) {
+  return a == b || a.toLowerCase() == b.toLowerCase();
+}
+
+export function parsebn(n: BN.Value, defaultValue?: BN, fmt?: BN.Format): BN {
+  if (typeof n !== "string") return bn(n);
+
+  const decimalSeparator = fmt?.decimalSeparator || ".";
+  const str = n.replace(new RegExp(`[^${decimalSeparator}\\d-]+`, "g"), "");
+  const result = bn(decimalSeparator === "." ? str : str.replace(decimalSeparator, "."));
+  if (defaultValue && (!result.isFinite() || result.lte(zero))) return defaultValue;
+  else return result;
+}
+
+export const isNativeAddress = (address: string) => !!nativeTokenAddresses.find((a) => eqIgnoreCase(a, address));
+
+export function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

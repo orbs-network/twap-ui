@@ -13,6 +13,8 @@ import {
   getMinTradeDurationWarning,
   MIN_DURATION_MILLIS_FORMATTED,
   MIN_TRADE_INTERVAL_FORMATTED,
+  getDurationMillis,
+  getMinFillDelayWarning,
 } from "@orbs-network/twap-sdk";
 const MIN_NATIVE_BALANCE = 0.01;
 export const useShouldWrapOrUnwrapOnly = () => {
@@ -122,7 +124,7 @@ export const useUsdAmount = () => {
 
 export const useIsPartialFillWarning = () => {
   const chunks = useChunks();
-  const durationMillis = useDuration().millis;
+  const durationMillis = useDuration();
   const fillDelayMillis = useFillDelay().millis;
   return SDK.getPartialFillWarning(chunks, durationMillis, fillDelayMillis);
 };
@@ -198,16 +200,27 @@ export const useSrcAmount = () => {
 
 export const useFillDelay = () => {
   const {
-    translations,
+    translations: t,
     isLimitPanel,
     state: { typedFillDelay },
   } = useTwapContext();
 
-  const millis = SDK.getFillDelay(isLimitPanel, typedFillDelay).millis;
+  const fillDelay = SDK.getFillDelay(isLimitPanel, typedFillDelay);
+  const millis = getDurationMillis(fillDelay);
+
+  const warning = useMemo(() => {
+    if (getMaxFillDelayWarning(fillDelay)) {
+      return t.maxDurationWarning;
+    }
+    if (getMinFillDelayWarning(fillDelay)) {
+      return t.minDurationWarning.replace("{duration}", MIN_DURATION_MILLIS_FORMATTED.toString());
+    }
+  }, [fillDelay, t]);
 
   return {
     millis,
-    text: useMemo(() => fillDelayText(millis, translations), [millis, translations]),
+    text: useMemo(() => fillDelayText(millis, t), [millis, t]),
+    warning,
   };
 };
 
@@ -239,7 +252,7 @@ export const useLimitPricePercentDiffFromMarket = () => {
 
 export const useDeadline = () => {
   const duration = useDuration();
-  const millis = SDK.getDeadline(duration.millis);
+  const millis = SDK.getDeadline(duration);
 
   return useMemo(() => {
     return {
@@ -313,25 +326,15 @@ export const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens]
   );
 };
 
 // Warnigns //
 
-export const useIsMaxTradeDurationWarning = () => {
-  const t = useTwapContext().translations;
-  const duration = useDuration().millis;
-  const warning = SDK.getMaxFillDelayWarning(duration);
-
-  if (!warning) return;
-
-  return t.maxDurationWarning;
-};
-
 export const useIsMinTradeDurationWarning = () => {
   const t = useTwapContext().translations;
-  const duration = useDuration().millis;
+  const duration = useDuration();
   const warning = SDK.getMinFillDelayWarning(duration);
 
   if (!warning) return;
@@ -378,26 +381,6 @@ export const useBalanceWarning = () => {
   }, [srcBalance?.toString(), srcAmount, maxSrcInputAmount?.toString(), translations]);
 };
 
-export const useIsFillDelayMaxWarning = () => {
-  const t = useTwapContext().translations;
-  const fillDelay = useFillDelay().millis;
-
-  const warning = getMaxFillDelayWarning(fillDelay);
-
-  if (!warning) return;
-
-  return t.maxTradeIntervalWarning.replace("{tradeInterval}", MAX_TRADE_INTERVAL_FORMATTED.toString());
-};
-export const useIsFillDelayMinWarning = () => {
-  const t = useTwapContext().translations;
-  const fillDelay = useFillDelay().millis;
-
-  const warning = getMinTradeDurationWarning(fillDelay);
-
-  if (!warning) return;
-
-  return t.minTradeIntervalWarning.replace("{tradeInterval}", MIN_TRADE_INTERVAL_FORMATTED.toString());
-};
 
 export const useSetIsMarket = () => {
   const { updateState } = useTwapContext();
@@ -405,7 +388,7 @@ export const useSetIsMarket = () => {
     (isMarketOrder?: boolean) => {
       updateState({ isMarketOrder: !!isMarketOrder });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -415,7 +398,7 @@ export const useSetFillDelay = () => {
     (typedFillDelay?: Duration) => {
       updateState({ typedFillDelay });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -425,7 +408,7 @@ export const useSetDuration = () => {
     (typedDuration?: Duration) => {
       updateState({ typedDuration });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -461,7 +444,7 @@ export const useSetLimitPrice = () => {
     (typedLimitPrice?: string, percent?: string) => {
       updateState({ typedLimitPrice, limitPricePercent: percent });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -524,7 +507,7 @@ export const useSwapWarning = () => {
 };
 
 export const useDuration = () => {
-  const minDuration = useMinDuration().duration;
+  const minDuration = useMinDuration();
   const typedDuration = useTwapContext().state.typedDuration;
   return SDK.getDuration(minDuration, typedDuration);
 };
@@ -602,7 +585,7 @@ export const useOnSrcAmountPercent = () => {
       const value = amountUiV2(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ srcAmountUi: value });
     },
-    [srcToken, maxAmount, srcBalance, updateState],
+    [srcToken, maxAmount, srcBalance, updateState]
   );
 };
 

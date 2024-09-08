@@ -1,8 +1,5 @@
 import ConfigJson from "@orbs-network/twap/configs.json";
-import { Moment } from "moment";
-import { IconType } from "@react-icons/all-files";
 export type Config = typeof ConfigJson.Arbidex;
-export type StoreOverride = Partial<State>;
 
 export type Token = {
   address: string;
@@ -11,25 +8,6 @@ export type Token = {
   logoUrl: string;
 };
 
-export type SwapState = "loading" | "success" | "failed" | "rejected";
-export type SwapStep = "createOrder" | "wrap" | "approve";
-
-export interface State {
-  swapStep?: SwapStep;
-  swapSteps?: SwapStep[];
-  swapState?: SwapState;
-
-  confirmationClickTimestamp: Moment;
-
-  customChunks?: number;
-  customFillDelay: Duration;
-  customDuration?: Duration;
-
-  customLimitPrice?: string;
-  isInvertedLimitPrice?: boolean;
-  limitPricePercent?: string;
-  isMarketOrder?: boolean;
-}
 
 export interface OrderCreated {
   Contract_id: string;
@@ -55,18 +33,6 @@ export interface OrderCreated {
   timestamp: string;
   transactionHash: string;
 }
-
-export type Step = {
-  title: string;
-  description?: string;
-  link?: {
-    url: string;
-    text: string;
-  };
-  Icon?: IconType;
-  image?: string;
-  status: "pending" | "loading" | "completed" | "disabled";
-};
 
 export enum TimeResolution {
   Minutes = 60 * 1000,

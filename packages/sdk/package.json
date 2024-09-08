@@ -20,11 +20,8 @@
     "test": "eslint src"
   },
   "dependencies": {
-    "@defi.org/web3-candies": "^5.0.0",
     "@orbs-network/twap": "^2.0.1",
-    "bignumber.js": "9.x",
-    "moment": "2.x",
-    "web3": "1.x"
+    "bignumber.js": "9.x"
   },
   "publishConfig": {
     "access": "public"

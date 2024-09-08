@@ -1,8 +1,6 @@
-import moment from "moment";
-import { Config, Status, Token } from "../types";
+import { Config, Status, Token } from "./types";
 import BN from "bignumber.js";
-import { getTheGraphUrl, groupBy, keyBy, orderBy } from "../utils";
-import { delay, eqIgnoreCase } from "@defi.org/web3-candies";
+import { delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 
 const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
@@ -163,9 +161,7 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
     return Status.Canceled;
   }
 
-  if (moment(Number(order.ask_deadline)).valueOf() > moment().valueOf() / 1000) {
-    return Status.Open;
-  }
+  if (new Date(Number(order.ask_deadline)).getTime() > Date.now() / 1000) return Status.Open;
   return Status.Expired;
 };
 
@@ -178,7 +174,7 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) =
     exchange: order.exchange,
     dex: order.dex.toLowerCase(),
     deadline: Number(order.ask_deadline) * 1000,
-    createdAt: moment(order.timestamp).valueOf(),
+    createdAt: new Date(order.timestamp).getTime(),
     srcAmount: order.ask_srcAmount,
     dstMinAmount: order.ask_dstMinAmount,
     status: getStatus(progress, order, statuses),

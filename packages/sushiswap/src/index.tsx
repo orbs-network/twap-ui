@@ -83,7 +83,7 @@ import { ButtonProps } from "@orbs-network/twap-ui";
 import { TimeResolution } from "@orbs-network/twap-sdk";
 
 const configs = [Configs.SushiArb, Configs.SushiBase];
-console.log({configs});
+console.log({ configs });
 
 const USD = ({ usd }: { usd?: string }) => {
   return (
