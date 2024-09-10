@@ -320,7 +320,6 @@ const useSelectedParsedTokens = () => {
     };
   }, [context.srcToken, context.dstToken, parseToken]);
 };
-
 const supportedChains = configs.map((config) => config.chainId);
 
 export const useProvider = () => {

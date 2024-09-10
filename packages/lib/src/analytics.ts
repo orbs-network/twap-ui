@@ -76,7 +76,6 @@ interface Data extends SubmitOrderArgs, LibConfig {
 
 const sendBI = async (data: Partial<Data>) => {
   try {
-    logger(data);
     await fetch(BI_ENDPOINT, {
       method: "POST",
       headers: {
@@ -137,6 +136,7 @@ class Analytics {
         walletConnectName = (provider as any)?.session?.peer.metadata.name;
       }
     } catch (error) {}
+    console.log("useEffect", config, provider, account, walletConnectName);
 
     this.updateAndSend({
       bidDelaySeconds: config?.bidDelaySeconds,

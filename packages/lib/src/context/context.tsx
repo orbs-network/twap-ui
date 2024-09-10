@@ -39,6 +39,8 @@ const Listener = (props: TwapLibProps) => {
   const setCustomDuration = stateActions.useSetCustomDuration();
   useMinChunksSizeUpdater();
 
+  console.log("useEffect");
+
   useEffect(() => {
     if (props.isLimitPanel) {
       setCustomDuration({ resolution: TimeResolution.Days, amount: 7 });
@@ -58,7 +60,11 @@ const Listener = (props: TwapLibProps) => {
   }, [state.showConfirmation, state.swapState, updateState]);
 
   useEffect(() => {
-    analytics.onLibInit(props.config, props.provider, props.account);
+    console.log("useEffect", props.config, props.provider, props.account);
+
+    if (props.config && props.provider && props.account) {
+      analytics.onLibInit(props.config, props.provider, props.account);
+    }
   }, [props.config, props.provider, props.account]);
 
   return null;
