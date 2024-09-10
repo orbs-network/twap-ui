@@ -4,10 +4,10 @@ import BN from "bignumber.js";
 import { Token } from "../types";
 import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, maxUint256, networks, Abi, erc20 } from "@defi.org/web3-candies";
 import { groupOrdersByStatus } from "@orbs-network/twap-sdk";
-import TwapAbi from "@orbs-network/twap/twap.abi.json";
 import { useNumericFormat } from "react-number-format";
 import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress } from "../utils";
 import { query, useOrdersHistory } from "./query";
+import { TwapAbi } from "@orbs-network/twap-sdk";
 
 export const useRefetchBalances = () => {
   const { refetch: refetchSrcBalance } = useSrcBalance();

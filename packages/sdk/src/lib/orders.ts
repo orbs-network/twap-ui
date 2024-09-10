@@ -241,12 +241,8 @@ export const groupOrdersByStatus = (orders?: Order[]) => {
 export const waitForUpdatedOrders = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
   for (let i = 0; i < 20; i++) {
     const orders = await getOrders(config, account!, signal);
-    const order = orders.find((o) => o.id === orderId);
-    if (order) {
-      return {
-        order,
-        orders,
-      };
+    if (orders.find((o) => o.id === orderId)) {
+      return orders;
     }
     await delay(3_000);
   }

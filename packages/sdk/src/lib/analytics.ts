@@ -36,6 +36,8 @@ interface Data {
   partner?: string;
   twapAddress?: string;
   twapVersion?: number;
+  uiCrashedErrorMessage?: string;
+  uiCrashedErrorStack?: string;
 }
 
 const sendBI = async (data: Partial<Data>) => {
@@ -58,6 +60,22 @@ class Analytics {
   data: Data = {
     _id: uuidv4(),
   };
+
+  constructor() {
+    this.updateAndSend = this.updateAndSend.bind(this);
+    this.reset = this.reset.bind(this);
+    this.onCancelOrder = this.onCancelOrder.bind(this);
+    this.onCancelOrderSuccess = this.onCancelOrderSuccess.bind(this);
+    this.onCanelOrderError = this.onCanelOrderError.bind(this);
+    this.onWrapSuccess = this.onWrapSuccess.bind(this);
+    this.onApproveSuccess = this.onApproveSuccess.bind(this);
+    this.onCreateOrderError = this.onCreateOrderError.bind(this);
+    this.onTxError = this.onTxError.bind(this);
+    this.onCreateOrderSuccess = this.onCreateOrderSuccess.bind(this);
+    this.onSubmitOrder = this.onSubmitOrder.bind(this);
+    this.onLoad = this.onLoad.bind(this);
+    this.onCrash = this.onCrash.bind(this);
+  }
 
   updateAndSend(values = {} as Partial<Data>) {
     this.data = {
@@ -83,6 +101,23 @@ class Analytics {
     }, 1_000);
   }
 
+  onCancelOrder(orderId: number) {
+    this.updateAndSend({
+      cancelOrderId: orderId,
+      action: "cancel order",
+    });
+  }
+
+  onCancelOrderSuccess() {
+    this.updateAndSend({
+      cancelOrderSuccess: true,
+    });
+  }
+
+  onCanelOrderError(error: any) {
+    this.onTxError(error);
+  }
+
   onWrapSuccess(wrapTxHash?: string) {
     this.updateAndSend({
       wrapTxHash,
@@ -96,12 +131,11 @@ class Analytics {
   }
 
   onCreateOrderError(error: any) {
-    const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
-    this.updateAndSend({ actionError });
+    this.onTxError(error);
     analytics.reset();
   }
 
-  onCanelOrderError(error: any) {
+  onTxError(error: any) {
     const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
     this.updateAndSend({ actionError });
   }
@@ -114,8 +148,8 @@ class Analytics {
     this.reset();
   }
 
-  onSubmitOrder(config: Config, createOrderValues: any, account: string) {
-    const values = createOrderValues;
+  onSubmitOrder(config: Config, askParams: any, account?: string) {
+    const values = askParams;
     const fromTokenAmount = values[3];
     const srcChunkAmount = values[4];
     const chunksAmount = BN(fromTokenAmount).div(srcChunkAmount).integerValue(BN.ROUND_FLOOR).toNumber();
@@ -144,6 +178,13 @@ class Analytics {
     });
   }
 
+  onCrash(error: Error) {
+    this.updateAndSend({
+      uiCrashedErrorMessage: error.message,
+      uiCrashedErrorStack: error.stack,
+    });
+  }
+
   onLoad() {
     this.updateAndSend({
       action: "module-import",
@@ -153,4 +194,16 @@ class Analytics {
 
 const analytics = new Analytics();
 
-export const { onApproveSuccess, onLoad, onWrapSuccess, onCanelOrderError, onCreateOrderError, onCreateOrderSuccess, onSubmitOrder } = analytics;
+export const {
+  onCancelOrderSuccess,
+  onCancelOrder,
+  onTxError,
+  onApproveSuccess,
+  onLoad,
+  onWrapSuccess,
+  onCanelOrderError,
+  onCreateOrderError,
+  onCreateOrderSuccess,
+  onSubmitOrder,
+  onCrash,
+} = analytics;

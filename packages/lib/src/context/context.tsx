@@ -2,14 +2,13 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useReducer 
 import { TWAPContextProps, TwapLibProps, TwapState } from "../types";
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { analytics } from "../analytics";
 import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
 import { setWeb3Instance } from "@defi.org/web3-candies";
-import { DEFAULT_FILL_DELAY, TimeResolution } from "@orbs-network/twap-sdk";
-analytics.onModuleImported();
+import { DEFAULT_FILL_DELAY, onLoad } from "@orbs-network/twap-sdk";
+onLoad();
 
 export const TwapContext = createContext({} as TWAPContextProps);
 const queryClient = new QueryClient({
@@ -21,18 +20,10 @@ const queryClient = new QueryClient({
 });
 
 const WrappedTwap = (props: TwapLibProps) => {
-  const { srcToken, dstToken, updateState, isLimitPanel } = useTwapContext();
+  const { srcToken, dstToken } = useTwapContext();
   query.useFeeOnTransfer(srcToken?.address);
   query.useFeeOnTransfer(dstToken?.address);
   query.useAllowance();
-
-  useEffect(() => {
-    if (isLimitPanel) {
-      updateState({ typedDuration: { resolution: TimeResolution.Days, amount: 7 } });
-    } else {
-      updateState({ typedDuration: undefined });
-    }
-  }, [isLimitPanel]);
 
   return <TwapErrorWrapper>{props.children}</TwapErrorWrapper>;
 };

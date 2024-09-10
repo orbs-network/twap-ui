@@ -417,7 +417,6 @@ const TotalTrades = () => {
         </div>
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
           <Components.ChunkSelector.Input />
-          <Components.ChunkSelector.Slider />
         </Styles.StyledRowFlex>
       </div>
     </Components.ChunkSelector>

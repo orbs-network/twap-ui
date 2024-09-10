@@ -613,9 +613,6 @@ const TotalTrades = () => {
       </Card.Header>
       <StyledChunksSelect>
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
-          <StyledChunksSelectSlider>
-            <Components.ChunkSelector.Slider />
-          </StyledChunksSelectSlider>
           <StyledChunksSelectInput>
             <Components.ChunkSelector.Input />
           </StyledChunksSelectInput>

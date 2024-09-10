@@ -10,14 +10,7 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
   const duration = useDuration().timeDuration;
   const setCustomDuration = useSetDuration();
 
-  return (
-    <StyledInput
-      className={className}
-      value={duration.value}
-      onChange={(v) => setCustomDuration({ unit: duration.unit, value: Number(v) })}
-      placeholder={placeholder}
-    />
-  );
+  return <StyledInput className={className} value={duration.value} onChange={(v) => setCustomDuration({ unit: duration.unit, value: Number(v) })} placeholder={placeholder} />;
 };
 
 const StyledInput = styled(NumericInput)({
@@ -62,7 +55,7 @@ const WarningComponent = () => {
 
   const warning = useMemo(() => {
     if (durationWarning) {
-      return durationWarning
+      return durationWarning;
     }
 
     if (partialFillWarning) {

@@ -32,7 +32,12 @@ export const useDstMinAmountOut = () => {
 
   const limitPrice = useLimitPrice().price;
   const srcChunkAmount = useSrcChunkAmount().amount;
-  const amount = SDK.getDstTokenMinAmount(srcToken, dstToken, srcChunkAmount, limitPrice, isMarketOrder);
+  const amount = useMemo(() => {
+    if (!srcToken || !dstToken) {
+      return "";
+    }
+    return SDK.getDstTokenMinAmount(srcToken?.decimals, dstToken?.decimals, srcChunkAmount, limitPrice, isMarketOrder);
+  }, [srcToken, dstToken, srcChunkAmount, limitPrice, isMarketOrder]);
 
   return {
     amount,
@@ -41,25 +46,19 @@ export const useDstMinAmountOut = () => {
 };
 
 export const useLimitPrice = () => {
-  const { state, dstToken, marketPrice } = useTwapContext();
-  const { typedLimitPrice, isInvertedLimitPrice } = state;
-
+  const {
+    state: { typedLimitPrice, isInvertedLimitPrice },
+    dstToken,
+    marketPrice,
+  } = useTwapContext();
   const isMarketOrder = useIsMarketOrder();
 
   const price = useMemo(() => {
-    if (!dstToken) {
-      return undefined;
-    }
+    if (!dstToken) return undefined;
 
-    if (typedLimitPrice === undefined || isMarketOrder || !marketPrice) {
-      return marketPrice;
-    }
-    let result = typedLimitPrice;
-    if (isInvertedLimitPrice) {
-      result = BN(1)
-        .div(typedLimitPrice || 0)
-        .toString();
-    }
+    if (!typedLimitPrice || isMarketOrder || !marketPrice) return marketPrice;
+
+    const result = isInvertedLimitPrice ? BN(1).div(typedLimitPrice).toString() : typedLimitPrice;
 
     return amountBNV2(dstToken.decimals, result);
   }, [dstToken, isInvertedLimitPrice, isMarketOrder, marketPrice, typedLimitPrice]);
@@ -321,7 +320,7 @@ export const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens]
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
   );
 };
 
@@ -372,7 +371,7 @@ export const useSetIsMarket = () => {
     (isMarketOrder?: boolean) => {
       updateState({ isMarketOrder: !!isMarketOrder });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -382,7 +381,7 @@ export const useSetFillDelay = () => {
     (typedFillDelay?: TimeDuration) => {
       updateState({ typedFillDelay });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -392,7 +391,7 @@ export const useSetDuration = () => {
     (typedDuration?: TimeDuration) => {
       updateState({ typedDuration });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -428,7 +427,7 @@ export const useSetLimitPrice = () => {
     (typedLimitPrice?: string, percent?: string) => {
       updateState({ typedLimitPrice, limitPricePercent: percent });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -586,7 +585,7 @@ export const useOnSrcAmountPercent = () => {
       const value = amountUiV2(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ srcAmountUi: value });
     },
-    [srcToken, maxAmount, srcBalance, updateState]
+    [srcToken, maxAmount, srcBalance, updateState],
   );
 };
 

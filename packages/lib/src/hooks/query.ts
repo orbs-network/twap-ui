@@ -1,16 +1,17 @@
 import { Abi, eqIgnoreCase, erc20, estimateGasPrice, isNativeAddress, setWeb3Instance } from "@defi.org/web3-candies";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
+import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
+import { useTwapContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
-import { amountBNV2 } from "../utils";
+import { Token } from "../types";
 import { useGetHasAllowance, useNetwork } from "./hooks";
-import { useSrcAmount } from "./lib";
-import { AMOUNT_TO_BORROW, getOrders, Order, Status, Token, groupOrdersByStatus } from "@orbs-network/twap-sdk";
-import { useTwapContext } from "../context/context";
-import { feeOnTransferDetectorAddresses, REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, STALE_ALLOWANCE } from "../consts";
 import { ordersStore } from "../store";
+import { useSrcAmount } from "./lib";
+import { getOrders, Order, Status } from "@orbs-network/twap-sdk";
+import { amountBNV2 } from "../utils";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const { web3, account, config } = useTwapContext();
@@ -153,43 +154,35 @@ const useUpdateOrderStatusToCanceled = () => {
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
   const config = useTwapContext().config;
+  const { data: orders, updateData } = useOrdersHistory();
 
   return useCallback(
     (orderId: number) => {
-      try {
-        ordersStore.cancelOrder(config.chainId, orderId);
-        queryClient.setQueryData(QUERY_KEY, (prev?: any) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            [Status.Open]: prev[Status.Open].map((o: Order) => {
-              if (o.id === orderId) {
-                return {
-                  ...o,
-                  status: Status.Canceled,
-                };
-              }
-              return o;
-            }),
-          };
-        });
-      } catch (error) {
-        console.error(error);
+      ordersStore.cancelOrder(config.chainId, orderId);
+      const updatedOrders = orders?.map((order: Order) => (order.id === orderId ? { ...order, status: Status.Canceled } : order));
+      if (updatedOrders) {
+        updateData(updatedOrders);
       }
     },
     [QUERY_KEY, queryClient, config],
   );
 };
-
 export const useOrdersHistory = () => {
-  const { state, config, account, tokens } = useTwapContext();
+  const { state, config, account } = useTwapContext();
 
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
   const query = useQuery(
     QUERY_KEY,
     async ({ signal }) => {
-      return getOrders(config, account!, signal);
+      let result: Order[] = [];
+      try {
+        result = await getOrders(config, account!, signal);
+      } catch (error) {
+        console.log({ error });
+      }
+
+      return result;
     },
     {
       enabled: !!config && !state.showConfirmation && !!account,
@@ -216,10 +209,12 @@ export const useOrdersHistory = () => {
     };
   }, [query, updateData]);
 };
-
 export const query = {
   useFeeOnTransfer,
+  useGasPrice,
   useMinNativeTokenBalance,
   useBalance,
+  useOrdersHistory,
   useAllowance,
+  useUpdateOrderStatusToCanceled,
 };

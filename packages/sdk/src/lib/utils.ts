@@ -92,7 +92,6 @@ export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-
 export function findTimeUnit(_millis: number): TimeUnit {
   const units = [TimeUnit.Years, TimeUnit.Months, TimeUnit.Weeks, TimeUnit.Days, TimeUnit.Hours, TimeUnit.Minutes];
   return units.find((unit) => unit <= _millis) || TimeUnit.Minutes;

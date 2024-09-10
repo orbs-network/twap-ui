@@ -16,7 +16,6 @@ export enum Status {
   Expired = "Expired",
 }
 
-
 export enum TimeUnit {
   Minutes = 60 * 1000,
   Hours = Minutes * 60,
