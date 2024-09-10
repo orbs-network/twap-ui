@@ -125,18 +125,17 @@ class Analytics {
       } else if (provider.isWalletConnect) {
         walletConnectName = "WalletConnect";
       } else if (provider.isCoinbaseWallet) {
-        return "Coinbase Wallet";
+        walletConnectName =  "Coinbase Wallet";
       } else if (provider.isOkxWallet) {
-        return "OKX Wallet";
+        walletConnectName =  "OKX Wallet";
       } else if (provider.isTrustWallet) {
-        return "Trust Wallet";
+        walletConnectName =  "Trust Wallet";
       } else if (provider.isMetaMask) {
-        return "MetaMask";
+        walletConnectName =  "MetaMask";
       } else {
         walletConnectName = (provider as any)?.session?.peer.metadata.name;
       }
     } catch (error) {}
-    console.log("useEffect", config, provider, account, walletConnectName);
 
     this.updateAndSend({
       bidDelaySeconds: config?.bidDelaySeconds,

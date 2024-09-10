@@ -108,11 +108,11 @@ function Main({ className = "", onSrcSelect, onDstSelect, Components, styles }: 
   return (
     <Context.Provider value={{ onSrcSelect, onDstSelect, Components, styles }}>
       <Container className={`twap-limit-panel ${className}`}>
-        <StyledRowFlex justifyContent="space-between">
+        <StyledRowFlex style={{ justifyContent: "space-between" }}>
           <Title />
           <InvertPrice />
         </StyledRowFlex>
-        <StyledRowFlex justifyContent="space-between">
+        <StyledRowFlex style={{ justifyContent: "space-between" }}>
           <Input />
           <TokenSelect />
         </StyledRowFlex>

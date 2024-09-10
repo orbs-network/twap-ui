@@ -177,11 +177,11 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       <StyledTokenPanel error={exceedsBalance ? 1 : 0}>
         <StyledTokenPanelLabel>{isSrcToken ? (!isLimitPanel ? "Allocate" : "Sell") : "Buy"}</StyledTokenPanelLabel>
         <TwapStyles.StyledColumnFlex gap={12}>
-          <TwapStyles.StyledRowFlex justifyContent="space-between" style={{ marginTop: 8 }}>
+          <TwapStyles.StyledRowFlex style={{ marginTop: 8, justifyContent: "space-between" }}>
             <StyledPanelInput placeholder="0.0" isSrc={isSrcToken} hide={hideAmounts ? 1 : 0} />
             <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
           </TwapStyles.StyledRowFlex>
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
+          <TwapStyles.StyledRowFlex style={{ justifyContent: "space-between" }}>
             {!hideAmounts && <TokenPanelUsd exceedsBalance={!!exceedsBalance} isSrc={isSrcToken} />}
             <Balance isSrc={isSrcToken} />
           </TwapStyles.StyledRowFlex>
