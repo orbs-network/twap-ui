@@ -125,13 +125,13 @@ class Analytics {
       } else if (provider.isWalletConnect) {
         walletConnectName = "WalletConnect";
       } else if (provider.isCoinbaseWallet) {
-        walletConnectName =  "Coinbase Wallet";
+        walletConnectName = "Coinbase Wallet";
       } else if (provider.isOkxWallet) {
-        walletConnectName =  "OKX Wallet";
+        walletConnectName = "OKX Wallet";
       } else if (provider.isTrustWallet) {
-        walletConnectName =  "Trust Wallet";
+        walletConnectName = "Trust Wallet";
       } else if (provider.isMetaMask) {
-        walletConnectName =  "MetaMask";
+        walletConnectName = "MetaMask";
       } else {
         walletConnectName = (provider as any)?.session?.peer.metadata.name;
       }
