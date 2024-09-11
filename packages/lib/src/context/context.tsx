@@ -213,6 +213,9 @@ const useMinChunksSizeUpdater = () => {
       .toNumber();
     return updateState({ minChunkSizeUsd: result });
   }, [maxFeePerGas.toString(), updateState, config.minChunkSizeUsd, nativeUsd]);
+  useEffect(() => {
+    updateState({ minChunkSizeUsd: undefined });
+  }, [config.chainId]);
 
   useEffect(() => {
     if (maxFeePerGas.gt(0) && !minChunkSizeUsd && nativeUsd) {
