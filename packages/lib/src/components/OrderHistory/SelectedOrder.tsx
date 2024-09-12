@@ -11,14 +11,17 @@ import { OrderDisplay } from "../OrderDisplay";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
-import { Status, Order } from "@orbs-network/twap-sdk";
-import { useOrderHistoryContext, useSelectedOrder } from "./context";
+import { Status, Order, getOrderLimitPrice,  getOrderExcecutionPrice} from "@orbs-network/twap-sdk";
+import { useOrderHistoryContext, useSelectedOrder, useTokenFromList } from "./context";
 import moment from "moment";
 
 export const SelectedOrder = () => {
   const order = useSelectedOrder();
+  
   const { selectedOrderId } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
+  const srcToken = useTokenFromList(order?.srcTokenAddress);
+  const dstToken = useTokenFromList(order?.dstTokenAddress);
 
   useEffect(() => {
     setExpanded("panel1");
@@ -34,8 +37,8 @@ export const SelectedOrder = () => {
     <Container className="twap-orders-selected-order">
       <OrderDisplay>
         <OrderDisplay.Tokens>
-          <OrderDisplay.SrcToken token={order?.srcToken} />
-          <OrderDisplay.DstToken token={order?.dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={order.fillDelay} />
+          <OrderDisplay.SrcToken token={srcToken} />
+          <OrderDisplay.DstToken token={dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={order.fillDelay} />
         </OrderDisplay.Tokens>
         <Separator />
         <StyledColumnFlex gap={15}>
@@ -86,17 +89,23 @@ const StyledDetails = styled.div({
 
 const OrderInfo = ({ order }: { order: Order }) => {
   const isTwap = (order?.totalChunks || 0) > 1;
-  const srcChunkAmountUi = useAmountUi(order?.srcToken?.decimals, order.srcBidAmount);
-  const dstMinAmountOutUi = useAmountUi(order?.dstToken?.decimals, order.dstMinAmount);
+  const srcToken = useTokenFromList(order?.srcTokenAddress);
+  const dstToken = useTokenFromList(order?.dstTokenAddress);
+  const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcBidAmount);
+
+  
+  const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmount);
+  console.log(order, order.dstMinAmount,dstMinAmountOutUi );
+
   return (
     <>
       <LimitPrice order={order} />
       <CreatedAt order={order} />
       <OrderDisplay.Expiry deadline={order?.deadline} />
       <AmountIn order={order} />
-      {isTwap && <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmountUi} srcToken={order?.srcToken} />}
+      {isTwap && <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />}
       {isTwap && <OrderDisplay.ChunksAmount chunks={order?.totalChunks} />}
-      <OrderDisplay.MinDestAmount totalChunks={order?.totalChunks} dstToken={order?.dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={dstMinAmountOutUi} />
+      <OrderDisplay.MinDestAmount totalChunks={order?.totalChunks} dstToken={dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={dstMinAmountOutUi} />
       {isTwap && <OrderDisplay.TradeInterval fillDelayMillis={order?.fillDelay} />}
       <OrderDisplay.Recipient />
       <OrderDisplay.TxHash txHash={order?.txHash} />
@@ -211,18 +220,36 @@ const Progress = ({ order }: { order: Order }) => {
 };
 
 const LimitPrice = ({ order }: { order: Order }) => {
+  const srcToken = useTokenFromList(order.srcTokenAddress);
+  const dstToken = useTokenFromList(order.dstTokenAddress);
+
+  const limitPrice = useMemo(() => {
+    if (!srcToken || !dstToken) return;
+    return getOrderLimitPrice(order, srcToken.decimals, dstToken.decimals);
+  }, [order, srcToken, dstToken]);
+
+
   if (order?.isMarketOrder) return null;
-  return <Price title="Limit price" price={order?.limitPrice} srcToken={order?.srcToken} dstToken={order?.dstToken} />;
+  return <Price title="Limit price" price={limitPrice} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const AvgExcecutionPrice = ({ order }: { order: Order }) => {
   const t = useTwapContext().translations;
+  const srcToken = useTokenFromList(order.srcTokenAddress);
+  const dstToken = useTokenFromList(order.dstTokenAddress);
+
+  const excecutionPrice = useMemo(() => {
+    if (!srcToken || !dstToken) return;
+    return getOrderExcecutionPrice(order, srcToken.decimals, dstToken.decimals);
+  }, [order, srcToken, dstToken]);
+
+
   return (
     <Price
       title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice}
-      price={order?.excecutionPrice}
-      srcToken={order?.srcToken}
-      dstToken={order?.dstToken}
+      price={excecutionPrice}
+      srcToken={srcToken}
+      dstToken={dstToken}
     />
   );
 };

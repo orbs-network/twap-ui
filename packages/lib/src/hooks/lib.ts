@@ -36,7 +36,9 @@ export const useDstMinAmountOut = () => {
     if (!srcToken || !dstToken) {
       return "";
     }
-    return SDK.getDstTokenMinAmount(srcToken?.decimals, dstToken?.decimals, srcChunkAmount, limitPrice, isMarketOrder);
+    const res = SDK.getDstTokenMinAmount(srcChunkAmount, limitPrice, srcToken?.decimals, dstToken?.decimals, isMarketOrder);
+    console.log("res", res, srcChunkAmount, limitPrice);
+    return res;
   }, [srcToken, dstToken, srcChunkAmount, limitPrice, isMarketOrder]);
 
   return {
@@ -322,7 +324,7 @@ export const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens]
   );
 };
 
@@ -373,7 +375,7 @@ export const useSetIsMarket = () => {
     (isMarketOrder?: boolean) => {
       updateState({ isMarketOrder: !!isMarketOrder });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -383,7 +385,7 @@ export const useSetFillDelay = () => {
     (typedFillDelay?: TimeDuration) => {
       updateState({ typedFillDelay });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -393,7 +395,7 @@ export const useSetDuration = () => {
     (typedDuration?: TimeDuration) => {
       updateState({ typedDuration });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -429,7 +431,7 @@ export const useSetLimitPrice = () => {
     (typedLimitPrice?: string, percent?: string) => {
       updateState({ typedLimitPrice, limitPricePercent: percent });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -587,7 +589,7 @@ export const useOnSrcAmountPercent = () => {
       const value = amountUiV2(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ srcAmountUi: value });
     },
-    [srcToken, maxAmount, srcBalance, updateState],
+    [srcToken, maxAmount, srcBalance, updateState]
   );
 };
 

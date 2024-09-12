@@ -1,13 +1,14 @@
 import BN from "bignumber.js";
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
 import { Config, TimeDuration, TimeUnit } from "./types";
-import { convertDecimals, findTimeUnit, getTimeDurationMillis, parsebn } from "./utils";
+import { amountUi, convertDecimals, findTimeUnit, getTimeDurationMillis, parsebn } from "./utils";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
-export const getDstTokenMinAmount = (srcTokenDecimals: number, dstTokenDecimals: number, srcChunkAmount = "", limitPrice = "", isMarketOrder = false) => {
+export const getDstTokenMinAmount = (srcChunkAmount = "", limitPrice = "", srcTokenDecimals: number, dstTokenDecimals: number, isMarketOrder = false) => {
   let amount = BN(1).toString();
+const limitPriceUi = amountUi(dstTokenDecimals, limitPrice);
   if (srcChunkAmount && !isMarketOrder && srcTokenDecimals && dstTokenDecimals && BN(limitPrice || "0").gt(0)) {
-    amount = BN.max(1, convertDecimals(BN(srcChunkAmount).times(parsebn(limitPrice || "0")), srcTokenDecimals, dstTokenDecimals).integerValue(BN.ROUND_FLOOR)).toString();
+    amount = BN.max(1, convertDecimals(BN(srcChunkAmount).times(parsebn(limitPriceUi || "0")), srcTokenDecimals, dstTokenDecimals).integerValue(BN.ROUND_FLOOR)).toString();
   }
   return amount;
 };

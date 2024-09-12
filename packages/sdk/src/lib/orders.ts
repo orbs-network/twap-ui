@@ -1,6 +1,6 @@
 import { Config, Status } from "./types";
 import BN from "bignumber.js";
-import { delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
+import { amountUi, convertDecimals, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 
 const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
@@ -167,7 +167,7 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
 
 const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) => {
   const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
-  const isMarketOrder = BN(order.dstMinAmount || 0).lte(1);
+  const isMarketOrder = BN(order.ask_dstMinAmount || 0).lte(1);
   const totalChunks = BN(order.ask_srcAmount || 0)
     .div(order.ask_srcBidAmount || 0)
     .integerValue(BN.ROUND_CEIL)
@@ -184,7 +184,6 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) =
     return "dca";
   };
 
-  console.log(orderFill);
 
   return {
     id: Number(order.Contract_id),
@@ -209,11 +208,23 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) =
       .integerValue(BN.ROUND_CEIL)
       .toNumber(),
     isMarketOrder,
-    limitPrice: isMarketOrder ? undefined : BN(order.ask_dstMinAmount).div(order.order.ask_srcBidAmount).toString() || "0",
-    excecutionPrice: BN(orderFill?.dstAmountOut).gt(0) && BN(orderFill?.srcAmountIn).gt(0) ? BN(orderFill?.dstAmountOut).div(orderFill?.srcAmountIn).toString() : undefined,
     fillDelay: (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config),
-    orderType: getOrderType(),
+    orderType: isMarketOrder ? "dca" : BN(totalChunks).eq(1) ? "limit" : "dca",
   };
+};
+
+export const getOrderLimitPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
+  if (order.isMarketOrder) {
+    return undefined;
+  }
+
+  return convertDecimals(BN(order.dstMinAmount).div(order.srcBidAmount), dstTokenDecimals, srcTokenDecimals).toString();
+};
+
+export const getOrderExcecutionPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
+  if (!BN(order.srcFilledAmount).gt(0) || !BN(order.dstAmount).gt(0)) return
+
+  return convertDecimals(BN(order.dstAmount).div(order.srcFilledAmount), dstTokenDecimals, srcTokenDecimals).toString();
 };
 
 export type Order = ReturnType<typeof parseOrder>;

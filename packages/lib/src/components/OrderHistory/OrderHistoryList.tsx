@@ -8,7 +8,7 @@ import { useFormatNumberV2 } from "../../hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Token, Translations } from "../../types";
 import { LinearProgress, Loader, TokenLogo } from "../base";
-import { useOrderHistoryContext } from "./context";
+import { useOrderHistoryContext, useTokenFromList } from "./context";
 import * as React from "react";
 import { size } from "../../utils";
 import { Order } from "@orbs-network/twap-sdk";
@@ -116,9 +116,9 @@ const ListOrder = React.memo(
           <LinearProgressWithLabel value={order.progress || 0} />
 
           <StyledRowFlex className="twap-order-tokens">
-            <TokenDisplay token={order.srcToken} />
+            <TokenDisplay address={order.srcTokenAddress} />
             <HiArrowRight className="twap-order-tokens-arrow" />
-            <TokenDisplay token={order.dstToken} />
+            <TokenDisplay address={order.dstTokenAddress} />
           </StyledRowFlex>
         </StyledListOrder>
       </Wrapper>
@@ -186,7 +186,8 @@ const StyledListOrder = styled(StyledColumnFlex)({
   },
 });
 
-const TokenDisplay = ({ token, amount }: { token?: Token; amount?: string }) => {
+const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }) => {
+  const token = useTokenFromList(address);
   const _amount = useFormatNumberV2({ value: amount, decimalScale: 4 });
   return (
     <StyledTokenDisplay className="twap-order-token">

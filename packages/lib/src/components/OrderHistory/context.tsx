@@ -18,20 +18,12 @@ interface OrderHistoryContextType {
   selectedOrderId?: number;
 }
 
-const useAddTokensToOrderCallback = () => {
+export const useTokenFromList = (address?: string) => {
   const { tokens } = useTwapContext();
-  return useCallback(
-    (order: Order) => {
-      const srcToken = tokens.find((t) => eqIgnoreCase(order.srcTokenAddress, t.address));
-      const dstToken = tokens.find((t) => eqIgnoreCase(order.dstTokenAddress, t.address));
-      return {
-        ...order,
-        srcToken,
-        dstToken,
-      };
-    },
-    [tokens],
-  );
+  return useMemo(() => {
+    if (!address || !tokens) return;
+    return tokens.find((t) => eqIgnoreCase(address, t.address));
+  }, [tokens, address]);
 };
 
 export const useSelectedOrder = () => {
@@ -47,13 +39,10 @@ export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
 const useOrders = () => {
   const { data } = useOrdersHistory();
-  const { tokens } = useTwapContext();
-  const addTokensToOrder = useAddTokensToOrderCallback();
 
   return useMemo(() => {
-    if (!tokens || !data) return;
-    return data.map(addTokensToOrder).filter((order) => order.srcToken && order.dstToken);
-  }, [data, tokens, addTokensToOrder]);
+    return data;
+  }, [data]);
 };
 
 const useSelectedOrders = (status: Status) => {
