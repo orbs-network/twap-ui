@@ -1,4 +1,4 @@
-import { Config, Status, Token } from "./types";
+import { Config, Status } from "./types";
 import BN from "bignumber.js";
 import { delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
@@ -168,6 +168,23 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
 const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) => {
   const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
   const isMarketOrder = BN(order.dstMinAmount || 0).lte(1);
+  const totalChunks = BN(order.ask_srcAmount || 0)
+    .div(order.ask_srcBidAmount || 0)
+    .integerValue(BN.ROUND_CEIL)
+    .toNumber();
+
+  const getOrderType = () => {
+    if (isMarketOrder) {
+      return "dca";
+    }
+    if (BN(totalChunks).eq(1)) {
+      return "limit";
+    }
+
+    return "dca";
+  };
+
+  console.log(orderFill);
 
   return {
     id: Number(order.Contract_id),
@@ -192,18 +209,14 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) =
       .integerValue(BN.ROUND_CEIL)
       .toNumber(),
     isMarketOrder,
-    limitPrice: isMarketOrder ? undefined : BN(order.dstMinAmount).div(order.srcBidAmount).toString() || "0",
-    excecutionPrice: BN(order.dstAmount).gt(0) && BN(order.srcFilledAmount).gt(0) ? BN(order.dstAmount).div(order.srcFilledAmount).toString() : undefined,
+    limitPrice: isMarketOrder ? undefined : BN(order.ask_dstMinAmount).div(order.order.ask_srcBidAmount).toString() || "0",
+    excecutionPrice: BN(orderFill?.dstAmountOut).gt(0) && BN(orderFill?.srcAmountIn).gt(0) ? BN(orderFill?.dstAmountOut).div(orderFill?.srcAmountIn).toString() : undefined,
     fillDelay: (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config),
+    orderType: getOrderType(),
   };
 };
 
-type PrasedOrder = ReturnType<typeof parseOrder>;
-
-export interface Order extends PrasedOrder {
-  srcToken?: Token;
-  dstToken?: Token;
-}
+export type Order = ReturnType<typeof parseOrder>;
 
 const fetchOrders = async (config: Config, account: string, signal?: AbortSignal): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(config!.chainId);

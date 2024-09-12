@@ -14,7 +14,6 @@ export const MAX_DURATION_MILLIS = 30 * 24 * 60 * 60 * 1000;
 export const MIN_DURATION_MILLIS = 5 * 60 * 1000;
 export const MIN_DURATION_MINUTES = new Date(MIN_DURATION_MILLIS).getMinutes();
 
-
 const THE_GRAPH_API = "https://hub.orbs.network/api/apikey/subgraphs/id";
 export const THE_GRAPH_ORDERS_API = {
   1: `${THE_GRAPH_API}/Bf7bvMYcJbDAvYWJmhMpHZ4cpFjqzkhK6GXXEpnPRq6`,

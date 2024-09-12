@@ -1,13 +1,6 @@
 import ConfigJson from "@orbs-network/twap/configs.json";
 export type Config = typeof ConfigJson.Arbidex;
 
-export type Token = {
-  address: string;
-  symbol: string;
-  decimals: number;
-  logoUrl: string;
-};
-
 export enum Status {
   All = "All",
   Open = "Open",

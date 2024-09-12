@@ -3,8 +3,8 @@ import moment from "moment";
 import { AddressPadding, Translations } from "./types";
 import BN from "bignumber.js";
 import { THE_GRAPH_ORDERS_API } from "./config";
-import { EXPLORER_URLS } from "@orbs-network/twap-sdk";
 import { Config } from "@orbs-network/twap-sdk";
+import { EXPLORER_URLS } from "./consts";
 export const logger = (...args: any[]) => {
   // let debug;
   // if (window) {

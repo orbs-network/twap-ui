@@ -13,7 +13,7 @@ export const getDstTokenMinAmount = (srcTokenDecimals: number, dstTokenDecimals:
 };
 
 export const getDstTokenAmount = (typedValue?: string, limitPrice?: string) => {
-  if (!limitPrice || !typedValue)  return undefined;
+  if (!limitPrice || !typedValue) return undefined;
   return BN(limitPrice).multipliedBy(typedValue).decimalPlaces(0).toString();
 };
 

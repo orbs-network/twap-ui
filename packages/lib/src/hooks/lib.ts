@@ -145,7 +145,9 @@ export const useSrcChunkAmountUsd = () => {
   const { srcToken, srcUsd } = useTwapContext();
   const srcChunksAmount = useSrcChunkAmount().amount;
 
-  const result = SDK.getSrcChunkAmountUsd(srcChunksAmount, srcUsd);
+  const result = BN(srcChunksAmount || "0")
+    .times(srcUsd)
+    .toString();
 
   return useAmountUi(srcToken?.decimals, result);
 };

@@ -580,7 +580,7 @@ const ShowConfirmationButton = () => {
 const TwapListener = () => {
   const onChange = hooks.useSetIsMarket();
   useEffect(() => {
-    onChange(true);
+    // onChange(true);
   }, [onChange]);
   return null;
 };
@@ -589,6 +589,7 @@ const TWAPPanel = () => {
   return (
     <StyledContent>
       <TwapListener />
+      <LimitPrice />
       <StyledTop>
         <TokenPanel isSrcToken={true} />
         <TokenChange />
