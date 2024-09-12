@@ -6,7 +6,7 @@ export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELA
 
 export const getDstTokenMinAmount = (srcChunkAmount = "", limitPrice = "", srcTokenDecimals: number, dstTokenDecimals: number, isMarketOrder = false) => {
   let amount = BN(1).toString();
-const limitPriceUi = amountUi(dstTokenDecimals, limitPrice);
+  const limitPriceUi = amountUi(dstTokenDecimals, limitPrice);
   if (srcChunkAmount && !isMarketOrder && srcTokenDecimals && dstTokenDecimals && BN(limitPrice || "0").gt(0)) {
     amount = BN.max(1, convertDecimals(BN(srcChunkAmount).times(parsebn(limitPriceUi || "0")), srcTokenDecimals, dstTokenDecimals).integerValue(BN.ROUND_FLOOR)).toString();
   }

@@ -11,13 +11,13 @@ import { OrderDisplay } from "../OrderDisplay";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
-import { Status, Order, getOrderLimitPrice,  getOrderExcecutionPrice} from "@orbs-network/twap-sdk";
+import { Status, Order, getOrderLimitPrice, getOrderExcecutionPrice } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder, useTokenFromList } from "./context";
 import moment from "moment";
 
 export const SelectedOrder = () => {
   const order = useSelectedOrder();
-  
+
   const { selectedOrderId } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
   const srcToken = useTokenFromList(order?.srcTokenAddress);
@@ -93,9 +93,8 @@ const OrderInfo = ({ order }: { order: Order }) => {
   const dstToken = useTokenFromList(order?.dstTokenAddress);
   const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcBidAmount);
 
-  
   const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmount);
-  console.log(order, order.dstMinAmount,dstMinAmountOutUi );
+  console.log(order, order.dstMinAmount, dstMinAmountOutUi);
 
   return (
     <>
@@ -160,39 +159,42 @@ const CreatedAt = ({ order }: { order: Order }) => {
 };
 
 const AmountOutFilled = ({ order }: { order: Order }) => {
-  const dstAmountUi = useAmountUi(order.dstToken?.decimals, order.dstAmount);
+  const dstToken = useTokenFromList(order?.dstTokenAddress);
+  const dstAmountUi = useAmountUi(dstToken?.decimals, order.dstAmount);
   const amount = useFormatNumberV2({ value: dstAmountUi, decimalScale: 3 });
 
   return (
     <OrderDisplay.DetailRow title="Amount received">
       <StyledText>
-        {amount || 0} {order?.dstToken?.symbol}
+        {amount || 0} {dstToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );
 };
 
 const AmountIn = ({ order }: { order: Order }) => {
-  const srcAmountUi = useAmountUi(order?.srcToken?.decimals, order.srcAmount);
+  const srcToken = useTokenFromList(order?.srcTokenAddress);
+  const srcAmountUi = useAmountUi(srcToken?.decimals, order.srcAmount);
   const amount = useFormatNumberV2({ value: srcAmountUi, decimalScale: 3 });
 
   return (
     <OrderDisplay.DetailRow title="Amount out">
       <StyledText>
-        {amount || 0} {order?.srcToken?.symbol}
+        {amount || 0} {srcToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );
 };
 
 const AmountInFilled = ({ order }: { order: Order }) => {
-  const srcFilledAmountUi = useAmountUi(order?.srcToken?.decimals, order.srcFilledAmount);
+  const srcToken = useTokenFromList(order?.srcTokenAddress);
+  const srcFilledAmountUi = useAmountUi(srcToken?.decimals, order.srcFilledAmount);
   const amount = useFormatNumberV2({ value: srcFilledAmountUi, decimalScale: 3 });
 
   return (
     <OrderDisplay.DetailRow title="Amount sent">
       <StyledText>
-        {amount || 0} {order?.srcToken?.symbol}
+        {amount || 0} {srcToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );
@@ -228,7 +230,6 @@ const LimitPrice = ({ order }: { order: Order }) => {
     return getOrderLimitPrice(order, srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
 
-
   if (order?.isMarketOrder) return null;
   return <Price title="Limit price" price={limitPrice} srcToken={srcToken} dstToken={dstToken} />;
 };
@@ -243,15 +244,7 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
     return getOrderExcecutionPrice(order, srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
 
-
-  return (
-    <Price
-      title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice}
-      price={excecutionPrice}
-      srcToken={srcToken}
-      dstToken={dstToken}
-    />
-  );
+  return <Price title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice} price={excecutionPrice} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?: Token; dstToken?: Token; title: string }) => {

@@ -184,7 +184,6 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) =
     return "dca";
   };
 
-
   return {
     id: Number(order.Contract_id),
     exchange: order.exchange,
@@ -218,13 +217,13 @@ export const getOrderLimitPrice = (order: Order, srcTokenDecimals: number, dstTo
     return undefined;
   }
 
-  return convertDecimals(BN(order.dstMinAmount).div(order.srcBidAmount), dstTokenDecimals, srcTokenDecimals).toString();
+  return convertDecimals(BN(order.dstMinAmount).div(order.srcBidAmount), srcTokenDecimals, dstTokenDecimals).toString();
 };
 
 export const getOrderExcecutionPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (!BN(order.srcFilledAmount).gt(0) || !BN(order.dstAmount).gt(0)) return
+  if (!BN(order.srcFilledAmount).gt(0) || !BN(order.dstAmount).gt(0)) return;
 
-  return convertDecimals(BN(order.dstAmount).div(order.srcFilledAmount), dstTokenDecimals, srcTokenDecimals).toString();
+  return convertDecimals(BN(order.dstAmount).div(order.srcFilledAmount), srcTokenDecimals, dstTokenDecimals).toString();
 };
 
 export type Order = ReturnType<typeof parseOrder>;
