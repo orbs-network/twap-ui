@@ -1,4 +1,4 @@
-import { Status } from "@orbs-network/twap-sdk";
+import { OrderStatus } from "@orbs-network/twap-sdk";
 
 interface HistoryOrder {
   id: number;
@@ -39,7 +39,7 @@ class OrdersStore implements OrdersState {
       if (order.id === orderId) {
         return {
           ...order,
-          status: Status.Canceled,
+          status: OrderStatus.Canceled,
         };
       }
       return order;

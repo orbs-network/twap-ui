@@ -1,12 +1,24 @@
-import ConfigJson from "@orbs-network/twap/configs.json";
-export type Config = typeof ConfigJson.Arbidex;
+export type Config = {
+  chainName: string;
+  chainId: number;
+  twapVersion: number;
+  twapAddress: string;
+  lensAddress: string;
+  bidDelaySeconds: number;
+  minChunkSizeUsd: number;
+  name: string;
+  partner: string;
+  exchangeAddress: string;
+  exchangeType: string;
+  pathfinderKey: string;
+};
 
-export enum Status {
-  All = "All",
-  Open = "Open",
-  Canceled = "Canceled",
-  Completed = "Completed",
-  Expired = "Expired",
+export enum OrderStatus {
+  All = "all",
+  Open = "open",
+  Canceled = "canceled",
+  Completed = "completed",
+  Expired = "expired",
 }
 
 export enum TimeUnit {
@@ -19,3 +31,33 @@ export enum TimeUnit {
 }
 
 export type TimeDuration = { unit: TimeUnit; value: number };
+
+export enum OrderType {
+  LIMIT = "limit",
+  DCA_LIMIT = "dca-limit",
+  DCA_MARKET = "dca-market",
+}
+
+export type Order = {
+  id: number;
+  exchange: string;
+  dex: string;
+  deadline: number;
+  createdAt: number;
+  srcAmount: string;
+  dstMinAmount: string;
+  status: OrderStatus;
+  srcBidAmount: string;
+  txHash: string;
+  dstFilledAmount: string;
+  srcFilledAmount: string;
+  srcFilledAmountUsd: string;
+  dstFilledAmountUsd: string;
+  progress: number;
+  srcTokenAddress: string;
+  dstTokenAddress: string;
+  totalChunks: number;
+  isMarketOrder: boolean;
+  fillDelay: number;
+  orderType: OrderType;
+};

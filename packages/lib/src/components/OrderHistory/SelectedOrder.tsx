@@ -11,7 +11,7 @@ import { OrderDisplay } from "../OrderDisplay";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
-import { Status, Order, getOrderLimitPrice, getOrderExcecutionPrice } from "@orbs-network/twap-sdk";
+import { OrderStatus, Order, getOrderLimitPrice, getOrderExcecutionPrice } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder, useTokenFromList } from "./context";
 import moment from "moment";
 
@@ -115,7 +115,7 @@ const OrderInfo = ({ order }: { order: Order }) => {
 const ExcecutionSummary = ({ order }: { order: Order }) => {
   return (
     <>
-      <OrderStatus order={order} />
+      <OrderStatusComponent order={order} />
       <AmountInFilled order={order} />
       <AmountOutFilled order={order} />
       <Progress order={order} />
@@ -130,7 +130,7 @@ export const CancelOrderButton = ({ order }: { order: Order }) => {
   const { isLoading, mutate: cancel } = useCancelOrder();
   const translations = useTwapContext().translations;
 
-  if (!order || order.status !== Status.Open) return null;
+  if (!order || order.status !== OrderStatus.Open) return null;
 
   return (
     <StyledCancelOrderButton
@@ -160,7 +160,7 @@ const CreatedAt = ({ order }: { order: Order }) => {
 
 const AmountOutFilled = ({ order }: { order: Order }) => {
   const dstToken = useTokenFromList(order?.dstTokenAddress);
-  const dstAmountUi = useAmountUi(dstToken?.decimals, order.dstAmount);
+  const dstAmountUi = useAmountUi(dstToken?.decimals, order.dstFilledAmount);
   const amount = useFormatNumberV2({ value: dstAmountUi, decimalScale: 3 });
 
   return (
@@ -199,10 +199,10 @@ const AmountInFilled = ({ order }: { order: Order }) => {
     </OrderDisplay.DetailRow>
   );
 };
-const OrderStatus = ({ order }: { order: Order }) => {
+const OrderStatusComponent = ({ order }: { order: Order }) => {
   const t = useTwapContext().translations;
 
-  const text = !order ? "" : t[order.status as keyof typeof t];
+  const text = !order ? "" : order.status;
 
   return (
     <OrderDisplay.DetailRow title="Status">

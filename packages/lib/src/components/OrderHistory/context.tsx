@@ -3,7 +3,7 @@ import { useTwapContext } from "../../context/context";
 import { Translations } from "../../types";
 import { OrdersMenuTab } from "./types";
 import { mapCollection, size } from "../../utils";
-import { Order, Status, groupOrdersByStatus } from "@orbs-network/twap-sdk";
+import { Order, OrderStatus, groupOrdersByStatus } from "@orbs-network/twap-sdk";
 import { useOrdersHistory } from "../../hooks";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 
@@ -11,7 +11,7 @@ interface OrderHistoryContextType {
   tabs: OrdersMenuTab[];
   selectOrder: (id: number | undefined) => void;
   orders: Order[];
-  setTab: (tab: Status) => void;
+  setTab: (tab: OrderStatus) => void;
   closePreview: () => void;
   selectedTab?: OrdersMenuTab;
   isLoading: boolean;
@@ -45,7 +45,7 @@ const useOrders = () => {
   }, [data]);
 };
 
-const useSelectedOrders = (status: Status) => {
+const useSelectedOrders = (status: OrderStatus) => {
   const orders = useOrders();
   if (!orders) {
     return [];
@@ -55,7 +55,7 @@ const useSelectedOrders = (status: Status) => {
 };
 
 export const OrderHistoryContextProvider = ({ children, isOpen }: { children: ReactNode; isOpen: boolean }) => {
-  const [tab, setTab] = useState<Status>(Status.All);
+  const [tab, setTab] = useState<OrderStatus>(OrderStatus.All);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
   const orders = useSelectedOrders(tab);
   const isLoading = !orders;
@@ -64,7 +64,7 @@ export const OrderHistoryContextProvider = ({ children, isOpen }: { children: Re
     if (!isOpen) {
       setTimeout(() => {
         setSelectedOrderId(undefined);
-        setTab(Status.All);
+        setTab(OrderStatus.All);
       }, 300);
     }
   }, [isOpen]);
@@ -82,9 +82,9 @@ export const OrderHistoryContextProvider = ({ children, isOpen }: { children: Re
 
   const translations = useTwapContext().translations;
   const tabs = useMemo(() => {
-    return mapCollection(Status, (it) => {
+    return mapCollection(OrderStatus, (it) => {
       return {
-        name: translations[it as keyof Translations],
+        name: it,
         amount: size(orders?.[it as any]),
         key: it,
       };

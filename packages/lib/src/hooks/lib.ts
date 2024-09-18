@@ -36,7 +36,7 @@ export const useDstMinAmountOut = () => {
     if (!srcToken || !dstToken) {
       return "";
     }
-    const res = SDK.getDstTokenMinAmount(srcChunkAmount, limitPrice, srcToken?.decimals, dstToken?.decimals, isMarketOrder);
+    const res = SDK.getDstTokenMinAmount(srcChunkAmount, limitPrice, isMarketOrder, srcToken?.decimals, dstToken?.decimals);
     console.log("res", res, srcChunkAmount, limitPrice);
     return res;
   }, [srcToken, dstToken, srcChunkAmount, limitPrice, isMarketOrder]);
@@ -89,7 +89,7 @@ export const useOutAmount = () => {
   const { dstToken } = useTwapContext();
 
   const limitPrice = useLimitPrice().price;
-  const outAmount = SDK.getDstTokenAmount(amountUi, limitPrice);
+  const outAmount = !limitPrice ? undefined : BN(limitPrice).multipliedBy(amountUi).decimalPlaces(0).toFixed();
   return {
     amount: outAmount,
     amountUi: useAmountUi(dstToken?.decimals, outAmount),
@@ -124,9 +124,9 @@ export const useUsdAmount = () => {
 
 export const useIsPartialFillWarning = () => {
   const chunks = useChunks();
-  const durationMillis = useDuration().millis;
-  const fillDelayMillis = useFillDelay().millis;
-  return SDK.getPartialFillWarning(chunks, durationMillis, fillDelayMillis);
+  const duration = useDuration().timeDuration;
+  const fillDelay = useFillDelay().timeDuration;
+  return SDK.getPartialFillWarning(chunks, duration, fillDelay);
 };
 
 export const useSetChunks = () => {
@@ -201,7 +201,7 @@ export const useFillDelay = () => {
     state: { typedFillDelay },
   } = useTwapContext();
 
-  const timeDuration = SDK.getFillDelay(isLimitPanel, typedFillDelay);
+  const timeDuration = SDK.getFillDelay(typedFillDelay, isLimitPanel);
 
   const warning = useMemo(() => {
     if (getMaxFillDelayWarning(timeDuration)) {
@@ -272,7 +272,6 @@ export const useSrcChunkAmount = () => {
     amountUi: useFormatDecimals(useAmountUi(srcToken?.decimals, amount), 2),
   };
 };
-
 export const useShouldOnlyWrap = () => {
   const { srcToken, dstToken } = useTwapContext();
   const network = useNetwork();
@@ -452,7 +451,10 @@ export const useIsMarketOrder = () => {
   } = useTwapContext();
 
   return useMemo(() => {
-    return SDK.getIsMarketOrder(isLimitPanel, isMarketOrder);
+    if (isLimitPanel) {
+      return false;
+    }
+    return isMarketOrder;
   }, [isLimitPanel, isMarketOrder]);
 };
 

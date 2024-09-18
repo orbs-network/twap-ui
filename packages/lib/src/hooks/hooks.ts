@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
 import { Token } from "../types";
 import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, maxUint256, networks, Abi, erc20 } from "@defi.org/web3-candies";
-import { groupOrdersByStatus } from "@orbs-network/twap-sdk";
+import { groupOrdersByStatus, OrderStatus } from "@orbs-network/twap-sdk";
 import { useNumericFormat } from "react-number-format";
 import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress } from "../utils";
 import { query, useOrdersHistory } from "./query";
@@ -161,7 +161,7 @@ export const useOpenOrders = () => {
   const { data } = useOrdersHistory();
 
   return useMemo(() => {
-    return groupOrdersByStatus(data)?.Open || [];
+    return groupOrdersByStatus(data)?.[OrderStatus.Open] || [];
   }, [data]);
 };
 

@@ -3,7 +3,9 @@ import BN from "bignumber.js";
 import { MAX_DURATION_MILLIS, MAX_FILL_DELAY_MILLIS, MIN_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS } from "./consts";
 import { getTimeDurationMillis } from "./utils";
 
-export const getPartialFillWarning = (chunks = 1, durationMillis: number, fillDelayUiMillis: number) => {
+export const getPartialFillWarning = (chunks = 1, duration: TimeDuration, fillDelay: TimeDuration) => {
+  const durationMillis = getTimeDurationMillis(duration);
+  const fillDelayUiMillis = getTimeDurationMillis(fillDelay);
   return chunks * fillDelayUiMillis > durationMillis;
 };
 

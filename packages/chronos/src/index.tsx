@@ -50,7 +50,7 @@ import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 import { ThemeProvider } from "styled-components";
-import { Status } from "@orbs-network/twap-sdk";
+import { OrderStatus } from "@orbs-network/twap-sdk";
 
 const useMobile = () => {
   return hooks.useWindowWidth() < 768;
@@ -67,7 +67,7 @@ interface ChronosTWAPProps extends TWAPProps {
 const uiPreferences: TwapContextUIPreferences = {
   getOrdersTabsLabel: (name: string, amount: number) => `${name} (${amount})`,
   qrSize: 120,
-  orderTabsToExclude: [Status.Canceled],
+  orderTabsToExclude: [OrderStatus.Canceled],
 };
 
 const makeElipsisAddress = (address?: string, padding = 6): string => {

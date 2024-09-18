@@ -1,4 +1,4 @@
-import { nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
+import { maxUint256, nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
 import BN from "bignumber.js";
 import { TimeDuration, TimeUnit } from "./types";
 
@@ -48,12 +48,12 @@ export const orderBy = <T>(array: T[], key: (item: T) => any, order: "asc" | "de
 export const amountUi = (decimals?: number, amount?: string) => {
   if (!decimals || !amount) return "";
   const percision = BN(10).pow(decimals || 0);
-  return BN(amount).times(percision).idiv(percision).div(percision).toString();
+  return BN(amount).times(percision).idiv(percision).div(percision).toFixed();
 };
 
 export const amountBN = (decimals?: number, amount?: string) => {
   if (!decimals || !amount) return "";
-  return parsebn(amount).times(BN(10).pow(decimals)).decimalPlaces(0).toString();
+  return parsebn(amount).times(BN(10).pow(decimals)).decimalPlaces(0).toFixed();
 };
 export const zero = BN(0);
 export const one = BN(1);
@@ -100,4 +100,11 @@ export function findTimeUnit(_millis: number): TimeUnit {
 export const getTimeDurationMillis = (duration?: TimeDuration) => {
   if (!duration) return 0;
   return duration.value * duration.unit;
+};
+
+export const safeInteger = (value?: string) => {
+  if (!value || value === "NaN") return "0";
+  return BN.min(BN(value || "0").toString(), maxUint256)
+    .decimalPlaces(0)
+    .toFixed();
 };

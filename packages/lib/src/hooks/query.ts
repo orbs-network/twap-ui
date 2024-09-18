@@ -10,7 +10,7 @@ import { Token } from "../types";
 import { useGetHasAllowance, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
 import { useSrcAmount } from "./lib";
-import { getOrders, Order, Status } from "@orbs-network/twap-sdk";
+import { getOrders, Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { amountBNV2 } from "../utils";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
@@ -159,7 +159,7 @@ const useUpdateOrderStatusToCanceled = () => {
   return useCallback(
     (orderId: number) => {
       ordersStore.cancelOrder(config.chainId, orderId);
-      const updatedOrders = orders?.map((order: Order) => (order.id === orderId ? { ...order, status: Status.Canceled } : order));
+      const updatedOrders = orders?.map((order: Order) => (order.id === orderId ? { ...order, status: OrderStatus.Canceled } : order));
       if (updatedOrders) {
         updateData(updatedOrders);
       }

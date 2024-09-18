@@ -7,15 +7,14 @@ import { Button, SelectMenu } from "../base";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { useTwapContext } from "../../context/context";
 import { SelectMeuItem } from "../../types";
-import { Status } from "@orbs-network/twap-sdk";
-import { useOrdersHistory } from "../../hooks";
+import { OrderStatus } from "@orbs-network/twap-sdk";
 
 export function OrderHistoryMenu() {
   const { setTab, selectedTab, tabs } = useOrderHistoryContext();
 
   const onSelect = useCallback(
     (item: SelectMeuItem) => {
-      setTab(item?.value as Status);
+      setTab(item?.value as OrderStatus);
     },
     [setTab, setTab],
   );

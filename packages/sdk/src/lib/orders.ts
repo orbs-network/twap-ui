@@ -1,4 +1,4 @@
-import { Config, Status } from "./types";
+import { Config, Order, OrderStatus, OrderType } from "./types";
 import BN from "bignumber.js";
 import { amountUi, convertDecimals, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
@@ -155,17 +155,17 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
   let status = statuses?.[order.Contract_id]?.toLowerCase();
 
   if (progress === 100 || status === "completed") {
-    return Status.Completed;
+    return OrderStatus.Completed;
   }
   if (status === "canceled") {
-    return Status.Canceled;
+    return OrderStatus.Canceled;
   }
 
-  if (new Date(Number(order.ask_deadline)).getTime() > Date.now() / 1000) return Status.Open;
-  return Status.Expired;
+  if (new Date(Number(order.ask_deadline)).getTime() > Date.now() / 1000) return OrderStatus.Open;
+  return OrderStatus.Expired;
 };
 
-const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) => {
+const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): Order => {
   const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
   const isMarketOrder = BN(order.ask_dstMinAmount || 0).lte(1);
   const totalChunks = BN(order.ask_srcAmount || 0)
@@ -175,13 +175,13 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) =
 
   const getOrderType = () => {
     if (isMarketOrder) {
-      return "dca";
+      return OrderType.DCA_MARKET;
     }
     if (BN(totalChunks).eq(1)) {
-      return "limit";
+      return OrderType.LIMIT;
     }
 
-    return "dca";
+    return OrderType.DCA_LIMIT;
   };
 
   return {
@@ -195,10 +195,10 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) =
     status: getStatus(progress, order, statuses),
     srcBidAmount: order.ask_srcBidAmount,
     txHash: order.transactionHash,
-    dstAmount: orderFill?.dstAmountOut,
+    dstFilledAmount: orderFill?.dstAmountOut,
     srcFilledAmount: orderFill?.srcAmountIn,
-    srcAmountUsd: orderFill?.dollarValueIn || "0",
-    dstAmountUsd: orderFill?.dollarValueOut || "0",
+    srcFilledAmountUsd: orderFill?.dollarValueIn || "0",
+    dstFilledAmountUsd: orderFill?.dollarValueOut || "0",
     progress,
     srcTokenAddress: order.ask_srcToken,
     dstTokenAddress: order.ask_dstToken,
@@ -208,7 +208,7 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any) =
       .toNumber(),
     isMarketOrder,
     fillDelay: (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config),
-    orderType: isMarketOrder ? "dca" : BN(totalChunks).eq(1) ? "limit" : "dca",
+    orderType: getOrderType(),
   };
 };
 
@@ -217,16 +217,20 @@ export const getOrderLimitPrice = (order: Order, srcTokenDecimals: number, dstTo
     return undefined;
   }
 
-  return convertDecimals(BN(order.dstMinAmount).div(order.srcBidAmount), srcTokenDecimals, dstTokenDecimals).toString();
+  const srcBidAmount = amountUi(srcTokenDecimals, order.srcBidAmount);
+  const dstMinAmount = amountUi(dstTokenDecimals, order.dstMinAmount);
+
+  return BN(dstMinAmount).div(srcBidAmount).toString();
 };
 
 export const getOrderExcecutionPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (!BN(order.srcFilledAmount).gt(0) || !BN(order.dstAmount).gt(0)) return;
+  if (!BN(order.srcFilledAmount).gt(0) || !BN(order.dstFilledAmount).gt(0)) return;
 
-  return convertDecimals(BN(order.dstAmount).div(order.srcFilledAmount), srcTokenDecimals, dstTokenDecimals).toString();
+  const srcFilledAmount = amountUi(srcTokenDecimals, order.srcFilledAmount);
+  const dstFilledAmount = amountUi(dstTokenDecimals, order.dstFilledAmount);
+
+  return BN(dstFilledAmount).div(srcFilledAmount).toString();
 };
-
-export type Order = ReturnType<typeof parseOrder>;
 
 const fetchOrders = async (config: Config, account: string, signal?: AbortSignal): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(config!.chainId);
@@ -257,7 +261,7 @@ export const getOrders = async (config: Config, account: string, signal?: AbortS
 export const groupOrdersByStatus = (orders?: Order[]) => {
   if (!orders) return undefined;
   const grouped = groupBy(orders, "status");
-  grouped[Status.All] = orders;
+  grouped[OrderStatus.All] = orders;
   return grouped as GroupedOrders;
 };
 
@@ -272,9 +276,9 @@ export const waitForUpdatedOrders = async (config: Config, orderId: number, acco
 };
 
 export interface GroupedOrders {
-  [Status.All]?: Order[];
-  [Status.Open]?: Order[];
-  [Status.Canceled]?: Order[];
-  [Status.Expired]?: Order[];
-  [Status.Completed]?: Order[];
+  [OrderStatus.All]?: Order[];
+  [OrderStatus.Open]?: Order[];
+  [OrderStatus.Canceled]?: Order[];
+  [OrderStatus.Expired]?: Order[];
+  [OrderStatus.Completed]?: Order[];
 }

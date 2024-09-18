@@ -1,10 +1,11 @@
 import BN from "bignumber.js";
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
 import { Config, TimeDuration, TimeUnit } from "./types";
-import { amountUi, convertDecimals, findTimeUnit, getTimeDurationMillis, parsebn } from "./utils";
+import { amountBN, amountUi, convertDecimals, findTimeUnit, getTimeDurationMillis, parsebn, safeInteger } from "./utils";
+import { getMaxFillDelayWarning, getMaxTradeDurationWarning, getMinFillDelayWarning, getMinTradeDurationWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
-export const getDstTokenMinAmount = (srcChunkAmount = "", limitPrice = "", srcTokenDecimals: number, dstTokenDecimals: number, isMarketOrder = false) => {
+export const getDstTokenMinAmount = (srcChunkAmount = "", limitPrice = "", isMarketOrder = false, srcTokenDecimals?: number, dstTokenDecimals?: number) => {
   let amount = BN(1).toString();
   const limitPriceUi = amountUi(dstTokenDecimals, limitPrice);
   if (srcChunkAmount && !isMarketOrder && srcTokenDecimals && dstTokenDecimals && BN(limitPrice || "0").gt(0)) {
@@ -13,13 +14,7 @@ export const getDstTokenMinAmount = (srcChunkAmount = "", limitPrice = "", srcTo
   return amount;
 };
 
-export const getDstTokenAmount = (typedValue?: string, limitPrice?: string) => {
-  if (!limitPrice || !typedValue) return undefined;
-  return BN(limitPrice).multipliedBy(typedValue).decimalPlaces(0).toString();
-};
-
-export const getDuration = (chunks = 1, fillDelay?: TimeDuration, customDuration?: TimeDuration, isLimitPanel?: boolean): TimeDuration => {
-  if (isLimitPanel) return { unit: TimeUnit.Days, value: 7 };
+export const getDuration = (chunks = 1, fillDelay?: TimeDuration, customDuration?: TimeDuration): TimeDuration => {
   const minDuration = getTimeDurationMillis(fillDelay) * 2 * chunks;
   const unit = findTimeUnit(minDuration);
   return customDuration || { unit, value: Number(BN(minDuration / unit).toFixed(2)) };
@@ -39,7 +34,7 @@ export const getMaxPossibleChunks = (config: Config, typedSrcAmount?: string, on
   return res > 1 ? res : 1;
 };
 
-export const getFillDelay = (isLimitPanel?: boolean, customFillDelay?: TimeDuration) => {
+export const getFillDelay = (customFillDelay?: TimeDuration, isLimitPanel?: boolean) => {
   if (isLimitPanel || !customFillDelay) return DEFAULT_FILL_DELAY;
   return customFillDelay;
 };
@@ -52,7 +47,7 @@ export const getLimitPricePercentDiffFromMarket = (limitPrice?: string, marketPr
   if (!limitPrice || !marketPrice || BN(limitPrice).isZero() || BN(limitPrice).isZero()) return "0";
   const from = isLimitPriceInverted ? marketPrice : limitPrice;
   const to = isLimitPriceInverted ? limitPrice : marketPrice;
-  return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_HALF_UP).toString();
+  return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_HALF_UP).toFixed();
 };
 
 export const getDeadline = (duration: TimeDuration) => {
@@ -66,11 +61,7 @@ export const getEstimatedDelayBetweenChunksMillis = (config?: Config) => {
 
 export const getSrcChunkAmount = (srcAmount = "", chunks = 1) => {
   if (BN(srcAmount || 0).isZero() || BN(chunks || 0).isZero()) return "0";
-  return BN(srcAmount).div(chunks).integerValue(BN.ROUND_FLOOR).toString();
-};
-
-export const getIsMarketOrder = (isLimitPanel?: boolean, isMarketOrder?: boolean) => {
-  return isLimitPanel ? false : isMarketOrder;
+  return BN(srcAmount).div(chunks).integerValue(BN.ROUND_FLOOR).toFixed();
 };
 
 export const getAskParams = (args: {
@@ -98,4 +89,58 @@ export const getAskParams = (args: {
     BN(fillDelaySeconds).toFixed(0),
     [],
   ];
+};
+
+export const getSwapDetails = ({
+  config,
+  srcAmount,
+  oneSrcTokenUsd,
+  customChunks,
+  isLimitPanel,
+  srcDecimals,
+  customFillDelay,
+  customDuration,
+  limitPrice,
+  dstDecimals,
+  isMarketOrder,
+}: {
+  config: Config;
+  srcAmount?: string;
+  limitPrice?: string;
+  customDuration?: TimeDuration;
+  customFillDelay?: TimeDuration;
+  customChunks?: number;
+  isLimitPanel?: boolean;
+  oneSrcTokenUsd?: string | number;
+  srcDecimals?: number;
+  dstDecimals?: number;
+  isMarketOrder?: boolean;
+}) => {
+  const srcAmountUi = amountUi(srcDecimals, srcAmount);
+  const maxPossibleChunks = getMaxPossibleChunks(config, srcAmountUi, oneSrcTokenUsd);
+  const chunks = getChunks(maxPossibleChunks, customChunks, isLimitPanel);
+  const srcChunkAmount = getSrcChunkAmount(srcAmount, chunks);
+  const fillDelay = getFillDelay(customFillDelay, isLimitPanel);
+  const duration = getDuration(chunks, fillDelay, customDuration);
+  const deadline = getDeadline(duration);
+  const dstTokenMinAmount = getDstTokenMinAmount(srcChunkAmount, limitPrice, isMarketOrder, srcDecimals, dstDecimals);
+  const srcChunkAmountUsd = BN(srcChunkAmount)
+    .times(oneSrcTokenUsd || 0)
+    .toFixed(0);
+  return {
+    chunks,
+    duration,
+    deadline,
+    fillDelay,
+    srcChunkAmount,
+    dstTokenMinAmount,
+    warnings: {
+      partialFill: getPartialFillWarning(chunks, duration, fillDelay),
+      minFillDelay: getMinFillDelayWarning(fillDelay),
+      maxFillDelay: getMaxFillDelayWarning(fillDelay),
+      minDuration: getMinTradeDurationWarning(duration),
+      maxDuration: getMaxTradeDurationWarning(duration),
+      tradeSize: getTradeSizeWarning(config, srcChunkAmountUsd, chunks),
+    },
+  };
 };

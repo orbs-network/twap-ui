@@ -128,7 +128,7 @@ const ListOrder = React.memo(
 
 const ListItemHeader = ({ order }: { order: Order }) => {
   const t = useTwapContext().translations;
-  const status = order && t[order.status as keyof Translations];
+  const status = order && order.status;
 
   const formattedDate = React.useMemo(() => {
     return moment(order.createdAt).format("DD/MM/YYYY HH:mm");
