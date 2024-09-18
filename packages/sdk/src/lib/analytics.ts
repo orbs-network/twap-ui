@@ -5,7 +5,7 @@ const Version = 0.3;
 
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
 
-type Action = "cancel order" | "create order" | "module-import";
+type Action = "cancel order" | "wrap" | "approve" | "create order" | "module-import";
 
 interface Data {
   _id: string;
@@ -61,22 +61,6 @@ class Analytics {
     _id: uuidv4(),
   };
 
-  constructor() {
-    this.updateAndSend = this.updateAndSend.bind(this);
-    this.reset = this.reset.bind(this);
-    this.onCancelOrder = this.onCancelOrder.bind(this);
-    this.onCancelOrderSuccess = this.onCancelOrderSuccess.bind(this);
-    this.onCanelOrderError = this.onCanelOrderError.bind(this);
-    this.onWrapSuccess = this.onWrapSuccess.bind(this);
-    this.onApproveSuccess = this.onApproveSuccess.bind(this);
-    this.onCreateOrderError = this.onCreateOrderError.bind(this);
-    this.onTxError = this.onTxError.bind(this);
-    this.onCreateOrderSuccess = this.onCreateOrderSuccess.bind(this);
-    this.onSubmitOrder = this.onSubmitOrder.bind(this);
-    this.onLoad = this.onLoad.bind(this);
-    this.onCrash = this.onCrash.bind(this);
-  }
-
   updateAndSend(values = {} as Partial<Data>) {
     this.data = {
       ...this.data,
@@ -124,10 +108,30 @@ class Analytics {
     });
   }
 
+  onWrapRequest() {
+    this.updateAndSend({
+      action: "wrap",
+    });
+  }
+
+  onWrapError(error: any) {
+    this.onTxError(error);
+  }
+
+  onApproveRequest() {
+    this.updateAndSend({
+      action: "approve",
+    });
+  }
+
   onApproveSuccess(approvalTxHash?: string) {
     this.updateAndSend({
       approvalTxHash,
     });
+  }
+
+  onApproveError(error: any) {
+    this.onTxError(error);
   }
 
   onCreateOrderError(error: any) {
@@ -138,6 +142,12 @@ class Analytics {
   onTxError(error: any) {
     const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
     this.updateAndSend({ actionError });
+  }
+
+  onCreateOrderRequest() {
+    this.updateAndSend({
+      action: "create order",
+    });
   }
 
   onCreateOrderSuccess(newOrderId: number, createOrderTxHash: string) {
@@ -194,16 +204,23 @@ class Analytics {
 
 const analytics = new Analytics();
 
-export const {
-  onCancelOrderSuccess,
-  onCancelOrder,
-  onTxError,
-  onApproveSuccess,
-  onLoad,
-  onWrapSuccess,
-  onCanelOrderError,
-  onCreateOrderError,
-  onCreateOrderSuccess,
-  onSubmitOrder,
-  onCrash,
-} = analytics;
+export const onCancelOrder = analytics.onCancelOrder.bind(analytics);
+export const onCancelOrderSuccess = analytics.onCancelOrderSuccess.bind(analytics);
+export const onCanelOrderError = analytics.onCanelOrderError.bind(analytics);
+
+export const onWrapRequest = analytics.onWrapRequest.bind(analytics);
+export const onWrapSuccess = analytics.onWrapSuccess.bind(analytics);
+export const onWrapError = analytics.onWrapError.bind(analytics);
+
+export const onApproveRequest = analytics.onApproveRequest.bind(analytics);
+export const onApproveSuccess = analytics.onApproveSuccess.bind(analytics);
+export const onApproveError = analytics.onApproveError.bind(analytics);
+
+export const onCreateOrderRequest = analytics.onCreateOrderRequest.bind(analytics);
+export const onCreateOrderError = analytics.onCreateOrderError.bind(analytics);
+export const onCreateOrderSuccess = analytics.onCreateOrderSuccess.bind(analytics);
+
+export const onSubmitOrder = analytics.onSubmitOrder.bind(analytics);
+
+export const onLoad = analytics.onLoad.bind(analytics);
+export const onCrash = analytics.onCrash.bind(analytics);

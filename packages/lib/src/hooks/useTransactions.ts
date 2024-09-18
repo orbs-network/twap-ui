@@ -15,7 +15,6 @@ import {
   onCanelOrderError,
   onCreateOrderSuccess,
   onSubmitOrder,
-  onTxError,
   onWrapSuccess,
   waitForUpdatedOrders,
 } from "@orbs-network/twap-sdk";
@@ -158,9 +157,7 @@ export const useUnwrapToken = () => {
       await onSuccess();
     },
     {
-      onError: (error) => {
-        onTxError(error);
-      },
+      onError: (error) => {},
     },
   );
 };
