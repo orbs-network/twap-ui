@@ -13,6 +13,7 @@ export const MAX_FILL_DELAY_FORMATTED = MAX_FILL_DELAY_MILLIS / day;
 export const MAX_DURATION_MILLIS = 30 * 24 * 60 * 60 * 1000;
 export const MIN_DURATION_MILLIS = 5 * 60 * 1000;
 export const MIN_DURATION_MINUTES = new Date(MIN_DURATION_MILLIS).getMinutes();
+export const MAX_DURATION_DAYS = 30;
 
 const THE_GRAPH_API = "https://hub.orbs.network/api/apikey/subgraphs/id";
 export const THE_GRAPH_ORDERS_API = {

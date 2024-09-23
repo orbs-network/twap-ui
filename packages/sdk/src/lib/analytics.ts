@@ -150,7 +150,7 @@ class Analytics {
     });
   }
 
-  onCreateOrderSuccess(newOrderId: number, createOrderTxHash: string) {
+  onCreateOrderSuccess(createOrderTxHash?: string, newOrderId?: number) {
     this.updateAndSend({
       newOrderId,
       createOrderTxHash,

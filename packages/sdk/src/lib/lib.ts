@@ -5,13 +5,12 @@ import { amountBN, amountUi, convertDecimals, findTimeUnit, getTimeDurationMilli
 import { getMaxFillDelayWarning, getMaxTradeDurationWarning, getMinFillDelayWarning, getMinTradeDurationWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
-export const getDstTokenMinAmount = (srcChunkAmount = "", limitPrice = "", isMarketOrder = false, srcTokenDecimals?: number, dstTokenDecimals?: number) => {
-  let amount = BN(1).toString();
-  const limitPriceUi = amountUi(dstTokenDecimals, limitPrice);
-  if (srcChunkAmount && !isMarketOrder && srcTokenDecimals && dstTokenDecimals && BN(limitPrice || "0").gt(0)) {
-    amount = BN.max(1, convertDecimals(BN(srcChunkAmount).times(parsebn(limitPriceUi || "0")), srcTokenDecimals, dstTokenDecimals).integerValue(BN.ROUND_FLOOR)).toString();
+export const getDstTokenMinAmount = (srcChunkAmount = "", typedLimitPrice = "", isMarketOrder = false, srcTokenDecimals?: number, dstTokenDecimals?: number) => {
+  if (!srcChunkAmount || isMarketOrder || !srcTokenDecimals || !dstTokenDecimals || !typedLimitPrice) {
+    return BN(1).toString();
   }
-  return amount;
+  const convertedAmount = convertDecimals(BN(srcChunkAmount), srcTokenDecimals, dstTokenDecimals);
+  return BN.max(1, BN(convertedAmount.times(parsebn(typedLimitPrice || "0"))).integerValue(BN.ROUND_FLOOR)).toString();
 };
 
 export const getDuration = (chunks = 1, fillDelay?: TimeDuration, customDuration?: TimeDuration): TimeDuration => {

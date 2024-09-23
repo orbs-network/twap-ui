@@ -72,7 +72,7 @@ export const useCreateOrder = () => {
 
     const orderId = Number(tx.events.OrderCreated.returnValues.id);
     const txHash = tx.transactionHash;
-    onCreateOrderSuccess(orderId, txHash);
+    onCreateOrderSuccess(txHash, orderId);
     logger("order created:", "orderId:", orderId, "txHash:", txHash);
     return {
       orderId,
