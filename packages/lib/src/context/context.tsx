@@ -7,8 +7,7 @@ import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
 import { setWeb3Instance } from "@defi.org/web3-candies";
-import { DEFAULT_FILL_DELAY, onLoad } from "@orbs-network/twap-sdk";
-onLoad();
+import { constructSDK, DEFAULT_FILL_DELAY } from "@orbs-network/twap-sdk";
 
 export const TwapContext = createContext({} as TWAPContextProps);
 const queryClient = new QueryClient({
@@ -89,6 +88,10 @@ export const Content = (props: TwapLibProps) => {
     setWeb3Instance(web3);
   }, [web3]);
 
+  const twapSDK = useMemo(() => {
+    return constructSDK({ config });
+  }, [config]);
+
   return (
     <TwapContext.Provider
       value={{
@@ -118,6 +121,7 @@ export const Content = (props: TwapLibProps) => {
         minNativeTokenBalance: props.minNativeTokenBalance,
         enableQueryParams: props.enableQueryParams,
         isExactAppoval: props.isExactAppoval,
+        twapSDK,
       }}
     >
       <WrappedTwap {...props} />

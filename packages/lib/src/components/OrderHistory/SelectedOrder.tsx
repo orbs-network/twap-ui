@@ -11,7 +11,7 @@ import { OrderDisplay } from "../OrderDisplay";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
-import { OrderStatus, Order, getOrderLimitPrice, getOrderExcecutionPrice } from "@orbs-network/twap-sdk";
+import { OrderStatus, Order } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder, useTokenFromList } from "./context";
 import moment from "moment";
 
@@ -227,7 +227,7 @@ const LimitPrice = ({ order }: { order: Order }) => {
 
   const limitPrice = useMemo(() => {
     if (!srcToken || !dstToken) return;
-    return getOrderLimitPrice(order, srcToken.decimals, dstToken.decimals);
+    return order.getLimitPrice(srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
 
   if (order?.isMarketOrder) return null;
@@ -241,7 +241,7 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
 
   const excecutionPrice = useMemo(() => {
     if (!srcToken || !dstToken) return;
-    return getOrderExcecutionPrice(order, srcToken.decimals, dstToken.decimals);
+    return order.getExcecutionPrice(srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
 
   return <Price title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice} price={excecutionPrice} srcToken={srcToken} dstToken={dstToken} />;

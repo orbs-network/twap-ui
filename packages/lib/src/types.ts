@@ -4,7 +4,7 @@ import { IconType } from "@react-icons/all-files";
 import Web3 from "web3";
 import { useSwapData } from "./hooks";
 import { Moment } from "moment";
-import { Config, TimeDuration } from "@orbs-network/twap-sdk";
+import { Config, constructSDK, TimeDuration } from "@orbs-network/twap-sdk";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -442,4 +442,5 @@ export interface TWAPContextProps {
   enableQueryParams?: boolean;
   dappWToken?: Token;
   isExactAppoval?: boolean;
+  twapSDK: ReturnType<typeof constructSDK>;
 }

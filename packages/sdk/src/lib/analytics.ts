@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import { Config } from "./types";
 import BN from "bignumber.js";
 const Version = 0.4;
@@ -6,6 +5,13 @@ const Version = 0.4;
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
 
 type Action = "cancel order" | "wrap" | "approve" | "create order" | "module-import";
+
+function generateId() {
+  const part1 = Math.random().toString(36).substring(2, 16); // Generate 16 random characters
+  const part2 = Math.random().toString(36).substring(2, 16); // Generate another 16 random characters
+  const timestamp = Date.now().toString(36); // Generate a timestamp
+  return `id_${part1 + part2 + timestamp}`; // Concatenate all parts
+}
 
 interface Data {
   _id: string;
@@ -56,7 +62,7 @@ const sendBI = async (data: Partial<Data>) => {
 export class Analytics {
   timeout: any = undefined;
   data: Data = {
-    _id: uuidv4(),
+    _id: generateId(),
   };
 
   updateAndSend(values = {} as Partial<Data>, noTimeout = false) {
@@ -153,18 +159,23 @@ export class Analytics {
   }
 
   onConfigChange(config: Config) {
-    this.updateAndSend({
-      bidDelaySeconds: config?.bidDelaySeconds,
-      chainId: config?.chainId,
-      chainName: config?.chainName,
-      exchangeAddress: config?.exchangeAddress,
-      exchangeType: config?.exchangeType,
-      lensAddress: config?.lensAddress,
-      name: config?.name,
-      partner: config?.partner,
-      twapAddress: config?.twapAddress,
-      twapVersion: config?.twapVersion,
-    });
+    if (config.partner !== this.data?.partner) {
+      this.data = {
+        _id: generateId(),
+        action: "module-import",
+        bidDelaySeconds: config?.bidDelaySeconds,
+        chainId: config?.chainId,
+        chainName: config?.chainName,
+        exchangeAddress: config?.exchangeAddress,
+        exchangeType: config?.exchangeType,
+        lensAddress: config?.lensAddress,
+        name: config?.name,
+        partner: config?.partner,
+        twapAddress: config?.twapAddress,
+        twapVersion: config?.twapVersion,
+      };
+      this.updateAndSend(this.data);
+    }
   }
 
   onCreateOrderSuccess(createOrderTxHash?: string, newOrderId?: number) {
@@ -173,12 +184,22 @@ export class Analytics {
         newOrderId,
         createOrderTxHash,
       },
-      true
+      true,
     );
 
     this.data = {
-      _id: uuidv4(),
+      _id: generateId(),
       action: "module-import",
+      bidDelaySeconds: this.data?.bidDelaySeconds,
+      chainId: this.data.chainId,
+      chainName: this.data.chainName,
+      exchangeAddress: this.data.exchangeAddress,
+      exchangeType: this.data.exchangeType,
+      lensAddress: this.data.lensAddress,
+      name: this.data.name,
+      partner: this.data.partner,
+      twapAddress: this.data.twapAddress,
+      twapVersion: this.data.twapVersion,
     };
   }
 
@@ -187,7 +208,7 @@ export class Analytics {
       {
         action: "module-import",
       },
-      true
+      true,
     );
   }
 }

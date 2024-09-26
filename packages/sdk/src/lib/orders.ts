@@ -165,6 +165,26 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
   return OrderStatus.Expired;
 };
 
+const getLimitPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
+  if (order.isMarketOrder) {
+    return undefined;
+  }
+
+  const srcBidAmount = amountUi(srcTokenDecimals, order.srcBidAmount);
+  const dstMinAmount = amountUi(dstTokenDecimals, order.dstMinAmount);
+
+  return BN(dstMinAmount).div(srcBidAmount).toString();
+};
+
+const getExcecutionPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
+  if (!BN(order.srcFilledAmount).gt(0) || !BN(order.dstFilledAmount).gt(0)) return;
+
+  const srcFilledAmount = amountUi(srcTokenDecimals, order.srcFilledAmount);
+  const dstFilledAmount = amountUi(dstTokenDecimals, order.dstFilledAmount);
+
+  return BN(dstFilledAmount).div(srcFilledAmount).toString();
+};
+
 const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): Order => {
   const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
   const isMarketOrder = BN(order.ask_dstMinAmount || 0).lte(1);
@@ -209,27 +229,9 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): 
     isMarketOrder,
     fillDelay: (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config),
     orderType: getOrderType(),
+    getLimitPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => getLimitPrice(order, srcTokenDecimals, dstTokenDecimals),
+    getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => getExcecutionPrice(order, srcTokenDecimals, dstTokenDecimals),
   };
-};
-
-export const getOrderLimitPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (order.isMarketOrder) {
-    return undefined;
-  }
-
-  const srcBidAmount = amountUi(srcTokenDecimals, order.srcBidAmount);
-  const dstMinAmount = amountUi(dstTokenDecimals, order.dstMinAmount);
-
-  return BN(dstMinAmount).div(srcBidAmount).toString();
-};
-
-export const getOrderExcecutionPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (!BN(order.srcFilledAmount).gt(0) || !BN(order.dstFilledAmount).gt(0)) return;
-
-  const srcFilledAmount = amountUi(srcTokenDecimals, order.srcFilledAmount);
-  const dstFilledAmount = amountUi(dstTokenDecimals, order.dstFilledAmount);
-
-  return BN(dstFilledAmount).div(srcFilledAmount).toString();
 };
 
 const fetchOrders = async (config: Config, account: string, signal?: AbortSignal): Promise<Order[]> => {

@@ -4,17 +4,7 @@ import BN from "bignumber.js";
 import { useFormatDecimals, useNetwork, useSrcBalance } from "./hooks";
 import { eqIgnoreCase, isNativeAddress, maxUint256 } from "@defi.org/web3-candies";
 import moment from "moment";
-import * as SDK from "@orbs-network/twap-sdk";
-import {
-  getLowLimitPriceWarning,
-  getMaxFillDelayWarning,
-  getMinTradeDurationWarning,
-  MIN_DURATION_MINUTES,
-  getMinFillDelayWarning,
-  getMaxTradeDurationWarning,
-  TimeDuration,
-  getTimeDurationMillis,
-} from "@orbs-network/twap-sdk";
+import { MIN_DURATION_MINUTES, TimeDuration } from "@orbs-network/twap-sdk";
 const MIN_NATIVE_BALANCE = 0.01;
 export const useShouldWrapOrUnwrapOnly = () => {
   const wrap = useShouldOnlyWrap();
@@ -28,6 +18,7 @@ export const useDstMinAmountOut = () => {
     srcToken,
     dstToken,
     state: { isMarketOrder },
+    twapSDK,
   } = useTwapContext();
 
   const limitPrice = useLimitPrice().price;
@@ -36,7 +27,7 @@ export const useDstMinAmountOut = () => {
     if (!srcToken || !dstToken) {
       return "";
     }
-    const res = SDK.getDstTokenMinAmount(srcChunkAmount, limitPrice, isMarketOrder, srcToken?.decimals, dstToken?.decimals);
+    const res = twapSDK.getDstTokenMinAmount(srcChunkAmount, limitPrice, isMarketOrder, srcToken?.decimals, dstToken?.decimals);
     console.log("res", res, srcChunkAmount, limitPrice);
     return res;
   }, [srcToken, dstToken, srcChunkAmount, limitPrice, isMarketOrder]);
@@ -124,9 +115,10 @@ export const useUsdAmount = () => {
 
 export const useIsPartialFillWarning = () => {
   const chunks = useChunks();
+  const twapSDK = useTwapContext().twapSDK;
   const duration = useDuration().timeDuration;
   const fillDelay = useFillDelay().timeDuration;
-  return SDK.getPartialFillWarning(chunks, duration, fillDelay);
+  return twapSDK.getPartialFillWarning(chunks, duration, fillDelay);
 };
 
 export const useSetChunks = () => {
@@ -159,9 +151,10 @@ export const useChunks = () => {
   const {
     state: { typedChunks },
     isLimitPanel,
+    twapSDK,
   } = useTwapContext();
 
-  const result = SDK.getChunks(maxPossibleChunks, typedChunks, isLimitPanel);
+  const result = twapSDK.getChunks(maxPossibleChunks, typedChunks, isLimitPanel);
 
   return result;
 };
@@ -173,9 +166,9 @@ export const useToken = (isSrc?: boolean) => {
 
 export const useMaxPossibleChunks = () => {
   const typedValue = useSrcAmount().amountUi;
-  const { config, srcUsd } = useTwapContext();
+  const { srcUsd, twapSDK } = useTwapContext();
 
-  return SDK.getMaxPossibleChunks(config, typedValue, srcUsd);
+  return twapSDK.getMaxPossibleChunks(typedValue, srcUsd);
 };
 
 export const useSrcAmount = () => {
@@ -199,20 +192,21 @@ export const useFillDelay = () => {
     translations: t,
     isLimitPanel,
     state: { typedFillDelay },
+    twapSDK,
   } = useTwapContext();
 
-  const timeDuration = SDK.getFillDelay(typedFillDelay, isLimitPanel);
+  const timeDuration = twapSDK.getFillDelay(typedFillDelay, isLimitPanel);
 
   const warning = useMemo(() => {
-    if (getMaxFillDelayWarning(timeDuration)) {
+    if (twapSDK.getMaxFillDelayWarning(timeDuration)) {
       return t.maxDurationWarning;
     }
-    if (getMinFillDelayWarning(timeDuration)) {
+    if (twapSDK.getMinFillDelayWarning(timeDuration)) {
       return t.minDurationWarning.replace("{duration}", MIN_DURATION_MINUTES.toString());
     }
-  }, [timeDuration, t]);
+  }, [timeDuration, t, twapSDK]);
 
-  const millis = getTimeDurationMillis(typedFillDelay);
+  const millis = typedFillDelay.unit * typedFillDelay.value;
 
   return {
     timeDuration,
@@ -223,8 +217,8 @@ export const useFillDelay = () => {
 };
 
 export const useMinimumDelayMinutes = () => {
-  const { config } = useTwapContext();
-  return SDK.getEstimatedDelayBetweenChunksMillis(config);
+  const { twapSDK } = useTwapContext();
+  return twapSDK.estimatedDelayBetweenChunksMillis;
 };
 
 export const useNoLiquidity = () => {
@@ -245,12 +239,13 @@ export const useLimitPricePercentDiffFromMarket = () => {
     state: { isInvertedLimitPrice },
   } = useTwapContext();
 
-  return SDK.getLimitPricePercentDiffFromMarket(limitPrice, marketPrice, isInvertedLimitPrice);
+  return getLimitPricePercentDiffFromMarket(limitPrice, marketPrice, isInvertedLimitPrice);
 };
 
 export const useDeadline = () => {
   const duration = useDuration();
-  const millis = SDK.getDeadline(duration.timeDuration);
+  const twapSDK = useTwapContext().twapSDK;
+  const millis = twapSDK.getDeadline(duration.timeDuration);
 
   return useMemo(() => {
     return {
@@ -262,10 +257,10 @@ export const useDeadline = () => {
 
 export const useSrcChunkAmount = () => {
   const srcAmount = useSrcAmount().amount;
-  const srcToken = useTwapContext().srcToken;
+  const { srcToken, twapSDK } = useTwapContext();
 
   const chunks = useChunks();
-  const amount = SDK.getSrcChunkAmount(srcAmount, chunks);
+  const amount = twapSDK.getSrcChunkAmount(srcAmount, chunks);
 
   return {
     amount,
@@ -398,6 +393,11 @@ export const useSetDuration = () => {
   );
 };
 
+export const getLowLimitPriceWarning = (isLimitPanel?: boolean, priceDeltaPercentage = "", isInvertedLimitPrice = false) => {
+  if (!isLimitPanel || !priceDeltaPercentage) return;
+  return isInvertedLimitPrice ? BN(priceDeltaPercentage).isGreaterThan(0) : BN(priceDeltaPercentage).isLessThan(0);
+};
+
 export const useLowPriceWarning = () => {
   const { isLimitPanel, translations: t, srcToken, dstToken, state } = useTwapContext();
   const { isInvertedLimitPrice } = state;
@@ -463,13 +463,14 @@ export const useTradeSizeWarning = () => {
     config,
     state: { srcAmountUi },
     translations: t,
+    twapSDK,
   } = useTwapContext();
   const srcChunkAmountUsd = useSrcChunkAmountUsd();
   const chunks = useChunks();
   const warning = useMemo(() => {
     if (!srcAmountUi) return;
-    return SDK.getTradeSizeWarning(config, srcChunkAmountUsd, chunks);
-  }, [config, srcChunkAmountUsd, chunks, srcAmountUi]);
+    return twapSDK.getTradeSizeWarning(srcChunkAmountUsd, chunks);
+  }, [config, srcChunkAmountUsd, chunks, srcAmountUi, twapSDK]);
 
   if (!warning) return;
 
@@ -499,21 +500,22 @@ export const useDuration = () => {
   const {
     state: { typedDuration },
     translations: t,
+    twapSDK,
   } = useTwapContext();
-  const timeDuration = SDK.getDuration(chunks, fillDelay.timeDuration, typedDuration);
+  const timeDuration = twapSDK.getDuration(chunks, fillDelay.timeDuration, typedDuration);
 
   const warning = useMemo(() => {
-    if (getMinTradeDurationWarning(timeDuration)) {
+    if (twapSDK.getMinTradeDurationWarning(timeDuration)) {
       return t.minDurationWarning.replace("{duration}", MIN_DURATION_MINUTES.toString());
     }
-    if (getMaxTradeDurationWarning(timeDuration)) {
+    if (twapSDK.getMaxTradeDurationWarning(timeDuration)) {
       return t.maxDurationWarning;
     }
-  }, [timeDuration, t]);
+  }, [timeDuration, t, twapSDK]);
 
   return {
     timeDuration,
-    millis: getTimeDurationMillis(timeDuration),
+    millis: timeDuration.unit * timeDuration.value,
     warning,
   };
 };
@@ -619,4 +621,11 @@ export const useSwapData = () => {
     srcToken,
     dstToken,
   };
+};
+
+export const getLimitPricePercentDiffFromMarket = (limitPrice?: string, marketPrice?: string, isLimitPriceInverted?: boolean) => {
+  if (!limitPrice || !marketPrice || BN(limitPrice).isZero() || BN(limitPrice).isZero()) return "0";
+  const from = isLimitPriceInverted ? marketPrice : limitPrice;
+  const to = isLimitPriceInverted ? limitPrice : marketPrice;
+  return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_HALF_UP).toFixed();
 };

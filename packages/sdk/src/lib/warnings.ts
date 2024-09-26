@@ -30,8 +30,3 @@ export const getTradeSizeWarning = (config: Config, srcChunkAmountUsd?: string |
   const minTradeSizeUsd = BN(config.minChunkSizeUsd || 0);
   return BN(chunks).isZero() || BN(srcChunkAmountUsd || 0).isLessThan(minTradeSizeUsd);
 };
-
-export const getLowLimitPriceWarning = (isLimitPanel?: boolean, priceDeltaPercentage = "", isInvertedLimitPrice = false) => {
-  if (!isLimitPanel || !priceDeltaPercentage) return;
-  return isInvertedLimitPrice ? BN(priceDeltaPercentage).isGreaterThan(0) : BN(priceDeltaPercentage).isLessThan(0);
-};

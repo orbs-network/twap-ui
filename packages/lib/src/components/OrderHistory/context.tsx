@@ -3,7 +3,7 @@ import { useTwapContext } from "../../context/context";
 import { Translations } from "../../types";
 import { OrdersMenuTab } from "./types";
 import { mapCollection, size } from "../../utils";
-import { Order, OrderStatus, groupOrdersByStatus } from "@orbs-network/twap-sdk";
+import { groupOrdersByStatus, Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { useOrdersHistory } from "../../hooks";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 

@@ -60,9 +60,9 @@ export type Order = {
   isMarketOrder: boolean;
   fillDelay: number;
   orderType: OrderType;
+  getLimitPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => string | undefined;
+  getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => string | undefined;
 };
-
-
 
 export interface GetAskValuesArgs {
   dstTokenMinAmount: string;

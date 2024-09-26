@@ -76,7 +76,7 @@ export const getCreateOrderArgs = (args: GetAskValuesArgs, config: Config) => {
 
 export const getSwapValues = (
   { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, dstDecimals, isMarketOrder }: GetSwapValuesArgs,
-  config: Config
+  config: Config,
 ) => {
   const srcAmountUi = amountUi(srcDecimals, srcAmount);
   const maxPossibleChunks = getMaxPossibleChunks(config, srcAmountUi, oneSrcTokenUsd);
@@ -106,10 +106,3 @@ export const getSwapValues = (
     },
   };
 };
-
-// export const getLimitPricePercentDiffFromMarket = (limitPrice?: string, marketPrice?: string, isLimitPriceInverted?: boolean) => {
-//   if (!limitPrice || !marketPrice || BN(limitPrice).isZero() || BN(limitPrice).isZero()) return "0";
-//   const from = isLimitPriceInverted ? marketPrice : limitPrice;
-//   const to = isLimitPriceInverted ? limitPrice : marketPrice;
-//   return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_HALF_UP).toFixed();
-// };

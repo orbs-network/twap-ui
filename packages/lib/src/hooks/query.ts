@@ -10,7 +10,7 @@ import { Token } from "../types";
 import { useGetHasAllowance, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
 import { useSrcAmount } from "./lib";
-import { getOrders, Order, OrderStatus } from "@orbs-network/twap-sdk";
+import { Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { amountBNV2 } from "../utils";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
@@ -168,7 +168,7 @@ const useUpdateOrderStatusToCanceled = () => {
   );
 };
 export const useOrdersHistory = () => {
-  const { state, config, account } = useTwapContext();
+  const { state, config, account, twapSDK } = useTwapContext();
 
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
@@ -177,7 +177,7 @@ export const useOrdersHistory = () => {
     async ({ signal }) => {
       let result: Order[] = [];
       try {
-        result = await getOrders(config, account!, signal);
+        result = await twapSDK.getOrders(account!, signal);
       } catch (error) {
         console.log({ error });
       }
