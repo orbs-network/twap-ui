@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { Config } from "./types";
 import BN from "bignumber.js";
-const Version = 0.3;
+const Version = 0.4;
 
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
 
@@ -36,8 +36,6 @@ interface Data {
   partner?: string;
   twapAddress?: string;
   twapVersion?: number;
-  uiCrashedErrorMessage?: string;
-  uiCrashedErrorStack?: string;
 }
 
 const sendBI = async (data: Partial<Data>) => {
@@ -55,34 +53,25 @@ const sendBI = async (data: Partial<Data>) => {
   }
 };
 
-class Analytics {
+export class Analytics {
   timeout: any = undefined;
   data: Data = {
     _id: uuidv4(),
   };
 
-  updateAndSend(values = {} as Partial<Data>) {
+  updateAndSend(values = {} as Partial<Data>, noTimeout = false) {
     this.data = {
       ...this.data,
       ...values,
     };
-
-    if (process.env.NODE_ENV === "development") {
-      return;
-    }
-    clearTimeout(this.timeout);
-    this.timeout = setTimeout(() => {
+    if (noTimeout) {
       sendBI(this.data);
-    }, 1_000);
-  }
-
-  reset() {
-    setTimeout(() => {
-      this.data = {
-        _id: uuidv4(),
-        action: "module-import",
-      };
-    }, 1_000);
+    } else {
+      clearTimeout(this.timeout);
+      this.timeout = setTimeout(() => {
+        sendBI(this.data);
+      }, 1_000);
+    }
   }
 
   onCancelOrder(orderId: number) {
@@ -136,7 +125,6 @@ class Analytics {
 
   onCreateOrderError(error: any) {
     this.onTxError(error);
-    analytics.reset();
   }
 
   onTxError(error: any) {
@@ -144,21 +132,7 @@ class Analytics {
     this.updateAndSend({ actionError });
   }
 
-  onCreateOrderRequest() {
-    this.updateAndSend({
-      action: "create order",
-    });
-  }
-
-  onCreateOrderSuccess(createOrderTxHash?: string, newOrderId?: number) {
-    this.updateAndSend({
-      newOrderId,
-      createOrderTxHash,
-    });
-    this.reset();
-  }
-
-  onSubmitOrder(config: Config, askParams: any, account?: string) {
+  onCreateOrderRequest(askParams: any, account?: string) {
     const values = askParams;
     const fromTokenAmount = values[3];
     const srcChunkAmount = values[4];
@@ -174,6 +148,12 @@ class Analytics {
       fillDelay: values[8],
       srcChunkAmount,
       action: "create order",
+      walletAddress: account,
+    });
+  }
+
+  onConfigChange(config: Config) {
+    this.updateAndSend({
       bidDelaySeconds: config?.bidDelaySeconds,
       chainId: config?.chainId,
       chainName: config?.chainName,
@@ -184,43 +164,30 @@ class Analytics {
       partner: config?.partner,
       twapAddress: config?.twapAddress,
       twapVersion: config?.twapVersion,
-      walletAddress: account,
     });
   }
 
-  onCrash(error: Error) {
-    this.updateAndSend({
-      uiCrashedErrorMessage: error.message,
-      uiCrashedErrorStack: error.stack,
-    });
+  onCreateOrderSuccess(createOrderTxHash?: string, newOrderId?: number) {
+    this.updateAndSend(
+      {
+        newOrderId,
+        createOrderTxHash,
+      },
+      true
+    );
+
+    this.data = {
+      _id: uuidv4(),
+      action: "module-import",
+    };
   }
 
   onLoad() {
-    this.updateAndSend({
-      action: "module-import",
-    });
+    this.updateAndSend(
+      {
+        action: "module-import",
+      },
+      true
+    );
   }
 }
-
-const analytics = new Analytics();
-
-export const onCancelOrder = analytics.onCancelOrder.bind(analytics);
-export const onCancelOrderSuccess = analytics.onCancelOrderSuccess.bind(analytics);
-export const onCanelOrderError = analytics.onCanelOrderError.bind(analytics);
-
-export const onWrapRequest = analytics.onWrapRequest.bind(analytics);
-export const onWrapSuccess = analytics.onWrapSuccess.bind(analytics);
-export const onWrapError = analytics.onWrapError.bind(analytics);
-
-export const onApproveRequest = analytics.onApproveRequest.bind(analytics);
-export const onApproveSuccess = analytics.onApproveSuccess.bind(analytics);
-export const onApproveError = analytics.onApproveError.bind(analytics);
-
-export const onCreateOrderRequest = analytics.onCreateOrderRequest.bind(analytics);
-export const onCreateOrderError = analytics.onCreateOrderError.bind(analytics);
-export const onCreateOrderSuccess = analytics.onCreateOrderSuccess.bind(analytics);
-
-export const onSubmitOrder = analytics.onSubmitOrder.bind(analytics);
-
-export const onLoad = analytics.onLoad.bind(analytics);
-export const onCrash = analytics.onCrash.bind(analytics);

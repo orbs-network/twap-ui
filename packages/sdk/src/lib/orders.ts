@@ -258,8 +258,7 @@ export const getOrders = async (config: Config, account: string, signal?: AbortS
   return orderBy(orders, (o) => o.createdAt, "desc");
 };
 
-export const groupOrdersByStatus = (orders?: Order[]) => {
-  if (!orders) return undefined;
+export const groupOrdersByStatus = (orders: Order[]) => {
   const grouped = groupBy(orders, "status");
   grouped[OrderStatus.All] = orders;
   return grouped as GroupedOrders;

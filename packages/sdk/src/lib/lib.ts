@@ -1,7 +1,7 @@
 import BN from "bignumber.js";
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
-import { Config, TimeDuration, TimeUnit } from "./types";
-import { amountBN, amountUi, convertDecimals, findTimeUnit, getTimeDurationMillis, parsebn, safeInteger } from "./utils";
+import { Config, GetAskValuesArgs, GetSwapValuesArgs, TimeDuration, TimeUnit } from "./types";
+import { amountUi, convertDecimals, findTimeUnit, getTimeDurationMillis, parsebn, safeInteger } from "./utils";
 import { getMaxFillDelayWarning, getMaxTradeDurationWarning, getMinFillDelayWarning, getMinTradeDurationWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
@@ -42,13 +42,6 @@ export const getMinimumDelayMinutes = (config?: Config) => {
   return getEstimatedDelayBetweenChunksMillis(config) / 1000 / 60;
 };
 
-export const getLimitPricePercentDiffFromMarket = (limitPrice?: string, marketPrice?: string, isLimitPriceInverted?: boolean) => {
-  if (!limitPrice || !marketPrice || BN(limitPrice).isZero() || BN(limitPrice).isZero()) return "0";
-  const from = isLimitPriceInverted ? marketPrice : limitPrice;
-  const to = isLimitPriceInverted ? limitPrice : marketPrice;
-  return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_HALF_UP).toFixed();
-};
-
 export const getDeadline = (duration: TimeDuration) => {
   const minute = 60_000;
   return Date.now() + getTimeDurationMillis(duration) + minute;
@@ -63,58 +56,28 @@ export const getSrcChunkAmount = (srcAmount = "", chunks = 1) => {
   return BN(srcAmount).div(chunks).integerValue(BN.ROUND_FLOOR).toFixed();
 };
 
-export const getAskParams = (args: {
-  config: Config;
-  dstTokenMinAmount: string;
-  srcChunkAmount: string;
-  deadline: number;
-  fillDelay: TimeDuration;
-  srcAmount: string;
-  srcTokenAddress: string;
-  dstTokenAddress: string;
-}) => {
+export const getCreateOrderArgs = (args: GetAskValuesArgs, config: Config) => {
   const fillDelayMillis = getTimeDurationMillis(args.fillDelay);
-  const fillDelaySeconds = (fillDelayMillis - getEstimatedDelayBetweenChunksMillis(args.config)) / 1000;
+  const fillDelaySeconds = (fillDelayMillis - getEstimatedDelayBetweenChunksMillis(config)) / 1000;
 
   return [
-    args.config.exchangeAddress,
+    config.exchangeAddress,
     args.srcTokenAddress,
     args.dstTokenAddress,
     BN(args.srcAmount).toFixed(0),
     BN(args.srcChunkAmount).toFixed(0),
     BN(args.dstTokenMinAmount).toFixed(0),
     BN(args.deadline).div(1000).toFixed(0),
-    BN(args.config.bidDelaySeconds).toFixed(0),
+    BN(config.bidDelaySeconds).toFixed(0),
     BN(fillDelaySeconds).toFixed(0),
     [],
   ];
 };
 
-export const getSwapDetails = ({
-  config,
-  srcAmount,
-  oneSrcTokenUsd,
-  customChunks,
-  isLimitPanel,
-  srcDecimals,
-  customFillDelay,
-  customDuration,
-  limitPrice,
-  dstDecimals,
-  isMarketOrder,
-}: {
-  config: Config;
-  srcAmount?: string;
-  limitPrice?: string;
-  customDuration?: TimeDuration;
-  customFillDelay?: TimeDuration;
-  customChunks?: number;
-  isLimitPanel?: boolean;
-  oneSrcTokenUsd?: string | number;
-  srcDecimals?: number;
-  dstDecimals?: number;
-  isMarketOrder?: boolean;
-}) => {
+export const getSwapValues = (
+  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, dstDecimals, isMarketOrder }: GetSwapValuesArgs,
+  config: Config
+) => {
   const srcAmountUi = amountUi(srcDecimals, srcAmount);
   const maxPossibleChunks = getMaxPossibleChunks(config, srcAmountUi, oneSrcTokenUsd);
   const chunks = getChunks(maxPossibleChunks, customChunks, isLimitPanel);
@@ -143,3 +106,10 @@ export const getSwapDetails = ({
     },
   };
 };
+
+// export const getLimitPricePercentDiffFromMarket = (limitPrice?: string, marketPrice?: string, isLimitPriceInverted?: boolean) => {
+//   if (!limitPrice || !marketPrice || BN(limitPrice).isZero() || BN(limitPrice).isZero()) return "0";
+//   const from = isLimitPriceInverted ? marketPrice : limitPrice;
+//   const to = isLimitPriceInverted ? limitPrice : marketPrice;
+//   return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_HALF_UP).toFixed();
+// };

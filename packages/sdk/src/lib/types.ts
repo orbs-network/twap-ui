@@ -61,3 +61,28 @@ export type Order = {
   fillDelay: number;
   orderType: OrderType;
 };
+
+
+
+export interface GetAskValuesArgs {
+  dstTokenMinAmount: string;
+  srcChunkAmount: string;
+  deadline: number;
+  fillDelay: TimeDuration;
+  srcAmount: string;
+  srcTokenAddress: string;
+  dstTokenAddress: string;
+}
+
+export interface GetSwapValuesArgs {
+  srcAmount?: string;
+  limitPrice?: string;
+  customDuration?: TimeDuration;
+  customFillDelay?: TimeDuration;
+  customChunks?: number;
+  isLimitPanel?: boolean;
+  oneSrcTokenUsd?: string | number;
+  srcDecimals?: number;
+  dstDecimals?: number;
+  isMarketOrder?: boolean;
+}
