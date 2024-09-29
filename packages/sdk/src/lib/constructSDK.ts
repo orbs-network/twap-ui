@@ -12,7 +12,7 @@ import {
   getSwapValues,
 } from "./lib";
 import { getOrders, waitForUpdatedOrders } from "./orders";
-import { Config, GetAskValuesArgs, GetSwapValuesArgs, Order, TimeDuration } from "./types";
+import { Config, GetCreateOrderArgs, GetSwapValuesArgs, Order, TimeDuration } from "./types";
 import { getMaxFillDelayWarning, getMaxTradeDurationWarning, getMinFillDelayWarning, getMinTradeDurationWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
 
 interface Props {
@@ -36,7 +36,7 @@ const analyticsCallback = {
   onCancelOrderError: analytics.onCancelOrder.bind(analytics),
 };
 
-class TwapSDK {
+export class TwapSDK {
   public config: Config;
   public analytics = analyticsCallback;
   public estimatedDelayBetweenChunksMillis: number;
@@ -46,7 +46,7 @@ class TwapSDK {
     this.estimatedDelayBetweenChunksMillis = getEstimatedDelayBetweenChunksMillis(this.config);
   }
 
-  getCreateOrderArgs(props: GetAskValuesArgs) {
+  getCreateOrderArgs(props: GetCreateOrderArgs) {
     return getCreateOrderArgs(props, this.config);
   }
   getSwapValues(props: GetSwapValuesArgs) {
@@ -101,10 +101,10 @@ class TwapSDK {
     return getMaxTradeDurationWarning(duration);
   }
 
-  getOrders(account: string, signal?: AbortSignal) {
+  async getOrders(account: string, signal?: AbortSignal) {
     return getOrders(this.config, account, signal);
   }
-  fetchUpdatedOrders(account: string, orderId: number, signal?: AbortSignal) {
+  async fetchUpdatedOrders(account: string, orderId: number, signal?: AbortSignal) {
     return waitForUpdatedOrders(this.config, orderId, account, signal);
   }
 }

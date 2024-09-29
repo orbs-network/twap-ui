@@ -1,16 +1,18 @@
 import BN from "bignumber.js";
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
-import { Config, GetAskValuesArgs, GetSwapValuesArgs, TimeDuration, TimeUnit } from "./types";
+import { Config, GetCreateOrderArgs, GetSwapValuesArgs, TimeDuration, TimeUnit } from "./types";
 import { amountUi, convertDecimals, findTimeUnit, getTimeDurationMillis, parsebn, safeInteger } from "./utils";
 import { getMaxFillDelayWarning, getMaxTradeDurationWarning, getMinFillDelayWarning, getMinTradeDurationWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
-export const getDstTokenMinAmount = (srcChunkAmount = "", typedLimitPrice = "", isMarketOrder = false, srcTokenDecimals?: number, dstTokenDecimals?: number) => {
-  if (!srcChunkAmount || isMarketOrder || !srcTokenDecimals || !dstTokenDecimals || !typedLimitPrice) {
+export const getDstTokenMinAmount = (srcChunkAmount = "", limitPrice = "", isMarketOrder = false, srcTokenDecimals?: number, dstTokenDecimals?: number) => {
+  if (!srcChunkAmount || isMarketOrder || !srcTokenDecimals || !dstTokenDecimals || !limitPrice) {
     return BN(1).toString();
   }
+
+  const limitPriceUi = amountUi(dstTokenDecimals, limitPrice);
   const convertedAmount = convertDecimals(BN(srcChunkAmount), srcTokenDecimals, dstTokenDecimals);
-  return BN.max(1, BN(convertedAmount.times(parsebn(typedLimitPrice || "0"))).integerValue(BN.ROUND_FLOOR)).toString();
+  return BN.max(1, BN(convertedAmount.times(parsebn(limitPriceUi || "0"))).integerValue(BN.ROUND_FLOOR)).toString();
 };
 
 export const getDuration = (chunks = 1, fillDelay?: TimeDuration, customDuration?: TimeDuration): TimeDuration => {
@@ -56,7 +58,7 @@ export const getSrcChunkAmount = (srcAmount = "", chunks = 1) => {
   return BN(srcAmount).div(chunks).integerValue(BN.ROUND_FLOOR).toFixed();
 };
 
-export const getCreateOrderArgs = (args: GetAskValuesArgs, config: Config) => {
+export const getCreateOrderArgs = (args: GetCreateOrderArgs, config: Config) => {
   const fillDelayMillis = getTimeDurationMillis(args.fillDelay);
   const fillDelaySeconds = (fillDelayMillis - getEstimatedDelayBetweenChunksMillis(config)) / 1000;
 
@@ -106,3 +108,5 @@ export const getSwapValues = (
     },
   };
 };
+
+export type getSwapValuesPayload = ReturnType<typeof getSwapValues>;

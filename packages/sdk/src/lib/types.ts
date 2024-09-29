@@ -64,7 +64,7 @@ export type Order = {
   getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => string | undefined;
 };
 
-export interface GetAskValuesArgs {
+export interface GetCreateOrderArgs {
   dstTokenMinAmount: string;
   srcChunkAmount: string;
   deadline: number;

@@ -4,7 +4,7 @@ import { useTwapContext } from "../context/context";
 import { useDuration, useShouldWrapOrUnwrapOnly, useSetDuration, useIsPartialFillWarning } from "../hooks/lib";
 import { StyledColumnFlex } from "../styles";
 import { BottomContent, Button, Label, Message, NumericInput, ResolutionSelect } from "./base";
-import { MIN_DURATION_MINUTES, TimeUnit } from "@orbs-network/twap-sdk";
+import { TimeUnit } from "@orbs-network/twap-sdk";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const duration = useDuration().timeDuration;
