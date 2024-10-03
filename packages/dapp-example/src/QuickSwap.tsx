@@ -92,7 +92,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       }
       return token.tokenInfo ? token.tokenInfo.logoURI : nativeTokenLogo;
     },
-    [dappTokens],
+    [dappTokens]
   );
 
   const onInputChange = (e: any) => {
@@ -119,7 +119,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     />
   );
 };
-const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8206.png";
+
 const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
 
@@ -140,7 +140,7 @@ const DappComponent = () => {
 
 const dapp: Dapp = {
   Component: DappComponent,
-  logo,
+  logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/8206.png",
   configs: [config],
   path: config.name.toLowerCase(),
 };
