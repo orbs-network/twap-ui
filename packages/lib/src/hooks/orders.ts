@@ -5,21 +5,25 @@ import { HistoryOrder } from "../types";
 import { amountUiV2, flatMap, flatMapObject } from "../utils";
 import BN from "bignumber.js";
 import { query } from "./query";
-import { useEstimatedDelayBetweenChunksMillis } from "./hooks";
+import { useEstimatedDelayBetweenChunksMillis, useGetTokenFromParsedTokensList } from "./hooks";
 
 export const useParseOrderUi = (order?: HistoryOrder) => {
-  const config = useTwapContext()?.config;
+  const { config, useParsedToken } = useTwapContext();
   const estimatedDelayBetweenChunksMillis = useEstimatedDelayBetweenChunksMillis();
+  const getTokensFromTokensList = useGetTokenFromParsedTokensList();
+  const srcTokenFromHook = useParsedToken?.(order?.srcTokenAddress);
+  const dstTokenFromHook = useParsedToken?.(order?.dstTokenAddress);
 
   return useMemo(() => {
     if (!config || !order) return;
-    const { srcToken, dstToken, srcAmount, srcBidAmount, dstMinAmount, srcFilledAmount, fillDelay, createdAt, deadline, dollarValueOut, progress } = order;
-    if (!srcToken || !dstToken) return;
+    const { srcAmount, srcBidAmount, dstMinAmount, srcFilledAmount, fillDelay, createdAt, deadline, dollarValueOut, progress } = order;
+    const srcToken = srcTokenFromHook || getTokensFromTokensList(order.srcTokenAddress);
+    const dstToken = dstTokenFromHook || getTokensFromTokensList(order.dstTokenAddress);
     const isMarketOrder = BN(dstMinAmount || 0).lte(1);
-    const srcChunkAmountUi = amountUiV2(srcToken.decimals, srcBidAmount) || "0";
-    const dstMinAmountOutUi = amountUiV2(dstToken.decimals, dstMinAmount) || "0";
-    const dstAmount = amountUiV2(dstToken.decimals, order.dstAmount) || "0";
-    const srcFilledAmountUi = amountUiV2(srcToken.decimals, srcFilledAmount) || "0";
+    const srcChunkAmountUi = !srcToken ? "" : amountUiV2(srcToken.decimals, srcBidAmount) || "";
+    const dstMinAmountOutUi = !dstToken ? "" : amountUiV2(dstToken.decimals, dstMinAmount) || "0";
+    const dstAmount = !dstToken ? "" : amountUiV2(dstToken.decimals, order.dstAmount) || "0";
+    const srcFilledAmountUi = !srcToken ? "" : amountUiV2(srcToken.decimals, srcFilledAmount) || "0";
     const totalChunks = order.totalChunks || 0;
 
     return {
@@ -28,7 +32,7 @@ export const useParseOrderUi = (order?: HistoryOrder) => {
       createdAtUi: moment(createdAt * 1000).format("ll HH:mm"),
       deadlineUi: moment(deadline * 1000).format("ll HH:mm"),
       isMarketOrder,
-      srcAmountUi: amountUiV2(srcToken.decimals, srcAmount) || "0",
+      srcAmountUi: !srcToken ? "" : amountUiV2(srcToken.decimals, srcAmount) || "0",
       srcAmountUsdUi: order.dollarValueIn || "0",
       srcChunkAmountUi,
       srcFilledAmountUi,
@@ -46,8 +50,9 @@ export const useParseOrderUi = (order?: HistoryOrder) => {
       txHash: order.txHash,
       limitPrice: isMarketOrder ? undefined : BN(dstMinAmountOutUi).div(srcChunkAmountUi).toString() || "0",
       excecutionPrice: BN(dstAmount).gt(0) && BN(srcFilledAmountUi).gt(0) ? BN(dstAmount).div(srcFilledAmountUi).toString() : undefined,
+      isLoading: !srcToken || !dstToken,
     };
-  }, [config, order, estimatedDelayBetweenChunksMillis]);
+  }, [config, order, estimatedDelayBetweenChunksMillis, getTokensFromTokensList, srcTokenFromHook, dstTokenFromHook]);
 };
 
 export const useOrderById = (id?: number) => {

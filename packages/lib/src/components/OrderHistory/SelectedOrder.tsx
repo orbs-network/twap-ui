@@ -149,7 +149,7 @@ const AmountOutFilled = ({ order }: { order: OrderUI }) => {
   return (
     <OrderDisplay.DetailRow title="Amount received">
       <StyledText>
-        {amount || 0} {order?.dstToken.symbol}
+        {amount || 0} {order?.dstToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );
@@ -161,7 +161,7 @@ const AmountIn = ({ order }: { order: OrderUI }) => {
   return (
     <OrderDisplay.DetailRow title="Amount out">
       <StyledText>
-        {amount || 0} {order?.srcToken.symbol}
+        {amount || 0} {order?.srcToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );
@@ -173,7 +173,7 @@ const AmountInFilled = ({ order }: { order: OrderUI }) => {
   return (
     <OrderDisplay.DetailRow title="Amount sent">
       <StyledText>
-        {amount || 0} {order?.srcToken.symbol}
+        {amount || 0} {order?.srcToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );

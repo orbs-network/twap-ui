@@ -228,10 +228,13 @@ export interface HistoryOrder {
   srcTokenAddress?: string;
   dstTokenAddress?: string;
   totalChunks?: number;
-  srcToken?: Token;
-  dstToken?: Token;
   dex?: string;
   exchange?: string;
+}
+
+export interface ExtendsOrderHistory extends HistoryOrder {
+  srcToken?: Token;
+  dstToken?: Token;
 }
 
 type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
@@ -253,7 +256,7 @@ export interface TwapLibProps {
   storeOverride?: StoreOverride;
   srcToken?: Token;
   dstToken?: Token;
-  dappTokens: any;
+  dappTokens?: any;
   uiPreferences?: TwapContextUIPreferences;
   onSrcTokenSelected: (token: any) => void;
   onDstTokenSelected: (token: any) => void;
@@ -263,12 +266,14 @@ export interface TwapLibProps {
   enableQueryParams?: boolean;
   minNativeTokenBalance?: string;
   isLimitPanel?: boolean;
-  parsedTokens: Token[];
+  parsedTokens?: Token[];
   onSwitchTokens?: () => void;
   isWrongChain?: boolean;
   isExactAppoval?: boolean;
   fee?: string;
   nativeUsd?: string;
+  useParsedToken?: (address?: string) => Token | undefined;
+  useDappToken?: (address?: string) => any;
 }
 
 export type Token = {
@@ -495,6 +500,8 @@ export interface TWAPContextProps {
   isExactAppoval?: boolean;
   fee?: string;
   nativeUsd?: string;
+  useParsedToken?: (address?: string) => Token | undefined;
+  useDappToken?: (address?: string) => any;
 }
 
 export enum Status {

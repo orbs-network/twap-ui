@@ -27,7 +27,7 @@ const ChunkSize = ({ srcChunkAmount, srcToken }: { srcChunkAmount?: string; srcT
   const _srcChunkAmount = useFormatNumberV2({ value: srcChunkAmount, decimalScale: 3 });
   return (
     <DetailRow title={translations.individualTradeSize} tooltip={translations.confirmationTradeSizeTooltip}>
-      {`${_srcChunkAmount} ${srcToken?.symbol}`}
+      {`${srcChunkAmount ? _srcChunkAmount : "-"} ${srcToken?.symbol}`}
     </DetailRow>
   );
 };
@@ -45,11 +45,12 @@ const MinDestAmount = ({
 }) => {
   const { translations } = useTwapContext();
   const formattedValue = useFormatNumberV2({ value: dstMinAmountOut });
+
   if (isMarketOrder) return null;
 
   return (
     <DetailRow title={totalChunks === 1 ? "Min. received" : translations.minReceivedPerTrade} tooltip={translations.confirmationMinDstAmountTootipLimit}>
-      {`${formattedValue} ${dstToken?.symbol}`}
+      {`${dstMinAmountOut ? formattedValue : "-"} ${dstToken?.symbol}`}
     </DetailRow>
   );
 };

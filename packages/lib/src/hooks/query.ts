@@ -7,7 +7,7 @@ import { useTwapContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
 import { amountBNV2, compact, getTheGraphUrl, groupBy, logger, orderBy } from "../utils";
-import { HistoryOrder, OrdersData, Status, Token } from "../types";
+import { ExtendsOrderHistory, HistoryOrder, OrdersData, Status, Token } from "../types";
 import { useGetHasAllowance, useGetTokenFromParsedTokensList, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
 import { getGraphOrders } from "../order-history";
@@ -156,7 +156,7 @@ const useAddNewOrder = () => {
   const config = useTwapContext().config;
 
   return useCallback(
-    (order: HistoryOrder) => {
+    (order: ExtendsOrderHistory) => {
       try {
         if (!config) return;
         ordersStore.addOrder(config.chainId, order);
@@ -211,7 +211,7 @@ const useUpdateOrderStatusToCanceled = () => {
 };
 
 export const useOrdersHistory = () => {
-  const { tokens, state, config, account } = useTwapContext();
+  const { state, config, account } = useTwapContext();
 
   const QUERY_KEY = useOrderHistoryKey();
   const getTokensFromTokensList = useGetTokenFromParsedTokensList();
@@ -241,21 +241,13 @@ export const useOrdersHistory = () => {
 
       orders = orders.filter((o) => eqIgnoreCase(config.exchangeAddress, o.exchange || ""));
       logger("filtered orders by exchange address", config.exchangeAddress, orders);
-      orders = orders.map((order) => {
-        return {
-          ...order,
-          srcToken: getTokensFromTokensList(order.srcTokenAddress),
-          dstToken: getTokensFromTokensList(order.dstTokenAddress),
-        };
-      });
-      let result = compact(orders.filter((o) => o.srcToken && o.dstToken));
-      result = orderBy(result, (o) => o.createdAt, "desc");
-      result = groupBy(result, "status");
+      orders = orderBy(orders, (o) => o.createdAt, "desc");
+      orders = groupBy(orders, "status");
 
-      return result as any;
+      return orders as any;
     },
     {
-      enabled: !!config && tokens?.length > 10 && !state.showConfirmation && !!account,
+      enabled: !!config && !state.showConfirmation && !!account,
       refetchInterval: REFETCH_ORDER_HISTORY,
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,

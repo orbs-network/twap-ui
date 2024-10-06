@@ -163,7 +163,7 @@ export const Content = (props: TwapLibProps) => {
         onSrcTokenSelected: props.onSrcTokenSelected,
         onSwitchTokens: props.onSwitchTokens || (() => {}),
         isLimitPanel: !!props.isLimitPanel,
-        tokens: props.parsedTokens,
+        tokens: props.parsedTokens || [],
         maxFeePerGas: props.maxFeePerGas,
         priorityFeePerGas: props.priorityFeePerGas,
         askDataParams: props.askDataParams,
@@ -173,6 +173,8 @@ export const Content = (props: TwapLibProps) => {
         isExactAppoval: props.isExactAppoval,
         fee: props.fee,
         nativeUsd: props.nativeUsd,
+        useDappToken: props.useDappToken,
+        useParsedToken: props.useParsedToken,
       }}
     >
       <WrappedTwap {...props} />

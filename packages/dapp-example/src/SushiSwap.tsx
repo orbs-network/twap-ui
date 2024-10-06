@@ -9,10 +9,11 @@ import { SelectorOption, TokenListItem } from "./types";
 import { getConfig, mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
 import { baseSwapTokens } from "./BaseSwap";
-import { network } from "@defi.org/web3-candies";
+import { eqIgnoreCase, network } from "@defi.org/web3-candies";
 
 const name = "SushiSwap";
 const configs = [Configs.SushiArb, Configs.SushiBase, Configs.SushiEth];
+
 export const useDappTokens = () => {
   const config = useConfig();
   const isBase = config?.chainId === Configs.SushiBase.chainId;
@@ -125,6 +126,12 @@ const Tooltip = (props: TooltipProps) => {
   );
 };
 
+const useToken = (address?: string) => {
+  const { data: tokens } = useDappTokens();
+
+  return useMemo(() => tokens?.find((it: any) => eqIgnoreCase(it.address, address || "")), [tokens, address]);
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
   const connect = useConnectWallet();
@@ -183,6 +190,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       onDstTokenSelected={(it: any) => setToToken(it)}
       onSwitchTokens={onSwitchTokens}
       Tooltip={Tooltip}
+      useToken={useToken}
     />
   );
 };

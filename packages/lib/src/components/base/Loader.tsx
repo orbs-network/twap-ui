@@ -1,11 +1,14 @@
 import { keyframes, styled } from "styled-components";
 
-const shimmer = keyframes`
+const fade = keyframes`
   0% {
-    background-position: -468px 0;
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
   }
   100% {
-    background-position: 468px 0;
+    opacity: 0.5;
   }
 `;
 
@@ -21,12 +24,9 @@ const SkeletonWrapper = styled.div<Shared>`
   display: inline-block;
   width: ${(props) => props.width || "100%"};
   height: ${(props) => props.height || "100%"};
-  background: #f6f7f8;
-  background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
-  background-repeat: no-repeat;
-  background-size: 800px 104px;
+  background-color: #f6f7f8;
   position: relative;
-  animation: ${shimmer} 1.2s infinite linear;
+  animation: ${fade} 1.5s infinite ease-in-out;
   border-radius: ${(props) => props.borderRadius || "4px"};
   margin: ${(props) => props.margin || "0"};
 `;

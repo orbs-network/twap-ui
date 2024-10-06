@@ -205,14 +205,14 @@ const useParseToken = () => {
           return {
             ...nativeToken,
             logoUrl: getTokenLogo(token) || nativeToken.logoUrl,
-          };
+          } as Token;
         }
         return {
           address: Web3.utils.toChecksumAddress(token.address),
           decimals: token.decimals,
           symbol: token.symbol,
           logoUrl: getTokenLogo(token),
-        };
+        } as Token;
       } catch (error) {
         console.error("Invalid token", token);
       }
@@ -240,6 +240,7 @@ interface SushiProps extends TWAPProps {
   connector?: any;
   NetworkSelector?: FC<{ children: ReactNode }>;
   Button?: FC<{ children: ReactNode; disabled?: boolean }>;
+  useToken: (address?: string) => any;
 }
 
 interface AdapterContextProps extends SushiProps {
@@ -253,11 +254,8 @@ const useAdapterContext = () => useContext(AdapterContext);
 
 const useWToken = () => {
   const context = useAdapterContext();
-
-  return useMemo(() => {
-    const wTokenAddress = network(context.config.chainId).wToken.address;
-    return context.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
-  }, [context.dappTokens, context.config]);
+  const token = context.useToken(network(context.config.chainId).wToken.address);
+  return token;
 };
 
 const useIsNative = () => {
@@ -356,6 +354,15 @@ const useParsedTokens = () => {
   }, [context.dappTokens, parseToken]);
 };
 
+const useParsedToken = (address?: string) => {
+  const { useToken } = useAdapterContext();
+  const parseToken = useParseToken();
+
+  const token = useToken(address);
+
+  return useMemo(() => parseToken(token), [token, parseToken]);
+};
+
 const useIsWrongChain = () => {
   const context = useAdapterContext();
 
@@ -406,8 +413,8 @@ const TWAPContent = () => {
           translations={translations as Translations}
           provider={provider}
           account={!context.configChainId ? undefined : context.account}
-          dappTokens={context.dappTokens}
-          parsedTokens={parsedTokens}
+          useParsedToken={useParsedToken}
+          useDappToken={context.useToken}
           srcToken={srcToken}
           dstToken={dstToken}
           onDstTokenSelected={context.onDstTokenSelected}

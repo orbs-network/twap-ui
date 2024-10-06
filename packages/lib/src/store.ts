@@ -29,7 +29,7 @@ class OrdersStore implements OrdersState {
   }
 
   private saveOrders(): void {
-    localStorage.setItem("twap-orders", JSON.stringify(this.orders));
+    localStorage?.setItem("twap-orders", JSON.stringify(this.orders));
   }
   cancelOrder(chainId: number, orderId: number): void {
     console.log("Cancelling order", orderId);
@@ -47,7 +47,7 @@ class OrdersStore implements OrdersState {
   }
 
   private loadOrders(): void {
-    const storedOrders = localStorage.getItem("twap-orders");
+    const storedOrders = localStorage?.getItem("twap-orders");
     if (storedOrders) {
       this.orders = JSON.parse(storedOrders);
     }

@@ -109,18 +109,26 @@ const ListOrder = React.memo(
       setSize(index, root.current.getBoundingClientRect().height);
     }, [index]);
 
-    if (!order) return null;
+    const onClick = useCallback(() => {
+      if (!order?.isLoading) {
+        onSelect(parsedOrder?.id);
+      }
+    }, [order?.isLoading, onSelect, parsedOrder?.id]);
+
+    if (!order) {
+      return <div></div>;
+    }
 
     return (
-      <Wrapper className="twap-order" ref={root} onClick={() => onSelect(parsedOrder?.id)}>
+      <Wrapper className="twap-order" ref={root} onClick={onClick}>
         <StyledListOrder className="twap-order-container">
           <ListItemHeader order={order} />
           <LinearProgressWithLabel value={order.progress || 0} />
 
           <StyledRowFlex className="twap-order-tokens">
-            <TokenDisplay token={order.srcToken} />
+            <TokenDisplay token={order.srcToken} isLoading={order.isLoading} />
             <HiArrowRight className="twap-order-tokens-arrow" />
-            <TokenDisplay token={order.dstToken} />
+            <TokenDisplay token={order.dstToken} isLoading={order.isLoading} />
           </StyledRowFlex>
         </StyledListOrder>
       </Wrapper>
@@ -184,17 +192,29 @@ const StyledListOrder = styled(StyledColumnFlex)({
   },
 });
 
-const TokenDisplay = ({ token, amount }: { token?: Token; amount?: string }) => {
+const TokenDisplay = ({ token, amount, isLoading }: { token?: Token; amount?: string; isLoading: boolean }) => {
   const _amount = useFormatNumberV2({ value: amount, decimalScale: 4 });
   return (
     <StyledTokenDisplay className="twap-order-token">
-      <TokenLogo logo={token?.logoUrl} />
-      <StyledText className="twap-order-token-text">
-        {_amount} {token?.symbol}
-      </StyledText>
+      {isLoading ? (
+        <StyledTokenDisplayLoader />
+      ) : (
+        <>
+          <TokenLogo logo={token?.logoUrl} />
+          <StyledText className="twap-order-token-text">
+            {_amount} {token?.symbol}
+          </StyledText>
+        </>
+      )}
     </StyledTokenDisplay>
   );
 };
+
+const StyledTokenDisplayLoader = styled(Loader)({
+  borderRadius: "50%",
+  width: 20,
+  height: 20,
+});
 
 const StyledTokenDisplay = styled(StyledRowFlex)({
   width: "auto",
