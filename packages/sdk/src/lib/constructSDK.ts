@@ -3,13 +3,14 @@ import {
   getChunks,
   getCreateOrderArgs,
   getDeadline,
-  getDstTokenMinAmount,
+  getDestTokenAmount,
+  getDestTokenMinAmount,
   getDuration,
   getEstimatedDelayBetweenChunksMillis,
   getFillDelay,
   getMaxPossibleChunks,
   getSrcChunkAmount,
-  getSwapValues,
+  getDerivedSwapValues,
 } from "./lib";
 import { getOrders, waitForUpdatedOrders } from "./orders";
 import { Config, GetCreateOrderArgs, GetSwapValuesArgs, Order, TimeDuration } from "./types";
@@ -47,60 +48,66 @@ export class TwapSDK {
   }
 
   getCreateOrderArgs(props: GetCreateOrderArgs) {
-    return getCreateOrderArgs(props, this.config);
+    return getCreateOrderArgs(this.config, props);
   }
-  getSwapValues(props: GetSwapValuesArgs) {
-    return getSwapValues(props, this.config);
+  public swapWarnings = {
+    partialFill: (chunks: number, duration: TimeDuration, fillDelay: TimeDuration) => {
+      return getPartialFillWarning(chunks, duration, fillDelay);
+    },
+
+    maxFillDelay: (fillDelay: TimeDuration) => {
+      return getMaxFillDelayWarning(fillDelay);
+    },
+
+    tradeSizeWarning: (srcChunkAmountUsd?: string | number | undefined, chunks?: number) => {
+      return getTradeSizeWarning(this.config, srcChunkAmountUsd, chunks);
+    },
+
+    minFillDelay: (fillDelay: TimeDuration) => {
+      return getMinFillDelayWarning(fillDelay);
+    },
+    minTradeDuration(duration: TimeDuration) {
+      return getMinTradeDurationWarning(duration);
+    },
+
+    maxTradeDuration: (duration: TimeDuration) => {
+      return getMaxTradeDurationWarning(duration);
+    },
+  };
+
+  getSwapData(props: GetSwapValuesArgs) {
+    return getDerivedSwapValues(this.config, props);
   }
 
   getDeadline(duration: TimeDuration) {
     return getDeadline(duration);
   }
 
-  getDuration(chunks?: number, fillDelay?: TimeDuration | undefined, customDuration?: TimeDuration | undefined) {
+  getDuration(chunks: number, fillDelay: TimeDuration, customDuration?: TimeDuration) {
     return getDuration(chunks, fillDelay, customDuration);
   }
 
-  getFillDelay(customFillDelay: TimeDuration, isLimitPanel?: boolean) {
-    return getFillDelay(customFillDelay, isLimitPanel);
+  getFillDelay(isLimitPanel: boolean, customFillDelay?: TimeDuration) {
+    return getFillDelay(isLimitPanel, customFillDelay);
   }
-  getChunks(maxPossibleChunks: number, customChunks?: number, isLimitPanel?: boolean) {
-    return getChunks(maxPossibleChunks, customChunks, isLimitPanel);
+  getChunks(maxPossibleChunks: number, isLimitPanel: boolean, customChunks?: number) {
+    return getChunks(maxPossibleChunks, isLimitPanel, customChunks);
   }
 
-  getSrcChunkAmount(srcAmount?: string, chunks?: number) {
+  getSrcChunkAmount(srcAmount: string, chunks: number) {
     return getSrcChunkAmount(srcAmount, chunks);
   }
-  getMaxPossibleChunks(typedSrcAmount?: string | undefined, oneSrcTokenUsd?: string | number | undefined) {
-    return getMaxPossibleChunks(this.config, typedSrcAmount, oneSrcTokenUsd);
+  getMaxPossibleChunks(srcAmount: string, oneSrcTokenUsd: string | number, srcTokenDecimals: number) {
+    return getMaxPossibleChunks(this.config, srcAmount, oneSrcTokenUsd, srcTokenDecimals);
   }
 
-  getDstTokenMinAmount(srcChunkAmount?: string, typedLimitPrice?: string, isMarketOrder?: boolean, srcTokenDecimals?: number, dstTokenDecimals?: number) {
-    return getDstTokenMinAmount(srcChunkAmount, typedLimitPrice, isMarketOrder, srcTokenDecimals, dstTokenDecimals);
-  }
-  getPartialFillWarning(chunks: number, duration: TimeDuration, fillDelay: TimeDuration) {
-    return getPartialFillWarning(chunks, duration, fillDelay);
+  getDestTokenMinAmount(srcChunkAmount: string, limitPrice: string, isMarketOrder: boolean, srcTokenDecimals: number, dstTokenDecimals: number) {
+    return getDestTokenMinAmount(srcChunkAmount, limitPrice, isMarketOrder, srcTokenDecimals, dstTokenDecimals);
   }
 
-  getMaxFillDelayWarning(fillDelay: TimeDuration) {
-    return getMaxFillDelayWarning(fillDelay);
+  getDestTokenAmount(srcAmount: string, limitPrice: string, srcTokenDecimals: number, destTokenDecimals: number) {
+    return getDestTokenAmount(srcAmount, limitPrice, srcTokenDecimals, destTokenDecimals);
   }
-
-  getTradeSizeWarning(srcChunkAmountUsd?: string | number | undefined, chunks?: number) {
-    return getTradeSizeWarning(this.config, srcChunkAmountUsd, chunks);
-  }
-
-  getMinFillDelayWarning(fillDelay: TimeDuration) {
-    return getMinFillDelayWarning(fillDelay);
-  }
-  getMinTradeDurationWarning(duration: TimeDuration) {
-    return getMinTradeDurationWarning(duration);
-  }
-
-  getMaxTradeDurationWarning(duration: TimeDuration) {
-    return getMaxTradeDurationWarning(duration);
-  }
-
   async getOrders(account: string, signal?: AbortSignal) {
     return getOrders(this.config, account, signal);
   }

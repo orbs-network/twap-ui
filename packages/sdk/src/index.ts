@@ -3,7 +3,7 @@ import TwapAbi from "@orbs-network/twap/twap.abi.json";
 export * from "./lib/types";
 export * from "./lib/consts";
 export { constructSDK, TwapSDK } from "./lib/constructSDK";
-export { DEFAULT_FILL_DELAY, type getSwapValuesPayload } from "./lib/lib";
+export { DEFAULT_FILL_DELAY } from "./lib/lib";
 export { groupOrdersByStatus } from "./lib/orders";
 
 export { Configs, TwapAbi };

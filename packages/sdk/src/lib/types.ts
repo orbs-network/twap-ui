@@ -83,6 +83,25 @@ export interface GetSwapValuesArgs {
   isLimitPanel?: boolean;
   oneSrcTokenUsd?: string | number;
   srcDecimals?: number;
-  dstDecimals?: number;
+  destDecimals?: number;
   isMarketOrder?: boolean;
+}
+
+export interface GetSwapValuesPayload {
+  chunks: number;
+  duration: TimeDuration;
+  deadline: number;
+  fillDelay: TimeDuration;
+  srcChunkAmount: string;
+  destTokenMinAmount: string;
+  destTokenAmount?: string;
+  maxPossibleChunks: number;
+  warnings: {
+    partialFill: boolean;
+    minFillDelay: boolean;
+    maxFillDelay: boolean;
+    minDuration: boolean;
+    maxDuration: boolean;
+    tradeSize: boolean;
+  };
 }

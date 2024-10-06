@@ -6,17 +6,14 @@ import { query, useGasPrice, useOrdersHistory } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
 import { useSwitchNativeToWrapped } from "../context/actions";
-import { useDeadline, useDstMinAmountOut, useFillDelay, useIsMarketOrder, useShouldOnlyWrap, useShouldWrap, useSrcAmount, useSrcChunkAmount, useSwapData } from "./lib";
+import { useDerivedSwapValues, useShouldWrap, useSrcAmount, useSwapData } from "./lib";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
-  const { account, dstToken, config, updateState, twapSDK } = useTwapContext();
-  const dstMinAmountOut = useDstMinAmountOut().amount;
-  const srcChunkAmount = useSrcChunkAmount().amount;
-  const deadline = useDeadline().millis;
-  const fillDelay = useFillDelay().timeDuration;
-  const srcAmount = useSrcAmount().amount;
+  const { account, dstToken, updateState, twapSDK } = useTwapContext();
   const twapContract = useTwapContract();
+  const swapData = useDerivedSwapValues();
+  const srcAmount = useSrcAmount().amount;
 
   return useMutation(async (srcToken: TokenData) => {
     if (!dstToken) {
@@ -32,10 +29,10 @@ export const useCreateOrder = () => {
     }
 
     const askParams = twapSDK.getCreateOrderArgs({
-      dstTokenMinAmount: dstMinAmountOut,
-      srcChunkAmount: srcChunkAmount,
-      deadline,
-      fillDelay,
+      dstTokenMinAmount: swapData.destTokenMinAmount,
+      srcChunkAmount: swapData.srcChunkAmount,
+      deadline: swapData.deadline,
+      fillDelay: swapData.fillDelay,
       srcAmount,
       srcTokenAddress: srcToken.address,
       dstTokenAddress: dstToken.address,
@@ -55,7 +52,7 @@ export const useCreateOrder = () => {
         onTxHash: (txHash) => {
           updateState({ createOrdertxHash: txHash });
         },
-      },
+      }
     );
 
     const orderId = Number(tx.events.OrderCreated.returnValues.id);
@@ -102,7 +99,7 @@ export const useWrapToken = () => {
           txHash = hash;
           updateState({ wrapTxHash: hash });
         },
-      },
+      }
     );
     logger("token wrap success:", txHash);
     twapSDK.analytics.onWrapSuccess(txHash);
@@ -140,13 +137,13 @@ export const useUnwrapToken = () => {
         erc20<any>(network.wToken.symbol, network.wToken.address, network.wToken.decimals, iwethabi).methods.withdraw(BN(srcAmount).toFixed(0)),
         { from: account, maxPriorityFeePerGas: priorityFeePerGas, maxFeePerGas },
         undefined,
-        undefined,
+        undefined
       );
       await onSuccess();
     },
     {
       onError: (error) => {},
-    },
+    }
   );
 };
 
@@ -185,7 +182,7 @@ export const useApproveToken = () => {
           updateState({ approveTxHash: value });
           txHash = value;
         },
-      },
+      }
     );
     logger("token approve success:", txHash);
     twapSDK.analytics.onApproveSuccess(txHash);
@@ -285,7 +282,7 @@ export const useSubmitOrderFlow = () => {
       onSettled() {
         refetchAllowance();
       },
-    },
+    }
   );
 
   const error = !mutate.error ? undefined : (mutate.error as any).message || "Failed to create order";
@@ -336,6 +333,6 @@ export const useCancelOrder = () => {
         console.log(`cancel error order`, error);
         twapSDK.analytics.onCreateOrderError(error);
       },
-    },
+    }
   );
 };
