@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-pangolin",
-  "version": "2.0.19",
+  "version": "2.0.20",
   "description": "TWAP UI for Pangolin",
   "license": "MIT",
   "author": "Orbs",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^2.0.19",
+    "@orbs-network/twap-ui": "^2.0.20",
     "web3": "1.x"
   },
   "peerDependencies": {
