@@ -184,7 +184,7 @@ export class Analytics {
         newOrderId,
         createOrderTxHash,
       },
-      true
+      true,
     );
 
     this.data = {
@@ -208,7 +208,7 @@ export class Analytics {
       {
         action: "module-import",
       },
-      true
+      true,
     );
   }
 }

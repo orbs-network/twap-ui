@@ -81,19 +81,19 @@ export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): Prepar
     config.exchangeAddress,
     args.srcTokenAddress,
     args.destTokenAddress,
-    Number(args.srcAmount).toFixed(0),
-    Number(args.srcChunkAmount).toFixed(0),
-    Number(args.destTokenMinAmount).toFixed(0),
-    (Number(args.deadline) / 1000).toFixed(0),
-    Number(config.bidDelaySeconds).toFixed(0),
-    Number(fillDelaySeconds).toFixed(0),
+    args.srcAmount.toString(),
+    args.srcChunkAmount.toString(),
+    args.destTokenMinAmount.toString(),
+    (args.deadline / 1000).toFixed(0),
+    config.bidDelaySeconds.toFixed(0),
+    fillDelaySeconds.toFixed(0),
     [],
   ];
 };
 
 export const derivedSwapValues = (
   config: Config,
-  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs
+  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs,
 ): DerivedSwapValuesResponse => {
   const maxPossibleChunks = getMaxPossibleChunks(config, srcAmount, oneSrcTokenUsd, srcDecimals);
   const chunks = getChunks(maxPossibleChunks, isLimitPanel, customChunks);

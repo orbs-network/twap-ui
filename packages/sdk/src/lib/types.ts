@@ -65,11 +65,11 @@ export type Order = {
 };
 
 export interface PrepareOrderArgs {
-  destTokenMinAmount: string;
-  srcChunkAmount: string;
+  destTokenMinAmount: bigint;
+  srcChunkAmount: bigint;
   deadline: number;
   fillDelay: TimeDuration;
-  srcAmount: string;
+  srcAmount: bigint;
   srcTokenAddress: string;
   destTokenAddress: string;
 }
