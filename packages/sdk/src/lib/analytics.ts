@@ -1,4 +1,5 @@
 import { Config } from "./types";
+import { BigintDiv } from "./utils";
 const Version = 0.4;
 
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
@@ -141,7 +142,7 @@ export class Analytics {
     const values = askParams;
     const fromTokenAmount = values[3];
     const srcChunkAmount = values[4];
-    const chunksAmount = Number(BigInt(fromTokenAmount) / BigInt(srcChunkAmount));
+    const chunksAmount = Math.floor(BigintDiv(BigInt(fromTokenAmount), BigInt(srcChunkAmount)));
 
     this.updateAndSend({
       fromTokenAddress: values[1],
