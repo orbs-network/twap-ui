@@ -1,13 +1,10 @@
 import { Config, Order, OrderStatus, OrderType } from "./types";
-import BN from "bignumber.js";
-import { amountUi, convertDecimals, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
+import { BigintSum, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy, BigintDiv } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 
-const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
+const getProgress = (srcFilled?: bigint, srcAmountIn?: bigint) => {
   if (!srcFilled || !srcAmountIn) return 0;
-  let progress = BN(srcFilled || "0")
-    .dividedBy(srcAmountIn || "0")
-    .toNumber();
+  let progress = BigintDiv(srcFilled, srcAmountIn);
 
   return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
 };
@@ -96,10 +93,10 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
 const getOrderFills = (orderId: number, fills?: any) => {
   return {
     TWAP_id: Number(orderId),
-    dstAmountOut: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dstAmountOut)), BN(0)).toString(),
-    srcAmountIn: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.srcAmountIn)), BN(0)).toString(),
-    dollarValueIn: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dollarValueIn)), BN(0)).toString(),
-    dollarValueOut: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dollarValueOut)), BN(0)).toString(),
+    dstAmountOut: BigintSum(fills?.map((it: any) => it.dstAmountOut)),
+    srcAmountIn: BigintSum(fills?.map((it: any) => it.srcAmountIn)),
+    dollarValueIn: BigintSum(fills?.map((it: any) => it.dollarValueIn)),
+    dollarValueOut: BigintSum(fills?.map((it: any) => it.dollarValueOut)),
   };
 };
 
@@ -165,39 +162,35 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
   return OrderStatus.Expired;
 };
 
-const getLimitPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
+const getLimitPrice = (order: Order, dstTokenDecimals: number) => {
   if (order.isMarketOrder) {
     return undefined;
   }
 
-  const srcBidAmount = amountUi(srcTokenDecimals, order.srcBidAmount);
-  const dstMinAmount = amountUi(dstTokenDecimals, order.dstMinAmount);
+  const result = BigintDiv(BigInt(order.dstMinAmount), BigInt(order.srcBidAmount), dstTokenDecimals);
 
-  return BN(dstMinAmount).div(srcBidAmount).toString();
+  return result.toString();
 };
 
-const getExcecutionPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (!BN(order.srcFilledAmount).gt(0) || !BN(order.dstFilledAmount).gt(0)) return;
+const getExcecutionPrice = (order: Order, dstTokenDecimals: number) => {
+  if (!(BigInt(order.srcFilledAmount) > BigInt(0)) || !(BigInt(order.dstFilledAmount) > BigInt(0))) return;
 
-  const srcFilledAmount = amountUi(srcTokenDecimals, order.srcFilledAmount);
-  const dstFilledAmount = amountUi(dstTokenDecimals, order.dstFilledAmount);
+  const result = BigintDiv(BigInt(order.dstFilledAmount), BigInt(order.srcFilledAmount), dstTokenDecimals);
 
-  return BN(dstFilledAmount).div(srcFilledAmount).toString();
+  return result.toString();
 };
 
 const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): Order => {
   const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
-  const isMarketOrder = BN(order.ask_dstMinAmount || 0).lte(1);
-  const totalChunks = BN(order.ask_srcAmount || 0)
-    .div(order.ask_srcBidAmount || 0)
-    .integerValue(BN.ROUND_CEIL)
-    .toNumber();
+  const isMarketOrder = BigInt(order.ask_dstMinAmount || 0) < BigInt(1);
+
+  const totalChunks = Math.ceil(BigintDiv(BigInt(order.ask_srcAmount || 0), BigInt(order.ask_srcBidAmount || 0)));
 
   const getOrderType = () => {
     if (isMarketOrder) {
       return OrderType.DCA_MARKET;
     }
-    if (BN(totalChunks).eq(1)) {
+    if (totalChunks === 1) {
       return OrderType.LIMIT;
     }
 
@@ -222,15 +215,12 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): 
     progress,
     srcTokenAddress: order.ask_srcToken,
     dstTokenAddress: order.ask_dstToken,
-    totalChunks: BN(order.ask_srcAmount || 0)
-      .div(order.ask_srcBidAmount || 0)
-      .integerValue(BN.ROUND_CEIL)
-      .toNumber(),
+    totalChunks,
     isMarketOrder,
     fillDelay: (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config),
     orderType: getOrderType(),
-    getLimitPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => getLimitPrice(order, srcTokenDecimals, dstTokenDecimals),
-    getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => getExcecutionPrice(order, srcTokenDecimals, dstTokenDecimals),
+    getLimitPrice: (dstTokenDecimals: number) => getLimitPrice(order, dstTokenDecimals),
+    getExcecutionPrice: (dstTokenDecimals: number) => getExcecutionPrice(order, dstTokenDecimals),
   };
 };
 

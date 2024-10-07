@@ -1,5 +1,4 @@
 import { Config } from "./types";
-import BN from "bignumber.js";
 const Version = 0.4;
 
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
@@ -142,7 +141,7 @@ export class Analytics {
     const values = askParams;
     const fromTokenAmount = values[3];
     const srcChunkAmount = values[4];
-    const chunksAmount = BN(fromTokenAmount).div(srcChunkAmount).integerValue(BN.ROUND_FLOOR).toNumber();
+    const chunksAmount = Number(BigInt(fromTokenAmount) / BigInt(srcChunkAmount));
 
     this.updateAndSend({
       fromTokenAddress: values[1],
@@ -184,7 +183,7 @@ export class Analytics {
         newOrderId,
         createOrderTxHash,
       },
-      true,
+      true
     );
 
     this.data = {
@@ -208,7 +207,7 @@ export class Analytics {
       {
         action: "module-import",
       },
-      true,
+      true
     );
   }
 }

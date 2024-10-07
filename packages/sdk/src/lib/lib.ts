@@ -1,30 +1,27 @@
-import BN from "bignumber.js";
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
 import { Config, DerivedSwapValuesArgs, DerivedSwapValuesResponse, PrepareOrderArgs, PrepareOrderArgsResult, TimeDuration, TimeUnit } from "./types";
-import { findTimeUnit, getTimeDurationMillis } from "./utils";
+import { BigintMax, BigintToNum, findTimeUnit, getTimeDurationMillis } from "./utils";
 import { getMaxFillDelayWarning, getMaxTradeDurationWarning, getMinFillDelayWarning, getMinTradeDurationWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
-export const getDestTokenAmount = (srcAmount?: string, limitPrice?: string, srcDecimals?: number, destDecimals?: number) => {
+export const getDestTokenAmount = (srcAmount?: bigint, limitPrice?: bigint, srcDecimals?: number, destDecimals?: number) => {
   if (!srcAmount || !limitPrice || !srcDecimals || !destDecimals) return undefined;
 
-  let result = BN(srcAmount).times(limitPrice);
-  const decimalAdjustment = BN(10).pow(srcDecimals);
-  return result.div(decimalAdjustment).toString();
+  const result = srcAmount * limitPrice;
+  return result / BigInt(10 ** srcDecimals);
 };
 
-export const getDestTokenMinAmount = (srcChunkAmount?: string, limitPrice?: string, isMarketOrder?: boolean, srcDecimals?: number, destDecimals?: number) => {
-  if (isMarketOrder || !srcDecimals || !destDecimals || !srcChunkAmount || !limitPrice) return BN(1).toString();
-  const result = BN(srcChunkAmount).times(BN(limitPrice));
-  const decimalAdjustment = BN(10).pow(srcDecimals);
-  const adjustedResult = result.div(decimalAdjustment);
-  return BN.max(1, adjustedResult).integerValue(BN.ROUND_FLOOR).toString();
+export const getDestTokenMinAmount = (srcChunkAmount?: bigint, limitPrice?: bigint, isMarketOrder?: boolean, srcDecimals?: number, destDecimals?: number) => {
+  if (isMarketOrder || !srcDecimals || !destDecimals || !srcChunkAmount || !limitPrice) return BigInt(1);
+  const result = srcChunkAmount * limitPrice;
+  const adjustedResult = result / BigInt(10 ** srcDecimals);
+  return BigintMax(BigInt(1), adjustedResult);
 };
 
 export const getDuration = (chunks: number, fillDelay: TimeDuration, customDuration?: TimeDuration): TimeDuration => {
   const minDuration = getTimeDurationMillis(fillDelay) * 2 * chunks;
   const unit = findTimeUnit(minDuration);
-  return customDuration || { unit, value: Number(BN(minDuration / unit).toFixed(2)) };
+  return customDuration || { unit, value: Number((minDuration / unit).toFixed(2)) };
 };
 
 export const getChunks = (maxPossibleChunks: number, isLimitPanel = false, typedChunks?: number) => {
@@ -33,14 +30,14 @@ export const getChunks = (maxPossibleChunks: number, isLimitPanel = false, typed
   return maxPossibleChunks;
 };
 
-export const getMaxPossibleChunks = (config: Config, srcAmount?: string, oneSrcTokenUsd?: string | number, srcDecimals?: number) => {
+export const getMaxPossibleChunks = (config: Config, srcAmount?: bigint, oneSrcTokenUsd?: string | number, srcDecimals?: number) => {
   if (!srcAmount || !oneSrcTokenUsd || !srcDecimals) return 1;
-  const normalizedSrcAmount = BN(srcAmount).div(BN(10).pow(srcDecimals));
+  const normalizedSrcAmount = BigintToNum(srcAmount, srcDecimals);
 
-  const amount = BN(oneSrcTokenUsd).times(normalizedSrcAmount);
+  const amount = Number(oneSrcTokenUsd) * normalizedSrcAmount;
   console.log({ amount: amount.toString() });
 
-  const res = BN.max(1, amount.div(config.minChunkSizeUsd)).integerValue(BN.ROUND_FLOOR).toNumber();
+  const res = Math.floor(Math.max(1, amount / config.minChunkSizeUsd));
 
   return res > 1 ? res : 1;
 };
@@ -63,9 +60,17 @@ export const getEstimatedDelayBetweenChunksMillis = (config: Config) => {
   return config.bidDelaySeconds * 1000 * 2;
 };
 
-export const getSrcChunkAmount = (srcAmount?: string, chunks?: number) => {
-  if (!srcAmount || !chunks) return "0";
-  return BN(srcAmount).div(chunks).integerValue(BN.ROUND_FLOOR).toFixed();
+export const getSrcChunkAmount = (srcAmount?: bigint, chunks?: number) => {
+  if (!srcAmount || !chunks) return BigInt(0);
+  return srcAmount / BigInt(chunks);
+};
+
+export const getSrcChunkAmountUsd = (srcChunkAmount?: bigint, oneSrcTokenUsd?: string | number, srcDecimals?: number) => {
+  if (!srcChunkAmount || !oneSrcTokenUsd || !srcDecimals) return 0;
+  const normalizedSrcChunkAmount = BigintToNum(srcChunkAmount, srcDecimals);
+
+  const amount = Number(oneSrcTokenUsd) * normalizedSrcChunkAmount;
+  return amount;
 };
 
 export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): PrepareOrderArgsResult => {
@@ -76,19 +81,19 @@ export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): Prepar
     config.exchangeAddress,
     args.srcTokenAddress,
     args.destTokenAddress,
-    BN(args.srcAmount).toFixed(0),
-    BN(args.srcChunkAmount).toFixed(0),
-    BN(args.destTokenMinAmount).toFixed(0),
-    BN(args.deadline).div(1000).toFixed(0),
-    BN(config.bidDelaySeconds).toFixed(0),
-    BN(fillDelaySeconds).toFixed(0),
+    Number(args.srcAmount).toFixed(0),
+    Number(args.srcChunkAmount).toFixed(0),
+    Number(args.destTokenMinAmount).toFixed(0),
+    (Number(args.deadline) / 1000).toFixed(0),
+    Number(config.bidDelaySeconds).toFixed(0),
+    Number(fillDelaySeconds).toFixed(0),
     [],
   ];
 };
 
 export const derivedSwapValues = (
   config: Config,
-  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs,
+  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs
 ): DerivedSwapValuesResponse => {
   const maxPossibleChunks = getMaxPossibleChunks(config, srcAmount, oneSrcTokenUsd, srcDecimals);
   const chunks = getChunks(maxPossibleChunks, isLimitPanel, customChunks);
@@ -97,9 +102,7 @@ export const derivedSwapValues = (
   const duration = getDuration(chunks, fillDelay, customDuration);
   const deadline = getDeadline(duration);
   const destTokenMinAmount = getDestTokenMinAmount(srcChunkAmount, limitPrice, isMarketOrder, srcDecimals, destDecimals);
-  const srcChunkAmountUsd = BN(srcChunkAmount)
-    .times(oneSrcTokenUsd || 0)
-    .toFixed(0);
+  const srcChunkAmountUsd = getSrcChunkAmountUsd(srcChunkAmount, oneSrcTokenUsd, srcDecimals);
   return {
     chunks,
     duration,

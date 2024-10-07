@@ -75,13 +75,13 @@ export interface PrepareOrderArgs {
 }
 
 export interface DerivedSwapValuesArgs {
-  srcAmount?: string;
-  limitPrice?: string;
+  srcAmount?: bigint;
+  limitPrice?: bigint;
   customDuration?: TimeDuration;
   customFillDelay?: TimeDuration;
   customChunks?: number;
   isLimitPanel?: boolean;
-  oneSrcTokenUsd?: string | number;
+  oneSrcTokenUsd?: number;
   srcDecimals?: number;
   destDecimals?: number;
   isMarketOrder?: boolean;
@@ -92,9 +92,9 @@ export interface DerivedSwapValuesResponse {
   duration: TimeDuration;
   deadline: number;
   fillDelay: TimeDuration;
-  srcChunkAmount: string;
-  destTokenMinAmount: string;
-  destTokenAmount?: string;
+  srcChunkAmount: bigint;
+  destTokenMinAmount: bigint;
+  destTokenAmount?: bigint;
   maxPossibleChunks: number;
   warnings: {
     partialFill: boolean;
