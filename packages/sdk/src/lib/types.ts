@@ -64,17 +64,17 @@ export type Order = {
   getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => string | undefined;
 };
 
-export interface GetCreateOrderArgs {
-  dstTokenMinAmount: string;
+export interface PrepareOrderArgs {
+  destTokenMinAmount: string;
   srcChunkAmount: string;
   deadline: number;
   fillDelay: TimeDuration;
   srcAmount: string;
   srcTokenAddress: string;
-  dstTokenAddress: string;
+  destTokenAddress: string;
 }
 
-export interface GetSwapValuesArgs {
+export interface DerivedSwapValuesArgs {
   srcAmount?: string;
   limitPrice?: string;
   customDuration?: TimeDuration;
@@ -87,7 +87,7 @@ export interface GetSwapValuesArgs {
   isMarketOrder?: boolean;
 }
 
-export interface GetSwapValuesPayload {
+export interface DerivedSwapValuesResponse {
   chunks: number;
   duration: TimeDuration;
   deadline: number;
@@ -105,3 +105,5 @@ export interface GetSwapValuesPayload {
     tradeSize: boolean;
   };
 }
+
+export type PrepareOrderArgsResult = [string, string, string, string, string, string, string, string, string, string[]];

@@ -25,7 +25,7 @@ export const useDerivedSwapValues = () => {
   const limitPrice = useLimitPrice().price;
   const srcAmount = useSrcAmount().amount;
   return useMemo(() => {
-    return twapSDK.getSwapData({
+    return twapSDK.derivedSwapValues({
       srcAmount,
       limitPrice,
       customChunks: typedChunks,
@@ -90,7 +90,7 @@ export const useInvertLimit = () => {
 
 export const useOutAmount = () => {
   const { amountUi } = useSrcAmount();
-  const {dstToken } = useTwapContext();
+  const { dstToken } = useTwapContext();
 
   const outAmount = useDerivedSwapValues()?.destTokenAmount;
 
@@ -198,7 +198,7 @@ export const useFillDelay = () => {
     warnings: { maxFillDelay, minFillDelay },
   } = useDerivedSwapValues();
 
-  const timeDuration = useDerivedSwapValues().fillDelay
+  const timeDuration = useDerivedSwapValues().fillDelay;
 
   const warning = useMemo(() => {
     if (maxFillDelay) {
@@ -316,7 +316,7 @@ export const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens]
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
   );
 };
 
@@ -367,7 +367,7 @@ export const useSetIsMarket = () => {
     (isMarketOrder?: boolean) => {
       updateState({ isMarketOrder: !!isMarketOrder });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -377,7 +377,7 @@ export const useSetFillDelay = () => {
     (typedFillDelay?: TimeDuration) => {
       updateState({ typedFillDelay });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -387,7 +387,7 @@ export const useSetDuration = () => {
     (typedDuration?: TimeDuration) => {
       updateState({ typedDuration });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -428,7 +428,7 @@ export const useSetLimitPrice = () => {
     (typedLimitPrice?: string, percent?: string) => {
       updateState({ typedLimitPrice, limitPricePercent: percent });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -575,7 +575,7 @@ export const useOnSrcAmountPercent = () => {
       const value = amountUiV2(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ srcAmountUi: value });
     },
-    [srcToken, maxAmount, srcBalance, updateState]
+    [srcToken, maxAmount, srcBalance, updateState],
   );
 };
 

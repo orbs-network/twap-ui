@@ -1,6 +1,6 @@
 import BN from "bignumber.js";
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
-import { Config, GetCreateOrderArgs, GetSwapValuesArgs, GetSwapValuesPayload, TimeDuration, TimeUnit } from "./types";
+import { Config, DerivedSwapValuesArgs, DerivedSwapValuesResponse, PrepareOrderArgs, PrepareOrderArgsResult, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
 import { getMaxFillDelayWarning, getMaxTradeDurationWarning, getMinFillDelayWarning, getMinTradeDurationWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
@@ -17,7 +17,7 @@ export const getDestTokenMinAmount = (srcChunkAmount?: string, limitPrice?: stri
   if (isMarketOrder || !srcDecimals || !destDecimals || !srcChunkAmount || !limitPrice) return BN(1).toString();
   const result = BN(srcChunkAmount).times(BN(limitPrice));
   const decimalAdjustment = BN(10).pow(srcDecimals);
-  const adjustedResult = result.div(decimalAdjustment);  
+  const adjustedResult = result.div(decimalAdjustment);
   return BN.max(1, adjustedResult).integerValue(BN.ROUND_FLOOR).toString();
 };
 
@@ -68,17 +68,17 @@ export const getSrcChunkAmount = (srcAmount?: string, chunks?: number) => {
   return BN(srcAmount).div(chunks).integerValue(BN.ROUND_FLOOR).toFixed();
 };
 
-export const getCreateOrderArgs = (config: Config, args: GetCreateOrderArgs) => {
+export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): PrepareOrderArgsResult => {
   const fillDelayMillis = getTimeDurationMillis(args.fillDelay);
   const fillDelaySeconds = (fillDelayMillis - getEstimatedDelayBetweenChunksMillis(config)) / 1000;
 
   return [
     config.exchangeAddress,
     args.srcTokenAddress,
-    args.dstTokenAddress,
+    args.destTokenAddress,
     BN(args.srcAmount).toFixed(0),
     BN(args.srcChunkAmount).toFixed(0),
-    BN(args.dstTokenMinAmount).toFixed(0),
+    BN(args.destTokenMinAmount).toFixed(0),
     BN(args.deadline).div(1000).toFixed(0),
     BN(config.bidDelaySeconds).toFixed(0),
     BN(fillDelaySeconds).toFixed(0),
@@ -86,10 +86,10 @@ export const getCreateOrderArgs = (config: Config, args: GetCreateOrderArgs) => 
   ];
 };
 
-export const getDerivedSwapValues = (
+export const derivedSwapValues = (
   config: Config,
-  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: GetSwapValuesArgs
-): GetSwapValuesPayload => {
+  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs,
+): DerivedSwapValuesResponse => {
   const maxPossibleChunks = getMaxPossibleChunks(config, srcAmount, oneSrcTokenUsd, srcDecimals);
   const chunks = getChunks(maxPossibleChunks, isLimitPanel, customChunks);
   const srcChunkAmount = getSrcChunkAmount(srcAmount, chunks);
