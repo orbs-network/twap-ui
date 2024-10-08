@@ -3,6 +3,17 @@ import { TimeDuration, TimeUnit } from "./types";
 
 export const MAX_DECIMALS = 18;
 
+export function toBigInt(value?: string | number): bigint {
+  if (value === undefined) {
+    return BigInt(0);
+  }
+  try {
+    return BigInt(value);
+  } catch (error) {
+    return BigInt(0);
+  }
+}
+
 export const getTheGraphUrl = (chainId?: number) => {
   if (!chainId) return;
   return THE_GRAPH_ORDERS_API[chainId as keyof typeof THE_GRAPH_ORDERS_API];
@@ -75,6 +86,11 @@ export function BigintMin(...args: bigint[]): bigint {
 }
 
 export function BigintDiv(a: bigint, b: bigint, decimals?: number): number {
+
+  if (b === BigInt(0)) {
+    return 0;
+  }
+
   return Number((a * BigInt(10 ** (decimals || MAX_DECIMALS))) / b) / 10 ** (decimals || MAX_DECIMALS);
 }
 

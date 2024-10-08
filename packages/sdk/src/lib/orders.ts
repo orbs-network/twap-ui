@@ -1,9 +1,10 @@
 import { Config, Order, OrderStatus, OrderType } from "./types";
-import { BigintSum, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy, BigintDiv } from "./utils";
+import { BigintSum, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy, BigintDiv, toBigInt } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 
 const getProgress = (srcFilled?: bigint, srcAmountIn?: bigint) => {
   if (!srcFilled || !srcAmountIn) return 0;
+  
   let progress = BigintDiv(srcFilled, srcAmountIn);
 
   return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
@@ -167,24 +168,24 @@ const getLimitPrice = (order: Order, dstTokenDecimals: number) => {
     return undefined;
   }
 
-  const result = BigintDiv(BigInt(order.dstMinAmount), BigInt(order.srcBidAmount), dstTokenDecimals);
+  const result = BigintDiv(toBigInt(order.dstMinAmount), toBigInt(order.srcBidAmount), dstTokenDecimals);
 
   return result.toString();
 };
 
 const getExcecutionPrice = (order: Order, dstTokenDecimals: number) => {
-  if (!(BigInt(order.srcFilledAmount) > BigInt(0)) || !(BigInt(order.dstFilledAmount) > BigInt(0))) return;
+  if (!(toBigInt(order.srcFilledAmount) > BigInt(0)) || !(toBigInt(order.dstFilledAmount) > BigInt(0))) return;
 
-  const result = BigintDiv(BigInt(order.dstFilledAmount), BigInt(order.srcFilledAmount), dstTokenDecimals);
+  const result = BigintDiv(toBigInt(order.dstFilledAmount), toBigInt(order.srcFilledAmount), dstTokenDecimals);
 
   return result.toString();
 };
 
 const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): Order => {
-  const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
-  const isMarketOrder = BigInt(order.ask_dstMinAmount || 0) < BigInt(1);
+  const progress = getProgress(toBigInt(orderFill?.srcAmountIn),toBigInt(order.ask_srcAmount));
+  const isMarketOrder = toBigInt(order.ask_dstMinAmount) < BigInt(1);
 
-  const totalChunks = Math.ceil(BigintDiv(BigInt(order.ask_srcAmount || 0), BigInt(order.ask_srcBidAmount || 0)));
+  const totalChunks = Math.ceil(BigintDiv(toBigInt(order.ask_srcAmount), toBigInt(order.ask_srcBidAmount)));
 
   const getOrderType = () => {
     if (isMarketOrder) {
