@@ -187,8 +187,8 @@ const AmountIn = ({ order }: { order: Order }) => {
 };
 
 const AmountInFilled = ({ order }: { order: Order }) => {
-  console.log({order});
-  
+  console.log({ order });
+
   const srcToken = useTokenFromList(order?.srcTokenAddress);
   const srcFilledAmountUi = useAmountUi(srcToken?.decimals, order.srcFilledAmount);
   const amount = useFormatNumberV2({ value: srcFilledAmountUi, decimalScale: 3 });

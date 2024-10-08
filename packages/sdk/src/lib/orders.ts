@@ -1,19 +1,19 @@
 import { Config, Order, OrderStatus, OrderType } from "./types";
-import { BigintSum, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy, BigintDiv, toBigInt } from "./utils";
+import { BigintSum, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy, BigintDiv, toBigInt, BigintDivToNum } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 
-const getProgress = (srcFilled?: bigint, srcAmountIn?: bigint) => {
+export const getProgress = (srcFilled?: bigint, srcAmountIn?: bigint) => {
   if (!srcFilled || !srcAmountIn) return 0;
-  
-  let progress = BigintDiv(srcFilled, srcAmountIn);
 
-  return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
+  const progress = BigintDivToNum(srcFilled, srcAmountIn);
+
+  return !progress ? 0 : progress < 0.99 ? Number(progress) * 100 : 100;
 };
 
 const graphCreatedOrders = async (account: string, endpoint: string, signal?: AbortSignal) => {
   const LIMIT = 1_000;
   let page = 0;
-  let orders: any = [];
+  const orders: any = [];
 
   const fetchOrders = async () => {
     const query = `
@@ -88,23 +88,25 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
       result[item.id] = item.status;
       return result;
     }, {});
-  } catch (error) {}
+  } catch (error) {
+    // handle error
+  }
 };
 
 const getOrderFills = (orderId: number, fills?: any) => {
   return {
     TWAP_id: Number(orderId),
-    dstAmountOut: BigintSum(fills?.map((it: any) => it.dstAmountOut)),
-    srcAmountIn: BigintSum(fills?.map((it: any) => it.srcAmountIn)),
-    dollarValueIn: BigintSum(fills?.map((it: any) => it.dollarValueIn)),
-    dollarValueOut: BigintSum(fills?.map((it: any) => it.dollarValueOut)),
+    dstAmountOut: BigintSum(fills?.map((it: any) => BigInt(it.dstAmountOut))),
+    srcAmountIn: BigintSum(fills?.map((it: any) => BigInt(it.srcAmountIn))),
+    dollarValueIn: BigintSum(fills?.map((it: any) => BigInt(it.dollarValueIn))),
+    dollarValueOut: BigintSum(fills?.map((it: any) => BigInt(it.dollarValueOut))),
   };
 };
 
 const graphOrderFills = async (account: string, endpoint: string, signal?: AbortSignal) => {
   const LIMIT = 1_000;
   let page = 0;
-  let fills: any = [];
+  const fills: any = [];
 
   const fetchFills = async () => {
     const query = `
@@ -129,7 +131,7 @@ const graphOrderFills = async (account: string, endpoint: string, signal?: Abort
       signal,
     });
     const response = await payload.json();
-    let orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
+    const orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
     const grouped = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
       return getOrderFills(orderId, fills);
     });
@@ -150,7 +152,7 @@ const graphOrderFills = async (account: string, endpoint: string, signal?: Abort
 };
 
 const getStatus = (progress = 0, order: any, statuses?: any) => {
-  let status = statuses?.[order.Contract_id]?.toLowerCase();
+  const status = statuses?.[order.Contract_id]?.toLowerCase();
 
   if (progress === 100 || status === "completed") {
     return OrderStatus.Completed;
@@ -182,10 +184,10 @@ const getExcecutionPrice = (order: Order, dstTokenDecimals: number) => {
 };
 
 const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): Order => {
-  const progress = getProgress(toBigInt(orderFill?.srcAmountIn),toBigInt(order.ask_srcAmount));
+  const progress = getProgress(toBigInt(orderFill?.srcAmountIn), toBigInt(order.ask_srcAmount));
   const isMarketOrder = toBigInt(order.ask_dstMinAmount) < BigInt(1);
 
-  const totalChunks = Math.ceil(BigintDiv(toBigInt(order.ask_srcAmount), toBigInt(order.ask_srcBidAmount)));
+  const totalChunks = Math.ceil(BigintDivToNum(toBigInt(order.ask_srcAmount), toBigInt(order.ask_srcBidAmount)));
 
   const getOrderType = () => {
     if (isMarketOrder) {
@@ -237,7 +239,9 @@ const fetchOrders = async (config: Config, account: string, signal?: AbortSignal
 
   try {
     statuses = await getOrderStatuses(ids, endpoint, signal);
-  } catch (error) {}
+  } catch (error) {
+    // handle error
+  }
 
   return orders.map((order: any) => {
     const orderFill = fills[order.Contract_id];

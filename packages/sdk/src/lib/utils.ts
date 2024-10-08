@@ -3,17 +3,6 @@ import { TimeDuration, TimeUnit } from "./types";
 
 export const MAX_DECIMALS = 18;
 
-export function toBigInt(value?: string | number): bigint {
-  if (value === undefined) {
-    return BigInt(0);
-  }
-  try {
-    return BigInt(value);
-  } catch (error) {
-    return BigInt(0);
-  }
-}
-
 export const getTheGraphUrl = (chainId?: number) => {
   if (!chainId) return;
   return THE_GRAPH_ORDERS_API[chainId as keyof typeof THE_GRAPH_ORDERS_API];
@@ -57,6 +46,17 @@ export const orderBy = <T>(array: T[], key: (item: T) => any, order: "asc" | "de
   });
 };
 
+export function toBigInt(value?: string | number): bigint {
+  if (value === undefined) {
+    return BigInt(0);
+  }
+  try {
+    return BigInt(value);
+  } catch (error) {
+    return BigInt(0);
+  }
+}
+
 export const BigintToNum = (amount?: bigint | string, decimals?: number): number => {
   if (!decimals || !amount) return 0;
 
@@ -74,24 +74,44 @@ export const BigintToNum = (amount?: bigint | string, decimals?: number): number
 };
 
 export function BigintSum(arr: bigint[]): bigint {
-  return arr.reduce((sum, current) => sum + current, BigInt(0));
+  try {
+    return arr.reduce((sum, current) => sum + current, BigInt(0));
+  } catch (error) {
+    return BigInt(0);
+  }
 }
 
 export function BigintMax(...args: bigint[]): bigint {
-  return args.reduce((max, current) => (current > max ? current : max));
+  try {
+    return args.reduce((max, current) => (current > max ? current : max));
+  } catch (error) {
+    return BigInt(0);
+  }
 }
 
 export function BigintMin(...args: bigint[]): bigint {
-  return args.reduce((min, current) => (current < min ? current : min));
+  try {
+    return args.reduce((min, current) => (current < min ? current : min));
+  } catch (error) {
+    return BigInt(0);
+  }
 }
 
-export function BigintDiv(a: bigint, b: bigint, decimals?: number): number {
-
+export function BigintDiv(a: bigint, b: bigint, decimals?: number): bigint {
   if (b === BigInt(0)) {
-    return 0;
+    return BigInt(0);
   }
 
-  return Number((a * BigInt(10 ** (decimals || MAX_DECIMALS))) / b) / 10 ** (decimals || MAX_DECIMALS);
+  try {
+    return (a * BigInt(10 ** (decimals || MAX_DECIMALS))) / b;
+  } catch (error) {
+    console.error("BigintDiv error", error);
+    return BigInt(0);
+  }
+}
+
+export function BigintDivToNum(a: bigint, b: bigint, decimals?: number): number {
+  return BigintToNum(BigintDiv(a, b, decimals), decimals || MAX_DECIMALS);
 }
 
 export function eqIgnoreCase(a: string, b: string) {

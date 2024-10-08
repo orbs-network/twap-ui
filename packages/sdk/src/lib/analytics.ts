@@ -1,5 +1,5 @@
 import { Config } from "./types";
-import { BigintDiv } from "./utils";
+import { BigintDivToNum } from "./utils";
 const Version = 0.4;
 
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
@@ -142,7 +142,7 @@ export class Analytics {
     const values = askParams;
     const fromTokenAmount = values[3];
     const srcChunkAmount = values[4];
-    const chunksAmount = Math.floor(BigintDiv(BigInt(fromTokenAmount), BigInt(srcChunkAmount)));
+    const chunksAmount = Math.floor(BigintDivToNum(BigInt(fromTokenAmount), BigInt(srcChunkAmount)));
 
     this.updateAndSend({
       fromTokenAddress: values[1],
@@ -184,7 +184,7 @@ export class Analytics {
         newOrderId,
         createOrderTxHash,
       },
-      true,
+      true
     );
 
     this.data = {
@@ -208,7 +208,7 @@ export class Analytics {
       {
         action: "module-import",
       },
-      true,
+      true
     );
   }
 }
