@@ -1,11 +1,11 @@
 import { Config, Order, OrderStatus, OrderType } from "./types";
-import { BigintSum, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy, BigintDiv, toBigInt, BigintDivToNum } from "./utils";
+import { BigintSum, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy, BigintDiv, toBigInt, BigintToNum, MAX_DECIMALS } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 
 export const getProgress = (srcFilled?: bigint, srcAmountIn?: bigint) => {
   if (!srcFilled || !srcAmountIn) return 0;
 
-  const progress = BigintDivToNum(srcFilled, srcAmountIn);
+  const progress = BigintToNum(BigintDiv(srcFilled, srcAmountIn), MAX_DECIMALS);
 
   return !progress ? 0 : progress < 0.99 ? Number(progress) * 100 : 100;
 };
@@ -165,21 +165,21 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
   return OrderStatus.Expired;
 };
 
-const getLimitPrice = (order: Order, dstTokenDecimals: number) => {
+const getLimitPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
   if (order.isMarketOrder) {
     return undefined;
   }
 
-  const result = BigintDiv(toBigInt(order.dstMinAmount), toBigInt(order.srcBidAmount), dstTokenDecimals);
-
+  const resultBi = BigintDiv(toBigInt(order.dstMinAmount), toBigInt(order.srcBidAmount));
+  const result = BigintToNum(resultBi, MAX_DECIMALS - (dstTokenDecimals - srcTokenDecimals));
   return result.toString();
 };
 
-const getExcecutionPrice = (order: Order, dstTokenDecimals: number) => {
+const getExcecutionPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
   if (!(toBigInt(order.srcFilledAmount) > BigInt(0)) || !(toBigInt(order.dstFilledAmount) > BigInt(0))) return;
 
-  const result = BigintDiv(toBigInt(order.dstFilledAmount), toBigInt(order.srcFilledAmount), dstTokenDecimals);
-
+  const resultBi = BigintDiv(toBigInt(order.dstFilledAmount), toBigInt(order.srcFilledAmount));
+  const result = BigintToNum(resultBi, MAX_DECIMALS - (dstTokenDecimals - srcTokenDecimals));
   return result.toString();
 };
 
@@ -187,7 +187,9 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): 
   const progress = getProgress(toBigInt(orderFill?.srcAmountIn), toBigInt(order.ask_srcAmount));
   const isMarketOrder = toBigInt(order.ask_dstMinAmount) < BigInt(1);
 
-  const totalChunks = Math.ceil(BigintDivToNum(toBigInt(order.ask_srcAmount), toBigInt(order.ask_srcBidAmount)));
+  const chunksBi = BigintDiv(toBigInt(order.ask_srcAmount), toBigInt(order.ask_srcBidAmount));
+
+  const totalChunks = Math.ceil(BigintToNum(chunksBi, MAX_DECIMALS));
 
   const getOrderType = () => {
     if (isMarketOrder) {
@@ -222,8 +224,8 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): 
     isMarketOrder,
     fillDelay: (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config),
     orderType: getOrderType(),
-    getLimitPrice: (dstTokenDecimals: number) => getLimitPrice(order, dstTokenDecimals),
-    getExcecutionPrice: (dstTokenDecimals: number) => getExcecutionPrice(order, dstTokenDecimals),
+    getLimitPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => getLimitPrice(order, srcTokenDecimals, dstTokenDecimals),
+    getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => getExcecutionPrice(order, srcTokenDecimals, dstTokenDecimals),
   };
 };
 

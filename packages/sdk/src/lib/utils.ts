@@ -57,8 +57,8 @@ export function toBigInt(value?: string | number): bigint {
   }
 }
 
-export const BigintToNum = (amount?: bigint | string, decimals?: number): number => {
-  if (!decimals || !amount) return 0;
+export const BigintToStr = (amount?: bigint | string, decimals?: number): string => {
+  if (!decimals || !amount) return "0";
 
   const numStr = typeof amount === "bigint" ? amount.toString() : amount;
   const precision = decimals || 0;
@@ -67,10 +67,14 @@ export const BigintToNum = (amount?: bigint | string, decimals?: number): number
     const integerPart = numStr.slice(0, -precision) || "0";
     const fractionalPart = numStr.slice(-precision).padStart(precision, "0");
 
-    return Number(`${integerPart}.${fractionalPart}`);
+    return `${integerPart}.${fractionalPart}`;
   } else {
-    return Number(numStr);
+    return numStr;
   }
+};
+
+export const BigintToNum = (amount?: bigint | string, decimals?: number): number => {
+  return Number(BigintToStr(amount, decimals));
 };
 
 export function BigintSum(arr: bigint[]): bigint {
@@ -97,21 +101,19 @@ export function BigintMin(...args: bigint[]): bigint {
   }
 }
 
-export function BigintDiv(a: bigint, b: bigint, decimals?: number): bigint {
+// Outputs bigint padded to the right with MAX_DECIMALS
+// result must be handled as amount with MAX_DECIMALS
+export function BigintDiv(a: bigint, b: bigint): bigint {
   if (b === BigInt(0)) {
     return BigInt(0);
   }
 
   try {
-    return (a * BigInt(10 ** (decimals || MAX_DECIMALS))) / b;
+    return (a * BigInt(10 ** MAX_DECIMALS)) / b;
   } catch (error) {
     console.error("BigintDiv error", error);
     return BigInt(0);
   }
-}
-
-export function BigintDivToNum(a: bigint, b: bigint, decimals?: number): number {
-  return BigintToNum(BigintDiv(a, b, decimals), decimals || MAX_DECIMALS);
 }
 
 export function eqIgnoreCase(a: string, b: string) {
