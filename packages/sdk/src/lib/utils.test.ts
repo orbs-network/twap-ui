@@ -1,4 +1,4 @@
-import { BigintDiv, BigintToNum, MAX_DECIMALS } from "./utils";
+import { BigintDiv, BigintToNum, MAX_DECIMALS, toBigInt } from "./utils";
 
 describe("utils", () => {
   describe("BigintDiv", () => {
@@ -92,6 +92,24 @@ describe("utils", () => {
 
       const srcTokenDecimals = 5;
       const srcFilledAmount = BigInt("12300000");
+
+      const res = BigintDiv(dstFilledAmount, srcFilledAmount);
+      // 100371373170731707317
+      expect(res.toString()).toBe("100371373170731707317");
+
+      const dec = MAX_DECIMALS - (srcTokenDecimals - dstTokenDecimals);
+      const num = BigintToNum(res, dec);
+      expect(num).toBe(0.010037137317073171);
+    });
+  });
+
+  describe("toBigInt", () => {
+    it("should be 100371373170731707317 > 0.010037137317073171", () => {
+      const dstTokenDecimals = 9;
+      const dstFilledAmount = toBigInt("1234567890");
+
+      const srcTokenDecimals = 5;
+      const srcFilledAmount = toBigInt("12300000");
 
       const res = BigintDiv(dstFilledAmount, srcFilledAmount);
       // 100371373170731707317
