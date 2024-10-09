@@ -1,7 +1,7 @@
 import { Analytics } from "./analytics";
 import { getEstimatedDelayBetweenChunksMillis, derivedSwapValues, prepareOrderArgs } from "./lib";
 import { getOrders, waitForOrdersUpdate } from "./orders";
-import { Config, DerivedSwapValuesArgs, Order, PrepareOrderArgs } from "./types";
+import { Config, DerivedSwapValuesArgs, PrepareOrderArgs } from "./types";
 
 interface Props {
   config: Config;

@@ -33,7 +33,7 @@ export const useCreateOrder = () => {
       srcChunkAmount: swapData.srcChunkAmount,
       deadline: swapData.deadline,
       fillDelay: swapData.fillDelay,
-      srcAmount,
+      srcAmount: BigInt(srcAmount),
       srcTokenAddress: srcToken.address,
       destTokenAddress: dstToken.address,
     });

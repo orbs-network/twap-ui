@@ -1,6 +1,7 @@
-import { maxUint256, nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
-import BN from "bignumber.js";
+import { nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
 import { TimeDuration, TimeUnit } from "./types";
+
+export const MAX_DECIMALS = 18;
 
 export const getTheGraphUrl = (chainId?: number) => {
   if (!chainId) return;
@@ -45,45 +46,84 @@ export const orderBy = <T>(array: T[], key: (item: T) => any, order: "asc" | "de
   });
 };
 
-export const amountUi = (decimals?: number, amount?: string) => {
-  if (!decimals || !amount) return "";
-  const percision = BN(10).pow(decimals || 0);
-  return BN(amount).times(percision).idiv(percision).div(percision).toFixed();
-};
+export function toBigInt(value?: string | number): bigint {
+  if (value === undefined) {
+    return BigInt(0);
+  }
 
-export const amountBN = (decimals?: number, amount?: string) => {
-  if (!decimals || !amount) return "";
-  return parsebn(amount).times(BN(10).pow(decimals)).decimalPlaces(0).toFixed();
-};
-export const zero = BN(0);
-export const one = BN(1);
-export const ten = BN(10);
-export const ether = BN(1e18);
+  try {
+    if (value.toString().includes(".")) {
+      const [integer, fractional] = value.toString().split(".");
+      return BigInt(integer + fractional.padEnd(MAX_DECIMALS, "0"));
+    }
 
-export function bn(n: BN.Value, base?: number): BN {
-  if (n instanceof BN) return n;
-  if (!n) return zero;
-  return BN(n, base);
+    return BigInt(value);
+  } catch (error) {
+    return BigInt(0);
+  }
 }
 
-export function convertDecimals(n: BN.Value, sourceDecimals: number, targetDecimals: number): BN {
-  if (sourceDecimals === targetDecimals) return bn(n);
-  else if (sourceDecimals > targetDecimals) return bn(n).idiv(ten.pow(sourceDecimals - targetDecimals));
-  else return bn(n).times(ten.pow(targetDecimals - sourceDecimals));
+export const BigintToStr = (amount?: bigint | string, decimals?: number): string => {
+  if (!decimals || !amount) return "0";
+
+  const numStr = typeof amount === "bigint" ? amount.toString() : amount;
+  const precision = decimals || 0;
+
+  if (precision > 0) {
+    const integerPart = numStr.slice(0, -precision) || "0";
+    const fractionalPart = numStr.slice(-precision).padStart(precision, "0");
+
+    return `${integerPart}.${fractionalPart}`;
+  } else {
+    return numStr;
+  }
+};
+
+export const BigintToNum = (amount?: bigint | string, decimals?: number): number => {
+  return Number(BigintToStr(amount, decimals));
+};
+
+export function BigintSum(arr: bigint[]): bigint {
+  try {
+    return arr.reduce((sum, current) => sum + current, BigInt(0));
+  } catch (error) {
+    return BigInt(0);
+  }
+}
+
+export function BigintMax(...args: bigint[]): bigint {
+  try {
+    return args.reduce((max, current) => (current > max ? current : max));
+  } catch (error) {
+    return BigInt(0);
+  }
+}
+
+export function BigintMin(...args: bigint[]): bigint {
+  try {
+    return args.reduce((min, current) => (current < min ? current : min));
+  } catch (error) {
+    return BigInt(0);
+  }
+}
+
+// Outputs bigint padded to the right with MAX_DECIMALS
+// result must be handled as amount with MAX_DECIMALS
+export function BigintDiv(a: bigint, b: bigint): bigint {
+  if (b === BigInt(0)) {
+    return BigInt(0);
+  }
+
+  try {
+    return (a * BigInt(10 ** MAX_DECIMALS)) / b;
+  } catch (error) {
+    console.error("BigintDiv error", error);
+    return BigInt(0);
+  }
 }
 
 export function eqIgnoreCase(a: string, b: string) {
   return a == b || a.toLowerCase() == b.toLowerCase();
-}
-
-export function parsebn(n: BN.Value, defaultValue?: BN, fmt?: BN.Format): BN {
-  if (typeof n !== "string") return bn(n);
-
-  const decimalSeparator = fmt?.decimalSeparator || ".";
-  const str = n.replace(new RegExp(`[^${decimalSeparator}\\d-]+`, "g"), "");
-  const result = bn(decimalSeparator === "." ? str : str.replace(decimalSeparator, "."));
-  if (defaultValue && (!result.isFinite() || result.lte(zero))) return defaultValue;
-  else return result;
 }
 
 export const isNativeAddress = (address: string) => !!nativeTokenAddresses.find((a) => eqIgnoreCase(a, address));
@@ -100,11 +140,4 @@ export function findTimeUnit(_millis: number): TimeUnit {
 export const getTimeDurationMillis = (duration?: TimeDuration) => {
   if (!duration) return 0;
   return duration.value * duration.unit;
-};
-
-export const safeInteger = (value?: string) => {
-  if (!value || value === "NaN") return "0";
-  return BN.min(BN(value || "0").toString(), maxUint256)
-    .decimalPlaces(0)
-    .toFixed();
 };

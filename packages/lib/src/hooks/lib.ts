@@ -26,13 +26,13 @@ export const useDerivedSwapValues = () => {
   const srcAmount = useSrcAmount().amount;
   return useMemo(() => {
     return twapSDK.derivedSwapValues({
-      srcAmount,
-      limitPrice,
+      srcAmount: BigInt(srcAmount),
+      limitPrice: limitPrice ? BigInt(limitPrice) : undefined,
       customChunks: typedChunks,
       customDuration: typedDuration,
       customFillDelay: typedFillDelay,
       isLimitPanel,
-      oneSrcTokenUsd,
+      oneSrcTokenUsd: oneSrcTokenUsd ? Number(oneSrcTokenUsd) : undefined,
       srcDecimals: srcToken?.decimals,
       destDecimals: dstToken?.decimals,
       isMarketOrder: !!isMarketOrder,
@@ -47,7 +47,7 @@ export const useDstMinAmountOut = () => {
 
   return {
     amount,
-    amountUi: useAmountUi(dstToken?.decimals, amount),
+    amountUi: useAmountUi(dstToken?.decimals, amount.toString()),
   };
 };
 
@@ -92,11 +92,11 @@ export const useOutAmount = () => {
   const { amountUi } = useSrcAmount();
   const { dstToken } = useTwapContext();
 
-  const outAmount = useDerivedSwapValues()?.destTokenAmount;
+  const outAmount = useDerivedSwapValues()?.destTokenAmount?.toString();
 
   return {
     amount: outAmount,
-    amountUi: useAmountUi(dstToken?.decimals, outAmount),
+    amountUi: useAmountUi(dstToken?.decimals, outAmount?.toString()),
     isLoading: amountUi && BN(outAmount || 0).isZero() ? true : false,
   };
 };
@@ -146,7 +146,7 @@ const useAmountUi = (decimals?: number, amount?: string) => {
 
 export const useSrcChunkAmountUsd = () => {
   const { srcToken, srcUsd } = useTwapContext();
-  const srcChunksAmount = useSrcChunkAmount().amount;
+  const srcChunksAmount = useSrcChunkAmount().amount.toString();
 
   const result = BN(srcChunksAmount || "0")
     .times(srcUsd)
@@ -258,7 +258,7 @@ export const useDeadline = () => {
 
 export const useSrcChunkAmount = () => {
   const { srcToken } = useTwapContext();
-  const amount = useDerivedSwapValues()?.srcChunkAmount;
+  const amount = useDerivedSwapValues()?.srcChunkAmount.toString();
 
   return {
     amount,
