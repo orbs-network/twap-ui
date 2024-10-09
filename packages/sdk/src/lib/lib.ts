@@ -1,6 +1,6 @@
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
 import { Config, DerivedSwapValuesArgs, DerivedSwapValuesResponse, PrepareOrderArgs, PrepareOrderArgsResult, TimeDuration, TimeUnit } from "./types";
-import { BigintMax, BigintToNum, findTimeUnit, getTimeDurationMillis } from "./utils";
+import { BigintMax, BigintToNum, findTimeUnit, getTimeDurationMillis, toBigInt } from "./utils";
 import { getMaxFillDelayWarning, getMaxTradeDurationWarning, getMinFillDelayWarning, getMinTradeDurationWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
@@ -62,7 +62,7 @@ export const getEstimatedDelayBetweenChunksMillis = (config: Config) => {
 
 export const getSrcChunkAmount = (srcAmount?: bigint, chunks?: number) => {
   if (!srcAmount || !chunks) return BigInt(0);
-  return srcAmount / BigInt(chunks);
+  return srcAmount / toBigInt(chunks);
 };
 
 export const getSrcChunkAmountUsd = (srcChunkAmount?: bigint, oneSrcTokenUsd?: string | number, srcDecimals?: number) => {
@@ -93,7 +93,7 @@ export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): Prepar
 
 export const derivedSwapValues = (
   config: Config,
-  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs,
+  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs
 ): DerivedSwapValuesResponse => {
   const maxPossibleChunks = getMaxPossibleChunks(config, srcAmount, oneSrcTokenUsd, srcDecimals);
   const chunks = getChunks(maxPossibleChunks, isLimitPanel, customChunks);

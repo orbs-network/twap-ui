@@ -96,10 +96,10 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
 const getOrderFills = (orderId: number, fills?: any) => {
   return {
     TWAP_id: Number(orderId),
-    dstAmountOut: BigintSum(fills?.map((it: any) => BigInt(it.dstAmountOut))),
-    srcAmountIn: BigintSum(fills?.map((it: any) => BigInt(it.srcAmountIn))),
-    dollarValueIn: BigintSum(fills?.map((it: any) => BigInt(it.dollarValueIn))),
-    dollarValueOut: BigintSum(fills?.map((it: any) => BigInt(it.dollarValueOut))),
+    dstAmountOut: BigintSum(fills?.map((it: any) => toBigInt(it.dstAmountOut))),
+    srcAmountIn: BigintSum(fills?.map((it: any) => toBigInt(it.srcAmountIn))),
+    dollarValueIn: BigintSum(fills?.map((it: any) => toBigInt(it.dollarValueIn))),
+    dollarValueOut: BigintSum(fills?.map((it: any) => toBigInt(it.dollarValueOut))),
   };
 };
 

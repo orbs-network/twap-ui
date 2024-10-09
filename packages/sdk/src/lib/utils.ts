@@ -50,7 +50,13 @@ export function toBigInt(value?: string | number): bigint {
   if (value === undefined) {
     return BigInt(0);
   }
+
   try {
+    if (value.toString().includes(".")) {
+      const [integer, fractional] = value.toString().split(".");
+      return BigInt(integer + fractional.padEnd(MAX_DECIMALS, "0"));
+    }
+
     return BigInt(value);
   } catch (error) {
     return BigInt(0);
