@@ -321,6 +321,8 @@ export interface TwapState {
   selectedOrdersTab?: number;
 
   swapData?: ReturnType<typeof useSwapData>;
+
+  currentTime: number;
 }
 
 export interface TooltipProps {

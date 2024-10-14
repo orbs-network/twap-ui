@@ -1,10 +1,11 @@
 import { Analytics } from "./analytics";
-import { getEstimatedDelayBetweenChunksMillis, derivedSwapValues, prepareOrderArgs } from "./lib";
+import { getEstimatedDelayBetweenChunksMillis, derivedSwapValues, prepareOrderArgs, getDeadline } from "./lib";
 import { getOrders, waitForOrdersUpdate } from "./orders";
-import { Config, DerivedSwapValuesArgs, Order, PrepareOrderArgs } from "./types";
+import { Config, DerivedSwapValuesArgs, Order, PrepareOrderArgs, TimeDuration } from "./types";
 
 interface Props {
   config: Config;
+  minChunkSizeUsd?: number;
 }
 
 const analytics = new Analytics();
@@ -28,10 +29,12 @@ export class TwapSDK {
   public config: Config;
   public analytics = analyticsCallback;
   public estimatedDelayBetweenChunksMillis: number;
+  public minChunkSizeUsd: number;
   constructor(props: Props) {
     this.config = props.config;
     analytics.onConfigChange(props.config);
     this.estimatedDelayBetweenChunksMillis = getEstimatedDelayBetweenChunksMillis(this.config);
+    this.minChunkSizeUsd = props.minChunkSizeUsd || props.config.minChunkSizeUsd;
   }
 
   prepareOrderArgs(props: PrepareOrderArgs) {
@@ -39,7 +42,10 @@ export class TwapSDK {
   }
 
   derivedSwapValues(props: DerivedSwapValuesArgs) {
-    return derivedSwapValues(this.config, props);
+    return derivedSwapValues(this.config, this.minChunkSizeUsd, props);
+  }
+  orderDeadline(currentTimeMillis: number, duration: TimeDuration) {
+    return getDeadline(currentTimeMillis, duration);
   }
 
   async getOrders(account: string, signal?: AbortSignal) {

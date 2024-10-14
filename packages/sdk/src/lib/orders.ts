@@ -165,24 +165,21 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
   return OrderStatus.Expired;
 };
 
-const getLimitPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (order.isMarketOrder) {
-    return undefined;
-  }
+const getLimitPrice = (srcBidAmount: string, dstMinAmount: string, isMarketOrder: boolean, srcTokenDecimals: number, dstTokenDecimals: number) => {
+  if (isMarketOrder) return;
+  const srcBidAmountUi = amountUi(srcTokenDecimals, srcBidAmount);
+  const dstMinAmountUi = amountUi(dstTokenDecimals, dstMinAmount);
 
-  const srcBidAmount = amountUi(srcTokenDecimals, order.srcBidAmount);
-  const dstMinAmount = amountUi(dstTokenDecimals, order.dstMinAmount);
-
-  return BN(dstMinAmount).div(srcBidAmount).toString();
+  return BN(dstMinAmountUi).div(srcBidAmountUi).toString();
 };
 
-const getExcecutionPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (!BN(order.srcFilledAmount).gt(0) || !BN(order.dstFilledAmount).gt(0)) return;
+const getExcecutionPrice = (srcTokenDecimals: number, dstTokenDecimals: number, srcFilledAmount?: string, dstFilledAmount?: string) => {
+  if (!BN(srcFilledAmount || 0).gt(0) || !BN(dstFilledAmount || 0).gt(0)) return;
 
-  const srcFilledAmount = amountUi(srcTokenDecimals, order.srcFilledAmount);
-  const dstFilledAmount = amountUi(dstTokenDecimals, order.dstFilledAmount);
+  const srcFilledAmountUi = amountUi(srcTokenDecimals, srcFilledAmount);
+  const dstFilledAmountUi = amountUi(dstTokenDecimals, dstFilledAmount);
 
-  return BN(dstFilledAmount).div(srcFilledAmount).toString();
+  return BN(dstFilledAmountUi).div(srcFilledAmountUi).toString();
 };
 
 const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): Order => {
@@ -195,13 +192,13 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): 
 
   const getOrderType = () => {
     if (isMarketOrder) {
-      return OrderType.DCA_MARKET;
+      return OrderType.TWAP_MARKET;
     }
     if (BN(totalChunks).eq(1)) {
       return OrderType.LIMIT;
     }
 
-    return OrderType.DCA_LIMIT;
+    return OrderType.TWAP_LIMIT;
   };
 
   return {
@@ -229,8 +226,10 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): 
     isMarketOrder,
     fillDelay: (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config),
     orderType: getOrderType(),
-    getLimitPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => getLimitPrice(order, srcTokenDecimals, dstTokenDecimals),
-    getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => getExcecutionPrice(order, srcTokenDecimals, dstTokenDecimals),
+    getLimitPrice: (srcTokenDecimals: number, dstTokenDecimals: number) =>
+      getLimitPrice(order.ask_srcBidAmount, order.ask_dstMinAmount, isMarketOrder, srcTokenDecimals, dstTokenDecimals),
+    getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) =>
+      getExcecutionPrice(srcTokenDecimals, dstTokenDecimals, orderFill?.srcAmountIn, orderFill?.dstAmountOut),
   };
 };
 

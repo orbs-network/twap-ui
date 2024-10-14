@@ -6,7 +6,7 @@ import { query, useGasPrice, useOrdersHistory } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
 import { useSwitchNativeToWrapped } from "../context/actions";
-import { useDerivedSwapValues, useShouldWrap, useSrcAmount, useSwapData } from "./lib";
+import { useDeadline, useDerivedSwapValues, useShouldWrap, useSrcAmount, useSwapData } from "./lib";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
@@ -14,6 +14,7 @@ export const useCreateOrder = () => {
   const twapContract = useTwapContract();
   const swapData = useDerivedSwapValues();
   const srcAmount = useSrcAmount().amount;
+  const deadline = useDeadline();
 
   return useMutation(async (srcToken: TokenData) => {
     if (!dstToken) {
@@ -31,7 +32,7 @@ export const useCreateOrder = () => {
     const askParams = twapSDK.prepareOrderArgs({
       destTokenMinAmount: swapData.destTokenMinAmount,
       srcChunkAmount: swapData.srcChunkAmount,
-      deadline: swapData.deadline,
+      deadline: deadline.millis,
       fillDelay: swapData.fillDelay,
       srcAmount,
       srcTokenAddress: srcToken.address,

@@ -27,7 +27,7 @@ export const useDerivedSwapValues = () => {
   return useMemo(() => {
     return twapSDK.derivedSwapValues({
       srcAmount,
-      limitPrice,
+      price: limitPrice,
       customChunks: typedChunks,
       customDuration: typedDuration,
       customFillDelay: typedFillDelay,
@@ -246,7 +246,12 @@ export const useLimitPricePercentDiffFromMarket = () => {
 };
 
 export const useDeadline = () => {
-  const deadline = useDerivedSwapValues().deadline;
+  const { duration } = useDerivedSwapValues();
+  const {
+    twapSDK,
+    state: { currentTime },
+  } = useTwapContext();
+  const deadline = useMemo(() => twapSDK.orderDeadline(currentTime, duration), [twapSDK, duration]);
 
   return useMemo(() => {
     return {

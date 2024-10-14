@@ -34,8 +34,8 @@ export type TimeDuration = { unit: TimeUnit; value: number };
 
 export enum OrderType {
   LIMIT = "limit",
-  DCA_LIMIT = "dca-limit",
-  DCA_MARKET = "dca-market",
+  TWAP_LIMIT = "twap-limit",
+  TWAP_MARKET = "twap-market",
 }
 
 export type Order = {
@@ -76,7 +76,7 @@ export interface PrepareOrderArgs {
 
 export interface DerivedSwapValuesArgs {
   srcAmount?: string;
-  limitPrice?: string;
+  price?: string;
   customDuration?: TimeDuration;
   customFillDelay?: TimeDuration;
   customChunks?: number;
@@ -90,7 +90,6 @@ export interface DerivedSwapValuesArgs {
 export interface DerivedSwapValuesResponse {
   chunks: number;
   duration: TimeDuration;
-  deadline: number;
   fillDelay: TimeDuration;
   srcChunkAmount: string;
   destTokenMinAmount: string;

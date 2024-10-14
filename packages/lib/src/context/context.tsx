@@ -32,6 +32,7 @@ export const getInitialState = ({ storeOverride = {}, isQueryParamsEnabled }: { 
     srcAmountUi: "",
     typedFillDelay: DEFAULT_FILL_DELAY,
     disclaimerAccepted: true,
+    currentTime: Date.now(),
     ...storeOverride,
   };
 };
@@ -83,6 +84,12 @@ export const Content = (props: TwapLibProps) => {
   const { updateState, state } = useStore(props);
   const uiPreferences = props.uiPreferences || {};
   const web3 = useMemo(() => (!props.provider ? undefined : new Web3(props.provider)), [props.provider]);
+
+  useEffect(() => {
+    setInterval(() => {
+      updateState({ currentTime: Date.now() });
+    }, 60_000);
+  }, [updateState]);
 
   useEffect(() => {
     setWeb3Instance(web3);
