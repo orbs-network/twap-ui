@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-thena",
-  "version": "2.0.36",
+  "version": "2.0.37",
   "description": "TWAP UI for Thena",
   "license": "MIT",
   "author": "Orbs",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^2.0.36",
+    "@orbs-network/twap-ui": "^2.0.37",
     "web3": "1.x"
   },
   "peerDependencies": {
