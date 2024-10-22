@@ -22,7 +22,7 @@ const analyticsCallback = {
   onCreateOrderError: analytics.onCreateOrderError.bind(analytics),
   onCancelOrderRequest: analytics.onCancelOrder.bind(analytics),
   onCancelOrderSuccess: analytics.onCancelOrderSuccess.bind(analytics),
-  onCancelOrderError: analytics.onCancelOrder.bind(analytics),
+  onCancelOrderError: analytics.onCanelOrderError.bind(analytics),
 };
 
 export class TwapSDK {

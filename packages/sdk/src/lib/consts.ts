@@ -8,7 +8,7 @@ export const MAX_FILL_DELAY_MILLIS = 30 * 24 * 60 * 60 * 1000;
 const day = 24 * 60 * 60 * 1000;
 
 export const MIN_FILL_DELAY_MINUTES = new Date(MIN_FILL_DELAY_MILLIS).getMinutes();
-export const MAX_FILL_DELAY_FORMATTED = MAX_FILL_DELAY_MILLIS / day;
+export const MAX_FILL_DELAY_DAYS = MAX_FILL_DELAY_MILLIS / day;
 
 export const MAX_DURATION_MILLIS = 30 * 24 * 60 * 60 * 1000;
 export const MIN_DURATION_MILLIS = 5 * 60 * 1000;

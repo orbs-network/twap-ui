@@ -259,10 +259,15 @@ export const getOrders = async (config: Config, account: string, signal?: AbortS
   return orderBy(orders, (o) => o.createdAt, "desc");
 };
 
-export const groupOrdersByStatus = (orders: Order[]) => {
+export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
   const grouped = groupBy(orders, "status");
-  grouped[OrderStatus.All] = orders;
-  return grouped as GroupedOrders;
+  return {
+    [OrderStatus.All]: orders || [],
+    [OrderStatus.Open]: grouped.open || [],
+    [OrderStatus.Completed]: grouped.completed || [],
+    [OrderStatus.Expired]: grouped.expired || [],
+    [OrderStatus.Canceled]: grouped.canceled || [],
+  };
 };
 
 export const waitForOrdersUpdate = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
