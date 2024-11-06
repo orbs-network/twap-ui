@@ -2,7 +2,7 @@ import { TokenData, parsebn, maxUint256, bn } from "@defi.org/web3-candies";
 import moment from "moment";
 import { AddressPadding, Translations } from "./types";
 import BN from "bignumber.js";
-import { THE_GRAPH_ORDERS_API } from "./config";
+import { networks, THE_GRAPH_ORDERS_API } from "./config";
 import { Config } from "@orbs-network/twap-sdk";
 import { EXPLORER_URLS } from "./consts";
 export const logger = (...args: any[]) => {
@@ -389,4 +389,8 @@ export const flatMapObject = <T, U = T>(obj?: T, iteratee?: (value: T, key: stri
   return Object.entries(obj).flatMap(([key, value]) => {
     return iteratee ? iteratee(value as any, key) : [value as unknown as U];
   });
+};
+
+export const getNetwork = (id?: number) => {
+  return Object.values(networks).find((network) => network.id === id);
 };

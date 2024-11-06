@@ -67,7 +67,9 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
   return useQuery({
     queryFn: async () => {
       try {
+        if (!address) return null;
         const contract = getContract(FEE_ON_TRANSFER_ABI as any, address!);
+
         if (!contract) {
           return null;
         }
@@ -82,7 +84,7 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
       }
     },
     queryKey: ["useFeeOnTransfer", tokenAddress, config.chainId, address],
-    enabled: !!tokenAddress && !!config && !!address && !!network,
+    enabled: !!tokenAddress && !!config && !!network,
     staleTime: Infinity,
   });
 };
@@ -177,7 +179,8 @@ export const useOrdersHistory = () => {
     async ({ signal }) => {
       let result: Order[] = [];
       try {
-        result = await twapSDK.getOrders(account!, signal);
+        result = await twapSDK.getOrders("", signal);
+        console.log({ result });
       } catch (error) {
         console.log({ error });
       }

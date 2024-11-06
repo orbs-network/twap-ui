@@ -110,6 +110,7 @@ const getUsdAmount = (amount?: string, usd?: string | number) => {
 export const useUsdAmount = () => {
   const { amount: srcAmount } = useSrcAmount();
   const { dstToken, dstUsd, srcToken, srcUsd } = useTwapContext();
+
   const dstAmount = useOutAmount().amount;
 
   const dstUsdAmount = useMemo(() => {

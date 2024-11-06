@@ -11,7 +11,7 @@ import lynex from "./Lynex";
 import arbidex from "./Arbidex";
 import syncswap from "./SyncSwap";
 import kinetix from "./kinetix";
-import generic from "./Generic";
+import dragonswap from "./DragonSwap";
 
 export const defaultDapp = quickswap;
-export const dapps = [generic, quickswap, spookyswap, pangolin, pangolinDaas, chronos, thena, baseswap, arbidex, lynex, stellaswap, pancake, sushiswap, syncswap, kinetix];
+export const dapps = [dragonswap, quickswap, spookyswap, pangolin, pangolinDaas, chronos, thena, baseswap, arbidex, lynex, stellaswap, pancake, sushiswap, syncswap, kinetix];

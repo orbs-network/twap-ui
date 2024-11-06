@@ -17,7 +17,7 @@ import {
   useTwapContext,
   compact,
   size,
-  Configs,
+  getNetwork,
 } from "@orbs-network/twap-ui";
 import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import translations from "./i18n/en.json";
@@ -76,13 +76,10 @@ import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
 import { MdInfo } from "@react-icons/all-files/md/MdInfo";
-import { eqIgnoreCase, network } from "@defi.org/web3-candies";
+import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
-
-const configs = [Configs.SushiArb, Configs.SushiBase];
-console.log({ configs });
 
 const USD = ({ usd }: { usd?: string }) => {
   return (
@@ -149,6 +146,7 @@ const TokenChange = () => {
 
 const TokenPanelUsd = ({ isSrc, exceedsBalance }: { isSrc?: boolean; exceedsBalance?: boolean }) => {
   const { srcUsd, dstUsd } = hooks.useUsdAmount();
+
   const usd = hooks.useFormatDecimals(isSrc ? srcUsd : dstUsd, 2);
 
   if (exceedsBalance) {
@@ -193,13 +191,13 @@ const useParseToken = () => {
   const { config, getTokenLogo } = useAdapterContext();
   return useCallback(
     (token?: any) => {
-      const nativeToken = network(config.chainId).native;
+      const nativeToken = getNetwork(config.chainId)?.native;
       try {
         if (!token || !token.symbol) {
           return;
         }
 
-        if (token.isNative) {
+        if (token.isNative && nativeToken) {
           return {
             ...nativeToken,
             logoUrl: getTokenLogo(token) || nativeToken.logoUrl,
@@ -227,24 +225,20 @@ export type SushiModalProps = {
   header?: ReactNode;
 };
 
-interface SushiProps extends TWAPProps {
+interface GenericProps extends TWAPProps {
   TokenSelectModal: FC<{ children: ReactNode; onSelect: (value: any) => void; selected: any }>;
   Modal: FC<SushiModalProps>;
   getTokenLogo: (token: any) => string;
   useUSD: (address?: any) => string | undefined;
   srcToken?: any;
   dstToken?: any;
-  configChainId?: number;
   connector?: any;
   NetworkSelector?: FC<{ children: ReactNode }>;
   Button?: FC<{ children: ReactNode; disabled?: boolean }>;
-}
-
-interface AdapterContextProps extends SushiProps {
   config: Config;
 }
 
-const AdapterContext = createContext({} as AdapterContextProps);
+const AdapterContext = createContext({} as GenericProps);
 const AdapterContextProvider = AdapterContext.Provider;
 
 const useAdapterContext = () => useContext(AdapterContext);
@@ -253,7 +247,8 @@ const useWToken = () => {
   const context = useAdapterContext();
 
   return useMemo(() => {
-    const wTokenAddress = network(context.config.chainId).wToken.address;
+    const wTokenAddress = getNetwork(context.config.chainId)?.wToken.address;
+
     return context.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
   }, [context.dappTokens, context.config]);
 };
@@ -263,7 +258,7 @@ const useIsNative = () => {
 
   return useCallback(
     (token?: any) => {
-      if (token?.isNative || token?.symbol === network(context.config.chainId).native.symbol) {
+      if (token?.isNative || token?.symbol === getNetwork(context.config.chainId)?.native.symbol) {
         return true;
       }
     },
@@ -298,7 +293,13 @@ const useMarketPrice = () => {
 
 const useUsd = () => {
   const context = useAdapterContext();
-  const { srcAddress, dstAddress } = useAddresses();
+  const wToken = useWToken();
+  const tokens = useAddresses();
+
+  const srcAddress = isNativeAddress(tokens.srcAddress || "") ? wToken?.address : tokens.srcAddress;
+  const dstAddress = isNativeAddress(tokens.dstAddress || "") ? wToken?.address : tokens.dstAddress;
+  console.log("srcAddress", srcAddress);
+  console.log("dstAddress", dstAddress);
 
   return {
     srcUsd: context.useUSD(srcAddress),
@@ -316,8 +317,6 @@ const useSelectedParsedTokens = () => {
     };
   }, [context.srcToken, context.dstToken, parseToken]);
 };
-
-const supportedChains = configs.map((config) => config.chainId);
 
 export const useProvider = () => {
   const context = useAdapterContext();
@@ -357,11 +356,8 @@ const useIsWrongChain = () => {
   const context = useAdapterContext();
 
   return useMemo(() => {
-    if (!context.configChainId) {
-      return false;
-    }
-    return !supportedChains.includes(context.configChainId);
-  }, [context.configChainId]);
+    return context.connectedChainId !== context.config.chainId;
+  }, [context.connectedChainId, context.config.chainId]);
 };
 
 const CustomButton = (props: ButtonProps) => {
@@ -387,6 +383,7 @@ const TWAPContent = () => {
   const parsedTokens = useParsedTokens();
   const { srcToken, dstToken } = useSelectedParsedTokens();
   const { srcUsd, dstUsd } = useUsd();
+
   const marketPrice = useMarketPrice();
   const isWrongChain = useIsWrongChain();
 
@@ -401,7 +398,7 @@ const TWAPContent = () => {
           priorityFeePerGas={context.priorityFeePerGas}
           translations={translations as Translations}
           provider={provider}
-          account={!context.configChainId ? undefined : context.account}
+          account={context.account}
           dappTokens={context.dappTokens}
           parsedTokens={parsedTokens}
           srcToken={srcToken}
@@ -434,13 +431,9 @@ const TWAPContent = () => {
   );
 };
 
-const TWAP = (props: SushiProps) => {
-  const config = useMemo(() => {
-    return getConfig(configs, props.configChainId);
-  }, [props.configChainId]);
-
+const TWAP = (props: GenericProps) => {
   return (
-    <AdapterContextProvider value={{ ...props, config }}>
+    <AdapterContextProvider value={props}>
       <TWAPContent />
     </AdapterContextProvider>
   );
@@ -709,8 +702,4 @@ const TradeIntervalSelect = () => {
   );
 };
 
-const isSupportedChain = (chainId?: number) => {
-  return Boolean(configs.find((config: Config) => config.chainId === chainId));
-};
-
-export { TWAP, isSupportedChain, supportedChains };
+export { TWAP };

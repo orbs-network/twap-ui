@@ -56,13 +56,13 @@ export const useConfirmationButton = (connect?: () => void) => {
       disabled: false,
     };
 
-  if (hasWarning)
-    return {
-      text: warning.zeroSrcAmount ? warning.zeroSrcAmount : warning.balance || translations.placeOrder,
-      onClick: undefined,
-      disabled: true,
-      loading: false,
-    };
+  // if (hasWarning)
+  //   return {
+  //     text: warning.zeroSrcAmount ? warning.zeroSrcAmount : warning.balance || translations.placeOrder,
+  //     onClick: undefined,
+  //     disabled: true,
+  //     loading: false,
+  //   };
   if (disableWhileLaoding) {
     return { text: translations.placeOrder, onClick: undefined, loading: true };
   }

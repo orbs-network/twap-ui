@@ -1,70 +1,52 @@
 import { StyledSushiLayout, StyledSushi, StyledSushiModalContent } from "./styles";
-import { SushiModalProps, TWAP } from "@orbs-network/twap-ui-sushiswap";
+import { SushiModalProps, TWAP } from "@orbs-network/twap-ui-generic";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, Popup, TokensList, UISelector } from "./Components";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { SelectorOption, TokenListItem } from "./types";
-import { getConfig, mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
+import { mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
 import { baseSwapTokens } from "./BaseSwap";
-import { network } from "@defi.org/web3-candies";
+import { zeroAddress } from "@orbs-network/twap-sdk";
 
 const config = Configs.DragonSwap;
 
+const getLogo = (address: string) => {
+  return `https://raw.githubusercontent.com/dragonswap-app/assets/main/logos/${address}/logo.png`;
+};
+
+// const nativeToken = {
+//   address: zeroAddress,
+//   decimals: 18,
+//   name: "SEI",
+//   symbol: "SEI",
+//   logoUrl: getLogo("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"),
+// };
+
 export const useDappTokens = () => {
-  const isBase = config?.chainId === Configs.SushiBase.chainId;
-  const { chainId } = useWeb3React();
-  const nativeToken = network(config.chainId).native;
   const parseListToken = useCallback(
     (tokenList?: any) => {
-      if (isBase) {
-        return mapCollection(baseSwapTokens, (it, key) => {
-          return {
-            address: key,
-            decimals: it.decimals,
-            symbol: it.symbol,
-            logoURI: it.tokenInfo.logoURI,
-          };
-        });
-      }
+      console.log({ tokenList });
 
-      const res = tokenList?.tokens
-        .filter((it: any) => it.chainId === config?.chainId)
-        .map(({ symbol, address, decimals, logoURI, name }: any) => ({
-          decimals,
-          symbol,
-          name,
-          address,
-          logoURI,
-        }));
-      const native = {
-        decimals: nativeToken.decimals,
-        symbol: nativeToken.symbol,
-        address: nativeToken.address,
-        logoURI: nativeToken.logoUrl,
-      };
-
-      return config ? [native, ...res] : res;
+      return tokenList?.tokens.map((t: any) => {
+        return {
+          decimals: t.decimals,
+          symbol: t.symbol,
+          name: t.name,
+          address: t.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" ? zeroAddress : t.address,
+          logoURI: getLogo(t.address),
+        };
+      });
     },
-    [nativeToken, config?.chainId],
+    [config?.chainId],
   );
 
-  const url = useMemo(() => {
-    switch (chainId) {
-      case Configs.SushiArb.chainId:
-        return "https://token-list.sushi.com/";
-      default:
-        break;
-    }
-  }, [chainId]);
-
   return useGetTokens({
-    url,
+    url: "https://raw.githubusercontent.com/dragonswap-app/assets/main/tokenlist-sei-mainnet.json",
     parse: parseListToken,
-    tokens: isBase ? baseSwapTokens : undefined,
-    modifyList: (tokens: any) => tokens.slice(0, 20),
+    // modifyList: (tokens: any) => tokens.slice(0, 20),
   });
 };
 
@@ -162,7 +144,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   return (
     <TWAP
-      configChainId={chainId}
+      config={config}
       connect={connect}
       account={account}
       connector={connector}
@@ -217,9 +199,9 @@ const DappComponent = () => {
 
 const dapp: Dapp = {
   Component: DappComponent,
-  logo: "https://cdn.cdnlogo.com/logos/s/10/sushiswap.svg",
+  logo: "https://avatars.githubusercontent.com/u/157521400?s=200&v=4",
   configs: [config],
-  path: config.name.toLowerCase()
+  path: config.name.toLowerCase(),
 };
 
 export default dapp;

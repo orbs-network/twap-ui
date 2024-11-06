@@ -2,11 +2,12 @@ import { useTwapContext } from "../context/context";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
 import { Token } from "../types";
-import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, maxUint256, networks, Abi, erc20 } from "@defi.org/web3-candies";
+import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, Abi, erc20 } from "@defi.org/web3-candies";
 import { useNumericFormat } from "react-number-format";
 import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress } from "../utils";
 import { query, useOrdersHistory } from "./query";
 import { TwapAbi, groupOrdersByStatus, OrderStatus } from "@orbs-network/twap-sdk";
+import { networks } from "../config";
 
 export const useRefetchBalances = () => {
   const { refetch: refetchSrcBalance } = useSrcBalance();
@@ -238,6 +239,7 @@ export const useGetHasAllowance = () => {
       if (!wToken) return;
       token = token && isNativeAddress(token?.address) ? wToken : token;
       const contract = erc20(token!.symbol, token!.address, token!.decimals);
+
       const allowance = BN(await contract.methods.allowance(account, config.twapAddress).call());
       return allowance.gte(amount);
     },
