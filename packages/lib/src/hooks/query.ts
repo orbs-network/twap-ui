@@ -179,8 +179,7 @@ export const useOrdersHistory = () => {
     async ({ signal }) => {
       let result: Order[] = [];
       try {
-        result = await twapSDK.getOrders("", signal);
-        console.log({ result });
+        result = await twapSDK.getUserOrders({ account: account!, signal });
       } catch (error) {
         console.log({ error });
       }

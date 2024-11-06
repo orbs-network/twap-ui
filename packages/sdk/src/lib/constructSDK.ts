@@ -48,9 +48,14 @@ export class TwapSDK {
     return getDeadline(currentTimeMillis, duration);
   }
 
-  async getOrders(account: string, signal?: AbortSignal) {
-    return getOrders(this.config, account, signal);
+  async getUserOrders({ account, signal, page, limit }: { account: string; signal?: AbortSignal; page?: number; limit?: number }) {
+    return getOrders({ config: this.config, account, signal, page, limit });
   }
+
+  async getAllOrders({ signal, page, limit }: { signal?: AbortSignal; page?: number; limit?: number }) {
+    return getOrders({ config: this.config, signal, page, limit });
+  }
+
   async waitForOrdersUpdate(orderId: number, account: string, signal?: AbortSignal) {
     return waitForOrdersUpdate(this.config, orderId, account, signal);
   }

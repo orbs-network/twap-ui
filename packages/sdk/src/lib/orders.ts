@@ -12,58 +12,88 @@ const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
   return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
 };
 
-const graphCreatedOrders = async (account: string, endpoint: string, signal?: AbortSignal) => {
-  const LIMIT = 1_000;
+const getCreatedOrders = async ({
+  endpoint,
+  signal,
+  config,
+  account,
+  page = 0,
+  limit,
+}: {
+  endpoint: string;
+  signal?: AbortSignal;
+  config: Config;
+  account?: string;
+  page: number;
+  limit: number;
+}) => {
+  const exchange = `exchange: "${config.exchangeAddress}"`;
+  const maker = account ? `, maker: "${account}"` : "";
+
+  const where = `where:{${exchange} ${maker}}`;
+
+  const query = `
+  {
+  orderCreateds(first: ${limit}, orderBy: timestamp, skip: ${page * limit},  ${where}) {
+      id
+      Contract_id
+      ask_bidDelay
+      ask_data
+      ask_deadline
+      ask_dstMinAmount
+      ask_dstToken
+      ask_fillDelay
+      ask_exchange
+      ask_srcToken
+      ask_srcBidAmount
+      ask_srcAmount
+      blockNumber
+      blockTimestamp
+      dex
+      dollarValueIn
+      dstTokenSymbol
+      exchange
+      maker
+      srcTokenSymbol
+      timestamp
+      transactionHash
+  }
+}
+`;
+
+  const payload = await fetch(endpoint, {
+    method: "POST",
+    body: JSON.stringify({ query }),
+    signal,
+  });
+  const response = await payload.json();
+  return response.data.orderCreateds;
+};
+
+const getAllCreatedOrders = async ({ account, endpoint, signal, config, limit }: { account: string; endpoint: string; signal?: AbortSignal; config: Config; limit: number }) => {
   let page = 0;
   let orders: any = [];
 
-  const fetchOrders = async () => {
-    const query = `
-        {
-        orderCreateds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, where:{maker: "${account}"}) {
-            id
-            Contract_id
-            ask_bidDelay
-            ask_data
-            ask_deadline
-            ask_dstMinAmount
-            ask_dstToken
-            ask_fillDelay
-            ask_exchange
-            ask_srcToken
-            ask_srcBidAmount
-            ask_srcAmount
-            blockNumber
-            blockTimestamp
-            dex
-            dollarValueIn
-            dstTokenSymbol
-            exchange
-            maker
-            srcTokenSymbol
-            timestamp
-            transactionHash
-        }
-    }
-      `;
-
-    const payload = await fetch(endpoint, {
-      method: "POST",
-      body: JSON.stringify({ query }),
+  const paginate = async () => {
+    const orderCreateds = await getCreatedOrders({
+      config,
+      account,
       signal,
+      endpoint,
+      page,
+      limit,
     });
-    const response = await payload.json();
-    const orderCreateds = response.data.orderCreateds;
+
     orders.push(...orderCreateds);
-    if (orderCreateds.length >= LIMIT) {
+    if (orderCreateds.length >= limit) {
       page++;
-      await fetchOrders();
+      await paginate();
     } else {
       return orders;
     }
   };
 
-  await fetchOrders();
+  await paginate();
 
   return orders;
 };
@@ -90,10 +120,12 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
       result[item.id] = item.status;
       return result;
     }, {});
-  } catch (error) {}
+  } catch (error) {
+    return {};
+  }
 };
 
-const getOrderFills = (orderId: number, fills?: any) => {
+const parseFills = (orderId: number, fills?: any) => {
   return {
     TWAP_id: Number(orderId),
     dstAmountOut: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dstAmountOut)), BN(0)).toString(),
@@ -103,27 +135,27 @@ const getOrderFills = (orderId: number, fills?: any) => {
   };
 };
 
-const graphOrderFills = async (account: string, endpoint: string, signal?: AbortSignal) => {
+const getAllFills = async ({ endpoint, signal, ids }: { endpoint: string; signal?: AbortSignal; ids: string[] }) => {
   const LIMIT = 1_000;
   let page = 0;
-  let fills: any = [];
+  const where = `where: { TWAP_id_in: [${ids.join(", ")}] }`;
 
-  const fetchFills = async () => {
+  const paginate = async () => {
     const query = `
-      {
-        orderFilleds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, where: { userAddress: "${account}" }) {
-          id
-          dstAmountOut
-          dstFee
-          srcFilledAmount
-          TWAP_id
-          srcAmountIn
-          timestamp
-          dollarValueIn
-          dollarValueOut
+        {
+          orderFilleds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, ${where}) {
+            id
+            dstAmountOut
+            dstFee
+            srcFilledAmount
+            TWAP_id
+            srcAmountIn
+            timestamp
+            dollarValueIn
+            dollarValueOut
+          }
         }
-      }
-    `;
+      `;
 
     const payload = await fetch(endpoint, {
       method: "POST",
@@ -132,23 +164,19 @@ const graphOrderFills = async (account: string, endpoint: string, signal?: Abort
     });
     const response = await payload.json();
     let orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
-    const grouped = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
-      return getOrderFills(orderId, fills);
+    const fills = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
+      return parseFills(orderId, fills);
     });
-
-    fills.push(...grouped);
-
-    if (orderFilleds.length >= LIMIT) {
+    fills.push(...fills);
+    if (fills.length >= LIMIT) {
       page++;
-      await fetchFills();
+      await paginate();
     } else {
       return fills;
     }
   };
 
-  await fetchFills();
-
-  return keyBy<ReturnType<typeof getOrderFills>>(fills, "TWAP_id");
+  return paginate();
 };
 
 const getStatus = (progress = 0, order: any, statuses?: any) => {
@@ -233,30 +261,37 @@ const parseOrder = (order: any, config: Config, orderFill: any, statuses: any): 
   };
 };
 
-const fetchOrders = async (config: Config, account: string, signal?: AbortSignal): Promise<Order[]> => {
+export const getOrders = async ({
+  config,
+  account = "",
+  signal,
+  page,
+  limit = 1_000,
+}: {
+  account?: string;
+  signal?: AbortSignal;
+  page?: number;
+  config: Config;
+  limit?: number;
+}) => {
   const endpoint = getTheGraphUrl(config!.chainId);
-  if (!endpoint) {
-    return [];
+  if (!endpoint) return [];
+  let orders = [];
+  if (typeof page === "number") {
+    orders = await getCreatedOrders({ endpoint, signal, account, config, page, limit });
+  } else {
+    orders = await getAllCreatedOrders({ endpoint, signal, account, config, limit });
   }
-
-  const [orders, fills] = await Promise.all([graphCreatedOrders(account, endpoint, signal), graphOrderFills(account, endpoint, signal)]);
   const ids = orders.map((order: any) => order.Contract_id);
-  let statuses: any = {};
+  const fills = await getAllFills({ endpoint, signal, ids });
+  const statuses = await getOrderStatuses(ids, endpoint, signal);
 
-  try {
-    statuses = await getOrderStatuses(ids, endpoint, signal);
-  } catch (error) {}
-
-  return orders.map((order: any) => {
-    const orderFill = fills[order.Contract_id];
-    return parseOrder(order, config, orderFill, statuses);
+  orders = orders.map((order: any) => {
+    const fill = fills?.find((it) => it.TWAP_id === order.Contract_id);
+    return parseOrder(order, config, fill, statuses);
   });
-};
 
-export const getOrders = async (config: Config, account: string, signal?: AbortSignal) => {
-  let orders = await fetchOrders(config, account!, signal);
-  orders = orders.filter((o) => eqIgnoreCase(config!.exchangeAddress, o.exchange || ""));
-  return orderBy(orders, (o) => o.createdAt, "desc");
+  return orderBy(orders, (o: any) => o.createdAt, "desc");
 };
 
 export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
@@ -272,7 +307,7 @@ export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
 
 export const waitForOrdersUpdate = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
   for (let i = 0; i < 20; i++) {
-    const orders = await getOrders(config, account!, signal);
+    const orders = await getOrders({ config, account, signal });
     if (orders.find((o) => o.id === orderId)) {
       return orders;
     }
