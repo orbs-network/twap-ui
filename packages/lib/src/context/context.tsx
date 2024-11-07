@@ -137,6 +137,23 @@ export const Content = (props: TwapLibProps) => {
   );
 };
 
+const OrdersTest = () => {
+  const { data, fetchNextPage } = query.useAllOrders();
+
+  return (
+    <div>
+      <button onClick={() => fetchNextPage()}>Load more</button>
+      <div>
+        {data?.pages.map((it) =>
+          it.map((it) => {
+            return <div style={{ color: "white" }}>{it.id}</div>;
+          }),
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const TwapAdapter = (props: TwapLibProps) => {
   return (
     <QueryClientProvider client={queryClient}>

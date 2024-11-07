@@ -18,6 +18,7 @@ import {
   compact,
   size,
   Configs,
+  query,
 } from "@orbs-network/twap-ui";
 import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import translations from "./i18n/en.json";

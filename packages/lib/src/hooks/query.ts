@@ -1,5 +1,5 @@
 import { Abi, eqIgnoreCase, erc20, estimateGasPrice, isNativeAddress, setWeb3Instance } from "@defi.org/web3-candies";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { useCallback, useMemo, useRef } from "react";
 import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
@@ -169,6 +169,32 @@ const useUpdateOrderStatusToCanceled = () => {
     [QUERY_KEY, queryClient, config],
   );
 };
+
+export const useAllOrders = () => {
+  const { state, config, account, twapSDK } = useTwapContext();
+  return useInfiniteQuery(
+    ["all orders", config.chainId],
+    async ({ signal, pageParam = 0 }) => {
+      let result: Order[] = [];
+      try {
+        result = await twapSDK.getAllOrders({ signal, page: pageParam, limit: 5 });
+      } catch (error) {
+        console.log({ error });
+      }
+
+      return result;
+    },
+    {
+      getNextPageParam: (lastPage, pages) => {
+        return lastPage.length > 0 ? pages.length : undefined; // Return next page number or undefined if no more pages
+      },
+      getPreviousPageParam: (firstPage) => {
+        return firstPage ? undefined : 0; // Modify based on how you paginate backwards
+      },
+      refetchInterval: REFETCH_ORDER_HISTORY,
+    },
+  );
+};
 export const useOrdersHistory = () => {
   const { state, config, account, twapSDK } = useTwapContext();
 
@@ -219,4 +245,5 @@ export const query = {
   useOrdersHistory,
   useAllowance,
   useUpdateOrderStatusToCanceled,
+  useAllOrders,
 };
