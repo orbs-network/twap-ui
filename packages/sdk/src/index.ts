@@ -4,6 +4,6 @@ export * from "./lib/types";
 export * from "./lib/consts";
 export { constructSDK, TwapSDK } from "./lib/constructSDK";
 export { DEFAULT_FILL_DELAY } from "./lib/lib";
-export { groupOrdersByStatus } from "./lib/orders";
+export { groupOrdersByStatus, getAllOrders, getOrderFillDelay, getConfigFromExchangeAddress, getOrderById } from "./lib/orders";
 
 export { Configs, TwapAbi };

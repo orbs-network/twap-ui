@@ -41,6 +41,7 @@ export enum OrderType {
 export type Order = {
   id: number;
   exchange: string;
+  ask_fillDelay: number;
   dex: string;
   deadline: number;
   createdAt: number;
@@ -58,8 +59,8 @@ export type Order = {
   dstTokenAddress: string;
   totalChunks: number;
   isMarketOrder: boolean;
-  fillDelay: number;
   orderType: OrderType;
+  fillDelay: number;
   getLimitPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => string | undefined;
   getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => string | undefined;
 };

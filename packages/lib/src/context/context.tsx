@@ -6,8 +6,10 @@ import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
-import { setWeb3Instance } from "@defi.org/web3-candies";
+import { eqIgnoreCase, setWeb3Instance } from "@defi.org/web3-candies";
 import { constructSDK, DEFAULT_FILL_DELAY } from "@orbs-network/twap-sdk";
+import { Configs } from "@orbs-network/twap-sdk";
+import { useOrderQuery } from "../hooks";
 
 export const TwapContext = createContext({} as TWAPContextProps);
 const queryClient = new QueryClient({
@@ -23,6 +25,8 @@ const WrappedTwap = (props: TwapLibProps) => {
   query.useFeeOnTransfer(srcToken?.address);
   query.useFeeOnTransfer(dstToken?.address);
   query.useAllowance();
+  const { data, error } = useOrderQuery(1953);
+  console.log({ data, error });
 
   return <TwapErrorWrapper>{props.children}</TwapErrorWrapper>;
 };
@@ -137,6 +141,13 @@ export const Content = (props: TwapLibProps) => {
   );
 };
 
+// const logConfig = () => {
+//   const exchange = "0x846f2b29ef314bf3d667981b4ffdadc5b858312a";
+
+//   const res = Object.values(Configs).find((it) => eqIgnoreCase(it.exchangeAddress, exchange));
+//   console.log({ res, Configs });
+// };
+
 const OrdersTest = () => {
   const { data, fetchNextPage } = query.useAllOrders();
 
@@ -146,7 +157,7 @@ const OrdersTest = () => {
       <div>
         {data?.pages.map((it) =>
           it.map((it) => {
-            return <div style={{ color: "white" }}>{it.id}</div>;
+            return <div style={{ color: "white" }}>{it.exchange}</div>;
           }),
         )}
       </div>

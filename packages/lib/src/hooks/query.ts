@@ -10,7 +10,7 @@ import { Token } from "../types";
 import { useGetHasAllowance, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
 import { useSrcAmount } from "./lib";
-import { Order, OrderStatus } from "@orbs-network/twap-sdk";
+import { Order, OrderStatus, getAllOrders, getOrderById } from "@orbs-network/twap-sdk";
 import { amountBNV2 } from "../utils";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
@@ -152,6 +152,23 @@ const useOrderHistoryKey = () => {
   return [QueryKeys.GET_ORDER_HISTORY, account, config.exchangeAddress, config.chainId];
 };
 
+export const useOrderQuery = (orderId?: number) => {
+  const chainId = useTwapContext().config.chainId;
+  return useQuery(
+    ["useOrderQuery", chainId, chainId],
+    async ({ signal }) => {
+      if (!orderId) return null;
+      const result = await getOrderById({ orderId: 79202, chainId: 56, signal });
+      console.log({ result });
+
+      return result;
+    },
+    {
+      enabled: !!orderId && !!chainId,
+    },
+  );
+};
+
 const useUpdateOrderStatusToCanceled = () => {
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
@@ -171,13 +188,14 @@ const useUpdateOrderStatusToCanceled = () => {
 };
 
 export const useAllOrders = () => {
-  const { state, config, account, twapSDK } = useTwapContext();
+  const { config } = useTwapContext();
   return useInfiniteQuery(
     ["all orders", config.chainId],
     async ({ signal, pageParam = 0 }) => {
       let result: Order[] = [];
       try {
-        result = await twapSDK.getAllOrders({ signal, page: pageParam, limit: 5 });
+        result = await getAllOrders({ signal, page: pageParam, limit: 5, chainId: config.chainId });
+        console.log({ result });
       } catch (error) {
         console.log({ error });
       }
