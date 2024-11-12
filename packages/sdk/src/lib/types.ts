@@ -38,33 +38,6 @@ export enum OrderType {
   TWAP_MARKET = "twap-market",
 }
 
-export type Order = {
-  id: number;
-  exchange: string;
-  ask_fillDelay: number;
-  dex: string;
-  deadline: number;
-  createdAt: number;
-  srcAmount: string;
-  dstMinAmount: string;
-  status: OrderStatus;
-  srcBidAmount: string;
-  txHash: string;
-  dstFilledAmount: string;
-  srcFilledAmount: string;
-  srcFilledAmountUsd: string;
-  dstFilledAmountUsd: string;
-  progress: number;
-  srcTokenAddress: string;
-  dstTokenAddress: string;
-  totalChunks: number;
-  isMarketOrder: boolean;
-  orderType: OrderType;
-  fillDelay: number;
-  getLimitPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => string | undefined;
-  getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) => string | undefined;
-};
-
 export interface PrepareOrderArgs {
   destTokenMinAmount: string;
   srcChunkAmount: string;

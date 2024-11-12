@@ -1,17 +1,10 @@
-import { Config, Order, OrderStatus, OrderType } from "./types";
+import { Config, OrderStatus, OrderType } from "./types";
 import BN from "bignumber.js";
 import { amountUi, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 import { Configs } from "..";
 
-const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
-  if (!srcFilled || !srcAmountIn) return 0;
-  let progress = BN(srcFilled || "0")
-    .dividedBy(srcAmountIn || "0")
-    .toNumber();
 
-  return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
-};
 
 const ordersCreatedQueryValues = `
 id
@@ -205,95 +198,100 @@ const getAllFills = async ({ endpoint, signal, ids }: { endpoint: string; signal
   return fills;
 };
 
-const getStatus = (progress = 0, order: any, statuses?: any) => {
-  let status = statuses?.[order.Contract_id]?.toLowerCase();
-  if (progress === 100 || status === "completed") {
-    return OrderStatus.Completed;
-  }
-  if (status === "canceled") {
-    return OrderStatus.Canceled;
-  }
 
-  if (new Date(Number(order.ask_deadline)).getTime() > Date.now() / 1000) return OrderStatus.Open;
-  return OrderStatus.Expired;
-};
 
-const getLimitPrice = (srcBidAmount: string, dstMinAmount: string, isMarketOrder: boolean, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (isMarketOrder) return;
-  const srcBidAmountUi = amountUi(srcTokenDecimals, srcBidAmount);
-  const dstMinAmountUi = amountUi(dstTokenDecimals, dstMinAmount);
+class Order {
+  id: number;
+  exchange: string;
+  ask_fillDelay: number;
+  dex: string;
+  deadline: number;
+  createdAt: number;
+  srcAmount: string;
+  dstMinAmount: string;
+  status: string;
+  srcChunkAmount: string;
+  txHash: string;
+  dstFilledAmount: string;
+  srcFilledAmount: string;
+  srcFilledAmountUsd: string;
+  dstFilledAmountUsd: string;
+  progress: number;
+  srcTokenAddress: string;
+  dstTokenAddress: string;
+  totalChunks: number;
+  isMarketOrder: boolean;
+  orderType: string;
 
-  return BN(dstMinAmountUi).div(srcBidAmountUi).toString();
-};
+  constructor(rawOrder: any, fills: any, status: any) {
+    const isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
+    this.id = Number(rawOrder.Contract_id);
+    this.exchange = rawOrder.exchange;
+    this.ask_fillDelay = rawOrder.ask_fillDelay;
+    this.dex = "";
+    this.deadline = Number(rawOrder.ask_deadline) * 1000;
+    this.createdAt = new Date(rawOrder.timestamp).getTime();
+    this.srcAmount = rawOrder.ask_srcAmount;
+    this.dstMinAmount = rawOrder.ask_dstMinAmount;
+    this.srcChunkAmount = rawOrder.ask_srcBidAmount;
+    this.txHash = rawOrder.transactionHash;
+    this.dstFilledAmount = fills?.dstAmountOut || 0;
+    this.srcFilledAmount = fills?.srcAmountIn || 0;
+    this.srcFilledAmountUsd = fills?.dollarValueIn || "0";
+    this.dstFilledAmountUsd = fills?.dollarValueOut || "0";
+    this.progress = this.getProgress(this.srcFilledAmount, this.srcAmount);
+    this.status = this.getStatus(this.progress, rawOrder, status);
 
-const getExcecutionPrice = (srcTokenDecimals: number, dstTokenDecimals: number, srcFilledAmount?: string, dstFilledAmount?: string) => {
-  if (!BN(srcFilledAmount || 0).gt(0) || !BN(dstFilledAmount || 0).gt(0)) return;
-
-  const srcFilledAmountUi = amountUi(srcTokenDecimals, srcFilledAmount);
-  const dstFilledAmountUi = amountUi(dstTokenDecimals, dstFilledAmount);
-
-  return BN(dstFilledAmountUi).div(srcFilledAmountUi).toString();
-};
-
-const parseOrder = (order: any, orderFill: any, statuses: any, config?: Config): Order => {
-  const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
-  const isMarketOrder = BN(order.ask_dstMinAmount || 0).lte(1);
-  const totalChunks = BN(order.ask_srcAmount || 0)
-    .div(order.ask_srcBidAmount || 0)
-    .integerValue(BN.ROUND_CEIL)
-    .toNumber();
-
-  const getOrderType = () => {
-    if (isMarketOrder) {
-      return OrderType.TWAP_MARKET;
-    }
-    if (BN(totalChunks).eq(1)) {
-      return OrderType.LIMIT;
-    }
-
-    return OrderType.TWAP_LIMIT;
-  };
-
-  return {
-    id: Number(order.Contract_id),
-    exchange: order.exchange,
-    ask_fillDelay: order.ask_fillDelay,
-    dex: getConfigFromExchangeAddress(order.exchange)?.name || "",
-    deadline: Number(order.ask_deadline) * 1000,
-    createdAt: new Date(order.timestamp).getTime(),
-    srcAmount: order.ask_srcAmount,
-    dstMinAmount: order.ask_dstMinAmount,
-    status: getStatus(progress, order, statuses),
-    srcBidAmount: order.ask_srcBidAmount,
-    txHash: order.transactionHash,
-    dstFilledAmount: orderFill?.dstAmountOut,
-    srcFilledAmount: orderFill?.srcAmountIn,
-    srcFilledAmountUsd: orderFill?.dollarValueIn || "0",
-    dstFilledAmountUsd: orderFill?.dollarValueOut || "0",
-    progress,
-    srcTokenAddress: order.ask_srcToken,
-    dstTokenAddress: order.ask_dstToken,
-    totalChunks: BN(order.ask_srcAmount || 0)
-      .div(order.ask_srcBidAmount || 0)
+    this.srcTokenAddress = rawOrder.ask_srcToken;
+    this.dstTokenAddress = rawOrder.ask_dstToken;
+    this.totalChunks = new BN(rawOrder.ask_srcAmount || 0)
+      .div(rawOrder.ask_srcBidAmount || 1) // Avoid division by zero
       .integerValue(BN.ROUND_CEIL)
-      .toNumber(),
-    isMarketOrder,
-    orderType: getOrderType(),
-    fillDelay: !config ? 0 : (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config),
-    getLimitPrice: (srcTokenDecimals: number, dstTokenDecimals: number) =>
-      getLimitPrice(order.ask_srcBidAmount, order.ask_dstMinAmount, isMarketOrder, srcTokenDecimals, dstTokenDecimals),
-    getExcecutionPrice: (srcTokenDecimals: number, dstTokenDecimals: number) =>
-      getExcecutionPrice(srcTokenDecimals, dstTokenDecimals, orderFill?.srcAmountIn, orderFill?.dstAmountOut),
+      .toNumber();
+    this.orderType = isMarketOrder ? OrderType.TWAP_MARKET : BN(this.totalChunks).eq(1) ? OrderType.LIMIT : OrderType.TWAP_LIMIT;
+    this.isMarketOrder = isMarketOrder;
+  }
+
+  private getProgress = (srcFilled?: string, srcAmountIn?: string) => {
+    if (!srcFilled || !srcAmountIn) return 0;
+    let progress = BN(srcFilled || "0")
+      .dividedBy(srcAmountIn || "0")
+      .toNumber();
+  
+    return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
   };
-};
 
-export const getOrderFillDelay = (order: Order, config: Config) => {
-  return (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
-};
+  getFillDelay(config: Config) {
+    return (this.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
+  }
 
-export const getConfigFromExchangeAddress = (exchangeAddress: string) => {
-  return Object.values(Configs).find((config) => eqIgnoreCase(config.exchangeAddress, exchangeAddress));
-};
+  getLimitPrice(srcTokenDecimals: number, dstTokenDecimals: number) {
+    if (this.isMarketOrder) return;
+    const srcBidAmountUi = amountUi(srcTokenDecimals, this.srcChunkAmount);
+    const dstMinAmountUi = amountUi(dstTokenDecimals, this.dstMinAmount);
+    return BN(dstMinAmountUi).div(srcBidAmountUi).toString();
+  }
+  getExcecutionPrice(srcTokenDecimals: number, dstTokenDecimals: number) {
+    if (!BN(this.srcFilledAmount || 0).gt(0) || !BN(this.dstFilledAmount || 0).gt(0)) return;
+    const srcFilledAmountUi = amountUi(srcTokenDecimals, this.srcFilledAmount);
+    const dstFilledAmountUi = amountUi(dstTokenDecimals, this.dstFilledAmount);
+
+    return BN(dstFilledAmountUi).div(srcFilledAmountUi).toString();
+  }
+
+  private getStatus(progress = 0, order: any, statuses?: any) {
+    let status = statuses?.[order.Contract_id]?.toLowerCase();
+    if (progress === 100 || status === "completed") {
+      return OrderStatus.Completed;
+    }
+    if (status === "canceled") {
+      return OrderStatus.Canceled;
+    }
+
+    if (new Date(Number(order.ask_deadline)).getTime() > Date.now() / 1000) return OrderStatus.Open;
+    return OrderStatus.Expired;
+  }
+}
 
 export const getOrders = async ({
   chainId,
@@ -324,9 +322,10 @@ export const getOrders = async ({
   const ids = orders.map((order: any) => order.Contract_id);
   const fills = await getAllFills({ endpoint, signal, ids });
   const statuses = await getOrderStatuses(ids, endpoint, signal);
-  orders = orders.map((order: any) => {
-    const fill = fills?.find((it) => it.TWAP_id === order.Contract_id);
-    return parseOrder(order, fill, statuses, config);
+  orders = orders.map((rawOrder: any) => {
+    const fill = fills?.find((it) => it.TWAP_id === rawOrder.Contract_id);
+    const status = statuses?.[rawOrder.Contract_id];
+    return new Order(rawOrder, fill, status);
   });
 
   const result = orderBy(orders, (o: any) => o.createdAt, "desc");
@@ -345,7 +344,7 @@ export const getOrderById = async ({ chainId, orderId, signal }: { chainId: numb
 
   const statuses = await getOrderStatuses(ids, endpoint, signal);
 
-  return parseOrder(order, fills?.[0], statuses);
+  return new Order(order, fills?.[0], statuses[order.Contract_id]);
 };
 
 export const getAllOrders = ({
