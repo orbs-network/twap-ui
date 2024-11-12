@@ -4,7 +4,6 @@ export * as hooks from "./hooks/index";
 export * from "./types";
 export * as Styles from "./styles";
 export * from "./context/context";
-export * from "./consts";
 export * as Components from "./components";
 export * from "./ErrorHandling";
 export * from "./ui-helper";
@@ -13,5 +12,6 @@ export { default as translations } from "./i18n/en.json";
 export * from "./hooks/query";
 export * from "./components/LimitPanel/hooks";
 export * from "./context/actions";
+export * from "./consts";
 
 export { Configs };

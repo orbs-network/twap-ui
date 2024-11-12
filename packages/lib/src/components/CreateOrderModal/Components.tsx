@@ -3,9 +3,9 @@ import { Button, TokenLogo } from "../base";
 import { useTokenDisplay } from "./hooks";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode, useMemo } from "react";
-import { useIsMarketOrder, useSubmitOrderButton } from "../../hooks";
 import { styled } from "styled-components";
 import { useTwapContext } from "../../context/context";
+import { useIsMarketOrder } from "../../hooks";
 
 export const TokenDispalySmall = ({ isSrc }: { isSrc?: boolean }) => {
   const { amount, token } = useTokenDisplay(isSrc);

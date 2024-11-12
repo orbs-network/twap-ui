@@ -190,7 +190,7 @@ export const useGetPriceUsdCallback = () => {
 
 export const usePriceUSD = (address?: string) => {
   const { config } = useDappContext();
-  const wToken = network(config.chainId).wToken.address;
+  const wToken = network(config.chainId)?.wToken.address;
   const { chainId } = useWeb3React();
   return useQuery<number>({
     queryKey: ["usePriceUSD", address, chainId],

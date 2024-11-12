@@ -1,4 +1,4 @@
-import { Config } from "@orbs-network/twap-ui";
+import { Config } from "@orbs-network/twap-sdk";
 import { createContext, useContext, useMemo } from "react";
 
 interface ContextProps {

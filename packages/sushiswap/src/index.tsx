@@ -18,9 +18,9 @@ import {
   compact,
   size,
   Configs,
-  Config,
-  stateActions,
+  query,
 } from "@orbs-network/twap-ui";
+import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import translations from "./i18n/en.json";
 import { createContext, FC, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
@@ -81,7 +81,6 @@ import { eqIgnoreCase, network } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
-import { TimeResolution } from "@orbs-network/twap-ui";
 
 const configs = [Configs.SushiArb, Configs.SushiBase, Configs.SushiEth];
 
@@ -386,6 +385,24 @@ const CustomButton = (props: ButtonProps) => {
   return null;
 };
 
+const Listener = () => {
+  const { limit } = useAdapterContext();
+  const { updateState } = useTwapContext();
+  const setCustomDuration = hooks.useSetDuration();
+
+  useEffect(() => {
+    if (limit) {
+      updateState({ isMarketOrder: false });
+      setCustomDuration({ unit: TimeUnit.Weeks, value: 1 });
+    } else {
+      updateState({ isMarketOrder: true });
+      setCustomDuration({ unit: TimeUnit.Minutes, value: 5 });
+    }
+  }, [limit, updateState, setCustomDuration]);
+
+  return null;
+};
+
 const TWAPContent = () => {
   const context = useAdapterContext();
   const provider = useProvider();
@@ -394,7 +411,6 @@ const TWAPContent = () => {
     return context.isDarkTheme ? darkTheme : lightTheme;
   }, [context.isDarkTheme]);
 
-  const parsedTokens = useParsedTokens();
   const { srcToken, dstToken } = useSelectedParsedTokens();
   const { srcUsd, dstUsd, nativeUsd } = useUsd();
 
@@ -413,7 +429,6 @@ const TWAPContent = () => {
           translations={translations as Translations}
           provider={provider}
           account={!context.configChainId ? undefined : context.account}
-          useParsedToken={useParsedToken}
           useDappToken={context.useToken}
           srcToken={srcToken}
           dstToken={dstToken}
@@ -432,8 +447,10 @@ const TWAPContent = () => {
           isExactAppoval={true}
           fee={"0.25"}
           nativeUsd={nativeUsd}
+          useParsedToken={useParsedToken}
         >
           <GlobalStyles />
+          <Listener />
           <StyledContent>
             {context.limit ? <LimitPanel /> : <TWAPPanel />}
             <Components.LimitPriceMessage />
@@ -482,7 +499,7 @@ const SubmitOrderModal = () => {
   const Modal = useAdapterContext().Modal;
 
   return (
-    <Modal open={isOpen} onClose={() => onClose()} title={!swapState ? "Review order" : ""}>
+    <Modal open={!!isOpen} onClose={() => onClose()} title={!swapState ? "Review order" : ""}>
       <StyledCreateOrderModal />
     </Modal>
   );
@@ -586,9 +603,9 @@ const ShowConfirmationButton = () => {
 };
 
 const TwapListener = () => {
-  const onChange = stateActions.useOnLimitMarketSwitch();
+  const onChange = hooks.useSetIsMarket();
   useEffect(() => {
-    onChange(true);
+    // onChange(true);
   }, [onChange]);
   return null;
 };
@@ -604,7 +621,6 @@ const TWAPPanel = () => {
       </StyledTop>
       <TradeIntervalSelect />
       <TotalTrades />
-
       <ShowConfirmationButton />
     </StyledContent>
   );
@@ -630,29 +646,29 @@ const LimitPanel = () => {
 const LimitPanelExpirationOptions = [
   {
     text: "1 Day",
-    value: TimeResolution.Days,
+    value: TimeUnit.Days,
   },
   {
     text: "1 Week",
-    value: TimeResolution.Weeks,
+    value: TimeUnit.Weeks,
   },
   {
     text: "1 Month",
-    value: TimeResolution.Months,
+    value: TimeUnit.Months,
   },
   {
     text: "1 Year",
-    value: TimeResolution.Years,
+    value: TimeUnit.Years,
   },
 ];
 
 const LimitPanelExpiration = () => {
   const selectedExpiry = hooks.useDuration().millis;
 
-  const setCustomDuration = stateActions.useSetCustomDuration();
+  const setCustomDuration = hooks.useSetDuration();
   const onChange = useCallback(
-    (resolution: TimeResolution) => {
-      setCustomDuration({ resolution, amount: 1 });
+    (unit: TimeUnit) => {
+      setCustomDuration({ unit, value: 1 });
     },
     [setCustomDuration],
   );

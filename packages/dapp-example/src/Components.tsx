@@ -24,8 +24,9 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
 import Backdrop from "@mui/material/Backdrop";
 import { Button, styled, TextField, Typography } from "@mui/material";
-import { Components, Config, hooks, isEmpty, size, Styles, Token } from "@orbs-network/twap-ui";
+import { Components, hooks, isEmpty, size, Styles, Token } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
+import { Config } from "@orbs-network/twap-sdk";
 
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
 import { BsMoon } from "@react-icons/all-files/bs/BsMoon";

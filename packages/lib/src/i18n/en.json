@@ -127,5 +127,6 @@
   "AverageExecutionPrice": "Avg. execution price",
   "twapMarket": "TWAP-market",
   "twapMarketOrder": "TWAP-market order",
-  "twapLimit": "dTWAP Limit"
+  "twapLimit": "dTWAP Limit",
+  "All": "All"
 }

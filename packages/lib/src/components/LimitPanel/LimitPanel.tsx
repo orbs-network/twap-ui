@@ -3,13 +3,12 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Icon, Label, NumericInput, TokenDisplay } from "../base";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
-import { createContext, FC, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, FC, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket, useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
 import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps, LimitPriceInputProps } from "../../types";
-import { useOnLimitPercentageClick } from "./hooks";
-import { amountUiV2, formatDecimals } from "../../utils";
+import { useLimitInput, useOnLimitPercentageClick } from "./hooks";
 import { useTwapContext } from "../../context/context";
-import { stateActions } from "../../context/actions";
+
 import { LimitSwitch } from "./LimitSwitch";
 import { MarketPriceWarning } from "../Components";
 interface Shared {
@@ -124,32 +123,8 @@ function Main({ className = "", onSrcSelect, onDstSelect, Components, styles }: 
 
 const Input = () => {
   const { Components } = useLimitPanelContext();
-  const { state, dstToken } = useTwapContext();
-  const { isInvertedLimitPrice, isCustomLimitPrice, customLimitPrice } = state;
-  const { isLoading, priceUi } = useLimitPrice();
-  const onChange = stateActions.useOnLimitChange();
+  const { value, onChange, isLoading } = useLimitInput();
   const isMarketOrder = useIsMarketOrder();
-
-  const limitPriceUi = useMemo(() => {
-    if (isCustomLimitPrice) {
-      return customLimitPrice;
-    }
-    let res = priceUi;
-
-    if (isInvertedLimitPrice) {
-      res = BN(1)
-        .div(res || 0)
-        .toString();
-    }
-
-    return formatDecimals(res);
-  }, [customLimitPrice, isCustomLimitPrice, isInvertedLimitPrice, priceUi, dstToken]);
-
-  const [value, setValue] = useState("");
-
-  useEffect(() => {
-    setValue(limitPriceUi || "");
-  }, [limitPriceUi]);
 
   return (
     <StyledInputContainer>
@@ -198,19 +173,19 @@ const PercentButton = ({ percent }: { percent: string }) => {
   const { isInvertedLimitPrice: inverted, isMarketOrder, limitPricePercent } = state;
   const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
 
-  const limitPrice = useLimitPrice().price;
+  const { price } = useLimitPrice();
   const Components = useLimitPanelContext().Components;
 
   const onPercentageChange = useOnLimitPercentageClick();
 
   const selected = useMemo(() => {
     const p = limitPricePercent || priceDeltaPercentage;
-    if (BN(limitPrice || 0).isZero()) {
+    if (BN(price || 0).isZero()) {
       return false;
     }
 
     return BN(p || 0).eq(percent);
-  }, [limitPricePercent, percent, isMarketOrder, limitPrice, priceDeltaPercentage]);
+  }, [limitPricePercent, percent, isMarketOrder, price, priceDeltaPercentage]);
 
   const prefix = percent === "0" ? "" : inverted ? "-" : !inverted && "+";
   if (Components?.PercentButton) {
@@ -256,7 +231,7 @@ const ZeroButton = () => {
 
 const TokenSelect = () => {
   const { state, srcToken, dstToken } = useTwapContext();
-  const { isInvertedLimitPrice: inverted } = state;
+  const inverted = state.isInvertedLimitPrice;
   const Components = useLimitPanelContext().Components;
   const token = inverted ? srcToken : dstToken;
   const { onDstSelect, onSrcSelect } = useLimitPanelContext();
@@ -266,8 +241,19 @@ const TokenSelect = () => {
   return <DefaultTokenSelect isSrcToken={!!inverted} token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
 };
 
+const useInvertLimit = () => {
+  const { state, updateState } = useTwapContext();
+
+  return useCallback(() => {
+    updateState({
+      isInvertedLimitPrice: !state.isInvertedLimitPrice,
+      limitPricePercent: undefined,
+    });
+  }, [state.isInvertedLimitPrice, updateState]);
+};
+
 const InvertPrice = () => {
-  const onInvert = stateActions.useInvertLimit();
+  const onInvert = useInvertLimit();
 
   return (
     <StyledInvertprice onClick={onInvert} className="twap-limit-panel-invert-button">

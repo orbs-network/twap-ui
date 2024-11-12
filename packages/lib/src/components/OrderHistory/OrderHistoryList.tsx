@@ -5,14 +5,13 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList } from "react-window";
 import { useTwapContext } from "../../context/context";
 import { useFormatNumberV2 } from "../../hooks";
-import { useParseOrderUi } from "../../hooks/orders";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
-import { HistoryOrder, OrderUI, Token, Translations } from "../../types";
 import { LinearProgress, Loader, TokenLogo } from "../base";
-import { useOrderHistoryContext } from "./context";
+import { useOrderHistoryContext, useTokenFromList } from "./context";
 import * as React from "react";
-
 import { size } from "../../utils";
+import { Order } from "@orbs-network/twap-sdk";
+import moment from "moment";
 
 export const OrderHistoryList = () => {
   const { selectOrder, orders, selectedOrderId, isLoading } = useOrderHistoryContext();
@@ -102,33 +101,24 @@ const StyledEmpty = styled(StyledColumnFlex)({
 });
 
 const ListOrder = React.memo(
-  ({ order: parsedOrder, index, setSize, onSelect }: { order?: HistoryOrder; index: number; setSize: (index: number, value: number) => void; onSelect: (id?: number) => void }) => {
-    const order = useParseOrderUi(parsedOrder);
+  ({ order, index, setSize, onSelect }: { order?: Order; index: number; setSize: (index: number, value: number) => void; onSelect: (id?: number) => void }) => {
     const root = useRef<any>();
     useEffect(() => {
-      setSize(index, root.current.getBoundingClientRect().height);
+      setSize(index, root.current?.getBoundingClientRect().height);
     }, [index]);
 
-    const onClick = useCallback(() => {
-      if (!order?.isLoading) {
-        onSelect(parsedOrder?.id);
-      }
-    }, [order?.isLoading, onSelect, parsedOrder?.id]);
-
-    if (!order) {
-      return <div></div>;
-    }
+    if (!order) return null;
 
     return (
-      <Wrapper className="twap-order" ref={root} onClick={onClick}>
+      <Wrapper className="twap-order" ref={root} onClick={() => onSelect(order?.id)}>
         <StyledListOrder className="twap-order-container">
           <ListItemHeader order={order} />
           <LinearProgressWithLabel value={order.progress || 0} />
 
           <StyledRowFlex className="twap-order-tokens">
-            <TokenDisplay token={order.srcToken} isLoading={order.isLoading} />
+            <TokenDisplay address={order.srcTokenAddress} />
             <HiArrowRight className="twap-order-tokens-arrow" />
-            <TokenDisplay token={order.dstToken} isLoading={order.isLoading} />
+            <TokenDisplay address={order.dstTokenAddress} />
           </StyledRowFlex>
         </StyledListOrder>
       </Wrapper>
@@ -136,15 +126,19 @@ const ListOrder = React.memo(
   },
 );
 
-const ListItemHeader = ({ order }: { order: OrderUI }) => {
+const ListItemHeader = ({ order }: { order: Order }) => {
   const t = useTwapContext().translations;
-  const status = order && t[order.status as keyof Translations];
+  const status = order && order.status;
+
+  const formattedDate = React.useMemo(() => {
+    return moment(order.createdAt).format("DD/MM/YYYY HH:mm");
+  }, [order.createdAt]);
 
   return (
     <StyledHeader className="twap-order-header">
       <StyledText className="twap-order-header-text">
         {" "}
-        #{order?.id} {order?.isMarketOrder ? t.twapMarket : t.limit} <span>{`(${order?.createdAtUi})`}</span>
+        #{order?.id} {order?.isMarketOrder ? t.twapMarket : t.limit} <span>{`(${formattedDate})`}</span>
       </StyledText>
       <StyledText className="twap-order-header-status">{status}</StyledText>
     </StyledHeader>
@@ -192,11 +186,13 @@ const StyledListOrder = styled(StyledColumnFlex)({
   },
 });
 
-const TokenDisplay = ({ token, amount, isLoading }: { token?: Token; amount?: string; isLoading: boolean }) => {
+const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }) => {
+  const token = useTokenFromList(address);
   const _amount = useFormatNumberV2({ value: amount, decimalScale: 4 });
+
   return (
     <StyledTokenDisplay className="twap-order-token">
-      {isLoading ? (
+      {!token ? (
         <StyledTokenDisplayLoader />
       ) : (
         <>

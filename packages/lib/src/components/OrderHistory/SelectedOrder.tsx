@@ -1,20 +1,28 @@
+import React from "react";
 import styled from "styled-components";
-
 import { useTwapContext } from "../../context/context";
 import { useCancelOrder } from "../../hooks/useTransactions";
 import { StyledColumnFlex, StyledText } from "../../styles";
 import { Button } from "../base";
 import { Separator } from "../Components";
-import { useFormatNumberV2 } from "../../hooks/hooks";
-import { useOrderById } from "../../hooks/orders";
-import { OrderUI, Status, Token } from "../../types";
+import { useAmountUi, useFormatNumberV2 } from "../../hooks/hooks";
+import { Token } from "../../types";
 import { OrderDisplay } from "../OrderDisplay";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
-export const SelectedOrder = ({ selectedOrderId }: { selectedOrderId?: number }) => {
-  const order = useOrderById(selectedOrderId);
+import { OrderStatus, Order } from "@orbs-network/twap-sdk";
+import { useOrderHistoryContext, useSelectedOrder, useTokenFromList } from "./context";
+import moment from "moment";
+
+export const SelectedOrder = () => {
+  const order = useSelectedOrder();
+  const config = useTwapContext().config;
+
+  const { selectedOrderId } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
+  const srcToken = useTokenFromList(order?.srcTokenAddress);
+  const dstToken = useTokenFromList(order?.dstTokenAddress);
 
   useEffect(() => {
     setExpanded("panel1");
@@ -30,8 +38,8 @@ export const SelectedOrder = ({ selectedOrderId }: { selectedOrderId?: number })
     <Container className="twap-orders-selected-order">
       <OrderDisplay>
         <OrderDisplay.Tokens>
-          <OrderDisplay.SrcToken token={order.srcToken} />
-          <OrderDisplay.DstToken token={order.dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={order.fillDelay} />
+          <OrderDisplay.SrcToken token={srcToken} />
+          <OrderDisplay.DstToken token={dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={order.getFillDelay(config)} />
         </OrderDisplay.Tokens>
         <Separator />
         <StyledColumnFlex gap={15}>
@@ -80,28 +88,33 @@ const StyledDetails = styled.div({
   flexDirection: "column",
 });
 
-const OrderInfo = ({ order }: { order: OrderUI }) => {
+const OrderInfo = ({ order }: { order: Order }) => {
   const isTwap = (order?.totalChunks || 0) > 1;
+  const srcToken = useTokenFromList(order?.srcTokenAddress);
+  const dstToken = useTokenFromList(order?.dstTokenAddress);
+  const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcChunkAmount);
+  const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmount);
+  const config = useTwapContext().config;
   return (
     <>
       <LimitPrice order={order} />
       <CreatedAt order={order} />
       <OrderDisplay.Expiry deadline={order?.deadline} />
       <AmountIn order={order} />
-      {isTwap && <OrderDisplay.ChunkSize srcChunkAmount={order?.srcChunkAmountUi} srcToken={order?.srcToken} />}
+      {isTwap && <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />}
       {isTwap && <OrderDisplay.ChunksAmount chunks={order?.totalChunks} />}
-      <OrderDisplay.MinDestAmount totalChunks={order?.totalChunks} dstToken={order?.dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={order?.dstMinAmountOutUi} />
-      {isTwap && <OrderDisplay.TradeInterval fillDelayMillis={order?.fillDelay} />}
+      <OrderDisplay.MinDestAmount totalChunks={order?.totalChunks} dstToken={dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={dstMinAmountOutUi} />
+      {isTwap && <OrderDisplay.TradeInterval fillDelayMillis={order?.getFillDelay(config)} />}
       <OrderDisplay.Recipient />
       <OrderDisplay.TxHash txHash={order?.txHash} />
     </>
   );
 };
 
-const ExcecutionSummary = ({ order }: { order: OrderUI }) => {
+const ExcecutionSummary = ({ order }: { order: Order }) => {
   return (
     <>
-      <OrderStatus order={order} />
+      <OrderStatusComponent order={order} />
       <AmountInFilled order={order} />
       <AmountOutFilled order={order} />
       <Progress order={order} />
@@ -112,11 +125,11 @@ const ExcecutionSummary = ({ order }: { order: OrderUI }) => {
 
 const Container = styled(StyledColumnFlex)({});
 
-export const CancelOrderButton = ({ order }: { order: OrderUI }) => {
+export const CancelOrderButton = ({ order }: { order: Order }) => {
   const { isLoading, mutate: cancel } = useCancelOrder();
   const translations = useTwapContext().translations;
 
-  if (!order || order.status !== Status.Open) return null;
+  if (!order || order.status !== OrderStatus.Open) return null;
 
   return (
     <StyledCancelOrderButton
@@ -135,53 +148,60 @@ const StyledCancelOrderButton = styled(Button)({
   marginTop: 0,
 });
 
-const CreatedAt = ({ order }: { order: OrderUI }) => {
+const CreatedAt = ({ order }: { order: Order }) => {
+  const createdAtUi = useMemo(() => moment(order?.createdAt).format("DD/MM/YYYY HH:mm"), [order?.createdAt]);
   return (
     <OrderDisplay.DetailRow title="Created at">
-      <StyledText>{order?.createdAtUi}</StyledText>
+      <StyledText>{createdAtUi}</StyledText>
     </OrderDisplay.DetailRow>
   );
 };
 
-const AmountOutFilled = ({ order }: { order: OrderUI }) => {
-  const amount = useFormatNumberV2({ value: order?.dstAmount, decimalScale: 3 });
+const AmountOutFilled = ({ order }: { order: Order }) => {
+  const dstToken = useTokenFromList(order?.dstTokenAddress);
+  const dstAmountUi = useAmountUi(dstToken?.decimals, order.dstFilledAmount);
+  const amount = useFormatNumberV2({ value: dstAmountUi, decimalScale: 3 });
 
   return (
     <OrderDisplay.DetailRow title="Amount received">
       <StyledText>
-        {amount || 0} {order?.dstToken?.symbol}
+        {amount || 0} {dstToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );
 };
 
-const AmountIn = ({ order }: { order: OrderUI }) => {
-  const amount = useFormatNumberV2({ value: order?.srcAmountUi, decimalScale: 3 });
+const AmountIn = ({ order }: { order: Order }) => {
+  const srcToken = useTokenFromList(order?.srcTokenAddress);
+  const srcAmountUi = useAmountUi(srcToken?.decimals, order.srcAmount);
+  const amount = useFormatNumberV2({ value: srcAmountUi, decimalScale: 3 });
 
   return (
     <OrderDisplay.DetailRow title="Amount out">
       <StyledText>
-        {amount || 0} {order?.srcToken?.symbol}
+        {amount || 0} {srcToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );
 };
 
-const AmountInFilled = ({ order }: { order: OrderUI }) => {
-  const amount = useFormatNumberV2({ value: order?.srcFilledAmountUi, decimalScale: 3 });
+const AmountInFilled = ({ order }: { order: Order }) => {
+  const srcToken = useTokenFromList(order?.srcTokenAddress);
+  const srcFilledAmountUi = useAmountUi(srcToken?.decimals, order.srcFilledAmount);
+  const amount = useFormatNumberV2({ value: srcFilledAmountUi, decimalScale: 3 });
 
   return (
     <OrderDisplay.DetailRow title="Amount sent">
       <StyledText>
-        {amount || 0} {order?.srcToken?.symbol}
+        {amount || 0} {srcToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );
 };
-const OrderStatus = ({ order }: { order: OrderUI }) => {
+const OrderStatusComponent = ({ order }: { order: Order }) => {
   const t = useTwapContext().translations;
 
-  const text = !order ? "" : t[order.status as keyof typeof t];
+  const text = !order ? "" : order.status;
 
   return (
     <OrderDisplay.DetailRow title="Status">
@@ -190,7 +210,7 @@ const OrderStatus = ({ order }: { order: OrderUI }) => {
   );
 };
 
-const Progress = ({ order }: { order: OrderUI }) => {
+const Progress = ({ order }: { order: Order }) => {
   const progress = useFormatNumberV2({ value: order?.progress, decimalScale: 2 });
   if (order?.totalChunks === 1) return null;
   return (
@@ -200,21 +220,33 @@ const Progress = ({ order }: { order: OrderUI }) => {
   );
 };
 
-const LimitPrice = ({ order }: { order: OrderUI }) => {
+const LimitPrice = ({ order }: { order: Order }) => {
+  const srcToken = useTokenFromList(order.srcTokenAddress);
+  const dstToken = useTokenFromList(order.dstTokenAddress);
+
+  const limitPrice = useMemo(() => {
+    if (!srcToken || !dstToken) return;
+    return order.getLimitPrice(srcToken.decimals, dstToken.decimals);
+  }, [order, srcToken, dstToken]);
+  const limitPriceF = useFormatNumberV2({ value: limitPrice });
+
   if (order?.isMarketOrder) return null;
-  return <Price title="Limit price" price={order?.limitPrice} srcToken={order?.srcToken} dstToken={order?.dstToken} />;
+  return <Price title="Limit price" price={limitPriceF} srcToken={srcToken} dstToken={dstToken} />;
 };
 
-const AvgExcecutionPrice = ({ order }: { order: OrderUI }) => {
+const AvgExcecutionPrice = ({ order }: { order: Order }) => {
   const t = useTwapContext().translations;
-  return (
-    <Price
-      title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice}
-      price={order?.excecutionPrice}
-      srcToken={order?.srcToken}
-      dstToken={order?.dstToken}
-    />
-  );
+  const srcToken = useTokenFromList(order.srcTokenAddress);
+  const dstToken = useTokenFromList(order.dstTokenAddress);
+
+  const excecutionPrice = useMemo(() => {
+    if (!srcToken || !dstToken) return;
+    return order.getExcecutionPrice(srcToken.decimals, dstToken.decimals);
+  }, [order, srcToken, dstToken]);
+
+  const excecutionPriceF = useFormatNumberV2({ value: excecutionPrice });
+
+  return <Price title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice} price={excecutionPriceF} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?: Token; dstToken?: Token; title: string }) => {

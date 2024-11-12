@@ -1,9 +1,10 @@
 import { TokenData, parsebn, maxUint256, bn } from "@defi.org/web3-candies";
 import moment from "moment";
-import { AddressPadding, Config, Translations } from "./types";
-import { EXPLORER_URLS, QUERY_PARAMS, STABLE_TOKENS } from "./consts";
+import { AddressPadding, Translations } from "./types";
 import BN from "bignumber.js";
-import { THE_GRAPH_ORDERS_API } from "./config";
+import { networks, THE_GRAPH_ORDERS_API } from "./config";
+import { Config } from "@orbs-network/twap-sdk";
+import { EXPLORER_URLS } from "./consts";
 export const logger = (...args: any[]) => {
   // let debug;
   // if (window) {
@@ -180,8 +181,6 @@ export const isNativeBalanceError = (error: any) => {
   } catch (error) {}
 };
 
-export const isStableCoin = (token?: TokenData) => STABLE_TOKENS.includes(token?.symbol.toLowerCase() || "");
-
 export const getConfig = (configs: Config[], chainId?: number): Config => {
   return configs.find((it) => it.chainId === chainId) || configs[0];
 };
@@ -223,20 +222,9 @@ export const setQueryParam = (name: string, value?: string) => {
   // window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
 };
 
-export const limitPriceFromQueryParams = () => {
-  const price = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
-  if (price && BN(price).gt(0)) {
-    return formatDecimals(price);
-  }
-};
+export const limitPriceFromQueryParams = () => {};
 
-export const resetQueryParams = () => {
-  setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
-  setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
-  setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
-  setQueryParam(QUERY_PARAMS.TRADE_INTERVAL, undefined);
-  setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
-};
+export const resetQueryParams = () => {};
 
 export const groupBy = (array: any = [], key: string) => {
   return array.reduce((result: any, currentItem: any) => {
@@ -401,4 +389,8 @@ export const flatMapObject = <T, U = T>(obj?: T, iteratee?: (value: T, key: stri
   return Object.entries(obj).flatMap(([key, value]) => {
     return iteratee ? iteratee(value as any, key) : [value as unknown as U];
   });
+};
+
+export const getNetwork = (id?: number) => {
+  return Object.values(networks).find((network) => network.id === id);
 };

@@ -1,20 +1,17 @@
 import { styled } from "styled-components";
-import { ReactNode, useCallback } from "react";
-import { stateActions } from "../context/actions";
+import { ReactNode, useCallback, useMemo } from "react";
 import { useTwapContext } from "../context/context";
 import { StyledColumnFlex } from "../styles";
-import { TimeResolution } from "../types";
 import { handleFillDelayText } from "../utils";
 import { BottomContent, Label, Message, NumericInput, ResolutionSelect } from "./base";
-import { useFillDelayWarning, useMinimumDelayMinutes, useShouldWrapOrUnwrapOnly } from "../hooks/lib";
+import { useFillDelay, useMinimumDelayMinutes, useSetFillDelay, useShouldWrapOrUnwrapOnly } from "../hooks/lib";
+import { TimeUnit } from "@orbs-network/twap-sdk";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const fillDelay = useTwapContext().state.customFillDelay;
-  const setFillDelay = stateActions.useSetCustomFillDelay();
+  const fillDelay = useTwapContext().state.typedFillDelay;
+  const setFillDelay = useSetFillDelay();
 
-  return (
-    <StyledInput className={className} value={fillDelay.amount} onChange={(v) => setFillDelay({ resolution: fillDelay.resolution, amount: Number(v) })} placeholder={placeholder} />
-  );
+  return <StyledInput className={className} value={fillDelay.value} onChange={(v) => setFillDelay({ unit: fillDelay.unit, value: Number(v) })} placeholder={placeholder} />;
 };
 
 const StyledInput = styled(NumericInput)({
@@ -24,17 +21,17 @@ const StyledInput = styled(NumericInput)({
 });
 
 const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
-  const fillDelay = useTwapContext().state.customFillDelay;
-  const setFillDelay = stateActions.useSetCustomFillDelay();
+  const fillDelay = useTwapContext().state.typedFillDelay;
+  const setFillDelay = useSetFillDelay();
 
   const onChange = useCallback(
-    (resolution: TimeResolution) => {
-      setFillDelay({ resolution, amount: fillDelay.amount });
+    (unit: TimeUnit) => {
+      setFillDelay({ unit, value: fillDelay.value });
     },
-    [fillDelay.amount, setFillDelay],
+    [fillDelay.value, setFillDelay],
   );
 
-  return <ResolutionSelect className={className} resolution={fillDelay.resolution} onChange={onChange} />;
+  return <ResolutionSelect className={className} unit={fillDelay.unit} onChange={onChange} />;
 };
 
 export const TradeInterval = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
@@ -53,13 +50,13 @@ export const TradeInterval = ({ children, className = "" }: { children: ReactNod
 };
 
 const WarningComponent = () => {
-  const warning = useFillDelayWarning();
+  const fillDelayWarning = useFillDelay().warning;
 
-  if (!warning) return null;
+  if (!fillDelayWarning) return null;
 
   return (
     <BottomContent>
-      <Message title={warning} variant="warning" />
+      <Message title={fillDelayWarning} variant="warning" />
     </BottomContent>
   );
 };

@@ -1,24 +1,16 @@
 import { styled } from "styled-components";
 import { FC, ReactNode, useCallback, useMemo } from "react";
-import { stateActions } from "../context/actions";
 import { useTwapContext } from "../context/context";
-import { useDuration, useShouldWrapOrUnwrapOnly, useMinDuration, useTradeDurationWarning } from "../hooks/lib";
+import { useDuration, useShouldWrapOrUnwrapOnly, useSetDuration, useIsPartialFillWarning } from "../hooks/lib";
 import { StyledColumnFlex } from "../styles";
-import { TimeResolution } from "../types";
 import { BottomContent, Button, Label, Message, NumericInput, ResolutionSelect } from "./base";
+import { TimeUnit } from "@orbs-network/twap-sdk";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const duration = useDuration().duration;
-  const setCustomDuration = stateActions.useSetCustomDuration();
+  const duration = useDuration().timeDuration;
+  const setCustomDuration = useSetDuration();
 
-  return (
-    <StyledInput
-      className={className}
-      value={duration.amount}
-      onChange={(v) => setCustomDuration({ resolution: duration.resolution, amount: Number(v) })}
-      placeholder={placeholder}
-    />
-  );
+  return <StyledInput className={className} value={duration.value} onChange={(v) => setCustomDuration({ unit: duration.unit, value: Number(v) })} placeholder={placeholder} />;
 };
 
 const StyledInput = styled(NumericInput)({
@@ -28,17 +20,17 @@ const StyledInput = styled(NumericInput)({
 });
 
 const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
-  const duration = useDuration().duration;
-  const setCustomDuration = stateActions.useSetCustomDuration();
+  const duration = useDuration().timeDuration;
+  const setCustomDuration = useSetDuration();
 
   const onChange = useCallback(
-    (resolution: TimeResolution) => {
-      setCustomDuration({ resolution, amount: duration.amount });
+    (unit: TimeUnit) => {
+      setCustomDuration({ unit, value: duration.value });
     },
-    [duration.amount, setCustomDuration],
+    [duration.value, setCustomDuration],
   );
 
-  return <ResolutionSelect className={className} resolution={duration.resolution} onChange={onChange} />;
+  return <ResolutionSelect className={className} unit={duration.unit} onChange={onChange} />;
 };
 
 export const TradeDuration = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
@@ -56,23 +48,20 @@ export const TradeDuration = ({ children, className = "" }: { children: ReactNod
   );
 };
 
-const usePartialFillWarning = () => {
-  const minDurationMillis = useMinDuration().millis;
-  const tradeDuration = useDuration().millis;
+const WarningComponent = () => {
   const { translations: t } = useTwapContext();
+  const durationWarning = useDuration().warning;
+  const partialFillWarning = useIsPartialFillWarning();
 
-  return useMemo(() => {
-    if (!tradeDuration) return;
-    if (minDurationMillis > tradeDuration) {
+  const warning = useMemo(() => {
+    if (durationWarning) {
+      return durationWarning;
+    }
+
+    if (partialFillWarning) {
       return t.partialFillWarning;
     }
-  }, [minDurationMillis, tradeDuration, t]);
-};
-
-const WarningComponent = () => {
-  const durationWarning = useTradeDurationWarning();
-  const partialFillWarning = usePartialFillWarning();
-  const warning = durationWarning || partialFillWarning;
+  }, [durationWarning, partialFillWarning, t]);
 
   if (!warning) return null;
 
@@ -93,10 +82,11 @@ const MaxDurationLabel = () => {
 };
 
 const Reset = ({ Component }: { Component?: FC<{ onClick: () => void }> }) => {
-  const setCustomDuration = stateActions.useSetCustomDuration();
-  const customDuration = useTwapContext().state.customDuration;
+  const setCustomDuration = useSetDuration();
+  const { state } = useTwapContext();
+  const { typedDuration } = state;
 
-  if (!customDuration) return null;
+  if (!typedDuration) return null;
 
   if (Component) {
     return <Component onClick={() => setCustomDuration(undefined)} />;

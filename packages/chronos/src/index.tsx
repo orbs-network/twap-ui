@@ -7,12 +7,10 @@ import {
   TWAPTokenSelectProps,
   hooks,
   TWAPProps,
-  ORDERS_CONTAINER_ID,
   Styles,
   size,
   compact,
   TooltipProps,
-  Status,
   Configs,
   Token,
 } from "@orbs-network/twap-ui";
@@ -52,6 +50,7 @@ import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 import { ThemeProvider } from "styled-components";
+import { OrderStatus } from "@orbs-network/twap-sdk";
 
 const useMobile = () => {
   return hooks.useWindowWidth() < 768;
@@ -68,7 +67,7 @@ interface ChronosTWAPProps extends TWAPProps {
 const uiPreferences: TwapContextUIPreferences = {
   getOrdersTabsLabel: (name: string, amount: number) => `${name} (${amount})`,
   qrSize: 120,
-  orderTabsToExclude: [Status.Canceled],
+  orderTabsToExclude: [OrderStatus.Canceled],
 };
 
 const makeElipsisAddress = (address?: string, padding = 6): string => {
@@ -370,49 +369,6 @@ const TWAP = (props: ChronosTWAPProps) => {
   );
 };
 
-const MobileTabs = () => {
-  const setTab = hooks.stateActions.useSelectOrdersTab();
-  const tab = useTwapContext().state.selectedOrdersTab;
-
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const onSelected = (value: number) => {
-    setTab(value);
-    setAnchorEl(null);
-  };
-
-  return (
-    <>
-      <StyledMobileTabsMenuButton aria-controls={open ? "basic-menu" : undefined} aria-expanded={open ? "true" : undefined} onClick={handleClick}>
-        <TwapStyles.StyledRowFlex gap={5}>
-          <VscSettings />
-        </TwapStyles.StyledRowFlex>
-      </StyledMobileTabsMenuButton>
-    </>
-  );
-};
-
-const OrdersLayout = () => {
-  const mobile = useMobile();
-
-  return (
-    <StyledOrders className="twap-orders">
-      <StyledOrdersHeader className="twap-chronos-orders-header">
-        <StyledOrderHeaderRight className="twap-chronos-orders-header-right">
-          <Components.Base.Odnp />
-        </StyledOrderHeaderRight>
-      </StyledOrdersHeader>
-    </StyledOrders>
-  );
-};
-
 const TWAPPanel = () => {
   return (
     <div className="twap-container">
@@ -461,7 +417,6 @@ const TotalTrades = () => {
         </div>
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
           <Components.ChunkSelector.Input />
-          <Components.ChunkSelector.Slider />
         </Styles.StyledRowFlex>
       </div>
     </Components.ChunkSelector>

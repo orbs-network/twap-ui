@@ -22,6 +22,7 @@ import {
   useSrcAmount,
   useSrcChunkAmount,
   useSwapPrice,
+  useToggleDisclaimer,
   useUsdAmount,
 } from "../../../hooks/lib";
 import { useMemo } from "react";
@@ -74,8 +75,8 @@ const MarketWarning = ({ isMarketOrder }: { isMarketOrder?: boolean }) => {
 };
 
 export const AcceptDisclaimer = ({ className }: { className?: string }) => {
-  const { translations: t, uiPreferences, state } = useTwapContext();
-  const handleDisclaimer = stateActions.useHandleDisclaimer();
+  const { translations: t, state } = useTwapContext();
+  const onChange = useToggleDisclaimer();
   const { disclaimerAccepted } = state;
 
   return (
@@ -90,7 +91,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
         </>
       }
     >
-      <Switch checked={disclaimerAccepted} onChange={handleDisclaimer} />
+      <Switch checked={!!disclaimerAccepted} onChange={onChange} />
     </OrderDisplay.DetailRow>
   );
 };
@@ -188,7 +189,7 @@ const Fee = () => {
     return BN(outAmount).multipliedBy(fee).dividedBy(100).toFixed().toString();
   }, [fee, outAmount, isMarketOrder]);
 
-  const amountUi = useFormatNumberV2({ value: useAmountUi(dstToken?.decimals, amount)});
+  const amountUi = useFormatNumberV2({ value: useAmountUi(dstToken?.decimals, amount) });
 
   if (!fee) return null;
   return <OrderDisplay.DetailRow title={`Fee (${fee}%)`}>{amountUi ? `${amountUi} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>;

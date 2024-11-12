@@ -3,8 +3,8 @@ import { ReactNode } from "react";
 import { useTwapContext } from "../context/context";
 import { useFormatNumberV2 } from "../hooks/hooks";
 import { StyledColumnFlex } from "../styles";
-import { BottomContent, Label, Loader, Message, NumericInput, Slider } from "./base";
-import { useChunks, useMaxPossibleChunks, useSetChunks, useShouldWrapOrUnwrapOnly, useSrcChunkAmount, useSrcChunkAmountUsd, useTradeSizeWarning } from "../hooks/lib";
+import { BottomContent, Label, Message, NumericInput, Slider } from "./base";
+import { useChunks, useSetChunks, useShouldWrapOrUnwrapOnly, useSrcChunkAmount, useSrcChunkAmountUsd, useTradeSizeWarning } from "../hooks/lib";
 
 export const ChunkSelector = ({ className = "", children }: { className?: string; children: ReactNode }) => {
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
@@ -52,22 +52,10 @@ const StyledWarning = styled(Message)({
 
 const Input = ({ className }: { className?: string }) => {
   const chunks = useChunks();
+
   const setChunks = useSetChunks();
 
   return <StyledChunksInput className={className} placeholder="0" value={chunks} decimalScale={0} onChange={(value) => setChunks(Number(value))} />;
-};
-
-const SliderComponent = ({ className }: { className?: string }) => {
-  const chunks = useChunks();
-  const setChunks = useSetChunks();
-  const maxPossibleChunks = useMaxPossibleChunks();
-  const srcUsd = useTwapContext().srcUsd;
-
-  if (!srcUsd) {
-    return <Loader height="100%" />;
-  }
-
-  return <Slider className={className} min={1} max={maxPossibleChunks === 1 ? maxPossibleChunks + 0.0001 : maxPossibleChunks} value={chunks} onChange={setChunks} />;
 };
 
 const StyledMessage = styled(Message)({
@@ -88,7 +76,6 @@ export const TotalTradesLabel = () => {
   );
 };
 
-ChunkSelector.Slider = SliderComponent;
 ChunkSelector.Input = Input;
 ChunkSelector.Label = TotalTradesLabel;
 

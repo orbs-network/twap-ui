@@ -1,15 +1,15 @@
 import { FC, useCallback } from "react";
 import styled from "styled-components";
 import { useTwapContext } from "../../context/context";
-import { stateActions } from "../../hooks";
+import { useSetIsMarket } from "../../hooks";
 import { StyledRowFlex } from "../../styles";
 import { LimitSwitchArgs } from "../../types";
 
 export const LimitSwitch = ({ className = "", Component }: { className?: string; Component?: FC<LimitSwitchArgs> }) => {
-  const { state, isLimitPanel } = useTwapContext();
+  const { isLimitPanel, state } = useTwapContext();
 
   const { isMarketOrder } = state;
-  const onChange = stateActions.useOnLimitMarketSwitch();
+  const onChange = useSetIsMarket();
 
   const onSelect = useCallback(
     (value: boolean) => {

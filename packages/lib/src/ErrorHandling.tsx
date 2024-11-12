@@ -1,8 +1,6 @@
 import { styled } from "styled-components";
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useTwapContext } from ".";
-import { analytics } from "./analytics";
 
 const StyledContainer = styled("div")<{ isDarkTheme?: number }>(({ theme, isDarkTheme }) => {
   return {
@@ -41,7 +39,6 @@ export function TwapErrorWrapper({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundary
       onError={(error) => {
-        analytics.onUiCreashed(error);
         // You can also log the error to an error reporting service like AppSignal
         // logErrorToMyService(error, errorInfo);
         console.error(error);
@@ -55,12 +52,7 @@ export function TwapErrorWrapper({ children }: { children: React.ReactNode }) {
 
 export function OrdersErrorWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <ErrorBoundary
-      onError={(error) => {
-        analytics.onUiCreashed(error);
-      }}
-      fallbackRender={OrdersFallbackUI}
-    >
+    <ErrorBoundary fallbackRender={OrdersFallbackUI}>
       <>{children}</>
     </ErrorBoundary>
   );

@@ -1,5 +1,3 @@
-import { TimeResolution } from "./types";
-
 export const REFETCH_ORDER_HISTORY = 40_000;
 export const REFETCH_USD = 15_000;
 export const REFETCH_BALANCE = 15_000;
@@ -36,14 +34,8 @@ export const MIN_TRADE_INTERVAL = 5 * 60 * 1000;
 
 export const MAX_TRADE_INTERVAL = 30 * 24 * 60 * 60 * 1000;
 
-const millisInADay = 24 * 60 * 60 * 1000;
-
-export const MIN_TRADE_INTERVAL_FORMATTED = new Date(MIN_TRADE_INTERVAL).getMinutes();
-export const MAX_TRADE_INTERVAL_FORMATTED = MAX_TRADE_INTERVAL / millisInADay;
-
 export const MAX_DURATION_MILLIS = 30 * 24 * 60 * 60 * 1000;
 export const MIN_DURATION_MILLIS = 5 * 60 * 1000;
-export const MIN_DURATION_MILLIS_FORMATTED = new Date(MIN_DURATION_MILLIS).getMinutes();
 
 export const EXPLORER_URLS = {
   1: "https://etherscan.io",
@@ -55,13 +47,8 @@ export const EXPLORER_URLS = {
   42161: "https://arbiscan.io",
 };
 
-export const STABLE_TOKENS = ["usdc", "dai", "usdt", "busd", "tusd", "susd"];
-
-export const defaultCustomFillDelay = { resolution: TimeResolution.Minutes, amount: MIN_TRADE_INTERVAL_FORMATTED };
-
 export const WAIT_FOR_ORDER_LOCAL_STORAGE = "WAIT_FOR_ORDER";
 
 export const ORBS_LOGO = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/orbslogo.svg";
 export const ORBS_LOGO_FALLBACK = "https://www.orbs.com/assets/img/common/logo.svg";
-
 export const TX_GAS_COST = 500_000;

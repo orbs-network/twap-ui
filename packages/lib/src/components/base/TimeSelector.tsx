@@ -1,29 +1,29 @@
 import { styled } from "styled-components";
 import { useCallback, useState } from "react";
-import { useTwapContext } from "../../context/context";
-import { Duration, TimeResolution, Translations } from "../../types";
+import { Translations } from "../../types";
 import NumericInput from "./NumericInput";
 import { StyledRowFlex } from "../../styles";
 import { SelectMenu } from "./SelectMenu";
+import { TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 
-const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
+const timeArr: { text: keyof Translations; value: TimeUnit }[] = [
   {
     text: "minutes",
-    value: TimeResolution.Minutes,
+    value: TimeUnit.Minutes,
   },
   {
     text: "hours",
-    value: TimeResolution.Hours,
+    value: TimeUnit.Hours,
   },
   {
     text: "days",
-    value: TimeResolution.Days,
+    value: TimeUnit.Days,
   },
 ];
 
 interface Props {
-  value: Duration;
-  onChange: ({ resolution, amount }: Duration) => void;
+  value: TimeDuration;
+  onChange: (timeDuration: TimeDuration) => void;
   disabled?: boolean;
   className?: string;
   onFocus?: () => void;
@@ -33,8 +33,8 @@ interface Props {
 
 export function TimeSelector({ value, onChange, disabled = false, className = "", onFocus, onBlur, placeholder = "0" }: Props) {
   const onResolutionSelect = useCallback(
-    (resolution: TimeResolution) => {
-      onChange({ resolution, amount: value.amount });
+    (unit: TimeUnit) => {
+      onChange({ unit, value: value.value });
     },
     [onChange],
   );
@@ -45,30 +45,25 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
         onBlur={onBlur}
         onFocus={onFocus}
         disabled={disabled}
-        value={value.amount}
-        onChange={(v) => onChange({ resolution: value.resolution, amount: Number(v) })}
+        value={value.value}
+        onChange={(v) => onChange({ unit: value.unit, value: Number(v) })}
         placeholder={placeholder}
       />
 
-      <ResolutionSelect resolution={value.resolution} onChange={onResolutionSelect} />
+      <ResolutionSelect unit={value.unit} onChange={onResolutionSelect} />
     </StyledContainer>
   );
 }
 
-export const ResolutionSelect = ({ onChange, resolution, className = "" }: { onChange: (resolution: TimeResolution) => void; resolution: TimeResolution; className?: string }) => {
-  const translations = useTwapContext().translations;
-
-  const [open, setOpen] = useState<boolean>(false);
-
+export const ResolutionSelect = ({ onChange, unit, className = "" }: { onChange: (unit: TimeUnit) => void; unit: TimeUnit; className?: string }) => {
   const onSelect = useCallback(
-    (resolution: TimeResolution) => {
-      setOpen(false);
-      onChange(resolution);
+    (unit: TimeUnit) => {
+      onChange(unit);
     },
     [onChange],
   );
 
-  return <SelectMenu onSelect={(it) => onSelect(it.value as number)} items={timeArr} selected={resolution} />;
+  return <SelectMenu onSelect={(it) => onSelect(it.value as number)} items={timeArr} selected={unit} />;
 };
 
 const StyledInput = styled(NumericInput)({

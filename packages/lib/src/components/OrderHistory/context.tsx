@@ -1,33 +1,75 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTwapContext } from "../../context/context";
-import { useOrdersHistory } from "../../hooks";
-import { HistoryOrder, OrdersData, OrderUI, Status, Translations } from "../../types";
+import { Translations } from "../../types";
 import { OrdersMenuTab } from "./types";
-import { mapCollection, size, sortBy } from "../../utils";
+import { mapCollection, size } from "../../utils";
+import { groupOrdersByStatus, Order, OrderStatus } from "@orbs-network/twap-sdk";
+import { useOrdersHistory } from "../../hooks";
+import { eqIgnoreCase } from "@defi.org/web3-candies";
 
 interface OrderHistoryContextType {
   tabs: OrdersMenuTab[];
   selectOrder: (id: number | undefined) => void;
-  orders: HistoryOrder[];
-  setTab: (tab?: Status) => void;
+  orders: Order[];
+  setTab: (tab: OrderStatus) => void;
   closePreview: () => void;
   selectedTab?: OrdersMenuTab;
   isLoading: boolean;
   selectedOrderId?: number;
 }
+
+export const useTokenFromList = (address?: string) => {
+  const { tokens, useParsedToken } = useTwapContext();
+  const _token = useParsedToken?.(address);
+
+  const result = useMemo(() => {
+    if (!address || !tokens) return;
+    return tokens.find((t) => eqIgnoreCase(address, t.address));
+  }, [tokens, address]);
+  return result || _token;
+};
+
+export const useSelectedOrder = () => {
+  const orders = useOrders();
+  console.log({ orders });
+
+  const { selectedOrderId } = useOrderHistoryContext();
+
+  return useMemo(() => {
+    if (!orders || !selectedOrderId) return;
+    return orders.find((it) => it.id === selectedOrderId);
+  }, [orders, selectedOrderId]);
+};
 export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
-export const OrderHistoryContextProvider = ({ children, isOpen }: { children: ReactNode; isOpen: boolean }) => {
+const useOrders = () => {
   const { data } = useOrdersHistory();
-  const [tab, setTab] = useState<Status | undefined>(undefined);
+
+  return useMemo(() => {
+    return data;
+  }, [data]);
+};
+
+const useSelectedOrders = (status: OrderStatus) => {
+  const orders = useOrders();
+  if (!orders) {
+    return [];
+  }
+  const grouped = groupOrdersByStatus(orders);
+  return grouped?.[status] || [];
+};
+
+export const OrderHistoryContextProvider = ({ children, isOpen }: { children: ReactNode; isOpen: boolean }) => {
+  const [tab, setTab] = useState<OrderStatus>(OrderStatus.All);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
-  const isLoading = !data;
+  const orders = useSelectedOrders(tab);
+  const isLoading = !orders;
 
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
         setSelectedOrderId(undefined);
-        setTab(undefined);
+        setTab(OrderStatus.All);
       }, 300);
     }
   }, [isOpen]);
@@ -45,30 +87,22 @@ export const OrderHistoryContextProvider = ({ children, isOpen }: { children: Re
 
   const translations = useTwapContext().translations;
   const tabs = useMemo(() => {
-    const res = mapCollection(Status, (it) => {
+    return mapCollection(OrderStatus, (it) => {
       return {
-        name: translations[it as keyof Translations],
-        amount: size(data?.[it as keyof typeof data]),
+        name: it,
+        amount: size(orders?.[it as any]),
         key: it,
       };
     });
+  }, [orders, translations]);
 
-    res.unshift({
-      name: "All",
-      amount: !data ? 0 : size(Object.values(data).flat()),
-      key: undefined as any,
-    });
-    return res;
-  }, [data, translations]);
-
-  const orders = useMemo(() => {
-    if (!data) return [];
-    if (!tab) {
-      return sortBy(Object.values(data).flat(), (it) => it.createdAt).reverse();
-    }
-    return data[tab as keyof typeof data] || [];
-  }, [data, tab]);
-  const selectedTab = useMemo(() => tabs.find((it) => it.key === tab), [tabs, tab]);
+  const selectedTab = useMemo(
+    () =>
+      tabs.find((it) => {
+        return it.key === tab;
+      }),
+    [tabs, tab],
+  );
 
   return (
     <OrderHistoryContext.Provider value={{ selectedOrderId, tabs, selectOrder, orders, setTab, closePreview, selectedTab, isLoading }}>{children}</OrderHistoryContext.Provider>

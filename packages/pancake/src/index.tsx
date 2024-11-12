@@ -571,7 +571,7 @@ const SubmitOrderModal = () => {
   }, [onClose]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onCloseWithDelay}>
+    <Modal isOpen={!!isOpen} onClose={onCloseWithDelay}>
       <StyledSwapModalContent
         style={{
           paddingBottom: "24px",
@@ -613,9 +613,6 @@ const TotalTrades = () => {
       </Card.Header>
       <StyledChunksSelect>
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
-          <StyledChunksSelectSlider>
-            <Components.ChunkSelector.Slider />
-          </StyledChunksSelectSlider>
           <StyledChunksSelectInput>
             <Components.ChunkSelector.Input />
           </StyledChunksSelectInput>
