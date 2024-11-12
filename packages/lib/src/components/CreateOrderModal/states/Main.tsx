@@ -188,7 +188,7 @@ const Fee = () => {
     return BN(outAmount).multipliedBy(fee).dividedBy(100).toFixed().toString();
   }, [fee, outAmount, isMarketOrder]);
 
-  const amountUi = useFormatNumber({ value: useAmountUi(dstToken?.decimals, amount), decimalScale: 3 });
+  const amountUi = useFormatNumberV2({ value: useAmountUi(dstToken?.decimals, amount)});
 
   if (!fee) return null;
   return <OrderDisplay.DetailRow title={`Fee (${fee}%)`}>{amountUi ? `${amountUi} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>;
