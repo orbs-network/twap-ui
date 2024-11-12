@@ -225,7 +225,7 @@ export class Order {
   srcAmount: string;
   dstMinAmount: string;
   status: string;
-  srcChunkAmount: string;
+  srcBidAmount: string;
   txHash: string;
   dstFilledAmount: string;
   srcFilledAmount: string;
@@ -249,7 +249,7 @@ export class Order {
     this.createdAt = new Date(rawOrder.timestamp).getTime();
     this.srcAmount = rawOrder.ask_srcAmount;
     this.dstMinAmount = rawOrder.ask_dstMinAmount;
-    this.srcChunkAmount = rawOrder.ask_srcBidAmount;
+    this.srcBidAmount = rawOrder.ask_srcBidAmount;
     this.txHash = rawOrder.transactionHash;
     this.dstFilledAmount = fills?.dstAmountOut || 0;
     this.srcFilledAmount = fills?.srcAmountIn || 0;
@@ -273,7 +273,7 @@ export class Order {
 
   public getLimitPrice = (srcTokenDecimals: number, dstTokenDecimals: number) => {
     if (this.isMarketOrder) return;
-    const srcBidAmountUi = amountUi(srcTokenDecimals, this.srcChunkAmount);
+    const srcBidAmountUi = amountUi(srcTokenDecimals, this.srcBidAmount);
     const dstMinAmountUi = amountUi(dstTokenDecimals, this.dstMinAmount);
     return BN(dstMinAmountUi).div(srcBidAmountUi).toString();
   };

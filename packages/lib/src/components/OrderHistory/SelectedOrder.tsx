@@ -92,7 +92,7 @@ const OrderInfo = ({ order }: { order: Order }) => {
   const isTwap = (order?.totalChunks || 0) > 1;
   const srcToken = useTokenFromList(order?.srcTokenAddress);
   const dstToken = useTokenFromList(order?.dstTokenAddress);
-  const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcChunkAmount);
+  const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcBidAmount);
   const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmount);
   const config = useTwapContext().config;
   return (

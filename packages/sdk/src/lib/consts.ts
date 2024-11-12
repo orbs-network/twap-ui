@@ -3,17 +3,17 @@ export const SUGGEST_CHUNK_VALUE = 100;
 export const MIN_CHUNKS = 1;
 export const MIN_FILL_DELAY_MILLIS = 5 * 60 * 1000;
 
-export const MAX_FILL_DELAY_MILLIS = 30 * 24 * 60 * 60 * 1000;
+export const MAX_FILL_DELAY_MILLIS = 365 * 24 * 60 * 60 * 1000;
 
 const day = 24 * 60 * 60 * 1000;
 
 export const MIN_FILL_DELAY_MINUTES = new Date(MIN_FILL_DELAY_MILLIS).getMinutes();
 export const MAX_FILL_DELAY_DAYS = MAX_FILL_DELAY_MILLIS / day;
 
-export const MAX_DURATION_MILLIS = 30 * 24 * 60 * 60 * 1000;
+export const MAX_DURATION_MILLIS = 365 * 24 * 60 * 60 * 1000;
 export const MIN_DURATION_MILLIS = 5 * 60 * 1000;
 export const MIN_DURATION_MINUTES = new Date(MIN_DURATION_MILLIS).getMinutes();
-export const MAX_DURATION_DAYS = 30;
+export const MAX_DURATION_DAYS = MAX_DURATION_MILLIS / day;
 
 const THE_GRAPH_API = "https://hub.orbs.network/api/apikey/subgraphs/id";
 export const THE_GRAPH_ORDERS_API = {

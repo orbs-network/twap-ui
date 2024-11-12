@@ -19,6 +19,8 @@ interface Data {
   newOrderId?: number;
   cancelOrderSuccess?: boolean;
   cancelOrderId?: number;
+  orderSubmitted?: boolean;
+  orderSuccess?: boolean;
   action?: Action;
   createOrderTxHash?: string;
   wrapTxHash?: string;
@@ -155,6 +157,7 @@ export class Analytics {
       srcChunkAmount,
       action: "create order",
       walletAddress: account,
+      orderSubmitted: true,
     });
   }
 
@@ -183,6 +186,7 @@ export class Analytics {
       {
         newOrderId,
         createOrderTxHash,
+        orderSuccess: true,
       },
       true,
     );

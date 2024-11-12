@@ -25,6 +25,7 @@ const WrappedTwap = (props: TwapLibProps) => {
   query.useFeeOnTransfer(srcToken?.address);
   query.useFeeOnTransfer(dstToken?.address);
   query.useAllowance();
+  useMinChunksSizeUpdater();
 
   return <TwapErrorWrapper>{props.children}</TwapErrorWrapper>;
 };
