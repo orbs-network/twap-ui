@@ -1212,7 +1212,6 @@ const useGetFillsCallback = () => {
       await fetchFills();
 
       const res = _.mapValues(_.keyBy(fills, "TWAP_id"));
-      logger("fills", res);
       return res;
     },
     [lib]
