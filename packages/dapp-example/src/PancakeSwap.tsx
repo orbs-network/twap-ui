@@ -1,8 +1,9 @@
 import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeOrders, StyledPancakeTwap } from "./styles";
-import { TWAP, Orders, parseToken } from "@orbs-network/twap-ui-pancake";
+import { TWAP, Orders } from "@orbs-network/twap-ui-pancake";
 import { useConnectWallet, useGetTokens, useIsMobile, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
+import Web3 from "web3";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -164,6 +165,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
   const isMobile = useIsMobile();
+  const config = useConfig();
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
     const { fromTokenDecimals, toTokenDecimals } = useDecimals(handleAddress(fromToken), handleAddress(toToken));
@@ -181,8 +183,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       <TWAP
         account={account}
         srcToken="CAKE"
-        dstToken={config.wToken.address}
+        dstToken={config?.wToken.address}
         dappTokens={dappTokens}
+        config={config}
         isDarkTheme={isDarkTheme}
         limit={limit}
         ConnectButton={ConnectButton}
@@ -237,8 +240,41 @@ const DappComponent = () => {
   );
 };
 
+const configs = [Configs.PancakeSwap];
+
+const useConfig = () => {
+  const { chainId } = useWeb3React();
+
+  return useMemo(() => configs.find((it) => it.chainId === chainId), [chainId]);
+};
+
+export const useParseToken = () => {
+  const config = useConfig();
+  return useCallback(
+    (rawToken: any): any => {
+      const { address, decimals, symbol, logoURI } = rawToken;
+
+      if (!symbol) {
+        console.error("Invalid token", rawToken);
+        return;
+      }
+      if (!address || isNativeAddress(address) || address === "BNB") {
+        return config?.nativeToken;
+      }
+      return {
+        address: Web3.utils.toChecksumAddress(address),
+        decimals,
+        symbol,
+        logoUrl: logoURI,
+      };
+    },
+    [config?.nativeToken, config?.chainId]
+  );
+};
+
 const Tokens = () => {
   const context = useContext(Context);
+  const parseToken = useParseToken();
 
   const selectToken = hooks.useSelectTokenCallback(parseToken);
 

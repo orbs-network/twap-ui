@@ -6,7 +6,6 @@ import {
   TwapAdapter,
   Styles as TwapStyles,
   store,
-  TWAPProps,
   Orders,
   TwapContextUIPreferences,
   Styles,
@@ -120,24 +119,34 @@ const uiPreferences: TwapContextUIPreferences = {
   },
 };
 
-const config = Configs.PancakeSwap;
+const useConfig = () => {
+  const { config } = useAdapterContext();
 
-export const parseToken = (rawToken: any): TokenData | undefined => {
-  const { address, decimals, symbol, logoURI } = rawToken;
+  return config || Configs.PancakeSwap;
+};
 
-  if (!symbol) {
-    console.error("Invalid token", rawToken);
-    return;
-  }
-  if (!address || isNativeAddress(address) || address === "BNB") {
-    return config.nativeToken;
-  }
-  return {
-    address: Web3.utils.toChecksumAddress(address),
-    decimals,
-    symbol,
-    logoUrl: logoURI,
-  };
+export const useParseToken = () => {
+  const config = useConfig();
+  return useCallback(
+    (rawToken: any): TokenData | undefined => {
+      const { address, decimals, symbol, logoURI } = rawToken;
+
+      if (!symbol) {
+        console.error("Invalid token", rawToken);
+        return;
+      }
+      if (!address || isNativeAddress(address) || address === "BNB") {
+        return config.nativeToken;
+      }
+      return {
+        address: Web3.utils.toChecksumAddress(address),
+        decimals,
+        symbol,
+        logoUrl: logoURI,
+      };
+    },
+    [config.nativeToken, config.chainId]
+  );
 };
 
 const storeOverride = {
@@ -264,6 +273,7 @@ const useTrade = (props: AdapterProps) => {
 const TWAP = memo((props: AdapterProps) => {
   const provider = useProvider(props);
   const trade = useTrade(props);
+  const parseToken = useParseToken();
 
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
@@ -276,6 +286,7 @@ const TWAP = memo((props: AdapterProps) => {
       [zeroAddress]: props.nativeToken,
     };
   }, [props.dappTokens, props.nativeToken]);
+  const config = useConfig();
 
   return (
     <Box className="twap-adapter-wrapper">

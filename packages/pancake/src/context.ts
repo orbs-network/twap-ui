@@ -1,5 +1,6 @@
 import { TWAPProps } from "@orbs-network/twap-ui";
 import { createContext, FC, JSXElementConstructor, useContext } from "react";
+import { Config } from "@orbs-network/twap";
 
 export interface AdapterProps extends TWAPProps {
   dappTokens?: { [key: string]: any };
@@ -18,6 +19,7 @@ export interface AdapterProps extends TWAPProps {
   AddToWallet?: any;
   TradePrice?: any;
   TradePriceToggle: FC<{ onClick: () => void; loading: boolean }>;
+  config?: Config;
 }
 
 const AdapterContext = createContext({} as AdapterProps);

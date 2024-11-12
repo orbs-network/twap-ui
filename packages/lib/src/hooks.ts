@@ -85,7 +85,7 @@ export const useWrapToken = (disableWizard?: boolean) => {
         wizardStore.setAction(WizardAction.WRAP);
         wizardStore.setStatus(WizardActionStatus.PENDING);
       }
-      analytics.onWrapClick(srcAmount);
+      analytics.onWrapRequest();
       return lib!.wrapNativeToken(srcAmount, priorityFeePerGas, maxFeePerGas);
     },
     {
@@ -157,7 +157,7 @@ export const useApproveToken = (disableWizard?: boolean) => {
         wizardStore.setStatus(WizardActionStatus.PENDING);
       }
 
-      analytics.onApproveClick(srcAmount);
+      analytics.onApproveRequest();
       await lib?.approve(srcToken!, maxUint256, priorityFeePerGas, maxFeePerGas);
       await refetch();
     },
@@ -211,7 +211,7 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
   const { setTab } = useOrdersStore();
 
   const wizardStore = useWizardStore();
-  const { askDataParams, onTxSubmitted } = useTwapContext();
+  const { askDataParams, onTxSubmitted, account } = useTwapContext();
   const dstMinAmountOut = useDstMinAmountOut();
   const dstAmountUsdUi = useDstAmountUsdUi();
   const dstAmount = useDstAmount().outAmount;
@@ -247,7 +247,6 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
 
       const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
 
-      analytics.onConfirmationCreateOrderClick({ minAmountOut: dstAmount.ui, totalTrades, tradeSize, deadline });
       store.setLoading(true);
 
       const onTxHash = (txHash: string) => {
@@ -287,16 +286,13 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
     },
     {
       onSuccess: async (result) => {
-        analytics.onCreateOrderSuccess(result.orderId);
+        analytics.onCreateOrderSuccess(result.txHash, result.orderId);
         onSuccess?.();
         onResetLimitPrice();
         !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
-        if ((error as any).code === 4001) {
-          analytics.onCreateOrderRejected();
-        }
         !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
       },
 
@@ -382,16 +378,16 @@ export const useCancelOrder = () => {
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   return useMutation(
     async (orderId: number) => {
-      analytics.onCancelOrderClick(orderId);
+      analytics.onCancelOrder(orderId);
       return lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
     },
     {
       onSuccess: (_result, orderId) => {
-        analytics.onCancelOrderSuccess(orderId.toString());
+        analytics.onCancelOrderSuccess();
         refetch();
       },
       onError: (error: Error) => {
-        analytics.onCancelOrderError(error.message);
+        analytics.onCanelOrderError(error.message);
       },
     }
   );
@@ -799,11 +795,9 @@ const useTokenSelect = (parseTokenProps?: (token: any) => any) => {
       const _parsedToken = parseToken || parseTokenProps;
       const parsedToken = _parsedToken ? _parsedToken(token) : token;
       if (isSrc) {
-        analytics.onSrcTokenClick(parsedToken?.symbol);
         useTwapStore.getState().setSrcToken(parsedToken);
         onSrcTokenSelected?.(token);
       } else {
-        analytics.onDstTokenClick(parsedToken?.symbol);
         useTwapStore.getState().setDstToken(parsedToken);
         onDstTokenSelected?.(token);
       }
@@ -986,7 +980,6 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
         } else {
           wizardStore.setOpen(true);
         }
-        analytics.onOpenConfirmationModal();
       },
       loading: true,
       disabled: false,
@@ -1014,7 +1007,6 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
     text: translations.placeOrder,
     onClick: () => {
       setShowConfirmation(true);
-      analytics.onOpenConfirmationModal();
     },
     loading: false,
     disabled: false,
@@ -1072,6 +1064,7 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
 
 function useSubmitOrderCallback() {
   const lib = useTwapStore((s) => s.lib);
+  const account = useTwapContext().account;
   return async (
     onTxHash: (txHash: string) => void,
     srcToken: TokenData,
@@ -1106,6 +1099,7 @@ function useSubmitOrderCallback() {
       BN(lib.config.bidDelaySeconds).toFixed(0),
       BN(fillDelaySeconds).toFixed(0),
     ];
+    analytics.onCreateOrderRequest(askParams, account);
 
     let ask: any;
     if (lib.config.twapVersion > 3) {
@@ -1212,7 +1206,6 @@ const useGetFillsCallback = () => {
       await fetchFills();
 
       const res = _.mapValues(_.keyBy(fills, "TWAP_id"));
-      logger("fills", res);
       return res;
     },
     [lib]
