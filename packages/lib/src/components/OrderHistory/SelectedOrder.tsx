@@ -1,5 +1,5 @@
+import React from "react";
 import styled from "styled-components";
-
 import { useTwapContext } from "../../context/context";
 import { useCancelOrder } from "../../hooks/useTransactions";
 import { StyledColumnFlex, StyledText } from "../../styles";
@@ -17,6 +17,7 @@ import moment from "moment";
 
 export const SelectedOrder = () => {
   const order = useSelectedOrder();
+  const config = useTwapContext().config
 
   const { selectedOrderId } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
@@ -38,7 +39,7 @@ export const SelectedOrder = () => {
       <OrderDisplay>
         <OrderDisplay.Tokens>
           <OrderDisplay.SrcToken token={srcToken} />
-          <OrderDisplay.DstToken token={dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={order.fillDelay} />
+          <OrderDisplay.DstToken token={dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={order.getFillDelay(config)} />
         </OrderDisplay.Tokens>
         <Separator />
         <StyledColumnFlex gap={15}>
@@ -91,11 +92,9 @@ const OrderInfo = ({ order }: { order: Order }) => {
   const isTwap = (order?.totalChunks || 0) > 1;
   const srcToken = useTokenFromList(order?.srcTokenAddress);
   const dstToken = useTokenFromList(order?.dstTokenAddress);
-  const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcBidAmount);
-
+  const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcChunkAmount);
   const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmount);
-  console.log(order, order.dstMinAmount, dstMinAmountOutUi);
-
+  const config = useTwapContext().config;
   return (
     <>
       <LimitPrice order={order} />
@@ -105,7 +104,7 @@ const OrderInfo = ({ order }: { order: Order }) => {
       {isTwap && <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />}
       {isTwap && <OrderDisplay.ChunksAmount chunks={order?.totalChunks} />}
       <OrderDisplay.MinDestAmount totalChunks={order?.totalChunks} dstToken={dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={dstMinAmountOutUi} />
-      {isTwap && <OrderDisplay.TradeInterval fillDelayMillis={order?.fillDelay} />}
+      {isTwap && <OrderDisplay.TradeInterval fillDelayMillis={order?.getFillDelay(config)} />}
       <OrderDisplay.Recipient />
       <OrderDisplay.TxHash txHash={order?.txHash} />
     </>
@@ -229,9 +228,10 @@ const LimitPrice = ({ order }: { order: Order }) => {
     if (!srcToken || !dstToken) return;
     return order.getLimitPrice(srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
+  const limitPriceF = useFormatNumberV2({value: limitPrice,})
 
   if (order?.isMarketOrder) return null;
-  return <Price title="Limit price" price={limitPrice} srcToken={srcToken} dstToken={dstToken} />;
+  return <Price title="Limit price" price={limitPriceF} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const AvgExcecutionPrice = ({ order }: { order: Order }) => {
@@ -244,7 +244,10 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
     return order.getExcecutionPrice(srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
 
-  return <Price title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice} price={excecutionPrice} srcToken={srcToken} dstToken={dstToken} />;
+
+  const excecutionPriceF = useFormatNumberV2({value: excecutionPrice,})
+
+  return <Price title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice} price={excecutionPriceF} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?: Token; dstToken?: Token; title: string }) => {

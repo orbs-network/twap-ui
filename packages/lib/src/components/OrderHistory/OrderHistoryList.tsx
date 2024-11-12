@@ -6,7 +6,6 @@ import { VariableSizeList } from "react-window";
 import { useTwapContext } from "../../context/context";
 import { useFormatNumberV2 } from "../../hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
-import { Token, Translations } from "../../types";
 import { LinearProgress, Loader, TokenLogo } from "../base";
 import { useOrderHistoryContext, useTokenFromList } from "./context";
 import * as React from "react";
@@ -108,6 +107,7 @@ const ListOrder = React.memo(
     }, [index]);
 
     if (!order) return null;
+    
 
     return (
       <Wrapper className="twap-order" ref={root} onClick={() => onSelect(order?.id)}>

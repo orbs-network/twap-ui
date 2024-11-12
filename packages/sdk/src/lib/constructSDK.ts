@@ -1,7 +1,7 @@
 import { Analytics } from "./analytics";
 import { getEstimatedDelayBetweenChunksMillis, derivedSwapValues, prepareOrderArgs, getDeadline } from "./lib";
-import { getOrders, getUserOrders, waitForOrdersUpdate } from "./orders";
-import { Config, DerivedSwapValuesArgs, Order, PrepareOrderArgs, TimeDuration } from "./types";
+import { getOrders, waitForOrdersUpdate } from "./orders";
+import { Config, DerivedSwapValuesArgs, PrepareOrderArgs, TimeDuration } from "./types";
 
 interface Props {
   config: Config;
@@ -49,7 +49,7 @@ export class TwapSDK {
   }
 
   async getUserOrders({ account, signal, page, limit }: { account: string; signal?: AbortSignal; page?: number; limit?: number }) {
-    return getUserOrders({ config: this.config, account, signal, page, limit });
+    return getOrders({ chainId: this.config.chainId, exchangeAddress: this.config.exchangeAddress, account, signal, page, limit });
   }
 
   async waitForOrdersUpdate(orderId: number, account: string, signal?: AbortSignal) {

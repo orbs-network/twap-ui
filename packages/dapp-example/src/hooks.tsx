@@ -52,7 +52,6 @@ export const useGetTokens = ({
       if (url) {
         const response = await fetch(url);
         const _tokenList = await response.json();
-        console.log({ _tokenList });
 
         tokenList = modifyFetchResponse ? modifyFetchResponse(_tokenList) : _tokenList;
       } else if (tokens) {

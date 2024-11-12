@@ -1,13 +1,32 @@
 import { Config, OrderStatus, OrderType } from "./types";
 import BN from "bignumber.js";
-import { amountUi, delay, eqIgnoreCase, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
+import { amountUi, delay, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
-import { Configs } from "..";
 
+const getOrderProgress = (srcFilled?: string, srcAmountIn?: string) => {  
+  if (!srcFilled || !srcAmountIn) return 0;
+  let progress = BN(srcFilled || "0")
+    .dividedBy(srcAmountIn || "0")
+    .toNumber();
 
+  return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
+};
+
+const getOrderStatus = (progress = 0, rawOrder: any, status?: any) => {
+  status = status?.toLowerCase();
+  if (progress === 100 || status === "completed") {
+    return OrderStatus.Completed;
+  }
+  if (status === "canceled") {
+    return OrderStatus.Canceled;
+  }
+
+  if (new Date(Number(rawOrder.ask_deadline)).getTime() > Date.now() / 1000) return OrderStatus.Open;
+  return OrderStatus.Expired;
+};
 
 const ordersCreatedQueryValues = `
-id
+      id
       Contract_id
       ask_bidDelay
       ask_data
@@ -130,21 +149,19 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
         }
         `;
 
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      body: JSON.stringify({ query }),
-      signal,
-    });
-    const payload = await response.json();
-
-    return payload.data.statuses.reduce((result: { [key: string]: string }, item: any) => {
-      result[item.id] = item.status;
-      return result;
-    }, {});
-  } catch (error) {
-    return {};
+  const response = await fetch(endpoint, {
+    method: "POST",
+    body: JSON.stringify({ query }),
+    signal,
+  });
+  const payload = await response.json();
+  if(payload.errors) {
+    throw new Error(payload.errors[0].message);
   }
+  return payload.data.statuses.reduce((result: { [key: string]: string }, item: any) => {
+    result[item.id] = item.status;
+    return result;
+  }, {});
 };
 
 const parseFills = (orderId: number, fills?: any) => {
@@ -198,9 +215,7 @@ const getAllFills = async ({ endpoint, signal, ids }: { endpoint: string; signal
   return fills;
 };
 
-
-
-class Order {
+export class Order {
   id: number;
   exchange: string;
   ask_fillDelay: number;
@@ -224,11 +239,14 @@ class Order {
   orderType: string;
 
   constructor(rawOrder: any, fills: any, status: any) {
+    console.log({fills});
+    
     const isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
+    const progress = getOrderProgress(fills?.srcAmountIn, rawOrder.ask_srcAmount)
     this.id = Number(rawOrder.Contract_id);
     this.exchange = rawOrder.exchange;
     this.ask_fillDelay = rawOrder.ask_fillDelay;
-    this.dex = "";
+    this.dex = rawOrder.dex;
     this.deadline = Number(rawOrder.ask_deadline) * 1000;
     this.createdAt = new Date(rawOrder.timestamp).getTime();
     this.srcAmount = rawOrder.ask_srcAmount;
@@ -239,9 +257,8 @@ class Order {
     this.srcFilledAmount = fills?.srcAmountIn || 0;
     this.srcFilledAmountUsd = fills?.dollarValueIn || "0";
     this.dstFilledAmountUsd = fills?.dollarValueOut || "0";
-    this.progress = this.getProgress(this.srcFilledAmount, this.srcAmount);
-    this.status = this.getStatus(this.progress, rawOrder, status);
-
+    this.progress = progress;
+    this.status = getOrderStatus(progress, rawOrder, status);
     this.srcTokenAddress = rawOrder.ask_srcToken;
     this.dstTokenAddress = rawOrder.ask_dstToken;
     this.totalChunks = new BN(rawOrder.ask_srcAmount || 0)
@@ -251,15 +268,6 @@ class Order {
     this.orderType = isMarketOrder ? OrderType.TWAP_MARKET : BN(this.totalChunks).eq(1) ? OrderType.LIMIT : OrderType.TWAP_LIMIT;
     this.isMarketOrder = isMarketOrder;
   }
-
-  private getProgress = (srcFilled?: string, srcAmountIn?: string) => {
-    if (!srcFilled || !srcAmountIn) return 0;
-    let progress = BN(srcFilled || "0")
-      .dividedBy(srcAmountIn || "0")
-      .toNumber();
-  
-    return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
-  };
 
   getFillDelay(config: Config) {
     return (this.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
@@ -278,19 +286,6 @@ class Order {
 
     return BN(dstFilledAmountUi).div(srcFilledAmountUi).toString();
   }
-
-  private getStatus(progress = 0, order: any, statuses?: any) {
-    let status = statuses?.[order.Contract_id]?.toLowerCase();
-    if (progress === 100 || status === "completed") {
-      return OrderStatus.Completed;
-    }
-    if (status === "canceled") {
-      return OrderStatus.Canceled;
-    }
-
-    if (new Date(Number(order.ask_deadline)).getTime() > Date.now() / 1000) return OrderStatus.Open;
-    return OrderStatus.Expired;
-  }
 }
 
 export const getOrders = async ({
@@ -299,18 +294,15 @@ export const getOrders = async ({
   signal,
   page,
   limit = 1_000,
-  config,
-  exchangeAddress: _exchangeAddress,
+  exchangeAddress,
 }: {
   account?: string;
   signal?: AbortSignal;
   page?: number;
   chainId: number;
   limit?: number;
-  config?: Config;
   exchangeAddress?: string;
 }): Promise<Order[]> => {
-  const exchangeAddress = _exchangeAddress || config?.exchangeAddress;
   const endpoint = getTheGraphUrl(chainId);
   if (!endpoint) return [];
   let orders = [];
@@ -323,14 +315,11 @@ export const getOrders = async ({
   const fills = await getAllFills({ endpoint, signal, ids });
   const statuses = await getOrderStatuses(ids, endpoint, signal);
   orders = orders.map((rawOrder: any) => {
-    const fill = fills?.find((it) => it.TWAP_id === rawOrder.Contract_id);
-    const status = statuses?.[rawOrder.Contract_id];
-    return new Order(rawOrder, fill, status);
+    const fill = fills?.find((it) => it.TWAP_id === Number(rawOrder.Contract_id));
+    return new Order(rawOrder, fill, statuses?.[rawOrder.Contract_id]);
   });
 
-  const result = orderBy(orders, (o: any) => o.createdAt, "desc");
-
-  return result;
+  return orderBy(orders, (o: any) => o.createdAt, "desc");
 };
 
 export const getOrderById = async ({ chainId, orderId, signal }: { chainId: number; orderId: number; signal?: AbortSignal }): Promise<Order> => {
@@ -369,10 +358,6 @@ export const getAllOrders = ({
   });
 };
 
-export const getUserOrders = async ({ account, signal, page, limit = 1_000, config }: { account: string; signal?: AbortSignal; page?: number; limit?: number; config: Config }) => {
-  return getOrders({ chainId: config?.chainId, account, signal, page, limit, config });
-};
-
 export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
   const grouped = groupBy(orders, "status");
   return {
@@ -386,7 +371,7 @@ export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
 
 export const waitForOrdersUpdate = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
   for (let i = 0; i < 20; i++) {
-    const orders = await getOrders({ config, account, signal, chainId: config.chainId });
+    const orders = await getOrders({ exchangeAddress: config.exchangeAddress, account, signal, chainId: config.chainId });
     if (orders.find((o) => o.id === orderId)) {
       return orders;
     }

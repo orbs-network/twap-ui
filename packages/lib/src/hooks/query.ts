@@ -27,7 +27,7 @@ export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
     {
       enabled: !!web3 && !!minNativeTokenBalance && !!account && !!config && !!network,
       staleTime: Infinity,
-    },
+    }
   );
 
   const ensureData = useCallback(() => {
@@ -48,7 +48,7 @@ const useGetContract = () => {
       if (!web3) return undefined;
       return new web3.eth.Contract(abi as any, address);
     },
-    [web3],
+    [web3]
   );
 };
 
@@ -120,7 +120,7 @@ const useAllowance = () => {
       enabled: !!srcToken && BN(srcAmount).gt(0) && !!account && !!config,
       staleTime: STALE_ALLOWANCE,
       refetchOnWindowFocus: true,
-    },
+    }
   );
 
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
@@ -141,7 +141,7 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
       onSuccess,
       refetchInterval: REFETCH_BALANCE,
       staleTime,
-    },
+    }
   );
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
 };
@@ -159,13 +159,11 @@ export const useOrderQuery = (orderId?: number) => {
     async ({ signal }) => {
       if (!orderId) return null;
       const result = await getOrderById({ orderId: 79202, chainId: 56, signal });
-      console.log({ result });
-
       return result;
     },
     {
       enabled: !!orderId && !!chainId,
-    },
+    }
   );
 };
 
@@ -178,29 +176,21 @@ const useUpdateOrderStatusToCanceled = () => {
   return useCallback(
     (orderId: number) => {
       ordersStore.cancelOrder(config.chainId, orderId);
-      const updatedOrders = orders?.map((order: Order) => (order.id === orderId ? { ...order, status: OrderStatus.Canceled } : order));
+      const updatedOrders = orders?.map((order: Order) => (order.id === orderId ? { ...order, status: OrderStatus.Canceled } : order)) as Order[];
       if (updatedOrders) {
         updateData(updatedOrders);
       }
     },
-    [QUERY_KEY, queryClient, config],
+    [QUERY_KEY, queryClient, config]
   );
 };
 
 export const useAllOrders = () => {
   const { config } = useTwapContext();
   return useInfiniteQuery(
-    ["all orders", config.chainId],
+    ["useAllOrders", config.chainId],
     async ({ signal, pageParam = 0 }) => {
-      let result: Order[] = [];
-      try {
-        result = await getAllOrders({ signal, page: pageParam, limit: 5, chainId: config.chainId });
-        console.log({ result });
-      } catch (error) {
-        console.log({ error });
-      }
-
-      return result;
+      return getAllOrders({ signal, page: pageParam, limit: 5, chainId: config.chainId });
     },
     {
       getNextPageParam: (lastPage, pages) => {
@@ -210,7 +200,8 @@ export const useAllOrders = () => {
         return firstPage ? undefined : 0; // Modify based on how you paginate backwards
       },
       refetchInterval: REFETCH_ORDER_HISTORY,
-    },
+      retry: 3,
+    }
   );
 };
 export const useOrdersHistory = () => {
@@ -237,7 +228,7 @@ export const useOrdersHistory = () => {
       refetchOnWindowFocus: true,
       retry: 5,
       staleTime: Infinity,
-    },
+    }
   );
 
   const updateData = useCallback(
@@ -245,7 +236,7 @@ export const useOrdersHistory = () => {
       if (!orders) return;
       queryClient.setQueryData(QUERY_KEY, orders);
     },
-    [QUERY_KEY, queryClient],
+    [QUERY_KEY, queryClient]
   );
 
   return useMemo(() => {
