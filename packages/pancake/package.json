@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-pancake",
-  "version": "2.0.47",
+  "version": "2.0.48",
   "description": "TWAP UI for Pancake",
   "license": "MIT",
   "author": "Orbs",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^2.0.47",
+    "@orbs-network/twap-ui": "^2.0.48",
     "web3": "1.x"
   },
   "peerDependencies": {
