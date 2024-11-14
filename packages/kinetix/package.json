@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-kinetix",
-  "version": "2.0.48",
+  "version": "2.0.49",
   "description": "TWAP UI for Kinetix",
   "license": "MIT",
   "author": "Orbs",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^2.0.48",
+    "@orbs-network/twap-ui": "^2.0.49",
     "web3": "1.x"
   },
   "peerDependencies": {
