@@ -237,9 +237,19 @@ export class Order {
   totalChunks: number;
   isMarketOrder: boolean;
   orderType: string;
+  srcTokenSymbol: string;
+  dstTokenSymbol: string;
+  maker: string;
+  dollarValueIn: string;
+  blockNumber: number;
 
   constructor(rawOrder: any, fills: any, status: any) {
     const isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
+    this.srcTokenSymbol = rawOrder.srcTokenSymbol;
+    this.dollarValueIn = rawOrder.dollarValueIn;
+    this.blockNumber = rawOrder.blockNumber;
+    this.maker = rawOrder.maker;
+    this.dstTokenSymbol = rawOrder.dstTokenSymbol;
     const progress = getOrderProgress(fills?.srcAmountIn, rawOrder.ask_srcAmount);
     this.id = Number(rawOrder.Contract_id);
     this.exchange = rawOrder.exchange;
