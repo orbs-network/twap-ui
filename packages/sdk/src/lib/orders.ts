@@ -248,6 +248,7 @@ export class Order {
   maker: string;
   dollarValueIn: string;
   blockNumber: number;
+  dexFee: string;
 
   constructor(rawOrder: any, fills: any, status: any) {
     const isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
@@ -281,6 +282,7 @@ export class Order {
       .toNumber();
     this.orderType = isMarketOrder ? OrderType.TWAP_MARKET : BN(this.totalChunks).eq(1) ? OrderType.LIMIT : OrderType.TWAP_LIMIT;
     this.isMarketOrder = isMarketOrder;
+    this.dexFee = fills?.dexFee || 0;
   }
 
   public getFillDelay = (config: Config) => {
