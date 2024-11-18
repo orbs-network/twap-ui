@@ -1,4 +1,4 @@
-import { CSSProperties, FC, ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { CSSProperties, FC, ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Balance,
   Button,
@@ -716,6 +716,34 @@ export const OrderSummaryDetailsMinDstAmount = ({ subtitle, translations }: { su
           <MinDstAmountOut translations={translations} />
         </>
       </StyledSummaryRowRight>
+    </StyledSummaryRow>
+  );
+};
+
+export const OrderSummaryDetailsFee = ({ fee }: { fee: number }) => {
+  const { outAmount } = useDstAmount();
+  const { dstToken } = useTwapStore((store) => ({
+    dstToken: store.dstToken,
+  }));
+
+  const amount = useMemo(() => {
+    if (!outAmount.raw || !dstToken) {
+      return;
+    }
+    const result =
+      BN(outAmount.raw || "0")
+        .multipliedBy(fee)
+        .div(100)
+        .toString() || "0";
+    return amountUi(dstToken, BN(result));
+  }, [outAmount.raw.toString(), fee, dstToken]);
+
+  const amountF = useFormatNumber({ value: amount, disableDynamicDecimals: false });
+
+  return (
+    <StyledSummaryRow className="twap-order-summary-details-item">
+      <Label tooltipText="Fee is estimated and exact amount may change at execution.">Fee {`(${fee}%)`}</Label>
+      <StyledSummaryRowRight className="twap-order-summary-details-item-right">{amount ? `${amountF} ${dstToken?.symbol}` : ""}</StyledSummaryRowRight>
     </StyledSummaryRow>
   );
 };

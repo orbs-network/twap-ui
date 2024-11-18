@@ -36,6 +36,7 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
                 <Components.OrderSummaryDetailsMinDstAmount />
               </>
             )}
+            <Components.OrderSummaryDetailsFee fee={0.25} />
           </StyledSummaryDetails>
         </Components.Base.Card>
         <Components.Base.Card>
