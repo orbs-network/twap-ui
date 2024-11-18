@@ -171,14 +171,16 @@ const parseFills = (orderId: number, fills?: any) => {
     srcAmountIn: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.srcAmountIn)), BN(0)).toString(),
     dollarValueIn: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dollarValueIn)), BN(0)).toString(),
     dollarValueOut: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dollarValueOut)), BN(0)).toString(),
+    dexFee: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dexFee || 0)), BN(0)).toString(),
   };
 };
 
-const getAllFills = async ({ endpoint, signal, ids }: { endpoint: string; signal?: AbortSignal; ids: string[] }) => {
+const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: string; signal?: AbortSignal; ids: string[]; chainId: number }) => {
   const LIMIT = 1_000;
   let page = 0;
   const where = `where: { TWAP_id_in: [${ids.join(", ")}] }`;
   let fills = [];
+  const dexFee = chainId === 56 ? "dexFee" : "";
   while (true) {
     const query = `
     {
@@ -191,7 +193,8 @@ const getAllFills = async ({ endpoint, signal, ids }: { endpoint: string; signal
         srcAmountIn
         timestamp
         dollarValueIn
-        dollarValueOut
+        dollarValueOut,
+        ${dexFee}
       }
     }
   `;
@@ -202,10 +205,13 @@ const getAllFills = async ({ endpoint, signal, ids }: { endpoint: string; signal
       signal,
     });
     const response = await payload.json();
+
     let orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
     const result = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
       return parseFills(orderId, fills);
     });
+
+    console.log({ result });
 
     fills.push(...result);
     if (fills.length < LIMIT) break;
@@ -320,7 +326,7 @@ export const getOrders = async ({
     orders = await getAllCreatedOrders({ endpoint, signal, account, exchangeAddress, limit });
   }
   const ids = orders.map((order: any) => order.Contract_id);
-  const fills = await getAllFills({ endpoint, signal, ids });
+  const fills = await getAllFills({ endpoint, signal, ids, chainId });
   const statuses = await getOrderStatuses(ids, endpoint, signal);
   orders = orders.map((rawOrder: any) => {
     const fill = fills?.find((it) => it.TWAP_id === Number(rawOrder.Contract_id));
@@ -337,7 +343,7 @@ export const getOrderById = async ({ chainId, orderId, signal }: { chainId: numb
   }
   const [order] = await getCreatedOrder({ endpoint, signal, orderId });
   const ids = [order.Contract_id];
-  const fills = await getAllFills({ endpoint, signal, ids });
+  const fills = await getAllFills({ endpoint, signal, ids, chainId });
 
   const statuses = await getOrderStatuses(ids, endpoint, signal);
 
