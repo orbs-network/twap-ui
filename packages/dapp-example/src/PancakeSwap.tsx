@@ -1,43 +1,85 @@
 import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeOrders, StyledPancakeTwap } from "./styles";
-import { TWAP, Orders, parseToken } from "@orbs-network/twap-ui-pancake";
+import { TWAP, Orders, useConfig as usePancakeConfig } from "@orbs-network/twap-ui-pancake";
 import { useConnectWallet, useGetTokens, useIsMobile, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
+import Web3 from "web3";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import _ from "lodash";
-import { erc20s, isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
+import { erc20s, isNativeAddress, zeroAddress, eqIgnoreCase } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
 import { Button, styled, Tooltip, Typography } from "@mui/material";
 import { Components, hooks, Styles } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
-const config = Configs.PancakeSwap;
 
-let native = {
-  ...config.nativeToken,
-  logoURI: config.nativeToken.logoUrl,
+const useConfig = () => {
+  const { chainId } = useWeb3React();
+  return usePancakeConfig(chainId);
 };
 
-const parseListToken = (tokenList: any) => {
-  const result = tokenList.tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
-    decimals,
-    symbol,
-    name,
-    address,
-    logoURI: logoURI.replace("_1", ""),
-  }));
+const useParseListToken = () => {
+  const config = useConfig();
+  return useCallback(
+    (tokenList: any) => {
+      let tokens = tokenList.tokens.map(({ symbol, address, decimals, logoURI, name }: any) => ({
+        decimals,
+        symbol,
+        name,
+        address,
+        logoURI: logoURI.replace("_1", ""),
+      }));
 
-  return [native, ...result];
+      const native = {
+        symbol: config.nativeToken.symbol,
+        address: config.nativeToken.address,
+        decimals: config.nativeToken.decimals,
+        logoURI: config.nativeToken.logoUrl,
+      };
+
+      return [native, ...tokens];
+    },
+    [config.nativeToken]
+  );
 };
 export const useDappTokens = () => {
+  const parse = useParseListToken();
+  const config = useConfig();
+
+  const { url, baseAssets } = useMemo(() => {
+    switch (config.chainId) {
+      case Configs.Lynex.chainId:
+        return {
+          url: "https://tokens.pancakeswap.finance/pancakeswap-linea-default.json",
+          baseAssets: erc20s.linea,
+        };
+      case Configs.BaseSwap.chainId:
+        return {
+          url: "https://tokens.pancakeswap.finance/pancakeswap-base-default.json",
+          baseAssets: erc20s.linea,
+        };
+      case Configs.Arbidex.chainId:
+        return {
+          url: "https://tokens.pancakeswap.finance/pancakeswap-arbitrum-default.json",
+          baseAssets: erc20s.linea,
+        };
+
+      default:
+        return {
+          url: "https://tokens.pancakeswap.finance/pancakeswap-extended.json",
+          baseAssets: erc20s.bsc,
+        };
+    }
+  }, [config.chainId]);
+
   return useGetTokens({
     chainId: config.chainId,
-    parse: parseListToken,
+    parse,
     modifyList: (tokens: any) => ({ ..._.mapKeys(tokens, (t) => t.address) }),
-    baseAssets: erc20s.bsc,
-    url: `https://tokens.pancakeswap.finance/pancakeswap-extended.json`,
+    baseAssets,
+    url,
   });
 };
 
@@ -104,16 +146,23 @@ const TokenSelectModal = ({ onCurrencySelect }: TokenSelectModalProps) => {
   );
 };
 
-const useDecimals = (fromToken?: string, toToken?: string) => {
+const useDecimals = (fromTokenAddress?: string, toTokenAddress?: string) => {
   const { data: dappTokens } = useDappTokens();
-  const fromTokenDecimals = dappTokens?.[fromToken || ""]?.decimals;
-  const toTokenDecimals = dappTokens?.[toToken || ""]?.decimals;
+  const { fromToken, toToken } = useMemo(() => {
+    if (!dappTokens) {
+      return { fromToken: undefined, toToken: undefined };
+    }
+    return {
+      fromToken: fromTokenAddress && Object.values(dappTokens).find((it: any) => eqIgnoreCase(fromTokenAddress || "", it.address)),
+      toToken: toTokenAddress && Object.values(dappTokens).find((it: any) => eqIgnoreCase(toTokenAddress || "", it.address)),
+    };
+  }, [dappTokens, fromTokenAddress, toTokenAddress]);
 
-  return { fromTokenDecimals, toTokenDecimals };
+  return { fromTokenDecimals: (fromToken as any)?.decimals, toTokenDecimals: (toToken as any)?.decimals };
 };
 
 const handleAddress = (address?: string) => {
-  return !address ? "" : "BNB" ? zeroAddress : address;
+  return address === "BNB" ? zeroAddress : address;
 };
 
 const useTokenModal = (item1: any, item2: any, item3: any, isFrom?: boolean) => {
@@ -164,6 +213,26 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
   const isMobile = useIsMobile();
+  const config = useConfig();
+  const [srcToken, setSrcToken] = useState("");
+  const [dstToken, setDstToken] = useState("");
+
+  useEffect(() => {
+    if (!dappTokens) return;
+
+    if (!srcToken) {
+      setSrcToken((Object.values(dappTokens) as any)?.[1]?.symbol);
+    }
+
+    if (!dstToken) {
+      setDstToken((Object.values(dappTokens) as any)?.[2]?.symbol);
+    }
+  }, [dappTokens, srcToken, dstToken]);
+
+  useEffect(() => {
+    setSrcToken("");
+    setDstToken("");
+  }, [chainId]);
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
     const { fromTokenDecimals, toTokenDecimals } = useDecimals(handleAddress(fromToken), handleAddress(toToken));
@@ -180,8 +249,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
       <TWAP
         account={account}
-        srcToken="CAKE"
-        dstToken={config.wToken.address}
+        srcToken={srcToken}
+        dstToken={dstToken}
         dappTokens={dappTokens}
         isDarkTheme={isDarkTheme}
         limit={limit}
@@ -191,7 +260,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         useTrade={_useTrade}
         useTokenModal={useTokenModal}
         onDstTokenSelected={(it: any) => console.log(it)}
-        nativeToken={native}
+        nativeToken={config.nativeToken}
         connector={connector}
         isMobile={isMobile}
         useTooltip={useTooltip}
@@ -212,6 +281,7 @@ const DappComponent = () => {
   const { isDarkTheme } = useTheme();
   const [selected, setSelected] = useState(SelectorOption.TWAP);
   const isMobile = useIsMobile();
+  const config = useConfig();
   return (
     <ContextWrapper>
       <Tokens />
@@ -237,8 +307,33 @@ const DappComponent = () => {
   );
 };
 
+export const useParseToken = () => {
+  const config = useConfig();
+  return useCallback(
+    (rawToken: any): any => {
+      const { address, decimals, symbol, logoURI } = rawToken;
+
+      if (!symbol) {
+        console.error("Invalid token", rawToken);
+        return;
+      }
+      if (!address || isNativeAddress(address) || address === "BNB") {
+        return config?.nativeToken;
+      }
+      return {
+        address: Web3.utils.toChecksumAddress(address),
+        decimals,
+        symbol,
+        logoUrl: logoURI,
+      };
+    },
+    [config?.nativeToken, config?.chainId]
+  );
+};
+
 const Tokens = () => {
   const context = useContext(Context);
+  const parseToken = useParseToken();
 
   const selectToken = hooks.useSelectTokenCallback(parseToken);
 
@@ -275,7 +370,7 @@ const StyledWrapper = styled(Box)({
 const dapp: Dapp = {
   Component: DappComponent,
   logo,
-  config,
+  config: Configs.PancakeSwap,
 };
 
 export default dapp;

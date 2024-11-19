@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { erc20s, zeroAddress, erc20sData, isNativeAddress } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
-import { fetchPrice } from "./utils";
 const config = Configs.Chronos;
 
 const tokensURL = "https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json";

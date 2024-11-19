@@ -6,7 +6,6 @@ import {
   TwapAdapter,
   Styles as TwapStyles,
   store,
-  TWAPProps,
   Orders,
   TwapContextUIPreferences,
   Styles,
@@ -56,8 +55,7 @@ import {
   StyledUSD,
 } from "./styles";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
-import { Configs, TokenData } from "@orbs-network/twap";
-import { createContext, useContext } from "react";
+import { TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import _ from "lodash";
 import BN from "bignumber.js";
@@ -72,6 +70,7 @@ import { useTwapContext } from "@orbs-network/twap-ui";
 import { useAdapterContext, AdapterContextProvider, AdapterProps } from "./context";
 import { Price } from "./components";
 import { create } from "zustand";
+import { configs } from "./config";
 
 const PERCENT = [
   { text: "25%", value: 0.25 },
@@ -120,24 +119,37 @@ const uiPreferences: TwapContextUIPreferences = {
   },
 };
 
-const config = Configs.PancakeSwap;
+export const useConfig = (connectedChainId?: number) => {
+  return useMemo(() => {
+    return Object.values(configs).find((config: any) => config.chainId === connectedChainId) || configs.PancakeSwap;
+  }, [connectedChainId]);
+};
 
-export const parseToken = (rawToken: any): TokenData | undefined => {
-  const { address, decimals, symbol, logoURI } = rawToken;
+export const PancakeConfigs = configs;
 
-  if (!symbol) {
-    console.error("Invalid token", rawToken);
-    return;
-  }
-  if (!address || isNativeAddress(address) || address === "BNB") {
-    return config.nativeToken;
-  }
-  return {
-    address: Web3.utils.toChecksumAddress(address),
-    decimals,
-    symbol,
-    logoUrl: logoURI,
-  };
+export const useParseToken = (connectedChainId?: number) => {
+  const config = useConfig(connectedChainId);
+
+  return useCallback(
+    (rawToken: any): TokenData | undefined => {
+      const { address, decimals, symbol, logoURI } = rawToken;
+
+      if (!symbol) {
+        console.error("Invalid token", rawToken);
+        return;
+      }
+      if (!address || isNativeAddress(address) || address === "BNB") {
+        return config.nativeToken;
+      }
+      return {
+        address: Web3.utils.toChecksumAddress(address),
+        decimals,
+        symbol,
+        logoUrl: logoURI,
+      };
+    },
+    [config.nativeToken, config.chainId]
+  );
 };
 
 const storeOverride = {
@@ -264,6 +276,7 @@ const useTrade = (props: AdapterProps) => {
 const TWAP = memo((props: AdapterProps) => {
   const provider = useProvider(props);
   const trade = useTrade(props);
+  const parseToken = useParseToken(props.connectedChainId);
 
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
@@ -276,6 +289,7 @@ const TWAP = memo((props: AdapterProps) => {
       [zeroAddress]: props.nativeToken,
     };
   }, [props.dappTokens, props.nativeToken]);
+  const config = useConfig(props.connectedChainId);
 
   return (
     <Box className="twap-adapter-wrapper">
@@ -782,4 +796,8 @@ export const useShowSwapModalButton = () => {
     loading: false,
     disabled: false,
   };
+};
+
+export const isChainSupported = (chainId?: number) => {
+  return !!Object.values(configs).find((config) => config.chainId === chainId);
 };

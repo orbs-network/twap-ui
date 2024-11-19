@@ -9,9 +9,9 @@ import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
 import { dapps } from "./config";
 import { TokenData } from "@orbs-network/twap";
-import { store, amountBN, amountUi } from "@orbs-network/twap-ui";
+import { store, amountUi } from "@orbs-network/twap-ui";
 import { usePersistedStore } from "./store";
-import { fetchPrice } from "./utils";
+import { fetchLLMAPrice } from "./utils";
 import BigNumber from "bignumber.js";
 import { useMediaQuery } from "@mui/material";
 export const injectedConnector = new InjectedConnector({});
@@ -172,8 +172,8 @@ export function useDebounce(value: string, delay: number) {
 export const useGetPriceUsdCallback = () => {
   const { chainId } = useWeb3React();
   return useCallback(
-    (address: string) => {
-      return fetchPrice(address, chainId);
+    async (address: string) => {
+      return (await fetchLLMAPrice(address!, chainId!)).priceUsd;
     },
     [chainId]
   );
@@ -187,7 +187,7 @@ export const usePriceUSD = (address?: string) => {
     queryFn: async () => {
       await delay(1_000);
       const _address = isNativeAddress(address || "") ? wToken : address;
-      return fetchPrice(_address!, chainId!);
+      return (await fetchLLMAPrice(_address!, chainId!)).priceUsd;
     },
     refetchInterval: 10_000,
     enabled: !!address && !!chainId,
