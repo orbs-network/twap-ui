@@ -161,8 +161,14 @@ const useDecimals = (fromTokenAddress?: string, toTokenAddress?: string) => {
   return { fromTokenDecimals: (fromToken as any)?.decimals, toTokenDecimals: (toToken as any)?.decimals };
 };
 
-const handleAddress = (address?: string) => {
-  return address === "BNB" ? zeroAddress : address;
+const useHandleAddress = () => {
+  const config = useConfig();
+  return useCallback(
+    (address?: string) => {
+      return address === config.nativeToken.symbol ? zeroAddress : address;
+    },
+    [config.nativeToken.symbol]
+  );
 };
 
 const useTokenModal = (item1: any, item2: any, item3: any, isFrom?: boolean) => {
@@ -235,8 +241,13 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   }, [chainId]);
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
-    const { fromTokenDecimals, toTokenDecimals } = useDecimals(handleAddress(fromToken), handleAddress(toToken));
-    return useTrade(fromToken, toToken, amount, fromTokenDecimals, toTokenDecimals);
+    const handleAddress = useHandleAddress();
+
+    const fromAddress = handleAddress(fromToken);
+    const toAddress = handleAddress(toToken);
+
+    const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromAddress, toAddress);
+    return useTrade(fromAddress, toAddress, amount, fromTokenDecimals, toTokenDecimals);
   };
 
   const connector = useMemo(() => {

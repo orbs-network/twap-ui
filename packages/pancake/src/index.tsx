@@ -239,10 +239,6 @@ const ChangeTokensOrder = () => {
   );
 };
 
-const handleAddress = (address?: string) => {
-  return isNativeAddress(address || "") ? "BNB" : address;
-};
-
 export const useProvider = (props: AdapterProps) => {
   const [provider, setProvider] = useState<any>(undefined);
 
@@ -258,12 +254,24 @@ export const useProvider = (props: AdapterProps) => {
   return provider;
 };
 
+const useHandleAddress = (connectedChainId?: number) => {
+  const config = useConfig(connectedChainId);
+  return useCallback(
+    (address?: string) => {
+      return isNativeAddress(address || "") ? config.nativeToken.symbol : address;
+    },
+    [config.nativeToken.symbol, connectedChainId]
+  );
+};
+
 const useTrade = (props: AdapterProps) => {
   const { srcToken, toToken, srcAmount } = store.useTwapStore((s) => ({
     srcToken: s.srcToken?.address,
     toToken: s.dstToken?.address,
     srcAmount: s.getSrcAmount().toString(),
   }));
+
+  const handleAddress = useHandleAddress(props.connectedChainId);
 
   const res = props.useTrade!(handleAddress(srcToken), handleAddress(toToken), srcAmount === "0" ? undefined : srcAmount);
 

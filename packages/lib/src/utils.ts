@@ -89,15 +89,17 @@ export const getTokenFromTokensList = (tokensList?: any, addressOrSymbol?: any) 
 };
 
 export const getQueryParam = (name: string) => {
-  const search = window.location.search;
+  try {
+    const search = window.location.search;
 
-  const params = new URLSearchParams(search);
-  const result = params.get(name);
-  if (name === QUERY_PARAMS.LIMIT_PRICE && result === ".") {
-    return "0.1";
-  }
+    const params = new URLSearchParams(search);
+    const result = params.get(name);
+    if (name === QUERY_PARAMS.LIMIT_PRICE && result === ".") {
+      return "0.1";
+    }
 
-  return result;
+    return result;
+  } catch (error) {}
 };
 
 export const setQueryParam = (name: string, value?: string) => {
