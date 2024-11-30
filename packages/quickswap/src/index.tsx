@@ -1,10 +1,11 @@
 import { Components, Translations, TwapAdapter, useTwapContext, Styles as TwapStyles, TWAPTokenSelectProps, hooks, TWAPProps, Configs, Token } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 
-import { createContext, memo, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import Web3 from "web3";
-import { configureStyles } from "./styles";
+import { darkTheme, GlobalStyles, lightTheme } from "./styles";
 import { isNativeAddress, network } from "@defi.org/web3-candies";
+import { ThemeProvider } from "styled-components";
 
 interface QuickSwapTWAPProps extends TWAPProps {
   connect: () => void;
@@ -56,10 +57,6 @@ const AdapterContext = createContext({} as QuickSwapTWAPProps);
 const AdapterContextProvider = AdapterContext.Provider;
 
 const useAdapterContext = () => useContext(AdapterContext);
-
-const useGlobalStyles = (isProMode?: boolean, isDarkMode = true) => {
-  return configureStyles(isProMode, isDarkMode);
-};
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const TokenSelectModal = useAdapterContext().TokenSelectModal;
@@ -126,7 +123,7 @@ const SrcTokenPercentSelector = () => {
 
 const ChangeTokensOrder = () => {
   return (
-    <div>
+    <div className="twap-change-tokens-order-wrapper">
       <Components.ChangeTokensOrder />
     </div>
   );
@@ -151,35 +148,46 @@ const Tooltip = () => {
   return <div></div>;
 };
 
-const TWAP = (props: Props) => {
-  const connect = useCallback(() => {
-    props.connect();
-  }, []);
+const TWAPContent = () => {
+  const context = useAdapterContext();
+
+  const theme = useMemo(() => {
+    return context.isDarkTheme ? darkTheme : lightTheme;
+  }, [context.isDarkTheme]);
 
   return (
-    <div className="adapter-wrapper">
-      <TwapAdapter
-        connect={connect}
-        config={config}
-        maxFeePerGas={props.maxFeePerGas}
-        priorityFeePerGas={props.priorityFeePerGas}
-        translations={translations as Translations}
-        provider={props.provider}
-        account={props.account}
-        dappTokens={props.dappTokens}
-        parsedTokens={[]}
-        onTxSubmitted={props.onTxSubmitted}
-        onDstTokenSelected={props.onDstTokenSelected}
-        onSrcTokenSelected={props.onSrcTokenSelected}
-        isLimitPanel={props.limit}
-        Components={{ Tooltip }}
-      >
-        <AdapterContextProvider value={props}>
+    <ThemeProvider theme={theme}>
+      <div className="adapter-wrapper">
+        <TwapAdapter
+          connect={context.connect}
+          config={config}
+          maxFeePerGas={context.maxFeePerGas}
+          priorityFeePerGas={context.priorityFeePerGas}
+          translations={translations as Translations}
+          provider={context.provider}
+          account={context.account}
+          dappTokens={context.dappTokens}
+          parsedTokens={[]}
+          onTxSubmitted={context.onTxSubmitted}
+          onDstTokenSelected={context.onDstTokenSelected}
+          onSrcTokenSelected={context.onSrcTokenSelected}
+          isLimitPanel={context.limit}
+          Components={{ Tooltip }}
+        >
+          <GlobalStyles />
           <AmountUpdater />
-          {props.limit ? <LimitPanel /> : <TWAPPanel />}
-        </AdapterContextProvider>
-      </TwapAdapter>
-    </div>
+          {context.limit ? <LimitPanel /> : <TWAPPanel />}
+        </TwapAdapter>
+      </div>
+    </ThemeProvider>
+  );
+};
+
+const TWAP = (props: Props) => {
+  return (
+    <AdapterContextProvider value={{ ...props }}>
+      <TWAPContent />
+    </AdapterContextProvider>
   );
 };
 
@@ -207,7 +215,6 @@ const TWAPPanel = () => {
         <TradeInterval />
         <MaxDuration />
       </TwapStyles.StyledColumnFlex>
-
       <Components.PoweredBy />
     </div>
   );
