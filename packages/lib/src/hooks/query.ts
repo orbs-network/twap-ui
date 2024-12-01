@@ -10,7 +10,7 @@ import { Token } from "../types";
 import { useGetHasAllowance, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
 import { useSrcAmount } from "./lib";
-import { Order, OrderStatus, getAllOrders, getOrderById } from "@orbs-network/twap-sdk";
+import { Order, OrderStatus, getOrders, getOrderById } from "@orbs-network/twap-sdk";
 import { amountBNV2 } from "../utils";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
@@ -190,7 +190,7 @@ export const useAllOrders = () => {
   return useInfiniteQuery(
     ["useAllOrders", config.chainId],
     async ({ signal, pageParam = 0 }) => {
-      return getAllOrders({ signal, page: pageParam, limit: 5, chainId: config.chainId });
+      return getOrders({ signal, page: pageParam, limit: 5, chainId: config.chainId });
     },
     {
       getNextPageParam: (lastPage, pages) => {
@@ -212,7 +212,9 @@ export const useOrdersHistory = () => {
   const query = useQuery(
     QUERY_KEY,
     async ({ signal }) => {
-      return twapSDK.getUserOrders({ account: account!, signal });
+      const res = await twapSDK.getUserOrders({ account: account!, signal });
+      
+      return res;
     },
     {
       enabled: !!config && !state.showConfirmation && !!account,
