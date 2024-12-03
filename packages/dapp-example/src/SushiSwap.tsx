@@ -225,7 +225,6 @@ const DappComponent = () => {
       <StyledSushi isDarkMode={isDarkTheme ? 1 : 0}>
         <StyledSushiLayout name={name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
-
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledSushiLayout>
       </StyledSushi>

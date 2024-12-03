@@ -9,6 +9,7 @@ import { Popup } from "./Components";
 import { useEffect, useMemo, useState } from "react";
 import { erc20s, isNativeAddress, network } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
+import { DappProvider } from "./context";
 
 const config = Configs.Thena;
 const nativeTokenLogo = "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png";
@@ -110,8 +111,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <TWAP
       connect={connect}
       account={account}
-      // srcToken={fromToken?.address}
-      // dstToken={dstToken?.address}
+      srcToken={fromToken}
+      dstToken={dstToken}
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}
@@ -133,17 +134,16 @@ const DappComponent = () => {
   const { isDarkTheme } = useTheme();
 
   return (
-    <StyledThena isDarkMode={isDarkTheme ? 1 : 0}>
-      <StyledThenaLayout name={config.name}>
-        <UISelector select={setSelected} selected={selected} limit={true} />
-
-        <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0}>
-          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-        </StyledThenaBox>
-
-        <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0}></StyledThenaBox>
-      </StyledThenaLayout>
-    </StyledThena>
+    <DappProvider config={config}>
+      <StyledThena isDarkMode={isDarkTheme ? 1 : 0}>
+        <StyledThenaLayout name={config.name}>
+          <UISelector select={setSelected} selected={selected} limit={true} />
+          <StyledThenaBox isDarkMode={isDarkTheme ? 1 : 0}>
+            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+          </StyledThenaBox>
+        </StyledThenaLayout>
+      </StyledThena>
+    </DappProvider>
   );
 };
 

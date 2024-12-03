@@ -1,5 +1,5 @@
 import { Components, Styles } from "@orbs-network/twap-ui";
-import { DefaultTheme, styled } from "styled-components";
+import { DefaultTheme, styled, createGlobalStyle } from "styled-components";
 
 const isDarkMode = (theme: DefaultTheme) => theme.palette.mode === "dark";
 
@@ -244,7 +244,7 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
   };
 });
 
-export const configureStyles = (theme: DefaultTheme) => {
+export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     ".twap-orders-mobile-menu": {
@@ -385,4 +385,4 @@ export const configureStyles = (theme: DefaultTheme) => {
       },
     },
   };
-};
+});
