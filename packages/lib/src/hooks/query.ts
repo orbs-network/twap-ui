@@ -213,7 +213,7 @@ export const useOrdersHistory = () => {
     QUERY_KEY,
     async ({ signal }) => {
       const res = await twapSDK.getUserOrders({ account: account!, signal });
-      
+
       return res;
     },
     {

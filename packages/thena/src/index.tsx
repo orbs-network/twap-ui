@@ -1,4 +1,18 @@
-import { Components, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, TwapContextUIPreferences, Configs, Token } from "@orbs-network/twap-ui";
+import {
+  Components,
+  Styles as TwapStyles,
+  TWAPTokenSelectProps,
+  hooks,
+  Translations,
+  TwapAdapter,
+  TwapContextUIPreferences,
+  Configs,
+  Token,
+  size,
+  compact,
+  Styles,
+  LimitPricePercentProps,
+} from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
@@ -12,7 +26,6 @@ import {
   StyledPanelInput,
   StyledPercentSelector,
   StyledTokenSelect,
-  configureStyles,
   StyledColumnFlex,
   StyledPoweredBy,
   StyledSubmit,
@@ -21,9 +34,18 @@ import {
   lightTheme,
   StyledTokenPanelUsd,
   StyledTopColumn,
+  GlobalStyles,
+  Card,
+  StyledTradeIntervalInput,
+  StyledChunkSelectorInput,
+  StyledTradeInterval,
+  StyledTradeSizeSelect,
+  StyledTradeIntervalAndChunkSelect,
+  StyledPercentSelectorButton,
 } from "./styles";
 
 import { useTwapContext } from "@orbs-network/twap-ui";
+import { ThemeProvider } from "styled-components";
 
 const uiPreferences: TwapContextUIPreferences = {
   usdPrefix: "$",
@@ -107,10 +129,10 @@ const SrcTokenPercentSelector = () => {
 
   return (
     <StyledPercentSelector className="twap-percent-selector">
-      <button onClick={() => onClick(0.1)}>10%</button>
-      <button onClick={() => onClick(0.25)}>25%</button>
-      <button onClick={() => onClick(0.5)}>50%</button>
-      <button onClick={() => onClick(1)}>Max</button>
+      <StyledPercentSelectorButton onClick={() => onClick(0.1)}>10%</StyledPercentSelectorButton>
+      <StyledPercentSelectorButton onClick={() => onClick(0.25)}>25%</StyledPercentSelectorButton>
+      <StyledPercentSelectorButton onClick={() => onClick(0.5)}>50%</StyledPercentSelectorButton>
+      <StyledPercentSelectorButton onClick={() => onClick(1)}>Max</StyledPercentSelectorButton>
     </StyledPercentSelector>
   );
 };
@@ -122,9 +144,12 @@ interface ThenaTWAPProps extends TWAPProps {
   dappTokens: any[];
   connector?: any;
   setFromAmount: (amount: string) => void;
+  srcToken?: any;
+  dstToken?: any;
 }
 
 const parseToken = (rawToken: any): Token | undefined => {
+  if (!rawToken) return;
   const { address, decimals, symbol, logoURI } = rawToken;
   if (!symbol) {
     console.error("Invalid token", rawToken);
@@ -185,39 +210,78 @@ const Tooltip = () => {
   return <div></div>;
 };
 
-const TWAP = (props: ThenaTWAPProps) => {
+const useParsedTokens = () => {
+  const context = useAdapterContext();
+  return useMemo(() => {
+    if (!size(context.dappTokens)) {
+      return [];
+    }
+    let parsed = context.dappTokens.map((rawToken: any) => {
+      return parseToken(rawToken);
+    });
+    return compact(parsed) as Token[];
+  }, [context.dappTokens, parseToken]);
+};
+
+const useSelectedParsedTokens = () => {
+  const context = useAdapterContext();
+  console.log(context);
+
+  return useMemo(() => {
+    return {
+      srcToken: parseToken(context.srcToken),
+      dstToken: parseToken(context.dstToken),
+    };
+  }, [context.srcToken, context.dstToken]);
+};
+
+const TWAPContent = () => {
+  const props = useAdapterContext();
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
+  const parsedTokens = useParsedTokens();
   const provider = useProvider(props);
+  const { srcToken, dstToken } = useSelectedParsedTokens();
 
   return (
-    <div className="twap-adapter-wrapper">
-      <TwapAdapter
-        connect={props.connect}
-        config={config}
-        maxFeePerGas={props.maxFeePerGas}
-        priorityFeePerGas={props.priorityFeePerGas}
-        translations={translations as Translations}
-        provider={provider}
-        account={props.account}
-        dappTokens={props.dappTokens}
-        onDstTokenSelected={props.onDstTokenSelected}
-        onSrcTokenSelected={props.onSrcTokenSelected}
-        uiPreferences={uiPreferences}
-        parsedTokens={[]}
-        isLimitPanel={props.limit}
-        Components={{ Tooltip }}
-      >
-        {/* <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
+      <div className="twap-adapter-wrapper">
+        <TwapAdapter
+          connect={props.connect}
+          config={config}
+          maxFeePerGas={props.maxFeePerGas}
+          priorityFeePerGas={props.priorityFeePerGas}
+          translations={translations as Translations}
+          provider={provider}
+          account={props.account}
+          dappTokens={props.dappTokens}
+          onDstTokenSelected={props.onDstTokenSelected}
+          onSrcTokenSelected={props.onSrcTokenSelected}
+          uiPreferences={uiPreferences}
+          parsedTokens={parsedTokens}
+          isLimitPanel={props.limit}
+          Components={{ Tooltip }}
+          srcToken={srcToken}
+          dstToken={dstToken}
+        >
+          <GlobalStyles />
           <AdapterContextProvider value={props}>
             <AmountUpdater />
             {props.limit ? <LimitPanel /> : <TWAPPanel />}
           </AdapterContextProvider>
-        </ThemeProvider> */}
-      </TwapAdapter>
-    </div>
+        </TwapAdapter>
+      </div>
+    </ThemeProvider>
+  );
+};
+
+const TWAP = (props: ThenaTWAPProps) => {
+  return (
+    <AdapterContextProvider value={props}>
+      <TWAPContent />
+    </AdapterContextProvider>
   );
 };
 
@@ -225,17 +289,18 @@ const TWAPPanel = () => {
   return (
     <div className="twap-container">
       <StyledColumnFlex>
+        <LimitPrice />
         <StyledTopColumn>
           <TokenPanel isSrcToken={true} />
           <StyledTokenChange />
           <TokenPanel />
         </StyledTopColumn>
-        <TradeSize />
-        <TradeInterval />
-        <MaxDuration />
+        <StyledTradeIntervalAndChunkSelect>
+          <TradeInterval />
+          <TradeSize />
+        </StyledTradeIntervalAndChunkSelect>
         <MainSubmit />
       </StyledColumnFlex>
-
       <StyledPoweredBy />
     </div>
   );
@@ -265,41 +330,80 @@ const MainSubmit = () => {
 
 const TradeSize = () => {
   return (
-    <StyledCard className="twap-trade-size">
-      <TwapStyles.StyledColumnFlex gap={5}>
-        <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
-          <Components.Labels.TotalTradesLabel />
-        </TwapStyles.StyledRowFlex>
-        <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
-          <Components.TradeSize />
-          <Components.ChunksUSD />
-        </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledColumnFlex>
-    </StyledCard>
+    <StyledTradeSizeSelect>
+      <Card.Header>
+        <Components.Labels.TotalTradesLabel />
+      </Card.Header>
+      <Card.BgContainer>
+        <Components.ChunkSelector>
+          <Styles.StyledRowFlex>
+            <StyledChunkSelectorInput />
+            <Styles.StyledText style={{ fontSize: 13 }}>Orders</Styles.StyledText>
+          </Styles.StyledRowFlex>
+        </Components.ChunkSelector>
+      </Card.BgContainer>
+    </StyledTradeSizeSelect>
   );
 };
 
-const MaxDuration = () => {
+const LimitPercentButton = (props: LimitPricePercentProps) => {
+  return <StyledPercentSelectorButton onClick={props.onClick}>{props.text}</StyledPercentSelectorButton>;
+};
+
+const LimitPrice = () => {
+  const [isSrcToken, setIsSrcToken] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const onSrcSelect = () => {
+    setIsSrcToken(true);
+    setIsOpen(true);
+  };
+
+  const onDstSelect = () => {
+    setIsSrcToken(false);
+    setIsOpen(true);
+  };
+
   return (
-    <StyledCard className="twap-max-duration-wrapper">
-      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
-        <Components.Labels.MaxDurationLabel />
-      </TwapStyles.StyledRowFlex>
-    </StyledCard>
+    <>
+      <TokenSelectModal onClose={() => setIsOpen(false)} isOpen={isOpen} isSrc={isSrcToken} />
+
+      <Card>
+        <Card.Header>
+          <Components.LimitPanel.Switch />
+        </Card.Header>
+        <Card.BgContainer>
+          <Components.LimitPanel.Main
+            onSrcSelect={onSrcSelect}
+            onDstSelect={onDstSelect}
+            Components={{
+              PercentButton: LimitPercentButton,
+            }}
+            styles={{
+              percentButtonsGap: "5px",
+            }}
+          />
+        </Card.BgContainer>
+      </Card>
+    </>
   );
 };
 
 const TradeInterval = () => {
   return (
-    <StyledCard className="twap-trade-interval-wrapper">
-      <TwapStyles.StyledRowFlex>
-        <Components.Labels.TradeIntervalLabel />
-
-        <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
-          <Components.TradeIntervalSelector />
-        </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledRowFlex>
-    </StyledCard>
+    <StyledTradeInterval>
+      <Card.Header>
+        <Components.TradeInterval.Label />
+      </Card.Header>
+      <Styles.StyledColumnFlex>
+        <Components.TradeInterval>
+          <Card.BgContainer>
+            <StyledTradeIntervalInput />
+            <Components.TradeInterval.Resolution />
+          </Card.BgContainer>
+        </Components.TradeInterval>
+      </Styles.StyledColumnFlex>
+    </StyledTradeInterval>
   );
 };
 

@@ -1,5 +1,6 @@
 import { Components, Styles } from "@orbs-network/twap-ui";
-import { DefaultTheme, styled } from "styled-components";
+import { ReactNode } from "react";
+import { DefaultTheme, styled, createGlobalStyle } from "styled-components";
 
 const isDarkMode = (theme: DefaultTheme) => theme.palette.mode === "dark";
 
@@ -46,7 +47,65 @@ export const StyledPanelInput = styled(Components.TokenPanelInput)({
 
 export const StyledCard = styled(Components.Base.Card)(({ theme }) => ({
   ...cardStyles(theme),
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-start",
 }));
+
+export const StyledTradeIntervalInput = styled(Components.TradeInterval.Input)({
+  flex: 1,
+});
+
+export const Card = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
+  return <StyledCard className={className}>{children}</StyledCard>;
+};
+
+export const CardHeader = ({ children }: { children: ReactNode }) => {
+  return <StyledCardHeader>{children}</StyledCardHeader>;
+};
+
+const CardBgContainer = ({ children }: { children: ReactNode }) => {
+  return <StyledCardBgContainer className="twap-card-bg-container">{children}</StyledCardBgContainer>;
+};
+
+const StyledCardBgContainer = styled("div")({
+  background: "rgb(40 27 46/1)",
+  padding: 10,
+  borderRadius: 10,
+  display: "flex",
+  alignItems: "center",
+  width: "100%",
+});
+
+export const StyledChunkSelectorInput = styled(Components.ChunkSelector.Input)({
+  flex: 1,
+  textAlign: "left",
+});
+
+export const StyledTradeIntervalAndChunkSelect = styled(Styles.StyledRowFlex)({
+  alignItems: "stretch",
+  ".twap-card-bg-container": {
+    height: 50,
+  },
+});
+
+export const StyledTradeInterval = styled(Card)({
+  flex: 1,
+});
+
+export const StyledTradeSizeSelect = styled(Card)({
+  flex: 1,
+});
+
+const StyledCardHeader = styled("div")({
+  marginBottom: 10,
+  ".twap-label-text": {
+    fontSize: 14,
+  },
+});
+
+Card.Header = CardHeader;
+Card.BgContainer = CardBgContainer;
 
 export const StyledTokenPanelTop = styled(Styles.StyledRowFlex)({
   justifyContent: "space-between",
@@ -78,25 +137,28 @@ export const StyledPercentSelector = styled(Styles.StyledRowFlex)(({ theme }) =>
     width: "fit-content",
     gap: 4,
     marginLeft: "auto",
-    button: {
-      background: "transparent",
-      border: "unset",
-      padding: "6px 12px",
-      fontSize: 14,
-      fontWeight: 500,
-      borderRadius: 4,
-      color: "rgb(217 213 219/1)",
-      cursor: "pointer",
-      "&:hover": {
-        background: "rgb(40 27 46/1)",
-      },
-      "@media(max-width: 600px)": {
-        fontSize: 12,
-        padding: "0px 7px",
-      },
-    },
     "@media(max-width: 600px)": {
       gap: 4,
+    },
+  };
+});
+
+export const StyledPercentSelectorButton = styled("button")(({ theme }) => {
+  return {
+    background: "transparent",
+    border: "unset",
+    padding: "6px 12px",
+    fontSize: 14,
+    fontWeight: 500,
+    borderRadius: 4,
+    color: "rgb(217 213 219/1)",
+    cursor: "pointer",
+    "&:hover": {
+      background: "rgb(40 27 46/1)",
+    },
+    "@media(max-width: 600px)": {
+      fontSize: 12,
+      padding: "0px 7px",
     },
   };
 });
@@ -244,9 +306,32 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
   };
 });
 
-export const configureStyles = (theme: DefaultTheme) => {
+export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = baseStyles(theme);
   return {
+    ".twap-select-menu-button": {
+      background: styles.secondaryBg,
+      border: "unset",
+      padding: "6px 12px",
+      borderRadius: 4,
+      p: {
+        margin: 0,
+        fontSize: 14,
+      },
+    },
+    ".twap-select-menu-list": {
+      background: styles.secondaryBg,
+      border: "unset",
+      "&-item": {
+        padding: "4px 12px",
+        p: {
+          fontSize: 14,
+        },
+        "&:hover": {
+          background: "rgb(53 36 61/1)",
+        },
+      },
+    },
     ".twap-orders-mobile-menu": {
       ".MuiPopover-paper": {
         background: styles.secondaryBg,
@@ -314,22 +399,7 @@ export const configureStyles = (theme: DefaultTheme) => {
     ".MuiBackdrop-root": {
       background: "rgba(13, 9, 15, 0.8)!important",
     },
-    ".twap-time-selector": {
-      ".twap-input": {
-        input: {
-          height: 30,
-          background: styles.secondaryBg,
-          borderRadius: 8,
-          padding: "12px 10px 12px 10px",
-          paddingRight: "13px!important",
-          maxWidth: 170,
-          marginLeft: "auto",
-        },
-      },
-      ".twap-loader": {
-        right: 0,
-      },
-    },
+
     ".twap-loader": {
       background: "rgba(255,255,255,0.1)!important",
     },
@@ -385,4 +455,4 @@ export const configureStyles = (theme: DefaultTheme) => {
       },
     },
   };
-};
+});

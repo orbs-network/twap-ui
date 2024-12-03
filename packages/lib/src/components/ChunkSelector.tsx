@@ -84,7 +84,6 @@ const StyledChunksInput = styled(NumericInput)({
   padding: "0px",
   input: {
     padding: "0px",
-    textAlign: "right",
     width: "100%",
     transition: "0.2s all",
   },
