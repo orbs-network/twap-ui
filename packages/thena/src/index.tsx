@@ -1,5 +1,5 @@
 import { GlobalStyles, Box, ThemeProvider, Typography } from "@mui/material";
-import { Components, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, Orders, TwapContextUIPreferences } from "@orbs-network/twap-ui";
+import { Components, Styles as TwapStyles, TWAPTokenSelectProps, hooks, Translations, TwapAdapter, Orders, TwapContextUIPreferences, Styles } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { Configs, TokenData } from "@orbs-network/twap";
 import { createContext, useContext, useEffect, useMemo } from "react";

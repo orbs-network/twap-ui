@@ -53,9 +53,7 @@ import {
   useDurationUi,
   useDeadlineUi,
   useSetSrcAmountUi,
-  useDebounce,
   usePriceDisplay,
-  useFeeOnTranserWarning,
 } from "../hooks";
 import { useLimitPriceStore, useTwapStore } from "../store";
 import {
@@ -513,14 +511,6 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
   );
 };
 
-export const FeeOnTranferWarning = ({ className = "" }: { className?: string }) => {
-  const { hasFeeOnTransfer } = useFeeOnTranserWarning();
-
-  if (!hasFeeOnTransfer) return null;
-
-  return <StyledText className={`${className} twap-fee-on-transfer-warning`}>Fee on transfer tokens are not supported</StyledText>;
-};
-
 export const useLimitPriceComponents = ({
   placeholder = "0.00",
   showDefault,
@@ -790,6 +780,10 @@ export const OrderSummaryDetailsDeadline = ({ subtitle, translations }: { subtit
   );
 };
 
+const OrderSummaryFee = () => {
+  return <Label>Fee {`(0.25%)`}</Label>;
+};
+
 export const OrderSummaryDetails = ({ className = "", subtitle, translations }: { className?: string; subtitle?: boolean; translations?: Translations }) => {
   return (
     <StyledSummaryDetails className={`twap-order-summary-details ${className}`}>
@@ -799,6 +793,7 @@ export const OrderSummaryDetails = ({ className = "", subtitle, translations }: 
       <OrderSummaryDetailsTotalChunks subtitle={subtitle} translations={translations} />
       <OrderSummaryDetailsTradeInterval subtitle={subtitle} translations={translations} />
       <OrderSummaryDetailsMinDstAmount subtitle={subtitle} translations={translations} />
+      <OrderSummaryFee />
     </StyledSummaryDetails>
   );
 };

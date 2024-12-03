@@ -235,7 +235,7 @@ export const StyledSubmit = styled(Components.SubmitButton)<{ connected?: number
     background: connected ? "rgb(53 36 61/1)" : "rgb(220 0 212/1)",
     marginTop: 20,
     "&:hover": {
-      background: connected ? "rgb(53 36 61/1)" : "rgb(220 0 212/1)",
+      background: connected ? "rgb(66 45 76/1)" : "rgb(220 0 212/1)",
     },
   };
 });

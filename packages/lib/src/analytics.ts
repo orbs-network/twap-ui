@@ -1,177 +1,227 @@
-import BigNumber from "bignumber.js";
-import { useTwapStore } from "./store";
-import { amountUi } from "./utils";
-require("isomorphic-fetch");
+import { Config } from "@orbs-network/twap";
+import BN from "bignumber.js";
+const Version = 0.4;
 
-enum Category {
-  Error = "Error",
-  TWAPPanel = "TWAPPanel",
-  OrdersPanel = "OrdersPanel",
-  ConfirmationPanel = "ConfirmationPanel",
-  PageView = "onTwapPageView",
+const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
+
+type Action = "cancel order" | "wrap" | "approve" | "create order" | "module-import" | "ui-crash";
+
+function generateId() {
+  const part1 = Math.random().toString(36).substring(2, 16); // Generate 16 random characters
+  const part2 = Math.random().toString(36).substring(2, 16); // Generate another 16 random characters
+  const timestamp = Date.now().toString(36); // Generate a timestamp
+  return `id_${part1 + part2 + timestamp}`; // Concatenate all parts
 }
 
-const onLimitToggleClick = (isLimitOrder: boolean) => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onLimitToggleClick", { isLimitOrder });
-};
+interface Data {
+  _id: string;
+  actionError?: string;
+  newOrderId?: number;
+  cancelOrderSuccess?: boolean;
+  cancelOrderId?: number;
+  orderSubmitted?: boolean;
+  orderSuccess?: boolean;
+  action?: Action;
+  createOrderTxHash?: string;
+  wrapTxHash?: string;
+  approvalTxHash?: string;
+  walletAddress?: string;
+  fromTokenAddress?: string;
+  toTokenAddress?: string;
+  fromTokenAmount?: string;
+  chunksAmount?: number;
+  minDstAmountOut?: string;
+  deadline?: number;
+  fillDelay?: number;
+  srcChunkAmount?: string;
+  bidDelaySeconds?: number;
+  chainId?: number;
+  chainName?: string;
+  exchangeAddress?: string;
+  exchangeType?: string;
+  lensAddress?: string;
+  name?: string;
+  partner?: string;
+  twapAddress?: string;
+  twapVersion?: number;
+}
 
-const uiCrashed = (location: "orders" | "twap", error: Error) => {
-  sendAnalyticsEvent(Category.Error, "UI crashed", { location, message: error.message, stack: error.stack });
-};
-
-const onSrcTokenClick = (symbol?: string) => {
-  sendAnalyticsEvent(Category.TWAPPanel, `onSrcTokenClick`, { symbol });
-};
-
-const onDstTokenClick = (symbol?: string) => {
-  sendAnalyticsEvent(Category.TWAPPanel, `onDstTokenClick`, { symbol });
-};
-
-const onCustomIntervalClick = () => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onCustomIntervalClick");
-};
-
-const onApproveClick = (amount: BigNumber) => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onApproveClick", { amount: amount.toString() });
-};
-
-const onApproveSuccess = () => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onApproveSuccess");
-};
-
-const onWrapClick = (amount: BigNumber) => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onWrapClick", { amount: amount.toString() });
-};
-
-const onWrapSuccess = () => {
-  sendAnalyticsEvent(Category.TWAPPanel, "onWrapSuccess");
-};
-
-const onConfirmationCreateOrderClick = ({
-  minAmountOut,
-  totalTrades,
-  tradeSize,
-  deadline,
-}: {
-  minAmountOut: string;
-  totalTrades: number;
-  tradeSize: BigNumber;
-  deadline: number;
-}) => {
-  const lib = useTwapStore.getState().lib;
-
-  const srcToken = useTwapStore.getState().srcToken;
-  const dsToken = useTwapStore.getState().dstToken;
-
-  sendAnalyticsEvent(Category.ConfirmationPanel, `onConfirmationCreateOrderClick`, {
-    exchangeAddress: lib?.config.exchangeAddress,
-    srcToken: useTwapStore.getState().srcToken?.address,
-    dstToken: useTwapStore.getState().dstToken?.address,
-    srcTokenAmount: amountUi(srcToken, useTwapStore.getState().getSrcAmount()),
-    tradeSize: amountUi(srcToken, tradeSize),
-    minAmountOut,
-    deadline,
-    tradeInterval: useTwapStore.getState().getFillDelayUiMillis(),
-    totalTrades,
-  });
-};
-
-const onODNPClick = () => {
-  sendAnalyticsEvent(Category.OrdersPanel, "onODNPClick");
-};
-
-const onModuleLoad = () => {
-  sendAnalyticsEvent(Category.PageView, "onModuleLoad");
-};
-
-const onTwapPageView = () => {
-  sendAnalyticsEvent(Category.PageView, "onTwapPageView");
-};
-
-const onCreateOrderSuccess = (orderId: number) => {
-  sendAnalyticsEvent(Category.ConfirmationPanel, `onCreateOrderSuccess`, { orderId });
-};
-
-const onCreateOrderError = (message: string) => {
-  sendAnalyticsEvent(Category.Error, `onCreateOrderError`, { message });
-};
-
-const onWrapError = (message: string) => {
-  sendAnalyticsEvent(Category.Error, "onWrapError", { message });
-};
-
-const onApproveError = (message: string) => {
-  sendAnalyticsEvent(Category.Error, "onApproveError", { message });
-};
-
-const onCancelOrderClick = (orderId: number) => {
-  sendAnalyticsEvent(Category.OrdersPanel, "onCancelOrderClick", { orderId });
-};
-
-const onCancelOrderSuccess = (orderId: string) => {
-  sendAnalyticsEvent(Category.OrdersPanel, "onCancelOrderSuccess", { orderId });
-};
-
-const onCancelOrderError = (error: string) => {
-  sendAnalyticsEvent(Category.Error, `onCancelOrderError`, { error });
-};
-
-const onCreateOrderRejected = () => {
-  sendAnalyticsEvent(Category.Error, `onCreateOrderRejected`);
-};
-
-const onOpenConfirmationModal = () => {
-  sendAnalyticsEvent(Category.ConfirmationPanel, `onOpenConfirmationModal`);
-};
-
-const sendAnalyticsEvent = (category: Category, action: string, data = {} as { [key: string]: any }) => {
-  if (process.env.NODE_ENV === "development") return;
-
-  const lib = useTwapStore.getState().lib;
-
+const sendBI = async (data: Partial<Data>) => {
   try {
-    fetch("https://bi.orbs.network/putes/twap-ui", {
+    await fetch(BI_ENDPOINT, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        timestamp: new Date().toISOString(),
-        maker: lib?.maker,
-        partner: lib?.config.partner,
-        chain: lib?.config.chainId,
-        category,
-        action,
-        ...data,
-      }),
-    });
+      body: JSON.stringify(data),
+    }).then();
   } catch (error) {
-    console.error(error);
+    console.error("Failed to send BI", error);
   }
 };
 
-export const analytics = {
-  onLimitToggleClick,
-  onSrcTokenClick,
-  onDstTokenClick,
-  onCustomIntervalClick,
-  onApproveClick,
-  onApproveSuccess,
-  onWrapClick,
-  onWrapSuccess,
-  onConfirmationCreateOrderClick,
-  onODNPClick,
-  onCreateOrderSuccess,
-  onCreateOrderError,
-  onWrapError,
-  onApproveError,
-  onCancelOrderClick,
-  onCancelOrderSuccess,
-  onCancelOrderError,
-  onTwapPageView,
-  onCreateOrderRejected,
-  onModuleLoad,
-  onOpenConfirmationModal,
-  uiCrashed,
-};
+export class Analytics {
+  timeout: any = undefined;
+  data: Data = {
+    _id: generateId(),
+  };
+
+  updateAndSend(values = {} as Partial<Data>, noTimeout = false) {
+    this.data = {
+      ...this.data,
+      ...values,
+    };
+    if (noTimeout) {
+      sendBI(this.data);
+    } else {
+      clearTimeout(this.timeout);
+      this.timeout = setTimeout(() => {
+        sendBI(this.data);
+      }, 1_000);
+    }
+  }
+
+  onCancelOrder(orderId: number) {
+    this.updateAndSend({
+      cancelOrderId: orderId,
+      action: "cancel order",
+    });
+  }
+
+  onCancelOrderSuccess() {
+    this.updateAndSend({
+      cancelOrderSuccess: true,
+    });
+  }
+
+  onCanelOrderError(error: any) {
+    this.onTxError(error);
+  }
+
+  onWrapSuccess(wrapTxHash?: string) {
+    this.updateAndSend({
+      wrapTxHash,
+    });
+  }
+
+  onWrapRequest() {
+    this.updateAndSend({
+      action: "wrap",
+    });
+  }
+
+  onWrapError(error: any) {
+    this.onTxError(error);
+  }
+
+  onApproveRequest() {
+    this.updateAndSend({
+      action: "approve",
+    });
+  }
+
+  onApproveSuccess(approvalTxHash?: string) {
+    this.updateAndSend({
+      approvalTxHash,
+    });
+  }
+
+  onApproveError(error: any) {
+    this.onTxError(error);
+  }
+
+  onCreateOrderError(error: any) {
+    this.onTxError(error);
+  }
+
+  onTxError(error: any) {
+    const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
+    this.updateAndSend({ actionError });
+  }
+
+  onCreateOrderRequest(askParams: any, account?: string) {
+    const values = askParams;
+    const fromTokenAmount = values[3];
+    const srcChunkAmount = values[4];
+    const chunksAmount = BN(fromTokenAmount).div(srcChunkAmount).integerValue(BN.ROUND_FLOOR).toNumber();
+
+    this.updateAndSend({
+      fromTokenAddress: values[1],
+      toTokenAddress: values[2],
+      fromTokenAmount: values[3],
+      chunksAmount,
+      minDstAmountOut: values[5],
+      deadline: values[6],
+      fillDelay: values[8],
+      srcChunkAmount,
+      action: "create order",
+      walletAddress: account,
+      orderSubmitted: true,
+    });
+  }
+
+  onConfigChange(config: Config) {
+    if (config.chainId !== this.data?.chainId) {
+      this.data = {
+        _id: generateId(),
+        action: "module-import",
+        bidDelaySeconds: config?.bidDelaySeconds,
+        chainId: config?.chainId,
+        chainName: config?.chainName,
+        exchangeAddress: config?.exchangeAddress,
+        exchangeType: config?.exchangeType,
+        lensAddress: config?.lensAddress,
+        name: config?.name,
+        partner: config?.partner,
+        twapAddress: config?.twapAddress,
+        twapVersion: config?.twapVersion,
+      };
+      this.updateAndSend(this.data);
+    }
+  }
+
+  onCreateOrderSuccess(createOrderTxHash?: string, newOrderId?: number) {
+    this.updateAndSend(
+      {
+        newOrderId,
+        createOrderTxHash,
+        orderSuccess: true,
+      },
+      true
+    );
+
+    this.data = {
+      _id: generateId(),
+      action: "module-import",
+      bidDelaySeconds: this.data?.bidDelaySeconds,
+      chainId: this.data.chainId,
+      chainName: this.data.chainName,
+      exchangeAddress: this.data.exchangeAddress,
+      exchangeType: this.data.exchangeType,
+      lensAddress: this.data.lensAddress,
+      name: this.data.name,
+      partner: this.data.partner,
+      twapAddress: this.data.twapAddress,
+      twapVersion: this.data.twapVersion,
+    };
+  }
+  onUiCrash(error: any) {
+    const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
+    this.updateAndSend({
+      action: "ui-crash",
+      actionError,
+    });
+  }
+
+  onLoad() {
+    this.updateAndSend(
+      {
+        action: "module-import",
+      },
+      true
+    );
+  }
+}
+
+export const analytics = new Analytics();

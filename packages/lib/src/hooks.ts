@@ -96,7 +96,7 @@ export const useWrapToken = (disableWizard?: boolean) => {
         wizardStore.setAction(WizardAction.WRAP);
         wizardStore.setStatus(WizardActionStatus.PENDING);
       }
-      analytics.onWrapClick(srcAmount);
+      analytics.onWrapRequest();
       return lib!.wrapNativeToken(srcAmount, priorityFeePerGas, maxFeePerGas);
     },
     {
@@ -168,7 +168,7 @@ export const useApproveToken = (disableWizard?: boolean) => {
         wizardStore.setStatus(WizardActionStatus.PENDING);
       }
 
-      analytics.onApproveClick(srcAmount);
+      analytics.onApproveRequest();
       await lib?.approve(srcToken!, maxUint256, priorityFeePerGas, maxFeePerGas);
       await refetch();
     },
@@ -258,7 +258,6 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
 
       const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
 
-      analytics.onConfirmationCreateOrderClick({ minAmountOut: dstAmount.ui, totalTrades, tradeSize, deadline });
       store.setLoading(true);
 
       const onTxHash = (txHash: string) => {
@@ -298,16 +297,13 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
     },
     {
       onSuccess: async (result) => {
-        analytics.onCreateOrderSuccess(result.orderId);
+        analytics.onCreateOrderSuccess(result.txHash, result.orderId);
         onSuccess?.();
         onResetLimitPrice();
         !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
-        if ((error as any).code === 4001) {
-          analytics.onCreateOrderRejected();
-        }
         !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
       },
 
@@ -393,16 +389,16 @@ export const useCancelOrder = () => {
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   return useMutation(
     async (orderId: number) => {
-      analytics.onCancelOrderClick(orderId);
+      analytics.onCancelOrder(orderId);
       return lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
     },
     {
       onSuccess: (_result, orderId) => {
-        analytics.onCancelOrderSuccess(orderId.toString());
+        analytics.onCancelOrderSuccess();
         refetch();
       },
       onError: (error: Error) => {
-        analytics.onCancelOrderError(error.message);
+        analytics.onCanelOrderError(error.message);
       },
     }
   );
@@ -603,8 +599,6 @@ export const useOrdersHistoryQuery = () => {
     showConfirmation: state.showConfirmation,
     srcToken: state.srcToken,
   }));
-  const { error, data } = useFeeOnTransfer(srcToken?.address);
-  console.log({ error, data });
   const QUERY_KEY = [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId];
 
   const query = useQuery<OrdersData>(
@@ -817,11 +811,9 @@ const useTokenSelect = (parseTokenProps?: (token: any) => any) => {
       const _parsedToken = parseToken || parseTokenProps;
       const parsedToken = _parsedToken ? _parsedToken(token) : token;
       if (isSrc) {
-        analytics.onSrcTokenClick(parsedToken?.symbol);
         useTwapStore.getState().setSrcToken(parsedToken);
         onSrcTokenSelected?.(token);
       } else {
-        analytics.onDstTokenClick(parsedToken?.symbol);
         useTwapStore.getState().setDstToken(parsedToken);
         onDstTokenSelected?.(token);
       }
@@ -1023,7 +1015,6 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
         } else {
           wizardStore.setOpen(true);
         }
-        analytics.onOpenConfirmationModal();
       },
       loading: true,
       disabled: false,
@@ -1048,7 +1039,6 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
     text: translations.placeOrder,
     onClick: () => {
       setShowConfirmation(true);
-      analytics.onOpenConfirmationModal();
     },
     loading: false,
     disabled: false,
@@ -1106,6 +1096,8 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
 
 function useSubmitOrderCallback() {
   const lib = useTwapStore((s) => s.lib);
+  const account = useTwapContext().account;
+
   return async (
     onTxHash: (txHash: string) => void,
     srcToken: TokenData,
@@ -1140,6 +1132,7 @@ function useSubmitOrderCallback() {
       BN(lib.config.bidDelaySeconds).toFixed(0),
       BN(fillDelaySeconds).toFixed(0),
     ];
+    analytics.onCreateOrderRequest(askParams, account);
 
     let ask: any;
     if (lib.config.twapVersion > 3) {
@@ -1387,15 +1380,11 @@ export const useFillWarning = () => {
   const deadline = useDeadline();
 
   const maxSrcInputAmount = useMaxSrcInputAmount();
-  const { isLoading: feeOnTraferLoading, hasFeeOnTransfer } = useFeeOnTranserWarning();
 
   const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount?.gt(maxSrcInputAmount);
   return useMemo(() => {
     if (!translation) return;
     if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) return translation.selectTokens;
-    if (hasFeeOnTransfer) {
-      return translation.feeOnTranferWarning;
-    }
     if (srcAmount.isZero()) return translation.enterAmount;
     if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) return translation.insufficientFunds;
     if (chunkSize.isZero()) return translation.enterTradeSize;
@@ -1412,9 +1401,6 @@ export const useFillWarning = () => {
     }
     if (fillDelayWarning) {
       return translation.fillDelayWarning;
-    }
-    if (feeOnTraferLoading) {
-      return translation.loading;
     }
   }, [
     srcToken,
@@ -1435,8 +1421,6 @@ export const useFillWarning = () => {
     maxSrcInputAmount,
     lib,
     dstAmountOut,
-    feeOnTraferLoading,
-    hasFeeOnTransfer,
   ]);
 };
 
@@ -1782,57 +1766,5 @@ export const usePriceDisplay = () => {
     inverted,
     onInvert,
     isLoading,
-  };
-};
-
-const useFeeOnTransferContract = () => {
-  const provider = useTwapContext().provider;
-  const lib = useTwapStore((s) => s.lib);
-
-  const address = useMemo(() => {
-    const chainId = lib?.config.chainId;
-    if (!chainId) return undefined;
-    return feeOnTransferDetectorAddresses[chainId as keyof typeof feeOnTransferDetectorAddresses];
-  }, [lib?.config.chainId]);
-
-  return useMemo(() => {
-    if (!provider || !address) return;
-
-    const web3 = new Web3(provider);
-
-    return new web3.eth.Contract(FEE_ON_TRANSFER_ABI as any, address);
-  }, [provider, address]);
-};
-
-const useFeeOnTransfer = (tokenAddress?: string) => {
-  const lib = useTwapStore((s) => s.lib);
-  const contract = useFeeOnTransferContract();
-
-  return useQuery({
-    queryFn: async () => {
-      const res = await contract?.methods.validate(tokenAddress, lib?.config.wToken.address, AMOUNT_TO_BORROW).call();
-      return {
-        buyFee: res.buyFeeBps,
-        sellFee: res.sellFeeBps,
-        hasFeeOnTranfer: BN(res.buyFeeBps).gt(0) || BN(res.sellFeeBps).gt(0),
-      };
-    },
-    queryKey: ["useFeeOnTransfer", tokenAddress, lib?.config.chainId],
-    enabled: !!contract && !!tokenAddress && !!lib,
-  });
-};
-
-export const useFeeOnTranserWarning = () => {
-  const { srcToken, dstToken } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-  }));
-
-  const srcTokenFeeOnTranfer = useFeeOnTransfer(srcToken?.address);
-  const dstTokenFeeOnTranfer = useFeeOnTransfer(dstToken?.address);
-
-  return {
-    isLoading: srcTokenFeeOnTranfer.isLoading || dstTokenFeeOnTranfer.isLoading,
-    hasFeeOnTransfer: srcTokenFeeOnTranfer.data?.hasFeeOnTranfer || dstTokenFeeOnTranfer.data?.hasFeeOnTranfer,
   };
 };

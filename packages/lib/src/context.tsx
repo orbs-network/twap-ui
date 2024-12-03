@@ -11,7 +11,7 @@ import { useLimitPriceStore, useTwapStore } from "./store";
 import BN from "bignumber.js";
 import { getQueryParam } from "./utils";
 import { QUERY_PARAMS } from "./consts";
-analytics.onModuleLoad();
+analytics.onLoad();
 
 export interface TWAPContextProps extends TwapLibProps {
   tokenList: TokenData[];
@@ -33,6 +33,13 @@ const Listener = (props: TwapLibProps) => {
   const updateStoreOveride = useUpdateStoreOveride();
   const limitStore = useLimitPriceStore();
   const enableQueryParams = props.enableQueryParams;
+
+  useEffect(() => {
+    if (props.config.partner) {
+      analytics.onConfigChange(props.config);
+    }
+  }, [props.config.partner]);
+
   useEffect(() => {
     if (enableQueryParams) {
       limitStore.setPriceFromQueryParams(getQueryParam(QUERY_PARAMS.LIMIT_PRICE));
@@ -58,10 +65,6 @@ const Listener = (props: TwapLibProps) => {
 };
 
 const WrappedTwap = (props: TwapLibProps) => {
-  useEffect(() => {
-    analytics.onTwapPageView();
-  }, []);
-
   return (
     <TwapErrorWrapper>
       <Listener {...props} />
