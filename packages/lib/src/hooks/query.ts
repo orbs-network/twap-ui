@@ -10,7 +10,7 @@ import { Token } from "../types";
 import { useGetHasAllowance, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
 import { useSrcAmount } from "./lib";
-import { Order, OrderStatus, getOrders, getOrderById } from "@orbs-network/twap-sdk";
+import { Order, OrderStatus, getOrders, getOrderById, getOrderByTxHash } from "@orbs-network/twap-sdk";
 import { amountBNV2 } from "../utils";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
@@ -155,14 +155,28 @@ const useOrderHistoryKey = () => {
 export const useOrderQuery = (orderId?: number) => {
   const chainId = useTwapContext().config.chainId;
   return useQuery(
-    ["useOrderQuery", chainId, chainId],
+    ["useOrderQuery", chainId, orderId],
     async ({ signal }) => {
       if (!orderId) return null;
-      const result = await getOrderById({ orderId: 79202, chainId: 56, signal });
+      const result = await getOrderById({ id: orderId, chainId, signal });
       return result;
     },
     {
       enabled: !!orderId && !!chainId,
+    },
+  );
+};
+
+export const useOrderQueryByTxHash = (txHash?: string) => {
+  const chainId = useTwapContext().config.chainId;
+  return useQuery(
+    ["useOrderQueryByTxHash", chainId, txHash],
+    async ({ signal }) => {
+      const result = await getOrderByTxHash({ txHash: txHash!, chainId, signal });
+      return result;
+    },
+    {
+      enabled: !!txHash && !!chainId,
     },
   );
 };

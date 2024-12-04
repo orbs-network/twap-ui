@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
 import React, { ReactNode } from "react";
 import { useTwapContext } from "../../context/context";
-import { useFormatNumberV2 } from "../../hooks";
+import { useFormatNumberV2 } from "../../hooks/hooks";
 import SmallLabel from "./SmallLabel";
 
 interface Props {

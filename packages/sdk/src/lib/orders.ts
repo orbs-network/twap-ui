@@ -86,10 +86,21 @@ const getCreatedOrders = async ({
   return response.data.orderCreateds;
 };
 
-export const getCreatedOrder = async ({ endpoint, signal, orderId }: { endpoint: string; signal?: AbortSignal; orderId: number }) => {
+export const getCreatedOrder = async ({ endpoint, signal, id, txHash }: { endpoint: string; signal?: AbortSignal; id?: number; txHash?: string }) => {
+  if (!id && !txHash) {
+    throw new Error("id or txHash is required");
+  }
+
+  let where;
+  if (id) {
+    where = `where:{Contract_id: ${id}}`;
+  } else {
+    where = `where:{transactionHash: "${txHash}"}`;
+  }
+
   const query = `
   {
-  orderCreateds(where:{Contract_id: ${orderId}}) {
+  orderCreateds(${where}) {
      ${ordersCreatedQueryValues}
   }
 }
@@ -210,8 +221,6 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
     const result = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
       return parseFills(orderId, fills);
     });
-
-    console.log({ result });
 
     fills.push(...result);
     if (fills.length < LIMIT) break;
@@ -338,18 +347,26 @@ export const getOrders = async ({
   return orderBy(orders, (o: any) => o.createdAt, "desc");
 };
 
-export const getOrderById = async ({ chainId, orderId, signal }: { chainId: number; orderId: number; signal?: AbortSignal }): Promise<Order> => {
+const getOrder = async ({ chainId, id, txHash, signal }: { chainId: number; id?: number; signal?: AbortSignal; txHash?: string }): Promise<Order> => {
   const endpoint = getTheGraphUrl(chainId);
   if (!endpoint) {
     throw new Error("No endpoint found");
   }
-  const [order] = await getCreatedOrder({ endpoint, signal, orderId });
+  const [order] = await getCreatedOrder({ endpoint, signal, id, txHash });
   const ids = [order.Contract_id];
   const fills = await getAllFills({ endpoint, signal, ids, chainId });
 
   const statuses = await getOrderStatuses(ids, endpoint, signal);
 
   return new Order(order, fills?.[0], statuses[order.Contract_id]);
+};
+
+export const getOrderById = async ({ chainId, id, signal }: { chainId: number; id: number; signal?: AbortSignal }): Promise<Order> => {
+  return getOrder({ chainId, id, signal });
+};
+
+export const getOrderByTxHash = async ({ chainId, txHash, signal }: { chainId: number; txHash: string; signal?: AbortSignal }): Promise<Order> => {
+  return getOrder({ chainId, txHash, signal });
 };
 
 export const getAllOrders = ({

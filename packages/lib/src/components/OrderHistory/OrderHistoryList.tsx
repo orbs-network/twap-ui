@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList } from "react-window";
 import { useTwapContext } from "../../context/context";
-import { useFormatNumberV2 } from "../../hooks";
+import { useFormatNumberV2 } from "../../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { LinearProgress, Loader, TokenLogo } from "../base";
 import { useOrderHistoryContext, useTokenFromList } from "./context";

@@ -4,7 +4,7 @@ import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
-import { query } from "../hooks/query";
+import { query, useOrderQueryByTxHash } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
 import { eqIgnoreCase, setWeb3Instance } from "@defi.org/web3-candies";
 import { constructSDK, DEFAULT_FILL_DELAY } from "@orbs-network/twap-sdk";
@@ -87,7 +87,6 @@ export const Content = (props: TwapLibProps) => {
   const { updateState, state } = useStore(props);
   const uiPreferences = props.uiPreferences || {};
   const web3 = useMemo(() => (!props.provider ? undefined : new Web3(props.provider)), [props.provider]);
-
   useEffect(() => {
     setInterval(() => {
       updateState({ currentTime: Date.now() });

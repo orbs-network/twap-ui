@@ -18,7 +18,7 @@ export function Failed({ error }: { error?: any }) {
       <Title />
       {nativeBalance && <StyledText className="twap-order-modal-failed-subtitle">Insufficient {nativeToken} balance</StyledText>}
       <SmallTokens />
-      <BottomContent text="Learn more" href="/" />
+      <BottomContent text="Learn more" href="https://www.orbs.com/dtwap-and-dlimit-faq/" />
     </StyledContainer>
   );
 }

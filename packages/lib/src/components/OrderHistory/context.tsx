@@ -4,7 +4,7 @@ import { Translations } from "../../types";
 import { OrdersMenuTab } from "./types";
 import { mapCollection, size } from "../../utils";
 import { groupOrdersByStatus, Order, OrderStatus } from "@orbs-network/twap-sdk";
-import { useOrdersHistory } from "../../hooks";
+import { useOrdersHistory } from "../../hooks/query";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 
 interface OrderHistoryContextType {
@@ -31,7 +31,6 @@ export const useTokenFromList = (address?: string) => {
 
 export const useSelectedOrder = () => {
   const orders = useOrders();
-  console.log({ orders });
 
   const { selectedOrderId } = useOrderHistoryContext();
 

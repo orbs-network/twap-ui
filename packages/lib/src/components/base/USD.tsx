@@ -2,7 +2,7 @@ import { styled } from "styled-components";
 import React from "react";
 import { SQUIGLE } from "../../config";
 import { useTwapContext } from "../../context/context";
-import { useFormatNumberV2 } from "../../hooks";
+import { useFormatNumberV2 } from "../../hooks/hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
 

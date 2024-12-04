@@ -8,8 +8,9 @@ import { Spinner } from "../base";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode, useCallback, useMemo } from "react";
 import { useTwapContext } from "../../context/context";
-import { query, useOpenOrders, useOrdersHistory } from "../../hooks";
+import { useOrdersHistory } from "../../hooks/query";
 import { size } from "../../utils";
+import { useOpenOrders } from "../../hooks/index";
 
 const OrderHistoryButton = ({ onClick, className = "" }: { onClick: () => void; className?: string }) => {
   const { data } = useOrdersHistory();
