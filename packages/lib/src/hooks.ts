@@ -1082,8 +1082,12 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
         dstMinAmountOutUi: amountUi(dstToken, o.order.ask.dstMinAmount),
         dstMinAmountOutUsdUi: amountUi(dstToken, o.order.ask.dstMinAmount.times(dstUsd)),
         fillDelay: o.order.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
-        createdAtUi: moment(o.order.time * 1000).format("ll HH:mm"),
-        deadlineUi: moment(o.order.ask.deadline * 1000).format("ll HH:mm"),
+        createdAtUi: moment(o.order.time * 1000)
+          .locale("en")
+          .format("ll HH:mm"),
+        deadlineUi: moment(o.order.ask.deadline * 1000)
+          .locale("en")
+          .format("ll HH:mm"),
         prefix: isMarketOrder ? "~" : "~",
         dstAmount: !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0")),
         dstAmountUsd: o.ui.dollarValueOut ? o.ui.dollarValueOut : !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0").times(dstUsd)),
@@ -1658,7 +1662,7 @@ export const useDeadline = () => {
 export const useDeadlineUi = () => {
   const deadline = useDeadline();
 
-  return useMemo(() => moment(deadline).format("ll HH:mm"), [deadline]);
+  return useMemo(() => moment(deadline).locale("en").format("ll HH:mm"), [deadline]);
 };
 
 export const useSetSrcAmountUi = () => {

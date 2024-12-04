@@ -780,7 +780,7 @@ export const OrderSummaryDetailsDeadline = ({ subtitle, translations }: { subtit
   );
 };
 
-const OrderSummaryFee = () => {
+export const OrderSummaryFee = () => {
   return <Label>Fee {`(0.25%)`}</Label>;
 };
 

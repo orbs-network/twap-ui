@@ -54,8 +54,12 @@ export const parseOrder = ({
     srcFilledAmountUi: amountUi(srcToken, BN(srcFilledAmount || "0")),
     dstMinAmountOutUi: amountUi(dstToken, order.ask.dstMinAmount),
     fillDelay: order.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
-    createdAtUi: moment(order.time * 1000).format("ll HH:mm"),
-    deadlineUi: moment(order.ask.deadline * 1000).format("ll HH:mm"),
+    createdAtUi: moment(order.time * 1000)
+      .locale("en")
+      .format("ll HH:mm"),
+    deadlineUi: moment(order.ask.deadline * 1000)
+      .locale("en")
+      .format("ll HH:mm"),
     prefix: "~",
     progress,
     dstAmount,

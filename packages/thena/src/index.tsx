@@ -326,6 +326,7 @@ const LimitPanel = () => {
           <Components.OrderSummaryDetailsOrderType />
           <Components.OrderSummaryDetailsChunkSize />
           <Components.OrderSummaryDetailsMinDstAmount />
+          <Components.OrderSummaryFee />
         </TwapStyles.StyledColumnFlex>
       </OrderSummary>
       <StyledPoweredBy />
