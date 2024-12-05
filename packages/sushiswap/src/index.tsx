@@ -84,7 +84,7 @@ import { ButtonProps } from "@orbs-network/twap-ui";
 
 const tempSushiEthConfigOverride = {
   ...Configs.SushiEth,
-  minChunkSizeUsd: 2000,
+  minChunkSizeUsd: 1000,
 };
 
 const configs = [Configs.SushiArb, Configs.SushiBase, tempSushiEthConfigOverride];
