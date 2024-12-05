@@ -183,6 +183,7 @@ const parseFills = (orderId: number, fills?: any) => {
     dollarValueIn: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dollarValueIn)), BN(0)).toString(),
     dollarValueOut: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dollarValueOut)), BN(0)).toString(),
     dexFee: fills?.reduce((acc: BN, it: any) => acc.plus(BN(it.dexFee || 0)), BN(0)).toString(),
+    fills
   };
 };
 
@@ -218,6 +219,7 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
     const response = await payload.json();
 
     let orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
+    
     const result = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
       return parseFills(orderId, fills);
     });
@@ -225,8 +227,9 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
     fills.push(...result);
     if (fills.length < LIMIT) break;
     page++;
-  }
-
+  }  
+  console.log({fills});
+  
   return fills;
 };
 
@@ -336,7 +339,7 @@ export const getOrders = async ({
   } else {
     orders = await getAllCreatedOrders({ endpoint, signal, account, exchangeAddress, limit });
   }
-  const ids = orders.map((order: any) => order.Contract_id);
+  const ids = orders.map((order: any) => order.Contract_id);  
   const fills = await getAllFills({ endpoint, signal, ids, chainId });
   const statuses = await getOrderStatuses(ids, endpoint, signal);
   orders = orders.map((rawOrder: any) => {
