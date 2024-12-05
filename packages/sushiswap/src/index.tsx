@@ -82,7 +82,12 @@ import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
 
-const configs = [Configs.SushiArb, Configs.SushiBase, Configs.SushiEth];
+const tempSushiEthConfigOverride = {
+  ...Configs.SushiEth,
+  minChunkSizeUsd: 1000,
+};
+
+const configs = [Configs.SushiArb, Configs.SushiBase, tempSushiEthConfigOverride];
 
 const USD = ({ usd }: { usd?: string }) => {
   return (
@@ -216,7 +221,7 @@ const useParseToken = () => {
         console.error("Invalid token", token);
       }
     },
-    [config.chainId, getTokenLogo],
+    [config.chainId, getTokenLogo]
   );
 };
 
@@ -266,7 +271,7 @@ const useIsNative = () => {
         return true;
       }
     },
-    [context.config.chainId],
+    [context.config.chainId]
   );
 };
 
@@ -670,7 +675,7 @@ const LimitPanelExpiration = () => {
     (unit: TimeUnit) => {
       setCustomDuration({ unit, value: 1 });
     },
-    [setCustomDuration],
+    [setCustomDuration]
   );
 
   return (
