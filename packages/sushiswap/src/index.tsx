@@ -82,7 +82,8 @@ import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
 
-const configs = [Configs.SushiArb, Configs.SushiBase, Configs.SushiEth];
+const ethConfig = { ...Configs.SushiEth, minChunkSizeUsd: 1000 };
+const configs = [Configs.SushiArb, Configs.SushiBase, ethConfig];
 
 const USD = ({ usd }: { usd?: string }) => {
   return (
