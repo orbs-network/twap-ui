@@ -238,7 +238,7 @@ export const useApproveToken = () => {
       const contract = erc20(token.symbol, token.address, token.decimals);
 
       await sendAndWaitForConfirmations(
-        contract.methods.approve(config.twapAddress, BN(approvalAmount).toFixed(0)),
+        contract.methods.approve(config.twapAddress, BN(approvalAmount).decimalPlaces(0).toFixed(0)),
         {
           from: account,
           maxPriorityFeePerGas: priorityFeePerGas,
