@@ -6,7 +6,7 @@ import { useUnwrapToken, useWrapOnly } from "./useTransactions";
 import { useSwapModal } from "./useSwapModal";
 import { isNil } from "../utils";
 import { useChangeNetwork, useSrcBalance } from "./hooks";
-import { useNoLiquidity, useOutAmount, useShouldOnlyWrap, useShouldUnwrap, useSwapWarning } from "./lib";
+import { useMinChunkSizeUsd, useNoLiquidity, useOutAmount, useShouldOnlyWrap, useShouldUnwrap, useSwapWarning } from "./lib";
 
 export const useConfirmationButton = (connect?: () => void) => {
   const { translations, isWrongChain, state, srcToken, dstToken, srcUsd, account } = useTwapContext();
@@ -25,6 +25,7 @@ export const useConfirmationButton = (connect?: () => void) => {
   const shouldOnlyWrap = useShouldOnlyWrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
+  const minChunkSizeUsd = useMinChunkSizeUsd();
 
   const hasWarning = useMemo(() => {
     return !Object.values(warning).every((value) => value === undefined);
@@ -96,6 +97,6 @@ export const useConfirmationButton = (connect?: () => void) => {
     text: translations.placeOrder,
     onClick: onOpen,
     loading: false,
-    disabled: false,
+    disabled: !minChunkSizeUsd ? true : false,
   };
 };

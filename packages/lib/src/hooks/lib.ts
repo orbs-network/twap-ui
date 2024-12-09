@@ -22,6 +22,7 @@ import { useAmountUi, useEstimatedDelayBetweenChunksMillis, useFormatDecimals, u
 import { convertDecimals, eqIgnoreCase, isNativeAddress, maxUint256, parsebn } from "@defi.org/web3-candies";
 import { stateActions, useSetQueryParams } from "../context/actions";
 import moment from "moment";
+import { useEthMinChunkSizeUsd } from "./useEthUsdPrice";
 export const useLimitPrice = () => {
   const { isLoading, marketPrice } = useMarketPrice();
   const { state, dstToken } = useTwapContext();
@@ -215,8 +216,9 @@ export const useToken = (isSrc?: boolean) => {
 };
 
 export const useMinChunkSizeUsd = () => {
-  const { state, config } = useTwapContext();
-  return Math.max(state.minChunkSizeUsd || 0, config?.minChunkSizeUsd || 0);
+  const { config } = useTwapContext();
+  const { data: ethMinChunkSizeUsd } = useEthMinChunkSizeUsd();
+  return config.chainId === 1 ? ethMinChunkSizeUsd || 0 : config.minChunkSizeUsd;
 };
 
 export const useMaxPossibleChunks = () => {

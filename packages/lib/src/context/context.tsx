@@ -13,7 +13,7 @@ import moment from "moment";
 import { setWeb3Instance } from "@defi.org/web3-candies";
 import { stateActions } from "./actions";
 import BN from "bignumber.js";
-analytics.onModuleImported();
+analytics.onLoad();
 
 export const TwapContext = createContext({} as TWAPContextProps);
 const queryClient = new QueryClient({
@@ -37,7 +37,6 @@ const Listener = (props: TwapLibProps) => {
   const interval = useRef<any>();
   const { state, updateState } = useTwapContext();
   const setCustomDuration = stateActions.useSetCustomDuration();
-  useMinChunksSizeUpdater();
 
   useEffect(() => {
     if (props.isLimitPanel) {
@@ -58,10 +57,8 @@ const Listener = (props: TwapLibProps) => {
   }, [state.showConfirmation, state.swapState, updateState]);
 
   useEffect(() => {
-    if (props.config && props.provider && props.account) {
-      analytics.onLibInit(props.config, props.provider, props.account);
-    }
-  }, [props.config, props.provider, props.account]);
+    analytics.onConfigChange(props.config);
+  }, [props.config.chainId]);
 
   return null;
 };
@@ -194,34 +191,4 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
 export const useTwapContext = () => {
   return useContext(TwapContext);
-};
-
-const useMinChunksSizeUpdater = () => {
-  const { maxFeePerGas } = query.useGasPrice();
-  const {
-    updateState,
-    state: { minChunkSizeUsd },
-    config,
-    nativeUsd,
-  } = useTwapContext();
-
-  const calculate = useCallback(() => {
-    const result = BN(TX_GAS_COST)
-      .multipliedBy(maxFeePerGas)
-      .multipliedBy(nativeUsd || "0")
-      .dividedBy(1e18)
-      .dividedBy(0.05)
-      .decimalPlaces(0)
-      .toNumber();
-    return updateState({ minChunkSizeUsd: result });
-  }, [maxFeePerGas.toString(), updateState, config.minChunkSizeUsd, nativeUsd]);
-  useEffect(() => {
-    updateState({ minChunkSizeUsd: undefined });
-  }, [config.chainId]);
-
-  useEffect(() => {
-    if (maxFeePerGas.gt(0) && !minChunkSizeUsd && nativeUsd) {
-      calculate();
-    }
-  }, [maxFeePerGas.toString(), calculate, minChunkSizeUsd, nativeUsd]);
 };

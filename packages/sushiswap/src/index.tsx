@@ -68,8 +68,6 @@ import {
   StyledLimitPanelExpirationButtons,
   StyledLimitPanelExpirationButton,
   StyledTokenPanelLabel,
-  StyledFee,
-  StyledShowConfirmationButtonContainer,
   StyledChunksSelectText,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
@@ -82,10 +80,10 @@ import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
 import { TimeResolution } from "@orbs-network/twap-ui";
+console.log(Configs.SushiArb);
 
-const ethConfig = { ...Configs.SushiEth, minChunkSizeUsd: 1000 };
 
-const configs = [Configs.SushiArb, Configs.SushiBase, ethConfig];
+const configs = [Configs.SushiArb, Configs.SushiBase, Configs.SushiEth];
 
 const USD = ({ usd }: { usd?: string }) => {
   return (

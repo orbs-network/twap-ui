@@ -1,5 +1,5 @@
-import { Abi, eqIgnoreCase, erc20, estimateGasPrice, isNativeAddress, setWeb3Instance } from "@defi.org/web3-candies";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Abi, eqIgnoreCase, erc20, estimateGasPrice, isNativeAddress, setWeb3Instance, zero } from "@defi.org/web3-candies";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { useCallback, useMemo, useRef } from "react";
 import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
@@ -87,20 +87,35 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
   });
 };
 
-export const useGasPrice = () => {
+export const useGasPriceCallback = () => {
   const { web3, maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
-  const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(undefined, undefined, web3), {
+
+  return useMutation(async () => {
+    if (!web3) {
+      throw new Error("Web3 is missing");
+    }
+    const data = await estimateGasPrice(undefined, undefined, web3);
+    const priorityFeePerGas = BN.max(data?.fast.tip || 0, contextTip || 0);
+    const maxFeePerGas = BN.max(data?.fast.max || 0, contextMax || 0, priorityFeePerGas);
+    return {
+      maxFeePerGas,
+      priorityFeePerGas,
+    };
+  });
+};
+
+export const useGasPrice = () => {
+  const { web3, maxFeePerGas: contextMax, priorityFeePerGas: contextTip, config } = useTwapContext();
+  const { mutateAsync: gesGasPrice } = useGasPriceCallback();
+  const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax, config.chainId], () => gesGasPrice(), {
     enabled: !!web3,
     refetchInterval: REFETCH_GAS_PRICE,
   });
 
-  const priorityFeePerGas = BN.max(data?.fast.tip || 0, contextTip || 0);
-  const maxFeePerGas = BN.max(data?.fast.max || 0, contextMax || 0, priorityFeePerGas);
-
   return {
     isLoading,
-    maxFeePerGas,
-    priorityFeePerGas,
+    maxFeePerGas: data?.maxFeePerGas || zero,
+    priorityFeePerGas: data?.priorityFeePerGas || zero,
   };
 };
 

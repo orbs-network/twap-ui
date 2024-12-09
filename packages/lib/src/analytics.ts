@@ -1,25 +1,38 @@
-import { isTxRejected, logger } from "./utils";
-import { v4 as uuidv4 } from "uuid";
-import { useSwapData } from "./hooks";
-import { Config } from "./types";
-
-const Version = 0.2;
+import BN from "bignumber.js";
+const Version = 0.5;
 
 const BI_ENDPOINT = `https://bi.orbs.network/putes/twap-ui-${Version}`;
 
-type Action =
-  | "cancel"
-  | "create-order"
-  | "onConfirmationCreateOrderClick"
-  | "onCreateOrderSuccess"
-  | "wrap-only"
-  | "wrap"
-  | "unwrap"
-  | "approve"
-  | "module-imported"
-  | "page-loaded";
+type Action = "cancel order" | "wrap" | "approve" | "create order" | "module-import" | "ui-crash";
 
-interface LibConfig {
+function generateId() {
+  const part1 = Math.random().toString(36).substring(2, 16); // Generate 16 random characters
+  const part2 = Math.random().toString(36).substring(2, 16); // Generate another 16 random characters
+  const timestamp = Date.now().toString(36); // Generate a timestamp
+  return `id_${part1 + part2 + timestamp}`; // Concatenate all parts
+}
+
+interface Data {
+  _id: string;
+  actionError?: string;
+  newOrderId?: number;
+  cancelOrderSuccess?: boolean;
+  cancelOrderId?: number;
+  orderSubmitted?: boolean;
+  orderSuccess?: boolean;
+  action?: Action;
+  createOrderTxHash?: string;
+  wrapTxHash?: string;
+  approvalTxHash?: string;
+  walletAddress?: string;
+  fromTokenAddress?: string;
+  toTokenAddress?: string;
+  fromTokenAmount?: string;
+  chunksAmount?: number;
+  minDstAmountOut?: string;
+  deadline?: number;
+  fillDelay?: number;
+  srcChunkAmount?: string;
   bidDelaySeconds?: number;
   chainId?: number;
   chainName?: string;
@@ -30,48 +43,7 @@ interface LibConfig {
   partner?: string;
   twapAddress?: string;
   twapVersion?: number;
-}
-
-type OrderType = "limit" | "twap-market" | "twap-limit";
-
-interface SubmitOrderArgs {
-  srcToken?: string;
-  dstToken?: string;
-  srcTokenSymbol?: string;
-  dstTokenSymbol?: string;
-  srcTokenAmount?: string;
-  srcTokenAmountBN?: string;
-  dstTokenAmount?: string;
-  dstTokenMarketAmount?: string;
-  dstTokenMarketAmountBN?: string;
-  totalTrades?: number;
-  minAmountOut?: string;
-  minAmountOutBN?: string;
-  deadline?: number;
-  deadlineUi?: string;
-  tradeInterval?: number;
-  fillDelayUi?: string;
-  tradeSize?: string;
-  tradeSizeBN?: string;
-}
-
-interface Data extends SubmitOrderArgs, LibConfig {
-  _id: string;
-  uiCrashedErrorMessage?: string;
-  uiCrashedErrorStack?: string;
-  actionError?: string;
-  newOrderId?: number;
-  cancelOrderSuccess?: boolean;
-  cancelOrderId?: number;
-  action?: Action;
-  createOrderTxHash?: string;
-  failedAction?: Action;
-  wrapTxHash?: string;
-  unwrapTxHash?: string;
-  approvalTxHash?: string;
-  walletConnectName?: string;
-  orderType?: OrderType;
-  maker?: string;
+  minChunkSizeUsd?: number;
 }
 
 const sendBI = async (data: Partial<Data>) => {
@@ -85,161 +57,177 @@ const sendBI = async (data: Partial<Data>) => {
       body: JSON.stringify(data),
     }).then();
   } catch (error) {
-    logger(`Analytics error: ${error}`);
+    console.error("Failed to send BI", error);
   }
 };
 
-class Analytics {
+export class Analytics {
   timeout: any = undefined;
+  ethMinChunkSizeUsd = 0;
   data: Data = {
-    _id: uuidv4(),
+    _id: generateId(),
   };
 
-  updateAndSend(values = {} as Partial<Data>) {
+  updateAndSend(values = {} as Partial<Data>, noTimeout = false) {
     this.data = {
       ...this.data,
       ...values,
     };
-
-    clearTimeout(this.timeout);
-    this.timeout = setTimeout(() => {
+    if (noTimeout) {
       sendBI(this.data);
-    }, 1_000);
+    } else {
+      clearTimeout(this.timeout);
+      this.timeout = setTimeout(() => {
+        sendBI(this.data);
+      }, 1_000);
+    }
   }
 
-  reset() {
-    setTimeout(() => {
-      this.data = {
-        _id: uuidv4(),
-        action: "page-loaded",
-      };
-    }, 1_000);
-  }
-
-  onLibInit(config?: Config, provider?: any, account?: string) {
-    let walletConnectName;
-
-    try {
-      if (provider.isRabby) {
-        walletConnectName = "Rabby Wallet";
-      } else if (provider.isWalletConnect) {
-        walletConnectName = "WalletConnect";
-      } else if (provider.isCoinbaseWallet) {
-        walletConnectName = "Coinbase Wallet";
-      } else if (provider.isOkxWallet) {
-        walletConnectName = "OKX Wallet";
-      } else if (provider.isTrustWallet) {
-        walletConnectName = "Trust Wallet";
-      } else if (provider.isMetaMask) {
-        walletConnectName = "MetaMask";
-      } else {
-        walletConnectName = (provider as any)?.session?.peer.metadata.name;
-      }
-    } catch (error) {}
-
+  onCancelOrder(orderId: number) {
     this.updateAndSend({
-      bidDelaySeconds: config?.bidDelaySeconds,
-      chainId: config?.chainId,
-      chainName: config?.chainName,
-      exchangeAddress: config?.exchangeAddress,
-      exchangeType: config?.exchangeType,
-      lensAddress: config?.lensAddress,
-      name: config?.name,
-      partner: config?.partner,
-      twapAddress: config?.twapAddress,
-      twapVersion: config?.twapVersion,
-      maker: account,
-      walletConnectName,
-      action: "page-loaded",
+      cancelOrderId: orderId,
+      action: "cancel order",
     });
-  }
-
-  onCancelOrder(cancelOrderId: number) {
-    this.updateAndSend({ cancelOrderId, action: "cancel" });
   }
 
   onCancelOrderSuccess() {
-    this.updateAndSend({ cancelOrderSuccess: true });
-  }
-
-  onSubmitOrder(swapData: ReturnType<typeof useSwapData>, orderType: OrderType) {
     this.updateAndSend({
-      srcToken: swapData.srcToken?.address,
-      dstToken: swapData.dstToken?.address,
-      srcTokenSymbol: swapData.srcToken?.symbol,
-      dstTokenSymbol: swapData.dstToken?.symbol,
-      srcTokenAmount: swapData.srcAmount.amountUi,
-      srcTokenAmountBN: swapData.srcAmount.amount,
-      dstTokenMarketAmount: swapData.outAmount.amountUi,
-      dstTokenMarketAmountBN: swapData.outAmount.amount,
-      totalTrades: swapData.chunks,
-      minAmountOut: swapData.dstMinAmount.amountUi,
-      minAmountOutBN: swapData.dstMinAmount.amount,
-      tradeInterval: swapData.fillDelay.millis,
-      deadline: swapData.deadline.millis,
-      deadlineUi: swapData.deadline.text,
-      tradeSize: swapData.srcChunkAmount.amountUi,
-      tradeSizeBN: swapData.srcChunkAmount.amount,
-      action: "onConfirmationCreateOrderClick",
-      orderType,
+      cancelOrderSuccess: true,
     });
   }
 
-  updateAction(action: Action) {
-    this.updateAndSend({
-      action,
-    });
+  onCanelOrderError(error: any) {
+    this.onTxError(error);
   }
 
-  onTxError(error: any, failedAction: Action) {
-    if (isTxRejected(error)) {
-      this.updateAndSend({ actionError: "rejected" });
-    } else {
-      const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
-      this.updateAndSend({ actionError, failedAction });
-      analytics.reset();
-    }
-  }
-  onWrapSuccess(wrapTxHash: string) {
+  onWrapSuccess(wrapTxHash?: string) {
     this.updateAndSend({
       wrapTxHash,
     });
   }
 
-  onUnwrapSuccess(unwrapTxHash: string) {
+  onWrapRequest() {
     this.updateAndSend({
-      unwrapTxHash,
+      action: "wrap",
     });
   }
 
-  onApproveSuccess(approvalTxHash: string) {
+  onWrapError(error: any) {
+    this.onTxError(error);
+  }
+
+  onApproveRequest() {
+    this.updateAndSend({
+      action: "approve",
+    });
+  }
+
+  onApproveSuccess(approvalTxHash?: string) {
     this.updateAndSend({
       approvalTxHash,
     });
   }
 
-  onCreateOrderSuccess(newOrderId: number, createOrderTxHash: string) {
-    this.updateAndSend({
-      newOrderId,
-      createOrderTxHash,
-      action: "onCreateOrderSuccess",
-    });
-    this.reset();
+  onApproveError(error: any) {
+    this.onTxError(error);
   }
 
-  onModuleImported() {
+  onCreateOrderError(error: any) {
+    this.onTxError(error);
+  }
+
+  onTxError(error: any) {
+    const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
+    this.updateAndSend({ actionError });
+  }
+
+  onCreateOrderRequest(askParams: any, account?: string) {
+    const values = askParams;
+    const fromTokenAmount = values[3];
+    const srcChunkAmount = values[4];
+    const chunksAmount = BN(fromTokenAmount).div(srcChunkAmount).integerValue(BN.ROUND_FLOOR).toNumber();
+
+    this.updateAndSend({
+      fromTokenAddress: values[1],
+      toTokenAddress: values[2],
+      fromTokenAmount: values[3],
+      chunksAmount,
+      minDstAmountOut: values[5],
+      deadline: values[6],
+      fillDelay: values[8],
+      srcChunkAmount,
+      action: "create order",
+      walletAddress: account,
+      orderSubmitted: true,
+    });
+  }
+
+  onEthMinChunkSizeUsd = (ethMinChunkSizeUsd?: number) => {
+    this.ethMinChunkSizeUsd = ethMinChunkSizeUsd || 0;
+    this.updateAndSend({ minChunkSizeUsd: ethMinChunkSizeUsd });
+  };
+
+  onConfigChange(config: any) {
+    if (config.chainId !== this.data?.chainId) {
+      this.data = {
+        _id: this.data.action !== "module-import" ? generateId() : this.data._id,
+        action: "module-import",
+        bidDelaySeconds: config?.bidDelaySeconds,
+        chainId: config?.chainId,
+        chainName: config?.chainName,
+        exchangeAddress: config?.exchangeAddress,
+        exchangeType: config?.exchangeType,
+        lensAddress: config?.lensAddress,
+        name: config?.name,
+        partner: config?.partner,
+        twapAddress: config?.twapAddress,
+        twapVersion: config?.twapVersion,
+        minChunkSizeUsd: config.chainId === 1 ? this.ethMinChunkSizeUsd : config?.minChunkSizeUsd,
+      };
+      this.updateAndSend(this.data);
+    }
+  }
+
+  onCreateOrderSuccess(createOrderTxHash?: string, newOrderId?: number) {
+    this.updateAndSend(
+      {
+        newOrderId,
+        createOrderTxHash,
+        orderSuccess: true,
+      },
+      true,
+    );
+
     this.data = {
-      ...this.data,
-      action: "module-imported",
+      _id: generateId(),
+      action: "module-import",
+      bidDelaySeconds: this.data?.bidDelaySeconds,
+      chainId: this.data.chainId,
+      chainName: this.data.chainName,
+      exchangeAddress: this.data.exchangeAddress,
+      exchangeType: this.data.exchangeType,
+      lensAddress: this.data.lensAddress,
+      name: this.data.name,
+      partner: this.data.partner,
+      twapAddress: this.data.twapAddress,
+      twapVersion: this.data.twapVersion,
     };
-    sendBI(this.data);
+  }
+  onUiCrash(error: any) {
+    const actionError = error?.message?.toLowerCase() || error?.toLowerCase();
+    this.updateAndSend({
+      action: "ui-crash",
+      actionError,
+    });
   }
 
-  onUiCreashed(error: Error) {
-    this.updateAndSend({
-      uiCrashedErrorMessage: error.message,
-      uiCrashedErrorStack: error.stack,
-    });
+  onLoad() {
+    this.updateAndSend(
+      {
+        action: "module-import",
+      },
+      true,
+    );
   }
 }
 

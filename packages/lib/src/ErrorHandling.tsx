@@ -41,7 +41,7 @@ export function TwapErrorWrapper({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundary
       onError={(error) => {
-        analytics.onUiCreashed(error);
+        analytics.onUiCrash(error);
         // You can also log the error to an error reporting service like AppSignal
         // logErrorToMyService(error, errorInfo);
         console.error(error);
@@ -57,7 +57,7 @@ export function OrdersErrorWrapper({ children }: { children: React.ReactNode }) 
   return (
     <ErrorBoundary
       onError={(error) => {
-        analytics.onUiCreashed(error);
+        analytics.onUiCrash(error);
       }}
       fallbackRender={OrdersFallbackUI}
     >

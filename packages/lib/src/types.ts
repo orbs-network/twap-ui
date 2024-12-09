@@ -365,8 +365,6 @@ export interface State {
   selectedOrdersTab: number;
 
   swapData?: ReturnType<typeof useSwapData>;
-
-  minChunkSizeUsd?: number;
 }
 
 export interface TooltipProps {

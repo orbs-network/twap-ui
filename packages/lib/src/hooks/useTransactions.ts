@@ -26,8 +26,6 @@ export const useCreateOrder = () => {
 
   return useMutation(
     async (srcToken: TokenData) => {
-      analytics.updateAction("create-order");
-
       const fillDelaySeconds = (fillDelayMillisUi - estimatedDelayBetweenChunksMillis) / 1000;
 
       if (!dstToken) {
@@ -56,21 +54,7 @@ export const useCreateOrder = () => {
         BN(fillDelaySeconds).toFixed(0),
         askData,
       ];
-
-      console.log("create order args:", {
-        exchangeAddress: config.exchangeAddress,
-        srcToken: srcToken.address,
-        dstToken: dstToken.address,
-        srcAmount: BN(srcAmount).toFixed(0),
-        srcChunkAmount: BN(srcChunkAmount).toFixed(0),
-        dstMinAmountOut: BN(dstMinAmountOut).toFixed(0),
-        deadline: BN(deadline).div(1000).toFixed(0),
-        bidDelaySeconds: BN(config.bidDelaySeconds).toFixed(0),
-        fillDelaySeconds: BN(fillDelaySeconds).toFixed(0),
-        priorityFeePerGas: priorityFeePerGas.toString(),
-        maxFeePerGas: maxFeePerGas.toString(),
-      });
-
+      analytics.onCreateOrderRequest(askParams, account);
       const ask = twapContract.methods.ask(askParams as any);
 
       const tx = await sendAndWaitForConfirmations(
@@ -89,7 +73,7 @@ export const useCreateOrder = () => {
 
       const orderId = Number(tx.events.OrderCreated.returnValues.id);
       const txHash = tx.transactionHash;
-      analytics.onCreateOrderSuccess(orderId, txHash);
+      analytics.onCreateOrderSuccess(txHash, orderId);
       logger("order created:", "orderId:", orderId, "txHash:", txHash);
       return {
         orderId,
@@ -99,7 +83,7 @@ export const useCreateOrder = () => {
     {
       onError: (error) => {
         logger("order create failed:", error);
-        analytics.onTxError(error, "create-order");
+        analytics.onCreateOrderError(error);
       },
     },
   );
@@ -127,7 +111,7 @@ export const useWrapToken = () => {
       }
 
       logger("wrapping token");
-      analytics.updateAction(wrapOnly ? "wrap-only" : "wrap");
+      analytics.onWrapRequest();
       await sendAndWaitForConfirmations(
         erc20<any>(network.wToken.symbol, network.wToken.address, network.wToken.decimals, iwethabi).methods.deposit(),
         {
@@ -151,7 +135,7 @@ export const useWrapToken = () => {
     {
       onError: (error) => {
         logger("token wrap failed:", error);
-        analytics.onTxError(error, wrapOnly ? "wrap-only" : "wrap");
+        analytics.onTxError(error);
       },
     },
   );
@@ -162,7 +146,6 @@ export const useWrapOnly = () => {
   const onSuccess = useResetAfterSwap();
 
   return useMutation(async () => {
-    analytics.updateAction("wrap-only");
     await mutateAsync();
     await onSuccess();
   });
@@ -176,40 +159,30 @@ export const useUnwrapToken = () => {
   const onTxHash = stateActions.useOnTxHash().onUnwrapTxHash;
   const network = useNetwork();
 
-  return useMutation(
-    async () => {
-      let txHash: string = "";
-      if (!network) {
-        throw new Error("network is not defined");
-      }
+  return useMutation(async () => {
+    let txHash: string = "";
+    if (!network) {
+      throw new Error("network is not defined");
+    }
 
-      if (!account) {
-        throw new Error("account is not defined");
-      }
+    if (!account) {
+      throw new Error("account is not defined");
+    }
 
-      analytics.updateAction("unwrap");
-
-      await sendAndWaitForConfirmations(
-        erc20<any>(network.wToken.symbol, network.wToken.address, network.wToken.decimals, iwethabi).methods.withdraw(BN(srcAmount).toFixed(0)),
-        { from: account, maxPriorityFeePerGas: priorityFeePerGas, maxFeePerGas },
-        undefined,
-        undefined,
-        {
-          onTxHash: (hash) => {
-            txHash = hash;
-            onTxHash(hash);
-          },
+    await sendAndWaitForConfirmations(
+      erc20<any>(network.wToken.symbol, network.wToken.address, network.wToken.decimals, iwethabi).methods.withdraw(BN(srcAmount).toFixed(0)),
+      { from: account, maxPriorityFeePerGas: priorityFeePerGas, maxFeePerGas },
+      undefined,
+      undefined,
+      {
+        onTxHash: (hash) => {
+          txHash = hash;
+          onTxHash(hash);
         },
-      );
-      analytics.onUnwrapSuccess(txHash);
-      await onSuccess();
-    },
-    {
-      onError: (error) => {
-        analytics.onTxError(error, "unwrap");
       },
-    },
-  );
+    );
+    await onSuccess();
+  });
 };
 
 export const useApproveToken = () => {
@@ -229,7 +202,7 @@ export const useApproveToken = () => {
       }
 
       logger("approving token...");
-      analytics.updateAction("approve");
+      analytics.onApproveRequest();
 
       let txHash: string = "";
       if (!hasWeb3Instance()) {
@@ -259,7 +232,7 @@ export const useApproveToken = () => {
     {
       onError: (error) => {
         logger("token approve failed:", error);
-        analytics.onTxError(error, "approve");
+        analytics.onApproveError(error);
       },
     },
   );
@@ -312,23 +285,6 @@ const useOnSuccessCallback = () => {
   );
 };
 
-const useSubmitAnalytics = () => {
-  const swapData = useSwapData();
-  const isMarket = useIsMarketOrder();
-  const { isLimitPanel } = useTwapContext();
-
-  const orderType = useMemo(() => {
-    if (isLimitPanel) {
-      return "limit";
-    }
-    return isMarket ? "twap-market" : "twap-limit";
-  }, [isLimitPanel, isMarket]);
-
-  return useCallback(() => {
-    analytics.onSubmitOrder(swapData, orderType);
-  }, [swapData, orderType]);
-};
-
 export const useSubmitOrderFlow = () => {
   const { minNativeTokenBalance, updateState, state, srcToken } = useTwapContext();
   const { swapState, swapStep, createOrdertxHash, approveTxHash, wrapTxHash, wrapSuccess } = state;
@@ -340,7 +296,6 @@ export const useSubmitOrderFlow = () => {
   const wToken = network?.wToken;
   const nativeSymbol = network?.native.symbol;
   const { refetch: refetchAllowance } = query.useAllowance();
-  const submitAnalytics = useSubmitAnalytics();
   const nativeToWrapped = useSwitchNativeToWrapped();
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
@@ -360,7 +315,6 @@ export const useSubmitOrderFlow = () => {
       }
       logger(`Create order request`);
       updateState({ swapState: "loading", swapData });
-      submitAnalytics();
 
       if (minNativeTokenBalance) {
         const hasMinNativeTokenBalance = await ensureNativeBalance();
@@ -456,7 +410,7 @@ export const useCancelOrder = () => {
       },
       onError: (error: Error) => {
         console.log(`cancel error order`, error);
-        analytics.onTxError(error, "cancel");
+        analytics.onCanelOrderError(error);
       },
     },
   );

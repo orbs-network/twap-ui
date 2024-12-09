@@ -134,6 +134,7 @@ const useToken = (address?: string) => {
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
+
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
@@ -159,10 +160,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     if (!fromToken) {
       setFromToken(dappTokens?.[1]);
     }
-    // if (!toToken) {
-    //   setToToken(dappTokens?.[2]);
-    // }
-  }, [dappTokens, toToken]);
+    if (!toToken) {
+      setToToken(dappTokens?.[2]);
+    }
+  }, [dappTokens, toToken, fromToken]);
 
   const onSwitchTokens = () => {
     setFromToken(toToken);
