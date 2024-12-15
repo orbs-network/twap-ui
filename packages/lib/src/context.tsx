@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { TwapContextUIPreferences, TwapLibProps } from "./types";
-import { useInitLib, useLimitPriceV2, useParseTokens, usePriceUSD, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
+import { useInitLib, useLimitPriceV2, useMaxPossibleChunks, useParseTokens, usePriceUSD, useSetChunks, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { analytics } from "./analytics";
@@ -11,6 +11,7 @@ import { useLimitPriceStore, useTwapStore } from "./store";
 import BN from "bignumber.js";
 import { getQueryParam } from "./utils";
 import { QUERY_PARAMS } from "./consts";
+import { useMaxPossibleChunksReady } from "./hooks";
 analytics.onModuleLoad();
 
 export interface TWAPContextProps extends TwapLibProps {
@@ -33,6 +34,17 @@ const Listener = (props: TwapLibProps) => {
   const updateStoreOveride = useUpdateStoreOveride();
   const limitStore = useLimitPriceStore();
   const enableQueryParams = props.enableQueryParams;
+  const { chunks } = useTwapStore();
+  const maxPossibleChunks = useMaxPossibleChunks();
+  const maxPossibleChunksReady = useMaxPossibleChunksReady();
+
+  const setChunks = useSetChunks();
+  useEffect(() => {
+    if (maxPossibleChunksReady && chunks && chunks > maxPossibleChunks) {
+      setChunks(maxPossibleChunks);
+    }
+  }, [chunks, maxPossibleChunks, setChunks, maxPossibleChunksReady]);
+
   useEffect(() => {
     if (enableQueryParams) {
       limitStore.setPriceFromQueryParams(getQueryParam(QUERY_PARAMS.LIMIT_PRICE));
