@@ -10,85 +10,95 @@ import {
   TooltipProps,
   Configs,
   Token,
+  compact,
+  Styles,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { createContext, useCallback, useContext, useMemo } from "react";
+import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
 import Web3 from "web3";
 import {
-  configureStyles,
   darkTheme,
+  GlobalStyles,
   lightTheme,
+  StyledBalance,
   StyledChangeTokensOrder,
-  StyledInputAndSelect,
-  StyledMaxButton,
+  StyledInputPanelLeft,
   StyledTokenBalance,
   StyledTokenPanel,
   StyledTokenPanelBalanceAndMax,
-  StyledTokenPanelBottom,
+  StyledTokenPanelRight,
   StyledTokenPanelInput,
   StyledTokenSelect,
   StyledTopGrid,
   StyledTradeSize,
 } from "./styles";
-import { isNativeAddress, network } from "@defi.org/web3-candies";
-import { memo, ReactNode } from "react";
+import { eqIgnoreCase, isNativeAddress, network } from "@defi.org/web3-candies";
+import { memo } from "react";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
-import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
-import { styled } from "styled-components";
+import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 
-const config = Configs.BaseSwap;
-
-const Button = (props: any) => {
-  const DappButton = useAdapterContext().Button;
-
-  return (
-    <DappButton text={props.text} onClick={props.onClick} disabled={props.disabled} isLoading={props.loading}>
-      {props.loading ? "Loading..." : props.children}
-    </DappButton>
-  );
-};
+import { styled, ThemeProvider } from "styled-components";
+export const config = Configs.BaseSwap;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
   usdSuffix: " USD",
   usdPrefix: `≈ `,
+  inputPlaceholder: "0",
 };
 
-const MaxButton = () => {
-  const onPercentClick = hooks.useOnSrcAmountPercent();
-  const translations = useTwapContext().translations;
+const Balance = ({ isSrc }: { isSrc?: boolean }) => {
+  const { srcToken, dstToken } = useTwapContext();
+  const srcBalance = hooks.useAmountUi(srcToken?.decimals, hooks.useSrcBalance().data?.toString());
+  const dstBalance = hooks.useAmountUi(dstToken?.decimals, hooks.useDstBalance().data?.toString());
+  const balance = isSrc ? srcBalance : dstBalance;
+  const formattedValue = hooks.useFormatNumberV2({ value: balance, decimalScale: 4 });
+  const onPercent = hooks.useOnSrcAmountPercent();
 
-  return <StyledMaxButton onClick={() => onPercentClick(1)}>{translations.max.toUpperCase()}</StyledMaxButton>;
+  const onMax = useCallback(() => {
+    if (!isSrc) return;
+    onPercent(1);
+  }, [onPercent]);
+
+  return (
+    <StyledBalance isSrc={isSrc ? 1 : 0} onClick={onMax}>
+      <Styles.StyledText>{formattedValue}</Styles.StyledText>
+      <IoWalletOutline />
+    </StyledBalance>
+  );
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const { useModal, TokenSelectModal } = useAdapterContext();
-  // const { rawDstToken: dstToken, rawSrcToken: srcToken } = useTwapContext();
-  const selectToken = hooks.useTokenSelect();
+  const { TokenSelectModal } = useAdapterContext();
 
-  const onSelect = useCallback(
-    (token: any) => {
-      selectToken({ isSrc: !!isSrcToken, token });
-    },
-    [selectToken, isSrcToken],
-  );
-  // const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
+  const [isOpen, setIsOpen] = useState(false);
+  const [finalFocusRef, setFinalFocusRef] = useState("");
+
+  const onOpen = useCallback(() => {
+    setIsOpen(true);
+    setFinalFocusRef(isSrcToken ? "tokenIn" : "tokenOut");
+  }, [isSrcToken]);
+
+  const onClose = useCallback(() => {
+    setIsOpen(false);
+    setFinalFocusRef("");
+  }, []);
 
   return (
     <>
+      <TokenSelectModal onOpen={() => {}} finalFocusRef={finalFocusRef as any} isOpen={isOpen} onClose={onClose} />
       <StyledTokenPanel>
-        <StyledInputAndSelect>
-          <StyledTokenSelect>{/* <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} /> */}</StyledTokenSelect>
+        <StyledInputPanelLeft>
           <StyledTokenPanelInput dstDecimalScale={3} isSrc={isSrcToken} />
-        </StyledInputAndSelect>
-        <StyledTokenPanelBottom>
-          <StyledTokenPanelBalanceAndMax>
-            <StyledTokenBalance isSrc={isSrcToken} />
-            {isSrcToken && <MaxButton />}
-          </StyledTokenPanelBalanceAndMax>
           <Components.TokenUSD isSrc={isSrcToken} />
-        </StyledTokenPanelBottom>
+        </StyledInputPanelLeft>
+        <StyledTokenPanelRight>
+          <StyledTokenSelect>
+            <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onOpen} />
+          </StyledTokenSelect>
+          <Balance isSrc={isSrcToken} />
+        </StyledTokenPanelRight>
       </StyledTokenPanel>
     </>
   );
@@ -100,8 +110,8 @@ const Tooltip = (props: TooltipProps) => {
 
 const nativeToken = network(config.chainId).native;
 
-const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string): Token | undefined => {
-  if (!rawToken.symbol) {
+const parseToken = (rawToken: any): Token | undefined => {
+  if (!rawToken || !rawToken.symbol) {
     console.error("Invalid token", rawToken);
     return;
   }
@@ -112,7 +122,7 @@ const parseToken = (rawToken: any, getTokenLogoURL: (address: string) => string)
     address: Web3.utils.toChecksumAddress(rawToken.address),
     decimals: rawToken.decimals,
     symbol: rawToken.symbol,
-    logoUrl: rawToken.tokenInfo?.logoURI || getTokenLogoURL(rawToken),
+    logoUrl: rawToken?.logoURI,
   };
 };
 const AdapterContext = createContext({} as BaseSwapTWAPProps);
@@ -122,42 +132,80 @@ const AdapterContextProvider = AdapterContext.Provider;
 const useAdapterContext = () => useContext(AdapterContext);
 
 interface BaseSwapTWAPProps extends TWAPProps {
-  connect: () => void;
   provider?: any;
-  useModal?: any;
-  Button: any;
+  TokenSelectModal: FC<{ finalFocusRef: "tokenIn" | "tokenOut"; isOpen?: boolean; onOpen: () => void; onClose: () => void }>;
 }
 
 const TWAP = (props: BaseSwapTWAPProps) => {
+  return (
+    <AdapterContextProvider value={props}>
+      <Content />
+    </AdapterContextProvider>
+  );
+};
+
+const useParsedTokens = () => {
+  const { dappTokens } = useAdapterContext();
+
+  return useMemo(() => {
+    if (!dappTokens) return [];
+
+    let parsed: Token[] = dappTokens.map((rawToken: any) => {
+      return parseToken(rawToken);
+    });
+
+    if (!parsed.find((it) => eqIgnoreCase(it.symbol, nativeToken.symbol))) {
+      parsed.push(nativeToken);
+    }
+    return compact(parsed) as Token[];
+  }, [dappTokens]);
+};
+
+const useSelectedTokens = () => {
+  const { srcToken, dstToken } = useAdapterContext();
+  return useMemo(() => {
+    return {
+      srcToken: parseToken(srcToken),
+      dstToken: parseToken(dstToken),
+    };
+  }, [srcToken, dstToken]);
+};
+
+const Content = () => {
+  const props = useAdapterContext();
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
+  const parsedTokens = useParsedTokens();
+  const { srcToken, dstToken } = useSelectedTokens();
+
   return (
-    <TwapAdapter
-      connect={props.connect}
-      config={config}
-      uiPreferences={uiPreferences}
-      maxFeePerGas={props.maxFeePerGas}
-      priorityFeePerGas={props.priorityFeePerGas}
-      translations={translations as Translations}
-      provider={props.provider}
-      account={props.account}
-      chainId={props.connectedChainId}
-      dappTokens={props.dappTokens}
-      onDstTokenSelected={props.onDstTokenSelected}
-      onSrcTokenSelected={props.onSrcTokenSelected}
-      parsedTokens={[]}
-      isLimitPanel={props.limit}
-      Components={{ Tooltip }}
-    >
-      <AdapterContextProvider value={props}>
-        {/* <ThemeProvider theme={theme}>
-          <GlobalStyles styles={configureStyles(theme)} />
-          <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
-        </ThemeProvider> */}
-      </AdapterContextProvider>
-    </TwapAdapter>
+    <ThemeProvider theme={theme}>
+      <TwapAdapter
+        connect={props.connect}
+        config={config}
+        uiPreferences={uiPreferences}
+        maxFeePerGas={props.maxFeePerGas}
+        priorityFeePerGas={props.priorityFeePerGas}
+        translations={translations as Translations}
+        provider={props.provider}
+        account={props.account}
+        srcToken={srcToken}
+        dstToken={dstToken}
+        chainId={props.connectedChainId}
+        dappTokens={props.dappTokens}
+        onDstTokenSelected={() => {}}
+        onSrcTokenSelected={() => {}}
+        parsedTokens={parsedTokens}
+        isLimitPanel={props.limit}
+        Components={{ Tooltip }}
+        onSwitchTokens={props.onSwitchTokens}
+      >
+        <GlobalStyles />
+        <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
+      </TwapAdapter>
+    </ThemeProvider>
   );
 };
 
@@ -166,20 +214,21 @@ const TWAPPanel = () => {
     <>
       <StyledTopGrid>
         <TokenPanel isSrcToken={true} />
-        <ChangeTokensOrder />
+        <StyledChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
-      <StyledSubmitButton isMain={true} />
+      <ShowConfirmationButton />
       <Components.PoweredBy />
     </>
   );
 };
 
-const ChangeTokensOrder = () => {
-  return <StyledChangeTokensOrder icon={<AiOutlineArrowDown />} />;
+const ShowConfirmationButton = () => {
+  const context = useAdapterContext();
+  return <Components.ShowConfirmation connect={context.connect} />;
 };
 
 const LimitPanel = () => {
@@ -187,7 +236,7 @@ const LimitPanel = () => {
     <>
       <StyledTopGrid>
         <TokenPanel isSrcToken={true} />
-        <ChangeTokensOrder />
+        <StyledChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
       <StyledSubmitButton isMain={true} />
@@ -242,9 +291,9 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
   const { loading, onClick, disabled, text } = hooks.useSubmitOrderButton();
 
   return (
-    <Button text={text} className={`twap-submit ${className}`} onClick={onClick || (() => {})}>
+    <Components.Base.Button text={text} className={`twap-submit ${className}`} onClick={onClick || (() => {})}>
       {text}
-    </Button>
+    </Components.Base.Button>
   );
 };
 

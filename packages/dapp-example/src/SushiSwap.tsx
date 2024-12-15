@@ -8,7 +8,6 @@ import MuiTooltip from "@mui/material/Tooltip";
 import { SelectorOption, TokenListItem } from "./types";
 import { getConfig, mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
-import { baseSwapTokens } from "./BaseSwap";
 import { eqIgnoreCase, network } from "@defi.org/web3-candies";
 
 const name = "SushiSwap";
@@ -22,14 +21,15 @@ export const useDappTokens = () => {
   const parseListToken = useCallback(
     (tokenList?: any) => {
       if (isBase) {
-        return mapCollection(baseSwapTokens, (it, key) => {
-          return {
-            address: key,
-            decimals: it.decimals,
-            symbol: it.symbol,
-            logoURI: it.tokenInfo.logoURI,
-          };
-        });
+        return [];
+        // return mapCollection(baseSwapTokens, (it, key) => {
+        //   return {
+        //     address: key,
+        //     decimals: it.decimals,
+        //     symbol: it.symbol,
+        //     logoURI: it.tokenInfo.logoURI,
+        //   };
+        // });
       }
 
       const res = tokenList?.tokens
@@ -66,7 +66,7 @@ export const useDappTokens = () => {
   return useGetTokens({
     url,
     parse: parseListToken,
-    tokens: isBase ? baseSwapTokens : undefined,
+    tokens: isBase ? [] : undefined,
     modifyList: (tokens: any) => tokens.slice(0, 20),
   });
 };

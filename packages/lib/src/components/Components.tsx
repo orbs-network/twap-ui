@@ -9,7 +9,7 @@ import { useConfirmationButton } from "../hooks/useConfirmationButton";
 import { StyledText, StyledRowFlex, StyledColumnFlex, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import { ChunksAmountLabel } from "./Labels";
-import { LimitSwitchArgs, TooltipProps, TWAPTokenSelectProps } from "../types";
+import { TooltipProps, TWAPTokenSelectProps } from "../types";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
 import { ORBS_LOGO, ORBS_LOGO_FALLBACK, Styles } from "..";

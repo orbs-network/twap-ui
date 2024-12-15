@@ -34,7 +34,7 @@ const fonts = {
   [Configs.PangolinDaas.name.toLowerCase()]: "Poppins",
   [Configs.SpookySwap.name.toLowerCase()]: "Red Hat Display",
   [Configs.PancakeSwap.name.toLowerCase()]: "Kanit",
-  [Configs.BaseSwap.name.toLowerCase()]: "Alegreya Sans",
+  [Configs.BaseSwap.name.toLowerCase()]: "Montserrat",
   StellaSwap: "DM Sans",
   Lynex: "Montserrat",
   [Configs.Arbidex.name.toLowerCase()]: "Quicksand",
@@ -221,16 +221,13 @@ export const StyledSpookySwapLayout = styled(DappLayout)({
 });
 
 export const StyledBaseSwapLayout = styled(DappLayout)({
-  maxWidth: 420,
+  maxWidth: 500,
   width: "calc(100% - 30px)",
 });
 
 export const StyledArbidexLayout = styled(DappLayout)({
   maxWidth: 540,
   width: "calc(100% - 30px)",
-  "@media(max-width:1200px)": {
-    maxWidth: 405,
-  },
 });
 
 export const StyledLynexLayout = styled(DappLayout)({
@@ -268,7 +265,7 @@ export const StyledSpookySwap = styled(StyledDapp)(({ theme }) => ({
 }));
 
 export const StyledBaseSwap = styled(StyledDapp)(({ theme }) => ({
-  background: isDarkMode(theme) ? "rgb(17, 17, 17)" : "rgb(250, 249, 250)",
+  background: isDarkMode(theme) ? "#000000" : "rgb(250, 249, 250)",
   ".ui-selector-btn": {
     color: isDarkMode(theme) ? "white" : "black",
   },
@@ -282,7 +279,7 @@ export const StyledBaseSwap = styled(StyledDapp)(({ theme }) => ({
 }));
 
 export const StyledArbidexSwap = styled(StyledDapp)(({ theme }) => ({
-  background: isDarkMode(theme) ? "rgb(8, 0, 30)" : "rgb(250, 249, 250)",
+  background: isDarkMode(theme) ? "#0B1019" : "rgb(250, 249, 250)",
   ".ui-selector-btn": {
     color: isDarkMode(theme) ? "white" : "black",
   },
@@ -330,18 +327,21 @@ export const StyledSpookySwapBox = styled(Box)(({ theme }) => ({
 }));
 
 export const StyledBaseSwapBox = styled(Box)(({ theme }) => ({
-  background: isDarkMode(theme) ? "#0D0D0D" : "rgb(242, 244, 248)",
-  borderRadius: 12,
-  padding: 16,
-  border: "2px solid rgb(1, 84, 253)",
+  background: isDarkMode(theme) ? "radial-gradient(circle, rgba(11, 61, 145, 0.5) 10%, #000)" : "rgb(242, 244, 248)",
+  borderRadius: 24,
+  padding: "8px 5px",
+  border: "1px solid rgba(255, 255, 255, 0.15)",
+  boxShadow:
+    "0 0 36px rgb(55, 192, 223, 0.25),0 0 24px rgba(55, 192, 223, 0.35),20px 20px 50px 0px rgba(0, 0, 0, 0.25),10px 10px 25px 0px rgba(0, 0, 0, 0.18),2px 2px 11px 0px rgba(0, 0, 0, 0.19),0px -1px 1px 0px #FFFFFF40",
 }));
 
 export const StyledArbidexBox = styled(Box)(({ theme }) => ({
-  background: isDarkMode(theme) ? "linear-gradient(270deg, rgb(10, 10, 20), rgb(10, 0, 40))" : "rgb(242, 244, 248)",
-  borderRadius: 12,
+  background: isDarkMode(theme) ? "linear-gradient(135deg, #0C1721, #152433)" : "rgb(242, 244, 248)",
+  borderRadius: 24,
   padding: 16,
-  border: "3px solid white",
-  backdropFilter: "blur(2px)",
+  border: "1px solid rgba(255, 255, 255, 0.15)",
+  boxShadow:
+    "0 0 36px rgba(0, 168, 232, 0.25),20px 20px 50px 0px rgba(0, 0, 0, 0.25),10px 10px 25px 0px rgba(0, 0, 0, 0.18),2px 2px 11px 0px rgba(0, 0, 0, 0.19),0px -1px 1px 0px rgba(217, 229, 242, 0.25)",
 }));
 
 export const StyledLynexBox = styled(Box)(({ theme }) => ({

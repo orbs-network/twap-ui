@@ -150,8 +150,8 @@ export interface TWAPProps {
   isDarkTheme?: boolean;
   Tooltip?: FC<TooltipProps>;
   USD?: FC<{ value?: string | number }>;
-  onSrcTokenSelected: (token: any) => void;
-  onDstTokenSelected: (token: any) => void;
+  onSrcTokenSelected?: (token: any) => void;
+  onDstTokenSelected?: (token: any) => void;
   TokenSelectModal?: any;
   limit?: boolean;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
@@ -164,6 +164,8 @@ export interface TWAPProps {
   connect?: () => void;
   isExactAppoval?: boolean;
   fee?: string;
+  srcToken?: any;
+  dstToken?: any;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };

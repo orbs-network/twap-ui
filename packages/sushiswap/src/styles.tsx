@@ -645,7 +645,7 @@ export const StyledTokenPanelLabel = styled("p")(({ theme }) => {
   };
 });
 
-export const StyledTokenPanel = styled(CardBody)<{ error?: number }>(({ theme, error }) => {
+export const StyledTokenPanel = styled(Card)<{ error?: number }>(({ theme, error }) => {
   const isDarkMode = getStyles(theme).isDarkMode;
   const bg = isDarkMode ? "rgba(239,68,68,.2)" : "rgba(239,68,68,.2)";
   return {

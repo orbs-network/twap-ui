@@ -8,7 +8,6 @@ import MuiTooltip from "@mui/material/Tooltip";
 import { SelectorOption, TokenListItem } from "./types";
 import { mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
-import { baseSwapTokens } from "./BaseSwap";
 import { zeroAddress } from "@orbs-network/twap-sdk";
 
 const config = Configs.DragonSwap;
@@ -28,8 +27,6 @@ const getLogo = (address: string) => {
 export const useDappTokens = () => {
   const parseListToken = useCallback(
     (tokenList?: any) => {
-      console.log({ tokenList });
-
       return tokenList?.tokens.map((t: any) => {
         return {
           decimals: t.decimals,

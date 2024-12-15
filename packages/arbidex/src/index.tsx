@@ -15,14 +15,15 @@ import translations from "./i18n/en.json";
 import { createContext, useCallback, useContext, useMemo } from "react";
 import Web3 from "web3";
 import {
-  configureStyles,
   darkTheme,
+  GlobalStyles,
   lightTheme,
   StyledChangeTokensOrder,
   StyledSubmitButton,
   StyledTokenBalance,
   StyledTokenPanel,
   StyledTokenPanelInput,
+  StyledTokenPanelUsd,
   StyledTokenSelect,
   StyledTopGrid,
   StyledTradeSize,
@@ -31,12 +32,14 @@ import { isNativeAddress, network } from "@defi.org/web3-candies";
 import { memo } from "react";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 import { HiArrowDown } from "@react-icons/all-files/hi/HiArrowDown";
+import { ThemeProvider } from "styled-components";
 const config = Configs.Arbidex;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
   usdSuffix: " USD",
   usdPrefix: "≈ ",
+  inputPlaceholder: "0",
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
@@ -48,7 +51,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
     (token: any) => {
       selectToken({ isSrc: !!isSrcToken, token });
     },
-    [selectToken, isSrcToken],
+    [selectToken, isSrcToken]
   );
   // const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
 
@@ -58,7 +61,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <TwapStyles.StyledColumnFlex style={{ flex: 1, width: "auto", gap: 24 }}>
             <StyledTokenPanelInput isSrc={isSrcToken} />
-            <Components.TokenUSD isSrc={isSrcToken} hideIfZero={true} />
+            <StyledTokenPanelUsd isSrc={isSrcToken} />
             <StyledTokenBalance isSrc={isSrcToken} />
           </TwapStyles.StyledColumnFlex>
           <StyledTokenSelect>{/* <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onPresentCurrencyModal} /> */}</StyledTokenSelect>
@@ -103,36 +106,43 @@ const Tooltip = (props: TooltipProps) => {
   return <div></div>;
 };
 
-const TWAP = (props: BaseSwapTWAPProps) => {
+export const TWAP = (props: BaseSwapTWAPProps) => {
+  return (
+    <AdapterContextProvider value={props}>
+      <Content />
+    </AdapterContextProvider>
+  );
+};
+
+const Content = () => {
+  const props = useAdapterContext();
   const theme = useMemo(() => {
     return props.isDarkTheme ? darkTheme : lightTheme;
   }, [props.isDarkTheme]);
 
   return (
-    <TwapAdapter
-      connect={props.connect}
-      config={config}
-      uiPreferences={uiPreferences}
-      maxFeePerGas={props.maxFeePerGas}
-      priorityFeePerGas={props.priorityFeePerGas}
-      translations={translations as Translations}
-      provider={props.provider}
-      account={props.account}
-      chainId={props.connectedChainId}
-      dappTokens={props.dappTokens}
-      parsedTokens={[]}
-      onDstTokenSelected={props.onDstTokenSelected}
-      onSrcTokenSelected={props.onSrcTokenSelected}
-      isLimitPanel={props.limit}
-      Components={{ Tooltip }}
-    >
-      <AdapterContextProvider value={props}>
-        {/* <ThemeProvider theme={theme}>
-          <GlobalStyles styles={configureStyles(theme)} />
-          <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
-        </ThemeProvider> */}
-      </AdapterContextProvider>
-    </TwapAdapter>
+    <ThemeProvider theme={theme}>
+      <TwapAdapter
+        connect={props.connect}
+        config={config}
+        uiPreferences={uiPreferences}
+        maxFeePerGas={props.maxFeePerGas}
+        priorityFeePerGas={props.priorityFeePerGas}
+        translations={translations as Translations}
+        provider={props.provider}
+        account={props.account}
+        chainId={props.connectedChainId}
+        dappTokens={props.dappTokens}
+        parsedTokens={[]}
+        onDstTokenSelected={props.onDstTokenSelected}
+        onSrcTokenSelected={props.onSrcTokenSelected}
+        isLimitPanel={props.limit}
+        Components={{ Tooltip }}
+      >
+        <GlobalStyles />
+        <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
+      </TwapAdapter>
+    </ThemeProvider>
   );
 };
 
@@ -147,11 +157,15 @@ const TWAPPanel = () => {
       <TradeSize />
       <TradeInterval />
       <MaxDuration />
-      <StyledSubmitButton />
-
+      <ShowConfirmationButton />;
       <Components.PoweredBy />
     </>
   );
+};
+
+const ShowConfirmationButton = () => {
+  const context = useAdapterContext();
+  return <Components.ShowConfirmation connect={context.connect} />;
 };
 
 const ChangeTokensOrder = () => {
@@ -211,6 +225,3 @@ const TradeInterval = () => {
     </Components.Base.Card>
   );
 };
-
-const memoizedTWAP = memo(TWAP);
-export { memoizedTWAP as TWAP };

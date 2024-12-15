@@ -56,14 +56,20 @@ export const useGetTokens = ({
       } else if (tokens) {
         tokenList = tokens;
       }
+
       const base = baseAssets && Object.values(baseAssets).map((t: any) => t().address);
 
       const candiesAddresses = base ? [zeroAddress, ...base] : [zeroAddress];
       const parsed = parse ? parse(tokenList) : tokenList;
-      let _tokens = sortBy(parsed, (t: any) => {
-        const index = candiesAddresses.indexOf(t.address);
-        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
-      });
+      let _tokens: any = [];
+      try {
+        _tokens = sortBy(parsed, (t: any) => {
+          const index = candiesAddresses.indexOf(t.address);
+          return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
+        });
+      } catch (error) {
+        console.log(error);
+      }
 
       _tokens = [...addedTokens, ..._tokens];
 

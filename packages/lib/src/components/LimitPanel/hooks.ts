@@ -30,7 +30,8 @@ export const useOnLimitPercentageClick = () => {
       const value = BN(price || "0")
         .times(p)
         .toString();
-      onChange(formatDecimals(value), percent);
+
+      onChange(BN(value).decimalPlaces(6).toString(), percent);
     },
     [marketPrice, onChange, dstToken, isInvertedLimitPrice, state],
   );

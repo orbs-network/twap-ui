@@ -10,6 +10,7 @@ import { useNoLiquidity, useOutAmount, useShouldOnlyWrap, useShouldUnwrap, useSw
 
 export const useConfirmationButton = (connect?: () => void) => {
   const { translations, isWrongChain, state, srcToken, dstToken, srcUsd, account } = useTwapContext();
+
   const { swapState } = state;
   const createOrderLoading = swapState === "loading";
   const { onOpen } = useSwapModal();

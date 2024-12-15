@@ -8,6 +8,7 @@ import { SelectorOption, TokenListItem } from "./types";
 import { erc20sData, zeroAddress, erc20s, isNativeAddress, network } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useContext, useState } from "react";
 import { Configs, mapKeys } from "@orbs-network/twap-ui";
+import { DappProvider } from "./context";
 
 const config = Configs.Arbidex;
 
@@ -28,7 +29,6 @@ const useDappTokens = () => {
     url: `https://raw.githubusercontent.com/viaprotocol/tokenlists/main/tokenlists/arbitrum.json`,
     parse: parseListToken,
     baseAssets: erc20s.arb,
-    modifyList: (_tokens: any) => ({ ...mapKeys(_tokens, (t: any) => t.address) }),
   });
 };
 interface TokenSelectModalProps {
@@ -137,19 +137,19 @@ const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
 
   return (
-    <ContextWrapper>
-      <ListPopup />
-      <StyledArbidexSwap>
-        <StyledArbidexLayout name={config.name}>
-          <UISelector limit={true} select={setSelected} selected={selected} />
-          <StyledArbidexBox>
-            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-          </StyledArbidexBox>
-
-          <StyledArbidexBox></StyledArbidexBox>
-        </StyledArbidexLayout>
-      </StyledArbidexSwap>
-    </ContextWrapper>
+    <DappProvider config={config}>
+      <ContextWrapper>
+        <ListPopup />
+        <StyledArbidexSwap>
+          <StyledArbidexLayout name={config.name}>
+            <UISelector limit={true} select={setSelected} selected={selected} />
+            <StyledArbidexBox>
+              <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+            </StyledArbidexBox>
+          </StyledArbidexLayout>
+        </StyledArbidexSwap>
+      </ContextWrapper>
+    </DappProvider>
   );
 };
 
