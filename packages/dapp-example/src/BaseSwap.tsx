@@ -87,7 +87,6 @@ const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
   return useTrade(fromToken, toToken, amount, tokens);
 };
 
-
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
   const connect = useConnectWallet();
@@ -95,16 +94,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const priceUsd = useGetPriceUsdCallback();
   const { isDarkTheme } = useTheme();
   const { srcToken, dstToken, setDstToken, setSrcToken } = useContext(Context);
-  const onSwitchTokens = useCallback(
-    () => {
-      setSrcToken(dstToken);
+  const onSwitchTokens = useCallback(() => {
+    setSrcToken(dstToken);
     setDstToken(srcToken);
-    },
-    [srcToken, dstToken, setSrcToken, setDstToken],
-  )
-  
-
-
+  }, [srcToken, dstToken, setSrcToken, setDstToken]);
 
   useEffect(() => {
     if (!dappTokens) return;

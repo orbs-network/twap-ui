@@ -28,7 +28,7 @@ const getStyles = (theme?: DefaultTheme) => {
     textColorDark: isDarkMode ? "#8D8D8D" : "rgb(255 255 255/1)",
     messageText: isDarkMode ? "#94a3b8" : "#6b7280",
     boxHover: isDarkMode ? "rgba(255,255,255, 0.09)" : "rgba(0,0,0, 0.03)",
-    buttonBg: isDarkMode ? 'linear-gradient(to bottom, #0154fe, #37C0DF)' : ''
+    buttonBg: isDarkMode ? "linear-gradient(to bottom, #0154fe, #37C0DF)" : "",
   };
 };
 
@@ -69,48 +69,47 @@ export const StyledMaxButton = styled("button")(({ theme }) => {
   };
 });
 
-export const StyledBalance = styled('div')<{isSrc: number}>(({theme, isSrc}) => {
+export const StyledBalance = styled("div")<{ isSrc: number }>(({ theme, isSrc }) => {
   const styles = getStyles(theme);
   return {
-    display: 'flex',
-    gap: '4px',
-    alignItems: 'center',
-    cursor:isSrc ?  'pointer' : 'default',
-    p :{
+    display: "flex",
+    gap: "4px",
+    alignItems: "center",
+    cursor: isSrc ? "pointer" : "default",
+    p: {
       fontSize: 14,
       color: styles.textColorDark,
-      transition: '0.2s all',
+      transition: "0.2s all",
     },
     svg: {
       color: styles.textColorDark,
-      width: 16
+      width: 16,
     },
-    "&:hover":  {
+    "&:hover": {
       p: {
-        color: isSrc ?  styles.textColorPrimary : styles.textColorDark,
-      }
-    }
-  }
-})
+        color: isSrc ? styles.textColorPrimary : styles.textColorDark,
+      },
+    },
+  };
+});
 
 export const StyledTopGrid = styled(Styles.StyledColumnFlex)({
   gap: 3,
 });
 
-
 export const StyledTokenPanelBalanceAndMax = styled(Styles.StyledRowFlex)({
   width: "auto",
   alignItems: "center",
-  flex:1
+  flex: 1,
 });
 export const StyledTokenPanelRight = styled(Styles.StyledColumnFlex)({
   alignItems: "flex-end",
-  flex:1
+  flex: 1,
 });
 
 export const StyledInputPanelLeft = styled(Styles.StyledColumnFlex)({});
 
-export const StyledTokenPanelInput = styled(Components.TokenPanelInput)(({theme}) => {
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)(({ theme }) => {
   const styles = getStyles(theme);
   return {
     width: "100%",
@@ -121,43 +120,38 @@ export const StyledTokenPanelInput = styled(Components.TokenPanelInput)(({theme}
     input: {
       textAlign: "left",
       fontSize: 28,
-      color: styles.textColorPrimary
+      color: styles.textColorPrimary,
     },
-  }
+  };
 });
-
 
 const buttonStyles = (theme: DefaultTheme) => {
   const styles = getStyles(theme);
   return {
     background: styles.buttonBg,
-    boxShadow:'0.1rem 0.1rem 0.1rem 0px rgba(255, 255, 255, 0.5) inset,-0.1rem -0.1rem 0.1rem 0px rgba(0, 0, 0, 0.15) inset,0.1rem 0.1rem 0.1rem 0px rgba(0, 0, 0, 0.07)',
-    '*': {
-      color:'white'
-    }
-  }
-}
-
-
-
+    boxShadow: "0.1rem 0.1rem 0.1rem 0px rgba(255, 255, 255, 0.5) inset,-0.1rem -0.1rem 0.1rem 0px rgba(0, 0, 0, 0.15) inset,0.1rem 0.1rem 0.1rem 0px rgba(0, 0, 0, 0.07)",
+    "*": {
+      color: "white",
+    },
+  };
+};
 
 export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ theme }) => {
-
   return {
     height: 0,
     cursor: "pointer",
     zIndex: 1,
     button: {
       transition: "0s all",
-    ...buttonStyles(theme),
+      ...buttonStyles(theme),
       border: `none`,
-      borderRadius: '50%',
+      borderRadius: "50%",
       width: 40,
-      height: 40, 
-      svg :{
-        width:20,
-        height:20
-      }
+      height: 40,
+      svg: {
+        width: 20,
+        height: 20,
+      },
     },
   };
 });
@@ -219,13 +213,10 @@ export const Card = ({ className = "", children }: { className?: string; childre
 export const StyledTokenPanel = styled(Card)({
   display: "flex",
   flexDirection: "row",
-  gap: 5
+  gap: 5,
 });
 
 export const GlobalStyles = createGlobalStyle(({ theme }) => {});
-
-
-
 
 export const StyledTokenSelect = styled("div")({
   display: "flex",
@@ -250,9 +241,9 @@ export const StyledTokenSelect = styled("div")({
     width: 32,
     height: 32,
   },
-  ".twap-icon":{
+  ".twap-icon": {
     width: 14,
     height: 14,
-    color:'rgba(255, 255, 255, 0.4)'
-  }
+    color: "rgba(255, 255, 255, 0.4)",
+  },
 });
