@@ -867,7 +867,7 @@ export const useSelectTokenCallback = (parseTokenProps?: (token: any) => any) =>
   const srcTokenAddress = useTwapStore((s) => s.srcToken)?.address;
   const dstTokenAddress = useTwapStore((s) => s.dstToken)?.address;
   const { parseToken } = useTwapContext();
-
+  const setChunks = useSetChunks();
   const onTokenSelect = useTokenSelect(parseTokenProps);
 
   const switchTokens = useSwitchTokens();
@@ -875,13 +875,14 @@ export const useSelectTokenCallback = (parseTokenProps?: (token: any) => any) =>
     (args: { isSrc: boolean; token: any }) => {
       const _parseToken = parseToken || parseTokenProps;
       const parsedToken = _parseToken ? _parseToken(args.token) : args.token;
+      setChunks(undefined);
       if (eqIgnoreCase(parsedToken?.address || "", srcTokenAddress || "") || eqIgnoreCase(parsedToken?.address || "", dstTokenAddress || "")) {
         switchTokens();
         return;
       }
       onTokenSelect(args);
     },
-    [srcTokenAddress, dstTokenAddress, switchTokens, parseToken, onTokenSelect, parseTokenProps]
+    [srcTokenAddress, dstTokenAddress, switchTokens, parseToken, onTokenSelect, parseTokenProps, setChunks]
   );
 };
 
@@ -1520,6 +1521,18 @@ export const useMaxPossibleChunks = () => {
   }, [srcAmount, srcToken, srcUsd]);
 };
 
+export const useMaxPossibleChunksReady = () => {
+  const { lib, srcAmount, srcToken } = useTwapStore((s) => ({
+    srcAmount: s.getSrcAmount().toString(),
+    lib: s.lib,
+    srcToken: s.srcToken,
+  }));
+
+  const srcUsd = useSrcUsd().value.toString();
+
+  return Boolean(lib && srcToken && srcAmount && srcUsd && BN(srcUsd).gt(0));
+};
+
 export const useChunks = () => {
   const srcUsd = useSrcUsd().value.toString();
   const { srcToken, chunks } = useTwapStore((s) => ({
@@ -1545,7 +1558,12 @@ export const useSetChunks = () => {
   const maxPossibleChunks = useMaxPossibleChunks();
   const updateState = useTwapStore((s) => s.updateState);
   return useCallback(
-    (chunks: number) => {
+    (chunks?: number) => {
+      if (!chunks) {
+        setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
+        updateState({ chunks: undefined });
+        return;
+      }
       const _chunks = Math.min(chunks, maxPossibleChunks);
       setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, _chunks > 0 ? _chunks.toString() : undefined);
       updateState({ chunks: _chunks });

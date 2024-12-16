@@ -243,8 +243,10 @@ export const useProvider = (props: AdapterProps) => {
   const [provider, setProvider] = useState<any>(undefined);
 
   const setProviderFromConnector = useCallback(async () => {
-    const res = await props.connector?.getProvider();
-    setProvider(res);
+    if (props.connector?.getProvider) {
+      const res = await props.connector?.getProvider();
+      setProvider(res);
+    }
   }, [setProvider, props.connector]);
 
   useEffect(() => {
