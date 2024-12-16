@@ -69,15 +69,16 @@ export const StyledMaxButton = styled("button")(({ theme }) => {
   };
 });
 
-export const StyledBalance = styled("div")<{ isSrc: number }>(({ theme, isSrc }) => {
+export const StyledTokenPanelBalance = styled("div")<{ isSrc: number }>(({ theme, isSrc }) => {
   const styles = getStyles(theme);
   return {
     display: "flex",
     gap: "4px",
     alignItems: "center",
     cursor: isSrc ? "pointer" : "default",
+    marginTop: 5,
     p: {
-      fontSize: 14,
+      fontSize: 12,
       color: styles.textColorDark,
       transition: "0.2s all",
     },
@@ -97,33 +98,43 @@ export const StyledTopGrid = styled(Styles.StyledColumnFlex)({
   gap: 3,
 });
 
-export const StyledTokenPanelBalanceAndMax = styled(Styles.StyledRowFlex)({
-  width: "auto",
-  alignItems: "center",
-  flex: 1,
-});
 export const StyledTokenPanelRight = styled(Styles.StyledColumnFlex)({
   alignItems: "flex-end",
   flex: 1,
+  marginTop: 8,
+  gap: 0
 });
 
-export const StyledInputPanelLeft = styled(Styles.StyledColumnFlex)({});
+export const StyledInputPanelLeft = styled(Styles.StyledColumnFlex)({
+  gap: 0
+});
 
 export const StyledTokenPanelInput = styled(Components.TokenPanelInput)(({ theme }) => {
   const styles = getStyles(theme);
   return {
     width: "100%",
+    maxHeight: 48,
     ".twap-loader": {
       left: "auto",
       right: 0,
     },
     input: {
       textAlign: "left",
-      fontSize: 28,
+      fontSize: 32,
       color: styles.textColorPrimary,
+      height: '100%'
     },
   };
 });
+
+
+export const TokenPanelUsd = styled(Components.TokenUSD)(({theme}) => {
+  const styles = getStyles(theme);
+  return {
+    color: styles.darkText,
+    fontSize: 13
+  }
+})
 
 const buttonStyles = (theme: DefaultTheme) => {
   const styles = getStyles(theme);
@@ -214,6 +225,8 @@ export const StyledTokenPanel = styled(Card)({
   display: "flex",
   flexDirection: "row",
   gap: 5,
+  paddingRight: 6,
+  paddingLeft: 16
 });
 
 export const GlobalStyles = createGlobalStyle(({ theme }) => {});

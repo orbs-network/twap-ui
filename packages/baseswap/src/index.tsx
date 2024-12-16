@@ -16,21 +16,21 @@ import {
 import translations from "./i18n/en.json";
 import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
 import Web3 from "web3";
+import BN from "bignumber.js";
 import {
   darkTheme,
   GlobalStyles,
   lightTheme,
-  StyledBalance,
+  StyledTokenPanelBalance,
   StyledChangeTokensOrder,
   StyledInputPanelLeft,
-  StyledTokenBalance,
   StyledTokenPanel,
-  StyledTokenPanelBalanceAndMax,
   StyledTokenPanelRight,
   StyledTokenPanelInput,
   StyledTokenSelect,
   StyledTopGrid,
   StyledTradeSize,
+  TokenPanelUsd,
 } from "./styles";
 import { eqIgnoreCase, isNativeAddress, network } from "@defi.org/web3-candies";
 import { memo } from "react";
@@ -43,12 +43,12 @@ export const config = Configs.BaseSwap;
 
 const uiPreferences: TwapContextUIPreferences = {
   infoIcon: BsQuestionCircle,
-  usdSuffix: " USD",
-  usdPrefix: `≈ `,
+  usdSuffix: "",
+  usdPrefix: `$`,
   inputPlaceholder: "0",
 };
 
-const Balance = ({ isSrc }: { isSrc?: boolean }) => {
+const TokenPanelBalance = ({ isSrc }: { isSrc?: boolean }) => {
   const { srcToken, dstToken } = useTwapContext();
   const srcBalance = hooks.useAmountUi(srcToken?.decimals, hooks.useSrcBalance().data?.toString());
   const dstBalance = hooks.useAmountUi(dstToken?.decimals, hooks.useDstBalance().data?.toString());
@@ -62,10 +62,10 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
   }, [onPercent]);
 
   return (
-    <StyledBalance isSrc={isSrc ? 1 : 0} onClick={onMax}>
-      <Styles.StyledText>{formattedValue}</Styles.StyledText>
+    <StyledTokenPanelBalance isSrc={isSrc ? 1 : 0} onClick={onMax}>
+      <Styles.StyledText>{BN(balance || '').isZero() ? '0.0' : formattedValue}</Styles.StyledText>
       <IoWalletOutline />
-    </StyledBalance>
+    </StyledTokenPanelBalance>
   );
 };
 
@@ -91,13 +91,13 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       <StyledTokenPanel>
         <StyledInputPanelLeft>
           <StyledTokenPanelInput dstDecimalScale={3} isSrc={isSrcToken} />
-          <Components.TokenUSD isSrc={isSrcToken} />
+          <TokenPanelUsd isSrc={isSrcToken} emptyUi='$0.00' />
         </StyledInputPanelLeft>
         <StyledTokenPanelRight>
           <StyledTokenSelect>
             <Components.TokenSelect hideArrow={false} isSrc={isSrcToken} onClick={onOpen} />
           </StyledTokenSelect>
-          <Balance isSrc={isSrcToken} />
+          <TokenPanelBalance isSrc={isSrcToken} />
         </StyledTokenPanelRight>
       </StyledTokenPanel>
     </>
