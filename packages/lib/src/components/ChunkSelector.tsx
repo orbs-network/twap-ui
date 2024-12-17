@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { useTwapContext } from "../context/context";
 import { useFormatNumberV2 } from "../hooks/hooks";
 import { StyledColumnFlex } from "../styles";

@@ -37,7 +37,7 @@ export const useDerivedSwapValues = () => {
       destDecimals: dstToken?.decimals,
       isMarketOrder: !!isMarketOrder,
     });
-  }, [limitPrice, srcAmount, typedChunks, typedDuration]);
+  }, [limitPrice, srcAmount, typedChunks, typedDuration, typedFillDelay, twapSDK, oneSrcTokenUsd, srcToken, dstToken, isMarketOrder, isLimitPanel]);
 };
 
 export const useDstMinAmountOut = () => {
@@ -328,7 +328,7 @@ export const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens]
   );
 };
 
@@ -379,7 +379,7 @@ export const useSetIsMarket = () => {
     (isMarketOrder?: boolean) => {
       updateState({ isMarketOrder: !!isMarketOrder });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -389,7 +389,7 @@ export const useSetFillDelay = () => {
     (typedFillDelay?: TimeDuration) => {
       updateState({ typedFillDelay });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -399,7 +399,7 @@ export const useSetDuration = () => {
     (typedDuration?: TimeDuration) => {
       updateState({ typedDuration });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -440,7 +440,7 @@ export const useSetLimitPrice = () => {
     (typedLimitPrice?: string, percent?: string) => {
       updateState({ typedLimitPrice, limitPricePercent: percent });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -475,6 +475,14 @@ export const useTradeSizeWarning = () => {
   if (!warnings.tradeSize) return;
 
   return t.tradeSizeMustBeEqual.replace("{minChunkSizeUsd}", config.minChunkSizeUsd.toString());
+};
+
+export const useTradesAmountWarning = () => {
+  const chunks = useChunks();
+
+  if (chunks > 0) return null;
+
+  return "Min. 1 trade is required.";
 };
 
 export const useSwapWarning = () => {
@@ -587,7 +595,7 @@ export const useOnSrcAmountPercent = () => {
       const value = amountUiV2(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ srcAmountUi: value });
     },
-    [srcToken, maxAmount, srcBalance, updateState],
+    [srcToken, maxAmount, srcBalance, updateState]
   );
 };
 

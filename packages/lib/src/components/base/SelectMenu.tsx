@@ -29,7 +29,8 @@ export const SelectMenu = (props: Props) => {
   );
 
   return (
-    <ClickAwayListener onClickAway={() => setOpen(false)}>
+    <div className="twap-select">
+      <ClickAwayListener onClickAway={() => setOpen(false)}>
       <Container className="twap-select-menu">
         <StyledSelected onClick={() => setOpen(!open)} className={`${props.className} twap-select-menu-button`}>
           {props.SelectedContent ? (
@@ -52,6 +53,7 @@ export const SelectMenu = (props: Props) => {
         )}
       </Container>
     </ClickAwayListener>
+    </div>
   );
 };
 

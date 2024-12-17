@@ -25,6 +25,7 @@ export const getMaxTradeDurationWarning = (duration: TimeDuration) => {
   return getTimeDurationMillis(duration) > MAX_DURATION_MILLIS;
 };
 
+
 export const getTradeSizeWarning = (minChunkSizeUsd: number, srcChunkAmountUsd?: string | number, chunks = 1) => {
   if (BN(srcChunkAmountUsd || 0).isZero()) return;
   const minTradeSizeUsd = BN(minChunkSizeUsd);

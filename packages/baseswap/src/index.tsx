@@ -1,18 +1,4 @@
-import {
-  Components,
-  Styles as TwapStyles,
-  Translations,
-  TwapAdapter,
-  TWAPProps,
-  useTwapContext,
-  TwapContextUIPreferences,
-  hooks,
-  TooltipProps,
-  Configs,
-  Token,
-  compact,
-  Styles,
-} from "@orbs-network/twap-ui";
+import { Components, Translations, TwapAdapter, TWAPProps, useTwapContext, TwapContextUIPreferences, hooks, Configs, Token, compact, Styles } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
 import Web3 from "web3";
@@ -31,18 +17,27 @@ import {
   StyledTopGrid,
   StyledTradeSize,
   TokenPanelUsd,
+  Card,
+  StyledTradeSizeContent,
+  StyledTraeInterval,
+  StyledTraeIntervalContent,
+  StyledTraeIntervalInput,
+  StyledTradeIntervalresolution,
+  StyledTradeSizeInput,
+  StyledTradeSizeText,
+  StyledSubmitButton,
+  StyledTradeWarning,
+  StyledChunkSizeMessage,
 } from "./styles";
 import { eqIgnoreCase, isNativeAddress, network } from "@defi.org/web3-candies";
-import { memo } from "react";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
-import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
 import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 
-import { styled, ThemeProvider } from "styled-components";
+import { ThemeProvider } from "styled-components";
 export const config = Configs.BaseSwap;
 
 const uiPreferences: TwapContextUIPreferences = {
-  infoIcon: BsQuestionCircle,
+  infoIcon: <BsQuestionCircle size="12px" />,
   usdSuffix: "",
   usdPrefix: `$`,
   inputPlaceholder: "0",
@@ -53,7 +48,7 @@ const TokenPanelBalance = ({ isSrc }: { isSrc?: boolean }) => {
   const srcBalance = hooks.useAmountUi(srcToken?.decimals, hooks.useSrcBalance().data?.toString());
   const dstBalance = hooks.useAmountUi(dstToken?.decimals, hooks.useDstBalance().data?.toString());
   const balance = isSrc ? srcBalance : dstBalance;
-  const formattedValue = hooks.useFormatNumberV2({ value: balance, decimalScale: 4 });
+  const formattedValue = hooks.useFormatNumberV2({ value: balance, decimalScale: 3 });
   const onPercent = hooks.useOnSrcAmountPercent();
 
   const onMax = useCallback(() => {
@@ -63,7 +58,7 @@ const TokenPanelBalance = ({ isSrc }: { isSrc?: boolean }) => {
 
   return (
     <StyledTokenPanelBalance isSrc={isSrc ? 1 : 0} onClick={onMax}>
-      <Styles.StyledText>{BN(balance || '').isZero() ? '0.0' : formattedValue}</Styles.StyledText>
+      <Styles.StyledText>{BN(balance || "").isZero() ? "0.0" : formattedValue}</Styles.StyledText>
       <IoWalletOutline />
     </StyledTokenPanelBalance>
   );
@@ -91,7 +86,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       <StyledTokenPanel>
         <StyledInputPanelLeft>
           <StyledTokenPanelInput dstDecimalScale={3} isSrc={isSrcToken} />
-          <TokenPanelUsd isSrc={isSrcToken} emptyUi='$0.00' />
+          <TokenPanelUsd isSrc={isSrcToken} emptyUi="$0.00" />
         </StyledInputPanelLeft>
         <StyledTokenPanelRight>
           <StyledTokenSelect>
@@ -104,15 +99,10 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   );
 };
 
-const Tooltip = (props: TooltipProps) => {
-  return <div></div>;
-};
-
 const nativeToken = network(config.chainId).native;
 
 const parseToken = (rawToken: any): Token | undefined => {
   if (!rawToken || !rawToken.symbol) {
-    console.error("Invalid token", rawToken);
     return;
   }
   if (!rawToken.address || isNativeAddress(rawToken.address)) {
@@ -132,6 +122,7 @@ const AdapterContextProvider = AdapterContext.Provider;
 const useAdapterContext = () => useContext(AdapterContext);
 
 interface BaseSwapTWAPProps extends TWAPProps {
+  useUSD: (address?: any) => string | undefined;
   provider?: any;
   TokenSelectModal: FC<{ finalFocusRef: "tokenIn" | "tokenOut"; isOpen?: boolean; onOpen: () => void; onClose: () => void }>;
 }
@@ -165,10 +156,50 @@ const useSelectedTokens = () => {
   const { srcToken, dstToken } = useAdapterContext();
   return useMemo(() => {
     return {
-      srcToken: parseToken(srcToken),
-      dstToken: parseToken(dstToken),
+      srcToken: srcToken ? parseToken(srcToken) : undefined,
+      dstToken: dstToken ? parseToken(dstToken) : undefined,
     };
   }, [srcToken, dstToken]);
+};
+
+const wrappedAddress = network(config.chainId).wToken.address;
+
+const useAddresses = () => {
+  const { srcToken, dstToken } = useSelectedTokens();
+
+  return useMemo(() => {
+    return {
+      srcAddress: isNativeAddress(srcToken?.address || "") ? wrappedAddress : srcToken?.address,
+      dstAddress: isNativeAddress(dstToken?.address || "") ? wrappedAddress : dstToken?.address,
+    };
+  }, [srcToken, dstToken]);
+};
+
+const useUsd = () => {
+  const context = useAdapterContext();
+
+  const { srcAddress, dstAddress } = useAddresses();
+  const srcUsd = context.useUSD(srcAddress);
+  const dstUsd = context.useUSD(dstAddress);
+
+  return useMemo(() => {
+    // const wTokenAddress = network(config.chainId).wToken.address;
+    return {
+      srcUsd,
+      dstUsd,
+    };
+  }, [srcUsd, dstUsd]);
+};
+
+const useMarketPrice = () => {
+  const { useTrade } = useAdapterContext();
+  const { srcAddress, dstAddress } = useAddresses();
+  const { srcToken } = useSelectedTokens();
+  const amount = hooks.useAmountBN(srcToken?.decimals, "1");
+
+  const trade = useTrade!(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
+
+  return trade?.outAmount;
 };
 
 const Content = () => {
@@ -178,6 +209,8 @@ const Content = () => {
   }, [props.isDarkTheme]);
 
   const parsedTokens = useParsedTokens();
+  const { srcUsd, dstUsd } = useUsd();
+  const marketPrice = useMarketPrice();
   const { srcToken, dstToken } = useSelectedTokens();
 
   return (
@@ -199,8 +232,11 @@ const Content = () => {
         onSrcTokenSelected={() => {}}
         parsedTokens={parsedTokens}
         isLimitPanel={props.limit}
-        Components={{ Tooltip }}
+        Components={{ Tooltip: props.Tooltip }}
         onSwitchTokens={props.onSwitchTokens}
+        marketPrice={marketPrice}
+        srcUsd={srcUsd}
+        dstUsd={dstUsd}
       >
         <GlobalStyles />
         <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
@@ -217,9 +253,11 @@ const TWAPPanel = () => {
         <StyledChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
-      <TradeSize />
-      <TradeInterval />
-      <MaxDuration />
+      <Styles.StyledRowFlex>
+        <TradeSize />
+        <TradeInterval />
+      </Styles.StyledRowFlex>
+     
       <ShowConfirmationButton />
       <Components.PoweredBy />
     </>
@@ -228,8 +266,16 @@ const TWAPPanel = () => {
 
 const ShowConfirmationButton = () => {
   const context = useAdapterContext();
-  return <Components.ShowConfirmation connect={context.connect} />;
+  return (
+    <Styles.StyledColumnFlex gap={12} style={{marginTop: 18}}>
+      <StyledChunkSizeMessage />
+      <StyledTradeWarning />
+      <StyledSubmitButton connect={context.connect} />
+    </Styles.StyledColumnFlex>
+  );
 };
+
+
 
 const LimitPanel = () => {
   return (
@@ -239,7 +285,6 @@ const LimitPanel = () => {
         <StyledChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
-      <StyledSubmitButton isMain={true} />
       <Components.PoweredBy />
     </>
   );
@@ -248,44 +293,32 @@ const LimitPanel = () => {
 const TradeSize = () => {
   return (
     <StyledTradeSize>
-      <TwapStyles.StyledColumnFlex gap={5}>
-        <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between" style={{ minHeight: 40 }}>
-          <Components.Labels.TotalTradesLabel />
-        </TwapStyles.StyledRowFlex>
-        <TwapStyles.StyledRowFlex className="twap-chunks-size" justifyContent="space-between">
-          <Components.TradeSize hideSymbol={true} />
-          <Components.ChunksUSD />
-        </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledColumnFlex>
+      <Card.Header>
+        <Components.Labels.TotalTradesLabel />
+      </Card.Header>
+      <StyledTradeSizeContent>
+        <StyledTradeSizeInput />
+        <StyledTradeSizeText>Orders</StyledTradeSizeText>
+      </StyledTradeSizeContent>
     </StyledTradeSize>
-  );
-};
-
-const MaxDuration = () => {
-  return (
-    <Components.Base.Card>
-      <TwapStyles.StyledRowFlex gap={10} justifyContent="space-between">
-        <Components.Labels.MaxDurationLabel />
-      </TwapStyles.StyledRowFlex>
-    </Components.Base.Card>
   );
 };
 
 const TradeInterval = () => {
   return (
-    <Components.Base.Card>
-      <TwapStyles.StyledRowFlex>
-        <Components.Labels.TradeIntervalLabel />
-        <TwapStyles.StyledRowFlex style={{ flex: 1 }}>
-          <Components.TradeIntervalSelector />
-        </TwapStyles.StyledRowFlex>
-      </TwapStyles.StyledRowFlex>
-    </Components.Base.Card>
+    <StyledTraeInterval>
+      <Card.Header>
+        <Components.TradeInterval.Label />
+      </Card.Header>
+      <StyledTraeIntervalContent>
+        <StyledTraeIntervalInput />
+        <StyledTradeIntervalresolution />
+      </StyledTraeIntervalContent>
+    </StyledTraeInterval>
   );
 };
 
-const memoizedTWAP = memo(TWAP);
-export { memoizedTWAP as TWAP };
+export { TWAP };
 
 export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
   const { loading, onClick, disabled, text } = hooks.useSubmitOrderButton();
@@ -296,7 +329,3 @@ export const SubmitButton = ({ className = "", isMain }: { className?: string; i
     </Components.Base.Button>
   );
 };
-
-export const StyledSubmitButton = styled(SubmitButton)({
-  marginTop: 10,
-});

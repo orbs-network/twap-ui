@@ -1,16 +1,15 @@
 import { StyledBaseSwap, StyledBaseSwapBox, StyledBaseSwapLayout, StyledModalContent } from "./styles";
 import { TWAP, config } from "@orbs-network/twap-ui-baseswap";
-import { Components } from "@orbs-network/twap-ui";
-
-import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, useTheme, useTrade } from "./hooks";
+import { TooltipProps } from "@orbs-network/twap-ui";
+import MuiTooltip from "@mui/material/Tooltip";
+import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
-import { eqIgnoreCase, erc20s } from "@defi.org/web3-candies";
-import { Component, createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {erc20s } from "@defi.org/web3-candies";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { DappProvider } from "./context";
-import styled from "styled-components";
 
 const useDappTokens = () => {
   return useGetTokens({
@@ -87,11 +86,26 @@ const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
   return useTrade(fromToken, toToken, amount, tokens);
 };
 
+const useUSD = (address?: string) => {
+  const res = usePriceUSD(address);
+  return res?.toString();
+};
+
+
+const Tooltip = (props: TooltipProps) => {
+  
+  return (
+    <MuiTooltip title={props.tooltipText} arrow>
+      <span>{props.children}</span>
+    </MuiTooltip>
+  );
+};
+
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
-  const priceUsd = useGetPriceUsdCallback();
   const { isDarkTheme } = useTheme();
   const { srcToken, dstToken, setDstToken, setSrcToken } = useContext(Context);
   const onSwitchTokens = useCallback(() => {
@@ -122,6 +136,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       limit={limit}
       connectedChainId={chainId}
       onSwitchTokens={onSwitchTokens}
+      useTrade={_useTrade}
+      useUSD={useUSD}
+      Tooltip={Tooltip}
     />
   );
 };
