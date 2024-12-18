@@ -1,22 +1,24 @@
 import { StyledBaseSwap, StyledBaseSwapBox, StyledBaseSwapLayout, StyledModalContent } from "./styles";
-import { TWAP, config } from "@orbs-network/twap-ui-baseswap";
+import { TWAP, config, OrdersPanel } from "@orbs-network/twap-ui-baseswap";
 import { TooltipProps } from "@orbs-network/twap-ui";
 import MuiTooltip from "@mui/material/Tooltip";
-import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
+import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
 import { SelectorOption, TokenListItem } from "./types";
-import {erc20s } from "@defi.org/web3-candies";
+import { erc20s, network } from "@defi.org/web3-candies";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { DappProvider } from "./context";
 
 const useDappTokens = () => {
+  const { chainId } = useWeb3React();
   return useGetTokens({
     url: "https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/CoinGecko.8453.json",
     baseAssets: erc20s.base,
     parse: (data?: any) => {
-      return data.tokens;
+      const native = chainId && network(chainId).native;
+      return native ? [native, ...data.tokens] : data.tokens;
     },
   });
 };
@@ -66,6 +68,16 @@ export const TokenSelectModal = ({ finalFocusRef, isOpen, onClose }: TokenSelect
   );
 };
 
+const Modal = ({ children, isOpen, onClose }: { children: ReactNode; isOpen: boolean; onClose: () => void }) => {
+  return (
+    <Popup isOpen={!!isOpen} onClose={onClose}>
+     <StyledModalContent>
+     {children}
+     </StyledModalContent>
+    </Popup>
+  );
+};
+
 interface ContextProps {
   srcToken: any;
   dstToken: any;
@@ -91,16 +103,13 @@ const useUSD = (address?: string) => {
   return res?.toString();
 };
 
-
 const Tooltip = (props: TooltipProps) => {
-  
   return (
     <MuiTooltip title={props.tooltipText} arrow>
       <span>{props.children}</span>
     </MuiTooltip>
   );
 };
-
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
@@ -116,10 +125,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   useEffect(() => {
     if (!dappTokens) return;
     if (!srcToken) {
-      setSrcToken(dappTokens[0]);
+      setSrcToken(dappTokens[1]);
     }
     if (!dstToken) {
-      setDstToken(dappTokens[1]);
+      setDstToken(dappTokens[2]);
     }
   }, [dappTokens, srcToken, dstToken]);
 
@@ -139,6 +148,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       useTrade={_useTrade}
       useUSD={useUSD}
       Tooltip={Tooltip}
+      Modal={Modal}
     />
   );
 };
@@ -157,8 +167,11 @@ const DappComponent = () => {
             <StyledBaseSwapBox>
               <TWAPComponent limit={selected === SelectorOption.LIMIT} />
             </StyledBaseSwapBox>
+            <OrdersPanel />
           </StyledBaseSwapLayout>
+        
         </StyledBaseSwap>
+     
       </ContextWrapper>
     </DappProvider>
   );

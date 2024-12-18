@@ -95,7 +95,38 @@ export const StyledTokenPanelBalance = styled("div")<{ isSrc: number }>(({ theme
   };
 });
 
+export const StyledOrdersButton = styled(Components.OrderHistory.Button)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    boxShadow: "rgb(0, 0, 0) 0px 0px 12px",
+    padding: "10px 20px",
+    cursor: "pointer",
+    color: styles.textColorPrimary,
+    border: "1px solid rgb(51, 51, 51)",
+    width: "100%",
+    borderRadius: 18,
+    transition: "0.2s all",
+    background:
+      "radial-gradient(at 10% top, rgba(10, 29, 86, 0.75) 0%, transparent 25%), radial-gradient(at center top, rgba(10, 29, 86, 0.75) 0%, transparent 30%), radial-gradient(at right 10%, rgba(10, 29, 86, 0.75) 0%, transparent 20%), radial-gradient(at left center, rgba(10, 29, 86, 0.75) 0%, transparent 30%), radial-gradient(rgba(10, 29, 86, 0.5) 0%, transparent 30%), radial-gradient(at 100% 40%, rgba(10, 29, 86, 0.6) 0%, transparent 25%), radial-gradient(at left bottom, rgba(10, 29, 86, 0.75) 0%, transparent 35%), radial-gradient(at center 80%, rgba(10, 29, 86, 0.65) 0%, transparent 25%), radial-gradient(at right bottom, rgba(10, 29, 86, 0.75) 0%, transparent 35%)",
+      "&:hover": {
+        border:'1px solid rgba(255,255,255, 0.3)'
+      }
+  };
+});
+
+export const StyledPoweredBy = styled(Components.PoweredBy)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    marginTop: 20,
+    p: { color: styles.textColorPrimary },
+  };
+});
+
 export const StyledTopGrid = styled(Styles.StyledColumnFlex)({
+  gap: 5,
+});
+
+export const StyledTradeSizeAndChunks = styled(Styles.StyledRowFlex)({
   gap: 3,
 });
 
@@ -140,32 +171,79 @@ const buttonStyles = (theme: DefaultTheme) => {
   const styles = getStyles(theme);
   return {
     background: styles.buttonBg,
-    border:'1px solid transparent',
+    border: "1px solid #535353",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    transition: "0.2s all",
     boxShadow: "0.1rem 0.1rem 0.1rem 0px rgba(255, 255, 255, 0.5) inset,-0.1rem -0.1rem 0.1rem 0px rgba(0, 0, 0, 0.15) inset,0.1rem 0.1rem 0.1rem 0px rgba(0, 0, 0, 0.07)",
     "*": {
       color: "white",
     },
+    "&-disabled": {
+      cursor: "not-allowed",
+      background: "black",
+      boxShadow: "none",
+      opacity: 0.4,
+      border: "1px solid #535353",
+      "&:hover": {
+        border: "1px solid rgba(255, 255, 255, 0.5)",
+      },
+    },
+    "&-enabled": {
+      "&:hover": {
+        background: "linear-gradient(to left, #0154fe, #37C0DF)",
+        border: "1px solid rgba(255, 255, 255, 0.5)",
+        boxShadow:
+          "20px 20px 50px 0px rgba(0, 0, 0, 0.25) inset,10px 10px 25px 0px rgba(0, 0, 0, 0.18) inset,2px 2px 11px 0px rgba(0, 0, 0, 0.19) inset,0px 0px 1px 0px #FFFFFF40 inset",
+      },
+    }
+  
   };
 };
 
+export const StyledOrders = styled(Components.OrderHistory.Content)(({ theme }) => {
+  const styles = getStyles(theme);
+
+  return {
+    color: styles.textColorPrimary,
+    padding: 15,
+    ".twap-order": {
+      width: "100%",
+      padding: '5px 10px',
+    },
+    ".twap-order-container" :{
+      transition: "0.2s all",
+     border: `1px solid rgba(255,255,255, 0.2)`,
+     background:'linear-gradient(135deg, #000, #001235 70%, #001a4d 100%),radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.05) 0%, transparent 60%)',
+     "&:hover": {
+      border: `1px solid rgba(255,255,255, 0.4)`,
+     }
+    }
+  }
+})
+
 export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ theme }) => {
+  const styles = getStyles(theme);
   return {
     height: 0,
     zIndex: 1,
     button: {
+      background: "linear-gradient(to bottom, #0154fe, #37C0DF)",
+      boxShadow: "0.1rem 0.1rem 0.1rem 0px rgba(255, 255, 255, 0.5) inset,-0.1rem -0.1rem 0.1rem 0px rgba(0, 0, 0, 0.15) inset,0.1rem 0.1rem 0.1rem 0px rgba(0, 0, 0, 0.07)",
       cursor: "pointer",
-      transition: "0s all",
-      ...buttonStyles(theme),
       border: `none`,
       borderRadius: "50%",
       width: 40,
       height: 40,
+      transition: "0.2s all",
+      "&:hover": {
+        transform: "scale(0.93)",
+      },
       svg: {
         width: 20,
         height: 20,
+        color: "white",
       },
     },
   };
@@ -229,8 +307,8 @@ export const CardHeader = ({ className = "", children }: { className?: string; c
 
 export const StyledCardHeader = styled("div")(({ theme }) => {
   return {
-    marginBottom: 10
-  }
+    marginBottom: 10,
+  };
 });
 
 Card.Header = CardHeader;
@@ -250,18 +328,18 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     ".twap-token-input-loading": {
       input: {
         opacity: 0,
-      }
+      },
     },
     ".twap-input": {
       input: {
         color: styles.textColorPrimary,
       },
-      
+
       ".twap-loader": {
-        left: '0px!important',
-        right: 'auto!important',
-        background: 'rgba(255,255,255,0.2)',
-      }
+        left: "0px!important",
+        right: "auto!important",
+        background: "rgba(255,255,255,0.2)",
+      },
     },
     ".twap-token-not-selected": {
       p: {
@@ -271,49 +349,49 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     ".twap-select": {
       "& > div": {
         height: "100%",
-      }
+      },
     },
-    '.twap-select-menu': {
-      height: '100%',
+    ".twap-select-menu": {
+      height: "100%",
     },
-   
+
     ".twap-select-menu-list": {
-      borderRadius:12,
-      border:'1px solid rgba(255,255,255, 0.4)',
-      background:'linear-gradient(135deg, #000, #001235 70%, #001a4d 100%),radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.05) 0%, transparent 60%)',
+      borderRadius: 12,
+      border: "1px solid rgba(255,255,255, 0.4)",
+      background: "linear-gradient(135deg, #000, #001235 70%, #001a4d 100%),radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.05) 0%, transparent 60%)",
     },
     ".twap-select-menu-list-item": {
-      padding: '5px 10px 5px 10px',
+      padding: "5px 10px 5px 10px",
       p: {
         fontSize: 12,
-        textTransform:'capitalize'
+        textTransform: "capitalize",
       },
       "&:hover": {
         background: "rgba(255,255,255,0.1)",
-      }
+      },
     },
     ".twap-label": {
       "&-text": {
-        fontSize: 14
-      }
+        fontSize: 14,
+      },
     },
 
-    '.twap-select-menu-button': {
+    ".twap-select-menu-button": {
       ...bgContainerStyles(theme),
       padding: "5px 10px",
-      height:'100%',
+      height: "100%",
 
       p: {
         margin: 0,
         fontSize: 12,
-        textTransform:'capitalize'
+        textTransform: "capitalize",
       },
       svg: {
         color: styles.textColorDark,
-        width:12,
-        height:12
-      }
-    }
+        width: 12,
+        height: 12,
+      },
+    },
   };
 });
 
@@ -327,8 +405,14 @@ const bgContainerStyles = (theme: DefaultTheme) => {
     borderRadius: 12,
     padding: "5px 15px",
     justifyContent: "center",
-    border:'none',
+    border: "none",
     boxShadow: "0px 0px 0px 1px #00000005,1px 1px 1px -0.5px #0000000F,3px 3px 3px -1.5px #0000000F,6px 6px 6px -3px #0000001A,-0.5px -0.5px 0px 0px #FFFFFF33",
+    "&:hover": {
+      transform: "scale(0.99)",
+      background: "radial-gradient(circle, rgba(11, 61, 145, 0.5) 10%, #000)",
+      boxShadow:
+        "20px 20px 50px 0px rgba(0, 0, 0, 0.25) inset,10px 10px 25px 0px rgba(0, 0, 0, 0.18) inset,2px 2px 11px 0px rgba(0, 0, 0, 0.19) inset,0px 0px 1px 0px #FFFFFF40 inset",
+    },
   };
 };
 
@@ -371,7 +455,7 @@ const smallInputStyles = (theme: DefaultTheme) => {
     borderRadius: 12,
     textIndent: 10,
     transition: "0.2s all",
-    fontSize:14,
+    fontSize: 14,
     "&:hover": {
       border: `1px solid rgba(255, 255, 255, 0.24)`,
     },
@@ -382,7 +466,7 @@ const smallInputStyles = (theme: DefaultTheme) => {
 };
 
 export const StyledTraeIntervalContent = styled(Styles.StyledRowFlex)({
-  alignItems:'stretch'
+  alignItems: "stretch",
 });
 export const StyledTraeIntervalInput = styled(Components.TradeInterval.Input)(({ theme }) => {
   return {
@@ -391,11 +475,9 @@ export const StyledTraeIntervalInput = styled(Components.TradeInterval.Input)(({
     },
   };
 });
-export const StyledTradeIntervalresolution = styled(Components.TradeInterval.Resolution)(({theme}) => {
+export const StyledTradeIntervalresolution = styled(Components.TradeInterval.Resolution)(({ theme }) => {
   const styles = getStyles(theme);
- return {
- 
- }
+  return {};
 });
 
 export const StyledTradeSizeContent = styled(Styles.StyledRowFlex)({});
@@ -415,55 +497,44 @@ export const StyledChunkSizeMessage = styled(Components.ChunkSizeMessage)(({ the
     fontSize: 14,
     span: {
       opacity: 0.7,
-    }
-  }
-})
+    },
+  };
+});
 
 export const StyledTradeWarning = styled(Components.TradeWarning)(({ theme }) => {
   const styles = getStyles(theme);
   return {
     paddingLeft: 20,
     ".twap-warning-message": {
-      gap: 5
+      gap: 5,
     },
     color: styles.textError,
     ".twap-warning-message-title": {
       fontSize: 14,
     },
-    '.twap-warning-message-icon':{
+    ".twap-warning-message-icon": {
       width: 16,
       height: 16,
-      position:'relative',
-      top: 2
-    }
+      position: "relative",
+      top: 2,
+    },
   };
-})
-
+});
 
 export const StyledSubmitButton = styled(Components.ShowConfirmation)(({ theme }) => {
   return {
     ".twap-button": {
       ...buttonStyles(theme),
-      borderRadius:14,
+      borderRadius: 14,
       height: 48,
       "&-children": {
         fontSize: 16,
         fontWeight: 400,
       },
-      "&-disabled": {
-        cursor: "not-allowed",
-        background: "black",
-        boxShadow: "none",
-        opacity: 0.4,
-        border:'1px solid #535353',
-        "&:hover": {
-          border:'1px solid rgba(255, 255, 255, 0.5)',
-        }
-      }
+   
     },
-
-  }
-})
+  };
+});
 
 export const StyledTradeSizeInput = styled(Components.ChunkSelector.Input)(({ theme }) => {
   return {

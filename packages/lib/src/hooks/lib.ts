@@ -2,10 +2,19 @@ import { useCallback, useMemo } from "react";
 import { amountBNV2, amountUiV2, fillDelayText, query, SwapStep, useTwapContext } from "..";
 import BN from "bignumber.js";
 import { useFormatDecimals, useNetwork, useSrcBalance } from "./hooks";
-import { eqIgnoreCase, isNativeAddress, maxUint256 } from "@defi.org/web3-candies";
+import { chainId, eqIgnoreCase, isNativeAddress, maxUint256, networks } from "@defi.org/web3-candies";
 import moment from "moment";
 import { MIN_DURATION_MINUTES, TimeDuration } from "@orbs-network/twap-sdk";
-const MIN_NATIVE_BALANCE = 0.01;
+const getMinNativeBalance = (chainId: number) => {
+  switch (chainId) {
+    case networks.base.id:
+      return 0.0001
+      break;
+  
+    default:
+      return 0.01
+  }
+}
 export const useShouldWrapOrUnwrapOnly = () => {
   const wrap = useShouldOnlyWrap();
   const unwrap = useShouldUnwrap();
@@ -328,7 +337,7 @@ export const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens]
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
   );
 };
 
@@ -379,7 +388,7 @@ export const useSetIsMarket = () => {
     (isMarketOrder?: boolean) => {
       updateState({ isMarketOrder: !!isMarketOrder });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -389,7 +398,7 @@ export const useSetFillDelay = () => {
     (typedFillDelay?: TimeDuration) => {
       updateState({ typedFillDelay });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -399,7 +408,7 @@ export const useSetDuration = () => {
     (typedDuration?: TimeDuration) => {
       updateState({ typedDuration });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -440,7 +449,7 @@ export const useSetLimitPrice = () => {
     (typedLimitPrice?: string, percent?: string) => {
       updateState({ typedLimitPrice, limitPricePercent: percent });
     },
-    [updateState]
+    [updateState],
   );
 };
 
@@ -568,15 +577,15 @@ export const useSwapPrice = () => {
 };
 
 export const useMaxSrcInputAmount = () => {
-  const { srcToken } = useTwapContext();
+  const { srcToken, config } = useTwapContext();
   const srcBalance = useSrcBalance().data?.toString();
 
   return useMemo(() => {
     if (srcBalance && isNativeAddress(srcToken?.address || "")) {
-      const srcTokenMinimum = amountBNV2(srcToken?.decimals, MIN_NATIVE_BALANCE.toString());
+      const srcTokenMinimum = amountBNV2(srcToken?.decimals, getMinNativeBalance(config.chainId).toString());
       return BN.max(0, BN.min(BN(srcBalance).minus(srcTokenMinimum))).toString();
     }
-  }, [srcToken, srcBalance]);
+  }, [srcToken, srcBalance, config.chainId]);
 };
 
 export const useOnSrcAmountPercent = () => {
@@ -595,7 +604,7 @@ export const useOnSrcAmountPercent = () => {
       const value = amountUiV2(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ srcAmountUi: value });
     },
-    [srcToken, maxAmount, srcBalance, updateState]
+    [srcToken, maxAmount, srcBalance, updateState],
   );
 };
 

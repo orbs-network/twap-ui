@@ -100,7 +100,7 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
     (srcAmountUi: string) => {
       updateState({ srcAmountUi });
     },
-    [updateState, srcAmountUi]
+    [updateState, srcAmountUi],
   );
 
   return <Input prefix="" onChange={onChange} value={srcAmountUi || ""} decimalScale={srcToken?.decimals} className={props.className} placeholder={props.placeholder} />;
@@ -184,7 +184,7 @@ export function TradeIntervalSelector({ placeholder }: { placeholder?: string })
     (typedFillDelay: TimeDuration) => {
       updateState({ typedFillDelay });
     },
-    [updateState, typedFillDelay]
+    [updateState, typedFillDelay],
   );
 
   return <TimeSelector placeholder={placeholder} onChange={setFillDelay} value={typedFillDelay} />;
@@ -205,7 +205,7 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: 
       onTokenSelectedCallback({ isSrc, token });
       onClose();
     },
-    [onTokenSelectedCallback, isSrc]
+    [onTokenSelectedCallback, isSrc],
   );
 
   if (!Component) return null;
@@ -458,7 +458,7 @@ export const ShowConfirmation = ({ className = "", connect }: { className?: stri
     <>
       <StyledShowConfirmation className={className}>
         <PanelWarning />
-        <Button className="twap-submit-button" allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
+        <Button  className="twap-submit-button" allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
           {text}
         </Button>
       </StyledShowConfirmation>
@@ -470,17 +470,13 @@ export const TradeWarning = ({ className = "" }: { className?: string }) => {
   const tradeSizeWarning = useTradeSizeWarning();
   const fillDelayWarning = useFillDelay().warning;
   const chunksWarning = useTradesAmountWarning();
-  
 
-  const warning = tradeSizeWarning || fillDelayWarning || chunksWarning
+  const warning = tradeSizeWarning || fillDelayWarning || chunksWarning;
   if (!warning) return null;
   return <Message className={className} title={warning} variant="warning" />;
 };
 
-
-
-
-export const ChunkSizeMessage = ({className = ''}:{className?: string}) => {
+export const ChunkSizeMessage = ({ className = "" }: { className?: string }) => {
   const { isWrongChain, srcToken, srcUsd } = useTwapContext();
   const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmount().amountUi });
 

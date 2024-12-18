@@ -1,6 +1,6 @@
 import { Components, Translations, TwapAdapter, TWAPProps, useTwapContext, TwapContextUIPreferences, hooks, Configs, Token, compact, Styles } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, CSSProperties, FC, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import Web3 from "web3";
 import BN from "bignumber.js";
 import {
@@ -28,12 +28,17 @@ import {
   StyledSubmitButton,
   StyledTradeWarning,
   StyledChunkSizeMessage,
+  StyledTradeSizeAndChunks,
+  StyledPoweredBy,
+  StyledOrdersButton,
+  StyledOrders,
 } from "./styles";
 import { eqIgnoreCase, isNativeAddress, network } from "@defi.org/web3-candies";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 
 import { ThemeProvider } from "styled-components";
+import { Portal } from "@orbs-network/twap-ui/dist/components/base";
 export const config = Configs.BaseSwap;
 
 const uiPreferences: TwapContextUIPreferences = {
@@ -125,6 +130,7 @@ interface BaseSwapTWAPProps extends TWAPProps {
   useUSD: (address?: any) => string | undefined;
   provider?: any;
   TokenSelectModal: FC<{ finalFocusRef: "tokenIn" | "tokenOut"; isOpen?: boolean; onOpen: () => void; onClose: () => void }>;
+  Modal: FC<{ isOpen: boolean; onClose: () => void; children: ReactNode }>;
 }
 
 const TWAP = (props: BaseSwapTWAPProps) => {
@@ -183,7 +189,6 @@ const useUsd = () => {
   const dstUsd = context.useUSD(dstAddress);
 
   return useMemo(() => {
-    // const wTokenAddress = network(config.chainId).wToken.address;
     return {
       srcUsd,
       dstUsd,
@@ -239,7 +244,10 @@ const Content = () => {
         dstUsd={dstUsd}
       >
         <GlobalStyles />
-        <div className="twap-container">{props.limit ? <LimitPanel /> : <TWAPPanel />}</div>
+        <div className="twap-container">
+          {props.limit ? <LimitPanel /> : <TWAPPanel />}
+          <Orders />
+        </div>
       </TwapAdapter>
     </ThemeProvider>
   );
@@ -252,14 +260,13 @@ const TWAPPanel = () => {
         <TokenPanel isSrcToken={true} />
         <StyledChangeTokensOrder />
         <TokenPanel />
+        <StyledTradeSizeAndChunks>
+          <TradeSize />
+          <TradeInterval />
+        </StyledTradeSizeAndChunks>
       </StyledTopGrid>
-      <Styles.StyledRowFlex>
-        <TradeSize />
-        <TradeInterval />
-      </Styles.StyledRowFlex>
-     
       <ShowConfirmationButton />
-      <Components.PoweredBy />
+      <StyledPoweredBy />
     </>
   );
 };
@@ -267,7 +274,7 @@ const TWAPPanel = () => {
 const ShowConfirmationButton = () => {
   const context = useAdapterContext();
   return (
-    <Styles.StyledColumnFlex gap={12} style={{marginTop: 18}}>
+    <Styles.StyledColumnFlex gap={12} style={{ marginTop: 18 }}>
       <StyledChunkSizeMessage />
       <StyledTradeWarning />
       <StyledSubmitButton connect={context.connect} />
@@ -275,7 +282,26 @@ const ShowConfirmationButton = () => {
   );
 };
 
+const Orders = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const Modal = useAdapterContext().Modal;
 
+  return (
+    <Components.OrderHistory isOpen={isOpen}>
+      <Portal containerId="twap-orders">
+        <StyledOrdersButton onClick={() => setIsOpen(true)} />
+      </Portal>
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+        <Components.OrderHistory.Header />
+        <StyledOrders />
+      </Modal>
+    </Components.OrderHistory>
+  );
+};
+
+export const OrdersPanel = ({ className = "", style = {} }: { className?: string; style?: CSSProperties }) => {
+  return <div id="twap-orders" className={className} style={{ width: "100%", ...style }} />;
+};
 
 const LimitPanel = () => {
   return (
@@ -285,7 +311,7 @@ const LimitPanel = () => {
         <StyledChangeTokensOrder />
         <TokenPanel />
       </StyledTopGrid>
-      <Components.PoweredBy />
+      <StyledPoweredBy />
     </>
   );
 };
@@ -319,13 +345,3 @@ const TradeInterval = () => {
 };
 
 export { TWAP };
-
-export const SubmitButton = ({ className = "", isMain }: { className?: string; isMain?: boolean }) => {
-  const { loading, onClick, disabled, text } = hooks.useSubmitOrderButton();
-
-  return (
-    <Components.Base.Button text={text} className={`twap-submit ${className}`} onClick={onClick || (() => {})}>
-      {text}
-    </Components.Base.Button>
-  );
-};

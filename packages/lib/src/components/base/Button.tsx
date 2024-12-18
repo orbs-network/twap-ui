@@ -24,7 +24,7 @@ function Button(props: ButtonProps) {
   return (
     <StyledContainer
       onClick={onClick}
-      className={`twap-button ${loading ? "twap-button-loading" : ""} ${disabled ? "twap-button-disabled" : ""} ${className}`}
+      className={`twap-button ${loading ? "twap-button-loading" : ""} ${disabled ? "twap-button-disabled" : "twap-button-enabled"} ${className}`}
       disabled={_disabled}
     >
       {loading && (

@@ -53,8 +53,6 @@ import {
   StyledBalanceWarning,
   StyledTop,
   StyledTwap,
-  StyledTradeDuration,
-  StyledTradeDurationRight,
   StyledOrdersContent,
   StyledLimitPriceTitle,
   GlobalStyles,
@@ -77,7 +75,7 @@ import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
 import { MdInfo } from "@react-icons/all-files/md/MdInfo";
-import { eqIgnoreCase, network } from "@defi.org/web3-candies";
+import { network } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
@@ -217,7 +215,7 @@ const useParseToken = () => {
         console.error("Invalid token", token);
       }
     },
-    [config.chainId, getTokenLogo],
+    [config.chainId, getTokenLogo]
   );
 };
 
@@ -267,7 +265,7 @@ const useIsNative = () => {
         return true;
       }
     },
-    [context.config.chainId],
+    [context.config.chainId]
   );
 };
 
@@ -671,7 +669,7 @@ const LimitPanelExpiration = () => {
     (unit: TimeUnit) => {
       setCustomDuration({ unit, value: 1 });
     },
-    [setCustomDuration],
+    [setCustomDuration]
   );
 
   return (

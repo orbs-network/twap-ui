@@ -31,28 +31,28 @@ export const SelectMenu = (props: Props) => {
   return (
     <div className="twap-select">
       <ClickAwayListener onClickAway={() => setOpen(false)}>
-      <Container className="twap-select-menu">
-        <StyledSelected onClick={() => setOpen(!open)} className={`${props.className} twap-select-menu-button`}>
-          {props.SelectedContent ? (
-            <props.SelectedContent item={selected} />
-          ) : (
-            <>
-              <p> {selected?.text}</p>
-              <IoIosArrowDown />
-            </>
+        <Container className="twap-select-menu">
+          <StyledSelected onClick={() => setOpen(!open)} className={`${props.className} twap-select-menu-button`}>
+            {props.SelectedContent ? (
+              <props.SelectedContent item={selected} />
+            ) : (
+              <>
+                <p> {selected?.text}</p>
+                <IoIosArrowDown />
+              </>
+            )}
+          </StyledSelected>
+          {open && (
+            <Menu className="twap-select-menu-list">
+              {props.items.map((item) => (
+                <StyledMenuItem className="twap-select-menu-list-item" key={item.value} onClick={() => onSelect(item)}>
+                  {props.ItemContent ? <props.ItemContent item={item} /> : <p>{item.text}</p>}
+                </StyledMenuItem>
+              ))}
+            </Menu>
           )}
-        </StyledSelected>
-        {open && (
-          <Menu className="twap-select-menu-list">
-            {props.items.map((item) => (
-              <StyledMenuItem className="twap-select-menu-list-item" key={item.value} onClick={() => onSelect(item)}>
-                {props.ItemContent ? <props.ItemContent item={item} /> : <p>{item.text}</p>}
-              </StyledMenuItem>
-            ))}
-          </Menu>
-        )}
-      </Container>
-    </ClickAwayListener>
+        </Container>
+      </ClickAwayListener>
     </div>
   );
 };
