@@ -8,13 +8,13 @@ import { MIN_DURATION_MINUTES, TimeDuration } from "@orbs-network/twap-sdk";
 const getMinNativeBalance = (chainId: number) => {
   switch (chainId) {
     case networks.base.id:
-      return 0.0001
+      return 0.0001;
       break;
-  
+
     default:
-      return 0.01
+      return 0.01;
   }
-}
+};
 export const useShouldWrapOrUnwrapOnly = () => {
   const wrap = useShouldOnlyWrap();
   const unwrap = useShouldUnwrap();

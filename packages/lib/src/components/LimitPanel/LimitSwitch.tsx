@@ -1,7 +1,7 @@
 import { FC, useCallback } from "react";
 import styled from "styled-components";
 import { useTwapContext } from "../../context/context";
-import { useSetIsMarket } from "../../hooks";
+import { useSetIsMarket } from "../../hooks/lib";
 import { StyledRowFlex } from "../../styles";
 import { LimitSwitchArgs } from "../../types";
 
@@ -35,10 +35,18 @@ export const LimitSwitch = ({ className = "", Component }: { className?: string;
 
   return (
     <StyledLimitSwitch className={className}>
-      <StyledLimitSwitchButton className={`${!!isMarketOrder ? "twap-limit-switch-selected" : ""}`} $selected={!!isMarketOrder} onClick={() => onSelect(true)}>
+      <StyledLimitSwitchButton
+        className={`${!!isMarketOrder ? "twap-limit-switch-selected" : "twap-limit-switch-not-selected"}`}
+        $selected={!!isMarketOrder}
+        onClick={() => onSelect(true)}
+      >
         Market
       </StyledLimitSwitchButton>
-      <StyledLimitSwitchButton className={`${!isMarketOrder ? "twap-limit-switch-selected" : ""}`} $selected={!isMarketOrder} onClick={() => onSelect(false)}>
+      <StyledLimitSwitchButton
+        className={`${!isMarketOrder ? "twap-limit-switch-selected" : "twap-limit-switch-not-selected"}`}
+        $selected={!isMarketOrder}
+        onClick={() => onSelect(false)}
+      >
         Limit
       </StyledLimitSwitchButton>
     </StyledLimitSwitch>

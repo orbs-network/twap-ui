@@ -4,7 +4,7 @@ import { Link, SmallTokens } from "../Components";
 import { HiArrowCircleUp } from "@react-icons/all-files/hi/HiArrowCircleUp";
 import { useOrderType } from "../hooks";
 import { useTwapContext } from "../../../context/context";
-import { useExplorerUrl } from "../../../hooks";
+import { useExplorerUrl } from "../../../hooks/hooks";
 
 export function OrderSubmitted() {
   const { createOrdertxHash } = useTwapContext().state;

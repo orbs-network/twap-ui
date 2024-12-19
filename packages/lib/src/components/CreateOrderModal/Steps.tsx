@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
 import { RiCheckboxCircleFill } from "@react-icons/all-files/ri/RiCheckboxCircleFill";
 import { useTwapContext } from "../../context/context";
-import { useNetwork } from "../../hooks";
+import { useNetwork } from "../../hooks/hooks";
 
 export const Steps = () => {
   const steps = useTwapContext().state.swapSteps;

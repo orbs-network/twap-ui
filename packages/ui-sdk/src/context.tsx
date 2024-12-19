@@ -1,6 +1,5 @@
 import React, { useContext, useEffect } from "react";
 import { createContext, useReducer, useCallback, useMemo } from "react";
-import { SwapStatus } from "@orbs-network/swap-ui";
 import {
   Config,
   DEFAULT_FILL_DELAY,
@@ -26,7 +25,7 @@ export type Token = {
 interface State {
   swapStep?: number;
   swapSteps?: number[];
-  swapStatus?: SwapStatus;
+  swapStatus?: any;
   srcAmount?: string;
 
   srcToken?: Token;

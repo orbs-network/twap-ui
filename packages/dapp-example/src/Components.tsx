@@ -27,10 +27,8 @@ import { Button, styled, TextField, Typography } from "@mui/material";
 import { Components, hooks, isEmpty, size, Styles, Token } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { Config } from "@orbs-network/twap-sdk";
-
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
 import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
-
 import { dapps } from "./config";
 import { Status } from "./Status";
 import { useAddedTokens, useBalance, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
@@ -39,7 +37,6 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import { SelectorOption, TokenListItem } from "./types";
 import { useNavigate } from "react-router-dom";
 import { useWeb3React } from "@web3-react/core";
-import { MdDeleteSweep } from "@react-icons/all-files/md/MdDeleteSweep";
 import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
 
 const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";

@@ -31,8 +31,7 @@
     "qrcode.react": "^3.1.0",
     "react-error-boundary": "^4.0.10",
     "react-number-format": "5.x",
-    "react-virtualized-auto-sizer": "^1.0.24",
-    "react-window": "^1.8.10",
+    "react-virtuoso": "^4.12.3",
     "styled-components": "^6.1.12",
     "web3": "1.x"
   },

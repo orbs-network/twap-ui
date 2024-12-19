@@ -458,7 +458,7 @@ export const ShowConfirmation = ({ className = "", connect }: { className?: stri
     <>
       <StyledShowConfirmation className={className}>
         <PanelWarning />
-        <Button  className="twap-submit-button" allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
+        <Button className="twap-submit-button" allowClickWhileLoading={true} onClick={onClick ? onClick : () => {}} loading={loading} disabled={disabled}>
           {text}
         </Button>
       </StyledShowConfirmation>

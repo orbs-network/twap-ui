@@ -215,7 +215,7 @@ const useParseToken = () => {
         console.error("Invalid token", token);
       }
     },
-    [config.chainId, getTokenLogo]
+    [config.chainId, getTokenLogo],
   );
 };
 
@@ -265,7 +265,7 @@ const useIsNative = () => {
         return true;
       }
     },
-    [context.config.chainId]
+    [context.config.chainId],
   );
 };
 
@@ -384,24 +384,6 @@ const CustomButton = (props: ButtonProps) => {
   return null;
 };
 
-const Listener = () => {
-  const { limit } = useAdapterContext();
-  const { updateState } = useTwapContext();
-  const setCustomDuration = hooks.useSetDuration();
-
-  useEffect(() => {
-    if (limit) {
-      updateState({ isMarketOrder: false });
-      setCustomDuration({ unit: TimeUnit.Weeks, value: 1 });
-    } else {
-      updateState({ isMarketOrder: true });
-      setCustomDuration({ unit: TimeUnit.Minutes, value: 5 });
-    }
-  }, [limit, updateState, setCustomDuration]);
-
-  return null;
-};
-
 const TWAPContent = () => {
   const context = useAdapterContext();
   const provider = useProvider();
@@ -449,7 +431,6 @@ const TWAPContent = () => {
           useParsedToken={useParsedToken}
         >
           <GlobalStyles />
-          <Listener />
           <StyledContent>
             {context.limit ? <LimitPanel /> : <TWAPPanel />}
             <Components.LimitPriceMessage />
@@ -669,7 +650,7 @@ const LimitPanelExpiration = () => {
     (unit: TimeUnit) => {
       setCustomDuration({ unit, value: 1 });
     },
-    [setCustomDuration]
+    [setCustomDuration],
   );
 
   return (

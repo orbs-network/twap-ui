@@ -231,8 +231,8 @@ export interface TwapLibProps {
   dstToken?: Token;
   dappTokens?: any;
   uiPreferences?: TwapContextUIPreferences;
-  onSrcTokenSelected: (token: any) => void;
-  onDstTokenSelected: (token: any) => void;
+  onSrcTokenSelected?: (token: any) => void;
+  onDstTokenSelected?: (token: any) => void;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
   marketPrice?: string;
   isMobile?: boolean;
@@ -439,8 +439,8 @@ export interface TWAPContextProps {
   web3?: Web3;
   config: Config;
   account?: string;
-  onSrcTokenSelected: (token: any) => void;
-  onDstTokenSelected: (token: any) => void;
+  onSrcTokenSelected?: (token: any) => void;
+  onDstTokenSelected?: (token: any) => void;
   onSwitchTokens: () => void;
   isLimitPanel: boolean;
   tokens: Token[];

@@ -1,8 +1,5 @@
 import { styled } from "styled-components";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
-import { useCallback, useEffect, useRef } from "react";
-import AutoSizer from "react-virtualized-auto-sizer";
-import { VariableSizeList } from "react-window";
 import { useTwapContext } from "../../context/context";
 import { useFormatNumberV2 } from "../../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
@@ -12,20 +9,12 @@ import * as React from "react";
 import { size } from "../../utils";
 import { Order } from "@orbs-network/twap-sdk";
 import moment from "moment";
+import { Virtuoso } from "react-virtuoso";
 
 export const OrderHistoryList = () => {
-  const { selectOrder, orders, selectedOrderId, isLoading } = useOrderHistoryContext();
+  const { selectOrder, orders, isLoading, selectedOrderId } = useOrderHistoryContext();
 
-  const sizeMap = useRef({} as any);
-  const listRef = useRef<any>();
-  const setSize = useCallback((index: number, size: number) => {
-    sizeMap.current = { ...sizeMap.current, [index]: size };
-    listRef.current.resetAfterIndex(0);
-  }, []);
-
-  const getSize = useCallback((index: number): number => {
-    return sizeMap.current[index] || 50;
-  }, []);
+  if (selectedOrderId) return null;
 
   if (isLoading) {
     return <StyledLoader height={120} />;
@@ -36,26 +25,30 @@ export const OrderHistoryList = () => {
   }
 
   return (
-    <ListContainer style={{ opacity: selectedOrderId !== undefined ? 0 : 1, pointerEvents: selectedOrderId !== undefined ? "none" : "all" }} className="twap-orders-list">
-      <AutoSizer>
-        {({ height, width }: any) => (
-          <VariableSizeList ref={listRef} height={height} itemCount={size(orders)} itemSize={getSize} width={width} itemData={{ setSize, selectOrder, orders }}>
-            {Comp}
-          </VariableSizeList>
-        )}
-      </AutoSizer>
-    </ListContainer>
+    <Virtuoso
+      totalCount={size(orders)}
+      overscan={10}
+      className="twap-orders-list"
+      style={{ height: "100%", width: "100%" }}
+      itemContent={(index) => {
+        const order = orders[index];
+        return <ListOrder selectOrder={selectOrder} order={order} />;
+      }}
+    />
   );
 };
 
-const Comp = (props: any) => {
-  const { style, data, index } = props;
-
-  const { selectOrder, setSize, orders } = data;
+const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
   return (
-    <div style={style}>
-      <ListOrder onSelect={selectOrder} setSize={setSize} index={index} order={orders[index]} />
-    </div>
+    <StyledListOrder className="twap-order" onClick={() => selectOrder(order?.id)}>
+      <ListItemHeader order={order} />
+      <LinearProgressWithLabel value={order.progress || 0} />
+      <StyledRowFlex className="twap-order-tokens">
+        <TokenDisplay address={order.srcTokenAddress} />
+        <HiArrowRight className="twap-order-tokens-arrow" />
+        <TokenDisplay address={order.dstTokenAddress} />
+      </StyledRowFlex>
+    </StyledListOrder>
   );
 };
 
@@ -76,16 +69,6 @@ const EmptyList = () => {
   );
 };
 
-const ListContainer = styled(StyledColumnFlex)({
-  width: "100%",
-  height: "calc(100% - 50px)",
-  top: 50,
-  position: "absolute",
-  zIndex: 1,
-  "*::-webkit-scrollbar": {
-    display: "none",
-  },
-});
 const StyledLoader = styled(Loader)({
   borderRadius: 15,
   transformOrigin: "top",
@@ -99,32 +82,6 @@ const StyledEmpty = styled(StyledColumnFlex)({
   fontSize: 18,
   fontWeight: 500,
 });
-
-const ListOrder = React.memo(
-  ({ order, index, setSize, onSelect }: { order?: Order; index: number; setSize: (index: number, value: number) => void; onSelect: (id?: number) => void }) => {
-    const root = useRef<any>();
-    useEffect(() => {
-      setSize(index, root.current?.getBoundingClientRect().height);
-    }, [index]);
-
-    if (!order) return null;
-
-    return (
-      <Wrapper className="twap-order" ref={root} onClick={() => onSelect(order?.id)}>
-        <StyledListOrder className="twap-order-container">
-          <ListItemHeader order={order} />
-          <LinearProgressWithLabel value={order.progress || 0} />
-
-          <StyledRowFlex className="twap-order-tokens">
-            <TokenDisplay address={order.srcTokenAddress} />
-            <HiArrowRight className="twap-order-tokens-arrow" />
-            <TokenDisplay address={order.dstTokenAddress} />
-          </StyledRowFlex>
-        </StyledListOrder>
-      </Wrapper>
-    );
-  },
-);
 
 const ListItemHeader = ({ order }: { order: Order }) => {
   const t = useTwapContext().translations;

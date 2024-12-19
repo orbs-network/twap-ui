@@ -4,12 +4,13 @@ import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
-import { query, useOrderQueryByTxHash } from "../hooks/query";
+import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
-import { eqIgnoreCase, setWeb3Instance } from "@defi.org/web3-candies";
-import { constructSDK, DEFAULT_FILL_DELAY } from "@orbs-network/twap-sdk";
+import { setWeb3Instance } from "@defi.org/web3-candies";
+import { constructSDK, DEFAULT_FILL_DELAY, TimeUnit } from "@orbs-network/twap-sdk";
 import BN from "bignumber.js";
 import { TX_GAS_COST } from "../consts";
+import { useSetDuration } from "../hooks/lib";
 
 export const TwapContext = createContext({} as TWAPContextProps);
 const queryClient = new QueryClient({
@@ -21,11 +22,24 @@ const queryClient = new QueryClient({
 });
 
 const WrappedTwap = (props: TwapLibProps) => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { srcToken, dstToken, isLimitPanel } = useTwapContext();
   query.useFeeOnTransfer(srcToken?.address);
   query.useFeeOnTransfer(dstToken?.address);
   query.useAllowance();
   useMinChunksSizeUpdater();
+
+  const { updateState } = useTwapContext();
+  const setCustomDuration = useSetDuration();
+
+  useEffect(() => {
+    if (isLimitPanel) {
+      updateState({ isMarketOrder: false });
+      setCustomDuration({ unit: TimeUnit.Weeks, value: 1 });
+    } else {
+      updateState({ isMarketOrder: true });
+      setCustomDuration({ unit: TimeUnit.Minutes, value: 5 });
+    }
+  }, [isLimitPanel, updateState, setCustomDuration]);
 
   return <TwapErrorWrapper>{props.children}</TwapErrorWrapper>;
 };

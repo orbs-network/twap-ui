@@ -1,5 +1,5 @@
 import { StyledBaseSwap, StyledBaseSwapBox, StyledBaseSwapLayout, StyledModalContent } from "./styles";
-import { TWAP, config, OrdersPanel } from "@orbs-network/twap-ui-baseswap";
+import { TWAP, config, TwapBottomContainer } from "@orbs-network/twap-ui-baseswap";
 import { TooltipProps } from "@orbs-network/twap-ui";
 import MuiTooltip from "@mui/material/Tooltip";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
@@ -71,9 +71,7 @@ export const TokenSelectModal = ({ finalFocusRef, isOpen, onClose }: TokenSelect
 const Modal = ({ children, isOpen, onClose }: { children: ReactNode; isOpen: boolean; onClose: () => void }) => {
   return (
     <Popup isOpen={!!isOpen} onClose={onClose}>
-     <StyledModalContent>
-     {children}
-     </StyledModalContent>
+      <StyledModalContent style={{ padding: 15 }}>{children}</StyledModalContent>
     </Popup>
   );
 };
@@ -167,11 +165,9 @@ const DappComponent = () => {
             <StyledBaseSwapBox>
               <TWAPComponent limit={selected === SelectorOption.LIMIT} />
             </StyledBaseSwapBox>
-            <OrdersPanel />
+            <TwapBottomContainer />
           </StyledBaseSwapLayout>
-        
         </StyledBaseSwap>
-     
       </ContextWrapper>
     </DappProvider>
   );

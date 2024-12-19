@@ -95,6 +95,12 @@ export const StyledTokenPanelBalance = styled("div")<{ isSrc: number }>(({ theme
   };
 });
 
+export const StyledDeadlineSelectButton = styled("button")<{ selected: number }>(({ theme, selected }) => {
+  return {
+    ...selectButtonStyles(theme, selected),
+  };
+});
+
 export const StyledOrdersButton = styled(Components.OrderHistory.Button)(({ theme }) => {
   const styles = getStyles(theme);
   return {
@@ -106,11 +112,10 @@ export const StyledOrdersButton = styled(Components.OrderHistory.Button)(({ them
     width: "100%",
     borderRadius: 18,
     transition: "0.2s all",
-    background:
-      "radial-gradient(at 10% top, rgba(10, 29, 86, 0.75) 0%, transparent 25%), radial-gradient(at center top, rgba(10, 29, 86, 0.75) 0%, transparent 30%), radial-gradient(at right 10%, rgba(10, 29, 86, 0.75) 0%, transparent 20%), radial-gradient(at left center, rgba(10, 29, 86, 0.75) 0%, transparent 30%), radial-gradient(rgba(10, 29, 86, 0.5) 0%, transparent 30%), radial-gradient(at 100% 40%, rgba(10, 29, 86, 0.6) 0%, transparent 25%), radial-gradient(at left bottom, rgba(10, 29, 86, 0.75) 0%, transparent 35%), radial-gradient(at center 80%, rgba(10, 29, 86, 0.65) 0%, transparent 25%), radial-gradient(at right bottom, rgba(10, 29, 86, 0.75) 0%, transparent 35%)",
-      "&:hover": {
-        border:'1px solid rgba(255,255,255, 0.3)'
-      }
+    background: "transparent",
+    "&:hover": {
+      border: "1px solid rgba(255,255,255, 0.3)",
+    },
   };
 });
 
@@ -141,7 +146,7 @@ export const StyledInputPanelLeft = styled(Styles.StyledColumnFlex)({
   gap: 0,
 });
 
-export const StyledTokenPanelInput = styled(Components.TokenPanelInput)(({ theme }) => {
+const bigInputStyles = (theme: DefaultTheme) => {
   const styles = getStyles(theme);
   return {
     width: "100%",
@@ -151,10 +156,192 @@ export const StyledTokenPanelInput = styled(Components.TokenPanelInput)(({ theme
       right: 0,
     },
     input: {
-      textAlign: "left",
+      textAlign: "left" as const,
       fontSize: 32,
       color: styles.textColorPrimary,
       height: "100%",
+    },
+  };
+};
+
+export const StyledTokenPanelInput = styled(Components.TokenPanelInput)(({ theme }) => {
+  return {
+    ...bigInputStyles(theme),
+  };
+});
+
+const selectButtonStyles = (theme: DefaultTheme, selected: number) => {
+  const styles = getStyles(theme);
+  return {
+    background: selected ? "linear-gradient(to bottom, #0154fe, #37C0DF)" : "radial-gradient(circle, rgba(11, 61, 145, 0.5) 10%, #000)",
+    color: selected ? "black" : styles.textColorPrimary,
+    border: "rgba(255, 255, 255, 0.25)",
+    padding: "4px 8px",
+    fontSize: 13,
+    borderRadius: 8,
+    cursor: "pointer",
+    minWidth: 45,
+    boxShadow: "20px 20px 50px 0px rgba(0, 0, 0, 0.25),10px 10px 25px 0px rgba(0, 0, 0, 0.18),2px 2px 11px 0px rgba(0, 0, 0, 0.19),0px -1px 1px 0px #FFFFFF40",
+  };
+};
+
+export const StyledPriceSelectButton = styled("button")<{ selected: number }>(({ theme, selected }) => {
+  return {
+    ...selectButtonStyles(theme, selected),
+  };
+});
+
+export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    color: styles.textColorPrimary,
+    ".twap-button": {
+      ...buttonStyles(theme),
+      borderRadius: 14,
+      height: 48,
+      "&-children": {
+        fontSize: 16,
+        fontWeight: 400,
+      },
+    },
+    ".twap-order-display-details": {
+      ...cardStyles(theme),
+    },
+    ".twap-switch-handle": {
+      background: "white",
+    },
+
+    ".twap-switch": {
+      background: "rgba(255, 255, 255, 0.24)",
+    },
+    ".twap-switch-checked": {
+      background: "rgba(80,80,80, 0.4)",
+    },
+    ".twap-order-modal-disclaimer": {
+      ...cardStyles(theme),
+      a: {
+        color: "white",
+      },
+    },
+  };
+});
+
+export const StyledPrice = styled(Components.LimitPanel)(({ theme }) => {
+  return {
+    ".twap-limit-panel-invert-button": {
+      marginRight: 5,
+      svg: {
+        width: 20,
+        height: 20,
+      },
+    },
+    ".twap-input": {
+      ...bigInputStyles(theme),
+    },
+    ".twap-limit-panel-token-select": {
+      ...tokenSelectStyles(theme),
+    },
+    ".twap-limit-panel-percent-select": {
+      marginLeft: "auto",
+      width: "fit-content",
+    },
+    ".twap-limit-panel-percent-button": {
+      ...selectButtonStyles(theme, 0),
+    },
+    ".twap-limit-panel-zero-btn": {
+      "&-left": {
+        borderRadius: 0,
+        borderTopLeftRadius: 8,
+        borderBottomLeftRadius: 8,
+      },
+      "&-right": {
+        paddingLeft: 6,
+        paddingRight: 6,
+        minWidth: "unset",
+        borderRadius: 0,
+        borderTopRightRadius: 8,
+        borderBottomRightRadius: 8,
+      },
+    },
+    ".twap-limit-panel-title": {
+      p: {
+        fontSize: 14,
+      },
+      ".twap-token-display": {
+        ...tokenSelectStyles(theme),
+        p: {
+          fontSize: 14,
+        },
+        padding: "2px 4px",
+        minWidth: "unset",
+        minHeight: "unset",
+        ".twap-token-logo": {
+          width: 20,
+          height: 20,
+        },
+      },
+    },
+  };
+});
+
+const warningStyles = (theme: DefaultTheme) => {
+  const styles = getStyles(theme);
+  return {
+    color: styles.darkText,
+    border: `1px solid rgba(255,255,255, 0.2)`,
+    borderRadius: 14,
+    padding: 10,
+    a: {
+      color: styles.darkText,
+      textDecoration: "underline",
+    },
+  };
+};
+
+export const StyledMarketPriceWarning = styled(Components.MarketPriceWarning)(({ theme }) => {
+  return {
+    ...warningStyles(theme),
+  };
+});
+
+export const StyledLimitPriceWarning = styled(Components.LimitPriceMessage)(({ theme }) => {
+  return {
+    ...warningStyles(theme),
+  };
+});
+
+export const StyledLimitSwitch = styled(Components.LimitPanel.Switch)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    borderRadius: 8,
+    gap: 4,
+    marginLeft: "auto",
+    height: 37,
+    padding: "0.25rem",
+    alignItems: "stretch",
+    background: "radial-gradient(circle, rgba(11, 61, 145, 0.5) 10%, #000)",
+    boxShadow:
+      "20px 20px 50px 0px rgba(0, 0, 0, 0.25) inset,10px 10px 25px 0px rgba(0, 0, 0, 0.18) inset,2px 2px 11px 0px rgba(0, 0, 0, 0.19) inset,0px 0px 1px 0px #FFFFFF40 inset",
+    button: {
+      fontWeight: 500,
+      fontSize: 14,
+      borderRadius: 8,
+      border: "none",
+      background: "transparent",
+      color: styles.darkText,
+      padding: "0px 16px",
+      cursor: "pointer",
+    },
+    ".twap-limit-switch-selected": {
+      boxShadow: "0 0 12px #000",
+      background: "linear-gradient(to bottom, #0154fe, #37C0DF)",
+      border: "none",
+      color: "#000",
+    },
+    ".twap-limit-switch-not-selected": {
+      "&:hover": {
+        color: styles.textColorPrimary,
+      },
     },
   };
 });
@@ -197,31 +384,89 @@ const buttonStyles = (theme: DefaultTheme) => {
         boxShadow:
           "20px 20px 50px 0px rgba(0, 0, 0, 0.25) inset,10px 10px 25px 0px rgba(0, 0, 0, 0.18) inset,2px 2px 11px 0px rgba(0, 0, 0, 0.19) inset,0px 0px 1px 0px #FFFFFF40 inset",
       },
-    }
-  
+    },
   };
 };
 
+export const StyledOrdersHeader = styled(Components.OrderHistory.Header)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    color: styles.textColorPrimary,
+    svg: {
+      color: styles.textColorPrimary,
+    },
+    ".twap-select-menu-button": {
+      minWidth: 100,
+      paddingLeft: 20,
+      paddingRight: 20,
+      height: 34,
+      p: {
+        fontSize: 16,
+        marginRight: 5,
+      },
+      svg: {
+        width: 20,
+        height: 20,
+      },
+    },
+  };
+});
 export const StyledOrders = styled(Components.OrderHistory.Content)(({ theme }) => {
   const styles = getStyles(theme);
 
   return {
     color: styles.textColorPrimary,
-    padding: 15,
+    marginTop: 10,
+    ".twap-button": {
+      ...buttonStyles(theme),
+      borderRadius: 14,
+      height: 48,
+      "&-children": {
+        fontSize: 16,
+        fontWeight: 400,
+      },
+    },
+    ".twap-orders-selected-order-summary": {
+      p: {
+        fontWeight: 600,
+      },
+    },
+    ".twap-order-display-details-row-right": {
+      fontSize: 13,
+    },
+
     ".twap-order": {
       width: "100%",
-      padding: '5px 10px',
-    },
-    ".twap-order-container" :{
+      padding: "10px 10px",
       transition: "0.2s all",
-     border: `1px solid rgba(255,255,255, 0.2)`,
-     background:'linear-gradient(135deg, #000, #001235 70%, #001a4d 100%),radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.05) 0%, transparent 60%)',
-     "&:hover": {
-      border: `1px solid rgba(255,255,255, 0.4)`,
-     }
-    }
-  }
-})
+      marginBottom: 10,
+      border: `1px solid rgba(255,255,255, 0.2)`,
+      background: "linear-gradient(135deg, #000, #001235 70%, #001a4d 100%),radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.05) 0%, transparent 60%)",
+      "&:hover": {
+        border: `1px solid rgba(255,255,255, 0.4)`,
+      },
+      ".twap-linear-progress-filled": {
+        background: "linear-gradient(to bottom, #0154fe, #37C0DF)",
+      },
+      ".twap-linear-progress": {
+        background: "rgba(255,255,255, 0.2)",
+      },
+    },
+
+    ".twap-order-display-details": {
+      borderRadius: 16,
+      padding: 10,
+      border: `1px solid rgba(255,255,255, 0.2)`,
+      background: "linear-gradient(135deg, #000, #001235 70%, #001a4d 100%),radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.05) 0%, transparent 60%)",
+    },
+    ".twap-orders-selected-order-details": {
+      gap: 6,
+      "&-expanded": {
+        marginTop: 10,
+      },
+    },
+  };
+});
 
 export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ theme }) => {
   const styles = getStyles(theme);
@@ -249,42 +494,7 @@ export const StyledChangeTokensOrder = styled(Components.ChangeTokensOrder)(({ t
   };
 });
 
-export const StyledPriceCard = styled(Components.Base.Card)({});
-
-export const StyledReset = styled("div")(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    border: "1px solid #fff",
-    padding: "0px 10px",
-    borderRadius: 12,
-    cursor: "pointer",
-    color: styles.textColor,
-    p: {
-      fontSize: 13,
-    },
-    svg: {
-      width: 12,
-      height: 12,
-      path: {
-        stroke: styles.iconsColor,
-      },
-    },
-    "&:hover": {
-      opacity: 0.8,
-    },
-  };
-});
-
-export const StyledSubmitContainer = styled("div")({
-  width: "100%",
-  button: {
-    width: "100%",
-    boxShadow: "none!important",
-    border: "unset!important",
-  },
-});
-
-const StyledCard = styled("div")(({ theme }) => {
+const cardStyles = (theme: DefaultTheme) => {
   const styles = baseStyles(theme);
   return {
     width: "100%",
@@ -294,6 +504,12 @@ const StyledCard = styled("div")(({ theme }) => {
     boxShadow:
       "20px 20px 50px 0px rgba(0, 0, 0, 0.25) inset,10px 10px 25px 0px rgba(0, 0, 0, 0.18) inset,2px 2px 11px 0px rgba(0, 0, 0, 0.19) inset,0px 0px 1px 0px #FFFFFF40 inset",
     color: styles.textColor,
+  };
+};
+
+const StyledCard = styled("div")(({ theme }) => {
+  return {
+    ...cardStyles(theme),
   };
 });
 
@@ -325,6 +541,9 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
 
   return {
+    ".twap-separator": {
+      background: "rgba(255,255,255, 0.2)",
+    },
     ".twap-token-input-loading": {
       input: {
         opacity: 0,
@@ -353,6 +572,9 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-select-menu": {
       height: "100%",
+      "&-button": {
+        color: styles.textColorPrimary,
+      },
     },
 
     ".twap-select-menu-list": {
@@ -361,10 +583,11 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       background: "linear-gradient(135deg, #000, #001235 70%, #001a4d 100%),radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.05) 0%, transparent 60%)",
     },
     ".twap-select-menu-list-item": {
-      padding: "5px 10px 5px 10px",
+      padding: "7px 10px 7px 10px",
       p: {
-        fontSize: 12,
+        fontSize: 13,
         textTransform: "capitalize",
+        color: styles.textColorPrimary,
       },
       "&:hover": {
         background: "rgba(255,255,255,0.1)",
@@ -403,7 +626,6 @@ const bgContainerStyles = (theme: DefaultTheme) => {
     cursor: "pointer",
     background: "radial-gradient(circle, rgba(11, 61, 145, 0.5) 10%, #000)",
     borderRadius: 12,
-    padding: "5px 15px",
     justifyContent: "center",
     border: "none",
     boxShadow: "0px 0px 0px 1px #00000005,1px 1px 1px -0.5px #0000000F,3px 3px 3px -1.5px #0000000F,6px 6px 6px -3px #0000001A,-0.5px -0.5px 0px 0px #FFFFFF33",
@@ -416,11 +638,23 @@ const bgContainerStyles = (theme: DefaultTheme) => {
   };
 };
 
-export const StyledTokenSelect = styled("div")(({ theme }) => {
+const tokenSelectStyles = (theme: DefaultTheme) => {
   return {
     ...bgContainerStyles(theme),
     minWidth: 170,
     minHeight: 45,
+    ".twap-token-select": {
+      padding: "0px 10px",
+      width: "100%",
+      height: "100%",
+    },
+    ".twap-token-selected": {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "100%",
+      height: "100%",
+    },
     p: {
       fontSize: 20,
       fontWeight: 500,
@@ -437,6 +671,12 @@ export const StyledTokenSelect = styled("div")(({ theme }) => {
       height: 14,
       color: "rgba(255, 255, 255, 0.4)",
     },
+  };
+};
+
+export const StyledTokenSelect = styled("div")(({ theme }) => {
+  return {
+    ...tokenSelectStyles(theme),
   };
 });
 
@@ -531,7 +771,6 @@ export const StyledSubmitButton = styled(Components.ShowConfirmation)(({ theme }
         fontSize: 16,
         fontWeight: 400,
       },
-   
     },
   };
 });
@@ -542,4 +781,17 @@ export const StyledTradeSizeInput = styled(Components.ChunkSelector.Input)(({ th
       ...smallInputStyles(theme),
     },
   };
+});
+
+export const StyledDeadlineSelect = styled(Styles.StyledRowFlex)(() => {
+  return {
+    gap: 5,
+    marginLeft: "auto",
+    width: "fit-content",
+  };
+});
+
+export const StyledPriceCard = styled(Card)({
+  paddingRight: 6,
+  paddingLeft: 16,
 });

@@ -8,9 +8,8 @@ import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket, us
 import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps, LimitPriceInputProps } from "../../types";
 import { useLimitInput, useOnLimitPercentageClick } from "./hooks";
 import { useTwapContext } from "../../context/context";
-
 import { LimitSwitch } from "./LimitSwitch";
-import { MarketPriceWarning } from "../Components";
+
 interface Shared {
   onSrcSelect: () => void;
   onDstSelect: () => void;
@@ -68,11 +67,29 @@ const StyledDefaultTitle = styled(StyledRowFlex)({
 });
 
 const DefaultZeroButton = ({ onClick, text }: LimitPriceZeroButtonProps) => {
-  return <button onClick={onClick}>{text}</button>;
+  return (
+    <StyledDefaultZeroButton className="twap-limit-panel-zero-btn">
+      <button onClick={onClick} className="twap-limit-panel-percent-button twap-limit-panel-zero-btn-left">
+        {text}
+      </button>
+      <button onClick={onClick} className="twap-limit-panel-percent-button twap-limit-panel-zero-btn-right">
+        X
+      </button>
+    </StyledDefaultZeroButton>
+  );
 };
 
+const StyledDefaultZeroButton = styled(StyledRowFlex)({
+  width: "auto",
+  gap: 2,
+});
+
 const DefaultPercentButton = ({ text, onClick, selected }: LimitPricePercentProps) => {
-  return <button onClick={onClick}>{text}</button>;
+  return (
+    <button className={`twap-limit-panel-percent-button  ${selected ? "twap-limit-panel-percent-button-selected" : ""}`} onClick={onClick}>
+      {text}
+    </button>
+  );
 };
 
 export interface LimitPanelProps extends Shared {
@@ -87,6 +104,9 @@ const useLimitPanelContext = () => useContext(Context);
 
 export const LimitPanel = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   const hide = useShouldWrapOrUnwrapOnly();
+  const isMarketOrder = useIsMarketOrder();
+
+  if (isMarketOrder) return null;
 
   if (hide) return null;
 
@@ -100,10 +120,7 @@ const StyledContainer = styled("div")({
 function Main({ className = "", onSrcSelect, onDstSelect, Components, styles }: LimitPanelProps) {
   const isMarketOrder = useIsMarketOrder();
 
-  if (isMarketOrder) {
-    return <MarketPriceWarning />;
-  }
-
+  if (isMarketOrder) return null;
   return (
     <Context.Provider value={{ onSrcSelect, onDstSelect, Components, styles }}>
       <Container className={`twap-limit-panel ${className}`}>
@@ -159,7 +176,10 @@ const PercentSelector = () => {
   const styles = useLimitPanelContext().styles;
   const disabled = useLimitPrice().isLoading;
   return (
-    <StyledPercentContainer style={{ pointerEvents: disabled ? "none" : "all", gap: styles?.percentButtonsGap || 5, opacity: disabled ? 0.8 : 1 }}>
+    <StyledPercentContainer
+      className="twap-limit-panel-percent-select"
+      style={{ pointerEvents: disabled ? "none" : "all", gap: styles?.percentButtonsGap || 5, opacity: disabled ? 0.8 : 1 }}
+    >
       <ZeroButton />
       {percent.map((it) => {
         return <PercentButton percent={it} key={it} />;

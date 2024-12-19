@@ -5,8 +5,7 @@ import { BottomContent, SmallTokens } from "../Components";
 import { useOrderType } from "../hooks";
 import { useMemo } from "react";
 import { isNativeBalanceError } from "../../../utils";
-import { useTwapContext } from "../../../context/context";
-import { useNetwork } from "../../../hooks";
+import { useNetwork } from "../../../hooks/hooks";
 
 export function Failed({ error }: { error?: any }) {
   const nativeBalance = useMemo(() => isNativeBalanceError(error), [error]);

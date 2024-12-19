@@ -1,6 +1,6 @@
 import { Components, Translations, TwapAdapter, TWAPProps, useTwapContext, TwapContextUIPreferences, hooks, Configs, Token, compact, Styles } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { createContext, CSSProperties, FC, ReactNode, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, FC, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import Web3 from "web3";
 import BN from "bignumber.js";
 import {
@@ -32,6 +32,16 @@ import {
   StyledPoweredBy,
   StyledOrdersButton,
   StyledOrders,
+  StyledOrdersHeader,
+  StyledPrice,
+  StyledMarketPriceWarning,
+  StyledLimitSwitch,
+  StyledLimitPriceWarning,
+  StyledDeadlineSelect,
+  StyledDeadlineSelectButton,
+  StyledPriceSelectButton,
+  StyledPriceCard,
+  StyledCreateOrderModal,
 } from "./styles";
 import { eqIgnoreCase, isNativeAddress, network } from "@defi.org/web3-candies";
 import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
@@ -39,6 +49,7 @@ import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 
 import { ThemeProvider } from "styled-components";
 import { Portal } from "@orbs-network/twap-ui/dist/components/base";
+import { TimeUnit } from "@orbs-network/twap-sdk";
 export const config = Configs.BaseSwap;
 
 const uiPreferences: TwapContextUIPreferences = {
@@ -245,29 +256,126 @@ const Content = () => {
       >
         <GlobalStyles />
         <div className="twap-container">
-          {props.limit ? <LimitPanel /> : <TWAPPanel />}
-          <Orders />
+          <SwapPanel />
+          <TwapBottomContent />
         </div>
       </TwapAdapter>
     </ThemeProvider>
   );
 };
 
-const TWAPPanel = () => {
+const Price = () => {
+  const TokenSelectModal = useAdapterContext().TokenSelectModal;
+  const [finalFocusRef, setFinalFocusRef] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const onOpen = useCallback((isSrcToken: boolean) => {
+    setIsOpen(true);
+    setFinalFocusRef(isSrcToken ? "tokenIn" : "tokenOut");
+  }, []);
+
+  const onClose = useCallback(() => {
+    setIsOpen(false);
+    setFinalFocusRef("");
+  }, []);
+
+  const isMarketOrder = hooks.useIsMarketOrder();
+
+  return (
+    <>
+      <TokenSelectModal onOpen={() => {}} finalFocusRef={finalFocusRef as any} isOpen={isOpen} onClose={onClose} />
+
+      <StyledLimitSwitch />
+      {!isMarketOrder && (
+        <StyledPriceCard>
+          <StyledPrice>
+            <Components.LimitPanel.Main
+              onDstSelect={() => onOpen(false)}
+              onSrcSelect={() => onOpen(true)}
+              Components={{
+                PercentButton: ({ selected, onClick, text }) => (
+                  <StyledPriceSelectButton selected={selected ? 1 : 0} onClick={onClick}>
+                    {text}
+                  </StyledPriceSelectButton>
+                ),
+              }}
+            />
+          </StyledPrice>
+        </StyledPriceCard>
+      )}
+    </>
+  );
+};
+
+const SwapPanel = () => {
+  const { limit } = useAdapterContext();
   return (
     <>
       <StyledTopGrid>
+        <Price />
         <TokenPanel isSrcToken={true} />
         <StyledChangeTokensOrder />
         <TokenPanel />
-        <StyledTradeSizeAndChunks>
-          <TradeSize />
-          <TradeInterval />
-        </StyledTradeSizeAndChunks>
+        {!limit ? (
+          <StyledTradeSizeAndChunks>
+            <TradeSize />
+            <TradeInterval />
+          </StyledTradeSizeAndChunks>
+        ) : (
+          <LimitPanelExpiration />
+        )}
       </StyledTopGrid>
+      <SubmitOrderModal />
       <ShowConfirmationButton />
-      <StyledPoweredBy />
     </>
+  );
+};
+
+const LimitPanelExpirationOptions = [
+  {
+    text: "1 Day",
+    value: TimeUnit.Days,
+  },
+  {
+    text: "1 Week",
+    value: TimeUnit.Weeks,
+  },
+  {
+    text: "1 Month",
+    value: TimeUnit.Months,
+  },
+  {
+    text: "1 Year",
+    value: TimeUnit.Years,
+  },
+];
+
+const LimitPanelExpiration = () => {
+  const selectedExpiry = hooks.useDuration().millis;
+
+  const setCustomDuration = hooks.useSetDuration();
+  const onChange = useCallback(
+    (unit: TimeUnit) => {
+      setCustomDuration({ unit, value: 1 });
+    },
+    [setCustomDuration],
+  );
+
+  return (
+    <Card>
+      <Card.Header>
+        <Components.Labels.MaxDurationLabel />
+      </Card.Header>
+
+      <StyledDeadlineSelect>
+        {LimitPanelExpirationOptions.map((it) => {
+          return (
+            <StyledDeadlineSelectButton key={it.value} onClick={() => onChange(it.value)} selected={selectedExpiry === it.value ? 1 : 0}>
+              {it.text}
+            </StyledDeadlineSelectButton>
+          );
+        })}
+      </StyledDeadlineSelect>
+    </Card>
   );
 };
 
@@ -282,37 +390,30 @@ const ShowConfirmationButton = () => {
   );
 };
 
+const SubmitOrderModal = () => {
+  const { isOpen, onClose } = hooks.useSwapModal();
+  const Modal = useAdapterContext().Modal;
+
+  return (
+    <Modal isOpen={Boolean(isOpen)} onClose={() => onClose()}>
+      <StyledCreateOrderModal />
+    </Modal>
+  );
+};
+
 const Orders = () => {
   const [isOpen, setIsOpen] = useState(false);
   const Modal = useAdapterContext().Modal;
 
   return (
     <Components.OrderHistory isOpen={isOpen}>
-      <Portal containerId="twap-orders">
-        <StyledOrdersButton onClick={() => setIsOpen(true)} />
-      </Portal>
+      <StyledOrdersButton onClick={() => setIsOpen(true)} />
+
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        <Components.OrderHistory.Header />
+        <StyledOrdersHeader />
         <StyledOrders />
       </Modal>
     </Components.OrderHistory>
-  );
-};
-
-export const OrdersPanel = ({ className = "", style = {} }: { className?: string; style?: CSSProperties }) => {
-  return <div id="twap-orders" className={className} style={{ width: "100%", ...style }} />;
-};
-
-const LimitPanel = () => {
-  return (
-    <>
-      <StyledTopGrid>
-        <TokenPanel isSrcToken={true} />
-        <StyledChangeTokensOrder />
-        <TokenPanel />
-      </StyledTopGrid>
-      <StyledPoweredBy />
-    </>
   );
 };
 
@@ -344,4 +445,21 @@ const TradeInterval = () => {
   );
 };
 
-export { TWAP };
+const TwapBottomContent = () => {
+  return (
+    <Portal containerId="twap-bottom-content">
+      <Styles.StyledColumnFlex>
+        <StyledMarketPriceWarning />
+        <StyledLimitPriceWarning />
+        <Orders />
+        <StyledPoweredBy />
+      </Styles.StyledColumnFlex>
+    </Portal>
+  );
+};
+
+const TwapBottomContainer = () => {
+  return <div id="twap-bottom-content" />;
+};
+
+export { TWAP, TwapBottomContainer };

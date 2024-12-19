@@ -114,7 +114,7 @@ export const derivedSwapValues = (
       maxFillDelay: getMaxFillDelayWarning(fillDelay),
       minDuration: isLimitPanel ? false : getMinTradeDurationWarning(duration),
       maxDuration: getMaxTradeDurationWarning(duration),
-      tradeSize: isLimitPanel ? false : !!getTradeSizeWarning(minChunkSizeUsd, amountUi(srcDecimals, srcChunkAmountUsd), chunks),
+      tradeSize: !!getTradeSizeWarning(minChunkSizeUsd, amountUi(srcDecimals, srcChunkAmountUsd), chunks),
     },
   };
 };
