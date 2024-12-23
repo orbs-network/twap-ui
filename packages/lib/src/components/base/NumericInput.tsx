@@ -21,6 +21,8 @@ export interface Props {
   decimalScale?: number;
   minAmount?: number;
   style?: CSSProperties;
+  allowNegative?: boolean;
+  id?: string;
 }
 
 const InputLoader = () => {
@@ -43,6 +45,8 @@ function NumericInput({
   maxValue,
   decimalScale,
   minAmount,
+  id = "",
+  allowNegative = false,
 }: Props) {
   const inputValue = value || minAmount || "";
 
@@ -56,7 +60,7 @@ function NumericInput({
       <Fade in={input?.showOnLoading ? true : !loading} timeout={0}>
         <StyledFlex>
           <NumericFormat
-            allowNegative={false}
+            allowNegative={allowNegative}
             disabled={disabled}
             decimalScale={decimalScale}
             onBlur={onBlur}
@@ -72,6 +76,7 @@ function NumericInput({
             decimalSeparator="."
             customInput={StyledInput}
             type="text"
+            id={id}
             min={minAmount}
             onValueChange={(values, _sourceInfo) => {
               if (_sourceInfo.source !== "event") {

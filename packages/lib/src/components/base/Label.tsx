@@ -25,14 +25,14 @@ function Label({ children, tooltipText, className = "", fontSize, placement, sub
   if (subtitle) {
     return (
       <StyledColumnFlex className={`twap-label ${className}`}>
-        <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
+        <StyledText style={{ fontSize }}>{children}</StyledText>
         <Typography>{tooltipText}</Typography>
       </StyledColumnFlex>
     );
   }
   return (
     <StyledContainer className={`twap-label ${className}`} style={{ gap: 0 }}>
-      <StyledLabel style={{ fontSize }}>{children}</StyledLabel>
+      <StyledText style={{ fontSize }}>{children}</StyledText>
       {tooltipText && (
         <Tooltip placement={placement} text={tooltipText}>
           <InfoIcon className="twap-icon twap-tooltip-icon" style={{ width: 16, position: "relative", top: 3, marginLeft: 5 }} />
@@ -48,9 +48,4 @@ const StyledContainer = styled(StyledRowFlex)({
   justifyContent: "flex-start",
   gap: 7,
   width: "fit-content",
-});
-
-const StyledLabel = styled(StyledText)({
-  fontSize: "inherit",
-  fontFamily: "inherit",
 });

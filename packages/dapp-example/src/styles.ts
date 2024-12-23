@@ -455,7 +455,7 @@ export const StyledPancakeLayout = styled(DappLayout)({
   flexDirection: "column",
   alignItems: "center",
   position: "relative",
-  maxWidth: 326,
+  maxWidth: 480,
 });
 
 export const StyledSushiLayout = styled(DappLayout)({

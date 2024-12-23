@@ -196,29 +196,19 @@ interface LimitPriceStore {
   toggleInverted: () => void;
   onLimitInput: (limitPrice?: string) => void;
   onReset: () => void;
-  isCustom: boolean;
-  hide: boolean;
-  setHide: (value: boolean) => void;
-  priceFromQueryParams: string | undefined;
-  setPriceFromQueryParams: (value?: string | null) => void;
+  gainPercent?: number;
+  setGainPercent: (value?: number) => void;
 }
 
 export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
   isCustom: false,
   inverted: false,
-  hide: false,
+  gainPercent: undefined,
+  setGainPercent: (gainPercent) => {
+    setQueryParam(QUERY_PARAMS.LIMIT_PRICE_GAIN, gainPercent ? gainPercent?.toString() : undefined);
+    set({ gainPercent });
+  },
   limitPrice: undefined,
-  priceFromQueryParams: undefined,
-  setPriceFromQueryParams: (price) => {
-    if (price) {
-      set({ priceFromQueryParams: price });
-    }
-  },
-
-  setHide: (hide) => {
-    set({ hide });
-  },
-
   toggleInverted: () => {
     set({
       inverted: !get().inverted,
@@ -233,7 +223,6 @@ export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
   onLimitInput: (limitPrice) => {
     set({
       limitPrice,
-      isCustom: true,
     });
     const inverted = get().inverted;
     setQueryParam(
@@ -250,10 +239,11 @@ export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
   },
   onReset: () => {
     setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
+    setQueryParam(QUERY_PARAMS.LIMIT_PRICE_GAIN, undefined);
     set({
       limitPrice: undefined,
-      isCustom: false,
-      priceFromQueryParams: undefined,
+      inverted: false,
+      gainPercent: undefined,
     });
   },
 }));

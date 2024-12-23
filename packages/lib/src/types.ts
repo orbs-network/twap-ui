@@ -130,6 +130,8 @@ export interface TWAPProps extends BaseProps {
   enableQueryParams?: boolean;
   dstAmountOut?: string;
   dstAmountLoading?: boolean;
+  marketPrice?: string;
+  marketPriceLoading?: boolean;
 }
 
 type PriceUsd = (address: string, token?: TokenData) => any;
@@ -221,6 +223,8 @@ export interface TwapLibProps extends LibProps {
   enableQueryParams?: boolean;
   dstAmountOut?: string;
   dstAmountLoading?: boolean;
+  marketPrice?: string;
+  marketPriceLoading?: boolean;
 }
 
 export type Token = TokenData;

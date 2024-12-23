@@ -11,6 +11,7 @@ export const QUERY_PARAMS = {
   TRADE_INTERVAL: "twap-interval",
   MAX_DURATION: "twap-duration",
   LIMIT_PRICE: "twap-limit",
+  LIMIT_PRICE_GAIN: "twap-limit-gain",
   INPUT_AMOUNT: "twap-input",
   TRADES_AMOUNT: "twap-trades",
   LIMIT_PRICE_INVERTED: "twap-inverted-limit",
