@@ -14,10 +14,10 @@ export function Price() {
     isLimitOrder: s.isLimitOrder,
   }));
 
-  const { limitPrice, isLoading, inverted } = hooks.useLimitPriceV2();
-  const { marketPrice } = hooks.useMarketPriceV2(inverted);
+  const { limitPrice, isLoading } = hooks.useLimitPriceV2();
+  const { priceUI } = hooks.useMarketPriceV2();
 
-  const price = hooks.useFormatNumber({ value: isLimitOrder ? limitPrice?.toggled : marketPrice?.toggled, decimalScale: 3, disableDynamicDecimals: false });
+  const price = hooks.useFormatNumber({ value: isLimitOrder ? limitPrice : priceUI, decimalScale: 3, disableDynamicDecimals: false });
 
   if (!DappTradePrice) {
     return <Components.OrderSummaryLimitPrice />;
@@ -27,8 +27,8 @@ export function Price() {
     return null;
   }
 
-  const leftSymbol = inverted ? dstToken?.symbol : srcToken?.symbol;
-  const rightSymbol = inverted ? srcToken?.symbol : dstToken?.symbol;
+  const leftSymbol = srcToken?.symbol;
+  const rightSymbol =  dstToken?.symbol;
 
   return (
     <StyledMarketPriceContainer>

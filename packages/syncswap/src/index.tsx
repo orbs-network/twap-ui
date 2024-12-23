@@ -284,23 +284,7 @@ const TWAP = (props: Props) => {
 };
 
 const Market = () => {
-  const [inverted, setInverted] = useState(false);
-  const { leftToken, rightToken, marketPrice, loading } = hooks.useMarketPriceV2(inverted);
-  return (
-    <StyledMarketPrice>
-      {loading ? (
-        <StyledMarketPriceLoader>
-          <Components.Base.Loader height={26} />
-        </StyledMarketPriceLoader>
-      ) : (
-        <Button onClick={() => setInverted(!inverted)}>
-          <Components.Base.TokenPriceCompare.LeftToken token={leftToken} />
-          <Typography>=</Typography>
-          <Components.Base.TokenPriceCompare.RightToken token={rightToken} price={marketPrice?.original} />
-        </Button>
-      )}
-    </StyledMarketPrice>
-  );
+  return null
 };
 
 const LimitPanel = () => {

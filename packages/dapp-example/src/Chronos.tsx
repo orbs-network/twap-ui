@@ -85,8 +85,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <TWAP
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.arb.USDC.address}
+
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       connector={connector}

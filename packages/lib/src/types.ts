@@ -116,8 +116,8 @@ interface BaseProps {
 }
 export interface TWAPProps extends BaseProps {
   connect?: () => void;
-  srcToken?: string;
-  dstToken?: string;
+  srcToken?: TokenData;
+  dstToken?: TokenData;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
   TokenSelectModal?: any;
@@ -128,8 +128,6 @@ export interface TWAPProps extends BaseProps {
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
-  dstAmountOut?: string;
-  dstAmountLoading?: boolean;
   marketPrice?: string;
   marketPriceLoading?: boolean;
 }
@@ -221,8 +219,6 @@ export interface TwapLibProps extends LibProps {
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
-  dstAmountOut?: string;
-  dstAmountLoading?: boolean;
   marketPrice?: string;
   marketPriceLoading?: boolean;
 }
@@ -285,8 +281,6 @@ export interface OrdersData {
 
 export interface State {
   lib: TWAPLib | undefined;
-  srcToken: TokenData | undefined;
-  dstToken: TokenData | undefined;
   wrongNetwork: undefined | boolean;
   srcAmountUi: string;
 
@@ -308,8 +302,6 @@ export interface State {
   txHash?: string;
   enableQueryParams?: boolean;
   waitingForOrdersUpdate: boolean;
-  srcUsd?: BN;
-  dstUsd?: BN;
   srcUsdLoading?: boolean;
   dstUsdLoading?: boolean;
 }

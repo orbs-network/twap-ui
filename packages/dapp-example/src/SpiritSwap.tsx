@@ -77,8 +77,6 @@ const TWAPComponent = () => {
       getProvider={() => library}
       connect={connect}
       account={account}
-      srcToken={zeroAddress}
-      dstToken={erc20sData.ftm.USDC.address}
       getTokenImageUrl={getTokenImageUrl}
       dappTokens={dappTokens}
       onSrcTokenSelected={(token: any) => console.log(token)}

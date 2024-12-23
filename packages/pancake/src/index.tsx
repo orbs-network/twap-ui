@@ -36,7 +36,6 @@ import {
   StyledSwapModalContent,
   StyledModalHeaderTitle,
   StyledTokenPanelTitle,
-  StyeledTokenPanelBody,
   StyledBalanceAndPercent,
   StyledTokenInputs,
   StyledTokenInputsPadding,
@@ -45,8 +44,6 @@ import {
   StyledPricePanelInputRight,
   StyledPricePanelPercent,
   StyledWarning,
-  StyledInputContainer,
-  StyledInputContainerChildren,
   InputContainer,
 } from "./styles";
 import { memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -263,16 +260,18 @@ export const useProvider = (props: AdapterProps) => {
   return provider;
 };
 
-const useHandleAddress = (connectedChainId?: number) => {
-  const config = useConfig(connectedChainId);
-  return useCallback(
-    (address?: string) => {
-      return isNativeAddress(address || "") ? config.nativeToken.symbol : address;
-    },
-    [config.nativeToken.symbol, connectedChainId]
-  );
-};
 
+const useSelectedTokens = () => {
+  const {srcToken, dstToken, connectedChainId} = useAdapterContext();
+  const parseToken = useParseToken(connectedChainId);
+
+  return useMemo(() => {
+    return {
+      srcToken: parseToken(srcToken),
+      dstToken: parseToken(dstToken),
+    }
+  }, [srcToken, dstToken, connectedChainId, parseToken])
+}
 
 const TWAP = memo((props: AdapterProps) => {
   const provider = useProvider(props);
@@ -289,8 +288,12 @@ const TWAP = memo((props: AdapterProps) => {
       [zeroAddress]: props.nativeToken,
     };
   }, [props.dappTokens, props.nativeToken]);
+
+
+
+
   const config = useConfig(props.connectedChainId);
-  
+  const {srcToken, dstToken}= useSelectedTokens();
 
   return (
     <div className="twap-adapter-wrapper">
@@ -302,8 +305,8 @@ const TWAP = memo((props: AdapterProps) => {
         translations={translations as Translations}
         provider={provider}
         account={props.account}
-        srcToken={props.srcToken}
-        dstToken={props.dstToken}
+        srcToken={srcToken}
+        dstToken={dstToken}
         storeOverride={props.limit ? storeOverride : undefined}
         parseToken={parseToken}
         dappTokens={dappTokens}
@@ -317,7 +320,6 @@ const TWAP = memo((props: AdapterProps) => {
         enableQueryParams={true}
         marketPrice={props.marketPrice}
         marketPriceLoading={!props.marketPrice}
-        
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -514,14 +516,14 @@ const PricePanel = () => {
 };
 
 const MarketPrice = () => {
-  const { marketPrice, leftToken, rightToken } = hooks.useMarketPriceV2();
-  const priceF = hooks.useFormatNumber({ value: marketPrice?.original, decimalScale: 6 });
 
-  return (
-    <Styles.StyledText>
-      1 ${leftToken?.symbol} = {priceF} {rightToken?.symbol}
-    </Styles.StyledText>
-  );
+  // const priceF = hooks.useFormatNumber({ value: marketPrice, decimalScale: 6 });
+  return null
+  // return (
+  //   <Styles.StyledText>
+  //     1 ${leftToken?.symbol} = {priceF} {rightToken?.symbol}
+  //   </Styles.StyledText>
+  // );
 };
 
 const PricePanelWarning = () => {
@@ -571,7 +573,7 @@ const LimitPanelInput = () => {
     <StyledPricePanelInput className="twap-limit-price-panel-input">
       <Components.Base.Label>{token?.symbol}</Components.Base.Label>
       <StyledPricePanelInputRight>
-        <Components.Base.NumericInput decimalScale={isCustom ? undefined : 6} loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice.original} />
+        <Components.Base.NumericInput decimalScale={isCustom ? undefined : 6} loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice} />
         <Components.Base.USD value={usdF} />
       </StyledPricePanelInputRight>
     </StyledPricePanelInput>
@@ -782,7 +784,7 @@ export const useShowSwapModalButton = () => {
     srcAmount: store.srcAmountUi,
   }));
   const warning = hooks.useFillWarning();
-  const { isLoading: dstAmountLoading, dexAmounOut } = hooks.useDstAmount();
+  const { isLoading: dstAmountLoading, amountUI } = hooks.useDstAmount();
   const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken(true);
   const { mutate: wrap, isLoading: wrapLoading } = hooks.useWrapToken(true);
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();
@@ -791,8 +793,8 @@ export const useShowSwapModalButton = () => {
 
   const noLiquidity = useMemo(() => {
     if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;
-    return !dexAmounOut.raw || BN(dexAmounOut.raw).isZero();
-  }, [dexAmounOut.raw, dstAmountLoading, srcAmount]);
+    return BN(amountUI).isZero();
+  }, [amountUI, dstAmountLoading, srcAmount]);
 
   if (wrongNetwork)
     return {

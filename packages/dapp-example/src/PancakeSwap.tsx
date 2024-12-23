@@ -214,20 +214,17 @@ const SwapPendingModalContent = ({ title }: { title: string }) => {
   return <p>{title}</p>;
 };
 
-
-
 const useMarketPrice = (srcAddress?: string, dstAddress?: string) => {
   const handleAddress = useHandleAddress();
 
   const fromAddress = handleAddress(srcAddress);
   const toAddress = handleAddress(dstAddress);
 
-
   const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromAddress, toAddress);
-  const amount = amountBNV2(fromTokenDecimals, '1')
+  const amount = amountBNV2(fromTokenDecimals, "1");
 
   return useTrade(fromAddress, toAddress, amount, fromTokenDecimals, toTokenDecimals);
-}
+};
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
@@ -241,6 +238,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const marketPrice = useMarketPrice(srcToken?.address, dstToken?.address).outAmount;
   const srcUsd = usePriceUSD(srcToken?.address);
   const dstUsd = usePriceUSD(dstToken?.address);
+
+
+  console.log({marketPrice, srcToken});
   
 
   useEffect(() => {
@@ -260,15 +260,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setDstToken(undefined);
   }, [chainId]);
 
-  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
-    const handleAddress = useHandleAddress();
-
-    const fromAddress = handleAddress(fromToken);
-    const toAddress = handleAddress(toToken);
-
-    const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromAddress, toAddress);
-    return useTrade(fromAddress, toAddress, amount, fromTokenDecimals, toTokenDecimals);
-  };
 
   const connector = useMemo(() => {
     return {
@@ -276,13 +267,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     };
   }, [library]);
 
-
-
   return (
     <TWAP
       account={account}
-      srcToken={srcToken?.symbol}
-      dstToken={dstToken?.symbol}
+      srcToken={srcToken}
+      dstToken={dstToken}
       dappTokens={dappTokens}
       isDarkTheme={isDarkTheme}
       limit={limit}
@@ -291,8 +280,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       connectedChainId={chainId}
       marketPrice={marketPrice}
       useTokenModal={useTokenModal}
-      onDstTokenSelected={(it: any) => setSrcToken(it)}
-      onSrcTokenSelected={(it: any) => setDstToken(it)}
+      onSrcTokenSelected={(it: any) => setSrcToken(it)}
+      onDstTokenSelected={(it: any) => setDstToken(it)}
+
       nativeToken={config.nativeToken}
       connector={connector}
       isMobile={isMobile}

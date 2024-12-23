@@ -21,6 +21,8 @@ export interface AdapterProps extends TWAPProps {
   TradePriceToggle: FC<{ onClick: () => void; loading: boolean }>;
   connectedChainId?: number;
   marketPrice?: string;
+  srcToken?: any;
+  dstToken?: any;
 }
 
 const AdapterContext = createContext({} as AdapterProps);

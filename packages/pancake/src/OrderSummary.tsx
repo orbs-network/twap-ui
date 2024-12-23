@@ -68,9 +68,9 @@ const SummaryPrice = () => {
     srcToken: store.srcToken,
     dstToken: store.dstToken,
   }));
-  const { isLoading, getToggled } = hooks.useLimitPriceV2();
-  const { marketPrice } = hooks.useMarketPriceV2(inverted);
-  const price = isLimitOrder ? getToggled(inverted, true) : marketPrice?.original;
+  const { isLoading } = hooks.useLimitPriceV2();
+  const { priceUI } = hooks.useMarketPriceV2();
+  const price = priceUI
   const value = hooks.useFormatNumber({ value: price || "", decimalScale: 5 });
 
   const onInvert = useCallback(() => {
@@ -110,7 +110,7 @@ const TokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
     token: isSrc ? store.srcToken : store.dstToken,
     srcAmount: store.srcAmountUi,
   }));
-  const dstAmount = hooks.useDstAmount().outAmount.ui;
+  const dstAmount = hooks.useDstAmount().amountUI
 
   const _amount = isSrc ? srcAmount : dstAmount;
 

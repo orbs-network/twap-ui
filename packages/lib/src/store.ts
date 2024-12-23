@@ -32,8 +32,6 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     showSuccessModal: true,
     showLoadingModal: false,
     lib: undefined,
-    srcToken: undefined,
-    dstToken: undefined,
     wrongNetwork: undefined,
     srcAmountUi: !queryParamsEnabled ? "" : srcAmountUi || "",
 
@@ -52,8 +50,6 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
 
     enableQueryParams: false,
     waitingForOrdersUpdate: false,
-    srcUsd: undefined,
-    dstUsd: undefined,
   };
 };
 const initialState = getInitialState();
@@ -78,11 +74,7 @@ export const useTwapStore = create(
         ...storeOverride,
         enableQueryParams,
         lib: get().lib,
-        srcToken: get().srcToken,
-        dstToken: get().dstToken,
         wrongNetwork: get().wrongNetwork,
-        srcUsd: get().srcUsd,
-        dstUsd: get().dstUsd,
       });
     },
     updateState: (values: Partial<State>) => set({ ...values }),
@@ -92,19 +84,10 @@ export const useTwapStore = create(
         ...getInitialState(),
         lib: get().lib,
         ...storeOverride,
-        srcToken: get().srcToken,
-        dstToken: get().dstToken,
-        srcUsd: get().srcUsd,
-        dstUsd: get().dstUsd,
       });
     },
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
-    setSrcToken: (srcToken?: TokenData) => {
-      set({ srcToken });
-    },
-    setDstToken: (dstToken?: TokenData) => set({ dstToken }),
-    getSrcAmount: () => BN.min(amountBN(get().srcToken, get().srcAmountUi), maxUint256).decimalPlaces(0),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork?: boolean) => set({ wrongNetwork }),
     setDuration: (customDuration: Duration) => {
@@ -121,14 +104,14 @@ export const useTwapStore = create(
     getFillDelayWarning: () => {
       return get().lib && (get() as any).getFillDelayUiMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000;
     },
-    shouldWrap: () =>
-      get().lib &&
-      get().srcToken &&
-      get().dstToken &&
-      [TokensValidation.wrapAndOrder, TokensValidation.wrapOnly].includes(get().lib!.validateTokens(get().srcToken!, get().dstToken!)),
+    // shouldWrap: () =>
+    //   get().lib &&
+    //   get().srcToken &&
+    //   get().dstToken &&
+    //   [TokensValidation.wrapAndOrder, TokensValidation.wrapOnly].includes(get().lib!.validateTokens(get().srcToken!, get().dstToken!)),
 
-    shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
-    isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
+    // shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
+    // isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
     setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment() }),
   }))
 );
@@ -192,8 +175,6 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
 
 interface LimitPriceStore {
   limitPrice?: string;
-  inverted: boolean;
-  toggleInverted: () => void;
   onLimitInput: (limitPrice?: string) => void;
   onReset: () => void;
   gainPercent?: number;
@@ -209,40 +190,18 @@ export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
     set({ gainPercent });
   },
   limitPrice: undefined,
-  toggleInverted: () => {
-    set({
-      inverted: !get().inverted,
-    });
-    const limitPrice = get().limitPrice;
-    if (limitPrice) {
-      set({
-        limitPrice: BN(1).div(limitPrice).toString(),
-      });
-    }
-  },
   onLimitInput: (limitPrice) => {
+    setQueryParam(QUERY_PARAMS.LIMIT_PRICE, BN(limitPrice || 0).isZero() ? undefined : limitPrice);
+
     set({
       limitPrice,
     });
-    const inverted = get().inverted;
-    setQueryParam(
-      QUERY_PARAMS.LIMIT_PRICE,
-      !limitPrice || BN(limitPrice).isZero()
-        ? undefined
-        : inverted
-        ? BN(1)
-            .div(limitPrice || "0")
-            .decimalPlaces(8)
-            .toString()
-        : limitPrice
-    );
   },
   onReset: () => {
     setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
     setQueryParam(QUERY_PARAMS.LIMIT_PRICE_GAIN, undefined);
     set({
       limitPrice: undefined,
-      inverted: false,
       gainPercent: undefined,
     });
   },
