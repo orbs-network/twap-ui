@@ -36,6 +36,10 @@ export const makeElipsisAddress = (address?: string, padding = 6): string => {
   if (!address) return "";
   return `${address.substring(0, padding)}...${address.substring(address.length - padding)}`;
 };
+export const amountBNV2 = (decimals?: number, amount?: string) => {
+  if (!decimals || !amount) return "0";
+  return parsebn(amount).times(BN(10).pow(decimals)).toFixed();
+};
 
 export const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));
 export const amountUi = (token: TokenData | undefined, amount: BN) => {

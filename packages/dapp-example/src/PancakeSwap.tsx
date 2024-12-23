@@ -12,7 +12,7 @@ import { erc20s, isNativeAddress, zeroAddress, eqIgnoreCase } from "@defi.org/we
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
 import { Button, styled, Tooltip, Typography } from "@mui/material";
-import { Components, hooks, Styles } from "@orbs-network/twap-ui";
+import { amountBNV2, Components, hooks, Styles } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
 
 const useConfig = () => {
@@ -220,24 +220,24 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { data: dappTokens } = useDappTokens();
   const isMobile = useIsMobile();
   const config = useConfig();
-  const [srcToken, setSrcToken] = useState("");
-  const [dstToken, setDstToken] = useState("");
+  const [srcToken, setSrcToken] = useState<any>(undefined);
+  const [dstToken, setDstToken] = useState<any>(undefined);
 
   useEffect(() => {
     if (!dappTokens) return;
 
     if (!srcToken) {
-      setSrcToken((Object.values(dappTokens) as any)?.[1]?.symbol);
+      setSrcToken((Object.values(dappTokens) as any)?.[1]);
     }
 
     if (!dstToken) {
-      setDstToken((Object.values(dappTokens) as any)?.[2]?.symbol);
+      setDstToken((Object.values(dappTokens) as any)?.[2]);
     }
   }, [dappTokens, srcToken, dstToken]);
 
   useEffect(() => {
-    setSrcToken("");
-    setDstToken("");
+    setSrcToken(undefined);
+    setDstToken(undefined);
   }, [chainId]);
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
@@ -257,33 +257,32 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   }, [library]);
 
   return (
-    <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
-      <TWAP
-        account={account}
-        srcToken={srcToken}
-        dstToken={dstToken}
-        dappTokens={dappTokens}
-        isDarkTheme={isDarkTheme}
-        limit={limit}
-        ConnectButton={ConnectButton}
-        usePriceUSD={usePriceUSD}
-        connectedChainId={chainId}
-        useTrade={_useTrade}
-        useTokenModal={useTokenModal}
-        onDstTokenSelected={(it: any) => console.log(it)}
-        nativeToken={config.nativeToken}
-        connector={connector}
-        isMobile={isMobile}
-        useTooltip={useTooltip}
-        Button={DappButton}
-        ApproveModalContent={ApproveModalContent}
-        SwapTransactionErrorContent={SwapTransactionErrorContent}
-        SwapPendingModalContent={SwapPendingModalContent}
-        SwapTransactionReceiptModalContent={SwapPendingModalContent}
-        TradePrice={TradePrice}
-        TradePriceToggle={TradePriceToggle}
-      />
-    </StyledPancakeTwap>
+    <TWAP
+      account={account}
+      srcToken={srcToken?.symbol}
+      dstToken={dstToken?.symbol}
+      dappTokens={dappTokens}
+      isDarkTheme={isDarkTheme}
+      limit={limit}
+      ConnectButton={ConnectButton}
+      usePriceUSD={usePriceUSD}
+      connectedChainId={chainId}
+      useTrade={_useTrade}
+      useTokenModal={useTokenModal}
+      onDstTokenSelected={(it: any) => setSrcToken(it)}
+      onSrcTokenSelected={(it: any) => setDstToken(it)}
+      nativeToken={config.nativeToken}
+      connector={connector}
+      isMobile={isMobile}
+      useTooltip={useTooltip}
+      Button={DappButton}
+      ApproveModalContent={ApproveModalContent}
+      SwapTransactionErrorContent={SwapTransactionErrorContent}
+      SwapPendingModalContent={SwapPendingModalContent}
+      SwapTransactionReceiptModalContent={SwapPendingModalContent}
+      TradePrice={TradePrice}
+      TradePriceToggle={TradePriceToggle}
+    />
   );
 };
 
@@ -304,9 +303,7 @@ const DappComponent = () => {
         )}
         <StyledPancakeLayout name={config.name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
-          <Wrapper>
-            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-          </Wrapper>
+          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledPancakeLayout>
         {!isMobile && (
           <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
@@ -360,16 +357,6 @@ const Tokens = () => {
     <Popup isOpen={!!context.showModal} onClose={context.close}>
       <TokenSelectModal onCurrencySelect={onSelect} />;
     </Popup>
-  );
-};
-const Wrapper = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  const { isDarkTheme } = useTheme();
-
-  return (
-    <StyledWrapper className={className}>
-      <StyledPancakeBackdrop isDarkTheme={isDarkTheme ? 1 : 0} />
-      <div style={{ position: "relative", width: "100%" }}>{children}</div>
-    </StyledWrapper>
   );
 };
 

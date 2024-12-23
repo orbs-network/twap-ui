@@ -19,7 +19,7 @@ import { TwapErrorWrapper } from "./ErrorHandling";
 import { Wizard } from "./components";
 import { useLimitPriceStore, useTwapStore } from "./store";
 import BN from "bignumber.js";
-import { getQueryParam } from "./utils";
+import { getQueryParam, setQueryParam } from "./utils";
 import { QUERY_PARAMS } from "./consts";
 analytics.onLoad();
 
@@ -55,10 +55,18 @@ const Listener = (props: TwapLibProps) => {
   }, [chunks, maxPossibleChunks, setChunks, maxPossibleChunksReady]);
 
   useEffect(() => {
-    if (enableQueryParams) {
-      limitStore.setPriceFromQueryParams(getQueryParam(QUERY_PARAMS.LIMIT_PRICE));
+    const limitPrice = getQueryParam(QUERY_PARAMS.LIMIT_PRICE);
+    const gainPercent = getQueryParam(QUERY_PARAMS.LIMIT_PRICE_GAIN);
+    if (!enableQueryParams) return;
+
+    if (limitPrice) {
+      limitStore.onLimitInput(BN(limitPrice || 0).gt(0) ? limitPrice : undefined);
+      setQueryParam(QUERY_PARAMS.LIMIT_PRICE_GAIN, undefined);
+    } else if (gainPercent) {
+      setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
+      limitStore.setGainPercent(BN(gainPercent || 0).gt(0) ? Number(gainPercent) : undefined);
     }
-  }, [enableQueryParams, limitStore.setPriceFromQueryParams]);
+  }, [enableQueryParams, limitStore.onLimitInput, limitStore.setGainPercent]);
 
   useEffect(() => {
     if (props.connectedChainId) {

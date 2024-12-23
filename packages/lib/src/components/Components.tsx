@@ -153,6 +153,7 @@ const Input = (props: {
   placeholder?: string;
   onChange?: (value: string) => void;
   value: string;
+  id?: string;
 }) => {
   return (
     <NumericInput
@@ -164,6 +165,7 @@ const Input = (props: {
       placeholder={props.placeholder}
       onChange={(value) => props.onChange?.(value)}
       value={props.value}
+      id={props.id}
     />
   );
 };
@@ -219,7 +221,7 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
     amount: store.srcAmountUi,
   }));
   const onChange = useSetSrcAmountUi();
-  return <Input prefix="" onChange={onChange} value={amount || ""} decimalScale={decimals} className={props.className} placeholder={props.placeholder} />;
+  return <Input id="twap-src-token-input" prefix="" onChange={onChange} value={amount || ""} decimalScale={decimals} className={props.className} placeholder={props.placeholder} />;
 };
 
 const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {

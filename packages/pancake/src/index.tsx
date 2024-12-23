@@ -19,14 +19,10 @@ import {
   darkTheme,
   lightTheme,
   StyledBalanceContainer,
-  StyledButton,
   StyledChunksInput,
   StyledChunksSlider,
   StyledColumnFlex,
   StyledLimitPrice,
-  StyledLimitPriceBody,
-  StyledLimitPriceLabel,
-  StyledMarketPriceContainer,
   StyledPoweredBy,
   StyledReset,
   StyledTimeSelect,
@@ -39,29 +35,28 @@ import {
   StyledModalHeader,
   StyledSwapModalContent,
   StyledModalHeaderTitle,
+  StyledTokenPanelTitle,
+  StyeledTokenPanelBody,
+  StyledBalanceAndPercent,
+  StyledTokenInputs,
+  StyledTokenInputsPadding,
+  StyledPricePanel,
+  StyledPricePanelInput,
+  StyledPricePanelInputRight,
+  StyledPricePanelPercent,
+  StyledWarning,
+  StyledInputContainer,
+  StyledInputContainerChildren,
+  InputContainer,
 } from "./styles";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  StyledBalance,
-  StyledEmptyUSD,
-  StyledMarketPrice,
-  StyledPercentSelect,
-  StyledSelectAndBalance,
-  StyledTokenChange,
-  StyledTokenChangeContainer,
-  StyledTokenPanel,
-  StyledTokenPanelInput,
-  StyledTokenSelect,
-  StyledUSD,
-} from "./styles";
+import { memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { StyledBalance, StyledEmptyUSD, StyledPercentSelect, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
 import Web3 from "web3";
 import _ from "lodash";
 import BN from "bignumber.js";
-import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
-import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";
-import { GrPowerReset } from "@react-icons/all-files/gr/GrPowerReset";
+import { MdKeyboardArrowDown } from "@react-icons/all-files/md/MdKeyboardArrowDown";
 import PancakeOrders from "./PancakeOrders";
 import { getTokenFromTokensList } from "@orbs-network/twap-ui";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
@@ -71,11 +66,13 @@ import { useAdapterContext, AdapterContextProvider, AdapterProps } from "./conte
 import { Price } from "./components";
 import { create } from "zustand";
 import { configs } from "./config";
+import { MdAccountBalanceWallet } from "@react-icons/all-files/md/MdAccountBalanceWallet";
+import { ChangeIcon } from "./icons/change";
+import { InfoIcon } from "./icons/info";
 
 const PERCENT = [
   { text: "25%", value: 0.25 },
   { text: "50%", value: 0.5 },
-  { text: "75%", value: 0.75 },
   { text: "MAX", value: 1 },
 ];
 
@@ -159,12 +156,13 @@ const storeOverride = {
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
-const Balance = ({ isSrc }: { isSrc?: boolean }) => {
+const Balance = ({ isSrc, hide }: { isSrc?: boolean; hide: boolean }) => {
   const onPercentClick = hooks.useCustomActions();
 
   return (
-    <StyledBalanceContainer onClick={isSrc ? () => onPercentClick(1) : () => {}}>
-      <StyledBalance isSrc={isSrc} decimalScale={6} />
+    <StyledBalanceContainer hide={hide ? 1 : 0} isSrc={isSrc ? 1 : 0} onClick={isSrc ? () => onPercentClick(1) : () => {}}>
+      <MdAccountBalanceWallet />
+      <StyledBalance hideLabel={true} isSrc={isSrc} decimalScale={6} />
     </StyledBalanceContainer>
   );
 };
@@ -172,6 +170,7 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   const selectToken = hooks.useSelectTokenCallback();
   const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
+  const [showPercent, setShowPercent] = useState(false);
 
   const onSelect = useCallback(
     (token: any) => {
@@ -182,24 +181,28 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   const onTokenSelectClick = useAdapterContext().useTokenModal(onSelect, srcToken, dstToken, isSrcToken);
   return (
     <StyledTokenPanel>
-      <Card.Header>
-        <StyledSelectAndBalance>
-          <StyledTokenSelect CustomArrow={MdArrowDropDown} hideArrow={false} isSrc={isSrcToken} onClick={onTokenSelectClick} />
-          <Balance isSrc={isSrcToken} />
-        </StyledSelectAndBalance>
-      </Card.Header>
-      <Card.Body editable={true}>
-        <Styles.StyledColumnFlex width="auto" gap={1} style={{ alignItems: "flex-end" }}>
-          <StyledTokenPanelInput dstDecimalScale={dstToken?.decimals || 3} isSrc={isSrcToken} />
-          <StyledUSD decimalScale={2} isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
-        </Styles.StyledColumnFlex>
-        {isSrcToken && <SrcTokenPercentSelector />}
-      </Card.Body>{" "}
+      <Styles.StyledRowFlex justifyContent="space-between">
+        <StyledTokenPanelTitle>{isSrcToken ? "From" : "To"}</StyledTokenPanelTitle>
+        <StyledBalanceAndPercent>
+          <Balance isSrc={isSrcToken} hide={Boolean(isSrcToken && showPercent)} />
+          <SrcTokenPercentSelector show={Boolean(isSrcToken && showPercent)} />
+        </StyledBalanceAndPercent>
+      </Styles.StyledRowFlex>
+
+      <InputContainer disabled={!isSrcToken} onBlur={() => setShowPercent(false)} onFocus={() => setShowPercent(true)}>
+        <Styles.StyledRowFlex gap={5} style={{ alignItems: "center" }}>
+          <StyledTokenSelect CustomArrow={MdKeyboardArrowDown} hideArrow={false} isSrc={isSrcToken} onClick={onTokenSelectClick} />
+          <Styles.StyledColumnFlex style={{ flex: 1, gap: 0, alignItems: "flex-end" }}>
+            <StyledTokenPanelInput dstDecimalScale={7} isSrc={isSrcToken} />
+            <StyledUSD decimalScale={2} isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
+          </Styles.StyledColumnFlex>
+        </Styles.StyledRowFlex>
+      </InputContainer>
     </StyledTokenPanel>
   );
 };
 
-const SrcTokenPercentSelector = () => {
+const SrcTokenPercentSelector = ({ show }: { show: boolean }) => {
   const onPercentClick = hooks.useCustomActions();
   const { srcAmount } = store.useTwapStore((state) => ({
     srcAmount: state.getSrcAmount(),
@@ -218,13 +221,13 @@ const SrcTokenPercentSelector = () => {
   };
 
   return (
-    <StyledPercentSelect>
+    <StyledPercentSelect show={show ? 1 : 0}>
       {PERCENT.map((p) => {
         const selected = BN(srcAmount || "0").isZero() ? false : Math.round(percent * 100) === p.value * 100 || (p.value === 1 && BN(maxSrcInputAmount || 0).isEqualTo(srcAmount));
         return (
-          <StyledButton selected={selected ? 1 : 0} key={p.text} onClick={() => (selected ? () => {} : onClick(p.value))}>
+          <button key={p.text} onClick={() => (selected ? () => {} : onClick(p.value))}>
             {p.text}
-          </StyledButton>
+          </button>
         );
       })}
     </StyledPercentSelect>
@@ -232,10 +235,14 @@ const SrcTokenPercentSelector = () => {
 };
 
 const ChangeTokensOrder = () => {
+  const switchTokens = hooks.useSwitchTokens();
+
   return (
-    <StyledTokenChangeContainer>
-      <StyledTokenChange icon={<AiOutlineArrowDown />} />
-    </StyledTokenChangeContainer>
+    <StyledTokenChange>
+      <button onClick={switchTokens}>
+        <ChangeIcon />
+      </button>
+    </StyledTokenChange>
   );
 };
 
@@ -302,7 +309,7 @@ const TWAP = memo((props: AdapterProps) => {
   const config = useConfig(props.connectedChainId);
 
   return (
-    <Box className="twap-adapter-wrapper">
+    <div className="twap-adapter-wrapper">
       <TwapAdapter
         connect={props.connect}
         config={config}
@@ -335,17 +342,24 @@ const TWAP = memo((props: AdapterProps) => {
           </AdapterContextProvider>
         </ThemeProvider>
       </TwapAdapter>
-    </Box>
+    </div>
   );
 });
 
 const TopPanel = () => {
   return (
-    <Styles.StyledColumnFlex gap={0}>
-      <TokenPanel isSrcToken={true} />
+    <StyledTokenInputs>
+      <StyledTokenInputsPadding>
+        <TokenPanel isSrcToken={true} />
+      </StyledTokenInputsPadding>
+
       <ChangeTokensOrder />
-      <TokenPanel />
-    </Styles.StyledColumnFlex>
+      <StyledTokenInputsPadding>
+        <TokenPanel />
+        <LimitPriceToggle />
+        <PricePanel />
+      </StyledTokenInputsPadding>
+    </StyledTokenInputs>
   );
 };
 
@@ -379,14 +393,11 @@ const StyledButtonContainer = styled("div")({
 });
 
 const LimitPanel = () => {
-  const { onInvert } = hooks.useLimitPriceV2();
-
   return (
     <div className="twap-container">
       <StyledColumnFlex>
         <TopPanel />
         <TwapStyles.StyledColumnFlex>
-          <LimitPrice limitOnly={true} />
           <Price />
         </TwapStyles.StyledColumnFlex>
         <OpenConfirmationModalButton />
@@ -402,7 +413,6 @@ const TWAPPanel = () => {
     <div className="twap-container">
       <StyledColumnFlex>
         <TopPanel />
-        <LimitPrice />
         <Price />
         <TotalTrades />
         <TradeSize />
@@ -492,42 +502,108 @@ const TradeInterval = () => {
   );
 };
 
-const LimitPrice = ({ limitOnly }: { limitOnly?: boolean }) => {
-  const isLimitOrder = store.useTwapStore((store) => store.isLimitOrder);
-  const { onInvert, isLoading } = hooks.useLimitPriceV2();
-  const { TradePriceToggle } = useAdapterContext();
-
+const LimitPriceToggle = () => {
   return (
     <StyledLimitPrice>
-      <Card>
-        <Card.Header>
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <StyledLimitPriceLabel>
-              <Components.Labels.LimitPriceLabel />
-              <Components.ResetLimitButton>
-                <StyledReset>
-                  <TwapStyles.StyledRowFlex gap={8}>
-                    <GrPowerReset />
-                    <Typography>Reset</Typography>
-                  </TwapStyles.StyledRowFlex>
-                </StyledReset>
-              </Components.ResetLimitButton>
-            </StyledLimitPriceLabel>
-            <TwapStyles.StyledRowFlex style={{ width: "auto", gap: 0 }}>
-              {!limitOnly && <Components.LimitPriceToggle />}
-              <TradePriceToggle onClick={onInvert} loading={!!isLoading} />
-            </TwapStyles.StyledRowFlex>
-          </TwapStyles.StyledRowFlex>
-        </Card.Header>
-        {isLimitOrder && (
-          <Styles.StyledColumnFlex>
-            <StyledLimitPriceBody editable={true}>
-              <Components.LimitInputV2 />
-            </StyledLimitPriceBody>
-          </Styles.StyledColumnFlex>
-        )}
-      </Card>
+      <span>
+        <Components.LimitPriceToggle />
+        <Components.Labels.LimitPriceLabel />
+      </span>
+
+      <MarketPrice />
     </StyledLimitPrice>
+  );
+};
+
+const PricePanel = () => {
+  return (
+    <StyledPricePanel className="twap-limit-price-panel">
+      <PricePanelHeader />
+      <Styles.StyledRowFlex className="twap-limit-price-panel-inputs">
+        <LimitPanelInput />
+        <LimitPanelPercent />
+      </Styles.StyledRowFlex>
+      <PricePanelWarning />
+    </StyledPricePanel>
+  );
+};
+
+const MarketPrice = () => {
+  const { marketPrice, leftToken, rightToken } = hooks.useMarketPriceV2();
+  const priceF = hooks.useFormatNumber({ value: marketPrice?.original, decimalScale: 6 });
+
+  return (
+    <Styles.StyledText>
+      1 ${leftToken?.symbol} = {priceF} {rightToken?.symbol}
+    </Styles.StyledText>
+  );
+};
+
+const PricePanelWarning = () => {
+  const gainPercent = -5;
+
+  if (gainPercent >= 0) return null;
+
+  return (
+    <Warning variant="warning">
+      <span>
+        {" "}
+        Limit price is {gainPercent}% lower than market, you are selling at a much lower rate. Please use our <a href="/swap">Swap</a> instead.
+      </span>
+    </Warning>
+  );
+};
+
+const Warning = ({ variant = "warning", children = "" }: { variant?: "error" | "warning"; children?: ReactNode }) => {
+  return (
+    <StyledWarning variant={variant} className="twap-warning-msg">
+      <InfoIcon />
+      <div className="twap-warning-msg-content">{children}</div>
+    </StyledWarning>
+  );
+};
+
+const PricePanelHeader = () => {
+  const token = store.useTwapStore((s) => s.srcToken);
+  const { onReset } = hooks.useLimitPriceV2();
+
+  return (
+    <Styles.StyledRowFlex className="twap-limit-price-panel-header">
+      <Styles.StyledText className="twap-limit-price-panel-header-sell">Sell {token?.symbol} at rate</Styles.StyledText>
+      <button className="twap-limit-price-panel-header-reset" onClick={onReset}>
+        <Styles.StyledText>Set market rate</Styles.StyledText>
+      </button>
+    </Styles.StyledRowFlex>
+  );
+};
+
+const LimitPanelInput = () => {
+  const { onChange, limitPrice, isLoading, usd, isCustom } = hooks.useLimitPriceV2();
+  const token = store.useTwapStore((s) => s.dstToken);
+  const usdF = hooks.useFormatNumber({ value: usd, decimalScale: 3 });
+
+  return (
+    <StyledPricePanelInput className="twap-limit-price-panel-input">
+      <Components.Base.Label>{token?.symbol}</Components.Base.Label>
+      <StyledPricePanelInputRight>
+        <Components.Base.NumericInput decimalScale={isCustom ? undefined : 6} loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice.original} />
+        <Components.Base.USD value={usdF} />
+      </StyledPricePanelInputRight>
+    </StyledPricePanelInput>
+  );
+};
+
+const LimitPanelPercent = () => {
+  const { gainPercent, isLoading, onPercent } = hooks.useLimitPriceV2();
+
+  return (
+    <StyledPricePanelPercent className="twap-limit-price-panel-percent">
+      <Components.Base.Label>Gain</Components.Base.Label>
+      <Styles.StyledRowFlex className="twap-limit-price-panel-percent-right">
+        <Components.Base.NumericInput allowNegative={true} loading={isLoading} placeholder={"0"} onChange={(value: string) => onPercent(Number(value))} value={gainPercent} />
+        <Styles.StyledText>%</Styles.StyledText>
+      </Styles.StyledRowFlex>
+    </StyledPricePanelPercent>
   );
 };
 

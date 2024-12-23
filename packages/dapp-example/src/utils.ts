@@ -47,3 +47,17 @@ export async function fetchLLMAPrice(token: string, chainId: number | string) {
     return nullPrice;
   }
 }
+
+export const fetchBinanceUsdPrice = async (symbol: string) => {
+  try {
+    const url = `https://api.binance.com/api/v3/ticker/price?symbol=${symbol}USDT`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      return 0;
+    }
+    const data = await response.json();
+    return parseFloat(data.price);
+  } catch (error) {
+    return 0;
+  }
+};

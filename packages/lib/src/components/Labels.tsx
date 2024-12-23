@@ -29,7 +29,7 @@ export const LimitPriceLabel = ({ custom }: { custom?: string }) => {
 
   return (
     <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", position: "relative" }} gap={3}>
-      <Label tooltipText={isLimitOrder ? translations.limitPriceTooltip : translations.marketPriceTooltip}>{custom || translations.limitPrice}</Label>{" "}
+      <Label>{custom || translations.limitPrice}</Label>{" "}
     </Styles.StyledRowFlex>
   );
 };
