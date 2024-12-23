@@ -17,7 +17,7 @@ export interface Props {
 }
 
 const Slider = ({ onChange, value, maxTrades, className = "" }: Props) => {
-  const handleChange = (_event: Event, newValue: number | number[]) => {
+  const handleChange = (_event: Event, newValue: number | number[], activeThumb: number) => {
     if (typeof newValue === "number") {
       onChange(newValue);
     }

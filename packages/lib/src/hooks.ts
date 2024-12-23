@@ -933,7 +933,7 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
   const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
   const { limitPrice } = useLimitPriceV2();
   const waitForLimitPrice = !limitPrice && isLimitOrder;
-  const warning = useFillWarning();
+  const warning = useFillWarning()?.message;
 
   if (wrongNetwork)
     return {
@@ -1359,20 +1359,20 @@ export const useLimitPriceV2 = () => {
     if (limitPriceStore.gainPercent !== undefined) {
       return limitPriceStore.gainPercent;
     }
-
-    return BN(limitPrice.original || "0")
+    const result =  BN(limitPrice.original || "0")
       .dividedBy(marketPrice || "0")
       .minus(1)
       .times(100)
       .decimalPlaces(2)
       .toNumber();
+      return isNaN(result) ? 0 : result;
   }, [limitPrice, marketPrice, limitPriceStore.gainPercent]);
 
   const onReset = useCallback(() => {
     limitPriceStore.onReset();
   }, [limitPriceStore.onReset, limitPrice]);
 
-  const tokenUsd = usePriceUSD?.(twapStore.dstToken?.address)
+  const tokenUsd = usePriceUSD?.(twapStore.dstToken?.address);
 
   const usd = useMemo(() => {
     if (!tokenUsd) return;
@@ -1411,6 +1411,7 @@ export const useLimitPriceV2 = () => {
     gainPercent,
     onPercent: onChangeGainPercent,
     usd,
+    onInvert: () => {},
   };
 };
 
@@ -1443,14 +1444,13 @@ export const useFillWarning = () => {
 
   const chunkSize = useSrcChunkAmount();
   const durationUi = useDurationUi();
-  const { fillDelayWarning, srcAmount, dstToken, srcToken, lib, isLimitOrder, fillDelayMillis } = useTwapStore((s) => ({
+  const { srcAmount, dstToken, srcToken, lib, isLimitOrder, fillDelayMillis } = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
     srcAmount: s.getSrcAmount(),
     isLimitOrder: s.isLimitOrder,
     lib: s.lib,
     fillDelayMillis: s.getFillDelayUiMillis() / 1000,
-    fillDelayWarning: s.getFillDelayWarning(),
   }));
 
   const deadline = useDeadline();
@@ -1460,23 +1460,49 @@ export const useFillWarning = () => {
   const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount?.gt(maxSrcInputAmount);
   return useMemo(() => {
     if (!translation) return;
-    if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) return translation.selectTokens;
-    if (srcAmount.isZero()) return translation.enterAmount;
-    if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) return translation.insufficientFunds;
-    if (chunkSize.isZero()) return translation.enterTradeSize;
-    if (durationUi.amount === 0) return translation.enterMaxDuration;
-    if (isLimitOrder && BN(dstAmountOut || "").gt(0) && BN(limitPrice.original || "0").isZero()) return translation.placeOrder || "Place order";
+    if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) {
+      return {
+        type: "tokens",
+        message: translation.selectTokens,
+      };
+    }
+    if (srcAmount.isZero()) {
+      return {
+        type: "input-amount",
+        message: translation.enterAmount,
+      };
+    }
+    if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
+      return {
+        type: "balance",
+        message: `Insufficient ${srcToken.symbol} balance`,
+      };
+    }
+    if (chunkSize.isZero()) {
+      return {
+        type: "chunk-size",
+        message: translation.enterTradeSize,
+      };
+    }
+    if (durationUi.amount === 0) {
+      return {
+        type: "duration",
+        message: translation.enterMaxDuration,
+      };
+    }
+    if (isLimitOrder && BN(dstAmountOut || "").gt(0) && BN(limitPrice.original || "0").isZero()) {
+      return {
+        type: "limit-price",
+        message: translation.placeOrder || "Place order",
+      };
+    }
     const valuesValidation = lib?.validateOrderInputs(srcToken!, dstToken!, srcAmount, chunkSize, dstMinAmountOut, deadline, fillDelayMillis, srcUsd);
 
-    if (valuesValidation === OrderInputValidation.invalidTokens) {
-      return translation.selectTokens;
-    }
-
     if (valuesValidation === OrderInputValidation.invalidSmallestSrcChunkUsd) {
-      return translation.tradeSizeMustBeEqual.replace("{usd}", lib?.config.minChunkSizeUsd.toString() || "");
-    }
-    if (fillDelayWarning) {
-      return translation.fillDelayWarning;
+      return {
+        type: "min-chunk-size",
+        message: translation.tradeSizeMustBeEqual.replace("{usd}", lib?.config.minChunkSizeUsd.toString() || ""),
+      };
     }
   }, [
     srcToken,
@@ -1493,7 +1519,6 @@ export const useFillWarning = () => {
     translation,
     isNativeTokenAndValueBiggerThanMax,
     srcUsd,
-    fillDelayWarning,
     maxSrcInputAmount,
     lib,
     dstAmountOut,

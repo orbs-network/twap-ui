@@ -24,7 +24,7 @@ const timeArr: { text: keyof Translations; value: TimeResolution }[] = [
 ];
 
 const findSelectedResolutionText = (resolution: TimeResolution) => {
-  return timeArr.find((t) => t.value === resolution)!.text;
+  return `${timeArr.find((t) => t.value === resolution)!.text}-short`;
 };
 
 interface Props {
@@ -66,7 +66,7 @@ function TimeSelector({ value, onChange, disabled = false, className = "", onFoc
 
       <StyledTimeSelect>
         <StyledSelected onClick={onOpenListClick} className="twap-time-selector-selected">
-          <StyledText> {translations[findSelectedResolutionText(value.resolution)]}</StyledText>
+          <StyledText> {translations[findSelectedResolutionText(value.resolution) as keyof typeof translations]}</StyledText>
           <IoIosArrowDown />
         </StyledSelected>
         {showList && (
@@ -137,9 +137,7 @@ const StyledList = styled(Box)({
 });
 
 const StyledListItem = styled(Box)({
-  padding: "0px 24px",
   textAlign: "left",
-  height: 36,
   display: "flex",
   alignItems: "center",
   cursor: "pointer",
@@ -149,11 +147,9 @@ const StyledListItem = styled(Box)({
   },
 });
 
-const StyledSelected = styled(Button)({
+const StyledSelected = styled("button")({
   cursor: "pointer",
   gap: 5,
-  svg: {
-    width: 14,
-    height: 14,
-  },
+  display: "flex",
+  alignItems: "center",
 });

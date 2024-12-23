@@ -14,42 +14,37 @@ import {
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
-  Card,
   configureStyles,
   darkTheme,
   lightTheme,
   StyledBalanceContainer,
-  StyledChunksInput,
-  StyledChunksSlider,
   StyledColumnFlex,
   StyledLimitPrice,
   StyledPoweredBy,
-  StyledReset,
-  StyledTimeSelect,
-  StyledTimeSelectBody,
-  StyledTimeSelectContainer,
-  StyledTimeSelectHeader,
-  StyledTotalChunks,
-  StyledTradeSize,
   StyledModalHeaderClose,
   StyledModalHeader,
   StyledSwapModalContent,
   StyledModalHeaderTitle,
   StyledTokenPanelTitle,
-  StyeledTokenPanelBody,
   StyledBalanceAndPercent,
-  StyledTokenInputs,
-  StyledTokenInputsPadding,
+  StyledContainerPadding,
   StyledPricePanel,
   StyledPricePanelInput,
   StyledPricePanelInputRight,
   StyledPricePanelPercent,
   StyledWarning,
-  StyledInputContainer,
-  StyledInputContainerChildren,
   InputContainer,
+  StyledSlider,
+  StyledSliderContainer,
+  StyledBackBody,
+  StyledFrontBody,
+  StyledTrades,
+  StyledContainer,
+  StyledTradeInterval,
+  StyledDuration,
+  StyledMarketPrice,
 } from "./styles";
-import { memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { StyledBalance, StyledEmptyUSD, StyledPercentSelect, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
@@ -62,13 +57,14 @@ import { getTokenFromTokensList } from "@orbs-network/twap-ui";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import { OrderSummary } from "./OrderSummary";
 import { useTwapContext } from "@orbs-network/twap-ui";
-import { useAdapterContext, AdapterContextProvider, AdapterProps } from "./context";
-import { Price } from "./components";
+import { useAdapterContext, AdapterContextProvider, AdapterProps, WarningVariant } from "./context";
 import { create } from "zustand";
 import { configs } from "./config";
 import { MdAccountBalanceWallet } from "@react-icons/all-files/md/MdAccountBalanceWallet";
 import { ChangeIcon } from "./icons/change";
 import { InfoIcon } from "./icons/info";
+import { BackBody } from "./icons/BackBody";
+import { FrontBody } from "./icons/FrontBody";
 
 const PERCENT = [
   { text: "25%", value: 0.25 },
@@ -87,8 +83,12 @@ const Button = (props: any) => {
 };
 
 const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
-  const useTooltip = useAdapterContext().useTooltip;
-  const { targetRef, tooltip, tooltipVisible } = useTooltip(text, { placement: "top", hideTimeout: 0 });
+  const context = useAdapterContext();
+  const { targetRef, tooltip, tooltipVisible } = context.useTooltip(text, { placement: "top", hideTimeout: 0 });
+  if (context.Tooltip) {
+    return <context.Tooltip content={text}>{children}</context.Tooltip>;
+  }
+
   return (
     <span ref={targetRef} style={{ ...childrenStyles }}>
       {children} {tooltipVisible && tooltip}
@@ -188,7 +188,6 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
           <SrcTokenPercentSelector show={Boolean(isSrcToken && showPercent)} />
         </StyledBalanceAndPercent>
       </Styles.StyledRowFlex>
-
       <InputContainer disabled={!isSrcToken} onBlur={() => setShowPercent(false)} onFocus={() => setShowPercent(true)}>
         <Styles.StyledRowFlex gap={5} style={{ alignItems: "center" }}>
           <StyledTokenSelect CustomArrow={MdKeyboardArrowDown} hideArrow={false} isSrc={isSrcToken} onClick={onTokenSelectClick} />
@@ -198,6 +197,7 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
           </Styles.StyledColumnFlex>
         </Styles.StyledRowFlex>
       </InputContainer>
+      {isSrcToken && <SrcInputWarning />}
     </StyledTokenPanel>
   );
 };
@@ -337,7 +337,7 @@ const TWAP = memo((props: AdapterProps) => {
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
           <AdapterContextProvider value={{ ...props, provider, dappTokens }}>
-            {props.limit ? <LimitPanel /> : <TWAPPanel />}
+            <TWAPPanel />
             <PancakeOrders />
           </AdapterContextProvider>
         </ThemeProvider>
@@ -346,20 +346,16 @@ const TWAP = memo((props: AdapterProps) => {
   );
 });
 
-const TopPanel = () => {
-  return (
-    <StyledTokenInputs>
-      <StyledTokenInputsPadding>
-        <TokenPanel isSrcToken={true} />
-      </StyledTokenInputsPadding>
+const SrcInputWarning = () => {
+  const warning = hooks.useFillWarning();
+  const type = warning?.type;
 
-      <ChangeTokensOrder />
-      <StyledTokenInputsPadding>
-        <TokenPanel />
-        <LimitPriceToggle />
-        <PricePanel />
-      </StyledTokenInputsPadding>
-    </StyledTokenInputs>
+  if (type !== "balance" && type !== "min-chunk-size") return null;
+
+  return (
+    <Warning variant="error">
+      <Styles.StyledText>{warning?.message}</Styles.StyledText>
+    </Warning>
   );
 };
 
@@ -369,18 +365,22 @@ const OpenConfirmationModalButton = () => {
 
   if (!provider) {
     return (
-      <StyledButtonContainer>
-        <ConnectButton />
-      </StyledButtonContainer>
+      <StyledContainerPadding>
+        <StyledButtonContainer>
+          <ConnectButton />
+        </StyledButtonContainer>
+      </StyledContainerPadding>
     );
   }
 
   return (
-    <StyledButtonContainer>
-      <Button onClick={onClick} disabled={disabled}>
-        {text}
-      </Button>
-    </StyledButtonContainer>
+    <StyledContainerPadding>
+      <StyledButtonContainer>
+        <Button onClick={onClick} disabled={disabled}>
+          {text}
+        </Button>
+      </StyledButtonContainer>
+    </StyledContainerPadding>
   );
 };
 
@@ -389,133 +389,220 @@ const StyledButtonContainer = styled("div")({
   "> *": {
     width: "100%",
   },
-  marginTop: 10,
 });
-
-const LimitPanel = () => {
-  return (
-    <div className="twap-container">
-      <StyledColumnFlex>
-        <TopPanel />
-        <TwapStyles.StyledColumnFlex>
-          <Price />
-        </TwapStyles.StyledColumnFlex>
-        <OpenConfirmationModalButton />
-      </StyledColumnFlex>
-      <SwapModal limitPanel={true} />
-      <StyledPoweredBy />
-    </div>
-  );
-};
 
 const TWAPPanel = () => {
   return (
     <div className="twap-container">
       <StyledColumnFlex>
-        <TopPanel />
-        <Price />
-        <TotalTrades />
-        <TradeSize />
-        <TradeInterval />
-        <MaxDuration />
+        <StyledContainer>
+          <StyledContainerPadding>
+            <TokenPanel isSrcToken={true} />
+          </StyledContainerPadding>
+          <ChangeTokensOrder />
+          <StyledContainerPadding>
+            <TokenPanel />
+            <LimitPriceToggle />
+            <PricePanel />
+          </StyledContainerPadding>
+        </StyledContainer>
+        <StyledContainer>
+          <TotalTrades />
+          <MaxDurationAndTradeInterval />
+          <OpenConfirmationModalButton />
+        </StyledContainer>
+
         <SwapModal limitPanel={false} />
-        <OpenConfirmationModalButton />
       </StyledColumnFlex>
       <StyledPoweredBy />
     </div>
   );
 };
 
-const TotalTrades = () => {
+const MaxDurationAndTradeInterval = () => {
+  const limit = useAdapterContext().limit;
+  if (limit) return null;
+  return (
+    <>
+      <StyledContainerPadding>
+        <Styles.StyledRowFlex>
+          <TradeInterval />
+          <MaxDuration />
+        </Styles.StyledRowFlex>
+      </StyledContainerPadding>
+      <TimeIntervalAndDurationWarnings />
+    </>
+  );
+};
+
+const getElementPositionInsideParent = (child: any, parent: any) => {
+  if (!child || !parent) return null;
+
+  const childRect = child.getBoundingClientRect();
+  const parentRect = parent.getBoundingClientRect();
+
+  return {
+    top: childRect.top - parentRect.top,
+    left: childRect.left - parentRect.left,
+    width: childRect.width,
+    height: childRect.height,
+  };
+};
+const calcPosition = () => {
+  const parentElement = document.querySelector(".twap-trades-select");
+  const childElement = document.querySelector(".MuiSlider-thumb");
+  const position = getElementPositionInsideParent(childElement, parentElement);
+
+  return position;
+};
+export function TotalTrades({ className = "" }: { className?: string }) {
   const { srcAmount } = store.useTwapStore((store) => ({
     srcAmount: store.getSrcAmount(),
   }));
+  const limitPanel = useAdapterContext().limit;
+  const maxPossibleChunks = hooks.useMaxPossibleChunks();
+  const chunks = hooks.useChunks();
+  const chunkSize = hooks.useFormatNumber({ value: hooks.useSrcChunkAmountUi(), decimalScale: 4 });
+  const setChunks = hooks.useSetChunks();
+  const srcToken = store.useTwapStore((store) => store.srcToken);
+  // const [chunks, setChunks] = useState(0);
+  const [position, setPosition] = useState({ left: 0, top: 0 });
+  const t = useTwapContext().translations;
 
-  const getChunksBiggerThanOne = hooks.useChunksBiggerThanOne();
+  const onSetPosition = useCallback((pos: any) => {
+    console.log(pos.left, pos.top);
 
-  if (srcAmount.isZero()) return null;
+    setPosition({
+      left: pos?.left || 0,
+      top: pos?.top || 0,
+    });
+  }, []);
 
-  if (!getChunksBiggerThanOne) {
-    return (
-      <TwapStyles.StyledRowFlex justifyContent="space-between">
-        <Components.Labels.TotalTradesLabel />
-        <Typography style={{ fontSize: 14 }}>1</Typography>
-      </TwapStyles.StyledRowFlex>
-    );
-  }
+  // useRelativePositionCallback(".twap-trades-select .MuiSlider-thumb", ".twap-trades-select", onSetPosition);
+
+  useEffect(() => {
+    // setChunks(30);
+  }, []);
+
+  // if (srcAmount.isZero()) return null;
+  if (limitPanel) return null;
+
   return (
-    <StyledTotalChunks>
-      <Card.Header>
-        <Components.Labels.TotalTradesLabel />
-      </Card.Header>
-      <Card.Body editable={true}>
-        <TwapStyles.StyledRowFlex gap={15} justifyContent="space-between">
-          <StyledChunksSlider />
-          <StyledChunksInput />
-        </TwapStyles.StyledRowFlex>
-      </Card.Body>
-    </StyledTotalChunks>
-  );
-};
+    <StyledContainerPadding>
+      <StyledTrades disabled={true}>
+        <InputContainer.Header>
+          <Styles.StyledRowFlex justifyContent="space-between">
+            <InputContainer.Header.Label tooltip={t.totalTradesTooltip} label="Total Trades" />
+            <InputContainer.Header.Label label="Size Per Trade: " value={`${chunkSize} ${srcToken?.symbol}`} />
+          </Styles.StyledRowFlex>
+        </InputContainer.Header>
 
-const TradeSize = () => {
-  const value = hooks.useSrcChunkAmountUi();
-
-  if (BN(value || "0").isZero()) return null;
-  return (
-    <StyledTradeSize>
-      <Components.Labels.ChunksAmountLabel />
-      <Components.TradeSize hideLabel={true} hideLogo={true} />
-    </StyledTradeSize>
+        <Styles.StyledRowFlex gap={30}>
+          <Components.Base.NumericInput
+            className={className}
+            placeholder="0"
+            value={chunks}
+            decimalScale={0}
+            maxValue={maxPossibleChunks.toString()}
+            onChange={(value) => setChunks(Number(value))}
+          />
+          <StyledSliderContainer className="twap-trades-select">
+            <StyledBackBody>
+              <BackBody />
+            </StyledBackBody>
+            <StyledFrontBody left={position.left - 6} top={position.top - 15}>
+              <FrontBody />
+            </StyledFrontBody>
+            <StyledSlider className={className} maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />
+          </StyledSliderContainer>
+        </Styles.StyledRowFlex>
+      </StyledTrades>
+    </StyledContainerPadding>
   );
-};
+}
 
 const MaxDuration = () => {
+  const isWarning = hooks.useIsPartialFillWarning();
+
   return (
-    <StyledTimeSelectContainer>
-      <StyledTimeSelectHeader>
-        <Components.Labels.MaxDurationLabel />
-      </StyledTimeSelectHeader>
-      <StyledTimeSelect>
-        <StyledTimeSelectBody editable={true}>
-          <Components.MaxDurationSelector />
-        </StyledTimeSelectBody>
-        <Components.PartialFillWarning />
-      </StyledTimeSelect>
-    </StyledTimeSelectContainer>
+    <StyledDuration customBorder={!!isWarning}>
+      <InputContainer.Header>
+        <InputContainer.Header.Label label="Max Duration" />
+      </InputContainer.Header>
+      <Components.MaxDurationSelector />
+    </StyledDuration>
   );
 };
 
 const TradeInterval = () => {
+  const fillDelayWarning = store.useTwapStore((store) => store.getFillDelayWarning());
+
   return (
-    <StyledTimeSelectContainer>
-      <StyledTimeSelectHeader>
-        <Components.Labels.TradeIntervalLabel />
-      </StyledTimeSelectHeader>
-      <StyledTimeSelect>
-        <StyledTimeSelectBody editable={true}>
-          <Components.TradeIntervalSelector />
-        </StyledTimeSelectBody>
-        <Components.FillDelayWarning />
-      </StyledTimeSelect>
-    </StyledTimeSelectContainer>
+    <StyledTradeInterval customBorder={!!fillDelayWarning}>
+      <InputContainer.Header>
+        <InputContainer.Header.Label label="Trade Interval" />
+      </InputContainer.Header>
+      <Components.TradeIntervalSelector />
+    </StyledTradeInterval>
+  );
+};
+
+const TimeIntervalAndDurationWarnings = () => {
+  const fillDelayWarning = store.useTwapStore((store) => store.getFillDelayWarning());
+  const isWarning = hooks.useIsPartialFillWarning();
+  const durationUi = hooks.useDurationUi();
+  const translation = useTwapContext().translations;
+  const warning = useMemo(() => {
+    if (fillDelayWarning) {
+      return {
+        variant: "error" as WarningVariant,
+        message: `Trade interval must be more than 1 minute to allow time for bidder auction and block settlement.`,
+      };
+    }
+    if (durationUi.amount === 0) {
+      return {
+        variant: "error" as WarningVariant,
+        message: translation.enterMaxDuration,
+      };
+    }
+    if (isWarning) {
+      return {
+        variant: "info" as WarningVariant,
+        message: `Order will be partially filled. To fully fill it, the minimum duration should be total trades multiplied by trade interval.`,
+      };
+    }
+  }, [fillDelayWarning, isWarning, durationUi.amount, translation.enterMaxDuration]);
+
+  if (!warning) return null;
+
+  return (
+    <StyledContainerPadding>
+      <Warning variant={warning.variant}>{warning.message}</Warning>
+    </StyledContainerPadding>
   );
 };
 
 const LimitPriceToggle = () => {
+  const limit = useAdapterContext().limit;
+  if (limit) return null;
   return (
     <StyledLimitPrice>
-      <span>
+      <Styles.StyledRowFlex width="auto">
         <Components.LimitPriceToggle />
         <Components.Labels.LimitPriceLabel />
-      </span>
-
+      </Styles.StyledRowFlex>
       <MarketPrice />
     </StyledLimitPrice>
   );
 };
 
 const PricePanel = () => {
+  const { isMarketOrder } = store.useTwapStore((s) => ({
+    isMarketOrder: !s.isLimitOrder,
+  }));
+
+  if (isMarketOrder) return null;
+
   return (
     <StyledPricePanel className="twap-limit-price-panel">
       <PricePanelHeader />
@@ -529,18 +616,25 @@ const PricePanel = () => {
 };
 
 const MarketPrice = () => {
-  const { marketPrice, leftToken, rightToken } = hooks.useMarketPriceV2();
+  const { marketPrice } = hooks.useMarketPriceV2();
+  const { srcToken, dstToken, isMarketOrder } = store.useTwapStore((s) => ({
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
+    isMarketOrder: !s.isLimitOrder,
+  }));
   const priceF = hooks.useFormatNumber({ value: marketPrice?.original, decimalScale: 6 });
 
+  if (!isMarketOrder) return null;
+
   return (
-    <Styles.StyledText>
-      1 ${leftToken?.symbol} = {priceF} {rightToken?.symbol}
-    </Styles.StyledText>
+    <StyledMarketPrice>
+      1 {srcToken?.symbol} = {priceF} {dstToken?.symbol}
+    </StyledMarketPrice>
   );
 };
 
 const PricePanelWarning = () => {
-  const gainPercent = -5;
+  const gainPercent = hooks.useLimitPriceV2().gainPercent;
 
   if (gainPercent >= 0) return null;
 
@@ -554,7 +648,7 @@ const PricePanelWarning = () => {
   );
 };
 
-const Warning = ({ variant = "warning", children = "" }: { variant?: "error" | "warning"; children?: ReactNode }) => {
+const Warning = ({ variant = "warning", children = "" }: { variant?: WarningVariant; children?: ReactNode }) => {
   return (
     <StyledWarning variant={variant} className="twap-warning-msg">
       <InfoIcon />
@@ -595,13 +689,14 @@ const LimitPanelInput = () => {
 
 const LimitPanelPercent = () => {
   const { gainPercent, isLoading, onPercent } = hooks.useLimitPriceV2();
+  const warning = BN(gainPercent || 0).lt(0);
 
   return (
-    <StyledPricePanelPercent className="twap-limit-price-panel-percent">
+    <StyledPricePanelPercent customBorder={!!warning} className="twap-limit-price-panel-percent">
       <Components.Base.Label>Gain</Components.Base.Label>
       <Styles.StyledRowFlex className="twap-limit-price-panel-percent-right">
         <Components.Base.NumericInput allowNegative={true} loading={isLoading} placeholder={"0"} onChange={(value: string) => onPercent(Number(value))} value={gainPercent} />
-        <Styles.StyledText>%</Styles.StyledText>
+        {!isLoading && <Styles.StyledText>%</Styles.StyledText>}
       </Styles.StyledRowFlex>
     </StyledPricePanelPercent>
   );
@@ -844,7 +939,7 @@ export const useShowSwapModalButton = () => {
 
   if (warning)
     return {
-      text: warning,
+      text: translations.placeOrder,
       onClick: undefined,
       disabled: true,
       loading: false,

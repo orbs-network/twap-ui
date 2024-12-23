@@ -1,6 +1,8 @@
 import { Box, Button, createTheme, styled, Theme, Typography } from "@mui/material";
+import { DefaultTheme } from "@mui/system";
 import { Components, OrdersContainer, Styles } from "@orbs-network/twap-ui";
-import { CSSProperties, ReactNode, useCallback, useRef, useState } from "react";
+import { Children, createContext, CSSProperties, ReactNode, useCallback, useRef, useState } from "react";
+import { WarningVariant } from "./context";
 import { useClickOutside } from "./hooks";
 const isDarkMode = (theme: Theme) => theme.palette.mode === "dark";
 
@@ -34,6 +36,7 @@ export const baseStyles = (theme: Theme) => {
     bgContainer: darkMode ? "#372f47" : "#F7F6FA",
     warning: darkMode ? "#A881FC" : "#ff6b6b",
     error: darkMode ? "#ED4B9E" : "#ff6b6b",
+    info: darkMode ? "#FF9D00" : "#FF9D00",
   };
 };
 
@@ -107,6 +110,30 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-time-selector-selected": {
+      background: "unset",
+      border: "none",
+      color: styles.primaryTextColor,
+      p: {
+        fontSize: "14px!important",
+        fontWeight: "400!important",
+      },
+      svg: {
+        color: styles.label,
+        width: 20,
+        height: 20,
+      },
+    },
+    ".twap-time-selector-list": {
+      ...getContainerStyles(theme),
+    },
+    ".twap-time-selector-list-item": {
+      padding: "5px 16px",
+      height: "unset",
+      "&:hover": {
+        background: "rgba(255,255,255,0.05)",
+      },
+    },
     ".twap-order-expanded-cancel-wraper": {
       marginTop: "40px",
       button: {
@@ -129,18 +156,7 @@ export const configureStyles = (theme: Theme) => {
     ".twap-token-input-loading": {
       opacity: 0.5,
     },
-    ".twap-odnp-button": {
-      ...getButtonStyles(theme),
-      background: darkMode ? "#B8ADD2" : "#492F79",
-      padding: "6px 12px!important",
-      width: "fit-content",
-      boxShadow: "unset",
-      marginLeft: "auto",
-      fontWeight: 500,
-      "&-children": {
-        gap: "5px!important",
-      },
-    },
+
     ".twap-label": {
       p: {
         fontWeight: 400,
@@ -261,31 +277,7 @@ export const configureStyles = (theme: Theme) => {
         background: "#32D0AA!important",
       },
     },
-    ".twap-time-selector": {
-      ".twap-input": {
-        input: {
-          fontWeight: 400,
-        },
-      },
-    },
-    ".twap-time-selector-selected": {
-      "*": {
-        color: `${styles.primaryTextColor}!important`,
-      },
-    },
-    ".twap-time-selector-list": {
-      background: styles.cardBox,
-      border: `1px solid ${styles.border}`,
-      borderRadius: "16px!important",
-      padding: "0px!important",
-    },
-    ".twap-time-selector-list-item": {
-      p: { color: styles.primaryTextColor, fontWeight: "400!important" },
 
-      "&:hover": {
-        background: darkMode ? "rgba(255,255,255, 0.06)" : "rgba(0,0,0, 0.06)",
-      },
-    },
     ".twap-button-disabled": {
       background: darkMode ? "#3c3742!important" : "#e9eaeb!important",
       opacity: "1!important",
@@ -308,8 +300,9 @@ export const configureStyles = (theme: Theme) => {
       },
     },
     ".twap-loader": {
-      background: darkMode ? "rgba(255,255,255, 0.1)!important" : "rgba(0,0,0, 0.1)!important",
+      backgroundColor: darkMode ? "rgba(255,255,255, 0.1)!important" : "rgba(0,0,0, 0.1)!important",
       right: 0,
+      borderRadius: "16px!important",
     },
     ".twap-market-price": {
       justifyContent: "center!important",
@@ -383,9 +376,12 @@ export const StyledBalanceContainer = styled(Styles.StyledRowFlex)<{ isSrc: numb
     flex: 1,
     overflow: "hidden",
     justifyContent: "flex-end",
+    cursor: "pointer",
     alignItems: "center",
     opacity: hide ? 0 : 1,
     transition: "opacity 0.2s",
+    position: "relative",
+    zIndex: hide ? -1 : 1,
     svg: {
       color: styles.label,
       width: 16,
@@ -396,7 +392,7 @@ export const StyledBalanceContainer = styled(Styles.StyledRowFlex)<{ isSrc: numb
 export const StyledBalance = styled(Components.TokenBalance)(({ theme, isSrc }) => {
   const styles = baseStyles(theme);
   return {
-    cursor: isSrc ? "pointer" : ("default" as const),
+    position: "relative",
     fontSize: 12,
     fontWeight: 600,
     color: styles.label,
@@ -408,46 +404,9 @@ export const StyledBalance = styled(Components.TokenBalance)(({ theme, isSrc }) 
   };
 });
 
-export const StyledMarketPrice = styled(Components.MarketPrice)({
-  flexDirection: "column",
-  alignItems: "flex-start",
-
-  gap: 5,
-  ".twap-loader": {
-    marginLeft: "auto",
-  },
-
-  ".twap-price-compare": {
-    justifyContent: "flex-end",
-    width: "auto",
-    marginLeft: "auto",
-    "*": {
-      fontSize: 13,
-    },
-  },
-});
-
-export const StyledMarketPriceContainer = styled(Styles.StyledRowFlex)(({ theme }) => {
-  const darkMode = baseStyles(theme).darkMode;
+export const StyledMarketPrice = styled(Styles.StyledText)(() => {
   return {
-    position: "relative",
-    justifyContent: "space-between",
-    p: { color: darkMode ? "#a881fc" : "#7645d9", fontWeight: "600!important" },
-    ".twap-token-logo": {
-      display: "none",
-    },
-    ".twap-label": {
-      p: {
-        whiteSpace: "nowrap",
-      },
-    },
-    "@media(max-width: 700px)": {
-      ".twap-label": {
-        p: {
-          fontSize: "12px!important",
-        },
-      },
-    },
+    fontSize: 14,
   };
 });
 
@@ -515,6 +474,7 @@ export const StyledPercentSelect = styled(Styles.StyledRowFlex)<{ show: number }
     opacity: show ? 1 : 0,
     transition: show ? "0.2s all" : "0s all",
     transform: `translateX(${show ? 0 : 10}px)`,
+    zIndex: show ? 1 : -1,
     button: {
       background: "transparent",
       border: "none",
@@ -524,6 +484,7 @@ export const StyledPercentSelect = styled(Styles.StyledRowFlex)<{ show: number }
       paddingLeft: "0px 0px",
       fontSize: 12,
       position: "relative",
+      cursor: "pointer",
       "&:after": {
         content: "''",
         position: "absolute",
@@ -591,6 +552,47 @@ export const StyledTokenChange = styled(Styles.StyledRowFlex)(({ theme }) => {
   };
 });
 
+export const StyledSlider = styled(Components.Base.Slider)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    borderRadius: 0,
+    ".MuiSlider-thumb": {
+      opacity: 0,
+    },
+    ".MuiSlider-valueLabel": {
+      display: "none",
+    },
+    ".MuiSlider-rail": {
+      background: "#55496E",
+    },
+    ".MuiSlider-track": {
+      background: "#1FC7D4",
+      border: "3px solid #1FC7D4",
+    },
+  };
+});
+
+export const StyledSliderContainer = styled(Styles.StyledRowFlex)({
+  position: "relative",
+  flex: 1,
+});
+
+export const StyledBackBody = styled("div")({
+  position: "absolute",
+  left: -10,
+  top: 7,
+});
+
+export const StyledFrontBody = styled("div")<{ left: number; top: number }>(({ left, top }) => {
+  return {
+    position: "absolute",
+    left,
+    top,
+    zIndex: 1,
+    pointerEvents: "none",
+  };
+});
+
 export const StyledChunksInput = styled(Components.ChunksInput)({
   marginLeft: "auto",
   fontWeight: 600,
@@ -603,40 +605,28 @@ export const StyledChunksInput = styled(Components.ChunksInput)({
   },
 });
 
-export const StyledContainer = styled("div")(({ theme }) => {
+const getContainerStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
   return {
     backgroundColor: styles.panelBg,
     borderRadius: 24,
-    padding: 16,
+    padding: "16px 0px 16px 0px",
     border: "1px solid #383241",
+    width: "100%",
   };
-});
+};
 
-export const StyledTokenInputs = styled(StyledContainer)({
-  padding: 0,
-});
-
-export const StyledTokenInputsPadding = styled("div")({
-  width: "100%",
-  padding: 16,
-});
-
-export const StyledChunksSlider = styled(Components.ChunksSliderSelect)(({ theme }) => {
+export const StyledContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    marginLeft: 10,
-    ".MuiSlider-thumb": {
-      background: styles.darkMode ? styles.primaryTextColor : "#1fc7d4",
-    },
-    ".MuiSlider-track": {
-      background: styles.primaryColor,
-      border: `1px solid ${styles.primaryColor}`,
-    },
-    ".MuiSlider-valueLabel": {
-      ...getTootlipStyles(theme),
-    },
+    ...getContainerStyles(theme),
+    gap: 16,
   };
+});
+
+export const StyledContainerPadding = styled("div")({
+  width: "100%",
+  padding: "0px 16px 0px 16px",
 });
 
 export const StyledPricePanel = styled(Styles.StyledColumnFlex)(({ theme }) => {
@@ -669,7 +659,7 @@ export const StyledPricePanel = styled(Styles.StyledColumnFlex)(({ theme }) => {
 
 export const StyledLimitPrice = styled(Styles.StyledRowFlex)(({ theme }) => {
   return {
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     marginTop: 16,
     gap: 8,
     p: {
@@ -797,34 +787,6 @@ export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) =>
   };
 });
 
-export const Card = ({ children, className = "", onClick }: { children: ReactNode; className?: string; onClick?: () => void }) => {
-  return (
-    <StyledColumnFlex gap={5} className={className}>
-      {children}
-    </StyledColumnFlex>
-  );
-};
-
-const CardHeader = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  return (
-    <Styles.StyledRowFlex className={className} justifyContent="space-between">
-      {" "}
-      {children}
-    </Styles.StyledRowFlex>
-  );
-};
-
-const CardBody = ({ children, editable, className = "" }: { children: ReactNode; editable?: boolean; className?: string }) => {
-  return (
-    <StyledCardBody className={className} editable={editable ? 1 : 0}>
-      {children}
-    </StyledCardBody>
-  );
-};
-
-Card.Body = CardBody;
-Card.Header = CardHeader;
-
 export const StyledBgContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
@@ -840,12 +802,6 @@ export const StyledTokenPanel = styled(Styles.StyledColumnFlex)({
   gap: 12,
 });
 
-export const StyeledTokenPanelBody = styled(StyledBgContainer)(({ theme }) => {
-  const styles = baseStyles(theme);
-
-  return {};
-});
-
 export const StyledTokenPanelTitle = styled(Styles.StyledText)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
@@ -853,24 +809,6 @@ export const StyledTokenPanelTitle = styled(Styles.StyledText)(({ theme }) => {
     fontWeight: 600,
     color: styles.label,
   };
-});
-
-export const StyledTradeSize = styled(Styles.StyledRowFlex)({
-  justifyContent: "space-between",
-  flexWrap: "wrap",
-  alignItems: "center",
-});
-
-export const StyledTotalChunks = styled(Card)({
-  ".twap-input": {
-    height: 25,
-  },
-});
-
-export const StyledTradeSizeRight = styled(Styles.StyledColumnFlex)({
-  gap: 0,
-  width: "auto",
-  alignItems: "center",
 });
 
 export const StyledOrdersMenuButton = styled(Button)(({ theme }) => ({
@@ -894,46 +832,6 @@ export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
       },
     },
   };
-});
-
-export const StyledTimeSelect = styled(Styles.StyledColumnFlex)({
-  display: "flex",
-  alignItems: "flex-end",
-  width: "auto",
-  padding: 2,
-  flex: 1,
-});
-
-export const StyledTimeSelectBody = styled(CardBody)({
-  display: "flex",
-  alignItems: "center",
-
-  padding: "4px 10px",
-  width: "auto",
-});
-
-export const StyledTimeSelectContainer = styled(Styles.StyledRowFlex)({
-  padding: 0,
-  ".MuiButtonBase-root": {
-    padding: "0px!important",
-    background: "unset!important",
-    height: "100%",
-    p: {
-      fontSize: "12px!important",
-      fontWeight: 400,
-    },
-  },
-  ".twap-input": {
-    input: {
-      fontSize: 14,
-      paddingRight: 3,
-    },
-  },
-});
-
-export const StyledTimeSelectHeader = styled(Card.Header)({
-  marginTop: 1,
-  width: "auto",
 });
 
 export const StyledOrdersHeader = styled(Box)(({ theme }) => {
@@ -980,24 +878,6 @@ export const StyledOrdersTabs = styled(Box)({
   height: "100%",
   flex: 1,
   "@media (max-width:700px)": {},
-});
-
-export const StyledLimitPriceBody = styled(Card.Body)({
-  padding: "10px 10px",
-  input: {
-    textAlign: "right",
-  },
-});
-
-export const StyledLimitPriceLabel = styled(Styles.StyledRowFlex)({
-  width: "auto",
-  minHeight: 24,
-});
-
-export const StyledSubmitButtonContainer = styled(Styles.StyledRowFlex)({
-  button: {
-    width: "100%",
-  },
 });
 
 export const StyledModalHeaderClose = styled("button")(({ theme }) => {
@@ -1074,17 +954,20 @@ export const StyledPricePanelInputRight = styled(Styles.StyledColumnFlex)({
   gap: 0,
 });
 
-export const StyledWarning = styled(Styles.StyledRowFlex)<{ variant: "error" | "warning" }>(({ theme, variant }) => {
+export const StyledWarning = styled(Styles.StyledRowFlex)<{ variant: WarningVariant }>(({ theme, variant }) => {
   const styles = baseStyles(theme);
   return {
-    color: variant === "error" ? styles.error : styles.primaryTextColor,
+    color: variant === "error" ? styles.error : variant === "info" ? styles.info : styles.primaryTextColor,
     fontWeight: 400,
+    gap: 5,
     alignItems: "flex-start",
     ".twap-warning-msg-content": {
       flex: 1,
     },
     svg: {
-      color: variant === "error" ? styles.error : styles.warning,
+      position: "relative",
+      top: -2,
+      fill: variant === "error" ? styles.error : variant === "info" ? styles.info : styles.warning,
       width: 24,
       height: 24,
     },
@@ -1111,6 +994,48 @@ export const StyledInputContainer = styled("div")<{ focused: number }>(({ focuse
       borderRadius: 28,
       opacity: focused ? 1 : 0,
       transition: "opacity 0.2s",
+      pointerEvents: "none",
+    },
+    "&:after": {
+      content: "''",
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      width: "calc(100% + 4px)",
+      height: "calc(100% + 5px)",
+      border: "2px solid #a881fc",
+      borderRadius: 25,
+      opacity: focused ? 1 : 0,
+      transition: "opacity 0.2s",
+      pointerEvents: "none",
+    },
+    ".twap-input": {
+      ...bigInputStyle(),
+    },
+  };
+});
+
+export const StyledInputContainerChildren = styled("div")<{ focused: number; customBorder?: number }>(({ theme, focused, customBorder }) => {
+  const styles = baseStyles(theme);
+  const showCustomBorder = customBorder && !focused;
+  return {
+    position: "relative",
+    zIndex: 1,
+    background: styles.bgContainer,
+    boxShadow: focused ? "unset" : "0px 2px 0px -1px #0000000F inset",
+    borderRadius: 24,
+    padding: 16,
+    "&:before": {
+      content: "''",
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      border: showCustomBorder ? "unset" : `${focused ? 2 : 1}px solid  #55496E`,
+      borderRadius: 24,
+      left: 0,
+      top: 0,
+      pointerEvents: "none",
     },
     "&:after": {
       content: "''",
@@ -1120,27 +1045,11 @@ export const StyledInputContainer = styled("div")<{ focused: number }>(({ focuse
       transform: "translate(-50%, -50%)",
       width: "calc(100% + 3.5px)",
       height: "calc(100% + 3.5px)",
-      background: "#a881fc",
-      borderRadius: 25,
-      opacity: focused ? 1 : 0,
+      borderRadius: 27,
+      opacity: showCustomBorder ? 1 : 0,
       transition: "opacity 0.2s",
+      pointerEvents: "none",
     },
-    ".twap-input": {
-      ...bigInputStyle(),
-    },
-  };
-});
-
-export const StyledInputContainerChildren = styled("div")<{ focused: number }>(({ theme, focused }) => {
-  const styles = baseStyles(theme);
-  return {
-    position: "relative",
-    zIndex: 1,
-    background: styles.bgContainer,
-    boxShadow: focused ? "unset" : "0px 2px 0px -1px #0000000F inset",
-    borderRadius: 24,
-    padding: 16,
-    border: "1px solid #55496E",
   };
 });
 
@@ -1150,12 +1059,14 @@ export const InputContainer = ({
   children,
   disabled,
   className = "",
+  customBorder,
 }: {
   onBlur?: () => void;
   onFocus?: () => void;
   children: ReactNode;
   disabled?: boolean;
   className?: string;
+  customBorder?: boolean;
 }) => {
   const [focused, setFocused] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -1176,12 +1087,20 @@ export const InputContainer = ({
 
   return (
     <StyledInputContainer className={`twap-input-container ${className}`} ref={ref} onClick={_onFocus} focused={focused ? 1 : 0}>
-      <StyledInputContainerChildren focused={focused ? 1 : 0} className="twap-input-container-content">
+      <StyledInputContainerChildren customBorder={customBorder ? 1 : 0} focused={focused ? 1 : 0} className="twap-input-container-content">
         {children}
       </StyledInputContainerChildren>
     </StyledInputContainer>
   );
 };
+
+const InputContainerHeader = ({ children }: { children: ReactNode }) => {
+  return <StyledInputContainerHeader>{children}</StyledInputContainerHeader>;
+};
+
+const StyledInputContainerHeader = styled("div")({
+  marginBottom: 10,
+});
 
 export const StyledPricePanelInput = styled(InputContainer)(() => {
   return {
@@ -1207,6 +1126,39 @@ export const StyledPricePanelInput = styled(InputContainer)(() => {
   };
 });
 
+const InputContainerLabel = ({ label, value, tooltip }: { label: string; value?: string; tooltip?: string }) => {
+  return (
+    <StyledInputContainerLabel>
+      <Components.Base.Tooltip title={tooltip}>
+        <StyledInputContainerLabelLabel>{label}</StyledInputContainerLabelLabel>
+      </Components.Base.Tooltip>
+      <StyledInputContainerLabelValue>{value}</StyledInputContainerLabelValue>
+    </StyledInputContainerLabel>
+  );
+};
+
+const StyledInputContainerLabel = styled("div")({
+  display: "flex",
+  flexDirection: "row",
+  gap: 5,
+});
+const StyledInputContainerLabelLabel = styled(Styles.StyledText)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    color: styles.label,
+    fontSize: 12,
+    borderBottom: `1px dashed #5B4776`,
+  };
+});
+
+const StyledInputContainerLabelValue = styled(Styles.StyledText)(() => {
+  return {
+    fontSize: 12,
+  };
+});
+InputContainerHeader.Label = InputContainerLabel;
+InputContainer.Header = InputContainerHeader;
+
 export const StyledPricePanelPercent = styled(InputContainer)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
@@ -1221,6 +1173,9 @@ export const StyledPricePanelPercent = styled(InputContainer)(({ theme }) => {
       width: "100%",
       padding: "4px 12px 6px 12px",
       height: "100%",
+      "&:after": {
+        border: `2px solid #A881FC`,
+      },
     },
     ".twap-input": {
       height: "auto",
@@ -1237,6 +1192,48 @@ export const StyledPricePanelPercent = styled(InputContainer)(({ theme }) => {
         fontSize: 20,
         fontWeight: 600,
         color: styles.label,
+      },
+    },
+  };
+});
+
+export const StyledTrades = styled(InputContainer)({
+  width: "100%",
+  ".twap-input": {
+    width: 70,
+    flex: "unset",
+    input: {
+      textAlign: "left",
+    },
+  },
+});
+
+export const StyledTradeInterval = styled(InputContainer)(({ theme }) => {
+  return {
+    ".twap-input-container-content": {
+      "&:after": {
+        border: `2px solid #ED4B9E`,
+      },
+    },
+
+    ".twap-input": {
+      input: {
+        textAlign: "left!important",
+      },
+    },
+  };
+});
+
+export const StyledDuration = styled(InputContainer)(() => {
+  return {
+    ".twap-input-container-content": {
+      "&:after": {
+        border: `2px solid #FFB237`,
+      },
+    },
+    ".twap-input": {
+      input: {
+        textAlign: "left!important",
       },
     },
   };

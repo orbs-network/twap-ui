@@ -37,6 +37,9 @@ export interface Translations {
   days: string;
   hours: string;
   minutes: string;
+  "days-short": string;
+  "minutes-short": string;
+  "hours-short": string;
   seconds: string;
   switchNetwork: string;
   wrap: string;

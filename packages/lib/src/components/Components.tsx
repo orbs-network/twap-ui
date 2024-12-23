@@ -34,7 +34,6 @@ import {
   useSubmitButton,
   useLimitPriceV2,
   useDstMinAmountOut,
-  useFillWarning,
   useSrcAmountUsdUi,
   useDstAmountUsdUi,
   useMarketPriceV2,
@@ -340,11 +339,11 @@ export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hid
   return <TokenName onClick={onClick} hideNull={hideNull} name={token?.symbol} />;
 };
 
-export function TradeIntervalSelector({ placeholder }: { placeholder?: string }) {
+export function TradeIntervalSelector({ placeholder, className = "" }: { placeholder?: string; className?: string }) {
   const setFillDelay = useTwapStore((store) => store.setFillDelay);
   const fillDelay = useTwapStore((store) => store.customFillDelay);
 
-  return <TimeSelector placeholder={placeholder} onChange={setFillDelay} value={fillDelay} />;
+  return <TimeSelector className={className} placeholder={placeholder} onChange={setFillDelay} value={fillDelay} />;
 }
 
 interface TokenSelectProps extends TWAPTokenSelectProps {
@@ -911,7 +910,7 @@ export const OutputAddress = ({ className, translations: _translations, ellipsis
 const StyledOutputAddress = styled(StyledColumnFlex)({});
 
 export const OrderSummaryLimitPriceToggle = ({ translations: _translations }: { translations?: Translations }) => {
-  const { onInvert, limitPrice, leftToken, rightToken } = useLimitPriceV2();
+  const { limitPrice, leftToken, rightToken, onInvert } = useLimitPriceV2();
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
   const translations = useTwapContext()?.translations || _translations;
 
@@ -1135,26 +1134,6 @@ const StyledTradeSize = styled(StyledRowFlex)({
     whiteSpace: "nowrap",
   },
 });
-
-export const WarningMessage = ({ className }: { className?: string }) => {
-  const translations = useTwapContext().translations;
-
-  const warning = useFillWarning();
-
-  if (!warning) return null;
-  if (warning === translations.selectTokens || warning === translations.enterAmount) {
-    return null;
-  }
-
-  return (
-    <Fade in={true}>
-      <StyledMsg className={`twap-warning-msg ${className}`}>
-        <AiOutlineWarning />
-        <Typography>{warning}</Typography>
-      </StyledMsg>
-    </Fade>
-  );
-};
 
 const StyledMsg = styled(StyledRowFlex)({
   flexWrap: "wrap",

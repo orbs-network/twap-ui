@@ -11,7 +11,7 @@ import _ from "lodash";
 import { erc20s, isNativeAddress, zeroAddress, eqIgnoreCase } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
-import { Button, styled, Tooltip, Typography } from "@mui/material";
+import { Button, styled, Tooltip as MuiTooltip, Typography } from "@mui/material";
 import { amountBNV2, Components, hooks, Styles } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
 
@@ -176,19 +176,12 @@ const useTokenModal = (item1: any, item2: any, item3: any, isFrom?: boolean) => 
   return () => context.openModal(!!isFrom);
 };
 
-const useTooltip = (content: ReactNode, options?: any, children?: ReactNode) => {
-  const targetRef = useRef<any>(null);
-
-  const tooltip = (
-    <Tooltip title={content}>
+const Tooltip = ({ content, children }: { content: ReactNode; children?: ReactNode }) => {
+  return (
+    <MuiTooltip title={content}>
       <span>{children}</span>
-    </Tooltip>
+    </MuiTooltip>
   );
-
-  return {
-    targetRef,
-    tooltip,
-  };
 };
 
 const DappButton = ({ isLoading, disabled, children, onClick }: any) => {
@@ -212,6 +205,21 @@ const SwapTransactionErrorContent = ({ message }: { message: string }) => {
 };
 const SwapPendingModalContent = ({ title }: { title: string }) => {
   return <p>{title}</p>;
+};
+
+const useTooltip = (content: ReactNode, options?: any, children?: ReactNode) => {
+  const targetRef = useRef<any>(null);
+
+  const tooltip = (
+    <MuiTooltip title={content}>
+      <span>{children}</span>
+    </MuiTooltip>
+  );
+
+  return {
+    targetRef,
+    tooltip,
+  };
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -275,6 +283,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       connector={connector}
       isMobile={isMobile}
       useTooltip={useTooltip}
+      Tooltip={Tooltip}
       Button={DappButton}
       ApproveModalContent={ApproveModalContent}
       SwapTransactionErrorContent={SwapTransactionErrorContent}

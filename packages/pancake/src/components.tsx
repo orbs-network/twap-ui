@@ -1,7 +1,6 @@
 import { Components, hooks, store } from "@orbs-network/twap-ui";
 import { useAdapterContext } from "./context";
 import BN from "bignumber.js";
-import { StyledMarketPriceContainer } from "./styles";
 import { styled } from "@mui/material";
 import { useMemo } from "react";
 
@@ -31,13 +30,13 @@ export function Price() {
   const rightSymbol = inverted ? srcToken?.symbol : dstToken?.symbol;
 
   return (
-    <StyledMarketPriceContainer>
+    <div>
       <Components.Base.Label>Price</Components.Base.Label>
       <div style={{ opacity: isLoading ? 0 : 1 }}>
         <DappTradePrice leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={price} />
       </div>
       <StyledLoader loading={isLoading ? 1 : 0} />
-    </StyledMarketPriceContainer>
+    </div>
   );
 }
 

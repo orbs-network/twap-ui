@@ -187,7 +187,10 @@ export const usePriceUSD = (address?: string) => {
     queryFn: async () => {
       await delay(1_000);
       const _address = isNativeAddress(address || "") ? wToken : address;
-      return (await fetchLLMAPrice(_address!, chainId!)).priceUsd;
+      const response = await fetch(`http://localhost:3000/usd?token=${_address}&chainId=${chainId}`);
+      const result = await response.json();
+
+      return result.priceUsd;
     },
     refetchInterval: 10_000,
     enabled: !!address && !!chainId,

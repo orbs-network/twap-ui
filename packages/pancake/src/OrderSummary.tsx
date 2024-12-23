@@ -1,6 +1,6 @@
 import { styled } from "@mui/material";
 import { Styles as TwapStyles, Components, store, hooks } from "@orbs-network/twap-ui";
-import { StyledMarketPriceContainer, StyledOrderSummary } from "./styles";
+import { StyledOrderSummary } from "./styles";
 import { MdArrowDownward } from "@react-icons/all-files/md/MdArrowDownward";
 import { useAdapterContext } from "./context";
 import { useCallback, useState } from "react";
@@ -81,10 +81,10 @@ const SummaryPrice = () => {
   const rightSymbol = inverted ? srcToken?.symbol : dstToken?.symbol;
 
   return (
-    <StyledMarketPriceContainer>
+    <div>
       <Components.Base.Label>Price</Components.Base.Label>
       <DappTradePrice onClick={onInvert} loading={isLoading} leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={value} />
-    </StyledMarketPriceContainer>
+    </div>
   );
 };
 

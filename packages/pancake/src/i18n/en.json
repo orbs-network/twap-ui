@@ -1,4 +1,8 @@
 {
   "enterAmount": "Enter an amount",
-  "tradeSizeMustBeEqual": "Trade size must be equal to at least {usd} USD"
+  "tradeSizeMustBeEqual": "Order must meet a minimum of {usd} USD",
+  "totalTradesTooltip": "The total number of trades scheduled for your order. Note that in limit orders, not all scheduled trades may be executed.",
+  "days-short": "Days",
+  "hours-short": "Hrs",
+  "minutes-short": "Min"
 }

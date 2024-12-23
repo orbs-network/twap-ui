@@ -719,7 +719,7 @@ const buttonStyles = (theme: Theme) => {
 
 export const StyledSubmit = styled(Components.SubmitButton)({});
 
-export const StyledWarningMsg = styled(Components.WarningMessage)({
+export const StyledWarningMsg = styled("div")({
   background: "#DF3C64F5",
   borderRadius: 15,
   svg: {

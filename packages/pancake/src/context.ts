@@ -11,6 +11,7 @@ export interface AdapterProps extends TWAPProps {
   connector?: any;
   isMobile?: boolean;
   useTooltip: any;
+  Tooltip?: any;
   Button: any;
   ApproveModalContent?: any;
   SwapTransactionErrorContent?: any;
@@ -27,3 +28,4 @@ const AdapterContext = createContext({} as AdapterProps);
 export const AdapterContextProvider = AdapterContext.Provider;
 
 export const useAdapterContext = () => useContext(AdapterContext);
+export type WarningVariant = "error" | "warning" | "info";
