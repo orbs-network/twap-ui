@@ -43,7 +43,7 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     showConfirmation: false,
     disclaimerAccepted: true,
 
-    chunks: !queryParamsEnabled ? 0 : chunks ? Number(chunks) : 0,
+    chunks: !queryParamsEnabled ? undefined : chunks ? Number(chunks) : undefined,
     customDuration: !queryParamsEnabled ? defaultCustomDuration : { resolution: TimeResolution.Minutes, amount: maxDurationQueryParam ? Number(maxDurationQueryParam) : undefined },
     customFillDelay: !queryParamsEnabled ? defaultCustomFillDelay : { resolution: TimeResolution.Minutes, amount: tradeIntervalQueryParam ? Number(tradeIntervalQueryParam) : 2 },
 

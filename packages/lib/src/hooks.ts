@@ -1359,13 +1359,13 @@ export const useLimitPriceV2 = () => {
     if (limitPriceStore.gainPercent !== undefined) {
       return limitPriceStore.gainPercent;
     }
-    const result =  BN(limitPrice.original || "0")
+    const result = BN(limitPrice.original || "0")
       .dividedBy(marketPrice || "0")
       .minus(1)
       .times(100)
       .decimalPlaces(2)
       .toNumber();
-      return isNaN(result) ? 0 : result;
+    return isNaN(result) ? 0 : result;
   }, [limitPrice, marketPrice, limitPriceStore.gainPercent]);
 
   const onReset = useCallback(() => {
@@ -1597,7 +1597,8 @@ export const useChunks = () => {
 
   return useMemo(() => {
     if (!srcUsd || !srcToken) return 1;
-    if (chunks >= 1) return chunks;
+    
+    if (chunks !== undefined) return chunks;
     return Math.min(
       maxPossibleChunks,
       BN(srcAmountUsd || "0")
@@ -1611,12 +1612,8 @@ export const useSetChunks = () => {
   const maxPossibleChunks = useMaxPossibleChunks();
   const updateState = useTwapStore((s) => s.updateState);
   return useCallback(
-    (chunks?: number) => {
-      if (!chunks) {
-        setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, undefined);
-        updateState({ chunks: undefined });
-        return;
-      }
+    (chunks = 0) => {
+      
       const _chunks = Math.min(chunks, maxPossibleChunks);
       setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, _chunks > 0 ? _chunks.toString() : undefined);
       updateState({ chunks: _chunks });

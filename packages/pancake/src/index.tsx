@@ -37,7 +37,6 @@ import {
   StyledSlider,
   StyledSliderContainer,
   StyledBackBody,
-  StyledFrontBody,
   StyledTrades,
   StyledContainer,
   StyledTradeInterval,
@@ -448,13 +447,7 @@ const getElementPositionInsideParent = (child: any, parent: any) => {
     height: childRect.height,
   };
 };
-const calcPosition = () => {
-  const parentElement = document.querySelector(".twap-trades-select");
-  const childElement = document.querySelector(".MuiSlider-thumb");
-  const position = getElementPositionInsideParent(childElement, parentElement);
 
-  return position;
-};
 export function TotalTrades({ className = "" }: { className?: string }) {
   const { srcAmount } = store.useTwapStore((store) => ({
     srcAmount: store.getSrcAmount(),
@@ -465,26 +458,18 @@ export function TotalTrades({ className = "" }: { className?: string }) {
   const chunkSize = hooks.useFormatNumber({ value: hooks.useSrcChunkAmountUi(), decimalScale: 4 });
   const setChunks = hooks.useSetChunks();
   const srcToken = store.useTwapStore((store) => store.srcToken);
-  // const [chunks, setChunks] = useState(0);
-  const [position, setPosition] = useState({ left: 0, top: 0 });
   const t = useTwapContext().translations;
 
-  const onSetPosition = useCallback((pos: any) => {
-    console.log(pos.left, pos.top);
-
-    setPosition({
-      left: pos?.left || 0,
-      top: pos?.top || 0,
-    });
-  }, []);
-
-  // useRelativePositionCallback(".twap-trades-select .MuiSlider-thumb", ".twap-trades-select", onSetPosition);
-
-  useEffect(() => {
-    // setChunks(30);
-  }, []);
-
   // if (srcAmount.isZero()) return null;
+
+  const onSetChunks = useCallback(
+    (value: string) => {
+      const res = !value ? 0 : Number(value);
+      setChunks(res);
+    },
+    [setChunks]
+  );
+
   if (limitPanel) return null;
 
   return (
@@ -498,21 +483,11 @@ export function TotalTrades({ className = "" }: { className?: string }) {
         </InputContainer.Header>
 
         <Styles.StyledRowFlex gap={30}>
-          <Components.Base.NumericInput
-            className={className}
-            placeholder="0"
-            value={chunks}
-            decimalScale={0}
-            maxValue={maxPossibleChunks.toString()}
-            onChange={(value) => setChunks(Number(value))}
-          />
+          <Components.Base.NumericInput className={className} placeholder="0" value={chunks} decimalScale={0} maxValue={maxPossibleChunks.toString()} onChange={onSetChunks} />
           <StyledSliderContainer className="twap-trades-select">
             <StyledBackBody>
               <BackBody />
             </StyledBackBody>
-            <StyledFrontBody left={position.left - 6} top={position.top - 15}>
-              <FrontBody />
-            </StyledFrontBody>
             <StyledSlider className={className} maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />
           </StyledSliderContainer>
         </Styles.StyledRowFlex>
@@ -881,7 +856,8 @@ const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }
 };
 
 export const useShowSwapModalButton = () => {
-  const translations = useTwapContext()?.translations;
+  const { translations } = useTwapContext();
+  const { limit } = useAdapterContext();
   const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, createOrderLoading, srcAmount } = store.useTwapStore((store) => ({
     maker: store.lib?.maker,
     shouldWrap: store.shouldWrap(),
@@ -898,6 +874,8 @@ export const useShowSwapModalButton = () => {
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();
   const srcUsd = hooks.useSrcUsd().value;
   const dstUsd = hooks.useDstUsd().value;
+
+  const placeOrderText = limit ? "Place Limit Order" : "Place TWAP Order";
 
   const noLiquidity = useMemo(() => {
     if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;
@@ -939,7 +917,7 @@ export const useShowSwapModalButton = () => {
 
   if (warning)
     return {
-      text: translations.placeOrder,
+      text: placeOrderText,
       onClick: undefined,
       disabled: true,
       loading: false,
@@ -962,7 +940,7 @@ export const useShowSwapModalButton = () => {
 
   if (createOrderLoading) {
     return {
-      text: translations.placeOrder,
+      text: placeOrderText,
       onClick: () => {
         setShowConfirmation(true);
       },
@@ -970,7 +948,7 @@ export const useShowSwapModalButton = () => {
   }
 
   return {
-    text: translations.placeOrder,
+    text: placeOrderText,
     onClick: () => {
       setShowConfirmation(true);
     },

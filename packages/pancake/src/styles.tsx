@@ -556,19 +556,29 @@ export const StyledSlider = styled(Components.Base.Slider)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     borderRadius: 0,
-    ".MuiSlider-thumb": {
-      opacity: 0,
+    ".twap-slider-thumb": {
+    
     },
     ".MuiSlider-valueLabel": {
       display: "none",
     },
     ".MuiSlider-rail": {
       background: "#55496E",
+      height:2,
+      opacity:1,
     },
     ".MuiSlider-track": {
       background: "#1FC7D4",
       border: "3px solid #1FC7D4",
+      zIndex: 1,
+      transition:'0s all'
     },
+    ".MuiSlider-mark": {
+      background:'#55496E',
+      width: 8,
+      height: 8,
+      borderRadius: "50%",
+    }
   };
 });
 
@@ -579,19 +589,20 @@ export const StyledSliderContainer = styled(Styles.StyledRowFlex)({
 
 export const StyledBackBody = styled("div")({
   position: "absolute",
-  left: -10,
+  left: -27,
   top: 7,
+  "&:after": {
+    content: "''",
+    position: "absolute",
+    width: 20,
+    height: 10,
+    background: "#1FC7D4",
+    top: 3,
+    left: 7
+  }
 });
 
-export const StyledFrontBody = styled("div")<{ left: number; top: number }>(({ left, top }) => {
-  return {
-    position: "absolute",
-    left,
-    top,
-    zIndex: 1,
-    pointerEvents: "none",
-  };
-});
+
 
 export const StyledChunksInput = styled(Components.ChunksInput)({
   marginLeft: "auto",
@@ -1114,7 +1125,7 @@ export const StyledPricePanelInput = styled(InputContainer)(() => {
       display: "flex",
       justifyContent: "space-between",
       width: "100%",
-      padding: "4px 12px 6px 12px",
+      padding: "6px 12px 6px 12px",
       height: "100%",
     },
     ".twap-label": {
@@ -1171,7 +1182,7 @@ export const StyledPricePanelPercent = styled(InputContainer)(({ theme }) => {
       display: "flex",
       justifyContent: "space-between",
       width: "100%",
-      padding: "4px 12px 6px 12px",
+      padding: "6px 12px 6px 12px",
       height: "100%",
       "&:after": {
         border: `2px solid #A881FC`,

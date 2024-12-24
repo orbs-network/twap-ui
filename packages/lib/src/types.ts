@@ -295,7 +295,7 @@ export interface State {
   showConfirmation: boolean;
   disclaimerAccepted: boolean;
 
-  chunks: number;
+  chunks?: number;
   customFillDelay: Duration;
   customDuration: Duration;
 
