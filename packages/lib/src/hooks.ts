@@ -1597,7 +1597,7 @@ export const useChunks = () => {
 
   return useMemo(() => {
     if (!srcUsd || !srcToken) return 1;
-    
+
     if (chunks !== undefined) return chunks;
     return Math.min(
       maxPossibleChunks,
@@ -1613,7 +1613,6 @@ export const useSetChunks = () => {
   const updateState = useTwapStore((s) => s.updateState);
   return useCallback(
     (chunks = 0) => {
-      
       const _chunks = Math.min(chunks, maxPossibleChunks);
       setQueryParam(QUERY_PARAMS.TRADES_AMOUNT, _chunks > 0 ? _chunks.toString() : undefined);
       updateState({ chunks: _chunks });

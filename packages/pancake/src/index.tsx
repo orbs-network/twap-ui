@@ -42,6 +42,7 @@ import {
   StyledTradeInterval,
   StyledDuration,
   StyledMarketPrice,
+  StyledTokenPanelContent,
 } from "./styles";
 import { memo, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { StyledBalance, StyledEmptyUSD, StyledPercentSelect, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
@@ -179,25 +180,25 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   );
   const onTokenSelectClick = useAdapterContext().useTokenModal(onSelect, srcToken, dstToken, isSrcToken);
   return (
-    <StyledTokenPanel>
-      <Styles.StyledRowFlex justifyContent="space-between">
-        <StyledTokenPanelTitle>{isSrcToken ? "From" : "To"}</StyledTokenPanelTitle>
-        <StyledBalanceAndPercent>
-          <Balance isSrc={isSrcToken} hide={Boolean(isSrcToken && showPercent)} />
-          <SrcTokenPercentSelector show={Boolean(isSrcToken && showPercent)} />
-        </StyledBalanceAndPercent>
-      </Styles.StyledRowFlex>
-      <InputContainer disabled={!isSrcToken} onBlur={() => setShowPercent(false)} onFocus={() => setShowPercent(true)}>
-        <Styles.StyledRowFlex gap={5} style={{ alignItems: "center" }}>
-          <StyledTokenSelect CustomArrow={MdKeyboardArrowDown} hideArrow={false} isSrc={isSrcToken} onClick={onTokenSelectClick} />
-          <Styles.StyledColumnFlex style={{ flex: 1, gap: 0, alignItems: "flex-end" }}>
-            <StyledTokenPanelInput dstDecimalScale={7} isSrc={isSrcToken} />
-            <StyledUSD decimalScale={2} isSrc={isSrcToken} emptyUi={<StyledEmptyUSD />} />
-          </Styles.StyledColumnFlex>
+    <StyledContainerPadding>
+      <StyledTokenPanel>
+        <Styles.StyledRowFlex justifyContent="space-between">
+          <StyledTokenPanelTitle>{isSrcToken ? "From" : "To"}</StyledTokenPanelTitle>
+          <StyledBalanceAndPercent>
+            <Balance isSrc={isSrcToken} hide={Boolean(isSrcToken && showPercent)} />
+            <SrcTokenPercentSelector show={Boolean(isSrcToken && showPercent)} />
+          </StyledBalanceAndPercent>
         </Styles.StyledRowFlex>
-      </InputContainer>
-      {isSrcToken && <SrcInputWarning />}
-    </StyledTokenPanel>
+        <StyledTokenPanelContent disabled={!isSrcToken} onBlur={() => setShowPercent(false)} onFocus={() => setShowPercent(true)}>
+          <StyledTokenSelect CustomArrow={MdKeyboardArrowDown} hideArrow={false} isSrc={isSrcToken} onClick={onTokenSelectClick} />
+          <Styles.StyledColumnFlex style={{ flex: 1, gap: 0, alignItems: "flex-end", width: "auto" }}>
+            <StyledTokenPanelInput dstDecimalScale={7} isSrc={isSrcToken} />
+            <StyledUSD decimalScale={2} isSrc={isSrcToken} hideIfZero={true} emptyUi={<StyledEmptyUSD />} />
+          </Styles.StyledColumnFlex>
+        </StyledTokenPanelContent>
+        {isSrcToken && <SrcInputWarning />}
+      </StyledTokenPanel>
+    </StyledContainerPadding>
   );
 };
 
@@ -395,15 +396,12 @@ const TWAPPanel = () => {
     <div className="twap-container">
       <StyledColumnFlex>
         <StyledContainer>
-          <StyledContainerPadding>
-            <TokenPanel isSrcToken={true} />
-          </StyledContainerPadding>
+          <TokenPanel isSrcToken={true} />
           <ChangeTokensOrder />
-          <StyledContainerPadding>
-            <TokenPanel />
-            <LimitPriceToggle />
-            <PricePanel />
-          </StyledContainerPadding>
+          <TokenPanel />
+
+          <LimitPriceToggle />
+          <PricePanel />
         </StyledContainer>
         <StyledContainer>
           <TotalTrades />
@@ -455,7 +453,7 @@ export function TotalTrades({ className = "" }: { className?: string }) {
   const limitPanel = useAdapterContext().limit;
   const maxPossibleChunks = hooks.useMaxPossibleChunks();
   const chunks = hooks.useChunks();
-  const chunkSize = hooks.useFormatNumber({ value: hooks.useSrcChunkAmountUi(), decimalScale: 4 });
+  const chunkSize = hooks.useFormatNumber({ value: hooks.useSrcChunkAmountUi(), decimalScale: 3 });
   const setChunks = hooks.useSetChunks();
   const srcToken = store.useTwapStore((store) => store.srcToken);
   const t = useTwapContext().translations;
@@ -474,7 +472,7 @@ export function TotalTrades({ className = "" }: { className?: string }) {
 
   return (
     <StyledContainerPadding>
-      <StyledTrades disabled={true}>
+      <StyledTrades>
         <InputContainer.Header>
           <Styles.StyledRowFlex justifyContent="space-between">
             <InputContainer.Header.Label tooltip={t.totalTradesTooltip} label="Total Trades" />
@@ -482,7 +480,7 @@ export function TotalTrades({ className = "" }: { className?: string }) {
           </Styles.StyledRowFlex>
         </InputContainer.Header>
 
-        <Styles.StyledRowFlex gap={30}>
+        <Styles.StyledRowFlex gap={40}>
           <Components.Base.NumericInput className={className} placeholder="0" value={chunks} decimalScale={0} maxValue={maxPossibleChunks.toString()} onChange={onSetChunks} />
           <StyledSliderContainer className="twap-trades-select">
             <StyledBackBody>
@@ -561,6 +559,7 @@ const LimitPriceToggle = () => {
   const limit = useAdapterContext().limit;
   if (limit) return null;
   return (
+   <StyledContainerPadding>
     <StyledLimitPrice>
       <Styles.StyledRowFlex width="auto">
         <Components.LimitPriceToggle />
@@ -568,6 +567,8 @@ const LimitPriceToggle = () => {
       </Styles.StyledRowFlex>
       <MarketPrice />
     </StyledLimitPrice>
+    </StyledContainerPadding>
+
   );
 };
 
@@ -579,6 +580,7 @@ const PricePanel = () => {
   if (isMarketOrder) return null;
 
   return (
+    <StyledContainerPadding>
     <StyledPricePanel className="twap-limit-price-panel">
       <PricePanelHeader />
       <Styles.StyledRowFlex className="twap-limit-price-panel-inputs">
@@ -587,6 +589,7 @@ const PricePanel = () => {
       </Styles.StyledRowFlex>
       <PricePanelWarning />
     </StyledPricePanel>
+    </StyledContainerPadding>
   );
 };
 
@@ -656,7 +659,7 @@ const LimitPanelInput = () => {
       <Components.Base.Label>{token?.symbol}</Components.Base.Label>
       <StyledPricePanelInputRight>
         <Components.Base.NumericInput decimalScale={isCustom ? undefined : 6} loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice.original} />
-        <Components.Base.USD value={usdF} />
+        {BN(usd || 0).gt(0) && <Components.Base.USD value={usdF} />}
       </StyledPricePanelInputRight>
     </StyledPricePanelInput>
   );

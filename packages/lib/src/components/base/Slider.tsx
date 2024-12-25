@@ -18,7 +18,6 @@ export interface Props {
   className?: string;
 }
 
-
 function limitMarks(marks: Mark[], maxMarks: number): Mark[] {
   if (marks.length <= maxMarks) return marks; // Return all marks if fewer than maxMarks
   const step = Math.ceil(marks.length / maxMarks);
@@ -27,11 +26,10 @@ function limitMarks(marks: Mark[], maxMarks: number): Mark[] {
 
 const Slider = ({ onChange, value, maxTrades, className = "" }: Props) => {
   const handleChange = (_event: Event, newValue: number | number[], activeThumb: number) => {
-    
     if (typeof newValue === "number") {
       onChange(newValue);
     }
-  };  
+  };
 
   // const allMarks = useMemo(() => {
   //   const maxMarks = Math.min(10, Math.ceil(maxTrades / 20));
@@ -39,7 +37,6 @@ const Slider = ({ onChange, value, maxTrades, className = "" }: Props) => {
   //     value: i * 5,
   //   }));
   // }, [maxTrades]);
-
 
   const _value = Math.max(1, value);
 
@@ -56,14 +53,12 @@ const Slider = ({ onChange, value, maxTrades, className = "" }: Props) => {
       onChange={handleChange}
       valueLabelDisplay="auto"
       className={`twap-slider ${className}`}
-     slots={{
-      thumb: Thumb,
-     }}
-    
+      slots={{
+        thumb: Thumb,
+      }}
     />
   );
 };
-
 
 export function FrontBody() {
   return (
@@ -107,31 +102,27 @@ export function FrontBody() {
   );
 }
 
-
 const Thumb = forwardRef((props: any, ref: any) => {
-  console.log(props);
-
   // Spread props to ensure Slider-specific props are applied correctly
   return (
     <StyledThumb
       {...props} // Pass all MUI-specific props
-      ref={ref}   // Forward the ref to make the element focusable
-      dataIndex={props['data-index']} // Ensure the element is focusable
-      type='range'
+      ref={ref} // Forward the ref to make the element focusable
+      dataIndex={props["data-index"]} // Ensure the element is focusable
+      type="range"
       className={`twap-slider-thumb ${props.className}`}
     >
-     <FrontBody />
+      <FrontBody />
     </StyledThumb>
   );
 });
 
-
-const StyledThumb = styled('div')({
-  position: 'relative',
+const StyledThumb = styled("div")({
+  position: "relative",
   top: -23,
   marginLeft: -20,
   zIndex: 1,
-})
+});
 
 export default Slider;
 
