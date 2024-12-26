@@ -433,7 +433,7 @@ export const StyledPancakeOrders = styled(Box)<{ isDarkTheme: number }>(({ isDar
   borderRadius: 24,
   position: "relative",
   width: "100%",
-  maxWidth: 630,
+  maxWidth: 780,
   marginTop: 20,
 }));
 

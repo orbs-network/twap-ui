@@ -184,18 +184,6 @@ const Tooltip = ({ content, children }: { content: ReactNode; children?: ReactNo
   );
 };
 
-const DappButton = ({ isLoading, disabled, children, onClick }: any) => {
-  return (
-    <StyledButton variant="contained" fullWidth disabled={isLoading || disabled} onClick={onClick}>
-      {children}
-    </StyledButton>
-  );
-};
-
-const StyledButton = styled(Button)({
-  width: "100%",
-});
-
 const ApproveModalContent = ({ title, isBonus, isMM }: { title: string; isBonus: boolean; isMM: boolean }) => {
   return <p>Approving</p>;
 };
@@ -284,7 +272,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       isMobile={isMobile}
       useTooltip={useTooltip}
       Tooltip={Tooltip}
-      Button={DappButton}
       ApproveModalContent={ApproveModalContent}
       SwapTransactionErrorContent={SwapTransactionErrorContent}
       SwapPendingModalContent={SwapPendingModalContent}

@@ -17,7 +17,6 @@ export const StyledShadowContainer = styled(Box)({
 });
 
 export const StyledText = styled(Typography)({
-  fontFamily: "inherit",
   fontSize: "inherit",
 });
 

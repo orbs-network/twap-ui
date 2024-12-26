@@ -4,5 +4,6 @@
   "totalTradesTooltip": "The total number of trades scheduled for your order. Note that in limit orders, not all scheduled trades may be executed.",
   "days-short": "Days",
   "hours-short": "Hrs",
-  "minutes-short": "Min"
+  "minutes-short": "Min",
+  "deadline":"Expiry"
 }

@@ -52,10 +52,6 @@ const StyledContainer = styled("div")({
   flexDirection: "column",
   gap: 15,
 
-  "& *": {
-    fontFamily: "inherit",
-    color: "inherit",
-  },
 });
 const StyledHeaderTop = styled(Box)({
   display: "flex",

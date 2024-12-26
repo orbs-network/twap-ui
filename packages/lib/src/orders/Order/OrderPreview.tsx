@@ -1,61 +1,156 @@
-import { LinearProgress, Typography, Box, styled, Fade } from "@mui/material";
-import { OrderUI, useTwapContext } from "../..";
+import { LinearProgress, Typography, Box, styled } from "@mui/material";
+import { Components, OrderUI } from "../..";
 import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../../styles";
 import { useFormatNumber } from "../../hooks";
 import { Icon, Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
-import { TokenData } from "@orbs-network/twap";
-import { ReactNode, useMemo } from "react";
-import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
-import { FiChevronDown } from "@react-icons/all-files/fi/FiChevronDown";
+import { Status, TokenData } from "@orbs-network/twap";
+import { ReactNode, useMemo, useState } from "react";
+import { ArrowsIcon, CheckIcon, ChevronDown } from "./icons";
+import BN from "bignumber.js";
+import { OrderStatus } from "./Components";
 
-function OrderPreview({ order }: { order: OrderUI }) {
-  const srcFilledAmountUi = useFormatNumber({ value: order?.ui.srcFilledAmountUi });
-  const progress = useFormatNumber({ value: order?.ui.progress, decimalScale: 1, suffix: "%" });
-  const translations = useTwapContext().translations;
-
+const Tokens = ({ order }: { order: OrderUI }) => {
   return (
-    <StyledColumnFlex gap={0} className="twap-order-preview">
-      <StyledHeader className="twap-order-preview-header">
-        <StyledRowFlex className="twap-order-preview-info" gap={6} justifyContent="flex-start" style={{ width: "auto" }}>
-          <StyledHeaderText>#{order?.order.id}</StyledHeaderText>
-          <StyledHeaderText>{order?.ui.isMarketOrder ? translations.marketOrder : translations.limitOrder}</StyledHeaderText>
-        </StyledRowFlex>
-        <StyledHeaderText className="twap-order-preview-date">{order?.ui.createdAtUi}</StyledHeaderText>
-      </StyledHeader>
-      <Tooltip
-        childrenStyles={{ width: "100%" }}
-        placement="top"
-        text={
-          <Box>
-            {srcFilledAmountUi}
-            {" " + order?.ui.srcToken?.symbol + " "}
-            {`(${progress ? progress : "0%"})`}
-          </Box>
-        }
-      >
-        <StyledPreviewLinearProgress variant="determinate" value={order?.ui.progress || 1} className="twap-order-progress twap-order-preview-progress" />
-      </Tooltip>
-      <StyledRowFlex style={{ paddingTop: 18, paddingRight: 10, alignItems: "flex-start", gap: 16 }} className="twap-order-preview-tokens" justifyContent="space-between">
-        <OrderTokenDisplay
-          isMain={true}
-          token={order?.ui.srcToken}
-          amount={order?.ui.srcAmountUi}
-          usdValue={order?.ui.srcAmountUsdUi || "0"}
-          isLoading={!order?.ui.srcAmountUsdUi}
-        />
-        <Icon className="twap-order-preview-icon" icon={<HiArrowRight style={{ width: 22, height: 22 }} />} />
-        <OrderTokenDisplay
-          usdLoading={order?.ui.dstUsdLoading}
-          isLoading={false}
-          token={order?.ui.dstToken}
-          amount={order?.ui.dstAmount}
-          usdValue={order?.ui.dstAmountUsd}
-          icon={<FiChevronDown />}
-        />
+    <SyledTokens className="twap-order-preview-tokens">
+      <TokensToken className="twap-order-preview-tokens-in-token" token={order?.ui.srcToken} amount={order?.ui.srcAmountUi} />
+      <TokensToken className="twap-order-preview-tokens-out-token" token={order?.ui.dstToken} amount={order?.ui.dstMinAmountOut} />
+    </SyledTokens>
+  );
+};
+
+const SyledTokens = styled(StyledColumnFlex)({
+  width: "auto",
+  alignItems: "flex-start",
+  gap: 5,
+});
+
+const TokensToken = ({ token, amount, className }: { token?: TokenData; amount?: string; className: string }) => {
+  const amountF = useFormatNumber({ value: amount, decimalScale: 3 });
+  return (
+    <StyledToken className={className}>
+      <Components.Base.TokenLogo logo={token?.logoUrl} />
+      {amount && <StyledTokenAmount>{amountF}</StyledTokenAmount>}
+      <StyledTokenSymbol>{token?.symbol}</StyledTokenSymbol>
+    </StyledToken>
+  );
+};
+const StyledTokenSymbol = styled(StyledText)({
+  fontSize: 16,
+  fontWeight: 600,
+});
+const StyledTokenAmount = styled(StyledText)({
+  fontSize: 16,
+  fontWeight: 600,
+});
+const StyledToken = styled(StyledRowFlex)({
+  width: "auto",
+  ".twap-token-logo ": {
+    width: 24,
+    height: 24,
+  },
+});
+
+const Price = ({ order }: { order: OrderUI }) => {
+  const priceSrcForDstToken = order?.ui.priceSrcForDstToken;
+  const [inverted, setInverted] = useState(false);
+
+  const value = useMemo(() => {
+    if (!priceSrcForDstToken) return;
+    return inverted ? BN(1).dividedBy(priceSrcForDstToken).toString() : priceSrcForDstToken;
+  }, [priceSrcForDstToken, inverted]);
+
+  const priceF = useFormatNumber({ value, decimalScale: 3 });
+
+  const leftToken = inverted ? order?.ui.dstToken : order?.ui.srcToken;
+  const rightToken = inverted ? order?.ui.srcToken : order?.ui.dstToken;
+
+  console.log({ value });
+
+  if (!value) return null;
+  return (
+    <StyledPrice>
+      <StyledPriceText>1 {leftToken?.symbol}</StyledPriceText>
+      <StyledPriceToggle onClick={() => setInverted(!inverted)}>
+        <ArrowsIcon />
+      </StyledPriceToggle>
+      <StyledPriceText>
+        {priceF} {rightToken?.symbol}
+      </StyledPriceText>
+    </StyledPrice>
+  );
+};
+const StyledPriceToggle = styled("button")({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background: "transparent",
+  border: "none",
+  cursor: "pointer",
+  svg: {
+    width: 18,
+    height: 18,
+  },
+});
+
+const StyledPrice = styled(StyledRowFlex)({
+  width: "auto",
+  gap: 0,
+});
+const StyledPriceText = styled(StyledText)({
+  fontSize: 14,
+});
+
+
+export interface Props {
+  order: OrderUI;
+  onExpand: () => void;
+  expanded: boolean;
+}
+
+
+function OrderPreview({ order, expanded, onExpand }: Props) {
+  return (
+    <StyledOrderPreview gap={0} className="twap-order-preview">
+      <Tokens order={order} />
+      <Price order={order} />
+      <StyledRowFlex style={{width:'auto'}}>
+      <OrderStatus order={order} />
+      <ToggleExpanded expanded={expanded} onExpand={onExpand} />
       </StyledRowFlex>
-    </StyledColumnFlex>
+    </StyledOrderPreview>
   );
 }
+
+const ToggleExpanded = ({ expanded, onExpand }: { expanded: boolean; onExpand: () => void }) => {
+
+  return (
+    <StyledExpandToggle expanded={expanded ? 1 : 0} onClick={onExpand}>
+      <ChevronDown />
+    </StyledExpandToggle>
+  );
+}
+
+const StyledOrderPreview = styled(StyledRowFlex)({
+  justifyContent: "space-between",
+  cursor:'auto!important',
+});
+
+
+
+
+
+const StyledExpandToggle = styled("button")<{expanded: number}>(({expanded}) => ({
+  background: "transparent",
+  border: "none",
+  cursor: "pointer",
+ 
+  svg: {
+    transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+    width: 22,
+    height: 22,
+  },
+}));
+
 
 export default OrderPreview;
 
@@ -80,19 +175,6 @@ export const StyledPreviewLinearProgress = styled(LinearProgress)({
     zIndex: 1,
     transition: "0.2s all",
   },
-});
-
-const StyledHeader = styled(StyledRowFlex)({
-  justifyContent: "space-between",
-  fontSize: 13,
-  fontWeight: 300,
-  marginBottom: 12,
-});
-
-const StyledHeaderText = styled(StyledText)({
-  fontSize: "inherit",
-  fontWeight: "inherit",
-  color: "#9CA3AF",
 });
 
 interface OrderTokenDisplayProps {

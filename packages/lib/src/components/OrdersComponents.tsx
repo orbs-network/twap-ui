@@ -1,11 +1,12 @@
 import { useMediaQuery } from "@mui/material";
 import { Status } from "@orbs-network/twap";
 import _ from "lodash";
-import { ParsedOrder, Translations, useTwapContext } from "..";
+import { ParsedOrder, Styles, Translations, useTwapContext } from "..";
 import { useOrdersHistoryQuery, useOrdersTabs } from "../hooks";
 import { useOrdersStore } from "../store";
 import { StyledOrdersLists, StyledOrdersTab, StyledOrdersTabs } from "../styles";
 import OrdersList from "../orders/OrdersList";
+import { useMemo } from "react";
 
 function a11yProps(index: number) {
   return {
@@ -57,6 +58,37 @@ export const SelectedOrders = ({ className = "" }: { className?: string }) => {
 
         return <OrdersList key={key} isLoading={isLoading} status={key as any as Status} orders={orders[key as any as Status] as ParsedOrder[]} />;
       })}
+    </StyledOrdersLists>
+  );
+};
+
+export const AllOrders = ({ className = "", hideStatus }: { className?: string; hideStatus?: Status }) => {
+  const { orders, isLoading } = useOrdersHistoryQuery();
+
+  const list = useMemo(() => {
+    console.log({ hideStatus, orders });
+
+    if (!hideStatus) {
+      return _.flatMap(orders);
+    }
+
+    return _.flatMap(orders).filter((order) => order.ui.status !== hideStatus);
+  }, [orders, hideStatus]);
+
+  return (
+    <StyledOrdersLists className={`twap-orders-lists ${className}`}>
+      {!list.length ? <Styles.StyledText>No history found</Styles.StyledText> : <OrdersList isLoading={isLoading} orders={list} />}
+    </StyledOrdersLists>
+  );
+};
+
+export const OpenOrders = ({ className = "" }: { className?: string }) => {
+  const { orders, isLoading } = useOrdersHistoryQuery();
+
+  const list = orders?.Open as ParsedOrder[];
+  return (
+    <StyledOrdersLists className={`twap-orders-lists ${className}`}>
+      {!list?.length ? <Styles.StyledText>No open orders found</Styles.StyledText> : <OrdersList isLoading={isLoading} status={Status.Open} orders={list} />}
     </StyledOrdersLists>
   );
 };

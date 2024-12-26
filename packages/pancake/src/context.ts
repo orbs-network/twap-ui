@@ -12,7 +12,7 @@ export interface AdapterProps extends TWAPProps {
   isMobile?: boolean;
   useTooltip: any;
   Tooltip?: any;
-  Button: any;
+  Button?: any;
   ApproveModalContent?: any;
   SwapTransactionErrorContent?: any;
   SwapPendingModalContent?: any;

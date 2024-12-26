@@ -18,35 +18,38 @@ export interface Props {
   className?: string;
 }
 
-function limitMarks(marks: Mark[], maxMarks: number): Mark[] {
-  if (marks.length <= maxMarks) return marks; // Return all marks if fewer than maxMarks
-  const step = Math.ceil(marks.length / maxMarks);
-  return marks.filter((_, index) => index % step === 0);
-}
+const generateMarks = (max: number) => {
+  if (max < 2) return []; // No marks if max is less than 2
+  const steps = 4; // Fixed number of marks (e.g., 4 including min and max)
 
+  const stepSize = max / (steps - 1); // Divide range into equal parts
+  const marks = [];
+  for (let i = 0; i < steps; i++) {
+    const value = Math.round(i * stepSize); // Mark values
+    marks.push({
+      value,
+    });
+  }
+  return marks;
+};
 const Slider = ({ onChange, value, maxTrades, className = "" }: Props) => {
-  const handleChange = (_event: Event, newValue: number | number[], activeThumb: number) => {
+  const handleChange = (_event: Event, newValue: number | number[]) => {
     if (typeof newValue === "number") {
       onChange(newValue);
     }
   };
 
-  // const allMarks = useMemo(() => {
-  //   const maxMarks = Math.min(10, Math.ceil(maxTrades / 20));
-  //   return Array.from({ length: maxTrades / maxMarks }, (_, i) => ({
-  //     value: i * 5,
-  //   }));
-  // }, [maxTrades]);
-
   const _value = Math.max(1, value);
+
+  const marks = useMemo(() => generateMarks(maxTrades), [maxTrades]);
 
   return (
     <StyledSlider
       value={_value}
       min={1}
       step={1}
-      marks={false}
-      max={_value === 1 ? undefined : maxTrades}
+      marks={marks}
+      max={Math.max(maxTrades, 2)}
       scale={calculateValue}
       getAriaValueText={valueLabelFormat}
       valueLabelFormat={valueLabelFormat}

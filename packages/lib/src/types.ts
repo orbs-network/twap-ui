@@ -193,7 +193,7 @@ export interface ParsedOrder {
     srcToken?: TokenData;
     dstToken?: TokenData;
     totalChunks?: number;
-    dstAmount?: string;
+    dstFilledAmount?: string;
     progress?: number;
     srcFilledAmount?: string;
     dollarValueIn?: string;

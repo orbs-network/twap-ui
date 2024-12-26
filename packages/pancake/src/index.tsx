@@ -43,6 +43,7 @@ import {
   StyledDuration,
   StyledMarketPrice,
   StyledTokenPanelContent,
+  StyledButton,
 } from "./styles";
 import { memo, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { StyledBalance, StyledEmptyUSD, StyledPercentSelect, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
@@ -64,23 +65,12 @@ import { MdAccountBalanceWallet } from "@react-icons/all-files/md/MdAccountBalan
 import { ChangeIcon } from "./icons/change";
 import { InfoIcon } from "./icons/info";
 import { BackBody } from "./icons/BackBody";
-import { FrontBody } from "./icons/FrontBody";
 
 const PERCENT = [
   { text: "25%", value: 0.25 },
   { text: "50%", value: 0.5 },
   { text: "MAX", value: 1 },
 ];
-
-const Button = (props: any) => {
-  const DappButton = useAdapterContext().Button;
-
-  return (
-    <DappButton onClick={props.onClick} disabled={props.disabled || props.loading}>
-      {props.children}
-    </DappButton>
-  );
-};
 
 const Tooltip = ({ text, children, childrenStyles = {} }: TooltipProps) => {
   const context = useAdapterContext();
@@ -104,7 +94,6 @@ const uiPreferences: TwapContextUIPreferences = {
   switchVariant: "ios",
   inputPlaceholder: "0.0",
   Tooltip,
-  Button,
   orders: {
     paginationChunks: 4,
     hideUsd: true,
@@ -359,8 +348,34 @@ const SrcInputWarning = () => {
   );
 };
 
+const DefaultButton = ({ isLoading, disabled, children, onClick }: any) => {
+  return (
+    <StyledButton disabled={isLoading || disabled} onClick={onClick}>
+      {children}
+    </StyledButton>
+  );
+};
+
+const Button = ({ onClick, disabled, children, loading }: any) => {
+  const DappButton = useAdapterContext().Button;
+
+  if (DappButton) {
+    return (
+      <DappButton onClick={onClick} disabled={disabled || loading}>
+        {children}
+      </DappButton>
+    );
+  }
+
+  return (
+    <DefaultButton onClick={onClick} disabled={disabled || loading}>
+      {children}
+    </DefaultButton>
+  );
+};
+
 const OpenConfirmationModalButton = () => {
-  const { ConnectButton, provider, Button } = useAdapterContext();
+  const { ConnectButton, provider } = useAdapterContext();
   const { onClick, text, disabled } = useShowSwapModalButton();
 
   if (!provider) {
@@ -559,16 +574,15 @@ const LimitPriceToggle = () => {
   const limit = useAdapterContext().limit;
   if (limit) return null;
   return (
-   <StyledContainerPadding>
-    <StyledLimitPrice>
-      <Styles.StyledRowFlex width="auto">
-        <Components.LimitPriceToggle />
-        <Components.Labels.LimitPriceLabel />
-      </Styles.StyledRowFlex>
-      <MarketPrice />
-    </StyledLimitPrice>
+    <StyledContainerPadding>
+      <StyledLimitPrice>
+        <Styles.StyledRowFlex width="auto">
+          <Components.LimitPriceToggle />
+          <Components.Labels.LimitPriceLabel />
+        </Styles.StyledRowFlex>
+        <MarketPrice />
+      </StyledLimitPrice>
     </StyledContainerPadding>
-
   );
 };
 
@@ -581,14 +595,14 @@ const PricePanel = () => {
 
   return (
     <StyledContainerPadding>
-    <StyledPricePanel className="twap-limit-price-panel">
-      <PricePanelHeader />
-      <Styles.StyledRowFlex className="twap-limit-price-panel-inputs">
-        <LimitPanelInput />
-        <LimitPanelPercent />
-      </Styles.StyledRowFlex>
-      <PricePanelWarning />
-    </StyledPricePanel>
+      <StyledPricePanel className="twap-limit-price-panel">
+        <PricePanelHeader />
+        <Styles.StyledRowFlex className="twap-limit-price-panel-inputs">
+          <LimitPanelInput />
+          <LimitPanelPercent />
+        </Styles.StyledRowFlex>
+        <PricePanelWarning />
+      </StyledPricePanel>
     </StyledContainerPadding>
   );
 };

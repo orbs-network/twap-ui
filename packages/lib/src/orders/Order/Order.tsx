@@ -2,23 +2,13 @@ import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import OrderPreview from "./OrderPreview";
 import OrderExpanded from "./OrderExpanded";
-import { OrderUI, ParsedOrder } from "../../types";
+import { ParsedOrder } from "../../types";
 import { AccordionSummary, Box, styled } from "@mui/material";
 import { StyledSeperator } from "./styles";
 import { CSSProperties } from "react";
 import { Card, Loader } from "../../components/base";
 import { useParseOrderUi } from "../../hooks";
-import ContentLoader from "../../components/base/ContentLoader";
 import { StyledColumnFlex } from "../../styles";
-
-const StyledLoader = styled(Loader)({
-  width: "100%",
-  height: "100%",
-  position: "absolute",
-  left: 0,
-  top: 0,
-  zIndex: 1,
-});
 
 export interface Props {
   order: ParsedOrder;
@@ -30,12 +20,12 @@ function OrderComponent({ order, onExpand, expanded }: Props) {
   const orderUI = useParseOrderUi(order, expanded);
 
   return (
-    <StyledContainer onClick={onExpand} className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
+    <StyledContainer className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
       <StyledAccordion expanded={expanded}>
         <StyledAccordionSummary>
-          <OrderPreview order={orderUI} />
+          <OrderPreview order={orderUI} expanded={expanded} onExpand={onExpand}  />
         </StyledAccordionSummary>
-        <StyledAccordionDetails className="twap-order-accordion" style={{ padding: 0, paddingTop: 10 }}>
+        <StyledAccordionDetails className="twap-order-accordion">
           <OrderSeparator className="twap-order-separator" style={{ marginBottom: 10 }} />
           <Box>
             <OrderExpanded order={orderUI} />
@@ -76,13 +66,11 @@ export const StyledAccordionSummary = styled(AccordionSummary)({
   display: "flex",
   width: "100%",
   padding: 0,
+  cursor:"auto"
 });
 
 const StyledContainer = styled(Card)({
-  cursor: "pointer",
-  "& *": {
-    color: "inherit!important",
-  },
+
 });
 
 const StyledAccordion = styled(Accordion)({
@@ -95,6 +83,9 @@ const StyledAccordion = styled(Accordion)({
   "& .MuiAccordionSummary-content": {
     margin: "0!important",
     width: "100%",
+  },
+  ".Mui-expanded": {
+    minHeight: 'unset',
   },
   "& *": {
     color: "inherit",

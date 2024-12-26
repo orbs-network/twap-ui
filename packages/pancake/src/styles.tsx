@@ -177,10 +177,6 @@ export const configureStyles = (theme: Theme) => {
       ...getButtonStyles(theme),
       padding: "10px",
     },
-    ".twap-order-separator": {
-      background: `${styles.primaryTextColor}!important`,
-      opacity: 0.4,
-    },
     ".twap-spinner": {
       color: `${styles.primaryTextColor}!important`,
     },
@@ -221,17 +217,7 @@ export const configureStyles = (theme: Theme) => {
         marginBottom: 10,
       },
     },
-    ".twap-trade-size": {
-      ".twap-label": {
-        whiteSpace: "nowrap",
-      },
-      ".twap-token-logo": {
-        display: "none",
-      },
-      "*": {
-        color: styles.primaryTextColor,
-      },
-    },
+
     ".twap-orders-title": {
       p: {
         fontWeight: 600,
@@ -241,7 +227,8 @@ export const configureStyles = (theme: Theme) => {
     ".twap-order": {
       border: `1px solid ${styles.border}`,
       borderRadius: 16,
-      padding: 15,
+      padding: '10px 12px',
+
       transition: "0.2s all",
       color: `${styles.primaryTextColor}!important`,
       background: darkMode ? "#362F47" : "#EEEAF4",
@@ -255,15 +242,25 @@ export const configureStyles = (theme: Theme) => {
         },
       },
     },
-    ".twap-order-progress": {
-      background: darkMode ? "#2D2836!important" : "#1fc7d4!important",
-      "&::after": {
-        display: "none!important",
-      },
-      ".MuiLinearProgress-bar": {
-        background: darkMode ? `${styles.label}!important` : "#7a6eaa!important",
-      },
+    ".twap-order-separator": {
+      display: "none",
     },
+   ".twap-order-accordion": {
+    borderRadius: 16,
+    background: darkMode ? "#08060B" : "#EEEAF4",
+    padding: 12,
+    marginTop: '15px!important',
+   },
+   ".twap-order-details-filled": {
+    span: {
+      color:'#B8ADD2!important'
+    }
+   },
+   ".twap-order-details-filled-percent": {
+    color: '#A881FC!important',
+    fontSize: 14,
+    fontWeight: '600!important',
+   },
 
     ".twap-switch": {
       ".MuiSwitch-thumb": {
@@ -341,22 +338,6 @@ export const configureStyles = (theme: Theme) => {
       ".twap-orders-title": {
         p: {
           fontSize: "14px!important",
-        },
-      },
-      ".twap-order-expanded": {
-        ".twap-token-logo": {
-          display: "none",
-        },
-      },
-      ".twap-order-preview-tokens": {
-        ".twap-order-preview-icon svg": {
-          width: "16px!important",
-          height: "16px!important",
-          position: "relative",
-          top: 5,
-        },
-        ".twap-token-logo": {
-          display: "none",
         },
       },
     },
@@ -682,7 +663,7 @@ export const StyledLimitPriceInput = styled(Components.LimitPriceInput)({
   paddingLeft: 0,
 });
 
-const borderButtonStyles = {
+const get = {
   background: "unset",
   borderRadius: 16,
   fontWeight: 600,
@@ -697,23 +678,21 @@ const borderButtonStyles = {
   },
 };
 
-export const StyledButton = styled("button")<{ selected?: number }>(({ theme, selected }) => {
+export const StyledButton = styled("button")(({ theme, disabled }) => {
   const styles = baseStyles(theme);
   return {
-    ...borderButtonStyles,
-    background: selected ? styles.primaryColor : "unset",
-    color: !selected ? "#1fc7d4" : styles.darkMode ? "#191326" : "white",
+    background: disabled ? "#3C3742" : styles.primaryColor,
+    borderRadius: 16,
+    height: 48,
+    color: disabled ? "#666171" : "black",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    fontWeight: 600,
+    fontSize: 16,
+    border: "none",
+    cursor: disabled ? "auto" : "pointer",
   };
-});
-
-export const StyledReset = styled(StyledButton)({
-  p: {
-    fontSize: 13,
-  },
-  svg: {
-    width: 12,
-    height: 12,
-  },
 });
 
 export const StyledAcceptDisclaimer = styled(Components.AcceptDisclaimer)({
@@ -844,32 +823,41 @@ export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
   };
 });
 
-export const StyledOrdersHeader = styled(Box)(({ theme }) => {
+export const StyledOrdersHeader = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    display: "flex",
-    flexDirection: "column",
-    background: styles.darkMode ? "#372f47" : "#eeeaf4",
+    background: styles.darkMode ? "#27262C" : "#eeeaf4",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    height: 48,
+    height: 64,
+    padding: 10,
+    justifyContent: "space-between",
+  };
+});
+
+export const StyledCanceledOrdersController = styled(Styles.StyledRowFlex)(({ theme }) => {
+  return {
+    width: "auto",
+    p: {
+      color: "#B8ADD2",
+      fontSize: 14,
+    },
   };
 });
 
 export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, theme }) => {
   const styles = baseStyles(theme);
   const color = styles.darkMode ? "#b8add2" : "#7a6eaa";
-  const selectedColor = styles.darkMode ? "#f4eeff" : "#280d5f";
+  const selectedColor = styles.darkMode ? "black" : "#280d5f";
   return {
     cursor: "pointer",
-    background: !selected ? "transparent" : styles.darkMode ? "#27262c" : "white",
+    background: !selected ? "transparent" : styles.darkMode ? "#B8ADD2" : "white",
     height: "100%",
-    padding: " 0px 24px",
+    padding: "0px 24px",
     display: "flex",
     alignItems: "center",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    flex: 1,
+    borderRadius: 16,
+    width: "auto",
     justifyContent: "center",
     fontWeight: 500,
     color: !selected ? color : selectedColor,
@@ -880,14 +868,19 @@ export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, th
   };
 });
 
-export const StyledOrdersTabs = styled(Box)({
-  display: "flex",
-  alignItems: "center",
-  width: "100%",
-  justifyContent: "space-between",
-  height: "100%",
-  flex: 1,
-  "@media (max-width:700px)": {},
+export const StyledOrdersTabs = styled(Box)(() => {
+  return {
+    display: "flex",
+    alignItems: "center",
+    width: "auto",
+    justifyContent: "space-between",
+    height: "100%",
+    background: "#372F47",
+    borderRadius: 16,
+    overflow: "hidden",
+
+    "@media (max-width:700px)": {},
+  };
 });
 
 export const StyledModalHeaderClose = styled("button")(({ theme }) => {
@@ -1035,7 +1028,7 @@ export const StyledInputContainerChildren = styled("div")<{ focused: number; cus
     background: styles.bgContainer,
     boxShadow: focused ? "unset" : "0px 2px 0px -1px #0000000F inset",
     borderRadius: 24,
-    padding: '0px 16px 0px 16px',
+    padding: "0px 16px 0px 16px",
     height: 80,
     "&:before": {
       content: "''",
@@ -1224,24 +1217,21 @@ export const StyledTrades = styled(InputContainer)({
     },
   },
   ".twap-input-container-content": {
-    paddingTop: 12
+    paddingTop: 12,
   },
   ".twap-input-container-header": {
-    marginBottom: 5,
+    marginBottom: 3,
   },
 });
 
-export const StyledTradeInterval = styled(InputContainer)(({ theme }) => {
+const StyledDurationAndTradeInterval = styled(InputContainer)(() => {
   return {
     ".twap-input-container-header": {
-      marginBottom: 6,
+      marginBottom: 3,
     },
     ".twap-input-container-content": {
-      "&:after": {
-        border: `2px solid #ED4B9E`,
-      },
+      paddingTop: 12,
     },
-
     ".twap-input": {
       input: {
         textAlign: "left!important",
@@ -1250,19 +1240,21 @@ export const StyledTradeInterval = styled(InputContainer)(({ theme }) => {
   };
 });
 
-export const StyledDuration = styled(InputContainer)(() => {
+export const StyledTradeInterval = styled(StyledDurationAndTradeInterval)(({ theme }) => {
   return {
-    ".twap-input-container-header": {
-      marginBottom: 6,
+    ".twap-input-container-content": {
+      "&:after": {
+        border: `2px solid #ED4B9E`,
+      },
     },
+  };
+});
+
+export const StyledDuration = styled(StyledDurationAndTradeInterval)(() => {
+  return {
     ".twap-input-container-content": {
       "&:after": {
         border: `2px solid #FFB237`,
-      },
-    },
-    ".twap-input": {
-      input: {
-        textAlign: "left!important",
       },
     },
   };

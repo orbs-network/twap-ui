@@ -5,50 +5,28 @@ import { Button, Label, TokenLogo, TokenPriceCompare } from "../../components/ba
 import { useTwapContext } from "../../context";
 import { useCancelOrder, useFormatNumber, useHistoryPrice } from "../../hooks";
 import { useTwapStore } from "../../store";
-import { StyledColumnFlex, StyledRowFlex } from "../../styles";
+import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { OrderUI } from "../../types";
 import { fillDelayText } from "../../utils";
+import { OrderStatus } from "./Components";
 
 const OrderExpanded = ({ order }: { order: OrderUI }) => {
-  const { translations, uiPreferences } = useTwapContext();
-  const hideUsd = uiPreferences.orders?.hideUsd;
-  const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
-  const totalChunks = useFormatNumber({ value: order?.ui.totalChunks, disableDynamicDecimals: true });
-  const srcChunkAmountUsdUi = useFormatNumber({ value: order?.ui.srcChunkAmountUsdUi, disableDynamicDecimals: true });
-
-  const srcChunkAmountUi = useFormatNumber({ value: order?.ui.srcChunkAmountUi, disableDynamicDecimals: true });
-
-  const dstMinAmountOutUi = useFormatNumber({ value: order?.ui.dstMinAmountOutUi, disableDynamicDecimals: true });
-  const dstMinAmountOutUsdUi = useFormatNumber({ value: order?.ui.dstMinAmountOutUsdUi, disableDynamicDecimals: true });
-
   if (!order) return null;
 
   return (
     <StyledContainer className="twap-order-expanded">
       <StyledColumnFlex gap={0}>
         <StyledColumnFlex className="twap-extended-order-info">
-          {order.ui.srcToken && order.ui.dstToken && <OrderPrice order={order} />}
-          <Row label={`${translations.totalTrades}`} tooltip={translations.totalTradesTooltip}>
-            {totalChunks}
+          <Row label={`Status`}>
+            <OrderStatus order={order} />
           </Row>
-          <Row label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
-            <TokenLogo logo={order.ui.srcToken?.logoUrl} />
-            {srcChunkAmountUi} {order.ui.srcToken?.symbol} {hideUsd ? null : `≈ $${srcChunkAmountUsdUi}`}
-          </Row>
-          {order.ui.isMarketOrder ? null : (
-            <Row label={`${translations.minReceivedPerTrade}`} tooltip={translations.confirmationMinDstAmountTootipLimit}>
-              <TokenLogo logo={order.ui.dstToken?.logoUrl} />
-              {`${dstMinAmountOutUi} `}
-              {order.ui.dstToken?.symbol} {hideUsd ? null : `≈ $${dstMinAmountOutUsdUi}`}
-            </Row>
-          )}
-
-          <Row label={`${translations.tradeInterval}`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
-            {fillDelayText(order.ui.fillDelay, translations)}
-          </Row>
-          <Row label={`${translations.deadline}`} tooltip={translations.maxDurationTooltip}>
-            {order.ui.deadlineUi}
-          </Row>
+          <OrderPrice order={order} />
+          <Filled order={order} />
+          <MinAmountOut order={order} />
+          <TotalTrades order={order} />
+          <SizePerTrade order={order} />
+          <TradeInterval order={order} />
+          <Expiry order={order} />
         </StyledColumnFlex>
         {order.ui.status === Status.Open && (
           <div className="twap-order-expanded-cancel-wraper" style={{ marginLeft: "auto", marginRight: "auto" }}>
@@ -57,6 +35,75 @@ const OrderExpanded = ({ order }: { order: OrderUI }) => {
         )}
       </StyledColumnFlex>
     </StyledContainer>
+  );
+};
+
+const Expiry = ({ order }: { order: OrderUI }) => {
+  const translations = useTwapContext().translations;
+  return (
+    <Row label={`${translations.deadline}`} tooltip={translations.maxDurationTooltip}>
+      {order?.ui.deadlineUi}
+    </Row>
+  );
+};
+
+const TradeInterval = ({ order }: { order: OrderUI }) => {
+  const minimumDelayMinutes = useTwapStore((state) => state.getMinimumDelayMinutes());
+
+  if (!order) return null;
+  const translations = useTwapContext().translations;
+  return (
+    <Row label={`${translations.tradeInterval}`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
+      {fillDelayText(order.ui.fillDelay, translations)}
+    </Row>
+  );
+};
+
+const SizePerTrade = ({ order }: { order: OrderUI }) => {
+  const translations = useTwapContext().translations;
+  const srcChunkAmountUi = useFormatNumber({ value: order?.ui.srcChunkAmountUi, disableDynamicDecimals: true });
+
+  return (
+    <Row label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
+      {srcChunkAmountUi} {order?.ui.srcToken?.symbol}
+    </Row>
+  );
+};
+
+const TotalTrades = ({ order }: { order: OrderUI }) => {
+  const translations = useTwapContext().translations;
+
+  return (
+    <Row label={`${translations.totalTrades}`} tooltip={translations.totalTradesTooltip}>
+      {order?.ui.totalChunks}
+    </Row>
+  );
+};
+
+const MinAmountOut = ({ order }: { order: OrderUI }) => {
+  const amountF = useFormatNumber({ value: order?.ui.dstMinAmountOut, decimalScale: 4 });
+
+  return (
+    <Row label="Minimum received" className="twap-order-details-min-amount-out">
+      {amountF} {order?.ui.dstToken?.symbol}
+    </Row>
+  );
+};
+
+const Filled = ({ order }: { order: OrderUI }) => {
+  const srcFilledAmountUiF = useFormatNumber({ value: order?.ui.srcFilledAmountUi, decimalScale: 4 });
+  const srcAmountUiF = useFormatNumber({ value: order?.ui.srcAmountUi, decimalScale: 4 });
+
+  return (
+    <Row label="Filled" className="twap-order-details-filled">
+      <StyledText>
+        {"("}
+        {`${srcFilledAmountUiF || "0"}`}
+        <span>{`/${srcAmountUiF}`}</span>
+        {")"}
+      </StyledText>
+      <StyledText className="twap-order-details-filled-percent">{order?.ui.progress}%</StyledText>
+    </Row>
   );
 };
 
@@ -77,11 +124,6 @@ export const StyledDetailRowChildren = styled(StyledRowFlex)({
   fontWeight: 300,
   fontSize: 13,
   textAlign: "right",
-
-  "& *": {
-    fontWeight: "inherit",
-    fontSize: "inherit",
-  },
   "& .twap-token-logo": {
     width: 21,
     height: 21,
@@ -106,6 +148,9 @@ export const StyledDetailRow = styled(StyledRowFlex)({
 const OrderPrice = ({ order }: { order: OrderUI }) => {
   const { leftToken, rightToken, priceUi, toggleInverted } = useHistoryPrice(order);
   const translations = useTwapContext().translations;
+
+  if (!priceUi) return null;
+
   return (
     <Row className="twap-market-price-section" label={order?.ui.isMarketOrder ? translations.marketPrice : translations.limitPrice}>
       <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={priceUi} toggleInverted={toggleInverted} />
@@ -129,10 +174,6 @@ export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number
     </StyledCancelOrderButton>
   );
 };
-
-const StyledMarketPrice = styled(StyledRowFlex)({
-  "@media(max-width: 500px)": {},
-});
 
 export const StyledCancelOrderButton = styled(Button)({});
 

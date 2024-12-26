@@ -1,23 +1,49 @@
 import * as React from "react";
 import { styled } from "@mui/material";
-import { hooks, OrdersPortal, SelectedOrders, store } from "@orbs-network/twap-ui";
-import { StyledOrders, StyledOrdersHeader, StyledOrdersTab, StyledOrdersTabs } from "./styles";
+import { Components, hooks, OrdersPortal, OpenOrders, AllOrders } from "@orbs-network/twap-ui";
+import { StyledCanceledOrdersController, StyledOrders, StyledOrdersHeader, StyledOrdersTab, StyledOrdersTabs } from "./styles";
 import { Styles } from "@orbs-network/twap-ui";
+import { Status } from "@orbs-network/twap";
+
+type ContextType = {
+  showAllOrders: boolean;
+  setShowAllOrders: (showAllOrders: boolean) => void;
+  hideCancelledOrders: boolean;
+  setHideCancelledOrders: (hideCancelledOrders: boolean) => void;
+};
+
+const context = React.createContext({} as ContextType);
+
+const Provider = ({ children }: { children: React.ReactNode }) => {
+  const [showAllOrders, setShowAllOrders] = React.useState(false);
+  const [hideCancelledOrders, setHideCancelledOrders] = React.useState(false);
+
+  return <context.Provider value={{ showAllOrders, setShowAllOrders, hideCancelledOrders, setHideCancelledOrders }}>{children}</context.Provider>;
+};
+const useOrdersContext = () => React.useContext(context);
 
 export default function PancakeOrders() {
   return (
-    <OrdersPortal>
-      <StyledOrders>
-        <StyledOrdersHeader>
-          <Tabs />
-        </StyledOrdersHeader>
-        <StyledBody>
-          <SelectedOrders />
-        </StyledBody>
-      </StyledOrders>
-    </OrdersPortal>
+    <Provider>
+      <OrdersPortal>
+        <StyledOrders>
+          <StyledOrdersHeader>
+            <Tabs />
+            <CancelledOrdersController />
+          </StyledOrdersHeader>
+          <StyledBody>
+            <Orders />
+          </StyledBody>
+        </StyledOrders>
+      </OrdersPortal>
+    </Provider>
   );
 }
+
+const Orders = () => {
+  const { showAllOrders, hideCancelledOrders } = useOrdersContext();
+  return showAllOrders ? <AllOrders hideStatus={hideCancelledOrders ? Status.Canceled : undefined} /> : <OpenOrders />;
+};
 
 const StyledBody = styled(Styles.StyledColumnFlex)({
   padding: "15px 20px 20px 20px",
@@ -25,27 +51,28 @@ const StyledBody = styled(Styles.StyledColumnFlex)({
   gap: 15,
 });
 
+const CancelledOrdersController = () => {
+  const { hideCancelledOrders, setHideCancelledOrders } = useOrdersContext();
+  return (
+    <StyledCanceledOrdersController>
+      <Styles.StyledText>Hide canceled orders</Styles.StyledText>
+      <Components.Base.Switch onChange={setHideCancelledOrders} value={hideCancelledOrders} />
+    </StyledCanceledOrdersController>
+  );
+};
+
 const Tabs = () => {
-  const { tab, setTab } = store.useOrdersStore();
-
+  const { showAllOrders, setShowAllOrders } = useOrdersContext();
   const tabs = hooks.useOrdersTabs();
-  const selectedTab = React.useMemo(() => {
-    return Object.keys(tabs)[tab as any];
-  }, [tabs, tab]);
-
-  const onSelect = (index: number) => {
-    setTab(index);
-  };
 
   return (
     <StyledOrdersTabs>
-      {Object.keys(tabs).map((key, index) => {
-        return (
-          <StyledOrdersTab selected={key === selectedTab ? 1 : 0} key={key} onClick={() => onSelect(index)}>
-            {key}
-          </StyledOrdersTab>
-        );
-      })}
+      <StyledOrdersTab selected={!showAllOrders ? 1 : 0} onClick={() => setShowAllOrders(false)}>
+        Open Orders {`(${(tabs as any).Open || 0})`}
+      </StyledOrdersTab>
+      <StyledOrdersTab selected={showAllOrders ? 1 : 0} onClick={() => setShowAllOrders(true)}>
+        Order History
+      </StyledOrdersTab>
     </StyledOrdersTabs>
   );
 };

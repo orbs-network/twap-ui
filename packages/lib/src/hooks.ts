@@ -397,12 +397,14 @@ export const useCancelOrder = () => {
 export const useHistoryPrice = (order: OrderUI) => {
   const [inverted, setInverted] = useState(false);
 
-  const price = inverted ? BN(1).div(order?.ui.dstPriceFor1Src || "0") : order?.ui.dstPriceFor1Src;
+  const price = inverted ? BN(1).div(order?.ui.priceSrcForDstToken || "0").toString() : order?.ui.priceSrcForDstToken;
+
+  const priceUi = useFormatNumber({value: price, decimalScale: 4})
   return {
     inverted,
     toggleInverted: () => setInverted(!inverted),
     price,
-    priceUi: price?.toFormat(),
+    priceUi,
     leftToken: inverted ? order?.ui.dstToken : order?.ui.srcToken,
     rightToken: !inverted ? order?.ui.dstToken : order?.ui.srcToken,
   };
@@ -599,7 +601,7 @@ export const useOrdersHistoryQuery = () => {
       const isBsc = lib?.config.chainId === networks.bsc.id;
 
       const parsedOrders = _.map(orders, (o): ParsedOrder => {
-        const dstAmount = fills?.[o.id]?.dstAmountOut;
+        const dstFilledAmount = fills?.[o.id]?.dstAmountOut;
         const srcFilled = fills?.[o.id]?.srcAmountIn;
         const dollarValueIn = fills?.[o.id]?.dollarValueIn;
         const dollarValueOut = fills?.[o.id]?.dollarValueOut;
@@ -629,7 +631,7 @@ export const useOrdersHistoryQuery = () => {
             status: status(),
             srcToken: tokenList.find((t) => eqIgnoreCase(o.ask.srcToken, t.address)),
             dstToken,
-            dstAmount,
+            dstFilledAmount,
             progress,
             srcFilledAmount: srcFilled,
             dollarValueIn,
@@ -1031,8 +1033,17 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
 
     const isMarketOrder = lib.isMarketOrder(o.order);
     const dstPriceFor1Src = lib.dstPriceFor1Src(srcToken, dstToken, srcUsd, dstUsd, o.order.ask.srcBidAmount, o.order.ask.dstMinAmount);
-    const dstAmount = isBsc ? o.ui.dstAmount : dstAmountOutFromEvents?.toString();
+    const dstFilledAmount = isBsc ? o.ui.dstFilledAmount : dstAmountOutFromEvents?.toString();
     const srcFilledAmount = isBsc ? o.ui.srcFilledAmount : o.order.srcFilledAmount;
+    const srcFilledUI = amountUiV2(srcToken.decimals, srcFilledAmount?.toString());
+    const dstFilledUI = amountUiV2(dstToken.decimals, dstFilledAmount);
+    const dstMinAmountOutUi = amountUiV2(dstToken.decimals, o.order.ask.dstMinAmount.toString());
+
+    const dstMinAmountOut = () => {
+      if (isMarketOrder || !o.ui.totalChunks) return;
+
+      return BN(dstMinAmountOutUi).multipliedBy(o.ui.totalChunks).toString();
+    };
 
     return {
       order: o.order,
@@ -1048,17 +1059,19 @@ export const useParseOrderUi = (o?: ParsedOrder, expanded?: boolean) => {
         srcAmountUsdUi: o.ui.dollarValueIn || amountUi(srcToken, o.order.ask.srcAmount.times(srcUsd)),
         srcChunkAmountUi: amountUi(srcToken, o.order.ask.srcBidAmount),
         srcChunkAmountUsdUi: amountUi(srcToken, o.order.ask.srcBidAmount.times(srcUsd)),
-        srcFilledAmountUi: amountUi(srcToken, BN(srcFilledAmount || "0")),
-        dstMinAmountOutUi: amountUi(dstToken, o.order.ask.dstMinAmount),
+        srcFilledAmountUi: srcFilledUI,
         dstMinAmountOutUsdUi: amountUi(dstToken, o.order.ask.dstMinAmount.times(dstUsd)),
         fillDelay: o.order.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
         createdAtUi: moment(o.order.time * 1000).format("ll HH:mm"),
         deadlineUi: moment(o.order.ask.deadline * 1000).format("ll HH:mm"),
         prefix: isMarketOrder ? "~" : "~",
-        dstAmount: !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0")),
-        dstAmountUsd: o.ui.dollarValueOut ? o.ui.dollarValueOut : !dstAmount ? undefined : amountUi(dstToken, BN(dstAmount || "0").times(dstUsd)),
+        dstFilledAmount: dstFilledUI,
+        dstAmountUsd: o.ui.dollarValueOut ? o.ui.dollarValueOut : !dstFilledAmount ? undefined : amountUi(dstToken, BN(dstFilledAmount || "0").times(dstUsd)),
         dstUsdLoading: !dstUsd || dstUsd.isZero(),
         progress: o?.ui.progress,
+        priceSrcForDstToken: !dstFilledUI || !srcFilledUI ? undefined :  BN(dstFilledUI).div(srcFilledUI).toString(),
+        dstMinAmountOut: dstMinAmountOut(),
+        minimumReceived: BN(o.ui.totalChunks || "0").multipliedBy(o.order.ask.dstMinAmount).toString(),
       },
     };
   }, [lib, o, srcUsd, dstUsd, dstAmountOutFromEvents]);
