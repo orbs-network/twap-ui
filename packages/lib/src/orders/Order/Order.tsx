@@ -2,39 +2,39 @@ import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import OrderPreview from "./OrderPreview";
 import OrderExpanded from "./OrderExpanded";
-import { ParsedOrder } from "../../types";
 import { AccordionSummary, Box, styled } from "@mui/material";
-import { StyledSeperator } from "./styles";
-import { CSSProperties } from "react";
 import { Card, Loader } from "../../components/base";
-import { useParseOrderUi } from "../../hooks";
 import { StyledColumnFlex } from "../../styles";
+import { Order } from "../../order";
+import { ListOrderProvider, useListOrderContext } from "./context";
 
 export interface Props {
-  order: ParsedOrder;
-  onExpand: () => void;
-  expanded: boolean;
+  order: Order;
 }
 
-function OrderComponent({ order, onExpand, expanded }: Props) {
-  const orderUI = useParseOrderUi(order, expanded);
+export function ListOrder({ order }: Props) {
+  return (
+    <ListOrderProvider order={order}>
+      <ListOrderContent />
+    </ListOrderProvider>
+  );
+}
 
+const ListOrderContent = () => {
+  const { expanded } = useListOrderContext();
   return (
     <StyledContainer className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
       <StyledAccordion expanded={expanded}>
         <StyledAccordionSummary>
-          <OrderPreview order={orderUI} expanded={expanded} onExpand={onExpand}  />
+          <OrderPreview />
         </StyledAccordionSummary>
         <StyledAccordionDetails className="twap-order-accordion">
-          <OrderSeparator className="twap-order-separator" style={{ marginBottom: 10 }} />
-          <Box>
-            <OrderExpanded order={orderUI} />
-          </Box>
+          <OrderExpanded />
         </StyledAccordionDetails>
       </StyledAccordion>
     </StyledContainer>
   );
-}
+};
 
 export const OrderLoader = ({ status }: { status?: string }) => {
   if (status !== "Open") return null;
@@ -51,27 +51,20 @@ export const OrderLoader = ({ status }: { status?: string }) => {
 
 const StyledOrderLoader = styled(Card)({});
 
-const OrderSeparator = ({ className = "", style }: { className?: string; style?: CSSProperties }) => {
-  return <StyledSeperator className={`twap-order-separator ${className}`} style={style} />;
-};
-
 const StyledAccordionDetails = styled(AccordionDetails)({
   marginTop: 10,
 });
-
-export default OrderComponent;
 
 export const StyledAccordionSummary = styled(AccordionSummary)({
   flexDirection: "column",
   display: "flex",
   width: "100%",
   padding: 0,
-  cursor:"auto"
+  cursor: "auto",
+  minHeight: "unset!important",
 });
 
-const StyledContainer = styled(Card)({
-
-});
+const StyledContainer = styled(Card)({});
 
 const StyledAccordion = styled(Accordion)({
   width: "100%",
@@ -85,7 +78,7 @@ const StyledAccordion = styled(Accordion)({
     width: "100%",
   },
   ".Mui-expanded": {
-    minHeight: 'unset',
+    minHeight: "unset",
   },
   "& *": {
     color: "inherit",

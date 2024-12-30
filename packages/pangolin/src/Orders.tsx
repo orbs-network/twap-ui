@@ -1,6 +1,6 @@
 import { Box, ClickAwayListener, styled, Typography, useMediaQuery } from "@mui/material";
 import { Status } from "@orbs-network/twap";
-import { CancelOrderButton, Components, hooks, OrderUI, ParsedOrder, store, Styles, useTwapContext, OrdersPanel, fillDelayText } from "@orbs-network/twap-ui";
+import { CancelOrderButton, Components, hooks, store, Styles, useTwapContext, OrdersPanel, fillDelayText } from "@orbs-network/twap-ui";
 import _ from "lodash";
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { parseTheme } from "./styles";
@@ -13,6 +13,10 @@ interface ContextProps {
   limit?: boolean;
   theme: any;
 }
+
+
+type OrderUI = any
+type ParsedOrder = any
 
 const useMobile = () => useMediaQuery("(max-width: 600px)");
 const TABS = [Status.Open, Status.Completed, Status.Canceled];
@@ -187,20 +191,9 @@ const Progress = ({ orderUI }: { orderUI: OrderUI }) => {
 };
 
 const DstTokenAmount = ({ orderUI }: { orderUI?: OrderUI }) => {
-  const { data } = hooks.useOrderPastEvents(orderUI!, true);
   const amount = hooks.useFormatNumber({ value: "" });
 
-  return (
-    <OrderDetail
-      label="Output Amount filled"
-      value={
-        <Styles.StyledRowFlex justifyContent="flex-start">
-          {!data ? <StyledDstAmountLoader /> : <Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>}
-          <Components.Base.TokenLogo logo={orderUI?.ui.dstToken?.logoUrl} />
-        </Styles.StyledRowFlex>
-      }
-    />
-  );
+  return null
 };
 
 const MinReceivedPerTrade = ({ orderUI }: { orderUI?: OrderUI }) => {
@@ -297,24 +290,9 @@ const Header = () => {
 
 const SelectedOrder = () => {
   const { selectedOrder } = useOrders();
-  const orderUI = hooks.useParseOrderUi(selectedOrder);
   const { theme } = useOrdersContext();
-  if (!orderUI) return null;
-  return (
-    <StyledSelectedOrder>
-      <StyledOrderHeader gap={53}>
-        <StyledDestopPairLogos orderUI={orderUI} />
-        <StyledOrderSymbols>
-          <StyledOrderSymbolsTop>
-            {orderUI.ui.srcToken?.symbol}/{orderUI.ui.dstToken?.symbol}
-          </StyledOrderSymbolsTop>
-          <StyledOrderSymbolsBottom theme={theme}> Buy {orderUI.ui.dstToken?.symbol}</StyledOrderSymbolsBottom>
-        </StyledOrderSymbols>
-      </StyledOrderHeader>
-      <OrderDetails orderUI={orderUI} />
-      <CancelOrder orderUI={orderUI} />
-    </StyledSelectedOrder>
-  );
+  return null
+
 };
 
 const PairLogos = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: string }) => {
@@ -416,7 +394,7 @@ const DesktopList = () => {
         </StyledEmptyList>
       ) : (
         selectedOrders?.map((o) => {
-          return <DesktopListItem key={o.order.id} order={o} />;
+          return <DesktopListItem key={0} order={o} />;
         })
       )}
     </StyledList>
@@ -437,7 +415,7 @@ const MobileList = () => {
         </StyledEmptyList>
       ) : (
         selectedOrders?.map((o) => {
-          return <MobileListItem key={o.order.id} order={o} />;
+          return <MobileListItem key={0} order={o} />;
         })
       )}
     </StyledMobileList>
@@ -451,31 +429,14 @@ const StyledMobileList = styled(Styles.StyledColumnFlex)({
 const MobileListItem = ({ order }: { order: ParsedOrder }) => {
   const { selectedOrderID, setSelectedOrderID, theme } = useOrdersContext();
   const isSelected = selectedOrderID === order?.order.id;
-  const orderUI = hooks.useParseOrderUi(order);
-  return (
-    <StyledMobileListItem theme={theme} selected={isSelected ? 1 : 0} gap={20} onClick={() => order?.order.id && setSelectedOrderID(order.order.id)}>
-      <StyledMobileListTopFlex>
-        <Styles.StyledColumnFlex gap={3} style={{ width: "auto" }}>
-          <Styles.StyledRowFlex justifyContent="flex-start" gap={23}>
-            <StyledMobilePairLogos orderUI={orderUI} />
-            <StyledMobilePairSymbols orderUI={orderUI} />
-          </Styles.StyledRowFlex>
-          <StyledMobileBuyText orderUI={orderUI} />
-        </Styles.StyledColumnFlex>
-        <StyledMobileAmounts orderUI={orderUI} />
-      </StyledMobileListTopFlex>
-      {isSelected && <MobileSelectedOrder order={order} />}
-    </StyledMobileListItem>
-  );
+  return null
+
 };
 
 const MobileSelectedOrder = ({ order }: { order?: ParsedOrder }) => {
-  const orderUI = hooks.useParseOrderUi(order);
-  return (
-    <>
-      <OrderDetails orderUI={orderUI} /> <CancelOrder orderUI={orderUI} />
-    </>
-  );
+
+ return null
+
 };
 
 const StyledMobileListTopFlex = styled(Styles.StyledRowFlex)({
@@ -503,21 +464,11 @@ const PairSymbols = ({ orderUI, className = "" }: { orderUI: OrderUI; className?
 };
 
 const Amounts = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: string }) => {
-  const { data } = hooks.useOrderPastEvents(orderUI, true);
   const outAmount = hooks.useFormatNumber({ value: "", decimalScale });
   const srcAmount = hooks.useFormatNumber({ value: orderUI?.ui.srcAmountUi, decimalScale });
 
-  return (
-    <StyledAmounts className={className}>
-      {!data ? (
-        <Components.Base.Loader width={60} />
-      ) : (
-        <Typography>
-          {srcAmount} / {outAmount}
-        </Typography>
-      )}
-    </StyledAmounts>
-  );
+  return null
+
 };
 
 const StyledAmounts = styled(Styles.StyledRowFlex)({
@@ -548,17 +499,9 @@ const StyledEmptyList = styled(Typography)({
 const decimalScale = 3;
 const DesktopListItem = ({ order }: { order: ParsedOrder }) => {
   const { setSelectedOrderID, selectedOrderID, theme } = useOrdersContext();
-  const orderUI = hooks.useParseOrderUi(order);
 
-  return (
-    <StyledListItem theme={theme} selected={orderUI?.order.id === selectedOrderID ? 1 : 0} onClick={() => orderUI && setSelectedOrderID(orderUI.order?.id)}>
-      <BuyText orderUI={orderUI} />
-      <Styles.StyledColumnFlex style={{ width: "auto", alignItems: "flex-end", gap: 2 }}>
-        <Amounts orderUI={orderUI} />
-        <StyledListItemStatus>{getStatusName(order?.ui.status)}</StyledListItemStatus>
-      </Styles.StyledColumnFlex>
-    </StyledListItem>
-  );
+  return null
+
 };
 
 const Tabs = () => {

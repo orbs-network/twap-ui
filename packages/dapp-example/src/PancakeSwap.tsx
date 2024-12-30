@@ -236,14 +236,17 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setDstToken(undefined);
   }, [chainId]);
 
-  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
+  const _useTrade = (fromToken?: string, toToken?: string) => {
     const handleAddress = useHandleAddress();
 
     const fromAddress = handleAddress(fromToken);
     const toAddress = handleAddress(toToken);
 
     const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromAddress, toAddress);
-    return useTrade(fromAddress, toAddress, amount, fromTokenDecimals, toTokenDecimals);
+
+    const _amount = hooks.useAmountBN('1', fromTokenDecimals)
+
+    return useTrade(fromAddress, toAddress, _amount, fromTokenDecimals, toTokenDecimals);
   };
 
   const connector = useMemo(() => {
@@ -276,8 +279,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       SwapTransactionErrorContent={SwapTransactionErrorContent}
       SwapPendingModalContent={SwapPendingModalContent}
       SwapTransactionReceiptModalContent={SwapPendingModalContent}
-      TradePrice={TradePrice}
-      TradePriceToggle={TradePriceToggle}
     />
   );
 };
@@ -369,17 +370,6 @@ const dapp: Dapp = {
 
 export default dapp;
 
-const TradePriceToggle = ({ onClick }: { onClick: () => void }) => {
-  return <button onClick={onClick}>T</button>;
-};
-
-const TradePrice = (props: { leftSymbol?: string; rightSymbol?: string; price?: string }) => {
-  return (
-    <Typography>
-      1 {props.leftSymbol} = {props.price} {props.rightSymbol}
-    </Typography>
-  );
-};
 
 export const amountUi = (decimals?: number, amount?: BN) => {
   if (!decimals || !amount) return "";

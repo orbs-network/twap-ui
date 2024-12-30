@@ -411,7 +411,6 @@ const TWAP = (props: ChronosTWAPProps) => {
 };
 
 const MobileTabs = () => {
-  const tabs = hooks.useOrdersTabs();
   const { setTab, tab } = store.useOrdersStore((store) => store);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -430,7 +429,7 @@ const MobileTabs = () => {
 
   return (
     <>
-      <StyledMobileTabsMenuButton aria-controls={open ? "basic-menu" : undefined} aria-expanded={open ? "true" : undefined} onClick={handleClick}>
+      {/* <StyledMobileTabsMenuButton aria-controls={open ? "basic-menu" : undefined} aria-expanded={open ? "true" : undefined} onClick={handleClick}>
         <TwapStyles.StyledRowFlex gap={5}>
           <VscSettings />
           <Typography> {_.keys(tabs)[tab]}</Typography>
@@ -444,7 +443,7 @@ const MobileTabs = () => {
             </MenuItem>
           );
         })}
-      </StyledMobileTabsMenu>
+      </StyledMobileTabsMenu> */}
     </>
   );
 };

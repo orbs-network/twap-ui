@@ -1,17 +1,5 @@
 import { GlobalStyles, Box, ThemeProvider, Typography, styled } from "@mui/material";
-import {
-  Components,
-  hooks,
-  Translations,
-  TwapAdapter,
-  Styles as TwapStyles,
-  store,
-  Orders,
-  TwapContextUIPreferences,
-  Styles,
-  TooltipProps,
-  parseError,
-} from "@orbs-network/twap-ui";
+import { Components, hooks, Translations, TwapAdapter, store, Orders, TwapContextUIPreferences, Styles, TooltipProps, parseError } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
   configureStyles,
@@ -62,9 +50,7 @@ import { useAdapterContext, AdapterContextProvider, AdapterProps, WarningVariant
 import { create } from "zustand";
 import { configs } from "./config";
 import { MdAccountBalanceWallet } from "@react-icons/all-files/md/MdAccountBalanceWallet";
-import { ChangeIcon } from "./icons/change";
-import { InfoIcon } from "./icons/info";
-import { BackBody } from "./icons/BackBody";
+import { ArrowsIcon, BackBody, ChangeIcon, InfoIcon } from "./icons";
 
 const PERCENT = [
   { text: "25%", value: 0.25 },
@@ -92,10 +78,10 @@ const uiPreferences: TwapContextUIPreferences = {
   usdEmptyUI: <></>,
   balanceEmptyUI: <></>,
   switchVariant: "ios",
-  inputPlaceholder: "0.0",
+  inputPlaceholder: "0.00",
   Tooltip,
   orders: {
-    paginationChunks: 4,
+    paginationChunks: 5,
     hideUsd: true,
   },
   modal: {
@@ -275,7 +261,7 @@ const useTrade = (props: AdapterProps) => {
 
   return {
     outAmount: res?.outAmount,
-    isLoading: BN(srcAmount || "0").gt(0) && res?.isLoading,
+    isLoading: Boolean(srcToken && toToken &&  BN(srcAmount || "0").gt(0) && res?.isLoading),
   };
 };
 
@@ -462,9 +448,7 @@ const getElementPositionInsideParent = (child: any, parent: any) => {
 };
 
 export function TotalTrades({ className = "" }: { className?: string }) {
-  const { srcAmount } = store.useTwapStore((store) => ({
-    srcAmount: store.getSrcAmount(),
-  }));
+
   const limitPanel = useAdapterContext().limit;
   const maxPossibleChunks = hooks.useMaxPossibleChunks();
   const chunks = hooks.useChunks();
@@ -472,8 +456,6 @@ export function TotalTrades({ className = "" }: { className?: string }) {
   const setChunks = hooks.useSetChunks();
   const srcToken = store.useTwapStore((store) => store.srcToken);
   const t = useTwapContext().translations;
-
-  // if (srcAmount.isZero()) return null;
 
   const onSetChunks = useCallback(
     (value: string) => {
@@ -491,7 +473,7 @@ export function TotalTrades({ className = "" }: { className?: string }) {
         <InputContainer.Header>
           <Styles.StyledRowFlex justifyContent="space-between">
             <InputContainer.Header.Label tooltip={t.totalTradesTooltip} label="Total Trades" />
-            <InputContainer.Header.Label label="Size Per Trade: " value={`${chunkSize} ${srcToken?.symbol}`} />
+            <InputContainer.Header.Label  tooltip={t.tradeSizeTooltip} label="Size Per Trade: " value={`${chunkSize} ${srcToken?.symbol}`} />
           </Styles.StyledRowFlex>
         </InputContainer.Header>
 
@@ -511,11 +493,12 @@ export function TotalTrades({ className = "" }: { className?: string }) {
 
 const MaxDuration = () => {
   const isWarning = hooks.useIsPartialFillWarning();
+  const t = useTwapContext().translations;
 
   return (
     <StyledDuration customBorder={!!isWarning}>
       <InputContainer.Header>
-        <InputContainer.Header.Label label="Max Duration" />
+        <InputContainer.Header.Label tooltip={t.maxDurationTooltip} label="Max Duration" />
       </InputContainer.Header>
       <Components.MaxDurationSelector />
     </StyledDuration>
@@ -524,11 +507,12 @@ const MaxDuration = () => {
 
 const TradeInterval = () => {
   const fillDelayWarning = store.useTwapStore((store) => store.getFillDelayWarning());
+  const t = useTwapContext().translations;
 
   return (
     <StyledTradeInterval customBorder={!!fillDelayWarning}>
       <InputContainer.Header>
-        <InputContainer.Header.Label label="Trade Interval" />
+        <InputContainer.Header.Label tooltip={t.tradeIntervalTootlip} label="Trade Interval" />
       </InputContainer.Header>
       <Components.TradeIntervalSelector />
     </StyledTradeInterval>
@@ -580,7 +564,7 @@ const LimitPriceToggle = () => {
           <Components.LimitPriceToggle />
           <Components.Labels.LimitPriceLabel />
         </Styles.StyledRowFlex>
-        <MarketPrice />
+        <TradePrice />
       </StyledLimitPrice>
     </StyledContainerPadding>
   );
@@ -607,20 +591,17 @@ const PricePanel = () => {
   );
 };
 
-const MarketPrice = () => {
-  const { marketPrice } = hooks.useMarketPriceV2();
-  const { srcToken, dstToken, isMarketOrder } = store.useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
+const TradePrice = () => {
+  const { leftToken, rightToken, onInvert, price } = hooks.useTradePrice();
+  const {  isMarketOrder } = store.useTwapStore((s) => ({
     isMarketOrder: !s.isLimitOrder,
   }));
-  const priceF = hooks.useFormatNumber({ value: marketPrice?.original, decimalScale: 6 });
 
   if (!isMarketOrder) return null;
 
   return (
     <StyledMarketPrice>
-      1 {srcToken?.symbol} = {priceF} {dstToken?.symbol}
+      1 {leftToken?.symbol} <ArrowsIcon onClick={onInvert} /> {price} {rightToken?.symbol}
     </StyledMarketPrice>
   );
 };

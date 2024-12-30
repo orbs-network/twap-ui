@@ -20,8 +20,6 @@ interface Props {
 function Label({ children, tooltipText, className = "", fontSize, placement, subtitle }: Props) {
   const uiPreferences = useTwapContext()?.uiPreferences;
 
-  const InfoIcon = uiPreferences?.infoIcon || AiOutlineQuestionCircle;
-
   if (subtitle) {
     return (
       <StyledColumnFlex className={`twap-label ${className}`}>
@@ -31,12 +29,13 @@ function Label({ children, tooltipText, className = "", fontSize, placement, sub
     );
   }
   return (
-    <StyledContainer className={`twap-label ${className}`} style={{ gap: 0 }}>
-      <StyledText style={{ fontSize }}>{children}</StyledText>
-      {tooltipText && (
+    <StyledContainer className={`twap-label ${tooltipText ? "twap-label-with-tooltip" : ""} ${className}`} style={{ gap: 0 }}>
+      {tooltipText ? (
         <Tooltip placement={placement} text={tooltipText}>
-          <InfoIcon className="twap-icon twap-tooltip-icon" style={{ width: 16, position: "relative", top: 3, marginLeft: 5 }} />
+          <StyledText style={{ fontSize }}>{children}</StyledText>
         </Tooltip>
+      ) : (
+        <StyledText style={{ fontSize }}>{children}</StyledText>
       )}
     </StyledContainer>
   );

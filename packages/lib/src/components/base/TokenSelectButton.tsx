@@ -13,9 +13,10 @@ interface Props {
   hideArrow?: boolean;
   customUi: ReactNode;
   customButtonElement?: FC;
+  CustomArrow?: any;
 }
 
-function TokenSelectButton({ className = "", onClick, hideArrow, customUi, customButtonElement }: Props) {
+function TokenSelectButton({ className = "", onClick, hideArrow, customUi, customButtonElement, CustomArrow = IoIosArrowDown }: Props) {
   const translations = useTwapContext().translations;
   const wrongNetwork = useTwapStore((state) => state.wrongNetwork);
   const maker = useTwapStore((state) => state.lib?.maker);
@@ -47,7 +48,7 @@ function TokenSelectButton({ className = "", onClick, hideArrow, customUi, custo
           ) : (
             <>
               <StyledOneLineText>{translations.selectToken}</StyledOneLineText>
-              {!hideArrow && <Icon icon={<IoIosArrowDown size={20} />} />}
+              {!hideArrow && <CustomArrow size={20} />}
             </>
           )}
         </StyledRowFlex>

@@ -429,7 +429,6 @@ export const StyledPancakeTwap = styled(Box)<{ isDarkTheme: number }>(({ isDarkT
 }));
 
 export const StyledPancakeOrders = styled(Box)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
-  background: isDarkTheme ? "#27262C" : "#FFFFFF",
   borderRadius: 24,
   position: "relative",
   width: "100%",

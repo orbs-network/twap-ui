@@ -3,8 +3,6 @@ import { Config, Order, Status, TokenData, TWAPLib } from "@orbs-network/twap";
 import { Moment } from "moment";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { Duration } from "./store";
-import { useParseOrderUi } from "./hooks";
-import { CSSObject } from "@mui/system";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -186,21 +184,6 @@ export type OnTxSubmitValues = {
   txHash: string;
 };
 
-export interface ParsedOrder {
-  order: Order;
-  ui: {
-    status: Status;
-    srcToken?: TokenData;
-    dstToken?: TokenData;
-    totalChunks?: number;
-    dstFilledAmount?: string;
-    progress?: number;
-    srcFilledAmount?: string;
-    dollarValueIn?: string;
-    dollarValueOut?: string;
-  };
-}
-
 type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
 
 export interface TwapLibProps extends LibProps {
@@ -235,8 +218,6 @@ export interface InitLibProps {
   connectedChainId?: number;
   storeOverride?: StoreOverride;
 }
-
-export type OrderUI = ReturnType<typeof useParseOrderUi>;
 
 export interface StylesConfig {
   primaryColor?: string;
@@ -273,13 +254,6 @@ export interface TWAPTokenSelectProps {
   onClose: () => void;
   srcTokenSelected?: any;
   dstTokenSelected?: any;
-}
-
-export interface OrdersData {
-  [Status.Open]?: OrderUI[];
-  [Status.Canceled]?: OrderUI[];
-  [Status.Expired]?: OrderUI[];
-  [Status.Completed]?: OrderUI[];
 }
 
 export interface State {

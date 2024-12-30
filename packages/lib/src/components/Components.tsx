@@ -187,7 +187,6 @@ export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boo
     <NumericInput
       className={`${className} twap-token-input`}
       decimalScale={isSrc ? srcDecimals : dstDecimals}
-      prefix={isSrc ? "" : isLimitOrder ? "~" : SQUIGLE}
       loading={isSrc ? srcInputLoading : dstAmountLoading}
       disabled={!isSrc}
       placeholder={placeholder}
@@ -234,7 +233,6 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
     <Input
       disabled={true}
       loading={isLoading}
-      prefix={isLimitOrder ? "~" : SQUIGLE}
       value={outAmount.ui}
       decimalScale={props.decimalScale || token?.decimals}
       className={props.className}
@@ -299,6 +297,7 @@ export const TokenSelect = ({
           hideArrow={hideArrow}
           className={`${className} twap-token-not-selected`}
           onClick={onClick}
+          CustomArrow={CustomArrow}
         />
       )}
     </Box>
@@ -461,7 +460,7 @@ export const TokenBalance = ({
       className={className}
       suffix={suffix}
       label={label}
-      value={balance}
+      value={balance || '0'}
       isLoading={isLoading}
     />
   );
@@ -492,8 +491,8 @@ export function TokenUSD({
   const dstLoading = useLoadingState().dstUsdLoading;
   const usd = isSrc ? srcUSD : dstUSD;
   const isLoading = isSrc ? srcLoading : dstLoading;
-
-  if (Number(usd) <= 0 && hideIfZero) return null;
+  
+  if (!usd || Number(usd) <= 0) return null;
 
   return <USD decimalScale={decimalScale} suffix={suffix} prefix={prefix} onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={isLoading} />;
 }

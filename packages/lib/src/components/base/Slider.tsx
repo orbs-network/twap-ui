@@ -48,7 +48,6 @@ const Slider = ({ onChange, value, maxTrades, className = "" }: Props) => {
       value={_value}
       min={1}
       step={1}
-      marks={marks}
       max={Math.max(maxTrades, 2)}
       scale={calculateValue}
       getAriaValueText={valueLabelFormat}

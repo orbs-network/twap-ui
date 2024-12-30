@@ -51,7 +51,6 @@ const StyledContainer = styled("div")({
   display: "flex",
   flexDirection: "column",
   gap: 15,
-
 });
 const StyledHeaderTop = styled(Box)({
   display: "flex",

@@ -112,10 +112,6 @@ const StyledInput = styled(Box)({
 const StyledTimeSelect = styled(Box)({
   position: "relative",
   display: "flex",
-  "& p": {
-    fontSize: 14,
-    fontWeight: 600,
-  },
 });
 
 const StyledContainer = styled(Box)({

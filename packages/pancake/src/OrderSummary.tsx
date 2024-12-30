@@ -61,7 +61,6 @@ export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: (
 };
 
 const SummaryPrice = () => {
-  const { TradePrice: DappTradePrice } = useAdapterContext();
   const [inverted, setInvert] = useState(false);
   const { isLimitOrder, srcToken, dstToken } = store.useTwapStore((store) => ({
     isLimitOrder: store.isLimitOrder,
@@ -83,7 +82,7 @@ const SummaryPrice = () => {
   return (
     <div>
       <Components.Base.Label>Price</Components.Base.Label>
-      <DappTradePrice onClick={onInvert} loading={isLoading} leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={value} />
+      {/* <DappTradePrice onClick={onInvert} loading={isLoading} leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={value} /> */}
     </div>
   );
 };

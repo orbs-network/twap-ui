@@ -29,7 +29,6 @@ export const baseStyles = (theme: Theme) => {
     editableCardBox: darkMode ? "#362F47" : "#EEEAF4",
     inputShadow: darkMode ? "" : "inset 0px 2px 2px -1px rgba(74,74,104,.1)",
     border: darkMode ? "#383241" : "#e7e3eb",
-    labelIcon: darkMode ? "#f4eeff" : "black",
     darkMode,
     label: darkMode ? "#b8add2" : "#7a6eaa",
     panelBg: darkMode ? " #27262C" : "#27262C",
@@ -37,6 +36,7 @@ export const baseStyles = (theme: Theme) => {
     warning: darkMode ? "#A881FC" : "#ff6b6b",
     error: darkMode ? "#ED4B9E" : "#ff6b6b",
     info: darkMode ? "#FF9D00" : "#FF9D00",
+    active: darkMode ? "#A881FC" : "#A881FC",
   };
 };
 
@@ -110,6 +110,9 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-label-with-tooltip": {
+      borderBottom: "1px dashed #5B4776",
+    },
     ".twap-time-selector-selected": {
       background: "unset",
       border: "none",
@@ -130,6 +133,10 @@ export const configureStyles = (theme: Theme) => {
     ".twap-time-selector-list-item": {
       padding: "5px 16px",
       height: "unset",
+      p:{
+        color: styles.primaryTextColor,
+        fontWeight: 400,
+      },
       "&:hover": {
         background: "rgba(255,255,255,0.05)",
       },
@@ -139,19 +146,6 @@ export const configureStyles = (theme: Theme) => {
       button: {
         color: !darkMode ? "white!important" : "#191326!important",
       },
-    },
-    ".twap-cancel-order": {
-      background: "unset!important",
-      borderRadius: "30px!important",
-      fontWeight: 500,
-      fontSize: "14px!important",
-      padding: "6px 40px!important",
-      transition: "0.2s all",
-      height: "unset!important",
-      cursor: "pointer",
-      marginTop: "20px",
-      minHeight: "unset!important",
-      boxShadow: "unset!important",
     },
     ".twap-token-input-loading": {
       opacity: 0.5,
@@ -164,13 +158,10 @@ export const configureStyles = (theme: Theme) => {
         fontSize: 12,
       },
       svg: {
-        color: `${styles.labelIcon}!important`,
+        color: `${styles.primaryTextColor}!important`,
         maxWidth: 14,
         maxHeight: 14,
       },
-    },
-    ".twap-container": {
-      color: styles.primaryTextColor,
     },
     ".twap-button": {
       minHeight: 48,
@@ -180,14 +171,7 @@ export const configureStyles = (theme: Theme) => {
     ".twap-spinner": {
       color: `${styles.primaryTextColor}!important`,
     },
-    ".twap-orders-lists": {
-      width: "100%",
-    },
-    ".twap-orders-list": {
-      padding: 0,
-      width: "100%",
-      gap: "15px!important",
-    },
+
     ".twap-order-token-display": {
       flex: "unset!important",
     },
@@ -224,50 +208,110 @@ export const configureStyles = (theme: Theme) => {
         color: `${styles.primaryTextColor}!important`,
       },
     },
+    ".twap-order-preview-token": {
+      p: {
+        color: "#3DDBB5",
+      },
+    },
+    ".twap-order-preview-token-src": {
+      p: {
+        color: "#ED4B9E",
+      },
+    },
     ".twap-order": {
-      border: `1px solid ${styles.border}`,
+      border: `1px solid #383241`,
       borderRadius: 16,
-      padding: '10px 12px',
-
+      padding: "10px 12px 12px 10px",
       transition: "0.2s all",
       color: `${styles.primaryTextColor}!important`,
-      background: darkMode ? "#362F47" : "#EEEAF4",
+      background: darkMode ? "#27262C" : "#EEEAF4",
+
+      ".twap-order-price": {
+        color: "#F4EEFF",
+        fontSize: 14,
+        fontWeight: 400,
+      },
+      ".twap-orders-status": {
+        p: {
+          fontSize: 14,
+          fontWeight: 600,
+          color: styles.label,
+        },
+        "&-completed": {
+          p: {
+            color: styles.active,
+          },
+          svg: {
+            color: styles.active,
+          },
+        },
+      },
+      ".twap-order-progress": {
+        color: styles.active,
+        gap: 5,
+      },
+      ".twap-order-progress-text": {
+        fontSize: 14,
+        fontWeight: 600,
+      },
+      ".twap-order-progress-spinner": {
+        width: "21px!important",
+        height: "21px!important",
+        position: "relative",
+        color: "inherit",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+          left: 0,
+          top: 0,
+          borderRadius: "50%",
+          border: "4px solid #55496E",
+          zIndex: 1,
+        },
+        svg: {
+          zIndex: 2,
+          position: "relative",
+        },
+      },
+      ".twap-order-hide": {
+        color: styles.label,
+        fontSize: 14,
+      },
       ".twap-order-expanded-right": {
         fontWeight: "400!important",
-      },
-      ".twap-market-price-section": {
-        "*": {
-          fontSize: 13,
-          fontWeight: "400!important",
-        },
+        fontSize: "14px",
+        color: styles.primaryTextColor,
       },
     },
     ".twap-order-separator": {
       display: "none",
     },
-   ".twap-order-accordion": {
-    borderRadius: 16,
-    background: darkMode ? "#08060B" : "#EEEAF4",
-    padding: 12,
-    marginTop: '15px!important',
-   },
-   ".twap-order-details-filled": {
-    span: {
-      color:'#B8ADD2!important'
-    }
-   },
-   ".twap-order-details-filled-percent": {
-    color: '#A881FC!important',
-    fontSize: 14,
-    fontWeight: '600!important',
-   },
+    ".twap-order-accordion": {
+      marginTop: "12px!important",
+      padding: "0px!important",
+    },
+    ".twap-order-expanded": {},
+    ".twap-order-expanded-details": {
+      background: darkMode ? "#08060B" : "#EEEAF4",
+      border: "1px solid #383241",
+      borderRadius: 16,
+      padding: 16,
+      gap: 7,
+    },
+    ".twap-order-details-filled": {
+      span: {
+        color: styles.label,
+      },
+    },
 
     ".twap-switch": {
       ".MuiSwitch-thumb": {
         background: darkMode ? `#27262C!important` : "white!important",
       },
       ".MuiSwitch-track": {
-        backgroundColor: darkMode ? `#b8add2!important` : "#EDEAF4!important",
+        backgroundColor: darkMode ? `#666171!important` : "#EDEAF4!important",
         opacity: "1!important",
       },
       ".Mui-checked+.MuiSwitch-track": {
@@ -327,6 +371,9 @@ export const configureStyles = (theme: Theme) => {
           fontWeight: "inherit",
         },
       },
+      ".twap-loader": {
+        width: "70%",
+      },
     },
     ".twap-usd": {
       fontSize: 12,
@@ -350,6 +397,87 @@ export const StyledTokenPanelInput = styled(Components.TokenPanelInput)(({ theme
     ...bigInputStyle(),
   };
 });
+
+const getCancelOrderStyles = (theme: Theme) => {
+  const styles = baseStyles(theme);
+  return {
+    position: "relative",
+    border: "none",
+    cursor: "pointer",
+    background: "transparent",
+    fontSize: 16,
+    fontWeight: 600,
+    ".twap-cancel-order-content": {
+      background: "#353547",
+      borderRadius: 12,
+      padding: "0px 20px",
+      height: 30,
+    },
+    ".twap-order-tx-hash-content": {
+      background: "#353547",
+      borderRadius: 12,
+      padding: "0px 6px",
+      height: 30,
+      p: {
+        paddingLeft: 6,
+        fontSize: 16,
+        fontWeight: 600,
+      },
+    },
+
+    p: {
+      fontSize: 16,
+      fontWeight: 600,
+      color: "#48D0DB",
+    },
+    "&:after": {
+      borderRadius: 12,
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "calc(100% + 2px)",
+      background: "#303040",
+      zIndex: 0,
+    },
+  };
+};
+
+export const StyledOrdersList = styled("div")(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    alignItems: "center",
+    marginTop: 5,
+    ".twap-orders-lists": {
+      width: "100%",
+    },
+    ".twap-orders-list": {
+      padding: 0,
+      width: "100%",
+      gap: "5px!important",
+    },
+    ".twap-order-expanded-bottom": {
+      justifyContent: "flex-end",
+    },
+    ".twap-cancel-order": {
+      ...getCancelOrderStyles(theme),
+      ".twap-cancel-order-spinner": {
+        width: 20,
+        height: 20,
+        top: "52%",
+      },
+    },
+    ".twap-cancel-order-loading": {
+      pointerEvents: "none",
+      opacity: 0.5,
+    },
+    ".twap-order-tx-hash": {
+      ...getCancelOrderStyles(theme),
+    },
+  };
+});
+
 export const StyledBalanceContainer = styled(Styles.StyledRowFlex)<{ isSrc: number; hide: number }>(({ theme, isSrc, hide }) => {
   const styles = baseStyles(theme);
   return {
@@ -382,12 +510,25 @@ export const StyledBalance = styled(Components.TokenBalance)(({ theme, isSrc }) 
       fontWeight: 600,
       fontSize: 12,
     },
+    svg: {
+      color: styles.label,
+    },
   };
 });
 
-export const StyledMarketPrice = styled(Styles.StyledText)(() => {
+export const StyledMarketPrice = styled(Styles.StyledText)(({ theme }) => {
+  const styles = baseStyles(theme);
   return {
     fontSize: 14,
+    fontWeight: "400!important",
+    color: styles.primaryTextColor,
+    svg: {
+      position: "relative",
+      top: 4,
+      cursor: "pointer",
+      marginLeft: 5,
+      marginRight: 5,
+    },
   };
 });
 
@@ -405,8 +546,16 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     transition: "background-color 0.2s",
-    padding: "6px 2px",
+    padding: "6px 3px",
     borderRadius: 16,
+    ".twap-token-select": {
+      gap: 5,
+     p: {
+      fontWeight: 600,
+      fontSize: 20,
+      color: styles.primaryTextColor,
+     }
+    },
     ".twap-token-display": {
       gap: 6,
     },
@@ -418,6 +567,7 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
       width: 40,
       height: 40,
     },
+ 
     ".twap-token-name": {
       fontWeight: 600,
       fontSize: 20,
@@ -751,7 +901,7 @@ export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) =>
         color: styles.primaryTextColor,
       },
       svg: {
-        color: `${styles.labelIcon}!important`,
+        color: `${styles.primaryTextColor}!important`,
       },
     },
 
@@ -823,23 +973,43 @@ export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
   };
 });
 
-export const StyledOrdersHeader = styled(Styles.StyledRowFlex)(({ theme }) => {
+export const StyledOrdersHeader = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     background: styles.darkMode ? "#27262C" : "#eeeaf4",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    height: 64,
-    padding: 10,
-    justifyContent: "space-between",
+    borderRadius: 24,
+    justifyContent: "center",
+    border: `1px solid #383241`,
+  };
+});
+
+export const StyledOrdersHeaderTop = styled(Styles.StyledRowFlex)({
+  justifyContent: "space-between",
+  height: 64,
+  padding: 10,
+});
+
+export const StyledOrdersHeaderBottom = styled(Styles.StyledColumnFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    justifyContent: "center",
+    display: "flex",
+    alignItems: "center",
+    paddingTop: 30,
+    paddingBottom: 30,
+    p: {
+      color: styles.label,
+      fontSize: 14,
+    },
   };
 });
 
 export const StyledCanceledOrdersController = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
   return {
     width: "auto",
     p: {
-      color: "#B8ADD2",
+      color: styles.label,
       fontSize: 14,
     },
   };
@@ -847,19 +1017,20 @@ export const StyledCanceledOrdersController = styled(Styles.StyledRowFlex)(({ th
 
 export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, theme }) => {
   const styles = baseStyles(theme);
-  const color = styles.darkMode ? "#b8add2" : "#7a6eaa";
+  const color = styles.darkMode ? styles.label : "#7a6eaa";
   const selectedColor = styles.darkMode ? "black" : "#280d5f";
   return {
     cursor: "pointer",
-    background: !selected ? "transparent" : styles.darkMode ? "#B8ADD2" : "white",
+    background: !selected ? "transparent" : styles.darkMode ? styles.label : "white",
     height: "100%",
     padding: "0px 24px",
     display: "flex",
     alignItems: "center",
+    transition: "0.2s background",
     borderRadius: 16,
     width: "auto",
     justifyContent: "center",
-    fontWeight: 500,
+    fontWeight: selected ? 600 : 400,
     color: !selected ? color : selectedColor,
     "@media (max-width:700px)": {
       fontSize: 11,
@@ -1007,7 +1178,7 @@ export const StyledInputContainer = styled("div")<{ focused: number }>(({ focuse
       transform: "translate(-50%, -50%)",
       width: "calc(100% + 4px)",
       height: "calc(100% + 5px)",
-      border: "2px solid #a881fc",
+      border: `2px solid ${styles.active}`,
       borderRadius: 25,
       opacity: focused ? 1 : 0,
       transition: "opacity 0.2s",
@@ -1149,32 +1320,35 @@ export const StyledPricePanelInput = styled(StyledPriceCard)(() => {
 
 const InputContainerLabel = ({ label, value, tooltip }: { label: string; value?: string; tooltip?: string }) => {
   return (
-    <StyledInputContainerLabel>
-      <Components.Base.Tooltip title={tooltip}>
-        <StyledInputContainerLabelLabel>{label}</StyledInputContainerLabelLabel>
-      </Components.Base.Tooltip>
+    <StyledInputContainerLabel >
+      <Components.Base.Label tooltipText={tooltip}>{label}</Components.Base.Label>
       <StyledInputContainerLabelValue>{value}</StyledInputContainerLabelValue>
     </StyledInputContainerLabel>
   );
 };
 
-const StyledInputContainerLabel = styled("div")({
-  display: "flex",
-  flexDirection: "row",
-  gap: 5,
+const StyledInputContainerLabel = styled('div')(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    display: "flex",
+    flexDirection: "row",
+    gap: 5,
+    color: styles.label,
+  };
 });
 const StyledInputContainerLabelLabel = styled(Styles.StyledText)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     color: styles.label,
     fontSize: 12,
-    borderBottom: `1px dashed #5B4776`,
   };
 });
 
-const StyledInputContainerLabelValue = styled(Styles.StyledText)(() => {
+const StyledInputContainerLabelValue = styled(Styles.StyledText)(({ theme }) => {
+  const styles = baseStyles(theme);
   return {
     fontSize: 12,
+    color: styles.primaryTextColor,
   };
 });
 InputContainerHeader.Label = InputContainerLabel;
@@ -1190,7 +1364,7 @@ export const StyledPricePanelPercent = styled(StyledPriceCard)(({ theme }) => {
     alignItems: "center",
     ".twap-input-container-content": {
       "&:after": {
-        border: `2px solid #A881FC`,
+        border: `2px solid ${styles.active}`,
       },
     },
     ".twap-input": {

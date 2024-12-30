@@ -18,8 +18,6 @@ export interface AdapterProps extends TWAPProps {
   SwapPendingModalContent?: any;
   SwapTransactionReceiptModalContent?: any;
   AddToWallet?: any;
-  TradePrice?: any;
-  TradePriceToggle: FC<{ onClick: () => void; loading: boolean }>;
   connectedChainId?: number;
 }
 
