@@ -194,13 +194,13 @@ const useSubmitSwapCallback = () => {
 
       try {
         if (shouldWrap) {
-            updateSwapState(SwapStep.WRAP);
+          updateSwapState(SwapStep.WRAP);
           await wrap();
           incrementStep();
         }
 
         if (!allowance) {
-            updateSwapState(SwapStep.APPROVE);
+          updateSwapState(SwapStep.APPROVE);
 
           await approveCallback();
           const approved = await refetchAllowance();
@@ -441,8 +441,8 @@ const ApproveContent = () => {
 
 const ProgressIndicator = () => {
   const { state } = useSubmitContext();
-    console.log(state.stepsCount);
-    
+  console.log(state.stepsCount);
+
   if (state.stepsCount < 2) return null;
   const value = (state.stepIndex / state.stepsCount) * 100;
 

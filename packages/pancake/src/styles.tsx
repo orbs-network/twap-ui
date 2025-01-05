@@ -1440,7 +1440,6 @@ export const StyledTokenPanelContent = styled(InputContainer)({
   },
 });
 
-
 export const StyledOrderSummaryInfo = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
@@ -1458,8 +1457,6 @@ export const StyledOrderSummaryInfo = styled(Styles.StyledColumnFlex)(({ theme }
   };
 });
 
-
-
 const limitLines = (lines: number) => ({
   display: "-webkit-box",
   WebkitLineClamp: lines,
@@ -1471,7 +1468,7 @@ const limitLines = (lines: number) => ({
 export const StyledDisclaimerContent = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    height: '100%',
+    height: "100%",
     overflow: "auto",
     alignItems: "flex-start",
     paddingRight: 8,
@@ -1488,8 +1485,6 @@ export const StyledDisclaimerContent = styled(Styles.StyledRowFlex)(({ theme }) 
       color: styles.primaryTextColor,
       fontSize: 14,
       lineHeight: "21px",
-     
-
     },
     a: {
       color: styles.primaryTextColor,
@@ -1504,21 +1499,21 @@ export const StyledDisclaimerContent = styled(Styles.StyledRowFlex)(({ theme }) 
       background: styles.label,
       width: 6,
       borderRadius: 999,
-      height: 36
+      height: 36,
     },
-  }
-})
+  };
+});
 export const StyledDisclaimer = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     height: 115,
     border: "1px solid #094D53",
     background: "#13393C",
-    padding: '12px 4px 12px 12px',
+    padding: "12px 4px 12px 12px",
     borderRadius: 20,
     "&::-webkit-scrollbar": {
-      display : "none"
-    }
+      display: "none",
+    },
   };
 });
 

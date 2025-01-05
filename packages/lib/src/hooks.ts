@@ -659,6 +659,7 @@ export const useSetTokensFromDapp = () => {
 
   const srcTokenAddressOrSymbol = context.srcToken;
   const dstTokenAddressOrSymbol = context.dstToken;
+  console.log({srcTokenAddressOrSymbol});
 
   const setSrcToken = useTwapStore((state) => state.setSrcToken);
   const setDstToken = useTwapStore((state) => state.setDstToken);
@@ -673,6 +674,8 @@ export const useSetTokensFromDapp = () => {
 
     if (srcTokenAddressOrSymbol) {
       const srcToken = getTokenFromTokensList(tokensList, srcTokenAddressOrSymbol);
+      console.log({srcToken});
+      
       setSrcToken(srcToken);
     }
     if (dstTokenAddressOrSymbol) {
@@ -783,18 +786,17 @@ export const useSwitchTokens = () => {
   }));
   const dstAmount = useDstAmount().amountUI;
   return useCallback(() => {
-
     const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
     const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
     console.log({ _srcToken, _dstToken });
-    
-     onSrcTokenSelected?.(_dstToken);
-   onDstTokenSelected?.(_srcToken);
-    updateState({
-      srcToken: dstToken,
-      dstToken: srcToken,
-      srcAmountUi: "",
-    });
+    srcToken && onSrcTokenSelected?.(_dstToken);
+    dstToken && onDstTokenSelected?.(_srcToken);
+    setTimeout(() => {
+      updateState({
+        srcAmountUi: "",
+      });
+    }, 10);
+   
     onReset();
   }, [dstAmount, _.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol, onSrcTokenSelected, onDstTokenSelected, onReset]);
 };

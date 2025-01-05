@@ -121,11 +121,7 @@ export const useTwapStore = create(
     getFillDelayWarning: () => {
       return get().lib && (get() as any).getFillDelayUiMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000;
     },
-    shouldWrap: () =>
-      get().lib &&
-      get().srcToken &&
-      get().dstToken &&
-      [TokensValidation.wrapOnly].includes(get().lib!.validateTokens(get().srcToken!, get().dstToken!)),
+    shouldWrap: () => get().lib && get().srcToken && get().dstToken && [TokensValidation.wrapOnly].includes(get().lib!.validateTokens(get().srcToken!, get().dstToken!)),
 
     shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
     isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,

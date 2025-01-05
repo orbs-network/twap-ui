@@ -315,12 +315,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       if (eqIgnoreCase(it.address || "", srcToken?.address || "")) {
         setDstToken(it);
         setSrcToken(dstToken);
-
       }
     },
     [dstToken, srcToken]
   );
-
 
   return (
     <TWAP

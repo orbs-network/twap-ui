@@ -880,7 +880,7 @@ const Fee = ({ fee, dstToken, outAmount }: { fee?: number; dstToken?: TokenData;
   const amountF = useFormatNumber({ value: amount, decimalScale: 6 });
   return (
     <OrderDetailsRow label={`Fee (${fee}%)`} tooltip="Fee is estimated and exact amount may change at execution.">
-      {`${amountF} ${dstToken?.symbol}`} 
+      {`${amountF} ${dstToken?.symbol}`}
     </OrderDetailsRow>
   );
 };
