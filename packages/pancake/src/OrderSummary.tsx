@@ -1,89 +1,89 @@
 import { styled } from "@mui/material";
-import { Styles as TwapStyles, Components, store, hooks } from "@orbs-network/twap-ui";
-import { StyledOrderSummary } from "./styles";
-import { MdArrowDownward } from "@react-icons/all-files/md/MdArrowDownward";
+import { Styles as TwapStyles, Components, store, hooks, useTwapContext } from "@orbs-network/twap-ui";
+import { StyledDisclaimer, StyledOrderSummary, StyledOrderSummaryInfo } from "./styles";
 import { useAdapterContext } from "./context";
-import { useCallback, useState } from "react";
+import { ArrowBottom, InfoIcon } from "./icons";
 
-export const OrderSummary = ({ onSubmit, disabled, isLimitPanel }: { onSubmit: () => void; disabled?: boolean; isLimitPanel?: boolean }) => {
+const Expiration = () => {
+  const t = useTwapContext().translations;
+  const deadline = hooks.useDeadline();
+
+  return <Components.OrderDetails.Expiry expiryMillis={deadline} />;
+};
+
+const Price = () => {
+  const price = hooks.useTradePrice().priceUI;
+  const { srcToken, dstToken } = store.useTwapStore((store) => ({
+    srcToken: store.srcToken,
+    dstToken: store.dstToken,
+  }));
+  return <Components.OrderDetails.Price price={price} srcToken={srcToken} dstToken={dstToken} />;
+};
+
+const MinReceived = () => {
+  const minReceived = hooks.useDstMinAmountOut().amountUI;
+  const { isLimitOrder, dstToken } = store.useTwapStore((store) => ({
+    dstToken: store.dstToken,
+    isLimitOrder: store.isLimitOrder,
+  }));
+  return <Components.OrderDetails.MinReceived symbol={dstToken?.symbol} minReceived={minReceived} isMarketOrder={!isLimitOrder} />;
+};
+
+const TotalTrades = () => {
+  const chunks = hooks.useChunks();
+  return <Components.OrderDetails.TotalTrades totalTrades={chunks} />;
+};
+
+const SizePerTrade = () => {
+  const token = store.useTwapStore((store) => store.srcToken);
+  const sizePerTrade = hooks.useSrcChunkAmountUi();
+  return <Components.OrderDetails.SizePerTrade symbol={token?.symbol} sizePerTrade={sizePerTrade} />;
+};
+
+const TradeInterval = () => {
+  const tradeInterval = store.useTwapStore((s) => s.getFillDelayUiMillis());
+  return <Components.OrderDetails.TradeInterval tradeIntervalMillis={tradeInterval} />;
+};
+
+const Fee = () => {
+  const fee = useTwapContext().fee;
+  const dstToken = store.useTwapStore((store) => store.dstToken);
+  const outAmount = hooks.useDstAmount().amountUI;
+  console.log({ outAmount });
+
+  return <Components.OrderDetails.Fee outAmount={outAmount} dstToken={dstToken} fee={fee} />;
+};
+
+export const OrderSummary = ({ onSubmit, disabled }: { onSubmit: () => void; disabled?: boolean }) => {
   const Button = useAdapterContext().Button;
   return (
-    <StyledOrderSummary gap={14}>
-      <TwapStyles.StyledColumnFlex gap={14}>
-        <StyledTokens>
-          <TokenDisplay isSrc={true} />
-          <StyledArrow />
-          <TokenDisplay />
-        </StyledTokens>
-        <Components.Base.Card>
-          <StyledSummaryDetails>
-            {isLimitPanel ? (
-              <>
-                <SummaryPrice />
-                <Components.OrderSummaryDetailsDeadline />
-                <Components.OrderSummaryDetailsOrderType />
-                <Components.OrderSummaryDetailsChunkSize />
-                <Components.OrderSummaryDetailsMinDstAmount />
-              </>
-            ) : (
-              <>
-                <SummaryPrice />
-                <Components.OrderSummaryDetailsDeadline />
-                <Components.OrderSummaryDetailsOrderType />
-                <Components.OrderSummaryDetailsChunkSize />
-                <Components.OrderSummaryDetailsTotalChunks />
-                <Components.OrderSummaryDetailsTradeInterval />
-                <Components.OrderSummaryDetailsMinDstAmount />
-              </>
-            )}
-            <Components.OrderSummaryDetailsFee fee={0.25} />
-          </StyledSummaryDetails>
-        </Components.Base.Card>
-        <Components.Base.Card>
-          <TwapStyles.StyledColumnFlex gap={10}>
-            <Components.DisclaimerText />
-          </TwapStyles.StyledColumnFlex>
-        </Components.Base.Card>
-      </TwapStyles.StyledColumnFlex>
-      <Components.Base.Card>
-        <TwapStyles.StyledColumnFlex gap={12}>
-          <Components.AcceptDisclaimer />
-          <Components.OutputAddress ellipsis={13} />
-        </TwapStyles.StyledColumnFlex>
-      </Components.Base.Card>
+    <StyledOrderSummary>
+      <StyledTokens>
+        <TokenDisplay isSrc={true} />
+        <ArrowBottom />
+        <TokenDisplay />
+      </StyledTokens>
+
+      <StyledOrderSummaryInfo>
+        <Price />
+        <Expiration />
+        <MinReceived />
+        <TotalTrades />
+        <SizePerTrade />
+        <TradeInterval />
+        <Fee />
+      </StyledOrderSummaryInfo>
+
+      <StyledDisclaimer>
+        <InfoIcon />
+        <Components.DisclaimerText />
+      </StyledDisclaimer>
       <StyledButtonContainer>
         <Button disabled={disabled} onClick={onSubmit}>
           Confirm Order
         </Button>
       </StyledButtonContainer>
     </StyledOrderSummary>
-  );
-};
-
-const SummaryPrice = () => {
-  const [inverted, setInvert] = useState(false);
-  const { isLimitOrder, srcToken, dstToken } = store.useTwapStore((store) => ({
-    isLimitOrder: store.isLimitOrder,
-    srcToken: store.srcToken,
-    dstToken: store.dstToken,
-  }));
-  const { isLoading, getToggled } = hooks.useLimitPriceV2();
-  const { marketPrice } = hooks.useMarketPriceV2(inverted);
-  const price = isLimitOrder ? getToggled(inverted, true) : marketPrice?.original;
-  const value = hooks.useFormatNumber({ value: price || "", decimalScale: 5 });
-
-  const onInvert = useCallback(() => {
-    setInvert((prev) => !prev);
-  }, [setInvert]);
-
-  const leftSymbol = inverted ? dstToken?.symbol : srcToken?.symbol;
-  const rightSymbol = inverted ? srcToken?.symbol : dstToken?.symbol;
-
-  return (
-    <div>
-      <Components.Base.Label>Price</Components.Base.Label>
-      {/* <DappTradePrice onClick={onInvert} loading={isLoading} leftSymbol={leftSymbol} rightSymbol={rightSymbol} price={value} /> */}
-    </div>
   );
 };
 
@@ -94,26 +94,15 @@ const StyledButtonContainer = styled(TwapStyles.StyledRowFlex)({
   },
 });
 
-const StyledSummaryDetails = styled(TwapStyles.StyledColumnFlex)({
-  gap: 9,
-  ".twap-token-logo": {
-    display: "none",
-  },
-  "@media(max-width: 700px)": {
-    gap: 6,
-  },
-});
-
 const TokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
   const { token, srcAmount } = store.useTwapStore((store) => ({
     token: isSrc ? store.srcToken : store.dstToken,
     srcAmount: store.srcAmountUi,
   }));
-  const dstAmount = hooks.useDstAmount().outAmount.ui;
-
+  const dstAmount = hooks.useDstAmount().amountUI;
   const _amount = isSrc ? srcAmount : dstAmount;
 
-  const amount = hooks.useFormatNumber({ value: _amount, decimalScale: 3 });
+  const amount = hooks.useFormatNumber({ value: _amount, decimalScale: 6 });
 
   return (
     <StyledTokenDisplay>
@@ -129,21 +118,21 @@ const TokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
 const StyledTokens = styled(TwapStyles.StyledColumnFlex)({
   gap: 12,
   alignItems: "center",
-});
-
-const StyledArrow = styled(MdArrowDownward)({
-  width: 24,
-  height: 24,
+  svg: {
+    width: 24,
+    height: 24,
+  },
 });
 
 const StyledTokenDisplayRight = styled(TwapStyles.StyledRowFlex)({
   width: "auto",
   p: {
-    fontSize: 14,
+    fontSize: 20,
+    fontWeight: 600,
   },
   ".twap-token-logo": {
-    width: 24,
-    height: 24,
+    width: 40,
+    height: 40,
   },
 });
 

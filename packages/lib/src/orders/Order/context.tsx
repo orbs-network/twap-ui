@@ -8,12 +8,14 @@ interface OrderContextProps {
   srcToken?: TokenData;
   dstToken?: TokenData;
   expanded?: boolean;
-  onExpand?: () => void;
+  onExpand: () => void;
+  setExpand: (expand: boolean) => void;
+  onCancelSuccess?: (value: number) => void;
 }
 
 const OrderContext = createContext({} as OrderContextProps);
 
-export const ListOrderProvider = ({ children, order }: { children: ReactNode; order: Order }) => {
+export const ListOrderProvider = ({ children, order, onCancelSuccess }: { children: ReactNode; order: Order, onCancelSuccess?: (value: number) => void }) => {
   const [expanded, setExpand] = useState(false);
   const srcToken = useGetToken(order?.srcTokenAddress);
   const dstToken = useGetToken(order?.dstTokenAddress);
@@ -21,8 +23,9 @@ export const ListOrderProvider = ({ children, order }: { children: ReactNode; or
   const onExpand = useCallback(() => {
     setExpand((prev) => !prev);
   }, []);
+  
 
-  return <OrderContext.Provider value={{ expanded, order, srcToken, dstToken, onExpand }}>{children}</OrderContext.Provider>;
+  return <OrderContext.Provider value={{ expanded, order, srcToken, dstToken, onExpand, setExpand, onCancelSuccess }}>{children}</OrderContext.Provider>;
 };
 
 export const useListOrderContext = () => {

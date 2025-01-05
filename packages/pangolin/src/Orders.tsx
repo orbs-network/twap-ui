@@ -14,9 +14,8 @@ interface ContextProps {
   theme: any;
 }
 
-
-type OrderUI = any
-type ParsedOrder = any
+type OrderUI = any;
+type ParsedOrder = any;
 
 const useMobile = () => useMediaQuery("(max-width: 600px)");
 const TABS = [Status.Open, Status.Completed, Status.Canceled];
@@ -193,7 +192,7 @@ const Progress = ({ orderUI }: { orderUI: OrderUI }) => {
 const DstTokenAmount = ({ orderUI }: { orderUI?: OrderUI }) => {
   const amount = hooks.useFormatNumber({ value: "" });
 
-  return null
+  return null;
 };
 
 const MinReceivedPerTrade = ({ orderUI }: { orderUI?: OrderUI }) => {
@@ -291,8 +290,7 @@ const Header = () => {
 const SelectedOrder = () => {
   const { selectedOrder } = useOrders();
   const { theme } = useOrdersContext();
-  return null
-
+  return null;
 };
 
 const PairLogos = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: string }) => {
@@ -429,14 +427,11 @@ const StyledMobileList = styled(Styles.StyledColumnFlex)({
 const MobileListItem = ({ order }: { order: ParsedOrder }) => {
   const { selectedOrderID, setSelectedOrderID, theme } = useOrdersContext();
   const isSelected = selectedOrderID === order?.order.id;
-  return null
-
+  return null;
 };
 
 const MobileSelectedOrder = ({ order }: { order?: ParsedOrder }) => {
-
- return null
-
+  return null;
 };
 
 const StyledMobileListTopFlex = styled(Styles.StyledRowFlex)({
@@ -467,8 +462,7 @@ const Amounts = ({ orderUI, className = "" }: { orderUI: OrderUI; className?: st
   const outAmount = hooks.useFormatNumber({ value: "", decimalScale });
   const srcAmount = hooks.useFormatNumber({ value: orderUI?.ui.srcAmountUi, decimalScale });
 
-  return null
-
+  return null;
 };
 
 const StyledAmounts = styled(Styles.StyledRowFlex)({
@@ -500,8 +494,7 @@ const decimalScale = 3;
 const DesktopListItem = ({ order }: { order: ParsedOrder }) => {
   const { setSelectedOrderID, selectedOrderID, theme } = useOrdersContext();
 
-  return null
-
+  return null;
 };
 
 const Tabs = () => {

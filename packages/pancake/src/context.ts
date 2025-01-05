@@ -1,5 +1,5 @@
 import { TWAPProps } from "@orbs-network/twap-ui";
-import { createContext, FC, JSXElementConstructor, useContext } from "react";
+import { createContext, FC, JSXElementConstructor, ReactNode, useContext } from "react";
 import { Config } from "@orbs-network/twap";
 
 export interface AdapterProps extends TWAPProps {
@@ -13,13 +13,12 @@ export interface AdapterProps extends TWAPProps {
   useTooltip: any;
   Tooltip?: any;
   Button?: any;
-  ApproveModalContent?: any;
-  SwapTransactionErrorContent?: any;
-  SwapPendingModalContent?: any;
-  SwapTransactionReceiptModalContent?: any;
-  AddToWallet?: any;
+  TransactionErrorContent: FC<{ message?: string; onClick: () => void }>;
   connectedChainId?: number;
+  toast: ({ title, message, autoCloseMillis, variant }: ToastProps) => void;
 }
+
+export type ToastProps = { title: string; message: ReactNode; autoCloseMillis?: number; variant: "success" | "warning" | "error" | "info" };
 
 const AdapterContext = createContext({} as AdapterProps);
 

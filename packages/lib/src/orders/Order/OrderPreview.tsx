@@ -10,6 +10,7 @@ import BN from "bignumber.js";
 import { OrderProgress, OrderStatus, useOrderExcecutionPrice } from "./Components";
 import { Order } from "../../order";
 import { useListOrderContext } from "./context";
+import { InvertPrice } from "../../components";
 
 const Tokens = () => {
   const order = useListOrderContext().order;
@@ -33,12 +34,14 @@ const StyledToken = styled(StyledRowFlex)({
   },
 });
 
-const TokensToken = ({ token, amount, className, isSrc }: { token?: TokenData; amount?: string; className: string, isSrc?: boolean }) => {
+const TokensToken = ({ token, amount, className, isSrc }: { token?: TokenData; amount?: string; className: string; isSrc?: boolean }) => {
   const amountF = useFormatNumber({ value: amount, decimalScale: 3 });
   return (
-    <StyledToken className={`twap-order-preview-token ${isSrc ? 'twap-order-preview-token-src' : ''} ${className}`}>
+    <StyledToken className={`twap-order-preview-token ${isSrc ? "twap-order-preview-token-src" : ""} ${className}`}>
       <Components.Base.TokenLogo logo={token?.logoUrl} />
-      <StyledTokenSymbol>{amountF} {token?.symbol} </StyledTokenSymbol>
+      <StyledTokenSymbol>
+        {amountF} {token?.symbol}{" "}
+      </StyledTokenSymbol>
     </StyledToken>
   );
 };
@@ -59,12 +62,12 @@ function OrderPreview() {
 
 const OrderExcecutionPrice = () => {
   const { order, expanded } = useListOrderContext();
-  const { leftToken, rightToken, onInvert, price } = useOrderExcecutionPrice(order);
+  const { price, srcToken, dstToken } = useOrderExcecutionPrice(order);
 
   if (expanded || !price) return null;
   return (
     <StyledPrice>
-      1 {leftToken?.symbol} <ArrowsIcon onClick={onInvert} /> {price} {rightToken?.symbol}
+      <InvertPrice price={price} srcToken={srcToken} dstToken={dstToken} />
     </StyledPrice>
   );
 };
@@ -98,7 +101,7 @@ const StyledStatus = styled(StyledRowFlex)({
 
 const StyledPrice = styled(StyledRowFlex)({
   gap: 5,
-  width:'40%',
+  width: "40%",
   maxWidth: 230,
   fontSize: 14,
   justifyContent: "flex-start",

@@ -1,4 +1,4 @@
-import { Box, Button, createTheme, styled, Theme, Typography } from "@mui/material";
+import { Box, Button, createTheme, LinearProgress, styled, Theme, Typography } from "@mui/material";
 import { DefaultTheme } from "@mui/system";
 import { Components, OrdersContainer, Styles } from "@orbs-network/twap-ui";
 import { Children, createContext, CSSProperties, ReactNode, useCallback, useRef, useState } from "react";
@@ -133,7 +133,7 @@ export const configureStyles = (theme: Theme) => {
     ".twap-time-selector-list-item": {
       padding: "5px 16px",
       height: "unset",
-      p:{
+      p: {
         color: styles.primaryTextColor,
         fontWeight: 400,
       },
@@ -190,15 +190,21 @@ export const configureStyles = (theme: Theme) => {
       display: "flex",
       flexDirection: "column",
       padding: "0px",
-      maxWidth: "370px!important",
-      borderRadius: 32,
-      minHeight: "415px",
+      maxWidth: "480px",
+      borderRadius: 24,
       overflow: "hidden",
       "*::-webkit-scrollbar": {
         display: "none",
       },
+
       "&-header": {
-        marginBottom: 10,
+        display: "none!important",
+      },
+    },
+    ".twap-order-summary-placed-step": {
+      svg: {
+        top: -5,
+        path: { fill: "#27a688" },
       },
     },
 
@@ -364,7 +370,7 @@ export const configureStyles = (theme: Theme) => {
       input: {
         color: styles.primaryTextColor,
         fontSize: 16,
-        fontWeight: 500,
+        fontWeight: 480,
         "&::placeholder": {
           color: `${styles.primaryTextColor}!important`,
           opacity: 0.5,
@@ -550,11 +556,11 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
     borderRadius: 16,
     ".twap-token-select": {
       gap: 5,
-     p: {
-      fontWeight: 600,
-      fontSize: 20,
-      color: styles.primaryTextColor,
-     }
+      p: {
+        fontWeight: 600,
+        fontSize: 20,
+        color: styles.primaryTextColor,
+      },
     },
     ".twap-token-display": {
       gap: 6,
@@ -567,7 +573,7 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
       width: 40,
       height: 40,
     },
- 
+
     ".twap-token-name": {
       fontWeight: 600,
       fontSize: 20,
@@ -845,10 +851,6 @@ export const StyledButton = styled("button")(({ theme, disabled }) => {
   };
 });
 
-export const StyledAcceptDisclaimer = styled(Components.AcceptDisclaimer)({
-  justifyContent: "space-between",
-});
-
 export const StyledOutputAddress = styled(Components.OutputAddress)({
   marginTop: 20,
   fontSize: 14,
@@ -857,6 +859,7 @@ export const StyledOutputAddress = styled(Components.OutputAddress)({
 export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
+    gap: 20,
     ".twap-order-summary-output-address": {
       alignItems: "center",
       fontSize: 14,
@@ -1080,27 +1083,6 @@ export const StyledModalHeaderClose = styled("button")(({ theme }) => {
   };
 });
 
-export const StyledModalHeader = styled(Styles.StyledRowFlex)<{ withTitle: number }>(({ theme, withTitle }) => {
-  const darkMode = baseStyles(theme).darkMode;
-
-  return {
-    justifyContent: "space-between",
-    alignItems: "center",
-    background: !withTitle ? "transparent" : darkMode ? "#3B394D" : "linear-gradient(111.68deg,#f2ecf2,#e8f2f6)",
-    padding: "12px 24px",
-    paddingBottom: !withTitle ? "0" : "12px",
-    borderBottom: !withTitle ? "1px solid transparent" : darkMode ? "1px solid #383241" : "1px solid #e7e3eb",
-  };
-});
-
-export const StyledSwapModalContent = styled(Styles.StyledColumnFlex)<{ style: CSSProperties }>(({ style }) => ({
-  padding: "0px 24px 24px 24px",
-  alignItems: "center",
-  justifyContent: "center",
-  flex: 1,
-  overflowY: "auto",
-  ...style,
-}));
 export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {
   const darkMode = baseStyles(theme).darkMode;
   return {
@@ -1320,14 +1302,14 @@ export const StyledPricePanelInput = styled(StyledPriceCard)(() => {
 
 const InputContainerLabel = ({ label, value, tooltip }: { label: string; value?: string; tooltip?: string }) => {
   return (
-    <StyledInputContainerLabel >
+    <StyledInputContainerLabel>
       <Components.Base.Label tooltipText={tooltip}>{label}</Components.Base.Label>
       <StyledInputContainerLabelValue>{value}</StyledInputContainerLabelValue>
     </StyledInputContainerLabel>
   );
 };
 
-const StyledInputContainerLabel = styled('div')(({ theme }) => {
+const StyledInputContainerLabel = styled("div")(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     display: "flex",
@@ -1449,4 +1431,188 @@ export const StyledTokenPanelContent = styled(InputContainer)({
       flex: "unset",
     },
   },
+});
+
+export const StyledOrderSummaryInfo = styled(Styles.StyledColumnFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    background: styles.darkMode ? "#08060B" : "#EEEAF4",
+    border: "1px solid #383241",
+    borderRadius: 16,
+    padding: 16,
+    gap: 9,
+    ".twap-token-logo": {
+      display: "none",
+    },
+    "@media(max-width: 700px)": {
+      gap: 6,
+    },
+  };
+});
+
+export const StyledDisclaimer = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    height: 110,
+    color: "1px solid #094D53",
+    background: "#13393C",
+    padding: 12,
+    borderRadius: 20,
+    svg: { fill: "#48D0DB", width: 24, height: 24, position: "sticky", top: 0 },
+    alignItems: "flex-start",
+    overflow: "auto",
+    p: {
+      color: styles.primaryTextColor,
+      fontSize: 14,
+      lineHeight: "21px",
+    },
+    a: {
+      color: styles.primaryTextColor,
+      fontSize: 14,
+      lineHeight: "21px",
+    },
+  };
+});
+
+export const StyledSubmitModalContentHeader = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    justifyContent: "center",
+    padding: 0,
+    position: "relative",
+    p: {
+      color: styles.primaryTextColor,
+      fontSize: 20,
+      fontWeight: 600,
+    },
+    button: {
+      cursor: "pointer",
+      border: "none",
+      background: "transparent",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 0,
+      position: "absolute",
+      right: 0,
+      top: 0,
+      svg: {
+        width: 32,
+        height: 32,
+      },
+    },
+  };
+});
+
+export const StyledModalContentTitle = styled(Styles.StyledText)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    color: styles.primaryTextColor,
+    fontSize: 20,
+    fontWeight: 600,
+  };
+});
+
+export const StyledAwaitingTxMessage = styled(Styles.StyledRowFlex)(({ theme }) => {
+  return {
+    ".twap-spinner": {
+      maxWidth: 17,
+      maxHeight: 17,
+    },
+  };
+});
+
+export const StyledSubmitModalContentChildren = styled(Styles.StyledRowFlex)({
+  marginTop: 35,
+  alignItems: "flex-start",
+  gap: 0,
+  position: "relative",
+});
+
+export const StyledSubmitModalContent = styled(Styles.StyledColumnFlex)({
+  alignItems: "center",
+  justifyContent: "flex-start",
+  height: 280,
+  padding: 20,
+  position:'relative'
+});
+
+export const StyledSubmitModalContentMain = styled(Styles.StyledColumnFlex)({
+  gap: 0,
+  overflowY: "auto",
+  flex: 1,
+});
+
+export const StyledSubmitModalToken = styled(Styles.StyledColumnFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    alignItems: "center",
+    padding: "0px 20px",
+    gap: 10,
+    width: "auto",
+    flex: 1,
+    ".twap-token-logo": {
+      width: 40,
+      height: 40,
+    },
+    p: {
+      color: styles.primaryTextColor,
+      fontSize: 16,
+      fontWeight: 600,
+    },
+  };
+});
+
+export const StyledSubmitModalBottom = styled(Styles.StyledColumnFlex)(() => {
+  return {
+    marginTop: "auto",
+    alignItems: "center",
+    gap: 14,
+  };
+});
+
+export const StyledSubmitModalBottomMsg = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    color: "#B8ADD2",
+    fontSize: 14,
+  };
+});
+
+export const StyledSubmitModalProgress = styled(LinearProgress)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    width: "100px",
+    borderRadius: "999px",
+    height: 4,
+    backgroundColor: "#55496E",
+    ".MuiLinearProgress-bar": {
+      backgroundColor: styles.active,
+    },
+  };
+});
+
+export const StyledSpinner = styled("div")({
+  // animation: "spin 1.5s linear infinite",
+  // "@keyframes spin": {
+  //   "0%": { transform: "rotate(0deg)" },
+  //   "100%": { transform: "rotate(360deg)" },
+  // },
+});
+
+export const StyledOrderPlacedMessage = styled(Styles.StyledText)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    fontSize: 14,
+    svg: {
+      position: "relative",
+      top: 4,
+      width: 21,
+      height: 21,
+    },
+    a: {
+      textDecoration: "unset",
+      color: "#48D0DB",
+    },
+  };
 });

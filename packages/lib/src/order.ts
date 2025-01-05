@@ -381,7 +381,7 @@ export const getOrders = async ({
 
 export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
   const grouped = _.groupBy(orders, "status");
-  
+
   return {
     [Status.Open]: grouped[Status.Open] || [],
     [Status.Completed]: grouped[Status.Completed] || [],
@@ -394,6 +394,17 @@ export const waitForOrdersUpdate = async (config: Config, orderId: number, accou
   for (let i = 0; i < 20; i++) {
     const orders = await getOrders({ exchangeAddress: config.exchangeAddress, account, signal, chainId: config.chainId });
     if (orders.find((o) => o.id === orderId)) {
+      return orders;
+    }
+    await delay(3_000);
+  }
+};
+
+export const waitForOrdersCancelled = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
+  for (let i = 0; i < 20; i++) {
+    const orders = await getOrders({ exchangeAddress: config.exchangeAddress, account, signal, chainId: config.chainId });
+    const order = orders.find((o) => o.id === orderId);
+    if (order && order.status !== Status.Open) {
       return orders;
     }
     await delay(3_000);

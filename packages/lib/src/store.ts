@@ -7,7 +7,7 @@ import _ from "lodash";
 import { maxUint256 } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
 import { QUERY_PARAMS } from "./consts";
-import { amountBN, amountUi, fillDelayText, getQueryParam, setQueryParam } from "./utils";
+import { amountBN, fillDelayText, getQueryParam, setQueryParam } from "./utils";
 
 export enum TimeResolution {
   Minutes = 60 * 1000,
@@ -51,7 +51,7 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     txHash: undefined,
 
     enableQueryParams: false,
-    waitingForOrdersUpdate: false,
+    waitingForOrderId: undefined,
     srcUsd: undefined,
     dstUsd: undefined,
   };
@@ -192,8 +192,6 @@ export const useWizardStore = create<WizardStore>((set, get) => ({
 
 interface LimitPriceStore {
   limitPrice?: string;
-  inverted: boolean;
-  toggleInverted: () => void;
   onLimitInput: (limitPrice?: string) => void;
   onReset: () => void;
   gainPercent?: number;
@@ -210,9 +208,6 @@ export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
   },
   limitPrice: undefined,
   toggleInverted: () => {
-    set({
-      inverted: !get().inverted,
-    });
     const limitPrice = get().limitPrice;
     if (limitPrice) {
       set({
@@ -224,7 +219,7 @@ export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
     set({
       limitPrice,
     });
-    const inverted = get().inverted;
+    const inverted = false;
     setQueryParam(
       QUERY_PARAMS.LIMIT_PRICE,
       !limitPrice || BN(limitPrice).isZero()
@@ -242,7 +237,6 @@ export const useLimitPriceStore = create<LimitPriceStore>((set, get) => ({
     setQueryParam(QUERY_PARAMS.LIMIT_PRICE_GAIN, undefined);
     set({
       limitPrice: undefined,
-      inverted: false,
       gainPercent: undefined,
     });
   },

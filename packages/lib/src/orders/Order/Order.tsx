@@ -4,17 +4,18 @@ import OrderPreview from "./OrderPreview";
 import OrderExpanded from "./OrderExpanded";
 import { AccordionSummary, Box, styled } from "@mui/material";
 import { Card, Loader } from "../../components/base";
-import { StyledColumnFlex } from "../../styles";
+import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { Order } from "../../order";
 import { ListOrderProvider, useListOrderContext } from "./context";
 
 export interface Props {
   order: Order;
+  onCancelSuccess?: (id: number) => void;
 }
 
-export function ListOrder({ order }: Props) {
+export function ListOrder({ order, onCancelSuccess }: Props) {
   return (
-    <ListOrderProvider order={order}>
+    <ListOrderProvider order={order} onCancelSuccess={onCancelSuccess}>
       <ListOrderContent />
     </ListOrderProvider>
   );
@@ -36,20 +37,51 @@ const ListOrderContent = () => {
   );
 };
 
-export const OrderLoader = ({ status }: { status?: string }) => {
-  if (status !== "Open") return null;
+
+export const OrderLoader = ({ className = "" }: { className?: string }) => {
   return (
-    <StyledOrderLoader className="twap-pending-order-loader twap-order">
-      <StyledColumnFlex gap={10}>
-        <Loader width="30%" height={20} />
-        <Loader width="40%" height={20} />
-        <Loader width="50%" height={20} />
+    <StyledOrdersLoader className={`${className} twap-order`}>
+      <StyledColumnFlex style={{ width: "auto", gap: 5 }}>
+        <StyledRowFlex style={{ width: "auto" }}>
+          <StyledLoaderLogo />
+          <StyledLoaderSymbol />
+        </StyledRowFlex>
+        <StyledRowFlex style={{ width: "auto" }}>
+          <StyledLoaderLogo />
+          <StyledLoaderSymbol />
+        </StyledRowFlex>
       </StyledColumnFlex>
-    </StyledOrderLoader>
+      <StyledLoaderRight />
+    </StyledOrdersLoader>
   );
 };
 
-const StyledOrderLoader = styled(Card)({});
+const StyledOrdersLoader = styled(StyledRowFlex)((theme) => {
+  return {
+    width: "100%",
+
+    justifyContent: "space-between",
+    marginTop: 5,
+  };
+});
+
+const StyledLoaderLogo = styled(Loader)({
+  width: 24,
+  height: 24,
+  transform: "unset",
+  borderRadius: "50%",
+});
+
+const StyledLoaderRight = styled(Loader)({
+  width: 70,
+  height: 30,
+});
+
+const StyledLoaderSymbol = styled(Loader)({
+  width: 70,
+  height: 20,
+});
+
 
 const StyledAccordionDetails = styled(AccordionDetails)({
   marginTop: 10,

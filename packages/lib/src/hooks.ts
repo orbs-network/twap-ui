@@ -28,18 +28,21 @@ import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
 import { amountBN, amountBNV2, amountUi, amountUiV2, devideCurrencyAmounts, getQueryParam, getTokenFromTokensList, logger, safeInteger, setQueryParam } from "./utils";
-import { getOrders, groupOrdersByStatus, Order } from "./order";
+import { getOrders, groupOrdersByStatus, Order, waitForOrdersCancelled, waitForOrdersUpdate } from "./order";
 
 /**
  * Actions
  */
 
 export const useResetStore = () => {
-  const resetTwapStore = useTwapStore((state) => state.reset);
+  const { resetTwapStore, waitingForOrderId } = useTwapStore((state) => ({
+    resetTwapStore: state.reset,
+    waitingForOrderId: state.waitingForOrderId,
+  }));
   const storeOverride = useTwapContext().storeOverride || {};
 
   return (args: Partial<State> = {}) => {
-    resetTwapStore({ ...storeOverride, ...args });
+    resetTwapStore({ ...storeOverride, ...args, waitingForOrderId });
     setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
     setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
     setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
@@ -64,7 +67,7 @@ export const useReset = () => {
   };
 };
 
-export const useWrapToken = (disableWizard?: boolean) => {
+export const useWrapToken = () => {
   const lib = useTwapStore((state) => state.lib);
   const srcAmount = useTwapStore((state) => state.getSrcAmount());
   const srcToken = useTwapStore((state) => state.srcToken);
@@ -79,17 +82,12 @@ export const useWrapToken = (disableWizard?: boolean) => {
 
   return useMutation(
     async () => {
-      if (!disableWizard) {
-        wizardStore.setAction(WizardAction.WRAP);
-        wizardStore.setStatus(WizardActionStatus.PENDING);
-      }
       analytics.onWrapRequest();
       return lib!.wrapNativeToken(srcAmount, priorityFeePerGas, maxFeePerGas);
     },
     {
       onSuccess: () => {
         analytics.onWrapSuccess();
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
         if (lib?.validateTokens(srcToken!, dstToken!) === TokensValidation.wrapOnly) {
           reset();
           return;
@@ -102,14 +100,14 @@ export const useWrapToken = (disableWizard?: boolean) => {
       },
       onError: (error: Error) => {
         console.log(error.message);
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
         analytics.onWrapError(error.message);
+        throw error;
       },
     }
   );
 };
 
-export const useUnwrapToken = (disableWizard?: boolean) => {
+export const useUnwrapToken = () => {
   const lib = useTwapStore((state) => state.lib);
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   const reset = useReset();
@@ -117,21 +115,13 @@ export const useUnwrapToken = (disableWizard?: boolean) => {
   const wizardStore = useWizardStore();
   return useMutation(
     async () => {
-      if (!disableWizard) {
-        wizardStore.setAction(WizardAction.UNWRAP);
-        wizardStore.setStatus(WizardActionStatus.PENDING);
-      }
-
       return lib?.unwrapNativeToken(srcTokenAmount, priorityFeePerGas, maxFeePerGas);
     },
     {
       onSuccess: () => {
         reset();
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
-      onError: (error: Error) => {
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
-      },
+      onError: (error: Error) => {},
     }
   );
 };
@@ -165,9 +155,9 @@ export const useApproveToken = (disableWizard?: boolean) => {
         !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
-        console.log(error.message);
         !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
         analytics.onApproveError(error.message);
+        throw error;
       },
       onSettled: () => {
         setLoading(false);
@@ -201,25 +191,22 @@ export const useHasMinNativeTokenBalance = (minTokenAmount?: string) => {
   );
 };
 
-export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) => {
+export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
-  const { refetch } = useOrdersHistoryQuery();
+  const { onOrderCreated } = useOrdersHistoryQuery();
   const submitOrder = useSubmitOrderCallback();
   const { setTab } = useOrdersStore();
-
-  const wizardStore = useWizardStore();
-  const { askDataParams, onTxSubmitted, account } = useTwapContext();
-  const dstMinAmountOut = useDstMinAmountOut();
-  const dstAmountUsdUi = useDstAmountUsdUi();
-  const dstAmount = useDstAmount().outAmount;
+  const { askDataParams, onTxSubmitted } = useTwapContext();
+  const dstMinAmountOut = useDstMinAmountOut().amount;
+  const { amount: dstAmount, usd: dstAmountUsdUi } = useDstAmount();
   const srcUsd = useSrcUsd().value.toString();
   const tradeSize = useSrcChunkAmount();
   const srcChunkAmount = useSrcChunkAmount();
   const deadline = useDeadline();
   const onResetLimitPrice = useLimitPriceStore().onReset;
   return useMutation(
-    async () => {
+    async (onTxHash?: (value: string) => void) => {
       const dstToken = {
         ...store.dstToken!,
         address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
@@ -229,7 +216,7 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
         srcToken: store.srcToken!,
         dstToken: dstToken,
         srcAmount: store.getSrcAmount().toString(),
-        dstAmount: dstAmount.raw,
+        dstAmount,
         dstUSD: dstAmountUsdUi!,
         getSrcChunkAmount: tradeSize.toString(),
         getDeadline: deadline,
@@ -237,25 +224,19 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
         isLimit: store.isLimitOrder,
       });
 
-      if (!disableWizard) {
-        wizardStore.setAction(WizardAction.CREATE_ORDER);
-        wizardStore.setStatus(WizardActionStatus.PENDING);
-      }
-
       const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
 
       store.setLoading(true);
 
-      const onTxHash = (txHash: string) => {
-        setTab(0);
-        store.updateState({
-          waitingForOrdersUpdate: true,
-          txHash,
-        });
-      };
-
       const order = await submitOrder(
-        onTxHash,
+        (txHash) => {
+          onTxHash?.(txHash);
+          setTab(0);
+          store.updateState({
+            txHash,
+            waitingForOrderId: true,
+          });
+        },
         store.srcToken!,
         dstToken,
         store.getSrcAmount(),
@@ -268,31 +249,29 @@ export const useCreateOrder = (disableWizard?: boolean, onSuccess?: () => void) 
         priorityFeePerGas || zero,
         maxFeePerGas
       );
-
       onTxSubmitted?.({
         srcToken: store.srcToken!,
         dstToken: dstToken!,
         srcAmount: store.getSrcAmount().toString(),
         dstUSD: dstAmountUsdUi!,
-        dstAmount: dstAmount.raw,
+        dstAmount,
         txHash: order.txHash,
       });
 
-      await refetch();
+      store.updateState({
+        waitingForOrderId: order.orderId,
+      });
+      onOrderCreated(order.orderId);
       return order;
     },
     {
       onSuccess: async (result) => {
         analytics.onCreateOrderSuccess(result.txHash, result.orderId);
-        onSuccess?.();
         onResetLimitPrice();
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
-        console.log({ error });
-
         analytics.onCreateOrderError(error.message);
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
+        throw error;
       },
 
       onSettled: () => {
@@ -373,17 +352,17 @@ export const useCustomActions = () => {
 
 export const useCancelOrder = () => {
   const lib = useTwapStore((state) => state.lib);
-  const { refetch } = useOrdersHistoryQuery();
+  const { onOrderCancelled } = useOrdersHistoryQuery();
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   return useMutation(
     async (orderId: number) => {
       analytics.onCancelOrder(orderId);
-      return lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
+      await lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
+      await onOrderCancelled(orderId);
     },
     {
-      onSuccess: (_result, orderId) => {
+      onSuccess: (_result) => {
         analytics.onCancelOrderSuccess();
-        refetch();
       },
       onError: (error: Error) => {
         analytics.onCanelOrderError(error.message);
@@ -418,8 +397,8 @@ export const useLoadingState = () => {
   const dstBalance = useDstBalance();
 
   return {
-    srcUsdLoading: !srcToken ? false  : srcUSD.isLoading || srcUSD.value?.isZero(),
-    dstUsdLoading: !dstToken ? false :   dstUSD.isLoading || dstUSD.value?.isZero(),
+    srcUsdLoading: !srcToken ? false : srcUSD.isLoading || srcUSD.value?.isZero(),
+    dstUsdLoading: !dstToken ? false : dstUSD.isLoading || dstUSD.value?.isZero(),
     srcBalanceLoading: srcBalance.isLoading,
     dstBalanceLoading: dstBalance.isLoading,
   };
@@ -462,24 +441,44 @@ export const useDstBalance = () => {
  * Queries
  */
 
+export const useHasAllowanceQueryKey = (srcAmount?: string) => {
+  const { lib, srcToken } = useTwapStore((state) => ({
+    lib: state.lib,
+    srcToken: state.srcToken,
+  }));
+  return useMemo(() => [QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, srcAmount], [lib, srcToken, srcAmount]);
+};
+
+export const useHasAllowanceDebounedQuery = () => {
+  const { lib, amount, srcToken } = useTwapStore((state) => ({
+    lib: state.lib,
+    amount: state.getSrcAmount(),
+    srcToken: state.srcToken,
+  }));
+
+  const debouncedValue = useDebounce(amount.toString(), 500);
+  const querykey = useHasAllowanceQueryKey(debouncedValue);
+  const query = useQuery(querykey, () => lib!.hasAllowance(srcToken!, debouncedValue), {
+    enabled: !!lib && !!srcToken && amount.gt(0),
+    staleTime: STALE_ALLOWANCE,
+    refetchOnWindowFocus: true,
+  });
+  return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
+};
+
 export const useHasAllowanceQuery = () => {
   const { lib, amount, srcToken } = useTwapStore((state) => ({
     lib: state.lib,
     amount: state.getSrcAmount(),
     srcToken: state.srcToken,
   }));
-  const query = useQuery(
-    [QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, amount.toString()],
-    async () => {
-      const result = await lib!.hasAllowance(srcToken!, amount);
-      return result;
-    },
-    {
-      enabled: !!lib && !!srcToken && amount.gt(0),
-      staleTime: STALE_ALLOWANCE,
-      refetchOnWindowFocus: true,
-    }
-  );
+  const querykey = useHasAllowanceQueryKey(amount.toString());
+
+  const query = useQuery(querykey, () => lib!.hasAllowance(srcToken!, amount), {
+    enabled: !!lib && !!srcToken && amount.gt(0),
+    staleTime: STALE_ALLOWANCE,
+    refetchOnWindowFocus: true,
+  });
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
 };
 
@@ -589,9 +588,11 @@ export const useOrdersHistoryQuery = () => {
     updateState: state.updateState,
     showConfirmation: state.showConfirmation,
   }));
+  const queryClient = useQueryClient();
+  const queryKey = useMemo(() => [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId], [lib?.maker, lib?.config.chainId]);
 
-  return useQuery({
-    queryKey: [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId],
+  const query = useQuery({
+    queryKey,
     queryFn: async ({ signal }) => {
       return await getOrders({
         account: lib!.maker,
@@ -604,6 +605,36 @@ export const useOrdersHistoryQuery = () => {
     staleTime: Infinity,
     refetchInterval: REFETCH_ORDER_HISTORY,
   });
+
+  const onOrderCreated = useCallback(
+    async (orderId?: number) => {
+      if (!orderId || !lib) {
+        return query.refetch();
+      }
+
+      const orders = await waitForOrdersUpdate(lib?.config, orderId, lib!.maker);
+      if (orders?.length) {
+        queryClient.setQueriesData(queryKey, orders);
+      }
+    },
+    [lib, query.refetch, queryKey, queryClient]
+  );
+
+  const onOrderCancelled = useCallback(
+    async (orderId: number) => {
+      const orders = await waitForOrdersCancelled(lib!.config, orderId, lib!.maker);
+      if (orders?.length) {
+        queryClient.setQueriesData(queryKey, orders);
+      }
+    },
+    [lib, queryKey, queryClient]
+  );
+
+  return {
+    ...query,
+    onOrderCreated,
+    onOrderCancelled,
+  };
 };
 
 export const useGroupedOrders = () => {
@@ -741,7 +772,7 @@ export const useToken = (isSrc?: boolean) => {
 
 export const useSwitchTokens = () => {
   const { dappTokens, onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
-  const { onReset } = useLimitPriceV2();
+  const { onReset } = useTradePrice();
 
   const { srcToken, dstToken, updateState } = useTwapStore((s) => ({
     srcToken: s.srcToken,
@@ -749,7 +780,7 @@ export const useSwitchTokens = () => {
     srcAmountUi: s.srcAmountUi,
     updateState: s.updateState,
   }));
-  const dstAmount = useDstAmount().outAmount.ui;
+  const dstAmount = useDstAmount().amountUI;
   return useCallback(() => {
     updateState({
       srcToken: dstToken,
@@ -821,19 +852,18 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
     createOrderLoading: store.loading,
     isLimitOrder: store.isLimitOrder,
   }));
-  const reset = useResetStore();
   const outAmountLoading = useDstAmount().isLoading;
   const { srcUsdLoading, dstUsdLoading } = useLoadingState();
   const { mutate: approve, isLoading: approveLoading } = useApproveToken();
-  const { mutate: createOrder } = useCreateOrder(false, reset);
+  const { mutate: createOrder } = useCreateOrder();
   const allowance = useHasAllowanceQuery();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapToken();
   const connect = useTwapContext()?.connect;
   const wizardStore = useWizardStore();
   const { loading: changeNetworkLoading, changeNetwork } = useChangeNetwork();
-  const { limitPrice } = useLimitPriceV2();
-  const waitForLimitPrice = !limitPrice && isLimitOrder;
+  const { priceUI } = useTradePrice();
+  const waitForLimitPrice = !priceUI && isLimitOrder;
   const warning = useFillWarning()?.message;
 
   if (wrongNetwork)
@@ -924,61 +954,6 @@ export const useGetToken = (address?: string) => {
     return tokenList?.find((t) => eqIgnoreCase(t.address, address));
   }, [address, tokenList]);
 };
-
-// export const useParseOrderUi = (o?: Order) => {
-//   const lib = useTwapStore((s) => s.lib);
-//   const { value: srcUsd = zero } = usePriceUSD(o?.srcTokenAddress);
-//   const { value: dstUsd = zero } = usePriceUSD(o?.dstTokenAddress);
-//   const srcToken = useGetToken(o?.srcTokenAddress);
-//   const dstToken = useGetToken(o?.dstTokenAddress);
-
-//   return useMemo(() => {
-//     if (!lib || !o) return;
-//     if (!srcToken || !dstToken) return;
-//     const isBsc = lib.config.chainId === networks.bsc.id;
-
-//     const srcFilledAmount =  o.srcFilledAmount;
-//     const srcFilledUI = amountUiV2(srcToken.decimals, srcFilledAmount?.toString());
-//     const dstFilledUI = amountUiV2(dstToken.decimals, o.dstFilledAmount);
-//     const dstMinAmountOutUi = amountUiV2(dstToken.decimals, o.dstMinAmount.toString());
-
-//     const dstMinAmountOut = () => {
-//       if (o.isMarketOrder || !o.totalChunks) return;
-
-//       return BN(dstMinAmountOutUi).multipliedBy(o.totalChunks).toString();
-//     };
-
-//     return {
-//       order: o.order,
-//       ui: {
-//         ...o.ui,
-//         isMarketOrder,
-//         dstPriceFor1Src,
-//         srcUsd,
-//         dstUsd,
-//         srcUsdUi: srcUsd.toString(),
-//         dstUsdUi: dstUsd.toString(),
-//         srcAmountUi: amountUi(srcToken, o.order.ask.srcAmount),
-//         srcAmountUsdUi: o.ui.dollarValueIn || amountUi(srcToken, o.order.ask.srcAmount.times(srcUsd)),
-//         srcChunkAmountUi: amountUi(srcToken, o.order.ask.srcBidAmount),
-//         srcChunkAmountUsdUi: amountUi(srcToken, o.order.ask.srcBidAmount.times(srcUsd)),
-//         srcFilledAmountUi: srcFilledUI,
-//         dstMinAmountOutUsdUi: amountUi(dstToken, o.order.ask.dstMinAmount.times(dstUsd)),
-//         fillDelay: o.order.ask.fillDelay * 1000 + lib.estimatedDelayBetweenChunksMillis(),
-//         createdAtUi: moment(o.order.time * 1000).format("ll HH:mm"),
-//         deadlineUi: moment(o.order.ask.deadline * 1000).format("ll HH:mm"),
-//         prefix: isMarketOrder ? "~" : "~",
-//         dstFilledAmount: dstFilledUI,
-//         dstAmountUsd: o.ui.dollarValueOut ? o.ui.dollarValueOut : !dstFilledAmount ? undefined : amountUi(dstToken, BN(dstFilledAmount || "0").times(dstUsd)),
-//         dstUsdLoading: !dstUsd || dstUsd.isZero(),
-//         progress: o?.ui.progress,
-//         priceSrcForDstToken: !dstFilledUI || !srcFilledUI ? undefined :  BN(dstFilledUI).div(srcFilledUI).toString(),
-//         dstMinAmountOut: dstMinAmountOut(),
-//         minimumReceived: BN(o.ui.totalChunks || "0").multipliedBy(o.order.ask.dstMinAmount).toString(),
-//       },
-//     };
-//   }, [lib, o, srcUsd, dstUsd, dstAmountOutFromEvents]);
-// };
 
 function useSubmitOrderCallback() {
   const lib = useTwapStore((s) => s.lib);
@@ -1132,67 +1107,54 @@ const useGetFillsCallback = () => {
 };
 
 export const useDstAmount = () => {
-  const { dstAmountOut, dstAmountLoading } = useTwapContext();
-  const { dstToken, isLimitOrder, srcToken, srcAmount } = useTwapStore((s) => ({
+  const { dstToken, srcAmount } = useTwapStore((s) => ({
     dstToken: s.dstToken,
     isLimitOrder: s.isLimitOrder,
     srcToken: s.srcToken,
-    srcAmount: s.getSrcAmount().toString(),
+    srcAmount: s.srcAmountUi,
   }));
 
-  const limitPrice = useLimitPriceV2().limitPrice?.original;
+  const { priceUI, isLoading } = useTradePrice();
 
-  return useMemo(() => {
-    const dexAmounOut = dstAmountOut;
+  const amount = useMemo(() => {
+    return amountBNV2(
+      dstToken?.decimals,
+      BN(srcAmount)
+        .times(priceUI || "0")
+        .toFixed()
+    );
+  }, [dstToken, priceUI, srcAmount]);
 
-    let outAmount = dexAmounOut;
-    if (isLimitOrder && srcToken) {
-      outAmount = amountBN(
-        dstToken,
-        BN(amountUiV2(srcToken?.decimals, srcAmount))
-          .times(limitPrice || "0")
-          .toString()
-      ).toString();
-    }
-    return {
-      isLoading: dstAmountLoading,
-      dexAmounOut: {
-        ui: amountUiV2(dstToken?.decimals, dexAmounOut),
-        raw: safeInteger(dexAmounOut),
-      },
-      outAmount: {
-        ui: amountUiV2(dstToken?.decimals, outAmount),
-        raw: safeInteger(outAmount),
-      },
-    };
-  }, [dstAmountOut, dstAmountLoading, dstToken, limitPrice, isLimitOrder, srcToken, srcAmount]);
+  const dstUsd = useDstUsd().value.toString();
+
+  const amountUI = amountUiV2(dstToken?.decimals, amount);
+
+  const usd = useMemo(() => {
+    return BN(amountUI || "0")
+      .times(dstUsd)
+      .toFixed();
+  }, [amountUI, dstUsd]);
+
+  return {
+    amount,
+    amountUI,
+    isLoading,
+    usd,
+  };
 };
 
 export const useMarketPriceV2 = (inverted?: boolean) => {
   const twapStore = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
-    srcAmount: s.getSrcAmount().toString(),
   }));
 
-  const { dstAmountOut, dstAmountLoading } = useTwapContext();
-  const marketPrice = useMemo(() => {
-    if (BN(dstAmountOut || "0").isZero()) return;
-
-    const original = devideCurrencyAmounts({ srcToken: twapStore.srcToken, dstToken: twapStore.dstToken, dstAmount: dstAmountOut, srcAmount: twapStore.srcAmount });
-    if (!original || BN(original || "0").isZero()) return;
-
-    return {
-      original,
-      toggled: inverted ? BN(1).div(original).toString() : original,
-    };
-  }, [dstAmountOut, twapStore.srcToken, twapStore.dstToken, inverted, twapStore.srcAmount]);
+  const { marketPrice, marketPriceLoading } = useTwapContext();
 
   return {
-    marketPrice,
-    leftToken: inverted ? twapStore.dstToken : twapStore.srcToken,
-    rightToken: inverted ? twapStore.srcToken : twapStore.dstToken,
-    loading: dstAmountLoading,
+    priceUI: useAmountUi(twapStore.dstToken?.decimals, marketPrice),
+    price: marketPrice,
+    isLoading: marketPriceLoading,
   };
 };
 
@@ -1214,89 +1176,50 @@ export const usePriceDisplay = (price?: string | number) => {
   };
 };
 
-export const useLimitPriceV2 = () => {
+export const useTradePrice = () => {
   const limitPriceStore = useLimitPriceStore();
-  const { dstAmountLoading, usePriceUSD } = useTwapContext();
+  const { marketPriceLoading, usePriceUSD } = useTwapContext();
   const percent = 1 + (limitPriceStore.gainPercent || 0) / 100;
   const isCustomLimitPrice = limitPriceStore.limitPrice !== undefined;
-  const marketPrice = useMarketPriceV2().marketPrice?.original;
-  
+  const marketPrice = useMarketPriceV2().priceUI;
+
   const twapStore = useTwapStore((s) => ({
     srcToken: s.srcToken,
     dstToken: s.dstToken,
   }));
 
-  const getToggled = useCallback(
-    (inverted: boolean, invertCustom?: boolean) => {
-      if (isCustomLimitPrice && invertCustom && inverted && limitPriceStore.limitPrice) {
-        return BN(1).dividedBy(limitPriceStore.limitPrice).toString();
-      }
-      if (isCustomLimitPrice) {
-        return limitPriceStore.limitPrice;
-      }
-      if (!marketPrice || BN(marketPrice).isZero()) return;
+  const priceUI = useMemo(() => {
+    if (isCustomLimitPrice) {
+      return limitPriceStore.limitPrice;
+    }
 
-      if (inverted) {
-        return BN(percent)
-          .dividedBy(marketPrice || "0")
-          .toString();
-      }
-      return BN(marketPrice || "0")
-        .times(percent)
-        .toString();
-    },
-    [marketPrice, isCustomLimitPrice, limitPriceStore.limitPrice]
-  );
-
-  const limitPrice = useMemo(() => {
-    const getOriginal = (percent: number) => {
-      if (limitPriceStore.limitPrice && isCustomLimitPrice && limitPriceStore.inverted) {
-        return BN(1)
-          .dividedBy(limitPriceStore.limitPrice || "")
-          .toString();
-      }
-      if (isCustomLimitPrice) {
-        return limitPriceStore.limitPrice;
-      }
-
-      if (!marketPrice || BN(marketPrice).isZero()) return;
-      return BN(marketPrice || "0")
-        .times(percent)
-        .toString();
-    };
-    const toggled = getToggled(limitPriceStore.inverted);
-    const original = getOriginal(percent);
-    return {
-      toggled: BN(toggled || "0").isZero() ? "" : toggled,
-      original: BN(original || "0").isZero() ? "" : original,
-    };
-  }, [marketPrice, limitPriceStore.inverted, limitPriceStore.limitPrice, isCustomLimitPrice, percent]);
+    if (!marketPrice || BN(marketPrice).isZero()) return;
+    return BN(marketPrice || "0")
+      .times(percent)
+      .toString();
+  }, [limitPriceStore.limitPrice, marketPrice, percent, isCustomLimitPrice]);
 
   const gainPercent = useMemo(() => {
     if (limitPriceStore.gainPercent !== undefined) {
       return limitPriceStore.gainPercent;
     }
-    const result = BN(limitPrice.original || "0")
+    const result = BN(priceUI || "0")
       .dividedBy(marketPrice || "0")
       .minus(1)
       .times(100)
       .decimalPlaces(2)
       .toNumber();
     return isNaN(result) ? 0 : result;
-  }, [limitPrice, marketPrice, limitPriceStore.gainPercent]);
-
-  const onReset = useCallback(() => {
-    limitPriceStore.onReset();
-  }, [limitPriceStore.onReset, limitPrice]);
+  }, [priceUI, marketPrice, limitPriceStore.gainPercent]);
 
   const tokenUsd = usePriceUSD?.(twapStore.dstToken?.address);
 
   const usd = useMemo(() => {
     if (!tokenUsd) return;
     return BN(tokenUsd)
-      .times(limitPrice.original || "0")
+      .times(priceUI || "0")
       .toNumber();
-  }, [tokenUsd, limitPrice.original]);
+  }, [tokenUsd, priceUI]);
 
   const onChangeGainPercent = useCallback(
     (value?: number) => {
@@ -1315,25 +1238,20 @@ export const useLimitPriceV2 = () => {
   );
 
   return {
-    limitPrice,
-    limitPriceOriginalRaw: useAmountBN(limitPrice.original, twapStore.dstToken?.decimals),
+    priceUI,
+    price: useAmountBN(priceUI, twapStore.dstToken?.decimals),
     onChange: onChangeLimitPrice,
-    onReset,
-    leftToken: limitPriceStore.inverted ? twapStore.dstToken : twapStore.srcToken,
-    rightToken: limitPriceStore.inverted ? twapStore.srcToken : twapStore.dstToken,
-    isLoading: dstAmountLoading,
-    inverted: limitPriceStore.inverted,
+    onReset: limitPriceStore.onReset,
+    isLoading: marketPriceLoading,
     isCustom: isCustomLimitPrice,
-    getToggled,
     gainPercent,
     onPercent: onChangeGainPercent,
     usd,
-    onInvert: () => {},
   };
 };
 
 export const useDstMinAmountOut = () => {
-  const { limitPrice } = useLimitPriceV2();
+  const limitPrice = useTradePrice().priceUI || "0";
   const srcChunkAmount = useSrcChunkAmount();
   const { srcToken, dstToken, lib, isLimitOrder } = useTwapStore((s) => ({
     srcToken: s.srcToken,
@@ -1342,20 +1260,25 @@ export const useDstMinAmountOut = () => {
     isLimitOrder: s.isLimitOrder,
   }));
 
-  return useMemo(() => {
-    if (lib && srcToken && dstToken && limitPrice && BN(limitPrice.original || "0").gt(0)) {
-      const res = lib.dstMinAmountOut(srcToken!, dstToken!, srcChunkAmount, parsebn(limitPrice.original || "0"), !isLimitOrder).toString();
+  const amount = useMemo(() => {
+    if (lib && srcToken && dstToken && limitPrice && BN(limitPrice).gt(0)) {
+      const res = lib.dstMinAmountOut(srcToken!, dstToken!, srcChunkAmount, parsebn(limitPrice), !isLimitOrder).toString();
 
       return res;
     }
     return BN(1).toString();
   }, [srcToken, dstToken, lib, srcChunkAmount, limitPrice, isLimitOrder]);
+
+  return {
+    amount,
+    amountUI: useAmountUi(dstToken?.decimals, amount),
+  };
 };
 
 export const useFillWarning = () => {
-  const { translations: translation, dstAmountOut } = useTwapContext();
-  const { limitPrice } = useLimitPriceV2();
-  const dstMinAmountOut = useDstMinAmountOut();
+  const { translations: translation } = useTwapContext();
+  const limitPrice = useTradePrice().priceUI;
+  const dstMinAmountOut = useDstMinAmountOut().amount;
   const srcUsd = useSrcUsd().value.toString();
   const srcBalance = useSrcBalance().data?.toString();
 
@@ -1371,6 +1294,7 @@ export const useFillWarning = () => {
   }));
 
   const deadline = useDeadline();
+  const dstAmountOut = useDstAmount().amountUI;
 
   const maxSrcInputAmount = useMaxSrcInputAmount();
 
@@ -1407,7 +1331,7 @@ export const useFillWarning = () => {
         message: translation.enterMaxDuration,
       };
     }
-    if (isLimitOrder && BN(dstAmountOut || "").gt(0) && BN(limitPrice.original || "0").isZero()) {
+    if (isLimitOrder && BN(dstAmountOut || "").gt(0) && BN(limitPrice || "0").isZero()) {
       return {
         type: "limit-price",
         message: translation.placeOrder || "Place order",
@@ -1458,22 +1382,6 @@ export const useSrcAmountUsdUi = () => {
   const srcUsd = useSrcUsd().value.toString();
 
   return useAmountUi(srcToken?.decimals, srcAmount.times(srcUsd).toString());
-};
-
-export const useDstAmountUsdUi = () => {
-  const dstAmount = useDstAmount().outAmount.raw;
-  const { dstToken } = useTwapStore((s) => ({
-    dstToken: s.dstToken,
-  }));
-
-  const dstUsd = useDstUsd().value.toString();
-
-  return useAmountUi(
-    dstToken?.decimals,
-    BN(dstAmount || "0")
-      .times(dstUsd)
-      .toString()
-  );
 };
 
 export const useMaxPossibleChunks = () => {
@@ -1604,9 +1512,8 @@ export const useIsPartialFillWarning = () => {
   const durationMillis = useDurationMillis();
 
   return useMemo(() => {
+    if (!durationMillis) return false;
 
-    if(!durationMillis) return false;
-    
     return chunks * fillDelayUiMillis > durationMillis;
   }, [chunks, fillDelayUiMillis, durationMillis]);
 };
@@ -1740,23 +1647,13 @@ export function useDebounce<T>(value: T, delay?: number): T {
   return debouncedValue;
 }
 
-export const useTradePrice = () => {
-  const { srcToken, dstToken } = useTwapStore((s) => {
-    return {
-      srcToken: s.srcToken,
-      dstToken: s.dstToken,
-    };
-  });
-  const limitPrice = useLimitPriceV2().limitPrice.original;
-
+export const usePriceInvert = (_price?: string, srcToken?: TokenData, dstToken?: TokenData) => {
   const [inverted, setInverted] = useState(false);
 
-  const value = useMemo(() => {
-    if (!limitPrice) return;
-    return inverted ? BN(1).dividedBy(limitPrice).toString() : limitPrice;
-  }, [limitPrice, inverted]);
-
-  const priceF = useFormatNumber({ value, decimalScale: 3 });
+  const price = useMemo(() => {
+    if (!_price) return;
+    return inverted ? BN(1).dividedBy(_price).toString() : _price;
+  }, [_price, inverted]);
 
   const leftToken = inverted ? dstToken : srcToken;
   const rightToken = inverted ? srcToken : dstToken;
@@ -1765,5 +1662,5 @@ export const useTradePrice = () => {
     setInverted((prev) => !prev);
   }, []);
 
-  return { price: priceF, leftToken, rightToken, onInvert, inverted };
+  return { price, leftToken, rightToken, onInvert, inverted };
 };

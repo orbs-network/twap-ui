@@ -262,8 +262,8 @@ const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: ()
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const [tokenListOpen, setTokenListOpen] = useState(false);
   const translations = useTwapContext().translations;
-  const marketPrice = hooks.useMarketPriceV2().marketPrice;
-  const formattedMarketPrice = hooks.useFormatNumber({ value: marketPrice?.original });
+  const marketPrice = hooks.useMarketPriceV2().priceUI;
+  const formattedMarketPrice = hooks.useFormatNumber({ value: marketPrice });
 
   const onClose = useCallback(() => {
     setTokenListOpen(false);
@@ -276,7 +276,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <TwapStyles.StyledRowFlex justifyContent="space-between">
           <Components.Base.SmallLabel className="twap-panel-title">{isSrcToken ? translations.from : `${translations.to} (${translations.estimated})`}</Components.Base.SmallLabel>
           {isSrcToken && <SrcTokenPercentSelector />}
-          {!isSrcToken && marketPrice?.original !== "0" && (
+          {!isSrcToken && marketPrice !== "0" && (
             <TwapStyles.StyledRowFlex className="twap-token-panel-price">
               <TwapStyles.StyledText>Price</TwapStyles.StyledText> {formattedMarketPrice} <Components.TokenSymbol isSrc={isSrcToken} />
             </TwapStyles.StyledRowFlex>

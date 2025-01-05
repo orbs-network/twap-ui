@@ -9,8 +9,9 @@ export * from "./ErrorHandling";
 export * from "./orders/OrdersPanel";
 export * from "./orders/Orders";
 export * from "./orders/Order/OrderExpanded";
+export {OrderLoader} from './orders/Order/Order'
 export * from "./components/OrdersComponents";
 export * from "./ui-helper";
 export * from "./utils";
 export { default as translations } from "./i18n/en.json";
-export { Order } from "./order";
+export { Order, waitForOrdersUpdate } from "./order";

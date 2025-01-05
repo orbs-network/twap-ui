@@ -1,6 +1,6 @@
 import { styled } from "@mui/material";
 import { Status } from "@orbs-network/twap";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useCallback, useMemo } from "react";
 import { Label, Spinner } from "../../components/base";
 import { useTwapContext } from "../../context";
 import { useAmountUi, useCancelOrder, useFormatNumber, useHistoryPrice, useNetwork } from "../../hooks";
@@ -12,6 +12,7 @@ import { useListOrderContext } from "./context";
 import BN from "bignumber.js";
 import moment from "moment";
 import { ArrowsIcon, ExplorerIcon } from "./icons";
+import { InvertPrice, OrderDetailsRow } from "../../components";
 
 const OrderExpanded = () => {
   return (
@@ -36,7 +37,7 @@ const OrderStatusComponent = () => {
 
   if (order.status === Status.Open) return null;
 
-  return <Row label="Status">{<OrderStatus order={order} />}</Row>;
+  return <OrderDetailsRow label="Status">{<OrderStatus order={order} />}</OrderDetailsRow>;
 };
 
 const OrderBottom = () => {
@@ -55,7 +56,7 @@ const ViewOnExplorer = () => {
 
   const url = `${explorer}/tx/${order.txHash}`;
 
-  if(!expanded) return null;
+  if (!expanded) return null;
   return (
     <StyledViewOnExplorer href={url} target="_blank" className="twap-order-tx-hash">
       <StyledRowFlex gap={5} className="twap-order-tx-hash-content">
@@ -98,9 +99,9 @@ const Expiry = () => {
   const { order } = useListOrderContext();
 
   return (
-    <Row label={`${translations.deadline}`} tooltip={translations.maxDurationTooltip}>
+    <OrderDetailsRow label={`${translations.deadline}`} tooltip={translations.maxDurationTooltip}>
       {moment(order?.deadline).format("MMM DD, YYYY HH:mm")}
-    </Row>
+    </OrderDetailsRow>
   );
 };
 
@@ -118,9 +119,9 @@ const TradeInterval = () => {
   if (!lib?.config) return null;
 
   return (
-    <Row label={`${translations.tradeInterval}`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
+    <OrderDetailsRow label={`${translations.tradeInterval}`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
       {fillDelayText(order.getFillDelay(lib?.config), translations)}
-    </Row>
+    </OrderDetailsRow>
   );
 };
 
@@ -132,9 +133,9 @@ const SizePerTrade = () => {
   const srcChunkAmountUiF = useFormatNumber({ value: srcChunkAmountUi, disableDynamicDecimals: true });
 
   return (
-    <Row label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
+    <OrderDetailsRow label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
       {srcChunkAmountUiF} {srcToken?.symbol}
-    </Row>
+    </OrderDetailsRow>
   );
 };
 
@@ -143,9 +144,9 @@ const TotalTrades = () => {
   const { order } = useListOrderContext();
 
   return (
-    <Row label={`${translations.totalTrades}`} tooltip={translations.totalTradesTooltip}>
+    <OrderDetailsRow label={`${translations.totalTrades}`} tooltip={translations.totalTradesTooltip}>
       {order.totalChunks}
-    </Row>
+    </OrderDetailsRow>
   );
 };
 
@@ -162,9 +163,9 @@ const MinAmountOut = () => {
   const amountF = useFormatNumber({ value: dstMinAmountOut, decimalScale: 4 });
 
   return (
-    <Row label="Minimum received" className="twap-order-details-min-amount-out">
+    <OrderDetailsRow label="Minimum received" className="twap-order-details-min-amount-out">
       {amountF} {dstToken?.symbol}
-    </Row>
+    </OrderDetailsRow>
   );
 };
 
@@ -176,7 +177,7 @@ const Filled = () => {
   const srcAmountUiF = useFormatNumber({ value: srcAmountUI, decimalScale: 4 });
 
   return (
-    <Row label="Filled" className="twap-order-details-filled">
+    <OrderDetailsRow label="Filled" className="twap-order-details-filled">
       <StyledText>
         {"("}
         {`${srcFilledAmountUiF || "0"}`}
@@ -184,79 +185,40 @@ const Filled = () => {
         {")"}
       </StyledText>
       <OrderProgress order={order} />
-    </Row>
+    </OrderDetailsRow>
   );
 };
 
 export default OrderExpanded;
 
-const Row = ({ label, tooltip = "", children, className = "" }: { label: string; tooltip?: string; children: ReactNode; className?: string }) => {
-  return (
-    <StyledDetailRow className={`twap-order-expanded-row ${className}`}>
-      <Label tooltipText={tooltip}>{label}</Label>
-      <StyledDetailRowChildren className="twap-order-expanded-right">{children}</StyledDetailRowChildren>
-    </StyledDetailRow>
-  );
-};
-
-export const StyledDetailRowChildren = styled(StyledRowFlex)({
-  width: "fit-content",
-  gap: 5,
-  fontWeight: 300,
-  fontSize: 13,
-  textAlign: "right",
-  "& .twap-token-logo": {
-    width: 21,
-    height: 21,
-  },
-});
-
-export const StyledDetailRow = styled(StyledRowFlex)({
-  justifyContent: "space-between",
-  "& .twap-label": {
-    fontWeight: 400,
-    fontSize: 14,
-    "& p": {
-      whiteSpace: "unset",
-    },
-  },
-  "& .text": {
-    fontWeight: 300,
-  },
-  "@media(max-width: 500px)": {},
-});
-
 const OrderPrice = () => {
   const order = useListOrderContext().order;
-  const { leftToken, rightToken, onInvert, price } = useOrderExcecutionPrice(order);
-
-  const content = useMemo(() => {
-    if (!price) return "-";
-
-    return (
-      <>
-        1 {leftToken?.symbol} <ArrowsIcon onClick={onInvert} /> {price} {rightToken?.symbol}
-      </>
-    );
-  }, [price, leftToken, rightToken, onInvert]);
+  const { srcToken, dstToken, price } = useOrderExcecutionPrice(order);
 
   return (
-    <Row className="twap-order-price" label="Price">
-      {content}
-    </Row>
+    <OrderDetailsRow className="twap-order-price" label="Price">
+      {!price ? "-" : <InvertPrice price={price} srcToken={srcToken} dstToken={dstToken} />}
+    </OrderDetailsRow>
   );
 };
 
 export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number; className?: string }) => {
-  const { isLoading, mutate } = useCancelOrder();
+  const { isLoading, mutateAsync } = useCancelOrder();
   const translations = useTwapContext().translations;
+  const { setExpand, onCancelSuccess } = useListOrderContext();
+
+  const onCancel = useCallback(async (e: any) => {
+    e.stopPropagation();
+    try {
+      await mutateAsync(orderId);
+      setExpand(false);
+      onCancelSuccess?.(orderId);
+    } catch (error) {}
+  }, [orderId, mutateAsync, setExpand]);
 
   return (
     <StyledCancelOrderButton
-      onClick={(e: any) => {
-        e.stopPropagation();
-        mutate(orderId);
-      }}
+      onClick={onCancel}
       className={`${className} twap-cancel-order ${isLoading ? "twap-cancel-order-loading" : ""}`}
     >
       <div className="twap-cancel-order-content">
@@ -295,7 +257,7 @@ export const StyledCancelOrderButton = styled("button")({
   },
 });
 
-export const StyledContainer = styled('div')({
+export const StyledContainer = styled("div")({
   width: "100%",
   display: "flex",
   flexDirection: "column",

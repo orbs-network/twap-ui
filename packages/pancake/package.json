@@ -26,6 +26,7 @@
     "@orbs-network/twap": "^1.18.x",
     "@orbs-network/twap-ui": "^0.11.8",
     "lodash": "4.x",
+    "react-lottie": "^1.2.10",
     "web3": "1.x"
   },
   "peerDependencies": {
@@ -35,5 +36,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "11f21ccf5f7568c421c516b09b470b922854b1e0"
+  "gitHead": "11f21ccf5f7568c421c516b09b470b922854b1e0",
+  "devDependencies": {
+    "@types/react-lottie": "^1.2.10"
+  }
 }

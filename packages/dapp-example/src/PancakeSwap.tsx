@@ -1,5 +1,5 @@
-import { StyledModalContent, StyledPancake, StyledPancakeBackdrop, StyledPancakeLayout, StyledPancakeOrders, StyledPancakeTwap } from "./styles";
-import { TWAP, Orders, useConfig as usePancakeConfig } from "@orbs-network/twap-ui-pancake";
+import { StyledModalContent, StyledPancake, StyledPancakeLayout, StyledPancakeOrders, StyledPancakeTwap } from "./styles";
+import { TWAP, Orders, useConfig as usePancakeConfig, ToastProps } from "@orbs-network/twap-ui-pancake";
 import { useConnectWallet, useGetTokens, useIsMobile, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { Configs } from "@orbs-network/twap";
 import { useWeb3React } from "@web3-react/core";
@@ -11,9 +11,10 @@ import _ from "lodash";
 import { erc20s, isNativeAddress, zeroAddress, eqIgnoreCase } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
 import { Box } from "@mui/system";
-import { Button, styled, Tooltip as MuiTooltip, Typography } from "@mui/material";
-import { amountBNV2, Components, hooks, Styles } from "@orbs-network/twap-ui";
+import { Button, styled, Tooltip as MuiTooltip } from "@mui/material";
+import { Components, hooks, Styles } from "@orbs-network/twap-ui";
 import BN from "bignumber.js";
+import { useSnackbar } from "notistack";
 
 const useConfig = () => {
   const { chainId } = useWeb3React();
@@ -184,15 +185,13 @@ const Tooltip = ({ content, children }: { content: ReactNode; children?: ReactNo
   );
 };
 
-const ApproveModalContent = ({ title, isBonus, isMM }: { title: string; isBonus: boolean; isMM: boolean }) => {
-  return <p>Approving</p>;
-};
-
-const SwapTransactionErrorContent = ({ message }: { message: string }) => {
-  return <p>{message}</p>;
-};
-const SwapPendingModalContent = ({ title }: { title: string }) => {
-  return <p>{title}</p>;
+const TxErrorContent = ({ message, onClick }: { message?: string; onClick: () => void }) => {
+  return (
+    <div>
+      <p>{message}</p>
+      <button onClick={onClick}>Close</button>
+    </div>
+  );
 };
 
 const useTooltip = (content: ReactNode, options?: any, children?: ReactNode) => {
@@ -210,6 +209,30 @@ const useTooltip = (content: ReactNode, options?: any, children?: ReactNode) => 
   };
 };
 
+const ToastContent = ({ title, message }: ToastProps) => {
+  return (
+    <div>
+      <p>{title}</p>
+      <div>{message}</div>
+    </div>
+  );
+};
+
+const useToast = () => {
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  return useCallback(
+    (props: ToastProps) => {
+      enqueueSnackbar(<ToastContent {...props} />, {
+        action: props.autoCloseMillis ? undefined : (key) => <button onClick={() => closeSnackbar(key)}>Dismiss</button>,
+        variant: props.variant,
+        autoHideDuration: props.autoCloseMillis,
+      });
+    },
+    [enqueueSnackbar, closeSnackbar]
+  );
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
@@ -218,6 +241,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const config = useConfig();
   const [srcToken, setSrcToken] = useState<any>(undefined);
   const [dstToken, setDstToken] = useState<any>(undefined);
+  const toast = useToast();
 
   useEffect(() => {
     if (!dappTokens) return;
@@ -236,17 +260,14 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setDstToken(undefined);
   }, [chainId]);
 
-  const _useTrade = (fromToken?: string, toToken?: string) => {
+  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
     const handleAddress = useHandleAddress();
 
     const fromAddress = handleAddress(fromToken);
     const toAddress = handleAddress(toToken);
-
     const { fromTokenDecimals, toTokenDecimals } = useDecimals(fromAddress, toAddress);
 
-    const _amount = hooks.useAmountBN('1', fromTokenDecimals)
-
-    return useTrade(fromAddress, toAddress, _amount, fromTokenDecimals, toTokenDecimals);
+    return useTrade(fromAddress, toAddress, amount, fromTokenDecimals, toTokenDecimals);
   };
 
   const connector = useMemo(() => {
@@ -275,10 +296,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       isMobile={isMobile}
       useTooltip={useTooltip}
       Tooltip={Tooltip}
-      ApproveModalContent={ApproveModalContent}
-      SwapTransactionErrorContent={SwapTransactionErrorContent}
-      SwapPendingModalContent={SwapPendingModalContent}
-      SwapTransactionReceiptModalContent={SwapPendingModalContent}
+      TransactionErrorContent={TxErrorContent}
+      Button={Button}
+      toast={toast}
     />
   );
 };
@@ -369,7 +389,6 @@ const dapp: Dapp = {
 };
 
 export default dapp;
-
 
 export const amountUi = (decimals?: number, amount?: BN) => {
   if (!decimals || !amount) return "";

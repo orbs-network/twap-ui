@@ -9,10 +9,6 @@ import {
   StyledColumnFlex,
   StyledLimitPrice,
   StyledPoweredBy,
-  StyledModalHeaderClose,
-  StyledModalHeader,
-  StyledSwapModalContent,
-  StyledModalHeaderTitle,
   StyledTokenPanelTitle,
   StyledBalanceAndPercent,
   StyledContainerPadding,
@@ -50,7 +46,8 @@ import { useAdapterContext, AdapterContextProvider, AdapterProps, WarningVariant
 import { create } from "zustand";
 import { configs } from "./config";
 import { MdAccountBalanceWallet } from "@react-icons/all-files/md/MdAccountBalanceWallet";
-import { ArrowsIcon, BackBody, ChangeIcon, InfoIcon } from "./icons";
+import { ArrowsIcon, BackBody, ChangeIcon, CloseIcon, InfoIcon } from "./icons";
+import { SwapModal } from "./OrderSubmitModal";
 
 const PERCENT = [
   { text: "25%", value: 0.25 },
@@ -249,25 +246,25 @@ const useHandleAddress = (connectedChainId?: number) => {
 };
 
 const useTrade = (props: AdapterProps) => {
-  const { srcToken, toToken, srcAmount } = store.useTwapStore((s) => ({
+  const { srcToken, toToken } = store.useTwapStore((s) => ({
     srcToken: s.srcToken?.address,
-    toToken: s.dstToken?.address,
-    srcAmount: s.getSrcAmount().toString(),
+    toToken: s.dstToken,
   }));
 
+  const amount = hooks.useAmountBN("1", toToken?.decimals);
   const handleAddress = useHandleAddress(props.connectedChainId);
-
-  const res = props.useTrade!(handleAddress(srcToken), handleAddress(toToken), srcAmount === "0" ? undefined : srcAmount);
+  const res = props.useTrade!(handleAddress(srcToken), handleAddress(toToken?.address), amount);
 
   return {
     outAmount: res?.outAmount,
-    isLoading: Boolean(srcToken && toToken &&  BN(srcAmount || "0").gt(0) && res?.isLoading),
+    isLoading: !srcToken || !toToken ? false : res?.isLoading,
   };
 };
 
 const TWAP = memo((props: AdapterProps) => {
   const provider = useProvider(props);
   const trade = useTrade(props);
+
   const parseToken = useParseToken(props.connectedChainId);
 
   const theme = useMemo(() => {
@@ -306,8 +303,9 @@ const TWAP = memo((props: AdapterProps) => {
         isMobile={props.isMobile}
         connectedChainId={props.connectedChainId}
         enableQueryParams={true}
-        dstAmountOut={trade?.outAmount}
-        dstAmountLoading={trade?.isLoading}
+        marketPrice={trade?.outAmount}
+        marketPriceLoading={trade?.isLoading}
+        fee={0.25}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -410,7 +408,7 @@ const TWAPPanel = () => {
           <OpenConfirmationModalButton />
         </StyledContainer>
 
-        <SwapModal limitPanel={false} />
+        <SwapModal />
       </StyledColumnFlex>
       <StyledPoweredBy />
     </div>
@@ -448,7 +446,6 @@ const getElementPositionInsideParent = (child: any, parent: any) => {
 };
 
 export function TotalTrades({ className = "" }: { className?: string }) {
-
   const limitPanel = useAdapterContext().limit;
   const maxPossibleChunks = hooks.useMaxPossibleChunks();
   const chunks = hooks.useChunks();
@@ -473,7 +470,7 @@ export function TotalTrades({ className = "" }: { className?: string }) {
         <InputContainer.Header>
           <Styles.StyledRowFlex justifyContent="space-between">
             <InputContainer.Header.Label tooltip={t.totalTradesTooltip} label="Total Trades" />
-            <InputContainer.Header.Label  tooltip={t.tradeSizeTooltip} label="Size Per Trade: " value={`${chunkSize} ${srcToken?.symbol}`} />
+            <InputContainer.Header.Label tooltip={t.tradeSizeTooltip} label="Size Per Trade: " value={`${chunkSize} ${srcToken?.symbol}`} />
           </Styles.StyledRowFlex>
         </InputContainer.Header>
 
@@ -592,22 +589,23 @@ const PricePanel = () => {
 };
 
 const TradePrice = () => {
-  const { leftToken, rightToken, onInvert, price } = hooks.useTradePrice();
-  const {  isMarketOrder } = store.useTwapStore((s) => ({
+  const { isMarketOrder, dstToken, srcToken } = store.useTwapStore((s) => ({
     isMarketOrder: !s.isLimitOrder,
+    srcToken: s.srcToken,
+    dstToken: s.dstToken,
   }));
-
+  const limitPrice = hooks.useTradePrice().priceUI;
   if (!isMarketOrder) return null;
 
   return (
     <StyledMarketPrice>
-      1 {leftToken?.symbol} <ArrowsIcon onClick={onInvert} /> {price} {rightToken?.symbol}
+      <Components.InvertPrice price={limitPrice} srcToken={srcToken} dstToken={dstToken} />
     </StyledMarketPrice>
   );
 };
 
 const PricePanelWarning = () => {
-  const gainPercent = hooks.useLimitPriceV2().gainPercent;
+  const gainPercent = hooks.useTradePrice().gainPercent;
 
   if (gainPercent >= 0) return null;
 
@@ -632,7 +630,7 @@ const Warning = ({ variant = "warning", children = "" }: { variant?: WarningVari
 
 const PricePanelHeader = () => {
   const token = store.useTwapStore((s) => s.srcToken);
-  const { onReset } = hooks.useLimitPriceV2();
+  const { onReset } = hooks.useTradePrice();
 
   return (
     <Styles.StyledRowFlex className="twap-limit-price-panel-header">
@@ -645,7 +643,7 @@ const PricePanelHeader = () => {
 };
 
 const LimitPanelInput = () => {
-  const { onChange, limitPrice, isLoading, usd, isCustom } = hooks.useLimitPriceV2();
+  const { onChange, priceUI: limitPrice, isLoading, usd, isCustom } = hooks.useTradePrice();
   const token = store.useTwapStore((s) => s.dstToken);
   const usdF = hooks.useFormatNumber({ value: usd, decimalScale: 3 });
 
@@ -653,7 +651,7 @@ const LimitPanelInput = () => {
     <StyledPricePanelInput className="twap-limit-price-panel-input">
       <Components.Base.Label>{token?.symbol}</Components.Base.Label>
       <StyledPricePanelInputRight>
-        <Components.Base.NumericInput decimalScale={isCustom ? undefined : 6} loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice.original} />
+        <Components.Base.NumericInput decimalScale={isCustom ? undefined : 6} loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice} />
         {BN(usd || 0).gt(0) && <Components.Base.USD value={usdF} />}
       </StyledPricePanelInputRight>
     </StyledPricePanelInput>
@@ -661,7 +659,7 @@ const LimitPanelInput = () => {
 };
 
 const LimitPanelPercent = () => {
-  const { gainPercent, isLoading, onPercent } = hooks.useLimitPriceV2();
+  const { gainPercent, isLoading, onPercent } = hooks.useTradePrice();
   const warning = BN(gainPercent || 0).lt(0);
 
   return (
@@ -674,184 +672,8 @@ const LimitPanelPercent = () => {
     </StyledPricePanelPercent>
   );
 };
-
+export { type ToastProps } from "./context";
 export { TWAP, Orders };
-
-export enum SwapState {
-  REVIEW,
-  APPROVE,
-  ATTEMTPING_TX,
-  PENDING_CONFIRMATION,
-  ERROR,
-  COMPLETED,
-}
-
-interface Store {
-  swapState: SwapState;
-  setSwapState: (value: SwapState) => void;
-}
-
-export const useOrdersStore = create<Store>((set, get) => ({
-  swapState: SwapState.REVIEW,
-  setSwapState: (swapState) => set({ swapState }),
-}));
-
-const SwapModal = ({ limitPanel }: { limitPanel: boolean }) => {
-  const { swapState, setSwapState } = useOrdersStore();
-  const { dappTokens, ApproveModalContent, SwapPendingModalContent, SwapTransactionErrorContent, AddToWallet, SwapTransactionReceiptModalContent } = useAdapterContext();
-  const { fromToken, setShowConfirmation, showConfirmation, txHash, isLimitOrder, disclaimerAccepted } = store.useTwapStore((s) => ({
-    fromToken: s.srcToken,
-    setShowConfirmation: s.setShowConfirmation,
-    showConfirmation: s.showConfirmation,
-    txHash: s.txHash,
-    isLimitOrder: s.isLimitOrder,
-    disclaimerAccepted: s.disclaimerAccepted,
-  }));
-  const reset = hooks.useResetStore();
-
-  const { mutateAsync: approveCallback } = hooks.useApproveToken(true);
-  const { data: allowance, isLoading, refetch: refetchAllowance } = hooks.useHasAllowanceQuery();
-  const { mutateAsync: createOrder } = hooks.useCreateOrder(true);
-  const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
-  const [error, setError] = useState("");
-  const { data: hasNativeBalance } = hooks.useHasMinNativeTokenBalance("0.0035");
-  const id = useRef(1);
-
-  const onSubmit = useCallback(async () => {
-    let _id = id.current;
-    try {
-      if (!hasNativeBalance) {
-        setError(`Insufficient BNB balance, you need at least 0.0035BNB to cover the transaction fees.`);
-        setSwapState(SwapState.ERROR);
-        return;
-      }
-      if (!allowance) {
-        setSwapState(SwapState.APPROVE);
-        await approveCallback();
-        const approved = await refetchAllowance();
-        if (!approved.data) {
-          setError("Insufficient allowance to perform the swap. Please approve the token first.");
-          setSwapState(SwapState.ERROR);
-          return;
-        }
-      }
-      if (id.current === _id) {
-        setSwapState(SwapState.ATTEMTPING_TX);
-      }
-      await createOrder();
-
-      if (id.current === _id) {
-        setSwapState(SwapState.COMPLETED);
-      }
-    } catch (error) {
-      if (id.current === _id) {
-        setSwapState(SwapState.ERROR);
-        setError(parseError(error) || "An error occurred");
-      }
-    }
-  }, [allowance, approveCallback, createOrder, setSwapState, setError, hasNativeBalance, id]);
-
-  const wrongNetwork = store.useTwapStore((store) => store.wrongNetwork);
-  let content = null;
-  let title: string | undefined = undefined;
-
-  const resetPoupupState = () => {
-    setTimeout(() => {
-      setSwapState(SwapState.REVIEW);
-    }, 300);
-  };
-
-  const onClose = () => {
-    id.current = id.current + 1;
-    setShowConfirmation(false);
-    resetPoupupState();
-    if (txHash) {
-      reset({ waitingForOrdersUpdate: true });
-    }
-    if (swapState === SwapState.COMPLETED) {
-      reset();
-    }
-  };
-
-  useEffect(() => {
-    if (txHash && swapState === SwapState.ATTEMTPING_TX) {
-      setSwapState(SwapState.PENDING_CONFIRMATION);
-    }
-  }, [txHash, swapState]);
-
-  const addToWallet = !AddToWallet ? null : <AddToWallet logo={fromToken?.logoUrl} symbol={fromToken?.symbol} address={fromToken?.address} decimals={fromToken?.decimals} />;
-
-  if (swapState === SwapState.REVIEW) {
-    title = "Confirm Order";
-    content = <OrderSummary isLimitPanel={limitPanel} disabled={isLoading || !disclaimerAccepted} onSubmit={onSubmit} />;
-  }
-
-  if (swapState === SwapState.APPROVE) {
-    content = !ApproveModalContent ? null : <ApproveModalContent title={`Enable spending ${inputCurrency?.symbol}`} isBonus={false} isMM={false} />;
-  }
-
-  if (swapState === SwapState.ERROR) {
-    content = !SwapTransactionErrorContent ? null : <SwapTransactionErrorContent openSettingModal={() => {}} onDismiss={onClose} message={error} />;
-  }
-
-  if (swapState === SwapState.ATTEMTPING_TX) {
-    content = !SwapPendingModalContent ? null : (
-      <SwapPendingModalContent title={`Create ${limitPanel ? "" : "TWAP"} ${isLimitOrder ? "Limit" : "Market"} Order`}>{addToWallet}</SwapPendingModalContent>
-    );
-  }
-
-  if (swapState === SwapState.PENDING_CONFIRMATION) {
-    content = (
-      <SwapPendingModalContent showIcon={true} title="Transaction Submitted">
-        {addToWallet}
-      </SwapPendingModalContent>
-    );
-  }
-
-  if (swapState === SwapState.COMPLETED) {
-    content = (
-      <SwapTransactionReceiptModalContent txHash={txHash} address={fromToken?.address} symbol={fromToken?.symbol} decimals={fromToken?.decimals} logo={fromToken?.logoUrl}>
-        {addToWallet}
-      </SwapTransactionReceiptModalContent>
-    );
-  }
-
-  if (wrongNetwork) {
-    content = null;
-  }
-
-  return (
-    <Components.Base.Modal header={<ModalHeader title={title} onClose={onClose} />} title={title} onClose={onClose} open={showConfirmation}>
-      <StyledSwapModalContent
-        style={{
-          paddingBottom: swapState === SwapState.REVIEW ? "24px" : "55px",
-          paddingTop: title ? "30px" : "24px",
-        }}
-      >
-        <StyledSwapModalContentChildren>{content}</StyledSwapModalContentChildren>
-      </StyledSwapModalContent>
-    </Components.Base.Modal>
-  );
-};
-
-const StyledSwapModalContentChildren = styled("div")`
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-`;
-
-const ModalHeader = ({ title, onClose }: { title?: string; onClose: () => void }) => {
-  return (
-    <StyledModalHeader withTitle={title ? 1 : 0}>
-      {title && <StyledModalHeaderTitle>{title}</StyledModalHeaderTitle>}
-      <StyledModalHeaderClose className="twap-ui-close" onClick={onClose}>
-        <IoMdClose />
-      </StyledModalHeaderClose>
-    </StyledModalHeader>
-  );
-};
 
 export const useShowSwapModalButton = () => {
   const { translations } = useTwapContext();
@@ -866,9 +688,9 @@ export const useShowSwapModalButton = () => {
     srcAmount: store.srcAmountUi,
   }));
   const warning = hooks.useFillWarning();
-  const { isLoading: dstAmountLoading, dexAmounOut } = hooks.useDstAmount();
-  const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken(true);
-  const { mutate: wrap, isLoading: wrapLoading } = hooks.useWrapToken(true);
+  const { marketPrice, marketPriceLoading } = useTwapContext();
+  const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken();
+  const { mutate: wrap, isLoading: wrapLoading } = hooks.useWrapToken();
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();
   const srcUsd = hooks.useSrcUsd().value;
   const dstUsd = hooks.useDstUsd().value;
@@ -876,9 +698,9 @@ export const useShowSwapModalButton = () => {
   const placeOrderText = limit ? "Place Limit Order" : "Place TWAP Order";
 
   const noLiquidity = useMemo(() => {
-    if (!srcAmount || BN(srcAmount).isZero() || dstAmountLoading) return false;
-    return !dexAmounOut.raw || BN(dexAmounOut.raw).isZero();
-  }, [dexAmounOut.raw, dstAmountLoading, srcAmount]);
+    if (!srcAmount || BN(srcAmount).isZero() || marketPriceLoading) return false;
+    return !marketPrice || BN(marketPrice).isZero();
+  }, [marketPrice, marketPriceLoading, srcAmount]);
 
   if (wrongNetwork)
     return {
@@ -894,7 +716,7 @@ export const useShowSwapModalButton = () => {
       disabled: true,
     };
   }
-  if (dstAmountLoading) {
+  if (marketPriceLoading) {
     return { text: "Searching for the best price", onClick: undefined, disabled: true };
   }
 

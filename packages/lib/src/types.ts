@@ -129,8 +129,9 @@ export interface TWAPProps extends BaseProps {
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
-  dstAmountOut?: string;
-  dstAmountLoading?: boolean;
+  marketPrice?: string;
+  marketPriceLoading?: boolean;
+  fee?: number;
 }
 
 type PriceUsd = (address: string, token?: TokenData) => any;
@@ -205,8 +206,9 @@ export interface TwapLibProps extends LibProps {
   useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
-  dstAmountOut?: string;
-  dstAmountLoading?: boolean;
+  marketPrice?: string;
+  marketPriceLoading?: boolean;
+  fee?: number;
 }
 
 export type Token = TokenData;
@@ -280,7 +282,7 @@ export interface State {
 
   txHash?: string;
   enableQueryParams?: boolean;
-  waitingForOrdersUpdate: boolean;
+  waitingForOrderId?: number | boolean;
   srcUsd?: BN;
   dstUsd?: BN;
   srcUsdLoading?: boolean;

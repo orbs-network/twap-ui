@@ -1,16 +1,17 @@
 import { Box, styled } from "@mui/material";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { OrderLoader, ListOrder } from "./Order/Order";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useTwapContext } from "../context";
 import _ from "lodash";
-import { usePagination } from "../hooks";
+import { useOrdersHistoryQuery, usePagination } from "../hooks";
 import { StyledColumnFlex } from "../styles";
 import { Pagination } from "../components/base";
 import { useTwapStore } from "../store";
 import { Order } from "../order";
+import { Status } from "@orbs-network/twap";
 
-function OrdersList({ orders, status, isLoading }: { orders?: Order[]; status?: string; isLoading: boolean }) {
+function OrdersList({ orders, status, isLoading, onCancelSuccess }: { orders?: Order[]; status?: Status; isLoading: boolean,  onCancelSuccess?: (orderId: number) => void }) {
   const { uiPreferences } = useTwapContext();
 
   const showPagination = uiPreferences.orders?.paginationChunks && _.size(orders) > uiPreferences.orders?.paginationChunks;
@@ -23,31 +24,37 @@ function OrdersList({ orders, status, isLoading }: { orders?: Order[]; status?: 
     );
   }
   if (showPagination) {
-    return <PaginationList orders={orders} status={status} />;
+    return <PaginationList onCancelSuccess={onCancelSuccess} orders={orders} status={status} />;
   }
-  return <List orders={orders} status={status} />;
+  return <List onCancelSuccess={onCancelSuccess} orders={orders} status={status} />;
 }
 
-const PaginationList = ({ orders, status }: { orders?: Order[]; status?: string }) => {
+const PaginationList = ({ orders, status, onCancelSuccess }: { orders?: Order[]; status?: Status, onCancelSuccess?: (orderId: number) => void  }) => {
   const paginationChunks = useTwapContext().uiPreferences.orders?.paginationChunks;
 
   const { list, nextPage, hasNextPage, prevPage, hasPrevPage, text } = usePagination(orders, paginationChunks);
 
   return (
     <StyledColumnFlex>
-      <List orders={list} status={status} />
+      <List onCancelSuccess={onCancelSuccess} orders={list} status={status} />
       <Pagination text={text} hasPrevPage={hasPrevPage} onNext={nextPage} onPrev={prevPage} hasNextPage={hasNextPage} />
     </StyledColumnFlex>
   );
 };
 
-const List = ({ orders, status }: { orders?: Order[]; status?: string }) => {
+const List = ({ orders, status, onCancelSuccess }: { orders?: Order[]; status?: Status, onCancelSuccess?: (orderId: number) => void }) => {
   const { translations } = useTwapContext();
-  const waitingForOrdersUpdate = useTwapStore((s) => s.waitingForOrdersUpdate);
+  const waitingForOrderId = useTwapStore((state) => state.waitingForOrderId);
+  const {data} = useOrdersHistoryQuery()
+  const waitForOrderLoader = useMemo(() => {
+    if(!waitingForOrderId || !data?.length) return false
+    return waitingForOrderId && !data?.find(it => it.id === waitingForOrderId)
+  }, [data, waitingForOrderId])
 
+  
   if (!_.size(orders)) {
-    return waitingForOrdersUpdate ? (
-      <OrderLoader status={status} />
+    return waitForOrderLoader ? (
+      <OrderLoader />
     ) : (
       <StyledContainer className="twap-orders-list">
         <StyledEmptyList className="twap-orders-empty-list">
@@ -56,12 +63,12 @@ const List = ({ orders, status }: { orders?: Order[]; status?: string }) => {
       </StyledContainer>
     );
   }
-
+  
   return (
     <StyledContainer className="twap-orders-list">
-      {waitingForOrdersUpdate && <OrderLoader status={status} />}
+      {waitForOrderLoader && <OrderLoader  />}
       {orders?.map((order, index) => {
-        return <ListOrder order={order} key={index} />;
+        return <ListOrder onCancelSuccess={onCancelSuccess} order={order} key={index} />;
       })}
     </StyledContainer>
   );

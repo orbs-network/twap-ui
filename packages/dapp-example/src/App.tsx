@@ -4,6 +4,7 @@ import { useEagerlyConnect, useSelectedDapp, useTheme } from "./hooks";
 import { dapps, defaultDapp } from "./config";
 import { GlobalStyles, ThemeProvider } from "@mui/material";
 import { useMemo } from "react";
+import { SnackbarProvider } from "notistack";
 
 const useGlobalStyles = () => {
   const dapp = useSelectedDapp();
@@ -19,15 +20,17 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <StyledApp>
-        <GlobalStyles styles={styles} />
-        <Routes>
-          {dapps.map(({ config, Component }) => {
-            return <Route path={config.name.toLowerCase()} element={<Component />} key={config.name} />;
-          })}
-          <Route path="*" element={<Navigate to={defaultDapp.config.name.toLowerCase()} />} />
-        </Routes>
-      </StyledApp>
+      <SnackbarProvider>
+        <StyledApp>
+          <GlobalStyles styles={styles} />
+          <Routes>
+            {dapps.map(({ config, Component }) => {
+              return <Route path={config.name.toLowerCase()} element={<Component />} key={config.name} />;
+            })}
+            <Route path="*" element={<Navigate to={defaultDapp.config.name.toLowerCase()} />} />
+          </Routes>
+        </StyledApp>
+      </SnackbarProvider>
     </ThemeProvider>
   );
 }

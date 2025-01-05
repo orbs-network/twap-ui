@@ -70,11 +70,7 @@ const StyledSeparator = styled(Box)({
   height: 20,
 });
 
-const StyledTitle = styled(Box)({
-  textAlign: "center",
-  fontWeight: 500,
-  fontSize: 17,
-});
+const StyledTitle = styled(Box)({});
 
 const StyledClose = styled(IconButton)({
   marginLeft: "auto",
