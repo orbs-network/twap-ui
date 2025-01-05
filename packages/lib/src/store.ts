@@ -39,7 +39,7 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
 
     loading: false,
     isLimitOrder: true,
-    confirmationClickTimestamp: moment(),
+    currentTime: moment().valueOf(),
     showConfirmation: false,
     disclaimerAccepted: true,
 
@@ -125,11 +125,11 @@ export const useTwapStore = create(
       get().lib &&
       get().srcToken &&
       get().dstToken &&
-      [TokensValidation.wrapAndOrder, TokensValidation.wrapOnly].includes(get().lib!.validateTokens(get().srcToken!, get().dstToken!)),
+      [TokensValidation.wrapOnly].includes(get().lib!.validateTokens(get().srcToken!, get().dstToken!)),
 
     shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
     isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
-    setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, confirmationClickTimestamp: moment() }),
+    setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, currentTime: moment().valueOf() }),
   }))
 );
 

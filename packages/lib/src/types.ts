@@ -132,6 +132,7 @@ export interface TWAPProps extends BaseProps {
   marketPrice?: string;
   marketPriceLoading?: boolean;
   fee?: number;
+  isLimitPanel?: boolean;
 }
 
 type PriceUsd = (address: string, token?: TokenData) => any;
@@ -209,6 +210,7 @@ export interface TwapLibProps extends LibProps {
   marketPrice?: string;
   marketPriceLoading?: boolean;
   fee?: number;
+  isLimitPanel?: boolean;
 }
 
 export type Token = TokenData;
@@ -267,7 +269,7 @@ export interface State {
 
   loading: boolean;
   isLimitOrder: boolean;
-  confirmationClickTimestamp: Moment;
+  currentTime: number;
   showConfirmation: boolean;
   disclaimerAccepted: boolean;
 

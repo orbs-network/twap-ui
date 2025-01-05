@@ -233,6 +233,30 @@ const useToast = () => {
   );
 };
 
+const _Button = ({ children, disabled, onClick }: { children: ReactNode; disabled: boolean; onClick: () => void }) => {
+  return (
+    <StyledButton onClick={onClick} disabled={disabled}>
+      {children}
+    </StyledButton>
+  );
+};
+
+const StyledButton = styled("button")(({ disabled }) => {
+  return {
+    background: "#1FC7D4",
+    borderRadius: 16,
+    height: 48,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    fontSize: 16,
+    fontWeight: 600,
+    border: "none",
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.5 : 1,
+  };
+});
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
@@ -276,6 +300,28 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     };
   }, [library]);
 
+  const onSrcTokenSelected = useCallback(
+    (it: any) => {
+      if (eqIgnoreCase(it.address || "", dstToken?.address || "")) {
+        setSrcToken(it);
+        setDstToken(srcToken);
+      }
+    },
+    [dstToken, srcToken]
+  );
+
+  const onDstTokenSelected = useCallback(
+    (it: any) => {
+      if (eqIgnoreCase(it.address || "", srcToken?.address || "")) {
+        setDstToken(it);
+        setSrcToken(dstToken);
+
+      }
+    },
+    [dstToken, srcToken]
+  );
+
+
   return (
     <TWAP
       account={account}
@@ -289,15 +335,15 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       connectedChainId={chainId}
       useTrade={_useTrade}
       useTokenModal={useTokenModal}
-      onDstTokenSelected={(it: any) => setSrcToken(it)}
-      onSrcTokenSelected={(it: any) => setDstToken(it)}
+      onDstTokenSelected={onSrcTokenSelected}
+      onSrcTokenSelected={onDstTokenSelected}
       nativeToken={config.nativeToken}
       connector={connector}
       isMobile={isMobile}
       useTooltip={useTooltip}
       Tooltip={Tooltip}
       TransactionErrorContent={TxErrorContent}
-      Button={Button}
+      Button={_Button}
       toast={toast}
     />
   );
@@ -306,7 +352,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 const logo = "https://assets.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1629359065";
 const DappComponent = () => {
   const { isDarkTheme } = useTheme();
-  const [selected, setSelected] = useState(SelectorOption.TWAP);
+  const [selected, setSelected] = useState(SelectorOption.LIMIT);
   const isMobile = useIsMobile();
   const config = useConfig();
   return (
@@ -389,9 +435,3 @@ const dapp: Dapp = {
 };
 
 export default dapp;
-
-export const amountUi = (decimals?: number, amount?: BN) => {
-  if (!decimals || !amount) return "";
-  const percision = BN(10).pow(decimals || 0);
-  return amount.times(percision).idiv(percision).div(percision).toString();
-};

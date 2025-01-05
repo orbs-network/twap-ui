@@ -11,7 +11,7 @@ import { useTwapStore } from "../store";
 import { Order } from "../order";
 import { Status } from "@orbs-network/twap";
 
-function OrdersList({ orders, status, isLoading, onCancelSuccess }: { orders?: Order[]; status?: Status; isLoading: boolean,  onCancelSuccess?: (orderId: number) => void }) {
+function OrdersList({ orders, status, isLoading, onCancelSuccess }: { orders?: Order[]; status?: Status; isLoading: boolean; onCancelSuccess?: (orderId: number) => void }) {
   const { uiPreferences } = useTwapContext();
 
   const showPagination = uiPreferences.orders?.paginationChunks && _.size(orders) > uiPreferences.orders?.paginationChunks;
@@ -29,7 +29,7 @@ function OrdersList({ orders, status, isLoading, onCancelSuccess }: { orders?: O
   return <List onCancelSuccess={onCancelSuccess} orders={orders} status={status} />;
 }
 
-const PaginationList = ({ orders, status, onCancelSuccess }: { orders?: Order[]; status?: Status, onCancelSuccess?: (orderId: number) => void  }) => {
+const PaginationList = ({ orders, status, onCancelSuccess }: { orders?: Order[]; status?: Status; onCancelSuccess?: (orderId: number) => void }) => {
   const paginationChunks = useTwapContext().uiPreferences.orders?.paginationChunks;
 
   const { list, nextPage, hasNextPage, prevPage, hasPrevPage, text } = usePagination(orders, paginationChunks);
@@ -42,16 +42,15 @@ const PaginationList = ({ orders, status, onCancelSuccess }: { orders?: Order[];
   );
 };
 
-const List = ({ orders, status, onCancelSuccess }: { orders?: Order[]; status?: Status, onCancelSuccess?: (orderId: number) => void }) => {
+const List = ({ orders, status, onCancelSuccess }: { orders?: Order[]; status?: Status; onCancelSuccess?: (orderId: number) => void }) => {
   const { translations } = useTwapContext();
   const waitingForOrderId = useTwapStore((state) => state.waitingForOrderId);
-  const {data} = useOrdersHistoryQuery()
+  const { data } = useOrdersHistoryQuery();
   const waitForOrderLoader = useMemo(() => {
-    if(!waitingForOrderId || !data?.length) return false
-    return waitingForOrderId && !data?.find(it => it.id === waitingForOrderId)
-  }, [data, waitingForOrderId])
+    if (!waitingForOrderId || !data?.length) return false;
+    return waitingForOrderId && !data?.find((it) => it.id === waitingForOrderId);
+  }, [data, waitingForOrderId]);
 
-  
   if (!_.size(orders)) {
     return waitForOrderLoader ? (
       <OrderLoader />
@@ -63,10 +62,10 @@ const List = ({ orders, status, onCancelSuccess }: { orders?: Order[]; status?: 
       </StyledContainer>
     );
   }
-  
+
   return (
     <StyledContainer className="twap-orders-list">
-      {waitForOrderLoader && <OrderLoader  />}
+      {waitForOrderLoader && <OrderLoader />}
       {orders?.map((order, index) => {
         return <ListOrder onCancelSuccess={onCancelSuccess} order={order} key={index} />;
       })}

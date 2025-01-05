@@ -12,7 +12,7 @@ import { useListOrderContext } from "./context";
 import BN from "bignumber.js";
 import moment from "moment";
 import { ArrowsIcon, ExplorerIcon } from "./icons";
-import { InvertPrice, OrderDetailsRow } from "../../components";
+import { InvertPrice, OrderDetails, OrderDetailsRow } from "../../components";
 
 const OrderExpanded = () => {
   return (
@@ -95,78 +95,43 @@ const CancelButton = () => {
 };
 
 const Expiry = () => {
-  const translations = useTwapContext().translations;
   const { order } = useListOrderContext();
 
-  return (
-    <OrderDetailsRow label={`${translations.deadline}`} tooltip={translations.maxDurationTooltip}>
-      {moment(order?.deadline).format("MMM DD, YYYY HH:mm")}
-    </OrderDetailsRow>
-  );
+  return <OrderDetails.Expiry format="MMM DD, YYYY HH:mm" expiryMillis={order.deadline} />;
 };
 
 const TradeInterval = () => {
   const { order } = useListOrderContext();
-  const { minimumDelayMinutes, lib } = useTwapStore((state) => {
-    return {
-      minimumDelayMinutes: state.getMinimumDelayMinutes(),
-      lib: state.lib,
-    };
-  });
+  const lib = useTwapStore((state) => state.lib);
+  const tradeIntervalMillis = useMemo(() => (!lib ? 0 : order.getFillDelay(lib?.config)), [lib]);
 
-  const translations = useTwapContext().translations;
-
-  if (!lib?.config) return null;
-
-  return (
-    <OrderDetailsRow label={`${translations.tradeInterval}`} tooltip={translations.tradeIntervalTootlip.replace("{{minutes}}", minimumDelayMinutes.toString())}>
-      {fillDelayText(order.getFillDelay(lib?.config), translations)}
-    </OrderDetailsRow>
-  );
+  return <OrderDetails.TradeInterval tradeIntervalMillis={tradeIntervalMillis} />;
 };
 
 const SizePerTrade = () => {
-  const translations = useTwapContext().translations;
   const { order, srcToken } = useListOrderContext();
-
   const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcBidAmount);
-  const srcChunkAmountUiF = useFormatNumber({ value: srcChunkAmountUi, disableDynamicDecimals: true });
+  if (order.totalChunks === 1) return null;
 
-  return (
-    <OrderDetailsRow label={`${translations.tradeSize}`} tooltip={translations.tradeSizeTooltip}>
-      {srcChunkAmountUiF} {srcToken?.symbol}
-    </OrderDetailsRow>
-  );
+  return <OrderDetails.SizePerTrade sizePerTrade={srcChunkAmountUi} symbol={srcToken?.symbol} />;
 };
 
 const TotalTrades = () => {
-  const translations = useTwapContext().translations;
   const { order } = useListOrderContext();
 
-  return (
-    <OrderDetailsRow label={`${translations.totalTrades}`} tooltip={translations.totalTradesTooltip}>
-      {order.totalChunks}
-    </OrderDetailsRow>
-  );
+  if (order.totalChunks === 1) return null;
+  return <OrderDetails.TotalTrades totalTrades={order.totalChunks} />;
 };
 
 const MinAmountOut = () => {
   const { order, dstToken } = useListOrderContext();
-
   const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmount);
-
   const dstMinAmountOut = useMemo(() => {
     if (!dstMinAmountOutUi || !order.totalChunks) return "0";
     return BN(dstMinAmountOutUi).multipliedBy(order.totalChunks).toString();
   }, [dstMinAmountOutUi, order.totalChunks]);
 
-  const amountF = useFormatNumber({ value: dstMinAmountOut, decimalScale: 4 });
-
-  return (
-    <OrderDetailsRow label="Minimum received" className="twap-order-details-min-amount-out">
-      {amountF} {dstToken?.symbol}
-    </OrderDetailsRow>
-  );
+  return <OrderDetails.MinReceived isMarketOrder={order.isMarketOrder} minReceived={dstMinAmountOut} symbol={dstToken?.symbol} />;
 };
 
 const Filled = () => {
@@ -177,7 +142,7 @@ const Filled = () => {
   const srcAmountUiF = useFormatNumber({ value: srcAmountUI, decimalScale: 4 });
 
   return (
-    <OrderDetailsRow label="Filled" className="twap-order-details-filled">
+    <OrderDetails.Row label="Filled" className="twap-order-details-filled">
       <StyledText>
         {"("}
         {`${srcFilledAmountUiF || "0"}`}
@@ -185,7 +150,7 @@ const Filled = () => {
         {")"}
       </StyledText>
       <OrderProgress order={order} />
-    </OrderDetailsRow>
+    </OrderDetails.Row>
   );
 };
 
@@ -195,11 +160,7 @@ const OrderPrice = () => {
   const order = useListOrderContext().order;
   const { srcToken, dstToken, price } = useOrderExcecutionPrice(order);
 
-  return (
-    <OrderDetailsRow className="twap-order-price" label="Price">
-      {!price ? "-" : <InvertPrice price={price} srcToken={srcToken} dstToken={dstToken} />}
-    </OrderDetailsRow>
-  );
+  return <OrderDetails.Price srcToken={srcToken} dstToken={dstToken} price={price} />;
 };
 
 export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number; className?: string }) => {
@@ -207,20 +168,20 @@ export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number
   const translations = useTwapContext().translations;
   const { setExpand, onCancelSuccess } = useListOrderContext();
 
-  const onCancel = useCallback(async (e: any) => {
-    e.stopPropagation();
-    try {
-      await mutateAsync(orderId);
-      setExpand(false);
-      onCancelSuccess?.(orderId);
-    } catch (error) {}
-  }, [orderId, mutateAsync, setExpand]);
+  const onCancel = useCallback(
+    async (e: any) => {
+      e.stopPropagation();
+      try {
+        await mutateAsync(orderId);
+        setExpand(false);
+        onCancelSuccess?.(orderId);
+      } catch (error) {}
+    },
+    [orderId, mutateAsync]
+  );
 
   return (
-    <StyledCancelOrderButton
-      onClick={onCancel}
-      className={`${className} twap-cancel-order ${isLoading ? "twap-cancel-order-loading" : ""}`}
-    >
+    <StyledCancelOrderButton onClick={onCancel} className={`${className} twap-cancel-order ${isLoading ? "twap-cancel-order-loading" : ""}`}>
       <div className="twap-cancel-order-content">
         {isLoading && (
           <div className="twap-cancel-order-spinner">

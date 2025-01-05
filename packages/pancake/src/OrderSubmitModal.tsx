@@ -1,7 +1,7 @@
 import { isNativeAddress } from "@defi.org/web3-candies";
 import { styled } from "@mui/material";
 import { TokenData } from "@orbs-network/twap";
-import { Components, getTokenFromTokensList, hooks, store, Styles, useTwapContext, waitForOrdersUpdate } from "@orbs-network/twap-ui";
+import { Components, getTokenFromTokensList, hooks, store, Styles, useTwapContext } from "@orbs-network/twap-ui";
 import React, { createContext, ReactNode, useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { useAdapterContext } from "./context";
 import { ArrowBottom, CloseIcon, InfoIcon, LinkIcon } from "./icons";
@@ -20,6 +20,7 @@ import {
   StyledOrderSummaryInfo,
   StyledDisclaimer,
   StyledSubmitModalContentMain,
+  StyledDisclaimerContent,
 } from "./styles";
 import Lottie from "react-lottie";
 import * as Loading_Lottie from "./lottie/Loading_Lottie.json";
@@ -175,7 +176,6 @@ const useSubmitSwapCallback = () => {
   const { mutateAsync: approveCallback } = hooks.useApproveToken();
   const { data: allowance, refetch: refetchAllowance } = hooks.useHasAllowanceQuery();
   const { mutateAsync: createOrder } = hooks.useCreateOrder();
-  const { data: hasNativeBalance } = hooks.useHasMinNativeTokenBalance("0.0035");
   const { mutateAsync: wrap } = hooks.useWrapToken();
   const shouldWrap = isNativeAddress(fromToken?.address || "");
   const errorToast = useToastError();
@@ -193,16 +193,15 @@ const useSubmitSwapCallback = () => {
       updateState(swapId, { stepsCount: calcStepsCount(shouldWrap, allowance) });
 
       try {
-        if (!hasNativeBalance) {
-          throw new BalanceError();
-        }
-
         if (shouldWrap) {
+            updateSwapState(SwapStep.WRAP);
           await wrap();
           incrementStep();
         }
 
         if (!allowance) {
+            updateSwapState(SwapStep.APPROVE);
+
           await approveCallback();
           const approved = await refetchAllowance();
           if (!approved.data) {
@@ -217,6 +216,8 @@ const useSubmitSwapCallback = () => {
         updateSwapState(SwapStep.ORDER_CREATED);
         orderPlacedToast();
       } catch (error) {
+        console.log({ error: (error as any).message });
+
         errorToast(error, step);
         updateSwapState(SwapStep.ERROR);
       }
@@ -426,11 +427,6 @@ const ErrorContent = () => {
   );
 };
 
-const StyledOrderPlacedContentIcon = styled("div")({
-  position: "relative",
-  top: 5,
-});
-
 const ApproveContent = () => {
   const { dappTokens } = useTwapContext();
   const fromToken = store.useTwapStore((store) => store.srcToken);
@@ -445,7 +441,8 @@ const ApproveContent = () => {
 
 const ProgressIndicator = () => {
   const { state } = useSubmitContext();
-
+    console.log(state.stepsCount);
+    
   if (state.stepsCount < 2) return null;
   const value = (state.stepIndex / state.stepsCount) * 100;
 
@@ -491,17 +488,24 @@ const MinReceived = () => {
 
 const TotalTrades = () => {
   const chunks = hooks.useChunks();
+  if (chunks === 1) return null;
   return <Components.OrderDetails.TotalTrades totalTrades={chunks} />;
 };
 
 const SizePerTrade = () => {
   const token = store.useTwapStore((store) => store.srcToken);
+  const chunks = hooks.useChunks();
+
   const sizePerTrade = hooks.useSrcChunkAmountUi();
+  if (chunks === 1) return null;
+
   return <Components.OrderDetails.SizePerTrade symbol={token?.symbol} sizePerTrade={sizePerTrade} />;
 };
 
 const TradeInterval = () => {
   const tradeInterval = store.useTwapStore((s) => s.getFillDelayUiMillis());
+  const chunks = hooks.useChunks();
+  if (chunks === 1) return null;
   return <Components.OrderDetails.TradeInterval tradeIntervalMillis={tradeInterval} />;
 };
 
@@ -537,12 +541,14 @@ const OrderReview = ({ onSubmit }: { onSubmit: () => void }) => {
         </StyledOrderSummaryInfo>
 
         <StyledDisclaimer>
-          <InfoIcon />
-          <Components.DisclaimerText />
+          <StyledDisclaimerContent>
+            <InfoIcon />
+            <Components.DisclaimerText />
+          </StyledDisclaimerContent>
         </StyledDisclaimer>
         <StyledButtonContainer>
           <Button disabled={allowanceLoading} onClick={() => onSubmit()}>
-            Confirm Order
+            Confirm
           </Button>
         </StyledButtonContainer>
       </StyledOrderSummary>
@@ -687,10 +693,10 @@ const useFailedToastError = () => {
 
   return useCallback(
     (error: any, step?: SwapStep) => {
-      if (error instanceof BalanceError) {
+      if (error.message?.toLowerCase().includes("gas required exceeds allowance")) {
         return {
-          title: "Insufficient balance",
-          message: "You don't have enough balance to perform the swap. Please try again with a smaller amount.",
+          title: `Insufficient ${config.nativeToken.symbol} balance`,
+          message: "You don't have enough balance to perform the swap.",
         };
       }
 

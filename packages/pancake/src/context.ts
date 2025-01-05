@@ -1,6 +1,5 @@
 import { TWAPProps } from "@orbs-network/twap-ui";
 import { createContext, FC, JSXElementConstructor, ReactNode, useContext } from "react";
-import { Config } from "@orbs-network/twap";
 
 export interface AdapterProps extends TWAPProps {
   dappTokens?: { [key: string]: any };

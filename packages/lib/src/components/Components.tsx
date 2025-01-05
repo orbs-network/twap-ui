@@ -812,20 +812,14 @@ const Expiry = ({ expiryMillis, format = "ll HH:mm" }: { expiryMillis?: number; 
   const expiry = useMemo(() => moment(expiryMillis).format(format), [expiryMillis, format]);
 
   return (
-    <OrderDetailsRow label="Expiry" tooltip={t.confirmationDeadlineTooltip}>
+    <OrderDetailsRow label="Expiration" tooltip={t.confirmationDeadlineTooltip}>
       {expiry}
     </OrderDetailsRow>
   );
 };
 
 const Price = ({ srcToken, dstToken, price: _price }: { srcToken?: TokenData; dstToken?: TokenData; price?: string }) => {
-  const t = useTwapContext().translations;
-
-  return (
-    <OrderDetailsRow label="Price">
-      <InvertPrice price={_price} srcToken={srcToken} dstToken={dstToken} />
-    </OrderDetailsRow>
-  );
+  return <OrderDetailsRow label="Price">{_price ? <InvertPrice price={_price} srcToken={srcToken} dstToken={dstToken} /> : "-"}</OrderDetailsRow>;
 };
 
 const TotalTrades = ({ totalTrades = 0 }: { totalTrades?: number }) => {
@@ -843,7 +837,7 @@ const MinReceived = ({ minReceived, isMarketOrder = false, symbol = "" }: { minR
   const minReceivedF = useFormatNumber({ value: minReceived, decimalScale: 6 });
   return (
     <OrderDetailsRow label={t.minReceivedPerTrade} tooltip={!isMarketOrder ? t.confirmationMinDstAmountTootipLimit : t.confirmationMinDstAmountTootipMarket}>
-      {`${minReceivedF} ${symbol}`}
+      {isMarketOrder ? "-" : `${minReceivedF} ${symbol}`}
     </OrderDetailsRow>
   );
 };
@@ -880,13 +874,13 @@ const Fee = ({ fee, dstToken, outAmount }: { fee?: number; dstToken?: TokenData;
         .div(100)
         .toString() || "0"
     );
-  }, [outAmount, fee, dstToken]);
+  }, [outAmount, fee]);
 
   const t = useTwapContext().translations;
   const amountF = useFormatNumber({ value: amount, decimalScale: 6 });
   return (
     <OrderDetailsRow label={`Fee (${fee}%)`} tooltip="Fee is estimated and exact amount may change at execution.">
-      {amountF}
+      {`${amountF} ${dstToken?.symbol}`} 
     </OrderDetailsRow>
   );
 };
@@ -898,12 +892,11 @@ OrderDetails.MinReceived = MinReceived;
 OrderDetails.SizePerTrade = SizePerTrade;
 OrderDetails.TradeInterval = TradeInterval;
 OrderDetails.Fee = Fee;
+OrderDetails.Row = OrderDetailsRow;
 
 export const StyledDetailRowChildren = styled(StyledRowFlex)({
   width: "fit-content",
   gap: 5,
-  fontWeight: 300,
-  fontSize: 13,
   textAlign: "right",
   "& .twap-token-logo": {
     width: 21,

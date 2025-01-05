@@ -61,7 +61,17 @@ export const SelectedOrders = ({ className = "" }: { className?: string }) => {
   );
 };
 
-export const AllOrders = ({ className = "", orders = [], isLoading, onCancelSuccess }: { className?: string; orders?: Order[]; isLoading?: boolean, onCancelSuccess?: (orderId: number) => void }) => {
+export const AllOrders = ({
+  className = "",
+  orders = [],
+  isLoading,
+  onCancelSuccess,
+}: {
+  className?: string;
+  orders?: Order[];
+  isLoading?: boolean;
+  onCancelSuccess?: (orderId: number) => void;
+}) => {
   return (
     <StyledOrdersLists className={`twap-orders-lists ${className}`}>
       <OrdersList onCancelSuccess={onCancelSuccess} isLoading={Boolean(isLoading)} orders={orders} />

@@ -199,6 +199,7 @@ export const useCreateOrder = () => {
   const { setTab } = useOrdersStore();
   const { askDataParams, onTxSubmitted } = useTwapContext();
   const dstMinAmountOut = useDstMinAmountOut().amount;
+
   const { amount: dstAmount, usd: dstAmountUsdUi } = useDstAmount();
   const srcUsd = useSrcUsd().value.toString();
   const tradeSize = useSrcChunkAmount();
@@ -782,16 +783,19 @@ export const useSwitchTokens = () => {
   }));
   const dstAmount = useDstAmount().amountUI;
   return useCallback(() => {
+
+    const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
+    const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
+    console.log({ _srcToken, _dstToken });
+    
+     onSrcTokenSelected?.(_dstToken);
+   onDstTokenSelected?.(_srcToken);
     updateState({
       srcToken: dstToken,
       dstToken: srcToken,
       srcAmountUi: "",
     });
     onReset();
-    const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
-    const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
-    srcToken && onSrcTokenSelected?.(_dstToken);
-    dstToken && onDstTokenSelected?.(_srcToken);
   }, [dstAmount, _.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol, onSrcTokenSelected, onDstTokenSelected, onReset]);
 };
 
@@ -1541,6 +1545,7 @@ export const useDurationUi = () => {
     if (!lib) {
       return { resolution: TimeResolution.Minutes, amount: 0 };
     }
+
     if (customDuration.amount !== undefined) return customDuration;
 
     const _millis = fillDelayUiMillis * 2 * chunks;
@@ -1579,18 +1584,16 @@ export const useChunksBiggerThanOne = () => {
 };
 
 export const useDeadline = () => {
-  const { confirmationClickTimestamp } = useTwapStore((s) => ({
-    confirmationClickTimestamp: s.confirmationClickTimestamp,
-  }));
+  const currentTime = useTwapStore((s) => s.currentTime);
 
   const durationUi = useDurationUi();
 
   return useMemo(() => {
-    return moment(confirmationClickTimestamp)
+    return moment(currentTime)
       .add((durationUi.amount || 0) * durationUi.resolution)
       .add(1, "minute")
       .valueOf();
-  }, [durationUi, confirmationClickTimestamp]);
+  }, [durationUi, currentTime]);
 };
 
 export const useDeadlineUi = () => {

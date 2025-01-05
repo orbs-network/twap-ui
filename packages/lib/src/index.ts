@@ -9,7 +9,7 @@ export * from "./ErrorHandling";
 export * from "./orders/OrdersPanel";
 export * from "./orders/Orders";
 export * from "./orders/Order/OrderExpanded";
-export {OrderLoader} from './orders/Order/Order'
+export { OrderLoader } from "./orders/Order/Order";
 export * from "./components/OrdersComponents";
 export * from "./ui-helper";
 export * from "./utils";

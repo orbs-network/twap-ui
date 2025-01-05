@@ -155,7 +155,7 @@ export const configureStyles = (theme: Theme) => {
       p: {
         fontWeight: 400,
         color: styles.label,
-        fontSize: 12,
+        fontSize: 14,
       },
       svg: {
         color: `${styles.primaryTextColor}!important`,
@@ -193,7 +193,7 @@ export const configureStyles = (theme: Theme) => {
       maxWidth: "480px",
       borderRadius: 24,
       overflow: "hidden",
-      "*::-webkit-scrollbar": {
+      "&::-webkit-scrollbar": {
         display: "none",
       },
 
@@ -323,6 +323,11 @@ export const configureStyles = (theme: Theme) => {
       ".Mui-checked+.MuiSwitch-track": {
         background: "#32D0AA!important",
       },
+    },
+    ".twap-order-details-row-right": {
+      fontSize: "14px",
+      fontWeight: "400",
+      color: styles.primaryTextColor,
     },
 
     ".twap-button-disabled": {
@@ -765,10 +770,15 @@ const getContainerStyles = (theme: Theme) => {
 };
 
 export const StyledContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
-  const styles = baseStyles(theme);
   return {
     ...getContainerStyles(theme),
-    gap: 16,
+    gap: 20,
+  };
+});
+
+export const StyledTopContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
+  return {
+    gap: 12,
   };
 });
 
@@ -780,7 +790,7 @@ export const StyledContainerPadding = styled("div")({
 export const StyledPricePanel = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    gap: 16,
+    gap: 12,
     ".twap-limit-price-panel-inputs": {
       gap: 10,
       alignItems: "stretch",
@@ -900,9 +910,7 @@ export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) =>
       },
     },
     ".twap-label": {
-      p: {
-        color: styles.primaryTextColor,
-      },
+      p: {},
       svg: {
         color: `${styles.primaryTextColor}!important`,
       },
@@ -1421,7 +1429,6 @@ export const StyledTokenPanelContent = styled(InputContainer)({
   ".twap-input-container-content": {
     height: 80,
     paddingTop: 0,
-    paddingBottom: 0,
     width: "100%",
     justifyContent: "space-between",
     alignItems: "center",
@@ -1432,6 +1439,7 @@ export const StyledTokenPanelContent = styled(InputContainer)({
     },
   },
 });
+
 
 export const StyledOrderSummaryInfo = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
@@ -1450,27 +1458,67 @@ export const StyledOrderSummaryInfo = styled(Styles.StyledColumnFlex)(({ theme }
   };
 });
 
-export const StyledDisclaimer = styled(Styles.StyledRowFlex)(({ theme }) => {
+
+
+const limitLines = (lines: number) => ({
+  display: "-webkit-box",
+  WebkitLineClamp: lines,
+  WebkitBoxOrient: "vertical" as const,
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+});
+
+export const StyledDisclaimerContent = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    height: 110,
-    color: "1px solid #094D53",
-    background: "#13393C",
-    padding: 12,
-    borderRadius: 20,
-    svg: { fill: "#48D0DB", width: 24, height: 24, position: "sticky", top: 0 },
-    alignItems: "flex-start",
+    height: '100%',
     overflow: "auto",
+    alignItems: "flex-start",
+    paddingRight: 8,
+    paddingBottom: 12,
+
+    svg: { fill: "#48D0DB", width: 24, height: 24, position: "sticky", top: 0 },
+    ".twap-disclaimer-text": {
+      // ...limitLines(4),
+      // "&::-webkit-scrollbar": {
+      //  display: "none",
+      // },
+    },
     p: {
       color: styles.primaryTextColor,
       fontSize: 14,
       lineHeight: "21px",
+     
+
     },
     a: {
       color: styles.primaryTextColor,
       fontSize: 14,
       lineHeight: "21px",
     },
+    "&::-webkit-scrollbar": {
+      background: "transparent",
+      width: 6,
+    },
+    "&::-webkit-scrollbar-thumb": {
+      background: styles.label,
+      width: 6,
+      borderRadius: 999,
+      height: 36
+    },
+  }
+})
+export const StyledDisclaimer = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    height: 115,
+    border: "1px solid #094D53",
+    background: "#13393C",
+    padding: '12px 4px 12px 12px',
+    borderRadius: 20,
+    "&::-webkit-scrollbar": {
+      display : "none"
+    }
   };
 });
 
@@ -1534,7 +1582,7 @@ export const StyledSubmitModalContent = styled(Styles.StyledColumnFlex)({
   justifyContent: "flex-start",
   height: 280,
   padding: 20,
-  position:'relative'
+  position: "relative",
 });
 
 export const StyledSubmitModalContentMain = styled(Styles.StyledColumnFlex)({

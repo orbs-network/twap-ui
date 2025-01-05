@@ -36,7 +36,9 @@ const Listener = (props: TwapLibProps) => {
   const { chunks } = useTwapStore();
   const maxPossibleChunks = useMaxPossibleChunks();
   const maxPossibleChunksReady = useMaxPossibleChunksReady();
-
+  const { updateState } = useTwapStore((state) => ({
+    updateState: state.updateState,
+  }));
   const setChunks = useSetChunks();
   useEffect(() => {
     if (maxPossibleChunksReady && chunks && chunks > maxPossibleChunks) {
@@ -57,6 +59,12 @@ const Listener = (props: TwapLibProps) => {
       limitStore.setGainPercent(BN(gainPercent || 0).gt(0) ? Number(gainPercent) : undefined);
     }
   }, [enableQueryParams, limitStore.onLimitInput, limitStore.setGainPercent]);
+
+  useEffect(() => {
+    setInterval(() => {
+      updateState({ currentTime: Date.now() });
+    }, 60_000);
+  }, [updateState]);
 
   useEffect(() => {
     if (props.connectedChainId) {

@@ -1,2 +1,2 @@
 export * from "./OrderExpanded";
-export {OrderLoader} from './Order'
+export { OrderLoader } from "./Order";

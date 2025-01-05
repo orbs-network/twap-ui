@@ -1,4 +1,4 @@
-import { GlobalStyles, Box, ThemeProvider, Typography, styled } from "@mui/material";
+import { GlobalStyles, ThemeProvider, styled } from "@mui/material";
 import { Components, hooks, Translations, TwapAdapter, store, Orders, TwapContextUIPreferences, Styles, TooltipProps, parseError } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import {
@@ -28,8 +28,9 @@ import {
   StyledMarketPrice,
   StyledTokenPanelContent,
   StyledButton,
+  StyledTopContainer,
 } from "./styles";
-import { memo, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { StyledBalance, StyledEmptyUSD, StyledPercentSelect, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
@@ -38,12 +39,8 @@ import _ from "lodash";
 import BN from "bignumber.js";
 import { MdKeyboardArrowDown } from "@react-icons/all-files/md/MdKeyboardArrowDown";
 import PancakeOrders from "./PancakeOrders";
-import { getTokenFromTokensList } from "@orbs-network/twap-ui";
-import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
-import { OrderSummary } from "./OrderSummary";
 import { useTwapContext } from "@orbs-network/twap-ui";
 import { useAdapterContext, AdapterContextProvider, AdapterProps, WarningVariant } from "./context";
-import { create } from "zustand";
 import { configs } from "./config";
 import { MdAccountBalanceWallet } from "@react-icons/all-files/md/MdAccountBalanceWallet";
 import { ArrowsIcon, BackBody, ChangeIcon, CloseIcon, InfoIcon } from "./icons";
@@ -306,6 +303,7 @@ const TWAP = memo((props: AdapterProps) => {
         marketPrice={trade?.outAmount}
         marketPriceLoading={trade?.isLoading}
         fee={0.25}
+        isLimitPanel={props.limit}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
@@ -395,10 +393,11 @@ const TWAPPanel = () => {
     <div className="twap-container">
       <StyledColumnFlex>
         <StyledContainer>
-          <TokenPanel isSrcToken={true} />
-          <ChangeTokensOrder />
-          <TokenPanel />
-
+          <StyledTopContainer>
+            <TokenPanel isSrcToken={true} />
+            <ChangeTokensOrder />
+            <TokenPanel />
+          </StyledTopContainer>
           <LimitPriceToggle />
           <PricePanel />
         </StyledContainer>
@@ -698,7 +697,7 @@ export const useShowSwapModalButton = () => {
   const placeOrderText = limit ? "Place Limit Order" : "Place TWAP Order";
 
   const noLiquidity = useMemo(() => {
-    if (!srcAmount || BN(srcAmount).isZero() || marketPriceLoading) return false;
+    if (BN(srcAmount || 0).isZero() || marketPriceLoading) return false;
     return !marketPrice || BN(marketPrice).isZero();
   }, [marketPrice, marketPriceLoading, srcAmount]);
 
@@ -758,14 +757,6 @@ export const useShowSwapModalButton = () => {
       disabled: wrapLoading,
     };
 
-  if (createOrderLoading) {
-    return {
-      text: placeOrderText,
-      onClick: () => {
-        setShowConfirmation(true);
-      },
-    };
-  }
 
   return {
     text: placeOrderText,

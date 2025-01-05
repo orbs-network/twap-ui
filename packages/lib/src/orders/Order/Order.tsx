@@ -37,7 +37,6 @@ const ListOrderContent = () => {
   );
 };
 
-
 export const OrderLoader = ({ className = "" }: { className?: string }) => {
   return (
     <StyledOrdersLoader className={`${className} twap-order`}>
@@ -82,7 +81,6 @@ const StyledLoaderSymbol = styled(Loader)({
   height: 20,
 });
 
-
 const StyledAccordionDetails = styled(AccordionDetails)({
   marginTop: 10,
 });
@@ -96,7 +94,12 @@ export const StyledAccordionSummary = styled(AccordionSummary)({
   minHeight: "unset!important",
 });
 
-const StyledContainer = styled(Card)({});
+const StyledContainer = styled(Card)({
+  ".MuiCollapse-root": {
+    transition: "unset!important",
+    transitionDuration: "0s!important",
+  },
+});
 
 const StyledAccordion = styled(Accordion)({
   width: "100%",
