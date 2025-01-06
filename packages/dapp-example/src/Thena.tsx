@@ -81,8 +81,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <TWAP
       connect={connect}
       account={account}
-      srcToken="BNB"
-      dstToken="0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"
       dappTokens={dappTokens}
       TokenSelectModal={TokenSelectModal}
       provider={library}

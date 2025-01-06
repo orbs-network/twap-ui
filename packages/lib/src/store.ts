@@ -1,13 +1,12 @@
 import BN from "bignumber.js";
-import { TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { TWAPLib } from "@orbs-network/twap";
 import moment from "moment";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import _ from "lodash";
-import { maxUint256 } from "@defi.org/web3-candies";
 import { State, StoreOverride, Translations } from "./types";
 import { QUERY_PARAMS } from "./consts";
-import { amountBN, fillDelayText, getQueryParam, setQueryParam } from "./utils";
+import { fillDelayText, getQueryParam, setQueryParam } from "./utils";
 
 export enum TimeResolution {
   Minutes = 60 * 1000,
@@ -32,8 +31,6 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     showSuccessModal: true,
     showLoadingModal: false,
     lib: undefined,
-    srcToken: undefined,
-    dstToken: undefined,
     wrongNetwork: undefined,
     srcAmountUi: !queryParamsEnabled ? "" : srcAmountUi || "",
 
@@ -52,8 +49,6 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
 
     enableQueryParams: false,
     waitingForOrderId: undefined,
-    srcUsd: undefined,
-    dstUsd: undefined,
   };
 };
 const initialState = getInitialState();
@@ -78,11 +73,7 @@ export const useTwapStore = create(
         ...storeOverride,
         enableQueryParams,
         lib: get().lib,
-        srcToken: get().srcToken,
-        dstToken: get().dstToken,
         wrongNetwork: get().wrongNetwork,
-        srcUsd: get().srcUsd,
-        dstUsd: get().dstUsd,
       });
     },
     updateState: (values: Partial<State>) => set({ ...values }),
@@ -92,19 +83,10 @@ export const useTwapStore = create(
         ...getInitialState(),
         lib: get().lib,
         ...storeOverride,
-        srcToken: get().srcToken,
-        dstToken: get().dstToken,
-        srcUsd: get().srcUsd,
-        dstUsd: get().dstUsd,
       });
     },
     setLib: (lib?: TWAPLib) => set({ lib }),
     setLoading: (loading: boolean) => set({ loading }),
-    setSrcToken: (srcToken?: TokenData) => {
-      set({ srcToken });
-    },
-    setDstToken: (dstToken?: TokenData) => set({ dstToken }),
-    getSrcAmount: () => BN.min(amountBN(get().srcToken, get().srcAmountUi), maxUint256).decimalPlaces(0),
     setDisclaimerAccepted: (disclaimerAccepted: boolean) => set({ disclaimerAccepted }),
     setWrongNetwork: (wrongNetwork?: boolean) => set({ wrongNetwork }),
     setDuration: (customDuration: Duration) => {
@@ -121,10 +103,6 @@ export const useTwapStore = create(
     getFillDelayWarning: () => {
       return get().lib && (get() as any).getFillDelayUiMillis() < (get() as any).getMinimumDelayMinutes() * 60 * 1000;
     },
-    shouldWrap: () => get().lib && get().srcToken && get().dstToken && [TokensValidation.wrapOnly].includes(get().lib!.validateTokens(get().srcToken!, get().dstToken!)),
-
-    shouldUnwrap: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.unwrapOnly,
-    isInvalidTokens: () => get().lib && get().srcToken && get().dstToken && get().lib!.validateTokens(get().srcToken!, get().dstToken!) === TokensValidation.invalid,
     setShowConfirmation: (showConfirmation: boolean) => set({ showConfirmation, currentTime: moment().valueOf() }),
   }))
 );

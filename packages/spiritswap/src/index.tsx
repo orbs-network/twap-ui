@@ -64,8 +64,6 @@ const TWAP = memo((props: SpiritSwapTWAPProps) => {
       provider={provider}
       account={props.account}
       dappTokens={props.dappTokens}
-      srcToken={props.srcToken}
-      dstToken={props.dstToken}
       parseToken={(rawToken) => parseToken(rawToken, props.getTokenImageUrl)}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}

@@ -87,24 +87,11 @@ const OrderSummary = ({ children }: { children: ReactNode }) => {
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens, account, connectedChainId } = useAdapterContext();
-  const { srcToken, dstToken } = store.useTwapStore();
-
-  const selectedCurrency = useMemo(() => {
-    if (!!dappTokens && srcToken) {
-      return dappTokens[srcToken.address];
-    }
-  }, [srcToken?.address]);
-
-  const otherSelectedCurrency = useMemo(() => {
-    if (!!dappTokens && dstToken) {
-      return dappTokens[dstToken.address];
-    }
-  }, [dstToken?.address]);
 
   return (
     <TokenSelectModal
-      otherSelectedCurrency={otherSelectedCurrency}
-      selectedCurrency={selectedCurrency}
+      otherSelectedCurrency={undefined}
+      selectedCurrency={undefined}
       onCurrencySelect={props.onSelect}
       isOpen={props.isOpen}
       onDismiss={props.onClose}
@@ -220,8 +207,6 @@ const TWAP = (props: SpookySwapTWAPProps) => {
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
       parseToken={(rawToken) => parseToken(rawToken, getTokenImageUrl)}
-      srcToken={props.srcToken}
-      dstToken={props.dstToken}
       storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}

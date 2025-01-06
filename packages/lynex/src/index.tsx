@@ -212,8 +212,6 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
       parseToken={parseToken}
-      srcToken={props.srcToken}
-      dstToken={props.dstToken}
       storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}

@@ -3,16 +3,16 @@ import { Status } from "@orbs-network/twap";
 import { ReactNode, useCallback, useMemo } from "react";
 import { Label, Spinner } from "../../components/base";
 import { useTwapContext } from "../../context";
-import { useAmountUi, useCancelOrder, useFormatNumber, useHistoryPrice, useNetwork } from "../../hooks";
+import { useAmountUi, useCancelOrder, useFormatNumber, useNetwork } from "../../hooks";
 import { useTwapStore } from "../../store";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { fillDelayText } from "../../utils";
-import { OrderProgress, OrderStatus, useOrderExcecutionPrice } from "./Components";
+import { OrderProgress, OrderStatus } from "./Components";
 import { useListOrderContext } from "./context";
 import BN from "bignumber.js";
-import moment from "moment";
-import { ArrowsIcon, ExplorerIcon } from "./icons";
-import { InvertPrice, OrderDetails, OrderDetailsRow } from "../../components";
+import { ExplorerIcon } from "./icons";
+import {  OrderDetails, OrderDetailsRow } from "../../components";
+import { useOrderPrice } from "./hooks";
 
 const OrderExpanded = () => {
   return (
@@ -157,27 +157,24 @@ const Filled = () => {
 export default OrderExpanded;
 
 const OrderPrice = () => {
-  const order = useListOrderContext().order;
-  const { srcToken, dstToken, price } = useOrderExcecutionPrice(order);
-
+  const price = useOrderPrice();
+  const { srcToken, dstToken } = useListOrderContext();
   return <OrderDetails.Price srcToken={srcToken} dstToken={dstToken} price={price} />;
 };
 
 export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number; className?: string }) => {
   const { isLoading, mutateAsync } = useCancelOrder();
-  const translations = useTwapContext().translations;
-  const { setExpand, onCancelSuccess } = useListOrderContext();
+  const { translations, onCancelOrderSuccess } = useTwapContext();
 
   const onCancel = useCallback(
     async (e: any) => {
       e.stopPropagation();
       try {
         await mutateAsync(orderId);
-        setExpand(false);
-        onCancelSuccess?.(orderId);
+        onCancelOrderSuccess?.(orderId);
       } catch (error) {}
     },
-    [orderId, mutateAsync]
+    [orderId, mutateAsync, onCancelOrderSuccess]
   );
 
   return (
@@ -218,7 +215,7 @@ export const StyledCancelOrderButton = styled("button")({
   },
 });
 
-export const StyledContainer = styled("div")({
+export const StyledContainer = styled(OrderDetails)({
   width: "100%",
   display: "flex",
   flexDirection: "column",

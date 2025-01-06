@@ -1,6 +1,5 @@
 import { styled } from "@mui/material";
 import React from "react";
-import { SQUIGLE } from "../../config";
 import { useTwapContext } from "../../context";
 import { useFormatNumber } from "../../hooks";
 import { textOverflow } from "../../styles";
@@ -30,7 +29,7 @@ const USD = ({
 
   const context = useTwapContext()?.uiPreferences;
 
-  const _prefix = prefix || context?.usdPrefix || `${SQUIGLE} $ `;
+  const _prefix = prefix || context?.usdPrefix || `~ $ `;
   const _suffix = suffix || context?.usdSuffix;
   const _emptyUi = emptyUi || context?.usdEmptyUI;
 

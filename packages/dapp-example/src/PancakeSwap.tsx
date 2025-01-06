@@ -119,19 +119,72 @@ interface ContextProps {
   showModal?: boolean;
   isFrom?: boolean;
   setIsFrom?: (value: boolean) => void;
+  srcToken?: any;
+  dstToken?: any;
+  onSrcTokenSelected: (it: any) => void;
+  onDstTokenSelected: (it: any) => void;
 }
 const Context = createContext({} as ContextProps);
 
 const ContextWrapper = ({ children }: { children: ReactNode }) => {
+  const { chainId } = useWeb3React();
   const [showModal, setShowModal] = useState(false);
   const [isFrom, setIsFrom] = useState(true);
+  const [srcToken, setSrcToken] = useState<any>(undefined);
+  const [dstToken, setDstToken] = useState<any>(undefined);
+  const { data: dappTokens } = useDappTokens();
 
   const openModal = (value: boolean) => {
     setIsFrom(value);
     setShowModal(true);
   };
 
-  return <Context.Provider value={{ isFrom, setIsFrom, showModal, openModal, close: () => setShowModal(false) }}>{children}</Context.Provider>;
+  useEffect(() => {
+    setSrcToken(undefined);
+    setDstToken(undefined);
+  }, [chainId]);
+
+  useEffect(() => {
+    if (!dappTokens) return;
+
+    if (!srcToken) {
+      setSrcToken((Object.values(dappTokens) as any)?.[1]);
+    }
+
+    if (!dstToken) {
+      setDstToken((Object.values(dappTokens) as any)?.[2]);
+    }
+  }, [dappTokens, srcToken, dstToken]);
+
+  const onSrcTokenSelected = useCallback(
+    (it: any) => {
+      if (eqIgnoreCase(it.address || "", dstToken?.address || "")) {
+        setSrcToken(it);
+        setDstToken(srcToken);
+      } else {
+        setSrcToken(it);
+      }
+    },
+    [dstToken, srcToken]
+  );
+
+  const onDstTokenSelected = useCallback(
+    (it: any) => {
+      if (eqIgnoreCase(it.address || "", srcToken?.address || "")) {
+        setDstToken(it);
+        setSrcToken(dstToken);
+      } else {
+        setDstToken(it);
+      }
+    },
+    [dstToken, srcToken]
+  );
+
+  return (
+    <Context.Provider value={{ onSrcTokenSelected, onDstTokenSelected, srcToken, dstToken, isFrom, setIsFrom, showModal, openModal, close: () => setShowModal(false) }}>
+      {children}
+    </Context.Provider>
+  );
 };
 
 const TokenSelectModal = ({ onCurrencySelect }: TokenSelectModalProps) => {
@@ -172,8 +225,12 @@ const useHandleAddress = () => {
   );
 };
 
+const useAppContext = () => {
+  return useContext(Context);
+};
+
 const useTokenModal = (item1: any, item2: any, item3: any, isFrom?: boolean) => {
-  const context = useContext(Context);
+  const context = useAppContext();
   return () => context.openModal(!!isFrom);
 };
 
@@ -263,26 +320,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { data: dappTokens } = useDappTokens();
   const isMobile = useIsMobile();
   const config = useConfig();
-  const [srcToken, setSrcToken] = useState<any>(undefined);
-  const [dstToken, setDstToken] = useState<any>(undefined);
+  const { srcToken, onDstTokenSelected, onSrcTokenSelected, dstToken } = useAppContext();
   const toast = useToast();
-
-  useEffect(() => {
-    if (!dappTokens) return;
-
-    if (!srcToken) {
-      setSrcToken((Object.values(dappTokens) as any)?.[1]);
-    }
-
-    if (!dstToken) {
-      setDstToken((Object.values(dappTokens) as any)?.[2]);
-    }
-  }, [dappTokens, srcToken, dstToken]);
-
-  useEffect(() => {
-    setSrcToken(undefined);
-    setDstToken(undefined);
-  }, [chainId]);
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
     const handleAddress = useHandleAddress();
@@ -300,31 +339,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     };
   }, [library]);
 
-  const onSrcTokenSelected = useCallback(
-    (it: any) => {
-      if (eqIgnoreCase(it.address || "", dstToken?.address || "")) {
-        setSrcToken(it);
-        setDstToken(srcToken);
-      }
-    },
-    [dstToken, srcToken]
-  );
-
-  const onDstTokenSelected = useCallback(
-    (it: any) => {
-      if (eqIgnoreCase(it.address || "", srcToken?.address || "")) {
-        setDstToken(it);
-        setSrcToken(dstToken);
-      }
-    },
-    [dstToken, srcToken]
-  );
-
   return (
     <TWAP
       account={account}
-      srcToken={srcToken?.symbol}
-      dstToken={dstToken?.symbol}
+      srcToken={srcToken}
+      dstToken={dstToken}
       dappTokens={dappTokens}
       isDarkTheme={isDarkTheme}
       limit={limit}
@@ -333,8 +352,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       connectedChainId={chainId}
       useTrade={_useTrade}
       useTokenModal={useTokenModal}
-      onDstTokenSelected={onSrcTokenSelected}
-      onSrcTokenSelected={onDstTokenSelected}
+      onDstTokenSelected={onDstTokenSelected}
+      onSrcTokenSelected={onSrcTokenSelected}
       nativeToken={config.nativeToken}
       connector={connector}
       isMobile={isMobile}
@@ -402,16 +421,18 @@ export const useParseToken = () => {
 
 const Tokens = () => {
   const context = useContext(Context);
-  const parseToken = useParseToken();
-
-  const selectToken = hooks.useSelectTokenCallback(parseToken);
+  const { onSrcTokenSelected, onDstTokenSelected } = useAppContext();
 
   const onSelect = useCallback(
     (token: any) => {
-      selectToken({ isSrc: !!context.isFrom, token });
+      if (context.isFrom) {
+        onSrcTokenSelected(token);
+      } else {
+        onDstTokenSelected(token);
+      }
       context.close();
     },
-    [selectToken, context.isFrom, context.close]
+    [context.isFrom, context.close, onSrcTokenSelected, onDstTokenSelected]
   );
 
   return (

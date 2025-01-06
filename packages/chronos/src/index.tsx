@@ -278,12 +278,11 @@ const Recipient = () => {
 };
 
 const TokenSummary = () => {
-  const { srcAmount, srcToken, dstToken } = store.useTwapStore((store) => ({
+  const { srcAmount } = store.useTwapStore((store) => ({
     srcAmount: store.srcAmountUi,
-    srcToken: store.srcToken,
-    dstToken: store.dstToken,
   }));
-  const dstAmount = hooks.useDstAmount().outAmount.ui;
+  const { srcToken, dstToken } = useTwapContext();
+  const dstAmount = hooks.useDstAmount().amountUI;
 
   const srcAmountFormatted = hooks.useFormatNumber({ value: srcAmount });
   const srcAmountFormattedTooltip = hooks.useFormatNumber({ value: srcAmount, decimalScale: 18 });
@@ -387,8 +386,6 @@ const TWAP = (props: ChronosTWAPProps) => {
         account={props.account}
         dappTokens={props.dappTokens}
         parseToken={(rawToken) => parseToken(props.getTokenLogoURL, rawToken)}
-        srcToken={props.srcToken}
-        dstToken={props.dstToken}
         storeOverride={props.limit ? limitStoreOverride : undefined}
         uiPreferences={uiPreferences}
         onDstTokenSelected={props.onDstTokenSelected}

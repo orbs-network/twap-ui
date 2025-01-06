@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo } from "react";
 import { TwapContextUIPreferences, TwapLibProps } from "./types";
-import { useInitLib, useMaxPossibleChunks, useMaxPossibleChunksReady, useParseTokens, usePriceUSD, useSetChunks, useSetTokensFromDapp, useUpdateStoreOveride } from "./hooks";
+import { useInitLib, useMaxPossibleChunks, useMaxPossibleChunksReady, usePriceUSD, useSetChunks, useUpdateStoreOveride } from "./hooks";
 import defaultTranlations from "./i18n/en.json";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { analytics } from "./analytics";
@@ -14,7 +14,6 @@ import { QUERY_PARAMS } from "./consts";
 analytics.onLoad();
 
 export interface TWAPContextProps extends TwapLibProps {
-  tokenList: TokenData[];
   uiPreferences: TwapContextUIPreferences;
 }
 
@@ -28,7 +27,6 @@ const queryClient = new QueryClient({
 });
 
 const Listener = (props: TwapLibProps) => {
-  const setTokensFromDappCallback = useSetTokensFromDapp();
   const initLib = useInitLib();
   const updateStoreOveride = useUpdateStoreOveride();
   const limitStore = useLimitPriceStore();
@@ -72,14 +70,9 @@ const Listener = (props: TwapLibProps) => {
     }
   }, [props.config.partner, props.connectedChainId]);
 
-  useSrcUsd();
-  useDstUsd();
   useEffect(() => {
     updateStoreOveride(props.storeOverride);
   }, [updateStoreOveride, props.storeOverride]);
-  useEffect(() => {
-    setTokensFromDappCallback();
-  }, [setTokensFromDappCallback]);
 
   useEffect(() => {
     // init web3 every time the provider changes
@@ -102,11 +95,10 @@ const WrappedTwap = (props: TwapLibProps) => {
 
 export const TwapAdapter = (props: TwapLibProps) => {
   const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
-  const tokenList = useParseTokens(props.dappTokens, props.parseToken);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TwapContext.Provider value={{ ...props, translations, tokenList, uiPreferences: props.uiPreferences || {} }}>
+      <TwapContext.Provider value={{ ...props, translations, uiPreferences: props.uiPreferences || {} }}>
         <WrappedTwap {...props} />
       </TwapContext.Provider>
     </QueryClientProvider>
@@ -115,30 +107,4 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
 export const useTwapContext = () => {
   return useContext(TwapContext);
-};
-
-export const useSrcUsd = () => {
-  const { srcToken, updateState } = useTwapStore((store) => ({
-    srcToken: store.srcToken,
-    updateState: store.updateState,
-  }));
-
-  const onSuccess = useCallback((srcUsd: BN, srcUsdLoading: boolean) => {
-    updateState({ srcUsd, srcUsdLoading });
-  }, []);
-
-  return usePriceUSD(srcToken?.address, onSuccess);
-};
-
-export const useDstUsd = () => {
-  const { dstToken, updateState } = useTwapStore((store) => ({
-    dstToken: store.dstToken,
-    updateState: store.updateState,
-  }));
-
-  const onSuccess = useCallback((dstUsd: BN, dstUsdLoading: boolean) => {
-    updateState({ dstUsd, dstUsdLoading });
-  }, []);
-
-  return usePriceUSD(dstToken?.address, onSuccess);
 };

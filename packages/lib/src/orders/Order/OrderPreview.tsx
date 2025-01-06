@@ -4,52 +4,63 @@ import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../..
 import { useAmountUi, useFormatNumber, useGetToken } from "../../hooks";
 import { Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
 import { Status, TokenData } from "@orbs-network/twap";
-import { ReactNode, useMemo, useState } from "react";
-import { ArrowsIcon, ChevronDown } from "./icons";
-import BN from "bignumber.js";
+import { ReactNode } from "react";
+import { ChevronDown } from "./icons";
 import { OrderProgress, OrderStatus, useOrderExcecutionPrice } from "./Components";
-import { Order } from "../../order";
 import { useListOrderContext } from "./context";
 import { InvertPrice } from "../../components";
+import { useOrderPrice } from "./hooks";
 
 const Tokens = () => {
   const order = useListOrderContext().order;
   const srcToken = useGetToken(order.srcTokenAddress);
   const dstToken = useGetToken(order.dstTokenAddress);
   const srcAmountUi = useAmountUi(srcToken?.decimals, order.srcAmount);
+  const dstAmountUi = useAmountUi(dstToken?.decimals, order.dstFilledAmount);
 
   return (
     <SyledTokens className="twap-order-preview-tokens">
-      <TokensToken isSrc={true} className="twap-order-preview-tokens-in-token" token={srcToken} amount={srcAmountUi} />
-      <TokensToken className="twap-order-preview-tokens-out-token" token={dstToken} amount={""} />
+      <TokensToken className="twap-order-preview-tokens-in-token" token={srcToken} amount={srcAmountUi} />
+      <TokensToken className="twap-order-preview-tokens-out-token" token={dstToken} amount={order.status === Status.Completed ? dstAmountUi : undefined} />
     </SyledTokens>
   );
 };
 
 const StyledToken = styled(StyledRowFlex)({
-  width: "auto",
+  gap: 0,
+  justifyContent: "flex-start",
   ".twap-token-logo ": {
     width: 24,
     height: 24,
   },
 });
 
-const TokensToken = ({ token, amount, className, isSrc }: { token?: TokenData; amount?: string; className: string; isSrc?: boolean }) => {
+const TokensToken = ({ token, amount, className }: { token?: TokenData; amount?: string; className: string }) => {
   const amountF = useFormatNumber({ value: amount, decimalScale: 3 });
   return (
-    <StyledToken className={`twap-order-preview-token ${isSrc ? "twap-order-preview-token-src" : ""} ${className}`}>
+    <StyledToken className={`twap-order-preview-token ${className}`}>
       <Components.Base.TokenLogo logo={token?.logoUrl} />
       <StyledTokenSymbol>
-        {amountF} {token?.symbol}{" "}
+        <StyledText>
+          {amountF} {token?.symbol}
+        </StyledText>
       </StyledTokenSymbol>
     </StyledToken>
   );
 };
-const StyledTokenSymbol = styled(StyledText)({
-  fontSize: 16,
-  fontWeight: 600,
-});
 
+const StyledTokenSymbol = styled(StyledRowFlex)({
+  width: "calc(100% - 28px)",
+  paddingLeft: 10,
+  justifyContent: "flex-start",
+  p: {
+    fontSize: 16,
+    textOverflow: "ellipsis",
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+    fontWeight: 600,
+  },
+});
 function OrderPreview() {
   return (
     <StyledOrderPreview gap={0} className="twap-order-preview">
@@ -61,15 +72,11 @@ function OrderPreview() {
 }
 
 const OrderExcecutionPrice = () => {
-  const { order, expanded } = useListOrderContext();
-  const { price, srcToken, dstToken } = useOrderExcecutionPrice(order);
+  const { srcToken, dstToken, expanded } = useListOrderContext();
+  const price = useOrderPrice();
 
   if (expanded || !price) return null;
-  return (
-    <StyledPrice>
-      <InvertPrice price={price} srcToken={srcToken} dstToken={dstToken} />
-    </StyledPrice>
-  );
+  return <StyledPrice price={price} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const OrderPreviewRight = () => {
@@ -99,20 +106,19 @@ const StyledStatus = styled(StyledRowFlex)({
   gap: 8,
 });
 
-const StyledPrice = styled(StyledRowFlex)({
+const StyledPrice = styled(InvertPrice)({
   gap: 5,
   width: "40%",
   maxWidth: 230,
   fontSize: 14,
   justifyContent: "flex-start",
   svg: {
-    position: "relative",
-    top: 1,
+    cursor: "pointer",
   },
 });
 
 const SyledTokens = styled(StyledColumnFlex)({
-  width: 140,
+  width: 160,
   alignItems: "flex-start",
   gap: 5,
 });
@@ -151,28 +157,7 @@ const StyledExpandToggle = styled("button")<{ expanded: number }>(({ expanded })
 
 export default OrderPreview;
 
-export const StyledPreviewLinearProgress = styled(LinearProgress)({
-  marginLeft: "auto",
-  marginRight: "auto",
-  width: "100%",
-  background: "transparent",
-  height: 7,
 
-  "&::after": {
-    position: "absolute",
-    top: "50%",
-    left: 0,
-    height: 1,
-    content: '""',
-    width: "100%",
-    background: "#373E55",
-  },
-  "& .MuiLinearProgress-bar": {
-    height: "100%",
-    zIndex: 1,
-    transition: "0.2s all",
-  },
-});
 
 interface OrderTokenDisplayProps {
   token?: TokenData;

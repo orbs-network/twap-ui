@@ -69,15 +69,10 @@ export const useReset = () => {
 
 export const useWrapToken = () => {
   const lib = useTwapStore((state) => state.lib);
-  const srcAmount = useTwapStore((state) => state.getSrcAmount());
-  const srcToken = useTwapStore((state) => state.srcToken);
-  const dstToken = useTwapStore((state) => state.dstToken);
-  const wizardStore = useWizardStore();
-  const { onSrcTokenSelected, dappTokens } = useTwapContext();
-
+  const srcAmount = useSrcAmount().amount;
+  const { srcToken, dstToken } = useTwapContext();
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
 
-  const setSrcToken = useTwapStore((state) => state.setSrcToken);
   const reset = useReset();
 
   return useMutation(
@@ -91,11 +86,6 @@ export const useWrapToken = () => {
         if (lib?.validateTokens(srcToken!, dstToken!) === TokensValidation.wrapOnly) {
           reset();
           return;
-        }
-        setSrcToken(lib!.config.wToken);
-        const token = getTokenFromTokensList(dappTokens, lib!.config.wToken.address);
-        if (token) {
-          onSrcTokenSelected?.(token);
         }
       },
       onError: (error: Error) => {
@@ -111,8 +101,7 @@ export const useUnwrapToken = () => {
   const lib = useTwapStore((state) => state.lib);
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   const reset = useReset();
-  const srcTokenAmount = useTwapStore((state) => state.getSrcAmount());
-  const wizardStore = useWizardStore();
+  const srcTokenAmount = useSrcAmount().amount;
   return useMutation(
     async () => {
       return lib?.unwrapNativeToken(srcTokenAmount, priorityFeePerGas, maxFeePerGas);
@@ -132,9 +121,8 @@ export const useApproveToken = (disableWizard?: boolean) => {
     setLoading: state.setLoading,
   }));
 
-  const srcAmount = useTwapStore((state) => state.getSrcAmount());
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
-  const srcToken = useTwapStore((state) => state.srcToken);
+  const srcToken = useTwapContext().srcToken;
   const { refetch } = useHasAllowanceQuery();
   const wizardStore = useWizardStore();
   return useMutation(
@@ -167,93 +155,67 @@ export const useApproveToken = (disableWizard?: boolean) => {
 };
 
 export const useOnTokenSelect = (isSrc?: boolean) => {
-  const srcSelect = useTwapStore((store) => store.setSrcToken);
-  const dstSelect = useTwapStore((store) => store.setDstToken);
+  const { onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
 
-  return isSrc ? srcSelect : dstSelect;
-};
-
-export const useHasMinNativeTokenBalance = (minTokenAmount?: string) => {
-  const { lib } = useTwapStore((s) => ({
-    lib: s.lib,
-  }));
-
-  return useQuery(
-    ["useHasMinNativeTokenBalance", lib?.maker, lib?.config.chainId, minTokenAmount],
-    async () => {
-      const balance = await web3().eth.getBalance(lib!.maker);
-      return BN(balance).gte(amountBN(lib?.config.nativeToken, minTokenAmount!));
-    },
-    {
-      enabled: !!lib?.maker && !!minTokenAmount,
-      staleTime: Infinity,
-    }
-  );
+  return isSrc ? onSrcTokenSelected : onDstTokenSelected;
 };
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPriceQuery();
   const store = useTwapStore();
+  const srcAmount = useSrcAmount().amount;
   const { onOrderCreated } = useOrdersHistoryQuery();
   const submitOrder = useSubmitOrderCallback();
-  const { setTab } = useOrdersStore();
-  const { askDataParams, onTxSubmitted } = useTwapContext();
+  const { askDataParams, onTxSubmitted, srcToken: _srcToken, dstToken: _dstToken } = useTwapContext();
   const dstMinAmountOut = useDstMinAmountOut().amount;
 
   const { amount: dstAmount, usd: dstAmountUsdUi } = useDstAmount();
   const srcUsd = useSrcUsd().value.toString();
-  const tradeSize = useSrcChunkAmount();
   const srcChunkAmount = useSrcChunkAmount();
+
   const deadline = useDeadline();
   const onResetLimitPrice = useLimitPriceStore().onReset;
   return useMutation(
     async (onTxHash?: (value: string) => void) => {
+      const srcToken = isNativeAddress(_srcToken?.address || "") ? store.lib?.config.wToken : _srcToken;
+
       const dstToken = {
-        ...store.dstToken!,
-        address: store.lib!.validateTokens(store.srcToken!, store.dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : store.dstToken!.address,
+        ..._dstToken!,
+        address: store.lib!.validateTokens(srcToken!, _dstToken!) === TokensValidation.dstTokenZero ? zeroAddress : _dstToken!.address,
       };
 
-      console.log({
-        srcToken: store.srcToken!,
-        dstToken: dstToken,
-        srcAmount: store.getSrcAmount().toString(),
-        dstAmount,
-        dstUSD: dstAmountUsdUi!,
-        getSrcChunkAmount: tradeSize.toString(),
-        getDeadline: deadline,
-        fillDelayMillis: store.getFillDelayUiMillis(),
-        isLimit: store.isLimitOrder,
-      });
+      if (!srcToken) {
+        throw new Error("srcToken is not defined");
+      }
 
-      const fillDelayMillis = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
-
+      const fillDelaySeconds = (store.getFillDelayUiMillis() - store.lib!.estimatedDelayBetweenChunksMillis()) / 1000;
       store.setLoading(true);
+      const validation = store.lib?.validateOrderInputs(srcToken, dstToken, srcAmount, srcChunkAmount, dstMinAmountOut, deadline, fillDelaySeconds, srcUsd);
+      if (validation !== OrderInputValidation.valid) throw new Error(`invalid inputs: ${validation}`);
 
       const order = await submitOrder(
         (txHash) => {
           onTxHash?.(txHash);
-          setTab(0);
           store.updateState({
             txHash,
             waitingForOrderId: true,
           });
         },
-        store.srcToken!,
+        srcToken!,
         dstToken,
-        store.getSrcAmount(),
+        srcAmount,
         srcChunkAmount,
         dstMinAmountOut,
         deadline,
-        fillDelayMillis,
-        srcUsd,
+        fillDelaySeconds,
         askDataParams,
         priorityFeePerGas || zero,
         maxFeePerGas
       );
       onTxSubmitted?.({
-        srcToken: store.srcToken!,
+        srcToken: srcToken!,
         dstToken: dstToken!,
-        srcAmount: store.getSrcAmount().toString(),
+        srcAmount,
         dstUSD: dstAmountUsdUi!,
         dstAmount,
         txHash: order.txHash,
@@ -389,8 +351,7 @@ export const useHistoryPrice = (order: Order) => {
 };
 
 export const useLoadingState = () => {
-  const srcToken = useTwapStore((store) => store.srcToken);
-  const dstToken = useTwapStore((store) => store.dstToken);
+  const { srcToken, dstToken } = useTwapContext();
   const srcUSD = useSrcUsd();
   const dstUSD = useDstUsd();
   const srcBalance = useSrcBalance();
@@ -406,10 +367,8 @@ export const useLoadingState = () => {
 };
 
 export const useSrcUsd = () => {
-  const { value } = useTwapStore((store) => ({
-    value: store.srcUsd || zero,
-    isLoading: store.srcUsdLoading,
-  }));
+  const srcToken = useTwapContext().srcToken;
+  const value = usePriceUSD(srcToken?.address).value;
 
   return {
     value,
@@ -418,10 +377,10 @@ export const useSrcUsd = () => {
 };
 
 export const useDstUsd = () => {
-  const { value } = useTwapStore((store) => ({
-    value: store.dstUsd || zero,
-    isLoading: store.dstUsdLoading,
-  }));
+  const dstToken = useTwapContext().dstToken;
+
+  const value = usePriceUSD(dstToken?.address).value;
+
   return {
     value,
     isLoading: value.isZero(),
@@ -429,12 +388,13 @@ export const useDstUsd = () => {
 };
 
 export const useSrcBalance = () => {
-  const srcToken = useTwapStore((store) => store.srcToken);
+  const srcToken = useTwapContext().srcToken;
   return useBalanceQuery(srcToken);
 };
 
 export const useDstBalance = () => {
-  const dstToken = useTwapStore((store) => store.dstToken);
+  const dstToken = useTwapContext().dstToken;
+
   return useBalanceQuery(dstToken);
 };
 
@@ -443,24 +403,22 @@ export const useDstBalance = () => {
  */
 
 export const useHasAllowanceQueryKey = (srcAmount?: string) => {
-  const { lib, srcToken } = useTwapStore((state) => ({
+  const { lib } = useTwapStore((state) => ({
     lib: state.lib,
-    srcToken: state.srcToken,
   }));
+  const srcToken = useTwapContext().srcToken;
   return useMemo(() => [QueryKeys.GET_ALLOWANCE, lib?.config.chainId, srcToken?.address, srcAmount], [lib, srcToken, srcAmount]);
 };
 
 export const useHasAllowanceDebounedQuery = () => {
-  const { lib, amount, srcToken } = useTwapStore((state) => ({
-    lib: state.lib,
-    amount: state.getSrcAmount(),
-    srcToken: state.srcToken,
-  }));
+  const lib = useTwapStore((s) => s.lib);
+  const amount = useSrcAmount().amount;
+  const srcToken = useTwapContext().srcToken;
 
-  const debouncedValue = useDebounce(amount.toString(), 500);
+  const debouncedValue = useDebounce(amount, 500);
   const querykey = useHasAllowanceQueryKey(debouncedValue);
   const query = useQuery(querykey, () => lib!.hasAllowance(srcToken!, debouncedValue), {
-    enabled: !!lib && !!srcToken && amount.gt(0),
+    enabled: !!lib && !!srcToken && BN(amount || 0).gt(0),
     staleTime: STALE_ALLOWANCE,
     refetchOnWindowFocus: true,
   });
@@ -468,15 +426,16 @@ export const useHasAllowanceDebounedQuery = () => {
 };
 
 export const useHasAllowanceQuery = () => {
-  const { lib, amount, srcToken } = useTwapStore((state) => ({
+  const { lib } = useTwapStore((state) => ({
     lib: state.lib,
-    amount: state.getSrcAmount(),
-    srcToken: state.srcToken,
   }));
+
+  const srcToken = useTwapContext().srcToken;
+  const amount = useSrcAmount().amount;
   const querykey = useHasAllowanceQueryKey(amount.toString());
 
   const query = useQuery(querykey, () => lib!.hasAllowance(srcToken!, amount), {
-    enabled: !!lib && !!srcToken && amount.gt(0),
+    enabled: !!lib && !!srcToken && BN(amount || 0).gt(0),
     staleTime: STALE_ALLOWANCE,
     refetchOnWindowFocus: true,
   });
@@ -565,23 +524,23 @@ const useGasPriceQuery = () => {
   };
 };
 
-const useTokenList = () => {
-  const tokens = useTwapContext().tokenList || [];
-  const lib = useTwapStore((store) => store.lib);
+// const useTokenList = () => {
+//   const tokens = useTwapContext().tokenList || [];
+//   const lib = useTwapStore((store) => store.lib);
 
-  const tokensLength = _.size(tokens);
+//   const tokensLength = _.size(tokens);
 
-  return useMemo(() => {
-    if (!lib || !tokensLength) return [];
-    if (!tokens.find((it: TokenData) => lib.isNativeToken(it))) {
-      tokens.push(lib.config.nativeToken);
-    }
-    if (!tokens.find((it: TokenData) => lib.isWrappedToken(it))) {
-      tokens.push(lib.config.wToken);
-    }
-    return tokens;
-  }, [lib, tokensLength]);
-};
+//   return useMemo(() => {
+//     if (!lib || !tokensLength) return [];
+//     if (!tokens.find((it: TokenData) => lib.isNativeToken(it))) {
+//       tokens.push(lib.config.nativeToken);
+//     }
+//     if (!tokens.find((it: TokenData) => lib.isWrappedToken(it))) {
+//       tokens.push(lib.config.wToken);
+//     }
+//     return tokens;
+//   }, [lib, tokensLength]);
+// };
 
 export const useOrdersHistoryQuery = () => {
   const { lib } = useTwapStore((state) => ({
@@ -654,43 +613,32 @@ export const useNetwork = () => {
   return useMemo(() => Object.values(networks).find((it) => it.id === lib?.config.chainId), [lib]);
 };
 
-export const useSetTokensFromDapp = () => {
-  const context = useTwapContext();
-
-  const srcTokenAddressOrSymbol = context.srcToken;
-  const dstTokenAddressOrSymbol = context.dstToken;
-  console.log({srcTokenAddressOrSymbol});
-
-  const setSrcToken = useTwapStore((state) => state.setSrcToken);
-  const setDstToken = useTwapStore((state) => state.setDstToken);
-  const tokensList = useTokenList();
-
-  const tokensReady = _.size(tokensList) > 0;
-
-  const wrongNetwork = useTwapStore((store) => store.wrongNetwork);
-
-  return useCallback(() => {
-    if (!tokensReady || wrongNetwork || wrongNetwork == null) return;
-
-    if (srcTokenAddressOrSymbol) {
-      const srcToken = getTokenFromTokensList(tokensList, srcTokenAddressOrSymbol);
-      console.log({srcToken});
-      
-      setSrcToken(srcToken);
-    }
-    if (dstTokenAddressOrSymbol) {
-      const dstToken = getTokenFromTokensList(tokensList, dstTokenAddressOrSymbol);
-      setDstToken(dstToken);
-    }
-  }, [srcTokenAddressOrSymbol, dstTokenAddressOrSymbol, tokensReady, wrongNetwork]);
+export const useShouldWrap = () => {
+  const { srcToken, dstToken, config } = useTwapContext();
+  return useMemo(() => {
+    if (!srcToken || !dstToken) return false;
+    return isNativeAddress(srcToken.address) && eqIgnoreCase(dstToken.address, config.wToken.address);
+  }, [srcToken, dstToken, config]);
 };
 
-export const useParseTokens = (dappTokens: any, parseToken?: (rawToken: any) => TokenData | undefined): TokenData[] => {
-  const listLength = _.size(dappTokens);
+export const useShouldUnwrap = () => {
+  const { srcToken, dstToken, config } = useTwapContext();
+  return useMemo(() => {
+    if (!srcToken || !dstToken) return false;
+    return eqIgnoreCase(srcToken.address, config.wToken.address) && isNativeAddress(dstToken.address);
+  }, [srcToken, dstToken, config]);
+};
 
-  const parse = parseToken ? parseToken : (t: any) => t;
-
-  return useMemo(() => _.compact(_.map(dappTokens, parse)), [listLength]);
+export const useSrcAmount = () => {
+  const { srcToken } = useTwapContext();
+  const amountUI = useTwapStore((s) => s.srcAmountUi);
+  const amount = useAmountBN(amountUI, srcToken?.decimals);
+  return useMemo(() => {
+    return {
+      amount,
+      amountUI,
+    };
+  }, [amountUI, amount]);
 };
 
 export const useFormatNumber = ({
@@ -744,92 +692,54 @@ export const useFormatNumber = ({
 };
 
 export const useSrcAmountNotZero = () => {
-  const value = useTwapStore((store) => store.getSrcAmount());
+  const value = useSrcAmount().amount;
 
-  return value.gt(0);
+  return BN(value || 0).gt(0);
 };
 
-const useTokenSelect = (parseTokenProps?: (token: any) => any) => {
-  const { onSrcTokenSelected, onDstTokenSelected, parseToken } = useTwapContext();
+const useTokenSelect = () => {
+  const { onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
   return useCallback(
     ({ isSrc, token }: { isSrc: boolean; token: any }) => {
-      const _parsedToken = parseToken || parseTokenProps;
-      const parsedToken = _parsedToken ? _parsedToken(token) : token;
       if (isSrc) {
-        useTwapStore.getState().setSrcToken(parsedToken);
         onSrcTokenSelected?.(token);
       } else {
-        useTwapStore.getState().setDstToken(parsedToken);
         onDstTokenSelected?.(token);
       }
     },
-    [onSrcTokenSelected, onDstTokenSelected, parseToken, parseTokenProps]
+    [onSrcTokenSelected, onDstTokenSelected]
   );
 };
 
 export const useToken = (isSrc?: boolean) => {
-  const srcTokenLogo = useTwapStore((store) => store.srcToken);
-  const dstTokenLogo = useTwapStore((store) => store.dstToken);
+  const { srcToken, dstToken } = useTwapContext();
 
-  return isSrc ? srcTokenLogo : dstTokenLogo;
+  return isSrc ? srcToken : dstToken;
 };
 
 export const useSwitchTokens = () => {
   const { dappTokens, onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
   const { onReset } = useTradePrice();
 
-  const { srcToken, dstToken, updateState } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-    srcAmountUi: s.srcAmountUi,
+  const { updateState } = useTwapStore((s) => ({
     updateState: s.updateState,
   }));
-  const dstAmount = useDstAmount().amountUI;
+  const { srcToken, dstToken } = useTwapContext();
   return useCallback(() => {
-    const _srcToken = getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
     const _dstToken = getTokenFromTokensList(dappTokens, dstToken?.address || dstToken?.symbol);
-    console.log({ _srcToken, _dstToken });
-    srcToken && onSrcTokenSelected?.(_dstToken);
-    dstToken && onDstTokenSelected?.(_srcToken);
-    setTimeout(() => {
-      updateState({
-        srcAmountUi: "",
-      });
-    }, 10);
-   
+
+    onSrcTokenSelected?.(_dstToken);
+
+    updateState({
+      srcAmountUi: "",
+    });
     onReset();
-  }, [dstAmount, _.size(dappTokens), srcToken?.address, srcToken?.symbol, dstToken?.address, dstToken?.symbol, onSrcTokenSelected, onDstTokenSelected, onReset]);
-};
-
-export const useSelectTokenCallback = (parseTokenProps?: (token: any) => any) => {
-  const srcTokenAddress = useTwapStore((s) => s.srcToken)?.address;
-  const dstTokenAddress = useTwapStore((s) => s.dstToken)?.address;
-  const { parseToken } = useTwapContext();
-  const setChunks = useSetChunks();
-  const onTokenSelect = useTokenSelect(parseTokenProps);
-
-  const switchTokens = useSwitchTokens();
-  return useCallback(
-    (args: { isSrc: boolean; token: any }) => {
-      const _parseToken = parseToken || parseTokenProps;
-      const parsedToken = _parseToken ? _parseToken(args.token) : args.token;
-      setChunks(undefined);
-      if (eqIgnoreCase(parsedToken?.address || "", srcTokenAddress || "") || eqIgnoreCase(parsedToken?.address || "", dstTokenAddress || "")) {
-        switchTokens();
-        return;
-      }
-      onTokenSelect(args);
-    },
-    [srcTokenAddress, dstTokenAddress, switchTokens, parseToken, onTokenSelect, parseTokenProps, setChunks]
-  );
+  }, [dappTokens, srcToken, dstToken, onSrcTokenSelected, onDstTokenSelected, updateState, onReset]);
 };
 
 export const useDappRawSelectedTokens = () => {
-  const { dappTokens } = useTwapContext();
+  const { dappTokens, srcToken, dstToken } = useTwapContext();
   const tokensLength = _.size(dappTokens);
-
-  const srcToken = useTwapStore((s) => s.srcToken);
-  const dstToken = useTwapStore((s) => s.dstToken);
 
   const _srcToken = useMemo(() => {
     return getTokenFromTokensList(dappTokens, srcToken?.address || srcToken?.symbol);
@@ -847,10 +757,9 @@ export const useDappRawSelectedTokens = () => {
 
 export const useSubmitButton = (isMain?: boolean, _translations?: Translations) => {
   const translations = useTwapContext()?.translations || _translations;
-  const { maker, shouldWrap, shouldUnwrap, wrongNetwork, disclaimerAccepted, setShowConfirmation, showConfirmation, createOrderLoading, isLimitOrder } = useTwapStore((store) => ({
+  const { maker, wrongNetwork, disclaimerAccepted, setShowConfirmation, showConfirmation, createOrderLoading, isLimitOrder } = useTwapStore((store) => ({
     maker: store.lib?.maker,
-    shouldWrap: store.shouldWrap(),
-    shouldUnwrap: store.shouldUnwrap(),
+
     wrongNetwork: store.wrongNetwork,
     disclaimerAccepted: store.disclaimerAccepted,
     setShowConfirmation: store.setShowConfirmation,
@@ -858,6 +767,8 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
     createOrderLoading: store.loading,
     isLimitOrder: store.isLimitOrder,
   }));
+  const shouldWrap = useShouldWrap();
+  const shouldUnwrap = useShouldUnwrap();
   const outAmountLoading = useDstAmount().isLoading;
   const { srcUsdLoading, dstUsdLoading } = useLoadingState();
   const { mutate: approve, isLoading: approveLoading } = useApproveToken();
@@ -953,12 +864,12 @@ export const useSubmitButton = (isMain?: boolean, _translations?: Translations) 
 };
 
 export const useGetToken = (address?: string) => {
-  const { tokenList } = useTwapContext();
+  const { parsedTokens } = useTwapContext();
 
   return useMemo(() => {
-    if (!address) return;
-    return tokenList?.find((t) => eqIgnoreCase(t.address, address));
-  }, [address, tokenList]);
+    if (!address || !parsedTokens) return;
+    return parsedTokens?.find((t) => eqIgnoreCase(t.address, address));
+  }, [address, parsedTokens]);
 };
 
 function useSubmitOrderCallback() {
@@ -973,7 +884,6 @@ function useSubmitOrderCallback() {
     dstMinChunkAmountOut: BN.Value,
     deadline: number,
     fillDelaySeconds: number,
-    srcUsd: BN.Value,
     askDataParams: any[] = [],
     maxPriorityFeePerGas?: BN.Value,
     maxFeePerGas?: BN.Value
@@ -981,9 +891,6 @@ function useSubmitOrderCallback() {
     if (!lib) {
       throw new Error("lib is not defined");
     }
-
-    const validation = lib?.validateOrderInputs(srcToken, dstToken, srcAmount, srcChunkAmount, dstMinChunkAmountOut, deadline, fillDelaySeconds, srcUsd);
-    if (validation !== OrderInputValidation.valid) throw new Error(`invalid inputs: ${validation}`);
 
     const askData = lib?.config.exchangeType === "PangolinDaasExchange" ? web3().eth.abi.encodeParameters(["address"], askDataParams) : [];
 
@@ -998,6 +905,8 @@ function useSubmitOrderCallback() {
       BN(lib.config.bidDelaySeconds).toFixed(0),
       BN(fillDelaySeconds).toFixed(0),
     ];
+
+    console.log({ askParams });
 
     analytics.onCreateOrderRequest(askParams, account);
 
@@ -1113,23 +1022,23 @@ const useGetFillsCallback = () => {
 };
 
 export const useDstAmount = () => {
-  const { dstToken, srcAmount } = useTwapStore((s) => ({
-    dstToken: s.dstToken,
-    isLimitOrder: s.isLimitOrder,
-    srcToken: s.srcToken,
-    srcAmount: s.srcAmountUi,
-  }));
-
+  const { amountUI: srcAmountUI, amount: srcAmount } = useSrcAmount();
+  const { dstToken } = useTwapContext();
+  const shouldWrap = useShouldWrap();
+  const shouldUnwrap = useShouldUnwrap();
   const { priceUI, isLoading } = useTradePrice();
 
   const amount = useMemo(() => {
+    if (shouldWrap || shouldUnwrap) {
+      return srcAmount;
+    }
     return amountBNV2(
       dstToken?.decimals,
-      BN(srcAmount)
+      BN(srcAmountUI)
         .times(priceUI || "0")
         .toFixed()
     );
-  }, [dstToken, priceUI, srcAmount]);
+  }, [dstToken, priceUI, srcAmountUI, srcAmount, shouldWrap, shouldUnwrap]);
 
   const dstUsd = useDstUsd().value.toString();
 
@@ -1149,18 +1058,17 @@ export const useDstAmount = () => {
   };
 };
 
-export const useMarketPriceV2 = (inverted?: boolean) => {
-  const twapStore = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-  }));
-
-  const { marketPrice, marketPriceLoading } = useTwapContext();
+export const useMarketPriceV2 = () => {
+  const { marketPrice, marketPriceLoading, dstToken } = useTwapContext();
+  const shouldWrap = useShouldWrap();
+  const shouldUnwrap = useShouldUnwrap();
+  const srcAmount = useSrcAmount().amount;
+  const price = shouldWrap || shouldUnwrap ? srcAmount : marketPrice;
 
   return {
-    priceUI: useAmountUi(twapStore.dstToken?.decimals, marketPrice),
-    price: marketPrice,
-    isLoading: marketPriceLoading,
+    priceUI: useAmountUi(dstToken?.decimals, price),
+    price: price,
+    isLoading: shouldWrap || shouldUnwrap ? false : marketPriceLoading,
   };
 };
 
@@ -1184,15 +1092,10 @@ export const usePriceDisplay = (price?: string | number) => {
 
 export const useTradePrice = () => {
   const limitPriceStore = useLimitPriceStore();
-  const { marketPriceLoading, usePriceUSD } = useTwapContext();
+  const { srcToken, dstToken } = useTwapContext();
   const percent = 1 + (limitPriceStore.gainPercent || 0) / 100;
   const isCustomLimitPrice = limitPriceStore.limitPrice !== undefined;
-  const marketPrice = useMarketPriceV2().priceUI;
-
-  const twapStore = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-  }));
+  const { priceUI: marketPrice, isLoading: marketPriceLoading } = useMarketPriceV2();
 
   const priceUI = useMemo(() => {
     if (isCustomLimitPrice) {
@@ -1206,7 +1109,7 @@ export const useTradePrice = () => {
   }, [limitPriceStore.limitPrice, marketPrice, percent, isCustomLimitPrice]);
 
   const gainPercent = useMemo(() => {
-    if (limitPriceStore.gainPercent !== undefined) {
+    if (limitPriceStore.gainPercent !== undefined && !_.isNaN(limitPriceStore.gainPercent)) {
       return limitPriceStore.gainPercent;
     }
     const result = BN(priceUI || "0")
@@ -1218,7 +1121,7 @@ export const useTradePrice = () => {
     return isNaN(result) ? 0 : result;
   }, [priceUI, marketPrice, limitPriceStore.gainPercent]);
 
-  const tokenUsd = usePriceUSD?.(twapStore.dstToken?.address);
+  const tokenUsd = useDstUsd().value.toString();
 
   const usd = useMemo(() => {
     if (!tokenUsd) return;
@@ -1245,7 +1148,7 @@ export const useTradePrice = () => {
 
   return {
     priceUI,
-    price: useAmountBN(priceUI, twapStore.dstToken?.decimals),
+    price: useAmountBN(priceUI, dstToken?.decimals),
     onChange: onChangeLimitPrice,
     onReset: limitPriceStore.onReset,
     isLoading: marketPriceLoading,
@@ -1259,12 +1162,12 @@ export const useTradePrice = () => {
 export const useDstMinAmountOut = () => {
   const limitPrice = useTradePrice().priceUI || "0";
   const srcChunkAmount = useSrcChunkAmount();
-  const { srcToken, dstToken, lib, isLimitOrder } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
+  const { lib, isLimitOrder } = useTwapStore((s) => ({
     lib: s.lib,
-    dstToken: s.dstToken,
     isLimitOrder: s.isLimitOrder,
   }));
+
+  const { srcToken, dstToken } = useTwapContext();
 
   const amount = useMemo(() => {
     if (lib && srcToken && dstToken && limitPrice && BN(limitPrice).gt(0)) {
@@ -1287,24 +1190,25 @@ export const useFillWarning = () => {
   const dstMinAmountOut = useDstMinAmountOut().amount;
   const srcUsd = useSrcUsd().value.toString();
   const srcBalance = useSrcBalance().data?.toString();
+  const shouldWrap = useShouldWrap();
+  const shouldUnwrap = useShouldUnwrap();
 
   const chunkSize = useSrcChunkAmount();
   const durationUi = useDurationUi();
-  const { srcAmount, dstToken, srcToken, lib, isLimitOrder, fillDelayMillis } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-    srcAmount: s.getSrcAmount(),
+  const { lib, isLimitOrder, fillDelayMillis } = useTwapStore((s) => ({
     isLimitOrder: s.isLimitOrder,
     lib: s.lib,
     fillDelayMillis: s.getFillDelayUiMillis() / 1000,
   }));
+  const { srcToken, dstToken } = useTwapContext();
+  const srcAmount = useSrcAmount().amount;
 
   const deadline = useDeadline();
   const dstAmountOut = useDstAmount().amountUI;
 
   const maxSrcInputAmount = useMaxSrcInputAmount();
 
-  const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && srcAmount?.gt(maxSrcInputAmount);
+  const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmount || 0).gt(maxSrcInputAmount);
   return useMemo(() => {
     if (!translation) return;
     if (!srcToken || !dstToken || lib?.validateTokens(srcToken, dstToken) === TokensValidation.invalid) {
@@ -1313,18 +1217,21 @@ export const useFillWarning = () => {
         message: translation.selectTokens,
       };
     }
-    if (srcAmount.isZero()) {
+    if (BN(srcAmount || 0).isZero()) {
       return {
         type: "input-amount",
         message: translation.enterAmount,
       };
     }
-    if ((srcBalance && srcAmount.gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
+    if ((srcBalance && BN(srcAmount || 0).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
       return {
         type: "balance",
         message: `Insufficient ${srcToken.symbol} balance`,
       };
     }
+
+    if (shouldWrap || shouldUnwrap) return undefined;
+
     if (chunkSize.isZero()) {
       return {
         type: "chunk-size",
@@ -1380,22 +1287,25 @@ export const useAmountUi = (decimals?: number, value?: string) => {
 };
 
 export const useSrcAmountUsdUi = () => {
-  const { srcToken, srcAmount } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    srcAmount: s.getSrcAmount(),
-  }));
+  const srcAmount = useSrcAmount().amount;
+  const srcToken = useTwapContext().srcToken;
 
   const srcUsd = useSrcUsd().value.toString();
 
-  return useAmountUi(srcToken?.decimals, srcAmount.times(srcUsd).toString());
+  return useAmountUi(
+    srcToken?.decimals,
+    BN(srcAmount || 0)
+      .times(srcUsd)
+      .toString()
+  );
 };
 
 export const useMaxPossibleChunks = () => {
-  const { lib, srcAmount, srcToken } = useTwapStore((s) => ({
-    srcAmount: s.getSrcAmount().toString(),
+  const { lib } = useTwapStore((s) => ({
     lib: s.lib,
-    srcToken: s.srcToken,
   }));
+  const srcAmount = useSrcAmount().amount;
+  const srcToken = useTwapContext().srcToken;
 
   const srcUsd = useSrcUsd().value.toString();
 
@@ -1406,11 +1316,12 @@ export const useMaxPossibleChunks = () => {
 };
 
 export const useMaxPossibleChunksReady = () => {
-  const { lib, srcAmount, srcToken } = useTwapStore((s) => ({
-    srcAmount: s.getSrcAmount().toString(),
+  const { lib } = useTwapStore((s) => ({
     lib: s.lib,
-    srcToken: s.srcToken,
   }));
+
+  const srcToken = useTwapContext().srcToken;
+  const srcAmount = useSrcAmount().amount;
 
   const srcUsd = useSrcUsd().value.toString();
 
@@ -1419,15 +1330,18 @@ export const useMaxPossibleChunksReady = () => {
 
 export const useChunks = () => {
   const srcUsd = useSrcUsd().value.toString();
-  const { srcToken, chunks } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
+  const { chunks } = useTwapStore((s) => ({
     chunks: s.chunks,
   }));
+
+  const srcToken = useTwapContext().srcToken;
   const maxPossibleChunks = useMaxPossibleChunks();
   const srcAmountUsd = useSrcAmountUsdUi();
+  const shouldWrap = useShouldWrap();
+  const shouldUnwrap = useShouldUnwrap();
 
   return useMemo(() => {
-    if (!srcUsd || !srcToken) return 1;
+    if (!srcUsd || !srcToken || shouldUnwrap || shouldWrap) return 1;
 
     if (chunks !== undefined) return chunks;
     return Math.min(
@@ -1436,7 +1350,7 @@ export const useChunks = () => {
         .idiv(SUGGEST_CHUNK_VALUE)
         .toNumber() || 1
     );
-  }, [srcUsd, srcToken, chunks, maxPossibleChunks, srcAmountUsd]);
+  }, [srcUsd, srcToken, chunks, maxPossibleChunks, srcAmountUsd, shouldWrap, shouldUnwrap]);
 };
 
 export const useSetChunks = () => {
@@ -1453,9 +1367,7 @@ export const useSetChunks = () => {
 };
 
 export const useMaxSrcInputAmount = () => {
-  const { srcToken } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-  }));
+  const srcToken = useTwapContext().srcToken;
   const srcBalance = useSrcBalance().data?.toString();
 
   return useMemo(() => {
@@ -1471,10 +1383,7 @@ export const useAmountBN = (value: string | undefined, decimals: number | undefi
 };
 
 export const useSetSrcAmountPercent = () => {
-  const { srcToken } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-  }));
-
+  const srcToken = useTwapContext().srcToken;
   const setSrcAmountUi = useSetSrcAmountUi();
   const maxAmount = useMaxSrcInputAmount();
   const srcBalance = useSrcBalance().data?.toString();
@@ -1496,9 +1405,7 @@ export const useSetSrcAmountPercent = () => {
 };
 
 export const useSrcChunkAmountUsdUi = () => {
-  const { srcToken } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-  }));
+  const srcToken = useTwapContext().srcToken;
   const srcChunksAmount = useSrcChunkAmount();
   const srcUsd = useSrcUsd().value.toString();
 
@@ -1525,11 +1432,11 @@ export const useIsPartialFillWarning = () => {
 };
 
 export const useSrcChunkAmount = () => {
-  const { lib, srcAmount } = useTwapStore((s) => ({
+  const { lib } = useTwapStore((s) => ({
     lib: s.lib,
-    srcAmount: s.getSrcAmount(),
   }));
   const chunks = useChunks();
+  const srcAmount = useSrcAmount().amount;
 
   return useMemo(() => {
     return lib?.srcChunkAmount(srcAmount, chunks) || BN(0);
@@ -1565,18 +1472,15 @@ export const useDurationMillis = () => {
 };
 
 export const useSrcChunkAmountUi = () => {
-  const srcToken = useTwapStore((s) => s.srcToken);
+  const srcToken = useTwapContext().srcToken;
   const srcChunksAmount = useSrcChunkAmount();
 
   return useAmountUi(srcToken?.decimals, srcChunksAmount.toString());
 };
 
 export const useChunksBiggerThanOne = () => {
-  const { srcToken, srcAmountUi } = useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    srcAmountUi: s.srcAmountUi,
-  }));
-
+  const srcToken = useTwapContext().srcToken;
+  const srcAmountUi = useSrcAmount().amountUI;
   const maxPossibleChunks = useMaxPossibleChunks();
 
   return useMemo(() => {
@@ -1605,11 +1509,11 @@ export const useDeadlineUi = () => {
 };
 
 export const useSetSrcAmountUi = () => {
-  const { updateState, lib, srcToken } = useTwapStore((s) => ({
+  const { updateState, lib } = useTwapStore((s) => ({
     updateState: s.updateState,
     lib: s.lib,
-    srcToken: s.srcToken,
   }));
+  const srcToken = useTwapContext().srcToken;
   const srcUsd = useSrcUsd().value.toString();
 
   return useCallback(

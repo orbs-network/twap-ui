@@ -14,7 +14,6 @@ import {
 import { Styles, OrderLoader } from "@orbs-network/twap-ui";
 import { Status } from "@orbs-network/twap";
 import _ from "lodash";
-import { useAdapterContext } from "./context";
 
 type ContextType = {
   showOpenOrders: boolean;
@@ -86,23 +85,7 @@ const HeaderBottom = () => {
   return null;
 };
 
-const useOnOrderCancelled = () => {
-  const { toast } = useAdapterContext();
-
-  return React.useCallback(
-    (id: number) => {
-      toast({
-        title: "Order cancelled",
-        message: `Order ${id} has been cancelled`,
-        variant: "success",
-        autoCloseMillis: 4_000,
-      });
-    },
-    [toast]
-  );
-};
 const Orders = () => {
-  const onOrderCancelled = useOnOrderCancelled();
   const { orders, ordersLoading } = useOrdersContext();
 
   if (ordersLoading) {
@@ -113,7 +96,7 @@ const Orders = () => {
 
   return (
     <StyledOrdersList>
-      <AllOrders onCancelSuccess={onOrderCancelled} orders={orders} />
+      <AllOrders orders={orders} />
     </StyledOrdersList>
   );
 };

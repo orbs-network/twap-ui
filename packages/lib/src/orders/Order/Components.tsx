@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useGetToken, usePriceInvert } from "../../hooks";
 import { Order } from "../../order";
 import { StyledRowFlex, StyledText } from "../../styles";
-import { CheckIcon } from "./icons";
+import { CanceledIcon, CheckIcon } from "./icons";
 
 export const useOrderExcecutionPrice = (order: Order) => {
   const srcToken = useGetToken(order.srcTokenAddress);
@@ -23,10 +23,22 @@ export const useOrderExcecutionPrice = (order: Order) => {
 };
 
 export const OrderStatus = ({ order }: { order: Order }) => {
+  const icon = useMemo(() => {
+    switch (order.status) {
+      case Status.Canceled:
+        return <CanceledIcon />;
+      case Status.Completed:
+        return <CheckIcon />;
+
+      default:
+        break;
+    }
+  }, [order.status]);
+
   return (
     <StyledStatus className={`twap-orders-status twap-orders-status-${order.status.toLowerCase()}`}>
       <StyledText>{order?.status}</StyledText>
-      {order?.status === Status.Completed && <CheckIcon />}
+      {icon}
     </StyledStatus>
   );
 };

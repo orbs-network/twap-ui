@@ -112,13 +112,9 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: boolean }) => {
-  const { srcToken, dstToken } = store.useTwapStore((state) => ({
-    srcToken: state.srcToken,
-    dstToken: state.dstToken,
-  }));
   const translations = useTwapContext().translations;
 
-  const token = isSrc ? srcToken : dstToken;
+  const token = undefined;
 
   return (
     <StyledTokenSelect onClick={onClick}>
@@ -256,9 +252,7 @@ const Adapter = (props: Props) => {
           account={props.account}
           dappTokens={props.dappTokens}
           parseToken={parseToken}
-          srcToken={eqIgnoreCase(props.srcToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.srcToken}
           onTxSubmitted={props.onTxSubmitted}
-          dstToken={eqIgnoreCase(props.dstToken || "", SYNCSWAP_ZERO_ADDRESS) ? zeroAddress : props.dstToken}
           storeOverride={props.limit ? storeOverride : undefined}
           priceUsd={priceUsd}
         >

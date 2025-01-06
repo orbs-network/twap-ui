@@ -221,8 +221,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         connect={connect}
         themeOptions={palette}
         account={account}
-        srcToken={store.srcToken}
-        dstToken={store.dstToken}
         dappTokens={tokens}
         getProvider={() => library}
         useGasPrice={library ? getGasPrice : undefined}

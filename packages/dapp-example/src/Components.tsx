@@ -386,7 +386,7 @@ export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
                 className="List"
                 itemData={{ tokens: filteredTokens, onClick }}
                 height={height || 0}
-                itemCount={filteredTokens.length}
+                itemCount={filteredTokens?.length}
                 itemSize={50}
                 width={width || 0}
               >

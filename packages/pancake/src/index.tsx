@@ -43,7 +43,7 @@ import { useTwapContext } from "@orbs-network/twap-ui";
 import { useAdapterContext, AdapterContextProvider, AdapterProps, WarningVariant } from "./context";
 import { configs } from "./config";
 import { MdAccountBalanceWallet } from "@react-icons/all-files/md/MdAccountBalanceWallet";
-import { ArrowsIcon, BackBody, ChangeIcon, CloseIcon, InfoIcon } from "./icons";
+import { BackBody, ChangeIcon, CloseIcon, InfoIcon } from "./icons";
 import { SwapModal } from "./OrderSubmitModal";
 
 const PERCENT = [
@@ -72,10 +72,10 @@ const uiPreferences: TwapContextUIPreferences = {
   usdEmptyUI: <></>,
   balanceEmptyUI: <></>,
   switchVariant: "ios",
-  inputPlaceholder: "0.00",
+  inputPlaceholder: "0.0",
   Tooltip,
   orders: {
-    paginationChunks: 5,
+    paginationChunks: 6,
     hideUsd: true,
   },
   modal: {
@@ -93,18 +93,20 @@ export const useConfig = (connectedChainId?: number) => {
 
 export const PancakeConfigs = configs;
 
-export const useParseToken = (connectedChainId?: number) => {
+export const useParseToken = () => {
+  const connectedChainId = useAdapterContext().connectedChainId;
   const config = useConfig(connectedChainId);
 
   return useCallback(
     (rawToken: any): TokenData | undefined => {
+      if (!rawToken) return;
       const { address, decimals, symbol, logoURI } = rawToken;
 
       if (!symbol) {
         console.error("Invalid token", rawToken);
         return;
       }
-      if (!address || isNativeAddress(address) || address === "BNB") {
+      if (!address || isNativeAddress(address || "") || address === "BNB") {
         return config.nativeToken;
       }
       return {
@@ -127,9 +129,12 @@ const storeOverride = {
 
 const Balance = ({ isSrc, hide }: { isSrc?: boolean; hide: boolean }) => {
   const onPercentClick = hooks.useCustomActions();
+  const warning = hooks.useFillWarning();
+  const type = warning?.type;
 
+  const showWarning = type === "balance" && isSrc;
   return (
-    <StyledBalanceContainer hide={hide ? 1 : 0} isSrc={isSrc ? 1 : 0} onClick={isSrc ? () => onPercentClick(1) : () => {}}>
+    <StyledBalanceContainer warning={showWarning ? 1 : 0} hide={hide ? 1 : 0} onClick={isSrc ? () => onPercentClick(1) : () => {}}>
       <MdAccountBalanceWallet />
       <StyledBalance hideLabel={true} isSrc={isSrc} decimalScale={6} />
     </StyledBalanceContainer>
@@ -137,15 +142,15 @@ const Balance = ({ isSrc, hide }: { isSrc?: boolean; hide: boolean }) => {
 };
 
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
-  const selectToken = hooks.useSelectTokenCallback();
   const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
   const [showPercent, setShowPercent] = useState(false);
+  const { onSrcTokenSelected, onDstTokenSelected } = useAdapterContext();
 
   const onSelect = useCallback(
     (token: any) => {
-      selectToken({ isSrc: !!isSrcToken, token });
+      isSrcToken ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
     },
-    [selectToken, isSrcToken]
+    [isSrcToken, onSrcTokenSelected, onDstTokenSelected]
   );
   const onTokenSelectClick = useAdapterContext().useTokenModal(onSelect, srcToken, dstToken, isSrcToken);
   return (
@@ -173,16 +178,15 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
 
 const SrcTokenPercentSelector = ({ show }: { show: boolean }) => {
   const onPercentClick = hooks.useCustomActions();
-  const { srcAmount } = store.useTwapStore((state) => ({
-    srcAmount: state.getSrcAmount(),
-  }));
-
+  const srcAmount = hooks.useSrcAmount().amount;
   const srcBalance = hooks.useSrcBalance().data;
-
   const maxSrcInputAmount = hooks.useMaxSrcInputAmount();
 
   const percent = useMemo(() => {
-    return srcAmount.dividedBy(srcBalance || "0").toNumber();
+    if (!srcAmount) return 0;
+    return BN(srcAmount)
+      .dividedBy(srcBalance || "0")
+      .toNumber();
   }, [srcAmount, srcBalance]);
 
   const onClick = (value: number) => {
@@ -242,32 +246,116 @@ const useHandleAddress = (connectedChainId?: number) => {
   );
 };
 
-const useTrade = (props: AdapterProps) => {
-  const { srcToken, toToken } = store.useTwapStore((s) => ({
-    srcToken: s.srcToken?.address,
-    toToken: s.dstToken,
-  }));
+const useTrade = () => {
+  const { srcToken, dstToken } = useParsedSelectedTokens();
+  const { useTrade, connectedChainId } = useAdapterContext();
 
-  const amount = hooks.useAmountBN("1", toToken?.decimals);
-  const handleAddress = useHandleAddress(props.connectedChainId);
-  const res = props.useTrade!(handleAddress(srcToken), handleAddress(toToken?.address), amount);
+  const amount = hooks.useAmountBN("1", dstToken?.decimals);
+  const handleAddress = useHandleAddress(connectedChainId);
+  const res = useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), amount);
 
   return {
     outAmount: res?.outAmount,
-    isLoading: !srcToken || !toToken ? false : res?.isLoading,
+    isLoading: !srcToken || !dstToken ? false : res?.isLoading,
   };
 };
 
-const TWAP = memo((props: AdapterProps) => {
-  const provider = useProvider(props);
-  const trade = useTrade(props);
+const useParsedSelectedTokens = () => {
+  const context = useAdapterContext();
+  const { srcToken, dstToken } = context;
 
-  const parseToken = useParseToken(props.connectedChainId);
+  const parseToken = useParseToken();
+  return useMemo(() => {
+    return {
+      srcToken: parseToken(srcToken),
+      dstToken: parseToken(dstToken),
+    };
+  }, [srcToken, dstToken, parseToken]);
+};
 
-  const theme = useMemo(() => {
-    return props.isDarkTheme ? darkTheme : lightTheme;
-  }, [props.isDarkTheme]);
+const useParsedTokens = () => {
+  const { dappTokens } = useAdapterContext();
+  const parse = useParseToken();
+  return useMemo(() => {
+    if (!dappTokens) return [];
+    return _.compact(_.map(dappTokens, parse));
+  }, [dappTokens, parse]);
+};
 
+const useTheme = () => {
+  const isDarkTheme = useAdapterContext().isDarkTheme;
+
+  return useMemo(() => {
+    return isDarkTheme ? darkTheme : lightTheme;
+  }, [isDarkTheme]);
+};
+
+const TwapPanel = memo(() => {
+  const trade = useTrade();
+  const context = useAdapterContext();
+  const parseToken = useParseToken();
+  const theme = useTheme();
+  const config = useConfig(context.connectedChainId);
+  const { srcToken, dstToken } = useParsedSelectedTokens();
+  const onCancelOrderSuccess = useOnCancelOrderSuccess();
+
+  const parsedTokens = useParsedTokens();
+  return (
+    <div className="twap-adapter-wrapper">
+      <TwapAdapter
+        connect={context.connect}
+        config={config}
+        maxFeePerGas={context.maxFeePerGas}
+        priorityFeePerGas={context.priorityFeePerGas}
+        translations={translations as Translations}
+        provider={context.provider}
+        account={context.account}
+        srcToken={srcToken}
+        dstToken={dstToken}
+        storeOverride={context.limit ? storeOverride : undefined}
+        parseToken={parseToken}
+        dappTokens={context.dappTokens}
+        uiPreferences={uiPreferences}
+        onDstTokenSelected={context.onDstTokenSelected}
+        usePriceUSD={context.usePriceUSD}
+        onSrcTokenSelected={context.onSrcTokenSelected}
+        isDarkTheme={context.isDarkTheme}
+        isMobile={context.isMobile}
+        connectedChainId={context.connectedChainId}
+        enableQueryParams={true}
+        marketPrice={trade?.outAmount}
+        marketPriceLoading={trade?.isLoading}
+        fee={0.25}
+        isLimitPanel={context.limit}
+        parsedTokens={parsedTokens}
+        onCancelOrderSuccess={onCancelOrderSuccess}
+      >
+        <ThemeProvider theme={theme}>
+          <GlobalStyles styles={configureStyles(theme) as any} />
+          <TWAPPanel />
+          <PancakeOrders />
+        </ThemeProvider>
+      </TwapAdapter>
+    </div>
+  );
+});
+
+const useOnCancelOrderSuccess = () => {
+  const { toast } = useAdapterContext();
+  return useCallback(
+    (id: number) => {
+      toast({
+        title: "Order cancelled",
+        message: `Order ${id} has been cancelled`,
+        variant: "success",
+        autoCloseMillis: 4_000,
+      });
+    },
+    [toast]
+  );
+};
+
+const TWAP = (props: AdapterProps) => {
   const dappTokens = useMemo(() => {
     if (!props.dappTokens || !props.nativeToken) return undefined;
     return {
@@ -275,47 +363,14 @@ const TWAP = memo((props: AdapterProps) => {
       [zeroAddress]: props.nativeToken,
     };
   }, [props.dappTokens, props.nativeToken]);
-  const config = useConfig(props.connectedChainId);
+  const provider = useProvider(props);
 
   return (
-    <div className="twap-adapter-wrapper">
-      <TwapAdapter
-        connect={props.connect}
-        config={config}
-        maxFeePerGas={props.maxFeePerGas}
-        priorityFeePerGas={props.priorityFeePerGas}
-        translations={translations as Translations}
-        provider={provider}
-        account={props.account}
-        srcToken={props.srcToken}
-        dstToken={props.dstToken}
-        storeOverride={props.limit ? storeOverride : undefined}
-        parseToken={parseToken}
-        dappTokens={dappTokens}
-        uiPreferences={uiPreferences}
-        onDstTokenSelected={props.onDstTokenSelected}
-        usePriceUSD={props.usePriceUSD}
-        onSrcTokenSelected={props.onSrcTokenSelected}
-        isDarkTheme={props.isDarkTheme}
-        isMobile={props.isMobile}
-        connectedChainId={props.connectedChainId}
-        enableQueryParams={true}
-        marketPrice={trade?.outAmount}
-        marketPriceLoading={trade?.isLoading}
-        fee={0.25}
-        isLimitPanel={props.limit}
-      >
-        <ThemeProvider theme={theme}>
-          <GlobalStyles styles={configureStyles(theme) as any} />
-          <AdapterContextProvider value={{ ...props, provider, dappTokens }}>
-            <TWAPPanel />
-            <PancakeOrders />
-          </AdapterContextProvider>
-        </ThemeProvider>
-      </TwapAdapter>
-    </div>
+    <AdapterContextProvider value={{ ...props, provider, dappTokens }}>
+      <TwapPanel />
+    </AdapterContextProvider>
   );
-});
+};
 
 const SrcInputWarning = () => {
   const warning = hooks.useFillWarning();
@@ -406,17 +461,19 @@ const TWAPPanel = () => {
           <MaxDurationAndTradeInterval />
           <OpenConfirmationModalButton />
         </StyledContainer>
-
-        <SwapModal />
       </StyledColumnFlex>
-      <StyledPoweredBy />
+      <SwapModal />
     </div>
   );
 };
 
 const MaxDurationAndTradeInterval = () => {
   const limit = useAdapterContext().limit;
-  if (limit) return null;
+
+  const shouldWrap = hooks.useShouldWrap();
+  const shouldUnwrap = hooks.useShouldUnwrap();
+
+  if (limit || shouldWrap || shouldUnwrap) return null;
   return (
     <>
       <StyledContainerPadding>
@@ -430,28 +487,15 @@ const MaxDurationAndTradeInterval = () => {
   );
 };
 
-const getElementPositionInsideParent = (child: any, parent: any) => {
-  if (!child || !parent) return null;
-
-  const childRect = child.getBoundingClientRect();
-  const parentRect = parent.getBoundingClientRect();
-
-  return {
-    top: childRect.top - parentRect.top,
-    left: childRect.left - parentRect.left,
-    width: childRect.width,
-    height: childRect.height,
-  };
-};
-
 export function TotalTrades({ className = "" }: { className?: string }) {
   const limitPanel = useAdapterContext().limit;
   const maxPossibleChunks = hooks.useMaxPossibleChunks();
   const chunks = hooks.useChunks();
   const chunkSize = hooks.useFormatNumber({ value: hooks.useSrcChunkAmountUi(), decimalScale: 3 });
   const setChunks = hooks.useSetChunks();
-  const srcToken = store.useTwapStore((store) => store.srcToken);
-  const t = useTwapContext().translations;
+  const { srcToken, translations: t } = useTwapContext();
+  const shouldWrap = hooks.useShouldWrap();
+  const shouldUnwrap = hooks.useShouldUnwrap();
 
   const onSetChunks = useCallback(
     (value: string) => {
@@ -461,7 +505,7 @@ export function TotalTrades({ className = "" }: { className?: string }) {
     [setChunks]
   );
 
-  if (limitPanel) return null;
+  if (limitPanel || shouldWrap || shouldUnwrap) return null;
 
   return (
     <StyledContainerPadding>
@@ -552,7 +596,11 @@ const TimeIntervalAndDurationWarnings = () => {
 
 const LimitPriceToggle = () => {
   const limit = useAdapterContext().limit;
-  if (limit) return null;
+
+  const shouldWrap = hooks.useShouldWrap();
+  const shouldUnwrap = hooks.useShouldUnwrap();
+
+  if (limit || shouldWrap || shouldUnwrap) return null;
   return (
     <StyledContainerPadding>
       <StyledLimitPrice>
@@ -571,7 +619,10 @@ const PricePanel = () => {
     isMarketOrder: !s.isLimitOrder,
   }));
 
-  if (isMarketOrder) return null;
+  const shouldWrap = hooks.useShouldWrap();
+  const shouldUnwrap = hooks.useShouldUnwrap();
+
+  if (isMarketOrder || shouldWrap || shouldUnwrap) return null;
 
   return (
     <StyledContainerPadding>
@@ -588,11 +639,10 @@ const PricePanel = () => {
 };
 
 const TradePrice = () => {
-  const { isMarketOrder, dstToken, srcToken } = store.useTwapStore((s) => ({
+  const { isMarketOrder } = store.useTwapStore((s) => ({
     isMarketOrder: !s.isLimitOrder,
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
   }));
+  const { srcToken, dstToken } = useTwapContext();
   const limitPrice = hooks.useTradePrice().priceUI;
   if (!isMarketOrder) return null;
 
@@ -628,7 +678,7 @@ const Warning = ({ variant = "warning", children = "" }: { variant?: WarningVari
 };
 
 const PricePanelHeader = () => {
-  const token = store.useTwapStore((s) => s.srcToken);
+  const token = useTwapContext().srcToken;
   const { onReset } = hooks.useTradePrice();
 
   return (
@@ -643,7 +693,7 @@ const PricePanelHeader = () => {
 
 const LimitPanelInput = () => {
   const { onChange, priceUI: limitPrice, isLoading, usd, isCustom } = hooks.useTradePrice();
-  const token = store.useTwapStore((s) => s.dstToken);
+  const token = useTwapContext().dstToken;
   const usdF = hooks.useFormatNumber({ value: usd, decimalScale: 3 });
 
   return (
@@ -677,17 +727,16 @@ export { TWAP, Orders };
 export const useShowSwapModalButton = () => {
   const { translations } = useTwapContext();
   const { limit } = useAdapterContext();
-  const { shouldWrap, shouldUnwrap, wrongNetwork, setShowConfirmation, createOrderLoading, srcAmount } = store.useTwapStore((store) => ({
+  const { wrongNetwork, setShowConfirmation, srcAmount } = store.useTwapStore((store) => ({
     maker: store.lib?.maker,
-    shouldWrap: store.shouldWrap(),
-    shouldUnwrap: store.shouldUnwrap(),
     wrongNetwork: store.wrongNetwork,
     setShowConfirmation: store.setShowConfirmation,
-    createOrderLoading: store.loading,
     srcAmount: store.srcAmountUi,
   }));
+  const shouldWrap = hooks.useShouldWrap();
+  const shouldUnwrap = hooks.useShouldUnwrap();
   const warning = hooks.useFillWarning();
-  const { marketPrice, marketPriceLoading } = useTwapContext();
+  const { priceUI: marketPrice, isLoading: marketPriceLoading } = hooks.useMarketPriceV2();
   const { mutate: unwrap, isLoading: unwrapLoading } = hooks.useUnwrapToken();
   const { mutate: wrap, isLoading: wrapLoading } = hooks.useWrapToken();
   const { loading: changeNetworkLoading, changeNetwork } = hooks.useChangeNetwork();

@@ -1,5 +1,4 @@
 import { Box, Button, createTheme, LinearProgress, styled, Theme, Typography } from "@mui/material";
-import { DefaultTheme } from "@mui/system";
 import { Components, OrdersContainer, Styles } from "@orbs-network/twap-ui";
 import { Children, createContext, CSSProperties, ReactNode, useCallback, useRef, useState } from "react";
 import { WarningVariant } from "./context";
@@ -22,7 +21,6 @@ export const baseStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
   return {
     primaryColor: "#1fc7d4",
-    cardColor: darkMode ? "#362F47" : "#eee",
     primaryTextColor: darkMode ? "#f4eeff" : "#280d5f",
     secondaryColor: darkMode ? "#9a6aff" : "#7645d9",
     cardBox: darkMode ? "#3c3742" : "#EEEAF4",
@@ -31,12 +29,13 @@ export const baseStyles = (theme: Theme) => {
     border: darkMode ? "#383241" : "#e7e3eb",
     darkMode,
     label: darkMode ? "#b8add2" : "#7a6eaa",
-    panelBg: darkMode ? " #27262C" : "#27262C",
-    bgContainer: darkMode ? "#372f47" : "#F7F6FA",
+    panelBg: darkMode ? " #27262C" : "white",
+    bgContainer: darkMode ? "#372f47" : "#EEEAF4",
     warning: darkMode ? "#A881FC" : "#ff6b6b",
-    error: darkMode ? "#ED4B9E" : "#ff6b6b",
+    error: darkMode ? "#ED4B9E" : "#ED4B9E",
     info: darkMode ? "#FF9D00" : "#FF9D00",
-    active: darkMode ? "#A881FC" : "#A881FC",
+    active: darkMode ? "#A881FC" : "#7645d9",
+    textLight: darkMode ? "#48D0DB" : "#02919D",
   };
 };
 
@@ -110,6 +109,9 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-token-logo": {
+      border:`1px solid ${styles.darkMode ? 'rgba(255,255,255, 0.1)' : 'rgb(8, 6, 11, 0.3)'}`
+    },
     ".twap-label-with-tooltip": {
       borderBottom: "1px dashed #5B4776",
     },
@@ -214,24 +216,32 @@ export const configureStyles = (theme: Theme) => {
         color: `${styles.primaryTextColor}!important`,
       },
     },
-    ".twap-order-preview-token": {
-      p: {
-        color: "#3DDBB5",
-      },
+   
+    ".twap-price-invert": {
+      color: styles.darkMode ? "#3DDBB5" : "#280D5F",
+      fontSize: 14,
+      svg: {
+       "*":{
+        fill: styles.darkMode ? '' : '#02919D',
+       }
+      }
     },
-    ".twap-order-preview-token-src": {
-      p: {
-        color: "#ED4B9E",
-      },
+    ".twap-order-details": {
+    ...lightBoxStyles(theme),
     },
     ".twap-order": {
-      border: `1px solid #383241`,
-      borderRadius: 16,
-      padding: "10px 12px 12px 10px",
-      transition: "0.2s all",
-      color: `${styles.primaryTextColor}!important`,
-      background: darkMode ? "#27262C" : "#EEEAF4",
-
+      ...getContainerStyles(theme),
+      padding: "12px 10px 12px 12px",
+      ".twap-order-preview-tokens-in-token": {
+        p: {
+          color: "#ED4B9E",
+        },
+      },
+      ".twap-order-preview-tokens-out-token": {
+        p: {
+          color: styles.darkMode ? "#3DDBB5"  : '#129E7D',
+        },
+      },
       ".twap-order-price": {
         color: "#F4EEFF",
         fontSize: 14,
@@ -273,7 +283,7 @@ export const configureStyles = (theme: Theme) => {
           left: 0,
           top: 0,
           borderRadius: "50%",
-          border: "4px solid #55496E",
+          border: `4px solid  ${darkMode? '#55496E': '#D7CAEC'}`,
           zIndex: 1,
         },
         svg: {
@@ -300,11 +310,7 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-order-expanded": {},
     ".twap-order-expanded-details": {
-      background: darkMode ? "#08060B" : "#EEEAF4",
-      border: "1px solid #383241",
-      borderRadius: 16,
-      padding: 16,
-      gap: 7,
+     
     },
     ".twap-order-details-filled": {
       span: {
@@ -317,7 +323,7 @@ export const configureStyles = (theme: Theme) => {
         background: darkMode ? `#27262C!important` : "white!important",
       },
       ".MuiSwitch-track": {
-        backgroundColor: darkMode ? `#666171!important` : "#EDEAF4!important",
+        backgroundColor: darkMode ? `#666171!important` : "#BDC2C4!important",
         opacity: "1!important",
       },
       ".Mui-checked+.MuiSwitch-track": {
@@ -377,8 +383,8 @@ export const configureStyles = (theme: Theme) => {
         fontSize: 16,
         fontWeight: 480,
         "&::placeholder": {
-          color: `${styles.primaryTextColor}!important`,
-          opacity: 0.5,
+          color: `${styles.label}!important`,
+          opacity: 1,
           fontWeight: "inherit",
         },
       },
@@ -419,13 +425,13 @@ const getCancelOrderStyles = (theme: Theme) => {
     fontSize: 16,
     fontWeight: 600,
     ".twap-cancel-order-content": {
-      background: "#353547",
+      background: styles.darkMode ?  "#353547" : '#EFF4F5',
       borderRadius: 12,
       padding: "0px 20px",
       height: 30,
     },
     ".twap-order-tx-hash-content": {
-      background: "#353547",
+      background: styles.darkMode ?  "#353547" : '#EFF4F5',
       borderRadius: 12,
       padding: "0px 6px",
       height: 30,
@@ -434,12 +440,17 @@ const getCancelOrderStyles = (theme: Theme) => {
         fontSize: 16,
         fontWeight: 600,
       },
+      svg: {
+        "*":{
+          fill:styles.darkMode ? '' :  '#02919D',
+        }
+      }
     },
 
     p: {
       fontSize: 16,
       fontWeight: 600,
-      color: "#48D0DB",
+      color: styles.textLight,
     },
     "&:after": {
       borderRadius: 12,
@@ -449,7 +460,7 @@ const getCancelOrderStyles = (theme: Theme) => {
       left: 0,
       width: "100%",
       height: "calc(100% + 2px)",
-      background: "#303040",
+      background: styles.darkMode ?  "#303040" : '#D7DCDC',
       zIndex: 0,
     },
   };
@@ -489,7 +500,7 @@ export const StyledOrdersList = styled("div")(({ theme }) => {
   };
 });
 
-export const StyledBalanceContainer = styled(Styles.StyledRowFlex)<{ isSrc: number; hide: number }>(({ theme, isSrc, hide }) => {
+export const StyledBalanceContainer = styled(Styles.StyledRowFlex)<{ hide: number; warning: number }>(({ theme, warning, hide }) => {
   const styles = baseStyles(theme);
   return {
     gap: 2,
@@ -502,10 +513,13 @@ export const StyledBalanceContainer = styled(Styles.StyledRowFlex)<{ isSrc: numb
     transition: "opacity 0.2s",
     position: "relative",
     zIndex: hide ? -1 : 1,
+    p: {
+      color: warning ? styles.error : styles.label,
+    },
     svg: {
-      color: styles.label,
-      width: 16,
-      height: 16,
+      color: warning ? styles.error : styles.label,
+      width: 18,
+      height: 18,
     },
   };
 });
@@ -515,7 +529,10 @@ export const StyledBalance = styled(Components.TokenBalance)(({ theme, isSrc }) 
     position: "relative",
     fontSize: 12,
     fontWeight: 600,
+    height: 20,
+    overflow: "hidden",
     color: styles.label,
+    ".twap-small-label-loader": {},
     p: {
       color: "inherit",
       fontWeight: 600,
@@ -590,15 +607,15 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
       height: 24,
     },
     "&:hover": {
-      backgroundColor: "#191326",
+      backgroundColor: styles.darkMode ?  "#191326" : 'white',
       ".twap-token-selected": {
-        opacity: 0.65,
+        opacity: 0.7,
       },
     },
   };
 });
 export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
-  gap: 14,
+  gap: 16,
 });
 
 export const StyledBalanceAndPercent = styled(Styles.StyledRowFlex)({
@@ -659,7 +676,7 @@ export const StyledTokenChange = styled(Styles.StyledRowFlex)(({ theme }) => {
       zIndex: 1,
       borderRadius: "50%",
       background: styles.panelBg,
-      border: "1px solid #383241",
+      border: `1px solid ${darkMode ? '#383241' : '#E7E3EB'}`,
       padding: 0,
       transition: "background-color 0.2s",
       cursor: "pointer",
@@ -669,11 +686,11 @@ export const StyledTokenChange = styled(Styles.StyledRowFlex)(({ theme }) => {
       svg: {
         transition: "color 0.2s",
         "*": {
-          fill: "#48D0DB",
+          fill: styles.textLight,
         },
       },
       "&:hover": {
-        background: styles.label,
+        background: darkMode ?  styles.label : '#1FC7D4',
         svg: {
           "*": {
             fill: styles.panelBg,
@@ -688,7 +705,7 @@ export const StyledTokenChange = styled(Styles.StyledRowFlex)(({ theme }) => {
       left: 0,
       position: "absolute",
       height: 1,
-      background: "#383241",
+      background: darkMode ? '#383241' : '#E7E3EB',
       transform: "translateY(-50%)",
     },
   };
@@ -705,7 +722,7 @@ export const StyledSlider = styled(Components.Base.Slider)(({ theme }) => {
       display: "none",
     },
     ".MuiSlider-rail": {
-      background: "#55496E",
+      background: styles.darkMode ?  "#55496E" : '#D7CAEC',
       height: 2,
       opacity: 1,
     },
@@ -764,8 +781,13 @@ const getContainerStyles = (theme: Theme) => {
     backgroundColor: styles.panelBg,
     borderRadius: 24,
     padding: "16px 0px 16px 0px",
-    border: "1px solid #383241",
+
+    borderColor:  styles.darkMode ? '#383241' : '#E7E3EB' ,
+    borderStyle: 'solid' as const,
+    borderWidth: '1px 1px 2px 1px' as const,
     width: "100%",
+    position:'relative' as const,
+  
   };
 };
 
@@ -775,6 +797,8 @@ export const StyledContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
     gap: 20,
   };
 });
+
+
 
 export const StyledTopContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
   return {
@@ -805,7 +829,7 @@ export const StyledPricePanel = styled(Styles.StyledColumnFlex)(({ theme }) => {
         color: styles.label,
       },
       "&-reset": {
-        color: "#48D0DB",
+        color: styles.textLight,
         background: "transparent",
         border: "none",
         padding: 0,
@@ -869,7 +893,8 @@ export const StyledOutputAddress = styled(Components.OutputAddress)({
 export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    gap: 20,
+    gap: 24,
+    marginTop: 20,
     ".twap-order-summary-output-address": {
       alignItems: "center",
       fontSize: 14,
@@ -949,7 +974,7 @@ export const StyledBgContainer = styled(Styles.StyledColumnFlex)(({ theme }) => 
 });
 
 export const StyledTokenPanel = styled(Styles.StyledColumnFlex)({
-  gap: 12,
+  gap: 8,
 });
 
 export const StyledTokenPanelTitle = styled(Styles.StyledText)(({ theme }) => {
@@ -987,10 +1012,9 @@ export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
 export const StyledOrdersHeader = styled(Styles.StyledColumnFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    background: styles.darkMode ? "#27262C" : "#eeeaf4",
-    borderRadius: 24,
+    ...getContainerStyles(theme),
     justifyContent: "center",
-    border: `1px solid #383241`,
+    padding: 0
   };
 });
 
@@ -1028,16 +1052,15 @@ export const StyledCanceledOrdersController = styled(Styles.StyledRowFlex)(({ th
 
 export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, theme }) => {
   const styles = baseStyles(theme);
-  const color = styles.darkMode ? styles.label : "#7a6eaa";
-  const selectedColor = styles.darkMode ? "black" : "#280d5f";
+  const color = styles.label ;
+  const selectedColor = styles.darkMode ? "black" : "white";
   return {
     cursor: "pointer",
-    background: !selected ? "transparent" : styles.darkMode ? styles.label : "white",
+    background: !selected ? "transparent" : styles.label,
     height: "100%",
     padding: "0px 24px",
     display: "flex",
     alignItems: "center",
-    transition: "0.2s background",
     borderRadius: 16,
     width: "auto",
     justifyContent: "center",
@@ -1050,14 +1073,15 @@ export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, th
   };
 });
 
-export const StyledOrdersTabs = styled(Box)(() => {
+export const StyledOrdersTabs = styled(Box)(({theme}) => {
+  const styles = baseStyles(theme);
   return {
     display: "flex",
     alignItems: "center",
     width: "auto",
     justifyContent: "space-between",
     height: "100%",
-    background: "#372F47",
+    background:  styles.darkMode ? "#372F47" : '#EEEAF4',
     borderRadius: 16,
     overflow: "hidden",
 
@@ -1065,40 +1089,6 @@ export const StyledOrdersTabs = styled(Box)(() => {
   };
 });
 
-export const StyledModalHeaderClose = styled("button")(({ theme }) => {
-  const darkMode = baseStyles(theme).darkMode;
-
-  return {
-    margin: 0,
-    marginLeft: "auto",
-    background: "transparent",
-    padding: 0,
-    border: "unset",
-    width: 48,
-    height: 48,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    cursor: "pointer",
-    svg: {
-      color: darkMode ? "#f4eeff" : "#1fc7d4",
-      width: 20,
-      height: 20,
-    },
-    "&:hover": {
-      opacity: 0.8,
-    },
-  };
-});
-
-export const StyledModalHeaderTitle = styled(Typography)(({ theme }) => {
-  const darkMode = baseStyles(theme).darkMode;
-  return {
-    fontSize: 20,
-    fontWeight: 600,
-    color: darkMode ? "#f4eeff" : "#280d5f",
-  };
-});
 
 const bigInputStyle = () => {
   return {
@@ -1123,7 +1113,7 @@ export const StyledWarning = styled(Styles.StyledRowFlex)<{ variant: WarningVari
   return {
     color: variant === "error" ? styles.error : variant === "info" ? styles.info : styles.primaryTextColor,
     fontWeight: 400,
-    gap: 5,
+    gap: 6,
     alignItems: "flex-start",
     ".twap-warning-msg-content": {
       flex: 1,
@@ -1154,7 +1144,7 @@ export const StyledInputContainer = styled("div")<{ focused: number }>(({ focuse
       transform: "translate(-50%, -50%)",
       width: "calc(100% + 11px)",
       height: "calc(100% + 11px)",
-      background: "#55496E",
+      background: styles.darkMode ?  "#55496E" : '#e4daf7',
       borderRadius: 28,
       opacity: focused ? 1 : 0,
       transition: "opacity 0.2s",
@@ -1167,7 +1157,7 @@ export const StyledInputContainer = styled("div")<{ focused: number }>(({ focuse
       left: "50%",
       transform: "translate(-50%, -50%)",
       width: "calc(100% + 4px)",
-      height: "calc(100% + 5px)",
+      height: "calc(100% + 4px)",
       border: `2px solid ${styles.active}`,
       borderRadius: 25,
       opacity: focused ? 1 : 0,
@@ -1183,11 +1173,13 @@ export const StyledInputContainer = styled("div")<{ focused: number }>(({ focuse
 export const StyledInputContainerChildren = styled("div")<{ focused: number; customBorder?: number }>(({ theme, focused, customBorder }) => {
   const styles = baseStyles(theme);
   const showCustomBorder = customBorder && !focused;
+  const boxShadow  = styles.darkMode ?  "0px 2px 0px -1px #0000000F inset" :'0px 2px 0px -1px rgba(0, 0, 0, 0.06) inset' 
+  const borderColor = styles.darkMode ? "#55496E" : '#D7CAEC'
   return {
     position: "relative",
     zIndex: 1,
-    background: styles.bgContainer,
-    boxShadow: focused ? "unset" : "0px 2px 0px -1px #0000000F inset",
+    background:  styles.bgContainer,
+    boxShadow: focused ? "unset" : boxShadow,
     borderRadius: 24,
     padding: "0px 16px 0px 16px",
     height: 80,
@@ -1196,7 +1188,7 @@ export const StyledInputContainerChildren = styled("div")<{ focused: number; cus
       position: "absolute",
       width: "100%",
       height: "100%",
-      border: showCustomBorder ? "unset" : `${focused ? 2 : 1}px solid  #55496E`,
+      border: showCustomBorder ? "unset" : `${focused ? 2 : 1}px solid  ${borderColor}`,
       borderRadius: 24,
       left: 0,
       top: 0,
@@ -1357,8 +1349,16 @@ export const StyledPricePanelPercent = styled(StyledPriceCard)(({ theme }) => {
         border: `2px solid ${styles.active}`,
       },
     },
+    ".twap-label": {
+      p: {
+        fontSize: 16,
+      },
+    },
     ".twap-input": {
       height: "auto",
+      input: {
+        fontSize: 20,
+      },
     },
     ".twap-limit-price-panel-percent-right": {
       gap: 0,
@@ -1440,30 +1440,29 @@ export const StyledTokenPanelContent = styled(InputContainer)({
   },
 });
 
-export const StyledOrderSummaryInfo = styled(Styles.StyledColumnFlex)(({ theme }) => {
+
+
+const lightBoxStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
   return {
-    background: styles.darkMode ? "#08060B" : "#EEEAF4",
-    border: "1px solid #383241",
+    background: styles.darkMode ? "#08060B" : "#FAF9FA",
+    border: `1px solid ${styles.darkMode ? '#383241' :'#E7E3EB'}`,
     borderRadius: 16,
     padding: 16,
-    gap: 9,
-    ".twap-token-logo": {
-      display: "none",
-    },
+    gap: 7,
+  }
+}
+
+export const StyledOrderSummaryInfo = styled(Components.OrderDetails)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+
     "@media(max-width: 700px)": {
       gap: 6,
     },
   };
 });
 
-const limitLines = (lines: number) => ({
-  display: "-webkit-box",
-  WebkitLineClamp: lines,
-  WebkitBoxOrient: "vertical" as const,
-  textOverflow: "ellipsis",
-  overflow: "hidden",
-});
 
 export const StyledDisclaimerContent = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
@@ -1473,13 +1472,10 @@ export const StyledDisclaimerContent = styled(Styles.StyledRowFlex)(({ theme }) 
     alignItems: "flex-start",
     paddingRight: 8,
     paddingBottom: 12,
-
-    svg: { fill: "#48D0DB", width: 24, height: 24, position: "sticky", top: 0 },
+  
+    svg: { fill: styles.textLight, width: 24, height: 24, position: "sticky", top: 0 },
     ".twap-disclaimer-text": {
-      // ...limitLines(4),
-      // "&::-webkit-scrollbar": {
-      //  display: "none",
-      // },
+    
     },
     p: {
       color: styles.primaryTextColor,
@@ -1504,11 +1500,9 @@ export const StyledDisclaimerContent = styled(Styles.StyledRowFlex)(({ theme }) 
   };
 });
 export const StyledDisclaimer = styled(Styles.StyledRowFlex)(({ theme }) => {
-  const styles = baseStyles(theme);
   return {
     height: 115,
-    border: "1px solid #094D53",
-    background: "#13393C",
+    ...lightBoxStyles(theme),
     padding: "12px 4px 12px 12px",
     borderRadius: 20,
     "&::-webkit-scrollbar": {
@@ -1542,6 +1536,9 @@ export const StyledSubmitModalContentHeader = styled(Styles.StyledRowFlex)(({ th
       svg: {
         width: 32,
         height: 32,
+       "*":{
+        fill: styles.label,
+       }
       },
     },
   };
@@ -1566,24 +1563,21 @@ export const StyledAwaitingTxMessage = styled(Styles.StyledRowFlex)(({ theme }) 
 });
 
 export const StyledSubmitModalContentChildren = styled(Styles.StyledRowFlex)({
-  marginTop: 35,
   alignItems: "flex-start",
   gap: 0,
   position: "relative",
+  overflowY: "auto",
+  "&::-webkit-scrollbar": {
+    display: "none",
+  },
 });
 
 export const StyledSubmitModalContent = styled(Styles.StyledColumnFlex)({
   alignItems: "center",
-  justifyContent: "flex-start",
+  justifyContent: "space-between",
   height: 280,
   padding: 20,
   position: "relative",
-});
-
-export const StyledSubmitModalContentMain = styled(Styles.StyledColumnFlex)({
-  gap: 0,
-  overflowY: "auto",
-  flex: 1,
 });
 
 export const StyledSubmitModalToken = styled(Styles.StyledColumnFlex)(({ theme }) => {
@@ -1608,7 +1602,6 @@ export const StyledSubmitModalToken = styled(Styles.StyledColumnFlex)(({ theme }
 
 export const StyledSubmitModalBottom = styled(Styles.StyledColumnFlex)(() => {
   return {
-    marginTop: "auto",
     alignItems: "center",
     gap: 14,
   };
@@ -1617,7 +1610,7 @@ export const StyledSubmitModalBottom = styled(Styles.StyledColumnFlex)(() => {
 export const StyledSubmitModalBottomMsg = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    color: "#B8ADD2",
+    color:styles.darkMode ?  "#B8ADD2" : '#7A6EAA',
     fontSize: 14,
   };
 });
@@ -1628,9 +1621,10 @@ export const StyledSubmitModalProgress = styled(LinearProgress)(({ theme }) => {
     width: "100px",
     borderRadius: "999px",
     height: 4,
-    backgroundColor: "#55496E",
+    backgroundColor: styles.darkMode ?  "#55496E" : '#D7CAEC',
     ".MuiLinearProgress-bar": {
       backgroundColor: styles.active,
+      borderRadius: "999px",
     },
   };
 });
@@ -1652,10 +1646,14 @@ export const StyledOrderPlacedMessage = styled(Styles.StyledText)(({ theme }) =>
       top: 4,
       width: 21,
       height: 21,
+      "*": {
+        fill: styles.darkMode ? '': '#02919D'
+      }
     },
     a: {
       textDecoration: "unset",
-      color: "#48D0DB",
+      color:  styles.textLight,
     },
   };
 });
+

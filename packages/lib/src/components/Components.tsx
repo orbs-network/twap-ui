@@ -29,7 +29,6 @@ import {
   useFormatNumber,
   useToken,
   useSwitchTokens,
-  useSelectTokenCallback,
   useSubmitButton,
   useDstMinAmountOut,
   useSrcAmountUsdUi,
@@ -159,12 +158,15 @@ const Input = (props: {
 
 export const TokenInput = ({ isSrc, placeholder, className = "" }: { isSrc?: boolean; placeholder?: string; className?: string }) => {
   // src
-  const { srcDecimals, srcAmount, dstDecimals, isLimitOrder } = useTwapStore((s) => ({
-    srcDecimals: s.srcToken?.decimals,
+  const { srcAmount, isLimitOrder } = useTwapStore((s) => ({
     srcAmount: s.srcAmountUi,
-    dstDecimals: s.dstToken?.decimals,
     isLimitOrder: s.isLimitOrder,
   }));
+  const { srcToken, dstToken } = useTwapContext();
+
+  const srcDecimals = srcToken?.decimals;
+  const dstDecimals = dstToken?.decimals;
+
   const setSrcAmountUi = useSetSrcAmountUi();
   const srcUsdLoading = useLoadingState().srcUsdLoading;
   const srcInputLoading = (!!srcAmount || srcAmount !== "0") && srcUsdLoading;
@@ -202,20 +204,17 @@ export const TokenPanelInput = ({
 };
 
 const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
-  const { decimals, amount } = useTwapStore((store) => ({
-    decimals: store.srcToken?.decimals,
+  const { amount } = useTwapStore((store) => ({
     amount: store.srcAmountUi,
   }));
+  const { srcToken } = useTwapContext();
+  const decimals = srcToken?.decimals;
   const onChange = useSetSrcAmountUi();
   return <Input id="twap-src-token-input" prefix="" onChange={onChange} value={amount || ""} decimalScale={decimals} className={props.className} placeholder={props.placeholder} />;
 };
 
 const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
-  const { token, isLimitOrder } = useTwapStore((store) => ({
-    token: store.dstToken,
-    srcAmount: store.srcAmountUi,
-    isLimitOrder: store.isLimitOrder,
-  }));
+  const token = useTwapContext().dstToken;
   const { amountUI, isLoading } = useDstAmount();
   return (
     <Input disabled={true} loading={isLoading} value={amountUI} decimalScale={props.decimalScale || token?.decimals} className={props.className} placeholder={props.placeholder} />
@@ -253,8 +252,7 @@ export const TokenSelect = ({
   CustomArrow?: any;
   customButtonElement?: FC;
 }) => {
-  const srcToken = useTwapStore((state) => state.srcToken);
-  const dstToken = useTwapStore((state) => state.dstToken);
+  const { srcToken, dstToken } = useTwapContext();
 
   const token = isSrc ? srcToken : dstToken;
 
@@ -298,9 +296,7 @@ export const TokenSelectNew = ({
   className?: string;
   CustomArrow?: IconType;
 }) => {
-  const srcToken = useTwapStore((state) => state.srcToken);
-  const dstToken = useTwapStore((state) => state.dstToken);
-  const translations = useTwapContext().translations;
+  const { translations, srcToken, dstToken } = useTwapContext();
 
   const token = isSrc ? srcToken : dstToken;
 
@@ -334,14 +330,14 @@ interface TokenSelectProps extends TWAPTokenSelectProps {
 }
 
 export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: TokenSelectProps) => {
-  const onTokenSelectedCallback = useSelectTokenCallback();
+  const { onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
 
   const onSelect = useCallback(
     (token: any) => {
-      onTokenSelectedCallback({ isSrc, token });
+      isSrc ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
       onClose();
     },
-    [onTokenSelectedCallback, isSrc]
+    [isSrc, onDstTokenSelected, onClose, onSrcTokenSelected]
   );
 
   if (!Component) return null;
@@ -351,12 +347,12 @@ export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: 
 export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; style?: CSSProperties }) {
   const { priceUI, onReset } = useTradePrice();
 
-  const { isLimitOrder, setLimitOrder, srcToken, dstToken } = useTwapStore((store) => ({
+  const { isLimitOrder, setLimitOrder } = useTwapStore((store) => ({
     isLimitOrder: store.isLimitOrder,
     setLimitOrder: store.setLimitOrder,
-    srcToken: store.srcToken,
-    dstToken: store.dstToken,
   }));
+
+  const { srcToken, dstToken } = useTwapContext();
 
   const { leftToken, rightToken } = usePriceInvert(priceUI, srcToken, dstToken);
 
@@ -385,12 +381,12 @@ export function LimitPriceRadioGroup({ className }: { className?: string }) {
   const loadingState = useLoadingState();
   const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
   const { onReset, priceUI } = useTradePrice();
-  const { isLimitOrder, setLimitOrder, srcToken, dstToken } = useTwapStore((store) => ({
+  const { isLimitOrder, setLimitOrder } = useTwapStore((store) => ({
     isLimitOrder: store.isLimitOrder,
     setLimitOrder: store.setLimitOrder,
-    srcToken: store.srcToken,
-    dstToken: store.dstToken,
   }));
+
+  const { srcToken, dstToken } = useTwapContext();
 
   const { leftToken, rightToken } = usePriceInvert(priceUI, srcToken, dstToken);
   const selectTokensWarning = !leftToken || !rightToken;
@@ -437,8 +433,7 @@ export const TokenBalance = ({
 }) => {
   const srcLoading = useLoadingState().srcBalanceLoading;
   const dstLoading = useLoadingState().dstBalanceLoading;
-  const srcToken = useTwapStore((state) => state.srcToken);
-  const dstToken = useTwapStore((state) => state.dstToken);
+  const { srcToken, dstToken } = useTwapContext();
   const isLoading = isSrc ? srcLoading : dstLoading;
   const symbol = isSrc ? srcToken?.symbol : dstToken?.symbol;
   const suffix = !showSymbol ? undefined : isSrc ? srcToken?.symbol : dstToken?.symbol;
@@ -518,11 +513,10 @@ export const useLimitPriceComponents = ({
   hideSymbol?: boolean;
   reverse?: boolean;
 }) => {
-  const { isLimitOrder, srcToken, dstToken } = useTwapStore((store) => ({
-    srcToken: store.srcToken,
+  const { isLimitOrder } = useTwapStore((store) => ({
     isLimitOrder: store.isLimitOrder,
-    dstToken: store.dstToken,
   }));
+  const { dstToken, srcToken } = useTwapContext();
   const { onChange, priceUI: limitPrice } = useTradePrice();
 
   const { leftToken, rightToken, price, onInvert } = usePriceInvert(limitPrice, srcToken, dstToken);
@@ -664,14 +658,14 @@ export const OrderType = () => {
   return <StyledOneLineText>{isLimitOrder ? translations.limitOrder : translations.marketOrder}</StyledOneLineText>;
 };
 
-export const InvertPrice = ({ srcToken, dstToken, price: _price }: { srcToken?: TokenData; dstToken?: TokenData; price?: string }) => {
+export const InvertPrice = ({ srcToken, dstToken, price: _price, className = '' }: { srcToken?: TokenData; dstToken?: TokenData; price?: string, className?: string }) => {
   const { leftToken, rightToken, onInvert, price } = usePriceInvert(_price, srcToken, dstToken);
   const priceF = useFormatNumber({ value: price, decimalScale: 6 });
 
   return (
-    <>
+    <StyledRowFlex className={`twap-price-invert ${className}`} style={{alignItems:'center'}}>
       1 {leftToken?.symbol} <ArrowsIcon onClick={onInvert} /> {priceF} {rightToken?.symbol}
-    </>
+    </StyledRowFlex>
   );
 };
 
@@ -683,11 +677,10 @@ export const TradeIntervalAsText = ({ translations: _translations }: { translati
 };
 
 export const MinDstAmountOut = ({ translations: _translations }: { translations?: Translations }) => {
-  const { isLimitOrder, dstToken } = useTwapStore((store) => ({
+  const { isLimitOrder } = useTwapStore((store) => ({
     isLimitOrder: store.isLimitOrder,
-    dstToken: store.dstToken,
   }));
-  const translations = useTwapContext()?.translations || _translations;
+  const { dstToken, translations } = useTwapContext();
   const dstMinAmountOutUi = useDstMinAmountOut().amountUI;
 
   const formattedValue = useFormatNumber({ value: dstMinAmountOutUi });
@@ -723,9 +716,8 @@ export const OrderSummaryDetailsMinDstAmount = ({ subtitle, translations }: { su
 
 export const OrderSummaryDetailsFee = ({ fee }: { fee: number }) => {
   const { amount: outAmount } = useDstAmount();
-  const { dstToken } = useTwapStore((store) => ({
-    dstToken: store.dstToken,
-  }));
+
+  const dstToken = useTwapContext().dstToken;
 
   const amount = useMemo(() => {
     if (!outAmount || !dstToken) {
@@ -794,9 +786,11 @@ export const OrderSummaryDetailsOrderType = () => {
   );
 };
 
-export const OrderDetails = ({ children }: { children: ReactNode }) => {
-  return <>{children}</>;
+export const OrderDetails = ({ children, className= ' ' }: { children: ReactNode, className?: string }) => {
+  return <StyledOrderDetails className={`${className} twap-order-details`}>{children}</StyledOrderDetails>;
 };
+
+const StyledOrderDetails = styled(StyledColumnFlex)({})
 
 export const OrderDetailsRow = ({ label, tooltip = "", children, className = "" }: { label: string; tooltip?: string; children: ReactNode; className?: string }) => {
   return (
@@ -806,6 +800,9 @@ export const OrderDetailsRow = ({ label, tooltip = "", children, className = "" 
     </StyledDetailRow>
   );
 };
+
+
+
 
 const Expiry = ({ expiryMillis, format = "ll HH:mm" }: { expiryMillis?: number; format?: string }) => {
   const t = useTwapContext().translations;
@@ -819,8 +816,14 @@ const Expiry = ({ expiryMillis, format = "ll HH:mm" }: { expiryMillis?: number; 
 };
 
 const Price = ({ srcToken, dstToken, price: _price }: { srcToken?: TokenData; dstToken?: TokenData; price?: string }) => {
-  return <OrderDetailsRow label="Price">{_price ? <InvertPrice price={_price} srcToken={srcToken} dstToken={dstToken} /> : "-"}</OrderDetailsRow>;
+  return <StyledPrice label="Price">{_price ? <InvertPrice price={_price} srcToken={srcToken} dstToken={dstToken} /> : "-"}</StyledPrice>;
 };
+
+const StyledPrice = styled(OrderDetailsRow)({
+  svg: {
+    cursor: "pointer",
+  },
+});
 
 const TotalTrades = ({ totalTrades = 0 }: { totalTrades?: number }) => {
   const t = useTwapContext().translations;
@@ -835,6 +838,9 @@ const MinReceived = ({ minReceived, isMarketOrder = false, symbol = "" }: { minR
   const t = useTwapContext().translations;
 
   const minReceivedF = useFormatNumber({ value: minReceived, decimalScale: 6 });
+
+  if (isMarketOrder) return null;
+
   return (
     <OrderDetailsRow label={t.minReceivedPerTrade} tooltip={!isMarketOrder ? t.confirmationMinDstAmountTootipLimit : t.confirmationMinDstAmountTootipMarket}>
       {isMarketOrder ? "-" : `${minReceivedF} ${symbol}`}
@@ -1041,10 +1047,8 @@ export const OrderSummaryLimitPriceToggle = ({ translations: _translations }: { 
 
 export const OrderSummaryPriceCompare = () => {
   const limitPrice = useTradePrice().priceUI;
-  const { srcToken, dstToken } = useTwapStore((store) => ({
-    srcToken: store.srcToken,
-    dstToken: store.dstToken,
-  }));
+
+  const { srcToken, dstToken } = useTwapContext();
   const { leftToken, rightToken, price, onInvert } = usePriceInvert(limitPrice, srcToken, dstToken);
   return <TokenPriceCompare leftToken={leftToken} rightToken={rightToken} price={price} toggleInverted={onInvert} />;
 };
@@ -1185,7 +1189,8 @@ const StyledPoweredBy = styled(StyledRowFlex)({
 export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
   const value = useSrcChunkAmountUi();
   const formattedValue = useFormatNumber({ value });
-  const srcToken = useTwapStore((store) => store.srcToken);
+
+  const { srcToken } = useTwapContext();
 
   const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
 
@@ -1200,10 +1205,9 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
 };
 
 export const TradeSize = ({ hideLabel, hideSymbol, hideLogo }: { hideLabel?: boolean; hideSymbol?: boolean; hideLogo?: boolean }) => {
-  const srcToken = useTwapStore((store) => store.srcToken);
-  const dsToken = useTwapStore((store) => store.dstToken);
+  const { srcToken, dstToken } = useTwapContext();
 
-  if (!srcToken && !dsToken) {
+  if (!srcToken && !dstToken) {
     return <span>0</span>;
   }
 
@@ -1255,8 +1259,7 @@ const StyledMsg = styled(StyledRowFlex)({
 });
 
 export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
-  const srcToken = useTwapStore((store) => store.srcToken);
-  const dstToken = useTwapStore((store) => store.dstToken);
+  const { srcToken, dstToken } = useTwapContext();
 
   const address = isSrc ? srcToken?.address : dstToken?.address;
 

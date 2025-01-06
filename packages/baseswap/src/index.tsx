@@ -106,14 +106,8 @@ const MaxButton = () => {
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const { useModal, TokenSelectModal } = useAdapterContext();
   const { dstToken, srcToken } = hooks.useDappRawSelectedTokens();
-  const selectToken = hooks.useSelectTokenCallback();
 
-  const onSelect = useCallback(
-    (token: any) => {
-      selectToken({ isSrc: !!isSrcToken, token });
-    },
-    [selectToken, isSrcToken]
-  );
+  const onSelect = useCallback((token: any) => {}, [isSrcToken]);
   const [onPresentCurrencyModal] = useModal(<TokenSelectModal otherSelectedCurrency={dstToken} selectedCurrency={srcToken} onCurrencySelect={onSelect} />);
 
   const theme = useTheme();
@@ -189,8 +183,6 @@ const TWAP = (props: BaseSwapTWAPProps) => {
       connectedChainId={props.connectedChainId}
       dappTokens={props.dappTokens}
       parseToken={(rawToken) => parseToken(rawToken, getTokenImageUrl)}
-      srcToken={props.srcToken}
-      dstToken={props.dstToken}
       storeOverride={props.limit ? storeOverride : undefined}
       onDstTokenSelected={props.onDstTokenSelected}
       onSrcTokenSelected={props.onSrcTokenSelected}

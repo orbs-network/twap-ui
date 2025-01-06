@@ -10,12 +10,13 @@ import { ListOrderProvider, useListOrderContext } from "./context";
 
 export interface Props {
   order: Order;
-  onCancelSuccess?: (id: number) => void;
+  expanded: boolean;
+  onExpand: (value: number) => void;
 }
 
-export function ListOrder({ order, onCancelSuccess }: Props) {
+export function ListOrder({ order, expanded, onExpand }: Props) {
   return (
-    <ListOrderProvider order={order} onCancelSuccess={onCancelSuccess}>
+    <ListOrderProvider order={order} expanded={expanded} onExpand={onExpand}>
       <ListOrderContent />
     </ListOrderProvider>
   );
@@ -95,10 +96,7 @@ export const StyledAccordionSummary = styled(AccordionSummary)({
 });
 
 const StyledContainer = styled(Card)({
-  ".MuiCollapse-root": {
-    transition: "unset!important",
-    transitionDuration: "0s!important",
-  },
+  ".MuiCollapse-root": {},
 });
 
 const StyledAccordion = styled(Accordion)({
@@ -114,8 +112,5 @@ const StyledAccordion = styled(Accordion)({
   },
   ".Mui-expanded": {
     minHeight: "unset",
-  },
-  "& *": {
-    color: "inherit",
   },
 });

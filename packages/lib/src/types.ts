@@ -117,8 +117,8 @@ interface BaseProps {
 }
 export interface TWAPProps extends BaseProps {
   connect?: () => void;
-  srcToken?: string;
-  dstToken?: string;
+  srcToken?: TokenData;
+  dstToken?: TokenData;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
   TokenSelectModal?: any;
@@ -133,6 +133,9 @@ export interface TWAPProps extends BaseProps {
   marketPriceLoading?: boolean;
   fee?: number;
   isLimitPanel?: boolean;
+  parsedTokens?: TokenData[];
+  onCancelOrderSuccess?: (orderId: number) => void;
+  onCancelOrderFailure?: (orderId: number) => void;
 }
 
 type PriceUsd = (address: string, token?: TokenData) => any;
@@ -192,8 +195,8 @@ export interface TwapLibProps extends LibProps {
   connect?: () => void;
   askDataParams?: any[];
   storeOverride?: StoreOverride;
-  srcToken?: string;
-  dstToken?: string;
+  srcToken?: TokenData;
+  dstToken?: TokenData;
   parseToken: (token: any) => TokenData | undefined;
   dappTokens: any;
   uiPreferences?: TwapContextUIPreferences;
@@ -211,6 +214,9 @@ export interface TwapLibProps extends LibProps {
   marketPriceLoading?: boolean;
   fee?: number;
   isLimitPanel?: boolean;
+  parsedTokens?: TokenData[];
+  onCancelOrderSuccess?: (orderId: number) => void;
+  onCancelOrderFailure?: (orderId: number) => void;
 }
 
 export type Token = TokenData;
@@ -262,8 +268,6 @@ export interface TWAPTokenSelectProps {
 
 export interface State {
   lib: TWAPLib | undefined;
-  srcToken: TokenData | undefined;
-  dstToken: TokenData | undefined;
   wrongNetwork: undefined | boolean;
   srcAmountUi: string;
 

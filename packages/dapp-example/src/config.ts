@@ -13,4 +13,4 @@ import syncswap from "./SyncSwap";
 import kinetix from "./kinetix";
 
 export const defaultDapp = quickswap;
-export const dapps = [quickswap, spookyswap, pangolin, pangolinDaas, chronos, thena, baseswap, arbidex, lynex, stellaswap, pancake, sushiswap, syncswap, kinetix];
+export const dapps = [pancake];

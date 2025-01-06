@@ -19,20 +19,13 @@ import {
   StyledOrderSummary,
   StyledOrderSummaryInfo,
   StyledDisclaimer,
-  StyledSubmitModalContentMain,
   StyledDisclaimerContent,
+  baseStyles,
 } from "./styles";
 import Lottie from "react-lottie";
 import * as Loading_Lottie from "./lottie/Loading_Lottie.json";
 import * as Long_Success_Lottie from "./lottie/Long_Success_Lottie.json";
 import * as Submit_Lottie from "./lottie/Submit_Lottie.json";
-
-class BalanceError extends Error {
-  constructor() {
-    super("insufficient balance");
-    this.name = "BalanceError";
-  }
-}
 
 const Loading_Lottie_options = {
   loop: true,
@@ -159,7 +152,7 @@ const Provider = ({ children }: { children: ReactNode }) => {
   const onClose = useCallback(() => {
     setShowConfirmation(false);
     // we reset the tokens and amounts, after a successfull trade
-    if (state.step === SwapStep.ORDER_PLACED) {
+    if (state.step === SwapStep.ORDER_PLACED ||state.step === SwapStep.ORDER_CREATED) {
       resetTwapStore();
     }
     setTimeout(() => {
@@ -172,19 +165,19 @@ const Provider = ({ children }: { children: ReactNode }) => {
 
 const useSubmitSwapCallback = () => {
   const { state, updateState, swapId } = useSubmitContext();
-  const fromToken = store.useTwapStore((s) => s.srcToken);
   const { mutateAsync: approveCallback } = hooks.useApproveToken();
   const { data: allowance, refetch: refetchAllowance } = hooks.useHasAllowanceQuery();
   const { mutateAsync: createOrder } = hooks.useCreateOrder();
   const { mutateAsync: wrap } = hooks.useWrapToken();
-  const shouldWrap = isNativeAddress(fromToken?.address || "");
+  const { srcToken, onSrcTokenSelected, config, dappTokens } = useTwapContext();
+  const shouldWrap = isNativeAddress(srcToken?.address || "");
   const errorToast = useToastError();
   const orderPlacedToast = useOrderPlacedToast();
 
   return useMutation({
     mutationFn: async () => {
       let step: SwapStep | undefined = undefined;
-
+      let wrapped = false;
       const incrementStep = () => updateState(swapId, { stepIndex: state.stepIndex + 1 });
       const updateSwapState = (_step: SwapStep) => {
         updateState(swapId, { step: _step });
@@ -197,6 +190,7 @@ const useSubmitSwapCallback = () => {
           updateSwapState(SwapStep.WRAP);
           await wrap();
           incrementStep();
+          wrapped = true;
         }
 
         if (!allowance) {
@@ -217,7 +211,10 @@ const useSubmitSwapCallback = () => {
         orderPlacedToast();
       } catch (error) {
         console.log({ error: (error as any).message });
-
+        if (wrapped) {
+          const wToken = getTokenFromTokensList(dappTokens, config?.wToken.address);
+          wToken && onSrcTokenSelected?.(wToken);
+        }
         errorToast(error, step);
         updateSwapState(SwapStep.ERROR);
       }
@@ -246,18 +243,14 @@ const SubmitModalToken = ({ token, amount }: { token?: TokenData; amount?: strin
 };
 
 const SubmitModalSrcToken = () => {
-  const { srcToken, srcAmount } = store.useTwapStore((store) => ({
-    srcToken: store.srcToken,
-    srcAmount: store.srcAmountUi,
-  }));
+  const srcAmount = hooks.useSrcAmount().amountUI;
+  const srcToken = useTwapContext().srcToken;
 
   return <SubmitModalToken token={srcToken} amount={srcAmount} />;
 };
 
 const SubmitModalDstToken = () => {
-  const { dstToken } = store.useTwapStore((store) => ({
-    dstToken: store.dstToken,
-  }));
+  const dstToken = useTwapContext().dstToken;
 
   const amount = hooks.useDstAmount().amountUI;
 
@@ -325,15 +318,13 @@ const StepContent = ({
   return (
     <StyledSubmitModalContent className={`twap-submit-order-content ${className}`}>
       <ModalHeaderContent title={title} />
-      <StyledSubmitModalContentMain>
-        <StyledSubmitModalContentChildren>{children}</StyledSubmitModalContentChildren>
-        {(message || indicator) && (
-          <StyledSubmitModalBottom>
-            {indicator && <ProgressIndicator />}
-            {message && <StyledSubmitModalBottomMsg>{message}</StyledSubmitModalBottomMsg>}
-          </StyledSubmitModalBottom>
-        )}
-      </StyledSubmitModalContentMain>
+      <StyledSubmitModalContentChildren>{children}</StyledSubmitModalContentChildren>
+      {(message || indicator) && (
+        <StyledSubmitModalBottom>
+          {indicator && <ProgressIndicator />}
+          {message && <StyledSubmitModalBottomMsg>{message}</StyledSubmitModalBottomMsg>}
+        </StyledSubmitModalBottom>
+      )}
     </StyledSubmitModalContent>
   );
 };
@@ -428,9 +419,8 @@ const ErrorContent = () => {
 };
 
 const ApproveContent = () => {
-  const { dappTokens } = useTwapContext();
-  const fromToken = store.useTwapStore((store) => store.srcToken);
-  const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, fromToken?.address), [dappTokens, fromToken]);
+  const { dappTokens, srcToken } = useTwapContext();
+  const inputCurrency = useMemo(() => getTokenFromTokensList(dappTokens, srcToken?.address), [dappTokens, srcToken]);
 
   return (
     <StepContent title={`Approve ${inputCurrency?.symbol}`} indicator={true} message={<AwaitingTxMessage />}>
@@ -441,7 +431,6 @@ const ApproveContent = () => {
 
 const ProgressIndicator = () => {
   const { state } = useSubmitContext();
-  console.log(state.stepsCount);
 
   if (state.stepsCount < 2) return null;
   const value = (state.stepIndex / state.stepsCount) * 100;
@@ -470,17 +459,16 @@ const Expiration = () => {
 
 const Price = () => {
   const price = hooks.useTradePrice().priceUI;
-  const { srcToken, dstToken } = store.useTwapStore((store) => ({
-    srcToken: store.srcToken,
-    dstToken: store.dstToken,
-  }));
+  const { srcToken, dstToken } = useTwapContext();
+
   return <Components.OrderDetails.Price price={price} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const MinReceived = () => {
   const minReceived = hooks.useDstMinAmountOut().amountUI;
-  const { isLimitOrder, dstToken } = store.useTwapStore((store) => ({
-    dstToken: store.dstToken,
+  const { dstToken } = useTwapContext();
+
+  const { isLimitOrder } = store.useTwapStore((store) => ({
     isLimitOrder: store.isLimitOrder,
   }));
   return <Components.OrderDetails.MinReceived symbol={dstToken?.symbol} minReceived={minReceived} isMarketOrder={!isLimitOrder} />;
@@ -493,7 +481,7 @@ const TotalTrades = () => {
 };
 
 const SizePerTrade = () => {
-  const token = store.useTwapStore((store) => store.srcToken);
+  const token = useTwapContext().srcToken;
   const chunks = hooks.useChunks();
 
   const sizePerTrade = hooks.useSrcChunkAmountUi();
@@ -510,8 +498,7 @@ const TradeInterval = () => {
 };
 
 const Fee = () => {
-  const fee = useTwapContext().fee;
-  const dstToken = store.useTwapStore((store) => store.dstToken);
+  const { fee, dstToken } = useTwapContext();
   const outAmount = hooks.useDstAmount().amountUI;
 
   return <Components.OrderDetails.Fee outAmount={outAmount} dstToken={dstToken} fee={fee} />;
@@ -522,7 +509,7 @@ const OrderReview = ({ onSubmit }: { onSubmit: () => void }) => {
   const orderType = useOrderType();
 
   return (
-    <StyledOrderReviewStep title={`Place ${orderType} order`}>
+    <StyledOrderReviewStep title={`Place ${orderType} Order`}>
       <StyledOrderSummary>
         <StyledTokens>
           <OrderReviewTokenDisplay isSrc={true} />
@@ -572,10 +559,10 @@ const StyledButtonContainer = styled(Styles.StyledRowFlex)({
 });
 
 const OrderReviewTokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
-  const { token, srcAmount } = store.useTwapStore((store) => ({
-    token: isSrc ? store.srcToken : store.dstToken,
-    srcAmount: store.srcAmountUi,
-  }));
+  const srcAmount = hooks.useSrcAmount().amountUI;
+  const { srcToken, dstToken } = useTwapContext();
+  const token = isSrc ? srcToken : dstToken;
+
   const dstAmount = hooks.useDstAmount().amountUI;
   const _amount = isSrc ? srcAmount : dstAmount;
 
@@ -624,12 +611,7 @@ const useOrderType = () => {
 };
 
 const useCurrencies = () => {
-  const { srcToken, dstToken } = store.useTwapStore((s) => ({
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-  }));
-
-  const { dappTokens } = useTwapContext();
+  const { dappTokens, srcToken, dstToken } = useTwapContext();
   return useMemo(() => {
     return {
       inputCurrency: getTokenFromTokensList(dappTokens, srcToken),
@@ -642,11 +624,8 @@ const useOrderPlacedToast = () => {
   const { toast } = useAdapterContext();
   const orderType = useOrderType();
   const { inputCurrency, outputCurrency } = useCurrencies();
-  const { srcAmountUi, srcToken, dstToken } = store.useTwapStore((s) => ({
-    srcAmountUi: s.srcAmountUi,
-    srcToken: s.srcToken,
-    dstToken: s.dstToken,
-  }));
+  const { srcToken, dstToken } = useTwapContext();
+  const srcAmountUi = hooks.useSrcAmount().amountUI;
   const outAmount = hooks.useDstAmount().amountUI;
 
   const srcAmountUiF = hooks.useFormatNumber({ value: srcAmountUi, decimalScale: 6 });
@@ -768,13 +747,19 @@ const useRejectedToastError = () => {
   );
 };
 
-const StyledTokens = styled(Styles.StyledColumnFlex)({
-  gap: 12,
+const StyledTokens = styled(Styles.StyledColumnFlex)(({theme}) => {
+  const styles = baseStyles(theme)
+ return {
+   gap: 16,
   alignItems: "center",
   svg: {
     width: 24,
     height: 24,
+   '*':{
+    fill: styles.label
+   }
   },
+ }
 });
 
 const StyledTokenDisplayRight = styled(Styles.StyledRowFlex)({

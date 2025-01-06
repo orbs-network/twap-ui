@@ -94,5 +94,8 @@
   "fillDelayWarning": "Invalid trade interval",
   "fillDelayWarningTooltip": "Trade interval must be higher than {{minutes}} minutes to allow time for bidder auction and block settlement.",
   "viewOrders": "View Order History",
-  "view": "View"
+  "view": "View",
+  "days-short": "Days",
+  "hours-short": "Hrs",
+  "minutes-short": "Min"
 }

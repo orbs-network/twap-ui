@@ -80,19 +80,7 @@ const TWAPComponent = () => {
   const { isDarkTheme } = useTheme();
   const priceUsd = useGetPriceUsdCallback();
 
-  return (
-    <TWAP
-      connect={connect}
-      account={account}
-      srcToken={zeroAddress}
-      dstToken="0x614389EaAE0A6821DC49062D56BDA3d9d45Fa2ff" //ORBS
-      dappTokens={dappTokens}
-      TokenSelectModal={TokenSelectModal}
-      provider={library}
-      isDarkTheme={isDarkTheme}
-      priceUsd={priceUsd}
-    />
-  );
+  return <TWAP connect={connect} account={account} dappTokens={dappTokens} TokenSelectModal={TokenSelectModal} provider={library} isDarkTheme={isDarkTheme} priceUsd={priceUsd} />;
 };
 
 const DappComponent = () => {

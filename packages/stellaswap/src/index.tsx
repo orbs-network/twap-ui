@@ -60,9 +60,7 @@ const TokenChange = () => {
 };
 
 const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () => void }) => {
-  const { srcToken, dstToken } = store.useTwapStore();
-
-  const notSelected = (isSrc && !srcToken) || (!isSrc && !dstToken);
+  const notSelected = true;
   return (
     <StyledTokenSelect onClick={onClick}>
       <Components.TokenLogo isSrc={isSrc} />
@@ -186,8 +184,6 @@ const TWAP = (props: ThenaTWAPProps) => {
           account={props.account}
           dappTokens={props.dappTokens}
           parseToken={parseToken}
-          srcToken={props.srcToken}
-          dstToken={props.dstToken}
           storeOverride={props.limit ? storeOverride : undefined}
           onDstTokenSelected={props.onDstTokenSelected}
           onSrcTokenSelected={props.onSrcTokenSelected}
