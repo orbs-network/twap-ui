@@ -106,9 +106,13 @@ const StyledAccordion = styled(Accordion)({
   margin: 0,
   background: "transparent",
   boxShadow: "unset",
+  ".MuiCollapse-root": {
+    transition: "unset!important",
+  },
   "& .MuiAccordionSummary-content": {
     margin: "0!important",
     width: "100%",
+    transition: "unset",
   },
   ".Mui-expanded": {
     minHeight: "unset",

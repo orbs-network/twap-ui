@@ -117,8 +117,8 @@ interface BaseProps {
 }
 export interface TWAPProps extends BaseProps {
   connect?: () => void;
-  srcToken?: TokenData;
-  dstToken?: TokenData;
+  srcToken?: any;
+  dstToken?: any;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
   TokenSelectModal?: any;

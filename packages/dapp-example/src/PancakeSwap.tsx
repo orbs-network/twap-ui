@@ -291,14 +291,16 @@ const useToast = () => {
 };
 
 const _Button = ({ children, disabled, onClick }: { children: ReactNode; disabled: boolean; onClick: () => void }) => {
+  const { isDarkTheme } = useTheme();
+
   return (
-    <StyledButton onClick={onClick} disabled={disabled}>
+    <StyledButton dark={isDarkTheme ? 1 : 0} onClick={onClick} disabled={disabled}>
       {children}
     </StyledButton>
   );
 };
 
-const StyledButton = styled("button")(({ disabled }) => {
+const StyledButton = styled("button")<{ dark: number }>(({ disabled, dark }) => {
   return {
     background: "#1FC7D4",
     borderRadius: 16,
@@ -311,6 +313,12 @@ const StyledButton = styled("button")(({ disabled }) => {
     border: "none",
     cursor: disabled ? "not-allowed" : "pointer",
     opacity: disabled ? 0.5 : 1,
+    color: dark ? "black" : "white",
+    boxShadow: "rgba(14, 14, 44, 0.4) 0px -1px 0px 0px inset",
+    transition: "opacity 0.2s",
+    "&:hover": {
+      opacity: 0.65,
+    },
   };
 });
 
@@ -369,27 +377,20 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 const logo = "https://assets.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1629359065";
 const DappComponent = () => {
   const { isDarkTheme } = useTheme();
-  const [selected, setSelected] = useState(SelectorOption.LIMIT);
+  const [selected, setSelected] = useState(SelectorOption.TWAP);
   const isMobile = useIsMobile();
   const config = useConfig();
   return (
     <ContextWrapper>
       <Tokens />
       <StyledPancake isDarkTheme={isDarkTheme ? 1 : 0}>
-        {isMobile && (
-          <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
-            <Orders />
-          </StyledPancakeOrders>
-        )}
         <StyledPancakeLayout name={config.name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
         </StyledPancakeLayout>
-        {!isMobile && (
-          <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
-            <Orders />
-          </StyledPancakeOrders>
-        )}
+        <StyledPancakeOrders isDarkTheme={isDarkTheme ? 1 : 0}>
+          <Orders />
+        </StyledPancakeOrders>
       </StyledPancake>
     </ContextWrapper>
   );

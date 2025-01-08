@@ -1,6 +1,7 @@
-import { Box, Button, createTheme, LinearProgress, styled, Theme, Typography } from "@mui/material";
+import { Box, Button, createTheme, LinearProgress, styled, SwipeableDrawer, Theme, Typography } from "@mui/material";
 import { Components, OrdersContainer, Styles } from "@orbs-network/twap-ui";
 import { Children, createContext, CSSProperties, ReactNode, useCallback, useRef, useState } from "react";
+import { MOBILE } from "./config";
 import { WarningVariant } from "./context";
 import { useClickOutside } from "./hooks";
 const isDarkMode = (theme: Theme) => theme.palette.mode === "dark";
@@ -33,7 +34,7 @@ export const baseStyles = (theme: Theme) => {
     bgContainer: darkMode ? "#372f47" : "#EEEAF4",
     warning: darkMode ? "#A881FC" : "#ff6b6b",
     error: darkMode ? "#ED4B9E" : "#ED4B9E",
-    info: darkMode ? "#FF9D00" : "#FF9D00",
+    info: darkMode ? "#FF9D00" : "#D67E0A",
     active: darkMode ? "#A881FC" : "#7645d9",
     textLight: darkMode ? "#48D0DB" : "#02919D",
   };
@@ -89,32 +90,21 @@ export const StyledCardBody = styled(Box)<{ editable?: number }>(({ theme, edita
   };
 });
 
-export const StyledPoweredBy = styled(Components.PoweredBy)(({ theme }) => {
-  const styles = baseStyles(theme);
-
-  return {
-    color: styles.primaryTextColor,
-    marginTop: 20,
-    fontSize: 14,
-
-    "*": {
-      color: "inherit",
-    },
-  };
-});
-
 export const configureStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
 
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-submit-order-content": {
+      "*": {
+        fontFamily: "inherit!important",
+      },
+    },
     ".twap-token-logo": {
-      border:`1px solid ${styles.darkMode ? 'rgba(255,255,255, 0.1)' : 'rgb(8, 6, 11, 0.3)'}`
+      border: `1px solid ${styles.darkMode ? "rgba(255,255,255, 0.1)" : "rgb(8, 6, 11, 0.3)"}`,
     },
-    ".twap-label-with-tooltip": {
-      borderBottom: "1px dashed #5B4776",
-    },
+
     ".twap-time-selector-selected": {
       background: "unset",
       border: "none",
@@ -140,7 +130,7 @@ export const configureStyles = (theme: Theme) => {
         fontWeight: 400,
       },
       "&:hover": {
-        background: "rgba(255,255,255,0.05)",
+        background: styles.darkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
       },
     },
     ".twap-order-expanded-cancel-wraper": {
@@ -179,10 +169,16 @@ export const configureStyles = (theme: Theme) => {
     },
     ".twap-adapter-wrapper": {
       width: "100%",
+      "*": {
+        fontFamily: "inherit!important",
+      },
     },
     ".twap-modal": {
+      "*": {
+        fontFamily: "inherit!important",
+      },
       ".MuiBackdrop-root": {
-        background: darkMode ? "rgba(244, 238, 255, 0.6)" : "",
+        background: styles.darkMode ? "rgba(68, 62, 88, 0.60)" : "rgba(40, 13, 95, 0.6)",
       },
     },
 
@@ -216,22 +212,22 @@ export const configureStyles = (theme: Theme) => {
         color: `${styles.primaryTextColor}!important`,
       },
     },
-   
+
     ".twap-price-invert": {
-      color: styles.darkMode ? "#3DDBB5" : "#280D5F",
+      color: styles.darkMode ? "#F4EEFF" : "#280D5F",
       fontSize: 14,
       svg: {
-       "*":{
-        fill: styles.darkMode ? '' : '#02919D',
-       }
-      }
+        "*": {
+          fill: styles.darkMode ? "" : "#02919D",
+        },
+      },
     },
     ".twap-order-details": {
-    ...lightBoxStyles(theme),
+      ...lightBoxStyles(theme),
     },
     ".twap-order": {
       ...getContainerStyles(theme),
-      padding: "12px 10px 12px 12px",
+      padding: 12,
       ".twap-order-preview-tokens-in-token": {
         p: {
           color: "#ED4B9E",
@@ -239,7 +235,7 @@ export const configureStyles = (theme: Theme) => {
       },
       ".twap-order-preview-tokens-out-token": {
         p: {
-          color: styles.darkMode ? "#3DDBB5"  : '#129E7D',
+          color: styles.darkMode ? "#3DDBB5" : "#129E7D",
         },
       },
       ".twap-order-price": {
@@ -283,7 +279,7 @@ export const configureStyles = (theme: Theme) => {
           left: 0,
           top: 0,
           borderRadius: "50%",
-          border: `4px solid  ${darkMode? '#55496E': '#D7CAEC'}`,
+          border: `4px solid  ${darkMode ? "#55496E" : "#D7CAEC"}`,
           zIndex: 1,
         },
         svg: {
@@ -309,9 +305,7 @@ export const configureStyles = (theme: Theme) => {
       padding: "0px!important",
     },
     ".twap-order-expanded": {},
-    ".twap-order-expanded-details": {
-     
-    },
+    ".twap-order-expanded-details": {},
     ".twap-order-details-filled": {
       span: {
         color: styles.label,
@@ -354,7 +348,7 @@ export const configureStyles = (theme: Theme) => {
       },
       "& .MuiTooltip-tooltip": {
         ...getTootlipStyles(theme),
-        fontFamily: "Kanit",
+        fontFamily: "inherit",
       },
     },
     ".twap-loader": {
@@ -421,47 +415,37 @@ const getCancelOrderStyles = (theme: Theme) => {
     position: "relative",
     border: "none",
     cursor: "pointer",
-    background: "transparent",
     fontSize: 16,
     fontWeight: 600,
+    borderRadius: 12,
+    height: 32,
+    borderColor: styles.darkMode ? "#303040" : "#D7DCDC",
+    borderWidth: "0px 0px 3px 0px" as const,
+    borderStyle: "solid" as const,
+    background: styles.darkMode ? "#353547" : "#EFF4F5",
+
     ".twap-cancel-order-content": {
-      background: styles.darkMode ?  "#353547" : '#EFF4F5',
-      borderRadius: 12,
-      padding: "0px 20px",
-      height: 30,
+      padding: "0px 10px",
     },
     ".twap-order-tx-hash-content": {
-      background: styles.darkMode ?  "#353547" : '#EFF4F5',
-      borderRadius: 12,
       padding: "0px 6px",
-      height: 30,
+
       p: {
         paddingLeft: 6,
         fontSize: 16,
         fontWeight: 600,
       },
       svg: {
-        "*":{
-          fill:styles.darkMode ? '' :  '#02919D',
-        }
-      }
+        "*": {
+          fill: styles.darkMode ? "" : "#02919D",
+        },
+      },
     },
 
     p: {
       fontSize: 16,
       fontWeight: 600,
       color: styles.textLight,
-    },
-    "&:after": {
-      borderRadius: 12,
-      content: '""',
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "calc(100% + 2px)",
-      background: styles.darkMode ?  "#303040" : '#D7DCDC',
-      zIndex: 0,
     },
   };
 };
@@ -550,13 +534,6 @@ export const StyledMarketPrice = styled(Styles.StyledText)(({ theme }) => {
     fontSize: 14,
     fontWeight: "400!important",
     color: styles.primaryTextColor,
-    svg: {
-      position: "relative",
-      top: 4,
-      cursor: "pointer",
-      marginLeft: 5,
-      marginRight: 5,
-    },
   };
 });
 
@@ -607,7 +584,7 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
       height: 24,
     },
     "&:hover": {
-      backgroundColor: styles.darkMode ?  "#191326" : 'white',
+      backgroundColor: styles.darkMode ? "#191326" : "white",
       ".twap-token-selected": {
         opacity: 0.7,
       },
@@ -655,7 +632,7 @@ export const StyledPercentSelect = styled(Styles.StyledRowFlex)<{ show: number }
         top: "50%",
         transform: "translateY(-50%)",
       },
-      "&:first-child": {
+      "&:first-of-type": {
         "&:after": {
           display: "none",
         },
@@ -676,7 +653,7 @@ export const StyledTokenChange = styled(Styles.StyledRowFlex)(({ theme }) => {
       zIndex: 1,
       borderRadius: "50%",
       background: styles.panelBg,
-      border: `1px solid ${darkMode ? '#383241' : '#E7E3EB'}`,
+      border: `1px solid ${darkMode ? "#383241" : "#E7E3EB"}`,
       padding: 0,
       transition: "background-color 0.2s",
       cursor: "pointer",
@@ -690,7 +667,7 @@ export const StyledTokenChange = styled(Styles.StyledRowFlex)(({ theme }) => {
         },
       },
       "&:hover": {
-        background: darkMode ?  styles.label : '#1FC7D4',
+        background: darkMode ? styles.label : "#1FC7D4",
         svg: {
           "*": {
             fill: styles.panelBg,
@@ -705,8 +682,23 @@ export const StyledTokenChange = styled(Styles.StyledRowFlex)(({ theme }) => {
       left: 0,
       position: "absolute",
       height: 1,
-      background: darkMode ? '#383241' : '#E7E3EB',
+      background: darkMode ? "#383241" : "#E7E3EB",
       transform: "translateY(-50%)",
+    },
+  };
+});
+
+export const StyledSliderDots = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    position: "absolute",
+    justifyContent: "space-between",
+    zIndex: -1,
+    span: {
+      width: 8,
+      height: 8,
+      background: styles.darkMode ? "#55496E" : "#D7CAEC",
+      borderRadius: "50%",
     },
   };
 });
@@ -714,6 +706,8 @@ export const StyledTokenChange = styled(Styles.StyledRowFlex)(({ theme }) => {
 export const StyledSlider = styled(Components.Base.Slider)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
+    position: "relative",
+
     borderRadius: 0,
     ".twap-slider-thumb": {
       width: 40,
@@ -722,14 +716,15 @@ export const StyledSlider = styled(Components.Base.Slider)(({ theme }) => {
       display: "none",
     },
     ".MuiSlider-rail": {
-      background: styles.darkMode ?  "#55496E" : '#D7CAEC',
+      background: styles.darkMode ? "#55496E" : "#D7CAEC",
       height: 2,
       opacity: 1,
     },
     ".MuiSlider-track": {
       background: "#1FC7D4",
-      border: "3px solid #1FC7D4",
+      border: "unset",
       zIndex: 1,
+      height: 10,
       transition: "0s all",
     },
     ".MuiSlider-mark": {
@@ -745,7 +740,7 @@ export const StyledSliderContainer = styled(Styles.StyledRowFlex)({
   position: "relative",
   flex: 1,
   paddingRight: 10,
-  top: 4,
+  top: 5,
 });
 
 export const StyledBackBody = styled("div")({
@@ -782,25 +777,29 @@ const getContainerStyles = (theme: Theme) => {
     borderRadius: 24,
     padding: "16px 0px 16px 0px",
 
-    borderColor:  styles.darkMode ? '#383241' : '#E7E3EB' ,
-    borderStyle: 'solid' as const,
-    borderWidth: '1px 1px 2px 1px' as const,
+    borderColor: styles.darkMode ? "#383241" : "#E7E3EB",
+    borderStyle: "solid" as const,
+    borderWidth: "1px 1px 2px 1px" as const,
     width: "100%",
-    position:'relative' as const,
-  
+    position: "relative" as const,
   };
 };
 
-export const StyledContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
+export const StyledTopContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
   return {
     ...getContainerStyles(theme),
-    gap: 20,
+    gap: 16,
   };
 });
 
+export const StyledBottomContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
+  return {
+    ...getContainerStyles(theme),
+    gap: 16,
+  };
+});
 
-
-export const StyledTopContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
+export const StyledTokenPanelsContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
   return {
     gap: 12,
   };
@@ -842,7 +841,8 @@ export const StyledPricePanel = styled(Styles.StyledColumnFlex)(({ theme }) => {
 export const StyledLimitPrice = styled(Styles.StyledRowFlex)(({ theme }) => {
   return {
     justifyContent: "space-between",
-    gap: 8,
+    flexWrap: "wrap",
+    gap: 10,
     p: {
       fontWeight: 600,
     },
@@ -959,6 +959,7 @@ export const StyledOrderSummary = styled(Styles.StyledColumnFlex)(({ theme }) =>
         },
       },
     },
+    [`@media (max-width: ${MOBILE}px)`]: {},
   };
 });
 
@@ -1006,6 +1007,9 @@ export const StyledOrders = styled(OrdersContainer)(({ theme }) => {
         color: styles.primaryTextColor,
       },
     },
+    "*": {
+      fontFamily: "inherit!important",
+    },
   };
 });
 
@@ -1014,14 +1018,15 @@ export const StyledOrdersHeader = styled(Styles.StyledColumnFlex)(({ theme }) =>
   return {
     ...getContainerStyles(theme),
     justifyContent: "center",
-    padding: 0
+    padding: 0,
   };
 });
 
 export const StyledOrdersHeaderTop = styled(Styles.StyledRowFlex)({
   justifyContent: "space-between",
-  height: 64,
+  height: "auto",
   padding: 10,
+  flexWrap: "wrap",
 });
 
 export const StyledOrdersHeaderBottom = styled(Styles.StyledColumnFlex)(({ theme }) => {
@@ -1043,6 +1048,7 @@ export const StyledCanceledOrdersController = styled(Styles.StyledRowFlex)(({ th
   const styles = baseStyles(theme);
   return {
     width: "auto",
+    marginLeft: "auto",
     p: {
       color: styles.label,
       fontSize: 14,
@@ -1052,7 +1058,7 @@ export const StyledCanceledOrdersController = styled(Styles.StyledRowFlex)(({ th
 
 export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, theme }) => {
   const styles = baseStyles(theme);
-  const color = styles.label ;
+  const color = styles.label;
   const selectedColor = styles.darkMode ? "black" : "white";
   return {
     cursor: "pointer",
@@ -1062,33 +1068,35 @@ export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, th
     display: "flex",
     alignItems: "center",
     borderRadius: 16,
+    fontSize: 16,
     width: "auto",
     justifyContent: "center",
     fontWeight: selected ? 600 : 400,
     color: !selected ? color : selectedColor,
-    "@media (max-width:700px)": {
-      fontSize: 11,
-      padding: " 0px 10px",
+    [`@media (max-width:${MOBILE}px)`]: {
+      width: "50%",
+      padding: "0px 10px",
     },
   };
 });
 
-export const StyledOrdersTabs = styled(Box)(({theme}) => {
+export const StyledOrdersTabs = styled(Box)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     display: "flex",
     alignItems: "center",
     width: "auto",
     justifyContent: "space-between",
-    height: "100%",
-    background:  styles.darkMode ? "#372F47" : '#EEEAF4',
+    height: "40px",
+    background: styles.darkMode ? "#372F47" : "#EEEAF4",
     borderRadius: 16,
     overflow: "hidden",
 
-    "@media (max-width:700px)": {},
+    [`@media (max-width:${MOBILE}px)`]: {
+      width: "100%",
+    },
   };
 });
-
 
 const bigInputStyle = () => {
   return {
@@ -1144,7 +1152,7 @@ export const StyledInputContainer = styled("div")<{ focused: number }>(({ focuse
       transform: "translate(-50%, -50%)",
       width: "calc(100% + 11px)",
       height: "calc(100% + 11px)",
-      background: styles.darkMode ?  "#55496E" : '#e4daf7',
+      background: styles.darkMode ? "#55496E" : "#e4daf7",
       borderRadius: 28,
       opacity: focused ? 1 : 0,
       transition: "opacity 0.2s",
@@ -1173,12 +1181,12 @@ export const StyledInputContainer = styled("div")<{ focused: number }>(({ focuse
 export const StyledInputContainerChildren = styled("div")<{ focused: number; customBorder?: number }>(({ theme, focused, customBorder }) => {
   const styles = baseStyles(theme);
   const showCustomBorder = customBorder && !focused;
-  const boxShadow  = styles.darkMode ?  "0px 2px 0px -1px #0000000F inset" :'0px 2px 0px -1px rgba(0, 0, 0, 0.06) inset' 
-  const borderColor = styles.darkMode ? "#55496E" : '#D7CAEC'
+  const boxShadow = styles.darkMode ? "0px 2px 0px -1px #0000000F inset" : "0px 2px 0px -1px rgba(0, 0, 0, 0.06) inset";
+  const borderColor = styles.darkMode ? "#55496E" : "#D7CAEC";
   return {
     position: "relative",
     zIndex: 1,
-    background:  styles.bgContainer,
+    background: styles.bgContainer,
     boxShadow: focused ? "unset" : boxShadow,
     borderRadius: 24,
     padding: "0px 16px 0px 16px",
@@ -1262,16 +1270,17 @@ const StyledInputContainerHeader = styled("div")({
 export const StyledPriceCard = styled(InputContainer)(() => {
   return {
     ".twap-input-container-content": {
-      height: 67,
+      height: 64,
       display: "flex",
       justifyContent: "space-between",
       width: "100%",
-      padding: "0px 13px 0px 13px",
+      padding: "0px 16px 0px 16px",
       alignItems: "center",
+      gap: 7,
     },
     ".twap-small-label": {
       position: "relative",
-      top: -2,
+      top: -4,
       p: {
         fontSize: 14,
       },
@@ -1286,9 +1295,37 @@ export const StyledPriceCard = styled(InputContainer)(() => {
         fontWeight: 600,
       },
     },
+    [`@media (max-width: ${MOBILE}px)`]: {
+      ".twap-label": {
+        p: {
+          fontSize: 14,
+          fontWeight: 600,
+        },
+      },
+      ".twap-small-label": {
+        top: -2,
+        p: {
+          fontSize: 12,
+        },
+      },
+      ".twap-input-container-content": {
+        height: 52,
+        borderRadius: 16,
+        "&:before": {
+          borderRadius: 16,
+        },
+      },
+      "&:before": {
+        borderRadius: 18,
+        width: "calc(100% + 9px)",
+        height: "calc(100% + 9px)",
+      },
+      "&:after": {
+        borderRadius: 18,
+      },
+    },
   };
 });
-
 export const StyledPricePanelInput = styled(StyledPriceCard)(() => {
   return {
     display: "flex",
@@ -1297,6 +1334,18 @@ export const StyledPricePanelInput = styled(StyledPriceCard)(() => {
     flex: 1,
     gap: 15,
     alignItems: "center",
+    ".twap-input": {
+      input: {
+        fontSize: 24,
+      },
+    },
+    [`@media (max-width: ${MOBILE}px)`]: {
+      ".twap-input": {
+        input: {
+          fontSize: 16,
+        },
+      },
+    },
   };
 });
 
@@ -1304,6 +1353,7 @@ const InputContainerLabel = ({ label, value, tooltip }: { label: string; value?:
   return (
     <StyledInputContainerLabel>
       <Components.Base.Label tooltipText={tooltip}>{label}</Components.Base.Label>
+
       <StyledInputContainerLabelValue>{value}</StyledInputContainerLabelValue>
     </StyledInputContainerLabel>
   );
@@ -1316,13 +1366,9 @@ const StyledInputContainerLabel = styled("div")(({ theme }) => {
     flexDirection: "row",
     gap: 5,
     color: styles.label,
-  };
-});
-const StyledInputContainerLabelLabel = styled(Styles.StyledText)(({ theme }) => {
-  const styles = baseStyles(theme);
-  return {
-    color: styles.label,
-    fontSize: 12,
+    p: {
+      fontSize: 12,
+    },
   };
 });
 
@@ -1366,6 +1412,19 @@ export const StyledPricePanelPercent = styled(StyledPriceCard)(({ theme }) => {
         fontSize: 20,
         fontWeight: 600,
         color: styles.label,
+      },
+    },
+    [`@media (max-width: ${MOBILE}px)`]: {
+      width: "40%",
+      ".twap-input": {
+        input: {
+          fontSize: 16,
+        },
+      },
+      ".twap-limit-price-panel-percent-right": {
+        p: {
+          fontSize: 16,
+        },
       },
     },
   };
@@ -1440,29 +1499,25 @@ export const StyledTokenPanelContent = styled(InputContainer)({
   },
 });
 
-
-
 const lightBoxStyles = (theme: Theme) => {
   const styles = baseStyles(theme);
   return {
     background: styles.darkMode ? "#08060B" : "#FAF9FA",
-    border: `1px solid ${styles.darkMode ? '#383241' :'#E7E3EB'}`,
+    border: `1px solid ${styles.darkMode ? "#383241" : "#E7E3EB"}`,
     borderRadius: 16,
     padding: 16,
     gap: 7,
-  }
-}
+  };
+};
 
 export const StyledOrderSummaryInfo = styled(Components.OrderDetails)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-
     "@media(max-width: 700px)": {
       gap: 6,
     },
   };
 });
-
 
 export const StyledDisclaimerContent = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
@@ -1472,11 +1527,9 @@ export const StyledDisclaimerContent = styled(Styles.StyledRowFlex)(({ theme }) 
     alignItems: "flex-start",
     paddingRight: 8,
     paddingBottom: 12,
-  
+
     svg: { fill: styles.textLight, width: 24, height: 24, position: "sticky", top: 0 },
-    ".twap-disclaimer-text": {
-    
-    },
+    ".twap-disclaimer-text": {},
     p: {
       color: styles.primaryTextColor,
       fontSize: 14,
@@ -1500,9 +1553,13 @@ export const StyledDisclaimerContent = styled(Styles.StyledRowFlex)(({ theme }) 
   };
 });
 export const StyledDisclaimer = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
   return {
     height: 115,
     ...lightBoxStyles(theme),
+    background: styles.darkMode ? "#13393C" : "#FAF9FA",
+    border: `1px solid ${styles.darkMode ? "#094D53" : "#E7E3EB"}`,
+
     padding: "12px 4px 12px 12px",
     borderRadius: 20,
     "&::-webkit-scrollbar": {
@@ -1536,9 +1593,19 @@ export const StyledSubmitModalContentHeader = styled(Styles.StyledRowFlex)(({ th
       svg: {
         width: 32,
         height: 32,
-       "*":{
-        fill: styles.label,
-       }
+        "*": {
+          fill: styles.label,
+        },
+      },
+    },
+    [`@media (max-width: ${MOBILE}px)`]: {
+      p: {
+        width: "100%",
+
+        textAlign: "center",
+      },
+      button: {
+        display: "none",
       },
     },
   };
@@ -1550,6 +1617,20 @@ export const StyledModalContentTitle = styled(Styles.StyledText)(({ theme }) => 
     color: styles.primaryTextColor,
     fontSize: 20,
     fontWeight: 600,
+  };
+});
+
+export const StyledSubmitModalHandle = styled("div")(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    background: styles.darkMode ? "rgba(255,255,255, 0.1)" : "rgba(0,0,0, 0.1)",
+    width: 36,
+    height: 4,
+    borderRadius: 999,
+    cursor: "pointer",
+    marginTop: 16,
+    marginLeft: "auto",
+    marginRight: "auto",
   };
 });
 
@@ -1572,12 +1653,27 @@ export const StyledSubmitModalContentChildren = styled(Styles.StyledRowFlex)({
   },
 });
 
+export const StyledDrawer = styled(SwipeableDrawer)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    ".MuiBackdrop-root": {
+      background: styles.darkMode ? "rgba(68, 62, 88, 0.60)" : "rgba(40, 13, 95, 0.6)",
+      opacity: 0.6,
+      pointerEvents: "none",
+    },
+  };
+});
+
 export const StyledSubmitModalContent = styled(Styles.StyledColumnFlex)({
   alignItems: "center",
   justifyContent: "space-between",
   height: 280,
   padding: 20,
   position: "relative",
+  [`@media (max-width: ${MOBILE}px)`]: {
+    padding: 16,
+    paddingBottom: 25,
+  },
 });
 
 export const StyledSubmitModalToken = styled(Styles.StyledColumnFlex)(({ theme }) => {
@@ -1610,7 +1706,7 @@ export const StyledSubmitModalBottom = styled(Styles.StyledColumnFlex)(() => {
 export const StyledSubmitModalBottomMsg = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
-    color:styles.darkMode ?  "#B8ADD2" : '#7A6EAA',
+    color: styles.darkMode ? "#B8ADD2" : "#7A6EAA",
     fontSize: 14,
   };
 });
@@ -1621,7 +1717,7 @@ export const StyledSubmitModalProgress = styled(LinearProgress)(({ theme }) => {
     width: "100px",
     borderRadius: "999px",
     height: 4,
-    backgroundColor: styles.darkMode ?  "#55496E" : '#D7CAEC',
+    backgroundColor: styles.darkMode ? "#55496E" : "#D7CAEC",
     ".MuiLinearProgress-bar": {
       backgroundColor: styles.active,
       borderRadius: "999px",
@@ -1647,13 +1743,12 @@ export const StyledOrderPlacedMessage = styled(Styles.StyledText)(({ theme }) =>
       width: 21,
       height: 21,
       "*": {
-        fill: styles.darkMode ? '': '#02919D'
-      }
+        fill: styles.darkMode ? "" : "#02919D",
+      },
     },
     a: {
       textDecoration: "unset",
-      color:  styles.textLight,
+      color: styles.textLight,
     },
   };
 });
-

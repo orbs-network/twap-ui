@@ -658,16 +658,20 @@ export const OrderType = () => {
   return <StyledOneLineText>{isLimitOrder ? translations.limitOrder : translations.marketOrder}</StyledOneLineText>;
 };
 
-export const InvertPrice = ({ srcToken, dstToken, price: _price, className = '' }: { srcToken?: TokenData; dstToken?: TokenData; price?: string, className?: string }) => {
+export const InvertPrice = ({ srcToken, dstToken, price: _price, className = "" }: { srcToken?: TokenData; dstToken?: TokenData; price?: string; className?: string }) => {
   const { leftToken, rightToken, onInvert, price } = usePriceInvert(_price, srcToken, dstToken);
   const priceF = useFormatNumber({ value: price, decimalScale: 6 });
 
   return (
-    <StyledRowFlex className={`twap-price-invert ${className}`} style={{alignItems:'center'}}>
+    <StyledInvertPrice className={`twap-price-invert ${className}`} style={{ alignItems: "center", gap: 5 }}>
       1 {leftToken?.symbol} <ArrowsIcon onClick={onInvert} /> {priceF} {rightToken?.symbol}
-    </StyledRowFlex>
+    </StyledInvertPrice>
   );
 };
+
+const StyledInvertPrice = styled(StyledRowFlex)({
+  whiteSpace: "nowrap",
+});
 
 export const TradeIntervalAsText = ({ translations: _translations }: { translations?: Translations }) => {
   const getFillDelayText = useTwapStore((store) => store.getFillDelayText);
@@ -786,11 +790,11 @@ export const OrderSummaryDetailsOrderType = () => {
   );
 };
 
-export const OrderDetails = ({ children, className= ' ' }: { children: ReactNode, className?: string }) => {
+export const OrderDetails = ({ children, className = " " }: { children: ReactNode; className?: string }) => {
   return <StyledOrderDetails className={`${className} twap-order-details`}>{children}</StyledOrderDetails>;
 };
 
-const StyledOrderDetails = styled(StyledColumnFlex)({})
+const StyledOrderDetails = styled(StyledColumnFlex)({});
 
 export const OrderDetailsRow = ({ label, tooltip = "", children, className = "" }: { label: string; tooltip?: string; children: ReactNode; className?: string }) => {
   return (
@@ -800,9 +804,6 @@ export const OrderDetailsRow = ({ label, tooltip = "", children, className = "" 
     </StyledDetailRow>
   );
 };
-
-
-
 
 const Expiry = ({ expiryMillis, format = "ll HH:mm" }: { expiryMillis?: number; format?: string }) => {
   const t = useTwapContext().translations;
@@ -912,6 +913,7 @@ export const StyledDetailRowChildren = styled(StyledRowFlex)({
 
 export const StyledDetailRow = styled(StyledRowFlex)({
   justifyContent: "space-between",
+  flexWrap: "wrap",
   "& .twap-label": {
     fontWeight: 400,
     fontSize: 14,

@@ -11,7 +11,7 @@ import { OrderProgress, OrderStatus } from "./Components";
 import { useListOrderContext } from "./context";
 import BN from "bignumber.js";
 import { ExplorerIcon } from "./icons";
-import {  OrderDetails, OrderDetailsRow } from "../../components";
+import { OrderDetails, OrderDetailsRow } from "../../components";
 import { useOrderPrice } from "./hooks";
 
 const OrderExpanded = () => {
@@ -219,7 +219,4 @@ export const StyledContainer = styled(OrderDetails)({
   width: "100%",
   display: "flex",
   flexDirection: "column",
-  "& *": {
-    color: "inherit",
-  },
 });

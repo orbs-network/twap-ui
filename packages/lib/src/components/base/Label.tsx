@@ -1,12 +1,8 @@
 import { styled } from "@mui/system";
 import { ReactElement, ReactNode } from "react";
 import Tooltip from "./Tooltip";
-
-import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQuestionCircle";
-
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Typography } from "@mui/material";
-import { useTwapContext } from "../../context";
 
 interface Props {
   children: string | number | ReactNode;
@@ -18,8 +14,6 @@ interface Props {
 }
 
 function Label({ children, tooltipText, className = "", fontSize, placement, subtitle }: Props) {
-  const uiPreferences = useTwapContext()?.uiPreferences;
-
   if (subtitle) {
     return (
       <StyledColumnFlex className={`twap-label ${className}`}>
@@ -37,14 +31,46 @@ function Label({ children, tooltipText, className = "", fontSize, placement, sub
       ) : (
         <StyledText style={{ fontSize }}>{children}</StyledText>
       )}
+      {tooltipText && <DottedBorder />}
     </StyledContainer>
   );
 }
-
 export default Label;
 
-const StyledContainer = styled(StyledRowFlex)({
-  justifyContent: "flex-start",
-  gap: 7,
-  width: "fit-content",
+const StyledContainer = styled(StyledRowFlex)(() => {
+  return {
+    justifyContent: "flex-start",
+    gap: 7,
+    width: "fit-content",
+    position: "relative",
+  };
+});
+
+export const DottedBorder = () => {
+  return (
+    <StyledDottedBorder>
+      {Array(30)
+        .fill(0)
+        .map((_, i) => (
+          <span key={i} className="dotted-border"></span>
+        ))}
+    </StyledDottedBorder>
+  );
+};
+
+const StyledDottedBorder = styled(StyledRowFlex)(({ theme }) => {
+  return {
+    gap: 4,
+    width: "100%",
+    position: "absolute",
+    bottom: -2,
+    height: 2,
+    left: 0,
+    overflow: "hidden",
+    "& span": {
+      minWidth: 2,
+      minHeight: 2,
+      background: "#aca4c3",
+    },
+  };
 });

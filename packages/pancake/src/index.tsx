@@ -8,7 +8,6 @@ import {
   StyledBalanceContainer,
   StyledColumnFlex,
   StyledLimitPrice,
-  StyledPoweredBy,
   StyledTokenPanelTitle,
   StyledBalanceAndPercent,
   StyledContainerPadding,
@@ -22,13 +21,15 @@ import {
   StyledSliderContainer,
   StyledBackBody,
   StyledTrades,
-  StyledContainer,
   StyledTradeInterval,
   StyledDuration,
   StyledMarketPrice,
   StyledTokenPanelContent,
   StyledButton,
+  StyledTokenPanelsContainer,
   StyledTopContainer,
+  StyledBottomContainer,
+  StyledSliderDots,
 } from "./styles";
 import { memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { StyledBalance, StyledEmptyUSD, StyledPercentSelect, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
@@ -249,14 +250,25 @@ const useHandleAddress = (connectedChainId?: number) => {
 const useTrade = () => {
   const { srcToken, dstToken } = useParsedSelectedTokens();
   const { useTrade, connectedChainId } = useAdapterContext();
+  const [isLoading, setIsLoading] = useState(false);
 
   const amount = hooks.useAmountBN("1", dstToken?.decimals);
   const handleAddress = useHandleAddress(connectedChainId);
   const res = useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), amount);
 
+  useEffect(() => {
+    setIsLoading(true);
+  }, [srcToken, dstToken]);
+
+  useEffect(() => {
+    if (!res.isLoading) {
+      setIsLoading(false);
+    }
+  }, [res.isLoading]);
+
   return {
     outAmount: res?.outAmount,
-    isLoading: !srcToken || !dstToken ? false : res?.isLoading,
+    isLoading,
   };
 };
 
@@ -447,20 +459,20 @@ const TWAPPanel = () => {
   return (
     <div className="twap-container">
       <StyledColumnFlex>
-        <StyledContainer>
-          <StyledTopContainer>
+        <StyledTopContainer>
+          <StyledTokenPanelsContainer>
             <TokenPanel isSrcToken={true} />
             <ChangeTokensOrder />
             <TokenPanel />
-          </StyledTopContainer>
+          </StyledTokenPanelsContainer>
           <LimitPriceToggle />
           <PricePanel />
-        </StyledContainer>
-        <StyledContainer>
+        </StyledTopContainer>
+        <StyledBottomContainer>
           <TotalTrades />
           <MaxDurationAndTradeInterval />
           <OpenConfirmationModalButton />
-        </StyledContainer>
+        </StyledBottomContainer>
       </StyledColumnFlex>
       <SwapModal />
     </div>
@@ -513,7 +525,7 @@ export function TotalTrades({ className = "" }: { className?: string }) {
         <InputContainer.Header>
           <Styles.StyledRowFlex justifyContent="space-between">
             <InputContainer.Header.Label tooltip={t.totalTradesTooltip} label="Total Trades" />
-            <InputContainer.Header.Label tooltip={t.tradeSizeTooltip} label="Size Per Trade: " value={`${chunkSize} ${srcToken?.symbol}`} />
+            <InputContainer.Header.Label tooltip={t.tradeSizeTooltip} label="Size Per Trade: " value={!srcToken ? "" : `${chunkSize} ${srcToken?.symbol}`} />
           </Styles.StyledRowFlex>
         </InputContainer.Header>
 
@@ -523,6 +535,7 @@ export function TotalTrades({ className = "" }: { className?: string }) {
             <StyledBackBody>
               <BackBody />
             </StyledBackBody>
+            <SliderDots />
             <StyledSlider className={className} maxTrades={maxPossibleChunks} value={chunks} onChange={setChunks} />
           </StyledSliderContainer>
         </Styles.StyledRowFlex>
@@ -530,6 +543,16 @@ export function TotalTrades({ className = "" }: { className?: string }) {
     </StyledContainerPadding>
   );
 }
+
+const SliderDots = () => {
+  return (
+    <StyledSliderDots>
+      {Array.from({ length: 4 }).map((_, index) => (
+        <span key={index} />
+      ))}
+    </StyledSliderDots>
+  );
+};
 
 const MaxDuration = () => {
   const isWarning = hooks.useIsPartialFillWarning();

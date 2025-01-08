@@ -62,3 +62,5 @@ export const configs: { [key: string]: Config } = {
     takerAbi: Configs.PancakeSwap.takerAbi,
   },
 };
+
+export const MOBILE = 700;

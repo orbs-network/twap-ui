@@ -1573,3 +1573,26 @@ export const usePriceInvert = (_price?: string, srcToken?: TokenData, dstToken?:
 
   return { price, leftToken, rightToken, onInvert, inverted };
 };
+
+export const useIsMobile = (breakpoint: number = 700) => {
+  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= breakpoint);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= breakpoint);
+    };
+
+    // Attach the resize event listener
+    window.addEventListener("resize", handleResize);
+
+    // Run once to ensure the state is correct on mount
+    handleResize();
+
+    // Clean up the event listener on unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [breakpoint]);
+
+  return isMobile;
+};

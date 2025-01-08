@@ -1,11 +1,10 @@
 import { isNativeAddress } from "@defi.org/web3-candies";
-import { styled } from "@mui/material";
+import { Box, Drawer, styled, SwipeableDrawer } from "@mui/material";
 import { TokenData } from "@orbs-network/twap";
 import { Components, getTokenFromTokensList, hooks, store, Styles, useTwapContext } from "@orbs-network/twap-ui";
 import React, { createContext, ReactNode, useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { useAdapterContext } from "./context";
 import { ArrowBottom, CloseIcon, InfoIcon, LinkIcon } from "./icons";
-import { useMutation } from "@tanstack/react-query";
 import {
   StyledSubmitModalContentHeader,
   StyledSubmitModalContent,
@@ -21,12 +20,13 @@ import {
   StyledDisclaimer,
   StyledDisclaimerContent,
   baseStyles,
+  StyledSubmitModalHandle,
+  StyledDrawer,
 } from "./styles";
 import Lottie from "react-lottie";
 import * as Loading_Lottie from "./lottie/Loading_Lottie.json";
 import * as Long_Success_Lottie from "./lottie/Long_Success_Lottie.json";
 import * as Submit_Lottie from "./lottie/Submit_Lottie.json";
-
 const Loading_Lottie_options = {
   loop: true,
   autoplay: true,
@@ -62,6 +62,7 @@ type SwapState = {
   step?: SwapStep;
   stepIndex: number;
   stepsCount: number;
+  error?: string;
 };
 
 type SubmitContextType = {
@@ -152,7 +153,7 @@ const Provider = ({ children }: { children: ReactNode }) => {
   const onClose = useCallback(() => {
     setShowConfirmation(false);
     // we reset the tokens and amounts, after a successfull trade
-    if (state.step === SwapStep.ORDER_PLACED ||state.step === SwapStep.ORDER_CREATED) {
+    if (state.step === SwapStep.ORDER_PLACED || state.step === SwapStep.ORDER_CREATED) {
       resetTwapStore();
     }
     setTimeout(() => {
@@ -174,61 +175,113 @@ const useSubmitSwapCallback = () => {
   const errorToast = useToastError();
   const orderPlacedToast = useOrderPlacedToast();
 
-  return useMutation({
-    mutationFn: async () => {
-      let step: SwapStep | undefined = undefined;
-      let wrapped = false;
-      const incrementStep = () => updateState(swapId, { stepIndex: state.stepIndex + 1 });
-      const updateSwapState = (_step: SwapStep) => {
-        updateState(swapId, { step: _step });
-        step = _step;
-      };
-      updateState(swapId, { stepsCount: calcStepsCount(shouldWrap, allowance) });
+  return useCallback(async () => {
+    let step: SwapStep | undefined = undefined;
+    let wrapped = false;
+    const incrementStep = () => updateState(swapId, { stepIndex: state.stepIndex + 1 });
+    const updateSwapState = (_step: SwapStep) => {
+      updateState(swapId, { step: _step });
+      step = _step;
+    };
+    updateState(swapId, { stepsCount: calcStepsCount(shouldWrap, allowance) });
 
-      try {
-        if (shouldWrap) {
-          updateSwapState(SwapStep.WRAP);
-          await wrap();
-          incrementStep();
-          wrapped = true;
-        }
-
-        if (!allowance) {
-          updateSwapState(SwapStep.APPROVE);
-
-          await approveCallback();
-          const approved = await refetchAllowance();
-          if (!approved.data) {
-            throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
-          }
-          incrementStep();
-        }
-        updateSwapState(SwapStep.ORDER_CREATE);
-        await createOrder(() => {
-          updateSwapState(SwapStep.ORDER_PLACED);
-        });
-        updateSwapState(SwapStep.ORDER_CREATED);
-        orderPlacedToast();
-      } catch (error) {
-        console.log({ error: (error as any).message });
-        if (wrapped) {
-          const wToken = getTokenFromTokensList(dappTokens, config?.wToken.address);
-          wToken && onSrcTokenSelected?.(wToken);
-        }
-        errorToast(error, step);
-        updateSwapState(SwapStep.ERROR);
+    try {
+      if (shouldWrap) {
+        updateSwapState(SwapStep.WRAP);
+        await wrap();
+        incrementStep();
+        wrapped = true;
       }
-    },
-  });
+
+      if (!allowance) {
+        updateSwapState(SwapStep.APPROVE);
+
+        await approveCallback();
+        const approved = await refetchAllowance();
+        if (!approved.data) {
+          throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
+        }
+        incrementStep();
+      }
+      updateSwapState(SwapStep.ORDER_CREATE);
+      await createOrder(() => {
+        updateSwapState(SwapStep.ORDER_PLACED);
+      });
+      updateSwapState(SwapStep.ORDER_CREATED);
+      orderPlacedToast();
+    } catch (error) {
+      console.log({ error: (error as any).message });
+      if (wrapped) {
+        const wToken = getTokenFromTokensList(dappTokens, config?.wToken.address);
+        wToken && onSrcTokenSelected?.(wToken);
+      }
+      errorToast(error, step);
+      updateState(swapId, { error: (error as any).message });
+      updateSwapState(SwapStep.ERROR);
+    }
+  }, [
+    allowance,
+    approveCallback,
+    config,
+    createOrder,
+    dappTokens,
+    onSrcTokenSelected,
+    orderPlacedToast,
+    refetchAllowance,
+    shouldWrap,
+    srcToken,
+    state.stepIndex,
+    swapId,
+    updateState,
+    wrap,
+    errorToast,
+  ]);
+};
+
+const PullableDrawer = ({ children }: { children: ReactNode }) => {
+  const { isOpen, setShowConfirmation } = store.useTwapStore((s) => ({
+    isOpen: s.showConfirmation,
+    setShowConfirmation: s.setShowConfirmation,
+  }));
+  const onClose = useSubmitContext().onClose;
+
+  return (
+    <StyledDrawer
+      anchor="bottom"
+      open={isOpen}
+      onClose={onClose}
+      onOpen={() => {}}
+      PaperProps={{
+        style: {
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+        },
+      }}
+    >
+      <StyledSubmitModalHandle />
+      {children}
+    </StyledDrawer>
+  );
 };
 
 const Modal = ({ children }: { children: ReactNode }) => {
   hooks.useHasAllowanceDebounedQuery();
+  const isMobile = hooks.useIsMobile();
+  const onClose = useSubmitContext().onClose;
 
   const { showConfirmation } = store.useTwapStore((s) => ({
     showConfirmation: s.showConfirmation,
   }));
-  return <Components.Base.Modal open={showConfirmation}>{children}</Components.Base.Modal>;
+
+  if (isMobile) {
+    return <PullableDrawer>{children}</PullableDrawer>;
+  }
+
+  return (
+    <Components.Base.Modal onClose={onClose} open={showConfirmation}>
+      {children}
+    </Components.Base.Modal>
+  );
 };
 
 const SubmitModalToken = ({ token, amount }: { token?: TokenData; amount?: string }) => {
@@ -272,7 +325,7 @@ const ModalContent = () => {
     state: { step },
   } = useSubmitContext();
 
-  const { mutateAsync: onSubmit } = useSubmitSwapCallback();
+  const onSubmit = useSubmitSwapCallback();
 
   if (step === SwapStep.ORDER_PLACED) {
     return <OrderPlacedContent />;
@@ -410,10 +463,21 @@ const OrderCreatedContent = () => {
 
 const ErrorContent = () => {
   const { TransactionErrorContent } = useAdapterContext();
-  const { onClose } = useSubmitContext();
+  const { onClose, state } = useSubmitContext();
+
+  const message = useMemo(() => {
+    console.log(state.error);
+
+    if (isTxRejected(state.error)) {
+      return "Transaction rejected";
+    }
+
+    return "Transaction failed";
+  }, [state.error]);
+
   return (
     <StepContent title="Error">
-      <TransactionErrorContent message="Something went wrong" onClick={onClose} />
+      <TransactionErrorContent message={message} onClick={onClose} />
     </StepContent>
   );
 };
@@ -440,6 +504,7 @@ const ProgressIndicator = () => {
 
 const ModalHeaderContent = ({ title, className = " " }: { title: string; className?: string }) => {
   const { onClose } = useSubmitContext();
+
   return (
     <StyledSubmitModalContentHeader className={`twap-submit-order-content-header ${className}`}>
       <Styles.StyledText>{title}</Styles.StyledText>
@@ -747,19 +812,19 @@ const useRejectedToastError = () => {
   );
 };
 
-const StyledTokens = styled(Styles.StyledColumnFlex)(({theme}) => {
-  const styles = baseStyles(theme)
- return {
-   gap: 16,
-  alignItems: "center",
-  svg: {
-    width: 24,
-    height: 24,
-   '*':{
-    fill: styles.label
-   }
-  },
- }
+const StyledTokens = styled(Styles.StyledColumnFlex)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    gap: 16,
+    alignItems: "center",
+    svg: {
+      width: 24,
+      height: 24,
+      "*": {
+        fill: styles.label,
+      },
+    },
+  };
 });
 
 const StyledTokenDisplayRight = styled(Styles.StyledRowFlex)({
@@ -784,7 +849,10 @@ const StyledTokenDisplay = styled(Styles.StyledRowFlex)({
 });
 
 export const isTxRejected = (error: any) => {
-  if (error?.message) {
-    return error.message?.toLowerCase()?.includes("rejected") || error.message?.toLowerCase()?.includes("denied");
-  }
+  try {
+    const message = error?.message || error;
+    if (message) {
+      return message?.toLowerCase()?.includes("rejected") || message?.toLowerCase()?.includes("denied");
+    }
+  } catch (error) {}
 };

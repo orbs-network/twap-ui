@@ -1,12 +1,12 @@
 import { LinearProgress, Typography, Box, styled } from "@mui/material";
 import { Components } from "../..";
 import { StyledColumnFlex, StyledRowFlex, StyledText, textOverflow } from "../../styles";
-import { useAmountUi, useFormatNumber, useGetToken } from "../../hooks";
+import { useAmountUi, useFormatNumber, useGetToken, useIsMobile } from "../../hooks";
 import { Loader, SmallLabel, TokenLogo, Tooltip } from "../../components/base";
 import { Status, TokenData } from "@orbs-network/twap";
 import { ReactNode } from "react";
 import { ChevronDown } from "./icons";
-import { OrderProgress, OrderStatus, useOrderExcecutionPrice } from "./Components";
+import { OrderProgress, OrderStatus } from "./Components";
 import { useListOrderContext } from "./context";
 import { InvertPrice } from "../../components";
 import { useOrderPrice } from "./hooks";
@@ -61,15 +61,49 @@ const StyledTokenSymbol = styled(StyledRowFlex)({
     fontWeight: 600,
   },
 });
-function OrderPreview() {
+
+const DesktopOrderPreview = () => {
   return (
     <StyledOrderPreview gap={0} className="twap-order-preview">
       <Tokens />
       <OrderExcecutionPrice />
-      <OrderPreviewRight />
+      <StyledStatusAndToggle>
+        <OrderPreviewRight />
+        <ToggleExpanded />
+      </StyledStatusAndToggle>
     </StyledOrderPreview>
   );
+};
+
+const MobileOrderPreview = () => {
+  return (
+    <StyledOrderPreview className="twap-order-preview">
+      <StyledRowFlex style={{ justifyContent: "space-between" }}>
+        <Tokens />
+        <ToggleExpanded />
+      </StyledRowFlex>
+      <StyledRowFlex style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
+        <OrderExcecutionPrice />
+        <OrderPreviewRight />
+      </StyledRowFlex>
+    </StyledOrderPreview>
+  );
+};
+
+function OrderPreview() {
+  const isMobile = useIsMobile(1200);
+  if (isMobile) {
+    return <MobileOrderPreview />;
+  }
+
+  return <DesktopOrderPreview />;
 }
+
+const StyledStatusAndToggle = styled(StyledRowFlex)({
+  width: 135,
+  gap: 5,
+  justifyContent: "space-between",
+});
 
 const OrderExcecutionPrice = () => {
   const { srcToken, dstToken, expanded } = useListOrderContext();
@@ -90,7 +124,6 @@ const OrderPreviewRight = () => {
       ) : (
         <OrderStatus order={order} />
       )}
-      <ToggleExpanded />
     </StyledStatus>
   );
 };
@@ -98,12 +131,18 @@ const OrderPreviewRight = () => {
 const StyledStatusHide = styled(StyledText)({
   textAlign: "right",
   flex: 1,
+  "@media (max-width: 1200px)": {
+    display: "none",
+  },
 });
 
 const StyledStatus = styled(StyledRowFlex)({
-  justifyContent: "space-between",
-  width: 135,
-  gap: 8,
+  flex: 1,
+  justifyContent: "flex-start",
+  "@media (max-width: 1200px)": {
+    width: "auto",
+    flex: "unset",
+  },
 });
 
 const StyledPrice = styled(InvertPrice)({
@@ -115,12 +154,20 @@ const StyledPrice = styled(InvertPrice)({
   svg: {
     cursor: "pointer",
   },
+  "@media (max-width: 1200px)": {
+    width: "auto",
+    flex: 1,
+  },
 });
 
 const SyledTokens = styled(StyledColumnFlex)({
   width: 160,
   alignItems: "flex-start",
   gap: 5,
+  "@media (max-width: 1200px)": {
+    width: "auto",
+    flex: 1,
+  },
 });
 
 const ToggleExpanded = () => {
@@ -135,6 +182,10 @@ const ToggleExpanded = () => {
 const StyledOrderPreview = styled(StyledRowFlex)({
   justifyContent: "space-between",
   cursor: "auto!important",
+  "@media (max-width: 1200px)": {
+    flexDirection: "column",
+    gap: 11,
+  },
 });
 
 const StyledExpandToggle = styled("button")<{ expanded: number }>(({ expanded }) => ({
@@ -156,8 +207,6 @@ const StyledExpandToggle = styled("button")<{ expanded: number }>(({ expanded })
 }));
 
 export default OrderPreview;
-
-
 
 interface OrderTokenDisplayProps {
   token?: TokenData;

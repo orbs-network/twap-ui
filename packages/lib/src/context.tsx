@@ -37,6 +37,7 @@ const Listener = (props: TwapLibProps) => {
   const { updateState } = useTwapStore((state) => ({
     updateState: state.updateState,
   }));
+
   const setChunks = useSetChunks();
   useEffect(() => {
     if (maxPossibleChunksReady && chunks && chunks > maxPossibleChunks) {

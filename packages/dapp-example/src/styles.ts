@@ -116,7 +116,7 @@ export const StyledThena = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
 }));
 
 export const StyledPancake = styled(StyledDapp)<{ isDarkTheme: number }>(({ isDarkTheme }) => ({
-  background: isDarkTheme ? 'linear-gradient(109deg, rgba(49, 60, 92, 0.20) 0.99%, rgba(61, 42, 84, 0.20) 101.69%), linear-gradient(140deg, #121621 0%, #160F1E 100%)' : "#EAF7FF",
+  background: isDarkTheme ? "linear-gradient(109deg, rgba(49, 60, 92, 0.20) 0.99%, rgba(61, 42, 84, 0.20) 101.69%), linear-gradient(140deg, #121621 0%, #160F1E 100%)" : "#EAF7FF",
   ".ui-selector-btn": {
     background: "#1fc7d4",
     color: isDarkTheme ? "white" : "black",
