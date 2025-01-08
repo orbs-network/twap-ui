@@ -554,6 +554,7 @@ export const useOrdersHistoryQuery = () => {
   const query = useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
+      if(!lib?.maker) return [];
       return await getOrders({
         account: lib!.maker,
         signal,
@@ -561,7 +562,6 @@ export const useOrdersHistoryQuery = () => {
         exchangeAddress: lib?.config.exchangeAddress,
       });
     },
-    enabled: !!lib,
     staleTime: Infinity,
     refetchInterval: REFETCH_ORDER_HISTORY,
   });

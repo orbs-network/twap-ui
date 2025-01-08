@@ -18,30 +18,11 @@ interface Props {
 
 function TokenSelectButton({ className = "", onClick, hideArrow, customUi, customButtonElement, CustomArrow = IoIosArrowDown }: Props) {
   const translations = useTwapContext().translations;
-  const wrongNetwork = useTwapStore((state) => state.wrongNetwork);
-  const maker = useTwapStore((state) => state.lib?.maker);
-
-  const selectTokenWarning = () => {
-    if (wrongNetwork) {
-      return translations.switchNetwork;
-    }
-    if (!maker) {
-      return translations.connect;
-    }
-  };
-
-  const warning = selectTokenWarning();
-
-  const _onClick = () => {
-    if (warning) return;
-    onClick();
-  };
 
   const Btn = customButtonElement || StyledContainer;
 
   return (
-    <Tooltip text={warning}>
-      <Btn className={`twap-token-select ${className}`} onClick={_onClick}>
+    <Btn className={`twap-token-select ${className}`} onClick={onClick}>
         <StyledRowFlex>
           {customUi ? (
             <>{customUi}</>
@@ -53,7 +34,6 @@ function TokenSelectButton({ className = "", onClick, hideArrow, customUi, custo
           )}
         </StyledRowFlex>
       </Btn>
-    </Tooltip>
   );
 }
 
