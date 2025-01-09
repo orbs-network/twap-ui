@@ -89,7 +89,6 @@ export const useWrapToken = () => {
         }
       },
       onError: (error: Error) => {
-        console.log(error.message);
         analytics.onWrapError(error.message);
         throw error;
       },
@@ -123,27 +122,22 @@ export const useApproveToken = (disableWizard?: boolean) => {
 
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   const srcToken = useTwapContext().srcToken;
+
   const { refetch } = useHasAllowanceQuery();
-  const wizardStore = useWizardStore();
   return useMutation(
     async () => {
-      setLoading(true);
-      if (!disableWizard) {
-        wizardStore.setAction(WizardAction.APPROVE);
-        wizardStore.setStatus(WizardActionStatus.PENDING);
-      }
+      const token = isNativeAddress(srcToken?.address || "") ? lib?.config.wToken : srcToken;
 
+      setLoading(true);
       analytics.onApproveRequest();
-      await lib?.approve(srcToken!, maxUint256, priorityFeePerGas, maxFeePerGas);
+      await lib?.approve(token!, maxUint256, priorityFeePerGas, maxFeePerGas);
       await refetch();
     },
     {
       onSuccess: async () => {
         analytics.onApproveSuccess();
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.SUCCESS);
       },
       onError: (error: Error) => {
-        !disableWizard && wizardStore.setStatus(WizardActionStatus.ERROR, error.message);
         analytics.onApproveError(error.message);
         throw error;
       },
@@ -417,8 +411,10 @@ export const useHasAllowanceDebounedQuery = () => {
 
   const debouncedValue = useDebounce(amount, 500);
   const querykey = useHasAllowanceQueryKey(debouncedValue);
-  const query = useQuery(querykey, () => lib!.hasAllowance(srcToken!, debouncedValue), {
-    enabled: !!lib && !!srcToken && BN(amount || 0).gt(0),
+  const token = isNativeAddress(srcToken?.address || "") ? lib?.config.wToken : srcToken;
+
+  const query = useQuery(querykey, () => lib!.hasAllowance(token!, debouncedValue), {
+    enabled: !!lib && !!token && BN(amount || 0).gt(0),
     staleTime: STALE_ALLOWANCE,
     refetchOnWindowFocus: true,
   });
@@ -434,8 +430,9 @@ export const useHasAllowanceQuery = () => {
   const amount = useSrcAmount().amount;
   const querykey = useHasAllowanceQueryKey(amount.toString());
 
-  const query = useQuery(querykey, () => lib!.hasAllowance(srcToken!, amount), {
-    enabled: !!lib && !!srcToken && BN(amount || 0).gt(0),
+  const token = isNativeAddress(srcToken?.address || "") ? lib?.config.wToken : srcToken;
+  const query = useQuery(querykey, () => lib!.hasAllowance(token!, amount), {
+    enabled: !!lib && !!token && BN(amount || 0).gt(0),
     staleTime: STALE_ALLOWANCE,
     refetchOnWindowFocus: true,
   });
@@ -730,7 +727,6 @@ export const useFormatNumber = ({
         .toFixed(decimalScale) // Format to the specified decimal scale
         .replace(/^0\./, "") // Remove the leading "0."
         .replace(/0+$/, ""); // Remove trailing zeros
-      console.log(num, formattedDecimals);
 
       // Return the result properly combining num and formatted decimals
       return formattedDecimals ? `${num}.${formattedDecimals}` : num;
@@ -952,8 +948,6 @@ function useSubmitOrderCallback() {
       BN(lib.config.bidDelaySeconds).toFixed(0),
       BN(fillDelaySeconds).toFixed(0),
     ];
-
-    console.log({ askParams });
 
     analytics.onCreateOrderRequest(askParams, account);
 

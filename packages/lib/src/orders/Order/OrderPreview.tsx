@@ -21,7 +21,7 @@ const Tokens = () => {
   return (
     <SyledTokens className="twap-order-preview-tokens">
       <TokensToken className="twap-order-preview-tokens-in-token" token={srcToken} amount={srcAmountUi} />
-      <TokensToken className="twap-order-preview-tokens-out-token" token={dstToken} amount={order.status === Status.Completed ? dstAmountUi : undefined} />
+      <TokensToken className="twap-order-preview-tokens-out-token" token={dstToken} amount={order.status === Status.Completed ? dstAmountUi : ""} />
     </SyledTokens>
   );
 };
@@ -42,7 +42,7 @@ const TokensToken = ({ token, amount, className }: { token?: TokenData; amount?:
       <Components.Base.TokenLogo logo={token?.logoUrl} />
       <StyledTokenSymbol>
         <StyledText>
-          {amountF} {token?.symbol}
+          {amount ? amountF : ""} {token?.symbol}
         </StyledText>
       </StyledTokenSymbol>
     </StyledToken>

@@ -63,6 +63,7 @@ type SwapState = {
   stepIndex: number;
   stepsCount: number;
   error?: string;
+  wrapped?: boolean;
 };
 
 type SubmitContextType = {
@@ -137,9 +138,14 @@ function reducer(state: State, action: Action): State {
 }
 
 const Provider = ({ children }: { children: ReactNode }) => {
-  const setShowConfirmation = store.useTwapStore((s) => s.setShowConfirmation);
+  const { setShowConfirmation, lib } = store.useTwapStore((s) => ({
+    setShowConfirmation: s.setShowConfirmation,
+    lib: s.lib,
+  }));
+
   const [_state, dispatch] = useReducer((state: State, action: Action) => reducer(state, action), initialState);
   const resetTwapStore = hooks.useResetStore();
+  const { dappTokens, onSrcTokenSelected } = useAdapterContext();
 
   const state = _state.states[_state.swapId];
 
@@ -159,7 +165,12 @@ const Provider = ({ children }: { children: ReactNode }) => {
     setTimeout(() => {
       dispatch({ type: "RESET" });
     }, 300);
-  }, [resetTwapStore, setShowConfirmation, state.step]);
+
+    if (state.wrapped) {
+      const wToken = getTokenFromTokensList(dappTokens, lib?.config?.wToken.address);
+      wToken && onSrcTokenSelected?.(wToken);
+    }
+  }, [resetTwapStore, setShowConfirmation, state.step, state.wrapped, onSrcTokenSelected, dappTokens, lib?.config?.wToken.address]);
 
   return <SubmitContext.Provider value={{ onClose, state, updateState, swapId: _state.swapId }}>{children}</SubmitContext.Provider>;
 };
@@ -168,6 +179,7 @@ const useSubmitSwapCallback = () => {
   const { state, updateState, swapId } = useSubmitContext();
   const { mutateAsync: approveCallback } = hooks.useApproveToken();
   const { data: allowance, refetch: refetchAllowance } = hooks.useHasAllowanceQuery();
+
   const { mutateAsync: createOrder } = hooks.useCreateOrder();
   const { mutateAsync: wrap } = hooks.useWrapToken();
   const { srcToken, onSrcTokenSelected, config, dappTokens } = useTwapContext();
@@ -177,12 +189,12 @@ const useSubmitSwapCallback = () => {
 
   return useCallback(async () => {
     let step: SwapStep | undefined = undefined;
-    let wrapped = false;
     const incrementStep = () => updateState(swapId, { stepIndex: state.stepIndex + 1 });
     const updateSwapState = (_step: SwapStep) => {
       updateState(swapId, { step: _step });
       step = _step;
     };
+
     updateState(swapId, { stepsCount: calcStepsCount(shouldWrap, allowance) });
 
     try {
@@ -190,7 +202,7 @@ const useSubmitSwapCallback = () => {
         updateSwapState(SwapStep.WRAP);
         await wrap();
         incrementStep();
-        wrapped = true;
+        updateState(swapId, { wrapped: true });
       }
 
       if (!allowance) {
@@ -210,11 +222,6 @@ const useSubmitSwapCallback = () => {
       updateSwapState(SwapStep.ORDER_CREATED);
       orderPlacedToast();
     } catch (error) {
-      console.log({ error: (error as any).message });
-      if (wrapped) {
-        const wToken = getTokenFromTokensList(dappTokens, config?.wToken.address);
-        wToken && onSrcTokenSelected?.(wToken);
-      }
       errorToast(error, step);
       updateState(swapId, { error: (error as any).message });
       updateSwapState(SwapStep.ERROR);

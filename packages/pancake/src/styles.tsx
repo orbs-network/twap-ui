@@ -1659,7 +1659,6 @@ export const StyledDrawer = styled(SwipeableDrawer)(({ theme }) => {
     ".MuiBackdrop-root": {
       background: styles.darkMode ? "rgba(68, 62, 88, 0.60)" : "rgba(40, 13, 95, 0.6)",
       opacity: 0.6,
-      pointerEvents: "none",
     },
   };
 });
