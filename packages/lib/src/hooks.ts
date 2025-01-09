@@ -371,13 +371,13 @@ export const useSrcUsd = () => {
 };
 
 export const useDstUsd = () => {
-  const dstToken = useTwapContext().dstToken;
+  const {dstToken, marketPriceLoading} = useTwapContext();
 
-  const value = usePriceUSD(dstToken?.address).value;
+  const {value, isLoading} = usePriceUSD(dstToken?.address)
 
   return {
     value,
-    isLoading: value.isZero(),
+    isLoading: marketPriceLoading || isLoading,
   };
 };
 

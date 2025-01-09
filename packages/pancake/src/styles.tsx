@@ -528,12 +528,9 @@ export const StyledBalance = styled(Components.TokenBalance)(({ theme, isSrc }) 
   };
 });
 
-export const StyledMarketPrice = styled(Styles.StyledText)(({ theme }) => {
-  const styles = baseStyles(theme);
+export const StyledMarketPrice = styled('div')(({ theme }) => {
   return {
-    fontSize: 14,
-    fontWeight: "400!important",
-    color: styles.primaryTextColor,
+
   };
 });
 
