@@ -126,12 +126,8 @@ const TotalTrades = () => {
 const MinAmountOut = () => {
   const { order, dstToken } = useListOrderContext();
   const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmount);
-  const dstMinAmountOut = useMemo(() => {
-    if (!dstMinAmountOutUi || !order.totalChunks) return "0";
-    return BN(dstMinAmountOutUi).multipliedBy(order.totalChunks).toString();
-  }, [dstMinAmountOutUi, order.totalChunks]);
 
-  return <OrderDetails.MinReceived isMarketOrder={order.isMarketOrder} minReceived={dstMinAmountOut} symbol={dstToken?.symbol} />;
+  return <OrderDetails.MinReceived isMarketOrder={order.isMarketOrder} minReceived={dstMinAmountOutUi} symbol={dstToken?.symbol} />;
 };
 
 const Filled = () => {

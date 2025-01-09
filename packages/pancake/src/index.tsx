@@ -250,27 +250,14 @@ const useHandleAddress = (connectedChainId?: number) => {
 const useTrade = () => {
   const { srcToken, dstToken } = useParsedSelectedTokens();
   const { useTrade, connectedChainId } = useAdapterContext();
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const amount = hooks.useAmountBN('1', srcToken?.decimals);
+
+  const amount = hooks.useAmountBN("1", srcToken?.decimals);
   const handleAddress = useHandleAddress(connectedChainId);
   const res = useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), amount);
 
-  useEffect(() => {
-    if (srcToken && dstToken) {
-      setIsLoading(true);
-    }
-  }, [srcToken, dstToken]);
-
-  useEffect(() => {
-    if (!res.isLoading) {
-      setIsLoading(false);
-    }
-  }, [res.isLoading]);
-
   return {
     outAmount: res?.outAmount,
-    isLoading,
+    isLoading: !srcToken || !dstToken ? false : res?.isLoading,
   };
 };
 

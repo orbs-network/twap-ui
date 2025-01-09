@@ -688,7 +688,54 @@ export const useFormatNumber = ({
     suffix,
   });
 
-  return result.value?.toString();
+  const val = result.value?.toString();
+  return useMemo(() => {
+    const numericValue = Number(val || "0");
+
+    if (!val || numericValue === 0) {
+      return "0";
+    }
+
+    const [num, decimals] = val.split("."); // Split into integer and decimal parts
+
+    if (!decimals) {
+      return num; // Return the integer part if no decimals exist
+    }
+
+    if (numericValue < 1) {
+      // For numbers less than 1, refine decimals dynamically up to 18 places
+      let decimalScaleToUse = decimalScale;
+      let formattedDecimals = "";
+      let foundNonZero = false;
+
+      while (!foundNonZero && decimalScaleToUse <= 18) {
+        let currentValue = Number(`0.${decimals}`).toFixed(decimalScaleToUse);
+
+        if (Number(currentValue) !== 0) {
+          currentValue = currentValue.replace(/\.?0+$/, ""); // Remove trailing zeros
+        }
+
+        if (Number(currentValue) !== 0) {
+          foundNonZero = true;
+          formattedDecimals = currentValue.split(".")[1]; // Extract the decimal part
+        } else {
+          decimalScaleToUse++;
+        }
+      }
+
+      return formattedDecimals ? `${num}.${formattedDecimals}` : num;
+    } else {
+      // For numbers >= 1, strip trailing zeros from decimals
+      const formattedDecimals = Number(`0.${decimals}`)
+        .toFixed(decimalScale) // Format to the specified decimal scale
+        .replace(/^0\./, "") // Remove the leading "0."
+        .replace(/0+$/, ""); // Remove trailing zeros
+      console.log(num, formattedDecimals);
+
+      // Return the result properly combining num and formatted decimals
+      return formattedDecimals ? `${num}.${formattedDecimals}` : num;
+    }
+  }, [val, decimalScale]);
 };
 
 export const useSrcAmountNotZero = () => {
