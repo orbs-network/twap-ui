@@ -257,7 +257,7 @@ const useTrade = () => {
   const res = useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), amount);
 
   useEffect(() => {
-    if(srcToken && dstToken) {
+    if (srcToken && dstToken) {
       setIsLoading(true);
     }
   }, [srcToken, dstToken]);

@@ -23,17 +23,17 @@ function TokenSelectButton({ className = "", onClick, hideArrow, customUi, custo
 
   return (
     <Btn className={`twap-token-select ${className}`} onClick={onClick}>
-        <StyledRowFlex>
-          {customUi ? (
-            <>{customUi}</>
-          ) : (
-            <>
-              <StyledOneLineText>{translations.selectToken}</StyledOneLineText>
-              {!hideArrow && <CustomArrow size={20} />}
-            </>
-          )}
-        </StyledRowFlex>
-      </Btn>
+      <StyledRowFlex>
+        {customUi ? (
+          <>{customUi}</>
+        ) : (
+          <>
+            <StyledOneLineText>{translations.selectToken}</StyledOneLineText>
+            {!hideArrow && <CustomArrow size={20} />}
+          </>
+        )}
+      </StyledRowFlex>
+    </Btn>
   );
 }
 

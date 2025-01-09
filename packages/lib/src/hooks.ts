@@ -554,7 +554,7 @@ export const useOrdersHistoryQuery = () => {
   const query = useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
-      if(!lib?.maker) return [];
+      if (!lib?.maker) return [];
       return await getOrders({
         account: lib!.maker,
         signal,
