@@ -528,10 +528,8 @@ export const StyledBalance = styled(Components.TokenBalance)(({ theme, isSrc }) 
   };
 });
 
-export const StyledMarketPrice = styled('div')(({ theme }) => {
-  return {
-
-  };
+export const StyledMarketPrice = styled("div")(({ theme }) => {
+  return {};
 });
 
 export const StyledUSD = styled(Components.TokenUSD)({

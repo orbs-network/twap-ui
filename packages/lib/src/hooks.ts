@@ -371,9 +371,9 @@ export const useSrcUsd = () => {
 };
 
 export const useDstUsd = () => {
-  const {dstToken, marketPriceLoading} = useTwapContext();
+  const { dstToken, marketPriceLoading } = useTwapContext();
 
-  const {value, isLoading} = usePriceUSD(dstToken?.address)
+  const { value, isLoading } = usePriceUSD(dstToken?.address);
 
   return {
     value,
