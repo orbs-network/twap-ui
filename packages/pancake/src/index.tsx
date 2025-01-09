@@ -251,8 +251,8 @@ const useTrade = () => {
   const { srcToken, dstToken } = useParsedSelectedTokens();
   const { useTrade, connectedChainId } = useAdapterContext();
   const [isLoading, setIsLoading] = useState(false);
-
-  const amount = hooks.useAmountBN("1", dstToken?.decimals);
+  
+  const amount = hooks.useAmountBN('1', srcToken?.decimals);
   const handleAddress = useHandleAddress(connectedChainId);
   const res = useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), amount);
 
