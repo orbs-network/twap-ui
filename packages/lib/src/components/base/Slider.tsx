@@ -87,7 +87,7 @@ export function FrontBody() {
       />
       <defs>
         <filter id="filter0_d_376_96946" x="2" y="0.5" width="28" height="28" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-          <feFlood floodColor="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
           <feOffset dy="0.5" />
           <feGaussianBlur stdDeviation="1" />
