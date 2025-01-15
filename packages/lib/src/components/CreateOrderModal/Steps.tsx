@@ -8,9 +8,10 @@ import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
 import { RiCheckboxCircleFill } from "@react-icons/all-files/ri/RiCheckboxCircleFill";
 import { useTwapContext } from "../../context/context";
 import { useNetwork } from "../../hooks/hooks";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const Steps = () => {
-  const steps = useTwapContext().state.swapSteps;
+  const steps = useTwapContextUI().state.swapSteps;
   return (
     <StepsContainer>
       <StyledSteps>{steps?.map((step, index) => <StepComponent key={step} stepType={step} />)}</StyledSteps>

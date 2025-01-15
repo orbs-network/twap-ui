@@ -4,18 +4,18 @@ import { useTokenDisplay } from "./hooks";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode, useMemo } from "react";
 import { styled } from "styled-components";
-import { useTwapContext } from "../../context/context";
 import { useIsMarketOrder } from "../../hooks";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const TokenDispalySmall = ({ isSrc }: { isSrc?: boolean }) => {
   const { amount, token } = useTokenDisplay(isSrc);
   const isMarketOrder = useIsMarketOrder();
-  const { swapState } = useTwapContext().state;
+  const { swapStatus } = useTwapContextUI().state;
 
   const prefix = useMemo(() => {
     if (!isSrc || !isMarketOrder) return "";
-    return swapState === "success" ? "Allocated" : "Allocate";
-  }, [isSrc, isMarketOrder]);
+    return swapStatus === "success" ? "Allocated" : "Allocate";
+  }, [isSrc, isMarketOrder, swapStatus]);
 
   return (
     <StyledTokenDispalySmall className="twap-order-modal-token-small">

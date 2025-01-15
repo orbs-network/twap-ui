@@ -14,6 +14,8 @@ import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
 import { ORBS_LOGO, ORBS_LOGO_FALLBACK, Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+
 import {
   useFeeOnTransferWarning,
   useFillDelay,
@@ -93,17 +95,19 @@ export const TokenPanelInput = ({
 };
 
 const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
-  const { srcToken, updateState } = useTwapContext();
+  const { parsedSrcToken, actionHandlers } = useTwapContextUI();
   const srcAmountUi = useSrcAmount().amountUi;
 
-  const onChange = useCallback(
-    (srcAmountUi: string) => {
-      updateState({ srcAmountUi });
-    },
-    [updateState, srcAmountUi],
+  return (
+    <Input
+      prefix=""
+      onChange={actionHandlers.setSrcAmount}
+      value={srcAmountUi || ""}
+      decimalScale={parsedSrcToken?.decimals}
+      className={props.className}
+      placeholder={props.placeholder}
+    />
   );
-
-  return <Input prefix="" onChange={onChange} value={srcAmountUi || ""} decimalScale={srcToken?.decimals} className={props.className} placeholder={props.placeholder} />;
 };
 
 const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
@@ -178,16 +182,10 @@ export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hid
 export function TradeIntervalSelector({ placeholder }: { placeholder?: string }) {
   const {
     state: { typedFillDelay },
-    updateState,
-  } = useTwapContext();
-  const setFillDelay = useCallback(
-    (typedFillDelay: TimeDuration) => {
-      updateState({ typedFillDelay });
-    },
-    [updateState, typedFillDelay],
-  );
+    actionHandlers,
+  } = useTwapContextUI();
 
-  return <TimeSelector placeholder={placeholder} onChange={setFillDelay} value={typedFillDelay} />;
+  return <TimeSelector placeholder={placeholder} onChange={actionHandlers.setFillDelay} value={typedFillDelay} />;
 }
 
 interface TokenSelectProps extends TWAPTokenSelectProps {

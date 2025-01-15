@@ -5,6 +5,7 @@ import { useDuration, useShouldWrapOrUnwrapOnly, useSetDuration, useIsPartialFil
 import { StyledColumnFlex } from "../styles";
 import { BottomContent, Button, Label, Message, NumericInput, ResolutionSelect } from "./base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const duration = useDuration().timeDuration;
@@ -83,7 +84,7 @@ const MaxDurationLabel = () => {
 
 const Reset = ({ Component }: { Component?: FC<{ onClick: () => void }> }) => {
   const setCustomDuration = useSetDuration();
-  const { state } = useTwapContext();
+  const { state } = useTwapContextUI();
   const { typedDuration } = state;
 
   if (!typedDuration) return null;

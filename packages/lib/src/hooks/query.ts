@@ -12,6 +12,7 @@ import { ordersStore } from "../store";
 import { useSrcAmount } from "./lib";
 import { Order, OrderStatus, getOrders, getOrderById, getOrderByTxHash } from "@orbs-network/twap-sdk";
 import { amountBNV2 } from "../utils";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const { web3, account, config } = useTwapContext();
@@ -219,19 +220,20 @@ export const useAllOrders = () => {
   );
 };
 export const useOrdersHistory = () => {
-  const { state, config, account, twapSDK } = useTwapContext();
+  const { config, account } = useTwapContext();
+  const { sdk, state } = useTwapContextUI();
 
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
   const query = useQuery(
     QUERY_KEY,
     async ({ signal }) => {
-      const res = await twapSDK.getUserOrders({ account: account!, signal });
+      const res = await sdk.getUserOrders({ account: account!, signal });
 
       return res;
     },
     {
-      enabled: !!config && !state.showConfirmation && !!account,
+      enabled: !!config && !!account,
       refetchInterval: REFETCH_ORDER_HISTORY,
       onError: (error: any) => console.log(error),
       refetchOnWindowFocus: true,

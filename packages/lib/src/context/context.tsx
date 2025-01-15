@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
-import { TWAPContextProps, TwapLibProps, TwapState } from "../types";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
+import { TWAPContextProps, TwapLibProps } from "../types";
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TwapErrorWrapper } from "../ErrorHandling";
@@ -7,10 +7,7 @@ import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
 import { setWeb3Instance } from "@defi.org/web3-candies";
-import { constructSDK, DEFAULT_FILL_DELAY, TimeUnit } from "@orbs-network/twap-sdk";
-import BN from "bignumber.js";
-import { TX_GAS_COST } from "../consts";
-import { useSetDuration } from "../hooks/lib";
+import { TwapProvider as TwapProviderUI, useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const TwapContext = createContext({} as TWAPContextProps);
 const queryClient = new QueryClient({
@@ -21,48 +18,40 @@ const queryClient = new QueryClient({
   },
 });
 
+const parseToken = (token: any) => {
+  return {} as any;
+};
+
 const WrappedTwap = (props: TwapLibProps) => {
-  const { srcToken, dstToken, isLimitPanel } = useTwapContext();
+  return (
+    <TwapErrorWrapper>
+      <TwapProviderUI parseToken={parseToken} isLimitPanel={props.isLimitPanel} config={props.config}>
+        <Panel {...props}>{props.children}</Panel>
+      </TwapProviderUI>
+    </TwapErrorWrapper>
+  );
+};
+
+const Panel = (props: TwapLibProps) => {
+  const { actionHandlers } = useTwapContextUI();
+  const { srcToken, dstToken } = useTwapContext();
   query.useFeeOnTransfer(srcToken?.address);
   query.useFeeOnTransfer(dstToken?.address);
   query.useAllowance();
-  useMinChunksSizeUpdater();
 
-  return <TwapErrorWrapper>{props.children}</TwapErrorWrapper>;
-};
+  useEffect(() => {
+    actionHandlers.setMarketPrice(props.marketPrice || "");
+  }, [props.marketPrice]);
 
-export const getInitialState = ({ storeOverride = {}, isQueryParamsEnabled }: { storeOverride?: Partial<TwapState>; isQueryParamsEnabled?: boolean }): TwapState => {
-  return {
-    srcAmountUi: "",
-    typedFillDelay: DEFAULT_FILL_DELAY,
-    disclaimerAccepted: true,
-    currentTime: Date.now(),
-    ...storeOverride,
-  };
-};
+  useEffect(() => {
+    actionHandlers.setSrcToken(props.srcToken);
+  }, [props.srcToken]);
 
-enum ActionType {
-  UPDATED_STATE = "UPDATED_STATE",
-}
+  useEffect(() => {
+    actionHandlers.setDstToken(props.dstToken);
+  }, [props.srcToken]);
 
-type Action = { type: ActionType.UPDATED_STATE; value: Partial<TwapState> };
-
-const contextReducer = (state: TwapState, action: Action): TwapState => {
-  switch (action.type) {
-    case ActionType.UPDATED_STATE:
-      return { ...state, ...action.value };
-    default:
-      return state;
-  }
-};
-
-const useStore = (props: TwapLibProps) => {
-  const [state, dispatch] = useReducer(contextReducer, getInitialState({ storeOverride: props.storeOverride, isQueryParamsEnabled: props.enableQueryParams }));
-  const updateState = useCallback((value: Partial<TwapState>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
-  return {
-    updateState,
-    state,
-  };
+  return <>{props.children}</>;
 };
 
 const useIsWrongChain = (props: TwapLibProps, chainId?: number) => {
@@ -85,30 +74,18 @@ export const Content = (props: TwapLibProps) => {
   const { config } = props;
   const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
   const isWrongChain = useIsWrongChain(props, props.chainId);
-  const { updateState, state } = useStore(props);
   const uiPreferences = props.uiPreferences || {};
   const web3 = useMemo(() => (!props.provider ? undefined : new Web3(props.provider)), [props.provider]);
-  useEffect(() => {
-    setInterval(() => {
-      updateState({ currentTime: Date.now() });
-    }, 60_000);
-  }, [updateState]);
 
   useEffect(() => {
     setWeb3Instance(web3);
   }, [web3]);
-
-  const twapSDK = useMemo(() => {
-    return constructSDK({ config });
-  }, [config]);
 
   return (
     <TwapContext.Provider
       value={{
         translations,
         isWrongChain,
-        state,
-        updateState,
         marketPrice: props.marketPrice,
         uiPreferences,
         srcToken: props.srcToken,
@@ -135,7 +112,6 @@ export const Content = (props: TwapLibProps) => {
         nativeUsd: props.nativeUsd,
         useDappToken: props.useDappToken,
         useParsedToken: props.useParsedToken,
-        twapSDK,
       }}
     >
       <WrappedTwap {...props} />
@@ -154,34 +130,4 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
 export const useTwapContext = () => {
   return useContext(TwapContext);
-};
-
-const useMinChunksSizeUpdater = () => {
-  const { maxFeePerGas } = query.useGasPrice();
-  const {
-    updateState,
-    state: { minChunkSizeUsd },
-    config,
-    nativeUsd,
-  } = useTwapContext();
-
-  const calculate = useCallback(() => {
-    const result = BN(TX_GAS_COST)
-      .multipliedBy(maxFeePerGas)
-      .multipliedBy(nativeUsd || "0")
-      .dividedBy(1e18)
-      .dividedBy(0.05)
-      .decimalPlaces(0)
-      .toNumber();
-    return updateState({ minChunkSizeUsd: result });
-  }, [maxFeePerGas.toString(), updateState, config.minChunkSizeUsd, nativeUsd]);
-  useEffect(() => {
-    updateState({ minChunkSizeUsd: undefined });
-  }, [config.chainId]);
-
-  useEffect(() => {
-    if (maxFeePerGas.gt(0) && !minChunkSizeUsd && nativeUsd) {
-      calculate();
-    }
-  }, [maxFeePerGas.toString(), calculate, minChunkSizeUsd, nativeUsd]);
 };

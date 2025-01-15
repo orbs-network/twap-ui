@@ -6,9 +6,10 @@ import { handleFillDelayText } from "../utils";
 import { BottomContent, Label, Message, NumericInput, ResolutionSelect } from "./base";
 import { useFillDelay, useMinimumDelayMinutes, useSetFillDelay, useShouldWrapOrUnwrapOnly } from "../hooks/lib";
 import { TimeUnit } from "@orbs-network/twap-sdk";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const fillDelay = useTwapContext().state.typedFillDelay;
+  const fillDelay = useTwapContextUI().state.typedFillDelay;
   const setFillDelay = useSetFillDelay();
 
   return <StyledInput className={className} value={fillDelay.value} onChange={(v) => setFillDelay({ unit: fillDelay.unit, value: Number(v) })} placeholder={placeholder} />;
@@ -21,7 +22,7 @@ const StyledInput = styled(NumericInput)({
 });
 
 const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
-  const fillDelay = useTwapContext().state.typedFillDelay;
+  const fillDelay = useTwapContextUI().state.typedFillDelay;
   const setFillDelay = useSetFillDelay();
 
   const onChange = useCallback(

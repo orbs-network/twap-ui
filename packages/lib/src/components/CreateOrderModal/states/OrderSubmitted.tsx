@@ -5,9 +5,10 @@ import { HiArrowCircleUp } from "@react-icons/all-files/hi/HiArrowCircleUp";
 import { useOrderType } from "../hooks";
 import { useTwapContext } from "../../../context/context";
 import { useExplorerUrl } from "../../../hooks/hooks";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export function OrderSubmitted() {
-  const { createOrdertxHash } = useTwapContext().state;
+  const { createOrderTxHash } = useTwapContextUI().state;
   const explorerUrl = useExplorerUrl();
 
   return (
@@ -17,7 +18,7 @@ export function OrderSubmitted() {
       </Logo>
       <Title />
       <SmallTokens />
-      {createOrdertxHash && <Link href={`${explorerUrl}/tx/${createOrdertxHash}`}>View explorer</Link>}
+      {createOrderTxHash && <Link href={`${explorerUrl}/tx/${createOrderTxHash}`}>View explorer</Link>}
     </StyledContainer>
   );
 }

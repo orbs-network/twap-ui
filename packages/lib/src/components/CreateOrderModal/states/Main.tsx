@@ -26,6 +26,7 @@ import {
   useUsdAmount,
 } from "../../../hooks/lib";
 import { useMemo } from "react";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 const Price = () => {
   const { srcToken, dstToken } = useTwapContext();
@@ -97,9 +98,9 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
 };
 
 export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) => {
-  const { swapState, swapSteps } = useTwapContext().state;
+  const { swapStatus, swapSteps } = useTwapContextUI().state;
 
-  const shouldOnlyConfirm = swapState === "loading" && size(swapSteps) === 1;
+  const shouldOnlyConfirm = swapStatus === "loading" && size(swapSteps) === 1;
 
   if (shouldOnlyConfirm) {
     return <ConfirmOrder />;
@@ -108,7 +109,7 @@ export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; class
   return (
     <StyledReview className={className}>
       <Tokens />
-      {swapState === "loading" ? (
+      {swapStatus === "loading" ? (
         <>
           <StyledSwapPendingBorder />
           <Steps />

@@ -1,12 +1,11 @@
 import { stateActions } from "../context/actions";
-import { useTwapContext } from "../context/context";
-import { useOutAmount, useSrcAmount, useUsdAmount } from "./lib";
+import { useOutAmount, useUsdAmount } from "./lib";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const useSwapModal = () => {
-  const { state, srcToken, dstToken } = useTwapContext();
-  const { swapState, showConfirmation: isOpen, swapData } = state;
+  const { state, parsedSrcToken, parsedDstToken } = useTwapContextUI();
+  const { swapStatus, showConfirmation: isOpen, typedSrcAmount } = state;
   const { onClose, onOpen } = stateActions.useSwapModalActions();
-  const srcAmountUi = useSrcAmount().amountUi;
   const { srcUsd, dstUsd } = useUsdAmount();
   const outAmount = useOutAmount().amountUi;
 
@@ -14,12 +13,12 @@ export const useSwapModal = () => {
     onClose,
     onOpen,
     isOpen,
-    swapState,
-    srcAmount: swapData?.srcAmount.amountUi || srcAmountUi,
-    srcUsd: swapData?.amountUsd.srcUsd || srcUsd,
-    dstUsd: swapData?.amountUsd.dstUsd || dstUsd,
-    outAmount: swapData?.outAmount.amountUi || outAmount,
-    srcToken: swapData?.srcToken || srcToken,
-    dstToken: swapData?.dstToken || dstToken,
+    swapState: swapStatus,
+    srcAmount: typedSrcAmount,
+    srcUsd: srcUsd,
+    dstUsd: dstUsd,
+    outAmount: outAmount,
+    srcToken: parsedSrcToken,
+    dstToken: parsedDstToken,
   };
 };

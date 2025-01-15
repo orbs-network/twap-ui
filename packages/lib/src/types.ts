@@ -172,8 +172,6 @@ export type SelectMeuItem = { text: string; value: string | number };
 
 type UsePriceUSD = (address?: string, token?: Token) => number | string | undefined;
 
-export type StoreOverride = Partial<TwapState>;
-
 export interface TwapContextUIPreferences {
   usdSuffix?: string;
   usdPrefix?: string;
@@ -226,7 +224,6 @@ export interface TwapLibProps {
   dappWToken?: any;
   connect?: () => void;
   askDataParams?: any[];
-  storeOverride?: StoreOverride;
   srcToken?: Token;
   dstToken?: Token;
   dappTokens?: any;
@@ -296,42 +293,6 @@ export interface TWAPTokenSelectProps {
 
 export type SwapState = "loading" | "success" | "failed" | "rejected";
 export type SwapStep = "createOrder" | "wrap" | "approve";
-
-export interface TwapState {
-  swapStep?: SwapStep;
-  swapSteps?: SwapStep[];
-  swapState?: SwapState;
-  srcAmountUi?: string;
-
-  confirmationClickTimestamp?: Moment;
-  showConfirmation?: boolean;
-  disclaimerAccepted?: boolean;
-
-  typedChunks?: number;
-  typedFillDelay: TimeDuration;
-  typedDuration?: TimeDuration;
-
-  createOrdertxHash?: string;
-  wrapTxHash?: string;
-  approveTxHash?: string;
-  unwrapTxHash?: string;
-
-  typedLimitPrice?: string;
-  isInvertedLimitPrice?: boolean;
-  limitPricePercent?: string;
-  isMarketOrder?: boolean;
-
-  createOrderSuccess?: boolean;
-  wrapSuccess?: boolean;
-  approveSuccess?: boolean;
-
-  selectedOrdersTab?: number;
-
-  swapData?: ReturnType<typeof useSwapData>;
-
-  minChunkSizeUsd?: number;
-  currentTime: number;
-}
 
 export interface TooltipProps {
   children: ReactNode;
@@ -427,8 +388,6 @@ interface TwapComponents {
 export interface TWAPContextProps {
   translations: Translations;
   isWrongChain: boolean;
-  state: TwapState;
-  updateState: (state: Partial<TwapState>) => void;
   uiPreferences: TwapContextUIPreferences;
   Components?: TwapComponents;
   srcToken?: Token;
@@ -452,7 +411,6 @@ export interface TWAPContextProps {
   enableQueryParams?: boolean;
   dappWToken?: Token;
   isExactAppoval?: boolean;
-  twapSDK: ReturnType<typeof constructSDK>;
   fee?: string;
   nativeUsd?: string;
   useDappToken?: (address?: string) => any;

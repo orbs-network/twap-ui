@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useTwapContext } from "./context";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const useSetQueryParams = () => {
   const enableQueryParams = useTwapContext().enableQueryParams;
@@ -22,33 +23,26 @@ export const useSwitchNativeToWrapped = () => {
 
 // Hook for handling modal close
 const useSwapModalActions = () => {
-  const { updateState, state } = useTwapContext();
-  const { swapState, wrapSuccess } = state;
+  const { state, actionHandlers } = useTwapContextUI();
+  const { swapStatus } = state;
   const onClose = useCallback(
     (closeDalay?: number) => {
-      updateState({ showConfirmation: false });
-      if (swapState === "loading") return;
+      actionHandlers.setShowConfirmation(false);
+      if (swapStatus === "loading") return;
       setTimeout(() => {
-        updateState({
-          swapSteps: undefined,
-          swapState: undefined,
-          swapStep: undefined,
-          approveSuccess: undefined,
-          wrapSuccess: undefined,
-          wrapTxHash: undefined,
-          unwrapTxHash: undefined,
-          approveTxHash: undefined,
-          createOrderSuccess: undefined,
-          swapData: undefined,
-        });
+        actionHandlers.setSwapSteps(undefined);
+        actionHandlers.setSwapStatus(undefined);
+        actionHandlers.setSwapStep(undefined);
+        actionHandlers.setCreatedOrderSuccess(false);
+        actionHandlers.setWrapSuccess(false);
       }, closeDalay || 300);
     },
-    [updateState, swapState, wrapSuccess],
+    [actionHandlers, swapStatus],
   );
 
   const onOpen = useCallback(() => {
-    updateState({ showConfirmation: true });
-  }, [updateState]);
+    actionHandlers.setShowConfirmation(true);
+  }, [actionHandlers]);
 
   return {
     onClose,

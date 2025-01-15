@@ -7,11 +7,17 @@ import { useSwapModal } from "./useSwapModal";
 import { isNil } from "../utils";
 import { useChangeNetwork, useSrcBalance } from "./hooks";
 import { useNoLiquidity, useOutAmount, useShouldOnlyWrap, useShouldUnwrap, useSwapWarning } from "./lib";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const useConfirmationButton = (connect?: () => void) => {
-  const { translations, isWrongChain, state, srcToken, dstToken, srcUsd, account } = useTwapContext();
-  const { swapState } = state;
-  const createOrderLoading = swapState === "loading";
+  const { translations, isWrongChain, srcUsd, account } = useTwapContext();
+  const {
+    config,
+    state: { swapStatus },
+    parsedSrcToken,
+    parsedDstToken,
+  } = useTwapContextUI();
+  const createOrderLoading = swapStatus === "loading";
   const { onOpen } = useSwapModal();
   const outAmountLoading = useOutAmount().isLoading;
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
@@ -20,8 +26,8 @@ export const useConfirmationButton = (connect?: () => void) => {
   const usdLoading = BN(srcUsd || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
   const warning = useSwapWarning();
-  const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);
-  const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(dstToken?.address);
+  const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(parsedSrcToken?.address);
+  const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(parsedDstToken?.address);
   const shouldOnlyWrap = useShouldOnlyWrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
