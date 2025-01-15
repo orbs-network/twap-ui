@@ -28,19 +28,6 @@ const WrappedTwap = (props: TwapLibProps) => {
   query.useAllowance();
   useMinChunksSizeUpdater();
 
-  const { updateState } = useTwapContext();
-  const setCustomDuration = useSetDuration();
-
-  useEffect(() => {
-    if (isLimitPanel) {
-      updateState({ isMarketOrder: false });
-      setCustomDuration({ unit: TimeUnit.Weeks, value: 1 });
-    } else {
-      updateState({ isMarketOrder: true });
-      setCustomDuration({ unit: TimeUnit.Minutes, value: 5 });
-    }
-  }, [isLimitPanel, updateState, setCustomDuration]);
-
   return <TwapErrorWrapper>{props.children}</TwapErrorWrapper>;
 };
 

@@ -1,79 +1,32 @@
-import React, { useContext, useEffect } from "react";
+import { Dispatch, useContext, useEffect } from "react";
 import { createContext, useReducer, useCallback, useMemo } from "react";
-import {
-  Config,
-  DEFAULT_FILL_DELAY,
-  getMaxFillDelayWarning,
-  getMaxTradeDurationWarning,
-  getMinFillDelayWarning,
-  getMinTradeDurationWarning,
-  getPartialFillWarning,
-  getTradeSizeWarning,
-  TimeDuration,
-  TwapSDK,
-} from "@orbs-network/twap-sdk";
+import SDK from "@orbs-network/twap-sdk";
 import BN from "bignumber.js";
-import { toWeiAmount } from "./utils";
-import { getChunks, getDeadline, getDestTokenMinAmount, getDuration, getFillDelay, getSrcChunkAmount, prepareOrderArgs } from "@orbs-network/twap-sdk/dist/lib/lib";
-export type Token = {
-  address: string;
-  symbol: string;
-  decimals: number;
-  logoUrl: string;
-};
-
-interface State {
-  swapStep?: number;
-  swapSteps?: number[];
-  swapStatus?: any;
-  srcAmount?: string;
-
-  srcToken?: Token;
-  dstToken?: Token;
-
-  chunks?: number;
-  fillDelay: TimeDuration;
-  duration?: TimeDuration;
-
-  limitPrice?: string;
-  isInvertedLimitPrice?: boolean;
-  limitPricePercent?: string;
-  isMarketOrder?: boolean;
-  isLimitPanel?: boolean;
-
-  marketPrice?: string;
-  oneSrcTokenUsd?: number;
-  currentTime: number;
-}
+import { toAmountUi } from "./utils";
+import { State, Token, TwapProviderProps } from "./types";
 
 const initialState: State = {
   currentTime: Date.now(),
-  fillDelay: DEFAULT_FILL_DELAY,
+  fillDelay: SDK.DEFAULT_FILL_DELAY,
 };
 
 interface ContextType {
   state: State;
-  setSrcAmount: (srcAmount: string) => void;
-  setChunks: (chunks: number) => void;
-  setFillDelay: (fillDelay: TimeDuration) => void;
-  setDuration: (duration: TimeDuration) => void;
-  setLimitPrice: (limitPrice: string) => void;
-  setIsInvertedLimitPrice: (isInvertedLimitPrice: boolean) => void;
-  setLimitPricePercent: (limitPricePercent: string) => void;
-  setIsMarketOrder: (isMarketOrder: boolean) => void;
-  setCurrentTime: (currentTime: number) => void;
-  derivedValues: ReturnType<typeof useDerivedValues>;
-  warnings: ReturnType<typeof useWarnings>;
-  sdk?: TwapSDK;
+  actionHandlers: ReturnType<typeof useStateActionsHandlers>;
+  sdk?: SDK.TwapSDK;
+  isLimitPanel?: boolean;
+  parsedSrcToken?: Token;
+  parsedDstToken?: Token;
+  config: SDK.Config;
+  derivedValues: ReturnType<typeof useDerivedSwapValues>;
 }
-
-const Context = createContext({} as ContextType);
-
 enum ActionType {
   UPDATED_STATE = "UPDATED_STATE",
 }
 
 type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> };
+
+const Context = createContext({} as ContextType);
 
 const contextReducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -84,205 +37,126 @@ const contextReducer = (state: State, action: Action): State => {
   }
 };
 
-const useTwapState = () => {
-  const [state, dispatch] = useReducer(contextReducer, initialState);
+const useStateActionsHandlers = (dispatch: Dispatch<Action>) => {
   const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
 
-  const setSrcAmount = useCallback((srcAmount: string) => updateState({ srcAmount }), [updateState]);
-  const setChunks = useCallback((chunks: number) => updateState({ chunks }), [updateState]);
-  const setFillDelay = useCallback((fillDelay: TimeDuration) => updateState({ fillDelay }), [updateState]);
-  const setDuration = useCallback((duration: TimeDuration) => updateState({ duration }), [updateState]);
-  const setLimitPrice = useCallback((limitPrice: string) => updateState({ limitPrice }), [updateState]);
-  const setIsInvertedLimitPrice = useCallback((isInvertedLimitPrice: boolean) => updateState({ isInvertedLimitPrice }), [updateState]);
-  const setLimitPricePercent = useCallback((limitPricePercent: string) => updateState({ limitPricePercent }), [updateState]);
-  const setIsMarketOrder = useCallback((isMarketOrder: boolean) => updateState({ isMarketOrder }), [updateState]);
-  const setCurrentTime = useCallback((currentTime: number) => updateState({ currentTime }), [updateState]);
-
   return {
-    state,
-    setSrcAmount,
-    setChunks,
-    setFillDelay,
-    setDuration,
-    setLimitPrice,
-    setIsInvertedLimitPrice,
-    setLimitPricePercent,
-    setIsMarketOrder,
-    setCurrentTime,
+    setSrcAmount: useCallback((srcAmount: string) => updateState({ srcAmount }), [updateState]),
+    setChunks: useCallback((chunks: number) => updateState({ chunks }), [updateState]),
+    setFillDelay: useCallback((fillDelay: SDK.TimeDuration) => updateState({ fillDelay }), [updateState]),
+    setDuration: useCallback((duration: SDK.TimeDuration) => updateState({ duration }), [updateState]),
+    setLimitPrice: useCallback((limitPrice?: string) => updateState({ limitPrice }), [updateState]),
+    setIsInvertedLimitPrice: useCallback((isInvertedLimitPrice: boolean) => updateState({ isInvertedLimitPrice }), [updateState]),
+    setIsMarketOrder: useCallback((isMarketOrder: boolean) => updateState({ isMarketOrder }), [updateState]),
+    setMarketPrice: useCallback((marketPrice: string) => updateState({ marketPrice }), [updateState]),
+    setSrcToken: useCallback((rawSrcToken: any) => updateState({ rawSrcToken }), [updateState]),
+    setDstToken: useCallback((rawDstToken: any) => updateState({ rawDstToken }), [updateState]),
+    setOneSrcTokenUsd: useCallback((oneSrcTokenUsd: number) => updateState({ oneSrcTokenUsd }), [updateState]),
+    setCurrentTime: useCallback((currentTime: number) => updateState({ currentTime }), [updateState]),
+    setLimitPricePercent: useCallback((limitPricePercent?: string) => updateState({ limitPricePercent }), [updateState]),
   };
 };
 
-export const usePrice = (state: State) => {
-  const { isMarketOrder, marketPrice, dstToken, limitPrice, isInvertedLimitPrice } = state;
+export const useOnLimitPricePercent = () => {
+  const { state, parsedDstToken, actionHandlers } = useTwapContext();
+  const { marketPrice, isInvertedLimitPrice } = state;
 
-  const price = useMemo(() => {
-    if (!dstToken) return undefined;
+  return useCallback(
+    (percent?: string) => {
+      actionHandlers.setLimitPricePercent(percent);
+      if (BN(percent || 0).isZero()) {
+        actionHandlers.setLimitPrice(undefined);
+        return;
+      }
+      const p = BN(percent || 0)
+        .div(100)
+        .plus(1)
+        .toString();
+      let price = toAmountUi(parsedDstToken?.decimals, marketPrice);
 
-    if (!limitPrice || isMarketOrder || !marketPrice) return marketPrice;
+      if (isInvertedLimitPrice) {
+        price = BN(1)
+          .div(price || "0")
+          .toString();
+      }
 
-    const result = isInvertedLimitPrice ? BN(1).div(limitPrice).toString() : limitPrice;
+      const value = BN(price || "0")
+        .times(p)
+        .toString();
 
-    return toWeiAmount(dstToken.decimals, result);
-  }, [dstToken, isInvertedLimitPrice, isMarketOrder, marketPrice, limitPrice]);
-
-  return price;
+      actionHandlers.setLimitPrice(BN(value).decimalPlaces(6).toString());
+    },
+    [marketPrice, parsedDstToken, isInvertedLimitPrice, state, actionHandlers]
+  );
 };
 
-const useMaxPossibleChunks = (state: State, config: Config) => {
-  const { srcAmount, oneSrcTokenUsd } = state;
+export const useDerivedSwapValues = (sdk: SDK.TwapSDK, state: State, parsedSrcToken?: Token, parsedDstToken?: Token, isLimitPanel?: boolean) => {
   return useMemo(() => {
-    if (!oneSrcTokenUsd || !srcAmount) return 1;
-    const amount = BN(oneSrcTokenUsd).times(srcAmount);
-    const res = BN.max(1, amount.div(config.minChunkSizeUsd)).integerValue(BN.ROUND_FLOOR).toNumber();
-    return res > 1 ? res : 1;
-  }, [srcAmount, oneSrcTokenUsd]);
-};
-
-const useFillDelay = (state: State) => {
-  const { isLimitPanel, fillDelay } = state;
-  return useMemo(() => {
-    return getFillDelay(isLimitPanel, fillDelay);
-  }, [isLimitPanel, fillDelay]);
-};
-
-const useChunks = (state: State, config: Config) => {
-  const { isLimitPanel, chunks } = state;
-  const maxPossibleChunks = useMaxPossibleChunks(state, config);
-  return useMemo(() => getChunks(maxPossibleChunks, isLimitPanel, chunks), [chunks, isLimitPanel, maxPossibleChunks, config]);
-};
-
-export const useSrcChunkAmount = (state: State, config: Config) => {
-  const { srcAmount, srcToken, oneSrcTokenUsd } = state;
-  const chunks = useChunks(state, config);
-  return useMemo(() => {
-    const amount = toWeiAmount(srcToken?.decimals, srcAmount);
-    const srcChunkAmount = getSrcChunkAmount(amount, chunks);
-    return {
-      amount: srcChunkAmount,
-      usd: BN(srcChunkAmount)
-        .times(oneSrcTokenUsd || 0)
-        .toFixed(0),
-    };
-  }, [srcAmount, srcToken, chunks, oneSrcTokenUsd, config]);
-};
-
-const useDuration = (state: State, config: Config) => {
-  const chunks = useChunks(state, config);
-  const fillDelay = useFillDelay(state);
-  const { duration } = state;
-  return useMemo(() => {
-    return getDuration(chunks, fillDelay, duration);
-  }, [getChunks, fillDelay, duration, chunks]);
-};
-
-const useDstMinAmountOut = (state: State, config: Config) => {
-  const srcChunkAmount = useSrcChunkAmount(state, config).amount;
-  const { isMarketOrder, srcToken, dstToken } = state;
-  const price = usePrice(state);
-
-  return useMemo(() => {
-    return getDestTokenMinAmount(srcChunkAmount, price, isMarketOrder, srcToken?.decimals, dstToken?.decimals);
-  }, [srcChunkAmount, isMarketOrder, price, srcToken, dstToken, config]);
-};
-
-const useDeadline = (state: State) => {
-  const { currentTime, duration } = state;
-  return useMemo(() => {
-    if (!duration) return undefined;
-    return getDeadline(currentTime, duration);
-  }, [currentTime, duration]);
-};
-
-const useDerivedValues = (state: State, config: Config) => {
-  const { srcAmount, dstToken, srcToken } = state;
-  const srcChunkAmount = useSrcChunkAmount(state, config);
-  const chunks = useChunks(state, config);
-  const fillDelay = useFillDelay(state);
-  const duration = useDuration(state, config);
-  const minAmountOut = useDstMinAmountOut(state, config);
-  const deadline = useDeadline(state);
-
-  const askParams = useMemo(() => {
-    prepareOrderArgs(config, {
-      destTokenMinAmount: minAmountOut,
-      srcChunkAmount: srcChunkAmount.amount,
-      deadline: deadline || 0,
-      fillDelay: fillDelay,
-      srcAmount: srcAmount || "",
-      srcTokenAddress: srcToken?.address || "",
-      destTokenAddress: dstToken?.address || "",
+    return sdk.derivedSwapValues({
+      oneSrcTokenUsd: state.oneSrcTokenUsd,
+      srcAmount: state.srcAmount,
+      srcDecimals: parsedSrcToken?.decimals,
+      destDecimals: parsedDstToken?.decimals,
+      customChunks: state.chunks,
+      isLimitPanel,
+      customFillDelay: state.fillDelay,
+      customDuration: state.duration,
+      price: state.limitPrice,
+      isMarketOrder: state.isMarketOrder,
     });
-  }, [config, minAmountOut, srcAmount, srcChunkAmount, fillDelay, deadline, srcToken, dstToken]);
-
-  return {
-    srcChunkAmount: srcChunkAmount.amount,
-    srcChunkAmountUsd: srcChunkAmount.usd,
-    chunks,
-    fillDelay,
-    duration,
-    minAmountOut,
-    deadline,
-    askParams,
-  };
+  }, [state, parsedSrcToken, parsedDstToken, sdk, isLimitPanel, state.oneSrcTokenUsd]);
 };
 
-export const amountUi = (decimals?: number, amount?: string) => {
-  if (!decimals || !amount) return "";
-  const percision = BN(10).pow(decimals || 0);
-  return BN(amount).times(percision).idiv(percision).div(percision).toString();
-};
+export const TwapProvider = ({ children, config, isLimitPanel = false, parseToken }: TwapProviderProps) => {
+  const [state, dispatch] = useReducer(contextReducer, initialState);
+  const actionHandlers = useStateActionsHandlers(dispatch);
 
-const useWarnings = (state: State, derivedValues: ReturnType<typeof useDerivedValues>, config: Config) => {
-  const { chunks, duration, fillDelay, srcChunkAmountUsd } = derivedValues;
-  const { isLimitPanel, srcToken } = state;
-  return useMemo(() => {
-    return {
-      partialFill: getPartialFillWarning(chunks, duration, fillDelay),
-      minFillDelay: isLimitPanel ? false : getMinFillDelayWarning(fillDelay),
-      maxFillDelay: getMaxFillDelayWarning(fillDelay),
-      minDuration: isLimitPanel ? false : getMinTradeDurationWarning(duration),
-      maxDuration: getMaxTradeDurationWarning(duration),
-      tradeSize: isLimitPanel ? false : !!getTradeSizeWarning(config.minChunkSizeUsd, amountUi(srcToken?.decimals, srcChunkAmountUsd), chunks),
-    };
-  }, [chunks, duration, fillDelay, srcChunkAmountUsd, isLimitPanel, srcToken, config]);
-};
+  const sdk = useMemo(() => new SDK.TwapSDK({ config }), [config]);
 
-export const TwapProvider = ({ children, config }: { children: React.ReactNode; config: Config }) => {
-  const { state, setSrcAmount, setChunks, setFillDelay, setDuration, setLimitPrice, setIsInvertedLimitPrice, setLimitPricePercent, setIsMarketOrder, setCurrentTime } =
-    useTwapState();
-
-  const sdk = useMemo(() => new TwapSDK({ config }), [config]);
-
-  useEffect(() => {
-    setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 60_000);
-  }, [setCurrentTime]);
-
+  const parsedSrcToken = useMemo(() => parseToken(state.rawSrcToken), [state.rawSrcToken, parseToken]);
+  const parsedDstToken = useMemo(() => parseToken(state.rawDstToken), [state.rawDstToken, parseToken]);
+  const derivedValues = useDerivedSwapValues(sdk, state, parsedSrcToken, parsedDstToken, isLimitPanel);
   return (
     <Context.Provider
       value={{
         sdk,
+        actionHandlers,
         state,
-        derivedValues: useDerivedValues(state, config),
-        warnings: useWarnings(state, useDerivedValues(state, config), config),
-        setSrcAmount,
-        setChunks,
-        setFillDelay,
-        setDuration,
-        setLimitPrice,
-        setIsInvertedLimitPrice,
-        setLimitPricePercent,
-        setIsMarketOrder,
-        setCurrentTime,
+        isLimitPanel,
+        parsedSrcToken,
+        parsedDstToken,
+        config,
+        derivedValues,
       }}
     >
+      <ContextListeners />
       {children}
     </Context.Provider>
   );
 };
 
-export const useTwapContext = () => {
+const ContextListeners = () => {
+  const { actionHandlers, isLimitPanel } = useTwapContext();
+  useEffect(() => {
+    if (isLimitPanel) {
+      actionHandlers.setIsMarketOrder(false);
+      actionHandlers.setDuration({ unit: SDK.TimeUnit.Weeks, value: 1 });
+    } else {
+      actionHandlers.setIsMarketOrder(true);
+      actionHandlers.setDuration({ unit: SDK.TimeUnit.Minutes, value: 5 });
+    }
+  }, [isLimitPanel, actionHandlers]);
+
+  useEffect(() => {
+    setInterval(() => {
+      actionHandlers.setCurrentTime(Date.now());
+    }, 60_000);
+  }, [actionHandlers]);
+
+  return null;
+};
+
+const useTwapContext = () => {
   const context = useContext(Context);
   if (!context) {
     throw new Error("useTwapContext must be used within a TwapProvider");
