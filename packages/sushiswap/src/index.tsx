@@ -338,19 +338,6 @@ export const useProvider = () => {
   return provider;
 };
 
-const useParsedTokens = () => {
-  const context = useAdapterContext();
-  const parseToken = useParseToken();
-  return useMemo(() => {
-    if (!size(context.dappTokens)) {
-      return [];
-    }
-    let parsed = context.dappTokens.map((rawToken: any) => {
-      return parseToken(rawToken);
-    });
-    return compact(parsed) as Token[];
-  }, [context.dappTokens, parseToken]);
-};
 
 const useParsedToken = (address?: string) => {
   const { useToken } = useAdapterContext();
@@ -399,6 +386,7 @@ const TWAPContent = () => {
   const isWrongChain = useIsWrongChain();
 
   const dappWToken = useWToken();
+  const parseToken = useParseToken();
 
   return (
     <ThemeProvider theme={theme}>
@@ -429,6 +417,7 @@ const TWAPContent = () => {
           fee={"0.25"}
           nativeUsd={nativeUsd}
           useParsedToken={useParsedToken}
+          parseToken={parseToken}
         >
           <GlobalStyles />
           <StyledContent>

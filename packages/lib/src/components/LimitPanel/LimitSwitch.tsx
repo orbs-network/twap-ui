@@ -4,9 +4,10 @@ import { useTwapContext } from "../../context/context";
 import { useSetIsMarket } from "../../hooks/lib";
 import { StyledRowFlex } from "../../styles";
 import { LimitSwitchArgs } from "../../types";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const LimitSwitch = ({ className = "", Component }: { className?: string; Component?: FC<LimitSwitchArgs> }) => {
-  const { isLimitPanel, state } = useTwapContext();
+  const { isLimitPanel, state } = useTwapContextUI();
 
   const { isMarketOrder } = state;
   const onChange = useSetIsMarket();

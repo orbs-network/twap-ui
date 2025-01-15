@@ -73,8 +73,9 @@ const StyledSpinner = styled(Spinner)({
 });
 
 const useStep = (step?: SwapStep) => {
-  const { state, srcToken } = useTwapContext();
-  const { createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps } = state;
+  const { srcToken } = useTwapContext();
+  const { state } = useTwapContextUI();
+  const { createOrderTxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps } = state;
   const nativeToken = useNetwork()?.native;
   return useMemo((): Step | undefined => {
     if (!step) return;
@@ -102,7 +103,7 @@ const useStep = (step?: SwapStep) => {
         status: createOrderSuccess ? "completed" : swapStep === "createOrder" ? "loading" : "disabled",
       };
     }
-  }, [createOrdertxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps, srcToken, nativeToken]);
+  }, [createOrderTxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps, srcToken, nativeToken]);
 };
 
 const StepContainer = styled(StyledColumnFlex)<{ selected: number }>(({ selected }) => ({

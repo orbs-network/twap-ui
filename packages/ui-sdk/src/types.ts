@@ -1,4 +1,4 @@
-import { Config, TimeDuration, TwapSDK } from "@orbs-network/twap-sdk";
+import { Config, TimeDuration } from "@orbs-network/twap-sdk";
 
 export type Token = {
   address: string;
@@ -10,7 +10,7 @@ export type SwapStep = "createOrder" | "wrap" | "approve";
 export type SwapState = "loading" | "success" | "failed" | "rejected";
 
 export type State = {
-  swapStep?: number;
+  swapStep?: SwapStep;
   swapSteps?: SwapStep[];
   swapStatus?: SwapState;
   typedSrcAmount?: string;

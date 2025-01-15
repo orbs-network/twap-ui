@@ -6,10 +6,10 @@ import BN from "bignumber.js";
 import React, { createContext, FC, ReactNode, useCallback, useContext, useMemo } from "react";
 import { useIsMarketOrder, useLimitPricePercentDiffFromMarket, useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
 import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps, LimitPriceInputProps } from "../../types";
-import { useLimitInput, useOnLimitPercentageClick } from "./hooks";
+import { useOnLimitPercentageClick } from "./hooks";
 import { useTwapContext } from "../../context/context";
 import { LimitSwitch } from "./LimitSwitch";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext as useTwapContextUI, useLimitInput } from "@orbs-network/twap-ui-sdk";
 
 interface Shared {
   onSrcSelect: () => void;
@@ -26,7 +26,7 @@ interface Shared {
   };
 }
 
-const DefaultInput = ({ isLoading, onChange, value }: { isLoading: boolean; onChange: (value: string) => void; value: string }) => {
+const DefaultInput = ({ isLoading, onChange, value }: { isLoading?: boolean; onChange: (value: string) => void; value: string }) => {
   return <NumericInput disabled={isLoading} onChange={onChange} value={value} />;
 };
 
@@ -141,17 +141,13 @@ function Main({ className = "", onSrcSelect, onDstSelect, Components, styles }: 
 
 const Input = () => {
   const { Components } = useLimitPanelContext();
-  const { value, onChange, isLoading } = useLimitInput();
+  const { value, onChange } = useLimitInput();
   const isMarketOrder = useIsMarketOrder();
 
   return (
     <StyledInputContainer>
       <div style={{ opacity: isMarketOrder ? 0 : 1, pointerEvents: isMarketOrder ? "none" : "all" }}>
-        {Components?.Input ? (
-          <Components.Input isLoading={isLoading} onChange={onChange} value={value} />
-        ) : (
-          <DefaultInput isLoading={isLoading} onChange={onChange} value={value} />
-        )}
+        {Components?.Input ? <Components.Input onChange={onChange} value={value} isLoading={false} /> : <DefaultInput onChange={onChange} value={value} isLoading={false} />}
       </div>
     </StyledInputContainer>
   );

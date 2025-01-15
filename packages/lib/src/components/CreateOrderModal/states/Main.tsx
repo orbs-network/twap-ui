@@ -8,7 +8,6 @@ import { BottomContent, SmallTokens } from "../Components";
 import { StyledColumnFlex, StyledText } from "../../../styles";
 import { Steps } from "../Steps";
 import { useOrderType } from "../hooks";
-import { stateActions } from "../../../context/actions";
 import { OrderDisplay } from "../../OrderDisplay";
 import { size } from "../../../utils";
 import BN from "bignumber.js";
@@ -76,9 +75,9 @@ const MarketWarning = ({ isMarketOrder }: { isMarketOrder?: boolean }) => {
 };
 
 export const AcceptDisclaimer = ({ className }: { className?: string }) => {
-  const { translations: t, state } = useTwapContext();
+  const { translations: t } = useTwapContext();
+  const { state } = useTwapContextUI();
   const onChange = useToggleDisclaimer();
-  const { disclaimerAccepted } = state;
 
   return (
     <OrderDisplay.DetailRow
@@ -92,7 +91,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
         </>
       }
     >
-      <Switch checked={!!disclaimerAccepted} onChange={onChange} />
+      <Switch checked={true} onChange={onChange} />
     </OrderDisplay.DetailRow>
   );
 };

@@ -137,5 +137,3 @@ export const fillDelayText = (value?: number) => {
 
   return arr.join(" ");
 };
-
-

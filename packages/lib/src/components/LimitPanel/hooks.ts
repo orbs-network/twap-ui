@@ -1,13 +1,16 @@
 import BN from "bignumber.js";
 import { useCallback, useMemo } from "react";
 import { useTwapContext } from "../../context/context";
-import { useIsMarketOrder, useLimitPrice, useLimitPricePercentDiffFromMarket, useSetLimitPrice, useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
+import { useIsMarketOrder, useLimitPricePercentDiffFromMarket, useSetLimitPrice, useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
 import { amountUiV2, formatDecimals } from "../../utils";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const useOnLimitPercentageClick = () => {
-  const { dstToken, marketPrice, state } = useTwapContext();
+  const {
+    parsedDstToken,
+    state: { marketPrice, isInvertedLimitPrice },
+  } = useTwapContextUI();
   const onChange = useSetLimitPrice();
-  const { isInvertedLimitPrice } = state;
 
   return useCallback(
     (percent: string) => {
@@ -19,7 +22,7 @@ export const useOnLimitPercentageClick = () => {
         .div(100)
         .plus(1)
         .toString();
-      let price = amountUiV2(dstToken?.decimals, marketPrice);
+      let price = amountUiV2(parsedDstToken?.decimals, marketPrice);
 
       if (isInvertedLimitPrice) {
         price = BN(1)
@@ -31,47 +34,16 @@ export const useOnLimitPercentageClick = () => {
         .times(p)
         .toString();
 
-      onChange(BN(value).decimalPlaces(6).toString(), percent);
+      onChange(BN(value).decimalPlaces(6).toString());
     },
-    [marketPrice, onChange, dstToken, isInvertedLimitPrice, state],
+    [marketPrice, onChange, parsedDstToken, isInvertedLimitPrice],
   );
 };
 
-export const useLimitInput = () => {
-  const { dstToken, state, updateState } = useTwapContext();
-  const { isInvertedLimitPrice, typedLimitPrice } = state;
-  const { priceUi, isLoading } = useLimitPrice();
-
-  const onChange = useCallback(
-    (value: string) => {
-      updateState({ typedLimitPrice: value, limitPricePercent: undefined });
-    },
-    [updateState],
-  );
-
-  const value = useMemo(() => {
-    if (typedLimitPrice) return typedLimitPrice;
-    let res = priceUi;
-
-    if (isInvertedLimitPrice) {
-      res = BN(1)
-        .div(res || 0)
-        .toString();
-    }
-
-    return formatDecimals(res);
-  }, [priceUi, isInvertedLimitPrice, typedLimitPrice]);
-
-  return {
-    value: value || "",
-    onChange,
-    isLoading,
-  };
-};
 const defaultPercent = [1, 5, 10];
 
 const useList = () => {
-  const { state } = useTwapContext();
+  const { state } = useTwapContextUI();
   const { isInvertedLimitPrice } = state;
 
   return useMemo(() => {
@@ -83,7 +55,7 @@ const useList = () => {
 };
 
 const useCustomPercent = () => {
-  const { state } = useTwapContext();
+  const { state } = useTwapContextUI();
 
   const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
   const { limitPricePercent } = state;
@@ -126,15 +98,15 @@ export const useLimitPercentList = () => {
 };
 
 export const useLimitTokens = () => {
-  const { srcToken, dstToken, state } = useTwapContext();
+  const { parsedSrcToken, parsedDstToken, state } = useTwapContextUI();
 
   const { isInvertedLimitPrice: inverted } = state;
   return useMemo(() => {
     return {
-      srcToken: inverted ? dstToken : srcToken,
-      dstToken: inverted ? srcToken : dstToken,
+      srcToken: inverted ? parsedDstToken : parsedSrcToken,
+      dstToken: inverted ? parsedSrcToken : parsedDstToken,
     };
-  }, [srcToken, dstToken, inverted]);
+  }, [inverted, parsedDstToken, parsedSrcToken]);
 };
 
 export const useLimitResetButton = () => {
@@ -151,9 +123,11 @@ export const useLimitResetButton = () => {
 };
 
 export const useLimitPercentButton = (percent: string) => {
-  const { state } = useTwapContext();
+  const {
+    state,
+    derivedValues: { price },
+  } = useTwapContextUI();
   const { isInvertedLimitPrice: inverted, limitPricePercent } = state;
-  const { price } = useLimitPrice();
 
   const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
 

@@ -670,8 +670,6 @@ const DurationSelect = () => {
 
 export { TWAP };
 
-
-
 const StyledSwapModalContentChildren = styled("div")`
   flex: 1;
   overflow-y: auto;

@@ -73,7 +73,7 @@ export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): Prepar
 
   return [
     config.exchangeAddress,
-    args.srcTokenAddress,
+  args.srcTokenAddress,
     args.destTokenAddress,
     BN(args.srcAmount).toFixed(0),
     BN(args.srcChunkAmount).toFixed(0),

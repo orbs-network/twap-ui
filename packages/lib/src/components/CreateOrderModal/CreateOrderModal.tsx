@@ -8,14 +8,14 @@ export interface Props {
   className?: string;
 }
 export const CreateOrderModal = ({ className = "" }: Props) => {
-  const { mutate: onSubmit, swapState, error } = useSubmitOrderFlow();
+  const { mutate: onSubmit, swapStatus, error } = useSubmitOrderFlow();
 
   let content = <Main onSubmit={onSubmit} />;
-  if (swapState === "failed") {
+  if (swapStatus === "failed") {
     content = <Failed error={error} />;
   }
 
-  if (swapState === "success") {
+  if (swapStatus === "success") {
     content = <OrderSubmitted />;
   }
 

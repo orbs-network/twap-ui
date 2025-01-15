@@ -18,14 +18,11 @@ const queryClient = new QueryClient({
   },
 });
 
-const parseToken = (token: any) => {
-  return {} as any;
-};
 
 const WrappedTwap = (props: TwapLibProps) => {
   return (
     <TwapErrorWrapper>
-      <TwapProviderUI parseToken={parseToken} isLimitPanel={props.isLimitPanel} config={props.config}>
+      <TwapProviderUI parseToken={props.parseToken} isLimitPanel={props.isLimitPanel} config={props.config}>
         <Panel {...props}>{props.children}</Panel>
       </TwapProviderUI>
     </TwapErrorWrapper>

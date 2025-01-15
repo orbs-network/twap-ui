@@ -4,6 +4,7 @@ import * as SDK from "@orbs-network/twap-sdk";
 import BN from "bignumber.js";
 import { safeValue, toAmountUi, toWeiAmount } from "./utils";
 import { State, SwapState, SwapStep, Token, TwapProviderProps } from "./types";
+import { getNetwork } from "./networks";
 
 const initialState: State = {
   currentTime: Date.now(),
@@ -91,7 +92,7 @@ const useStateActionsHandlers = (state: State, dispatch: Dispatch<Action>, parse
     setOneSrcTokenUsd: useCallback((oneSrcTokenUsd: number) => updateState({ oneSrcTokenUsd }), [updateState]),
     setCurrentTime: useCallback((currentTime: number) => updateState({ currentTime }), [updateState]),
     setLimitPricePercent: useCallback((limitPricePercent?: string) => updateState({ limitPricePercent }), [updateState]),
-    setSwapStep: useCallback((swapStep?: number) => updateState({ swapStep }), [updateState]),
+    setSwapStep: useCallback((swapStep?: SwapStep) => updateState({ swapStep }), [updateState]),
     setSwapSteps: useCallback((swapSteps?: SwapStep[]) => updateState({ swapSteps }), [updateState]),
     setShowConfirmation: useCallback((showConfirmation: boolean) => updateState({ showConfirmation }), [updateState]),
     setWrapSuccess: useCallback((wrapSuccess: boolean) => updateState({ wrapSuccess }), [updateState]),
@@ -112,9 +113,14 @@ export const getPriceDiffFromMarket = (limitPrice?: string, marketPrice?: string
 };
 
 export const useDerivedSwapValues = (sdk: SDK.TwapSDK, state: State, parsedSrcToken?: Token, parsedDstToken?: Token, isLimitPanel?: boolean) => {
+  const price = useMemo(() => {
+    if (!state.typedPrice || state.isMarketOrder || !state.marketPrice) return state.marketPrice;
+    const result = state.isInvertedLimitPrice ? BN(1).div(state.typedPrice).toString() : state.typedPrice;
+    return safeValue(toWeiAmount(parsedDstToken?.decimals, result));
+  }, [state.typedPrice, state.isMarketOrder, state.marketPrice, state.isInvertedLimitPrice, parsedDstToken?.decimals]);
+
   return useMemo(() => {
     const srcAmount = safeValue(toWeiAmount(parsedSrcToken?.decimals, state.typedSrcAmount));
-    const price = safeValue(toWeiAmount(parsedDstToken?.decimals, state.typedPrice));
     const data = sdk.derivedSwapValues({
       oneSrcTokenUsd: state.oneSrcTokenUsd,
       srcAmount,
@@ -127,17 +133,30 @@ export const useDerivedSwapValues = (sdk: SDK.TwapSDK, state: State, parsedSrcTo
       price,
       isMarketOrder: state.isMarketOrder,
     });
+    const deadline = sdk.orderDeadline(state.currentTime, data.duration);
+    const wToken = getNetwork(sdk.config.chainId)?.wToken;
+    const createOrderArgs = sdk.prepareOrderArgs({
+      destTokenMinAmount: data.destTokenMinAmount,
+      srcChunkAmount: data.srcChunkAmount,
+      deadline: deadline,
+      fillDelay: data.fillDelay,
+      srcAmount,
+      srcTokenAddress: SDK.isNativeAddress(parsedSrcToken?.address) ? wToken?.address || "" : parsedSrcToken?.address || "",
+      destTokenAddress: parsedDstToken?.address || "",
+    });
 
     const priceDiffFromMarket = getPriceDiffFromMarket(price, state.marketPrice, state.isInvertedLimitPrice);
     return {
       ...data,
       price,
+      priceUI: toAmountUi(parsedDstToken?.decimals, price),
       srcAmount,
       priceDiffFromMarket,
       srcChunksAmountUI: toAmountUi(parsedSrcToken?.decimals, data.srcChunkAmount),
       destTokenMinAmountOutUI: toAmountUi(parsedDstToken?.decimals, data.destTokenMinAmount),
       destTokenAmountUI: toAmountUi(parsedDstToken?.decimals, data.destTokenAmount),
       deadline: sdk.orderDeadline(state.currentTime, data.duration),
+      createOrderArgs,
     };
   }, [state, parsedSrcToken, parsedDstToken, sdk, isLimitPanel, state.oneSrcTokenUsd]);
 };
@@ -149,6 +168,8 @@ export const TwapProvider = ({ children, config, isLimitPanel = false, parseToke
 
   const parsedSrcToken = useMemo(() => parseToken(state.rawSrcToken), [state.rawSrcToken, parseToken]);
   const parsedDstToken = useMemo(() => parseToken(state.rawDstToken), [state.rawDstToken, parseToken]);
+
+  
   const derivedValues = useDerivedSwapValues(sdk, state, parsedSrcToken, parsedDstToken, isLimitPanel);
   const actionHandlers = useStateActionsHandlers(state, dispatch, parsedDstToken);
 
@@ -181,7 +202,7 @@ const ContextListeners = () => {
       actionHandlers.setIsMarketOrder(true);
       actionHandlers.setDuration({ unit: SDK.TimeUnit.Minutes, value: 5 });
     }
-  }, [isLimitPanel, actionHandlers]);
+  }, [isLimitPanel]);
 
   useEffect(() => {
     setInterval(() => {
@@ -223,5 +244,32 @@ export const useSwapPriceDisplay = () => {
     price,
     leftToken: inverted ? parsedDstToken : parsedSrcToken,
     rightToken: inverted ? parsedSrcToken : parsedDstToken,
+  };
+};
+
+export const useLimitInput = () => {
+  const {
+    actionHandlers,
+    derivedValues: { priceUI },
+    state,
+  } = useTwapContext();
+  const { isInvertedLimitPrice, typedPrice } = state;
+
+  const value = useMemo(() => {
+    if (typedPrice) return typedPrice;
+    let res = priceUI;
+
+    if (isInvertedLimitPrice) {
+      res = BN(1)
+        .div(res || 0)
+        .toString();
+    }
+
+    return res;
+  }, [typedPrice, priceUI, isInvertedLimitPrice]);
+
+  return {
+    value: value || "",
+    onChange: actionHandlers.setLimitPrice,
   };
 };

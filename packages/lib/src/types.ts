@@ -166,6 +166,7 @@ export interface TWAPProps {
   fee?: string;
   srcToken?: any;
   dstToken?: any;
+  parseToken?: (token: any) => Token | undefined;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -244,6 +245,7 @@ export interface TwapLibProps {
   nativeUsd?: string;
   useParsedToken?: (address?: string) => Token | undefined;
   useDappToken?: (address?: string) => any;
+  parseToken?: (token: any) => Token | undefined;
 }
 
 export type Token = {

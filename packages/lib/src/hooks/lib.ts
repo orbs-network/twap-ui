@@ -267,7 +267,7 @@ export const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens]
   );
 };
 
@@ -365,7 +365,7 @@ export const useLowPriceWarning = () => {
 
 export const useSetLimitPrice = () => {
   const { actionHandlers } = useTwapContextUI();
-  return actionHandlers.setLimitPrice();
+  return actionHandlers.setLimitPrice;
 };
 
 export const useToggleDisclaimer = () => {
@@ -520,7 +520,7 @@ export const useOnSrcAmountPercent = () => {
       const value = amountUiV2(parsedSrcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       actionHandlers.setSrcAmount(value);
     },
-    [maxAmount, srcBalance, actionHandlers.setSrcAmount, parsedSrcToken],
+    [maxAmount, srcBalance, actionHandlers.setSrcAmount, parsedSrcToken]
   );
 };
 
