@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTwapContext } from "../../context/context";
 import { useSwapModal } from "../../hooks/useSwapModal";
 import { useFormatNumberV2 } from "../../hooks/hooks";
-import { useIsMarketOrder } from "../../hooks";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const useTokenDisplay = (isSrc?: boolean) => {
   const { outAmount, srcAmount, srcToken, dstToken, srcUsd, dstUsd } = useSwapModal();
@@ -19,8 +19,11 @@ export const useTokenDisplay = (isSrc?: boolean) => {
 };
 
 export const useOrderType = () => {
-  const { isLimitPanel, translations: t } = useTwapContext();
-  const isMarketOrder = useIsMarketOrder();
+  const { translations: t } = useTwapContext();
+  const {
+    isLimitPanel,
+    derivedValues: { isMarketOrder },
+  } = useTwapContextUI();
 
   return useMemo(() => {
     if (isLimitPanel) {

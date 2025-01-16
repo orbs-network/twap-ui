@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useMemo } from "react";
-import { TWAPContextProps, TwapLibProps } from "../types";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
+import { State, TWAPContextProps, TwapLibProps } from "../types";
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TwapErrorWrapper } from "../ErrorHandling";
@@ -17,6 +17,22 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+enum ActionType {
+  UPDATED_STATE = "UPDATED_STATE",
+}
+type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> };
+
+const initialState = {} as State;
+
+const contextReducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case ActionType.UPDATED_STATE:
+      return { ...state, ...action.value };
+    default:
+      return state;
+  }
+};
 
 const WrappedTwap = (props: TwapLibProps) => {
   return (
@@ -44,7 +60,11 @@ const Panel = (props: TwapLibProps) => {
 
   useEffect(() => {
     actionHandlers.setDstToken(props.dstToken);
-  }, [props.srcToken]);
+  }, [props.dstToken]);
+
+  useEffect(() => {
+    actionHandlers.setOneSrcTokenUsd(props.srcUsd ? Number(props.srcUsd) : 0);
+  }, [props.srcUsd]);
 
   return <>{props.children}</>;
 };
@@ -71,6 +91,9 @@ export const Content = (props: TwapLibProps) => {
   const isWrongChain = useIsWrongChain(props, props.chainId);
   const uiPreferences = props.uiPreferences || {};
   const web3 = useMemo(() => (!props.provider ? undefined : new Web3(props.provider)), [props.provider]);
+  const [state, dispatch] = useReducer(contextReducer, initialState);
+
+  const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
 
   useEffect(() => {
     setWeb3Instance(web3);
@@ -105,6 +128,8 @@ export const Content = (props: TwapLibProps) => {
         nativeUsd: props.nativeUsd,
         useDappToken: props.useDappToken,
         useParsedToken: props.useParsedToken,
+        updateState,
+        state,
       }}
     >
       <WrappedTwap {...props} />

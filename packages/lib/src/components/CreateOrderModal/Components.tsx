@@ -1,16 +1,16 @@
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
-import { Button, TokenLogo } from "../base";
-import { useTokenDisplay } from "./hooks";
+import { TokenLogo } from "../base";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
-import { ReactNode, useMemo } from "react";
+import React, { ReactNode, useMemo } from "react";
 import { styled } from "styled-components";
-import { useIsMarketOrder } from "../../hooks";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "../..";
+import { useTokenDisplay } from "./hooks";
 
 export const TokenDispalySmall = ({ isSrc }: { isSrc?: boolean }) => {
   const { amount, token } = useTokenDisplay(isSrc);
-  const isMarketOrder = useIsMarketOrder();
-  const { swapStatus } = useTwapContextUI().state;
+  const isMarketOrder = useTwapContextUI().derivedValues.isMarketOrder;
+  const { swapStatus } = useTwapContext().state;
 
   const prefix = useMemo(() => {
     if (!isSrc || !isMarketOrder) return "";

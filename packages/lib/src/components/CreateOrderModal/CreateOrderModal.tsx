@@ -3,6 +3,7 @@ import { useSubmitOrderFlow } from "../../hooks/useTransactions";
 import { StyledColumnFlex } from "../../styles";
 import { OrderSubmitted, Failed } from "./states";
 import { Main } from "./states/Main";
+import React from "react";
 
 export interface Props {
   className?: string;

@@ -1,17 +1,18 @@
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { FaCheck } from "@react-icons/all-files/fa/FaCheck";
 import { styled } from "styled-components";
+import React from "react";
 import { Spinner } from "../base";
 import { Step, SwapStep } from "../../types";
 import { useMemo } from "react";
 import { RiSwapFill } from "@react-icons/all-files/ri/RiSwapFill";
 import { RiCheckboxCircleFill } from "@react-icons/all-files/ri/RiCheckboxCircleFill";
-import { useTwapContext } from "../../context/context";
 import { useNetwork } from "../../hooks/hooks";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "../../context/context";
 
 export const Steps = () => {
-  const steps = useTwapContextUI().state.swapSteps;
+  const steps = useTwapContext().state.swapSteps;
   return (
     <StepsContainer>
       <StyledSteps>{steps?.map((step, index) => <StepComponent key={step} stepType={step} />)}</StyledSteps>
@@ -73,7 +74,9 @@ const StyledSpinner = styled(Spinner)({
 });
 
 const useStep = (step?: SwapStep) => {
-  const { state, parsedSrcToken: srcToken } = useTwapContextUI();
+  const { parsedSrcToken: srcToken } = useTwapContextUI();
+  const { state } = useTwapContext();
+
   const { createOrderTxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps } = state;
   const nativeToken = useNetwork()?.native;
   return useMemo((): Step | undefined => {

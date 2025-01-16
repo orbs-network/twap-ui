@@ -108,6 +108,11 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       color: styles.messageText,
       ...cardBodyStyles(theme),
     },
+    ".twap-warning-message": {
+      "*": {
+        color: styles.warningText,
+      },
+    },
     ".twap-input-loading": {
       opacity: 0,
     },

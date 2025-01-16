@@ -1,4 +1,4 @@
-import { zero, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256, hasWeb3Instance, setWeb3Instance, account } from "@defi.org/web3-candies";
+import { zero, sendAndWaitForConfirmations, TokenData, erc20, iwethabi, maxUint256, hasWeb3Instance, setWeb3Instance, account } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context/context";
 import { useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } from "./hooks";
@@ -15,9 +15,8 @@ export const useCreateOrder = () => {
     parsedDstToken,
     derivedValues: { createOrderArgs },
     sdk,
-    actionHandlers,
   } = useTwapContextUI();
-  const { account } = useTwapContext();
+  const { account, updateState } = useTwapContext();
   const twapContract = useTwapContract();
 
   return useMutation(async (srcToken: TokenData) => {
@@ -45,8 +44,8 @@ export const useCreateOrder = () => {
       undefined,
       undefined,
       {
-        onTxHash: (txHash) => {
-          actionHandlers.setCrteateOrderTxHash(txHash);
+        onTxHash: (createOrderTxHash) => {
+          updateState({ createOrderTxHash });
         },
       },
     );
@@ -182,8 +181,8 @@ export const useApproveToken = () => {
   });
 };
 const useUpdatedOrders = () => {
-  const { account } = useTwapContext();
-  const { sdk, actionHandlers } = useTwapContextUI();
+  const { account, updateState } = useTwapContext();
+  const { sdk } = useTwapContextUI();
 
   const { refetch, updateData } = useOrdersHistory();
   const reset = useResetAfterSwap();
@@ -195,16 +194,17 @@ const useUpdatedOrders = () => {
         const updatedOrders = await sdk.waitForOrdersUpdate(order.orderId, account);
         updateData(updatedOrders);
       }
-      actionHandlers.setSwapStatus("success");
-      actionHandlers.setCreatedOrderSuccess(true);
+      updateState({
+        swapStatus: "success",
+        createOrderSuccess: true,
+      });
       reset();
     },
   });
 };
 
 export const useSubmitOrderFlow = () => {
-  const { minNativeTokenBalance } = useTwapContext();
-  const { sdk, state, actionHandlers } = useTwapContextUI();
+  const { minNativeTokenBalance, state, updateState } = useTwapContext();
 
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash, wrapSuccess } = state;
   const { data: haveAllowance } = query.useAllowance();
@@ -215,7 +215,6 @@ export const useSubmitOrderFlow = () => {
   const wToken = network?.wToken;
   const nativeSymbol = network?.native.symbol;
   const { refetch: refetchAllowance } = query.useAllowance();
-  const nativeToWrapped = useSwitchNativeToWrapped();
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;
@@ -233,7 +232,7 @@ export const useSubmitOrderFlow = () => {
         throw new Error("WToken not defined");
       }
       logger(`Create order request`);
-      actionHandlers.setSwapStatus("loading");
+      updateState({ swapStatus: "loading" });
 
       if (minNativeTokenBalance) {
         const hasMinNativeTokenBalance = await ensureNativeBalance();
@@ -245,34 +244,32 @@ export const useSubmitOrderFlow = () => {
       let token = srcToken;
 
       if (shouldWrap) {
-        actionHandlers.setSwapStep("wrap");
+        updateState({ swapStep: "wrap" });
         await wrapToken();
-        actionHandlers.setWrapSuccess(true);
+        updateState({ wrapSuccess: true });
         token = wToken;
       }
 
       if (!haveAllowance) {
-        actionHandlers.setSwapStep("approve");
+        updateState({ swapStep: "approve" });
         await approve(token);
         const res = await getHasAllowance(token, srcAmount.amount);
         if (!res) {
           throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
         }
-        actionHandlers.setApproveSuccess(true);
+        updateState({ approveSuccess: true });
       }
-      actionHandlers.setSwapStep("createOrder");
+
+      updateState({ swapStep: "createOrder" });
       const order = await createOrder(token);
       await updateOrders(order);
     },
     {
       onError(error) {
-        if (wrapSuccess) {
-          nativeToWrapped();
-        }
-        if (isTxRejected(error)) {
-          actionHandlers.setSwapStep(undefined);
+        if (isTxRejected(error) && !wrapSuccess) {
+          updateState({ swapStep: undefined, swapStatus:undefined });
         } else {
-          actionHandlers.setSwapStatus("failed");
+          updateState({ swapStatus: "failed" });
         }
       },
 

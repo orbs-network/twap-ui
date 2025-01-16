@@ -1,14 +1,14 @@
 import { styled } from "styled-components";
+import React from "react";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { Link, SmallTokens } from "../Components";
 import { HiArrowCircleUp } from "@react-icons/all-files/hi/HiArrowCircleUp";
 import { useOrderType } from "../hooks";
-import { useTwapContext } from "../../../context/context";
 import { useExplorerUrl } from "../../../hooks/hooks";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "../../../context/context";
 
 export function OrderSubmitted() {
-  const { createOrderTxHash } = useTwapContextUI().state;
+  const { createOrderTxHash } = useTwapContext().state;
   const explorerUrl = useExplorerUrl();
 
   return (

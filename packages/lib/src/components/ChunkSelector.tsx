@@ -27,7 +27,9 @@ const Text = () => {
 
   const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmount().amountUi });
 
-  const warning = useTradeSizeWarning();
+  const tradeSizeWarning = useTradeSizeWarning();
+
+  const warning = tradeSizeWarning;
 
   const _usd = useFormatNumberV2({ value: useSrcChunkAmountUsd(), decimalScale: 2 });
   const usd = _usd ? `($${_usd})` : "";

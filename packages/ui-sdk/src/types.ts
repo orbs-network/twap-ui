@@ -6,13 +6,8 @@ export type Token = {
   decimals: number;
   logoUrl: string;
 };
-export type SwapStep = "createOrder" | "wrap" | "approve";
-export type SwapState = "loading" | "success" | "failed" | "rejected";
 
 export type State = {
-  swapStep?: SwapStep;
-  swapSteps?: SwapStep[];
-  swapStatus?: SwapState;
   typedSrcAmount?: string;
 
   rawSrcToken?: any;
@@ -31,15 +26,6 @@ export type State = {
   marketPrice?: string;
   oneSrcTokenUsd?: number;
   currentTime: number;
-  showConfirmation?: boolean;
-
-  approveSuccess?: boolean;
-  wrapSuccess?: boolean;
-  wrapTxHash?: string;
-  unwrapTxHash?: string;
-  approveTxHash?: string;
-  createOrderSuccess?: boolean;
-  createOrderTxHash?: string;
 };
 
 export type TwapProviderProps = {
@@ -49,3 +35,9 @@ export type TwapProviderProps = {
   isLimitPanel?: boolean;
   walletAddress?: string;
 };
+
+export enum ActionType {
+  UPDATED_STATE = "UPDATED_STATE",
+}
+
+export type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> };

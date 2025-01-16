@@ -1,11 +1,11 @@
 import { styled } from "styled-components";
-import { FC, ReactNode, useCallback, useMemo } from "react";
-import { useTwapContext } from "../context/context";
+import React, { FC, ReactNode, useCallback, useMemo } from "react";
 import { useDuration, useShouldWrapOrUnwrapOnly, useSetDuration, useIsPartialFillWarning } from "../hooks/lib";
 import { StyledColumnFlex } from "../styles";
 import { BottomContent, Button, Label, Message, NumericInput, ResolutionSelect } from "./base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "../context/context";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const duration = useDuration().timeDuration;

@@ -19,7 +19,7 @@ import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 import {
   useFeeOnTransferWarning,
   useFillDelay,
-  useIsMarketOrder,
+  useLimitPriceWarning,
   useLowPriceWarning,
   useOutAmount,
   useShouldWrapOrUnwrapOnly,
@@ -111,9 +111,11 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
 };
 
 const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
-  const { parsedDstToken: token } = useTwapContextUI();
+  const {
+    parsedDstToken: token,
+    derivedValues: { isMarketOrder },
+  } = useTwapContextUI();
   const { amountUi, isLoading } = useOutAmount();
-  const isMarketOrder = useIsMarketOrder();
   return (
     <Input
       disabled={true}
@@ -414,7 +416,7 @@ export const DstToken = () => {
 };
 
 export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
-  const isMarketOrder = useIsMarketOrder();
+  const isMarketOrder = useTwapContextUI().derivedValues.isMarketOrder;
   const { translations: t } = useTwapContext();
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
 
@@ -439,14 +441,17 @@ export const PanelWarning = ({ className = "" }: { className?: string }) => {
   const lowPriceWarning = useLowPriceWarning();
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
   const isWrongChain = useTwapContext().isWrongChain;
+  const limitPriceWarning = useLimitPriceWarning();
 
-  const show = feeOnTranferWarning || lowPriceWarning;
-  const title = feeOnTranferWarning || lowPriceWarning?.title;
+
+
+  const show = feeOnTranferWarning || lowPriceWarning || limitPriceWarning;
+  const title = feeOnTranferWarning || lowPriceWarning?.title || limitPriceWarning;
   const text = lowPriceWarning?.subTitle;
 
   if (!show || isWrapOrUnwrapOnly || isWrongChain) return null;
 
-  return <Message className={className} title={title} text={text} variant="error" />;
+  return <Message className={className} title={title} text={text} variant="warning" />;
 };
 
 export const ShowConfirmation = ({ className = "", connect }: { className?: string; connect?: () => void }) => {
@@ -493,7 +498,7 @@ export const ChunkSizeMessage = ({ className = "" }: { className?: string }) => 
 };
 
 const StyledShowConfirmation = styled(StyledColumnFlex)({
-  gap: 20,
+  gap: 10,
 });
 
 export const LimitPriceMessageContent = ({ className }: { className?: string }) => {
@@ -506,7 +511,7 @@ export const LimitPriceMessageContent = ({ className }: { className?: string }) 
 
 export const LimitPriceMessage = ({ className }: { className?: string }) => {
   const { translations: t } = useTwapContext();
-  const isMarketOrder = useIsMarketOrder();
+  const isMarketOrder = useTwapContextUI().derivedValues.isMarketOrder;
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
   if (isMarketOrder || isWrapOrUnwrapOnly) return null;
 

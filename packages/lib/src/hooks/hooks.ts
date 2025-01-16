@@ -10,6 +10,10 @@ import { TwapAbi, groupOrdersByStatus, OrderStatus } from "@orbs-network/twap-sd
 import { networks } from "../config";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
+export const useIsMarketOrder = () => {
+  return useTwapContextUI().derivedValues.isMarketOrder;
+};
+
 export const useRefetchBalances = () => {
   const { refetch: refetchSrcBalance } = useSrcBalance();
   const { refetch: refetchDstBalance } = useDstBalance();

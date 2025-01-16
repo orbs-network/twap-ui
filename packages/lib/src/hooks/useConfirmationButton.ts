@@ -10,13 +10,14 @@ import { useNoLiquidity, useOutAmount, useShouldOnlyWrap, useShouldUnwrap, useSw
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const useConfirmationButton = (connect?: () => void) => {
-  const { translations, isWrongChain, srcUsd, account } = useTwapContext();
   const {
-    config,
+    translations,
+    isWrongChain,
+    srcUsd,
+    account,
     state: { swapStatus },
-    parsedSrcToken,
-    parsedDstToken,
-  } = useTwapContextUI();
+  } = useTwapContext();
+  const { parsedSrcToken, parsedDstToken } = useTwapContextUI();
   const createOrderLoading = swapStatus === "loading";
   const { onOpen } = useSwapModal();
   const outAmountLoading = useOutAmount().isLoading;

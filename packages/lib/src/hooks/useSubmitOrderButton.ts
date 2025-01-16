@@ -2,12 +2,12 @@ import React, { useCallback } from "react";
 import { useTwapContext } from "../context/context";
 import { useSetSwapSteps } from "./lib";
 import { query } from "./query";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export function useSubmitOrderButton(onClick?: () => void) {
-  const { translations: t } = useTwapContext();
-  const { state } = useTwapContextUI();
-  const { swapStatus } = state;
+  const {
+    translations: t,
+    state: { swapStatus },
+  } = useTwapContext();
   const isLoading = swapStatus === "loading";
 
   const setSwapSteps = useSetSwapSteps();

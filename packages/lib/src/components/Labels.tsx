@@ -1,8 +1,10 @@
+import React from "react";
 import { Styles, Translations } from "..";
 import { useTwapContext } from "../context/context";
 import { Label } from "./base";
 import { handleFillDelayText } from "../utils";
-import { useIsMarketOrder, useMinimumDelayMinutes } from "../hooks/lib";
+import { useMinimumDelayMinutes } from "../hooks/lib";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export function ChunksAmountLabel() {
   const translations = useTwapContext().translations;
@@ -37,7 +39,7 @@ export const CurrentMarketPriceLabel = () => {
 
 export const LimitPriceLabel = () => {
   const { translations: t, isLimitPanel } = useTwapContext();
-  const isMarketOrder = useIsMarketOrder();
+  const isMarketOrder = useTwapContextUI().derivedValues.isMarketOrder;
 
   return (
     <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", position: "relative" }} gap={3}>

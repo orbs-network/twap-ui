@@ -3,13 +3,16 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Icon, Label, NumericInput, TokenDisplay } from "../base";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import BN from "bignumber.js";
-import React, { createContext, FC, ReactNode, useCallback, useContext, useMemo } from "react";
-import { useIsMarketOrder, useLimitPricePercentDiffFromMarket, useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
+import React, { createContext, FC, ReactNode, useContext, useMemo } from "react";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
 import { LimitPriceZeroButtonProps, LimitPricePercentProps, LimitPriceTitleProps, LimitPriceTokenSelectProps, LimitPriceInputProps } from "../../types";
-import { useOnLimitPercentageClick } from "./hooks";
+import { useTwapContext as useTwapContextUI, useLimitPriceInput } from "@orbs-network/twap-ui-sdk";
 import { useTwapContext } from "../../context/context";
 import { LimitSwitch } from "./LimitSwitch";
-import { useTwapContext as useTwapContextUI, useLimitInput } from "@orbs-network/twap-ui-sdk";
+
+const useIsMarketOrder = () => {
+  return useTwapContextUI().derivedValues.isMarketOrder;
+};
 
 interface Shared {
   onSrcSelect: () => void;
@@ -141,13 +144,13 @@ function Main({ className = "", onSrcSelect, onDstSelect, Components, styles }: 
 
 const Input = () => {
   const { Components } = useLimitPanelContext();
-  const { value, onChange } = useLimitInput();
+  const { value, onChange, isLoading } = useLimitPriceInput();
   const isMarketOrder = useIsMarketOrder();
 
   return (
     <StyledInputContainer>
       <div style={{ opacity: isMarketOrder ? 0 : 1, pointerEvents: isMarketOrder ? "none" : "all" }}>
-        {Components?.Input ? <Components.Input onChange={onChange} value={value} isLoading={false} /> : <DefaultInput onChange={onChange} value={value} isLoading={false} />}
+        {Components?.Input ? <Components.Input  onChange={onChange} value={value} isLoading={isLoading} /> : <DefaultInput onChange={onChange} value={value} isLoading={isLoading} />}
       </div>
     </StyledInputContainer>
   );
@@ -188,22 +191,21 @@ const PercentSelector = () => {
 const PercentButton = ({ percent }: { percent: string }) => {
   const {
     state,
-    derivedValues: { price },
+    derivedValues: { price, priceDiffFromMarket },
     actionHandlers,
   } = useTwapContextUI();
   const { isInvertedLimitPrice: inverted, isMarketOrder, limitPricePercent } = state;
-  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
 
   const Components = useLimitPanelContext().Components;
 
   const selected = useMemo(() => {
-    const p = limitPricePercent || priceDeltaPercentage;
+    const p = limitPricePercent || priceDiffFromMarket;
     if (BN(price || 0).isZero()) {
       return false;
     }
 
     return BN(p || 0).eq(percent);
-  }, [limitPricePercent, percent, isMarketOrder, price, priceDeltaPercentage]);
+  }, [limitPricePercent, percent, isMarketOrder, price, priceDiffFromMarket]);
 
   const prefix = percent === "0" ? "" : inverted ? "-" : !inverted && "+";
   if (Components?.PercentButton) {
@@ -213,13 +215,15 @@ const PercentButton = ({ percent }: { percent: string }) => {
 };
 
 const ZeroButton = () => {
-  const limitPricePercent = useTwapContextUI().state.limitPricePercent;
-  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
-  const onPercentageChange = useOnLimitPercentageClick();
+  const {
+    state: { limitPricePercent },
+    derivedValues: { priceDiffFromMarket },
+    actionHandlers: { onPricePercentClick },
+  } = useTwapContextUI();
   const Components = useLimitPanelContext().Components;
   const percent = usePercent();
   const showZero = useMemo(() => {
-    if (BN(priceDeltaPercentage).isZero()) {
+    if (BN(priceDiffFromMarket).isZero()) {
       return false;
     }
 
@@ -230,18 +234,18 @@ const ZeroButton = () => {
     if (limitPricePercent && percent.includes(limitPricePercent)) {
       return false;
     }
-    if (priceDeltaPercentage && percent.includes(priceDeltaPercentage)) {
+    if (priceDiffFromMarket && percent.includes(priceDiffFromMarket)) {
       return false;
     }
 
     return true;
-  }, [priceDeltaPercentage, limitPricePercent, percent]);
+  }, [priceDiffFromMarket, limitPricePercent, percent]);
 
   if (showZero) {
     return Components?.ZeroButton ? (
-      <Components.ZeroButton onClick={() => onPercentageChange("0")} text={`${priceDeltaPercentage}%`} />
+      <Components.ZeroButton onClick={() => onPricePercentClick("0")} text={`${priceDiffFromMarket}%`} />
     ) : (
-      <DefaultZeroButton onClick={() => onPercentageChange("0")} text={`${priceDeltaPercentage}%`} />
+      <DefaultZeroButton onClick={() => onPricePercentClick("0")} text={`${priceDiffFromMarket}%`} />
     );
   }
   return <PercentButton percent="0" />;

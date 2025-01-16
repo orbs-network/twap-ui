@@ -43,12 +43,13 @@ export const useOutAmount = () => {
   const { amountUi } = useSrcAmount();
   const {
     derivedValues: { destTokenAmount, destTokenAmountUI },
+    state: {marketPrice}
   } = useTwapContextUI();
 
   return {
     amount: destTokenAmount,
     amountUi: destTokenAmountUI,
-    isLoading: amountUi && BN(destTokenAmount || 0).isZero() ? true : false,
+    isLoading: amountUi && BN(marketPrice || 0).isZero() ? true : false,
   };
 };
 
@@ -130,8 +131,8 @@ export const useSrcAmount = () => {
   const { derivedValues, state } = useTwapContextUI();
 
   return {
-    amountUi: state.typedSrcAmount || "0",
-    amount: derivedValues.srcAmount || "0",
+    amountUi: state.typedSrcAmount || "",
+    amount: derivedValues.srcAmount || "",
   };
 };
 
@@ -184,14 +185,6 @@ export const useNoLiquidity = () => {
     if (BN(price || 0).isZero() || BN(srcAmount || 0).isZero() || !outAmount) return false;
     return BN(outAmount || 0).isZero();
   }, [outAmount, srcAmount, price]);
-};
-
-export const useLimitPricePercentDiffFromMarket = () => {
-  const {
-    derivedValues: { priceDiffFromMarket },
-  } = useTwapContextUI();
-
-  return priceDiffFromMarket;
 };
 
 export const useDeadline = () => {
@@ -316,11 +309,6 @@ export const useBalanceWarning = () => {
   }, [srcBalance?.toString(), srcAmount, maxSrcInputAmount?.toString(), translations]);
 };
 
-export const useSetIsMarket = () => {
-  const { actionHandlers } = useTwapContextUI();
-  return actionHandlers.setIsMarketOrder;
-};
-
 export const useSetFillDelay = () => {
   const { actionHandlers } = useTwapContextUI();
   return actionHandlers.setFillDelay;
@@ -343,28 +331,28 @@ export const useLowPriceWarning = () => {
     isLimitPanel,
     parsedSrcToken,
     parsedDstToken,
+    derivedValues: { priceDiffFromMarket },
   } = useTwapContextUI();
 
-  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
   return useMemo(() => {
     if (!parsedSrcToken || !parsedDstToken) {
       return undefined;
     }
 
-    const warning = getLowLimitPriceWarning(isLimitPanel, priceDeltaPercentage, !!isInvertedLimitPrice);
+    const warning = getLowLimitPriceWarning(isLimitPanel, priceDiffFromMarket, !!isInvertedLimitPrice);
 
     if (!warning) return;
     const title = isInvertedLimitPrice ? t.limitPriceWarningTitleInverted : t.limitPriceWarningTitle;
     const subtitle = isInvertedLimitPrice ? t.limitPriceWarningSubtileInverted : t.limitPriceWarningSubtitle;
     const token = isInvertedLimitPrice ? parsedDstToken : parsedSrcToken;
-    const percent = BN(priceDeltaPercentage || 0)
+    const percent = BN(priceDiffFromMarket || 0)
       .abs()
       .toString();
     return {
       title: title.replace("{symbol}", token.symbol),
       subTitle: subtitle.replace("{percent}", percent),
     };
-  }, [isInvertedLimitPrice, isLimitPanel, priceDeltaPercentage, parsedSrcToken, parsedDstToken, t]);
+  }, [isInvertedLimitPrice, isLimitPanel, priceDiffFromMarket, parsedSrcToken, parsedDstToken, t]);
 };
 
 export const useSetLimitPrice = () => {
@@ -374,20 +362,6 @@ export const useSetLimitPrice = () => {
 
 export const useToggleDisclaimer = () => {
   return useCallback(() => {}, []);
-};
-
-export const useIsMarketOrder = () => {
-  const {
-    isLimitPanel,
-    state: { isMarketOrder },
-  } = useTwapContextUI();
-
-  return useMemo(() => {
-    if (isLimitPanel) {
-      return false;
-    }
-    return isMarketOrder;
-  }, [isLimitPanel, isMarketOrder]);
 };
 
 export const useTradeSizeWarning = () => {
@@ -410,6 +384,18 @@ export const useTradesAmountWarning = () => {
   return "Min. 1 trade is required.";
 };
 
+
+export const useLimitPriceWarning = () => {
+  const {state: {typedPrice}} = useTwapContextUI()
+
+  
+  return useMemo(() => {
+    if(typedPrice !== undefined &&  BN(typedPrice || 0).isZero()) {
+      return 'Enter limit price'
+    }
+  },[typedPrice])
+}
+
 export const useSwapWarning = () => {
   const { warning: fillDelayWarning } = useFillDelay();
   const { warning: durationWarning } = useDuration();
@@ -419,12 +405,13 @@ export const useSwapWarning = () => {
   const zeroSrcAmount = useSrcAmountWarning();
   const balance = useBalanceWarning();
   const lowPrice = useLowPriceWarning();
+  const limitPriceWarning = useLimitPriceWarning()
 
   if (shouldWrapOrUnwrapOnly) {
     return { balance, zeroSrcAmount };
   }
 
-  return { tradeSize, zeroSrcAmount, feeOnTranfer, lowPrice, balance, fillDelayWarning, durationWarning };
+  return { tradeSize, zeroSrcAmount, feeOnTranfer, lowPrice, balance, fillDelayWarning, durationWarning, limitPriceWarning };
 };
 
 export const useDuration = () => {
@@ -460,9 +447,7 @@ export const useShouldWrap = () => {
 export const useSetSwapSteps = () => {
   const shouldWrap = useShouldWrap();
   const { data: haveAllowance } = query.useAllowance();
-  const {
-    actionHandlers: { setSwapSteps },
-  } = useTwapContextUI();
+  const { updateState } = useTwapContext();
   return useCallback(() => {
     let swapSteps: SwapStep[] = [];
     if (shouldWrap) {
@@ -472,8 +457,8 @@ export const useSetSwapSteps = () => {
       swapSteps.push("approve");
     }
     swapSteps.push("createOrder");
-    setSwapSteps(swapSteps);
-  }, [haveAllowance, shouldWrap, setSwapSteps]);
+    updateState({ swapSteps: swapSteps });
+  }, [haveAllowance, shouldWrap, updateState]);
 };
 
 export const useSwapPrice = () => {

@@ -387,6 +387,21 @@ interface TwapComponents {
   USD?: FC<{ value?: string | number }>;
 }
 
+export interface State {
+  swapStep?: SwapStep;
+  swapSteps?: SwapStep[];
+  swapStatus?: SwapState;
+  approveSuccess?: boolean;
+  wrapSuccess?: boolean;
+  wrapTxHash?: string;
+  unwrapTxHash?: string;
+  approveTxHash?: string;
+  createOrderSuccess?: boolean;
+  createOrderTxHash?: string;
+  showConfirmation?: boolean;
+  disclaimerAccepted?: boolean;
+}
+
 export interface TWAPContextProps {
   translations: Translations;
   isWrongChain: boolean;
@@ -415,4 +430,6 @@ export interface TWAPContextProps {
   nativeUsd?: string;
   useDappToken?: (address?: string) => any;
   useParsedToken: any;
+  state: State;
+  updateState: (state: Partial<State>) => void;
 }

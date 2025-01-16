@@ -1,13 +1,8 @@
 import { styled } from "styled-components";
-import { useTwapContext } from "../../../context/context";
-import { useAmountUi, useFormatNumber, useFormatNumberV2 } from "../../../hooks/hooks";
-import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
+import { useAmountUi, useFormatNumberV2 } from "../../../hooks/hooks";
 import { Button, Spinner, Switch } from "../../base";
 import { MarketPriceWarning, Separator } from "../../Components";
-import { BottomContent, SmallTokens } from "../Components";
 import { StyledColumnFlex, StyledText } from "../../../styles";
-import { Steps } from "../Steps";
-import { useOrderType } from "../hooks";
 import { OrderDisplay } from "../../OrderDisplay";
 import { size } from "../../../utils";
 import BN from "bignumber.js";
@@ -16,7 +11,6 @@ import {
   useDeadline,
   useDstMinAmountOut,
   useFillDelay,
-  useIsMarketOrder,
   useOutAmount,
   useSrcAmount,
   useSrcChunkAmount,
@@ -24,13 +18,21 @@ import {
   useToggleDisclaimer,
   useUsdAmount,
 } from "../../../hooks/lib";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "../../../context/context";
+import { Steps } from "../Steps";
+import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
+import { useOrderType } from "../hooks";
+import { BottomContent, SmallTokens } from "../Components";
 
 const Price = () => {
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    parsedSrcToken: srcToken,
+    parsedDstToken: dstToken,
+    derivedValues: { isMarketOrder },
+  } = useTwapContextUI();
   const swapPrice = useSwapPrice();
-  const isMarketOrder = useIsMarketOrder();
   const usd = useFormatNumberV2({ value: swapPrice.usd, decimalScale: 2 });
   const price = useFormatNumberV2({ value: swapPrice.price, decimalScale: 4 });
   return (
@@ -96,7 +98,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
 };
 
 export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) => {
-  const { swapStatus, swapSteps } = useTwapContextUI().state;
+  const { swapStatus, swapSteps } = useTwapContext().state;
 
   const shouldOnlyConfirm = swapStatus === "loading" && size(swapSteps) === 1;
 
@@ -124,13 +126,16 @@ export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; class
 };
 
 const Tokens = () => {
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    parsedSrcToken: srcToken,
+    parsedDstToken: dstToken,
+    derivedValues: { isMarketOrder },
+  } = useTwapContextUI();
 
   const { srcUsd, dstUsd } = useUsdAmount();
   const srcAmount = useSrcAmount().amountUi;
   const outAmount = useOutAmount().amountUi;
   const fillDelayMillis = useFillDelay().millis;
-  const isMarketOrder = useIsMarketOrder();
   const chunks = useChunks();
 
   return (
@@ -143,12 +148,15 @@ const Tokens = () => {
 
 const Details = () => {
   const chunks = useChunks();
-  const { isLimitPanel } = useTwapContext();
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    parsedSrcToken: srcToken,
+    parsedDstToken: dstToken,
+    derivedValues: { isMarketOrder },
+    isLimitPanel,
+  } = useTwapContextUI();
 
   const deadline = useDeadline().millis;
   const srcChunkAmount = useSrcChunkAmount().amountUi;
-  const isMarketOrder = useIsMarketOrder();
   const dstMinAmountOut = useDstMinAmountOut().amountUi;
   const fillDelayMillis = useFillDelay().millis;
 
@@ -182,10 +190,12 @@ const Details = () => {
 
 const Fee = () => {
   const { fee } = useTwapContext();
-  const { parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    parsedDstToken: dstToken,
+    derivedValues: { isMarketOrder },
+  } = useTwapContextUI();
 
   const outAmount = useOutAmount().amount;
-  const isMarketOrder = useIsMarketOrder();
 
   const amount = useMemo(() => {
     if (!fee || !outAmount || isMarketOrder) return "";

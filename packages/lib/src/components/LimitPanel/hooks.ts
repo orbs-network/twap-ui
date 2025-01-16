@@ -1,44 +1,7 @@
 import BN from "bignumber.js";
 import { useCallback, useMemo } from "react";
-import { useTwapContext } from "../../context/context";
-import { useIsMarketOrder, useLimitPricePercentDiffFromMarket, useSetLimitPrice, useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
-import { amountUiV2, formatDecimals } from "../../utils";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/lib";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
-
-export const useOnLimitPercentageClick = () => {
-  const {
-    parsedDstToken,
-    state: { marketPrice, isInvertedLimitPrice },
-  } = useTwapContextUI();
-  const onChange = useSetLimitPrice();
-
-  return useCallback(
-    (percent: string) => {
-      if (BN(percent).isZero()) {
-        onChange(undefined);
-        return;
-      }
-      const p = BN(percent || 0)
-        .div(100)
-        .plus(1)
-        .toString();
-      let price = amountUiV2(parsedDstToken?.decimals, marketPrice);
-
-      if (isInvertedLimitPrice) {
-        price = BN(1)
-          .div(price || "0")
-          .toString();
-      }
-
-      const value = BN(price || "0")
-        .times(p)
-        .toString();
-
-      onChange(BN(value).decimalPlaces(6).toString());
-    },
-    [marketPrice, onChange, parsedDstToken, isInvertedLimitPrice],
-  );
-};
 
 const defaultPercent = [1, 5, 10];
 
@@ -55,15 +18,17 @@ const useList = () => {
 };
 
 const useCustomPercent = () => {
-  const { state } = useTwapContextUI();
+  const {
+    state,
+    derivedValues: { priceDiffFromMarket },
+  } = useTwapContextUI();
 
-  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
   const { limitPricePercent } = state;
 
   const formatted = useList();
 
   const custom = useMemo(() => {
-    if (BN(priceDeltaPercentage).isZero()) {
+    if (BN(priceDiffFromMarket).isZero()) {
       return false;
     }
 
@@ -74,18 +39,20 @@ const useCustomPercent = () => {
     if (limitPricePercent && formatted.includes(limitPricePercent)) {
       return false;
     }
-    if (priceDeltaPercentage && formatted.includes(priceDeltaPercentage)) {
+    if (priceDiffFromMarket && formatted.includes(priceDiffFromMarket)) {
       return false;
     }
 
     return true;
-  }, [priceDeltaPercentage, limitPricePercent, formatted]);
+  }, [priceDiffFromMarket, limitPricePercent, formatted]);
 
-  return custom ? priceDeltaPercentage : undefined;
+  return custom ? priceDiffFromMarket : undefined;
 };
 
 export const useLimitPercentList = () => {
-  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
+  const {
+    derivedValues: { priceDiffFromMarket },
+  } = useTwapContextUI();
   const formatted = useList();
   const custom = useCustomPercent();
 
@@ -94,7 +61,7 @@ export const useLimitPercentList = () => {
       return ["0", ...formatted];
     }
     return formatted;
-  }, [formatted, custom, priceDeltaPercentage]);
+  }, [formatted, custom, priceDiffFromMarket]);
 };
 
 export const useLimitTokens = () => {
@@ -111,7 +78,8 @@ export const useLimitTokens = () => {
 
 export const useLimitResetButton = () => {
   const customPercent = useCustomPercent();
-  const onSelectCallback = useOnLimitPercentageClick();
+  const { actionHandlers } = useTwapContextUI();
+  const onSelectCallback = actionHandlers.onPricePercentClick;
   const onReset = useCallback(() => {
     onSelectCallback("0");
   }, [onSelectCallback]);
@@ -125,26 +93,25 @@ export const useLimitResetButton = () => {
 export const useLimitPercentButton = (percent: string) => {
   const {
     state,
-    derivedValues: { price },
+    derivedValues: { price, priceDiffFromMarket },
+    actionHandlers,
   } = useTwapContextUI();
   const { isInvertedLimitPrice: inverted, limitPricePercent } = state;
 
-  const priceDeltaPercentage = useLimitPricePercentDiffFromMarket();
-
   const isSelected = useMemo(() => {
-    const p = limitPricePercent || priceDeltaPercentage;
+    const p = limitPricePercent || priceDiffFromMarket;
     if (BN(price || 0).isZero()) {
       return false;
     }
 
     return BN(p || 0).eq(percent);
-  }, [limitPricePercent, price, priceDeltaPercentage, percent]);
+  }, [limitPricePercent, price, priceDiffFromMarket, percent]);
 
   const text = useMemo(() => {
     return `${BN(percent || 0).isZero() ? "" : inverted ? "-" : !inverted && "+"} ${Math.abs(Number(percent))} %`;
   }, [inverted, percent]);
 
-  const onSelectCallback = useOnLimitPercentageClick();
+  const onSelectCallback = actionHandlers.onPricePercentClick;
 
   const onSelect = useCallback(() => {
     onSelectCallback(percent);
@@ -159,11 +126,13 @@ export const useLimitPercentButton = (percent: string) => {
 };
 
 export const useLimitPricePanel = () => {
-  const isMarket = useIsMarketOrder();
+  const {
+    derivedValues: { isMarketOrder },
+  } = useTwapContextUI();
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
 
   return {
-    showWarning: isMarket,
+    showWarning: isMarketOrder,
     hidePanel: shouldWrapOrUnwrapOnly,
   };
 };

@@ -571,18 +571,9 @@ const ShowConfirmationButton = () => {
   return <Components.ShowConfirmation connect={context.connect} />;
 };
 
-const TwapListener = () => {
-  const onChange = hooks.useSetIsMarket();
-  useEffect(() => {
-    // onChange(true);
-  }, [onChange]);
-  return null;
-};
-
 const TWAPPanel = () => {
   return (
     <StyledContent>
-      <TwapListener />
       <StyledTop>
         <TokenPanel isSrcToken={true} />
         <TokenChange />
