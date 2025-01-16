@@ -1,6 +1,6 @@
 import { Box, Button, createTheme, LinearProgress, styled, SwipeableDrawer, Theme, Typography } from "@mui/material";
 import { Components, OrdersContainer, Styles } from "@orbs-network/twap-ui";
-import { Children, createContext, CSSProperties, ReactNode, useCallback, useRef, useState } from "react";
+import { Children, createContext, CSSProperties, ReactElement, ReactNode, useCallback, useRef, useState } from "react";
 import { MOBILE } from "./config";
 import { WarningVariant } from "./context";
 import { useClickOutside } from "./hooks";
@@ -491,7 +491,6 @@ export const StyledBalanceContainer = styled(Styles.StyledRowFlex)<{ hide: numbe
     flex: 1,
     overflow: "hidden",
     justifyContent: "flex-end",
-    cursor: "pointer",
     alignItems: "center",
     opacity: hide ? 0 : 1,
     transition: "opacity 0.2s",
@@ -1344,7 +1343,7 @@ export const StyledPricePanelInput = styled(StyledPriceCard)(() => {
   };
 });
 
-const InputContainerLabel = ({ label, value, tooltip }: { label: string; value?: string; tooltip?: string }) => {
+const InputContainerLabel = ({ label, value, tooltip }: { label: string; value?: string; tooltip?: string | ReactElement }) => {
   return (
     <StyledInputContainerLabel>
       <Components.Base.Label tooltipText={tooltip}>{label}</Components.Base.Label>

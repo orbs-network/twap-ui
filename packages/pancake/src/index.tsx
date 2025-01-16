@@ -135,8 +135,8 @@ const Balance = ({ isSrc, hide }: { isSrc?: boolean; hide: boolean }) => {
 
   const showWarning = type === "balance" && isSrc;
   return (
-    <StyledBalanceContainer warning={showWarning ? 1 : 0} hide={hide ? 1 : 0} onClick={isSrc ? () => onPercentClick(1) : () => {}}>
-      <MdAccountBalanceWallet />
+    <StyledBalanceContainer style={{ cursor: isSrc ? "pointer" : "auto" }} warning={showWarning ? 1 : 0} hide={hide ? 1 : 0} onClick={isSrc ? () => onPercentClick(1) : () => {}}>
+      {isSrc && <MdAccountBalanceWallet />}
       <StyledBalance hideLabel={true} isSrc={isSrc} decimalScale={6} />
     </StyledBalanceContainer>
   );
@@ -497,6 +497,8 @@ export function TotalTrades({ className = "" }: { className?: string }) {
   const { srcToken, translations: t } = useTwapContext();
   const shouldWrap = hooks.useShouldWrap();
   const shouldUnwrap = hooks.useShouldUnwrap();
+  const connectedChainId = useAdapterContext().connectedChainId;
+  const config = useConfig(connectedChainId);
 
   const onSetChunks = useCallback(
     (value: string) => {
@@ -514,7 +516,15 @@ export function TotalTrades({ className = "" }: { className?: string }) {
         <InputContainer.Header>
           <Styles.StyledRowFlex justifyContent="space-between">
             <InputContainer.Header.Label tooltip={t.totalTradesTooltip} label="Total Trades" />
-            <InputContainer.Header.Label tooltip={t.tradeSizeTooltip} label="Size Per Trade: " value={!srcToken ? "" : `${chunkSize} ${srcToken?.symbol}`} />
+            <InputContainer.Header.Label
+              tooltip={
+                <>
+                  {t.tradeSizeTooltip} <br /> {`Note: Min. size per trade should be > USD ${config.minChunkSizeUsd}`}
+                </>
+              }
+              label="Size Per Trade: "
+              value={!srcToken ? "" : `${chunkSize} ${srcToken?.symbol}`}
+            />
           </Styles.StyledRowFlex>
         </InputContainer.Header>
 
