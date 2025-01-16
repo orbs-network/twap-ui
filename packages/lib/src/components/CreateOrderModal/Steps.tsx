@@ -73,8 +73,7 @@ const StyledSpinner = styled(Spinner)({
 });
 
 const useStep = (step?: SwapStep) => {
-  const { srcToken } = useTwapContext();
-  const { state } = useTwapContextUI();
+  const { state, parsedSrcToken: srcToken } = useTwapContextUI();
   const { createOrderTxHash, approveTxHash, wrapTxHash, swapStep, createOrderSuccess, wrapSuccess, approveSuccess, swapSteps } = state;
   const nativeToken = useNetwork()?.native;
   return useMemo((): Step | undefined => {

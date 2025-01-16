@@ -108,17 +108,19 @@ export const useGasPrice = () => {
 };
 
 const useAllowance = () => {
-  const { srcToken, config, account } = useTwapContext();
+  const { account } = useTwapContext();
+  const { parsedSrcToken: srcToken, sdk } = useTwapContextUI();
+
   const srcAmount = useSrcAmount().amount;
   const getHasAllowance = useGetHasAllowance();
 
   const query = useQuery(
-    [QueryKeys.GET_ALLOWANCE, config.chainId, srcToken?.address, srcAmount],
+    [QueryKeys.GET_ALLOWANCE, sdk.config.chainId, srcToken?.address, srcAmount],
     async () => {
       return getHasAllowance(srcToken!, srcAmount);
     },
     {
-      enabled: !!srcToken && BN(srcAmount).gt(0) && !!account && !!config,
+      enabled: !!srcToken && BN(srcAmount).gt(0) && !!account && !!sdk.config,
       staleTime: STALE_ALLOWANCE,
       refetchOnWindowFocus: true,
     },

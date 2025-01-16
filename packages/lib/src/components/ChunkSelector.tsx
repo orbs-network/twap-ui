@@ -5,6 +5,7 @@ import { useFormatNumberV2 } from "../hooks/hooks";
 import { StyledColumnFlex } from "../styles";
 import { BottomContent, Label, Message, NumericInput, Slider } from "./base";
 import { useChunks, useSetChunks, useShouldWrapOrUnwrapOnly, useSrcChunkAmount, useSrcChunkAmountUsd, useTradeSizeWarning } from "../hooks/lib";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const ChunkSelector = ({ className = "", children }: { className?: string; children: ReactNode }) => {
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
@@ -21,7 +22,8 @@ export const ChunkSelector = ({ className = "", children }: { className?: string
   );
 };
 const Text = () => {
-  const { isWrongChain, srcToken, srcUsd } = useTwapContext();
+  const { isWrongChain, srcUsd } = useTwapContext();
+  const { parsedSrcToken: srcToken } = useTwapContextUI();
 
   const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmount().amountUi });
 

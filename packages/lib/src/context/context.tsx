@@ -18,7 +18,6 @@ const queryClient = new QueryClient({
   },
 });
 
-
 const WrappedTwap = (props: TwapLibProps) => {
   return (
     <TwapErrorWrapper>
@@ -30,10 +29,9 @@ const WrappedTwap = (props: TwapLibProps) => {
 };
 
 const Panel = (props: TwapLibProps) => {
-  const { actionHandlers } = useTwapContextUI();
-  const { srcToken, dstToken } = useTwapContext();
-  query.useFeeOnTransfer(srcToken?.address);
-  query.useFeeOnTransfer(dstToken?.address);
+  const { actionHandlers, parsedSrcToken, parsedDstToken } = useTwapContextUI();
+  query.useFeeOnTransfer(parsedSrcToken?.address);
+  query.useFeeOnTransfer(parsedDstToken?.address);
   query.useAllowance();
 
   useEffect(() => {
@@ -85,8 +83,6 @@ export const Content = (props: TwapLibProps) => {
         isWrongChain,
         marketPrice: props.marketPrice,
         uiPreferences,
-        srcToken: props.srcToken,
-        dstToken: props.dstToken,
         srcUsd: props.srcUsd || 0,
         dstUsd: props.dstUsd || 0,
         Components: props.Components,

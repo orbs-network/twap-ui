@@ -11,6 +11,8 @@ import {
   Token,
   Configs,
 } from "@orbs-network/twap-ui";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+
 import translations from "./i18n/en.json";
 import { createContext, useContext, useMemo } from "react";
 import Web3 from "web3";
@@ -28,7 +30,7 @@ const uiPreferences: TwapContextUIPreferences = {
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens, account, connectedChainId } = useAdapterContext();
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
 
   const selectedCurrency = useMemo(() => {
     if (!!dappTokens && srcToken) {

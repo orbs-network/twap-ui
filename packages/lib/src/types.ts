@@ -392,8 +392,6 @@ export interface TWAPContextProps {
   isWrongChain: boolean;
   uiPreferences: TwapContextUIPreferences;
   Components?: TwapComponents;
-  srcToken?: Token;
-  dstToken?: Token;
   srcUsd: string | number;
   dstUsd: string | number;
   marketPrice?: string;

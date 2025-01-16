@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from "react";
 import { amountBNV2, amountUiV2, query, SwapStep, useTwapContext } from "..";
 import BN from "bignumber.js";
-import { useFormatDecimals, useNetwork, useSrcBalance } from "./hooks";
-import { chainId, eqIgnoreCase, isNativeAddress, maxUint256, networks } from "@defi.org/web3-candies";
+import { useNetwork, useSrcBalance } from "./hooks";
+import { eqIgnoreCase, isNativeAddress, maxUint256, networks } from "@defi.org/web3-candies";
 import moment from "moment";
 import { fillDelayText, MIN_DURATION_MINUTES, TimeDuration } from "@orbs-network/twap-sdk";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
@@ -60,7 +60,8 @@ const getUsdAmount = (amount?: string, usd?: string | number) => {
 };
 export const useUsdAmount = () => {
   const { amount: srcAmount } = useSrcAmount();
-  const { dstToken, dstUsd, srcToken, srcUsd } = useTwapContext();
+  const { dstUsd, srcUsd } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
 
   const dstAmount = useOutAmount().amount;
 
@@ -92,7 +93,8 @@ const useAmountUi = (decimals?: number, amount?: string) => {
 };
 
 export const useSrcChunkAmountUsd = () => {
-  const { srcToken, srcUsd } = useTwapContext();
+  const { srcUsd } = useTwapContext();
+  const { parsedSrcToken: srcToken } = useTwapContextUI();
   const srcChunksAmount = useSrcChunkAmount().amount;
 
   const result = BN(srcChunksAmount || "0")
@@ -107,7 +109,7 @@ export const useChunks = () => {
 };
 
 export const useToken = (isSrc?: boolean) => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
   return isSrc ? srcToken : dstToken;
 };
 
@@ -216,7 +218,7 @@ export const useSrcChunkAmount = () => {
   };
 };
 export const useShouldOnlyWrap = () => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
   const network = useNetwork();
 
   return useMemo(() => {
@@ -225,7 +227,7 @@ export const useShouldOnlyWrap = () => {
 };
 
 export const useShouldUnwrap = () => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
   const network = useNetwork();
 
   return useMemo(() => {
@@ -248,7 +250,8 @@ const isEqual = (tokenA?: any, tokenB?: any) => {
 
 export const useTokenSelect = () => {
   const switchTokens = useSwitchTokens();
-  const { onSrcTokenSelected, onDstTokenSelected, srcToken, dstToken } = useTwapContext();
+  const { onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
   return useCallback(
     ({ isSrc, token }: { isSrc: boolean; token: any }) => {
       if (isSrc && isEqual(token, dstToken)) {
@@ -267,14 +270,15 @@ export const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens]
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
   );
 };
 
 // Warnigns //
 
 export const useFeeOnTransferWarning = () => {
-  const { translations, srcToken, dstToken } = useTwapContext();
+  const { translations } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
   const { data: srcTokenFeeOnTransfer } = query.useFeeOnTransfer(srcToken?.address);
   const { data: dstTokenFeeOnTransfer } = query.useFeeOnTransfer(dstToken?.address);
 
@@ -446,7 +450,7 @@ export const useDuration = () => {
 };
 
 export const useShouldWrap = () => {
-  const { srcToken } = useTwapContext();
+  const { parsedSrcToken: srcToken } = useTwapContextUI();
 
   return useMemo(() => {
     return isNativeAddress(srcToken?.address || "");
@@ -493,15 +497,15 @@ export const useSwapPrice = () => {
 };
 
 export const useMaxSrcInputAmount = () => {
-  const { srcToken, config } = useTwapContext();
+  const { parsedSrcToken: srcToken, sdk } = useTwapContextUI();
   const srcBalance = useSrcBalance().data?.toString();
 
   return useMemo(() => {
     if (srcBalance && isNativeAddress(srcToken?.address || "")) {
-      const srcTokenMinimum = amountBNV2(srcToken?.decimals, getMinNativeBalance(config.chainId).toString());
+      const srcTokenMinimum = amountBNV2(srcToken?.decimals, getMinNativeBalance(sdk.config.chainId).toString());
       return BN.max(0, BN.min(BN(srcBalance).minus(srcTokenMinimum))).toString();
     }
-  }, [srcToken, srcBalance, config.chainId]);
+  }, [srcToken, srcBalance, sdk.config.chainId]);
 };
 
 export const useOnSrcAmountPercent = () => {
@@ -520,7 +524,7 @@ export const useOnSrcAmountPercent = () => {
       const value = amountUiV2(parsedSrcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       actionHandlers.setSrcAmount(value);
     },
-    [maxAmount, srcBalance, actionHandlers.setSrcAmount, parsedSrcToken]
+    [maxAmount, srcBalance, actionHandlers.setSrcAmount, parsedSrcToken],
   );
 };
 
@@ -534,7 +538,7 @@ export const useSwapData = () => {
 
   const fillDelay = useFillDelay();
   const chunks = useChunks();
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
 
   return {
     srcAmount,

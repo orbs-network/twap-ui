@@ -28,7 +28,7 @@ import { useMemo } from "react";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 const Price = () => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
   const swapPrice = useSwapPrice();
   const isMarketOrder = useIsMarketOrder();
   const usd = useFormatNumberV2({ value: swapPrice.usd, decimalScale: 2 });
@@ -76,7 +76,6 @@ const MarketWarning = ({ isMarketOrder }: { isMarketOrder?: boolean }) => {
 
 export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   const { translations: t } = useTwapContext();
-  const { state } = useTwapContextUI();
   const onChange = useToggleDisclaimer();
 
   return (
@@ -125,7 +124,7 @@ export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; class
 };
 
 const Tokens = () => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
 
   const { srcUsd, dstUsd } = useUsdAmount();
   const srcAmount = useSrcAmount().amountUi;
@@ -144,7 +143,9 @@ const Tokens = () => {
 
 const Details = () => {
   const chunks = useChunks();
-  const { isLimitPanel, srcToken, dstToken } = useTwapContext();
+  const { isLimitPanel } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+
   const deadline = useDeadline().millis;
   const srcChunkAmount = useSrcChunkAmount().amountUi;
   const isMarketOrder = useIsMarketOrder();
@@ -180,7 +181,9 @@ const Details = () => {
 };
 
 const Fee = () => {
-  const { fee, dstToken } = useTwapContext();
+  const { fee } = useTwapContext();
+  const { parsedDstToken: dstToken } = useTwapContextUI();
+
   const outAmount = useOutAmount().amount;
   const isMarketOrder = useIsMarketOrder();
 

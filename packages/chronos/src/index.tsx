@@ -205,7 +205,6 @@ const SrcTokenPercentSelector = () => {
 
 const TokenSummary = () => {
   const srcAmount = hooks.useSrcAmount().amountUi;
-  const { srcToken, dstToken } = useTwapContext();
   const dstAmount = hooks.useOutAmount().amountUi;
 
   const srcAmountFormatted = hooks.useFormatNumber({ value: srcAmount });

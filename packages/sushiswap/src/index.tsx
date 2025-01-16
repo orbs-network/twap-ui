@@ -20,6 +20,8 @@ import {
   Configs,
   query,
 } from "@orbs-network/twap-ui";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+
 import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import translations from "./i18n/en.json";
 import { createContext, FC, useContext, useEffect, useMemo } from "react";
@@ -338,7 +340,6 @@ export const useProvider = () => {
   return provider;
 };
 
-
 const useParsedToken = (address?: string) => {
   const { useToken } = useAdapterContext();
   const parseToken = useParseToken();
@@ -379,7 +380,6 @@ const TWAPContent = () => {
     return context.isDarkTheme ? darkTheme : lightTheme;
   }, [context.isDarkTheme]);
 
-  const { srcToken, dstToken } = useSelectedParsedTokens();
   const { srcUsd, dstUsd, nativeUsd } = useUsd();
 
   const marketPrice = useMarketPrice();
@@ -399,8 +399,8 @@ const TWAPContent = () => {
           provider={provider}
           account={!context.configChainId ? undefined : context.account}
           useDappToken={context.useToken}
-          srcToken={srcToken}
-          dstToken={dstToken}
+          srcToken={context.srcToken}
+          dstToken={context.dstToken}
           onDstTokenSelected={context.onDstTokenSelected}
           onSrcTokenSelected={context.onSrcTokenSelected}
           isLimitPanel={context.limit}
@@ -505,8 +505,8 @@ const LimitPriceTokenSelect = (props: LimitPriceTokenSelectProps) => {
 
 const LimitPriceTitleTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const adapterContext = useAdapterContext();
-  const twapContext = useTwapContext();
-  const token = props.isSrc ? twapContext.srcToken : twapContext.dstToken;
+  const twapContext = useTwapContextUI();
+  const token = props.isSrc ? twapContext.parsedSrcToken : twapContext.parsedDstToken;
 
   return (
     <adapterContext.TokenSelectModal selected={props.isSrc ? adapterContext.srcToken : adapterContext.dstToken} onSelect={props.onSelect!}>

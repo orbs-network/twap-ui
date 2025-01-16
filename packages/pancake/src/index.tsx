@@ -68,6 +68,8 @@ import { useAdapterContext, AdapterContextProvider, PancakeProps } from "./conte
 import { LimitPriceTitleProps } from "@orbs-network/twap-ui";
 import { LimitPriceTokenSelectProps } from "@orbs-network/twap-ui";
 import { MdArrowDropDown } from "@react-icons/all-files/md/MdArrowDropDown";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+
 import { styled } from "styled-components";
 const PERCENT = [
   { text: "25%", value: 0.25 },
@@ -129,7 +131,7 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
 };
 
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
-  const dstToken = useTwapContext().dstToken;
+  const dstToken = useTwapContextUI().parsedDstToken;
   const onTokenSelectClick = useTokenSelectClick();
   const [isOpen, setIsOpen] = useState(false);
 

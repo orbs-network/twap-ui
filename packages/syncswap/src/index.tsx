@@ -14,6 +14,8 @@ import {
   Styles,
 } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+
 import { createContext, useCallback, useContext, useMemo } from "react";
 import Web3 from "web3";
 import {
@@ -94,8 +96,8 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: boolean }) => {
-  const { translations, srcToken, dstToken } = useTwapContext();
-
+  const { translations } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
   const token = isSrc ? srcToken : dstToken;
 
   return (

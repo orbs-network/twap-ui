@@ -50,6 +50,8 @@ import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 import { ThemeProvider } from "styled-components";
 import { Portal } from "@orbs-network/twap-ui/dist/components/base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+
 export const config = Configs.BaseSwap;
 
 const uiPreferences: TwapContextUIPreferences = {
@@ -60,7 +62,7 @@ const uiPreferences: TwapContextUIPreferences = {
 };
 
 const TokenPanelBalance = ({ isSrc }: { isSrc?: boolean }) => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
   const srcBalance = hooks.useAmountUi(srcToken?.decimals, hooks.useSrcBalance().data?.toString());
   const dstBalance = hooks.useAmountUi(dstToken?.decimals, hooks.useDstBalance().data?.toString());
   const balance = isSrc ? srcBalance : dstBalance;

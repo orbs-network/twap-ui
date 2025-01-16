@@ -13,6 +13,8 @@ import {
   Styles,
   LimitPricePercentProps,
 } from "@orbs-network/twap-ui";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+
 import translations from "./i18n/en.json";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
@@ -79,7 +81,7 @@ const TokenSelectModal = ({ onClose, isSrc, isOpen }: any) => {
     },
     [onTokenSelectedCallback, isSrc],
   );
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
 
   const { srcTokenSelected, dstTokenSelected } = useMemo(() => {
     return {

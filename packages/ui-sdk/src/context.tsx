@@ -20,6 +20,7 @@ interface ContextType {
   parsedDstToken?: Token;
   config: SDK.Config;
   derivedValues: ReturnType<typeof useDerivedSwapValues>;
+  walletAddress?: string;
 }
 enum ActionType {
   UPDATED_STATE = "UPDATED_STATE",
@@ -161,15 +162,14 @@ export const useDerivedSwapValues = (sdk: SDK.TwapSDK, state: State, parsedSrcTo
   }, [state, parsedSrcToken, parsedDstToken, sdk, isLimitPanel, state.oneSrcTokenUsd]);
 };
 
-export const TwapProvider = ({ children, config, isLimitPanel = false, parseToken }: TwapProviderProps) => {
+export const TwapProvider = ({ children, config, isLimitPanel = false, parseToken, walletAddress }: TwapProviderProps) => {
   const [state, dispatch] = useReducer(contextReducer, initialState);
 
   const sdk = useMemo(() => new SDK.TwapSDK({ config }), [config]);
 
-  const parsedSrcToken = useMemo(() => parseToken(state.rawSrcToken), [state.rawSrcToken, parseToken]);
-  const parsedDstToken = useMemo(() => parseToken(state.rawDstToken), [state.rawDstToken, parseToken]);
+  const parsedSrcToken = useMemo(() => parseToken?.(state.rawSrcToken), [state.rawSrcToken, parseToken]);
+  const parsedDstToken = useMemo(() => parseToken?.(state.rawDstToken), [state.rawDstToken, parseToken]);
 
-  
   const derivedValues = useDerivedSwapValues(sdk, state, parsedSrcToken, parsedDstToken, isLimitPanel);
   const actionHandlers = useStateActionsHandlers(state, dispatch, parsedDstToken);
 
@@ -184,6 +184,7 @@ export const TwapProvider = ({ children, config, isLimitPanel = false, parseToke
         parsedDstToken,
         config,
         derivedValues,
+        walletAddress,
       }}
     >
       <ContextListeners />
@@ -257,15 +258,12 @@ export const useLimitInput = () => {
 
   const value = useMemo(() => {
     if (typedPrice) return typedPrice;
-    let res = priceUI;
 
-    if (isInvertedLimitPrice) {
-      res = BN(1)
-        .div(res || 0)
-        .toString();
+    if (isInvertedLimitPrice && priceUI) {
+      return BN(1).div(priceUI).toString();
     }
 
-    return res;
+    return priceUI;
   }, [typedPrice, priceUI, isInvertedLimitPrice]);
 
   return {

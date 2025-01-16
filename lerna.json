@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "version": "2.0.54",
-  "useNx": false,
+  "useNx": true,
   "useWorkspaces": true,
   "progress": true,
   "rejectCycles": true,

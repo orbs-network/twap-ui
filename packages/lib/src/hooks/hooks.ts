@@ -8,6 +8,7 @@ import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddr
 import { query, useOrdersHistory } from "./query";
 import { TwapAbi, groupOrdersByStatus, OrderStatus } from "@orbs-network/twap-sdk";
 import { networks } from "../config";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const useRefetchBalances = () => {
   const { refetch: refetchSrcBalance } = useSrcBalance();
@@ -28,12 +29,12 @@ export const useResetAfterSwap = () => {
 };
 
 export const useSrcBalance = () => {
-  const srcToken = useTwapContext().srcToken;
+  const srcToken = useTwapContextUI().parsedSrcToken;
   return query.useBalance(srcToken);
 };
 
 export const useDstBalance = () => {
-  const dstToken = useTwapContext().dstToken;
+  const dstToken = useTwapContextUI().parsedDstToken;
   return query.useBalance(dstToken);
 };
 
@@ -106,7 +107,7 @@ export const useInvertedPrice = (price?: string, inverted?: boolean) => {
 
 export const useInvertPrice = (price?: string) => {
   const [inverted, setInvert] = useState(false);
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
 
   const invertedPrice = useInvertedPrice(price, inverted);
   const value = useFormatNumber({ value: invertedPrice || "", decimalScale: 5 });
@@ -150,7 +151,7 @@ export const useAmountUi = (decimals?: number, value?: string) => {
 };
 
 export const useTokenBalance = (isSrc?: boolean) => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
 
   const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
   const dstBalance = useAmountUi(dstToken?.decimals, useDstBalance().data?.toString());

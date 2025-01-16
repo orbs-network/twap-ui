@@ -22,9 +22,9 @@ import {
   lightTheme,
   StyledChunkSize,
 } from "./styles";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 import { AiFillAccountBook } from "@react-icons/all-files/ai/AiFillAccountBook";
-import { useTwapContext } from "@orbs-network/twap-ui";
 
 interface ThenaTWAPProps extends TWAPProps {
   connect: () => void;
@@ -56,7 +56,7 @@ const TokenChange = () => {
 };
 
 const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () => void }) => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
 
   const notSelected = (isSrc && !srcToken) || (!isSrc && !dstToken);
   return (

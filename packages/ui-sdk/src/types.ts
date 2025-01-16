@@ -45,6 +45,7 @@ export type State = {
 export type TwapProviderProps = {
   config: Config;
   children: React.ReactNode;
-  parseToken: (token: any) => Token;
+  parseToken?: (token: any) => Token | undefined;
   isLimitPanel?: boolean;
+  walletAddress?: string;
 };

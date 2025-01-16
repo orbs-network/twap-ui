@@ -24,6 +24,8 @@ import translations from "./i18n/en.json";
 import { createContext, FC, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
 import { memo, ReactNode, useCallback, useState } from "react";
+import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+
 import {
   StyledBalance,
   StyledPanelInput,
@@ -499,8 +501,8 @@ const LimitPriceTokenSelect = (props: LimitPriceTokenSelectProps) => {
 
 const LimitPriceTitleTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const adapterContext = useAdapterContext();
-  const twapContext = useTwapContext();
-  const token = props.isSrc ? twapContext.srcToken : twapContext.dstToken;
+  const twapContext = useTwapContextUI();
+  const token = props.isSrc ? twapContext.parsedSrcToken : twapContext.parsedDstToken;
 
   return (
     <adapterContext.TokenSelectModal selected={props.isSrc ? adapterContext.srcToken : adapterContext.dstToken} onSelect={props.onSelect!}>
