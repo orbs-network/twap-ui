@@ -1480,6 +1480,7 @@ export const StyledDuration = styled(StyledDurationAndTradeInterval)(() => {
 export const StyledTokenPanelContent = styled(InputContainer)({
   width: "100%",
   ".twap-input-container-content": {
+    gap: 20,
     height: 80,
     paddingTop: 0,
     width: "100%",
@@ -1675,7 +1676,7 @@ export const StyledSubmitModalToken = styled(Styles.StyledColumnFlex)(({ theme }
     alignItems: "center",
     padding: "0px 20px",
     gap: 10,
-    width: "auto",
+    maxWidth: "50%",
     flex: 1,
     ".twap-token-logo": {
       width: 40,

@@ -40,9 +40,11 @@ export const useResetStore = () => {
     waitingForOrderId: state.waitingForOrderId,
   }));
   const storeOverride = useTwapContext().storeOverride || {};
+  const limitPriceStore = useLimitPriceStore();
 
   return (args: Partial<State> = {}) => {
     resetTwapStore({ ...storeOverride, ...args, waitingForOrderId });
+    limitPriceStore.onReset();
     setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
     setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
     setQueryParam(QUERY_PARAMS.MAX_DURATION, undefined);
@@ -519,25 +521,6 @@ const useGasPriceQuery = () => {
     priorityFeePerGas,
   };
 };
-
-// const useTokenList = () => {
-//   const tokens = useTwapContext().tokenList || [];
-//   const lib = useTwapStore((store) => store.lib);
-
-//   const tokensLength = _.size(tokens);
-
-//   return useMemo(() => {
-//     if (!lib || !tokensLength) return [];
-//     if (!tokens.find((it: TokenData) => lib.isNativeToken(it))) {
-//       tokens.push(lib.config.nativeToken);
-//     }
-//     if (!tokens.find((it: TokenData) => lib.isWrappedToken(it))) {
-//       tokens.push(lib.config.wToken);
-//     }
-//     return tokens;
-//   }, [lib, tokensLength]);
-// };
-
 export const useOrdersHistoryQuery = () => {
   const { lib } = useTwapStore((state) => ({
     lib: state.lib,
@@ -551,7 +534,7 @@ export const useOrdersHistoryQuery = () => {
     queryKey,
     queryFn: async ({ signal }) => {
       if (!lib?.maker) return [];
-      return await getOrders({
+      return getOrders({
         account: lib!.maker,
         signal,
         chainId: lib!.config.chainId,
@@ -629,57 +612,32 @@ export const useSrcAmount = () => {
   const { srcToken } = useTwapContext();
   const amountUI = useTwapStore((s) => s.srcAmountUi);
   const amount = useAmountBN(amountUI, srcToken?.decimals);
-  return useMemo(() => {
-    return {
-      amount,
-      amountUI,
-    };
-  }, [amountUI, amount]);
+  return {
+    amount,
+    amountUI,
+  };
 };
 
 export const useFormatNumber = ({
   value,
-  decimalScale = 3,
+  decimalScale,
   prefix,
   suffix,
   disableDynamicDecimals = true,
+  thousandSeparator = false,
 }: {
   value?: string | number;
   decimalScale?: number;
   prefix?: string;
   suffix?: string;
   disableDynamicDecimals?: boolean;
+  thousandSeparator?: boolean;
 }) => {
-  const decimals = useMemo(() => {
-    if (!value) return 0;
-    const [, decimal] = value.toString().split(".");
-    if (!decimal) return 0;
-    const arr = decimal.split("");
-    let count = 0;
-
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i] === "0") {
-        count++;
-      } else {
-        break;
-      }
-    }
-
-    return !count ? decimalScale : count + decimalScale;
-  }, [value, decimalScale]);
-
-  const isBiggerThan1 = useMemo(() => {
-    return BN(value || "0").gt(1);
-  }, [value]);
-
-  const _disableDynamicDecimals = disableDynamicDecimals || isBiggerThan1;
-
   const result = useNumericFormat({
     allowLeadingZeros: true,
-    thousandSeparator: ",",
+    thousandSeparator: thousandSeparator ? "," : "",
     displayType: "text",
-    value: value || "",
-    decimalScale: _disableDynamicDecimals ? decimalScale : decimals,
+    value: formatWithDecimals(value, decimalScale) || "",
     prefix,
     suffix,
   });
@@ -692,65 +650,14 @@ export const useFormatNumber = ({
       return "0";
     }
 
-    const [num, decimals] = val.split("."); // Split into integer and decimal parts
-
-    if (!decimals) {
-      return num; // Return the integer part if no decimals exist
-    }
-
-    if (numericValue < 1) {
-      // For numbers less than 1, refine decimals dynamically up to 18 places
-      let decimalScaleToUse = decimalScale;
-      let formattedDecimals = "";
-      let foundNonZero = false;
-
-      while (!foundNonZero && decimalScaleToUse <= 18) {
-        let currentValue = Number(`0.${decimals}`).toFixed(decimalScaleToUse);
-
-        if (Number(currentValue) !== 0) {
-          currentValue = currentValue.replace(/\.?0+$/, ""); // Remove trailing zeros
-        }
-
-        if (Number(currentValue) !== 0) {
-          foundNonZero = true;
-          formattedDecimals = currentValue.split(".")[1]; // Extract the decimal part
-        } else {
-          decimalScaleToUse++;
-        }
-      }
-
-      return formattedDecimals ? `${num}.${formattedDecimals}` : num;
-    } else {
-      // For numbers >= 1, strip trailing zeros from decimals
-      const formattedDecimals = Number(`0.${decimals}`)
-        .toFixed(decimalScale) // Format to the specified decimal scale
-        .replace(/^0\./, "") // Remove the leading "0."
-        .replace(/0+$/, ""); // Remove trailing zeros
-
-      // Return the result properly combining num and formatted decimals
-      return formattedDecimals ? `${num}.${formattedDecimals}` : num;
-    }
-  }, [val, decimalScale]);
+    return val;
+  }, [val]);
 };
 
 export const useSrcAmountNotZero = () => {
   const value = useSrcAmount().amount;
 
   return BN(value || 0).gt(0);
-};
-
-const useTokenSelect = () => {
-  const { onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
-  return useCallback(
-    ({ isSrc, token }: { isSrc: boolean; token: any }) => {
-      if (isSrc) {
-        onSrcTokenSelected?.(token);
-      } else {
-        onDstTokenSelected?.(token);
-      }
-    },
-    [onSrcTokenSelected, onDstTokenSelected]
-  );
 };
 
 export const useToken = (isSrc?: boolean) => {
@@ -1062,27 +969,32 @@ const useGetFillsCallback = () => {
 };
 
 export const useDstAmount = () => {
-  const { amountUI: srcAmountUI, amount: srcAmount } = useSrcAmount();
-  const { dstToken } = useTwapContext();
+  const { amountUI: srcAmountUi, amount: srcAmount } = useSrcAmount();
   const shouldWrap = useShouldWrap();
+  const { dstToken } = useTwapContext();
   const shouldUnwrap = useShouldUnwrap();
-  const { priceUI, isLoading } = useTradePrice();
-
-  const amount = useMemo(() => {
-    if (shouldWrap || shouldUnwrap) {
-      return srcAmount;
-    }
-    return amountBNV2(
-      dstToken?.decimals,
-      BN(srcAmountUI)
-        .times(priceUI || "0")
-        .toFixed()
-    );
-  }, [dstToken, priceUI, srcAmountUI, srcAmount, shouldWrap, shouldUnwrap]);
+  const { priceUI: tradePriceUI, isLoading, isCustom, gainPercent } = useTradePrice();
+  const marketPriceUI = useMarketPriceV2().priceUI;
+  const shouldWrapOrUwrapOnly = shouldWrap || shouldUnwrap;
 
   const dstUsd = useDstUsd().value.toString();
 
-  const amountUI = amountUiV2(dstToken?.decimals, amount);
+  const priceUI = useMemo(() => {
+    let result = "";
+    if (isCustom || gainPercent) {
+      result = BN(srcAmountUi || 0)
+        .times(tradePriceUI || 0)
+        .toFixed();
+    } else {
+      result = marketPriceUI || "";
+    }
+
+    return formatWithDecimals(result);
+  }, [tradePriceUI, srcAmountUi, marketPriceUI, isCustom, gainPercent]);
+
+  const price = useAmountBN(priceUI, dstToken?.decimals);
+
+  const amountUI = shouldWrapOrUwrapOnly ? srcAmountUi : priceUI;
 
   const usd = useMemo(() => {
     return BN(amountUI || "0")
@@ -1091,10 +1003,10 @@ export const useDstAmount = () => {
   }, [amountUI, dstUsd]);
 
   return {
-    amount,
-    amountUI,
-    isLoading,
-    usd,
+    amount: isLoading ? "" : !srcAmountUi ? "" : shouldWrapOrUwrapOnly ? srcAmount : price,
+    amountUI: isLoading ? "" : !srcAmountUi ? "" : amountUI,
+    isLoading: !srcAmountUi ? false : isLoading,
+    usd: !srcAmountUi ? "" : usd,
   };
 };
 
@@ -1132,34 +1044,45 @@ export const usePriceDisplay = (price?: string | number) => {
 
 export const useTradePrice = () => {
   const limitPriceStore = useLimitPriceStore();
-  const { srcToken, dstToken } = useTwapContext();
+  const { dstToken } = useTwapContext();
   const percent = 1 + (limitPriceStore.gainPercent || 0) / 100;
   const isCustomLimitPrice = limitPriceStore.limitPrice !== undefined;
   const { priceUI: marketPrice, isLoading: marketPriceLoading } = useMarketPriceV2();
+  const srcAmountUI = useSrcAmount().amountUI || "1";
 
   const priceUI = useMemo(() => {
     if (isCustomLimitPrice) {
       return limitPriceStore.limitPrice;
     }
-
-    if (!marketPrice || BN(marketPrice).isZero()) return;
-    return BN(marketPrice || "0")
+    if (BN(marketPrice || 0).isZero()) return;
+    let price = BN(marketPrice || "0")
+      .dividedBy(srcAmountUI)
       .times(percent)
       .toString();
-  }, [limitPriceStore.limitPrice, marketPrice, percent, isCustomLimitPrice]);
+
+    return formatWithDecimals(price);
+  }, [limitPriceStore.limitPrice, marketPrice, percent, isCustomLimitPrice, srcAmountUI]);
 
   const gainPercent = useMemo(() => {
     if (limitPriceStore.gainPercent !== undefined && !_.isNaN(limitPriceStore.gainPercent)) {
       return limitPriceStore.gainPercent;
     }
+
+    if (!isCustomLimitPrice) {
+      return 0;
+    }
+
+    const market = BN(marketPrice || "0")
+      .dividedBy(srcAmountUI)
+      .toFixed();
     const result = BN(priceUI || "0")
-      .dividedBy(marketPrice || "0")
+      .dividedBy(market || "0")
       .minus(1)
       .times(100)
       .decimalPlaces(2)
       .toNumber();
     return isNaN(result) ? 0 : result;
-  }, [priceUI, marketPrice, limitPriceStore.gainPercent]);
+  }, [priceUI, marketPrice, limitPriceStore.gainPercent, srcAmountUI, isCustomLimitPrice]);
 
   const tokenUsd = useDstUsd().value.toString();
 
@@ -1635,4 +1558,89 @@ export const useIsMobile = (breakpoint: number = 700) => {
   }, [breakpoint]);
 
   return isMobile;
+};
+
+export const getDecimals = (value?: string | number, decimalScale = 0) => {
+  const val = BN(value || 0);
+
+  const getDecimalsUnder1 = (value: string): number => {
+    if (!value) return 0;
+
+    const numericValue = Number(value); // Ensure the value is treated as a number
+    if (isNaN(numericValue)) return 0;
+
+    const [, decimal] = BN(numericValue).toFixed().split(".");
+    if (!decimal) return 0; // No decimal part
+
+    const arr = decimal.split("");
+    
+    let leadingZerosCount = 0;
+
+    // Count leading zeros in the decimal part
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] === "0") {
+        leadingZerosCount++;
+      } else {
+        break;
+      }
+    }    
+    // Return the total number of decimals, adding leading zeros count
+    return leadingZerosCount + (decimalScale || 5);
+  };
+
+  let decimals = getDecimalsUnder1(val.toString());
+
+  if (val.gte(1) && decimalScale) {
+    return decimalScale;
+  }
+
+  if (val.gte(1)) {
+    decimals = 5;
+  }
+  if (val.gte(10)) {
+    decimals = 4;
+  }
+
+  if (val.gte(100)) {
+    decimals = 3;
+  }
+
+  if (val.gte(1000)) {
+    decimals = 2;
+  }
+
+  if (val.gte(10_000)) {
+    decimals = 1;
+  }
+
+  if (val.gte(100_000)) {
+    decimals = 0;
+  }
+
+  return Number(decimals);
+};
+export const formatWithDecimals = (value?: string | number, decimalScale?: number) => {
+  if (value == null) return ""; // Handle null/undefined inputs
+
+  const [int, dec] = value.toString().split(".");
+
+  // Fallback for decimalsCount
+  const decimalsCount = getDecimals(value, decimalScale);
+  
+  // No decimal part
+  if (!dec) {
+    return int;
+  }
+
+  // No decimal scale specified or zero decimals
+  if (!decimalsCount) {
+    return int;
+  }
+
+  // Format with the specified number of decimal places
+  const result = `${int}.${dec.slice(0, decimalsCount)}`;
+
+  if (Number(result) === 0) return "0";
+
+  return result;
 };

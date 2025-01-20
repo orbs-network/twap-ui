@@ -64,6 +64,10 @@ type SwapState = {
   stepsCount: number;
   error?: string;
   wrapped?: boolean;
+  srcToken?: TokenData;
+  dstToken?: TokenData;
+  srcAmount?: string;
+  dstAmount?: string;
 };
 
 type SubmitContextType = {
@@ -175,21 +179,33 @@ const Provider = ({ children }: { children: ReactNode }) => {
   return <SubmitContext.Provider value={{ onClose, state, updateState, swapId: _state.swapId }}>{children}</SubmitContext.Provider>;
 };
 
+const useInitSwap = () => {
+  const { updateState, swapId } = useSubmitContext();
+  const { srcToken, dstToken } = useTwapContext();
+  const srcAmount = hooks.useSrcAmount().amountUI;
+  const dstAmount = hooks.useDstAmount().amountUI;
+
+  return useCallback(() => {
+    updateState(swapId, { srcToken, dstToken, srcAmount, dstAmount });
+  }, [updateState, swapId, srcToken, dstToken, srcAmount, dstAmount]);
+};
+
 const useSubmitSwapCallback = () => {
   const { state, updateState, swapId } = useSubmitContext();
   const { mutateAsync: approveCallback } = hooks.useApproveToken();
   const { data: allowance, refetch: refetchAllowance } = hooks.useHasAllowanceQuery();
-
   const { mutateAsync: createOrder } = hooks.useCreateOrder();
   const { mutateAsync: wrap } = hooks.useWrapToken();
   const { srcToken, onSrcTokenSelected, config, dappTokens } = useTwapContext();
   const shouldWrap = isNativeAddress(srcToken?.address || "");
   const errorToast = useToastError();
   const orderPlacedToast = useOrderPlacedToast();
+  const onInitSwap = useInitSwap();
 
   return useCallback(async () => {
     let step: SwapStep | undefined = undefined;
     const incrementStep = () => updateState(swapId, { stepIndex: state.stepIndex + 1 });
+    onInitSwap();
     const updateSwapState = (_step: SwapStep) => {
       updateState(swapId, { step: _step });
       step = _step;
@@ -242,6 +258,7 @@ const useSubmitSwapCallback = () => {
     updateState,
     wrap,
     errorToast,
+    onInitSwap,
   ]);
 };
 
@@ -292,29 +309,37 @@ const Modal = ({ children }: { children: ReactNode }) => {
 };
 
 const SubmitModalToken = ({ token, amount }: { token?: TokenData; amount?: string }) => {
-  const amountF = hooks.useFormatNumber({ value: amount, decimalScale: 6 });
-
   return (
     <StyledSubmitModalToken>
       <Components.Base.TokenLogo logo={token?.logoUrl} />
-      <Styles.StyledText>{`${amountF} ${token?.symbol}`}</Styles.StyledText>
+      <StyledStyledSubmitModalTokenText>{`${amount} ${token?.symbol}`}</StyledStyledSubmitModalTokenText>
     </StyledSubmitModalToken>
   );
 };
 
+const StyledStyledSubmitModalTokenText = styled(Styles.StyledText)({
+  whiteSpace: "nowrap",
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+  width: "100%",
+  textAlign: "center",
+});
+
 const SubmitModalSrcToken = () => {
-  const srcAmount = hooks.useSrcAmount().amountUI;
-  const srcToken = useTwapContext().srcToken;
+  const {
+    state: { srcToken, srcAmount },
+  } = useSubmitContext();
 
   return <SubmitModalToken token={srcToken} amount={srcAmount} />;
 };
 
 const SubmitModalDstToken = () => {
-  const dstToken = useTwapContext().dstToken;
+  const {
+    state: { dstToken, dstAmount },
+  } = useSubmitContext();
 
-  const amount = hooks.useDstAmount().amountUI;
-
-  return <SubmitModalToken token={dstToken} amount={amount} />;
+  const amountF = hooks.useFormatNumber({ value: dstAmount });
+  return <SubmitModalToken token={dstToken} amount={amountF} />;
 };
 
 export const SwapModal = () => {
@@ -473,7 +498,6 @@ const ErrorContent = () => {
   const { onClose, state } = useSubmitContext();
 
   const message = useMemo(() => {
-    console.log(state.error);
 
     if (isTxRejected(state.error)) {
       return "Transaction rejected";
@@ -636,9 +660,7 @@ const OrderReviewTokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
   const token = isSrc ? srcToken : dstToken;
 
   const dstAmount = hooks.useDstAmount().amountUI;
-  const _amount = isSrc ? srcAmount : dstAmount;
-
-  const amount = hooks.useFormatNumber({ value: _amount, decimalScale: 6 });
+  const amount = isSrc ? srcAmount : dstAmount;
 
   return (
     <StyledTokenDisplay>
@@ -852,7 +874,7 @@ const StyledTokenDisplayAmount = styled(Styles.StyledOneLineText)({
 });
 const StyledTokenDisplay = styled(Styles.StyledRowFlex)({
   justifyContent: "space-between",
-  gap: 30,
+  gap: 50,
 });
 
 export const isTxRejected = (error: any) => {

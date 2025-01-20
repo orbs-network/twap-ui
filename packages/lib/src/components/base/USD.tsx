@@ -1,7 +1,7 @@
 import { styled } from "@mui/material";
 import React from "react";
 import { useTwapContext } from "../../context";
-import { useFormatNumber } from "../../hooks";
+import { formatWithDecimals, useFormatNumber } from "../../hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
 import Tooltip from "./Tooltip";
@@ -25,7 +25,7 @@ const USD = ({
   prefix?: string;
   decimalScale?: number;
 }) => {
-  const formattedValue = useFormatNumber({ value, decimalScale });
+  const formattedValue = useFormatNumber({ value: formatWithDecimals(value?.toString(), 2), thousandSeparator: true });
 
   const context = useTwapContext()?.uiPreferences;
 
@@ -43,7 +43,7 @@ const USD = ({
       ) : (
         <>
           {_prefix}
-          <>{formattedValue || "0"}</>
+          <>{value && Number(value) < 0.01 ? "<0.01" : formattedValue || "0"}</>
           {_suffix}
         </>
       )}

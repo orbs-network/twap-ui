@@ -48,6 +48,7 @@ import {
   useSetSrcAmountUi,
   usePriceInvert,
   useTradePrice,
+  getDecimals,
 } from "../hooks";
 import { useTwapStore } from "../store";
 import { StyledText, StyledRowFlex, StyledColumnFlex, StyledOneLineText, textOverflow, StyledSummaryDetails, StyledSummaryRow, StyledSummaryRowRight } from "../styles";
@@ -200,7 +201,7 @@ export const TokenPanelInput = ({
   if (isSrc) {
     return <SrcTokenInput className={className} placeholder={placeholder} />;
   }
-  return <DstTokenInput decimalScale={dstDecimalScale} className={className} placeholder={placeholder} />;
+  return <DstTokenInput className={className} placeholder={placeholder} />;
 };
 
 const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
@@ -213,12 +214,14 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
   return <Input id="twap-src-token-input" prefix="" onChange={onChange} value={amount || ""} decimalScale={decimals} className={props.className} placeholder={props.placeholder} />;
 };
 
-const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
-  const token = useTwapContext().dstToken;
+const DstTokenInput = (props: { className?: string; placeholder?: string }) => {
   const { amountUI, isLoading } = useDstAmount();
-  return (
-    <Input disabled={true} loading={isLoading} value={amountUI} decimalScale={props.decimalScale || token?.decimals} className={props.className} placeholder={props.placeholder} />
-  );
+  const { srcAmountUi } = useTwapStore((store) => ({
+    srcAmountUi: store.srcAmountUi,
+  }));
+
+  const amount = !srcAmountUi ? "" : amountUI;
+  return <Input disabled={true} loading={isLoading} value={amount || ""} className={props.className} placeholder={props.placeholder} />;
 };
 
 export const TokenLogo = ({ isSrc, className = "" }: { isSrc?: boolean; className?: string }) => {
@@ -660,7 +663,7 @@ export const OrderType = () => {
 
 export const InvertPrice = ({ srcToken, dstToken, price: _price, className = "" }: { srcToken?: TokenData; dstToken?: TokenData; price?: string; className?: string }) => {
   const { leftToken, rightToken, onInvert, price } = usePriceInvert(_price, srcToken, dstToken);
-  const priceF = useFormatNumber({ value: price, decimalScale: 6 });
+  const priceF = useFormatNumber({ value: price });
 
   return (
     <StyledInvertPrice className={`twap-price-invert ${className}`} style={{ alignItems: "center", gap: 5 }}>
@@ -796,7 +799,7 @@ export const OrderDetails = ({ children, className = " " }: { children: ReactNod
 
 const StyledOrderDetails = styled(StyledColumnFlex)({});
 
-export const OrderDetailsRow = ({ label, tooltip, children, className = "" }: { label: string; tooltip?: ReactElement; children: ReactNode; className?: string }) => {
+export const OrderDetailsRow = ({ label, tooltip, children, className = "" }: { label: string; tooltip?: ReactElement | string; children: ReactNode; className?: string }) => {
   return (
     <StyledDetailRow className={`twap-order-details-row ${className}`}>
       <Label tooltipText={tooltip}>{label}</Label>
@@ -838,7 +841,7 @@ const TotalTrades = ({ totalTrades = 0 }: { totalTrades?: number }) => {
 const MinReceived = ({ minReceived, isMarketOrder = false, symbol = "" }: { minReceived?: string; isMarketOrder?: boolean; symbol?: string }) => {
   const t = useTwapContext().translations;
 
-  const minReceivedF = useFormatNumber({ value: minReceived, decimalScale: 6 });
+  const minReceivedF = useFormatNumber({ value: minReceived });
 
   if (isMarketOrder) return null;
 
@@ -864,7 +867,7 @@ const MinReceived = ({ minReceived, isMarketOrder = false, symbol = "" }: { minR
 
 const SizePerTrade = ({ sizePerTrade, symbol = "" }: { sizePerTrade?: string; symbol?: string }) => {
   const t = useTwapContext().translations;
-  const sizePerTradeF = useFormatNumber({ value: sizePerTrade, decimalScale: 6 });
+  const sizePerTradeF = useFormatNumber({ value: sizePerTrade });
   return (
     <OrderDetailsRow label={t.tradeSize} tooltip={t.confirmationTradeSizeTooltip}>
       {`${sizePerTradeF} ${symbol}`}
@@ -897,7 +900,7 @@ const Fee = ({ fee, dstToken, outAmount }: { fee?: number; dstToken?: TokenData;
   }, [outAmount, fee]);
 
   const t = useTwapContext().translations;
-  const amountF = useFormatNumber({ value: amount, decimalScale: 6 });
+  const amountF = useFormatNumber({ value: amount });
   return (
     <OrderDetailsRow label={`Fee (${fee}%)`} tooltip="Fee is estimated and exact amount may change at execution.">
       {`${amountF} ${dstToken?.symbol}`}
@@ -1002,7 +1005,7 @@ export const OrderSummaryTokenDisplay = ({
 
   const amount = isSrc ? srcAmount : dstAmount;
   const prefix = isSrc ? "" : isLimitOrder ? "~ " : "~ ";
-  const _amount = useFormatNumber({ value: amount, decimalScale: 5 });
+  const _amount = useFormatNumber({ value: amount });
 
   return (
     <StyledOrderSummaryTokenDisplay className="twap-orders-summary-token-display">
@@ -1207,7 +1210,7 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
 
   const { srcToken } = useTwapContext();
 
-  const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
+  const formattedValueTooltip = useFormatNumber({ value });
 
   if (!formattedValue || formattedValue === "0") {
     return <Typography className="twap-trade-size-value">-</Typography>;

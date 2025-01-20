@@ -31,7 +31,7 @@ import {
   StyledBottomContainer,
   StyledSliderDots,
 } from "./styles";
-import React, { memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, ReactNode, useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { StyledBalance, StyledEmptyUSD, StyledPercentSelect, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
@@ -169,7 +169,7 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
         </Styles.StyledRowFlex>
         <StyledTokenPanelContent disabled={!isSrcToken} onBlur={() => setShowPercent(false)} onFocus={() => setShowPercent(true)}>
           <StyledTokenSelect CustomArrow={MdKeyboardArrowDown} hideArrow={false} isSrc={isSrcToken} onClick={onTokenSelectClick} />
-          <Styles.StyledColumnFlex style={{ flex: 1, gap: 0, alignItems: "flex-end", width: "auto" }}>
+          <Styles.StyledColumnFlex style={{ flex: 1, gap: 0, alignItems: "flex-end", width: "auto", overflow:'hidden' }}>
             <StyledTokenPanelInput dstDecimalScale={7} isSrc={isSrcToken} />
             <StyledUSD decimalScale={2} isSrc={isSrcToken} hideIfZero={true} emptyUi={<StyledEmptyUSD />} />
           </Styles.StyledColumnFlex>
@@ -254,7 +254,8 @@ const useTrade = () => {
   const { srcToken, dstToken } = useParsedSelectedTokens();
   const { useTrade, connectedChainId } = useAdapterContext();
 
-  const amount = hooks.useAmountBN("1", srcToken?.decimals);
+  const srcAmountUi = store.useTwapStore((s) => s.srcAmountUi);
+  const amount = hooks.useAmountBN(srcAmountUi || "1", srcToken?.decimals);
   const handleAddress = useHandleAddress(connectedChainId);
   const res = useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), amount);
 
@@ -717,16 +718,17 @@ const PricePanelHeader = () => {
 };
 
 const LimitPanelInput = () => {
-  const { onChange, priceUI: limitPrice, isLoading, usd, isCustom } = hooks.useTradePrice();
+  const { onChange, priceUI: limitPrice, isLoading, usd } = hooks.useTradePrice();
+
   const token = useTwapContext().dstToken;
-  const usdF = hooks.useFormatNumber({ value: usd, decimalScale: 3 });
+  const usdF = hooks.useFormatNumber({ value: usd, decimalScale: 2 });
 
   return (
     <StyledPricePanelInput className="twap-limit-price-panel-input">
       <Components.Base.Label>{token?.symbol}</Components.Base.Label>
       <StyledPricePanelInputRight>
-        <Components.Base.NumericInput decimalScale={isCustom ? undefined : 6} loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice} />
-        {BN(usd || 0).gt(0) && <Components.Base.USD value={usdF} />}
+        <Components.Base.NumericInput loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice} />
+        {BN(usd || 0).gt(0) && !isLoading && <Components.Base.USD value={usdF} />}
       </StyledPricePanelInputRight>
     </StyledPricePanelInput>
   );
@@ -807,28 +809,26 @@ export const useShowSwapModalButton = () => {
       disabled: true,
     };
   }
-
-  if (warning)
-    return {
-      text: placeOrderText,
-      onClick: undefined,
-      disabled: true,
-      loading: false,
-    };
-
   if (shouldUnwrap)
     return {
       text: translations.unwrap,
       onClick: unwrap,
       loading: unwrapLoading,
-      disabled: unwrapLoading,
+      disabled: unwrapLoading || warning,
     };
   if (shouldWrap)
     return {
       text: translations.wrap,
       onClick: wrap,
       loading: wrapLoading,
-      disabled: wrapLoading,
+      disabled: wrapLoading || warning,
+    };
+  if (warning)
+    return {
+      text: placeOrderText,
+      onClick: undefined,
+      disabled: true,
+      loading: false,
     };
 
   return {

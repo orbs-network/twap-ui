@@ -296,7 +296,7 @@ export class Order {
     this.dstTokenAddress = rawOrder.ask_dstToken;
     this.totalChunks = new BN(rawOrder.ask_srcAmount || 0)
       .div(rawOrder.ask_srcBidAmount || 1) // Avoid division by zero
-      .integerValue(BN.ROUND_CEIL)
+      .integerValue(BN.ROUND_FLOOR)
       .toNumber();
     this.orderType = isMarketOrder ? OrderType.TWAP_MARKET : BN(this.totalChunks).eq(1) ? OrderType.LIMIT : OrderType.TWAP_LIMIT;
     this.isMarketOrder = isMarketOrder;
@@ -363,17 +363,18 @@ export const getOrders = async ({
 }): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(chainId);
   if (!endpoint) return [];
-  let orders = [];
+  let orders: any = [];
   if (typeof page === "number") {
     orders = await getCreatedOrders({ endpoint, signal, account, exchangeAddress, page, limit });
   } else {
     orders = await getAllCreatedOrders({ endpoint, signal, account, exchangeAddress, limit });
   }
+
   const ids = orders.map((order: any) => order.Contract_id);
   const fills = await getAllFills({ endpoint, signal, ids, chainId });
   const statuses = await getOrderStatuses(ids, endpoint, signal);
   orders = orders.map((rawOrder: any) => {
-    const fill = fills?.find((it) => it.TWAP_id === Number(rawOrder.Contract_id));
+    const fill = fills?.find((it: any) => it.TWAP_id === Number(rawOrder.Contract_id));
     return new Order(rawOrder, fill, statuses?.[rawOrder.Contract_id]);
   });
 

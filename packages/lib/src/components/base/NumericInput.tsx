@@ -57,37 +57,34 @@ function NumericInput({
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>
       {loading && <InputLoader />}
-      <Fade in={input?.showOnLoading ? true : !loading} timeout={0}>
-        <StyledFlex>
-          <NumericFormat
-            allowNegative={allowNegative}
-            disabled={disabled}
-            decimalScale={decimalScale}
-            onBlur={onBlur}
-            onFocus={onFocus}
-            placeholder={_placeholder}
-            isAllowed={(values) => {
-              const { floatValue = 0 } = values;
-              return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
-            }}
-            prefix={prefix ? `${prefix} ` : ""}
-            value={disabled && value === "0" ? "" : inputValue}
-            thousandSeparator=","
-            decimalSeparator="."
-            customInput={StyledInput}
-            type="text"
-            id={id}
-            min={minAmount}
-            onValueChange={(values, _sourceInfo) => {
-              if (_sourceInfo.source !== "event") {
-                return;
-              }
+      <StyledFlex style={{ opacity: loading ? 0 : 1 }}>
+        <NumericFormat
+          allowNegative={allowNegative}
+          disabled={disabled}
+          decimalScale={decimalScale}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          placeholder={_placeholder}
+          isAllowed={(values) => {
+            const { floatValue = 0 } = values;
+            return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
+          }}
+          prefix={prefix ? `${prefix} ` : ""}
+          value={disabled && value === "0" ? "" : inputValue}
+          decimalSeparator="."
+          customInput={StyledInput}
+          type="text"
+          id={id}
+          min={minAmount}
+          onValueChange={(values, _sourceInfo) => {
+            if (_sourceInfo.source !== "event") {
+              return;
+            }
 
-              onChange(values.value === "." ? "0." : values.value);
-            }}
-          />
-        </StyledFlex>
-      </Fade>
+            onChange(values.value === "." ? "0." : values.value);
+          }}
+        />
+      </StyledFlex>
     </StyledContainer>
   );
 }

@@ -99,11 +99,7 @@ export const OrderSummaryMinDstAmountOutLabel = ({ subtitle, translations: _tran
   const translations = useTwapContext()?.translations || _translations;
 
   const isLimitOrder = useTwapStore((store) => store.isLimitOrder);
-  return (
-    <Label subtitle={subtitle} tooltipText={isLimitOrder ? translations.confirmationMinDstAmountTootipLimit : translations.confirmationMinDstAmountTootipMarket}>
-      {translations.minReceivedPerTrade}
-    </Label>
-  );
+  return <Label subtitle={subtitle}>{translations.minReceivedPerTrade}</Label>;
 };
 
 export const OrdersLabel = ({ className = "" }: { className?: string }) => {
