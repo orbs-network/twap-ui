@@ -5,7 +5,7 @@ import { MarketPriceWarning, Separator } from "../../Components";
 import { StyledColumnFlex, StyledText } from "../../../styles";
 import { OrderDisplay } from "../../OrderDisplay";
 import BN from "bignumber.js";
-import { useChunks, useDeadline, useDstMinAmountOut, useFillDelay, useOutAmount, useSrcChunkAmount, useSwapData, useSwapPrice, useToggleDisclaimer } from "../../../hooks/lib";
+import { useChunks, useDeadline, useDstMinAmountOut, useFillDelay, useOutAmount, useSrcChunkAmount, useSwapPrice, useToggleDisclaimer } from "../../../hooks/lib";
 import React, { useMemo } from "react";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 import { useTwapContext } from "../../../context/context";
@@ -65,7 +65,10 @@ const MarketWarning = ({ isMarketOrder }: { isMarketOrder?: boolean }) => {
 };
 
 export const AcceptDisclaimer = ({ className }: { className?: string }) => {
-  const { translations: t, state:{disclaimerAccepted} } = useTwapContext();
+  const {
+    translations: t,
+    state: { disclaimerAccepted },
+  } = useTwapContext();
   const onChange = useToggleDisclaimer();
 
   return (
@@ -119,20 +122,19 @@ const useSteps = () => {
   }, [parsedSrcToken, swapSteps]);
 };
 
-export const Main = ({ onSubmit}: { onSubmit: () => void }) => {
+export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
   const {
-    state: { swapStatus, swapStep },
+    state: { swapStatus, swapStep, swapData },
     translations: t,
   } = useTwapContext();
   const {
     isLimitPanel,
     derivedValues: { isMarketOrder },
   } = useTwapContextUI();
-  const { amountUsd } = useSwapData();
   const steps = useSteps();
 
-  const inUsd = useFormatNumberV2({ value: amountUsd.srcUsd, decimalScale: 2 });
-  const outUsd = useFormatNumberV2({ value: amountUsd.dstUsd, decimalScale: 2 });
+  const inUsd = useFormatNumberV2({ value: swapData.srcAmountusd, decimalScale: 2 });
+  const outUsd = useFormatNumberV2({ value: swapData.outAmountusd, decimalScale: 2 });
 
   return (
     <>
@@ -191,7 +193,7 @@ const Details = () => {
 
   return (
     <>
-    <Separator />
+      <Separator />
       <OrderDisplay.DetailsContainer>
         <Price />
         {isLimitPanel ? (
@@ -241,7 +243,7 @@ export const SubmitButton = ({ onClick }: { onClick: () => void }) => {
   const button = useSubmitOrderButton(onClick);
 
   return (
-    <Button className="twap-order-modal-submit-btn twap-submit-button" onClick={button.onClick} loading={button.loading} disabled={button.disabled}>
+    <Button className="twap-order-modal-submit-btn twap-submit-button" onClick={button.onClick ? button.onClick : () => null} loading={button.loading} disabled={button.disabled}>
       {button.text}
     </Button>
   );

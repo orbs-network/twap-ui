@@ -24,7 +24,7 @@ enum ActionType {
 type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> };
 
 const initialState = {
-  disclaimerAccepted: true
+  disclaimerAccepted: true,
 } as State;
 
 const contextReducer = (state: State, action: Action): State => {

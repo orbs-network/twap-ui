@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 import { useTwapContext } from "../context/context";
 import { SwapStatus } from "@orbs-network/swap-ui";
+import { useOutAmount, useSrcAmount, useUsdAmount } from "../hooks";
 
 export const useSetQueryParams = () => {
   const enableQueryParams = useTwapContext().enableQueryParams;
@@ -24,10 +25,12 @@ export const useSwitchNativeToWrapped = () => {
 
 // Hook for handling modal close
 const useSwapModalActions = () => {
-  const { actionHandlers } = useTwapContextUI();
+  const { actionHandlers, parsedSrcToken, parsedDstToken } = useTwapContextUI();
   const { updateState, state } = useTwapContext();
   const nativeToWrapped = useSwitchNativeToWrapped();
-
+  const srcAmount = useSrcAmount().amountUi;
+  const outAmount = useOutAmount().amountUi;
+  const { srcUsd: srcAmountusd, dstUsd: outAmountusd } = useUsdAmount();
   const { swapStatus } = state;
   const onClose = useCallback(
     (closeDalay?: number) => {
@@ -54,8 +57,18 @@ const useSwapModalActions = () => {
   );
 
   const onOpen = useCallback(() => {
-    updateState({ showConfirmation: true });
-  }, [updateState]);
+    updateState({
+      showConfirmation: true,
+      swapData: {
+        srcToken: parsedSrcToken,
+        dstToken: parsedDstToken,
+        srcAmount: srcAmount,
+        outAmount: outAmount,
+        srcAmountusd,
+        outAmountusd,
+      },
+    });
+  }, [updateState, parsedSrcToken, parsedDstToken, srcAmount, outAmount, srcAmountusd, outAmountusd]);
 
   return {
     onClose,

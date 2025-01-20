@@ -1,14 +1,15 @@
 import { useMemo } from "react";
 import { useTwapContext } from "../../context/context";
-import { useSwapModal } from "../../hooks/useSwapModal";
 import { useFormatNumberV2 } from "../../hooks/hooks";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 export const useTokenDisplay = (isSrc?: boolean) => {
-  const { outAmount, srcAmount, srcToken, dstToken, srcUsd, dstUsd } = useSwapModal();
-  const token = isSrc ? srcToken : dstToken;
-  const amount = useFormatNumberV2({ value: isSrc ? srcAmount : outAmount, decimalScale: 3 });
-  const usd = useFormatNumberV2({ value: isSrc ? srcUsd : dstUsd, decimalScale: 2 });
+  const {
+    state: { swapData },
+  } = useTwapContext();
+  const token = isSrc ? swapData.srcToken : swapData.dstToken;
+  const amount = useFormatNumberV2({ value: isSrc ? swapData.srcAmount : swapData.outAmount, decimalScale: 3 });
+  const usd = useFormatNumberV2({ value: isSrc ? swapData.srcAmountusd : swapData.outAmountusd, decimalScale: 2 });
   const title = isSrc ? "From" : "To";
   return {
     token,

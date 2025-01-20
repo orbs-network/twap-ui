@@ -58,14 +58,13 @@ const StyledContainer = styled(StyledColumnFlex)({
   },
 });
 
-
 export const BottomContent = ({ href, text }: { href?: string; text?: string }) => {
   let content;
   if (href) {
     content = (
-      <StyledLink href={href} target="_blank" className="twap-order-modal-link">
+      <a href={href} target="_blank" className="twap-order-modal-link">
         {text}
-      </StyledLink>
+      </a>
     );
   } else {
     content = <StyledBottomContentText>{text}</StyledBottomContentText>;

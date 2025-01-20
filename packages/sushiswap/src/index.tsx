@@ -464,8 +464,11 @@ const Orders = () => {
 };
 
 const SubmitOrderModal = () => {
-  const { isOpen, onClose, swapStatus } = hooks.useSwapModal();
+  const { isOpen, onClose } = hooks.useSwapModal();
   const Modal = useAdapterContext().Modal;
+  const {
+    state: { swapStatus },
+  } = useTwapContext();
 
   return (
     <Modal open={!!isOpen} onClose={() => onClose()} title={!swapStatus ? "Review order" : ""}>

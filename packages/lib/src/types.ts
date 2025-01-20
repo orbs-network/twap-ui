@@ -4,6 +4,7 @@ import { IconType } from "@react-icons/all-files";
 import Web3 from "web3";
 import { Config } from "@orbs-network/twap-sdk";
 import { SwapStatus, SwapStep } from "@orbs-network/swap-ui";
+import { Token } from "@orbs-network/twap-ui-sdk";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -307,7 +308,6 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
   allowClickWhileLoading?: boolean;
 }
 
-
 export type LimitPricePercentProps = {
   text: string;
   selected: boolean;
@@ -359,11 +359,10 @@ interface TwapComponents {
   USD?: FC<{ value?: string | number }>;
 }
 
-
 export enum SwapSteps {
   WRAP,
   APPROVE,
-  CREATE
+  CREATE,
 }
 
 export interface State {
@@ -379,6 +378,14 @@ export interface State {
   createOrderTxHash?: string;
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
+  swapData: {
+    srcToken?: Token;
+    dstToken?: Token;
+    srcAmount?: string;
+    outAmount?: string;
+    srcAmountusd?: string;
+    outAmountusd?: string;
+  };
 }
 
 export interface TWAPContextProps {

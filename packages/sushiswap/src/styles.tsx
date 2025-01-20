@@ -913,21 +913,21 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
       marginBottom: 20,
     },
     ".orbs_Main-wrapper": {
-      width:'100%'
+      width: "100%",
     },
     ".orbs_MainTokenAmount": {
       fontSize: 17,
       fontWeight: 500,
     },
     ".orbs_MainTokenLeft": {
-      gap:4
+      gap: 4,
     },
     ".orbs_Main": {
-      width:'100%'
+      width: "100%",
     },
     ".orbs_MainToken": {
-      width:'100%',
-      justifyContent:'space-between'
+      width: "100%",
+      justifyContent: "space-between",
     },
     ".orbs_MainTokenLogo": {
       width: "40px!important",
@@ -960,7 +960,7 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
       background: "unset",
       margin: "8px 0px!important",
     },
-  
+
     ".twap-order-modal-disclaimer": {
       ...summaryModalStyles,
       a: {

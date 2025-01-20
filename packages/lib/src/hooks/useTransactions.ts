@@ -204,21 +204,19 @@ const useUpdatedOrders = () => {
   });
 };
 
-
 const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
+  let steps: number[] = [];
 
-  let steps: number[] = []
-
-  if(shouldWrap) {
-    steps.push(SwapSteps.WRAP)
+  if (shouldWrap) {
+    steps.push(SwapSteps.WRAP);
   }
-  if(shouldApprove) {
-    steps.push(SwapSteps.APPROVE)
+  if (shouldApprove) {
+    steps.push(SwapSteps.APPROVE);
   }
 
-  steps.push(SwapSteps.CREATE)
-  return steps
-}
+  steps.push(SwapSteps.CREATE);
+  return steps;
+};
 
 export const useSubmitOrderFlow = () => {
   const { minNativeTokenBalance, state, updateState } = useTwapContext();
@@ -270,7 +268,7 @@ export const useSubmitOrderFlow = () => {
       }
 
       if (!haveAllowance) {
-        updateState({ swapStep: SwapSteps.APPROVE});
+        updateState({ swapStep: SwapSteps.APPROVE });
         await approve(token);
         const res = await getHasAllowance(token, srcAmount.amount);
         if (!res) {

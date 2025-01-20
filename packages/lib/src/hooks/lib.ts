@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from "react";
-import { amountBNV2, amountUiV2, query, SwapStep, useTwapContext } from "..";
+import { amountBNV2, amountUiV2, query, useTwapContext } from "..";
 import BN from "bignumber.js";
 import { useNetwork, useSrcBalance } from "./hooks";
-import { eqIgnoreCase, isNativeAddress, maxUint256, networks } from "@defi.org/web3-candies";
+import { eqIgnoreCase, isNativeAddress, networks } from "@defi.org/web3-candies";
 import moment from "moment";
-import { fillDelayText, MIN_DURATION_MINUTES, TimeDuration } from "@orbs-network/twap-sdk";
+import { fillDelayText, MIN_DURATION_MINUTES } from "@orbs-network/twap-sdk";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 
 const getMinNativeBalance = (chainId: number) => {
@@ -361,10 +361,13 @@ export const useSetLimitPrice = () => {
 };
 
 export const useToggleDisclaimer = () => {
-  const {state:{disclaimerAccepted}, updateState} = useTwapContext()
+  const {
+    state: { disclaimerAccepted },
+    updateState,
+  } = useTwapContext();
   return useCallback(() => {
-    updateState({disclaimerAccepted: !disclaimerAccepted})
-  }, [ disclaimerAccepted, updateState]);
+    updateState({ disclaimerAccepted: !disclaimerAccepted });
+  }, [disclaimerAccepted, updateState]);
 };
 
 export const useTradeSizeWarning = () => {
@@ -447,23 +450,6 @@ export const useShouldWrap = () => {
   }, [srcToken]);
 };
 
-export const useSetSwapSteps = () => {
-  const shouldWrap = useShouldWrap();
-  const { data: haveAllowance } = query.useAllowance();
-  const { updateState } = useTwapContext();
-  return useCallback(() => {
-    let swapSteps: SwapStep[] = [];
-    if (shouldWrap) {
-      swapSteps.push("wrap");
-    }
-    if (!haveAllowance) {
-      swapSteps.push("approve");
-    }
-    swapSteps.push("createOrder");
-    updateState({ swapSteps: swapSteps });
-  }, [haveAllowance, shouldWrap, updateState]);
-};
-
 export const useSwapPrice = () => {
   const srcAmount = useSrcAmount().amountUi;
   const { srcUsd, dstUsd } = useTwapContext();
@@ -514,30 +500,4 @@ export const useOnSrcAmountPercent = () => {
     },
     [maxAmount, srcBalance, actionHandlers.setSrcAmount, parsedSrcToken],
   );
-};
-
-export const useSwapData = () => {
-  const srcAmount = useSrcAmount();
-  const amountUsd = useUsdAmount();
-  const outAmount = useOutAmount();
-  const deadline = useDeadline();
-  const srcChunkAmount = useSrcChunkAmount();
-  const dstMinAmount = useDstMinAmountOut();
-
-  const fillDelay = useFillDelay();
-  const chunks = useChunks();
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
-
-  return {
-    srcAmount,
-    amountUsd,
-    outAmount,
-    deadline,
-    srcChunkAmount,
-    dstMinAmount,
-    fillDelay,
-    chunks,
-    srcToken,
-    dstToken,
-  };
 };

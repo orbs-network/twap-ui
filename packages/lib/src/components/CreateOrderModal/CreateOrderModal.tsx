@@ -3,17 +3,18 @@ import { Failed } from "./states";
 import { Main } from "./states/Main";
 import React from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
-import { useExplorerUrl, useFormatNumberV2, useSwapData } from "../../hooks";
+import { useExplorerUrl, useFormatNumberV2 } from "../../hooks";
 import { useTwapContext } from "../../context/context";
 
 export const CreateOrderModal = ({ className = "" }: { className?: string }) => {
   const { mutate: onSubmit, swapStatus, error } = useSubmitOrderFlow();
-  const { srcAmount, outAmount, srcToken, dstToken } = useSwapData();
-  const { createOrderTxHash } = useTwapContext().state;
+  const {
+    state: { createOrderTxHash, swapData },
+  } = useTwapContext();
   const explorerUrl = useExplorerUrl();
+  const srcAmountF = useFormatNumberV2({ value: swapData.srcAmount });
+  const outAmountF = useFormatNumberV2({ value: swapData.outAmount });
 
-  const srcAmountF = useFormatNumberV2({ value: srcAmount.amountUi });
-  const outAmountF = useFormatNumberV2({ value: outAmount.amountUi });
   return (
     <SwapFlow
       className={className}
@@ -24,12 +25,12 @@ export const CreateOrderModal = ({ className = "" }: { className?: string }) => 
       successContent={<SwapFlow.Success explorerUrl={`${explorerUrl}/tx/${createOrderTxHash}`} />}
       failedContent={<Failed error={error} />}
       inToken={{
-        symbol: srcToken?.symbol,
-        logo: srcToken?.logoUrl,
+        symbol: swapData.srcToken?.symbol,
+        logo: swapData.srcToken?.logoUrl,
       }}
       outToken={{
-        symbol: dstToken?.symbol,
-        logo: dstToken?.logoUrl,
+        symbol: swapData.dstToken?.symbol,
+        logo: swapData.dstToken?.logoUrl,
       }}
     />
   );
