@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 import { useTwapContext } from "../context/context";
+import { SwapStatus } from "@orbs-network/swap-ui";
 
 export const useSetQueryParams = () => {
   const enableQueryParams = useTwapContext().enableQueryParams;
@@ -31,7 +32,7 @@ const useSwapModalActions = () => {
   const onClose = useCallback(
     (closeDalay?: number) => {
       updateState({ showConfirmation: false });
-      if (swapStatus === "loading") return;
+      if (swapStatus === SwapStatus.FAILED) return;
       setTimeout(() => {
         updateState({
           swapSteps: undefined,
@@ -44,7 +45,7 @@ const useSwapModalActions = () => {
           approveTxHash: undefined,
           createOrderSuccess: undefined,
         });
-        if(state.wrapSuccess) {
+        if (state.wrapSuccess) {
           nativeToWrapped();
         }
       }, closeDalay || 300);

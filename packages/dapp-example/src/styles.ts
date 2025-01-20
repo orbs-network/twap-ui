@@ -502,6 +502,7 @@ export const StyledSushiModalContent = styled(StyledModalContent)<{ isDarkTheme?
     padding: 20,
     border: "unset",
     borderRadius: 16,
+    maxWidth: 512,
     "*": {
       color: isDarkTheme ? "white" : "black",
     },

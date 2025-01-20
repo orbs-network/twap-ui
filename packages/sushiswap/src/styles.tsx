@@ -155,6 +155,11 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     ".twap-separator": {
       background: isDarkMode ? "rgba(255, 255, 255, 0.07)" : "rgba(0, 0, 0, 0.07)",
     },
+    ".twap-order-display-details": {
+      ...cardBodyStyles(theme),
+      background: styles.isDarkMode ? "#ffffff0a" : "white",
+      gap: 8,
+    },
     ".twap-order-display": {
       ".twap-token-logo": {
         width: "40px!important",
@@ -170,11 +175,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         "*": {
           color: styles.messageText,
         },
-      },
-      ".twap-order-display-details": {
-        ...cardBodyStyles(theme),
-        background: styles.isDarkMode ? "#ffffff0a" : "white",
-        gap: 8,
       },
 
       ".twap-label p": {
@@ -908,6 +908,59 @@ export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ the
     "*": {
       color: styles.textColor,
     },
+    ".twap-separator": {
+      marginTop: 20,
+      marginBottom: 20,
+    },
+    ".orbs_Main-wrapper": {
+      width:'100%'
+    },
+    ".orbs_MainTokenAmount": {
+      fontSize: 17,
+      fontWeight: 500,
+    },
+    ".orbs_MainTokenLeft": {
+      gap:4
+    },
+    ".orbs_Main": {
+      width:'100%'
+    },
+    ".orbs_MainToken": {
+      width:'100%',
+      justifyContent:'space-between'
+    },
+    ".orbs_MainTokenLogo": {
+      width: "40px!important",
+      height: "40px!important",
+    },
+    ".twap-custom-usd": {},
+    ".twap-order-display-token-amount": {
+      fontWeight: 500,
+      fontSize: 17,
+    },
+    ".twap-order-modal-market-warning": {
+      background: styles.accent,
+      "*": {
+        color: styles.messageText,
+      },
+    },
+
+    ".twap-label p": {
+      fontWeight: 500,
+    },
+    ".twap-order-display-details-row-right": {
+      color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
+      fontSize: 13,
+      "*": {
+        color: styles.isDarkMode ? "#94a3b8" : "#6b7280",
+        fontSize: 13,
+      },
+    },
+    ".twap-order-display-separator": {
+      background: "unset",
+      margin: "8px 0px!important",
+    },
+  
     ".twap-order-modal-disclaimer": {
       ...summaryModalStyles,
       a: {

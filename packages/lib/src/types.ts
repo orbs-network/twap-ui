@@ -2,9 +2,8 @@ import ConfigJson from "@orbs-network/twap/configs.json";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
 import Web3 from "web3";
-import { useSwapData } from "./hooks";
-import { Moment } from "moment";
-import { Config, constructSDK, TimeDuration } from "@orbs-network/twap-sdk";
+import { Config } from "@orbs-network/twap-sdk";
+import { SwapStatus, SwapStep } from "@orbs-network/swap-ui";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -293,9 +292,6 @@ export interface TWAPTokenSelectProps {
   isSrc?: boolean;
 }
 
-export type SwapState = "loading" | "success" | "failed" | "rejected";
-export type SwapStep = "createOrder" | "wrap" | "approve";
-
 export interface TooltipProps {
   children: ReactNode;
   tooltipText?: string | ReactElement | number;
@@ -311,30 +307,6 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
   allowClickWhileLoading?: boolean;
 }
 
-export interface OrderCreated {
-  Contract_id: string;
-  ask_bidDelay: string;
-  ask_data: string;
-  ask_deadline: string;
-  ask_dstMinAmount: string;
-  ask_dstToken: string;
-  ask_exchange: string;
-  ask_fillDelay: string;
-  ask_srcAmount: string;
-  ask_srcBidAmount: string;
-  ask_srcToken: string;
-  blockNumber: string;
-  blockTimestamp: string;
-  dex: string;
-  dollarValueIn: string;
-  dstTokenSymbol: string;
-  exchange: string;
-  id: string;
-  maker: string;
-  srcTokenSymbol: string;
-  timestamp: string;
-  transactionHash: string;
-}
 
 export type LimitPricePercentProps = {
   text: string;
@@ -387,10 +359,17 @@ interface TwapComponents {
   USD?: FC<{ value?: string | number }>;
 }
 
+
+export enum SwapSteps {
+  WRAP,
+  APPROVE,
+  CREATE
+}
+
 export interface State {
-  swapStep?: SwapStep;
-  swapSteps?: SwapStep[];
-  swapStatus?: SwapState;
+  swapStep?: SwapSteps;
+  swapSteps?: SwapSteps[];
+  swapStatus?: SwapStatus;
   approveSuccess?: boolean;
   wrapSuccess?: boolean;
   wrapTxHash?: string;

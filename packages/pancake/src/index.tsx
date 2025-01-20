@@ -558,36 +558,6 @@ const TWAPPanel = () => {
   );
 };
 
-const SubmitOrderModal = () => {
-  const { Modal } = useAdapterContext();
-  const { isOpen, onClose, swapState } = hooks.useSwapModal();
-
-  const title = useMemo(() => {
-    if (!swapState) {
-      return "Review order";
-    }
-  }, [swapState]);
-
-  const onCloseWithDelay = useCallback(() => {
-    onClose(500);
-  }, [onClose]);
-
-  return (
-    <Modal isOpen={!!isOpen} onClose={onCloseWithDelay}>
-      <StyledSwapModalContent
-        style={{
-          paddingBottom: "24px",
-          paddingTop: title ? "30px" : "0px",
-        }}
-      >
-        <StyledSwapModalContentChildren>
-          <Components.CreateOrderModal />
-        </StyledSwapModalContentChildren>
-      </StyledSwapModalContent>
-    </Modal>
-  );
-};
-
 const MenuButton = ({ text, selected, onClick }: { text: string; selected?: boolean; onClick: () => void }) => {
   return (
     <StyledMenuButton selected={selected ? 1 : 0} onClick={onClick}>

@@ -2,13 +2,14 @@ import React, { useCallback } from "react";
 import { useTwapContext } from "../context/context";
 import { useSetSwapSteps } from "./lib";
 import { query } from "./query";
+import { SwapStatus } from "@orbs-network/swap-ui";
 
 export function useSubmitOrderButton(onClick?: () => void) {
   const {
     translations: t,
-    state: { swapStatus },
+    state: { swapStatus, disclaimerAccepted },
   } = useTwapContext();
-  const isLoading = swapStatus === "loading";
+  const isLoading = swapStatus === SwapStatus.LOADING;
 
   const setSwapSteps = useSetSwapSteps();
   const { isLoading: allowanceLoading } = query.useAllowance();
@@ -24,6 +25,6 @@ export function useSubmitOrderButton(onClick?: () => void) {
     text: t.placeOrder,
     onClick: _onClick,
     loading,
-    disabled: loading,
+    disabled: loading || !disclaimerAccepted,
   };
 }

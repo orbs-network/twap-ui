@@ -150,7 +150,11 @@ const Input = () => {
   return (
     <StyledInputContainer>
       <div style={{ opacity: isMarketOrder ? 0 : 1, pointerEvents: isMarketOrder ? "none" : "all" }}>
-        {Components?.Input ? <Components.Input  onChange={onChange} value={value} isLoading={isLoading} /> : <DefaultInput onChange={onChange} value={value} isLoading={isLoading} />}
+        {Components?.Input ? (
+          <Components.Input onChange={onChange} value={value} isLoading={isLoading} />
+        ) : (
+          <DefaultInput onChange={onChange} value={value} isLoading={isLoading} />
+        )}
       </div>
     </StyledInputContainer>
   );

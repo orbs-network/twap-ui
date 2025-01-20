@@ -4,10 +4,10 @@ import { query } from "./query";
 import BN from "bignumber.js";
 import { useUnwrapToken, useWrapOnly } from "./useTransactions";
 import { useSwapModal } from "./useSwapModal";
-import { isNil } from "../utils";
 import { useChangeNetwork, useSrcBalance } from "./hooks";
 import { useNoLiquidity, useOutAmount, useShouldOnlyWrap, useShouldUnwrap, useSwapWarning } from "./lib";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { SwapStatus } from "@orbs-network/swap-ui";
 
 export const useConfirmationButton = (connect?: () => void) => {
   const {
@@ -18,7 +18,7 @@ export const useConfirmationButton = (connect?: () => void) => {
     state: { swapStatus },
   } = useTwapContext();
   const { parsedSrcToken, parsedDstToken } = useTwapContextUI();
-  const createOrderLoading = swapStatus === "loading";
+  const createOrderLoading = swapStatus === SwapStatus.LOADING;
   const { onOpen } = useSwapModal();
   const outAmountLoading = useOutAmount().isLoading;
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();

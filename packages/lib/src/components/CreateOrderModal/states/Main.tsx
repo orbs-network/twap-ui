@@ -4,27 +4,15 @@ import { Button, Spinner, Switch } from "../../base";
 import { MarketPriceWarning, Separator } from "../../Components";
 import { StyledColumnFlex, StyledText } from "../../../styles";
 import { OrderDisplay } from "../../OrderDisplay";
-import { size } from "../../../utils";
 import BN from "bignumber.js";
-import {
-  useChunks,
-  useDeadline,
-  useDstMinAmountOut,
-  useFillDelay,
-  useOutAmount,
-  useSrcAmount,
-  useSrcChunkAmount,
-  useSwapPrice,
-  useToggleDisclaimer,
-  useUsdAmount,
-} from "../../../hooks/lib";
+import { useChunks, useDeadline, useDstMinAmountOut, useFillDelay, useOutAmount, useSrcChunkAmount, useSwapData, useSwapPrice, useToggleDisclaimer } from "../../../hooks/lib";
 import React, { useMemo } from "react";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 import { useTwapContext } from "../../../context/context";
-import { Steps } from "../Steps";
+import { SwapFlow, SwapStep } from "@orbs-network/swap-ui";
 import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
-import { useOrderType } from "../hooks";
-import { BottomContent, SmallTokens } from "../Components";
+import { fillDelayText } from "@orbs-network/twap-sdk";
+import { SwapSteps } from "../../../types";
 
 const Price = () => {
   const {
@@ -77,7 +65,7 @@ const MarketWarning = ({ isMarketOrder }: { isMarketOrder?: boolean }) => {
 };
 
 export const AcceptDisclaimer = ({ className }: { className?: string }) => {
-  const { translations: t } = useTwapContext();
+  const { translations: t, state:{disclaimerAccepted} } = useTwapContext();
   const onChange = useToggleDisclaimer();
 
   return (
@@ -92,59 +80,100 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
         </>
       }
     >
-      <Switch checked={true} onChange={onChange} />
+      <Switch checked={Boolean(disclaimerAccepted)} onChange={onChange} />
     </OrderDisplay.DetailRow>
   );
 };
 
-export const Main = ({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) => {
-  const { swapStatus, swapSteps } = useTwapContext().state;
+const useSteps = () => {
+  const {
+    state: { swapSteps },
+  } = useTwapContext();
+  const { parsedSrcToken } = useTwapContextUI();
+  return useMemo((): SwapStep[] => {
+    if (!swapSteps || !parsedSrcToken) return [];
 
-  const shouldOnlyConfirm = swapStatus === "loading" && size(swapSteps) === 1;
+    return swapSteps.map((step) => {
+      if (step === SwapSteps.WRAP) {
+        return {
+          id: SwapSteps.WRAP,
+          title: `Wrap ${parsedSrcToken.symbol}`,
+          description: `Wrap ${parsedSrcToken.symbol}`,
+          image: parsedSrcToken.logoUrl,
+        };
+      }
+      if (step === SwapSteps.APPROVE) {
+        return {
+          id: SwapSteps.APPROVE,
+          title: `Approve ${parsedSrcToken.symbol}`,
+          description: `Approve ${parsedSrcToken.symbol}`,
+          image: parsedSrcToken.logoUrl,
+        };
+      }
+      return {
+        id: SwapSteps.CREATE,
+        title: `Create order`,
+        image: parsedSrcToken?.logoUrl,
+      };
+    });
+  }, [parsedSrcToken, swapSteps]);
+};
 
-  if (shouldOnlyConfirm) {
-    return <ConfirmOrder />;
-  }
+export const Main = ({ onSubmit}: { onSubmit: () => void }) => {
+  const {
+    state: { swapStatus, swapStep },
+    translations: t,
+  } = useTwapContext();
+  const {
+    isLimitPanel,
+    derivedValues: { isMarketOrder },
+  } = useTwapContextUI();
+  const { amountUsd } = useSwapData();
+  const steps = useSteps();
+
+  const inUsd = useFormatNumberV2({ value: amountUsd.srcUsd, decimalScale: 2 });
+  const outUsd = useFormatNumberV2({ value: amountUsd.dstUsd, decimalScale: 2 });
 
   return (
-    <StyledReview className={className}>
-      <Tokens />
-      {swapStatus === "loading" ? (
-        <>
-          <StyledSwapPendingBorder />
-          <Steps />
-        </>
-      ) : (
+    <>
+      <SwapFlow.Main
+        fromTitle={isLimitPanel ? "From" : "Allocate"}
+        toTitle={!isMarketOrder ? "To" : "Buy"}
+        steps={steps}
+        inUsd={`$${inUsd}`}
+        outUsd={`$${outUsd}`}
+        currentStep={swapStep}
+        showSingleStep={true}
+        bottomContent={<ChunksText />}
+      />
+      {!swapStatus && (
         <StyledColumnFlex gap={15}>
           <Details />
           <AcceptDisclaimer />
           <SubmitButton onClick={onSubmit} />
         </StyledColumnFlex>
       )}
-    </StyledReview>
+    </>
   );
 };
 
-const Tokens = () => {
+const ChunksText = () => {
   const {
-    parsedSrcToken: srcToken,
-    parsedDstToken: dstToken,
-    derivedValues: { isMarketOrder },
+    derivedValues: { chunks, fillDelay },
   } = useTwapContextUI();
-
-  const { srcUsd, dstUsd } = useUsdAmount();
-  const srcAmount = useSrcAmount().amountUi;
-  const outAmount = useOutAmount().amountUi;
-  const fillDelayMillis = useFillDelay().millis;
-  const chunks = useChunks();
+  if (chunks <= 1) return null;
 
   return (
-    <OrderDisplay.Tokens>
-      <OrderDisplay.SrcToken token={srcToken} amount={srcAmount} usd={srcUsd} />
-      <OrderDisplay.DstToken token={dstToken} amount={outAmount} usd={dstUsd} fillDelayMillis={fillDelayMillis} isMarketOrder={isMarketOrder} chunks={chunks} />
-    </OrderDisplay.Tokens>
+    <StyledChunksText className="twap-small-text">
+      Every {fillDelayText(fillDelay.unit * fillDelay.value).toLowerCase()} Over {chunks} Orders
+    </StyledChunksText>
   );
 };
+
+const StyledChunksText = styled(StyledText)({
+  marginTop: 10,
+  fontSize: 14,
+});
 
 const Details = () => {
   const chunks = useChunks();
@@ -162,7 +191,7 @@ const Details = () => {
 
   return (
     <>
-      <Separator />
+    <Separator />
       <OrderDisplay.DetailsContainer>
         <Price />
         {isLimitPanel ? (
@@ -217,37 +246,3 @@ export const SubmitButton = ({ onClick }: { onClick: () => void }) => {
     </Button>
   );
 };
-
-const StyledReview = styled(OrderDisplay)({});
-const StyledSwapPendingBorder = styled(Separator)({
-  margin: "20px 0px",
-});
-
-export function ConfirmOrder() {
-  return (
-    <StyledContainer className="twap-create-order-confirm">
-      <Spinner size={55} />
-      <Title />
-      <SmallTokens />
-      <BottomContent text="Proceed in your wallet" />
-    </StyledContainer>
-  );
-}
-
-const Title = () => {
-  const type = useOrderType();
-  return <StyledText className="twap-order-modal-confirm-title">Confirm {type} order</StyledText>;
-};
-
-const StyledContainer = styled(StyledColumnFlex)({
-  gap: 15,
-  alignItems: "center",
-  ".twap-order-modal-confirm-title": {
-    fontSize: 16,
-  },
-  ".twap-order-modal-confirm-bottom": {
-    marginTop: 30,
-    color: "rgb(155, 155, 155)",
-    fontSize: 14,
-  },
-});

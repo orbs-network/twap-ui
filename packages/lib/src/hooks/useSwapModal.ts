@@ -20,7 +20,7 @@ export const useSwapModal = () => {
     onClose,
     onOpen,
     isOpen,
-    swapState: swapStatus,
+    swapStatus,
     srcAmount: typedSrcAmount,
     srcUsd: srcUsd,
     dstUsd: dstUsd,

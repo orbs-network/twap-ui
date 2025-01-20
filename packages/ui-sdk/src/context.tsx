@@ -41,7 +41,7 @@ export const TwapProvider = ({ children, config, isLimitPanel = false, parseToke
   const parsedDstToken = useMemo(() => parseToken?.(state.rawDstToken), [state.rawDstToken, parseToken]);
   const derivedValues = useDerivedSwapValues(sdk, state, parsedSrcToken, parsedDstToken, isLimitPanel);
   const actionHandlers = useActionsHandlers(state, dispatch, parsedDstToken);
-  
+
   return (
     <Context.Provider
       value={{
@@ -138,6 +138,6 @@ export const useLimitPriceInput = () => {
   return {
     value: value || "",
     onChange: actionHandlers.setLimitPrice,
-    isLoading: Boolean(state.rawSrcToken && state.rawDstToken &&  !state.marketPrice)
+    isLoading: Boolean(state.rawSrcToken && state.rawDstToken && !state.marketPrice),
   };
 };

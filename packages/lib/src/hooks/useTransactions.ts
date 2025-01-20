@@ -5,9 +5,10 @@ import { useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } fr
 import { query, useGasPrice, useOrdersHistory } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
-import { useSwitchNativeToWrapped } from "../context/actions";
 import { useShouldWrap, useSrcAmount, useSwapData } from "./lib";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { SwapStatus } from "@orbs-network/swap-ui";
+import { SwapSteps } from "../types";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
@@ -195,13 +196,29 @@ const useUpdatedOrders = () => {
         updateData(updatedOrders);
       }
       updateState({
-        swapStatus: "success",
+        swapStatus: SwapStatus.SUCCESS,
         createOrderSuccess: true,
       });
       reset();
     },
   });
 };
+
+
+const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
+
+  let steps: number[] = []
+
+  if(shouldWrap) {
+    steps.push(SwapSteps.WRAP)
+  }
+  if(shouldApprove) {
+    steps.push(SwapSteps.APPROVE)
+  }
+
+  steps.push(SwapSteps.CREATE)
+  return steps
+}
 
 export const useSubmitOrderFlow = () => {
   const { minNativeTokenBalance, state, updateState } = useTwapContext();
@@ -231,8 +248,10 @@ export const useSubmitOrderFlow = () => {
       if (!wToken) {
         throw new Error("WToken not defined");
       }
+
+      const steps = getSteps(shouldWrap, !haveAllowance);
       logger(`Create order request`);
-      updateState({ swapStatus: "loading" });
+      updateState({ swapStatus: SwapStatus.LOADING, swapSteps: steps });
 
       if (minNativeTokenBalance) {
         const hasMinNativeTokenBalance = await ensureNativeBalance();
@@ -244,14 +263,14 @@ export const useSubmitOrderFlow = () => {
       let token = srcToken;
 
       if (shouldWrap) {
-        updateState({ swapStep: "wrap" });
+        updateState({ swapStep: SwapSteps.WRAP });
         await wrapToken();
         updateState({ wrapSuccess: true });
         token = wToken;
       }
 
       if (!haveAllowance) {
-        updateState({ swapStep: "approve" });
+        updateState({ swapStep: SwapSteps.APPROVE});
         await approve(token);
         const res = await getHasAllowance(token, srcAmount.amount);
         if (!res) {
@@ -260,16 +279,16 @@ export const useSubmitOrderFlow = () => {
         updateState({ approveSuccess: true });
       }
 
-      updateState({ swapStep: "createOrder" });
+      updateState({ swapStep: SwapSteps.CREATE });
       const order = await createOrder(token);
       await updateOrders(order);
     },
     {
       onError(error) {
         if (isTxRejected(error) && !wrapSuccess) {
-          updateState({ swapStep: undefined, swapStatus:undefined });
+          updateState({ swapStep: undefined, swapStatus: undefined });
         } else {
-          updateState({ swapStatus: "failed" });
+          updateState({ swapStatus: SwapStatus.FAILED });
         }
       },
 

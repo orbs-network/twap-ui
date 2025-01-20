@@ -443,8 +443,6 @@ export const PanelWarning = ({ className = "" }: { className?: string }) => {
   const isWrongChain = useTwapContext().isWrongChain;
   const limitPriceWarning = useLimitPriceWarning();
 
-
-
   const show = feeOnTranferWarning || lowPriceWarning || limitPriceWarning;
   const title = feeOnTranferWarning || lowPriceWarning?.title || limitPriceWarning;
   const text = lowPriceWarning?.subTitle;

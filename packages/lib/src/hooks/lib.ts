@@ -43,7 +43,7 @@ export const useOutAmount = () => {
   const { amountUi } = useSrcAmount();
   const {
     derivedValues: { destTokenAmount, destTokenAmountUI },
-    state: {marketPrice}
+    state: { marketPrice },
   } = useTwapContextUI();
 
   return {
@@ -361,7 +361,10 @@ export const useSetLimitPrice = () => {
 };
 
 export const useToggleDisclaimer = () => {
-  return useCallback(() => {}, []);
+  const {state:{disclaimerAccepted}, updateState} = useTwapContext()
+  return useCallback(() => {
+    updateState({disclaimerAccepted: !disclaimerAccepted})
+  }, [ disclaimerAccepted, updateState]);
 };
 
 export const useTradeSizeWarning = () => {
@@ -384,17 +387,17 @@ export const useTradesAmountWarning = () => {
   return "Min. 1 trade is required.";
 };
 
-
 export const useLimitPriceWarning = () => {
-  const {state: {typedPrice}} = useTwapContextUI()
+  const {
+    state: { typedPrice },
+  } = useTwapContextUI();
 
-  
   return useMemo(() => {
-    if(typedPrice !== undefined &&  BN(typedPrice || 0).isZero()) {
-      return 'Enter limit price'
+    if (typedPrice !== undefined && BN(typedPrice || 0).isZero()) {
+      return "Enter limit price";
     }
-  },[typedPrice])
-}
+  }, [typedPrice]);
+};
 
 export const useSwapWarning = () => {
   const { warning: fillDelayWarning } = useFillDelay();
@@ -405,7 +408,7 @@ export const useSwapWarning = () => {
   const zeroSrcAmount = useSrcAmountWarning();
   const balance = useBalanceWarning();
   const lowPrice = useLowPriceWarning();
-  const limitPriceWarning = useLimitPriceWarning()
+  const limitPriceWarning = useLimitPriceWarning();
 
   if (shouldWrapOrUnwrapOnly) {
     return { balance, zeroSrcAmount };

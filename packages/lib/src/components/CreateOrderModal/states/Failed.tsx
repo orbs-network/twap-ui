@@ -1,9 +1,8 @@
 import { styled } from "styled-components";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
-import { BottomContent, SmallTokens } from "../Components";
 import { useOrderType } from "../hooks";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { isNativeBalanceError } from "../../../utils";
 import { useNetwork } from "../../../hooks/hooks";
 
@@ -16,7 +15,6 @@ export function Failed({ error }: { error?: any }) {
       <Logo />
       <Title />
       {nativeBalance && <StyledText className="twap-order-modal-failed-subtitle">Insufficient {nativeToken} balance</StyledText>}
-      <SmallTokens />
       <BottomContent text="Learn more" href="https://www.orbs.com/dtwap-and-dlimit-faq/" />
     </StyledContainer>
   );
@@ -58,4 +56,32 @@ const StyledContainer = styled(StyledColumnFlex)({
     fontSize: 15,
     fontWeight: 500,
   },
+});
+
+
+export const BottomContent = ({ href, text }: { href?: string; text?: string }) => {
+  let content;
+  if (href) {
+    content = (
+      <StyledLink href={href} target="_blank" className="twap-order-modal-link">
+        {text}
+      </StyledLink>
+    );
+  } else {
+    content = <StyledBottomContentText>{text}</StyledBottomContentText>;
+  }
+
+  return <StyledBottomContent className="twap-order-modal-bottom-content">{content}</StyledBottomContent>;
+};
+
+const StyledBottomContent = styled(StyledColumnFlex)({
+  marginTop: 40,
+  alignItems: "center",
+});
+
+const StyledBottomContentText = styled(StyledText)({
+  textAlign: "center",
+  color: "rgb(155, 155, 155)",
+  fontSize: 14,
+  fontWeight: 500,
 });
