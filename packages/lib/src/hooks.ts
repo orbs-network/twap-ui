@@ -224,7 +224,6 @@ export const useCreateOrder = () => {
     {
       onSuccess: async (result) => {
         analytics.onCreateOrderSuccess(result.txHash, result.orderId);
-        onResetLimitPrice();
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);

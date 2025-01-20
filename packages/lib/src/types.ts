@@ -10,7 +10,8 @@ export interface Translations {
   confirmationTradeSizeTooltip: string;
   confirmationTotalTradesTooltip: string;
   confirmationMinDstAmountTootipMarket: string;
-  confirmationMinDstAmountTootipLimit: string;
+  confirmationMinDstAmountTootipLimitPart1: string;
+  confirmationMinDstAmountTootipLimitPart2: string;
   confirmationOrderType: string;
   confirmationMarketOrderTooltip: string;
   marketPriceTooltip: string;

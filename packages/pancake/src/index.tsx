@@ -31,7 +31,7 @@ import {
   StyledBottomContainer,
   StyledSliderDots,
 } from "./styles";
-import { memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { StyledBalance, StyledEmptyUSD, StyledPercentSelect, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
 import { isNativeAddress, zeroAddress } from "@defi.org/web3-candies";
 import { TokenData } from "@orbs-network/twap";
@@ -134,9 +134,12 @@ const Balance = ({ isSrc, hide }: { isSrc?: boolean; hide: boolean }) => {
   const type = warning?.type;
 
   const showWarning = type === "balance" && isSrc;
+
+  if (!isSrc) return null;
+
   return (
     <StyledBalanceContainer style={{ cursor: isSrc ? "pointer" : "auto" }} warning={showWarning ? 1 : 0} hide={hide ? 1 : 0} onClick={isSrc ? () => onPercentClick(1) : () => {}}>
-      {isSrc && <MdAccountBalanceWallet />}
+      <MdAccountBalanceWallet />
       <StyledBalance hideLabel={true} isSrc={isSrc} decimalScale={6} />
     </StyledBalanceContainer>
   );

@@ -796,7 +796,7 @@ export const OrderDetails = ({ children, className = " " }: { children: ReactNod
 
 const StyledOrderDetails = styled(StyledColumnFlex)({});
 
-export const OrderDetailsRow = ({ label, tooltip = "", children, className = "" }: { label: string; tooltip?: string; children: ReactNode; className?: string }) => {
+export const OrderDetailsRow = ({ label, tooltip, children, className = "" }: { label: string; tooltip?: ReactElement; children: ReactNode; className?: string }) => {
   return (
     <StyledDetailRow className={`twap-order-details-row ${className}`}>
       <Label tooltipText={tooltip}>{label}</Label>
@@ -843,7 +843,20 @@ const MinReceived = ({ minReceived, isMarketOrder = false, symbol = "" }: { minR
   if (isMarketOrder) return null;
 
   return (
-    <OrderDetailsRow label={t.minReceivedPerTrade} tooltip={!isMarketOrder ? t.confirmationMinDstAmountTootipLimit : t.confirmationMinDstAmountTootipMarket}>
+    <OrderDetailsRow
+      label={t.minReceivedPerTrade}
+      tooltip={
+        !isMarketOrder ? (
+          <>
+            {t.confirmationMinDstAmountTootipLimitPart1}
+            <br />
+            {t.confirmationMinDstAmountTootipLimitPart2}
+          </>
+        ) : (
+          t.confirmationMinDstAmountTootipMarket
+        )
+      }
+    >
       {isMarketOrder ? "-" : `${minReceivedF} ${symbol}`}
     </OrderDetailsRow>
   );

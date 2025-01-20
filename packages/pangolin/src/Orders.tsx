@@ -2,7 +2,7 @@ import { Box, ClickAwayListener, styled, Typography, useMediaQuery } from "@mui/
 import { Status } from "@orbs-network/twap";
 import { CancelOrderButton, Components, hooks, store, Styles, useTwapContext, OrdersPanel, fillDelayText } from "@orbs-network/twap-ui";
 import _ from "lodash";
-import React, { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, ReactElement, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { parseTheme } from "./styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 interface ContextProps {
@@ -152,7 +152,7 @@ const Select = () => {
   );
 };
 
-const OrderDetail = ({ label, value, labelTooltip, valueTooltip }: { label: string; labelTooltip?: string; value: ReactNode; valueTooltip?: string }) => {
+const OrderDetail = ({ label, value, labelTooltip, valueTooltip }: { label: string; labelTooltip?: ReactElement | string; value: ReactNode; valueTooltip?: string }) => {
   const { theme } = useOrdersContext();
   return (
     <StyledOrderDetail>
@@ -205,7 +205,13 @@ const MinReceivedPerTrade = ({ orderUI }: { orderUI?: OrderUI }) => {
   return (
     <OrderDetail
       valueTooltip={tooltip}
-      labelTooltip={translations.confirmationMinDstAmountTootipLimit}
+      labelTooltip={
+        <>
+          {translations.confirmationMinDstAmountTootipLimitPart1}
+          <br />
+          {translations.confirmationMinDstAmountTootipLimitPart2}
+        </>
+      }
       label={translations.minReceivedPerTrade}
       value={<Styles.StyledOneLineText>{amount}</Styles.StyledOneLineText>}
     />
