@@ -13,5 +13,6 @@ export * from "./hooks/query";
 export * from "./components/LimitPanel/hooks";
 export * from "./context/actions";
 export * from "./consts";
+export { Widget } from "./widget/Widget";
 
 export { Configs };

@@ -18,6 +18,7 @@ import {
   compact,
   size,
   getNetwork,
+  Widget,
 } from "@orbs-network/twap-ui";
 import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import translations from "./i18n/en.json";
@@ -83,14 +84,6 @@ import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
 
-const USD = ({ usd }: { usd?: string }) => {
-  return (
-    <StyledUSD className="twap-custom-usd">
-      <SmallText prefix="$ " value={BN(usd || 0).isZero() ? "0.00" : usd} />
-    </StyledUSD>
-  );
-};
-
 const uiPreferences: TwapContextUIPreferences = {
   disableThousandSeparator: true,
   addressPadding: {
@@ -128,64 +121,19 @@ const SmallText = ({ value = "", prefix }: { value?: string; prefix?: string }) 
   );
 };
 
-const Balance = ({ isSrc }: { isSrc?: boolean }) => {
-  const onClick = hooks.useOnSrcAmountPercent();
-  const _balance = hooks.useTokenBalance(isSrc);
-  const isZeroBalance = BN(_balance || 0).eq(0);
-  const balance = hooks.useFormatDecimals(_balance, 2);
-
-  return (
-    <StyledBalance disabled={!isSrc ? 1 : 0} onClick={!isZeroBalance ? () => onClick(1) : () => {}}>
-      <IoWalletSharp />
-      <SmallText value={isZeroBalance ? "0.00" : balance} />
-    </StyledBalance>
-  );
-};
-
 const TokenChange = () => {
   return <StyledTokenChange icon={<BsArrowDownShort />} />;
 };
 
-const TokenPanelUsd = ({ isSrc, exceedsBalance }: { isSrc?: boolean; exceedsBalance?: boolean }) => {
-  const { srcUsd, dstUsd } = hooks.useUsdAmount();
-
-  const usd = hooks.useFormatDecimals(isSrc ? srcUsd : dstUsd, 2);
-
-  if (exceedsBalance) {
-    return <StyledBalanceWarning>Exceeds Balance</StyledBalanceWarning>;
-  }
-
-  return <USD usd={usd} />;
-};
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const [tokenListOpen, setTokenListOpen] = useState(false);
-  const { isLimitPanel } = useTwapContext();
-
-  const onClose = useCallback(() => {
-    setTokenListOpen(false);
-  }, []);
-
-  const insufficientFunds = hooks.useBalanceWarning();
-
-  const exceedsBalance = !isSrcToken ? undefined : insufficientFunds;
-
   return (
-    <>
-      <StyledTokenPanel error={exceedsBalance ? 1 : 0}>
-        <StyledTokenPanelLabel>{isSrcToken ? (!isLimitPanel ? "Allocate" : "Sell") : "Buy"}</StyledTokenPanelLabel>
-        <TwapStyles.StyledColumnFlex gap={12}>
-          <TwapStyles.StyledRowFlex justifyContent="space-between" style={{ marginTop: 8 }}>
-            <StyledPanelInput placeholder="0.0" isSrc={isSrcToken} />
-            <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
-          </TwapStyles.StyledRowFlex>
-          <TwapStyles.StyledRowFlex justifyContent="space-between">
-            <TokenPanelUsd exceedsBalance={!!exceedsBalance} isSrc={isSrcToken} />
-            <Balance isSrc={isSrcToken} />
-          </TwapStyles.StyledRowFlex>
-        </TwapStyles.StyledColumnFlex>
-      </StyledTokenPanel>
-    </>
+    <Widget.TokenPanel isSrcToken={isSrcToken}>
+      <Widget.TokenPanel.Balance />
+      <Widget.TokenPanel.Usd />
+      <Widget.TokenPanel.Select />
+      <Widget.TokenPanel.Input />
+    </Widget.TokenPanel>
   );
 };
 
@@ -215,7 +163,7 @@ const useParseToken = () => {
         console.error("Invalid token", token);
       }
     },
-    [config.chainId, getTokenLogo],
+    [config.chainId, getTokenLogo]
   );
 };
 
@@ -264,7 +212,7 @@ const useIsNative = () => {
         return true;
       }
     },
-    [context.config.chainId],
+    [context.config.chainId]
   );
 };
 
@@ -300,8 +248,6 @@ const useUsd = () => {
 
   const srcAddress = isNativeAddress(tokens.srcAddress || "") ? wToken?.address : tokens.srcAddress;
   const dstAddress = isNativeAddress(tokens.dstAddress || "") ? wToken?.address : tokens.dstAddress;
-  console.log("srcAddress", srcAddress);
-  console.log("dstAddress", dstAddress);
 
   return {
     srcUsd: context.useUSD(srcAddress),
@@ -362,17 +308,6 @@ const useIsWrongChain = () => {
   }, [context.connectedChainId, context.config.chainId]);
 };
 
-const CustomButton = (props: ButtonProps) => {
-  const context = useAdapterContext();
-  if (context.Button) {
-    return (
-      <div onClick={props.onClick} style={{ width: "100%" }} className="twap-custom-button">
-        <context.Button disabled={props.disabled || props.loading}>{props.children}</context.Button>
-      </div>
-    );
-  }
-  return null;
-};
 
 const TWAPContent = () => {
   const context = useAdapterContext();
@@ -389,19 +324,19 @@ const TWAPContent = () => {
   const marketPrice = useMarketPrice();
   const isWrongChain = useIsWrongChain();
 
-  const dappWToken = useWToken();
-
+  console.log({srcToken, dstToken});
+  
+  
   return (
     <ThemeProvider theme={theme}>
       <StyledTwap className="twap-adapter-wrapper">
-        <TwapAdapter
+        <Widget
           config={context.config}
           maxFeePerGas={context.maxFeePerGas}
           priorityFeePerGas={context.priorityFeePerGas}
           translations={translations as Translations}
           provider={provider}
           account={context.account}
-          dappTokens={context.dappTokens}
           parsedTokens={parsedTokens}
           srcToken={srcToken}
           dstToken={dstToken}
@@ -415,8 +350,7 @@ const TWAPContent = () => {
           marketPrice={marketPrice}
           chainId={context.connectedChainId}
           isWrongChain={isWrongChain}
-          Components={{ Tooltip: context.Tooltip, Button: context.Button && CustomButton }}
-          dappWToken={dappWToken}
+          components={{ Modal: context.Modal, TokensListModal: context.TokenSelectModal }}
           isExactAppoval={true}
         >
           <GlobalStyles />
@@ -426,8 +360,7 @@ const TWAPContent = () => {
             <Orders />
             <StyledPoweredBy />
           </StyledContent>
-          <SubmitOrderModal />
-        </TwapAdapter>
+        </Widget>
       </StyledTwap>
     </ThemeProvider>
   );
@@ -460,7 +393,8 @@ const Orders = () => {
 };
 
 const SubmitOrderModal = () => {
-  const { isOpen, onClose, swapStatus } = hooks.useSwapModal();
+  const { isOpen, onClose } = hooks.useSwapModal();
+  const { swapStatus } = useTwapContext().state;
   const Modal = useAdapterContext().Modal;
 
   return (
@@ -530,11 +464,11 @@ const LimitPrice = () => {
     <StyledLimitPanel>
       <Card>
         <Card.Header>
-          {/* <Components.LimitPanel.Label /> */}
+          <Widget.LimitPanel.Label />
           <StyledLimitSwitch />
         </Card.Header>
         <Card.Body>
-          <Components.LimitPanel.Main
+          <Widget.LimitPanel.Main
             onSrcSelect={() => {}}
             Components={{ Input: LimitInput, PercentButton: LimitPercentButton, ZeroButton: LimitPriceZeroButton, TokenSelect: LimitPriceTokenSelect, Title: LimitPriceTitle }}
             onDstSelect={() => {}}
@@ -567,7 +501,7 @@ const ShowConfirmationButton = () => {
   return (
     <StyledShowConfirmationButtonContainer>
       <StyledFee>Fee: 0.25%</StyledFee>
-      <Components.ShowConfirmation connect={context.connect} />
+      <Widget.ShowConfirmationButton />
     </StyledShowConfirmationButtonContainer>
   );
 };
@@ -631,7 +565,7 @@ const LimitPanelExpiration = () => {
     (unit: TimeUnit) => {
       setCustomDuration({ unit, value: 1 });
     },
-    [setCustomDuration],
+    [setCustomDuration]
   );
 
   return (
@@ -678,20 +612,22 @@ const TradeIntervalSelect = () => {
   return (
     <Card>
       <Card.Header>
-        <Components.TradeInterval.Label />
+        <Widget.FillDelaySelect.Label />
       </Card.Header>
       <StyledTradeInterval>
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
           <StyledTradeIntervalInput>
-            <Components.TradeInterval.Input />
+            <Widget.FillDelaySelect.Input />
           </StyledTradeIntervalInput>
           <StyledTradeIntervalResolution>
-            <Components.TradeInterval.Resolution />
+            <Widget.FillDelaySelect.Resolution />
           </StyledTradeIntervalResolution>
         </Styles.StyledRowFlex>
       </StyledTradeInterval>
     </Card>
   );
 };
+
+TWAP.Orders = Orders;
 
 export { TWAP };

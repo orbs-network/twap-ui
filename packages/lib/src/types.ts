@@ -4,7 +4,6 @@ import { IconType } from "@react-icons/all-files";
 import Web3 from "web3";
 import { Config } from "@orbs-network/twap-sdk";
 import { SwapStatus, SwapStep } from "@orbs-network/swap-ui";
-import { Token } from "@orbs-network/twap-ui-sdk";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;

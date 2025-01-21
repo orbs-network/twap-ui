@@ -5,7 +5,7 @@ import { useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } fr
 import { query, useGasPrice, useOrdersHistory } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
-import { useShouldWrap, useSrcAmount, useSwapData } from "./lib";
+import { useShouldWrap, useSrcAmount } from "./lib";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { SwapSteps } from "../types";
@@ -185,16 +185,13 @@ const useUpdatedOrders = () => {
   const { account, updateState } = useTwapContext();
   const { sdk } = useTwapContextUI();
 
-  const { refetch, updateData } = useOrdersHistory();
+  const { data, updateData } = useOrdersHistory();
   const reset = useResetAfterSwap();
   return useMutation({
     mutationFn: async (order: { txHash: string; orderId?: number }) => {
-      if (!order.orderId || !account) {
-        await refetch();
-      } else {
-        const updatedOrders = await sdk.waitForOrdersUpdate(order.orderId, account);
-        updateData(updatedOrders);
-      }
+      if (!account) return;
+      const orders = await sdk.waitForNewOrder({ orderId: order.orderId, account, currentOrdersLength: data.length });
+      updateData(orders);
       updateState({
         swapStatus: SwapStatus.SUCCESS,
         createOrderSuccess: true,
@@ -221,7 +218,7 @@ const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 export const useSubmitOrderFlow = () => {
   const { minNativeTokenBalance, state, updateState } = useTwapContext();
 
-  const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash, wrapSuccess } = state;
+  const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash, wrapSuccess, swapData } = state;
   const { data: haveAllowance } = query.useAllowance();
   const { ensureData: ensureNativeBalance } = query.useMinNativeTokenBalance(minNativeTokenBalance);
   const shouldWrap = useShouldWrap();
@@ -234,8 +231,8 @@ export const useSubmitOrderFlow = () => {
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;
   const getHasAllowance = useGetHasAllowance();
-  const swapData = useSwapData();
-  const { srcAmount, srcToken, dstToken } = swapData;
+  const { srcToken, dstToken } = swapData;
+  const srcAmount = useSrcAmount().amount;
 
   const mutate = useMutation(
     async () => {
@@ -270,7 +267,7 @@ export const useSubmitOrderFlow = () => {
       if (!haveAllowance) {
         updateState({ swapStep: SwapSteps.APPROVE });
         await approve(token);
-        const res = await getHasAllowance(token, srcAmount.amount);
+        const res = await getHasAllowance(token, srcAmount);
         if (!res) {
           throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
         }

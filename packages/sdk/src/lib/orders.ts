@@ -405,13 +405,85 @@ export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
   };
 };
 
-export const waitForOrdersUpdate = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
-  for (let i = 0; i < 20; i++) {
-    const orders = await getOrders({ exchangeAddress: config.exchangeAddress, account, signal, chainId: config.chainId });
-    if (orders.find((o) => o.id === orderId)) {
-      return orders;
+export const waitForOrdersLengthUpdate = async (config: Config, currentOrdersLength: number, account: string, signal?: AbortSignal): Promise<Order[]> => {
+  const MAX_ATTEMPTS = 20;
+  const POLL_INTERVAL_MS = 3_000;
+
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    try {
+      const orders = await getOrders({
+        exchangeAddress: config.exchangeAddress,
+        account,
+        signal,
+        chainId: config.chainId,
+      });
+
+      if (orders.length > currentOrdersLength) {
+        return orders;
+      }
+    } catch (error) {
+      if (signal?.aborted) {
+        throw new Error("Operation aborted");
+      }
+      console.error("Error fetching orders:", error);
     }
-    await delay(3_000);
+
+    await delay(POLL_INTERVAL_MS);
+  }
+
+  throw new Error("Timeout: Orders length did not update within the allowed attempts");
+};
+
+export const waitForOrdersUpdate = async (config: Config, orderId: number, account: string, signal?: AbortSignal): Promise<Order[]> => {
+  const MAX_ATTEMPTS = 20;
+  const POLL_INTERVAL_MS = 3_000;
+
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    try {
+      const orders = await getOrders({
+        exchangeAddress: config.exchangeAddress,
+        account,
+        signal,
+        chainId: config.chainId,
+      });
+
+      if (orders.some((order) => order.id === orderId)) {
+        return orders;
+      }
+    } catch (error) {
+      if (signal?.aborted) {
+        throw new Error("Operation aborted");
+      }
+      console.error("Error fetching orders:", error);
+    }
+
+    await delay(POLL_INTERVAL_MS);
+  }
+
+  throw new Error(`Timeout: Order with ID ${orderId} not found within the allowed attempts`);
+};
+
+export const waitForNewOrder = ({
+  config,
+  orderId,
+  account,
+  signal,
+  currentOrdersLength,
+}: {
+  config: Config;
+  orderId?: number;
+  account: string;
+  signal?: AbortSignal;
+  currentOrdersLength?: number;
+}) => {
+  if (!Number.isInteger(orderId) && !Number.isInteger(currentOrdersLength)) {
+    throw new Error("Either orderId or currentOrdersLength must be provided");
+  }
+
+  if (Number.isInteger(orderId)) {
+    return waitForOrdersUpdate(config, orderId!, account, signal);
+  } else {
+    return waitForOrdersLengthUpdate(config, currentOrdersLength!, account, signal);
   }
 };
 
