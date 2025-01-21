@@ -186,7 +186,7 @@ const useInitSwap = () => {
   const dstAmount = hooks.useDstAmount().amountUI;
 
   return useCallback(() => {
-    updateState(swapId, { srcToken, dstToken, srcAmount, dstAmount });
+    updateState(swapId, { srcToken, dstToken, srcAmount: hooks.formatWithDecimals(srcAmount), dstAmount });
   }, [updateState, swapId, srcToken, dstToken, srcAmount, dstAmount]);
 };
 
@@ -498,7 +498,6 @@ const ErrorContent = () => {
   const { onClose, state } = useSubmitContext();
 
   const message = useMemo(() => {
-
     if (isTxRejected(state.error)) {
       return "Transaction rejected";
     }
@@ -660,7 +659,9 @@ const OrderReviewTokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
   const token = isSrc ? srcToken : dstToken;
 
   const dstAmount = hooks.useDstAmount().amountUI;
-  const amount = isSrc ? srcAmount : dstAmount;
+
+  const srcAmountF = hooks.useFormatNumber({ value: srcAmount, decimalScale: 13 });
+  const amount = isSrc ? srcAmountF : dstAmount;
 
   return (
     <StyledTokenDisplay>

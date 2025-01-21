@@ -15,6 +15,7 @@ export interface AdapterProps extends TWAPProps {
   TransactionErrorContent: FC<{ message?: string; onClick: () => void }>;
   connectedChainId?: number;
   toast: ({ title, message, autoCloseMillis, variant }: ToastProps) => void;
+  FlipButton?: FC<{ onClick: () => void }>;
   MobileDrawer?: FC<{
     children: ReactNode;
     isOpen: boolean;

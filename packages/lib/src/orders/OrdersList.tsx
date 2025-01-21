@@ -44,20 +44,15 @@ const PaginationList = ({ orders, status }: { orders?: Order[]; status?: Status 
 
 const List = ({ orders, status }: { orders?: Order[]; status?: Status }) => {
   const { translations } = useTwapContext();
-  const waitingForOrderId = useTwapStore((state) => state.waitingForOrderId);
   const [expanded, setExpanded] = useState<number | undefined>(undefined);
-  const { data } = useOrdersHistoryQuery();
-  const waitForOrderLoader = useMemo(() => {
-    if (!waitingForOrderId || !data?.length) return false;
-    return waitingForOrderId && !data?.find((it) => it.id === waitingForOrderId);
-  }, [data, waitingForOrderId]);
+  const newOrderLoading = useTwapStore((s) => s.newOrderLoading);
 
   const onExpand = useCallback((id: number) => {
     setExpanded((prev) => (prev === id ? undefined : id));
   }, []);
 
   if (!_.size(orders)) {
-    return waitForOrderLoader ? (
+    return newOrderLoading ? (
       <OrderLoader />
     ) : (
       <StyledContainer className="twap-orders-list">
@@ -70,7 +65,7 @@ const List = ({ orders, status }: { orders?: Order[]; status?: Status }) => {
 
   return (
     <StyledContainer className="twap-orders-list">
-      {waitForOrderLoader && <OrderLoader />}
+      {newOrderLoading && <OrderLoader />}
       {orders?.map((order, index) => {
         return <ListOrder onExpand={onExpand} expanded={order.id === expanded} order={order} key={index} />;
       })}

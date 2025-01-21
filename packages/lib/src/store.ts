@@ -48,7 +48,7 @@ const getInitialState = (queryParamsEnabled?: boolean): State => {
     txHash: undefined,
 
     enableQueryParams: false,
-    waitingForOrderId: undefined,
+    newOrderLoading: false,
   };
 };
 const initialState = getInitialState();

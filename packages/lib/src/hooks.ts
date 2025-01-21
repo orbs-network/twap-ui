@@ -28,22 +28,22 @@ import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
 import { amountBN, amountBNV2, amountUi, amountUiV2, devideCurrencyAmounts, getQueryParam, getTokenFromTokensList, logger, safeInteger, setQueryParam } from "./utils";
-import { getOrders, groupOrdersByStatus, Order, waitForOrdersCancelled, waitForOrdersUpdate } from "./order";
+import { getOrders, groupOrdersByStatus, Order, waitForOrdersCancelled, waitForOrdersUpdate, waitForOrdersLengthUpdate } from "./order";
 
 /**
  * Actions
  */
 
 export const useResetStore = () => {
-  const { resetTwapStore, waitingForOrderId } = useTwapStore((state) => ({
+  const { resetTwapStore, newOrderLoading } = useTwapStore((state) => ({
     resetTwapStore: state.reset,
-    waitingForOrderId: state.waitingForOrderId,
+    newOrderLoading: state.newOrderLoading,
   }));
   const storeOverride = useTwapContext().storeOverride || {};
   const limitPriceStore = useLimitPriceStore();
 
   return (args: Partial<State> = {}) => {
-    resetTwapStore({ ...storeOverride, ...args, waitingForOrderId });
+    resetTwapStore({ ...storeOverride, ...args, newOrderLoading });
     limitPriceStore.onReset();
     setQueryParam(QUERY_PARAMS.INPUT_AMOUNT, undefined);
     setQueryParam(QUERY_PARAMS.LIMIT_PRICE, undefined);
@@ -168,9 +168,8 @@ export const useCreateOrder = () => {
   const { amount: dstAmount, usd: dstAmountUsdUi } = useDstAmount();
   const srcUsd = useSrcUsd().value.toString();
   const srcChunkAmount = useSrcChunkAmount();
-
   const deadline = useDeadline();
-  const onResetLimitPrice = useLimitPriceStore().onReset;
+
   return useMutation(
     async (onTxHash?: (value: string) => void) => {
       const srcToken = isNativeAddress(_srcToken?.address || "") ? store.lib?.config.wToken : _srcToken;
@@ -194,7 +193,7 @@ export const useCreateOrder = () => {
           onTxHash?.(txHash);
           store.updateState({
             txHash,
-            waitingForOrderId: true,
+            newOrderLoading: true,
           });
         },
         srcToken!,
@@ -216,10 +215,6 @@ export const useCreateOrder = () => {
         dstAmount,
         txHash: order.txHash,
       });
-
-      store.updateState({
-        waitingForOrderId: order.orderId,
-      });
       onOrderCreated(order.orderId);
       return order;
     },
@@ -229,6 +224,9 @@ export const useCreateOrder = () => {
       },
       onError: (error: Error) => {
         analytics.onCreateOrderError(error.message);
+        store.updateState({
+          newOrderLoading: false,
+        });
         throw error;
       },
 
@@ -506,7 +504,9 @@ export const useBalanceQuery = (token?: TokenData, onSuccess?: (value: BN) => vo
 
 const useGasPriceQuery = () => {
   const { maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
-  const lib = useTwapStore((state) => state.lib);
+  const { lib } = useTwapStore((state) => ({
+    lib: state.lib,
+  }));
   const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(), {
     enabled: !!lib,
     refetchInterval: REFETCH_GAS_PRICE,
@@ -522,7 +522,7 @@ const useGasPriceQuery = () => {
   };
 };
 export const useOrdersHistoryQuery = () => {
-  const { lib } = useTwapStore((state) => ({
+  const { lib, updateState } = useTwapStore((state) => ({
     lib: state.lib,
     updateState: state.updateState,
     showConfirmation: state.showConfirmation,
@@ -547,16 +547,26 @@ export const useOrdersHistoryQuery = () => {
 
   const onOrderCreated = useCallback(
     async (orderId?: number) => {
-      if (!orderId || !lib) {
-        return query.refetch();
-      }
+      if (!lib) return;
+      updateState({ newOrderLoading: true });
+      try {
+        let orders: Order[] = [];
+        if (!orderId) {
+          orders = await waitForOrdersLengthUpdate(lib.config, query.data?.length || 0, lib!.maker);
+        } else {
+          orders = await waitForOrdersUpdate(lib.config, orderId, lib!.maker);
+        }
 
-      const orders = await waitForOrdersUpdate(lib?.config, orderId, lib!.maker);
-      if (orders?.length) {
-        queryClient.setQueriesData(queryKey, orders);
+        if (orders?.length) {
+          queryClient.setQueriesData(queryKey, orders);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        updateState({ newOrderLoading: false });
       }
     },
-    [lib, query.refetch, queryKey, queryClient]
+    [lib, queryKey, queryClient, updateState, query.data]
   );
 
   const onOrderCancelled = useCallback(
@@ -1573,7 +1583,7 @@ export const getDecimals = (value?: string | number, decimalScale = 0) => {
     if (!decimal) return 0; // No decimal part
 
     const arr = decimal.split("");
-    
+
     let leadingZerosCount = 0;
 
     // Count leading zeros in the decimal part
@@ -1583,7 +1593,7 @@ export const getDecimals = (value?: string | number, decimalScale = 0) => {
       } else {
         break;
       }
-    }    
+    }
     // Return the total number of decimals, adding leading zeros count
     return leadingZerosCount + (decimalScale || 5);
   };
@@ -1626,7 +1636,7 @@ export const formatWithDecimals = (value?: string | number, decimalScale?: numbe
 
   // Fallback for decimalsCount
   const decimalsCount = getDecimals(value, decimalScale);
-  
+
   // No decimal part
   if (!dec) {
     return int;

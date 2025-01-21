@@ -289,11 +289,11 @@ export interface State {
 
   txHash?: string;
   enableQueryParams?: boolean;
-  waitingForOrderId?: number | boolean;
   srcUsd?: BN;
   dstUsd?: BN;
   srcUsdLoading?: boolean;
   dstUsdLoading?: boolean;
+  newOrderLoading?: boolean;
 }
 
 export type SwitchVariant = "ios" | "default";

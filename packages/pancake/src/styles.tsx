@@ -531,9 +531,15 @@ export const StyledMarketPrice = styled("div")(({ theme }) => {
   return {};
 });
 
-export const StyledUSD = styled(Components.TokenUSD)({
-  fontSize: 14,
-  fontWeight: 400,
+export const StyledUSD = styled(Components.TokenUSD)<{ warning: number }>(({ theme, warning }) => {
+  const styles = baseStyles(theme);
+  return {
+    fontSize: 14,
+    fontWeight: 400,
+    "*": {
+      color: warning ? styles.error : styles.label,
+    },
+  };
 });
 
 export const StyledEmptyUSD = styled(Box)({
@@ -608,8 +614,7 @@ export const StyledPercentSelect = styled(Styles.StyledRowFlex)<{ show: number }
     button: {
       background: "transparent",
       border: "none",
-      color: styles.label,
-      opacity: 0.7,
+      color: styles.darkMode ? styles.label : "#02919D",
       fontWeight: 600,
       paddingLeft: "0px 0px",
       fontSize: 12,
@@ -618,8 +623,7 @@ export const StyledPercentSelect = styled(Styles.StyledRowFlex)<{ show: number }
       "&:after": {
         content: "''",
         position: "absolute",
-        background: styles.label,
-        opacity: 0.2,
+        background: styles.darkMode ? styles.label : "#E7E3EB",
         left: -3,
         height: "80%",
         width: 1,
@@ -641,6 +645,7 @@ export const StyledTokenChange = styled(Styles.StyledRowFlex)(({ theme }) => {
   const darkMode = isDarkMode(theme);
   return {
     position: "relative",
+    marginTop: 16,
     button: {
       width: 40,
       height: 40,
@@ -795,7 +800,7 @@ export const StyledBottomContainer = styled(Styles.StyledColumnFlex)(({ theme })
 
 export const StyledTokenPanelsContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
   return {
-    gap: 12,
+    gap: 8,
   };
 });
 

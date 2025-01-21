@@ -23,11 +23,11 @@ export function ListOrder({ order, expanded, onExpand }: Props) {
 }
 
 const ListOrderContent = () => {
-  const { expanded } = useListOrderContext();
+  const { expanded, onExpand } = useListOrderContext();
   return (
     <StyledContainer className={`twap-order ${expanded ? "twap-order-expanded-wrapper" : ""}`}>
       <StyledAccordion expanded={expanded}>
-        <StyledAccordionSummary>
+        <StyledAccordionSummary onClick={onExpand}>
           <OrderPreview />
         </StyledAccordionSummary>
         <StyledAccordionDetails className="twap-order-accordion">

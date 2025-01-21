@@ -1,7 +1,7 @@
-import { Config, Status } from "@orbs-network/twap";
+import { Config, OrderStatus, OrderType } from "./types";
 import BN from "bignumber.js";
-import _ from "lodash";
-import { amountUiV2 } from "./utils";
+import { amountUi, delay, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
+import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 
 const getOrderProgress = (srcFilled?: string, srcAmountIn?: string) => {
   if (!srcFilled || !srcAmountIn) return 0;
@@ -15,14 +15,14 @@ const getOrderProgress = (srcFilled?: string, srcAmountIn?: string) => {
 const getOrderStatus = (progress = 0, rawOrder: any, status?: any) => {
   status = status?.toLowerCase();
   if (progress === 100 || status === "completed") {
-    return Status.Completed;
+    return OrderStatus.Completed;
   }
   if (status === "canceled") {
-    return Status.Canceled;
+    return OrderStatus.Canceled;
   }
 
-  if (new Date(Number(rawOrder.ask_deadline)).getTime() > Date.now() / 1000) return Status.Open;
-  return Status.Expired;
+  if (new Date(Number(rawOrder.ask_deadline)).getTime() > Date.now() / 1000) return OrderStatus.Open;
+  return OrderStatus.Expired;
 };
 
 const ordersCreatedQueryValues = `
@@ -83,7 +83,6 @@ const getCreatedOrders = async ({
     signal,
   });
   const response = await payload.json();
-
   return response.data.orderCreateds;
 };
 
@@ -219,7 +218,7 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
     });
     const response = await payload.json();
 
-    let orderFilleds = _.groupBy(response.data.orderFilleds, "TWAP_id");
+    let orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
 
     const result = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
       return parseFills(orderId, fills);
@@ -229,15 +228,10 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
     if (fills.length < LIMIT) break;
     page++;
   }
+  console.log({ fills });
 
   return fills;
 };
-
-export enum OrderType {
-  LIMIT = "limit",
-  TWAP_LIMIT = "twap-limit",
-  TWAP_MARKET = "twap-market",
-}
 
 export class Order {
   id: number;
@@ -296,7 +290,7 @@ export class Order {
     this.dstTokenAddress = rawOrder.ask_dstToken;
     this.totalChunks = new BN(rawOrder.ask_srcAmount || 0)
       .div(rawOrder.ask_srcBidAmount || 1) // Avoid division by zero
-      .integerValue(BN.ROUND_FLOOR)
+      .integerValue(BN.ROUND_CEIL)
       .toNumber();
     this.orderType = isMarketOrder ? OrderType.TWAP_MARKET : BN(this.totalChunks).eq(1) ? OrderType.LIMIT : OrderType.TWAP_LIMIT;
     this.isMarketOrder = isMarketOrder;
@@ -309,42 +303,18 @@ export class Order {
 
   public getLimitPrice = (srcTokenDecimals: number, dstTokenDecimals: number) => {
     if (this.isMarketOrder) return;
-    const srcBidAmountUi = amountUiV2(srcTokenDecimals, this.srcBidAmount);
-    const dstMinAmountUi = amountUiV2(dstTokenDecimals, this.dstMinAmount);
+    const srcBidAmountUi = amountUi(srcTokenDecimals, this.srcBidAmount);
+    const dstMinAmountUi = amountUi(dstTokenDecimals, this.dstMinAmount);
     return BN(dstMinAmountUi).div(srcBidAmountUi).toString();
   };
   public getExcecutionPrice = (srcTokenDecimals: number, dstTokenDecimals: number) => {
     if (!BN(this.srcFilledAmount || 0).gt(0) || !BN(this.dstFilledAmount || 0).gt(0)) return;
-    const srcFilledAmountUi = amountUiV2(srcTokenDecimals, this.srcFilledAmount);
-    const dstFilledAmountUi = amountUiV2(dstTokenDecimals, this.dstFilledAmount);
+    const srcFilledAmountUi = amountUi(srcTokenDecimals, this.srcFilledAmount);
+    const dstFilledAmountUi = amountUi(dstTokenDecimals, this.dstFilledAmount);
 
     return BN(dstFilledAmountUi).div(srcFilledAmountUi).toString();
   };
 }
-
-export const getEstimatedDelayBetweenChunksMillis = (config: Config) => {
-  return config.bidDelaySeconds * 1000 * 2;
-};
-
-export const getMinimumDelayMinutes = (config: Config) => {
-  return getEstimatedDelayBetweenChunksMillis(config) / 1000 / 60;
-};
-
-const THE_GRAPH_API = "https://hub.orbs.network/api/apikey/subgraphs/id";
-
-export const THE_GRAPH_ORDERS_API = {
-  1: `${THE_GRAPH_API}/Bf7bvMYcJbDAvYWJmhMpHZ4cpFjqzkhK6GXXEpnPRq6`,
-  56: `${THE_GRAPH_API}/4NfXEi8rreQsnAr4aJ45RLCKgnjcWX46Lbt9SadiCcz6`,
-  137: `${THE_GRAPH_API}/3PyRPWSvDnMowGbeBy7aNsvUkD5ZuxdXQw2RdJq4NdXi`,
-  42161: `${THE_GRAPH_API}/83bpQexEaqBjHaQbKoFTbtvCXuo5RudRkfLgtRUYqo2c`,
-  8453: `${THE_GRAPH_API}/DFhaPQb3HATXkpsWNZw3gydYHehLBVEDiSk4iBdZJyps`,
-  1329: `${THE_GRAPH_API}/5zjzRnURzoddyFSZBw5E5NAM3oBgPq3NasTYbtMk6EL6`,
-};
-
-export const getTheGraphUrl = (chainId?: number) => {
-  if (!chainId) return;
-  return THE_GRAPH_ORDERS_API[chainId as keyof typeof THE_GRAPH_ORDERS_API];
-};
 
 export const getOrders = async ({
   chainId,
@@ -363,32 +333,75 @@ export const getOrders = async ({
 }): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(chainId);
   if (!endpoint) return [];
-  let orders: any = [];
+  let orders = [];
   if (typeof page === "number") {
     orders = await getCreatedOrders({ endpoint, signal, account, exchangeAddress, page, limit });
   } else {
     orders = await getAllCreatedOrders({ endpoint, signal, account, exchangeAddress, limit });
   }
-
   const ids = orders.map((order: any) => order.Contract_id);
   const fills = await getAllFills({ endpoint, signal, ids, chainId });
   const statuses = await getOrderStatuses(ids, endpoint, signal);
   orders = orders.map((rawOrder: any) => {
-    const fill = fills?.find((it: any) => it.TWAP_id === Number(rawOrder.Contract_id));
+    const fill = fills?.find((it) => it.TWAP_id === Number(rawOrder.Contract_id));
     return new Order(rawOrder, fill, statuses?.[rawOrder.Contract_id]);
   });
 
-  return _.orderBy(orders, (o: any) => o.createdAt, "desc");
+  return orderBy(orders, (o: any) => o.createdAt, "desc");
+};
+
+const getOrder = async ({ chainId, id, txHash, signal }: { chainId: number; id?: number; signal?: AbortSignal; txHash?: string }): Promise<Order> => {
+  const endpoint = getTheGraphUrl(chainId);
+  if (!endpoint) {
+    throw new Error("No endpoint found");
+  }
+  const [order] = await getCreatedOrder({ endpoint, signal, id, txHash });
+  const ids = [order.Contract_id];
+  const fills = await getAllFills({ endpoint, signal, ids, chainId });
+
+  const statuses = await getOrderStatuses(ids, endpoint, signal);
+
+  return new Order(order, fills?.[0], statuses[order.Contract_id]);
+};
+
+export const getOrderById = async ({ chainId, id, signal }: { chainId: number; id: number; signal?: AbortSignal }): Promise<Order> => {
+  return getOrder({ chainId, id, signal });
+};
+
+export const getOrderByTxHash = async ({ chainId, txHash, signal }: { chainId: number; txHash: string; signal?: AbortSignal }): Promise<Order> => {
+  return getOrder({ chainId, txHash, signal });
+};
+
+export const getAllOrders = ({
+  chainId,
+  signal,
+  page,
+  limit = 1_000,
+  exchangeAddress,
+}: {
+  signal?: AbortSignal;
+  page?: number;
+  chainId: number;
+  limit?: number;
+  exchangeAddress?: string;
+}) => {
+  return getOrders({
+    chainId,
+    signal,
+    page,
+    limit,
+    exchangeAddress,
+  });
 };
 
 export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
-  const grouped = _.groupBy(orders, "status");
-
+  const grouped = groupBy(orders, "status");
   return {
-    [Status.Open]: grouped[Status.Open] || [],
-    [Status.Completed]: grouped[Status.Completed] || [],
-    [Status.Expired]: grouped[Status.Expired] || [],
-    [Status.Canceled]: grouped[Status.Canceled] || [],
+    [OrderStatus.All]: orders || [],
+    [OrderStatus.Open]: grouped.open || [],
+    [OrderStatus.Completed]: grouped.completed || [],
+    [OrderStatus.Expired]: grouped.expired || [],
+    [OrderStatus.Canceled]: grouped.canceled || [],
   };
 };
 
@@ -450,24 +463,10 @@ export const waitForOrdersLengthUpdate = async (config: Config, currentOrdersLen
   throw new Error("Timeout: Orders length did not update within the allowed attempts");
 };
 
-export const waitForOrdersCancelled = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
-  for (let i = 0; i < 20; i++) {
-    const orders = await getOrders({ exchangeAddress: config.exchangeAddress, account, signal, chainId: config.chainId });
-    const order = orders.find((o) => o.id === orderId);
-    if (order && order.status !== Status.Open) {
-      return orders;
-    }
-    await delay(3_000);
-  }
-};
-
-export function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export interface GroupedOrders {
-  [Status.Open]?: Order[];
-  [Status.Canceled]?: Order[];
-  [Status.Expired]?: Order[];
-  [Status.Completed]?: Order[];
+  [OrderStatus.All]?: Order[];
+  [OrderStatus.Open]?: Order[];
+  [OrderStatus.Canceled]?: Order[];
+  [OrderStatus.Expired]?: Order[];
+  [OrderStatus.Completed]?: Order[];
 }

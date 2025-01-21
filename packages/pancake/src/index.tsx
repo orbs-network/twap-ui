@@ -169,15 +169,20 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
         </Styles.StyledRowFlex>
         <StyledTokenPanelContent disabled={!isSrcToken} onBlur={() => setShowPercent(false)} onFocus={() => setShowPercent(true)}>
           <StyledTokenSelect CustomArrow={MdKeyboardArrowDown} hideArrow={false} isSrc={isSrcToken} onClick={onTokenSelectClick} />
-          <Styles.StyledColumnFlex style={{ flex: 1, gap: 0, alignItems: "flex-end", width: "auto", overflow:'hidden' }}>
+          <Styles.StyledColumnFlex style={{ flex: 1, gap: 0, alignItems: "flex-end", width: "auto", overflow: "hidden" }}>
             <StyledTokenPanelInput dstDecimalScale={7} isSrc={isSrcToken} />
-            <StyledUSD decimalScale={2} isSrc={isSrcToken} hideIfZero={true} emptyUi={<StyledEmptyUSD />} />
+            <TokenPanelUsd isSrc={isSrcToken} />
           </Styles.StyledColumnFlex>
         </StyledTokenPanelContent>
         {isSrcToken && <SrcInputWarning />}
       </StyledTokenPanel>
     </StyledContainerPadding>
   );
+};
+
+const TokenPanelUsd = ({ isSrc }: { isSrc?: boolean }) => {
+  const warning = useSrcInputWarning();
+  return <StyledUSD warning={!isSrc ? 0 : warning ? 1 : 0} decimalScale={2} isSrc={isSrc} hideIfZero={true} emptyUi={<StyledEmptyUSD />} />;
 };
 
 const SrcTokenPercentSelector = ({ show }: { show: boolean }) => {
@@ -213,12 +218,17 @@ const SrcTokenPercentSelector = ({ show }: { show: boolean }) => {
 
 const ChangeTokensOrder = () => {
   const switchTokens = hooks.useSwitchTokens();
+  const FlipButton = useAdapterContext().FlipButton;
 
   return (
     <StyledTokenChange>
-      <button onClick={switchTokens}>
-        <ChangeIcon />
-      </button>
+      {FlipButton ? (
+        <FlipButton onClick={switchTokens} />
+      ) : (
+        <button onClick={switchTokens}>
+          <ChangeIcon />
+        </button>
+      )}
     </StyledTokenChange>
   );
 };
@@ -377,12 +387,19 @@ const TWAP = (props: AdapterProps) => {
   );
 };
 
-const SrcInputWarning = () => {
+const useSrcInputWarning = () => {
   const warning = hooks.useFillWarning();
   const type = warning?.type;
 
   if (type !== "balance" && type !== "min-chunk-size") return null;
 
+  return warning;
+};
+
+const SrcInputWarning = () => {
+  const warning = useSrcInputWarning();
+
+  if (!warning) return null;
   return (
     <Warning variant="error">
       <Styles.StyledText>{warning?.message}</Styles.StyledText>

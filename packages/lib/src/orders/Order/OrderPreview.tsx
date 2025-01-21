@@ -171,9 +171,9 @@ const SyledTokens = styled(StyledColumnFlex)({
 });
 
 const ToggleExpanded = () => {
-  const { expanded, onExpand } = useListOrderContext();
+  const { expanded } = useListOrderContext();
   return (
-    <StyledExpandToggle expanded={expanded ? 1 : 0} onClick={onExpand}>
+    <StyledExpandToggle expanded={expanded ? 1 : 0}>
       <ChevronDown />
     </StyledExpandToggle>
   );
@@ -181,7 +181,7 @@ const ToggleExpanded = () => {
 
 const StyledOrderPreview = styled(StyledRowFlex)({
   justifyContent: "space-between",
-  cursor: "auto!important",
+  cursor: "pointer",
   "@media (max-width: 1200px)": {
     flexDirection: "column",
     gap: 11,

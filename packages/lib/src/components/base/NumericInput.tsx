@@ -74,6 +74,7 @@ function NumericInput({
           decimalSeparator="."
           customInput={StyledInput}
           type="text"
+          inputMode="decimal"
           id={id}
           min={minAmount}
           onValueChange={(values, _sourceInfo) => {
