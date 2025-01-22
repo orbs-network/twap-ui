@@ -218,7 +218,15 @@ export interface TwapLibProps extends LibProps {
   parsedTokens?: TokenData[];
   onCancelOrderSuccess?: (orderId: number) => void;
   onCancelOrderFailure?: (orderId: number) => void;
+  Input?: FC<InputProps>;
 }
+
+export type InputProps = {
+  loading?: boolean;
+  disabled?: boolean;
+  value: string;
+  onChange: (value: string) => void;
+};
 
 export type Token = TokenData;
 

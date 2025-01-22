@@ -1,3 +1,4 @@
+import { InputProps } from "@orbs-network/twap-ui";
 import { TWAPProps } from "@orbs-network/twap-ui";
 import { createContext, FC, JSXElementConstructor, ReactNode, useContext } from "react";
 
@@ -21,6 +22,7 @@ export interface AdapterProps extends TWAPProps {
     isOpen: boolean;
     setIsOpen: (value: boolean) => void;
   }>;
+  Input?: FC<InputProps>;
 }
 
 export type ToastProps = { title: string; message: ReactNode; autoCloseMillis?: number; variant: "success" | "warning" | "error" | "info" };

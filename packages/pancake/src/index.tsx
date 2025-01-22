@@ -344,6 +344,7 @@ const TwapPanel = memo(() => {
         isLimitPanel={context.limit}
         parsedTokens={parsedTokens}
         onCancelOrderSuccess={onCancelOrderSuccess}
+        Input={context.Input}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />

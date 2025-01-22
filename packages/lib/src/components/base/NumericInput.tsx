@@ -50,41 +50,48 @@ function NumericInput({
 }: Props) {
   const inputValue = value || minAmount || "";
 
-  const { inputPlaceholder, input } = useTwapContext().uiPreferences;
+  const {
+    uiPreferences: { inputPlaceholder },
+    Input,
+  } = useTwapContext();
 
   const _placeholder = placeholder || inputPlaceholder || "0.0";
 
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>
       {loading && <InputLoader />}
-      <StyledFlex style={{ opacity: loading ? 0 : 1 }}>
-        <NumericFormat
-          allowNegative={allowNegative}
-          disabled={disabled}
-          decimalScale={decimalScale}
-          onBlur={onBlur}
-          onFocus={onFocus}
-          placeholder={_placeholder}
-          isAllowed={(values) => {
-            const { floatValue = 0 } = values;
-            return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
-          }}
-          prefix={prefix ? `${prefix} ` : ""}
-          value={disabled && value === "0" ? "" : inputValue}
-          decimalSeparator="."
-          customInput={StyledInput}
-          type="text"
-          inputMode="decimal"
-          id={id}
-          min={minAmount}
-          onValueChange={(values, _sourceInfo) => {
-            if (_sourceInfo.source !== "event") {
-              return;
-            }
+      <StyledFlex style={{ opacity: loading ? 0 : 1, pointerEvents: disabled ? 'none' : 'auto'}}>
+        {Input ? (
+          <Input disabled={false} onChange={onChange} value={inputValue.toString() || ""} />
+        ) : (
+          <NumericFormat
+            allowNegative={allowNegative}
+            disabled={false}
+            decimalScale={decimalScale}
+            onBlur={onBlur}
+            onFocus={onFocus}
+            placeholder={_placeholder}
+            isAllowed={(values) => {
+              const { floatValue = 0 } = values;
+              return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
+            }}
+            prefix={prefix ? `${prefix} ` : ""}
+            value={disabled && value === "0" ? "" : inputValue}
+            decimalSeparator="."
+            customInput={StyledInput}
+            type="text"
+            inputMode="decimal"
+            id={id}
+            min={minAmount}
+            onValueChange={(values, _sourceInfo) => {
+              if (_sourceInfo.source !== "event") {
+                return;
+              }
 
-            onChange(values.value === "." ? "0." : values.value);
-          }}
-        />
+              onChange(values.value === "." ? "0." : values.value);
+            }}
+          />
+        )}
       </StyledFlex>
     </StyledContainer>
   );

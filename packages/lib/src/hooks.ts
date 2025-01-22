@@ -1598,7 +1598,7 @@ export const getDecimals = (value?: string | number, decimalScale = 0) => {
     return leadingZerosCount + (decimalScale || 5);
   };
 
-  let decimals = getDecimalsUnder1(val.toString());
+  let decimals = Math.min(getDecimalsUnder1(val.toString()), 9);
 
   if (val.gte(1) && decimalScale) {
     return decimalScale;

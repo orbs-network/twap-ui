@@ -755,6 +755,9 @@ export const StyledBackBody = styled("div")({
     top: 3,
     left: 7,
   },
+  [`@media (max-width: ${MOBILE}px)`]: {
+    top: 13,
+  },
 });
 
 export const StyledChunksInput = styled(Components.ChunksInput)({
