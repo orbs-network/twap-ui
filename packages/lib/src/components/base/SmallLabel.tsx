@@ -15,9 +15,7 @@ function SmallLabel({ children, style, loading = false, className = "" }: { chil
       )}
 
       {!loading && (
-        <Fade in={!loading}>
-          <StyledChildren>{children}</StyledChildren>
-        </Fade>
+        <>{children}</>
       )}
     </StyledContainer>
   );
@@ -25,10 +23,6 @@ function SmallLabel({ children, style, loading = false, className = "" }: { chil
 
 export default SmallLabel;
 
-const StyledChildren = styled(StyledOneLineText)({
-  fontSize: "inherit",
-  fontFamily: "inherit",
-});
 
 const StyledLoader = styled(Box)({
   width: 50,

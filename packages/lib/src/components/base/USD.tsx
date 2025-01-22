@@ -2,7 +2,7 @@ import { styled } from "@mui/material";
 import React from "react";
 import { useTwapContext } from "../../context";
 import { formatWithDecimals, useFormatNumber } from "../../hooks";
-import { textOverflow } from "../../styles";
+import { StyledText, textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
 import Tooltip from "./Tooltip";
 
@@ -37,14 +37,13 @@ const USD = ({
   return (
     <StyledLabel loading={isLoading} className={`twap-usd ${className} ${value === "0" ? "twap-usd-zero" : ""} `}>
       {value == 0 && emptyUi ? (
-        <>{_emptyUi}</>
+        <StyledText>{_emptyUi}</StyledText>
       ) : onlyValue ? (
         <>{formattedValue}</>
       ) : (
         <>
-          {_prefix}
-          <>{value && Number(value) < 0.01 ? "<0.01" : formattedValue || "0"}</>
-          {_suffix}
+          <StyledOverflow>{`${_prefix}`}{value && Number(value) < 0.01 ? "<0.01" : formattedValue || "0"}</StyledOverflow>
+          <StyledText>{`${_suffix}`}</StyledText>
         </>
       )}
     </StyledLabel>
@@ -53,8 +52,21 @@ const USD = ({
 
 export default USD;
 
+
+
+const StyledOverflow = styled(StyledText)({
+    whiteSpace: "nowrap",
+    textOverflow:'ellipsis',
+    overflow: "hidden",
+    flex:1
+})
+
 const StyledLabel = styled(SmallLabel)({
+  display: "flex",
+  alignItems: "center",
+  flexDirection: "row",
   overflow: "hidden",
   ...textOverflow,
   minWidth: "0px",
+  gap: 3,
 });

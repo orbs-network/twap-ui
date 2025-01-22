@@ -104,7 +104,9 @@ export const configureStyles = (theme: Theme) => {
     ".twap-token-logo": {
       border: `1px solid ${styles.darkMode ? "rgba(255,255,255, 0.1)" : "rgb(8, 6, 11, 0.3)"}`,
     },
-
+    ".twap-time-selector": {
+      gap:'4px!important',
+    },
     ".twap-time-selector-selected": {
       background: "unset",
       border: "none",
@@ -372,6 +374,7 @@ export const configureStyles = (theme: Theme) => {
     },
 
     ".twap-input": {
+      overflow: "hidden",
       input: {
         color: styles.primaryTextColor,
         fontSize: 16,
@@ -589,6 +592,12 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
         opacity: 0.7,
       },
     },
+    [`@media (max-width: ${MOBILE}px)`]: {
+      ".twap-token-logo": {
+        width: 32,
+        height: 32,
+      },
+    },
   };
 });
 export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
@@ -756,7 +765,7 @@ export const StyledBackBody = styled("div")({
     left: 7,
   },
   [`@media (max-width: ${MOBILE}px)`]: {
-    top: 13,
+    top: 14,
   },
 });
 
@@ -1078,6 +1087,7 @@ export const StyledOrdersTab = styled(Box)<{ selected: number }>(({ selected, th
     [`@media (max-width:${MOBILE}px)`]: {
       width: "50%",
       padding: "0px 10px",
+      fontSize: 13,
     },
   };
 });
@@ -1116,6 +1126,7 @@ export const StyledPricePanelInputRight = styled(Styles.StyledColumnFlex)({
   alignItems: "flex-end",
   flex: 1,
   gap: 0,
+  overflow: "hidden",
 });
 
 export const StyledWarning = styled(Styles.StyledRowFlex)<{ variant: WarningVariant }>(({ theme, variant }) => {
@@ -1332,16 +1343,23 @@ export const StyledPricePanelInput = styled(StyledPriceCard)(() => {
   return {
     display: "flex",
     flexDirection: "row",
-    width: "auto",
-    flex: 1,
+    width: "calc(100% - 166px)",
     gap: 15,
     alignItems: "center",
+    ".twap-usd": {
+      maxWidth: 140,
+    },
     ".twap-input": {
+      overflow: "hidden",
       input: {
         fontSize: 24,
       },
     },
     [`@media (max-width: ${MOBILE}px)`]: {
+      width: "calc(100% - 136px)",
+      ".twap-usd": {
+        maxWidth: 100,
+      },
       ".twap-input": {
         input: {
           fontSize: 16,
@@ -1388,7 +1406,7 @@ export const StyledPricePanelPercent = styled(StyledPriceCard)(({ theme }) => {
   const styles = baseStyles(theme);
   return {
     display: "flex",
-    width: "43%",
+    width: 156,
     flexDirection: "row",
     gap: 15,
     alignItems: "center",
@@ -1417,7 +1435,7 @@ export const StyledPricePanelPercent = styled(StyledPriceCard)(({ theme }) => {
       },
     },
     [`@media (max-width: ${MOBILE}px)`]: {
-      width: "40%",
+      width: 126,
       ".twap-input": {
         input: {
           fontSize: 16,
@@ -1487,6 +1505,9 @@ export const StyledDuration = styled(StyledDurationAndTradeInterval)(() => {
 
 export const StyledTokenPanelContent = styled(InputContainer)({
   width: "100%",
+  ".twap-usd": {
+    maxWidth: 200,
+  },
   ".twap-input-container-content": {
     gap: 20,
     height: 80,
@@ -1500,6 +1521,14 @@ export const StyledTokenPanelContent = styled(InputContainer)({
       flex: "unset",
     },
   },
+  [`@media (max-width: ${MOBILE}px)`]: {
+    ".twap-usd": {
+      maxWidth: 140,
+    },
+    ".twap-input-container-content": {
+      gap: 10,
+    }
+  }
 });
 
 const lightBoxStyles = (theme: Theme) => {

@@ -60,7 +60,7 @@ function NumericInput({
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>
       {loading && <InputLoader />}
-      <StyledFlex style={{ opacity: loading ? 0 : 1, pointerEvents: disabled ? 'none' : 'auto'}}>
+      <StyledFlex style={{ opacity: loading ? 0 : 1, pointerEvents: disabled ? "none" : "auto" }}>
         {Input ? (
           <Input disabled={false} onChange={onChange} value={inputValue.toString() || ""} />
         ) : (
