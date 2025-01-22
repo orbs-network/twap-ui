@@ -1,3 +1,4 @@
+import React from "react";
 import { styled } from "styled-components";
 import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 import { SelectedOrder } from "./SelectedOrder";
@@ -41,7 +42,8 @@ const OrderHistoryButton = ({ onClick, className = "" }: { onClick: () => void; 
 
 export const OrderHistory = ({ className = "", children, isOpen }: { className?: string; children: ReactNode; isOpen: boolean }) => {
   const { account, isWrongChain } = useTwapContext();
-
+  console.log( account, isWrongChain);
+  
   if (!account || isWrongChain) return null;
 
   return (

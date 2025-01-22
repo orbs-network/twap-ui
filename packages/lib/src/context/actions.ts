@@ -25,7 +25,10 @@ export const useSwitchNativeToWrapped = () => {
 
 // Hook for handling modal close
 const useSwapModalActions = () => {
-  const { actionHandlers, parsedSrcToken, parsedDstToken } = useTwapContextUI();
+  const {
+    actionHandlers,
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
   const { updateState, state } = useTwapContext();
   const nativeToWrapped = useSwitchNativeToWrapped();
   const srcAmount = useSrcAmount().amountUi;
@@ -60,15 +63,15 @@ const useSwapModalActions = () => {
     updateState({
       showConfirmation: true,
       swapData: {
-        srcToken: parsedSrcToken,
-        dstToken: parsedDstToken,
+        srcToken,
+        dstToken: destToken,
         srcAmount: srcAmount,
         outAmount: outAmount,
         srcAmountusd,
         outAmountusd,
       },
     });
-  }, [updateState, parsedSrcToken, parsedDstToken, srcAmount, outAmount, srcAmountusd, outAmountusd]);
+  }, [updateState, srcToken, destToken, srcAmount, outAmount, srcAmountusd, outAmountusd]);
 
   return {
     onClose,

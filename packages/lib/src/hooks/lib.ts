@@ -62,7 +62,9 @@ const getUsdAmount = (amount?: string, usd?: string | number) => {
 export const useUsdAmount = () => {
   const { amount: srcAmount } = useSrcAmount();
   const { dstUsd, srcUsd } = useTwapContext();
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
 
   const dstAmount = useOutAmount().amount;
 
@@ -76,7 +78,7 @@ export const useUsdAmount = () => {
 
   return {
     srcUsd: useAmountUi(srcToken?.decimals, srcUsdAmount),
-    dstUsd: useAmountUi(dstToken?.decimals, dstUsdAmount),
+    dstUsd: useAmountUi(destToken?.decimals, dstUsdAmount),
   };
 };
 
@@ -95,7 +97,9 @@ const useAmountUi = (decimals?: number, amount?: string) => {
 
 export const useSrcChunkAmountUsd = () => {
   const { srcUsd } = useTwapContext();
-  const { parsedSrcToken: srcToken } = useTwapContextUI();
+  const {
+    state: { srcToken },
+  } = useTwapContextUI();
   const srcChunksAmount = useSrcChunkAmount().amount;
 
   const result = BN(srcChunksAmount || "0")
@@ -110,8 +114,10 @@ export const useChunks = () => {
 };
 
 export const useToken = (isSrc?: boolean) => {
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
-  return isSrc ? srcToken : dstToken;
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
+  return isSrc ? srcToken : destToken;
 };
 
 export const useMinChunkSizeUsd = () => {
@@ -211,21 +217,25 @@ export const useSrcChunkAmount = () => {
   };
 };
 export const useShouldOnlyWrap = () => {
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
   const network = useNetwork();
 
   return useMemo(() => {
-    return isNativeAddress(srcToken?.address || "") && eqIgnoreCase(dstToken?.address || "", network?.wToken.address || "");
-  }, [srcToken, dstToken, network]);
+    return isNativeAddress(srcToken?.address || "") && eqIgnoreCase(destToken?.address || "", network?.wToken.address || "");
+  }, [srcToken, destToken, network]);
 };
 
 export const useShouldUnwrap = () => {
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
   const network = useNetwork();
 
   return useMemo(() => {
-    return eqIgnoreCase(srcToken?.address || "", network?.wToken.address || "") && isNativeAddress(dstToken?.address || "");
-  }, [srcToken, dstToken, network]);
+    return eqIgnoreCase(srcToken?.address || "", network?.wToken.address || "") && isNativeAddress(destToken?.address || "");
+  }, [srcToken, destToken, network]);
 };
 
 export const useSwitchTokens = () => {
@@ -244,10 +254,12 @@ const isEqual = (tokenA?: any, tokenB?: any) => {
 export const useTokenSelect = () => {
   const switchTokens = useSwitchTokens();
   const { onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
   return useCallback(
     ({ isSrc, token }: { isSrc: boolean; token: any }) => {
-      if (isSrc && isEqual(token, dstToken)) {
+      if (isSrc && isEqual(token, destToken)) {
         switchTokens?.();
         return;
       }
@@ -263,7 +275,7 @@ export const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, destToken, switchTokens],
   );
 };
 
@@ -271,9 +283,11 @@ export const useTokenSelect = () => {
 
 export const useFeeOnTransferWarning = () => {
   const { translations } = useTwapContext();
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
   const { data: srcTokenFeeOnTransfer } = query.useFeeOnTransfer(srcToken?.address);
-  const { data: dstTokenFeeOnTransfer } = query.useFeeOnTransfer(dstToken?.address);
+  const { data: dstTokenFeeOnTransfer } = query.useFeeOnTransfer(destToken?.address);
 
   return useMemo(() => {
     if (srcTokenFeeOnTransfer?.hasFeeOnTranfer || dstTokenFeeOnTransfer?.hasFeeOnTranfer) {
@@ -327,15 +341,13 @@ export const getLowLimitPriceWarning = (isLimitPanel?: boolean, priceDeltaPercen
 export const useLowPriceWarning = () => {
   const { translations: t } = useTwapContext();
   const {
-    state: { isInvertedLimitPrice },
+    state: { isInvertedLimitPrice, srcToken, destToken },
     isLimitPanel,
-    parsedSrcToken,
-    parsedDstToken,
     derivedValues: { priceDiffFromMarket },
   } = useTwapContextUI();
 
   return useMemo(() => {
-    if (!parsedSrcToken || !parsedDstToken) {
+    if (!srcToken || !destToken) {
       return undefined;
     }
 
@@ -344,7 +356,7 @@ export const useLowPriceWarning = () => {
     if (!warning) return;
     const title = isInvertedLimitPrice ? t.limitPriceWarningTitleInverted : t.limitPriceWarningTitle;
     const subtitle = isInvertedLimitPrice ? t.limitPriceWarningSubtileInverted : t.limitPriceWarningSubtitle;
-    const token = isInvertedLimitPrice ? parsedDstToken : parsedSrcToken;
+    const token = isInvertedLimitPrice ? destToken : srcToken;
     const percent = BN(priceDiffFromMarket || 0)
       .abs()
       .toString();
@@ -352,7 +364,7 @@ export const useLowPriceWarning = () => {
       title: title.replace("{symbol}", token.symbol),
       subTitle: subtitle.replace("{percent}", percent),
     };
-  }, [isInvertedLimitPrice, isLimitPanel, priceDiffFromMarket, parsedSrcToken, parsedDstToken, t]);
+  }, [isInvertedLimitPrice, isLimitPanel, priceDiffFromMarket, srcToken, destToken, t]);
 };
 
 export const useSetLimitPrice = () => {
@@ -443,7 +455,9 @@ export const useDuration = () => {
 };
 
 export const useShouldWrap = () => {
-  const { parsedSrcToken: srcToken } = useTwapContextUI();
+  const {
+    state: { srcToken },
+  } = useTwapContextUI();
 
   return useMemo(() => {
     return isNativeAddress(srcToken?.address || "");
@@ -471,7 +485,10 @@ export const useSwapPrice = () => {
 };
 
 export const useMaxSrcInputAmount = () => {
-  const { parsedSrcToken: srcToken, sdk } = useTwapContextUI();
+  const {
+    state: { srcToken },
+    sdk,
+  } = useTwapContextUI();
   const srcBalance = useSrcBalance().data?.toString();
 
   return useMemo(() => {
@@ -483,21 +500,24 @@ export const useMaxSrcInputAmount = () => {
 };
 
 export const useOnSrcAmountPercent = () => {
-  const { parsedSrcToken, actionHandlers } = useTwapContextUI();
+  const {
+    state: { srcToken },
+    actionHandlers,
+  } = useTwapContextUI();
 
   const maxAmount = useMaxSrcInputAmount();
   const srcBalance = useSrcBalance().data?.toString();
   return useCallback(
     (percent: number) => {
-      if (!parsedSrcToken || !srcBalance) {
+      if (!srcToken || !srcBalance) {
         return;
       }
 
       //max amount will be greater than zero only if the src token is native token
       const _maxAmount = maxAmount && percent === 1 && BN(maxAmount).gt(0) ? maxAmount : undefined;
-      const value = amountUiV2(parsedSrcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
+      const value = amountUiV2(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       actionHandlers.setSrcAmount(value);
     },
-    [maxAmount, srcBalance, actionHandlers.setSrcAmount, parsedSrcToken],
+    [maxAmount, srcBalance, actionHandlers.setSrcAmount, srcToken],
   );
 };

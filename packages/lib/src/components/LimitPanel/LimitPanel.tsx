@@ -256,10 +256,12 @@ const ZeroButton = () => {
 };
 
 const TokenSelect = () => {
-  const { state, parsedSrcToken, parsedDstToken } = useTwapContextUI();
-  const inverted = state.isInvertedLimitPrice;
+  const {
+    state: { srcToken, destToken, isInvertedLimitPrice },
+  } = useTwapContextUI();
+  const inverted = isInvertedLimitPrice;
   const Components = useLimitPanelContext().Components;
-  const token = inverted ? parsedSrcToken : parsedDstToken;
+  const token = inverted ? srcToken : destToken;
   const { onDstSelect, onSrcSelect } = useLimitPanelContext();
   if (Components?.TokenSelect) {
     return <Components.TokenSelect isSrcToken={!!inverted} token={token} onClick={inverted ? onSrcSelect : onDstSelect} />;
@@ -281,10 +283,10 @@ const Title = () => {
   const { onDstSelect, onSrcSelect } = useLimitPanelContext();
   const Components = useLimitPanelContext().Components;
   const { translations: t } = useTwapContext();
-  const { state, parsedSrcToken, parsedDstToken } = useTwapContextUI();
+  const { state } = useTwapContextUI();
 
-  const { isInvertedLimitPrice: inverted } = state;
-  const token = inverted ? parsedDstToken : parsedSrcToken;
+  const { isInvertedLimitPrice: inverted, srcToken, destToken } = state;
+  const token = inverted ? destToken : srcToken;
 
   if (Components?.Title) {
     return <Components.Title isSrcToken={!inverted} textLeft={t.swapOne} textRight={t.isWorth} token={token} onTokenClick={inverted ? onDstSelect : onSrcSelect} />;

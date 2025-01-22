@@ -56,9 +56,11 @@ const TokenChange = () => {
 };
 
 const TokenSelectButton = ({ isSrc, onClick }: { isSrc?: boolean; onClick: () => void }) => {
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
 
-  const notSelected = (isSrc && !srcToken) || (!isSrc && !dstToken);
+  const notSelected = (isSrc && !srcToken) || (!isSrc && !destToken);
   return (
     <StyledTokenSelect onClick={onClick}>
       <Components.TokenLogo isSrc={isSrc} />

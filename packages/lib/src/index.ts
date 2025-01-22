@@ -14,5 +14,6 @@ export * from "./components/LimitPanel/hooks";
 export * from "./context/actions";
 export * from "./consts";
 export { Widget } from "./widget/Widget";
+export { type TokensListModalProps } from "./widget/types";
 
 export { Configs };

@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { ChunkSelector, Labels } from "../components";
-import { useShouldWrapOrUnwrapOnly } from "../hooks";
+import { useShouldWrapOrUnwrapOnly } from "../hooks/lib";
 
 export const TradesAmountInput = ({ children }: { children: ReactNode }) => {
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();

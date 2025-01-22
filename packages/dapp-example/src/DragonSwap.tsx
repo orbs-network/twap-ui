@@ -8,22 +8,10 @@ import MuiTooltip from "@mui/material/Tooltip";
 import { SelectorOption, TokenListItem } from "./types";
 import { mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
-import { zeroAddress } from "@orbs-network/twap-sdk";
 import { network } from "@defi.org/web3-candies";
 
 const config = Configs.SushiArb;
 
-const getLogo = (address: string) => {
-  return `https://raw.githubusercontent.com/dragonswap-app/assets/main/logos/${address}/logo.png`;
-};
-
-// const nativeToken = {
-//   address: zeroAddress,
-//   decimals: 18,
-//   name: "SEI",
-//   symbol: "SEI",
-//   logoUrl: getLogo("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"),
-// };
 export const useDappTokens = () => {
   const isBase = config?.chainId === Configs.SushiBase.chainId;
   const { chainId } = useWeb3React();
@@ -95,27 +83,18 @@ const parseList = (rawList?: any): TokenListItem[] => {
   });
 };
 
-const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNode; onSelect: (value: any) => void; selected: any }) => {
+const TokenSelectModal = ({ isOpen, onSelect, onClose, selected }: { isOpen: boolean; onClose: () => void; onSelect: (value: any) => void; selected: any }) => {
   const { data: baseAssets } = useDappTokens();
-  const [open, setOpen] = useState(false);
   const { isDarkTheme } = useTheme();
   const tokensListSize = size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
-  const _onSelect = (value: any) => {
-    setOpen(false);
-    onSelect(value);
-  };
-
   return (
-    <>
-      <Popup isOpen={open} onClose={() => setOpen(false)}>
-        <StyledSushiModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
-          <TokensList tokens={parsedList} onClick={_onSelect} />
-        </StyledSushiModalContent>
-      </Popup>
-      <div onClick={() => setOpen(true)}>{children}</div>
-    </>
+    <Popup isOpen={isOpen} onClose={onClose}>
+      <StyledSushiModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
+        <TokensList tokens={parsedList} onClick={onSelect} />
+      </StyledSushiModalContent>
+    </Popup>
   );
 };
 
@@ -164,15 +143,14 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       setFromToken(dappTokens?.[1]);
     }
     if (!toToken) {
-      setToToken(dappTokens?.[2]);
+      setToToken(dappTokens?.[3]);
     }
-  }, [dappTokens, toToken]);
+  }, [dappTokens, toToken, fromToken]);
 
   const onSwitchTokens = () => {
     setFromToken(toToken);
     setToToken(fromToken);
   };
-  
 
   return (
     <TWAP
@@ -233,7 +211,7 @@ const dapp: Dapp = {
   Component: DappComponent,
   logo: "https://avatars.githubusercontent.com/u/157521400?s=200&v=4",
   configs: [config],
-  path: 'dragonswap',
+  path: "dragonswap",
 };
 
 export default dapp;

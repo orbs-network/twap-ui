@@ -12,21 +12,21 @@ export const getPriceDiffFromMarket = (limitPrice?: string, marketPrice?: string
   return BN(from).div(to).minus(1).multipliedBy(100).decimalPlaces(2, BN.ROUND_HALF_UP).toFixed();
 };
 
-export const useDerivedSwapValues = (sdk: SDK.TwapSDK, state: State, parsedSrcToken?: Token, parsedDstToken?: Token, isLimitPanel?: boolean) => {
+export const useDerivedSwapValues = (sdk: SDK.TwapSDK, state: State, isLimitPanel?: boolean) => {
   const price = useMemo(() => {
     if (state.typedPrice === undefined || state.isMarketOrder || !state.marketPrice) return state.marketPrice;
     const result = state.isInvertedLimitPrice ? BN(1).div(state.typedPrice).toString() : state.typedPrice;
-    return safeValue(toWeiAmount(parsedDstToken?.decimals, result));
-  }, [state.typedPrice, state.isMarketOrder, state.marketPrice, state.isInvertedLimitPrice, parsedDstToken?.decimals]);
+    return safeValue(toWeiAmount(state.destToken?.decimals, result));
+  }, [state.typedPrice, state.isMarketOrder, state.marketPrice, state.isInvertedLimitPrice, state.destToken?.decimals]);
 
   return useMemo(() => {
-    const srcAmount = safeValue(toWeiAmount(parsedSrcToken?.decimals, state.typedSrcAmount));
+    const srcAmount = safeValue(toWeiAmount(state.srcToken?.decimals, state.typedSrcAmount));
     const isMarketOrder = state.isMarketOrder && !isLimitPanel;
     const data = sdk.derivedSwapValues({
       oneSrcTokenUsd: state.oneSrcTokenUsd,
       srcAmount,
-      srcDecimals: parsedSrcToken?.decimals,
-      destDecimals: parsedDstToken?.decimals,
+      srcDecimals: state.srcToken?.decimals,
+      destDecimals: state.destToken?.decimals,
       customChunks: state.typedChunks,
       isLimitPanel,
       customFillDelay: state.typedFillDelay,
@@ -42,23 +42,23 @@ export const useDerivedSwapValues = (sdk: SDK.TwapSDK, state: State, parsedSrcTo
       deadline: deadline,
       fillDelay: data.fillDelay,
       srcAmount,
-      srcTokenAddress: SDK.isNativeAddress(parsedSrcToken?.address) ? wToken?.address || "" : parsedSrcToken?.address || "",
-      destTokenAddress: parsedDstToken?.address || "",
+      srcTokenAddress: SDK.isNativeAddress(state.srcToken?.address) ? wToken?.address || "" : state.srcToken?.address || "",
+      destTokenAddress: state.destToken?.address || "",
     });
 
     const priceDiffFromMarket = getPriceDiffFromMarket(price, state.marketPrice, state.isInvertedLimitPrice);
     return {
       ...data,
       price,
-      priceUI: toAmountUi(parsedDstToken?.decimals, price),
+      priceUI: toAmountUi(state.destToken?.decimals, price),
       srcAmount,
       priceDiffFromMarket,
-      srcChunksAmountUI: toAmountUi(parsedSrcToken?.decimals, data.srcChunkAmount),
-      destTokenMinAmountOutUI: toAmountUi(parsedDstToken?.decimals, data.destTokenMinAmount),
-      destTokenAmountUI: toAmountUi(parsedDstToken?.decimals, data.destTokenAmount),
+      srcChunksAmountUI: toAmountUi(state.srcToken?.decimals, data.srcChunkAmount),
+      destTokenMinAmountOutUI: toAmountUi(state.destToken?.decimals, data.destTokenMinAmount),
+      destTokenAmountUI: toAmountUi(state.destToken?.decimals, data.destTokenAmount),
       deadline: sdk.orderDeadline(state.currentTime, data.duration),
       createOrderArgs,
       isMarketOrder,
     };
-  }, [state, parsedSrcToken, parsedDstToken, sdk, isLimitPanel, state.oneSrcTokenUsd, state.currentTime, price]);
+  }, [state, sdk, isLimitPanel, state.oneSrcTokenUsd, state.currentTime, price]);
 };

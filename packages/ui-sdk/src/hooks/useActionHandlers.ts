@@ -4,7 +4,7 @@ import * as SDK from "@orbs-network/twap-sdk";
 import { Action, ActionType, State, Token } from "../types";
 import { toAmountUi } from "../utils";
 
-export const useActionsHandlers = (state: State, dispatch: Dispatch<Action>, parsedDstToken?: Token) => {
+export const useActionsHandlers = (state: State, dispatch: Dispatch<Action>) => {
   const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
 
   const onInvertPrice = () => {
@@ -28,7 +28,7 @@ export const useActionsHandlers = (state: State, dispatch: Dispatch<Action>, par
         .div(100)
         .plus(1)
         .toString();
-      let price = toAmountUi(parsedDstToken?.decimals, state.marketPrice);
+      let price = toAmountUi(state.destToken?.decimals, state.marketPrice);
 
       if (state.isInvertedLimitPrice) {
         price = BN(1)
@@ -41,7 +41,7 @@ export const useActionsHandlers = (state: State, dispatch: Dispatch<Action>, par
         .toString();
       updateState({ typedPrice: BN(value).decimalPlaces(6).toString() });
     },
-    [parsedDstToken, state.isInvertedLimitPrice, state.marketPrice, updateState],
+    [state.destToken, state.isInvertedLimitPrice, state.marketPrice, updateState],
   );
 
   return {
@@ -53,8 +53,8 @@ export const useActionsHandlers = (state: State, dispatch: Dispatch<Action>, par
     setIsInvertedLimitPrice: useCallback((isInvertedLimitPrice: boolean) => updateState({ isInvertedLimitPrice }), [updateState]),
     setIsMarketOrder: useCallback((isMarketOrder: boolean) => updateState({ isMarketOrder }), [updateState]),
     setMarketPrice: useCallback((marketPrice: string) => updateState({ marketPrice }), [updateState]),
-    setSrcToken: useCallback((rawSrcToken: any) => updateState({ rawSrcToken }), [updateState]),
-    setDstToken: useCallback((rawDstToken: any) => updateState({ rawDstToken }), [updateState]),
+    setSrcToken: useCallback((srcToken?: Token) => updateState({ srcToken }), [updateState]),
+    setDstToken: useCallback((destToken?: Token) => updateState({ destToken }), [updateState]),
     setOneSrcTokenUsd: useCallback((oneSrcTokenUsd: number) => updateState({ oneSrcTokenUsd }), [updateState]),
     setCurrentTime: useCallback((currentTime: number) => updateState({ currentTime }), [updateState]),
     setLimitPricePercent: useCallback((limitPricePercent?: string) => updateState({ limitPricePercent }), [updateState]),

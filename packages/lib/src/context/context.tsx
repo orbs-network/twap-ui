@@ -47,9 +47,7 @@ const WrappedTwap = (props: TwapLibProps) => {
 };
 
 const Panel = (props: TwapLibProps) => {
-  const { actionHandlers, parsedSrcToken, parsedDstToken } = useTwapContextUI();
-  query.useFeeOnTransfer(parsedSrcToken?.address);
-  query.useFeeOnTransfer(parsedDstToken?.address);
+  const { actionHandlers } = useTwapContextUI();
   query.useAllowance();
 
   useEffect(() => {

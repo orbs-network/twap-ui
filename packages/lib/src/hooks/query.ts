@@ -109,7 +109,10 @@ export const useGasPrice = () => {
 
 const useAllowance = () => {
   const { account } = useTwapContext();
-  const { parsedSrcToken: srcToken, sdk } = useTwapContextUI();
+  const {
+    state: { srcToken },
+    sdk,
+  } = useTwapContextUI();
 
   const srcAmount = useSrcAmount().amount;
   const getHasAllowance = useGetHasAllowance();

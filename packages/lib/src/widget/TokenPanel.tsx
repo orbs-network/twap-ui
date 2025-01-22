@@ -1,9 +1,10 @@
-import { createContext, ReactNode, useCallback, useContext, useState } from "react";
+import React, { createContext, ReactNode, useCallback, useContext, useState } from "react";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
-import { useAmountUi, useDstBalance, useFormatNumberV2, useSrcBalance, useUsdAmount } from "../hooks";
+import { useAmountUi, useDstBalance, useFormatNumberV2, useSrcBalance } from "../hooks/hooks";
 import { TokenLogo } from "../components/base";
 import { usePanelContext } from "./context";
 import { TokenPanelInput } from "../components";
+import { useUsdAmount } from "../hooks";
 
 const Context = createContext({} as { isSrcToken: boolean });
 
@@ -18,9 +19,11 @@ const TokenInput = ({ placeholder = "", className = "" }: { placeholder?: string
 
 const TokenPanelBalance = ({ decimalScale = 4 }: { decimalScale?: number }) => {
   const { isSrcToken } = useContext(Context);
-  const { parsedSrcToken, parsedDstToken } = useTwapContextUI();
-  const srcBalance = useAmountUi(parsedSrcToken?.decimals, useSrcBalance().data?.toString());
-  const dstBalance = useAmountUi(parsedDstToken?.decimals, useDstBalance().data?.toString());
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
+  const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
+  const dstBalance = useAmountUi(destToken?.decimals, useDstBalance().data?.toString());
   const srcBalanceF = useFormatNumberV2({ value: isSrcToken ? srcBalance : dstBalance, decimalScale });
 
   return <>{srcBalanceF}</>;
@@ -35,24 +38,19 @@ const TokenPanelUsd = ({ decimalScale = 2 }: { decimalScale?: number }) => {
   return <>{usd}</>;
 };
 
-const TokenSelect = ({ className = "" }: { className?: string }) => {
+const TokenSelect = ({ className = "", onClick }: { className?: string; onClick?: () => void }) => {
   const { isSrcToken } = useContext(Context);
-  const [isOpen, setIsOpen] = useState(false);
-  const TokensListModal = usePanelContext().components.TokensListModal;
-  const { parsedSrcToken, parsedDstToken } = useTwapContextUI();
-  console.log({parsedSrcToken});
-  
-  const onClose = useCallback(() => setIsOpen(false), []);
-  const onOpen = useCallback(() => setIsOpen(true), []);
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
 
-  const token = isSrcToken ? parsedSrcToken : parsedDstToken;
+  const token = isSrcToken ? srcToken : destToken;
 
   return (
     <>
-      <TokensListModal onClose={onClose} isSrcToken={isSrcToken} isOpen={isOpen} />
-      <div className={className} onClick={onOpen}>
+      <div className={className} onClick={onClick}>
         <p>{token?.symbol}</p>
-        <TokenLogo logo={parsedSrcToken?.logoUrl} />
+        <TokenLogo logo={token?.logoUrl} />
       </div>
     </>
   );

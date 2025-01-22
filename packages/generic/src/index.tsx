@@ -1,3 +1,4 @@
+import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import {
   Components,
   TWAPTokenSelectProps,
@@ -19,8 +20,9 @@ import {
   size,
   getNetwork,
   Widget,
+  TokensListModalProps,
+  WidgetModalProps
 } from "@orbs-network/twap-ui";
-import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import translations from "./i18n/en.json";
 import { createContext, FC, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
@@ -82,7 +84,6 @@ import { MdInfo } from "@react-icons/all-files/md/MdInfo";
 import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
-import { ButtonProps } from "@orbs-network/twap-ui";
 
 const uiPreferences: TwapContextUIPreferences = {
   disableThousandSeparator: true,
@@ -93,38 +94,9 @@ const uiPreferences: TwapContextUIPreferences = {
   infoIcon: <MdInfo size={15} />,
 };
 
-const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const { TokenSelectModal, srcToken, dstToken } = useAdapterContext();
-
-  return (
-    <TokenSelectModal selected={props.isSrc ? srcToken : dstToken} onSelect={props.onSelect!}>
-      <StyledTokenSelect hideArrow={false} isSrc={props.isSrc} onClick={() => {}} />
-    </TokenSelectModal>
-  );
-};
-const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
-
-const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
-  return <Components.TokenSelectModal Component={memoizedTokenSelect} isOpen={open} onClose={onClose} isSrc={isSrcToken} />;
-};
-
-const SmallText = ({ value = "", prefix }: { value?: string; prefix?: string }) => {
-  const splitted = value?.split(".");
-  const nums = splitted?.[0];
-  const decimals = splitted?.[1];
-  return (
-    <StyledSmallText>
-      {prefix}
-      {nums}
-      {decimals && <small>.{decimals}</small>}
-    </StyledSmallText>
-  );
-};
-
 const TokenChange = () => {
   return <StyledTokenChange icon={<BsArrowDownShort />} />;
 };
-
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   return (
@@ -176,7 +148,7 @@ export type SushiModalProps = {
 };
 
 interface GenericProps extends TWAPProps {
-  TokenSelectModal: FC<{ children: ReactNode; onSelect: (value: any) => void; selected: any }>;
+  TokenSelectModal: FC<{ isOpen: boolean; onClose: () => void; onSelect: (value: any) => void; selected: any }>;
   Modal: FC<SushiModalProps>;
   getTokenLogo: (token: any) => string;
   useUSD: (address?: any) => string | undefined;
@@ -308,6 +280,11 @@ const useIsWrongChain = () => {
   }, [context.connectedChainId, context.config.chainId]);
 };
 
+const TokensListModal = (props: TokensListModalProps) => {
+  const context = useAdapterContext().TokenSelectModal;
+
+  return <context.TokenSelectModal isOpen={props.isOpen} onClose={props.onClose} onSelect={props.onSelect} />;
+};
 
 const TWAPContent = () => {
   const context = useAdapterContext();
@@ -320,13 +297,9 @@ const TWAPContent = () => {
   const parsedTokens = useParsedTokens();
   const { srcToken, dstToken } = useSelectedParsedTokens();
   const { srcUsd, dstUsd } = useUsd();
-
   const marketPrice = useMarketPrice();
   const isWrongChain = useIsWrongChain();
 
-  console.log({srcToken, dstToken});
-  
-  
   return (
     <ThemeProvider theme={theme}>
       <StyledTwap className="twap-adapter-wrapper">
@@ -337,11 +310,11 @@ const TWAPContent = () => {
           translations={translations as Translations}
           provider={provider}
           account={context.account}
-          parsedTokens={parsedTokens}
+          tokens={parsedTokens}
           srcToken={srcToken}
           dstToken={dstToken}
-          onDstTokenSelected={context.onDstTokenSelected}
           onSrcTokenSelected={context.onSrcTokenSelected}
+          onDstTokenSelected={context.onDstTokenSelected}
           isLimitPanel={context.limit}
           uiPreferences={uiPreferences}
           onSwitchTokens={context.onSwitchTokens}
@@ -350,14 +323,14 @@ const TWAPContent = () => {
           marketPrice={marketPrice}
           chainId={context.connectedChainId}
           isWrongChain={isWrongChain}
-          components={{ Modal: context.Modal, TokensListModal: context.TokenSelectModal }}
+          components={{ Modal, TokensListModal }}
           isExactAppoval={true}
         >
           <GlobalStyles />
           <StyledContent>
             {context.limit ? <LimitPanel /> : <TWAPPanel />}
             <Components.LimitPriceMessage />
-            <Orders />
+            <Widget.Orders />
             <StyledPoweredBy />
           </StyledContent>
         </Widget>
@@ -374,35 +347,6 @@ const TWAP = (props: GenericProps) => {
   );
 };
 
-const Orders = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const Modal = useAdapterContext().Modal;
-
-  const onClose = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  return (
-    <Components.OrderHistory isOpen={isOpen}>
-      <StyledOrdersButton onClick={() => setIsOpen(true)} />
-      <Modal open={isOpen} onClose={onClose} header={<StyledOrdersHeader />}>
-        <StyledOrdersContent />
-      </Modal>
-    </Components.OrderHistory>
-  );
-};
-
-const SubmitOrderModal = () => {
-  const { isOpen, onClose } = hooks.useSwapModal();
-  const { swapStatus } = useTwapContext().state;
-  const Modal = useAdapterContext().Modal;
-
-  return (
-    <Modal open={!!isOpen} onClose={() => onClose()} title={!swapStatus ? "Review order" : ""}>
-      <StyledCreateOrderModal />
-    </Modal>
-  );
-};
 
 const LimitInput = (props: LimitPriceInputProps) => {
   return <StyledLimitInput placeholder="0" onChange={props.onChange} value={props.value} loading={props.isLoading} />;
@@ -429,14 +373,21 @@ const LimitPriceZeroButton = ({ text, onClick }: LimitPriceZeroButtonProps) => {
   );
 };
 
+
+const Modal = (props: WidgetModalProps) => {
+  const context = useAdapterContext()
+
+  return <context.Modal open={props.isOpen} onClose={props.onClose} />;
+}
+
 const LimitPriceTokenSelect = (props: LimitPriceTokenSelectProps) => {
-  return <TokenSelect onClose={() => {}} open={true} isSrcToken={props.isSrcToken} />;
+  return null
 };
 
 const LimitPriceTitleTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const adapterContext = useAdapterContext();
   const twapContext = useTwapContextUI();
-  const token = props.isSrc ? twapContext.parsedSrcToken : twapContext.parsedDstToken;
+  const token = props.isSrc ? twapContext.state.srcToken : twapContext.state.destToken;
 
   return (
     <adapterContext.TokenSelectModal selected={props.isSrc ? adapterContext.srcToken : adapterContext.dstToken} onSelect={props.onSelect!}>
@@ -628,6 +579,5 @@ const TradeIntervalSelect = () => {
   );
 };
 
-TWAP.Orders = Orders;
 
 export { TWAP };

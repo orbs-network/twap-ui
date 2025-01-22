@@ -107,6 +107,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
       "*": {
         fontFamily: "inherit",
+        color:'white'
       },
     },
     ".twap-spinner": {

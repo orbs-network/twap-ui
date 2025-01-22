@@ -33,7 +33,6 @@ import {
   useTradeSizeWarning,
   useUsdAmount,
 } from "../hooks/lib";
-import { TimeDuration } from "@orbs-network/twap-sdk";
 
 export const ChangeTokensOrder = ({ children, className = "", icon = <RiArrowUpDownLine /> }: { children?: ReactNode; className?: string; icon?: any }) => {
   const switchTokens = useSwitchTokens();
@@ -95,7 +94,10 @@ export const TokenPanelInput = ({
 };
 
 const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
-  const { parsedSrcToken, actionHandlers } = useTwapContextUI();
+  const {
+    state: { srcToken },
+    actionHandlers,
+  } = useTwapContextUI();
   const srcAmountUi = useSrcAmount().amountUi;
 
   return (
@@ -103,7 +105,7 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
       prefix=""
       onChange={actionHandlers.setSrcAmount}
       value={srcAmountUi || ""}
-      decimalScale={parsedSrcToken?.decimals}
+      decimalScale={srcToken?.decimals}
       className={props.className}
       placeholder={props.placeholder}
     />
@@ -112,7 +114,7 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
 
 const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
   const {
-    parsedDstToken: token,
+    state: { destToken },
     derivedValues: { isMarketOrder },
   } = useTwapContextUI();
   const { amountUi, isLoading } = useOutAmount();
@@ -122,7 +124,7 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
       loading={isLoading}
       prefix={isMarketOrder ? SQUIGLE : ""}
       value={useFormatDecimals(amountUi)}
-      decimalScale={props.decimalScale || token?.decimals}
+      decimalScale={props.decimalScale || destToken?.decimals}
       className={props.className}
       placeholder={props.placeholder}
     />
@@ -235,12 +237,14 @@ export const TokenBalance = ({
   emptyUi?: ReactNode;
   decimalScale?: number;
 }) => {
-  const { parsedSrcToken, parsedDstToken } = useTwapContextUI();
-  const symbol = isSrc ? parsedSrcToken?.symbol : parsedDstToken?.symbol;
-  const suffix = !showSymbol ? undefined : isSrc ? parsedSrcToken?.symbol : parsedDstToken?.symbol;
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
+  const symbol = isSrc ? srcToken?.symbol : destToken?.symbol;
+  const suffix = !showSymbol ? undefined : isSrc ? srcToken?.symbol : destToken?.symbol;
 
-  const srcBalance = useAmountUi(parsedSrcToken?.decimals, useSrcBalance().data?.toString());
-  const dstBalance = useAmountUi(parsedDstToken?.decimals, useDstBalance().data?.toString());
+  const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
+  const dstBalance = useAmountUi(destToken?.decimals, useDstBalance().data?.toString());
 
   const balance = isSrc ? srcBalance : dstBalance;
 
@@ -328,7 +332,9 @@ const StyledPoweredBy = styled(StyledRowFlex)({
 export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
   const value = useSrcChunkAmount().amountUi;
   const formattedValue = useFormatNumber({ value });
-  const { parsedSrcToken: srcToken } = useTwapContextUI();
+  const {
+    state: { srcToken },
+  } = useTwapContextUI();
 
   const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
 
@@ -342,9 +348,11 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
 };
 
 export const TradeSize = ({ hideLabel, hideSymbol, hideLogo }: { hideLabel?: boolean; hideSymbol?: boolean; hideLogo?: boolean }) => {
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
 
-  if (!srcToken && !dstToken) {
+  if (!srcToken && !destToken) {
     return <span>0</span>;
   }
 
@@ -390,9 +398,11 @@ const StyledTradeSize = styled(StyledRowFlex)({
 });
 
 export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
 
-  const address = isSrc ? srcToken?.address : dstToken?.address;
+  const address = isSrc ? srcToken?.address : destToken?.address;
 
   return <Copy value={address} />;
 };
@@ -479,7 +489,9 @@ export const TradeWarning = ({ className = "" }: { className?: string }) => {
 
 export const ChunkSizeMessage = ({ className = "" }: { className?: string }) => {
   const { isWrongChain, srcUsd } = useTwapContext();
-  const { parsedSrcToken: srcToken } = useTwapContextUI();
+  const {
+    state: { srcToken },
+  } = useTwapContextUI();
 
   const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmount().amountUi });
 

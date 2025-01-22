@@ -97,8 +97,10 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 
 export const TokenSelect = ({ onClick, isSrc }: { onClick: () => void; isSrc?: boolean }) => {
   const { translations } = useTwapContext();
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
-  const token = isSrc ? srcToken : dstToken;
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
+  const token = isSrc ? srcToken : destToken;
 
   return (
     <StyledTokenSelect onClick={onClick}>

@@ -62,9 +62,11 @@ const uiPreferences: TwapContextUIPreferences = {
 };
 
 const TokenPanelBalance = ({ isSrc }: { isSrc?: boolean }) => {
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
   const srcBalance = hooks.useAmountUi(srcToken?.decimals, hooks.useSrcBalance().data?.toString());
-  const dstBalance = hooks.useAmountUi(dstToken?.decimals, hooks.useDstBalance().data?.toString());
+  const dstBalance = hooks.useAmountUi(destToken?.decimals, hooks.useDstBalance().data?.toString());
   const balance = isSrc ? srcBalance : dstBalance;
   const formattedValue = hooks.useFormatNumberV2({ value: balance, decimalScale: 3 });
   const onPercent = hooks.useOnSrcAmountPercent();

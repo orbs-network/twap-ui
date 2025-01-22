@@ -33,12 +33,12 @@ export const useResetAfterSwap = () => {
 };
 
 export const useSrcBalance = () => {
-  const srcToken = useTwapContextUI().parsedSrcToken;
+  const srcToken = useTwapContextUI().state.srcToken;
   return query.useBalance(srcToken);
 };
 
 export const useDstBalance = () => {
-  const dstToken = useTwapContextUI().parsedDstToken;
+  const dstToken = useTwapContextUI().state.destToken;
   return query.useBalance(dstToken);
 };
 
@@ -111,7 +111,9 @@ export const useInvertedPrice = (price?: string, inverted?: boolean) => {
 
 export const useInvertPrice = (price?: string) => {
   const [inverted, setInvert] = useState(false);
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
 
   const invertedPrice = useInvertedPrice(price, inverted);
   const value = useFormatNumber({ value: invertedPrice || "", decimalScale: 5 });
@@ -120,8 +122,8 @@ export const useInvertPrice = (price?: string) => {
     setInvert((prev) => !prev);
   }, [setInvert]);
 
-  const leftToken = inverted ? dstToken : srcToken;
-  const rightToken = inverted ? srcToken : dstToken;
+  const leftToken = inverted ? destToken : srcToken;
+  const rightToken = inverted ? srcToken : destToken;
 
   return {
     price: value,
@@ -155,10 +157,12 @@ export const useAmountUi = (decimals?: number, value?: string) => {
 };
 
 export const useTokenBalance = (isSrc?: boolean) => {
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
 
   const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
-  const dstBalance = useAmountUi(dstToken?.decimals, useDstBalance().data?.toString());
+  const dstBalance = useAmountUi(destToken?.decimals, useDstBalance().data?.toString());
   return isSrc ? srcBalance : dstBalance;
 };
 

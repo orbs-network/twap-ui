@@ -16,9 +16,8 @@ import { SwapSteps } from "../../../types";
 
 const Price = () => {
   const {
-    parsedSrcToken: srcToken,
-    parsedDstToken: dstToken,
     derivedValues: { isMarketOrder },
+    state: { srcToken, destToken },
   } = useTwapContextUI();
   const swapPrice = useSwapPrice();
   const usd = useFormatNumberV2({ value: swapPrice.usd, decimalScale: 2 });
@@ -26,7 +25,7 @@ const Price = () => {
   return (
     <OrderDisplay.DetailRow title={isMarketOrder ? "Market Price" : "Limit Price"}>
       <StyledPrice>
-        1 {srcToken?.symbol} = {price} {dstToken?.symbol} <span>{`($${usd})`}</span>
+        1 {srcToken?.symbol} = {price} {destToken?.symbol} <span>{`($${usd})`}</span>
       </StyledPrice>
     </OrderDisplay.DetailRow>
   );
@@ -92,34 +91,36 @@ const useSteps = () => {
   const {
     state: { swapSteps },
   } = useTwapContext();
-  const { parsedSrcToken } = useTwapContextUI();
+  const {
+    state: { srcToken },
+  } = useTwapContextUI();
   return useMemo((): SwapStep[] => {
-    if (!swapSteps || !parsedSrcToken) return [];
+    if (!swapSteps || !srcToken) return [];
 
     return swapSteps.map((step) => {
       if (step === SwapSteps.WRAP) {
         return {
           id: SwapSteps.WRAP,
-          title: `Wrap ${parsedSrcToken.symbol}`,
-          description: `Wrap ${parsedSrcToken.symbol}`,
-          image: parsedSrcToken.logoUrl,
+          title: `Wrap ${srcToken.symbol}`,
+          description: `Wrap ${srcToken.symbol}`,
+          image: srcToken.logoUrl,
         };
       }
       if (step === SwapSteps.APPROVE) {
         return {
           id: SwapSteps.APPROVE,
-          title: `Approve ${parsedSrcToken.symbol}`,
-          description: `Approve ${parsedSrcToken.symbol}`,
-          image: parsedSrcToken.logoUrl,
+          title: `Approve ${srcToken.symbol}`,
+          description: `Approve ${srcToken.symbol}`,
+          image: srcToken.logoUrl,
         };
       }
       return {
         id: SwapSteps.CREATE,
         title: `Create order`,
-        image: parsedSrcToken?.logoUrl,
+        image: srcToken?.logoUrl,
       };
     });
-  }, [parsedSrcToken, swapSteps]);
+  }, [srcToken, swapSteps]);
 };
 
 export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
@@ -180,10 +181,9 @@ const StyledChunksText = styled(StyledText)({
 const Details = () => {
   const chunks = useChunks();
   const {
-    parsedSrcToken: srcToken,
-    parsedDstToken: dstToken,
     derivedValues: { isMarketOrder },
     isLimitPanel,
+    state: { srcToken, destToken },
   } = useTwapContextUI();
 
   const deadline = useDeadline().millis;
@@ -208,7 +208,7 @@ const Details = () => {
             <OrderDisplay.Expiry deadline={deadline} />
             <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmount} srcToken={srcToken} />
             <OrderDisplay.ChunksAmount chunks={chunks} />
-            <OrderDisplay.MinDestAmount dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={dstMinAmountOut} />
+            <OrderDisplay.MinDestAmount dstToken={destToken} isMarketOrder={isMarketOrder} dstMinAmountOut={dstMinAmountOut} />
             <OrderDisplay.TradeInterval fillDelayMillis={fillDelayMillis} />
             <OrderDisplay.Recipient />
             <Fee />
@@ -222,7 +222,7 @@ const Details = () => {
 const Fee = () => {
   const { fee } = useTwapContext();
   const {
-    parsedDstToken: dstToken,
+    state: { destToken },
     derivedValues: { isMarketOrder },
   } = useTwapContextUI();
 
@@ -233,10 +233,10 @@ const Fee = () => {
     return BN(outAmount).multipliedBy(fee).dividedBy(100).toFixed().toString();
   }, [fee, outAmount, isMarketOrder]);
 
-  const amountUi = useFormatNumberV2({ value: useAmountUi(dstToken?.decimals, amount) });
+  const amountUi = useFormatNumberV2({ value: useAmountUi(destToken?.decimals, amount) });
 
   if (!fee) return null;
-  return <OrderDisplay.DetailRow title={`Fee (${fee}%)`}>{amountUi ? `${amountUi} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>;
+  return <OrderDisplay.DetailRow title={`Fee (${fee}%)`}>{amountUi ? `${amountUi} ${destToken?.symbol}` : ""}</OrderDisplay.DetailRow>;
 };
 
 export const SubmitButton = ({ onClick }: { onClick: () => void }) => {

@@ -81,14 +81,16 @@ const TokenSelectModal = ({ onClose, isSrc, isOpen }: any) => {
     },
     [onTokenSelectedCallback, isSrc],
   );
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
 
   const { srcTokenSelected, dstTokenSelected } = useMemo(() => {
     return {
       srcTokenSelected: dappTokens?.find((it) => eqIgnoreCase(it.address, srcToken?.address || "")),
-      dstTokenSelected: dappTokens?.find((it) => eqIgnoreCase(it.address, dstToken?.address || "")),
+      dstTokenSelected: dappTokens?.find((it) => eqIgnoreCase(it.address, destToken?.address || "")),
     };
-  }, [dappTokens, srcToken, dstToken]);
+  }, [dappTokens, srcToken, destToken]);
 
   return <MemoizedTokenModal onClose={onClose} isOpen={isOpen} onSelect={onSelect} srcTokenSelected={srcTokenSelected} dstTokenSelected={dstTokenSelected} />;
 };
@@ -227,7 +229,6 @@ const useParsedTokens = () => {
 
 const useSelectedParsedTokens = () => {
   const context = useAdapterContext();
-  console.log(context);
 
   return useMemo(() => {
     return {

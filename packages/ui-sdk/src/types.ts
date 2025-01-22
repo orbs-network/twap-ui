@@ -10,8 +10,8 @@ export type Token = {
 export type State = {
   typedSrcAmount?: string;
 
-  rawSrcToken?: any;
-  rawDstToken?: any;
+  srcToken?: Token;
+  destToken?: Token;
 
   typedChunks?: number;
   typedFillDelay: TimeDuration;

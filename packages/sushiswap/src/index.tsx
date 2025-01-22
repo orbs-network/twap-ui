@@ -509,7 +509,7 @@ const LimitPriceTokenSelect = (props: LimitPriceTokenSelectProps) => {
 const LimitPriceTitleTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const adapterContext = useAdapterContext();
   const twapContext = useTwapContextUI();
-  const token = props.isSrc ? twapContext.parsedSrcToken : twapContext.parsedDstToken;
+  const token = props.isSrc ? twapContext.state.srcToken : twapContext.state.destToken;
 
   return (
     <adapterContext.TokenSelectModal selected={props.isSrc ? adapterContext.srcToken : adapterContext.dstToken} onSelect={props.onSelect!}>

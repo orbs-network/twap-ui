@@ -13,7 +13,7 @@ import { SwapSteps } from "../types";
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
   const {
-    parsedDstToken,
+    state: { destToken },
     derivedValues: { createOrderArgs },
     sdk,
   } = useTwapContextUI();
@@ -21,7 +21,7 @@ export const useCreateOrder = () => {
   const twapContract = useTwapContract();
 
   return useMutation(async (srcToken: TokenData) => {
-    if (!parsedDstToken) {
+    if (!destToken) {
       throw new Error("dstToken is not defined");
     }
 
@@ -190,7 +190,7 @@ const useUpdatedOrders = () => {
   return useMutation({
     mutationFn: async (order: { txHash: string; orderId?: number }) => {
       if (!account) return;
-      const orders = await sdk.waitForNewOrder({ orderId: order.orderId, account, currentOrdersLength: data.length });
+      const orders = await sdk.waitForNewOrder({ orderId: order.orderId, account, currentOrdersLength: data?.length });
       updateData(orders);
       updateState({
         swapStatus: SwapStatus.SUCCESS,

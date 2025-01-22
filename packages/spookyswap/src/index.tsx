@@ -30,7 +30,9 @@ const uiPreferences: TwapContextUIPreferences = {
 
 const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens, account, connectedChainId } = useAdapterContext();
-  const { parsedSrcToken: srcToken, parsedDstToken: dstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
 
   const selectedCurrency = useMemo(() => {
     if (!!dappTokens && srcToken) {
@@ -39,10 +41,10 @@ const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
   }, [srcToken?.address]);
 
   const otherSelectedCurrency = useMemo(() => {
-    if (!!dappTokens && dstToken) {
-      return dappTokens[dstToken.address];
+    if (!!dappTokens && destToken) {
+      return dappTokens[destToken.address];
     }
-  }, [dstToken?.address]);
+  }, [destToken?.address]);
 
   return (
     <TokenSelectModal

@@ -131,7 +131,7 @@ const Balance = ({ isSrc }: { isSrc?: boolean }) => {
 };
 
 const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
-  const dstToken = useTwapContextUI().parsedDstToken;
+  const dstToken = useTwapContextUI().state.destToken;
   const onTokenSelectClick = useTokenSelectClick();
   const [isOpen, setIsOpen] = useState(false);
 

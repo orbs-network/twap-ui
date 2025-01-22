@@ -16,8 +16,6 @@ interface ContextType {
   actionHandlers: ReturnType<typeof useActionsHandlers>;
   sdk: SDK.TwapSDK;
   isLimitPanel?: boolean;
-  parsedSrcToken?: Token;
-  parsedDstToken?: Token;
   config: SDK.Config;
   derivedValues: ReturnType<typeof useDerivedSwapValues>;
   walletAddress?: string;
@@ -34,13 +32,11 @@ const contextReducer = (state: State, action: Action): State => {
   }
 };
 
-export const TwapProvider = ({ children, config, isLimitPanel = false, parseToken, walletAddress }: TwapProviderProps) => {
+export const TwapProvider = ({ children, config, isLimitPanel = false, walletAddress }: TwapProviderProps) => {
   const [state, dispatch] = useReducer(contextReducer, initialState);
   const sdk = useMemo(() => new SDK.TwapSDK({ config }), [config]);
-  const parsedSrcToken = useMemo(() => parseToken?.(state.rawSrcToken), [state.rawSrcToken, parseToken]);
-  const parsedDstToken = useMemo(() => parseToken?.(state.rawDstToken), [state.rawDstToken, parseToken]);
-  const derivedValues = useDerivedSwapValues(sdk, state, parsedSrcToken, parsedDstToken, isLimitPanel);
-  const actionHandlers = useActionsHandlers(state, dispatch, parsedDstToken);
+  const derivedValues = useDerivedSwapValues(sdk, state, isLimitPanel);
+  const actionHandlers = useActionsHandlers(state, dispatch);
 
   return (
     <Context.Provider
@@ -49,8 +45,6 @@ export const TwapProvider = ({ children, config, isLimitPanel = false, parseToke
         actionHandlers,
         state,
         isLimitPanel,
-        parsedSrcToken,
-        parsedDstToken,
         config,
         derivedValues,
         walletAddress,
@@ -95,9 +89,7 @@ export const useSwapPriceDisplay = () => {
   const [inverted, setInvert] = useState(Boolean);
   const {
     derivedValues: { destTokenAmountUI },
-    state: { typedSrcAmount },
-    parsedSrcToken,
-    parsedDstToken,
+    state: { typedSrcAmount, srcToken, destToken },
   } = useTwapContext();
   const price = useMemo(() => {
     if (!destTokenAmountUI || !typedSrcAmount) return "0";
@@ -112,8 +104,8 @@ export const useSwapPriceDisplay = () => {
   return {
     toggleInvert,
     price,
-    leftToken: inverted ? parsedDstToken : parsedSrcToken,
-    rightToken: inverted ? parsedSrcToken : parsedDstToken,
+    leftToken: inverted ? destToken : srcToken,
+    rightToken: inverted ? srcToken : destToken,
   };
 };
 
@@ -138,6 +130,6 @@ export const useLimitPriceInput = () => {
   return {
     value: value || "",
     onChange: actionHandlers.setLimitPrice,
-    isLoading: Boolean(state.rawSrcToken && state.rawDstToken && !state.marketPrice),
+    isLoading: Boolean(state.srcToken && state.destToken && !state.marketPrice),
   };
 };

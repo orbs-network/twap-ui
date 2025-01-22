@@ -23,7 +23,9 @@ export const ChunkSelector = ({ className = "", children }: { className?: string
 };
 const Text = () => {
   const { isWrongChain, srcUsd } = useTwapContext();
-  const { parsedSrcToken: srcToken } = useTwapContextUI();
+  const {
+    state: { srcToken },
+  } = useTwapContextUI();
 
   const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmount().amountUi });
 

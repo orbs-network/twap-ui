@@ -2,16 +2,23 @@ import { Config } from "@orbs-network/twap-sdk";
 import { FC, ReactNode } from "react";
 import { Token, Translations, TwapContextUIPreferences, TWAPProps } from "../types";
 
-export type ModalProps = {
+export type WidgetModalProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children?: ReactNode;
 };
 
+export type TokensListModalProps = {
+  isSrcToken?: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+  selectedToken?: Token;
+};
+
 interface Components {
-  Modal: FC<ModalProps>;
-  TokensListModal: FC<{ isSrcToken?: boolean; isOpen: boolean; onClose: () => void }>;
+  Modal: FC<WidgetModalProps>;
+  TokensListModal: FC<TokensListModalProps>;
 }
 
 export interface PanelProps extends TWAPProps {

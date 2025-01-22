@@ -52,7 +52,7 @@ export class TwapSDK {
     return getOrders({ chainId: this.config.chainId, exchangeAddress: this.config.exchangeAddress, account, signal, page, limit });
   }
 
-  async waitForNewOrder({ orderId, account, signal, currentOrdersLength }: { orderId: number; account: string; signal?: AbortSignal; currentOrdersLength?: number }) {
+  async waitForNewOrder({ orderId, account, signal, currentOrdersLength }: { orderId?: number; account: string; signal?: AbortSignal; currentOrdersLength?: number }) {
     return waitForNewOrder({ config: this.config, orderId, account, signal, currentOrdersLength });
   }
 }

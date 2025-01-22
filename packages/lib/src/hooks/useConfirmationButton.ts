@@ -17,7 +17,9 @@ export const useConfirmationButton = (connect?: () => void) => {
     account,
     state: { swapStatus },
   } = useTwapContext();
-  const { parsedSrcToken, parsedDstToken } = useTwapContextUI();
+  const {
+    state: { srcToken, destToken },
+  } = useTwapContextUI();
   const createOrderLoading = swapStatus === SwapStatus.LOADING;
   const { onOpen } = useSwapModal();
   const outAmountLoading = useOutAmount().isLoading;
@@ -27,8 +29,8 @@ export const useConfirmationButton = (connect?: () => void) => {
   const usdLoading = BN(srcUsd || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
   const warning = useSwapWarning();
-  const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(parsedSrcToken?.address);
-  const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(parsedDstToken?.address);
+  const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);
+  const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(destToken?.address);
   const shouldOnlyWrap = useShouldOnlyWrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();

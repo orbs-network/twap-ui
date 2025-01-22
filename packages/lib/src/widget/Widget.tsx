@@ -2,13 +2,14 @@ import React, { useCallback, useState } from "react";
 import { TwapAdapter, useTwapContext } from "../context/context";
 import { Translations } from "../types";
 import { CreateOrderModal, LimitPanel, OrderHistory, PoweredBy, ShowConfirmation } from "../components";
-import { useFillDelay, useSwapModal, useTradeSizeWarning } from "../hooks";
+import { useFillDelay, useTradeSizeWarning } from "../hooks/lib";
 import { PanelProps } from "./types";
 import { PanelProvider, usePanelContext } from "./context";
 import { LimitPanelDeadlineSelect } from "./LimitPanelDeadlineSelect";
 import { TradesAmountInput } from "./TradesAmountInput";
 import { TokenPanel } from "./TokenPanel";
 import { FillDelaySelector } from "./FillDelaySelector";
+import { useSwapModal } from "../hooks/useSwapModal";
 
 function PanelContent(props: PanelProps) {
   return (

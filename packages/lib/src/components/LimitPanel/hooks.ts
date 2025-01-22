@@ -65,15 +65,15 @@ export const useLimitPercentList = () => {
 };
 
 export const useLimitTokens = () => {
-  const { parsedSrcToken, parsedDstToken, state } = useTwapContextUI();
+  const { state } = useTwapContextUI();
 
-  const { isInvertedLimitPrice: inverted } = state;
+  const { isInvertedLimitPrice: inverted, srcToken, destToken } = state;
   return useMemo(() => {
     return {
-      srcToken: inverted ? parsedDstToken : parsedSrcToken,
-      dstToken: inverted ? parsedSrcToken : parsedDstToken,
+      srcToken: inverted ? destToken : srcToken,
+      dstToken: inverted ? srcToken : destToken,
     };
-  }, [inverted, parsedDstToken, parsedSrcToken]);
+  }, [inverted, destToken, srcToken]);
 };
 
 export const useLimitResetButton = () => {
