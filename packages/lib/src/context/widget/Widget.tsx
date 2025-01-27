@@ -1,11 +1,9 @@
 import React, { useCallback, useState } from "react";
 import { useWidgetContext, WidgetProvider } from "../context";
-import { CreateOrderModal, LimitPanel, OrderHistory, PoweredBy, ShowConfirmation } from "../../components";
-import { useFillDelay, useTradeSizeWarning } from "../../hooks/lib";
+import { CreateOrderModal, LimitPanel, OrderHistory, PoweredBy, ShowConfirmation, TradeInterval } from "../../components";
 import { LimitPanelDeadlineSelect } from "./LimitPanelDeadlineSelect";
 import { TradesAmountSelect } from "./TradesAmountSelect";
 import { TokenPanel } from "./TokenPanel";
-import { FillDelaySelector } from "./FillDelaySelector";
 import { useSwapModal } from "../../hooks/useSwapModal";
 import { WidgetProps } from "../../types";
 import { Warnings } from "./Warnings";
@@ -51,7 +49,7 @@ Widget.Warnings = Warnings;
 Widget.TradesAmountSelect = TradesAmountSelect;
 Widget.TokenPanel = TokenPanel;
 Widget.PoweredBy = PoweredBy;
-Widget.FillDelaySelect = FillDelaySelector;
+Widget.FillDelaySelect = TradeInterval;
 Widget.SubmitOrderModal = SubmitOrderModal;
 
 export { Widget };

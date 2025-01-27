@@ -23,7 +23,7 @@
   "dependencies": {
     "@defi.org/web3-candies": "^5.0.0",
     "@orbs-network/swap-ui": "^0.0.18",
-    "@orbs-network/twap": "^2.0.1",
+    "@orbs-network/twap": "^2.3.0",
     "@orbs-network/twap-sdk": "^2.0.54",
     "@orbs-network/twap-ui-sdk": "^2.0.54",
     "@react-icons/all-files": "^4.1.0",

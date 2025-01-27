@@ -60,5 +60,6 @@ export const useActionsHandlers = (state: State, dispatch: Dispatch<Action>) => 
     setLimitPricePercent: useCallback((limitPricePercent?: string) => updateState({ limitPricePercent }), [updateState]),
     onInvertPrice,
     onPricePercentClick,
+    updateState,
   };
 };

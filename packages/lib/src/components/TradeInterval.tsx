@@ -29,7 +29,7 @@ const Resolution = ({ placeholder, className = "" }: { placeholder?: string; cla
     (unit: TimeUnit) => {
       setFillDelay({ unit, value: fillDelay.value });
     },
-    [fillDelay.value, setFillDelay]
+    [fillDelay.value, setFillDelay],
   );
 
   return <ResolutionSelect className={className} unit={fillDelay.unit} onChange={onChange} />;

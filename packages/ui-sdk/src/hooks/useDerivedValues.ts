@@ -62,3 +62,5 @@ export const useDerivedSwapValues = (sdk: SDK.TwapSDK, state: State, isLimitPane
     };
   }, [state, sdk, isLimitPanel, state.oneSrcTokenUsd, state.currentTime, price]);
 };
+
+export type DerivedSwapValues = ReturnType<typeof useDerivedSwapValues>;

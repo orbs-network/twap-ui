@@ -5,6 +5,7 @@ import BN from "bignumber.js";
 import { Action, ActionType, State, Token, TwapProviderProps } from "./types";
 import { useDerivedSwapValues } from "./hooks/useDerivedValues";
 import { useActionsHandlers } from "./hooks/useActionHandlers";
+import { usePanels } from "./hooks/usePanels";
 
 const initialState: State = {
   currentTime: Date.now(),
@@ -37,6 +38,7 @@ export const TwapProvider = ({ children, config, isLimitPanel = false, walletAdd
   const sdk = useMemo(() => new SDK.TwapSDK({ config }), [config]);
   const derivedValues = useDerivedSwapValues(sdk, state, isLimitPanel);
   const actionHandlers = useActionsHandlers(state, dispatch);
+  const panels = usePanels(state, derivedValues, actionHandlers.updateState);
 
   return (
     <Context.Provider

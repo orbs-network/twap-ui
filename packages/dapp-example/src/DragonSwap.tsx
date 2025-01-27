@@ -12,6 +12,9 @@ import { network } from "@defi.org/web3-candies";
 
 const config = Configs.SushiArb;
 
+console.log(Configs.TeaFi);
+
+
 export const useDappTokens = () => {
   const isBase = config?.chainId === Configs.SushiBase.chainId;
   const { chainId } = useWeb3React();
