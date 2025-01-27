@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useTwapContext } from "../context/context";
+import { useWidgetContext } from "../context/context";
 import { query } from "./query";
 import BN from "bignumber.js";
 import { useUnwrapToken, useWrapOnly } from "./useTransactions";
@@ -9,14 +9,16 @@ import { useNoLiquidity, useOutAmount, useShouldOnlyWrap, useShouldUnwrap, useSw
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 
-export const useConfirmationButton = (connect?: () => void) => {
+export const useConfirmationButton = () => {
   const {
-    translations,
     isWrongChain,
     srcUsd,
     account,
     state: { swapStatus },
-  } = useTwapContext();
+    translations,
+    connect,
+  } = useWidgetContext();
+
   const {
     state: { srcToken, destToken },
   } = useTwapContextUI();
@@ -42,69 +44,96 @@ export const useConfirmationButton = (connect?: () => void) => {
   const maker = account;
   const disableWhileLaoding = outAmountLoading || usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading;
 
-  if (createOrderLoading) {
+  return useMemo(() => {
+    if (createOrderLoading) {
+      return {
+        text: translations.placingOrder,
+        onClick: onOpen,
+        loading: false,
+        disabled: false,
+      };
+    }
+    if (isWrongChain)
+      return {
+        text: translations.switchNetwork,
+        onClick: changeNetwork,
+        loading: changeNetworkLoading,
+        disabled: changeNetworkLoading,
+      };
+    if (!maker)
+      return {
+        text: translations.connect,
+        onClick: () => {
+          if (!connect) {
+            alert("connect function is not defined");
+          } else {
+            connect();
+          }
+        },
+        loading: false,
+        disabled: false,
+      };
+
+    if (hasWarning)
+      return {
+        text: warning.zeroSrcAmount ? warning.zeroSrcAmount : warning.balance || translations.placeOrder,
+        onClick: undefined,
+        disabled: true,
+        loading: false,
+      };
+    if (disableWhileLaoding) {
+      return { text: translations.placeOrder, onClick: undefined, loading: true };
+    }
+
+    if (noLiquidity) {
+      return {
+        text: translations.noLiquidity,
+        disabled: true,
+        loading: false,
+      };
+    }
+
+    if (shouldOnlyWrap) {
+      return {
+        text: translations.wrap,
+        onClick: wrap,
+        disabled: false,
+        loading: wrapLoading,
+      };
+    }
+    if (shouldUnwrap) {
+      return {
+        text: translations.unwrap,
+        onClick: unwrap,
+        disabled: false,
+        loading: unwrapLoading,
+      };
+    }
+
     return {
-      text: translations.placingOrder,
+      text: translations.placeOrder,
       onClick: onOpen,
       loading: false,
       disabled: false,
     };
-  }
-  if (isWrongChain)
-    return {
-      text: translations.switchNetwork,
-      onClick: changeNetwork,
-      loading: changeNetworkLoading,
-      disabled: changeNetworkLoading,
-    };
-  if (!maker && connect)
-    return {
-      text: translations.connect,
-      onClick: connect,
-      loading: false,
-      disabled: false,
-    };
-
-  if (hasWarning)
-    return {
-      text: warning.zeroSrcAmount ? warning.zeroSrcAmount : warning.balance || translations.placeOrder,
-      onClick: undefined,
-      disabled: true,
-      loading: false,
-    };
-  if (disableWhileLaoding) {
-    return { text: translations.placeOrder, onClick: undefined, loading: true };
-  }
-
-  if (noLiquidity) {
-    return {
-      text: translations.noLiquidity,
-      disabled: true,
-      loading: false,
-    };
-  }
-
-  if (shouldOnlyWrap) {
-    return {
-      text: translations.wrap,
-      onClick: wrap,
-      disabled: false,
-      loading: wrapLoading,
-    };
-  }
-  if (shouldUnwrap) {
-    return {
-      text: translations.unwrap,
-      onClick: unwrap,
-      disabled: false,
-      loading: unwrapLoading,
-    };
-  }
-
-  return {
-    text: translations.placeOrder,
-    onClick: onOpen,
-    loading: false,
-    disabled: false,
-  };
+  }, [
+    createOrderLoading,
+    isWrongChain,
+    maker,
+    connect,
+    hasWarning,
+    warning,
+    disableWhileLaoding,
+    noLiquidity,
+    shouldOnlyWrap,
+    wrap,
+    wrapLoading,
+    shouldUnwrap,
+    unwrap,
+    unwrapLoading,
+    translations,
+    changeNetwork,
+    changeNetworkLoading,
+    onOpen,
+  ]);
 };

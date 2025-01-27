@@ -7,8 +7,8 @@ import { OrderDisplay } from "../../OrderDisplay";
 import BN from "bignumber.js";
 import { useChunks, useDeadline, useDstMinAmountOut, useFillDelay, useOutAmount, useSrcChunkAmount, useSwapPrice, useToggleDisclaimer } from "../../../hooks/lib";
 import React, { useMemo } from "react";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
-import { useTwapContext } from "../../../context/context";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
+import { useWidgetContext } from "../../../context/context";
 import { SwapFlow, SwapStep } from "@orbs-network/swap-ui";
 import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
 import { fillDelayText } from "@orbs-network/twap-sdk";
@@ -18,7 +18,7 @@ const Price = () => {
   const {
     derivedValues: { isMarketOrder },
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
   const swapPrice = useSwapPrice();
   const usd = useFormatNumberV2({ value: swapPrice.usd, decimalScale: 2 });
   const price = useFormatNumberV2({ value: swapPrice.price, decimalScale: 4 });
@@ -67,7 +67,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   const {
     translations: t,
     state: { disclaimerAccepted },
-  } = useTwapContext();
+  } = useWidgetContext();
   const onChange = useToggleDisclaimer();
 
   return (
@@ -90,10 +90,10 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
 const useSteps = () => {
   const {
     state: { swapSteps },
-  } = useTwapContext();
+  } = useWidgetContext();
   const {
     state: { srcToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
   return useMemo((): SwapStep[] => {
     if (!swapSteps || !srcToken) return [];
 
@@ -127,11 +127,11 @@ export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
   const {
     state: { swapStatus, swapStep, swapData },
     translations: t,
-  } = useTwapContext();
+  } = useWidgetContext();
   const {
     isLimitPanel,
     derivedValues: { isMarketOrder },
-  } = useTwapContextUI();
+  } = useTwapContext();
   const steps = useSteps();
 
   const inUsd = useFormatNumberV2({ value: swapData.srcAmountusd, decimalScale: 2 });
@@ -163,7 +163,7 @@ export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
 const ChunksText = () => {
   const {
     derivedValues: { chunks, fillDelay },
-  } = useTwapContextUI();
+  } = useTwapContext();
   if (chunks <= 1) return null;
 
   return (
@@ -184,7 +184,7 @@ const Details = () => {
     derivedValues: { isMarketOrder },
     isLimitPanel,
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const deadline = useDeadline().millis;
   const srcChunkAmount = useSrcChunkAmount().amountUi;
@@ -220,11 +220,11 @@ const Details = () => {
 };
 
 const Fee = () => {
-  const { fee } = useTwapContext();
+  const { fee } = useWidgetContext();
   const {
     state: { destToken },
     derivedValues: { isMarketOrder },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const outAmount = useOutAmount().amount;
 

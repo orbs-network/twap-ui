@@ -1,4 +1,4 @@
-import { useTwapContext } from "../context/context";
+import { useWidgetContext } from "../context/context";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
 import { Token } from "../types";
@@ -8,10 +8,10 @@ import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddr
 import { query, useOrdersHistory } from "./query";
 import { TwapAbi, groupOrdersByStatus, OrderStatus } from "@orbs-network/twap-sdk";
 import { networks } from "../config";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 export const useIsMarketOrder = () => {
-  return useTwapContextUI().derivedValues.isMarketOrder;
+  return useTwapContext().derivedValues.isMarketOrder;
 };
 
 export const useRefetchBalances = () => {
@@ -33,12 +33,12 @@ export const useResetAfterSwap = () => {
 };
 
 export const useSrcBalance = () => {
-  const srcToken = useTwapContextUI().state.srcToken;
+  const srcToken = useTwapContext().state.srcToken;
   return query.useBalance(srcToken);
 };
 
 export const useDstBalance = () => {
-  const dstToken = useTwapContextUI().state.destToken;
+  const dstToken = useTwapContext().state.destToken;
   return query.useBalance(dstToken);
 };
 
@@ -55,10 +55,10 @@ export const useFormatNumber = ({
   suffix?: string;
   disableDynamicDecimals?: boolean;
 }) => {
-  const { disableThousandSeparator } = useTwapContext().uiPreferences;
+  const { input } = useWidgetContext().uiPreferences;
   const result = useNumericFormat({
     allowLeadingZeros: true,
-    thousandSeparator: disableThousandSeparator ? "" : ",",
+    thousandSeparator: input?.disableThousandSeparator ? "" : ",",
     displayType: "text",
     value: value || "",
     decimalScale: decimalScale || 18,
@@ -71,10 +71,10 @@ export const useFormatNumber = ({
 
 export const useFormatNumberV2 = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
   const _value = useFormatDecimals(value, decimalScale);
-  const { disableThousandSeparator } = useTwapContext().uiPreferences;
+  const { input } = useWidgetContext().uiPreferences;
   const result = useNumericFormat({
     allowLeadingZeros: true,
-    thousandSeparator: disableThousandSeparator ? "" : ",",
+    thousandSeparator: input?.disableThousandSeparator ? "" : ",",
     displayType: "text",
     value: _value || "",
     decimalScale: 18,
@@ -113,7 +113,7 @@ export const useInvertPrice = (price?: string) => {
   const [inverted, setInvert] = useState(false);
   const {
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const invertedPrice = useInvertedPrice(price, inverted);
   const value = useFormatNumber({ value: invertedPrice || "", decimalScale: 5 });
@@ -159,7 +159,7 @@ export const useAmountUi = (decimals?: number, value?: string) => {
 export const useTokenBalance = (isSrc?: boolean) => {
   const {
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
   const dstBalance = useAmountUi(destToken?.decimals, useDstBalance().data?.toString());
@@ -176,30 +176,17 @@ export const useOpenOrders = () => {
 };
 
 export const useTokenFromParsedTokensList = (address?: string) => {
-  const getTokenFromList = useGetTokenFromParsedTokensList();
-  return useMemo(() => getTokenFromList(address), [address]);
-};
-
-export const useGetTokenFromParsedTokensList = () => {
-  const { tokens } = useTwapContext();
-  return useCallback(
-    (address?: string) => {
-      return tokens.find((token) => eqIgnoreCase(address || "", token.address || ""));
-    },
-    [tokens],
-  );
+  const { useToken } = useWidgetContext();
+  return useToken?.(address);
 };
 
 export const usemElipsisAddress = (address?: string) => {
-  const { addressPadding } = useTwapContext().uiPreferences;
-
-  return useMemo(() => {
-    return makeElipsisAddress(address, addressPadding);
-  }, [addressPadding, address]);
+  return useMemo(() => makeElipsisAddress(address), [address]);
 };
 
 export const useContract = (abi?: Abi, address?: string) => {
-  const { config, web3 } = useTwapContext();
+  const { config } = useTwapContext();
+  const web3 = useWidgetContext().web3;
 
   const wTokenAddress = network(config.chainId)?.wToken.address;
   return useMemo(() => {
@@ -247,7 +234,8 @@ export const useChangeNetwork = () => {
 
 export const useGetHasAllowance = () => {
   const wToken = useNetwork()?.wToken;
-  const { account, config } = useTwapContext();
+  const { config } = useTwapContext();
+  const { account } = useWidgetContext();
   return useCallback(
     async (token: Token, amount: string) => {
       if (!wToken) return;

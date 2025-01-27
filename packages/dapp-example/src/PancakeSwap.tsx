@@ -142,38 +142,39 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setFromToken(toToken);
     setToToken(fromToken);
   };
+  return null;
 
-  return (
-    <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
-      <TWAP
-        account={account}
-        srcToken={fromToken}
-        dstToken={toToken}
-        dappTokens={dappTokens}
-        isDarkTheme={isDarkTheme}
-        limit={limit}
-        ConnectButton={ConnectButton}
-        usePriceUSD={usePriceUSD}
-        connectedChainId={chainId}
-        useTrade={_useTrade}
-        TokenSelectModal={TokenSelectModal}
-        Modal={Popup}
-        nativeToken={native}
-        connector={connector}
-        isMobile={isMobile}
-        Button={DappButton}
-        ApproveModalContent={ApproveModalContent}
-        SwapTransactionErrorContent={SwapTransactionErrorContent}
-        SwapPendingModalContent={SwapPendingModalContent}
-        SwapTransactionReceiptModalContent={SwapPendingModalContent}
-        TradePrice={TradePrice}
-        TradePriceToggle={TradePriceToggle}
-        onSrcTokenSelected={(token: any) => setFromToken(token)}
-        onDstTokenSelected={(token: any) => setToToken(token)}
-        onSwitchTokens={onSwitchTokens}
-      />
-    </StyledPancakeTwap>
-  );
+  // return (
+  //   <StyledPancakeTwap isDarkTheme={isDarkTheme ? 1 : 0}>
+  //     <TWAP
+  //       account={account}
+  //       srcToken={fromToken}
+  //       dstToken={toToken}
+  //       dappTokens={dappTokens}
+  //       isDarkTheme={isDarkTheme}
+  //       limit={limit}
+  //       ConnectButton={ConnectButton}
+  //       usePriceUSD={usePriceUSD}
+  //       connectedChainId={chainId}
+  //       useTrade={_useTrade}
+  //       TokenSelectModal={TokenSelectModal}
+  //       Modal={Popup}
+  //       nativeToken={native}
+  //       connector={connector}
+  //       isMobile={isMobile}
+  //       Button={DappButton}
+  //       ApproveModalContent={ApproveModalContent}
+  //       SwapTransactionErrorContent={SwapTransactionErrorContent}
+  //       SwapPendingModalContent={SwapPendingModalContent}
+  //       SwapTransactionReceiptModalContent={SwapPendingModalContent}
+  //       TradePrice={TradePrice}
+  //       TradePriceToggle={TradePriceToggle}
+  //       onSrcTokenSelected={(token: any) => setFromToken(token)}
+  //       onDstTokenSelected={(token: any) => setToToken(token)}
+  //       onSwitchTokens={onSwitchTokens}
+  //     />
+  //   </StyledPancakeTwap>
+  // );
 };
 
 const logo = "https://assets.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1629359065";

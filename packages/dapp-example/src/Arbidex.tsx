@@ -113,22 +113,23 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const priceUsd = useGetPriceUsdCallback();
   const { isDarkTheme } = useTheme();
 
-  return (
-    <TWAP
-      provider={library?.givenProvider}
-      connect={connect}
-      account={account}
-      // srcToken={zeroAddress}
-      // dstToken={erc20sData.arb.USDC.address}
-      dappTokens={dappTokens}
-      onSrcTokenSelected={(token: any) => console.log(token)}
-      onDstTokenSelected={(token: any) => console.log(token)}
-      TokenSelectModal={TokenSelectModal}
-      isDarkTheme={isDarkTheme}
-      limit={limit}
-      useModal={useModal}
-    />
-  );
+  return null;
+  // return (
+  //   <TWAP
+  //     provider={library?.givenProvider}
+  //     connect={connect}
+  //     account={account}
+  //     // srcToken={zeroAddress}
+  //     // dstToken={erc20sData.arb.USDC.address}
+  //     dappTokens={dappTokens}
+  //     onSrcTokenSelected={(token: any) => console.log(token)}
+  //     onDstTokenSelected={(token: any) => console.log(token)}
+  //     TokenSelectModal={TokenSelectModal}
+  //     isDarkTheme={isDarkTheme}
+  //     limit={limit}
+  //     useModal={useModal}
+  //   />
+  // );
 };
 
 const logo = "https://arbidex.fi/images/tokens/0xd5954c3084a1ccd70b4da011e67760b8e78aee84.png";

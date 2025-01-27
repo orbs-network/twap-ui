@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { MessageVariant } from "../../types";
 

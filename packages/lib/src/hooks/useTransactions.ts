@@ -1,12 +1,12 @@
 import { zero, sendAndWaitForConfirmations, TokenData, erc20, iwethabi, maxUint256, hasWeb3Instance, setWeb3Instance, account } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
-import { useTwapContext } from "../context/context";
+import { useWidgetContext } from "../context/context";
 import { useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } from "./hooks";
 import { query, useGasPrice, useOrdersHistory } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
 import { useShouldWrap, useSrcAmount } from "./lib";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { SwapSteps } from "../types";
 
@@ -16,8 +16,8 @@ export const useCreateOrder = () => {
     state: { destToken },
     derivedValues: { createOrderArgs },
     sdk,
-  } = useTwapContextUI();
-  const { account, updateState } = useTwapContext();
+  } = useTwapContext();
+  const { account, updateState } = useWidgetContext();
   const twapContract = useTwapContract();
 
   return useMutation(async (srcToken: TokenData) => {
@@ -64,8 +64,8 @@ export const useCreateOrder = () => {
 
 export const useWrapToken = () => {
   const srcAmount = useSrcAmount().amount;
-  const { account } = useTwapContext();
-  const { sdk } = useTwapContextUI();
+  const { account } = useWidgetContext();
+  const { sdk } = useTwapContext();
   const network = useNetwork();
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
 
@@ -110,7 +110,7 @@ export const useWrapOnly = () => {
 };
 
 export const useUnwrapToken = () => {
-  const { account } = useTwapContext();
+  const { account } = useWidgetContext();
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
   const onSuccess = useResetAfterSwap();
   const srcAmount = useSrcAmount().amount;
@@ -141,8 +141,8 @@ export const useUnwrapToken = () => {
 };
 
 export const useApproveToken = () => {
-  const { account, isExactAppoval, web3 } = useTwapContext();
-  const { sdk } = useTwapContextUI();
+  const { account, isExactAppoval, web3 } = useWidgetContext();
+  const { sdk } = useTwapContext();
   const srcAmount = useSrcAmount().amount;
 
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
@@ -182,8 +182,8 @@ export const useApproveToken = () => {
   });
 };
 const useUpdatedOrders = () => {
-  const { account, updateState } = useTwapContext();
-  const { sdk } = useTwapContextUI();
+  const { account, updateState } = useWidgetContext();
+  const { sdk } = useTwapContext();
 
   const { data, updateData } = useOrdersHistory();
   const reset = useResetAfterSwap();
@@ -216,11 +216,9 @@ const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 };
 
 export const useSubmitOrderFlow = () => {
-  const { minNativeTokenBalance, state, updateState } = useTwapContext();
-
+  const { state, updateState } = useWidgetContext();
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash, wrapSuccess, swapData } = state;
   const { data: haveAllowance } = query.useAllowance();
-  const { ensureData: ensureNativeBalance } = query.useMinNativeTokenBalance(minNativeTokenBalance);
   const shouldWrap = useShouldWrap();
   const { mutateAsync: updateOrders } = useUpdatedOrders();
   const network = useNetwork();
@@ -247,13 +245,6 @@ export const useSubmitOrderFlow = () => {
       const steps = getSteps(shouldWrap, !haveAllowance);
       logger(`Create order request`);
       updateState({ swapStatus: SwapStatus.LOADING, swapSteps: steps });
-
-      if (minNativeTokenBalance) {
-        const hasMinNativeTokenBalance = await ensureNativeBalance();
-        if (!hasMinNativeTokenBalance.data) {
-          throw new Error(`Insufficient ${nativeSymbol} balance, you need at least ${minNativeTokenBalance}${nativeSymbol} to cover the transaction fees.`);
-        }
-      }
 
       let token = srcToken;
 
@@ -308,8 +299,8 @@ export const useSubmitOrderFlow = () => {
 
 export const useCancelOrder = () => {
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
-  const { account } = useTwapContext();
-  const { sdk } = useTwapContextUI();
+  const { account } = useWidgetContext();
+  const { sdk } = useTwapContext();
 
   const twapContract = useTwapContract();
   const updateCanceledOrder = query.useUpdateOrderStatusToCanceled();

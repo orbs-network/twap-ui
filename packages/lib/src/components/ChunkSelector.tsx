@@ -1,11 +1,11 @@
 import styled from "styled-components";
 import React, { ReactNode } from "react";
-import { useTwapContext } from "../context/context";
 import { useFormatNumberV2 } from "../hooks/hooks";
 import { StyledColumnFlex } from "../styles";
-import { BottomContent, Label, Message, NumericInput, Slider } from "./base";
+import { BottomContent, Label, Message, NumericInput } from "./base";
 import { useChunks, useSetChunks, useShouldWrapOrUnwrapOnly, useSrcChunkAmount, useSrcChunkAmountUsd, useTradeSizeWarning } from "../hooks/lib";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
+import { useWidgetContext } from "../context/context";
 
 export const ChunkSelector = ({ className = "", children }: { className?: string; children: ReactNode }) => {
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
@@ -22,34 +22,37 @@ export const ChunkSelector = ({ className = "", children }: { className?: string
   );
 };
 const Text = () => {
-  const { isWrongChain, srcUsd } = useTwapContext();
   const {
     state: { srcToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
-  const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmount().amountUi });
+  return null;
 
-  const tradeSizeWarning = useTradeSizeWarning();
+  // const { isWrongChain, srcUsd } = useWidgetContext();
+  // const srcChunksAmount = useSrcChunkAmount();
+  // const chunkSizeFormatted = useFormatNumberV2({ value: srcChunksAmount.amountUi });
 
-  const warning = tradeSizeWarning;
+  // const tradeSizeWarning = useTradeSizeWarning();
 
-  const _usd = useFormatNumberV2({ value: useSrcChunkAmountUsd(), decimalScale: 2 });
-  const usd = _usd ? `($${_usd})` : "";
+  // const warning = tradeSizeWarning;
+  // const srcChunkAmountUsd = useSrcChunkAmountUsd()
+  // const _usd = useFormatNumberV2({ value: srcChunkAmountUsd, decimalScale: 2 });
+  // const usd = _usd ? `($${_usd})` : "";
 
-  if (!srcUsd || isWrongChain) return null;
+  // if (!srcUsd || isWrongChain) return null;
 
-  return (
-    <BottomContent>
-      <StyledMessage
-        title={
-          <>
-            {chunkSizeFormatted} {srcToken?.symbol} per trade <span>{usd}</span>
-          </>
-        }
-      />
-      {warning && <StyledWarning variant="warning" title={warning} />}
-    </BottomContent>
-  );
+  // return (
+  //   <BottomContent>
+  //     <StyledMessage
+  //       title={
+  //         <>
+  //           {chunkSizeFormatted} {srcToken?.symbol} per trade <span>{usd}</span>
+  //         </>
+  //       }
+  //     />
+  //     {warning && <StyledWarning variant="warning" title={warning} />}
+  //   </BottomContent>
+  // );
 };
 
 const StyledWarning = styled(Message)({
@@ -72,7 +75,7 @@ const StyledMessage = styled(Message)({
 });
 
 export const TotalTradesLabel = () => {
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
 
   return (
     <Label>

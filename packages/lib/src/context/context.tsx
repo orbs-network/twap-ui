@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
-import { State, TWAPContextProps, TwapLibProps } from "../types";
+import { State, WidgetContextType, Translations, WidgetProps } from "../types";
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TwapErrorWrapper } from "../ErrorHandling";
@@ -7,9 +7,9 @@ import Web3 from "web3";
 import { query } from "../hooks/query";
 import { LimitPriceMessageContent } from "../components";
 import { setWeb3Instance } from "@defi.org/web3-candies";
-import { TwapProvider as TwapProviderUI, useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { TwapProvider, useListeners, useTwapContext } from "@orbs-network/twap-ui-sdk";
 
-export const TwapContext = createContext({} as TWAPContextProps);
+export const WidgetContext = createContext({} as WidgetContextType);
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -36,116 +36,66 @@ const contextReducer = (state: State, action: Action): State => {
   }
 };
 
-const WrappedTwap = (props: TwapLibProps) => {
-  return (
-    <TwapErrorWrapper>
-      <TwapProviderUI parseToken={props.parseToken} isLimitPanel={props.isLimitPanel} config={props.config}>
-        <Panel {...props}>{props.children}</Panel>
-      </TwapProviderUI>
-    </TwapErrorWrapper>
-  );
-};
-
-const Panel = (props: TwapLibProps) => {
-  const { actionHandlers } = useTwapContextUI();
+const Listeners = (props: WidgetProps) => {
   query.useAllowance();
-
-  useEffect(() => {
-    actionHandlers.setMarketPrice(props.marketPrice || "");
-  }, [props.marketPrice]);
-
-  useEffect(() => {
-    actionHandlers.setSrcToken(props.srcToken);
-  }, [props.srcToken]);
-
-  useEffect(() => {
-    actionHandlers.setDstToken(props.dstToken);
-  }, [props.dstToken]);
-
-  useEffect(() => {
-    actionHandlers.setOneSrcTokenUsd(props.srcUsd ? Number(props.srcUsd) : 0);
-  }, [props.srcUsd]);
+  useListeners(props.srcToken, props.dstToken, props.marketPrice, props.srcUsd);
 
   return <>{props.children}</>;
 };
 
-const useIsWrongChain = (props: TwapLibProps, chainId?: number) => {
+const useIsWrongChain = (props: WidgetProps, chainId?: number) => {
   return useMemo(() => {
-    if (!props.account) {
-      return false;
-    }
-    if (props.isWrongChain) {
-      return true;
-    }
-    if (!chainId) {
+    if (!props.account || !chainId) {
       return false;
     }
 
-    return chainId !== props.config?.chainId;
-  }, [chainId, props.config?.chainId, props.isWrongChain]);
+    return props.config.chainId !== chainId;
+  }, [chainId, props.account, props.config.chainId]);
 };
 
-export const Content = (props: TwapLibProps) => {
-  const { config } = props;
-  const translations = useMemo(() => ({ ...defaultTranlations, ...props.translations }), [props.translations]);
+export const useTranslations = (translations?: Partial<Translations>): Translations => {
+  return useMemo(() => {
+    if (!translations) return defaultTranlations;
+    return {
+      ...defaultTranlations,
+      ...translations,
+    } as Translations;
+  }, [translations]);
+};
+
+export const WidgetProvider = (props: WidgetProps) => {
   const isWrongChain = useIsWrongChain(props, props.chainId);
-  const uiPreferences = props.uiPreferences || {};
   const web3 = useMemo(() => (!props.provider ? undefined : new Web3(props.provider)), [props.provider]);
   const [state, dispatch] = useReducer(contextReducer, initialState);
-
   const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
-
+  const translations = useTranslations(props.translations);
   useEffect(() => {
     setWeb3Instance(web3);
   }, [web3]);
-
-  return (
-    <TwapContext.Provider
-      value={{
-        translations,
-        isWrongChain,
-        marketPrice: props.marketPrice,
-        uiPreferences,
-        srcUsd: props.srcUsd || 0,
-        dstUsd: props.dstUsd || 0,
-        Components: props.Components,
-        web3,
-        config,
-        account: props.account,
-        onDstTokenSelected: props.onDstTokenSelected,
-        onSrcTokenSelected: props.onSrcTokenSelected,
-        onSwitchTokens: props.onSwitchTokens || (() => {}),
-        isLimitPanel: !!props.isLimitPanel,
-        tokens: props.parsedTokens || [],
-        maxFeePerGas: props.maxFeePerGas,
-        priorityFeePerGas: props.priorityFeePerGas,
-        askDataParams: props.askDataParams,
-        onTxSubmitted: props.onTxSubmitted,
-        minNativeTokenBalance: props.minNativeTokenBalance,
-        enableQueryParams: props.enableQueryParams,
-        isExactAppoval: props.isExactAppoval,
-        fee: props.fee,
-        nativeUsd: props.nativeUsd,
-        useDappToken: props.useDappToken,
-        useParsedToken: props.useParsedToken,
-        updateState,
-        state,
-      }}
-    >
-      <WrappedTwap {...props} />
-      <LimitPriceMessageContent />
-    </TwapContext.Provider>
-  );
-};
-
-export const TwapAdapter = (props: TwapLibProps) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <Content {...props} />
+      <WidgetContext.Provider
+        value={{
+          ...props,
+          translations,
+          isWrongChain,
+          web3,
+          updateState,
+          state,
+          uiPreferences: props.uiPreferences || {},
+        }}
+      >
+        <TwapErrorWrapper>
+          <TwapProvider chainId={props.chainId} config={props.config} isLimitPanel={props.isLimitPanel}>
+            <Listeners {...props}>{props.children}</Listeners>
+          </TwapProvider>
+        </TwapErrorWrapper>
+        <LimitPriceMessageContent />
+      </WidgetContext.Provider>
     </QueryClientProvider>
   );
 };
 
-export const useTwapContext = () => {
-  return useContext(TwapContext);
+export const useWidgetContext = () => {
+  return useContext(WidgetContext);
 };

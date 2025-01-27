@@ -1,11 +1,12 @@
 import { useCallback } from "react";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
-import { useTwapContext } from "../context/context";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
+import { useWidgetContext } from "../context/context";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useOutAmount, useSrcAmount, useUsdAmount } from "../hooks";
+import { network } from "@defi.org/web3-candies";
 
 export const useSetQueryParams = () => {
-  const enableQueryParams = useTwapContext().enableQueryParams;
+  const enableQueryParams = useWidgetContext().enableQueryParams;
   return useCallback(
     (name: string, value?: string) => {
       if (!enableQueryParams) return;
@@ -15,12 +16,9 @@ export const useSetQueryParams = () => {
 };
 
 export const useSwitchNativeToWrapped = () => {
-  const { onSrcTokenSelected, dappWToken } = useTwapContext();
-  return useCallback(() => {
-    if (dappWToken) {
-      onSrcTokenSelected?.(dappWToken);
-    }
-  }, [onSrcTokenSelected, dappWToken]);
+  const { onSrcTokenSelected } = useWidgetContext();
+  const { config } = useTwapContext();
+  return useCallback(() => {}, [onSrcTokenSelected]);
 };
 
 // Hook for handling modal close
@@ -28,8 +26,8 @@ const useSwapModalActions = () => {
   const {
     actionHandlers,
     state: { srcToken, destToken },
-  } = useTwapContextUI();
-  const { updateState, state } = useTwapContext();
+  } = useTwapContext();
+  const { updateState, state } = useWidgetContext();
   const nativeToWrapped = useSwitchNativeToWrapped();
   const srcAmount = useSrcAmount().amountUi;
   const outAmount = useOutAmount().amountUi;

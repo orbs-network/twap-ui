@@ -88,25 +88,26 @@ const TWAPComponent = ({ partnerDaas, limit }: { partnerDaas?: string; limit?: b
   const { isDarkTheme } = useTheme();
 
   const connect = useConnectWallet();
+  return null;
 
-  return (
-    <TWAP
-      account={account}
-      TokenSelectModal={TokenSelectModal}
-      // srcToken={zeroAddress} //AVAX
-      // dstToken={erc20sData.avax.USDC.address} // ORBS
-      dappTokens={dappTokens}
-      provider={provider}
-      onSrcTokenSelected={(token: any) => console.log(token, "selected")}
-      onDstTokenSelected={(token: any) => console.log(token, "selected")}
-      connect={connect}
-      connectedChainId={chainId}
-      theme={isDarkTheme ? pangolinDarkTheme : pangolinLightTheme}
-      partnerDaas={partnerDaas}
-      limit={limit}
-      usePriceUSD={usePriceUSD}
-    />
-  );
+  // return (
+  //   <TWAP
+  //     account={account}
+  //     TokenSelectModal={TokenSelectModal}
+  //     // srcToken={zeroAddress} //AVAX
+  //     // dstToken={erc20sData.avax.USDC.address} // ORBS
+  //     dappTokens={dappTokens}
+  //     provider={provider}
+  //     onSrcTokenSelected={(token: any) => console.log(token, "selected")}
+  //     onDstTokenSelected={(token: any) => console.log(token, "selected")}
+  //     connect={connect}
+  //     connectedChainId={chainId}
+  //     theme={isDarkTheme ? pangolinDarkTheme : pangolinLightTheme}
+  //     partnerDaas={partnerDaas}
+  //     limit={limit}
+  //     usePriceUSD={usePriceUSD}
+  //   />
+  // );
 };
 
 const PangolinComponent = () => {

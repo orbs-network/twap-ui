@@ -1,4 +1,4 @@
-import { Components, Styles } from "@orbs-network/twap-ui";
+import { Components, Styles, Widget } from "@orbs-network/twap-ui";
 import { ReactNode } from "react";
 import { DefaultTheme, styled, createGlobalStyle } from "styled-components";
 
@@ -107,7 +107,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
       "*": {
         fontFamily: "inherit",
-        color:'white'
+        color: "white",
       },
     },
     ".twap-spinner": {
@@ -654,7 +654,7 @@ export const StyledLimitInput = styled(Components.Base.NumericInput)({
   },
 });
 
-export const StyledSelectButton = styled("button")<{ selected?: number }>(({ selected, theme }) => {
+const selectButtonStyles = (theme?: DefaultTheme, selected?: number) => {
   const styles = getStyles(theme);
   const selectedBg = styles.isDarkMode ? "rgba(255,255,255, 0.15) " : "rgb(59 130 246/1)";
   const selectedColor = styles.isDarkMode ? styles.textColor : "white";
@@ -681,6 +681,12 @@ export const StyledSelectButton = styled("button")<{ selected?: number }>(({ sel
       border: "1px solid transparent",
       color: selectedColor,
     },
+  };
+};
+
+export const StyledSelectButton = styled("button")<{ selected?: number }>(({ selected, theme }) => {
+  return {
+    ...selectButtonStyles(theme, selected),
   };
 });
 
@@ -1051,4 +1057,34 @@ export const StyledLimitPriceTitle = styled(Styles.StyledRowFlex)(({ theme }) =>
 
 export const StyledNetworkSelect = styled("div")({
   width: "100%",
+});
+
+export const StyledTokenPanelBalance = styled("div")(() => {
+  return {};
+});
+
+export const StyledTokenPanelUsd = styled(Styles.StyledText)(() => {
+  return {};
+});
+
+export const StyledTokenPanelSelect = styled(Widget.TokenPanel.Select)(() => {
+  return {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    cursor: "pointer",
+    ".twap-token-logo": {
+      width: 40,
+      height: 40,
+    },
+  };
+});
+
+export const StyledTokenPanelBalanceSelect = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    button: {
+      ...selectButtonStyles(theme, 0),
+    },
+  };
 });

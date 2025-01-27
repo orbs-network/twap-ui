@@ -2,10 +2,10 @@ import React, { FC, useCallback } from "react";
 import styled from "styled-components";
 import { StyledRowFlex } from "../../styles";
 import { LimitSwitchArgs } from "../../types";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 export const LimitSwitch = ({ className = "", Component }: { className?: string; Component?: FC<LimitSwitchArgs> }) => {
-  const { isLimitPanel, state, actionHandlers } = useTwapContextUI();
+  const { isLimitPanel, state, actionHandlers } = useTwapContext();
 
   const { isMarketOrder } = state;
 

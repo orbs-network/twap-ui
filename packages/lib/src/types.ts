@@ -1,4 +1,3 @@
-import ConfigJson from "@orbs-network/twap/configs.json";
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
 import Web3 from "web3";
@@ -134,63 +133,106 @@ export interface Translations {
 
 export type MessageVariant = "error" | "warning" | "info";
 
+export type ModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  children?: ReactNode;
+};
+
+export type TokensListModalProps = {
+  isSrcToken?: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+  selectedToken?: Token;
+  onSelect: (token: any) => void;
+  children?: ReactNode;
+};
+
+export interface LimitPanelTokenSelectProps {
+  onSelect?: (token: any) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  srcTokenSelected?: any;
+  dstTokenSelected?: any;
+  isSrc?: boolean;
+}
+
 export interface BaseComponentProps {
   className?: string;
 }
 
-export interface TWAPProps {
-  connectedChainId?: number;
+export type InputProps = {
+  onChange: (value: string) => void;
+  value: string;
+  disabled?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
+};
+
+interface Components {
+  Modal: FC<ModalProps>;
+  TokensListModal: FC<TokensListModalProps>;
+  Tooltip: FC<TooltipProps>;
+  Ipnut?: FC<InputProps>;
+}
+
+export interface WidgetProps {
+  chainId?: number;
   account?: any;
   provider?: any;
-  getProvider?: () => any;
-  dappTokens?: any;
   maxFeePerGas?: string;
   priorityFeePerGas?: string;
   isDarkTheme?: boolean;
-  Tooltip?: FC<TooltipProps>;
-  USD?: FC<{ value?: string | number }>;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
-  TokenSelectModal?: any;
-  limit?: boolean;
+  isLimitPanel?: boolean;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  usePriceUSD?: UsePriceUSD;
-  useTrade?: UseTrade;
   isMobile?: boolean;
   enableQueryParams?: boolean;
-  parsedTokens?: Token[];
   onSwitchTokens?: () => void;
-  connect?: () => void;
-  isExactAppoval?: boolean;
+  connect: () => void;
   fee?: string;
-  srcToken?: any;
-  dstToken?: any;
-  parseToken?: (token: any) => Token | undefined;
+  config: Config;
+  translations?: Translations;
+  srcToken?: Token;
+  dstToken?: Token;
+  uiPreferences?: UIPreferences;
+  srcUsd?: number;
+  dstUsd?: number;
+  nativeUsd?: number;
+  marketPrice?: string;
+  isExactAppoval?: boolean;
+  children: React.ReactNode;
+  components: Components;
+  askDataParams?: any[];
+  useToken?: (value?: string) => Token | undefined;
+}
+
+export interface WidgetContextType extends WidgetProps {
+  isWrongChain: boolean;
+  web3?: Web3;
+  state: State;
+  updateState: (state: Partial<State>) => void;
+  translations: Translations;
+  uiPreferences: UIPreferences;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
 
-type UsePriceUSD = (address?: string, token?: Token) => number | string | undefined;
-
-export interface TwapContextUIPreferences {
-  usdSuffix?: string;
-  usdPrefix?: string;
-  usdEmptyUI?: ReactNode;
-  balanceEmptyUI?: ReactNode;
-  getOrdersTabsLabel?: (label: string, amount: number) => string;
-  inputPlaceholder?: string;
-  qrSize?: number;
-  orderTabsToExclude?: string[];
-  infoIcon?: any;
-  inputLoader?: ReactElement;
-  disableThousandSeparator?: boolean;
+export interface UIPreferences {
+  usd?: {
+    suffix?: string;
+    prefix?: string;
+    emptyUI?: ReactNode;
+  };
+  balance?: {
+    emptyUI?: ReactNode;
+  };
   input?: {
     showOnLoading?: boolean;
-  };
-  addressPadding?: AddressPadding;
-  tooltipIcon?: ReactNode;
-  modal?: {
-    styles?: CSSProperties;
+    placeholder?: string;
+    disableThousandSeparator?: boolean;
   };
 }
 
@@ -207,45 +249,6 @@ export type OnTxSubmitValues = {
   dstAmount: string;
   txHash: string;
 };
-
-type UseTrade = (fromToken?: string, toToken?: string, amount?: string) => { isLoading?: boolean; outAmount?: string };
-export interface TwapLibProps {
-  srcUsd?: string | number;
-  dstUsd?: string | number;
-  children: ReactNode;
-  chainId?: number;
-  account?: any;
-  config: Config;
-  provider: any;
-  translations: Translations;
-  priorityFeePerGas?: string;
-  maxFeePerGas?: string;
-  Components?: TwapComponents;
-  dappWToken?: any;
-  connect?: () => void;
-  askDataParams?: any[];
-  srcToken?: Token;
-  dstToken?: Token;
-  dappTokens?: any;
-  uiPreferences?: TwapContextUIPreferences;
-  onSrcTokenSelected?: (token: any) => void;
-  onDstTokenSelected?: (token: any) => void;
-  onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  marketPrice?: string;
-  isMobile?: boolean;
-  enableQueryParams?: boolean;
-  minNativeTokenBalance?: string;
-  isLimitPanel?: boolean;
-  parsedTokens?: Token[];
-  onSwitchTokens?: () => void;
-  isWrongChain?: boolean;
-  isExactAppoval?: boolean;
-  fee?: string;
-  nativeUsd?: string;
-  useParsedToken?: (address?: string) => Token | undefined;
-  useDappToken?: (address?: string) => any;
-  parseToken?: (token: any) => Token | undefined;
-}
 
 export type Token = {
   address: string;
@@ -283,15 +286,6 @@ export interface StylesConfig {
   selectedTokenBorderColor?: string;
 }
 
-export interface TWAPTokenSelectProps {
-  onSelect?: (token: any) => void;
-  isOpen: boolean;
-  onClose: () => void;
-  srcTokenSelected?: any;
-  dstTokenSelected?: any;
-  isSrc?: boolean;
-}
-
 export interface TooltipProps {
   children: ReactNode;
   tooltipText?: string | ReactElement | number;
@@ -306,33 +300,6 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
   text?: string;
   allowClickWhileLoading?: boolean;
 }
-
-export type LimitPricePercentProps = {
-  text: string;
-  selected: boolean;
-  onClick: () => void;
-};
-
-export type LimitPriceZeroButtonProps = {
-  text: string;
-  onClick: () => void;
-};
-
-export type LimitPriceTitleProps = {
-  textLeft: string;
-  textRight?: string;
-  token?: Token;
-  onTokenClick: () => void;
-  isSrcToken: boolean;
-};
-
-export type LimitPriceTokenSelectProps = {
-  token?: Token;
-  onClick: () => void;
-  isSrcToken: boolean;
-};
-
-export type LimitPriceInputProps = { isLoading: boolean; onChange: (value: string) => void; value: string };
 
 export type Step = {
   title: string;
@@ -351,12 +318,6 @@ export type LimitSwitchArgs = {
   selected: boolean;
   onClick: (value: boolean) => void;
 };
-
-interface TwapComponents {
-  Tooltip?: FC<TooltipProps>;
-  Button?: FC<ButtonProps>;
-  USD?: FC<{ value?: string | number }>;
-}
 
 export enum SwapSteps {
   WRAP,
@@ -385,36 +346,4 @@ export interface State {
     srcAmountusd?: string;
     outAmountusd?: string;
   };
-}
-
-export interface TWAPContextProps {
-  translations: Translations;
-  isWrongChain: boolean;
-  uiPreferences: TwapContextUIPreferences;
-  Components?: TwapComponents;
-  srcUsd: string | number;
-  dstUsd: string | number;
-  marketPrice?: string;
-  web3?: Web3;
-  config: Config;
-  account?: string;
-  onSrcTokenSelected?: (token: any) => void;
-  onDstTokenSelected?: (token: any) => void;
-  onSwitchTokens: () => void;
-  isLimitPanel: boolean;
-  tokens: Token[];
-  maxFeePerGas?: string;
-  priorityFeePerGas?: string;
-  askDataParams?: any[];
-  onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  minNativeTokenBalance?: string;
-  enableQueryParams?: boolean;
-  dappWToken?: Token;
-  isExactAppoval?: boolean;
-  fee?: string;
-  nativeUsd?: string;
-  useDappToken?: (address?: string) => any;
-  useParsedToken: any;
-  state: State;
-  updateState: (state: Partial<State>) => void;
 }

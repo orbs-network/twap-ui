@@ -1,13 +1,13 @@
 import { styled } from "styled-components";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
-import { useTwapContext } from "../../context/context";
+import { Order } from "@orbs-network/twap-sdk";
+import { useWidgetContext } from "../../context/context";
 import { useFormatNumberV2 } from "../../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { LinearProgress, Loader, TokenLogo } from "../base";
 import { useOrderHistoryContext, useTokenFromList } from "./context";
 import * as React from "react";
 import { size } from "../../utils";
-import { Order } from "@orbs-network/twap-sdk";
 import moment from "moment";
 import { Virtuoso } from "react-virtuoso";
 
@@ -84,7 +84,7 @@ const StyledEmpty = styled(StyledColumnFlex)({
 });
 
 const ListItemHeader = ({ order }: { order: Order }) => {
-  const t = useTwapContext().translations;
+  const t = useWidgetContext().translations;
   const status = order && order.status;
 
   const formattedDate = React.useMemo(() => {

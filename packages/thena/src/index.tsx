@@ -5,7 +5,7 @@ import {
   hooks,
   Translations,
   TwapAdapter,
-  TwapContextUIPreferences,
+  UIPreferences,
   Configs,
   Token,
   size,
@@ -13,13 +13,13 @@ import {
   Styles,
   LimitPricePercentProps,
 } from "@orbs-network/twap-ui";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 import translations from "./i18n/en.json";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
 import { eqIgnoreCase, isNativeAddress, network, networks } from "@defi.org/web3-candies";
-import { TWAPProps } from "@orbs-network/twap-ui";
+import { WidgetProps } from "@orbs-network/twap-ui";
 import { memo, ReactNode, useCallback, useState } from "react";
 import {
   StyledBalance,
@@ -45,14 +45,9 @@ import {
   StyledTradeIntervalAndChunkSelect,
   StyledPercentSelectorButton,
 } from "./styles";
-
-import { useTwapContext } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 
-const uiPreferences: TwapContextUIPreferences = {
-  usdPrefix: "$",
-  inputPlaceholder: "0.0",
-};
+const uiPreferences: UIPreferences = {};
 
 const MemoizedTokenModal = memo((props: TWAPTokenSelectProps) => {
   const { TokenSelectModal, dappTokens } = useAdapterContext();
@@ -83,7 +78,7 @@ const TokenSelectModal = ({ onClose, isSrc, isOpen }: any) => {
   );
   const {
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const { srcTokenSelected, dstTokenSelected } = useMemo(() => {
     return {
@@ -143,7 +138,7 @@ const SrcTokenPercentSelector = () => {
 
 const config = Configs.Thena;
 
-interface ThenaTWAPProps extends TWAPProps {
+interface ThenaTWAPProps extends Partial<WidgetProps> {
   connect: () => void;
   dappTokens: any[];
   connector?: any;
@@ -186,7 +181,7 @@ export const useProvider = (props: ThenaTWAPProps) => {
 
   useEffect(() => {
     setProviderFromConnector();
-  }, [props.account, props.connectedChainId, setProviderFromConnector]);
+  }, [props.account, props.chainId, setProviderFromConnector]);
 
   return provider;
 };

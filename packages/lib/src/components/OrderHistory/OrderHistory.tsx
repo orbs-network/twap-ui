@@ -8,7 +8,7 @@ import { OrderHistoryList } from "./OrderHistoryList";
 import { Spinner } from "../base";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { ReactNode, useCallback, useMemo } from "react";
-import { useTwapContext } from "../../context/context";
+import { useWidgetContext } from "../../context/context";
 import { useOrdersHistory } from "../../hooks/query";
 import { size } from "../../utils";
 import { useOpenOrders } from "../../hooks/index";
@@ -41,9 +41,8 @@ const OrderHistoryButton = ({ onClick, className = "" }: { onClick: () => void; 
 };
 
 export const OrderHistory = ({ className = "", children, isOpen }: { className?: string; children: ReactNode; isOpen: boolean }) => {
-  const { account, isWrongChain } = useTwapContext();
-  console.log( account, isWrongChain);
-  
+  const { account, isWrongChain } = useWidgetContext();
+
   if (!account || isWrongChain) return null;
 
   return (

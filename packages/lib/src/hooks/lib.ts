@@ -1,11 +1,17 @@
 import { useCallback, useMemo } from "react";
-import { amountBNV2, amountUiV2, query, useTwapContext } from "..";
+import { amountBNV2, amountUiV2, query } from "..";
 import BN from "bignumber.js";
 import { useNetwork, useSrcBalance } from "./hooks";
 import { eqIgnoreCase, isNativeAddress, networks } from "@defi.org/web3-candies";
 import moment from "moment";
 import { fillDelayText, MIN_DURATION_MINUTES } from "@orbs-network/twap-sdk";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import {
+  useTwapContext,
+  useShouldWrapOrUnwrapOnly as _useShouldWrapOrUnwrapOnly,
+  useShouldOnlyWrap as _useShouldOnlyWrap,
+  useShouldUnwrap as _useShouldUnwrap,
+} from "@orbs-network/twap-ui-sdk";
+import { useWidgetContext } from "../context/context";
 
 const getMinNativeBalance = (chainId: number) => {
   switch (chainId) {
@@ -18,16 +24,13 @@ const getMinNativeBalance = (chainId: number) => {
   }
 };
 export const useShouldWrapOrUnwrapOnly = () => {
-  const wrap = useShouldOnlyWrap();
-  const unwrap = useShouldUnwrap();
-
-  return wrap || unwrap;
+  return _useShouldWrapOrUnwrapOnly();
 };
 
 export const useDstMinAmountOut = () => {
   const {
     derivedValues: { destTokenMinAmount, destTokenMinAmountOutUI },
-  } = useTwapContextUI();
+  } = useTwapContext();
   return {
     amount: destTokenMinAmount,
     amountUi: destTokenMinAmountOutUI,
@@ -35,7 +38,7 @@ export const useDstMinAmountOut = () => {
 };
 
 export const useInvertLimit = () => {
-  const { actionHandlers } = useTwapContextUI();
+  const { actionHandlers } = useTwapContext();
   return actionHandlers.onInvertPrice;
 };
 
@@ -44,7 +47,7 @@ export const useOutAmount = () => {
   const {
     derivedValues: { destTokenAmount, destTokenAmountUI },
     state: { marketPrice },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   return {
     amount: destTokenAmount,
@@ -61,10 +64,10 @@ const getUsdAmount = (amount?: string, usd?: string | number) => {
 };
 export const useUsdAmount = () => {
   const { amount: srcAmount } = useSrcAmount();
-  const { dstUsd, srcUsd } = useTwapContext();
+  const { dstUsd, srcUsd } = useWidgetContext();
   const {
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const dstAmount = useOutAmount().amount;
 
@@ -83,11 +86,11 @@ export const useUsdAmount = () => {
 };
 
 export const useIsPartialFillWarning = () => {
-  return useTwapContextUI().derivedValues?.warnings.partialFill;
+  return useTwapContext().derivedValues?.warnings.partialFill;
 };
 
 export const useSetChunks = () => {
-  const { actionHandlers } = useTwapContextUI();
+  const { actionHandlers } = useTwapContext();
   return actionHandlers.setChunks;
 };
 
@@ -96,45 +99,45 @@ const useAmountUi = (decimals?: number, amount?: string) => {
 };
 
 export const useSrcChunkAmountUsd = () => {
-  const { srcUsd } = useTwapContext();
+  const { srcUsd } = useWidgetContext();
   const {
     state: { srcToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
   const srcChunksAmount = useSrcChunkAmount().amount;
-
+  if (!srcUsd) return "0";
   const result = BN(srcChunksAmount || "0")
-    .times(srcUsd)
+    .times(srcUsd || 0)
     .toString();
 
   return useAmountUi(srcToken?.decimals, result);
 };
 
 export const useChunks = () => {
-  return useTwapContextUI().derivedValues.chunks;
+  return useTwapContext().derivedValues.chunks;
 };
 
 export const useToken = (isSrc?: boolean) => {
   const {
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
   return isSrc ? srcToken : destToken;
 };
 
 export const useMinChunkSizeUsd = () => {
-  const { state, config } = useTwapContextUI();
+  const { state, config } = useTwapContext();
   return Math.max(config.minChunkSizeUsd || 0, config?.minChunkSizeUsd || 0);
 };
 
 export const useMaxPossibleChunks = () => {
   const {
     derivedValues: { maxPossibleChunks },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   return maxPossibleChunks;
 };
 
 export const useSrcAmount = () => {
-  const { derivedValues, state } = useTwapContextUI();
+  const { derivedValues, state } = useTwapContext();
 
   return {
     amountUi: state.typedSrcAmount || "",
@@ -143,11 +146,11 @@ export const useSrcAmount = () => {
 };
 
 export const useFillDelay = () => {
-  const { translations: t } = useTwapContext();
+  const t = useWidgetContext().translations;
   const {
     state: { typedFillDelay },
     derivedValues,
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const {
     warnings: { maxFillDelay, minFillDelay },
@@ -176,7 +179,7 @@ export const useFillDelay = () => {
 };
 
 export const useMinimumDelayMinutes = () => {
-  const { sdk } = useTwapContextUI();
+  const { sdk } = useTwapContext();
   return sdk.estimatedDelayBetweenChunksMillis;
 };
 
@@ -184,7 +187,7 @@ export const useNoLiquidity = () => {
   const srcAmount = useSrcAmount().amount;
   const {
     derivedValues: { price },
-  } = useTwapContextUI();
+  } = useTwapContext();
   const outAmount = useOutAmount().amount;
 
   return useMemo(() => {
@@ -196,7 +199,7 @@ export const useNoLiquidity = () => {
 export const useDeadline = () => {
   const {
     derivedValues: { deadline },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   return useMemo(() => {
     return {
@@ -209,7 +212,7 @@ export const useDeadline = () => {
 export const useSrcChunkAmount = () => {
   const {
     derivedValues: { srcChunkAmount, srcChunksAmountUI },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   return {
     amount: srcChunkAmount,
@@ -217,29 +220,15 @@ export const useSrcChunkAmount = () => {
   };
 };
 export const useShouldOnlyWrap = () => {
-  const {
-    state: { srcToken, destToken },
-  } = useTwapContextUI();
-  const network = useNetwork();
-
-  return useMemo(() => {
-    return isNativeAddress(srcToken?.address || "") && eqIgnoreCase(destToken?.address || "", network?.wToken.address || "");
-  }, [srcToken, destToken, network]);
+  return _useShouldOnlyWrap();
 };
 
 export const useShouldUnwrap = () => {
-  const {
-    state: { srcToken, destToken },
-  } = useTwapContextUI();
-  const network = useNetwork();
-
-  return useMemo(() => {
-    return eqIgnoreCase(srcToken?.address || "", network?.wToken.address || "") && isNativeAddress(destToken?.address || "");
-  }, [srcToken, destToken, network]);
+  return _useShouldUnwrap();
 };
 
 export const useSwitchTokens = () => {
-  const { onSwitchTokens } = useTwapContext();
+  const { onSwitchTokens } = useWidgetContext();
 
   return useCallback(() => {
     onSwitchTokens?.();
@@ -253,10 +242,10 @@ const isEqual = (tokenA?: any, tokenB?: any) => {
 
 export const useTokenSelect = () => {
   const switchTokens = useSwitchTokens();
-  const { onSrcTokenSelected, onDstTokenSelected } = useTwapContext();
+  const { onSrcTokenSelected, onDstTokenSelected } = useWidgetContext();
   const {
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
   return useCallback(
     ({ isSrc, token }: { isSrc: boolean; token: any }) => {
       if (isSrc && isEqual(token, destToken)) {
@@ -282,29 +271,29 @@ export const useTokenSelect = () => {
 // Warnigns //
 
 export const useFeeOnTransferWarning = () => {
-  const { translations } = useTwapContext();
+  const t = useWidgetContext().translations;
   const {
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
   const { data: srcTokenFeeOnTransfer } = query.useFeeOnTransfer(srcToken?.address);
   const { data: dstTokenFeeOnTransfer } = query.useFeeOnTransfer(destToken?.address);
 
   return useMemo(() => {
     if (srcTokenFeeOnTransfer?.hasFeeOnTranfer || dstTokenFeeOnTransfer?.hasFeeOnTranfer) {
-      return translations.feeOnTranferWarning;
+      return t.feeOnTranferWarning;
     }
-  }, [srcTokenFeeOnTransfer, dstTokenFeeOnTransfer, translations]);
+  }, [srcTokenFeeOnTransfer, dstTokenFeeOnTransfer, t]);
 };
 
 const useSrcAmountWarning = () => {
   const srcAmount = useSrcAmount().amount;
-  const { translations } = useTwapContext();
+  const t = useWidgetContext().translations;
 
   return useMemo(() => {
     if (BN(srcAmount).isZero()) {
-      return translations.enterAmount;
+      return t.enterAmount;
     }
-  }, [srcAmount, translations]);
+  }, [srcAmount, t]);
 };
 
 export const useBalanceWarning = () => {
@@ -312,24 +301,24 @@ export const useBalanceWarning = () => {
   const maxSrcInputAmount = useMaxSrcInputAmount();
   const srcAmount = useSrcAmount().amount;
 
-  const { translations } = useTwapContext();
+  const t = useWidgetContext().translations;
 
   return useMemo(() => {
     const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmount)?.gt(maxSrcInputAmount);
 
     if ((srcBalance && BN(srcAmount).gt(srcBalance)) || isNativeTokenAndValueBiggerThanMax) {
-      return translations.insufficientFunds;
+      return t.insufficientFunds;
     }
-  }, [srcBalance?.toString(), srcAmount, maxSrcInputAmount?.toString(), translations]);
+  }, [srcBalance?.toString(), srcAmount, maxSrcInputAmount?.toString(), t]);
 };
 
 export const useSetFillDelay = () => {
-  const { actionHandlers } = useTwapContextUI();
+  const { actionHandlers } = useTwapContext();
   return actionHandlers.setFillDelay;
 };
 
 export const useSetDuration = () => {
-  const { actionHandlers } = useTwapContextUI();
+  const { actionHandlers } = useTwapContext();
   return actionHandlers.setDuration;
 };
 
@@ -339,12 +328,12 @@ export const getLowLimitPriceWarning = (isLimitPanel?: boolean, priceDeltaPercen
 };
 
 export const useLowPriceWarning = () => {
-  const { translations: t } = useTwapContext();
+  const t = useWidgetContext().translations;
   const {
     state: { isInvertedLimitPrice, srcToken, destToken },
     isLimitPanel,
     derivedValues: { priceDiffFromMarket },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   return useMemo(() => {
     if (!srcToken || !destToken) {
@@ -368,7 +357,7 @@ export const useLowPriceWarning = () => {
 };
 
 export const useSetLimitPrice = () => {
-  const { actionHandlers } = useTwapContextUI();
+  const { actionHandlers } = useTwapContext();
   return actionHandlers.setLimitPrice;
 };
 
@@ -376,18 +365,18 @@ export const useToggleDisclaimer = () => {
   const {
     state: { disclaimerAccepted },
     updateState,
-  } = useTwapContext();
+  } = useWidgetContext();
   return useCallback(() => {
     updateState({ disclaimerAccepted: !disclaimerAccepted });
   }, [disclaimerAccepted, updateState]);
 };
 
 export const useTradeSizeWarning = () => {
-  const { translations: t } = useTwapContext();
+  const t = useWidgetContext().translations;
   const {
     derivedValues: { warnings },
     config,
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   if (!warnings.tradeSize) return;
 
@@ -405,7 +394,7 @@ export const useTradesAmountWarning = () => {
 export const useLimitPriceWarning = () => {
   const {
     state: { typedPrice },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   return useMemo(() => {
     if (typedPrice !== undefined && BN(typedPrice || 0).isZero()) {
@@ -433,10 +422,10 @@ export const useSwapWarning = () => {
 };
 
 export const useDuration = () => {
-  const { translations: t } = useTwapContext();
+  const t = useWidgetContext().translations;
   const {
     derivedValues: { warnings, duration },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const warning = useMemo(() => {
     if (warnings.minDuration) {
@@ -457,7 +446,7 @@ export const useDuration = () => {
 export const useShouldWrap = () => {
   const {
     state: { srcToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   return useMemo(() => {
     return isNativeAddress(srcToken?.address || "");
@@ -466,7 +455,7 @@ export const useShouldWrap = () => {
 
 export const useSwapPrice = () => {
   const srcAmount = useSrcAmount().amountUi;
-  const { srcUsd, dstUsd } = useTwapContext();
+  const { srcUsd, dstUsd } = useWidgetContext();
   const outAmountUi = useOutAmount().amountUi;
   const price = useMemo(() => {
     if (!outAmountUi || !srcAmount) return "0";
@@ -488,7 +477,7 @@ export const useMaxSrcInputAmount = () => {
   const {
     state: { srcToken },
     sdk,
-  } = useTwapContextUI();
+  } = useTwapContext();
   const srcBalance = useSrcBalance().data?.toString();
 
   return useMemo(() => {
@@ -503,7 +492,7 @@ export const useOnSrcAmountPercent = () => {
   const {
     state: { srcToken },
     actionHandlers,
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const maxAmount = useMaxSrcInputAmount();
   const srcBalance = useSrcBalance().data?.toString();

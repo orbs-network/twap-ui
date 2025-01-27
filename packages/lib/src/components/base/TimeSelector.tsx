@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { Translations } from "../../types";
 import NumericInput from "./NumericInput";
 import { StyledRowFlex } from "../../styles";
@@ -41,7 +41,7 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
 
   return (
     <StyledContainer className={`twap-time-selector ${className}`} style={{ pointerEvents: disabled ? "none" : "unset" }}>
-      <StyledInput
+      <NumericInput
         onBlur={onBlur}
         onFocus={onFocus}
         disabled={disabled}
@@ -66,17 +66,17 @@ export const ResolutionSelect = ({ onChange, unit, className = "" }: { onChange:
   return <SelectMenu onSelect={(it) => onSelect(it.value as number)} items={timeArr} selected={unit} />;
 };
 
-const StyledInput = styled(NumericInput)({
-  flex: 1,
-  input: {
-    textAlign: "left",
-    paddingLeft: 10,
-    flex: "unset",
-    width: "100%",
-    "&::placeholder": {
-      color: "white",
+const StyledContainer = styled(StyledRowFlex)({
+  ".twap-input": {
+    flex: 1,
+    input: {
+      textAlign: "left",
+      paddingLeft: 10,
+      flex: "unset",
+      width: "100%",
+      "&::placeholder": {
+        color: "white",
+      },
     },
   },
 });
-
-const StyledContainer = styled(StyledRowFlex)({});

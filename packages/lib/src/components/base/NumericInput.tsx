@@ -1,11 +1,11 @@
 import styled from "styled-components";
 
 import { NumericFormat } from "react-number-format";
-import { useTwapContext } from "../../context/context";
 import { maxUint256 } from "@defi.org/web3-candies";
 import BN from "bignumber.js";
-import { CSSProperties } from "react";
+import React, { CSSProperties } from "react";
 import { Loader } from "./Loader";
+import { useWidgetContext } from "../../context/context";
 export interface Props {
   onChange: (value: string) => void;
   value?: string | number;
@@ -40,41 +40,48 @@ function NumericInput({
 }: Props) {
   const inputValue = value || minAmount || "";
 
-  const { inputPlaceholder, disableThousandSeparator } = useTwapContext().uiPreferences;
+  const {
+    uiPreferences: { input },
+    components: { Ipnut },
+  } = useWidgetContext();
 
-  const _placeholder = placeholder || inputPlaceholder || "0.0";
+  const _placeholder = placeholder || input?.placeholder || "0.0";
 
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>
       {loading && <StyledLoader className="twap-input-loader" width="75%" height="60%" />}
 
-      <StyledFlex style={{ height: "100%" }} className={`${loading ? "twap-input-loading" : ""}`}>
-        <NumericFormat
-          allowNegative={false}
-          disabled={disabled}
-          decimalScale={decimalScale}
-          onBlur={onBlur}
-          onFocus={onFocus}
-          placeholder={_placeholder}
-          isAllowed={(values) => {
-            const { floatValue = 0 } = values;
-            return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
-          }}
-          prefix={prefix ? `${prefix} ` : ""}
-          value={disabled && value === "0" ? "" : inputValue}
-          thousandSeparator={disableThousandSeparator ? undefined : ","}
-          decimalSeparator="."
-          customInput={StyledInput}
-          type="text"
-          min={minAmount}
-          onValueChange={(values, _sourceInfo) => {
-            if (_sourceInfo.source !== "event") {
-              return;
-            }
+      <StyledFlex style={{ height: "100%", pointerEvents: disabled ? "none" : "auto" }} className={`${loading ? "twap-input-loading" : ""}`}>
+        {Ipnut ? (
+          <Ipnut onChange={onChange} onBlur={onBlur} onFocus={onFocus} value={value?.toString() || ""} />
+        ) : (
+          <NumericFormat
+            allowNegative={false}
+            disabled={disabled}
+            decimalScale={decimalScale}
+            onBlur={onBlur}
+            onFocus={onFocus}
+            placeholder={_placeholder}
+            isAllowed={(values) => {
+              const { floatValue = 0 } = values;
+              return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
+            }}
+            prefix={prefix ? `${prefix} ` : ""}
+            value={disabled && value === "0" ? "" : inputValue}
+            thousandSeparator={input?.disableThousandSeparator ? undefined : ","}
+            decimalSeparator="."
+            customInput={StyledInput}
+            type="text"
+            min={minAmount}
+            onValueChange={(values, _sourceInfo) => {
+              if (_sourceInfo.source !== "event") {
+                return;
+              }
 
-            onChange(values.value === "." ? "0." : values.value);
-          }}
-        />
+              onChange(values.value === "." ? "0." : values.value);
+            }}
+          />
+        )}
       </StyledFlex>
     </StyledContainer>
   );

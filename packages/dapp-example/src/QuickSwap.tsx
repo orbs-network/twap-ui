@@ -99,25 +99,27 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setFromAmount(e);
   };
 
-  return (
-    <TWAP
-      connect={connect}
-      account={account}
-      // srcToken={fromToken?.address}
-      // dstToken={toToken?.address}
-      dappTokens={dappTokens}
-      onSrcTokenSelected={(token: any) => setFromToken(token)}
-      onDstTokenSelected={(token: any) => setToToken(token)}
-      TokenSelectModal={TokenSelectModal}
-      provider={library}
-      getTokenLogoURL={getTokenLogoURL}
-      isDarkTheme={isDarkTheme}
-      limit={limit}
-      onTxSubmitted={(args: any) => console.log(args)}
-      usePriceUSD={usePriceUSD}
-      onInputChange={onInputChange}
-    />
-  );
+  return null;
+
+  // return (
+  //   <TWAP
+  //     connect={connect}
+  //     account={account}
+  //     // srcToken={fromToken?.address}
+  //     // dstToken={toToken?.address}
+  //     dappTokens={dappTokens}
+  //     onSrcTokenSelected={(token: any) => setFromToken(token)}
+  //     onDstTokenSelected={(token: any) => setToToken(token)}
+  //     TokenSelectModal={TokenSelectModal}
+  //     provider={library}
+  //     getTokenLogoURL={getTokenLogoURL}
+  //     isDarkTheme={isDarkTheme}
+  //     limit={limit}
+  //     onTxSubmitted={(args: any) => console.log(args)}
+  //     usePriceUSD={usePriceUSD}
+  //     onInputChange={onInputChange}
+  //   />
+  // );
 };
 const logo = "https://s2.coinmarketcap.com/static/img/coins/64x64/8206.png";
 const DappComponent = () => {

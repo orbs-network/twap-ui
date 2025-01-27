@@ -75,22 +75,23 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
   const priceUsd = useGetPriceUsdCallback();
+  return null;
 
-  return (
-    <TWAP
-      connect={connect}
-      account={account}
-      // srcToken={zeroAddress}
-      // dstToken={erc20sData.poly.USDC.address} //USDC
-      dappTokens={dappTokens}
-      TokenSelectModal={TokenSelectModal}
-      provider={library}
-      isDarkTheme={isDarkTheme}
-      limit={limit}
-      onSrcTokenSelected={(token: any) => console.log(token)}
-      onDstTokenSelected={(token: any) => console.log(token)}
-    />
-  );
+  // return (
+  //   <TWAP
+  //     connect={connect}
+  //     account={account}
+  //     // srcToken={zeroAddress}
+  //     // dstToken={erc20sData.poly.USDC.address} //USDC
+  //     dappTokens={dappTokens}
+  //     TokenSelectModal={TokenSelectModal}
+  //     provider={library}
+  //     isDarkTheme={isDarkTheme}
+  //     limit={limit}
+  //     onSrcTokenSelected={(token: any) => console.log(token)}
+  //     onDstTokenSelected={(token: any) => console.log(token)}
+  //   />
+  // );
 };
 
 const DappComponent = () => {

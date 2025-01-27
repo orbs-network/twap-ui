@@ -1,38 +1,27 @@
 import {
   Components,
-  TWAPTokenSelectProps,
   Translations,
-  TwapAdapter,
+  WidgetProvider,
   Styles as TwapStyles,
-  TWAPProps,
+  WidgetProps,
   getConfig,
   hooks,
-  LimitPriceInputProps,
-  LimitPricePercentProps,
   Styles,
-  LimitPriceZeroButtonProps,
-  TwapContextUIPreferences,
-  LimitPriceTokenSelectProps,
-  LimitPriceTitleProps,
-  useTwapContext,
-  compact,
-  size,
   Configs,
-  query,
+  UIPreferences,
+  useWidgetContext,
+  Widget,
 } from "@orbs-network/twap-ui";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
-
 import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import translations from "./i18n/en.json";
 import { createContext, FC, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
-import { memo, ReactNode, useCallback, useState } from "react";
+import React, { ReactNode, useCallback, useState } from "react";
 import {
   StyledBalance,
   StyledPanelInput,
   StyledTokenChange,
   StyledTokenPanel,
-  StyledTokenSelect,
   StyledUSD,
   StyledPoweredBy,
   darkTheme,
@@ -55,12 +44,8 @@ import {
   StyledBalanceWarning,
   StyledTop,
   StyledTwap,
-  StyledOrdersContent,
   StyledLimitPriceTitle,
   GlobalStyles,
-  StyledOrdersButton,
-  StyledCreateOrderModal,
-  StyledOrdersHeader,
   StyledNetworkSelect,
   StyledLimitAndInputs,
   StyledChunksWarning,
@@ -68,19 +53,15 @@ import {
   StyledLimitPanelExpirationButtons,
   StyledLimitPanelExpirationButton,
   StyledTokenPanelLabel,
-  StyledFee,
-  StyledShowConfirmationButtonContainer,
   StyledChunksSelectText,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
-import { MdInfo } from "@react-icons/all-files/md/MdInfo";
 import { network } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
-import { ButtonProps } from "@orbs-network/twap-ui";
 
 const ethConfig = { ...Configs.SushiEth, minChunkSizeUsd: 1000 };
 const configs = [Configs.SushiArb, Configs.SushiBase, ethConfig];
@@ -93,28 +74,10 @@ const USD = ({ usd }: { usd?: string }) => {
   );
 };
 
-const uiPreferences: TwapContextUIPreferences = {
-  disableThousandSeparator: true,
-  addressPadding: {
-    start: 5,
-    end: 3,
+const uiPreferences: UIPreferences = {
+  input: {
+    disableThousandSeparator: true,
   },
-  infoIcon: <MdInfo size={15} />,
-};
-
-const ModifiedTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const { TokenSelectModal, srcToken, dstToken } = useAdapterContext();
-
-  return (
-    <TokenSelectModal selected={props.isSrc ? srcToken : dstToken} onSelect={props.onSelect!}>
-      <StyledTokenSelect hideArrow={false} isSrc={props.isSrc} onClick={() => {}} />
-    </TokenSelectModal>
-  );
-};
-const memoizedTokenSelect = memo(ModifiedTokenSelectModal);
-
-const TokenSelect = ({ open, onClose, isSrcToken }: { open: boolean; onClose: () => void; isSrcToken?: boolean }) => {
-  return <Components.TokenSelectModal Component={memoizedTokenSelect} isOpen={open} onClose={onClose} isSrc={isSrcToken} />;
 };
 
 const SmallText = ({ value = "", prefix }: { value?: string; prefix?: string }) => {
@@ -159,16 +122,34 @@ const TokenPanelUsd = ({ isSrc, exceedsBalance }: { isSrc?: boolean; exceedsBala
   return <USD usd={usd} />;
 };
 
+const TokenSelect = ({ isSrcToken }: { isSrcToken?: boolean }) => {
+  const {
+    components: { TokensListModal },
+    onSrcTokenSelected,
+    onDstTokenSelected,
+  } = useWidgetContext();
+
+  const onSelect = useCallback(
+    (token: any) => {
+      if (isSrcToken) {
+        onSrcTokenSelected?.(token);
+      } else {
+        onDstTokenSelected?.(token);
+      }
+    },
+    [isSrcToken, onSrcTokenSelected, onDstTokenSelected],
+  );
+
+  return (
+    <TokensListModal onSelect={onSelect}>
+      <div>Select</div>
+    </TokensListModal>
+  );
+};
+
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const [tokenListOpen, setTokenListOpen] = useState(false);
-  const { isLimitPanel } = useTwapContext();
-
-  const onClose = useCallback(() => {
-    setTokenListOpen(false);
-  }, []);
-
   const insufficientFunds = hooks.useBalanceWarning();
-
+  const { isLimitPanel } = useWidgetContext();
   const exceedsBalance = !isSrcToken ? undefined : insufficientFunds;
   const hideAmounts = !isSrcToken && !isLimitPanel;
 
@@ -179,7 +160,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <TwapStyles.StyledColumnFlex gap={12}>
           <TwapStyles.StyledRowFlex style={{ marginTop: 8, justifyContent: "space-between" }}>
             <StyledPanelInput placeholder="0.0" isSrc={isSrcToken} hide={hideAmounts ? 1 : 0} />
-            <TokenSelect onClose={onClose} open={tokenListOpen} isSrcToken={isSrcToken} />
+            <TokenSelect isSrcToken={isSrcToken} />
           </TwapStyles.StyledRowFlex>
           <TwapStyles.StyledRowFlex style={{ justifyContent: "space-between" }}>
             {!hideAmounts && <TokenPanelUsd exceedsBalance={!!exceedsBalance} isSrc={isSrcToken} />}
@@ -229,18 +210,17 @@ export type SushiModalProps = {
   header?: ReactNode;
 };
 
-interface SushiProps extends TWAPProps {
-  TokenSelectModal: FC<{ children: ReactNode; onSelect: (value: any) => void; selected: any }>;
-  Modal: FC<SushiModalProps>;
+interface SushiProps extends Partial<WidgetProps> {
   getTokenLogo: (token: any) => string;
   useUSD: (address?: any) => string | undefined;
   srcToken?: any;
   dstToken?: any;
   configChainId?: number;
   connector?: any;
+  dappTokens?: any;
   NetworkSelector?: FC<{ children: ReactNode }>;
   Button?: FC<{ children: ReactNode; disabled?: boolean }>;
-  useToken: (address?: string) => any;
+  useMarketPrice: (srcAddress?: string, dstAddress?: string, amount?: string) => { outAmount?: string; isLoading?: boolean };
 }
 
 interface AdapterContextProps extends SushiProps {
@@ -251,12 +231,6 @@ const AdapterContext = createContext({} as AdapterContextProps);
 const AdapterContextProvider = AdapterContext.Provider;
 
 const useAdapterContext = () => useContext(AdapterContext);
-
-const useWToken = () => {
-  const context = useAdapterContext();
-  const token = context.useToken(network(context.config.chainId).wToken.address);
-  return token;
-};
 
 const useIsNative = () => {
   const context = useAdapterContext();
@@ -269,6 +243,12 @@ const useIsNative = () => {
     },
     [context.config.chainId],
   );
+};
+
+const useWToken = () => {
+  const context = useAdapterContext();
+  const token = context.useToken?.(network(context.config.chainId).wToken.address);
+  return token;
 };
 
 const useAddresses = () => {
@@ -285,13 +265,13 @@ const useAddresses = () => {
 };
 
 const useMarketPrice = () => {
-  const { useTrade } = useAdapterContext();
+  const context = useAdapterContext();
 
   const { srcAddress, dstAddress } = useAddresses();
   const { srcToken } = useSelectedParsedTokens();
   const amount = hooks.useAmountBN(srcToken?.decimals, "1");
 
-  const trade = useTrade!(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
+  const trade = context.useMarketPrice!(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
 
   return trade?.outAmount;
 };
@@ -331,7 +311,7 @@ export const useProvider = () => {
       const res = await context.connector?.getProvider();
       setProvider(res);
     } catch (error) {}
-  }, [setProvider, context.connector, context.connectedChainId, context.account]);
+  }, [setProvider, context.connector, context.chainId, context.account]);
 
   useEffect(() => {
     setProviderFromConnector();
@@ -344,7 +324,7 @@ const useParsedToken = (address?: string) => {
   const { useToken } = useAdapterContext();
   const parseToken = useParseToken();
 
-  const token = useToken(address);
+  const token = useToken?.(address);
 
   return useMemo(() => parseToken(token), [token, parseToken]);
 };
@@ -360,18 +340,6 @@ const useIsWrongChain = () => {
   }, [context.configChainId]);
 };
 
-const CustomButton = (props: ButtonProps) => {
-  const context = useAdapterContext();
-  if (context.Button) {
-    return (
-      <div onClick={props.onClick} style={{ width: "100%" }} className="twap-custom-button">
-        <context.Button disabled={props.disabled || props.loading}>{props.children}</context.Button>
-      </div>
-    );
-  }
-  return null;
-};
-
 const TWAPContent = () => {
   const context = useAdapterContext();
   const provider = useProvider();
@@ -381,53 +349,45 @@ const TWAPContent = () => {
   }, [context.isDarkTheme]);
 
   const { srcUsd, dstUsd, nativeUsd } = useUsd();
-
   const marketPrice = useMarketPrice();
-  const isWrongChain = useIsWrongChain();
-
-  const dappWToken = useWToken();
-  const parseToken = useParseToken();
 
   return (
     <ThemeProvider theme={theme}>
       <StyledTwap className="twap-adapter-wrapper">
-        <TwapAdapter
+        <WidgetProvider
+          connect={context.connect!}
           config={context.config}
           maxFeePerGas={context.maxFeePerGas}
           priorityFeePerGas={context.priorityFeePerGas}
           translations={translations as Translations}
           provider={provider}
           account={!context.configChainId ? undefined : context.account}
-          useDappToken={context.useToken}
+          useToken={context.useToken}
           srcToken={context.srcToken}
           dstToken={context.dstToken}
           onDstTokenSelected={context.onDstTokenSelected}
           onSrcTokenSelected={context.onSrcTokenSelected}
-          isLimitPanel={context.limit}
+          isLimitPanel={context.isLimitPanel}
           uiPreferences={uiPreferences}
           onSwitchTokens={context.onSwitchTokens}
-          srcUsd={srcUsd}
-          dstUsd={dstUsd}
+          srcUsd={srcUsd ? Number(srcUsd) : 0}
+          dstUsd={dstUsd ? Number(dstUsd) : 0}
+          nativeUsd={nativeUsd ? Number(nativeUsd) : 0}
           marketPrice={marketPrice}
-          chainId={context.connectedChainId}
-          isWrongChain={isWrongChain}
-          Components={{ Tooltip: context.Tooltip, Button: context.Button && CustomButton }}
-          dappWToken={dappWToken}
+          chainId={context.chainId}
+          components={context.components!}
           isExactAppoval={true}
           fee={"0.25"}
-          nativeUsd={nativeUsd}
-          useParsedToken={useParsedToken}
-          parseToken={parseToken}
         >
           <GlobalStyles />
           <StyledContent>
-            {context.limit ? <LimitPanel /> : <TWAPPanel />}
+            {context.isLimitPanel ? <LimitPanel /> : <TWAPPanel />}
             <Components.LimitPriceMessage />
-            <Orders />
+            <Widget.Orders />
             <StyledPoweredBy />
           </StyledContent>
-          <SubmitOrderModal />
-        </TwapAdapter>
+          <Widget.SubmitOrderModal />
+        </WidgetProvider>
       </StyledTwap>
     </ThemeProvider>
   );
@@ -442,38 +402,6 @@ const TWAP = (props: SushiProps) => {
     <AdapterContextProvider value={{ ...props, config }}>
       <TWAPContent />
     </AdapterContextProvider>
-  );
-};
-
-const Orders = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const Modal = useAdapterContext().Modal;
-
-  const onClose = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  return (
-    <Components.OrderHistory isOpen={isOpen}>
-      <StyledOrdersButton onClick={() => setIsOpen(true)} />
-      <Modal open={isOpen} onClose={onClose} header={<StyledOrdersHeader />}>
-        <StyledOrdersContent />
-      </Modal>
-    </Components.OrderHistory>
-  );
-};
-
-const SubmitOrderModal = () => {
-  const { isOpen, onClose } = hooks.useSwapModal();
-  const Modal = useAdapterContext().Modal;
-  const {
-    state: { swapStatus },
-  } = useTwapContext();
-
-  return (
-    <Modal open={!!isOpen} onClose={() => onClose()} title={!swapStatus ? "Review order" : ""}>
-      <StyledCreateOrderModal />
-    </Modal>
   );
 };
 
@@ -503,19 +431,11 @@ const LimitPriceZeroButton = ({ text, onClick }: LimitPriceZeroButtonProps) => {
 };
 
 const LimitPriceTokenSelect = (props: LimitPriceTokenSelectProps) => {
-  return <TokenSelect onClose={() => {}} open={true} isSrcToken={props.isSrcToken} />;
+  return <TokenSelect isSrcToken={props.isSrcToken} />;
 };
 
-const LimitPriceTitleTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const adapterContext = useAdapterContext();
-  const twapContext = useTwapContextUI();
-  const token = props.isSrc ? twapContext.state.srcToken : twapContext.state.destToken;
-
-  return (
-    <adapterContext.TokenSelectModal selected={props.isSrc ? adapterContext.srcToken : adapterContext.dstToken} onSelect={props.onSelect!}>
-      <Components.Base.TokenDisplay symbol={token?.symbol} logo={token?.logoUrl} />
-    </adapterContext.TokenSelectModal>
-  );
+const LimitPriceTitleTokenSelectModal = (props: any) => {
+  return <TokenSelect isSrcToken={props.isSrc} />;
 };
 
 const LimitPriceTitleTokenSelect = (props: LimitPriceTitleProps) => {
@@ -557,7 +477,7 @@ const LimitPrice = () => {
 
 const ShowConfirmationButton = () => {
   const context = useAdapterContext();
-  const isWrongChain = useTwapContext().isWrongChain;
+  const isWrongChain = useWidgetContext().isWrongChain;
 
   if (isWrongChain && context.NetworkSelector) {
     return (
@@ -571,7 +491,7 @@ const ShowConfirmationButton = () => {
     );
   }
 
-  return <Components.ShowConfirmation connect={context.connect} />;
+  return <Components.ShowConfirmation />;
 };
 
 const TWAPPanel = () => {

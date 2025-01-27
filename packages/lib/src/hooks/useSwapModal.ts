@@ -1,10 +1,10 @@
 import { stateActions } from "../context/actions";
-import { useTwapContext } from "../context/context";
+import { useWidgetContext } from "../context/context";
 
 export const useSwapModal = () => {
   const {
     state: { showConfirmation: isOpen },
-  } = useTwapContext();
+  } = useWidgetContext();
   const { onClose, onOpen } = stateActions.useSwapModalActions();
 
   return {

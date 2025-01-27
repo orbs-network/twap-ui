@@ -1,12 +1,12 @@
 import { useMemo } from "react";
-import { useTwapContext } from "../../context/context";
+import { useWidgetContext } from "../../context/context";
 import { useFormatNumberV2 } from "../../hooks/hooks";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 export const useTokenDisplay = (isSrc?: boolean) => {
   const {
     state: { swapData },
-  } = useTwapContext();
+  } = useWidgetContext();
   const token = isSrc ? swapData.srcToken : swapData.dstToken;
   const amount = useFormatNumberV2({ value: isSrc ? swapData.srcAmount : swapData.outAmount, decimalScale: 3 });
   const usd = useFormatNumberV2({ value: isSrc ? swapData.srcAmountusd : swapData.outAmountusd, decimalScale: 2 });
@@ -20,11 +20,11 @@ export const useTokenDisplay = (isSrc?: boolean) => {
 };
 
 export const useOrderType = () => {
-  const { translations: t } = useTwapContext();
+  const { translations: t } = useWidgetContext();
   const {
     isLimitPanel,
     derivedValues: { isMarketOrder },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   return useMemo(() => {
     if (isLimitPanel) {

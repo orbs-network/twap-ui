@@ -3,7 +3,7 @@ import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-quer
 import BN from "bignumber.js";
 import { useCallback, useMemo, useRef } from "react";
 import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
-import { useTwapContext } from "../context/context";
+import { useWidgetContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
 import { Token } from "../types";
@@ -12,10 +12,11 @@ import { ordersStore } from "../store";
 import { useSrcAmount } from "./lib";
 import { Order, OrderStatus, getOrders, getOrderById, getOrderByTxHash } from "@orbs-network/twap-sdk";
 import { amountBNV2 } from "../utils";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
-  const { web3, account, config } = useTwapContext();
+  const { web3, account } = useWidgetContext();
+  const { config } = useTwapContext();
   const network = useNetwork();
   const key = ["useHasMinNativeTokenBalance", account, config.chainId, minNativeTokenBalance];
   const queryClient = useQueryClient();
@@ -42,7 +43,7 @@ export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
 };
 
 const useGetContract = () => {
-  const web3 = useTwapContext().web3;
+  const web3 = useWidgetContext().web3;
 
   return useCallback(
     (abi: Abi, address: string) => {
@@ -91,7 +92,7 @@ export const useFeeOnTransfer = (tokenAddress?: string) => {
 };
 
 export const useGasPrice = () => {
-  const { web3, maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useTwapContext();
+  const { web3, maxFeePerGas: contextMax, priorityFeePerGas: contextTip } = useWidgetContext();
   const { isLoading, data } = useQuery([QueryKeys.GET_GAS_PRICE, contextTip, contextMax], () => estimateGasPrice(undefined, undefined, web3), {
     enabled: !!web3,
     refetchInterval: REFETCH_GAS_PRICE,
@@ -108,11 +109,11 @@ export const useGasPrice = () => {
 };
 
 const useAllowance = () => {
-  const { account } = useTwapContext();
+  const { account } = useWidgetContext();
   const {
     state: { srcToken },
     sdk,
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const srcAmount = useSrcAmount().amount;
   const getHasAllowance = useGetHasAllowance();
@@ -133,7 +134,7 @@ const useAllowance = () => {
 };
 
 export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, staleTime?: number) => {
-  const { web3, account } = useTwapContext();
+  const { web3, account } = useWidgetContext();
 
   const query = useQuery(
     [QueryKeys.GET_BALANCE, account, token?.address],
@@ -153,7 +154,8 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
 };
 
 const useOrderHistoryKey = () => {
-  const { config, account } = useTwapContext();
+  const { account } = useWidgetContext();
+  const { config } = useTwapContext();
 
   return [QueryKeys.GET_ORDER_HISTORY, account, config.exchangeAddress, config.chainId];
 };
@@ -225,8 +227,8 @@ export const useAllOrders = () => {
   );
 };
 export const useOrdersHistory = () => {
-  const { config, account } = useTwapContext();
-  const { sdk, state } = useTwapContextUI();
+  const { account } = useWidgetContext();
+  const { sdk, config } = useTwapContext();
 
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();

@@ -1,13 +1,13 @@
 import React from "react";
 import { Styles, Translations } from "..";
-import { useTwapContext } from "../context/context";
+import { useWidgetContext } from "../context/context";
 import { Label } from "./base";
 import { handleFillDelayText } from "../utils";
 import { useMinimumDelayMinutes } from "../hooks/lib";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 export function ChunksAmountLabel() {
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
 
   return (
     <Label>
@@ -18,7 +18,7 @@ export function ChunksAmountLabel() {
 }
 
 export const TotalTradesLabel = () => {
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
 
   return (
     <Label>
@@ -29,7 +29,7 @@ export const TotalTradesLabel = () => {
 };
 
 export const CurrentMarketPriceLabel = () => {
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
   return (
     <Label>
       <Label.Text text={translations.currentMarketPrice} />
@@ -38,8 +38,8 @@ export const CurrentMarketPriceLabel = () => {
 };
 
 export const LimitPriceLabel = () => {
-  const { translations: t, isLimitPanel } = useTwapContext();
-  const isMarketOrder = useTwapContextUI().derivedValues.isMarketOrder;
+  const { translations: t, isLimitPanel } = useWidgetContext();
+  const isMarketOrder = useTwapContext().derivedValues.isMarketOrder;
 
   return (
     <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", position: "relative" }} gap={3}>
@@ -52,7 +52,7 @@ export const LimitPriceLabel = () => {
 };
 
 export const MaxDurationLabel = () => {
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
   return (
     <Label>
       <Label.Text text={translations.expiry} />
@@ -62,7 +62,7 @@ export const MaxDurationLabel = () => {
 };
 
 export const TradeIntervalLabel = () => {
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
   const getMinimumDelayMinutes = useMinimumDelayMinutes();
   return (
     <Label>
@@ -73,7 +73,7 @@ export const TradeIntervalLabel = () => {
 };
 
 export const OrderSummaryDeadlineLabel = ({ subtitle, translations: _translations }: { subtitle?: boolean; translations?: Translations }) => {
-  const translations = useTwapContext()?.translations || _translations;
+  const translations = useWidgetContext()?.translations || _translations;
 
   return (
     <Label>

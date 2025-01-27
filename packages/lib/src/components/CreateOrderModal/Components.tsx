@@ -3,15 +3,15 @@ import { TokenLogo } from "../base";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import React, { ReactNode, useMemo } from "react";
 import { styled } from "styled-components";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
-import { useTwapContext } from "../..";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 import { useTokenDisplay } from "./hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
+import { useWidgetContext } from "../../context/context";
 
 export const TokenDispalySmall = ({ isSrc }: { isSrc?: boolean }) => {
   const { amount, token } = useTokenDisplay(isSrc);
-  const isMarketOrder = useTwapContextUI().derivedValues.isMarketOrder;
-  const { swapStatus } = useTwapContext().state;
+  const isMarketOrder = useTwapContext().derivedValues.isMarketOrder;
+  const { swapStatus } = useWidgetContext().state;
 
   const prefix = useMemo(() => {
     if (!isSrc || !isMarketOrder) return "";

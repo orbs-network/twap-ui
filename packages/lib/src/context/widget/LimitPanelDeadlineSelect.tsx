@@ -1,9 +1,8 @@
 import { TimeUnit } from "@orbs-network/twap-sdk";
-import { useCallback } from "react";
-import { Labels, ShowConfirmation } from "../components";
-import { useDuration, useSetDuration } from "../hooks";
-import { StyledColumnFlex, StyledRowFlex } from "../styles";
-import { usePanelContext } from "./context";
+import React, { useCallback } from "react";
+import { Labels, ShowConfirmation } from "../../components";
+import { useDuration, useSetDuration } from "../../hooks";
+import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 
 const LimitPanelExpirationOptions = [
   {
@@ -58,10 +57,4 @@ export const LimitPanelDeadlineSelect = ({
       </StyledRowFlex>
     </StyledColumnFlex>
   );
-};
-
-const ShowConfirmationButton = ({ className = "" }: { className?: string }) => {
-  const context = usePanelContext();
-
-  return <ShowConfirmation className={className} connect={context.connect} />;
 };

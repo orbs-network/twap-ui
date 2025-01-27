@@ -1,7 +1,7 @@
 import React, { FC, ReactNode, useCallback, useState } from "react";
 import { Balance, Icon, NumericInput, TimeSelector, TokenName, USD, TokenLogo as Logo, Button, Portal } from "./base";
 import { Message } from "./base/Message";
-import { useTwapContext } from "../context/context";
+import { useWidgetContext } from "../context/context";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import styled from "styled-components";
 import { useFormatNumber, useSrcBalance, useDstBalance, useFormatDecimals, useAmountUi, useFormatNumberV2 } from "../hooks/hooks";
@@ -9,12 +9,12 @@ import { useConfirmationButton } from "../hooks/useConfirmationButton";
 import { StyledText, StyledRowFlex, StyledColumnFlex, textOverflow } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import { ChunksAmountLabel } from "./Labels";
-import { TooltipProps, TWAPTokenSelectProps } from "../types";
+import { TooltipProps } from "../types";
 import Copy from "./base/Copy";
 import { SQUIGLE } from "../config";
 import { ORBS_LOGO, ORBS_LOGO_FALLBACK, Styles } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 import {
   useFeeOnTransferWarning,
@@ -97,7 +97,7 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string }) => {
   const {
     state: { srcToken },
     actionHandlers,
-  } = useTwapContextUI();
+  } = useTwapContext();
   const srcAmountUi = useSrcAmount().amountUi;
 
   return (
@@ -116,7 +116,7 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
   const {
     state: { destToken },
     derivedValues: { isMarketOrder },
-  } = useTwapContextUI();
+  } = useTwapContext();
   const { amountUi, isLoading } = useOutAmount();
   return (
     <Input
@@ -187,32 +187,10 @@ export function TradeIntervalSelector({ placeholder }: { placeholder?: string })
   const {
     state: { typedFillDelay },
     actionHandlers,
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   return <TimeSelector placeholder={placeholder} onChange={actionHandlers.setFillDelay} value={typedFillDelay} />;
 }
-
-interface TokenSelectProps extends TWAPTokenSelectProps {
-  Component?: FC<TWAPTokenSelectProps>;
-  isOpen: boolean;
-  onClose: () => void;
-  isSrc?: boolean;
-}
-
-export const TokenSelectModal = ({ Component, isOpen, onClose, isSrc = false }: TokenSelectProps) => {
-  const onTokenSelectedCallback = useTokenSelect();
-
-  const onSelect = useCallback(
-    (token: any) => {
-      onTokenSelectedCallback({ isSrc, token });
-      onClose();
-    },
-    [onTokenSelectedCallback, isSrc],
-  );
-
-  if (!Component) return null;
-  return <Component isSrc={isSrc} isOpen={isOpen} onClose={onClose} onSelect={onSelect} srcTokenSelected={undefined} dstTokenSelected={undefined} />;
-};
 
 export function ChunksUSD({ onlyValue, emptyUi, suffix, prefix }: { onlyValue?: boolean; emptyUi?: React.ReactNode; suffix?: string; prefix?: string }) {
   const usd = useSrcChunkAmountUsd();
@@ -239,7 +217,7 @@ export const TokenBalance = ({
 }) => {
   const {
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
   const symbol = isSrc ? srcToken?.symbol : destToken?.symbol;
   const suffix = !showSymbol ? undefined : isSrc ? srcToken?.symbol : destToken?.symbol;
 
@@ -293,7 +271,7 @@ export function TokenUSD({
 
 export function PoweredBy({ className = "" }: { className?: string }) {
   const [url, setUrl] = useState(ORBS_LOGO);
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
 
   const onError = () => {
     setUrl(ORBS_LOGO_FALLBACK);
@@ -334,7 +312,7 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
   const formattedValue = useFormatNumber({ value });
   const {
     state: { srcToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const formattedValueTooltip = useFormatNumber({ value, decimalScale: 18 });
 
@@ -350,7 +328,7 @@ export const TradeSizeValue = ({ symbol }: { symbol?: boolean }) => {
 export const TradeSize = ({ hideLabel, hideSymbol, hideLogo }: { hideLabel?: boolean; hideSymbol?: boolean; hideLogo?: boolean }) => {
   const {
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   if (!srcToken && !destToken) {
     return <span>0</span>;
@@ -400,7 +378,7 @@ const StyledTradeSize = styled(StyledRowFlex)({
 export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
   const {
     state: { srcToken, destToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const address = isSrc ? srcToken?.address : destToken?.address;
 
@@ -426,8 +404,8 @@ export const DstToken = () => {
 };
 
 export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
-  const isMarketOrder = useTwapContextUI().derivedValues.isMarketOrder;
-  const { translations: t } = useTwapContext();
+  const isMarketOrder = useTwapContext().derivedValues.isMarketOrder;
+  const { translations: t } = useWidgetContext();
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
 
   if (!isMarketOrder || isWrapOrUnwrapOnly) return null;
@@ -450,7 +428,7 @@ export const PanelWarning = ({ className = "" }: { className?: string }) => {
   const feeOnTranferWarning = useFeeOnTransferWarning();
   const lowPriceWarning = useLowPriceWarning();
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  const isWrongChain = useTwapContext().isWrongChain;
+  const isWrongChain = useWidgetContext().isWrongChain;
   const limitPriceWarning = useLimitPriceWarning();
 
   const show = feeOnTranferWarning || lowPriceWarning || limitPriceWarning;
@@ -462,8 +440,8 @@ export const PanelWarning = ({ className = "" }: { className?: string }) => {
   return <Message className={className} title={title} text={text} variant="warning" />;
 };
 
-export const ShowConfirmation = ({ className = "", connect }: { className?: string; connect?: () => void }) => {
-  const { onClick, text, disabled, loading } = useConfirmationButton(connect);
+export const ShowConfirmation = ({ className = "" }: { className?: string }) => {
+  const { onClick, text, disabled, loading } = useConfirmationButton();
 
   return (
     <>
@@ -488,10 +466,10 @@ export const TradeWarning = ({ className = "" }: { className?: string }) => {
 };
 
 export const ChunkSizeMessage = ({ className = "" }: { className?: string }) => {
-  const { isWrongChain, srcUsd } = useTwapContext();
+  const { isWrongChain, srcUsd } = useWidgetContext();
   const {
     state: { srcToken },
-  } = useTwapContextUI();
+  } = useTwapContext();
 
   const chunkSizeFormatted = useFormatNumberV2({ value: useSrcChunkAmount().amountUi });
 
@@ -520,8 +498,8 @@ export const LimitPriceMessageContent = ({ className }: { className?: string }) 
 };
 
 export const LimitPriceMessage = ({ className }: { className?: string }) => {
-  const { translations: t } = useTwapContext();
-  const isMarketOrder = useTwapContextUI().derivedValues.isMarketOrder;
+  const { translations: t } = useWidgetContext();
+  const isMarketOrder = useTwapContext().derivedValues.isMarketOrder;
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
   if (isMarketOrder || isWrapOrUnwrapOnly) return null;
 
@@ -559,11 +537,7 @@ const StyledSeparator = styled("div")({
 });
 
 export const Tooltip = (props: TooltipProps) => {
-  const Components = useTwapContext().Components;
+  const Tooltip = useWidgetContext().components.Tooltip;
 
-  if (!Components?.Tooltip) {
-    return <>{props.children}</>;
-  }
-
-  return <Components.Tooltip tooltipText={props.tooltipText}>{props.children}</Components.Tooltip>;
+  return <Tooltip tooltipText={props.tooltipText}>{props.children}</Tooltip>;
 };

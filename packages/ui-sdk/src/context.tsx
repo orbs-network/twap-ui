@@ -32,7 +32,7 @@ const contextReducer = (state: State, action: Action): State => {
   }
 };
 
-export const TwapProvider = ({ children, config, isLimitPanel = false, walletAddress }: TwapProviderProps) => {
+export const TwapProvider = ({ children, config, isLimitPanel = false, walletAddress, chainId }: TwapProviderProps) => {
   const [state, dispatch] = useReducer(contextReducer, initialState);
   const sdk = useMemo(() => new SDK.TwapSDK({ config }), [config]);
   const derivedValues = useDerivedSwapValues(sdk, state, isLimitPanel);
@@ -83,53 +83,4 @@ export const useTwapContext = () => {
     throw new Error("useTwapContext must be used within a TwapProvider");
   }
   return context;
-};
-
-export const useSwapPriceDisplay = () => {
-  const [inverted, setInvert] = useState(Boolean);
-  const {
-    derivedValues: { destTokenAmountUI },
-    state: { typedSrcAmount, srcToken, destToken },
-  } = useTwapContext();
-  const price = useMemo(() => {
-    if (!destTokenAmountUI || !typedSrcAmount) return "0";
-    const value = BN(destTokenAmountUI).dividedBy(typedSrcAmount).toString();
-    return inverted ? BN(1).div(value).toString() : value;
-  }, [destTokenAmountUI, typedSrcAmount, inverted]);
-
-  const toggleInvert = useCallback(() => {
-    setInvert((prev) => !prev);
-  }, []);
-
-  return {
-    toggleInvert,
-    price,
-    leftToken: inverted ? destToken : srcToken,
-    rightToken: inverted ? srcToken : destToken,
-  };
-};
-
-export const useLimitPriceInput = () => {
-  const {
-    actionHandlers,
-    derivedValues: { priceUI },
-    state,
-  } = useTwapContext();
-  const { isInvertedLimitPrice, typedPrice } = state;
-
-  const value = useMemo(() => {
-    if (typedPrice !== undefined) return typedPrice;
-
-    if (isInvertedLimitPrice && priceUI) {
-      return BN(1).div(priceUI).decimalPlaces(6).toString();
-    }
-
-    return BN(priceUI).decimalPlaces(6).toString();
-  }, [typedPrice, priceUI, isInvertedLimitPrice]);
-
-  return {
-    value: value || "",
-    onChange: actionHandlers.setLimitPrice,
-    isLoading: Boolean(state.srcToken && state.destToken && !state.marketPrice),
-  };
 };

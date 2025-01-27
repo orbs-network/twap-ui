@@ -1,16 +1,16 @@
 import { styled } from "styled-components";
-import { ReactNode, useMemo } from "react";
+import React, { ReactNode, useMemo } from "react";
 import { useExplorerUrl, useFormatNumberV2, usemElipsisAddress } from "../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
 import { Label, TokenLogo } from "./base";
 import moment from "moment";
-import { useTwapContext } from "../context/context";
+import { useWidgetContext } from "../context/context";
 import { fillDelayText } from "../utils";
 import { Token } from "../types";
 import { Tooltip } from "./Components";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
-  const t = useTwapContext()?.translations;
+  const t = useWidgetContext()?.translations;
   const res = useMemo(() => moment(deadline).format("ll HH:mm"), [deadline]);
 
   return (
@@ -21,7 +21,7 @@ const Expiry = ({ deadline }: { deadline?: number }) => {
 };
 
 const ChunkSize = ({ srcChunkAmount, srcToken }: { srcChunkAmount?: string; srcToken?: Token }) => {
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
 
   const _srcChunkAmount = useFormatNumberV2({ value: srcChunkAmount, decimalScale: 3 });
   return (
@@ -42,7 +42,7 @@ const MinDestAmount = ({
   dstMinAmountOut?: string;
   totalChunks?: number;
 }) => {
-  const { translations } = useTwapContext();
+  const { translations } = useWidgetContext();
   const formattedValue = useFormatNumberV2({ value: dstMinAmountOut });
 
   if (isMarketOrder) return null;
@@ -55,7 +55,7 @@ const MinDestAmount = ({
 };
 
 const ChunksAmount = ({ chunks }: { chunks?: number }) => {
-  const t = useTwapContext().translations;
+  const t = useWidgetContext().translations;
 
   return (
     <DetailRow title={t.numberOfTrades} tooltip={t.confirmationTotalTradesTooltip}>
@@ -65,7 +65,7 @@ const ChunksAmount = ({ chunks }: { chunks?: number }) => {
 };
 
 const Recipient = () => {
-  const { translations: t, account } = useTwapContext();
+  const { translations: t, account } = useWidgetContext();
   const explorerUrl = useExplorerUrl();
   const makerAddress = usemElipsisAddress(account);
 
@@ -83,7 +83,7 @@ const Recipient = () => {
 };
 
 const TradeInterval = ({ fillDelayMillis }: { fillDelayMillis?: number }) => {
-  const t = useTwapContext()?.translations;
+  const t = useWidgetContext()?.translations;
   const text = useMemo(() => fillDelayText(fillDelayMillis, t), [fillDelayMillis, t]);
 
   return (
@@ -126,7 +126,7 @@ const DetailRow = ({
 };
 
 const TxHash = ({ txHash }: { txHash?: string }) => {
-  const { translations: t } = useTwapContext();
+  const { translations: t } = useWidgetContext();
   const txHashAddress = usemElipsisAddress(txHash);
   const explorerUrl = useExplorerUrl();
 
@@ -177,16 +177,11 @@ const TokenDisplay = ({ amount, token, usd, title, content }: { amount?: string;
 };
 
 const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
-  const Components = useTwapContext().Components;
-
-  if (Components?.USD) {
-    return <Components.USD value={usd} />;
-  }
   return <StyledSmallText className={`twap-order-display-token-usd ${className}`}>${usd}</StyledSmallText>;
 };
 
 const SrcToken = ({ amount, token, usd }: { amount?: string; token?: Token; usd?: string }) => {
-  const isLimitPanel = useTwapContext().isLimitPanel;
+  const isLimitPanel = useWidgetContext().isLimitPanel;
   return <TokenDisplay amount={amount} token={token} usd={usd} title={isLimitPanel ? "From" : "Allocate"} />;
 };
 
@@ -205,7 +200,7 @@ const DstToken = ({
   fillDelayMillis?: number;
   chunks?: number;
 }) => {
-  const t = useTwapContext().translations;
+  const t = useWidgetContext().translations;
 
   const content = useMemo(() => {
     if (!isMarketOrder) return null;

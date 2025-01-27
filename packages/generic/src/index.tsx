@@ -1,119 +1,57 @@
 import { Config, TimeUnit } from "@orbs-network/twap-sdk";
-import {
-  Components,
-  TWAPTokenSelectProps,
-  Translations,
-  TwapAdapter,
-  Styles as TwapStyles,
-  TWAPProps,
-  getConfig,
-  hooks,
-  LimitPriceInputProps,
-  LimitPricePercentProps,
-  Styles,
-  LimitPriceZeroButtonProps,
-  TwapContextUIPreferences,
-  LimitPriceTokenSelectProps,
-  LimitPriceTitleProps,
-  useTwapContext,
-  compact,
-  size,
-  getNetwork,
-  Widget,
-  TokensListModalProps,
-  WidgetModalProps
-} from "@orbs-network/twap-ui";
+import { Components, Translations, hooks, Styles, compact, size, getNetwork, Widget, useWidgetContext, UIPreferences, WidgetProps } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { createContext, FC, useContext, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Web3 from "web3";
-import { memo, ReactNode, useCallback, useState } from "react";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
+import React, { memo, ReactNode, useCallback, useState } from "react";
 
 import {
-  StyledBalance,
-  StyledPanelInput,
   StyledTokenChange,
-  StyledTokenPanel,
-  StyledTokenSelect,
-  StyledUSD,
-  StyledPoweredBy,
   darkTheme,
   lightTheme,
-  StyledLimitSwitch,
   Card,
-  StyledLimitInput,
-  StyledSelectButton,
   StyledLimitPanel,
   StyledTradeIntervalInput,
   StyledTradeIntervalResolution,
   StyledTradeInterval,
-  StyledResetLimitButtonContainer,
-  StyledResetLimitButtonLeft,
-  StyledResetLimitButtonRight,
   StyledChunksSelect,
   StyledChunksSelectInput,
   StyledContent,
-  StyledSmallText,
-  StyledBalanceWarning,
   StyledTop,
   StyledTwap,
-  StyledTradeDuration,
-  StyledTradeDurationRight,
-  StyledOrdersContent,
-  StyledLimitPriceTitle,
   GlobalStyles,
-  StyledOrdersButton,
-  StyledCreateOrderModal,
-  StyledOrdersHeader,
-  StyledNetworkSelect,
   StyledLimitAndInputs,
   StyledChunksWarning,
   StyledLimitPanelExpiration,
   StyledLimitPanelExpirationButtons,
   StyledLimitPanelExpirationButton,
-  StyledTokenPanelLabel,
   StyledFee,
   StyledShowConfirmationButtonContainer,
   StyledChunksSelectText,
+  StyledTokenPanelBalance,
+  StyledTokenPanelUsd,
+  StyledTokenPanelSelect,
+  StyledTokenPanelBalanceSelect,
 } from "./styles";
 import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
 import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
-import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
-import { MdInfo } from "@react-icons/all-files/md/MdInfo";
 import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
 import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 
-const uiPreferences: TwapContextUIPreferences = {
-  disableThousandSeparator: true,
-  addressPadding: {
-    start: 5,
-    end: 3,
-  },
-  infoIcon: <MdInfo size={15} />,
+const uiPreferences: UIPreferences = {
+  input: { disableThousandSeparator: true },
 };
 
 const TokenChange = () => {
   return <StyledTokenChange icon={<BsArrowDownShort />} />;
 };
 
-const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  return (
-    <Widget.TokenPanel isSrcToken={isSrcToken}>
-      <Widget.TokenPanel.Balance />
-      <Widget.TokenPanel.Usd />
-      <Widget.TokenPanel.Select />
-      <Widget.TokenPanel.Input />
-    </Widget.TokenPanel>
-  );
-};
-
-const useParseToken = () => {
-  const { config, getTokenLogo } = useAdapterContext();
+const useParseToken = (props: AdapterProps) => {
   return useCallback(
     (token?: any) => {
-      const nativeToken = getNetwork(config.chainId)?.native;
+      const nativeToken = getNetwork(props.config.chainId)?.native;
       try {
         if (!token || !token.symbol) {
           return;
@@ -122,134 +60,108 @@ const useParseToken = () => {
         if (token.isNative && nativeToken) {
           return {
             ...nativeToken,
-            logoUrl: getTokenLogo(token) || nativeToken.logoUrl,
+            logoUrl: props.getTokenLogo(token) || nativeToken.logoUrl,
           };
         }
         return {
           address: Web3.utils.toChecksumAddress(token.address),
           decimals: token.decimals,
           symbol: token.symbol,
-          logoUrl: getTokenLogo(token),
+          logoUrl: props.getTokenLogo(token),
         };
       } catch (error) {
         console.error("Invalid token", token);
       }
     },
-    [config.chainId, getTokenLogo]
+    [props.config.chainId, props.getTokenLogo],
   );
 };
 
-export type SushiModalProps = {
-  open: boolean;
-  onClose: () => void;
-  title?: string;
-  children?: ReactNode;
-  header?: ReactNode;
-};
-
-interface GenericProps extends TWAPProps {
-  TokenSelectModal: FC<{ isOpen: boolean; onClose: () => void; onSelect: (value: any) => void; selected: any }>;
-  Modal: FC<SushiModalProps>;
+interface AdapterProps extends Partial<WidgetProps> {
   getTokenLogo: (token: any) => string;
   useUSD: (address?: any) => string | undefined;
   srcToken?: any;
   dstToken?: any;
   connector?: any;
-  NetworkSelector?: FC<{ children: ReactNode }>;
-  Button?: FC<{ children: ReactNode; disabled?: boolean }>;
   config: Config;
+  dappTokens?: any;
+  useMarketPrice: (srcToken?: string, dstToken?: string, amount?: string) => { outAmount?: string };
 }
 
-const AdapterContext = createContext({} as GenericProps);
-const AdapterContextProvider = AdapterContext.Provider;
-
-const useAdapterContext = () => useContext(AdapterContext);
-
-const useWToken = () => {
-  const context = useAdapterContext();
-
+const useWToken = (props: AdapterProps) => {
   return useMemo(() => {
-    const wTokenAddress = getNetwork(context.config.chainId)?.wToken.address;
+    const wTokenAddress = getNetwork(props.config.chainId)?.wToken.address;
 
-    return context.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
-  }, [context.dappTokens, context.config]);
+    return props.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
+  }, [props.dappTokens, props.config]);
 };
 
-const useIsNative = () => {
-  const context = useAdapterContext();
-
+const useIsNative = (props: AdapterProps) => {
   return useCallback(
     (token?: any) => {
-      if (token?.isNative || token?.symbol === getNetwork(context.config.chainId)?.native.symbol) {
+      if (token?.isNative || token?.symbol === getNetwork(props.config.chainId)?.native.symbol) {
         return true;
       }
     },
-    [context.config.chainId]
+    [props.config.chainId],
   );
 };
 
-const useAddresses = () => {
-  const context = useAdapterContext();
-  const wrappedAddress = useWToken()?.address;
-  const isNative = useIsNative();
+const useAddresses = (props: AdapterProps) => {
+  const wrappedAddress = useWToken(props)?.address;
+  const isNative = useIsNative(props);
 
   return useMemo(() => {
     return {
-      srcAddress: isNative(context.srcToken) ? wrappedAddress : context.srcToken?.address,
-      dstAddress: isNative(context.dstToken) ? wrappedAddress : context.dstToken?.address,
+      srcAddress: isNative(props.srcToken) ? wrappedAddress : props.srcToken?.address,
+      dstAddress: isNative(props.dstToken) ? wrappedAddress : props.dstToken?.address,
     };
-  }, [context.srcToken, context.dstToken, isNative, wrappedAddress]);
+  }, [props.srcToken, props.dstToken, isNative, wrappedAddress]);
 };
 
-const useMarketPrice = () => {
-  const { useTrade } = useAdapterContext();
-
-  const { srcAddress, dstAddress } = useAddresses();
-  const { srcToken } = useSelectedParsedTokens();
+const useMarketPrice = (props: AdapterProps) => {
+  const { srcAddress, dstAddress } = useAddresses(props);
+  const { srcToken } = useSelectedParsedTokens(props);
   const amount = hooks.useAmountBN(srcToken?.decimals, "1");
 
-  const trade = useTrade!(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
+  const trade = props.useMarketPrice(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
 
   return trade?.outAmount;
 };
 
-const useUsd = () => {
-  const context = useAdapterContext();
-  const wToken = useWToken();
-  const tokens = useAddresses();
+const useUsd = (props: AdapterProps) => {
+  const wToken = useWToken(props);
+  const tokens = useAddresses(props);
 
   const srcAddress = isNativeAddress(tokens.srcAddress || "") ? wToken?.address : tokens.srcAddress;
   const dstAddress = isNativeAddress(tokens.dstAddress || "") ? wToken?.address : tokens.dstAddress;
 
   return {
-    srcUsd: context.useUSD(srcAddress),
-    dstUsd: context.useUSD(dstAddress),
+    srcUsd: props.useUSD(srcAddress),
+    dstUsd: props.useUSD(dstAddress),
   };
 };
 
-const useSelectedParsedTokens = () => {
-  const context = useAdapterContext();
-  const parseToken = useParseToken();
+const useSelectedParsedTokens = (props: AdapterProps) => {
+  const parseToken = useParseToken(props);
   return useMemo(() => {
     return {
-      srcToken: parseToken(context.srcToken),
-      dstToken: parseToken(context.dstToken),
+      srcToken: parseToken(props.srcToken),
+      dstToken: parseToken(props.dstToken),
     };
-  }, [context.srcToken, context.dstToken, parseToken]);
+  }, [props.srcToken, props.dstToken, parseToken]);
 };
 
-export const useProvider = () => {
-  const context = useAdapterContext();
-
+export const useProvider = (props: AdapterProps) => {
   const [provider, setProvider] = useState<any>(undefined);
 
   const setProviderFromConnector = useCallback(async () => {
     setProvider(undefined);
     try {
-      const res = await context.connector?.getProvider();
+      const res = await props.connector?.getProvider();
       setProvider(res);
     } catch (error) {}
-  }, [setProvider, context.connector, context.connectedChainId, context.account]);
+  }, [setProvider, props.connector, props.chainId, props.account]);
 
   useEffect(() => {
     setProviderFromConnector();
@@ -258,80 +170,83 @@ export const useProvider = () => {
   return provider;
 };
 
-const useParsedTokens = () => {
-  const context = useAdapterContext();
-  const parseToken = useParseToken();
+const useParsedTokens = (props: AdapterProps) => {
+  const parseToken = useParseToken(props);
   return useMemo(() => {
-    if (!size(context.dappTokens)) {
+    if (!size(props.dappTokens)) {
       return [];
     }
-    let parsed = context.dappTokens.map((rawToken: any) => {
+    let parsed = props.dappTokens.map((rawToken: any) => {
       return parseToken(rawToken);
     });
     return compact(parsed) as Token[];
-  }, [context.dappTokens, parseToken]);
+  }, [props.dappTokens, parseToken]);
 };
 
-const useIsWrongChain = () => {
-  const context = useAdapterContext();
+const TokenSelect = ({ isSrcToken }: { isSrcToken?: boolean }) => {
+  const {
+    components: { TokensListModal },
+    onSrcTokenSelected,
+    onDstTokenSelected,
+  } = useWidgetContext();
 
-  return useMemo(() => {
-    return context.connectedChainId !== context.config.chainId;
-  }, [context.connectedChainId, context.config.chainId]);
+  const onSelect = useCallback(
+    (token: any) => {
+      isSrcToken ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
+    },
+    [isSrcToken, onSrcTokenSelected, onDstTokenSelected],
+  );
+
+  return (
+    <TokensListModal isOpen={true} onClose={() => {}} onSelect={onSelect}>
+      <div>Select</div>
+    </TokensListModal>
+  );
 };
 
-const TokensListModal = (props: TokensListModalProps) => {
-  const context = useAdapterContext().TokenSelectModal;
+const TWAP = (props: AdapterProps) => {
+  const provider = useProvider(props);
 
-  return <context.TokenSelectModal isOpen={props.isOpen} onClose={props.onClose} onSelect={props.onSelect} />;
-};
+  const theme = useMemo(() => (props.isDarkTheme ? darkTheme : lightTheme), [props.isDarkTheme]);
 
-const TWAPContent = () => {
-  const context = useAdapterContext();
-  const provider = useProvider();
-
-  const theme = useMemo(() => {
-    return context.isDarkTheme ? darkTheme : lightTheme;
-  }, [context.isDarkTheme]);
-
-  const parsedTokens = useParsedTokens();
-  const { srcToken, dstToken } = useSelectedParsedTokens();
-  const { srcUsd, dstUsd } = useUsd();
-  const marketPrice = useMarketPrice();
-  const isWrongChain = useIsWrongChain();
+  const parsedTokens = useParsedTokens(props);
+  const { srcToken, dstToken } = useSelectedParsedTokens(props);
+  const { srcUsd, dstUsd } = useUsd(props);
+  const marketPrice = useMarketPrice(props);
 
   return (
     <ThemeProvider theme={theme}>
       <StyledTwap className="twap-adapter-wrapper">
         <Widget
-          config={context.config}
-          maxFeePerGas={context.maxFeePerGas}
-          priorityFeePerGas={context.priorityFeePerGas}
+          connect={props.connect!}
+          config={props.config}
+          maxFeePerGas={props.maxFeePerGas}
+          priorityFeePerGas={props.priorityFeePerGas}
           translations={translations as Translations}
           provider={provider}
-          account={context.account}
+          account={props.account}
           tokens={parsedTokens}
           srcToken={srcToken}
           dstToken={dstToken}
-          onSrcTokenSelected={context.onSrcTokenSelected}
-          onDstTokenSelected={context.onDstTokenSelected}
-          isLimitPanel={context.limit}
+          onSrcTokenSelected={props.onSrcTokenSelected}
+          onDstTokenSelected={props.onDstTokenSelected}
+          isLimitPanel={props.isLimitPanel}
           uiPreferences={uiPreferences}
-          onSwitchTokens={context.onSwitchTokens}
-          srcUsd={srcUsd}
-          dstUsd={dstUsd}
+          onSwitchTokens={props.onSwitchTokens}
+          srcUsd={srcUsd ? Number(srcUsd) : 0}
+          dstUsd={dstUsd ? Number(dstUsd) : 0}
           marketPrice={marketPrice}
-          chainId={context.connectedChainId}
-          isWrongChain={isWrongChain}
-          components={{ Modal, TokensListModal }}
+          chainId={props.chainId}
           isExactAppoval={true}
+          components={props.components!}
         >
           <GlobalStyles />
           <StyledContent>
-            {context.limit ? <LimitPanel /> : <TWAPPanel />}
+            {props.isLimitPanel ? <LimitPanel /> : <TWAPPanel />}
             <Components.LimitPriceMessage />
             <Widget.Orders />
-            <StyledPoweredBy />
+            <Widget.SubmitOrderModal />
+            <Widget.PoweredBy />
           </StyledContent>
         </Widget>
       </StyledTwap>
@@ -339,94 +254,19 @@ const TWAPContent = () => {
   );
 };
 
-const TWAP = (props: GenericProps) => {
-  return (
-    <AdapterContextProvider value={props}>
-      <TWAPContent />
-    </AdapterContextProvider>
-  );
-};
-
-
-const LimitInput = (props: LimitPriceInputProps) => {
-  return <StyledLimitInput placeholder="0" onChange={props.onChange} value={props.value} loading={props.isLoading} />;
-};
-
-const LimitPercentButton = (props: LimitPricePercentProps) => {
-  return (
-    <StyledSelectButton onClick={props.onClick} selected={props.selected ? 1 : 0}>
-      {props.text === "0%" ? "Market" : props.text}
-    </StyledSelectButton>
-  );
-};
-
-const LimitPriceZeroButton = ({ text, onClick }: LimitPriceZeroButtonProps) => {
-  return (
-    <StyledResetLimitButtonContainer>
-      <StyledResetLimitButtonLeft selected={1} onClick={onClick}>
-        {text}
-      </StyledResetLimitButtonLeft>
-      <StyledResetLimitButtonRight selected={1} onClick={onClick}>
-        <IoMdClose />
-      </StyledResetLimitButtonRight>
-    </StyledResetLimitButtonContainer>
-  );
-};
-
-
-const Modal = (props: WidgetModalProps) => {
-  const context = useAdapterContext()
-
-  return <context.Modal open={props.isOpen} onClose={props.onClose} />;
-}
-
-const LimitPriceTokenSelect = (props: LimitPriceTokenSelectProps) => {
-  return null
-};
-
-const LimitPriceTitleTokenSelectModal = (props: TWAPTokenSelectProps) => {
-  const adapterContext = useAdapterContext();
-  const twapContext = useTwapContextUI();
-  const token = props.isSrc ? twapContext.state.srcToken : twapContext.state.destToken;
-
-  return (
-    <adapterContext.TokenSelectModal selected={props.isSrc ? adapterContext.srcToken : adapterContext.dstToken} onSelect={props.onSelect!}>
-      <Components.Base.TokenDisplay symbol={token?.symbol} logo={token?.logoUrl} />
-    </adapterContext.TokenSelectModal>
-  );
-};
-
-const LimitPriceTitleTokenSelect = (props: LimitPriceTitleProps) => {
-  return <Components.TokenSelectModal Component={LimitPriceTitleTokenSelectModal} isOpen={false} onClose={() => {}} isSrc={props.isSrcToken} />;
-};
-
-const LimitPriceTitle = (props: LimitPriceTitleProps) => {
-  return (
-    <StyledLimitPriceTitle>
-      <span>{props.textLeft}</span>
-      <LimitPriceTitleTokenSelect {...props} />
-      <span>{props.textRight}</span>
-    </StyledLimitPriceTitle>
-  );
-};
-
 const LimitPrice = () => {
+  const { hidePanel } = Widget.LimitPanel.usePanel();
+
+  if (hidePanel) return null;
+
   return (
     <StyledLimitPanel>
       <Card>
         <Card.Header>
-          <Widget.LimitPanel.Label />
-          <StyledLimitSwitch />
+          <Widget.LimitPanel.Switch />
         </Card.Header>
         <Card.Body>
-          <Widget.LimitPanel.Main
-            onSrcSelect={() => {}}
-            Components={{ Input: LimitInput, PercentButton: LimitPercentButton, ZeroButton: LimitPriceZeroButton, TokenSelect: LimitPriceTokenSelect, Title: LimitPriceTitle }}
-            onDstSelect={() => {}}
-            styles={{
-              percentButtonsGap: "5px",
-            }}
-          />
+          <Widget.LimitPanel.Main />
         </Card.Body>
       </Card>
     </StyledLimitPanel>
@@ -434,21 +274,6 @@ const LimitPrice = () => {
 };
 
 const ShowConfirmationButton = () => {
-  const context = useAdapterContext();
-  const isWrongChain = useTwapContext().isWrongChain;
-
-  if (isWrongChain && context.NetworkSelector) {
-    return (
-      <context.NetworkSelector>
-        <StyledNetworkSelect>
-          <Components.Base.Button className="twap-submit-button" onClick={() => {}}>
-            Switch network
-          </Components.Base.Button>
-        </StyledNetworkSelect>
-      </context.NetworkSelector>
-    );
-  }
-
   return (
     <StyledShowConfirmationButtonContainer>
       <StyledFee>Fee: 0.25%</StyledFee>
@@ -461,9 +286,9 @@ const TWAPPanel = () => {
     <StyledContent>
       <LimitPrice />
       <StyledTop>
-        <TokenPanel isSrcToken={true} />
+        <Widget.TokenPanel.Main isSrcToken={true} />
         <TokenChange />
-        <TokenPanel />
+        <Widget.TokenPanel.Main isSrcToken={false} />
       </StyledTop>
       <TradeIntervalSelect />
       <TotalTrades />
@@ -478,13 +303,12 @@ const LimitPanel = () => {
       <StyledLimitAndInputs>
         <LimitPrice />
         <StyledTop>
-          <TokenPanel isSrcToken={true} />
+          <Widget.TokenPanel.Main isSrcToken={true} />
           <TokenChange />
-          <TokenPanel />
+          <Widget.TokenPanel.Main isSrcToken={false} />
         </StyledTop>
       </StyledLimitAndInputs>
       <LimitPanelExpiration />
-      <TradeSizeWarning />
       <ShowConfirmationButton />
     </StyledContent>
   );
@@ -516,7 +340,7 @@ const LimitPanelExpiration = () => {
     (unit: TimeUnit) => {
       setCustomDuration({ unit, value: 1 });
     },
-    [setCustomDuration]
+    [setCustomDuration],
   );
 
   return (
@@ -535,22 +359,16 @@ const LimitPanelExpiration = () => {
   );
 };
 
-const TradeSizeWarning = () => {
-  const warning = hooks.useTradeSizeWarning();
-  if (!warning) return null;
-  return <StyledChunksWarning title={warning} variant="warning" />;
-};
-
 const TotalTrades = () => {
   return (
     <Card>
       <Card.Header>
-        <Components.Labels.TotalTradesLabel />
+        <Widget.TradesAmountSelect.Label />
       </Card.Header>
       <StyledChunksSelect>
         <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
           <StyledChunksSelectInput>
-            <Components.ChunkSelector.Input />
+            <Widget.TradesAmountSelect.Input />
             <StyledChunksSelectText>Orders</StyledChunksSelectText>
           </StyledChunksSelectInput>
         </Styles.StyledRowFlex>
@@ -578,6 +396,5 @@ const TradeIntervalSelect = () => {
     </Card>
   );
 };
-
 
 export { TWAP };

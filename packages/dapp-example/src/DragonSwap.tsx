@@ -1,12 +1,12 @@
 import { StyledSushiLayout, StyledSushi, StyledSushiModalContent } from "./styles";
-import { SushiModalProps, TWAP } from "@orbs-network/twap-ui-generic";
+import { TWAP } from "@orbs-network/twap-ui-generic";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, Popup, TokensList, UISelector } from "./Components";
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { SelectorOption, TokenListItem } from "./types";
-import { mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
+import { mapCollection, size, TooltipProps, Configs, TokensListModalProps, ModalProps } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
 import { network } from "@defi.org/web3-candies";
 
@@ -18,18 +18,6 @@ export const useDappTokens = () => {
   const nativeToken = network(config.chainId).native;
   const parseListToken = useCallback(
     (tokenList?: any) => {
-      if (isBase) {
-        return [];
-        // return mapCollection(baseSwapTokens, (it, key) => {
-        //   return {
-        //     address: key,
-        //     decimals: it.decimals,
-        //     symbol: it.symbol,
-        //     logoURI: it.tokenInfo.logoURI,
-        //   };
-        // });
-      }
-
       const res = tokenList?.tokens
         .filter((it: any) => it.chainId === config?.chainId)
         .map(({ symbol, address, decimals, logoURI, name }: any) => ({
@@ -83,7 +71,7 @@ const parseList = (rawList?: any): TokenListItem[] => {
   });
 };
 
-const TokenSelectModal = ({ isOpen, onSelect, onClose, selected }: { isOpen: boolean; onClose: () => void; onSelect: (value: any) => void; selected: any }) => {
+const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
   const { data: baseAssets } = useDappTokens();
   const { isDarkTheme } = useTheme();
   const tokensListSize = size(baseAssets);
@@ -94,6 +82,14 @@ const TokenSelectModal = ({ isOpen, onSelect, onClose, selected }: { isOpen: boo
       <StyledSushiModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
         <TokensList tokens={parsedList} onClick={onSelect} />
       </StyledSushiModalContent>
+    </Popup>
+  );
+};
+
+const Modal = (props: ModalProps) => {
+  return (
+    <Popup isOpen={props.isOpen} onClose={props.onClose}>
+      {props.children}
     </Popup>
   );
 };
@@ -161,32 +157,17 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       srcToken={fromToken}
       dstToken={toToken}
       dappTokens={dappTokens}
-      TokenSelectModal={TokenSelectModal}
       isDarkTheme={isDarkTheme}
-      useTrade={_useTrade}
-      connectedChainId={chainId}
-      limit={limit}
-      Modal={SushiModal}
+      useMarketPrice={_useTrade}
+      chainId={chainId}
+      isLimitPanel={limit}
       getTokenLogo={getTokenLogo}
       useUSD={useUSD}
-      onSrcTokenSelected={(it: any) => setFromToken(it)}
-      onDstTokenSelected={(it: any) => setToToken(it)}
+      onSrcTokenSelected={setFromToken}
+      onDstTokenSelected={setToToken}
       onSwitchTokens={onSwitchTokens}
-      Tooltip={Tooltip}
+      components={{ Tooltip, TokensListModal, Modal }}
     />
-  );
-};
-
-const SushiModal = (props: SushiModalProps) => {
-  const { isDarkTheme } = useTheme();
-
-  return (
-    <Popup isOpen={props.open} onClose={props.onClose}>
-      <StyledSushiModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
-        <Popup.Header title={props.title} Component={props.header} onClose={props.onClose} />
-        <Popup.Body>{props.children}</Popup.Body>
-      </StyledSushiModalContent>
-    </Popup>
   );
 };
 

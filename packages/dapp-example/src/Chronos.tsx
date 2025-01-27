@@ -89,25 +89,26 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     },
     [dappTokens],
   );
+  return null;
 
-  return (
-    <TWAP
-      connect={connect}
-      account={account}
-      // srcToken={zeroAddress}
-      // dstToken={erc20sData.arb.USDC.address}
-      dappTokens={dappTokens}
-      TokenSelectModal={TokenSelectModal}
-      connector={connector}
-      getTokenLogoURL={getTokenLogoURL}
-      limit={limit}
-      isDarkTheme={isDarkTheme}
-      swapAnimationStart={false}
-      useTrade={_useTrade}
-      onSrcTokenSelected={(token: any) => console.log(token)}
-      onDstTokenSelected={(token: any) => console.log(token)}
-    />
-  );
+  // return (
+  //   <TWAP
+  //     connect={connect}
+  //     account={account}
+  //     // srcToken={zeroAddress}
+  //     // dstToken={erc20sData.arb.USDC.address}
+  //     dappTokens={dappTokens}
+  //     TokenSelectModal={TokenSelectModal}
+  //     connector={connector}
+  //     getTokenLogoURL={getTokenLogoURL}
+  //     limit={limit}
+  //     isDarkTheme={isDarkTheme}
+  //     swapAnimationStart={false}
+  //     useTrade={_useTrade}
+  //     onSrcTokenSelected={(token: any) => console.log(token)}
+  //     onDstTokenSelected={(token: any) => console.log(token)}
+  //   />
+  // );
 };
 
 const logo = "https://chronos.exchange/wp-content/uploads/2023/03/1-1-1.png";

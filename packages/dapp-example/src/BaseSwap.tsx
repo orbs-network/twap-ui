@@ -130,25 +130,27 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     }
   }, [dappTokens, srcToken, dstToken]);
 
-  return (
-    <TWAP
-      provider={library?.givenProvider}
-      connect={connect}
-      account={account}
-      srcToken={srcToken}
-      dstToken={dstToken}
-      dappTokens={dappTokens}
-      TokenSelectModal={TokenSelectModal}
-      isDarkTheme={isDarkTheme}
-      limit={limit}
-      connectedChainId={chainId}
-      onSwitchTokens={onSwitchTokens}
-      useTrade={_useTrade}
-      useUSD={useUSD}
-      Tooltip={Tooltip}
-      Modal={Modal}
-    />
-  );
+  return null;
+
+  // return (
+  //   <TWAP
+  //     provider={library?.givenProvider}
+  //     connect={connect}
+  //     account={account}
+  //     srcToken={srcToken}
+  //     dstToken={dstToken}
+  //     dappTokens={dappTokens}
+  //     TokenSelectModal={TokenSelectModal}
+  //     isDarkTheme={isDarkTheme}
+  //     limit={limit}
+  //     connectedChainId={chainId}
+  //     onSwitchTokens={onSwitchTokens}
+  //     useTrade={_useTrade}
+  //     useUSD={useUSD}
+  //     Tooltip={Tooltip}
+  //     Modal={Modal}
+  //   />
+  // );
 };
 
 const logo = "https://baseswap.fi/images/newlogo.png";

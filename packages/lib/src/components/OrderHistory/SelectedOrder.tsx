@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { useTwapContext } from "../../context/context";
+import { useWidgetContext } from "../../context/context";
 import { useCancelOrder } from "../../hooks/useTransactions";
 import { StyledColumnFlex, StyledText } from "../../styles";
 import { Button } from "../base";
@@ -14,6 +14,7 @@ import BN from "bignumber.js";
 import { OrderStatus, Order } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder, useTokenFromList } from "./context";
 import moment from "moment";
+import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 export const SelectedOrder = () => {
   const order = useSelectedOrder();
@@ -127,7 +128,7 @@ const Container = styled(StyledColumnFlex)({});
 
 export const CancelOrderButton = ({ order }: { order: Order }) => {
   const { isLoading, mutate: cancel } = useCancelOrder();
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
 
   if (!order || order.status !== OrderStatus.Open) return null;
 
@@ -199,7 +200,7 @@ const AmountInFilled = ({ order }: { order: Order }) => {
   );
 };
 const OrderStatusComponent = ({ order }: { order: Order }) => {
-  const t = useTwapContext().translations;
+  const t = useWidgetContext().translations;
 
   const text = !order ? "" : order.status;
 
@@ -235,7 +236,7 @@ const LimitPrice = ({ order }: { order: Order }) => {
 };
 
 const AvgExcecutionPrice = ({ order }: { order: Order }) => {
-  const t = useTwapContext().translations;
+  const t = useWidgetContext().translations;
   const srcToken = useTokenFromList(order.srcTokenAddress);
   const dstToken = useTokenFromList(order.dstTokenAddress);
 

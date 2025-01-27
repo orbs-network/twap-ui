@@ -12,9 +12,7 @@ export { default as Button } from "./Button";
 export { default as Balance } from "./Balance";
 export { default as USD } from "./USD";
 export * from "./Loader";
-export * from "./Slider";
 export * from "./Portal";
-export { default as Odnp } from "./Odnp";
 export * from "./Spinner";
 
 export { default as TokenDisplay } from "./TokenDisplay";

@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { useTwapContext } from "../context/context";
+import { useWidgetContext } from "../context/context";
 import { query } from "./query";
 import { SwapStatus } from "@orbs-network/swap-ui";
 
@@ -7,7 +7,7 @@ export function useSubmitOrderButton(onClick?: () => void) {
   const {
     translations: t,
     state: { swapStatus, disclaimerAccepted },
-  } = useTwapContext();
+  } = useWidgetContext();
   const isLoading = swapStatus === SwapStatus.LOADING;
 
   const { isLoading: allowanceLoading } = query.useAllowance();

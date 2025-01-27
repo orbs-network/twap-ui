@@ -106,23 +106,24 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   }, [library]);
 
   const trade = _useTrade(fromToken, dstToken, amount);
+  return null;
 
-  return (
-    <TWAP
-      connect={connect}
-      account={account}
-      srcToken={fromToken}
-      dstToken={dstToken}
-      dappTokens={dappTokens}
-      TokenSelectModal={TokenSelectModal}
-      isDarkTheme={isDarkTheme}
-      limit={limit}
-      connector={connector}
-      onSrcTokenSelected={setFromToken}
-      onDstTokenSelected={setDstToken}
-      setFromAmount={setAmount}
-    />
-  );
+  // return (
+  //   <TWAP
+  //     connect={connect}
+  //     account={account}
+  //     srcToken={fromToken}
+  //     dstToken={dstToken}
+  //     dappTokens={dappTokens}
+  //     TokenSelectModal={TokenSelectModal}
+  //     isDarkTheme={isDarkTheme}
+  //     isLimitPanel={limit}
+  //     connector={connector}
+  //     onSrcTokenSelected={setFromToken}
+  //     onDstTokenSelected={setDstToken}
+  //     setFromAmount={setAmount}
+  //   />
+  // );
 };
 
 const logo =

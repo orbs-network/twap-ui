@@ -5,7 +5,7 @@ import { StyledColumnFlex } from "../styles";
 import { BottomContent, Button, Label, Message, NumericInput, ResolutionSelect } from "./base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
 import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
-import { useTwapContext } from "../context/context";
+import { useWidgetContext } from "../context/context";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const duration = useDuration().timeDuration;
@@ -50,7 +50,7 @@ export const TradeDuration = ({ children, className = "" }: { children: ReactNod
 };
 
 const WarningComponent = () => {
-  const { translations: t } = useTwapContext();
+  const { translations: t } = useWidgetContext();
   const durationWarning = useDuration().warning;
   const partialFillWarning = useIsPartialFillWarning();
 
@@ -73,7 +73,7 @@ const WarningComponent = () => {
   );
 };
 const MaxDurationLabel = () => {
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
   return (
     <Label>
       <Label.Text text={translations.expiry} />

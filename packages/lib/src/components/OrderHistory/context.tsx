@@ -1,6 +1,5 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useTwapContext } from "../../context/context";
-import { Translations } from "../../types";
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useWidgetContext } from "../../context/context";
 import { OrdersMenuTab } from "./types";
 import { mapCollection, size } from "../../utils";
 import { groupOrdersByStatus, Order, OrderStatus } from "@orbs-network/twap-sdk";
@@ -19,8 +18,8 @@ interface OrderHistoryContextType {
 }
 
 export const useTokenFromList = (address?: string) => {
-  const { tokens, useParsedToken } = useTwapContext();
-  const _token = useParsedToken?.(address);
+  const { tokens, useToken } = useWidgetContext();
+  const _token = useToken?.(address);
 
   const result = useMemo(() => {
     if (!address || !tokens) return;
@@ -84,7 +83,7 @@ export const OrderHistoryContextProvider = ({ children, isOpen }: { children: Re
     setSelectedOrderId(undefined);
   }, [setSelectedOrderId]);
 
-  const translations = useTwapContext().translations;
+  const translations = useWidgetContext().translations;
   const tabs = useMemo(() => {
     return mapCollection(OrderStatus, (it) => {
       return {

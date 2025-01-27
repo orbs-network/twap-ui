@@ -84,22 +84,23 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { data: dappTokens } = useDappTokens();
   const priceUsd = useGetPriceUsdCallback();
   const { isDarkTheme } = useTheme();
+  return null;
 
-  return (
-    <TWAP
-      provider={library?.givenProvider}
-      connect={connect}
-      account={account}
-      // srcToken="ETH"
-      // dstToken="USDC"
-      dappTokens={dappTokens}
-      onSrcTokenSelected={(token: any) => console.log(token)}
-      onDstTokenSelected={(token: any) => console.log(token)}
-      TokenSelectModal={TokenSelectModal}
-      isDarkTheme={isDarkTheme}
-      limit={limit}
-    />
-  );
+  // return (
+  //   <TWAP
+  //     provider={library?.givenProvider}
+  //     connect={connect}
+  //     account={account}
+  //     // srcToken="ETH"
+  //     // dstToken="USDC"
+  //     dappTokens={dappTokens}
+  //     onSrcTokenSelected={(token: any) => console.log(token)}
+  //     onDstTokenSelected={(token: any) => console.log(token)}
+  //     TokenSelectModal={TokenSelectModal}
+  //     isDarkTheme={isDarkTheme}
+  //     limit={limit}
+  //   />
+  // );
 };
 
 const logo = "https://app.lynex.fi/images/header/logo.svg";
