@@ -39,7 +39,7 @@ const TokensToken = ({ token, amount, className }: { token?: TokenData; amount?:
   const amountF = useFormatNumber({ value: amount, decimalScale: 3 });
   return (
     <StyledToken className={`twap-order-preview-token ${className}`}>
-      <Components.Base.TokenLogo logo={token?.logoUrl} />
+      <Components.Base.TokenLogo logo={token?.logoUrl} token={token} />
       <StyledTokenSymbol>
         <StyledText>
           {amount ? amountF : ""} {token?.symbol}

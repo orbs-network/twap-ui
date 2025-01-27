@@ -23,6 +23,7 @@ export interface AdapterProps extends TWAPProps {
     setIsOpen: (value: boolean) => void;
   }>;
   Input?: FC<InputProps>;
+  CurrencyLogo: FC<{ address?: string }>;
 }
 
 export type ToastProps = { title: string; message: ReactNode; autoCloseMillis?: number; variant: "success" | "warning" | "error" | "info" };

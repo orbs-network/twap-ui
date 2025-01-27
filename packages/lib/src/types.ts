@@ -219,6 +219,7 @@ export interface TwapLibProps extends LibProps {
   onCancelOrderSuccess?: (orderId: number) => void;
   onCancelOrderFailure?: (orderId: number) => void;
   Input?: FC<InputProps>;
+  CurrencyLogo?: FC<{ address?: string; size?: string }>;
 }
 
 export type InputProps = {

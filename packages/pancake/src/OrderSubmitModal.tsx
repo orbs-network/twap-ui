@@ -311,7 +311,7 @@ const Modal = ({ children }: { children: ReactNode }) => {
 const SubmitModalToken = ({ token, amount }: { token?: TokenData; amount?: string }) => {
   return (
     <StyledSubmitModalToken>
-      <Components.Base.TokenLogo logo={token?.logoUrl} />
+      <Components.Base.TokenLogo token={token} size="40px" />
       <StyledStyledSubmitModalTokenText>{`${amount} ${token?.symbol}`}</StyledStyledSubmitModalTokenText>
     </StyledSubmitModalToken>
   );
@@ -608,7 +608,7 @@ const OrderReview = ({ onSubmit }: { onSubmit: () => void }) => {
       <StyledOrderSummary>
         <StyledTokens>
           <OrderReviewTokenDisplay isSrc={true} />
-          <ArrowBottom />
+          <ArrowBottom className="twap-submit-icon" />
           <OrderReviewTokenDisplay />
         </StyledTokens>
 
@@ -668,7 +668,7 @@ const OrderReviewTokenDisplay = ({ isSrc }: { isSrc?: boolean }) => {
       <StyledTokenDisplayAmount>{amount}</StyledTokenDisplayAmount>
       <StyledTokenDisplayRight>
         <Styles.StyledText>{token?.symbol}</Styles.StyledText>
-        <Components.Base.TokenLogo logo={token?.logoUrl} />
+        <Components.Base.TokenLogo token={token} size="40px" />
       </StyledTokenDisplayRight>
     </StyledTokenDisplay>
   );
@@ -847,7 +847,7 @@ const StyledTokens = styled(Styles.StyledColumnFlex)(({ theme }) => {
   return {
     gap: 16,
     alignItems: "center",
-    svg: {
+    ".twap-submit-icon": {
       width: 24,
       height: 24,
       "*": {
@@ -862,10 +862,6 @@ const StyledTokenDisplayRight = styled(Styles.StyledRowFlex)({
   p: {
     fontSize: 20,
     fontWeight: 600,
-  },
-  ".twap-token-logo": {
-    width: 40,
-    height: 40,
   },
 });
 

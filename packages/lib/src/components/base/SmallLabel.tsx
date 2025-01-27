@@ -14,15 +14,12 @@ function SmallLabel({ children, style, loading = false, className = "" }: { chil
         </Fade>
       )}
 
-      {!loading && (
-        <>{children}</>
-      )}
+      {!loading && <>{children}</>}
     </StyledContainer>
   );
 }
 
 export default SmallLabel;
-
 
 const StyledLoader = styled(Box)({
   width: 50,

@@ -42,7 +42,10 @@ const USD = ({
         <>{formattedValue}</>
       ) : (
         <>
-          <StyledOverflow>{`${_prefix}`}{value && Number(value) < 0.01 ? "<0.01" : formattedValue || "0"}</StyledOverflow>
+          <StyledOverflow>
+            {`${_prefix}`}
+            {value && Number(value) < 0.01 ? "<0.01" : formattedValue || "0"}
+          </StyledOverflow>
           <StyledText>{`${_suffix}`}</StyledText>
         </>
       )}
@@ -52,14 +55,12 @@ const USD = ({
 
 export default USD;
 
-
-
 const StyledOverflow = styled(StyledText)({
-    whiteSpace: "nowrap",
-    textOverflow:'ellipsis',
-    overflow: "hidden",
-    flex:1
-})
+  whiteSpace: "nowrap",
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+  flex: 1,
+});
 
 const StyledLabel = styled(SmallLabel)({
   display: "flex",

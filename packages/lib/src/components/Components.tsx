@@ -226,14 +226,19 @@ const DstTokenInput = (props: { className?: string; placeholder?: string }) => {
 
 export const TokenLogo = ({ isSrc, className = "" }: { isSrc?: boolean; className?: string }) => {
   const token = useToken(isSrc);
+  const CurrencyLogo = useTwapContext().CurrencyLogo;
+
+  if (CurrencyLogo) {
+    return <CurrencyLogo address={token?.address} />;
+  }
 
   return <Logo className={className} logo={token?.logoUrl} />;
 };
 
-export function TokenLogoAndSymbol({ isSrc, reverse }: { isSrc?: boolean; reverse?: boolean }) {
+export function TokenLogoAndSymbol({ isSrc, reverse, size }: { isSrc?: boolean; reverse?: boolean; size?: string }) {
   const token = useToken(isSrc);
 
-  return <TokenDisplay reverse={reverse} logo={token?.logoUrl} symbol={token?.symbol} />;
+  return <TokenDisplay size={size} reverse={reverse} token={token} logo={token?.logoUrl} symbol={token?.symbol} />;
 }
 
 export const TokenSelect = ({
@@ -267,7 +272,7 @@ export const TokenSelect = ({
             <>{tokenSelectedUi}</>
           ) : (
             <>
-              <TokenLogoAndSymbol isSrc={isSrc} />
+              <TokenLogoAndSymbol size={"40px"} isSrc={isSrc} />
               {!hideArrow && <Icon icon={CustomArrow ? <CustomArrow size={20} /> : <IoIosArrowDown size={20} />} />}
             </>
           )}

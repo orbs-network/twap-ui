@@ -6,7 +6,7 @@ import { useWeb3React } from "@web3-react/core";
 import Web3 from "web3";
 import { Dapp, TokensList, UISelector } from "./Components";
 import { Popup } from "./Components";
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import _ from "lodash";
 import { erc20s, isNativeAddress, zeroAddress, eqIgnoreCase } from "@defi.org/web3-candies";
 import { SelectorOption, TokenListItem } from "./types";
@@ -322,6 +322,13 @@ const StyledButton = styled("button")<{ dark: number }>(({ disabled, dark }) => 
   };
 });
 
+const CurrencyLogo = ({ address, size = "24px" }: { address?: string; size?: string }) => {
+  const { data: dappTokens } = useDappTokens();
+  const currency = dappTokens && dappTokens[address || ""];
+
+  return <img src={currency?.logoURI} style={{ width: size, height: size, borderRadius: "50%" }} />;
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
@@ -370,6 +377,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       TransactionErrorContent={TxErrorContent}
       Button={_Button}
       toast={toast}
+      CurrencyLogo={CurrencyLogo}
     />
   );
 };

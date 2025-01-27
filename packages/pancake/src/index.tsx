@@ -345,6 +345,7 @@ const TwapPanel = memo(() => {
         parsedTokens={parsedTokens}
         onCancelOrderSuccess={onCancelOrderSuccess}
         Input={context.Input}
+        CurrencyLogo={context.CurrencyLogo}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />

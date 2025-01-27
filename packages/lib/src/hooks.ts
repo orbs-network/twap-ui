@@ -1316,7 +1316,7 @@ export const useChunks = () => {
   return useMemo(() => {
     if (!srcUsd || !srcToken || shouldUnwrap || shouldWrap) return 1;
 
-    if (chunks !== undefined || BN(srcAmountUsd).isZero()) return chunks;
+    if (chunks !== undefined || BN(srcAmountUsd || 0).isZero()) return chunks || 1;
     return Math.min(
       maxPossibleChunks,
       BN(srcAmountUsd || "0")

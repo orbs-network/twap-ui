@@ -105,7 +105,7 @@ export const configureStyles = (theme: Theme) => {
       border: `1px solid ${styles.darkMode ? "rgba(255,255,255, 0.1)" : "rgb(8, 6, 11, 0.3)"}`,
     },
     ".twap-time-selector": {
-      gap:'4px!important',
+      gap: "4px!important",
     },
     ".twap-time-selector-selected": {
       background: "unset",
@@ -202,10 +202,10 @@ export const configureStyles = (theme: Theme) => {
       },
     },
     ".twap-order-summary-placed-step": {
-      svg: {
-        top: -5,
-        path: { fill: "#27a688" },
-      },
+      // svg: {
+      //   top: -5,
+      //   path: { fill: "#27a688" },
+      // },
     },
 
     ".twap-orders-title": {
@@ -565,7 +565,7 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
       },
     },
     ".twap-token-display": {
-      gap: 6,
+      gap: 10,
     },
     ".twap-token-selected": {
       gap: 2,
@@ -581,10 +581,12 @@ export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
       fontSize: 20,
       color: styles.primaryTextColor,
     },
-    svg: {
-      color: styles.label,
-      width: 24,
-      height: 24,
+    ".twap-icon": {
+      svg: {
+        color: styles.label,
+        width: 24,
+        height: 24,
+      },
     },
     "&:hover": {
       backgroundColor: styles.darkMode ? "#191326" : "white",
@@ -1527,8 +1529,8 @@ export const StyledTokenPanelContent = styled(InputContainer)({
     },
     ".twap-input-container-content": {
       gap: 10,
-    }
-  }
+    },
+  },
 });
 
 const lightBoxStyles = (theme: Theme) => {
