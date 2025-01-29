@@ -2,6 +2,7 @@ import { styled } from "styled-components";
 import { StyledRowFlex, StyledText } from "../../styles";
 import TokenLogo from "./TokenLogo";
 import TokenName from "./TokenName";
+import React from "react";
 
 export interface Props {
   symbol?: string;

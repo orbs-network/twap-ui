@@ -26,68 +26,47 @@ const getStyles = (theme?: DefaultTheme) => {
     textColor: isDarkMode ? "rgb(248 250 252/1)" : "rgb(17 24 39/1)",
     messageText: isDarkMode ? "#94a3b8" : "#6b7280",
     boxHover: isDarkMode ? "rgba(255,255,255, 0.09)" : "rgba(0,0,0, 0.03)",
+    cardBg: isDarkMode ? "rgb(13,20,58)" : "rgb(255, 255, 255)",
+    label: isDarkMode ? "rgb(191 219 254)" : "rgb(107 114 128/1)",
+    inputColor: isDarkMode ? "rgb(239 246 255)" : "rgb(17 24 39/1)",
+    errorBorder: isDarkMode ? "rgb(239 68 68)" : "",
+    focusBorder: isDarkMode ? "rgb(8 96 219)" : "",
   };
 };
 
-export const StyledPanelInput = styled(Components.TokenPanelInput)({
-  input: {
-    fontSize: 30,
-    height: 44,
-    padding: "0px!important",
-    fontWeight: 500,
-    "@media (max-width: 600px)": {
-      fontSize: 24,
-    },
-  },
-});
-
-export const StyledSmallText = styled("span")(({ theme }) => {
+const cardStyles = (theme: DefaultTheme) => {
   const styles = getStyles(theme);
   return {
-    color: `${styles.darkText}`,
-    fontWeight: "500!important",
-    fontSize: 17,
-    small: {
+    width: "100%",
+    background: styles.cardBg,
+    padding: 16,
+    gap: 8,
+    borderRadius: 20,
+    color: "white",
+    ".twap-message": {
+      color: styles.messageText,
       fontSize: 14,
-      color: styles.darkText,
-      fontWeight: "500!important",
+      lineHeight: "20px",
     },
   };
-});
-
-export const StyledOrdersHeader = styled(Components.OrderHistory.Header)(({ theme }) => {
-  const styles = getStyles(theme);
-  return {
-    "*": {
-      color: styles.textColor,
-    },
-
-    ".twap-order-modal-header-title": {
-      fontWeight: 500,
-    },
-    ".twap-order-modal-header-back": {
-      borderRadius: "50%",
-      width: 30,
-      height: 30,
-      transition: "0.2s all",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      svg: {
-        width: 15,
-        height: 15,
-      },
-      "&:hover": {
-        background: styles.boxHover,
-      },
-    },
-  };
-});
+};
 
 export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-message": {
+      color: styles.label,
+      p: {
+        fontSize: 14,
+      },
+    },
+    ".twap-limit-panel-percent-button": {
+      ...selectButtonStyles(theme),
+    },
+    ".twap-limit-panel-percent-button-selected": {
+      ...selectButtonStyles(theme, 1),
+    },
     ".twap-custom-button": {
       color: "white!important",
       "*": {
@@ -96,7 +75,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-error-message": {
       color: styles.messageText,
-      ...cardBodyStyles(theme),
     },
     ".twap-input-loading": {
       opacity: 0,
@@ -107,7 +85,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
       "*": {
         fontFamily: "inherit",
-        color: "white",
       },
     },
     ".twap-spinner": {
@@ -115,7 +92,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       border: !isDarkMode ? "3px solid rgba(0, 0, 0, 0.1)" : `3px solid rgba(255, 255, 255, 0.1)`,
     },
     ".twap-order-menu": {
-      ...cardBodyStyles(theme),
       minWidth: "100%",
       borderRadius: 6,
       overflow: "hidden",
@@ -131,7 +107,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
 
     ".twap-order-container": {
-      ...cardBodyStyles(theme),
       background: styles.isDarkMode ? "#ffffff0a" : "white",
       transition: "0.2s all",
       "&:hover": {
@@ -158,7 +133,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         },
       },
       ".twap-order-display-details": {
-        ...cardBodyStyles(theme),
         background: styles.isDarkMode ? "#ffffff0a" : "white",
         gap: 8,
       },
@@ -180,7 +154,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
     ".twap-select-menu-list": {
-      ...cardBodyStyles(theme),
       padding: 0,
       "&-item": {
         color: styles.textColor,
@@ -211,7 +184,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
     ".twap-limit-price-message": {
-      ...cardBodyStyles(theme),
       "*": {
         color: styles.messageText,
       },
@@ -483,58 +455,13 @@ const selectTokenStyles = (theme: DefaultTheme) => {
   };
 };
 
-export const StyledTokenSelect = styled(Components.TokenSelect)(({ theme }) => {
-  const styles = getStyles(theme);
-  return {
-    ...selectTokenStyles(theme),
-  };
-});
-
-export const StyledTokenSelectLimit = styled(Styles.StyledRowFlex)(({ theme }) => {
-  return {
-    ...selectTokenStyles(theme),
-    width: "auto",
-  };
-});
-
-const cardBodyStyles = (theme?: DefaultTheme) => {
-  const styles = getStyles(theme);
-  return {
-    background: styles.isDarkMode ? "rgb(30 41 59/1)" : "white",
-    borderRadius: 12,
-    padding: 12,
-    border: `1px solid ${styles.accent}`,
-  };
-};
-
-const tooltipStyles = (theme?: DefaultTheme) => {
-  const styles = getStyles(theme);
-
-  return {
-    backgroundColor: styles.isDarkMode ? "rgba(30,41,59,.5)" : "#F9F9FA",
-    backdropFilter: "blur(10px) saturate(190%) contrast(70%) brightness(80%)",
-    borderRadius: "12px",
-    fontSize: 14,
-    padding: 16,
-    fontWeight: 400,
-    color: styles.isDarkMode ? "#94a3b8" : "rgb(107 114 128/1)",
-    border: `1px solid ${styles.accent}`,
-    lineHeight: "20px",
-    "& *": {
-      color: "inherit",
-      fontSize: "inherit",
-      fontWeight: "inherit",
-    },
-  };
-};
-
 export const StyledLimitAndInputs = styled(Styles.StyledColumnFlex)(({ theme }) => {
   return {
     gap: 8,
   };
 });
 
-export const StyledLimitSwitch = styled(Components.LimitPanel.Switch)(({ theme }) => {
+export const StyledLimitSwitch = styled(Components.LimitSwitch)(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
@@ -565,20 +492,9 @@ export const StyledLimitSwitch = styled(Components.LimitPanel.Switch)(({ theme }
   };
 });
 
-const StyledCardHeader = styled(Styles.StyledRowFlex)({
-  justifyContent: "space-between",
-});
-
 export const StyledCard = styled(StyledColumnFlex)(({ theme }) => {
-  const styles = getStyles(theme);
   return {
-    width: "100%",
-    gap: 6,
-    ".twap-message": {
-      color: styles.messageText,
-      fontSize: 14,
-      lineHeight: "20px",
-    },
+    ...cardStyles(theme),
   };
 });
 
@@ -587,42 +503,26 @@ export const Card = ({ children, className = "" }: { children: ReactNode; classN
 };
 
 export const CardHeader = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  return <StyledCardHeader className={className}> {children}</StyledCardHeader>;
-};
-
-export const CardBody = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  return <StyledCardBody className={`${className} twap-card-body`}> {children}</StyledCardBody>;
+  return <StyledCardHeader className={className}>{children}</StyledCardHeader>;
 };
 
 Card.Header = CardHeader;
-Card.Body = CardBody;
 
-export const StyledCardBody = styled("div")(({ theme }) => {
-  return {
-    ...cardBodyStyles(theme),
-    width: "100%",
-    minHeight: 55,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-  };
-});
-
-export const StyledFee = styled("p")(({ theme }) => {
+const StyledCardHeader = styled(Styles.StyledRowFlex)(({ theme }) => {
   const styles = getStyles(theme);
   return {
-    fontSize: 14,
-    color: styles.messageText,
-    lineHeight: "20px",
-    margin: 0,
-    textAlign: "left",
-    width: "100%",
+    justifyContent: "space-between",
+    ".twap-label": {
+      p: {
+        color: styles.label,
+        fontSize: 14,
+        textTransform: "uppercase",
+        letterSpacing: "0.02em",
+        lineHeight: "20px",
+        fontWeight: 500,
+      },
+    },
   };
-});
-
-export const StyledShowConfirmationButtonContainer = styled(Styles.StyledColumnFlex)({
-  gap: 10,
-  justifyContent: "center",
 });
 
 export const StyledTokenPanelLabel = styled("p")(({ theme }) => {
@@ -632,14 +532,6 @@ export const StyledTokenPanelLabel = styled("p")(({ theme }) => {
     fontSize: 14,
     color: styles.messageText,
     lineHeight: "20px",
-  };
-});
-
-export const StyledTokenPanel = styled(CardBody)<{ error?: number }>(({ theme, error }) => {
-  const isDarkMode = getStyles(theme).isDarkMode;
-  const bg = isDarkMode ? "rgba(239,68,68,.2)" : "rgba(239,68,68,.2)";
-  return {
-    background: error ? bg : "",
   };
 });
 
@@ -711,6 +603,104 @@ export const StyledResetLimitButtonRight = styled(StyledSelectButton)({
   },
 });
 
+export const StyledTokenPanel = styled(Widget.TokenPanel)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    ...cardStyles(theme),
+      border:'2px solid transparent',
+    display: "flex",
+    flexDirection: "column",
+    transition: "0.2s all",
+    gap: 8,
+    ".twap-panel-balance-buttons": {
+      display: "flex",
+      gap: 10,
+      button: {
+        color: "rgb(36 99 235)",
+        background: "transparent",
+        border: "none",
+        fontSize: 14,
+        fontWeight: 500,
+        letterSpacing: "0.02em",
+        padding: 0,
+      },
+    },
+    ".twap-panel-token-select": {
+      gap: 3,
+      background: "rgb(36 54 109)",
+      padding: 6,
+      borderRadius: 8,
+      ".twap-token-logo": {
+        width: 16,
+        height: 16,
+      },
+      svg: {
+        width: 20,
+        height: 20,
+        color: "rgb(146 197 253)",
+        stroke: {
+          color: "rgb(146 197 253)",
+        } as any,
+        marginLeft: 5,
+      },
+      p: {
+        fontSize: 14,
+      },
+    },
+    ".twap-input": {
+      input: {
+        fontSize: 30,
+        fontWeight: 500,
+        color: styles.inputColor,
+        "&::placeholder": {
+          opacity: 0.7,
+        },
+      },
+    },
+    "&.twap-token-panel-focus": {
+      border: `2px solid ${styles.focusBorder}`,
+    },
+    "&.twap-token-panel-error": {
+      border: `2px solid ${styles.errorBorder}`,
+    },
+   
+  };
+});
+
+export const StyledTokenPanelTop = styled(Styles.StyledRowFlex)(({ theme }) => {
+  return {
+    justifyContent: "space-between",
+    gap: 8,
+  };
+});
+export const StyledTokenPanelBottom = styled(Styles.StyledRowFlex)(({ theme }) => {
+  return {
+    justifyContent: "space-between",
+    gap: 8,
+  };
+});
+
+export const StyledTokenPanelBalance = styled(Styles.StyledText)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    fontSize: 14,
+    letterSpacing: "0.02em",
+    color: styles.label,
+    span: {
+      color: "rgb(191 219 254/0.3)",
+    },
+  };
+});
+
+export const StyledTokenPanelUsd = styled(Styles.StyledText)(({ theme }) => {
+  const styles = getStyles(theme);
+  return {
+    fontSize: 14,
+    letterSpacing: "0.02em",
+    color: "rgb(191 219 254/0.3)",
+  };
+});
+
 export const StyledLimitPanel = styled(Components.LimitPanel)(({ theme }) => {
   const styles = getStyles(theme);
   return {
@@ -751,15 +741,9 @@ export const StyledLimitPanel = styled(Components.LimitPanel)(({ theme }) => {
   };
 });
 
-export const StyledTradeInterval = styled(Components.TradeInterval)(({ theme }) => {
+export const StyledTradeInterval = styled(Card)(({ theme }) => {
   const styles = getStyles(theme);
-  return {
-    ".twap-warning-message": {
-      "*": {
-        color: styles.warningText,
-      },
-    },
-  };
+  return {};
 });
 
 export const StyledTradeDuration = styled(Components.TradeDuration)(({ theme }) => {
@@ -773,13 +757,7 @@ export const StyledTradeDuration = styled(Components.TradeDuration)(({ theme }) 
   };
 });
 
-export const StyledTradeIntervalInput = styled(CardBody)({
-  input: {
-    fontSize: 18,
-  },
-});
-
-export const StyledTradeDurationRight = styled(CardBody)({
+export const StyledTradeDurationRight = styled(Card)({
   display: "flex",
   flexDirection: "row",
   ".twap-duration-reset": {
@@ -798,43 +776,17 @@ export const StyledTradeDurationRight = styled(CardBody)({
     fontSize: 18,
   },
 });
-export const StyledTradeIntervalResolution = styled(CardBody)({
-  alignItems: "flex-end",
-  display: "flex",
-  paddingTop: 0,
-  paddingBottom: 0,
-});
 
-export const StyledChunksSelect = styled(Components.ChunkSelector)(({ theme }) => {
+export const StyledChunksSelect = styled(Card)(({ theme }) => {
   const styles = getStyles(theme);
   return {
-    ".twap-warning-message": {
-      "*": {
-        color: styles.warningText,
+    ".twap-input": {
+      flex: 1,
+      input: {
+        fontSize: 16,
+        textAlign: "left!important" as any,
+        height: "100%",
       },
-    },
-  };
-});
-
-export const StyledChunksSelectSlider = styled(CardBody)(({ theme }) => {
-  const styles = getStyles(theme);
-  return {
-    flex: 1,
-    width: "auto",
-    padding: "5px 20px 5px 20px",
-    ".MuiSlider-thumb": {
-      backgroundColor: "#D8D8DB",
-    },
-    ".MuiSlider-track": {
-      background: "rgb(59 130 246/1)",
-      border: "none!important",
-    },
-    ".MuiSlider-rail": {
-      backgroundColor: styles.accent,
-      borderRadius: 12,
-    },
-    ".MuiSlider-valueLabel": {
-      ...tooltipStyles(theme),
     },
   };
 });
@@ -844,25 +796,6 @@ export const StyledTop = styled(Styles.StyledColumnFlex)({
   "@media(max-width: 1000px)": {
     gap: 16,
   },
-});
-
-export const StyledChunksSelectInput = styled(CardBody)(() => {
-  return {
-    display: "flex",
-    alignItems: "center",
-    flexDirection: "row",
-    width: "100%",
-    paddingRight: 20,
-    gap: 20,
-    ".twap-input": {
-      flex: 1,
-      input: {
-        fontSize: 18,
-        textAlign: "left!important" as any,
-        height: "100%",
-      },
-    },
-  };
 });
 
 export const StyledChunksSelectText = styled(Styles.StyledText)(({ theme }) => {
@@ -890,7 +823,6 @@ export const StyledBalanceWarning = styled(Styles.StyledText)(({ theme }) => {
 export const StyledCreateOrderModal = styled(Components.CreateOrderModal)(({ theme }) => {
   const styles = getStyles(theme);
   const summaryModalStyles = {
-    ...cardBodyStyles(theme),
     background: styles.isDarkMode ? "#ffffff0a" : "white",
   };
 
@@ -944,18 +876,10 @@ export const StyledLimitPanelExpirationButton = styled(StyledSelectButton)(({ th
   };
 });
 
-export const StyledChunksWarning = styled(Components.Base.Message)(({ theme }) => {
-  const styles = getStyles(theme);
-  return {
-    color: styles.warningText,
-  };
-});
-
 export const StyledOrdersButton = styled(Components.OrderHistory.Button)(({ theme }) => {
   const styles = getStyles(theme);
   return {
     width: "100%",
-    ...cardBodyStyles(theme),
     transition: "0.2s all",
     cursor: "pointer",
     fontSize: 15,
@@ -964,6 +888,14 @@ export const StyledOrdersButton = styled(Components.OrderHistory.Button)(({ them
     "&:hover": {
       background: styles.boxHover,
     },
+  };
+});
+
+export const StyledTwapInputs = styled(Styles.StyledRowFlex)(({ theme }) => {
+  const styles = getStyles(theme);
+
+  return {
+    alignItems: "stretch",
   };
 });
 
@@ -1057,34 +989,4 @@ export const StyledLimitPriceTitle = styled(Styles.StyledRowFlex)(({ theme }) =>
 
 export const StyledNetworkSelect = styled("div")({
   width: "100%",
-});
-
-export const StyledTokenPanelBalance = styled("div")(() => {
-  return {};
-});
-
-export const StyledTokenPanelUsd = styled(Styles.StyledText)(() => {
-  return {};
-});
-
-export const StyledTokenPanelSelect = styled(Widget.TokenPanel.Select)(() => {
-  return {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    cursor: "pointer",
-    ".twap-token-logo": {
-      width: 40,
-      height: 40,
-    },
-  };
-});
-
-export const StyledTokenPanelBalanceSelect = styled(Styles.StyledRowFlex)(({ theme }) => {
-  const styles = getStyles(theme);
-  return {
-    button: {
-      ...selectButtonStyles(theme, 0),
-    },
-  };
 });

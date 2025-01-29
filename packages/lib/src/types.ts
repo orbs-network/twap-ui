@@ -3,6 +3,7 @@ import { IconType } from "@react-icons/all-files";
 import Web3 from "web3";
 import { Config } from "@orbs-network/twap-sdk";
 import { SwapStatus, SwapStep } from "@orbs-network/swap-ui";
+import { UseTwap } from "@orbs-network/twap-ui-sdk";
 
 export interface Translations {
   confirmationDeadlineTooltip: string;
@@ -216,6 +217,7 @@ export interface WidgetContextType extends WidgetProps {
   updateState: (state: Partial<State>) => void;
   translations: Translations;
   uiPreferences: UIPreferences;
+  twap: UseTwap;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -338,6 +340,7 @@ export interface State {
   createOrderTxHash?: string;
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
+  srcAmount?: string;
   swapData: {
     srcToken?: Token;
     dstToken?: Token;

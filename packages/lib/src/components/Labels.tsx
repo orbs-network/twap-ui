@@ -4,7 +4,6 @@ import { useWidgetContext } from "../context/context";
 import { Label } from "./base";
 import { handleFillDelayText } from "../utils";
 import { useMinimumDelayMinutes } from "../hooks/lib";
-import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 export function ChunksAmountLabel() {
   const translations = useWidgetContext().translations;
@@ -38,8 +37,8 @@ export const CurrentMarketPriceLabel = () => {
 };
 
 export const LimitPriceLabel = () => {
-  const { translations: t, isLimitPanel } = useWidgetContext();
-  const isMarketOrder = useTwapContext().derivedValues.isMarketOrder;
+  const { translations: t, isLimitPanel, twap } = useWidgetContext();
+  const isMarketOrder = twap.values.isMarketOrder;
 
   return (
     <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "auto", position: "relative" }} gap={3}>

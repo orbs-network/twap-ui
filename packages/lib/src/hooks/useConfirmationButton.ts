@@ -5,54 +5,35 @@ import BN from "bignumber.js";
 import { useUnwrapToken, useWrapOnly } from "./useTransactions";
 import { useSwapModal } from "./useSwapModal";
 import { useChangeNetwork, useSrcBalance } from "./hooks";
-import { useNoLiquidity, useOutAmount, useShouldOnlyWrap, useShouldUnwrap, useSwapWarning } from "./lib";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
-import { SwapStatus } from "@orbs-network/swap-ui";
+import { useShouldOnlyWrap, useShouldUnwrap } from "./lib";
 
 export const useConfirmationButton = () => {
   const {
     isWrongChain,
     srcUsd,
-    account,
-    state: { swapStatus },
+    account: maker,
     translations,
     connect,
+    srcToken,
+    dstToken,
+    twap: {
+      errors: { hasErros },
+    },
   } = useWidgetContext();
-
-  const {
-    state: { srcToken, destToken },
-  } = useTwapContextUI();
-  const createOrderLoading = swapStatus === SwapStatus.LOADING;
   const { onOpen } = useSwapModal();
-  const outAmountLoading = useOutAmount().isLoading;
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
-  const noLiquidity = useNoLiquidity();
   const shouldUnwrap = useShouldUnwrap();
   const usdLoading = BN(srcUsd || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
-  const warning = useSwapWarning();
   const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);
-  const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(destToken?.address);
+  const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(dstToken?.address);
   const shouldOnlyWrap = useShouldOnlyWrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
 
-  const hasWarning = useMemo(() => {
-    return !Object.values(warning).every((value) => value === undefined);
-  }, [warning]);
-
-  const maker = account;
-  const disableWhileLaoding = outAmountLoading || usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading;
+  const isLoading = usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading;
 
   return useMemo(() => {
-    if (createOrderLoading) {
-      return {
-        text: translations.placingOrder,
-        onClick: onOpen,
-        loading: false,
-        disabled: false,
-      };
-    }
     if (isWrongChain)
       return {
         text: translations.switchNetwork,
@@ -74,57 +55,26 @@ export const useConfirmationButton = () => {
         disabled: false,
       };
 
-    if (hasWarning)
+    if (shouldOnlyWrap || shouldUnwrap) {
       return {
-        text: warning.zeroSrcAmount ? warning.zeroSrcAmount : warning.balance || translations.placeOrder,
-        onClick: undefined,
-        disabled: true,
-        loading: false,
-      };
-    if (disableWhileLaoding) {
-      return { text: translations.placeOrder, onClick: undefined, loading: true };
-    }
-
-    if (noLiquidity) {
-      return {
-        text: translations.noLiquidity,
-        disabled: true,
-        loading: false,
-      };
-    }
-
-    if (shouldOnlyWrap) {
-      return {
-        text: translations.wrap,
-        onClick: wrap,
+        text: shouldOnlyWrap ? translations.wrap : translations.unwrap,
+        onClick: shouldOnlyWrap ? wrap : unwrap,
         disabled: false,
-        loading: wrapLoading,
-      };
-    }
-    if (shouldUnwrap) {
-      return {
-        text: translations.unwrap,
-        onClick: unwrap,
-        disabled: false,
-        loading: unwrapLoading,
+        loading: wrapLoading || unwrapLoading,
       };
     }
 
     return {
       text: translations.placeOrder,
       onClick: onOpen,
-      loading: false,
-      disabled: false,
+      loading: isLoading,
+      disabled: isLoading || hasErros,
     };
   }, [
-    createOrderLoading,
     isWrongChain,
     maker,
     connect,
-    hasWarning,
-    warning,
-    disableWhileLaoding,
-    noLiquidity,
+    isLoading,
     shouldOnlyWrap,
     wrap,
     wrapLoading,
@@ -135,5 +85,6 @@ export const useConfirmationButton = () => {
     changeNetwork,
     changeNetworkLoading,
     onOpen,
+    hasErros,
   ]);
 };

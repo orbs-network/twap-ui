@@ -197,6 +197,7 @@ export const useGetPriceUsdCallback = () => {
 export const usePriceUSD = (address?: string) => {
   const { config } = useDappContext();
   const wToken = network(config.chainId)?.wToken.address;
+
   const { chainId } = useWeb3React();
   return useQuery<number>({
     queryKey: ["usePriceUSD", address, chainId],
@@ -221,6 +222,7 @@ const chainIdToName: { [key: number]: string } = {
   81457: "blast",
   59144: "linea",
   42161: "arbitrum",
+  1329: "sei",
 };
 
 export async function fetchLLMAPrice(token: string, chainId: number | string) {

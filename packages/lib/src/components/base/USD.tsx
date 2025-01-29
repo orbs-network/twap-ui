@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
 import React from "react";
 import { SQUIGLE } from "../../config";
-import { useFormatNumberV2 } from "../../hooks/hooks";
+import { useFormatNumber } from "../../hooks/hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
 import { useWidgetContext } from "../../context/context";
@@ -25,7 +25,7 @@ const USD = ({
   prefix?: string;
   decimalScale?: number;
 }) => {
-  const formattedValue = useFormatNumberV2({ value, decimalScale });
+  const formattedValue = useFormatNumber({ value, decimalScale });
 
   const usd = useWidgetContext()?.uiPreferences.usd;
 

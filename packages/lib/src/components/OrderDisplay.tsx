@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import React, { ReactNode, useMemo } from "react";
-import { useExplorerUrl, useFormatNumberV2, usemElipsisAddress } from "../hooks/hooks";
+import { useExplorerUrl, useFormatNumber, usemElipsisAddress } from "../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
 import { Label, TokenLogo } from "./base";
 import moment from "moment";
@@ -23,7 +23,7 @@ const Expiry = ({ deadline }: { deadline?: number }) => {
 const ChunkSize = ({ srcChunkAmount, srcToken }: { srcChunkAmount?: string; srcToken?: Token }) => {
   const translations = useWidgetContext().translations;
 
-  const _srcChunkAmount = useFormatNumberV2({ value: srcChunkAmount, decimalScale: 3 });
+  const _srcChunkAmount = useFormatNumber({ value: srcChunkAmount, decimalScale: 3 });
   return (
     <DetailRow title={translations.individualTradeSize} tooltip={translations.confirmationTradeSizeTooltip}>
       {`${srcChunkAmount ? _srcChunkAmount : "-"} ${srcToken?.symbol}`}
@@ -43,7 +43,7 @@ const MinDestAmount = ({
   totalChunks?: number;
 }) => {
   const { translations } = useWidgetContext();
-  const formattedValue = useFormatNumberV2({ value: dstMinAmountOut });
+  const formattedValue = useFormatNumber({ value: dstMinAmountOut });
 
   if (isMarketOrder) return null;
 
@@ -158,8 +158,8 @@ export function OrderDisplay({ children, className = "" }: { children?: ReactNod
 }
 
 const TokenDisplay = ({ amount, token, usd, title, content }: { amount?: string; token?: Token; usd?: string; title?: string; content?: ReactNode }) => {
-  const _usd = useFormatNumberV2({ value: usd, decimalScale: 2 });
-  const _amount = useFormatNumberV2({ value: amount });
+  const _usd = useFormatNumber({ value: usd, decimalScale: 2 });
+  const _amount = useFormatNumber({ value: amount });
 
   return (
     <StyledTokenDisplay className="twap-order-display-token-usd">

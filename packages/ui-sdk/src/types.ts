@@ -4,15 +4,9 @@ export type Token = {
   address: string;
   symbol: string;
   decimals: number;
-  logoUrl: string;
 };
 
 export type State = {
-  typedSrcAmount?: string;
-
-  srcToken?: Token;
-  destToken?: Token;
-
   typedChunks?: number;
   typedFillDelay: TimeDuration;
   typedDuration?: TimeDuration;
@@ -21,10 +15,7 @@ export type State = {
   isInvertedLimitPrice?: boolean;
   limitPricePercent?: string;
   isMarketOrder?: boolean;
-  isLimitPanel?: boolean;
 
-  marketPrice?: string;
-  oneSrcTokenUsd?: number;
   currentTime: number;
 };
 
@@ -38,6 +29,7 @@ export type TwapProviderProps = {
 
 export enum ActionType {
   UPDATED_STATE = "UPDATED_STATE",
+  RESET = "RESET",
 }
 
-export type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> };
+export type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> } | { type: ActionType.RESET };

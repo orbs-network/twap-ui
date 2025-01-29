@@ -1,33 +1,33 @@
 import React from "react";
+import { useWidgetContext } from "../..";
 import { Message } from "../../components/base";
-import { useBalanceWarning, useFillDelay, useTradeSizeWarning } from "../../hooks";
+import { useBalanceWaning } from "../../hooks";
 
-export const useWarnings = () => {
-  const fillDelay = useFillDelay().warning;
-  const tradeSize = useTradeSizeWarning();
-  const balance = useBalanceWarning();
+export const useErrros = () => {
+  const errors = useWidgetContext().twap.errors;
+  const balanceWrning = useBalanceWaning();
 
   return {
-    fillDelay,
-    tradeSize,
-    balance,
+    fillDelay: errors.fillDelay?.text,
+    tradeSize: errors.tradeSize?.text,
+    balance: balanceWrning,
   };
 };
 
 const TradeSizeWarning = () => {
-  const { tradeSize } = useWarnings();
+  const { tradeSize } = useErrros();
   if (!tradeSize) return null;
   return <Message variant="warning" title={tradeSize} />;
 };
 
 const fillDelayWarning = () => {
-  const { fillDelay } = useWarnings();
+  const { fillDelay } = useErrros();
   if (!fillDelay) return null;
   return <Message variant="warning" title={fillDelay} />;
 };
 
 const balanceWarning = () => {
-  const { balance } = useWarnings();
+  const { balance } = useErrros();
   if (!balance) return null;
   return <Message variant="warning" title={balance} />;
 };

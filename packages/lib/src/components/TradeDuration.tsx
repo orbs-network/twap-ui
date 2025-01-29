@@ -1,17 +1,18 @@
 import { styled } from "styled-components";
-import React, { FC, ReactNode, useCallback, useMemo } from "react";
-import { useDuration, useShouldWrapOrUnwrapOnly, useSetDuration, useIsPartialFillWarning } from "../hooks/lib";
+import React, { FC, ReactNode, useCallback } from "react";
+import { useShouldWrapOrUnwrapOnly } from "../hooks/lib";
 import { StyledColumnFlex } from "../styles";
 import { BottomContent, Button, Label, Message, NumericInput, ResolutionSelect } from "./base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
 import { useWidgetContext } from "../context/context";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const duration = useDuration().timeDuration;
-  const setCustomDuration = useSetDuration();
+  const {
+    values: { duration },
+    actionHandlers: { setDuration },
+  } = useWidgetContext().twap;
 
-  return <StyledInput className={className} value={duration.value} onChange={(v) => setCustomDuration({ unit: duration.unit, value: Number(v) })} placeholder={placeholder} />;
+  return <StyledInput className={className} value={duration.value} onChange={(v) => setDuration({ unit: duration.unit, value: Number(v) })} placeholder={placeholder} />;
 };
 
 const StyledInput = styled(NumericInput)({
@@ -21,14 +22,16 @@ const StyledInput = styled(NumericInput)({
 });
 
 const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
-  const duration = useDuration().timeDuration;
-  const setCustomDuration = useSetDuration();
+  const {
+    values: { duration },
+    actionHandlers: { setDuration },
+  } = useWidgetContext().twap;
 
   const onChange = useCallback(
     (unit: TimeUnit) => {
-      setCustomDuration({ unit, value: duration.value });
+      setDuration({ unit, value: duration.value });
     },
-    [duration.value, setCustomDuration],
+    [duration.value, setDuration],
   );
 
   return <ResolutionSelect className={className} unit={duration.unit} onChange={onChange} />;
@@ -50,25 +53,14 @@ export const TradeDuration = ({ children, className = "" }: { children: ReactNod
 };
 
 const WarningComponent = () => {
-  const { translations: t } = useWidgetContext();
-  const durationWarning = useDuration().warning;
-  const partialFillWarning = useIsPartialFillWarning();
+  const { translations: t, twap } = useWidgetContext();
+  const errors = twap.errors;
 
-  const warning = useMemo(() => {
-    if (durationWarning) {
-      return durationWarning;
-    }
-
-    if (partialFillWarning) {
-      return t.partialFillWarning;
-    }
-  }, [durationWarning, partialFillWarning, t]);
-
-  if (!warning) return null;
+  if (!errors.duration) return null;
 
   return (
     <BottomContent>
-      <Message title={warning} variant="warning" />
+      <Message title={errors.duration.text} variant="warning" />
     </BottomContent>
   );
 };
@@ -83,18 +75,19 @@ const MaxDurationLabel = () => {
 };
 
 const Reset = ({ Component }: { Component?: FC<{ onClick: () => void }> }) => {
-  const setCustomDuration = useSetDuration();
-  const { state } = useTwapContextUI();
-  const { typedDuration } = state;
+  const {
+    values: { duration },
+    actionHandlers: { onResetDuration },
+  } = useWidgetContext().twap;
 
-  if (!typedDuration) return null;
+  if (!duration) return null;
 
   if (Component) {
-    return <Component onClick={() => setCustomDuration(undefined)} />;
+    return <Component onClick={onResetDuration} />;
   }
 
   return (
-    <Button className="twap-duration-reset" onClick={() => setCustomDuration(undefined)}>
+    <Button className="twap-duration-reset" onClick={onResetDuration}>
       Default
     </Button>
   );

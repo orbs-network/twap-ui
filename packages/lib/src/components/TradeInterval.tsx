@@ -4,13 +4,14 @@ import { StyledColumnFlex } from "../styles";
 import { handleFillDelayText } from "../utils";
 import { BottomContent, Label, Message, NumericInput, ResolutionSelect } from "./base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
-import { useTwapContext as useTwapContextUI } from "@orbs-network/twap-ui-sdk";
-import { useFillDelay, useMinimumDelayMinutes, useSetFillDelay, useShouldWrapOrUnwrapOnly } from "../hooks/lib";
+import { useMinimumDelayMinutes, useShouldWrapOrUnwrapOnly } from "../hooks/lib";
 import { useWidgetContext } from "../context/context";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const fillDelay = useTwapContextUI().state.typedFillDelay;
-  const setFillDelay = useSetFillDelay();
+  const {
+    values: { fillDelay },
+    actionHandlers: { setFillDelay },
+  } = useWidgetContext().twap;
 
   return <StyledInput className={className} value={fillDelay.value} onChange={(v) => setFillDelay({ unit: fillDelay.unit, value: Number(v) })} placeholder={placeholder} />;
 };
@@ -22,8 +23,10 @@ const StyledInput = styled(NumericInput)({
 });
 
 const Resolution = ({ placeholder, className = "" }: { placeholder?: string; className?: string }) => {
-  const fillDelay = useTwapContextUI().state.typedFillDelay;
-  const setFillDelay = useSetFillDelay();
+  const {
+    values: { fillDelay },
+    actionHandlers: { setFillDelay },
+  } = useWidgetContext().twap;
 
   const onChange = useCallback(
     (unit: TimeUnit) => {
@@ -49,11 +52,11 @@ export const TradeInterval = ({ children, className = "" }: { children: ReactNod
 };
 
 const WarningComponent = () => {
-  const fillDelayWarning = useFillDelay().warning;
+  const fillDelayError = useWidgetContext().twap.errors.fillDelay;
 
-  if (!fillDelayWarning) return null;
+  if (!fillDelayError) return null;
 
-  return <Message title={fillDelayWarning} variant="warning" />;
+  return <Message title={fillDelayError.text} variant="warning" />;
 };
 
 const TradeIntervalLabel = () => {

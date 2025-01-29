@@ -3,8 +3,8 @@ import { Failed } from "./states";
 import { Main } from "./states/Main";
 import React from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
-import { useExplorerUrl, useFormatNumberV2 } from "../../hooks";
-import { useWidgetContext } from "../../context/context";
+import { useExplorerUrl, useFormatNumber } from "../../hooks";
+import { useWidgetContext } from "../..";
 
 export const CreateOrderModal = ({ className = "" }: { className?: string }) => {
   const { mutate: onSubmit, swapStatus, error } = useSubmitOrderFlow();
@@ -12,8 +12,8 @@ export const CreateOrderModal = ({ className = "" }: { className?: string }) => 
     state: { createOrderTxHash, swapData },
   } = useWidgetContext();
   const explorerUrl = useExplorerUrl();
-  const srcAmountF = useFormatNumberV2({ value: swapData.srcAmount });
-  const outAmountF = useFormatNumberV2({ value: swapData.outAmount });
+  const srcAmountF = useFormatNumber({ value: swapData.srcAmount });
+  const outAmountF = useFormatNumber({ value: swapData.outAmount });
 
   return (
     <SwapFlow

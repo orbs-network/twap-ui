@@ -11,7 +11,7 @@
 // import arbidex from "./Arbidex";
 // import syncswap from "./SyncSwap";
 // import kinetix from "./kinetix";
-import dragonswap from "./DragonSwap";
+import dragonswap from "./dragonswap/DragonSwap";
 
 export const defaultDapp = dragonswap;
 export const dapps = [dragonswap];

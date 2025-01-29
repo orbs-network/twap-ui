@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import BN from "bignumber.js";
 import { Token } from "../types";
-import { useTwapContext } from "../context";
 
 export const usePriceDisplay = (srcToken?: Token, destToken?: Token, srcAmount?: string, destAmount?: string) => {
   const [inverted, setInvert] = useState(Boolean);
@@ -22,13 +21,4 @@ export const usePriceDisplay = (srcToken?: Token, destToken?: Token, srcAmount?:
     leftToken: inverted ? destToken : srcToken,
     rightToken: inverted ? srcToken : destToken,
   };
-};
-
-export const useSwapPriceDisplay = () => {
-  const {
-    derivedValues: { destTokenAmountUI },
-    state: { typedSrcAmount, srcToken, destToken },
-  } = useTwapContext();
-
-  return usePriceDisplay(srcToken, destToken, typedSrcAmount, destTokenAmountUI);
 };

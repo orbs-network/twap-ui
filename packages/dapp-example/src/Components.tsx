@@ -247,7 +247,7 @@ const Row = (props: any) => {
   const item: TokenListItem = data.tokens[index];
   const { balance, isLoading } = useBalance(item.token);
 
-  const formattedValue = hooks.useFormatNumberV2({ value: balance, decimalScale: 6 });
+  const formattedValue = hooks.useFormatNumber({ value: balance, decimalScale: 6 });
 
   if (!item) return null;
   return (

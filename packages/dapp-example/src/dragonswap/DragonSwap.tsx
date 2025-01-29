@@ -1,62 +1,39 @@
-import { StyledSushiLayout, StyledSushi, StyledSushiModalContent } from "./styles";
-import { TWAP } from "@orbs-network/twap-ui-generic";
-import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
+import { StyledSushiLayout, StyledSushi, StyledSushiModalContent, StyledDragonswap, StyledDragonLayout, StyledDragonPanel } from "../styles";
+import { TWAP } from "@orbs-network/twap-ui-dragonswap";
+import tokens from "./token.json";
+import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "../hooks";
 import { useWeb3React } from "@web3-react/core";
-import { Dapp, Popup, TokensList, UISelector } from "./Components";
+import { Dapp, Popup, TokensList, UISelector } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { SelectorOption, TokenListItem } from "./types";
+import { SelectorOption, TokenListItem } from "../types";
 import { mapCollection, size, TooltipProps, Configs, TokensListModalProps, ModalProps } from "@orbs-network/twap-ui";
-import { DappProvider } from "./context";
+import { DappProvider } from "../context";
 import { network } from "@defi.org/web3-candies";
 
-const config = Configs.SushiArb;
-
-console.log(Configs.TeaFi);
-
+const config = Configs.DragonSwap;
 
 export const useDappTokens = () => {
-  const isBase = config?.chainId === Configs.SushiBase.chainId;
-  const { chainId } = useWeb3React();
   const nativeToken = network(config.chainId).native;
   const parseListToken = useCallback(
     (tokenList?: any) => {
       const res = tokenList?.tokens
         .filter((it: any) => it.chainId === config?.chainId)
-        .map(({ symbol, address, decimals, logoURI, name }: any) => ({
+        .map(({ symbol, address, decimals, name }: any) => ({
           decimals,
           symbol,
           name,
           address,
-          logoURI,
+          logoURI: `https://dzyb4dm7r8k8w.cloudfront.net/prod/logos/${address}/logo.png`,
         }));
-      const native = {
-        decimals: nativeToken.decimals,
-        symbol: nativeToken.symbol,
-        address: nativeToken.address,
-        logoURI: nativeToken.logoUrl,
-      };
-
-      return config ? [native, ...res] : res;
+      return res;
     },
     [nativeToken, config?.chainId],
   );
 
-  const url = useMemo(() => {
-    switch (chainId) {
-      case Configs.SushiEth.chainId:
-      case Configs.SushiArb.chainId:
-        return "https://token-list.sushi.com/";
-      default:
-        break;
-    }
-  }, [chainId]);
-
   return useGetTokens({
-    url,
     parse: parseListToken,
-    tokens: isBase ? [] : undefined,
-    modifyList: (tokens: any) => tokens.slice(0, 20),
+    tokens: tokens,
   });
 };
 
@@ -95,10 +72,6 @@ const Modal = (props: ModalProps) => {
       {props.children}
     </Popup>
   );
-};
-
-const getTokenLogo = (token: any) => {
-  return token.logoURI;
 };
 
 const useUSD = (address?: string) => {
@@ -164,7 +137,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       useMarketPrice={_useTrade}
       chainId={chainId}
       isLimitPanel={limit}
-      getTokenLogo={getTokenLogo}
       useUSD={useUSD}
       onSrcTokenSelected={setFromToken}
       onDstTokenSelected={setToToken}
@@ -180,13 +152,14 @@ const DappComponent = () => {
 
   return (
     <DappProvider config={config}>
-      <StyledSushi isDarkMode={isDarkTheme ? 1 : 0}>
-        <StyledSushiLayout name={config.name}>
+      <StyledDragonswap isDarkMode={isDarkTheme ? 1 : 0}>
+        <StyledDragonLayout name={config.name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
-
-          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-        </StyledSushiLayout>
-      </StyledSushi>
+          <StyledDragonPanel>
+            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+          </StyledDragonPanel>
+        </StyledDragonLayout>
+      </StyledDragonswap>
     </DappProvider>
   );
 };

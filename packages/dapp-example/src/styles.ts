@@ -156,6 +156,23 @@ export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
   },
 }));
 
+export const StyledDragonswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#020526" : "#F4F5F6",
+  ".menu-button": {
+    "*": {
+      color: isDarkMode ? "white" : "black",
+    },
+  },
+  ".ui-selector-btn": {
+    background: isDarkMode ? "hsla(0,0%,100%,.06)" : "white",
+    color: isDarkMode ? "white" : "black",
+  },
+  ".ui-selector-btn-selected": {
+    background: "rgb(59 130 246/1)",
+    color: "white",
+  },
+}));
+
 export const StyledQuickswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#12131a" : "#F8F7F7",
   ".ui-selector-btn-selected": {
@@ -454,6 +471,19 @@ export const StyledPancakeLayout = styled(DappLayout)({
 export const StyledSushiLayout = styled(DappLayout)({
   maxWidth: 480,
   width: "calc(100% - 30px)",
+});
+
+export const StyledDragonLayout = styled(DappLayout)({
+  maxWidth: 480,
+  width: "calc(100% - 30px)",
+});
+
+export const StyledDragonPanel = styled("div")({
+  width: "100%",
+  border: "1px solid rgb(36 99 235)",
+  borderRadius: 20,
+  background: "linear-gradient(180deg, #1d40b0 0%, #0d143a 100%)",
+  padding: 12,
 });
 
 export const StyledPangolinLayout = styled(DappLayout)({

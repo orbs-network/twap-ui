@@ -1,7 +1,7 @@
 import { TimeUnit } from "@orbs-network/twap-sdk";
 import React, { useCallback } from "react";
-import { Labels, ShowConfirmation } from "../../components";
-import { useDuration, useSetDuration } from "../../hooks";
+import { useWidgetContext } from "../..";
+import { Labels } from "../../components";
 import { StyledColumnFlex, StyledRowFlex } from "../../styles";
 
 const LimitPanelExpirationOptions = [
@@ -33,14 +33,14 @@ export const LimitPanelDeadlineSelect = ({
   }[];
   className?: string;
 }) => {
-  const selectedExpiry = useDuration().millis;
+  const { twap } = useWidgetContext();
+  const selectedExpiry = twap.values.durationMilliseconds;
 
-  const setCustomDuration = useSetDuration();
   const onChange = useCallback(
     (unit: TimeUnit) => {
-      setCustomDuration({ unit, value: 1 });
+      twap.actionHandlers.setDuration({ unit, value: 1 });
     },
-    [setCustomDuration],
+    [twap.actionHandlers.setDuration],
   );
 
   return (

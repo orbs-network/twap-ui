@@ -9,14 +9,12 @@ import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
 import { Token } from "../types";
 import { useGetHasAllowance, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
-import { useSrcAmount } from "./lib";
 import { Order, OrderStatus, getOrders, getOrderById, getOrderByTxHash } from "@orbs-network/twap-sdk";
 import { amountBNV2 } from "../utils";
-import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const { web3, account } = useWidgetContext();
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
   const network = useNetwork();
   const key = ["useHasMinNativeTokenBalance", account, config.chainId, minNativeTokenBalance];
   const queryClient = useQueryClient();
@@ -55,7 +53,7 @@ const useGetContract = () => {
 };
 
 export const useFeeOnTransfer = (tokenAddress?: string) => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
 
   const address = useMemo(() => {
     if (!config.chainId) return undefined;
@@ -109,22 +107,23 @@ export const useGasPrice = () => {
 };
 
 const useAllowance = () => {
-  const { account } = useWidgetContext();
   const {
-    state: { srcToken },
-    sdk,
-  } = useTwapContext();
-
-  const srcAmount = useSrcAmount().amount;
+    account,
+    srcToken,
+    config,
+    twap: {
+      values: { srcAmount },
+    },
+  } = useWidgetContext();
   const getHasAllowance = useGetHasAllowance();
 
   const query = useQuery(
-    [QueryKeys.GET_ALLOWANCE, sdk.config.chainId, srcToken?.address, srcAmount],
+    [QueryKeys.GET_ALLOWANCE, config.chainId, srcToken?.address, srcAmount],
     async () => {
       return getHasAllowance(srcToken!, srcAmount);
     },
     {
-      enabled: !!srcToken && BN(srcAmount).gt(0) && !!account && !!sdk.config,
+      enabled: !!srcToken && BN(srcAmount).gt(0) && !!account && !!config,
       staleTime: STALE_ALLOWANCE,
       refetchOnWindowFocus: true,
     },
@@ -154,14 +153,13 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
 };
 
 const useOrderHistoryKey = () => {
-  const { account } = useWidgetContext();
-  const { config } = useTwapContext();
+  const { account, config } = useWidgetContext();
 
   return [QueryKeys.GET_ORDER_HISTORY, account, config.exchangeAddress, config.chainId];
 };
 
 export const useOrderQuery = (orderId?: number) => {
-  const chainId = useTwapContext().config.chainId;
+  const chainId = useWidgetContext().config.chainId;
   return useQuery(
     ["useOrderQuery", chainId, orderId],
     async ({ signal }) => {
@@ -176,7 +174,7 @@ export const useOrderQuery = (orderId?: number) => {
 };
 
 export const useOrderQueryByTxHash = (txHash?: string) => {
-  const chainId = useTwapContext().config.chainId;
+  const chainId = useWidgetContext().config.chainId;
   return useQuery(
     ["useOrderQueryByTxHash", chainId, txHash],
     async ({ signal }) => {
@@ -192,7 +190,7 @@ export const useOrderQueryByTxHash = (txHash?: string) => {
 const useUpdateOrderStatusToCanceled = () => {
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
-  const config = useTwapContext().config;
+  const config = useWidgetContext().config;
   const { data: orders, updateData } = useOrdersHistory();
 
   return useCallback(
@@ -208,7 +206,7 @@ const useUpdateOrderStatusToCanceled = () => {
 };
 
 export const useAllOrders = () => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
   return useInfiniteQuery(
     ["useAllOrders", config.chainId],
     async ({ signal, pageParam = 0 }) => {
@@ -227,15 +225,15 @@ export const useAllOrders = () => {
   );
 };
 export const useOrdersHistory = () => {
-  const { account } = useWidgetContext();
-  const { sdk, config } = useTwapContext();
+  const { account, twap } = useWidgetContext();
+  const { config } = useWidgetContext();
 
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
   const query = useQuery(
     QUERY_KEY,
     async ({ signal }) => {
-      const res = await sdk.getUserOrders({ account: account!, signal });
+      const res = await twap.orders.getUserOrders({ account: account!, signal });
 
       return res;
     },

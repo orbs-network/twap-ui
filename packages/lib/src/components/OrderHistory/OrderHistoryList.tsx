@@ -2,10 +2,10 @@ import { styled } from "styled-components";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { Order } from "@orbs-network/twap-sdk";
 import { useWidgetContext } from "../../context/context";
-import { useFormatNumberV2 } from "../../hooks/hooks";
+import { useFormatNumber } from "../../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { LinearProgress, Loader, TokenLogo } from "../base";
-import { useOrderHistoryContext, useTokenFromList } from "./context";
+import { useOrderHistoryContext } from "./context";
 import * as React from "react";
 import { size } from "../../utils";
 import moment from "moment";
@@ -144,8 +144,9 @@ const StyledListOrder = styled(StyledColumnFlex)({
 });
 
 const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }) => {
-  const token = useTokenFromList(address);
-  const _amount = useFormatNumberV2({ value: amount, decimalScale: 4 });
+  const { useToken } = useWidgetContext();
+  const token = useToken?.(address);
+  const _amount = useFormatNumber({ value: amount, decimalScale: 4 });
 
   return (
     <StyledTokenDisplay className="twap-order-token">

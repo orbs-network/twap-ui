@@ -17,17 +17,6 @@ interface OrderHistoryContextType {
   selectedOrderId?: number;
 }
 
-export const useTokenFromList = (address?: string) => {
-  const { tokens, useToken } = useWidgetContext();
-  const _token = useToken?.(address);
-
-  const result = useMemo(() => {
-    if (!address || !tokens) return;
-    return tokens.find((t) => eqIgnoreCase(address, t.address));
-  }, [tokens, address]);
-  return result || _token;
-};
-
 export const useSelectedOrder = () => {
   const orders = useOrders();
 

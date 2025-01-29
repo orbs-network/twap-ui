@@ -1,8 +1,8 @@
 import BN from "bignumber.js";
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
-import { Config, DerivedSwapValuesArgs, DerivedSwapValuesResponse, PrepareOrderArgs, PrepareOrderArgsResult, TimeDuration, TimeUnit } from "./types";
+import { Config, DerivedSwapValuesArgs, PrepareOrderArgs, PrepareOrderArgsResult, TimeDuration, TimeUnit } from "./types";
 import { amountUi, findTimeUnit, getTimeDurationMillis } from "./utils";
-import { getMaxFillDelayWarning, getMaxTradeDurationWarning, getMinFillDelayWarning, getMinTradeDurationWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
+import { getChunksWarning, getDurationWarning, getFillDelayWarning, getPartialFillWarning, getSrcAmountWarning, getLimitPriceWarning, getTradeSizeWarning } from "./warnings";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
 export const getDestTokenAmount = (srcAmount?: string, limitPrice?: string, srcDecimals?: number, destDecimals?: number) => {
@@ -88,8 +88,8 @@ export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): Prepar
 export const derivedSwapValues = (
   config: Config,
   minChunkSizeUsd: number,
-  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, price: limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs,
-): DerivedSwapValuesResponse => {
+  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs,
+) => {
   const maxPossibleChunks = getMaxPossibleChunks(config, srcAmount, oneSrcTokenUsd, srcDecimals);
   const chunks = getChunks(maxPossibleChunks, isLimitPanel, customChunks);
   const srcChunkAmount = getSrcChunkAmount(srcAmount, chunks);
@@ -100,6 +100,15 @@ export const derivedSwapValues = (
     .times(oneSrcTokenUsd || 0)
     .toFixed(0);
 
+  const errors = {
+    fillDelay: getFillDelayWarning(fillDelay, isLimitPanel),
+    duration: getDurationWarning(duration, isLimitPanel),
+    tradeSize: getTradeSizeWarning(minChunkSizeUsd, amountUi(srcDecimals, srcChunkAmountUsd), chunks),
+    srcAmount: getSrcAmountWarning(srcAmount),
+    limitPrice: getLimitPriceWarning(limitPrice),
+    chunks: getChunksWarning(chunks, maxPossibleChunks, Boolean(isLimitPanel)),
+  };
+
   return {
     chunks,
     duration,
@@ -108,13 +117,14 @@ export const derivedSwapValues = (
     destTokenMinAmount,
     destTokenAmount: getDestTokenAmount(srcAmount, limitPrice, srcDecimals, destDecimals),
     maxPossibleChunks,
+    errors: {
+      ...errors,
+      hasErros: Object.values(errors).some(Boolean),
+    },
     warnings: {
       partialFill: getPartialFillWarning(chunks, duration, fillDelay),
-      minFillDelay: isLimitPanel ? false : getMinFillDelayWarning(fillDelay),
-      maxFillDelay: getMaxFillDelayWarning(fillDelay),
-      minDuration: isLimitPanel ? false : getMinTradeDurationWarning(duration),
-      maxDuration: getMaxTradeDurationWarning(duration),
-      tradeSize: !!getTradeSizeWarning(minChunkSizeUsd, amountUi(srcDecimals, srcChunkAmountUsd), chunks),
     },
   };
 };
+
+export type DerivedSwapValues = ReturnType<typeof derivedSwapValues>;

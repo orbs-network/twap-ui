@@ -1,13 +1,12 @@
 import { styled } from "styled-components";
-import { useAmountUi, useFormatNumberV2 } from "../../../hooks/hooks";
-import { Button, Spinner, Switch } from "../../base";
+import { useAmountUi, useFormatNumber } from "../../../hooks/hooks";
+import { Button, Switch } from "../../base";
 import { MarketPriceWarning, Separator } from "../../Components";
 import { StyledColumnFlex, StyledText } from "../../../styles";
 import { OrderDisplay } from "../../OrderDisplay";
 import BN from "bignumber.js";
-import { useChunks, useDeadline, useDstMinAmountOut, useFillDelay, useOutAmount, useSrcChunkAmount, useSwapPrice, useToggleDisclaimer } from "../../../hooks/lib";
+import { useDstMinAmountOut, useSwapPrice, useToggleDisclaimer } from "../../../hooks/lib";
 import React, { useMemo } from "react";
-import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 import { useWidgetContext } from "../../../context/context";
 import { SwapFlow, SwapStep } from "@orbs-network/swap-ui";
 import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
@@ -15,17 +14,17 @@ import { fillDelayText } from "@orbs-network/twap-sdk";
 import { SwapSteps } from "../../../types";
 
 const Price = () => {
+  const { srcToken, dstToken, twap } = useWidgetContext();
   const {
-    derivedValues: { isMarketOrder },
-    state: { srcToken, destToken },
-  } = useTwapContext();
+    values: { isMarketOrder },
+  } = twap;
   const swapPrice = useSwapPrice();
-  const usd = useFormatNumberV2({ value: swapPrice.usd, decimalScale: 2 });
-  const price = useFormatNumberV2({ value: swapPrice.price, decimalScale: 4 });
+  const usd = useFormatNumber({ value: swapPrice.usd, decimalScale: 2 });
+  const price = useFormatNumber({ value: swapPrice.price, decimalScale: 4 });
   return (
     <OrderDisplay.DetailRow title={isMarketOrder ? "Market Price" : "Limit Price"}>
       <StyledPrice>
-        1 {srcToken?.symbol} = {price} {destToken?.symbol} <span>{`($${usd})`}</span>
+        1 {srcToken?.symbol} = {price} {dstToken?.symbol} <span>{`($${usd})`}</span>
       </StyledPrice>
     </OrderDisplay.DetailRow>
   );
@@ -90,10 +89,9 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
 const useSteps = () => {
   const {
     state: { swapSteps },
+    srcToken,
   } = useWidgetContext();
-  const {
-    state: { srcToken },
-  } = useTwapContext();
+
   return useMemo((): SwapStep[] => {
     if (!swapSteps || !srcToken) return [];
 
@@ -126,16 +124,16 @@ const useSteps = () => {
 export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
   const {
     state: { swapStatus, swapStep, swapData },
-    translations: t,
+    twap,
+    isLimitPanel,
   } = useWidgetContext();
   const {
-    isLimitPanel,
-    derivedValues: { isMarketOrder },
-  } = useTwapContext();
+    values: { isMarketOrder },
+  } = twap;
   const steps = useSteps();
 
-  const inUsd = useFormatNumberV2({ value: swapData.srcAmountusd, decimalScale: 2 });
-  const outUsd = useFormatNumberV2({ value: swapData.outAmountusd, decimalScale: 2 });
+  const inUsd = useFormatNumber({ value: swapData.srcAmountusd, decimalScale: 2 });
+  const outUsd = useFormatNumber({ value: swapData.outAmountusd, decimalScale: 2 });
 
   return (
     <>
@@ -162,8 +160,8 @@ export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
 
 const ChunksText = () => {
   const {
-    derivedValues: { chunks, fillDelay },
-  } = useTwapContext();
+    values: { chunks, fillDelay },
+  } = useWidgetContext().twap;
   if (chunks <= 1) return null;
 
   return (
@@ -179,17 +177,10 @@ const StyledChunksText = styled(StyledText)({
 });
 
 const Details = () => {
-  const chunks = useChunks();
+  const { twap, srcToken, dstToken, isLimitPanel } = useWidgetContext();
   const {
-    derivedValues: { isMarketOrder },
-    isLimitPanel,
-    state: { srcToken, destToken },
-  } = useTwapContext();
-
-  const deadline = useDeadline().millis;
-  const srcChunkAmount = useSrcChunkAmount().amountUi;
-  const dstMinAmountOut = useDstMinAmountOut().amountUi;
-  const fillDelayMillis = useFillDelay().millis;
+    values: { isMarketOrder, deadline, fillDelayMilliseconds, chunks, srcChunksAmountUI, destTokenMinAmountOutUI },
+  } = twap;
 
   return (
     <>
@@ -206,10 +197,10 @@ const Details = () => {
           <>
             <MarketWarning isMarketOrder={isMarketOrder} />
             <OrderDisplay.Expiry deadline={deadline} />
-            <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmount} srcToken={srcToken} />
+            <OrderDisplay.ChunkSize srcChunkAmount={srcChunksAmountUI} srcToken={srcToken} />
             <OrderDisplay.ChunksAmount chunks={chunks} />
-            <OrderDisplay.MinDestAmount dstToken={destToken} isMarketOrder={isMarketOrder} dstMinAmountOut={dstMinAmountOut} />
-            <OrderDisplay.TradeInterval fillDelayMillis={fillDelayMillis} />
+            <OrderDisplay.MinDestAmount dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={destTokenMinAmountOutUI} />
+            <OrderDisplay.TradeInterval fillDelayMillis={fillDelayMilliseconds} />
             <OrderDisplay.Recipient />
             <Fee />
           </>
@@ -220,23 +211,20 @@ const Details = () => {
 };
 
 const Fee = () => {
-  const { fee } = useWidgetContext();
+  const { fee, dstToken, twap } = useWidgetContext();
   const {
-    state: { destToken },
-    derivedValues: { isMarketOrder },
-  } = useTwapContext();
-
-  const outAmount = useOutAmount().amount;
+    values: { isMarketOrder, destTokenAmount },
+  } = twap;
 
   const amount = useMemo(() => {
-    if (!fee || !outAmount || isMarketOrder) return "";
-    return BN(outAmount).multipliedBy(fee).dividedBy(100).toFixed().toString();
-  }, [fee, outAmount, isMarketOrder]);
+    if (!fee || !destTokenAmount || isMarketOrder) return "";
+    return BN(destTokenAmount).multipliedBy(fee).dividedBy(100).toFixed().toString();
+  }, [fee, destTokenAmount, isMarketOrder]);
 
-  const amountUi = useFormatNumberV2({ value: useAmountUi(destToken?.decimals, amount) });
+  const amountUi = useFormatNumber({ value: useAmountUi(dstToken?.decimals, amount) });
 
   if (!fee) return null;
-  return <OrderDisplay.DetailRow title={`Fee (${fee}%)`}>{amountUi ? `${amountUi} ${destToken?.symbol}` : ""}</OrderDisplay.DetailRow>;
+  return <OrderDisplay.DetailRow title={`Fee (${fee}%)`}>{amountUi ? `${amountUi} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>;
 };
 
 export const SubmitButton = ({ onClick }: { onClick: () => void }) => {

@@ -1,12 +1,13 @@
 import React, { useCallback, useState } from "react";
 import { useWidgetContext, WidgetProvider } from "../context";
-import { CreateOrderModal, LimitPanel, OrderHistory, PoweredBy, ShowConfirmation, TradeInterval } from "../../components";
+import { ChunkSelector, CreateOrderModal, LimitPanel, LimitSwitch, OrderHistory, PoweredBy, TradeInterval } from "../../components";
 import { LimitPanelDeadlineSelect } from "./LimitPanelDeadlineSelect";
-import { TradesAmountSelect } from "./TradesAmountSelect";
 import { TokenPanel } from "./TokenPanel";
 import { useSwapModal } from "../../hooks/useSwapModal";
 import { WidgetProps } from "../../types";
-import { Warnings } from "./Warnings";
+import { Warnings } from "./Errors";
+import { WidgetMessage } from "./components/WidgetMessage";
+import { SubmitOrderPanel } from "./components/submit-order-panel";
 
 const SubmitOrderModal = () => {
   const { isOpen, onClose } = useSwapModal();
@@ -42,14 +43,16 @@ const Widget = (props: WidgetProps) => {
 };
 
 Widget.Orders = Orders;
-Widget.LimitPanel = LimitPanel;
-Widget.ShowConfirmationButton = ShowConfirmation;
+Widget.LimitPricePanel = LimitPanel;
+Widget.SubmitOrderPanel = SubmitOrderPanel;
 Widget.LimitPanelDeadlineSelect = LimitPanelDeadlineSelect;
 Widget.Warnings = Warnings;
-Widget.TradesAmountSelect = TradesAmountSelect;
+Widget.TradesAmountSelect = ChunkSelector;
 Widget.TokenPanel = TokenPanel;
 Widget.PoweredBy = PoweredBy;
 Widget.FillDelaySelect = TradeInterval;
 Widget.SubmitOrderModal = SubmitOrderModal;
+Widget.LimitPriceSwitch = LimitSwitch;
+Widget.Message = WidgetMessage;
 
 export { Widget };

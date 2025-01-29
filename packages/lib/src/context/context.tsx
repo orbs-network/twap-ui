@@ -4,10 +4,9 @@ import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
-import { query } from "../hooks/query";
-import { LimitPriceMessageContent } from "../components";
 import { setWeb3Instance } from "@defi.org/web3-candies";
-import { TwapProvider, useListeners, useTwapContext } from "@orbs-network/twap-ui-sdk";
+import { useTwap } from "@orbs-network/twap-ui-sdk";
+import { query } from "../hooks/query";
 
 export const WidgetContext = createContext({} as WidgetContextType);
 const queryClient = new QueryClient({
@@ -36,11 +35,10 @@ const contextReducer = (state: State, action: Action): State => {
   }
 };
 
-const Listeners = (props: WidgetProps) => {
+const Listeners = () => {
   query.useAllowance();
-  useListeners(props.srcToken, props.dstToken, props.marketPrice, props.srcUsd);
 
-  return <>{props.children}</>;
+  return null;
 };
 
 const useIsWrongChain = (props: WidgetProps, chainId?: number) => {
@@ -63,11 +61,28 @@ export const useTranslations = (translations?: Partial<Translations>): Translati
   }, [translations]);
 };
 
+const useStore = () => {
+  const [state, dispatch] = useReducer(contextReducer, initialState);
+  const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
+  return {
+    state,
+    updateState,
+  };
+};
+
 export const WidgetProvider = (props: WidgetProps) => {
   const isWrongChain = useIsWrongChain(props, props.chainId);
   const web3 = useMemo(() => (!props.provider ? undefined : new Web3(props.provider)), [props.provider]);
-  const [state, dispatch] = useReducer(contextReducer, initialState);
-  const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
+  const { state, updateState } = useStore();
+  const twap = useTwap({
+    config: props.config,
+    isLimitPanel: props.isLimitPanel,
+    srcToken: props.srcToken,
+    destToken: props.dstToken,
+    marketPriceOneToken: props.marketPrice,
+    oneSrcTokenUsd: props.srcUsd,
+    typedSrcAmount: state.srcAmount,
+  });
   const translations = useTranslations(props.translations);
   useEffect(() => {
     setWeb3Instance(web3);
@@ -83,14 +98,11 @@ export const WidgetProvider = (props: WidgetProps) => {
           updateState,
           state,
           uiPreferences: props.uiPreferences || {},
+          twap,
         }}
       >
-        <TwapErrorWrapper>
-          <TwapProvider chainId={props.chainId} config={props.config} isLimitPanel={props.isLimitPanel}>
-            <Listeners {...props}>{props.children}</Listeners>
-          </TwapProvider>
-        </TwapErrorWrapper>
-        <LimitPriceMessageContent />
+        <Listeners />
+        <TwapErrorWrapper>{props.children}</TwapErrorWrapper>
       </WidgetContext.Provider>
     </QueryClientProvider>
   );

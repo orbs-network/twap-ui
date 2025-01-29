@@ -1,77 +1,80 @@
-import React, { createContext, FC, Fragment, ReactNode, useCallback, useContext, useState } from "react";
-import { useTwapContext } from "@orbs-network/twap-ui-sdk";
-import { useAmountUi, useDstBalance, useFormatNumberV2, useSrcBalance } from "../../hooks/hooks";
+import React, { createContext, FC, Fragment, ReactElement, ReactNode, useCallback, useContext, useState } from "react";
+import { useAmountUi, useDstBalance, useFormatNumber, useSrcBalance } from "../../hooks/hooks";
 import { TokenLogo } from "../../components/base";
 import { TokenPanelInput } from "../../components";
-import { useOnSrcAmountPercent, useUsdAmount } from "../../hooks/lib";
+import { useBalanceWaning, useOnSrcAmountPercent, useUsdAmount } from "../../hooks/lib";
 import { useWidgetContext } from "../context";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { styled } from "@mui/material";
-import { Warnings } from "./Warnings";
+import { Warnings } from "./Errors";
 
-const Context = createContext({} as { isSrcToken: boolean });
+const Context = createContext({} as { isSrcToken: boolean; onFocus: () => void; onBlur: () => void });
 
 const useTokenPanel = (isSrcToken?: boolean) => {
   const srcBalance = useSrcBalance().data?.toString();
   const dstBalance = useDstBalance().data?.toString();
-  const { onSrcTokenSelected, onDstTokenSelected } = useWidgetContext();
+  const { onSrcTokenSelected, onDstTokenSelected, twap, srcToken, dstToken } = useWidgetContext();
   const { srcUsd, dstUsd } = useUsdAmount();
   const {
-    state: { srcToken, destToken, typedSrcAmount },
-    derivedValues: { destTokenAmountUI },
-  } = useTwapContext();
-
+    values: { srcAmountUI, destTokenAmountUI },
+  } = twap;
   const onTokenSelect = useCallback(
     (token: any) => {
       isSrcToken ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
     },
-    [isSrcToken, onSrcTokenSelected, onDstTokenSelected],
+    [isSrcToken, onSrcTokenSelected, onDstTokenSelected]
   );
 
   return {
     balance: isSrcToken ? srcBalance : dstBalance,
     usd: isSrcToken ? srcUsd : dstUsd,
-    token: isSrcToken ? srcToken : destToken,
+    token: isSrcToken ? srcToken : dstToken,
     onTokenSelect,
-    inputValue: isSrcToken ? typedSrcAmount : destTokenAmountUI,
+    inputValue: isSrcToken ? srcAmountUI : destTokenAmountUI,
   };
 };
 
-export const TokenPanel = ({ isSrcToken, children }: { isSrcToken: boolean; children: ReactNode }) => {
-  return <Context.Provider value={{ isSrcToken }}>{children}</Context.Provider>;
+export const TokenPanel = ({ isSrcToken, children, className = "" }: { isSrcToken: boolean; children: ReactNode; className?: string }) => {
+  const balanceError = useBalanceWaning();
+  const [isFocus, setIsHover] = useState(false);
+
+  const onFocus = useCallback(() => setIsHover(true), []);
+  const onBlur = useCallback(() => setIsHover(false), []);
+
+  return (
+    <Context.Provider value={{ isSrcToken, onFocus, onBlur }}>
+      <div className={`twap-token-panel ${isSrcToken && balanceError ? "twap-token-panel-error" : ""} ${isFocus ? "twap-token-panel-focus" : ""}  ${className}`}>{children}</div>
+    </Context.Provider>
+  );
 };
 
 const TokenInput = ({ placeholder = "", className = "" }: { placeholder?: string; className?: string }) => {
-  const { isSrcToken } = useContext(Context);
-  return <TokenPanelInput isSrc={isSrcToken} className={className} placeholder={placeholder} />;
+  const { isSrcToken, onFocus, onBlur } = useContext(Context);
+  return <TokenPanelInput onFocus={onFocus} onBlur={onBlur} isSrc={isSrcToken} className={className} placeholder={placeholder} />;
 };
 
 const TokenPanelBalance = ({ decimalScale = 4, className = "" }: { decimalScale?: number; className?: string }) => {
   const { isSrcToken } = useContext(Context);
-  const {
-    state: { srcToken, destToken },
-  } = useTwapContext();
+  const { srcToken, dstToken } = useWidgetContext();
 
   const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
-  const dstBalance = useAmountUi(destToken?.decimals, useDstBalance().data?.toString());
-  const srcBalanceF = useFormatNumberV2({ value: isSrcToken ? srcBalance : dstBalance, decimalScale });
-  return <StyledText className={`twap-panel-balance ${className}`}>{srcBalanceF}</StyledText>;
+  const dstBalance = useAmountUi(dstToken?.decimals, useDstBalance().data?.toString());
+  const srcBalanceF = useFormatNumber({ value: isSrcToken ? srcBalance : dstBalance, decimalScale });
+  return <>{srcBalanceF}</>;
 };
 
 const TokenPanelUsd = ({ decimalScale = 2, className = "" }: { decimalScale?: number; className?: string }) => {
   const { isSrcToken } = useContext(Context);
   const { srcUsd, dstUsd } = useUsdAmount();
 
-  const usd = useFormatNumberV2({ value: isSrcToken ? srcUsd : dstUsd, decimalScale });
+  const usd = useFormatNumber({ value: isSrcToken ? srcUsd : dstUsd, decimalScale });
 
-  return <StyledText className={`twap-panel-usd ${className}`}>${usd}</StyledText>;
+  return <>{usd}</>;
 };
 
-const TokenSelect = ({ className = "", onClick }: { className?: string; onClick?: () => void }) => {
+const TokenSelect = ({ className = "", onClick, endIcon }: { className?: string; onClick?: () => void; endIcon?: ReactElement }) => {
   const { isSrcToken } = useContext(Context);
-  const {
-    state: { srcToken, destToken },
-  } = useTwapContext();
+  const { srcToken, dstToken } = useWidgetContext();
   const [isOpen, setIsOpen] = useState(false);
 
   const { components, onSrcTokenSelected, onDstTokenSelected } = useWidgetContext();
@@ -80,14 +83,14 @@ const TokenSelect = ({ className = "", onClick }: { className?: string; onClick?
     setIsOpen(false);
   }, []);
 
-  const token = isSrcToken ? srcToken : destToken;
+  const token = isSrcToken ? srcToken : dstToken;
 
   const onSelect = useCallback(
     (token: any) => {
       isSrcToken ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
       onClose();
     },
-    [isSrcToken, onSrcTokenSelected, onDstTokenSelected, onClose],
+    [isSrcToken, onSrcTokenSelected, onDstTokenSelected, onClose]
   );
 
   const _onClick = useCallback(() => {
@@ -101,33 +104,52 @@ const TokenSelect = ({ className = "", onClick }: { className?: string; onClick?
   return (
     <>
       <components.TokensListModal onClose={onClose} isOpen={isOpen} isSrcToken={isSrcToken} onSelect={onSelect} />
-      <StyledTokenSelect className={className} onClick={_onClick}>
+      <StyledTokenSelect className={`twap-panel-token-select ${className}`} onClick={_onClick}>
         <TokenLogo logo={token?.logoUrl} />
         <StyledText>{token?.symbol}</StyledText>
+        {endIcon}
       </StyledTokenSelect>
     </>
   );
 };
 
-const BalanceAmountSelect = ({ options = [0.25, 0.5, 0.75, 1] }: { options?: number[] }) => {
+const BalanceAmountSelect = ({
+  options = [
+    { value: 0.25, text: "25%" },
+    { value: 0.5, text: "50%" },
+    { value: 0.75, text: "75%" },
+    { value: 1, text: "100%" },
+  ],
+  className = "",
+}: {
+  options?: { value: number; text: string }[];
+  className?: string;
+}) => {
   const onClick = useOnSrcAmountPercent();
   const { isSrcToken } = useContext(Context);
   if (!isSrcToken) return null;
 
   return (
-    <>
+    <div className={`twap-panel-balance-buttons ${className}`}>
       {options.map((option) => {
         return (
-          <button onClick={() => onClick(option)} key={option}>
-            {option === 1 ? "100%" : `${option * 100}%`}
+          <button className="twap-panel-balance-buttons-btn" onClick={() => onClick(option.value)} key={option.value}>
+            {option.text}
           </button>
         );
       })}
-    </>
+    </div>
   );
 };
 
 const Main = ({ isSrcToken, className = "", Container }: { isSrcToken: boolean; className?: string; Container?: FC<{ children: ReactNode }> }) => {
+  const onSrcAmountPercent = useOnSrcAmountPercent();
+
+  const onBalance = useCallback(() => {
+    if (!isSrcToken) return;
+    onSrcAmountPercent(1);
+  }, [isSrcToken, onSrcAmountPercent]);
+
   const content = (
     <StyledMain className={className}>
       <StyledMainTop>
@@ -136,7 +158,9 @@ const Main = ({ isSrcToken, className = "", Container }: { isSrcToken: boolean; 
       </StyledMainTop>
       <StyledMainBottom>
         <TokenPanelUsd />
-        <TokenPanelBalance />
+        <div onClick={onBalance}>
+          <TokenPanelBalance />
+        </div>
       </StyledMainBottom>
     </StyledMain>
   );

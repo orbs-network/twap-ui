@@ -1,17 +1,15 @@
 import { useWidgetContext } from "../context/context";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
-import { Token } from "../types";
-import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, Abi, erc20, network } from "@defi.org/web3-candies";
+import { switchMetaMaskNetwork, isNativeAddress, Abi, erc20, network, TokenData } from "@defi.org/web3-candies";
 import { useNumericFormat } from "react-number-format";
 import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress } from "../utils";
 import { query, useOrdersHistory } from "./query";
 import { TwapAbi, groupOrdersByStatus, OrderStatus } from "@orbs-network/twap-sdk";
 import { networks } from "../config";
-import { useTwapContext } from "@orbs-network/twap-ui-sdk";
 
 export const useIsMarketOrder = () => {
-  return useTwapContext().derivedValues.isMarketOrder;
+  return useWidgetContext().twap.values.isMarketOrder;
 };
 
 export const useRefetchBalances = () => {
@@ -33,45 +31,18 @@ export const useResetAfterSwap = () => {
 };
 
 export const useSrcBalance = () => {
-  const srcToken = useTwapContext().state.srcToken;
+  const srcToken = useWidgetContext().srcToken;
   return query.useBalance(srcToken);
 };
 
 export const useDstBalance = () => {
-  const dstToken = useTwapContext().state.destToken;
+  const dstToken = useWidgetContext().dstToken;
   return query.useBalance(dstToken);
 };
 
-export const useFormatNumber = ({
-  value,
-  decimalScale = 3,
-  prefix,
-  suffix,
-  disableDynamicDecimals = true,
-}: {
-  value?: string | number;
-  decimalScale?: number;
-  prefix?: string;
-  suffix?: string;
-  disableDynamicDecimals?: boolean;
-}) => {
+export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
   const { input } = useWidgetContext().uiPreferences;
-  const result = useNumericFormat({
-    allowLeadingZeros: true,
-    thousandSeparator: input?.disableThousandSeparator ? "" : ",",
-    displayType: "text",
-    value: value || "",
-    decimalScale: decimalScale || 18,
-    prefix,
-    suffix,
-  });
-
-  return result.value?.toString();
-};
-
-export const useFormatNumberV2 = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
   const _value = useFormatDecimals(value, decimalScale);
-  const { input } = useWidgetContext().uiPreferences;
   const result = useNumericFormat({
     allowLeadingZeros: true,
     thousandSeparator: input?.disableThousandSeparator ? "" : ",",
@@ -111,9 +82,7 @@ export const useInvertedPrice = (price?: string, inverted?: boolean) => {
 
 export const useInvertPrice = (price?: string) => {
   const [inverted, setInvert] = useState(false);
-  const {
-    state: { srcToken, destToken },
-  } = useTwapContext();
+  const { srcToken, dstToken } = useWidgetContext();
 
   const invertedPrice = useInvertedPrice(price, inverted);
   const value = useFormatNumber({ value: invertedPrice || "", decimalScale: 5 });
@@ -122,8 +91,8 @@ export const useInvertPrice = (price?: string) => {
     setInvert((prev) => !prev);
   }, [setInvert]);
 
-  const leftToken = inverted ? destToken : srcToken;
-  const rightToken = inverted ? srcToken : destToken;
+  const leftToken = inverted ? dstToken : srcToken;
+  const rightToken = inverted ? srcToken : dstToken;
 
   return {
     price: value,
@@ -135,7 +104,7 @@ export const useInvertPrice = (price?: string) => {
 };
 
 export const useNetwork = () => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
 
   return useMemo(() => {
     return Object.values(networks).find((network) => network.id === config.chainId);
@@ -143,7 +112,7 @@ export const useNetwork = () => {
 };
 
 export const useExplorerUrl = () => {
-  const config = useTwapContext().config;
+  const config = useWidgetContext().config;
 
   return useMemo(() => getExplorerUrl(config.chainId), [config.chainId]);
 };
@@ -157,12 +126,10 @@ export const useAmountUi = (decimals?: number, value?: string) => {
 };
 
 export const useTokenBalance = (isSrc?: boolean) => {
-  const {
-    state: { srcToken, destToken },
-  } = useTwapContext();
+  const { srcToken, dstToken } = useWidgetContext();
 
   const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
-  const dstBalance = useAmountUi(destToken?.decimals, useDstBalance().data?.toString());
+  const dstBalance = useAmountUi(dstToken?.decimals, useDstBalance().data?.toString());
   return isSrc ? srcBalance : dstBalance;
 };
 
@@ -185,7 +152,7 @@ export const usemElipsisAddress = (address?: string) => {
 };
 
 export const useContract = (abi?: Abi, address?: string) => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
   const web3 = useWidgetContext().web3;
 
   const wTokenAddress = network(config.chainId)?.wToken.address;
@@ -199,12 +166,12 @@ export const useContract = (abi?: Abi, address?: string) => {
 };
 
 export const useTwapContract = () => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
   return useContract(TwapAbi as Abi, config.twapAddress);
 };
 
 export const useChangeNetwork = () => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
   const [loading, setLoading] = useState(false);
 
   const changeNetwork = async (onSuccess: () => void, onError: () => void) => {
@@ -234,10 +201,10 @@ export const useChangeNetwork = () => {
 
 export const useGetHasAllowance = () => {
   const wToken = useNetwork()?.wToken;
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
   const { account } = useWidgetContext();
   return useCallback(
-    async (token: Token, amount: string) => {
+    async (token: TokenData, amount: string) => {
       if (!wToken) return;
       token = token && isNativeAddress(token?.address) ? wToken : token;
       const contract = erc20(token!.symbol, token!.address, token!.decimals);
@@ -250,7 +217,7 @@ export const useGetHasAllowance = () => {
 };
 
 export const useEstimatedDelayBetweenChunksMillis = () => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
   return useMemo(() => {
     return config.bidDelaySeconds * 1000 * 2;
   }, [config]);

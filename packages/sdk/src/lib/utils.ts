@@ -137,3 +137,15 @@ export const fillDelayText = (value?: number) => {
 
   return arr.join(" ");
 };
+
+export function millisToDays(milliseconds?: number): number {
+  if (!milliseconds) return 0;
+  const millisecondsInADay = 86400000; // 24 * 60 * 60 * 1000
+  return milliseconds / millisecondsInADay;
+}
+
+export function millisToMinutes(milliseconds?: number): number {
+  if (!milliseconds) return 0;
+  const millisecondsInAMinute = 60000; // 60 * 1000
+  return milliseconds / millisecondsInAMinute;
+}

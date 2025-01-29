@@ -50,7 +50,7 @@ export interface PrepareOrderArgs {
 
 export interface DerivedSwapValuesArgs {
   srcAmount?: string;
-  price?: string;
+  limitPrice?: string;
   customDuration?: TimeDuration;
   customFillDelay?: TimeDuration;
   customChunks?: number;
@@ -61,22 +61,33 @@ export interface DerivedSwapValuesArgs {
   isMarketOrder?: boolean;
 }
 
-export interface DerivedSwapValuesResponse {
-  chunks: number;
-  duration: TimeDuration;
-  fillDelay: TimeDuration;
-  srcChunkAmount: string;
-  destTokenMinAmount: string;
-  destTokenAmount?: string;
-  maxPossibleChunks: number;
-  warnings: {
-    partialFill: boolean;
-    minFillDelay: boolean;
-    maxFillDelay: boolean;
-    minDuration: boolean;
-    maxDuration: boolean;
-    tradeSize: boolean;
-  };
+export enum Warnings {
+  PARTIAL_FILL = "PARTIAL_FILL",
 }
+export enum Errors {
+  MIN_FILL_DELAY = "MIN_FILL_DELAY",
+  MAX_FILL_DELAY = "MAX_FILL_DELAY",
+  MIN_TRADE_DURATION = "MIN_TRADE_DURATION",
+  MAX_TRADE_DURATION = "MAX_TRADE_DURATION",
+  TRADE_SIZE = "TRADE_SIZE",
+  SRC_AMOUNT = "SRC_AMOUNT",
+  LIMIT_PRICE = "LIMIT_PRICE",
+  MIN_CHUNKS = "MIN_CHUNKS",
+  MAX_CHUNKS = "MAX_CHUNKS",
+}
+
+export type TwapError =
+  | {
+      type: Errors;
+      text: string;
+    }
+  | undefined;
+
+export type TwapWarning =
+  | {
+      type: Warnings;
+      text: string;
+    }
+  | undefined;
 
 export type PrepareOrderArgsResult = [string, string, string, string, string, string, string, string, string, string[]];

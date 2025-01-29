@@ -1,9 +1,9 @@
 import { Config, TimeUnit } from "@orbs-network/twap-sdk";
-import { Components, Translations, hooks, Styles, compact, size, getNetwork, Widget, useWidgetContext, UIPreferences, WidgetProps } from "@orbs-network/twap-ui";
+import { Components, Translations, hooks, Styles, getNetwork, Widget, useWidgetContext, UIPreferences, WidgetProps } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { useEffect, useMemo } from "react";
 import Web3 from "web3";
-import React, { memo, ReactNode, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 import {
   StyledTokenChange,
@@ -11,74 +11,60 @@ import {
   lightTheme,
   Card,
   StyledLimitPanel,
-  StyledTradeIntervalInput,
-  StyledTradeIntervalResolution,
   StyledTradeInterval,
   StyledChunksSelect,
-  StyledChunksSelectInput,
   StyledContent,
   StyledTop,
   StyledTwap,
   GlobalStyles,
   StyledLimitAndInputs,
-  StyledChunksWarning,
   StyledLimitPanelExpiration,
   StyledLimitPanelExpirationButtons,
   StyledLimitPanelExpirationButton,
-  StyledFee,
-  StyledShowConfirmationButtonContainer,
   StyledChunksSelectText,
   StyledTokenPanelBalance,
   StyledTokenPanelUsd,
-  StyledTokenPanelSelect,
-  StyledTokenPanelBalanceSelect,
+  StyledTokenPanel,
+  StyledTokenPanelTop,
+  StyledTokenPanelBottom,
+  StyledTwapInputs,
 } from "./styles";
-import { IoMdClose } from "@react-icons/all-files/io/IoMdClose";
 import BN from "bignumber.js";
-import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
+import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
-import { Token } from "@orbs-network/twap-ui";
 import { ThemeProvider } from "styled-components";
 
 const uiPreferences: UIPreferences = {
-  input: { disableThousandSeparator: true },
+  input: { disableThousandSeparator: true, placeholder: "0" },
 };
 
 const TokenChange = () => {
-  return <StyledTokenChange icon={<BsArrowDownShort />} />;
+  return <StyledTokenChange icon={<IoIosArrowDown />} />;
 };
 
 const useParseToken = (props: AdapterProps) => {
   return useCallback(
     (token?: any) => {
-      const nativeToken = getNetwork(props.config.chainId)?.native;
       try {
         if (!token || !token.symbol) {
           return;
         }
 
-        if (token.isNative && nativeToken) {
-          return {
-            ...nativeToken,
-            logoUrl: props.getTokenLogo(token) || nativeToken.logoUrl,
-          };
-        }
         return {
           address: Web3.utils.toChecksumAddress(token.address),
           decimals: token.decimals,
           symbol: token.symbol,
-          logoUrl: props.getTokenLogo(token),
+          logoUrl: token.logoURI,
         };
       } catch (error) {
         console.error("Invalid token", token);
       }
     },
-    [props.config.chainId, props.getTokenLogo],
+    [props.config.chainId]
   );
 };
 
 interface AdapterProps extends Partial<WidgetProps> {
-  getTokenLogo: (token: any) => string;
   useUSD: (address?: any) => string | undefined;
   srcToken?: any;
   dstToken?: any;
@@ -103,7 +89,7 @@ const useIsNative = (props: AdapterProps) => {
         return true;
       }
     },
-    [props.config.chainId],
+    [props.config.chainId]
   );
 };
 
@@ -170,46 +156,9 @@ export const useProvider = (props: AdapterProps) => {
   return provider;
 };
 
-const useParsedTokens = (props: AdapterProps) => {
-  const parseToken = useParseToken(props);
-  return useMemo(() => {
-    if (!size(props.dappTokens)) {
-      return [];
-    }
-    let parsed = props.dappTokens.map((rawToken: any) => {
-      return parseToken(rawToken);
-    });
-    return compact(parsed) as Token[];
-  }, [props.dappTokens, parseToken]);
-};
-
-const TokenSelect = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const {
-    components: { TokensListModal },
-    onSrcTokenSelected,
-    onDstTokenSelected,
-  } = useWidgetContext();
-
-  const onSelect = useCallback(
-    (token: any) => {
-      isSrcToken ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
-    },
-    [isSrcToken, onSrcTokenSelected, onDstTokenSelected],
-  );
-
-  return (
-    <TokensListModal isOpen={true} onClose={() => {}} onSelect={onSelect}>
-      <div>Select</div>
-    </TokensListModal>
-  );
-};
-
 const TWAP = (props: AdapterProps) => {
   const provider = useProvider(props);
-
   const theme = useMemo(() => (props.isDarkTheme ? darkTheme : lightTheme), [props.isDarkTheme]);
-
-  const parsedTokens = useParsedTokens(props);
   const { srcToken, dstToken } = useSelectedParsedTokens(props);
   const { srcUsd, dstUsd } = useUsd(props);
   const marketPrice = useMarketPrice(props);
@@ -225,7 +174,6 @@ const TWAP = (props: AdapterProps) => {
           translations={translations as Translations}
           provider={provider}
           account={props.account}
-          tokens={parsedTokens}
           srcToken={srcToken}
           dstToken={dstToken}
           onSrcTokenSelected={props.onSrcTokenSelected}
@@ -255,45 +203,69 @@ const TWAP = (props: AdapterProps) => {
 };
 
 const LimitPrice = () => {
-  const { hidePanel } = Widget.LimitPanel.usePanel();
-
-  if (hidePanel) return null;
-
   return (
-    <StyledLimitPanel>
-      <Card>
-        <Card.Header>
-          <Widget.LimitPanel.Switch />
-        </Card.Header>
-        <Card.Body>
-          <Widget.LimitPanel.Main />
-        </Card.Body>
-      </Card>
-    </StyledLimitPanel>
+    <>
+      <Widget.LimitPriceSwitch />
+      <StyledLimitPanel Container={Card}>
+        <Widget.LimitPricePanel.Main />
+      </StyledLimitPanel>
+    </>
   );
 };
 
-const ShowConfirmationButton = () => {
-  return (
-    <StyledShowConfirmationButtonContainer>
-      <StyledFee>Fee: 0.25%</StyledFee>
-      <Widget.ShowConfirmationButton />
-    </StyledShowConfirmationButtonContainer>
-  );
-};
 const TWAPPanel = () => {
   return (
     <StyledContent>
       <LimitPrice />
       <StyledTop>
-        <Widget.TokenPanel.Main isSrcToken={true} />
+        <TokenPanel isSrcToken={true} />
         <TokenChange />
-        <Widget.TokenPanel.Main isSrcToken={false} />
+        <TokenPanel isSrcToken={false} />
       </StyledTop>
+      <TwapInputs />
+      <Widget.SubmitOrderPanel />
+    </StyledContent>
+  );
+};
+
+const TwapInputs = () => {
+  return (
+    <StyledTwapInputs>
       <TradeIntervalSelect />
       <TotalTrades />
-      <ShowConfirmationButton />
-    </StyledContent>
+    </StyledTwapInputs>
+  );
+};
+
+const BalanceOptions = [
+  { value: 0.5, text: "50%" },
+  { value: 0.75, text: "75%" },
+  { value: 1, text: "MAX" },
+];
+
+const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
+  return (
+    <StyledTokenPanel isSrcToken={Boolean(isSrcToken)}>
+      <Card.Header>
+        <Components.Base.Label>{isSrcToken ? "Allocate" : "Buy"}</Components.Base.Label>
+        <Widget.TokenPanel.BalanceSelect options={BalanceOptions} />
+      </Card.Header>
+
+      <StyledTokenPanelTop>
+        <Widget.TokenPanel.Input />
+        <Widget.TokenPanel.Select endIcon={<IoIosArrowDown />} />
+      </StyledTokenPanelTop>
+      <StyledTokenPanelBottom>
+        <StyledTokenPanelUsd>
+          ~$ <Widget.TokenPanel.Usd />
+        </StyledTokenPanelUsd>
+
+        <StyledTokenPanelBalance>
+          <span> Balance: </span>
+          <Widget.TokenPanel.Balance />
+        </StyledTokenPanelBalance>
+      </StyledTokenPanelBottom>
+    </StyledTokenPanel>
   );
 };
 
@@ -303,13 +275,13 @@ const LimitPanel = () => {
       <StyledLimitAndInputs>
         <LimitPrice />
         <StyledTop>
-          <Widget.TokenPanel.Main isSrcToken={true} />
+          <TokenPanel isSrcToken={true} />
           <TokenChange />
-          <Widget.TokenPanel.Main isSrcToken={false} />
+          <TokenPanel isSrcToken={false} />
         </StyledTop>
       </StyledLimitAndInputs>
       <LimitPanelExpiration />
-      <ShowConfirmationButton />
+      <Widget.SubmitOrderPanel />
     </StyledContent>
   );
 };
@@ -333,14 +305,18 @@ const LimitPanelExpirationOptions = [
 ];
 
 const LimitPanelExpiration = () => {
-  const selectedExpiry = hooks.useDuration().millis;
+  const {
+    twap: {
+      values: { durationMilliseconds },
+      actionHandlers,
+    },
+  } = useWidgetContext();
 
-  const setCustomDuration = hooks.useSetDuration();
   const onChange = useCallback(
     (unit: TimeUnit) => {
-      setCustomDuration({ unit, value: 1 });
+      actionHandlers.setDuration({ unit, value: 1 });
     },
-    [setCustomDuration],
+    [actionHandlers.setDuration]
   );
 
   return (
@@ -349,7 +325,7 @@ const LimitPanelExpiration = () => {
       <StyledLimitPanelExpirationButtons>
         {LimitPanelExpirationOptions.map((it) => {
           return (
-            <StyledLimitPanelExpirationButton key={it.value} onClick={() => onChange(it.value)} selected={selectedExpiry === it.value ? 1 : 0}>
+            <StyledLimitPanelExpirationButton key={it.value} onClick={() => onChange(it.value)} selected={durationMilliseconds === it.value ? 1 : 0}>
               {it.text}
             </StyledLimitPanelExpirationButton>
           );
@@ -361,39 +337,35 @@ const LimitPanelExpiration = () => {
 
 const TotalTrades = () => {
   return (
-    <Card>
+    <StyledChunksSelect>
       <Card.Header>
         <Widget.TradesAmountSelect.Label />
       </Card.Header>
-      <StyledChunksSelect>
-        <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
-          <StyledChunksSelectInput>
+      <Widget.TradesAmountSelect>
+        <Styles.StyledColumnFlex>
+          <Styles.StyledRowFlex>
             <Widget.TradesAmountSelect.Input />
             <StyledChunksSelectText>Orders</StyledChunksSelectText>
-          </StyledChunksSelectInput>
-        </Styles.StyledRowFlex>
-      </StyledChunksSelect>
-    </Card>
+          </Styles.StyledRowFlex>
+        </Styles.StyledColumnFlex>
+      </Widget.TradesAmountSelect>
+    </StyledChunksSelect>
   );
 };
 
 const TradeIntervalSelect = () => {
   return (
-    <Card>
+    <StyledTradeInterval>
       <Card.Header>
         <Widget.FillDelaySelect.Label />
       </Card.Header>
-      <StyledTradeInterval>
-        <Styles.StyledRowFlex style={{ alignItems: "stretch" }}>
-          <StyledTradeIntervalInput>
-            <Widget.FillDelaySelect.Input />
-          </StyledTradeIntervalInput>
-          <StyledTradeIntervalResolution>
-            <Widget.FillDelaySelect.Resolution />
-          </StyledTradeIntervalResolution>
+      <Widget.FillDelaySelect>
+        <Styles.StyledRowFlex>
+          <Widget.FillDelaySelect.Input />
+          <Widget.FillDelaySelect.Resolution />
         </Styles.StyledRowFlex>
-      </StyledTradeInterval>
-    </Card>
+      </Widget.FillDelaySelect>
+    </StyledTradeInterval>
   );
 };
 
