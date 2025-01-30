@@ -805,6 +805,16 @@ export const StyledTopContainer = styled(Styles.StyledColumnFlex)(({ theme }) =>
   };
 });
 
+export const StyledPoweredBy = styled(Components.PoweredBy)(({ theme }) => {
+  const styles = baseStyles(theme);
+  return {
+    marginTop: 15,
+    p: {
+      color: styles.primaryTextColor,
+    },
+  };
+});
+
 export const StyledBottomContainer = styled(Styles.StyledColumnFlex)(({ theme }) => {
   return {
     ...getContainerStyles(theme),

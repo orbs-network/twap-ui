@@ -30,6 +30,7 @@ import {
   StyledTopContainer,
   StyledBottomContainer,
   StyledSliderDots,
+  StyledPoweredBy,
 } from "./styles";
 import React, { memo, ReactNode, useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { StyledBalance, StyledEmptyUSD, StyledPercentSelect, StyledTokenChange, StyledTokenPanel, StyledTokenPanelInput, StyledTokenSelect, StyledUSD } from "./styles";
@@ -487,6 +488,7 @@ const TWAPPanel = () => {
         </StyledBottomContainer>
       </StyledColumnFlex>
       <SwapModal />
+      <StyledPoweredBy />
     </div>
   );
 };
