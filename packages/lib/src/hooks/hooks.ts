@@ -1,4 +1,3 @@
-import { useWidgetContext } from "../context/context";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
 import { switchMetaMaskNetwork, isNativeAddress, Abi, erc20, network, TokenData } from "@defi.org/web3-candies";
@@ -7,10 +6,7 @@ import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddr
 import { query, useOrdersHistory } from "./query";
 import { TwapAbi, groupOrdersByStatus, OrderStatus } from "@orbs-network/twap-sdk";
 import { networks } from "../config";
-
-export const useIsMarketOrder = () => {
-  return useWidgetContext().twap.values.isMarketOrder;
-};
+import { useWidgetContext } from "../widget/widget-context";
 
 export const useRefetchBalances = () => {
   const { refetch: refetchSrcBalance } = useSrcBalance();
@@ -19,15 +15,6 @@ export const useRefetchBalances = () => {
   return useCallback(async () => {
     await Promise.all([refetchSrcBalance(), refetchDstBalance()]);
   }, [refetchSrcBalance, refetchDstBalance]);
-};
-
-export const useResetAfterSwap = () => {
-  const refetchBalances = useRefetchBalances();
-
-  return useCallback(async () => {
-    // resetAfterSwap();
-    await refetchBalances();
-  }, [refetchBalances]);
 };
 
 export const useSrcBalance = () => {
@@ -60,19 +47,6 @@ export const useFormatDecimals = (value?: string | BN | number, decimalPlaces?: 
   return useMemo(() => formatDecimals(value, decimalPlaces), [value, decimalPlaces]);
 };
 
-export function useDebounce<T>(value: T, delay?: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
 export const useInvertedPrice = (price?: string, inverted?: boolean) => {
   return useMemo(() => {
     if (!price) return "";
@@ -140,15 +114,6 @@ export const useOpenOrders = () => {
     if (!data) return [];
     return groupOrdersByStatus(data)?.[OrderStatus.Open] || [];
   }, [data]);
-};
-
-export const useTokenFromParsedTokensList = (address?: string) => {
-  const { useToken } = useWidgetContext();
-  return useToken?.(address);
-};
-
-export const usemElipsisAddress = (address?: string) => {
-  return useMemo(() => makeElipsisAddress(address), [address]);
 };
 
 export const useContract = (abi?: Abi, address?: string) => {

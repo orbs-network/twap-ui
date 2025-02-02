@@ -7,7 +7,7 @@ import { Dapp, Popup, TokensList, UISelector } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { SelectorOption, TokenListItem } from "../types";
-import { mapCollection, size, TooltipProps, Configs, TokensListModalProps, ModalProps } from "@orbs-network/twap-ui";
+import { mapCollection, size, TooltipProps, Configs, TokensListModalProps, ModalProps, ButtonProps } from "@orbs-network/twap-ui";
 import { DappProvider } from "../context";
 import { network } from "@defi.org/web3-candies";
 
@@ -86,6 +86,9 @@ const Tooltip = (props: TooltipProps) => {
     </MuiTooltip>
   );
 };
+
+
+
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();

@@ -8,9 +8,9 @@ export function Message({ text, className = "", variant, title }: { variant?: Me
   const _className = useMemo(() => {
     switch (variant) {
       case "error":
-        return "twap-message-error";
+        return "twap-error-message";
       case "warning":
-        return "twap-message-warning";
+        return "twap-warning-message";
 
       default:
         return "";

@@ -1,45 +1,19 @@
-import { Config, TimeUnit } from "@orbs-network/twap-sdk";
-import { Components, Translations, hooks, Styles, getNetwork, Widget, useWidgetContext, UIPreferences, WidgetProps } from "@orbs-network/twap-ui";
+import { Config } from "@orbs-network/twap-sdk";
+import { Components, Translations, hooks, Styles, getNetwork, Widget, UIPreferences, WidgetProps, WidgetProvider } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { useEffect, useMemo } from "react";
 import Web3 from "web3";
 import React, { useCallback, useState } from "react";
-
-import {
-  StyledTokenChange,
-  darkTheme,
-  lightTheme,
-  Card,
-  StyledLimitPanel,
-  StyledTradeInterval,
-  StyledChunksSelect,
-  StyledContent,
-  StyledTop,
-  StyledTwap,
-  GlobalStyles,
-  StyledLimitAndInputs,
-  StyledLimitPanelExpiration,
-  StyledLimitPanelExpirationButtons,
-  StyledLimitPanelExpirationButton,
-  StyledChunksSelectText,
-  StyledTokenPanelBalance,
-  StyledTokenPanelUsd,
-  StyledTokenPanel,
-  StyledTokenPanelTop,
-  StyledTokenPanelBottom,
-  StyledTwapInputs,
-} from "./styles";
+import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledLimitAndInputs, StyledTwapInputs } from "./styles";
 import BN from "bignumber.js";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
 import { ThemeProvider } from "styled-components";
 
 const uiPreferences: UIPreferences = {
-  input: { disableThousandSeparator: true, placeholder: "0" },
-};
-
-const TokenChange = () => {
-  return <StyledTokenChange icon={<IoIosArrowDown />} />;
+  input: { disableThousandSeparator: false, placeholder: "0" },
+  tokenSelect: { icon: <IoIosArrowDown style={{width: 14}} /> },
+  menu: { icon: <IoIosArrowDown style={{width: 14}} /> },
 };
 
 const useParseToken = (props: AdapterProps) => {
@@ -165,40 +139,49 @@ const TWAP = (props: AdapterProps) => {
 
   return (
     <ThemeProvider theme={theme}>
-      <StyledTwap className="twap-adapter-wrapper">
-        <Widget
-          connect={props.connect!}
-          config={props.config}
-          maxFeePerGas={props.maxFeePerGas}
-          priorityFeePerGas={props.priorityFeePerGas}
-          translations={translations as Translations}
-          provider={provider}
-          account={props.account}
-          srcToken={srcToken}
-          dstToken={dstToken}
-          onSrcTokenSelected={props.onSrcTokenSelected}
-          onDstTokenSelected={props.onDstTokenSelected}
-          isLimitPanel={props.isLimitPanel}
-          uiPreferences={uiPreferences}
-          onSwitchTokens={props.onSwitchTokens}
-          srcUsd={srcUsd ? Number(srcUsd) : 0}
-          dstUsd={dstUsd ? Number(dstUsd) : 0}
-          marketPrice={marketPrice}
-          chainId={props.chainId}
-          isExactAppoval={true}
-          components={props.components!}
-        >
-          <GlobalStyles />
-          <StyledContent>
-            {props.isLimitPanel ? <LimitPanel /> : <TWAPPanel />}
-            <Components.LimitPriceMessage />
-            <Widget.Orders />
-            <Widget.SubmitOrderModal />
-            <Widget.PoweredBy />
-          </StyledContent>
-        </Widget>
-      </StyledTwap>
+      <WidgetProvider
+        connect={props.connect!}
+        config={props.config}
+        maxFeePerGas={props.maxFeePerGas}
+        priorityFeePerGas={props.priorityFeePerGas}
+        translations={translations as Translations}
+        provider={provider}
+        account={props.account}
+        srcToken={srcToken}
+        dstToken={dstToken}
+        onSrcTokenSelected={props.onSrcTokenSelected}
+        onDstTokenSelected={props.onDstTokenSelected}
+        isLimitPanel={props.isLimitPanel}
+        uiPreferences={uiPreferences}
+        onSwitchTokens={props.onSwitchTokens}
+        srcUsd={srcUsd ? Number(srcUsd) : 0}
+        dstUsd={dstUsd ? Number(dstUsd) : 0}
+        marketPrice={marketPrice}
+        chainId={props.chainId}
+        isExactAppoval={true}
+        components={props.components!}
+      >
+        <GlobalStyles />
+        <Styles.StyledColumnFlex gap={16}>
+          {props.isLimitPanel ? <LimitPanel /> : <TWAPPanel />}
+          <Widget.ErrorMessage />
+          <Widget.SubmitOrderPanel />
+          <Components.LimitPriceMessage />
+          <Widget.Orders />
+          <Widget.PoweredByOrbs />
+        </Styles.StyledColumnFlex>
+      </WidgetProvider>
     </ThemeProvider>
+  );
+};
+
+const InputsPanel = () => {
+  return (
+    <StyledTop>
+      <TokenPanel isSrcToken={true} />
+      <Widget.SwitchTokens />
+      <TokenPanel isSrcToken={false} />
+    </StyledTop>
   );
 };
 
@@ -206,166 +189,61 @@ const LimitPrice = () => {
   return (
     <>
       <Widget.LimitPriceSwitch />
-      <StyledLimitPanel Container={Card}>
+      <Widget.LimitPricePanel>
         <Widget.LimitPricePanel.Main />
-      </StyledLimitPanel>
+      </Widget.LimitPricePanel>
     </>
   );
 };
 
 const TWAPPanel = () => {
   return (
-    <StyledContent>
+    <>
       <LimitPrice />
-      <StyledTop>
-        <TokenPanel isSrcToken={true} />
-        <TokenChange />
-        <TokenPanel isSrcToken={false} />
-      </StyledTop>
-      <TwapInputs />
-      <Widget.SubmitOrderPanel />
-    </StyledContent>
+      <InputsPanel />
+      <StyledTwapInputs>
+        <Widget.FillDelayPanel>
+          <Widget.FillDelayPanel.Main />
+        </Widget.FillDelayPanel>
+        <Widget.TradesAmountPanel>
+          <Widget.TradesAmountPanel.Main />
+        </Widget.TradesAmountPanel>
+      </StyledTwapInputs>
+
+    </>
   );
 };
-
-const TwapInputs = () => {
-  return (
-    <StyledTwapInputs>
-      <TradeIntervalSelect />
-      <TotalTrades />
-    </StyledTwapInputs>
-  );
-};
-
-const BalanceOptions = [
-  { value: 0.5, text: "50%" },
-  { value: 0.75, text: "75%" },
-  { value: 1, text: "MAX" },
-];
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   return (
-    <StyledTokenPanel isSrcToken={Boolean(isSrcToken)}>
-      <Card.Header>
+    <Widget.TokenPanel isSrcToken={Boolean(isSrcToken)}>
+      <Widget.Panel.Header>
         <Components.Base.Label>{isSrcToken ? "Allocate" : "Buy"}</Components.Base.Label>
-        <Widget.TokenPanel.BalanceSelect options={BalanceOptions} />
-      </Card.Header>
-
-      <StyledTokenPanelTop>
+        <Widget.TokenPanel.BalanceSelect />
+      </Widget.Panel.Header>
+      <Styles.StyledRowFlex className={`${Widget.TokenPanel.ClassName}-top`}>
         <Widget.TokenPanel.Input />
-        <Widget.TokenPanel.Select endIcon={<IoIosArrowDown />} />
-      </StyledTokenPanelTop>
-      <StyledTokenPanelBottom>
-        <StyledTokenPanelUsd>
-          ~$ <Widget.TokenPanel.Usd />
-        </StyledTokenPanelUsd>
-
-        <StyledTokenPanelBalance>
-          <span> Balance: </span>
-          <Widget.TokenPanel.Balance />
-        </StyledTokenPanelBalance>
-      </StyledTokenPanelBottom>
-    </StyledTokenPanel>
+        <Widget.TokenPanel.Select />
+      </Styles.StyledRowFlex>
+      <Styles.StyledRowFlex className={`${Widget.TokenPanel.ClassName}-bottom`}>
+        <Widget.TokenPanel.Usd prefix={"~$ "} />
+        <Widget.TokenPanel.Balance prefix={<span> Balance: </span>} />
+      </Styles.StyledRowFlex>
+    </Widget.TokenPanel>
   );
 };
 
 const LimitPanel = () => {
   return (
-    <StyledContent>
+    <>
       <StyledLimitAndInputs>
         <LimitPrice />
-        <StyledTop>
-          <TokenPanel isSrcToken={true} />
-          <TokenChange />
-          <TokenPanel isSrcToken={false} />
-        </StyledTop>
+        <InputsPanel />
       </StyledLimitAndInputs>
-      <LimitPanelExpiration />
-      <Widget.SubmitOrderPanel />
-    </StyledContent>
-  );
-};
-const LimitPanelExpirationOptions = [
-  {
-    text: "1 Day",
-    value: TimeUnit.Days,
-  },
-  {
-    text: "1 Week",
-    value: TimeUnit.Weeks,
-  },
-  {
-    text: "1 Month",
-    value: TimeUnit.Months,
-  },
-  {
-    text: "1 Year",
-    value: TimeUnit.Years,
-  },
-];
-
-const LimitPanelExpiration = () => {
-  const {
-    twap: {
-      values: { durationMilliseconds },
-      actionHandlers,
-    },
-  } = useWidgetContext();
-
-  const onChange = useCallback(
-    (unit: TimeUnit) => {
-      actionHandlers.setDuration({ unit, value: 1 });
-    },
-    [actionHandlers.setDuration]
-  );
-
-  return (
-    <StyledLimitPanelExpiration>
-      <Components.Labels.MaxDurationLabel />
-      <StyledLimitPanelExpirationButtons>
-        {LimitPanelExpirationOptions.map((it) => {
-          return (
-            <StyledLimitPanelExpirationButton key={it.value} onClick={() => onChange(it.value)} selected={durationMilliseconds === it.value ? 1 : 0}>
-              {it.text}
-            </StyledLimitPanelExpirationButton>
-          );
-        })}
-      </StyledLimitPanelExpirationButtons>
-    </StyledLimitPanelExpiration>
-  );
-};
-
-const TotalTrades = () => {
-  return (
-    <StyledChunksSelect>
-      <Card.Header>
-        <Widget.TradesAmountSelect.Label />
-      </Card.Header>
-      <Widget.TradesAmountSelect>
-        <Styles.StyledColumnFlex>
-          <Styles.StyledRowFlex>
-            <Widget.TradesAmountSelect.Input />
-            <StyledChunksSelectText>Orders</StyledChunksSelectText>
-          </Styles.StyledRowFlex>
-        </Styles.StyledColumnFlex>
-      </Widget.TradesAmountSelect>
-    </StyledChunksSelect>
-  );
-};
-
-const TradeIntervalSelect = () => {
-  return (
-    <StyledTradeInterval>
-      <Card.Header>
-        <Widget.FillDelaySelect.Label />
-      </Card.Header>
-      <Widget.FillDelaySelect>
-        <Styles.StyledRowFlex>
-          <Widget.FillDelaySelect.Input />
-          <Widget.FillDelaySelect.Resolution />
-        </Styles.StyledRowFlex>
-      </Widget.FillDelaySelect>
-    </StyledTradeInterval>
+      <Widget.DurationPanel>
+        <Widget.DurationPanel.Main />
+      </Widget.DurationPanel>
+    </>
   );
 };
 

@@ -1,13 +1,12 @@
 import { styled } from "styled-components";
 import React, { ReactNode, useMemo } from "react";
-import { useExplorerUrl, useFormatNumber, usemElipsisAddress } from "../hooks/hooks";
+import { useExplorerUrl, useFormatNumber } from "../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
 import { Label, TokenLogo } from "./base";
 import moment from "moment";
-import { useWidgetContext } from "../context/context";
-import { fillDelayText } from "../utils";
+import { fillDelayText, makeElipsisAddress } from "../utils";
 import { Token } from "../types";
-import { Tooltip } from "./Components";
+import { useWidgetContext } from "..";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useWidgetContext()?.translations;
@@ -67,7 +66,7 @@ const ChunksAmount = ({ chunks }: { chunks?: number }) => {
 const Recipient = () => {
   const { translations: t, account } = useWidgetContext();
   const explorerUrl = useExplorerUrl();
-  const makerAddress = usemElipsisAddress(account);
+  const makerAddress = makeElipsisAddress(account);
 
   return (
     <DetailRow title={t.recipient}>
@@ -127,7 +126,7 @@ const DetailRow = ({
 
 const TxHash = ({ txHash }: { txHash?: string }) => {
   const { translations: t } = useWidgetContext();
-  const txHashAddress = usemElipsisAddress(txHash);
+  const txHashAddress = makeElipsisAddress(txHash);
   const explorerUrl = useExplorerUrl();
 
   if (!txHash) return null;

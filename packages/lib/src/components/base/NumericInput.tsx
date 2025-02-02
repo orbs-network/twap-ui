@@ -5,7 +5,8 @@ import { maxUint256 } from "@defi.org/web3-candies";
 import BN from "bignumber.js";
 import React, { CSSProperties } from "react";
 import { Loader } from "./Loader";
-import { useWidgetContext } from "../../context/context";
+import { useWidgetContext } from "../..";
+
 export interface Props {
   onChange: (value: string) => void;
   value?: string | number;

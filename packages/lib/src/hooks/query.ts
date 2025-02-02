@@ -3,7 +3,6 @@ import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-quer
 import BN from "bignumber.js";
 import { useCallback, useMemo, useRef } from "react";
 import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
-import { useWidgetContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
 import { Token } from "../types";
@@ -11,6 +10,7 @@ import { useGetHasAllowance, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
 import { Order, OrderStatus, getOrders, getOrderById, getOrderByTxHash } from "@orbs-network/twap-sdk";
 import { amountBNV2 } from "../utils";
+import { useWidgetContext } from "..";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const { web3, account } = useWidgetContext();
@@ -111,11 +111,10 @@ const useAllowance = () => {
     account,
     srcToken,
     config,
-    twap: {
-      values: { srcAmount },
-    },
+    twap
   } = useWidgetContext();
-  const getHasAllowance = useGetHasAllowance();
+  const getHasAllowance = useGetHasAllowance();  
+  const { values:{srcAmount} } = twap;
 
   const query = useQuery(
     [QueryKeys.GET_ALLOWANCE, config.chainId, srcToken?.address, srcAmount],

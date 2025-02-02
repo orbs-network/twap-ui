@@ -36,7 +36,7 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
     (unit: TimeUnit) => {
       onChange({ unit, value: value.value });
     },
-    [onChange],
+    [onChange]
   );
 
   return (
@@ -55,15 +55,27 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
   );
 }
 
-export const ResolutionSelect = ({ onChange, unit, className = "" }: { onChange: (unit: TimeUnit) => void; unit: TimeUnit; className?: string }) => {
+export const ResolutionSelect = ({
+  onChange,
+  unit,
+  className = "",
+  onOpen,
+  onClose,
+}: {
+  onChange: (unit: TimeUnit) => void;
+  unit: TimeUnit;
+  className?: string;
+  onOpen?: () => void;
+  onClose?: () => void;
+}) => {
   const onSelect = useCallback(
     (unit: TimeUnit) => {
       onChange(unit);
     },
-    [onChange],
+    [onChange]
   );
 
-  return <SelectMenu onSelect={(it) => onSelect(it.value as number)} items={timeArr} selected={unit} />;
+  return <SelectMenu onOpen={onOpen} onClose={onClose} onSelect={(it) => onSelect(it.value as number)} items={timeArr} selected={unit} />;
 };
 
 const StyledContainer = styled(StyledRowFlex)({

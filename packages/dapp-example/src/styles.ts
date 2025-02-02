@@ -39,6 +39,7 @@ const fonts = {
   Lynex: "Montserrat",
   [Configs.Arbidex.name.toLowerCase()]: "Quicksand",
   SyncSwap: "Inter",
+  [Configs.DragonSwap.name.toLowerCase()]: "Fredoka",
 };
 
 export const globalStyle = (name?: string) => {

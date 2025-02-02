@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import { useWidgetContext } from "../context/context";
 import { query } from "./query";
 import BN from "bignumber.js";
 import { useUnwrapToken, useWrapOnly } from "./useTransactions";
 import { useSwapModal } from "./useSwapModal";
 import { useChangeNetwork, useSrcBalance } from "./hooks";
-import { useShouldOnlyWrap, useShouldUnwrap } from "./lib";
+import { useBalanceWaning, useShouldOnlyWrap, useShouldUnwrap } from "./lib";
+import { useWidgetContext } from "..";
 
 export const useConfirmationButton = () => {
   const {
@@ -25,6 +25,7 @@ export const useConfirmationButton = () => {
   const shouldUnwrap = useShouldUnwrap();
   const usdLoading = BN(srcUsd || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
+    const balanceError = useBalanceWaning()
   const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);
   const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(dstToken?.address);
   const shouldOnlyWrap = useShouldOnlyWrap();
@@ -68,7 +69,7 @@ export const useConfirmationButton = () => {
       text: translations.placeOrder,
       onClick: onOpen,
       loading: isLoading,
-      disabled: isLoading || hasErros,
+      disabled: isLoading || hasErros || balanceError,
     };
   }, [
     isWrongChain,
@@ -86,5 +87,6 @@ export const useConfirmationButton = () => {
     changeNetworkLoading,
     onOpen,
     hasErros,
+    balanceError,
   ]);
 };

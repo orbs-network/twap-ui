@@ -1,8 +1,8 @@
 import { styled } from "styled-components";
 import React, { ReactNode } from "react";
-import { useWidgetContext } from "../../context/context";
 import { useFormatNumber } from "../../hooks/hooks";
 import SmallLabel from "./SmallLabel";
+import { useWidgetContext } from "../..";
 
 interface Props {
   isLoading: boolean;

@@ -1,6 +1,5 @@
 import React from "react";
-import { Styles, Translations } from "..";
-import { useWidgetContext } from "../context/context";
+import { Styles, Translations, useWidgetContext } from "..";
 import { Label } from "./base";
 import { handleFillDelayText } from "../utils";
 import { useMinimumDelayMinutes } from "../hooks/lib";

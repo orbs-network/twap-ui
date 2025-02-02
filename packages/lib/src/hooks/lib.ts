@@ -1,9 +1,8 @@
 import { useCallback, useMemo } from "react";
-import { amountBNV2, amountUiV2, query } from "..";
+import { amountBNV2, amountUiV2, query, useWidgetContext } from "..";
 import BN from "bignumber.js";
 import { useNetwork, useSrcBalance } from "./hooks";
 import { eqIgnoreCase, isNativeAddress, networks } from "@defi.org/web3-candies";
-import { useWidgetContext } from "../context/context";
 
 export const useShouldOnlyWrap = () => {
   const { srcToken, dstToken } = useWidgetContext();
@@ -163,38 +162,6 @@ export const useFeeOnTransferWarning = () => {
       return t.feeOnTranferWarning;
     }
   }, [srcTokenFeeOnTransfer, dstTokenFeeOnTransfer, t]);
-};
-
-export const getLowLimitPriceWarning = (isLimitPanel?: boolean, priceDeltaPercentage = "", isInvertedLimitPrice = false) => {
-  if (!isLimitPanel || !priceDeltaPercentage) return;
-  return isInvertedLimitPrice ? BN(priceDeltaPercentage).isGreaterThan(0) : BN(priceDeltaPercentage).isLessThan(0);
-};
-
-export const useLowPriceWarning = () => {
-  const { translations: t, twap, isLimitPanel, srcToken, dstToken } = useWidgetContext();
-  const {
-    values: { isInvertedLimitPrice, priceDiffFromMarket },
-  } = twap;
-
-  return useMemo(() => {
-    if (!srcToken || !dstToken) {
-      return undefined;
-    }
-
-    const warning = getLowLimitPriceWarning(isLimitPanel, priceDiffFromMarket, !!isInvertedLimitPrice);
-
-    if (!warning) return;
-    const title = isInvertedLimitPrice ? t.limitPriceWarningTitleInverted : t.limitPriceWarningTitle;
-    const subtitle = isInvertedLimitPrice ? t.limitPriceWarningSubtileInverted : t.limitPriceWarningSubtitle;
-    const token = isInvertedLimitPrice ? dstToken : srcToken;
-    const percent = BN(priceDiffFromMarket || 0)
-      .abs()
-      .toString();
-    return {
-      title: title.replace("{symbol}", token.symbol),
-      subTitle: subtitle.replace("{percent}", percent),
-    };
-  }, [isInvertedLimitPrice, isLimitPanel, priceDiffFromMarket, srcToken, dstToken, t]);
 };
 
 export const useToggleDisclaimer = () => {

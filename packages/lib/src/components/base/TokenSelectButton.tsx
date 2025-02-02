@@ -1,10 +1,10 @@
 import { styled } from "styled-components";
 import Icon from "./Icon";
-import { useWidgetContext } from "../../context/context";
 import { StyledOneLineText, StyledRowFlex } from "../../styles";
 import React, { FC, ReactNode } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { Tooltip } from "../Components";
+import { useWidgetContext } from "../..";
 
 interface Props {
   onClick: () => void;

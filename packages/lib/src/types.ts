@@ -176,6 +176,7 @@ interface Components {
   TokensListModal: FC<TokensListModalProps>;
   Tooltip: FC<TooltipProps>;
   Ipnut?: FC<InputProps>;
+  Button?: FC<ButtonProps>;
 }
 
 export interface WidgetProps {
@@ -208,6 +209,7 @@ export interface WidgetProps {
   components: Components;
   askDataParams?: any[];
   useToken?: (value?: string) => Token | undefined;
+  withStyles?: boolean;
 }
 
 export interface WidgetContextType extends WidgetProps {
@@ -223,6 +225,12 @@ export interface WidgetContextType extends WidgetProps {
 export type SelectMeuItem = { text: string; value: string | number };
 
 export interface UIPreferences {
+  menu?: {
+    icon?: ReactElement
+  },
+  tokenSelect?: {
+    icon?: ReactElement
+  };
   usd?: {
     suffix?: string;
     prefix?: string;
@@ -341,7 +349,7 @@ export interface State {
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
   srcAmount?: string;
-  swapData: {
+  swapData?: {
     srcToken?: Token;
     dstToken?: Token;
     srcAmount?: string;

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
-import { useWidgetContext } from "../context/context";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useUsdAmount } from ".";
+import { useWidgetContext } from "..";
 
 export const useSwitchNativeToWrapped = () => {
   const { onSrcTokenSelected } = useWidgetContext();

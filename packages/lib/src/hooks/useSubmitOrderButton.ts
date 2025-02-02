@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
-import { useWidgetContext } from "../context/context";
 import { query } from "./query";
 import { SwapStatus } from "@orbs-network/swap-ui";
+import { useWidgetContext } from "..";
 
 export function useSubmitOrderButton(onClick?: () => void) {
   const {

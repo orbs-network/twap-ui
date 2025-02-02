@@ -445,6 +445,43 @@
   src: url("./fonts/arbidex/quicksand-v30-latin-700.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
+/* dragonswap */
+/* fredoka-400 */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 400;
+  src: url("./fonts/dragonswap/Fredoka-Regular.ttf") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* fredoka-500 */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 500;
+  src: url("./fonts/dragonswap/Fredoka-Medium.ttf") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* fredoka-600 */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 600;
+  src: url("./fonts/dragonswap/Fredoka-SemiBold.ttf") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* fredoka-700 */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "Fredoka";
+  font-style: bold;
+  font-weight: 700;
+  src: url("./fonts/dragonswap/Fredoka-Bold.ttf") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
 .theme-background-light {
   background: linear-gradient(125deg, #efedff 20%, #f0f5ff 50%, #f7f2ff 90%), #efedff;
 }

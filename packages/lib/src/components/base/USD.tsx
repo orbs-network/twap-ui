@@ -4,7 +4,7 @@ import { SQUIGLE } from "../../config";
 import { useFormatNumber } from "../../hooks/hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
-import { useWidgetContext } from "../../context/context";
+import { useWidgetContext } from "../..";
 
 const USD = ({
   isLoading = false,

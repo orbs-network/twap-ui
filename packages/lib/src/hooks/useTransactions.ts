@@ -1,13 +1,13 @@
 import { zero, sendAndWaitForConfirmations, TokenData, erc20, iwethabi, maxUint256, hasWeb3Instance, setWeb3Instance, account } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
-import { useWidgetContext } from "../context/context";
-import { useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } from "./hooks";
+import { useGetHasAllowance, useNetwork, useRefetchBalances, useTwapContract } from "./hooks";
 import { query, useGasPrice, useOrdersHistory } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
 import { useShouldWrap } from "./lib";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { SwapSteps, Token } from "../types";
+import { useWidgetContext } from "../widget/widget-context";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
@@ -45,7 +45,7 @@ export const useCreateOrder = () => {
         onTxHash: (createOrderTxHash) => {
           updateState({ createOrderTxHash });
         },
-      },
+      }
     );
 
     const orderId = Number(tx.events.OrderCreated.returnValues.id);
@@ -89,7 +89,7 @@ export const useWrapToken = () => {
         onTxHash: (hash) => {
           txHash = hash;
         },
-      },
+      }
     );
     logger("token wrap success:", txHash);
     twap.analytics.onWrapSuccess(txHash);
@@ -98,7 +98,8 @@ export const useWrapToken = () => {
 
 export const useWrapOnly = () => {
   const { mutateAsync } = useWrapToken();
-  const onSuccess = useResetAfterSwap();
+
+  const onSuccess = useRefetchBalances();
 
   return useMutation(async () => {
     await mutateAsync();
@@ -109,7 +110,7 @@ export const useWrapOnly = () => {
 export const useUnwrapToken = () => {
   const { account, twap } = useWidgetContext();
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
-  const onSuccess = useResetAfterSwap();
+  const onSuccess = useRefetchBalances();
   const srcAmount = twap.values.srcAmount;
   const network = useNetwork();
 
@@ -125,13 +126,13 @@ export const useUnwrapToken = () => {
         erc20<any>(network.wToken.symbol, network.wToken.address, network.wToken.decimals, iwethabi).methods.withdraw(BN(srcAmount).toFixed(0)),
         { from: account, maxPriorityFeePerGas: priorityFeePerGas, maxFeePerGas },
         undefined,
-        undefined,
+        undefined
       );
       await onSuccess();
     },
     {
       onError: (error) => {},
-    },
+    }
   );
 };
 
@@ -167,7 +168,7 @@ export const useApproveToken = () => {
         onTxHash: (value) => {
           txHash = value;
         },
-      },
+      }
     );
     logger("token approve success:", txHash);
     twap.analytics.onApproveSuccess(txHash);
@@ -177,7 +178,7 @@ const useUpdatedOrders = () => {
   const { account, updateState, twap } = useWidgetContext();
 
   const { data, updateData } = useOrdersHistory();
-  const reset = useResetAfterSwap();
+  const reset = useRefetchBalances();
   return useMutation({
     mutationFn: async (order: { txHash: string; orderId?: number }) => {
       if (!account) return;
@@ -208,22 +209,24 @@ const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 
 export const useSubmitOrderFlow = () => {
   const { state, updateState, twap } = useWidgetContext();
+
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash, wrapSuccess, swapData } = state;
-  const { data: haveAllowance } = query.useAllowance();
+
+  const { data: haveAllowance, refetch: refetchAllowance } = query.useAllowance();
   const shouldWrap = useShouldWrap();
   const { mutateAsync: updateOrders } = useUpdatedOrders();
   const wToken = useNetwork()?.wToken;
-  const { refetch: refetchAllowance } = query.useAllowance();
+
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;
   const getHasAllowance = useGetHasAllowance();
-  const { srcToken, dstToken } = swapData;
+
   const srcAmount = twap.values.srcAmount;
 
   const mutate = useMutation(
     async () => {
-      if (!srcToken || !dstToken) {
+      if (!swapData?.srcToken || !swapData?.dstToken) {
         throw new Error("Please select a token to swap");
       }
 
@@ -235,7 +238,7 @@ export const useSubmitOrderFlow = () => {
       logger(`Create order request`);
       updateState({ swapStatus: SwapStatus.LOADING, swapSteps: steps });
 
-      let token = srcToken;
+      let token = swapData.srcToken;
 
       if (shouldWrap) {
         updateState({ swapStep: SwapSteps.WRAP });
@@ -270,7 +273,7 @@ export const useSubmitOrderFlow = () => {
       onSettled() {
         refetchAllowance();
       },
-    },
+    }
   );
 
   const error = !mutate.error ? undefined : (mutate.error as any).message || "Failed to create order";
@@ -322,6 +325,6 @@ export const useCancelOrder = () => {
         console.log(`cancel error order`, error);
         twap.analytics.onCreateOrderError(error);
       },
-    },
+    }
   );
 };

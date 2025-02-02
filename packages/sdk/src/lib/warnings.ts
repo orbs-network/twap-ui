@@ -90,13 +90,13 @@ export const getChunksWarning = (chunks = 0, maxPossibleChunks: number, isLimitP
   if (BN(chunks).isZero()) {
     return {
       type: Errors.MIN_CHUNKS,
-      text: `Enter a valid number of trades amount`,
+      text: `Enter a valid number of orders`,
     };
   }
   if (BN(chunks).isGreaterThan(maxPossibleChunks)) {
     return {
       type: Errors.MAX_CHUNKS,
-      text: `Max. number of trades is ${maxPossibleChunks}`,
+      text: `Max. number of orders is ${maxPossibleChunks}`,
     };
   }
 };
