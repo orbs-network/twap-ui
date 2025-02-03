@@ -1,17 +1,15 @@
 import { styled } from "styled-components";
-import { useAmountUi, useFormatNumber } from "../../../../hooks/hooks";
-import { Button, Switch } from "../../../../components/base";
-import { MarketPriceWarning, Separator } from "../../../../components/Components";
-import { StyledColumnFlex, StyledText } from "../../../../styles";
-import { OrderDisplay } from "../../../../components/OrderDisplay";
 import BN from "bignumber.js";
-import { useDstMinAmountOut, useSwapPrice, useToggleDisclaimer } from "../../../../hooks/lib";
 import React, { useMemo } from "react";
-import { useWidgetContext } from "../../../../context/context";
 import { SwapFlow, SwapStep } from "@orbs-network/swap-ui";
-import { useSubmitOrderButton } from "../../../../hooks/useSubmitOrderButton";
 import { fillDelayText } from "@orbs-network/twap-sdk";
-import { SwapSteps } from "../../../../types";
+import { MarketPriceWarning, Separator } from "../../../components";
+import { Switch, Button } from "../../../components/base";
+import { OrderDisplay } from "../../../components/OrderDisplay";
+import { useSwapPrice, useFormatNumber, useToggleDisclaimer, useAmountUi, useSubmitOrderButton } from "../../../hooks";
+import { StyledText, StyledColumnFlex } from "../../../styles";
+import { SwapSteps } from "../../../types";
+import { useWidgetContext } from "../../widget-context";
 
 const Price = () => {
   const { srcToken, dstToken, twap } = useWidgetContext();
@@ -125,24 +123,26 @@ export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
   const {
     state: { swapStatus, swapStep, swapData },
     twap,
-    isLimitPanel,
+    uiPreferences,
+    translations
   } = useWidgetContext();
   const {
-    values: { isMarketOrder },
   } = twap;
   const steps = useSteps();
 
-  const inUsd = useFormatNumber({ value: swapData.srcAmountusd, decimalScale: 2 });
-  const outUsd = useFormatNumber({ value: swapData.outAmountusd, decimalScale: 2 });
+  const inUsd = useFormatNumber({ value: swapData?.srcAmountusd, decimalScale: 2 });
+  const outUsd = useFormatNumber({ value: swapData?.outAmountusd, decimalScale: 2 });
 
+  const usdPrefix = uiPreferences.usd?.prefix || '$'
+  const usdSuffix = uiPreferences.usd?.suffix || ''
   return (
     <>
       <SwapFlow.Main
-        fromTitle={isLimitPanel ? "From" : "Allocate"}
-        toTitle={!isMarketOrder ? "To" : "Buy"}
+        fromTitle={translations.from}
+        toTitle={translations.to}
         steps={steps}
-        inUsd={`$${inUsd}`}
-        outUsd={`$${outUsd}`}
+        inUsd={`${usdPrefix}${inUsd}${usdSuffix}`}
+        outUsd={`${usdPrefix}${outUsd}${usdSuffix}`}
         currentStep={swapStep}
         showSingleStep={true}
         bottomContent={<ChunksText />}

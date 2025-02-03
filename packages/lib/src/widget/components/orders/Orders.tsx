@@ -10,9 +10,10 @@ import { size } from "../../../utils";
 import { Portal, Spinner } from "../../../components/base";
 import { StyledColumnFlex, StyledRowFlex } from "../../../styles";
 import { useWidgetContext } from "../../widget-context";
+import { OrderHistoryHeader } from "./OrderHistoryHeader";
 const PORTAL_ID = "twap-orders-portal";
-export const OrdersPortal = ({ children }: { children: React.ReactNode }) => {
-  return <div id={PORTAL_ID}>{children}</div>;
+export const OrdersPortal = () => {
+  return <div id={PORTAL_ID} />
 };
 
 export const Orders = ({ className = "" }: { className?: string }) => {
@@ -30,19 +31,14 @@ export const OrdersButton = ({ className = "" }: { className?: string }) => {
   const { data } = useOrdersHistory();
   const openOrders = useOpenOrders();
   const { onOpen } = useOrderHistoryContext();
-  const isLoading = !data;
-  const text = useMemo(() => {
-    if (!data) {
-      return "Loading orders";
-    }
-    return `${size(openOrders)} Open orders`;
-  }, [data, openOrders]);
+  const isLoading = !data
+  const text = useMemo(() =>isLoading ? 'Loading orders...' :  `${size(openOrders)} Open orders`, [data, openOrders, isLoading]);
 
   return (
-    <StyledOrderHistoryButton className={`twap-order-history-open-button ${className}`} onClick={onOpen}>
+    <StyledOrderHistoryButton className={`twap-order-history-button ${className}`} onClick={onOpen}>
       {isLoading && <Spinner size={20} />}
-      <span>{text}</span>
-      <FaArrowRight className="twap-order-history-open-button" />
+      <span className="twap-order-history-button-text">{text}</span>
+      <FaArrowRight className="twap-order-history-button-icon" />
     </StyledOrderHistoryButton>
   );
 };
@@ -53,6 +49,7 @@ const OrderHistory = ({ className = "" }: { className?: string }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <StyledContainer className={`twap-order-history ${className}`} order={order ? 1 : 0}>
+        <OrderHistoryHeader />
         <SelectedOrder />
         <OrderHistoryList />
       </StyledContainer>

@@ -39,4 +39,16 @@ export function Message({ text, className = "", variant, title }: { variant?: Me
   );
 }
 
-const Container = styled(StyledRowFlex)({});
+const Container = styled(StyledRowFlex)({
+  gap: 10,
+  alignItems: "flex-start",
+  ".twap-message-right": {
+    flex:1
+  },
+  svg: {
+    width: 20,
+    height: 20,
+    position:'relative',
+    top: 2
+  }
+});

@@ -4,14 +4,16 @@ import { WidgetMessage } from "./components/message";
 import { SubmitOrderPanel } from "./components/submit-order-panel";
 import { FillDelayPanel } from "./components/fill-delay-panel";
 import { LimitPanel } from "./components/limit-panel";
-import { LimitPriceSwitch } from "./components/limit-price-switch";
+import { PriceTabs } from "./components/price-tabs";
 import { TradesAmountPanel } from "./components/trades-amount-panel";
 import { DurationPanel } from "./components/trade-duration-panel";
 import { Panel } from "../components/Panel";
 import { SwitchTokens } from "./components/switch-tokens";
 import { ErrorMessage } from "./components/error-message";
 import { OrdersPortal } from "./components/orders/Orders";
-import { PoweredByOrbs } from "./components/powered-by-orbs";
+import { PoweredByOrbsPortal } from "./components/powered-by-orbs";
+import { LimitPriceMessagePortal } from "../components";
+import { PriceSwitch } from "./components/price-switch";
 
 const Widget = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
@@ -22,13 +24,15 @@ Widget.LimitPricePanel = LimitPanel;
 Widget.SubmitOrderPanel = SubmitOrderPanel;
 Widget.TradesAmountPanel = TradesAmountPanel;
 Widget.TokenPanel = TokenPanel;
-Widget.PoweredByOrbs = PoweredByOrbs;
+Widget.PoweredByOrbs = PoweredByOrbsPortal;
 Widget.FillDelayPanel = FillDelayPanel;
-Widget.LimitPriceSwitch = LimitPriceSwitch;
+Widget.PriceTabs = PriceTabs;
 Widget.DurationPanel = DurationPanel;
 Widget.Panel = Panel;
 Widget.SwitchTokens = SwitchTokens;
 Widget.ErrorMessage = ErrorMessage;
 Widget.Message = WidgetMessage;
+Widget.LimitPriceMessage = LimitPriceMessagePortal
+Widget.PriceSwitch = PriceSwitch
 
 export { Widget };

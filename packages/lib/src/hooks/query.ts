@@ -107,14 +107,11 @@ export const useGasPrice = () => {
 };
 
 const useAllowance = () => {
+  const { account, srcToken, config, twap } = useWidgetContext();
+  const getHasAllowance = useGetHasAllowance();
   const {
-    account,
-    srcToken,
-    config,
-    twap
-  } = useWidgetContext();
-  const getHasAllowance = useGetHasAllowance();  
-  const { values:{srcAmount} } = twap;
+    values: { srcAmount },
+  } = twap;
 
   const query = useQuery(
     [QueryKeys.GET_ALLOWANCE, config.chainId, srcToken?.address, srcAmount],

@@ -1,10 +1,10 @@
 import { styled } from "styled-components";
-import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../../styles";
+import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
-import { useOrderType } from "../hooks";
 import React, { useMemo } from "react";
-import { isNativeBalanceError } from "../../../../utils";
-import { useNetwork } from "../../../../hooks/hooks";
+import { isNativeBalanceError } from "../../../utils";
+import { useNetwork } from "../../../hooks/hooks";
+import { useOrderType } from "../../hooks/hooks";
 
 export function Failed({ error }: { error?: any }) {
   const nativeBalance = useMemo(() => isNativeBalanceError(error), [error]);
@@ -39,12 +39,10 @@ const Logo = () => {
 };
 
 const StyledLogo = styled(StyledRowFlex)({
-  background: "rgba(255, 255, 255, 0.07)",
   width: 48,
   height: 48,
   borderRadius: 12,
   svg: {
-    fill: "rgb(155, 155, 155)",
     width: 24,
     height: 24,
   },
@@ -80,7 +78,6 @@ const StyledBottomContent = styled(StyledColumnFlex)({
 
 const StyledBottomContentText = styled(StyledText)({
   textAlign: "center",
-  color: "rgb(155, 155, 155)",
   fontSize: 14,
   fontWeight: 500,
 });

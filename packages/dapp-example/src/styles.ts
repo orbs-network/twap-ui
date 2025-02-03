@@ -477,6 +477,7 @@ export const StyledSushiLayout = styled(DappLayout)({
 export const StyledDragonLayout = styled(DappLayout)({
   maxWidth: 480,
   width: "calc(100% - 30px)",
+  gap: 10
 });
 
 export const StyledDragonPanel = styled("div")({
@@ -539,6 +540,19 @@ export const StyledSushiModalContent = styled(StyledModalContent)<{ isDarkTheme?
     },
   };
 });
+
+export const StyledDragonswapModalContent = styled(StyledModalContent)<{ isDarkTheme?: number }>(({ isDarkTheme }) => {
+  return {
+    background: isDarkTheme ? "rgb(13 20 58)" : "rgb(243 244 246/1)",
+    color: isDarkTheme ? "white" : "black",
+    padding: 20,
+    border: "1px solid rgb(29 64 176/0.5)",
+    borderRadius: 16,
+    maxWidth: 512,
+
+  };
+});
+
 
 export const StyledListToken = styled(Box)({
   cursor: "pointer",

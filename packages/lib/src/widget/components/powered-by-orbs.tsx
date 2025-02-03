@@ -4,7 +4,17 @@ import { StyledRowFlex, StyledText } from "../../styles";
 import React from "react";
 import { ORBS_LOGO, ORBS_LOGO_FALLBACK } from "../../consts";
 import { useWidgetContext } from "../widget-context";
-export function PoweredByOrbs({ className = "" }: { className?: string }) {
+import { Portal } from "../../components/base";
+
+export const PoweredbyOrbsWithPortal = ({ className = "" }: { className?: string }) => {
+  return (
+    <Portal containerId="twap-powered-by-contaier">
+      <PoweredbyOrbs className={className} />
+    </Portal>
+  );
+};
+
+export function PoweredbyOrbs({ className = "" }: { className?: string }) {
   const [url, setUrl] = useState(ORBS_LOGO);
   const translations = useWidgetContext().translations;
 
@@ -22,12 +32,13 @@ export function PoweredByOrbs({ className = "" }: { className?: string }) {
   );
 }
 
+export const PoweredByOrbsPortal = () => {
+  return <div id="twap-powered-by-contaier" />;
+};
+
 const StyledPoweredBy = styled(StyledRowFlex)({
   marginTop: 10,
   marginBottom: 10,
-  "& p": {
-    color: "inherit",
-  },
   "& a": {
     display: "flex",
     alignItems: "center",

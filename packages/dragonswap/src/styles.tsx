@@ -18,7 +18,8 @@ const getStyles = (theme?: DefaultTheme) => {
 
   return {
     isDarkMode,
-    darkText: isDarkMode ? "rgb(191 219 254/0.3)" : "rgb(107 114 128/1)",
+    darkText: isDarkMode ? "rgb(191 219 254)" : "rgb(107 114 128/1)",
+    darkTextOpacity: isDarkMode ? "rgb(191 219 254/0.3)" : "rgb(107 114 128/1)",
     darkTextHover: isDarkMode ? "rgb(203 213 225/1)" : "rgb(37 99 235/1)",
     warningText: "rgb(239 68 68/1)",
     textColor: isDarkMode ? "rgb(248 250 252/1)" : "rgb(17 24 39/1)",
@@ -26,11 +27,23 @@ const getStyles = (theme?: DefaultTheme) => {
     boxHover: isDarkMode ? "rgba(255,255,255, 0.09)" : "rgba(0,0,0, 0.03)",
     cardBg: isDarkMode ? "rgb(13,20,58)" : "rgb(255, 255, 255)",
     label: isDarkMode ? "rgb(191 219 254)" : "rgb(107 114 128/1)",
+    label2: isDarkMode ? "rgb(146 197 253)" : "rgb(107 114 128/1)",
     inputColor: isDarkMode ? "rgb(239 246 255)" : "rgb(17 24 39/1)",
     errorBorder: isDarkMode ? "rgb(239 68 68)" : "",
     focusBorder: isDarkMode ? "rgb(8 96 219)" : "",
     color2: isDarkMode ? "rgb(36 54 109)" : "rgb(107 114 128/1)",
     error: isDarkMode ? "rgb(239 68 68)" : "rgb(239 68 68)",
+  };
+};
+
+const panelLabelStyles = (theme?: DefaultTheme) => {
+  const styles = getStyles(theme);
+
+  return {
+    color: styles.label,
+    fontSize: 14,
+    textTransform: "uppercase" as const,
+    fontWeight: 500,
   };
 };
 
@@ -135,13 +148,13 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
       justifyContent: "space-between",
       marginTop: 8,
       ".twap-token-panel-usd": {
-        color: styles.darkText,
+        color: styles.darkTextOpacity,
         fontSize: 14,
       },
       ".twap-token-panel-balance": {
         fontSize: 14,
         span: {
-          color: styles.darkText,
+          color: styles.darkTextOpacity,
         },
       },
     },
@@ -160,37 +173,192 @@ const buttonStyles = (theme: DefaultTheme) => {
   };
 };
 
+const switchTokensStyles = (theme: DefaultTheme) => {
+  return {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: 0,
+    position: "relative" as const,
+    button: {
+      position: "absolute" as const,
+      left: "50%",
+      top: "50%",
+      transform: "translate(-50%, -50%)",
+      background: "rgb(29 64 176)",
+      borderRadius: "50%",
+      border: "4px solid rgb(13 20 58)",
+      width: 48,
+      height: 48,
+      color: "white",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      cursor: "pointer",
+      svg: {
+        width: 20,
+        height: 20,
+      },
+    },
+  };
+};
+
 export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-orders-selected-order-details": {
+      gap: 8,
+    },
+    ".twap-orders-selected-order-details-expanded ": {
+      paddingTop: 10
+    },
+    ".twap-order-display-details-row": {
+      ".twap-label": {
+        color: styles.label2,
+        fontWeight: 500,
+      },
+      "&-right": {
+        color: styles.textColor,
+      },
+    },
+    ".twap-order-display": {
+      ".twap-token-logo": {
+        width: 40,
+        height: 40,
+      },
+    },
+    ".twap-order-display-token-title": {
+      ...panelLabelStyles(theme),
+    },
+    ".twap-order-display-token-amount": {
+      fontSize: 18,
+      fontWeight: 500,
+    },
+    ".twap-order-display-fill-delay": {
+      color: styles.darkText,
+    },
+    ".twap-order-history-order": {
+      background: styles.color2,
+    },
+    ".twap-order-history-header-back-icon": {
+      color: styles.textColor,
+      position: "relative",
+      top: 2,
+    },
+    ".twap-loader": {
+      background: "rgba(255,255,255, 0.1)",
+    },
+    ".twap-orders-list-loader": {
+      ".twap-loader": {
+        width: "100%",
+        height: 70,
+        borderRadius: 16,
+      },
+    },
+    ".twap-order-display-details": {
+      ...panelStyles(theme),
+      background: styles.color2,
+      padding: 8,
+      borderRadius: 8,
+    },
+    ".orbs_MainTokenLeft": {
+      gap: 4,
+    },
+    ".orbs_Main-wrapper": {
+      width: "100%",
+    },
+    ".orbs_MainTokenTitle": {
+      color: styles.label,
+      fontSize: 14,
+      fontWeight: 500,
+      textTransform: "uppercase" as const,
+      opacity: 1,
+    },
+    ".orbs_SwapFlow": {
+      ".twap-separator": {
+        background: "transparent",
+        marginTop: 10,
+      },
+      ".twap-order-display-details": {
+        background: styles.color2,
+        borderRadius: 8,
+        padding: 8,
+        gap: 8,
+        ".twap-label": {
+          color: "rgb(146 197 253)",
+        },
+      },
+
+      ".twap-order-modal-disclaimer": {
+        a: {
+          color: styles.textColor,
+        },
+      },
+    },
+    ".twap-duration-panel": {
+      ...panelStyles(theme),
+      "&-buttons": {
+        gap: 5,
+      },
+      "&-button": {
+        ...selectButtonStyles(theme),
+      },
+      ".twap-label": {
+        ...panelLabelStyles(theme),
+      },
+    },
+
+    ".twap-order-history-button": {
+      background: styles.color2,
+      borderRadius: 20,
+      padding: 16,
+      transition: "0.2s all",
+      cursor: "pointer",
+      color: styles.textColor,
+
+      svg: {
+        marginLeft: "auto",
+      },
+      "&-text": {
+        fontSize: 14,
+      },
+      ".twap-spinner": {
+        marginRight: 10,
+      },
+    },
+    ".twap-powered-by": {
+      p: {
+        color: styles.textColor,
+      },
+    },
+    ".twap-price-switch": {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      marginLeft: "auto",
+
+      p: {
+        color: styles.textColor,
+        fontSize: 14,
+        fontWeight: 500,
+        textTransform: "uppercase" as const,
+      },
+    },
+    ".twap-limit-price-panel-title-text": {
+      ...panelLabelStyles(theme),
+    },
+    ".twap-limit-price-message": {
+      ...panelStyles(theme),
+      border: "1px solid rgb(36 99 235)",
+      gap: 10,
+      a: {
+        color: styles.textColor,
+      },
+    },
     ".twap-switch-tokens": {
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        width:'100%',
-        height: 0,
-        position:'relative',
-        button: {
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: 'rgb(29 64 176)',
-          borderRadius:'50%',
-          border:'4px solid rgb(13 20 58)',
-          width: 48,
-          height: 48,
-          color:'white',
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          cursor: "pointer",
-          svg: {
-            width: 20,
-            height: 20,
-          }
-        }
+      ...switchTokensStyles(theme),
     },
     ".twap-button": {
       ...buttonStyles(theme),
@@ -202,32 +370,29 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       ...panelStyles(theme),
     },
     ".twap-trade-interval-panel, .twap-trades-amount-panel": {
-      paddingTop:10,
+      paddingTop: 10,
       paddingBottom: 10,
       ".twap-input": {
         input: {
-          fontSize: 18
-        }
-      }
+          fontSize: 18,
+        },
+      },
     },
     ".twap-trades-amount-panel": {
-      p: {
+      "&-text": {
         color: styles.darkText,
-        textTransform:'lowercase',
+        textTransform: "lowercase" as const,
         fontWeight: 500,
-        fontSize:  14
-      }
+        fontSize: 14,
+      },
     },
-  
+
     ".twap-panel-header": {
       marginBottom: 8,
       display: "flex",
       justifyContent: "space-between",
       ".twap-label": {
-        color: styles.label,
-        fontSize: 14,
-        textTransform: "uppercase",
-        fontWeight: 500,
+        ...panelLabelStyles(theme),
       },
     },
     ".twap-token-select": {
@@ -245,15 +410,26 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     ".twap-limit-price-panel-percent-button": {
       ...selectButtonStyles(theme),
     },
-    ".twap-limit-price-panel-percent-button-selected": {
-      ...selectButtonStyles(theme, 1),
+    ".twap-limit-price-panel-percent-reset": {
+      gap: 3,
+    },
+    ".twap-limit-price-panel-percent-reset-button": {
+      borderRadius: 0,
+      borderTopLeftRadius: 8,
+      borderBottomLeftRadius: 8,
+    },
+    ".twap-limit-price-panel-percent-reset-icon": {
+      padding: "0px 7px",
+      minWidth: "unset",
+      borderRadius: 0,
+      borderTopRightRadius: 8,
+      borderBottomRightRadius: 8,
     },
     ".twap-message": {
       fontSize: 14,
     },
     ".twap-error-message": {
       color: styles.error,
-
     },
     ".twap-input-loading": {
       opacity: 0,
@@ -271,8 +447,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     ".twap-select-menu-button": {
       ...tokenSelectStyles(theme),
       padding: "7px",
-      textTransform: "capitalize",
-     
+      textTransform: "capitalize" as const,
     },
     ".twap-select-menu-list": {
       background: styles.color2,
@@ -285,8 +460,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         },
       },
     },
-   
-   
+
     ".twap-input": {
       input: {
         color: styles.textColor,
@@ -311,20 +485,13 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
 
     ".twap-switch-handle": {
-      background: isDarkMode ? "rgb(15 23 42/1)" : "rgb(249 250 251/1)",
+      background: isDarkMode ? "rgb(239 246 255)" : "rgb(249 250 251/1)",
     },
     ".twap-switch": {
-      background: isDarkMode ? "hsla(0,0%,100%,.1)" : "rgba(0,0,0,.1)",
+      background: isDarkMode ? "rgb(36 99 235/0.6)" : "rgba(0,0,0,.1)",
     },
     ".twap-switch-checked": {
-      background: "rgb(59 130 246/1)",
-      ".twap-switch-handle": {
-        background: "white",
-      },
-    },
-
-    ".twap-orders-header": {
-      padding: "0px!important",
+      background: "rgb(36 99 235)",
     },
   };
 });
@@ -342,15 +509,13 @@ export const StyledLimitAndInputs = styled(Styles.StyledColumnFlex)(({ theme }) 
   };
 });
 
-const selectButtonStyles = (theme?: DefaultTheme, selected?: number) => {
+const selectButtonStyles = (theme?: DefaultTheme) => {
   const styles = getStyles(theme);
-  const selectedBg = styles.isDarkMode ? "rgba(255,255,255, 0.15) " : "rgb(59 130 246/1)";
-  const selectedColor = styles.isDarkMode ? styles.textColor : "white";
+
   return {
-    background: "transparent",
-    color: selected ? styles.focusBorder : styles.textColor,
+    color: styles.darkText,
     fontWeight: 500,
-    padding: "5px 7px",
+    padding: "7px 7px",
     borderRadius: 8,
     cursor: "pointer",
     display: "flex",
@@ -358,20 +523,20 @@ const selectButtonStyles = (theme?: DefaultTheme, selected?: number) => {
     justifyContent: "center",
     minWidth: 50,
     transition: "0.2s all",
-    border: selected ? `1px solid ${styles.focusBorder}` : `1px solid ${styles.isDarkMode ? "rgba(255,255,255, 0.2)" : "transparent"}`,
-    height: 28,
+    border: "unset",
     fontSize: 14,
-    svg: {
-      fill: selectedColor,
-    },
+    background: "transparent",
     "&:hover": {
-      border: `1px solid ${styles.focusBorder}`,
+      background: styles.color2,
+    },
+    "&-selected": {
+      background: styles.color2,
     },
   };
 };
 
 export const StyledTop = styled(Styles.StyledColumnFlex)({
-  gap: 4,
+  gap: 8,
   "@media(max-width: 1000px)": {
     gap: 8,
   },

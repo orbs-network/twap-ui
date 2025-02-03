@@ -75,7 +75,7 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string; onFocu
     (srcAmount: string) => {
       updateState({ srcAmount });
     },
-    [updateState],
+    [updateState]
   );
 
   return (
@@ -164,7 +164,6 @@ export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hid
   return <TokenName onClick={onClick} hideNull={hideNull} name={token?.symbol} />;
 };
 
-
 export function ChunksUSD({ onlyValue, emptyUi, suffix, prefix }: { onlyValue?: boolean; emptyUi?: React.ReactNode; suffix?: string; prefix?: string }) {
   const usd = useSrcChunkAmountUsd();
 
@@ -240,8 +239,6 @@ export function TokenUSD({
   return <USD decimalScale={decimalScale} suffix={suffix} prefix={prefix} onlyValue={onlyValue} className={className} emptyUi={emptyUi} value={usd || "0"} isLoading={!usd} />;
 }
 
-
-
 export const CopyTokenAddress = ({ isSrc }: { isSrc: boolean }) => {
   const { srcToken, dstToken } = useWidgetContext();
 
@@ -300,27 +297,28 @@ export const LimitPriceMessageContent = ({ className }: { className?: string }) 
 export const LimitPriceMessage = ({ className }: { className?: string }) => {
   const { translations: t, twap } = useWidgetContext();
   const isMarketOrder = twap.values.isMarketOrder;
-  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  if (isMarketOrder || isWrapOrUnwrapOnly) return null;
+  if (isMarketOrder) return null;
 
   return (
-    <StyledLimitPriceMessage
-      className={`${className} twap-limit-price-message`}
-      variant="warning"
-      title={
-        <>
-          {t.limitPriceMessage}{" "}
-          <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">
-            {t.learnMore}
-          </a>
-        </>
-      }
-    />
+    <Portal containerId="twap-limit-price-message-portal">
+      <StyledLimitPriceMessage
+        className={`${className} twap-limit-price-message`}
+        variant="warning"
+        title={
+          <>
+            {t.limitPriceMessage}{" "}
+            <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">
+              {t.learnMore}
+            </a>
+          </>
+        }
+      />
+    </Portal>
   );
 };
 
 export const LimitPriceMessagePortal = () => {
-  return <div id="twap-limit-price-message-container" />;
+  return <div id="twap-limit-price-message-portal" />;
 };
 
 const StyledLimitPriceMessage = styled(Message)({

@@ -36,7 +36,7 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
     (unit: TimeUnit) => {
       onChange({ unit, value: value.value });
     },
-    [onChange]
+    [onChange],
   );
 
   return (
@@ -72,7 +72,7 @@ export const ResolutionSelect = ({
     (unit: TimeUnit) => {
       onChange(unit);
     },
-    [onChange]
+    [onChange],
   );
 
   return <SelectMenu onOpen={onOpen} onClose={onClose} onSelect={(it) => onSelect(it.value as number)} items={timeArr} selected={unit} />;

@@ -25,7 +25,7 @@ export const useConfirmationButton = () => {
   const shouldUnwrap = useShouldUnwrap();
   const usdLoading = BN(srcUsd || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
-    const balanceError = useBalanceWaning()
+  const balanceError = useBalanceWaning();
   const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);
   const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(dstToken?.address);
   const shouldOnlyWrap = useShouldOnlyWrap();

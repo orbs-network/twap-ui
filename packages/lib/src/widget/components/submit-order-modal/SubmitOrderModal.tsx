@@ -1,10 +1,10 @@
 import { useSubmitOrderFlow } from "../../../hooks/useTransactions";
-import { Failed } from "./states";
-import { Main } from "./states/Main";
+import { Main } from "./Main";
 import React from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
 import { useExplorerUrl, useFormatNumber, useSwapModal } from "../../../hooks";
 import { useWidgetContext } from "../../..";
+import { Failed } from "./Failed";
 
 export const SubmitOrderModal = ({ className = "" }: { className?: string }) => {
   const { mutate: onSubmit, swapStatus, error } = useSubmitOrderFlow();

@@ -12,13 +12,21 @@ import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
 import { size } from "../../../utils";
 import { useWidgetContext } from "../../widget-context";
 
+const ListLoader = () => {
+  return (
+    <StyledColumnFlex className="twap-orders-list-loader">
+      <Loader />
+    </StyledColumnFlex>
+  );
+};
+
 export const OrderHistoryList = () => {
   const { selectOrder, orders, isLoading, selectedOrderId } = useOrderHistoryContext();
 
   if (selectedOrderId) return null;
 
   if (isLoading) {
-    return <StyledLoader height={120} />;
+    return <ListLoader />;
   }
 
   if (!size(orders)) {
@@ -29,7 +37,7 @@ export const OrderHistoryList = () => {
     <Virtuoso
       totalCount={size(orders)}
       overscan={10}
-      className="twap-orders-list"
+      className="twap-order-history--list"
       style={{ height: "100%", width: "100%" }}
       itemContent={(index) => {
         const order = orders[index];
@@ -41,12 +49,12 @@ export const OrderHistoryList = () => {
 
 const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
   return (
-    <StyledListOrder className="twap-order" onClick={() => selectOrder(order?.id)}>
+    <StyledListOrder className="twap-order-history-order" onClick={() => selectOrder(order?.id)}>
       <ListItemHeader order={order} />
       <LinearProgressWithLabel value={order.progress || 0} />
-      <StyledRowFlex className="twap-order-tokens">
+      <StyledRowFlex className="twap-order-history-order-tokens">
         <TokenDisplay address={order.srcTokenAddress} />
-        <HiArrowRight className="twap-order-tokens-arrow" />
+        <HiArrowRight className="twap-order-history-order-tokens-arrow" />
         <TokenDisplay address={order.dstTokenAddress} />
       </StyledRowFlex>
     </StyledListOrder>
@@ -57,23 +65,19 @@ const EmptyList = () => {
   const tab = useOrderHistoryContext().selectedTab;
 
   const name = React.useMemo(() => {
-    if (tab?.name === "All") {
+    if (tab?.name === "all") {
       return "";
     }
     return tab?.name;
   }, [tab]);
 
   return (
-    <StyledEmpty>
+    <StyledEmpty className="twap-order-history-list-empty">
       <StyledText>No {name} Orders</StyledText>
     </StyledEmpty>
   );
 };
 
-const StyledLoader = styled(Loader)({
-  borderRadius: 15,
-  transformOrigin: "top",
-});
 
 const StyledEmpty = styled(StyledColumnFlex)({
   alignItems: "center",
@@ -122,19 +126,15 @@ const StyledHeader = styled(StyledRowFlex)({
   },
 });
 
-const Wrapper = styled(StyledColumnFlex)({
-  padding: "0px 0px 10px 0px",
-});
-
 const StyledListOrder = styled(StyledColumnFlex)({
   borderRadius: 15,
   padding: 10,
   gap: 5,
   cursor: "pointer",
-  ".twap-order-tokens": {
+  ".twap-order-history-order-tokens": {
     justifyContent: "flex-start",
   },
-  ".twap-order-tokens-arrow": {
+  ".twap-order-history-order-tokens-arrow": {
     width: 16,
     height: 16,
   },
@@ -147,6 +147,8 @@ const StyledListOrder = styled(StyledColumnFlex)({
 const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }) => {
   const { useToken } = useWidgetContext();
   const token = useToken?.(address);
+  console.log({ token });
+
   const _amount = useFormatNumber({ value: amount, decimalScale: 4 });
 
   return (

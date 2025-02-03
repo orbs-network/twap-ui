@@ -33,20 +33,20 @@ export function OrderHistoryMenu() {
 }
 
 export const OrderHistoryHeader = ({ className = "" }: { className?: string }) => {
-  const { closePreview, isLoading } = useOrderHistoryContext();
+  const { closePreview } = useOrderHistoryContext();
   const order = useSelectedOrder();
   const t = useWidgetContext().translations;
 
   return (
-    <StyledHeader className={`twap-order-modal-header ${className}`}>
-      {isLoading ? null : !order ? (
+    <StyledHeader className={`twap-order-history-header ${className}`}>
+      {!order ? (
         <OrderHistoryMenu />
       ) : (
         <StyledOrderDetails>
-          <StyledBack onClick={closePreview} className="twap-order-modal-header-back">
+          <StyledBack onClick={closePreview} className="twap-order-history-header-back-icon">
             <HiArrowLeft />
           </StyledBack>
-          <StyledTitle className="twap-order-modal-header-title">
+          <StyledTitle className="twap-order-history-header-title">
             #{order?.id} {order?.isMarketOrder ? t.twapMarketOrder : t.limitOrder}
           </StyledTitle>
         </StyledOrderDetails>

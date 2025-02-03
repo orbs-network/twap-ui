@@ -1,4 +1,4 @@
-import { StyledSushiLayout, StyledSushi, StyledSushiModalContent, StyledDragonswap, StyledDragonLayout, StyledDragonPanel } from "../styles";
+import { StyledSushiLayout, StyledSushi, StyledSushiModalContent, StyledDragonswap, StyledDragonLayout, StyledDragonPanel, StyledDragonswapModalContent } from "../styles";
 import { TWAP } from "@orbs-network/twap-ui-dragonswap";
 import tokens from "./token.json";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "../hooks";
@@ -7,7 +7,7 @@ import { Dapp, Popup, TokensList, UISelector } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { SelectorOption, TokenListItem } from "../types";
-import { mapCollection, size, TooltipProps, Configs, TokensListModalProps, ModalProps, ButtonProps } from "@orbs-network/twap-ui";
+import { mapCollection, size, TooltipProps, Configs, TokensListModalProps, ModalProps, ButtonProps, Widget } from "@orbs-network/twap-ui";
 import { DappProvider } from "../context";
 import { network } from "@defi.org/web3-candies";
 
@@ -28,7 +28,7 @@ export const useDappTokens = () => {
         }));
       return res;
     },
-    [nativeToken, config?.chainId],
+    [nativeToken, config?.chainId]
   );
 
   return useGetTokens({
@@ -59,17 +59,19 @@ const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) =>
 
   return (
     <Popup isOpen={isOpen} onClose={onClose}>
-      <StyledSushiModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
+      <StyledDragonswapModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
         <TokensList tokens={parsedList} onClick={onSelect} />
-      </StyledSushiModalContent>
+      </StyledDragonswapModalContent>
     </Popup>
   );
 };
 
 const Modal = (props: ModalProps) => {
+  const { isDarkTheme } = useTheme();
+
   return (
     <Popup isOpen={props.isOpen} onClose={props.onClose}>
-      {props.children}
+      <StyledDragonswapModalContent isDarkTheme={isDarkTheme ? 1 : 0}>{props.children}</StyledDragonswapModalContent>
     </Popup>
   );
 };
@@ -86,9 +88,6 @@ const Tooltip = (props: TooltipProps) => {
     </MuiTooltip>
   );
 };
-
-
-
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
@@ -161,6 +160,8 @@ const DappComponent = () => {
           <StyledDragonPanel>
             <TWAPComponent limit={selected === SelectorOption.LIMIT} />
           </StyledDragonPanel>
+          <Widget.Orders />
+          <Widget.PoweredByOrbs />
         </StyledDragonLayout>
       </StyledDragonswap>
     </DappProvider>

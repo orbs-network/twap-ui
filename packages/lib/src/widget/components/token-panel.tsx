@@ -1,6 +1,6 @@
 import React, { createContext, FC, Fragment, ReactElement, ReactNode, useCallback, useContext, useState } from "react";
 import { useAmountUi, useDstBalance, useFormatNumber, useSrcBalance } from "../../hooks/hooks";
-import { TokenLogo } from "../../components/base";
+import { Label, TokenLogo } from "../../components/base";
 import { TokenPanelInput } from "../../components";
 import { useBalanceWaning, useOnSrcAmountPercent, useUsdAmount } from "../../hooks/lib";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
@@ -83,17 +83,18 @@ const TokenPanelBalance = ({
   );
 };
 
-const TokenPanelUsd = ({ decimalScale = 2, className = "", prefix = "", suffix = "" }: { decimalScale?: number; className?: string; prefix?: ReactNode; suffix?: ReactNode }) => {
+const TokenPanelUsd = ({ decimalScale = 2, className = ""}: { decimalScale?: number; className?: string}) => {
   const { isSrcToken } = useTokenPanelContext();
   const { srcUsd, dstUsd } = useUsdAmount();
+  const {uiPreferences} = useWidgetContext();
 
   const usd = useFormatNumber({ value: isSrcToken ? srcUsd : dstUsd, decimalScale });
 
   return (
     <StyledText className={`${className} twap-token-panel-usd`}>
-      {prefix}
+      {uiPreferences.usd?.prefix}
       {usd}
-      {suffix}
+      {uiPreferences.usd?.suffix}
     </StyledText>
   );
 };
@@ -160,6 +161,17 @@ const Main = ({ className = "" }: { className?: string }) => {
   );
 };
 
+const TokenPanelLabel = () => {
+  const {translations} = useWidgetContext();
+  const { isSrcToken } = useTokenPanelContext();
+ 
+  return (
+    <Label className="twap-token-panel-label">
+      <StyledText>{isSrcToken ? translations.from : translations.to}</StyledText>
+    </Label>
+  );
+};
+
 TokenPanel.Balance = TokenPanelBalance;
 TokenPanel.Usd = TokenPanelUsd;
 TokenPanel.Select = PanelTokenSelect;
@@ -168,6 +180,7 @@ TokenPanel.BalanceSelect = BalanceAmountSelect;
 TokenPanel.Main = Main;
 TokenPanel.useTokenPanel = useTokenPanel;
 TokenPanel.ClassName = "twap-token-panel";
+TokenPanel.Label = TokenPanelLabel;
 
 const StyledMainTop = styled(StyledRowFlex)({
   gap: 10,

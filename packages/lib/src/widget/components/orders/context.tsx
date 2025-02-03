@@ -55,10 +55,10 @@ const useSelectedOrders = (status: OrderStatus) => {
 
 export const OrderHistoryContextProvider = ({ children }: { children: ReactNode }) => {
   const [tab, setTab] = useState<OrderStatus>(OrderStatus.All);
+  const {isLoading} = useOrdersHistory();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
   const orders = useSelectedOrders(tab);
-  const isLoading = !orders;
 
   useEffect(() => {
     if (!isOpen) {

@@ -15,7 +15,7 @@ export const TokenSelect = ({ className = "", isSrcToken }: { className?: string
       isSrcToken ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
       onClose();
     },
-    [isSrcToken, onSrcTokenSelected, onDstTokenSelected, onClose]
+    [isSrcToken, onSrcTokenSelected, onDstTokenSelected, onClose],
   );
 
   const onClick = useCallback(() => {

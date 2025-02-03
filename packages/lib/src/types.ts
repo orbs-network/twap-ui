@@ -226,10 +226,10 @@ export type SelectMeuItem = { text: string; value: string | number };
 
 export interface UIPreferences {
   menu?: {
-    icon?: ReactElement
-  },
+    icon?: ReactElement;
+  };
   tokenSelect?: {
-    icon?: ReactElement
+    icon?: ReactElement;
   };
   usd?: {
     suffix?: string;

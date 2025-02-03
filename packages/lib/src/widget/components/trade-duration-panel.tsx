@@ -102,7 +102,6 @@ const StyledMain = styled(StyledRowFlex)({
     display: "flex",
     justifyContent: "flex-end",
     flex: 1,
-    gap: 10,
   },
 });
 

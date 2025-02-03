@@ -56,7 +56,7 @@ const Main = ({ className = "" }: { className?: string }) => {
       </Panel.Header>
       <StyledRowFlex>
         <Input />
-        <StyledText>{t.orders}</StyledText>
+        <StyledText className="twap-trades-amount-panel-text">{t.orders}</StyledText>
       </StyledRowFlex>
     </StyledMain>
   );

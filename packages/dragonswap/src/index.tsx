@@ -1,7 +1,7 @@
 import { Config } from "@orbs-network/twap-sdk";
-import { Components, Translations, hooks, Styles, getNetwork, Widget, UIPreferences, WidgetProps, WidgetProvider } from "@orbs-network/twap-ui";
+import { Translations, hooks, Styles, getNetwork, Widget, UIPreferences, WidgetProps, WidgetProvider, useWidgetContext, Token } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { useEffect, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
 import React, { useCallback, useState } from "react";
 import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledLimitAndInputs, StyledTwapInputs } from "./styles";
@@ -12,11 +12,13 @@ import { ThemeProvider } from "styled-components";
 
 const uiPreferences: UIPreferences = {
   input: { disableThousandSeparator: false, placeholder: "0" },
-  tokenSelect: { icon: <IoIosArrowDown style={{width: 14}} /> },
-  menu: { icon: <IoIosArrowDown style={{width: 14}} /> },
+  tokenSelect: { icon: <IoIosArrowDown style={{ width: 14 }} /> },
+  menu: { icon: <IoIosArrowDown style={{ width: 14 }} /> },
+  usd: { prefix: "~$ " },
 };
 
-const useParseToken = (props: AdapterProps) => {
+const useParseToken = () => {
+  const props = useAdapterContext();
   return useCallback(
     (token?: any) => {
       try {
@@ -48,7 +50,8 @@ interface AdapterProps extends Partial<WidgetProps> {
   useMarketPrice: (srcToken?: string, dstToken?: string, amount?: string) => { outAmount?: string };
 }
 
-const useWToken = (props: AdapterProps) => {
+const useWToken = () => {
+  const props = useAdapterContext();
   return useMemo(() => {
     const wTokenAddress = getNetwork(props.config.chainId)?.wToken.address;
 
@@ -56,7 +59,8 @@ const useWToken = (props: AdapterProps) => {
   }, [props.dappTokens, props.config]);
 };
 
-const useIsNative = (props: AdapterProps) => {
+const useIsNative = () => {
+  const props = useAdapterContext();
   return useCallback(
     (token?: any) => {
       if (token?.isNative || token?.symbol === getNetwork(props.config.chainId)?.native.symbol) {
@@ -67,9 +71,10 @@ const useIsNative = (props: AdapterProps) => {
   );
 };
 
-const useAddresses = (props: AdapterProps) => {
-  const wrappedAddress = useWToken(props)?.address;
-  const isNative = useIsNative(props);
+const useAddresses = () => {
+  const props = useAdapterContext();
+  const wrappedAddress = useWToken()?.address;
+  const isNative = useIsNative();
 
   return useMemo(() => {
     return {
@@ -79,9 +84,10 @@ const useAddresses = (props: AdapterProps) => {
   }, [props.srcToken, props.dstToken, isNative, wrappedAddress]);
 };
 
-const useMarketPrice = (props: AdapterProps) => {
-  const { srcAddress, dstAddress } = useAddresses(props);
-  const { srcToken } = useSelectedParsedTokens(props);
+const useMarketPrice = () => {
+  const props = useAdapterContext();
+  const { srcAddress, dstAddress } = useAddresses();
+  const { srcToken } = useSelectedParsedTokens();
   const amount = hooks.useAmountBN(srcToken?.decimals, "1");
 
   const trade = props.useMarketPrice(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
@@ -89,9 +95,10 @@ const useMarketPrice = (props: AdapterProps) => {
   return trade?.outAmount;
 };
 
-const useUsd = (props: AdapterProps) => {
-  const wToken = useWToken(props);
-  const tokens = useAddresses(props);
+const useUsd = () => {
+  const props = useAdapterContext();
+  const wToken = useWToken();
+  const tokens = useAddresses();
 
   const srcAddress = isNativeAddress(tokens.srcAddress || "") ? wToken?.address : tokens.srcAddress;
   const dstAddress = isNativeAddress(tokens.dstAddress || "") ? wToken?.address : tokens.dstAddress;
@@ -102,8 +109,19 @@ const useUsd = (props: AdapterProps) => {
   };
 };
 
-const useSelectedParsedTokens = (props: AdapterProps) => {
-  const parseToken = useParseToken(props);
+const useParsedTokens = () => {
+  const { dappTokens } = useAdapterContext();
+  const parseToken = useParseToken();
+  return useMemo(() => {
+    return dappTokens.map((t: any) => {
+      return parseToken(t);
+    });
+  }, [dappTokens, parseToken]);
+};
+
+const useSelectedParsedTokens = () => {
+  const props = useAdapterContext();
+  const parseToken = useParseToken();
   return useMemo(() => {
     return {
       srcToken: parseToken(props.srcToken),
@@ -112,7 +130,8 @@ const useSelectedParsedTokens = (props: AdapterProps) => {
   }, [props.srcToken, props.dstToken, parseToken]);
 };
 
-export const useProvider = (props: AdapterProps) => {
+export const useProvider = () => {
+  const props = useAdapterContext();
   const [provider, setProvider] = useState<any>(undefined);
 
   const setProviderFromConnector = useCallback(async () => {
@@ -130,12 +149,24 @@ export const useProvider = (props: AdapterProps) => {
   return provider;
 };
 
-const TWAP = (props: AdapterProps) => {
-  const provider = useProvider(props);
+const useToken = (addressOrSymbol?: string) => {
+  const parsedTokens = useParsedTokens();
+  return useMemo(
+    () =>
+      parsedTokens?.find((it: Token) => {
+        return eqIgnoreCase(it.address, addressOrSymbol || "") || eqIgnoreCase(it.symbol, addressOrSymbol || "");
+      }),
+    [parsedTokens, addressOrSymbol]
+  );
+};
+
+const Content = () => {
+  const props = useAdapterContext();
+  const provider = useProvider();
   const theme = useMemo(() => (props.isDarkTheme ? darkTheme : lightTheme), [props.isDarkTheme]);
-  const { srcToken, dstToken } = useSelectedParsedTokens(props);
-  const { srcUsd, dstUsd } = useUsd(props);
-  const marketPrice = useMarketPrice(props);
+  const { srcToken, dstToken } = useSelectedParsedTokens();
+  const { srcUsd, dstUsd } = useUsd();
+  const marketPrice = useMarketPrice();
 
   return (
     <ThemeProvider theme={theme}>
@@ -160,35 +191,53 @@ const TWAP = (props: AdapterProps) => {
         chainId={props.chainId}
         isExactAppoval={true}
         components={props.components!}
+        useToken={useToken}
       >
         <GlobalStyles />
         <Styles.StyledColumnFlex gap={16}>
           {props.isLimitPanel ? <LimitPanel /> : <TWAPPanel />}
           <Widget.ErrorMessage />
           <Widget.SubmitOrderPanel />
-          <Components.LimitPriceMessage />
-          <Widget.Orders />
-          <Widget.PoweredByOrbs />
         </Styles.StyledColumnFlex>
       </WidgetProvider>
     </ThemeProvider>
   );
 };
 
+const AdapterContext = createContext<AdapterProps | undefined>(undefined);
+
+export const useAdapterContext = () => {
+  const context = useContext(AdapterContext);
+  if (!context) {
+    throw new Error("useAdapter must be used within a AdapterProvider");
+  }
+  return context;
+};
+
+const TWAP = (props: AdapterProps) => {
+  return (
+    <AdapterContext.Provider value={props}>
+      <Content />
+    </AdapterContext.Provider>
+  );
+};
+
 const InputsPanel = () => {
   return (
-    <StyledTop>
-      <TokenPanel isSrcToken={true} />
-      <Widget.SwitchTokens />
-      <TokenPanel isSrcToken={false} />
-    </StyledTop>
+    <>
+      <LimitPrice />
+      <StyledTop>
+        <TokenPanel isSrcToken={true} />
+        <Widget.SwitchTokens />
+        <TokenPanel isSrcToken={false} />
+      </StyledTop>
+    </>
   );
 };
 
 const LimitPrice = () => {
   return (
     <>
-      <Widget.LimitPriceSwitch />
       <Widget.LimitPricePanel>
         <Widget.LimitPricePanel.Main />
       </Widget.LimitPricePanel>
@@ -199,7 +248,7 @@ const LimitPrice = () => {
 const TWAPPanel = () => {
   return (
     <>
-      <LimitPrice />
+      <Widget.PriceSwitch />
       <InputsPanel />
       <StyledTwapInputs>
         <Widget.FillDelayPanel>
@@ -209,7 +258,6 @@ const TWAPPanel = () => {
           <Widget.TradesAmountPanel.Main />
         </Widget.TradesAmountPanel>
       </StyledTwapInputs>
-
     </>
   );
 };
@@ -218,7 +266,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   return (
     <Widget.TokenPanel isSrcToken={Boolean(isSrcToken)}>
       <Widget.Panel.Header>
-        <Components.Base.Label>{isSrcToken ? "Allocate" : "Buy"}</Components.Base.Label>
+        <Widget.TokenPanel.Label />
         <Widget.TokenPanel.BalanceSelect />
       </Widget.Panel.Header>
       <Styles.StyledRowFlex className={`${Widget.TokenPanel.ClassName}-top`}>
@@ -226,7 +274,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
         <Widget.TokenPanel.Select />
       </Styles.StyledRowFlex>
       <Styles.StyledRowFlex className={`${Widget.TokenPanel.ClassName}-bottom`}>
-        <Widget.TokenPanel.Usd prefix={"~$ "} />
+        <Widget.TokenPanel.Usd />
         <Widget.TokenPanel.Balance prefix={<span> Balance: </span>} />
       </Styles.StyledRowFlex>
     </Widget.TokenPanel>
@@ -236,10 +284,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 const LimitPanel = () => {
   return (
     <>
-      <StyledLimitAndInputs>
-        <LimitPrice />
-        <InputsPanel />
-      </StyledLimitAndInputs>
+      <InputsPanel />
       <Widget.DurationPanel>
         <Widget.DurationPanel.Main />
       </Widget.DurationPanel>

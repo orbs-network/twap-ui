@@ -41,7 +41,6 @@ const Resolution = ({ className = "" }: { className?: string }) => {
   } = useWidgetContext().twap;
   const { onBlur, onFocus } = Panel.usePanelContext();
 
-
   const onChange = useCallback(
     (unit: TimeUnit) => {
       setFillDelay({ unit, value: fillDelay.value });

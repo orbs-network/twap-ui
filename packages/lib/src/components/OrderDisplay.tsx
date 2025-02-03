@@ -162,7 +162,7 @@ const TokenDisplay = ({ amount, token, usd, title, content }: { amount?: string;
 
   return (
     <StyledTokenDisplay className="twap-order-display-token-usd">
-      <StyledTokenRight className="twap-order-display-token-right">
+      <StyledTokenRight className="twap-order-display-token-left">
         <StyledText className="twap-order-display-token-title">{title}</StyledText>
         <StyledText className="twap-order-display-token-amount">
           {amount ? _amount : ""} {token?.symbol}
@@ -170,7 +170,7 @@ const TokenDisplay = ({ amount, token, usd, title, content }: { amount?: string;
         {usd && <USD usd={_usd} />}
         {content}
       </StyledTokenRight>
-      <TokenLogo className="twap-order-display-token-usd-logo" logo={token?.logoUrl} />
+      <TokenLogo className="twap-order-display-token-logo" logo={token?.logoUrl} />
     </StyledTokenDisplay>
   );
 };
@@ -180,8 +180,8 @@ const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
 };
 
 const SrcToken = ({ amount, token, usd }: { amount?: string; token?: Token; usd?: string }) => {
-  const isLimitPanel = useWidgetContext().isLimitPanel;
-  return <TokenDisplay amount={amount} token={token} usd={usd} title={isLimitPanel ? "From" : "Allocate"} />;
+  const { translations} = useWidgetContext();
+  return <TokenDisplay amount={amount} token={token} usd={usd} title={translations.from} />;
 };
 
 const DstToken = ({
@@ -204,13 +204,13 @@ const DstToken = ({
   const content = useMemo(() => {
     if (!isMarketOrder) return null;
     return (
-      <StyledSmallText className="twap-small-text">
+      <StyledSmallText className="twap-order-display-fill-delay">
         Every {fillDelayText(fillDelayMillis, t).toLowerCase()} Over {chunks} Orders
       </StyledSmallText>
     );
   }, [chunks, isMarketOrder, fillDelayMillis, t]);
 
-  return <TokenDisplay content={content} amount={!isMarketOrder ? amount : ""} token={token} usd={!isMarketOrder ? usd : ""} title={!isMarketOrder ? "To" : "Buy"} />;
+  return <TokenDisplay content={content} amount={!isMarketOrder ? amount : ""} token={token} usd={!isMarketOrder ? usd : ""} title={t.to} />;
 };
 
 const StyledSmallText = styled(StyledText)({

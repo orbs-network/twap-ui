@@ -45,7 +45,7 @@ export const useCreateOrder = () => {
         onTxHash: (createOrderTxHash) => {
           updateState({ createOrderTxHash });
         },
-      }
+      },
     );
 
     const orderId = Number(tx.events.OrderCreated.returnValues.id);
@@ -89,7 +89,7 @@ export const useWrapToken = () => {
         onTxHash: (hash) => {
           txHash = hash;
         },
-      }
+      },
     );
     logger("token wrap success:", txHash);
     twap.analytics.onWrapSuccess(txHash);
@@ -126,13 +126,13 @@ export const useUnwrapToken = () => {
         erc20<any>(network.wToken.symbol, network.wToken.address, network.wToken.decimals, iwethabi).methods.withdraw(BN(srcAmount).toFixed(0)),
         { from: account, maxPriorityFeePerGas: priorityFeePerGas, maxFeePerGas },
         undefined,
-        undefined
+        undefined,
       );
       await onSuccess();
     },
     {
       onError: (error) => {},
-    }
+    },
   );
 };
 
@@ -168,7 +168,7 @@ export const useApproveToken = () => {
         onTxHash: (value) => {
           txHash = value;
         },
-      }
+      },
     );
     logger("token approve success:", txHash);
     twap.analytics.onApproveSuccess(txHash);
@@ -209,7 +209,7 @@ const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 
 export const useSubmitOrderFlow = () => {
   const { state, updateState, twap } = useWidgetContext();
-
+  
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash, wrapSuccess, swapData } = state;
 
   const { data: haveAllowance, refetch: refetchAllowance } = query.useAllowance();
@@ -273,7 +273,7 @@ export const useSubmitOrderFlow = () => {
       onSettled() {
         refetchAllowance();
       },
-    }
+    },
   );
 
   const error = !mutate.error ? undefined : (mutate.error as any).message || "Failed to create order";
@@ -325,6 +325,6 @@ export const useCancelOrder = () => {
         console.log(`cancel error order`, error);
         twap.analytics.onCreateOrderError(error);
       },
-    }
+    },
   );
 };

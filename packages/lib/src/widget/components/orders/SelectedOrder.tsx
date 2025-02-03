@@ -64,10 +64,7 @@ const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: 
           <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
         </StyledSummary>
         <StyledDetails style={{ height: expanded ? "auto" : 0 }} className={`twap-orders-selected-order-details ${expanded ? "twap-orders-selected-order-details-expanded" : ""} `}>
-          <>
-            {children}
-            <div className="twap-orders-selected-order-details-margin" />
-          </>
+        {children}
         </StyledDetails>
       </StyledAccordion>
     </OrderDisplay.DetailsContainer>

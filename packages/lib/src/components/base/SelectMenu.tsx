@@ -28,7 +28,7 @@ export const SelectMenu = (props: Props) => {
       setOpen(false);
       props.onSelect(item);
     },
-    [props.onSelect]
+    [props.onSelect],
   );
 
   useEffect(() => {

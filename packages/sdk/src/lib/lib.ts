@@ -106,7 +106,7 @@ export const derivedSwapValues = (
     tradeSize: getTradeSizeWarning(minChunkSizeUsd, amountUi(srcDecimals, srcChunkAmountUsd), chunks),
     srcAmount: getSrcAmountWarning(srcAmount),
     limitPrice: getLimitPriceWarning(limitPrice),
-    chunks: getChunksWarning(chunks, maxPossibleChunks, Boolean(isLimitPanel)),
+    chunks: getChunksWarning(chunks, maxPossibleChunks, Boolean(isLimitPanel), srcAmount),
   };
 
   return {
