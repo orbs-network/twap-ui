@@ -22,6 +22,9 @@ const ListLoader = () => {
 
 export const OrderHistoryList = () => {
   const { selectOrder, orders, isLoading, selectedOrderId } = useOrderHistoryContext();
+  const {
+    state: { newOrderLoading },
+  } = useWidgetContext();
 
   if (selectedOrderId) return null;
 
@@ -34,16 +37,19 @@ export const OrderHistoryList = () => {
   }
 
   return (
-    <Virtuoso
-      totalCount={size(orders)}
-      overscan={10}
-      className="twap-order-history--list"
-      style={{ height: "100%", width: "100%" }}
-      itemContent={(index) => {
-        const order = orders[index];
-        return <ListOrder selectOrder={selectOrder} order={order} />;
-      }}
-    />
+    <>
+      {newOrderLoading && <ListLoader />}
+      <Virtuoso
+        totalCount={size(orders)}
+        overscan={10}
+        className="twap-order-history--list"
+        style={{ height: "100%", width: "100%" }}
+        itemContent={(index) => {
+          const order = orders[index];
+          return <ListOrder selectOrder={selectOrder} order={order} />;
+        }}
+      />
+    </>
   );
 };
 
@@ -77,7 +83,6 @@ const EmptyList = () => {
     </StyledEmpty>
   );
 };
-
 
 const StyledEmpty = styled(StyledColumnFlex)({
   alignItems: "center",
@@ -147,7 +152,6 @@ const StyledListOrder = styled(StyledColumnFlex)({
 const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }) => {
   const { useToken } = useWidgetContext();
   const token = useToken?.(address);
-  console.log({ token });
 
   const _amount = useFormatNumber({ value: amount, decimalScale: 4 });
 

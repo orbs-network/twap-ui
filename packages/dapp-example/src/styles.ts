@@ -477,7 +477,7 @@ export const StyledSushiLayout = styled(DappLayout)({
 export const StyledDragonLayout = styled(DappLayout)({
   maxWidth: 480,
   width: "calc(100% - 30px)",
-  gap: 10
+  gap: 10,
 });
 
 export const StyledDragonPanel = styled("div")({
@@ -549,10 +549,8 @@ export const StyledDragonswapModalContent = styled(StyledModalContent)<{ isDarkT
     border: "1px solid rgb(29 64 176/0.5)",
     borderRadius: 16,
     maxWidth: 512,
-
   };
 });
-
 
 export const StyledListToken = styled(Box)({
   cursor: "pointer",

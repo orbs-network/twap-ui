@@ -88,7 +88,7 @@ export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): Prepar
 export const derivedSwapValues = (
   config: Config,
   minChunkSizeUsd: number,
-  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs,
+  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs
 ) => {
   const maxPossibleChunks = getMaxPossibleChunks(config, srcAmount, oneSrcTokenUsd, srcDecimals);
   const chunks = getChunks(maxPossibleChunks, isLimitPanel, customChunks);
@@ -100,15 +100,19 @@ export const derivedSwapValues = (
     .times(oneSrcTokenUsd || 0)
     .toFixed(0);
 
-  const errors = {
-    fillDelay: getFillDelayWarning(fillDelay, isLimitPanel),
-    duration: getDurationWarning(duration, isLimitPanel),
-    tradeSize: getTradeSizeWarning(minChunkSizeUsd, amountUi(srcDecimals, srcChunkAmountUsd), chunks),
+  const Allerrors = {
     srcAmount: getSrcAmountWarning(srcAmount),
     limitPrice: getLimitPriceWarning(limitPrice),
     chunks: getChunksWarning(chunks, maxPossibleChunks, Boolean(isLimitPanel), srcAmount),
+    duration: getDurationWarning(duration, isLimitPanel),
+    fillDelay: getFillDelayWarning(fillDelay, isLimitPanel),
+    tradeSize: getTradeSizeWarning(minChunkSizeUsd, amountUi(srcDecimals, srcChunkAmountUsd), chunks),
   };
 
+  const firstKeyWithValue = Object.keys(Allerrors).find((key) => Allerrors[key as keyof typeof Allerrors]);
+
+  const errors = firstKeyWithValue ? { [firstKeyWithValue]: Allerrors[firstKeyWithValue as keyof typeof Allerrors], hasErrors: true } : { hasErrors: false };
+  
   return {
     chunks,
     duration,
@@ -117,10 +121,7 @@ export const derivedSwapValues = (
     destTokenMinAmount,
     destTokenAmount: getDestTokenAmount(srcAmount, limitPrice, srcDecimals, destDecimals),
     maxPossibleChunks,
-    errors: {
-      ...errors,
-      hasErros: Object.values(errors).some(Boolean),
-    },
+    errors,
     warnings: {
       partialFill: getPartialFillWarning(chunks, duration, fillDelay),
     },

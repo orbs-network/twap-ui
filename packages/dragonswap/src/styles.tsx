@@ -127,6 +127,7 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
     flexDirection: "column" as const,
     transition: "0.2s all",
     gap: 0,
+
     ".twap-panel-balance-buttons": {
       display: "flex",
       gap: 10,
@@ -203,16 +204,19 @@ const switchTokensStyles = (theme: DefaultTheme) => {
     },
   };
 };
-
+const letterSpacing = "0.02em";
 export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-orders-selected-order-bottom": {
+      marginTop: 15,
+    },
     ".twap-orders-selected-order-details": {
       gap: 8,
     },
     ".twap-orders-selected-order-details-expanded ": {
-      paddingTop: 10
+      paddingTop: 10,
     },
     ".twap-order-display-details-row": {
       ".twap-label": {
@@ -241,6 +245,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-order-history-order": {
       background: styles.color2,
+      marginBottom: 8,
     },
     ".twap-order-history-header-back-icon": {
       color: styles.textColor,
@@ -257,16 +262,18 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         borderRadius: 16,
       },
     },
-    ".twap-order-display-details": {
-      ...panelStyles(theme),
-      background: styles.color2,
-      padding: 8,
-      borderRadius: 8,
-    },
+
     ".orbs_MainTokenLeft": {
       gap: 4,
     },
     ".orbs_Main-wrapper": {
+      width: "100%",
+    },
+    ".orbs_MainTokenLogo": {
+      width: 40,
+      height: 40,
+    },
+    ".twap-order-display-token": {
       width: "100%",
     },
     ".orbs_MainTokenTitle": {
@@ -276,22 +283,42 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       textTransform: "uppercase" as const,
       opacity: 1,
     },
-    ".orbs_SwapFlow": {
-      ".twap-separator": {
-        background: "transparent",
-        marginTop: 10,
+    ".twap-order-display-details": {
+      background: styles.color2,
+      borderRadius: 8,
+      padding: 12,
+      gap: 8,
+      ".twap-label": {
+        color: "rgb(146 197 253)",
       },
-      ".twap-order-display-details": {
-        background: styles.color2,
-        borderRadius: 8,
+      ".twap-message": {
+        background: styles.cardBg,
+        letterSpacing,
+        fontSize: 14,
         padding: 8,
-        gap: 8,
-        ".twap-label": {
-          color: "rgb(146 197 253)",
+        borderRadius: 16,
+        a: {
+          color: styles.textColor,
+        },
+        svg: {
+          width: 15,
+          height: 15,
+          position: "relative",
+          top: 3,
         },
       },
-
+    },
+    ".twap-separator": {
+      background: "transparent",
+      marginTop: 20,
+    },
+    ".orbs_SwapFlow": {
+      ".twap-order-display-details": {
+        marginTop: 15,
+        marginBottom: 15,
+      },
       ".twap-order-modal-disclaimer": {
+        p: { color: styles.textColor },
         a: {
           color: styles.textColor,
         },
@@ -322,10 +349,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         marginLeft: "auto",
       },
       "&-text": {
-        fontSize: 14,
-      },
-      ".twap-spinner": {
-        marginRight: 10,
+        fontSize: 15,
       },
     },
     ".twap-powered-by": {
@@ -346,16 +370,23 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         textTransform: "uppercase" as const,
       },
     },
+    ".twap-limit-price-panel-invert-button": {
+      transition: "0.2s all",
+      width: 35,
+      height: 35,
+      borderRadius: "50%",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      position: "relative" as const,
+      top: -3,
+      right: -3,
+      "&:hover": {
+        background: "rgba(255,255,255,0.1)",
+      },
+    },
     ".twap-limit-price-panel-title-text": {
       ...panelLabelStyles(theme),
-    },
-    ".twap-limit-price-message": {
-      ...panelStyles(theme),
-      border: "1px solid rgb(36 99 235)",
-      gap: 10,
-      a: {
-        color: styles.textColor,
-      },
     },
     ".twap-switch-tokens": {
       ...switchTokensStyles(theme),
@@ -479,9 +510,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       ".twap-loader": {
         right: 0,
       },
-    },
-    ".twap-loader": {
-      background: isDarkMode ? "rgba(255,255,255,0.1)!important" : "rgba(0,0,0,0.1)!important",
     },
 
     ".twap-switch-handle": {

@@ -13,7 +13,7 @@ import { useWidgetContext } from "../../widget-context";
 import { OrderHistoryHeader } from "./OrderHistoryHeader";
 const PORTAL_ID = "twap-orders-portal";
 export const OrdersPortal = () => {
-  return <div id={PORTAL_ID} />
+  return <div id={PORTAL_ID} />;
 };
 
 export const Orders = ({ className = "" }: { className?: string }) => {
@@ -30,9 +30,20 @@ export const Orders = ({ className = "" }: { className?: string }) => {
 export const OrdersButton = ({ className = "" }: { className?: string }) => {
   const { data } = useOrdersHistory();
   const openOrders = useOpenOrders();
-  const { onOpen } = useOrderHistoryContext();
-  const isLoading = !data
-  const text = useMemo(() =>isLoading ? 'Loading orders...' :  `${size(openOrders)} Open orders`, [data, openOrders, isLoading]);
+  const {
+    state: { newOrderLoading },
+  } = useWidgetContext();
+  const { onOpen, isLoading } = useOrderHistoryContext();
+  const text = useMemo(() => {
+    if (isLoading) {
+      return "Loading orders...";
+    }
+    if (newOrderLoading) {
+      return "Loading created order...";
+    }
+
+    return `${size(openOrders)} Open orders`;
+  }, [data, openOrders, isLoading, newOrderLoading]);
 
   return (
     <StyledOrderHistoryButton className={`twap-order-history-button ${className}`} onClick={onOpen}>

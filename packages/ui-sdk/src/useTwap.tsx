@@ -10,6 +10,7 @@ import { useLimitPricePanel } from "./hooks/useLimitPricePanel";
 const initialState: State = {
   currentTime: Date.now(),
   typedFillDelay: SDK.DEFAULT_FILL_DELAY,
+  isMarketOrder: true,
 };
 
 const useOrders = (sdk: SDK.TwapSDK) => {

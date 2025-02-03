@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
 import { switchMetaMaskNetwork, isNativeAddress, Abi, erc20, network, TokenData } from "@defi.org/web3-candies";
 import { useNumericFormat } from "react-number-format";
-import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress } from "../utils";
+import { amountBNV2, amountUiV2, formatDecimals } from "../utils";
 import { query, useOrdersHistory } from "./query";
 import { TwapAbi, groupOrdersByStatus, OrderStatus } from "@orbs-network/twap-sdk";
 import { networks } from "../config";
@@ -83,12 +83,6 @@ export const useNetwork = () => {
   return useMemo(() => {
     return Object.values(networks).find((network) => network.id === config.chainId);
   }, [config]);
-};
-
-export const useExplorerUrl = () => {
-  const config = useWidgetContext().config;
-
-  return useMemo(() => getExplorerUrl(config.chainId), [config.chainId]);
 };
 
 export const useAmountBN = (decimals?: number, value?: string) => {

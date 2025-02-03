@@ -233,7 +233,7 @@ export const useOnSrcAmountPercent = () => {
   const srcBalance = useSrcBalance().data?.toString();
   return useCallback(
     (percent: number) => {
-      if (!srcToken || !srcBalance) return;
+      if (!srcToken || !srcBalance || BN(srcBalance || 0).isZero()) return;
 
       const _maxAmount = maxAmount && percent === 1 && BN(maxAmount).gt(0) ? maxAmount : undefined;
       const value = amountUiV2(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());

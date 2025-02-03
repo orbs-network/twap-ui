@@ -84,7 +84,7 @@ export const getLimitPriceWarning = (price?: string): TwapError => {
   };
 };
 
-export const getChunksWarning = (chunks = 0, maxPossibleChunks: number, isLimitPanel: boolean, srcAmount = '0'): TwapError => {
+export const getChunksWarning = (chunks = 0, maxPossibleChunks: number, isLimitPanel: boolean, srcAmount = "0"): TwapError => {
   if (isLimitPanel || BN(srcAmount).isZero()) return;
 
   if (BN(chunks).isZero()) {

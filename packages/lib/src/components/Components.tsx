@@ -75,7 +75,7 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string; onFocu
     (srcAmount: string) => {
       updateState({ srcAmount });
     },
-    [updateState]
+    [updateState],
   );
 
   return (
@@ -96,14 +96,13 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
   const {
     dstToken,
     twap: {
-      values: { isMarketOrder, destTokenAmountUI, destTokenAmountLoading },
+      values: { destTokenAmountUI, destTokenAmountLoading },
     },
   } = useWidgetContext();
   return (
     <Input
       disabled={true}
       loading={destTokenAmountLoading}
-      prefix={isMarketOrder ? SQUIGLE : ""}
       value={useFormatDecimals(destTokenAmountUI)}
       decimalScale={props.decimalScale || dstToken?.decimals}
       className={props.className}
@@ -277,8 +276,8 @@ export const MarketPriceWarning = ({ className = "" }: { className?: string }) =
       className={`twap-market-price-warning ${className}`}
       title={
         <>
-          {t?.marketOrderWarning}
-          <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">{` ${t.learnMore}`}</a>
+          {`${t?.marketOrderWarning} `}
+          <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">{`${t.learnMore}`}</a>
         </>
       }
       variant="warning"
@@ -286,44 +285,26 @@ export const MarketPriceWarning = ({ className = "" }: { className?: string }) =
   );
 };
 
-export const LimitPriceMessageContent = ({ className }: { className?: string }) => {
-  return (
-    <Portal containerId="twap-limit-price-message-container">
-      <LimitPriceMessage className={className} />
-    </Portal>
-  );
-};
-
-export const LimitPriceMessage = ({ className }: { className?: string }) => {
+export const LimitPriceWarning = ({ className = "" }: { className?: string }) => {
   const { translations: t, twap } = useWidgetContext();
   const isMarketOrder = twap.values.isMarketOrder;
   if (isMarketOrder) return null;
 
   return (
-    <Portal containerId="twap-limit-price-message-portal">
-      <StyledLimitPriceMessage
-        className={`${className} twap-limit-price-message`}
-        variant="warning"
-        title={
-          <>
-            {t.limitPriceMessage}{" "}
-            <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">
-              {t.learnMore}
-            </a>
-          </>
-        }
-      />
-    </Portal>
+    <Message
+      className={`${className} twap-limit-price-message`}
+      variant="warning"
+      title={
+        <>
+          {t.limitPriceMessage}{" "}
+          <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">
+            {t.learnMore}
+          </a>
+        </>
+      }
+    />
   );
 };
-
-export const LimitPriceMessagePortal = () => {
-  return <div id="twap-limit-price-message-portal" />;
-};
-
-const StyledLimitPriceMessage = styled(Message)({
-  color: "white",
-});
 
 export const Separator = ({ className = "" }: { className?: string }) => {
   return <StyledSeparator className={`${className} twap-separator`} />;

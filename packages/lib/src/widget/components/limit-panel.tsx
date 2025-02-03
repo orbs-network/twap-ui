@@ -91,10 +91,10 @@ const PercentSelector = () => {
 const StyledPercentSelector = styled(StyledRowFlex)({
   width: "auto",
   ".twap-limit-price-panel-percent-reset": {
-    width:'auto',
+    width: "auto",
     alignItems: "stretch",
-  }
-})
+  },
+});
 
 const PanelTokenSelect = ({ className = "" }: { className?: string }) => {
   const { twap } = useWidgetContext();
@@ -109,11 +109,15 @@ const InvertPriceButton = ({ className = "" }: { className?: string }) => {
   const onInvert = useWidgetContext().twap.limitPricePanel.onInvertLimitPrice;
 
   return (
-    <div onClick={onInvert} className={`twap-limit-price-panel-invert-button ${className}`}>
+    <StyledPriceInvert onClick={onInvert} className={`twap-limit-price-panel-invert-button ${className}`}>
       <RiArrowUpDownLine size="16px" className="twap-limit-price-panel-icon" />
-    </div>
+    </StyledPriceInvert>
   );
 };
+
+const StyledPriceInvert = styled("div")({
+  cursor: "pointer",
+});
 
 const Title = () => {
   const { translations: t, twap } = useWidgetContext();

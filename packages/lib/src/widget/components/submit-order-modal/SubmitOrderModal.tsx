@@ -2,7 +2,7 @@ import { useSubmitOrderFlow } from "../../../hooks/useTransactions";
 import { Main } from "./Main";
 import React from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
-import { useExplorerUrl, useFormatNumber, useSwapModal } from "../../../hooks";
+import { useFormatNumber, useNetwork, useSwapModal } from "../../../hooks";
 import { useWidgetContext } from "../../..";
 import { Failed } from "./Failed";
 
@@ -13,7 +13,7 @@ export const SubmitOrderModal = ({ className = "" }: { className?: string }) => 
     components: { Modal },
   } = useWidgetContext();
   const { isOpen, onClose } = useSwapModal();
-  const explorerUrl = useExplorerUrl();
+  const explorerUrl = useNetwork()?.explorer;
   const srcAmountF = useFormatNumber({ value: swapData?.srcAmount });
   const outAmountF = useFormatNumber({ value: swapData?.outAmount });
 

@@ -13,7 +13,7 @@ export const useSwapModal = () => {
   const {
     state: { showConfirmation: isOpen },
   } = useWidgetContext();
-  const { updateState, state, srcToken, dstToken, twap } = useWidgetContext();
+  const { resetState, state, srcToken, dstToken, twap, updateState } = useWidgetContext();
   const nativeToWrapped = useSwitchNativeToWrapped();
   const srcAmount = twap.values.srcAmountUI;
   const outAmount = twap.values.destTokenAmountUI;
@@ -22,25 +22,17 @@ export const useSwapModal = () => {
   const onClose = useCallback(
     (closeDalay?: number) => {
       updateState({ showConfirmation: false });
-      if (swapStatus === SwapStatus.FAILED) return;
-      setTimeout(() => {
-        updateState({
-          swapSteps: undefined,
-          swapStatus: undefined,
-          swapStep: undefined,
-          approveSuccess: undefined,
-          wrapSuccess: undefined,
-          wrapTxHash: undefined,
-          unwrapTxHash: undefined,
-          approveTxHash: undefined,
-          createOrderSuccess: undefined,
-        });
-        if (state.wrapSuccess) {
-          nativeToWrapped();
-        }
-      }, closeDalay || 300);
+      if (state.wrapSuccess) {
+        nativeToWrapped();
+      }
+
+      if (state.swapStatus) {
+        setTimeout(() => {
+          resetState();
+        }, closeDalay || 300);
+      }
     },
-    [swapStatus, updateState, nativeToWrapped],
+    [swapStatus, nativeToWrapped, resetState, state, updateState],
   );
 
   const onOpen = useCallback(() => {

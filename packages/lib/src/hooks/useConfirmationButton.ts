@@ -17,8 +17,9 @@ export const useConfirmationButton = () => {
     srcToken,
     dstToken,
     twap: {
-      errors: { hasErros },
+      errors: { hasErrors },
     },
+    marketPrice,
   } = useWidgetContext();
   const { onOpen } = useSwapModal();
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
@@ -32,7 +33,7 @@ export const useConfirmationButton = () => {
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
 
-  const isLoading = usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading;
+  const isLoading = usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading || BN(marketPrice || 0).isZero();
 
   return useMemo(() => {
     if (isWrongChain)
@@ -69,7 +70,7 @@ export const useConfirmationButton = () => {
       text: translations.placeOrder,
       onClick: onOpen,
       loading: isLoading,
-      disabled: isLoading || hasErros || balanceError,
+      disabled: isLoading || hasErrors || !!balanceError,
     };
   }, [
     isWrongChain,
@@ -86,7 +87,7 @@ export const useConfirmationButton = () => {
     changeNetwork,
     changeNetworkLoading,
     onOpen,
-    hasErros,
+    hasErrors,
     balanceError,
   ]);
 };

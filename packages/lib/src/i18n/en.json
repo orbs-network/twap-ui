@@ -128,5 +128,6 @@
   "twapMarket": "TWAP-market",
   "twapMarketOrder": "TWAP-market order",
   "twapLimit": "dTWAP Limit",
-  "All": "All"
+  "All": "All",
+  "minReceived": "Min. received"
 }

@@ -40,8 +40,7 @@ export const SelectedOrder = () => {
           <OrderDisplay.SrcToken token={srcToken} />
           <OrderDisplay.DstToken token={dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={order.getFillDelay(config)} />
         </OrderDisplay.Tokens>
-        <Separator />
-        <StyledColumnFlex gap={15}>
+        <StyledColumnFlex gap={15} className="twap-orders-selected-order-bottom">
           <AccordionContainer title="Execution summary" onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
             <ExcecutionSummary order={order} />
           </AccordionContainer>
@@ -64,7 +63,7 @@ const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: 
           <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
         </StyledSummary>
         <StyledDetails style={{ height: expanded ? "auto" : 0 }} className={`twap-orders-selected-order-details ${expanded ? "twap-orders-selected-order-details-expanded" : ""} `}>
-        {children}
+          {children}
         </StyledDetails>
       </StyledAccordion>
     </OrderDisplay.DetailsContainer>
@@ -98,10 +97,10 @@ const OrderInfo = ({ order }: { order: Order }) => {
       <CreatedAt order={order} />
       <OrderDisplay.Expiry deadline={order?.deadline} />
       <AmountIn order={order} />
-      {isTwap && <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />}
+      {isTwap && <OrderDisplay.ChunkSize chunks={order?.totalChunks} srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />}
       {isTwap && <OrderDisplay.ChunksAmount chunks={order?.totalChunks} />}
       <OrderDisplay.MinDestAmount totalChunks={order?.totalChunks} dstToken={dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={dstMinAmountOutUi} />
-      {isTwap && <OrderDisplay.TradeInterval fillDelayMillis={order?.getFillDelay(config)} />}
+      {isTwap && <OrderDisplay.TradeInterval chunks={order.totalChunks} fillDelayMillis={order?.getFillDelay(config)} />}
       <OrderDisplay.Recipient />
       <OrderDisplay.TxHash txHash={order?.txHash} />
     </>

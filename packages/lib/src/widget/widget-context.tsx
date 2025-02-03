@@ -10,7 +10,6 @@ import { query } from "../hooks/query";
 import { styled } from "@mui/material";
 import { Orders } from "./components/orders/Orders";
 import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
-import { LimitPriceMessage } from "../components";
 import { PoweredbyOrbsWithPortal } from "./components/powered-by-orbs";
 
 export const WidgetContext = createContext({} as WidgetContextType);
@@ -24,8 +23,9 @@ const queryClient = new QueryClient({
 
 enum ActionType {
   UPDATED_STATE = "UPDATED_STATE",
+  RESET = "RESET",
 }
-type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> };
+type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> } | { type: ActionType.RESET };
 
 const initialState = {
   disclaimerAccepted: true,
@@ -35,6 +35,8 @@ const contextReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case ActionType.UPDATED_STATE:
       return { ...state, ...action.value };
+    case ActionType.RESET:
+      return initialState;
     default:
       return state;
   }
@@ -69,16 +71,19 @@ export const useTranslations = (translations?: Partial<Translations>): Translati
 const useStore = () => {
   const [state, dispatch] = useReducer(contextReducer, initialState);
   const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
+
+  const resetState = useCallback(() => dispatch({ type: ActionType.RESET }), [dispatch]);
   return {
     state,
     updateState,
+    resetState,
   };
 };
 
 export const WidgetProvider = (props: WidgetProps) => {
   const isWrongChain = useIsWrongChain(props, props.chainId);
   const web3 = useMemo(() => (!props.provider ? undefined : new Web3(props.provider)), [props.provider]);
-  const { state, updateState } = useStore();
+  const { state, updateState, resetState } = useStore();
   const twap = useTwap({
     config: props.config,
     isLimitPanel: props.isLimitPanel,
@@ -101,6 +106,7 @@ export const WidgetProvider = (props: WidgetProps) => {
           isWrongChain,
           web3,
           updateState,
+          resetState,
           state,
           uiPreferences: props.uiPreferences || {},
           twap,
@@ -110,7 +116,6 @@ export const WidgetProvider = (props: WidgetProps) => {
         <TwapErrorWrapper>
           <Orders />
           <SubmitOrderModal />
-          <LimitPriceMessage />
           <PoweredbyOrbsWithPortal />
           {props.withStyles ? <Container className="twap-widget">{props.children}</Container> : <div className="twap-widget">{props.children}</div>}
         </TwapErrorWrapper>

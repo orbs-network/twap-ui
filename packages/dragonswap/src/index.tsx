@@ -36,7 +36,7 @@ const useParseToken = () => {
         console.error("Invalid token", token);
       }
     },
-    [props.config.chainId]
+    [props.config.chainId],
   );
 };
 
@@ -67,7 +67,7 @@ const useIsNative = () => {
         return true;
       }
     },
-    [props.config.chainId]
+    [props.config.chainId],
   );
 };
 
@@ -156,7 +156,7 @@ const useToken = (addressOrSymbol?: string) => {
       parsedTokens?.find((it: Token) => {
         return eqIgnoreCase(it.address, addressOrSymbol || "") || eqIgnoreCase(it.symbol, addressOrSymbol || "");
       }),
-    [parsedTokens, addressOrSymbol]
+    [parsedTokens, addressOrSymbol],
   );
 };
 

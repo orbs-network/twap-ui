@@ -6,6 +6,7 @@ import { SwapStatus, SwapStep } from "@orbs-network/swap-ui";
 import { UseTwap } from "@orbs-network/twap-ui-sdk";
 
 export interface Translations {
+  minReceived: string;
   confirmationDeadlineTooltip: string;
   confirmationtradeIntervalTooltip: string;
   confirmationTradeSizeTooltip: string;
@@ -210,6 +211,12 @@ export interface WidgetProps {
   askDataParams?: any[];
   useToken?: (value?: string) => Token | undefined;
   withStyles?: boolean;
+  onWrapSuccess?: (srcToken: Token, txHash: string) => void;
+  onApproveSuccess?: (srcToken: Token, txHash: string) => void;
+  onCreateOrderSuccess?: (srcToken: Token, dstToken: Token, srcAmount: string, dstAmount: string, orderId?: number) => void;
+  onWrapFailed?: (error: string) => void;
+  onApproveFailed?: (error: string) => void;
+  onCreateOrderFailed?: (error: string) => void;
 }
 
 export interface WidgetContextType extends WidgetProps {
@@ -217,6 +224,7 @@ export interface WidgetContextType extends WidgetProps {
   web3?: Web3;
   state: State;
   updateState: (state: Partial<State>) => void;
+  resetState: () => void;
   translations: Translations;
   uiPreferences: UIPreferences;
   twap: UseTwap;
@@ -349,6 +357,7 @@ export interface State {
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
   srcAmount?: string;
+  newOrderLoading?: boolean;
   swapData?: {
     srcToken?: Token;
     dstToken?: Token;

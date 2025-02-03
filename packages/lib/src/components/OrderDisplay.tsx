@@ -1,12 +1,13 @@
 import { styled } from "styled-components";
 import React, { ReactNode, useMemo } from "react";
-import { useExplorerUrl, useFormatNumber } from "../hooks/hooks";
+import { useFormatNumber, useNetwork } from "../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
-import { Label, TokenLogo } from "./base";
+import { Label } from "./base";
 import moment from "moment";
 import { fillDelayText, makeElipsisAddress } from "../utils";
 import { Token } from "../types";
 import { useWidgetContext } from "..";
+import * as SwapUI from "@orbs-network/swap-ui";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useWidgetContext()?.translations;
@@ -19,10 +20,13 @@ const Expiry = ({ deadline }: { deadline?: number }) => {
   );
 };
 
-const ChunkSize = ({ srcChunkAmount, srcToken }: { srcChunkAmount?: string; srcToken?: Token }) => {
+const ChunkSize = ({ srcChunkAmount, srcToken, chunks }: { srcChunkAmount?: string; srcToken?: Token; chunks: number }) => {
   const translations = useWidgetContext().translations;
 
   const _srcChunkAmount = useFormatNumber({ value: srcChunkAmount, decimalScale: 3 });
+
+  if (chunks === 1) return null;
+
   return (
     <DetailRow title={translations.individualTradeSize} tooltip={translations.confirmationTradeSizeTooltip}>
       {`${srcChunkAmount ? _srcChunkAmount : "-"} ${srcToken?.symbol}`}
@@ -41,13 +45,13 @@ const MinDestAmount = ({
   dstMinAmountOut?: string;
   totalChunks?: number;
 }) => {
-  const { translations } = useWidgetContext();
+  const { translations: t } = useWidgetContext();
   const formattedValue = useFormatNumber({ value: dstMinAmountOut });
 
   if (isMarketOrder) return null;
 
   return (
-    <DetailRow title={totalChunks === 1 ? "Min. received" : translations.minReceivedPerTrade} tooltip={translations.confirmationMinDstAmountTootipLimit}>
+    <DetailRow title={totalChunks === 1 ? t.minReceived : t.minReceivedPerTrade} tooltip={t.confirmationMinDstAmountTootipLimit}>
       {`${dstMinAmountOut ? formattedValue : "-"} ${dstToken?.symbol}`}
     </DetailRow>
   );
@@ -55,6 +59,8 @@ const MinDestAmount = ({
 
 const ChunksAmount = ({ chunks }: { chunks?: number }) => {
   const t = useWidgetContext().translations;
+
+  if (chunks === 1) return null;
 
   return (
     <DetailRow title={t.numberOfTrades} tooltip={t.confirmationTotalTradesTooltip}>
@@ -65,7 +71,7 @@ const ChunksAmount = ({ chunks }: { chunks?: number }) => {
 
 const Recipient = () => {
   const { translations: t, account } = useWidgetContext();
-  const explorerUrl = useExplorerUrl();
+  const explorerUrl = useNetwork()?.explorer;
   const makerAddress = makeElipsisAddress(account);
 
   return (
@@ -81,9 +87,11 @@ const Recipient = () => {
   );
 };
 
-const TradeInterval = ({ fillDelayMillis }: { fillDelayMillis?: number }) => {
+const TradeInterval = ({ fillDelayMillis, chunks }: { fillDelayMillis?: number; chunks: number }) => {
   const t = useWidgetContext()?.translations;
   const text = useMemo(() => fillDelayText(fillDelayMillis, t), [fillDelayMillis, t]);
+
+  if (chunks === 1) return null;
 
   return (
     <DetailRow title={t.tradeInterval} tooltip={t.confirmationtradeIntervalTooltip}>
@@ -127,7 +135,7 @@ const DetailRow = ({
 const TxHash = ({ txHash }: { txHash?: string }) => {
   const { translations: t } = useWidgetContext();
   const txHashAddress = makeElipsisAddress(txHash);
-  const explorerUrl = useExplorerUrl();
+  const explorerUrl = useNetwork()?.explorer;
 
   if (!txHash) return null;
 
@@ -159,28 +167,27 @@ export function OrderDisplay({ children, className = "" }: { children?: ReactNod
 const TokenDisplay = ({ amount, token, usd, title, content }: { amount?: string; token?: Token; usd?: string; title?: string; content?: ReactNode }) => {
   const _usd = useFormatNumber({ value: usd, decimalScale: 2 });
   const _amount = useFormatNumber({ value: amount });
+  const { uiPreferences } = useWidgetContext();
+  const usdPrefix = uiPreferences.usd?.prefix || "$";
+  const usdSuffix = uiPreferences.usd?.suffix || "";
+
+  const _token = useMemo(() => {
+    return {
+      symbol: token?.symbol,
+      logo: token?.logoUrl,
+    };
+  }, [token]);
 
   return (
-    <StyledTokenDisplay className="twap-order-display-token-usd">
-      <StyledTokenRight className="twap-order-display-token-left">
-        <StyledText className="twap-order-display-token-title">{title}</StyledText>
-        <StyledText className="twap-order-display-token-amount">
-          {amount ? _amount : ""} {token?.symbol}
-        </StyledText>
-        {usd && <USD usd={_usd} />}
-        {content}
-      </StyledTokenRight>
-      <TokenLogo className="twap-order-display-token-logo" logo={token?.logoUrl} />
-    </StyledTokenDisplay>
+    <div className="twap-order-display-token">
+      <SwapUI.TokenDisplay token={_token} title={title || ""} amount={_amount} usd={!_usd ? "" : `${usdPrefix}${_usd}${usdSuffix}`} />
+      {content}
+    </div>
   );
 };
 
-const USD = ({ usd, className = "" }: { usd?: string; className?: string }) => {
-  return <StyledSmallText className={`twap-order-display-token-usd ${className}`}>${usd}</StyledSmallText>;
-};
-
 const SrcToken = ({ amount, token, usd }: { amount?: string; token?: Token; usd?: string }) => {
-  const { translations} = useWidgetContext();
+  const { translations } = useWidgetContext();
   return <TokenDisplay amount={amount} token={token} usd={usd} title={translations.from} />;
 };
 
@@ -246,9 +253,6 @@ const StyledTokens = styled(StyledColumnFlex)({
 
 const Container = styled(StyledColumnFlex)({
   gap: 0,
-  ".twap-separator": {
-    margin: "20px 0px",
-  },
   ".twap-order-display-details": {
     gap: 8,
   },
@@ -272,37 +276,5 @@ const StyledDetailRowChildren = styled(StyledRowFlex)({
     "&:hover": {
       textDecoration: "underline",
     },
-  },
-});
-
-const StyledTokenRight = styled(StyledColumnFlex)({
-  width: "auto",
-  flex: 1,
-  justifyContent: "space-between",
-  gap: 4,
-});
-const StyledTokenDisplay = styled(StyledRowFlex)({
-  alignItems: "center",
-  gap: 4,
-  ".twap-order-modal-token-title": {
-    opacity: 0.7,
-    fontSize: 14,
-  },
-  ".twap-order-modal-token-amount": {
-    fontSize: 29,
-    lineHeight: "30px",
-    flex: 1,
-    minWidth: 0,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  ".twap-token-logo": {
-    width: 36,
-    height: 36,
-  },
-  ".twap-order-modal-token-usd": {
-    opacity: 0.7,
-    fontSize: 14,
   },
 });

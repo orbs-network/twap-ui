@@ -3,13 +3,14 @@ import BN from "bignumber.js";
 import React, { useMemo } from "react";
 import { SwapFlow, SwapStep } from "@orbs-network/swap-ui";
 import { fillDelayText } from "@orbs-network/twap-sdk";
-import { MarketPriceWarning, Separator } from "../../../components";
+import { LimitPriceWarning, MarketPriceWarning, Separator } from "../../../components";
 import { Switch, Button } from "../../../components/base";
 import { OrderDisplay } from "../../../components/OrderDisplay";
-import { useSwapPrice, useFormatNumber, useToggleDisclaimer, useAmountUi, useSubmitOrderButton } from "../../../hooks";
+import { useSwapPrice, useFormatNumber, useToggleDisclaimer, useAmountUi, useSubmitOrderButton, useNetwork } from "../../../hooks";
 import { StyledText, StyledColumnFlex } from "../../../styles";
 import { SwapSteps } from "../../../types";
 import { useWidgetContext } from "../../widget-context";
+import { isNativeAddress } from "@defi.org/web3-candies";
 
 const Price = () => {
   const { srcToken, dstToken, twap } = useWidgetContext();
@@ -54,12 +55,6 @@ const StyledWarning = styled(MarketPriceWarning)({
   },
 });
 
-const MarketWarning = ({ isMarketOrder }: { isMarketOrder?: boolean }) => {
-  if (!isMarketOrder) return null;
-
-  return <StyledWarning className="twap-order-modal-market-warning" />;
-};
-
 export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   const {
     translations: t,
@@ -88,8 +83,11 @@ const useSteps = () => {
   const {
     state: { swapSteps },
     srcToken,
+    useToken,
   } = useWidgetContext();
-
+  const wToken = useNetwork()?.wToken;
+  const dappWToken = useToken?.(wToken?.address);
+  const isNativeIn = isNativeAddress(srcToken?.address || "");
   return useMemo((): SwapStep[] => {
     if (!swapSteps || !srcToken) return [];
 
@@ -98,16 +96,14 @@ const useSteps = () => {
         return {
           id: SwapSteps.WRAP,
           title: `Wrap ${srcToken.symbol}`,
-          description: `Wrap ${srcToken.symbol}`,
           image: srcToken.logoUrl,
         };
       }
       if (step === SwapSteps.APPROVE) {
         return {
           id: SwapSteps.APPROVE,
-          title: `Approve ${srcToken.symbol}`,
-          description: `Approve ${srcToken.symbol}`,
-          image: srcToken.logoUrl,
+          title: `Approve ${isNativeIn ? wToken?.symbol : srcToken.symbol}`,
+          image: isNativeIn ? dappWToken?.logoUrl : srcToken.logoUrl,
         };
       }
       return {
@@ -116,7 +112,7 @@ const useSteps = () => {
         image: srcToken?.logoUrl,
       };
     });
-  }, [srcToken, swapSteps]);
+  }, [srcToken, swapSteps, wToken, dappWToken?.logoUrl, isNativeIn]);
 };
 
 export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
@@ -124,17 +120,16 @@ export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
     state: { swapStatus, swapStep, swapData },
     twap,
     uiPreferences,
-    translations
+    translations,
   } = useWidgetContext();
-  const {
-  } = twap;
+  const {} = twap;
   const steps = useSteps();
 
   const inUsd = useFormatNumber({ value: swapData?.srcAmountusd, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: swapData?.outAmountusd, decimalScale: 2 });
 
-  const usdPrefix = uiPreferences.usd?.prefix || '$'
-  const usdSuffix = uiPreferences.usd?.suffix || ''
+  const usdPrefix = uiPreferences.usd?.prefix || "$";
+  const usdSuffix = uiPreferences.usd?.suffix || "";
   return (
     <>
       <SwapFlow.Main
@@ -148,11 +143,13 @@ export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
         bottomContent={<ChunksText />}
       />
       {!swapStatus && (
-        <StyledColumnFlex gap={15}>
+        <>
           <Details />
-          <AcceptDisclaimer />
-          <SubmitButton onClick={onSubmit} />
-        </StyledColumnFlex>
+          <StyledColumnFlex gap={15}>
+            <AcceptDisclaimer />
+            <SubmitButton onClick={onSubmit} />
+          </StyledColumnFlex>
+        </>
       )}
     </>
   );
@@ -183,30 +180,28 @@ const Details = () => {
   } = twap;
 
   return (
-    <>
-      <Separator />
-      <OrderDisplay.DetailsContainer>
-        <Price />
-        {isLimitPanel ? (
-          <>
-            <OrderDisplay.Expiry deadline={deadline} />
-            <OrderDisplay.Recipient />
-            <Fee />
-          </>
-        ) : (
-          <>
-            <MarketWarning isMarketOrder={isMarketOrder} />
-            <OrderDisplay.Expiry deadline={deadline} />
-            <OrderDisplay.ChunkSize srcChunkAmount={srcChunksAmountUI} srcToken={srcToken} />
-            <OrderDisplay.ChunksAmount chunks={chunks} />
-            <OrderDisplay.MinDestAmount dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={destTokenMinAmountOutUI} />
-            <OrderDisplay.TradeInterval fillDelayMillis={fillDelayMilliseconds} />
-            <OrderDisplay.Recipient />
-            <Fee />
-          </>
-        )}
-      </OrderDisplay.DetailsContainer>
-    </>
+    <OrderDisplay.DetailsContainer>
+      <Price />
+      {isLimitPanel ? (
+        <>
+          <OrderDisplay.Expiry deadline={deadline} />
+          <OrderDisplay.Recipient />
+          <Fee />
+        </>
+      ) : (
+        <>
+          <MarketPriceWarning />
+          <LimitPriceWarning />
+          <OrderDisplay.Expiry deadline={deadline} />
+          <OrderDisplay.ChunkSize srcChunkAmount={srcChunksAmountUI} chunks={chunks} srcToken={srcToken} />
+          <OrderDisplay.ChunksAmount chunks={chunks} />
+          <OrderDisplay.MinDestAmount totalChunks={chunks} dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={destTokenMinAmountOutUI} />
+          <OrderDisplay.TradeInterval chunks={chunks} fillDelayMillis={fillDelayMilliseconds} />
+          <OrderDisplay.Recipient />
+          <Fee />
+        </>
+      )}
+    </OrderDisplay.DetailsContainer>
   );
 };
 

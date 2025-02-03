@@ -190,7 +190,7 @@ const DappComponent = () => {
           <Wrapper>
             <TWAPComponent limit={selected === SelectorOption.LIMIT} />
           </Wrapper>
-          <Components.LimitPriceMessage />
+          {/* <Components.LimitPriceMessage /> */}
         </StyledPancakeLayout>
       </StyledPancake>
     </DappProvider>

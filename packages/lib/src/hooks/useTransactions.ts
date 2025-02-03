@@ -1,7 +1,7 @@
 import { zero, sendAndWaitForConfirmations, TokenData, erc20, iwethabi, maxUint256, hasWeb3Instance, setWeb3Instance, account } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useGetHasAllowance, useNetwork, useRefetchBalances, useTwapContract } from "./hooks";
-import { query, useGasPrice, useOrdersHistory } from "./query";
+import { query, useGasPrice, useOrdersHistory, useWaitForNewOrderCallback } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
 import { useShouldWrap } from "./lib";
@@ -11,89 +11,104 @@ import { useWidgetContext } from "../widget/widget-context";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
-  const { account, updateState, twap, dstToken } = useWidgetContext();
+  const { account, updateState, twap, dstToken, onCreateOrderSuccess, onCreateOrderFailed } = useWidgetContext();
   const {
     values: { createOrderArgs },
   } = twap;
   const twapContract = useTwapContract();
 
-  return useMutation(async (srcToken: TokenData) => {
-    if (!dstToken) {
-      throw new Error("dstToken is not defined");
-    }
+  return useMutation(
+    async (srcToken: TokenData) => {
+      if (!dstToken) {
+        throw new Error("dstToken is not defined");
+      }
 
-    if (!twapContract) {
-      throw new Error("twapContract is not defined");
-    }
+      if (!twapContract) {
+        throw new Error("twapContract is not defined");
+      }
 
-    if (!account) {
-      throw new Error("account is not defined");
-    }
+      if (!account) {
+        throw new Error("account is not defined");
+      }
 
-    twap.analytics.onCreateOrderRequest(createOrderArgs, account);
+      twap.analytics.onCreateOrderRequest(createOrderArgs, account);
 
-    const tx = await sendAndWaitForConfirmations(
-      twapContract.methods.ask(createOrderArgs as any),
-      {
-        from: account,
-        maxPriorityFeePerGas: priorityFeePerGas || zero,
-        maxFeePerGas,
-      },
-      undefined,
-      undefined,
-      {
-        onTxHash: (createOrderTxHash) => {
-          updateState({ createOrderTxHash });
+      const tx = await sendAndWaitForConfirmations(
+        twapContract.methods.ask(createOrderArgs as any),
+        {
+          from: account,
+          maxPriorityFeePerGas: priorityFeePerGas || zero,
+          maxFeePerGas,
         },
-      },
-    );
+        undefined,
+        undefined,
+        {
+          onTxHash: (createOrderTxHash) => {
+            updateState({ createOrderTxHash });
+          },
+        },
+      );
 
-    const orderId = Number(tx.events.OrderCreated.returnValues.id);
-    const txHash = tx.transactionHash;
-    twap.analytics.onCreateOrderSuccess(txHash, orderId);
-    logger("order created:", "orderId:", orderId, "txHash:", txHash);
-    return {
-      orderId,
-      txHash,
-    };
-  });
+      const orderId = Number(tx.events.OrderCreated.returnValues.id);
+      const txHash = tx.transactionHash;
+      twap.analytics.onCreateOrderSuccess(txHash, orderId);
+      logger("order created:", "orderId:", orderId, "txHash:", txHash);
+      return {
+        orderId,
+        txHash,
+      };
+    },
+    {
+      onError(error) {
+        onCreateOrderFailed?.((error as any).message);
+      },
+    },
+  );
 };
 
 export const useWrapToken = () => {
-  const { account, twap } = useWidgetContext();
+  const { account, twap, onWrapSuccess, onWrapFailed, srcToken } = useWidgetContext();
   const srcAmount = twap.values.srcAmount;
 
   const network = useNetwork();
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
 
-  return useMutation(async () => {
-    let txHash: string = "";
-    if (!network) {
-      throw new Error("network is not defined");
-    }
-    if (!account) {
-      throw new Error("account is not defined");
-    }
+  return useMutation(
+    async () => {
+      let txHash: string = "";
+      if (!network) {
+        throw new Error("network is not defined");
+      }
+      if (!account) {
+        throw new Error("account is not defined");
+      }
 
-    await sendAndWaitForConfirmations(
-      erc20<any>(network.wToken.symbol, network.wToken.address, network.wToken.decimals, iwethabi).methods.deposit(),
-      {
-        from: account,
-        maxPriorityFeePerGas: priorityFeePerGas,
-        maxFeePerGas,
-        value: srcAmount,
-      },
-      undefined,
-      undefined,
-      {
-        onTxHash: (hash) => {
-          txHash = hash;
+      await sendAndWaitForConfirmations(
+        erc20<any>(network.wToken.symbol, network.wToken.address, network.wToken.decimals, iwethabi).methods.deposit(),
+        {
+          from: account,
+          maxPriorityFeePerGas: priorityFeePerGas,
+          maxFeePerGas,
+          value: srcAmount,
         },
+        undefined,
+        undefined,
+        {
+          onTxHash: (hash) => {
+            txHash = hash;
+          },
+        },
+      );
+      logger("token wrap success:", txHash);
+      twap.analytics.onWrapSuccess(txHash);
+      onWrapSuccess?.(srcToken!, txHash);
+    },
+    {
+      onError: (error) => {
+        onWrapFailed?.((error as any).message);
       },
-    );
-    logger("token wrap success:", txHash);
-    twap.analytics.onWrapSuccess(txHash);
-  });
+    },
+  );
 };
 
 export const useWrapOnly = () => {
@@ -137,60 +152,50 @@ export const useUnwrapToken = () => {
 };
 
 export const useApproveToken = () => {
-  const { account, isExactAppoval, web3, config, twap } = useWidgetContext();
+  const { account, isExactAppoval, web3, config, twap, onApproveSuccess, onApproveFailed } = useWidgetContext();
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
   const srcAmount = twap.values.srcAmount;
   const approvalAmount = isExactAppoval ? srcAmount : maxUint256;
 
-  return useMutation(async (token: TokenData) => {
-    if (!account) {
-      throw new Error("account is not defined");
-    }
+  return useMutation(
+    async (token: Token) => {
+      if (!account) {
+        throw new Error("account is not defined");
+      }
 
-    logger("approving token...");
+      logger("approving token...");
 
-    let txHash: string = "";
-    if (!hasWeb3Instance()) {
-      setWeb3Instance(web3);
-    }
-    const contract = erc20(token.symbol, token.address, token.decimals);
+      let txHash: string = "";
+      if (!hasWeb3Instance()) {
+        setWeb3Instance(web3);
+      }
+      const contract = erc20(token.symbol, token.address, token.decimals);
 
-    await sendAndWaitForConfirmations(
-      contract.methods.approve(config.twapAddress, BN(approvalAmount).decimalPlaces(0).toFixed(0)),
-      {
-        from: account,
-        maxPriorityFeePerGas: priorityFeePerGas,
-        maxFeePerGas,
-      },
-      undefined,
-      undefined,
-      {
-        onTxHash: (value) => {
-          txHash = value;
+      await sendAndWaitForConfirmations(
+        contract.methods.approve(config.twapAddress, BN(approvalAmount).decimalPlaces(0).toFixed(0)),
+        {
+          from: account,
+          maxPriorityFeePerGas: priorityFeePerGas,
+          maxFeePerGas,
         },
-      },
-    );
-    logger("token approve success:", txHash);
-    twap.analytics.onApproveSuccess(txHash);
-  });
-};
-const useUpdatedOrders = () => {
-  const { account, updateState, twap } = useWidgetContext();
-
-  const { data, updateData } = useOrdersHistory();
-  const reset = useRefetchBalances();
-  return useMutation({
-    mutationFn: async (order: { txHash: string; orderId?: number }) => {
-      if (!account) return;
-      const orders = await twap.orders.waitForCreatedOrder({ orderId: order.orderId, account, currentOrdersLength: data?.length });
-      updateData(orders);
-      updateState({
-        swapStatus: SwapStatus.SUCCESS,
-        createOrderSuccess: true,
-      });
-      reset();
+        undefined,
+        undefined,
+        {
+          onTxHash: (value) => {
+            txHash = value;
+          },
+        },
+      );
+      logger("token approve success:", txHash);
+      twap.analytics.onApproveSuccess(txHash);
+      onApproveSuccess?.(token!, txHash);
     },
-  });
+    {
+      onError: (error) => {
+        onApproveFailed?.((error as any).message);
+      },
+    },
+  );
 };
 
 const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
@@ -208,15 +213,13 @@ const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 };
 
 export const useSubmitOrderFlow = () => {
-  const { state, updateState, twap } = useWidgetContext();
-  
+  const { state, updateState, twap, onCreateOrderSuccess } = useWidgetContext();
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash, wrapSuccess, swapData } = state;
-
   const { data: haveAllowance, refetch: refetchAllowance } = query.useAllowance();
   const shouldWrap = useShouldWrap();
-  const { mutateAsync: updateOrders } = useUpdatedOrders();
+  const { mutateAsync: waitForNewOrderCallback } = useWaitForNewOrderCallback();
   const wToken = useNetwork()?.wToken;
-
+  const refetchBalances = useRefetchBalances();
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;
@@ -259,7 +262,13 @@ export const useSubmitOrderFlow = () => {
 
       updateState({ swapStep: SwapSteps.CREATE });
       const order = await createOrder(token);
-      await updateOrders(order);
+      onCreateOrderSuccess?.(swapData.srcToken!, swapData!.dstToken!, swapData.srcAmount!, swapData.outAmount!, order.orderId);
+      updateState({
+        swapStatus: SwapStatus.SUCCESS,
+      });
+      waitForNewOrderCallback(order.orderId);
+
+      await refetchBalances();
     },
     {
       onError(error) {

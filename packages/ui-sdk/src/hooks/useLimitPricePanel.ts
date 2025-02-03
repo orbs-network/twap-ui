@@ -38,7 +38,7 @@ export const useLimitPricePanel = (state: State, values: TwapValues, updateState
         .toString();
       updateState({ typedPrice: BN(value).decimalPlaces(6).toString() });
     },
-    [updateState, destToken, marketPrice, state.isInvertedLimitPrice]
+    [updateState, destToken, marketPrice, state.isInvertedLimitPrice],
   );
 
   const limitPrice = useMemo(() => {
@@ -68,7 +68,7 @@ export const useLimitPricePanel = (state: State, values: TwapValues, updateState
       if (BN(limitPrice || 0).isZero()) return false;
       return BN(p || 0).eq(percent);
     },
-    [limitPricePercent, limitPrice, priceDiffFromMarket]
+    [limitPricePercent, limitPrice, priceDiffFromMarket],
   );
 
   const percentList = useMemo(() => {
@@ -82,17 +82,14 @@ export const useLimitPricePanel = (state: State, values: TwapValues, updateState
   const resetButton = useMemo(() => {
     let text = "";
     let selected = false;
-    let isReset = false
-    if (BN(priceDiffFromMarket).isZero()  ||  percentList.includes(priceDiffFromMarket) || limitPricePercent) {
+    let isReset = false;
+    if (BN(priceDiffFromMarket).isZero() || percentList.includes(priceDiffFromMarket) || limitPricePercent) {
       text = "0%";
     } else {
       text = `${priceDiffFromMarket}%`;
       selected = true;
       isReset = true;
     }
-
-    console.log({priceDiffFromMarket});
-    
 
     return {
       text,
@@ -102,7 +99,7 @@ export const useLimitPricePanel = (state: State, values: TwapValues, updateState
     };
   }, [limitPricePercent, priceDiffFromMarket, onLimitPriceReset, percentList]);
 
-  const percentButtons = useMemo(()=> {
+  const percentButtons = useMemo(() => {
     const buttons = percentList.map((percent) => {
       return {
         text: `${BN(percent || 0).isZero() ? "" : isInvertedLimitPrice ? "-" : !isInvertedLimitPrice && "+"} ${Math.abs(Number(percent))} %`,

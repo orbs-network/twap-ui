@@ -24,7 +24,7 @@ const useTokenPanel = (isSrcToken?: boolean) => {
     (token: any) => {
       isSrcToken ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
     },
-    [isSrcToken, onSrcTokenSelected, onDstTokenSelected]
+    [isSrcToken, onSrcTokenSelected, onDstTokenSelected],
   );
 
   return {
@@ -83,10 +83,10 @@ const TokenPanelBalance = ({
   );
 };
 
-const TokenPanelUsd = ({ decimalScale = 2, className = ""}: { decimalScale?: number; className?: string}) => {
+const TokenPanelUsd = ({ decimalScale = 2, className = "" }: { decimalScale?: number; className?: string }) => {
   const { isSrcToken } = useTokenPanelContext();
   const { srcUsd, dstUsd } = useUsdAmount();
-  const {uiPreferences} = useWidgetContext();
+  const { uiPreferences } = useWidgetContext();
 
   const usd = useFormatNumber({ value: isSrcToken ? srcUsd : dstUsd, decimalScale });
 
@@ -162,9 +162,9 @@ const Main = ({ className = "" }: { className?: string }) => {
 };
 
 const TokenPanelLabel = () => {
-  const {translations} = useWidgetContext();
+  const { translations } = useWidgetContext();
   const { isSrcToken } = useTokenPanelContext();
- 
+
   return (
     <Label className="twap-token-panel-label">
       <StyledText>{isSrcToken ? translations.from : translations.to}</StyledText>
