@@ -298,8 +298,7 @@ const useUsd = () => {
 
   const srcAddress = isNativeAddress(tokens.srcAddress || "") ? wToken?.address : tokens.srcAddress;
   const dstAddress = isNativeAddress(tokens.dstAddress || "") ? wToken?.address : tokens.dstAddress;
-  console.log("srcAddress", srcAddress);
-  console.log("dstAddress", dstAddress);
+
 
   return {
     srcUsd: context.useUSD(srcAddress),

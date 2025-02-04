@@ -24,6 +24,7 @@ export const getDestTokenMinAmount = (srcChunkAmount?: string, limitPrice?: stri
 export const getDuration = (chunks: number, fillDelay: TimeDuration, customDuration?: TimeDuration): TimeDuration => {
   const minDuration = getTimeDurationMillis(fillDelay) * 2 * chunks;
   const unit = findTimeUnit(minDuration);
+
   return customDuration || { unit, value: Number(BN(minDuration / unit).toFixed(2)) };
 };
 
@@ -88,7 +89,7 @@ export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): Prepar
 export const derivedSwapValues = (
   config: Config,
   minChunkSizeUsd: number,
-  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, price: limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs,
+  { srcAmount, oneSrcTokenUsd, customChunks, isLimitPanel, srcDecimals, customFillDelay, customDuration, price: limitPrice, destDecimals, isMarketOrder }: DerivedSwapValuesArgs
 ): DerivedSwapValuesResponse => {
   const maxPossibleChunks = getMaxPossibleChunks(config, srcAmount, oneSrcTokenUsd, srcDecimals);
   const chunks = getChunks(maxPossibleChunks, isLimitPanel, customChunks);

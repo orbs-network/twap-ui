@@ -176,12 +176,12 @@ export const useToken = (isSrc?: boolean) => {
 
 export const useMinChunkSizeUsd = () => {
   const { state, config } = useTwapContext();
+  
   return Math.max(state.minChunkSizeUsd || 0, config?.minChunkSizeUsd || 0);
 };
 
 export const useMaxPossibleChunks = () => {
   const { maxPossibleChunks } = useDerivedSwapValues();
-
   return maxPossibleChunks;
 };
 
@@ -337,7 +337,7 @@ export const useTokenSelect = () => {
         onDstTokenSelected?.(token);
       }
     },
-    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens],
+    [onDstTokenSelected, onSrcTokenSelected, srcToken, dstToken, switchTokens]
   );
 };
 
@@ -388,7 +388,7 @@ export const useSetIsMarket = () => {
     (isMarketOrder?: boolean) => {
       updateState({ isMarketOrder: !!isMarketOrder });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -398,7 +398,7 @@ export const useSetFillDelay = () => {
     (typedFillDelay?: TimeDuration) => {
       updateState({ typedFillDelay });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -408,7 +408,7 @@ export const useSetDuration = () => {
     (typedDuration?: TimeDuration) => {
       updateState({ typedDuration });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -449,7 +449,7 @@ export const useSetLimitPrice = () => {
     (typedLimitPrice?: string, percent?: string) => {
       updateState({ typedLimitPrice, limitPricePercent: percent });
     },
-    [updateState],
+    [updateState]
   );
 };
 
@@ -604,7 +604,7 @@ export const useOnSrcAmountPercent = () => {
       const value = amountUiV2(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ srcAmountUi: value });
     },
-    [srcToken, maxAmount, srcBalance, updateState],
+    [srcToken, maxAmount, srcBalance, updateState]
   );
 };
 

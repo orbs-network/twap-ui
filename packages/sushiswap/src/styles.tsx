@@ -649,7 +649,9 @@ export const StyledTokenPanel = styled(Card)<{ error?: number }>(({ theme, error
   const isDarkMode = getStyles(theme).isDarkMode;
   const bg = isDarkMode ? "rgba(239,68,68,.2)" : "rgba(239,68,68,.2)";
   return {
-    background: error ? bg : "",
+    ".twap-card-body": {
+      background: error ? bg : "",
+    },
   };
 });
 

@@ -225,7 +225,6 @@ const useParsedTokens = () => {
 
 const useSelectedParsedTokens = () => {
   const context = useAdapterContext();
-  console.log(context);
 
   return useMemo(() => {
     return {

@@ -171,8 +171,8 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   const hideAmounts = !isSrcToken && !isLimitPanel;
 
   return (
-    <>
-      <StyledTokenPanel error={exceedsBalance ? 1 : 0}>
+    <StyledTokenPanel error={exceedsBalance ? 1 : 0}>
+      <Card.Body>
         <StyledTokenPanelLabel>{isSrcToken ? (!isLimitPanel ? "Allocate" : "Sell") : "Buy"}</StyledTokenPanelLabel>
         <TwapStyles.StyledColumnFlex gap={12}>
           <TwapStyles.StyledRowFlex style={{ marginTop: 8, justifyContent: "space-between" }}>
@@ -184,8 +184,8 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
             <Balance isSrc={isSrcToken} />
           </TwapStyles.StyledRowFlex>
         </TwapStyles.StyledColumnFlex>
-      </StyledTokenPanel>
-    </>
+      </Card.Body>
+    </StyledTokenPanel>
   );
 };
 
@@ -215,7 +215,7 @@ const useParseToken = () => {
         console.error("Invalid token", token);
       }
     },
-    [config.chainId, getTokenLogo],
+    [config.chainId, getTokenLogo]
   );
 };
 
@@ -265,7 +265,7 @@ const useIsNative = () => {
         return true;
       }
     },
-    [context.config.chainId],
+    [context.config.chainId]
   );
 };
 
@@ -650,7 +650,7 @@ const LimitPanelExpiration = () => {
     (unit: TimeUnit) => {
       setCustomDuration({ unit, value: 1 });
     },
-    [setCustomDuration],
+    [setCustomDuration]
   );
 
   return (

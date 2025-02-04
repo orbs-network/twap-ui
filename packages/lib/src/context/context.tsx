@@ -37,7 +37,6 @@ const WrappedTwap = (props: TwapLibProps) => {
       setCustomDuration({ unit: TimeUnit.Weeks, value: 1 });
     } else {
       updateState({ isMarketOrder: true });
-      setCustomDuration({ unit: TimeUnit.Minutes, value: 5 });
     }
   }, [isLimitPanel, updateState, setCustomDuration]);
 
