@@ -191,7 +191,6 @@ const Details = () => {
       ) : (
         <>
           <MarketPriceWarning />
-          <LimitPriceWarning />
           <OrderDisplay.Expiry deadline={deadline} />
           <OrderDisplay.ChunkSize srcChunkAmount={srcChunksAmountUI} chunks={chunks} srcToken={srcToken} />
           <OrderDisplay.ChunksAmount chunks={chunks} />

@@ -285,7 +285,7 @@ export const MarketPriceWarning = ({ className = "" }: { className?: string }) =
   );
 };
 
-export const LimitPriceWarning = ({ className = "" }: { className?: string }) => {
+export const LimitPriceWarningContent = ({ className = "" }: { className?: string }) => {
   const { translations: t, twap } = useWidgetContext();
   const isMarketOrder = twap.values.isMarketOrder;
   if (isMarketOrder) return null;
@@ -303,6 +303,18 @@ export const LimitPriceWarning = ({ className = "" }: { className?: string }) =>
         </>
       }
     />
+  );
+};
+
+export const LimitPriceWarning = () => {
+  return <div id="twap-limit-price-message"></div>;
+};
+
+export const LimitPriceWarningPortal = () => {
+  return (
+    <Portal containerId="twap-limit-price-message">
+      <LimitPriceWarningContent />
+    </Portal>
   );
 };
 

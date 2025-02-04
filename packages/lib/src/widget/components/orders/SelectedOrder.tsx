@@ -84,7 +84,6 @@ const StyledDetails = styled.div({
 });
 
 const OrderInfo = ({ order }: { order: Order }) => {
-  const isTwap = (order?.totalChunks || 0) > 1;
   const { config, useToken } = useWidgetContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
@@ -97,10 +96,10 @@ const OrderInfo = ({ order }: { order: Order }) => {
       <CreatedAt order={order} />
       <OrderDisplay.Expiry deadline={order?.deadline} />
       <AmountIn order={order} />
-      {isTwap && <OrderDisplay.ChunkSize chunks={order?.totalChunks} srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />}
-      {isTwap && <OrderDisplay.ChunksAmount chunks={order?.totalChunks} />}
+      <OrderDisplay.ChunkSize chunks={order?.totalChunks} srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />
+      <OrderDisplay.ChunksAmount chunks={order?.totalChunks} />
       <OrderDisplay.MinDestAmount totalChunks={order?.totalChunks} dstToken={dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={dstMinAmountOutUi} />
-      {isTwap && <OrderDisplay.TradeInterval chunks={order.totalChunks} fillDelayMillis={order?.getFillDelay(config)} />}
+      <OrderDisplay.TradeInterval chunks={order.totalChunks} fillDelayMillis={order?.getFillDelay(config)} />
       <OrderDisplay.Recipient />
       <OrderDisplay.TxHash txHash={order?.txHash} />
     </>
@@ -145,7 +144,7 @@ const StyledCancelOrderButton = styled(Button)({
 });
 
 const CreatedAt = ({ order }: { order: Order }) => {
-  const createdAtUi = useMemo(() => moment(order?.createdAt).format("DD/MM/YYYY HH:mm"), [order?.createdAt]);
+  const createdAtUi = useMemo(() => moment(order?.createdAt).format("ll HH:mm"), [order?.createdAt]);
   return (
     <OrderDisplay.DetailRow title="Created at">
       <StyledText>{createdAtUi}</StyledText>

@@ -5,7 +5,6 @@ import { useOrderHistoryContext } from "./context";
 import * as React from "react";
 import moment from "moment";
 import { Virtuoso } from "react-virtuoso";
-import { LinearProgress } from "@mui/material";
 import { Loader, TokenLogo } from "../../../components/base";
 import { useFormatNumber } from "../../../hooks";
 import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
@@ -42,7 +41,7 @@ export const OrderHistoryList = () => {
       <Virtuoso
         totalCount={size(orders)}
         overscan={10}
-        className="twap-order-history--list"
+        className="twap-order-history-list"
         style={{ height: "100%", width: "100%" }}
         itemContent={(index) => {
           const order = orders[index];
@@ -60,7 +59,7 @@ const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: nu
       <LinearProgressWithLabel value={order.progress || 0} />
       <StyledRowFlex className="twap-order-history-order-tokens">
         <TokenDisplay address={order.srcTokenAddress} />
-        <HiArrowRight className="twap-order-history-order-tokens-arrow" />
+        <HiArrowRight />
         <TokenDisplay address={order.dstTokenAddress} />
       </StyledRowFlex>
     </StyledListOrder>
@@ -193,15 +192,21 @@ const StyledTokenDisplay = styled(StyledRowFlex)({
 function LinearProgressWithLabel(props: { value: number }) {
   return (
     <StyledProgress className="twap-order-token-progress">
-      <div style={{ width: "100%" }}>
-        <LinearProgress variant="determinate" {...props} />
-      </div>
+      <Progress value={props.value} />
       <div className="twap-order-token-progress-label">
         <StyledText>{`${Math.round(props.value)}%`}</StyledText>
       </div>
     </StyledProgress>
   );
 }
+
+const Progress = ({ value }: { value: number }) => {
+  return (
+    <div className="twap-order-token-progress-bar">
+      <div className="twap-order-token-progress-bar-filled" style={{ width: `${value}%` }} />
+    </div>
+  );
+};
 
 const StyledProgress = styled(StyledRowFlex)({
   width: "100%",

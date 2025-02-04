@@ -24,7 +24,7 @@ const useTokenPanel = (isSrcToken?: boolean) => {
     (token: any) => {
       isSrcToken ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
     },
-    [isSrcToken, onSrcTokenSelected, onDstTokenSelected]
+    [isSrcToken, onSrcTokenSelected, onDstTokenSelected],
   );
 
   return {

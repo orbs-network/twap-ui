@@ -79,7 +79,7 @@ const StyledContainer = styled(StyledColumnFlex)<{ order: number }>(({ order }) 
   return {
     width: "100%",
     position: "relative",
-    height: order ? "auto" : "500px",
+    height: order ? "auto" : "700px",
     maxHeight: "90vh",
   };
 });

@@ -175,8 +175,9 @@ const DappComponent = () => {
           <StyledDragonPanel>
             <TWAPComponent limit={selected === SelectorOption.LIMIT} />
           </StyledDragonPanel>
-          <Widget.Orders />
           <Widget.PoweredByOrbs />
+          <Widget.Orders />
+          <Widget.LimitPriceWarning />
         </StyledDragonLayout>
       </StyledDragonswap>
     </DappProvider>

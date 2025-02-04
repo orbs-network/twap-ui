@@ -21,6 +21,8 @@ export const useConfirmationButton = () => {
     },
     marketPrice,
   } = useWidgetContext();
+  console.log({hasErrors});
+  
   const { onOpen } = useSwapModal();
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
   const shouldUnwrap = useShouldUnwrap();

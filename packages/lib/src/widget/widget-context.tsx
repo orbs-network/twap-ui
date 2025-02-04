@@ -11,6 +11,7 @@ import { styled } from "@mui/material";
 import { Orders } from "./components/orders/Orders";
 import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
 import { PoweredbyOrbsWithPortal } from "./components/powered-by-orbs";
+import { LimitPriceWarningPortal } from "../components";
 
 export const WidgetContext = createContext({} as WidgetContextType);
 const queryClient = new QueryClient({
@@ -117,6 +118,7 @@ export const WidgetProvider = (props: WidgetProps) => {
           <Orders />
           <SubmitOrderModal />
           <PoweredbyOrbsWithPortal />
+          <LimitPriceWarningPortal />
           {props.withStyles ? <Container className="twap-widget">{props.children}</Container> : <div className="twap-widget">{props.children}</div>}
         </TwapErrorWrapper>
       </WidgetContext.Provider>

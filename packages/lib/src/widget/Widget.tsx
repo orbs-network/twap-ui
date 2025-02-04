@@ -13,6 +13,7 @@ import { ErrorMessage } from "./components/error-message";
 import { OrdersPortal } from "./components/orders/Orders";
 import { PoweredByOrbsPortal } from "./components/powered-by-orbs";
 import { PriceSwitch } from "./components/price-switch";
+import { LimitPriceWarning } from "../components";
 
 const Widget = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
@@ -32,5 +33,5 @@ Widget.SwitchTokens = SwitchTokens;
 Widget.ErrorMessage = ErrorMessage;
 Widget.Message = WidgetMessage;
 Widget.PriceSwitch = PriceSwitch;
-
+Widget.LimitPriceWarning = LimitPriceWarning;
 export { Widget };

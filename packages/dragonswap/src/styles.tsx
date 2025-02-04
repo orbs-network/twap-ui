@@ -209,14 +209,48 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-order-token-progress-bar": {
+      flex:1,
+      height:4,
+      position:'relative',
+      background:styles.darkText,
+      overflow:'hidden',
+      borderRadius: 20
+    },
+    ".twap-order-token-progress-bar-filled": {
+      position:'absolute',
+      left: 0,
+      height: '100%',
+      background: 'rgb(36 99 235)'
+    },
+    ".twap-order-history-list": {
+      "&::-webkit-scrollbar": {
+        display: "none",
+      },
+    },
+    ".twap-limit-price-message": {
+      background: "#24366D",
+      color: styles.textColor,
+      padding: 16,
+      borderRadius: 20,
+      a: {
+        color: styles.textColor,
+      },
+    },
     ".twap-orders-selected-order-bottom": {
       marginTop: 15,
     },
+    ".twap-select-menu-list-item": {
+      textTransform:'capitalize'
+    },
     ".twap-orders-selected-order-details": {
       gap: 8,
+      padding: 12,
+      paddingTop: 0,
+      paddingBottom: 0
     },
     ".twap-orders-selected-order-details-expanded ": {
-      paddingTop: 10,
+      paddingBottom: 12
     },
     ".twap-order-display-details-row": {
       ".twap-label": {
@@ -283,10 +317,13 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       textTransform: "uppercase" as const,
       opacity: 1,
     },
+    ".twap-orders-selected-order-summary":{
+      padding: 12
+    },
+
     ".twap-order-display-details": {
       background: styles.color2,
       borderRadius: 8,
-      padding: 12,
       gap: 8,
       ".twap-label": {
         color: "rgb(146 197 253)",
@@ -316,6 +353,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       ".twap-order-display-details": {
         marginTop: 15,
         marginBottom: 15,
+        padding: 12
       },
       ".twap-order-modal-disclaimer": {
         p: { color: styles.textColor },
@@ -338,7 +376,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
 
     ".twap-order-history-button": {
-      background: styles.color2,
+      background: "#24366D",
       borderRadius: 20,
       padding: 16,
       transition: "0.2s all",
