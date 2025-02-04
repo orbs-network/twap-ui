@@ -40,10 +40,7 @@ export const useGetTokens = ({
   modifyList?: (list: any) => any;
   modifyFetchResponse?: (res: any) => any;
 }) => {
-  const { account } = useWeb3React();
-  const { isInValidNetwork } = useNetwork(chainId);
   const addedTokens = useAddedTokens();
-  const lib = store.useTwapStore((s) => s.lib);
   return useQuery(
     ["useGetTokens", chainId, _.size(addedTokens)],
     async () => {
@@ -68,7 +65,7 @@ export const useGetTokens = ({
 
       return modifyList ? modifyList(_tokens) : _tokens;
     },
-    { enabled: !!account && !isInValidNetwork && !!lib, staleTime: Infinity }
+    { staleTime: Infinity }
   );
 };
 

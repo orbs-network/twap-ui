@@ -98,5 +98,7 @@
   "view": "View",
   "days-short": "Days",
   "hours-short": "Hrs",
-  "minutes-short": "Min"
+  "minutes-short": "Min",
+  "limitPriceMessage": "Limit orders may not execute when the token's price is equal or close to the limit price, due to gas and standard swap fees.",
+  "learnMore": "Learn more"
 }

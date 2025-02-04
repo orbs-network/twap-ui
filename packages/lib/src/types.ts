@@ -100,6 +100,8 @@ export interface Translations {
   viewOrders: string;
   view: string;
   estimate: string;
+  limitPriceMessage: string;
+  learnMore: string;
 }
 
 export interface BaseComponentProps {

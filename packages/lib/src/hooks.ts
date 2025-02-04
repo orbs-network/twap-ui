@@ -1424,10 +1424,6 @@ export const useDurationUi = () => {
   }));
   const chunks = useChunks();
   return useMemo(() => {
-    if (!lib) {
-      return { resolution: TimeResolution.Minutes, amount: 0 };
-    }
-
     if (customDuration.amount !== undefined) return customDuration;
 
     const _millis = fillDelayUiMillis * 2 * chunks;

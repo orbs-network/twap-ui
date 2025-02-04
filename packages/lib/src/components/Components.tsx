@@ -23,6 +23,8 @@ import { useTwapContext } from "../context";
 import { AiOutlineWarning } from "@react-icons/all-files/ai/AiOutlineWarning";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import { HiSwitchHorizontal } from "@react-icons/all-files/hi/HiSwitchHorizontal";
+import { IoWarning } from "@react-icons/all-files/io5/IoWarning";
+
 import { IconType } from "@react-icons/all-files";
 import {
   useLoadingState,
@@ -365,11 +367,6 @@ export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; 
   const { leftToken, rightToken } = usePriceInvert(priceUI, srcToken, dstToken);
 
   const loadingState = useLoadingState();
-  const isLoading = loadingState.srcUsdLoading || loadingState.dstUsdLoading;
-  const { translations, marketPriceLoading } = useTwapContext();
-
-  const selectTokensWarning = !leftToken || !rightToken;
-
   const onSetLimitOrder = useCallback(
     (value?: boolean) => {
       setLimitOrder(value);
@@ -378,11 +375,7 @@ export function LimitPriceToggle({ variant, style }: { variant?: SwitchVariant; 
     [setLimitOrder, onReset]
   );
 
-  return (
-    <Tooltip text={marketPriceLoading ? `${translations.loading}...` : selectTokensWarning ? translations.selectTokens : ""}>
-      <Switch style={style} variant={variant} disabled={!!selectTokensWarning || isLoading} value={isLimitOrder} onChange={onSetLimitOrder} />
-    </Tooltip>
-  );
+  return <Switch style={style} variant={variant} value={isLimitOrder} onChange={onSetLimitOrder} />;
 }
 
 export function LimitPriceRadioGroup({ className }: { className?: string }) {
@@ -1344,4 +1337,23 @@ export const LimitInputV2 = () => {
   const { onChange, priceUI: limitPrice, isLoading } = useTradePrice();
 
   return <NumericInput loading={isLoading} placeholder={""} onChange={onChange} value={limitPrice} />;
+};
+
+export const LimitPriceMessage = ({ className }: { className?: string }) => {
+  const { translations: t } = useTwapContext();
+  const isLimitOrder = useTwapStore((s) => s.isLimitOrder);
+
+  if (!isLimitOrder) return null;
+
+  return (
+    <div className={`${className} twap-limit-price-message`}>
+      <IoWarning />
+      <StyledText>
+        {t.limitPriceMessage}{" "}
+        <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">
+          {t.learnMore}
+        </a>
+      </StyledText>
+    </div>
+  );
 };

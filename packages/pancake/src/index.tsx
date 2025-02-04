@@ -263,7 +263,7 @@ const useHandleAddress = (connectedChainId?: number) => {
 
 const useTrade = () => {
   const { srcToken, dstToken } = useParsedSelectedTokens();
-  const { useTrade, connectedChainId } = useAdapterContext();
+  const { useTrade, connectedChainId, account } = useAdapterContext();
 
   const srcAmountUi = store.useTwapStore((s) => s.srcAmountUi);
   const amount = hooks.useAmountBN(srcAmountUi || "1", srcToken?.decimals);
@@ -272,7 +272,7 @@ const useTrade = () => {
 
   return {
     outAmount: res?.outAmount,
-    isLoading: !srcToken || !dstToken ? false : res?.isLoading,
+    isLoading: !account ? false : !srcToken || !dstToken ? false : res?.isLoading,
   };
 };
 
@@ -489,6 +489,7 @@ const TWAPPanel = () => {
       </StyledColumnFlex>
       <SwapModal />
       <StyledPoweredBy />
+      <Components.LimitPriceMessage />
     </div>
   );
 };

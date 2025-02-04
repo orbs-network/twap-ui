@@ -18,7 +18,7 @@ import { useSnackbar } from "notistack";
 
 const useConfig = () => {
   const { chainId } = useWeb3React();
-  return usePancakeConfig(chainId);
+  return usePancakeConfig(chainId || Configs.PancakeSwap.chainId);
 };
 
 const useParseListToken = () => {
@@ -48,32 +48,33 @@ const useParseListToken = () => {
 export const useDappTokens = () => {
   const parse = useParseListToken();
   const config = useConfig();
+  const { account } = useWeb3React();
 
   const { url, baseAssets } = useMemo(() => {
     switch (config.chainId) {
       case Configs.Lynex.chainId:
         return {
           url: "https://tokens.pancakeswap.finance/pancakeswap-linea-default.json",
-          baseAssets: erc20s.linea,
+          baseAssets: account ? erc20s.linea : [],
         };
       case Configs.BaseSwap.chainId:
         return {
           url: "https://tokens.pancakeswap.finance/pancakeswap-base-default.json",
-          baseAssets: erc20s.linea,
+          baseAssets: account ? erc20s.linea : [],
         };
       case Configs.Arbidex.chainId:
         return {
           url: "https://tokens.pancakeswap.finance/pancakeswap-arbitrum-default.json",
-          baseAssets: erc20s.linea,
+          baseAssets: account ? erc20s.linea : [],
         };
 
       default:
         return {
           url: "https://tokens.pancakeswap.finance/pancakeswap-extended.json",
-          baseAssets: erc20s.bsc,
+          baseAssets: account ? erc20s.bsc : [],
         };
     }
-  }, [config.chainId]);
+  }, [config.chainId, account]);
 
   return useGetTokens({
     chainId: config.chainId,
@@ -333,6 +334,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { isDarkTheme } = useTheme();
   const { account, library, chainId } = useWeb3React();
   const { data: dappTokens } = useDappTokens();
+
   const isMobile = useIsMobile();
   const config = useConfig();
   const { srcToken, onDstTokenSelected, onSrcTokenSelected, dstToken } = useAppContext();

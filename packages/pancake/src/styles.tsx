@@ -96,6 +96,28 @@ export const configureStyles = (theme: Theme) => {
   const darkMode = isDarkMode(theme);
 
   return {
+    ".twap-limit-price-message": {
+      display: "flex",
+      alignItems: "flex-start",
+      gap: "8px",
+      ...getContainerStyles(theme),
+      padding: 14,
+      p: {
+        flex: 1,
+        color: styles.primaryTextColor,
+        fontSize: 14,
+      },
+      a: {
+        color: styles.primaryTextColor,
+      },
+      svg: {
+        color: styles.primaryTextColor,
+        width: 18,
+        height: 18,
+        position: "relative",
+        top: 4,
+      },
+    },
     ".twap-submit-order-content": {
       "*": {
         fontFamily: "inherit!important",
