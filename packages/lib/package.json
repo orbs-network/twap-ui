@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui",
-  "version": "2.0.54",
+  "version": "3.0.0",
   "description": "TWAP UI",
   "license": "MIT",
   "author": "Orbs",
@@ -24,8 +24,8 @@
     "@defi.org/web3-candies": "^5.0.6",
     "@orbs-network/swap-ui": "^0.0.19",
     "@orbs-network/twap": "^2.3.0",
-    "@orbs-network/twap-sdk": "^2.0.54",
-    "@orbs-network/twap-ui-sdk": "^2.0.54",
+    "@orbs-network/twap-sdk": "^3.0.0",
+    "@orbs-network/twap-ui-sdk": "^3.0.0",
     "@react-icons/all-files": "^4.1.0",
     "@tanstack/react-query": "4.x",
     "bignumber.js": "9.x",
