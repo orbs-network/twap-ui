@@ -428,9 +428,6 @@ export const useTradeDurationWarning = () => {
     if (durationMillis < MIN_DURATION_MILLIS) {
       return translations.minDurationWarning.replace("{duration}", MIN_DURATION_MILLIS_FORMATTED.toString());
     }
-    if (durationMillis > MAX_DURATION_MILLIS) {
-      return translations.maxDurationWarning;
-    }
   }, [durationMillis, translations, state.customDuration]);
 };
 
