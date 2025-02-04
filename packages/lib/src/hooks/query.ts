@@ -10,7 +10,7 @@ import { amountBNV2, compact, getTheGraphUrl, groupBy, logger, orderBy } from ".
 import { ExtendsOrderHistory, HistoryOrder, OrdersData, Status, Token } from "../types";
 import { useGetHasAllowance, useGetTokenFromParsedTokensList, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
-import { getGraphOrders } from "../order-history";
+import { getGraphOrders, waitForCancelledOrder } from "../order-history";
 import { useSrcAmount } from "./lib";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
@@ -197,31 +197,20 @@ const useUpdateOrderStatusToCanceled = () => {
   const QUERY_KEY = useOrderHistoryKey();
   const queryClient = useQueryClient();
   const config = useTwapContext().config;
+  const { account } = useTwapContext();
 
   return useCallback(
-    (orderId: number) => {
+    async (orderId: number) => {
       try {
-        ordersStore.cancelOrder(config.chainId, orderId);
-        queryClient.setQueryData(QUERY_KEY, (prev?: any) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            [Status.Open]: prev[Status.Open].map((o: HistoryOrder) => {
-              if (o.id === orderId) {
-                return {
-                  ...o,
-                  status: Status.Canceled,
-                };
-              }
-              return o;
-            }),
-          };
-        });
-      } catch (error) {
-        console.error(error);
-      }
+        const endpoint = getTheGraphUrl(config.chainId);
+        if (!endpoint || !account) return;
+        const orders = await waitForCancelledOrder(orderId, endpoint, account);
+        if (orders) {
+          queryClient.setQueryData(QUERY_KEY, orders);
+        }
+      } catch (error) {}
     },
-    [QUERY_KEY, queryClient, config],
+    [QUERY_KEY, queryClient, config, account],
   );
 };
 
@@ -229,7 +218,6 @@ export const useOrdersHistory = () => {
   const { state, config, account } = useTwapContext();
 
   const QUERY_KEY = useOrderHistoryKey();
-  const getTokensFromTokensList = useGetTokenFromParsedTokensList();
 
   const query = useQuery<OrdersData>(
     QUERY_KEY,
@@ -243,7 +231,6 @@ export const useOrdersHistory = () => {
       try {
         const ids = orders.map((o) => o.id);
         let chainOrders = ordersStore.orders[config.chainId];
-
         chainOrders.forEach((o: any) => {
           if (!ids.includes(Number(o.id))) {
             orders.push(o);
@@ -255,6 +242,7 @@ export const useOrdersHistory = () => {
       logger("all orders", orders);
 
       orders = orders.filter((o) => eqIgnoreCase(config.exchangeAddress, o.exchange || ""));
+
       logger("filtered orders by exchange address", config.exchangeAddress, orders);
       orders = orderBy(orders, (o) => o.createdAt, "desc");
       orders = groupBy(orders, "status");

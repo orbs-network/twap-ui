@@ -400,13 +400,13 @@ export const useCancelOrder = () => {
         maxPriorityFeePerGas: priorityFeePerGas,
         maxFeePerGas,
       });
+      await onCancelOrder(orderId);
       console.log(`order canceled`);
     },
     {
       onSuccess: (_, orderId) => {
         logger(`order canceled`);
         analytics.onCancelOrderSuccess();
-        onCancelOrder(orderId);
       },
       onError: (error: Error) => {
         console.log(`cancel error order`, error);

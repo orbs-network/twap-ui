@@ -39,6 +39,26 @@ export const useDstBalance = () => {
   return query.useBalance(dstToken);
 };
 
+const calculateRequiredDecimals = (value: string | number, maxDecimals = 18, minDecimals = 2) => {
+  try {
+    let decimalScale = minDecimals;
+
+    while (decimalScale <= maxDecimals) {
+      const formattedValue = Number(value).toFixed(decimalScale);
+
+      if (parseFloat(formattedValue) !== 0) {
+        return decimalScale; // Return when a non-zero value is found
+      }
+
+      decimalScale++;
+    }
+
+    return maxDecimals; // Return max if all decimals are zero
+  } catch (error) {
+    return 0;
+  }
+};
+
 export const useFormatNumber = ({
   value,
   decimalScale = 3,
@@ -52,13 +72,14 @@ export const useFormatNumber = ({
   suffix?: string;
   disableDynamicDecimals?: boolean;
 }) => {
+  const decimals = useMemo(() => calculateRequiredDecimals(value || "") + decimalScale, [value, decimalScale]);
   const { disableThousandSeparator } = useTwapContext().uiPreferences;
   const result = useNumericFormat({
     allowLeadingZeros: true,
     thousandSeparator: disableThousandSeparator ? "" : ",",
     displayType: "text",
     value: value || "",
-    decimalScale: decimalScale || 18,
+    decimalScale: decimals,
     prefix,
     suffix,
   });

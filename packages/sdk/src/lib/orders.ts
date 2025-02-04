@@ -414,6 +414,18 @@ export const waitForOrdersUpdate = async (config: Config, orderId: number, accou
   }
 };
 
+
+
+export const waitForCancelledOrder = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
+  for (let i = 0; i < 20; i++) {
+    const orders = await getOrders({ exchangeAddress: config.exchangeAddress, account, signal, chainId: config.chainId });
+    if (orders.find((o) => o.id === orderId && o.status === OrderStatus.Canceled)) {
+      return orders;
+    }
+    await delay(3_000);
+  }
+}
+
 export interface GroupedOrders {
   [OrderStatus.All]?: Order[];
   [OrderStatus.Open]?: Order[];

@@ -69,28 +69,47 @@ export const graphCreatedOrders = async ({ account, endpoint, signal }: { accoun
 };
 
 const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortSignal) => {
-  const query = `
-    {
-        statuses(where:{id_in: [${ids.map((id) => `"${id}"`)}]}) {
-          id
-          status
-        }
+  const LIMIT = 100;
+  let statuses: any = [];
+
+  const fetchStatuses = async (page = 0) => {
+    const query = `{
+      statuses(skip: ${page * LIMIT}, where: { id_in: [${ids.map((id) => `"${id}"`).join(",")}] }) {
+        id
+        status
       }
-      `;
+    }`;
 
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      body: JSON.stringify({ query }),
-      signal,
-    });
-    const payload = await response.json();
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+        signal,
+      });
 
-    return payload.data.statuses.reduce((result: { [key: string]: string }, item: any) => {
-      result[item.id] = item.status;
-      return result;
-    }, {});
-  } catch (error) {}
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+      const payload = await response.json();
+      const result = payload?.data?.statuses || [];
+
+      statuses.push(...result);
+
+      if (result.length >= LIMIT) {
+        await fetchStatuses(page + 1);
+      }
+    } catch (error) {
+      console.error("Error fetching statuses:", error);
+    }
+  };
+
+  await fetchStatuses();
+
+  const res = statuses.reduce((result: { [key: string]: string }, item: any) => {
+    result[item.id] = item.status;
+    return result;
+  }, {});
+  return res;
 };
 
 export type ParsedOrder = ReturnType<any>;
@@ -172,6 +191,7 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
 export const getGraphOrders = async (endpoint: string, account: string, signal?: AbortSignal): Promise<HistoryOrder[]> => {
   const args = { account, endpoint, signal };
   const [orders, fills] = await Promise.all([graphCreatedOrders(args), graphOrderFills(args)]);
+
   const ids = orders.map((order: any) => order.Contract_id);
   let statuses: any = {};
 
@@ -208,4 +228,26 @@ export const getGraphOrders = async (endpoint: string, account: string, signal?:
         .toNumber(),
     };
   });
+};
+
+const delay = (ms: number): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+export const waitForCancelledOrder = async (
+  orderId: number,
+  endpoint: string,
+  account: string,
+  signal?: AbortSignal,
+  maxRetries: number = 20,
+  delayMs: number = 3000,
+): Promise<any[]> => {
+  for (let i = 0; i < maxRetries; i++) {
+    const orders = await getGraphOrders(endpoint, account, signal);
+    if (orders.some((o) => o.id === orderId && o.status === Status.Canceled)) {
+      return orders;
+    }
+    await delay(delayMs);
+  }
+  return [];
 };
