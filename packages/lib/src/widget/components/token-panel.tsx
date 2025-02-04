@@ -24,7 +24,7 @@ const useTokenPanel = (isSrcToken?: boolean) => {
     (token: any) => {
       isSrcToken ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
     },
-    [isSrcToken, onSrcTokenSelected, onDstTokenSelected],
+    [isSrcToken, onSrcTokenSelected, onDstTokenSelected]
   );
 
   return {
@@ -42,7 +42,7 @@ export const TokenPanel = ({ isSrcToken, children, className = "" }: { isSrcToke
     twap: { errors },
   } = useWidgetContext();
 
-  const error = errors.tradeSize?.text || balanceError;
+  const error = (!errors.chunks && errors.tradeSize?.text) || balanceError;
 
   return (
     <Panel className={`${className} twap-token-panel`} error={Boolean(error && isSrcToken)}>
