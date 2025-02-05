@@ -1,16 +1,12 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { styled } from "styled-components";
-import { useTwapContext } from "../../context/context";
+import { useWidgetContext } from "../..";
 import { ButtonProps } from "../../types";
 import { Spinner } from "./Spinner";
 
 function Button(props: ButtonProps) {
+  const CustomButton = useWidgetContext().components.Button;
   const { children, disabled = false, onClick, loading = false, className = "", allowClickWhileLoading } = props;
-  const Components = useTwapContext().Components;
-
-  if (Components?.Button) {
-    return <Components.Button {...props}>{children}</Components.Button>;
-  }
 
   const _disabled = useMemo(() => {
     if (disabled) {
@@ -21,6 +17,11 @@ function Button(props: ButtonProps) {
     }
     return false;
   }, [allowClickWhileLoading, disabled, loading]);
+
+  if (CustomButton) {
+    return <CustomButton {...props} />;
+  }
+
   return (
     <StyledContainer
       onClick={onClick}
@@ -50,12 +51,9 @@ const StyledContainer = styled("button")<{ disabled: boolean }>(({ disabled }) =
   position: "relative",
   width: "100%",
   border: "unset",
-  fontWeight: 600,
   cursor: disabled ? "unset" : "pointer",
-  fontSize: 16,
   opacity: disabled ? 0.6 : 1,
   transition: "0.2s all",
-  padding: 0,
 }));
 
 const StyledChildren = styled("div")({});

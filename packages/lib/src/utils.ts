@@ -4,7 +4,6 @@ import { AddressPadding, Translations } from "./types";
 import BN from "bignumber.js";
 import { networks, THE_GRAPH_ORDERS_API } from "./config";
 import { Config } from "@orbs-network/twap-sdk";
-import { EXPLORER_URLS } from "./consts";
 export const logger = (...args: any[]) => {
   // let debug;
   // if (window) {
@@ -39,7 +38,7 @@ export const copy: CopyFn = async (text) => {
 
 export const makeElipsisAddress = (address?: string, padding?: AddressPadding): string => {
   if (!address) return "";
-  return `${address.substring(0, padding?.start || 4)}...${address.substring(address.length - (padding?.end || 3))}`;
+  return `${address.substring(0, padding?.start || 6)}...${address.substring(address.length - (padding?.end || 5))}`;
 };
 
 export const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));
@@ -159,11 +158,6 @@ export const formatDecimals = (value?: string | BN | number, decimalPlaces?: num
   const res = BN(value).gt(1) && index >= 1 ? 0 : index > 8 ? 0 : index + decimals;
 
   return BN(value).decimalPlaces(res, BN.ROUND_DOWN).toString();
-};
-
-export const getExplorerUrl = (chainId?: number) => {
-  if (!chainId) return;
-  return EXPLORER_URLS[chainId as keyof typeof EXPLORER_URLS];
 };
 
 export const isTxRejected = (error: any) => {

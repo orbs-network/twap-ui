@@ -1,101 +1,97 @@
 import { useMemo } from "react";
-import { useTwapContext } from "../context/context";
-import { query } from "./query";
 import BN from "bignumber.js";
 import { useUnwrapToken, useWrapOnly } from "./useTransactions";
 import { useSwapModal } from "./useSwapModal";
-import { isNil } from "../utils";
 import { useChangeNetwork, useSrcBalance } from "./hooks";
-import { useNoLiquidity, useOutAmount, useShouldOnlyWrap, useShouldUnwrap, useSwapWarning } from "./lib";
+import { useBalanceWaning, useShouldOnlyWrap, useShouldUnwrap } from "./lib";
+import { useWidgetContext } from "..";
+import { useFeeOnTransfer } from "./useFeeOnTransfer";
 
-export const useConfirmationButton = (connect?: () => void) => {
-  const { translations, isWrongChain, state, srcToken, dstToken, srcUsd, account } = useTwapContext();
-  const { swapState } = state;
-  const createOrderLoading = swapState === "loading";
+export const useConfirmationButton = () => {
+  const {
+    isWrongChain,
+    srcUsd,
+    account: maker,
+    translations,
+    connect,
+    srcToken,
+    dstToken,
+    twap: {
+      errors: { hasErrors },
+    },
+    marketPrice,
+  } = useWidgetContext();
+
   const { onOpen } = useSwapModal();
-  const outAmountLoading = useOutAmount().isLoading;
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
-  const noLiquidity = useNoLiquidity();
   const shouldUnwrap = useShouldUnwrap();
   const usdLoading = BN(srcUsd || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
-  const warning = useSwapWarning();
-  const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);
-  const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(dstToken?.address);
+  const balanceError = useBalanceWaning();
+  const { isLoading: srcTokenFeeLoading } = useFeeOnTransfer(srcToken?.address);
+  const { isLoading: dstTokenFeeLoading } = useFeeOnTransfer(dstToken?.address);
   const shouldOnlyWrap = useShouldOnlyWrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
 
-  const hasWarning = useMemo(() => {
-    return !Object.values(warning).every((value) => value === undefined);
-  }, [warning]);
+  const isLoading = useMemo(() => {
+    if (!srcToken || !dstToken) return false;
+    return usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading || BN(marketPrice || 0).isZero();
+  }, [usdLoading, srcBalanceLoading, srcTokenFeeLoading, dstTokenFeeLoading, marketPrice, srcToken, dstToken]);
 
-  const maker = account;
-  const disableWhileLaoding = outAmountLoading || usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading;
+  return useMemo(() => {
+    if (isWrongChain)
+      return {
+        text: translations.switchNetwork,
+        onClick: changeNetwork,
+        loading: changeNetworkLoading,
+        disabled: changeNetworkLoading,
+      };
+    if (!maker)
+      return {
+        text: translations.connect,
+        onClick: () => {
+          if (!connect) {
+            alert("connect function is not defined");
+          } else {
+            connect();
+          }
+        },
+        loading: false,
+        disabled: false,
+      };
 
-  if (createOrderLoading) {
+    if (shouldOnlyWrap || shouldUnwrap) {
+      return {
+        text: shouldOnlyWrap ? translations.wrap : translations.unwrap,
+        onClick: shouldOnlyWrap ? wrap : unwrap,
+        disabled: false,
+        loading: wrapLoading || unwrapLoading,
+      };
+    }
+
     return {
-      text: translations.placingOrder,
+      text: translations.placeOrder,
       onClick: onOpen,
-      loading: false,
-      disabled: false,
+      loading: isLoading,
+      disabled: isLoading || hasErrors || !!balanceError,
     };
-  }
-  if (isWrongChain)
-    return {
-      text: translations.switchNetwork,
-      onClick: changeNetwork,
-      loading: changeNetworkLoading,
-      disabled: changeNetworkLoading,
-    };
-  if (!maker && connect)
-    return {
-      text: translations.connect,
-      onClick: connect,
-      loading: false,
-      disabled: false,
-    };
-
-  if (hasWarning)
-    return {
-      text: warning.zeroSrcAmount ? warning.zeroSrcAmount : warning.balance || translations.placeOrder,
-      onClick: undefined,
-      disabled: true,
-      loading: false,
-    };
-  if (disableWhileLaoding) {
-    return { text: translations.placeOrder, onClick: undefined, loading: true };
-  }
-
-  if (noLiquidity) {
-    return {
-      text: translations.noLiquidity,
-      disabled: true,
-      loading: false,
-    };
-  }
-
-  if (shouldOnlyWrap) {
-    return {
-      text: translations.wrap,
-      onClick: wrap,
-      disabled: false,
-      loading: wrapLoading,
-    };
-  }
-  if (shouldUnwrap) {
-    return {
-      text: translations.unwrap,
-      onClick: unwrap,
-      disabled: false,
-      loading: unwrapLoading,
-    };
-  }
-
-  return {
-    text: translations.placeOrder,
-    onClick: onOpen,
-    loading: false,
-    disabled: false,
-  };
+  }, [
+    isWrongChain,
+    maker,
+    connect,
+    isLoading,
+    shouldOnlyWrap,
+    wrap,
+    wrapLoading,
+    shouldUnwrap,
+    unwrap,
+    unwrapLoading,
+    translations,
+    changeNetwork,
+    changeNetworkLoading,
+    onOpen,
+    hasErrors,
+    balanceError,
+  ]);
 };

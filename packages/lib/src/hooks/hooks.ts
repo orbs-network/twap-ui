@@ -1,13 +1,13 @@
-import { useTwapContext } from "../context/context";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BN from "bignumber.js";
-import { Token } from "../types";
-import { eqIgnoreCase, switchMetaMaskNetwork, isNativeAddress, Abi, erc20, network } from "@defi.org/web3-candies";
+import { switchMetaMaskNetwork, isNativeAddress, Abi, erc20, network, TokenData } from "@defi.org/web3-candies";
 import { useNumericFormat } from "react-number-format";
-import { amountBNV2, amountUiV2, formatDecimals, getExplorerUrl, makeElipsisAddress } from "../utils";
-import { query, useOrdersHistory } from "./query";
+import { amountBNV2, amountUiV2, formatDecimals } from "../utils";
 import { TwapAbi, groupOrdersByStatus, OrderStatus } from "@orbs-network/twap-sdk";
 import { networks } from "../config";
+import { useWidgetContext } from "../widget/widget-context";
+import { useBalance } from "./useBalance";
+import { useOrderHistoryManager } from "./useOrderHistoryManager";
 
 export const useRefetchBalances = () => {
   const { refetch: refetchSrcBalance } = useSrcBalance();
@@ -18,58 +18,22 @@ export const useRefetchBalances = () => {
   }, [refetchSrcBalance, refetchDstBalance]);
 };
 
-export const useResetAfterSwap = () => {
-  const refetchBalances = useRefetchBalances();
-
-  return useCallback(async () => {
-    // resetAfterSwap();
-    await refetchBalances();
-  }, [refetchBalances]);
-};
-
 export const useSrcBalance = () => {
-  const srcToken = useTwapContext().srcToken;
-  return query.useBalance(srcToken);
+  const srcToken = useWidgetContext().srcToken;
+  return useBalance(srcToken);
 };
 
 export const useDstBalance = () => {
-  const dstToken = useTwapContext().dstToken;
-  return query.useBalance(dstToken);
+  const dstToken = useWidgetContext().dstToken;
+  return useBalance(dstToken);
 };
 
-export const useFormatNumber = ({
-  value,
-  decimalScale = 3,
-  prefix,
-  suffix,
-  disableDynamicDecimals = true,
-}: {
-  value?: string | number;
-  decimalScale?: number;
-  prefix?: string;
-  suffix?: string;
-  disableDynamicDecimals?: boolean;
-}) => {
-  const { disableThousandSeparator } = useTwapContext().uiPreferences;
-  const result = useNumericFormat({
-    allowLeadingZeros: true,
-    thousandSeparator: disableThousandSeparator ? "" : ",",
-    displayType: "text",
-    value: value || "",
-    decimalScale: decimalScale || 18,
-    prefix,
-    suffix,
-  });
-
-  return result.value?.toString();
-};
-
-export const useFormatNumberV2 = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
+export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
+  const { input } = useWidgetContext().uiPreferences;
   const _value = useFormatDecimals(value, decimalScale);
-  const { disableThousandSeparator } = useTwapContext().uiPreferences;
   const result = useNumericFormat({
     allowLeadingZeros: true,
-    thousandSeparator: disableThousandSeparator ? "" : ",",
+    thousandSeparator: input?.disableThousandSeparator ? "" : ",",
     displayType: "text",
     value: _value || "",
     decimalScale: 18,
@@ -84,19 +48,6 @@ export const useFormatDecimals = (value?: string | BN | number, decimalPlaces?: 
   return useMemo(() => formatDecimals(value, decimalPlaces), [value, decimalPlaces]);
 };
 
-export function useDebounce<T>(value: T, delay?: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
 export const useInvertedPrice = (price?: string, inverted?: boolean) => {
   return useMemo(() => {
     if (!price) return "";
@@ -106,7 +57,7 @@ export const useInvertedPrice = (price?: string, inverted?: boolean) => {
 
 export const useInvertPrice = (price?: string) => {
   const [inverted, setInvert] = useState(false);
-  const { srcToken, dstToken } = useTwapContext();
+  const { srcToken, dstToken } = useWidgetContext();
 
   const invertedPrice = useInvertedPrice(price, inverted);
   const value = useFormatNumber({ value: invertedPrice || "", decimalScale: 5 });
@@ -128,17 +79,11 @@ export const useInvertPrice = (price?: string) => {
 };
 
 export const useNetwork = () => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
 
   return useMemo(() => {
     return Object.values(networks).find((network) => network.id === config.chainId);
   }, [config]);
-};
-
-export const useExplorerUrl = () => {
-  const config = useTwapContext().config;
-
-  return useMemo(() => getExplorerUrl(config.chainId), [config.chainId]);
 };
 
 export const useAmountBN = (decimals?: number, value?: string) => {
@@ -150,7 +95,7 @@ export const useAmountUi = (decimals?: number, value?: string) => {
 };
 
 export const useTokenBalance = (isSrc?: boolean) => {
-  const { srcToken, dstToken } = useTwapContext();
+  const { srcToken, dstToken } = useWidgetContext();
 
   const srcBalance = useAmountUi(srcToken?.decimals, useSrcBalance().data?.toString());
   const dstBalance = useAmountUi(dstToken?.decimals, useDstBalance().data?.toString());
@@ -158,39 +103,14 @@ export const useTokenBalance = (isSrc?: boolean) => {
 };
 
 export const useOpenOrders = () => {
-  const { data } = useOrdersHistory();
+  const { groupedOrdersByStatus } = useOrderHistoryManager();
 
-  return useMemo(() => {
-    if (!data) return [];
-    return groupOrdersByStatus(data)?.[OrderStatus.Open] || [];
-  }, [data]);
-};
-
-export const useTokenFromParsedTokensList = (address?: string) => {
-  const getTokenFromList = useGetTokenFromParsedTokensList();
-  return useMemo(() => getTokenFromList(address), [address]);
-};
-
-export const useGetTokenFromParsedTokensList = () => {
-  const { tokens } = useTwapContext();
-  return useCallback(
-    (address?: string) => {
-      return tokens.find((token) => eqIgnoreCase(address || "", token.address || ""));
-    },
-    [tokens],
-  );
-};
-
-export const usemElipsisAddress = (address?: string) => {
-  const { addressPadding } = useTwapContext().uiPreferences;
-
-  return useMemo(() => {
-    return makeElipsisAddress(address, addressPadding);
-  }, [addressPadding, address]);
+  return groupedOrdersByStatus.open || [];
 };
 
 export const useContract = (abi?: Abi, address?: string) => {
-  const { config, web3 } = useTwapContext();
+  const { config } = useWidgetContext();
+  const web3 = useWidgetContext().web3;
 
   const wTokenAddress = network(config.chainId)?.wToken.address;
   return useMemo(() => {
@@ -203,12 +123,12 @@ export const useContract = (abi?: Abi, address?: string) => {
 };
 
 export const useTwapContract = () => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
   return useContract(TwapAbi as Abi, config.twapAddress);
 };
 
 export const useChangeNetwork = () => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
   const [loading, setLoading] = useState(false);
 
   const changeNetwork = async (onSuccess: () => void, onError: () => void) => {
@@ -238,9 +158,10 @@ export const useChangeNetwork = () => {
 
 export const useGetHasAllowance = () => {
   const wToken = useNetwork()?.wToken;
-  const { account, config } = useTwapContext();
+  const { config } = useWidgetContext();
+  const { account } = useWidgetContext();
   return useCallback(
-    async (token: Token, amount: string) => {
+    async (token: TokenData, amount: string) => {
       if (!wToken) return;
       token = token && isNativeAddress(token?.address) ? wToken : token;
       const contract = erc20(token!.symbol, token!.address, token!.decimals);
@@ -253,8 +174,25 @@ export const useGetHasAllowance = () => {
 };
 
 export const useEstimatedDelayBetweenChunksMillis = () => {
-  const { config } = useTwapContext();
+  const { config } = useWidgetContext();
   return useMemo(() => {
     return config.bidDelaySeconds * 1000 * 2;
   }, [config]);
+};
+
+export const useOrderType = () => {
+  const { translations: t, isLimitPanel, twap } = useWidgetContext();
+  const {
+    values: { isMarketOrder },
+  } = twap;
+
+  return useMemo(() => {
+    if (isLimitPanel) {
+      return t.limit;
+    }
+    if (isMarketOrder) {
+      return t.twapMarket;
+    }
+    return t.twapLimit;
+  }, [isLimitPanel, isMarketOrder, t]);
 };

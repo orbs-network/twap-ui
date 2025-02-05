@@ -1,25 +1,57 @@
-import { stateActions } from "../context/actions";
-import { useTwapContext } from "../context/context";
-import { useOutAmount, useSrcAmount, useUsdAmount } from "./lib";
+import { useCallback } from "react";
+import { SwapStatus } from "@orbs-network/swap-ui";
+import { useUsdAmount } from ".";
+import { useWidgetContext } from "..";
+
+export const useSwitchNativeToWrapped = () => {
+  const { onSrcTokenSelected } = useWidgetContext();
+
+  return useCallback(() => {}, [onSrcTokenSelected]);
+};
 
 export const useSwapModal = () => {
-  const { state, srcToken, dstToken } = useTwapContext();
-  const { swapState, showConfirmation: isOpen, swapData } = state;
-  const { onClose, onOpen } = stateActions.useSwapModalActions();
-  const srcAmountUi = useSrcAmount().amountUi;
-  const { srcUsd, dstUsd } = useUsdAmount();
-  const outAmount = useOutAmount().amountUi;
+  const {
+    state: { showConfirmation: isOpen },
+  } = useWidgetContext();
+  const { resetState, state, srcToken, dstToken, twap, updateState } = useWidgetContext();
+  const nativeToWrapped = useSwitchNativeToWrapped();
+  const srcAmount = twap.values.srcAmountUI;
+  const outAmount = twap.values.destTokenAmountUI;
+  const { srcUsd: srcAmountusd, dstUsd: outAmountusd } = useUsdAmount();
+  const { swapStatus } = state;
+  const onClose = useCallback(
+    (closeDalay?: number) => {
+      updateState({ showConfirmation: false });
+      if (state.wrapSuccess) {
+        nativeToWrapped();
+      }
+
+      if (state.swapStatus) {
+        setTimeout(() => {
+          resetState();
+        }, closeDalay || 300);
+      }
+    },
+    [swapStatus, nativeToWrapped, resetState, state, updateState],
+  );
+
+  const onOpen = useCallback(() => {
+    updateState({
+      showConfirmation: true,
+      swapData: {
+        srcToken,
+        dstToken,
+        srcAmount,
+        outAmount,
+        srcAmountusd,
+        outAmountusd,
+      },
+    });
+  }, [updateState, srcToken, dstToken, srcAmount, outAmount, srcAmountusd, outAmountusd]);
 
   return {
     onClose,
     onOpen,
     isOpen,
-    swapState,
-    srcAmount: swapData?.srcAmount.amountUi || srcAmountUi,
-    srcUsd: swapData?.amountUsd.srcUsd || srcUsd,
-    dstUsd: swapData?.amountUsd.dstUsd || dstUsd,
-    outAmount: swapData?.outAmount.amountUi || outAmount,
-    srcToken: swapData?.srcToken || srcToken,
-    dstToken: swapData?.dstToken || dstToken,
   };
 };

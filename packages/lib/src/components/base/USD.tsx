@@ -1,10 +1,10 @@
 import { styled } from "styled-components";
 import React from "react";
 import { SQUIGLE } from "../../config";
-import { useTwapContext } from "../../context/context";
-import { useFormatNumberV2 } from "../../hooks/hooks";
+import { useFormatNumber } from "../../hooks/hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
+import { useWidgetContext } from "../..";
 
 const USD = ({
   isLoading = false,
@@ -25,13 +25,13 @@ const USD = ({
   prefix?: string;
   decimalScale?: number;
 }) => {
-  const formattedValue = useFormatNumberV2({ value, decimalScale });
+  const formattedValue = useFormatNumber({ value, decimalScale });
 
-  const context = useTwapContext()?.uiPreferences;
+  const usd = useWidgetContext()?.uiPreferences.usd;
 
-  const _prefix = prefix || context?.usdPrefix || `${SQUIGLE} $ `;
-  const _suffix = suffix || context?.usdSuffix;
-  const _emptyUi = emptyUi || context?.usdEmptyUI;
+  const _prefix = prefix || usd?.prefix || `${SQUIGLE} $ `;
+  const _suffix = suffix || usd?.suffix;
+  const _emptyUi = emptyUi || usd?.emptyUI;
 
   if (value == null) return null;
   return (

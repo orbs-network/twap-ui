@@ -5,6 +5,7 @@ export * from "./lib/consts";
 export { constructSDK, TwapSDK } from "./lib/constructSDK";
 export * from "./lib/lib";
 export * from "./lib/warnings";
+export { fillDelayText, isNativeAddress } from "./lib/utils";
 
 export { groupOrdersByStatus, getOrders, getOrderById, getOrderByTxHash, Order } from "./lib/orders";
 

@@ -1,3 +1,5 @@
+import { networks } from "@defi.org/web3-candies";
+
 export const REFETCH_ORDER_HISTORY = 40_000;
 export const REFETCH_USD = 15_000;
 export const REFETCH_BALANCE = 15_000;
@@ -36,16 +38,6 @@ export const MAX_TRADE_INTERVAL = 30 * 24 * 60 * 60 * 1000;
 
 export const MAX_DURATION_MILLIS = 30 * 24 * 60 * 60 * 1000;
 export const MIN_DURATION_MILLIS = 5 * 60 * 1000;
-
-export const EXPLORER_URLS = {
-  1: "https://etherscan.io",
-  56: "https://bscscan.com",
-  137: "https://polygonscan.com",
-  43114: "https://snowtrace.io",
-  250: "https://ftmscan.com",
-  8453: "https://basescan.org",
-  42161: "https://arbiscan.io",
-};
 
 export const WAIT_FOR_ORDER_LOCAL_STORAGE = "WAIT_FOR_ORDER";
 

@@ -1,4 +1,4 @@
-import { CSSProperties, ReactNode } from "react";
+import React, { CSSProperties, ReactNode } from "react";
 import { styled } from "styled-components";
 import { StyledOneLineText } from "../../styles";
 import { Loader } from "./Loader";

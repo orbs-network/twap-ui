@@ -1,8 +1,8 @@
 import { styled } from "styled-components";
 import React, { ReactNode } from "react";
-import { useTwapContext } from "../../context/context";
-import { useFormatNumberV2 } from "../../hooks/hooks";
+import { useFormatNumber } from "../../hooks/hooks";
 import SmallLabel from "./SmallLabel";
+import { useWidgetContext } from "../..";
 
 interface Props {
   isLoading: boolean;
@@ -17,12 +17,12 @@ interface Props {
 }
 
 function Balance({ isLoading, value, className = "", label, suffix, hideLabel, emptyUi, decimalScale }: Props) {
-  const { translations, uiPreferences } = useTwapContext();
-  const _emptyUi = emptyUi || uiPreferences.balanceEmptyUI;
+  const { translations, uiPreferences } = useWidgetContext();
+  const _emptyUi = emptyUi || uiPreferences.balance?.emptyUI;
 
   const args = { value: value, suffix: suffix ? ` ${suffix}` : undefined };
 
-  const formattedValue = useFormatNumberV2({ ...args, decimalScale });
+  const formattedValue = useFormatNumber({ ...args, decimalScale });
 
   if (value == null) {
     return null;
