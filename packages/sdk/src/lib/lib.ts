@@ -24,6 +24,7 @@ export const getDestTokenMinAmount = (srcChunkAmount?: string, limitPrice?: stri
 export const getDuration = (chunks: number, fillDelay: TimeDuration, customDuration?: TimeDuration): TimeDuration => {
   const minDuration = getTimeDurationMillis(fillDelay) * 2 * chunks;
   const unit = findTimeUnit(minDuration);
+
   return customDuration || { unit, value: Number(BN(minDuration / unit).toFixed(2)) };
 };
 
