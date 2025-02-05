@@ -517,6 +517,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       opacity: 0,
     },
     ".twap-widget": {
+      width:'100%',
       "*": {
         fontFamily: "inherit",
       },

@@ -321,4 +321,8 @@ const LimitPanel = () => {
   );
 };
 
+TWAP.LimitPriceWarning = Widget.LimitPriceWarning;
+TWAP.Orders = Widget.Orders;
+TWAP.PoweredByOrbs = Widget.PoweredByOrbs;
+
 export { TWAP };

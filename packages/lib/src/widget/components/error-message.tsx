@@ -6,11 +6,12 @@ import { useBalanceWaning } from "../../hooks";
 export function ErrorMessage() {
   const {
     twap: { errors },
+    state:{srcAmount}
   } = useWidgetContext();
 
   const balanceWarning = useBalanceWaning();
-
-  const error = errors.chunks?.text || errors.fillDelay?.text || errors.duration?.text || errors.tradeSize?.text || errors.limitPrice?.text || balanceWarning;
+  
+  const error =!srcAmount ? '' :  errors.chunks?.text || errors.fillDelay?.text || errors.duration?.text || errors.tradeSize?.text || errors.limitPrice?.text || balanceWarning;
 
   if (!error) return null;
 

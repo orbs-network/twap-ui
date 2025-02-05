@@ -103,11 +103,11 @@ export const derivedSwapValues = (
 
   const errors = {
     fillDelay: getFillDelayWarning(fillDelay, isLimitPanel),
-    duration: getDurationWarning(duration, isLimitPanel),
     tradeSize: getTradeSizeWarning(minChunkSizeUsd, amountUi(srcDecimals, srcChunkAmountUsd), chunks),
     srcAmount: getSrcAmountWarning(srcAmount),
     limitPrice: getLimitPriceWarning(limitPrice),
     chunks: getChunksWarning(chunks, maxPossibleChunks, Boolean(isLimitPanel), srcAmount),
+    duration: getDurationWarning(duration, isLimitPanel),
   };
 
   return {

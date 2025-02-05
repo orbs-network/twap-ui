@@ -138,8 +138,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setToToken(fromToken);
   };
 
-  console.log({ fromToken });
-
   return (
     <TWAP
       connect={connect}
