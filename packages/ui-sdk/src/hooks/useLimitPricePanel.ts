@@ -2,7 +2,7 @@ import { useMemo, useCallback } from "react";
 import BN from "bignumber.js";
 import { State, Token } from "../types";
 import { TwapValues } from "./useDerivedValues";
-import { toAmountUi } from "../utils";
+import { removeCommas, toAmountUi } from "../utils";
 
 type UpdateState = (value: Partial<State>) => void;
 const defaultPercent = [1, 5, 10];
@@ -52,7 +52,7 @@ export const useLimitPricePanel = (state: State, values: TwapValues, updateState
 
   const onLimitPriceReset = useCallback(() => onLimitPricePercent("0"), [onLimitPricePercent]);
 
-  const setLimitPrice = useCallback((typedPrice: string) => updateState({ typedPrice, limitPricePercent: undefined }), [updateState]);
+  const setLimitPrice = useCallback((typedPrice: string) => updateState({ typedPrice: removeCommas(typedPrice), limitPricePercent: undefined }), [updateState]);
 
   const onInvertLimitPrice = useCallback(() => {
     updateState({

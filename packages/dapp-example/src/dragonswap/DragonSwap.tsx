@@ -140,7 +140,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   return (
     <TWAP
-      config={config}
       connect={connect}
       account={account}
       connector={connector}

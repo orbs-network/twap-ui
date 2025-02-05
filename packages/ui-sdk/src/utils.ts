@@ -17,6 +17,10 @@ export const safeValue = (value?: string) => {
   return BN.min(value, maxUint256).decimalPlaces(0).toString();
 };
 
+export const removeCommas = (numStr: string): string => {
+  return numStr.replace(/,/g, "");
+};
+
 export function millisToDays(milliseconds?: number): number {
   if (!milliseconds) return 0;
   const millisecondsInADay = 86400000; // 24 * 60 * 60 * 1000

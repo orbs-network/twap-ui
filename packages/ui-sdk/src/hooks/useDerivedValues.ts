@@ -1,7 +1,7 @@
 import BN from "bignumber.js";
 import { useMemo } from "react";
 import * as SDK from "@orbs-network/twap-sdk";
-import { safeValue, toAmountUi, toWeiAmount } from "../utils";
+import { removeCommas, safeValue, toAmountUi, toWeiAmount } from "../utils";
 import { State, Token } from "../types";
 import { network } from "@defi.org/web3-candies";
 
@@ -27,8 +27,9 @@ export const useDerivedSwapValues = (
   destToken?: Token,
   marketPrice?: string,
   oneSrcTokenUsd?: string,
-  typedSrcAmount?: string,
+  _typedSrcAmount?: string,
 ) => {
+  const typedSrcAmount = removeCommas(_typedSrcAmount || "0");
   const limitPrice = useMemo(() => {
     if (state.typedPrice === undefined || state.isMarketOrder || !marketPrice) return marketPrice;
     const result = state.isInvertedLimitPrice ? BN(1).div(state.typedPrice).toString() : state.typedPrice;

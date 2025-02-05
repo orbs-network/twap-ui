@@ -1,4 +1,4 @@
-import { Config } from "@orbs-network/twap-sdk";
+import { Config, Configs } from "@orbs-network/twap-sdk";
 import { Translations, hooks, Styles, getNetwork, Widget, UIPreferences, WidgetProps, WidgetProvider, useWidgetContext, Token } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, useContext, useEffect, useMemo } from "react";
@@ -18,7 +18,8 @@ const uiPreferences: UIPreferences = {
 };
 
 const useParseToken = () => {
-  const props = useAdapterContext();
+  const config = useConfig();
+
   return useCallback(
     (token?: any) => {
       try {
@@ -36,7 +37,7 @@ const useParseToken = () => {
         console.error("Invalid token", token);
       }
     },
-    [props.config.chainId],
+    [config.chainId],
   );
 };
 
@@ -45,29 +46,31 @@ interface AdapterProps extends Partial<WidgetProps> {
   srcToken?: any;
   dstToken?: any;
   connector?: any;
-  config: Config;
   dappTokens?: any;
   useMarketPrice: (srcToken?: string, dstToken?: string, amount?: string) => { outAmount?: string };
 }
 
 const useWToken = () => {
   const props = useAdapterContext();
+  const config = useConfig();
+
   return useMemo(() => {
-    const wTokenAddress = getNetwork(props.config.chainId)?.wToken.address;
+    const wTokenAddress = getNetwork(config.chainId)?.wToken.address;
 
     return props.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
-  }, [props.dappTokens, props.config]);
+  }, [props.dappTokens, config]);
 };
 
 const useIsNative = () => {
-  const props = useAdapterContext();
+  const config = useConfig();
+
   return useCallback(
     (token?: any) => {
-      if (token?.isNative || token?.symbol === getNetwork(props.config.chainId)?.native.symbol) {
+      if (token?.isNative || token?.symbol === getNetwork(config.chainId)?.native.symbol) {
         return true;
       }
     },
-    [props.config.chainId],
+    [config.chainId],
   );
 };
 
@@ -160,6 +163,15 @@ const useToken = (addressOrSymbol?: string) => {
   );
 };
 
+const configs = [Configs.DragonSwap];
+const useConfig = () => {
+  const { chainId } = useAdapterContext();
+
+  return useMemo(() => {
+    return configs.find((it) => it.chainId === chainId) || configs[0];
+  }, [chainId]);
+};
+
 const Content = () => {
   const props = useAdapterContext();
   const provider = useProvider();
@@ -167,12 +179,13 @@ const Content = () => {
   const { srcToken, dstToken } = useSelectedParsedTokens();
   const { srcUsd, dstUsd } = useUsd();
   const marketPrice = useMarketPrice();
+  const config = useConfig();
 
   return (
     <ThemeProvider theme={theme}>
       <WidgetProvider
         connect={props.connect!}
-        config={props.config}
+        config={config}
         maxFeePerGas={props.maxFeePerGas}
         priorityFeePerGas={props.priorityFeePerGas}
         translations={translations as Translations}
