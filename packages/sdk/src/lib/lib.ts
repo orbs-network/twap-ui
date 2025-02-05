@@ -108,8 +108,7 @@ export const derivedSwapValues = (
     limitPrice: getLimitPriceWarning(limitPrice),
     chunks: getChunksWarning(chunks, maxPossibleChunks, Boolean(isLimitPanel), srcAmount),
   };
-  
-  
+
   return {
     chunks,
     duration,

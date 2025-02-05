@@ -1,8 +1,8 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { groupOrdersByStatus, Order, OrderStatus } from "@orbs-network/twap-sdk";
-import { useOrdersHistory } from "../../../hooks";
 import { mapCollection, size } from "../../../utils";
 import { useWidgetContext } from "../../widget-context";
+import { useOrderHistoryManager } from "../../../hooks/useOrderHistoryManager";
 
 export type OrdersMenuTab = {
   name: string;
@@ -25,7 +25,7 @@ interface OrderHistoryContextType {
 }
 
 export const useSelectedOrder = () => {
-  const orders = useOrders();
+  const orders = useOrderHistoryManager().orders;
 
   const { selectedOrderId } = useOrderHistoryContext();
 
@@ -36,16 +36,8 @@ export const useSelectedOrder = () => {
 };
 export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
-const useOrders = () => {
-  const { data } = useOrdersHistory();
-
-  return useMemo(() => {
-    return data;
-  }, [data]);
-};
-
 const useSelectedOrders = (status: OrderStatus) => {
-  const orders = useOrders();
+  const orders = useOrderHistoryManager().orders;
   if (!orders) {
     return [];
   }
@@ -55,7 +47,7 @@ const useSelectedOrders = (status: OrderStatus) => {
 
 export const OrderHistoryContextProvider = ({ children }: { children: ReactNode }) => {
   const [tab, setTab] = useState<OrderStatus>(OrderStatus.All);
-  const { isLoading } = useOrdersHistory();
+  const { ordersLoading } = useOrderHistoryManager();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
   const orders = useSelectedOrders(tab);
@@ -103,7 +95,7 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
   const onOpen = useCallback(() => setIsOpen(true), []);
 
   return (
-    <OrderHistoryContext.Provider value={{ selectedOrderId, tabs, selectOrder, orders, setTab, closePreview, selectedTab, isLoading, isOpen, onClose, onOpen }}>
+    <OrderHistoryContext.Provider value={{ selectedOrderId, tabs, selectOrder, orders, setTab, closePreview, selectedTab, isLoading: ordersLoading, isOpen, onClose, onOpen }}>
       {children}
     </OrderHistoryContext.Provider>
   );

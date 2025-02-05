@@ -3,8 +3,7 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
 import React, { useMemo } from "react";
 import { isNativeBalanceError } from "../../../utils";
-import { useNetwork } from "../../../hooks/hooks";
-import { useOrderType } from "../../hooks/hooks";
+import { useNetwork, useOrderType } from "../../../hooks/hooks";
 
 export function Failed({ error }: { error?: any }) {
   const nativeBalance = useMemo(() => isNativeBalanceError(error), [error]);

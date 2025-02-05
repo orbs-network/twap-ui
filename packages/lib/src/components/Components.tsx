@@ -1,18 +1,14 @@
-import React, { FC, ReactNode, useCallback, useState } from "react";
-import { Balance, Icon, NumericInput, TimeSelector, TokenName, USD, TokenLogo as Logo, Button, Portal } from "./base";
+import React, { FC, ReactNode, useCallback } from "react";
+import { Balance, Icon, NumericInput, TokenName, USD, TokenLogo as Logo, Portal } from "./base";
 import { Message } from "./base/Message";
-
 import styled from "styled-components";
-import { useFormatNumber, useSrcBalance, useDstBalance, useFormatDecimals, useAmountUi } from "../hooks/hooks";
-import { StyledText, StyledRowFlex, StyledColumnFlex, textOverflow } from "../styles";
+import { useSrcBalance, useDstBalance, useFormatDecimals, useAmountUi } from "../hooks/hooks";
+import { StyledText, StyledRowFlex } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
-import { ChunksAmountLabel } from "./Labels";
 import { TooltipProps } from "../types";
 import Copy from "./base/Copy";
-import { SQUIGLE } from "../config";
 import { Styles, useWidgetContext } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-
 import { useShouldWrapOrUnwrapOnly, useSrcChunkAmountUsd, useToken, useUsdAmount } from "../hooks/lib";
 
 const Input = (props: {

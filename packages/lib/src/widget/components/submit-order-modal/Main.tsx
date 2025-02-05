@@ -3,14 +3,15 @@ import BN from "bignumber.js";
 import React, { useMemo } from "react";
 import { SwapFlow, SwapStep } from "@orbs-network/swap-ui";
 import { fillDelayText } from "@orbs-network/twap-sdk";
-import { LimitPriceWarning, MarketPriceWarning, Separator } from "../../../components";
+import { MarketPriceWarning } from "../../../components";
 import { Switch, Button } from "../../../components/base";
 import { OrderDisplay } from "../../../components/OrderDisplay";
-import { useSwapPrice, useFormatNumber, useToggleDisclaimer, useAmountUi, useSubmitOrderButton, useNetwork } from "../../../hooks";
+import { useSwapPrice, useFormatNumber, useToggleDisclaimer, useAmountUi, useSubmitOrderButton, useNetwork, useOrderType } from "../../../hooks";
 import { StyledText, StyledColumnFlex } from "../../../styles";
 import { SwapSteps } from "../../../types";
 import { useWidgetContext } from "../../widget-context";
 import { isNativeAddress } from "@defi.org/web3-candies";
+import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 
 const Price = () => {
   const { srcToken, dstToken, twap } = useWidgetContext();
@@ -87,6 +88,8 @@ const useSteps = () => {
   } = useWidgetContext();
   const wToken = useNetwork()?.wToken;
   const dappWToken = useToken?.(wToken?.address);
+  const orderType = useOrderType();
+
   const isNativeIn = isNativeAddress(srcToken?.address || "");
   return useMemo((): SwapStep[] => {
     if (!swapSteps || !srcToken) return [];
@@ -108,8 +111,8 @@ const useSteps = () => {
       }
       return {
         id: SwapSteps.CREATE,
-        title: `Create order`,
-        image: srcToken?.logoUrl,
+        title: `Create ${orderType} order`,
+        icon: <RiArrowUpDownLine style={{ width: 20, height: 20 }} />,
       };
     });
   }, [srcToken, swapSteps, wToken, dappWToken?.logoUrl, isNativeIn]);

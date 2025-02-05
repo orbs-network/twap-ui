@@ -3,10 +3,11 @@ import BN from "bignumber.js";
 import { switchMetaMaskNetwork, isNativeAddress, Abi, erc20, network, TokenData } from "@defi.org/web3-candies";
 import { useNumericFormat } from "react-number-format";
 import { amountBNV2, amountUiV2, formatDecimals } from "../utils";
-import { query, useOrdersHistory } from "./query";
 import { TwapAbi, groupOrdersByStatus, OrderStatus } from "@orbs-network/twap-sdk";
 import { networks } from "../config";
 import { useWidgetContext } from "../widget/widget-context";
+import { useBalance } from "./useBalance";
+import { useOrderHistoryManager } from "./useOrderHistoryManager";
 
 export const useRefetchBalances = () => {
   const { refetch: refetchSrcBalance } = useSrcBalance();
@@ -19,12 +20,12 @@ export const useRefetchBalances = () => {
 
 export const useSrcBalance = () => {
   const srcToken = useWidgetContext().srcToken;
-  return query.useBalance(srcToken);
+  return useBalance(srcToken);
 };
 
 export const useDstBalance = () => {
   const dstToken = useWidgetContext().dstToken;
-  return query.useBalance(dstToken);
+  return useBalance(dstToken);
 };
 
 export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
@@ -102,12 +103,9 @@ export const useTokenBalance = (isSrc?: boolean) => {
 };
 
 export const useOpenOrders = () => {
-  const { data } = useOrdersHistory();
+  const { groupedOrdersByStatus } = useOrderHistoryManager();
 
-  return useMemo(() => {
-    if (!data) return [];
-    return groupOrdersByStatus(data)?.[OrderStatus.Open] || [];
-  }, [data]);
+  return groupedOrdersByStatus.open || [];
 };
 
 export const useContract = (abi?: Abi, address?: string) => {
@@ -180,4 +178,21 @@ export const useEstimatedDelayBetweenChunksMillis = () => {
   return useMemo(() => {
     return config.bidDelaySeconds * 1000 * 2;
   }, [config]);
+};
+
+export const useOrderType = () => {
+  const { translations: t, isLimitPanel, twap } = useWidgetContext();
+  const {
+    values: { isMarketOrder },
+  } = twap;
+
+  return useMemo(() => {
+    if (isLimitPanel) {
+      return t.limit;
+    }
+    if (isMarketOrder) {
+      return t.twapMarket;
+    }
+    return t.twapLimit;
+  }, [isLimitPanel, isMarketOrder, t]);
 };

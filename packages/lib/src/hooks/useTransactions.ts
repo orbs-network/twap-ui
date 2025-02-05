@@ -1,13 +1,15 @@
-import { zero, sendAndWaitForConfirmations, TokenData, erc20, iwethabi, maxUint256, hasWeb3Instance, setWeb3Instance, account } from "@defi.org/web3-candies";
+import { zero, sendAndWaitForConfirmations, TokenData, erc20, iwethabi, maxUint256, hasWeb3Instance, setWeb3Instance } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useGetHasAllowance, useNetwork, useRefetchBalances, useTwapContract } from "./hooks";
-import { query, useGasPrice, useOrdersHistory, useWaitForNewOrderCallback } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
 import { useShouldWrap } from "./lib";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { SwapSteps, Token } from "../types";
 import { useWidgetContext } from "../widget/widget-context";
+import { useGasPrice } from "./useGasPrice";
+import { useOrderHistoryManager } from "./useOrderHistoryManager";
+import { useAllowance } from "./useAllowance";
 
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
@@ -215,9 +217,9 @@ const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 export const useSubmitOrderFlow = () => {
   const { state, updateState, twap, onCreateOrderSuccess } = useWidgetContext();
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash, wrapSuccess, swapData } = state;
-  const { data: haveAllowance, refetch: refetchAllowance } = query.useAllowance();
+  const { data: haveAllowance, refetch: refetchAllowance } = useAllowance();
   const shouldWrap = useShouldWrap();
-  const { mutateAsync: waitForNewOrderCallback } = useWaitForNewOrderCallback();
+  const { waitForNewOrder } = useOrderHistoryManager();
   const wToken = useNetwork()?.wToken;
   const refetchBalances = useRefetchBalances();
   const approve = useApproveToken().mutateAsync;
@@ -266,7 +268,7 @@ export const useSubmitOrderFlow = () => {
       updateState({
         swapStatus: SwapStatus.SUCCESS,
       });
-      waitForNewOrderCallback(order.orderId);
+      waitForNewOrder(order.orderId);
 
       await refetchBalances();
     },
@@ -299,11 +301,11 @@ export const useSubmitOrderFlow = () => {
 };
 
 export const useCancelOrder = () => {
-  const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
+  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
   const { account, twap } = useWidgetContext();
 
   const twapContract = useTwapContract();
-  const updateCanceledOrder = query.useUpdateOrderStatusToCanceled();
+  const { waitForOrderCancellation } = useOrderHistoryManager();
   return useMutation(
     async (orderId: number) => {
       if (!twapContract) {
@@ -322,13 +324,13 @@ export const useCancelOrder = () => {
         maxPriorityFeePerGas: priorityFeePerGas,
         maxFeePerGas,
       });
+      await waitForOrderCancellation(orderId);
       console.log(`order canceled`);
     },
     {
-      onSuccess: (_, orderId) => {
+      onSuccess: () => {
         logger(`order canceled`);
         twap.analytics.onCancelOrderSuccess();
-        updateCanceledOrder(orderId);
       },
       onError: (error: Error) => {
         console.log(`cancel error order`, error);

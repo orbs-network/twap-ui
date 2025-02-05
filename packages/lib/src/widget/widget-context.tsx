@@ -6,12 +6,12 @@ import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
 import { setWeb3Instance } from "@defi.org/web3-candies";
 import { useTwap } from "@orbs-network/twap-ui-sdk";
-import { query } from "../hooks/query";
 import { styled } from "@mui/material";
 import { Orders } from "./components/orders/Orders";
 import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
 import { PoweredbyOrbsWithPortal } from "./components/powered-by-orbs";
 import { LimitPriceWarningPortal } from "../components";
+import { useAllowance } from "../hooks/useAllowance";
 
 export const WidgetContext = createContext({} as WidgetContextType);
 const queryClient = new QueryClient({
@@ -44,7 +44,7 @@ const contextReducer = (state: State, action: Action): State => {
 };
 
 const Listeners = () => {
-  query.useAllowance();
+  useAllowance();
 
   return null;
 };

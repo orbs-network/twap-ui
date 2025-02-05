@@ -1,4 +1,4 @@
-import { Components, Styles } from "@orbs-network/twap-ui";
+import { Styles } from "@orbs-network/twap-ui";
 import { DefaultTheme, styled, createGlobalStyle } from "styled-components";
 
 export const darkTheme = {
@@ -205,23 +205,24 @@ const switchTokensStyles = (theme: DefaultTheme) => {
   };
 };
 const letterSpacing = "0.02em";
+const mobile = 700;
 export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
     ".twap-order-token-progress-bar": {
-      flex:1,
-      height:4,
-      position:'relative',
-      background:styles.darkText,
-      overflow:'hidden',
-      borderRadius: 20
+      flex: 1,
+      height: 4,
+      position: "relative",
+      background: styles.darkText,
+      overflow: "hidden",
+      borderRadius: 20,
     },
     ".twap-order-token-progress-bar-filled": {
-      position:'absolute',
+      position: "absolute",
       left: 0,
-      height: '100%',
-      background: 'rgb(36 99 235)'
+      height: "100%",
+      background: "rgb(36 99 235)",
     },
     ".twap-order-history-list": {
       "&::-webkit-scrollbar": {
@@ -241,16 +242,16 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       marginTop: 15,
     },
     ".twap-select-menu-list-item": {
-      textTransform:'capitalize'
+      textTransform: "capitalize",
     },
     ".twap-orders-selected-order-details": {
       gap: 8,
       padding: 12,
       paddingTop: 0,
-      paddingBottom: 0
+      paddingBottom: 0,
     },
     ".twap-orders-selected-order-details-expanded ": {
-      paddingBottom: 12
+      paddingBottom: 12,
     },
     ".twap-order-display-details-row": {
       ".twap-label": {
@@ -317,8 +318,8 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       textTransform: "uppercase" as const,
       opacity: 1,
     },
-    ".twap-orders-selected-order-summary":{
-      padding: 12
+    ".twap-orders-selected-order-summary": {
+      padding: 12,
     },
 
     ".twap-order-display-details": {
@@ -349,11 +350,22 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       background: "transparent",
       marginTop: 20,
     },
+    ".orbs_StepsStep": {
+      gap: 7,
+    },
+    ".orbs_StepsStepLogo": {
+      background: styles.color2,
+      border: `7px solid ${styles.color2}`,
+      "*": {
+        opacity: 0.7,
+      },
+    },
+
     ".orbs_SwapFlow": {
       ".twap-order-display-details": {
         marginTop: 15,
         marginBottom: 15,
-        padding: 12
+        padding: 12,
       },
       ".twap-order-modal-disclaimer": {
         p: { color: styles.textColor },
@@ -447,6 +459,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         },
       },
     },
+
     ".twap-trades-amount-panel": {
       "&-text": {
         color: styles.darkText,
@@ -558,6 +571,14 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-switch-checked": {
       background: "rgb(36 99 235)",
+    },
+
+    [`@media(max-width: ${mobile}px)`]: {
+      ".twap-trade-interval-panel": {
+        ".twap-select-menu-button p": {
+          fontSize: 12,
+        },
+      },
     },
   };
 });

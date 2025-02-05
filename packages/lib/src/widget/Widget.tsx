@@ -14,9 +14,14 @@ import { OrdersPortal } from "./components/orders/Orders";
 import { PoweredByOrbsPortal } from "./components/powered-by-orbs";
 import { PriceSwitch } from "./components/price-switch";
 import { LimitPriceWarning } from "../components";
+import { useOrderHistoryManager } from "../hooks";
 
 const Widget = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
+};
+
+const hooks = {
+  useOrderHistoryManager,
 };
 
 Widget.Orders = OrdersPortal;
@@ -34,4 +39,5 @@ Widget.ErrorMessage = ErrorMessage;
 Widget.Message = WidgetMessage;
 Widget.PriceSwitch = PriceSwitch;
 Widget.LimitPriceWarning = LimitPriceWarning;
+Widget.hooks = hooks;
 export { Widget };

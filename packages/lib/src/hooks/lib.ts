@@ -1,8 +1,9 @@
 import { useCallback, useMemo } from "react";
-import { amountBNV2, amountUiV2, query, useWidgetContext } from "..";
+import { amountBNV2, amountUiV2, useWidgetContext } from "..";
 import BN from "bignumber.js";
 import { useNetwork, useSrcBalance } from "./hooks";
 import { eqIgnoreCase, isNativeAddress, networks } from "@defi.org/web3-candies";
+import { useFeeOnTransfer } from "./useFeeOnTransfer";
 
 export const useShouldOnlyWrap = () => {
   const { srcToken, dstToken } = useWidgetContext();
@@ -154,8 +155,8 @@ export const useTokenSelect = () => {
 export const useFeeOnTransferWarning = () => {
   const { translations: t, srcToken, dstToken } = useWidgetContext();
 
-  const { data: srcTokenFeeOnTransfer } = query.useFeeOnTransfer(srcToken?.address);
-  const { data: dstTokenFeeOnTransfer } = query.useFeeOnTransfer(dstToken?.address);
+  const { data: srcTokenFeeOnTransfer } = useFeeOnTransfer(srcToken?.address);
+  const { data: dstTokenFeeOnTransfer } = useFeeOnTransfer(dstToken?.address);
 
   return useMemo(() => {
     if (srcTokenFeeOnTransfer?.hasFeeOnTranfer || dstTokenFeeOnTransfer?.hasFeeOnTranfer) {

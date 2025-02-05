@@ -2,7 +2,7 @@ import { useSubmitOrderFlow } from "../../../hooks/useTransactions";
 import { Main } from "./Main";
 import React from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
-import { useFormatNumber, useNetwork, useSwapModal } from "../../../hooks";
+import { useFormatNumber, useNetwork, useOrderType, useSwapModal } from "../../../hooks";
 import { useWidgetContext } from "../../..";
 import { Failed } from "./Failed";
 
@@ -25,7 +25,7 @@ export const SubmitOrderModal = ({ className = "" }: { className?: string }) => 
         outAmount={outAmountF}
         mainContent={<Main onSubmit={onSubmit} />}
         swapStatus={swapStatus}
-        successContent={<SwapFlow.Success explorerUrl={`${explorerUrl}/tx/${createOrderTxHash}`} />}
+        successContent={<SuccessContent />}
         failedContent={<Failed error={error} />}
         inToken={{
           symbol: swapData?.srcToken?.symbol,
@@ -38,4 +38,15 @@ export const SubmitOrderModal = ({ className = "" }: { className?: string }) => 
       />
     </Modal>
   );
+};
+
+const SuccessContent = () => {
+  const {
+    state: { createOrderTxHash },
+  } = useWidgetContext();
+  const explorerUrl = useNetwork()?.explorer;
+
+  const orderType = useOrderType();
+
+  return <SwapFlow.Success title={`${orderType} order created`} explorerUrl={`${explorerUrl}/tx/${createOrderTxHash}`} />;
 };

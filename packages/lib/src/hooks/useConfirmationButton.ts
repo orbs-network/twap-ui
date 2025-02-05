@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import { query } from "./query";
 import BN from "bignumber.js";
 import { useUnwrapToken, useWrapOnly } from "./useTransactions";
 import { useSwapModal } from "./useSwapModal";
 import { useChangeNetwork, useSrcBalance } from "./hooks";
 import { useBalanceWaning, useShouldOnlyWrap, useShouldUnwrap } from "./lib";
 import { useWidgetContext } from "..";
+import { useFeeOnTransfer } from "./useFeeOnTransfer";
 
 export const useConfirmationButton = () => {
   const {
@@ -21,16 +21,15 @@ export const useConfirmationButton = () => {
     },
     marketPrice,
   } = useWidgetContext();
-  console.log({hasErrors});
-  
+
   const { onOpen } = useSwapModal();
   const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
   const shouldUnwrap = useShouldUnwrap();
   const usdLoading = BN(srcUsd || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
   const balanceError = useBalanceWaning();
-  const { isLoading: srcTokenFeeLoading } = query.useFeeOnTransfer(srcToken?.address);
-  const { isLoading: dstTokenFeeLoading } = query.useFeeOnTransfer(dstToken?.address);
+  const { isLoading: srcTokenFeeLoading } = useFeeOnTransfer(srcToken?.address);
+  const { isLoading: dstTokenFeeLoading } = useFeeOnTransfer(dstToken?.address);
   const shouldOnlyWrap = useShouldOnlyWrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();

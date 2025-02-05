@@ -17,6 +17,7 @@ const useOrders = (sdk: SDK.TwapSDK) => {
     return {
       getUserOrders: sdk.getUserOrders.bind(sdk),
       waitForCreatedOrder: sdk.waitForNewOrder.bind(sdk),
+      waitForCancelledOrder: sdk.waitForCancelledOrder.bind(sdk),
     };
   }, [sdk]);
 };

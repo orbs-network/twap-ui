@@ -5,12 +5,13 @@ import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
 import { OrderHistoryList } from "./OrderHistoryList";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { useMemo } from "react";
-import { useOpenOrders, useOrdersHistory } from "../../../hooks";
+import { useOpenOrders } from "../../../hooks";
 import { size } from "../../../utils";
 import { Portal, Spinner } from "../../../components/base";
 import { StyledColumnFlex, StyledRowFlex } from "../../../styles";
 import { useWidgetContext } from "../../widget-context";
 import { OrderHistoryHeader } from "./OrderHistoryHeader";
+import { useOrderHistoryManager } from "../../../hooks/useOrderHistoryManager";
 const PORTAL_ID = "twap-orders-portal";
 export const OrdersPortal = () => {
   return <div id={PORTAL_ID} />;
@@ -28,7 +29,6 @@ export const Orders = ({ className = "" }: { className?: string }) => {
 };
 
 export const OrdersButton = ({ className = "" }: { className?: string }) => {
-  const { data } = useOrdersHistory();
   const openOrders = useOpenOrders();
   const {
     state: { newOrderLoading },
@@ -43,7 +43,7 @@ export const OrdersButton = ({ className = "" }: { className?: string }) => {
     }
 
     return `${size(openOrders)} Open orders`;
-  }, [data, openOrders, isLoading, newOrderLoading]);
+  }, [openOrders, isLoading, newOrderLoading]);
 
   return (
     <StyledOrderHistoryButton className={`twap-order-history-button ${className}`} onClick={onOpen}>
