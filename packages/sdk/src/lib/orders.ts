@@ -228,7 +228,6 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
     if (fills.length < LIMIT) break;
     page++;
   }
-  console.log({ fills });
 
   return fills;
 };

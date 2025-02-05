@@ -27,7 +27,19 @@ import { MIN_NATIVE_BALANCE, QUERY_PARAMS, REFETCH_BALANCE, REFETCH_GAS_PRICE, R
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
-import { amountBN, amountBNV2, amountUi, amountUiV2, devideCurrencyAmounts, getQueryParam, getTokenFromTokensList, logger, safeInteger, setQueryParam } from "./utils";
+import {
+  amountBN,
+  amountBNV2,
+  amountUi,
+  amountUiV2,
+  devideCurrencyAmounts,
+  getQueryParam,
+  getTokenFromTokensList,
+  logger,
+  removeCommas,
+  safeInteger,
+  setQueryParam,
+} from "./utils";
 import { getOrders, groupOrdersByStatus, Order, waitForOrdersCancelled, waitForOrdersUpdate, waitForOrdersLengthUpdate } from "./order";
 
 /**
@@ -624,7 +636,7 @@ export const useSrcAmount = () => {
   const amount = useAmountBN(amountUI, srcToken?.decimals);
   return {
     amount,
-    amountUI,
+    amountUI: useMemo(() => removeCommas(amountUI), [amountUI]),
   };
 };
 
@@ -982,6 +994,7 @@ export const useDstAmount = () => {
   const { amountUI: srcAmountUi, amount: srcAmount } = useSrcAmount();
   const shouldWrap = useShouldWrap();
   const { dstToken } = useTwapContext();
+  const wrongNetwork = useTwapStore((s) => s.wrongNetwork);
   const shouldUnwrap = useShouldUnwrap();
   const { priceUI: tradePriceUI, isLoading, isCustom, gainPercent } = useTradePrice();
   const marketPriceUI = useMarketPriceV2().priceUI;
@@ -1014,7 +1027,7 @@ export const useDstAmount = () => {
 
   return {
     amount: isLoading ? "" : !srcAmountUi ? "" : shouldWrapOrUwrapOnly ? srcAmount : price,
-    amountUI: isLoading ? "" : !srcAmountUi ? "" : amountUI,
+    amountUI: wrongNetwork ? "" : isLoading ? "" : !srcAmountUi ? "" : amountUI,
     isLoading: !srcAmountUi ? false : isLoading,
     usd: !srcAmountUi ? "" : usd,
   };
@@ -1054,6 +1067,7 @@ export const usePriceDisplay = (price?: string | number) => {
 
 export const useTradePrice = () => {
   const limitPriceStore = useLimitPriceStore();
+  const wrongNetwork = useTwapStore((s) => s.wrongNetwork);
   const { dstToken } = useTwapContext();
   const percent = 1 + (limitPriceStore.gainPercent || 0) / 100;
   const isCustomLimitPrice = limitPriceStore.limitPrice !== undefined;
@@ -1120,11 +1134,12 @@ export const useTradePrice = () => {
   );
 
   return {
-    priceUI,
+    priceUI: removeCommas(priceUI || ""),
+    inputValue: wrongNetwork ? "" : priceUI,
     price: useAmountBN(priceUI, dstToken?.decimals),
     onChange: onChangeLimitPrice,
     onReset: limitPriceStore.onReset,
-    isLoading: marketPriceLoading,
+    isLoading: wrongNetwork ? false : marketPriceLoading,
     isCustom: isCustomLimitPrice,
     gainPercent,
     onPercent: onChangeGainPercent,

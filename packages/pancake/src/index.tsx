@@ -109,7 +109,10 @@ export const useParseToken = () => {
         return;
       }
       if (!address || isNativeAddress(address || "") || address === "BNB") {
-        return config.nativeToken;
+        return {
+          ...config.nativeToken,
+          symbol: rawToken?.symbol || config.nativeToken,
+        };
       }
       return {
         address: Web3.utils.toChecksumAddress(address),
@@ -267,6 +270,7 @@ const useTrade = () => {
 
   const srcAmountUi = store.useTwapStore((s) => s.srcAmountUi);
   const amount = hooks.useAmountBN(srcAmountUi || "1", srcToken?.decimals);
+
   const handleAddress = useHandleAddress(connectedChainId);
   const res = useTrade!(handleAddress(srcToken?.address), handleAddress(dstToken?.address), amount);
 
@@ -740,7 +744,7 @@ const PricePanelHeader = () => {
 };
 
 const LimitPanelInput = () => {
-  const { onChange, priceUI: limitPrice, isLoading, usd } = hooks.useTradePrice();
+  const { onChange, inputValue: limitPrice, isLoading, usd } = hooks.useTradePrice();
 
   const token = useTwapContext().dstToken;
   const usdF = hooks.useFormatNumber({ value: usd, decimalScale: 2 });

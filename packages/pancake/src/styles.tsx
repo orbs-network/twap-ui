@@ -894,25 +894,6 @@ export const StyledLimitPrice = styled(Styles.StyledRowFlex)(({ theme }) => {
   };
 });
 
-export const StyledLimitPriceInput = styled(Components.LimitPriceInput)({
-  paddingLeft: 0,
-});
-
-const get = {
-  background: "unset",
-  borderRadius: 16,
-  fontWeight: 600,
-  fontSize: 12,
-  border: "2px solid #1fc7d4",
-  color: "#1fc7d4",
-  padding: "0px 8px",
-  transition: "0.2s all",
-  cursor: "pointer",
-  "&:hover": {
-    opacity: 0.65,
-  },
-};
-
 export const StyledButton = styled("button")(({ theme, disabled }) => {
   const styles = baseStyles(theme);
   return {

@@ -13,6 +13,10 @@ export const logger = (...args: any[]) => {
   }
 };
 
+export const removeCommas = (numStr: string): string => {
+  return numStr.replace(/,/g, "");
+};
+
 type CopyFn = (text: string) => Promise<boolean>; // Return success
 
 export const copy: CopyFn = async (text) => {
@@ -38,10 +42,11 @@ export const makeElipsisAddress = (address?: string, padding = 6): string => {
 };
 export const amountBNV2 = (decimals?: number, amount?: string) => {
   if (!decimals || !amount) return "0";
-  return safeInteger(parsebn(amount).times(BN(10).pow(decimals)).toFixed());
+  const value = removeCommas(amount);
+  return safeInteger(parsebn(value).times(BN(10).pow(decimals)).toFixed());
 };
 
-export const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));
+export const amountBN = (token: TokenData | undefined, amount: string) => parsebn(removeCommas(amount)).times(BN(10).pow(token?.decimals || 0));
 export const amountUi = (token: TokenData | undefined, amount: BN) => {
   if (!token) return "";
   const percision = BN(10).pow(token?.decimals || 0);
