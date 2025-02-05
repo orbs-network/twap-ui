@@ -106,8 +106,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const connect = useConnectWallet();
   const { data: dappTokens } = useDappTokens();
   const { isDarkTheme } = useTheme();
-  const [fromToken, setFromToken] = useState(undefined);
-  const [toToken, setToToken] = useState(undefined);
+  const [fromToken, setFromToken] = useState<any>(undefined);
+  const [toToken, setToToken] = useState<any>(undefined);
 
   const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
     return useTrade(fromToken, toToken, amount, dappTokens);
@@ -138,14 +138,16 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setToToken(fromToken);
   };
 
+  console.log({ fromToken });
+
   return (
     <TWAP
       connect={connect}
       account={account}
       connector={connector}
-      srcToken={fromToken}
-      dstToken={toToken}
-      dappTokens={dappTokens}
+      srcTokenAddress={fromToken?.address}
+      dstTokenAddress={toToken?.address}
+      dexTokens={dappTokens}
       isDarkTheme={isDarkTheme}
       useMarketPrice={_useTrade}
       chainId={chainId}

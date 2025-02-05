@@ -34,7 +34,10 @@ export const useConfirmationButton = () => {
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
 
-  const isLoading = usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading || BN(marketPrice || 0).isZero();
+  const isLoading = useMemo(() => {
+    if (!srcToken || !dstToken) return false;
+    return usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading || BN(marketPrice || 0).isZero();
+  }, [usdLoading, srcBalanceLoading, srcTokenFeeLoading, dstTokenFeeLoading, marketPrice, srcToken, dstToken]);
 
   return useMemo(() => {
     if (isWrongChain)

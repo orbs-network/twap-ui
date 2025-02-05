@@ -23,9 +23,10 @@ const useParseToken = () => {
   return useCallback(
     (token?: any) => {
       try {
-        if (!token || !token.symbol) {
-          return;
-        }
+        if (!token) return;
+        console.log({ token });
+
+        if (!token.address) return;
 
         return {
           address: Web3.utils.toChecksumAddress(token.address),
@@ -41,12 +42,23 @@ const useParseToken = () => {
   );
 };
 
+type DexToken = {
+  symbol: string;
+  address: `0x${string}`;
+  name: string;
+  decimals: number;
+  chainId: number;
+  about: string;
+  tags: string[];
+  logoURI: string;
+};
+
 interface AdapterProps extends Partial<WidgetProps> {
   useUSD: (address?: any) => string | undefined;
-  srcToken?: any;
-  dstToken?: any;
+  srcTokenAddress?: string;
+  dstTokenAddress?: string;
   connector?: any;
-  dappTokens?: any;
+  dexTokens?: DexToken[];
   useMarketPrice: (srcToken?: string, dstToken?: string, amount?: string) => { outAmount?: string };
 }
 
@@ -57,8 +69,8 @@ const useWToken = () => {
   return useMemo(() => {
     const wTokenAddress = getNetwork(config.chainId)?.wToken.address;
 
-    return props.dappTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
-  }, [props.dappTokens, config]);
+    return props.dexTokens?.find((it: any) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
+  }, [props.dexTokens, config]);
 };
 
 const useIsNative = () => {
@@ -81,10 +93,10 @@ const useAddresses = () => {
 
   return useMemo(() => {
     return {
-      srcAddress: isNative(props.srcToken) ? wrappedAddress : props.srcToken?.address,
-      dstAddress: isNative(props.dstToken) ? wrappedAddress : props.dstToken?.address,
+      srcAddress: isNative(props.srcTokenAddress) ? wrappedAddress : props.srcTokenAddress,
+      dstAddress: isNative(props.dstTokenAddress) ? wrappedAddress : props.dstTokenAddress,
     };
-  }, [props.srcToken, props.dstToken, isNative, wrappedAddress]);
+  }, [props.srcTokenAddress, props.dstTokenAddress, wrappedAddress, isNative]);
 };
 
 const useMarketPrice = () => {
@@ -113,24 +125,26 @@ const useUsd = () => {
 };
 
 const useParsedTokens = () => {
-  const { dappTokens } = useAdapterContext();
+  const { dexTokens } = useAdapterContext();
   const parseToken = useParseToken();
   return useMemo(() => {
-    return dappTokens.map((t: any) => {
+    return dexTokens?.map((t: any) => {
       return parseToken(t);
     });
-  }, [dappTokens, parseToken]);
+  }, [dexTokens, parseToken]);
 };
 
 const useSelectedParsedTokens = () => {
   const props = useAdapterContext();
   const parseToken = useParseToken();
   return useMemo(() => {
+    const srcToken = props.dexTokens?.find((it: any) => eqIgnoreCase(it.address || "", props.srcTokenAddress || ""));
+    const dstToken = props.dexTokens?.find((it: any) => eqIgnoreCase(it.address || "", props.dstTokenAddress || ""));
     return {
-      srcToken: parseToken(props.srcToken),
-      dstToken: parseToken(props.dstToken),
+      srcToken: parseToken(srcToken),
+      dstToken: parseToken(dstToken),
     };
-  }, [props.srcToken, props.dstToken, parseToken]);
+  }, [props.srcToken, props.dstToken, parseToken, props.dexTokens, props.srcTokenAddress, props.dstTokenAddress]);
 };
 
 export const useProvider = () => {
@@ -156,8 +170,8 @@ const useToken = (addressOrSymbol?: string) => {
   const parsedTokens = useParsedTokens();
   return useMemo(
     () =>
-      parsedTokens?.find((it: Token) => {
-        return eqIgnoreCase(it.address, addressOrSymbol || "") || eqIgnoreCase(it.symbol, addressOrSymbol || "");
+      parsedTokens?.find((it) => {
+        return eqIgnoreCase(it?.address || "", addressOrSymbol || "") || eqIgnoreCase(it?.symbol || "", addressOrSymbol || "");
       }),
     [parsedTokens, addressOrSymbol],
   );
@@ -177,6 +191,8 @@ const Content = () => {
   const provider = useProvider();
   const theme = useMemo(() => (props.isDarkTheme ? darkTheme : lightTheme), [props.isDarkTheme]);
   const { srcToken, dstToken } = useSelectedParsedTokens();
+  console.log({ srcToken, dstToken, srcTokenAddress: props.srcTokenAddress, dstTokenAddress: props.dstTokenAddress, token: props.dexTokens });
+
   const { srcUsd, dstUsd } = useUsd();
   const marketPrice = useMarketPrice();
   const config = useConfig();
