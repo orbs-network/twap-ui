@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-sdk",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "TWAP UI",
   "license": "MIT",
   "author": "Orbs",
@@ -23,7 +23,7 @@
   "dependencies": {
     "@defi.org/web3-candies": "^5.0.0",
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-sdk": "^3.0.1",
+    "@orbs-network/twap-sdk": "^3.0.2",
     "@react-icons/all-files": "^4.1.0",
     "bignumber.js": "9.x",
     "moment": "2.x",
