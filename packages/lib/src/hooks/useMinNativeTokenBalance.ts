@@ -1,9 +1,9 @@
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { useCallback } from "react";
-import { useNetwork } from ".";
 import { amountBNV2 } from "../utils";
 import { useWidgetContext } from "../widget/widget-context";
+import { useNetwork } from "./useNetwork";
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const { web3, account } = useWidgetContext();
   const { config } = useWidgetContext();

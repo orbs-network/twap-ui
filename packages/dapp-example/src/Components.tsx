@@ -24,7 +24,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
 import Backdrop from "@mui/material/Backdrop";
 import { Button, styled, TextField, Typography } from "@mui/material";
-import { Components, hooks, isEmpty, size, Styles, Token } from "@orbs-network/twap-ui";
+import { Components, isEmpty, size, Styles, Token, useFormatNumber } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { Config } from "@orbs-network/twap-sdk";
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
@@ -247,7 +247,7 @@ const Row = (props: any) => {
   const item: TokenListItem = data.tokens[index];
   const { balance, isLoading } = useBalance(item.token);
 
-  const formattedValue = hooks.useFormatNumber({ value: balance, decimalScale: 6 });
+  const formattedValue = useFormatNumber({ value: balance, decimalScale: 6 });
 
   if (!item) return null;
   return (

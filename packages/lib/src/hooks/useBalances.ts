@@ -1,9 +1,9 @@
 import { setWeb3Instance, isNativeAddress, erc20 } from "@defi.org/web3-candies";
-import { Token } from "@orbs-network/twap-ui-sdk";
 import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
+import { Token, useWidgetContext } from "..";
 import { REFETCH_BALANCE } from "../consts";
 import { QueryKeys } from "../enums";
-import { useWidgetContext } from "../widget/widget-context";
 import BN from "bignumber.js";
 
 export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, staleTime?: number) => {
@@ -24,4 +24,23 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
     },
   );
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
+};
+
+export const useRefetchBalances = () => {
+  const { refetch: refetchSrcBalance } = useSrcBalance();
+  const { refetch: refetchDstBalance } = useDstBalance();
+
+  return useCallback(async () => {
+    await Promise.all([refetchSrcBalance(), refetchDstBalance()]);
+  }, [refetchSrcBalance, refetchDstBalance]);
+};
+
+export const useSrcBalance = () => {
+  const srcToken = useWidgetContext().srcToken;
+  return useBalance(srcToken);
+};
+
+export const useDstBalance = () => {
+  const dstToken = useWidgetContext().dstToken;
+  return useBalance(dstToken);
 };

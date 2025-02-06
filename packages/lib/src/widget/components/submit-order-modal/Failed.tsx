@@ -3,7 +3,8 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
 import React, { useMemo } from "react";
 import { isNativeBalanceError } from "../../../utils";
-import { useNetwork, useOrderType } from "../../../hooks/hooks";
+import { useOrderName } from "../../../hooks/useOrderName";
+import { useNetwork } from "../../../hooks/useNetwork";
 
 export function Failed({ error }: { error?: any }) {
   const nativeBalance = useMemo(() => isNativeBalanceError(error), [error]);
@@ -20,7 +21,7 @@ export function Failed({ error }: { error?: any }) {
 }
 
 const Title = () => {
-  const type = useOrderType();
+  const type = useOrderName();
 
   return <StyledTitle className="twap-order-modal-failed-title">{`${type} order failed`}</StyledTitle>;
 };

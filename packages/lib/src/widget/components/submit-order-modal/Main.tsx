@@ -1,17 +1,42 @@
 import { styled } from "styled-components";
 import BN from "bignumber.js";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { SwapFlow, SwapStep } from "@orbs-network/swap-ui";
 import { fillDelayText } from "@orbs-network/twap-sdk";
 import { MarketPriceWarning } from "../../../components";
 import { Switch, Button } from "../../../components/base";
 import { OrderDisplay } from "../../../components/OrderDisplay";
-import { useSwapPrice, useFormatNumber, useToggleDisclaimer, useAmountUi, useSubmitOrderButton, useNetwork, useOrderType } from "../../../hooks";
 import { StyledText, StyledColumnFlex } from "../../../styles";
 import { SwapSteps } from "../../../types";
 import { useWidgetContext } from "../../widget-context";
 import { isNativeAddress } from "@defi.org/web3-candies";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
+import { useFormatNumber } from "../../../hooks/useFormatNumber";
+import { useNetwork } from "../../../hooks/useNetwork";
+import { useOrderName } from "../../../hooks/useOrderName";
+import { useAmountUi } from "../../../hooks/useParseAmounts";
+import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
+import { useUsdAmount } from "../../../hooks/useUsdAmounts";
+
+export const useSwapPrice = () => {
+  const { srcUsd, dstUsd, twap } = useWidgetContext();
+
+  const srcAmount = twap.values.srcAmountUI;
+  const outAmountUi = twap.values.destTokenAmountUI;
+
+  const price = useMemo(() => {
+    if (!outAmountUi || !srcAmount) return "0";
+    return BN(outAmountUi).dividedBy(srcAmount).toString();
+  }, [srcAmount, outAmountUi]);
+
+  return {
+    price,
+    usd: useMemo(() => {
+      if (!dstUsd || !srcUsd) return "0";
+      return BN(dstUsd).multipliedBy(price).toString();
+    }, [price, srcUsd, dstUsd]),
+  };
+};
 
 const Price = () => {
   const { srcToken, dstToken, twap } = useWidgetContext();
@@ -60,8 +85,12 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   const {
     translations: t,
     state: { disclaimerAccepted },
+    updateState,
   } = useWidgetContext();
-  const onChange = useToggleDisclaimer();
+
+  const onChange = useCallback(() => {
+    updateState({ disclaimerAccepted: !disclaimerAccepted });
+  }, [disclaimerAccepted, updateState]);
 
   return (
     <OrderDisplay.DetailRow
@@ -88,7 +117,7 @@ const useSteps = () => {
   } = useWidgetContext();
   const wToken = useNetwork()?.wToken;
   const dappWToken = useToken?.(wToken?.address);
-  const orderType = useOrderType();
+  const orderType = useOrderName();
 
   const isNativeIn = isNativeAddress(srcToken?.address || "");
   return useMemo((): SwapStep[] => {
@@ -118,18 +147,18 @@ const useSteps = () => {
   }, [srcToken, swapSteps, wToken, dappWToken?.logoUrl, isNativeIn]);
 };
 
-export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
+export const Main = () => {
   const {
-    state: { swapStatus, swapStep, swapData },
+    state: { swapStatus, swapStep, confirmedData },
     twap,
     uiPreferences,
     translations,
   } = useWidgetContext();
-  const {} = twap;
   const steps = useSteps();
+  const { srcUsd } = useUsdAmount();
 
-  const inUsd = useFormatNumber({ value: swapData?.srcAmountusd, decimalScale: 2 });
-  const outUsd = useFormatNumber({ value: swapData?.outAmountusd, decimalScale: 2 });
+  const inUsd = useFormatNumber({ value: srcUsd, decimalScale: 2 });
+  const outUsd = useFormatNumber({ value: confirmedData?.outAmountusd, decimalScale: 2 });
 
   const usdPrefix = uiPreferences.usd?.prefix || "$";
   const usdSuffix = uiPreferences.usd?.suffix || "";
@@ -150,7 +179,7 @@ export const Main = ({ onSubmit }: { onSubmit: () => void }) => {
           <Details />
           <StyledColumnFlex gap={15}>
             <AcceptDisclaimer />
-            <SubmitButton onClick={onSubmit} />
+            <SubmitButton />
           </StyledColumnFlex>
         </>
       )}
@@ -224,8 +253,8 @@ const Fee = () => {
   return <OrderDisplay.DetailRow title={`Fee (${fee}%)`}>{amountUi ? `${amountUi} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>;
 };
 
-export const SubmitButton = ({ onClick }: { onClick: () => void }) => {
-  const button = useSubmitOrderButton(onClick);
+export const SubmitButton = () => {
+  const button = useSubmitOrderButton();
 
   return (
     <Button className="twap-order-modal-submit-btn twap-submit-button" onClick={button.onClick ? button.onClick : () => null} loading={button.loading} disabled={button.disabled}>

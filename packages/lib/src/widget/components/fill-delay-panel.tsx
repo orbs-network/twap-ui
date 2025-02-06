@@ -5,7 +5,6 @@ import { TimeUnit } from "@orbs-network/twap-sdk";
 import { Label, Message, NumericInput, ResolutionSelect } from "../../components/base";
 import React, { ReactNode, useCallback } from "react";
 import { handleFillDelayText } from "../../utils";
-import { useMinimumDelayMinutes } from "../../hooks";
 import { useWidgetContext } from "../..";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
@@ -70,12 +69,11 @@ const WarningComponent = () => {
 };
 
 const TradeIntervalLabel = () => {
-  const translations = useWidgetContext().translations;
-  const getMinimumDelayMinutes = useMinimumDelayMinutes();
+  const { translations, twap } = useWidgetContext();
   return (
     <Label className="twap-trade-interval-panel-label">
       <Label.Text text={translations.tradeInterval} />
-      <Label.Info text={handleFillDelayText(translations.tradeIntervalTootlip, getMinimumDelayMinutes)} />
+      <Label.Info text={handleFillDelayText(translations.tradeIntervalTootlip, twap.values.estimatedDelayBetweenChunksMillis)} />
     </Label>
   );
 };

@@ -1,12 +1,13 @@
 import React from "react";
 import { Message } from "../../components/base";
-import { useFormatNumber, useSrcChunkAmountUsd } from "../../hooks";
+import { useFormatNumber } from "../../hooks/useFormatNumber";
+import { useSrcChunkAmountUSD } from "../../hooks/useSrcChunkAmountUSD";
 import { useWidgetContext } from "../widget-context";
 
 const useTradeSizeMessage = () => {
   const { srcUsd, twap, srcToken } = useWidgetContext();
   const srcChunksAmount = twap.values.srcChunksAmountUI;
-  const srcChunkAmountUsd = useSrcChunkAmountUsd();
+  const srcChunkAmountUsd = useSrcChunkAmountUSD();
   const _usd = useFormatNumber({ value: srcChunkAmountUsd, decimalScale: 2 });
   const chunkSizeFormatted = useFormatNumber({ value: srcChunksAmount });
   const usd = _usd ? `($${_usd})` : "";

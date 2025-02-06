@@ -11,7 +11,7 @@ import { Orders } from "./components/orders/Orders";
 import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
 import { PoweredbyOrbsWithPortal } from "./components/powered-by-orbs";
 import { LimitPriceWarningPortal } from "../components";
-import { useAllowance } from "../hooks/useAllowance";
+import { useHasAllowance } from "../hooks/useAllowance";
 
 export const WidgetContext = createContext({} as WidgetContextType);
 const queryClient = new QueryClient({
@@ -44,7 +44,7 @@ const contextReducer = (state: State, action: Action): State => {
 };
 
 const Listeners = () => {
-  useAllowance();
+  useHasAllowance();
 
   return null;
 };

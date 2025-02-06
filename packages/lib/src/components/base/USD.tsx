@@ -1,10 +1,10 @@
 import { styled } from "styled-components";
 import React from "react";
 import { SQUIGLE } from "../../config";
-import { useFormatNumber } from "../../hooks/hooks";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
 import { useWidgetContext } from "../..";
+import { useFormatNumber } from "../../hooks/useFormatNumber";
 
 const USD = ({
   isLoading = false,

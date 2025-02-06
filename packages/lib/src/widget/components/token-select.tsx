@@ -27,7 +27,7 @@ export const TokenSelect = ({ className = "", isSrcToken }: { className?: string
       <components.TokensListModal onClose={onClose} isOpen={isOpen} isSrcToken={isSrcToken} onSelect={onSelect} />
       <div className={`twap-token-select ${className}`} onClick={onClick}>
         <TokenLogo logo={token?.logoUrl} />
-        <StyledText>{token?.symbol}</StyledText>
+        <StyledText>{token ? token.symbol : "Select"}</StyledText>
         {uiPreferences.tokenSelect?.icon}
       </div>
     </>

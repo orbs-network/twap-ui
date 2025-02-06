@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
 import { dapps } from "./config";
-import { amountUi, size, sortBy, Token } from "@orbs-network/twap-ui";
+import { amountUiV2, size, sortBy, Token } from "@orbs-network/twap-ui";
 import { fetchPrice } from "./utils";
 import BigNumber from "bignumber.js";
 import { useMediaQuery } from "@mui/material";
@@ -160,7 +160,7 @@ export const useBalanceQuery = (token?: Token) => {
 export const useBalance = (token?: Token) => {
   const { data = zero, isLoading } = useBalanceQuery(token);
 
-  return { balance: amountUi(token, data), isLoading };
+  return { balance: amountUiV2(token?.decimals, data), isLoading };
 };
 
 export function useDebounce(value: string, delay: number) {

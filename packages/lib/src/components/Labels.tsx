@@ -2,7 +2,6 @@ import React from "react";
 import { Styles, Translations, useWidgetContext } from "..";
 import { Label } from "./base";
 import { handleFillDelayText } from "../utils";
-import { useMinimumDelayMinutes } from "../hooks/lib";
 
 export function ChunksAmountLabel() {
   const translations = useWidgetContext().translations;
@@ -55,17 +54,6 @@ export const MaxDurationLabel = () => {
     <Label>
       <Label.Text text={translations.expiry} />
       <Label.Info text={translations.maxDurationTooltip} />
-    </Label>
-  );
-};
-
-export const TradeIntervalLabel = () => {
-  const translations = useWidgetContext().translations;
-  const getMinimumDelayMinutes = useMinimumDelayMinutes();
-  return (
-    <Label>
-      <Label.Text text={translations.tradeInterval} />
-      <Label.Info text={handleFillDelayText(translations.tradeIntervalTootlip, getMinimumDelayMinutes)} />
     </Label>
   );
 };

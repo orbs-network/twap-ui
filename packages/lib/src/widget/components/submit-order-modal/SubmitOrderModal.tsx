@@ -1,21 +1,23 @@
-import { useSubmitOrderFlow } from "../../../hooks/useTransactions";
 import { Main } from "./Main";
 import React from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
-import { useFormatNumber, useNetwork, useOrderType, useSwapModal } from "../../../hooks";
 import { useWidgetContext } from "../../..";
 import { Failed } from "./Failed";
+import { useFormatNumber } from "../../../hooks/useFormatNumber";
+import { useSwapModal } from "../../../hooks/useSwapModal";
+import { useNetwork } from "../../../hooks/useNetwork";
+import { useOrderName } from "../../../hooks/useOrderName";
 
 export const SubmitOrderModal = ({ className = "" }: { className?: string }) => {
-  const { mutate: onSubmit, swapStatus, error } = useSubmitOrderFlow();
   const {
-    state: { createOrderTxHash, swapData },
+    state: { confirmedData, swapStatus, swapError, srcAmount },
     components: { Modal },
+    srcToken,
+    dstToken,
   } = useWidgetContext();
   const { isOpen, onClose } = useSwapModal();
-  const explorerUrl = useNetwork()?.explorer;
-  const srcAmountF = useFormatNumber({ value: swapData?.srcAmount });
-  const outAmountF = useFormatNumber({ value: swapData?.outAmount });
+  const srcAmountF = useFormatNumber({ value: srcAmount });
+  const outAmountF = useFormatNumber({ value: confirmedData?.outAmount });
 
   return (
     <Modal isOpen={Boolean(isOpen)} onClose={onClose}>
@@ -23,17 +25,17 @@ export const SubmitOrderModal = ({ className = "" }: { className?: string }) => 
         className={className}
         inAmount={srcAmountF}
         outAmount={outAmountF}
-        mainContent={<Main onSubmit={onSubmit} />}
+        mainContent={<Main />}
         swapStatus={swapStatus}
         successContent={<SuccessContent />}
-        failedContent={<Failed error={error} />}
+        failedContent={<Failed error={swapError} />}
         inToken={{
-          symbol: swapData?.srcToken?.symbol,
-          logo: swapData?.srcToken?.logoUrl,
+          symbol: srcToken?.symbol,
+          logo: srcToken?.logoUrl,
         }}
         outToken={{
-          symbol: swapData?.dstToken?.symbol,
-          logo: swapData?.dstToken?.logoUrl,
+          symbol: dstToken?.symbol,
+          logo: dstToken?.logoUrl,
         }}
       />
     </Modal>
@@ -46,7 +48,7 @@ const SuccessContent = () => {
   } = useWidgetContext();
   const explorerUrl = useNetwork()?.explorer;
 
-  const orderType = useOrderType();
+  const orderType = useOrderName();
 
   return <SwapFlow.Success title={`${orderType} order created`} explorerUrl={`${explorerUrl}/tx/${createOrderTxHash}`} />;
 };

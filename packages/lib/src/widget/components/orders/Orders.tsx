@@ -5,7 +5,6 @@ import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
 import { OrderHistoryList } from "./OrderHistoryList";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { useMemo } from "react";
-import { useOpenOrders } from "../../../hooks";
 import { size } from "../../../utils";
 import { Portal, Spinner } from "../../../components/base";
 import { StyledColumnFlex, StyledRowFlex } from "../../../styles";
@@ -29,17 +28,17 @@ export const Orders = ({ className = "" }: { className?: string }) => {
 };
 
 export const OrdersButton = ({ className = "" }: { className?: string }) => {
-  const openOrders = useOpenOrders();
+  const openOrders = useOrderHistoryManager().groupedOrdersByStatus?.open;
   const {
     state: { newOrderLoading },
   } = useWidgetContext();
   const { onOpen, isLoading } = useOrderHistoryContext();
   const text = useMemo(() => {
     if (isLoading) {
-      return "Loading orders...";
+      return "Loading orders";
     }
     if (newOrderLoading) {
-      return "Loading created order...";
+      return "Updating orders";
     }
 
     return `${size(openOrders)} Open orders`;

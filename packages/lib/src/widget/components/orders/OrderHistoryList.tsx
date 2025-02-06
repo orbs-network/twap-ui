@@ -6,10 +6,10 @@ import * as React from "react";
 import moment from "moment";
 import { Virtuoso } from "react-virtuoso";
 import { Loader, TokenLogo } from "../../../components/base";
-import { useFormatNumber } from "../../../hooks";
 import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
 import { size } from "../../../utils";
 import { useWidgetContext } from "../../widget-context";
+import { useFormatNumber } from "../../../hooks/useFormatNumber";
 
 const ListLoader = () => {
   return (

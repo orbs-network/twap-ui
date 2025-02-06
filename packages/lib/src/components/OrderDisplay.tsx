@@ -1,6 +1,5 @@
 import { styled } from "styled-components";
 import React, { ReactNode, useMemo } from "react";
-import { useFormatNumber, useNetwork } from "../hooks/hooks";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
 import { Label } from "./base";
 import moment from "moment";
@@ -8,6 +7,8 @@ import { fillDelayText, makeElipsisAddress } from "../utils";
 import { Token } from "../types";
 import { useWidgetContext } from "..";
 import * as SwapUI from "@orbs-network/swap-ui";
+import { useFormatNumber } from "../hooks/useFormatNumber";
+import { useNetwork } from "../hooks/useNetwork";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useWidgetContext()?.translations;

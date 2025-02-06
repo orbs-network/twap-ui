@@ -1,12 +1,12 @@
 import React from "react";
 import { Button } from "../../components/base";
-import { useConfirmationButton } from "../../hooks";
+import { useConfirmationButton } from "../../hooks/useConfirmationButton";
 
 export const ShowConfirmationButton = ({ className = "" }: { className?: string }) => {
-  const { onClick, text, disabled, loading } = useConfirmationButton();
+  const { onClick, text, disabled, loading, allowClickWhileLoading } = useConfirmationButton();
 
   return (
-    <Button className={`twap-submit-button ${className}`} onClick={onClick} loading={loading} disabled={disabled}>
+    <Button allowClickWhileLoading={allowClickWhileLoading} className={`twap-submit-button ${className}`} onClick={onClick} loading={loading} disabled={disabled}>
       {text}
     </Button>
   );

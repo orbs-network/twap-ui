@@ -7,7 +7,20 @@ import { Dapp, Popup, TokensList, UISelector } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { SelectorOption, TokenListItem } from "../types";
-import { mapCollection, size, TooltipProps, Configs, TokensListModalProps, ModalProps, ButtonProps, Widget, Token } from "@orbs-network/twap-ui";
+import {
+  mapCollection,
+  size,
+  TooltipProps,
+  Configs,
+  TokensListModalProps,
+  ModalProps,
+  ButtonProps,
+  Widget,
+  Token,
+  OnWrapSuccessArgs,
+  OnApproveSuccessArgs,
+  OnCreateOrderSuccessArgs,
+} from "@orbs-network/twap-ui";
 import { DappProvider } from "../context";
 import { network } from "@defi.org/web3-candies";
 
@@ -89,16 +102,16 @@ const Tooltip = (props: TooltipProps) => {
   );
 };
 
-const onWrapSuccess = (srcToken: any, txHash: string) => {
-  console.log("onWrapSuccess", srcToken, txHash);
+const onWrapSuccess = (args: OnWrapSuccessArgs) => {
+  console.log("onWrapSuccess", args.token, args.txHash);
 };
 
-const onApproveSuccess = (srcToken: any, txHash: string) => {
-  console.log("onApproveSuccess", srcToken, txHash);
+const onApproveSuccess = (args: OnApproveSuccessArgs) => {
+  console.log("onApproveSuccess", args.token, args.txHash);
 };
 
-const onCreateOrderSuccess = (srcToken: Token, dstToken: Token, srcAmount: string, dstAmount: string, orderId?: number) => {
-  console.log("onCreateOrderSuccess", srcToken, dstToken, srcAmount, dstAmount, orderId);
+const onCreateOrderSuccess = (args: OnCreateOrderSuccessArgs) => {
+  console.log("onCreateOrderSuccess");
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -155,9 +168,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       onDstTokenSelected={setToToken}
       onSwitchTokens={onSwitchTokens}
       components={{ Tooltip, TokensListModal, Modal }}
-      onWrapSuccess={onWrapSuccess}
-      onApproveSuccess={onApproveSuccess}
-      onCreateOrderSuccess={onCreateOrderSuccess}
+      callbacks={{
+        onWrapSuccess,
+        onApproveSuccess,
+        onCreateOrderSuccess,
+      }}
     />
   );
 };

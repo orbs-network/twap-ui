@@ -1,11 +1,14 @@
 import { useMemo } from "react";
 import BN from "bignumber.js";
-import { useUnwrapToken, useWrapOnly } from "./useTransactions";
 import { useSwapModal } from "./useSwapModal";
-import { useChangeNetwork, useSrcBalance } from "./hooks";
-import { useBalanceWaning, useShouldOnlyWrap, useShouldUnwrap } from "./lib";
 import { useWidgetContext } from "..";
-import { useFeeOnTransfer } from "./useFeeOnTransfer";
+import { useSwitchChain } from "./useSwitchChain";
+import { useShouldOnlyWrap, useShouldUnwrap } from "./useShouldWraoOrUnwrap";
+import { useSrcBalance } from "./useBalances";
+import { useBalanceWaning, useFeeOnTransferError } from "./useWarnings";
+import { useWrapOnly } from "./useWrapToken";
+import { useUnwrapToken } from "./useUnwrapToken";
+import { SwapStatus } from "@orbs-network/swap-ui";
 
 export const useConfirmationButton = () => {
   const {
@@ -20,24 +23,25 @@ export const useConfirmationButton = () => {
       errors: { hasErrors },
     },
     marketPrice,
+    state: { swapStatus },
   } = useWidgetContext();
 
   const { onOpen } = useSwapModal();
-  const { changeNetwork, loading: changeNetworkLoading } = useChangeNetwork();
+  const { changeNetwork, loading: changeNetworkLoading } = useSwitchChain();
   const shouldUnwrap = useShouldUnwrap();
   const usdLoading = BN(srcUsd || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
   const balanceError = useBalanceWaning();
-  const { isLoading: srcTokenFeeLoading } = useFeeOnTransfer(srcToken?.address);
-  const { isLoading: dstTokenFeeLoading } = useFeeOnTransfer(dstToken?.address);
+  const { feeError, isLoading: feeOnTransferLoading } = useFeeOnTransferError();
+
   const shouldOnlyWrap = useShouldOnlyWrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
 
   const isLoading = useMemo(() => {
     if (!srcToken || !dstToken) return false;
-    return usdLoading || srcBalanceLoading || srcTokenFeeLoading || dstTokenFeeLoading || BN(marketPrice || 0).isZero();
-  }, [usdLoading, srcBalanceLoading, srcTokenFeeLoading, dstTokenFeeLoading, marketPrice, srcToken, dstToken]);
+    return swapStatus === SwapStatus.LOADING || usdLoading || srcBalanceLoading || feeOnTransferLoading || BN(marketPrice || 0).isZero();
+  }, [usdLoading, srcBalanceLoading, feeOnTransferLoading, marketPrice, srcToken, dstToken, swapStatus]);
 
   return useMemo(() => {
     if (isWrongChain)
@@ -74,7 +78,8 @@ export const useConfirmationButton = () => {
       text: translations.placeOrder,
       onClick: onOpen,
       loading: isLoading,
-      disabled: isLoading || hasErrors || !!balanceError,
+      disabled: Boolean(feeError) || isLoading || hasErrors || !!balanceError,
+      allowClickWhileLoading: true,
     };
   }, [
     isWrongChain,
@@ -93,5 +98,6 @@ export const useConfirmationButton = () => {
     onOpen,
     hasErrors,
     balanceError,
+    feeError,
   ]);
 };

@@ -1,22 +1,21 @@
-import React, { useCallback } from "react";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useWidgetContext } from "..";
-import { useAllowance } from "./useAllowance";
+import { useHasAllowance } from "./useAllowance";
+import { useSwapModal } from "./useSwapModal";
 
-export function useSubmitOrderButton(onClick?: () => void) {
+export function useSubmitOrderButton() {
   const {
     translations: t,
     state: { swapStatus, disclaimerAccepted },
   } = useWidgetContext();
+  const { onSubmit } = useSwapModal();
   const isLoading = swapStatus === SwapStatus.LOADING;
-
-  const { isLoading: allowanceLoading } = useAllowance();
-
+  const { isLoading: allowanceLoading } = useHasAllowance();
   const loading = isLoading || allowanceLoading;
 
   return {
     text: t.placeOrder,
-    onClick: onClick,
+    onClick: onSubmit,
     loading,
     disabled: loading || !disclaimerAccepted,
   };

@@ -3,7 +3,6 @@ import { useReducer, useCallback, useMemo } from "react";
 import * as SDK from "@orbs-network/twap-sdk";
 import { Action, ActionType, State, Token } from "./types";
 import { useDerivedSwapValues } from "./hooks/useDerivedValues";
-import { Config } from "@orbs-network/twap-sdk";
 import { useActionHandlers } from "./hooks/useHandlers";
 import { useLimitPricePanel } from "./hooks/useLimitPricePanel";
 
@@ -34,7 +33,7 @@ const StateRedicer = (state: State, action: Action): State => {
 };
 
 type UseTwapProps = {
-  config: Config;
+  config: SDK.Config;
   isLimitPanel?: boolean;
   srcToken?: Token;
   destToken?: Token;

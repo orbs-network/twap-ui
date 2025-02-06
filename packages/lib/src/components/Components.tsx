@@ -2,14 +2,18 @@ import React, { FC, ReactNode, useCallback } from "react";
 import { Balance, Icon, NumericInput, TokenName, USD, TokenLogo as Logo, Portal } from "./base";
 import { Message } from "./base/Message";
 import styled from "styled-components";
-import { useSrcBalance, useDstBalance, useFormatDecimals, useAmountUi } from "../hooks/hooks";
 import { StyledText, StyledRowFlex } from "../styles";
 import TokenDisplay from "./base/TokenDisplay";
 import { TooltipProps } from "../types";
 import Copy from "./base/Copy";
 import { Styles, useWidgetContext } from "..";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { useShouldWrapOrUnwrapOnly, useSrcChunkAmountUsd, useToken, useUsdAmount } from "../hooks/lib";
+import { useFormatDecimals } from "../hooks/useFormatNumber";
+import { useSrcChunkAmountUSD } from "../hooks/useSrcChunkAmountUSD";
+import { useAmountUi } from "../hooks/useParseAmounts";
+import { useDstBalance, useSrcBalance } from "../hooks/useBalances";
+import { useUsdAmount } from "../hooks/useUsdAmounts";
+import { useShouldWrapOrUnwrapOnly } from "../hooks/useShouldWraoOrUnwrap";
 
 const Input = (props: {
   className?: string;
@@ -107,6 +111,11 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
   );
 };
 
+const useToken = (isSrc?: boolean) => {
+  const { srcToken, dstToken } = useWidgetContext();
+  return isSrc ? srcToken : dstToken;
+};
+
 export const TokenLogo = ({ isSrc, className = "" }: { isSrc?: boolean; className?: string }) => {
   const token = useToken(isSrc);
 
@@ -160,7 +169,7 @@ export const TokenSymbol = ({ isSrc, hideNull, onClick }: { isSrc?: boolean; hid
 };
 
 export function ChunksUSD({ onlyValue, emptyUi, suffix, prefix }: { onlyValue?: boolean; emptyUi?: React.ReactNode; suffix?: string; prefix?: string }) {
-  const usd = useSrcChunkAmountUsd();
+  const usd = useSrcChunkAmountUSD();
 
   return <USD prefix={prefix} suffix={suffix} value={usd} onlyValue={onlyValue} emptyUi={emptyUi} isLoading={!usd} />;
 }

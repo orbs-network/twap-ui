@@ -180,6 +180,27 @@ interface Components {
   Button?: FC<ButtonProps>;
 }
 
+export type OnWrapSuccessArgs = {
+  token: Token;
+  amount: string;
+  txHash: string;
+};
+
+export type OnApproveSuccessArgs = {
+  token: Token;
+  amount?: string;
+  txHash: string;
+};
+
+export type OnCreateOrderSuccessArgs = {
+  srcToken: Token;
+  dstToken: Token;
+  srcAmount: string;
+  dstAmount: string;
+  orderId: number;
+  txHash: string;
+};
+
 export interface WidgetProps {
   chainId?: number;
   account?: any;
@@ -211,12 +232,14 @@ export interface WidgetProps {
   askDataParams?: any[];
   useToken?: (value?: string) => Token | undefined;
   withStyles?: boolean;
-  onWrapSuccess?: (srcToken: Token, txHash: string) => void;
-  onApproveSuccess?: (srcToken: Token, txHash: string) => void;
-  onCreateOrderSuccess?: (srcToken: Token, dstToken: Token, srcAmount: string, dstAmount: string, orderId?: number) => void;
-  onWrapFailed?: (error: string) => void;
-  onApproveFailed?: (error: string) => void;
-  onCreateOrderFailed?: (error: string) => void;
+  callbacks?: {
+    onWrapSuccess?: (args: OnWrapSuccessArgs) => void;
+    onApproveSuccess?: (args: OnApproveSuccessArgs) => void;
+    onCreateOrderSuccess?: (args: OnCreateOrderSuccessArgs) => void;
+    onWrapFailed?: (error: string) => void;
+    onApproveFailed?: (error: string) => void;
+    onCreateOrderFailed?: (error: string) => void;
+  };
 }
 
 export interface WidgetContextType extends WidgetProps {
@@ -347,6 +370,7 @@ export interface State {
   swapStep?: SwapSteps;
   swapSteps?: SwapSteps[];
   swapStatus?: SwapStatus;
+  swapError?: string;
   approveSuccess?: boolean;
   wrapSuccess?: boolean;
   wrapTxHash?: string;
@@ -358,12 +382,8 @@ export interface State {
   disclaimerAccepted?: boolean;
   srcAmount?: string;
   newOrderLoading?: boolean;
-  swapData?: {
-    srcToken?: Token;
-    dstToken?: Token;
-    srcAmount?: string;
+  confirmedData?: {
     outAmount?: string;
-    srcAmountusd?: string;
     outAmountusd?: string;
   };
 }

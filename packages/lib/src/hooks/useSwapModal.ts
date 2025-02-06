@@ -1,7 +1,8 @@
 import { useCallback } from "react";
-import { SwapStatus } from "@orbs-network/swap-ui";
-import { useUsdAmount } from ".";
 import { useWidgetContext } from "..";
+import { useSubmitOrderFlow } from "./useSubmitOrderFlow";
+import { useUsdAmount } from "./useUsdAmounts";
+import { SwapStatus } from "@orbs-network/swap-ui";
 
 export const useSwitchNativeToWrapped = () => {
   const { onSrcTokenSelected } = useWidgetContext();
@@ -12,12 +13,15 @@ export const useSwitchNativeToWrapped = () => {
 export const useSwapModal = () => {
   const {
     state: { showConfirmation: isOpen },
+    twap: {
+      values: { destTokenAmountUI },
+    },
   } = useWidgetContext();
-  const { resetState, state, srcToken, dstToken, twap, updateState } = useWidgetContext();
+  const { resetState, state, updateState } = useWidgetContext();
   const nativeToWrapped = useSwitchNativeToWrapped();
-  const srcAmount = twap.values.srcAmountUI;
-  const outAmount = twap.values.destTokenAmountUI;
-  const { srcUsd: srcAmountusd, dstUsd: outAmountusd } = useUsdAmount();
+  const { mutate: onSubmit } = useSubmitOrderFlow();
+  const { dstUsd } = useUsdAmount();
+
   const { swapStatus } = state;
   const onClose = useCallback(
     (closeDalay?: number) => {
@@ -26,7 +30,7 @@ export const useSwapModal = () => {
         nativeToWrapped();
       }
 
-      if (state.swapStatus) {
+      if (state.swapStatus === SwapStatus.SUCCESS || state.swapStatus === SwapStatus.FAILED) {
         setTimeout(() => {
           resetState();
         }, closeDalay || 300);
@@ -38,20 +42,17 @@ export const useSwapModal = () => {
   const onOpen = useCallback(() => {
     updateState({
       showConfirmation: true,
-      swapData: {
-        srcToken,
-        dstToken,
-        srcAmount,
-        outAmount,
-        srcAmountusd,
-        outAmountusd,
+      confirmedData: {
+        outAmount: destTokenAmountUI || "",
+        outAmountusd: dstUsd,
       },
     });
-  }, [updateState, srcToken, dstToken, srcAmount, outAmount, srcAmountusd, outAmountusd]);
+  }, [updateState, destTokenAmountUI, dstUsd]);
 
   return {
     onClose,
     onOpen,
     isOpen,
+    onSubmit,
   };
 };

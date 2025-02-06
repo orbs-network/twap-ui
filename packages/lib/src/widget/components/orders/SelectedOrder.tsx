@@ -6,13 +6,14 @@ import BN from "bignumber.js";
 import { OrderStatus, Order } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import moment from "moment";
-import { Separator } from "../../../components";
 import { OrderDisplay } from "../../../components/OrderDisplay";
-import { useAmountUi, useCancelOrder, useFormatNumber } from "../../../hooks";
 import { StyledColumnFlex, StyledText } from "../../../styles";
 import { Token } from "../../../types";
 import { Button } from "../../../components/base";
 import { useWidgetContext } from "../../widget-context";
+import { useCancelOrder } from "../../../hooks/useCancelOrder";
+import { useAmountUi } from "../../../hooks/useParseAmounts";
+import { useFormatNumber } from "../../../hooks/useFormatNumber";
 
 export const SelectedOrder = () => {
   const order = useSelectedOrder();

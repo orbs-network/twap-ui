@@ -1,13 +1,17 @@
 import React, { createContext, FC, Fragment, ReactElement, ReactNode, useCallback, useContext, useState } from "react";
-import { useAmountUi, useDstBalance, useFormatNumber, useSrcBalance } from "../../hooks/hooks";
 import { Label, TokenLogo } from "../../components/base";
 import { TokenPanelInput } from "../../components";
-import { useBalanceWaning, useOnSrcAmountPercent, useUsdAmount } from "../../hooks/lib";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { styled } from "@mui/material";
 import { Panel } from "../../components/Panel";
 import { useWidgetContext } from "../widget-context";
 import { TokenSelect } from "./token-select";
+import { useDstBalance, useSrcBalance } from "../../hooks/useBalances";
+import { useUsdAmount } from "../../hooks/useUsdAmounts";
+import { useBalanceWaning } from "../../hooks/useWarnings";
+import { useAmountUi } from "../../hooks/useParseAmounts";
+import { useFormatNumber } from "../../hooks/useFormatNumber";
+import { useOnSrcInputPercentClick } from "../../hooks/useOnSrcInputPercentClick";
 
 const Context = createContext({} as { isSrcToken: boolean });
 const useTokenPanelContext = () => useContext(Context);
@@ -117,7 +121,7 @@ const BalanceAmountSelect = ({
   options?: { value: number; text: string }[];
   className?: string;
 }) => {
-  const onClick = useOnSrcAmountPercent();
+  const onClick = useOnSrcInputPercentClick();
   const { isSrcToken } = useTokenPanelContext();
   if (!isSrcToken) return null;
 
@@ -135,7 +139,7 @@ const BalanceAmountSelect = ({
 };
 
 const Main = ({ className = "" }: { className?: string }) => {
-  const onSrcAmountPercent = useOnSrcAmountPercent();
+  const onSrcAmountPercent = useOnSrcInputPercentClick();
   const { isSrcToken } = useTokenPanelContext();
 
   const onBalance = useCallback(() => {

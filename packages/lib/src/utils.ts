@@ -41,13 +41,6 @@ export const makeElipsisAddress = (address?: string, padding?: AddressPadding): 
   return `${address.substring(0, padding?.start || 6)}...${address.substring(address.length - (padding?.end || 5))}`;
 };
 
-export const amountBN = (token: TokenData | undefined, amount: string) => parsebn(amount).times(BN(10).pow(token?.decimals || 0));
-export const amountUi = (token: TokenData | undefined, amount: BN) => {
-  if (!token) return "";
-  const percision = BN(10).pow(token?.decimals || 0);
-  return amount.times(percision).idiv(percision).div(percision).toFormat();
-};
-
 export const amountUiV2 = (decimals?: number, amount?: string) => {
   if (!decimals || !amount) return "";
   const percision = BN(10).pow(decimals || 0);
@@ -387,4 +380,14 @@ export const flatMapObject = <T, U = T>(obj?: T, iteratee?: (value: T, key: stri
 
 export const getNetwork = (id?: number) => {
   return Object.values(networks).find((network) => network.id === id);
+};
+
+export const getMinNativeBalance = (chainId: number) => {
+  switch (chainId) {
+    case networks.base.id:
+      return 0.0001;
+
+    default:
+      return 0.01;
+  }
 };

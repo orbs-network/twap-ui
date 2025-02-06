@@ -1,10 +1,10 @@
 import { Config, Configs } from "@orbs-network/twap-sdk";
-import { Translations, hooks, Styles, getNetwork, Widget, UIPreferences, WidgetProps, WidgetProvider, useWidgetContext, Token } from "@orbs-network/twap-ui";
+import { Translations, Styles, getNetwork, Widget, UIPreferences, WidgetProps, WidgetProvider, useAmountBN } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, useContext, useEffect, useMemo } from "react";
 import Web3 from "web3";
 import React, { useCallback, useState } from "react";
-import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledLimitAndInputs, StyledTwapInputs } from "./styles";
+import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledTwapInputs } from "./styles";
 import BN from "bignumber.js";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
@@ -24,7 +24,6 @@ const useParseToken = () => {
     (token?: any) => {
       try {
         if (!token) return;
-        console.log({ token });
 
         if (!token.address) return;
 
@@ -103,7 +102,7 @@ const useMarketPrice = () => {
   const props = useAdapterContext();
   const { srcAddress, dstAddress } = useAddresses();
   const { srcToken } = useSelectedParsedTokens();
-  const amount = hooks.useAmountBN(srcToken?.decimals, "1");
+  const amount = useAmountBN(srcToken?.decimals, "1");
 
   const trade = props.useMarketPrice(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
 
@@ -191,7 +190,6 @@ const Content = () => {
   const provider = useProvider();
   const theme = useMemo(() => (props.isDarkTheme ? darkTheme : lightTheme), [props.isDarkTheme]);
   const { srcToken, dstToken } = useSelectedParsedTokens();
-  console.log({ srcToken, dstToken, srcTokenAddress: props.srcTokenAddress, dstTokenAddress: props.dstTokenAddress, token: props.dexTokens });
 
   const { srcUsd, dstUsd } = useUsd();
   const marketPrice = useMarketPrice();
@@ -221,6 +219,7 @@ const Content = () => {
         isExactAppoval={true}
         components={props.components!}
         useToken={useToken}
+        callbacks={props.callbacks}
       >
         <GlobalStyles />
         <Styles.StyledColumnFlex gap={16}>
