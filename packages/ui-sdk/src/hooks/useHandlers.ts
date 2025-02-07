@@ -5,7 +5,7 @@ import { TimeDuration } from "@orbs-network/twap-sdk";
 type UpdateState = (value: Partial<State>) => void;
 
 export const useActionHandlers = (dispatch: React.Dispatch<Action>, updateState: UpdateState) => {
-  const resetTwap = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
+  const resetTwap = useCallback(() => dispatch({ type: ActionType.RESET }), [dispatch]);
 
   return {
     setIsMarketPrice: useCallback((isMarketOrder: boolean) => updateState({ isMarketOrder }), [updateState]),

@@ -4,21 +4,17 @@ import { useSubmitOrderFlow } from "./useSubmitOrderFlow";
 import { useUsdAmount } from "./useUsdAmounts";
 import { SwapStatus } from "@orbs-network/swap-ui";
 
-export const useSwitchNativeToWrapped = () => {
-  const { onSrcTokenSelected } = useWidgetContext();
-
-  return useCallback(() => {}, [onSrcTokenSelected]);
-};
-
 export const useSwapModal = () => {
   const {
     state: { showConfirmation: isOpen },
     twap: {
+      actionHandlers,
       values: { destTokenAmountUI },
     },
+    srcToken,
+    dstToken,
   } = useWidgetContext();
   const { resetState, state, updateState } = useWidgetContext();
-  const nativeToWrapped = useSwitchNativeToWrapped();
   const { mutate: onSubmit } = useSubmitOrderFlow();
   const { dstUsd } = useUsdAmount();
 
@@ -26,17 +22,18 @@ export const useSwapModal = () => {
   const onClose = useCallback(
     (closeDalay?: number) => {
       updateState({ showConfirmation: false });
-      if (state.wrapSuccess) {
-        nativeToWrapped();
-      }
-
-      if (state.swapStatus === SwapStatus.SUCCESS || state.swapStatus === SwapStatus.FAILED) {
+      if (state.swapStatus === SwapStatus.SUCCESS) {
         setTimeout(() => {
           resetState();
+          actionHandlers.resetTwap();
         }, closeDalay || 300);
       }
+
+      if (state.swapStatus === SwapStatus.FAILED) {
+        updateState({ swapStatus: undefined, swapStep: undefined });
+      }
     },
-    [swapStatus, nativeToWrapped, resetState, state, updateState],
+    [swapStatus, resetState, state, updateState, actionHandlers],
   );
 
   const onOpen = useCallback(() => {
@@ -45,9 +42,11 @@ export const useSwapModal = () => {
       confirmedData: {
         outAmount: destTokenAmountUI || "",
         outAmountusd: dstUsd,
+        srcToken,
+        dstToken,
       },
     });
-  }, [updateState, destTokenAmountUI, dstUsd]);
+  }, [updateState, destTokenAmountUI, dstUsd, srcToken, dstToken]);
 
   return {
     onClose,

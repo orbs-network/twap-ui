@@ -2,8 +2,9 @@ import React, { createContext, ReactNode, useCallback } from "react";
 import { Label, Message } from "../../components/base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
 import { StyledRowFlex } from "../../styles";
-import { styled } from "@mui/material";
 import { useWidgetContext } from "../..";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
+import styled from "styled-components";
 
 type Option = { text: string; value: TimeUnit };
 
@@ -62,6 +63,10 @@ const Buttons = ({ className = "" }: { className?: string }) => {
 };
 
 export const DurationPanel = ({ children, className = "", options = Options }: { children: ReactNode; className?: string; options?: Option[] }) => {
+  const hide = useShouldWrapOrUnwrapOnly();
+
+  if (hide) return null;
+
   return (
     <PanelContext.Provider value={{ options: Options }}>
       <div className={`twap-duration-panel ${className}`}>{children}</div>

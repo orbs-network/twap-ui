@@ -12,8 +12,6 @@ export const SubmitOrderModal = ({ className = "" }: { className?: string }) => 
   const {
     state: { confirmedData, swapStatus, swapError, srcAmount },
     components: { Modal },
-    srcToken,
-    dstToken,
   } = useWidgetContext();
   const { isOpen, onClose } = useSwapModal();
   const srcAmountF = useFormatNumber({ value: srcAmount });
@@ -30,12 +28,12 @@ export const SubmitOrderModal = ({ className = "" }: { className?: string }) => 
         successContent={<SuccessContent />}
         failedContent={<Failed error={swapError} />}
         inToken={{
-          symbol: srcToken?.symbol,
-          logo: srcToken?.logoUrl,
+          symbol: confirmedData?.srcToken?.symbol,
+          logo: confirmedData?.srcToken?.logoUrl,
         }}
         outToken={{
-          symbol: dstToken?.symbol,
-          logo: dstToken?.logoUrl,
+          symbol: confirmedData?.dstToken?.symbol,
+          logo: confirmedData?.dstToken?.logoUrl,
         }}
       />
     </Modal>

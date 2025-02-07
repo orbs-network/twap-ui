@@ -8,9 +8,10 @@ import { useOrderHistoryManager } from "./useOrderHistoryManager";
 import { useWrapToken } from "./useWrapToken";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useRefetchBalances } from "./useBalances";
-import { useShouldWrap } from "./useShouldWraoOrUnwrap";
+import { useShouldWrap } from "./useShouldWrapOrUnwrap";
 import { useHasAllowance } from "./useAllowance";
 import { useNetwork } from "./useNetwork";
+import { useRef } from "react";
 
 const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
   let steps: number[] = [];
@@ -27,8 +28,8 @@ const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 };
 
 export const useSubmitOrderFlow = () => {
-  const { state, twap, updateState, callbacks, srcToken, dstToken } = useWidgetContext();
-  const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash, wrapSuccess } = state;
+  const { state, twap, updateState, callbacks, srcToken, dstToken, onSwitchFromNativeToWtoken } = useWidgetContext();
+  const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash } = state;
   const { data: haveAllowance, refetch: refetchAllowance } = useHasAllowance();
   const shouldWrap = useShouldWrap();
   const { waitForNewOrder } = useOrderHistoryManager();
@@ -37,9 +38,10 @@ export const useSubmitOrderFlow = () => {
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;
-
+  const wrappedRef = useRef(false);
   const mutate = useMutation(
     async () => {
+      wrappedRef.current = false;
       if (!srcToken || !dstToken) {
         throw new Error("Please select a token to swap");
       }
@@ -52,38 +54,33 @@ export const useSubmitOrderFlow = () => {
       logger(`Create order request`);
       updateState({ swapStatus: SwapStatus.LOADING, swapSteps: steps });
 
-      let token = srcToken;
-
       if (shouldWrap) {
         updateState({ swapStep: SwapSteps.WRAP });
         await wrapToken();
-        updateState({ wrapSuccess: true });
-        token = wToken as Token;
+        wrappedRef.current = true;
       }
 
       if (!haveAllowance) {
         updateState({ swapStep: SwapSteps.APPROVE });
-        await approve(token);
+        await approve();
         const res = await refetchAllowance();
         if (!res) {
           throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
         }
-        updateState({ approveSuccess: true });
       }
 
       updateState({ swapStep: SwapSteps.CREATE });
-      const order = await createOrder(token);
-
-      updateState({
-        swapStatus: SwapStatus.SUCCESS,
-      });
-      waitForNewOrder(order.orderId);
+      const order = await createOrder();
+      updateState({ swapStatus: SwapStatus.SUCCESS });
+      console.log({ order });
 
       await refetchBalances();
       return order;
     },
     {
       onSuccess(order) {
+        waitForNewOrder(order.orderId);
+
         callbacks?.onCreateOrderSuccess?.({
           srcToken: srcToken!,
           dstToken: dstToken!,
@@ -95,7 +92,7 @@ export const useSubmitOrderFlow = () => {
       },
 
       onError(error) {
-        if (isTxRejected(error) && !wrapSuccess) {
+        if (isTxRejected(error) && !wrappedRef.current) {
           updateState({ swapStep: undefined, swapStatus: undefined });
         } else {
           updateState({ swapStatus: SwapStatus.FAILED, swapError: (error as any).message });
@@ -104,6 +101,9 @@ export const useSubmitOrderFlow = () => {
 
       onSettled() {
         refetchAllowance();
+        if (wrappedRef.current) {
+          onSwitchFromNativeToWtoken?.();
+        }
       },
     },
   );

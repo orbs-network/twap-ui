@@ -9,3 +9,4 @@ export * from "./consts";
 export { Configs };
 export { useAmountBN, useAmountUi } from "./hooks/useParseAmounts";
 export { useFormatNumber } from "./hooks/useFormatNumber";
+export * as Types from "./types";

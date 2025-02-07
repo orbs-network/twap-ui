@@ -1,7 +1,6 @@
 import { sendAndWaitForConfirmations, zero } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useWidgetContext } from "..";
-import { Token } from "../types";
 import { logger } from "../utils";
 import { useTwapContract } from "./useContracts";
 import { useGasPrice } from "./useGasPrice";
@@ -15,18 +14,10 @@ export const useCreateOrder = () => {
   const twapContract = useTwapContract();
 
   return useMutation(
-    async (srcToken: Token) => {
-      if (!dstToken) {
-        throw new Error("dstToken is not defined");
-      }
-
-      if (!twapContract) {
-        throw new Error("twapContract is not defined");
-      }
-
-      if (!account) {
-        throw new Error("account is not defined");
-      }
+    async () => {
+      if (!dstToken) throw new Error("dstToken is not defined");
+      if (!twapContract) throw new Error("twapContract is not defined");
+      if (!account) throw new Error("account is not defined");
 
       twap.analytics.onCreateOrderRequest(createOrderArgs, account);
 

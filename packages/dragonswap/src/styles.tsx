@@ -18,20 +18,20 @@ const getStyles = (theme?: DefaultTheme) => {
 
   return {
     isDarkMode,
-    darkText: isDarkMode ? "rgb(191 219 254)" : "rgb(107 114 128/1)",
-    darkTextOpacity: isDarkMode ? "rgb(191 219 254/0.3)" : "rgb(107 114 128/1)",
+    darkText: isDarkMode ? "rgb(191 219 254)" : "rgb(36 54 109/1)",
+    darkTextOpacity: isDarkMode ? "rgb(191 219 254/0.3)" : "rgb(36 54 109/0.3)",
     darkTextHover: isDarkMode ? "rgb(203 213 225/1)" : "rgb(37 99 235/1)",
     warningText: "rgb(239 68 68/1)",
-    textColor: isDarkMode ? "rgb(248 250 252/1)" : "rgb(17 24 39/1)",
+    textColor: isDarkMode ? "rgb(248 250 252/1)" : "rgb(13 20 58)",
     messageText: isDarkMode ? "#94a3b8" : "#6b7280",
     boxHover: isDarkMode ? "rgba(255,255,255, 0.09)" : "rgba(0,0,0, 0.03)",
-    cardBg: isDarkMode ? "rgb(13,20,58)" : "rgb(255, 255, 255)",
-    label: isDarkMode ? "rgb(191 219 254)" : "rgb(107 114 128/1)",
-    label2: isDarkMode ? "rgb(146 197 253)" : "rgb(107 114 128/1)",
-    inputColor: isDarkMode ? "rgb(239 246 255)" : "rgb(17 24 39/1)",
-    errorBorder: isDarkMode ? "rgb(239 68 68)" : "",
-    focusBorder: isDarkMode ? "rgb(8 96 219)" : "",
-    color2: isDarkMode ? "rgb(36 54 109)" : "rgb(107 114 128/1)",
+    cardBg: isDarkMode ? "rgb(13,20,58)" : "rgb(239 246 255)",
+    label: isDarkMode ? "rgb(191 219 254)" : "rgb(36 54 109)",
+    label2: isDarkMode ? "rgb(146 197 253)" : "rgb(29 64 176)",
+    inputColor: isDarkMode ? "rgb(239 246 255)" : "rgb(13 20 58)",
+    errorBorder: "rgb(239 68 68)",
+    focusBorder: "rgb(8 96 219)",
+    color2: isDarkMode ? "rgb(36 54 109)" : "rgb(191 219 254)",
     error: isDarkMode ? "rgb(239 68 68)" : "rgb(239 68 68)",
   };
 };
@@ -43,7 +43,7 @@ const panelLabelStyles = (theme?: DefaultTheme) => {
     color: styles.label,
     fontSize: 14,
     textTransform: "uppercase" as const,
-    fontWeight: 500,
+    fontWeight: 400,
   };
 };
 
@@ -77,7 +77,7 @@ const tokenSelectStyles = (theme: DefaultTheme) => {
   const styles = getStyles(theme);
   return {
     display: "flex",
-    gap: 3,
+    gap: 4,
     background: styles.color2,
     padding: 6,
     borderRadius: 8,
@@ -89,16 +89,17 @@ const tokenSelectStyles = (theme: DefaultTheme) => {
       height: 16,
     },
     svg: {
-      width: 20,
-      height: 20,
-      color: "rgb(146 197 253)",
+      width: "16px!important",
+      height: 16,
+      color: styles.isDarkMode ? "rgb(146 197 253)" : "rgb(29 64 176)",
       stroke: {
-        color: "rgb(146 197 253)",
+        color: styles.isDarkMode ? "rgb(146 197 253)" : "rgb(29 64 176)",
       } as any,
       marginLeft: 5,
     },
     p: {
-      fontSize: 14,
+      fontSize: 16,
+      color: styles.textColor,
     },
   };
 };
@@ -109,8 +110,8 @@ const bigInputStyles = (theme: DefaultTheme) => {
     ".twap-input": {
       input: {
         fontSize: 30,
-        fontWeight: 500,
         color: styles.inputColor,
+        fontWeight: 400,
         "&::placeholder": {
           opacity: 0.6,
         },
@@ -125,7 +126,6 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
   return {
     display: "flex",
     flexDirection: "column" as const,
-    transition: "0.2s all",
     gap: 0,
 
     ".twap-panel-balance-buttons": {
@@ -154,6 +154,7 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
       },
       ".twap-token-panel-balance": {
         fontSize: 14,
+        color: styles.darkText,
         span: {
           color: styles.darkTextOpacity,
         },
@@ -175,6 +176,7 @@ const buttonStyles = (theme: DefaultTheme) => {
 };
 
 const switchTokensStyles = (theme: DefaultTheme) => {
+  const styles = getStyles(theme);
   return {
     display: "flex",
     justifyContent: "center",
@@ -187,12 +189,12 @@ const switchTokensStyles = (theme: DefaultTheme) => {
       left: "50%",
       top: "50%",
       transform: "translate(-50%, -50%)",
-      background: "rgb(29 64 176)",
+      background: styles.isDarkMode ? "rgb(29 64 176)" : "rgb(191 219 254)",
       borderRadius: "50%",
-      border: "4px solid rgb(13 20 58)",
+      border: `4px solid ${styles.cardBg}`,
       width: 48,
       height: 48,
-      color: "white",
+      color: styles.isDarkMode ? "white" : "rgb(13 20 58)",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
@@ -210,11 +212,32 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-inputs-panel": {
+      justifyContent: "space-between",
+      p: {
+        color: styles.textColor,
+        fontSize: 16,
+        fontWeight: 400,
+      },
+    },
+    ".twap-order-modal-failed-logo": {
+      color: styles.error,
+      width: 60,
+      height: 60,
+      svg: {
+        height: "100%",
+        width: "100%",
+      },
+    },
+    ".twap-order-modal-link": {
+      color: styles.textColor,
+      textDecoration: "none",
+    },
     ".twap-order-token-progress-bar": {
       flex: 1,
       height: 4,
       position: "relative",
-      background: styles.darkText,
+      background: styles.isDarkMode ? styles.darkText : "rgba(0,0,0,0.1)",
       overflow: "hidden",
       borderRadius: 20,
     },
@@ -222,7 +245,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       position: "absolute",
       left: 0,
       height: "100%",
-      background: "rgb(36 99 235)",
+      background: styles.isDarkMode ? "rgb(36 99 235)" : "rgb(29 64 176 /0.5)",
     },
     ".twap-order-history-list": {
       "&::-webkit-scrollbar": {
@@ -230,9 +253,9 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
     ".twap-limit-price-message": {
-      background: "#24366D",
+      background: styles.isDarkMode ? "#24366D" : styles.color2,
       color: styles.textColor,
-      padding: 16,
+      padding: "12px 16px",
       borderRadius: 20,
       a: {
         color: styles.textColor,
@@ -279,7 +302,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       color: styles.darkText,
     },
     ".twap-order-history-order": {
-      background: styles.color2,
+      background: styles.isDarkMode ? styles.color2 : "rgb(191 219 254/0.7)",
       marginBottom: 8,
     },
     ".twap-order-history-header-back-icon": {
@@ -288,7 +311,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       top: 2,
     },
     ".twap-loader": {
-      background: "rgba(255,255,255, 0.1)",
+      background: styles.isDarkMode ? "rgba(255,255,255, 0.1)" : "rgba(0,0,0, 0.08)",
     },
     ".twap-orders-list-loader": {
       ".twap-loader": {
@@ -297,12 +320,21 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         borderRadius: 16,
       },
     },
-
+    ".orbs_Spinner": {
+      border: isDarkMode ? "" : `3px solid rgba(0,0,0, 0.7)`,
+      borderBottomColor: isDarkMode ? "" : `rgba(0,0,0, 0.2)`,
+    },
+    ".orbs_MainTokenUsd": {
+      color: styles.darkTextOpacity,
+    },
     ".orbs_MainTokenLeft": {
       gap: 4,
     },
     ".orbs_Main-wrapper": {
       width: "100%",
+    },
+    ".orbs_MainTokenAmount": {
+      fontWeight: 400,
     },
     ".orbs_MainTokenLogo": {
       width: 40,
@@ -314,7 +346,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     ".orbs_MainTokenTitle": {
       color: styles.label,
       fontSize: 14,
-      fontWeight: 500,
+      fontWeight: 400,
       textTransform: "uppercase" as const,
       opacity: 1,
     },
@@ -327,7 +359,8 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       borderRadius: 8,
       gap: 8,
       ".twap-label": {
-        color: "rgb(146 197 253)",
+        color: styles.label2,
+        fontWeight: 400,
       },
       ".twap-message": {
         background: styles.cardBg,
@@ -362,6 +395,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
 
     ".orbs_SwapFlow": {
+      color: styles.textColor,
       ".twap-order-display-details": {
         marginTop: 15,
         marginBottom: 15,
@@ -388,9 +422,9 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
 
     ".twap-order-history-button": {
-      background: "#24366D",
+      background: styles.isDarkMode ? "#24366D" : styles.color2,
       borderRadius: 20,
-      padding: 16,
+      padding: "12px 16px",
       transition: "0.2s all",
       cursor: "pointer",
       color: styles.textColor,
@@ -431,8 +465,16 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       position: "relative" as const,
       top: -3,
       right: -3,
+      color: styles.textColor,
       "&:hover": {
-        background: "rgba(255,255,255,0.1)",
+        background: styles.isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+      },
+    },
+    ".twap-limit-price-panel-title": {
+      ".twap-token-select": {
+        p: {
+          fontSize: 14,
+        },
       },
     },
     ".twap-limit-price-panel-title-text": {
@@ -456,6 +498,8 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       ".twap-input": {
         input: {
           fontSize: 18,
+          color: styles.inputColor,
+          fontWeight: 400,
         },
       },
     },
@@ -488,6 +532,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       alignItems: "center",
       justifyContent: "flex-end",
       marginLeft: "auto",
+      gap: 0,
     },
     ".twap-limit-price-panel-percent-button": {
       ...selectButtonStyles(theme),
@@ -531,15 +576,24 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       ...tokenSelectStyles(theme),
       padding: "7px",
       textTransform: "capitalize" as const,
+      p: {
+        fontSize: 14,
+        color: styles.textColor,
+        fontWeight: 400,
+      },
     },
     ".twap-select-menu-list": {
       background: styles.color2,
-      borderRadius: 8,
+      borderRadius: 12,
+      padding: 8,
       "&-item": {
+        borderRadius: 8,
         color: styles.textColor,
         fontSize: 14,
+        padding: "5px 8px 5px 8px",
+        fontWeight: 400,
         "&:hover": {
-          background: styles.isDarkMode ? "#ffffff0f" : "#0000000a",
+          background: styles.isDarkMode ? "#ffffff0f" : "rgb(239 246 255)",
         },
       },
     },

@@ -1,6 +1,6 @@
 import { setWeb3Instance, isNativeAddress, erc20 } from "@defi.org/web3-candies";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Token, useWidgetContext } from "..";
 import { REFETCH_BALANCE } from "../consts";
 import { QueryKeys } from "../enums";

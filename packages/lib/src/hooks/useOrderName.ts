@@ -1,19 +1,31 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useWidgetContext } from "..";
 
+export const useGetOrderNameCallback = () => {
+  const { translations: t } = useWidgetContext();
+  return useCallback(
+    (isMarketOrder?: boolean, chunks = 1) => {
+      if (isMarketOrder) {
+        return t.twapMarket;
+      }
+      if (chunks === 1) {
+        return t.limit;
+      }
+      return t.twapLimit;
+    },
+    [t],
+  );
+};
+
 export const useOrderName = () => {
-  const { translations: t, isLimitPanel, twap } = useWidgetContext();
+  const { twap } = useWidgetContext();
   const {
     values: { isMarketOrder },
   } = twap;
 
+  const getName = useGetOrderNameCallback();
+
   return useMemo(() => {
-    if (isLimitPanel) {
-      return t.limit;
-    }
-    if (isMarketOrder) {
-      return t.twapMarket;
-    }
-    return t.twapLimit;
-  }, [isLimitPanel, isMarketOrder, t]);
+    return getName(isMarketOrder, twap.values.chunks);
+  }, [getName, isMarketOrder, twap.values.chunks]);
 };

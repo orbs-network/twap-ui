@@ -19,7 +19,7 @@ import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
 import { useUsdAmount } from "../../../hooks/useUsdAmounts";
 
 export const useSwapPrice = () => {
-  const { srcUsd, dstUsd, twap } = useWidgetContext();
+  const { srcUsd1Token, dstUsd1Token, twap } = useWidgetContext();
 
   const srcAmount = twap.values.srcAmountUI;
   const outAmountUi = twap.values.destTokenAmountUI;
@@ -32,9 +32,9 @@ export const useSwapPrice = () => {
   return {
     price,
     usd: useMemo(() => {
-      if (!dstUsd || !srcUsd) return "0";
-      return BN(dstUsd).multipliedBy(price).toString();
-    }, [price, srcUsd, dstUsd]),
+      if (!dstUsd1Token || !srcUsd1Token) return "0";
+      return BN(dstUsd1Token).multipliedBy(price).toString();
+    }, [price, srcUsd1Token, dstUsd1Token]),
   };
 };
 
@@ -60,24 +60,6 @@ const StyledPrice = styled(StyledText)({
   span: {
     opacity: 0.6,
     fontSize: 12,
-  },
-});
-
-const StyledWarning = styled(MarketPriceWarning)({
-  justifyContent: "flex-start",
-  background: "rgb(27, 27, 27)",
-  padding: 8,
-  borderRadius: 12,
-
-  ".twap-warning-message": {
-    gap: 5,
-    fontSize: 14,
-  },
-  ".twap-warning-message-icon": {
-    width: 15,
-    height: 15,
-    top: 3,
-    position: "relative",
   },
 });
 
@@ -150,7 +132,6 @@ const useSteps = () => {
 export const Main = () => {
   const {
     state: { swapStatus, swapStep, confirmedData },
-    twap,
     uiPreferences,
     translations,
   } = useWidgetContext();

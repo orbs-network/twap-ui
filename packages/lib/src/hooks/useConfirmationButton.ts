@@ -3,7 +3,7 @@ import BN from "bignumber.js";
 import { useSwapModal } from "./useSwapModal";
 import { useWidgetContext } from "..";
 import { useSwitchChain } from "./useSwitchChain";
-import { useShouldOnlyWrap, useShouldUnwrap } from "./useShouldWraoOrUnwrap";
+import { useShouldOnlyWrap, useShouldUnwrap } from "./useShouldWrapOrUnwrap";
 import { useSrcBalance } from "./useBalances";
 import { useBalanceWaning, useFeeOnTransferError } from "./useWarnings";
 import { useWrapOnly } from "./useWrapToken";
@@ -13,23 +13,24 @@ import { SwapStatus } from "@orbs-network/swap-ui";
 export const useConfirmationButton = () => {
   const {
     isWrongChain,
-    srcUsd,
+    srcUsd1Token,
     account: maker,
     translations,
     connect,
     srcToken,
     dstToken,
     twap: {
-      errors: { hasErrors },
+      errors: { hasErrors, srcAmount: srcAmountError },
     },
-    marketPrice,
+    marketPrice1Token,
     state: { swapStatus },
+    marketPriceLoading,
   } = useWidgetContext();
 
   const { onOpen } = useSwapModal();
   const { changeNetwork, loading: changeNetworkLoading } = useSwitchChain();
   const shouldUnwrap = useShouldUnwrap();
-  const usdLoading = BN(srcUsd || "0").isZero();
+  const usdLoading = BN(srcUsd1Token || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
   const balanceError = useBalanceWaning();
   const { feeError, isLoading: feeOnTransferLoading } = useFeeOnTransferError();
@@ -40,8 +41,8 @@ export const useConfirmationButton = () => {
 
   const isLoading = useMemo(() => {
     if (!srcToken || !dstToken) return false;
-    return swapStatus === SwapStatus.LOADING || usdLoading || srcBalanceLoading || feeOnTransferLoading || BN(marketPrice || 0).isZero();
-  }, [usdLoading, srcBalanceLoading, feeOnTransferLoading, marketPrice, srcToken, dstToken, swapStatus]);
+    return marketPriceLoading || usdLoading || srcBalanceLoading || feeOnTransferLoading || BN(marketPrice1Token || 0).isZero();
+  }, [usdLoading, srcBalanceLoading, feeOnTransferLoading, marketPrice1Token, srcToken, dstToken, marketPriceLoading]);
 
   return useMemo(() => {
     if (isWrongChain)
@@ -69,7 +70,7 @@ export const useConfirmationButton = () => {
       return {
         text: shouldOnlyWrap ? translations.wrap : translations.unwrap,
         onClick: shouldOnlyWrap ? wrap : unwrap,
-        disabled: false,
+        disabled: srcAmountError?.text || balanceError || wrapLoading || unwrapLoading,
         loading: wrapLoading || unwrapLoading,
       };
     }
@@ -77,7 +78,7 @@ export const useConfirmationButton = () => {
     return {
       text: translations.placeOrder,
       onClick: onOpen,
-      loading: isLoading,
+      loading: swapStatus === SwapStatus.LOADING || isLoading,
       disabled: Boolean(feeError) || isLoading || hasErrors || !!balanceError,
       allowClickWhileLoading: true,
     };
@@ -99,5 +100,6 @@ export const useConfirmationButton = () => {
     hasErrors,
     balanceError,
     feeError,
+    srcAmountError,
   ]);
 };

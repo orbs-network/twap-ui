@@ -2,7 +2,6 @@ import React, { createContext, FC, Fragment, ReactElement, ReactNode, useCallbac
 import { Label, TokenLogo } from "../../components/base";
 import { TokenPanelInput } from "../../components";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
-import { styled } from "@mui/material";
 import { Panel } from "../../components/Panel";
 import { useWidgetContext } from "../widget-context";
 import { TokenSelect } from "./token-select";
@@ -12,6 +11,7 @@ import { useBalanceWaning } from "../../hooks/useWarnings";
 import { useAmountUi } from "../../hooks/useParseAmounts";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useOnSrcInputPercentClick } from "../../hooks/useOnSrcInputPercentClick";
+import styled from "styled-components";
 
 const Context = createContext({} as { isSrcToken: boolean });
 const useTokenPanelContext = () => useContext(Context);

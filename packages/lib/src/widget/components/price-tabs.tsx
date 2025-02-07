@@ -1,6 +1,7 @@
 import React, { FC } from "react";
 import styled from "styled-components";
 import { useWidgetContext } from "../..";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 import { StyledRowFlex } from "../../styles";
 
 export const PriceTabs = ({ className = "" }: { className?: string }) => {
@@ -9,6 +10,10 @@ export const PriceTabs = ({ className = "" }: { className?: string }) => {
     values: { isMarketOrder },
     actionHandlers: { setIsMarketPrice },
   } = twap;
+
+  const hide = useShouldWrapOrUnwrapOnly();
+
+  if (hide) return null;
 
   return (
     <Container className={`twap-price-tabs ${className}`}>

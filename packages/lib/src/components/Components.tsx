@@ -13,7 +13,7 @@ import { useSrcChunkAmountUSD } from "../hooks/useSrcChunkAmountUSD";
 import { useAmountUi } from "../hooks/useParseAmounts";
 import { useDstBalance, useSrcBalance } from "../hooks/useBalances";
 import { useUsdAmount } from "../hooks/useUsdAmounts";
-import { useShouldWrapOrUnwrapOnly } from "../hooks/useShouldWraoOrUnwrap";
+import { useShouldWrapOrUnwrapOnly } from "../hooks/useShouldWrapOrUnwrap";
 
 const Input = (props: {
   className?: string;
@@ -96,14 +96,19 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
   const {
     dstToken,
     twap: {
-      values: { destTokenAmountUI, destTokenAmountLoading },
+      values: { destTokenAmountUI },
     },
+    state: { srcAmount },
+    marketPriceLoading,
   } = useWidgetContext();
+
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+
   return (
     <Input
       disabled={true}
-      loading={destTokenAmountLoading}
-      value={useFormatDecimals(destTokenAmountUI)}
+      loading={isWrapOrUnwrapOnly ? false : marketPriceLoading}
+      value={useFormatDecimals(isWrapOrUnwrapOnly ? srcAmount : destTokenAmountUI)}
       decimalScale={props.decimalScale || dstToken?.decimals}
       className={props.className}
       placeholder={props.placeholder}
@@ -293,7 +298,9 @@ export const MarketPriceWarning = ({ className = "" }: { className?: string }) =
 export const LimitPriceWarningContent = ({ className = "" }: { className?: string }) => {
   const { translations: t, twap } = useWidgetContext();
   const isMarketOrder = twap.values.isMarketOrder;
-  if (isMarketOrder) return null;
+  const hide = useShouldWrapOrUnwrapOnly();
+
+  if (isMarketOrder || hide) return null;
 
   return (
     <Message

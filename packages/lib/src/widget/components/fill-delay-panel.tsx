@@ -6,6 +6,7 @@ import { Label, Message, NumericInput, ResolutionSelect } from "../../components
 import React, { ReactNode, useCallback } from "react";
 import { handleFillDelayText } from "../../utils";
 import { useWidgetContext } from "../..";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const {
@@ -52,6 +53,10 @@ const Resolution = ({ className = "" }: { className?: string }) => {
 
 export const FillDelayPanel = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
   const { twap } = useWidgetContext();
+
+  const hide = useShouldWrapOrUnwrapOnly();
+
+  if (hide) return null;
 
   return (
     <Panel className={`${className} twap-trade-interval-panel`} error={Boolean(twap.errors.fillDelay?.text)}>

@@ -1,20 +1,30 @@
-import { Abi, network, isNativeAddress } from "@defi.org/web3-candies";
+import { Abi, isNativeAddress, erc20abi, iwethabi } from "@defi.org/web3-candies";
 import { TwapAbi } from "@orbs-network/twap-sdk";
 import { useMemo } from "react";
 import { useWidgetContext } from "..";
+import { useNetwork } from "./useNetwork";
 
 export const useContract = (abi?: Abi, address?: string) => {
   const { config } = useWidgetContext();
   const web3 = useWidgetContext().web3;
+  const wTokenAddress = useNetwork()?.wToken.address;
 
-  const wTokenAddress = network(config.chainId)?.wToken.address;
   return useMemo(() => {
-    if (!web3 || !address || !config || !abi) return;
-    if (isNativeAddress(address)) {
-      return new web3.eth.Contract(abi || [], wTokenAddress);
-    }
-    return new web3.eth.Contract(abi || [], address);
-  }, [abi, address, config, web3, wTokenAddress]);
+    const _address = isNativeAddress(address || "") ? wTokenAddress : address;
+
+    if (!web3 || !_address || !config || !abi) return;
+    return new web3.eth.Contract(abi || [], _address);
+  }, [web3, address, wTokenAddress, config, abi]);
+};
+
+export const useERC20Contract = (address?: string) => {
+  return useContract(erc20abi, address);
+};
+
+export const useIWETHContract = () => {
+  const wTokenAddress = useNetwork()?.wToken.address;
+
+  return useContract(iwethabi, wTokenAddress);
 };
 
 export const useTwapContract = () => {

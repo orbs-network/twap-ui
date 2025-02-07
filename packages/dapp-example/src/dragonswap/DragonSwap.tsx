@@ -14,7 +14,6 @@ import {
   Configs,
   TokensListModalProps,
   ModalProps,
-  ButtonProps,
   Widget,
   Token,
   OnWrapSuccessArgs,
@@ -22,7 +21,7 @@ import {
   OnCreateOrderSuccessArgs,
 } from "@orbs-network/twap-ui";
 import { DappProvider } from "../context";
-import { network } from "@defi.org/web3-candies";
+import { eqIgnoreCase, network, networks } from "@defi.org/web3-candies";
 
 const config = Configs.DragonSwap;
 
@@ -151,8 +150,17 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setToToken(fromToken);
   };
 
+  const onSwitchFromNativeToWtoken = useCallback(() => {
+    const wToken = Object.values(networks).find((it) => it.id === chainId)?.wToken.address;
+    const token = dappTokens.find((it: any) => eqIgnoreCase(it.address, wToken || ""));
+    if (token) {
+      setFromToken(token);
+    }
+  }, [dappTokens, chainId]);
+
   return (
     <TWAP
+      title={limit ? "Limit" : "TWAP"}
       connect={connect}
       account={account}
       connector={connector}
@@ -166,8 +174,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       useUSD={useUSD}
       onSrcTokenSelected={setFromToken}
       onDstTokenSelected={setToToken}
+      onSwitchFromNativeToWtoken={onSwitchFromNativeToWtoken}
       onSwitchTokens={onSwitchTokens}
       components={{ Tooltip, TokensListModal, Modal }}
+      isExactAppoval={true}
+      minChunkSizeUsd={4}
       callbacks={{
         onWrapSuccess,
         onApproveSuccess,
@@ -186,7 +197,7 @@ const DappComponent = () => {
       <StyledDragonswap isDarkMode={isDarkTheme ? 1 : 0}>
         <StyledDragonLayout name={config.name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
-          <StyledDragonPanel>
+          <StyledDragonPanel isDarkMode={isDarkTheme ? 1 : 0}>
             <TWAPComponent limit={selected === SelectorOption.LIMIT} />
           </StyledDragonPanel>
           <Widget.PoweredByOrbs />

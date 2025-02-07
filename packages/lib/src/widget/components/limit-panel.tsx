@@ -8,6 +8,8 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Label, NumericInput, TokenDisplay } from "../../components/base";
 import { useWidgetContext } from "../..";
 import { TokenSelect } from "./token-select";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
+import { PriceSwitch } from "./price-switch";
 
 export const LimitPanel = ({ children, className = "" }: { className?: string; children: ReactNode }) => {
   const {
@@ -17,8 +19,9 @@ export const LimitPanel = ({ children, className = "" }: { className?: string; c
     },
   } = useWidgetContext();
   const error = errors.limitPrice?.text;
+  const hide = useShouldWrapOrUnwrapOnly();
 
-  if (isMarketOrder) return null;
+  if (isMarketOrder || hide) return null;
 
   return (
     <Panel error={Boolean(error)} className={`twap-limit-price-panel ${className}`}>
@@ -63,7 +66,7 @@ const PercentSelector = () => {
   const percentButtons = useWidgetContext().twap.limitPricePanel.percentButtons;
 
   return (
-    <StyledPercentSelector className="twap-limit-price-panel-percent" style={{ gap: 5 }}>
+    <StyledPercentSelector className="twap-limit-price-panel-percent">
       {percentButtons.map((it) => {
         const className = `twap-limit-price-panel-percent-button  ${it.selected ? "twap-limit-price-panel-percent-button-selected" : ""}`;
         if (it.isReset) {

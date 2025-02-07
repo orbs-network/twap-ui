@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useWidgetContext } from "..";
 import BN from "bignumber.js";
+import { useShouldWrapOrUnwrapOnly } from "./useShouldWrapOrUnwrap";
 
 const getUsdAmount = (amount?: string, usd?: string | number) => {
   if (!amount || !usd || BN(amount || "0").isZero() || BN(usd || "0").isZero()) return "0";
@@ -9,15 +10,20 @@ const getUsdAmount = (amount?: string, usd?: string | number) => {
     .toString();
 };
 export const useUsdAmount = () => {
-  const { dstUsd, srcUsd, twap } = useWidgetContext();
+  const { dstUsd1Token, srcUsd1Token, twap } = useWidgetContext();
   const { srcAmountUI, destTokenAmountUI } = twap.values;
+  const isWrapOrUnwrap = useShouldWrapOrUnwrapOnly();
+
+  const srcUsd = useMemo(() => {
+    return getUsdAmount(srcAmountUI, srcUsd1Token);
+  }, [srcAmountUI, srcUsd1Token]);
+
+  const dstUsd = useMemo(() => {
+    return getUsdAmount(destTokenAmountUI, dstUsd1Token);
+  }, [destTokenAmountUI, dstUsd1Token]);
 
   return {
-    srcUsd: useMemo(() => {
-      return getUsdAmount(srcAmountUI, srcUsd);
-    }, [srcAmountUI, srcUsd]),
-    dstUsd: useMemo(() => {
-      return getUsdAmount(destTokenAmountUI, dstUsd);
-    }, [destTokenAmountUI, dstUsd]),
+    srcUsd,
+    dstUsd: isWrapOrUnwrap ? srcUsd : dstUsd,
   };
 };

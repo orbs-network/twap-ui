@@ -9,6 +9,7 @@ import { SelectMeuItem } from "../../../types";
 import { SelectMenu } from "../../../components/base";
 import { StyledRowFlex, StyledText } from "../../../styles";
 import { useWidgetContext } from "../../widget-context";
+import { useGetOrderNameCallback } from "../../../hooks/useOrderName";
 
 export function OrderHistoryMenu() {
   const { setTab, selectedTab, tabs } = useOrderHistoryContext();
@@ -36,7 +37,8 @@ export const OrderHistoryHeader = ({ className = "" }: { className?: string }) =
   const { closePreview } = useOrderHistoryContext();
   const order = useSelectedOrder();
   const t = useWidgetContext().translations;
-
+  const getName = useGetOrderNameCallback();
+  const name = useMemo(() => getName(order?.isMarketOrder, order?.totalChunks), [order, getName]);
   return (
     <StyledHeader className={`twap-order-history-header ${className}`}>
       {!order ? (
@@ -47,7 +49,7 @@ export const OrderHistoryHeader = ({ className = "" }: { className?: string }) =
             <HiArrowLeft />
           </StyledBack>
           <StyledTitle className="twap-order-history-header-title">
-            #{order?.id} {order?.isMarketOrder ? t.twapMarketOrder : t.limitOrder}
+            #{order?.id} {name}
           </StyledTitle>
         </StyledOrderDetails>
       )}

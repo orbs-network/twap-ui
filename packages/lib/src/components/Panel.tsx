@@ -1,4 +1,5 @@
 import React, { ReactNode, useCallback, useContext, useState } from "react";
+import { useShouldWrapOrUnwrapOnly } from "../hooks/useShouldWrapOrUnwrap";
 
 type ContextType = {
   onFocus: () => void;
@@ -15,13 +16,14 @@ const PanelHeader = ({ children }: { children: ReactNode }) => {
 
 export function Panel({ error, className = "", children }: { error?: boolean; className?: string; children: ReactNode }) {
   const [isFocused, setIsFocused] = useState(false);
+  const wrapOrUnwrap = useShouldWrapOrUnwrapOnly();
 
   const onFocus = useCallback(() => setIsFocused(true), []);
   const onBlur = useCallback(() => setIsFocused(false), []);
-
+  const _error = !wrapOrUnwrap && error;
   return (
     <Context.Provider value={{ isFocused, onBlur, onFocus }}>
-      <div className={`${className} twap-panel ${isFocused && !error ? "twap-panel-focused" : ""} ${error ? "twap-panel-error" : ""}`}>{children}</div>
+      <div className={`${className} twap-panel ${isFocused && !_error ? "twap-panel-focused" : ""} ${_error ? "twap-panel-error" : ""}`}>{children}</div>
     </Context.Provider>
   );
 }

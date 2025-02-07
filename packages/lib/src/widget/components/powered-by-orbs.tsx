@@ -1,10 +1,10 @@
-import { styled } from "@mui/material";
 import { useState } from "react";
 import { StyledRowFlex, StyledText } from "../../styles";
 import React from "react";
 import { ORBS_LOGO, ORBS_LOGO_FALLBACK } from "../../consts";
 import { useWidgetContext } from "../widget-context";
 import { Portal } from "../../components/base";
+import { styled } from "styled-components";
 
 export const PoweredbyOrbsWithPortal = ({ className = "" }: { className?: string }) => {
   return (

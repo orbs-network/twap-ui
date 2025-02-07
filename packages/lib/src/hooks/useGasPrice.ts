@@ -13,7 +13,7 @@ export const useGasPrice = () => {
   });
 
   const priorityFeePerGas = BN.max(data?.fast.tip || 0, contextTip || 0);
-  const maxFeePerGas = BN.max(data?.fast.max || 0, contextMax || 0, priorityFeePerGas);
+  const maxFeePerGas = BN.max(data?.fast.max || 0, contextMax || 0, priorityFeePerGas || 0);
 
   return {
     isLoading,

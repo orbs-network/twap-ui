@@ -1,7 +1,7 @@
 import { Config, Configs } from "@orbs-network/twap-sdk";
-import { Translations, Styles, getNetwork, Widget, UIPreferences, WidgetProps, WidgetProvider, useAmountBN } from "@orbs-network/twap-ui";
+import { Translations, Styles, getNetwork, Widget, UIPreferences, WidgetProps, WidgetProvider, useAmountBN, Components, Types } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { createContext, useContext, useEffect, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo, ReactNode } from "react";
 import Web3 from "web3";
 import React, { useCallback, useState } from "react";
 import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledTwapInputs } from "./styles";
@@ -11,7 +11,7 @@ import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
 import { ThemeProvider } from "styled-components";
 
 const uiPreferences: UIPreferences = {
-  input: { disableThousandSeparator: false, placeholder: "0" },
+  input: { disableThousandSeparator: true, placeholder: "0" },
   tokenSelect: { icon: <IoIosArrowDown style={{ width: 14 }} /> },
   menu: { icon: <IoIosArrowDown style={{ width: 14 }} /> },
   usd: { prefix: "~$ " },
@@ -58,7 +58,8 @@ interface AdapterProps extends Partial<WidgetProps> {
   dstTokenAddress?: string;
   connector?: any;
   dexTokens?: DexToken[];
-  useMarketPrice: (srcToken?: string, dstToken?: string, amount?: string) => { outAmount?: string };
+  useMarketPrice: (srcToken?: string, dstToken?: string, amount?: string) => { outAmount?: string; isLoading?: boolean };
+  title: string;
 }
 
 const useWToken = () => {
@@ -106,7 +107,10 @@ const useMarketPrice = () => {
 
   const trade = props.useMarketPrice(srcAddress, dstAddress, BN(amount || 0).isZero() ? undefined : amount);
 
-  return trade?.outAmount;
+  return {
+    marketPrice: trade?.outAmount,
+    marketPriceLoading: trade?.isLoading,
+  };
 };
 
 const useUsd = () => {
@@ -192,7 +196,7 @@ const Content = () => {
   const { srcToken, dstToken } = useSelectedParsedTokens();
 
   const { srcUsd, dstUsd } = useUsd();
-  const marketPrice = useMarketPrice();
+  const { marketPrice, marketPriceLoading } = useMarketPrice();
   const config = useConfig();
 
   return (
@@ -200,6 +204,7 @@ const Content = () => {
       <WidgetProvider
         connect={props.connect!}
         config={config}
+        minChunkSizeUsd={props.minChunkSizeUsd}
         maxFeePerGas={props.maxFeePerGas}
         priorityFeePerGas={props.priorityFeePerGas}
         translations={translations as Translations}
@@ -212,14 +217,16 @@ const Content = () => {
         isLimitPanel={props.isLimitPanel}
         uiPreferences={uiPreferences}
         onSwitchTokens={props.onSwitchTokens}
-        srcUsd={srcUsd ? Number(srcUsd) : 0}
-        dstUsd={dstUsd ? Number(dstUsd) : 0}
-        marketPrice={marketPrice}
+        srcUsd1Token={srcUsd ? Number(srcUsd) : 0}
+        dstUsd1Token={dstUsd ? Number(dstUsd) : 0}
+        marketPrice1Token={marketPrice}
+        marketPriceLoading={marketPriceLoading}
         chainId={props.chainId}
-        isExactAppoval={true}
+        isExactAppoval={props.isExactAppoval}
         components={props.components!}
         useToken={useToken}
         callbacks={props.callbacks}
+        onSwitchFromNativeToWtoken={props.onSwitchFromNativeToWtoken}
       >
         <GlobalStyles />
         <Styles.StyledColumnFlex gap={16}>
@@ -251,8 +258,13 @@ const TWAP = (props: AdapterProps) => {
 };
 
 const InputsPanel = () => {
+  const { title } = useAdapterContext();
   return (
     <>
+      <Styles.StyledRowFlex className="twap-inputs-panel">
+        <Styles.StyledText> {title}</Styles.StyledText>
+        <Widget.PriceSwitch />
+      </Styles.StyledRowFlex>
       <LimitPrice />
       <StyledTop>
         <TokenPanel isSrcToken={true} />
@@ -276,7 +288,6 @@ const LimitPrice = () => {
 const TWAPPanel = () => {
   return (
     <>
-      <Widget.PriceSwitch />
       <InputsPanel />
       <StyledTwapInputs>
         <Widget.FillDelayPanel>
@@ -324,4 +335,8 @@ TWAP.LimitPriceWarning = Widget.LimitPriceWarning;
 TWAP.Orders = Widget.Orders;
 TWAP.PoweredByOrbs = Widget.PoweredByOrbs;
 
-export { TWAP };
+const Portal = ({ children, containerId }: { children: ReactNode; containerId: string }) => {
+  return <Components.Base.Portal containerId={containerId}>{children}</Components.Base.Portal>;
+};
+
+export { TWAP, Portal, Types };

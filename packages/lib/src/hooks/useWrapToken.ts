@@ -3,28 +3,25 @@ import { useMutation } from "@tanstack/react-query";
 import { useWidgetContext } from "..";
 import { logger } from "../utils";
 import { useRefetchBalances } from "./useBalances";
+import { useIWETHContract } from "./useContracts";
 import { useGasPrice } from "./useGasPrice";
-import { useNetwork } from "./useNetwork";
 
 export const useWrapToken = () => {
   const { account, twap, srcToken, callbacks } = useWidgetContext();
   const { srcAmount, srcAmountUI } = twap.values;
-
-  const network = useNetwork();
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
+
+  const contract = useIWETHContract();
 
   return useMutation(
     async () => {
       let txHash: string = "";
-      if (!network) {
-        throw new Error("network is not defined");
-      }
-      if (!account) {
-        throw new Error("account is not defined");
-      }
+      if (!srcAmount) throw new Error("srcAmount is not defined");
+      if (!account) throw new Error("account is not defined");
+      if (!contract) throw new Error("contract is not defined");
 
       await sendAndWaitForConfirmations(
-        erc20<any>(network.wToken.symbol, network.wToken.address, network.wToken.decimals, iwethabi).methods.deposit(),
+        contract.methods.deposit(),
         {
           from: account,
           maxPriorityFeePerGas: priorityFeePerGas,
@@ -53,11 +50,13 @@ export const useWrapToken = () => {
 
 export const useWrapOnly = () => {
   const { mutateAsync } = useWrapToken();
+  const { resetState } = useWidgetContext();
 
   const onSuccess = useRefetchBalances();
 
   return useMutation(async () => {
     await mutateAsync();
+    resetState();
     await onSuccess();
   });
 };

@@ -1,13 +1,17 @@
 import React, { ReactNode } from "react";
 import { Panel } from "../../components/Panel";
 import { Label, NumericInput } from "../../components/base";
-import { styled } from "@mui/material";
 import { StyledRowFlex, StyledText } from "../../styles";
 import { useWidgetContext } from "../..";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
+import styled from "styled-components";
 
 export const TradesAmountPanel = ({ className = "", children }: { className?: string; children: ReactNode }) => {
   const { twap } = useWidgetContext();
   const error = twap.errors.chunks?.text;
+  const hide = useShouldWrapOrUnwrapOnly();
+
+  if (hide) return null;
 
   return (
     <Panel error={Boolean(error)} className={`${className} twap-trades-amount-panel`}>

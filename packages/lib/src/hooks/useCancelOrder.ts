@@ -8,7 +8,7 @@ import { useOrderHistoryManager } from "./useOrderHistoryManager";
 
 export const useCancelOrder = () => {
   const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
-  const { account, twap } = useWidgetContext();
+  const { account, twap, callbacks } = useWidgetContext();
 
   const twapContract = useTwapContract();
   const { waitForOrderCancellation } = useOrderHistoryManager();
@@ -25,13 +25,25 @@ export const useCancelOrder = () => {
       logger(`canceling order...`, orderId);
 
       twap.analytics.onCancelOrderRequest(orderId);
-      await sendAndWaitForConfirmations(twapContract.methods.cancel(orderId), {
-        from: account,
-        maxPriorityFeePerGas: priorityFeePerGas,
-        maxFeePerGas,
-      });
+      let txHash = "";
+      await sendAndWaitForConfirmations(
+        twapContract.methods.cancel(orderId),
+        {
+          from: account,
+          maxPriorityFeePerGas: priorityFeePerGas,
+          maxFeePerGas,
+        },
+        undefined,
+        undefined,
+        {
+          onTxHash: (value) => {
+            txHash = value;
+          },
+        },
+      );
       await waitForOrderCancellation(orderId);
       console.log(`order canceled`);
+      callbacks?.onCancelOrderSuccess?.({ orderId, txHash });
     },
     {
       onSuccess: () => {
@@ -41,6 +53,7 @@ export const useCancelOrder = () => {
       onError: (error: Error) => {
         console.log(`cancel error order`, error);
         twap.analytics.onCreateOrderError(error);
+        callbacks?.onCancelOrderFailed?.(error.message);
       },
     },
   );

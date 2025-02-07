@@ -42,7 +42,7 @@
   "confirmOrder": "Confirm order",
   "partialFillWarning": "Partial fill warning",
   "enterAmount": "Enter amount",
-  "insufficientFunds": "Insufficient funds",
+  "insufficientFunds": "Insufficient Balance",
   "enterTradeSize": "Enter trade size",
   "enterTradeInterval": "Enter trade interval",
   "tradeSizeMustBeEqual": "Trade size must be at least ${minChunkSizeUsd}",
@@ -117,7 +117,7 @@
   "isWorth": "is worth",
   "placingOrder": "Placing order",
   "market": "market",
-  "limit": "limit",
+  "limit": "Limit",
   "txHash": "Transaction hash",
   "maxDurationWarning": "Max. expiry is 30 days",
   "minDurationWarning": "Min. expiry is {duration} minutes",
@@ -127,7 +127,7 @@
   "AverageExecutionPrice": "Avg. execution price",
   "twapMarket": "TWAP-market",
   "twapMarketOrder": "TWAP-market order",
-  "twapLimit": "dTWAP Limit",
+  "twapLimit": "TWAP-limit order",
   "All": "All",
   "minReceived": "Min. received"
 }

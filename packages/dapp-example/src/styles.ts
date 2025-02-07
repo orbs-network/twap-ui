@@ -480,13 +480,13 @@ export const StyledDragonLayout = styled(DappLayout)({
   gap: 10,
 });
 
-export const StyledDragonPanel = styled("div")({
+export const StyledDragonPanel = styled("div")<{ isDarkMode: number }>(({ isDarkMode }) => ({
   width: "100%",
   border: "1px solid rgb(36 99 235)",
   borderRadius: 20,
-  background: "linear-gradient(180deg, #1d40b0 0%, #0d143a 100%)",
+  background: isDarkMode ? "linear-gradient(180deg, #1d40b0 0%, #0d143a 100%)" : "linear-gradient(180deg, #bfdbfe 0%, #eff6ff 100%)",
   padding: 12,
-});
+}));
 
 export const StyledPangolinLayout = styled(DappLayout)({
   maxWidth: 520,

@@ -6,7 +6,6 @@ import { TwapErrorWrapper } from "../ErrorHandling";
 import Web3 from "web3";
 import { setWeb3Instance } from "@defi.org/web3-candies";
 import { useTwap } from "@orbs-network/twap-ui-sdk";
-import { styled } from "@mui/material";
 import { Orders } from "./components/orders/Orders";
 import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
 import { PoweredbyOrbsWithPortal } from "./components/powered-by-orbs";
@@ -84,20 +83,32 @@ const useStore = () => {
 export const WidgetProvider = (props: WidgetProps) => {
   const isWrongChain = useIsWrongChain(props, props.chainId);
   const web3 = useMemo(() => (!props.provider ? undefined : new Web3(props.provider)), [props.provider]);
+
+  const config = useMemo(() => {
+    if (!props.minChunkSizeUsd) {
+      return props.config;
+    }
+    return {
+      ...props.config,
+      minChunkSizeUsd: props.minChunkSizeUsd,
+    };
+  }, [props.config, props.minChunkSizeUsd]);
+
   const { state, updateState, resetState } = useStore();
   const twap = useTwap({
-    config: props.config,
+    config,
     isLimitPanel: props.isLimitPanel,
     srcToken: props.srcToken,
     destToken: props.dstToken,
-    marketPriceOneToken: props.marketPrice,
-    oneSrcTokenUsd: props.srcUsd,
+    marketPriceOneToken: props.marketPrice1Token,
+    oneSrcTokenUsd: props.srcUsd1Token,
     typedSrcAmount: state.srcAmount,
   });
   const translations = useTranslations(props.translations);
   useEffect(() => {
     setWeb3Instance(web3);
   }, [web3]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <WidgetContext.Provider
@@ -111,6 +122,7 @@ export const WidgetProvider = (props: WidgetProps) => {
           state,
           uiPreferences: props.uiPreferences || {},
           twap,
+          config,
         }}
       >
         <Listeners />
@@ -119,14 +131,12 @@ export const WidgetProvider = (props: WidgetProps) => {
           <SubmitOrderModal />
           <PoweredbyOrbsWithPortal />
           <LimitPriceWarningPortal />
-          {props.withStyles ? <Container className="twap-widget">{props.children}</Container> : <div className="twap-widget">{props.children}</div>}
+          <div className="twap-widget">{props.children}</div>
         </TwapErrorWrapper>
       </WidgetContext.Provider>
     </QueryClientProvider>
   );
 };
-
-const Container = styled("div")({});
 
 export const useWidgetContext = () => {
   return useContext(WidgetContext);

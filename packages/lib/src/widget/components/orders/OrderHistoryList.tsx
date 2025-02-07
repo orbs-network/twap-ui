@@ -10,6 +10,7 @@ import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
 import { size } from "../../../utils";
 import { useWidgetContext } from "../../widget-context";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
+import { useGetOrderNameCallback } from "../../../hooks/useOrderName";
 
 const ListLoader = () => {
   return (
@@ -95,16 +96,18 @@ const StyledEmpty = styled(StyledColumnFlex)({
 const ListItemHeader = ({ order }: { order: Order }) => {
   const t = useWidgetContext().translations;
   const status = order && order.status;
-
+  const getName = useGetOrderNameCallback();
   const formattedDate = React.useMemo(() => {
     return moment(order.createdAt).format("DD/MM/YYYY HH:mm");
   }, [order.createdAt]);
+
+  const name = React.useMemo(() => getName(order.isMarketOrder, order.totalChunks), [order, getName]);
 
   return (
     <StyledHeader className="twap-order-header">
       <StyledText className="twap-order-header-text">
         {" "}
-        #{order?.id} {order?.isMarketOrder ? t.twapMarket : t.limit} <span>{`(${formattedDate})`}</span>
+        #{order?.id} {name} <span>{`(${formattedDate})`}</span>
       </StyledText>
       <StyledText className="twap-order-header-status">{status}</StyledText>
     </StyledHeader>

@@ -2,7 +2,7 @@ import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
 import Web3 from "web3";
 import { Config } from "@orbs-network/twap-sdk";
-import { SwapStatus, SwapStep } from "@orbs-network/swap-ui";
+import { SwapStatus } from "@orbs-network/swap-ui";
 import { UseTwap } from "@orbs-network/twap-ui-sdk";
 
 export interface Translations {
@@ -186,6 +186,11 @@ export type OnWrapSuccessArgs = {
   txHash: string;
 };
 
+export type OnCancelOrderSuccessArgs = {
+  txHash: string;
+  orderId: number;
+};
+
 export type OnApproveSuccessArgs = {
   token: Token;
   amount?: string;
@@ -210,6 +215,7 @@ export interface WidgetProps {
   isDarkTheme?: boolean;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
+  onSwitchFromNativeToWtoken?: () => void;
   isLimitPanel?: boolean;
   onTxSubmitted?: (values: OnTxSubmitValues) => void;
   isMobile?: boolean;
@@ -222,23 +228,28 @@ export interface WidgetProps {
   srcToken?: Token;
   dstToken?: Token;
   uiPreferences?: UIPreferences;
-  srcUsd?: number;
-  dstUsd?: number;
+  srcUsd1Token?: number;
+  dstUsd1Token?: number;
   nativeUsd?: number;
-  marketPrice?: string;
+  marketPrice1Token?: string;
   isExactAppoval?: boolean;
   children: React.ReactNode;
   components: Components;
   askDataParams?: any[];
+  marketPriceLoading?: boolean;
   useToken?: (value?: string) => Token | undefined;
   withStyles?: boolean;
+  minChunkSizeUsd?: number;
   callbacks?: {
     onWrapSuccess?: (args: OnWrapSuccessArgs) => void;
     onApproveSuccess?: (args: OnApproveSuccessArgs) => void;
     onCreateOrderSuccess?: (args: OnCreateOrderSuccessArgs) => void;
+    onCancelOrderSuccess?: (args: OnCancelOrderSuccessArgs) => void;
+
     onWrapFailed?: (error: string) => void;
     onApproveFailed?: (error: string) => void;
     onCreateOrderFailed?: (error: string) => void;
+    onCancelOrderFailed?: (error: string) => void;
   };
 }
 
@@ -371,8 +382,6 @@ export interface State {
   swapSteps?: SwapSteps[];
   swapStatus?: SwapStatus;
   swapError?: string;
-  approveSuccess?: boolean;
-  wrapSuccess?: boolean;
   wrapTxHash?: string;
   unwrapTxHash?: string;
   approveTxHash?: string;
@@ -385,5 +394,7 @@ export interface State {
   confirmedData?: {
     outAmount?: string;
     outAmountusd?: string;
+    srcToken?: Token;
+    dstToken?: Token;
   };
 }

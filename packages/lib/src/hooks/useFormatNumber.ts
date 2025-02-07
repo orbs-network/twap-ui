@@ -9,11 +9,10 @@ export const useFormatDecimals = (value?: string | BN | number, decimalPlaces?: 
 };
 
 export const useFormatNumber = ({ value, decimalScale = 3, prefix, suffix }: { value?: string | number; decimalScale?: number; prefix?: string; suffix?: string }) => {
-  const { input } = useWidgetContext().uiPreferences;
   const _value = useFormatDecimals(value, decimalScale);
   const result = useNumericFormat({
     allowLeadingZeros: true,
-    thousandSeparator: input?.disableThousandSeparator ? "" : ",",
+    thousandSeparator: ",",
     displayType: "text",
     value: _value || "",
     decimalScale: 18,
