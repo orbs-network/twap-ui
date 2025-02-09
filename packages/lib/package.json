@@ -36,7 +36,7 @@
     "react-tooltip": "^5.28.0",
     "react-virtuoso": "^4.12.3",
     "styled-components": "^6.1.12",
-    "web3": "1.x"
+    "viem": "^2.22.23"
   },
   "peerDependencies": {
     "react": "*",

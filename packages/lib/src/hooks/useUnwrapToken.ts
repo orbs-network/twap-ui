@@ -1,31 +1,38 @@
-import { sendAndWaitForConfirmations } from "@defi.org/web3-candies";
+import { iwethabi } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
-import { useGasPrice } from "./useGasPrice";
 import BN from "bignumber.js";
 import { useRefetchBalances } from "./useBalances";
 import { useWidgetContext } from "../widget/widget-context";
-import { useIWETHContract } from "./useContracts";
+import { waitForTransactionReceipt } from "viem/actions";
+import { useNetwork } from "./useNetwork";
 
 export const useUnwrapToken = () => {
-  const { account, twap, resetState } = useWidgetContext();
-  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
+  const { account, twap, resetState, walletClient, publicClient } = useWidgetContext();
   const onSuccess = useRefetchBalances();
   const srcAmount = twap.values.srcAmount;
-  const contract = useIWETHContract();
+  const tokenAddress = useNetwork()?.wToken.address;
 
   return useMutation(async () => {
-    if (!contract) {
-      throw new Error("contract is not defined");
+    if (!tokenAddress) {
+      throw new Error("address is not defined");
     }
     if (!account) {
       throw new Error("account is not defined");
     }
-    await sendAndWaitForConfirmations(
-      contract.methods.withdraw(BN(srcAmount).toFixed(0)),
-      { from: account, maxPriorityFeePerGas: priorityFeePerGas, maxFeePerGas },
-      undefined,
-      undefined,
-    );
+
+    const hash = await (walletClient as any).writeContract({
+      abi: iwethabi,
+      functionName: "withdraw",
+      account: account,
+      address: tokenAddress,
+      value: BN(srcAmount).decimalPlaces(0).toFixed(),
+    });
+
+    await waitForTransactionReceipt(publicClient as any, {
+      hash,
+      confirmations: 5,
+    });
+
     resetState();
     await onSuccess();
   });

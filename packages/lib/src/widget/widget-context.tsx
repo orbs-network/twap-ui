@@ -3,15 +3,35 @@ import { State, WidgetContextType, Translations, WidgetProps } from "../types";
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TwapErrorWrapper } from "../ErrorHandling";
-import Web3 from "web3";
-import { setWeb3Instance } from "@defi.org/web3-candies";
+import { networks } from "@defi.org/web3-candies";
 import { useTwap } from "@orbs-network/twap-ui-sdk";
 import { Orders } from "./components/orders/Orders";
 import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
 import { PoweredbyOrbsWithPortal } from "./components/powered-by-orbs";
 import { LimitPriceWarningPortal } from "../components";
 import { useHasAllowance } from "../hooks/useAllowance";
+import { createWalletClient, custom, createPublicClient, http } from "viem";
+import { mainnet, polygon, bsc, arbitrum, sonic, sei, avalanche, fantom, base, linea, zksync, scroll } from "viem/chains";
 
+const viemChains = {
+  [networks.eth.id]: mainnet,
+  [networks.bsc.id]: bsc,
+  [networks.poly.id]: polygon,
+  [networks.arb.id]: arbitrum,
+  [networks.avax.id]: avalanche,
+  [networks.ftm.id]: fantom,
+  [networks.base.id]: base,
+  [networks.linea.id]: linea,
+  [networks.zksync.id]: zksync,
+  [networks.scroll.id]: scroll,
+  [networks.sonic.id]: sonic,
+  [networks.sei.id]: sei,
+};
+
+export function getViemChain(chainId?: number) {
+  if (!chainId) return null; // Returns null if no chainId
+  return viemChains[chainId as keyof typeof viemChains] || null; // Returns the chain or null if not found
+}
 export const WidgetContext = createContext({} as WidgetContextType);
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -83,9 +103,21 @@ const useStore = () => {
   };
 };
 
+const useClients = (props: WidgetProps) => {
+  return useMemo(() => {
+    const viemChain = getViemChain(props.chainId);
+    if (!viemChain) return;
+    const provider = props.provider?.currentProvider;
+
+    return {
+      walletClient: provider ? createWalletClient({ account: props.account, chain: viemChain, transport: custom(provider) }) : undefined,
+      publicClient: createPublicClient({ chain: viemChain, transport: provider ? custom(provider) : http() }),
+    };
+  }, [props.chainId, props.provider, props.account]);
+};
+
 export const WidgetProvider = (props: WidgetProps) => {
   const isWrongChain = useIsWrongChain(props, props.chainId);
-  const web3 = useMemo(() => (!props.provider ? undefined : new Web3(props.provider)), [props.provider]);
 
   const config = useMemo(() => {
     if (!props.minChunkSizeUsd) {
@@ -108,9 +140,7 @@ export const WidgetProvider = (props: WidgetProps) => {
     typedSrcAmount: state.srcAmount,
   });
   const translations = useTranslations(props.translations);
-  useEffect(() => {
-    setWeb3Instance(web3);
-  }, [web3]);
+  const clients = useClients(props);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -119,13 +149,14 @@ export const WidgetProvider = (props: WidgetProps) => {
           ...props,
           translations,
           isWrongChain,
-          web3,
           updateState,
           resetState,
           state,
           uiPreferences: props.uiPreferences || {},
           twap,
           config,
+          walletClient: clients?.walletClient,
+          publicClient: clients?.publicClient,
         }}
       >
         <Listeners />

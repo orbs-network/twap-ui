@@ -1,26 +1,37 @@
-import { setWeb3Instance, isNativeAddress, erc20 } from "@defi.org/web3-candies";
+import { isNativeAddress, erc20abi } from "@defi.org/web3-candies";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { Token, useWidgetContext } from "..";
 import { REFETCH_BALANCE } from "../consts";
 import { QueryKeys } from "../enums";
 import BN from "bignumber.js";
+import { readContract } from "viem/actions";
 
 export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, staleTime?: number) => {
-  const { web3, account } = useWidgetContext();
+  const { account, publicClient } = useWidgetContext();
 
   const query = useQuery(
     [QueryKeys.GET_BALANCE, account, token?.address],
-    () => {
-      setWeb3Instance(web3);
-      if (isNativeAddress(token!.address)) return web3!.eth.getBalance(account!).then(BN);
-      else return erc20(token!.symbol, token!.address, token!.decimals).methods.balanceOf(account!).call().then(BN);
+    async () => {
+      if (isNativeAddress(token!.address)) {
+        const res = await (publicClient as any).getBalance({ address: account });
+        return res.toString();
+      } else {
+        const balance = await (readContract as any)(publicClient, {
+          address: token?.address,
+          abi: erc20abi,
+          functionName: "balanceOf",
+          args: [account],
+        });
+
+        return balance.toString();
+      }
     },
     {
-      enabled: !!web3 && !!token && !!account,
+      enabled: !!token && !!account,
       onSuccess,
       refetchInterval: REFETCH_BALANCE,
-      staleTime,
+      staleTime: Infinity,
     },
   );
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };

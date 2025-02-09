@@ -1,44 +1,39 @@
-import { sendAndWaitForConfirmations, erc20, iwethabi } from "@defi.org/web3-candies";
+import { iwethabi } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useWidgetContext } from "..";
 import { logger } from "../utils";
 import { useRefetchBalances } from "./useBalances";
-import { useIWETHContract } from "./useContracts";
-import { useGasPrice } from "./useGasPrice";
+import { useNetwork } from "./useNetwork";
+import BN from "bignumber.js";
+import { waitForTransactionReceipt } from "viem/actions";
 
 export const useWrapToken = () => {
-  const { account, twap, srcToken, callbacks } = useWidgetContext();
+  const { account, twap, srcToken, callbacks, walletClient, publicClient } = useWidgetContext();
   const { srcAmount, srcAmountUI } = twap.values;
-  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
 
-  const contract = useIWETHContract();
+  const tokenAddress = useNetwork()?.wToken.address;
 
   return useMutation(
     async () => {
-      let txHash: string = "";
       if (!srcAmount) throw new Error("srcAmount is not defined");
       if (!account) throw new Error("account is not defined");
-      if (!contract) throw new Error("contract is not defined");
 
-      await sendAndWaitForConfirmations(
-        contract.methods.deposit(),
-        {
-          from: account,
-          maxPriorityFeePerGas: priorityFeePerGas,
-          maxFeePerGas,
-          value: srcAmount,
-        },
-        undefined,
-        undefined,
-        {
-          onTxHash: (hash) => {
-            txHash = hash;
-          },
-        },
-      );
-      logger("token wrap success:", txHash);
-      twap.analytics.onWrapSuccess(txHash);
-      callbacks?.onWrapSuccess?.({ token: srcToken!, txHash: txHash!, amount: srcAmountUI });
+      const hash = await (walletClient as any).writeContract({
+        abi: iwethabi,
+        functionName: "deposit",
+        account: account,
+        address: tokenAddress,
+        value: BN(srcAmount).decimalPlaces(0).toFixed(),
+      });
+
+      await waitForTransactionReceipt(publicClient as any, {
+        hash,
+        confirmations: 5,
+      });
+
+      logger("token wrap success:", hash);
+      twap.analytics.onWrapSuccess(hash);
+      callbacks?.onWrapSuccess?.({ token: srcToken!, txHash: hash, amount: srcAmountUI });
     },
     {
       onError: (error) => {

@@ -1,4 +1,4 @@
-import { StyledSushiLayout, StyledSushi, StyledSushiModalContent, StyledDragonswap, StyledDragonLayout, StyledDragonPanel, StyledDragonswapModalContent } from "../styles";
+import { StyledDragonswap, StyledDragonLayout, StyledDragonPanel, StyledDragonswapModalContent } from "../styles";
 import { TWAP } from "@orbs-network/twap-ui-dragonswap";
 import tokens from "./token.json";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "../hooks";
@@ -15,7 +15,6 @@ import {
   TokensListModalProps,
   ModalProps,
   Widget,
-  Token,
   OnWrapSuccessArgs,
   OnApproveSuccessArgs,
   OnCreateOrderSuccessArgs,
@@ -24,7 +23,8 @@ import { DappProvider } from "../context";
 import { eqIgnoreCase, network, networks } from "@defi.org/web3-candies";
 
 const config = Configs.DragonSwap;
-
+  console.log({config});
+  
 export const useDappTokens = () => {
   const nativeToken = network(config.chainId).native;
   const parseListToken = useCallback(

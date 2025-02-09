@@ -4,6 +4,7 @@ import Web3 from "web3";
 import { Config } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { UseTwap } from "@orbs-network/twap-ui-sdk";
+import { createWalletClient, createPublicClient } from "viem";
 
 export interface Translations {
   minReceived: string;
@@ -210,8 +211,6 @@ export interface WidgetProps {
   chainId?: number;
   account?: any;
   provider?: any;
-  maxFeePerGas?: string;
-  priorityFeePerGas?: string;
   isDarkTheme?: boolean;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
@@ -255,13 +254,14 @@ export interface WidgetProps {
 
 export interface WidgetContextType extends WidgetProps {
   isWrongChain: boolean;
-  web3?: Web3;
   state: State;
   updateState: (state: Partial<State>) => void;
   resetState: () => void;
   translations: Translations;
   uiPreferences: UIPreferences;
   twap: UseTwap;
+  walletClient?: any;
+  publicClient?: any;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };

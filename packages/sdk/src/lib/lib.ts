@@ -68,7 +68,7 @@ export const getSrcChunkAmount = (srcAmount?: string, chunks?: number) => {
   return BN(srcAmount).div(chunks).integerValue(BN.ROUND_FLOOR).toFixed(0);
 };
 
-export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): PrepareOrderArgsResult => {
+export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs) => {
   const fillDelayMillis = getTimeDurationMillis(args.fillDelay);
   const fillDelaySeconds = (fillDelayMillis - getEstimatedDelayBetweenChunksMillis(config)) / 1000;
 
@@ -83,7 +83,7 @@ export const prepareOrderArgs = (config: Config, args: PrepareOrderArgs): Prepar
     BN(config.bidDelaySeconds).toFixed(0),
     BN(fillDelaySeconds).toFixed(0),
     [],
-  ];
+  ].map((it) => it.toString());
 };
 
 export const derivedSwapValues = (
