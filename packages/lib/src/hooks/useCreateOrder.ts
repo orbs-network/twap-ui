@@ -8,10 +8,11 @@ import { useGasPrice } from "./useGasPrice";
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
   const { account, updateState, twap, dstToken, callbacks } = useWidgetContext();
-  const {
-    values: { createOrderArgs },
-  } = twap;
+  const { contractMethods } = twap;
   const twapContract = useTwapContract();
+
+
+  const createOrderArgs = contractMethods.createOrder
 
   return useMutation(
     async () => {
@@ -19,10 +20,10 @@ export const useCreateOrder = () => {
       if (!twapContract) throw new Error("twapContract is not defined");
       if (!account) throw new Error("account is not defined");
 
-      twap.analytics.onCreateOrderRequest(createOrderArgs, account);
+      twap.analytics.onCreateOrderRequest(createOrderArgs.params, account);
 
       const tx = await sendAndWaitForConfirmations(
-        twapContract.methods.ask(createOrderArgs as any),
+        twapContract.methods.ask(createOrderArgs.params as any),
         {
           from: account,
           maxPriorityFeePerGas: priorityFeePerGas || zero,

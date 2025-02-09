@@ -5,6 +5,7 @@ import { Action, ActionType, State, Token } from "./types";
 import { useDerivedSwapValues } from "./hooks/useDerivedValues";
 import { useActionHandlers } from "./hooks/useHandlers";
 import { useLimitPricePanel } from "./hooks/useLimitPricePanel";
+import useCreateOrderCallArgs from "./hooks/useContractMethods";
 
 const initialState: State = {
   currentTime: Date.now(),
@@ -50,6 +51,8 @@ export const useTwap = ({ config, isLimitPanel, srcToken, destToken, marketPrice
   const { values, warnings, errors } = useDerivedSwapValues(sdk, state, isLimitPanel, srcToken, destToken, marketPrice, oneSrcTokenUsd?.toString(), typedSrcAmount);
   const actionHandlers = useActionHandlers(dispatch, updateState);
   const limitPricePanel = useLimitPricePanel(state, values, updateState, srcToken, destToken, marketPrice);
+  const { createOrder, approve } = useCreateOrderCallArgs(values, sdk, srcToken, destToken);
+
   useEffect(() => {
     if (isLimitPanel) {
       updateState({ typedDuration: { unit: SDK.TimeUnit.Weeks, value: 1 } });
@@ -72,6 +75,10 @@ export const useTwap = ({ config, isLimitPanel, srcToken, destToken, marketPrice
     limitPricePanel,
     analytics: sdk.analytics,
     orders,
+    contractMethods: {
+      createOrder,
+      approve,
+    },
   };
 };
 

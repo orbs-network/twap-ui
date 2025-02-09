@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import * as SDK from "@orbs-network/twap-sdk";
 import { removeCommas, safeValue, toAmountUi, toWeiAmount } from "../utils";
 import { State, Token } from "../types";
-import { network } from "@defi.org/web3-candies";
 
 export const getPriceDiffFromMarket = (limitPrice?: string, marketPrice?: string, isLimitPriceInverted?: boolean): string => {
   // Validate inputs
@@ -51,19 +50,6 @@ export const useDerivedSwapValues = (
       limitPrice,
       isMarketOrder,
     });
-    const deadline = sdk.orderDeadline(state.currentTime, drivedValues.duration);
-    const wToken = network(sdk.config.chainId)?.wToken;
-    const createOrderArgs = sdk.prepareOrderArgs({
-      destTokenMinAmount: drivedValues.destTokenMinAmount,
-      srcChunkAmount: drivedValues.srcChunkAmount,
-      deadline: deadline,
-      fillDelay: drivedValues.fillDelay,
-      srcAmount,
-      srcTokenAddress: SDK.isNativeAddress(srcToken?.address) ? wToken?.address || "" : srcToken?.address || "",
-      destTokenAddress: destToken?.address || "",
-    });
-
-    const priceDiffFromMarket = getPriceDiffFromMarket(limitPrice, marketPrice, state.isInvertedLimitPrice);
 
     const { warnings, errors, ...rest } = drivedValues;
 
@@ -72,9 +58,8 @@ export const useDerivedSwapValues = (
         ...rest,
         limitPrice,
         srcAmount,
-        priceDiffFromMarket,
+        priceDiffFromMarket: getPriceDiffFromMarket(limitPrice, marketPrice, state.isInvertedLimitPrice),
         deadline: sdk.orderDeadline(state.currentTime, rest.duration),
-        createOrderArgs,
         isMarketOrder,
         estimatedDelayBetweenChunksMillis: sdk.estimatedDelayBetweenChunksMillis,
         limitPriceUI: toAmountUi(destToken?.decimals, limitPrice),
