@@ -106,7 +106,7 @@ const TokenPanelUsd = ({ decimalScale = 2, className = "" }: { decimalScale?: nu
 const PanelTokenSelect = ({ className = "" }: { className?: string }) => {
   const { isSrcToken } = useTokenPanelContext();
 
-  return <TokenSelect isSrcToken={isSrcToken} className={`twap-panel-token-select ${className}`} />;
+  return <TokenSelect isSrcToken={isSrcToken} className={`twap-token-panel-token-select ${className}`} />;
 };
 
 const BalanceAmountSelect = ({
@@ -126,10 +126,10 @@ const BalanceAmountSelect = ({
   if (!isSrcToken) return null;
 
   return (
-    <div className={`twap-panel-balance-buttons ${className}`}>
+    <div className={`twap-token-panel-balance-buttons ${className}`}>
       {options.map((option) => {
         return (
-          <button className="twap-panel-balance-buttons-btn" onClick={() => onClick(option.value)} key={option.value}>
+          <button className="twap-token-panel-balance-buttons-btn" onClick={() => onClick(option.value)} key={option.value}>
             {option.text}
           </button>
         );

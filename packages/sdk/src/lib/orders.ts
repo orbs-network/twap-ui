@@ -480,7 +480,6 @@ export const waitForNewOrder = ({
   }
 
   if (Number.isInteger(orderId)) {
-    
     return waitForOrdersUpdate(config, orderId!, account, signal);
   } else {
     return waitForOrdersLengthUpdate(config, currentOrdersLength!, account, signal);

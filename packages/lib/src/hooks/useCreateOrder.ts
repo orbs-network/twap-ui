@@ -11,8 +11,7 @@ export const useCreateOrder = () => {
   const { contractMethods } = twap;
   const twapContract = useTwapContract();
 
-
-  const createOrderArgs = contractMethods.createOrder
+  const createOrderArgs = contractMethods.createOrder;
 
   return useMutation(
     async () => {

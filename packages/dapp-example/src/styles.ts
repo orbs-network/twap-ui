@@ -36,7 +36,7 @@ const fonts = {
   [Configs.PancakeSwap.name.toLowerCase()]: "Kanit",
   [Configs.BaseSwap.name.toLowerCase()]: "Montserrat",
   StellaSwap: "DM Sans",
-  Lynex: "Montserrat",
+  [Configs.Lynex.name.toLowerCase()]: "Montserrat",
   [Configs.Arbidex.name.toLowerCase()]: "Quicksand",
   SyncSwap: "Inter",
   [Configs.DragonSwap.name.toLowerCase()]: "Fredoka",
@@ -159,6 +159,23 @@ export const StyledSushi = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkM
 
 export const StyledDragonswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
   background: isDarkMode ? "#020526" : "#F4F5F6",
+  ".menu-button": {
+    "*": {
+      color: isDarkMode ? "white" : "black",
+    },
+  },
+  ".ui-selector-btn": {
+    background: isDarkMode ? "hsla(0,0%,100%,.06)" : "white",
+    color: isDarkMode ? "white" : "black",
+  },
+  ".ui-selector-btn-selected": {
+    background: "rgb(59 130 246/1)",
+    color: "white",
+  },
+}));
+
+export const StyledLynexswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  background: isDarkMode ? "#1B140C" : "#F4F5F6",
   ".menu-button": {
     "*": {
       color: isDarkMode ? "white" : "black",
@@ -486,6 +503,13 @@ export const StyledDragonPanel = styled("div")<{ isDarkMode: number }>(({ isDark
   borderRadius: 20,
   background: isDarkMode ? "linear-gradient(180deg, #1d40b0 0%, #0d143a 100%)" : "linear-gradient(180deg, #bfdbfe 0%, #eff6ff 100%)",
   padding: 12,
+}));
+
+export const StyledLynexPanel = styled("div")<{ isDarkMode: number }>(({ isDarkMode }) => ({
+  width: "100%",
+  borderRadius: 12,
+  background: isDarkMode ? "#1E1812" : "#1E1812",
+  padding: "20px 16px 20px 16px",
 }));
 
 export const StyledPangolinLayout = styled(DappLayout)({

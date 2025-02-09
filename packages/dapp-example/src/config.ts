@@ -7,13 +7,13 @@
 // import stellaswap from "./StellaSwap";
 // import pancake from "./PancakeSwap";
 // import baseswap from "./BaseSwap";
-// import lynex from "./Lynex";
+import lynex from "./Lynex";
 // import arbidex from "./Arbidex";
 // import syncswap from "./SyncSwap";
 // import kinetix from "./kinetix";
 import dragonswap from "./dragonswap/DragonSwap";
 
 export const defaultDapp = dragonswap;
-export const dapps = [dragonswap];
+export const dapps = [dragonswap, lynex];
 
 // export const dapps = [dragonswap, quickswap, spookyswap, pangolin, pangolinDaas, chronos, thena, baseswap, arbidex, lynex, stellaswap, pancake, sushiswap, syncswap, kinetix];

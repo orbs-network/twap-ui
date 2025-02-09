@@ -1,135 +1,228 @@
-// import { StyledLynex, StyledLynexBox, StyledLynexLayout, StyledModalContent } from "./styles";
-// import { TWAP } from "@orbs-network/twap-ui-lynex";
-// import { useConnectWallet, useGetPriceUsdCallback, useGetTokens, usePriceUSD, useTheme } from "./hooks";
-// import { useWeb3React } from "@web3-react/core";
-// import { Dapp, TokensList, UISelector } from "./Components";
-// import { Popup } from "./Components";
-// import { SelectorOption, TokenListItem } from "./types";
-// import { useMemo, useState } from "react";
-// import { size, Configs } from "@orbs-network/twap-ui";
+import {
+  StyledSushiLayout,
+  StyledSushi,
+  StyledSushiModalContent,
+  StyledDragonswap,
+  StyledDragonLayout,
+  StyledDragonPanel,
+  StyledDragonswapModalContent,
+  StyledLynexswap,
+  StyledLynexPanel,
+} from "./styles";
+import { TWAP } from "@orbs-network/twap-ui-lynex";
+import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
+import { useWeb3React } from "@web3-react/core";
+import { Dapp, Popup, TokensList, UISelector } from "./Components";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import MuiTooltip from "@mui/material/Tooltip";
+import { SelectorOption, TokenListItem } from "./types";
+import tokens from './dragonswap/token.json'
+import {
+  mapCollection,
+  size,
+  TooltipProps,
+  Configs,
+  TokensListModalProps,
+  ModalProps,
+  Widget,
+  Token,
+  OnWrapSuccessArgs,
+  OnApproveSuccessArgs,
+  OnCreateOrderSuccessArgs,
+} from "@orbs-network/twap-ui";
+import { DappProvider } from "./context";
+import { eqIgnoreCase, network, networks } from "@defi.org/web3-candies";
 
-// const backendApi = "https://lynex-backend-7e21c8e31085.herokuapp.com/api/v1";
+const config = Configs.Lynex;
 
-// const config = Configs.Lynex;
+export const useDappTokens = () => {
+  const nativeToken = network(config.chainId).native;
+  const parseListToken = useCallback(
+    (tokenList?: any) => {
+      const res = tokenList?.tokens
+        .map(({ symbol, address, decimals, name }: any) => ({
+          decimals,
+          symbol,
+          name,
+          address,
+          logoURI: `https://dzyb4dm7r8k8w.cloudfront.net/prod/logos/${address}/logo.png`,
+        }));
+      return res;
+    },
+    [nativeToken, config?.chainId],
+  );
 
-// const parseListToken = (tokenList: any) => {
-//   return tokenList.map(({ symbol, address, decimals, logoURI, name }: any) => ({
-//     decimals,
-//     symbol,
-//     name,
-//     address,
-//     logoURI,
-//   }));
-// };
+  return useGetTokens({
+    parse: parseListToken,
+    tokens,
+  });
+};
 
-// export const useDappTokens = () => {
-//   return useGetTokens({
-//     parse: parseListToken,
-//     modifyFetchResponse: (response: any) => {
-//       return response.data;
-//     },
-//     baseAssets: [],
-//     url: `${backendApi}/assets`,
-//   });
-// };
+const parseList = (rawList?: any): TokenListItem[] => {
+  return mapCollection(rawList, (rawToken: any) => {
+    return {
+      token: {
+        address: rawToken.address,
+        decimals: rawToken.decimals,
+        symbol: rawToken.symbol,
+        logoUrl: rawToken.logoURI,
+      },
+      rawToken,
+    };
+  });
+};
 
-// interface TokenSelectModalProps {
-//   isOpen: boolean;
-//   selectedCurrency?: any;
-//   onCurrencySelect: (token: any) => void;
-//   onDismiss: () => void;
-// }
+const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
+  const { data: baseAssets } = useDappTokens();
+  const { isDarkTheme } = useTheme();
+  const tokensListSize = size(baseAssets);
+  const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
-// const parseList = (rawList?: any): TokenListItem[] => {
-//   return rawList.map((rawToken: any) => {
-//     return {
-//       token: {
-//         address: rawToken.address,
-//         decimals: rawToken.decimals,
-//         symbol: rawToken.symbol,
-//         logoUrl: rawToken.logoURI,
-//       },
-//       rawToken,
-//     };
-//   });
-// };
+  return (
+    <Popup isOpen={isOpen} onClose={onClose}>
+      <StyledDragonswapModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
+        <TokensList tokens={parsedList} onClick={onSelect} />
+      </StyledDragonswapModalContent>
+    </Popup>
+  );
+};
 
-// interface TokenSelectModalProps {
-//   popup: boolean;
-//   setPopup: (value: boolean) => void;
-//   selectedAsset: any;
-//   setSelectedAsset: (value: any) => void;
-//   otherAsset: any;
-//   setOtherAsset: (value: any) => void;
-//   baseAssets: any[];
-//   onAssetSelect: () => void;
-// }
+const Modal = (props: ModalProps) => {
+  const { isDarkTheme } = useTheme();
 
-// const TokenSelectModal = ({ popup, setPopup, setSelectedAsset, baseAssets }: TokenSelectModalProps) => {
-//   const tokensListSize = size(baseAssets);
-//   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
+  return (
+    <Popup isOpen={props.isOpen} onClose={props.onClose}>
+      <StyledDragonswapModalContent isDarkTheme={isDarkTheme ? 1 : 0}>{props.children}</StyledDragonswapModalContent>
+    </Popup>
+  );
+};
 
-//   return (
-//     <Popup isOpen={popup} onClose={() => setPopup(true)}>
-//       <StyledModalContent>
-//         <TokensList tokens={parsedList} onClick={setSelectedAsset} />
-//       </StyledModalContent>
-//     </Popup>
-//   );
-// };
+const useUSD = (address?: string) => {
+  const res = usePriceUSD(address);
+  return res?.toString();
+};
 
-// const TWAPComponent = ({ limit }: { limit?: boolean }) => {
-//   const { account, library } = useWeb3React();
-//   const connect = useConnectWallet();
-//   const { data: dappTokens } = useDappTokens();
-//   const priceUsd = useGetPriceUsdCallback();
+const Tooltip = (props: TooltipProps) => {
+  return (
+    <MuiTooltip title={props.tooltipText} arrow>
+      <span>{props.children}</span>
+    </MuiTooltip>
+  );
+};
 
-//   const { isDarkTheme } = useTheme();
-//   return null;
+const onWrapSuccess = (args: OnWrapSuccessArgs) => {
+  console.log("onWrapSuccess", args.token, args.txHash);
+};
 
-//   // return (
-//   //   <TWAP
-//   //     provider={library?.givenProvider}
-//   //     connect={connect}
-//   //     account={account}
-//   //     // srcToken="ETH"
-//   //     // dstToken="USDC"
-//   //     dappTokens={dappTokens}
-//   //     onSrcTokenSelected={(token: any) => console.log(token)}
-//   //     onDstTokenSelected={(token: any) => console.log(token)}
-//   //     TokenSelectModal={TokenSelectModal}
-//   //     isDarkTheme={isDarkTheme}
-//   //     limit={limit}
-//   //   />
-//   // );
-// };
+const onApproveSuccess = (args: OnApproveSuccessArgs) => {
+  console.log("onApproveSuccess", args.token, args.txHash);
+};
 
-// const logo = "https://app.lynex.fi/images/header/logo.svg";
+const onCreateOrderSuccess = (args: OnCreateOrderSuccessArgs) => {
+  console.log("onCreateOrderSuccess");
+};
 
-// const DappComponent = () => {
-//   const [selected, setSelected] = useState(SelectorOption.TWAP);
+const TWAPComponent = ({ limit }: { limit?: boolean }) => {
+  const { account, library, chainId } = useWeb3React();
+  const connect = useConnectWallet();
+  const { data: dappTokens } = useDappTokens();
+  const { isDarkTheme } = useTheme();
+  const [fromToken, setFromToken] = useState<any>(undefined);
+  const [toToken, setToToken] = useState<any>(undefined);
 
-//   return (
-//     <StyledLynex>
-//       <StyledLynexLayout name={config.name}>
-//         <UISelector limit={true} select={setSelected} selected={selected} />
-//         <StyledLynexBox>
-//           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-//         </StyledLynexBox>
+  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
+    return useTrade(fromToken, toToken, amount, dappTokens);
+  };
 
-//         <StyledLynexBox></StyledLynexBox>
-//       </StyledLynexLayout>
-//     </StyledLynex>
-//   );
-// };
+  const connector = useMemo(() => {
+    return {
+      getProvider: () => library,
+    };
+  }, [library]);
 
-// const dapp: Dapp = {
-//   Component: DappComponent,
-//   logo,
-//   configs: [config],
-//   path: config.name.toLowerCase(),
-// };
+  useEffect(() => {
+    setFromToken(undefined);
+    setToToken(undefined);
+  }, [chainId]);
 
-// export default dapp;
+  useEffect(() => {
+    if (!fromToken) {
+      setFromToken(dappTokens?.[1]);
+    }
+    if (!toToken) {
+      setToToken(dappTokens?.[3]);
+    }
+  }, [dappTokens, toToken, fromToken]);
 
-export {};
+  const onSwitchTokens = () => {
+    setFromToken(toToken);
+    setToToken(fromToken);
+  };
+
+  const onSwitchFromNativeToWtoken = useCallback(() => {
+    const wToken = Object.values(networks).find((it) => it.id === chainId)?.wToken.address;
+    const token = dappTokens.find((it: any) => eqIgnoreCase(it.address, wToken || ""));
+    if (token) {
+      setFromToken(token);
+    }
+  }, [dappTokens, chainId]);
+
+  return (
+    <TWAP
+      title={limit ? "Limit" : "TWAP"}
+      connect={connect}
+      account={account}
+      connector={connector}
+      srcTokenAddress={fromToken?.address}
+      dstTokenAddress={toToken?.address}
+      dexTokens={dappTokens}
+      isDarkTheme={isDarkTheme}
+      useMarketPrice={_useTrade}
+      chainId={chainId}
+      isLimitPanel={limit}
+      useUSD={useUSD}
+      onSrcTokenSelected={setFromToken}
+      onDstTokenSelected={setToToken}
+      onSwitchFromNativeToWtoken={onSwitchFromNativeToWtoken}
+      onSwitchTokens={onSwitchTokens}
+      components={{ Tooltip, TokensListModal, Modal }}
+      isExactAppoval={true}
+      minChunkSizeUsd={4}
+      callbacks={{
+        onWrapSuccess,
+        onApproveSuccess,
+        onCreateOrderSuccess,
+      }}
+    />
+  );
+};
+
+const DappComponent = () => {
+  const [selected, setSelected] = useState(SelectorOption.TWAP);
+  const { isDarkTheme } = useTheme();
+
+  return (
+    <DappProvider config={config}>
+      <StyledLynexswap isDarkMode={isDarkTheme ? 1 : 0}>
+        <StyledDragonLayout name={config.name}>
+          <UISelector selected={selected} select={setSelected} limit={true} />
+          <StyledLynexPanel isDarkMode={isDarkTheme ? 1 : 0}>
+            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
+          </StyledLynexPanel>
+          <Widget.PoweredByOrbs />
+          <Widget.Orders />
+          <Widget.LimitPriceWarning />
+        </StyledDragonLayout>
+      </StyledLynexswap>
+    </DappProvider>
+  );
+};
+
+const dapp: Dapp = {
+  Component: DappComponent,
+  logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/29525.png",
+  configs: [config],
+  path: "lynex",
+};
+
+export default dapp;

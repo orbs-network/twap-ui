@@ -38,7 +38,7 @@ const contextReducer = (state: State, action: Action): State => {
     case ActionType.RESET:
       return {
         ...initialState,
-        newOrderLoading: state.newOrderLoading
+        newOrderLoading: state.newOrderLoading,
       };
     default:
       return state;
