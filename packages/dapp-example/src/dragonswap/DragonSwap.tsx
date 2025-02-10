@@ -23,8 +23,7 @@ import { DappProvider } from "../context";
 import { eqIgnoreCase, network, networks } from "@defi.org/web3-candies";
 
 const config = Configs.DragonSwap;
-  console.log({config});
-  
+
 export const useDappTokens = () => {
   const nativeToken = network(config.chainId).native;
   const parseListToken = useCallback(

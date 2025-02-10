@@ -2,13 +2,13 @@ import { Config, Configs } from "@orbs-network/twap-sdk";
 import { Translations, Styles, getNetwork, Widget, UIPreferences, WidgetProps, WidgetProvider, useAmountBN, Components, Types } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, useContext, useEffect, useMemo, ReactNode } from "react";
-import Web3 from "web3";
 import React, { useCallback, useState } from "react";
 import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledTwapInputs } from "./styles";
 import BN from "bignumber.js";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { eqIgnoreCase, isNativeAddress } from "@defi.org/web3-candies";
 import { ThemeProvider } from "styled-components";
+import { checksumAddress } from "viem";
 
 const uiPreferences: UIPreferences = {
   input: { disableThousandSeparator: true, placeholder: "0" },
@@ -28,7 +28,7 @@ const useParseToken = () => {
         if (!token.address) return;
 
         return {
-          address: Web3.utils.toChecksumAddress(token.address),
+          address: checksumAddress(token.address),
           decimals: token.decimals,
           symbol: token.symbol,
           logoUrl: token.logoURI,
@@ -205,8 +205,6 @@ const Content = () => {
         connect={props.connect!}
         config={config}
         minChunkSizeUsd={props.minChunkSizeUsd}
-        maxFeePerGas={props.maxFeePerGas}
-        priorityFeePerGas={props.priorityFeePerGas}
         translations={translations as Translations}
         provider={provider}
         account={props.account}

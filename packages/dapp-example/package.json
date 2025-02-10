@@ -39,6 +39,7 @@
     "react-dom": "18.x",
     "react-helmet": "6.x",
     "react-router-dom": "6.x",
+    "react-scripts": "^5.0.1",
     "react-virtualized-auto-sizer": "^1.0.7",
     "react-window": "^1.8.8"
   },

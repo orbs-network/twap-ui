@@ -1,14 +1,21 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import BN from "bignumber.js";
 import { useSwapModal } from "./useSwapModal";
 import { useWidgetContext } from "..";
-import { useSwitchChain } from "./useSwitchChain";
 import { useShouldOnlyWrap, useShouldUnwrap } from "./useShouldWrapOrUnwrap";
 import { useSrcBalance } from "./useBalances";
 import { useBalanceWaning, useFeeOnTransferError } from "./useWarnings";
 import { useWrapOnly } from "./useWrapToken";
 import { useUnwrapToken } from "./useUnwrapToken";
 import { SwapStatus } from "@orbs-network/swap-ui";
+
+export const useSwitchChain = () => {
+  const { config, walletClient } = useWidgetContext();
+
+  return useCallback(() => {
+    (walletClient as any)?.switchChain({ id: config.chainId });
+  }, [config, walletClient]);
+};
 
 export const useConfirmationButton = () => {
   const {
@@ -28,7 +35,7 @@ export const useConfirmationButton = () => {
   } = useWidgetContext();
 
   const { onOpen } = useSwapModal();
-  const { changeNetwork, loading: changeNetworkLoading } = useSwitchChain();
+  const switchChain = useSwitchChain();
   const shouldUnwrap = useShouldUnwrap();
   const usdLoading = BN(srcUsd1Token || "0").isZero();
   const { isLoading: srcBalanceLoading } = useSrcBalance();
@@ -48,9 +55,9 @@ export const useConfirmationButton = () => {
     if (isWrongChain)
       return {
         text: translations.switchNetwork,
-        onClick: changeNetwork,
-        loading: changeNetworkLoading,
-        disabled: changeNetworkLoading,
+        onClick: switchChain,
+        loading: false,
+        disabled: false,
       };
     if (!maker)
       return {
@@ -94,12 +101,11 @@ export const useConfirmationButton = () => {
     unwrap,
     unwrapLoading,
     translations,
-    changeNetwork,
-    changeNetworkLoading,
     onOpen,
     hasErrors,
     balanceError,
     feeError,
     srcAmountError,
+    switchChain,
   ]);
 };
