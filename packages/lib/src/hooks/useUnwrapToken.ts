@@ -25,7 +25,7 @@ export const useUnwrapToken = () => {
       functionName: "withdraw",
       account: account,
       address: tokenAddress,
-      value: BN(srcAmount).decimalPlaces(0).toFixed(),
+      params: [BN(srcAmount).decimalPlaces(0).toFixed()],
     });
 
     await waitForTransactionReceipt(publicClient as any, {

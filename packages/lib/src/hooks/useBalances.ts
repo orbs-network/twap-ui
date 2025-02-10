@@ -4,14 +4,13 @@ import { useCallback } from "react";
 import { Token, useWidgetContext } from "..";
 import { REFETCH_BALANCE } from "../consts";
 import { QueryKeys } from "../enums";
-import BN from "bignumber.js";
 import { readContract } from "viem/actions";
 
-export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, staleTime?: number) => {
-  const { account, publicClient } = useWidgetContext();
+export const useBalance = (token?: Token) => {
+  const { account, publicClient, chainId } = useWidgetContext();
 
   const query = useQuery(
-    [QueryKeys.GET_BALANCE, account, token?.address],
+    [QueryKeys.GET_BALANCE, account, token?.address, chainId],
     async () => {
       if (isNativeAddress(token!.address)) {
         const res = await (publicClient as any).getBalance({ address: account });
@@ -29,7 +28,6 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
     },
     {
       enabled: !!token && !!account,
-      onSuccess,
       refetchInterval: REFETCH_BALANCE,
       staleTime: Infinity,
     },

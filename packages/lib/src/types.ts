@@ -1,10 +1,8 @@
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
-import Web3 from "web3";
 import { Config } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { UseTwap } from "@orbs-network/twap-ui-sdk";
-import { createWalletClient, createPublicClient } from "viem";
 
 export interface Translations {
   minReceived: string;
@@ -210,7 +208,8 @@ export type OnCreateOrderSuccessArgs = {
 export interface WidgetProps {
   chainId?: number;
   account?: any;
-  provider?: any;
+  walletProvider?: any;
+  walletClientTransport?: any;
   isDarkTheme?: boolean;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;

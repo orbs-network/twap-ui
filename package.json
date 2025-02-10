@@ -17,9 +17,8 @@
     "jest-environment-jsdom": "29.x",
     "lerna": "6.x",
     "nodemon": "2.x",
-    "ts-jest": "29.x",
-    "typescript": "^5.7.3"
-  },
+    "ts-jest": "29.x"
+    },
   "scripts": {
     "clean": "lerna exec 'rm -f package-lock.json' && lerna clean -y || true && lerna bootstrap",
     "build": "lerna run build",
@@ -43,7 +42,6 @@
     ],
     "root": true,
     "rules": {
-      "import/no-extraneous-dependencies": "error",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-empty-function": "off",

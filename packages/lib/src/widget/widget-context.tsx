@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useReducer } from "react";
 import { State, WidgetContextType, Translations, WidgetProps } from "../types";
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -107,13 +107,14 @@ const useClients = (props: WidgetProps) => {
   return useMemo(() => {
     const viemChain = getViemChain(props.chainId);
     if (!viemChain) return;
-    const provider = props.provider?.currentProvider;
+    const walletProvider = props.walletProvider?.currentProvider;
+    const transport = props.walletClientTransport || walletProvider ? custom(walletProvider) : undefined;
 
     return {
-      walletClient: provider ? createWalletClient({ account: props.account, chain: viemChain, transport: custom(provider) }) : undefined,
-      publicClient: createPublicClient({ chain: viemChain, transport: provider ? custom(provider) : http() }),
+      walletClient: transport ? createWalletClient({ account: props.account, chain: viemChain, transport }) : undefined,
+      publicClient: createPublicClient({ chain: viemChain, transport: transport || http() }),
     };
-  }, [props.chainId, props.provider, props.account]);
+  }, [props.chainId, props.walletProvider, props.account, props.walletClientTransport]);
 };
 
 export const WidgetProvider = (props: WidgetProps) => {

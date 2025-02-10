@@ -1,4 +1,4 @@
-import { Config, Configs } from "@orbs-network/twap-sdk";
+import { Configs } from "@orbs-network/twap-sdk";
 import { Translations, Styles, getNetwork, Widget, UIPreferences, WidgetProps, WidgetProvider, useAmountBN, Components, Types } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, useContext, useEffect, useMemo, ReactNode } from "react";
@@ -23,9 +23,7 @@ const useParseToken = () => {
   return useCallback(
     (token?: any) => {
       try {
-        if (!token) return;
-
-        if (!token.address) return;
+        if (!token || !token.address) return;
 
         return {
           address: checksumAddress(token.address),
@@ -159,7 +157,9 @@ export const useProvider = () => {
     try {
       const res = await props.connector?.getProvider();
       setProvider(res);
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to get provider", error);
+    }
   }, [setProvider, props.connector, props.chainId, props.account]);
 
   useEffect(() => {
@@ -206,7 +206,8 @@ const Content = () => {
         config={config}
         minChunkSizeUsd={props.minChunkSizeUsd}
         translations={translations as Translations}
-        provider={provider}
+        walletProvider={provider}
+        walletClientTransport={props.walletClientTransport}
         account={props.account}
         srcToken={srcToken}
         dstToken={dstToken}
