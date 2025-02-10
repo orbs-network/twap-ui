@@ -1,6 +1,6 @@
-import { Config, TimeDuration, TwapWarning, TwapError, Warnings, Errors } from "./types";
+import { TimeDuration, TwapWarning, TwapError, Warnings, Errors } from "./types";
 import BN from "bignumber.js";
-import { MAX_DURATION_DAYS, MAX_DURATION_MILLIS, MAX_FILL_DELAY_MILLIS, MIN_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS } from "./consts";
+import { MAX_DURATION_MILLIS, MAX_FILL_DELAY_MILLIS, MIN_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS } from "./consts";
 import { getTimeDurationMillis, millisToDays, millisToMinutes } from "./utils";
 
 export const getPartialFillWarning = (chunks = 1, duration: TimeDuration, fillDelay: TimeDuration): TwapWarning => {
@@ -68,10 +68,12 @@ export const getMaxTradeDurationWarning = (duration: TimeDuration): TwapError =>
   const warning = getTimeDurationMillis(duration) > MAX_DURATION_MILLIS;
   if (!warning) return;
 
-  return {
-    type: Errors.MAX_TRADE_DURATION,
-    text: `Max. expiry is ${MAX_DURATION_DAYS} days`,
-  };
+  return undefined;
+
+  // return {
+  //   type: Errors.MAX_TRADE_DURATION,
+  //   text: `Max. expiry is ${MAX_DURATION_DAYS} days`,
+  // };
 };
 
 export const getLimitPriceWarning = (price?: string): TwapError => {
@@ -101,15 +103,14 @@ export const getChunksWarning = (chunks = 0, maxPossibleChunks: number, isLimitP
   }
 };
 
-export const getTradeSizeWarning = (minChunkSizeUsd: number, srcChunkAmountUsd?: string | number, chunks = 1): TwapError => {
-  if (BN(srcChunkAmountUsd || 0).isZero()) return;
-  const minTradeSizeUsd = BN(minChunkSizeUsd);
-
-  const warning = BN(chunks).isZero() || BN(srcChunkAmountUsd || 0).isLessThan(minTradeSizeUsd);
+export const getTradeSizeWarning = (minChunkSizeUsd: number, oneSrcTokenUsd?: string | number, srcAmount?: string): TwapError => {
+  const warning = BN(oneSrcTokenUsd || 0)
+    .multipliedBy(srcAmount || 0)
+    .isLessThan(minChunkSizeUsd);
   if (!warning) return;
 
   return {
     type: Errors.TRADE_SIZE,
-    text: `Minimum trade size is ${minTradeSizeUsd.toString()} USD`,
+    text: `Minimum trade size is ${minChunkSizeUsd} USD`,
   };
 };

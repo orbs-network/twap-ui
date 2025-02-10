@@ -9,7 +9,7 @@ import moment from "moment";
 import { OrderDisplay } from "../../../components/OrderDisplay";
 import { StyledColumnFlex, StyledText } from "../../../styles";
 import { Token } from "../../../types";
-import { Button } from "../../../components/base";
+import Button from "../../../components/base/Button";
 import { useWidgetContext } from "../../widget-context";
 import { useCancelOrder } from "../../../hooks/useCancelOrder";
 import { useAmountUi } from "../../../hooks/useParseAmounts";
@@ -200,8 +200,6 @@ const AmountInFilled = ({ order }: { order: Order }) => {
   );
 };
 const OrderStatusComponent = ({ order }: { order: Order }) => {
-  const t = useWidgetContext().translations;
-
   const text = !order ? "" : order.status;
 
   return (

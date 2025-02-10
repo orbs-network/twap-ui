@@ -25,7 +25,7 @@ const getStyles = (theme?: DefaultTheme) => {
     messageText: isDarkMode ? "#94a3b8" : "#6b7280",
     boxHover: isDarkMode ? "rgba(255,255,255, 0.09)" : "rgba(0,0,0, 0.03)",
     cardBg: isDarkMode ? "rgb(13,20,58)" : "rgb(239 246 255)",
-    errorBorder: "rgb(239 68 68)",
+    errorBorder: "hsl(6.899999999999977 100% 28.8%)",
     focusBorder: "rgb(8 96 219)",
     color2: isDarkMode ? "hsl(36.80000000000001 25.6% 23.7%)" : "rgb(191 219 254)",
     error: isDarkMode ? "rgb(239 68 68)" : "rgb(239 68 68)",
@@ -38,7 +38,6 @@ const getStyles = (theme?: DefaultTheme) => {
     switchHandle: isDarkMode ? "#948F81" : "rgb(191 219 254)",
     switchBg: isDarkMode ? "hsl(36 25.8% 19%)" : "rgb(191 219 254)",
     switchHandleActive: isDarkMode ? "#F2B87F" : "rgb(191 219 254)",
-
   };
 };
 
@@ -58,7 +57,7 @@ const panelBodyStyles = (theme: DefaultTheme) => {
     width: "100%",
     background: "transparent",
     padding: 16,
-    height:'100%',
+    height: "100%",
     gap: 0,
     borderRadius: 12,
     color: "white",
@@ -91,9 +90,9 @@ const tokenSelectStyles = (theme: DefaultTheme) => {
     svg: {
       width: "16px!important",
       height: 16,
-      color: styles.isDarkMode ? "rgb(146 197 253)" : "rgb(29 64 176)",
+      color: "#8E8194",
       stroke: {
-        color: styles.isDarkMode ? "rgb(146 197 253)" : "rgb(29 64 176)",
+        color: "#8E8194",
       } as any,
     },
     p: {
@@ -107,30 +106,28 @@ const tokenSelectStyles = (theme: DefaultTheme) => {
   };
 };
 
-
-
 const selectButtons = (theme: DefaultTheme) => {
   const styles = getStyles(theme);
-return {
-  display: "flex",
-  gap: 4,
-  marginLeft: "auto",
-  "button": {
-    color: styles.tokenSelectPercentBtn,
-    background: "transparent",
-    border: "none",
-    fontSize: 12,
-    padding: '0.5rem 0.7rem',
-    fontWeight: 500,
-    cursor: "pointer",
-    transition: "background 0.2s",
-    borderRadius: 4,
-    "&:hover": {
-      background: styles.tokenSelectPercentBtnHover,
-    }
-  },
-}
-}
+  return {
+    display: "flex",
+    gap: 4,
+    marginLeft: "auto",
+    button: {
+      color: styles.tokenSelectPercentBtn,
+      background: "transparent",
+      border: "none",
+      fontSize: 12,
+      padding: "0.5rem 0.7rem",
+      fontWeight: 500,
+      cursor: "pointer",
+      transition: "background 0.2s",
+      borderRadius: 4,
+      "&:hover": {
+        background: styles.tokenSelectPercentBtnHover,
+      },
+    },
+  };
+};
 
 const tokenPanelStyles = (theme: DefaultTheme) => {
   const styles = getStyles(theme);
@@ -140,7 +137,7 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
     flexDirection: "column" as const,
     gap: 0,
     ".twap-panel-body": {
-      gap: 12
+      gap: 12,
     },
 
     ".twap-token-panel-balance-buttons": {
@@ -155,7 +152,7 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
         fontSize: 14,
       },
       ".twap-token-panel-balance": {
-        fontSize: '0.875rem',
+        fontSize: "0.875rem",
         color: styles.darkText,
         span: {
           color: styles.darkText,
@@ -191,7 +188,7 @@ const switchTokensStyles = (theme: DefaultTheme) => {
       left: "50%",
       top: "50%",
       transform: "translate(-50%, -50%)",
-      background:  styles.switchTokensBg,
+      background: styles.switchTokensBg,
       borderRadius: 8,
       border: `unset`,
       width: 32,
@@ -208,7 +205,7 @@ const switchTokensStyles = (theme: DefaultTheme) => {
       },
       "&:hover": {
         background: styles.switchTokensBgHover,
-      }
+      },
     },
   };
 };
@@ -418,9 +415,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       "&-buttons": {
         gap: 5,
       },
-      "&-button": {
-
-      },
+      "&-button": {},
       ".twap-label": {
         ...panelLabelStyles(theme),
       },
@@ -476,11 +471,12 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-input": {
       input: {
+        fontWeight: 400,
         color: styles.textColor,
-        fontSize: '1.25rem',
+        fontSize: "1.25rem",
         "&::placeholder": {
           color: styles.textColor,
-          opacity: '0.5!important',
+          opacity: "0.5!important",
         },
       },
     },
@@ -504,16 +500,16 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       ...tokenPanelStyles(theme),
     },
     ".twap-panel": {
-      width:'100%'
+      width: "100%",
     },
     ".twap-panel-body": {
       ...panelBodyStyles(theme),
     },
     ".twap-trade-interval-panel, .twap-trades-amount-panel": {
-     ".twap-panel-body":{
-      paddingTop: 10,
-      paddingBottom: 10,
-     },
+      ".twap-panel-body": {
+        paddingTop: 10,
+        paddingBottom: 10,
+      },
       ".twap-input": {
         input: {
           fontSize: 18,
@@ -545,8 +541,8 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-limit-price-panel": {
       ".twap-panel-body": {
-        gap:12
-      }
+        gap: 12,
+      },
     },
     ".twap-limit-price-panel-percent": {
       ...selectButtons(theme),
@@ -573,7 +569,19 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       fontSize: 14,
     },
     ".twap-error-message": {
-      color: styles.error,
+      color: styles.textColor,
+      padding: 10,
+      fontSize:14,
+      gap: 8,
+      border:`1px solid ${styles.errorBorder}`,
+      borderRadius: 12,
+
+      svg: {
+        color: styles.error,
+        width: `20px!important`,
+        height: 20,
+        top: -1
+      }
     },
     ".twap-input-loading": {
       opacity: 0,
@@ -615,7 +623,6 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
 
-  
     ".twap-time-selector": {
       ".twap-input": {
         input: {
@@ -637,9 +644,8 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       background: styles.switchBgActive,
       ".twap-switch-handle": {
         background: styles.switchHandleActive,
-      }
+      },
     },
-    
 
     [`@media(max-width: ${mobile}px)`]: {
       ".twap-trade-interval-panel": {

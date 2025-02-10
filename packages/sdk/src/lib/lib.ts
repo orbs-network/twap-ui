@@ -1,6 +1,6 @@
 import BN from "bignumber.js";
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
-import { Config, DerivedSwapValuesArgs, PrepareOrderArgs, PrepareOrderArgsResult, TimeDuration, TimeUnit } from "./types";
+import { Config, DerivedSwapValuesArgs, PrepareOrderArgs, TimeDuration, TimeUnit } from "./types";
 import { amountUi, findTimeUnit, getTimeDurationMillis } from "./utils";
 import { getChunksWarning, getDurationWarning, getFillDelayWarning, getPartialFillWarning, getSrcAmountWarning, getLimitPriceWarning, getTradeSizeWarning } from "./warnings";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
@@ -8,7 +8,7 @@ export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELA
 export const getDestTokenAmount = (srcAmount?: string, limitPrice?: string, srcDecimals?: number, destDecimals?: number) => {
   if (!srcAmount || !limitPrice || !srcDecimals || !destDecimals) return undefined;
 
-  let result = BN(srcAmount).times(limitPrice);
+  const result = BN(srcAmount).times(limitPrice);
   const decimalAdjustment = BN(10).pow(srcDecimals);
   return result.div(decimalAdjustment).toFixed(0);
 };
@@ -97,13 +97,10 @@ export const derivedSwapValues = (
   const fillDelay = getFillDelay(isLimitPanel, customFillDelay);
   const duration = getDuration(chunks, fillDelay, customDuration);
   const destTokenMinAmount = getDestTokenMinAmount(srcChunkAmount, limitPrice, isMarketOrder, srcDecimals, destDecimals);
-  const srcChunkAmountUsd = BN(srcChunkAmount)
-    .times(oneSrcTokenUsd || 0)
-    .toFixed(0);
 
   const errors = {
     fillDelay: getFillDelayWarning(fillDelay, isLimitPanel),
-    tradeSize: getTradeSizeWarning(minChunkSizeUsd, amountUi(srcDecimals, srcChunkAmountUsd), chunks),
+    tradeSize: getTradeSizeWarning(minChunkSizeUsd, oneSrcTokenUsd, amountUi(srcDecimals, srcAmount)),
     srcAmount: getSrcAmountWarning(srcAmount),
     limitPrice: getLimitPriceWarning(limitPrice),
     chunks: getChunksWarning(chunks, maxPossibleChunks, Boolean(isLimitPanel), srcAmount),

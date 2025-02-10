@@ -136,7 +136,7 @@ export const WidgetProvider = (props: WidgetProps) => {
     isLimitPanel: props.isLimitPanel,
     srcToken: props.srcToken,
     destToken: props.dstToken,
-    marketPriceOneToken: props.marketPrice1Token,
+    marketPriceOneToken: props.marketPrice,
     oneSrcTokenUsd: props.srcUsd1Token,
     typedSrcAmount: state.srcAmount,
   });

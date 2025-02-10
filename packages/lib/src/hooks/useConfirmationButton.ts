@@ -29,7 +29,7 @@ export const useConfirmationButton = () => {
     twap: {
       errors: { hasErrors, srcAmount: srcAmountError },
     },
-    marketPrice1Token,
+    marketPrice,
     state: { swapStatus },
     marketPriceLoading,
   } = useWidgetContext();
@@ -48,8 +48,8 @@ export const useConfirmationButton = () => {
 
   const isLoading = useMemo(() => {
     if (!srcToken || !dstToken) return false;
-    return marketPriceLoading || usdLoading || srcBalanceLoading || feeOnTransferLoading || BN(marketPrice1Token || 0).isZero();
-  }, [usdLoading, srcBalanceLoading, feeOnTransferLoading, marketPrice1Token, srcToken, dstToken, marketPriceLoading]);
+    return marketPriceLoading || usdLoading || srcBalanceLoading || feeOnTransferLoading || BN(marketPrice || 0).isZero();
+  }, [usdLoading, srcBalanceLoading, feeOnTransferLoading, marketPrice, srcToken, dstToken, marketPriceLoading]);
 
   return useMemo(() => {
     if (isWrongChain)

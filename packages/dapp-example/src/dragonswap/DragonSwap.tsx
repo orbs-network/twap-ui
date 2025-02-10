@@ -18,6 +18,7 @@ import {
   OnWrapSuccessArgs,
   OnApproveSuccessArgs,
   OnCreateOrderSuccessArgs,
+  useAmountBN,
 } from "@orbs-network/twap-ui";
 import { DappProvider } from "../context";
 import { eqIgnoreCase, network, networks } from "@defi.org/web3-candies";
@@ -120,16 +121,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const [fromToken, setFromToken] = useState<any>(undefined);
   const [toToken, setToToken] = useState<any>(undefined);
 
-  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
-    return useTrade(fromToken, toToken, amount, dappTokens);
-  };
-
-  const connector = useMemo(() => {
-    return {
-      getProvider: () => library,
-    };
-  }, [library]);
-
   useEffect(() => {
     setFromToken(undefined);
     setToToken(undefined);
@@ -149,6 +140,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setToToken(fromToken);
   };
 
+  const amount = useAmountBN(fromToken?.decimals, "1");
+
+  const { outAmount, isLoading } = useTrade(fromToken?.address, toToken?.address, amount, dappTokens);
+
   const onSwitchFromNativeToWtoken = useCallback(() => {
     const wToken = Object.values(networks).find((it) => it.id === chainId)?.wToken.address;
     const token = dappTokens.find((it: any) => eqIgnoreCase(it.address, wToken || ""));
@@ -157,20 +152,25 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     }
   }, [dappTokens, chainId]);
 
+  const srcUsd = useUSD(fromToken?.address);
+  const dstUsd = useUSD(toToken?.address);
+
   return (
     <TWAP
       title={limit ? "Limit" : "TWAP"}
       connect={connect}
       account={account}
-      connector={connector}
+      walletProvider={library}
       srcTokenAddress={fromToken?.address}
       dstTokenAddress={toToken?.address}
       dexTokens={dappTokens}
       isDarkTheme={isDarkTheme}
-      useMarketPrice={_useTrade}
+      marketPrice={outAmount}
+      marketPriceLoading={isLoading}
       chainId={chainId}
       isLimitPanel={limit}
-      useUSD={useUSD}
+      srcUsd1Token={srcUsd ? Number(srcUsd) : 0}
+      dstUsd1Token={dstUsd ? Number(dstUsd) : 0}
       onSrcTokenSelected={setFromToken}
       onDstTokenSelected={setToToken}
       onSwitchFromNativeToWtoken={onSwitchFromNativeToWtoken}

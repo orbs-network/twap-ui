@@ -128,7 +128,7 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
     flexDirection: "column" as const,
     gap: 0,
 
-    ".twap-panel-balance-buttons": {
+    ".twap-token-panel-balance-buttons": {
       display: "flex",
       gap: 10,
       "&-btn": {

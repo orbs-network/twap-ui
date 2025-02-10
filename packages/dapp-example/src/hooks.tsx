@@ -270,6 +270,9 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
   const fromTokenUsd = usePriceUSD(handleAddress(fromToken));
   const toTokenUsd = usePriceUSD(handleAddress(toToken));
   const { chainId } = useWeb3React();
+  console.log("fromTokenUsd", fromTokenUsd);
+  console.log("toTokenUsd", toTokenUsd);
+
   const { fromTokenDecimals, toTokenDecimals } = useMemo(() => {
     return {
       fromTokenDecimals: tokens?.find((it: any) => eqIgnoreCase(it.address, fromToken || ""))?.decimals,

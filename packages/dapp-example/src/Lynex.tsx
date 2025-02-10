@@ -1,14 +1,4 @@
-import {
-  StyledSushiLayout,
-  StyledSushi,
-  StyledSushiModalContent,
-  StyledDragonswap,
-  StyledDragonLayout,
-  StyledDragonPanel,
-  StyledDragonswapModalContent,
-  StyledLynexswap,
-  StyledLynexPanel,
-} from "./styles";
+import { StyledDragonLayout, StyledDragonswapModalContent, StyledLynexswap, StyledLynexPanel } from "./styles";
 import { TWAP } from "@orbs-network/twap-ui-lynex";
 import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
@@ -16,7 +6,7 @@ import { Dapp, Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { SelectorOption, TokenListItem } from "./types";
-import tokens from './dragonswap/token.json'
+import tokens from "./dragonswap/token.json";
 import {
   mapCollection,
   size,
@@ -29,32 +19,44 @@ import {
   OnWrapSuccessArgs,
   OnApproveSuccessArgs,
   OnCreateOrderSuccessArgs,
+  useAmountBN,
 } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
-import { eqIgnoreCase, network, networks } from "@defi.org/web3-candies";
+import { chainId, eqIgnoreCase, erc20s, network, networks } from "@defi.org/web3-candies";
 
 const config = Configs.Lynex;
 
 export const useDappTokens = () => {
-  const nativeToken = network(config.chainId).native;
+  const nativeToken = useMemo(() => {
+    const native = network(config.chainId).native;
+    return {
+      ...native,
+      logoURI: native.logoUrl,
+    };
+  }, [config.chainId]);
   const parseListToken = useCallback(
     (tokenList?: any) => {
-      const res = tokenList?.tokens
-        .map(({ symbol, address, decimals, name }: any) => ({
-          decimals,
-          symbol,
-          name,
-          address,
-          logoURI: `https://dzyb4dm7r8k8w.cloudfront.net/prod/logos/${address}/logo.png`,
-        }));
-      return res;
+      const res = tokenList?.map(({ symbol, address, decimals, name, logoURI }: any) => ({
+        decimals,
+        symbol,
+        name,
+        address,
+        logoURI,
+      }));
+      return [nativeToken, ...res];
     },
     [nativeToken, config?.chainId],
   );
 
+  const url = useMemo(() => {
+    return `https://prod-api.lynex.fi/tracking/assets`;
+  }, []);
+
   return useGetTokens({
     parse: parseListToken,
     tokens,
+    url,
+    baseAssets: erc20s.linea,
   });
 };
 
@@ -130,16 +132,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const [fromToken, setFromToken] = useState<any>(undefined);
   const [toToken, setToToken] = useState<any>(undefined);
 
-  const _useTrade = (fromToken?: string, toToken?: string, amount?: string) => {
-    return useTrade(fromToken, toToken, amount, dappTokens);
-  };
-
-  const connector = useMemo(() => {
-    return {
-      getProvider: () => library,
-    };
-  }, [library]);
-
   useEffect(() => {
     setFromToken(undefined);
     setToToken(undefined);
@@ -147,10 +139,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   useEffect(() => {
     if (!fromToken) {
-      setFromToken(dappTokens?.[1]);
+      setFromToken(dappTokens?.find((it: any) => it.symbol === "USDC"));
     }
     if (!toToken) {
-      setToToken(dappTokens?.[3]);
+      setToToken(dappTokens?.find((it: any) => it.symbol === "WETH"));
     }
   }, [dappTokens, toToken, fromToken]);
 
@@ -167,20 +159,28 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     }
   }, [dappTokens, chainId]);
 
+  const amount = useAmountBN(fromToken?.decimals, "1");
+
+  const { outAmount, isLoading } = useTrade(fromToken?.address, toToken?.address, amount, dappTokens);
+  const srcUsd = useUSD(fromToken?.address);
+  const dstUsd = useUSD(toToken?.address);
+
   return (
     <TWAP
       title={limit ? "Limit" : "TWAP"}
       connect={connect}
       account={account}
-      connector={connector}
+      walletProvider={library}
       srcTokenAddress={fromToken?.address}
       dstTokenAddress={toToken?.address}
       dexTokens={dappTokens}
       isDarkTheme={isDarkTheme}
-      useMarketPrice={_useTrade}
+      marketPrice={outAmount}
+      marketPriceLoading={isLoading}
+      srcUsd1Token={srcUsd ? Number(srcUsd) : 0}
+      dstUsd1Token={dstUsd ? Number(dstUsd) : 0}
       chainId={chainId}
       isLimitPanel={limit}
-      useUSD={useUSD}
       onSrcTokenSelected={setFromToken}
       onDstTokenSelected={setToToken}
       onSwitchFromNativeToWtoken={onSwitchFromNativeToWtoken}
