@@ -5,14 +5,14 @@ import { Token } from "../types";
 import { TwapValues } from "./useDerivedValues";
 import { TwapAbi } from "@orbs-network/twap-sdk";
 
-export default function useContractMethods(derivedState: TwapValues, sdk: TwapSDK, srcToken?: Token, destToken?: Token) {
+export default function useCreateOrderTx(derivedState: TwapValues, sdk: TwapSDK, srcToken?: Token, destToken?: Token) {
   const srcTokenAddress = useMemo(() => {
     const wToken = network(sdk.config.chainId)?.wToken;
 
     return isNativeAddress(srcToken?.address) ? wToken?.address || "" : srcToken?.address || "";
   }, [srcToken, sdk.config.chainId]);
 
-  const createOrder = useMemo(() => {
+  return useMemo(() => {
     const params = sdk.prepareOrderArgs({
       destTokenMinAmount: derivedState.destTokenMinAmount,
       srcChunkAmount: derivedState.srcChunkAmount,
@@ -30,17 +30,4 @@ export default function useContractMethods(derivedState: TwapValues, sdk: TwapSD
       abi: TwapAbi,
     };
   }, [sdk, srcTokenAddress, derivedState, destToken]);
-
-  const approve = useMemo(() => {
-    return {
-      abi: erc20abi,
-      spender: sdk.config.twapAddress,
-      method: "approve",
-    };
-  }, [sdk.config.twapAddress]);
-
-  return {
-    createOrder,
-    approve,
-  };
 }

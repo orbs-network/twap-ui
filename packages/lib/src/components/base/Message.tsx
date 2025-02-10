@@ -5,8 +5,11 @@ import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine
 import React, { ReactNode, useMemo } from "react";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { MessageVariant } from "../../types";
+import { useWidgetContext } from "../../widget/widget-context";
 
 export function Message({ text, className = "", variant, title }: { variant?: MessageVariant; title: ReactNode; text?: ReactNode; className?: string }) {
+  const { uiPreferences } = useWidgetContext();
+
   const _className = useMemo(() => {
     switch (variant) {
       case "error":
@@ -22,14 +25,14 @@ export function Message({ text, className = "", variant, title }: { variant?: Me
   const icon = useMemo(() => {
     switch (variant) {
       case "error":
-        return <IoIosWarning className="twap-message-icon" />;
+        return uiPreferences.message?.errorIcon || <IoIosWarning className="twap-message-icon" />;
       case "warning":
-        return <RiErrorWarningLine className="twap-message-icon" />;
+        return uiPreferences.message?.warningIcon || <RiErrorWarningLine className="twap-message-icon" />;
 
       default:
         return undefined;
     }
-  }, [variant]);
+  }, [variant, uiPreferences.message]);
 
   return (
     <Container className={`twap-message ${_className} ${className}`}>

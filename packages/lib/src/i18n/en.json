@@ -126,8 +126,8 @@
   "numberOfTrades": "No. of trades",
   "AverageExecutionPrice": "Avg. execution price",
   "twapMarket": "TWAP-market",
-  "twapMarketOrder": "TWAP-market order",
-  "twapLimit": "TWAP-limit order",
+  "twapMarketOrder": "TWAP-market",
+  "twapLimit": "TWAP-limit",
   "All": "All",
   "minReceived": "Min. received"
 }

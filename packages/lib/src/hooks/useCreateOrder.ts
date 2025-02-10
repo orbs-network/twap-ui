@@ -1,49 +1,51 @@
-import { sendAndWaitForConfirmations, zero } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useWidgetContext } from "..";
-import { logger } from "../utils";
-import { useTwapContract } from "./useContracts";
-import { useGasPrice } from "./useGasPrice";
+import { waitForTransactionReceipt } from "viem/actions";
+import { Hex, decodeEventLog } from "viem";
+import { TwapAbi } from "@orbs-network/twap-sdk";
+
+export function decodeOrderCreatedEvent(topics: Hex[], data: Hex) {
+  const decodedLog = (decodeEventLog as any)({
+    abi: TwapAbi,
+    data,
+    topics,
+    eventName: "OrderCreated",
+  });
+
+  return decodedLog.args;
+}
 
 export const useCreateOrder = () => {
-  const { maxFeePerGas, priorityFeePerGas } = useGasPrice();
-  const { account, updateState, twap, dstToken, callbacks } = useWidgetContext();
-  const { contractMethods } = twap;
-  const twapContract = useTwapContract();
-
-  const createOrderArgs = contractMethods.createOrder;
+  const { account, updateState, twap, dstToken, callbacks, walletClient, publicClient } = useWidgetContext();
+  const { createOrderTx } = twap;
 
   return useMutation(
     async () => {
       if (!dstToken) throw new Error("dstToken is not defined");
-      if (!twapContract) throw new Error("twapContract is not defined");
       if (!account) throw new Error("account is not defined");
 
-      twap.analytics.onCreateOrderRequest(createOrderArgs.params, account);
+      twap.analytics.onCreateOrderRequest(createOrderTx.params, account);
 
-      const tx = await sendAndWaitForConfirmations(
-        twapContract.methods.ask(createOrderArgs.params as any),
-        {
-          from: account,
-          maxPriorityFeePerGas: priorityFeePerGas || zero,
-          maxFeePerGas,
-        },
-        undefined,
-        undefined,
-        {
-          onTxHash: (createOrderTxHash) => {
-            updateState({ createOrderTxHash });
-          },
-        },
-      );
+      const hash = await (walletClient as any).writeContract({
+        account,
+        address: createOrderTx.contract,
+        abi: createOrderTx.abi,
+        functionName: createOrderTx.method,
+        args: [createOrderTx.params],
+      });
+      const receipt = await waitForTransactionReceipt(publicClient as any, {
+        hash,
+        confirmations: 5,
+      });
 
-      const orderId = Number(tx.events.OrderCreated.returnValues.id);
-      const txHash = tx.transactionHash;
-      twap.analytics.onCreateOrderSuccess(txHash, orderId);
-      logger("order created:", "orderId:", orderId, "txHash:", txHash);
+      updateState({ createOrderTxHash: receipt.transactionHash });
+      const decodedEvent = decodeOrderCreatedEvent(receipt.logs[0].topics, receipt.logs[0].data);
+
+      const orderId = Number(decodedEvent.id);
+      twap.analytics.onCreateOrderSuccess(hash, orderId);
       return {
         orderId,
-        txHash,
+        txHash: hash,
       };
     },
     {

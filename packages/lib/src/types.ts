@@ -1,9 +1,9 @@
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
-import Web3 from "web3";
 import { Config } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { UseTwap } from "@orbs-network/twap-ui-sdk";
+import { Transport } from "viem";
 
 export interface Translations {
   minReceived: string;
@@ -209,9 +209,8 @@ export type OnCreateOrderSuccessArgs = {
 export interface WidgetProps {
   chainId?: number;
   account?: any;
-  provider?: any;
-  maxFeePerGas?: string;
-  priorityFeePerGas?: string;
+  walletProvider?: any;
+  walletClientTransport?: Transport;
   isDarkTheme?: boolean;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
@@ -231,11 +230,11 @@ export interface WidgetProps {
   srcUsd1Token?: number;
   dstUsd1Token?: number;
   nativeUsd?: number;
-  marketPrice1Token?: string;
   isExactAppoval?: boolean;
   children: React.ReactNode;
   components: Components;
   askDataParams?: any[];
+  marketPrice?: string;
   marketPriceLoading?: boolean;
   useToken?: (value?: string) => Token | undefined;
   withStyles?: boolean;
@@ -255,18 +254,23 @@ export interface WidgetProps {
 
 export interface WidgetContextType extends WidgetProps {
   isWrongChain: boolean;
-  web3?: Web3;
   state: State;
   updateState: (state: Partial<State>) => void;
   resetState: () => void;
   translations: Translations;
   uiPreferences: UIPreferences;
   twap: UseTwap;
+  walletClient?: any;
+  publicClient?: any;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
 
 export interface UIPreferences {
+  message?: {
+    warningIcon?: ReactElement;
+    errorIcon?: ReactElement;
+  };
   menu?: {
     icon?: ReactElement;
   };

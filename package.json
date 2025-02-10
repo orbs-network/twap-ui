@@ -9,8 +9,6 @@
     "@testing-library/jest-dom": "5.x",
     "@testing-library/react": "13.x",
     "@types/styled-components": "^5.1.34",
-    "@types/uuid": "^10.0.0",
-    "@types/web3-provider-engine": "^14.0.1",
     "@typescript-eslint/eslint-plugin": "5.x",
     "@typescript-eslint/parser": "5.x",
     "eslint": "8.x",
@@ -19,10 +17,10 @@
     "jest-environment-jsdom": "29.x",
     "lerna": "6.x",
     "nodemon": "2.x",
-    "react-scripts": "5.x",
     "ts-jest": "29.x",
-    "typescript": "4.x"
-  },
+    "typescript": "5.x"
+
+    },
   "scripts": {
     "clean": "lerna exec 'rm -f package-lock.json' && lerna clean -y || true && lerna bootstrap",
     "build": "lerna run build",
@@ -46,17 +44,10 @@
     ],
     "root": true,
     "rules": {
-      "import/no-extraneous-dependencies": "error",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-empty-function": "off",
       "@typescript-eslint/no-unused-vars": "error"
     }
-  },
-  "dependencies": {
-    "@defi.org/web3-candies": "^5.0.0",
-    "@orbs-network/twap": "^2.0.1",
-    "styled-components": "^6.1.12",
-    "uuid": "^10.0.0"
   }
 }

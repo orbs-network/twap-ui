@@ -36,7 +36,7 @@
     "react-tooltip": "^5.28.0",
     "react-virtuoso": "^4.12.3",
     "styled-components": "^6.1.12",
-    "web3": "1.x"
+    "viem": "^2.23.0"
   },
   "peerDependencies": {
     "react": "*",
@@ -50,5 +50,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "11f21ccf5f7568c421c516b09b470b922854b1e0"
+  "gitHead": "11f21ccf5f7568c421c516b09b470b922854b1e0",
+  "devDependencies": {
+    "typescript": "5.x"
+  }
 }

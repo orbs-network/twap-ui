@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^3.0.8"
+    "@orbs-network/twap-ui": "^3.0.8",
+    "viem": "^2.23.0"
   },
   "peerDependencies": {
     "react": "*",

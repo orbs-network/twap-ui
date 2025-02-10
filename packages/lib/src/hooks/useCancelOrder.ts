@@ -1,23 +1,16 @@
-import { sendAndWaitForConfirmations } from "@defi.org/web3-candies";
+import { TwapAbi } from "@orbs-network/twap-sdk";
 import { useMutation } from "@tanstack/react-query";
 import { useWidgetContext } from "..";
 import { logger } from "../utils";
-import { useTwapContract } from "./useContracts";
-import { useGasPrice } from "./useGasPrice";
 import { useOrderHistoryManager } from "./useOrderHistoryManager";
+import { waitForTransactionReceipt } from "viem/actions";
 
 export const useCancelOrder = () => {
-  const { priorityFeePerGas, maxFeePerGas } = useGasPrice();
-  const { account, twap, callbacks } = useWidgetContext();
+  const { account, twap, config, callbacks, walletClient, publicClient } = useWidgetContext();
 
-  const twapContract = useTwapContract();
   const { waitForOrderCancellation } = useOrderHistoryManager();
   return useMutation(
     async (orderId: number) => {
-      if (!twapContract) {
-        throw new Error("twap contract not defined");
-      }
-
       if (!account) {
         throw new Error("account not defined");
       }
@@ -25,25 +18,22 @@ export const useCancelOrder = () => {
       logger(`canceling order...`, orderId);
 
       twap.analytics.onCancelOrderRequest(orderId);
-      let txHash = "";
-      await sendAndWaitForConfirmations(
-        twapContract.methods.cancel(orderId),
-        {
-          from: account,
-          maxPriorityFeePerGas: priorityFeePerGas,
-          maxFeePerGas,
-        },
-        undefined,
-        undefined,
-        {
-          onTxHash: (value) => {
-            txHash = value;
-          },
-        },
-      );
+
+      const hash = await (walletClient as any).writeContract({
+        account,
+        address: config.twapAddress,
+        abi: TwapAbi,
+        functionName: "cancel",
+        args: [orderId],
+      });
+      await waitForTransactionReceipt(publicClient as any, {
+        hash,
+        confirmations: 5,
+      });
+
       await waitForOrderCancellation(orderId);
       console.log(`order canceled`);
-      callbacks?.onCancelOrderSuccess?.({ orderId, txHash });
+      callbacks?.onCancelOrderSuccess?.({ orderId, txHash: hash });
     },
     {
       onSuccess: () => {

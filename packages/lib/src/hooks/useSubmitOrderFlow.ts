@@ -72,7 +72,6 @@ export const useSubmitOrderFlow = () => {
       updateState({ swapStep: SwapSteps.CREATE });
       const order = await createOrder();
       updateState({ swapStatus: SwapStatus.SUCCESS });
-      console.log({ order });
 
       await refetchBalances();
       return order;
