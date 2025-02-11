@@ -1,58 +1,76 @@
 import { Styles } from "@orbs-network/twap-ui";
 import { DefaultTheme, styled, createGlobalStyle } from "styled-components";
 
-export const darkTheme = {
+type ThemeMode = "lynex-dark" | "ocelex-dark";
+
+export const lynexDark = {
   palette: {
-    mode: "dark",
+    mode: "lynex-dark" as ThemeMode,
   },
 };
 
-export const lightTheme = {
+export const ocelexDark = {
   palette: {
-    mode: "light",
+    mode: "ocelex-dark" as ThemeMode,
   },
 };
 
-const getStyles = (theme?: DefaultTheme) => {
-  const isDarkMode = theme?.palette.mode === "dark" ? 1 : 0;
-
+const getColors = (theme: DefaultTheme) => {
+  const isOcelex = theme.palette.mode === "ocelex-dark";
   return {
-    isDarkMode,
-    darkText: isDarkMode ? "hsl(38.39999999999998 12.6% 39%)" : "rgb(36 54 109/1)",
-    darkTextHover: isDarkMode ? "rgb(203 213 225/1)" : "rgb(37 99 235/1)",
-    warningText: "rgb(239 68 68/1)",
-    textColor: isDarkMode ? "hsl(30 8.3% 95.3%)" : "rgb(13 20 58)",
-    messageText: isDarkMode ? "#94a3b8" : "#6b7280",
-    boxHover: isDarkMode ? "rgba(255,255,255, 0.09)" : "rgba(0,0,0, 0.03)",
-    cardBg: isDarkMode ? "rgb(13,20,58)" : "rgb(239 246 255)",
-    errorBorder: "hsl(6.899999999999977 100% 28.8%)",
-    focusBorder: "rgb(8 96 219)",
-    color2: isDarkMode ? "hsl(36.80000000000001 25.6% 23.7%)" : "rgb(191 219 254)",
-    error: isDarkMode ? "rgb(239 68 68)" : "rgb(239 68 68)",
-    tokenSelectPercentBtn: isDarkMode ? "hsl(40 7.7% 84.7%)" : "rgb(36 54 109)",
-    tokenSelectPercentBtnHover: isDarkMode ? "hsl(34.69999999999999 26% 14.3%)" : "rgb(36 54 109)",
-    tokenSelectBg: isDarkMode ? "hsl(36.80000000000001 25.6% 23.7%)" : "rgb(191 219 254)",
-    switchTokensBg: isDarkMode ? "hsl(36 25.8% 19%)" : "rgb(191 219 254)",
-    switchTokensBgHover: isDarkMode ? "hsl(36.80000000000001 25.6% 23.7%)" : "rgb(191 219 254)",
-    switchBgActive: isDarkMode ? "hsl(28.600000000000023 73.3% 52.9%)" : "rgb(191 219 254)",
-    switchHandle: isDarkMode ? "#948F81" : "rgb(191 219 254)",
-    switchBg: isDarkMode ? "hsl(36 25.8% 19%)" : "rgb(191 219 254)",
-    switchHandleActive: isDarkMode ? "#F2B87F" : "rgb(191 219 254)",
+    success: {
+      100: isOcelex ? "hsl(142.5, 61.5%, 94.9%)" : "hsl(142.5, 61.5%, 94.9%)",
+      200: isOcelex ? "hsl(144.7, 65.4%, 89.8%)" : "hsl(144.7, 65.4%, 89.8%)",
+      300: isOcelex ? "hsl(143.3, 65%, 79.8%)" : "hsl(143.3, 65%, 79.8%)",
+      400: isOcelex ? "hsl(144, 64.1%, 69.4%)" : "hsl(144, 64.1%, 69.4%)",
+      500: isOcelex ? "hsl(143.5, 64.3%, 59.4%)" : "hsl(143.5, 64.3%, 59.4%)",
+      600: isOcelex ? "hsl(143.7, 66.5%, 49.2%)" : "hsl(143.7, 66.5%, 49.2%)",
+      700: isOcelex ? "hsl(143.5, 66.2%, 39.4%)" : "hsl(143.5, 66.2%, 39.4%)",
+      800: isOcelex ? "hsl(144, 66.7%, 29.4%)" : "hsl(144, 66.7%, 29.4%)",
+      900: isOcelex ? "hsl(143.3, 66.3%, 19.8%)" : "hsl(143.3, 66.3%, 19.8%)",
+      950: isOcelex ? "hsl(144.7, 68%, 9.8%)" : "hsl(144.7, 68%, 9.8%)",
+    },
+    primary: {
+      100: isOcelex ? "hsl(30, 51.4%, 85.5%)" : "hsl(216, 100%, 95.1%)",
+      200: isOcelex ? "hsl(29.2, 55.7%, 72.5%)" : "hsl(66.2, 89.9%, 46.7%)",
+      300: isOcelex ? "hsl(29.5, 81.4%, 72.5%)" : "hsl(64.3, 74.8%, 56.5%)",
+      400: isOcelex ? "hsl(29.1, 81.3%, 68.6%)" : "hsl(66.2, 89.9%, 46.7%)",
+      500: isOcelex ? "hsl(28.9, 73.2%, 56.1%)" : "hsl(64.3, 74.8%, 56.5%)",
+      600: isOcelex ? "hsl(28.6, 73.3%, 52.9%)" : "hsl(64.3, 74.8%, 56.5%)",
+      700: isOcelex ? "hsl(28.9, 83.6%, 42.9%)" : "hsl(64.3, 74.8%, 56.5%)",
+      800: isOcelex ? "hsl(29, 90.5%, 37.3%)" : "hsl(64.3, 74.8%, 56.5%)",
+      900: isOcelex ? "hsl(28.9, 91.8%, 23.9%)" : "hsl(0, 0%, 7.8%)",
+      950: isOcelex ? "hsl(28.9, 97.6%, 16.3%)" : "hsl(40, 25%, 4.7%)",
+    },
+    neutral: {
+      50: isOcelex ? "hsl(30, 8.3%, 95.3%)" : "hsl(0, 0%, 98%)",
+      100: isOcelex ? "hsl(40, 7.7%, 92.4%)" : "hsl(0, 0%, 96.1%)",
+      200: isOcelex ? "hsl(40, 7.7%, 84.7%)" : "hsl(0, 0%, 89.8%)",
+      300: isOcelex ? "hsl(35, 7.7%, 69.4%)" : "hsl(0, 0%, 83.1%)",
+      400: isOcelex ? "hsl(44.2, 8.2%, 54.3%)" : "hsl(0, 0%, 63.9%)",
+      500: isOcelex ? "hsl(38.4, 12.6%, 39%)" : "hsl(0, 0%, 45.1%)",
+      600: isOcelex ? "hsl(36.8, 25.6%, 23.7%)" : "hsl(0, 0%, 32.2%)",
+      700: isOcelex ? "hsl(36, 25.8%, 19%)" : "hsl(0, 0%, 25.1%)",
+      800: isOcelex ? "hsl(34.7, 26%, 14.3%)" : "hsl(0, 0%, 18%)",
+      900: isOcelex ? "hsl(30, 25%, 9.4%)" : "hsl(0, 0%, 13.7%)",
+      950: isOcelex ? "hsl(40, 25%, 4.7%)" : "hsl(0, 0%, 9%)",
+    },
+    focus: isOcelex ? "hsl(35.9, 92.5%, 68.8%)" : "hsl(214.6, 100%, 50%)",
   };
 };
 
-const panelLabelStyles = (theme?: DefaultTheme) => {
-  const styles = getStyles(theme);
+const panelLabelStyles = (theme: DefaultTheme) => {
+  const styles = getColors(theme);
 
   return {
-    color: styles.textColor,
+    color: styles.neutral[200],
     fontSize: 14,
     fontWeight: 400,
   };
 };
 
 const panelBodyStyles = (theme: DefaultTheme) => {
-  const styles = getStyles(theme);
+  const styles = getColors(theme);
   return {
     width: "100%",
     background: "transparent",
@@ -61,22 +79,16 @@ const panelBodyStyles = (theme: DefaultTheme) => {
     gap: 0,
     borderRadius: 12,
     color: "white",
-    border: "1px solid rgb(36 25.8% 19%)",
-
-    ".twap-message": {
-      color: styles.messageText,
-      fontSize: 14,
-      lineHeight: "20px",
-    },
+    border: `1px solid ${styles.neutral[700]}`,
   };
 };
 
 const tokenSelectStyles = (theme: DefaultTheme) => {
-  const styles = getStyles(theme);
+  const styles = getColors(theme);
   return {
     display: "flex",
     gap: 8,
-    background: styles.tokenSelectBg,
+    background: styles.neutral[600],
     padding: "0.375rem 0.5rem 0.375rem 0.375rem",
     borderRadius: 9999,
     border: "none",
@@ -97,23 +109,23 @@ const tokenSelectStyles = (theme: DefaultTheme) => {
     },
     p: {
       fontSize: 15,
-      color: "hsl(40 7.7% 84.7%)",
+      color: styles.neutral[200],
       fontWeight: 400,
     },
     "&:hover": {
-      background: "#3C3323",
+      background: styles.neutral[700],
     },
   };
 };
 
 const selectButtons = (theme: DefaultTheme) => {
-  const styles = getStyles(theme);
+  const styles = getColors(theme);
   return {
     display: "flex",
     gap: 4,
     marginLeft: "auto",
     button: {
-      color: styles.tokenSelectPercentBtn,
+      color: styles.neutral[200],
       background: "transparent",
       border: "none",
       fontSize: 12,
@@ -123,14 +135,15 @@ const selectButtons = (theme: DefaultTheme) => {
       transition: "background 0.2s",
       borderRadius: 4,
       "&:hover": {
-        background: styles.tokenSelectPercentBtnHover,
+        color: styles.neutral[100],
+        background: styles.neutral[800],
       },
     },
   };
 };
 
 const tokenPanelStyles = (theme: DefaultTheme) => {
-  const styles = getStyles(theme);
+  const styles = getColors(theme);
 
   return {
     display: "flex",
@@ -148,14 +161,14 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
       display: "flex",
       justifyContent: "space-between",
       ".twap-token-panel-usd": {
-        color: styles.darkText,
+        color: styles.neutral[500],
         fontSize: 14,
       },
       ".twap-token-panel-balance": {
         fontSize: "0.875rem",
-        color: styles.darkText,
+        color: styles.neutral[500],
         span: {
-          color: styles.darkText,
+          color: styles.neutral[500],
         },
       },
     },
@@ -163,14 +176,16 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
 };
 
 const buttonStyles = (theme: DefaultTheme) => {
+  const styles = getColors(theme);
   return {
-    background: "radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, rgb(51, 80, 232) 55%) calc(3.44828%) calc(42.3077%) / 200% 200%, rgb(51, 80, 232)",
-    color: "rgb(239 246 255 / 1)",
-    fontWeight: 600,
+    background: styles.neutral[700],
+    color: styles.neutral[100],
+    fontWeight: 500,
     width: "100%",
-    padding: "12px 14px 12px 14px",
-    borderRadius: 12,
+    padding: "12px 16px 12px 16px",
+    borderRadius: 8,
     cursor: "pointer",
+    fontSize: 16
   };
 };
 

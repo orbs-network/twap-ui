@@ -3,7 +3,7 @@ import { Translations, Styles, Widget, UIPreferences, WidgetProps, WidgetProvide
 import translations from "./i18n/en.json";
 import { createContext, useContext, useEffect, useMemo, ReactNode } from "react";
 import Web3 from "web3";
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledTwapInputs } from "./styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { MdErrorOutline } from "@react-icons/all-files/md/MdErrorOutline";
@@ -39,7 +39,7 @@ const useParseToken = () => {
         console.error("Invalid token", token);
       }
     },
-    [config.chainId],
+    [config.chainId]
   );
 };
 
@@ -91,7 +91,7 @@ const useToken = (addressOrSymbol?: string) => {
       parsedTokens?.find((it) => {
         return eqIgnoreCase(it?.address || "", addressOrSymbol || "") || eqIgnoreCase(it?.symbol || "", addressOrSymbol || "");
       }),
-    [parsedTokens, addressOrSymbol],
+    [parsedTokens, addressOrSymbol]
   );
 };
 
