@@ -571,17 +571,17 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     ".twap-error-message": {
       color: styles.textColor,
       padding: 10,
-      fontSize:14,
+      fontSize: 14,
       gap: 8,
-      border:`1px solid ${styles.errorBorder}`,
+      border: `1px solid ${styles.errorBorder}`,
       borderRadius: 12,
 
       svg: {
         color: styles.error,
         width: `20px!important`,
         height: 20,
-        top: -1
-      }
+        top: -1,
+      },
     },
     ".twap-input-loading": {
       opacity: 0,

@@ -6,7 +6,7 @@ import * as React from "react";
 import moment from "moment";
 import { Virtuoso } from "react-virtuoso";
 
-import {Loader} from "../../../components/base/Loader";
+import { Loader } from "../../../components/base/Loader";
 import TokenLogo from "../../../components/base/TokenLogo";
 import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
 import { size } from "../../../utils";
