@@ -1,23 +1,12 @@
 import React from "react";
-import { useWidgetContext } from "../..";
 import { Message } from "../../components/base";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
-import { useBalanceWaning, useFeeOnTransferError } from "../../hooks/useWarnings";
+import { useError } from "../hooks";
 
 export function ErrorMessage() {
-  const {
-    twap: { errors },
-    state: { srcAmount },
-  } = useWidgetContext();
   const hide = useShouldWrapOrUnwrapOnly();
 
-  const { feeError } = useFeeOnTransferError();
-
-  const balanceWarning = useBalanceWaning();
-
-  const error = !srcAmount
-    ? ""
-    : errors.chunks?.text || errors.fillDelay?.text || errors.duration?.text || errors.tradeSize?.text || errors.limitPrice?.text || balanceWarning || feeError;
+  const error = useError();
 
   if (!error || hide) return null;
 

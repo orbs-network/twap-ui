@@ -223,6 +223,7 @@ const chainIdToName: { [key: number]: string } = {
   59144: "linea",
   42161: "arbitrum",
   1329: "sei",
+  48900: "zircuit",
 };
 
 export async function fetchLLMAPrice(token: string, chainId: number | string) {
@@ -270,8 +271,6 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
   const fromTokenUsd = usePriceUSD(handleAddress(fromToken));
   const toTokenUsd = usePriceUSD(handleAddress(toToken));
   const { chainId } = useWeb3React();
-  console.log("fromTokenUsd", fromTokenUsd);
-  console.log("toTokenUsd", toTokenUsd);
 
   const { fromTokenDecimals, toTokenDecimals } = useMemo(() => {
     return {

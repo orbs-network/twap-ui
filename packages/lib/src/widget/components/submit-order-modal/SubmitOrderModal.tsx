@@ -1,24 +1,37 @@
 import { Main } from "./Main";
-import React from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
 import { useWidgetContext } from "../../..";
 import { Failed } from "./Failed";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
-import { useSwapModal } from "../../../hooks/useSwapModal";
+import { useConfirmation } from "../../../hooks/useConfirmation";
 import { useNetwork } from "../../../hooks/useNetwork";
 import { useOrderName } from "../../../hooks/useOrderName";
+import { Portal } from "../../../components/base";
+import { ReactNode } from "react";
 
-export const SubmitOrderModal = ({ className = "" }: { className?: string }) => {
-  const {
-    state: { confirmedData, swapStatus, swapError, srcAmount },
-    components: { Modal },
-  } = useWidgetContext();
-  const { isOpen, onClose } = useSwapModal();
-  const srcAmountF = useFormatNumber({ value: srcAmount });
-  const outAmountF = useFormatNumber({ value: confirmedData?.outAmount });
+const CustomModal = ({ children }: { children: ReactNode }) => {
+  const Modal = useWidgetContext().components.Modal;
+  const { isOpen, onClose, swapStatus } = useConfirmation();
+
+  if (!Modal) {
+    return null;
+  }
 
   return (
-    <Modal isOpen={Boolean(isOpen)} onClose={onClose}>
+    <Modal isOpen={Boolean(isOpen)} onClose={onClose} title={!swapStatus ? "Confirm order" : ""}>
+      {children}
+    </Modal>
+  );
+};
+
+export const SubmitOrderModal = ({ className = "" }: { className?: string }) => {
+  const { srcToken, dstToken } = useWidgetContext();
+  const { swapData, swapStatus, swapError } = useConfirmation();
+  const srcAmountF = useFormatNumber({ value: swapData?.srcAmount });
+  const outAmountF = useFormatNumber({ value: swapData?.outAmount });
+
+  return (
+    <CustomModal>
       <SwapFlow
         className={className}
         inAmount={srcAmountF}
@@ -28,15 +41,15 @@ export const SubmitOrderModal = ({ className = "" }: { className?: string }) => 
         successContent={<SuccessContent />}
         failedContent={<Failed error={swapError} />}
         inToken={{
-          symbol: confirmedData?.srcToken?.symbol,
-          logo: confirmedData?.srcToken?.logoUrl,
+          symbol: srcToken?.symbol,
+          logo: srcToken?.logoUrl,
         }}
         outToken={{
-          symbol: confirmedData?.dstToken?.symbol,
-          logo: confirmedData?.dstToken?.logoUrl,
+          symbol: dstToken?.symbol,
+          logo: dstToken?.logoUrl,
         }}
       />
-    </Modal>
+    </CustomModal>
   );
 };
 
@@ -49,4 +62,16 @@ const SuccessContent = () => {
   const orderType = useOrderName();
 
   return <SwapFlow.Success title={`${orderType} order created`} explorerUrl={`${explorerUrl}/tx/${createOrderTxHash}`} />;
+};
+
+export const SubmitOrderModalWithPortal = () => {
+  return (
+    <Portal containerId="twap-submit-order-portal">
+      <SubmitOrderModal />
+    </Portal>
+  );
+};
+
+export const SubmitOrderModalPortal = () => {
+  <div id="twap-submit-order-portal" />;
 };

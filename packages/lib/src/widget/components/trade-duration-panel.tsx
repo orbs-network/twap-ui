@@ -1,10 +1,12 @@
-import React, { createContext, ReactNode, useCallback } from "react";
-import { Label, Message } from "../../components/base";
+import React, { createContext, ReactNode } from "react";
+import { Label } from "../../components/base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
 import { StyledRowFlex } from "../../styles";
 import { useWidgetContext } from "../..";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 import styled from "styled-components";
+import { useTradeDurationPanel } from "../hooks";
+import { Panel } from "../../components/Panel";
 
 type Option = { text: string; value: TimeUnit };
 
@@ -30,20 +32,8 @@ const Options: Option[] = [
 ];
 
 const Buttons = ({ className = "" }: { className?: string }) => {
-  const {
-    twap: {
-      values: { durationMilliseconds },
-      actionHandlers: { setDuration },
-    },
-  } = useWidgetContext();
   const { options } = usePanelContext();
-
-  const onChange = useCallback(
-    (unit: TimeUnit) => {
-      setDuration({ unit, value: 1 });
-    },
-    [setDuration],
-  );
+  const { onChange, selected } = useTradeDurationPanel();
 
   return (
     <div className={`twap-duration-panel-buttons ${className}`}>
@@ -52,7 +42,7 @@ const Buttons = ({ className = "" }: { className?: string }) => {
           <button
             key={it.value}
             onClick={() => onChange(it.value)}
-            className={`twap-duration-panel-button ${durationMilliseconds === it.value ? "twap-duration-panel-button-selected" : ""}`}
+            className={`twap-duration-panel-button twap-select-button ${selected === it.value ? "twap-duration-panel-button-selected twap-select-button-selected" : ""}`}
           >
             {it.text}
           </button>
@@ -68,20 +58,12 @@ export const DurationPanel = ({ children, className = "", options = Options }: {
   if (hide) return null;
 
   return (
-    <PanelContext.Provider value={{ options: Options }}>
-      <div className={`twap-duration-panel ${className}`}>{children}</div>
-    </PanelContext.Provider>
+    <Panel className={`twap-duration-panel ${className}`}>
+      <PanelContext.Provider value={{ options }}>{children}</PanelContext.Provider>
+    </Panel>
   );
 };
 
-const WarningComponent = () => {
-  const { twap } = useWidgetContext();
-  const errors = twap.errors;
-
-  if (!errors.duration) return null;
-
-  return <Message title={errors.duration.text} variant="warning" />;
-};
 const DurationLabel = () => {
   const translations = useWidgetContext().translations;
   return (
@@ -112,5 +94,4 @@ const StyledMain = styled(StyledRowFlex)({
 
 DurationPanel.Buttons = Buttons;
 DurationPanel.Label = DurationLabel;
-DurationPanel.Warning = WarningComponent;
 DurationPanel.Main = Main;

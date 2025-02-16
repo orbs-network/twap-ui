@@ -126,7 +126,11 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
   return {
     display: "flex",
     flexDirection: "column" as const,
-    gap: 0,
+    gap: "8px!important",
+    ".twap-token-panel-header": {
+      display: "flex",
+      justifyContent: "space-between",
+    },
 
     ".twap-token-panel-balance-buttons": {
       display: "flex",
@@ -147,7 +151,6 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
     ".twap-token-panel-bottom": {
       display: "flex",
       justifyContent: "space-between",
-      marginTop: 8,
       ".twap-token-panel-usd": {
         color: styles.darkTextOpacity,
         fontSize: 14,
@@ -163,7 +166,7 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
   };
 };
 
-const buttonStyles = (theme: DefaultTheme) => {
+const buttonStyles = () => {
   return {
     background: "radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, rgb(51, 80, 232) 55%) calc(3.44828%) calc(42.3077%) / 200% 200%, rgb(51, 80, 232)",
     color: "rgb(239 246 255 / 1)",
@@ -484,7 +487,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       ...switchTokensStyles(theme),
     },
     ".twap-button": {
-      ...buttonStyles(theme),
+      ...buttonStyles(),
     },
     ".twap-token-panel": {
       ...tokenPanelStyles(theme),
@@ -645,7 +648,7 @@ export const StyledContainer = styled(Styles.StyledColumnFlex)({
 export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
   gap: 16,
 });
-export const StyledLimitAndInputs = styled(Styles.StyledColumnFlex)(({ theme }) => {
+export const StyledLimitAndInputs = styled(Styles.StyledColumnFlex)(() => {
   return {
     gap: 8,
   };
@@ -692,7 +695,7 @@ export const StyledChunksSelectText = styled(Styles.StyledText)(({ theme }) => {
   };
 });
 
-export const StyledTwapInputs = styled(Styles.StyledRowFlex)(({ theme }) => {
+export const StyledTwapInputs = styled(Styles.StyledRowFlex)(() => {
   return {
     alignItems: "stretch",
   };

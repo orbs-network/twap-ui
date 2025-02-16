@@ -1,10 +1,11 @@
-import { isNativeAddress, erc20abi } from "@defi.org/web3-candies";
+import { isNativeAddress } from "@defi.org/web3-candies";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { Token, useWidgetContext } from "..";
 import { REFETCH_BALANCE } from "../consts";
 import { QueryKeys } from "../enums";
 import { readContract } from "viem/actions";
+import { erc20Abi } from "viem";
 
 export const useBalance = (token?: Token) => {
   const { account, publicClient, chainId } = useWidgetContext();
@@ -12,26 +13,41 @@ export const useBalance = (token?: Token) => {
   const query = useQuery(
     [QueryKeys.GET_BALANCE, account, token?.address, chainId],
     async () => {
+      console.log({token});
+      
+      let balance = "";
       if (isNativeAddress(token!.address)) {
-        const res = await (publicClient as any).getBalance({ address: account });
-        return res.toString();
-      } else {
-        const balance = await (readContract as any)(publicClient, {
-          address: token?.address,
-          abi: erc20abi,
-          functionName: "balanceOf",
-          args: [account],
-        });
+      try {
+        console.log({ publicClient });
 
+        const res = await (publicClient as any).getBalance({ address: account });
+
+        return res.toString();
+      } catch (error) {
+        console.log({ error });
+      }
+      } else {
+        try {
+          balance = await (readContract as any)(publicClient, {
+            address: token?.address,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [account],
+          });
+        } catch (error) {
+          console.log({ error });
+        }
+        console.log({ balance });
         return balance.toString();
       }
     },
     {
-      enabled: !!token && !!account,
+      enabled: !!token && !!account && !!publicClient,
       refetchInterval: REFETCH_BALANCE,
       staleTime: Infinity,
     },
   );
+
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
 };
 

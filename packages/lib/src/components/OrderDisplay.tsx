@@ -12,7 +12,7 @@ import { Label } from "./base/Label";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useWidgetContext()?.translations;
-  const res = useMemo(() => moment(deadline).format("ll HH:mm"), [deadline]);
+  const res = useMemo(() => moment(deadline).format("DD/MM/YYYY HH:mm"), [deadline]);
 
   return (
     <DetailRow title={t.expiration} tooltip={t.confirmationDeadlineTooltip}>

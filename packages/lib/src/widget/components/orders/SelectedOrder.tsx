@@ -145,7 +145,7 @@ const StyledCancelOrderButton = styled(Button)({
 });
 
 const CreatedAt = ({ order }: { order: Order }) => {
-  const createdAtUi = useMemo(() => moment(order?.createdAt).format("ll HH:mm"), [order?.createdAt]);
+  const createdAtUi = useMemo(() => moment(order?.createdAt).format("DD/MM/YYYY HH:mm"), [order?.createdAt]);
   return (
     <OrderDisplay.DetailRow title="Created at">
       <StyledText>{createdAtUi}</StyledText>

@@ -6,7 +6,7 @@ import { fillDelayText } from "@orbs-network/twap-sdk";
 import { MarketPriceWarning } from "../../../components";
 import { Switch, Button } from "../../../components/base";
 import { OrderDisplay } from "../../../components/OrderDisplay";
-import { StyledText, StyledColumnFlex } from "../../../styles";
+import { StyledText } from "../../../styles";
 import { SwapSteps } from "../../../types";
 import { useWidgetContext } from "../../widget-context";
 import { isNativeAddress } from "@defi.org/web3-candies";
@@ -16,36 +16,46 @@ import { useNetwork } from "../../../hooks/useNetwork";
 import { useOrderName } from "../../../hooks/useOrderName";
 import { useAmountUi } from "../../../hooks/useParseAmounts";
 import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
-import { useUsdAmount } from "../../../hooks/useUsdAmounts";
+import { useConfirmation } from "../../../hooks/useConfirmation";
 
 export const useSwapPrice = () => {
-  const { srcUsd1Token, dstUsd1Token, twap } = useWidgetContext();
-
-  const srcAmount = twap.values.srcAmountUI;
-  const outAmountUi = twap.values.destTokenAmountUI;
+  const { swapData } = useConfirmation();
 
   const price = useMemo(() => {
-    if (!outAmountUi || !srcAmount) return "0";
-    return BN(outAmountUi).dividedBy(srcAmount).toString();
-  }, [srcAmount, outAmountUi]);
+    if (!swapData?.outAmount || !swapData?.srcAmount) return "0";
+    return BN(swapData.outAmount).dividedBy(swapData.srcAmount).toString();
+  }, [swapData?.outAmount, swapData?.srcAmount]);
+
+  const srcUsd1Token = useMemo(() => {
+    if (!swapData?.srcAmountusd || !swapData?.srcAmount) return;
+    return BN(swapData?.srcAmountusd).dividedBy(swapData?.srcAmount).toString();
+  }, [swapData?.srcAmountusd, swapData?.srcAmount]);
+
+  const dstUsd1Token = useMemo(() => {
+    if (!swapData?.outAmountusd || !swapData?.outAmount) return;
+    return BN(swapData?.outAmountusd).dividedBy(swapData?.outAmount).toString();
+  }, [swapData?.outAmountusd, swapData?.outAmount]);
+
+  const usd = useMemo(() => {
+    if (!dstUsd1Token || !srcUsd1Token) return "0";
+    return BN(dstUsd1Token).multipliedBy(price).toString();
+  }, [price, srcUsd1Token, dstUsd1Token]);
 
   return {
     price,
-    usd: useMemo(() => {
-      if (!dstUsd1Token || !srcUsd1Token) return "0";
-      return BN(dstUsd1Token).multipliedBy(price).toString();
-    }, [price, srcUsd1Token, dstUsd1Token]),
+    usd,
   };
 };
 
 const Price = () => {
-  const { srcToken, dstToken, twap } = useWidgetContext();
+  const { twap, srcToken, dstToken } = useWidgetContext();
   const {
     values: { isMarketOrder },
   } = twap;
   const swapPrice = useSwapPrice();
   const usd = useFormatNumber({ value: swapPrice.usd, decimalScale: 2 });
   const price = useFormatNumber({ value: swapPrice.price, decimalScale: 4 });
+
   return (
     <OrderDisplay.DetailRow title={isMarketOrder ? "Market Price" : "Limit Price"}>
       <StyledPrice>
@@ -130,16 +140,12 @@ const useSteps = () => {
 };
 
 export const Main = () => {
-  const {
-    state: { swapStatus, swapStep, confirmedData },
-    uiPreferences,
-    translations,
-  } = useWidgetContext();
+  const { uiPreferences, translations } = useWidgetContext();
+  const { swapStatus, swapStep, swapData } = useConfirmation();
   const steps = useSteps();
-  const { srcUsd } = useUsdAmount();
 
-  const inUsd = useFormatNumber({ value: srcUsd, decimalScale: 2 });
-  const outUsd = useFormatNumber({ value: confirmedData?.outAmountusd, decimalScale: 2 });
+  const inUsd = useFormatNumber({ value: swapData?.srcAmountusd, decimalScale: 2 });
+  const outUsd = useFormatNumber({ value: swapData?.outAmountusd, decimalScale: 2 });
 
   const usdPrefix = uiPreferences.usd?.prefix || "$";
   const usdSuffix = uiPreferences.usd?.suffix || "";
@@ -157,11 +163,10 @@ export const Main = () => {
       />
       {!swapStatus && (
         <>
+          <div className="twap-devider" />
           <Details />
-          <StyledColumnFlex gap={15}>
-            <AcceptDisclaimer />
-            <SubmitButton />
-          </StyledColumnFlex>
+          <AcceptDisclaimer />
+          <SubmitButton />
         </>
       )}
     </>
@@ -187,7 +192,8 @@ const StyledChunksText = styled(StyledText)({
 });
 
 const Details = () => {
-  const { twap, srcToken, dstToken, isLimitPanel } = useWidgetContext();
+  const { twap, isLimitPanel, srcToken, dstToken } = useWidgetContext();
+
   const {
     values: { isMarketOrder, deadline, fillDelayMilliseconds, chunks, srcChunksAmountUI, destTokenMinAmountOutUI },
   } = twap;

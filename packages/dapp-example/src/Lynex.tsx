@@ -22,18 +22,19 @@ import {
   useAmountBN,
 } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
-import { chainId, eqIgnoreCase, erc20s, network, networks } from "@defi.org/web3-candies";
+import { eqIgnoreCase, networks } from "@defi.org/web3-candies";
+import { Config } from "@orbs-network/twap-sdk";
 
-const config = Configs.Lynex;
+const configs = [Configs.Lynex, Configs.Ocelex];
+
+const useConfig = () => {
+  const { chainId } = useWeb3React();
+  return useMemo(() => configs.find((it) => it.chainId === chainId) || configs[0], [chainId]);
+};
 
 export const useDappTokens = () => {
-  const nativeToken = useMemo(() => {
-    const native = network(config.chainId).native;
-    return {
-      ...native,
-      logoURI: native.logoUrl,
-    };
-  }, [config.chainId]);
+  const config = useConfig();
+
   const parseListToken = useCallback(
     (tokenList?: any) => {
       const res = tokenList?.map(({ symbol, address, decimals, name, logoURI }: any) => ({
@@ -43,20 +44,29 @@ export const useDappTokens = () => {
         address,
         logoURI,
       }));
-      return [nativeToken, ...res];
+      return res;
     },
-    [nativeToken, config?.chainId],
+    [config?.chainId],
   );
 
   const url = useMemo(() => {
-    return `https://prod-api.lynex.fi/tracking/assets`;
-  }, []);
+    switch (config.chainId) {
+      case Configs.Ocelex.chainId:
+        return `https://api.ocelex.fi/tracking/assets`;
+      case Configs.Lynex.chainId:
+        return `https://prod-api.lynex.fi/tracking/assets`;
+      default:
+        break;
+    }
+  }, [config.chainId]);
 
   return useGetTokens({
     parse: parseListToken,
     tokens,
     url,
-    baseAssets: erc20s.linea,
+    modifyList: (list: any) => {
+      return [networks.eth.native, ...list];
+    },
   });
 };
 
@@ -121,8 +131,29 @@ const onApproveSuccess = (args: OnApproveSuccessArgs) => {
 };
 
 const onCreateOrderSuccess = (args: OnCreateOrderSuccessArgs) => {
-  console.log("onCreateOrderSuccess");
+  console.log("onCreateOrderSuccess", args);
 };
+
+const parseDexToken = (token?: any): Token | undefined => {
+  if (!token) return;
+  return {
+    address: token.address,
+    decimals: token.decimals,
+    symbol: token.symbol,
+    logoUrl: token.logoURI,
+  };
+};
+
+const useToken = (addressOrSymbol?: string) => {
+  const { data: tokens } = useDappTokens();
+
+  return useMemo(() => {
+    return tokens?.find((it: any) => eqIgnoreCase(it.address, addressOrSymbol || "") || eqIgnoreCase(it.symbol, addressOrSymbol || ""));
+  }, [tokens, addressOrSymbol]);
+};
+
+const initialSrc = "ETH";
+const initialDst = "USDC";
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
@@ -139,10 +170,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   useEffect(() => {
     if (!fromToken) {
-      setFromToken(dappTokens?.find((it: any) => it.symbol === "USDC"));
+      setFromToken(dappTokens?.find((it: any) => it.symbol === initialSrc));
     }
     if (!toToken) {
-      setToToken(dappTokens?.find((it: any) => it.symbol === "WETH"));
+      setToToken(dappTokens?.find((it: any) => it.symbol === initialDst));
     }
   }, [dappTokens, toToken, fromToken]);
 
@@ -165,15 +196,17 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const srcUsd = useUSD(fromToken?.address);
   const dstUsd = useUSD(toToken?.address);
 
+  const srcToken = useMemo(() => parseDexToken(fromToken), [fromToken]);
+  const dstToken = useMemo(() => parseDexToken(toToken), [toToken]);
+
   return (
     <TWAP
       title={limit ? "Limit" : "TWAP"}
       connect={connect}
+      srcToken={srcToken}
+      dstToken={dstToken}
       account={account}
-      walletProvider={library}
-      srcTokenAddress={fromToken?.address}
-      dstTokenAddress={toToken?.address}
-      dexTokens={dappTokens}
+      walletProvider={library?.currentProvider}
       isDarkTheme={isDarkTheme}
       marketPrice={outAmount}
       marketPriceLoading={isLoading}
@@ -188,6 +221,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       components={{ Tooltip, TokensListModal, Modal }}
       isExactAppoval={true}
       minChunkSizeUsd={4}
+      useToken={useToken}
       callbacks={{
         onWrapSuccess,
         onApproveSuccess,
@@ -200,9 +234,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
   const { isDarkTheme } = useTheme();
-
+  const config = useConfig();
   return (
-    <DappProvider config={config}>
+    <DappProvider config={config as Config}>
       <StyledLynexswap isDarkMode={isDarkTheme ? 1 : 0}>
         <StyledDragonLayout name={config.name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
@@ -221,7 +255,7 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/29525.png",
-  configs: [config],
+  configs: configs as Config[],
   path: "lynex",
 };
 

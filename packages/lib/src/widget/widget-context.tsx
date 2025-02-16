@@ -6,12 +6,12 @@ import { TwapErrorWrapper } from "../ErrorHandling";
 import { networks } from "@defi.org/web3-candies";
 import { useTwap } from "@orbs-network/twap-ui-sdk";
 import { Orders } from "./components/orders/Orders";
-import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
+import { SubmitOrderModal, SubmitOrderModalWithPortal } from "./components/submit-order-modal/SubmitOrderModal";
 import { PoweredbyOrbsWithPortal } from "./components/powered-by-orbs";
 import { LimitPriceWarningPortal } from "../components";
 import { useHasAllowance } from "../hooks/useAllowance";
 import { createWalletClient, custom, createPublicClient, http } from "viem";
-import { mainnet, polygon, bsc, arbitrum, sonic, sei, avalanche, fantom, base, linea, zksync, scroll } from "viem/chains";
+import { mainnet, polygon, bsc, arbitrum, sonic, sei, avalanche, fantom, base, linea, zksync, scroll, zircuit } from "viem/chains";
 
 const viemChains = {
   [networks.eth.id]: mainnet,
@@ -22,6 +22,7 @@ const viemChains = {
   [networks.ftm.id]: fantom,
   [networks.base.id]: base,
   [networks.linea.id]: linea,
+  48900: zircuit,
   [networks.zksync.id]: zksync,
   [networks.scroll.id]: scroll,
   [networks.sonic.id]: sonic,
@@ -105,15 +106,22 @@ const useStore = () => {
 
 const useClients = (props: WidgetProps) => {
   return useMemo(() => {
-    const viemChain = getViemChain(props.chainId);
-    if (!viemChain) return;
-    const walletProvider = props.walletProvider?.currentProvider;
-    const transport = props.walletClientTransport || walletProvider ? custom(walletProvider) : undefined;
+    try {
+      const viemChain = getViemChain(props.chainId);
 
-    return {
-      walletClient: transport ? createWalletClient({ account: props.account, chain: viemChain, transport }) : undefined,
-      publicClient: createPublicClient({ chain: viemChain, transport: transport || http() }),
-    };
+      if (!viemChain) return undefined; // Explicitly return an empty object
+      const custom1 = props.walletProvider ? custom(props.walletProvider) : undefined;
+      const custom2 = props.walletClientTransport ? custom(props.walletClientTransport) : undefined;
+      const transport = custom1 || custom2;
+
+      return {
+        walletClient: transport ? createWalletClient({ account: props.account, chain: viemChain, transport }) : undefined,
+        publicClient: createPublicClient({ chain: viemChain, transport: transport || http() }),
+      };
+    } catch (error) {
+      console.log({ error });
+      return;
+    }
   }, [props.chainId, props.walletProvider, props.account, props.walletClientTransport]);
 };
 
@@ -136,7 +144,7 @@ export const WidgetProvider = (props: WidgetProps) => {
     isLimitPanel: props.isLimitPanel,
     srcToken: props.srcToken,
     destToken: props.dstToken,
-    marketPriceOneToken: props.marketPrice,
+    marketPriceOneToken: state.swapData?.marketPrice || props.marketPrice,
     oneSrcTokenUsd: props.srcUsd1Token,
     typedSrcAmount: state.srcAmount,
   });
@@ -164,6 +172,7 @@ export const WidgetProvider = (props: WidgetProps) => {
         <TwapErrorWrapper>
           <Orders />
           <SubmitOrderModal />
+          <SubmitOrderModalWithPortal />
           <PoweredbyOrbsWithPortal />
           <LimitPriceWarningPortal />
           <div className="twap-widget">{props.children}</div>
@@ -174,5 +183,8 @@ export const WidgetProvider = (props: WidgetProps) => {
 };
 
 export const useWidgetContext = () => {
+  if (!WidgetContext) {
+    throw new Error("useWidgetContext must be used within a WidgetProvider");
+  }
   return useContext(WidgetContext);
 };

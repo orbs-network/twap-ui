@@ -1,6 +1,6 @@
 import { Analytics } from "./analytics";
 import { getEstimatedDelayBetweenChunksMillis, derivedSwapValues, prepareOrderArgs, getDeadline } from "./lib";
-import { getOrders, waitForCancelledOrder, waitForNewOrder, waitForOrdersUpdate } from "./orders";
+import { getOrders, waitForCancelledOrder, waitForNewOrder } from "./orders";
 import { Config, DerivedSwapValuesArgs, PrepareOrderArgs, TimeDuration } from "./types";
 
 interface Props {

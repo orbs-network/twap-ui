@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useWidgetContext } from "..";
-import { SwapSteps, Token } from "../types";
+import { SwapSteps } from "../types";
 import { logger, isTxRejected } from "../utils";
 import { useApproveToken } from "./useApproveToken";
 import { useCreateOrder } from "./useCreateOrder";
@@ -14,7 +14,7 @@ import { useNetwork } from "./useNetwork";
 import { useRef } from "react";
 
 const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
-  let steps: number[] = [];
+  const steps: number[] = [];
 
   if (shouldWrap) {
     steps.push(SwapSteps.WRAP);
@@ -28,7 +28,7 @@ const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 };
 
 export const useSubmitOrderFlow = () => {
-  const { state, twap, updateState, callbacks, srcToken, dstToken, onSwitchFromNativeToWtoken } = useWidgetContext();
+  const { state, twap, updateState, callbacks, srcToken, dstToken } = useWidgetContext();
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash } = state;
   const { data: haveAllowance, refetch: refetchAllowance } = useHasAllowance();
   const shouldWrap = useShouldWrap();
@@ -57,6 +57,7 @@ export const useSubmitOrderFlow = () => {
       if (shouldWrap) {
         updateState({ swapStep: SwapSteps.WRAP });
         await wrapToken();
+        updateState({ isWrapped: true });
         wrappedRef.current = true;
       }
 
@@ -100,9 +101,6 @@ export const useSubmitOrderFlow = () => {
 
       onSettled() {
         refetchAllowance();
-        if (wrappedRef.current) {
-          onSwitchFromNativeToWtoken?.();
-        }
       },
     },
   );

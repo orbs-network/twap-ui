@@ -110,7 +110,7 @@ const onApproveSuccess = (args: OnApproveSuccessArgs) => {
 };
 
 const onCreateOrderSuccess = (args: OnCreateOrderSuccessArgs) => {
-  console.log("onCreateOrderSuccess");
+  console.log("onCreateOrderSuccess", args);
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -160,7 +160,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       title={limit ? "Limit" : "TWAP"}
       connect={connect}
       account={account}
-      walletProvider={library}
+      walletProvider={library?.currentProvider}
       srcTokenAddress={fromToken?.address}
       dstTokenAddress={toToken?.address}
       dexTokens={dappTokens}

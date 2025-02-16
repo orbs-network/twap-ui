@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { styled } from "styled-components";
 import { SelectedOrder } from "./SelectedOrder";
 import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
@@ -53,17 +53,30 @@ export const OrdersButton = ({ className = "" }: { className?: string }) => {
   );
 };
 
-const OrderHistory = ({ className = "" }: { className?: string }) => {
-  const { selectedOrderId: order, isOpen, onClose } = useOrderHistoryContext();
+const CustomModal = ({ children }: { children: ReactNode }) => {
   const Modal = useWidgetContext().components.Modal;
+  const { isOpen, onClose } = useOrderHistoryContext();
+
+  if (!Modal) {
+    return <>{children}</>;
+  }
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={Boolean(isOpen)} onClose={onClose} title="Order history">
+      {children}
+    </Modal>
+  );
+};
+
+const OrderHistory = ({ className = "" }: { className?: string }) => {
+  const { selectedOrderId: order } = useOrderHistoryContext();
+  return (
+    <CustomModal>
       <StyledContainer className={`twap-order-history ${className}`} order={order ? 1 : 0}>
         <OrderHistoryHeader />
         <SelectedOrder />
         <OrderHistoryList />
       </StyledContainer>
-    </Modal>
+    </CustomModal>
   );
 };
 

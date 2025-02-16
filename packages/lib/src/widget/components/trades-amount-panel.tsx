@@ -5,27 +5,25 @@ import { StyledRowFlex, StyledText } from "../../styles";
 import { useWidgetContext } from "../..";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 import styled from "styled-components";
+import { useTradesAmountPanel } from "../hooks";
 
 export const TradesAmountPanel = ({ className = "", children }: { className?: string; children: ReactNode }) => {
-  const { twap } = useWidgetContext();
-  const error = twap.errors.chunks?.text;
+  const { error } = useTradesAmountPanel();
+
   const hide = useShouldWrapOrUnwrapOnly();
 
   if (hide) return null;
 
   return (
-    <Panel error={Boolean(error)} className={`${className} twap-trades-amount-panel`}>
+    <Panel error={!!error} className={`${className} twap-trades-amount-panel`}>
       {children}
     </Panel>
   );
 };
 
 const Input = ({ className }: { className?: string }) => {
-  const {
-    values: { chunks },
-    actionHandlers: { setChunks },
-  } = useWidgetContext().twap;
   const { onBlur, onFocus } = Panel.usePanelContext();
+  const { setChunks, chunks } = useTradesAmountPanel();
 
   return (
     <NumericInput
@@ -41,12 +39,12 @@ const Input = ({ className }: { className?: string }) => {
 };
 
 export const _Label = ({ className = "" }: { className?: string }) => {
-  const translations = useWidgetContext().translations;
+  const { label, tooltip } = useTradesAmountPanel();
 
   return (
     <Label className={`twap-trades-amount-panel-label ${className}`}>
-      <Label.Text text={translations.totalTrades} />
-      <Label.Info text={translations.totalTradesTooltip} />
+      <Label.Text text={label} />
+      <Label.Info text={tooltip} />
     </Label>
   );
 };

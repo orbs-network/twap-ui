@@ -6,6 +6,7 @@ import { useDerivedSwapValues } from "./hooks/useDerivedValues";
 import { useActionHandlers } from "./hooks/useHandlers";
 import { useLimitPricePanel } from "./hooks/useLimitPricePanel";
 import useCreateOrderTx from "./hooks/useContractMethods";
+import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 
 const initialState: State = {
   currentTime: Date.now(),
@@ -27,7 +28,10 @@ const StateRedicer = (state: State, action: Action): State => {
     case ActionType.UPDATED_STATE:
       return { ...state, ...action.value };
     case ActionType.RESET:
-      return initialState;
+      return {
+        ...initialState,
+        typedDuration: action.payload ? DEFAULT_LIMIT_PANEL_DURATION : undefined,
+      };
     default:
       return state;
   }
@@ -49,13 +53,13 @@ export const useTwap = ({ config, isLimitPanel, srcToken, destToken, marketPrice
   const sdk = useMemo(() => new SDK.TwapSDK({ config }), [config]);
   const orders = useOrders(sdk);
   const { values, warnings, errors } = useDerivedSwapValues(sdk, state, isLimitPanel, srcToken, destToken, marketPrice, oneSrcTokenUsd?.toString(), typedSrcAmount);
-  const actionHandlers = useActionHandlers(dispatch, updateState);
-  const limitPricePanel = useLimitPricePanel(state, values, updateState, srcToken, destToken, marketPrice);
+  const actionHandlers = useActionHandlers(dispatch, updateState, !!isLimitPanel);
+  const limitPricePanel = useLimitPricePanel(state, values, errors, updateState, srcToken, destToken, marketPrice);
   const createOrderTx = useCreateOrderTx(values, sdk, srcToken, destToken);
 
   useEffect(() => {
     if (isLimitPanel) {
-      updateState({ typedDuration: { unit: SDK.TimeUnit.Weeks, value: 1 } });
+      updateState({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION });
     } else {
       updateState({ typedDuration: undefined });
     }

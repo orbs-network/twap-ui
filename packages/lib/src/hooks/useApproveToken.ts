@@ -1,4 +1,4 @@
-import { maxUint256, erc20abi, isNativeAddress } from "@defi.org/web3-candies";
+import { maxUint256, erc20abi } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useWidgetContext } from "..";
 import { logger } from "../utils";

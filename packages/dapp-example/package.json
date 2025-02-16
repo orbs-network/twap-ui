@@ -9,6 +9,7 @@
     "build": "npm run prettier && DISABLE_ESLINT_PLUGIN=true react-scripts build && cp build/index.html build/404.html"
   },
   "dependencies": {
+    "@defi.org/web3-candies": "^5.0.6",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^5.16.4",

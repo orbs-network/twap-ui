@@ -1,15 +1,13 @@
-import React, { FC } from "react";
+import React from "react";
 import styled from "styled-components";
 import { useWidgetContext } from "../..";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 import { StyledRowFlex } from "../../styles";
+import { usePriceMode } from "../hooks";
 
 export const PriceTabs = ({ className = "" }: { className?: string }) => {
-  const { twap, translations } = useWidgetContext();
-  const {
-    values: { isMarketOrder },
-    actionHandlers: { setIsMarketPrice },
-  } = twap;
+  const { translations } = useWidgetContext();
+  const { isMarketOrder, setIsMarketOrder } = usePriceMode();
 
   const hide = useShouldWrapOrUnwrapOnly();
 
@@ -17,10 +15,10 @@ export const PriceTabs = ({ className = "" }: { className?: string }) => {
 
   return (
     <Container className={`twap-price-tabs ${className}`}>
-      <button className={`twap-price-tabs-tab ${!!isMarketOrder ? "twap-price-tabs-tab-selected" : ""}`} onClick={() => setIsMarketPrice(true)}>
+      <button className={`twap-price-tabs-tab ${isMarketOrder ? "twap-price-tabs-tab-selected" : ""}`} onClick={() => setIsMarketOrder(true)}>
         {translations.market}
       </button>
-      <button className={`twap-price-tabs-tab ${!isMarketOrder ? "twap-price-tabs-tab-selected" : ""}`} onClick={() => setIsMarketPrice(false)}>
+      <button className={`twap-price-tabs-tab ${!isMarketOrder ? "twap-price-tabs-tab-selected" : ""}`} onClick={() => setIsMarketOrder(false)}>
         {translations.limit}
       </button>
     </Container>

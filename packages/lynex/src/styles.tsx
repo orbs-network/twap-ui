@@ -1,23 +1,31 @@
-import { Styles } from "@orbs-network/twap-ui";
-import { DefaultTheme, styled, createGlobalStyle } from "styled-components";
+import { createGlobalStyle } from "styled-components";
 
-type ThemeMode = "lynex-dark" | "ocelex-dark";
-
-export const lynexDark = {
-  palette: {
-    mode: "lynex-dark" as ThemeMode,
-  },
-};
-
-export const ocelexDark = {
-  palette: {
-    mode: "ocelex-dark" as ThemeMode,
-  },
-};
-
-const getColors = (theme: DefaultTheme) => {
-  const isOcelex = theme.palette.mode === "ocelex-dark";
+const getColors = (isOcelex?: boolean) => {
   return {
+    warn: {
+      100: "hsl(55, 92.3%, 94.9%)",
+      200: "hsl(55.1, 92.5%, 89.6%)",
+      300: "hsl(54.5, 92.5%, 79.2%)",
+      400: "hsl(54.7, 92.5%, 68.8%)",
+      500: "hsl(54.5, 92.5%, 58.4%)",
+      600: "hsl(54.6, 100%, 48%)",
+      700: "hsl(54.5, 100%, 38.4%)",
+      800: "hsl(54.7, 100%, 28.8%)",
+      900: "hsl(54.5, 100%, 19.2%)",
+      950: "hsl(55.1, 100%, 9.6%)",
+    },
+    error: {
+      100: "hsl(55.1, 100%, 9.6%)",
+      200: "hsl(7.3, 92.5%, 89.6%)",
+      300: "hsl(6.7, 92.5%, 79.2%)",
+      400: "hsl(6.9, 92.5%, 68.8%)",
+      500: "hsl(6.7, 92.5%, 58.4%)",
+      600: "hsl(6.9, 100%, 48%)",
+      700: "hsl(6.7, 100%, 38.4%)",
+      800: "hsl(6.9, 100%, 28.8%)",
+      900: "hsl(6.7, 100%, 19.2%)",
+      950: "hsl(7.3, 100%, 9.6%)",
+    },
     success: {
       100: isOcelex ? "hsl(142.5, 61.5%, 94.9%)" : "hsl(142.5, 61.5%, 94.9%)",
       200: isOcelex ? "hsl(144.7, 65.4%, 89.8%)" : "hsl(144.7, 65.4%, 89.8%)",
@@ -59,8 +67,8 @@ const getColors = (theme: DefaultTheme) => {
   };
 };
 
-const panelLabelStyles = (theme: DefaultTheme) => {
-  const styles = getColors(theme);
+const panelLabelStyles = (isOcelex?: boolean) => {
+  const styles = getColors(isOcelex);
 
   return {
     color: styles.neutral[200],
@@ -69,8 +77,8 @@ const panelLabelStyles = (theme: DefaultTheme) => {
   };
 };
 
-const panelBodyStyles = (theme: DefaultTheme) => {
-  const styles = getColors(theme);
+const panelBodyStyles = (isOcelex?: boolean) => {
+  const styles = getColors(isOcelex);
   return {
     width: "100%",
     background: "transparent",
@@ -83,8 +91,8 @@ const panelBodyStyles = (theme: DefaultTheme) => {
   };
 };
 
-const tokenSelectStyles = (theme: DefaultTheme) => {
-  const styles = getColors(theme);
+const tokenSelectStyles = (isOcelex?: boolean) => {
+  const styles = getColors(isOcelex);
   return {
     display: "flex",
     gap: 8,
@@ -95,6 +103,7 @@ const tokenSelectStyles = (theme: DefaultTheme) => {
     cursor: "pointer",
     alignItems: "center",
     transition: "background 0.2s",
+    width: "fit-content",
     ".twap-token-logo": {
       width: 24,
       height: 24,
@@ -118,43 +127,33 @@ const tokenSelectStyles = (theme: DefaultTheme) => {
   };
 };
 
-const selectButtons = (theme: DefaultTheme) => {
-  const styles = getColors(theme);
+const selectButtons = (isOcelex?: boolean) => {
+  const styles = getColors(isOcelex);
   return {
     display: "flex",
     gap: 4,
     marginLeft: "auto",
-    button: {
-      color: styles.neutral[200],
-      background: "transparent",
-      border: "none",
-      fontSize: 12,
-      padding: "0.5rem 0.7rem",
-      fontWeight: 500,
-      cursor: "pointer",
-      transition: "background 0.2s",
-      borderRadius: 4,
-      "&:hover": {
-        color: styles.neutral[100],
-        background: styles.neutral[800],
-      },
-    },
   };
 };
 
-const tokenPanelStyles = (theme: DefaultTheme) => {
-  const styles = getColors(theme);
+const tokenPanelStyles = (isOcelex?: boolean) => {
+  const styles = getColors(isOcelex);
 
   return {
     display: "flex",
     flexDirection: "column" as const,
-    gap: 0,
+    ".twap-token-panel-top": {
+      display: "flex",
+      justifyContent: "space-between",
+    },
     ".twap-panel-body": {
       gap: 12,
+      display: "flex",
+      flexDirection: "column" as const,
     },
 
     ".twap-token-panel-balance-buttons": {
-      ...selectButtons(theme),
+      ...selectButtons(isOcelex),
     },
 
     ".twap-token-panel-bottom": {
@@ -175,8 +174,8 @@ const tokenPanelStyles = (theme: DefaultTheme) => {
   };
 };
 
-const buttonStyles = (theme: DefaultTheme) => {
-  const styles = getColors(theme);
+const buttonStyles = (isOcelex?: boolean) => {
+  const styles = getColors(isOcelex);
   return {
     background: styles.neutral[700],
     color: styles.neutral[100],
@@ -185,12 +184,12 @@ const buttonStyles = (theme: DefaultTheme) => {
     padding: "12px 16px 12px 16px",
     borderRadius: 8,
     cursor: "pointer",
-    fontSize: 16
+    fontSize: 16,
   };
 };
 
-const switchTokensStyles = (theme: DefaultTheme) => {
-  const styles = getStyles(theme);
+const switchTokensStyles = (isOcelex?: boolean) => {
+  const styles = getColors(isOcelex);
   return {
     display: "flex",
     justifyContent: "center",
@@ -203,12 +202,12 @@ const switchTokensStyles = (theme: DefaultTheme) => {
       left: "50%",
       top: "50%",
       transform: "translate(-50%, -50%)",
-      background: styles.switchTokensBg,
+      background: styles.neutral[700],
       borderRadius: 8,
       border: `unset`,
       width: 32,
       height: 32,
-      color: styles.textColor,
+      color: styles.neutral[200],
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
@@ -219,27 +218,46 @@ const switchTokensStyles = (theme: DefaultTheme) => {
         height: 18,
       },
       "&:hover": {
-        background: styles.switchTokensBgHover,
+        background: styles.neutral[600],
       },
     },
   };
 };
 const letterSpacing = "0.02em";
 const mobile = 700;
-export const GlobalStyles = createGlobalStyle(({ theme }) => {
-  const styles = getStyles(theme);
-  const isDarkMode = styles.isDarkMode;
+export const GlobalStyles = createGlobalStyle<{ isOcelex?: boolean }>(({ isOcelex }) => {
+  const styles = getColors(isOcelex);
+
   return {
+    ".twap-select-button": {
+      color: styles.neutral[200],
+      background: "transparent",
+      border: "none",
+      fontSize: 12,
+      padding: "0.5rem 0.7rem",
+      fontWeight: 500,
+      cursor: "pointer",
+      transition: "background 0.2s",
+      borderRadius: 4,
+      "&:hover": {
+        color: styles.neutral[100],
+        background: styles.neutral[800],
+      },
+    },
+    ".twap-select-button-selected": {
+      color: styles.neutral[100],
+      background: styles.neutral[800],
+    },
     ".twap-inputs-panel": {
       justifyContent: "space-between",
       p: {
-        color: styles.textColor,
+        color: styles.neutral[200],
         fontSize: 16,
         fontWeight: 400,
       },
     },
     ".twap-order-modal-failed-logo": {
-      color: styles.error,
+      color: styles.error[500],
       width: 60,
       height: 60,
       svg: {
@@ -248,14 +266,14 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
     ".twap-order-modal-link": {
-      color: styles.textColor,
+      color: styles.neutral[200],
       textDecoration: "none",
     },
     ".twap-order-token-progress-bar": {
       flex: 1,
       height: 4,
       position: "relative",
-      background: styles.isDarkMode ? styles.darkText : "rgba(0,0,0,0.1)",
+      background: styles.neutral[200],
       overflow: "hidden",
       borderRadius: 20,
     },
@@ -263,7 +281,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       position: "absolute",
       left: 0,
       height: "100%",
-      background: styles.isDarkMode ? "rgb(36 99 235)" : "rgb(29 64 176 /0.5)",
+      background: styles.neutral[200],
     },
     ".twap-order-history-list": {
       "&::-webkit-scrollbar": {
@@ -271,12 +289,12 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
     ".twap-limit-price-message": {
-      background: styles.tokenSelectBg,
-      color: styles.textColor,
+      background: styles.neutral[700],
+      color: styles.neutral[200],
       padding: "12px 16px",
       borderRadius: 20,
       a: {
-        color: styles.textColor,
+        color: styles.neutral[200],
       },
     },
     ".twap-orders-selected-order-bottom": {
@@ -296,11 +314,11 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-order-display-details-row": {
       ".twap-label": {
-        color: styles.textColor,
+        color: styles.neutral[200],
         fontWeight: 500,
       },
       "&-right": {
-        color: styles.textColor,
+        color: styles.neutral[200],
       },
     },
     ".twap-order-display": {
@@ -310,26 +328,26 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
     ".twap-order-display-token-title": {
-      ...panelLabelStyles(theme),
+      ...panelLabelStyles(isOcelex),
     },
     ".twap-order-display-token-amount": {
       fontSize: 18,
       fontWeight: 500,
     },
     ".twap-order-display-fill-delay": {
-      color: styles.darkText,
+      color: styles.neutral[200],
     },
     ".twap-order-history-order": {
-      background: styles.isDarkMode ? styles.color2 : "rgb(191 219 254/0.7)",
+      background: styles.neutral[200],
       marginBottom: 8,
     },
     ".twap-order-history-header-back-icon": {
-      color: styles.textColor,
+      color: styles.neutral[200],
       position: "relative",
       top: 2,
     },
     ".twap-loader": {
-      background: styles.isDarkMode ? "rgba(255,255,255, 0.1)" : "rgba(0,0,0, 0.08)",
+      background: styles.neutral[200],
     },
     ".twap-orders-list-loader": {
       ".twap-loader": {
@@ -339,11 +357,11 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
     ".orbs_Spinner": {
-      border: isDarkMode ? "" : `3px solid rgba(0,0,0, 0.7)`,
-      borderBottomColor: isDarkMode ? "" : `rgba(0,0,0, 0.2)`,
+      border: styles.neutral[200],
+      borderBottomColor: styles.neutral[200],
     },
     ".orbs_MainTokenUsd": {
-      color: styles.darkText,
+      color: styles.neutral[200],
     },
     ".orbs_MainTokenLeft": {
       gap: 4,
@@ -362,7 +380,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       width: "100%",
     },
     ".orbs_MainTokenTitle": {
-      color: styles.textColor,
+      color: styles.neutral[200],
       fontSize: 14,
       fontWeight: 400,
       opacity: 1,
@@ -372,21 +390,21 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
 
     ".twap-order-display-details": {
-      background: styles.color2,
+      background: styles.neutral[200],
       borderRadius: 8,
       gap: 8,
       ".twap-label": {
-        color: styles.textColor,
+        color: styles.neutral[200],
         fontWeight: 400,
       },
       ".twap-message": {
-        background: styles.cardBg,
+        background: styles.neutral[200],
         letterSpacing,
         fontSize: 14,
         padding: 8,
         borderRadius: 16,
         a: {
-          color: styles.textColor,
+          color: styles.neutral[200],
         },
         svg: {
           width: 15,
@@ -404,45 +422,45 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       gap: 7,
     },
     ".orbs_StepsStepLogo": {
-      background: styles.color2,
-      border: `7px solid ${styles.color2}`,
+      background: styles.neutral[200],
+      border: `7px solid ${styles.neutral[200]}`,
       "*": {
         opacity: 0.7,
       },
     },
 
     ".orbs_SwapFlow": {
-      color: styles.textColor,
+      color: styles.neutral[200],
       ".twap-order-display-details": {
         marginTop: 15,
         marginBottom: 15,
         padding: 12,
       },
       ".twap-order-modal-disclaimer": {
-        p: { color: styles.textColor },
+        p: { color: styles.neutral[200] },
         a: {
-          color: styles.textColor,
+          color: styles.neutral[200],
         },
       },
     },
     ".twap-duration-panel": {
-      ...panelBodyStyles(theme),
+      ...panelBodyStyles(isOcelex),
       "&-buttons": {
         gap: 5,
       },
       "&-button": {},
       ".twap-label": {
-        ...panelLabelStyles(theme),
+        ...panelLabelStyles(isOcelex),
       },
     },
 
     ".twap-order-history-button": {
-      background: styles.tokenSelectBg,
+      background: styles.neutral[200],
       borderRadius: 20,
       padding: "12px 16px",
       transition: "0.2s all",
       cursor: "pointer",
-      color: styles.textColor,
+      color: styles.neutral[200],
 
       svg: {
         marginLeft: "auto",
@@ -453,7 +471,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-powered-by": {
       p: {
-        color: styles.textColor,
+        color: styles.neutral[200],
       },
     },
     ".twap-price-switch": {
@@ -463,7 +481,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       marginLeft: "auto",
 
       p: {
-        color: styles.textColor,
+        color: styles.neutral[200],
         fontSize: 14,
         fontWeight: 500,
       },
@@ -479,18 +497,18 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       position: "relative" as const,
       top: -3,
       right: -3,
-      color: styles.textColor,
+      color: styles.neutral[200],
       "&:hover": {
-        background: styles.isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+        background: styles.neutral[200],
       },
     },
     ".twap-input": {
       input: {
         fontWeight: 400,
-        color: styles.textColor,
+        color: styles.neutral[200],
         fontSize: "1.25rem",
         "&::placeholder": {
-          color: styles.textColor,
+          color: styles.neutral[200],
           opacity: "0.5!important",
         },
       },
@@ -503,22 +521,22 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
     ".twap-limit-price-panel-title-text": {
-      ...panelLabelStyles(theme),
+      ...panelLabelStyles(isOcelex),
     },
     ".twap-switch-tokens": {
-      ...switchTokensStyles(theme),
+      ...switchTokensStyles(isOcelex),
     },
     ".twap-button": {
-      ...buttonStyles(theme),
+      ...buttonStyles(isOcelex),
     },
     ".twap-token-panel": {
-      ...tokenPanelStyles(theme),
+      ...tokenPanelStyles(isOcelex),
     },
     ".twap-panel": {
       width: "100%",
     },
     ".twap-panel-body": {
-      ...panelBodyStyles(theme),
+      ...panelBodyStyles(isOcelex),
     },
     ".twap-trade-interval-panel, .twap-trades-amount-panel": {
       ".twap-panel-body": {
@@ -528,7 +546,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       ".twap-input": {
         input: {
           fontSize: 18,
-          color: styles.textColor,
+          color: styles.neutral[200],
           fontWeight: 400,
         },
       },
@@ -536,7 +554,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
 
     ".twap-trades-amount-panel": {
       "&-text": {
-        color: styles.darkText,
+        color: styles.neutral[200],
         textTransform: "lowercase" as const,
         fontWeight: 500,
         fontSize: 14,
@@ -548,11 +566,11 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       display: "flex",
       justifyContent: "space-between",
       ".twap-label": {
-        ...panelLabelStyles(theme),
+        ...panelLabelStyles(isOcelex),
       },
     },
     ".twap-token-select": {
-      ...tokenSelectStyles(theme),
+      ...tokenSelectStyles(isOcelex),
     },
     ".twap-limit-price-panel": {
       ".twap-panel-body": {
@@ -560,10 +578,10 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
     ".twap-limit-price-panel-percent": {
-      ...selectButtons(theme),
+      ...selectButtons(isOcelex),
     },
     ".twap-limit-price-panel-percent-button": {
-      ...selectButtonStyles(theme),
+      ...selectButtonStyles(isOcelex),
     },
     ".twap-limit-price-panel-percent-reset": {
       gap: 3,
@@ -584,15 +602,15 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       fontSize: 14,
     },
     ".twap-error-message": {
-      color: styles.textColor,
+      color: styles.neutral[200],
       padding: 10,
       fontSize: 14,
       gap: 8,
-      border: `1px solid ${styles.errorBorder}`,
+      border: `1px solid ${styles.neutral[200]}`,
       borderRadius: 12,
 
       svg: {
-        color: styles.error,
+        color: styles.error[200],
         width: `20px!important`,
         height: 20,
         top: -1,
@@ -608,32 +626,32 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       },
     },
     ".twap-spinner": {
-      borderTop: `3px solid ${styles.textColor}!important`,
-      border: !isDarkMode ? "3px solid rgba(0, 0, 0, 0.1)" : `3px solid rgba(255, 255, 255, 0.1)`,
+      borderTop: `3px solid ${styles.neutral[200]}!important`,
+      border: styles.neutral[200],
     },
 
     ".twap-select-menu-button": {
-      ...tokenSelectStyles(theme),
+      ...tokenSelectStyles(isOcelex),
       padding: "7px",
       textTransform: "capitalize" as const,
       p: {
         fontSize: 14,
-        color: styles.textColor,
+        color: styles.neutral[200],
         fontWeight: 400,
       },
     },
     ".twap-select-menu-list": {
-      background: styles.color2,
+      background: styles.neutral[200],
       borderRadius: 12,
       padding: 8,
       "&-item": {
         borderRadius: 8,
-        color: styles.textColor,
+        color: styles.neutral[200],
         fontSize: 14,
         padding: "5px 8px 5px 8px",
         fontWeight: 400,
         "&:hover": {
-          background: styles.isDarkMode ? "#ffffff0f" : "rgb(239 246 255)",
+          background: styles.neutral[200],
         },
       },
     },
@@ -650,15 +668,15 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
 
     ".twap-switch-handle": {
-      background: styles.switchHandle,
+      background: styles.neutral[200],
     },
     ".twap-switch": {
-      background: styles.switchBg,
+      background: styles.neutral[200],
     },
     ".twap-switch-checked": {
-      background: styles.switchBgActive,
+      background: styles.neutral[200],
       ".twap-switch-handle": {
-        background: styles.switchHandleActive,
+        background: styles.neutral[200],
       },
     },
 
@@ -672,24 +690,11 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
   };
 });
 
-export const StyledContainer = styled(Styles.StyledColumnFlex)({
-  gap: 15,
-});
-
-export const StyledColumnFlex = styled(Styles.StyledColumnFlex)({
-  gap: 16,
-});
-export const StyledLimitAndInputs = styled(Styles.StyledColumnFlex)(({ theme }) => {
-  return {
-    gap: 8,
-  };
-});
-
-const selectButtonStyles = (theme?: DefaultTheme) => {
-  const styles = getStyles(theme);
+const selectButtonStyles = (isOcelex?: boolean) => {
+  const styles = getColors(isOcelex);
 
   return {
-    color: styles.darkText,
+    color: styles.neutral[200],
     fontWeight: 500,
     padding: "7px 7px",
     borderRadius: 8,
@@ -703,31 +708,10 @@ const selectButtonStyles = (theme?: DefaultTheme) => {
     fontSize: 14,
     background: "transparent",
     "&:hover": {
-      background: styles.color2,
+      background: styles.neutral[200],
     },
     "&-selected": {
-      background: styles.color2,
+      background: styles.neutral[200],
     },
   };
 };
-
-export const StyledTop = styled(Styles.StyledColumnFlex)({
-  gap: 4,
-  "@media(max-width: 1000px)": {
-    gap: 4,
-  },
-});
-
-export const StyledChunksSelectText = styled(Styles.StyledText)(({ theme }) => {
-  const styles = getStyles(theme);
-  return {
-    color: styles.messageText,
-    fontSize: 15,
-  };
-});
-
-export const StyledTwapInputs = styled(Styles.StyledRowFlex)(({ theme }) => {
-  return {
-    alignItems: "stretch",
-  };
-});

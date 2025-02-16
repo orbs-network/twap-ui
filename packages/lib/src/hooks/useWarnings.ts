@@ -1,13 +1,8 @@
 import { useMemo } from "react";
-import { amountBNV2, AMOUNT_TO_BORROW, feeOnTransferDetectorAddresses, Token, useWidgetContext } from "..";
+import { useWidgetContext } from "..";
 import { useSrcBalance } from "./useBalances";
 import { useMaxSrcInputAmount } from "./useMaxSrcInputAmount";
 import BN from "bignumber.js";
-import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
-import { useQuery } from "@tanstack/react-query";
-import { useNetwork } from "./useNetwork";
-import { decodeEventLog } from "viem";
-import { erc20abi } from "@defi.org/web3-candies";
 
 export const useBalanceWaning = () => {
   const { data: srcBalance } = useSrcBalance();
@@ -65,7 +60,6 @@ export const useBalanceWaning = () => {
 // };
 
 export const useFeeOnTransferError = () => {
-  const { srcToken, dstToken, translations: t } = useWidgetContext();
   // const { data: srcFee, isLoading: srcLoading } = useFeeOnTransfer(srcToken?.address);
   // const { data: dstFee, isLoading: dstLoading } = useFeeOnTransfer(dstToken?.address);
   // const hasError = srcFee?.hasFeeOnTranfer || dstFee?.hasFeeOnTranfer;

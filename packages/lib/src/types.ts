@@ -3,7 +3,7 @@ import { IconType } from "@react-icons/all-files";
 import { Config } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { UseTwap } from "@orbs-network/twap-ui-sdk";
-import { Transport } from "viem";
+import { TransportConfig } from "viem";
 
 export interface Translations {
   minReceived: string;
@@ -173,11 +173,12 @@ export type InputProps = {
 };
 
 interface Components {
-  Modal: FC<ModalProps>;
-  TokensListModal: FC<TokensListModalProps>;
-  Tooltip: FC<TooltipProps>;
+  Modal?: FC<ModalProps>;
+  TokensListModal?: FC<TokensListModalProps>;
+  Tooltip?: FC<TooltipProps>;
   Ipnut?: FC<InputProps>;
   Button?: FC<ButtonProps>;
+  Toggle?: FC<ToggleProps>;
 }
 
 export type OnWrapSuccessArgs = {
@@ -210,7 +211,7 @@ export interface WidgetProps {
   chainId?: number;
   account?: any;
   walletProvider?: any;
-  walletClientTransport?: Transport;
+  walletClientTransport?: TransportConfig;
   isDarkTheme?: boolean;
   onSrcTokenSelected?: (token: any) => void;
   onDstTokenSelected?: (token: any) => void;
@@ -229,7 +230,6 @@ export interface WidgetProps {
   uiPreferences?: UIPreferences;
   srcUsd1Token?: number;
   dstUsd1Token?: number;
-  nativeUsd?: number;
   isExactAppoval?: boolean;
   children: React.ReactNode;
   components: Components;
@@ -237,7 +237,6 @@ export interface WidgetProps {
   marketPrice?: string;
   marketPriceLoading?: boolean;
   useToken?: (value?: string) => Token | undefined;
-  withStyles?: boolean;
   minChunkSizeUsd?: number;
   callbacks?: {
     onWrapSuccess?: (args: OnWrapSuccessArgs) => void;
@@ -357,6 +356,11 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
   allowClickWhileLoading?: boolean;
 }
 
+export type ToggleProps = {
+  checked: boolean;
+  onChange: () => void;
+};
+
 export type Step = {
   title: string;
   description?: string;
@@ -395,10 +399,12 @@ export interface State {
   disclaimerAccepted?: boolean;
   srcAmount?: string;
   newOrderLoading?: boolean;
-  confirmedData?: {
+  isWrapped?: boolean;
+  swapData?: {
+    srcAmount?: string;
     outAmount?: string;
+    srcAmountusd?: string;
     outAmountusd?: string;
-    srcToken?: Token;
-    dstToken?: Token;
+    marketPrice?: string;
   };
 }

@@ -1,4 +1,4 @@
-import React, { FC, ReactNode, useCallback } from "react";
+import React, { ReactNode, useCallback } from "react";
 import { Balance, Icon, NumericInput, TokenName, USD, TokenLogo as Logo, Portal } from "./base";
 import { Message } from "./base/Message";
 import styled from "styled-components";
@@ -139,14 +139,12 @@ export const TokenSelect = ({
   hideArrow = true,
   className = "",
   CustomArrow,
-  customButtonElement,
 }: {
   onClick: () => void;
   isSrc?: boolean;
   hideArrow?: boolean;
   className?: string;
   CustomArrow?: any;
-  customButtonElement?: FC;
 }) => {
   const token = useToken(isSrc);
 
@@ -341,6 +339,10 @@ const StyledSeparator = styled("div")({
 
 export const Tooltip = (props: TooltipProps) => {
   const Tooltip = useWidgetContext().components.Tooltip;
+
+  if (!Tooltip) {
+    return <>{props.children}</>;
+  }
 
   return <Tooltip tooltipText={props.tooltipText}>{props.children}</Tooltip>;
 };

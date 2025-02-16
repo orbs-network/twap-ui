@@ -1,19 +1,15 @@
 import { Panel } from "../../components/Panel";
 import { StyledRowFlex } from "../../styles";
 import { styled } from "styled-components";
-import { TimeUnit } from "@orbs-network/twap-sdk";
 import { Label, Message, NumericInput, ResolutionSelect } from "../../components/base";
-import React, { ReactNode, useCallback } from "react";
+import React, { ReactNode } from "react";
 import { handleFillDelayText } from "../../utils";
 import { useWidgetContext } from "../..";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
+import { useFillDelayPanel } from "../hooks";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const {
-    values: { fillDelay },
-    actionHandlers: { setFillDelay },
-  } = useWidgetContext().twap;
-
+  const { onInputChange, fillDelay } = useFillDelayPanel();
   const { onBlur, onFocus } = Panel.usePanelContext();
 
   return (
@@ -22,7 +18,7 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
       onFocus={onFocus}
       className={`twap-trade-interval-panel-input ${className}`}
       value={fillDelay.value}
-      onChange={(v) => setFillDelay({ unit: fillDelay.unit, value: Number(v) })}
+      onChange={onInputChange}
       placeholder={placeholder}
     />
   );
@@ -35,42 +31,31 @@ const StyledInput = styled(NumericInput)({
 });
 
 const Resolution = ({ className = "" }: { className?: string }) => {
-  const {
-    values: { fillDelay },
-    actionHandlers: { setFillDelay },
-  } = useWidgetContext().twap;
+  const { onUnitSelect, fillDelay } = useFillDelayPanel();
   const { onBlur, onFocus } = Panel.usePanelContext();
 
-  const onChange = useCallback(
-    (unit: TimeUnit) => {
-      setFillDelay({ unit, value: fillDelay.value });
-    },
-    [fillDelay.value, setFillDelay],
-  );
-
-  return <ResolutionSelect onClose={onBlur} onOpen={onFocus} className={`twap-trade-interval-panel-resolution ${className}`} unit={fillDelay.unit} onChange={onChange} />;
+  return <ResolutionSelect onClose={onBlur} onOpen={onFocus} className={`twap-trade-interval-panel-resolution ${className}`} unit={fillDelay.unit} onChange={onUnitSelect} />;
 };
 
 export const FillDelayPanel = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  const { twap } = useWidgetContext();
-
+  const { error } = useFillDelayPanel();
   const hide = useShouldWrapOrUnwrapOnly();
 
   if (hide) return null;
 
   return (
-    <Panel className={`${className} twap-trade-interval-panel`} error={Boolean(twap.errors.fillDelay?.text)}>
+    <Panel className={`${className} twap-trade-interval-panel`} error={!!error}>
       {children}
     </Panel>
   );
 };
 
 const WarningComponent = () => {
-  const fillDelayError = useWidgetContext().twap.errors.fillDelay;
+  const fillDelayError = useFillDelayPanel().error;
 
   if (!fillDelayError) return null;
 
-  return <Message title={fillDelayError.text} variant="warning" />;
+  return <Message title={fillDelayError} variant="warning" />;
 };
 
 const TradeIntervalLabel = () => {

@@ -32,4 +32,4 @@ export enum ActionType {
   RESET = "RESET",
 }
 
-export type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> } | { type: ActionType.RESET };
+export type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> } | { type: ActionType.RESET; payload: boolean };

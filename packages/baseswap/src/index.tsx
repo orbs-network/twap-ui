@@ -395,7 +395,7 @@
 // };
 
 // const SubmitOrderModal = () => {
-//   const { isOpen, onClose } = hooks.useSwapModal();
+//   const { isOpen, onClose } = hooks.useConfirmation();
 //   const Modal = useAdapterContext().Modal;
 
 //   return (

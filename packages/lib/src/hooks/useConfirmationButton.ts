@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import BN from "bignumber.js";
-import { useSwapModal } from "./useSwapModal";
+import { useConfirmation } from "./useConfirmation";
 import { useWidgetContext } from "..";
 import { useShouldOnlyWrap, useShouldUnwrap } from "./useShouldWrapOrUnwrap";
 import { useSrcBalance } from "./useBalances";
@@ -22,7 +22,7 @@ export const useConfirmationButton = () => {
     isWrongChain,
     srcUsd1Token,
     account: maker,
-    translations,
+    translations: t,
     connect,
     srcToken,
     dstToken,
@@ -34,7 +34,7 @@ export const useConfirmationButton = () => {
     marketPriceLoading,
   } = useWidgetContext();
 
-  const { onOpen } = useSwapModal();
+  const { onOpen } = useConfirmation();
   const switchChain = useSwitchChain();
   const shouldUnwrap = useShouldUnwrap();
   const usdLoading = BN(srcUsd1Token || "0").isZero();
@@ -54,14 +54,12 @@ export const useConfirmationButton = () => {
   return useMemo(() => {
     if (isWrongChain)
       return {
-        text: translations.switchNetwork,
+        text: t.switchNetwork,
         onClick: switchChain,
-        loading: false,
-        disabled: false,
       };
     if (!maker)
       return {
-        text: translations.connect,
+        text: t.connect,
         onClick: () => {
           if (!connect) {
             alert("connect function is not defined");
@@ -69,21 +67,39 @@ export const useConfirmationButton = () => {
             connect();
           }
         },
-        loading: false,
-        disabled: false,
       };
 
-    if (shouldOnlyWrap || shouldUnwrap) {
+    if (shouldOnlyWrap) {
       return {
-        text: shouldOnlyWrap ? translations.wrap : translations.unwrap,
-        onClick: shouldOnlyWrap ? wrap : unwrap,
-        disabled: srcAmountError?.text || balanceError || wrapLoading || unwrapLoading,
-        loading: wrapLoading || unwrapLoading,
+        text: t.wrap,
+        onClick: wrap,
+        disabled: srcAmountError?.text || balanceError || wrapLoading,
+        loading: wrapLoading,
       };
     }
 
+    if (shouldUnwrap) {
+      return {
+        text: t.unwrap,
+        onClick: unwrap,
+        disabled: srcAmountError?.text || balanceError || unwrapLoading,
+        loading: unwrapLoading,
+      };
+    }
+
+    const text = () => {
+      if (marketPriceLoading) {
+        return t.outAmountLoading;
+      }
+      if (srcAmountError) {
+        return t.enterAmount;
+      }
+
+      return t.placeOrder;
+    };
+
     return {
-      text: translations.placeOrder,
+      text: text(),
       onClick: onOpen,
       loading: swapStatus === SwapStatus.LOADING || isLoading,
       disabled: Boolean(feeError) || isLoading || hasErrors || !!balanceError,
@@ -100,12 +116,14 @@ export const useConfirmationButton = () => {
     shouldUnwrap,
     unwrap,
     unwrapLoading,
-    translations,
+    t,
     onOpen,
     hasErrors,
     balanceError,
     feeError,
     srcAmountError,
     switchChain,
+    swapStatus,
+    marketPriceLoading,
   ]);
 };

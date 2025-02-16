@@ -127,7 +127,7 @@ const Content = () => {
         <Styles.StyledColumnFlex gap={16}>
           {props.isLimitPanel ? <LimitPanel /> : <TWAPPanel />}
           <Widget.ErrorMessage />
-          <Widget.SubmitOrderPanel />
+          <Widget.ShowConfirmationButton />
         </Styles.StyledColumnFlex>
       </WidgetProvider>
     </ThemeProvider>
@@ -199,15 +199,15 @@ const TWAPPanel = () => {
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
   return (
     <Widget.TokenPanel isSrcToken={Boolean(isSrcToken)}>
-      <Widget.Panel.Header>
+      <div className="twap-token-panel-header">
         <Widget.TokenPanel.Label />
         <Widget.TokenPanel.BalanceSelect />
-      </Widget.Panel.Header>
-      <Styles.StyledRowFlex className={`${Widget.TokenPanel.ClassName}-top`}>
+      </div>
+      <Styles.StyledRowFlex className={`twap-token-panel-top`}>
         <Widget.TokenPanel.Input />
         <Widget.TokenPanel.Select />
       </Styles.StyledRowFlex>
-      <Styles.StyledRowFlex className={`${Widget.TokenPanel.ClassName}-bottom`}>
+      <Styles.StyledRowFlex className={`twap-token-panel-bottom`}>
         <Widget.TokenPanel.Usd />
         <Widget.TokenPanel.Balance prefix={<span> Balance: </span>} />
       </Styles.StyledRowFlex>

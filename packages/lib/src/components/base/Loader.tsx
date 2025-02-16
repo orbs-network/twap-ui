@@ -24,7 +24,6 @@ const SkeletonWrapper = styled.div<Shared>`
   display: inline-block;
   width: ${(props) => props.width || "100%"};
   height: ${(props) => props.height || "100%"};
-  background-color: #f6f7f8;
   position: relative;
   animation: ${fade} 1.5s infinite ease-in-out;
   border-radius: ${(props) => props.borderRadius || "4px"};

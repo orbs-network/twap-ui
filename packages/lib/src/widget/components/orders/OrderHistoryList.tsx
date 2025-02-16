@@ -96,7 +96,6 @@ const StyledEmpty = styled(StyledColumnFlex)({
 });
 
 const ListItemHeader = ({ order }: { order: Order }) => {
-  const t = useWidgetContext().translations;
   const status = order && order.status;
   const getName = useGetOrderNameCallback();
   const formattedDate = React.useMemo(() => {

@@ -50,7 +50,7 @@ function NumericInput({
 
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>
-      {loading && <StyledLoader className="twap-input-loader" width="75%" height="60%" />}
+      {loading && <StyledLoader className="twap-input-loader" />}
 
       <StyledFlex style={{ height: "100%", pointerEvents: disabled ? "none" : "auto" }} className={`${loading ? "twap-input-loading" : ""}`}>
         {Ipnut ? (

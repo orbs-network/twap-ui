@@ -41,7 +41,7 @@
   "placeOrder": "Place order",
   "confirmOrder": "Confirm order",
   "partialFillWarning": "Partial fill warning",
-  "enterAmount": "Enter amount",
+  "enterAmount": "Enter an amount",
   "insufficientFunds": "Insufficient Balance",
   "enterTradeSize": "Enter trade size",
   "enterTradeInterval": "Enter trade interval",

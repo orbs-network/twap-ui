@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
+import { useWidgetContext } from "../../widget/widget-context";
 
 interface SwitchContainerProps {
   checked: boolean;
@@ -36,9 +37,14 @@ interface SwitchProps {
 }
 
 export const Switch: React.FC<SwitchProps> = ({ checked, onChange }) => {
+  const Toggle = useWidgetContext().components.Toggle;
   const handleToggle = () => {
     onChange(!checked);
   };
+
+  if (Toggle) {
+    return <Toggle checked={checked} onChange={handleToggle} />;
+  }
 
   return (
     <SwitchContainer checked={checked} onClick={handleToggle} className={`twap-switch ${checked ? "twap-switch-checked" : ""}`}>

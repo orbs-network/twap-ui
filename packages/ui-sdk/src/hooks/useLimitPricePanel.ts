@@ -1,13 +1,13 @@
 import { useMemo, useCallback } from "react";
 import BN from "bignumber.js";
 import { State, Token } from "../types";
-import { TwapValues } from "./useDerivedValues";
+import { TwapErrors, TwapValues } from "./useDerivedValues";
 import { removeCommas, toAmountUi } from "../utils";
 
 type UpdateState = (value: Partial<State>) => void;
 const defaultPercent = [1, 5, 10];
 
-export const useLimitPricePanel = (state: State, values: TwapValues, updateState: UpdateState, srcToken?: Token, destToken?: Token, marketPrice?: string) => {
+export const useLimitPricePanel = (state: State, values: TwapValues, errors: TwapErrors, updateState: UpdateState, srcToken?: Token, destToken?: Token, marketPrice?: string) => {
   const { limitPriceUI, priceDiffFromMarket } = values;
   const { isInvertedLimitPrice, typedPrice, limitPricePercent } = state;
 
@@ -126,5 +126,7 @@ export const useLimitPricePanel = (state: State, values: TwapValues, updateState
     priceDiffFromMarket: values.priceDiffFromMarket,
     isSelectedPercentCallback,
     percentButtons,
+    error: errors.limitPrice?.text,
+    isMarketOrder: state.isMarketOrder,
   };
 };
