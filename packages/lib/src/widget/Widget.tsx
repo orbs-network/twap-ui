@@ -17,7 +17,7 @@ import { SubmitOrderModalPortal } from "./components/submit-order-modal/SubmitOr
 import { useConfirmation } from "../hooks/useConfirmation";
 import * as Hooks from "./hooks";
 import { SwapPanel } from "./components/swap-panel";
-import { LimitPriceWarning } from "./components/limit-price-warning";
+import { LimitPriceWarningPortal } from "./components/limit-price-warning";
 
 const Widget = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
@@ -52,7 +52,7 @@ Widget.SwitchTokens = SwitchTokens;
 Widget.ErrorMessage = ErrorMessage;
 Widget.Message = WidgetMessage;
 Widget.PriceSwitch = PriceSwitch;
-Widget.LimitPriceWarning = LimitPriceWarning;
+Widget.LimitPriceWarning = LimitPriceWarningPortal;
 Widget.SwapPanel = SwapPanel;
 Widget.hooks = hooks;
 export { Widget };

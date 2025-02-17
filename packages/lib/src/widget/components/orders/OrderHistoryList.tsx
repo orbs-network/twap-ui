@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
-import { Order } from "@orbs-network/twap-sdk";
+import { Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext } from "./context";
 import * as React from "react";
 import moment from "moment";
@@ -68,14 +68,14 @@ const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: nu
 };
 
 const EmptyList = () => {
-  const tab = useOrderHistoryContext().selectedStatus;
+  const status = useOrderHistoryContext().status;
 
   const name = React.useMemo(() => {
-    if (tab?.name === "all") {
+    if (status === OrderStatus.All) {
       return "";
     }
-    return tab?.name;
-  }, [tab]);
+    return status;
+  }, [status]);
 
   return (
     <StyledEmpty className="twap-order-history-list-empty">

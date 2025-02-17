@@ -5,14 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TwapErrorWrapper } from "../ErrorHandling";
 import { networks } from "@defi.org/web3-candies";
 import { useTwap } from "@orbs-network/twap-ui-sdk";
-import { Orders } from "./components/orders/Orders";
+import { OrdersWithPortalPortal } from "./components/orders/Orders";
 import { SubmitOrderModal, SubmitOrderModalWithPortal } from "./components/submit-order-modal/SubmitOrderModal";
 import { PoweredbyOrbsWithPortal } from "./components/powered-by-orbs";
 import { useHasAllowance } from "../hooks/useAllowance";
 import { createWalletClient, custom, createPublicClient, http } from "viem";
 import { mainnet, polygon, bsc, arbitrum, sonic, sei, avalanche, fantom, base, linea, zksync, scroll, zircuit } from "viem/chains";
 import { GlobalStyles } from "./styles";
-import { LimitPriceWarningPortal } from "./components/limit-price-warning";
+import { LimitPriceWarningWithPortal } from "./components/limit-price-warning";
 
 const viemChains = {
   [networks.eth.id]: mainnet,
@@ -171,11 +171,11 @@ export const WidgetProvider = (props: WidgetProps) => {
       >
         <Listeners />
         <TwapErrorWrapper>
-          <Orders />
+          <OrdersWithPortalPortal />
           <SubmitOrderModal />
           <SubmitOrderModalWithPortal />
           <PoweredbyOrbsWithPortal />
-          <LimitPriceWarningPortal />
+          <LimitPriceWarningWithPortal />
           <div className="twap-widget">{props.children}</div>
         </TwapErrorWrapper>
         {props.includeStyles && <GlobalStyles isDarkMode={props.isDarkTheme} />}

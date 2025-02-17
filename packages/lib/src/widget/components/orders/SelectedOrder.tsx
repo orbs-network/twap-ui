@@ -60,12 +60,10 @@ const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: 
     <OrderDisplay.DetailsContainer>
       <StyledAccordion>
         <StyledSummary onClick={onClick} className="twap-orders-selected-order-summary">
-          <StyledText>{title}</StyledText>
+          <StyledText className="twap-orders-selected-order-summary-title">{title}</StyledText>
           <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
         </StyledSummary>
-        <StyledDetails style={{ height: expanded ? "auto" : 0 }} className={`twap-orders-selected-order-details ${expanded ? "twap-orders-selected-order-details-expanded" : ""} `}>
-          {children}
-        </StyledDetails>
+        {expanded && <StyledDetails className={`twap-orders-selected-order-details ${expanded ? "twap-orders-selected-order-details-expanded" : ""} `}>{children}</StyledDetails>}
       </StyledAccordion>
     </OrderDisplay.DetailsContainer>
   );
@@ -228,10 +226,9 @@ const LimitPrice = ({ order }: { order: Order }) => {
     if (!srcToken || !dstToken) return;
     return order.getLimitPrice(srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
-  const limitPriceF = useFormatNumber({ value: limitPrice });
 
   if (order?.isMarketOrder) return null;
-  return <Price title="Limit price" price={limitPriceF} srcToken={srcToken} dstToken={dstToken} />;
+  return <Price title="Limit price" price={limitPrice} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const AvgExcecutionPrice = ({ order }: { order: Order }) => {
@@ -244,9 +241,7 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
     return order.getExcecutionPrice(srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
 
-  const excecutionPriceF = useFormatNumber({ value: excecutionPrice });
-
-  return <Price title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice} price={excecutionPriceF} srcToken={srcToken} dstToken={dstToken} />;
+  return <Price title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice} price={excecutionPrice} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?: Token; dstToken?: Token; title: string }) => {

@@ -3,14 +3,13 @@ import { TWAP } from "@orbs-network/twap-ui-dragonswap";
 import tokens from "./token.json";
 import { useBalanceQuery, useConnectWallet, usePriceUSD, useRefetchBalances, useTheme, useTrade } from "../hooks";
 import { useWeb3React } from "@web3-react/core";
-import { Dapp, Popup, TokensList, UISelector } from "../Components";
+import { Dapp, Popup, SelectorOption, TokensList, UISelector } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { SelectorOption } from "../types";
-import { mapCollection, size, TooltipProps, Configs, TokensListModalProps, ModalProps, Widget, useAmountBN, Token } from "@orbs-network/twap-ui";
+import { TooltipProps, Configs, TokensListModalProps, ModalProps, Widget, useAmountBN, Token } from "@orbs-network/twap-ui";
 import { DappProvider } from "../context";
 import { eqIgnoreCase, network, networks } from "@defi.org/web3-candies";
-
+import _ from "lodash";
 const config = Configs.DragonSwap;
 
 export const useDappTokens = () => {
@@ -26,7 +25,7 @@ export const useDappTokens = () => {
 };
 
 const parseList = (rawList?: any): Token[] => {
-  return mapCollection(rawList, (rawToken: any) => {
+  return _.map(rawList, (rawToken: any) => {
     return { address: rawToken.address, decimals: rawToken.decimals, symbol: rawToken.symbol, logoUrl: rawToken.logoURI };
   });
 };
@@ -34,7 +33,7 @@ const parseList = (rawList?: any): Token[] => {
 const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
   const baseAssets = useDappTokens();
   const { isDarkTheme } = useTheme();
-  const tokensListSize = size(baseAssets);
+  const tokensListSize = _.size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
   return (

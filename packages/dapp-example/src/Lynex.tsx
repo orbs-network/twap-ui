@@ -1,11 +1,10 @@
 import { StyledDragonLayout, StyledGenericModalContent, StyledLynexswap } from "./styles";
 import { useBalanceQuery, useConnectWallet, useGetTokens, usePriceUSD, useRefetchBalances, useTheme, useTrade } from "./hooks";
 import { useWeb3React } from "@web3-react/core";
-import { Dapp, Popup, TokensList, UISelector } from "./Components";
+import { Dapp, Popup, SelectorOption, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { SelectorOption } from "./types";
-import { mapCollection, size, TooltipProps, Configs, TokensListModalProps, ModalProps, Widget, Token, useAmountBN, WidgetProvider, UIPreferences } from "@orbs-network/twap-ui";
+import { TooltipProps, Configs, TokensListModalProps, ModalProps, Widget, Token, useAmountBN, WidgetProvider, UIPreferences } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
 import { eqIgnoreCase, networks } from "@defi.org/web3-candies";
 import { Config } from "@orbs-network/twap-sdk";
@@ -61,8 +60,8 @@ const useToken = (addressOrSymbol?: string) => {
   }, [tokens, addressOrSymbol]);
 };
 
-const initialSrc = "A3A";
-const initialDst = "USDC";
+const initialSrc = "USDC";
+const initialDst = "WETH";
 
 const uiPreferences: UIPreferences = {
   input: { disableThousandSeparator: true, placeholder: "0.0" },
@@ -118,7 +117,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   return (
     <WidgetProvider
-      config={config as Config}
+      config={Configs.Lynex}
       minChunkSizeUsd={4}
       web3Provider={library?.currentProvider}
       account={account as string}
@@ -162,9 +161,6 @@ const DappComponent = () => {
         <StyledDragonLayout name={config.name}>
           <UISelector selected={selected} select={setSelected} limit={true} />
           <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-          <Widget.PoweredByOrbs />
-          <Widget.Orders />
-          <Widget.LimitPriceWarning />
         </StyledDragonLayout>
       </StyledLynexswap>
     </DappProvider>

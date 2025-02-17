@@ -1,11 +1,11 @@
 import { Config, OrderStatus, OrderType } from "./types";
 import BN from "bignumber.js";
-import { amountUi, delay, getTheGraphUrl, groupBy, keyBy, orderBy } from "./utils";
+import { amountUi, delay, getTheGraphUrl, groupBy, orderBy } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
 
 const getOrderProgress = (srcFilled?: string, srcAmountIn?: string) => {
   if (!srcFilled || !srcAmountIn) return 0;
-  let progress = BN(srcFilled || "0")
+  const progress = BN(srcFilled || "0")
     .dividedBy(srcAmountIn || "0")
     .toNumber();
 
@@ -129,8 +129,9 @@ const getAllCreatedOrders = async ({
   limit: number;
 }) => {
   let page = 0;
-  let orders: any = [];
+  const orders: any = [];
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const orderCreateds = await getCreatedOrders({
       exchangeAddress,
@@ -191,8 +192,9 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
   const LIMIT = 1_000;
   let page = 0;
   const where = `where: { TWAP_id_in: [${ids.join(", ")}] }`;
-  let fills = [];
+  const fills = [];
   const dexFee = chainId === 56 ? "dexFee" : "";
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const query = `
     {
@@ -218,7 +220,7 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
     });
     const response = await payload.json();
 
-    let orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
+    const orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
 
     const result = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
       return parseFills(orderId, fills);
@@ -289,7 +291,7 @@ export class Order {
     this.dstTokenAddress = rawOrder.ask_dstToken;
     this.totalChunks = new BN(rawOrder.ask_srcAmount || 0)
       .div(rawOrder.ask_srcBidAmount || 1) // Avoid division by zero
-      .integerValue(BN.ROUND_CEIL)
+      .integerValue(BN.ROUND_FLOOR)
       .toNumber();
     this.orderType = isMarketOrder ? OrderType.TWAP_MARKET : BN(this.totalChunks).eq(1) ? OrderType.LIMIT : OrderType.TWAP_LIMIT;
     this.isMarketOrder = isMarketOrder;

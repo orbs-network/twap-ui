@@ -1,6 +1,5 @@
 import Modal from "@mui/material/Modal";
-import { ReactNode, useEffect, useMemo, useState } from "react";
-import { Helmet } from "react-helmet";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
 import {
   StyledCloseIcon,
   StyledDappLayoutContent,
@@ -24,7 +23,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
 import Backdrop from "@mui/material/Backdrop";
 import { Button, styled, TextField, Typography } from "@mui/material";
-import { Components, isEmpty, size, Styles, Token, useAmountUi, useFormatNumber } from "@orbs-network/twap-ui";
+import { Components, Styles, Token, useAmountUi, useFormatNumber } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { Config } from "@orbs-network/twap-sdk";
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
@@ -32,13 +31,10 @@ import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
 import { dapps } from "./config";
 import { Status } from "./Status";
 import { useAddedTokens, useBalanceQuery, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
-import { FixedSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
-import { SelectorOption } from "./types";
 import { useNavigate } from "react-router-dom";
 import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
-
-const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
+import { isEmpty, size } from "lodash";
+import { Virtuoso } from "react-virtuoso";
 
 export interface Dapp {
   logo: string;
@@ -105,15 +101,6 @@ const StyledPopupHeader = styled("div")({
   alignItems: "center",
   ".twap-popup-title": {},
 });
-
-export const MetaTags = ({ title }: { title: string }) => {
-  return (
-    <Helmet>
-      <link rel="icon" href={FAVICON} />
-      <title>TWAP On {title}</title>
-    </Helmet>
-  );
-};
 
 const ToggleTheme = () => {
   const { selectedDapp } = useSelectedDapp();
@@ -222,7 +209,6 @@ export const DappsMenu = () => {
 export const DappLayout = ({ children, name, className }: { children: ReactNode; name: string; className?: string }) => {
   return (
     <>
-      <MetaTags title={name} />
       <DappsMenu />
       <StyledDappLayoutContent className={className}>{children}</StyledDappLayoutContent>
     </>
@@ -240,33 +226,28 @@ export const TokenSearchInput = ({ setValue }: { value: string; setValue: (value
   return <StyledSearchInput placeholder="Insert token name..." value={localValue} onChange={(e: any) => setLocalValue(e.target.value)} />;
 };
 
-const Row = (props: any) => {
-  const { index, style, data } = props;
-
-  const token = data.tokens[index];
+const Row = ({ onClick, token }: any) => {
   const { data: balance, isLoading } = useBalanceQuery(token?.address);
   const balanceF = useAmountUi(token?.decimals, balance);
   const formattedValue = useFormatNumber({ value: balanceF, decimalScale: 6 });
-  if (!token) return null;
+
   return (
-    <div style={style}>
-      <StyledListToken onClick={() => data.onClick(token)} className="twap-tokens-list-item">
-        <StyledListTokenLeft>
-          <Components.Base.TokenLogo
-            logo={token.logoUrl}
-            alt={token.symbol}
-            style={{
-              width: 30,
-              height: 30,
-            }}
-          />
-          {token.symbol}
-        </StyledListTokenLeft>
-        <Components.Base.SmallLabel loading={isLoading} className="balance">
-          {formattedValue}
-        </Components.Base.SmallLabel>
-      </StyledListToken>
-    </div>
+    <StyledListToken onClick={() => onClick(token)} className="twap-tokens-list-item">
+      <StyledListTokenLeft>
+        <Components.Base.TokenLogo
+          logo={token.logoUrl}
+          alt={token.symbol}
+          style={{
+            width: 30,
+            height: 30,
+          }}
+        />
+        {token.symbol}
+      </StyledListTokenLeft>
+      <Components.Base.SmallLabel loading={isLoading} className="balance">
+        {formattedValue}
+      </Components.Base.SmallLabel>
+    </StyledListToken>
   );
 };
 
@@ -408,21 +389,16 @@ export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
       {view === TokenListView.MANAGE_TOKENS && <ManageAddedTokens />}
       {view === TokenListView.DEFAULT && (
         <StyledTokensList>
-          <AutoSizer>
-            {({ height, width }: any) => (
-              <List
-                overscanCount={30}
-                className="List"
-                itemData={{ tokens: filteredTokens, onClick }}
-                height={height || 0}
-                itemCount={filteredTokens.length}
-                itemSize={50}
-                width={width || 0}
-              >
-                {Row}
-              </List>
-            )}
-          </AutoSizer>
+          <Virtuoso
+            totalCount={filteredTokens.length}
+            overscan={10}
+            className="twap-order-history-list"
+            style={{ height: "100%", width: "100%" }}
+            itemContent={(index) => {
+              const token = filteredTokens[index];
+              return <Row onClick={onClick} token={token} />;
+            }}
+          />
         </StyledTokensList>
       )}
     </StyledTokens>
@@ -457,6 +433,11 @@ const StyledListBackBtn = styled("button")({
   border: "unset",
   cursor: "pointer",
 });
+
+export enum SelectorOption {
+  TWAP = "TWAP",
+  LIMIT = "LIMIT",
+}
 
 export const UISelector = ({
   className = "",

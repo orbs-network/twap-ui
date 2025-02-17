@@ -11,17 +11,24 @@ import { useWidgetContext } from "../../widget-context";
 import { OrderHistoryHeader } from "./OrderHistoryHeader";
 import { useOrderHistoryManager } from "../../../hooks/useOrderHistoryManager";
 const PORTAL_ID = "twap-orders-portal";
+
 export const OrdersPortal = () => {
   return <div id={PORTAL_ID} />;
 };
 
 export const Orders = ({ className = "" }: { className?: string }) => {
   return (
+    <OrderHistoryContextProvider>
+      <OrderHistory />
+      <OrdersButton className={className} />
+    </OrderHistoryContextProvider>
+  );
+};
+
+export const OrdersWithPortalPortal = () => {
+  return (
     <Portal containerId={PORTAL_ID}>
-      <OrderHistoryContextProvider>
-        <OrderHistory />
-        <OrdersButton className={className} />
-      </OrderHistoryContextProvider>
+      <Orders />
     </Portal>
   );
 };

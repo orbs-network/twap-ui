@@ -1,5 +1,5 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
-import { zeroAddress, zero, convertDecimals, isNativeAddress, networks, erc20s, eqIgnoreCase, network, erc20abi } from "@defi.org/web3-candies";
+import { zeroAddress, convertDecimals, isNativeAddress, networks, erc20s, eqIgnoreCase, network, erc20abi } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearchParams } from "react-router-dom";
@@ -7,13 +7,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dapp } from "./Components";
 import { PROVIDER_NAME } from ".";
 import { dapps } from "./config";
-import { Configs, size, sortBy, Token } from "@orbs-network/twap-ui";
+import { Configs, Token } from "@orbs-network/twap-ui";
 import BigNumber from "bignumber.js";
 import { useMediaQuery } from "@mui/material";
 import { useDappContext } from "./context";
 import BN from "bignumber.js";
 import { getNetwork } from "@orbs-network/twap-sdk";
-
+import { size, sortBy } from "lodash";
 export const injectedConnector = new InjectedConnector({});
 
 export const useAddedTokens = () => {

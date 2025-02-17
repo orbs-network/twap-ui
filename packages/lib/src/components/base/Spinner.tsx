@@ -15,7 +15,7 @@ const CircularContainer = styled.div<{ size: number; color?: string }>`
   width: ${(props) => props.size}px;
   height: ${(props) => props.size}px;
   border: 3px solid rgba(0, 0, 0, 0.1);
-  border-top: 3px solid ${(props) => props.color || "#3f51b5"};
+  border-top: 3px solid ${(props) => props.color || "white"};
   border-radius: 50%;
   animation: ${rotate} 1s linear infinite;
 `;

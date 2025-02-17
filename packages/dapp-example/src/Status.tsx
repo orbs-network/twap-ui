@@ -108,7 +108,7 @@ export function Status() {
   const { selectedDapp: dapp } = useSelectedDapp();
   const config = useConfig();
 
-  const orbsTakers = useOrbsL3TakersStatus(dapp);
+  const orbsTakers = useOrbsL3TakersStatus();
   const backupTakers = useBackupTakersStatus();
   return (
     <>

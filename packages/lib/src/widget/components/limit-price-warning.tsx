@@ -2,7 +2,7 @@ import { Message, Portal } from "../../components/base";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 import { useWidgetContext } from "../widget-context";
 
-export const LimitPriceWarningContent = ({ className = "" }: { className?: string }) => {
+export const LimitPriceWarning = ({ className = "" }: { className?: string }) => {
   const { translations: t, twap } = useWidgetContext();
   const isMarketOrder = twap.values.isMarketOrder;
   const hide = useShouldWrapOrUnwrapOnly();
@@ -25,14 +25,14 @@ export const LimitPriceWarningContent = ({ className = "" }: { className?: strin
   );
 };
 
-export const LimitPriceWarning = () => {
+export const LimitPriceWarningPortal = () => {
   return <div id="twap-limit-price-message"></div>;
 };
 
-export const LimitPriceWarningPortal = () => {
+export const LimitPriceWarningWithPortal = () => {
   return (
     <Portal containerId="twap-limit-price-message">
-      <LimitPriceWarningContent />
+      <LimitPriceWarning />
     </Portal>
   );
 };

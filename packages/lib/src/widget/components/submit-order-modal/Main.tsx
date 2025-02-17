@@ -74,25 +74,14 @@ const Price = () => {
     values: { isMarketOrder },
   } = twap;
   const swapPrice = useSwapPrice();
-  const usd = useFormatNumber({ value: swapPrice.usd, decimalScale: 2 });
   const price = useFormatNumber({ value: swapPrice.price, decimalScale: 4 });
 
   return (
     <OrderDisplay.DetailRow title={isMarketOrder ? "Market Price" : "Limit Price"}>
-      <StyledPrice>
-        1 {srcToken?.symbol} = {price} {dstToken?.symbol} <span>{`($${usd})`}</span>
-      </StyledPrice>
+      1 {srcToken?.symbol} = {price} {dstToken?.symbol}
     </OrderDisplay.DetailRow>
   );
 };
-
-const StyledPrice = styled(StyledText)({
-  fontSize: 13,
-  span: {
-    opacity: 0.6,
-    fontSize: 12,
-  },
-});
 
 export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   const {
@@ -183,12 +172,11 @@ export const Main = () => {
         bottomContent={<ChunksText />}
       />
       {!swapStatus && (
-        <>
-          <div className="twap-devider" />
+        <div className="twap-order-modal-bottom">
           <Details />
           <AcceptDisclaimer />
           <SubmitButton />
-        </>
+        </div>
       )}
     </>
   );

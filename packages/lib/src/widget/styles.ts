@@ -34,9 +34,108 @@ const getSelectButton = (isDarkMode?: boolean, selected?: boolean) => {
 export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDarkMode }) => {
   const colors = getColors(isDarkMode);
   return {
-    ".twap-order-modal-disclaimer": {
+    ".twap-order-history-button": {
+      padding: 16,
+      background: "#1B1B1B",
+      borderRadius: 20,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-start",
+      height: 48,
+      color: colors.text.main,
+      fontSize: 14,
+      border: "1px solid rgba(255, 255, 255, 0.1)",
+      cursor: "pointer",
+      "&:hover": {
+        background: "rgba(255, 255, 255, 0.07)",
+      },
+    },
+    ".twap-order-history-button-icon": {
+      marginLeft: "auto",
+    },
+    ".twap-orders-selected-order-bottom": {
       marginTop: 20,
-      marginBottom: 20,
+    },
+    ".twap-order-history": {
+      ".twap-order-modal-bottom": {
+        padding: 12,
+      },
+    },
+    ".twap-orders-selected-order-summary": {
+      padding: 12,
+    },
+    ".twap-order-modal-bottom": {
+      marginTop: 20,
+      display: "flex",
+      gap: 10,
+      flexDirection: "column",
+      width: "100%",
+    },
+    ".orbs_MainTokenLeft": {
+      gap: 2,
+    },
+    ".twap-orders-selected-order-summary-title": {
+      fontWeight: 500,
+      fontSize: 14,
+    },
+    ".twap-orders-selected-order-details": {
+      gap: 5,
+      padding: 12,
+      paddingTop: 0,
+    },
+    ".twap-market-price-warning": {
+      fontSize: 13,
+      background: "rgba(255,255,255, 0.06)",
+      padding: 7,
+      borderRadius: 12,
+      svg: {
+        position: "relative",
+        top: 2,
+      },
+      a: {
+        color: colors.text.main,
+      },
+    },
+    ".twap-order-display-details": {
+      background: "#1B1B1B",
+      borderRadius: 16,
+    },
+    ".orbs_SwapFlow": {
+      ".twap-order-display-details": {
+        padding: 12,
+      },
+    },
+    ".twap-order-display-details-row-right": {
+      fontSize: 13,
+    },
+    ".twap-order-display-token": {
+      width: "100%",
+    },
+    ".twap-order-history-header-back-icon": {
+      color: "white",
+    },
+    ".twap-order-token-progress-bar": {
+      flex: 1,
+      background: "rgba(255, 255, 255, 0.07)",
+      height: 5,
+      borderRadius: 999,
+      overflow: "hidden",
+    },
+    ".twap-order-token-progress-bar-filled": {
+      background: "rgb(252, 114, 255)",
+      height: "100%",
+    },
+    ".twap-order-history-order": {
+      background: "#1B1B1B",
+      padding: 12,
+      borderRadius: 16,
+      marginBottom: 6,
+      "&:hover": {
+        background: "rgba(255,255,255, 0.06)",
+      },
+    },
+
+    ".twap-order-modal-disclaimer": {
       p: {
         color: colors.text.main,
       },
@@ -45,9 +144,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         textDecoration: "underline",
       },
     },
-    ".twap-order-display-details": {
-      marginTop: 20,
-    },
+
     ".twap-select-menu-button": {
       cursor: "pointer",
       display: "flex",
@@ -329,22 +426,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       display: "flex",
       gap: 5,
     },
-    ".twap-order-history-button": {
-      padding: 16,
-      background: "#1B1B1B",
-      borderRadius: 20,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      height: 48,
-      color: colors.text.main,
-      fontSize: 14,
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-      cursor: "pointer",
-      "&:hover": {
-        background: "rgba(255, 255, 255, 0.07)",
-      },
-    },
+
     ".twap-panel": {
       border: "1px solid transparent",
       padding: 16,

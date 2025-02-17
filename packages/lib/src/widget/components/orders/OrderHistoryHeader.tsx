@@ -11,20 +11,20 @@ import { StyledRowFlex, StyledText } from "../../../styles";
 import { useGetOrderNameCallback } from "../../../hooks/useOrderName";
 
 export function OrderHistoryMenu() {
-  const { setStatus, selectedStatus, statuses } = useOrderHistoryContext();
+  const { setStatus, status } = useOrderHistoryContext();
 
   const onSelect = useCallback((item: SelectMeuItem) => setStatus(item?.value as OrderStatus), [setStatus]);
 
   const items = useMemo(() => {
-    return statuses.map((it) => {
+    return Object.keys(OrderStatus).map((it) => {
       return {
-        text: it.name,
-        value: it.key,
+        text: it,
+        value: it.toLowerCase(),
       };
     });
-  }, [statuses]);
+  }, []);
 
-  return <SelectMenu onSelect={onSelect} selected={selectedStatus?.key} items={items} />;
+  return <SelectMenu onSelect={onSelect} selected={status} items={items} />;
 }
 
 export const OrderHistoryHeader = ({ className = "" }: { className?: string }) => {

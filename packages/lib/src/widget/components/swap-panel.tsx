@@ -9,6 +9,9 @@ import { TradesAmountPanel } from "./trades-amount-panel";
 import { FillDelayPanel } from "./fill-delay-panel";
 import { DurationPanel } from "./trade-duration-panel";
 import { ErrorMessage } from "./error-message";
+import { Orders } from "./orders/Orders";
+import { PoweredbyOrbs } from "./powered-by-orbs";
+import { LimitPriceWarning } from "./limit-price-warning";
 
 export function SwapPanel() {
   const {
@@ -51,6 +54,9 @@ export function SwapPanel() {
 
       <ErrorMessage />
       <ShowConfirmationButton />
+      <PoweredbyOrbs />
+      <Orders />
+      <LimitPriceWarning />
     </div>
   );
 }

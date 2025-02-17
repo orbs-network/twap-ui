@@ -159,9 +159,9 @@ const TokenPanelBalance = ({
 const TokenPanelUsd = ({ decimalScale = 2, className = "" }: { decimalScale?: number; className?: string }) => {
   const { isSrcToken } = useTokenPanelContext();
   const { usd } = useTokenPanel(isSrcToken);
-  const { uiPreferences } = useWidgetContext();
+  const { uiPreferences, marketPriceLoading } = useWidgetContext();
 
-  const usdF = useFormatNumber({ value: usd, decimalScale });
+  const usdF = useFormatNumber({ value: marketPriceLoading ? "0" : usd, decimalScale });
 
   return (
     <StyledText className={`${className} twap-token-panel-usd`}>
