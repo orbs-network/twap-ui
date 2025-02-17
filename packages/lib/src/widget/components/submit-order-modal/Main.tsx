@@ -3,8 +3,7 @@ import BN from "bignumber.js";
 import React, { useCallback, useMemo } from "react";
 import { SwapFlow, SwapStep } from "@orbs-network/swap-ui";
 import { fillDelayText } from "@orbs-network/twap-sdk";
-import { MarketPriceWarning } from "../../../components";
-import { Switch, Button } from "../../../components/base";
+import { Switch, Button, Message } from "../../../components/base";
 import { OrderDisplay } from "../../../components/OrderDisplay";
 import { StyledText } from "../../../styles";
 import { SwapSteps } from "../../../types";
@@ -17,6 +16,28 @@ import { useOrderName } from "../../../hooks/useOrderName";
 import { useAmountUi } from "../../../hooks/useParseAmounts";
 import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
 import { useConfirmation } from "../../../hooks/useConfirmation";
+import { useShouldWrapOrUnwrapOnly } from "../../../hooks/useShouldWrapOrUnwrap";
+
+export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
+  const isMarketOrder = useWidgetContext().twap.values.isMarketOrder;
+  const { translations: t } = useWidgetContext();
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+
+  if (!isMarketOrder || isWrapOrUnwrapOnly) return null;
+
+  return (
+    <Message
+      className={`twap-market-price-warning ${className}`}
+      title={
+        <>
+          {`${t?.marketOrderWarning} `}
+          <a href="https://www.orbs.com/dtwap-and-dlimit-faq/" target="_blank">{`${t.learnMore}`}</a>
+        </>
+      }
+      variant="warning"
+    />
+  );
+};
 
 export const useSwapPrice = () => {
   const { swapData } = useConfirmation();

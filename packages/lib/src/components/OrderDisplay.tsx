@@ -2,13 +2,14 @@ import { styled } from "styled-components";
 import React, { ReactNode, useMemo } from "react";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
 import moment from "moment";
-import { fillDelayText, makeElipsisAddress } from "../utils";
+import { makeElipsisAddress } from "../utils";
 import { Token } from "../types";
 import { useWidgetContext } from "..";
 import * as SwapUI from "@orbs-network/swap-ui";
 import { useFormatNumber } from "../hooks/useFormatNumber";
 import { useNetwork } from "../hooks/useNetwork";
 import { Label } from "./base/Label";
+import { fillDelayText } from "@orbs-network/twap-sdk";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useWidgetContext()?.translations;
@@ -90,7 +91,7 @@ const Recipient = () => {
 
 const TradeInterval = ({ fillDelayMillis, chunks }: { fillDelayMillis?: number; chunks: number }) => {
   const t = useWidgetContext()?.translations;
-  const text = useMemo(() => fillDelayText(fillDelayMillis, t), [fillDelayMillis, t]);
+  const text = useMemo(() => fillDelayText(fillDelayMillis), [fillDelayMillis]);
 
   if (chunks === 1) return null;
 
@@ -213,7 +214,7 @@ const DstToken = ({
     if (!isMarketOrder) return null;
     return (
       <StyledSmallText className="twap-order-display-fill-delay">
-        Every {fillDelayText(fillDelayMillis, t).toLowerCase()} Over {chunks} Orders
+        Every {fillDelayText(fillDelayMillis).toLowerCase()} Over {chunks} Orders
       </StyledSmallText>
     );
   }, [chunks, isMarketOrder, fillDelayMillis, t]);

@@ -8,6 +8,7 @@ export const useShouldOnlyWrap = () => {
   const network = useNetwork();
 
   return useMemo(() => {
+    if (!srcToken || !dstToken || !network) return false;
     return isNativeAddress(srcToken?.address || "") && eqIgnoreCase(dstToken?.address || "", network?.wToken.address || "");
   }, [srcToken, dstToken, network]);
 };
@@ -17,6 +18,8 @@ export const useShouldUnwrap = () => {
   const network = useNetwork();
 
   return useMemo(() => {
+    if (!srcToken || !dstToken || !network) return false;
+
     return eqIgnoreCase(srcToken?.address || "", network?.wToken.address || "") && isNativeAddress(dstToken?.address || "");
   }, [srcToken, dstToken, network]);
 };

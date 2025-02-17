@@ -24,19 +24,18 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
 import Backdrop from "@mui/material/Backdrop";
 import { Button, styled, TextField, Typography } from "@mui/material";
-import { Components, isEmpty, size, Styles, Token, useFormatNumber } from "@orbs-network/twap-ui";
+import { Components, isEmpty, size, Styles, Token, useAmountUi, useFormatNumber } from "@orbs-network/twap-ui";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { Config } from "@orbs-network/twap-sdk";
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
 import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
 import { dapps } from "./config";
 import { Status } from "./Status";
-import { useAddedTokens, useBalance, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
+import { useAddedTokens, useBalanceQuery, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
-import { SelectorOption, TokenListItem } from "./types";
+import { SelectorOption } from "./types";
 import { useNavigate } from "react-router-dom";
-import { useWeb3React } from "@web3-react/core";
 import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
 
 const FAVICON = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/64.png";
@@ -244,25 +243,24 @@ export const TokenSearchInput = ({ setValue }: { value: string; setValue: (value
 const Row = (props: any) => {
   const { index, style, data } = props;
 
-  const item: TokenListItem = data.tokens[index];
-  const { balance, isLoading } = useBalance(item.token);
-
-  const formattedValue = useFormatNumber({ value: balance, decimalScale: 6 });
-
-  if (!item) return null;
+  const token = data.tokens[index];
+  const { data: balance, isLoading } = useBalanceQuery(token?.address);
+  const balanceF = useAmountUi(token?.decimals, balance);
+  const formattedValue = useFormatNumber({ value: balanceF, decimalScale: 6 });
+  if (!token) return null;
   return (
     <div style={style}>
-      <StyledListToken onClick={() => data.onClick(item.rawToken)} className="twap-tokens-list-item">
+      <StyledListToken onClick={() => data.onClick(token)} className="twap-tokens-list-item">
         <StyledListTokenLeft>
           <Components.Base.TokenLogo
-            logo={item.token.logoUrl}
-            alt={item.token.symbol}
+            logo={token.logoUrl}
+            alt={token.symbol}
             style={{
               width: 30,
               height: 30,
             }}
           />
-          {item.token.symbol}
+          {token.symbol}
         </StyledListTokenLeft>
         <Components.Base.SmallLabel loading={isLoading} className="balance">
           {formattedValue}
@@ -278,15 +276,15 @@ const StyledListTokenLeft = styled("div")({
   gap: 10,
 });
 
-const filterTokens = (list: TokenListItem[], filterValue: string) => {
+const filterTokens = (list: Token[], filterValue: string) => {
   if (!filterValue) return list;
   return list.filter((it) => {
-    return it.token.symbol.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0 || eqIgnoreCase(it.token.address, filterValue);
+    return it.symbol.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0 || eqIgnoreCase(it.address, filterValue);
   });
 };
 
 interface TokensListProps {
-  tokens?: TokenListItem[];
+  tokens?: Token[];
   onClick: (token: Token) => void;
 }
 
@@ -331,15 +329,8 @@ const StyledAddTokenInput = styled(TextField)({
   width: "100%",
 });
 
-const testToken = {
-  address: "0xCdC3A010A3473c0C4b2cB03D8489D6BA387B83CD",
-  symbol: "liveThe",
-  decimals: 18,
-};
-
 const ManageAddedTokens = () => {
   const addedTokens = useAddedTokens();
-  const { chainId } = useWeb3React();
   // const { removeToken } = usePersistedStore();
 
   return (

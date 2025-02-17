@@ -12,11 +12,12 @@ import { ErrorMessage } from "./components/error-message";
 import { OrdersPortal } from "./components/orders/Orders";
 import { PoweredByOrbsPortal } from "./components/powered-by-orbs";
 import { PriceSwitch } from "./components/price-switch";
-import { LimitPriceWarning } from "../components";
 import { useOrderHistoryManager } from "../hooks/useOrderHistoryManager";
 import { SubmitOrderModalPortal } from "./components/submit-order-modal/SubmitOrderModal";
 import { useConfirmation } from "../hooks/useConfirmation";
 import * as Hooks from "./hooks";
+import { SwapPanel } from "./components/swap-panel";
+import { LimitPriceWarning } from "./components/limit-price-warning";
 
 const Widget = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
@@ -52,5 +53,6 @@ Widget.ErrorMessage = ErrorMessage;
 Widget.Message = WidgetMessage;
 Widget.PriceSwitch = PriceSwitch;
 Widget.LimitPriceWarning = LimitPriceWarning;
+Widget.SwapPanel = SwapPanel;
 Widget.hooks = hooks;
 export { Widget };

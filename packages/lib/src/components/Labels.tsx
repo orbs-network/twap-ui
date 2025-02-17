@@ -1,7 +1,6 @@
 import React from "react";
 import { Styles, Translations, useWidgetContext } from "..";
 import { Label } from "./base";
-import { handleFillDelayText } from "../utils";
 
 export function ChunksAmountLabel() {
   const translations = useWidgetContext().translations;

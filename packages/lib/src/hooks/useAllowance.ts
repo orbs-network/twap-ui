@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { QueryKeys } from "../enums";
 import { useWidgetContext } from "../widget/widget-context";
 import BN from "bignumber.js";
 import { readContract } from "viem/actions";
@@ -14,7 +13,7 @@ export const useHasAllowance = () => {
 
   const tokenAddress = useHandleNativeAddress(srcToken?.address);
   const query = useQuery(
-    [QueryKeys.GET_ALLOWANCE, config.chainId, srcToken?.address, srcAmount],
+    ["useTwapHasAllowance", config.chainId, srcToken?.address, srcAmount],
     async () => {
       const allowance = await (readContract as any)(publicClient, {
         address: tokenAddress,

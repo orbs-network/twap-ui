@@ -1,6 +1,5 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { groupOrdersByStatus, Order, OrderStatus } from "@orbs-network/twap-sdk";
-import { mapCollection, size } from "../../../utils";
+import { Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { useWidgetContext } from "../../widget-context";
 import { useOrderHistoryManager } from "../../../hooks/useOrderHistoryManager";
 
@@ -11,17 +10,17 @@ export type OrdersMenuTab = {
 };
 
 interface OrderHistoryContextType {
-  tabs: OrdersMenuTab[];
   selectOrder: (id: number | undefined) => void;
-  orders: Order[];
-  setTab: (tab: OrderStatus) => void;
+  selectedOrders: Order[];
   closePreview: () => void;
-  selectedTab?: OrdersMenuTab;
   isLoading: boolean;
   selectedOrderId?: number;
   isOpen: boolean;
   onClose: () => void;
   onOpen: () => void;
+  statuses: OrdersMenuTab[];
+  setStatus: (status: OrderStatus) => void;
+  selectedStatus?: OrdersMenuTab;
 }
 
 export const useSelectedOrder = () => {
@@ -36,27 +35,18 @@ export const useSelectedOrder = () => {
 };
 export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
-const useSelectedOrders = (status: OrderStatus) => {
-  const orders = useOrderHistoryManager().orders;
-  if (!orders) {
-    return [];
-  }
-  const grouped = groupOrdersByStatus(orders);
-  return grouped?.[status] || [];
-};
-
 export const OrderHistoryContextProvider = ({ children }: { children: ReactNode }) => {
-  const [tab, setTab] = useState<OrderStatus>(OrderStatus.All);
-  const { ordersLoading } = useOrderHistoryManager();
+  const [status, setStatus] = useState<OrderStatus>(OrderStatus.All);
+  const { ordersLoading, groupedOrdersByStatus, orders } = useOrderHistoryManager();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
-  const orders = useSelectedOrders(tab);
+  const selectedOrders = groupedOrdersByStatus[status] || [];
 
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
         setSelectedOrderId(undefined);
-        setTab(OrderStatus.All);
+        setStatus(OrderStatus.All);
       }, 300);
     }
   }, [isOpen]);
@@ -73,29 +63,31 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
   }, [setSelectedOrderId]);
 
   const translations = useWidgetContext().translations;
-  const tabs = useMemo(() => {
-    return mapCollection(OrderStatus, (it) => {
+  const statuses = useMemo(() => {
+    return Object.keys(OrderStatus).map((it) => {
       return {
         name: it,
-        amount: size(orders?.[it as any]),
+        amount: orders?.filter((order) => order.status === it).length || 0,
         key: it,
       };
     });
-  }, [orders, translations]);
+  }, [orders, translations, status]);
 
-  const selectedTab = useMemo(
+  const selectedStatus = useMemo(
     () =>
-      tabs.find((it) => {
-        return it.key === tab;
+      statuses.find((it) => {
+        return it.key === status;
       }),
-    [tabs, tab],
+    [statuses, status],
   );
 
   const onClose = useCallback(() => setIsOpen(false), []);
   const onOpen = useCallback(() => setIsOpen(true), []);
 
   return (
-    <OrderHistoryContext.Provider value={{ selectedOrderId, tabs, selectOrder, orders, setTab, closePreview, selectedTab, isLoading: ordersLoading, isOpen, onClose, onOpen }}>
+    <OrderHistoryContext.Provider
+      value={{ selectedOrderId, statuses, selectOrder, selectedOrders, setStatus, closePreview, selectedStatus, isLoading: ordersLoading, isOpen, onClose, onOpen }}
+    >
       {children}
     </OrderHistoryContext.Provider>
   );

@@ -3,7 +3,6 @@ import { StyledRowFlex } from "../../styles";
 import { styled } from "styled-components";
 import { Label, Message, NumericInput, ResolutionSelect } from "../../components/base";
 import React, { ReactNode } from "react";
-import { handleFillDelayText } from "../../utils";
 import { useWidgetContext } from "../..";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 import { useFillDelayPanel } from "../hooks";
@@ -63,7 +62,7 @@ const TradeIntervalLabel = () => {
   return (
     <Label className="twap-trade-interval-panel-label">
       <Label.Text text={translations.tradeInterval} />
-      <Label.Info text={handleFillDelayText(translations.tradeIntervalTootlip, twap.values.estimatedDelayBetweenChunksMillis)} />
+      {/* <Label.Info text={handleFillDelayText(translations.tradeIntervalTootlip, twap.values.estimatedDelayBetweenChunksMillis)} /> */}
     </Label>
   );
 };

@@ -1,25 +1,13 @@
 import { StyledDragonswap, StyledDragonLayout, StyledDragonPanel, StyledDragonswapModalContent } from "../styles";
 import { TWAP } from "@orbs-network/twap-ui-dragonswap";
 import tokens from "./token.json";
-import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "../hooks";
+import { useBalanceQuery, useConnectWallet, usePriceUSD, useRefetchBalances, useTheme, useTrade } from "../hooks";
 import { useWeb3React } from "@web3-react/core";
 import { Dapp, Popup, TokensList, UISelector } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { SelectorOption, TokenListItem } from "../types";
-import {
-  mapCollection,
-  size,
-  TooltipProps,
-  Configs,
-  TokensListModalProps,
-  ModalProps,
-  Widget,
-  OnWrapSuccessArgs,
-  OnApproveSuccessArgs,
-  OnCreateOrderSuccessArgs,
-  useAmountBN,
-} from "@orbs-network/twap-ui";
+import { SelectorOption } from "../types";
+import { mapCollection, size, TooltipProps, Configs, TokensListModalProps, ModalProps, Widget, useAmountBN, Token } from "@orbs-network/twap-ui";
 import { DappProvider } from "../context";
 import { eqIgnoreCase, network, networks } from "@defi.org/web3-candies";
 
@@ -27,44 +15,24 @@ const config = Configs.DragonSwap;
 
 export const useDappTokens = () => {
   const nativeToken = network(config.chainId).native;
-  const parseListToken = useCallback(
-    (tokenList?: any) => {
-      const res = tokenList?.tokens
-        .filter((it: any) => it.chainId === config?.chainId)
-        .map(({ symbol, address, decimals, name }: any) => ({
-          decimals,
-          symbol,
-          name,
-          address,
-          logoURI: `https://dzyb4dm7r8k8w.cloudfront.net/prod/logos/${address}/logo.png`,
-        }));
-      return res;
-    },
-    [nativeToken, config?.chainId],
-  );
-
-  return useGetTokens({
-    parse: parseListToken,
-    tokens: tokens,
-  });
+  return useMemo(() => {
+    return tokens.tokens
+      .filter((it: any) => it.chainId === config?.chainId)
+      .map((t: any) => ({
+        ...t,
+        logoURI: `https://dzyb4dm7r8k8w.cloudfront.net/prod/logos/${t.address}/logo.png`,
+      }));
+  }, [nativeToken, config?.chainId]);
 };
 
-const parseList = (rawList?: any): TokenListItem[] => {
+const parseList = (rawList?: any): Token[] => {
   return mapCollection(rawList, (rawToken: any) => {
-    return {
-      token: {
-        address: rawToken.address,
-        decimals: rawToken.decimals,
-        symbol: rawToken.symbol,
-        logoUrl: rawToken.logoURI,
-      },
-      rawToken,
-    };
+    return { address: rawToken.address, decimals: rawToken.decimals, symbol: rawToken.symbol, logoUrl: rawToken.logoURI };
   });
 };
 
 const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
-  const { data: baseAssets } = useDappTokens();
+  const baseAssets = useDappTokens();
   const { isDarkTheme } = useTheme();
   const tokensListSize = size(baseAssets);
   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
@@ -101,22 +69,10 @@ const Tooltip = (props: TooltipProps) => {
   );
 };
 
-const onWrapSuccess = (args: OnWrapSuccessArgs) => {
-  console.log("onWrapSuccess", args.token, args.txHash);
-};
-
-const onApproveSuccess = (args: OnApproveSuccessArgs) => {
-  console.log("onApproveSuccess", args.token, args.txHash);
-};
-
-const onCreateOrderSuccess = (args: OnCreateOrderSuccessArgs) => {
-  console.log("onCreateOrderSuccess", args);
-};
-
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { account, library, chainId } = useWeb3React();
   const connect = useConnectWallet();
-  const { data: dappTokens } = useDappTokens();
+  const dappTokens = useDappTokens();
   const { isDarkTheme } = useTheme();
   const [fromToken, setFromToken] = useState<any>(undefined);
   const [toToken, setToToken] = useState<any>(undefined);
@@ -154,13 +110,15 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   const srcUsd = useUSD(fromToken?.address);
   const dstUsd = useUSD(toToken?.address);
+  const srcBalance = useBalanceQuery(fromToken?.address).data;
+  const dstBalance = useBalanceQuery(toToken?.address).data;
+  const refetchBalances = useRefetchBalances(fromToken?.address, toToken?.address);
 
   return (
     <TWAP
       title={limit ? "Limit" : "TWAP"}
-      connect={connect}
-      account={account}
-      walletProvider={library?.currentProvider}
+      account={account as string}
+      web3Provider={library?.currentProvider}
       srcTokenAddress={fromToken?.address}
       dstTokenAddress={toToken?.address}
       dexTokens={dappTokens}
@@ -171,17 +129,18 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       isLimitPanel={limit}
       srcUsd1Token={srcUsd ? Number(srcUsd) : 0}
       dstUsd1Token={dstUsd ? Number(dstUsd) : 0}
-      onSrcTokenSelected={setFromToken}
-      onDstTokenSelected={setToToken}
-      onSwitchFromNativeToWtoken={onSwitchFromNativeToWtoken}
-      onSwitchTokens={onSwitchTokens}
       components={{ Tooltip, TokensListModal, Modal }}
       isExactAppoval={true}
       minChunkSizeUsd={4}
-      callbacks={{
-        onWrapSuccess,
-        onApproveSuccess,
-        onCreateOrderSuccess,
+      srcBalance={srcBalance}
+      dstBalance={dstBalance}
+      actions={{
+        onSwitchFromNativeToWrapped: onSwitchFromNativeToWtoken,
+        onSwitchTokens,
+        onSrcTokenSelect: setFromToken,
+        onDstTokenSelect: setToToken,
+        refetchBalances,
+        onConnect: connect,
       }}
     />
   );

@@ -2,7 +2,7 @@ import React, { ReactNode } from "react";
 import styled from "styled-components";
 import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQuestionCircle";
 import { StyledRowFlex, StyledText } from "../../styles";
-import { Tooltip } from "../Components";
+import { Tooltip } from "./Tooltip";
 
 interface Props {
   children: string | number | ReactNode;

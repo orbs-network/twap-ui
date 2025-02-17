@@ -7,7 +7,7 @@ import { useHandleNativeAddress } from "./useHandleNativeAddress";
 import BN from "bignumber.js";
 
 export const useApproveToken = () => {
-  const { account, isExactAppoval, config, twap, callbacks, srcToken, walletClient, publicClient } = useWidgetContext();
+  const { account, isExactAppoval, config, twap, srcToken, walletClient, publicClient, callbacks } = useWidgetContext();
   const { srcAmount, srcAmountUI } = twap.values;
   const approvalAmount = isExactAppoval ? srcAmount : maxUint256;
   const tokenAddress = useHandleNativeAddress(srcToken?.address);
@@ -17,6 +17,7 @@ export const useApproveToken = () => {
       if (!account) throw new Error("account is not defined");
       if (!approvalAmount) throw new Error("approvalAmount is not defined");
       if (!tokenAddress) throw new Error("tokenAddress is not defined");
+      callbacks?.approve?.onRequest?.({ token: srcToken!, amount: srcAmountUI });
       const hash = await (walletClient as any).writeContract({
         abi: erc20abi,
         functionName: "approve",
@@ -32,11 +33,11 @@ export const useApproveToken = () => {
 
       logger("token approve success:", hash);
       twap.analytics.onApproveSuccess(hash);
-      callbacks?.onApproveSuccess?.({ token: srcToken!, txHash: hash, amount: isExactAppoval ? srcAmountUI : undefined });
+      callbacks?.approve.onSuccess?.({ token: srcToken!, txHash: hash, amount: isExactAppoval ? srcAmountUI : maxUint256 });
     },
     {
       onError: (error) => {
-        callbacks?.onApproveFailed?.((error as any).message);
+        callbacks?.approve.onFailed?.((error as any).message);
       },
     },
   );

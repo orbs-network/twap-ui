@@ -98,20 +98,16 @@ const Content = () => {
   return (
     <ThemeProvider theme={theme}>
       <WidgetProvider
-        connect={props.connect!}
         config={config}
         minChunkSizeUsd={props.minChunkSizeUsd}
         translations={translations as Translations}
-        walletProvider={props.walletProvider}
+        web3Provider={props.web3Provider}
         walletClientTransport={props.walletClientTransport}
         account={props.account}
         srcToken={srcToken}
         dstToken={dstToken}
-        onSrcTokenSelected={props.onSrcTokenSelected}
-        onDstTokenSelected={props.onDstTokenSelected}
         isLimitPanel={props.isLimitPanel}
         uiPreferences={uiPreferences}
-        onSwitchTokens={props.onSwitchTokens}
         srcUsd1Token={props.srcUsd1Token || 0}
         dstUsd1Token={props.srcUsd1Token || 0}
         marketPrice={props.marketPrice}
@@ -120,8 +116,7 @@ const Content = () => {
         isExactAppoval={props.isExactAppoval}
         components={props.components!}
         useToken={useToken}
-        callbacks={props.callbacks}
-        onSwitchFromNativeToWtoken={props.onSwitchFromNativeToWtoken}
+        actions={props.actions!}
       >
         <GlobalStyles />
         <Styles.StyledColumnFlex gap={16}>

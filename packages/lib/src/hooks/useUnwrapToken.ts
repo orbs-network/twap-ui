@@ -1,14 +1,12 @@
 import { iwethabi } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { useRefetchBalances } from "./useBalances";
 import { useWidgetContext } from "../widget/widget-context";
 import { waitForTransactionReceipt } from "viem/actions";
 import { useNetwork } from "./useNetwork";
 
 export const useUnwrapToken = () => {
-  const { account, twap, resetState, walletClient, publicClient } = useWidgetContext();
-  const onSuccess = useRefetchBalances();
+  const { account, twap, resetState, walletClient, publicClient, actions } = useWidgetContext();
   const srcAmount = twap.values.srcAmount;
   const tokenAddress = useNetwork()?.wToken.address;
 
@@ -34,6 +32,6 @@ export const useUnwrapToken = () => {
     });
 
     resetState();
-    await onSuccess();
+    await actions.refetchBalances();
   });
 };

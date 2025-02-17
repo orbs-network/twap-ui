@@ -1,13 +1,11 @@
 import { useMemo } from "react";
 import { useWidgetContext } from "..";
-import { useSrcBalance } from "./useBalances";
 import { useMaxSrcInputAmount } from "./useMaxSrcInputAmount";
 import BN from "bignumber.js";
 
 export const useBalanceWaning = () => {
-  const { data: srcBalance } = useSrcBalance();
   const maxSrcInputAmount = useMaxSrcInputAmount();
-  const { translations: t, twap } = useWidgetContext();
+  const { translations: t, twap, srcBalance } = useWidgetContext();
   const srcAmount = twap.values.srcAmount;
 
   return useMemo(() => {

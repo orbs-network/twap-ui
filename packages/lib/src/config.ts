@@ -1,8 +1,6 @@
-import { networks as _networks } from "@defi.org/web3-candies";
+import { networks } from "@orbs-network/twap-sdk";
 
 export const SQUIGLE = "≈";
-
-export const networks = _networks;
 
 export const THE_GRAPH_ORDERS_API = {
   [networks.bsc.id]: "https://hub.orbs.network/api/apikey/subgraphs/id/4NfXEi8rreQsnAr4aJ45RLCKgnjcWX46Lbt9SadiCcz6",

@@ -1,6 +1,7 @@
 import { maxUint256, nativeTokenAddresses, THE_GRAPH_ORDERS_API } from "./consts";
 import BN from "bignumber.js";
 import { TimeDuration, TimeUnit } from "./types";
+import { networks } from "./networks";
 
 export const getTheGraphUrl = (chainId?: number) => {
   if (!chainId) return;
@@ -149,3 +150,7 @@ export function millisToMinutes(milliseconds?: number): number {
   const millisecondsInAMinute = 60000; // 60 * 1000
   return milliseconds / millisecondsInAMinute;
 }
+
+export const getNetwork = (chainId?: number) => {
+  return Object.values(networks).find((it) => it.id === chainId);
+};

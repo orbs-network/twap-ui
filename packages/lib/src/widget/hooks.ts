@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-import { useSrcBalance, useDstBalance } from "../hooks/useBalances";
 import { useUsdAmount } from "../hooks/useUsdAmounts";
 import { useWidgetContext } from "./widget-context";
 import { useBalanceWaning, useFeeOnTransferError } from "../hooks/useWarnings";
@@ -10,9 +9,7 @@ import { useFormatNumber } from "../hooks/useFormatNumber";
 import { useAmountUi } from "../hooks/useParseAmounts";
 
 export const useTokenPanel = (isSrcToken?: boolean) => {
-  const srcBalance = useSrcBalance().data?.toString();
-  const dstBalance = useDstBalance().data?.toString();
-  const { onSrcTokenSelected, onDstTokenSelected, twap, srcToken, dstToken } = useWidgetContext();
+  const { actions, twap, srcToken, dstToken, srcBalance, dstBalance } = useWidgetContext();
   const { srcUsd, dstUsd } = useUsdAmount();
   const balanceError = useBalanceWaning();
 
@@ -21,9 +18,9 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
   } = twap;
   const onTokenSelect = useCallback(
     (token: any) => {
-      isSrcToken ? onSrcTokenSelected?.(token) : onDstTokenSelected?.(token);
+      isSrcToken ? actions.onSrcTokenSelect?.(token) : actions.onDstTokenSelect?.(token);
     },
-    [isSrcToken, onSrcTokenSelected, onDstTokenSelected],
+    [isSrcToken, actions.onSrcTokenSelect, actions.onDstTokenSelect],
   );
 
   const balance = useAmountUi(isSrcToken ? srcToken?.decimals : dstToken?.decimals, isSrcToken ? srcBalance : dstBalance);
@@ -39,9 +36,9 @@ export const useTokenPanel = (isSrcToken?: boolean) => {
 };
 
 export const useSwitchTokens = () => {
-  const { onSwitchTokens } = useWidgetContext();
+  const { actions } = useWidgetContext();
 
-  return onSwitchTokens;
+  return actions.onSwitchTokens;
 };
 
 export const useTradesAmountPanel = () => {

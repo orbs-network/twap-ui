@@ -36,6 +36,7 @@
     "@web3-react/core": "6.x",
     "@web3-react/injected-connector": "6.x",
     "@web3-react/walletconnect-connector": "6.x",
+    "lodash": "^4.17.21",
     "react": "18.x",
     "react-dom": "18.x",
     "react-helmet": "6.x",

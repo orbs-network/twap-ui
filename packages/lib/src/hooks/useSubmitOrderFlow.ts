@@ -1,13 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import { useWidgetContext } from "..";
 import { SwapSteps } from "../types";
-import { logger, isTxRejected } from "../utils";
+import { isTxRejected } from "../utils";
 import { useApproveToken } from "./useApproveToken";
 import { useCreateOrder } from "./useCreateOrder";
 import { useOrderHistoryManager } from "./useOrderHistoryManager";
 import { useWrapToken } from "./useWrapToken";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { useRefetchBalances } from "./useBalances";
 import { useShouldWrap } from "./useShouldWrapOrUnwrap";
 import { useHasAllowance } from "./useAllowance";
 import { useNetwork } from "./useNetwork";
@@ -28,13 +27,12 @@ const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 };
 
 export const useSubmitOrderFlow = () => {
-  const { state, twap, updateState, callbacks, srcToken, dstToken } = useWidgetContext();
+  const { state, updateState, srcToken, dstToken, actions, callbacks, twap } = useWidgetContext();
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash } = state;
   const { data: haveAllowance, refetch: refetchAllowance } = useHasAllowance();
   const shouldWrap = useShouldWrap();
   const { waitForNewOrder } = useOrderHistoryManager();
   const wToken = useNetwork()?.wToken;
-  const refetchBalances = useRefetchBalances();
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;
@@ -51,7 +49,6 @@ export const useSubmitOrderFlow = () => {
       }
 
       const steps = getSteps(shouldWrap, !haveAllowance);
-      logger(`Create order request`);
       updateState({ swapStatus: SwapStatus.LOADING, swapSteps: steps });
 
       if (shouldWrap) {
@@ -74,21 +71,15 @@ export const useSubmitOrderFlow = () => {
       const order = await createOrder();
       updateState({ swapStatus: SwapStatus.SUCCESS });
 
-      await refetchBalances();
+      await actions.refetchBalances();
       return order;
     },
     {
       onSuccess(order) {
         waitForNewOrder(order.orderId);
-
-        callbacks?.onCreateOrderSuccess?.({
-          srcToken: srcToken!,
-          dstToken: dstToken!,
-          orderId: order.orderId,
-          srcAmount: state.srcAmount || "0",
-          dstAmount: twap.values.destTokenAmountUI || "0",
-          txHash: order.txHash,
-        });
+      },
+      onMutate() {
+        callbacks?.onSubmitOrderRequest?.({ srcToken: srcToken!, dstToken: dstToken!, srcAmount: twap.values.srcAmountUI, dstAmount: twap.values.destTokenAmountUI });
       },
 
       onError(error) {

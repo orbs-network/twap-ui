@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { ClickAwayListener } from "./ClickAwayListener";
 import { SelectMeuItem } from "../../types";
@@ -70,15 +70,9 @@ const StyledSelected = styled("button")({
   display: "flex",
   alignItems: "center",
   gap: 5,
-  padding: "0px",
-  fontSize: 14,
-  textTransform: "none",
+  textTransform: "capitalize",
   color: "inherit",
   cursor: "pointer",
-  svg: {
-    width: 14,
-    height: 14,
-  },
 });
 
 const Menu = styled.div`
@@ -93,6 +87,7 @@ const Menu = styled.div`
 const StyledMenuItem = styled.div`
   padding: 7px 15px 7px 10px;
   cursor: pointer;
+  text-transform: capitalize;
   p {
     margin: 0;
   }

@@ -16,8 +16,11 @@ export function decodeOrderCreatedEvent(topics: Hex[], data: Hex) {
 }
 
 export const useCreateOrder = () => {
-  const { account, updateState, twap, dstToken, callbacks, walletClient, publicClient } = useWidgetContext();
-  const { createOrderTx } = twap;
+  const { account, updateState, twap, srcToken, dstToken, walletClient, publicClient, callbacks } = useWidgetContext();
+  const {
+    createOrderTx,
+    values: { srcAmountUI },
+  } = twap;
 
   return useMutation(
     async () => {
@@ -49,8 +52,18 @@ export const useCreateOrder = () => {
       };
     },
     {
+      onSuccess: (data) => {
+        callbacks?.createOrder?.onSuccess?.({
+          srcToken: srcToken!,
+          dstToken: dstToken!,
+          orderId: data.orderId,
+          srcAmount: srcAmountUI || "0",
+          dstAmount: twap.values.destTokenAmountUI || "0",
+          txHash: data.txHash,
+        });
+      },
       onError(error) {
-        callbacks?.onCreateOrderFailed?.((error as any).message);
+        callbacks?.createOrder?.onFailed?.((error as any).message);
       },
     },
   );

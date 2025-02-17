@@ -1,13 +1,16 @@
 import { isNativeAddress } from "@defi.org/web3-candies";
-import React, { useMemo } from "react";
-import { useNetwork } from "./useNetwork";
+import { getNetwork } from "@orbs-network/twap-sdk";
+import { useMemo } from "react";
+import { useWidgetContext } from "../widget/widget-context";
 
 export function useHandleNativeAddress(address?: string) {
-  const wTokenAddress = useNetwork()?.wToken.address;
+  const { config } = useWidgetContext();
   return useMemo(() => {
+    const wTokenAddress = getNetwork(config.chainId)?.wToken.address;
+
     if (isNativeAddress(address || "")) {
       return wTokenAddress;
     }
     return address;
-  }, [address, wTokenAddress]);
+  }, [address, config.chainId]);
 }

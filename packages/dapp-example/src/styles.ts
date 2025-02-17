@@ -175,7 +175,7 @@ export const StyledDragonswap = styled(StyledDapp)<{ isDarkMode: number }>(({ is
 }));
 
 export const StyledLynexswap = styled(StyledDapp)<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  background: isDarkMode ? "#1B140C" : "#F4F5F6",
+  background: isDarkMode ? "#141414" : "#F4F5F6",
   ".menu-button": {
     "*": {
       color: isDarkMode ? "white" : "black",
@@ -505,13 +505,6 @@ export const StyledDragonPanel = styled("div")<{ isDarkMode: number }>(({ isDark
   padding: 12,
 }));
 
-export const StyledLynexPanel = styled("div")<{ isDarkMode: number }>(({ isDarkMode }) => ({
-  width: "100%",
-  borderRadius: 12,
-  background: isDarkMode ? "#1E1812" : "#1E1812",
-  padding: "20px 16px 20px 16px",
-}));
-
 export const StyledPangolinLayout = styled(DappLayout)({
   maxWidth: 520,
   width: "calc(100% - 30px)",
@@ -573,6 +566,17 @@ export const StyledDragonswapModalContent = styled(StyledModalContent)<{ isDarkT
     border: "1px solid rgb(29 64 176/0.5)",
     borderRadius: 16,
     maxWidth: 512,
+  };
+});
+
+export const StyledGenericModalContent = styled(StyledModalContent)<{ isDarkTheme?: number }>(({ isDarkTheme }) => {
+  return {
+    background: isDarkTheme ? "rgb(19, 19, 19)" : "rgb(243 244 246/1)",
+    color: isDarkTheme ? "white" : "black",
+    padding: 20,
+    borderRadius: 16,
+    maxWidth: 512,
+    border: "1px solid rgba(255, 255, 255, 0.12)",
   };
 });
 

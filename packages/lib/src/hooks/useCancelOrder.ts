@@ -18,7 +18,7 @@ export const useCancelOrder = () => {
       logger(`canceling order...`, orderId);
 
       twap.analytics.onCancelOrderRequest(orderId);
-
+      callbacks?.cancelOrder.onRequest?.(orderId);
       const hash = await (walletClient as any).writeContract({
         account,
         address: config.twapAddress,
@@ -33,7 +33,7 @@ export const useCancelOrder = () => {
 
       await waitForOrderCancellation(orderId);
       console.log(`order canceled`);
-      callbacks?.onCancelOrderSuccess?.({ orderId, txHash: hash });
+      callbacks?.cancelOrder.onSuccess?.({ orderId, txHash: hash });
     },
     {
       onSuccess: () => {
@@ -43,7 +43,7 @@ export const useCancelOrder = () => {
       onError: (error: Error) => {
         console.log(`cancel error order`, error);
         twap.analytics.onCreateOrderError(error);
-        callbacks?.onCancelOrderFailed?.(error.message);
+        callbacks?.cancelOrder.onFailed?.(error.message);
       },
     },
   );

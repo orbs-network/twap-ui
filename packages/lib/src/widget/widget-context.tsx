@@ -8,10 +8,11 @@ import { useTwap } from "@orbs-network/twap-ui-sdk";
 import { Orders } from "./components/orders/Orders";
 import { SubmitOrderModal, SubmitOrderModalWithPortal } from "./components/submit-order-modal/SubmitOrderModal";
 import { PoweredbyOrbsWithPortal } from "./components/powered-by-orbs";
-import { LimitPriceWarningPortal } from "../components";
 import { useHasAllowance } from "../hooks/useAllowance";
 import { createWalletClient, custom, createPublicClient, http } from "viem";
 import { mainnet, polygon, bsc, arbitrum, sonic, sei, avalanche, fantom, base, linea, zksync, scroll, zircuit } from "viem/chains";
+import { GlobalStyles } from "./styles";
+import { LimitPriceWarningPortal } from "./components/limit-price-warning";
 
 const viemChains = {
   [networks.eth.id]: mainnet,
@@ -110,19 +111,19 @@ const useClients = (props: WidgetProps) => {
       const viemChain = getViemChain(props.chainId);
 
       if (!viemChain) return undefined; // Explicitly return an empty object
-      const custom1 = props.walletProvider ? custom(props.walletProvider) : undefined;
+      const custom1 = props.web3Provider ? custom(props.web3Provider) : undefined;
       const custom2 = props.walletClientTransport ? custom(props.walletClientTransport) : undefined;
       const transport = custom1 || custom2;
 
       return {
-        walletClient: transport ? createWalletClient({ account: props.account, chain: viemChain, transport }) : undefined,
+        walletClient: transport ? createWalletClient({ account: props.account as `0x${string}`, chain: viemChain, transport }) : undefined,
         publicClient: createPublicClient({ chain: viemChain, transport: transport || http() }),
       };
     } catch (error) {
       console.log({ error });
       return;
     }
-  }, [props.chainId, props.walletProvider, props.account, props.walletClientTransport]);
+  }, [props.chainId, props.web3Provider, props.account, props.walletClientTransport]);
 };
 
 export const WidgetProvider = (props: WidgetProps) => {
@@ -177,6 +178,7 @@ export const WidgetProvider = (props: WidgetProps) => {
           <LimitPriceWarningPortal />
           <div className="twap-widget">{props.children}</div>
         </TwapErrorWrapper>
+        {props.includeStyles && <GlobalStyles isDarkMode={props.isDarkTheme} />}
       </WidgetContext.Provider>
     </QueryClientProvider>
   );

@@ -1,12 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { network } from "@defi.org/web3-candies";
-import { Dapp } from "./Components";
 import BN from "bignumber.js";
 import { useSelectedDapp, useSelectedDappConfig } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
 import { useEffect, useState } from "react";
-import { get, size, sortBy } from "@orbs-network/twap-ui";
-
+import { get, size, sortBy } from "lodash";
 const chainNames = {
   ftm: "fantom",
   avax: "avalanche",
@@ -20,7 +18,9 @@ const MIN_BALANCE = 0.001;
 function useConfig() {
   const config = useSelectedDappConfig();
   const twapVersion = config?.twapVersion || "?";
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const twapLibVersion = require("@orbs-network/twap/package.json").version || "?";
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const twapUiVersion = require("@orbs-network/twap-ui/package.json").version || "?";
   const info = network(config?.chainId || 0) || {};
   return { twapVersion, twapLibVersion, twapUiVersion, info, ...config };
@@ -55,7 +55,7 @@ function useBackupTakersStatus() {
   ).data;
 }
 
-function useOrbsL3TakersStatus(dapp?: Dapp) {
+function useOrbsL3TakersStatus() {
   const config = useSelectedDappConfig();
 
   return useQuery(

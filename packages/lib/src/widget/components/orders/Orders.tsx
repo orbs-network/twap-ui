@@ -5,7 +5,6 @@ import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
 import { OrderHistoryList } from "./OrderHistoryList";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { useMemo } from "react";
-import { size } from "../../../utils";
 import { Portal, Spinner } from "../../../components/base";
 import { StyledColumnFlex, StyledRowFlex } from "../../../styles";
 import { useWidgetContext } from "../../widget-context";
@@ -41,7 +40,7 @@ export const OrdersButton = ({ className = "" }: { className?: string }) => {
       return "Updating orders";
     }
 
-    return `${size(openOrders)} Open orders`;
+    return `${openOrders?.length || 0} Open orders`;
   }, [openOrders, isLoading, newOrderLoading]);
 
   return (

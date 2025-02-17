@@ -81,8 +81,10 @@ const PercentSelector = () => {
   );
 };
 
-const StyledPercentSelector = styled(StyledRowFlex)({
+const StyledPercentSelector = styled("div")({
   width: "auto",
+  display: "flex",
+  alignItems: "center",
   ".twap-limit-price-panel-percent-reset": {
     width: "auto",
     alignItems: "stretch",

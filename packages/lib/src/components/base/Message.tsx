@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
+// import { RiErrorWarningLine } from "@react-icons/all-files/io/RiErrorWarningLine";
 import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine";
 
 import React, { ReactNode, useMemo } from "react";
@@ -25,7 +25,7 @@ export function Message({ text, className = "", variant, title }: { variant?: Me
   const icon = useMemo(() => {
     switch (variant) {
       case "error":
-        return uiPreferences.message?.errorIcon || <IoIosWarning className="twap-message-icon" />;
+        return uiPreferences.message?.errorIcon || <RiErrorWarningLine className="twap-message-icon" />;
       case "warning":
         return uiPreferences.message?.warningIcon || <RiErrorWarningLine className="twap-message-icon" />;
 
@@ -52,10 +52,5 @@ const Container = styled(StyledRowFlex)({
     flex: 1,
     width: "auto",
   },
-  svg: {
-    width: 20,
-    height: 20,
-    position: "relative",
-    top: 2,
-  },
+  svg: {},
 });

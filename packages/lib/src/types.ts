@@ -182,7 +182,6 @@ interface Components {
 }
 
 export type OnWrapSuccessArgs = {
-  token: Token;
   amount: string;
   txHash: string;
 };
@@ -192,63 +191,93 @@ export type OnCancelOrderSuccessArgs = {
   orderId: number;
 };
 
-export type OnApproveSuccessArgs = {
-  token: Token;
-  amount?: string;
-  txHash: string;
-};
+interface OnCreateOrderArgs {
+  srcToken: Token;
+  dstToken: Token;
+  srcAmount: string;
+  dstAmount: string;
+}
 
-export type OnCreateOrderSuccessArgs = {
+interface OnOrderCreatedArgs extends OnCreateOrderArgs {
   srcToken: Token;
   dstToken: Token;
   srcAmount: string;
   dstAmount: string;
   orderId: number;
   txHash: string;
+}
+
+interface ApproveRequestArgs {
+  token: Token;
+  amount: string;
+}
+
+export interface OnApproveSuccessArgs extends ApproveRequestArgs {
+  txHash: string;
+}
+
+export type Callbacks = {
+  onSubmitOrderRequest?: (args: OnCreateOrderArgs) => void;
+  createOrder?: {
+    onRequest?: (args: OnCreateOrderArgs) => void;
+    onSuccess?: (args: OnOrderCreatedArgs) => void;
+    onFailed?: (error: string) => void;
+  };
+  cancelOrder: {
+    onRequest?: (orderId: number) => void;
+    onSuccess?: (args: OnCancelOrderSuccessArgs) => void;
+    onFailed?: (error: string) => void;
+  };
+  approve: {
+    onRequest?: (args: ApproveRequestArgs) => void;
+    onSuccess?: (args: OnApproveSuccessArgs) => void;
+    onFailed?: (error: string) => void;
+  };
+  wrap: {
+    onRequest?: (amount: string) => void;
+    onSuccess?: (args: OnWrapSuccessArgs) => void;
+    onFailed?: (error: string) => void;
+  };
+};
+
+type Actions = {
+  onSrcTokenSelect?: (token: any) => void;
+  onDstTokenSelect?: (token: any) => void;
+  onSwitchFromNativeToWrapped?: () => void;
+  onSwitchTokens?: () => void;
+  onConnect: () => void;
+  refetchBalances: () => Promise<void>;
 };
 
 export interface WidgetProps {
   chainId?: number;
-  account?: any;
-  walletProvider?: any;
+  account?: string;
+  web3Provider?: any;
   walletClientTransport?: TransportConfig;
   isDarkTheme?: boolean;
-  onSrcTokenSelected?: (token: any) => void;
-  onDstTokenSelected?: (token: any) => void;
-  onSwitchFromNativeToWtoken?: () => void;
   isLimitPanel?: boolean;
-  onTxSubmitted?: (values: OnTxSubmitValues) => void;
-  isMobile?: boolean;
   enableQueryParams?: boolean;
-  onSwitchTokens?: () => void;
-  connect: () => void;
   fee?: string;
   config: Config;
   translations?: Translations;
   srcToken?: Token;
   dstToken?: Token;
+  srcUsd1Token?: number | string;
+  dstUsd1Token?: number | string;
+  srcBalance?: string;
+  dstBalance?: string;
   uiPreferences?: UIPreferences;
-  srcUsd1Token?: number;
-  dstUsd1Token?: number;
   isExactAppoval?: boolean;
   children: React.ReactNode;
   components: Components;
   askDataParams?: any[];
   marketPrice?: string;
   marketPriceLoading?: boolean;
-  useToken?: (value?: string) => Token | undefined;
   minChunkSizeUsd?: number;
-  callbacks?: {
-    onWrapSuccess?: (args: OnWrapSuccessArgs) => void;
-    onApproveSuccess?: (args: OnApproveSuccessArgs) => void;
-    onCreateOrderSuccess?: (args: OnCreateOrderSuccessArgs) => void;
-    onCancelOrderSuccess?: (args: OnCancelOrderSuccessArgs) => void;
-
-    onWrapFailed?: (error: string) => void;
-    onApproveFailed?: (error: string) => void;
-    onCreateOrderFailed?: (error: string) => void;
-    onCancelOrderFailed?: (error: string) => void;
-  };
+  useToken?: (value?: string) => Token | undefined;
+  includeStyles?: boolean;
+  callbacks?: Callbacks;
+  actions: Actions;
 }
 
 export interface WidgetContextType extends WidgetProps {
@@ -294,15 +323,6 @@ export interface UIPreferences {
 export type AddressPadding = {
   start: number;
   end: number;
-};
-
-export type OnTxSubmitValues = {
-  srcToken: Token;
-  dstToken: Token;
-  srcAmount: string;
-  dstUSD: string;
-  dstAmount: string;
-  txHash: string;
 };
 
 export type Token = {
@@ -371,12 +391,6 @@ export type Step = {
   Icon?: IconType;
   image?: string;
   status: "pending" | "loading" | "completed" | "disabled";
-};
-
-export type LimitSwitchArgs = {
-  options: [{ label: "Market"; value: boolean }, { label: "Limit"; value: boolean }];
-  selected: boolean;
-  onClick: (value: boolean) => void;
 };
 
 export enum SwapSteps {

@@ -3,7 +3,6 @@ import BN from "bignumber.js";
 import { useConfirmation } from "./useConfirmation";
 import { useWidgetContext } from "..";
 import { useShouldOnlyWrap, useShouldUnwrap } from "./useShouldWrapOrUnwrap";
-import { useSrcBalance } from "./useBalances";
 import { useBalanceWaning, useFeeOnTransferError } from "./useWarnings";
 import { useWrapOnly } from "./useWrapToken";
 import { useUnwrapToken } from "./useUnwrapToken";
@@ -23,7 +22,7 @@ export const useConfirmationButton = () => {
     srcUsd1Token,
     account: maker,
     translations: t,
-    connect,
+    actions,
     srcToken,
     dstToken,
     twap: {
@@ -32,15 +31,17 @@ export const useConfirmationButton = () => {
     marketPrice,
     state: { swapStatus },
     marketPriceLoading,
+    srcBalance,
   } = useWidgetContext();
 
   const { onOpen } = useConfirmation();
   const switchChain = useSwitchChain();
   const shouldUnwrap = useShouldUnwrap();
   const usdLoading = BN(srcUsd1Token || "0").isZero();
-  const { isLoading: srcBalanceLoading } = useSrcBalance();
+  const srcBalanceLoading = srcBalance === undefined;
   const balanceError = useBalanceWaning();
   const { feeError, isLoading: feeOnTransferLoading } = useFeeOnTransferError();
+  const { onConnect } = actions;
 
   const shouldOnlyWrap = useShouldOnlyWrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
@@ -61,10 +62,10 @@ export const useConfirmationButton = () => {
       return {
         text: t.connect,
         onClick: () => {
-          if (!connect) {
+          if (!onConnect) {
             alert("connect function is not defined");
           } else {
-            connect();
+            onConnect();
           }
         },
       };
@@ -88,6 +89,9 @@ export const useConfirmationButton = () => {
     }
 
     const text = () => {
+      if (!srcToken || !dstToken) {
+        return t.enterAmount;
+      }
       if (marketPriceLoading) {
         return t.outAmountLoading;
       }
@@ -108,7 +112,7 @@ export const useConfirmationButton = () => {
   }, [
     isWrongChain,
     maker,
-    connect,
+    onConnect,
     isLoading,
     shouldOnlyWrap,
     wrap,

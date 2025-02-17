@@ -3,8 +3,8 @@ import Icon from "./Icon";
 import { StyledOneLineText, StyledRowFlex } from "../../styles";
 import React, { FC, ReactNode } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { Tooltip } from "../Components";
 import { useWidgetContext } from "../..";
+import { Tooltip } from "./Tooltip";
 
 interface Props {
   onClick: () => void;

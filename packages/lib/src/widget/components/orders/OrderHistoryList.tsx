@@ -5,11 +5,9 @@ import { useOrderHistoryContext } from "./context";
 import * as React from "react";
 import moment from "moment";
 import { Virtuoso } from "react-virtuoso";
-
 import { Loader } from "../../../components/base/Loader";
 import TokenLogo from "../../../components/base/TokenLogo";
 import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
-import { size } from "../../../utils";
 import { useWidgetContext } from "../../widget-context";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useGetOrderNameCallback } from "../../../hooks/useOrderName";
@@ -23,7 +21,7 @@ const ListLoader = () => {
 };
 
 export const OrderHistoryList = () => {
-  const { selectOrder, orders, isLoading, selectedOrderId } = useOrderHistoryContext();
+  const { selectOrder, selectedOrders, isLoading, selectedOrderId } = useOrderHistoryContext();
   const {
     state: { newOrderLoading },
   } = useWidgetContext();
@@ -34,7 +32,7 @@ export const OrderHistoryList = () => {
     return <ListLoader />;
   }
 
-  if (!size(orders)) {
+  if (!selectedOrders.length) {
     return <EmptyList />;
   }
 
@@ -42,12 +40,12 @@ export const OrderHistoryList = () => {
     <>
       {newOrderLoading && <ListLoader />}
       <Virtuoso
-        totalCount={size(orders)}
+        totalCount={selectedOrders.length}
         overscan={10}
         className="twap-order-history-list"
         style={{ height: "100%", width: "100%" }}
         itemContent={(index) => {
-          const order = orders[index];
+          const order = selectedOrders[index];
           return <ListOrder selectOrder={selectOrder} order={order} />;
         }}
       />
@@ -70,7 +68,7 @@ const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: nu
 };
 
 const EmptyList = () => {
-  const tab = useOrderHistoryContext().selectedTab;
+  const tab = useOrderHistoryContext().selectedStatus;
 
   const name = React.useMemo(() => {
     if (tab?.name === "all") {

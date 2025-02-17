@@ -1,14 +1,12 @@
-import { erc20abi, network } from "@defi.org/web3-candies";
-import { isNativeAddress, TwapSDK } from "@orbs-network/twap-sdk";
-import React, { useMemo } from "react";
+import { getNetwork, isNativeAddress, TwapSDK } from "@orbs-network/twap-sdk";
+import { useMemo } from "react";
 import { Token } from "../types";
 import { TwapValues } from "./useDerivedValues";
 import { TwapAbi } from "@orbs-network/twap-sdk";
 
 export default function useCreateOrderTx(derivedState: TwapValues, sdk: TwapSDK, srcToken?: Token, destToken?: Token) {
   const srcTokenAddress = useMemo(() => {
-    const wToken = network(sdk.config.chainId)?.wToken;
-
+    const wToken = getNetwork(sdk.config.chainId)?.wToken;
     return isNativeAddress(srcToken?.address) ? wToken?.address || "" : srcToken?.address || "";
   }, [srcToken, sdk.config.chainId]);
 

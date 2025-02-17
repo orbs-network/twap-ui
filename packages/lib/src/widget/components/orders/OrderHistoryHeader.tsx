@@ -8,35 +8,28 @@ import { OrderStatus } from "@orbs-network/twap-sdk";
 import { SelectMeuItem } from "../../../types";
 import { SelectMenu } from "../../../components/base";
 import { StyledRowFlex, StyledText } from "../../../styles";
-import { useWidgetContext } from "../../widget-context";
 import { useGetOrderNameCallback } from "../../../hooks/useOrderName";
 
 export function OrderHistoryMenu() {
-  const { setTab, selectedTab, tabs } = useOrderHistoryContext();
+  const { setStatus, selectedStatus, statuses } = useOrderHistoryContext();
 
-  const onSelect = useCallback(
-    (item: SelectMeuItem) => {
-      setTab(item?.value as OrderStatus);
-    },
-    [setTab, setTab],
-  );
+  const onSelect = useCallback((item: SelectMeuItem) => setStatus(item?.value as OrderStatus), [setStatus]);
 
   const items = useMemo(() => {
-    return tabs.map((it) => {
+    return statuses.map((it) => {
       return {
         text: it.name,
         value: it.key,
       };
     });
-  }, [tabs]);
+  }, [statuses]);
 
-  return <SelectMenu onSelect={onSelect} selected={selectedTab?.key} items={items} />;
+  return <SelectMenu onSelect={onSelect} selected={selectedStatus?.key} items={items} />;
 }
 
 export const OrderHistoryHeader = ({ className = "" }: { className?: string }) => {
   const { closePreview } = useOrderHistoryContext();
   const order = useSelectedOrder();
-  const t = useWidgetContext().translations;
   const getName = useGetOrderNameCallback();
   const name = useMemo(() => getName(order?.isMarketOrder, order?.totalChunks), [order, getName]);
   return (

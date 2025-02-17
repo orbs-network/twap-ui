@@ -46,7 +46,7 @@ function NumericInput({
     components: { Ipnut },
   } = useWidgetContext();
 
-  const _placeholder = placeholder || input?.placeholder || "0.0";
+  const _placeholder = placeholder || input?.placeholder || "0";
 
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>

@@ -2,14 +2,13 @@ import { groupOrdersByStatus, Order } from "@orbs-network/twap-sdk";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
-import { QueryKeys } from "../enums";
 import { useWidgetContext } from "../widget/widget-context";
 
 export const useOrderHistoryManager = () => {
   const { account, twap, updateState } = useWidgetContext();
   const { config } = useWidgetContext();
   const queryClient = useQueryClient();
-  const QUERY_KEY = useMemo(() => [QueryKeys.GET_ORDER_HISTORY, account, config.exchangeAddress, config.chainId], [account, config]);
+  const QUERY_KEY = useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
 
   const query = useQuery(QUERY_KEY, async ({ signal }) => twap.orders.getUserOrders({ account: account!, signal }), {
     enabled: !!config && !!account,
@@ -28,6 +27,7 @@ export const useOrderHistoryManager = () => {
 
   const { mutateAsync: waitForNewOrder } = useMutation({
     mutationFn: async (orderId?: number) => {
+      if (!account) return;
       try {
         updateState({ newOrderLoading: true });
         const orders = await twap.orders.waitForCreatedOrder({ orderId, account, currentOrdersLength: query.data?.length });
@@ -42,6 +42,7 @@ export const useOrderHistoryManager = () => {
 
   const { mutateAsync: waitForOrderCancellation, isLoading: orderCancellationLoading } = useMutation({
     mutationFn: async (orderId: number) => {
+      if (!account) return;
       const orders = await twap.orders.waitForCancelledOrder({ orderId, account });
       updateOrdersData(orders);
     },

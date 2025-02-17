@@ -21,7 +21,7 @@ export const TradesAmountPanel = ({ className = "", children }: { className?: st
   );
 };
 
-const Input = ({ className }: { className?: string }) => {
+const Input = ({ className = "" }: { className?: string }) => {
   const { onBlur, onFocus } = Panel.usePanelContext();
   const { setChunks, chunks } = useTradesAmountPanel();
 

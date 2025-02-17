@@ -16,9 +16,10 @@ export const useConfirmation = () => {
     marketPrice,
   } = useWidgetContext();
 
-  const { resetState, state, updateState, onSwitchFromNativeToWtoken } = useWidgetContext();
+  const { resetState, state, updateState, actions } = useWidgetContext();
   const { mutate: onSubmit } = useSubmitOrderFlow();
   const { dstUsd, srcUsd } = useUsdAmount();
+  const { onSwitchFromNativeToWrapped } = actions;
 
   const onClose = useCallback(
     (closeDalay?: number) => {
@@ -36,10 +37,10 @@ export const useConfirmation = () => {
         updateState({ swapStatus: undefined, swapStep: undefined });
       }
       if ((success || failure) && state.isWrapped) {
-        onSwitchFromNativeToWtoken?.();
+        onSwitchFromNativeToWrapped?.();
       }
     },
-    [swapStatus, resetState, state, updateState, actionHandlers, onSwitchFromNativeToWtoken],
+    [swapStatus, resetState, state, updateState, actionHandlers, onSwitchFromNativeToWrapped],
   );
 
   const onOpen = useCallback(() => {

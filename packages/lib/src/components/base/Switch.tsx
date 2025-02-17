@@ -10,7 +10,6 @@ const SwitchContainer = styled.div<SwitchContainerProps>`
   display: inline-block;
   width: 50px;
   height: 25px;
-  background-color: ${(props) => (props.checked ? "#4caf50" : "#ccc")};
   border-radius: 25px;
   position: relative;
   cursor: pointer;
