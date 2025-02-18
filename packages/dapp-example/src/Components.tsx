@@ -199,7 +199,6 @@ export const DappsMenu = () => {
               </ListItem>
             ))}
           </StyledMenuList>
-          <Status />
         </StyledDrawerContent>
       </StyledMenuDrawer>
     </>

@@ -312,8 +312,8 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
 
   const { fromTokenDecimals, toTokenDecimals } = useMemo(() => {
     return {
-      fromTokenDecimals: tokens?.find((it: any) => eqIgnoreCase(it.address, fromToken || ""))?.decimals,
-      toTokenDecimals: tokens?.find((it: any) => eqIgnoreCase(it.address, toToken || ""))?.decimals,
+      fromTokenDecimals: tokens?.find((it: any) => eqIgnoreCase(it.address || '', fromToken || ""))?.decimals,
+      toTokenDecimals: tokens?.find((it: any) => eqIgnoreCase(it.address || '', toToken || ""))?.decimals,
     };
   }, [fromToken, toToken, tokens]);
 
