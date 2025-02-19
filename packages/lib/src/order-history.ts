@@ -5,7 +5,7 @@ import { groupBy, keyBy } from "./utils";
 
 const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
   if (!srcFilled || !srcAmountIn) return 0;
-  let progress = BN(srcFilled || "0")
+  const  progress = BN(srcFilled || "0")
     .dividedBy(srcAmountIn || "0")
     .toNumber();
 
@@ -15,7 +15,7 @@ const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
 export const graphCreatedOrders = async ({ account, endpoint, signal }: { account: string; endpoint: string; signal?: AbortSignal }) => {
   const LIMIT = 1_000;
   let page = 0;
-  let orders: any = [];
+  const  orders: any = [];
 
   const fetchOrders = async () => {
     const query = `

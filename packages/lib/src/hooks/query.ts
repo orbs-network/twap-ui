@@ -12,6 +12,7 @@ import { useGetHasAllowance, useGetTokenFromParsedTokensList, useNetwork } from 
 import { ordersStore } from "../store";
 import { getGraphOrders, waitForCancelledOrder } from "../order-history";
 import { useSrcAmount } from "./lib";
+import Configs from "@orbs-network/twap/configs.json";
 
 export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
   const { web3, account, config } = useTwapContext();
@@ -27,7 +28,7 @@ export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
     {
       enabled: !!web3 && !!minNativeTokenBalance && !!account && !!config && !!network,
       staleTime: Infinity,
-    },
+    }
   );
 
   const ensureData = useCallback(() => {
@@ -48,7 +49,7 @@ const useGetContract = () => {
       if (!web3) return undefined;
       return new web3.eth.Contract(abi as any, address);
     },
-    [web3],
+    [web3]
   );
 };
 
@@ -133,7 +134,7 @@ const useAllowance = () => {
       enabled: !!srcToken && BN(srcAmount).gt(0) && !!account && !!config,
       staleTime: STALE_ALLOWANCE,
       refetchOnWindowFocus: true,
-    },
+    }
   );
 
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
@@ -154,7 +155,7 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
       onSuccess,
       refetchInterval: REFETCH_BALANCE,
       staleTime,
-    },
+    }
   );
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
 };
@@ -189,7 +190,7 @@ const useAddNewOrder = () => {
         });
       } catch (error) {}
     },
-    [QUERY_KEY, queryClient, config],
+    [QUERY_KEY, queryClient, config]
   );
 };
 
@@ -210,8 +211,13 @@ const useUpdateOrderStatusToCanceled = () => {
         }
       } catch (error) {}
     },
-    [QUERY_KEY, queryClient, config, account],
+    [QUERY_KEY, queryClient, config, account]
   );
+};  
+export const LEGACY_ORDERS_MAP = {
+  [Configs.SushiArb.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a"],
+  [Configs.SushiBase.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a"],
+  [Configs.SushiEth.name]: ["0xc55943Fa6509004B2903ED8F8ab7347BfC47D0bA"],
 };
 
 export const useOrdersHistory = () => {
@@ -230,7 +236,7 @@ export const useOrdersHistory = () => {
 
       try {
         const ids = orders.map((o) => o.id);
-        let chainOrders = ordersStore.orders[config.chainId];
+        const chainOrders = ordersStore.orders[config.chainId];
         chainOrders.forEach((o: any) => {
           if (!ids.includes(Number(o.id))) {
             orders.push(o);
@@ -238,10 +244,16 @@ export const useOrdersHistory = () => {
             ordersStore.deleteOrder(config.chainId, o.id);
           }
         });
-      } catch (error) {}
+      } catch (error) {
+        console.error(error);
+      }
       logger("all orders", orders);
-
-      orders = orders.filter((o) => eqIgnoreCase(config.exchangeAddress, o.exchange || ""));
+      
+      const legacyAddresses = LEGACY_ORDERS_MAP[config.name] || [];
+      const addresses = [config.exchangeAddress, ...legacyAddresses].map((a) => a.toLowerCase());        
+      orders = orders.filter((o) => {        
+        return addresses.includes(o.exchange?.toLowerCase() || '');
+      });
 
       logger("filtered orders by exchange address", config.exchangeAddress, orders);
       orders = orderBy(orders, (o) => o.createdAt, "desc");
@@ -256,7 +268,7 @@ export const useOrdersHistory = () => {
       refetchOnWindowFocus: true,
       retry: 5,
       staleTime: Infinity,
-    },
+    }
   );
 
   return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };
