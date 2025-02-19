@@ -23,7 +23,7 @@ export const useUnwrapToken = () => {
       functionName: "withdraw",
       account: account,
       address: tokenAddress,
-      params: [BN(srcAmount).decimalPlaces(0).toFixed()],
+      args: [BN(srcAmount).decimalPlaces(0).toFixed()],
     });
 
     await waitForTransactionReceipt(publicClient as any, {
@@ -32,6 +32,6 @@ export const useUnwrapToken = () => {
     });
 
     resetState();
-    await actions.refetchBalances();
+    await actions.refetchBalances?.();
   });
 };

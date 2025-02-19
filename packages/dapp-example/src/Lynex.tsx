@@ -9,12 +9,8 @@ import { DappProvider } from "./context";
 import { eqIgnoreCase, networks } from "@defi.org/web3-candies";
 import { Config } from "@orbs-network/twap-sdk";
 
-const configs = Object.values(Configs);
-
-const useConfig = () => {
-  const { chainId } = useWeb3React();
-  return useMemo(() => configs.find((it) => it.chainId === chainId) || configs[0], [chainId]);
-};
+const config = Configs.SushiArb;
+console.log({ config });
 
 const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
   const { data: baseAssets } = useGetTokens();
@@ -56,7 +52,7 @@ const useToken = (addressOrSymbol?: string) => {
   const { data: tokens } = useGetTokens();
 
   return useMemo(() => {
-    return tokens?.find((it: any) => eqIgnoreCase(it.address, addressOrSymbol || "") || eqIgnoreCase(it.symbol, addressOrSymbol || ""));
+    return tokens?.find((it: any) => eqIgnoreCase(it.address || "", addressOrSymbol || "") || eqIgnoreCase(it.symbol || "", addressOrSymbol || ""));
   }, [tokens, addressOrSymbol]);
 };
 
@@ -112,13 +108,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const srcBalance = useBalanceQuery(srcToken?.address).data;
   const dstBalance = useBalanceQuery(dstToken?.address).data;
   const refetchBalances = useRefetchBalances(srcToken?.address, dstToken?.address);
-  const config = useConfig();
   const { isDarkTheme } = useTheme();
 
   return (
     <WidgetProvider
-      config={Configs.Lynex}
-      minChunkSizeUsd={4}
+      config={config}
       web3Provider={library?.currentProvider}
       account={account as string}
       srcToken={srcToken}
@@ -154,7 +148,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 const DappComponent = () => {
   const [selected, setSelected] = useState(SelectorOption.TWAP);
   const { isDarkTheme } = useTheme();
-  const config = useConfig();
   return (
     <DappProvider config={config as Config}>
       <StyledLynexswap isDarkMode={isDarkTheme ? 1 : 0}>
@@ -170,7 +163,7 @@ const DappComponent = () => {
 const dapp: Dapp = {
   Component: DappComponent,
   logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/29525.png",
-  configs: configs as Config[],
+  configs: [config],
   path: "lynex",
 };
 

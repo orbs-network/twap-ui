@@ -1,7 +1,7 @@
-import { Configs } from "@orbs-network/twap-sdk";
+import { Configs, getNetwork } from "@orbs-network/twap-sdk";
 import { Translations, Styles, Widget, UIPreferences, WidgetProps, WidgetProvider, Components, Types } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
-import { createContext, useContext, useMemo, ReactNode } from "react";
+import { createContext, useContext, useMemo, ReactNode, useCallback, useState, useEffect } from "react";
 import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledTwapInputs } from "./styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { eqIgnoreCase } from "@defi.org/web3-candies";
@@ -89,12 +89,43 @@ const useConfig = () => {
   }, [chainId]);
 };
 
+const useOnSwitchFromNativeToWrapped = () => {
+  const props = useAdapterContext();
+  const config = useConfig();
+
+  const wTokenAddress = useMemo(() => getNetwork(config?.chainId)?.wToken.address, [config?.chainId]);
+
+  return useCallback(() => {
+    const token = props.dexTokens?.find((it) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
+
+    if (token) {
+      return props.actions?.onSrcTokenSelect?.(token);
+    }
+  }, [props.actions, props.dexTokens, wTokenAddress]);
+};
+
+const useMarketPriceLoading = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const context = useAdapterContext();
+
+  useEffect(() => {
+    setIsLoading(true);
+  }, [context.srcToken?.address, context.dstToken?.address]);
+
+  useEffect(() => {
+    setIsLoading(Boolean(context.marketPriceLoading));
+  }, [context.marketPriceLoading]);
+
+  return isLoading;
+};
+
 const Content = () => {
   const props = useAdapterContext();
   const theme = useMemo(() => (props.isDarkTheme ? darkTheme : lightTheme), [props.isDarkTheme]);
   const { srcToken, dstToken } = useSelectedParsedTokens();
   const config = useConfig();
-
+  const onSwitchFromNativeToWrapped = useOnSwitchFromNativeToWrapped();
+  const marketPriceLoading = useMarketPriceLoading();
   return (
     <ThemeProvider theme={theme}>
       <WidgetProvider
@@ -109,14 +140,19 @@ const Content = () => {
         isLimitPanel={props.isLimitPanel}
         uiPreferences={uiPreferences}
         srcUsd1Token={props.srcUsd1Token || 0}
-        dstUsd1Token={props.srcUsd1Token || 0}
+        dstUsd1Token={props.dstUsd1Token || 0}
         marketPrice={props.marketPrice}
-        marketPriceLoading={props.marketPriceLoading}
+        marketPriceLoading={marketPriceLoading}
         chainId={props.chainId}
         isExactAppoval={props.isExactAppoval}
         components={props.components!}
         useToken={useToken}
-        actions={props.actions!}
+        actions={{
+          ...props.actions!,
+          onSwitchFromNativeToWrapped,
+        }}
+        srcBalance={props.srcBalance}
+        dstBalance={props.dstBalance}
       >
         <GlobalStyles />
         <Styles.StyledColumnFlex gap={16}>

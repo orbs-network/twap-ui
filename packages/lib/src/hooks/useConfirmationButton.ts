@@ -25,11 +25,12 @@ export const useConfirmationButton = () => {
     actions,
     srcToken,
     dstToken,
+    config,
     twap: {
       errors: { hasErrors, srcAmount: srcAmountError },
     },
     marketPrice,
-    state: { swapStatus },
+    state: { swapStatus, srcAmount },
     marketPriceLoading,
     srcBalance,
   } = useWidgetContext();
@@ -49,8 +50,8 @@ export const useConfirmationButton = () => {
 
   const isLoading = useMemo(() => {
     if (!srcToken || !dstToken) return false;
-    return marketPriceLoading || usdLoading || srcBalanceLoading || feeOnTransferLoading || BN(marketPrice || 0).isZero();
-  }, [usdLoading, srcBalanceLoading, feeOnTransferLoading, marketPrice, srcToken, dstToken, marketPriceLoading]);
+    return (marketPriceLoading && BN(srcAmount || 0).gt(0)) || usdLoading || srcBalanceLoading || feeOnTransferLoading || !config.minChunkSizeUsd;
+  }, [usdLoading, srcBalanceLoading, feeOnTransferLoading, srcToken, dstToken, marketPriceLoading, srcAmount, config.minChunkSizeUsd]);
 
   return useMemo(() => {
     if (isWrongChain)
@@ -106,7 +107,7 @@ export const useConfirmationButton = () => {
       text: text(),
       onClick: onOpen,
       loading: swapStatus === SwapStatus.LOADING || isLoading,
-      disabled: Boolean(feeError) || isLoading || hasErrors || !!balanceError,
+      disabled: BN(marketPrice || 0).isZero() || Boolean(feeError) || isLoading || hasErrors || !!balanceError,
       allowClickWhileLoading: true,
     };
   }, [
@@ -129,5 +130,8 @@ export const useConfirmationButton = () => {
     switchChain,
     swapStatus,
     marketPriceLoading,
+    marketPrice,
+    srcToken,
+    dstToken,
   ]);
 };

@@ -14,13 +14,8 @@ export const useUsdAmount = () => {
   const { srcAmountUI, destTokenAmountUI } = twap.values;
   const isWrapOrUnwrap = useShouldWrapOrUnwrapOnly();
 
-  const srcUsd = useMemo(() => {
-    return getUsdAmount(srcAmountUI, srcUsd1Token);
-  }, [srcAmountUI, srcUsd1Token]);
-
-  const dstUsd = useMemo(() => {
-    return getUsdAmount(destTokenAmountUI, dstUsd1Token);
-  }, [destTokenAmountUI, dstUsd1Token]);
+  const srcUsd = useMemo(() => getUsdAmount(srcAmountUI, srcUsd1Token), [srcAmountUI, srcUsd1Token]);
+  const dstUsd = useMemo(() => getUsdAmount(destTokenAmountUI, dstUsd1Token), [destTokenAmountUI, dstUsd1Token]);
 
   return {
     srcUsd,

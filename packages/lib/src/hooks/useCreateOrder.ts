@@ -63,6 +63,8 @@ export const useCreateOrder = () => {
         });
       },
       onError(error) {
+        console.log({ error });
+
         callbacks?.createOrder?.onFailed?.((error as any).message);
       },
     },

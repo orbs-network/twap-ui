@@ -5,13 +5,13 @@ import { REFETCH_ORDER_HISTORY } from "../consts";
 import { useWidgetContext } from "../widget/widget-context";
 
 export const useOrderHistoryManager = () => {
-  const { account, twap, updateState } = useWidgetContext();
+  const { account, twap, updateState, isWrongChain } = useWidgetContext();
   const { config } = useWidgetContext();
   const queryClient = useQueryClient();
   const QUERY_KEY = useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
 
   const query = useQuery(QUERY_KEY, async ({ signal }) => twap.orders.getUserOrders({ account: account!, signal }), {
-    enabled: !!config && !!account,
+    enabled: !!config && !!account && !isWrongChain,
     refetchInterval: REFETCH_ORDER_HISTORY,
     refetchOnWindowFocus: true,
     retry: 3,
@@ -56,7 +56,7 @@ export const useOrderHistoryManager = () => {
   return {
     orders: query.data,
     refetchOrders: query.refetch,
-    ordersLoading: query.isLoading,
+    ordersLoading: !account || isWrongChain ? false : query.isLoading,
     waitForNewOrder,
     waitForOrderCancellation,
     orderCancellationLoading,

@@ -49,6 +49,6 @@ export const useWrapOnly = () => {
   return useMutation(async () => {
     await mutateAsync();
     resetState();
-    await actions.refetchBalances();
+    await actions.refetchBalances?.();
   });
 };

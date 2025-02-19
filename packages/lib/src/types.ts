@@ -245,8 +245,8 @@ type Actions = {
   onDstTokenSelect?: (token: any) => void;
   onSwitchFromNativeToWrapped?: () => void;
   onSwitchTokens?: () => void;
-  onConnect: () => void;
-  refetchBalances: () => Promise<void>;
+  onConnect?: () => void;
+  refetchBalances?: () => Promise<void>;
 };
 
 export interface WidgetProps {

@@ -71,7 +71,10 @@ export const useSubmitOrderFlow = () => {
       const order = await createOrder();
       updateState({ swapStatus: SwapStatus.SUCCESS });
 
-      await actions.refetchBalances();
+      // we refetch balances only if we wrapped the token
+      if (wrappedRef.current) {
+        await actions.refetchBalances?.();
+      }
       return order;
     },
     {

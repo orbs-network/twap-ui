@@ -47,9 +47,21 @@ const StyledMain = styled(StyledColumnFlex)({
 });
 
 const Input = ({ className = "" }: { className?: string }) => {
-  const { limitPrice, setLimitPrice, isLoading } = useLimitPricePanel();
+  const { limitPrice, setLimitPrice, isLoading, isCustom } = useLimitPricePanel();
+  const { marketPriceLoading, marketPrice } = useWidgetContext();
   const { onBlur, onFocus } = Panel.usePanelContext();
-  return <NumericInput className={`twap-limit-price-panel ${className}`} onBlur={onBlur} onFocus={onFocus} disabled={isLoading} onChange={setLimitPrice} value={limitPrice} />;
+
+  return (
+    <NumericInput
+      loading={isLoading || (marketPriceLoading && !isCustom)}
+      className={`twap-limit-price-panel ${className}`}
+      onBlur={onBlur}
+      onFocus={onFocus}
+      disabled={!marketPrice}
+      onChange={setLimitPrice}
+      value={limitPrice}
+    />
+  );
 };
 
 const PercentSelector = () => {

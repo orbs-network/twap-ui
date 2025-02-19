@@ -1,4 +1,4 @@
-import { zeroAddress } from "./consts";
+export const zeroAddress = "0x0000000000000000000000000000000000000000";
 
 export const networks = {
   eth: {
@@ -96,8 +96,8 @@ export const networks = {
       logoUrl: "https://assets.coingecko.com/coins/images/28205/standard/Sei_Logo_-_Transparent.png",
     },
     wToken: {
-      symbol: "WETH",
-      address: "0x160345fC359604fC6e70E3c5fAcbdE5F7A9342d8",
+      symbol: "WSEI",
+      address: "0xE30feDd158A2e3b13e9badaeABaFc5516e95e8C7",
       decimals: 18,
       logoUrl: "https://tokens-data.1inch.io/images/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2.png",
     },

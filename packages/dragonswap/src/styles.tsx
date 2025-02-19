@@ -215,6 +215,12 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
   const styles = getStyles(theme);
   const isDarkMode = styles.isDarkMode;
   return {
+    ".twap-token-panel-label": {
+      ...panelLabelStyles(theme),
+    },
+    ".twap-order-modal-bottom": {
+      width: "100%",
+    },
     ".twap-inputs-panel": {
       justifyContent: "space-between",
       p: {
@@ -262,6 +268,12 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       borderRadius: 20,
       a: {
         color: styles.textColor,
+      },
+      svg: {
+        top: 2,
+        position: "relative",
+        width: 17,
+        height: 17,
       },
     },
     ".twap-orders-selected-order-bottom": {
@@ -401,10 +413,11 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       color: styles.textColor,
       ".twap-order-display-details": {
         marginTop: 15,
-        marginBottom: 15,
         padding: 12,
       },
       ".twap-order-modal-disclaimer": {
+        marginTop: 15,
+        marginBottom: 15,
         p: { color: styles.textColor },
         a: {
           color: styles.textColor,
@@ -475,13 +488,22 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-limit-price-panel-title": {
       ".twap-token-select": {
+        paddingTop: 4,
+        paddingBottom: 4,
         p: {
           fontSize: 14,
         },
+        svg: {
+          width: 13,
+          height: 13,
+          marginLeft: 3,
+        },
       },
     },
+
     ".twap-limit-price-panel-title-text": {
       ...panelLabelStyles(theme),
+      fontSize: 14,
     },
     ".twap-switch-tokens": {
       ...switchTokensStyles(theme),
@@ -515,7 +537,9 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         fontSize: 14,
       },
     },
-
+    ".twap-input-loader": {
+      maxWidth: "70%",
+    },
     ".twap-panel-header": {
       marginBottom: 8,
       display: "flex",
@@ -535,7 +559,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
       alignItems: "center",
       justifyContent: "flex-end",
       marginLeft: "auto",
-      gap: 0,
+      gap: 5,
     },
     ".twap-limit-price-panel-percent-button": {
       ...selectButtonStyles(theme),

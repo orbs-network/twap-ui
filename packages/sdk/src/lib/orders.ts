@@ -56,15 +56,16 @@ const getCreatedOrders = async ({
   account,
   page = 0,
   limit,
-  exchangeAddress,
+  config,
 }: {
   endpoint: string;
   signal?: AbortSignal;
   account?: string;
   page: number;
   limit: number;
-  exchangeAddress?: string;
+  config: Config;
 }) => {
+  const exchangeAddress = config.exchangeAddress
   const exchange = exchangeAddress ? `exchange: "${exchangeAddress}"` : "";
   const maker = account ? `, maker: "${account}"` : "";
 
@@ -119,22 +120,21 @@ const getAllCreatedOrders = async ({
   account,
   endpoint,
   signal,
-  exchangeAddress,
+  config,
   limit,
 }: {
   account: string;
   endpoint: string;
   signal?: AbortSignal;
-  exchangeAddress?: string;
+  config: Config;
   limit: number;
 }) => {
   let page = 0;
   const orders: any = [];
-
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const orderCreateds = await getCreatedOrders({
-      exchangeAddress,
+      config,
       account,
       signal,
       endpoint,
@@ -150,6 +150,9 @@ const getAllCreatedOrders = async ({
 
   return orders;
 };
+
+
+
 
 const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortSignal) => {
   const query = `
@@ -323,22 +326,22 @@ export const getOrders = async ({
   signal,
   page,
   limit = 1_000,
-  exchangeAddress,
+  config,
 }: {
   account?: string;
   signal?: AbortSignal;
   page?: number;
   chainId: number;
   limit?: number;
-  exchangeAddress?: string;
+  config: Config;
 }): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(chainId);
   if (!endpoint) return [];
   let orders = [];
   if (typeof page === "number") {
-    orders = await getCreatedOrders({ endpoint, signal, account, exchangeAddress, page, limit });
+    orders = await getCreatedOrders({ endpoint, signal, account, config, page, limit });
   } else {
-    orders = await getAllCreatedOrders({ endpoint, signal, account, exchangeAddress, limit });
+    orders = await getAllCreatedOrders({ endpoint, signal, account, config, limit });
   }
   const ids = orders.map((order: any) => order.Contract_id);
   const fills = await getAllFills({ endpoint, signal, ids, chainId });
@@ -378,20 +381,20 @@ export const getAllOrders = ({
   signal,
   page,
   limit = 1_000,
-  exchangeAddress,
+  config,
 }: {
   signal?: AbortSignal;
   page?: number;
   chainId: number;
   limit?: number;
-  exchangeAddress?: string;
+  config: Config;
 }) => {
   return getOrders({
     chainId,
     signal,
     page,
     limit,
-    exchangeAddress,
+    config,
   });
 };
 
@@ -413,7 +416,7 @@ export const waitForOrdersLengthUpdate = async (config: Config, currentOrdersLen
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     try {
       const orders = await getOrders({
-        exchangeAddress: config.exchangeAddress,
+        config,
         account,
         signal,
         chainId: config.chainId,
@@ -442,7 +445,7 @@ export const waitForOrdersUpdate = async (config: Config, orderId: number, accou
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     try {
       const orders = await getOrders({
-        exchangeAddress: config.exchangeAddress,
+        config,
         account,
         signal,
         chainId: config.chainId,
@@ -506,7 +509,7 @@ export const waitForCancelledOrder = async ({
   try {
     for (let i = 0; i < maxRetries; i++) {
       const orders = await getOrders({
-        exchangeAddress: config.exchangeAddress,
+        config,
         account,
         signal,
         chainId: config.chainId,

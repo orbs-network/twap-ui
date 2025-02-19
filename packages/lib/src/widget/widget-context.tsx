@@ -13,6 +13,7 @@ import { createWalletClient, custom, createPublicClient, http } from "viem";
 import { mainnet, polygon, bsc, arbitrum, sonic, sei, avalanche, fantom, base, linea, zksync, scroll, zircuit } from "viem/chains";
 import { GlobalStyles } from "./styles";
 import { LimitPriceWarningWithPortal } from "./components/limit-price-warning";
+import { useMinChunkSizeUsd } from "../hooks/useMinChunkSizeUSD";
 
 const viemChains = {
   [networks.eth.id]: mainnet,
@@ -126,20 +127,22 @@ const useClients = (props: WidgetProps) => {
   }, [props.chainId, props.web3Provider, props.account, props.walletClientTransport]);
 };
 
-export const WidgetProvider = (props: WidgetProps) => {
+const WidgetProviderContent = (props: WidgetProps) => {
   const isWrongChain = useIsWrongChain(props, props.chainId);
 
+  const { state, updateState, resetState } = useStore();
+
+  const translations = useTranslations(props.translations);
+  const clients = useClients(props);
+  const minChunksSizeUsd = useMinChunkSizeUsd(props.config, clients?.publicClient);
+
   const config = useMemo(() => {
-    if (!props.minChunkSizeUsd) {
-      return props.config;
-    }
     return {
       ...props.config,
-      minChunkSizeUsd: props.minChunkSizeUsd,
+      minChunkSizeUsd: minChunksSizeUsd,
     };
-  }, [props.config, props.minChunkSizeUsd]);
+  }, [props.config, minChunksSizeUsd]);
 
-  const { state, updateState, resetState } = useStore();
   const twap = useTwap({
     config,
     isLimitPanel: props.isLimitPanel,
@@ -149,37 +152,41 @@ export const WidgetProvider = (props: WidgetProps) => {
     oneSrcTokenUsd: props.srcUsd1Token,
     typedSrcAmount: state.srcAmount,
   });
-  const translations = useTranslations(props.translations);
-  const clients = useClients(props);
 
   return (
+    <WidgetContext.Provider
+      value={{
+        ...props,
+        translations,
+        isWrongChain,
+        updateState,
+        resetState,
+        state,
+        uiPreferences: props.uiPreferences || {},
+        twap,
+        config,
+        walletClient: clients?.walletClient,
+        publicClient: clients?.publicClient,
+      }}
+    >
+      <Listeners />
+      <TwapErrorWrapper>
+        <OrdersWithPortalPortal />
+        <SubmitOrderModal />
+        <SubmitOrderModalWithPortal />
+        <PoweredbyOrbsWithPortal />
+        <LimitPriceWarningWithPortal />
+        <div className="twap-widget">{props.children}</div>
+      </TwapErrorWrapper>
+      {props.includeStyles && <GlobalStyles isDarkMode={props.isDarkTheme} />}
+    </WidgetContext.Provider>
+  );
+};
+
+export const WidgetProvider = (props: WidgetProps) => {
+  return (
     <QueryClientProvider client={queryClient}>
-      <WidgetContext.Provider
-        value={{
-          ...props,
-          translations,
-          isWrongChain,
-          updateState,
-          resetState,
-          state,
-          uiPreferences: props.uiPreferences || {},
-          twap,
-          config,
-          walletClient: clients?.walletClient,
-          publicClient: clients?.publicClient,
-        }}
-      >
-        <Listeners />
-        <TwapErrorWrapper>
-          <OrdersWithPortalPortal />
-          <SubmitOrderModal />
-          <SubmitOrderModalWithPortal />
-          <PoweredbyOrbsWithPortal />
-          <LimitPriceWarningWithPortal />
-          <div className="twap-widget">{props.children}</div>
-        </TwapErrorWrapper>
-        {props.includeStyles && <GlobalStyles isDarkMode={props.isDarkTheme} />}
-      </WidgetContext.Provider>
+      <WidgetProviderContent {...props} />
     </QueryClientProvider>
   );
 };
