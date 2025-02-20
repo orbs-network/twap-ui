@@ -52,8 +52,22 @@ const getZircuitTokens = async (signal?: AbortSignal): Promise<Token[]> => {
   return [networks.eth.native, ...result];
 };
 
+const getBaseTokens = async (signal?: AbortSignal): Promise<Token[]> => {
+  const payload = await fetch(`https://tokens.coingecko.com/base/all.json`, { signal }).then((res) => res.json());
+  const result = payload.tokens.map((token: any) => {
+    return {
+      address: token.address,
+      symbol: token.symbol,
+      decimals: token.decimals,
+      logoUrl: token.logoURI,
+    };
+  });
+
+  return [networks.base.native, ...result];
+};
+
 const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
-  const tokens = await fetch("https://token-list.sushi.com/", { signal }).then((res) => res.json().then((it) => it.tokens.filter((it: any) => it.chainId === chainId)));
+  const tokens = await fetch("http://localhost:3000/sushi", { signal }).then((res) => res.json().then((it) => it.tokens.filter((it: any) => it.chainId === chainId)));
 
   const result = Object.values(tokens).map((token: any) => {
     return {
@@ -73,6 +87,8 @@ const getTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]
   switch (chainId) {
     case networks.linea.id:
       return getLineaTokens(signal);
+    case networks.base.id:
+      return getBaseTokens(signal);
     case Configs.Ocelex.chainId:
       return getZircuitTokens(signal);
 

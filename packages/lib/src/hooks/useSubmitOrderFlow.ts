@@ -31,7 +31,7 @@ export const useSubmitOrderFlow = () => {
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash } = state;
   const { data: haveAllowance, refetch: refetchAllowance } = useHasAllowance();
   const shouldWrap = useShouldWrap();
-  const { waitForNewOrder } = useOrderHistoryManager();
+  const { addNewOrder } = useOrderHistoryManager();
   const wToken = useNetwork()?.wToken;
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
@@ -75,12 +75,10 @@ export const useSubmitOrderFlow = () => {
       if (wrappedRef.current) {
         await actions.refetchBalances?.();
       }
+      await addNewOrder({ Contract_id: order.orderId, transactionHash: order.txHash! });
       return order;
     },
     {
-      onSuccess(order) {
-        waitForNewOrder(order.orderId);
-      },
       onMutate() {
         callbacks?.onSubmitOrderRequest?.({ srcToken: srcToken!, dstToken: dstToken!, srcAmount: twap.values.srcAmountUI, dstAmount: twap.values.destTokenAmountUI });
       },

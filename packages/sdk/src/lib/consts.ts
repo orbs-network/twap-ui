@@ -41,10 +41,8 @@ export const nativeTokenAddresses = [
 
 export const maxUint256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
-
-
 export const LEGACY_ORDERS_MAP = {
-  [Configs.SushiArb.partner]: ['0x846F2B29ef314bF3D667981b4ffdADc5B858312a'],
-  [Configs.SushiBase.partner]: ['0x846F2B29ef314bF3D667981b4ffdADc5B858312a'],
-  [Configs.SushiEth.partner]:['0xc55943Fa6509004B2903ED8F8ab7347BfC47D0bA']
-}
+  [Configs.SushiArb.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a"],
+  [Configs.SushiBase.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a"],
+  [Configs.SushiEth.name]: ["0xc55943Fa6509004B2903ED8F8ab7347BfC47D0bA"],
+};

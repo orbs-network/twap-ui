@@ -17,8 +17,8 @@ const useOrders = (sdk: SDK.TwapSDK) => {
   return useMemo(() => {
     return {
       getUserOrders: sdk.getUserOrders.bind(sdk),
-      waitForCreatedOrder: sdk.waitForNewOrder.bind(sdk),
-      waitForCancelledOrder: sdk.waitForCancelledOrder.bind(sdk),
+      addNewOrder: sdk.addNewOrder.bind(sdk),
+      addCancelledOrder: sdk.addCancelledOrder.bind(sdk),
     };
   }, [sdk]);
 };

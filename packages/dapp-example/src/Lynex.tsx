@@ -9,8 +9,7 @@ import { DappProvider } from "./context";
 import { eqIgnoreCase, networks } from "@defi.org/web3-candies";
 import { Config } from "@orbs-network/twap-sdk";
 
-const config = Configs.SushiArb;
-console.log({ config });
+const config = Configs.Lynex;
 
 const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
   const { data: baseAssets } = useGetTokens();
@@ -139,6 +138,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       useToken={useToken}
       includeStyles={true}
       isDarkTheme={isDarkTheme}
+      minChunkSizeUsd={4}
     >
       <Widget.SwapPanel />
     </WidgetProvider>

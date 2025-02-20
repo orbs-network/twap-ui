@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
-import { OrderStatus, Order } from "@orbs-network/twap-sdk";
+import { OrderStatus, Order, getOrderFillDelay, getOrderLimitPrice, getOrderExcecutionPrice } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import moment from "moment";
 import { OrderDisplay } from "../../../components/OrderDisplay";
@@ -15,9 +15,14 @@ import { useCancelOrder } from "../../../hooks/useCancelOrder";
 import { useAmountUi } from "../../../hooks/useParseAmounts";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 
+const useOrderFillDelay = (order?: Order) => {
+  const { config } = useWidgetContext();
+  return useMemo(() => (!order ? undefined : getOrderFillDelay(order, config)), [order, config]);
+};
+
 export const SelectedOrder = () => {
   const order = useSelectedOrder();
-  const { config, useToken } = useWidgetContext();
+  const { useToken } = useWidgetContext();
 
   const { selectedOrderId } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
@@ -32,6 +37,8 @@ export const SelectedOrder = () => {
     setExpanded(expanded === panel ? false : panel);
   };
 
+  const fillDelayMillis = useOrderFillDelay(order);
+
   if (!order) return null;
 
   return (
@@ -39,7 +46,7 @@ export const SelectedOrder = () => {
       <OrderDisplay>
         <OrderDisplay.Tokens>
           <OrderDisplay.SrcToken token={srcToken} />
-          <OrderDisplay.DstToken token={dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={order.getFillDelay(config)} />
+          <OrderDisplay.DstToken token={dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />
         </OrderDisplay.Tokens>
         <StyledColumnFlex gap={15} className="twap-orders-selected-order-bottom">
           <AccordionContainer title="Execution summary" onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
@@ -83,12 +90,14 @@ const StyledDetails = styled.div({
 });
 
 const OrderInfo = ({ order }: { order: Order }) => {
-  const { config, useToken } = useWidgetContext();
+  const { useToken } = useWidgetContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
   const dstToken = useToken?.(order?.dstTokenAddress);
   const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcBidAmount);
   const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmount);
+  const fillDelayMillis = useOrderFillDelay(order);
+
   return (
     <>
       <LimitPrice order={order} />
@@ -98,7 +107,7 @@ const OrderInfo = ({ order }: { order: Order }) => {
       <OrderDisplay.ChunkSize chunks={order?.totalChunks} srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />
       <OrderDisplay.ChunksAmount chunks={order?.totalChunks} />
       <OrderDisplay.MinDestAmount totalChunks={order?.totalChunks} dstToken={dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={dstMinAmountOutUi} />
-      <OrderDisplay.TradeInterval chunks={order.totalChunks} fillDelayMillis={order?.getFillDelay(config)} />
+      <OrderDisplay.TradeInterval chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />
       <OrderDisplay.Recipient />
       <OrderDisplay.TxHash txHash={order?.txHash} />
     </>
@@ -128,6 +137,7 @@ export const CancelOrderButton = ({ order }: { order: Order }) => {
   return (
     <StyledCancelOrderButton
       loading={isLoading}
+      disabled={isLoading}
       onClick={() => {
         cancel(order.id);
       }}
@@ -224,7 +234,7 @@ const LimitPrice = ({ order }: { order: Order }) => {
 
   const limitPrice = useMemo(() => {
     if (!srcToken || !dstToken) return;
-    return order.getLimitPrice(srcToken.decimals, dstToken.decimals);
+    return getOrderLimitPrice(order, srcToken?.decimals, dstToken?.decimals);
   }, [order, srcToken, dstToken]);
 
   if (order?.isMarketOrder) return null;
@@ -238,7 +248,7 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
 
   const excecutionPrice = useMemo(() => {
     if (!srcToken || !dstToken) return;
-    return order.getExcecutionPrice(srcToken.decimals, dstToken.decimals);
+    return getOrderExcecutionPrice(order, srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
 
   return <Price title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice} price={excecutionPrice} srcToken={srcToken} dstToken={dstToken} />;

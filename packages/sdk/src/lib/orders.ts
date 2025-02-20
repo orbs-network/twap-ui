@@ -1,7 +1,8 @@
 import { Config, OrderStatus, OrderType } from "./types";
 import BN from "bignumber.js";
-import { amountUi, delay, getTheGraphUrl, groupBy, orderBy } from "./utils";
+import { amountUi, getTheGraphUrl, groupBy, orderBy } from "./utils";
 import { getEstimatedDelayBetweenChunksMillis } from "./lib";
+import { LEGACY_ORDERS_MAP } from "./consts";
 
 const getOrderProgress = (srcFilled?: string, srcAmountIn?: string) => {
   if (!srcFilled || !srcAmountIn) return 0;
@@ -65,8 +66,8 @@ const getCreatedOrders = async ({
   limit: number;
   config: Config;
 }) => {
-  const exchangeAddress = config.exchangeAddress;
-  const exchange = exchangeAddress ? `exchange: "${exchangeAddress}"` : "";
+  const exchangeAddresses = [config.exchangeAddress, ...(LEGACY_ORDERS_MAP[config.name] || [])].map((a) => `"${a}"`);
+  const exchange = `exchange_in: [${exchangeAddresses.join(", ")}]`;
   const maker = account ? `, maker: "${account}"` : "";
 
   const where = `where:{${exchange} ${maker}}`;
@@ -118,7 +119,7 @@ export const getCreatedOrder = async ({ endpoint, signal, id, txHash }: { endpoi
 
 const getAllCreatedOrders = async ({ account, endpoint, signal, config, limit }: { account: string; endpoint: string; signal?: AbortSignal; config: Config; limit: number }) => {
   let page = 0;
-  const orders: any = [];
+  const orders: RawOrder[] = [];
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const orderCreateds = await getCreatedOrders({
@@ -222,6 +223,26 @@ const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: strin
   return fills;
 };
 
+export type RawOrder = {
+  Contract_id: string | number;
+  srcTokenSymbol: string;
+  dollarValueIn: string;
+  blockNumber: number;
+  maker: string;
+  dstTokenSymbol: string;
+  ask_fillDelay: number;
+  exchange: string;
+  dex: string;
+  ask_deadline: number;
+  timestamp: string;
+  ask_srcAmount: string;
+  ask_dstMinAmount: string;
+  ask_srcBidAmount: string;
+  transactionHash: string;
+  ask_srcToken: string;
+  ask_dstToken: string;
+};
+
 export class Order {
   id: number;
   exchange: string;
@@ -251,7 +272,7 @@ export class Order {
   blockNumber: number;
   dexFee: string;
 
-  constructor(rawOrder: any, fills: any, status: any) {
+  constructor(rawOrder: RawOrder, fills: any, status: any) {
     const isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
     this.srcTokenSymbol = rawOrder.srcTokenSymbol;
     this.dollarValueIn = rawOrder.dollarValueIn;
@@ -285,25 +306,25 @@ export class Order {
     this.isMarketOrder = isMarketOrder;
     this.dexFee = fills?.dexFee || 0;
   }
-
-  public getFillDelay = (config: Config) => {
-    return (this.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
-  };
-
-  public getLimitPrice = (srcTokenDecimals: number, dstTokenDecimals: number) => {
-    if (this.isMarketOrder) return;
-    const srcBidAmountUi = amountUi(srcTokenDecimals, this.srcBidAmount);
-    const dstMinAmountUi = amountUi(dstTokenDecimals, this.dstMinAmount);
-    return BN(dstMinAmountUi).div(srcBidAmountUi).toString();
-  };
-  public getExcecutionPrice = (srcTokenDecimals: number, dstTokenDecimals: number) => {
-    if (!BN(this.srcFilledAmount || 0).gt(0) || !BN(this.dstFilledAmount || 0).gt(0)) return;
-    const srcFilledAmountUi = amountUi(srcTokenDecimals, this.srcFilledAmount);
-    const dstFilledAmountUi = amountUi(dstTokenDecimals, this.dstFilledAmount);
-
-    return BN(dstFilledAmountUi).div(srcFilledAmountUi).toString();
-  };
 }
+
+export const getOrderFillDelay = (order: Order, config: Config) => {
+  return (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
+};
+
+export const getOrderLimitPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
+  if (order.isMarketOrder) return;
+  const srcBidAmountUi = amountUi(srcTokenDecimals, order.srcBidAmount);
+  const dstMinAmountUi = amountUi(dstTokenDecimals, order.dstMinAmount);
+  return BN(dstMinAmountUi).div(srcBidAmountUi).toString();
+};
+export const getOrderExcecutionPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
+  if (!BN(order.srcFilledAmount || 0).gt(0) || !BN(order.dstFilledAmount || 0).gt(0)) return;
+  const srcFilledAmountUi = amountUi(srcTokenDecimals, order.srcFilledAmount);
+  const dstFilledAmountUi = amountUi(dstTokenDecimals, order.dstFilledAmount);
+
+  return BN(dstFilledAmountUi).div(srcFilledAmountUi).toString();
+};
 
 export const getOrders = async ({
   chainId,
@@ -322,19 +343,58 @@ export const getOrders = async ({
 }): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(chainId);
   if (!endpoint) return [];
-  let orders = [];
+  let rawOrders: RawOrder[] = [];
   if (typeof page === "number") {
-    orders = await getCreatedOrders({ endpoint, signal, account, config, page, limit });
+    rawOrders = await getCreatedOrders({ endpoint, signal, account, config, page, limit });
   } else {
-    orders = await getAllCreatedOrders({ endpoint, signal, account, config, limit });
+    rawOrders = await getAllCreatedOrders({ endpoint, signal, account, config, limit });
   }
-  const ids = orders.map((order: any) => order.Contract_id);
+
+  const ordersMap = new Map(rawOrders.map((order) => [Number(order.Contract_id), order]));
+  const ids = rawOrders.map((rawOrder: any) => rawOrder.Contract_id);
   const fills = await getAllFills({ endpoint, signal, ids, chainId });
   const statuses = await getOrderStatuses(ids, endpoint, signal);
-  orders = orders.map((rawOrder: any) => {
+
+  const parseOrder = (rawOrder: RawOrder) => {
     const fill = fills?.find((it) => it.TWAP_id === Number(rawOrder.Contract_id));
     return new Order(rawOrder, fill, statuses?.[rawOrder.Contract_id]);
-  });
+  };
+
+  let orders = rawOrders.map((rawOrder: any) => {
+    return parseOrder(rawOrder);
+  }) as Order[];
+
+  const { cancelledOrderIds, newOrders } = orderStore.getOrders(account, config.exchangeAddress);
+
+  if (newOrders.length) {
+    newOrders.forEach((newOrder) => {
+      if (!ordersMap.has(Number(newOrder.Contract_id))) {
+        console.log(`New added: ${newOrder.Contract_id}`);
+        orders.unshift(parseOrder(newOrder));
+      } else {
+        console.log(`New removed: ${newOrder.Contract_id}`);
+        orderStore.deleteNewOrder(account, config.exchangeAddress, Number(newOrder.Contract_id));
+      }
+    });
+  }
+
+  if (cancelledOrderIds.length) {
+    const cancelledSet = new Set(cancelledOrderIds);
+
+    orders = orders.map((order) => {
+      if (cancelledSet.has(order.id)) {
+        if (order.status !== OrderStatus.Canceled) {
+          console.log(`Cancelled: ${order.id}`);
+          return { ...order, status: OrderStatus.Canceled };
+        } else {
+          console.log(`Cancelled removed: ${order.id}`);
+
+          orderStore.deleteCancelledOrderId(account, config.exchangeAddress, order.id);
+        }
+      }
+      return order;
+    });
+  }
 
   return orderBy(orders, (o: any) => o.createdAt, "desc");
 };
@@ -382,122 +442,58 @@ export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
   };
 };
 
-export const waitForOrdersLengthUpdate = async (config: Config, currentOrdersLength: number, account: string, signal?: AbortSignal): Promise<Order[]> => {
-  const MAX_ATTEMPTS = 20;
-  const POLL_INTERVAL_MS = 3_000;
+type ExchangeOrders = { newOrders: RawOrder[]; cancelledOrderIds: number[] };
 
-  for (let i = 0; i < MAX_ATTEMPTS; i++) {
-    try {
-      const orders = await getOrders({
-        config,
-        account,
-        signal,
-        chainId: config.chainId,
-      });
+class OrdersStore {
+  getOrders(account: string, exchange: string): ExchangeOrders {
+    const res = localStorage.getItem(`orders-${account}`);
+    if (!res) return { newOrders: [], cancelledOrderIds: [] };
 
-      if (orders.length > currentOrdersLength) {
-        return orders;
-      }
-    } catch (error) {
-      if (signal?.aborted) {
-        throw new Error("Operation aborted");
-      }
-      console.error("Error fetching orders:", error);
+    const parsedData = JSON.parse(res);
+    return parsedData[exchange] || { newOrders: [], cancelledOrderIds: [] };
+  }
+  save(account: string, exchange: string, exchangeOrders: ExchangeOrders) {
+    const storedData = localStorage.getItem(`orders-${account}`);
+    const allOrders = storedData ? JSON.parse(storedData) : {};
+    allOrders[exchange] = exchangeOrders;
+    localStorage.setItem(`orders-${account}`, JSON.stringify(allOrders));
+  }
+
+  addNewOrder(account: string, exchange: string, newOrder: RawOrder) {
+    const orders = this.getOrders(account, exchange);
+    if (orders.newOrders.some((order) => order.Contract_id === newOrder.Contract_id)) return;
+    orders.newOrders.push(newOrder);
+    this.save(account, exchange, orders);
+  }
+  addCancelledOrder(account: string, exchange: string, orderId: number) {
+    const orders = this.getOrders(account, exchange);
+    if (!orders.cancelledOrderIds.includes(orderId)) {
+      // `.includes()` is more readable for arrays
+      orders.cancelledOrderIds.push(orderId);
+      this.save(account, exchange, orders);
     }
-
-    await delay(POLL_INTERVAL_MS);
   }
-
-  throw new Error("Timeout: Orders length did not update within the allowed attempts");
-};
-
-export const waitForOrdersUpdate = async (config: Config, orderId: number, account: string, signal?: AbortSignal): Promise<Order[]> => {
-  const MAX_ATTEMPTS = 20;
-  const POLL_INTERVAL_MS = 3_000;
-
-  for (let i = 0; i < MAX_ATTEMPTS; i++) {
-    try {
-      const orders = await getOrders({
-        config,
-        account,
-        signal,
-        chainId: config.chainId,
-      });
-
-      if (orders.some((order) => order.id === orderId)) {
-        return orders;
-      }
-    } catch (error) {
-      if (signal?.aborted) {
-        throw new Error("Operation aborted");
-      }
-      console.error("Error fetching orders:", error);
-    }
-
-    await delay(POLL_INTERVAL_MS);
+  deleteNewOrder(account: string, exchange: string, orderId: number) {
+    const orders = this.getOrders(account, exchange);
+    orders.newOrders = orders.newOrders.filter((order) => order.Contract_id !== orderId);
+    this.save(account, exchange, orders);
   }
-
-  throw new Error(`Timeout: Order with ID ${orderId} not found within the allowed attempts`);
-};
-
-export const waitForNewOrder = ({
-  config,
-  orderId,
-  account,
-  signal,
-  currentOrdersLength,
-}: {
-  config: Config;
-  orderId?: number;
-  account: string;
-  signal?: AbortSignal;
-  currentOrdersLength?: number;
-}) => {
-  if (!Number.isInteger(orderId) && !Number.isInteger(currentOrdersLength)) {
-    throw new Error("Either orderId or currentOrdersLength must be provided");
+  deleteCancelledOrderId(account: string, exchange: string, orderId: number) {
+    const orders = this.getOrders(account, exchange);
+    orders.cancelledOrderIds = orders.cancelledOrderIds.filter((id) => id !== orderId);
+    this.save(account, exchange, orders);
   }
+}
 
-  if (Number.isInteger(orderId)) {
-    return waitForOrdersUpdate(config, orderId!, account, signal);
-  } else {
-    return waitForOrdersLengthUpdate(config, currentOrdersLength!, account, signal);
-  }
-};
+const orderStore = new OrdersStore();
 
-export const waitForCancelledOrder = async ({
-  config,
-  orderId,
-  account,
-  signal,
-  maxRetries = 20,
-  delayMs = 3000,
-}: {
-  config: Config;
-  orderId?: number;
-  account: string;
-  signal?: AbortSignal;
-  maxRetries?: number;
-  delayMs?: number;
-}) => {
-  try {
-    for (let i = 0; i < maxRetries; i++) {
-      const orders = await getOrders({
-        config,
-        account,
-        signal,
-        chainId: config.chainId,
-      });
+export function addNewOrder(account: string, exchange: string, rawOrder: RawOrder) {
+  orderStore.addNewOrder(account, exchange, rawOrder);
+}
 
-      if (orders.some((o) => o.id === orderId && o.status === OrderStatus.Canceled)) {
-        return orders;
-      }
-      await delay(delayMs);
-    }
-    return [];
-  } catch (error) {
-    return [];
-  }
-};
+export function addCancelledOrder(account: string, exchange: string, orderId: number) {
+  orderStore.addCancelledOrder(account, exchange, orderId);
+}
 
 export interface GroupedOrders {
   [OrderStatus.All]?: Order[];

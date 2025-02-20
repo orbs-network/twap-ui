@@ -1,6 +1,6 @@
 import { Analytics } from "./analytics";
 import { getEstimatedDelayBetweenChunksMillis, derivedSwapValues, prepareOrderArgs, getDeadline } from "./lib";
-import { getOrders, waitForCancelledOrder, waitForNewOrder } from "./orders";
+import { addCancelledOrder, addNewOrder, getOrders, RawOrder } from "./orders";
 import { Config, DerivedSwapValuesArgs, PrepareOrderArgs, TimeDuration } from "./types";
 
 interface Props {
@@ -52,12 +52,12 @@ export class TwapSDK {
     return getOrders({ chainId: this.config.chainId, config: this.config, account, signal, page, limit });
   }
 
-  async waitForNewOrder({ orderId, account, signal, currentOrdersLength }: { orderId?: number; account: string; signal?: AbortSignal; currentOrdersLength?: number }) {
-    return waitForNewOrder({ config: this.config, orderId, account, signal, currentOrdersLength });
+  async addNewOrder(account: string, rawOrder: RawOrder) {
+    return addNewOrder(account, this.config.exchangeAddress, rawOrder);
   }
 
-  async waitForCancelledOrder({ orderId, account, signal }: { orderId?: number; account: string; signal?: AbortSignal }) {
-    return waitForCancelledOrder({ config: this.config, orderId, account, signal });
+  async addCancelledOrder(account: string, orderId: number) {
+    return addCancelledOrder(account, this.config.exchangeAddress, orderId);
   }
 }
 

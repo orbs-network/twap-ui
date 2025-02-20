@@ -270,7 +270,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
         color: styles.textColor,
       },
       svg: {
-        top: 2,
+        top: 3,
         position: "relative",
         width: 17,
         height: 17,

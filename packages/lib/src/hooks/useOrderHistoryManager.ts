@@ -1,14 +1,13 @@
-import { groupOrdersByStatus, Order, OrderStatus } from "@orbs-network/twap-sdk";
-import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { groupOrdersByStatus, RawOrder } from "@orbs-network/twap-sdk";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import { useWidgetContext } from "../widget/widget-context";
+import moment from "moment";
 
 export const useOrderHistoryManager = () => {
-  const { account, twap, updateState, isWrongChain } = useWidgetContext();
+  const { config, isWrongChain, srcToken, dstToken, account, twap } = useWidgetContext();
 
-  const { config } = useWidgetContext();
-  const queryClient = useQueryClient();
   const QUERY_KEY = useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
 
   const query = useQuery(QUERY_KEY, async ({ signal }) => twap.orders.getUserOrders({ account: account!, signal }), {
@@ -19,39 +18,39 @@ export const useOrderHistoryManager = () => {
     staleTime: Infinity,
   });
 
-  const updateOrdersData = useCallback(
-    (orders?: Order[]) => {
-      orders && queryClient.setQueryData(QUERY_KEY, orders);
-    },
-    [QUERY_KEY, queryClient]
-  );
-
-  const { mutateAsync: waitForNewOrder } = useMutation({
-    mutationFn: async (orderId?: number) => {
-      if (!account) return;
-      try {
-        updateState({ newOrderLoading: true });
-        const orders = await twap.orders.waitForCreatedOrder({ orderId, account, currentOrdersLength: query.data?.length });
-        updateOrdersData(orders);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        updateState({ newOrderLoading: false });
-      }
+  const { mutateAsync: addNewOrder } = useMutation({
+    mutationFn: async ({ Contract_id, transactionHash }: { Contract_id: number; transactionHash: string }) => {
+      const rawOrder: RawOrder = {
+        maker: account!,
+        Contract_id,
+        srcTokenSymbol: srcToken!.symbol,
+        ask_srcToken: srcToken!.address,
+        ask_dstToken: dstToken!.address,
+        dstTokenSymbol: dstToken!.symbol,
+        dollarValueIn: "",
+        blockNumber: 0,
+        ask_srcAmount: twap.createOrderTx.params[3],
+        transactionHash,
+        ask_dstMinAmount: twap.values.destTokenMinAmount,
+        exchange: config.exchangeAddress,
+        timestamp: moment().utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
+        ask_deadline: Number(twap.createOrderTx.params[6]),
+        dex: "",
+        ask_fillDelay: Number(twap.createOrderTx.params[8]),
+        ask_srcBidAmount: twap.createOrderTx.params[4],
+      };
+      twap.orders.addNewOrder(account!, rawOrder);
+      await query.refetch();
     },
   });
 
-  const onOrderCancelled = useCallback(
-    (orderId: number) => {
-      const data = query.data?.map((order) => {
-        if (order.id === orderId) {
-          return { ...order, status: OrderStatus.Canceled };
-        }
-        return order;
-      });
-      updateOrdersData(data);
+  const addCancelledOrder = useCallback(
+    async (orderId: number) => {
+      if (!account) return;
+      twap.orders.addCancelledOrder(account, orderId);
+      await query.refetch();
     },
-    [query.data, updateOrdersData]
+    [account, twap, query],
   );
 
   const groupedOrdersByStatus = useMemo(() => {
@@ -63,8 +62,8 @@ export const useOrderHistoryManager = () => {
     orders: query.data,
     refetchOrders: query.refetch,
     ordersLoading: !account || isWrongChain ? false : query.isLoading,
-    waitForNewOrder,
-    onOrderCancelled,
+    addNewOrder,
+    addCancelledOrder,
     groupedOrdersByStatus,
   };
 };

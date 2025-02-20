@@ -8,7 +8,7 @@ import { waitForTransactionReceipt } from "viem/actions";
 export const useCancelOrder = () => {
   const { account, twap, config, callbacks, walletClient, publicClient } = useWidgetContext();
 
-  const { onOrderCancelled } = useOrderHistoryManager();
+  const { addCancelledOrder } = useOrderHistoryManager();
   return useMutation(
     async (orderId: number) => {
       if (!account) {
@@ -31,9 +31,9 @@ export const useCancelOrder = () => {
         confirmations: 5,
       });
 
-      onOrderCancelled(orderId);
       console.log(`order canceled`);
       callbacks?.cancelOrder.onSuccess?.({ orderId, txHash: hash });
+      await addCancelledOrder(orderId);
     },
     {
       onSuccess: () => {

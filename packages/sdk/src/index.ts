@@ -8,6 +8,6 @@ export * from "./lib/warnings";
 export { fillDelayText, isNativeAddress, getNetwork, amountBN, amountUi } from "./lib/utils";
 export { networks } from "./lib/networks";
 
-export { groupOrdersByStatus, getOrders, getOrderById, getOrderByTxHash, Order } from "./lib/orders";
+export { groupOrdersByStatus, getOrders, getOrderById, getOrderByTxHash, Order, type RawOrder, getOrderExcecutionPrice, getOrderFillDelay, getOrderLimitPrice } from "./lib/orders";
 
 export { Configs, TwapAbi };

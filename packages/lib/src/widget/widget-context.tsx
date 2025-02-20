@@ -139,7 +139,7 @@ const WidgetProviderContent = (props: WidgetProps) => {
   const config = useMemo(() => {
     return {
       ...props.config,
-      minChunkSizeUsd:props.minChunkSizeUsd ||  minChunksSizeUsd,
+      minChunkSizeUsd: props.minChunkSizeUsd || minChunksSizeUsd,
     };
   }, [props.config, minChunksSizeUsd, props.minChunkSizeUsd]);
 
