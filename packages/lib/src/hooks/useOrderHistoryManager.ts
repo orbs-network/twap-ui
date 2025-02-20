@@ -1,4 +1,4 @@
-import { groupOrdersByStatus, Order } from "@orbs-network/twap-sdk";
+import { groupOrdersByStatus, Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
@@ -6,6 +6,7 @@ import { useWidgetContext } from "../widget/widget-context";
 
 export const useOrderHistoryManager = () => {
   const { account, twap, updateState, isWrongChain } = useWidgetContext();
+
   const { config } = useWidgetContext();
   const queryClient = useQueryClient();
   const QUERY_KEY = useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
@@ -22,7 +23,7 @@ export const useOrderHistoryManager = () => {
     (orders?: Order[]) => {
       orders && queryClient.setQueryData(QUERY_KEY, orders);
     },
-    [QUERY_KEY, queryClient],
+    [QUERY_KEY, queryClient]
   );
 
   const { mutateAsync: waitForNewOrder } = useMutation({
@@ -40,13 +41,18 @@ export const useOrderHistoryManager = () => {
     },
   });
 
-  const { mutateAsync: waitForOrderCancellation, isLoading: orderCancellationLoading } = useMutation({
-    mutationFn: async (orderId: number) => {
-      if (!account) return;
-      const orders = await twap.orders.waitForCancelledOrder({ orderId, account });
-      updateOrdersData(orders);
+  const onOrderCancelled = useCallback(
+    (orderId: number) => {
+      const data = query.data?.map((order) => {
+        if (order.id === orderId) {
+          return { ...order, status: OrderStatus.Canceled };
+        }
+        return order;
+      });
+      updateOrdersData(data);
     },
-  });
+    [query.data, updateOrdersData]
+  );
 
   const groupedOrdersByStatus = useMemo(() => {
     if (!query.data) return {};
@@ -58,8 +64,7 @@ export const useOrderHistoryManager = () => {
     refetchOrders: query.refetch,
     ordersLoading: !account || isWrongChain ? false : query.isLoading,
     waitForNewOrder,
-    waitForOrderCancellation,
-    orderCancellationLoading,
+    onOrderCancelled,
     groupedOrdersByStatus,
   };
 };

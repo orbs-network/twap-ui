@@ -139,9 +139,9 @@ const WidgetProviderContent = (props: WidgetProps) => {
   const config = useMemo(() => {
     return {
       ...props.config,
-      minChunkSizeUsd: minChunksSizeUsd,
+      minChunkSizeUsd:props.minChunkSizeUsd ||  minChunksSizeUsd,
     };
-  }, [props.config, minChunksSizeUsd]);
+  }, [props.config, minChunksSizeUsd, props.minChunkSizeUsd]);
 
   const twap = useTwap({
     config,

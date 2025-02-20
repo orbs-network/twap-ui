@@ -49,7 +49,7 @@ export class TwapSDK {
   }
 
   async getUserOrders({ account, signal, page, limit }: { account: string; signal?: AbortSignal; page?: number; limit?: number }) {
-    return getOrders({ chainId: this.config.chainId, exchangeAddress: this.config.exchangeAddress, account, signal, page, limit });
+    return getOrders({ chainId: this.config.chainId, config: this.config, account, signal, page, limit });
   }
 
   async waitForNewOrder({ orderId, account, signal, currentOrdersLength }: { orderId?: number; account: string; signal?: AbortSignal; currentOrdersLength?: number }) {

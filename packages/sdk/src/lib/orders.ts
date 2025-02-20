@@ -65,7 +65,7 @@ const getCreatedOrders = async ({
   limit: number;
   config: Config;
 }) => {
-  const exchangeAddress = config.exchangeAddress
+  const exchangeAddress = config.exchangeAddress;
   const exchange = exchangeAddress ? `exchange: "${exchangeAddress}"` : "";
   const maker = account ? `, maker: "${account}"` : "";
 
@@ -116,19 +116,7 @@ export const getCreatedOrder = async ({ endpoint, signal, id, txHash }: { endpoi
   return response.data.orderCreateds;
 };
 
-const getAllCreatedOrders = async ({
-  account,
-  endpoint,
-  signal,
-  config,
-  limit,
-}: {
-  account: string;
-  endpoint: string;
-  signal?: AbortSignal;
-  config: Config;
-  limit: number;
-}) => {
+const getAllCreatedOrders = async ({ account, endpoint, signal, config, limit }: { account: string; endpoint: string; signal?: AbortSignal; config: Config; limit: number }) => {
   let page = 0;
   const orders: any = [];
   // eslint-disable-next-line no-constant-condition
@@ -150,9 +138,6 @@ const getAllCreatedOrders = async ({
 
   return orders;
 };
-
-
-
 
 const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortSignal) => {
   const query = `
@@ -376,19 +361,7 @@ export const getOrderByTxHash = async ({ chainId, txHash, signal }: { chainId: n
   return getOrder({ chainId, txHash, signal });
 };
 
-export const getAllOrders = ({
-  chainId,
-  signal,
-  page,
-  limit = 1_000,
-  config,
-}: {
-  signal?: AbortSignal;
-  page?: number;
-  chainId: number;
-  limit?: number;
-  config: Config;
-}) => {
+export const getAllOrders = ({ chainId, signal, page, limit = 1_000, config }: { signal?: AbortSignal; page?: number; chainId: number; limit?: number; config: Config }) => {
   return getOrders({
     chainId,
     signal,
