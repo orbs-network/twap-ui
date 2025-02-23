@@ -1,11 +1,11 @@
 import styled from "styled-components";
 
 import { NumericFormat } from "react-number-format";
-import { maxUint256 } from "@defi.org/web3-candies";
 import BN from "bignumber.js";
 import React, { CSSProperties } from "react";
 import { Loader } from "./Loader";
 import { useWidgetContext } from "../..";
+import { maxUint256 } from "viem";
 
 export interface Props {
   onChange: (value: string) => void;
@@ -65,7 +65,7 @@ function NumericInput({
             placeholder={_placeholder}
             isAllowed={(values) => {
               const { floatValue = 0 } = values;
-              return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256);
+              return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256.toString());
             }}
             prefix={prefix ? `${prefix} ` : ""}
             value={disabled && value === "0" ? "" : inputValue}

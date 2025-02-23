@@ -3,7 +3,6 @@ import { State, WidgetContextType, Translations, WidgetProps } from "../types";
 import defaultTranlations from "../i18n/en.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TwapErrorWrapper } from "../ErrorHandling";
-import { networks } from "@defi.org/web3-candies";
 import { useTwap } from "@orbs-network/twap-ui-sdk";
 import { OrdersWithPortalPortal } from "./components/orders/Orders";
 import { SubmitOrderModal, SubmitOrderModalWithPortal } from "./components/submit-order-modal/SubmitOrderModal";
@@ -14,6 +13,7 @@ import { mainnet, polygon, bsc, arbitrum, sonic, sei, avalanche, fantom, base, l
 import { GlobalStyles } from "./styles";
 import { LimitPriceWarningWithPortal } from "./components/limit-price-warning";
 import { useMinChunkSizeUsd } from "../hooks/useMinChunkSizeUSD";
+import { networks } from "@orbs-network/twap-sdk";
 
 const viemChains = {
   [networks.eth.id]: mainnet,

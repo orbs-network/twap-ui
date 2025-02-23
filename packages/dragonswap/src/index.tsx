@@ -1,10 +1,9 @@
-import { Configs, getNetwork } from "@orbs-network/twap-sdk";
+import { Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sdk";
 import { Translations, Styles, Widget, UIPreferences, WidgetProps, WidgetProvider, Components, Types } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, useContext, useMemo, ReactNode, useCallback, useState, useEffect } from "react";
 import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledTwapInputs } from "./styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { eqIgnoreCase } from "@defi.org/web3-candies";
 import { ThemeProvider } from "styled-components";
 import { checksumAddress } from "viem";
 

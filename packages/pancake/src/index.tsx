@@ -58,7 +58,6 @@
 //   StyledTokenSelect,
 //   StyledUSD,
 // } from "./styles";
-// import { eqIgnoreCase, isNativeAddress, network, zeroAddress } from "@defi.org/web3-candies";
 // import Web3 from "web3";
 // import BN from "bignumber.js";
 // import { AiOutlineArrowDown } from "@react-icons/all-files/ai/AiOutlineArrowDown";

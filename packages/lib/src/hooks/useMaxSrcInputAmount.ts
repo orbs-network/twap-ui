@@ -1,9 +1,8 @@
-import { isNativeAddress } from "@defi.org/web3-candies";
 import { useMemo } from "react";
 import { useWidgetContext } from "..";
 import { getMinNativeBalance } from "../utils";
 import BN from "bignumber.js";
-import { amountBN } from "@orbs-network/twap-sdk";
+import { amountBN, isNativeAddress } from "@orbs-network/twap-sdk";
 
 export const useMaxSrcInputAmount = () => {
   const { srcToken, config, srcBalance } = useWidgetContext();

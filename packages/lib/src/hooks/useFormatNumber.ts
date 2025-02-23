@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useNumericFormat } from "react-number-format";
-import { useWidgetContext } from "..";
 import { formatDecimals } from "../utils";
 import BN from "bignumber.js";
 

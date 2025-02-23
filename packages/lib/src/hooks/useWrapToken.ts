@@ -1,10 +1,10 @@
-import { iwethabi } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useWidgetContext } from "..";
 import { logger } from "../utils";
 import { useNetwork } from "./useNetwork";
 import BN from "bignumber.js";
 import { waitForTransactionReceipt } from "viem/actions";
+import { iwethabi } from "@orbs-network/twap-sdk";
 
 export const useWrapToken = () => {
   const { account, twap, walletClient, publicClient, callbacks } = useWidgetContext();

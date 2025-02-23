@@ -1,11 +1,11 @@
-import { networks } from "@defi.org/web3-candies";
 import { useMemo } from "react";
 import { useWidgetContext } from "..";
+import { getNetwork } from "@orbs-network/twap-sdk";
 
 export const useNetwork = () => {
   const { config } = useWidgetContext();
 
   return useMemo(() => {
-    return Object.values(networks).find((network) => network.id === config.chainId);
+    return getNetwork(config.chainId);
   }, [config]);
 };

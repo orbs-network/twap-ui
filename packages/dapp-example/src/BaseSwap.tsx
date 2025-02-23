@@ -7,7 +7,6 @@
 // import { Dapp, TokensList, UISelector } from "./Components";
 // import { Popup } from "./Components";
 // import { SelectorOption, TokenListItem } from "./types";
-// import { erc20s, network } from "@defi.org/web3-candies";
 // import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 // import { DappProvider } from "./context";
 

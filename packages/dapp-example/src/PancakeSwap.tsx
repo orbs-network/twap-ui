@@ -4,7 +4,6 @@
 // import { useWeb3React } from "@web3-react/core";
 // import { Dapp, Popup, TokensList, UISelector } from "./Components";
 // import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-// import { erc20s, network, zeroAddress } from "@defi.org/web3-candies";
 // import { SelectorOption, TokenListItem } from "./types";
 // import { Box } from "@mui/system";
 // import { Button, styled, Typography } from "@mui/material";

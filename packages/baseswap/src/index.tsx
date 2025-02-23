@@ -43,7 +43,6 @@
 //   StyledPriceCard,
 //   StyledCreateOrderModal,
 // } from "./styles";
-// import { eqIgnoreCase, isNativeAddress, network } from "@defi.org/web3-candies";
 // import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 // import { IoWalletOutline } from "@react-icons/all-files/io5/IoWalletOutline";
 

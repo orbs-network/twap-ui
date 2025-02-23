@@ -21,7 +21,6 @@
     "test:watch": "NETWORK=FTM DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors --watch"
   },
   "dependencies": {
-    "@defi.org/web3-candies": "^5.0.6",
     "@orbs-network/twap": "^2.0.1",
     "@orbs-network/twap-sdk": "^3.0.24",
     "@react-icons/all-files": "^4.1.0",

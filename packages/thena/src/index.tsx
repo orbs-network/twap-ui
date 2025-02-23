@@ -18,7 +18,6 @@
 // import translations from "./i18n/en.json";
 // import { createContext, useContext, useEffect, useMemo } from "react";
 // import Web3 from "web3";
-// import { eqIgnoreCase, isNativeAddress, network, networks } from "@defi.org/web3-candies";
 // import { WidgetProps } from "@orbs-network/twap-ui";
 // import { memo, ReactNode, useCallback, useState } from "react";
 // import {

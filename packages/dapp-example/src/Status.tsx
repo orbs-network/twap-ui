@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { network } from "@defi.org/web3-candies";
 import BN from "bignumber.js";
 import { useSelectedDapp, useSelectedDappConfig } from "./hooks";
 import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
 import { useEffect, useState } from "react";
 import { get, size, sortBy } from "lodash";
+import { getNetwork } from "@orbs-network/twap-sdk";
 const chainNames = {
   ftm: "fantom",
   avax: "avalanche",
@@ -22,7 +22,7 @@ function useConfig() {
   const twapLibVersion = require("@orbs-network/twap/package.json").version || "?";
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const twapUiVersion = require("@orbs-network/twap-ui/package.json").version || "?";
-  const info = network(config?.chainId || 0) || {};
+  const info = getNetwork(config?.chainId || 0)
   return { twapVersion, twapLibVersion, twapUiVersion, info, ...config };
 }
 

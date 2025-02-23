@@ -3,7 +3,7 @@ import { useWidgetContext } from "../widget/widget-context";
 import BN from "bignumber.js";
 import { readContract } from "viem/actions";
 import { useHandleNativeAddress } from "./useHandleNativeAddress";
-import { erc20abi } from "@defi.org/web3-candies";
+import { erc20Abi } from "viem";
 
 export const useHasAllowance = () => {
   const { account, srcToken, config, twap, publicClient } = useWidgetContext();
@@ -17,7 +17,7 @@ export const useHasAllowance = () => {
     async () => {
       const allowance = await (readContract as any)(publicClient, {
         address: tokenAddress,
-        abi: erc20abi,
+        abi: erc20Abi,
         functionName: "allowance",
         args: [account, config.twapAddress],
       });

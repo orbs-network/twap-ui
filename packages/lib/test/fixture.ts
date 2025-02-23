@@ -1,6 +1,4 @@
-// import { erc20s, setWeb3Instance, Token as cToken, web3, network, erc20sData } from "@defi.org/web3-candies";
 // import { configure } from "@testing-library/react";
-// import { useChaiBigNumber } from "@defi.org/web3-candies/dist/hardhat";
 // import type { TokenData } from "@orbs-network/twap";
 // import Web3 from "web3";
 // import { expect } from "chai";

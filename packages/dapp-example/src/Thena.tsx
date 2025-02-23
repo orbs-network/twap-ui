@@ -7,7 +7,6 @@
 // import { Dapp, TokensList, UISelector } from "./Components";
 // import { Popup } from "./Components";
 // import { useEffect, useMemo, useState } from "react";
-// import { erc20s, isNativeAddress, network } from "@defi.org/web3-candies";
 // import { SelectorOption, TokenListItem } from "./types";
 // import { DappProvider } from "./context";
 

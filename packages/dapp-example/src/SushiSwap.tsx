@@ -3,16 +3,16 @@
 // import { useConnectWallet, useGetTokens, usePriceUSD, useTheme, useTrade } from "./hooks";
 // import { useWeb3React } from "@web3-react/core";
 // import { Dapp, Popup, TokensList, UISelector } from "./Components";
-// import { useCallback, useEffect, useMemo, useState } from "react";
+// import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 // import MuiTooltip from "@mui/material/Tooltip";
 // import { SelectorOption, TokenListItem } from "./types";
-// import { getConfig, mapCollection, size, TooltipProps, Configs, ModalProps, TokensListModalProps } from "@orbs-network/twap-ui";
+// import { getConfig, mapCollection, size, TooltipProps, Configs } from "@orbs-network/twap-ui";
 // import { DappProvider } from "./context";
-// import { eqIgnoreCase, network } from "@defi.org/web3-candies";
+// import { baseSwapTokens } from "./BaseSwap";
 
 // const name = "SushiSwap";
 // const configs = [Configs.SushiArb, Configs.SushiBase, Configs.SushiEth];
-
+// console.log(configs);
 // export const useDappTokens = () => {
 //   const config = useConfig();
 //   const isBase = config?.chainId === Configs.SushiBase.chainId;
@@ -20,6 +20,17 @@
 //   const nativeToken = network(config.chainId).native;
 //   const parseListToken = useCallback(
 //     (tokenList?: any) => {
+//       if (isBase) {
+//         return mapCollection(baseSwapTokens, (it, key) => {
+//           return {
+//             address: key,
+//             decimals: it.decimals,
+//             symbol: it.symbol,
+//             logoURI: it.tokenInfo.logoURI,
+//           };
+//         });
+//       }
+
 //       const res = tokenList?.tokens
 //         .filter((it: any) => it.chainId === config?.chainId)
 //         .map(({ symbol, address, decimals, logoURI, name }: any) => ({
@@ -54,7 +65,7 @@
 //   return useGetTokens({
 //     url,
 //     parse: parseListToken,
-//     tokens: isBase ? [] : undefined,
+//     tokens: isBase ? baseSwapTokens : undefined,
 //     modifyList: (tokens: any) => tokens.slice(0, 20),
 //   });
 // };
@@ -73,9 +84,9 @@
 //   });
 // };
 
-// const TokensListModal = ({ onSelect, children }: TokensListModalProps) => {
+// const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNode; onSelect: (value: any) => void; selected: any }) => {
 //   const { data: baseAssets } = useDappTokens();
-//   const [isOpen, setOpen] = useState(false);
+//   const [open, setOpen] = useState(false);
 //   const { isDarkTheme } = useTheme();
 //   const tokensListSize = size(baseAssets);
 //   const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
@@ -87,7 +98,7 @@
 
 //   return (
 //     <>
-//       <Popup isOpen={isOpen} onClose={() => setOpen(false)}>
+//       <Popup isOpen={open} onClose={() => setOpen(false)}>
 //         <StyledSushiModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
 //           <TokensList tokens={parsedList} onClick={_onSelect} />
 //         </StyledSushiModalContent>
@@ -122,6 +133,7 @@
 
 // const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 //   const { account, library, chainId } = useWeb3React();
+
 //   const connect = useConnectWallet();
 //   const { data: dappTokens } = useDappTokens();
 //   const { isDarkTheme } = useTheme();
@@ -150,37 +162,37 @@
 //     if (!toToken) {
 //       setToToken(dappTokens?.[2]);
 //     }
-//   }, [dappTokens, toToken]);
+//   }, [dappTokens, toToken, fromToken]);
 
 //   const onSwitchTokens = () => {
 //     setFromToken(toToken);
 //     setToToken(fromToken);
 //   };
-//   return null;
 
-//   // return (
-//   //   <TWAP
-//   //     configChainId={chainId}
-//   //     connect={connect}
-//   //     account={account}
-//   //     connector={connector}
-//   //     srcToken={fromToken}
-//   //     dstToken={toToken}
-//   //     dappTokens={dappTokens}
-//   //     isDarkTheme={isDarkTheme}
-//   //     useMarketPrice={_useTrade}
-//   //     chainId={chainId}
-//   //     isLimitPanel={limit}
-//   //     Modal={SushiModal}
-//   //     getTokenLogo={getTokenLogo}
-//   //     useUSD={useUSD}
-//   //     onSrcTokenSelected={(it: any) => setFromToken(it)}
-//   //     onDstTokenSelected={(it: any) => setToToken(it)}
-//   //     onSwitchTokens={onSwitchTokens}
-//   //     useToken={useToken}
-//   //     components={{ Tooltip, Modal, TokensListModal }}
-//   //   />
-//   // );
+//   return (
+//     <TWAP
+//       configChainId={chainId}
+//       connect={connect}
+//       account={account}
+//       connector={connector}
+//       srcToken={fromToken}
+//       dstToken={toToken}
+//       dappTokens={dappTokens}
+//       TokenSelectModal={TokenSelectModal}
+//       isDarkTheme={isDarkTheme}
+//       useTrade={_useTrade}
+//       connectedChainId={chainId}
+//       limit={limit}
+//       Modal={SushiModal}
+//       getTokenLogo={getTokenLogo}
+//       useUSD={useUSD}
+//       onSrcTokenSelected={(it: any) => setFromToken(it)}
+//       onDstTokenSelected={(it: any) => setToToken(it)}
+//       onSwitchTokens={onSwitchTokens}
+//       Tooltip={Tooltip}
+//       useToken={useToken}
+//     />
+//   );
 // };
 
 // const SushiModal = (props: SushiModalProps) => {
@@ -196,14 +208,6 @@
 //   );
 // };
 
-// const Modal = (props: ModalProps) => {
-//   return (
-//     <Popup isOpen={props.isOpen} onClose={props.onClose}>
-//       {props.children}
-//     </Popup>
-//   );
-// };
-
 // const useConfig = () => {
 //   const { chainId } = useWeb3React();
 
@@ -211,7 +215,7 @@
 // };
 
 // const DappComponent = () => {
-//   const [selected, setSelected] = useState(SelectorOption.TWAP);
+//   const [selected, setSelected] = useState(SelectorOption.LIMIT);
 //   const { isDarkTheme } = useTheme();
 
 //   const config = useConfig();

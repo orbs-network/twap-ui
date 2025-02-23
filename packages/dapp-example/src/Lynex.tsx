@@ -6,8 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { TooltipProps, Configs, TokensListModalProps, ModalProps, Widget, Token, useAmountBN, WidgetProvider, UIPreferences } from "@orbs-network/twap-ui";
 import { DappProvider } from "./context";
-import { eqIgnoreCase, networks } from "@defi.org/web3-candies";
-import { Config } from "@orbs-network/twap-sdk";
+import { Config, eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
 
 const config = Configs.Lynex;
 

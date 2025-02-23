@@ -28,7 +28,6 @@
 //   StyledTopGrid,
 //   StyledTradeSize,
 // } from "./styles";
-// import { isNativeAddress, network } from "@defi.org/web3-candies";
 // import { memo } from "react";
 // import { BsQuestionCircle } from "@react-icons/all-files/bs/BsQuestionCircle";
 // import { HiArrowDown } from "@react-icons/all-files/hi/HiArrowDown";

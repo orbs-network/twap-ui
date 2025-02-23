@@ -1,7 +1,7 @@
-import { isNativeAddress, eqIgnoreCase } from "@defi.org/web3-candies";
 import { useMemo } from "react";
 import { useWidgetContext } from "..";
 import { useNetwork } from "./useNetwork";
+import { eqIgnoreCase, isNativeAddress } from "@orbs-network/twap-sdk";
 
 export const useShouldOnlyWrap = () => {
   const { srcToken, dstToken } = useWidgetContext();

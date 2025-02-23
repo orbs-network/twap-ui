@@ -43,7 +43,6 @@
 //   StyledMobileTabsMenuButton,
 //   StyledLimitSwitch,
 // } from "./styles";
-// import { isNativeAddress, network } from "@defi.org/web3-candies";
 // import Web3 from "web3";
 // import { TwapContextUIPreferences } from "@orbs-network/twap-ui";
 // import { VscSettings } from "@react-icons/all-files/vsc/VscSettings";

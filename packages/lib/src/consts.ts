@@ -1,5 +1,3 @@
-import { networks } from "@defi.org/web3-candies";
-
 export const REFETCH_ORDER_HISTORY = 40_000;
 export const REFETCH_USD = 15_000;
 export const REFETCH_BALANCE = 15_000;

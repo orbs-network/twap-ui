@@ -21,7 +21,6 @@
     "test:watch": "NETWORK=FTM DOTENV_CONFIG_PATH=../../.env jest --setupFiles dotenv/config --colors --watch"
   },
   "dependencies": {
-    "@defi.org/web3-candies": "^5.0.6",
     "@orbs-network/swap-ui": "^0.0.19",
     "@orbs-network/twap": "^2.3.3",
     "@orbs-network/twap-sdk": "^3.0.24",
@@ -31,9 +30,7 @@
     "bignumber.js": "9.x",
     "moment": "2.x",
     "react-error-boundary": "^4.0.10",
-    "react-modal": "^3.16.3",
     "react-number-format": "5.x",
-    "react-tooltip": "^5.28.0",
     "react-virtuoso": "^4.12.3",
     "styled-components": "^6.1.12",
     "viem": "^2.23.2"

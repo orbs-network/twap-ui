@@ -1,5 +1,4 @@
 import { InjectedConnector } from "@web3-react/injected-connector";
-import { zeroAddress, convertDecimals, isNativeAddress, networks, erc20s, eqIgnoreCase, network, erc20abi } from "@defi.org/web3-candies";
 import { useWeb3React } from "@web3-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearchParams } from "react-router-dom";
@@ -12,8 +11,9 @@ import BigNumber from "bignumber.js";
 import { useMediaQuery } from "@mui/material";
 import { useDappContext } from "./context";
 import BN from "bignumber.js";
-import { getNetwork } from "@orbs-network/twap-sdk";
+import { eqIgnoreCase, getNetwork, isNativeAddress, networks, zeroAddress } from "@orbs-network/twap-sdk";
 import { size, sortBy } from "lodash";
+import { erc20Abi } from "viem";
 export const injectedConnector = new InjectedConnector({});
 
 export const useAddedTokens = () => {
@@ -99,7 +99,6 @@ const getTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]
 
 export const useGetTokens = (getCustomTokens?: () => Promise<Token[]>) => {
   const chainId = useSelectedDappConfig()?.chainId;
-  const baseAssets = useBaseAssets();
   const { account } = useWeb3React();
   const addedTokens = useAddedTokens();
 
@@ -113,9 +112,7 @@ export const useGetTokens = (getCustomTokens?: () => Promise<Token[]>) => {
         tokenList = await getTokens(chainId!, signal);
       }
 
-      const base = baseAssets && Object.values(baseAssets).map((t: any) => t().address);
-
-      const candiesAddresses = base ? [zeroAddress, ...base] : [zeroAddress];
+      const candiesAddresses = [zeroAddress];
       let _tokens: any = [];
       try {
         _tokens = sortBy(tokenList, (t: any) => {
@@ -128,7 +125,7 @@ export const useGetTokens = (getCustomTokens?: () => Promise<Token[]>) => {
 
       return [...addedTokens, ..._tokens];
     },
-    { enabled: !!account, staleTime: Infinity },
+    { enabled: !!account, staleTime: Infinity }
   );
 };
 
@@ -199,14 +196,14 @@ export const useBalanceQuery = (address?: string) => {
     ["useDappExampleBalance", account, address, config.chainId],
     () => {
       if (isNativeAddress(address!)) return library!.eth.getBalance(account!).then(BN);
-      const contract = new library!.eth.Contract(erc20abi, address);
+      const contract = new library!.eth.Contract(erc20Abi, address);
       return contract.methods.balanceOf(account!).call().then(BN);
     },
     {
       enabled: !!library && !!account && !!address,
       refetchInterval: 20_000,
       staleTime: Infinity,
-    },
+    }
   );
 };
 
@@ -235,14 +232,14 @@ export function useDebounce(value: string, delay: number) {
         clearTimeout(handler);
       };
     },
-    [value, delay], // Only re-call effect if value or delay changes
+    [value, delay] // Only re-call effect if value or delay changes
   );
   return debouncedValue;
 }
 
 export const usePriceUSD = (address?: string) => {
   const { config } = useDappContext();
-  const wToken = network(config.chainId)?.wToken.address;
+  const wToken = getNetwork(config.chainId)?.wToken.address;
 
   const { chainId } = useWeb3React();
   return useQuery<number>({
@@ -282,7 +279,7 @@ export async function fetchLLMAPrice(token: string, chainId: number | string) {
     const chainName = chainIdToName[chainId as any] || "Unknown Chain";
 
     if (isNativeAddress(token)) {
-      token = network(parseInt(chainId as any)).wToken.address;
+      token = getNetwork(parseInt(chainId as any))!.wToken.address;
     }
     const tokenAddressWithChainId = `${chainName}:${token}`;
     const url = `https://coins.llama.fi/prices/current/${tokenAddressWithChainId}`;
@@ -315,7 +312,7 @@ const useHandleAddress = (address?: string) => {
       return network?.wToken.address;
     }
     return address;
-  }, [address, network]);
+  }, [address, chainId]);
 };
 
 export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: string, tokens?: any) => {
@@ -344,7 +341,7 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
           .times(fromTokenUsd || "0")
           .div(toTokenUsd || "0"),
         fromTokenDecimals,
-        toTokenDecimals,
+        toTokenDecimals
       ).integerValue(BigNumber.ROUND_FLOOR);
 
       return result.toString();
@@ -368,28 +365,10 @@ export const useSelectedDappConfig = () => {
   return configs?.find((it) => it.chainId === chainId);
 };
 
-export const useBaseAssets = () => {
-  const { chainId } = useWeb3React();
-  return useMemo(() => {
-    switch (chainId) {
-      case networks.eth.id:
-        return erc20s.eth;
-      case networks.arb.id:
-        return erc20s.arb;
-      case networks.base.id:
-        return erc20s.base;
-      case networks.poly.id:
-        return erc20s.poly;
-      case networks.bsc.id:
-        return erc20s.bsc;
-      case networks.blast.id:
-        return erc20s.blast;
-      case networks.ftm.id:
-        return erc20s.ftm;
-      case networks.linea.id:
-        return erc20s.linea;
-      default:
-        break;
-    }
-  }, [chainId]);
-};
+export const ten = BN(10);
+
+export function convertDecimals(n: BN.Value, sourceDecimals: number, targetDecimals: number): BN {
+  if (sourceDecimals === targetDecimals) return BN(n);
+  else if (sourceDecimals > targetDecimals) return BN(n).idiv(ten.pow(sourceDecimals - targetDecimals));
+  else return BN(n).times(ten.pow(targetDecimals - sourceDecimals));
+}

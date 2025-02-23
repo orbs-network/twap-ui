@@ -24,12 +24,10 @@ import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
 import Backdrop from "@mui/material/Backdrop";
 import { Button, styled, TextField, Typography } from "@mui/material";
 import { Components, Styles, Token, useAmountUi, useFormatNumber } from "@orbs-network/twap-ui";
-import { eqIgnoreCase } from "@defi.org/web3-candies";
-import { Config } from "@orbs-network/twap-sdk";
+import { Config, eqIgnoreCase } from "@orbs-network/twap-sdk";
 import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
 import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
 import { dapps } from "./config";
-import { Status } from "./Status";
 import { useAddedTokens, useBalanceQuery, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
 import { useNavigate } from "react-router-dom";
 import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
@@ -362,10 +360,7 @@ export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
   const [view, setView] = useState(TokenListView.DEFAULT);
   // const { addToken } = usePersistedStore();
 
-  const onAddToken = (token: Token) => {
-    setView(TokenListView.DEFAULT);
-    // addToken(chainId!, token);
-  };
+ 
 
   const filteredTokens = useMemo(() => filterTokens(tokens, filterValue), [filterValue, tokensLength]);
 
@@ -384,7 +379,6 @@ export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
           <StyledListBtn onClick={() => setView(TokenListView.MANAGE_TOKENS)}>Manage tokens</StyledListBtn>
         </StyledListSettings>
       )}
-      {view === TokenListView.ADD_TOKEN && <AddToken onAddToken={onAddToken} />}
       {view === TokenListView.MANAGE_TOKENS && <ManageAddedTokens />}
       {view === TokenListView.DEFAULT && (
         <StyledTokensList>

@@ -3,7 +3,6 @@
 // import { initFixture, maker, tokens } from "./fixture";
 // import { act, renderHook, waitFor } from "@testing-library/react";
 // import { Configs, Order, Status, TWAPLib } from "@orbs-network/twap";
-// import { bn, chainId, contract, web3, zero, zeroAddress } from "@defi.org/web3-candies";
 // import { TimeResolution, useTwapStore } from "../src/store";
 // import { expect } from "chai";
 // import BN from "bignumber.js";
@@ -12,7 +11,6 @@
 // import { useOrderPastEvents } from "../src/hooks";
 // import { TwapContext, TWAPContextProps } from "../src/context";
 // import { OrderUI } from "../src/types";
-// import { useChaiBigNumber } from "@defi.org/web3-candies/dist/hardhat";
 // import { query } from "../src/query";
 //   const useOrdersHistoryQuery = query.useOrdersHistory
 // useChaiBigNumber();

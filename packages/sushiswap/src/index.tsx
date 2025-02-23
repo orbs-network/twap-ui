@@ -59,7 +59,6 @@
 // import BN from "bignumber.js";
 // import { BsArrowDownShort } from "@react-icons/all-files/bs/BsArrowDownShort";
 // import { IoWalletSharp } from "@react-icons/all-files/io5/IoWalletSharp";
-// import { network } from "@defi.org/web3-candies";
 // import { Token } from "@orbs-network/twap-ui";
 // import { ThemeProvider } from "styled-components";
 

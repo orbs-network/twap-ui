@@ -1,5 +1,4 @@
-import { isNativeAddress } from "@defi.org/web3-candies";
-import { getNetwork } from "@orbs-network/twap-sdk";
+import { getNetwork, isNativeAddress } from "@orbs-network/twap-sdk";
 import { useMemo } from "react";
 import { useWidgetContext } from "../widget/widget-context";
 

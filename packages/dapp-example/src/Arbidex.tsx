@@ -5,7 +5,6 @@
 // import { Dapp, TokensList, UISelector } from "./Components";
 // import { Popup } from "./Components";
 // import { SelectorOption, TokenListItem } from "./types";
-// import { erc20sData, zeroAddress, erc20s, isNativeAddress, network } from "@defi.org/web3-candies";
 // import { createContext, ReactNode, useContext, useState } from "react";
 // import { Configs, mapKeys } from "@orbs-network/twap-ui";
 // import { DappProvider } from "./context";

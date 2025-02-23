@@ -8,12 +8,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { TooltipProps, Configs, TokensListModalProps, ModalProps, Widget, useAmountBN, Token } from "@orbs-network/twap-ui";
 import { DappProvider } from "../context";
-import { eqIgnoreCase, network, networks } from "@defi.org/web3-candies";
 import _ from "lodash";
+import { eqIgnoreCase, getNetwork, networks } from "@orbs-network/twap-sdk";
 const config = Configs.DragonSwap;
 
 export const useDappTokens = () => {
-  const nativeToken = network(config.chainId).native;
+  const nativeToken = getNetwork(config.chainId)?.native;
   return useMemo(() => {
     return tokens.tokens
       .filter((it: any) => it.chainId === config?.chainId)

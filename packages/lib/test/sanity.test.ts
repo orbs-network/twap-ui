@@ -1,6 +1,5 @@
 // import "react";
 // import { expect } from "chai";
-// import { hasWeb3Instance, network } from "@defi.org/web3-candies";
 // import { CHAIN_ID, initFixture } from "./fixture";
 
 // describe("Sanity", function () {
