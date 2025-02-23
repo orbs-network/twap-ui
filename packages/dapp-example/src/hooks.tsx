@@ -52,6 +52,21 @@ const getZircuitTokens = async (signal?: AbortSignal): Promise<Token[]> => {
   return [networks.eth.native, ...result];
 };
 
+
+const getPolygonTokens = async (signal?: AbortSignal): Promise<Token[]> => {
+  const tokens = await fetch(`https://tokens.coingecko.com/polygon-pos/all.json`, { signal }).then((res) => res.json());
+  const result =  tokens.tokens.map((token: any) => {
+    return {
+      address: token.address,
+      symbol: token.symbol,
+      decimals: token.decimals,
+      logoUrl: token.logoURI,
+    };
+  });
+
+  return [networks.eth.native, ...result];
+};
+
 const getBaseTokens = async (signal?: AbortSignal): Promise<Token[]> => {
   const payload = await fetch(`https://tokens.coingecko.com/base/all.json`, { signal }).then((res) => res.json());
   const result = payload.tokens.map((token: any) => {
@@ -91,6 +106,8 @@ const getTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]
       return getBaseTokens(signal);
     case Configs.Ocelex.chainId:
       return getZircuitTokens(signal);
+      case Configs.QuickSwap.chainId:
+        return getPolygonTokens(signal);
 
     default:
       return getDefaultTokens(chainId, signal);
@@ -197,6 +214,8 @@ export const useBalanceQuery = (address?: string) => {
     () => {
       if (isNativeAddress(address!)) return library!.eth.getBalance(account!).then(BN);
       const contract = new library!.eth.Contract(erc20Abi, address);
+      console.log(contract);
+      
       return contract.methods.balanceOf(account!).call().then(BN);
     },
     {

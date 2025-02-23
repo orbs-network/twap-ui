@@ -5,10 +5,9 @@ import { Dapp, Popup, SelectorOption, TokensList, UISelector } from "./Component
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { TooltipProps, Configs, TokensListModalProps, ModalProps, Widget, Token, useAmountBN, WidgetProvider, UIPreferences } from "@orbs-network/twap-ui";
-import { DappProvider } from "./context";
 import { Config, eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
 
-const config = Configs.QuickSwap;
+const config = Configs.Lynex;
 
 const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
   const { data: baseAssets } = useGetTokens();
