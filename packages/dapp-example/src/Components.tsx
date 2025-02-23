@@ -360,8 +360,6 @@ export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
   const [view, setView] = useState(TokenListView.DEFAULT);
   // const { addToken } = usePersistedStore();
 
- 
-
   const filteredTokens = useMemo(() => filterTokens(tokens, filterValue), [filterValue, tokensLength]);
 
   return (

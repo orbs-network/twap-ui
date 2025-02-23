@@ -22,7 +22,7 @@ function useConfig() {
   const twapLibVersion = require("@orbs-network/twap/package.json").version || "?";
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const twapUiVersion = require("@orbs-network/twap-ui/package.json").version || "?";
-  const info = getNetwork(config?.chainId || 0)
+  const info = getNetwork(config?.chainId || 0);
   return { twapVersion, twapLibVersion, twapUiVersion, info, ...config };
 }
 

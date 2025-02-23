@@ -2717,6 +2717,32 @@
   resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.19.tgz#1987f8c355d941d27ae5e55a64928a4fc86d7e8e"
   integrity sha512-OPszeW+aUOUUuwuNPoC9g8y0cLs2cEau8hkrZkxbo2denhEvdIYyLTxah4jl42w1cM5dnJOlJOg6SVLAx5zdng==
 
+"@orbs-network/twap-ui-arbidex@^3.0.24":
+  version "3.0.24"
+  resolved "https://registry.yarnpkg.com/@orbs-network/twap-ui-arbidex/-/twap-ui-arbidex-3.0.24.tgz#701df95ec28379ea90b2b3fe4b1426d411f09e07"
+  integrity sha512-hkOMtw4bITitJSyWj+GExvxH0h0e6nGG8QoGxmDEEWD638A+02/wMOWQkB+kdggOq6ZnTKf9IoMXGV7cXoB+0w==
+  dependencies:
+    "@orbs-network/twap-ui" "^3.0.24"
+    web3 "1.x"
+
+"@orbs-network/twap-ui-baseswap@^3.0.24":
+  version "3.0.24"
+  resolved "https://registry.yarnpkg.com/@orbs-network/twap-ui-baseswap/-/twap-ui-baseswap-3.0.24.tgz#1f89ba2334e7e5848365d5d6514ebaeab8eb1397"
+  integrity sha512-Bqb8pbnUDNHE8FR988zzOPxnjF/bbB6jo15oRGvSDu6dgbOoqYp0pXYZ0Ow44F8K2uVbd8/6yMoTRpgY3NBg4g==
+  dependencies:
+    "@orbs-network/twap" "^2.0.1"
+    "@orbs-network/twap-ui" "^3.0.24"
+    web3 "1.x"
+
+"@orbs-network/twap-ui-chronos@^3.0.24":
+  version "3.0.24"
+  resolved "https://registry.yarnpkg.com/@orbs-network/twap-ui-chronos/-/twap-ui-chronos-3.0.24.tgz#5b991959104a1476931264387a9be235c283fd78"
+  integrity sha512-tCKDdFrJKosc9bL53MHyf9gHdrZx0AYs28d+pLxc80XFt+Zv7uAtTZj8khrKineNzs8BqmSjQdqZ9nZ4FtFPAg==
+  dependencies:
+    "@orbs-network/twap" "^2.0.1"
+    "@orbs-network/twap-ui" "^3.0.24"
+    web3 "1.x"
+
 "@orbs-network/twap-ui-kinetix@^3.0.11":
   version "3.0.11"
   resolved "https://registry.yarnpkg.com/@orbs-network/twap-ui-kinetix/-/twap-ui-kinetix-3.0.11.tgz#89164b3d1551862c24bdb88bd1d09bbd5525d943"
@@ -2733,6 +2759,15 @@
   dependencies:
     "@orbs-network/twap" "^2.0.1"
     "@orbs-network/twap-ui" "^3.0.11"
+
+"@orbs-network/twap-ui-pancake@^3.0.24":
+  version "3.0.24"
+  resolved "https://registry.yarnpkg.com/@orbs-network/twap-ui-pancake/-/twap-ui-pancake-3.0.24.tgz#618c48fc55909b2c73cf8c142ea6d0474ebfc824"
+  integrity sha512-jcsI2OBSbrOD2wcu+QPCDtgPtiZ8DY8n0QLwfYQqJ6i1Oz1+209uFQk5hycuEVq4qq3+qeIWb7R7RIKCFPGblQ==
+  dependencies:
+    "@orbs-network/twap" "^2.0.1"
+    "@orbs-network/twap-ui" "^3.0.24"
+    web3 "1.x"
 
 "@orbs-network/twap-ui-pangolin@^3.0.11":
   version "3.0.11"
@@ -2779,6 +2814,15 @@
     "@orbs-network/twap-ui" "^3.0.11"
     web3 "1.x"
 
+"@orbs-network/twap-ui-sushiswap@^3.0.24":
+  version "3.0.24"
+  resolved "https://registry.yarnpkg.com/@orbs-network/twap-ui-sushiswap/-/twap-ui-sushiswap-3.0.24.tgz#9ad67098544c78f5eba6034792d18939766e2b74"
+  integrity sha512-01i9+KYlX0CLaI+H/G0BEtjQHbVbdMJCvbKK77CUQkhYIrIn4T0H71q5vdhIYkQZl1saPW5z2XVTsvQ+mMzQEA==
+  dependencies:
+    "@orbs-network/twap" "^2.0.1"
+    "@orbs-network/twap-ui" "^3.0.24"
+    web3 "1.x"
+
 "@orbs-network/twap-ui-syncswap@^3.0.11":
   version "3.0.11"
   resolved "https://registry.yarnpkg.com/@orbs-network/twap-ui-syncswap/-/twap-ui-syncswap-3.0.11.tgz#8f505445a3f519c8f2e97b7ea3b5d746da0a2de4"
@@ -2786,6 +2830,15 @@
   dependencies:
     "@orbs-network/twap" "^2.0.1"
     "@orbs-network/twap-ui" "^3.0.11"
+    web3 "1.x"
+
+"@orbs-network/twap-ui-thena@^3.0.24":
+  version "3.0.24"
+  resolved "https://registry.yarnpkg.com/@orbs-network/twap-ui-thena/-/twap-ui-thena-3.0.24.tgz#3c9f6cb985b60a0f90980579c9b1d697ae887ab0"
+  integrity sha512-9BozIusDrzO4rCX5lI8B/jLZWsf/HjecYR4RU0M3sfeO+8MOzUMput6VGryOxodKCeghxgm/L4ziM+VuT7QFew==
+  dependencies:
+    "@orbs-network/twap" "^2.0.1"
+    "@orbs-network/twap-ui" "^3.0.24"
     web3 "1.x"
 
 "@orbs-network/twap@^2.0.1", "@orbs-network/twap@^2.2.7", "@orbs-network/twap@^2.3.3":

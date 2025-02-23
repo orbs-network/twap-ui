@@ -125,7 +125,7 @@ export const useGetTokens = (getCustomTokens?: () => Promise<Token[]>) => {
 
       return [...addedTokens, ..._tokens];
     },
-    { enabled: !!account, staleTime: Infinity }
+    { enabled: !!account, staleTime: Infinity },
   );
 };
 
@@ -203,7 +203,7 @@ export const useBalanceQuery = (address?: string) => {
       enabled: !!library && !!account && !!address,
       refetchInterval: 20_000,
       staleTime: Infinity,
-    }
+    },
   );
 };
 
@@ -232,7 +232,7 @@ export function useDebounce(value: string, delay: number) {
         clearTimeout(handler);
       };
     },
-    [value, delay] // Only re-call effect if value or delay changes
+    [value, delay], // Only re-call effect if value or delay changes
   );
   return debouncedValue;
 }
@@ -341,7 +341,7 @@ export const useTrade = (fromToken?: string, toToken?: string, srcAmount?: strin
           .times(fromTokenUsd || "0")
           .div(toTokenUsd || "0"),
         fromTokenDecimals,
-        toTokenDecimals
+        toTokenDecimals,
       ).integerValue(BigNumber.ROUND_FLOOR);
 
       return result.toString();
