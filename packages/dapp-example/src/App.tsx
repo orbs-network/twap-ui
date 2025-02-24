@@ -1,33 +1,26 @@
-import { getTheme, globalStyle, StyledApp } from "./styles";
-import { Route, Routes, Navigate } from "react-router-dom";
-import { useEagerlyConnect, useSelectedDapp, useTheme } from "./hooks";
-import { dapps, defaultDapp } from "./config";
-import { GlobalStyles, ThemeProvider } from "@mui/material";
-import { useMemo } from "react";
+import { ThemeProvider } from "styled-components";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import "@rainbow-me/rainbowkit/styles.css";
+import { Dapp } from "./Dapp";
+import { useDappContext } from "./context";
+import { GlobalStyles, darkTheme } from "./styles";
+import { ConfigSelector } from "./Components";
 
-const useGlobalStyles = () => {
-  const dapp = useSelectedDapp();
-  return globalStyle(dapp.selectedDapp?.path);
-};
 
 function App() {
-  useEagerlyConnect();
-  const styles = useGlobalStyles();
-  const { isDarkTheme } = useTheme();
-
-  const theme = useMemo(() => getTheme(isDarkTheme), [isDarkTheme]);
+  const { config } = useDappContext();
 
   return (
-    <ThemeProvider theme={theme}>
-      <StyledApp>
-        <GlobalStyles styles={styles} />
-        <Routes>
-          {dapps.map(({ path, Component }) => {
-            return <Route path={path} element={<Component />} key={path} />;
-          })}
-          <Route path="*" element={<Navigate to={defaultDapp.path} />} />
-        </Routes>
-      </StyledApp>
+    <ThemeProvider theme={darkTheme}>
+      <div className="app">
+      <GlobalStyles config={config} />
+      {/* <ToggleTheme /> */}
+      <div className="navbar">
+        <ConfigSelector />
+      <ConnectButton />
+      </div>
+      <Dapp />
+      </div>
     </ThemeProvider>
   );
 }

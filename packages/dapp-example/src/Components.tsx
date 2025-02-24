@@ -1,214 +1,57 @@
-import Modal from "@mui/material/Modal";
-import React, { ReactNode, useEffect, useMemo, useState } from "react";
-import {
-  StyledCloseIcon,
-  StyledDappLayoutContent,
-  StyledDrawerContent,
-  StyledListToken,
-  StyledMenuDrawer,
-  StyledMenuList,
-  StyledMenuListItemButton,
-  StyledMenuLogo,
-  StyledMenuMobileToggle,
-  StyledSearchInput,
-  StyledThemeToggle,
-  StyledTokens,
-  StyledTokensList,
-  StyledUISelector,
-  StyledUISelectorButton,
-} from "./styles";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { FiMenu } from "@react-icons/all-files/fi/FiMenu";
-import Backdrop from "@mui/material/Backdrop";
-import { Button, styled, TextField, Typography } from "@mui/material";
-import { Components, Styles, Token, useAmountUi, useFormatNumber } from "@orbs-network/twap-ui";
-import { Config, eqIgnoreCase } from "@orbs-network/twap-sdk";
-import { AiOutlineClose } from "@react-icons/all-files/ai/AiOutlineClose";
+import Dialog from "@mui/material/Dialog";
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Components, Token, useFormatNumber } from "@orbs-network/twap-ui";
+import { Config, Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sdk";
+import { MdClose } from "@react-icons/all-files/md/MdClose";
 import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
-import { dapps } from "./config";
-import { useAddedTokens, useBalanceQuery, useDebounce, useDisconnectWallet, useSelectedDapp, useTheme } from "./hooks";
-import { useNavigate } from "react-router-dom";
-import { BiArrowBack } from "@react-icons/all-files/bi/BiArrowBack";
-import { isEmpty, size } from "lodash";
+import { BsSun } from "@react-icons/all-files/bs/BsSun";
+import { useDebounce, useToken, useTokenBalance, useTokenList, useTokenUsd } from "./hooks";
 import { Virtuoso } from "react-virtuoso";
+import { Panels, useDappContext } from "./context";
+import { useSwitchChain } from "wagmi";
 
-export interface Dapp {
-  logo: string;
-  Component: any;
-  invertLogo?: boolean;
-  theme?: "light" | "dark";
-  workInProgress?: boolean;
-  configs: Config[];
-  path: string;
-}
-
-export const Popup = ({ isOpen, onClose, children, className = "" }: { isOpen: boolean; onClose: () => void; children: ReactNode; className?: string }) => {
+export const Popup = ({ isOpen, onClose, children, className = "", title }: { isOpen: boolean; onClose: () => void; children: ReactNode; className?: string; title?: string }) => {
   return (
-    <Modal open={isOpen} onClose={onClose} className={className}>
-      <>{children}</>
-    </Modal>
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      classes={{
+        paper: `popup-main ${className}`,
+      }}
+    >
+      <div className="popup-header">
+        {title && <h2>{title}</h2>}
+        <button onClick={onClose} className="close-btn">
+          <MdClose />
+        </button>
+      </div>
+      <div className="popup-content">{children}</div>
+    </Dialog>
   );
 };
 
-const PopupContent = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
-  return <StyledPoupContent className={className}>{children}</StyledPoupContent>;
-};
-
-const PopupHeader = ({ onClose, title, Component }: { onClose: () => void; title?: string; Component?: ReactNode }) => {
-  return (
-    <StyledPopupHeader>
-      {Component ? Component : title && <p className="twap-popup-title">{title}</p>}
-      <StyledCloseIcon onClick={onClose}>
-        <AiOutlineClose className="icon" />
-      </StyledCloseIcon>
-    </StyledPopupHeader>
-  );
-};
-
-const PopupBody = ({ children }: { children: ReactNode }) => {
-  return <StyledPoupBody>{children}</StyledPoupBody>;
-};
-
-Popup.Header = PopupHeader;
-Popup.Content = PopupContent;
-Popup.Body = PopupBody;
-const StyledPoupBody = styled("div")({
-  width: "100%",
-  flex: 1,
-});
-const StyledPoupContent = styled("div")({
-  maxWidth: 600,
-  maxHeight: 600,
-  position: "relative",
-  left: "50%",
-  top: "50%",
-  transform: "translate(-50%, -50%)",
-  background: "rgba(0, 0, 0, 0.5)",
-  padding: 15,
-  borderRadius: 10,
-  display: "flex",
-  flexDirection: "column",
-});
-
-const StyledPopupHeader = styled("div")({
-  display: "flex",
-  justifyContent: "space-between",
-  height: 50,
-  alignItems: "center",
-  ".twap-popup-title": {},
-});
-
-const ToggleTheme = () => {
-  const { selectedDapp } = useSelectedDapp();
-  const showLight = !selectedDapp?.theme || selectedDapp.theme === "light";
-  const showDark = !selectedDapp?.theme || selectedDapp.theme === "dark";
+export const ToggleTheme = () => {
   const size = 18;
-  const { setTheme, isDarkTheme } = useTheme();
+  const { setTheme, theme } = useDappContext();
   return (
-    <StyledThemeToggle>
-      {showLight && (
-        <button
-          style={{
-            opacity: isDarkTheme ? 0.5 : 1,
-          }}
-          onClick={() => setTheme("light")}
-        >
-          <BsMoon style={{ width: size, height: size }} />
-        </button>
-      )}
-      {showDark && (
-        <button
-          style={{
-            opacity: !isDarkTheme ? 0.5 : 1,
-          }}
-          onClick={() => setTheme("dark")}
-        >
-          <BsMoon style={{ width: size, height: size }} />
-        </button>
-      )}
-    </StyledThemeToggle>
-  );
-};
-
-const drawerWidth = 260;
-
-export const DappsMenu = () => {
-  const { isSelected } = useSelectedDapp();
-
-  const isMobile = useMediaQuery("(max-width:1200px)");
-  const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
-  const disconnect = useDisconnectWallet();
-  const onSelect = (dapp: Dapp) => {
-    disconnect();
-    navigate(`/${dapp.path}`);
-  };
-
-  const open = !isMobile ? true : isMobile && isOpen;
-
-  const handleDrawerToggle = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const onSelectClick = (dapp: Dapp) => {
-    if (isMobile) {
-      setIsOpen(false);
-    }
-    onSelect(dapp);
-  };
-
-  return (
-    <>
-      {isMobile && (
-        <StyledMenuMobileToggle className="menu-button" color="inherit" edge="start" onClick={handleDrawerToggle}>
-          <FiMenu />
-        </StyledMenuMobileToggle>
-      )}
-      <StyledMenuDrawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
-            width: drawerWidth,
-            boxSizing: "border-box",
-            background: "rgb(16, 23, 38)",
-          },
+    <div>
+      <button
+        style={{
+          opacity: theme === "dark" ? 0.5 : 1,
         }}
-        variant="persistent"
-        anchor="left"
-        open={open}
+        onClick={() => setTheme("light")}
       >
-        <Backdrop open={isMobile && isOpen} onClick={() => setIsOpen(false)} />
-
-        <StyledDrawerContent>
-          <ToggleTheme />
-          <StyledMenuList>
-            {dapps.map((dapp) => (
-              <ListItem onClick={() => onSelectClick(dapp)} key={dapp.path} disablePadding selected={isSelected(dapp)}>
-                <StyledMenuListItemButton>
-                  <div>
-                    {/* <StyledMenuLogo src={network(dapp.config.chainId).logoUrl} style={{ width: 16, height: 16 }} /> */}
-                    <StyledMenuLogo src={dapp.logo} width={32} height={32} style={{ filter: dapp.invertLogo ? "invert(100%)" : "unset" }} />
-                  </div>
-                  <ListItemText primary={`${dapp.workInProgress ? `[WIP] ${dapp.path}` : dapp.path}`} />
-                </StyledMenuListItemButton>
-              </ListItem>
-            ))}
-          </StyledMenuList>
-        </StyledDrawerContent>
-      </StyledMenuDrawer>
-    </>
-  );
-};
-
-export const DappLayout = ({ children, name, className }: { children: ReactNode; name: string; className?: string }) => {
-  return (
-    <>
-      <DappsMenu />
-      <StyledDappLayoutContent className={className}>{children}</StyledDappLayoutContent>
-    </>
+        <BsMoon style={{ width: size, height: size }} />
+      </button>
+      <button
+        style={{
+          opacity: theme === "light" ? 0.5 : 1,
+        }}
+        onClick={() => setTheme("dark")}
+      >
+        <BsSun style={{ width: size, height: size }} />
+      </button>
+    </div>
   );
 };
 
@@ -220,17 +63,19 @@ export const TokenSearchInput = ({ setValue }: { value: string; setValue: (value
     setValue(debouncedValue);
   }, [debouncedValue]);
 
-  return <StyledSearchInput placeholder="Insert token name..." value={localValue} onChange={(e: any) => setLocalValue(e.target.value)} />;
+  return <input className="token-select-input" placeholder="Insert token name..." value={localValue} onChange={(e: any) => setLocalValue(e.target.value)} />;
 };
 
 const Row = ({ onClick, token }: any) => {
-  const { data: balance, isLoading } = useBalanceQuery(token?.address);
-  const balanceF = useAmountUi(token?.decimals, balance);
-  const formattedValue = useFormatNumber({ value: balanceF, decimalScale: 6 });
+  const balance = useTokenBalance(token).data?.ui;
+  const balanceF = useFormatNumber({ value: balance, decimalScale: 6 });
+
+  const usd = useTokenUsd(token?.address);
+  const usdF = useFormatNumber({ value: usd || "0", decimalScale: 2 });
 
   return (
-    <StyledListToken onClick={() => onClick(token)} className="twap-tokens-list-item">
-      <StyledListTokenLeft>
+    <div onClick={() => onClick(token)} className="token-select-list-token list-item">
+      <div className="token-select-list-token-left">
         <Components.Base.TokenLogo
           logo={token.logoUrl}
           alt={token.symbol}
@@ -240,228 +85,124 @@ const Row = ({ onClick, token }: any) => {
           }}
         />
         {token.symbol}
-      </StyledListTokenLeft>
-      <Components.Base.SmallLabel loading={isLoading} className="balance">
-        {formattedValue}
-      </Components.Base.SmallLabel>
-    </StyledListToken>
+      </div>
+      <div className="token-select-list-token-right">
+        <Components.Base.SmallLabel loading={usd === undefined} className="usd">
+          {`$${usdF}`}
+        </Components.Base.SmallLabel>
+        <Components.Base.SmallLabel loading={balance === undefined} className="balance">
+          {balanceF}
+        </Components.Base.SmallLabel>
+      </div>
+    </div>
   );
 };
 
-const StyledListTokenLeft = styled("div")({
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-});
+const configs = Object.values(Configs);
+export const ConfigSelector = () => {
+  const { setConfig, config } = useDappContext();
+  const [isOpen, setIsOpen] = useState(false);
 
-const filterTokens = (list: Token[], filterValue: string) => {
-  if (!filterValue) return list;
-  return list.filter((it) => {
-    return it.symbol.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0 || eqIgnoreCase(it.address, filterValue);
-  });
+  const onClose = useCallback(() => setIsOpen(false), []);
+  const onOpen = useCallback(() => setIsOpen(true), []);
+  const { switchChain } = useSwitchChain();
+
+  const network = useMemo(() => getNetwork(config.chainId), [config.chainId]);
+  const onSelect = useCallback(
+    (config: Config) => {
+      setConfig(config);
+      switchChain({ chainId: config.chainId });
+      onClose();
+    },
+    [onClose, setConfig, switchChain]
+  );
+
+  return (
+    <>
+      <button className="config-select-button" onClick={onOpen}>
+        <p>
+          {config.name} <small>{`(${network?.shortname})`}</small>
+        </p>
+        <svg fill="none" height="7" width="14" xmlns="http://www.w3.org/2000/svg">
+          <title>Dropdown</title>
+          <path
+            d="M12.75 1.54001L8.51647 5.0038C7.77974 5.60658 6.72026 5.60658 5.98352 5.0038L1.75 1.54001"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2.5"
+            xmlns="http://www.w3.org/2000/svg"
+          ></path>
+        </svg>
+      </button>
+      <Popup title="Partner select" isOpen={isOpen} onClose={onClose} className="config-select-popup">
+        <div className="config-select-list">
+          {configs.map((config) => {
+            const chain = getNetwork(config.chainId);
+            return (
+              <div className="config-select-list-item list-item" onClick={() => onSelect(config as Config)} key={config.partner}>
+                <p>
+                  {config.name} <small>{`(${chain?.shortname})`}</small>
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </Popup>
+    </>
+  );
 };
 
 interface TokensListProps {
-  tokens?: Token[];
   onClick: (token: Token) => void;
 }
 
-const AddToken = ({ onAddToken }: { onAddToken: (token: Token) => void }) => {
-  const [data, setData] = useState({ address: "", symbol: "", decimals: 18, logoUrl: "" } as Token);
+export const TokensList = ({ onClick }: TokensListProps) => {
+  const tokens = useTokenList();
 
-  const onChange = (e: any) => {
-    const { name, value } = e.target;
-    setData({ ...data, [name]: value });
-  };
-
-  const _onSubmit = () => {
-    if (!data.address || !data.symbol || !data.decimals) {
-      alert("Please fill all fields");
-      return;
-    }
-    onAddToken(data);
-  };
-
-  return (
-    <StyledAddToken>
-      <StyledAddTokenInput label="Address" name="address" value={data["address"]} onChange={onChange} />
-      <StyledAddTokenInput label="Symbol" name="symbol" value={data["symbol"]} onChange={onChange} />
-      <StyledAddTokenInput label="Decimals" name="decimals" type="number" value={data["decimals"]} onChange={onChange} />
-      <StyledAddTokenInput label="Logo" name="logoUrl" value={data["logoUrl"]} onChange={onChange} />
-      <StyledSubmitBtn onClick={_onSubmit}>Submit</StyledSubmitBtn>
-    </StyledAddToken>
-  );
-};
-
-const StyledSubmitBtn = styled(Button)({
-  marginLeft: "auto",
-  marginRight: "auto",
-});
-
-const StyledAddToken = styled(Styles.StyledColumnFlex)({
-  padding: 10,
-  gap: 20,
-});
-
-const StyledAddTokenInput = styled(TextField)({
-  width: "100%",
-});
-
-const ManageAddedTokens = () => {
-  const addedTokens = useAddedTokens();
-  // const { removeToken } = usePersistedStore();
-
-  return (
-    <StyledManageTokens>
-      {isEmpty(addedTokens) ? (
-        <Typography style={{ textAlign: "center", width: "100%" }}>No tokens</Typography>
-      ) : (
-        addedTokens.map((t: Token) => {
-          return (
-            <StyledListToken>
-              <Styles.StyledRowFlex justifyContent="space-between">
-                <Styles.StyledRowFlex justifyContent="flex-start" style={{ width: "unset", flex: 1 }}>
-                  <Components.Base.TokenLogo
-                    logo={t.logoUrl}
-                    alt={t.symbol}
-                    style={{
-                      width: 30,
-                      height: 30,
-                    }}
-                  />
-                  {t.symbol}
-                </Styles.StyledRowFlex>
-                {/* <IconButton onClick={() => removeToken(chainId!, t)}>
-                  <MdDeleteSweep />
-                </IconButton> */}
-              </Styles.StyledRowFlex>
-            </StyledListToken>
-          );
-        })
-      )}
-    </StyledManageTokens>
-  );
-};
-
-const StyledManageTokens = styled(Styles.StyledColumnFlex)({
-  flex: 1,
-  overflowY: "auto",
-});
-
-enum TokenListView {
-  DEFAULT,
-  ADD_TOKEN,
-  MANAGE_TOKENS,
-}
-
-export const TokensList = ({ tokens = [], onClick }: TokensListProps) => {
   const [filterValue, setFilterValue] = useState("");
-  const tokensLength = size(tokens);
-  const [view, setView] = useState(TokenListView.DEFAULT);
-  // const { addToken } = usePersistedStore();
 
-  const filteredTokens = useMemo(() => filterTokens(tokens, filterValue), [filterValue, tokensLength]);
+  const dynamicToken = useToken(filterValue).token;
+
+  const filteredTokens = useMemo(() => {
+    if (!filterValue) return tokens;
+    const result = tokens.filter((it) => {
+      return it.symbol.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0 || eqIgnoreCase(it.address, filterValue);
+    });
+    return !result.length && dynamicToken ? [dynamicToken] : result;
+  }, [filterValue, tokens, dynamicToken]);
 
   return (
-    <StyledTokens>
-      {view !== TokenListView.DEFAULT && (
-        <StyledListBackBtn onClick={() => setView(TokenListView.DEFAULT)}>
-          <BiArrowBack />
-          Back
-        </StyledListBackBtn>
-      )}
-      {view === TokenListView.DEFAULT && <TokenSearchInput setValue={setFilterValue} value={filterValue} />}
-      {view === TokenListView.DEFAULT && (
-        <StyledListSettings>
-          <StyledListBtn onClick={() => setView(TokenListView.ADD_TOKEN)}>Add token</StyledListBtn>
-          <StyledListBtn onClick={() => setView(TokenListView.MANAGE_TOKENS)}>Manage tokens</StyledListBtn>
-        </StyledListSettings>
-      )}
-      {view === TokenListView.MANAGE_TOKENS && <ManageAddedTokens />}
-      {view === TokenListView.DEFAULT && (
-        <StyledTokensList>
-          <Virtuoso
-            totalCount={filteredTokens.length}
-            overscan={10}
-            className="twap-order-history-list"
-            style={{ height: "100%", width: "100%" }}
-            itemContent={(index) => {
-              const token = filteredTokens[index];
-              return <Row onClick={onClick} token={token} />;
-            }}
-          />
-        </StyledTokensList>
-      )}
-    </StyledTokens>
+    <div className="token-select">
+      <TokenSearchInput setValue={setFilterValue} value={filterValue} />
+      <div className="token-select-list">
+        <Virtuoso
+          totalCount={filteredTokens.length}
+          overscan={10}
+          className="twap-order-history-list"
+          style={{ height: "100%", width: "100%" }}
+          itemContent={(index) => {
+            const token = filteredTokens[index];
+            return <Row onClick={onClick} token={token} />;
+          }}
+        />
+      </div>
+    </div>
   );
 };
 
-const StyledListSettings = styled(Styles.StyledRowFlex)({
-  padding: "10px 10px 0px 10px",
-  justifyContent: "flex-start",
-});
-const StyledListBtn = styled("button")({
-  background: "none",
-  border: "1px solid rgba(255,255,255,0.2)",
-  borderRadius: 5,
-  padding: "5px 10px",
-  color: "white",
-  cursor: "pointer",
-  transition: "all 0.2s all",
+export const UISelector = () => {
+  const { setPanel, panel } = useDappContext();
 
-  "&:hover": {
-    border: "1px solid rgba(255,255,255,0.8)",
-  },
-});
-
-const StyledListBackBtn = styled("button")({
-  background: "none",
-  display: "flex",
-  alignItems: "center",
-  gap: 7,
-  width: "fit-content",
-  margin: "10px 0px 20px 15px",
-  border: "unset",
-  cursor: "pointer",
-});
-
-export enum SelectorOption {
-  TWAP = "TWAP",
-  LIMIT = "LIMIT",
-}
-
-export const UISelector = ({
-  className = "",
-  select,
-  limit,
-  selected,
-}: {
-  className?: string;
-  select?: (value: SelectorOption) => void;
-  limit?: boolean;
-  selected?: SelectorOption;
-}) => {
-  const tabs = limit ? [SelectorOption.TWAP, SelectorOption.LIMIT] : [SelectorOption.TWAP];
-  const onSelect = (value: SelectorOption) => {
-    select?.(value);
-    const search = window.location.search;
-    const params = new URLSearchParams(search);
-    const theme = params.get("theme");
-    if (theme) {
-      window.history.replaceState({}, "", `${window.location.pathname}?theme=${theme}`);
-    } else {
-      window.history.replaceState({}, "", `${window.location.pathname}`);
-    }
-  };
   return (
-    <StyledUISelector className={`ui-selector ${className}`}>
-      {tabs.map((it) => {
+    <div className="panel-selector">
+      {Object.values(Panels).map((it) => {
         return (
-          <StyledUISelectorButton className={`${selected === it ? " ui-selector-btn-selected" : ""} ui-selector-btn`} key={it} onClick={() => onSelect?.(it)}>
+          <button className={`${panel === it ? "panel-selector-btn-selected" : ""} panel-selector-btn`} key={it} onClick={() => setPanel(it)}>
             {it}
-          </StyledUISelectorButton>
+          </button>
         );
       })}
-    </StyledUISelector>
+    </div>
   );
 };

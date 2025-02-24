@@ -1,34 +1,26 @@
-import { StyledDragonLayout, StyledGenericModalContent, StyledLynexswap } from "./styles";
-import { useBalanceQuery, useConnectWallet, useGetTokens, usePriceUSD, useRefetchBalances, useTheme, useTrade } from "./hooks";
-import { useWeb3React } from "@web3-react/core";
-import { Dapp, Popup, SelectorOption, TokensList, UISelector } from "./Components";
+import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useRefetchBalances } from "./hooks";
+import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { TooltipProps, Configs, TokensListModalProps, ModalProps, Widget, Token, useAmountBN, WidgetProvider, UIPreferences } from "@orbs-network/twap-ui";
-import { DappProvider } from "./context";
-import { Config, eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
-
-const config = Configs.QuickSwap;
+import { TooltipProps, TokensListModalProps, ModalProps, Widget, Token, WidgetProvider, UIPreferences } from "@orbs-network/twap-ui";
+import { eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
+import { useAccount, useWalletClient } from "wagmi";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { Panels, useDappContext } from "./context";
 
 const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
-  const { data: baseAssets } = useGetTokens();
-  const { isDarkTheme } = useTheme();
 
   return (
-    <Popup isOpen={isOpen} onClose={onClose}>
-      <StyledGenericModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
-        <TokensList tokens={baseAssets} onClick={onSelect} />
-      </StyledGenericModalContent>
+    <Popup isOpen={isOpen} onClose={onClose} title='Token Select'>
+      <TokensList onClick={onSelect} />
     </Popup>
   );
 };
 
 const Modal = (props: ModalProps) => {
-  const { isDarkTheme } = useTheme();
-
   return (
     <Popup isOpen={props.isOpen} onClose={props.onClose}>
-      <StyledGenericModalContent isDarkTheme={isDarkTheme ? 1 : 0}>{props.children}</StyledGenericModalContent>
+      {props.children}
     </Popup>
   );
 };
@@ -47,15 +39,12 @@ const Tooltip = (props: TooltipProps) => {
 };
 
 const useToken = (addressOrSymbol?: string) => {
-  const { data: tokens } = useGetTokens();
+  const tokens = useTokenList();
 
   return useMemo(() => {
     return tokens?.find((it: any) => eqIgnoreCase(it.address || "", addressOrSymbol || "") || eqIgnoreCase(it.symbol || "", addressOrSymbol || ""));
   }, [tokens, addressOrSymbol]);
 };
-
-const initialSrc = "USDC";
-const initialDst = "WETH";
 
 const uiPreferences: UIPreferences = {
   input: { disableThousandSeparator: true, placeholder: "0.0" },
@@ -63,12 +52,15 @@ const uiPreferences: UIPreferences = {
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
-  const { account, library, chainId } = useWeb3React();
-  const connect = useConnectWallet();
-  const { data: dappTokens } = useGetTokens();
-
+  const { address: account, chainId } = useAccount();
+  const { openConnectModal } = useConnectModal();
+  const config = useDappContext().config;
+  const dappTokens = useTokenList();
+  const client = useWalletClient();
   const [srcToken, setSrcToken] = useState<Token | undefined>(undefined);
   const [dstToken, setDstToken] = useState<Token | undefined>(undefined);
+  const { theme } = useDappContext();
+  const refetchBalances = useRefetchBalances();
 
   useEffect(() => {
     setSrcToken(undefined);
@@ -77,10 +69,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   useEffect(() => {
     if (!srcToken) {
-      setSrcToken(dappTokens?.find((it) => it.symbol === initialSrc));
+      setSrcToken(dappTokens[1]);
     }
     if (!dstToken) {
-      setDstToken(dappTokens?.find((it) => it.symbol === initialDst));
+      setDstToken(dappTokens[2]);
     }
   }, [dappTokens, dstToken, srcToken]);
 
@@ -97,21 +89,18 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     }
   }, [dappTokens, chainId]);
 
-  const amount = useAmountBN(srcToken?.decimals, "1");
-
-  const { outAmount: marketPrice, isLoading: marketPriceLoading } = useTrade(srcToken?.address, dstToken?.address, amount, dappTokens);
+  const { outAmount: marketPrice, isLoading: marketPriceLoading } = useMarketPrice(srcToken, dstToken);
 
   const srcUsd = useUSD(srcToken?.address);
   const dstUsd = useUSD(dstToken?.address);
-  const srcBalance = useBalanceQuery(srcToken?.address).data;
-  const dstBalance = useBalanceQuery(dstToken?.address).data;
-  const refetchBalances = useRefetchBalances(srcToken?.address, dstToken?.address);
-  const { isDarkTheme } = useTheme();
+  const srcBalance = useTokenBalance(srcToken).data?.wei;
+  const dstBalance = useTokenBalance(dstToken).data?.wei;
+
 
   return (
     <WidgetProvider
       config={config}
-      web3Provider={library?.currentProvider}
+      walletClientTransport={client.data?.transport}
       account={account as string}
       srcToken={srcToken}
       dstToken={dstToken}
@@ -119,7 +108,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         onSwitchFromNativeToWrapped: onSwitchFromNativeToWtoken,
         onSrcTokenSelect: setSrcToken,
         onDstTokenSelect: setDstToken,
-        onConnect: connect,
+        onConnect: openConnectModal,
         refetchBalances,
         onSwitchTokens,
       }}
@@ -136,7 +125,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       components={{ Tooltip, TokensListModal, Modal }}
       useToken={useToken}
       includeStyles={true}
-      isDarkTheme={isDarkTheme}
+      isDarkTheme={theme === "dark"}
       minChunkSizeUsd={4}
     >
       <Widget.SwapPanel />
@@ -144,26 +133,12 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   );
 };
 
-const DappComponent = () => {
-  const [selected, setSelected] = useState(SelectorOption.TWAP);
-  const { isDarkTheme } = useTheme();
+export const Dapp = () => {
+  const { panel } = useDappContext();
   return (
-    <DappProvider config={config as Config}>
-      <StyledLynexswap isDarkMode={isDarkTheme ? 1 : 0}>
-        <StyledDragonLayout name={config.name}>
-          <UISelector selected={selected} select={setSelected} limit={true} />
-          <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-        </StyledDragonLayout>
-      </StyledLynexswap>
-    </DappProvider>
+    <div className="dapp">
+      <UISelector />
+      <TWAPComponent limit={panel === Panels.LIMIT} />
+    </div>
   );
 };
-
-const dapp: Dapp = {
-  Component: DappComponent,
-  logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/29525.png",
-  configs: [config],
-  path: "lynex",
-};
-
-export default dapp;

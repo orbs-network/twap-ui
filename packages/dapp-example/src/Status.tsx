@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { useSelectedDapp, useSelectedDappConfig } from "./hooks";
-import { StyledStatus, StyledStatusSection, StyledStatusSectionText, StyledStatusSectionTitle } from "./styles";
 import { useEffect, useState } from "react";
 import { get, size, sortBy } from "lodash";
 import { getNetwork } from "@orbs-network/twap-sdk";
+import { useDappContext } from "./context";
 const chainNames = {
   ftm: "fantom",
   avax: "avalanche",
@@ -16,18 +15,17 @@ const chainNames = {
 const MIN_BALANCE = 0.001;
 
 function useConfig() {
-  const config = useSelectedDappConfig();
-  const twapVersion = config?.twapVersion || "?";
+  const config = useDappContext().config;
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const twapLibVersion = require("@orbs-network/twap/package.json").version || "?";
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const twapUiVersion = require("@orbs-network/twap-ui/package.json").version || "?";
   const info = getNetwork(config?.chainId || 0);
-  return { twapVersion, twapLibVersion, twapUiVersion, info, ...config };
+  return { twapLibVersion, twapUiVersion, info, ...config };
 }
 
 function useBackupTakersStatus() {
-  const config = useSelectedDappConfig();
+  const config = useDappContext().config;
 
   return useQuery(
     ["useBackupTakersStatus", config?.chainId],
@@ -56,7 +54,7 @@ function useBackupTakersStatus() {
 }
 
 function useOrbsL3TakersStatus() {
-  const config = useSelectedDappConfig();
+  const config = useDappContext().config;
 
   return useQuery(
     ["useOrbsL3TakersStatus", config?.chainId],
@@ -105,87 +103,86 @@ const Image = ({ logo }: { logo?: string }) => {
 };
 
 export function Status() {
-  const { selectedDapp: dapp } = useSelectedDapp();
   const config = useConfig();
 
   const orbsTakers = useOrbsL3TakersStatus();
   const backupTakers = useBackupTakersStatus();
   return (
     <>
-      {dapp && (
-        <StyledStatus>
-          <StyledStatusSection>
-            <StyledStatusSectionTitle>
+      {config && (
+        <div>
+          <div>
+            <div>
               <a href={"https://github.com/orbs-network/twap"} target={"_blank"}>
                 TWAP Version:
               </a>
-            </StyledStatusSectionTitle>
-            <StyledStatusSectionText>{config?.twapVersion}</StyledStatusSectionText>
-          </StyledStatusSection>
-          <StyledStatusSection>
-            <StyledStatusSectionTitle>
+            </div>
+            <div>{config?.twapVersion}</div>
+          </div>
+          <div>
+            <div>
               <a href={"https://github.com/orbs-network/twap"} target={"_blank"}>
                 TWAP Lib Version:
               </a>
-            </StyledStatusSectionTitle>
-            <StyledStatusSectionText>{config?.twapLibVersion}</StyledStatusSectionText>
-          </StyledStatusSection>
-          <StyledStatusSection>
-            <StyledStatusSectionTitle>
+            </div>
+            <div>{config?.twapLibVersion}</div>
+          </div>
+          <div>
+            <div>
               <a href={"https://github.com/orbs-network/twap-ui"} target={"_blank"}>
                 TWAP-UI Version:
               </a>
-            </StyledStatusSectionTitle>
-            <StyledStatusSectionText>{config?.twapUiVersion}</StyledStatusSectionText>
-          </StyledStatusSection>
-          <StyledStatusSection>
-            <StyledStatusSectionTitle> Chain:</StyledStatusSectionTitle>
-            <StyledStatusSectionText>
+            </div>
+            <div>{config?.twapUiVersion}</div>
+          </div>
+          <div>
+            <div> Chain:</div>
+            <div>
               <Image logo={config?.info?.logoUrl} /> {config?.info?.name} {config.chainId}
-            </StyledStatusSectionText>
-          </StyledStatusSection>
-          <StyledStatusSection>
-            <StyledStatusSectionTitle>TWAP:</StyledStatusSectionTitle>
-            <StyledStatusSectionText>
+            </div>
+          </div>
+          <div>
+            <div>TWAP:</div>
+            <div>
               <a href={config ? `${config.info?.explorer}/address/${config.twapAddress}` : ""} target={"_blank"}>
                 {config?.twapAddress}
               </a>
-            </StyledStatusSectionText>
-          </StyledStatusSection>
-          <StyledStatusSection>
-            <StyledStatusSectionTitle> Lens:</StyledStatusSectionTitle>
-            <StyledStatusSectionText>
+            </div>
+          </div>
+          <div>
+            <div> Lens:</div>
+            <div>
               <a href={config ? `${config.info?.explorer}/address/${config.lensAddress}` : ""} target={"_blank"}>
                 {config.lensAddress}
               </a>
-            </StyledStatusSectionText>
-          </StyledStatusSection>
-          <StyledStatusSection>
-            <StyledStatusSectionTitle>Exchange:</StyledStatusSectionTitle>
-            <StyledStatusSectionText>
+            </div>
+          </div>
+          <div>
+            <div>Exchange:</div>
+            <div>
               {config?.exchangeType}{" "}
               <a href={config ? `${config.info?.explorer}/address/${config?.exchangeAddress}` : ""} target={"_blank"}>
                 {config?.exchangeAddress}
               </a>
-            </StyledStatusSectionText>
-          </StyledStatusSection>
-          <StyledStatusSection>
-            <StyledStatusSectionTitle>
+            </div>
+          </div>
+          <div>
+            <div>
               <a href={"https://twap-takers.orbs.network/"} target={"_blank"}>
                 {!orbsTakers ? "" : orbsTakers.status ? "✅" : "⚠️"} Orbs L3 Takers ({orbsTakers?.balances.length}):
               </a>
-            </StyledStatusSectionTitle>
-            <StyledStatusSectionText>gas: {orbsTakers?.balances.slice(0, 5).join(" / ")}...</StyledStatusSectionText>
-          </StyledStatusSection>
-          <StyledStatusSection>
-            <StyledStatusSectionTitle>
+            </div>
+            <div>gas: {orbsTakers?.balances.slice(0, 5).join(" / ")}...</div>
+          </div>
+          <div>
+            <div>
               <a href={"https://twap-takers.orbs.network/"} target={"_blank"}>
                 {!backupTakers ? "" : backupTakers.status ? "✅" : "⚠️"} Orbs Backup Takers ({backupTakers?.count}):
               </a>
-            </StyledStatusSectionTitle>
-            <StyledStatusSectionText>gas: {backupTakers?.balances.join(" / ")}</StyledStatusSectionText>
-          </StyledStatusSection>
-        </StyledStatus>
+            </div>
+            <div>gas: {backupTakers?.balances.join(" / ")}</div>
+          </div>
+        </div>
       )}
     </>
   );

@@ -7,7 +7,7 @@ import { useConfirmationButton } from "../hooks/useConfirmationButton";
 import { useSrcChunkAmountUSD } from "../hooks/useSrcChunkAmountUSD";
 import { useFormatNumber } from "../hooks/useFormatNumber";
 import { useAmountUi } from "../hooks/useParseAmounts";
-
+import BN from "bignumber.js";
 export const useTokenPanel = (isSrcToken?: boolean) => {
   const { actions, twap, srcToken, dstToken, srcBalance, dstBalance } = useWidgetContext();
   const { srcUsd, dstUsd } = useUsdAmount();
@@ -158,13 +158,14 @@ export const useError = () => {
   const {
     twap: { errors },
     state: { srcAmount },
+    marketPrice
   } = useWidgetContext();
 
   const { feeError } = useFeeOnTransferError();
 
   const balanceWarning = useBalanceWaning();
 
-  const error = !srcAmount
+  const error = BN(srcAmount || 0).isZero() || BN(marketPrice || 0).isZero()
     ? ""
     : errors.chunks?.text || errors.fillDelay?.text || errors.duration?.text || errors.tradeSize?.text || errors.limitPrice?.text || balanceWarning || feeError;
 

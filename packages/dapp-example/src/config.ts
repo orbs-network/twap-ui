@@ -1,19 +1,9 @@
-// import { pangolin, pangolinDaas } from "./Pangolin";
-// import spookyswap from "./SpookySwap";
-// import quickswap from "./QuickSwap";
-// import chronos from "./Chronos";
-// import thena from "./Thena";
-// import sushiswap from "./SushiSwap";
-// import stellaswap from "./StellaSwap";
-// import pancake from "./PancakeSwap";
-// import baseswap from "./BaseSwap";
-import lynex from "./Lynex";
-// import arbidex from "./Arbidex";
-// import syncswap from "./SyncSwap";
-// import kinetix from "./kinetix";
-import dragonswap from "./dragonswap/DragonSwap";
+import { getDefaultConfig } from "@rainbow-me/rainbowkit";
+import { polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova } from "viem/chains";
 
-export const defaultDapp = dragonswap;
-export const dapps = [dragonswap, lynex];
-
-// export const dapps = [dragonswap, quickswap, spookyswap, pangolin, pangolinDaas, chronos, thena, baseswap, arbidex, lynex, stellaswap, pancake, sushiswap, syncswap, kinetix];
+export const wagmiConfig = getDefaultConfig({
+  pollingInterval: 60_0000,
+  appName: "TWAP",
+  projectId: process.env.REACT_APP_CONNECT_PROJECT_ID as string,
+  chains: [polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova],
+});

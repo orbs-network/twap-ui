@@ -1,28 +1,39 @@
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { Web3ReactProvider } from "@web3-react/core";
-import Web3 from "web3";
-import { GlobalStyles } from "@mui/material";
-import { globalStyle } from "./styles";
-import CssBaseline from "@mui/material/CssBaseline";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { BrowserRouter as Router } from "react-router-dom";
+import { structuralSharing } from "@wagmi/core/query";
+import { darkTheme, lightTheme, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { WagmiProvider } from "wagmi";
+import { wagmiConfig } from "./config";
+import { DappProvider, useDappContext } from "./context";
 import "./index.css";
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } });
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      structuralSharing,
+    },
+  },
+});
 
-export const PROVIDER_NAME = "TWAP_UI";
+const Root = () => {
+  const { theme } = useDappContext();
+
+  return (
+    <RainbowKitProvider modalSize="compact" theme={theme === "dark" ? darkTheme() : lightTheme()}>
+      <App />
+    </RainbowKitProvider>
+  );
+};
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <Web3ReactProvider getLibrary={(provider) => new Web3(provider)}>
-    <GlobalStyles styles={globalStyle as any} />
-    <CssBaseline />
+  <WagmiProvider config={wagmiConfig}>
     <QueryClientProvider client={queryClient}>
-      <Router basename={process.env.PUBLIC_URL}>
-        <App />
-      </Router>
+      <DappProvider>
+        <Root />
+      </DappProvider>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </QueryClientProvider>
-  </Web3ReactProvider>,
+  </WagmiProvider>
 );

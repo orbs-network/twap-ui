@@ -1,15 +1,14 @@
-import { StyledDragonswap, StyledDragonLayout, StyledDragonPanel, StyledDragonswapModalContent } from "../styles";
 import { TWAP } from "@orbs-network/twap-ui-dragonswap";
 import tokens from "./token.json";
-import { useBalanceQuery, useConnectWallet, usePriceUSD, useRefetchBalances, useTheme, useTrade } from "../hooks";
-import { useWeb3React } from "@web3-react/core";
-import { Dapp, Popup, SelectorOption, TokensList, UISelector } from "../Components";
+import { useMarketPrice, usePriceUSD, useRefetchBalances, useTokenBalance } from "../hooks";
+import { Popup, TokensList, UISelector } from "../Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { TooltipProps, Configs, TokensListModalProps, ModalProps, Widget, useAmountBN, Token } from "@orbs-network/twap-ui";
-import { DappProvider } from "../context";
-import _ from "lodash";
+import { TooltipProps, Configs, TokensListModalProps, ModalProps, Widget } from "@orbs-network/twap-ui";
+import { Panels, useDappContext } from "../context";
 import { eqIgnoreCase, getNetwork, networks } from "@orbs-network/twap-sdk";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { useAccount, useWalletClient } from "wagmi";
 const config = Configs.DragonSwap;
 
 export const useDappTokens = () => {
@@ -24,33 +23,20 @@ export const useDappTokens = () => {
   }, [nativeToken, config?.chainId]);
 };
 
-const parseList = (rawList?: any): Token[] => {
-  return _.map(rawList, (rawToken: any) => {
-    return { address: rawToken.address, decimals: rawToken.decimals, symbol: rawToken.symbol, logoUrl: rawToken.logoURI };
-  });
-};
-
 const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
-  const baseAssets = useDappTokens();
-  const { isDarkTheme } = useTheme();
-  const tokensListSize = _.size(baseAssets);
-  const parsedList = useMemo(() => parseList(baseAssets), [tokensListSize]);
 
   return (
     <Popup isOpen={isOpen} onClose={onClose}>
-      <StyledDragonswapModalContent isDarkTheme={isDarkTheme ? 1 : 0}>
-        <TokensList tokens={parsedList} onClick={onSelect} />
-      </StyledDragonswapModalContent>
+     <TokensList  onClick={onSelect} />
     </Popup>
   );
 };
 
 const Modal = (props: ModalProps) => {
-  const { isDarkTheme } = useTheme();
 
   return (
     <Popup isOpen={props.isOpen} onClose={props.onClose}>
-      <StyledDragonswapModalContent isDarkTheme={isDarkTheme ? 1 : 0}>{props.children}</StyledDragonswapModalContent>
+      <div>{props.children}</div>
     </Popup>
   );
 };
@@ -69,10 +55,11 @@ const Tooltip = (props: TooltipProps) => {
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
-  const { account, library, chainId } = useWeb3React();
-  const connect = useConnectWallet();
+  const { address: account, chainId } = useAccount();
+  const client = useWalletClient();
+  const { openConnectModal } = useConnectModal();
   const dappTokens = useDappTokens();
-  const { isDarkTheme } = useTheme();
+  const { theme } = useDappContext();
   const [fromToken, setFromToken] = useState<any>(undefined);
   const [toToken, setToToken] = useState<any>(undefined);
 
@@ -95,9 +82,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setToToken(fromToken);
   };
 
-  const amount = useAmountBN(fromToken?.decimals, "1");
-
-  const { outAmount, isLoading } = useTrade(fromToken?.address, toToken?.address, amount, dappTokens);
+  const { outAmount, isLoading } = useMarketPrice(fromToken, toToken);
 
   const onSwitchFromNativeToWtoken = useCallback(() => {
     const wToken = Object.values(networks).find((it) => it.id === chainId)?.wToken.address;
@@ -109,19 +94,19 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   const srcUsd = useUSD(fromToken?.address);
   const dstUsd = useUSD(toToken?.address);
-  const srcBalance = useBalanceQuery(fromToken?.address).data;
-  const dstBalance = useBalanceQuery(toToken?.address).data;
-  const refetchBalances = useRefetchBalances(fromToken?.address, toToken?.address);
+  const srcBalance = useTokenBalance(fromToken).data?.wei;
+  const dstBalance = useTokenBalance(toToken).data?.wei;
+  const refetchBalances = useRefetchBalances();
 
   return (
     <TWAP
       title={limit ? "Limit" : "TWAP"}
       account={account as string}
-      web3Provider={library?.currentProvider}
+      walletClientTransport={client.data?.transport}
       srcTokenAddress={fromToken?.address}
       dstTokenAddress={toToken?.address}
       dexTokens={dappTokens}
-      isDarkTheme={isDarkTheme}
+      isDarkTheme={theme === 'dark'}
       marketPrice={outAmount}
       marketPriceLoading={isLoading}
       chainId={chainId}
@@ -139,38 +124,23 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         onSrcTokenSelect: setFromToken,
         onDstTokenSelect: setToToken,
         refetchBalances,
-        onConnect: connect,
+        onConnect: openConnectModal,
       }}
     />
   );
 };
 
-const DappComponent = () => {
-  const [selected, setSelected] = useState(SelectorOption.TWAP);
-  const { isDarkTheme } = useTheme();
-
+export const Dragonswap = () => {
+const {panel}  = useDappContext()
   return (
-    <DappProvider config={config}>
-      <StyledDragonswap isDarkMode={isDarkTheme ? 1 : 0}>
-        <StyledDragonLayout name={config.name}>
-          <UISelector selected={selected} select={setSelected} limit={true} />
-          <StyledDragonPanel isDarkMode={isDarkTheme ? 1 : 0}>
-            <TWAPComponent limit={selected === SelectorOption.LIMIT} />
-          </StyledDragonPanel>
-          <Widget.PoweredByOrbs />
-          <Widget.Orders />
-          <Widget.LimitPriceWarning />
-        </StyledDragonLayout>
-      </StyledDragonswap>
-    </DappProvider>
+    <div>
+      <div>
+        <UISelector  />
+        <TWAPComponent limit={panel === Panels.LIMIT} />
+        <Widget.PoweredByOrbs />
+        <Widget.Orders />
+        <Widget.LimitPriceWarning />
+      </div>
+    </div>
   );
 };
-
-const dapp: Dapp = {
-  Component: DappComponent,
-  logo: "https://avatars.githubusercontent.com/u/157521400?s=200&v=4",
-  configs: [config],
-  path: "dragonswap",
-};
-
-export default dapp;
