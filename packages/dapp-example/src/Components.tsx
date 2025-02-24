@@ -114,7 +114,7 @@ export const ConfigSelector = () => {
       switchChain({ chainId: config.chainId });
       onClose();
     },
-    [onClose, setConfig, switchChain]
+    [onClose, setConfig, switchChain],
   );
 
   return (
@@ -137,10 +137,10 @@ export const ConfigSelector = () => {
       </button>
       <Popup title="Partner select" isOpen={isOpen} onClose={onClose} className="config-select-popup">
         <div className="config-select-list">
-          {configs.map((config) => {
+          {configs.map((config, index) => {
             const chain = getNetwork(config.chainId);
             return (
-              <div className="config-select-list-item list-item" onClick={() => onSelect(config as Config)} key={config.partner}>
+              <div className="config-select-list-item list-item" onClick={() => onSelect(config as Config)} key={index}>
                 <p>
                   {config.name} <small>{`(${chain?.shortname})`}</small>
                 </p>

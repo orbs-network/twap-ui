@@ -111,7 +111,7 @@ export const useLimitPricePanel = (state: State, values: TwapValues, errors: Twa
 
     return [resetButton, ...buttons];
   }, [percentList, isSelectedPercentCallback, onLimitPricePercent, isInvertedLimitPrice, resetButton]);
-  
+
   return {
     setLimitPrice,
     onLimitPricePercent,
@@ -126,7 +126,7 @@ export const useLimitPricePanel = (state: State, values: TwapValues, errors: Twa
     priceDiffFromMarket: values.priceDiffFromMarket,
     isSelectedPercentCallback,
     percentButtons,
-    error:  BN(marketPrice || 0).gt(0) ? errors.limitPrice?.text :  undefined ,
+    error: BN(marketPrice || 0).gt(0) ? errors.limitPrice?.text : undefined,
     isMarketOrder: state.isMarketOrder,
     isCustom: typedPrice !== undefined,
   };

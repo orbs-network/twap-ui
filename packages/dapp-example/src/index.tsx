@@ -35,5 +35,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       </DappProvider>
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </QueryClientProvider>
-  </WagmiProvider>
+  </WagmiProvider>,
 );

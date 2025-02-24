@@ -3,9 +3,7 @@ import dragonswapTokens from "./tokens/dragonswap.json";
 import { Token } from "@orbs-network/twap-ui";
 import _ from "lodash";
 
-
-const BASE_TOKENS = _.uniq(['USDT', 'USDC', 'DAI', 'WBTC', 'BUSD', ...Object.values(networks).map(it => it.wToken.symbol) ])
-
+const BASE_TOKENS = _.uniq(["USDT", "USDC", "DAI", "WBTC", "BUSD", ...Object.values(networks).map((it) => it.wToken.symbol)]);
 
 const getDragonswapTokens = (): Token[] => {
   return dragonswapTokens.tokens.map((it) => {
@@ -88,21 +86,21 @@ const getArbitrumTokens = async (signal?: AbortSignal): Promise<Token[]> => {
   return [networks.arb.native, ...result];
 };
 
-
 const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
   const response = await fetch("https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokens.1inch.eth.link", { signal }).then((res) => res.json());
 
-  const result = response.tokens.filter((t: any) => t.chainId === chainId).map((token: any) => {
-    return {
-      address: token.address,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      logoUrl: token.logoURI,
-    };
-  });
+  const result = response.tokens
+    .filter((t: any) => t.chainId === chainId)
+    .map((token: any) => {
+      return {
+        address: token.address,
+        symbol: token.symbol,
+        decimals: token.decimals,
+        logoUrl: token.logoURI,
+      };
+    });
 
-  console.log({result: result.find((t: any) => t.symbol === "USDT")});
-  
+  console.log({ result: result.find((t: any) => t.symbol === "USDT") });
 
   const native = getNetwork(chainId)?.native as Token;
 
@@ -119,19 +117,16 @@ const tokensLists = {
 };
 
 const getTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
-  let tokens: Token[] = []
+  let tokens: Token[] = [];
   if (tokensLists[chainId]) {
     tokens = await tokensLists[chainId](signal);
-  }else{
-    tokens = await  getDefaultTokens(chainId, signal);
+  } else {
+    tokens = await getDefaultTokens(chainId, signal);
   }
 
+  const result = _.sortBy(tokens, (it) => BASE_TOKENS.indexOf(it.symbol));
 
-  const result =  _.sortBy(tokens, (it) => BASE_TOKENS.indexOf(it.symbol))
-
-  return result
-
- 
+  return result;
 };
 
 export const api = { getTokens };

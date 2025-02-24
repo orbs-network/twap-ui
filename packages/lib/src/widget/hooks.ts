@@ -158,16 +158,17 @@ export const useError = () => {
   const {
     twap: { errors },
     state: { srcAmount },
-    marketPrice
+    marketPrice,
   } = useWidgetContext();
 
   const { feeError } = useFeeOnTransferError();
 
   const balanceWarning = useBalanceWaning();
 
-  const error = BN(srcAmount || 0).isZero() || BN(marketPrice || 0).isZero()
-    ? ""
-    : errors.chunks?.text || errors.fillDelay?.text || errors.duration?.text || errors.tradeSize?.text || errors.limitPrice?.text || balanceWarning || feeError;
+  const error =
+    BN(srcAmount || 0).isZero() || BN(marketPrice || 0).isZero()
+      ? ""
+      : errors.chunks?.text || errors.fillDelay?.text || errors.duration?.text || errors.tradeSize?.text || errors.limitPrice?.text || balanceWarning || feeError;
 
   return error;
 };

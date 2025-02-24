@@ -9,9 +9,8 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "./context";
 
 const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
-
   return (
-    <Popup isOpen={isOpen} onClose={onClose} title='Token Select'>
+    <Popup isOpen={isOpen} onClose={onClose} title="Token Select">
       <TokensList onClick={onSelect} />
     </Popup>
   );
@@ -95,7 +94,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const dstUsd = useUSD(dstToken?.address);
   const srcBalance = useTokenBalance(srcToken).data?.wei;
   const dstBalance = useTokenBalance(dstToken).data?.wei;
-
 
   return (
     <WidgetProvider

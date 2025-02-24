@@ -115,7 +115,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       color: "white",
     },
     ".twap-order-header-text": {
-      fontSize: 13
+      fontSize: 13,
     },
     ".twap-order-token-progress-bar": {
       flex: 1,
@@ -227,14 +227,14 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         top: 2,
       },
     },
-    '.twap-input-loader': {
-      background:'rgba(255,255,255, 0.2)',
+    ".twap-input-loader": {
+      background: "rgba(255,255,255, 0.2)",
       borderRadius: 8,
-      maxWidth: '80%',
-      height:'80%'
+      maxWidth: "80%",
+      height: "80%",
     },
     ".twap-input-loading": {
-      opacity: 0
+      opacity: 0,
     },
     ".twap-powered-by": {
       a: {
@@ -245,7 +245,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       display: "flex",
       marginLeft: "auto",
       color: colors.text.main,
-      alignItems:'center',
+      alignItems: "center",
       marginBottom: 10,
       gap: 10,
       p: {
@@ -263,7 +263,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       background: "white",
     },
     ".twap-widget": {
-      width:'100%'
+      width: "100%",
     },
     ".twap-widget-swap-panel-top": {
       display: "flex",

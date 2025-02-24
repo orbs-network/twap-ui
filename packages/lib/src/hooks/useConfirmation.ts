@@ -6,7 +6,7 @@ import { SwapStatus } from "@orbs-network/swap-ui";
 
 export const useConfirmation = () => {
   const {
-    state: { showConfirmation: isOpen, swapData, swapStatus, swapError, srcAmount, swapStep },
+    state: { showConfirmation: isOpen, swapData, swapStatus, swapError, srcAmount, swapStep, swapSteps },
     srcToken,
     dstToken,
     twap: {
@@ -65,8 +65,8 @@ export const useConfirmation = () => {
     swapStatus,
     swapError,
     swapStep,
-    marketPrice,
     srcToken,
     dstToken,
+    swapSteps,
   };
 };

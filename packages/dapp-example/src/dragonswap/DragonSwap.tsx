@@ -24,16 +24,14 @@ export const useDappTokens = () => {
 };
 
 const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
-
   return (
     <Popup isOpen={isOpen} onClose={onClose}>
-     <TokensList  onClick={onSelect} />
+      <TokensList onClick={onSelect} />
     </Popup>
   );
 };
 
 const Modal = (props: ModalProps) => {
-
   return (
     <Popup isOpen={props.isOpen} onClose={props.onClose}>
       <div>{props.children}</div>
@@ -106,7 +104,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       srcTokenAddress={fromToken?.address}
       dstTokenAddress={toToken?.address}
       dexTokens={dappTokens}
-      isDarkTheme={theme === 'dark'}
+      isDarkTheme={theme === "dark"}
       marketPrice={outAmount}
       marketPriceLoading={isLoading}
       chainId={chainId}
@@ -131,11 +129,11 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 };
 
 export const Dragonswap = () => {
-const {panel}  = useDappContext()
+  const { panel } = useDappContext();
   return (
     <div>
       <div>
-        <UISelector  />
+        <UISelector />
         <TWAPComponent limit={panel === Panels.LIMIT} />
         <Widget.PoweredByOrbs />
         <Widget.Orders />

@@ -23,7 +23,7 @@ const useGetTokens = () => {
     async ({ signal }) => {
       return api.getTokens(chainId!, signal);
     },
-    { enabled: !!account, staleTime: Infinity }
+    { enabled: !!account, staleTime: Infinity },
   );
 };
 
@@ -115,12 +115,11 @@ export const useTokenUsd = (address?: string) => {
 };
 
 export const useTokensWithBalancesUSD = () => {
-  const { data: balances } = useTokenListBalances();
+  const { data: balances, dataUpdatedAt } = useTokenListBalances();
   const { chainId } = useAccount();
-  const key = useMemo(() => Object.keys(balances || {}).join(","), [balances]);
 
   return useQuery({
-    queryKey: ["useTokensWithBalancesUSD", key],
+    queryKey: ["useTokensWithBalancesUSD", dataUpdatedAt],
     queryFn: async () => {
       const balancesWithValues = Object.entries(balances!)
         .filter(([, it]) => it.ui !== "0")
@@ -129,17 +128,18 @@ export const useTokensWithBalancesUSD = () => {
       const usdValues = await Promise.all(
         balancesWithValues.map(async (address) => {
           const result = await fetchLLMAPrice(address, chainId!);
+
           const balance = balances![address].ui;
           return {
-            [address]: BN(result.priceUsd).multipliedBy(balance).toNumber(),
+            [address.toLowerCase()]: BN(result.priceUsd).multipliedBy(balance).toNumber(),
           };
-        })
+        }),
       );
-
       return usdValues.reduce((acc, it) => {
         return { ...acc, ...it };
       }, {}) as { [key: string]: number };
     },
+
     enabled: !!balances,
     staleTime: Infinity,
   });
@@ -178,7 +178,7 @@ export function useDebounce(value: string, delay: number) {
         clearTimeout(handler);
       };
     },
-    [value, delay] // Only re-call effect if value or delay changes
+    [value, delay], // Only re-call effect if value or delay changes
   );
   return debouncedValue;
 }
