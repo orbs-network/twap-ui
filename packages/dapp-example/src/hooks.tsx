@@ -62,7 +62,7 @@ const getPolygonTokens = async (signal?: AbortSignal): Promise<Token[]> => {
     };
   });
 
-  return [networks.poly.native, ...result];
+  return [networks.poly.native, networks.poly.wToken, ...result];
 };
 
 const getBaseTokens = async (signal?: AbortSignal): Promise<Token[]> => {

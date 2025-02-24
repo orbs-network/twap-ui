@@ -27,8 +27,7 @@
     "bignumber.js": "9.x",
     "moment": "2.x",
     "react-number-format": "5.x",
-    "styled-components": "^6.1.12",
-    "web3": "1.x"
+    "styled-components": "^6.1.12"
   },
   "peerDependencies": {
     "react": "*",

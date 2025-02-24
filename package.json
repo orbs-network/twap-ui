@@ -19,15 +19,14 @@
     "nodemon": "2.x",
     "ts-jest": "29.x",
     "typescript": "5.x"
-
     },
   "scripts": {
-    "clean": "lerna exec 'rm -f package-lock.json' && lerna clean -y || true && lerna bootstrap",
+    "clean": "lerna exec 'rm -f yarn.lock' && lerna clean -y || true && lerna bootstrap",
     "build": "lerna run build",
     "start": "PORT=3005 lerna run start --parallel",
     "test": "lerna run test",
     "test:watch": "cd packages/lib; npm run test:watch",
-    "publish": "npm run build && lerna publish --force-publish"
+    "publish": "yarn build && lerna publish --force-publish"
   },
   "prettier": {
     "printWidth": 180
