@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useWidgetContext } from "..";
 import { waitForTransactionReceipt } from "viem/actions";
 import { Hex, decodeEventLog } from "viem";
-import { TwapAbi } from "@orbs-network/twap-sdk";
+import { amountUi, TwapAbi } from "@orbs-network/twap-sdk";
 
 export function decodeOrderCreatedEvent(topics: Hex[], data: Hex) {
   const decodedLog = (decodeEventLog as any)({
@@ -16,25 +16,32 @@ export function decodeOrderCreatedEvent(topics: Hex[], data: Hex) {
 }
 
 export const useCreateOrder = () => {
-  const { account, updateState, twap, srcToken, dstToken, walletClient, publicClient, callbacks } = useWidgetContext();
   const {
-    createOrderTx,
-    values: { srcAmountUI },
-  } = twap;
+    account,
+    updateState,
+    twap,
+    srcToken,
+    dstToken,
+    walletClient,
+    publicClient,
+    callbacks,
+    state: { typedSrcAmount },
+  } = useWidgetContext();
+  const { submitOrderArgs } = twap;
 
   return useMutation(
     async () => {
       if (!dstToken) throw new Error("dstToken is not defined");
       if (!account) throw new Error("account is not defined");
 
-      twap.analytics.onCreateOrderRequest(createOrderTx.params, account);
+      twap.analytics.onCreateOrderRequest(submitOrderArgs.params, account);
 
       const hash = await (walletClient as any).writeContract({
         account,
-        address: createOrderTx.contract,
-        abi: createOrderTx.abi,
-        functionName: createOrderTx.method,
-        args: [createOrderTx.params],
+        address: submitOrderArgs.contract,
+        abi: submitOrderArgs.abi,
+        functionName: submitOrderArgs.method,
+        args: [submitOrderArgs.params],
       });
       const receipt = await waitForTransactionReceipt(publicClient as any, {
         hash,
@@ -57,8 +64,8 @@ export const useCreateOrder = () => {
           srcToken: srcToken!,
           dstToken: dstToken!,
           orderId: data.orderId,
-          srcAmount: srcAmountUI || "0",
-          dstAmount: twap.values.destTokenAmountUI || "0",
+          srcAmount: typedSrcAmount || "0",
+          dstAmount: amountUi(dstToken?.decimals, twap.derivedState.destTokenAmount || "0"),
           txHash: data.txHash,
         });
       },

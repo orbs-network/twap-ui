@@ -4,20 +4,20 @@ import { useSubmitOrderFlow } from "./useSubmitOrderFlow";
 import { useUsdAmount } from "./useUsdAmounts";
 import { SwapStatus } from "@orbs-network/swap-ui";
 
-export const useConfirmation = () => {
+export const useConfirmationModal = () => {
   const {
-    state: { showConfirmation: isOpen, swapData, swapStatus, swapError, srcAmount, swapStep, swapSteps },
+    state: { showConfirmation: isOpen, swapData, swapStatus, swapError, typedSrcAmount, swapStep, swapSteps },
     srcToken,
     dstToken,
     twap: {
       actionHandlers,
-      values: { destTokenAmountUI },
+      derivedState: { ui },
     },
     marketPrice,
   } = useWidgetContext();
 
   const { resetState, state, updateState, actions } = useWidgetContext();
-  const { mutate: onSubmit } = useSubmitOrderFlow();
+  const { mutate: onSubmitOrder } = useSubmitOrderFlow();
   const { dstUsd, srcUsd } = useUsdAmount();
   const { onSwitchFromNativeToWrapped } = actions;
 
@@ -30,7 +30,7 @@ export const useConfirmation = () => {
         setTimeout(() => {
           resetState();
           actionHandlers.resetTwap();
-        }, closeDalay || 300);
+        }, closeDalay || 500);
       }
 
       if (failure) {
@@ -40,27 +40,28 @@ export const useConfirmation = () => {
         onSwitchFromNativeToWrapped?.();
       }
     },
-    [swapStatus, resetState, state, updateState, actionHandlers, onSwitchFromNativeToWrapped],
+    [swapStatus, resetState, state, updateState, actionHandlers, onSwitchFromNativeToWrapped, actions],
   );
 
   const onOpen = useCallback(() => {
     updateState({
       showConfirmation: true,
+      // prevent data to change during order creation
       swapData: {
-        srcAmount,
-        outAmount: destTokenAmountUI || "",
+        srcAmount: typedSrcAmount,
+        outAmount: ui.destTokenAmount || "",
         srcAmountusd: srcUsd,
         outAmountusd: dstUsd,
         marketPrice,
       },
     });
-  }, [updateState, destTokenAmountUI, dstUsd, srcAmount, srcUsd, marketPrice]);
+  }, [updateState, ui.destTokenAmount, dstUsd, typedSrcAmount, srcUsd, marketPrice]);
 
   return {
     onClose,
     onOpen,
     isOpen,
-    onCreateOrder: onSubmit,
+    onSubmitOrder,
     swapData,
     swapStatus,
     swapError,

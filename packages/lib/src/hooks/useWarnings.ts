@@ -1,12 +1,12 @@
 import { useMemo } from "react";
-import { useWidgetContext } from "..";
+import { useAmountBN, useWidgetContext } from "..";
 import { useMaxSrcInputAmount } from "./useMaxSrcInputAmount";
 import BN from "bignumber.js";
 
 export const useBalanceWaning = () => {
   const maxSrcInputAmount = useMaxSrcInputAmount();
-  const { translations: t, twap, srcBalance } = useWidgetContext();
-  const srcAmount = twap.values.srcAmount;
+  const { translations: t, srcToken, srcBalance, state } = useWidgetContext();
+  const srcAmount = useAmountBN(srcToken?.decimals, state.typedSrcAmount);
 
   return useMemo(() => {
     const isNativeTokenAndValueBiggerThanMax = maxSrcInputAmount && BN(srcAmount)?.gt(maxSrcInputAmount);
@@ -15,15 +15,4 @@ export const useBalanceWaning = () => {
       return t.insufficientFunds;
     }
   }, [srcBalance?.toString(), srcAmount, maxSrcInputAmount?.toString(), t]);
-};
-
-export const useFeeOnTransferError = () => {
-  // const { data: srcFee, isLoading: srcLoading } = useFeeOnTransfer(srcToken?.address);
-  // const { data: dstFee, isLoading: dstLoading } = useFeeOnTransfer(dstToken?.address);
-  // const hasError = srcFee?.hasFeeOnTranfer || dstFee?.hasFeeOnTranfer;
-
-  return {
-    isLoading: false,
-    feeError: false,
-  };
 };

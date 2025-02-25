@@ -29,15 +29,15 @@ export const useOrderHistoryManager = () => {
         dstTokenSymbol: dstToken!.symbol,
         dollarValueIn: "",
         blockNumber: 0,
-        ask_srcAmount: twap.createOrderTx.params[3],
+        ask_srcAmount: twap.submitOrderArgs.params[3],
         transactionHash,
-        ask_dstMinAmount: twap.values.destTokenMinAmount,
+        ask_dstMinAmount: twap.derivedState.destTokenMinAmount,
         exchange: config.exchangeAddress,
         timestamp: moment().utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
-        ask_deadline: Number(twap.createOrderTx.params[6]),
+        ask_deadline: Number(twap.submitOrderArgs.params[6]),
         dex: "",
-        ask_fillDelay: Number(twap.createOrderTx.params[8]),
-        ask_srcBidAmount: twap.createOrderTx.params[4],
+        ask_fillDelay: Number(twap.submitOrderArgs.params[8]),
+        ask_srcBidAmount: twap.submitOrderArgs.params[4],
       };
       twap.orders.addNewOrder(account!, rawOrder);
       await query.refetch();

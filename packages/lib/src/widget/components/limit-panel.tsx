@@ -111,7 +111,7 @@ const PanelTokenSelect = ({ className = "" }: { className?: string }) => {
 };
 
 const InvertPriceButton = ({ className = "" }: { className?: string }) => {
-  const onInvert = useWidgetContext().twap.limitPricePanel.onInvertLimitPrice;
+  const onInvert = useLimitPricePanel().onInvertLimitPrice;
 
   return (
     <StyledPriceInvert onClick={onInvert} className={`twap-limit-price-panel-invert-button ${className}`}>
@@ -125,9 +125,12 @@ const StyledPriceInvert = styled("div")({
 });
 
 const Title = () => {
-  const { translations: t, twap } = useWidgetContext();
+  const {
+    translations: t,
+    twap: { derivedState },
+  } = useWidgetContext();
 
-  const inverted = twap.limitPricePanel.isInvertedLimitPrice;
+  const inverted = derivedState.isInvertedLimitPrice;
 
   return (
     <>

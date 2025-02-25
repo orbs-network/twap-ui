@@ -38,7 +38,7 @@ export enum OrderType {
   TWAP_MARKET = "twap-market",
 }
 
-export interface PrepareOrderArgs {
+export interface getAskArgsProps {
   destTokenMinAmount: string;
   srcChunkAmount: string;
   deadline: number;
@@ -46,26 +46,6 @@ export interface PrepareOrderArgs {
   srcAmount: string;
   srcTokenAddress: string;
   destTokenAddress: string;
-}
-
-
-export type Token =  {
-  address: string;
-  decimals: number;
-  symbol: string;
-}
-
-export interface DerivedSwapValuesArgs {
-  srcAmount?: string;
-  limitPrice?: string;
-  customDuration?: TimeDuration;
-  customFillDelay?: TimeDuration;
-  customChunks?: number;
-  isLimitPanel?: boolean;
-  oneSrcTokenUsd?: string | number;
-  srcToken?: Token;
-  isMarketOrder?: boolean;
-  minChunkSizeUsd: number,
 }
 
 export enum Warnings {

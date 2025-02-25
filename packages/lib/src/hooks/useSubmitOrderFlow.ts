@@ -11,6 +11,7 @@ import { useShouldWrap } from "./useShouldWrapOrUnwrap";
 import { useHasAllowance } from "./useAllowance";
 import { useNetwork } from "./useNetwork";
 import { useRef } from "react";
+import { amountUi } from "@orbs-network/twap-sdk";
 
 const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
   const steps: number[] = [];
@@ -28,7 +29,7 @@ const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 
 export const useSubmitOrderFlow = () => {
   const { state, updateState, srcToken, dstToken, actions, callbacks, twap } = useWidgetContext();
-  const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash } = state;
+  const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash, typedSrcAmount } = state;
   const { data: haveAllowance, refetch: refetchAllowance } = useHasAllowance();
   const shouldWrap = useShouldWrap();
   const { addNewOrder } = useOrderHistoryManager();
@@ -79,7 +80,12 @@ export const useSubmitOrderFlow = () => {
     },
     {
       onMutate() {
-        callbacks?.onSubmitOrderRequest?.({ srcToken: srcToken!, dstToken: dstToken!, srcAmount: twap.values.srcAmountUI, dstAmount: twap.values.destTokenAmountUI });
+        callbacks?.onSubmitOrderRequest?.({
+          srcToken: srcToken!,
+          dstToken: dstToken!,
+          srcAmount: typedSrcAmount || "",
+          dstAmount: amountUi(dstToken?.decimals, twap.derivedState.destTokenAmount),
+        });
       },
 
       onError(error) {

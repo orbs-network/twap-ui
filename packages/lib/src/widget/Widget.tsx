@@ -14,10 +14,11 @@ import { PoweredByOrbsPortal } from "./components/powered-by-orbs";
 import { PriceSwitch } from "./components/price-switch";
 import { useOrderHistoryManager } from "../hooks/useOrderHistoryManager";
 import { SubmitOrderModalPortal } from "./components/submit-order-modal/SubmitOrderModal";
-import { useConfirmation } from "../hooks/useConfirmation";
+import { useConfirmationModal } from "../hooks/useConfirmationModal";
 import * as Hooks from "./hooks";
 import { SwapPanel } from "./components/swap-panel";
 import { LimitPriceWarningPortal } from "./components/limit-price-warning";
+import './index.css';
 
 const Widget = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
@@ -25,7 +26,7 @@ const Widget = ({ children }: { children: ReactNode }) => {
 
 const hooks = {
   useOrderHistoryManager,
-  useConfirmation,
+  useConfirmationModal,
   useTokenPanel: Hooks.useTokenPanel,
   useSwitchTokens: Hooks.useSwitchTokens,
   useTradesAmountPanel: Hooks.useTradesAmountPanel,

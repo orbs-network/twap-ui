@@ -6,8 +6,7 @@ import { useNetwork } from "./useNetwork";
 import { iwethabi } from "@orbs-network/twap-sdk";
 
 export const useUnwrapToken = () => {
-  const { account, twap, resetState, walletClient, publicClient, actions } = useWidgetContext();
-  const srcAmount = twap.values.srcAmount;
+  const { account, resetState, walletClient, publicClient, actions, srcAmount } = useWidgetContext();
   const tokenAddress = useNetwork()?.wToken.address;
 
   return useMutation(async () => {
@@ -23,7 +22,11 @@ export const useUnwrapToken = () => {
       functionName: "withdraw",
       account: account,
       address: tokenAddress,
-      args: [BN(srcAmount).decimalPlaces(0).toFixed()],
+      args: [
+        BN(srcAmount || "")
+          .decimalPlaces(0)
+          .toFixed(),
+      ],
     });
 
     await waitForTransactionReceipt(publicClient as any, {

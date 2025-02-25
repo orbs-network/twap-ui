@@ -9,6 +9,7 @@ import { useOnSrcInputPercentClick } from "../../hooks/useOnSrcInputPercentClick
 import styled from "styled-components";
 import { useTokenPanel } from "../hooks";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
+import { useAmountUi } from "../../hooks/useParseAmounts";
 
 const Input = (props: {
   className?: string;
@@ -63,10 +64,10 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string; onFocu
   const {
     srcToken,
     updateState,
-    state: { srcAmount },
+    state: { typedSrcAmount = "" },
   } = useWidgetContext();
 
-  const setSrcAmount = useCallback((srcAmount: string) => updateState({ srcAmount }), [updateState]);
+  const setSrcAmount = useCallback((typedSrcAmount: string) => updateState({ typedSrcAmount }), [updateState]);
 
   return (
     <Input
@@ -74,7 +75,7 @@ const SrcTokenInput = (props: { className?: string; placeholder?: string; onFocu
       onBlur={props.onBlur}
       prefix=""
       onChange={setSrcAmount}
-      value={srcAmount || ""}
+      value={typedSrcAmount}
       decimalScale={srcToken?.decimals}
       className={props.className}
       placeholder={props.placeholder}
@@ -86,19 +87,19 @@ const DstTokenInput = (props: { className?: string; placeholder?: string; decima
   const {
     dstToken,
     twap: {
-      values: { destTokenAmountUI },
+      derivedState: { destTokenAmount },
     },
-    state: { srcAmount },
+    state: { typedSrcAmount },
     marketPriceLoading,
   } = useWidgetContext();
-
+  const destTokenAmountUI = useAmountUi(dstToken?.decimals, destTokenAmount);
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
 
   return (
     <Input
       disabled={true}
       loading={isWrapOrUnwrapOnly ? false : marketPriceLoading}
-      value={useFormatDecimals(isWrapOrUnwrapOnly ? srcAmount : destTokenAmountUI)}
+      value={useFormatDecimals(isWrapOrUnwrapOnly ? typedSrcAmount : destTokenAmountUI)}
       decimalScale={props.decimalScale || dstToken?.decimals}
       className={props.className}
       placeholder={props.placeholder}

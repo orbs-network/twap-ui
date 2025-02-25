@@ -4,7 +4,7 @@ import { useWidgetContext } from "../widget-context";
 
 export const LimitPriceWarning = ({ className = "" }: { className?: string }) => {
   const { translations: t, twap } = useWidgetContext();
-  const isMarketOrder = twap.values.isMarketOrder;
+  const isMarketOrder = twap.derivedState.isMarketOrder;
   const hide = useShouldWrapOrUnwrapOnly();
 
   if (isMarketOrder || hide) return null;

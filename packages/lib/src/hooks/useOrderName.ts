@@ -20,12 +20,12 @@ export const useGetOrderNameCallback = () => {
 export const useOrderName = () => {
   const { twap } = useWidgetContext();
   const {
-    values: { isMarketOrder },
+    derivedState: { isMarketOrder, chunks },
   } = twap;
 
   const getName = useGetOrderNameCallback();
 
   return useMemo(() => {
-    return getName(isMarketOrder, twap.values.chunks);
-  }, [getName, isMarketOrder, twap.values.chunks]);
+    return getName(isMarketOrder, chunks);
+  }, [getName, isMarketOrder, chunks]);
 };

@@ -14,6 +14,7 @@ import { GlobalStyles } from "./styles";
 import { LimitPriceWarningWithPortal } from "./components/limit-price-warning";
 import { useMinChunkSizeUsd } from "../hooks/useMinChunkSizeUSD";
 import { networks } from "@orbs-network/twap-sdk";
+import { useAmountBN } from "../hooks/useParseAmounts";
 
 const viemChains = {
   [networks.eth.id]: mainnet,
@@ -132,14 +133,14 @@ const WidgetProviderContent = (props: WidgetProps) => {
   const { state, updateState, resetState } = useStore();
   const translations = useTranslations(props.translations);
   const clients = useClients(props);
-  const minChunksSizeUsd = useMinChunkSizeUsd(props.config, clients?.publicClient);
+  const calculatedMinChunksSizeUsd = useMinChunkSizeUsd(props.config, clients?.publicClient);
 
   const config = useMemo(() => {
     return {
       ...props.config,
-      minChunkSizeUsd: props.minChunkSizeUsd || minChunksSizeUsd,
+      minChunkSizeUsd: props.minChunkSizeUsd || calculatedMinChunksSizeUsd,
     };
-  }, [props.config, minChunksSizeUsd, props.minChunkSizeUsd]);
+  }, [props.config, calculatedMinChunksSizeUsd, props.minChunkSizeUsd]);
 
   const twap = useTwap({
     config,
@@ -148,9 +149,10 @@ const WidgetProviderContent = (props: WidgetProps) => {
     destToken: props.dstToken,
     marketPriceOneToken: state.swapData?.marketPrice || props.marketPrice,
     oneSrcTokenUsd: props.srcUsd1Token,
-    typedSrcAmount: state.srcAmount,
+    typedSrcAmount: state.typedSrcAmount,
   });
 
+  const srcAmount = useAmountBN(props.srcToken?.decimals, state.typedSrcAmount);
   return (
     <WidgetContext.Provider
       value={{
@@ -165,6 +167,7 @@ const WidgetProviderContent = (props: WidgetProps) => {
         config,
         walletClient: clients?.walletClient,
         publicClient: clients?.publicClient,
+        srcAmount,
       }}
     >
       <Listeners />

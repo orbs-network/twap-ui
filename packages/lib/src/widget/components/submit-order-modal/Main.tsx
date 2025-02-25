@@ -14,11 +14,11 @@ import { useNetwork } from "../../../hooks/useNetwork";
 import { useOrderName } from "../../../hooks/useOrderName";
 import { useAmountUi } from "../../../hooks/useParseAmounts";
 import { useSubmitOrderButton } from "../../../hooks/useSubmitOrderButton";
-import { useConfirmation } from "../../../hooks/useConfirmation";
+import { useConfirmationModal } from "../../../hooks/useConfirmationModal";
 import { useShouldWrapOrUnwrapOnly } from "../../../hooks/useShouldWrapOrUnwrap";
 
 export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
-  const isMarketOrder = useWidgetContext().twap.values.isMarketOrder;
+  const isMarketOrder = useWidgetContext().twap.derivedState.isMarketOrder;
   const { translations: t } = useWidgetContext();
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
 
@@ -39,7 +39,7 @@ export const MarketPriceWarning = ({ className = "" }: { className?: string }) =
 };
 
 export const useSwapPrice = () => {
-  const { swapData } = useConfirmation();
+  const { swapData } = useConfirmationModal();
 
   const price = useMemo(() => {
     if (!swapData?.outAmount || !swapData?.srcAmount) return "0";
@@ -70,7 +70,7 @@ export const useSwapPrice = () => {
 const Price = () => {
   const { twap, srcToken, dstToken } = useWidgetContext();
   const {
-    values: { isMarketOrder },
+    derivedState: { isMarketOrder },
   } = twap;
   const swapPrice = useSwapPrice();
   const price = useFormatNumber({ value: swapPrice.price, decimalScale: 4 });
@@ -150,7 +150,7 @@ const useSteps = () => {
 
 export const Main = () => {
   const { uiPreferences, translations } = useWidgetContext();
-  const { swapStatus, swapStep, swapData } = useConfirmation();
+  const { swapStatus, swapStep, swapData } = useConfirmationModal();
   const steps = useSteps();
 
   const inUsd = useFormatNumber({ value: swapData?.srcAmountusd, decimalScale: 2 });
@@ -183,7 +183,7 @@ export const Main = () => {
 
 const ChunksText = () => {
   const {
-    values: { chunks, fillDelay },
+    derivedState: { chunks, fillDelay },
   } = useWidgetContext().twap;
   if (chunks <= 1) return null;
 
@@ -203,7 +203,7 @@ const Details = () => {
   const { twap, isLimitPanel, srcToken, dstToken } = useWidgetContext();
 
   const {
-    values: { isMarketOrder, deadline, fillDelayMilliseconds, chunks, srcChunksAmountUI, destTokenMinAmountOutUI },
+    derivedState: { isMarketOrder, orderDeadline, fillDelay, chunks, ui },
   } = twap;
 
   return (
@@ -211,18 +211,18 @@ const Details = () => {
       <Price />
       {isLimitPanel ? (
         <>
-          <OrderDisplay.Expiry deadline={deadline} />
+          <OrderDisplay.Expiry deadline={orderDeadline} />
           <OrderDisplay.Recipient />
           <Fee />
         </>
       ) : (
         <>
           <MarketPriceWarning />
-          <OrderDisplay.Expiry deadline={deadline} />
-          <OrderDisplay.ChunkSize srcChunkAmount={srcChunksAmountUI} chunks={chunks} srcToken={srcToken} />
+          <OrderDisplay.Expiry deadline={orderDeadline} />
+          <OrderDisplay.ChunkSize srcChunkAmount={ui.srcTokenChunkAmount} chunks={chunks} srcToken={srcToken} />
           <OrderDisplay.ChunksAmount chunks={chunks} />
-          <OrderDisplay.MinDestAmount totalChunks={chunks} dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={destTokenMinAmountOutUI} />
-          <OrderDisplay.TradeInterval chunks={chunks} fillDelayMillis={fillDelayMilliseconds} />
+          <OrderDisplay.MinDestAmount totalChunks={chunks} dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={ui.destTokenMinAmountOut} />
+          <OrderDisplay.TradeInterval chunks={chunks} fillDelayMillis={fillDelay.unit * fillDelay.value} />
           <OrderDisplay.Recipient />
           <Fee />
         </>
@@ -234,7 +234,7 @@ const Details = () => {
 const Fee = () => {
   const { fee, dstToken, twap } = useWidgetContext();
   const {
-    values: { isMarketOrder, destTokenAmount },
+    derivedState: { isMarketOrder, destTokenAmount },
   } = twap;
 
   const amount = useMemo(() => {

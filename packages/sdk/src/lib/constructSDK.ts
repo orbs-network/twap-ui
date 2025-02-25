@@ -1,7 +1,19 @@
 import { Analytics } from "./analytics";
-import { getEstimatedDelayBetweenChunksMillis, derivedSwapValues, prepareOrderArgs, getDeadline } from "./lib";
+import {
+  getEstimatedDelayBetweenChunksMillis,
+  getDeadline,
+  getMaxPossibleChunks,
+  getChunks,
+  getSrcChunkAmount,
+  getFillDelay,
+  getDuration,
+  getDestTokenMinAmount,
+  getDestTokenAmount,
+  getAskArgs,
+} from "./lib";
 import { addCancelledOrder, addNewOrder, getOrders, RawOrder } from "./orders";
-import { Config, DerivedSwapValuesArgs, PrepareOrderArgs, TimeDuration } from "./types";
+import { Config, getAskArgsProps, TimeDuration } from "./types";
+import { getChunksWarning, getDurationWarning, getFillDelayWarning, getLimitPriceWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
 
 interface Props {
   config: Config;
@@ -35,15 +47,51 @@ export class TwapSDK {
     this.estimatedDelayBetweenChunksMillis = getEstimatedDelayBetweenChunksMillis(this.config);
   }
 
-  prepareOrderArgs(props: PrepareOrderArgs) {
-    return prepareOrderArgs(this.config, props);
+  getAskArgs(props: getAskArgsProps) {
+    return getAskArgs(this.config, props);
+  }
+  getMaxChunks(typedSrcAmount: string, oneSrcTokenUsd: number) {
+    return getMaxPossibleChunks(this.config, typedSrcAmount, oneSrcTokenUsd);
+  }
+  getChunks(maxChunks: number, isLimitPanel: boolean, customChunks?: number) {
+    return getChunks(maxChunks, isLimitPanel, customChunks);
+  }
+  getSrcTokenChunkAmount(srcAmount: string, chunks?: number) {
+    return getSrcChunkAmount(srcAmount, chunks);
+  }
+  getFillDelay(isLimitPanel: boolean, typedFillDelay?: TimeDuration) {
+    return getFillDelay(isLimitPanel, typedFillDelay);
+  }
+  getOrderDuration(chunks: number, fillDelay: TimeDuration, typedDuration?: TimeDuration) {
+    return getDuration(chunks, fillDelay, typedDuration);
+  }
+  getDestTokenMinAmount(srcTokenChunkAmount: string, limitPrice: string, isMarketOrder: boolean, srcTokenDecimals: number) {
+    return getDestTokenMinAmount(srcTokenChunkAmount, limitPrice, isMarketOrder, srcTokenDecimals);
+  }
+  getDestTokenAmount(srcAmount: string, limitPrice: string, srcTokenDecimals: number) {
+    return getDestTokenAmount(srcAmount, limitPrice, srcTokenDecimals);
+  }
+  getFillDelayError(fillDelay: TimeDuration, isLimitPanel: boolean) {
+    return getFillDelayWarning(fillDelay, isLimitPanel);
+  }
+  getOrderDeadline(currentTimeMillis: number, orderDuration: TimeDuration) {
+    return getDeadline(currentTimeMillis, orderDuration);
   }
 
-  derivedSwapValues(props: DerivedSwapValuesArgs) {
-    return derivedSwapValues(this.config, props);
+  getTradeSizeError(typedSrcAmount: string, oneSrcTokenUsd: number) {
+    return getTradeSizeWarning(this.config.minChunkSizeUsd, oneSrcTokenUsd, typedSrcAmount);
   }
-  orderDeadline(currentTimeMillis: number, duration: TimeDuration) {
-    return getDeadline(currentTimeMillis, duration);
+  getChunksError(chunks: number, maxChunks: number, isLimitPanel: boolean) {
+    return getChunksWarning(chunks, maxChunks, Boolean(isLimitPanel));
+  }
+  getLimitPriceError(typedLimitPrice?: string) {
+    return getLimitPriceWarning(typedLimitPrice);
+  }
+  getDurationError(orderDuration: TimeDuration, isLimitPanel: boolean) {
+    return getDurationWarning(orderDuration, isLimitPanel);
+  }
+  getPartialFillWarning(chunks: number, orderDuration: TimeDuration, fillDelay: TimeDuration) {
+    return getPartialFillWarning(chunks, orderDuration, fillDelay);
   }
 
   async getUserOrders({ account, signal, page, limit }: { account: string; signal?: AbortSignal; page?: number; limit?: number }) {

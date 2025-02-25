@@ -3,7 +3,7 @@ import { SwapFlow } from "@orbs-network/swap-ui";
 import { useWidgetContext } from "../../..";
 import { Failed } from "./Failed";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
-import { useConfirmation } from "../../../hooks/useConfirmation";
+import { useConfirmationModal } from "../../../hooks/useConfirmationModal";
 import { useNetwork } from "../../../hooks/useNetwork";
 import { useOrderName } from "../../../hooks/useOrderName";
 import { Portal } from "../../../components/base";
@@ -11,7 +11,7 @@ import { ReactNode } from "react";
 
 const CustomModal = ({ children }: { children: ReactNode }) => {
   const Modal = useWidgetContext().components.Modal;
-  const { isOpen, onClose, swapStatus } = useConfirmation();
+  const { isOpen, onClose, swapStatus } = useConfirmationModal();
 
   if (!Modal) {
     return null;
@@ -26,7 +26,7 @@ const CustomModal = ({ children }: { children: ReactNode }) => {
 
 export const SubmitOrderModal = ({ className = "" }: { className?: string }) => {
   const { srcToken, dstToken } = useWidgetContext();
-  const { swapData, swapStatus, swapError } = useConfirmation();
+  const { swapData, swapStatus, swapError } = useConfirmationModal();
   const srcAmountF = useFormatNumber({ value: swapData?.srcAmount });
   const outAmountF = useFormatNumber({ value: swapData?.outAmount });
 

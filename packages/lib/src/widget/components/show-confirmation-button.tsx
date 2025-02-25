@@ -3,11 +3,11 @@ import { Button } from "../../components/base";
 import { useShowConfirmationButton } from "../hooks";
 
 export const ShowConfirmationButton = ({ className = "" }: { className?: string }) => {
-  const { onClick, text, disabled, loading, allowClickWhileLoading } = useShowConfirmationButton();
+  const args = useShowConfirmationButton();
 
   return (
-    <Button allowClickWhileLoading={allowClickWhileLoading} className={`twap-submit-button ${className}`} onClick={onClick} loading={loading} disabled={Boolean(disabled)}>
-      {text}
+    <Button className={`twap-submit-button ${className}`} onClick={args.onClick} loading={args.loading} disabled={Boolean(args.disabled)}>
+      {args.text}
     </Button>
   );
 };

@@ -14,7 +14,7 @@ export const useOnSrcInputPercentClick = () => {
 
       const _maxAmount = maxAmount && percent === 1 && BN(maxAmount).gt(0) ? maxAmount : undefined;
       const value = amountUi(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
-      updateState({ srcAmount: value });
+      updateState({ typedSrcAmount: value });
     },
     [maxAmount, srcBalance, updateState, srcToken],
   );

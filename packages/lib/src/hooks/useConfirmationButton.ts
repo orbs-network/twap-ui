@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from "react";
 import BN from "bignumber.js";
-import { useConfirmation } from "./useConfirmation";
+import { useConfirmationModal } from "./useConfirmationModal";
 import { useWidgetContext } from "..";
 import { useShouldOnlyWrap, useShouldUnwrap } from "./useShouldWrapOrUnwrap";
-import { useBalanceWaning, useFeeOnTransferError } from "./useWarnings";
+import { useBalanceWaning } from "./useWarnings";
 import { useWrapOnly } from "./useWrapToken";
 import { useUnwrapToken } from "./useUnwrapToken";
 import { SwapStatus } from "@orbs-network/swap-ui";
@@ -25,81 +25,86 @@ export const useConfirmationButton = () => {
     actions,
     srcToken,
     dstToken,
-    config,
-    twap: {
-      errors: { hasErrors, srcAmount: srcAmountError },
-    },
+    twap: { errors },
     marketPrice,
-    state: { swapStatus, srcAmount },
+    state: { swapStatus, typedSrcAmount },
     marketPriceLoading,
     srcBalance,
   } = useWidgetContext();
 
-  const { onOpen } = useConfirmation();
+  const { onOpen } = useConfirmationModal();
   const switchChain = useSwitchChain();
   const shouldUnwrap = useShouldUnwrap();
   const usdLoading = BN(srcUsd1Token || "0").isZero();
   const srcBalanceLoading = srcBalance === undefined;
   const balanceError = useBalanceWaning();
-  const { feeError, isLoading: feeOnTransferLoading } = useFeeOnTransferError();
   const { onConnect } = actions;
+  const hasErrors = Object.values(errors).some((it) => it);
 
   const shouldOnlyWrap = useShouldOnlyWrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
+  const zeroSrcAmount = BN(typedSrcAmount || "0").isZero();
+  const zeroMarketPrice = BN(marketPrice || 0).isZero();
 
   const isLoading = useMemo(() => {
-    if (!srcToken || !dstToken) return false;
-    return (marketPriceLoading && BN(srcAmount || 0).gt(0)) || usdLoading || srcBalanceLoading || feeOnTransferLoading || !config.minChunkSizeUsd;
-  }, [usdLoading, srcBalanceLoading, feeOnTransferLoading, srcToken, dstToken, marketPriceLoading, srcAmount, config.minChunkSizeUsd]);
+    if (!srcToken || !dstToken || !typedSrcAmount || BN(typedSrcAmount).isZero()) return false;
+    return marketPriceLoading || usdLoading || srcBalanceLoading;
+  }, [usdLoading, srcBalanceLoading, srcToken, dstToken, marketPriceLoading, typedSrcAmount]);
 
-  return useMemo(() => {
-    if (isWrongChain)
-      return {
-        text: t.switchNetwork,
-        onClick: switchChain,
-      };
-    if (!maker)
-      return {
-        text: t.connect,
-        onClick: () => {
-          if (!onConnect) {
-            alert("connect function is not defined");
-          } else {
-            onConnect();
-          }
-        },
-      };
+  const connect = useMemo(() => {
+    if (maker) return;
 
-    if (shouldOnlyWrap) {
-      return {
-        text: t.wrap,
-        onClick: wrap,
-        disabled: srcAmountError?.text || balanceError || wrapLoading,
-        loading: wrapLoading,
-      };
-    }
+    return {
+      text: t.connect,
+      disabled: false,
+      loading: false,
+      onClick: () => {
+        if (!onConnect) {
+          alert("connect function is not defined");
+        } else {
+          onConnect();
+        }
+      },
+    };
+  }, [maker, onConnect, t]);
 
-    if (shouldUnwrap) {
-      return {
-        text: t.unwrap,
-        onClick: unwrap,
-        disabled: srcAmountError?.text || balanceError || unwrapLoading,
-        loading: unwrapLoading,
-      };
-    }
+  const invalidChain = useMemo(() => {
+    if (!isWrongChain) return;
+    return {
+      text: t.switchNetwork,
+      onClick: switchChain,
+      disabled: false,
+      loading: false,
+    };
+  }, [isWrongChain, t, switchChain]);
 
+  const wrapOnly = useMemo(() => {
+    if (!shouldOnlyWrap) return;
+
+    return {
+      text: t.wrap,
+      onClick: wrap,
+      disabled: zeroSrcAmount || balanceError || wrapLoading,
+      loading: wrapLoading,
+    };
+  }, [shouldOnlyWrap, wrap, zeroSrcAmount, balanceError, wrapLoading, t]);
+
+  const unwrapOnly = useMemo(() => {
+    if (!shouldUnwrap) return;
+
+    return {
+      text: t.unwrap,
+      onClick: unwrap,
+      disabled: zeroSrcAmount || balanceError || unwrapLoading,
+      loading: unwrapLoading,
+    };
+  }, [shouldUnwrap, unwrap, zeroSrcAmount, balanceError, unwrapLoading, t]);
+
+  const swap = useMemo(() => {
     const text = () => {
-      if (!srcToken || !dstToken) {
-        return t.enterAmount;
-      }
-      if (marketPriceLoading) {
-        return t.outAmountLoading;
-      }
-      if (srcAmountError) {
-        return t.enterAmount;
-      }
-
+      if (zeroSrcAmount) return t.enterAmount;
+      if (marketPriceLoading) return t.outAmountLoading;
       return t.placeOrder;
     };
 
@@ -107,31 +112,9 @@ export const useConfirmationButton = () => {
       text: text(),
       onClick: onOpen,
       loading: swapStatus === SwapStatus.LOADING || isLoading,
-      disabled: BN(marketPrice || 0).isZero() || Boolean(feeError) || isLoading || hasErrors || !!balanceError,
-      allowClickWhileLoading: true,
+      disabled: swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isLoading || hasErrors || balanceError,
     };
-  }, [
-    isWrongChain,
-    maker,
-    onConnect,
-    isLoading,
-    shouldOnlyWrap,
-    wrap,
-    wrapLoading,
-    shouldUnwrap,
-    unwrap,
-    unwrapLoading,
-    t,
-    onOpen,
-    hasErrors,
-    balanceError,
-    feeError,
-    srcAmountError,
-    switchChain,
-    swapStatus,
-    marketPriceLoading,
-    marketPrice,
-    srcToken,
-    dstToken,
-  ]);
+  }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isLoading, zeroMarketPrice, hasErrors, balanceError]);
+
+  return connect || invalidChain || wrapOnly || unwrapOnly || swap;
 };

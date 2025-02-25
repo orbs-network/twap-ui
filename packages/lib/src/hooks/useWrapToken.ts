@@ -7,8 +7,15 @@ import { waitForTransactionReceipt } from "viem/actions";
 import { iwethabi } from "@orbs-network/twap-sdk";
 
 export const useWrapToken = () => {
-  const { account, twap, walletClient, publicClient, callbacks } = useWidgetContext();
-  const { srcAmount, srcAmountUI } = twap.values;
+  const {
+    account,
+    twap,
+    walletClient,
+    publicClient,
+    callbacks,
+    state: { typedSrcAmount },
+    srcAmount,
+  } = useWidgetContext();
 
   const tokenAddress = useNetwork()?.wToken.address;
 
@@ -16,7 +23,7 @@ export const useWrapToken = () => {
     async () => {
       if (!srcAmount) throw new Error("srcAmount is not defined");
       if (!account) throw new Error("account is not defined");
-      callbacks?.wrap.onRequest?.(srcAmountUI);
+      callbacks?.wrap.onRequest?.(typedSrcAmount || "");
       const hash = await (walletClient as any).writeContract({
         abi: iwethabi,
         functionName: "deposit",
@@ -32,7 +39,7 @@ export const useWrapToken = () => {
 
       logger("token wrap success:", hash);
       twap.analytics.onWrapSuccess(hash);
-      callbacks?.wrap.onSuccess?.({ txHash: hash, amount: srcAmountUI });
+      callbacks?.wrap.onSuccess?.({ txHash: hash, amount: typedSrcAmount || "" });
     },
     {
       onError: (error) => {

@@ -4,7 +4,6 @@ import { Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext } from "./context";
 import * as React from "react";
 import moment from "moment";
-import { Virtuoso } from "react-virtuoso";
 import { Loader } from "../../../components/base/Loader";
 import TokenLogo from "../../../components/base/TokenLogo";
 import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
@@ -39,16 +38,11 @@ export const OrderHistoryList = () => {
   return (
     <>
       {newOrderLoading && <ListLoader />}
-      <Virtuoso
-        totalCount={selectedOrders.length}
-        overscan={10}
-        className="twap-order-history-list"
-        style={{ height: "100%", width: "100%" }}
-        itemContent={(index) => {
-          const order = selectedOrders[index];
-          return <ListOrder selectOrder={selectOrder} order={order} />;
-        }}
-      />
+      <div className="twap-order-history-list">
+        {selectedOrders.map((order) => {
+          return <ListOrder key={order.id} selectOrder={selectOrder} order={order} />;
+        })}
+      </div>
     </>
   );
 };

@@ -262,8 +262,8 @@ export interface WidgetProps {
   translations?: Translations;
   srcToken?: Token;
   dstToken?: Token;
-  srcUsd1Token?: number | string;
-  dstUsd1Token?: number | string;
+  srcUsd1Token?: number;
+  dstUsd1Token?: number;
   srcBalance?: string;
   dstBalance?: string;
   uiPreferences?: UIPreferences;
@@ -290,6 +290,7 @@ export interface WidgetContextType extends WidgetProps {
   twap: UseTwap;
   walletClient?: any;
   publicClient?: any;
+  srcAmount?: string;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -411,7 +412,7 @@ export interface State {
   createOrderTxHash?: string;
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
-  srcAmount?: string;
+  typedSrcAmount?: string;
   newOrderLoading?: boolean;
   isWrapped?: boolean;
   swapData?: {

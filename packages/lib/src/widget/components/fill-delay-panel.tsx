@@ -58,11 +58,11 @@ const WarningComponent = () => {
 };
 
 const TradeIntervalLabel = () => {
-  const { translations, twap } = useWidgetContext();
+  const { translations } = useWidgetContext();
   return (
     <Label className="twap-trade-interval-panel-label">
       <Label.Text text={translations.tradeInterval} />
-      {/* <Label.Info text={handleFillDelayText(translations.tradeIntervalTootlip, twap.values.estimatedDelayBetweenChunksMillis)} /> */}
+      <Label.Info text={translations.tradeIntervalTootlip} />
     </Label>
   );
 };

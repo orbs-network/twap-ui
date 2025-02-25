@@ -2,11 +2,10 @@ import { useEffect } from "react";
 import { useReducer, useCallback, useMemo } from "react";
 import * as SDK from "@orbs-network/twap-sdk";
 import { Action, ActionType, State, Token } from "./types";
-import { useDerivedSwapValues } from "./hooks/useDerivedValues";
-import { useActionHandlers } from "./hooks/useHandlers";
-import { useLimitPricePanel } from "./hooks/useLimitPricePanel";
-import useCreateOrderTx from "./hooks/useContractMethods";
+
 import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
+import { removeCommas, toWeiAmount } from "./utils";
+import { useActionHandlers, useDerivedState, useErrors, useWarnings, useSubmitOrderArgs } from "./hooks";
 
 const initialState: State = {
   currentTime: Date.now(),
@@ -23,7 +22,7 @@ const useOrders = (sdk: SDK.TwapSDK) => {
   }, [sdk]);
 };
 
-const StateRedicer = (state: State, action: Action): State => {
+const StateReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case ActionType.UPDATED_STATE:
       return { ...state, ...action.value };
@@ -43,19 +42,22 @@ type UseTwapProps = {
   srcToken?: Token;
   destToken?: Token;
   marketPriceOneToken?: string;
-  oneSrcTokenUsd?: number | string;
+  oneSrcTokenUsd?: number;
   typedSrcAmount?: string;
 };
 
-export const useTwap = ({ config, isLimitPanel, srcToken, destToken, marketPriceOneToken: marketPrice, oneSrcTokenUsd, typedSrcAmount }: UseTwapProps) => {
-  const [state, dispatch] = useReducer(StateRedicer, initialState);
+export const useTwap = ({ config, isLimitPanel, srcToken, destToken, marketPriceOneToken: marketPrice, oneSrcTokenUsd, typedSrcAmount: _typedSrcAmount }: UseTwapProps) => {
+  const [state, dispatch] = useReducer(StateReducer, initialState);
+  const typedSrcAmount = useMemo(() => removeCommas(_typedSrcAmount || "0"), [_typedSrcAmount]);
+  const srcAmount = useMemo(() => toWeiAmount(srcToken?.decimals, typedSrcAmount), [srcToken, typedSrcAmount]);
   const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
   const sdk = useMemo(() => new SDK.TwapSDK({ config }), [config]);
   const orders = useOrders(sdk);
-  const { values, warnings, errors } = useDerivedSwapValues(sdk, state, isLimitPanel, srcToken, destToken, marketPrice, oneSrcTokenUsd?.toString(), typedSrcAmount);
-  const actionHandlers = useActionHandlers(dispatch, updateState, !!isLimitPanel);
-  const limitPricePanel = useLimitPricePanel(state, values, errors, updateState, srcToken, destToken, marketPrice);
-  const createOrderTx = useCreateOrderTx(values, sdk, srcToken, destToken);
+  const derivedState = useDerivedState(sdk, state, isLimitPanel, srcToken, destToken, marketPrice, oneSrcTokenUsd, typedSrcAmount, srcAmount);
+  const actionHandlers = useActionHandlers(dispatch, updateState, !!isLimitPanel, state, marketPrice, destToken);
+  const submitOrderArgs = useSubmitOrderArgs(derivedState, sdk, srcToken, destToken, srcAmount);
+  const warnings = useWarnings(sdk, derivedState);
+  const errors = useErrors(sdk, derivedState, state, !!isLimitPanel, oneSrcTokenUsd, typedSrcAmount);
 
   useEffect(() => {
     if (isLimitPanel) {
@@ -72,14 +74,13 @@ export const useTwap = ({ config, isLimitPanel, srcToken, destToken, marketPrice
   }, [updateState]);
 
   return {
-    values,
-    warnings,
-    errors,
+    derivedState,
     actionHandlers,
-    limitPricePanel,
     analytics: sdk.analytics,
     orders,
-    createOrderTx,
+    submitOrderArgs,
+    warnings,
+    errors,
   };
 };
 

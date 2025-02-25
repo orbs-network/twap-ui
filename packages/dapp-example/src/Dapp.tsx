@@ -112,8 +112,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       }}
       isLimitPanel={limit}
       uiPreferences={uiPreferences}
-      srcUsd1Token={srcUsd}
-      dstUsd1Token={dstUsd}
+      srcUsd1Token={srcUsd ? Number(srcUsd) : 0}
+      dstUsd1Token={dstUsd ? Number(dstUsd) : 0}
       srcBalance={srcBalance}
       dstBalance={dstBalance}
       marketPrice={marketPrice}

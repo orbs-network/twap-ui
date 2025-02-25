@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useWidgetContext } from "..";
+import { useAmountBN, useWidgetContext } from "..";
 import { logger } from "../utils";
 import { waitForTransactionReceipt } from "viem/actions";
 import { useHandleNativeAddress } from "./useHandleNativeAddress";
@@ -7,8 +7,18 @@ import BN from "bignumber.js";
 import { erc20Abi, maxUint256 } from "viem";
 
 export const useApproveToken = () => {
-  const { account, isExactAppoval, config, twap, srcToken, walletClient, publicClient, callbacks } = useWidgetContext();
-  const { srcAmount, srcAmountUI } = twap.values;
+  const {
+    account,
+    isExactAppoval,
+    config,
+    twap,
+    srcToken,
+    walletClient,
+    publicClient,
+    callbacks,
+    state: { typedSrcAmount = "" },
+  } = useWidgetContext();
+  const srcAmount = useAmountBN(srcToken?.decimals, typedSrcAmount);
   const approvalAmount = isExactAppoval ? srcAmount : maxUint256.toString();
   const tokenAddress = useHandleNativeAddress(srcToken?.address);
 
@@ -17,7 +27,7 @@ export const useApproveToken = () => {
       if (!account) throw new Error("account is not defined");
       if (!approvalAmount) throw new Error("approvalAmount is not defined");
       if (!tokenAddress) throw new Error("tokenAddress is not defined");
-      callbacks?.approve?.onRequest?.({ token: srcToken!, amount: srcAmountUI });
+      callbacks?.approve?.onRequest?.({ token: srcToken!, amount: typedSrcAmount || "" });
       const hash = await (walletClient as any).writeContract({
         abi: erc20Abi,
         functionName: "approve",
@@ -33,7 +43,7 @@ export const useApproveToken = () => {
 
       logger("token approve success:", hash);
       twap.analytics.onApproveSuccess(hash);
-      callbacks?.approve.onSuccess?.({ token: srcToken!, txHash: hash, amount: isExactAppoval ? srcAmountUI : maxUint256.toString() });
+      callbacks?.approve.onSuccess?.({ token: srcToken!, txHash: hash, amount: isExactAppoval ? typedSrcAmount : maxUint256.toString() });
     },
     {
       onError: (error) => {

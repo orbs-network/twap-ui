@@ -17,7 +17,7 @@ export function SwapPanel() {
   const {
     isLimitPanel,
     twap: {
-      values: { isMarketOrder },
+      derivedState: { isMarketOrder },
     },
   } = useWidgetContext();
   return (
