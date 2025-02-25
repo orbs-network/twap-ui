@@ -32,17 +32,17 @@ export const useDerivedSwapValues = (
   const limitPrice = useMemo(() => {
     if (state.typedPrice === undefined || state.isMarketOrder || !marketPrice) return marketPrice;
     const result = state.isInvertedLimitPrice ? BN(1).div(state.typedPrice).toString() : state.typedPrice;
-    return safeValue(toWeiAmount(destToken?.decimals, result));
+    return toWeiAmount(destToken?.decimals, result);
   }, [state.typedPrice, state.isMarketOrder, marketPrice, state.isInvertedLimitPrice, destToken?.decimals]);
 
   return useMemo(() => {
-    const srcAmount = safeValue(toWeiAmount(srcToken?.decimals, typedSrcAmount));
+    const srcAmount = toWeiAmount(srcToken?.decimals, typedSrcAmount);
     const isMarketOrder = state.isMarketOrder && !isLimitPanel;
     const drivedValues = sdk.derivedSwapValues({
       oneSrcTokenUsd,
       srcAmount,
-      srcDecimals: srcToken?.decimals,
-      destDecimals: destToken?.decimals,
+      srcToken,
+      destToken,
       customChunks: state.typedChunks,
       isLimitPanel,
       customFillDelay: state.typedFillDelay,

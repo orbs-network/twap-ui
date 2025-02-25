@@ -48,6 +48,13 @@ export interface PrepareOrderArgs {
   destTokenAddress: string;
 }
 
+
+export type Token =  {
+  address: string;
+  decimals: number;
+  symbol: string;
+}
+
 export interface DerivedSwapValuesArgs {
   srcAmount?: string;
   limitPrice?: string;
@@ -56,9 +63,9 @@ export interface DerivedSwapValuesArgs {
   customChunks?: number;
   isLimitPanel?: boolean;
   oneSrcTokenUsd?: string | number;
-  srcDecimals?: number;
-  destDecimals?: number;
+  srcToken?: Token;
   isMarketOrder?: boolean;
+  minChunkSizeUsd: number,
 }
 
 export enum Warnings {

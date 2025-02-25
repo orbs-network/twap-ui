@@ -24,7 +24,7 @@ const viemChains = {
   [networks.ftm.id]: fantom,
   [networks.base.id]: base,
   [networks.linea.id]: linea,
-  48900: zircuit,
+  [networks.zircuit.id]: zircuit,
   [networks.zksync.id]: zksync,
   [networks.scroll.id]: scroll,
   [networks.sonic.id]: sonic,
@@ -129,9 +129,7 @@ const useClients = (props: WidgetProps) => {
 
 const WidgetProviderContent = (props: WidgetProps) => {
   const isWrongChain = useIsWrongChain(props, props.chainId);
-
   const { state, updateState, resetState } = useStore();
-
   const translations = useTranslations(props.translations);
   const clients = useClients(props);
   const minChunksSizeUsd = useMinChunkSizeUsd(props.config, clients?.publicClient);

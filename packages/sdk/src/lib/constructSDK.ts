@@ -29,12 +29,10 @@ export class TwapSDK {
   public config: Config;
   public analytics = analyticsCallback;
   public estimatedDelayBetweenChunksMillis: number;
-  public minChunkSizeUsd: number;
   constructor(props: Props) {
     this.config = props.config;
     analytics.onConfigChange(props.config);
     this.estimatedDelayBetweenChunksMillis = getEstimatedDelayBetweenChunksMillis(this.config);
-    this.minChunkSizeUsd = props.minChunkSizeUsd || props.config.minChunkSizeUsd;
   }
 
   prepareOrderArgs(props: PrepareOrderArgs) {
@@ -42,7 +40,7 @@ export class TwapSDK {
   }
 
   derivedSwapValues(props: DerivedSwapValuesArgs) {
-    return derivedSwapValues(this.config, this.minChunkSizeUsd, props);
+    return derivedSwapValues(this.config, props);
   }
   orderDeadline(currentTimeMillis: number, duration: TimeDuration) {
     return getDeadline(currentTimeMillis, duration);
