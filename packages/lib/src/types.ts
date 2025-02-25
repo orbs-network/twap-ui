@@ -284,7 +284,7 @@ export interface WidgetContextType extends WidgetProps {
   isWrongChain: boolean;
   state: State;
   updateState: (state: Partial<State>) => void;
-  resetState: () => void;
+  reset: () => void;
   translations: Translations;
   uiPreferences: UIPreferences;
   twap: UseTwap;

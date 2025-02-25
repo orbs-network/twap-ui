@@ -18,7 +18,6 @@ import { useConfirmationModal } from "../hooks/useConfirmationModal";
 import * as Hooks from "./hooks";
 import { SwapPanel } from "./components/swap-panel";
 import { LimitPriceWarningPortal } from "./components/limit-price-warning";
-import './index.css';
 
 const Widget = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
@@ -33,7 +32,7 @@ const hooks = {
   useTradeDurationPanel: Hooks.useTradeDurationPanel,
   useShowConfirmationButton: Hooks.useShowConfirmationButton,
   usePriceMode: Hooks.usePriceMode,
-  useMessage: Hooks.useMessage,
+  useMessage: Hooks.useChunkSizeMessage,
   useLimitPricePanel: Hooks.useLimitPricePanel,
   useFillDelayPanel: Hooks.useFillDelayPanel,
   useError: Hooks.useError,

@@ -51,11 +51,11 @@ export const useWrapToken = () => {
 
 export const useWrapOnly = () => {
   const { mutateAsync } = useWrapToken();
-  const { resetState, actions } = useWidgetContext();
+  const { reset, actions } = useWidgetContext();
 
   return useMutation(async () => {
     await mutateAsync();
-    resetState();
+    reset();
     await actions.refetchBalances?.();
   });
 };

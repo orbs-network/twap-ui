@@ -105,8 +105,8 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         padding: 12,
       },
     },
-    ".twap-order-history-list":{
-      width:'100%'
+    ".twap-order-history-list": {
+      width: "100%",
     },
     ".twap-order-display-details-row-right": {
       fontSize: 13,

@@ -1,9 +1,9 @@
 import React from "react";
 import { Message } from "../../components/base";
-import { useMessage } from "../hooks";
+import { useChunkSizeMessage } from "../hooks";
 
 export const WidgetMessage = () => {
-  const message = useMessage();
+  const message = useChunkSizeMessage();
   if (!message) return null;
 
   return <Message title={message} />;

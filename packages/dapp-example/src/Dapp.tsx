@@ -125,6 +125,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       includeStyles={true}
       isDarkTheme={theme === "dark"}
       minChunkSizeUsd={4}
+      fee="0.25"
     >
       <Widget.SwapPanel />
     </WidgetProvider>

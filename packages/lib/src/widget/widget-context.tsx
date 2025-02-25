@@ -152,6 +152,11 @@ const WidgetProviderContent = (props: WidgetProps) => {
     typedSrcAmount: state.typedSrcAmount,
   });
 
+  const reset = useCallback(() => {
+    resetState();
+    twap.actionHandlers.resetTwap();
+  }, [resetState, twap.actionHandlers]);
+
   const srcAmount = useAmountBN(props.srcToken?.decimals, state.typedSrcAmount);
   return (
     <WidgetContext.Provider
@@ -160,7 +165,7 @@ const WidgetProviderContent = (props: WidgetProps) => {
         translations,
         isWrongChain,
         updateState,
-        resetState,
+        reset,
         state,
         uiPreferences: props.uiPreferences || {},
         twap,

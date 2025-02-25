@@ -96,7 +96,7 @@ export const usePriceMode = () => {
   };
 };
 
-export const useMessage = () => {
+export const useChunkSizeMessage = () => {
   const { srcUsd1Token, twap, srcToken } = useWidgetContext();
   const srcChunksAmount = useAmountUi(srcToken?.decimals, twap.derivedState.srcTokenChunkAmount);
   const srcChunkAmountUsd = useSrcChunkAmountUSD();
