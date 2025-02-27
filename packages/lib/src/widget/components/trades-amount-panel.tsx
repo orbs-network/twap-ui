@@ -2,10 +2,10 @@ import React, { ReactNode } from "react";
 import { Panel } from "../../components/Panel";
 import { Label, NumericInput } from "../../components/base";
 import { StyledRowFlex, StyledText } from "../../styles";
-import { useWidgetContext } from "../..";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 import styled from "styled-components";
-import { useTradesAmountPanel } from "../hooks";
+import { useTwapContext } from "../../context";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
+import { useTradesAmountPanel } from "../../hooks/ui-hooks";
 
 export const TradesAmountPanel = ({ className = "", children }: { className?: string; children: ReactNode }) => {
   const { error } = useTradesAmountPanel();
@@ -23,7 +23,7 @@ export const TradesAmountPanel = ({ className = "", children }: { className?: st
 
 const Input = ({ className = "" }: { className?: string }) => {
   const { onBlur, onFocus } = Panel.usePanelContext();
-  const { setChunks, chunks } = useTradesAmountPanel();
+  const { onChange, trades } = useTradesAmountPanel();
 
   return (
     <NumericInput
@@ -31,9 +31,9 @@ const Input = ({ className = "" }: { className?: string }) => {
       onFocus={onFocus}
       className={`twap-trades-amount-panel-input ${className}`}
       placeholder="0"
-      value={chunks}
+      value={trades}
       decimalScale={0}
-      onChange={(value) => setChunks(Number(value))}
+      onChange={(value) => onChange(Number(value))}
     />
   );
 };
@@ -50,7 +50,7 @@ export const _Label = ({ className = "" }: { className?: string }) => {
 };
 
 const Main = ({ className = "" }: { className?: string }) => {
-  const { translations: t } = useWidgetContext();
+  const { translations: t } = useTwapContext();
   return (
     <StyledMain className={`twap-trades-amount-panel-main ${className}`}>
       <Panel.Header>

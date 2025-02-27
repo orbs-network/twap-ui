@@ -1,6 +1,6 @@
 import React from "react";
 import { Message } from "../../components/base";
-import { useChunkSizeMessage } from "../hooks";
+import { useChunkSizeMessage } from "../../hooks/ui-hooks";
 
 export const WidgetMessage = () => {
   const message = useChunkSizeMessage();

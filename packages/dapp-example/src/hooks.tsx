@@ -212,6 +212,7 @@ const chainIdToName: { [key: number]: string } = {
   42161: "arbitrum",
   1329: "sei",
   48900: "zircuit",
+  14: 'flare'
 };
 
 export async function fetchLLMAPrice(token: string, chainId: number | string) {

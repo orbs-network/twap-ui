@@ -129,5 +129,6 @@
   "twapMarketOrder": "TWAP-market",
   "twapLimit": "TWAP-limit",
   "All": "All",
-  "minReceived": "Min. received"
+  "minReceived": "Min. received",
+  "submitOrder": "Submit order"
 }

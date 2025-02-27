@@ -2,7 +2,7 @@ import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useRefetchB
 import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { TooltipProps, TokensListModalProps, ModalProps, Widget, Token, WidgetProvider, UIPreferences } from "@orbs-network/twap-ui";
+import { TooltipProps, TokensListModalProps, ModalProps, Widget, Token, UIPreferences, TwapProvider } from "@orbs-network/twap-ui";
 import { eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
@@ -96,7 +96,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const dstBalance = useTokenBalance(dstToken).data?.wei;
 
   return (
-    <WidgetProvider
+    <TwapProvider
       config={config}
       walletClientTransport={client.data?.transport}
       account={account as string}
@@ -127,8 +127,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       minChunkSizeUsd={4}
       fee="0.25"
     >
-      <Widget.SwapPanel />
-    </WidgetProvider>
+      <Widget>
+        <Widget.SwapPanel />
+      </Widget>
+    </TwapProvider>
   );
 };
 

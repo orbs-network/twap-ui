@@ -137,7 +137,7 @@ export const Dragonswap = () => {
         <TWAPComponent limit={panel === Panels.LIMIT} />
         <Widget.PoweredByOrbs />
         <Widget.Orders />
-        <Widget.LimitPriceWarning />
+        <Widget.LimitPriceMessage />
       </div>
     </div>
   );

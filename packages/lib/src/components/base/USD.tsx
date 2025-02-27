@@ -3,8 +3,8 @@ import React from "react";
 import { SQUIGLE } from "../../config";
 import { textOverflow } from "../../styles";
 import SmallLabel from "./SmallLabel";
-import { useWidgetContext } from "../..";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
+import { useTwapContext } from "../../context";
 
 const USD = ({
   isLoading = false,
@@ -27,7 +27,7 @@ const USD = ({
 }) => {
   const formattedValue = useFormatNumber({ value, decimalScale });
 
-  const usd = useWidgetContext()?.uiPreferences.usd;
+  const usd = useTwapContext()?.uiPreferences.usd;
 
   const _prefix = prefix || usd?.prefix || `${SQUIGLE} $ `;
   const _suffix = suffix || usd?.suffix;

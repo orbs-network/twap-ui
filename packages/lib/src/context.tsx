@@ -1,20 +1,12 @@
-import React, { createContext, useCallback, useContext, useMemo, useReducer } from "react";
-import { State, WidgetContextType, Translations, WidgetProps } from "../types";
-import defaultTranlations from "../i18n/en.json";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { TwapErrorWrapper } from "../ErrorHandling";
-import { useTwap } from "@orbs-network/twap-ui-sdk";
-import { OrdersWithPortalPortal } from "./components/orders/Orders";
-import { SubmitOrderModal, SubmitOrderModalWithPortal } from "./components/submit-order-modal/SubmitOrderModal";
-import { PoweredbyOrbsWithPortal } from "./components/powered-by-orbs";
-import { useHasAllowance } from "../hooks/useAllowance";
 import { createWalletClient, custom, createPublicClient, http } from "viem";
 import { mainnet, polygon, bsc, arbitrum, sonic, sei, avalanche, fantom, base, linea, zksync, scroll, zircuit } from "viem/chains";
-import { GlobalStyles } from "./styles";
-import { LimitPriceWarningWithPortal } from "./components/limit-price-warning";
-import { useMinChunkSizeUsd } from "../hooks/useMinChunkSizeUSD";
-import { networks } from "@orbs-network/twap-sdk";
-import { useAmountBN } from "../hooks/useParseAmounts";
+import { constructSDK, networks } from "@orbs-network/twap-sdk";
+import { State, TwapProps, TwapContextType, Translations } from "./types";
+import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
+import { TwapErrorWrapper } from "./ErrorHandling";
+import defaultTranlations from "./i18n/en.json";
 
 const viemChains = {
   [networks.eth.id]: mainnet,
@@ -36,7 +28,7 @@ export function getViemChain(chainId?: number) {
   if (!chainId) return null; // Returns null if no chainId
   return viemChains[chainId as keyof typeof viemChains] || null; // Returns the chain or null if not found
 }
-export const WidgetContext = createContext({} as WidgetContextType);
+export const TwapContext = createContext({} as TwapContextType);
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -53,6 +45,7 @@ type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> } | { type
 
 const initialState = {
   disclaimerAccepted: true,
+  currentTime: Date.now(),
 } as State;
 
 const contextReducer = (state: State, action: Action): State => {
@@ -62,7 +55,7 @@ const contextReducer = (state: State, action: Action): State => {
     case ActionType.RESET:
       return {
         ...initialState,
-        newOrderLoading: state.newOrderLoading,
+        currentTime: Date.now(),
       };
     default:
       return state;
@@ -70,17 +63,28 @@ const contextReducer = (state: State, action: Action): State => {
 };
 
 const Listeners = () => {
-  useHasAllowance();
+  const { isLimitPanel, updateState } = useTwapContext();
+
+  useEffect(() => {
+    if (isLimitPanel) {
+      updateState({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION, isMarketOrder: false });
+    } else {
+      updateState({ typedDuration: undefined });
+    }
+  }, [isLimitPanel, updateState]);
+
+  useEffect(() => {
+    setInterval(() => {
+      updateState({ currentTime: Date.now() });
+    }, 60_000);
+  }, [updateState]);
 
   return null;
 };
 
-const useIsWrongChain = (props: WidgetProps, chainId?: number) => {
+const useIsWrongChain = (props: TwapProps, chainId?: number) => {
   return useMemo(() => {
-    if (!props.account || !chainId) {
-      return false;
-    }
-
+    if (!props.account || !chainId) return false;
     return props.config.chainId !== chainId;
   }, [chainId, props.account, props.config.chainId]);
 };
@@ -107,7 +111,7 @@ const useStore = () => {
   };
 };
 
-const useClients = (props: WidgetProps) => {
+const useClients = (props: TwapProps) => {
   return useMemo(() => {
     try {
       const viemChain = getViemChain(props.chainId);
@@ -128,78 +132,46 @@ const useClients = (props: WidgetProps) => {
   }, [props.chainId, props.web3Provider, props.account, props.walletClientTransport]);
 };
 
-const WidgetProviderContent = (props: WidgetProps) => {
+const Content = (props: TwapProps) => {
   const isWrongChain = useIsWrongChain(props, props.chainId);
   const { state, updateState, resetState } = useStore();
   const translations = useTranslations(props.translations);
   const clients = useClients(props);
-  const calculatedMinChunksSizeUsd = useMinChunkSizeUsd(props.config, clients?.publicClient);
+  const twapSDK = useMemo(() => constructSDK({ config: props.config }), [props.config]);
 
-  const config = useMemo(() => {
-    return {
-      ...props.config,
-      minChunkSizeUsd: props.minChunkSizeUsd || calculatedMinChunksSizeUsd,
-    };
-  }, [props.config, calculatedMinChunksSizeUsd, props.minChunkSizeUsd]);
-
-  const twap = useTwap({
-    config,
-    isLimitPanel: props.isLimitPanel,
-    srcToken: props.srcToken,
-    destToken: props.dstToken,
-    marketPriceOneToken: state.swapData?.marketPrice || props.marketPrice,
-    oneSrcTokenUsd: props.srcUsd1Token,
-    typedSrcAmount: state.typedSrcAmount,
-  });
-
-  const reset = useCallback(() => {
-    resetState();
-    twap.actionHandlers.resetTwap();
-  }, [resetState, twap.actionHandlers]);
-
-  const srcAmount = useAmountBN(props.srcToken?.decimals, state.typedSrcAmount);
   return (
-    <WidgetContext.Provider
+    <TwapContext.Provider
       value={{
         ...props,
         translations,
         isWrongChain,
         updateState,
-        reset,
+        reset: resetState,
         state,
         uiPreferences: props.uiPreferences || {},
-        twap,
-        config,
+        config: props.config,
         walletClient: clients?.walletClient,
         publicClient: clients?.publicClient,
-        srcAmount,
+        twapSDK,
       }}
     >
       <Listeners />
-      <TwapErrorWrapper>
-        <OrdersWithPortalPortal />
-        <SubmitOrderModal />
-        <SubmitOrderModalWithPortal />
-        <PoweredbyOrbsWithPortal />
-        <LimitPriceWarningWithPortal />
-        <div className="twap-widget">{props.children}</div>
-      </TwapErrorWrapper>
-      {props.includeStyles && <GlobalStyles isDarkMode={props.isDarkTheme} />}
-    </WidgetContext.Provider>
+      <TwapErrorWrapper>{props.children}</TwapErrorWrapper>
+    </TwapContext.Provider>
   );
 };
 
-export const WidgetProvider = (props: WidgetProps) => {
+export const TwapProvider = (props: TwapProps) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <WidgetProviderContent {...props} />
+      <Content {...props} />
     </QueryClientProvider>
   );
 };
 
-export const useWidgetContext = () => {
-  if (!WidgetContext) {
-    throw new Error("useWidgetContext must be used within a WidgetProvider");
+export const useTwapContext = () => {
+  if (!TwapContext) {
+    throw new Error("useTwapContext must be used within a WidgetProvider");
   }
-  return useContext(WidgetContext);
+  return useContext(TwapContext);
 };

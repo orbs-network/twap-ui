@@ -3,8 +3,8 @@ import Icon from "./Icon";
 import { StyledOneLineText, StyledRowFlex } from "../../styles";
 import React, { FC, ReactNode } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
-import { useWidgetContext } from "../..";
 import { Tooltip } from "./Tooltip";
+import { useTwapContext } from "../../context";
 
 interface Props {
   onClick: () => void;
@@ -15,7 +15,7 @@ interface Props {
 }
 
 function TokenSelectButton({ className = "", onClick, hideArrow, customUi, customButtonElement }: Props) {
-  const { translations, isWrongChain, account } = useWidgetContext();
+  const { translations, isWrongChain, account } = useTwapContext();
   const maker = account;
 
   const selectTokenWarning = () => {

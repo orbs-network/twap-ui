@@ -27,6 +27,7 @@ const fonts = {
   [Configs.BaseSwap.name]: "Montserrat",
   StellaSwap: "DM Sans",
   [Configs.Lynex.name]: "Montserrat",
+  [Configs.SparkDEX.name]: "Montserrat",
   [Configs.Arbidex.name]: "Quicksand",
   SyncSwap: "Inter",
   [Configs.DragonSwap.name]: "Fredoka",

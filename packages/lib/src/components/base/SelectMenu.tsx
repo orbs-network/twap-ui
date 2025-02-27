@@ -4,7 +4,7 @@ import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { ClickAwayListener } from "./ClickAwayListener";
 import { SelectMeuItem } from "../../types";
 import { StyledText } from "../../styles";
-import { useWidgetContext } from "../..";
+import { useTwapContext } from "../../context";
 
 interface Props {
   selected: string | number;
@@ -17,7 +17,7 @@ interface Props {
 
 export const SelectMenu = (props: Props) => {
   const [open, setOpen] = useState<boolean>(false);
-  const icon = useWidgetContext().uiPreferences.menu?.icon;
+  const icon = useTwapContext().uiPreferences.menu?.icon;
 
   const selected = useMemo(() => {
     return props.items.find((it) => it.value === props.selected);

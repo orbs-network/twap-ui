@@ -338,4 +338,25 @@ export const networks = {
     explorer: "https://explorer.zircuit.com/",
     eip1559: true,
   },
+  flare: {
+    id: 14,
+    name: "flare",
+    shortname: "flare",
+    native: {
+      address: zeroAddress,
+      symbol: "FLR",
+      decimals: 18,
+      logoUrl: "https://icons.llamao.fi/icons/chains/rsz_flare?w=48&h=48",
+    },
+    wToken: {
+      symbol: "WFLR",
+      address: "0x1D80c49BbBCd1C0911346656B529DF9E5c2F783d",
+      decimals: 18,
+      logoUrl: "https://res.cloudinary.com/sparkdex/image/upload/q_100/v1/website-assets/coins/wflr?_a=DATAg1AAZAA0",
+    },
+    publicRpcUrl: "https://flare.network",
+    logoUrl: "https://icons.llamao.fi/icons/chains/rsz_flare?w=48&h=48",
+    explorer: "https://flarescan.com",
+    eip1559: true,
+  },
 };

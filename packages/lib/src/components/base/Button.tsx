@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import { styled } from "styled-components";
-import { useWidgetContext } from "../..";
 import { ButtonProps } from "../../types";
 import { Spinner } from "./Spinner";
+import { useTwapContext } from "../../context";
 
 function Button(props: ButtonProps) {
-  const CustomButton = useWidgetContext().components.Button;
+  const CustomButton = useTwapContext().components.Button;
   const { children, disabled = false, onClick, loading = false, className = "", allowClickWhileLoading } = props;
 
   const _disabled = useMemo(() => {

@@ -3,9 +3,9 @@ import { StyledRowFlex } from "../../styles";
 import { styled } from "styled-components";
 import { Label, Message, NumericInput, ResolutionSelect } from "../../components/base";
 import React, { ReactNode } from "react";
-import { useWidgetContext } from "../..";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
-import { useFillDelayPanel } from "../hooks";
+import { useTwapContext } from "../../context";
+import { useFillDelayPanel } from "../../hooks/ui-hooks";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const { onInputChange, fillDelay } = useFillDelayPanel();
@@ -50,7 +50,7 @@ export const FillDelayPanel = ({ children, className = "" }: { children: ReactNo
 };
 
 const WarningComponent = () => {
-  const fillDelayError = useFillDelayPanel().error;
+  const fillDelayError = useFillDelayPanel().error?.text;
 
   if (!fillDelayError) return null;
 
@@ -58,7 +58,7 @@ const WarningComponent = () => {
 };
 
 const TradeIntervalLabel = () => {
-  const { translations } = useWidgetContext();
+  const { translations } = useTwapContext();
   return (
     <Label className="twap-trade-interval-panel-label">
       <Label.Text text={translations.tradeInterval} />

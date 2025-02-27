@@ -2,14 +2,12 @@ import React, { createContext, ReactNode, useCallback, useContext } from "react"
 import { Label, NumericInput } from "../../components/base";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { Panel } from "../../components/Panel";
-import { useWidgetContext } from "../widget-context";
 import { TokenSelect } from "./token-select";
-import { useFormatDecimals, useFormatNumber } from "../../hooks/useFormatNumber";
-import { useOnSrcInputPercentClick } from "../../hooks/useOnSrcInputPercentClick";
+import { useFormatNumber } from "../../hooks/useFormatNumber";
 import styled from "styled-components";
-import { useTokenPanel } from "../hooks";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
-import { useAmountUi } from "../../hooks/useParseAmounts";
+import { useTwapContext } from "../../context";
+import { useBalanceError, useOnSrcInputPercentClick } from "../../hooks/logic-hooks";
+import { useToken, useTokenBalance, useTokenInput, useTokenUSD } from "../../hooks/ui-hooks";
 
 const Input = (props: {
   className?: string;
@@ -20,13 +18,13 @@ const Input = (props: {
   placeholder?: string;
   onChange?: (value: string) => void;
   value: string;
-  onFocus?: () => void;
-  onBlur?: () => void;
 }) => {
+  const { onFocus, onBlur } = Panel.usePanelContext();
+
   return (
     <NumericInput
-      onBlur={props.onBlur}
-      onFocus={props.onFocus}
+      onBlur={onBlur}
+      onFocus={onFocus}
       className={`${props.className} twap-token-input ${props.loading ? "twap-token-input-loading" : ""}`}
       decimalScale={props.decimalScale}
       prefix={props.prefix}
@@ -39,91 +37,25 @@ const Input = (props: {
   );
 };
 
-const TokenPanelInput = ({
-  isSrc,
-  placeholder,
-  className = "",
-  dstDecimalScale,
-  onFocus,
-  onBlur,
-}: {
-  isSrc?: boolean;
-  placeholder?: string;
-  className?: string;
-  dstDecimalScale?: number;
-  onFocus?: () => void;
-  onBlur?: () => void;
-}) => {
-  if (isSrc) {
-    return <SrcTokenInput onBlur={onBlur} onFocus={onFocus} className={className} placeholder={placeholder} />;
-  }
-  return <DstTokenInput decimalScale={dstDecimalScale} className={className} placeholder={placeholder} />;
-};
+const TokenInput = ({ prefix = "", className = "", placeholder = "" }: { prefix?: string; className?: string; placeholder?: string }) => {
+  const { isSrcToken } = useTokenPanelContext();
+  const { value, onChange } = useTokenInput({ isSrcToken });
+  const token = useToken({ isSrcToken });
 
-const SrcTokenInput = (props: { className?: string; placeholder?: string; onFocus?: () => void; onBlur?: () => void }) => {
-  const {
-    srcToken,
-    updateState,
-    state: { typedSrcAmount = "" },
-  } = useWidgetContext();
-
-  const setSrcAmount = useCallback((typedSrcAmount: string) => updateState({ typedSrcAmount }), [updateState]);
-
-  return (
-    <Input
-      onFocus={props.onFocus}
-      onBlur={props.onBlur}
-      prefix=""
-      onChange={setSrcAmount}
-      value={typedSrcAmount}
-      decimalScale={srcToken?.decimals}
-      className={props.className}
-      placeholder={props.placeholder}
-    />
-  );
-};
-
-const DstTokenInput = (props: { className?: string; placeholder?: string; decimalScale?: number }) => {
-  const {
-    dstToken,
-    twap: {
-      derivedState: { destTokenAmount },
-    },
-    state: { typedSrcAmount },
-    marketPriceLoading,
-  } = useWidgetContext();
-  const destTokenAmountUI = useAmountUi(dstToken?.decimals, destTokenAmount);
-  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-
-  return (
-    <Input
-      disabled={true}
-      loading={isWrapOrUnwrapOnly ? false : marketPriceLoading}
-      value={useFormatDecimals(isWrapOrUnwrapOnly ? typedSrcAmount : destTokenAmountUI)}
-      decimalScale={props.decimalScale || dstToken?.decimals}
-      className={props.className}
-      placeholder={props.placeholder}
-    />
-  );
+  return <Input prefix={prefix} onChange={onChange} value={value} decimalScale={token?.decimals} className={className} placeholder={placeholder} />;
 };
 
 const Context = createContext({} as { isSrcToken: boolean });
 const useTokenPanelContext = () => useContext(Context);
 
 export const TokenPanel = ({ isSrcToken, children, className = "" }: { isSrcToken: boolean; children: ReactNode; className?: string }) => {
-  const error = useTokenPanel(isSrcToken).error;
-
+  const balanceError = useBalanceError();
+  const error = isSrcToken ? Boolean(balanceError) : false;
   return (
-    <Panel className={`${className} twap-token-panel`} error={!!error}>
+    <Panel className={`${className} twap-token-panel`} error={error}>
       <Context.Provider value={{ isSrcToken }}>{children}</Context.Provider>
     </Panel>
   );
-};
-
-const TokenInput = ({ placeholder = "", className = "" }: { placeholder?: string; className?: string }) => {
-  const { isSrcToken } = useTokenPanelContext();
-  const { onFocus, onBlur } = Panel.usePanelContext();
-  return <TokenPanelInput onFocus={onFocus} onBlur={onBlur} isSrc={isSrcToken} className={className} placeholder={placeholder} />;
 };
 
 const TokenPanelBalance = ({
@@ -138,10 +70,10 @@ const TokenPanelBalance = ({
   suffix?: ReactNode;
 }) => {
   const { isSrcToken } = useTokenPanelContext();
-  const { balance } = useTokenPanel(isSrcToken);
+  const balance = useTokenBalance({ isSrcToken });
   const srcBalanceF = useFormatNumber({ value: balance, decimalScale });
   const onSrcAmountPercent = useOnSrcInputPercentClick();
-  const { translations: t } = useWidgetContext();
+  const { translations: t } = useTwapContext();
 
   const onBalance = useCallback(() => {
     if (!isSrcToken) return;
@@ -159,8 +91,8 @@ const TokenPanelBalance = ({
 
 const TokenPanelUsd = ({ decimalScale = 2, className = "" }: { decimalScale?: number; className?: string }) => {
   const { isSrcToken } = useTokenPanelContext();
-  const { usd } = useTokenPanel(isSrcToken);
-  const { uiPreferences, marketPriceLoading } = useWidgetContext();
+  const usd = useTokenUSD({ isSrcToken });
+  const { uiPreferences, marketPriceLoading } = useTwapContext();
   const isLoading = !isSrcToken && marketPriceLoading;
   const usdF = useFormatNumber({ value: isLoading ? "0" : usd, decimalScale });
 
@@ -225,7 +157,7 @@ const Main = ({ className = "" }: { className?: string }) => {
 };
 
 const TokenPanelLabel = () => {
-  const { translations } = useWidgetContext();
+  const { translations } = useTwapContext();
   const { isSrcToken } = useTokenPanelContext();
 
   return (

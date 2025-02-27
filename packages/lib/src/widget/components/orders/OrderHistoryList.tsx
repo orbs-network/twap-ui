@@ -7,9 +7,9 @@ import moment from "moment";
 import { Loader } from "../../../components/base/Loader";
 import TokenLogo from "../../../components/base/TokenLogo";
 import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
-import { useWidgetContext } from "../../widget-context";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
-import { useGetOrderNameCallback } from "../../../hooks/useOrderName";
+import { useTwapContext } from "../../../context";
+import { useOrderName } from "../../../hooks/ui-hooks";
 
 const ListLoader = () => {
   return (
@@ -21,9 +21,6 @@ const ListLoader = () => {
 
 export const OrderHistoryList = () => {
   const { selectOrder, selectedOrders, isLoading, selectedOrderId } = useOrderHistoryContext();
-  const {
-    state: { newOrderLoading },
-  } = useWidgetContext();
 
   if (selectedOrderId) return null;
 
@@ -37,7 +34,6 @@ export const OrderHistoryList = () => {
 
   return (
     <>
-      {newOrderLoading && <ListLoader />}
       <div className="twap-order-history-list">
         {selectedOrders.map((order) => {
           return <ListOrder key={order.id} selectOrder={selectOrder} order={order} />;
@@ -89,12 +85,10 @@ const StyledEmpty = styled(StyledColumnFlex)({
 
 const ListItemHeader = ({ order }: { order: Order }) => {
   const status = order && order.status;
-  const getName = useGetOrderNameCallback();
+  const name = useOrderName(order.isMarketOrder, order.totalChunks);
   const formattedDate = React.useMemo(() => {
     return moment(order.createdAt).format("DD/MM/YYYY HH:mm");
   }, [order.createdAt]);
-
-  const name = React.useMemo(() => getName(order.isMarketOrder, order.totalChunks), [order, getName]);
 
   return (
     <StyledHeader className="twap-order-header">
@@ -145,7 +139,7 @@ const StyledListOrder = styled(StyledColumnFlex)({
 });
 
 const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }) => {
-  const { useToken } = useWidgetContext();
+  const { useToken } = useTwapContext();
   const token = useToken?.(address);
 
   const _amount = useFormatNumber({ value: amount, decimalScale: 4 });

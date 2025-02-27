@@ -1,5 +1,5 @@
 import { Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sdk";
-import { Translations, Styles, Widget, UIPreferences, WidgetProps, WidgetProvider, Components, Types } from "@orbs-network/twap-ui";
+import { Translations, Styles, Widget, UIPreferences, TwapProps, TwapProvider, Components, Types } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, useContext, useMemo, ReactNode, useCallback, useState, useEffect } from "react";
 import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledTwapInputs } from "./styles";
@@ -40,7 +40,7 @@ type DexToken = {
   logoURI: string;
 };
 
-interface AdapterProps extends Partial<WidgetProps> {
+interface AdapterProps extends Partial<TwapProps> {
   srcTokenAddress?: string;
   dstTokenAddress?: string;
   dexTokens?: DexToken[];
@@ -127,7 +127,7 @@ const Content = () => {
   const marketPriceLoading = useMarketPriceLoading();
   return (
     <ThemeProvider theme={theme}>
-      <WidgetProvider
+      <TwapProvider
         config={config}
         minChunkSizeUsd={props.minChunkSizeUsd}
         translations={translations as Translations}
@@ -156,10 +156,9 @@ const Content = () => {
         <GlobalStyles />
         <Styles.StyledColumnFlex gap={16}>
           {props.isLimitPanel ? <LimitPanel /> : <TWAPPanel />}
-          <Widget.ErrorMessage />
           <Widget.ShowConfirmationButton />
         </Styles.StyledColumnFlex>
-      </WidgetProvider>
+      </TwapProvider>
     </ThemeProvider>
   );
 };
@@ -256,7 +255,7 @@ const LimitPanel = () => {
   );
 };
 
-TWAP.LimitPriceWarning = Widget.LimitPriceWarning;
+TWAP.LimitPriceWarning = Widget.LimitPriceMessage;
 TWAP.Orders = Widget.Orders;
 TWAP.PoweredByOrbs = Widget.PoweredByOrbs;
 

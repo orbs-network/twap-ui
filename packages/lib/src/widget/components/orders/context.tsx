@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Order, OrderStatus } from "@orbs-network/twap-sdk";
-import { useOrderHistoryManager } from "../../../hooks/useOrderHistoryManager";
+import { useAccountOrders, useGroupedByStatusOrders } from "../../../hooks/order-hooks";
 
 export type OrdersMenuTab = {
   name: string;
@@ -22,7 +22,7 @@ interface OrderHistoryContextType {
 }
 
 export const useSelectedOrder = () => {
-  const orders = useOrderHistoryManager().orders;
+  const orders = useAccountOrders().data;
 
   const { selectedOrderId } = useOrderHistoryContext();
 
@@ -34,11 +34,12 @@ export const useSelectedOrder = () => {
 export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
 export const OrderHistoryContextProvider = ({ children }: { children: ReactNode }) => {
+  const groupedOrders = useGroupedByStatusOrders();
   const [status, setStatus] = useState<OrderStatus>(OrderStatus.All);
-  const { ordersLoading, groupedOrdersByStatus } = useOrderHistoryManager();
+  const { isLoading } = useAccountOrders();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
-  const selectedOrders = groupedOrdersByStatus[status] || [];
+  const selectedOrders = groupedOrders[status] || [];
 
   useEffect(() => {
     if (!isOpen) {
@@ -64,7 +65,7 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
   const onOpen = useCallback(() => setIsOpen(true), []);
 
   return (
-    <OrderHistoryContext.Provider value={{ selectedOrderId, selectOrder, selectedOrders, setStatus, closePreview, status, isLoading: ordersLoading, isOpen, onClose, onOpen }}>
+    <OrderHistoryContext.Provider value={{ selectedOrderId, selectOrder, selectedOrders, setStatus, closePreview, status, isLoading, isOpen, onClose, onOpen }}>
       {children}
     </OrderHistoryContext.Provider>
   );

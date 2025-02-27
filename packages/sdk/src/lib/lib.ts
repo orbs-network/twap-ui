@@ -33,11 +33,11 @@ export const getChunks = (maxPossibleChunks: number, isLimitPanel = false, typed
   return maxPossibleChunks;
 };
 
-export const getMaxPossibleChunks = (config: Config, typedSrcAmount?: string, oneSrcTokenUsd?: string | number) => {
-  if (!typedSrcAmount || !oneSrcTokenUsd) return 1;
+export const getMaxPossibleChunks = (config: Config, typedSrcAmount?: string, oneSrcTokenUsd?: string | number, minChunkSizeUsd?: number) => {
+  if (!typedSrcAmount || !oneSrcTokenUsd || !minChunkSizeUsd) return 1;
   const amount = BN(oneSrcTokenUsd).times(typedSrcAmount);
 
-  const res = BN.max(1, amount.div(config.minChunkSizeUsd)).integerValue(BN.ROUND_FLOOR).toNumber();
+  const res = BN.max(1, amount.div(minChunkSizeUsd)).integerValue(BN.ROUND_FLOOR).toNumber();
 
   return res > 1 ? res : 1;
 };

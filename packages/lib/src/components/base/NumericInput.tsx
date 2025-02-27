@@ -4,8 +4,8 @@ import { NumericFormat } from "react-number-format";
 import BN from "bignumber.js";
 import React, { CSSProperties } from "react";
 import { Loader } from "./Loader";
-import { useWidgetContext } from "../..";
 import { maxUint256 } from "viem";
+import { useTwapContext } from "../../context";
 
 export interface Props {
   onChange: (value: string) => void;
@@ -44,7 +44,7 @@ function NumericInput({
   const {
     uiPreferences: { input },
     components: { Ipnut },
-  } = useWidgetContext();
+  } = useTwapContext();
 
   const _placeholder = placeholder || input?.placeholder || "0";
 

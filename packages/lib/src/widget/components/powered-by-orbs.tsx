@@ -2,9 +2,9 @@ import { useState } from "react";
 import { StyledRowFlex, StyledText } from "../../styles";
 import React from "react";
 import { ORBS_LOGO, ORBS_LOGO_FALLBACK } from "../../consts";
-import { useWidgetContext } from "../widget-context";
 import { Portal } from "../../components/base";
 import { styled } from "styled-components";
+import { useTwapContext } from "../../context";
 
 export const PoweredbyOrbsWithPortal = ({ className = "" }: { className?: string }) => {
   return (
@@ -16,7 +16,7 @@ export const PoweredbyOrbsWithPortal = ({ className = "" }: { className?: string
 
 export function PoweredbyOrbs({ className = "" }: { className?: string }) {
   const [url, setUrl] = useState(ORBS_LOGO);
-  const translations = useWidgetContext().translations;
+  const translations = useTwapContext().translations;
 
   const onError = () => {
     setUrl(ORBS_LOGO_FALLBACK);

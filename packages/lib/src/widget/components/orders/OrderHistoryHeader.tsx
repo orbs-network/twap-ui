@@ -8,7 +8,7 @@ import { OrderStatus } from "@orbs-network/twap-sdk";
 import { SelectMeuItem } from "../../../types";
 import { SelectMenu } from "../../../components/base";
 import { StyledRowFlex, StyledText } from "../../../styles";
-import { useGetOrderNameCallback } from "../../../hooks/useOrderName";
+import { useOrderName } from "../../../hooks/ui-hooks";
 
 export function OrderHistoryMenu() {
   const { setStatus, status } = useOrderHistoryContext();
@@ -30,8 +30,7 @@ export function OrderHistoryMenu() {
 export const OrderHistoryHeader = ({ className = "" }: { className?: string }) => {
   const { closePreview } = useOrderHistoryContext();
   const order = useSelectedOrder();
-  const getName = useGetOrderNameCallback();
-  const name = useMemo(() => getName(order?.isMarketOrder, order?.totalChunks), [order, getName]);
+  const name = useOrderName(order?.isMarketOrder, order?.totalChunks);
   return (
     <StyledHeader className={`twap-order-history-header ${className}`}>
       {!order ? (

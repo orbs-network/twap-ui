@@ -1,8 +1,8 @@
 import { styled } from "styled-components";
 import React, { ReactNode } from "react";
 import SmallLabel from "./SmallLabel";
-import { useWidgetContext } from "../..";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
+import { useTwapContext } from "../../context";
 
 interface Props {
   isLoading: boolean;
@@ -17,7 +17,7 @@ interface Props {
 }
 
 function Balance({ isLoading, value, className = "", label, suffix, hideLabel, emptyUi, decimalScale }: Props) {
-  const { translations, uiPreferences } = useWidgetContext();
+  const { translations, uiPreferences } = useTwapContext();
   const _emptyUi = emptyUi || uiPreferences.balance?.emptyUI;
 
   const args = { value: value, suffix: suffix ? ` ${suffix}` : undefined };

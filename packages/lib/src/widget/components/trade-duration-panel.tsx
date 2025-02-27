@@ -1,12 +1,12 @@
-import React, { createContext, ReactNode } from "react";
+import React, { createContext, ReactNode, useCallback } from "react";
 import { Label } from "../../components/base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
 import { StyledRowFlex } from "../../styles";
-import { useWidgetContext } from "../..";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 import styled from "styled-components";
-import { useTradeDurationPanel } from "../hooks";
 import { Panel } from "../../components/Panel";
+import { useTwapContext } from "../../context";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
+import { useOrderDurationPanel } from "../../hooks/ui-hooks";
 
 type Option = { text: string; value: TimeUnit };
 
@@ -33,7 +33,9 @@ const Options: Option[] = [
 
 const Buttons = ({ className = "" }: { className?: string }) => {
   const { options } = usePanelContext();
-  const { onChange, selected } = useTradeDurationPanel();
+  const { onUnitSelect, milliseconds } = useOrderDurationPanel();
+
+  const onChange = useCallback((unit: TimeUnit) => onUnitSelect(unit), [onUnitSelect]);
 
   return (
     <div className={`twap-duration-panel-buttons ${className}`}>
@@ -42,7 +44,7 @@ const Buttons = ({ className = "" }: { className?: string }) => {
           <button
             key={it.value}
             onClick={() => onChange(it.value)}
-            className={`twap-duration-panel-button twap-select-button ${selected === it.value ? "twap-duration-panel-button-selected twap-select-button-selected" : ""}`}
+            className={`twap-duration-panel-button twap-select-button ${milliseconds === it.value ? "twap-duration-panel-button-selected twap-select-button-selected" : ""}`}
           >
             {it.text}
           </button>
@@ -65,7 +67,7 @@ export const DurationPanel = ({ children, className = "", options = Options }: {
 };
 
 const DurationLabel = () => {
-  const translations = useWidgetContext().translations;
+  const translations = useTwapContext().translations;
   return (
     <Label>
       <Label.Text text={translations.expiry} />

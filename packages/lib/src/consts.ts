@@ -1,3 +1,5 @@
+import { TimeUnit } from "@orbs-network/twap-sdk";
+
 export const REFETCH_ORDER_HISTORY = 40_000;
 export const REFETCH_USD = 15_000;
 export const REFETCH_BALANCE = 15_000;
@@ -15,6 +17,7 @@ export const QUERY_PARAMS = {
   TRADES_AMOUNT: "twap-trades",
   LIMIT_PRICE_INVERTED: "twap-inverted-limit",
 };
+export const DEFAULT_LIMIT_PANEL_DURATION = { unit: TimeUnit.Weeks, value: 1 };
 
 export const SUGGEST_CHUNK_VALUE = 100;
 export const AMOUNT_TO_BORROW = 10000; // smallest amount that has full precision over bps

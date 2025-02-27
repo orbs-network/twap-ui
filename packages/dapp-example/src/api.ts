@@ -86,6 +86,20 @@ const getArbitrumTokens = async (signal?: AbortSignal): Promise<Token[]> => {
   return [networks.arb.native, ...result];
 };
 
+
+const getFlareTokens = async (signal?: AbortSignal): Promise<Token[]> => {
+  const payload = await fetch(`https://tokens.coingecko.com/flare-network/all.json`, { signal }).then((res) => res.json());
+  const result = payload.tokens.map((token: any) => {
+    return {
+      address: token.address,
+      symbol: token.symbol,
+      decimals: token.decimals,
+      logoUrl: token.logoURI,
+    };
+  });
+  return [networks.flare.native, ...result];
+};
+
 const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
   const response = await fetch("https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokens.1inch.eth.link", { signal }).then((res) => res.json());
 
@@ -100,8 +114,6 @@ const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<
       };
     });
 
-  console.log({ result: result.find((t: any) => t.symbol === "USDT") });
-
   const native = getNetwork(chainId)?.native as Token;
 
   return [native, ...result];
@@ -114,6 +126,7 @@ const tokensLists = {
   [networks.poly.id]: getPolygonTokens,
   [networks.sei.id]: getDragonswapTokens,
   [networks.arb.id]: getArbitrumTokens,
+  [networks.flare.id]: getFlareTokens,
 };
 
 const getTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
@@ -124,7 +137,7 @@ const getTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]
     tokens = await getDefaultTokens(chainId, signal);
   }
 
-  const result = _.sortBy(tokens, (it) => BASE_TOKENS.indexOf(it.symbol));
+  const result = _.sortBy(tokens, (it) => BASE_TOKENS.indexOf(it.symbol)).reverse();
 
   return result;
 };

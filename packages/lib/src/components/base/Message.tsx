@@ -5,10 +5,10 @@ import { RiErrorWarningLine } from "@react-icons/all-files/ri/RiErrorWarningLine
 import React, { ReactNode, useMemo } from "react";
 import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { MessageVariant } from "../../types";
-import { useWidgetContext } from "../../widget/widget-context";
+import { useTwapContext } from "../../context";
 
 export function Message({ text, className = "", variant, title }: { variant?: MessageVariant; title: ReactNode; text?: ReactNode; className?: string }) {
-  const { uiPreferences } = useWidgetContext();
+  const { uiPreferences } = useTwapContext();
 
   const _className = useMemo(() => {
     switch (variant) {

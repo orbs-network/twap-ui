@@ -1,25 +1,23 @@
 import React from "react";
 import { TokenPanel } from "./token-panel";
 import { SwitchTokens } from "./switch-tokens";
-import { useWidgetContext } from "../widget-context";
 import { LimitPanel } from "./limit-panel";
 import { PriceSwitch } from "./price-switch";
 import { ShowConfirmationButton } from "./show-confirmation-button";
 import { TradesAmountPanel } from "./trades-amount-panel";
 import { FillDelayPanel } from "./fill-delay-panel";
 import { DurationPanel } from "./trade-duration-panel";
-import { ErrorMessage } from "./error-message";
 import { Orders } from "./orders/Orders";
 import { PoweredbyOrbs } from "./powered-by-orbs";
-import { LimitPriceWarning } from "./limit-price-warning";
+import { useTwapContext } from "../../context";
+import { SubmitOrderModal } from "./submit-order-modal/SubmitOrderModal";
+import { LimitPriceMessage } from "./limit-price-message";
 
 export function SwapPanel() {
   const {
     isLimitPanel,
-    twap: {
-      derivedState: { isMarketOrder },
-    },
-  } = useWidgetContext();
+    state: { isMarketOrder },
+  } = useTwapContext();
   return (
     <div className="twap-widget-swap-panel">
       <PriceSwitch />
@@ -52,11 +50,11 @@ export function SwapPanel() {
         </div>
       )}
 
-      <ErrorMessage />
       <ShowConfirmationButton />
       <PoweredbyOrbs />
       <Orders />
-      <LimitPriceWarning />
+      <LimitPriceMessage />
+      <SubmitOrderModal />
     </div>
   );
 }

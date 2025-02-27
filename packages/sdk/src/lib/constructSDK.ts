@@ -50,8 +50,8 @@ export class TwapSDK {
   getAskArgs(props: getAskArgsProps) {
     return getAskArgs(this.config, props);
   }
-  getMaxChunks(typedSrcAmount: string, oneSrcTokenUsd: number) {
-    return getMaxPossibleChunks(this.config, typedSrcAmount, oneSrcTokenUsd);
+  getMaxChunks(typedSrcAmount: string, oneSrcTokenUsd: number, minChunkSizeUsd: number) {
+    return getMaxPossibleChunks(this.config, typedSrcAmount, oneSrcTokenUsd, minChunkSizeUsd);
   }
   getChunks(maxChunks: number, isLimitPanel: boolean, customChunks?: number) {
     return getChunks(maxChunks, isLimitPanel, customChunks);
@@ -78,8 +78,8 @@ export class TwapSDK {
     return getDeadline(currentTimeMillis, orderDuration);
   }
 
-  getTradeSizeError(typedSrcAmount: string, oneSrcTokenUsd: number) {
-    return getTradeSizeWarning(this.config.minChunkSizeUsd, oneSrcTokenUsd, typedSrcAmount);
+  getTradeSizeError(typedSrcAmount: string, oneSrcTokenUsd: number, minChunkSizeUsd: number) {
+    return getTradeSizeWarning(minChunkSizeUsd, oneSrcTokenUsd, typedSrcAmount);
   }
   getChunksError(chunks: number, maxChunks: number, isLimitPanel: boolean) {
     return getChunksWarning(chunks, maxChunks, Boolean(isLimitPanel));

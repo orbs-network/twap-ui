@@ -1,8 +1,8 @@
+import { useTwapContext } from "../../context";
 import { TooltipProps } from "../../types";
-import { useWidgetContext } from "../../widget/widget-context";
 
 export const Tooltip = (props: TooltipProps) => {
-  const Tooltip = useWidgetContext().components.Tooltip;
+  const Tooltip = useTwapContext().components.Tooltip;
 
   if (!Tooltip) {
     return <>{props.children}</>;

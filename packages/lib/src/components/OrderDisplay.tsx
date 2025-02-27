@@ -4,15 +4,15 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../styles";
 import moment from "moment";
 import { makeElipsisAddress } from "../utils";
 import { Token } from "../types";
-import { useWidgetContext } from "..";
 import * as SwapUI from "@orbs-network/swap-ui";
 import { useFormatNumber } from "../hooks/useFormatNumber";
-import { useNetwork } from "../hooks/useNetwork";
 import { Label } from "./base/Label";
 import { fillDelayText } from "@orbs-network/twap-sdk";
+import { useTwapContext } from "../context";
+import { useNetwork } from "../hooks/logic-hooks";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
-  const t = useWidgetContext()?.translations;
+  const t = useTwapContext()?.translations;
   const res = useMemo(() => moment(deadline).format("DD/MM/YYYY HH:mm"), [deadline]);
 
   return (
@@ -23,7 +23,7 @@ const Expiry = ({ deadline }: { deadline?: number }) => {
 };
 
 const ChunkSize = ({ srcChunkAmount, srcToken, chunks }: { srcChunkAmount?: string; srcToken?: Token; chunks: number }) => {
-  const translations = useWidgetContext().translations;
+  const translations = useTwapContext().translations;
 
   const _srcChunkAmount = useFormatNumber({ value: srcChunkAmount, decimalScale: 3 });
 
@@ -47,7 +47,7 @@ const MinDestAmount = ({
   dstMinAmountOut?: string;
   totalChunks?: number;
 }) => {
-  const { translations: t } = useWidgetContext();
+  const { translations: t } = useTwapContext();
   const formattedValue = useFormatNumber({ value: dstMinAmountOut });
 
   if (isMarketOrder) return null;
@@ -60,7 +60,7 @@ const MinDestAmount = ({
 };
 
 const ChunksAmount = ({ chunks }: { chunks?: number }) => {
-  const t = useWidgetContext().translations;
+  const t = useTwapContext().translations;
 
   if (chunks === 1) return null;
 
@@ -72,7 +72,7 @@ const ChunksAmount = ({ chunks }: { chunks?: number }) => {
 };
 
 const Recipient = () => {
-  const { translations: t, account } = useWidgetContext();
+  const { translations: t, account } = useTwapContext();
   const explorerUrl = useNetwork()?.explorer;
   const makerAddress = makeElipsisAddress(account);
 
@@ -90,7 +90,7 @@ const Recipient = () => {
 };
 
 const TradeInterval = ({ fillDelayMillis, chunks }: { fillDelayMillis?: number; chunks: number }) => {
-  const t = useWidgetContext()?.translations;
+  const t = useTwapContext()?.translations;
   const text = useMemo(() => fillDelayText(fillDelayMillis), [fillDelayMillis]);
 
   if (chunks === 1) return null;
@@ -135,7 +135,7 @@ const DetailRow = ({
 };
 
 const TxHash = ({ txHash }: { txHash?: string }) => {
-  const { translations: t } = useWidgetContext();
+  const { translations: t } = useTwapContext();
   const txHashAddress = makeElipsisAddress(txHash);
   const explorerUrl = useNetwork()?.explorer;
 
@@ -169,7 +169,7 @@ export function OrderDisplay({ children, className = "" }: { children?: ReactNod
 const TokenDisplay = ({ amount, token, usd, title, content }: { amount?: string; token?: Token; usd?: string; title?: string; content?: ReactNode }) => {
   const _usd = useFormatNumber({ value: usd, decimalScale: 2 });
   const _amount = useFormatNumber({ value: amount });
-  const { uiPreferences } = useWidgetContext();
+  const { uiPreferences } = useTwapContext();
   const usdPrefix = uiPreferences.usd?.prefix || "$";
   const usdSuffix = uiPreferences.usd?.suffix || "";
 
@@ -189,7 +189,7 @@ const TokenDisplay = ({ amount, token, usd, title, content }: { amount?: string;
 };
 
 const SrcToken = ({ amount, token, usd }: { amount?: string; token?: Token; usd?: string }) => {
-  const { translations } = useWidgetContext();
+  const { translations } = useTwapContext();
   return <TokenDisplay amount={amount} token={token} usd={usd} title={translations.from} />;
 };
 
@@ -208,7 +208,7 @@ const DstToken = ({
   fillDelayMillis?: number;
   chunks?: number;
 }) => {
-  const t = useWidgetContext().translations;
+  const t = useTwapContext().translations;
 
   const content = useMemo(() => {
     if (!isMarketOrder) return null;

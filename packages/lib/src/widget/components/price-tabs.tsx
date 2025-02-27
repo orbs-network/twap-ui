@@ -1,13 +1,13 @@
 import React from "react";
 import styled from "styled-components";
-import { useWidgetContext } from "../..";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 import { StyledRowFlex } from "../../styles";
-import { usePriceMode } from "../hooks";
+import { useTwapContext } from "../../context";
+import { usePriceToggle } from "../../hooks/ui-hooks";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
 
 export const PriceTabs = ({ className = "" }: { className?: string }) => {
-  const { translations } = useWidgetContext();
-  const { isMarketOrder, setIsMarketOrder } = usePriceMode();
+  const { translations } = useTwapContext();
+  const { isMarketOrder, setIsMarketOrder } = usePriceToggle();
 
   const hide = useShouldWrapOrUnwrapOnly();
 

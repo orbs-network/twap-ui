@@ -1,20 +1,15 @@
 import React, { ReactNode } from "react";
 import { styled } from "styled-components";
-import { SelectedOrder } from "./SelectedOrder";
+import { HistoryOrderPreview } from "./HistoryOrderPreview";
 import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
 import { OrderHistoryList } from "./OrderHistoryList";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { useMemo } from "react";
-import { Portal, Spinner } from "../../../components/base";
+import { Spinner } from "../../../components/base";
 import { StyledColumnFlex, StyledRowFlex } from "../../../styles";
-import { useWidgetContext } from "../../widget-context";
 import { OrderHistoryHeader } from "./OrderHistoryHeader";
-import { useOrderHistoryManager } from "../../../hooks/useOrderHistoryManager";
-const PORTAL_ID = "twap-orders-portal";
-
-export const OrdersPortal = () => {
-  return <div id={PORTAL_ID} />;
-};
+import { useTwapContext } from "../../../context";
+import { useGroupedByStatusOrders } from "../../../hooks/order-hooks";
 
 export const Orders = ({ className = "" }: { className?: string }) => {
   return (
@@ -25,30 +20,17 @@ export const Orders = ({ className = "" }: { className?: string }) => {
   );
 };
 
-export const OrdersWithPortalPortal = () => {
-  return (
-    <Portal containerId={PORTAL_ID}>
-      <Orders />
-    </Portal>
-  );
-};
-
 export const OrdersButton = ({ className = "" }: { className?: string }) => {
-  const openOrders = useOrderHistoryManager().groupedOrdersByStatus?.open;
-  const {
-    state: { newOrderLoading },
-  } = useWidgetContext();
+  const openOrders = useGroupedByStatusOrders().open;
+
   const { onOpen, isLoading } = useOrderHistoryContext();
   const text = useMemo(() => {
     if (isLoading) {
       return "Loading orders";
     }
-    if (newOrderLoading) {
-      return "Updating orders";
-    }
 
     return `${openOrders?.length || 0} Open orders`;
-  }, [openOrders, isLoading, newOrderLoading]);
+  }, [openOrders, isLoading]);
 
   return (
     <StyledOrderHistoryButton className={`twap-order-history-button ${className}`} onClick={onOpen}>
@@ -60,7 +42,7 @@ export const OrdersButton = ({ className = "" }: { className?: string }) => {
 };
 
 const CustomModal = ({ children }: { children: ReactNode }) => {
-  const Modal = useWidgetContext().components.Modal;
+  const Modal = useTwapContext().components.Modal;
   const { isOpen, onClose } = useOrderHistoryContext();
 
   if (!Modal) {
@@ -79,7 +61,7 @@ const OrderHistory = ({ className = "" }: { className?: string }) => {
     <CustomModal>
       <StyledContainer className={`twap-order-history ${className}`} order={order ? 1 : 0}>
         <OrderHistoryHeader />
-        <SelectedOrder />
+        <HistoryOrderPreview />
         <OrderHistoryList />
       </StyledContainer>
     </CustomModal>

@@ -1,8 +1,7 @@
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
-import { Config } from "@orbs-network/twap-sdk";
+import { Config, TimeDuration, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { UseTwap } from "@orbs-network/twap-ui-sdk";
 import { TransportConfig } from "viem";
 
 export interface Translations {
@@ -68,6 +67,7 @@ export interface Translations {
   orders: string;
   Open: string;
   Completed: string;
+  submitOrder: string;
   Expired: string;
   Canceled: string;
   noOrdersFound: string;
@@ -249,7 +249,7 @@ type Actions = {
   refetchBalances?: () => Promise<void>;
 };
 
-export interface WidgetProps {
+export interface TwapProps {
   chainId?: number;
   account?: string;
   web3Provider?: any;
@@ -280,17 +280,16 @@ export interface WidgetProps {
   actions: Actions;
 }
 
-export interface WidgetContextType extends WidgetProps {
+export interface TwapContextType extends TwapProps {
   isWrongChain: boolean;
   state: State;
   updateState: (state: Partial<State>) => void;
   reset: () => void;
   translations: Translations;
   uiPreferences: UIPreferences;
-  twap: UseTwap;
   walletClient?: any;
   publicClient?: any;
-  srcAmount?: string;
+  twapSDK: TwapSDK;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -413,13 +412,22 @@ export interface State {
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
   typedSrcAmount?: string;
-  newOrderLoading?: boolean;
   isWrapped?: boolean;
   swapData?: {
     srcAmount?: string;
     outAmount?: string;
     srcAmountusd?: string;
     outAmountusd?: string;
-    marketPrice?: string;
   };
+
+  typedChunks?: number;
+  typedFillDelay: TimeDuration;
+  typedDuration?: TimeDuration;
+
+  typedPrice?: string;
+  isInvertedPrice?: boolean;
+  selectedPricePercent?: string;
+  isMarketOrder?: boolean;
+
+  currentTime: number;
 }

@@ -1,13 +1,13 @@
 import React from "react";
-import { useWidgetContext } from "../..";
 import { Switch } from "../../components/base";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/useShouldWrapOrUnwrap";
 import { StyledText } from "../../styles";
-import { usePriceMode } from "../hooks";
+import { useTwapContext } from "../../context";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
+import { usePriceToggle } from "../../hooks/ui-hooks";
 
 export const PriceSwitch = ({ className = "" }: { className?: string }) => {
-  const { isLimitPanel } = useWidgetContext();
-  const { isMarketOrder, setIsMarketOrder } = usePriceMode();
+  const { isLimitPanel } = useTwapContext();
+  const { isMarketOrder, setIsMarketOrder } = usePriceToggle();
   const hide = useShouldWrapOrUnwrapOnly();
 
   if (hide || isLimitPanel) return null;

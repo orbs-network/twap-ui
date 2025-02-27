@@ -1,17 +1,9 @@
 import { AddressPadding } from "./types";
 import BN from "bignumber.js";
 import { networks } from "@orbs-network/twap-sdk";
-export const logger = (...args: any[]) => {
-  // let debug;
-  // if (window) {
-  //   const query = new URLSearchParams(window.location.search);
-  //   debug = query?.get("twap-debug");
-  // }
-  // const fromLocalStore = localStorage.getItem("twap-debug");
-  // if (process.env.NODE_ENV !== "development") return;
-  // if (fromLocalStore) {
-  //   console.log(...args);
-  // }
+
+export const removeCommas = (numStr: string): string => {
+  return numStr.replace(/,/g, "");
 };
 
 type CopyFn = (text: string) => Promise<boolean>; // Return success

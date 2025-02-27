@@ -10,19 +10,19 @@ import { OrderDisplay } from "../../../components/OrderDisplay";
 import { StyledColumnFlex, StyledText } from "../../../styles";
 import { Token } from "../../../types";
 import Button from "../../../components/base/Button";
-import { useWidgetContext } from "../../widget-context";
-import { useCancelOrder } from "../../../hooks/useCancelOrder";
-import { useAmountUi } from "../../../hooks/useParseAmounts";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
+import { useTwapContext } from "../../../context";
+import { useAmountUi } from "../../../hooks/logic-hooks";
+import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
 
 const useOrderFillDelay = (order?: Order) => {
-  const { config } = useWidgetContext();
+  const { config } = useTwapContext();
   return useMemo(() => (!order ? undefined : getOrderFillDelay(order, config)), [order, config]);
 };
 
-export const SelectedOrder = () => {
+export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
-  const { useToken } = useWidgetContext();
+  const { useToken } = useTwapContext();
 
   const { selectedOrderId } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
@@ -90,7 +90,7 @@ const StyledDetails = styled.div({
 });
 
 const OrderInfo = ({ order }: { order: Order }) => {
-  const { useToken } = useWidgetContext();
+  const { useToken } = useTwapContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
   const dstToken = useToken?.(order?.dstTokenAddress);
@@ -130,7 +130,7 @@ const Container = styled(StyledColumnFlex)({});
 
 export const CancelOrderButton = ({ order }: { order: Order }) => {
   const { isLoading, mutate: cancel } = useCancelOrder();
-  const translations = useWidgetContext().translations;
+  const translations = useTwapContext().translations;
 
   if (!order || order.status !== OrderStatus.Open) return null;
 
@@ -162,7 +162,7 @@ const CreatedAt = ({ order }: { order: Order }) => {
 };
 
 const AmountOutFilled = ({ order }: { order: Order }) => {
-  const { useToken } = useWidgetContext();
+  const { useToken } = useTwapContext();
   const dstToken = useToken?.(order?.dstTokenAddress);
   const dstAmountUi = useAmountUi(dstToken?.decimals, order.dstFilledAmount);
   const amount = useFormatNumber({ value: dstAmountUi, decimalScale: 3 });
@@ -177,7 +177,7 @@ const AmountOutFilled = ({ order }: { order: Order }) => {
 };
 
 const AmountIn = ({ order }: { order: Order }) => {
-  const { useToken } = useWidgetContext();
+  const { useToken } = useTwapContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
   const srcAmountUi = useAmountUi(srcToken?.decimals, order.srcAmount);
@@ -193,7 +193,7 @@ const AmountIn = ({ order }: { order: Order }) => {
 };
 
 const AmountInFilled = ({ order }: { order: Order }) => {
-  const { useToken } = useWidgetContext();
+  const { useToken } = useTwapContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
   const srcFilledAmountUi = useAmountUi(srcToken?.decimals, order.srcFilledAmount);
@@ -228,7 +228,7 @@ const Progress = ({ order }: { order: Order }) => {
 };
 
 const LimitPrice = ({ order }: { order: Order }) => {
-  const { useToken } = useWidgetContext();
+  const { useToken } = useTwapContext();
   const srcToken = useToken?.(order.srcTokenAddress);
   const dstToken = useToken?.(order.dstTokenAddress);
 
@@ -242,7 +242,7 @@ const LimitPrice = ({ order }: { order: Order }) => {
 };
 
 const AvgExcecutionPrice = ({ order }: { order: Order }) => {
-  const { translations: t, useToken } = useWidgetContext();
+  const { translations: t, useToken } = useTwapContext();
   const srcToken = useToken?.(order.srcTokenAddress);
   const dstToken = useToken?.(order.dstTokenAddress);
 
