@@ -342,7 +342,12 @@ export const usePriceToggle = () => {
     updateState,
   } = useTwapContext();
 
-  const setIsMarketOrder = useCallback((isMarketOrder: boolean) => updateState({ isMarketOrder }), [updateState])
+  const setIsMarketOrder = useCallback(
+    (value: boolean) => {
+      updateState({ isMarketOrder: value });
+    },
+    [updateState],
+  );
 
   return {
     isMarketOrder,
@@ -597,9 +602,10 @@ export const useLimitPriceMessage = () => {
   } = useTwapContext();
   const hide = useShouldWrapOrUnwrapOnly();
 
-  if (isMarketOrder || hide) return null;
 
   return useMemo(() => {
+    if (isMarketOrder || hide) return null;
+ 
     return {
       text: t.limitPriceMessage,
       url: "https://www.orbs.com/dtwap-and-dlimit-faq/",

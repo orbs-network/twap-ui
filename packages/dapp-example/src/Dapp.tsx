@@ -55,7 +55,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { openConnectModal } = useConnectModal();
   const config = useDappContext().config;
   const dappTokens = useTokenList();
-  const client = useWalletClient();  
+  const client = useWalletClient();
   const [srcToken, setSrcToken] = useState<Token | undefined>(undefined);
   const [dstToken, setDstToken] = useState<Token | undefined>(undefined);
   const { theme } = useDappContext();

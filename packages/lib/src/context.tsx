@@ -112,7 +112,7 @@ const useStore = () => {
 };
 
 const useClients = (props: TwapProps) => {
-  console.log(props.walletClientTransport)
+  console.log(props.walletClientTransport);
   return useMemo(() => {
     try {
       const viemChain = getViemChain(props.chainId);
