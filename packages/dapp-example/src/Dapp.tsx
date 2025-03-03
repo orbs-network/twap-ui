@@ -2,9 +2,9 @@ import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useRefetchB
 import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { TooltipProps, TokensListModalProps, ModalProps, Widget, Token, UIPreferences, TwapProvider } from "@orbs-network/twap-ui";
+import { TooltipProps, TokensListModalProps, ModalProps, Widget, Token, UIPreferences } from "@orbs-network/twap-ui";
 import { eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
-import { useAccount, useWalletClient } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "./context";
 
@@ -55,7 +55,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { openConnectModal } = useConnectModal();
   const config = useDappContext().config;
   const dappTokens = useTokenList();
-  const client = useWalletClient();
+  const client = useWalletClient();  
   const [srcToken, setSrcToken] = useState<Token | undefined>(undefined);
   const [dstToken, setDstToken] = useState<Token | undefined>(undefined);
   const { theme } = useDappContext();
@@ -96,7 +96,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const dstBalance = useTokenBalance(dstToken).data?.wei;
 
   return (
-    <TwapProvider
+    <Widget
       config={config}
       walletClientTransport={client.data?.transport}
       account={account as string}
@@ -127,10 +127,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       minChunkSizeUsd={4}
       fee="0.25"
     >
-      <Widget>
-        <Widget.SwapPanel />
-      </Widget>
-    </TwapProvider>
+      <Widget.SwapPanel />
+    </Widget>
   );
 };
 

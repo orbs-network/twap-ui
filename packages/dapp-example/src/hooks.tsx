@@ -35,11 +35,15 @@ export const useTokenListBalances = () => {
   return useQuery({
     queryKey: ["useTokenListBalances", tokens?.length],
     queryFn: async () => {
+      if (!client) return {};
       const addresses: string[] = tokens!.map((it) => it.address).filter((it) => !isNativeAddress(it));
       const nativeToken = tokens!.find((it) => isNativeAddress(it.address));
-      const nativeBalanceReponse = await client?.getBalance({ address: account! });
-      const nativeBalance = nativeBalanceReponse?.toString() || "0";
-      const multicallResponse = await client?.multicall({
+      // const nativeBalanceReponse = await client.getBalance({ address: account! });
+      // console.log({nativeBalanceReponse});
+
+      const nativeBalance = "0";
+
+      const multicallResponse = await client.multicall({
         contracts: addresses.map((address) => {
           return {
             abi: erc20abi as any,
@@ -49,6 +53,7 @@ export const useTokenListBalances = () => {
           };
         }),
       });
+
       const balances = addresses.reduce((acc, address, index) => {
         const balance = multicallResponse?.[index]?.result?.toString();
         const token = tokens!.find((it) => eqIgnoreCase(it.address, address));
@@ -78,6 +83,7 @@ export const useTokenBalance = (token?: Token) => {
   const client = usePublicClient();
   const { address: account } = useAccount();
   const { data: balances, isLoading: balancesListLoading } = useTokenListBalances();
+
   const addressNotInList = Boolean(balances && token && !Object.keys(balances).some((it) => eqIgnoreCase(it, token.address)));
 
   const { data: balance, isLoading } = useQuery<Balance>({
@@ -150,7 +156,8 @@ export const useTokenList = () => {
   const { data: usdValues } = useTokensWithBalancesUSD();
 
   return useMemo((): Token[] => {
-    if (!tokens || !usdValues) return [];
+    if (!tokens) return [];
+
     const sorted = _.sortBy(tokens, (it) => {
       const usd = usdValues?.[it.address.toLowerCase()] || 0;
       return -usd;
@@ -212,7 +219,7 @@ const chainIdToName: { [key: number]: string } = {
   42161: "arbitrum",
   1329: "sei",
   48900: "zircuit",
-  14: 'flare'
+  14: "flare",
 };
 
 export async function fetchLLMAPrice(token: string, chainId: number | string) {

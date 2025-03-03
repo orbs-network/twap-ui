@@ -91,10 +91,9 @@ const TokenPanelBalance = ({
 
 const TokenPanelUsd = ({ decimalScale = 2, className = "" }: { decimalScale?: number; className?: string }) => {
   const { isSrcToken } = useTokenPanelContext();
-  const usd = useTokenUSD({ isSrcToken });
-  const { uiPreferences, marketPriceLoading } = useTwapContext();
-  const isLoading = !isSrcToken && marketPriceLoading;
-  const usdF = useFormatNumber({ value: isLoading ? "0" : usd, decimalScale });
+  const { data, isLoading } = useTokenUSD({ isSrcToken });
+  const { uiPreferences } = useTwapContext();
+  const usdF = useFormatNumber({ value: isLoading ? "0" : data, decimalScale });
 
   return (
     <StyledText className={`${className} twap-token-panel-usd`}>

@@ -112,11 +112,12 @@ const useStore = () => {
 };
 
 const useClients = (props: TwapProps) => {
+  console.log(props.walletClientTransport)
   return useMemo(() => {
     try {
       const viemChain = getViemChain(props.chainId);
 
-      if (!viemChain) return undefined; // Explicitly return an empty object
+      if (!viemChain) return undefined;
       const custom1 = props.web3Provider ? custom(props.web3Provider) : undefined;
       const custom2 = props.walletClientTransport ? custom(props.walletClientTransport) : undefined;
       const transport = custom1 || custom2;

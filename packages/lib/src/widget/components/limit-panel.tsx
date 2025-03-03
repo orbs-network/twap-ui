@@ -72,14 +72,14 @@ const PercentSelector = () => {
         }`;
         if (it.isReset) {
           return (
-            <StyledRowFlex key={it.text} className={`twap-limit-price-panel-percent-reset`} onClick={it.onClick}>
+            <div key={it.text} className={`twap-limit-price-panel-percent-reset`} onClick={it.onClick}>
               <button className={`${className} twap-limit-price-panel-percent-reset-button`}>
                 <StyledText>{it.text}</StyledText>
               </button>
               <button className={`${className} twap-limit-price-panel-percent-reset-icon `}>
                 <IoClose />
               </button>
-            </StyledRowFlex>
+            </div>
           );
         }
         return (

@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React from "react";
 import { TokenPanel } from "./components/token-panel";
 import { WidgetMessage } from "./components/message";
 import { ShowConfirmationButton } from "./components/show-confirmation-button";
@@ -14,38 +14,19 @@ import { PriceSwitch } from "./components/price-switch";
 import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
 import { SwapPanel } from "./components/swap-panel";
 import { GlobalStyles } from "./styles";
-import { useTwapContext } from "../context";
-import {
-  useChunkSizeMessage,
-  useConfirmationModalPanel,
-  useFillDelayPanel,
-  useOrderDurationPanel,
-  usePriceToggle,
-  useShowConfirmationModalButton,
-  useSwitchTokensCallback,
-  useTradesAmountPanel,
-} from "../hooks/ui-hooks";
+import { TwapProvider } from "../context";
 import { LimitPriceMessage } from "./components/limit-price-message";
+import { TwapProps } from "../types";
 
-const Widget = ({ children }: { children: ReactNode }) => {
-  const { includeStyles, isDarkTheme } = useTwapContext();
+const Widget = (props: TwapProps) => {
   return (
-    <div className="twap-widget">
-      {includeStyles && <GlobalStyles isDarkMode={isDarkTheme} />}
-      {children}
-    </div>
+    <TwapProvider {...props}>
+      <div className="twap-widget">
+        {props.includeStyles && <GlobalStyles isDarkMode={props.isDarkTheme} />}
+        {props.children}
+      </div>
+    </TwapProvider>
   );
-};
-
-const hooks = {
-  useSwitchTokensCallback,
-  useTradesAmountPanel,
-  useOrderDurationPanel,
-  useShowConfirmationModalButton,
-  usePriceToggle,
-  useChunkSizeMessage,
-  useFillDelayPanel,
-  useConfirmationModalPanel,
 };
 
 Widget.Orders = Orders;
@@ -63,5 +44,4 @@ Widget.Message = WidgetMessage;
 Widget.PriceSwitch = PriceSwitch;
 Widget.LimitPriceMessage = LimitPriceMessage;
 Widget.SwapPanel = SwapPanel;
-Widget.hooks = hooks;
 export { Widget };

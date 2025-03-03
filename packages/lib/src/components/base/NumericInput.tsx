@@ -43,19 +43,18 @@ function NumericInput({
 
   const {
     uiPreferences: { input },
-    components: { Ipnut },
+    components: { Input },
   } = useTwapContext();
 
   const _placeholder = placeholder || input?.placeholder || "0";
 
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>
-      {loading && <StyledLoader className="twap-input-loader" />}
-
-      <StyledFlex style={{ height: "100%", pointerEvents: disabled ? "none" : "auto" }} className={`${loading ? "twap-input-loading" : ""}`}>
-        {Ipnut ? (
-          <Ipnut onChange={onChange} onBlur={onBlur} onFocus={onFocus} value={value?.toString() || ""} />
-        ) : (
+      {Input ? (
+        <Input isLoading={loading} onChange={onChange} onBlur={onBlur} onFocus={onFocus} value={value?.toString() || ""} />
+      ) : (
+        <StyledFlex style={{ height: "100%", pointerEvents: disabled ? "none" : "auto" }} className={`${loading ? "twap-input-loading" : ""}`}>
+          {loading && <StyledLoader className="twap-input-loader" />}
           <NumericFormat
             allowNegative={false}
             disabled={disabled}
@@ -82,8 +81,8 @@ function NumericInput({
               onChange(values.value === "." ? "0." : values.value);
             }}
           />
-        )}
-      </StyledFlex>
+        </StyledFlex>
+      )}
     </StyledContainer>
   );
 }

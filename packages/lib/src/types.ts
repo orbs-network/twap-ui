@@ -170,13 +170,14 @@ export type InputProps = {
   disabled?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
+  isLoading?: boolean;
 };
 
 interface Components {
   Modal?: FC<ModalProps>;
   TokensListModal?: FC<TokensListModalProps>;
   Tooltip?: FC<TooltipProps>;
-  Ipnut?: FC<InputProps>;
+  Input?: FC<InputProps>;
   Button?: FC<ButtonProps>;
   Toggle?: FC<ToggleProps>;
 }
@@ -259,7 +260,7 @@ export interface TwapProps {
   enableQueryParams?: boolean;
   fee?: string;
   config: Config;
-  translations?: Translations;
+  translations?: Partial<Translations>;
   srcToken?: Token;
   dstToken?: Token;
   srcUsd1Token?: number;

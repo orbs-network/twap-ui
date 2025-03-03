@@ -5,7 +5,7 @@ import _ from "lodash";
 
 const BASE_TOKENS = _.uniq(["USDT", "USDC", "DAI", "WBTC", "BUSD", ...Object.values(networks).map((it) => it.wToken.symbol)]);
 
-const getDragonswapTokens = (): Token[] => {
+const getSeiTokens = (): Token[] => {
   return dragonswapTokens.tokens.map((it) => {
     return {
       address: it.address,
@@ -16,91 +16,36 @@ const getDragonswapTokens = (): Token[] => {
   });
 };
 
-const getLineaTokens = async (signal?: AbortSignal): Promise<Token[]> => {
-  const tokens = await fetch(`https://prod-api.lynex.fi/tracking/assets`, { signal }).then((res) => res.json());
-
-  const result = Object.values(tokens).map((token: any) => {
-    return {
-      address: token.address,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      logoUrl: token.logoURI,
-    };
-  });
-  return [networks.eth.native, ...result];
-};
-
-const getZircuitTokens = async (signal?: AbortSignal): Promise<Token[]> => {
-  const tokens = await fetch(`https://api.ocelex.fi/tracking/assets`, { signal }).then((res) => res.json());
-  const result = Object.values(tokens).map((token: any) => {
-    return {
-      address: token.address,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      logoUrl: token.logoURI,
-    };
-  });
-
-  return [networks.eth.native, ...result];
-};
-
-const getPolygonTokens = async (signal?: AbortSignal): Promise<Token[]> => {
-  const tokens = await fetch(`https://tokens.coingecko.com/polygon-pos/all.json`, { signal }).then((res) => res.json());
-  const result = tokens.tokens.map((token: any) => {
-    return {
-      address: token.address,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      logoUrl: token.logoURI,
-    };
-  });
-
-  return [networks.poly.native, networks.poly.wToken, ...result];
-};
-
-const getBaseTokens = async (signal?: AbortSignal): Promise<Token[]> => {
-  const payload = await fetch(`https://tokens.coingecko.com/base/all.json`, { signal }).then((res) => res.json());
-  const result = payload.tokens.map((token: any) => {
-    return {
-      address: token.address,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      logoUrl: token.logoURI,
-    };
-  });
-
-  return [networks.base.native, ...result];
-};
-
-const getArbitrumTokens = async (signal?: AbortSignal): Promise<Token[]> => {
-  const payload = await fetch(`https://tokens.coingecko.com/arbitrum-one/all.json`, { signal }).then((res) => res.json());
-  const result = payload.tokens.map((token: any) => {
-    return {
-      address: token.address,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      logoUrl: token.logoURI,
-    };
-  });
-
-  return [networks.arb.native, ...result];
-};
-
-
-const getFlareTokens = async (signal?: AbortSignal): Promise<Token[]> => {
-  const payload = await fetch(`https://tokens.coingecko.com/flare-network/all.json`, { signal }).then((res) => res.json());
-  const result = payload.tokens.map((token: any) => {
-    return {
-      address: token.address,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      logoUrl: token.logoURI,
-    };
-  });
-  return [networks.flare.native, ...result];
+const coingekoChainToName = {
+  [networks.flare.id]: "flare-network",
+  [networks.ftm.id]: "fantom",
+  [networks.arb.id]: "arbitrum-one",
+  [networks.poly.id]: "polygon-pos",
+  [networks.base.id]: "base",
+  [networks.eth.id]: "ethereum",
+  [networks.bsc.id]: "binance-smart-chain",
+  [networks.linea.id]: "linea",
 };
 
 const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
+  const name = coingekoChainToName[chainId];
+
+  if (name) {
+    const payload = await fetch(`https://tokens.coingecko.com/${name}/all.json`, { signal }).then((res) => res.json());
+
+    const result = payload.tokens.map((token: any) => {
+      return {
+        address: token.address,
+        symbol: token.symbol,
+        decimals: token.decimals,
+        logoUrl: token.logoURI,
+      };
+    });
+
+    const native = getNetwork(chainId)?.native as Token;
+    return [native, ...result];
+  }
+
   const response = await fetch("https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokens.1inch.eth.link", { signal }).then((res) => res.json());
 
   const result = response.tokens
@@ -119,20 +64,14 @@ const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<
   return [native, ...result];
 };
 
-const tokensLists = {
-  [networks.linea.id]: getLineaTokens,
-  [networks.base.id]: getBaseTokens,
-  [networks.zircuit.id]: getZircuitTokens,
-  [networks.poly.id]: getPolygonTokens,
-  [networks.sei.id]: getDragonswapTokens,
-  [networks.arb.id]: getArbitrumTokens,
-  [networks.flare.id]: getFlareTokens,
+const customLists = {
+  [networks.sei.id]: getSeiTokens,
 };
 
 const getTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
   let tokens: Token[] = [];
-  if (tokensLists[chainId]) {
-    tokens = await tokensLists[chainId](signal);
+  if (customLists[chainId]) {
+    tokens = customLists[chainId]();
   } else {
     tokens = await getDefaultTokens(chainId, signal);
   }

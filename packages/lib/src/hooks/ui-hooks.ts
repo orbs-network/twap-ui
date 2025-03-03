@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { useTwapContext } from "../context";
 import {
   useAmountUi,
+  useBalanceError,
   useChunks,
   useDestTokenAmount,
   useDestTokenMinAmount,
@@ -12,6 +13,7 @@ import {
   useNetwork,
   useOnCloseConfirmationModal,
   useOnOpenConfirmationModal,
+  useOnSrcInputPercentClick,
   useOrderDeadline,
   useOrderDuration,
   usePriceDiffFromMarketPercent,
@@ -27,6 +29,7 @@ import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
 import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
+import { useAccountOrders, useGroupedByStatusOrders } from "./order-hooks";
 
 const defaultPercent = [1, 5, 10];
 
@@ -42,7 +45,7 @@ const useDerivedLimitPrice = () => {
       return BN(1).div(limitPriceUI).decimalPlaces(6).toString();
     }
 
-    return BN(limitPriceUI).decimalPlaces(6).toString();
+    return !limitPriceUI ? "" : BN(limitPriceUI).decimalPlaces(6).toString();
   }, [typedPrice, limitPriceUI, isInvertedPrice]);
 };
 const useLimitPriceLoading = () => {
@@ -226,9 +229,14 @@ export const useTokenBalance = ({ isSrcToken }: { isSrcToken: boolean }) => {
 
 export const useTokenUSD = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const { srcUsd, dstUsd } = useUsdAmount();
+  const token = useToken({ isSrcToken });
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+  const data = isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd;
 
-  return isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd;
+  return {
+    data: isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd,
+    isLoading: token && !data,
+  };
 };
 
 export const useTokenSelect = ({ isSrcToken }: { isSrcToken: boolean }) => {
@@ -264,6 +272,37 @@ export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
   return {
     value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : destTokenAmountUI,
     onChange,
+  };
+};
+
+export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  const { value, onChange } = useTokenInput({ isSrcToken });
+  const token = useToken({ isSrcToken });
+  const balanceError = useBalanceError();
+  const balance = useTokenBalance({ isSrcToken });
+  const usd = useTokenUSD({ isSrcToken });
+  const onTokenSelect = useTokenSelect({ isSrcToken });
+  const onSrcInputPercentClick = useOnSrcInputPercentClick();
+  const { marketPriceLoading } = useTwapContext();
+
+  const onPercent = useCallback(
+    (percent: number) => {
+      if (!isSrcToken) return;
+      onSrcInputPercentClick(percent);
+    },
+    [onSrcInputPercentClick, isSrcToken],
+  );
+
+  return {
+    value,
+    onChange,
+    token,
+    error: isSrcToken ? balanceError : false,
+    balance,
+    usd,
+    onTokenSelect,
+    onPercent,
+    isLoading: isSrcToken ? false : marketPriceLoading,
   };
 };
 
@@ -303,9 +342,11 @@ export const usePriceToggle = () => {
     updateState,
   } = useTwapContext();
 
+  const setIsMarketOrder = useCallback((isMarketOrder: boolean) => updateState({ isMarketOrder }), [updateState])
+
   return {
     isMarketOrder,
-    setIsMarketOrder: useCallback((isMarketOrder: boolean) => updateState({ isMarketOrder }), [updateState]),
+    setIsMarketOrder,
   };
 };
 
@@ -564,4 +605,14 @@ export const useLimitPriceMessage = () => {
       url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
     };
   }, [t, isMarketOrder, hide]);
+};
+
+export const useOrders = () => {
+  const { data: orders } = useAccountOrders();
+  const groupedOrders = useGroupedByStatusOrders();
+
+  return {
+    orders,
+    groupedOrders,
+  };
 };

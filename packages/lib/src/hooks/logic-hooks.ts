@@ -356,8 +356,6 @@ export function useSubmitOrderArgs() {
   const srcTokenAddress = useHandleNativeAddress(srcToken?.address);
 
   return useMemo(() => {
-    console.log(dstToken, destTokenMinAmount, srcTokenChunkAmount, orderDeadline, fillDelay, srcAmountWei, srcTokenAddress);
-
     if (!dstToken || !destTokenMinAmount || !srcTokenChunkAmount || !orderDeadline || !fillDelay || !srcAmountWei || !srcTokenAddress) return;
     const params = twapSDK.getAskArgs({
       destTokenMinAmount,
