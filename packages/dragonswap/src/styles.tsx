@@ -223,6 +223,7 @@ export const GlobalStyles = createGlobalStyle(({ theme }) => {
     },
     ".twap-inputs-panel": {
       justifyContent: "space-between",
+      color: styles.textColor,
       p: {
         color: styles.textColor,
         fontSize: 16,

@@ -115,7 +115,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   return (
     <TWAP
-      title={limit ? "Limit" : "TWAP"}
+      title={<div>{limit ? "Limit" : "TWAP"}</div>}
       account={account as string}
       web3Provider={library?.currentProvider}
       srcTokenAddress={fromToken?.address}

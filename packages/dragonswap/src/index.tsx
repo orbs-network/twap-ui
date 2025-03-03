@@ -45,7 +45,7 @@ interface AdapterProps extends Partial<WidgetProps> {
   srcTokenAddress?: string;
   dstTokenAddress?: string;
   dexTokens?: DexToken[];
-  title: string;
+  title?: ReactNode;
 }
 
 const useParsedTokens = () => {
@@ -188,7 +188,7 @@ const InputsPanel = () => {
   return (
     <>
       <Styles.StyledRowFlex className="twap-inputs-panel">
-        <Styles.StyledText> {title}</Styles.StyledText>
+        {title}
         <Widget.PriceSwitch />
       </Styles.StyledRowFlex>
       <LimitPrice />
