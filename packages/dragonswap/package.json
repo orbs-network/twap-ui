@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-dragonswap",
-  "version": "3.0.24",
+  "version": "3.0.25-alpha.0",
   "description": "TWAP UI",
   "license": "MIT",
   "author": "Orbs",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^3.0.24",
+    "@orbs-network/twap-ui": "^3.0.25-alpha.0",
     "typescript": "5.x",
     "viem": "^2.23.0"
   },

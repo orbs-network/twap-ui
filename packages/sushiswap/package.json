@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-sushiswap",
-  "version": "3.0.24",
+  "version": "3.0.25-alpha.0",
   "description": "TWAP UI for Sushiwap",
   "license": "MIT",
   "author": "Orbs",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^3.0.24",
+    "@orbs-network/twap-ui": "^3.0.25-alpha.0",
     "web3": "1.x"
   },
   "peerDependencies": {
