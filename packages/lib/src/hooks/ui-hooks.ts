@@ -30,6 +30,7 @@ import { useFormatNumber } from "./useFormatNumber";
 import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useAccountOrders, useGroupedByStatusOrders } from "./order-hooks";
+import { SwapSteps } from "../types";
 
 const defaultPercent = [1, 5, 10];
 
@@ -543,15 +544,14 @@ export const useConfirmationModalButton = () => {
 
 export const useConfirmationModalPanel = () => {
   const {
-    state: { isMarketOrder, createOrderTxHash },
+    state: { isMarketOrder, createOrderTxHash, swapStep, swapStatus, swapData, swapSteps, swapError },
     translations: t,
     fee,
-    srcToken,
-    dstToken,
+    updateState,
   } = useTwapContext();
 
-  const orderDeadline = useOrderDeadline();
-  const srcTokenChunkAmount = useSrcTokenChunkAmount().amountUI;
+  const deadline = useOrderDeadline();
+  const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
   const chunks = useChunks().chunks;
   const fillDelayMillis = useFillDelay().milliseconds;
   const dstMinAmountOut = useDestTokenMinAmount().amountUI;
@@ -560,12 +560,11 @@ export const useConfirmationModalPanel = () => {
   const onClose = useOnCloseConfirmationModal();
 
   const explorerUrl = useNetwork()?.explorer;
-  const orderName = useOrderName(isMarketOrder, chunks);
   const explorerLink = useMemo(() => {
     if (!explorerUrl || !createOrderTxHash) return "";
     return `${explorerUrl}/tx/${createOrderTxHash}`;
   }, [explorerUrl, createOrderTxHash]);
-  const marketPriceMessage = useMemo(() => {
+  const marketWarning = useMemo(() => {
     if (!isMarketOrder || isWrapOrUnwrapOnly) return;
     return {
       text: t?.marketOrderWarning,
@@ -573,25 +572,44 @@ export const useConfirmationModalPanel = () => {
     };
   }, [isMarketOrder, isWrapOrUnwrapOnly, t]);
 
-  const amount = useMemo(() => {
+  const feeAmountUI = useMemo(() => {
     if (!fee || !destTokenAmount || isMarketOrder) return "";
     return BN(destTokenAmount).multipliedBy(fee).dividedBy(100).toFixed().toString();
   }, [fee, destTokenAmount, isMarketOrder]);
 
+  const callbacks = useMemo(() => {
+    return {
+      onClose,
+      setStep: (swapStep: SwapSteps) => updateState({ swapStep }),
+      setStatus: (swapStatus: SwapStatus) => updateState({ swapStatus }),
+    };
+  }, [onClose, updateState]);
+
+  const orderDetails = useMemo(() => {
+    return {
+      deadline,
+      srcChunkAmount,
+      fillDelayMillis,
+      dstMinAmountOut,
+      chunks,
+      fee: {
+        percent: fee,
+        amount: feeAmountUI,
+      },
+    };
+  }, [deadline, srcChunkAmount, fillDelayMillis, dstMinAmountOut, chunks, fee, feeAmountUI]);
+
   return {
-    orderName,
-    marketPriceMessage,
-    orderDeadline,
-    srcTokenChunkAmount,
-    fillDelayMillis,
-    dstMinAmountOut,
-    chunks,
-    feePercent: fee,
-    feeAmount: amount,
-    onClose,
+    orderName: useOrderName(isMarketOrder, chunks),
+    orderDetails,
+    marketWarning,
     explorerLink,
-    srcToken,
-    dstToken,
+    swapStep,
+    swapStatus,
+    swapError,
+    swapSteps,
+    callbacks,
+    ...swapData,
   };
 };
 

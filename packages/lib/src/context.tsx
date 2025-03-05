@@ -1,11 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createWalletClient, custom } from "viem";
+import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { constructSDK } from "@orbs-network/twap-sdk";
 import { State, TwapProps, TwapContextType, Translations } from "./types";
 import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranlations from "./i18n/en.json";
+import * as chains from "viem/chains";
 
 export const TwapContext = createContext({} as TwapContextType);
 const queryClient = new QueryClient({
@@ -83,33 +84,28 @@ const useStore = () => {
   };
 };
 
-const useInitiateWalletClient = (props: TwapProps) => {
-  const [chainId, setChainId] = useState<number | undefined>(undefined);
+const useInitiateWallet = (props: TwapProps) => {
   const [account, setAccount] = useState<string | undefined>(undefined);
+  const chain = useMemo(() => Object.values(chains).find((it: any) => it.id === props.chainId), [props.chainId]);
+  const transport = useMemo(() => (props.provider ? custom(props.provider) : undefined), [props.provider]);
   const walletClient = useMemo(() => {
-    const transport = props.provider ? custom(props.provider) : undefined;
-    if (!transport) {
-      return;
-    }
-
-    return createWalletClient({ account: undefined, chain: undefined, transport });
-  }, [props.provider]);
+    return transport ? createWalletClient({ chain, transport }) : undefined;
+  }, [transport]);
 
   useEffect(() => {
-    setChainId(undefined);
     setAccount(undefined);
-    walletClient?.getChainId().then((chain) => {
-      setChainId(chain);
-    });
-    walletClient?.getAddresses().then((addresses) => {
-      setAccount(addresses[0]);
-    });
+    walletClient?.getAddresses().then((addresses) => setAccount(addresses[0]));
   }, [walletClient]);
+
+  const publicClient = useMemo(() => {
+    if (!chain) return;
+    return createPublicClient({ chain, transport: transport || http() });
+  }, [transport, chain]);
 
   return {
     walletClient,
-    chainId,
     account,
+    publicClient,
   };
 };
 
@@ -117,24 +113,24 @@ const Content = (props: TwapProps) => {
   const { state, updateState, resetState } = useStore();
   const translations = useTranslations(props.translations);
   const twapSDK = useMemo(() => constructSDK({ config: props.config }), [props.config]);
-  const { chainId, walletClient, account } = useInitiateWalletClient(props);
+  const { walletClient, account, publicClient } = useInitiateWallet(props);
 
   return (
     <TwapContext.Provider
       value={{
         ...props,
         translations,
-        isWrongChain: !account || !chainId ? false : props.config.chainId !== chainId,
+        isWrongChain: !account || !props.chainId ? false : props.config.chainId !== props.chainId,
         updateState,
         reset: resetState,
         state,
         config: props.config,
         walletClient,
+        publicClient,
         twapSDK,
         marketPrice: props.marketReferencePrice.value,
         marketPriceLoading: props.marketReferencePrice.isLoading,
         account,
-        chainId,
       }}
     >
       <Listeners />

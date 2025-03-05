@@ -2,6 +2,7 @@ import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
 import { Config, Order, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
+import { createWalletClient } from "viem";
 
 export interface Translations {
   minReceived: string;
@@ -361,6 +362,7 @@ export interface TwapProps {
   useToken?: (value?: string) => Token | undefined;
   includeStyles?: boolean;
   callbacks: Callbacks;
+  chainId?: number;
 }
 
 export interface TwapContextType extends TwapProps {
@@ -369,13 +371,12 @@ export interface TwapContextType extends TwapProps {
   updateState: (state: Partial<State>) => void;
   reset: () => void;
   translations: Translations;
-  walletClient?: any;
+  walletClient?: ReturnType<typeof createWalletClient>;
   publicClient?: any;
   twapSDK: TwapSDK;
   marketPrice?: string;
   marketPriceLoading?: boolean;
   account?: string;
-  chainId?: number;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -472,12 +473,13 @@ export interface State {
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
   typedSrcAmount?: string;
-  isWrapped?: boolean;
   swapData?: {
+    srcToken?: Token;
+    dstToken?: Token;
     srcAmount?: string;
-    outAmount?: string;
+    dstAmount?: string;
     srcAmountusd?: string;
-    outAmountusd?: string;
+    dstAmountusd?: string;
   };
 
   typedChunks?: number;

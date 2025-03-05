@@ -7,6 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { erc20Abi } from "viem";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { TX_GAS_COST } from "../consts";
+import { Token } from "../types";
 
 const abi = [{ inputs: [], name: "latestAnswer", outputs: [{ internalType: "int256", name: "", type: "int256" }], stateMutability: "view", type: "function" }];
 
@@ -79,7 +80,7 @@ export const useSrcAmount = () => {
 export const useHasAllowanceCallback = () => {
   const { account, srcToken, config, publicClient } = useTwapContext();
   const srcAmount = useSrcAmount().amountWei;
-  const tokenAddress = useHandleNativeAddress(srcToken?.address);
+  const tokenAddress = useHandleNative(srcToken)?.address;
 
   return useMutation({
     mutationFn: async () => {
@@ -325,14 +326,14 @@ export const useNetwork = () => {
   return useMemo(() => getNetwork(config.chainId), [config]);
 };
 
-export function useHandleNativeAddress(address?: string) {
-  const wTokenAddress = useNetwork()?.wToken.address;
+export function useHandleNative(token?: Token) {
+  const wToken = useNetwork()?.wToken;
   return useMemo(() => {
-    if (isNativeAddress(address || "")) {
-      return wTokenAddress;
+    if (isNativeAddress(token?.address || "")) {
+      return wToken;
     }
-    return address;
-  }, [address, wTokenAddress]);
+    return token;
+  }, [token, wToken]);
 }
 
 export const useOrderDeadline = () => {
@@ -353,7 +354,7 @@ export function useSubmitOrderArgs() {
   const orderDeadline = useOrderDeadline();
   const fillDelay = useFillDelay().fillDelay;
 
-  const srcTokenAddress = useHandleNativeAddress(srcToken?.address);
+  const srcTokenAddress = useHandleNative(srcToken)?.address;
 
   return useMemo(() => {
     if (!dstToken || !destTokenMinAmount || !srcTokenChunkAmount || !orderDeadline || !fillDelay || !srcAmountWei || !srcTokenAddress) return;
@@ -419,8 +420,10 @@ export const useOnOpenConfirmationModal = () => {
   const {
     updateState,
     state: { typedSrcAmount },
+    srcToken,
+    dstToken,
   } = useTwapContext();
-  const outAmount = useDestTokenAmount().amountUI;
+  const dstAmount = useDestTokenAmount().amountUI;
   const { srcUsd, dstUsd } = useUsdAmount();
   return useCallback(() => {
     updateState({
@@ -428,12 +431,14 @@ export const useOnOpenConfirmationModal = () => {
       // prevent data to change during order creation
       swapData: {
         srcAmount: typedSrcAmount,
-        outAmount,
+        dstAmount,
         srcAmountusd: srcUsd,
-        outAmountusd: dstUsd,
+        dstAmountusd: dstUsd,
+        srcToken,
+        dstToken,
       },
     });
-  }, [updateState, typedSrcAmount, outAmount, srcUsd, dstUsd]);
+  }, [updateState, typedSrcAmount, dstAmount, srcUsd, dstUsd, srcToken, dstToken]);
 };
 
 export const useOnCloseConfirmationModal = () => {
@@ -441,7 +446,6 @@ export const useOnCloseConfirmationModal = () => {
     updateState,
     state: { swapStatus },
     reset,
-    state,
   } = useTwapContext();
 
   return useCallback(() => {
@@ -451,13 +455,13 @@ export const useOnCloseConfirmationModal = () => {
     if (success) {
       setTimeout(() => {
         reset();
-      }, 500);
+      }, 300);
     }
 
     if (failure) {
       updateState({ swapStatus: undefined, swapStep: undefined });
     }
-  }, [reset, updateState, state.isWrapped, swapStatus]);
+  }, [reset, updateState, swapStatus]);
 };
 
 const getUsdAmount = (amount?: string, usd?: string | number) => {

@@ -16,17 +16,17 @@ import { useNetwork } from "../../../hooks/logic-hooks";
 
 export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
   const { translations: t } = useTwapContext();
-  const { marketPriceMessage } = useConfirmationModalPanel();
+  const { marketWarning } = useConfirmationModalPanel();
 
-  if (!marketPriceMessage) return null;
+  if (!marketWarning) return null;
 
   return (
     <Message
       className={`twap-market-price-warning ${className}`}
       title={
         <>
-          {`${marketPriceMessage.text} `}
-          <a href={marketPriceMessage.url} target="_blank">{`${t.learnMore}`}</a>
+          {`${marketWarning.text} `}
+          <a href={marketWarning.url} target="_blank">{`${t.learnMore}`}</a>
         </>
       }
       variant="warning"
@@ -41,10 +41,10 @@ export const useSwapPrice = () => {
 
   const price = useMemo(
     () =>
-      BN(swapData?.outAmount || 0)
+      BN(swapData?.dstAmount || 0)
         .dividedBy(swapData?.srcAmount || 0)
         .toString(),
-    [swapData?.outAmount, swapData?.srcAmount],
+    [swapData?.dstAmount, swapData?.srcAmount],
   );
 
   const srcUsd1Token = useMemo(() => {
@@ -53,9 +53,9 @@ export const useSwapPrice = () => {
   }, [swapData?.srcAmountusd, swapData?.srcAmount]);
 
   const dstUsd1Token = useMemo(() => {
-    if (!swapData?.outAmountusd || !swapData?.outAmount) return;
-    return BN(swapData?.outAmountusd).dividedBy(swapData?.outAmount).toString();
-  }, [swapData?.outAmountusd, swapData?.outAmount]);
+    if (!swapData?.dstAmountusd || !swapData?.dstAmount) return;
+    return BN(swapData?.dstAmountusd).dividedBy(swapData?.dstAmount).toString();
+  }, [swapData?.dstAmountusd, swapData?.dstAmount]);
 
   const usd = useMemo(() => {
     if (!dstUsd1Token || !srcUsd1Token) return "0";
@@ -114,11 +114,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
 };
 
 const useSteps = () => {
-  const {
-    state: { swapSteps },
-    srcToken,
-  } = useTwapContext();
-  const orderType = useConfirmationModalPanel();
+  const { orderName, srcToken, swapSteps } = useConfirmationModalPanel();
   const wTokenSymbol = useNetwork()?.wToken.symbol;
 
   const isNativeIn = isNativeAddress(srcToken?.address || "");
@@ -142,23 +138,20 @@ const useSteps = () => {
       }
       return {
         id: SwapSteps.CREATE,
-        title: `Create ${orderType} order`,
+        title: `Create ${orderName} order`,
         icon: <RiArrowUpDownLine style={{ width: 20, height: 20 }} />,
       };
     });
-  }, [srcToken, swapSteps, wTokenSymbol, orderType, isNativeIn]);
+  }, [srcToken, swapSteps, wTokenSymbol, orderName, isNativeIn]);
 };
 
 export const Main = () => {
-  const {
-    translations,
-    state: { swapStatus, swapStep, swapData },
-    components,
-  } = useTwapContext();
+  const { translations, components } = useTwapContext();
   const steps = useSteps();
+  const { swapStatus, swapStep, srcAmountusd, dstAmountusd } = useConfirmationModalPanel();
 
-  const inUsd = useFormatNumber({ value: swapData?.srcAmountusd, decimalScale: 2 });
-  const outUsd = useFormatNumber({ value: swapData?.outAmountusd, decimalScale: 2 });
+  const inUsd = useFormatNumber({ value: srcAmountusd, decimalScale: 2 });
+  const outUsd = useFormatNumber({ value: dstAmountusd, decimalScale: 2 });
 
   return (
     <>
@@ -166,8 +159,8 @@ export const Main = () => {
         fromTitle={translations.from}
         toTitle={translations.to}
         steps={steps}
-        inUsd={components.USD ? <components.USD value={inUsd || ""} isLoading={false} /> : `$${inUsd}`}
-        outUsd={components.USD ? <components.USD value={outUsd || ""} isLoading={false} /> : `$${outUsd}`}
+        inUsd={components.USD ? <components.USD value={srcAmountusd || ""} isLoading={false} /> : `$${inUsd}`}
+        outUsd={components.USD ? <components.USD value={dstAmountusd || ""} isLoading={false} /> : `$${outUsd}`}
         currentStep={swapStep}
         showSingleStep={true}
         bottomContent={<ChunksText />}
@@ -184,13 +177,13 @@ export const Main = () => {
 };
 
 const ChunksText = () => {
-  const { chunks, fillDelayMillis } = useConfirmationModalPanel();
+  const { orderDetails } = useConfirmationModalPanel();
 
-  if (chunks <= 1) return null;
+  if (orderDetails.chunks <= 1) return null;
 
   return (
     <StyledChunksText className="twap-small-text">
-      Every {fillDelayText(fillDelayMillis).toLowerCase()} Over {chunks} Orders
+      Every {fillDelayText(orderDetails.fillDelayMillis).toLowerCase()} Over {orderDetails.chunks} Orders
     </StyledChunksText>
   );
 };
@@ -208,28 +201,28 @@ const Details = () => {
     state: { isMarketOrder },
   } = useTwapContext();
 
-  const { fillDelayMillis, dstMinAmountOut, orderDeadline, chunks, srcTokenChunkAmount, feeAmount, feePercent } = useConfirmationModalPanel();
-  const feeAmountF = useFormatNumber({ value: feeAmount, decimalScale: 2 });
+  const { fillDelayMillis, dstMinAmountOut, deadline, chunks, srcChunkAmount, fee } = useConfirmationModalPanel().orderDetails;
+  const feeAmountF = useFormatNumber({ value: fee.amount, decimalScale: 2 });
   return (
     <OrderDisplay.DetailsContainer>
       <Price />
       {isLimitPanel ? (
         <>
-          <OrderDisplay.Expiry deadline={orderDeadline} />
+          <OrderDisplay.Expiry deadline={deadline} />
           <OrderDisplay.Recipient />
         </>
       ) : (
         <>
           <MarketPriceWarning />
-          <OrderDisplay.Expiry deadline={orderDeadline} />
-          <OrderDisplay.ChunkSize srcChunkAmount={srcTokenChunkAmount} chunks={chunks} srcToken={srcToken} />
+          <OrderDisplay.Expiry deadline={deadline} />
+          <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmount} chunks={chunks} srcToken={srcToken} />
           <OrderDisplay.ChunksAmount chunks={chunks} />
           <OrderDisplay.MinDestAmount totalChunks={chunks} dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={dstMinAmountOut} />
           <OrderDisplay.TradeInterval chunks={chunks} fillDelayMillis={fillDelayMillis} />
           <OrderDisplay.Recipient />
         </>
       )}
-      {feePercent && <OrderDisplay.DetailRow title={`Fee (${feePercent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>}
+      {fee && <OrderDisplay.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>}
     </OrderDisplay.DetailsContainer>
   );
 };

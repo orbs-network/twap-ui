@@ -4,6 +4,7 @@ import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import moment from "moment";
 import { useTwapContext } from "../context";
+import { useHandleNative } from "./logic-hooks";
 
 const useKey = () => {
   const { config, account } = useTwapContext();
@@ -11,8 +12,9 @@ const useKey = () => {
 };
 
 export const useAddNewOrder = () => {
-  const { account, twapSDK, srcToken, dstToken, config } = useTwapContext();
+  const { account, twapSDK, srcToken: _srcToken, dstToken, config } = useTwapContext();
   const { refetch } = useAccountOrders();
+  const srcToken = useHandleNative(_srcToken);
   const { mutateAsync: callback } = useMutation({
     mutationFn: async ({ Contract_id, transactionHash, params }: { Contract_id: number; transactionHash: string; params: string[] }) => {
       const rawOrder: RawOrder = {

@@ -406,6 +406,8 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     ".twap-limit-price-panel-percent": {
       marginLeft: "auto",
       gap: 5,
+      display: "flex",
+      alignItems: "center",
     },
 
     ".twap-limit-price-panel": {

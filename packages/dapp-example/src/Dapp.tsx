@@ -103,6 +103,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     <Widget
       config={config}
       isExactAppoval={true}
+      chainId={chainId}
       provider={client.data?.transport}
       srcToken={srcToken}
       dstToken={dstToken}

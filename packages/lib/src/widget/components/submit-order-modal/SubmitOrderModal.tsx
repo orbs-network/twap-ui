@@ -11,7 +11,7 @@ const CustomModal = ({ children }: { children: ReactNode }) => {
   const {
     state: { swapStatus, showConfirmation },
   } = useTwapContext();
-  const onClose = useConfirmationModalPanel().onClose;
+  const onClose = useConfirmationModalPanel().callbacks.onClose;
 
   return (
     <OrderConfirmationModal isOpen={Boolean(showConfirmation)} onClose={onClose} title={!swapStatus ? "Confirm order" : ""}>
@@ -21,13 +21,9 @@ const CustomModal = ({ children }: { children: ReactNode }) => {
 };
 
 export const SubmitOrderModal = ({ className = "" }: { className?: string }) => {
-  const {
-    srcToken,
-    dstToken,
-    state: { swapError, swapStatus, swapData },
-  } = useTwapContext();
-  const srcAmountF = useFormatNumber({ value: swapData?.srcAmount });
-  const outAmountF = useFormatNumber({ value: swapData?.outAmount });
+  const { swapError, swapStatus, srcAmount, dstAmount, srcToken, dstToken } = useConfirmationModalPanel();
+  const srcAmountF = useFormatNumber({ value: srcAmount });
+  const outAmountF = useFormatNumber({ value: dstAmount });
 
   return (
     <CustomModal>

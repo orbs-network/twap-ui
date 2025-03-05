@@ -4,7 +4,7 @@ import { waitForTransactionReceipt } from "viem/actions";
 import BN from "bignumber.js";
 import { erc20Abi, maxUint256, Hex, decodeEventLog } from "viem";
 import { useTwapContext } from "../context";
-import { useAmountBN, useDestTokenAmount, useHandleNativeAddress, useHasAllowanceCallback, useNetwork, useShouldWrap, useSrcAmount, useSubmitOrderArgs } from "./logic-hooks";
+import { useAmountBN, useDestTokenAmount, useHandleNative, useHasAllowanceCallback, useNetwork, useShouldWrap, useSrcAmount, useSubmitOrderArgs } from "./logic-hooks";
 import { iwethabi, TwapAbi } from "@orbs-network/twap-sdk";
 import { useCallback, useRef } from "react";
 import { SwapStatus } from "@orbs-network/swap-ui";
@@ -24,7 +24,7 @@ export const useApproveToken = () => {
   } = useTwapContext();
   const srcAmount = useAmountBN(srcToken?.decimals, typedSrcAmount);
   const approvalAmount = isExactAppoval ? srcAmount : maxUint256.toString();
-  const tokenAddress = useHandleNativeAddress(srcToken?.address);
+  const tokenAddress = useHandleNative(srcToken)?.address;
 
   return useMutation(
     async () => {
@@ -118,7 +118,6 @@ const useCallbacks = () => {
     state: { typedSrcAmount },
   } = useTwapContext();
   const addNewOrder = useAddNewOrder();
-
   const destTokenAmountUI = useDestTokenAmount().amountUI;
   const onRequest = useCallback((params: string[]) => twapSDK.analytics.onCreateOrderRequest(params, account), [twapSDK, account]);
   const onSuccess = useCallback(
@@ -325,17 +324,15 @@ export const useSubmitOrderCallback = () => {
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash } = state;
   const { mutateAsync: getHasAllowance } = useHasAllowanceCallback();
   const shouldWrap = useShouldWrap();
-  const wToken = useNetwork()?.wToken;
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;
   const { onRequest } = useSubmitOrderCallbacks();
+
   const wrappedRef = useRef(false);
   const mutate = useMutation(
     async () => {
-      wrappedRef.current = false;
       if (!srcToken || !dstToken) throw new Error("Please select a token to swap");
-      if (!wToken) throw new Error("Wrapped Token not defined");
 
       onRequest();
       const haveAllowance = await getHasAllowance();
@@ -345,8 +342,6 @@ export const useSubmitOrderCallback = () => {
       if (shouldWrap) {
         updateState({ swapStep: SwapSteps.WRAP });
         await wrapToken();
-        updateState({ isWrapped: true });
-        wrappedRef.current = true;
       }
 
       if (!haveAllowance) {
