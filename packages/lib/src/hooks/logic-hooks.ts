@@ -1,4 +1,4 @@
-import { amountBN, amountUi, eqIgnoreCase, getNetwork, isNativeAddress, networks, TimeDuration, TwapAbi } from "@orbs-network/twap-sdk";
+import { amountBN, amountUi, eqIgnoreCase, getNetwork, isNativeAddress, networks, TimeDuration } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
 import { useTwapContext } from "../context";
 import { getMinNativeBalance, removeCommas } from "../utils";
@@ -16,8 +16,8 @@ const addressMap = {
 };
 
 export const useMinChunkSizeUsd = () => {
-  const { config, publicClient, minChunkSizeUsd: propsMinChunkSizeUsd } = useTwapContext();
-  const address = addressMap[config.chainId];
+  const { config, publicClient, minChunkSizeUsd } = useTwapContext();
+  const address = addressMap[config.chainId] as `0x${string}`;
   const query = useQuery({
     queryKey: ["useMinChunkSizeUsd", config.chainId],
     queryFn: async () => {
@@ -28,11 +28,13 @@ export const useMinChunkSizeUsd = () => {
         functionName: "latestAnswer",
       });
 
-      const ethUsdPrice = BN(latestAnswer).div(1e8).toNumber();
+      const ethUsdPrice = BN(latestAnswer as string)
+        .div(1e8)
+        .toNumber();
       const result = await publicClient!.estimateFeesPerGas();
       const maxFeePerGas = result.maxFeePerGas;
       const minChunkSizeUsd = BN(TX_GAS_COST)
-        .multipliedBy(maxFeePerGas)
+        .multipliedBy(maxFeePerGas.toString())
         .multipliedBy(ethUsdPrice || "0")
         .dividedBy(1e18)
         .dividedBy(0.05)
@@ -40,12 +42,12 @@ export const useMinChunkSizeUsd = () => {
         .toNumber();
       return minChunkSizeUsd;
     },
-    enabled: !!publicClient && !!config && !propsMinChunkSizeUsd,
+    enabled: !!publicClient && !!config && !minChunkSizeUsd,
     staleTime: 60_000,
   });
 
-  if (propsMinChunkSizeUsd) {
-    return propsMinChunkSizeUsd;
+  if (minChunkSizeUsd) {
+    return minChunkSizeUsd;
   }
 
   if (!address) {
@@ -78,19 +80,18 @@ export const useSrcAmount = () => {
 };
 
 export const useHasAllowanceCallback = () => {
-  const { account, srcToken, config, publicClient } = useTwapContext();
-  const srcAmount = useSrcAmount().amountWei;
-  const tokenAddress = useHandleNative(srcToken)?.address;
+  const { account, config, publicClient } = useTwapContext();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ token, amount }: { token: Token; amount: string }) => {
+      if (!publicClient) throw new Error("publicClient is not defined");
       const allowance = await publicClient.readContract({
-        address: tokenAddress,
+        address: token.address as `0x${string}`,
         abi: erc20Abi,
         functionName: "allowance",
-        args: [account, config.twapAddress],
+        args: [account as `0x${string}`, config.twapAddress as `0x${string}`],
       });
-      return BN(allowance).gte(srcAmount);
+      return BN(allowance.toString()).gte(amount);
     },
   });
 };
@@ -291,12 +292,6 @@ export const useShouldWrapOrUnwrapOnly = () => {
   return wrap || unwrap;
 };
 
-export const useShouldWrap = () => {
-  const { srcToken } = useTwapContext();
-
-  return useMemo(() => isNativeAddress(srcToken?.address || ""), [srcToken]);
-};
-
 export const useError = () => {
   const {
     state: { typedSrcAmount },
@@ -326,16 +321,6 @@ export const useNetwork = () => {
   return useMemo(() => getNetwork(config.chainId), [config]);
 };
 
-export function useHandleNative(token?: Token) {
-  const wToken = useNetwork()?.wToken;
-  return useMemo(() => {
-    if (isNativeAddress(token?.address || "")) {
-      return wToken;
-    }
-    return token;
-  }, [token, wToken]);
-}
-
 export const useOrderDeadline = () => {
   const {
     twapSDK,
@@ -345,37 +330,6 @@ export const useOrderDeadline = () => {
 
   return useMemo(() => twapSDK.getOrderDeadline(currentTime, orderDuration), [twapSDK, currentTime, orderDuration]);
 };
-
-export function useSubmitOrderArgs() {
-  const { srcToken, twapSDK, dstToken } = useTwapContext();
-  const srcAmountWei = useSrcAmount().amountWei;
-  const destTokenMinAmount = useDestTokenMinAmount().amountWei;
-  const srcTokenChunkAmount = useSrcTokenChunkAmount().amountWei;
-  const orderDeadline = useOrderDeadline();
-  const fillDelay = useFillDelay().fillDelay;
-
-  const srcTokenAddress = useHandleNative(srcToken)?.address;
-
-  return useMemo(() => {
-    if (!dstToken || !destTokenMinAmount || !srcTokenChunkAmount || !orderDeadline || !fillDelay || !srcAmountWei || !srcTokenAddress) return;
-    const params = twapSDK.getAskArgs({
-      destTokenMinAmount,
-      srcChunkAmount: srcTokenChunkAmount,
-      deadline: orderDeadline,
-      fillDelay,
-      srcAmount: srcAmountWei,
-      srcTokenAddress,
-      destTokenAddress: dstToken?.address || "",
-    });
-
-    return {
-      method: "ask",
-      params,
-      contract: twapSDK.config.twapAddress,
-      abi: TwapAbi,
-    };
-  }, [twapSDK, srcToken, srcAmountWei, dstToken, destTokenMinAmount, srcTokenChunkAmount, orderDeadline, fillDelay, srcTokenAddress]);
-}
 
 export const useFillDelay = () => {
   const {

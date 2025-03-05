@@ -8,7 +8,7 @@ import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "./context";
 
-const TokensListModal = ({ isOpen, onSelect, onClose }: TokenSelectModalProps) => {
+const TokenSelectModal = ({ isOpen, onSelect, onClose }: TokenSelectModalProps) => {
   return (
     <Popup isOpen={isOpen} onClose={onClose} title="Token Select">
       <TokensList onClick={onSelect} />
@@ -61,7 +61,6 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const client = useWalletClient();
   const [srcToken, setSrcToken] = useState<Token | undefined>(undefined);
   const [dstToken, setDstToken] = useState<Token | undefined>(undefined);
-  const { theme } = useDappContext();
   const refetchBalances = useRefetchBalances();
 
   useEffect(() => {
@@ -111,6 +110,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         wrap: {
           onSuccess: onWrapSuccess,
         },
+        unwrap: {
+          onSuccess: refetchBalances,
+        },
         onSrcTokenSelect: setSrcToken,
         onDstTokenSelect: setDstToken,
         onConnect: openConnectModal,
@@ -123,7 +125,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       dstBalance={dstBalance}
       marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
       components={{ Tooltip }}
-      modals={{ OrderConfirmationModal, OrderHistoryModal, TokenSelectModal: TokensListModal }}
+      modals={{ OrderConfirmationModal, OrderHistoryModal, TokenSelectModal }}
       useToken={useToken}
       includeStyles={true}
       minChunkSizeUsd={4}

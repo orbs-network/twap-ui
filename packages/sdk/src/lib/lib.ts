@@ -1,6 +1,6 @@
 import BN from "bignumber.js";
 import { MIN_FILL_DELAY_MINUTES } from "./consts";
-import { Config, getAskArgsProps, TimeDuration, TimeUnit } from "./types";
+import { Config, getAskParamsProps, TimeDuration, TimeUnit } from "./types";
 import { findTimeUnit, getTimeDurationMillis } from "./utils";
 export const DEFAULT_FILL_DELAY = { unit: TimeUnit.Minutes, value: MIN_FILL_DELAY_MINUTES } as TimeDuration;
 
@@ -65,7 +65,7 @@ export const getSrcChunkAmount = (srcAmount?: string, chunks?: number) => {
   return BN(srcAmount).div(chunks).integerValue(BN.ROUND_FLOOR).toFixed(0);
 };
 
-export const getAskArgs = (config: Config, args: getAskArgsProps) => {
+export const getAskParams = (config: Config, args: getAskParamsProps) => {
   const fillDelayMillis = getTimeDurationMillis(args.fillDelay);
   const fillDelaySeconds = (fillDelayMillis - getEstimatedDelayBetweenChunksMillis(config)) / 1000;
 

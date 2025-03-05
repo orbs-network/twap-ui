@@ -435,7 +435,7 @@ export const useShowConfirmationModalButton = () => {
     return {
       text: error ? error : marketPriceLoading ? t.outAmountLoading : t.placeOrder,
       onClick: onOpen,
-      loading: swapStatus === SwapStatus.LOADING || isPropsLoading,
+      loading: isPropsLoading,
       disabled: swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isPropsLoading || error,
     };
   }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isPropsLoading, zeroMarketPrice, error]);

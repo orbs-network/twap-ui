@@ -38,7 +38,7 @@ export enum OrderType {
   TWAP_MARKET = "twap-market",
 }
 
-export interface getAskArgsProps {
+export interface getAskParamsProps {
   destTokenMinAmount: string;
   srcChunkAmount: string;
   deadline: number;

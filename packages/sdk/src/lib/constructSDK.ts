@@ -9,10 +9,10 @@ import {
   getDuration,
   getDestTokenMinAmount,
   getDestTokenAmount,
-  getAskArgs,
+  getAskParams,
 } from "./lib";
 import { addCancelledOrder, addNewOrder, getOrders, RawOrder } from "./orders";
-import { Config, getAskArgsProps, TimeDuration } from "./types";
+import { Config, getAskParamsProps, TimeDuration } from "./types";
 import { getChunksWarning, getDurationWarning, getFillDelayWarning, getLimitPriceWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
 
 interface Props {
@@ -47,8 +47,8 @@ export class TwapSDK {
     this.estimatedDelayBetweenChunksMillis = getEstimatedDelayBetweenChunksMillis(this.config);
   }
 
-  getAskArgs(props: getAskArgsProps) {
-    return getAskArgs(this.config, props);
+  getAskParams(props: getAskParamsProps) {
+    return getAskParams(this.config, props);
   }
   getMaxChunks(typedSrcAmount: string, oneSrcTokenUsd: number, minChunkSizeUsd: number) {
     return getMaxPossibleChunks(this.config, typedSrcAmount, oneSrcTokenUsd, minChunkSizeUsd);

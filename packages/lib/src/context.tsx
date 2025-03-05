@@ -85,7 +85,7 @@ const useStore = () => {
 };
 
 const useInitiateWallet = (props: TwapProps) => {
-  const [account, setAccount] = useState<string | undefined>(undefined);
+  const [account, setAccount] = useState<`0x${string}` | undefined>(undefined);
   const chain = useMemo(() => Object.values(chains).find((it: any) => it.id === props.chainId), [props.chainId]);
   const transport = useMemo(() => (props.provider ? custom(props.provider) : undefined), [props.provider]);
   const walletClient = useMemo(() => {
@@ -126,7 +126,7 @@ const Content = (props: TwapProps) => {
         state,
         config: props.config,
         walletClient,
-        publicClient,
+        publicClient: publicClient as any as ReturnType<typeof createPublicClient>,
         twapSDK,
         marketPrice: props.marketReferencePrice.value,
         marketPriceLoading: props.marketReferencePrice.isLoading,

@@ -1,6 +1,7 @@
-import { AddressPadding } from "./types";
+import { AddressPadding, Token } from "./types";
 import BN from "bignumber.js";
-import { networks } from "@orbs-network/twap-sdk";
+import { getNetwork, isNativeAddress, networks, TwapAbi } from "@orbs-network/twap-sdk";
+import { decodeEventLog, Hex, TransactionReceipt } from "viem";
 
 export const removeCommas = (numStr: string): string => {
   return numStr.replace(/,/g, "");
@@ -101,4 +102,24 @@ export const getMinNativeBalance = (chainId: number) => {
     default:
       return 0.01;
   }
+};
+
+export function getOrderIdFromCreateOrderEvent(receipt: TransactionReceipt) {
+  const decodedLog = (decodeEventLog as any)({
+    abi: TwapAbi,
+    data: receipt.logs[0].data,
+    topics: receipt.logs[0].topics,
+    eventName: "OrderCreated",
+  });
+
+  return Number(decodedLog.args.id);
+}
+
+export const ensureWrappedToken = (token: Token, chainId: number) => {
+  const network = getNetwork(chainId);
+  if (!network) throw new Error("Invalid chainId");
+  if (isNativeAddress(token.address)) {
+    return network.wToken;
+  }
+  return token;
 };

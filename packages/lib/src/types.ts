@@ -2,7 +2,9 @@ import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
 import { Config, Order, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { createWalletClient } from "viem";
+import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt } from "viem";
+
+export type TransactionReceipt = _TransactionReceipt;
 
 export interface Translations {
   minReceived: string;
@@ -265,66 +267,47 @@ interface Components {
   DurationSelectButtons?: FC<DurationSelectButtonsProps>;
 }
 
-export type OnWrapSuccessArgs = {
-  amount: string;
-  txHash: string;
-};
-
-export type OnCancelOrderSuccessArgs = {
-  txHash: string;
-  orderId: number;
-};
-
-interface OnCreateOrderArgs {
+interface CreateOrderCallbackArgs {
   srcToken: Token;
   dstToken: Token;
   srcAmount: string;
   dstAmount: string;
 }
 
-interface OnOrderCreatedArgs extends OnCreateOrderArgs {
+interface CreateOrderSuccessCallbackArgs extends CreateOrderCallbackArgs {
   srcToken: Token;
   dstToken: Token;
   srcAmount: string;
   dstAmount: string;
   orderId: number;
-  txHash: string;
-}
-
-interface ApproveRequestArgs {
-  token: Token;
-  amount: string;
-}
-
-export interface OnApproveSuccessArgs extends ApproveRequestArgs {
-  txHash: string;
+  receipt: TransactionReceipt;
 }
 
 export type Callbacks = {
-  onSubmitOrderRequest?: (args: OnCreateOrderArgs) => void;
+  onSubmitOrderRequest?: (args: CreateOrderCallbackArgs) => void;
   createOrder?: {
-    onRequest?: (args: OnCreateOrderArgs) => void;
-    onSuccess?: (args: OnOrderCreatedArgs) => void;
+    onRequest?: (args: CreateOrderCallbackArgs) => void;
+    onSuccess?: (args: CreateOrderSuccessCallbackArgs) => void;
     onFailed?: (error: string) => void;
   };
   cancelOrder?: {
     onRequest?: (orderId: number) => void;
-    onSuccess?: (args: OnCancelOrderSuccessArgs) => void;
+    onSuccess?: (receipt: TransactionReceipt, orderId: number) => void;
     onFailed?: (error: string) => void;
   };
   approve?: {
-    onRequest?: (args: ApproveRequestArgs) => void;
-    onSuccess?: (args: OnApproveSuccessArgs) => void;
+    onRequest?: (token: Token, amount: string) => void;
+    onSuccess?: (receipt: TransactionReceipt, token: Token, amount: string) => void;
     onFailed?: (error: string) => void;
   };
   wrap?: {
     onRequest?: (amount: string) => void;
-    onSuccess?: (args: OnWrapSuccessArgs) => Promise<void>;
+    onSuccess?: (receipt: TransactionReceipt, amount: string) => Promise<void>;
     onFailed?: (error: string) => void;
   };
   unwrap?: {
     onRequest?: (amount: string) => void;
-    onSuccess?: (args: OnWrapSuccessArgs) => Promise<void>;
+    onSuccess?: (receipt: TransactionReceipt, amount: string) => Promise<void>;
     onFailed?: (error: string) => void;
   };
   onSrcTokenSelect?: (token: any) => void;
@@ -372,11 +355,11 @@ export interface TwapContextType extends TwapProps {
   reset: () => void;
   translations: Translations;
   walletClient?: ReturnType<typeof createWalletClient>;
-  publicClient?: any;
+  publicClient?: ReturnType<typeof createPublicClient>;
   twapSDK: TwapSDK;
   marketPrice?: string;
   marketPriceLoading?: boolean;
-  account?: string;
+  account?: `0x${string}`;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
@@ -465,10 +448,6 @@ export interface State {
   swapSteps?: SwapSteps[];
   swapStatus?: SwapStatus;
   swapError?: string;
-  wrapTxHash?: string;
-  unwrapTxHash?: string;
-  approveTxHash?: string;
-  createOrderSuccess?: boolean;
   createOrderTxHash?: string;
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
