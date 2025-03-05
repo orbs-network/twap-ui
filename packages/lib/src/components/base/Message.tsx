@@ -7,9 +7,8 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { MessageVariant } from "../../types";
 import { useTwapContext } from "../../context";
 
-export function Message({ text, className = "", variant, title }: { variant?: MessageVariant; title: ReactNode; text?: ReactNode; className?: string }) {
-  const { uiPreferences } = useTwapContext();
-
+export function Message({ text, className = "", variant, title }: { variant: MessageVariant; title: ReactNode; text?: ReactNode; className?: string }) {
+  const { components } = useTwapContext();
   const _className = useMemo(() => {
     switch (variant) {
       case "error":
@@ -25,14 +24,18 @@ export function Message({ text, className = "", variant, title }: { variant?: Me
   const icon = useMemo(() => {
     switch (variant) {
       case "error":
-        return uiPreferences.message?.errorIcon || <RiErrorWarningLine className="twap-message-icon" />;
+        return <RiErrorWarningLine className="twap-message-icon" />;
       case "warning":
-        return uiPreferences.message?.warningIcon || <RiErrorWarningLine className="twap-message-icon" />;
+        return <RiErrorWarningLine className="twap-message-icon" />;
 
       default:
         return undefined;
     }
-  }, [variant, uiPreferences.message]);
+  }, [variant]);
+
+  if (components.Message) {
+    return <components.Message title={title} text={text} variant={variant} />;
+  }
 
   return (
     <Container className={`twap-message ${_className} ${className}`}>

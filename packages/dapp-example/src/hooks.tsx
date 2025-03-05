@@ -38,10 +38,9 @@ export const useTokenListBalances = () => {
       if (!client) return {};
       const addresses: string[] = tokens!.map((it) => it.address).filter((it) => !isNativeAddress(it));
       const nativeToken = tokens!.find((it) => isNativeAddress(it.address));
-      // const nativeBalanceReponse = await client.getBalance({ address: account! });
-      // console.log({nativeBalanceReponse});
+      const nativeBalanceReponse = await client.getBalance({ address: account! });
 
-      const nativeBalance = "0";
+      const nativeBalance = nativeBalanceReponse.toString();
 
       const multicallResponse = await client.multicall({
         contracts: addresses.map((address) => {

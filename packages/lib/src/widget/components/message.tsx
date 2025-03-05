@@ -6,5 +6,5 @@ export const WidgetMessage = () => {
   const message = useChunkSizeMessage();
   if (!message) return null;
 
-  return <Message title={message} />;
+  return <Message title={message} variant="info" />;
 };

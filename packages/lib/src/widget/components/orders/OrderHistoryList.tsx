@@ -10,6 +10,7 @@ import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
 import { useOrderName } from "../../../hooks/ui-hooks";
+import { OrderHistoryMenu } from "./OrderHistorySelect";
 
 const ListLoader = () => {
   return (
@@ -24,26 +25,31 @@ export const OrderHistoryList = () => {
 
   if (selectedOrderId) return null;
 
-  if (isLoading) {
-    return <ListLoader />;
-  }
-
-  if (!selectedOrders.length) {
-    return <EmptyList />;
-  }
-
   return (
     <>
-      <div className="twap-order-history-list">
-        {selectedOrders.map((order) => {
-          return <ListOrder key={order.id} selectOrder={selectOrder} order={order} />;
-        })}
-      </div>
+      <OrderHistoryMenu />
+      {isLoading ? (
+        <ListLoader />
+      ) : !selectedOrders.length ? (
+        <EmptyList />
+      ) : (
+        <div className="twap-order-history-list">
+          {selectedOrders.map((order) => {
+            return <ListOrder key={order.id} selectOrder={selectOrder} order={order} />;
+          })}
+        </div>
+      )}
     </>
   );
 };
 
 const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
+  const { components } = useTwapContext();
+
+  if (components.OrderHistoryListOrder) {
+    return <components.OrderHistoryListOrder order={order} selectOrder={selectOrder} />;
+  }
+
   return (
     <StyledListOrder className="twap-order-history-order" onClick={() => selectOrder(order?.id)}>
       <ListItemHeader order={order} />

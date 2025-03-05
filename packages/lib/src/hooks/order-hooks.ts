@@ -46,13 +46,21 @@ export const useAddNewOrder = () => {
 export const useAccountOrders = () => {
   const { config, isWrongChain, account, twapSDK } = useTwapContext();
   const queryKey = useKey();
-  return useQuery(queryKey, async ({ signal }) => twapSDK.getUserOrders({ account: account!, signal }), {
-    enabled: !!config && !!account && !isWrongChain,
+  const enabled = Boolean(config && account && !isWrongChain);
+  const query = useQuery(queryKey, async ({ signal }) => twapSDK.getUserOrders({ account: account!, signal }), {
+    enabled,
     refetchInterval: REFETCH_ORDER_HISTORY,
     refetchOnWindowFocus: true,
     retry: 3,
     staleTime: Infinity,
   });
+
+  return useMemo(() => {
+    return {
+      ...query,
+      isLoading: enabled ? query.isLoading : false,
+    };
+  }, [query, enabled]);
 };
 
 export const useAddCancelledOrder = () => {

@@ -46,11 +46,11 @@ export const useApproveToken = () => {
       });
 
       twapSDK.analytics.onApproveSuccess(hash);
-      callbacks?.approve.onSuccess?.({ token: srcToken!, txHash: hash, amount: isExactAppoval ? typedSrcAmount : maxUint256.toString() });
+      callbacks?.approve?.onSuccess?.({ token: srcToken!, txHash: hash, amount: isExactAppoval ? typedSrcAmount : maxUint256.toString() });
     },
     {
       onError: (error) => {
-        callbacks?.approve.onFailed?.((error as any).message);
+        callbacks?.approve?.onFailed?.((error as any).message);
       },
     },
   );
@@ -67,7 +67,7 @@ export const useCancelOrder = () => {
       }
 
       twapSDK.analytics.onCancelOrderRequest(orderId);
-      callbacks?.cancelOrder.onRequest?.(orderId);
+      callbacks?.cancelOrder?.onRequest?.(orderId);
       const hash = await (walletClient as any).writeContract({
         account,
         address: config.twapAddress,
@@ -81,7 +81,7 @@ export const useCancelOrder = () => {
       });
 
       console.log(`order canceled`);
-      callbacks?.cancelOrder.onSuccess?.({ orderId, txHash: hash });
+      callbacks?.cancelOrder?.onSuccess?.({ orderId, txHash: hash });
       await addCancelledOrder(orderId);
     },
     {
@@ -91,7 +91,7 @@ export const useCancelOrder = () => {
       onError: (error: Error) => {
         console.log(`cancel error order`, error);
         twapSDK.analytics.onCreateOrderError(error);
-        callbacks?.cancelOrder.onFailed?.(error.message);
+        callbacks?.cancelOrder?.onFailed?.(error.message);
       },
     },
   );
@@ -213,7 +213,7 @@ export const useWrapToken = () => {
     async () => {
       if (!srcAmountWei) throw new Error("srcAmount is not defined");
       if (!account) throw new Error("account is not defined");
-      callbacks?.wrap.onRequest?.(typedSrcAmount || "");
+      callbacks?.wrap?.onRequest?.(typedSrcAmount || "");
       const hash = await (walletClient as any).writeContract({
         abi: iwethabi,
         functionName: "deposit",
@@ -228,7 +228,7 @@ export const useWrapToken = () => {
       });
 
       twapSDK.analytics.onWrapSuccess(hash);
-      callbacks?.wrap.onSuccess?.({ txHash: hash, amount: typedSrcAmount || "" });
+      await callbacks?.wrap?.onSuccess?.({ txHash: hash, amount: typedSrcAmount || "" });
     },
     {
       onError: (error) => {
@@ -240,44 +240,51 @@ export const useWrapToken = () => {
 
 export const useWrapOnly = () => {
   const { mutateAsync } = useWrapToken();
-  const { reset, actions } = useTwapContext();
+  const { reset } = useTwapContext();
 
   return useMutation(async () => {
     await mutateAsync();
     reset();
-    await actions.refetchBalances?.();
   });
 };
 
 export const useUnwrapToken = () => {
-  const { account, reset, walletClient, publicClient, actions } = useTwapContext();
+  const { account, reset, walletClient, publicClient, callbacks } = useTwapContext();
   const tokenAddress = useNetwork()?.wToken.address;
-  const srcAmountWei = useSrcAmount().amountWei;
+  const { amountWei, amountUI = "" } = useSrcAmount();
 
-  return useMutation(async () => {
-    if (!tokenAddress) {
-      throw new Error("address is not defined");
-    }
-    if (!account) {
-      throw new Error("account is not defined");
-    }
+  return useMutation(
+    async () => {
+      if (!tokenAddress) {
+        throw new Error("address is not defined");
+      }
+      if (!account) {
+        throw new Error("account is not defined");
+      }
+      callbacks.unwrap?.onRequest?.(amountUI);
 
-    const hash = await (walletClient as any).writeContract({
-      abi: iwethabi,
-      functionName: "withdraw",
-      account: account,
-      address: tokenAddress,
-      args: [BN(srcAmountWei).decimalPlaces(0).toFixed()],
-    });
+      const hash = await (walletClient as any).writeContract({
+        abi: iwethabi,
+        functionName: "withdraw",
+        account: account,
+        address: tokenAddress,
+        args: [BN(amountWei).decimalPlaces(0).toFixed()],
+      });
 
-    await waitForTransactionReceipt(publicClient as any, {
-      hash,
-      confirmations: 5,
-    });
+      await waitForTransactionReceipt(publicClient as any, {
+        hash,
+        confirmations: 5,
+      });
 
-    reset();
-    await actions.refetchBalances?.();
-  });
+      await callbacks.unwrap?.onSuccess?.({ txHash: hash, amount: amountUI });
+      reset();
+    },
+    {
+      onError: (error) => {
+        callbacks.unwrap?.onFailed?.((error as any).message);
+      },
+    },
+  );
 };
 
 const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
@@ -314,7 +321,7 @@ const useSubmitOrderCallbacks = () => {
 };
 
 export const useSubmitOrderCallback = () => {
-  const { state, updateState, srcToken, dstToken, actions } = useTwapContext();
+  const { state, updateState, srcToken, dstToken } = useTwapContext();
   const { swapStatus, swapStep, createOrderTxHash, approveTxHash, wrapTxHash } = state;
   const { mutateAsync: getHasAllowance } = useHasAllowanceCallback();
   const shouldWrap = useShouldWrap();
@@ -354,9 +361,6 @@ export const useSubmitOrderCallback = () => {
       updateState({ swapStep: SwapSteps.CREATE });
       const order = await createOrder();
       // we refetch balances only if we wrapped the token
-      if (wrappedRef.current) {
-        await actions.refetchBalances?.();
-      }
       updateState({ swapStatus: SwapStatus.SUCCESS });
       return order;
     },

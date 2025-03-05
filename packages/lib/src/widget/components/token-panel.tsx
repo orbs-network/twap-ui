@@ -58,48 +58,47 @@ export const TokenPanel = ({ isSrcToken, children, className = "" }: { isSrcToke
   );
 };
 
-const TokenPanelBalance = ({
-  decimalScale = 4,
-  className = "",
-  prefix = "",
-  suffix = "",
-}: {
-  decimalScale?: number;
-  className?: string;
-  prefix?: ReactNode;
-  suffix?: ReactNode;
-}) => {
+const TokenPanelBalance = ({ className = "" }: { className?: string }) => {
   const { isSrcToken } = useTokenPanelContext();
   const balance = useTokenBalance({ isSrcToken });
-  const srcBalanceF = useFormatNumber({ value: balance, decimalScale });
+  const srcBalanceF = useFormatNumber({ value: balance, decimalScale: 3 });
   const onSrcAmountPercent = useOnSrcInputPercentClick();
-  const { translations: t } = useTwapContext();
+  const { translations: t, components, srcBalance, dstBalance } = useTwapContext();
+  const balanceWei = isSrcToken ? srcBalance : dstBalance;
+  const _className = `${className} twap-token-panel-balance`;
 
-  const onBalance = useCallback(() => {
+  const onMax = useCallback(() => {
     if (!isSrcToken) return;
     onSrcAmountPercent(1);
   }, [isSrcToken, onSrcAmountPercent]);
 
+  if (components.Balance) {
+    return <components.Balance isLoading={!balanceWei} balanceWei={balanceWei || ""} balance={balance || ""} onMax={onMax} />;
+  }
+
   return (
-    <StyledText onClick={onBalance} className={`${className} twap-token-panel-balance`}>
-      <span className="twap-token-panel-balance-prefix">{prefix || `${t.balance}: `}</span>
+    <StyledText onClick={onMax} className={_className}>
+      <span className="twap-token-panel-balance-prefix">{t.balance}:</span>
       <span className="twap-token-panel-balance-value">{srcBalanceF || "0"}</span>
-      <span className="twap-token-panel-balance-prefix-suffix">{suffix}</span>
     </StyledText>
   );
 };
 
-const TokenPanelUsd = ({ decimalScale = 2, className = "" }: { decimalScale?: number; className?: string }) => {
+const TokenPanelUsd = ({ className = "" }: { className?: string }) => {
   const { isSrcToken } = useTokenPanelContext();
   const { data, isLoading } = useTokenUSD({ isSrcToken });
-  const { uiPreferences } = useTwapContext();
-  const usdF = useFormatNumber({ value: isLoading ? "0" : data, decimalScale });
+  const components = useTwapContext().components;
+  const usdF = useFormatNumber({ value: isLoading ? "0" : data, decimalScale: 2 });
+
+  const _className = `${className} twap-token-panel-usd`;
+
+  if (components.USD) {
+    return <components.USD isLoading={Boolean(isLoading)} value={data} />;
+  }
 
   return (
-    <StyledText className={`${className} twap-token-panel-usd`}>
-      <span className="twap-token-panel-usd-prefix">{uiPreferences.usd?.prefix}</span>
-      <span className="twap-token-panel-usd-value"> {usdF}</span>
-      <span className="twap-token-panel-usd-suffix"> {uiPreferences.usd?.suffix}</span>
+    <StyledText className={_className}>
+      <span className="twap-token-panel-usd-value"> ${usdF}</span>
     </StyledText>
   );
 };
@@ -122,15 +121,20 @@ const BalanceAmountSelect = ({
   options?: { value: number; text: string }[];
   className?: string;
 }) => {
-  const onClick = useOnSrcInputPercentClick();
+  const onSelect = useOnSrcInputPercentClick();
   const { isSrcToken } = useTokenPanelContext();
+  const { components } = useTwapContext();
   if (!isSrcToken) return null;
+
+  if (components.TokenAmountPercentSelect) {
+    return <components.TokenAmountPercentSelect onSelect={onSelect} />;
+  }
 
   return (
     <div className={`twap-token-panel-balance-buttons ${className}`}>
       {options.map((option) => {
         return (
-          <button className="twap-token-panel-balance-buttons-btn twap-select-button" onClick={() => onClick(option.value)} key={option.value}>
+          <button className="twap-token-panel-balance-buttons-btn twap-select-button" onClick={() => onSelect(option.value)} key={option.value}>
             {option.text}
           </button>
         );

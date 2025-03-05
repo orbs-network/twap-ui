@@ -442,7 +442,6 @@ export const useOnCloseConfirmationModal = () => {
     state: { swapStatus },
     reset,
     state,
-    actions: { onSwitchFromNativeToWrapped },
   } = useTwapContext();
 
   return useCallback(() => {
@@ -458,10 +457,7 @@ export const useOnCloseConfirmationModal = () => {
     if (failure) {
       updateState({ swapStatus: undefined, swapStep: undefined });
     }
-    if ((success || failure) && state.isWrapped) {
-      onSwitchFromNativeToWrapped?.();
-    }
-  }, [reset, updateState, onSwitchFromNativeToWrapped, state.isWrapped, swapStatus]);
+  }, [reset, updateState, state.isWrapped, swapStatus]);
 };
 
 const getUsdAmount = (amount?: string, usd?: string | number) => {

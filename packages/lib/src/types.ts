@@ -1,8 +1,7 @@
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
-import { Config, TimeDuration, TwapSDK } from "@orbs-network/twap-sdk";
+import { Config, Order, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { TransportConfig } from "viem";
 
 export interface Translations {
   minReceived: string;
@@ -135,14 +134,21 @@ export interface Translations {
 
 export type MessageVariant = "error" | "warning" | "info";
 
-export type ModalProps = {
+export type OrderConfirmationModalProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children?: ReactNode;
 };
 
-export type TokensListModalProps = {
+export type OrderHistoryModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  children?: ReactNode;
+};
+
+export type TokenSelectModalProps = {
   isSrcToken?: boolean;
   isOpen: boolean;
   onClose: () => void;
@@ -160,10 +166,6 @@ export interface LimitPanelTokenSelectProps {
   isSrc?: boolean;
 }
 
-export interface BaseComponentProps {
-  className?: string;
-}
-
 export type InputProps = {
   onChange: (value: string) => void;
   value: string;
@@ -173,13 +175,93 @@ export type InputProps = {
   isLoading?: boolean;
 };
 
+export interface Modals {
+  OrderConfirmationModal: FC<OrderConfirmationModalProps>;
+  TokenSelectModal: FC<TokenSelectModalProps>;
+  OrderHistoryModal: FC<OrderHistoryModalProps>;
+}
+
+export type BalanceProps = {
+  balance: string;
+  onMax: () => void;
+  balanceWei: string;
+  isLoading: boolean;
+};
+
+export type USDProps = {
+  value: string;
+  isLoading: boolean;
+};
+
+export type CurrencySelectButtonProps = {
+  token?: Token;
+  onClick: () => void;
+};
+
+export type TokenAmountPercentSelectProps = {
+  onSelect: (percent: number) => void;
+};
+
+export type LimitPanelPercentSelectProps = {
+  buttons: {
+    text: string;
+    selected: boolean;
+    onClick: () => void;
+    isReset: boolean;
+  }[];
+};
+
+export type MessageProps = {
+  title: ReactNode;
+  variant: MessageVariant;
+  text: ReactNode;
+};
+
+export type SelectMenuProps = {
+  items: SelectMeuItem[];
+  onSelect: (item: SelectMeuItem) => void;
+  selected?: SelectMeuItem;
+};
+
+export type OrderHistoryListOrderProps = {
+  order: Order;
+  selectOrder: (orderId: number) => void;
+};
+
+export type LimitPanelInvertButtonProps = {
+  onClick: () => void;
+};
+
+export type OrderHistorySelectedOrderProps = {
+  order: Order;
+  onBackClick: () => void;
+};
+
+export type DurationSelectButtonsProps = {
+  onSelect: (unit: TimeUnit) => void;
+  selected: number;
+};
+
 interface Components {
-  Modal?: FC<ModalProps>;
-  TokensListModal?: FC<TokensListModalProps>;
+  // shared
   Tooltip?: FC<TooltipProps>;
   Input?: FC<InputProps>;
   Button?: FC<ButtonProps>;
   Toggle?: FC<ToggleProps>;
+  // token panel
+  Balance?: FC<BalanceProps>;
+  USD?: FC<USDProps>;
+  CurrencySelectButton?: FC<CurrencySelectButtonProps>;
+  TokenAmountPercentSelect?: FC<TokenAmountPercentSelectProps>;
+  Message?: FC<MessageProps>;
+  SelectMenu?: FC<SelectMenuProps>;
+  // limit panel
+  LimitPanelPercentSelect?: FC<LimitPanelPercentSelectProps>;
+  LimitPanelInvertButton?: FC<LimitPanelInvertButtonProps>;
+  // orders
+  OrderHistoryListOrder?: FC<OrderHistoryListOrderProps>;
+  OrderHistorySelectedOrder?: FC<OrderHistorySelectedOrderProps>;
+  DurationSelectButtons?: FC<DurationSelectButtonsProps>;
 }
 
 export type OnWrapSuccessArgs = {
@@ -224,37 +306,39 @@ export type Callbacks = {
     onSuccess?: (args: OnOrderCreatedArgs) => void;
     onFailed?: (error: string) => void;
   };
-  cancelOrder: {
+  cancelOrder?: {
     onRequest?: (orderId: number) => void;
     onSuccess?: (args: OnCancelOrderSuccessArgs) => void;
     onFailed?: (error: string) => void;
   };
-  approve: {
+  approve?: {
     onRequest?: (args: ApproveRequestArgs) => void;
     onSuccess?: (args: OnApproveSuccessArgs) => void;
     onFailed?: (error: string) => void;
   };
-  wrap: {
+  wrap?: {
     onRequest?: (amount: string) => void;
-    onSuccess?: (args: OnWrapSuccessArgs) => void;
+    onSuccess?: (args: OnWrapSuccessArgs) => Promise<void>;
     onFailed?: (error: string) => void;
   };
-};
-
-type Actions = {
+  unwrap?: {
+    onRequest?: (amount: string) => void;
+    onSuccess?: (args: OnWrapSuccessArgs) => Promise<void>;
+    onFailed?: (error: string) => void;
+  };
   onSrcTokenSelect?: (token: any) => void;
   onDstTokenSelect?: (token: any) => void;
-  onSwitchFromNativeToWrapped?: () => void;
   onSwitchTokens?: () => void;
   onConnect?: () => void;
-  refetchBalances?: () => Promise<void>;
 };
 
+interface Provider {
+  request(...args: any): Promise<any>;
+  [key: string]: any; // Allow extra properties
+}
+
 export interface TwapProps {
-  chainId?: number;
-  account?: string;
-  web3Provider?: any;
-  walletClientTransport?: TransportConfig;
+  provider?: Provider;
   isDarkTheme?: boolean;
   isLimitPanel?: boolean;
   enableQueryParams?: boolean;
@@ -267,18 +351,16 @@ export interface TwapProps {
   dstUsd1Token?: number;
   srcBalance?: string;
   dstBalance?: string;
-  uiPreferences?: UIPreferences;
   isExactAppoval?: boolean;
   children: React.ReactNode;
   components: Components;
+  modals: Modals;
   askDataParams?: any[];
-  marketPrice?: string;
-  marketPriceLoading?: boolean;
+  marketReferencePrice: { value?: string; isLoading?: boolean };
   minChunkSizeUsd?: number;
   useToken?: (value?: string) => Token | undefined;
   includeStyles?: boolean;
-  callbacks?: Callbacks;
-  actions: Actions;
+  callbacks: Callbacks;
 }
 
 export interface TwapContextType extends TwapProps {
@@ -287,39 +369,16 @@ export interface TwapContextType extends TwapProps {
   updateState: (state: Partial<State>) => void;
   reset: () => void;
   translations: Translations;
-  uiPreferences: UIPreferences;
   walletClient?: any;
   publicClient?: any;
   twapSDK: TwapSDK;
+  marketPrice?: string;
+  marketPriceLoading?: boolean;
+  account?: string;
+  chainId?: number;
 }
 
 export type SelectMeuItem = { text: string; value: string | number };
-
-export interface UIPreferences {
-  message?: {
-    warningIcon?: ReactElement;
-    errorIcon?: ReactElement;
-  };
-  menu?: {
-    icon?: ReactElement;
-  };
-  tokenSelect?: {
-    icon?: ReactElement;
-  };
-  usd?: {
-    suffix?: string;
-    prefix?: string;
-    emptyUI?: ReactNode;
-  };
-  balance?: {
-    emptyUI?: ReactNode;
-  };
-  input?: {
-    showOnLoading?: boolean;
-    placeholder?: string;
-    disableThousandSeparator?: boolean;
-  };
-}
 
 export type AddressPadding = {
   start: number;

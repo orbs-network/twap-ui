@@ -7,7 +7,6 @@ import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { useMemo } from "react";
 import { Spinner } from "../../../components/base";
 import { StyledColumnFlex, StyledRowFlex } from "../../../styles";
-import { OrderHistoryHeader } from "./OrderHistoryHeader";
 import { useTwapContext } from "../../../context";
 import { useGroupedByStatusOrders } from "../../../hooks/order-hooks";
 
@@ -42,16 +41,13 @@ export const OrdersButton = ({ className = "" }: { className?: string }) => {
 };
 
 const CustomModal = ({ children }: { children: ReactNode }) => {
-  const Modal = useTwapContext().components.Modal;
+  const OrderHistoryModal = useTwapContext().modals.OrderHistoryModal;
   const { isOpen, onClose } = useOrderHistoryContext();
 
-  if (!Modal) {
-    return <>{children}</>;
-  }
   return (
-    <Modal isOpen={Boolean(isOpen)} onClose={onClose} title="Order history">
+    <OrderHistoryModal isOpen={Boolean(isOpen)} onClose={onClose} title="Order history">
       {children}
-    </Modal>
+    </OrderHistoryModal>
   );
 };
 
@@ -60,7 +56,6 @@ const OrderHistory = ({ className = "" }: { className?: string }) => {
   return (
     <CustomModal>
       <StyledContainer className={`twap-order-history ${className}`} order={order ? 1 : 0}>
-        <OrderHistoryHeader />
         <HistoryOrderPreview />
         <OrderHistoryList />
       </StyledContainer>

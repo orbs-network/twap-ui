@@ -55,19 +55,7 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
   );
 }
 
-export const ResolutionSelect = ({
-  onChange,
-  unit,
-  className = "",
-  onOpen,
-  onClose,
-}: {
-  onChange: (unit: TimeUnit) => void;
-  unit: TimeUnit;
-  className?: string;
-  onOpen?: () => void;
-  onClose?: () => void;
-}) => {
+export const ResolutionSelect = ({ onChange, unit, onOpen, onClose }: { onChange: (unit: TimeUnit) => void; unit: TimeUnit; onOpen?: () => void; onClose?: () => void }) => {
   const onSelect = useCallback(
     (unit: TimeUnit) => {
       onChange(unit);

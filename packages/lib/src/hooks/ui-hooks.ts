@@ -56,36 +56,36 @@ const useLimitPriceLoading = () => {
 export const useLimitPriceSrcTokenSelect = () => {
   const {
     state: { isInvertedPrice },
-    actions,
+    callbacks,
   } = useTwapContext();
 
   return useCallback(
     (token: any) => {
       if (isInvertedPrice) {
-        actions.onDstTokenSelect?.(token);
+        callbacks.onDstTokenSelect?.(token);
       } else {
-        actions.onSrcTokenSelect?.(token);
+        callbacks.onSrcTokenSelect?.(token);
       }
     },
-    [isInvertedPrice, actions.onDstTokenSelect, actions.onSrcTokenSelect],
+    [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect],
   );
 };
 
 export const useLimitPriceDstTokenSelect = () => {
   const {
     state: { isInvertedPrice },
-    actions,
+    callbacks,
   } = useTwapContext();
 
   return useCallback(
     (token: any) => {
       if (isInvertedPrice) {
-        actions.onSrcTokenSelect?.(token);
+        callbacks.onSrcTokenSelect?.(token);
       } else {
-        actions.onDstTokenSelect?.(token);
+        callbacks.onDstTokenSelect?.(token);
       }
     },
-    [isInvertedPrice, actions.onDstTokenSelect, actions.onSrcTokenSelect],
+    [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect],
   );
 };
 
@@ -240,12 +240,12 @@ export const useTokenUSD = ({ isSrcToken }: { isSrcToken: boolean }) => {
 };
 
 export const useTokenSelect = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { actions } = useTwapContext();
+  const { callbacks } = useTwapContext();
   return useCallback(
     (token: any) => {
-      isSrcToken ? actions.onSrcTokenSelect?.(token) : actions.onDstTokenSelect?.(token);
+      isSrcToken ? callbacks.onSrcTokenSelect?.(token) : callbacks.onDstTokenSelect?.(token);
     },
-    [isSrcToken, actions.onSrcTokenSelect, actions.onDstTokenSelect],
+    [isSrcToken, callbacks.onSrcTokenSelect, callbacks.onDstTokenSelect],
   );
 };
 
@@ -307,7 +307,7 @@ export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
 };
 
 export const useSwitchTokensCallback = () => {
-  return useTwapContext().actions.onSwitchTokens;
+  return useTwapContext().callbacks.onSwitchTokens;
 };
 
 export const useTradesAmountPanel = () => {
@@ -361,7 +361,7 @@ export const useShowConfirmationModalButton = () => {
     srcUsd1Token,
     account: maker,
     translations: t,
-    actions,
+    callbacks,
     marketPrice,
     state: { swapStatus, typedSrcAmount },
     marketPriceLoading,
@@ -371,7 +371,7 @@ export const useShowConfirmationModalButton = () => {
   const error = useError();
 
   const onOpen = useOnOpenConfirmationModal();
-  const { onConnect } = actions;
+  const { onConnect } = callbacks;
   const switchChain = useSwitchChain();
   const shouldUnwrap = useShouldUnwrap();
   const shouldOnlyWrap = useShouldOnlyWrap();
@@ -602,10 +602,9 @@ export const useLimitPriceMessage = () => {
   } = useTwapContext();
   const hide = useShouldWrapOrUnwrapOnly();
 
-
   return useMemo(() => {
     if (isMarketOrder || hide) return null;
- 
+
     return {
       text: t.limitPriceMessage,
       url: "https://www.orbs.com/dtwap-and-dlimit-faq/",

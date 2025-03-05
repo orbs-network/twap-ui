@@ -29,11 +29,11 @@ const StyledInput = styled(NumericInput)({
   },
 });
 
-const Resolution = ({ className = "" }: { className?: string }) => {
+const Resolution = () => {
   const { onUnitSelect, fillDelay } = useFillDelayPanel();
   const { onBlur, onFocus } = Panel.usePanelContext();
 
-  return <ResolutionSelect onClose={onBlur} onOpen={onFocus} className={`twap-trade-interval-panel-resolution ${className}`} unit={fillDelay.unit} onChange={onUnitSelect} />;
+  return <ResolutionSelect onClose={onBlur} onOpen={onFocus} unit={fillDelay.unit} onChange={onUnitSelect} />;
 };
 
 export const FillDelayPanel = ({ children, className = "" }: { children: ReactNode; className?: string }) => {

@@ -203,9 +203,9 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       color: colors.text.main,
       fontSize: 14,
       a: {
-        color: "rgb(59 130 246)",
+        color: "white",
         fontWeight: 500,
-        textDecoration: "none",
+        textDecoration: "underline",
         "&:hover": {
           opacity: 0.7,
         },
@@ -488,6 +488,8 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     },
     ".twap-limit-price-panel-percent-reset": {
       gap: 2,
+      display: "flex",
+      alignItems: "stretch",
     },
     ".twap-limit-price-panel-percent-reset-button": {
       borderTopRightRadius: 0,

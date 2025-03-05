@@ -17,7 +17,7 @@ interface Props {
 
 export const SelectMenu = (props: Props) => {
   const [open, setOpen] = useState<boolean>(false);
-  const icon = useTwapContext().uiPreferences.menu?.icon;
+  const { components } = useTwapContext();
 
   const selected = useMemo(() => {
     return props.items.find((it) => it.value === props.selected);
@@ -39,13 +39,17 @@ export const SelectMenu = (props: Props) => {
     }
   }, [open, props.onOpen, props.onClose]);
 
+  if (components.SelectMenu) {
+    return <components.SelectMenu selected={selected} onSelect={props.onSelect} items={props.items} />;
+  }
+
   return (
     <div className="twap-select">
       <ClickAwayListener onClickAway={() => setOpen(false)}>
         <Container className="twap-select-menu">
           <StyledSelected onClick={() => setOpen(!open)} className={`${props.className || ""} twap-select-menu-button`}>
             <StyledText> {selected?.text}</StyledText>
-            {icon || <IoIosArrowDown />}
+            <IoIosArrowDown />
           </StyledSelected>
           {open && (
             <Menu className="twap-select-menu-list">

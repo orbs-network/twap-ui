@@ -34,8 +34,12 @@ const Options: Option[] = [
 const Buttons = ({ className = "" }: { className?: string }) => {
   const { options } = usePanelContext();
   const { onUnitSelect, milliseconds } = useOrderDurationPanel();
-
+  const { components } = useTwapContext();
   const onChange = useCallback((unit: TimeUnit) => onUnitSelect(unit), [onUnitSelect]);
+
+  if (components.DurationSelectButtons) {
+    return <components.DurationSelectButtons onSelect={onChange} selected={milliseconds} />;
+  }
 
   return (
     <div className={`twap-duration-panel-buttons ${className}`}>

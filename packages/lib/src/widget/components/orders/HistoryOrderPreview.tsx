@@ -7,13 +7,15 @@ import { OrderStatus, Order, getOrderFillDelay, getOrderLimitPrice, getOrderExce
 import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import moment from "moment";
 import { OrderDisplay } from "../../../components/OrderDisplay";
-import { StyledColumnFlex, StyledText } from "../../../styles";
+import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
 import { Token } from "../../../types";
 import Button from "../../../components/base/Button";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
 import { useAmountUi } from "../../../hooks/logic-hooks";
 import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
+import { useOrderName } from "../../../hooks/ui-hooks";
+import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 
 const useOrderFillDelay = (order?: Order) => {
   const { config } = useTwapContext();
@@ -22,9 +24,9 @@ const useOrderFillDelay = (order?: Order) => {
 
 export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
-  const { useToken } = useTwapContext();
+  const { useToken, components } = useTwapContext();
 
-  const { selectedOrderId } = useOrderHistoryContext();
+  const { selectedOrderId, closePreview } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
   const srcToken = useToken?.(order?.srcTokenAddress);
   const dstToken = useToken?.(order?.dstTokenAddress);
@@ -38,11 +40,24 @@ export const HistoryOrderPreview = () => {
   };
 
   const fillDelayMillis = useOrderFillDelay(order);
+  const name = useOrderName(order?.isMarketOrder, order?.totalChunks);
 
   if (!order) return null;
 
+  if (components.OrderHistorySelectedOrder) {
+    return <components.OrderHistorySelectedOrder order={order} onBackClick={closePreview} />;
+  }
+
   return (
     <Container className="twap-orders-selected-order">
+      <StyledOrderDetails>
+        <StyledBack onClick={closePreview} className="twap-order-history-header-back-icon">
+          <HiArrowLeft />
+        </StyledBack>
+        <StyledTitle className="twap-order-history-header-title">
+          #{order?.id} {name}
+        </StyledTitle>
+      </StyledOrderDetails>
       <OrderDisplay>
         <OrderDisplay.Tokens>
           <OrderDisplay.SrcToken token={srcToken} />
@@ -61,6 +76,29 @@ export const HistoryOrderPreview = () => {
     </Container>
   );
 };
+
+const StyledTitle = styled(StyledText)({
+  fontSize: 14,
+  span: {
+    opacity: 0.7,
+    fontSize: 13,
+  },
+});
+
+const StyledBack = styled("button")({
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+  svg: {
+    width: 18,
+    height: 18,
+  },
+});
+
+const StyledOrderDetails = styled(StyledRowFlex)({
+  justifyContent: "flex-start",
+  gap: 5,
+});
 
 const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: boolean; onClick: () => void; children: ReactNode; title: string }) => {
   return (

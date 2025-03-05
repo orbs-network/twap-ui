@@ -1,18 +1,10 @@
 import { Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sdk";
-import { Translations, Styles, Widget, UIPreferences, TwapProps, TwapProvider, Components, Types } from "@orbs-network/twap-ui";
+import { Translations, Styles, Widget, TwapProps, TwapProvider, Components, Types } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, useContext, useMemo, ReactNode, useCallback, useState, useEffect } from "react";
 import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledTwapInputs } from "./styles";
-import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { ThemeProvider } from "styled-components";
 import { checksumAddress } from "viem";
-
-const uiPreferences: UIPreferences = {
-  input: { disableThousandSeparator: true, placeholder: "0" },
-  tokenSelect: { icon: <IoIosArrowDown style={{ width: 14 }} /> },
-  menu: { icon: <IoIosArrowDown style={{ width: 14 }} /> },
-  usd: { prefix: "~$ " },
-};
 
 const parseToken = (token?: any) => {
   try {
@@ -81,11 +73,9 @@ const useToken = (addressOrSymbol?: string) => {
 
 const configs = [Configs.DragonSwap];
 const useConfig = () => {
-  const { chainId } = useAdapterContext();
-
   return useMemo(() => {
-    return configs.find((it) => it.chainId === chainId) || configs[0];
-  }, [chainId]);
+    return configs[0];
+  }, []);
 };
 
 const useOnSwitchFromNativeToWrapped = () => {
@@ -98,9 +88,9 @@ const useOnSwitchFromNativeToWrapped = () => {
     const token = props.dexTokens?.find((it) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
 
     if (token) {
-      return props.actions?.onSrcTokenSelect?.(token);
+      return props.callbacks?.onSrcTokenSelect?.(token);
     }
-  }, [props.actions, props.dexTokens, wTokenAddress]);
+  }, [props.callbacks, props.dexTokens, wTokenAddress]);
 };
 
 const useMarketPriceLoading = () => {
@@ -112,8 +102,8 @@ const useMarketPriceLoading = () => {
   }, [context.srcToken?.address, context.dstToken?.address]);
 
   useEffect(() => {
-    setIsLoading(Boolean(context.marketPriceLoading));
-  }, [context.marketPriceLoading]);
+    setIsLoading(Boolean(context.marketReferencePrice?.isLoading));
+  }, [context.marketReferencePrice?.isLoading]);
 
   return isLoading;
 };
@@ -123,7 +113,6 @@ const Content = () => {
   const theme = useMemo(() => (props.isDarkTheme ? darkTheme : lightTheme), [props.isDarkTheme]);
   const { srcToken, dstToken } = useSelectedParsedTokens();
   const config = useConfig();
-  const onSwitchFromNativeToWrapped = useOnSwitchFromNativeToWrapped();
   const marketPriceLoading = useMarketPriceLoading();
   return (
     <ThemeProvider theme={theme}>
@@ -131,25 +120,21 @@ const Content = () => {
         config={config}
         minChunkSizeUsd={props.minChunkSizeUsd}
         translations={translations as Translations}
-        web3Provider={props.web3Provider}
-        walletClientTransport={props.walletClientTransport}
-        account={props.account}
+        provider={props.provider}
         srcToken={srcToken}
         dstToken={dstToken}
         isLimitPanel={props.isLimitPanel}
-        uiPreferences={uiPreferences}
         srcUsd1Token={props.srcUsd1Token || 0}
         dstUsd1Token={props.dstUsd1Token || 0}
-        marketPrice={props.marketPrice}
-        marketPriceLoading={marketPriceLoading}
-        chainId={props.chainId}
+        marketReferencePrice={{
+          value: props.marketReferencePrice?.value,
+          isLoading: marketPriceLoading,
+        }}
         isExactAppoval={props.isExactAppoval}
         components={props.components!}
         useToken={useToken}
-        actions={{
-          ...props.actions!,
-          onSwitchFromNativeToWrapped,
-        }}
+        modals={props.modals!}
+        callbacks={props.callbacks!}
         srcBalance={props.srcBalance}
         dstBalance={props.dstBalance}
       >
@@ -238,7 +223,7 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
       </Styles.StyledRowFlex>
       <Styles.StyledRowFlex className={`twap-token-panel-bottom`}>
         <Widget.TokenPanel.Usd />
-        <Widget.TokenPanel.Balance prefix={<span> Balance: </span>} />
+        <Widget.TokenPanel.Balance />
       </Styles.StyledRowFlex>
     </Widget.TokenPanel>
   );

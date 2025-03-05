@@ -22,7 +22,7 @@ const Widget = (props: TwapProps) => {
   return (
     <TwapProvider {...props}>
       <div className="twap-widget">
-        {props.includeStyles && <GlobalStyles isDarkMode={props.isDarkTheme} />}
+        {props.includeStyles && <GlobalStyles isDarkMode={true} />}
         {props.children}
       </div>
     </TwapProvider>

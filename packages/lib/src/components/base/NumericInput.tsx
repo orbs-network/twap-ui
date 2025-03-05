@@ -42,47 +42,46 @@ function NumericInput({
   const inputValue = value || minAmount || "";
 
   const {
-    uiPreferences: { input },
     components: { Input },
   } = useTwapContext();
 
-  const _placeholder = placeholder || input?.placeholder || "0";
+  const _placeholder = placeholder || "0";
+
+  if (Input) {
+    return <Input isLoading={loading} onChange={onChange} onBlur={onBlur} onFocus={onFocus} value={value?.toString() || ""} />;
+  }
 
   return (
     <StyledContainer className={`twap-input ${className}`} style={style}>
-      {Input ? (
-        <Input isLoading={loading} onChange={onChange} onBlur={onBlur} onFocus={onFocus} value={value?.toString() || ""} />
-      ) : (
-        <StyledFlex style={{ height: "100%", pointerEvents: disabled ? "none" : "auto" }} className={`${loading ? "twap-input-loading" : ""}`}>
-          {loading && <StyledLoader className="twap-input-loader" />}
-          <NumericFormat
-            allowNegative={false}
-            disabled={disabled}
-            decimalScale={decimalScale}
-            onBlur={onBlur}
-            onFocus={onFocus}
-            placeholder={_placeholder}
-            isAllowed={(values) => {
-              const { floatValue = 0 } = values;
-              return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256.toString());
-            }}
-            prefix={prefix ? `${prefix} ` : ""}
-            value={disabled && value === "0" ? "" : inputValue}
-            thousandSeparator={input?.disableThousandSeparator ? undefined : ","}
-            decimalSeparator="."
-            customInput={StyledInput}
-            type="text"
-            min={minAmount}
-            onValueChange={(values, _sourceInfo) => {
-              if (_sourceInfo.source !== "event") {
-                return;
-              }
+      <StyledFlex style={{ height: "100%", pointerEvents: disabled ? "none" : "auto" }} className={`${loading ? "twap-input-loading" : ""}`}>
+        {loading && <StyledLoader className="twap-input-loader" />}
+        <NumericFormat
+          allowNegative={false}
+          disabled={disabled}
+          decimalScale={decimalScale}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          placeholder={_placeholder}
+          isAllowed={(values) => {
+            const { floatValue = 0 } = values;
+            return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256.toString());
+          }}
+          prefix={prefix ? `${prefix} ` : ""}
+          value={disabled && value === "0" ? "" : inputValue}
+          thousandSeparator={","}
+          decimalSeparator="."
+          customInput={StyledInput}
+          type="text"
+          min={minAmount}
+          onValueChange={(values, _sourceInfo) => {
+            if (_sourceInfo.source !== "event") {
+              return;
+            }
 
-              onChange(values.value === "." ? "0." : values.value);
-            }}
-          />
-        </StyledFlex>
-      )}
+            onChange(values.value === "." ? "0." : values.value);
+          }}
+        />
+      </StyledFlex>
     </StyledContainer>
   );
 }

@@ -2,13 +2,13 @@ import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useRefetchB
 import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { TooltipProps, TokensListModalProps, ModalProps, Widget, Token, UIPreferences } from "@orbs-network/twap-ui";
+import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps } from "@orbs-network/twap-ui";
 import { eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
-import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "./context";
 
-const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) => {
+const TokensListModal = ({ isOpen, onSelect, onClose }: TokenSelectModalProps) => {
   return (
     <Popup isOpen={isOpen} onClose={onClose} title="Token Select">
       <TokensList onClick={onSelect} />
@@ -16,7 +16,15 @@ const TokensListModal = ({ isOpen, onSelect, onClose }: TokensListModalProps) =>
   );
 };
 
-const Modal = (props: ModalProps) => {
+const OrderHistoryModal = (props: OrderHistoryModalProps) => {
+  return (
+    <Popup isOpen={props.isOpen} onClose={props.onClose}>
+      {props.children}
+    </Popup>
+  );
+};
+
+const OrderConfirmationModal = (props: OrderConfirmationModalProps) => {
   return (
     <Popup isOpen={props.isOpen} onClose={props.onClose}>
       {props.children}
@@ -45,13 +53,8 @@ const useToken = (addressOrSymbol?: string) => {
   }, [tokens, addressOrSymbol]);
 };
 
-const uiPreferences: UIPreferences = {
-  input: { disableThousandSeparator: true, placeholder: "0.0" },
-  usd: { prefix: "$" },
-};
-
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
-  const { address: account, chainId } = useAccount();
+  const { chainId } = useAccount();
   const { openConnectModal } = useConnectModal();
   const config = useDappContext().config;
   const dappTokens = useTokenList();
@@ -80,13 +83,14 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     setDstToken(srcToken);
   };
 
-  const onSwitchFromNativeToWtoken = useCallback(() => {
+  const onWrapSuccess = useCallback(async () => {
     const wToken = Object.values(networks).find((it) => it.id === chainId)?.wToken.address;
     const token = dappTokens?.find((it: any) => eqIgnoreCase(it.address, wToken || ""));
     if (token) {
       setSrcToken(token);
     }
-  }, [dappTokens, chainId]);
+    await refetchBalances();
+  }, [dappTokens, chainId, refetchBalances]);
 
   const { outAmount: marketPrice, isLoading: marketPriceLoading } = useMarketPrice(srcToken, dstToken);
 
@@ -98,32 +102,29 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   return (
     <Widget
       config={config}
-      walletClientTransport={client.data?.transport}
-      account={account as string}
+      isExactAppoval={true}
+      provider={client.data?.transport}
       srcToken={srcToken}
       dstToken={dstToken}
-      actions={{
-        onSwitchFromNativeToWrapped: onSwitchFromNativeToWtoken,
+      callbacks={{
+        wrap: {
+          onSuccess: onWrapSuccess,
+        },
         onSrcTokenSelect: setSrcToken,
         onDstTokenSelect: setDstToken,
         onConnect: openConnectModal,
-        refetchBalances,
         onSwitchTokens,
       }}
       isLimitPanel={limit}
-      uiPreferences={uiPreferences}
       srcUsd1Token={srcUsd ? Number(srcUsd) : 0}
       dstUsd1Token={dstUsd ? Number(dstUsd) : 0}
       srcBalance={srcBalance}
       dstBalance={dstBalance}
-      marketPrice={marketPrice}
-      marketPriceLoading={marketPriceLoading}
-      chainId={chainId}
-      isExactAppoval={true}
-      components={{ Tooltip, TokensListModal, Modal }}
+      marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
+      components={{ Tooltip }}
+      modals={{ OrderConfirmationModal, OrderHistoryModal, TokenSelectModal: TokensListModal }}
       useToken={useToken}
       includeStyles={true}
-      isDarkTheme={theme === "dark"}
       minChunkSizeUsd={4}
       fee="0.25"
     >

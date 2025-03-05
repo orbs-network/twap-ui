@@ -151,25 +151,23 @@ const useSteps = () => {
 
 export const Main = () => {
   const {
-    uiPreferences,
     translations,
     state: { swapStatus, swapStep, swapData },
+    components,
   } = useTwapContext();
   const steps = useSteps();
 
   const inUsd = useFormatNumber({ value: swapData?.srcAmountusd, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: swapData?.outAmountusd, decimalScale: 2 });
 
-  const usdPrefix = uiPreferences.usd?.prefix || "$";
-  const usdSuffix = uiPreferences.usd?.suffix || "";
   return (
     <>
       <SwapFlow.Main
         fromTitle={translations.from}
         toTitle={translations.to}
         steps={steps}
-        inUsd={`${usdPrefix}${inUsd}${usdSuffix}`}
-        outUsd={`${usdPrefix}${outUsd}${usdSuffix}`}
+        inUsd={components.USD ? <components.USD value={inUsd || ""} isLoading={false} /> : `$${inUsd}`}
+        outUsd={components.USD ? <components.USD value={outUsd || ""} isLoading={false} /> : `$${outUsd}`}
         currentStep={swapStep}
         showSingleStep={true}
         bottomContent={<ChunksText />}

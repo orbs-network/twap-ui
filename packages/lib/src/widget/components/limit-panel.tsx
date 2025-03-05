@@ -7,15 +7,7 @@ import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
 import { NumericInput } from "../../components/base";
 import { TokenSelect } from "./token-select";
 import { useTwapContext } from "../../context";
-import {
-  useLimitPriceDstTokenSelect,
-  useLimitPriceError,
-  useLimitPriceInput,
-  useLimitPriceOnInvert,
-  useLimitPricePercentSelect,
-  useLimitPriceSrcTokenSelect,
-  useShouldHideLimitPricePanel,
-} from "../../hooks/ui-hooks";
+import { useLimitPriceError, useLimitPriceInput, useLimitPriceOnInvert, useLimitPricePercentSelect, useShouldHideLimitPricePanel } from "../../hooks/ui-hooks";
 
 export const LimitPanel = ({ children, className = "" }: { className?: string; children: ReactNode }) => {
   const error = useLimitPriceError();
@@ -63,9 +55,14 @@ const Input = ({ className = "" }: { className?: string }) => {
 
 const PercentSelector = () => {
   const buttons = useLimitPricePercentSelect().buttons;
+  const { components } = useTwapContext();
+
+  if (components.LimitPanelPercentSelect) {
+    return <components.LimitPanelPercentSelect buttons={buttons} />;
+  }
 
   return (
-    <StyledPercentSelector className="twap-limit-price-panel-percent">
+    <div className="twap-limit-price-panel-percent">
       {buttons.map((it) => {
         const className = `twap-limit-price-panel-percent-button twap-select-button  ${
           it.selected ? "twap-limit-price-panel-percent-button-selected twap-select-button-selected" : ""
@@ -88,28 +85,23 @@ const PercentSelector = () => {
           </button>
         );
       })}
-    </StyledPercentSelector>
+    </div>
   );
 };
 
-const StyledPercentSelector = styled("div")({
-  width: "auto",
-  display: "flex",
-  alignItems: "center",
-  ".twap-limit-price-panel-percent-reset": {
-    width: "auto",
-    alignItems: "stretch",
-  },
-});
-
 const DstTokenSelect = ({ className = "" }: { className?: string }) => {
-  const onSelect = useLimitPriceDstTokenSelect();
+  const { isInvertedPrice } = useTwapContext().state;
 
-  return <TokenSelect onCustomSelect={onSelect} className={`twap-limit-price-panel-token-select ${className}`} />;
+  return <TokenSelect isSrcToken={isInvertedPrice} className={`twap-limit-price-panel-token-select ${className}`} />;
 };
 
 const InvertPriceButton = ({ className = "" }: { className?: string }) => {
   const onInvert = useLimitPriceOnInvert();
+  const { components } = useTwapContext();
+
+  if (components.LimitPanelInvertButton) {
+    return <components.LimitPanelInvertButton onClick={onInvert} />;
+  }
 
   return (
     <StyledPriceInvert onClick={onInvert} className={`twap-limit-price-panel-invert-button ${className}`}>
@@ -127,12 +119,12 @@ const Title = () => {
     translations: t,
     state: { isInvertedPrice },
   } = useTwapContext();
-  const onTokenSelect = useLimitPriceSrcTokenSelect();
+
   return (
     <>
       <StyledTitle className="twap-limit-price-panel-title">
         <StyledText className="twap-limit-price-panel-title-text">{t.swapOne}</StyledText>
-        <TokenSelect onCustomSelect={onTokenSelect} isSrcToken={!isInvertedPrice} />
+        <TokenSelect isSrcToken={!isInvertedPrice} />
         <StyledText className="twap-limit-price-panel-title-text">{t.isWorth}</StyledText>
       </StyledTitle>
     </>

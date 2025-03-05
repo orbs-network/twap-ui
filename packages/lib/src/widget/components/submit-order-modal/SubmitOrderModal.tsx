@@ -7,20 +7,16 @@ import { useTwapContext } from "../../../context";
 import { useConfirmationModalPanel } from "../../../hooks/ui-hooks";
 
 const CustomModal = ({ children }: { children: ReactNode }) => {
-  const Modal = useTwapContext().components.Modal;
+  const OrderConfirmationModal = useTwapContext().modals.OrderConfirmationModal;
   const {
     state: { swapStatus, showConfirmation },
   } = useTwapContext();
   const onClose = useConfirmationModalPanel().onClose;
 
-  if (!Modal) {
-    return null;
-  }
-
   return (
-    <Modal isOpen={Boolean(showConfirmation)} onClose={onClose} title={!swapStatus ? "Confirm order" : ""}>
+    <OrderConfirmationModal isOpen={Boolean(showConfirmation)} onClose={onClose} title={!swapStatus ? "Confirm order" : ""}>
       {children}
-    </Modal>
+    </OrderConfirmationModal>
   );
 };
 

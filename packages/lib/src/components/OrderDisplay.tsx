@@ -169,9 +169,6 @@ export function OrderDisplay({ children, className = "" }: { children?: ReactNod
 const TokenDisplay = ({ amount, token, usd, title, content }: { amount?: string; token?: Token; usd?: string; title?: string; content?: ReactNode }) => {
   const _usd = useFormatNumber({ value: usd, decimalScale: 2 });
   const _amount = useFormatNumber({ value: amount });
-  const { uiPreferences } = useTwapContext();
-  const usdPrefix = uiPreferences.usd?.prefix || "$";
-  const usdSuffix = uiPreferences.usd?.suffix || "";
 
   const _token = useMemo(() => {
     return {
@@ -182,7 +179,7 @@ const TokenDisplay = ({ amount, token, usd, title, content }: { amount?: string;
 
   return (
     <div className="twap-order-display-token">
-      <SwapUI.TokenDisplay token={_token} title={title || ""} amount={_amount} usd={!_usd ? "" : `${usdPrefix}${_usd}${usdSuffix}`} />
+      <SwapUI.TokenDisplay token={_token} title={title || ""} amount={_amount} usd={!_usd ? "" : `$${_usd}`} />
       {content}
     </div>
   );
