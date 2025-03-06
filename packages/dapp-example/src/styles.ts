@@ -135,7 +135,7 @@ export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) =
     },
 
     body: {
-      fontFamily: fonts[config.name],
+      fontFamily: fonts[config.name] || "Montserrat",
       lineHeight: "normal",
       "*": {
         fontFamily: "inherit",

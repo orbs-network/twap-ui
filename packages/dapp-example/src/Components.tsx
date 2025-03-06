@@ -5,7 +5,7 @@ import { Config, Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sd
 import { MdClose } from "@react-icons/all-files/md/MdClose";
 import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
 import { BsSun } from "@react-icons/all-files/bs/BsSun";
-import { useDebounce, useToken, useTokenBalance, useTokenList, useTokenUsd } from "./hooks";
+import { useToken, useTokenBalance, useTokenList, useTokenUsd } from "./hooks";
 import { Virtuoso } from "react-virtuoso";
 import { Panels, useDappContext } from "./context";
 import { useSwitchChain } from "wagmi";
@@ -55,15 +55,8 @@ export const ToggleTheme = () => {
   );
 };
 
-export const TokenSearchInput = ({ setValue }: { value: string; setValue: (value: string) => void }) => {
-  const [localValue, setLocalValue] = useState("");
-  const debouncedValue = useDebounce(localValue, 300);
-
-  useEffect(() => {
-    setValue(debouncedValue);
-  }, [debouncedValue]);
-
-  return <input className="token-select-input" placeholder="Insert token name..." value={localValue} onChange={(e: any) => setLocalValue(e.target.value)} />;
+export const TokenSearchInput = ({ setValue, value }: { value: string; setValue: (value: string) => void }) => {
+  return <input className="token-select-input" placeholder="Insert token name..." value={value || ""} onChange={(e: any) => setValue(e.target.value)} />;
 };
 
 const Row = ({ onClick, token }: any) => {
@@ -99,9 +92,12 @@ const Row = ({ onClick, token }: any) => {
 };
 
 const configs = Object.values(Configs);
+console.log({ Configs });
+
 export const ConfigSelector = () => {
   const { setConfig, config } = useDappContext();
   const [isOpen, setIsOpen] = useState(false);
+  const [filter, setFilter] = useState("");
 
   const onClose = useCallback(() => setIsOpen(false), []);
   const onOpen = useCallback(() => setIsOpen(true), []);
@@ -116,6 +112,13 @@ export const ConfigSelector = () => {
     },
     [onClose, setConfig, switchChain],
   );
+
+  const list = useMemo(() => {
+    if (!filter) return configs;
+    return configs.filter((it) => {
+      return it.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0 || it.chainId.toString().indexOf(filter) >= 0;
+    });
+  }, [filter]);
 
   return (
     <>
@@ -137,7 +140,8 @@ export const ConfigSelector = () => {
       </button>
       <Popup title="Partner select" isOpen={isOpen} onClose={onClose} className="config-select-popup">
         <div className="config-select-list">
-          {configs.map((config, index) => {
+          <input value={filter} onChange={(e) => setFilter(e.target.value)} className="token-select-input" placeholder="Search..." />
+          {list.map((config, index) => {
             const chain = getNetwork(config.chainId);
             return (
               <div className="config-select-list-item list-item" onClick={() => onSelect(config as Config)} key={index}>

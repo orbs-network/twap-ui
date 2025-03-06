@@ -186,9 +186,10 @@ export interface Modals {
 
 export type BalanceProps = {
   balance: string;
-  onMax: () => void;
+  onMax?: () => void;
   balanceWei: string;
   isLoading: boolean;
+  isSrcToken?: boolean;
 };
 
 export type USDProps = {

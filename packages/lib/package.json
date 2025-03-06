@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@orbs-network/swap-ui": "^0.0.20",
-    "@orbs-network/twap": "^2.3.3",
     "@orbs-network/twap-sdk": "^3.0.32",
     "@react-icons/all-files": "^4.1.0",
     "@tanstack/react-query": "4.x",

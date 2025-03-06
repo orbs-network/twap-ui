@@ -73,7 +73,7 @@ const TokenPanelBalance = ({ className = "" }: { className?: string }) => {
   }, [isSrcToken, onSrcAmountPercent]);
 
   if (components.Balance) {
-    return <components.Balance isLoading={!balanceWei} balanceWei={balanceWei || ""} balance={balance || ""} onMax={onMax} />;
+    return <components.Balance isSrcToken={isSrcToken} isLoading={!balanceWei} balanceWei={balanceWei || ""} balance={balance || ""} onMax={!isSrcToken ? undefined : onMax} />;
   }
 
   return (

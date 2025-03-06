@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected, SwapSteps, Token } from "..";
 import BN from "bignumber.js";
-import { erc20Abi, maxUint256, TransactionReceipt } from "viem";
+import { erc20Abi, isAddress, maxUint256, TransactionReceipt } from "viem";
 import { useTwapContext } from "../context";
 import {
   useDestTokenAmount,
@@ -49,7 +49,7 @@ export const useApproveToken = () => {
       onError: (error) => {
         callbacks?.approve?.onFailed?.((error as any).message);
       },
-    }
+    },
   );
 };
 
@@ -91,7 +91,7 @@ export const useCancelOrder = () => {
         twapSDK.analytics.onCreateOrderError(error);
         callbacks?.cancelOrder?.onFailed?.(error.message);
       },
-    }
+    },
   );
 };
 
@@ -120,14 +120,14 @@ const useCallbacks = () => {
       });
       await addNewOrder({ Contract_id: orderId, transactionHash: receipt.transactionHash, params, srcToken, dstToken: dstToken! });
     },
-    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, twapSDK, addNewOrder]
+    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, twapSDK, addNewOrder],
   );
   const onError = useCallback(
     (error: any) => {
       callbacks?.createOrder?.onFailed?.((error as any).message);
       twapSDK.analytics.onCreateOrderError(error);
     },
-    [callbacks, twapSDK]
+    [callbacks, twapSDK],
   );
 
   return {
@@ -170,8 +170,8 @@ export const useCreateOrder = () => {
       callbacks.onRequest(params);
 
       const txHash = await walletClient.writeContract({
-        account: account as `0x${string}`,
-        address: twapSDK.config.twapAddress as `0x${string}`,
+        account: account.toLowerCase() as `0x${string}`,
+        address: twapSDK.config.twapAddress.toLowerCase() as `0x${string}`,
         abi: TwapAbi,
         functionName: "ask",
         args: [params],
@@ -196,7 +196,7 @@ export const useCreateOrder = () => {
         console.error(error);
         callbacks.onError(error);
       },
-    }
+    },
   );
 };
 
@@ -243,7 +243,7 @@ export const useWrapToken = () => {
       onError: (error) => {
         callbacks?.wrap?.onFailed?.((error as any).message);
       },
-    }
+    },
   );
 };
 
@@ -294,7 +294,7 @@ export const useUnwrapToken = () => {
       onError: (error) => {
         callbacks.unwrap?.onFailed?.((error as any).message);
       },
-    }
+    },
   );
 };
 
@@ -368,7 +368,7 @@ export const useSubmitOrderCallback = () => {
       return order;
     },
     {
-      onMutate:onRequest,
+      onMutate: onRequest,
       onError(error) {
         if (isTxRejected(error) && !wrappedRef.current) {
           updateState({ swapStep: undefined, swapStatus: undefined });
@@ -376,6 +376,6 @@ export const useSubmitOrderCallback = () => {
           updateState({ swapStatus: SwapStatus.FAILED, swapError: (error as any).message });
         }
       },
-    }
+    },
   );
 };

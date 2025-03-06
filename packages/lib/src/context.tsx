@@ -114,6 +114,7 @@ const Content = (props: TwapProps) => {
   const translations = useTranslations(props.translations);
   const twapSDK = useMemo(() => constructSDK({ config: props.config }), [props.config]);
   const { walletClient, account, publicClient } = useInitiateWallet(props);
+  console.log({ account });
 
   return (
     <TwapContext.Provider

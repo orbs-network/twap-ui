@@ -1,7 +1,7 @@
 import { AddressPadding, Token } from "./types";
 import BN from "bignumber.js";
 import { getNetwork, isNativeAddress, networks, TwapAbi } from "@orbs-network/twap-sdk";
-import { decodeEventLog, Hex, TransactionReceipt } from "viem";
+import { decodeEventLog, TransactionReceipt } from "viem";
 
 export const removeCommas = (numStr: string): string => {
   return numStr.replace(/,/g, "");

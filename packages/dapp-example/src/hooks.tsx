@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Token } from "@orbs-network/twap-ui";
 import { useMediaQuery } from "@mui/material";
 import BN from "bignumber.js";
-import { amountBN, amountUi, eqIgnoreCase, erc20abi, getNetwork, isNativeAddress, zeroAddress } from "@orbs-network/twap-sdk";
+import { amountBN, amountUi, eqIgnoreCase, erc20abi, getNetwork, isNativeAddress, networks, zeroAddress } from "@orbs-network/twap-sdk";
 import _ from "lodash";
 import { useAccount, usePublicClient, useReadContracts } from "wagmi";
 import { api } from "./api";
@@ -219,6 +219,7 @@ const chainIdToName: { [key: number]: string } = {
   1329: "sei",
   48900: "zircuit",
   14: "flare",
+  [networks.sonic.id]: "sonic",
 };
 
 export async function fetchLLMAPrice(token: string, chainId: number | string) {

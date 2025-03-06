@@ -25,6 +25,7 @@ const coingekoChainToName = {
   [networks.eth.id]: "ethereum",
   [networks.bsc.id]: "binance-smart-chain",
   [networks.linea.id]: "linea",
+  [networks.sonic.id]: "sonic",
 };
 
 const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {
