@@ -41,12 +41,7 @@ const Input = ({ className = "" }: { className?: string }) => {
 export const _Label = ({ className = "" }: { className?: string }) => {
   const { label, tooltip } = useTradesAmountPanel();
 
-  return (
-    <Label className={`twap-trades-amount-panel-label ${className}`}>
-      <Label.Text text={label} />
-      <Label.Info text={tooltip} />
-    </Label>
-  );
+  return <Label className={`twap-trades-amount-panel-label ${className}`} text={label} tooltip={tooltip} />;
 };
 
 const Main = ({ className = "" }: { className?: string }) => {

@@ -246,6 +246,11 @@ export type DurationSelectButtonsProps = {
   selected: number;
 };
 
+export type LabelProps = {
+  text: ReactNode;
+  tooltip?: string;
+};
+
 interface Components {
   // shared
   Tooltip?: FC<TooltipProps>;
@@ -266,6 +271,8 @@ interface Components {
   OrderHistoryListOrder?: FC<OrderHistoryListOrderProps>;
   OrderHistorySelectedOrder?: FC<OrderHistorySelectedOrderProps>;
   DurationSelectButtons?: FC<DurationSelectButtonsProps>;
+
+  Label?: FC<LabelProps>;
 }
 
 interface CreateOrderCallbackArgs {

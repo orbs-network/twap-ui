@@ -59,12 +59,7 @@ const WarningComponent = () => {
 
 const TradeIntervalLabel = () => {
   const { translations } = useTwapContext();
-  return (
-    <Label className="twap-trade-interval-panel-label">
-      <Label.Text text={translations.tradeInterval} />
-      <Label.Info text={translations.tradeIntervalTootlip} />
-    </Label>
-  );
+  return <Label className="twap-trade-interval-panel-label" tooltip={translations.tradeIntervalTootlip} text={translations.tradeInterval} />;
 };
 
 const Main = ({ className = "" }: { className?: string }) => {

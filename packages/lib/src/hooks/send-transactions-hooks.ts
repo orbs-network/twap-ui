@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected, SwapSteps, Token } from "..";
 import BN from "bignumber.js";
-import { erc20Abi, isAddress, maxUint256, TransactionReceipt } from "viem";
+import { erc20Abi, maxUint256, TransactionReceipt } from "viem";
 import { useTwapContext } from "../context";
 import {
   useDestTokenAmount,

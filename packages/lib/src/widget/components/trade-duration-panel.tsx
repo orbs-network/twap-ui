@@ -72,12 +72,7 @@ export const DurationPanel = ({ children, className = "", options = Options }: {
 
 const DurationLabel = () => {
   const translations = useTwapContext().translations;
-  return (
-    <Label>
-      <Label.Text text={translations.expiry} />
-      <Label.Info text={translations.maxDurationTooltip} />
-    </Label>
-  );
+  return <Label text={translations.expiry} tooltip={translations.maxDurationTooltip} />;
 };
 
 const Main = ({ className = "" }: { className?: string }) => {

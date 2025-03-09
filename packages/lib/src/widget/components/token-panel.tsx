@@ -163,11 +163,7 @@ const TokenPanelLabel = () => {
   const { translations } = useTwapContext();
   const { isSrcToken } = useTokenPanelContext();
 
-  return (
-    <Label className="twap-token-panel-label">
-      <StyledText>{isSrcToken ? translations.from : translations.to}</StyledText>
-    </Label>
-  );
+  return <Label className="twap-token-panel-label" text={isSrcToken ? translations.from : translations.to} />;
 };
 
 TokenPanel.Balance = TokenPanelBalance;

@@ -1,4 +1,4 @@
-import { groupOrdersByStatus, RawOrder } from "@orbs-network/twap-sdk";
+import { groupOrdersByStatus, LensAbi, Order, RawOrder } from "@orbs-network/twap-sdk";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
@@ -42,7 +42,7 @@ export const useAddNewOrder = () => {
         transactionHash,
         ask_dstMinAmount: params[5],
         exchange: config.exchangeAddress,
-        timestamp: moment().utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
+        timestamp: moment().utc().valueOf(),
         ask_deadline: Number(params[6]),
         dex: "",
         ask_fillDelay: Number(params[8]),
@@ -58,16 +58,66 @@ export const useAddNewOrder = () => {
 };
 
 export const useAccountOrders = () => {
-  const { config, isWrongChain, account, twapSDK } = useTwapContext();
+  const { config, isWrongChain, account, twapSDK, publicClient } = useTwapContext();
   const queryKey = useKey();
   const enabled = Boolean(config && account && !isWrongChain);
-  const query = useQuery(queryKey, async ({ signal }) => twapSDK.getUserOrders({ account: account!, signal }), {
-    enabled,
-    refetchInterval: REFETCH_ORDER_HISTORY,
-    refetchOnWindowFocus: true,
-    retry: 3,
-    staleTime: Infinity,
-  });
+  const query = useQuery(
+    queryKey,
+    async ({ signal }) => {
+      if (!account) return [];
+      try {
+        return await twapSDK.getUserOrders({ account: account!, signal });
+      } catch (error) {
+        if ((error as any).message === "no endpoint found") {
+          // fetch on-chain orders
+          const lensOrders = (await publicClient?.readContract({
+            address: twapSDK.config.lensAddress as `0x${string}`,
+            functionName: "makerOrders",
+            args: [account],
+            abi: LensAbi,
+          })) as any[];
+          const orders: Order[] = lensOrders.map((it: any): Order => {
+            const rawOrder: RawOrder = {
+              Contract_id: Number(it.id),
+              srcTokenSymbol: "",
+              dollarValueIn: "",
+              blockNumber: 0,
+              maker: it.maker,
+              dstTokenSymbol: "",
+              ask_fillDelay: it.ask.fillDelay,
+              exchange: twapSDK.config.exchangeAddress,
+              dex: "",
+              ask_deadline: it.ask.deadline,
+              timestamp: it.time * 1000,
+              ask_srcAmount: it.ask.srcAmount,
+              ask_dstMinAmount: it.ask.dstMinAmount.toString(),
+              ask_srcBidAmount: it.ask.srcBidAmount.toString(),
+              transactionHash: "",
+              ask_srcToken: it.ask.srcToken,
+              ask_dstToken: it.ask.dstToken,
+            };
+            const status = () => {
+              if (it.status === 1) return "cancelled";
+              if (it.status === 2) return "completed";
+              if (it.status === 3) return 'expired'
+              return "pending";
+            }
+            const order = new Order(rawOrder, [], status());            
+            return order;
+          });
+
+          return orders.sort((a, b) => b.createdAt - a.createdAt);
+        }
+      }
+    },
+    {
+      enabled,
+      refetchInterval: REFETCH_ORDER_HISTORY,
+      refetchOnWindowFocus: true,
+      retry: 3,
+      staleTime: Infinity,
+    }
+  );
 
   return useMemo(() => {
     return {
@@ -86,7 +136,7 @@ export const useAddCancelledOrder = () => {
       twapSDK.addCancelledOrder(account, orderId);
       await refetch();
     },
-    [account, twapSDK, refetch],
+    [account, twapSDK, refetch]
   );
 };
 

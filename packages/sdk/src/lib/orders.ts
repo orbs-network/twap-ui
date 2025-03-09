@@ -13,9 +13,9 @@ const getOrderProgress = (srcFilled?: string, srcAmountIn?: string) => {
   return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
 };
 
-const getOrderStatus = (progress = 0, rawOrder: any, status?: any) => {
+const getOrderStatus = (rawOrder: any, status?: any) => {
   status = status?.toLowerCase();
-  if (progress === 100 || status === "completed") {
+  if (status === "completed") {
     return OrderStatus.Completed;
   }
   if (status === "canceled") {
@@ -234,7 +234,7 @@ export type RawOrder = {
   exchange: string;
   dex: string;
   ask_deadline: number;
-  timestamp: string;
+  timestamp: number;
   ask_srcAmount: string;
   ask_dstMinAmount: string;
   ask_srcBidAmount: string;
@@ -273,13 +273,15 @@ export class Order {
   dexFee: string;
 
   constructor(rawOrder: RawOrder, fills: any, status: any) {
+    
+    this.status = getOrderStatus(rawOrder, status)
     const isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
     this.srcTokenSymbol = rawOrder.srcTokenSymbol;
     this.dollarValueIn = rawOrder.dollarValueIn;
     this.blockNumber = rawOrder.blockNumber;
     this.maker = rawOrder.maker;
     this.dstTokenSymbol = rawOrder.dstTokenSymbol;
-    const progress = getOrderProgress(fills?.srcAmountIn, rawOrder.ask_srcAmount);
+    const progress = this.status === OrderStatus.Completed ? 100 :  getOrderProgress(fills?.srcAmountIn, rawOrder.ask_srcAmount);
     this.id = Number(rawOrder.Contract_id);
     this.exchange = rawOrder.exchange;
     this.ask_fillDelay = rawOrder.ask_fillDelay;
@@ -295,7 +297,6 @@ export class Order {
     this.srcFilledAmountUsd = fills?.dollarValueIn || "0";
     this.dstFilledAmountUsd = fills?.dollarValueOut || "0";
     this.progress = progress;
-    this.status = getOrderStatus(progress, rawOrder, status);
     this.srcTokenAddress = rawOrder.ask_srcToken;
     this.dstTokenAddress = rawOrder.ask_dstToken;
     this.totalChunks = new BN(rawOrder.ask_srcAmount || 0)
@@ -342,7 +343,9 @@ export const getOrders = async ({
   config: Config;
 }): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(chainId);
-  if (!endpoint) return [];
+  if (!endpoint){
+    throw new Error("no endpoint found");
+  }
   let rawOrders: RawOrder[] = [];
   if (typeof page === "number") {
     rawOrders = await getCreatedOrders({ endpoint, signal, account, config, page, limit });
@@ -365,7 +368,7 @@ export const getOrders = async ({
   }) as Order[];
 
   const { cancelledOrderIds, newOrders } = orderStore.getOrders(account, config.exchangeAddress);
-
+  
   if (newOrders.length) {
     newOrders.forEach((newOrder) => {
       if (!ordersMap.has(Number(newOrder.Contract_id))) {

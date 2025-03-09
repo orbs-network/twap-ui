@@ -104,31 +104,10 @@ const TradeInterval = ({ fillDelayMillis, chunks }: { fillDelayMillis?: number; 
 
 const StyledDetails = styled(StyledColumnFlex)({});
 
-const DetailRow = ({
-  title,
-  tooltip,
-  children,
-  className = "",
-  startLogo,
-}: {
-  title: ReactNode;
-  tooltip?: string;
-  children?: React.ReactNode;
-  className?: string;
-  startLogo?: ReactNode;
-}) => {
+const DetailRow = ({ title, tooltip, children, className = "" }: { title: React.ReactNode; tooltip?: string; children?: React.ReactNode; className?: string }) => {
   return (
     <StyledDetailRow className={`${className} twap-order-display-details-row`}>
-      <StyledLabel>
-        <Label.Text
-          text={
-            <>
-              {startLogo} {title}
-            </>
-          }
-        />
-        {tooltip && <Label.Info text={tooltip} />}
-      </StyledLabel>
+      <StyledLabel text={title} tooltip={tooltip} />
       <StyledDetailRowChildren className="twap-order-display-details-row-right">{children}</StyledDetailRowChildren>
     </StyledDetailRow>
   );

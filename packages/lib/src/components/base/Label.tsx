@@ -1,38 +1,36 @@
-import React, { ReactNode } from "react";
 import styled from "styled-components";
 import { AiOutlineQuestionCircle } from "@react-icons/all-files/ai/AiOutlineQuestionCircle";
 import { StyledRowFlex, StyledText } from "../../styles";
 import { Tooltip } from "./Tooltip";
+import { useTwapContext } from "../../context";
+import { ReactNode } from "react";
 
 interface Props {
-  children: string | number | ReactNode;
+  tooltip?: string;
   className?: string;
+  text: ReactNode;
 }
 
-export function Label({ children, className = "" }: Props) {
-  return <StyledContainer className={`twap-label ${className}`}>{children}</StyledContainer>;
+export function Label({ tooltip, className = "", text }: Props) {
+  const { components } = useTwapContext();
+
+  if (components.Label) {
+    return <components.Label text={text || ""} tooltip={tooltip} />;
+  }
+
+  return (
+    <StyledContainer className={`twap-label ${className}`}>
+      <StyledLabel className="twap-label-text">{text}</StyledLabel>
+      {tooltip && (
+        <Tooltip tooltipText={tooltip}>
+          <StyledInfo>
+            <AiOutlineQuestionCircle />
+          </StyledInfo>
+        </Tooltip>
+      )}
+    </StyledContainer>
+  );
 }
-
-const Text = ({ text, fontSize }: { text: ReactNode; fontSize?: string }) => {
-  return (
-    <StyledLabel className="twap-label-text" style={{ fontSize }}>
-      {text}
-    </StyledLabel>
-  );
-};
-
-const Info = ({ text }: { text: string }) => {
-  const InfoIcon = <AiOutlineQuestionCircle />;
-
-  return (
-    <Tooltip tooltipText={text}>
-      <StyledInfo> {InfoIcon}</StyledInfo>
-    </Tooltip>
-  );
-};
-
-Label.Text = Text;
-Label.Info = Info;
 
 const StyledInfo = styled(StyledRowFlex)({
   position: "relative",
