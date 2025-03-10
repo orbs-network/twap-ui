@@ -7,7 +7,7 @@ import { useTwapContext } from "../../context";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
 import { useTradesAmountPanel } from "../../hooks/ui-hooks";
 
-export const TradesAmountPanel = ({ className = "", children }: { className?: string; children: ReactNode }) => {
+export const TradesAmountPanel = ({ className = "", children }: { className?: string; children?: ReactNode }) => {
   const { error } = useTradesAmountPanel();
 
   const hide = useShouldWrapOrUnwrapOnly();
@@ -16,7 +16,7 @@ export const TradesAmountPanel = ({ className = "", children }: { className?: st
 
   return (
     <Panel error={!!error} className={`${className} twap-trades-amount-panel`}>
-      {children}
+      {children || <Main />}
     </Panel>
   );
 };
@@ -53,7 +53,7 @@ const Main = ({ className = "" }: { className?: string }) => {
       </Panel.Header>
       <StyledRowFlex>
         <Input />
-        <StyledText className="twap-trades-amount-panel-text">{t.orders}</StyledText>
+        <StyledText className="twap-trades-amount-panel-text">{t.trades}</StyledText>
       </StyledRowFlex>
     </StyledMain>
   );
@@ -63,4 +63,3 @@ const StyledMain = styled("div")({});
 
 TradesAmountPanel.Input = Input;
 TradesAmountPanel.Label = _Label;
-TradesAmountPanel.Main = Main;

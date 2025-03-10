@@ -1,10 +1,9 @@
 import React, { createContext, ReactNode, useCallback, useContext } from "react";
 import { Label, NumericInput } from "../../components/base";
-import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
+import { StyledText } from "../../styles";
 import { Panel } from "../../components/Panel";
 import { TokenSelect } from "./token-select";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
-import styled from "styled-components";
 import { useTwapContext } from "../../context";
 import { useBalanceError, useOnSrcInputPercentClick } from "../../hooks/logic-hooks";
 import { useToken, useTokenBalance, useTokenInput, useTokenUSD } from "../../hooks/ui-hooks";
@@ -48,12 +47,12 @@ const TokenInput = ({ prefix = "", className = "", placeholder = "" }: { prefix?
 const Context = createContext({} as { isSrcToken: boolean });
 const useTokenPanelContext = () => useContext(Context);
 
-export const TokenPanel = ({ isSrcToken, children, className = "" }: { isSrcToken: boolean; children: ReactNode; className?: string }) => {
+export const TokenPanel = ({ isSrcToken, children, className = "" }: { isSrcToken: boolean; children?: ReactNode; className?: string }) => {
   const balanceError = useBalanceError();
   const error = isSrcToken ? Boolean(balanceError) : false;
   return (
     <Panel className={`${className} twap-token-panel`} error={error}>
-      <Context.Provider value={{ isSrcToken }}>{children}</Context.Provider>
+      <Context.Provider value={{ isSrcToken }}>{children || <Main />}</Context.Provider>
     </Panel>
   );
 };
@@ -143,19 +142,22 @@ const BalanceAmountSelect = ({
   );
 };
 
-const Main = ({ className = "" }: { className?: string }) => {
+const Main = () => {
   return (
-    <StyledMain className={className}>
-      <BalanceAmountSelect />
-      <StyledMainTop>
+    <div className="twap-token-panel-main">
+      <div className="twap-token-panel-main-top">
+        <TokenPanelLabel />
+        <BalanceAmountSelect />
+      </div>
+      <div className="twap-token-panel-main-middle">
         <TokenInput />
         <PanelTokenSelect />
-      </StyledMainTop>
-      <StyledMainBottom>
+      </div>
+      <div className="twap-token-panel-main-bottom">
         <TokenPanelUsd />
         <TokenPanelBalance />
-      </StyledMainBottom>
-    </StyledMain>
+      </div>
+    </div>
   );
 };
 
@@ -171,14 +173,4 @@ TokenPanel.Usd = TokenPanelUsd;
 TokenPanel.Select = PanelTokenSelect;
 TokenPanel.Input = TokenInput;
 TokenPanel.BalanceSelect = BalanceAmountSelect;
-TokenPanel.Main = Main;
 TokenPanel.Label = TokenPanelLabel;
-
-const StyledMainTop = styled(StyledRowFlex)({
-  gap: 10,
-});
-const StyledMainBottom = styled(StyledRowFlex)({
-  justifyContent: "space-between",
-});
-
-const StyledMain = styled(StyledColumnFlex)({});

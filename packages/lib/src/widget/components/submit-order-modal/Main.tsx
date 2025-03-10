@@ -2,10 +2,9 @@ import { styled } from "styled-components";
 import BN from "bignumber.js";
 import React, { useCallback, useMemo } from "react";
 import { SwapFlow, SwapStep } from "@orbs-network/swap-ui";
-import { fillDelayText, isNativeAddress } from "@orbs-network/twap-sdk";
+import { isNativeAddress } from "@orbs-network/twap-sdk";
 import { Switch, Button, Message } from "../../../components/base";
 import { OrderDisplay } from "../../../components/OrderDisplay";
-import { StyledText } from "../../../styles";
 import { SwapSteps } from "../../../types";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import { IoIosCheckmarkCircleOutline } from "@react-icons/all-files/io/IoIosCheckmarkCircleOutline";
@@ -145,6 +144,11 @@ const useSteps = () => {
   }, [srcToken, swapSteps, wTokenSymbol, orderName, isNativeIn]);
 };
 
+const FillDelaySummary = () => {
+  const { chunks, fillDelayMillis } = useConfirmationModalPanel().orderDetails;
+  return <OrderDisplay.FillDelaySummary chunks={chunks} fillDelayMillis={fillDelayMillis} />;
+};
+
 export const Main = () => {
   const { translations, components } = useTwapContext();
   const steps = useSteps();
@@ -163,34 +167,21 @@ export const Main = () => {
         outUsd={components.USD ? <components.USD value={dstAmountusd || ""} isLoading={false} /> : `$${outUsd}`}
         currentStep={swapStep}
         showSingleStep={true}
-        bottomContent={<ChunksText />}
+        bottomContent={<FillDelaySummary />}
       />
       {!swapStatus && (
-        <div className="twap-order-modal-bottom">
+        <StyledBottom className="twap-create-order-bottom">
           <Details />
           <AcceptDisclaimer />
           <SubmitButton />
-        </div>
+        </StyledBottom>
       )}
     </>
   );
 };
 
-const ChunksText = () => {
-  const { orderDetails } = useConfirmationModalPanel();
-
-  if (orderDetails.chunks <= 1) return null;
-
-  return (
-    <StyledChunksText className="twap-small-text">
-      Every {fillDelayText(orderDetails.fillDelayMillis).toLowerCase()} Over {orderDetails.chunks} Orders
-    </StyledChunksText>
-  );
-};
-
-const StyledChunksText = styled(StyledText)({
-  marginTop: 10,
-  fontSize: 14,
+const StyledBottom = styled("div")({
+  width: "100%",
 });
 
 const Details = () => {
@@ -204,7 +195,7 @@ const Details = () => {
   const { fillDelayMillis, dstMinAmountOut, deadline, chunks, srcChunkAmount, fee } = useConfirmationModalPanel().orderDetails;
   const feeAmountF = useFormatNumber({ value: fee.amount, decimalScale: 2 });
   return (
-    <OrderDisplay.DetailsContainer>
+    <div className="twap-create-order-details">
       <Price />
       {isLimitPanel ? (
         <>
@@ -222,8 +213,8 @@ const Details = () => {
           <OrderDisplay.Recipient />
         </>
       )}
-      {fee && <OrderDisplay.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>}
-    </OrderDisplay.DetailsContainer>
+      {fee.percent && <OrderDisplay.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>}
+    </div>
   );
 };
 
@@ -231,7 +222,7 @@ export const SubmitButton = () => {
   const { text, onSubmit, isLoading, disabled } = useConfirmationModalButton();
 
   return (
-    <Button className="twap-order-modal-submit-btn twap-submit-button" onClick={onSubmit} loading={isLoading} disabled={disabled}>
+    <Button className="twap-create-order-submit-btn twap-submit-button" onClick={onSubmit} loading={isLoading} disabled={disabled}>
       {text}
     </Button>
   );

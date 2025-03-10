@@ -9,130 +9,87 @@ export type TransactionReceipt = _TransactionReceipt;
 export interface Translations {
   minReceived: string;
   confirmationDeadlineTooltip: string;
-  confirmationtradeIntervalTooltip: string;
   confirmationTradeSizeTooltip: string;
   confirmationTotalTradesTooltip: string;
-  confirmationMinDstAmountTootipMarket: string;
-  confirmationMinDstAmountTootipLimit: string;
-  confirmationOrderType: string;
-  confirmationMarketOrderTooltip: string;
+  confirmationMinDstAmountTooltipLimit: string;
   marketPriceTooltip: string;
   limitPriceTooltip: string;
   tradeSizeTooltip: string;
   maxDurationTooltip: string;
   tradeIntervalTootlip: string;
-  customIntervalTooltip: string;
   totalTradesTooltip: string;
   connect: string;
-  selectTokens: string;
-  acceptDisclaimer: string;
-  outputWillBeSentTo: string;
-  disclaimer1: string;
-  disclaimer2: string;
-  disclaimer3: string;
-  disclaimer4: string;
-  disclaimer5: string;
-  disclaimer6: string;
-  disclaimer7: string;
   link: string;
   days: string;
   hours: string;
   minutes: string;
+  noLiquidity: string;
   seconds: string;
   switchNetwork: string;
-  wrap: string;
-  approve: string;
   placeOrder: string;
+  excecutionSummary: string;
+  orderInfo: string;
   confirmOrder: string;
-  partialFillWarning: string;
   enterAmount: string;
   insufficientFunds: string;
-  enterTradeSize: string;
-  enterTradeInterval: string;
-  tradeSizeMustBeEqual: string;
-  tradeSize: string;
-  tradeInterval: string;
-  totalTrades: string;
   deadline: string;
+  noOrders: string;
+  order: string;
   filled: string;
   remaining: string;
+  tradeInterval: string;
   cancelOrder: string;
   marketOrder: string;
   limitOrder: string;
   limitPrice: string;
   marketPrice: string;
-  max: string;
-  currentMarketPrice: string;
   from: string;
   to: string;
   none: string;
   orders: string;
   Open: string;
   Completed: string;
-  submitOrder: string;
   Expired: string;
   Canceled: string;
-  noOrdersFound: string;
   confirmTx: string;
   expiration: string;
-  orderType: string;
   minReceivedPerTrade: string;
-  confirmationLimitPriceTooltip: string;
-  ordersTooltip: string;
-  noOrdersFound1: string;
   poweredBy: string;
-  insertLimitPriceWarning: string;
-  unwrap: string;
-  balance: string;
-  selectToken: string;
-  sliderMinSizeTooltip: string;
-  loading: string;
-  progress: string;
-  estimated: string;
-  notify: string;
-  prtialFillWarning: string;
-  prtialFillWarningTooltip: string;
-  fillDelayWarning: string;
-  fillDelayWarningTooltip: string;
-  invalid: string;
-  viewOrders: string;
-  view: string;
-  estimate: string;
-  noLiquidity: string;
+  minFillDelayError: string;
+  maxFillDelayError: string;
   outAmountLoading: string;
-  feeOnTranferWarning: string;
-  maxChunksWarning: string;
-  minChunksWarning: string;
+  enterLimitPrice: string;
+  maxChunksError: string;
+  minChunksError: string;
+  minTradeSizeError: string;
   weeks: string;
-  price: string;
-  minTradeIntervalWarning: string;
+  trades: string;
   recipient: string;
   accept: string;
   disclaimer: string;
   marketOrderWarning: string;
-  limitPriceWarningTitle: string;
-  limitPriceWarningTitleInverted: string;
-  limitPriceWarningSubtitle: string;
-  limitPriceWarningSubtileInverted: string;
   limitPriceMessage: string;
-  maxTradeIntervalWarning: string;
   learnMore: string;
   swapOne: string;
   isWorth: string;
-  placingOrder: string;
   market: string;
   limit: string;
   txHash: string;
-  maxDurationWarning: string;
-  minDurationWarning: string;
+  maxDurationError: string;
+  minDurationError: string;
   expiry: string;
   individualTradeSize: string;
   numberOfTrades: string;
   AverageExecutionPrice: string;
   twapMarket: string;
-  limitPriceTooltipLimitPanel: string;
   twapLimit: string;
   twapMarketOrder: string;
+  every: string;
+  over: string;
+  selectToken: string;
+  wrap: string;
+  unwrap: string;
+  balance: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";
@@ -251,6 +208,21 @@ export type LabelProps = {
   tooltip?: string;
 };
 
+export type SwitchTokensProps = {
+  onClick: () => void;
+};
+
+export type TokenLogoProps = {
+  token?: Token;
+  size?: number;
+  className?: string;
+};
+
+export type OrdersButtonProps = {
+  onClick: () => void;
+  openOrdersCount: number;
+};
+
 interface Components {
   // shared
   Tooltip?: FC<TooltipProps>;
@@ -273,6 +245,9 @@ interface Components {
   DurationSelectButtons?: FC<DurationSelectButtonsProps>;
 
   Label?: FC<LabelProps>;
+  SwitchTokens?: FC<SwitchTokensProps>;
+  TokenLogo?: FC<TokenLogoProps>;
+  OrdersButton?: FC<OrdersButtonProps>;
 }
 
 interface CreateOrderCallbackArgs {
@@ -344,12 +319,12 @@ export interface TwapProps {
   srcBalance?: string;
   dstBalance?: string;
   isExactAppoval?: boolean;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   components: Components;
   modals: Modals;
   askDataParams?: any[];
   marketReferencePrice: { value?: string; isLoading?: boolean };
-  minChunkSizeUsd?: number;
+  customMinChunkSizeUsd?: number;
   useToken?: (value?: string) => Token | undefined;
   includeStyles?: boolean;
   callbacks: Callbacks;
@@ -383,35 +358,6 @@ export type Token = {
   decimals: number;
   logoUrl: string;
 };
-
-export interface StylesConfig {
-  primaryColor?: string;
-  textColor: string;
-  iconsColor: string;
-  tooltipBackground: string;
-  tooltipTextColor: string;
-  skeletonLoaderBackground?: string;
-  spinnerColor: string;
-  containerBackground: string;
-  cardBackground: string;
-  wrapperBackground?: string;
-  iconBackground?: string;
-  borderColor?: string;
-  progressBarColor: string;
-  progressBarTrackColor: string;
-  orderHistorySelectedTabBackground: string;
-  orderHistorySelectedTabColor: string;
-  orderHistoryTabColor: string;
-  buttonBackground: string;
-  buttonColor: string;
-  disabledButtonBackground: string;
-  disabledButtonColor: string;
-  selectTokenBackground: string;
-  selectTokenTextColor: string;
-  selectedTokenBackground: string;
-  selectedTokenTextColor: string;
-  selectedTokenBorderColor?: string;
-}
 
 export interface TooltipProps {
   children: ReactNode;

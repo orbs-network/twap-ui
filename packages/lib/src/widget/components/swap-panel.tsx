@@ -1,4 +1,3 @@
-import React from "react";
 import { TokenPanel } from "./token-panel";
 import { SwitchTokens } from "./switch-tokens";
 import { LimitPanel } from "./limit-panel";
@@ -14,43 +13,25 @@ import { SubmitOrderModal } from "./submit-order-modal/SubmitOrderModal";
 import { LimitPriceMessage } from "./limit-price-message";
 
 export function SwapPanel() {
-  const {
-    isLimitPanel,
-    state: { isMarketOrder },
-  } = useTwapContext();
+  const { isLimitPanel } = useTwapContext();
   return (
     <div className="twap-widget-swap-panel">
-      <PriceSwitch />
-      {!isMarketOrder && (
-        <LimitPanel>
-          <LimitPanel.Main />
-        </LimitPanel>
-      )}
-      <div className="twap-widget-swap-panel-top">
-        <TokenPanel isSrcToken={true}>
-          <TokenPanel.Main />
-        </TokenPanel>
+      <div className="twap-widget-swap-panel-form">
+        <PriceSwitch />
+        <LimitPanel />
+        <TokenPanel isSrcToken={true} />
         <SwitchTokens />
-        <TokenPanel isSrcToken={false}>
-          <TokenPanel.Main />
-        </TokenPanel>
+        <TokenPanel isSrcToken={false} />
+        {isLimitPanel ? (
+          <DurationPanel />
+        ) : (
+          <div className="twap-inputs">
+            <FillDelayPanel />
+            <TradesAmountPanel />
+          </div>
+        )}
+        <ShowConfirmationButton />
       </div>
-      {isLimitPanel ? (
-        <DurationPanel>
-          <DurationPanel.Main />
-        </DurationPanel>
-      ) : (
-        <div className="twap-inputs">
-          <FillDelayPanel>
-            <FillDelayPanel.Main />
-          </FillDelayPanel>
-          <TradesAmountPanel>
-            <TradesAmountPanel.Main />
-          </TradesAmountPanel>
-        </div>
-      )}
-
-      <ShowConfirmationButton />
       <PoweredbyOrbs />
       <Orders />
       <LimitPriceMessage />

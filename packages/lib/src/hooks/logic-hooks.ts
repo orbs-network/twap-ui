@@ -1,7 +1,7 @@
 import { amountBN, amountUi, eqIgnoreCase, getNetwork, isNativeAddress, networks, TimeDuration } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
 import { useTwapContext } from "../context";
-import { getMinNativeBalance, removeCommas } from "../utils";
+import { getMinNativeBalance, millisToDays, millisToMinutes, removeCommas } from "../utils";
 import BN from "bignumber.js";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { erc20Abi } from "viem";
@@ -16,7 +16,7 @@ const addressMap = {
 };
 
 export const useMinChunkSizeUsd = () => {
-  const { config, publicClient, minChunkSizeUsd } = useTwapContext();
+  const { config, publicClient, customMinChunkSizeUsd } = useTwapContext();
   const address = addressMap[config.chainId] as `0x${string}`;
   const query = useQuery({
     queryKey: ["useMinChunkSizeUsd", config.chainId],
@@ -42,12 +42,12 @@ export const useMinChunkSizeUsd = () => {
         .toNumber();
       return minChunkSizeUsd;
     },
-    enabled: !!publicClient && !!config && !minChunkSizeUsd,
+    enabled: !!publicClient && !!config,
     staleTime: 60_000,
   });
 
-  if (minChunkSizeUsd) {
-    return minChunkSizeUsd;
+  if (customMinChunkSizeUsd) {
+    return customMinChunkSizeUsd;
   }
 
   if (!address) {
@@ -71,11 +71,13 @@ export const useSrcAmount = () => {
   const {
     state: { typedSrcAmount },
     srcToken,
+    translations: t,
   } = useTwapContext();
 
   return {
     amountWei: useAmountBN(srcToken?.decimals, typedSrcAmount),
     amountUI: typedSrcAmount,
+    error: BN(typedSrcAmount || 0).isZero() ? t.enterAmount : undefined,
   };
 };
 
@@ -97,20 +99,18 @@ export const useHasAllowanceCallback = () => {
 };
 
 export const useLimitPrice = () => {
-  const { state, dstToken, marketPrice, updateState, twapSDK } = useTwapContext();
+  const { state, dstToken, marketPrice, updateState, translations: t } = useTwapContext();
   const amountWei = useMemo(() => {
     if (state.typedPrice === undefined || state.isMarketOrder || !marketPrice) return marketPrice;
     const result = state.isInvertedPrice ? BN(1).div(state.typedPrice).toString() : state.typedPrice;
     return amountBN(dstToken?.decimals, result);
   }, [state.typedPrice, state.isMarketOrder, marketPrice, state.isInvertedPrice, dstToken?.decimals]);
 
-  const error = useMemo(() => twapSDK.getLimitPriceError(state.typedPrice), [state.typedPrice, twapSDK]);
-
   return {
     amountWei,
     amountUI: useAmountUi(dstToken?.decimals, amountWei),
-    onChange: useCallback((typedPrice?: string) => updateState({ typedPrice: typedPrice ? removeCommas(typedPrice) : undefined }), [updateState]),
-    error,
+    onChange: useCallback((typedPrice?: string) => updateState({ typedPrice: typedPrice ? removeCommas(typedPrice) : typedPrice }), [updateState]),
+    error: state.typedPrice !== undefined && BN(state.typedPrice || 0).isZero() ? t.enterLimitPrice : undefined,
   };
 };
 
@@ -119,8 +119,8 @@ export const useMaxChunks = () => {
     twapSDK,
     state: { typedSrcAmount },
     srcUsd1Token,
-    minChunkSizeUsd,
   } = useTwapContext();
+  const minChunkSizeUsd = useMinChunkSizeUsd();
 
   return useMemo(() => twapSDK.getMaxChunks(typedSrcAmount || "", srcUsd1Token || 0, minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, twapSDK]);
 };
@@ -133,9 +133,15 @@ export const useChunks = () => {
     updateState,
   } = useTwapContext();
   const maxChunks = useMaxChunks();
+  const t = useTwapContext().translations;
 
   const chunks = useMemo(() => twapSDK.getChunks(maxChunks, Boolean(isLimitPanel), typedChunks), [maxChunks, typedChunks, isLimitPanel, twapSDK]);
-  const error = useMemo(() => twapSDK.getChunksError(chunks, maxChunks, Boolean(isLimitPanel)), [chunks, twapSDK, maxChunks, isLimitPanel]);
+  const error = useMemo(() => {
+    const { isError, value } = twapSDK.getMaxChunksError(chunks, maxChunks, Boolean(isLimitPanel));
+    if (!isError) return undefined;
+    return t.maxChunksError.replace("{maxChunks}", value.toString());
+  }, [chunks, twapSDK, maxChunks, isLimitPanel]);
+
   const setChunks = useCallback(
     (typedChunks: number) => {
       updateState({
@@ -158,12 +164,18 @@ export const useSrcTokenChunkAmount = () => {
     srcToken,
     state: { typedSrcAmount },
     srcUsd1Token,
-    minChunkSizeUsd,
   } = useTwapContext();
+  const minChunkSizeUsd = useMinChunkSizeUsd();
   const { chunks } = useChunks();
+  const t = useTwapContext().translations;
   const srcAmountWei = useSrcAmount().amountWei;
   const amountWei = useMemo(() => twapSDK.getSrcTokenChunkAmount(srcAmountWei || "", chunks), [twapSDK, srcAmountWei, chunks]);
-  const error = useMemo(() => twapSDK.getTradeSizeError(typedSrcAmount || "", srcUsd1Token || 0, minChunkSizeUsd || 0), [twapSDK, typedSrcAmount, srcUsd1Token, minChunkSizeUsd]);
+  const error = useMemo(() => {
+    const { isError, value } = twapSDK.getMinTradeSizeError(typedSrcAmount || "", srcUsd1Token || 0, minChunkSizeUsd || 0);
+
+    if (!isError) return undefined;
+    return t.minTradeSizeError.replace("{minTradeSize}", `${value} USD`);
+  }, [twapSDK, typedSrcAmount, srcUsd1Token, minChunkSizeUsd]);
   return {
     amountWei,
     amountUI: useAmountUi(srcToken?.decimals, amountWei),
@@ -293,19 +305,14 @@ export const useShouldWrapOrUnwrapOnly = () => {
 };
 
 export const useError = () => {
-  const {
-    state: { typedSrcAmount },
-    marketPrice = "0",
-    translations: t,
-  } = useTwapContext();
-
+  const { marketPrice } = useTwapContext();
   const balanceError = useBalanceError();
-  const chunksError = useChunks().error?.text;
-  const fillDelayError = useFillDelay().error?.text;
-  const orderDurationError = useOrderDuration().error?.text;
-  const tradeSizeError = useSrcTokenChunkAmount().error?.text;
-  const srcAmountError = BN(typedSrcAmount || 0).isZero() ? t.enterAmount : undefined;
+  const chunksError = useChunks().error;
+  const fillDelayError = useFillDelay().error;
+  const tradeSizeError = useSrcTokenChunkAmount().error;
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+  const srcAmountError = useSrcAmount().error;
+  const limitPriceError = useLimitPrice().error;
 
   if (shouldWrapOrUnwrapOnly) {
     return srcAmountError || balanceError;
@@ -313,7 +320,7 @@ export const useError = () => {
 
   if (BN(marketPrice || 0).isZero()) return;
 
-  return srcAmountError || chunksError || fillDelayError || orderDurationError || tradeSizeError || balanceError;
+  return srcAmountError || limitPriceError || chunksError || fillDelayError || tradeSizeError || balanceError;
 };
 
 export const useNetwork = () => {
@@ -327,7 +334,7 @@ export const useOrderDeadline = () => {
     state: { currentTime },
   } = useTwapContext();
   const orderDuration = useOrderDuration().orderDuration;
-
+  // return moment().add('3', 'month').valueOf()
   return useMemo(() => twapSDK.getOrderDeadline(currentTime, orderDuration), [twapSDK, currentTime, orderDuration]);
 };
 
@@ -337,14 +344,26 @@ export const useFillDelay = () => {
     isLimitPanel,
     state: { typedFillDelay },
     updateState,
+    translations: t,
   } = useTwapContext();
   const fillDelay = useMemo(() => twapSDK.getFillDelay(Boolean(isLimitPanel), typedFillDelay), [isLimitPanel, typedFillDelay, twapSDK]);
+  const chunks = useChunks().chunks;
+  const maxFillDelayError = useMemo(() => {
+    const { isError, value } = twapSDK.getMaxFillDelayError(fillDelay, chunks);
+    if (!isError) return undefined;
+    return t.maxFillDelayError.replace("{fillDelay}", `${Math.floor(millisToDays(value)).toFixed(0)} ${t.days}`);
+  }, [fillDelay, twapSDK, chunks]);
 
-  const error = useMemo(() => twapSDK.getFillDelayError(fillDelay, Boolean(isLimitPanel)), [fillDelay, isLimitPanel, twapSDK]);
+  const minFillDelayError = useMemo(() => {
+    const { isError, value } = twapSDK.getMinFillDelayError(fillDelay);
+    if (!isError) return undefined;
+    return t.minFillDelayError.replace("{fillDelay}", `${millisToMinutes(value)} ${t.minutes}`);
+  }, [fillDelay, twapSDK]);
+
   return {
     fillDelay,
     setFillDelay: useCallback((typedFillDelay: TimeDuration) => updateState({ typedFillDelay }), [updateState]),
-    error,
+    error: maxFillDelayError || minFillDelayError,
     milliseconds: fillDelay.unit * fillDelay.value,
   };
 };
@@ -354,19 +373,16 @@ export const useOrderDuration = () => {
     twapSDK,
     state: { typedDuration },
     updateState,
-    isLimitPanel,
   } = useTwapContext();
   const { chunks } = useChunks();
   const { fillDelay } = useFillDelay();
 
   const orderDuration = useMemo(() => twapSDK.getOrderDuration(chunks, fillDelay, typedDuration), [chunks, fillDelay, typedDuration, twapSDK]);
-  const error = useMemo(() => twapSDK.getDurationError(orderDuration, Boolean(isLimitPanel)), [orderDuration, twapSDK, isLimitPanel]);
 
   return {
     orderDuration,
     milliseconds: orderDuration.unit * orderDuration.value,
     setOrderDuration: useCallback((typedDuration: TimeDuration) => updateState({ typedDuration }), [updateState]),
-    error,
   };
 };
 

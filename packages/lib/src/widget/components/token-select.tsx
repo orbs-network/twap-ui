@@ -41,7 +41,7 @@ export const TokenSelect = ({ className = "", isSrcToken = false }: { className?
     <>
       {modal}
       <div className={`twap-token-select ${className} ${!token ? "twap-token-select-not-selected" : "twap-token-select-selected"}`} onClick={onOpen}>
-        {token && <TokenLogo logo={token?.logoUrl} />}
+        {token && components.TokenLogo ? <components.TokenLogo token={token} /> : <TokenLogo logo={token?.logoUrl} />}
         <StyledText className="twap-token-select-symbol">{token ? token.symbol : translations.selectToken}</StyledText>
         {<IoIosArrowDown className="twap-token-select-icon" />}
       </div>

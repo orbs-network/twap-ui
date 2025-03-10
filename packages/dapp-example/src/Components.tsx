@@ -92,7 +92,6 @@ const Row = ({ onClick, token }: any) => {
 };
 
 const configs = Object.values(Configs);
-console.log({ Configs });
 
 export const ConfigSelector = () => {
   const { setConfig, config } = useDappContext();

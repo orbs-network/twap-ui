@@ -21,6 +21,7 @@ export const Orders = ({ className = "" }: { className?: string }) => {
 
 export const OrdersButton = ({ className = "" }: { className?: string }) => {
   const openOrders = useGroupedByStatusOrders().open;
+  const { components } = useTwapContext();
 
   const { onOpen, isLoading } = useOrderHistoryContext();
   const text = useMemo(() => {
@@ -30,6 +31,10 @@ export const OrdersButton = ({ className = "" }: { className?: string }) => {
 
     return `${openOrders?.length || 0} Open orders`;
   }, [openOrders, isLoading]);
+
+  if (components.OrdersButton) {
+    return <components.OrdersButton onClick={onOpen} openOrdersCount={openOrders?.length || 0} />;
+  }
 
   return (
     <StyledOrderHistoryButton className={`twap-order-history-button ${className}`} onClick={onOpen}>
@@ -52,10 +57,10 @@ const CustomModal = ({ children }: { children: ReactNode }) => {
 };
 
 const OrderHistory = ({ className = "" }: { className?: string }) => {
-  const { selectedOrderId: order } = useOrderHistoryContext();
+  const { selectedOrderId } = useOrderHistoryContext();
   return (
     <CustomModal>
-      <StyledContainer className={`twap-order-history ${className}`} order={order ? 1 : 0}>
+      <StyledContainer className={`twap-order-history ${className}`} order={selectedOrderId !== undefined ? 1 : 0}>
         <HistoryOrderPreview />
         <OrderHistoryList />
       </StyledContainer>

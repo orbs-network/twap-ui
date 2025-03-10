@@ -27,7 +27,7 @@ export const useSelectedOrder = () => {
   const { selectedOrderId } = useOrderHistoryContext();
 
   return useMemo(() => {
-    if (!orders || !selectedOrderId) return;
+    if (!orders || selectedOrderId === undefined) return;
     return orders.find((it) => it.id === selectedOrderId);
   }, [orders, selectedOrderId]);
 };

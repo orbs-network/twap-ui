@@ -9,8 +9,7 @@ export * from "./lib/types";
 export * from "./lib/consts";
 export { constructSDK, TwapSDK } from "./lib/constructSDK";
 export * from "./lib/lib";
-export * from "./lib/warnings";
-export { fillDelayText, isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase } from "./lib/utils";
+export { isNativeAddress, getNetwork, amountBN, amountUi, eqIgnoreCase } from "./lib/utils";
 export { networks } from "./lib/networks";
 
 export { groupOrdersByStatus, getOrders, getOrderById, getOrderByTxHash, Order, type RawOrder, getOrderExcecutionPrice, getOrderFillDelay, getOrderLimitPrice } from "./lib/orders";

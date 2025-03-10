@@ -110,47 +110,6 @@ export const safeInteger = (value?: string) => {
     .toFixed();
 };
 
-export const fillDelayText = (value?: number) => {
-  if (!value) {
-    return "";
-  }
-
-  const secondsTotal = Math.floor(value / 1000);
-  const days = Math.floor(secondsTotal / (24 * 60 * 60));
-  const hours = Math.floor((secondsTotal % (24 * 60 * 60)) / (60 * 60));
-  const minutes = Math.floor((secondsTotal % (60 * 60)) / 60);
-  const seconds = secondsTotal % 60;
-
-  const arr: string[] = [];
-
-  if (days) {
-    arr.push(`${days} days `);
-  }
-  if (hours) {
-    arr.push(`${hours} hours `);
-  }
-  if (minutes) {
-    arr.push(`${minutes} minutes`);
-  }
-  if (seconds) {
-    arr.push(`${seconds} seconds`);
-  }
-
-  return arr.join(" ");
-};
-
-export function millisToDays(milliseconds?: number): number {
-  if (!milliseconds) return 0;
-  const millisecondsInADay = 86400000; // 24 * 60 * 60 * 1000
-  return milliseconds / millisecondsInADay;
-}
-
-export function millisToMinutes(milliseconds?: number): number {
-  if (!milliseconds) return 0;
-  const millisecondsInAMinute = 60000; // 60 * 1000
-  return milliseconds / millisecondsInAMinute;
-}
-
 export const getNetwork = (chainId?: number) => {
   return Object.values(networks).find((it) => it.id === chainId);
 };

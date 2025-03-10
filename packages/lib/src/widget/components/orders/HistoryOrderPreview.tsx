@@ -24,7 +24,7 @@ const useOrderFillDelay = (order?: Order) => {
 
 export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
-  const { useToken, components } = useTwapContext();
+  const { useToken, components, translations: t } = useTwapContext();
 
   const { selectedOrderId, closePreview } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
@@ -54,45 +54,35 @@ export const HistoryOrderPreview = () => {
         <StyledBack onClick={closePreview} className="twap-order-history-header-back-icon">
           <HiArrowLeft />
         </StyledBack>
-        <StyledTitle className="twap-order-history-header-title">
-          #{order?.id} {name}
-        </StyledTitle>
+        <StyledText className="twap-order-history-header-title">
+          #{order?.id} {name} {t.order}
+        </StyledText>
       </StyledOrderDetails>
       <OrderDisplay>
         <OrderDisplay.Tokens>
           <OrderDisplay.SrcToken token={srcToken} />
-          <OrderDisplay.DstToken token={dstToken} isMarketOrder={order.isMarketOrder} chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />
+          <OrderDisplay.DstToken token={dstToken} />
         </OrderDisplay.Tokens>
-        <StyledColumnFlex gap={15} className="twap-orders-selected-order-bottom">
-          <AccordionContainer title="Execution summary" onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
+        <OrderDisplay.FillDelaySummary chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />
+
+        <div className="twap-orders-selected-order-bottom">
+          <AccordionContainer title={t.excecutionSummary} onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
             <ExcecutionSummary order={order} />
           </AccordionContainer>
-          <AccordionContainer title="Order info" expanded={expanded === "panel2"} onClick={() => handleChange("panel2")}>
+          <AccordionContainer title={t.orderInfo} expanded={expanded === "panel2"} onClick={() => handleChange("panel2")}>
             <OrderInfo order={order} />
           </AccordionContainer>
           <CancelOrderButton order={order} />
-        </StyledColumnFlex>
+        </div>
       </OrderDisplay>
     </Container>
   );
 };
 
-const StyledTitle = styled(StyledText)({
-  fontSize: 14,
-  span: {
-    opacity: 0.7,
-    fontSize: 13,
-  },
-});
-
 const StyledBack = styled("button")({
   background: "none",
   border: "none",
   cursor: "pointer",
-  svg: {
-    width: 18,
-    height: 18,
-  },
 });
 
 const StyledOrderDetails = styled(StyledRowFlex)({
@@ -102,15 +92,13 @@ const StyledOrderDetails = styled(StyledRowFlex)({
 
 const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: boolean; onClick: () => void; children: ReactNode; title: string }) => {
   return (
-    <OrderDisplay.DetailsContainer>
-      <StyledAccordion>
-        <StyledSummary onClick={onClick} className="twap-orders-selected-order-summary">
-          <StyledText className="twap-orders-selected-order-summary-title">{title}</StyledText>
-          <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
-        </StyledSummary>
-        {expanded && <StyledDetails className={`twap-orders-selected-order-details ${expanded ? "twap-orders-selected-order-details-expanded" : ""} `}>{children}</StyledDetails>}
-      </StyledAccordion>
-    </OrderDisplay.DetailsContainer>
+    <StyledAccordion className="twap-orders-selected-order-accordion">
+      <StyledSummary onClick={onClick} className="twap-orders-selected-order-summary">
+        <StyledText className="twap-orders-selected-order-summary-title">{title}</StyledText>
+        <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
+      </StyledSummary>
+      {expanded && <div className="twap-orders-selected-order-details">{children}</div>}
+    </StyledAccordion>
   );
 };
 
@@ -119,12 +107,6 @@ const StyledSummary = styled.div({
   justifyContent: "space-between",
   cursor: "pointer",
   alignItems: "center",
-});
-
-const StyledDetails = styled.div({
-  overflow: "hidden",
-  display: "flex",
-  flexDirection: "column",
 });
 
 const OrderInfo = ({ order }: { order: Order }) => {
@@ -208,7 +190,7 @@ const AmountOutFilled = ({ order }: { order: Order }) => {
   return (
     <OrderDisplay.DetailRow title="Amount received">
       <StyledText>
-        {amount || 0} {dstToken?.symbol}
+        {amount || "-"} {dstToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );
@@ -240,7 +222,7 @@ const AmountInFilled = ({ order }: { order: Order }) => {
   return (
     <OrderDisplay.DetailRow title="Amount sent">
       <StyledText>
-        {amount || 0} {srcToken?.symbol}
+        {amount || "-"} {srcToken?.symbol}
       </StyledText>
     </OrderDisplay.DetailRow>
   );
@@ -308,8 +290,5 @@ const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?
 };
 
 const StyledAccordion = styled("div")({
-  backgroundColor: "transparent",
-  backgroundImage: "unset",
-  boxShadow: "unset",
   width: "100%",
 });

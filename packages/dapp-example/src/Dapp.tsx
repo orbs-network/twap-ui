@@ -3,7 +3,7 @@ import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps } from "@orbs-network/twap-ui";
-import { eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
+import { Configs, eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "./context";
@@ -72,9 +72,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     if (!srcToken) {
       setSrcToken(dappTokens[1]);
     }
-    if (!dstToken) {
-      setDstToken(dappTokens[2]);
-    }
+    // if (!dstToken) {
+    //   setDstToken(dappTokens[2]);
+    // }
   }, [dappTokens, dstToken, srcToken]);
 
   const onSwitchTokens = () => {
@@ -128,11 +128,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       modals={{ OrderConfirmationModal, OrderHistoryModal, TokenSelectModal }}
       useToken={useToken}
       includeStyles={true}
-      minChunkSizeUsd={4}
+      customMinChunkSizeUsd={4}
       fee="0.25"
-    >
-      <Widget.SwapPanel />
-    </Widget>
+    />
   );
 };
 

@@ -58,14 +58,14 @@ const Buttons = ({ className = "" }: { className?: string }) => {
   );
 };
 
-export const DurationPanel = ({ children, className = "", options = Options }: { children: ReactNode; className?: string; options?: Option[] }) => {
+export const DurationPanel = ({ children, className = "", options = Options }: { children?: ReactNode; className?: string; options?: Option[] }) => {
   const hide = useShouldWrapOrUnwrapOnly();
 
   if (hide) return null;
 
   return (
     <Panel className={`twap-duration-panel ${className}`}>
-      <PanelContext.Provider value={{ options }}>{children}</PanelContext.Provider>
+      <PanelContext.Provider value={{ options }}>{children || <Main />}</PanelContext.Provider>
     </Panel>
   );
 };
@@ -95,4 +95,3 @@ const StyledMain = styled(StyledRowFlex)({
 
 DurationPanel.Buttons = Buttons;
 DurationPanel.Label = DurationLabel;
-DurationPanel.Main = Main;

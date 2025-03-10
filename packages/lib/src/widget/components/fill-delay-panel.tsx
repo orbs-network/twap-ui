@@ -36,7 +36,7 @@ const Resolution = () => {
   return <ResolutionSelect onClose={onBlur} onOpen={onFocus} unit={fillDelay.unit} onChange={onUnitSelect} />;
 };
 
-export const FillDelayPanel = ({ children, className = "" }: { children: ReactNode; className?: string }) => {
+export const FillDelayPanel = ({ children, className = "" }: { children?: ReactNode; className?: string }) => {
   const { error } = useFillDelayPanel();
   const hide = useShouldWrapOrUnwrapOnly();
 
@@ -44,13 +44,13 @@ export const FillDelayPanel = ({ children, className = "" }: { children: ReactNo
 
   return (
     <Panel className={`${className} twap-trade-interval-panel`} error={!!error}>
-      {children}
+      {children || <Main />}
     </Panel>
   );
 };
 
 const WarningComponent = () => {
-  const fillDelayError = useFillDelayPanel().error?.text;
+  const fillDelayError = useFillDelayPanel().error;
 
   if (!fillDelayError) return null;
 
@@ -59,7 +59,7 @@ const WarningComponent = () => {
 
 const TradeIntervalLabel = () => {
   const { translations } = useTwapContext();
-  return <Label className="twap-trade-interval-panel-label" tooltip={translations.tradeIntervalTootlip} text={translations.tradeInterval} />;
+  return <Label className="twap-trade-interval-panel-label" tooltip={translations.tradeIntervalTootlip} text={translations.every} />;
 };
 
 const Main = ({ className = "" }: { className?: string }) => {
@@ -80,7 +80,6 @@ FillDelayPanel.Resolution = Resolution;
 FillDelayPanel.Input = Input;
 FillDelayPanel.Label = TradeIntervalLabel;
 FillDelayPanel.Warning = WarningComponent;
-FillDelayPanel.Main = Main;
 
 const StyledMain = styled("div")({
   ".twap-select-menu": {

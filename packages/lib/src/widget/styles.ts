@@ -50,6 +50,10 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         background: "rgba(255, 255, 255, 0.07)",
       },
     },
+    ".twap-widget-swap-panel-form": {
+      display: "flex",
+      flexDirection: "column",
+    },
     ".twap-order-history-button-icon": {
       marginLeft: "auto",
     },
@@ -64,7 +68,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     ".twap-orders-selected-order-summary": {
       padding: 12,
     },
-    ".twap-order-modal-bottom": {
+    ".twap-create-order-bottom": {
       marginTop: 20,
       display: "flex",
       gap: 10,
@@ -97,28 +101,81 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       },
     },
     ".twap-order-display-details": {
+      gap: 12,
+    },
+
+    ".twap-orders-selected-order-accordion": {
+      borderRadius: 16,
+      background: "#1B1B1B",
+      ".twap-orders-selected-order-details": {
+        padding: "5px 12px 12px 12px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+      },
+    },
+    ".twap-order-fill-delay-summary-text": {
+      fontSize: 14,
+      fontWeight: 500,
+      marginTop: 10,
+    },
+    ".twap-duration-panel": {
+      marginTop: 5,
+    },
+    ".twap-create-order-details": {
+      padding: 12,
       background: "#1B1B1B",
       borderRadius: 16,
-    },
-    ".orbs_SwapFlow": {
-      ".twap-order-display-details": {
-        padding: 12,
-      },
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
     },
     ".twap-order-history-list": {
       width: "100%",
     },
-    ".twap-order-display-details-row-right": {
+    ".orbs_Logo img": {
+      objectFit: "cover",
+    },
+    ".twap-order-details-row-right": {
       fontSize: 13,
     },
-    ".twap-order-display-token": {
+    ".twap-order-tokens": {
       width: "100%",
+      gap: 30,
+    },
+    ".twap-order-tokens-token-left": {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+    },
+    ".twap-order-tokens-token": {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      width: "100%",
+    },
+    ".twap-order-tokens-token-title": {
+      fontSize: 15,
+      fontWeight: 500,
+    },
+    ".twap-order-tokens-token-symbol": {
+      fontSize: 20,
+      fontWeight: 500,
+    },
+    ".twap-order-tokens-token-right": {
+      ".twap-token-logo": {
+        width: 45,
+        height: 45,
+      },
     },
     ".twap-order-history-header-back-icon": {
       color: "white",
     },
     ".twap-order-header-text": {
       fontSize: 13,
+    },
+    ".twap-widget-swap-panel-powered-by-orbs-inner": {
+      display: "none",
     },
     ".twap-order-token-progress-bar": {
       flex: 1,
@@ -329,7 +386,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     },
     ".twap-switch-tokens": {
       position: "relative",
-      height: 1,
+      height: 5,
       button: {
         width: 50,
         height: 50,
@@ -408,9 +465,11 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       gap: 5,
       display: "flex",
       alignItems: "center",
+      justifyContent: "flex-end",
     },
 
     ".twap-limit-price-panel": {
+      marginBottom: 5,
       ".twap-input": {
         input: {
           fontSize: 34,
@@ -437,6 +496,57 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       color: colors.text.dark,
       fontSize: 14,
       fontWeight: 500,
+    },
+    ".orbs_MainToken": {
+      alignItems: "center",
+
+      ".orbs_MainTokenLeft": {
+        display: "flex",
+        flexDirection: "column",
+        gap: 5,
+        ".orbs_MainTokenTitle": {
+          fontSize: 15,
+        },
+        ".orbs_MainTokenAmount": {
+          fontSize: 20,
+          fontWeight: 500,
+        },
+        ".orbs_MainTokenUsd": {
+          fontSize: 13,
+          opacity: 0.7,
+        },
+      },
+      ".orbs_MainTokenRight": {
+        ".orbs_MainTokenLogo": {
+          img: {
+            width: 40,
+            height: 40,
+          },
+        },
+      },
+    },
+    ".twap-token-panel-main": {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+    },
+    ".twap-token-panel-main-top": {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      width: "100%",
+    },
+    ".twap-token-panel-main-middle": {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      width: "100%",
+    },
+    ".twap-token-panel-main-bottom": {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      width: "100%",
     },
     ".twap-label": {
       color: colors.text.dark,
@@ -473,6 +583,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       display: "flex",
       alignItems: "stretch",
       gap: 5,
+      marginTop: 5,
       ".twap-panel": {
         flex: 1,
       },

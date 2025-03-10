@@ -10,6 +10,7 @@ import {
   useError,
   useFillDelay,
   useLimitPrice,
+  useMinChunkSizeUsd,
   useNetwork,
   useOnCloseConfirmationModal,
   useOnOpenConfirmationModal,
@@ -316,10 +317,10 @@ export const useTradesAmountPanel = () => {
   const { setChunks, chunks, error } = useChunks();
 
   return {
-    error: error?.text,
+    error,
     trades: chunks,
     onChange: setChunks,
-    label: t.totalTrades,
+    label: t.over,
     tooltip: t.totalTradesTooltip,
   };
 };
@@ -367,9 +368,11 @@ export const useShowConfirmationModalButton = () => {
     state: { swapStatus, typedSrcAmount },
     marketPriceLoading,
     srcBalance,
-    minChunkSizeUsd,
+    srcToken,
+    dstToken,
   } = useTwapContext();
   const error = useError();
+  const minChunkSizeUsd = useMinChunkSizeUsd();
 
   const onOpen = useOnOpenConfirmationModal();
   const { onConnect } = callbacks;
@@ -381,6 +384,18 @@ export const useShowConfirmationModalButton = () => {
   const zeroSrcAmount = BN(typedSrcAmount || "0").isZero();
   const zeroMarketPrice = BN(marketPrice || 0).isZero();
   const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
+  const isButtonLoading = !srcToken || !dstToken ? false : isPropsLoading || wrapLoading || unwrapLoading;
+
+  const noLiquidity = useMemo(() => {
+    const result = srcToken && dstToken && !isButtonLoading && !marketPriceLoading && zeroMarketPrice;
+    if (!result) return;
+    return {
+      text: t.noLiquidity,
+      disabled: true,
+      loading: false,
+      onClick: () => {},
+    };
+  }, [t, isButtonLoading, marketPriceLoading, zeroMarketPrice, srcToken, dstToken]);
 
   const connect = useMemo(() => {
     if (maker) return;
@@ -415,10 +430,10 @@ export const useShowConfirmationModalButton = () => {
     return {
       text: error || t.wrap,
       onClick: wrap,
-      disabled: error || wrapLoading,
-      loading: wrapLoading,
+      disabled: error || isButtonLoading,
+      loading: isButtonLoading,
     };
-  }, [shouldOnlyWrap, wrap, zeroSrcAmount, wrapLoading, t, error]);
+  }, [shouldOnlyWrap, wrap, zeroSrcAmount, isButtonLoading, t, error]);
 
   const unwrapOnly = useMemo(() => {
     if (!shouldUnwrap) return;
@@ -426,21 +441,21 @@ export const useShowConfirmationModalButton = () => {
     return {
       text: error || t.unwrap,
       onClick: unwrap,
-      disabled: error || unwrapLoading,
-      loading: unwrapLoading,
+      disabled: error || isButtonLoading,
+      loading: isButtonLoading,
     };
-  }, [shouldUnwrap, unwrap, zeroSrcAmount, error, unwrapLoading, t]);
+  }, [shouldUnwrap, unwrap, zeroSrcAmount, error, isButtonLoading, t]);
 
   const swap = useMemo(() => {
     return {
-      text: error ? error : marketPriceLoading ? t.outAmountLoading : t.placeOrder,
+      text: !srcToken || !dstToken ? t.placeOrder : error ? error : marketPriceLoading ? t.outAmountLoading : t.placeOrder,
       onClick: onOpen,
-      loading: isPropsLoading,
-      disabled: swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isPropsLoading || error,
+      loading: isButtonLoading,
+      disabled: swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isButtonLoading || error,
     };
-  }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isPropsLoading, zeroMarketPrice, error]);
+  }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isButtonLoading, zeroMarketPrice, error, srcToken, dstToken]);
 
-  return connect || invalidChain || wrapOnly || unwrapOnly || swap;
+  return connect || invalidChain || wrapOnly || unwrapOnly || noLiquidity || swap;
 };
 
 export const useOrderName = (isMarketOrder = false, chunks = 1) => {
@@ -534,7 +549,7 @@ export const useConfirmationModalButton = () => {
   return useMemo(() => {
     const isLoading = mutationLoading || swapStatus === SwapStatus.LOADING;
     return {
-      text: t.submitOrder,
+      text: t.confirmOrder,
       onSubmit,
       isLoading,
       disabled: !disclaimerAccepted || isLoading,

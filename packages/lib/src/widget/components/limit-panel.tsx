@@ -3,13 +3,13 @@ import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import { IoClose } from "@react-icons/all-files/io5/IoClose";
 import React, { ReactNode } from "react";
 import { Panel } from "../../components/Panel";
-import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../styles";
+import { StyledRowFlex, StyledText } from "../../styles";
 import { NumericInput } from "../../components/base";
 import { TokenSelect } from "./token-select";
 import { useTwapContext } from "../../context";
 import { useLimitPriceError, useLimitPriceInput, useLimitPriceOnInvert, useLimitPricePercentSelect, useShouldHideLimitPricePanel } from "../../hooks/ui-hooks";
 
-export const LimitPanel = ({ children, className = "" }: { className?: string; children: ReactNode }) => {
+export const LimitPanel = ({ children, className = "" }: { className?: string; children?: ReactNode }) => {
   const error = useLimitPriceError();
   const shouldHide = useShouldHideLimitPricePanel();
 
@@ -17,32 +17,26 @@ export const LimitPanel = ({ children, className = "" }: { className?: string; c
 
   return (
     <Panel error={!!error} className={`twap-limit-price-panel ${className}`}>
-      {children}
+      {children || <Main />}
     </Panel>
   );
 };
 
 function Main({ className = "" }: { className?: string }) {
   return (
-    <StyledMain className={`twap-limit-price-panel-main ${className}`}>
-      <StyledRowFlex style={{ justifyContent: "space-between" }}>
+    <div className={`twap-limit-price-panel-main ${className}`}>
+      <StyledRowFlex style={{ justifyContent: "space-between" }} className="twap-limit-price-panel-main-header">
         <Title />
         <InvertPriceButton />
       </StyledRowFlex>
-      <StyledRowFlex style={{ justifyContent: "space-between" }}>
+      <StyledRowFlex style={{ justifyContent: "space-between" }} className="twap-limit-price-panel-main-body">
         <Input />
         <DstTokenSelect />
       </StyledRowFlex>
       <PercentSelector />
-    </StyledMain>
+    </div>
   );
 }
-
-const StyledMain = styled(StyledColumnFlex)({
-  ".twap-token-display": {
-    ".twap-token-logo": {},
-  },
-});
 
 const Input = ({ className = "" }: { className?: string }) => {
   const { value, onChange, isLoading } = useLimitPriceInput();
@@ -141,4 +135,3 @@ LimitPanel.DstTokenSelect = DstTokenSelect;
 LimitPanel.PercentSelector = PercentSelector;
 LimitPanel.Title = Title;
 LimitPanel.InvertPriceButton = InvertPriceButton;
-LimitPanel.Main = Main;

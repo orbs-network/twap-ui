@@ -1,6 +1,5 @@
 import React from "react";
 import { TokenPanel } from "./components/token-panel";
-import { WidgetMessage } from "./components/message";
 import { ShowConfirmationButton } from "./components/show-confirmation-button";
 import { FillDelayPanel } from "./components/fill-delay-panel";
 import { LimitPanel } from "./components/limit-panel";
@@ -23,7 +22,7 @@ const Widget = (props: TwapProps) => {
     <TwapProvider {...props}>
       <div className="twap-widget">
         {props.includeStyles && <GlobalStyles isDarkMode={true} />}
-        {props.children}
+        {props.children || <SwapPanel />}
       </div>
     </TwapProvider>
   );
@@ -40,8 +39,6 @@ Widget.FillDelayPanel = FillDelayPanel;
 Widget.PriceTabs = PriceTabs;
 Widget.DurationPanel = DurationPanel;
 Widget.SwitchTokens = SwitchTokens;
-Widget.Message = WidgetMessage;
 Widget.PriceSwitch = PriceSwitch;
 Widget.LimitPriceMessage = LimitPriceMessage;
-Widget.SwapPanel = SwapPanel;
 export { Widget };

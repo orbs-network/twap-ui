@@ -273,15 +273,14 @@ export class Order {
   dexFee: string;
 
   constructor(rawOrder: RawOrder, fills: any, status: any) {
-    
-    this.status = getOrderStatus(rawOrder, status)
+    this.status = getOrderStatus(rawOrder, status);
     const isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
     this.srcTokenSymbol = rawOrder.srcTokenSymbol;
     this.dollarValueIn = rawOrder.dollarValueIn;
     this.blockNumber = rawOrder.blockNumber;
     this.maker = rawOrder.maker;
     this.dstTokenSymbol = rawOrder.dstTokenSymbol;
-    const progress = this.status === OrderStatus.Completed ? 100 :  getOrderProgress(fills?.srcAmountIn, rawOrder.ask_srcAmount);
+    const progress = this.status === OrderStatus.Completed ? 100 : getOrderProgress(fills?.srcAmountIn, rawOrder.ask_srcAmount);
     this.id = Number(rawOrder.Contract_id);
     this.exchange = rawOrder.exchange;
     this.ask_fillDelay = rawOrder.ask_fillDelay;
@@ -343,7 +342,7 @@ export const getOrders = async ({
   config: Config;
 }): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(chainId);
-  if (!endpoint){
+  if (!endpoint) {
     throw new Error("no endpoint found");
   }
   let rawOrders: RawOrder[] = [];
@@ -368,7 +367,7 @@ export const getOrders = async ({
   }) as Order[];
 
   const { cancelledOrderIds, newOrders } = orderStore.getOrders(account, config.exchangeAddress);
-  
+
   if (newOrders.length) {
     newOrders.forEach((newOrder) => {
       if (!ordersMap.has(Number(newOrder.Contract_id))) {

@@ -99,10 +99,10 @@ export const useAccountOrders = () => {
             const status = () => {
               if (it.status === 1) return "cancelled";
               if (it.status === 2) return "completed";
-              if (it.status === 3) return 'expired'
+              if (it.status === 3) return "expired";
               return "pending";
-            }
-            const order = new Order(rawOrder, [], status());            
+            };
+            const order = new Order(rawOrder, [], status());
             return order;
           });
 
@@ -116,7 +116,7 @@ export const useAccountOrders = () => {
       refetchOnWindowFocus: true,
       retry: 3,
       staleTime: Infinity,
-    }
+    },
   );
 
   return useMemo(() => {
@@ -136,7 +136,7 @@ export const useAddCancelledOrder = () => {
       twapSDK.addCancelledOrder(account, orderId);
       await refetch();
     },
-    [account, twapSDK, refetch]
+    [account, twapSDK, refetch],
   );
 };
 

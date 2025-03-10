@@ -1,4 +1,5 @@
 import { Analytics } from "./analytics";
+import { MAX_FILL_DELAY_MILLIS, MIN_FILL_DELAY_MILLIS } from "./consts";
 import {
   getEstimatedDelayBetweenChunksMillis,
   getDeadline,
@@ -13,7 +14,8 @@ import {
 } from "./lib";
 import { addCancelledOrder, addNewOrder, getOrders, RawOrder } from "./orders";
 import { Config, getAskParamsProps, TimeDuration } from "./types";
-import { getChunksWarning, getDurationWarning, getFillDelayWarning, getLimitPriceWarning, getPartialFillWarning, getTradeSizeWarning } from "./warnings";
+import { getTimeDurationMillis } from "./utils";
+import BN from "bignumber.js";
 
 interface Props {
   config: Config;
@@ -46,7 +48,7 @@ export class TwapSDK {
     analytics.onConfigChange(props.config);
     this.estimatedDelayBetweenChunksMillis = getEstimatedDelayBetweenChunksMillis(this.config);
   }
-
+  //create order values
   getAskParams(props: getAskParamsProps) {
     return getAskParams(this.config, props);
   }
@@ -71,27 +73,37 @@ export class TwapSDK {
   getDestTokenAmount(srcAmount: string, limitPrice: string, srcTokenDecimals: number) {
     return getDestTokenAmount(srcAmount, limitPrice, srcTokenDecimals);
   }
-  getFillDelayError(fillDelay: TimeDuration, isLimitPanel: boolean) {
-    return getFillDelayWarning(fillDelay, isLimitPanel);
-  }
   getOrderDeadline(currentTimeMillis: number, orderDuration: TimeDuration) {
     return getDeadline(currentTimeMillis, orderDuration);
   }
 
-  getTradeSizeError(typedSrcAmount: string, oneSrcTokenUsd: number, minChunkSizeUsd: number) {
-    return getTradeSizeWarning(minChunkSizeUsd, oneSrcTokenUsd, typedSrcAmount);
+  // errors
+  getMaxFillDelayError(fillDelay: TimeDuration, chunks: number) {
+    return {
+      isError: getTimeDurationMillis(fillDelay) * chunks > MAX_FILL_DELAY_MILLIS,
+      value: Math.floor(MAX_FILL_DELAY_MILLIS / chunks),
+    };
   }
-  getChunksError(chunks: number, maxChunks: number, isLimitPanel: boolean) {
-    return getChunksWarning(chunks, maxChunks, Boolean(isLimitPanel));
+
+  getMinFillDelayError(fillDelay: TimeDuration) {
+    return {
+      isError: getTimeDurationMillis(fillDelay) < MIN_FILL_DELAY_MILLIS,
+      value: MIN_FILL_DELAY_MILLIS,
+    };
   }
-  getLimitPriceError(typedLimitPrice?: string) {
-    return getLimitPriceWarning(typedLimitPrice);
+  getMinTradeSizeError(typedSrcAmount: string, oneSrcTokenUsd: number, minChunkSizeUsd: number) {
+    return {
+      isError: BN(oneSrcTokenUsd || 0)
+        .multipliedBy(typedSrcAmount || 0)
+        .isLessThan(minChunkSizeUsd),
+      value: minChunkSizeUsd,
+    };
   }
-  getDurationError(orderDuration: TimeDuration, isLimitPanel: boolean) {
-    return getDurationWarning(orderDuration, isLimitPanel);
-  }
-  getPartialFillWarning(chunks: number, orderDuration: TimeDuration, fillDelay: TimeDuration) {
-    return getPartialFillWarning(chunks, orderDuration, fillDelay);
+  getMaxChunksError(chunks: number, maxChunks: number, isLimitPanel: boolean) {
+    return {
+      isError: !isLimitPanel && BN(chunks).isGreaterThan(maxChunks),
+      value: maxChunks,
+    };
   }
 
   async getUserOrders({ account, signal, page, limit }: { account: string; signal?: AbortSignal; page?: number; limit?: number }) {

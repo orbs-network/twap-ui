@@ -26,6 +26,35 @@ export const copy: CopyFn = async (text) => {
   }
 };
 
+export const fillDelayText = (value?: number) => {
+  if (!value) {
+    return "";
+  }
+
+  const secondsTotal = Math.floor(value / 1000);
+  const days = Math.floor(secondsTotal / (24 * 60 * 60));
+  const hours = Math.floor((secondsTotal % (24 * 60 * 60)) / (60 * 60));
+  const minutes = Math.floor((secondsTotal % (60 * 60)) / 60);
+  const seconds = secondsTotal % 60;
+
+  const arr: string[] = [];
+
+  if (days) {
+    arr.push(`${days} days `);
+  }
+  if (hours) {
+    arr.push(`${hours} hours `);
+  }
+  if (minutes) {
+    arr.push(`${minutes} minutes`);
+  }
+  if (seconds) {
+    arr.push(`${seconds} seconds`);
+  }
+
+  return arr.join(" ");
+};
+
 export const makeElipsisAddress = (address?: string, padding?: AddressPadding): string => {
   if (!address) return "";
   return `${address.substring(0, padding?.start || 6)}...${address.substring(address.length - (padding?.end || 5))}`;
@@ -123,3 +152,15 @@ export const ensureWrappedToken = (token: Token, chainId: number) => {
   }
   return token;
 };
+
+export function millisToDays(milliseconds?: number): number {
+  if (!milliseconds) return 0;
+  const millisecondsInADay = 86400000; // 24 * 60 * 60 * 1000
+  return milliseconds / millisecondsInADay;
+}
+
+export function millisToMinutes(milliseconds?: number): number {
+  if (!milliseconds) return 0;
+  const millisecondsInAMinute = 60000; // 60 * 1000
+  return milliseconds / millisecondsInAMinute;
+}

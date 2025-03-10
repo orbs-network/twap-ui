@@ -118,7 +118,7 @@ const Content = () => {
     <ThemeProvider theme={theme}>
       <TwapProvider
         config={config}
-        minChunkSizeUsd={props.minChunkSizeUsd}
+        customMinChunkSizeUsd={props.customMinChunkSizeUsd}
         translations={translations as Translations}
         provider={props.provider}
         srcToken={srcToken}
@@ -187,9 +187,7 @@ const InputsPanel = () => {
 const LimitPrice = () => {
   return (
     <>
-      <Widget.LimitPricePanel>
-        <Widget.LimitPricePanel.Main />
-      </Widget.LimitPricePanel>
+      <Widget.LimitPricePanel />
     </>
   );
 };
@@ -199,12 +197,8 @@ const TWAPPanel = () => {
     <>
       <InputsPanel />
       <StyledTwapInputs>
-        <Widget.FillDelayPanel>
-          <Widget.FillDelayPanel.Main />
-        </Widget.FillDelayPanel>
-        <Widget.TradesAmountPanel>
-          <Widget.TradesAmountPanel.Main />
-        </Widget.TradesAmountPanel>
+        <Widget.FillDelayPanel />
+        <Widget.TradesAmountPanel />
       </StyledTwapInputs>
     </>
   );
@@ -233,9 +227,7 @@ const LimitPanel = () => {
   return (
     <>
       <InputsPanel />
-      <Widget.DurationPanel>
-        <Widget.DurationPanel.Main />
-      </Widget.DurationPanel>
+      <Widget.DurationPanel />
     </>
   );
 };

@@ -5,7 +5,7 @@ import { constructSDK } from "@orbs-network/twap-sdk";
 import { State, TwapProps, TwapContextType, Translations } from "./types";
 import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
-import defaultTranlations from "./i18n/en.json";
+import defaultTranslations from "./i18n/en.json";
 import * as chains from "viem/chains";
 
 export const TwapContext = createContext({} as TwapContextType);
@@ -64,9 +64,9 @@ const Listeners = () => {
 
 const useTranslations = (translations?: Partial<Translations>): Translations => {
   return useMemo(() => {
-    if (!translations) return defaultTranlations;
+    if (!translations) return defaultTranslations;
     return {
-      ...defaultTranlations,
+      ...defaultTranslations,
       ...translations,
     } as Translations;
   }, [translations]);

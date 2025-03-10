@@ -15,13 +15,14 @@ const CustomModal = ({ children }: { children: ReactNode }) => {
 
   return (
     <OrderConfirmationModal isOpen={Boolean(showConfirmation)} onClose={onClose} title={!swapStatus ? "Confirm order" : ""}>
-      {children}
+      <div className="twap-create-order">{children}</div>
     </OrderConfirmationModal>
   );
 };
 
 export const SubmitOrderModal = ({ className = "" }: { className?: string }) => {
   const { swapError, swapStatus, srcAmount, dstAmount, srcToken, dstToken } = useConfirmationModalPanel();
+  const { components } = useTwapContext();
   const srcAmountF = useFormatNumber({ value: srcAmount });
   const outAmountF = useFormatNumber({ value: dstAmount });
 
@@ -42,6 +43,10 @@ export const SubmitOrderModal = ({ className = "" }: { className?: string }) => 
         outToken={{
           symbol: dstToken?.symbol,
           logo: dstToken?.logoUrl,
+        }}
+        components={{
+          srcTokenLogo: components.TokenLogo ? <components.TokenLogo token={srcToken} /> : undefined,
+          dstTokenLogo: components.TokenLogo ? <components.TokenLogo token={dstToken} /> : undefined,
         }}
       />
     </CustomModal>

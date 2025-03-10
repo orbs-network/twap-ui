@@ -8,15 +8,7 @@ export const MIN_FILL_DELAY_MILLIS = 5 * 60 * 1000;
 
 export const MAX_FILL_DELAY_MILLIS = 365 * 24 * 60 * 60 * 1000;
 
-const day = 24 * 60 * 60 * 1000;
-
 export const MIN_FILL_DELAY_MINUTES = new Date(MIN_FILL_DELAY_MILLIS).getMinutes();
-export const MAX_FILL_DELAY_DAYS = MAX_FILL_DELAY_MILLIS / day;
-
-export const MAX_DURATION_MILLIS = 365 * 24 * 60 * 60 * 1000;
-export const MIN_DURATION_MILLIS = 5 * 60 * 1000;
-export const MIN_DURATION_MINUTES = new Date(MIN_DURATION_MILLIS).getMinutes();
-export const MAX_DURATION_DAYS = MAX_DURATION_MILLIS / day;
 
 const THE_GRAPH_API = "https://hub.orbs.network/api/apikey/subgraphs/id";
 export const THE_GRAPH_ORDERS_API = {
@@ -27,6 +19,8 @@ export const THE_GRAPH_ORDERS_API = {
   [networks.base.id]: `${THE_GRAPH_API}/DFhaPQb3HATXkpsWNZw3gydYHehLBVEDiSk4iBdZJyps`,
   [networks.sei.id]: `${THE_GRAPH_API}/5zjzRnURzoddyFSZBw5E5NAM3oBgPq3NasTYbtMk6EL6`,
   [networks.linea.id]: `${THE_GRAPH_API}/6VsNPEYfFLPZCqdMMDadoXQjLHWJdjEwiD768GAtb7j6`,
+  [networks.sonic.id]: `${THE_GRAPH_API}/DtBr6a5vsoDd2oAXdPszcn4gLgrr1XC68Q3AJQKXnNLV`,
+  [networks.ftm.id]: `${THE_GRAPH_API}/DdRo1pmJkrJC9fjsjEBWnNE1uqrbh7Diz4tVKd7rfupp`,
 };
 
 export const zeroAddress = "0x0000000000000000000000000000000000000000";

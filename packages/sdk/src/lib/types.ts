@@ -48,33 +48,4 @@ export interface getAskParamsProps {
   destTokenAddress: string;
 }
 
-export enum Warnings {
-  PARTIAL_FILL = "PARTIAL_FILL",
-}
-export enum Errors {
-  MIN_FILL_DELAY = "MIN_FILL_DELAY",
-  MAX_FILL_DELAY = "MAX_FILL_DELAY",
-  MIN_TRADE_DURATION = "MIN_TRADE_DURATION",
-  MAX_TRADE_DURATION = "MAX_TRADE_DURATION",
-  TRADE_SIZE = "TRADE_SIZE",
-  SRC_AMOUNT = "SRC_AMOUNT",
-  LIMIT_PRICE = "LIMIT_PRICE",
-  MIN_CHUNKS = "MIN_CHUNKS",
-  MAX_CHUNKS = "MAX_CHUNKS",
-}
-
-export type TwapError =
-  | {
-      type: Errors;
-      text: string;
-    }
-  | undefined;
-
-export type TwapWarning =
-  | {
-      type: Warnings;
-      text: string;
-    }
-  | undefined;
-
 export type PrepareOrderArgsResult = [string, string, string, string, string, string, string, string, string, string[]];
