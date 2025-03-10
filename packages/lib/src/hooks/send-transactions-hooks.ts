@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected, SwapSteps, Token } from "..";
+import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected, Steps, Token } from "..";
 import BN from "bignumber.js";
 import { erc20Abi, maxUint256, TransactionReceipt } from "viem";
 import { useTwapContext } from "../context";
@@ -19,7 +19,7 @@ import { SwapStatus } from "@orbs-network/swap-ui";
 import { useAddCancelledOrder, useAddNewOrder } from "./order-hooks";
 
 export const useApproveToken = () => {
-  const { account, config, walletClient, publicClient, callbacks, twapSDK } = useTwapContext();
+  const { account, config, walletClient, publicClient, callbacks, twapSDK, updateState } = useTwapContext();
 
   return useMutation(
     async ({ token, amount }: { token: Token; amount: string }) => {
@@ -36,7 +36,7 @@ export const useApproveToken = () => {
         args: [config.twapAddress as `0x${string}`, BigInt(BN(amount).decimalPlaces(0).toFixed())],
         chain: walletClient.chain,
       });
-
+      updateState({ approveTxHash: hash });
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
         confirmations: 5,
@@ -177,12 +177,13 @@ export const useCreateOrder = () => {
         args: [params],
         chain: walletClient.chain,
       });
+      updateState({ createOrderTxHash: txHash });
+
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash,
         confirmations: 5,
       });
 
-      updateState({ createOrderTxHash: receipt.transactionHash });
       const orderId = getOrderIdFromCreateOrderEvent(receipt);
       await callbacks.onSuccess(orderId, receipt, params, srcToken);
 
@@ -208,6 +209,7 @@ export const useWrapToken = () => {
     callbacks,
     state: { typedSrcAmount = "" },
     twapSDK,
+    updateState,
   } = useTwapContext();
   const tokenAddress = useNetwork()?.wToken.address;
 
@@ -226,6 +228,7 @@ export const useWrapToken = () => {
         value: BigInt(BN(amount).decimalPlaces(0).toFixed()),
         chain: walletClient.chain,
       });
+      updateState({ wrapTxHash: hash });
 
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
@@ -258,7 +261,7 @@ export const useWrapOnly = () => {
 };
 
 export const useUnwrapToken = () => {
-  const { account, reset, walletClient, publicClient, callbacks } = useTwapContext();
+  const { account, reset, walletClient, publicClient, callbacks, updateState } = useTwapContext();
   const wTokenAddress = useNetwork()?.wToken.address;
   const { amountWei, amountUI = "" } = useSrcAmount();
 
@@ -277,7 +280,7 @@ export const useUnwrapToken = () => {
         args: [BigInt(BN(amountWei).decimalPlaces(0).toFixed())],
         chain: walletClient.chain,
       });
-
+      updateState({ unwrapTxHash: hash });
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
         confirmations: 5,
@@ -298,13 +301,11 @@ export const useUnwrapToken = () => {
   );
 };
 
-const getSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
-  const steps: number[] = [];
-
-  if (shouldWrap) steps.push(SwapSteps.WRAP);
-  if (shouldApprove) steps.push(SwapSteps.APPROVE);
-  steps.push(SwapSteps.CREATE);
-  return steps;
+const getTotalSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
+  let stepsCount = 1;
+  if (shouldWrap) stepsCount++;
+  if (shouldApprove) stepsCount++;
+  return stepsCount;
 };
 
 const useSubmitOrderCallbacks = () => {
@@ -345,23 +346,27 @@ export const useSubmitOrderCallback = () => {
       const ensureAllowance = () => getHasAllowance({ token: ensureWrappedToken(srcToken, chainId), amount: srcAmount });
       const shouldWrap = isNativeAddress(srcToken.address);
       const haveAllowance = await ensureAllowance();
-      updateState({ swapStatus: SwapStatus.LOADING, swapSteps: getSteps(shouldWrap, !haveAllowance) });
+      let stepIndex = 0;
+      updateState({ swapStatus: SwapStatus.LOADING, totalSteps: getTotalSteps(shouldWrap, !haveAllowance) });
 
       if (shouldWrap) {
-        updateState({ swapStep: SwapSteps.WRAP });
+        updateState({ activeStep: Steps.WRAP });
         await wrapToken(srcAmount);
+        stepIndex++;
+        updateState({ currentStepIndex: stepIndex });
       }
 
       if (!haveAllowance) {
-        updateState({ swapStep: SwapSteps.APPROVE });
+        updateState({ activeStep: Steps.APPROVE });
         await approve({ token: ensureWrappedToken(srcToken, chainId), amount: approvalAmount });
         // make sure the allowance was set
         if (!(await ensureAllowance())) {
           throw new Error("Insufficient allowance to perform the swap. Please approve the token first.");
         }
+        stepIndex++;
+        updateState({ currentStepIndex: stepIndex });
       }
-
-      updateState({ swapStep: SwapSteps.CREATE });
+      updateState({ activeStep: Steps.CREATE });
       const order = await createOrder(ensureWrappedToken(srcToken, chainId));
       // we refetch balances only if we wrapped the token
       updateState({ swapStatus: SwapStatus.SUCCESS });
@@ -371,7 +376,7 @@ export const useSubmitOrderCallback = () => {
       onMutate: onRequest,
       onError(error) {
         if (isTxRejected(error) && !wrappedRef.current) {
-          updateState({ swapStep: undefined, swapStatus: undefined });
+          updateState({ activeStep: undefined, swapStatus: undefined, currentStepIndex: undefined });
         } else {
           updateState({ swapStatus: SwapStatus.FAILED, swapError: (error as any).message });
         }

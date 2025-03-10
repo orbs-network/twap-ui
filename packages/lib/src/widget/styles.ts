@@ -59,6 +59,15 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     },
     ".twap-orders-selected-order-bottom": {
       marginTop: 20,
+      width: "100%",
+      ".twap-submit-button": {
+        marginTop: 20,
+      },
+      "&-accordions": {
+        display: "flex",
+        flexDirection: "column",
+        gap: 15,
+      },
     },
     ".twap-order-history": {
       ".twap-order-modal-bottom": {
@@ -459,6 +468,12 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         fontWeight: 500,
         color: colors.text.main,
       },
+    },
+    ".orbs_StepIndicatorLine": {
+      "--line-bg-color": "rgb(252, 114, 255)",
+    },
+    ".orbs_StepIndicator": {
+      // "--indicator-margin-bottom": "10px",
     },
     ".twap-limit-price-panel-percent": {
       marginLeft: "auto",

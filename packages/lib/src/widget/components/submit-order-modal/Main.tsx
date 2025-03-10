@@ -1,21 +1,17 @@
 import { styled } from "styled-components";
 import BN from "bignumber.js";
 import React, { useCallback, useMemo } from "react";
-import { SwapFlow, SwapStep } from "@orbs-network/swap-ui";
-import { isNativeAddress } from "@orbs-network/twap-sdk";
+import { SwapFlow } from "@orbs-network/swap-ui";
 import { Switch, Button, Message } from "../../../components/base";
 import { OrderDisplay } from "../../../components/OrderDisplay";
-import { SwapSteps } from "../../../types";
-import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
-import { IoIosCheckmarkCircleOutline } from "@react-icons/all-files/io/IoIosCheckmarkCircleOutline";
+
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
-import { useConfirmationModalButton, useConfirmationModalPanel } from "../../../hooks/ui-hooks";
-import { useNetwork } from "../../../hooks/logic-hooks";
+import { useConfirmationModal, useConfirmationModalButton, useConfirmationModalOrderDetails } from "../../../hooks/ui-hooks";
 
 export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
   const { translations: t } = useTwapContext();
-  const { marketWarning } = useConfirmationModalPanel();
+  const { marketWarning } = useConfirmationModalOrderDetails();
 
   if (!marketWarning) return null;
 
@@ -112,47 +108,15 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   );
 };
 
-const useSteps = () => {
-  const { orderName, srcToken, swapSteps } = useConfirmationModalPanel();
-  const wTokenSymbol = useNetwork()?.wToken.symbol;
-
-  const isNativeIn = isNativeAddress(srcToken?.address || "");
-  return useMemo((): SwapStep[] => {
-    if (!swapSteps || !srcToken) return [];
-
-    return swapSteps.map((step) => {
-      if (step === SwapSteps.WRAP) {
-        return {
-          id: SwapSteps.WRAP,
-          title: `Wrap ${srcToken.symbol}`,
-          image: srcToken.logoUrl,
-        };
-      }
-      if (step === SwapSteps.APPROVE) {
-        return {
-          id: SwapSteps.APPROVE,
-          title: `Approve ${isNativeIn ? wTokenSymbol : srcToken.symbol}`,
-          icon: <IoIosCheckmarkCircleOutline style={{ width: 20, height: 20 }} />,
-        };
-      }
-      return {
-        id: SwapSteps.CREATE,
-        title: `Create ${orderName} order`,
-        icon: <RiArrowUpDownLine style={{ width: 20, height: 20 }} />,
-      };
-    });
-  }, [srcToken, swapSteps, wTokenSymbol, orderName, isNativeIn]);
-};
-
 const FillDelaySummary = () => {
-  const { chunks, fillDelayMillis } = useConfirmationModalPanel().orderDetails;
+  const { chunks, fillDelayMillis } = useConfirmationModalOrderDetails();
   return <OrderDisplay.FillDelaySummary chunks={chunks} fillDelayMillis={fillDelayMillis} />;
 };
 
 export const Main = () => {
   const { translations, components } = useTwapContext();
-  const steps = useSteps();
-  const { swapStatus, swapStep, srcAmountusd, dstAmountusd } = useConfirmationModalPanel();
+  const { srcAmountusd, dstAmountusd } = useConfirmationModalOrderDetails();
+  const { swapStatus } = useConfirmationModal();
 
   const inUsd = useFormatNumber({ value: srcAmountusd, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: dstAmountusd, decimalScale: 2 });
@@ -162,15 +126,12 @@ export const Main = () => {
       <SwapFlow.Main
         fromTitle={translations.from}
         toTitle={translations.to}
-        steps={steps}
         inUsd={components.USD ? <components.USD value={srcAmountusd || ""} isLoading={false} /> : `$${inUsd}`}
         outUsd={components.USD ? <components.USD value={dstAmountusd || ""} isLoading={false} /> : `$${outUsd}`}
-        currentStep={swapStep}
-        showSingleStep={true}
-        bottomContent={<FillDelaySummary />}
       />
       {!swapStatus && (
         <StyledBottom className="twap-create-order-bottom">
+          <FillDelaySummary />
           <Details />
           <AcceptDisclaimer />
           <SubmitButton />
@@ -192,8 +153,8 @@ const Details = () => {
     state: { isMarketOrder },
   } = useTwapContext();
 
-  const { fillDelayMillis, dstMinAmountOut, deadline, chunks, srcChunkAmount, fee } = useConfirmationModalPanel().orderDetails;
-  const feeAmountF = useFormatNumber({ value: fee.amount, decimalScale: 2 });
+  const { fillDelayMillis, dstMinAmountOut, deadline, chunks, srcChunkAmount, fee } = useConfirmationModalOrderDetails();
+  const feeAmountF = useFormatNumber({ value: fee.amountUI, decimalScale: 2 });
   return (
     <div className="twap-create-order-details">
       <Price />

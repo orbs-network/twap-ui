@@ -1,5 +1,5 @@
 import Dialog from "@mui/material/Dialog";
-import React, { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import React, { ReactNode, useCallback, useMemo, useState } from "react";
 import { Components, Token, useFormatNumber } from "@orbs-network/twap-ui";
 import { Config, Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sdk";
 import { MdClose } from "@react-icons/all-files/md/MdClose";

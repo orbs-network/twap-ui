@@ -34,7 +34,7 @@ const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<
   if (name) {
     const payload = await fetch(`https://tokens.coingecko.com/${name}/all.json`, { signal }).then((res) => res.json());
 
-    const result = payload.tokens.map((token: any) => {
+    return payload.tokens.map((token: any) => {
       return {
         address: token.address,
         symbol: token.symbol,
@@ -42,9 +42,6 @@ const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<
         logoUrl: token.logoURI,
       };
     });
-
-    const native = getNetwork(chainId)?.native as Token;
-    return [native, ...result];
   }
 
   const response = await fetch("https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokens.1inch.eth.link", { signal }).then((res) => res.json());
@@ -78,8 +75,9 @@ const getTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]
   }
 
   const result = _.sortBy(tokens, (it) => BASE_TOKENS.indexOf(it.symbol)).reverse();
+  const native = getNetwork(chainId)?.native as Token;
 
-  return result;
+  return [native, ...result];
 };
 
 export const api = { getTokens };

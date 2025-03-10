@@ -90,6 +90,9 @@ export interface Translations {
   wrap: string;
   unwrap: string;
   balance: string;
+  wrapAction: string;
+  approveAction: string;
+  createOrderAction: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";
@@ -309,7 +312,7 @@ export interface TwapProps {
   isDarkTheme?: boolean;
   isLimitPanel?: boolean;
   enableQueryParams?: boolean;
-  fee?: string;
+  fee?: number;
   config: Config;
   translations?: Partial<Translations>;
   srcToken?: Token;
@@ -391,18 +394,22 @@ export type Step = {
   status: "pending" | "loading" | "completed" | "disabled";
 };
 
-export enum SwapSteps {
-  WRAP,
-  APPROVE,
-  CREATE,
+export enum Steps {
+  WRAP = "wrap",
+  APPROVE = "approve",
+  CREATE = "create",
 }
 
 export interface State {
-  swapStep?: SwapSteps;
-  swapSteps?: SwapSteps[];
+  totalSteps?: number;
   swapStatus?: SwapStatus;
+  activeStep?: Steps;
+  currentStepIndex?: number;
   swapError?: string;
   createOrderTxHash?: string;
+  approveTxHash?: string;
+  wrapTxHash?: string;
+  unwrapTxHash?: string;
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
   typedSrcAmount?: string;

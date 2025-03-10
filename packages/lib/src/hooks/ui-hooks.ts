@@ -11,7 +11,6 @@ import {
   useFillDelay,
   useLimitPrice,
   useMinChunkSizeUsd,
-  useNetwork,
   useOnCloseConfirmationModal,
   useOnOpenConfirmationModal,
   useOnSrcInputPercentClick,
@@ -31,7 +30,7 @@ import { useFormatNumber } from "./useFormatNumber";
 import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useAccountOrders, useGroupedByStatusOrders } from "./order-hooks";
-import { SwapSteps } from "../types";
+import { Steps } from "../types";
 
 const defaultPercent = [1, 5, 10];
 
@@ -511,19 +510,6 @@ export const useOrderDurationPanel = () => {
   };
 };
 
-// comfirmation modal hooks
-export const useNewOrderExplorerUrl = () => {
-  const {
-    state: { createOrderTxHash },
-  } = useTwapContext();
-  const explorerUrl = useNetwork()?.explorer;
-
-  return useMemo(() => {
-    if (!explorerUrl || !createOrderTxHash) return "";
-    return `${explorerUrl}/tx/${createOrderTxHash}`;
-  }, [explorerUrl, createOrderTxHash]);
-};
-
 export const useMarketPriceMessage = () => {
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
   const {
@@ -557,74 +543,83 @@ export const useConfirmationModalButton = () => {
   }, [t, onSubmit, disclaimerAccepted, mutationLoading, swapStatus]);
 };
 
-export const useConfirmationModalPanel = () => {
+const useMarketWarning = () => {
   const {
-    state: { isMarketOrder, createOrderTxHash, swapStep, swapStatus, swapData, swapSteps, swapError },
+    state: { isMarketOrder },
     translations: t,
-    fee,
-    updateState,
   } = useTwapContext();
-
-  const deadline = useOrderDeadline();
-  const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
-  const chunks = useChunks().chunks;
-  const fillDelayMillis = useFillDelay().milliseconds;
-  const dstMinAmountOut = useDestTokenMinAmount().amountUI;
-  const destTokenAmount = useDestTokenAmount().amountUI;
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  const onClose = useOnCloseConfirmationModal();
 
-  const explorerUrl = useNetwork()?.explorer;
-  const explorerLink = useMemo(() => {
-    if (!explorerUrl || !createOrderTxHash) return "";
-    return `${explorerUrl}/tx/${createOrderTxHash}`;
-  }, [explorerUrl, createOrderTxHash]);
-  const marketWarning = useMemo(() => {
+  return useMemo(() => {
     if (!isMarketOrder || isWrapOrUnwrapOnly) return;
     return {
       text: t?.marketOrderWarning,
       url: `https://www.orbs.com/dtwap-and-dlimit-faq/`,
     };
   }, [isMarketOrder, isWrapOrUnwrapOnly, t]);
+};
 
-  const feeAmountUI = useMemo(() => {
+const useFee = () => {
+  const {
+    fee,
+    state: { isMarketOrder },
+  } = useTwapContext();
+  const destTokenAmount = useDestTokenAmount().amountUI;
+
+  const amountUI = useMemo(() => {
     if (!fee || !destTokenAmount || isMarketOrder) return "";
     return BN(destTokenAmount).multipliedBy(fee).dividedBy(100).toFixed().toString();
   }, [fee, destTokenAmount, isMarketOrder]);
+  return {
+    amountUI,
+    percent: fee,
+  };
+};
 
-  const callbacks = useMemo(() => {
-    return {
-      onClose,
-      setStep: (swapStep: SwapSteps) => updateState({ swapStep }),
-      setStatus: (swapStatus: SwapStatus) => updateState({ swapStatus }),
-    };
-  }, [onClose, updateState]);
-
-  const orderDetails = useMemo(() => {
-    return {
-      deadline,
-      srcChunkAmount,
-      fillDelayMillis,
-      dstMinAmountOut,
-      chunks,
-      fee: {
-        percent: fee,
-        amount: feeAmountUI,
-      },
-    };
-  }, [deadline, srcChunkAmount, fillDelayMillis, dstMinAmountOut, chunks, fee, feeAmountUI]);
+export const useConfirmationModalOrderDetails = () => {
+  const {
+    state: { swapData },
+  } = useTwapContext();
+  const deadline = useOrderDeadline();
+  const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
+  const chunks = useChunks().chunks;
+  const fillDelayMillis = useFillDelay().milliseconds;
+  const dstMinAmountOut = useDestTokenMinAmount().amountUI;
+  const fee = useFee();
 
   return {
-    orderName: useOrderName(isMarketOrder, chunks),
-    orderDetails,
-    marketWarning,
-    explorerLink,
-    swapStep,
-    swapStatus,
-    swapError,
-    swapSteps,
-    callbacks,
+    marketWarning: useMarketWarning(),
+    deadline,
+    srcChunkAmount,
+    fillDelayMillis,
+    dstMinAmountOut,
+    chunks,
+    fee,
     ...swapData,
+  };
+};
+
+export const useConfirmationModal = () => {
+  const { state, updateState } = useTwapContext();
+
+  const chunks = useChunks().chunks;
+  const onClose = useOnCloseConfirmationModal();
+
+  return {
+    orderName: useOrderName(state.isMarketOrder, chunks),
+    activeStep: state.activeStep,
+    createOrderTxHash: state.createOrderTxHash,
+    totalSteps: state.totalSteps,
+    currentStepIndex: state.currentStepIndex,
+    swapStatus: state.swapStatus,
+    swapError: state.swapError,
+    approveTxHash: state.approveTxHash,
+    wrapTxHash: state.wrapTxHash,
+    unwrapTxHash: state.unwrapTxHash,
+    onClose,
+    incrementStep: useCallback(() => updateState({ currentStepIndex: (state.currentStepIndex || 0) + 1 }), [updateState, state.currentStepIndex]),
+    setActiveStep: useCallback((step: Steps) => updateState({ activeStep: step }), [updateState]),
+    setStatus: useCallback((swapStatus: SwapStatus) => updateState({ swapStatus }), [updateState]),
   };
 };
 

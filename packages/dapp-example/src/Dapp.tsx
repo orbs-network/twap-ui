@@ -3,7 +3,7 @@ import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps } from "@orbs-network/twap-ui";
-import { Configs, eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
+import { eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "./context";
@@ -58,6 +58,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const { openConnectModal } = useConnectModal();
   const config = useDappContext().config;
   const dappTokens = useTokenList();
+
   const client = useWalletClient();
   const [srcToken, setSrcToken] = useState<Token | undefined>(undefined);
   const [dstToken, setDstToken] = useState<Token | undefined>(undefined);
@@ -72,9 +73,9 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
     if (!srcToken) {
       setSrcToken(dappTokens[1]);
     }
-    // if (!dstToken) {
-    //   setDstToken(dappTokens[2]);
-    // }
+    if (!dstToken) {
+      setDstToken(dappTokens[2]);
+    }
   }, [dappTokens, dstToken, srcToken]);
 
   const onSwitchTokens = () => {
@@ -129,7 +130,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       useToken={useToken}
       includeStyles={true}
       customMinChunkSizeUsd={4}
-      fee="0.25"
+      fee={0.25}
     />
   );
 };

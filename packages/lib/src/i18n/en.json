@@ -86,5 +86,8 @@
   "order": "Order",
   "noLiquidity": "No liquidity for this pair",
   "excecutionSummary": "Execution summary",
-  "orderInfo": "Order info"
+  "orderInfo": "Order info",
+  "wrapAction": "Wrap {symbol}",
+  "approveAction": "Approve {symbol}",
+  "createOrderAction": "Create {name} order"
 }

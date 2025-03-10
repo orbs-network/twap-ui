@@ -4,7 +4,7 @@ import { IoIosWarning } from "@react-icons/all-files/io/IoIosWarning";
 import React, { useMemo } from "react";
 import { isNativeBalanceError } from "../../../utils";
 import { useNetwork } from "../../../hooks/logic-hooks";
-import { useConfirmationModalPanel } from "../../../hooks/ui-hooks";
+import { useConfirmationModal } from "../../../hooks/ui-hooks";
 
 export function Failed({ error }: { error?: any }) {
   const nativeBalance = useMemo(() => isNativeBalanceError(error), [error]);
@@ -21,7 +21,7 @@ export function Failed({ error }: { error?: any }) {
 }
 
 const Title = () => {
-  const orderName = useConfirmationModalPanel().orderName;
+  const orderName = useConfirmationModal().orderName;
 
   return <StyledTitle className="twap-order-modal-failed-title">{`${orderName} order failed`}</StyledTitle>;
 };

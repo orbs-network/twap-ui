@@ -127,7 +127,7 @@ export const useTokensWithBalancesUSD = () => {
     queryKey: ["useTokensWithBalancesUSD", dataUpdatedAt],
     queryFn: async () => {
       const balancesWithValues = Object.entries(balances!)
-        .filter(([, it]) => it.ui !== "0")
+        .filter(([, it]) => BN(it.ui).gt(0))
         .map((it) => it[0]);
 
       const usdValues = await Promise.all(
@@ -135,14 +135,18 @@ export const useTokensWithBalancesUSD = () => {
           const result = await fetchLLMAPrice(address, chainId!);
 
           const balance = balances![address].ui;
+
           return {
             [address.toLowerCase()]: BN(result.priceUsd).multipliedBy(balance).toNumber(),
           };
         }),
       );
-      return usdValues.reduce((acc, it) => {
+
+      const result = usdValues.reduce((acc, it) => {
         return { ...acc, ...it };
       }, {}) as { [key: string]: number };
+
+      return result;
     },
 
     enabled: !!balances,
@@ -162,9 +166,10 @@ export const useTokenList = () => {
       return -usd;
     });
     const nativeTokenIndex = sorted.findIndex((it) => isNativeAddress(it.address));
+
     const nativeToken = sorted.splice(nativeTokenIndex, 1)[0];
 
-    return nativeTokenIndex ? [nativeToken, ...sorted] : sorted;
+    return nativeTokenIndex > -1 ? [nativeToken, ...sorted] : sorted;
   }, [tokens, usdValues]);
 };
 

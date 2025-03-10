@@ -429,9 +429,17 @@ export const useOnCloseConfirmationModal = () => {
     }
 
     if (failure) {
-      updateState({ swapStatus: undefined, swapStep: undefined });
+      updateState({ swapStatus: undefined, activeStep: undefined, currentStepIndex: 0 });
     }
   }, [reset, updateState, swapStatus]);
+};
+
+export const useTransactionExplorerLink = (txHash?: string) => {
+  const network = useNetwork();
+  return useMemo(() => {
+    if (!txHash || !network) return undefined;
+    return `${network.explorer}/tx/${txHash}`;
+  }, [txHash, network]);
 };
 
 const getUsdAmount = (amount?: string, usd?: string | number) => {

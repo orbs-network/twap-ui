@@ -66,12 +66,14 @@ export const HistoryOrderPreview = () => {
         <OrderDisplay.FillDelaySummary chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />
 
         <div className="twap-orders-selected-order-bottom">
-          <AccordionContainer title={t.excecutionSummary} onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
-            <ExcecutionSummary order={order} />
-          </AccordionContainer>
-          <AccordionContainer title={t.orderInfo} expanded={expanded === "panel2"} onClick={() => handleChange("panel2")}>
-            <OrderInfo order={order} />
-          </AccordionContainer>
+          <div className="twap-orders-selected-order-bottom-accordions">
+            <AccordionContainer title={t.excecutionSummary} onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
+              <ExcecutionSummary order={order} />
+            </AccordionContainer>
+            <AccordionContainer title={t.orderInfo} expanded={expanded === "panel2"} onClick={() => handleChange("panel2")}>
+              <OrderInfo order={order} />
+            </AccordionContainer>
+          </div>
           <CancelOrderButton order={order} />
         </div>
       </OrderDisplay>
