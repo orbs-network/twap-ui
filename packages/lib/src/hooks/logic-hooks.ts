@@ -368,6 +368,18 @@ export const useFillDelay = () => {
   };
 };
 
+export const useOrderName = (isMarketOrder = false, chunks = 1) => {
+  const { translations: t } = useTwapContext();
+  return useMemo(() => {
+    if (isMarketOrder) {
+      return t.twapMarket;
+    }
+    if (chunks === 1) {
+      return t.limit;
+    }
+    return t.twapLimit;
+  }, [t, isMarketOrder, chunks]);
+};
 export const useOrderDuration = () => {
   const {
     twapSDK,
@@ -389,26 +401,28 @@ export const useOrderDuration = () => {
 export const useOnOpenConfirmationModal = () => {
   const {
     updateState,
-    state: { typedSrcAmount },
+    state: { typedSrcAmount, swapStatus, isMarketOrder },
     srcToken,
     dstToken,
   } = useTwapContext();
+  const chunks = useChunks().chunks;
   const dstAmount = useDestTokenAmount().amountUI;
-  const { srcUsd, dstUsd } = useUsdAmount();
+  const orderName = useOrderName(isMarketOrder, chunks);
   return useCallback(() => {
+    updateState({ showConfirmation: true });
+    if (swapStatus === SwapStatus.LOADING) return;
     updateState({
-      showConfirmation: true,
+      swapStatus: undefined,
       // prevent data to change during order creation
-      swapData: {
+      trade: {
         srcAmount: typedSrcAmount,
         dstAmount,
-        srcAmountusd: srcUsd,
-        dstAmountusd: dstUsd,
         srcToken,
         dstToken,
+        title: orderName,
       },
     });
-  }, [updateState, typedSrcAmount, dstAmount, srcUsd, dstUsd, srcToken, dstToken]);
+  }, [updateState, typedSrcAmount, dstAmount, srcToken, dstToken, swapStatus, orderName]);
 };
 
 export const useOnCloseConfirmationModal = () => {
@@ -419,16 +433,12 @@ export const useOnCloseConfirmationModal = () => {
   } = useTwapContext();
 
   return useCallback(() => {
-    const success = swapStatus === SwapStatus.SUCCESS;
-    const failure = swapStatus === SwapStatus.FAILED;
     updateState({ showConfirmation: false });
-    if (success) {
-      setTimeout(() => {
-        reset();
-      }, 300);
+    if (swapStatus === SwapStatus.SUCCESS) {
+      reset();
     }
 
-    if (failure) {
+    if (swapStatus === SwapStatus.FAILED) {
       updateState({ swapStatus: undefined, activeStep: undefined, currentStepIndex: 0 });
     }
   }, [reset, updateState, swapStatus]);
@@ -442,28 +452,13 @@ export const useTransactionExplorerLink = (txHash?: string) => {
   }, [txHash, network]);
 };
 
-const getUsdAmount = (amount?: string, usd?: string | number) => {
-  if (!amount || !usd || BN(amount || "0").isZero() || BN(usd || "0").isZero()) return "0";
-  return BN(amount || "0")
-    .times(usd)
-    .toString();
-};
-export const useUsdAmount = () => {
-  const {
-    dstUsd1Token,
-    srcUsd1Token,
-    state: { typedSrcAmount },
-  } = useTwapContext();
-  const isWrapOrUnwrap = useShouldWrapOrUnwrapOnly();
-  const destTokenAmountUI = useDestTokenAmount().amountUI;
-
-  const srcUsd = useMemo(() => getUsdAmount(typedSrcAmount, srcUsd1Token), [typedSrcAmount, srcUsd1Token]);
-  const dstUsd = useMemo(() => getUsdAmount(destTokenAmountUI, dstUsd1Token), [destTokenAmountUI, dstUsd1Token]);
-
-  return {
-    srcUsd,
-    dstUsd: isWrapOrUnwrap ? srcUsd : dstUsd,
-  };
+export const useUsdAmount = (amount?: string, usd?: string | number) => {
+  return useMemo(() => {
+    if (!amount || !usd || BN(amount || "0").isZero() || BN(usd || "0").isZero()) return "0";
+    return BN(amount || "0")
+      .times(usd)
+      .toString();
+  }, [amount, usd]);
 };
 
 export const useOnSrcInputPercentClick = () => {

@@ -6,15 +6,12 @@ import {
   useBalanceError,
   useChunks,
   useDestTokenAmount,
-  useDestTokenMinAmount,
   useError,
   useFillDelay,
   useLimitPrice,
   useMinChunkSizeUsd,
-  useOnCloseConfirmationModal,
   useOnOpenConfirmationModal,
   useOnSrcInputPercentClick,
-  useOrderDeadline,
   useOrderDuration,
   usePriceDiffFromMarketPercent,
   useShouldOnlyWrap,
@@ -30,7 +27,6 @@ import { useFormatNumber } from "./useFormatNumber";
 import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useAccountOrders, useGroupedByStatusOrders } from "./order-hooks";
-import { Steps } from "../types";
 
 const defaultPercent = [1, 5, 10];
 
@@ -88,13 +84,6 @@ export const useLimitPriceDstTokenSelect = () => {
     },
     [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect],
   );
-};
-
-export const useShouldHideLimitPricePanel = () => {
-  const isMarketOrder = useTwapContext().state.isMarketOrder;
-  const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-
-  return isMarketOrder || shouldWrapOrUnwrapOnly;
 };
 
 export const useLimitPriceInput = () => {
@@ -229,7 +218,15 @@ export const useTokenBalance = ({ isSrcToken }: { isSrcToken: boolean }) => {
 };
 
 export const useTokenUSD = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { srcUsd, dstUsd } = useUsdAmount();
+  const {
+    srcUsd1Token,
+    dstUsd1Token,
+    state: { typedSrcAmount },
+  } = useTwapContext();
+  const dstAmountOut = useDestTokenAmount().amountUI;
+  const srcUsd = useUsdAmount(typedSrcAmount, srcUsd1Token);
+  const dstUsd = useUsdAmount(dstAmountOut, dstUsd1Token);
+
   const token = useToken({ isSrcToken });
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
   const data = isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd;
@@ -457,19 +454,6 @@ export const useShowConfirmationModalButton = () => {
   return connect || invalidChain || wrapOnly || unwrapOnly || noLiquidity || swap;
 };
 
-export const useOrderName = (isMarketOrder = false, chunks = 1) => {
-  const { translations: t } = useTwapContext();
-  return useMemo(() => {
-    if (isMarketOrder) {
-      return t.twapMarket;
-    }
-    if (chunks === 1) {
-      return t.limit;
-    }
-    return t.twapLimit;
-  }, [t, isMarketOrder, chunks]);
-};
-
 export const useFillDelayPanel = () => {
   const { setFillDelay, fillDelay, milliseconds, error } = useFillDelay();
 
@@ -510,21 +494,6 @@ export const useOrderDurationPanel = () => {
   };
 };
 
-export const useMarketPriceMessage = () => {
-  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  const {
-    state: { isMarketOrder },
-    translations: t,
-  } = useTwapContext();
-  return useMemo(() => {
-    if (!isMarketOrder || isWrapOrUnwrapOnly) return;
-    return {
-      text: t?.marketOrderWarning,
-      url: `https://www.orbs.com/dtwap-and-dlimit-faq/`,
-    };
-  }, [isMarketOrder, isWrapOrUnwrapOnly, t]);
-};
-
 export const useConfirmationModalButton = () => {
   const { mutate: onSubmit, isLoading: mutationLoading } = useSubmitOrderCallback();
   const {
@@ -543,13 +512,12 @@ export const useConfirmationModalButton = () => {
   }, [t, onSubmit, disclaimerAccepted, mutationLoading, swapStatus]);
 };
 
-const useMarketWarning = () => {
+export const useMarketPriceMessage = () => {
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
   const {
     state: { isMarketOrder },
     translations: t,
   } = useTwapContext();
-  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-
   return useMemo(() => {
     if (!isMarketOrder || isWrapOrUnwrapOnly) return;
     return {
@@ -559,7 +527,7 @@ const useMarketWarning = () => {
   }, [isMarketOrder, isWrapOrUnwrapOnly, t]);
 };
 
-const useFee = () => {
+export const useFee = () => {
   const {
     fee,
     state: { isMarketOrder },
@@ -573,53 +541,6 @@ const useFee = () => {
   return {
     amountUI,
     percent: fee,
-  };
-};
-
-export const useConfirmationModalOrderDetails = () => {
-  const {
-    state: { swapData },
-  } = useTwapContext();
-  const deadline = useOrderDeadline();
-  const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
-  const chunks = useChunks().chunks;
-  const fillDelayMillis = useFillDelay().milliseconds;
-  const dstMinAmountOut = useDestTokenMinAmount().amountUI;
-  const fee = useFee();
-
-  return {
-    marketWarning: useMarketWarning(),
-    deadline,
-    srcChunkAmount,
-    fillDelayMillis,
-    dstMinAmountOut,
-    chunks,
-    fee,
-    ...swapData,
-  };
-};
-
-export const useConfirmationModal = () => {
-  const { state, updateState } = useTwapContext();
-
-  const chunks = useChunks().chunks;
-  const onClose = useOnCloseConfirmationModal();
-
-  return {
-    orderName: useOrderName(state.isMarketOrder, chunks),
-    activeStep: state.activeStep,
-    createOrderTxHash: state.createOrderTxHash,
-    totalSteps: state.totalSteps,
-    currentStepIndex: state.currentStepIndex,
-    swapStatus: state.swapStatus,
-    swapError: state.swapError,
-    approveTxHash: state.approveTxHash,
-    wrapTxHash: state.wrapTxHash,
-    unwrapTxHash: state.unwrapTxHash,
-    onClose,
-    incrementStep: useCallback(() => updateState({ currentStepIndex: (state.currentStepIndex || 0) + 1 }), [updateState, state.currentStepIndex]),
-    setActiveStep: useCallback((step: Steps) => updateState({ activeStep: step }), [updateState]),
-    setStatus: useCallback((swapStatus: SwapStatus) => updateState({ swapStatus }), [updateState]),
   };
 };
 

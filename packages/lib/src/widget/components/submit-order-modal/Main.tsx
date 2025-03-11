@@ -7,11 +7,12 @@ import { OrderDisplay } from "../../../components/OrderDisplay";
 
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
-import { useConfirmationModal, useConfirmationModalButton, useConfirmationModalOrderDetails } from "../../../hooks/ui-hooks";
+import { useConfirmationModalButton, useFee, useMarketPriceMessage } from "../../../hooks/ui-hooks";
+import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../../hooks/logic-hooks";
 
 export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
   const { translations: t } = useTwapContext();
-  const { marketWarning } = useConfirmationModalOrderDetails();
+  const marketWarning = useMarketPriceMessage();
 
   if (!marketWarning) return null;
 
@@ -29,53 +30,26 @@ export const MarketPriceWarning = ({ className = "" }: { className?: string }) =
   );
 };
 
-export const useSwapPrice = () => {
-  const {
-    state: { swapData },
-  } = useTwapContext();
-
-  const price = useMemo(
-    () =>
-      BN(swapData?.dstAmount || 0)
-        .dividedBy(swapData?.srcAmount || 0)
-        .toString(),
-    [swapData?.dstAmount, swapData?.srcAmount],
-  );
-
-  const srcUsd1Token = useMemo(() => {
-    if (!swapData?.srcAmountusd || !swapData?.srcAmount) return;
-    return BN(swapData?.srcAmountusd).dividedBy(swapData?.srcAmount).toString();
-  }, [swapData?.srcAmountusd, swapData?.srcAmount]);
-
-  const dstUsd1Token = useMemo(() => {
-    if (!swapData?.dstAmountusd || !swapData?.dstAmount) return;
-    return BN(swapData?.dstAmountusd).dividedBy(swapData?.dstAmount).toString();
-  }, [swapData?.dstAmountusd, swapData?.dstAmount]);
-
-  const usd = useMemo(() => {
-    if (!dstUsd1Token || !srcUsd1Token) return "0";
-    return BN(dstUsd1Token).multipliedBy(price).toString();
-  }, [price, srcUsd1Token, dstUsd1Token]);
-
-  return {
-    price,
-    usd,
-  };
-};
-
 const Price = () => {
   const {
-    state: { isMarketOrder },
+    state: { isMarketOrder, trade },
     srcToken,
     dstToken,
   } = useTwapContext();
 
-  const swapPrice = useSwapPrice();
-  const price = useFormatNumber({ value: swapPrice.price, decimalScale: 4 });
+  const price = useMemo(
+    () =>
+      BN(trade?.dstAmount || 0)
+        .dividedBy(trade?.srcAmount || 0)
+        .toString(),
+    [trade?.dstAmount, trade?.srcAmount],
+  );
+
+  const priceF = useFormatNumber({ value: price, decimalScale: 4 });
 
   return (
     <OrderDisplay.DetailRow title={isMarketOrder ? "Market Price" : "Limit Price"}>
-      1 {srcToken?.symbol} = {price} {dstToken?.symbol}
+      1 {srcToken?.symbol} = {priceF} {dstToken?.symbol}
     </OrderDisplay.DetailRow>
   );
 };
@@ -109,25 +83,32 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
 };
 
 const FillDelaySummary = () => {
-  const { chunks, fillDelayMillis } = useConfirmationModalOrderDetails();
+  const chunks = useChunks().chunks;
+  const fillDelayMillis = useFillDelay().milliseconds;
   return <OrderDisplay.FillDelaySummary chunks={chunks} fillDelayMillis={fillDelayMillis} />;
 };
 
 export const Main = () => {
-  const { translations, components } = useTwapContext();
-  const { srcAmountusd, dstAmountusd } = useConfirmationModalOrderDetails();
-  const { swapStatus } = useConfirmationModal();
+  const {
+    translations,
+    components,
+    state: { trade, swapStatus },
+    srcUsd1Token,
+    dstUsd1Token,
+  } = useTwapContext();
+  const srcAmountUsd = useUsdAmount(trade?.srcAmount, srcUsd1Token) || "";
+  const dstAmountUsd = useUsdAmount(trade?.dstAmount, dstUsd1Token) || "";
 
-  const inUsd = useFormatNumber({ value: srcAmountusd, decimalScale: 2 });
-  const outUsd = useFormatNumber({ value: dstAmountusd, decimalScale: 2 });
+  const inUsd = useFormatNumber({ value: srcAmountUsd, decimalScale: 2 });
+  const outUsd = useFormatNumber({ value: dstAmountUsd, decimalScale: 2 });
 
   return (
     <>
       <SwapFlow.Main
         fromTitle={translations.from}
         toTitle={translations.to}
-        inUsd={components.USD ? <components.USD value={srcAmountusd || ""} isLoading={false} /> : `$${inUsd}`}
-        outUsd={components.USD ? <components.USD value={dstAmountusd || ""} isLoading={false} /> : `$${outUsd}`}
+        inUsd={components.USD ? <components.USD value={srcAmountUsd} isLoading={false} /> : `$${inUsd}`}
+        outUsd={components.USD ? <components.USD value={dstAmountUsd} isLoading={false} /> : `$${outUsd}`}
       />
       {!swapStatus && (
         <StyledBottom className="twap-create-order-bottom">
@@ -153,7 +134,12 @@ const Details = () => {
     state: { isMarketOrder },
   } = useTwapContext();
 
-  const { fillDelayMillis, dstMinAmountOut, deadline, chunks, srcChunkAmount, fee } = useConfirmationModalOrderDetails();
+  const fee = useFee();
+  const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
+  const deadline = useOrderDeadline();
+  const dstMinAmountOut = useDestTokenMinAmount().amountUI;
+  const fillDelayMillis = useFillDelay().milliseconds;
+  const chunks = useChunks().chunks;
   const feeAmountF = useFormatNumber({ value: fee.amountUI, decimalScale: 2 });
   return (
     <div className="twap-create-order-details">

@@ -9,8 +9,8 @@ import TokenLogo from "../../../components/base/TokenLogo";
 import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
-import { useOrderName } from "../../../hooks/ui-hooks";
 import { OrderHistoryMenu } from "./OrderHistorySelect";
+import { useOrderName } from "../../../hooks/logic-hooks";
 
 const ListLoader = () => {
   return (

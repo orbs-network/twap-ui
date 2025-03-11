@@ -7,13 +7,16 @@ import { StyledRowFlex, StyledText } from "../../styles";
 import { NumericInput } from "../../components/base";
 import { TokenSelect } from "./token-select";
 import { useTwapContext } from "../../context";
-import { useLimitPriceError, useLimitPriceInput, useLimitPriceOnInvert, useLimitPricePercentSelect, useShouldHideLimitPricePanel } from "../../hooks/ui-hooks";
+import { useLimitPriceError, useLimitPriceInput, useLimitPriceOnInvert, useLimitPricePercentSelect } from "../../hooks/ui-hooks";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
 
 export const LimitPanel = ({ children, className = "" }: { className?: string; children?: ReactNode }) => {
   const error = useLimitPriceError();
-  const shouldHide = useShouldHideLimitPricePanel();
 
-  if (shouldHide) return null;
+  const isMarketOrder = useTwapContext().state.isMarketOrder;
+  const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+
+  if (isMarketOrder || shouldWrapOrUnwrapOnly) return null;
 
   return (
     <Panel error={!!error} className={`twap-limit-price-panel ${className}`}>

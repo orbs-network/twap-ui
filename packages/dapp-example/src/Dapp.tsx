@@ -3,7 +3,7 @@ import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps } from "@orbs-network/twap-ui";
-import { eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
+import { Configs, eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "./context";

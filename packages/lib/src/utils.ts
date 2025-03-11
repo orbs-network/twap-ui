@@ -1,4 +1,4 @@
-import { AddressPadding, Token } from "./types";
+import { AddressPadding, OrderType, Token } from "./types";
 import BN from "bignumber.js";
 import { getNetwork, isNativeAddress, networks, TwapAbi } from "@orbs-network/twap-sdk";
 import { decodeEventLog, TransactionReceipt } from "viem";
@@ -164,3 +164,13 @@ export function millisToMinutes(milliseconds?: number): number {
   const millisecondsInAMinute = 60000; // 60 * 1000
   return milliseconds / millisecondsInAMinute;
 }
+
+export const getOrderType = (isMarketOrder: boolean, chunks: number) => {
+  if (isMarketOrder) {
+    return OrderType.TWAP_MARKET;
+  }
+  if (chunks === 1) {
+    return OrderType.LIMIT;
+  }
+  return OrderType.TWAP_LIMIT;
+};

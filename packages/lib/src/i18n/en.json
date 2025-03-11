@@ -89,5 +89,8 @@
   "orderInfo": "Order info",
   "wrapAction": "Wrap {symbol}",
   "approveAction": "Approve {symbol}",
-  "createOrderAction": "Create {name} order"
+  "createOrderAction": "Create {name} order",
+  "orderModalConfirmOrder": "Confirm order",
+  "CreateOrderModalNativeBalanceError": "Insufficient {nativeToken} balance",
+  "CreateOrderModalOrderCreated": "{name} order created"
 }

@@ -4,46 +4,92 @@ import { Failed } from "./Failed";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { ReactNode, useMemo } from "react";
 import { useTwapContext } from "../../../context";
-import { useNetwork, useTransactionExplorerLink } from "../../../hooks/logic-hooks";
+import {
+  useChunks,
+  useDestTokenMinAmount,
+  useFillDelay,
+  useNetwork,
+  useOnCloseConfirmationModal,
+  useOrderDeadline,
+  useSrcTokenChunkAmount,
+  useTransactionExplorerLink,
+  useUsdAmount,
+} from "../../../hooks/logic-hooks";
 import { isNativeAddress } from "@orbs-network/twap-sdk";
-import { useConfirmationModal, useConfirmationModalOrderDetails } from "../../../hooks/ui-hooks";
+import { useFee } from "../../../hooks/ui-hooks";
 import { Steps } from "../../../types";
+import { getOrderType } from "../../../utils";
+import { useSubmitOrderCallback } from "../../../hooks/send-transactions-hooks";
 
-const CustomModal = ({ children }: { children: ReactNode }) => {
-  const OrderConfirmationModal = useTwapContext().modals.OrderConfirmationModal;
-  const {
-    state: { swapStatus, showConfirmation },
-  } = useTwapContext();
-  const onClose = useConfirmationModal().onClose;
+const Modal = ({ children }: { children: ReactNode }) => {
+  const { modals, state, translations: t, srcUsd1Token, dstUsd1Token } = useTwapContext();
+  const onClose = useOnCloseConfirmationModal();
+  const deadline = useOrderDeadline();
+  const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
+  const chunks = useChunks().chunks;
+  const fillDelayMillis = useFillDelay().milliseconds;
+  const dstMinAmountOut = useDestTokenMinAmount().amountUI;
+  const fee = useFee();
+  const { mutateAsync: onConfirm } = useSubmitOrderCallback();
+  const srcUsd = useUsdAmount(state.trade?.srcAmount, srcUsd1Token);
+  const dstUsd = useUsdAmount(state.trade?.dstAmount, dstUsd1Token);
 
   return (
-    <OrderConfirmationModal isOpen={Boolean(showConfirmation)} onClose={onClose} title={!swapStatus ? "Confirm order" : ""}>
+    <modals.OrderConfirmationModal
+      activeStep={state.activeStep}
+      swapError={state.swapError}
+      swapStatus={state.swapStatus}
+      totalSteps={state.totalSteps}
+      currentStepIndex={state.currentStepIndex || 0}
+      isOpen={Boolean(state.showConfirmation)}
+      onClose={onClose}
+      title={!state.swapStatus ? t.orderModalConfirmOrder : ""}
+      feeAmount={fee.amountUI}
+      feePercent={fee.percent}
+      deadline={deadline}
+      srcChunkAmount={srcChunkAmount}
+      trades={chunks}
+      fillDelayMillis={fillDelayMillis}
+      dstMinAmountOut={dstMinAmountOut}
+      unwrapTxHash={state.unwrapTxHash}
+      wrapTxHash={state.wrapTxHash}
+      approveTxHash={state.approveTxHash}
+      createOrderTxHash={state.createOrderTxHash}
+      orderType={getOrderType(Boolean(state.isMarketOrder), chunks)}
+      srcToken={state.trade?.srcToken}
+      dstToken={state.trade?.dstToken}
+      srcAmount={state.trade?.srcAmount}
+      dstAmount={state.trade?.dstAmount}
+      srcAmountusd={srcUsd}
+      dstAmountusd={dstUsd}
+      onConfirm={onConfirm}
+    >
       <div className="twap-create-order">{children}</div>
-    </OrderConfirmationModal>
+    </modals.OrderConfirmationModal>
   );
 };
 
 const useStep = () => {
-  const { orderName, createOrderTxHash, approveTxHash, wrapTxHash, activeStep } = useConfirmationModal();
-  const { srcToken } = useConfirmationModalOrderDetails();
-  const { translations: t } = useTwapContext();
+  const { translations: t, state } = useTwapContext();
   const network = useNetwork();
-  const wrapExplorerUrl = useTransactionExplorerLink(wrapTxHash);
-  const approveExplorerUrl = useTransactionExplorerLink(approveTxHash);
-  const createOrderExplorerUrl = useTransactionExplorerLink(createOrderTxHash);
+  const wrapExplorerUrl = useTransactionExplorerLink(state.wrapTxHash);
+  const approveExplorerUrl = useTransactionExplorerLink(state.approveTxHash);
+  const createOrderExplorerUrl = useTransactionExplorerLink(state.createOrderTxHash);
+  const srcToken = state.trade?.srcToken;
   const isNativeIn = isNativeAddress(srcToken?.address || "");
-  return useMemo((): Step | undefined => {
-    if (!srcToken) return;
+  const symbol = isNativeIn ? network?.native.symbol || "" : srcToken?.symbol || "";
+  const orderName = state.trade?.title || "";
 
-    if (activeStep === Steps.WRAP) {
+  return useMemo((): Step | undefined => {
+    if (state.activeStep === Steps.WRAP) {
       return {
-        title: t.wrapAction.replace("{symbol}", network?.native.symbol || ""),
+        title: t.wrapAction.replace("{symbol}", symbol),
         explorerUrl: wrapExplorerUrl,
       };
     }
-    if (activeStep === Steps.APPROVE) {
+    if (state.activeStep === Steps.APPROVE) {
       return {
-        title: t.approveAction?.replace("{symbol}", isNativeIn ? network?.wToken.symbol || "" : srcToken.symbol),
+        title: t.approveAction?.replace("{symbol}", symbol),
         explorerUrl: approveExplorerUrl,
       };
     }
@@ -51,18 +97,32 @@ const useStep = () => {
       title: t.createOrderAction.replace("{name}", orderName),
       explorerUrl: createOrderExplorerUrl,
     };
-  }, [orderName, srcToken, network, isNativeIn, activeStep, t, wrapExplorerUrl, approveExplorerUrl, createOrderExplorerUrl]);
+  }, [state.activeStep, approveExplorerUrl, createOrderExplorerUrl, symbol, orderName, t, wrapExplorerUrl]);
 };
 
 export const SubmitOrderModal = () => {
-  const { swapError, swapStatus, totalSteps, currentStepIndex } = useConfirmationModal();
-  const { srcToken, srcAmount, dstToken, dstAmount } = useConfirmationModalOrderDetails();
-  const { components } = useTwapContext();
-  const srcAmountF = useFormatNumber({ value: srcAmount });
-  const outAmountF = useFormatNumber({ value: dstAmount });
+  const {
+    components,
+    state: { swapError, swapStatus, totalSteps, currentStepIndex, trade },
+  } = useTwapContext();
+  const srcAmountF = useFormatNumber({ value: trade?.srcAmount });
+  const outAmountF = useFormatNumber({ value: trade?.dstAmount });
+
+  const { inToken, outToken } = useMemo(() => {
+    return {
+      inToken: {
+        symbol: trade?.srcToken?.symbol,
+        logo: trade?.srcToken?.logoUrl,
+      },
+      outToken: {
+        symbol: trade?.dstToken?.symbol,
+        logo: trade?.dstToken?.logoUrl,
+      },
+    };
+  }, [trade]);
 
   return (
-    <CustomModal>
+    <Modal>
       <SwapFlow
         inAmount={srcAmountF}
         outAmount={outAmountF}
@@ -70,28 +130,25 @@ export const SubmitOrderModal = () => {
         totalSteps={totalSteps}
         currentStep={useStep()}
         currentStepIndex={currentStepIndex}
-        inToken={{
-          symbol: srcToken?.symbol,
-          logo: srcToken?.logoUrl,
-        }}
-        outToken={{
-          symbol: dstToken?.symbol,
-          logo: dstToken?.logoUrl,
-        }}
+        inToken={inToken}
+        outToken={outToken}
         components={{
-          SrcTokenLogo: components.TokenLogo ? <components.TokenLogo token={srcToken} /> : undefined,
-          DstTokenLogo: components.TokenLogo ? <components.TokenLogo token={dstToken} /> : undefined,
+          SrcTokenLogo: components.TokenLogo && <components.TokenLogo token={trade?.srcToken} />,
+          DstTokenLogo: components.TokenLogo && <components.TokenLogo token={trade?.dstToken} />,
           Failed: <Failed error={swapError} />,
           Success: <SuccessContent />,
           Main: <Main />,
         }}
       />
-    </CustomModal>
+    </Modal>
   );
 };
 
 const SuccessContent = () => {
-  const { createOrderTxHash, orderName } = useConfirmationModal();
+  const {
+    state: { createOrderTxHash, trade },
+    translations: t,
+  } = useTwapContext();
   const explorerUrl = useTransactionExplorerLink(createOrderTxHash);
-  return <SwapFlow.Success title={`${orderName} order created`} explorerUrl={explorerUrl} />;
+  return <SwapFlow.Success title={t.CreateOrderModalOrderCreated.replace("{name}", trade?.title || "")} explorerUrl={explorerUrl} />;
 };

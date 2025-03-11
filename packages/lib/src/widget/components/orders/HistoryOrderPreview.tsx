@@ -12,9 +12,8 @@ import { Token } from "../../../types";
 import Button from "../../../components/base/Button";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
-import { useAmountUi } from "../../../hooks/logic-hooks";
+import { useAmountUi, useOrderName } from "../../../hooks/logic-hooks";
 import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
-import { useOrderName } from "../../../hooks/ui-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 
 const useOrderFillDelay = (order?: Order) => {

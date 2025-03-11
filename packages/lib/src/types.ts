@@ -5,7 +5,6 @@ import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt } from "viem";
 
 export type TransactionReceipt = _TransactionReceipt;
-
 export interface Translations {
   minReceived: string;
   confirmationDeadlineTooltip: string;
@@ -93,15 +92,48 @@ export interface Translations {
   wrapAction: string;
   approveAction: string;
   createOrderAction: string;
+  orderModalConfirmOrder: string;
+  CreateOrderModalNativeBalanceError: string;
+  CreateOrderModalOrderCreated: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";
+
+export enum OrderType {
+  LIMIT = "LIMIT",
+  TWAP_MARKET = "TWAP_MARKET",
+  TWAP_LIMIT = "TWAP_LIMIT",
+}
 
 export type OrderConfirmationModalProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children?: ReactNode;
+  activeStep?: Steps;
+  createOrderTxHash?: string;
+  totalSteps?: number;
+  currentStepIndex?: number;
+  swapStatus?: SwapStatus;
+  swapError?: string;
+  approveTxHash?: string;
+  wrapTxHash?: string;
+  unwrapTxHash?: string;
+  srcToken?: Token;
+  dstToken?: Token;
+  srcAmount?: string;
+  dstAmount?: string;
+  srcAmountusd?: string;
+  dstAmountusd?: string;
+  deadline?: number;
+  srcChunkAmount?: string;
+  fillDelayMillis?: number;
+  dstMinAmountOut?: string;
+  trades?: number;
+  feePercent?: number;
+  feeAmount?: string;
+  orderType?: OrderType;
+  onConfirm: () => void;
 };
 
 export type OrderHistoryModalProps = {
@@ -413,13 +445,12 @@ export interface State {
   showConfirmation?: boolean;
   disclaimerAccepted?: boolean;
   typedSrcAmount?: string;
-  swapData?: {
+  trade?: {
     srcToken?: Token;
     dstToken?: Token;
     srcAmount?: string;
     dstAmount?: string;
-    srcAmountusd?: string;
-    dstAmountusd?: string;
+    title?: string;
   };
 
   typedChunks?: number;
@@ -433,3 +464,5 @@ export interface State {
 
   currentTime: number;
 }
+
+export { SwapStatus };

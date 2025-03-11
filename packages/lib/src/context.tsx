@@ -36,6 +36,8 @@ const contextReducer = (state: State, action: Action): State => {
       return {
         ...initialState,
         currentTime: Date.now(),
+        trade: state.trade,
+        swapStatus: state.swapStatus,
       };
     default:
       return state;
@@ -43,7 +45,7 @@ const contextReducer = (state: State, action: Action): State => {
 };
 
 const Listeners = () => {
-  const { isLimitPanel, updateState } = useTwapContext();
+  const { isLimitPanel, updateState, chainId, reset } = useTwapContext();
 
   useEffect(() => {
     if (isLimitPanel) {
@@ -58,6 +60,10 @@ const Listeners = () => {
       updateState({ currentTime: Date.now() });
     }, 60_000);
   }, [updateState]);
+
+  useEffect(() => {
+    reset();
+  }, [chainId, reset]);
 
   return null;
 };
