@@ -378,7 +378,7 @@ export const useShowConfirmationModalButton = () => {
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
   const zeroSrcAmount = BN(typedSrcAmount || "0").isZero();
-  const zeroMarketPrice = BN(marketPrice || 0).isZero();
+  const zeroMarketPrice = !BN(marketPrice || 0).gt(0);
   const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
   const isButtonLoading = !srcToken || !dstToken ? false : isPropsLoading || wrapLoading || unwrapLoading;
 
