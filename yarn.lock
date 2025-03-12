@@ -2780,10 +2780,10 @@
   dependencies:
     "@octokit/openapi-types" "^18.0.0"
 
-"@orbs-network/swap-ui@^0.0.28":
-  version "0.0.28"
-  resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.28.tgz#94ccebd1c53718422eee30a7aa1b62f3dcab8c69"
-  integrity sha512-3LgVfpLp1KuEc5rf9EkDrUSWi71BtzXwr2zrNfZMNm5I7nB3/FK4c0g0OtSgsh4L1/nReZi6q/SMbVjECAYJjg==
+"@orbs-network/swap-ui@^0.0.29":
+  version "0.0.29"
+  resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.29.tgz#e3595e8e11ef5945b0159d5ab33a5fec223900d2"
+  integrity sha512-9cNB2r4/tD+FFx42126kvyFWku4dRaa3U+3hQbcXGB4p46+9eVabkFNj+GJkk1/yDxIlwjZWEa0T0EfYTGoktQ==
 
 "@orbs-network/twap@^2.0.1":
   version "2.3.4"

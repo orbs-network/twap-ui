@@ -1,6 +1,8 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Order, OrderStatus } from "@orbs-network/twap-sdk";
 import { useAccountOrders, useGroupedByStatusOrders } from "../../../hooks/order-hooks";
+import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
+import { SwapStatus } from "@orbs-network/swap-ui";
 
 export type OrdersMenuTab = {
   name: string;
@@ -19,6 +21,9 @@ interface OrderHistoryContextType {
   onOpen: () => void;
   setStatus: (status: OrderStatus) => void;
   status: OrderStatus;
+  cancelOrder: () => void;
+  cancelOrderTxHash: string | undefined;
+  cancelOrderStatus?: SwapStatus;
 }
 
 export const useSelectedOrder = () => {
@@ -40,6 +45,7 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
   const selectedOrders = groupedOrders[status] || [];
+  const { mutate: cancelOrder, swapStatus: cancelOrderStatus, txHash: cancelOrderTxHash, resetSwapStatus: resetCancelOrderStatus } = useCancelOrder(selectedOrderId);
 
   useEffect(() => {
     if (!isOpen) {
@@ -61,11 +67,33 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
     setSelectedOrderId(undefined);
   }, [setSelectedOrderId]);
 
-  const onClose = useCallback(() => setIsOpen(false), []);
+  const onClose = useCallback(() => {
+    if (cancelOrderStatus) {
+      resetCancelOrderStatus();
+    } else {
+      setIsOpen(false);
+    }
+  }, [cancelOrderStatus, resetCancelOrderStatus]);
   const onOpen = useCallback(() => setIsOpen(true), []);
 
   return (
-    <OrderHistoryContext.Provider value={{ selectedOrderId, selectOrder, selectedOrders, setStatus, closePreview, status, isLoading, isOpen, onClose, onOpen }}>
+    <OrderHistoryContext.Provider
+      value={{
+        selectedOrderId,
+        cancelOrder,
+        cancelOrderTxHash,
+        cancelOrderStatus,
+        selectOrder,
+        selectedOrders,
+        setStatus,
+        closePreview,
+        status,
+        isLoading,
+        isOpen,
+        onClose,
+        onOpen,
+      }}
+    >
       {children}
     </OrderHistoryContext.Provider>
   );

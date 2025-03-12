@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import { styled } from "styled-components";
 import { HistoryOrderPreview } from "./HistoryOrderPreview";
-import { OrderHistoryContextProvider, useOrderHistoryContext } from "./context";
+import { OrderHistoryContextProvider, useOrderHistoryContext, useSelectedOrder } from "./context";
 import { OrderHistoryList } from "./OrderHistoryList";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { useMemo } from "react";
@@ -9,6 +9,8 @@ import { Spinner } from "../../../components/base";
 import { StyledColumnFlex, StyledRowFlex } from "../../../styles";
 import { useTwapContext } from "../../../context";
 import { useGroupedByStatusOrders } from "../../../hooks/order-hooks";
+import { Step, SwapFlow } from "@orbs-network/swap-ui";
+import { useTransactionExplorerLink } from "../../../hooks/logic-hooks";
 
 export const Orders = ({ className = "" }: { className?: string }) => {
   return (
@@ -45,25 +47,73 @@ export const OrdersButton = ({ className = "" }: { className?: string }) => {
   );
 };
 
-const CustomModal = ({ children }: { children: ReactNode }) => {
-  const OrderHistoryModal = useTwapContext().modals.OrderHistoryModal;
-  const { isOpen, onClose } = useOrderHistoryContext();
+const CancelOrderFlow = () => {
+  const { cancelOrderTxHash, cancelOrderStatus } = useOrderHistoryContext();
+  const { translations: t, useToken, components } = useTwapContext();
+  const order = useSelectedOrder();
+  const srcToken = useToken?.(order?.srcTokenAddress);
+  const dstToken = useToken?.(order?.dstTokenAddress);
+
+  const explorerUrl = useTransactionExplorerLink(cancelOrderTxHash);
+  const currentStep = useMemo((): Step => {
+    return {
+      title: t.cancelOrderModalTitle.replace("{id}", order?.id?.toString() || ""),
+      explorerUrl,
+    };
+  }, [cancelOrderTxHash, order?.id, t]);
+
+  const { inToken, outToken } = useMemo(() => {
+    return {
+      inToken: { symbol: srcToken?.symbol, logo: srcToken?.logoUrl },
+      outToken: { symbol: dstToken?.symbol, logo: dstToken?.logoUrl },
+    };
+  }, [srcToken, dstToken]);
 
   return (
-    <OrderHistoryModal isOpen={Boolean(isOpen)} onClose={onClose} title="Order history">
+    <SwapFlow
+      className="twap-cancel-order-flow"
+      swapStatus={cancelOrderStatus}
+      totalSteps={1}
+      currentStep={currentStep}
+      currentStepIndex={0}
+      inToken={inToken}
+      outToken={outToken}
+      components={{
+        Failed: <SwapFlow.Failed link="https://www.orbs.com/dtwap-and-dlimit-faq" />,
+        Success: <SwapFlow.Success title={t.orderCancelled} explorerUrl={explorerUrl} />,
+        Main: <SwapFlow.Main />,
+        SrcTokenLogo: components.TokenLogo && <components.TokenLogo token={srcToken} />,
+        DstTokenLogo: components.TokenLogo && <components.TokenLogo token={dstToken} />,
+      }}
+    />
+  );
+};
+
+const CustomModal = ({ children }: { children: ReactNode }) => {
+  const OrderHistoryModal = useTwapContext().modals.OrderHistoryModal;
+  const { isOpen, onClose, cancelOrderStatus } = useOrderHistoryContext();
+  const { translations: t } = useTwapContext();
+
+  return (
+    <OrderHistoryModal isOpen={Boolean(isOpen)} onClose={onClose} title={!cancelOrderStatus ? t.orderHistory : ""}>
       {children}
     </OrderHistoryModal>
   );
 };
 
 const OrderHistory = ({ className = "" }: { className?: string }) => {
-  const { selectedOrderId } = useOrderHistoryContext();
+  const { selectedOrderId, cancelOrderStatus } = useOrderHistoryContext();
+
   return (
     <CustomModal>
-      <StyledContainer className={`twap-order-history ${className}`} order={selectedOrderId !== undefined ? 1 : 0}>
-        <HistoryOrderPreview />
-        <OrderHistoryList />
-      </StyledContainer>
+      {cancelOrderStatus ? (
+        <CancelOrderFlow />
+      ) : (
+        <StyledContainer className={`twap-order-history ${className}`} order={selectedOrderId !== undefined ? 1 : 0}>
+          <HistoryOrderPreview />
+          <OrderHistoryList />
+        </StyledContainer>
+      )}
     </CustomModal>
   );
 };

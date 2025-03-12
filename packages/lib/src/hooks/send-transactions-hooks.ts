@@ -14,7 +14,7 @@ import {
   useSrcTokenChunkAmount,
 } from "./logic-hooks";
 import { amountUi, isNativeAddress, iwethabi, TwapAbi } from "@orbs-network/twap-sdk";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useAddCancelledOrder, useAddNewOrder } from "./order-hooks";
 
@@ -53,16 +53,20 @@ export const useApproveToken = () => {
   );
 };
 
-export const useCancelOrder = () => {
+export const useCancelOrder = (orderId?: number) => {
   const { account, config, callbacks, walletClient, publicClient, twapSDK } = useTwapContext();
+  const [txHash, setTxHash] = useState<string | undefined>(undefined);
+  const [swapStatus, setSwapStatus] = useState<SwapStatus | undefined>(undefined);
 
   const addCancelledOrder = useAddCancelledOrder();
-  return useMutation(
-    async (orderId: number) => {
+  const mutation = useMutation(
+    async () => {
       if (!account) throw new Error("account not defined");
       if (!walletClient) throw new Error("walletClient not defined");
       if (!publicClient) throw new Error("publicClient not defined");
-
+      if (!orderId) throw new Error("orderId not defined");
+      setTxHash(undefined);
+      setSwapStatus(SwapStatus.LOADING);
       twapSDK.analytics.onCancelOrderRequest(orderId);
       callbacks?.cancelOrder?.onRequest?.(orderId);
       const hash = await walletClient.writeContract({
@@ -73,6 +77,7 @@ export const useCancelOrder = () => {
         args: [orderId],
         chain: walletClient.chain,
       });
+      setTxHash(hash);
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
         confirmations: 5,
@@ -85,14 +90,26 @@ export const useCancelOrder = () => {
     {
       onSuccess: () => {
         twapSDK.analytics.onCancelOrderSuccess();
+        setSwapStatus(SwapStatus.SUCCESS);
       },
       onError: (error: Error) => {
         console.log(`cancel error order`, error);
-        twapSDK.analytics.onCreateOrderError(error);
-        callbacks?.cancelOrder?.onFailed?.(error.message);
+        if (isTxRejected(error)) {
+          setSwapStatus(undefined);
+        } else {
+          setSwapStatus(SwapStatus.FAILED);
+          twapSDK.analytics.onCreateOrderError(error);
+          callbacks?.cancelOrder?.onFailed?.(error.message);
+        }
       },
     },
   );
+  const resetSwapStatus = useCallback(() => {
+    setSwapStatus(undefined);
+    mutation.reset();
+  }, [mutation]);
+
+  return { ...mutation, txHash, swapStatus, resetSwapStatus };
 };
 
 const useCallbacks = () => {

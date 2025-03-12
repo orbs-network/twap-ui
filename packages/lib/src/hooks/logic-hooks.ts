@@ -8,6 +8,7 @@ import { erc20Abi } from "viem";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { TX_GAS_COST } from "../consts";
 import { Token } from "../types";
+import moment from "moment";
 
 const abi = [{ inputs: [], name: "latestAnswer", outputs: [{ internalType: "int256", name: "", type: "int256" }], stateMutability: "view", type: "function" }];
 
@@ -334,8 +335,8 @@ export const useOrderDeadline = () => {
     state: { currentTime },
   } = useTwapContext();
   const orderDuration = useOrderDuration().orderDuration;
-  // return moment().add('3', 'month').valueOf()
-  return useMemo(() => twapSDK.getOrderDeadline(currentTime, orderDuration), [twapSDK, currentTime, orderDuration]);
+  return moment().add('3', 'month').valueOf()
+  // return useMemo(() => twapSDK.getOrderDeadline(currentTime, orderDuration), [twapSDK, currentTime, orderDuration]);
 };
 
 export const useFillDelay = () => {

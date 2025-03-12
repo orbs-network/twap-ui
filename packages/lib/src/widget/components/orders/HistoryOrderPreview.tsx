@@ -13,7 +13,6 @@ import Button from "../../../components/base/Button";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
 import { useAmountUi, useOrderName } from "../../../hooks/logic-hooks";
-import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 
 const useOrderFillDelay = (order?: Order) => {
@@ -150,20 +149,13 @@ const ExcecutionSummary = ({ order }: { order: Order }) => {
 const Container = styled(StyledColumnFlex)({});
 
 export const CancelOrderButton = ({ order }: { order: Order }) => {
-  const { isLoading, mutate: cancel } = useCancelOrder();
+  const { cancelOrder } = useOrderHistoryContext();
   const translations = useTwapContext().translations;
 
   if (!order || order.status !== OrderStatus.Open) return null;
 
   return (
-    <StyledCancelOrderButton
-      loading={isLoading}
-      disabled={isLoading}
-      onClick={() => {
-        cancel(order.id);
-      }}
-      className="twap-cancel-order twap-submit-button"
-    >
+    <StyledCancelOrderButton onClick={cancelOrder} className="twap-cancel-order twap-submit-button">
       {translations.cancelOrder}
     </StyledCancelOrderButton>
   );

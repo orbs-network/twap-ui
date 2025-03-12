@@ -7,6 +7,9 @@ import { createPublicClient, createWalletClient, TransactionReceipt as _Transact
 export type TransactionReceipt = _TransactionReceipt;
 export interface Translations {
   minReceived: string;
+  orderHistory: string;
+  orderCancelled: string;
+  cancelOrderModalTitle: string;
   confirmationDeadlineTooltip: string;
   confirmationTradeSizeTooltip: string;
   confirmationTotalTradesTooltip: string;
