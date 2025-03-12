@@ -2790,10 +2790,10 @@
   resolved "https://registry.yarnpkg.com/@orbs-network/twap/-/twap-2.3.4.tgz#f2894525d870bc2c5cc5911904ec841745b4b7f7"
   integrity sha512-XYfV5k+1zvVtbU9a918Zj6Ucbza7Oi1+5muc8vJSni8eMJYAsOtzhA+eP/ullR7j3mrQqaj2LZLkK/I+u7lzSw==
 
-"@orbs-network/twap@^2.3.7":
-  version "2.3.7"
-  resolved "https://registry.yarnpkg.com/@orbs-network/twap/-/twap-2.3.7.tgz#1064b08c07c046130101cfadee992d9a9f177b50"
-  integrity sha512-0l9x3pKL8I2ewMLz2U7suBhL4paQjrfFrVYkcF6FjpcYnFV6G4PFDNA5uwYw4ubkTHDeXXpnxq3OYZhfOZw4PQ==
+"@orbs-network/twap@^2.3.8":
+  version "2.3.8"
+  resolved "https://registry.yarnpkg.com/@orbs-network/twap/-/twap-2.3.8.tgz#0696dc5fd9b48520538c57d2c0d8e66151b1a216"
+  integrity sha512-SrhgCgx2OCZWAThaz9fu0YqNvbSDqeoKSLe8ZyLnamTQpBsYHEHQ5NVLgpyfxxLCBj8oBeCeW1UuGSgyi2Z9VQ==
 
 "@parcel/watcher@2.0.4":
   version "2.0.4"

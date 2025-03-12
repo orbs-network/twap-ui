@@ -335,7 +335,7 @@ export const useOrderDeadline = () => {
     state: { currentTime },
   } = useTwapContext();
   const orderDuration = useOrderDuration().orderDuration;
-  return moment().add('3', 'month').valueOf()
+  return moment().add("3", "month").valueOf();
   // return useMemo(() => twapSDK.getOrderDeadline(currentTime, orderDuration), [twapSDK, currentTime, orderDuration]);
 };
 
