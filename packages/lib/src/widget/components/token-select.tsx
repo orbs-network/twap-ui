@@ -26,13 +26,13 @@ export const TokenSelect = ({ className = "", isSrcToken = false }: { className?
     [onSelect, onClose],
   );
 
-  const modal = <TokenSelectModal onClose={onClose} isOpen={isOpen} isSrcToken={isSrcToken} onSelect={onTokenSelect} />;
+  const modal = !TokenSelectModal ? undefined : <TokenSelectModal onClose={onClose} isOpen={isOpen} isSrcToken={isSrcToken} onSelect={onTokenSelect} />;
 
   if (components.CurrencySelectButton) {
     return (
       <>
         {modal}
-        <components.CurrencySelectButton token={token} onClick={onOpen} />
+        <components.CurrencySelectButton onSelect={onTokenSelect} isSrcToken={isSrcToken} token={token} onClick={onOpen} />
       </>
     );
   }

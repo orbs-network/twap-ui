@@ -51,15 +51,15 @@ const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: nu
   }
 
   return (
-    <StyledListOrder className="twap-order-history-order" onClick={() => selectOrder(order?.id)}>
+    <div className={`twap-order-history-order twap-order-history-order-${order.status}`} onClick={() => selectOrder(order?.id)}>
       <ListItemHeader order={order} />
       <LinearProgressWithLabel value={order.progress || 0} />
-      <StyledRowFlex className="twap-order-history-order-tokens">
+      <div className="twap-order-history-order-tokens">
         <TokenDisplay address={order.srcTokenAddress} />
         <HiArrowRight />
         <TokenDisplay address={order.dstTokenAddress} />
-      </StyledRowFlex>
-    </StyledListOrder>
+      </div>
+    </div>
   );
 };
 
@@ -85,8 +85,6 @@ const StyledEmpty = styled(StyledColumnFlex)({
   justifyContent: "flex-start",
   paddingTop: 30,
   paddingBottom: 30,
-  fontSize: 18,
-  fontWeight: 500,
 });
 
 const ListItemHeader = ({ order }: { order: Order }) => {
@@ -108,40 +106,9 @@ const ListItemHeader = ({ order }: { order: Order }) => {
 
 const StyledHeader = styled(StyledRowFlex)({
   justifyContent: "space-between",
-  fontSize: 14,
-  ".twap-order-header-text": {
-    textTransform: "capitalize",
-    span: {
-      fontSize: 12,
-      opacity: 0.7,
-    },
-  },
-  ".twap-order-header-status": {
-    fontSize: 12,
-    opacity: 0.7,
-  },
-  "@media(max-width: 1000px)": {
-    fontSize: 12,
-  },
 });
 
-const StyledListOrder = styled(StyledColumnFlex)({
-  borderRadius: 15,
-  padding: 10,
-  gap: 5,
-  cursor: "pointer",
-  ".twap-order-history-order-tokens": {
-    justifyContent: "flex-start",
-  },
-  ".twap-order-history-order-tokens-arrow": {
-    width: 16,
-    height: 16,
-  },
-  ".twap-token-logo": {
-    width: 16,
-    height: 16,
-  },
-});
+const StyledListOrder = styled(StyledColumnFlex)({});
 
 const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }) => {
   const { useToken, components } = useTwapContext();
@@ -173,15 +140,6 @@ const StyledTokenDisplayLoader = styled(Loader)({
 
 const StyledTokenDisplay = styled(StyledRowFlex)({
   width: "auto",
-  ".twap-order-token-text": {
-    fontSize: 14,
-    opacity: 0.8,
-  },
-  "@media(max-width: 1000px)": {
-    ".twap-order-token-text": {
-      fontSize: 12,
-    },
-  },
 });
 
 function LinearProgressWithLabel(props: { value: number }) {
@@ -210,12 +168,4 @@ const StyledProgressBar = styled("div")({
 const StyledProgress = styled(StyledRowFlex)({
   width: "100%",
   gap: 0,
-  p: {
-    fontSize: 12,
-    opacity: 0.8,
-    textAlign: "right",
-  },
-  ".twap-order-token-progress-label": {
-    minWidth: 40,
-  },
 });

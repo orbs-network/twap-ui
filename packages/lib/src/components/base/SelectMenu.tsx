@@ -89,7 +89,6 @@ const Menu = styled.div`
 `;
 
 const StyledMenuItem = styled.div`
-  padding: 7px 15px 7px 10px;
   cursor: pointer;
   text-transform: capitalize;
   p {

@@ -96,8 +96,8 @@ export const Main = () => {
     srcUsd1Token,
     dstUsd1Token,
   } = useTwapContext();
-  const srcAmountUsd = useUsdAmount(trade?.srcAmount, srcUsd1Token) || "";
-  const dstAmountUsd = useUsdAmount(trade?.dstAmount, dstUsd1Token) || "";
+  const srcAmountUsd = useUsdAmount(trade?.srcAmount, srcUsd1Token);
+  const dstAmountUsd = useUsdAmount(trade?.dstAmount, dstUsd1Token);
 
   const inUsd = useFormatNumber({ value: srcAmountUsd, decimalScale: 2 });
   const outUsd = useFormatNumber({ value: dstAmountUsd, decimalScale: 2 });

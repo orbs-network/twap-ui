@@ -2,15 +2,15 @@ import { Message } from "../../components/base";
 import { useTwapContext } from "../../context";
 import { useLimitPriceMessage } from "../../hooks/ui-hooks";
 
-export const LimitPriceMessage = ({ className = "" }: { className?: string }) => {
+const Content = ({ className = "" }: { className?: string }) => {
   const { translations: t } = useTwapContext();
-  const message = useLimitPriceMessage();
 
+  const message = useLimitPriceMessage();
   if (!message) return null;
 
   return (
     <Message
-      className={`${className} twap-limit-price-message`}
+      className={`twap-limit-price-message ${className}`}
       variant="warning"
       title={
         <>
@@ -23,3 +23,13 @@ export const LimitPriceMessage = ({ className = "" }: { className?: string }) =>
     />
   );
 };
+
+export const LimitPriceMessage = ({ children, className = "" }: { children?: React.ReactNode; className?: string }) => {
+  const message = useLimitPriceMessage();
+
+  if (!message) return null;
+
+  return <>{children ? children : <Content className={className} />}</>;
+};
+
+LimitPriceMessage.Content = Content;

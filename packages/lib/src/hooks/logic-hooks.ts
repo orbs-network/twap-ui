@@ -8,7 +8,6 @@ import { erc20Abi } from "viem";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { TX_GAS_COST } from "../consts";
 import { Token } from "../types";
-import moment from "moment";
 
 const abi = [{ inputs: [], name: "latestAnswer", outputs: [{ internalType: "int256", name: "", type: "int256" }], stateMutability: "view", type: "function" }];
 
@@ -455,10 +454,10 @@ export const useTransactionExplorerLink = (txHash?: string) => {
 
 export const useUsdAmount = (amount?: string, usd?: string | number) => {
   return useMemo(() => {
-    if (!amount || !usd || BN(amount || "0").isZero() || BN(usd || "0").isZero()) return "0";
+    if (!amount || !usd || BN(amount || "0").isZero() || BN(usd || "0").isZero()) return 0;
     return BN(amount || "0")
       .times(usd)
-      .toString();
+      .toNumber();
   }, [amount, usd]);
 };
 

@@ -28,12 +28,7 @@ function Button(props: ButtonProps) {
       className={`twap-button ${loading ? "twap-button-loading" : ""} ${disabled ? "twap-button-disabled" : "twap-button-enabled"} ${className}`}
       disabled={_disabled}
     >
-      {loading && (
-        <StyledLoader className="twap-button-loader">
-          <Spinner className="twap-button-loader" />
-        </StyledLoader>
-      )}
-      <StyledChildren className="twap-button-children" style={{ opacity: loading ? 0 : 1 }}>
+      <StyledChildren className="twap-button-children" style={{ pointerEvents: loading ? "none" : "auto" }}>
         {children}
       </StyledChildren>
     </StyledContainer>

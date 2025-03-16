@@ -50,31 +50,13 @@ const useLimitPriceLoading = () => {
   return Boolean(srcToken && dstToken && BN(marketPrice || 0).isZero());
 };
 
-export const useLimitPriceSrcTokenSelect = () => {
+export const useLimitPriceTokenSelect = () => {
   const {
     state: { isInvertedPrice },
     callbacks,
   } = useTwapContext();
 
-  return useCallback(
-    (token: any) => {
-      if (isInvertedPrice) {
-        callbacks.onDstTokenSelect?.(token);
-      } else {
-        callbacks.onSrcTokenSelect?.(token);
-      }
-    },
-    [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect],
-  );
-};
-
-export const useLimitPriceDstTokenSelect = () => {
-  const {
-    state: { isInvertedPrice },
-    callbacks,
-  } = useTwapContext();
-
-  return useCallback(
+  const bottomTokenSelect = useCallback(
     (token: any) => {
       if (isInvertedPrice) {
         callbacks.onSrcTokenSelect?.(token);
@@ -84,6 +66,22 @@ export const useLimitPriceDstTokenSelect = () => {
     },
     [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect],
   );
+
+  const topTokenSelect = useCallback(
+    (token: any) => {
+      if (isInvertedPrice) {
+        callbacks.onDstTokenSelect?.(token);
+      } else {
+        callbacks.onSrcTokenSelect?.(token);
+      }
+    },
+    [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect],
+  );
+
+  return {
+    bottomTokenSelect,
+    topTokenSelect,
+  };
 };
 
 export const useLimitPriceInput = () => {
@@ -201,8 +199,8 @@ export const useLimitPriceTokens = () => {
   } = useTwapContext();
 
   return {
-    srcToken: isInvertedPrice ? dstToken : srcToken,
-    destToken: isInvertedPrice ? srcToken : dstToken,
+    topToken: isInvertedPrice ? dstToken : srcToken,
+    bottomToken: isInvertedPrice ? srcToken : dstToken,
   };
 };
 
@@ -233,7 +231,7 @@ export const useTokenUSD = ({ isSrcToken }: { isSrcToken: boolean }) => {
 
   return {
     data: isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd,
-    isLoading: token && !data,
+    isLoading: Boolean(token && !data),
   };
 };
 
@@ -276,12 +274,14 @@ export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
 export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const { value, onChange } = useTokenInput({ isSrcToken });
   const token = useToken({ isSrcToken });
+  const otherToken = useToken({ isSrcToken: !isSrcToken });
+
   const balanceError = useBalanceError();
   const balance = useTokenBalance({ isSrcToken });
   const usd = useTokenUSD({ isSrcToken });
   const onTokenSelect = useTokenSelect({ isSrcToken });
   const onSrcInputPercentClick = useOnSrcInputPercentClick();
-  const { marketPriceLoading } = useTwapContext();
+  const { marketPriceLoading, translations: t } = useTwapContext();
 
   const onPercent = useCallback(
     (percent: number) => {
@@ -291,16 +291,23 @@ export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
     [onSrcInputPercentClick, isSrcToken],
   );
 
+  const onMax = useCallback(() => {
+    onPercent(1);
+  }, [onPercent]);
+
   return {
     value,
     onChange,
     token,
+    otherToken,
     error: isSrcToken ? balanceError : false,
     balance,
     usd,
     onTokenSelect,
     onPercent,
+    onMax,
     isLoading: isSrcToken ? false : marketPriceLoading,
+    title: isSrcToken ? t.from : t.to,
   };
 };
 
@@ -380,7 +387,7 @@ export const useShowConfirmationModalButton = () => {
   const zeroSrcAmount = BN(typedSrcAmount || "0").isZero();
   const zeroMarketPrice = !BN(marketPrice || 0).gt(0);
   const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
-  const isButtonLoading = !srcToken || !dstToken ? false : isPropsLoading || wrapLoading || unwrapLoading;
+  const isButtonLoading = !srcToken || !dstToken || !typedSrcAmount ? false : isPropsLoading || wrapLoading || unwrapLoading;
 
   const noLiquidity = useMemo(() => {
     const result = srcToken && dstToken && !isButtonLoading && !marketPriceLoading && zeroMarketPrice;
@@ -444,12 +451,23 @@ export const useShowConfirmationModalButton = () => {
 
   const swap = useMemo(() => {
     return {
-      text: !srcToken || !dstToken ? t.placeOrder : error ? error : marketPriceLoading ? t.outAmountLoading : t.placeOrder,
+      text:
+        !srcToken || !dstToken
+          ? t.placeOrder
+          : !typedSrcAmount
+            ? t.enterAmount
+            : marketPriceLoading
+              ? t.outAmountLoading
+              : isButtonLoading
+                ? t.placeOrder
+                : error
+                  ? error
+                  : t.placeOrder,
       onClick: onOpen,
       loading: isButtonLoading,
       disabled: swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isButtonLoading || error,
     };
-  }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isButtonLoading, zeroMarketPrice, error, srcToken, dstToken]);
+  }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isButtonLoading, zeroMarketPrice, error, srcToken, dstToken, typedSrcAmount]);
 
   return connect || invalidChain || wrapOnly || unwrapOnly || noLiquidity || swap;
 };

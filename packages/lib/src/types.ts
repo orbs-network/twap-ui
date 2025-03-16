@@ -126,8 +126,8 @@ export type OrderConfirmationModalProps = {
   dstToken?: Token;
   srcAmount?: string;
   dstAmount?: string;
-  srcAmountusd?: string;
-  dstAmountusd?: string;
+  srcAmountusd?: number;
+  dstAmountusd?: number;
   deadline?: number;
   srcChunkAmount?: string;
   fillDelayMillis?: number;
@@ -175,7 +175,7 @@ export type InputProps = {
 
 export interface Modals {
   OrderConfirmationModal: FC<OrderConfirmationModalProps>;
-  TokenSelectModal: FC<TokenSelectModalProps>;
+  TokenSelectModal?: FC<TokenSelectModalProps>;
   OrderHistoryModal: FC<OrderHistoryModalProps>;
 }
 
@@ -188,13 +188,15 @@ export type BalanceProps = {
 };
 
 export type USDProps = {
-  value: string;
+  value: number;
   isLoading: boolean;
 };
 
 export type CurrencySelectButtonProps = {
   token?: Token;
   onClick: () => void;
+  isSrcToken?: boolean;
+  onSelect?: (token: any) => void;
 };
 
 export type TokenAmountPercentSelectProps = {
