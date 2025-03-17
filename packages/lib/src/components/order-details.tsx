@@ -29,7 +29,7 @@ const ChunkSize = ({ srcChunkAmount, srcToken, chunks }: { srcChunkAmount?: stri
 
   return (
     <DetailRow title={translations.individualTradeSize} tooltip={translations.confirmationTradeSizeTooltip}>
-      {`${srcChunkAmount ? _srcChunkAmount : "-"} ${srcToken?.symbol}`}
+      {`${srcChunkAmount ? _srcChunkAmount : "-"} ${srcToken?.symbol || ""}`}
     </DetailRow>
   );
 };

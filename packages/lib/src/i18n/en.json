@@ -32,7 +32,7 @@
   "marketOrder": "Market order",
   "limitOrder": "Limit order",
   "limitPrice": "Limit price",
-  "finalExcecutionPrice":"Final execution price",
+  "finalExcecutionPrice": "Final execution price",
   "marketPrice": "Market price",
   "from": "From",
   "to": "To",

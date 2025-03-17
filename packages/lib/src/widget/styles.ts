@@ -34,6 +34,11 @@ const getSelectButton = (isDarkMode?: boolean, selected?: boolean) => {
 export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDarkMode }) => {
   const colors = getColors(isDarkMode);
   return {
+    ".twap-orders": {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+    },
     ".twap-orders__button": {
       padding: 16,
       background: "#1B1B1B",
@@ -51,33 +56,20 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       },
       svg: {
         marginLeft: "auto",
-      }
+      },
     },
     ".twap-widget-swap-panel-form": {
       display: "flex",
       flexDirection: "column",
     },
-    ".twap-order-history-button-icon": {
-      marginLeft: "auto",
+    ".twap-submit-button": {
+      marginTop: 20,
     },
-    ".twap-orders-selected-order-bottom": {
+    ".twap-orders__selected-order-bottom": {
       marginTop: 20,
       width: "100%",
-      ".twap-submit-button": {
-        marginTop: 20,
-      },
-      "&-accordions": {
-        display: "flex",
-        flexDirection: "column",
-        gap: 15,
-      },
     },
-    ".twap-order-history": {
-      ".twap-order-modal-bottom": {
-        padding: 12,
-      },
-    },
-    ".twap-orders-selected-order-summary": {
+    ".twap-orders__selected-order-summary": {
       padding: 12,
     },
     ".twap-create-order-bottom": {
@@ -90,11 +82,11 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     ".orbs_MainTokenLeft": {
       gap: 2,
     },
-    ".twap-orders-selected-order-summary-title": {
+    ".twap-orders__selected-order-summary-title": {
       fontWeight: 500,
       fontSize: 14,
     },
-    ".twap-orders-selected-order-details": {
+    ".twap-orders__selected-order-details": {
       gap: 5,
       padding: 12,
       paddingTop: 0,
@@ -112,24 +104,52 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         color: colors.text.main,
       },
     },
-    ".twap-order-display-details": {
-      gap: 12,
+    ".twap-order-details": {
+      gap: 8,
+      display: "flex",
+      flexDirection: "column",
     },
-
-    ".twap-orders-selected-order-accordion": {
+    ".twap-orders__selected-order-accordions": {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+      marginTop: 20,
+    },
+    ".twap-cancel-order": {
+      marginTop: 20,
+    },
+    ".twap-orders__selected-order-accordion": {
       borderRadius: 16,
       background: "#1B1B1B",
-      ".twap-orders-selected-order-details": {
+      "&-trigger": {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "12px 12px 12px 12px",
+        cursor: "pointer",
+        fontSize: 15,
+      },
+      "&-details": {
         padding: "5px 12px 12px 12px",
         display: "flex",
         flexDirection: "column",
         gap: 8,
       },
     },
-    ".twap-order-fill-delay-summary-text": {
+    ".twap-order-details__detail-row": {
+      "&-label": {
+        "*": {
+          fontSize: 14,
+          fontWeight: 500,
+        },
+      },
+      "&-value": {
+        fontSize: 14,
+      },
+    },
+    ".twap-order-details__fill-delay-text": {
       fontSize: 14,
       fontWeight: 500,
-      marginTop: 10,
     },
     ".twap-duration-panel": {
       marginTop: 5,
@@ -142,71 +162,59 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       flexDirection: "column",
       gap: 8,
     },
-    ".twap-order-history-list": {
-      width: "100%",
-    },
     ".orbs_Logo img": {
       objectFit: "cover",
     },
-    ".twap-order-details-row-right": {
-      fontSize: 13,
-    },
-    ".twap-order-tokens": {
-      width: "100%",
-      gap: 30,
-    },
-    ".twap-order-tokens-token-left": {
-      display: "flex",
-      flexDirection: "column",
-      gap: 8,
-    },
-    ".twap-order-tokens-token": {
+
+    ".twap-orders__list-item-progress": {
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-between",
-      width: "100%",
+      gap: 15,
     },
-    ".twap-order-tokens-token-title": {
-      fontSize: 15,
-      fontWeight: 500,
-    },
-    ".twap-order-tokens-token-symbol": {
-      fontSize: 20,
-      fontWeight: 500,
-    },
-    ".twap-order-tokens-token-right": {
-      ".twap-token-logo": {
-        width: 45,
-        height: 45,
-      },
-    },
-    ".twap-order-history-header-back-icon": {
-      color: "white",
-    },
-    ".twap-order-header-text": {
-      fontSize: 13,
-    },
-    ".twap-widget-swap-panel-powered-by-orbs-inner": {
-      display: "none",
-    },
-    ".twap-order-token-progress-bar": {
+    ".twap-orders__list-item-progress-bar": {
       flex: 1,
       background: "rgba(255, 255, 255, 0.07)",
       height: 5,
       borderRadius: 999,
       overflow: "hidden",
     },
-    ".twap-order-token-progress-bar-filled": {
+    ".twap-orders__list-item-progress-bar-filled": {
       background: "rgb(252, 114, 255)",
       height: "100%",
     },
-    ".twap-order-history-order": {
+    ".twap-loader": { background: "rgba(255, 255, 255, 0.07)" },
+    ".twap-orders__list-item-token-logo": {
+      background: "rgba(255, 255, 255, 0.1)",
+      borderRadius: 999,
+    },
+    ".twap-orders__selected-order-header": {
+      gap: 10,
+      marginBottom: 20,
+      "&-title": {
+        fontSize: 13,
+      },
+    },
+    ".twap-orders__list-item": {
+      cursor: "pointer",
       background: "#1B1B1B",
       padding: 12,
       borderRadius: 16,
       marginBottom: 6,
       "&:hover": {
         background: "rgba(255,255,255, 0.06)",
+      },
+      "&-header": {
+        "&-title": {
+          fontSize: 13,
+          span: {
+            fontSize: 12,
+            opacity: 0.7,
+          },
+        },
+        "&-status": {
+          fontSize: 13,
+          opacity: 0.7,
+        },
       },
     },
 
@@ -350,7 +358,6 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       color: "white",
       fontSize: 15,
       fontWeight: 500,
-      marginTop: 10,
       "&-enabled": {
         "&:hover": {
           background: "rgb(37 99 235)",
@@ -534,12 +541,15 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
           opacity: 0.7,
         },
       },
-      ".orbs_MainTokenRight": {
-        ".orbs_MainTokenLogo": {
-          img: {
-            width: 40,
-            height: 40,
-          },
+
+      ".orbs_MainTokenLogo": {
+        background: "rgba(255, 255, 255, 0.1)",
+        borderRadius: 999,
+        img: {
+          width: 40,
+          height: 40,
+          objectFit: "cover",
+          borderRadius: "50%",
         },
       },
     },

@@ -108,7 +108,6 @@ export const SubmitOrderModal = () => {
   const srcAmountF = useFormatNumber({ value: trade?.srcAmount });
   const outAmountF = useFormatNumber({ value: trade?.dstAmount });
 
-
   return (
     <Modal>
       <SwapFlow
@@ -127,7 +126,7 @@ export const SubmitOrderModal = () => {
           Success: <SuccessContent />,
           Main: <Main />,
           Loader: components.CreateOrderLoader,
-          SuccessIcon: components.CreateOrderSuccessIcon ,
+          SuccessIcon: components.CreateOrderSuccessIcon,
           FailedIcon: components.CreateOrderErrorIcon,
         }}
       />

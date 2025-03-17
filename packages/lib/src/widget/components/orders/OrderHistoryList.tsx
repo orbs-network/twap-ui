@@ -7,7 +7,6 @@ import moment from "moment";
 import { Loader } from "../../../components/base/Loader";
 import TokenLogo from "../../../components/base/TokenLogo";
 import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
-import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
 import { OrderHistoryMenu } from "./OrderHistorySelect";
 import { useOrderName } from "../../../hooks/logic-hooks";
@@ -33,15 +32,21 @@ export const OrderHistoryList = () => {
       ) : !selectedOrders.length ? (
         <EmptyList />
       ) : (
-        <div className="twap-orders__list">
+        <StyledList className="twap-orders__list">
           {selectedOrders.map((order) => {
             return <ListOrder key={order.id} selectOrder={selectOrder} order={order} />;
           })}
-        </div>
+        </StyledList>
       )}
     </>
   );
 };
+
+const StyledList = styled("div")({
+  display: "flex",
+  flexDirection: "column",
+  gap: 7,
+});
 
 const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
   const { components } = useTwapContext();
@@ -51,17 +56,56 @@ const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: nu
   }
 
   return (
-    <div className={`twap-orders__list-item twap-orders__list-item-${order.status}`} onClick={() => selectOrder(order?.id)}>
+    <StyledListItem className={`twap-orders__list-item twap-orders__list-item-${order.status}`} onClick={() => selectOrder(order?.id)}>
       <ListItemHeader order={order} />
       <LinearProgressWithLabel value={order.progress || 0} />
       <div className="twap-orders__list-item-tokens">
         <TokenDisplay address={order.srcTokenAddress} />
-        <HiArrowRight />
+        <HiArrowRight className="twap-orders__list-item-tokens-arrow" />
         <TokenDisplay address={order.dstTokenAddress} />
       </div>
-    </div>
+    </StyledListItem>
   );
 };
+
+const StyledListItem = styled("div")({
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+  ".twap-orders__list-item-header": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    "&-title": {},
+    "&-status": {
+      textTransform: "capitalize",
+    },
+  },
+  ".twap-orders__list-item-tokens": {
+    display: "flex",
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+    "&-arrow": {
+      width: 15,
+      height: 15,
+    },
+  },
+  ".twap-orders__list-item-token": {
+    "&-logo": {
+      width: 20,
+      height: 20,
+      img: {
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+      },
+    },
+    "&-symbol": {
+      fontSize: 13,
+    },
+  },
+});
 
 const EmptyList = () => {
   const status = useOrderHistoryContext().status;
@@ -92,14 +136,14 @@ const ListItemHeader = ({ order }: { order: Order }) => {
   const { dateFormat } = useTwapContext();
   const name = useOrderName(order.isMarketOrder, order.totalChunks);
   const formattedDate = React.useMemo(() => {
-    if(!order.createdAt) return "";
-    if(dateFormat) return dateFormat(order.createdAt);
+    if (!order.createdAt) return "";
+    if (dateFormat) return dateFormat(order.createdAt);
     return moment(order.createdAt).format("DD/MM/YYYY HH:mm");
   }, [order.createdAt, dateFormat]);
 
   return (
     <div className="twap-orders__list-item-header">
-      <StyledText className="twap-orders__list-item-header-text">
+      <StyledText className="twap-orders__list-item-header-title">
         #{order?.id} {name} <span>{`(${formattedDate})`}</span>
       </StyledText>
       <StyledText className="twap-orders__list-item-header-status">{status}</StyledText>
@@ -107,11 +151,9 @@ const ListItemHeader = ({ order }: { order: Order }) => {
   );
 };
 
-const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }) => {
+const TokenDisplay = ({ address }: { address?: string; amount?: string }) => {
   const { useToken, components } = useTwapContext();
   const token = useToken?.(address);
-
-  const _amount = useFormatNumber({ value: amount, decimalScale: 4 });
 
   return (
     <StyledTokenDisplay className="twap-orders__list-item-token">
@@ -119,10 +161,8 @@ const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }
         <StyledTokenDisplayLoader />
       ) : (
         <>
-          {components.TokenLogo ? <components.TokenLogo token={token} /> : <TokenLogo logo={token?.logoUrl} />}
-          <StyledText className="twap-orders__list-item-token-text">
-            {_amount} {token?.symbol}
-          </StyledText>
+          <div className="twap-orders__list-item-token-logo">{components.TokenLogo ? <components.TokenLogo token={token} /> : <TokenLogo logo={token?.logoUrl} />}</div>
+          <StyledText className="twap-orders__list-item-token-symbol">{token?.symbol}</StyledText>
         </>
       )}
     </StyledTokenDisplay>
@@ -135,8 +175,10 @@ const StyledTokenDisplayLoader = styled(Loader)({
   height: 20,
 });
 
-const StyledTokenDisplay = styled(StyledRowFlex)({
-  width: "auto",
+const StyledTokenDisplay = styled("div")({
+  display: "flex",
+  alignItems: "center",
+  gap: 5,
 });
 
 function LinearProgressWithLabel(props: { value: number }) {

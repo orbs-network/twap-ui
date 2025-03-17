@@ -13,6 +13,7 @@ import { useAmountUi, useOrderName } from "../../../hooks/logic-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { TokensDisplay } from "@orbs-network/swap-ui";
 import { OrderDetails } from "../../../components/order-details";
+import styled from "styled-components";
 
 const useOrderFillDelay = (order?: Order) => {
   const { config } = useTwapContext();
@@ -46,7 +47,7 @@ export const HistoryOrderPreview = () => {
   }
 
   return (
-    <div className="twap-orders__selected-order">
+    <StyledSelected className="twap-orders__selected-order">
       <div className="twap-orders__selected-order-header">
         <div style={{ cursor: "pointer" }} onClick={closePreview} className="twap-orders__selected-order-header-back-icon">
           {icons?.selectedOrderBack || <HiArrowLeft />}
@@ -70,10 +71,17 @@ export const HistoryOrderPreview = () => {
         </div>
         <CancelOrderButton order={order} />
       </div>
-    </div>
+    </StyledSelected>
   );
 };
 
+const StyledSelected = styled("div")({
+  ".twap-orders__selected-order-header": {
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+  },
+});
 const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: boolean; onClick: () => void; children: ReactNode; title: string }) => {
   return (
     <div className="twap-orders__selected-order-accordion">
@@ -96,7 +104,7 @@ const OrderInfo = ({ order }: { order: Order }) => {
   const fillDelayMillis = useOrderFillDelay(order);
 
   return (
-    <>
+    <OrderDetails>
       <LimitPrice order={order} />
       <CreatedAt order={order} />
       <OrderDetails.Expiry deadline={order?.deadline} />
@@ -107,19 +115,19 @@ const OrderInfo = ({ order }: { order: Order }) => {
       <OrderDetails.TradeInterval chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />
       <OrderDetails.Recipient />
       <OrderDetails.TxHash txHash={order?.txHash} />
-    </>
+    </OrderDetails>
   );
 };
 
 const ExcecutionSummary = ({ order }: { order: Order }) => {
   return (
-    <>
+    <OrderDetails>
       <OrderStatusComponent order={order} />
       <AmountInFilled order={order} />
       <AmountOutFilled order={order} />
       <Progress order={order} />
       <AvgExcecutionPrice order={order} />
-    </>
+    </OrderDetails>
   );
 };
 
@@ -136,13 +144,11 @@ export const CancelOrderButton = ({ order }: { order: Order }) => {
   );
 };
 
-
-
 const CreatedAt = ({ order }: { order: Order }) => {
   const { dateFormat, translations: t } = useTwapContext();
   const createdAtUi = useMemo(() => {
     if (!order?.createdAt) return "";
-    if (dateFormat)  return dateFormat(order?.createdAt);
+    if (dateFormat) return dateFormat(order?.createdAt);
 
     return moment(order?.createdAt).format("DD/MM/YYYY HH:mm");
   }, [order?.createdAt, dateFormat]);
