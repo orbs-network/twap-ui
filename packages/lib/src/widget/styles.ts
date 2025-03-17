@@ -34,7 +34,7 @@ const getSelectButton = (isDarkMode?: boolean, selected?: boolean) => {
 export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDarkMode }) => {
   const colors = getColors(isDarkMode);
   return {
-    ".twap-order-history-button": {
+    ".twap-orders__button": {
       padding: 16,
       background: "#1B1B1B",
       borderRadius: 20,
@@ -49,6 +49,9 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       "&:hover": {
         background: "rgba(255, 255, 255, 0.07)",
       },
+      svg: {
+        marginLeft: "auto",
+      }
     },
     ".twap-widget-swap-panel-form": {
       display: "flex",

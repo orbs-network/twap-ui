@@ -3,12 +3,12 @@ import BN from "bignumber.js";
 import React, { useCallback, useMemo } from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
 import { Switch, Button, Message } from "../../../components/base";
-import { OrderDisplay } from "../../../components/OrderDisplay";
 
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
 import { useConfirmationModalButton, useFee, useMarketPriceMessage } from "../../../hooks/ui-hooks";
 import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../../hooks/logic-hooks";
+import { OrderDetails } from "../../../components/order-details";
 
 export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
   const { translations: t } = useTwapContext();
@@ -48,9 +48,9 @@ const Price = () => {
   const priceF = useFormatNumber({ value: price, decimalScale: 4 });
 
   return (
-    <OrderDisplay.DetailRow title={isMarketOrder ? "Market Price" : "Limit Price"}>
+    <OrderDetails.DetailRow title={isMarketOrder ? "Market Price" : "Limit Price"}>
       1 {srcToken?.symbol} = {priceF} {dstToken?.symbol}
-    </OrderDisplay.DetailRow>
+    </OrderDetails.DetailRow>
   );
 };
 
@@ -66,7 +66,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   }, [disclaimerAccepted, updateState]);
 
   return (
-    <OrderDisplay.DetailRow
+    <OrderDetails.DetailRow
       className={`twap-order-modal-disclaimer ${className}`}
       title={
         <>
@@ -78,14 +78,14 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
       }
     >
       <Switch checked={Boolean(disclaimerAccepted)} onChange={onChange} />
-    </OrderDisplay.DetailRow>
+    </OrderDetails.DetailRow>
   );
 };
 
 const FillDelaySummary = () => {
   const chunks = useChunks().chunks;
   const fillDelayMillis = useFillDelay().milliseconds;
-  return <OrderDisplay.FillDelaySummary chunks={chunks} fillDelayMillis={fillDelayMillis} />;
+  return <OrderDetails.FillDelaySummary chunks={chunks} fillDelayMillis={fillDelayMillis} />;
 };
 
 export const Main = () => {
@@ -146,21 +146,21 @@ const Details = () => {
       <Price />
       {isLimitPanel ? (
         <>
-          <OrderDisplay.Expiry deadline={deadline} />
-          <OrderDisplay.Recipient />
+          <OrderDetails.Expiry deadline={deadline} />
+          <OrderDetails.Recipient />
         </>
       ) : (
         <>
           <MarketPriceWarning />
-          <OrderDisplay.Expiry deadline={deadline} />
-          <OrderDisplay.ChunkSize srcChunkAmount={srcChunkAmount} chunks={chunks} srcToken={srcToken} />
-          <OrderDisplay.ChunksAmount chunks={chunks} />
-          <OrderDisplay.MinDestAmount totalChunks={chunks} dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={dstMinAmountOut} />
-          <OrderDisplay.TradeInterval chunks={chunks} fillDelayMillis={fillDelayMillis} />
-          <OrderDisplay.Recipient />
+          <OrderDetails.Expiry deadline={deadline} />
+          <OrderDetails.ChunkSize srcChunkAmount={srcChunkAmount} chunks={chunks} srcToken={srcToken} />
+          <OrderDetails.ChunksAmount chunks={chunks} />
+          <OrderDetails.MinDestAmount totalChunks={chunks} dstToken={dstToken} isMarketOrder={isMarketOrder} dstMinAmountOut={dstMinAmountOut} />
+          <OrderDetails.TradeInterval chunks={chunks} fillDelayMillis={fillDelayMillis} />
+          <OrderDetails.Recipient />
         </>
       )}
-      {fee.percent && <OrderDisplay.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDisplay.DetailRow>}
+      {fee.percent && <OrderDetails.DetailRow title={`Fee (${fee.percent}%)`}>{feeAmountF ? `${feeAmountF} ${dstToken?.symbol}` : ""}</OrderDetails.DetailRow>}
     </div>
   );
 };

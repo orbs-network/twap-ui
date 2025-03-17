@@ -108,18 +108,6 @@ export const SubmitOrderModal = () => {
   const srcAmountF = useFormatNumber({ value: trade?.srcAmount });
   const outAmountF = useFormatNumber({ value: trade?.dstAmount });
 
-  const { inToken, outToken } = useMemo(() => {
-    return {
-      inToken: {
-        symbol: trade?.srcToken?.symbol,
-        logo: trade?.srcToken?.logoUrl,
-      },
-      outToken: {
-        symbol: trade?.dstToken?.symbol,
-        logo: trade?.dstToken?.logoUrl,
-      },
-    };
-  }, [trade]);
 
   return (
     <Modal>
@@ -130,14 +118,17 @@ export const SubmitOrderModal = () => {
         totalSteps={totalSteps}
         currentStep={useStep()}
         currentStepIndex={currentStepIndex}
-        inToken={inToken}
-        outToken={outToken}
+        inToken={trade?.srcToken}
+        outToken={trade?.dstToken}
         components={{
           SrcTokenLogo: components.TokenLogo && <components.TokenLogo token={trade?.srcToken} />,
           DstTokenLogo: components.TokenLogo && <components.TokenLogo token={trade?.dstToken} />,
           Failed: <Failed error={swapError} />,
           Success: <SuccessContent />,
           Main: <Main />,
+          Loader: components.CreateOrderLoader,
+          SuccessIcon: components.CreateOrderSuccessIcon ,
+          FailedIcon: components.CreateOrderErrorIcon,
         }}
       />
     </Modal>

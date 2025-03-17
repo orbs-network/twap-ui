@@ -98,6 +98,13 @@ export interface Translations {
   orderModalConfirmOrder: string;
   CreateOrderModalNativeBalanceError: string;
   CreateOrderModalOrderCreated: string;
+  amountReceived: string;
+  createdAt: string;
+  amountOut: string;
+  amountSent: string;
+  status: string;
+  progress: string;
+  finalExcecutionPrice: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";
@@ -261,6 +268,7 @@ export type TokenLogoProps = {
 export type OrdersButtonProps = {
   onClick: () => void;
   openOrdersCount: number;
+  isLoading: boolean;
 };
 
 interface Components {
@@ -288,6 +296,9 @@ interface Components {
   SwitchTokens?: FC<SwitchTokensProps>;
   TokenLogo?: FC<TokenLogoProps>;
   OrdersButton?: FC<OrdersButtonProps>;
+  CreateOrderLoader?: ReactNode;
+  CreateOrderSuccessIcon?: ReactNode;
+  CreateOrderErrorIcon?: ReactNode;
 }
 
 interface CreateOrderCallbackArgs {
@@ -337,12 +348,17 @@ export type Callbacks = {
   onDstTokenSelect?: (token: any) => void;
   onSwitchTokens?: () => void;
   onConnect?: () => void;
+  onMaxSrcAmount?: () => void;
 };
 
 interface Provider {
   request(...args: any): Promise<any>;
   [key: string]: any; // Allow extra properties
 }
+
+type Icons = {
+  selectedOrderBack?: ReactNode;
+};
 
 export interface TwapProps {
   provider?: Provider;
@@ -369,6 +385,8 @@ export interface TwapProps {
   includeStyles?: boolean;
   callbacks: Callbacks;
   chainId?: number;
+  icons?: Icons;
+  dateFormat?: (date: number) => string;
 }
 
 export interface TwapContextType extends TwapProps {

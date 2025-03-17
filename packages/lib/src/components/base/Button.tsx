@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { styled } from "styled-components";
 import { ButtonProps } from "../../types";
-import { Spinner } from "./Spinner";
 import { useTwapContext } from "../../context";
 
 function Button(props: ButtonProps) {
@@ -34,13 +33,6 @@ function Button(props: ButtonProps) {
     </StyledContainer>
   );
 }
-
-const StyledLoader = styled("div")({
-  left: "50%",
-  top: "55%",
-  transform: "translate(-50%, -50%) scale(0.8)",
-  position: "absolute",
-});
 
 const StyledContainer = styled("button")<{ disabled: boolean }>(({ disabled }) => ({
   position: "relative",

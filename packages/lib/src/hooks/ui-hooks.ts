@@ -281,7 +281,11 @@ export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const usd = useTokenUSD({ isSrcToken });
   const onTokenSelect = useTokenSelect({ isSrcToken });
   const onSrcInputPercentClick = useOnSrcInputPercentClick();
-  const { marketPriceLoading, translations: t } = useTwapContext();
+  const {
+    marketPriceLoading,
+    translations: t,
+    callbacks: { onMaxSrcAmount },
+  } = useTwapContext();
 
   const onPercent = useCallback(
     (percent: number) => {
@@ -292,8 +296,12 @@ export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
   );
 
   const onMax = useCallback(() => {
-    onPercent(1);
-  }, [onPercent]);
+    if (onMaxSrcAmount) {
+      onMaxSrcAmount();
+    } else {
+      onPercent(1);
+    }
+  }, [onPercent, onMaxSrcAmount]);
 
   return {
     value,

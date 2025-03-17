@@ -1,19 +1,18 @@
-import React from "react";
-import styled from "styled-components";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
 import { OrderStatus, Order, getOrderFillDelay, getOrderLimitPrice, getOrderExcecutionPrice } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import moment from "moment";
-import { OrderDisplay } from "../../../components/OrderDisplay";
-import { StyledColumnFlex, StyledRowFlex, StyledText } from "../../../styles";
+import { StyledText } from "../../../styles";
 import { Token } from "../../../types";
 import Button from "../../../components/base/Button";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
 import { useAmountUi, useOrderName } from "../../../hooks/logic-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
+import { TokensDisplay } from "@orbs-network/swap-ui";
+import { OrderDetails } from "../../../components/order-details";
 
 const useOrderFillDelay = (order?: Order) => {
   const { config } = useTwapContext();
@@ -22,7 +21,7 @@ const useOrderFillDelay = (order?: Order) => {
 
 export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
-  const { useToken, components, translations: t } = useTwapContext();
+  const { useToken, components, translations: t, icons } = useTwapContext();
 
   const { selectedOrderId, closePreview } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
@@ -47,67 +46,45 @@ export const HistoryOrderPreview = () => {
   }
 
   return (
-    <Container className="twap-orders-selected-order">
-      <StyledOrderDetails>
-        <StyledBack onClick={closePreview} className="twap-order-history-header-back-icon">
-          <HiArrowLeft />
-        </StyledBack>
-        <StyledText className="twap-order-history-header-title">
+    <div className="twap-orders__selected-order">
+      <div className="twap-orders__selected-order-header">
+        <div style={{ cursor: "pointer" }} onClick={closePreview} className="twap-orders__selected-order-header-back-icon">
+          {icons?.selectedOrderBack || <HiArrowLeft />}
+        </div>
+        <StyledText className="twap-orders__selected-order-header-title">
           #{order?.id} {name} {t.order}
         </StyledText>
-      </StyledOrderDetails>
-      <OrderDisplay>
-        <OrderDisplay.Tokens>
-          <OrderDisplay.SrcToken token={srcToken} />
-          <OrderDisplay.DstToken token={dstToken} />
-        </OrderDisplay.Tokens>
-        <OrderDisplay.FillDelaySummary chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />
+      </div>
+      <TokensDisplay fromTitle={t.from} inToken={srcToken} toTitle={t.to} outToken={dstToken} />
 
-        <div className="twap-orders-selected-order-bottom">
-          <div className="twap-orders-selected-order-bottom-accordions">
-            <AccordionContainer title={t.excecutionSummary} onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
-              <ExcecutionSummary order={order} />
-            </AccordionContainer>
-            <AccordionContainer title={t.orderInfo} expanded={expanded === "panel2"} onClick={() => handleChange("panel2")}>
-              <OrderInfo order={order} />
-            </AccordionContainer>
-          </div>
-          <CancelOrderButton order={order} />
+      <div className="twap-orders__selected-order-bottom">
+        <OrderDetails.FillDelaySummary chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />
+
+        <div className="twap-orders__selected-order-accordions">
+          <AccordionContainer title={t.excecutionSummary} onClick={() => handleChange("panel1")} expanded={expanded === "panel1"}>
+            <ExcecutionSummary order={order} />
+          </AccordionContainer>
+          <AccordionContainer title={t.orderInfo} expanded={expanded === "panel2"} onClick={() => handleChange("panel2")}>
+            <OrderInfo order={order} />
+          </AccordionContainer>
         </div>
-      </OrderDisplay>
-    </Container>
+        <CancelOrderButton order={order} />
+      </div>
+    </div>
   );
 };
-
-const StyledBack = styled("button")({
-  background: "none",
-  border: "none",
-  cursor: "pointer",
-});
-
-const StyledOrderDetails = styled(StyledRowFlex)({
-  justifyContent: "flex-start",
-  gap: 5,
-});
 
 const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: boolean; onClick: () => void; children: ReactNode; title: string }) => {
   return (
-    <StyledAccordion className="twap-orders-selected-order-accordion">
-      <StyledSummary onClick={onClick} className="twap-orders-selected-order-summary">
-        <StyledText className="twap-orders-selected-order-summary-title">{title}</StyledText>
+    <div className="twap-orders__selected-order-accordion">
+      <div onClick={onClick} className="twap-orders__selected-order-accordion-trigger">
+        <StyledText>{title}</StyledText>
         <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
-      </StyledSummary>
-      {expanded && <div className="twap-orders-selected-order-details">{children}</div>}
-    </StyledAccordion>
+      </div>
+      {expanded && <div className="twap-orders__selected-order-accordion-details">{children}</div>}
+    </div>
   );
 };
-
-const StyledSummary = styled.div({
-  display: "flex",
-  justifyContent: "space-between",
-  cursor: "pointer",
-  alignItems: "center",
-});
 
 const OrderInfo = ({ order }: { order: Order }) => {
   const { useToken } = useTwapContext();
@@ -122,14 +99,14 @@ const OrderInfo = ({ order }: { order: Order }) => {
     <>
       <LimitPrice order={order} />
       <CreatedAt order={order} />
-      <OrderDisplay.Expiry deadline={order?.deadline} />
+      <OrderDetails.Expiry deadline={order?.deadline} />
       <AmountIn order={order} />
-      <OrderDisplay.ChunkSize chunks={order?.totalChunks} srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />
-      <OrderDisplay.ChunksAmount chunks={order?.totalChunks} />
-      <OrderDisplay.MinDestAmount totalChunks={order?.totalChunks} dstToken={dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={dstMinAmountOutUi} />
-      <OrderDisplay.TradeInterval chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />
-      <OrderDisplay.Recipient />
-      <OrderDisplay.TxHash txHash={order?.txHash} />
+      <OrderDetails.ChunkSize chunks={order?.totalChunks} srcChunkAmount={srcChunkAmountUi} srcToken={srcToken} />
+      <OrderDetails.ChunksAmount chunks={order?.totalChunks} />
+      <OrderDetails.MinDestAmount totalChunks={order?.totalChunks} dstToken={dstToken} isMarketOrder={order?.isMarketOrder} dstMinAmountOut={dstMinAmountOutUi} />
+      <OrderDetails.TradeInterval chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />
+      <OrderDetails.Recipient />
+      <OrderDetails.TxHash txHash={order?.txHash} />
     </>
   );
 };
@@ -146,8 +123,6 @@ const ExcecutionSummary = ({ order }: { order: Order }) => {
   );
 };
 
-const Container = styled(StyledColumnFlex)({});
-
 export const CancelOrderButton = ({ order }: { order: Order }) => {
   const { cancelOrder } = useOrderHistoryContext();
   const translations = useTwapContext().translations;
@@ -155,93 +130,99 @@ export const CancelOrderButton = ({ order }: { order: Order }) => {
   if (!order || order.status !== OrderStatus.Open) return null;
 
   return (
-    <StyledCancelOrderButton onClick={cancelOrder} className="twap-cancel-order twap-submit-button">
+    <Button onClick={cancelOrder} className="twap-cancel-order">
       {translations.cancelOrder}
-    </StyledCancelOrderButton>
+    </Button>
   );
 };
 
-const StyledCancelOrderButton = styled(Button)({
-  marginTop: 0,
-});
+
 
 const CreatedAt = ({ order }: { order: Order }) => {
-  const createdAtUi = useMemo(() => moment(order?.createdAt).format("DD/MM/YYYY HH:mm"), [order?.createdAt]);
+  const { dateFormat, translations: t } = useTwapContext();
+  const createdAtUi = useMemo(() => {
+    if (!order?.createdAt) return "";
+    if (dateFormat)  return dateFormat(order?.createdAt);
+
+    return moment(order?.createdAt).format("DD/MM/YYYY HH:mm");
+  }, [order?.createdAt, dateFormat]);
   return (
-    <OrderDisplay.DetailRow title="Created at">
+    <OrderDetails.DetailRow title={t.createdAt}>
       <StyledText>{createdAtUi}</StyledText>
-    </OrderDisplay.DetailRow>
+    </OrderDetails.DetailRow>
   );
 };
 
 const AmountOutFilled = ({ order }: { order: Order }) => {
-  const { useToken } = useTwapContext();
+  const { useToken, translations: t } = useTwapContext();
   const dstToken = useToken?.(order?.dstTokenAddress);
   const dstAmountUi = useAmountUi(dstToken?.decimals, order.dstFilledAmount);
   const amount = useFormatNumber({ value: dstAmountUi, decimalScale: 3 });
 
   return (
-    <OrderDisplay.DetailRow title="Amount received">
+    <OrderDetails.DetailRow title={t.amountReceived}>
       <StyledText>
         {amount || "-"} {dstToken?.symbol}
       </StyledText>
-    </OrderDisplay.DetailRow>
+    </OrderDetails.DetailRow>
   );
 };
 
 const AmountIn = ({ order }: { order: Order }) => {
-  const { useToken } = useTwapContext();
+  const { useToken, translations: t } = useTwapContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
   const srcAmountUi = useAmountUi(srcToken?.decimals, order.srcAmount);
   const amount = useFormatNumber({ value: srcAmountUi, decimalScale: 3 });
 
   return (
-    <OrderDisplay.DetailRow title="Amount out">
+    <OrderDetails.DetailRow title={t.amountOut}>
       <StyledText>
         {amount || 0} {srcToken?.symbol}
       </StyledText>
-    </OrderDisplay.DetailRow>
+    </OrderDetails.DetailRow>
   );
 };
 
 const AmountInFilled = ({ order }: { order: Order }) => {
-  const { useToken } = useTwapContext();
+  const { useToken, translations: t } = useTwapContext();
 
   const srcToken = useToken?.(order?.srcTokenAddress);
   const srcFilledAmountUi = useAmountUi(srcToken?.decimals, order.srcFilledAmount);
   const amount = useFormatNumber({ value: srcFilledAmountUi, decimalScale: 3 });
 
   return (
-    <OrderDisplay.DetailRow title="Amount sent">
+    <OrderDetails.DetailRow title={t.amountSent}>
       <StyledText>
         {amount || "-"} {srcToken?.symbol}
       </StyledText>
-    </OrderDisplay.DetailRow>
+    </OrderDetails.DetailRow>
   );
 };
 const OrderStatusComponent = ({ order }: { order: Order }) => {
+  const { translations: t } = useTwapContext();
   const text = !order ? "" : order.status;
 
   return (
-    <OrderDisplay.DetailRow title="Status">
+    <OrderDetails.DetailRow title={t.status}>
       <StyledText>{text}</StyledText>
-    </OrderDisplay.DetailRow>
+    </OrderDetails.DetailRow>
   );
 };
 
 const Progress = ({ order }: { order: Order }) => {
+  const { translations: t } = useTwapContext();
   const progress = useFormatNumber({ value: order?.progress, decimalScale: 2 });
   if (order?.totalChunks === 1) return null;
   return (
-    <OrderDisplay.DetailRow title="Progress">
+    <OrderDetails.DetailRow title={t.progress}>
       <StyledText>{progress || 0}%</StyledText>
-    </OrderDisplay.DetailRow>
+    </OrderDetails.DetailRow>
   );
 };
 
 const LimitPrice = ({ order }: { order: Order }) => {
-  const { useToken } = useTwapContext();
+  const { useToken, translations: t } = useTwapContext();
   const srcToken = useToken?.(order.srcTokenAddress);
   const dstToken = useToken?.(order.dstTokenAddress);
 
@@ -251,7 +232,7 @@ const LimitPrice = ({ order }: { order: Order }) => {
   }, [order, srcToken, dstToken]);
 
   if (order?.isMarketOrder) return null;
-  return <Price title="Limit price" price={limitPrice} srcToken={srcToken} dstToken={dstToken} />;
+  return <Price title={t.limitPrice} price={limitPrice} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const AvgExcecutionPrice = ({ order }: { order: Order }) => {
@@ -264,13 +245,13 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
     return getOrderExcecutionPrice(order, srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
 
-  return <Price title={order?.totalChunks === 1 ? "Final execution price" : t.AverageExecutionPrice} price={excecutionPrice} srcToken={srcToken} dstToken={dstToken} />;
+  return <Price title={order?.totalChunks === 1 ? t.finalExcecutionPrice : t.AverageExecutionPrice} price={excecutionPrice} srcToken={srcToken} dstToken={dstToken} />;
 };
 
 const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?: Token; dstToken?: Token; title: string }) => {
   const _price = useFormatNumber({ value: price, decimalScale: 3 });
   return (
-    <OrderDisplay.DetailRow title={title}>
+    <OrderDetails.DetailRow title={title}>
       {BN(price || 0).isZero() ? (
         <StyledText>-</StyledText>
       ) : (
@@ -278,10 +259,6 @@ const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?
           1 {srcToken?.symbol} = {_price} {dstToken?.symbol}
         </StyledText>
       )}
-    </OrderDisplay.DetailRow>
+    </OrderDetails.DetailRow>
   );
 };
-
-const StyledAccordion = styled("div")({
-  width: "100%",
-});

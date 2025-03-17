@@ -32,6 +32,7 @@
   "marketOrder": "Market order",
   "limitOrder": "Limit order",
   "limitPrice": "Limit price",
+  "finalExcecutionPrice":"Final execution price",
   "marketPrice": "Market price",
   "from": "From",
   "to": "To",
@@ -95,5 +96,11 @@
   "CreateOrderModalOrderCreated": "{name} order created",
   "orderCancelled": "Order cancelled",
   "cancelOrderModalTitle": "Cancel order {id}",
-  "orderHistory": "Order history"
+  "orderHistory": "Order history",
+  "amountReceived": "Amount received",
+  "createdAt": "Created at",
+  "amountOut": "Amount out",
+  "amountSent": "Amount sent",
+  "status": "Status",
+  "progress": "Progress"
 }

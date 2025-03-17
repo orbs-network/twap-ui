@@ -14,7 +14,7 @@ import { useOrderName } from "../../../hooks/logic-hooks";
 
 const ListLoader = () => {
   return (
-    <StyledColumnFlex className="twap-orders-list-loader">
+    <StyledColumnFlex className="twap-orders__loader">
       <Loader />
     </StyledColumnFlex>
   );
@@ -33,7 +33,7 @@ export const OrderHistoryList = () => {
       ) : !selectedOrders.length ? (
         <EmptyList />
       ) : (
-        <div className="twap-order-history-list">
+        <div className="twap-orders__list">
           {selectedOrders.map((order) => {
             return <ListOrder key={order.id} selectOrder={selectOrder} order={order} />;
           })}
@@ -51,10 +51,10 @@ const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: nu
   }
 
   return (
-    <div className={`twap-order-history-order twap-order-history-order-${order.status}`} onClick={() => selectOrder(order?.id)}>
+    <div className={`twap-orders__list-item twap-orders__list-item-${order.status}`} onClick={() => selectOrder(order?.id)}>
       <ListItemHeader order={order} />
       <LinearProgressWithLabel value={order.progress || 0} />
-      <div className="twap-order-history-order-tokens">
+      <div className="twap-orders__list-item-tokens">
         <TokenDisplay address={order.srcTokenAddress} />
         <HiArrowRight />
         <TokenDisplay address={order.dstTokenAddress} />
@@ -74,7 +74,7 @@ const EmptyList = () => {
   }, [status]);
 
   return (
-    <StyledEmpty className="twap-order-history-list-empty">
+    <StyledEmpty className="twap-orders__list-empty">
       <StyledText>{t.noOrders.replace("{status}", name)}</StyledText>
     </StyledEmpty>
   );
@@ -89,26 +89,23 @@ const StyledEmpty = styled(StyledColumnFlex)({
 
 const ListItemHeader = ({ order }: { order: Order }) => {
   const status = order && order.status;
+  const { dateFormat } = useTwapContext();
   const name = useOrderName(order.isMarketOrder, order.totalChunks);
   const formattedDate = React.useMemo(() => {
+    if(!order.createdAt) return "";
+    if(dateFormat) return dateFormat(order.createdAt);
     return moment(order.createdAt).format("DD/MM/YYYY HH:mm");
-  }, [order.createdAt]);
+  }, [order.createdAt, dateFormat]);
 
   return (
-    <StyledHeader className="twap-order-header">
-      <StyledText className="twap-order-header-text">
+    <div className="twap-orders__list-item-header">
+      <StyledText className="twap-orders__list-item-header-text">
         #{order?.id} {name} <span>{`(${formattedDate})`}</span>
       </StyledText>
-      <StyledText className="twap-order-header-status">{status}</StyledText>
-    </StyledHeader>
+      <StyledText className="twap-orders__list-item-header-status">{status}</StyledText>
+    </div>
   );
 };
-
-const StyledHeader = styled(StyledRowFlex)({
-  justifyContent: "space-between",
-});
-
-const StyledListOrder = styled(StyledColumnFlex)({});
 
 const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }) => {
   const { useToken, components } = useTwapContext();
@@ -117,13 +114,13 @@ const TokenDisplay = ({ address, amount }: { address?: string; amount?: string }
   const _amount = useFormatNumber({ value: amount, decimalScale: 4 });
 
   return (
-    <StyledTokenDisplay className="twap-order-token">
+    <StyledTokenDisplay className="twap-orders__list-item-token">
       {!token ? (
         <StyledTokenDisplayLoader />
       ) : (
         <>
           {components.TokenLogo ? <components.TokenLogo token={token} /> : <TokenLogo logo={token?.logoUrl} />}
-          <StyledText className="twap-order-token-text">
+          <StyledText className="twap-orders__list-item-token-text">
             {_amount} {token?.symbol}
           </StyledText>
         </>
@@ -144,28 +141,22 @@ const StyledTokenDisplay = styled(StyledRowFlex)({
 
 function LinearProgressWithLabel(props: { value: number }) {
   return (
-    <StyledProgress className="twap-order-token-progress">
-      <ProgressBar value={props.value} />
-      <div className="twap-order-token-progress-label">
+    <StyledProgress className="twap-orders__list-item-progress">
+      <div className="twap-orders__list-item-progress-bar">
+        <div className="twap-orders__list-item-progress-bar-filled" style={{ width: `${props.value}%` }} />
+      </div>
+      <div className="twap-orders__list-item-token-progress-label">
         <StyledText>{`${Math.round(props.value)}%`}</StyledText>
       </div>
     </StyledProgress>
   );
 }
 
-const ProgressBar = ({ value }: { value: number }) => {
-  return (
-    <StyledProgressBar className="twap-order-token-progress-bar">
-      <div className="twap-order-token-progress-bar-filled" style={{ width: `${value}%` }} />
-    </StyledProgressBar>
-  );
-};
-
-const StyledProgressBar = styled("div")({
-  flex: 1,
-});
-
 const StyledProgress = styled(StyledRowFlex)({
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
   width: "100%",
-  gap: 0,
+  gap: 15,
 });

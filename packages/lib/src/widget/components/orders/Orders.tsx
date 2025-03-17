@@ -1,12 +1,10 @@
 import React, { ReactNode } from "react";
-import { styled } from "styled-components";
 import { HistoryOrderPreview } from "./HistoryOrderPreview";
 import { OrderHistoryContextProvider, useOrderHistoryContext, useSelectedOrder } from "./context";
 import { OrderHistoryList } from "./OrderHistoryList";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { useMemo } from "react";
 import { Spinner } from "../../../components/base";
-import { StyledColumnFlex, StyledRowFlex } from "../../../styles";
 import { useTwapContext } from "../../../context";
 import { useGroupedByStatusOrders } from "../../../hooks/order-hooks";
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
@@ -35,15 +33,15 @@ export const OrdersButton = ({ className = "" }: { className?: string }) => {
   }, [openOrders, isLoading]);
 
   if (components.OrdersButton) {
-    return <components.OrdersButton onClick={onOpen} openOrdersCount={openOrders?.length || 0} />;
+    return <components.OrdersButton isLoading={isLoading} onClick={onOpen} openOrdersCount={openOrders?.length || 0} />;
   }
 
   return (
-    <StyledOrderHistoryButton className={`twap-order-history-button ${className}`} onClick={onOpen}>
+    <div className={`twap-orders__button ${className}`} onClick={onOpen}>
       {isLoading && <Spinner size={20} />}
-      <span className="twap-order-history-button-text">{text}</span>
-      <FaArrowRight className="twap-order-history-button-icon" />
-    </StyledOrderHistoryButton>
+      <span className="twap-orders__button-text">{text}</span>
+      <FaArrowRight className="twap-orders__button-icon" />
+    </div>
   );
 };
 
@@ -62,13 +60,6 @@ const CancelOrderFlow = () => {
     };
   }, [cancelOrderTxHash, order?.id, t]);
 
-  const { inToken, outToken } = useMemo(() => {
-    return {
-      inToken: { symbol: srcToken?.symbol, logo: srcToken?.logoUrl },
-      outToken: { symbol: dstToken?.symbol, logo: dstToken?.logoUrl },
-    };
-  }, [srcToken, dstToken]);
-
   return (
     <SwapFlow
       className="twap-cancel-order-flow"
@@ -76,8 +67,8 @@ const CancelOrderFlow = () => {
       totalSteps={1}
       currentStep={currentStep}
       currentStepIndex={0}
-      inToken={inToken}
-      outToken={outToken}
+      inToken={srcToken}
+      outToken={dstToken}
       components={{
         Failed: <SwapFlow.Failed link="https://www.orbs.com/dtwap-and-dlimit-faq" />,
         Success: <SwapFlow.Success title={t.orderCancelled} explorerUrl={explorerUrl} />,
@@ -109,27 +100,11 @@ const OrderHistory = ({ className = "" }: { className?: string }) => {
       {cancelOrderStatus ? (
         <CancelOrderFlow />
       ) : (
-        <StyledContainer className={`twap-order-history ${className}`} order={selectedOrderId !== undefined ? 1 : 0}>
+        <div className={`twap-orders ${selectedOrderId !== undefined ? "twap-orders__show-selected" : ""} ${className}`}>
           <HistoryOrderPreview />
           <OrderHistoryList />
-        </StyledContainer>
+        </div>
       )}
     </CustomModal>
   );
 };
-
-const StyledOrderHistoryButton = styled(StyledRowFlex)({
-  justifyContent: "flex-start",
-  ".twap-show-orders-btn-arrow": {
-    marginLeft: "auto",
-  },
-});
-
-const StyledContainer = styled(StyledColumnFlex)<{ order: number }>(({ order }) => {
-  return {
-    width: "100%",
-    position: "relative",
-    height: order ? "auto" : "700px",
-    maxHeight: "90vh",
-  };
-});

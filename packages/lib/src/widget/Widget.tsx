@@ -16,6 +16,7 @@ import { GlobalStyles } from "./styles";
 import { TwapProvider } from "../context";
 import { LimitPriceMessage } from "./components/limit-price-message";
 import { TwapProps } from "../types";
+import { createGlobalStyle } from "styled-components";
 
 const Widget = (props: TwapProps) => {
   return (
@@ -41,4 +42,5 @@ Widget.DurationPanel = DurationPanel;
 Widget.SwitchTokens = SwitchTokens;
 Widget.PriceSwitch = PriceSwitch;
 Widget.LimitPriceMessage = LimitPriceMessage;
+Widget.createGlobalStyle = createGlobalStyle;
 export { Widget };
