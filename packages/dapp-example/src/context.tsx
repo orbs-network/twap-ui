@@ -20,12 +20,25 @@ const Context = createContext({} as ContextProps);
 
 const useConfig = () => {
   const { chainId } = useAccount();
-  const initialConfig = useMemo(() => Object.values(Configs).find((it) => it.chainId === chainId) || Configs.Lynex, [chainId]);
+
+  const initialConfig = useMemo(() => {
+    const configName = localStorage.getItem("config-name");
+    const config = Object.values(Configs).find((it) => it.name === configName);
+    return config || Object.values(Configs).find((it) => it.chainId === chainId) || Configs.Lynex;
+  }, [chainId]);
   const [config, setConfig] = useState(initialConfig as Config);
+
+  const onConfigChange = useCallback(
+    (config: Config) => {
+      localStorage.setItem("config-name", config.name);
+      setConfig(config);
+    },
+    [setConfig],
+  );
 
   return {
     config,
-    setConfig,
+    setConfig: onConfigChange,
   };
 };
 

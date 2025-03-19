@@ -274,13 +274,15 @@ export class Order {
 
   constructor(rawOrder: RawOrder, fills: any, status: any) {
     this.status = getOrderStatus(rawOrder, status);
+    console.log(getOrderProgress(fills?.srcAmountIn, rawOrder.ask_srcAmount));
     const isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
     this.srcTokenSymbol = rawOrder.srcTokenSymbol;
     this.dollarValueIn = rawOrder.dollarValueIn;
     this.blockNumber = rawOrder.blockNumber;
     this.maker = rawOrder.maker;
     this.dstTokenSymbol = rawOrder.dstTokenSymbol;
-    const progress = this.status === OrderStatus.Completed ? 100 : getOrderProgress(fills?.srcAmountIn, rawOrder.ask_srcAmount);
+    this.progress = this.status === OrderStatus.Completed ? 100 : getOrderProgress(fills?.srcAmountIn, rawOrder.ask_srcAmount);
+    this.status = this.progress === 100 ? OrderStatus.Completed : this.status;
     this.id = Number(rawOrder.Contract_id);
     this.exchange = rawOrder.exchange;
     this.ask_fillDelay = rawOrder.ask_fillDelay;
@@ -295,7 +297,6 @@ export class Order {
     this.srcFilledAmount = fills?.srcAmountIn || 0;
     this.srcFilledAmountUsd = fills?.dollarValueIn || "0";
     this.dstFilledAmountUsd = fills?.dollarValueOut || "0";
-    this.progress = progress;
     this.srcTokenAddress = rawOrder.ask_srcToken;
     this.dstTokenAddress = rawOrder.ask_dstToken;
     this.totalChunks = new BN(rawOrder.ask_srcAmount || 0)
