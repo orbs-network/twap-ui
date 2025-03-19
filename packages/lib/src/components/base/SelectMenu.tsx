@@ -85,7 +85,6 @@ const Menu = styled.div`
   margin-top: 5px;
   top: 100%;
   overflow: hidden;
-  min-width: 100%;
 `;
 
 const StyledMenuItem = styled.div`

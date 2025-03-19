@@ -2,7 +2,7 @@ import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useRefetchB
 import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps } from "@orbs-network/twap-ui";
+import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps, TokenLogoProps } from "@orbs-network/twap-ui";
 import { eqIgnoreCase, networks, Configs } from "@orbs-network/twap-sdk";
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
@@ -51,6 +51,10 @@ const useToken = (addressOrSymbol?: string) => {
   return useMemo(() => {
     return tokens?.find((it: any) => eqIgnoreCase(it.address || "", addressOrSymbol || "") || eqIgnoreCase(it.symbol || "", addressOrSymbol || ""));
   }, [tokens, addressOrSymbol]);
+};
+
+const TokenLogo = ({ token }: TokenLogoProps) => {
+  return <img src={token?.logoUrl} />;
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
@@ -125,7 +129,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       srcBalance={srcBalance}
       dstBalance={dstBalance}
       marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
-      components={{ Tooltip }}
+      components={{ Tooltip, TokenLogo }}
       modals={{ OrderConfirmationModal, OrderHistoryModal, TokenSelectModal }}
       useToken={useToken}
       includeStyles={true}

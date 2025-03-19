@@ -56,7 +56,14 @@ export const HistoryOrderPreview = () => {
           #{order?.id} {name} {t.order}
         </StyledText>
       </div>
-      <TokensDisplay fromTitle={t.from} inToken={srcToken} toTitle={t.to} outToken={dstToken} />
+      <TokensDisplay
+        SrcTokenLogo={components.TokenLogo && <components.TokenLogo token={srcToken} />}
+        DstTokenLogo={components.TokenLogo && <components.TokenLogo token={dstToken} />}
+        fromTitle={t.from}
+        inToken={srcToken}
+        toTitle={t.to}
+        outToken={dstToken}
+      />
 
       <div className="twap-orders__selected-order-bottom">
         <OrderDetails.FillDelaySummary chunks={order.totalChunks} fillDelayMillis={fillDelayMillis} />

@@ -20,7 +20,7 @@
     "test": "eslint src"
   },
   "dependencies": {
-    "@orbs-network/twap": "^2.3.8",
+    "@orbs-network/twap": "^2.3.9",
     "bignumber.js": "9.x"
   },
   "publishConfig": {
