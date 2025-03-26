@@ -2,11 +2,12 @@ import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useRefetchB
 import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps, TokenLogoProps } from "@orbs-network/twap-ui";
+import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps, TokenLogoProps, OrdersProps } from "@orbs-network/twap-ui";
 import { eqIgnoreCase, networks, Configs } from "@orbs-network/twap-sdk";
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "./context";
+console.log({ Configs });
 
 const TokenSelectModal = ({ isOpen, onSelect, onClose }: TokenSelectModalProps) => {
   return (
@@ -104,38 +105,44 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const dstBalance = useTokenBalance(dstToken).data?.wei;
 
   return (
-    <Widget
-      config={config}
-      isExactAppoval={true}
-      chainId={chainId}
-      provider={client.data?.transport}
-      srcToken={srcToken}
-      dstToken={dstToken}
-      callbacks={{
-        wrap: {
-          onSuccess: onWrapSuccess,
-        },
-        unwrap: {
-          onSuccess: refetchBalances,
-        },
-        onSrcTokenSelect: setSrcToken,
-        onDstTokenSelect: setDstToken,
-        onConnect: openConnectModal,
-        onSwitchTokens,
-      }}
-      isLimitPanel={limit}
-      srcUsd1Token={srcUsd ? Number(srcUsd) : 0}
-      dstUsd1Token={dstUsd ? Number(dstUsd) : 0}
-      srcBalance={srcBalance}
-      dstBalance={dstBalance}
-      marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
-      components={{ Tooltip, TokenLogo }}
-      modals={{ OrderConfirmationModal, OrderHistoryModal, TokenSelectModal }}
-      useToken={useToken}
-      includeStyles={true}
-      customMinChunkSizeUsd={4}
-      fee={0.25}
-    />
+    <>
+      <Widget
+        config={config}
+        isExactAppoval={true}
+        chainId={chainId}
+        provider={client.data?.transport}
+        srcToken={srcToken}
+        dstToken={dstToken}
+        callbacks={{
+          wrap: {
+            onSuccess: onWrapSuccess,
+          },
+          unwrap: {
+            onSuccess: refetchBalances,
+          },
+          onSrcTokenSelect: setSrcToken,
+          onDstTokenSelect: setDstToken,
+          onConnect: openConnectModal,
+          onSwitchTokens,
+        }}
+        isLimitPanel={limit}
+        srcUsd1Token={srcUsd ? Number(srcUsd) : 0}
+        dstUsd1Token={dstUsd ? Number(dstUsd) : 0}
+        srcBalance={srcBalance}
+        dstBalance={dstBalance}
+        marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
+        components={{ Tooltip, TokenLogo }}
+        modals={{ OrderConfirmationModal, OrderHistoryModal, TokenSelectModal }}
+        useToken={useToken}
+        includeStyles={true}
+        customMinChunkSizeUsd={4}
+        translations={{
+          tradeIntervalTitle: "Trade interval",
+          tradesAmountSmallText: "orders",
+        }}
+        fee={0.25}
+      />
+    </>
   );
 };
 

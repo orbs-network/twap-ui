@@ -6,7 +6,7 @@ import { ShowConfirmationButton } from "./show-confirmation-button";
 import { TradesAmountPanel } from "./trades-amount-panel";
 import { FillDelayPanel } from "./fill-delay-panel";
 import { DurationPanel } from "./trade-duration-panel";
-import { Orders } from "./orders/Orders";
+import { OrdersPortal } from "./orders/Orders";
 import { PoweredbyOrbs } from "./powered-by-orbs";
 import { useTwapContext } from "../../context";
 import { SubmitOrderModal } from "./submit-order-modal/SubmitOrderModal";
@@ -33,7 +33,7 @@ export function SwapPanel() {
         <ShowConfirmationButton />
       </div>
       <PoweredbyOrbs />
-      <Orders />
+      <OrdersPortal />
       <LimitPriceMessage />
       <SubmitOrderModal />
     </div>

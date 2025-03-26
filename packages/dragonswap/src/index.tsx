@@ -1,5 +1,5 @@
 import { Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sdk";
-import { Translations, Styles, Widget, TwapProps, TwapProvider, Components, Types } from "@orbs-network/twap-ui";
+import { Translations, Styles, Widget, TwapProps, TwapProvider, Components } from "@orbs-network/twap-ui";
 import translations from "./i18n/en.json";
 import { createContext, useContext, useMemo, ReactNode, useCallback, useState, useEffect } from "react";
 import { darkTheme, lightTheme, StyledTop, GlobalStyles, StyledTwapInputs } from "./styles";
@@ -240,4 +240,4 @@ const Portal = ({ children, containerId }: { children: ReactNode; containerId: s
   return <Components.Base.Portal containerId={containerId}>{children}</Components.Base.Portal>;
 };
 
-export { TWAP, Portal, Types };
+export { TWAP, Portal };

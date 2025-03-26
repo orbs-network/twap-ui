@@ -1,5 +1,5 @@
 import { amountUi, TimeUnit } from "@orbs-network/twap-sdk";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import {
   useAmountUi,
@@ -209,6 +209,28 @@ export const useLimitPriceError = () => {
   return error;
 };
 
+export const useLimitPricePanel = () => {
+  const tokens = useLimitPriceTokens();
+  const error = useLimitPriceError();
+  const input = useLimitPriceInput();
+  const percent = useLimitPricePercentSelect();
+  const onInvert = useLimitPriceOnInvert();
+  const tokenSelect = useLimitPriceTokenSelect();
+  const {
+    state: { isInvertedPrice },
+  } = useTwapContext();
+
+  return {
+    tokens,
+    error,
+    input,
+    percent,
+    onInvert,
+    isInverted: isInvertedPrice,
+    tokenSelect,
+  };
+};
+
 export const useTokenBalance = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const { srcBalance, dstBalance } = useTwapContext();
   const token = useToken({ isSrcToken });
@@ -331,8 +353,33 @@ export const useTradesAmountPanel = () => {
     error,
     trades: chunks,
     onChange: setChunks,
-    label: t.over,
+    label: t.tradesAmountTitle,
     tooltip: t.totalTradesTooltip,
+  };
+};
+
+export const usePriceDisplay = (type: "limit" | "market") => {
+  const [inverted, setInverted] = useState(false);
+  const { marketPrice, dstToken, srcToken } = useTwapContext();
+  const limitPriceUI = useLimitPrice().amountUI;
+  const marketPriceUI = useAmountUi(dstToken?.decimals, marketPrice);
+
+  const onInvert = useCallback(() => {
+    setInverted(!inverted);
+  }, [inverted]);
+
+  const price = useMemo(() => {
+    const price = type === "limit" ? limitPriceUI : marketPriceUI;
+
+    if (inverted) return BN(1).div(price).toString();
+    return price;
+  }, [inverted, limitPriceUI, marketPriceUI]);
+
+  return {
+    onInvert,
+    price,
+    leftToken: !inverted ? srcToken : dstToken,
+    rightToken: !inverted ? dstToken : srcToken,
   };
 };
 

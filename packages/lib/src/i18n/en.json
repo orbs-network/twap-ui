@@ -102,5 +102,8 @@
   "amountOut": "Amount out",
   "amountSent": "Amount sent",
   "status": "Status",
-  "progress": "Progress"
+  "progress": "Progress",
+  "tradeIntervalTitle": "Every",
+  "tradesAmountTitle": "Over",
+  "tradesAmountSmallText": "trades"
 }

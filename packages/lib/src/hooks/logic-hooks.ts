@@ -380,15 +380,11 @@ export const useOrderName = (isMarketOrder = false, chunks = 1) => {
   }, [t, isMarketOrder, chunks]);
 };
 export const useOrderDuration = () => {
-  const {
-    twapSDK,
-    state: { typedDuration },
-    updateState,
-  } = useTwapContext();
+  const { twapSDK, state, updateState } = useTwapContext();
   const { chunks } = useChunks();
   const { fillDelay } = useFillDelay();
 
-  const orderDuration = useMemo(() => twapSDK.getOrderDuration(chunks, fillDelay, typedDuration), [chunks, fillDelay, typedDuration, twapSDK]);
+  const orderDuration = useMemo(() => twapSDK.getOrderDuration(chunks, fillDelay, state.typedDuration), [chunks, fillDelay, state.typedDuration, twapSDK]);
 
   return {
     orderDuration,

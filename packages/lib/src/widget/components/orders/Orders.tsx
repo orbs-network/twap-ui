@@ -1,22 +1,47 @@
-import React, { ReactNode } from "react";
+import React, { FC, ReactNode } from "react";
 import { HistoryOrderPreview } from "./HistoryOrderPreview";
 import { OrderHistoryContextProvider, useOrderHistoryContext, useSelectedOrder } from "./context";
 import { OrderHistoryList } from "./OrderHistoryList";
 import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { useMemo } from "react";
-import { Spinner } from "../../../components/base";
+import { Portal, Spinner } from "../../../components/base";
 import { useTwapContext } from "../../../context";
-import { useGroupedByStatusOrders } from "../../../hooks/order-hooks";
+import { useAccountOrders, useGroupedByStatusOrders } from "../../../hooks/order-hooks";
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
 import { useTransactionExplorerLink } from "../../../hooks/logic-hooks";
+import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
+import { OrdersProps } from "../../../types";
+
+const PORTAL_ID = "twap-orders-portal";
 
 export const Orders = ({ className = "" }: { className?: string }) => {
+  const { components } = useTwapContext();
+  if (components.Orders) {
+    return <OrdersPortalContainer Component={components.Orders} />;
+  }
+
   return (
-    <OrderHistoryContextProvider>
-      <OrderHistory />
-      <OrdersButton className={className} />
-    </OrderHistoryContextProvider>
+    <Portal containerId={PORTAL_ID}>
+      <OrderHistoryContextProvider>
+        <OrderHistory />
+        <OrdersButton className={className} />
+      </OrderHistoryContextProvider>
+    </Portal>
   );
+};
+
+export const OrdersPortalContainer = ({ Component }: { Component: FC<OrdersProps> }) => {
+  const { data: orders, isLoading: orderLoading } = useAccountOrders();
+  const { mutateAsync: cancelOrder } = useCancelOrder();
+  return (
+    <Portal containerId={PORTAL_ID}>
+      <Component onCancelOrder={cancelOrder} orders={orders} isLoading={orderLoading} />
+    </Portal>
+  );
+};
+
+export const OrdersPortal = () => {
+  return <div id={PORTAL_ID} />;
 };
 
 export const OrdersButton = ({ className = "" }: { className?: string }) => {
@@ -84,6 +109,9 @@ const CustomModal = ({ children }: { children: ReactNode }) => {
   const OrderHistoryModal = useTwapContext().modals.OrderHistoryModal;
   const { isOpen, onClose, cancelOrderStatus } = useOrderHistoryContext();
   const { translations: t } = useTwapContext();
+  if (!OrderHistoryModal) {
+    return null;
+  }
 
   return (
     <OrderHistoryModal isOpen={Boolean(isOpen)} onClose={onClose} title={!cancelOrderStatus ? t.orderHistory : ""}>

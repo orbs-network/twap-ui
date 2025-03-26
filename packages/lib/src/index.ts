@@ -9,4 +9,4 @@ export * from "./utils";
 export * from "./consts";
 export { Configs };
 export { useFormatNumber } from "./hooks/useFormatNumber";
-export * as Types from "./types";
+export * from "./types";

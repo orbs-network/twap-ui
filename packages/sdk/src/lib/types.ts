@@ -14,7 +14,6 @@ export type Config = {
 };
 
 export enum OrderStatus {
-  All = "all",
   Open = "open",
   Canceled = "canceled",
   Completed = "completed",

@@ -3,6 +3,8 @@ import { IconType } from "@react-icons/all-files";
 import { Config, Order, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt } from "viem";
+export type { Order } from "@orbs-network/twap-sdk";
+export { OrderStatus } from "@orbs-network/twap-sdk";
 
 export type TransactionReceipt = _TransactionReceipt;
 export interface Translations {
@@ -105,6 +107,10 @@ export interface Translations {
   status: string;
   progress: string;
   finalExcecutionPrice: string;
+
+  tradeIntervalTitle: string;
+  tradesAmountTitle: string;
+  tradesAmountSmallText: string;
 }
 
 export type MessageVariant = "error" | "warning" | "info";
@@ -183,7 +189,7 @@ export type InputProps = {
 export interface Modals {
   OrderConfirmationModal: FC<OrderConfirmationModalProps>;
   TokenSelectModal?: FC<TokenSelectModalProps>;
-  OrderHistoryModal: FC<OrderHistoryModalProps>;
+  OrderHistoryModal?: FC<OrderHistoryModalProps>;
 }
 
 export type BalanceProps = {
@@ -271,6 +277,12 @@ export type OrdersButtonProps = {
   isLoading: boolean;
 };
 
+export type OrdersProps = {
+  orders?: Order[];
+  isLoading: boolean;
+  onCancelOrder: (orderId: number) => Promise<string>;
+};
+
 interface Components {
   // shared
   Tooltip?: FC<TooltipProps>;
@@ -299,6 +311,8 @@ interface Components {
   CreateOrderLoader?: ReactNode;
   CreateOrderSuccessIcon?: ReactNode;
   CreateOrderErrorIcon?: ReactNode;
+
+  Orders?: FC<OrdersProps>;
 }
 
 interface CreateOrderCallbackArgs {

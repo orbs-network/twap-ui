@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
-import { Order, OrderStatus } from "@orbs-network/twap-sdk";
-import { useOrderHistoryContext } from "./context";
+import { Order } from "@orbs-network/twap-sdk";
+import { OrdersFilter, useOrderHistoryContext } from "./context";
 import * as React from "react";
 import moment from "moment";
 import { Loader } from "../../../components/base/Loader";
@@ -111,7 +111,7 @@ const EmptyList = () => {
   const status = useOrderHistoryContext().status;
   const t = useTwapContext().translations;
   const name = React.useMemo(() => {
-    if (status === OrderStatus.All) {
+    if (status === OrdersFilter.All) {
       return "";
     }
     return status;

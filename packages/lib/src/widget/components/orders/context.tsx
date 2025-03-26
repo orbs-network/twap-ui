@@ -1,8 +1,16 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Order, OrderStatus } from "@orbs-network/twap-sdk";
+import { Order } from "@orbs-network/twap-sdk";
 import { useAccountOrders, useGroupedByStatusOrders } from "../../../hooks/order-hooks";
 import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
+
+export enum OrdersFilter {
+  All = "all",
+  Open = "open",
+  Canceled = "canceled",
+  Completed = "completed",
+  Expired = "expired",
+}
 
 export type OrdersMenuTab = {
   name: string;
@@ -19,9 +27,9 @@ interface OrderHistoryContextType {
   isOpen: boolean;
   onClose: () => void;
   onOpen: () => void;
-  setStatus: (status: OrderStatus) => void;
-  status: OrderStatus;
-  cancelOrder: () => void;
+  setStatus: (status: OrdersFilter) => void;
+  status: OrdersFilter;
+  cancelOrder: (orderId: number) => Promise<string>;
   cancelOrderTxHash: string | undefined;
   cancelOrderStatus?: SwapStatus;
 }
@@ -40,18 +48,18 @@ export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
 export const OrderHistoryContextProvider = ({ children }: { children: ReactNode }) => {
   const groupedOrders = useGroupedByStatusOrders();
-  const [status, setStatus] = useState<OrderStatus>(OrderStatus.All);
+  const [status, setStatus] = useState<OrdersFilter>(OrdersFilter.All);
   const { isLoading } = useAccountOrders();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
   const selectedOrders = groupedOrders[status] || [];
-  const { mutate: cancelOrder, swapStatus: cancelOrderStatus, txHash: cancelOrderTxHash, resetSwapStatus: resetCancelOrderStatus } = useCancelOrder(selectedOrderId);
+  const { mutateAsync: cancelOrder, swapStatus: cancelOrderStatus, txHash: cancelOrderTxHash, resetSwapStatus: resetCancelOrderStatus } = useCancelOrder();
 
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
         setSelectedOrderId(undefined);
-        setStatus(OrderStatus.All);
+        setStatus(OrdersFilter.All);
       }, 300);
     }
   }, [isOpen]);

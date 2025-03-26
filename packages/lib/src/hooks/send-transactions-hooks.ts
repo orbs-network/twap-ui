@@ -53,18 +53,17 @@ export const useApproveToken = () => {
   );
 };
 
-export const useCancelOrder = (orderId?: number) => {
+export const useCancelOrder = () => {
   const { account, config, callbacks, walletClient, publicClient, twapSDK } = useTwapContext();
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [swapStatus, setSwapStatus] = useState<SwapStatus | undefined>(undefined);
 
   const addCancelledOrder = useAddCancelledOrder();
   const mutation = useMutation(
-    async () => {
+    async (orderId: number) => {
       if (!account) throw new Error("account not defined");
       if (!walletClient) throw new Error("walletClient not defined");
       if (!publicClient) throw new Error("publicClient not defined");
-      if (!orderId) throw new Error("orderId not defined");
       setTxHash(undefined);
       setSwapStatus(SwapStatus.LOADING);
       twapSDK.analytics.onCancelOrderRequest(orderId);
@@ -86,6 +85,7 @@ export const useCancelOrder = (orderId?: number) => {
       console.log(`order canceled`);
       callbacks?.cancelOrder?.onSuccess?.(receipt, orderId);
       await addCancelledOrder(orderId);
+      return hash;
     },
     {
       onSuccess: () => {

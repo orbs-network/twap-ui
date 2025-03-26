@@ -251,9 +251,10 @@ export class Order {
   deadline: number;
   createdAt: number;
   srcAmount: string;
+  dstMinAmountPerChunk: string;
   dstMinAmount: string;
   status: string;
-  srcBidAmount: string;
+  srcAmountPerChunk: string;
   txHash: string;
   dstFilledAmount: string;
   srcFilledAmount: string;
@@ -271,11 +272,12 @@ export class Order {
   dollarValueIn: string;
   blockNumber: number;
   dexFee: string;
-
+  getLimitPriceRate: (srcTokenDecimals: number, dstTokenDecimals: number) => string;
+  getExcecutionRateFromFills: (srcTokenDecimals: number, dstTokenDecimals: number) => string;
+  getFillDelay: (config: Config) => number;
   constructor(rawOrder: RawOrder, fills: any, status: any) {
     this.status = getOrderStatus(rawOrder, status);
-    console.log(getOrderProgress(fills?.srcAmountIn, rawOrder.ask_srcAmount));
-    const isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
+    this.isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
     this.srcTokenSymbol = rawOrder.srcTokenSymbol;
     this.dollarValueIn = rawOrder.dollarValueIn;
     this.blockNumber = rawOrder.blockNumber;
@@ -290,8 +292,8 @@ export class Order {
     this.deadline = Number(rawOrder.ask_deadline) * 1000;
     this.createdAt = new Date(rawOrder.timestamp).getTime();
     this.srcAmount = rawOrder.ask_srcAmount;
-    this.dstMinAmount = rawOrder.ask_dstMinAmount;
-    this.srcBidAmount = rawOrder.ask_srcBidAmount;
+    this.dstMinAmountPerChunk = rawOrder.ask_dstMinAmount;
+    this.srcAmountPerChunk = rawOrder.ask_srcBidAmount;
     this.txHash = rawOrder.transactionHash;
     this.dstFilledAmount = fills?.dstAmountOut || 0;
     this.srcFilledAmount = fills?.srcAmountIn || 0;
@@ -303,29 +305,27 @@ export class Order {
       .div(rawOrder.ask_srcBidAmount || 1) // Avoid division by zero
       .integerValue(BN.ROUND_FLOOR)
       .toNumber();
-    this.orderType = isMarketOrder ? OrderType.TWAP_MARKET : BN(this.totalChunks).eq(1) ? OrderType.LIMIT : OrderType.TWAP_LIMIT;
-    this.isMarketOrder = isMarketOrder;
+    this.orderType = this.isMarketOrder ? OrderType.TWAP_MARKET : BN(this.totalChunks).eq(1) ? OrderType.LIMIT : OrderType.TWAP_LIMIT;
+
     this.dexFee = fills?.dexFee || 0;
+    this.dstMinAmount = this.isMarketOrder ? "0" : new BN(this.dstMinAmountPerChunk).times(this.totalChunks).toString();
+    this.getLimitPriceRate = (srcTokenDecimals: number, dstTokenDecimals: number) => {
+      const srcBidAmountUi = amountUi(srcTokenDecimals, this.srcAmountPerChunk);
+      const dstMinAmountUi = amountUi(dstTokenDecimals, this.dstMinAmountPerChunk);
+      return BN(dstMinAmountUi).div(srcBidAmountUi).toString();
+    };
+    this.getExcecutionRateFromFills = (srcTokenDecimals: number, dstTokenDecimals: number) => {
+      if (!BN(this.srcFilledAmount || 0).gt(0) || !BN(this.dstFilledAmount || 0).gt(0)) return "";
+      const srcFilledAmountUi = amountUi(srcTokenDecimals, this.srcFilledAmount);
+      const dstFilledAmountUi = amountUi(dstTokenDecimals, this.dstFilledAmount);
+
+      return BN(dstFilledAmountUi).div(srcFilledAmountUi).toString();
+    };
+    this.getFillDelay = (config: Config) => {
+      return (this.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
+    };
   }
 }
-
-export const getOrderFillDelay = (order: Order, config: Config) => {
-  return (order.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
-};
-
-export const getOrderLimitPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (order.isMarketOrder) return;
-  const srcBidAmountUi = amountUi(srcTokenDecimals, order.srcBidAmount);
-  const dstMinAmountUi = amountUi(dstTokenDecimals, order.dstMinAmount);
-  return BN(dstMinAmountUi).div(srcBidAmountUi).toString();
-};
-export const getOrderExcecutionPrice = (order: Order, srcTokenDecimals: number, dstTokenDecimals: number) => {
-  if (!BN(order.srcFilledAmount || 0).gt(0) || !BN(order.dstFilledAmount || 0).gt(0)) return;
-  const srcFilledAmountUi = amountUi(srcTokenDecimals, order.srcFilledAmount);
-  const dstFilledAmountUi = amountUi(dstTokenDecimals, order.dstFilledAmount);
-
-  return BN(dstFilledAmountUi).div(srcFilledAmountUi).toString();
-};
 
 export const getOrders = async ({
   chainId,
@@ -398,6 +398,7 @@ export const getOrders = async ({
       return order;
     });
   }
+  console.log(orders);
 
   return orderBy(orders, (o: any) => o.createdAt, "desc");
 };
@@ -437,7 +438,7 @@ export const getAllOrders = ({ chainId, signal, page, limit = 1_000, config }: {
 export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
   const grouped = groupBy(orders, "status");
   return {
-    [OrderStatus.All]: orders || [],
+    all: orders || [],
     [OrderStatus.Open]: grouped.open || [],
     [OrderStatus.Completed]: grouped.completed || [],
     [OrderStatus.Expired]: grouped.expired || [],
@@ -499,7 +500,7 @@ export function addCancelledOrder(account: string, exchange: string, orderId: nu
 }
 
 export interface GroupedOrders {
-  [OrderStatus.All]?: Order[];
+  all: Order[];
   [OrderStatus.Open]?: Order[];
   [OrderStatus.Canceled]?: Order[];
   [OrderStatus.Expired]?: Order[];

@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
-import { constructSDK } from "@orbs-network/twap-sdk";
+import { constructSDK, TimeUnit } from "@orbs-network/twap-sdk";
 import { State, TwapProps, TwapContextType, Translations } from "./types";
 import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
@@ -45,11 +45,11 @@ const contextReducer = (state: State, action: Action): State => {
 };
 
 const Listeners = () => {
-  const { isLimitPanel, updateState, chainId, reset } = useTwapContext();
+  const { isLimitPanel, updateState } = useTwapContext();
 
   useEffect(() => {
     if (isLimitPanel) {
-      updateState({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION, isMarketOrder: false });
+      updateState({ typedDuration: { unit: TimeUnit.Weeks, value: 1 }, isMarketOrder: false });
     } else {
       updateState({ typedDuration: undefined });
     }
@@ -60,10 +60,6 @@ const Listeners = () => {
       updateState({ currentTime: Date.now() });
     }, 60_000);
   }, [updateState]);
-
-  useEffect(() => {
-    reset();
-  }, [chainId, reset]);
 
   return null;
 };

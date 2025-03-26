@@ -1,7 +1,7 @@
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import BN from "bignumber.js";
-import { OrderStatus, Order, getOrderFillDelay, getOrderLimitPrice, getOrderExcecutionPrice } from "@orbs-network/twap-sdk";
+import { OrderStatus, Order } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import moment from "moment";
 import { StyledText } from "../../../styles";
@@ -17,7 +17,7 @@ import styled from "styled-components";
 
 const useOrderFillDelay = (order?: Order) => {
   const { config } = useTwapContext();
-  return useMemo(() => (!order ? undefined : getOrderFillDelay(order, config)), [order, config]);
+  return useMemo(() => (!order ? undefined : order.getFillDelay(config)), [order, config]);
 };
 
 export const HistoryOrderPreview = () => {
@@ -106,8 +106,8 @@ const OrderInfo = ({ order }: { order: Order }) => {
 
   const srcToken = useToken?.(order?.srcTokenAddress);
   const dstToken = useToken?.(order?.dstTokenAddress);
-  const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcBidAmount);
-  const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmount);
+  const srcChunkAmountUi = useAmountUi(srcToken?.decimals, order.srcAmountPerChunk);
+  const dstMinAmountOutUi = useAmountUi(dstToken?.decimals, order.dstMinAmountPerChunk);
   const fillDelayMillis = useOrderFillDelay(order);
 
   return (
@@ -142,10 +142,14 @@ export const CancelOrderButton = ({ order }: { order: Order }) => {
   const { cancelOrder } = useOrderHistoryContext();
   const translations = useTwapContext().translations;
 
+  const onCancelOrder = useCallback(async () => {
+    return cancelOrder(order.id);
+  }, [cancelOrder, order.id]);
+
   if (!order || order.status !== OrderStatus.Open) return null;
 
   return (
-    <Button onClick={cancelOrder} className="twap-cancel-order">
+    <Button onClick={onCancelOrder} className="twap-cancel-order">
       {translations.cancelOrder}
     </Button>
   );
@@ -241,7 +245,7 @@ const LimitPrice = ({ order }: { order: Order }) => {
 
   const limitPrice = useMemo(() => {
     if (!srcToken || !dstToken) return;
-    return getOrderLimitPrice(order, srcToken?.decimals, dstToken?.decimals);
+    return order.getLimitPriceRate(srcToken?.decimals, dstToken?.decimals);
   }, [order, srcToken, dstToken]);
 
   if (order?.isMarketOrder) return null;
@@ -255,7 +259,7 @@ const AvgExcecutionPrice = ({ order }: { order: Order }) => {
 
   const excecutionPrice = useMemo(() => {
     if (!srcToken || !dstToken) return;
-    return getOrderExcecutionPrice(order, srcToken.decimals, dstToken.decimals);
+    return order.getExcecutionRateFromFills(srcToken.decimals, dstToken.decimals);
   }, [order, srcToken, dstToken]);
 
   return <Price title={order?.totalChunks === 1 ? t.finalExcecutionPrice : t.AverageExecutionPrice} price={excecutionPrice} srcToken={srcToken} dstToken={dstToken} />;
