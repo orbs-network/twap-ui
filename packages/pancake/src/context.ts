@@ -1,4 +1,4 @@
-import { InputProps } from "@orbs-network/twap-ui";
+import { BalanceProps, InputProps } from "@orbs-network/twap-ui";
 import { TWAPProps } from "@orbs-network/twap-ui";
 import { createContext, FC, JSXElementConstructor, ReactNode, useContext } from "react";
 
@@ -24,6 +24,7 @@ export interface AdapterProps extends TWAPProps {
   }>;
   Input?: FC<InputProps>;
   CurrencyLogo: FC<{ address?: string }>;
+  Balance?: FC<BalanceProps>;
 }
 
 export type ToastProps = { title: string; message: ReactNode; autoCloseMillis?: number; variant: "success" | "warning" | "error" | "info" };

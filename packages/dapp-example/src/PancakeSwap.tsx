@@ -380,8 +380,13 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
       Button={_Button}
       toast={toast}
       CurrencyLogo={CurrencyLogo}
+      Balance={Balance}
     />
   );
+};
+
+const Balance = ({ balance, insufficientBalance, onMax }: any) => {
+  return <div>{balance}</div>;
 };
 
 const logo = "https://assets.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1629359065";

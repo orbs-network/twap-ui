@@ -222,7 +222,15 @@ export interface TwapLibProps extends LibProps {
   onCancelOrderFailure?: (orderId: number) => void;
   Input?: FC<InputProps>;
   CurrencyLogo?: FC<{ address?: string; size?: string }>;
+  Balance?: FC<BalanceProps>;
 }
+export type BalanceProps = {
+  balance?: string;
+  insufficientBalance: boolean;
+  onValueChange: (value: string) => void;
+  isInputFocus: boolean;
+  isSrcToken?: boolean;
+};
 
 export type InputProps = {
   loading?: boolean;

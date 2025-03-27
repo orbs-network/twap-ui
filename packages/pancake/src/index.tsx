@@ -132,17 +132,32 @@ const storeOverride = {
   customFillDelay: { resolution: store.TimeResolution.Minutes, amount: 2 },
 };
 
-const Balance = ({ isSrc, hide }: { isSrc?: boolean; hide: boolean }) => {
+const Balance = ({ isSrc, showPercent }: { isSrc?: boolean; showPercent: boolean }) => {
   const onPercentClick = hooks.useCustomActions();
+  const setSrcAmountUi = hooks.useSetSrcAmountUi();
+
+  const { Balance: ContextBalance, srcToken, dstToken } = useTwapContext();
+
   const warning = hooks.useFillWarning();
   const type = warning?.type;
 
-  const showWarning = type === "balance" && isSrc;
+  const insufficientBalance = type === "balance" && isSrc;
 
-  if (!isSrc) return null;
+  const srcBalance = hooks.useAmountUi(srcToken?.decimals, hooks.useSrcBalance().data?.toString());
+  const dstBalance = hooks.useAmountUi(dstToken?.decimals, hooks.useDstBalance().data?.toString());
+  const balance = isSrc ? srcBalance : dstBalance;
+
+  if (ContextBalance) {
+    return <ContextBalance isSrcToken={isSrc} onValueChange={setSrcAmountUi} isInputFocus={showPercent} balance={balance} insufficientBalance={Boolean(insufficientBalance)} />;
+  }
 
   return (
-    <StyledBalanceContainer style={{ cursor: isSrc ? "pointer" : "auto" }} warning={showWarning ? 1 : 0} hide={hide ? 1 : 0} onClick={isSrc ? () => onPercentClick(1) : () => {}}>
+    <StyledBalanceContainer
+      style={{ cursor: isSrc ? "pointer" : "auto" }}
+      warning={insufficientBalance ? 1 : 0}
+      hide={showPercent ? 1 : 0}
+      onClick={isSrc ? () => onPercentClick(1) : () => {}}
+    >
       <MdAccountBalanceWallet />
       <StyledBalance hideLabel={true} isSrc={isSrc} decimalScale={6} />
     </StyledBalanceContainer>
@@ -164,12 +179,9 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
   return (
     <StyledContainerPadding>
       <StyledTokenPanel>
-        <Styles.StyledRowFlex justifyContent="space-between">
+        <Styles.StyledRowFlex justifyContent="space-between" style={{ position: "relative", marginBottom: 4 }}>
           <StyledTokenPanelTitle>{isSrcToken ? "From" : "To"}</StyledTokenPanelTitle>
-          <StyledBalanceAndPercent>
-            <Balance isSrc={isSrcToken} hide={Boolean(isSrcToken && showPercent)} />
-            <SrcTokenPercentSelector show={Boolean(isSrcToken && showPercent)} />
-          </StyledBalanceAndPercent>
+          <Balance isSrc={isSrcToken} showPercent={showPercent} />
         </Styles.StyledRowFlex>
         <StyledTokenPanelContent disabled={!isSrcToken} onBlur={() => setShowPercent(false)} onFocus={() => setShowPercent(true)}>
           <StyledTokenSelect CustomArrow={MdKeyboardArrowDown} hideArrow={false} isSrc={isSrcToken} onClick={onTokenSelectClick} />
@@ -187,37 +199,6 @@ const TokenPanel = ({ isSrcToken = false }: { isSrcToken?: boolean }) => {
 const TokenPanelUsd = ({ isSrc }: { isSrc?: boolean }) => {
   const warning = useSrcInputWarning();
   return <StyledUSD warning={!isSrc ? 0 : warning ? 1 : 0} decimalScale={2} isSrc={isSrc} hideIfZero={true} emptyUi={<StyledEmptyUSD />} />;
-};
-
-const SrcTokenPercentSelector = ({ show }: { show: boolean }) => {
-  const onPercentClick = hooks.useCustomActions();
-  const srcAmount = hooks.useSrcAmount().amount;
-  const srcBalance = hooks.useSrcBalance().data;
-  const maxSrcInputAmount = hooks.useMaxSrcInputAmount();
-
-  const percent = useMemo(() => {
-    if (!srcAmount) return 0;
-    return BN(srcAmount)
-      .dividedBy(srcBalance || "0")
-      .toNumber();
-  }, [srcAmount, srcBalance]);
-
-  const onClick = (value: number) => {
-    onPercentClick(value);
-  };
-
-  return (
-    <StyledPercentSelect show={show ? 1 : 0}>
-      {PERCENT.map((p) => {
-        const selected = BN(srcAmount || "0").isZero() ? false : Math.round(percent * 100) === p.value * 100 || (p.value === 1 && BN(maxSrcInputAmount || 0).isEqualTo(srcAmount));
-        return (
-          <button key={p.text} onClick={() => (selected ? () => {} : onClick(p.value))}>
-            {p.text}
-          </button>
-        );
-      })}
-    </StyledPercentSelect>
-  );
 };
 
 const ChangeTokensOrder = () => {
@@ -351,6 +332,7 @@ const TwapPanel = memo(() => {
         onCancelOrderSuccess={onCancelOrderSuccess}
         Input={context.Input}
         CurrencyLogo={context.CurrencyLogo}
+        Balance={context.Balance}
       >
         <ThemeProvider theme={theme}>
           <GlobalStyles styles={configureStyles(theme) as any} />
