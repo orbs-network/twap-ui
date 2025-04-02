@@ -38,6 +38,7 @@ const contextReducer = (state: State, action: Action): State => {
         currentTime: Date.now(),
         trade: state.trade,
         swapStatus: state.swapStatus,
+        isMarketOrder: state.isMarketOrder,
       };
     default:
       return state;

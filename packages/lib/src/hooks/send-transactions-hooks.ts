@@ -42,11 +42,17 @@ export const useApproveToken = () => {
         confirmations: 5,
       });
 
+      if (receipt.status === "reverted") {
+        throw new Error("failed to approve token");
+      }
+
       twapSDK.analytics.onApproveSuccess(hash);
       callbacks?.approve?.onSuccess?.(receipt, token!, amountUi(token?.decimals, amount));
     },
     {
       onError: (error) => {
+        console.log({error});
+        
         callbacks?.approve?.onFailed?.((error as any).message);
       },
     },
@@ -201,7 +207,11 @@ export const useCreateOrder = () => {
         hash: txHash,
         confirmations: 5,
       });
-
+      console.log(receipt.status);
+      
+      if (receipt.status === "reverted") {
+        throw new Error("failed to create order");
+      }
       const orderId = getOrderIdFromCreateOrderEvent(receipt);
       await callbacks.onSuccess(receipt, params, srcToken, orderId);
 
@@ -252,6 +262,9 @@ export const useWrapToken = () => {
         hash,
         confirmations: 5,
       });
+      if (receipt.status === "reverted") {
+        throw new Error("failed to wrap token");
+      }
 
       twapSDK.analytics.onWrapSuccess(hash);
       await callbacks?.wrap?.onSuccess?.(receipt, typedSrcAmount);
@@ -389,6 +402,7 @@ export const useSubmitOrderCallback = () => {
       }
       updateState({ activeStep: Steps.CREATE });
       const order = await createOrder(ensureWrappedToken(srcToken, chainId));
+      
       // we refetch balances only if we wrapped the token
       updateState({ swapStatus: SwapStatus.SUCCESS });
       return order;

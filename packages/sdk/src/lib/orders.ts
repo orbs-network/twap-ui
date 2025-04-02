@@ -310,16 +310,19 @@ export class Order {
     this.dexFee = fills?.dexFee || 0;
     this.dstMinAmount = this.isMarketOrder ? "0" : new BN(this.dstMinAmountPerChunk).times(this.totalChunks).toString();
     this.getLimitPriceRate = (srcTokenDecimals: number, dstTokenDecimals: number) => {
+      if (this.isMarketOrder) {
+        return this.getExcecutionRateFromFills(srcTokenDecimals, dstTokenDecimals);
+      }
       const srcBidAmountUi = amountUi(srcTokenDecimals, this.srcAmountPerChunk);
       const dstMinAmountUi = amountUi(dstTokenDecimals, this.dstMinAmountPerChunk);
-      return BN(dstMinAmountUi).div(srcBidAmountUi).toString();
+      return BN(dstMinAmountUi).div(srcBidAmountUi).toFixed();
     };
     this.getExcecutionRateFromFills = (srcTokenDecimals: number, dstTokenDecimals: number) => {
       if (!BN(this.srcFilledAmount || 0).gt(0) || !BN(this.dstFilledAmount || 0).gt(0)) return "";
       const srcFilledAmountUi = amountUi(srcTokenDecimals, this.srcFilledAmount);
       const dstFilledAmountUi = amountUi(dstTokenDecimals, this.dstFilledAmount);
 
-      return BN(dstFilledAmountUi).div(srcFilledAmountUi).toString();
+      return BN(dstFilledAmountUi).div(srcFilledAmountUi).toFixed();
     };
     this.getFillDelay = (config: Config) => {
       return (this.ask_fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
