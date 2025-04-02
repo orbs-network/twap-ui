@@ -51,8 +51,8 @@ export const useApproveToken = () => {
     },
     {
       onError: (error) => {
-        console.log({error});
-        
+        console.log({ error });
+
         callbacks?.approve?.onFailed?.((error as any).message);
       },
     },
@@ -87,6 +87,10 @@ export const useCancelOrder = () => {
         hash,
         confirmations: 5,
       });
+
+      if (receipt.status === "reverted") {
+        throw new Error("failed to cancel order");
+      }
 
       console.log(`order canceled`);
       callbacks?.cancelOrder?.onSuccess?.(receipt, orderId);
@@ -208,7 +212,7 @@ export const useCreateOrder = () => {
         confirmations: 5,
       });
       console.log(receipt.status);
-      
+
       if (receipt.status === "reverted") {
         throw new Error("failed to create order");
       }
@@ -402,7 +406,7 @@ export const useSubmitOrderCallback = () => {
       }
       updateState({ activeStep: Steps.CREATE });
       const order = await createOrder(ensureWrappedToken(srcToken, chainId));
-      
+
       // we refetch balances only if we wrapped the token
       updateState({ swapStatus: SwapStatus.SUCCESS });
       return order;
