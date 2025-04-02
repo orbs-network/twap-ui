@@ -308,6 +308,7 @@ export const useError = () => {
   const balanceError = useBalanceError();
   const chunksError = useChunks().error;
   const fillDelayError = useFillDelay().error;
+  const orderDurationError = useOrderDuration().error;
   const tradeSizeError = useSrcTokenChunkAmount().error;
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
   const srcAmountError = useSrcAmount().error;
@@ -319,7 +320,7 @@ export const useError = () => {
 
   if (BN(marketPrice || 0).isZero()) return;
 
-  return srcAmountError || limitPriceError || chunksError || fillDelayError || tradeSizeError || balanceError;
+  return srcAmountError || limitPriceError || chunksError || fillDelayError || tradeSizeError || balanceError || orderDurationError;
 };
 
 export const useNetwork = () => {
@@ -333,7 +334,9 @@ export const useOrderDeadline = () => {
     state: { currentTime },
   } = useTwapContext();
   const orderDuration = useOrderDuration().orderDuration;
-  return useMemo(() => twapSDK.getOrderDeadline(currentTime, orderDuration), [twapSDK, currentTime, orderDuration]);
+  const deadline = useMemo(() => twapSDK.getOrderDeadline(currentTime, orderDuration), [twapSDK, currentTime, orderDuration]);
+
+  return deadline;
 };
 
 export const useFillDelay = () => {
@@ -379,16 +382,24 @@ export const useOrderName = (isMarketOrder = false, chunks = 1) => {
   }, [t, isMarketOrder, chunks]);
 };
 export const useOrderDuration = () => {
-  const { twapSDK, state, updateState } = useTwapContext();
+  const { twapSDK, state, updateState, translations: t } = useTwapContext();
   const { chunks } = useChunks();
   const { fillDelay } = useFillDelay();
 
   const orderDuration = useMemo(() => twapSDK.getOrderDuration(chunks, fillDelay, state.typedDuration), [chunks, fillDelay, state.typedDuration, twapSDK]);
 
+  const error = useMemo(() => {
+    const { isError, value } = twapSDK.getOrderDurationError(orderDuration);
+
+    if (!isError) return undefined;
+    return t.maxDurationError.replace("{duration}", `${Math.floor(millisToDays(value)).toFixed(0)} ${t.days}`);
+  }, [orderDuration, twapSDK]);
+
   return {
     orderDuration,
     milliseconds: orderDuration.unit * orderDuration.value,
     setOrderDuration: useCallback((typedDuration: TimeDuration) => updateState({ typedDuration }), [updateState]),
+    error,
   };
 };
 

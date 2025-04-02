@@ -34,7 +34,7 @@ export const OrderHistoryList = () => {
         <EmptyList />
       ) : (
         <StyledList className="twap-orders__list">
-          <Virtuoso style={{ height: "100%" }} data={selectedOrders} itemContent={(index, order) => <ListOrder key={order.id} selectOrder={selectOrder} order={order} />} />
+          <Virtuoso style={{ height: "100%" }} data={selectedOrders} itemContent={(index, order) => <ListOrder key={index} selectOrder={selectOrder} order={order} />} />
         </StyledList>
       )}
     </>

@@ -134,14 +134,18 @@ export const getMinNativeBalance = (chainId: number) => {
 };
 
 export function getOrderIdFromCreateOrderEvent(receipt: TransactionReceipt) {
-  const decodedLog = (decodeEventLog as any)({
-    abi: TwapAbi,
-    data: receipt.logs[0].data,
-    topics: receipt.logs[0].topics,
-    eventName: "OrderCreated",
-  });
+  try {
+    const decodedLog = (decodeEventLog as any)({
+      abi: TwapAbi,
+      data: receipt.logs[0].data,
+      topics: receipt.logs[0].topics,
+      eventName: "OrderCreated",
+    });
 
-  return Number(decodedLog.args.id);
+    return Number(decodedLog.args.id);
+  } catch (error) {
+    return undefined;
+  }
 }
 
 export const ensureWrappedToken = (token: Token, chainId: number) => {

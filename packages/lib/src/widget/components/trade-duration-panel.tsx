@@ -116,7 +116,7 @@ const Menu = () => {
     </StyledRowFlex>
   );
 };
-const Main = ({ className = "", variant = "buttons" }: { className?: string; variant?: "buttons" | "menu" }) => {
+const Main = ({ className = "", variant = "menu" }: { className?: string; variant?: "buttons" | "menu" }) => {
   return (
     <StyledMain className={`twap-duration-panel-main ${className}`}>
       <Panel.Header>

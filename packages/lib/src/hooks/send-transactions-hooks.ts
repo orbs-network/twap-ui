@@ -125,7 +125,7 @@ const useCallbacks = () => {
   const destTokenAmountUI = useDestTokenAmount().amountUI;
   const onRequest = useCallback((params: string[]) => twapSDK.analytics.onCreateOrderRequest(params, account), [twapSDK, account]);
   const onSuccess = useCallback(
-    async (orderId: number, receipt: TransactionReceipt, params: string[], srcToken: Token) => {
+    async (receipt: TransactionReceipt, params: string[], srcToken: Token, orderId?: number) => {
       twapSDK.analytics.onCreateOrderSuccess(receipt.transactionHash, orderId);
       callbacks?.createOrder?.onSuccess?.({
         srcToken: srcToken!,
@@ -135,6 +135,7 @@ const useCallbacks = () => {
         dstAmount: destTokenAmountUI,
         receipt,
       });
+
       await addNewOrder({ Contract_id: orderId, transactionHash: receipt.transactionHash, params, srcToken, dstToken: dstToken! });
     },
     [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, twapSDK, addNewOrder],
@@ -202,7 +203,7 @@ export const useCreateOrder = () => {
       });
 
       const orderId = getOrderIdFromCreateOrderEvent(receipt);
-      await callbacks.onSuccess(orderId, receipt, params, srcToken);
+      await callbacks.onSuccess(receipt, params, srcToken, orderId);
 
       return {
         orderId,

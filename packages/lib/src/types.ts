@@ -340,7 +340,7 @@ interface CreateOrderSuccessCallbackArgs extends CreateOrderCallbackArgs {
   dstToken: Token;
   srcAmount: string;
   dstAmount: string;
-  orderId: number;
+  orderId?: number;
   receipt: TransactionReceipt;
 }
 

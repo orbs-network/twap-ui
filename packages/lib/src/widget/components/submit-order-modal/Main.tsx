@@ -114,6 +114,7 @@ const Details = () => {
   const fee = useFee();
   const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
   const deadline = useOrderDeadline();
+
   const dstMinAmountOut = useDestTokenMinAmount().amountUI;
   const fillDelayMillis = useFillDelay().milliseconds;
   const chunks = useChunks().chunks;

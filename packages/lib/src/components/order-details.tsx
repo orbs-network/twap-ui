@@ -12,7 +12,6 @@ import { useNetwork } from "../hooks/logic-hooks";
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useTwapContext()?.translations;
   const res = useMemo(() => moment(deadline).format("DD/MM/YYYY HH:mm"), [deadline]);
-
   return (
     <DetailRow title={t.expiration} tooltip={t.confirmationDeadlineTooltip}>
       {res}

@@ -1,5 +1,5 @@
 import { Analytics } from "./analytics";
-import { MAX_FILL_DELAY_MILLIS, MIN_FILL_DELAY_MILLIS } from "./consts";
+import { MAX_ORDER_DURATION_MILLIS, MIN_FILL_DELAY_MILLIS } from "./consts";
 import {
   getEstimatedDelayBetweenChunksMillis,
   getDeadline,
@@ -80,8 +80,15 @@ export class TwapSDK {
   // errors
   getMaxFillDelayError(fillDelay: TimeDuration, chunks: number) {
     return {
-      isError: getTimeDurationMillis(fillDelay) * chunks > MAX_FILL_DELAY_MILLIS,
-      value: Math.floor(MAX_FILL_DELAY_MILLIS / chunks),
+      isError: getTimeDurationMillis(fillDelay) * chunks > MAX_ORDER_DURATION_MILLIS,
+      value: Math.floor(MAX_ORDER_DURATION_MILLIS / chunks),
+    };
+  }
+
+  getOrderDurationError(duration: TimeDuration) {
+    return {
+      isError: getTimeDurationMillis(duration) > MAX_ORDER_DURATION_MILLIS,
+      value: MAX_ORDER_DURATION_MILLIS,
     };
   }
 

@@ -11,6 +11,8 @@ const useKey = () => {
   return useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
 };
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const useAddNewOrder = () => {
   const { account, twapSDK, config } = useTwapContext();
   const { refetch } = useAccountOrders();
@@ -23,12 +25,18 @@ export const useAddNewOrder = () => {
       srcToken,
       dstToken,
     }: {
-      Contract_id: number;
+      Contract_id?: number;
       transactionHash: string;
       params: string[];
       srcToken: Token;
       dstToken: Token;
     }) => {
+      if (!Contract_id) {
+        await delay(8_000);
+        await refetch();
+        return;
+      }
+
       const rawOrder: RawOrder = {
         maker: account!,
         Contract_id,
