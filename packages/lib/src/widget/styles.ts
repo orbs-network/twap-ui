@@ -91,19 +91,6 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       padding: 12,
       paddingTop: 0,
     },
-    ".twap-market-price-warning": {
-      fontSize: 13,
-      background: "rgba(255,255,255, 0.06)",
-      padding: 7,
-      borderRadius: 12,
-      svg: {
-        position: "relative",
-        top: 2,
-      },
-      a: {
-        color: colors.text.main,
-      },
-    },
     ".twap-order-details": {
       gap: 8,
       display: "flex",
@@ -194,6 +181,10 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         fontSize: 13,
       },
     },
+    ".twap-orders__list": {
+      maxHeight: "60vh",
+      height: 700,
+    },
     ".twap-orders__list-item": {
       cursor: "pointer",
       background: "#1B1B1B",
@@ -273,7 +264,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       color: colors.text.dark,
       fontSize: 14,
     },
-    ".twap-limit-price-message": {
+    ".twap-warning-message": {
       padding: 16,
       background: "#1B1B1B",
       borderRadius: 20,
@@ -364,6 +355,11 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         },
       },
     },
+    ".twap-limit-price-panel-usd": {
+      color: colors.text.dark,
+      fontSize: 14,
+      fontWeight: 500,
+    },
     ".twap-limit-price-panel-invert-button": {
       width: 30,
       height: 30,
@@ -437,6 +433,15 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       gap: 5,
       color: colors.text.main,
     },
+    ".twap-trade-amount-message": {
+      fontSize: 14,
+      fontWeight: 500,
+      color: colors.text.main,
+      marginTop: 20,
+      "&-error": {
+        color: colors.text.error,
+      },
+    },
     ".twap-token-select": {
       cursor: "pointer",
       display: "flex",
@@ -445,6 +450,13 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       borderRadius: 999999,
       border: "1px solid rgba(255, 255, 255, 0.07)",
       padding: "4px 8px 4px 4px",
+      img: {
+        width: 24,
+        height: 24,
+        objectFit: "cover",
+        borderRadius: "50%",
+        overflow: "hidden",
+      },
       "&-not-selected": {
         background: "rgb(252, 114, 255)",
         paddingLeft: 10,

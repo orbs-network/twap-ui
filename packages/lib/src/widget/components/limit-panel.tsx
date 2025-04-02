@@ -7,8 +7,9 @@ import { StyledRowFlex, StyledText } from "../../styles";
 import { NumericInput } from "../../components/base";
 import { TokenSelect } from "./token-select";
 import { useTwapContext } from "../../context";
-import { useLimitPriceError, useLimitPriceInput, useLimitPriceOnInvert, useLimitPricePercentSelect } from "../../hooks/ui-hooks";
+import { useLimitPriceError, useLimitPriceInput, useLimitPriceOnInvert, useLimitPricePanel, useLimitPricePercentSelect } from "../../hooks/ui-hooks";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
+import { useFormatNumber } from "../../hooks/useFormatNumber";
 
 export const LimitPanel = ({ children, className = "" }: { className?: string; children?: ReactNode }) => {
   const error = useLimitPriceError();
@@ -36,10 +37,25 @@ function Main({ className = "" }: { className?: string }) {
         <Input />
         <DstTokenSelect />
       </StyledRowFlex>
-      <PercentSelector />
+      <StyledRowFlex>
+        <USD />
+        <PercentSelector />
+      </StyledRowFlex>
     </div>
   );
 }
+
+const USD = () => {
+  const { usd } = useLimitPricePanel();
+  const { components } = useTwapContext();
+  const usdF = useFormatNumber({ value: usd, decimalScale: 2 });
+
+  if (components.USD) {
+    return <components.USD isLoading={!usd} value={usd} />;
+  }
+
+  return <StyledText className="twap-limit-price-panel-usd">{`$${usdF}`}</StyledText>;
+};
 
 const Input = ({ className = "" }: { className?: string }) => {
   const { value, onChange, isLoading } = useLimitPriceInput();
@@ -51,7 +67,7 @@ const Input = ({ className = "" }: { className?: string }) => {
 };
 
 const PercentSelector = () => {
-  const buttons = useLimitPricePercentSelect().buttons;
+  const { buttons, isReset } = useLimitPricePercentSelect();
   const { components } = useTwapContext();
 
   if (components.LimitPanelPercentSelect) {
@@ -59,7 +75,7 @@ const PercentSelector = () => {
   }
 
   return (
-    <div className="twap-limit-price-panel-percent">
+    <div className={`twap-limit-price-panel-percent ${isReset ? "twap-limit-price-panel-percent-is-reset" : ""}`}>
       {buttons.map((it) => {
         const className = `twap-limit-price-panel-percent-button twap-select-button  ${
           it.selected ? "twap-limit-price-panel-percent-button-selected twap-select-button-selected" : ""

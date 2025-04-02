@@ -1,6 +1,6 @@
 import { AddressPadding, OrderType, Token } from "./types";
 import BN from "bignumber.js";
-import { getNetwork, isNativeAddress, networks, TwapAbi } from "@orbs-network/twap-sdk";
+import { eqIgnoreCase, getNetwork, isNativeAddress, networks, TwapAbi } from "@orbs-network/twap-sdk";
 import { decodeEventLog, TransactionReceipt } from "viem";
 
 export const removeCommas = (numStr: string): string => {
@@ -173,4 +173,14 @@ export const getOrderType = (isMarketOrder: boolean, chunks: number) => {
     return OrderType.LIMIT;
   }
   return OrderType.TWAP_LIMIT;
+};
+
+export const shouldWrapOnly = (srcToken?: Token, dstToken?: Token, chainId?: number) => {
+  const network = getNetwork(chainId);
+  return isNativeAddress(srcToken?.address || "") && eqIgnoreCase(dstToken?.address || "", network?.wToken.address || "");
+};
+
+export const shouldUnwrapOnly = (srcToken?: Token, dstToken?: Token, chainId?: number) => {
+  const network = getNetwork(chainId);
+  return eqIgnoreCase(srcToken?.address || "", network?.wToken.address || "") && isNativeAddress(dstToken?.address || "");
 };

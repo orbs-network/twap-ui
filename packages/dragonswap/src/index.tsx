@@ -77,22 +77,6 @@ const useConfig = () => {
     return configs[0];
   }, []);
 };
-
-const useOnSwitchFromNativeToWrapped = () => {
-  const props = useAdapterContext();
-  const config = useConfig();
-
-  const wTokenAddress = useMemo(() => getNetwork(config?.chainId)?.wToken.address, [config?.chainId]);
-
-  return useCallback(() => {
-    const token = props.dexTokens?.find((it) => eqIgnoreCase(it.address || "", wTokenAddress || ""));
-
-    if (token) {
-      return props.callbacks?.onSrcTokenSelect?.(token);
-    }
-  }, [props.callbacks, props.dexTokens, wTokenAddress]);
-};
-
 const useMarketPriceLoading = () => {
   const [isLoading, setIsLoading] = useState(false);
   const context = useAdapterContext();
@@ -232,7 +216,6 @@ const LimitPanel = () => {
   );
 };
 
-TWAP.LimitPriceWarning = Widget.LimitPriceMessage;
 TWAP.Orders = Widget.Orders;
 TWAP.PoweredByOrbs = Widget.PoweredByOrbs;
 

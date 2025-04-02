@@ -12,3 +12,4 @@ export * from "./Spinner";
 export * from "./Message";
 export * from "./ClickAwayListener";
 export * from "./SelectMenu";
+export * from "./Link";

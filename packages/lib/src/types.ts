@@ -12,6 +12,7 @@ export interface Translations {
   orderHistory: string;
   orderCancelled: string;
   cancelOrderModalTitle: string;
+  perTrade: string;
   confirmationDeadlineTooltip: string;
   confirmationTradeSizeTooltip: string;
   confirmationTotalTradesTooltip: string;
@@ -150,6 +151,9 @@ export type OrderConfirmationModalProps = {
   feeAmount?: string;
   orderType?: OrderType;
   onConfirm: () => void;
+  disclaimerAccepted?: boolean;
+  setDisclaimerAccepted: (accepted: boolean) => void;
+  buttonDisabled?: boolean;
 };
 
 export type OrderHistoryModalProps = {
@@ -283,6 +287,11 @@ export type OrdersProps = {
   onCancelOrder: (orderId: number) => Promise<string>;
 };
 
+export type LinkProps = {
+  href: string;
+  children: ReactNode;
+};
+
 interface Components {
   // shared
   Tooltip?: FC<TooltipProps>;
@@ -303,16 +312,20 @@ interface Components {
   OrderHistoryListOrder?: FC<OrderHistoryListOrderProps>;
   OrderHistorySelectedOrder?: FC<OrderHistorySelectedOrderProps>;
   DurationSelectButtons?: FC<DurationSelectButtonsProps>;
+  Link?: FC<LinkProps>;
 
   Label?: FC<LabelProps>;
   SwitchTokens?: FC<SwitchTokensProps>;
   TokenLogo?: FC<TokenLogoProps>;
   OrdersButton?: FC<OrdersButtonProps>;
-  CreateOrderLoader?: ReactNode;
-  CreateOrderSuccessIcon?: ReactNode;
-  CreateOrderErrorIcon?: ReactNode;
+  CrateOrder?: {
+    Spinner?: ReactNode;
+    SuccessIcon?: ReactNode;
+    ErrorIcon?: ReactNode;
+  };
 
   Orders?: FC<OrdersProps>;
+  OrderConfirmation?: FC<OrderConfirmationModalProps>;
 }
 
 interface CreateOrderCallbackArgs {
@@ -401,6 +414,9 @@ export interface TwapProps {
   chainId?: number;
   icons?: Icons;
   dateFormat?: (date: number) => string;
+  account?: string;
+  orderDisclaimerAcceptedByDefault?: boolean;
+  isTwapMarketByDefault?: boolean;
 }
 
 export interface TwapContextType extends TwapProps {

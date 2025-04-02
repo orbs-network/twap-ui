@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { TokenPanel } from "./components/token-panel";
 import { ShowConfirmationButton } from "./components/show-confirmation-button";
 import { FillDelayPanel } from "./components/fill-delay-panel";
@@ -14,16 +14,22 @@ import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderMod
 import { SwapPanel } from "./components/swap-panel";
 import { GlobalStyles } from "./styles";
 import { TwapProvider } from "../context";
-import { LimitPriceMessage } from "./components/limit-price-message";
+import { WarningMessage } from "./components/warnings";
 import { TwapProps } from "../types";
 import { createGlobalStyle } from "styled-components";
 import * as uiHooks from "../hooks/ui-hooks";
+import { TradeAmountMessage } from "./components/message";
+import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 
 const Widget = (props: TwapProps) => {
+  const shouldWrapOrUnwrap = useMemo(() => {
+    return shouldWrapOnly(props.srcToken, props.dstToken, props.chainId) || shouldUnwrapOnly(props.srcToken, props.dstToken, props.chainId);
+  }, [props.srcToken, props.dstToken, props.chainId]);
   return (
     <TwapProvider {...props}>
-      <div className="twap-widget">
+      <div className={`twap-widget ${shouldWrapOrUnwrap ? "twap-widget-wrap-only" : ""}`}>
         <Orders />
+        <SubmitOrderModal />
         {props.includeStyles && <GlobalStyles isDarkMode={true} />}
         {props.children || <SwapPanel />}
       </div>
@@ -34,7 +40,6 @@ const Widget = (props: TwapProps) => {
 Widget.Orders = OrdersPortal;
 Widget.LimitPricePanel = LimitPanel;
 Widget.ShowConfirmationButton = ShowConfirmationButton;
-Widget.OrderConfirmation = SubmitOrderModal;
 Widget.TradesAmountPanel = TradesAmountPanel;
 Widget.TokenPanel = TokenPanel;
 Widget.PoweredByOrbs = PoweredbyOrbs;
@@ -43,7 +48,8 @@ Widget.PriceTabs = PriceTabs;
 Widget.DurationPanel = DurationPanel;
 Widget.SwitchTokens = SwitchTokens;
 Widget.PriceSwitch = PriceSwitch;
-Widget.LimitPriceMessage = LimitPriceMessage;
+Widget.WarningMessage = WarningMessage;
 Widget.createGlobalStyle = createGlobalStyle;
 Widget.hooks = uiHooks;
+Widget.TradeAmountMessage = TradeAmountMessage;
 export { Widget };

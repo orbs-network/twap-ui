@@ -148,13 +148,13 @@ export const useLimitPricePercentSelect = () => {
     }
   }, [isInvertedPrice]);
 
-  const buttons = useMemo(() => {
+  const { buttons, isReset } = useMemo(() => {
     const isSelected = (percent: number) => (BN(limitPrice || 0).isZero() ? false : BN(selectedPricePercent || 0).eq(percent));
     const isReset = !BN(priceDiffFromMarket).isZero() && !options.includes(priceDiffFromMarket) && !selectedPricePercent;
 
     const resetButton = {
       text: isReset ? `${priceDiffFromMarket}%` : "0%",
-      selected: isReset ? true : false,
+      selected: isReset || !selectedPricePercent ? true : false,
       onClick: () => onPercent("0"),
       isReset,
     };
@@ -167,13 +167,17 @@ export const useLimitPricePercentSelect = () => {
       };
     });
 
-    return [resetButton, ...buttons];
+    return {
+      buttons: [resetButton, ...buttons],
+      isReset,
+    };
   }, [options, onPercent, limitPrice, selectedPricePercent, isInvertedPrice, priceDiffFromMarket]);
 
   return {
     onPercent,
     buttons,
     selected: selectedPricePercent,
+    isReset,
   };
 };
 
@@ -209,6 +213,17 @@ export const useLimitPriceError = () => {
   return error;
 };
 
+export const useLimitPanelUsd = () => {
+  const {
+    state: { isInvertedPrice },
+    srcUsd1Token,
+    dstUsd1Token,
+  } = useTwapContext();
+  const { value: limitPrice } = useLimitPriceInput();
+
+  return useUsdAmount(limitPrice, isInvertedPrice ? srcUsd1Token : dstUsd1Token);
+};
+
 export const useLimitPricePanel = () => {
   const tokens = useLimitPriceTokens();
   const error = useLimitPriceError();
@@ -220,6 +235,8 @@ export const useLimitPricePanel = () => {
     state: { isInvertedPrice },
   } = useTwapContext();
 
+  const usd = useLimitPanelUsd();
+
   return {
     tokens,
     error,
@@ -228,6 +245,7 @@ export const useLimitPricePanel = () => {
     onInvert,
     isInverted: isInvertedPrice,
     tokenSelect,
+    usd,
   };
 };
 
@@ -442,7 +460,7 @@ export const useShowConfirmationModalButton = () => {
   const zeroSrcAmount = BN(typedSrcAmount || "0").isZero();
   const zeroMarketPrice = !BN(marketPrice || 0).gt(0);
   const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
-  const isButtonLoading = !srcToken || !dstToken || !typedSrcAmount ? false : isPropsLoading || wrapLoading || unwrapLoading;
+  const isButtonLoading = !srcToken || !dstToken || !typedSrcAmount ? false : isPropsLoading;
 
   const noLiquidity = useMemo(() => {
     const result = srcToken && dstToken && !isButtonLoading && !marketPriceLoading && zeroMarketPrice;
@@ -463,9 +481,7 @@ export const useShowConfirmationModalButton = () => {
       disabled: false,
       loading: false,
       onClick: () => {
-        if (!onConnect) {
-          alert("connect function is not defined");
-        } else {
+        if (onConnect) {
           onConnect();
         }
       },
@@ -488,10 +504,10 @@ export const useShowConfirmationModalButton = () => {
     return {
       text: error || t.wrap,
       onClick: wrap,
-      disabled: error || isButtonLoading,
-      loading: isButtonLoading,
+      disabled: error || wrapLoading,
+      loading: wrapLoading,
     };
-  }, [shouldOnlyWrap, wrap, zeroSrcAmount, isButtonLoading, t, error]);
+  }, [shouldOnlyWrap, wrap, wrapLoading, t, error]);
 
   const unwrapOnly = useMemo(() => {
     if (!shouldUnwrap) return;
@@ -499,10 +515,10 @@ export const useShowConfirmationModalButton = () => {
     return {
       text: error || t.unwrap,
       onClick: unwrap,
-      disabled: error || isButtonLoading,
-      loading: isButtonLoading,
+      disabled: error || unwrapLoading,
+      loading: unwrapLoading,
     };
-  }, [shouldUnwrap, unwrap, zeroSrcAmount, error, isButtonLoading, t]);
+  }, [shouldUnwrap, unwrap, error, unwrapLoading, t]);
 
   const swap = useMemo(() => {
     return {
@@ -557,7 +573,7 @@ export const useFillDelayPanel = () => {
 export const useOrderDurationPanel = () => {
   const { orderDuration, setOrderDuration, milliseconds } = useOrderDuration();
 
-  const onUnitSelect = useCallback((unit: TimeUnit) => setOrderDuration({ unit, value: 1 }), [setOrderDuration]);
+  const onUnitSelect = useCallback((unit: TimeUnit) => setOrderDuration({ unit, value: orderDuration.value }), [setOrderDuration, orderDuration.value]);
 
   return {
     orderDuration,
@@ -583,21 +599,6 @@ export const useConfirmationModalButton = () => {
       disabled: !disclaimerAccepted || isLoading,
     };
   }, [t, onSubmit, disclaimerAccepted, mutationLoading, swapStatus]);
-};
-
-export const useMarketPriceMessage = () => {
-  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  const {
-    state: { isMarketOrder },
-    translations: t,
-  } = useTwapContext();
-  return useMemo(() => {
-    if (!isMarketOrder || isWrapOrUnwrapOnly) return;
-    return {
-      text: t?.marketOrderWarning,
-      url: `https://www.orbs.com/dtwap-and-dlimit-faq/`,
-    };
-  }, [isMarketOrder, isWrapOrUnwrapOnly, t]);
 };
 
 export const useFee = () => {

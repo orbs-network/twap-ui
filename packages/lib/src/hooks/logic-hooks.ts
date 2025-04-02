@@ -1,7 +1,7 @@
-import { amountBN, amountUi, eqIgnoreCase, getNetwork, isNativeAddress, networks, TimeDuration } from "@orbs-network/twap-sdk";
+import { amountBN, amountUi, getNetwork, isNativeAddress, networks, TimeDuration } from "@orbs-network/twap-sdk";
 import { useMemo, useCallback } from "react";
 import { useTwapContext } from "../context";
-import { getMinNativeBalance, millisToDays, millisToMinutes, removeCommas } from "../utils";
+import { getMinNativeBalance, millisToDays, millisToMinutes, removeCommas, shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import BN from "bignumber.js";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { erc20Abi } from "viem";
@@ -134,12 +134,16 @@ export const useChunks = () => {
   } = useTwapContext();
   const maxChunks = useMaxChunks();
   const t = useTwapContext().translations;
+  const minChunkSizeUsd = useMinChunkSizeUsd();
 
   const chunks = useMemo(() => twapSDK.getChunks(maxChunks, Boolean(isLimitPanel), typedChunks), [maxChunks, typedChunks, isLimitPanel, twapSDK]);
   const error = useMemo(() => {
-    const { isError, value } = twapSDK.getMaxChunksError(chunks, maxChunks, Boolean(isLimitPanel));
+    if (!chunks) {
+      return `${t.minChunksError} 1`;
+    }
+    const { isError } = twapSDK.getMaxChunksError(chunks, maxChunks, Boolean(isLimitPanel));
     if (!isError) return undefined;
-    return t.maxChunksError.replace("{maxChunks}", value.toString());
+    return t.minTradeSizeError.replace("{minTradeSize}", `${minChunkSizeUsd} USD`);
   }, [chunks, twapSDK, maxChunks, isLimitPanel]);
 
   const setChunks = useCallback(
@@ -277,24 +281,19 @@ export const useBalanceError = () => {
 };
 
 export const useShouldOnlyWrap = () => {
-  const { srcToken, dstToken } = useTwapContext();
-  const network = useNetwork();
+  const { srcToken, dstToken, chainId } = useTwapContext();
 
   return useMemo(() => {
-    if (!srcToken || !dstToken || !network) return false;
-    return isNativeAddress(srcToken?.address || "") && eqIgnoreCase(dstToken?.address || "", network?.wToken.address || "");
-  }, [srcToken, dstToken, network]);
+    return shouldWrapOnly(srcToken, dstToken, chainId);
+  }, [srcToken, dstToken, chainId]);
 };
 
 export const useShouldUnwrap = () => {
-  const { srcToken, dstToken } = useTwapContext();
-  const network = useNetwork();
+  const { srcToken, dstToken, chainId } = useTwapContext();
 
   return useMemo(() => {
-    if (!srcToken || !dstToken || !network) return false;
-
-    return eqIgnoreCase(srcToken?.address || "", network?.wToken.address || "") && isNativeAddress(dstToken?.address || "");
-  }, [srcToken, dstToken, network]);
+    return shouldUnwrapOnly(srcToken, dstToken, chainId);
+  }, [srcToken, dstToken, chainId]);
 };
 
 export const useShouldWrapOrUnwrapOnly = () => {

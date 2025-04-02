@@ -1,7 +1,7 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
-import { constructSDK, TimeUnit } from "@orbs-network/twap-sdk";
+import { constructSDK } from "@orbs-network/twap-sdk";
 import { State, TwapProps, TwapContextType, Translations } from "./types";
 import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
@@ -44,16 +44,27 @@ const contextReducer = (state: State, action: Action): State => {
   }
 };
 
+const getInitialState = ({ orderDisclaimerAcceptedByDefault = true }: TwapProps) => {
+  return {
+    ...initialState,
+    disclaimerAccepted: orderDisclaimerAcceptedByDefault,
+  };
+};
+
 const Listeners = () => {
-  const { isLimitPanel, updateState } = useTwapContext();
+  const { isLimitPanel, updateState, isTwapMarketByDefault, srcToken, dstToken } = useTwapContext();
+
+  useEffect(() => {
+    updateState({ typedPrice: undefined, selectedPricePercent: undefined });
+  }, [srcToken?.address, dstToken?.address]);
 
   useEffect(() => {
     if (isLimitPanel) {
-      updateState({ typedDuration: { unit: TimeUnit.Weeks, value: 1 }, isMarketOrder: false });
+      updateState({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION, isMarketOrder: false });
     } else {
-      updateState({ typedDuration: undefined });
+      updateState({ typedDuration: undefined, isMarketOrder: isTwapMarketByDefault ? true : false });
     }
-  }, [isLimitPanel, updateState]);
+  }, [isLimitPanel, updateState, isTwapMarketByDefault]);
 
   useEffect(() => {
     setInterval(() => {
@@ -74,8 +85,8 @@ const useTranslations = (translations?: Partial<Translations>): Translations => 
   }, [translations]);
 };
 
-const useStore = () => {
-  const [state, dispatch] = useReducer(contextReducer, initialState);
+const useStore = (props: TwapProps) => {
+  const [state, dispatch] = useReducer(contextReducer, getInitialState(props));
   const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
 
   const resetState = useCallback(() => dispatch({ type: ActionType.RESET }), [dispatch]);
@@ -87,17 +98,11 @@ const useStore = () => {
 };
 
 const useInitiateWallet = (props: TwapProps) => {
-  const [account, setAccount] = useState<`0x${string}` | undefined>(undefined);
   const chain = useMemo(() => Object.values(chains).find((it: any) => it.id === props.chainId), [props.chainId]);
   const transport = useMemo(() => (props.provider ? custom(props.provider) : undefined), [props.provider]);
   const walletClient = useMemo(() => {
     return transport ? createWalletClient({ chain, transport }) : undefined;
   }, [transport]);
-
-  useEffect(() => {
-    setAccount(undefined);
-    walletClient?.getAddresses().then((addresses) => setAccount(addresses[0]));
-  }, [walletClient]);
 
   const publicClient = useMemo(() => {
     if (!chain) return;
@@ -106,33 +111,31 @@ const useInitiateWallet = (props: TwapProps) => {
 
   return {
     walletClient,
-    account,
     publicClient,
   };
 };
 
 const Content = (props: TwapProps) => {
-  const { state, updateState, resetState } = useStore();
+  const { state, updateState, resetState } = useStore(props);
   const translations = useTranslations(props.translations);
   const twapSDK = useMemo(() => constructSDK({ config: props.config }), [props.config]);
-  const { walletClient, account, publicClient } = useInitiateWallet(props);
+  const { walletClient, publicClient } = useInitiateWallet(props);
 
   return (
     <TwapContext.Provider
       value={{
         ...props,
+        account: props.account as `0x${string}` | undefined,
         translations,
-        isWrongChain: !account || !props.chainId ? false : props.config.chainId !== props.chainId,
+        isWrongChain: !props.account || !props.chainId ? false : props.config.chainId !== props.chainId,
         updateState,
         reset: resetState,
         state,
-        config: props.config,
         walletClient,
         publicClient: publicClient as any as ReturnType<typeof createPublicClient>,
         twapSDK,
         marketPrice: props.marketReferencePrice.value,
         marketPriceLoading: props.marketReferencePrice.isLoading,
-        account,
       }}
     >
       <Listeners />

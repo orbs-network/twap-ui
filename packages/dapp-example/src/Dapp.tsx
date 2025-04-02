@@ -2,7 +2,7 @@ import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance, useRefetchB
 import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
-import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps, TokenLogoProps, OrdersProps } from "@orbs-network/twap-ui";
+import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps, TokenLogoProps, LinkProps } from "@orbs-network/twap-ui";
 import { eqIgnoreCase, networks, Configs } from "@orbs-network/twap-sdk";
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
@@ -58,8 +58,12 @@ const TokenLogo = ({ token }: TokenLogoProps) => {
   return <img src={token?.logoUrl} />;
 };
 
+const Link = ({ href, children }: LinkProps) => {
+  return <a href={href}>{children}</a>;
+};
+
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {
-  const { chainId } = useAccount();
+  const { chainId, address: account } = useAccount();
   const { openConnectModal } = useConnectModal();
   const config = useDappContext().config;
   const dappTokens = useTokenList();
@@ -131,7 +135,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         srcBalance={srcBalance}
         dstBalance={dstBalance}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
-        components={{ Tooltip, TokenLogo }}
+        components={{ Tooltip, TokenLogo, Link }}
         modals={{ OrderConfirmationModal, OrderHistoryModal, TokenSelectModal }}
         useToken={useToken}
         includeStyles={true}
@@ -141,6 +145,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
           tradesAmountSmallText: "orders",
         }}
         fee={0.25}
+        account={account}
       />
     </>
   );

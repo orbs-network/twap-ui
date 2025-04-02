@@ -353,16 +353,19 @@ export const useSubmitOrderCallback = () => {
   const { onRequest } = useSubmitOrderCallbacks();
   const srcAmount = useSrcAmount().amountWei;
   const approvalAmount = isExactAppoval ? srcAmount : maxUint256.toString();
+  const [checkingApproval, setCheckingApproval] = useState(false);
 
   const wrappedRef = useRef(false);
-  return useMutation(
+  const mutation = useMutation(
     async () => {
       if (!srcToken) throw new Error("srcToken is not defined");
       if (!dstToken) throw new Error("dstToken is not defined");
       if (!chainId) throw new Error("chainId is not defined");
       const ensureAllowance = () => getHasAllowance({ token: ensureWrappedToken(srcToken, chainId), amount: srcAmount });
       const shouldWrap = isNativeAddress(srcToken.address);
+      setCheckingApproval(true);
       const haveAllowance = await ensureAllowance();
+      setCheckingApproval(false);
       let stepIndex = 0;
       updateState({ swapStatus: SwapStatus.LOADING, totalSteps: getTotalSteps(shouldWrap, !haveAllowance) });
 
@@ -400,4 +403,9 @@ export const useSubmitOrderCallback = () => {
       },
     },
   );
+
+  return {
+    ...mutation,
+    checkingApproval,
+  };
 };

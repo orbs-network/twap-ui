@@ -10,6 +10,7 @@ import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
 import { useTwapContext } from "../../../context";
 import { OrderHistoryMenu } from "./OrderHistorySelect";
 import { useOrderName } from "../../../hooks/logic-hooks";
+import { Virtuoso } from "react-virtuoso";
 
 const ListLoader = () => {
   return (
@@ -33,9 +34,7 @@ export const OrderHistoryList = () => {
         <EmptyList />
       ) : (
         <StyledList className="twap-orders__list">
-          {selectedOrders.map((order) => {
-            return <ListOrder key={order.id} selectOrder={selectOrder} order={order} />;
-          })}
+          <Virtuoso style={{ height: "100%" }} data={selectedOrders} itemContent={(index, order) => <ListOrder key={order.id} selectOrder={selectOrder} order={order} />} />
         </StyledList>
       )}
     </>

@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useCallback } from "react";
-import { Label } from "../../components/base";
+import { Label, NumericInput, ResolutionSelect } from "../../components/base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
 import { StyledRowFlex } from "../../styles";
 import styled from "styled-components";
@@ -58,14 +58,24 @@ const Buttons = ({ className = "" }: { className?: string }) => {
   );
 };
 
-export const DurationPanel = ({ children, className = "", options = Options }: { children?: ReactNode; className?: string; options?: Option[] }) => {
+export const DurationPanel = ({
+  children,
+  className = "",
+  options = Options,
+  variant,
+}: {
+  children?: ReactNode;
+  className?: string;
+  options?: Option[];
+  variant?: "buttons" | "menu";
+}) => {
   const hide = useShouldWrapOrUnwrapOnly();
 
   if (hide) return null;
 
   return (
     <Panel className={`twap-duration-panel ${className}`}>
-      <PanelContext.Provider value={{ options }}>{children || <Main />}</PanelContext.Provider>
+      <PanelContext.Provider value={{ options }}>{children || <Main variant={variant} />}</PanelContext.Provider>
     </Panel>
   );
 };
@@ -75,16 +85,50 @@ const DurationLabel = () => {
   return <Label text={translations.expiry} tooltip={translations.maxDurationTooltip} />;
 };
 
-const Main = ({ className = "" }: { className?: string }) => {
+const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
+  const { setOrderDuration, orderDuration } = useOrderDurationPanel();
+  const { onBlur, onFocus } = Panel.usePanelContext();
+
+  return (
+    <NumericInput
+      onBlur={onBlur}
+      onFocus={onFocus}
+      className={`twap-trade-interval-panel-input ${className}`}
+      value={orderDuration.value}
+      onChange={(value) => setOrderDuration({ unit: orderDuration.unit, value: Number(value) })}
+      placeholder={placeholder}
+    />
+  );
+};
+
+const Resolution = () => {
+  const { onUnitSelect, orderDuration } = useOrderDurationPanel();
+  const { onBlur, onFocus } = Panel.usePanelContext();
+
+  return <ResolutionSelect onClose={onBlur} onOpen={onFocus} unit={orderDuration.unit} onChange={onUnitSelect} />;
+};
+
+const Menu = () => {
+  return (
+    <StyledRowFlex>
+      <Input />
+      <Resolution />
+    </StyledRowFlex>
+  );
+};
+const Main = ({ className = "", variant = "buttons" }: { className?: string; variant?: "buttons" | "menu" }) => {
   return (
     <StyledMain className={`twap-duration-panel-main ${className}`}>
-      <DurationLabel />
-      <Buttons />
+      <Panel.Header>
+        <DurationLabel />
+      </Panel.Header>
+      {variant === "buttons" && <Buttons />}
+      {variant === "menu" && <Menu />}
     </StyledMain>
   );
 };
 
-const StyledMain = styled(StyledRowFlex)({
+const StyledMain = styled("div")({
   flexWrap: "wrap",
   ".twap-duration-panel-buttons": {
     display: "flex",
@@ -95,3 +139,4 @@ const StyledMain = styled(StyledRowFlex)({
 
 DurationPanel.Buttons = Buttons;
 DurationPanel.Label = DurationLabel;
+DurationPanel.Menu = Menu;

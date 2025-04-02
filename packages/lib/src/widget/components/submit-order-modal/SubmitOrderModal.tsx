@@ -2,7 +2,7 @@ import { Main } from "./Main";
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
 import { Failed } from "./Failed";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useCallback, useMemo } from "react";
 import { useTwapContext } from "../../../context";
 import {
   useChunks,
@@ -22,7 +22,7 @@ import { getOrderType } from "../../../utils";
 import { useSubmitOrderCallback } from "../../../hooks/send-transactions-hooks";
 
 const Modal = ({ children }: { children: ReactNode }) => {
-  const { modals, state, translations: t, srcUsd1Token, dstUsd1Token } = useTwapContext();
+  const { modals, state, translations: t, srcUsd1Token, dstUsd1Token, updateState } = useTwapContext();
   const onClose = useOnCloseConfirmationModal();
   const deadline = useOrderDeadline();
   const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
@@ -30,9 +30,16 @@ const Modal = ({ children }: { children: ReactNode }) => {
   const fillDelayMillis = useFillDelay().milliseconds;
   const dstMinAmountOut = useDestTokenMinAmount().amountUI;
   const fee = useFee();
-  const { mutateAsync: onConfirm } = useSubmitOrderCallback();
+  const { mutateAsync: onConfirm, checkingApproval } = useSubmitOrderCallback();
   const srcUsd = useUsdAmount(state.trade?.srcAmount, srcUsd1Token);
   const dstUsd = useUsdAmount(state.trade?.dstAmount, dstUsd1Token);
+
+  const setDisclaimerAccepted = useCallback(
+    (accepted: boolean) => {
+      updateState({ disclaimerAccepted: accepted });
+    },
+    [updateState],
+  );
 
   return (
     <modals.OrderConfirmationModal
@@ -63,6 +70,9 @@ const Modal = ({ children }: { children: ReactNode }) => {
       srcAmountusd={srcUsd}
       dstAmountusd={dstUsd}
       onConfirm={onConfirm}
+      disclaimerAccepted={state.disclaimerAccepted}
+      setDisclaimerAccepted={setDisclaimerAccepted}
+      buttonDisabled={checkingApproval}
     >
       <div className="twap-create-order">{children}</div>
     </modals.OrderConfirmationModal>
@@ -125,9 +135,10 @@ export const SubmitOrderModal = () => {
           Failed: <Failed error={swapError} />,
           Success: <SuccessContent />,
           Main: <Main />,
-          Loader: components.CreateOrderLoader,
-          SuccessIcon: components.CreateOrderSuccessIcon,
-          FailedIcon: components.CreateOrderErrorIcon,
+          Loader: components.CrateOrder?.Spinner,
+          SuccessIcon: components.CrateOrder?.SuccessIcon,
+          FailedIcon: components.CrateOrder?.ErrorIcon,
+          Link: components.Link,
         }}
       />
     </Modal>

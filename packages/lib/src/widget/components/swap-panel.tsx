@@ -9,8 +9,8 @@ import { DurationPanel } from "./trade-duration-panel";
 import { OrdersPortal } from "./orders/Orders";
 import { PoweredbyOrbs } from "./powered-by-orbs";
 import { useTwapContext } from "../../context";
-import { SubmitOrderModal } from "./submit-order-modal/SubmitOrderModal";
-import { LimitPriceMessage } from "./limit-price-message";
+import { WarningMessage } from "./warnings";
+import { TradeAmountMessage } from "./message";
 
 export function SwapPanel() {
   const { isLimitPanel } = useTwapContext();
@@ -30,12 +30,12 @@ export function SwapPanel() {
             <TradesAmountPanel />
           </div>
         )}
+        <TradeAmountMessage />
         <ShowConfirmationButton />
       </div>
       <PoweredbyOrbs />
       <OrdersPortal />
-      <LimitPriceMessage />
-      <SubmitOrderModal />
+      <WarningMessage />
     </div>
   );
 }

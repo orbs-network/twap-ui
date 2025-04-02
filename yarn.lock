@@ -2780,10 +2780,10 @@
   dependencies:
     "@octokit/openapi-types" "^18.0.0"
 
-"@orbs-network/swap-ui@^0.0.38":
-  version "0.0.38"
-  resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.38.tgz#daa4504bfc57a830096ebf41aa159b1d3e2e74a4"
-  integrity sha512-3Twdfy6Z6jFDzfYlDKtjLm3fN79oSsz1FZsS34weYAsXZwoLf/andmwCyS488ymV0DOjvvzIyF4imz9KD6YqKw==
+"@orbs-network/swap-ui@^0.0.41":
+  version "0.0.41"
+  resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.41.tgz#294ea0505fbc2207ce045050430bcf289aa400cd"
+  integrity sha512-7NMJAi2D3R1kam0Fp1IdZA468Dq3YJ39KlpQQcq0qz9MTjrTi4ho7yyRVDG4qrw02qX83QVhgOCvvbTTtjm+3w==
 
 "@orbs-network/twap@^2.0.1":
   version "2.3.4"
@@ -13263,6 +13263,11 @@ react-virtuoso@^4.12.5:
   version "4.12.5"
   resolved "https://registry.yarnpkg.com/react-virtuoso/-/react-virtuoso-4.12.5.tgz#cf92efc2527e56d6df1d4d63c6e4dd3fac5a4030"
   integrity sha512-YeCbRRsC9CLf0buD0Rct7WsDbzf+yBU1wGbo05/XjbcN2nJuhgh040m3y3+6HVogTZxEqVm45ac9Fpae4/MxRQ==
+
+react-virtuoso@^4.12.6:
+  version "4.12.6"
+  resolved "https://registry.yarnpkg.com/react-virtuoso/-/react-virtuoso-4.12.6.tgz#20fe374d43cce3c9821e29f4cc4d050596d06d01"
+  integrity sha512-bfvS6aCL1ehXmq39KRiz/vxznGUbtA27I5I24TYCe1DhMf84O3aVNCIwrSjYQjkJGJGzY46ihdN8WkYlemuhMQ==
 
 react@18.x:
   version "18.3.1"

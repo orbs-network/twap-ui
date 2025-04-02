@@ -2,33 +2,12 @@ import { styled } from "styled-components";
 import BN from "bignumber.js";
 import React, { useCallback, useMemo } from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
-import { Switch, Button, Message } from "../../../components/base";
-
+import { Switch, Button, Link } from "../../../components/base";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
-import { useConfirmationModalButton, useFee, useMarketPriceMessage } from "../../../hooks/ui-hooks";
+import { useConfirmationModalButton, useFee } from "../../../hooks/ui-hooks";
 import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../../hooks/logic-hooks";
 import { OrderDetails } from "../../../components/order-details";
-
-export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
-  const { translations: t } = useTwapContext();
-  const marketWarning = useMarketPriceMessage();
-
-  if (!marketWarning) return null;
-
-  return (
-    <Message
-      className={`twap-market-price-warning ${className}`}
-      title={
-        <>
-          {`${marketWarning.text} `}
-          <a href={marketWarning.url} target="_blank">{`${t.learnMore}`}</a>
-        </>
-      }
-      variant="warning"
-    />
-  );
-};
 
 const Price = () => {
   const {
@@ -71,9 +50,7 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
       title={
         <>
           {`${t.accept} `}
-          <a href="https://www.orbs.com/dtwap-dlimit-disclaimer" target="_blank">
-            {t.disclaimer}
-          </a>
+          <Link href="https://www.orbs.com/dtwap-dlimit-disclaimer">{t.disclaimer}</Link>
         </>
       }
     >
@@ -151,7 +128,6 @@ const Details = () => {
         </>
       ) : (
         <>
-          <MarketPriceWarning />
           <OrderDetails.Expiry deadline={deadline} />
           <OrderDetails.ChunkSize srcChunkAmount={srcChunkAmount} chunks={chunks} srcToken={srcToken} />
           <OrderDetails.ChunksAmount chunks={chunks} />
