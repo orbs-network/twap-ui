@@ -3,6 +3,10 @@ import { Config, Configs } from "@orbs-network/twap";
 export const configs: { [key: string]: Config } = {
   PancakeSwap: {
     ...Configs.PancakeSwap,
+    twapAddress: "0xa6F7444D2b92Aa9F94a2165c77aAF2B671e63994",
+    lensAddress: "0xEdB0c077fa87Fb21d050c619FF426798f8Fc1264",
+    exchangeAddress: "0xE2a0c3b9aD19A18c4bBa7fffBe5bC1b0E58Db1CE",
+    exchangeType: "ExchangeV2" as any,
   },
   PancakeSwapArbitrum: {
     chainName: "arb",
