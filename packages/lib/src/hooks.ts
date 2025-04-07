@@ -1,4 +1,4 @@
-import { OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { Configs, OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -533,6 +533,11 @@ const useGasPriceQuery = () => {
     priorityFeePerGas,
   };
 };
+
+const LEGACY_TWAP_ADDRESSES = {
+  [Configs.PancakeSwap.chainId]: ["0x25a0A78f5ad07b2474D3D42F1c1432178465936d"],
+};
+
 export const useOrdersHistoryQuery = () => {
   const { lib, updateState } = useTwapStore((state) => ({
     lib: state.lib,
@@ -546,12 +551,18 @@ export const useOrdersHistoryQuery = () => {
     queryKey,
     queryFn: async ({ signal }) => {
       if (!lib?.maker) return [];
-      return getOrders({
-        account: lib!.maker,
-        signal,
-        chainId: lib!.config.chainId,
-        exchangeAddress: lib?.config.exchangeAddress,
-      });
+      const getOrdersByTwap = (twapAddress: string) => {
+        return getOrders({
+          account: lib!.maker,
+          signal,
+          chainId: lib!.config.chainId,
+          twapAddress,
+        });
+      };
+
+      const twapAddresses = [lib?.config.twapAddress, ...(LEGACY_TWAP_ADDRESSES[lib?.config.chainId] || [])];
+      const orders = await Promise.all(twapAddresses.map(getOrdersByTwap));
+      return orders.flat();
     },
     staleTime: Infinity,
     refetchInterval: REFETCH_ORDER_HISTORY,

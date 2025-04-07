@@ -176,6 +176,20 @@ export const useGetPriceUsdCallback = () => {
   );
 };
 
+const chainIdToName: { [key: number]: string } = {
+  56: "bsc",
+  137: "polygon",
+  8453: "base", // Assuming this ID is another identifier for Polygon as per the user's mapping
+  250: "fantom",
+  1: "ethereum",
+  1101: "zkevm",
+  81457: "blast",
+  59144: "linea",
+  42161: "arbitrum",
+};
+
+
+
 export const usePriceUSD = (address?: string) => {
   const wToken = store.useTwapStore((s) => s.lib)?.config.wToken.address;
   const { chainId } = useWeb3React();
@@ -184,10 +198,13 @@ export const usePriceUSD = (address?: string) => {
     queryFn: async () => {
       await delay(1_000);
       const _address = isNativeAddress(address || "") ? wToken : address;
-      const response = await fetch(`http://localhost:3000/usd?token=${_address}&chainId=${chainId}`);
+      const chainName = chainIdToName[chainId as keyof typeof chainIdToName] || "Unknown Chain";
+      const tokenAddressWithChainId = `${chainName}:${_address}`;
+      const response = await fetch(`https://coins.llama.fi/prices/current/${tokenAddressWithChainId}`);
       const result = await response.json();
 
-      return result.priceUsd;
+      const coin = result.coins[tokenAddressWithChainId];
+      return coin.price
     },
     refetchInterval: 10_000,
     enabled: !!address && !!chainId,

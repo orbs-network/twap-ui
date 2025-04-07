@@ -56,19 +56,19 @@ const getCreatedOrders = async ({
   account,
   page = 0,
   limit,
-  exchangeAddress,
+  twapAddress,
 }: {
   endpoint: string;
   signal?: AbortSignal;
   account?: string;
   page: number;
   limit: number;
-  exchangeAddress?: string;
+  twapAddress?: string;
 }) => {
-  const exchange = exchangeAddress ? `exchange: "${exchangeAddress}"` : "";
+  const address = twapAddress ? `twapAddress: "${twapAddress}"` : "";
   const maker = account ? `, maker: "${account}"` : "";
 
-  const where = `where:{${exchange} ${maker}}`;
+  const where = `where:{${address} ${maker}}`;
 
   const query = `
   {
@@ -120,13 +120,13 @@ const getAllCreatedOrders = async ({
   account,
   endpoint,
   signal,
-  exchangeAddress,
+  twapAddress,
   limit,
 }: {
   account: string;
   endpoint: string;
   signal?: AbortSignal;
-  exchangeAddress?: string;
+  twapAddress?: string;
   limit: number;
 }) => {
   let page = 0;
@@ -134,7 +134,7 @@ const getAllCreatedOrders = async ({
 
   while (true) {
     const orderCreateds = await getCreatedOrders({
-      exchangeAddress,
+      twapAddress,
       account,
       signal,
       endpoint,
@@ -152,6 +152,8 @@ const getAllCreatedOrders = async ({
 };
 
 const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortSignal) => {
+  console.log({ ids });
+
   const query = `
       {
           statuses(where:{id_in: [${ids.map((id) => `"${id}"`)}]}) {
@@ -188,10 +190,10 @@ const parseFills = (orderId: number, fills?: any) => {
   };
 };
 
-const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: string; signal?: AbortSignal; ids: string[]; chainId: number }) => {
+const getAllFills = async ({ endpoint, signal, ids, chainId, twapAddress }: { endpoint: string; signal?: AbortSignal; ids: string[]; chainId: number; twapAddress: string }) => {
   const LIMIT = 1_000;
   let page = 0;
-  const where = `where: { TWAP_id_in: [${ids.join(", ")}] }`;
+  const where = `where: { TWAP_id_in: [${ids.join(", ")}], twapAddress: "${twapAddress}" }`;
   let fills = [];
   const dexFee = chainId === 56 ? "dexFee" : "";
   while (true) {
@@ -352,26 +354,26 @@ export const getOrders = async ({
   signal,
   page,
   limit = 1_000,
-  exchangeAddress,
+  twapAddress,
 }: {
   account?: string;
   signal?: AbortSignal;
   page?: number;
   chainId: number;
   limit?: number;
-  exchangeAddress?: string;
+  twapAddress?: string;
 }): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(chainId);
   if (!endpoint) return [];
   let orders: any = [];
   if (typeof page === "number") {
-    orders = await getCreatedOrders({ endpoint, signal, account, exchangeAddress, page, limit });
+    orders = await getCreatedOrders({ endpoint, signal, account, twapAddress: twapAddress?.toLowerCase(), page, limit });
   } else {
-    orders = await getAllCreatedOrders({ endpoint, signal, account, exchangeAddress, limit });
+    orders = await getAllCreatedOrders({ endpoint, signal, account, twapAddress: twapAddress?.toLowerCase(), limit });
   }
 
   const ids = orders.map((order: any) => order.Contract_id);
-  const fills = await getAllFills({ endpoint, signal, ids, chainId });
+  const fills = await getAllFills({ endpoint, signal, ids, chainId, twapAddress: twapAddress?.toLowerCase() || "" });
   const statuses = await getOrderStatuses(ids, endpoint, signal);
   orders = orders.map((rawOrder: any) => {
     const fill = fills?.find((it: any) => it.TWAP_id === Number(rawOrder.Contract_id));

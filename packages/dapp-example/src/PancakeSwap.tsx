@@ -153,7 +153,7 @@ const ContextWrapper = ({ children }: { children: ReactNode }) => {
     }
 
     if (!dstToken) {
-      setDstToken((Object.values(dappTokens) as any)?.[2]);
+      setDstToken((Object.values(dappTokens).find((it: any) => it.symbol === "USDT") as any));
     }
   }, [dappTokens, srcToken, dstToken]);
 
