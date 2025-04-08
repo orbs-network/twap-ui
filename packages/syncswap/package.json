@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-syncswap",
-  "version": "0.11.35",
+  "version": "0.11.36",
   "description": "TWAP UI for Syncswap",
   "license": "MIT",
   "author": "Orbs",
@@ -24,7 +24,7 @@
     "@mui/material": "5.x",
     "@mui/system": "5.x",
     "@orbs-network/twap": "^1.18.x",
-    "@orbs-network/twap-ui": "^0.11.35",
+    "@orbs-network/twap-ui": "^0.11.36",
     "lodash": "4.x",
     "web3": "1.x"
   },
