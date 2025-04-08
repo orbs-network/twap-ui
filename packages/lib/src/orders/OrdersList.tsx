@@ -45,27 +45,15 @@ const PaginationList = ({ orders, status }: { orders?: Order[]; status?: Status 
 const List = ({ orders, status }: { orders?: Order[]; status?: Status }) => {
   const { translations } = useTwapContext();
   const [expanded, setExpanded] = useState<number | undefined>(undefined);
-  const newOrderLoading = useTwapStore((s) => s.newOrderLoading);
 
   const onExpand = useCallback((id: number) => {
     setExpanded((prev) => (prev === id ? undefined : id));
   }, []);
 
-  if (!_.size(orders)) {
-    return newOrderLoading ? (
-      <OrderLoader />
-    ) : (
-      <StyledContainer className="twap-orders-list">
-        <StyledEmptyList className="twap-orders-empty-list">
-          {!status ? "You currently don't have orders" : `${translations.noOrdersFound} ${(translations as any)["noOrdersFound_" + status]} ${translations.noOrdersFound1}`}
-        </StyledEmptyList>
-      </StyledContainer>
-    );
-  }
+  if (!_.size(orders)) return null;
 
   return (
     <StyledContainer className="twap-orders-list">
-      {newOrderLoading && <OrderLoader />}
       {orders?.map((order, index) => {
         return <ListOrder onExpand={onExpand} expanded={order.id === expanded} order={order} key={index} />;
       })}

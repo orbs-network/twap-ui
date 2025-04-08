@@ -188,8 +188,6 @@ const chainIdToName: { [key: number]: string } = {
   42161: "arbitrum",
 };
 
-
-
 export const usePriceUSD = (address?: string) => {
   const wToken = store.useTwapStore((s) => s.lib)?.config.wToken.address;
   const { chainId } = useWeb3React();
@@ -204,7 +202,7 @@ export const usePriceUSD = (address?: string) => {
       const result = await response.json();
 
       const coin = result.coins[tokenAddressWithChainId];
-      return coin.price
+      return coin.price;
     },
     refetchInterval: 10_000,
     enabled: !!address && !!chainId,

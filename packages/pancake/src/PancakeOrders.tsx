@@ -73,8 +73,8 @@ const Header = () => {
 
 const HeaderBottom = () => {
   const { orders, ordersLoading, showOpenOrders } = useOrdersContext();
-
-  if (!ordersLoading && !orders?.length) {
+  const newOrderLoading = store.useTwapStore((s) => s.newOrderLoading);
+  if (!ordersLoading && !orders?.length && !newOrderLoading) {
     return (
       <StyledOrdersHeaderBottom>
         <Styles.StyledText>{showOpenOrders ? "No open orders" : "No history found"}</Styles.StyledText>
@@ -86,16 +86,21 @@ const HeaderBottom = () => {
 };
 
 const Orders = () => {
-  const { orders, ordersLoading } = useOrdersContext();
-
+  const { orders, ordersLoading, showOpenOrders } = useOrdersContext();
+  const newOrderLoading = store.useTwapStore((s) => s.newOrderLoading);
   if (ordersLoading) {
-    return <OrderLoader />;
+    return (
+      <StyledOrdersList>
+        <OrderLoader />
+      </StyledOrdersList>
+    );
   }
 
-  if (!orders?.length) return null;
+  if (!orders?.length && !newOrderLoading) return null;
 
   return (
     <StyledOrdersList>
+      {newOrderLoading && showOpenOrders && <OrderLoader />}
       <AllOrders orders={orders} />
     </StyledOrdersList>
   );

@@ -535,15 +535,21 @@ const useGasPriceQuery = () => {
 };
 
 const LEGACY_TWAP_ADDRESSES = {
-  [Configs.PancakeSwap.chainId]: ["0x25a0A78f5ad07b2474D3D42F1c1432178465936d"],
+  [Configs.PancakeSwap.name]: ["0x25a0A78f5ad07b2474D3D42F1c1432178465936d"],
+};
+
+const LEGACY_EXCHANGE_ADDRESSES = {
+  [Configs.PancakeSwap.name]: ["0xb2BAFe188faD927240038cC4FfF2d771d8A58905"],
 };
 
 export const useOrdersHistoryQuery = () => {
-  const { lib, updateState } = useTwapStore((state) => ({
+  const { lib, updateState, loading } = useTwapStore((state) => ({
     lib: state.lib,
     updateState: state.updateState,
     showConfirmation: state.showConfirmation,
+    loading: state.loading,
   }));
+
   const queryClient = useQueryClient();
   const queryKey = useMemo(() => [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId], [lib?.maker, lib?.config.chainId]);
 
@@ -560,12 +566,16 @@ export const useOrdersHistoryQuery = () => {
         });
       };
 
-      const twapAddresses = [lib?.config.twapAddress, ...(LEGACY_TWAP_ADDRESSES[lib?.config.chainId] || [])];
-      const orders = await Promise.all(twapAddresses.map(getOrdersByTwap));
-      return orders.flat();
+      const twapAddresses = [lib?.config.twapAddress, ...(LEGACY_TWAP_ADDRESSES[lib?.config.name] || [])];
+      const result = await Promise.all(twapAddresses.map(getOrdersByTwap));
+      const orders = result.flat();
+      const exchangeAddresses = [lib?.config.exchangeAddress, ...(LEGACY_EXCHANGE_ADDRESSES[lib?.config.name] || [])].map((it) => it.toLowerCase());
+      // show orders for selected exchange
+      return orders.filter((order) => exchangeAddresses.includes(order.exchange.toLowerCase()));
     },
     staleTime: Infinity,
     refetchInterval: REFETCH_ORDER_HISTORY,
+    enabled: !loading,
   });
 
   const onOrderCreated = useCallback(
@@ -937,68 +947,6 @@ export const usePagination = <T>(list: T[] = [], chunkSize = 5) => {
     hasNextPage: page < chunks.length - 1,
     text: `Page ${page + 1} of ${chunks.length}`,
   };
-};
-
-const useGetFillsCallback = () => {
-  const lib = useTwapStore((s) => s.lib);
-  return useCallback(
-    async (signal?: AbortSignal) => {
-      if (!lib) return {};
-      const LIMIT = 1_000;
-      let page = 0;
-      let fills: any = [];
-      const API_URL = "https://hub.orbs.network/api/apikey/subgraphs/id/4NfXEi8rreQsnAr4aJ45RLCKgnjcWX46Lbt9SadiCcz6";
-
-      const fetchFills = async () => {
-        const query = `
-    {
-      orderFilleds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, where: { userAddress: "${lib.maker}" }) {
-        id
-        dstAmountOut
-        dstFee
-        srcFilledAmount
-        TWAP_id
-        srcAmountIn
-        timestamp
-        dollarValueIn
-        dollarValueOut
-      }
-    }
-  `;
-
-        const payload = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({ query }),
-          signal,
-        });
-        const response = await payload.json();
-        const orderFilleds = response.data.orderFilleds;
-
-        const grouped = _.map(_.groupBy(orderFilleds, "TWAP_id"), (fills, orderId) => ({
-          TWAP_id: Number(orderId),
-          dstAmountOut: fills.reduce((acc, it) => acc.plus(BN(it.dstAmountOut)), BN(0)).toString(),
-          srcAmountIn: fills.reduce((acc, it) => acc.plus(BN(it.srcAmountIn)), BN(0)).toString(),
-          dollarValueIn: fills.reduce((acc, it) => acc.plus(BN(it.dollarValueIn)), BN(0)).toString(),
-          dollarValueOut: fills.reduce((acc, it) => acc.plus(BN(it.dollarValueOut)), BN(0)).toString(),
-        }));
-
-        fills.push(...grouped);
-
-        if (orderFilleds.length >= LIMIT) {
-          page++;
-          await fetchFills();
-        } else {
-          return fills;
-        }
-      };
-
-      await fetchFills();
-
-      const res = _.mapValues(_.keyBy(fills, "TWAP_id"));
-      return res;
-    },
-    [lib]
-  );
 };
 
 export const useDstAmount = () => {

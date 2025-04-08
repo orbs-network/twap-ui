@@ -480,6 +480,9 @@ export const StyledOrdersList = styled("div")(({ theme }) => {
   return {
     alignItems: "center",
     marginTop: 5,
+    display: "flex",
+    flexDirection: "column",
+    gap: 5,
     ".twap-orders-lists": {
       width: "100%",
     },

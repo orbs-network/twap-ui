@@ -61,7 +61,6 @@ const StyledOrdersLoader = styled(StyledRowFlex)((theme) => {
     width: "100%",
 
     justifyContent: "space-between",
-    marginTop: 5,
   };
 });
 

@@ -151,13 +151,11 @@ const getAllCreatedOrders = async ({
   return orders;
 };
 
-const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortSignal) => {
-  console.log({ ids });
-
+const getOrderStatuses = async (ids: string[], endpoint: string, twapAddress: string, signal?: AbortSignal) => {
   const query = `
       {
-          statuses(where:{id_in: [${ids.map((id) => `"${id}"`)}]}) {
-            id
+          statusNews(where:{twapId_in: [${ids.map((id) => `"${id}"`)}], twapAddress: "${twapAddress}"}) {
+            twapId
             status
           }
         }
@@ -172,8 +170,8 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
   if (payload.errors) {
     throw new Error(payload.errors[0].message);
   }
-  return payload.data.statuses.reduce((result: { [key: string]: string }, item: any) => {
-    result[item.id] = item.status;
+  return payload.data.statusNews.reduce((result: { [key: string]: string }, item: any) => {
+    result[item.twapId] = item.status;
     return result;
   }, {});
 };
@@ -354,27 +352,28 @@ export const getOrders = async ({
   signal,
   page,
   limit = 1_000,
-  twapAddress,
+  twapAddress: _twapAddress,
 }: {
   account?: string;
   signal?: AbortSignal;
   page?: number;
   chainId: number;
   limit?: number;
-  twapAddress?: string;
+  twapAddress: string;
 }): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(chainId);
+  const twapAddress = _twapAddress?.toLowerCase();
   if (!endpoint) return [];
   let orders: any = [];
   if (typeof page === "number") {
-    orders = await getCreatedOrders({ endpoint, signal, account, twapAddress: twapAddress?.toLowerCase(), page, limit });
+    orders = await getCreatedOrders({ endpoint, signal, account, twapAddress, page, limit });
   } else {
-    orders = await getAllCreatedOrders({ endpoint, signal, account, twapAddress: twapAddress?.toLowerCase(), limit });
+    orders = await getAllCreatedOrders({ endpoint, signal, account, twapAddress, limit });
   }
 
   const ids = orders.map((order: any) => order.Contract_id);
-  const fills = await getAllFills({ endpoint, signal, ids, chainId, twapAddress: twapAddress?.toLowerCase() || "" });
-  const statuses = await getOrderStatuses(ids, endpoint, signal);
+  const fills = await getAllFills({ endpoint, signal, ids, chainId, twapAddress });
+  const statuses = await getOrderStatuses(ids, endpoint, twapAddress, signal);
   orders = orders.map((rawOrder: any) => {
     const fill = fills?.find((it: any) => it.TWAP_id === Number(rawOrder.Contract_id));
     return new Order(rawOrder, fill, statuses?.[rawOrder.Contract_id]);
@@ -401,7 +400,7 @@ export const waitForOrdersUpdate = async (config: Config, orderId: number, accou
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     try {
       const orders = await getOrders({
-        exchangeAddress: config.exchangeAddress,
+        twapAddress: config.twapAddress,
         account,
         signal,
         chainId: config.chainId,
@@ -430,7 +429,7 @@ export const waitForOrdersLengthUpdate = async (config: Config, currentOrdersLen
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     try {
       const orders = await getOrders({
-        exchangeAddress: config.exchangeAddress,
+        twapAddress: config.twapAddress,
         account,
         signal,
         chainId: config.chainId,
@@ -454,7 +453,7 @@ export const waitForOrdersLengthUpdate = async (config: Config, currentOrdersLen
 
 export const waitForOrdersCancelled = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
   for (let i = 0; i < 20; i++) {
-    const orders = await getOrders({ exchangeAddress: config.exchangeAddress, account, signal, chainId: config.chainId });
+    const orders = await getOrders({ twapAddress: config.twapAddress, account, signal, chainId: config.chainId });
     const order = orders.find((o) => o.id === orderId);
     if (order && order.status !== Status.Open) {
       return orders;
