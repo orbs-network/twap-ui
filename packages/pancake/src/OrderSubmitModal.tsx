@@ -2,7 +2,7 @@ import { isNativeAddress } from "@defi.org/web3-candies";
 import { Box, Drawer, styled, SwipeableDrawer } from "@mui/material";
 import { TokenData } from "@orbs-network/twap";
 import { Components, getTokenFromTokensList, hooks, store, Styles, useTwapContext } from "@orbs-network/twap-ui";
-import React, { createContext, ReactNode, useCallback, useEffect, useMemo, useReducer, useState } from "react";
+import React, { createContext, ReactNode, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useAdapterContext } from "./context";
 import { ArrowBottom, CloseIcon, InfoIcon, LinkIcon } from "./icons";
 import {
@@ -27,6 +27,7 @@ import Lottie from "react-lottie";
 import * as Loading_Lottie from "./lottie/Loading_Lottie.json";
 import * as Long_Success_Lottie from "./lottie/Long_Success_Lottie.json";
 import * as Submit_Lottie from "./lottie/Submit_Lottie.json";
+import BN from "bignumber.js";
 const Loading_Lottie_options = {
   loop: true,
   autoplay: true,
@@ -196,11 +197,15 @@ const useSubmitSwapCallback = () => {
   const { data: allowance, refetch: refetchAllowance } = hooks.useHasAllowanceQuery();
   const { mutateAsync: createOrder } = hooks.useCreateOrder();
   const { mutateAsync: wrap } = hooks.useWrapToken();
-  const { srcToken, onSrcTokenSelected, config, dappTokens } = useTwapContext();
+  const { srcToken, onSrcTokenSelected, config, dappTokens, dstToken } = useTwapContext();
   const shouldWrap = isNativeAddress(srcToken?.address || "");
   const errorToast = useToastError();
   const orderPlacedToast = useOrderPlacedToast();
   const onInitSwap = useInitSwap();
+  const srcAmountUi = hooks.useSrcAmount().amountUI;
+  const outAmount = hooks.useDstAmount().amountUI;
+  const srcAmountUiF = hooks.useFormatNumber({ value: srcAmountUi, decimalScale: 6 });
+  const outAmountF = hooks.useFormatNumber({ value: outAmount, decimalScale: 6 });
 
   return useCallback(async () => {
     let step: SwapStep | undefined = undefined;
@@ -236,7 +241,7 @@ const useSubmitSwapCallback = () => {
         updateSwapState(SwapStep.ORDER_PLACED);
       });
       updateSwapState(SwapStep.ORDER_CREATED);
-      orderPlacedToast();
+      orderPlacedToast(srcToken, dstToken, srcAmountUiF, outAmountF);
     } catch (error) {
       errorToast(error, step);
       updateState(swapId, { error: (error as any).message });
@@ -252,13 +257,16 @@ const useSubmitSwapCallback = () => {
     orderPlacedToast,
     refetchAllowance,
     shouldWrap,
-    srcToken,
     state.stepIndex,
     swapId,
     updateState,
     wrap,
     errorToast,
     onInitSwap,
+    srcAmountUiF,
+    outAmountF,
+    srcToken,
+    dstToken,
   ]);
 };
 
@@ -546,7 +554,6 @@ const ModalHeaderContent = ({ title, className = " " }: { title: string; classNa
 };
 
 const Expiration = () => {
-  const t = useTwapContext().translations;
   const deadline = hooks.useDeadline();
 
   return <Components.OrderDetails.Expiry expiryMillis={deadline} />;
@@ -717,23 +724,22 @@ const useCurrencies = () => {
 
 const useOrderPlacedToast = () => {
   const { toast } = useAdapterContext();
-  const orderType = useOrderType();
-  const { inputCurrency, outputCurrency } = useCurrencies();
-  const { srcToken, dstToken } = useTwapContext();
-  const srcAmountUi = hooks.useSrcAmount().amountUI;
-  const outAmount = hooks.useDstAmount().amountUI;
 
-  const srcAmountUiF = hooks.useFormatNumber({ value: srcAmountUi, decimalScale: 6 });
-  const outAmountF = hooks.useFormatNumber({ value: outAmount, decimalScale: 6 });
-
-  return useCallback(() => {
-    toast({
-      title: "Order submitted",
-      message: `${srcAmountUiF} ${srcToken?.symbol} for ${outAmountF} ${dstToken?.symbol}`,
-      variant: "success",
-      autoCloseMillis: 4_000,
-    });
-  }, [toast, orderType, inputCurrency, outputCurrency]);
+  return useCallback(
+    (srcToken?: TokenData, dstToken?: TokenData, srcAmount?: string, outAmount?: string) => {
+      try {
+        toast({
+          title: "Order submitted",
+          message: `${srcAmount} ${srcToken?.symbol} for ${outAmount} ${dstToken?.symbol}`,
+          variant: "success",
+          autoCloseMillis: 4_000,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [toast]
+  );
 };
 
 const useToastError = () => {
