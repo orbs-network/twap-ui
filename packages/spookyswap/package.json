@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui-spookyswap",
-  "version": "1.1.70",
+  "version": "1.1.71",
   "description": "TWAP UI for Spookyswap",
   "license": "MIT",
   "author": "Orbs",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orbs-network/twap": "^2.0.1",
-    "@orbs-network/twap-ui": "^1.1.70",
+    "@orbs-network/twap-ui": "^1.1.71",
     "web3": "1.x"
   },
   "peerDependencies": {
