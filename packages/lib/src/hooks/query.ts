@@ -28,7 +28,7 @@ export const useMinNativeTokenBalance = (minNativeTokenBalance?: string) => {
     {
       enabled: !!web3 && !!minNativeTokenBalance && !!account && !!config && !!network,
       staleTime: Infinity,
-    }
+    },
   );
 
   const ensureData = useCallback(() => {
@@ -49,7 +49,7 @@ const useGetContract = () => {
       if (!web3) return undefined;
       return new web3.eth.Contract(abi as any, address);
     },
-    [web3]
+    [web3],
   );
 };
 
@@ -134,7 +134,7 @@ const useAllowance = () => {
       enabled: !!srcToken && BN(srcAmount).gt(0) && !!account && !!config,
       staleTime: STALE_ALLOWANCE,
       refetchOnWindowFocus: true,
-    }
+    },
   );
 
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" };
@@ -155,7 +155,7 @@ export const useBalance = (token?: Token, onSuccess?: (value: BN) => void, stale
       onSuccess,
       refetchInterval: REFETCH_BALANCE,
       staleTime,
-    }
+    },
   );
   return { ...query, isLoading: query.isLoading && query.fetchStatus !== "idle" && !!token };
 };
@@ -190,7 +190,7 @@ const useAddNewOrder = () => {
         });
       } catch (error) {}
     },
-    [QUERY_KEY, queryClient, config]
+    [QUERY_KEY, queryClient, config],
   );
 };
 
@@ -199,25 +199,33 @@ const useUpdateOrderStatusToCanceled = () => {
   const queryClient = useQueryClient();
   const config = useTwapContext().config;
   const { account } = useTwapContext();
+  const { refetch } = useOrdersHistory();
 
   return useCallback(
-    async (orderId: number) => {
+    async (orderId: number, twapAddress: string) => {
       try {
         const endpoint = getTheGraphUrl(config.chainId);
         if (!endpoint || !account) return;
-        const orders = await waitForCancelledOrder(orderId, endpoint, account);
-        if (orders) {
-          queryClient.setQueryData(QUERY_KEY, orders);
-        }
-      } catch (error) {}
+        await waitForCancelledOrder(orderId, endpoint, account, twapAddress);
+        await refetch();
+      } catch (error) {
+        console.error(error);
+      }
     },
-    [QUERY_KEY, queryClient, config, account]
+    [QUERY_KEY, queryClient, config, account, refetch],
   );
-};  
-export const LEGACY_ORDERS_MAP = {
-  [Configs.SushiArb.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a"],
-  [Configs.SushiBase.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a"],
-  [Configs.SushiEth.name]: ["0xc55943Fa6509004B2903ED8F8ab7347BfC47D0bA"],
+};
+
+export const LEGACY_EXCHANGE_ADDRESSES = {
+  [Configs.SushiArb.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
+  [Configs.SushiBase.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
+  [Configs.SushiEth.name]: ["0xc55943Fa6509004B2903ED8F8ab7347BfC47D0bA", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
+};
+
+export const LEGACY_TWAP_ADDRESSES = {
+  [Configs.SushiArb.name]: ["0xD63430c74C8E70D9dbdCA04C6a9E6E9E929028DA"],
+  [Configs.SushiBase.name]: ["0x25a0A78f5ad07b2474D3D42F1c1432178465936d"],
+  [Configs.SushiEth.name]: ["0x037E2bda7B1f03411ba5E96ACb7F36a7D19c3D83"],
 };
 
 export const useOrdersHistory = () => {
@@ -232,12 +240,19 @@ export const useOrdersHistory = () => {
       if (!endpoint) {
         return [];
       }
-      let orders = await getGraphOrders(endpoint, account!, signal);
+
+      const getOrdersByTwap = (twapAddress: string) => {
+        return getGraphOrders(endpoint, account!, twapAddress, signal);
+      };
+      const twapAddresses = [config.twapAddress, ...(LEGACY_TWAP_ADDRESSES[config.name] || [])];
+      const result = await Promise.all(twapAddresses.map(getOrdersByTwap));
+
+      let orders = result.flat() as HistoryOrder[];
 
       try {
         const ids = orders.map((o) => o.id);
         const chainOrders = ordersStore.orders[config.chainId];
-        chainOrders.forEach((o: any) => {
+        chainOrders?.forEach((o: any) => {
           if (!ids.includes(Number(o.id))) {
             orders.push(o);
           } else {
@@ -248,11 +263,11 @@ export const useOrdersHistory = () => {
         console.error(error);
       }
       logger("all orders", orders);
-      
-      const legacyAddresses = LEGACY_ORDERS_MAP[config.name] || [];
-      const addresses = [config.exchangeAddress, ...legacyAddresses].map((a) => a.toLowerCase());        
-      orders = orders.filter((o) => {        
-        return addresses.includes(o.exchange?.toLowerCase() || '');
+
+      const legacyAddresses = LEGACY_EXCHANGE_ADDRESSES[config.name] || [];
+      const addresses = [config.exchangeAddress, ...legacyAddresses].map((a) => a.toLowerCase());
+      orders = orders.filter((o) => {
+        return addresses.includes(o.exchange?.toLowerCase() || "");
       });
 
       logger("filtered orders by exchange address", config.exchangeAddress, orders);
@@ -268,7 +283,7 @@ export const useOrdersHistory = () => {
       refetchOnWindowFocus: true,
       retry: 5,
       staleTime: Infinity,
-    }
+    },
   );
 
   return { ...query, orders: query.data || {}, isLoading: query.isLoading && query.fetchStatus !== "idle" };

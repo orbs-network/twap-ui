@@ -51,6 +51,7 @@ export const useParseOrderUi = (order?: HistoryOrder) => {
       limitPrice: isMarketOrder ? undefined : BN(dstMinAmountOutUi).div(srcChunkAmountUi).toString() || "0",
       excecutionPrice: BN(dstAmount).gt(0) && BN(srcFilledAmountUi).gt(0) ? BN(dstAmount).div(srcFilledAmountUi).toString() : undefined,
       isLoading: !srcToken || !dstToken,
+      twapAddress: order.twapAddress,
     };
   }, [config, order, estimatedDelayBetweenChunksMillis, getTokensFromTokensList, srcTokenFromHook, dstTokenFromHook]);
 };

@@ -23,6 +23,45 @@ export const useAddedTokens = () => {
   return [];
 };
 
+const coingekoChainToName = {
+  [networks.ftm.id]: "fantom",
+  [networks.arb.id]: "arbitrum-one",
+  [networks.poly.id]: "polygon-pos",
+  [networks.base.id]: "base",
+  [networks.eth.id]: "ethereum",
+  [networks.bsc.id]: "binance-smart-chain",
+  [networks.linea.id]: "linea",
+};
+
+const getDefaultTokens = async (chainId: number, base: string[], signal?: AbortSignal): Promise<Token[]> => {
+  const name = coingekoChainToName[chainId];
+
+  const payload = await fetch(`https://tokens.coingecko.com/${name}/all.json`, { signal }).then((res) => res.json());
+
+  const result = payload.tokens.map((token: any): Token => {
+    return {
+      address: token.address,
+      symbol: token.symbol,
+      decimals: token.decimals,
+      logoUrl: token.logoURI,
+    };
+  });
+
+  const sorted = result.sort((a: Token, b: Token) => {
+    const indexA = base.indexOf(a.address.toLowerCase());
+    const indexB = base.indexOf(b.address.toLowerCase());
+
+    const safeIndexA = indexA >= 0 ? indexA : Number.MAX_SAFE_INTEGER;
+    const safeIndexB = indexB >= 0 ? indexB : Number.MAX_SAFE_INTEGER;
+
+    return safeIndexA - safeIndexB;
+  });
+
+  const native = network(chainId)?.native as Token;
+
+  return [native, ...sorted];
+};
+
 export const useGetTokens = ({
   url,
   parse,
@@ -37,37 +76,22 @@ export const useGetTokens = ({
   modifyList?: (list: any) => any;
   modifyFetchResponse?: (res: any) => any;
 }) => {
-  const chainId = useSelectedDappConfig()?.chainId;
   const baseAssets = useBaseAssets();
 
-  const { account } = useWeb3React();
+  const { account, chainId } = useWeb3React();
 
   const addedTokens = useAddedTokens();
 
   return useQuery(
     ["useGetTokens", chainId, size(addedTokens)],
     async () => {
-      let tokenList;
-      if (url) {
-        const response = await fetch(url);
-        const _tokenList = await response.json();
+      const base = baseAssets && Object.values(baseAssets).map((t: any) => t().address.toLowerCase());
 
-        tokenList = modifyFetchResponse ? modifyFetchResponse(_tokenList) : _tokenList;
-      } else if (tokens) {
-        tokenList = tokens;
-      }
-      const base = baseAssets && Object.values(baseAssets).map((t: any) => t().address);
+      let tokenList = await getDefaultTokens(chainId!, base);
 
-      const candiesAddresses = base ? [zeroAddress, ...base] : [zeroAddress];
-      const parsed = parse ? parse(tokenList) : tokenList;
-      let _tokens = sortBy(parsed, (t: any) => {
-        const index = candiesAddresses.indexOf(t.address);
-        return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
-      });
+      tokenList = [...addedTokens, ...tokenList];
 
-      _tokens = [...addedTokens, ..._tokens];
-
-      return modifyList ? modifyList(_tokens) : _tokens;
+      return modifyList ? modifyList(tokenList) : tokenList;
     },
     { enabled: !!account, staleTime: Infinity },
   );

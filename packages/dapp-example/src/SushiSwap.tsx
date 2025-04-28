@@ -15,59 +15,8 @@ const name = "SushiSwap";
 const configs = [Configs.SushiArb, Configs.SushiBase, Configs.SushiEth];
 
 export const useDappTokens = () => {
-  const config = useConfig();
-  const isBase = config?.chainId === Configs.SushiBase.chainId;
-  const { chainId } = useWeb3React();
-  const nativeToken = network(config.chainId).native;
-  const parseListToken = useCallback(
-    (tokenList?: any) => {
-      if (isBase) {
-        return mapCollection(baseSwapTokens, (it, key) => {
-          return {
-            address: key,
-            decimals: it.decimals,
-            symbol: it.symbol,
-            logoURI: it.tokenInfo.logoURI,
-          };
-        });
-      }
-
-      const res = tokenList?.tokens
-        .filter((it: any) => it.chainId === config?.chainId)
-        .map(({ symbol, address, decimals, logoURI, name }: any) => ({
-          decimals,
-          symbol,
-          name,
-          address,
-          logoURI,
-        }));
-      const native = {
-        decimals: nativeToken.decimals,
-        symbol: nativeToken.symbol,
-        address: nativeToken.address,
-        logoURI: nativeToken.logoUrl,
-      };
-
-      return config ? [native, ...res] : res;
-    },
-    [nativeToken, config?.chainId],
-  );
-
-  const url = useMemo(() => {
-    switch (chainId) {
-      case Configs.SushiEth.chainId:
-      case Configs.SushiArb.chainId:
-        return "https://token-list.sushi.com/";
-      default:
-        break;
-    }
-  }, [chainId]);
-
   return useGetTokens({
-    url,
-    parse: parseListToken,
-    tokens: isBase ? baseSwapTokens : undefined,
-    modifyList: (tokens: any) => tokens.slice(0, 20),
+    url: "",
   });
 };
 
@@ -78,7 +27,7 @@ const parseList = (rawList?: any): TokenListItem[] => {
         address: rawToken.address,
         decimals: rawToken.decimals,
         symbol: rawToken.symbol,
-        logoUrl: rawToken.logoURI,
+        logoUrl: rawToken.logoUrl,
       },
       rawToken,
     };
@@ -110,7 +59,7 @@ const TokenSelectModal = ({ children, onSelect, selected }: { children: ReactNod
 };
 
 const getTokenLogo = (token: any) => {
-  return token.logoURI;
+  return token.logoUrl;
 };
 
 const useUSD = (address?: string) => {
@@ -158,10 +107,10 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
 
   useEffect(() => {
     if (!fromToken) {
-      setFromToken(dappTokens?.[1]);
+      setFromToken(dappTokens?.find((it: any) => it.symbol === "CAKE"));
     }
     if (!toToken) {
-      setToToken(dappTokens?.[2]);
+      setToToken(dappTokens?.find((it: any) => it.symbol === "ETH"));
     }
   }, [dappTokens, toToken, fromToken]);
 

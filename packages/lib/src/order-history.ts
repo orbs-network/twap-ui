@@ -5,22 +5,22 @@ import { groupBy, keyBy } from "./utils";
 
 const getProgress = (srcFilled?: string, srcAmountIn?: string) => {
   if (!srcFilled || !srcAmountIn) return 0;
-  const  progress = BN(srcFilled || "0")
+  const progress = BN(srcFilled || "0")
     .dividedBy(srcAmountIn || "0")
     .toNumber();
 
   return !progress ? 0 : progress < 0.99 ? progress * 100 : 100;
 };
 
-export const graphCreatedOrders = async ({ account, endpoint, signal }: { account: string; endpoint: string; signal?: AbortSignal }) => {
+export const graphCreatedOrders = async ({ account, endpoint, signal, twapAddress }: { account: string; endpoint: string; signal?: AbortSignal; twapAddress: string }) => {
   const LIMIT = 1_000;
   let page = 0;
-  const  orders: any = [];
+  const orders: any = [];
 
   const fetchOrders = async () => {
     const query = `
       {
-      orderCreateds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, where:{maker: "${account}"}) {
+      orderCreateds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, where:{maker: "${account}", twapAddress: "${twapAddress}"}) {
           id
           Contract_id
           ask_bidDelay
@@ -68,14 +68,14 @@ export const graphCreatedOrders = async ({ account, endpoint, signal }: { accoun
   return orders;
 };
 
-const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortSignal) => {
+const getOrderStatuses = async (ids: string[], endpoint: string, twapAddress: string, signal?: AbortSignal) => {
   const LIMIT = 100;
-  let statuses: any = [];
+  const statuses: any = [];
 
   const fetchStatuses = async (page = 0) => {
     const query = `{
-      statuses(skip: ${page * LIMIT}, where: { id_in: [${ids.map((id) => `"${id}"`).join(",")}] }) {
-        id
+      statusNews(skip: ${page * LIMIT}, where: { twapId_in: [${ids.map((id) => `"${id}"`).join(",")}], twapAddress: "${twapAddress}" }) {
+        twapId
         status
       }
     }`;
@@ -91,7 +91,7 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
       const payload = await response.json();
-      const result = payload?.data?.statuses || [];
+      const result = payload?.data?.statusNews || [];
 
       statuses.push(...result);
 
@@ -106,7 +106,7 @@ const getOrderStatuses = async (ids: string[], endpoint: string, signal?: AbortS
   await fetchStatuses();
 
   const res = statuses.reduce((result: { [key: string]: string }, item: any) => {
-    result[item.id] = item.status;
+    result[item.twapId] = item.status;
     return result;
   }, {});
   return res;
@@ -124,15 +124,15 @@ const getOrderFills = (orderId: number, fills?: any) => {
   };
 };
 
-const graphOrderFills = async ({ account, endpoint, signal }: { account: string; endpoint: string; signal?: AbortSignal }) => {
+const graphOrderFills = async ({ account, endpoint, signal, twapAddress }: { account: string; endpoint: string; signal?: AbortSignal; twapAddress: string }) => {
   const LIMIT = 1_000;
   let page = 0;
-  let fills: any = [];
+  const fills: any = [];
 
   const fetchFills = async () => {
     const query = `
     {
-      orderFilleds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, where: { userAddress: "${account}" }) {
+      orderFilleds(first: ${LIMIT}, orderBy: timestamp, skip: ${page * LIMIT}, where: { userAddress: "${account}", twapAddress: "${twapAddress}" }) {
         id
         dstAmountOut
         dstFee
@@ -152,7 +152,7 @@ const graphOrderFills = async ({ account, endpoint, signal }: { account: string;
       signal,
     });
     const response = await payload.json();
-    let orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
+    const orderFilleds = groupBy(response.data.orderFilleds, "TWAP_id");
     const grouped = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
       return getOrderFills(orderId, fills);
     });
@@ -173,7 +173,7 @@ const graphOrderFills = async ({ account, endpoint, signal }: { account: string;
 };
 
 const getStatus = (progress = 0, order: any, statuses?: any) => {
-  let status = statuses?.[order.Contract_id]?.toLowerCase();
+  const status = statuses?.[order.Contract_id]?.toLowerCase();
 
   if (progress === 100 || status === "completed") {
     return Status.Completed;
@@ -188,21 +188,24 @@ const getStatus = (progress = 0, order: any, statuses?: any) => {
   return Status.Expired;
 };
 
-export const getGraphOrders = async (endpoint: string, account: string, signal?: AbortSignal): Promise<HistoryOrder[]> => {
-  const args = { account, endpoint, signal };
+export const getGraphOrders = async (endpoint: string, account: string, twapAddress: string, signal?: AbortSignal): Promise<HistoryOrder[]> => {
+  const args = { account, endpoint, signal, twapAddress: twapAddress.toLowerCase() };
   const [orders, fills] = await Promise.all([graphCreatedOrders(args), graphOrderFills(args)]);
 
   const ids = orders.map((order: any) => order.Contract_id);
   let statuses: any = {};
 
   try {
-    statuses = await getOrderStatuses(ids, endpoint, signal);
-  } catch (error) {}
+    statuses = await getOrderStatuses(ids, endpoint, twapAddress.toLowerCase(), signal);
+  } catch (error) {
+    console.error("Error fetching statuses:", error);
+  }
 
   return orders.map((order: any) => {
     const orderFill = fills[order.Contract_id];
 
     const progress = getProgress(orderFill?.srcAmountIn, order.ask_srcAmount);
+
     return {
       id: Number(order.Contract_id),
       exchange: order.exchange,
@@ -222,6 +225,7 @@ export const getGraphOrders = async (endpoint: string, account: string, signal?:
       progress,
       srcTokenAddress: order.ask_srcToken,
       dstTokenAddress: order.ask_dstToken,
+      twapAddress,
       totalChunks: BN(order.ask_srcAmount || 0)
         .div(order.ask_srcBidAmount || 0)
         .integerValue(BN.ROUND_CEIL)
@@ -238,12 +242,13 @@ export const waitForCancelledOrder = async (
   orderId: number,
   endpoint: string,
   account: string,
+  twapAddress: string,
   signal?: AbortSignal,
-  maxRetries: number = 20,
-  delayMs: number = 3000,
+  maxRetries = 20,
+  delayMs = 3000,
 ): Promise<any[]> => {
   for (let i = 0; i < maxRetries; i++) {
-    const orders = await getGraphOrders(endpoint, account, signal);
+    const orders = await getGraphOrders(endpoint, account, twapAddress.toLowerCase(), signal);
     if (orders.some((o) => o.id === orderId && o.status === Status.Canceled)) {
       return orders;
     }

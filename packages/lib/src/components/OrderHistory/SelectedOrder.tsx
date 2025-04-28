@@ -113,7 +113,7 @@ const ExcecutionSummary = ({ order }: { order: OrderUI }) => {
 const Container = styled(StyledColumnFlex)({});
 
 export const CancelOrderButton = ({ order }: { order: OrderUI }) => {
-  const { isLoading, mutate: cancel } = useCancelOrder();
+  const { isLoading, mutate: cancel } = useCancelOrder(order?.id, order?.twapAddress);
   const translations = useTwapContext().translations;
 
   if (!order || order.status !== Status.Open) return null;
@@ -122,7 +122,7 @@ export const CancelOrderButton = ({ order }: { order: OrderUI }) => {
     <StyledCancelOrderButton
       loading={isLoading}
       onClick={() => {
-        cancel(order.id);
+        cancel();
       }}
       className="twap-cancel-order twap-submit-button"
     >

@@ -230,6 +230,7 @@ export interface HistoryOrder {
   totalChunks?: number;
   dex?: string;
   exchange?: string;
+  twapAddress?: string;
 }
 
 export interface ExtendsOrderHistory extends HistoryOrder {

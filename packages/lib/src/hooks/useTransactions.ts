@@ -1,7 +1,7 @@
-import { zero, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256, hasWeb3Instance, setWeb3Instance } from "@defi.org/web3-candies";
+import { zero, sendAndWaitForConfirmations, TokenData, web3, erc20, iwethabi, maxUint256, hasWeb3Instance, setWeb3Instance, Abi, isNativeAddress } from "@defi.org/web3-candies";
 import { useMutation } from "@tanstack/react-query";
 import { useTwapContext } from "../context/context";
-import { useEstimatedDelayBetweenChunksMillis, useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } from "./hooks";
+import { useContract, useEstimatedDelayBetweenChunksMillis, useGetHasAllowance, useNetwork, useResetAfterSwap, useTwapContract } from "./hooks";
 import { query, useOrdersHistory } from "./query";
 import BN from "bignumber.js";
 import { isTxRejected, logger } from "../utils";
@@ -9,9 +9,9 @@ import { useCallback, useMemo } from "react";
 import { analytics } from "../analytics";
 import { stateActions, useSwitchNativeToWrapped } from "../context/actions";
 import moment from "moment";
-import { useDeadline, useDstMinAmountOut, useFillDelay, useIsMarketOrder, useShouldOnlyWrap, useShouldWrap, useSrcAmount, useSrcChunkAmount, useSwapData } from "./lib";
-import { Status } from "../types";
-
+import { useDeadline, useDstMinAmountOut, useFillDelay, useShouldOnlyWrap, useShouldWrap, useSrcAmount, useSrcChunkAmount, useSwapData } from "./lib";
+import { HistoryOrder, Status } from "../types";
+import TwapAbi from "@orbs-network/twap/twap.abi.json";
 export const useCreateOrder = () => {
   const { maxFeePerGas, priorityFeePerGas } = query.useGasPrice();
   const { askDataParams, account, dstToken, config } = useTwapContext();
@@ -241,6 +241,7 @@ const useOnSuccessCallback = () => {
   const { onTxSubmitted, config, srcToken, dstToken } = useTwapContext();
   const addOrder = query.useAddNewOrder();
   const swapData = useSwapData();
+  const network = useNetwork();
   const onOrderCreated = stateActions.useOnOrderCreated();
   const { refetch } = useOrdersHistory();
   const reset = useResetAfterSwap();
@@ -255,7 +256,7 @@ const useOnSuccessCallback = () => {
 
       onOrderCreated();
       addOrder({
-        srcTokenAddress: srcToken?.address,
+        srcTokenAddress: isNativeAddress(srcToken?.address || "") ? network?.wToken.address : srcToken?.address,
         dstTokenAddress: dstToken?.address,
         srcAmount: swapData.srcAmount.amount,
         createdAt: moment().unix().valueOf(),
@@ -270,6 +271,7 @@ const useOnSuccessCallback = () => {
         srcToken,
         dstToken,
         exchange: config.exchangeAddress,
+        twapAddress: config.twapAddress,
       });
       onTxSubmitted?.({
         srcToken: srcToken!,
@@ -281,7 +283,7 @@ const useOnSuccessCallback = () => {
       });
       reset();
     },
-    [srcToken, dstToken, onTxSubmitted, onOrderCreated, reset, config, swapData, estimatedDelayBetweenChunksMillis, refetch, addOrder],
+    [srcToken, dstToken, onTxSubmitted, onOrderCreated, reset, config, swapData, estimatedDelayBetweenChunksMillis, refetch, addOrder, network],
   );
 };
 
@@ -357,6 +359,9 @@ export const useSubmitOrderFlow = () => {
           updateState({ swapState: "failed" });
         }
       },
+      onSuccess() {
+        updateState({ swapState: "success" });
+      },
 
       onSettled() {
         refetchAllowance();
@@ -377,34 +382,34 @@ export const useSubmitOrderFlow = () => {
   };
 };
 
-export const useCancelOrder = () => {
+export const useCancelOrder = (id?: number, twapAddress?: string) => {
   const { priorityFeePerGas, maxFeePerGas } = query.useGasPrice();
   const { account } = useTwapContext();
-  const twapContract = useTwapContract();
+  const contract = useContract(TwapAbi as Abi, twapAddress);
   const onCancelOrder = query.useUpdateOrderStatusToCanceled();
   return useMutation(
-    async (orderId: number) => {
-      if (!twapContract) {
-        throw new Error("twap contract not defined");
+    async () => {
+      if (!contract || !twapAddress || id === undefined) {
+        throw new Error("twap contract or order not defined");
       }
 
       if (!account) {
         throw new Error("account not defined");
       }
 
-      logger(`canceling order...`, orderId);
+      logger(`canceling order...`, id);
 
-      analytics.onCancelOrder(orderId);
-      await sendAndWaitForConfirmations(twapContract.methods.cancel(orderId), {
+      analytics.onCancelOrder(id);
+      await sendAndWaitForConfirmations(contract.methods.cancel(id), {
         from: account,
         maxPriorityFeePerGas: priorityFeePerGas,
         maxFeePerGas,
       });
-      await onCancelOrder(orderId);
+      await onCancelOrder(id, twapAddress);
       console.log(`order canceled`);
     },
     {
-      onSuccess: (_, orderId) => {
+      onSuccess: () => {
         logger(`order canceled`);
         analytics.onCancelOrderSuccess();
       },
