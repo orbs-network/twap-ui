@@ -1,33 +1,33 @@
 import { TokenPanel } from "./token-panel";
 import { SwitchTokens } from "./switch-tokens";
 import { LimitPanel } from "./limit-panel";
-import { PriceSwitch } from "./price-switch";
 import { ShowConfirmationButton } from "./show-confirmation-button";
-import { TradesAmountPanel } from "./trades-amount-panel";
 import { FillDelayPanel } from "./fill-delay-panel";
-import { DurationPanel } from "./trade-duration-panel";
 import { OrdersPortal } from "./orders/Orders";
 import { PoweredbyOrbs } from "./powered-by-orbs";
 import { useTwapContext } from "../../context";
 import { WarningMessage } from "./warnings";
-import { TradeAmountMessage } from "./message";
+import { TradeAmountMessage } from "./TradesAmountMe";
+import { Duration } from "./trade-duration-panel";
+import { TradesAmount } from "./trades-amount-panel";
+import { PriceMode } from "./price-mode";
 
 export function SwapPanel() {
   const { isLimitPanel } = useTwapContext();
   return (
     <div className="twap-widget-swap-panel">
       <div className="twap-widget-swap-panel-form">
-        <PriceSwitch />
+        <PriceMode />
         <LimitPanel />
         <TokenPanel isSrcToken={true} />
         <SwitchTokens />
         <TokenPanel isSrcToken={false} />
         {isLimitPanel ? (
-          <DurationPanel />
+          <Duration />
         ) : (
           <div className="twap-inputs">
             <FillDelayPanel />
-            <TradesAmountPanel />
+            <TradesAmount />
           </div>
         )}
         <TradeAmountMessage />

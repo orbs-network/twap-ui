@@ -3,7 +3,6 @@ import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import {
   useAmountUi,
-  useBalanceError,
   useChunks,
   useDestTokenAmount,
   useError,
@@ -11,7 +10,6 @@ import {
   useLimitPrice,
   useMinChunkSizeUsd,
   useOnOpenConfirmationModal,
-  useOnSrcInputPercentClick,
   useOrderDuration,
   usePriceDiffFromMarketPercent,
   useShouldOnlyWrap,
@@ -249,31 +247,7 @@ export const useLimitPricePanel = () => {
   };
 };
 
-export const useTokenBalance = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { srcBalance, dstBalance } = useTwapContext();
-  const token = useToken({ isSrcToken });
-  return useAmountUi(token?.decimals, isSrcToken ? srcBalance : dstBalance);
-};
 
-export const useTokenUSD = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const {
-    srcUsd1Token,
-    dstUsd1Token,
-    state: { typedSrcAmount },
-  } = useTwapContext();
-  const dstAmountOut = useDestTokenAmount().amountUI;
-  const srcUsd = useUsdAmount(typedSrcAmount, srcUsd1Token);
-  const dstUsd = useUsdAmount(dstAmountOut, dstUsd1Token);
-
-  const token = useToken({ isSrcToken });
-  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-  const data = isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd;
-
-  return {
-    data: isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd,
-    isLoading: Boolean(token && !data),
-  };
-};
 
 export const useTokenSelect = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const { callbacks } = useTwapContext();
@@ -285,96 +259,12 @@ export const useTokenSelect = ({ isSrcToken }: { isSrcToken: boolean }) => {
   );
 };
 
-export const useToken = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { srcToken, dstToken } = useTwapContext();
-  return isSrcToken ? srcToken : dstToken;
-};
 
-export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const {
-    state: { typedSrcAmount = "" },
-    updateState,
-  } = useTwapContext();
-  const destTokenAmountUI = useDestTokenAmount().amountUI;
-  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
-
-  const onChange = useCallback(
-    (value: string) => {
-      if (!isSrcToken) return;
-      updateState({ typedSrcAmount: value });
-    },
-    [updateState, isSrcToken],
-  );
-  return {
-    value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : destTokenAmountUI,
-    onChange,
-  };
-};
-
-export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const { value, onChange } = useTokenInput({ isSrcToken });
-  const token = useToken({ isSrcToken });
-  const otherToken = useToken({ isSrcToken: !isSrcToken });
-
-  const balanceError = useBalanceError();
-  const balance = useTokenBalance({ isSrcToken });
-  const usd = useTokenUSD({ isSrcToken });
-  const onTokenSelect = useTokenSelect({ isSrcToken });
-  const onSrcInputPercentClick = useOnSrcInputPercentClick();
-  const {
-    marketPriceLoading,
-    translations: t,
-    callbacks: { onMaxSrcAmount },
-  } = useTwapContext();
-
-  const onPercent = useCallback(
-    (percent: number) => {
-      if (!isSrcToken) return;
-      onSrcInputPercentClick(percent);
-    },
-    [onSrcInputPercentClick, isSrcToken],
-  );
-
-  const onMax = useCallback(() => {
-    if (onMaxSrcAmount) {
-      onMaxSrcAmount();
-    } else {
-      onPercent(1);
-    }
-  }, [onPercent, onMaxSrcAmount]);
-
-  return {
-    value,
-    onChange,
-    token,
-    otherToken,
-    error: isSrcToken ? balanceError : false,
-    balance,
-    usd,
-    onTokenSelect,
-    onPercent,
-    onMax,
-    isLoading: isSrcToken ? false : marketPriceLoading,
-    title: isSrcToken ? t.from : t.to,
-  };
-};
 
 export const useSwitchTokensCallback = () => {
   return useTwapContext().callbacks.onSwitchTokens;
 };
 
-export const useTradesAmountPanel = () => {
-  const { translations: t } = useTwapContext();
-  const { setChunks, chunks, error } = useChunks();
-
-  return {
-    error,
-    trades: chunks,
-    onChange: setChunks,
-    label: t.tradesAmountTitle,
-    tooltip: t.totalTradesTooltip,
-  };
-};
 
 export const usePriceDisplay = (type: "limit" | "market") => {
   const [inverted, setInverted] = useState(false);
@@ -567,19 +457,6 @@ export const useFillDelayPanel = () => {
     milliseconds,
     fillDelay,
     error,
-  };
-};
-
-export const useOrderDurationPanel = () => {
-  const { orderDuration, setOrderDuration, milliseconds } = useOrderDuration();
-
-  const onUnitSelect = useCallback((unit: TimeUnit) => setOrderDuration({ unit, value: orderDuration.value }), [setOrderDuration, orderDuration.value]);
-
-  return {
-    orderDuration,
-    setOrderDuration,
-    milliseconds,
-    onUnitSelect,
   };
 };
 

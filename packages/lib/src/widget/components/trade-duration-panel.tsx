@@ -5,8 +5,7 @@ import { StyledRowFlex } from "../../styles";
 import styled from "styled-components";
 import { Panel } from "../../components/Panel";
 import { useTwapContext } from "../../context";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
-import { useOrderDurationPanel } from "../../hooks/ui-hooks";
+import { useOrderDuration, useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
 
 type Option = { text: string; value: TimeUnit };
 
@@ -33,12 +32,12 @@ const Options: Option[] = [
 
 const Buttons = ({ className = "" }: { className?: string }) => {
   const { options } = usePanelContext();
-  const { onUnitSelect, milliseconds } = useOrderDurationPanel();
+  const { setUnit, durationMillis } = usePanel();
   const { components } = useTwapContext();
-  const onChange = useCallback((unit: TimeUnit) => onUnitSelect(unit), [onUnitSelect]);
+  const onChange = useCallback((unit: TimeUnit) => setUnit(unit), [setUnit]);
 
   if (components.DurationSelectButtons) {
-    return <components.DurationSelectButtons onSelect={onChange} selected={milliseconds} />;
+    return <components.DurationSelectButtons onSelect={onChange} selected={durationMillis} />;
   }
 
   return (
@@ -48,7 +47,7 @@ const Buttons = ({ className = "" }: { className?: string }) => {
           <button
             key={it.value}
             onClick={() => onChange(it.value)}
-            className={`twap-duration-panel-button twap-select-button ${milliseconds === it.value ? "twap-duration-panel-button-selected twap-select-button-selected" : ""}`}
+            className={`twap-duration-panel-button twap-select-button ${durationMillis === it.value ? "twap-duration-panel-button-selected twap-select-button-selected" : ""}`}
           >
             {it.text}
           </button>
@@ -58,7 +57,7 @@ const Buttons = ({ className = "" }: { className?: string }) => {
   );
 };
 
-export const DurationPanel = ({
+export const Duration = ({
   children,
   className = "",
   options = Options,
@@ -85,8 +84,21 @@ const DurationLabel = () => {
   return <Label text={translations.expiry} tooltip={translations.maxDurationTooltip} />;
 };
 
+export const usePanel = () => {
+  const { orderDuration: duration, setOrderDuration: setDuration, milliseconds: durationMillis } = useOrderDuration();
+
+  const setUnit = useCallback((unit: TimeUnit) => setDuration({ unit, value: duration.value }), [setDuration, duration.value]);
+
+  return {
+    duration,
+    setDuration,
+    durationMillis,
+    setUnit,
+  };
+};
+
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const { setOrderDuration, orderDuration } = useOrderDurationPanel();
+  const { setDuration, duration } = usePanel();
   const { onBlur, onFocus } = Panel.usePanelContext();
 
   return (
@@ -94,18 +106,18 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
       onBlur={onBlur}
       onFocus={onFocus}
       className={`twap-trade-interval-panel-input ${className}`}
-      value={orderDuration.value}
-      onChange={(value) => setOrderDuration({ unit: orderDuration.unit, value: Number(value) })}
+      value={duration.value}
+      onChange={(value) => setDuration({ unit: duration.unit, value: Number(value) })}
       placeholder={placeholder}
     />
   );
 };
 
 const Resolution = () => {
-  const { onUnitSelect, orderDuration } = useOrderDurationPanel();
+  const { setUnit, duration } = usePanel();
   const { onBlur, onFocus } = Panel.usePanelContext();
 
-  return <ResolutionSelect onClose={onBlur} onOpen={onFocus} unit={orderDuration.unit} onChange={onUnitSelect} />;
+  return <ResolutionSelect onClose={onBlur} onOpen={onFocus} unit={duration.unit} onChange={setUnit} />;
 };
 
 const Menu = () => {
@@ -137,6 +149,7 @@ const StyledMain = styled("div")({
   },
 });
 
-DurationPanel.Buttons = Buttons;
-DurationPanel.Label = DurationLabel;
-DurationPanel.Menu = Menu;
+Duration.Buttons = Buttons;
+Duration.Label = DurationLabel;
+Duration.Menu = Menu;
+Duration.usePanel = usePanel;

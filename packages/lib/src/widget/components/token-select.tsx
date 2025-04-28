@@ -3,7 +3,7 @@ import { TokenLogo } from "../../components/base";
 import { StyledText } from "../../styles";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { useTwapContext } from "../../context";
-import { useToken, useTokenSelect } from "../../hooks/ui-hooks";
+import { useTokenSelect } from "../../hooks/ui-hooks";
 
 export const TokenSelect = ({ className = "", isSrcToken = false }: { className?: string; isSrcToken?: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,8 +11,10 @@ export const TokenSelect = ({ className = "", isSrcToken = false }: { className?
     translations,
     modals: { TokenSelectModal },
     components,
+    srcToken,
+    dstToken,
   } = useTwapContext();
-  const token = useToken({ isSrcToken });
+  const token = isSrcToken ? srcToken : dstToken;
 
   const onSelect = useTokenSelect({ isSrcToken });
   const onOpen = useCallback(() => setIsOpen(true), []);

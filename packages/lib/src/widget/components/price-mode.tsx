@@ -5,7 +5,7 @@ import { useTwapContext } from "../../context";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
 import { usePriceToggle } from "../../hooks/ui-hooks";
 
-export const PriceSwitch = ({ className = "", hideLabel = false }: { className?: string; hideLabel?: boolean }) => {
+export const PriceMode = ({ className = "", hideLabel = false }: { className?: string; hideLabel?: boolean }) => {
   const { isLimitPanel } = useTwapContext();
   const { isMarketOrder, setIsMarketOrder } = usePriceToggle();
   const hide = useShouldWrapOrUnwrapOnly();
@@ -19,3 +19,14 @@ export const PriceSwitch = ({ className = "", hideLabel = false }: { className?:
     </div>
   );
 };
+
+
+const usePanel = () => {
+  const { isMarketOrder, setIsMarketOrder } = usePriceToggle();
+  return {
+    isMarketOrder,
+    setIsMarketOrder,
+  };
+};
+
+PriceMode.usePanel = usePanel;
