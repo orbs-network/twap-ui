@@ -12,7 +12,7 @@ import {
   getDestTokenAmount,
   getAskParams,
 } from "./lib";
-import { addCancelledOrder, addNewOrder, getOrders, RawOrder } from "./orders";
+import { Orders } from "./orders";
 import { Config, getAskParamsProps, TimeDuration } from "./types";
 import { getTimeDurationMillis } from "./utils";
 import BN from "bignumber.js";
@@ -43,10 +43,12 @@ export class TwapSDK {
   public config: Config;
   public analytics = analyticsCallback;
   public estimatedDelayBetweenChunksMillis: number;
+  public orders: Orders;
   constructor(props: Props) {
     this.config = props.config;
     analytics.onConfigChange(props.config);
     this.estimatedDelayBetweenChunksMillis = getEstimatedDelayBetweenChunksMillis(this.config);
+    this.orders = new Orders(props.config);
   }
   //create order values
   getAskParams(props: getAskParamsProps) {
@@ -113,16 +115,8 @@ export class TwapSDK {
     };
   }
 
-  async getUserOrders({ account, signal, page, limit }: { account: string; signal?: AbortSignal; page?: number; limit?: number }) {
-    return getOrders({ chainId: this.config.chainId, config: this.config, account, signal, page, limit });
-  }
-
-  async addNewOrder(account: string, rawOrder: RawOrder) {
-    return addNewOrder(account, this.config.exchangeAddress, rawOrder);
-  }
-
-  async addCancelledOrder(account: string, orderId: number) {
-    return addCancelledOrder(account, this.config.exchangeAddress, orderId);
+  async getOrders(account: string, signal?: AbortSignal) {
+    return this.orders.getOrders(account, signal);
   }
 }
 

@@ -20,7 +20,6 @@ export const PriceMode = ({ className = "", hideLabel = false }: { className?: s
   );
 };
 
-
 const usePanel = () => {
   const { isMarketOrder, setIsMarketOrder } = usePriceToggle();
   return {

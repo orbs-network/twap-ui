@@ -14,7 +14,6 @@ import { TwapProvider } from "../context";
 import { WarningMessage } from "./components/warnings";
 import { TwapProps } from "../types";
 import { createGlobalStyle } from "styled-components";
-import * as uiHooks from "../hooks/ui-hooks";
 import { TradeAmountMessage } from "./components/TradesAmountMe";
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import { Duration } from "./components/trade-duration-panel";
@@ -37,7 +36,7 @@ const Widget = (props: TwapProps) => {
 };
 
 Widget.Orders = OrdersPortal;
-Widget.LimitPricePanel = LimitPanel;
+Widget.LimitPrice = LimitPanel;
 Widget.ShowConfirmationButton = ShowConfirmationButton;
 Widget.TradesAmount = TradesAmount;
 Widget.TokenPanel = TokenPanel;
@@ -48,6 +47,5 @@ Widget.SwitchTokens = SwitchTokens;
 Widget.PriceMode = PriceMode;
 Widget.WarningMessage = WarningMessage;
 Widget.createGlobalStyle = createGlobalStyle;
-Widget.hooks = uiHooks;
 Widget.TradeAmountMessage = TradeAmountMessage;
 export { Widget };

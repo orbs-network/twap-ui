@@ -14,10 +14,10 @@ export type Config = {
 };
 
 export enum OrderStatus {
-  Open = "open",
-  Canceled = "canceled",
-  Completed = "completed",
-  Expired = "expired",
+  Open = "OPEN",
+  Canceled = "CANCELED",
+  Completed = "COMPLETED",
+  Expired = "EXPIRED",
 }
 
 export enum TimeUnit {

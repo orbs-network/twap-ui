@@ -3,14 +3,12 @@ import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import {
   useAmountUi,
-  useChunks,
   useDestTokenAmount,
   useError,
   useFillDelay,
   useLimitPrice,
   useMinChunkSizeUsd,
   useOnOpenConfirmationModal,
-  useOrderDuration,
   usePriceDiffFromMarketPercent,
   useShouldOnlyWrap,
   useShouldUnwrap,
@@ -24,7 +22,6 @@ import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
 import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { useAccountOrders, useGroupedByStatusOrders } from "./order-hooks";
 
 const defaultPercent = [1, 5, 10];
 
@@ -247,8 +244,6 @@ export const useLimitPricePanel = () => {
   };
 };
 
-
-
 export const useTokenSelect = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const { callbacks } = useTwapContext();
   return useCallback(
@@ -259,12 +254,9 @@ export const useTokenSelect = ({ isSrcToken }: { isSrcToken: boolean }) => {
   );
 };
 
-
-
 export const useSwitchTokensCallback = () => {
   return useTwapContext().callbacks.onSwitchTokens;
 };
-
 
 export const usePriceDisplay = (type: "limit" | "market") => {
   const [inverted, setInverted] = useState(false);
@@ -512,12 +504,3 @@ export const useLimitPriceMessage = () => {
   }, [t, isMarketOrder, hide]);
 };
 
-export const useOrders = () => {
-  const { data: orders } = useAccountOrders();
-  const groupedOrders = useGroupedByStatusOrders();
-
-  return {
-    orders,
-    groupedOrders,
-  };
-};

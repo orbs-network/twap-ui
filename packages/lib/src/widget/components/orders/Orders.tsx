@@ -6,11 +6,11 @@ import { FaArrowRight } from "@react-icons/all-files/fa/FaArrowRight";
 import { useMemo } from "react";
 import { Portal, Spinner } from "../../../components/base";
 import { useTwapContext } from "../../../context";
-import { useAccountOrders, useGroupedByStatusOrders } from "../../../hooks/order-hooks";
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
 import { useTransactionExplorerLink } from "../../../hooks/logic-hooks";
 import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
 import { OrdersProps } from "../../../types";
+import { useOrders } from "../../../hooks/order-hooks";
 
 const PORTAL_ID = "twap-orders-portal";
 
@@ -31,7 +31,7 @@ export const Orders = ({ className = "" }: { className?: string }) => {
 };
 
 export const OrdersPortalContainer = ({ Component }: { Component: FC<OrdersProps> }) => {
-  const { data: orders, isLoading: orderLoading } = useAccountOrders();
+  const { orders, isLoading: orderLoading } = useOrders();
   const { mutateAsync: cancelOrder } = useCancelOrder();
   return (
     <Portal containerId={PORTAL_ID}>
@@ -40,12 +40,14 @@ export const OrdersPortalContainer = ({ Component }: { Component: FC<OrdersProps
   );
 };
 
-export const OrdersPortal = () => {
-  return <div id={PORTAL_ID} />;
+export const OrdersPortal = ({children}: {children: ReactNode}) => {
+  return <div id={PORTAL_ID}>{children}</div>;
 };
 
+
+
 export const OrdersButton = ({ className = "" }: { className?: string }) => {
-  const openOrders = useGroupedByStatusOrders().open;
+  const openOrders = useOrders()?.orders?.OPEN;
   const { components } = useTwapContext();
 
   const { onOpen, isLoading } = useOrderHistoryContext();

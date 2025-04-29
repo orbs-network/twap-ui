@@ -1,16 +1,8 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Order } from "@orbs-network/twap-sdk";
-import { useAccountOrders, useGroupedByStatusOrders } from "../../../hooks/order-hooks";
 import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
-
-export enum OrdersFilter {
-  All = "all",
-  Open = "open",
-  Canceled = "canceled",
-  Completed = "completed",
-  Expired = "expired",
-}
+import { OrderStatus, TwapOrder } from "../../../types";
+import { useOrders } from "../../../hooks/order-hooks";
 
 export type OrdersMenuTab = {
   name: string;
@@ -20,56 +12,50 @@ export type OrdersMenuTab = {
 
 interface OrderHistoryContextType {
   selectOrder: (id: number | undefined) => void;
-  selectedOrders: Order[];
+  selectedOrders: TwapOrder[];
   closePreview: () => void;
   isLoading: boolean;
   selectedOrderId?: number;
   isOpen: boolean;
   onClose: () => void;
   onOpen: () => void;
-  setStatus: (status: OrdersFilter) => void;
-  status: OrdersFilter;
-  cancelOrder: (orderId: number) => Promise<string>;
+  setStatus: (status?: OrderStatus) => void;
+  status?: OrderStatus;
+  cancelOrder: (order: TwapOrder) => Promise<string>;
   cancelOrderTxHash: string | undefined;
   cancelOrderStatus?: SwapStatus;
 }
 
 export const useSelectedOrder = () => {
-  const orders = useAccountOrders().data;
+  const {orders} = useOrders();
 
   const { selectedOrderId } = useOrderHistoryContext();
 
   return useMemo(() => {
     if (!orders || selectedOrderId === undefined) return;
-    return orders.find((it) => it.id === selectedOrderId);
+    return orders.all.find((it) => it.id === selectedOrderId);
   }, [orders, selectedOrderId]);
 };
 export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
 export const OrderHistoryContextProvider = ({ children }: { children: ReactNode }) => {
-  const groupedOrders = useGroupedByStatusOrders();
-  const [status, setStatus] = useState<OrdersFilter>(OrdersFilter.All);
-  const { isLoading } = useAccountOrders();
+  const {orders, isLoading} = useOrders();
+
+  const [status, setStatus] = useState<OrderStatus | undefined>(undefined);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>(undefined);
-  const selectedOrders = groupedOrders[status] || [];
+  const selectedOrders = !orders ? [] : !status ? orders.all : orders[status.toUpperCase() as keyof typeof orders];
+
   const { mutateAsync: cancelOrder, swapStatus: cancelOrderStatus, txHash: cancelOrderTxHash, resetSwapStatus: resetCancelOrderStatus } = useCancelOrder();
 
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
         setSelectedOrderId(undefined);
-        setStatus(OrdersFilter.All);
+        setStatus(undefined);
       }, 300);
     }
   }, [isOpen]);
-
-  const selectOrder = useCallback(
-    (id: number | undefined) => {
-      setSelectedOrderId(id);
-    },
-    [setSelectedOrderId],
-  );
 
   const closePreview = useCallback(() => {
     setSelectedOrderId(undefined);
@@ -91,8 +77,8 @@ export const OrderHistoryContextProvider = ({ children }: { children: ReactNode 
         cancelOrder,
         cancelOrderTxHash,
         cancelOrderStatus,
-        selectOrder,
-        selectedOrders,
+        selectOrder: setSelectedOrderId,
+        selectedOrders: selectedOrders || [],
         setStatus,
         closePreview,
         status,

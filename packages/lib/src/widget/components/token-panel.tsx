@@ -207,7 +207,7 @@ export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
       if (!isSrcToken) return;
       updateState({ typedSrcAmount: value });
     },
-    [updateState, isSrcToken]
+    [updateState, isSrcToken],
   );
   return {
     value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : destTokenAmountUI,
