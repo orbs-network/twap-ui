@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected, Steps, Token } from "..";
+import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected, Steps, Token, TwapOrder } from "..";
 import BN from "bignumber.js";
 import { erc20Abi, maxUint256, TransactionReceipt } from "viem";
 import { useTwapContext } from "../context";
@@ -16,7 +16,7 @@ import {
 import { amountUi, isNativeAddress, iwethabi, TwapAbi } from "@orbs-network/twap-sdk";
 import { useCallback, useRef, useState } from "react";
 import { SwapStatus } from "@orbs-network/swap-ui";
-import { useAddCancelledOrder, useAddNewOrder } from "./order-hooks";
+import { useOrders, usePersistedOrdersStore } from "./order-hooks";
 
 export const useApproveToken = () => {
   const { account, config, walletClient, publicClient, callbacks, twapSDK, updateState } = useTwapContext();
@@ -39,7 +39,7 @@ export const useApproveToken = () => {
       updateState({ approveTxHash: hash });
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
-        confirmations: 5,
+        confirmations: 2,
       });
 
       if (receipt.status === "reverted") {
@@ -60,32 +60,32 @@ export const useApproveToken = () => {
 };
 
 export const useCancelOrder = () => {
-  const { account, config, callbacks, walletClient, publicClient, twapSDK } = useTwapContext();
+  const { account, callbacks, walletClient, publicClient, twapSDK } = useTwapContext();
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [swapStatus, setSwapStatus] = useState<SwapStatus | undefined>(undefined);
 
-  const addCancelledOrder = useAddCancelledOrder();
+  const { addCancelledOrderId } = usePersistedOrdersStore();
   const mutation = useMutation(
-    async (orderId: number) => {
+    async (order: TwapOrder) => {
       if (!account) throw new Error("account not defined");
       if (!walletClient) throw new Error("walletClient not defined");
       if (!publicClient) throw new Error("publicClient not defined");
       setTxHash(undefined);
       setSwapStatus(SwapStatus.LOADING);
-      twapSDK.analytics.onCancelOrderRequest(orderId);
-      callbacks?.cancelOrder?.onRequest?.(orderId);
+      twapSDK.analytics.onCancelOrderRequest(order.id);
+      callbacks?.cancelOrder?.onRequest?.(order.id);
       const hash = await walletClient.writeContract({
         account: account as `0x${string}`,
-        address: config.twapAddress as `0x${string}`,
+        address: order.twapAddress as `0x${string}`,
         abi: TwapAbi,
         functionName: "cancel",
-        args: [orderId],
+        args: [order.id],
         chain: walletClient.chain,
       });
       setTxHash(hash);
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
-        confirmations: 5,
+        confirmations: 2,
       });
 
       if (receipt.status === "reverted") {
@@ -93,8 +93,8 @@ export const useCancelOrder = () => {
       }
 
       console.log(`order canceled`);
-      callbacks?.cancelOrder?.onSuccess?.(receipt, orderId);
-      await addCancelledOrder(orderId);
+      callbacks?.cancelOrder?.onSuccess?.(receipt, order.id);
+      addCancelledOrderId(order.id);
       return hash;
     },
     {
@@ -131,8 +131,9 @@ const useCallbacks = () => {
     dstToken,
     state: { typedSrcAmount },
   } = useTwapContext();
-  const addNewOrder = useAddNewOrder();
+  const { addCreatedOrder } = usePersistedOrdersStore();
   const destTokenAmountUI = useDestTokenAmount().amountUI;
+  const { refetch: refetchOrders } = useOrders();
   const onRequest = useCallback((params: string[]) => twapSDK.analytics.onCreateOrderRequest(params, account), [twapSDK, account]);
   const onSuccess = useCallback(
     async (receipt: TransactionReceipt, params: string[], srcToken: Token, orderId?: number) => {
@@ -146,10 +147,15 @@ const useCallbacks = () => {
         receipt,
       });
 
-      await addNewOrder({ Contract_id: orderId, transactionHash: receipt.transactionHash, params, srcToken, dstToken: dstToken! });
+      if (!orderId) {
+        return await refetchOrders();
+      }
+
+      addCreatedOrder(orderId, receipt.transactionHash, params, srcToken, dstToken!);
     },
-    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, twapSDK, addNewOrder],
+    [callbacks, srcToken, dstToken, typedSrcAmount, destTokenAmountUI, twapSDK, addCreatedOrder, refetchOrders],
   );
+
   const onError = useCallback(
     (error: any) => {
       callbacks?.createOrder?.onFailed?.((error as any).message);
@@ -209,9 +215,8 @@ export const useCreateOrder = () => {
 
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash,
-        confirmations: 5,
+        confirmations: 2,
       });
-      console.log(receipt.status);
 
       if (receipt.status === "reverted") {
         throw new Error("failed to create order");
@@ -264,7 +269,7 @@ export const useWrapToken = () => {
 
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
-        confirmations: 5,
+        confirmations: 2,
       });
       if (receipt.status === "reverted") {
         throw new Error("failed to wrap token");
@@ -318,7 +323,7 @@ export const useUnwrapToken = () => {
       updateState({ unwrapTxHash: hash });
       const receipt = await publicClient.waitForTransactionReceipt({
         hash,
-        confirmations: 5,
+        confirmations: 2,
       });
 
       await callbacks.unwrap?.onSuccess?.(receipt, amountUI);

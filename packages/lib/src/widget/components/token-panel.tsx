@@ -5,9 +5,8 @@ import { Panel } from "../../components/Panel";
 import { TokenSelect } from "./token-select";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
-import { useBalanceError, useOnSrcInputPercentClick } from "../../hooks/logic-hooks";
-import { useToken, useTokenBalance, useTokenInput, useTokenUSD } from "../../hooks/ui-hooks";
-
+import { useAmountUi, useBalanceError, useDestTokenAmount, useOnSrcInputPercentClick, useShouldWrapOrUnwrapOnly, useUsdAmount } from "../../hooks/logic-hooks";
+import { useTokenSelect } from "../../hooks/ui-hooks";
 const Input = (props: {
   className?: string;
   decimalScale?: number;
@@ -57,7 +56,7 @@ export const TokenPanel = ({ isSrcToken, children, className = "" }: { isSrcToke
   );
 };
 
-const TokenPanelBalance = ({ className = "" }: { className?: string }) => {
+const Balance = ({ className = "" }: { className?: string }) => {
   const { isSrcToken } = useTokenPanelContext();
   const balance = useTokenBalance({ isSrcToken });
   const srcBalanceF = useFormatNumber({ value: balance, decimalScale: 3 });
@@ -83,7 +82,7 @@ const TokenPanelBalance = ({ className = "" }: { className?: string }) => {
   );
 };
 
-const TokenPanelUsd = ({ className = "" }: { className?: string }) => {
+const USD = ({ className = "" }: { className?: string }) => {
   const { isSrcToken } = useTokenPanelContext();
   const { data, isLoading } = useTokenUSD({ isSrcToken });
   const components = useTwapContext().components;
@@ -102,7 +101,7 @@ const TokenPanelUsd = ({ className = "" }: { className?: string }) => {
   );
 };
 
-const PanelTokenSelect = ({ className = "" }: { className?: string }) => {
+const Select = ({ className = "" }: { className?: string }) => {
   const { isSrcToken } = useTokenPanelContext();
 
   return <TokenSelect isSrcToken={isSrcToken} className={`twap-token-panel-token-select ${className}`} />;
@@ -151,11 +150,11 @@ const Main = () => {
       </div>
       <div className="twap-token-panel-main-middle">
         <TokenInput />
-        <PanelTokenSelect />
+        <Select />
       </div>
       <div className="twap-token-panel-main-bottom">
-        <TokenPanelUsd />
-        <TokenPanelBalance />
+        <USD />
+        <Balance />
       </div>
     </div>
   );
@@ -168,9 +167,74 @@ const TokenPanelLabel = () => {
   return <Label className="twap-token-panel-label" text={isSrcToken ? translations.from : translations.to} />;
 };
 
-TokenPanel.Balance = TokenPanelBalance;
-TokenPanel.Usd = TokenPanelUsd;
-TokenPanel.Select = PanelTokenSelect;
+export const useTokenBalance = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  const { srcBalance, dstBalance } = useTwapContext();
+  const token = useToken({ isSrcToken });
+  return useAmountUi(token?.decimals, isSrcToken ? srcBalance : dstBalance);
+};
+
+export const useTokenUSD = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  const {
+    srcUsd1Token,
+    dstUsd1Token,
+    state: { typedSrcAmount },
+  } = useTwapContext();
+  const dstAmountOut = useDestTokenAmount().amountUI;
+  const srcUsd = useUsdAmount(typedSrcAmount, srcUsd1Token);
+  const dstUsd = useUsdAmount(dstAmountOut, dstUsd1Token);
+
+  const token = useToken({ isSrcToken });
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+  const data = isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd;
+
+  return {
+    data: isSrcToken ? srcUsd : isWrapOrUnwrapOnly ? srcUsd : dstUsd,
+    isLoading: Boolean(token && !data),
+  };
+};
+
+export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  const {
+    state: { typedSrcAmount = "" },
+    updateState,
+    marketPriceLoading,
+  } = useTwapContext();
+  const destTokenAmountUI = useDestTokenAmount().amountUI;
+  const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
+
+  const onChange = useCallback(
+    (value: string) => {
+      if (!isSrcToken) return;
+      updateState({ typedSrcAmount: value });
+    },
+    [updateState, isSrcToken],
+  );
+  return {
+    value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : destTokenAmountUI,
+    onChange,
+    isLoading: isSrcToken ? false : marketPriceLoading,
+  };
+};
+export const useToken = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  const { srcToken, dstToken } = useTwapContext();
+  return isSrcToken ? srcToken : dstToken;
+};
+
+const usePanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
+  return {
+    balance: useTokenBalance({ isSrcToken }),
+    usd: useTokenUSD({ isSrcToken }),
+    input: useTokenInput({ isSrcToken }),
+    token: useToken({ isSrcToken }),
+    onTokenSelect: useTokenSelect({ isSrcToken }),
+    error: useBalanceError(),
+  };
+};
+
+TokenPanel.Balance = Balance;
+TokenPanel.Usd = USD;
+TokenPanel.Select = Select;
 TokenPanel.Input = TokenInput;
 TokenPanel.BalanceSelect = BalanceAmountSelect;
 TokenPanel.Label = TokenPanelLabel;
+TokenPanel.usePanel = usePanel;

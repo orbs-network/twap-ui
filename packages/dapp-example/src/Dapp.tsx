@@ -3,11 +3,10 @@ import { Popup, TokensList, UISelector } from "./Components";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiTooltip from "@mui/material/Tooltip";
 import { TooltipProps, TokenSelectModalProps, Widget, Token, OrderHistoryModalProps, OrderConfirmationModalProps, TokenLogoProps, LinkProps } from "@orbs-network/twap-ui";
-import { eqIgnoreCase, networks, Configs } from "@orbs-network/twap-sdk";
+import { eqIgnoreCase, networks } from "@orbs-network/twap-sdk";
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "./context";
-console.log({ Configs });
 
 const TokenSelectModal = ({ isOpen, onSelect, onClose }: TokenSelectModalProps) => {
   return (
@@ -135,7 +134,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         srcBalance={srcBalance}
         dstBalance={dstBalance}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
-        components={{ Tooltip, TokenLogo, Link }}
+        components={{ Tooltip, TokenLogo, Link, }}
         modals={{ OrderConfirmationModal, OrderHistoryModal, TokenSelectModal }}
         useToken={useToken}
         includeStyles={true}

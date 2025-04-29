@@ -3,13 +3,10 @@ import { TokenPanel } from "./components/token-panel";
 import { ShowConfirmationButton } from "./components/show-confirmation-button";
 import { FillDelayPanel } from "./components/fill-delay-panel";
 import { LimitPanel } from "./components/limit-panel";
-import { PriceTabs } from "./components/price-tabs";
-import { TradesAmountPanel } from "./components/trades-amount-panel";
-import { DurationPanel } from "./components/trade-duration-panel";
 import { SwitchTokens } from "./components/switch-tokens";
 import { Orders, OrdersPortal } from "./components/orders/Orders";
 import { PoweredbyOrbs } from "./components/powered-by-orbs";
-import { PriceSwitch } from "./components/price-switch";
+import { PriceMode } from "./components/price-mode";
 import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
 import { SwapPanel } from "./components/swap-panel";
 import { GlobalStyles } from "./styles";
@@ -17,9 +14,10 @@ import { TwapProvider } from "../context";
 import { WarningMessage } from "./components/warnings";
 import { TwapProps } from "../types";
 import { createGlobalStyle } from "styled-components";
-import * as uiHooks from "../hooks/ui-hooks";
-import { TradeAmountMessage } from "./components/message";
+import { TradeAmountMessage } from "./components/TradesAmountMe";
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
+import { Duration } from "./components/trade-duration-panel";
+import { TradesAmount } from "./components/trades-amount-panel";
 
 const Widget = (props: TwapProps) => {
   const shouldWrapOrUnwrap = useMemo(() => {
@@ -38,18 +36,16 @@ const Widget = (props: TwapProps) => {
 };
 
 Widget.Orders = OrdersPortal;
-Widget.LimitPricePanel = LimitPanel;
+Widget.LimitPrice = LimitPanel;
 Widget.ShowConfirmationButton = ShowConfirmationButton;
-Widget.TradesAmountPanel = TradesAmountPanel;
+Widget.TradesAmount = TradesAmount;
 Widget.TokenPanel = TokenPanel;
 Widget.PoweredByOrbs = PoweredbyOrbs;
 Widget.FillDelayPanel = FillDelayPanel;
-Widget.PriceTabs = PriceTabs;
-Widget.DurationPanel = DurationPanel;
+Widget.Duration = Duration;
 Widget.SwitchTokens = SwitchTokens;
-Widget.PriceSwitch = PriceSwitch;
+Widget.PriceMode = PriceMode;
 Widget.WarningMessage = WarningMessage;
 Widget.createGlobalStyle = createGlobalStyle;
-Widget.hooks = uiHooks;
 Widget.TradeAmountMessage = TradeAmountMessage;
 export { Widget };

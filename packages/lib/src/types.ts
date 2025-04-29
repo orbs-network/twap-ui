@@ -1,6 +1,6 @@
 import { CSSProperties, FC, ReactElement, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
-import { Config, Order, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
+import { Config, Order, OrderStatus, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { createPublicClient, createWalletClient, TransactionReceipt as _TransactionReceipt } from "viem";
 export type { Order } from "@orbs-network/twap-sdk";
@@ -282,9 +282,15 @@ export type OrdersButtonProps = {
 };
 
 export type OrdersProps = {
-  orders?: Order[];
+  orders: {
+    all: TwapOrder[];
+    OPEN: TwapOrder[];
+    COMPLETED: TwapOrder[];
+    EXPIRED: TwapOrder[];
+    CANCELED: TwapOrder[];
+};
   isLoading: boolean;
-  onCancelOrder: (orderId: number) => Promise<string>;
+  onCancelOrder: (order: TwapOrder) => Promise<string>;
 };
 
 export type LinkProps = {
@@ -519,3 +525,8 @@ export interface State {
 }
 
 export { SwapStatus };
+
+export interface TwapOrder extends Order {
+  status?: OrderStatus;
+  fillDelayMillis?: number;
+}

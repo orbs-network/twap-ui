@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
-import { Order } from "@orbs-network/twap-sdk";
-import { OrdersFilter, useOrderHistoryContext } from "./context";
+import { OrderType } from "@orbs-network/twap-sdk";
+import { useOrderHistoryContext } from "./context";
 import * as React from "react";
 import moment from "moment";
 import { Loader } from "../../../components/base/Loader";
@@ -11,6 +11,7 @@ import { useTwapContext } from "../../../context";
 import { OrderHistoryMenu } from "./OrderHistorySelect";
 import { useOrderName } from "../../../hooks/logic-hooks";
 import { Virtuoso } from "react-virtuoso";
+import { TwapOrder } from "../../../types";
 
 const ListLoader = () => {
   return (
@@ -47,7 +48,7 @@ const StyledList = styled("div")({
   gap: 7,
 });
 
-const ListOrder = ({ order, selectOrder }: { order: Order; selectOrder: (id?: number) => void }) => {
+const ListOrder = ({ order, selectOrder }: { order: TwapOrder; selectOrder: (id?: number) => void }) => {
   const { components } = useTwapContext();
 
   if (components.OrderHistoryListOrder) {
@@ -110,7 +111,7 @@ const EmptyList = () => {
   const status = useOrderHistoryContext().status;
   const t = useTwapContext().translations;
   const name = React.useMemo(() => {
-    if (status === OrdersFilter.All) {
+    if (!status) {
       return "";
     }
     return status;
@@ -130,10 +131,10 @@ const StyledEmpty = styled(StyledColumnFlex)({
   paddingBottom: 30,
 });
 
-const ListItemHeader = ({ order }: { order: Order }) => {
+const ListItemHeader = ({ order }: { order: TwapOrder }) => {
   const status = order && order.status;
   const { dateFormat } = useTwapContext();
-  const name = useOrderName(order.isMarketOrder, order.totalChunks);
+  const name = useOrderName(order.type === OrderType.TWAP_MARKET, order.chunks);
   const formattedDate = React.useMemo(() => {
     if (!order.createdAt) return "";
     if (dateFormat) return dateFormat(order.createdAt);
