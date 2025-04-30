@@ -53,11 +53,17 @@ const getInitialState = ({ orderDisclaimerAcceptedByDefault = true }: TwapProps)
 };
 
 const Listeners = () => {
-  const { isLimitPanel, updateState, isTwapMarketByDefault, srcToken, dstToken } = useTwapContext();
+  const { isLimitPanel, updateState, isTwapMarketByDefault, srcToken, dstToken, onSrcAmountChange, state } = useTwapContext();
 
   useEffect(() => {
     updateState({ typedPrice: undefined, selectedPricePercent: undefined });
   }, [srcToken?.address, dstToken?.address]);
+
+  useEffect(() => {
+    if (onSrcAmountChange) {
+      onSrcAmountChange(state.typedSrcAmount);
+    }
+  }, [onSrcAmountChange, state.typedSrcAmount]);
 
   useEffect(() => {
     if (isLimitPanel) {

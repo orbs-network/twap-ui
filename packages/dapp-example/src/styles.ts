@@ -20,8 +20,6 @@ const fonts = {
   Kinetix: "Inter",
   [Configs.Thena.name]: "Inter",
   sushiswap: "Inter",
-  [Configs.Pangolin.name]: "Poppins",
-  [Configs.PangolinDaas.name]: "Poppins",
   [Configs.SpookySwap.name]: "Red Hat Display",
   [Configs.PancakeSwap.name]: "Kanit",
   [Configs.BaseSwap.name]: "Montserrat",

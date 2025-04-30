@@ -27,12 +27,9 @@ const useGetOrderStatuses = () => {
           }),
         });
 
-        const statusMap = orders.reduce((acc, order, index) => {
-          acc[order.id] = parseOrderStatus(order.progress, multicallResponse[index].result as number);
-          return acc;
-        }, {} as Record<string, OrderStatus>);
-
-        return statusMap;
+        return multicallResponse.map((it) => {
+          return it.result as number;
+        });
       } catch (error) {
         console.error(error);
       }
@@ -158,10 +155,11 @@ const useOrdersQuery = () => {
 
       const statuses = await getOrderStatuses(orders);
 
+      
       const canceledOrders = new Set(getCancelledOrderIds());
 
-      return orders.map((order): TwapOrder => {
-        let status = statuses?.[order.id];
+      return orders.map((order, index): TwapOrder => {
+        let status = parseOrderStatus(order.progress, statuses?.[index]);
         if (canceledOrders.has(order.id)) {
           if (status !== OrderStatus.Canceled) {
             console.log(`Cancelled added: ${order.id}`);
@@ -172,7 +170,7 @@ const useOrdersQuery = () => {
           }
         }
 
-        return { ...order, status: statuses?.[order.id], fillDelayMillis: getOrderFillDelay(order.fillDelay, config) };
+        return { ...order, status, fillDelayMillis: getOrderFillDelay(order.fillDelay, config) };
       });
     },
     {

@@ -40,11 +40,9 @@ export const OrdersPortalContainer = ({ Component }: { Component: FC<OrdersProps
   );
 };
 
-export const OrdersPortal = ({children}: {children: ReactNode}) => {
+export const OrdersPortal = ({ children }: { children: ReactNode }) => {
   return <div id={PORTAL_ID}>{children}</div>;
 };
-
-
 
 export const OrdersButton = ({ className = "" }: { className?: string }) => {
   const openOrders = useOrders()?.orders?.OPEN;

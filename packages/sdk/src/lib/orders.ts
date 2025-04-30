@@ -43,17 +43,22 @@ type GraphFill = {
   srcAmountIn: string;
   srcFilledAmount: string;
   timestamp: string;
+  twapAddress: string;
+  exchange: string;
 };
 
 type OrderFills = {
   id: number;
   fills: GraphFill[];
+  twapAddress: string;
+  exchange: string;
 };
 function groupFillsByTWAP(fills: GraphFill[]): OrderFills[] {
   const groupedMap = new Map<number, GraphFill[]>();
 
   for (const fill of fills) {
     const id = fill.TWAP_id;
+    
     if (!groupedMap.has(id)) {
       groupedMap.set(id, []);
     }
@@ -63,6 +68,8 @@ function groupFillsByTWAP(fills: GraphFill[]): OrderFills[] {
   return Array.from(groupedMap.entries()).map(([id, fills]) => ({
     id,
     fills,
+    twapAddress: fills[0].twapAddress,
+    exchange: fills[0].exchange,
   }));
 }
 
@@ -188,6 +195,8 @@ export class Orders {
           dstAmountOut
           dstFee
           srcFilledAmount
+          twapAddress
+          exchange
           TWAP_id
           srcAmountIn
           timestamp
@@ -224,9 +233,9 @@ export class Orders {
 
     const ids = createdOrders.map((rawOrder) => rawOrder.Contract_id.toString());
     const allFills = await this.getFills(ids, signal);
-
+    
     const parsedOrders = createdOrders.map((o) => {
-      const fills = allFills?.find((it) => it.id === Number(o.Contract_id));
+      const fills = allFills?.find((it) => it.id === Number(o.Contract_id) && it.exchange === o.exchange && it.twapAddress === o.twapAddress);
       return buildOrder({
         fills: fills?.fills,
         srcAmount: o.ask_srcAmount,
@@ -347,7 +356,7 @@ export const buildOrder = ({
     deadline,
     createdAt,
     srcAmount,
-    dstMinAmountPerChunk: Number(dstMinAmountPerChunk) === 1 ? '0' : dstMinAmountPerChunk,
+    dstMinAmountPerChunk: Number(dstMinAmountPerChunk) === 1 ? "0" : dstMinAmountPerChunk,
     srcAmountPerChunk,
     txHash,
     chunks,
@@ -366,9 +375,10 @@ const getOrderProgress = (srcAmount: string, filledSrcAmount: string) => {
   return progress * 100;
 };
 
-export const parseOrderStatus = (progress: number, status: number) => {
+export const parseOrderStatus = (progress: number, status?: number) => {
+  
   if (progress === 100) return OrderStatus.Completed;
-  if (status > Date.now() / 1000) return OrderStatus.Open;
+  if (status && status > Date.now() / 1000) return OrderStatus.Open;
 
   switch (status) {
     case 1:

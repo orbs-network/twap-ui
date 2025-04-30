@@ -288,7 +288,7 @@ export type OrdersProps = {
     COMPLETED: TwapOrder[];
     EXPIRED: TwapOrder[];
     CANCELED: TwapOrder[];
-};
+  };
   isLoading: boolean;
   onCancelOrder: (order: TwapOrder) => Promise<string>;
 };
@@ -423,6 +423,7 @@ export interface TwapProps {
   account?: string;
   orderDisclaimerAcceptedByDefault?: boolean;
   isTwapMarketByDefault?: boolean;
+  onSrcAmountChange?: (amount: string) => void;
 }
 
 export interface TwapContextType extends TwapProps {

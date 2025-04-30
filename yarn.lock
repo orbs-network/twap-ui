@@ -2785,11 +2785,6 @@
   resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.41.tgz#294ea0505fbc2207ce045050430bcf289aa400cd"
   integrity sha512-7NMJAi2D3R1kam0Fp1IdZA468Dq3YJ39KlpQQcq0qz9MTjrTi4ho7yyRVDG4qrw02qX83QVhgOCvvbTTtjm+3w==
 
-"@orbs-network/twap@^2.0.1":
-  version "2.3.4"
-  resolved "https://registry.yarnpkg.com/@orbs-network/twap/-/twap-2.3.4.tgz#f2894525d870bc2c5cc5911904ec841745b4b7f7"
-  integrity sha512-XYfV5k+1zvVtbU9a918Zj6Ucbza7Oi1+5muc8vJSni8eMJYAsOtzhA+eP/ullR7j3mrQqaj2LZLkK/I+u7lzSw==
-
 "@orbs-network/twap@^2.7.1":
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/@orbs-network/twap/-/twap-2.7.1.tgz#142384ec747de71d72b30817d234d24d12413152"
@@ -15525,7 +15520,7 @@ vary@~1.1.2:
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
 
-viem@2.x, viem@^2.1.1, viem@^2.23.0, viem@^2.23.2:
+viem@2.x, viem@^2.1.1, viem@^2.23.2:
   version "2.23.5"
   resolved "https://registry.yarnpkg.com/viem/-/viem-2.23.5.tgz#50fb9ea0701d58e6a7a1714ecaa5edfa100bb391"
   integrity sha512-cUfBHdFQHmBlPW0loFXda0uZcoU+uJw3NRYQRwYgkrpH6PgovH8iuVqDn6t1jZk82zny4wQL54c9dCX2W9kLMg==

@@ -503,4 +503,3 @@ export const useLimitPriceMessage = () => {
     };
   }, [t, isMarketOrder, hide]);
 };
-

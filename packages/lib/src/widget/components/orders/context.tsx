@@ -27,7 +27,7 @@ interface OrderHistoryContextType {
 }
 
 export const useSelectedOrder = () => {
-  const {orders} = useOrders();
+  const { orders } = useOrders();
 
   const { selectedOrderId } = useOrderHistoryContext();
 
@@ -39,7 +39,7 @@ export const useSelectedOrder = () => {
 export const OrderHistoryContext = createContext({} as OrderHistoryContextType);
 
 export const OrderHistoryContextProvider = ({ children }: { children: ReactNode }) => {
-  const {orders, isLoading} = useOrders();
+  const { orders, isLoading } = useOrders();
 
   const [status, setStatus] = useState<OrderStatus | undefined>(undefined);
   const [isOpen, setIsOpen] = useState(false);
