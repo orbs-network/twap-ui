@@ -61,7 +61,7 @@ const Listeners = () => {
 
   useEffect(() => {
     if (onSrcAmountChange) {
-      onSrcAmountChange(state.typedSrcAmount);
+      onSrcAmountChange(state.typedSrcAmount || "");
     }
   }, [onSrcAmountChange, state.typedSrcAmount]);
 
