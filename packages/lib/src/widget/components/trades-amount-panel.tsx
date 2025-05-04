@@ -3,7 +3,7 @@ import { Panel } from "../../components/Panel";
 import { Label, NumericInput } from "../../components/base";
 import { StyledRowFlex, StyledText } from "../../styles";
 import { useTwapContext } from "../../context";
-import { useChunks, useShouldWrapOrUnwrapOnly, useSrcChunkAmountUSD, useSrcTokenChunkAmount } from "../../hooks/logic-hooks";
+import { useChunks, useShouldWrapOrUnwrapOnly, useSrcChunkAmountUSD, useSrcTokenChunkAmount } from "../../hooks/widget-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 
 const useTradeSize = () => {

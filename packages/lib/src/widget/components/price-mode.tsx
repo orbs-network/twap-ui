@@ -2,7 +2,7 @@ import React from "react";
 import { Switch } from "../../components/base";
 import { StyledText } from "../../styles";
 import { useTwapContext } from "../../context";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/widget-hooks";
 import { usePriceToggle } from "../../hooks/ui-hooks";
 
 export const PriceMode = ({ className = "", hideLabel = false }: { className?: string; hideLabel?: boolean }) => {

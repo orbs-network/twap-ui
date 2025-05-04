@@ -9,7 +9,7 @@ import { Token, TwapOrder } from "../../../types";
 import Button from "../../../components/base/Button";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
-import { useAmountUi, useOrderName } from "../../../hooks/logic-hooks";
+import { useAmountUi, useOrderName } from "../../../hooks/widget-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { TokensDisplay } from "@orbs-network/swap-ui";
 import { OrderDetails } from "../../../components/order-details";

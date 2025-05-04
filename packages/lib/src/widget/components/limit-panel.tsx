@@ -8,7 +8,7 @@ import { NumericInput } from "../../components/base";
 import { TokenSelect } from "./token-select";
 import { useTwapContext } from "../../context";
 import { useLimitPriceError, useLimitPriceInput, useLimitPriceOnInvert, useLimitPricePanel, useLimitPricePercentSelect } from "../../hooks/ui-hooks";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/widget-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 
 export const LimitPanel = ({ children, className = "" }: { className?: string; children?: ReactNode }) => {
@@ -154,3 +154,4 @@ LimitPanel.DstTokenSelect = DstTokenSelect;
 LimitPanel.PercentSelector = PercentSelector;
 LimitPanel.Title = Title;
 LimitPanel.InvertPriceButton = InvertPriceButton;
+LimitPanel.usePanel = useLimitPricePanel;

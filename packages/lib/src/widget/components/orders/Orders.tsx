@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { Portal, Spinner } from "../../../components/base";
 import { useTwapContext } from "../../../context";
 import { Step, SwapFlow } from "@orbs-network/swap-ui";
-import { useTransactionExplorerLink } from "../../../hooks/logic-hooks";
+import { useTransactionExplorerLink } from "../../../hooks/widget-hooks";
 import { useCancelOrder } from "../../../hooks/send-transactions-hooks";
 import { OrdersProps } from "../../../types";
 import { useOrders } from "../../../hooks/order-hooks";
@@ -40,7 +40,7 @@ export const OrdersPortalContainer = ({ Component }: { Component: FC<OrdersProps
   );
 };
 
-export const OrdersPortal = ({ children }: { children: ReactNode }) => {
+export const OrdersPortal = ({ children }: { children?: ReactNode }) => {
   return <div id={PORTAL_ID}>{children}</div>;
 };
 

@@ -5,7 +5,7 @@ import { Label, Message, NumericInput, ResolutionSelect } from "../../components
 import React, { ReactNode } from "react";
 import { useTwapContext } from "../../context";
 import { useFillDelayPanel } from "../../hooks/ui-hooks";
-import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
+import { useShouldWrapOrUnwrapOnly } from "../../hooks/widget-hooks";
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
   const { onInputChange, fillDelay } = useFillDelayPanel();

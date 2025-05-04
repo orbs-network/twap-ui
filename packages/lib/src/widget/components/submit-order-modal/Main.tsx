@@ -6,7 +6,7 @@ import { Switch, Button, Link } from "../../../components/base";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
 import { useConfirmationModalButton, useFee } from "../../../hooks/ui-hooks";
-import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../../hooks/logic-hooks";
+import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../../hooks/widget-hooks";
 import { OrderDetails } from "../../../components/order-details";
 
 const Price = () => {

@@ -7,7 +7,7 @@ import { Token } from "../types";
 import { useFormatNumber } from "../hooks/useFormatNumber";
 import { Label } from "./base/Label";
 import { useTwapContext } from "../context";
-import { useNetwork } from "../hooks/logic-hooks";
+import { useNetwork } from "../hooks/widget-hooks";
 
 const Expiry = ({ deadline }: { deadline?: number }) => {
   const t = useTwapContext()?.translations;

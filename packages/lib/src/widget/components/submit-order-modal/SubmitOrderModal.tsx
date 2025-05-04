@@ -14,7 +14,7 @@ import {
   useSrcTokenChunkAmount,
   useTransactionExplorerLink,
   useUsdAmount,
-} from "../../../hooks/logic-hooks";
+} from "../../../hooks/widget-hooks";
 import { isNativeAddress } from "@orbs-network/twap-sdk";
 import { useFee } from "../../../hooks/ui-hooks";
 import { Steps } from "../../../types";

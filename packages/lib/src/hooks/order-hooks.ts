@@ -85,7 +85,7 @@ export const usePersistedOrdersStore = () => {
         return [{ ...order, status: OrderStatus.Open }, ...orders];
       });
     },
-    [getCreatedOrders, ordersKey, queryClient, queryKey]
+    [getCreatedOrders, ordersKey, queryClient, queryKey],
   );
   const addCancelledOrderId = useCallback(
     (orderId: number) => {
@@ -105,21 +105,21 @@ export const usePersistedOrdersStore = () => {
         });
       }
     },
-    [getCancelledOrderIds, cancelledOrderIdsKey, queryClient, queryKey]
+    [getCancelledOrderIds, cancelledOrderIdsKey, queryClient, queryKey],
   );
   const deleteCreatedOrder = useCallback(
     (id: number) => {
       const orders = getCreatedOrders().filter((order) => order.id !== id);
       localStorage.setItem(ordersKey, JSON.stringify(orders));
     },
-    [getCreatedOrders, ordersKey]
+    [getCreatedOrders, ordersKey],
   );
   const deleteCancelledOrderId = useCallback(
     (orderId: number) => {
       const cancelledOrderIds = getCancelledOrderIds().filter((id) => id !== orderId);
       localStorage.setItem(cancelledOrderIdsKey, JSON.stringify(cancelledOrderIds));
     },
-    [getCancelledOrderIds, cancelledOrderIdsKey]
+    [getCancelledOrderIds, cancelledOrderIdsKey],
   );
 
   return {
@@ -155,7 +155,6 @@ const useOrdersQuery = () => {
 
       const statuses = await getOrderStatuses(orders);
 
-      
       const canceledOrders = new Set(getCancelledOrderIds());
 
       return orders.map((order, index): TwapOrder => {
@@ -179,7 +178,7 @@ const useOrdersQuery = () => {
       refetchOnWindowFocus: true,
       retry: 3,
       staleTime: Infinity,
-    }
+    },
   );
 };
 

@@ -12,7 +12,7 @@ import {
   useFillDelay,
   useOrderDeadline,
   useSrcTokenChunkAmount,
-} from "./logic-hooks";
+} from "./widget-hooks";
 import { amountUi, isNativeAddress, iwethabi, TwapAbi } from "@orbs-network/twap-sdk";
 import { useCallback, useRef, useState } from "react";
 import { SwapStatus } from "@orbs-network/swap-ui";

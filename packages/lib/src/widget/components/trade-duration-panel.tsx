@@ -5,7 +5,7 @@ import { StyledRowFlex } from "../../styles";
 import styled from "styled-components";
 import { Panel } from "../../components/Panel";
 import { useTwapContext } from "../../context";
-import { useOrderDuration, useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
+import { useOrderDuration, useShouldWrapOrUnwrapOnly } from "../../hooks/widget-hooks";
 
 type Option = { text: string; value: TimeUnit };
 

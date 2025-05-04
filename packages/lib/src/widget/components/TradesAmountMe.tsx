@@ -1,6 +1,6 @@
 import React from "react";
 import { StyledText } from "../../styles";
-import { useChunks, useSrcChunkAmountUSD, useSrcTokenChunkAmount } from "../../hooks/logic-hooks";
+import { useChunks, useSrcChunkAmountUSD, useSrcTokenChunkAmount } from "../../hooks/widget-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
 

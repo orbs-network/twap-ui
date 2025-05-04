@@ -1,23 +1,8 @@
 import { amountUi, TimeUnit } from "@orbs-network/twap-sdk";
 import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
-import {
-  useAmountUi,
-  useDestTokenAmount,
-  useError,
-  useFillDelay,
-  useLimitPrice,
-  useMinChunkSizeUsd,
-  useOnOpenConfirmationModal,
-  usePriceDiffFromMarketPercent,
-  useShouldOnlyWrap,
-  useShouldUnwrap,
-  useShouldWrapOrUnwrapOnly,
-  useSrcChunkAmountUSD,
-  useSrcTokenChunkAmount,
-  useSwitchChain,
-  useUsdAmount,
-} from "./logic-hooks";
+import { WidgetHooks } from "./widget-hooks";
+import { BaseHooks } from "./base-hooks";
 import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
 import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
@@ -29,7 +14,7 @@ const useDerivedLimitPrice = () => {
   const {
     state: { typedPrice, isInvertedPrice },
   } = useTwapContext();
-  const { amountUI: limitPriceUI } = useLimitPrice();
+  const { amountUI: limitPriceUI } = WidgetHooks.useLimitPrice();
 
   return useMemo(() => {
     if (typedPrice !== undefined) return typedPrice;
@@ -59,7 +44,7 @@ export const useLimitPriceTokenSelect = () => {
         callbacks.onDstTokenSelect?.(token);
       }
     },
-    [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect],
+    [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect]
   );
 
   const topTokenSelect = useCallback(
@@ -70,7 +55,7 @@ export const useLimitPriceTokenSelect = () => {
         callbacks.onSrcTokenSelect?.(token);
       }
     },
-    [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect],
+    [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect]
   );
 
   return {
@@ -80,7 +65,7 @@ export const useLimitPriceTokenSelect = () => {
 };
 
 export const useLimitPriceInput = () => {
-  const { onChange: onLimitPriceChange } = useLimitPrice();
+  const { onChange: onLimitPriceChange } = WidgetHooks.useLimitPrice();
   const { updateState } = useTwapContext();
 
   const onChange = useCallback(
@@ -88,7 +73,7 @@ export const useLimitPriceInput = () => {
       onLimitPriceChange(value);
       updateState({ selectedPricePercent: undefined });
     },
-    [onLimitPriceChange, updateState],
+    [onLimitPriceChange, updateState]
   );
 
   return {
@@ -106,8 +91,8 @@ export const useLimitPricePercentSelect = () => {
     updateState,
   } = useTwapContext();
   const isLoading = useLimitPriceLoading();
-  const { onChange: onPriceChange, amountUI: limitPrice } = useLimitPrice();
-  const priceDiffFromMarket = usePriceDiffFromMarketPercent();
+  const { onChange: onPriceChange, amountUI: limitPrice } = WidgetHooks.useLimitPrice();
+  const priceDiffFromMarket = WidgetHooks.usePriceDiffFromMarketPercent();
 
   const onPercent = useCallback(
     (percent?: string) => {
@@ -132,7 +117,7 @@ export const useLimitPricePercentSelect = () => {
         .toString();
       onPriceChange(computedPrice);
     },
-    [updateState, dstToken, marketPrice, isInvertedPrice, onPriceChange, isLoading],
+    [updateState, dstToken, marketPrice, isInvertedPrice, onPriceChange, isLoading]
   );
 
   const options = useMemo(() => {
@@ -204,7 +189,7 @@ export const useLimitPriceTokens = () => {
 };
 
 export const useLimitPriceError = () => {
-  const { error } = useLimitPrice();
+  const { error } = WidgetHooks.useLimitPrice();
   return error;
 };
 
@@ -216,7 +201,7 @@ export const useLimitPanelUsd = () => {
   } = useTwapContext();
   const { value: limitPrice } = useLimitPriceInput();
 
-  return useUsdAmount(limitPrice, isInvertedPrice ? srcUsd1Token : dstUsd1Token);
+  return BaseHooks.useUsdAmount(limitPrice, isInvertedPrice ? srcUsd1Token : dstUsd1Token);
 };
 
 export const useLimitPricePanel = () => {
@@ -250,7 +235,7 @@ export const useTokenSelect = ({ isSrcToken }: { isSrcToken: boolean }) => {
     (token: any) => {
       isSrcToken ? callbacks.onSrcTokenSelect?.(token) : callbacks.onDstTokenSelect?.(token);
     },
-    [isSrcToken, callbacks.onSrcTokenSelect, callbacks.onDstTokenSelect],
+    [isSrcToken, callbacks.onSrcTokenSelect, callbacks.onDstTokenSelect]
   );
 };
 
@@ -261,8 +246,8 @@ export const useSwitchTokensCallback = () => {
 export const usePriceDisplay = (type: "limit" | "market") => {
   const [inverted, setInverted] = useState(false);
   const { marketPrice, dstToken, srcToken } = useTwapContext();
-  const limitPriceUI = useLimitPrice().amountUI;
-  const marketPriceUI = useAmountUi(dstToken?.decimals, marketPrice);
+  const limitPriceUI = WidgetHooks.useLimitPrice().amountUI;
+  const marketPriceUI = BaseHooks.useAmountUi(dstToken?.decimals, marketPrice);
 
   const onInvert = useCallback(() => {
     setInverted(!inverted);
@@ -285,8 +270,8 @@ export const usePriceDisplay = (type: "limit" | "market") => {
 
 export const useChunkSizeMessage = () => {
   const { srcUsd1Token, srcToken } = useTwapContext();
-  const srcTokenChunkAmountUI = useSrcTokenChunkAmount().amountUI;
-  const srcChunkAmountUsd = useSrcChunkAmountUSD();
+  const srcTokenChunkAmountUI = WidgetHooks.useSrcTokenChunkAmount().amountUI;
+  const srcChunkAmountUsd = WidgetHooks.useSrcChunkAmountUSD();
   const usd = useFormatNumber({ value: srcChunkAmountUsd, decimalScale: 2 });
   const chunkSizeF = useFormatNumber({ value: srcTokenChunkAmountUI });
   const usdF = usd ? `($${usd})` : "";
@@ -306,7 +291,7 @@ export const usePriceToggle = () => {
     (value: boolean) => {
       updateState({ isMarketOrder: value });
     },
-    [updateState],
+    [updateState]
   );
 
   return {
@@ -329,14 +314,14 @@ export const useShowConfirmationModalButton = () => {
     srcToken,
     dstToken,
   } = useTwapContext();
-  const error = useError();
-  const minChunkSizeUsd = useMinChunkSizeUsd();
+  const error = WidgetHooks.useError();
+  const minChunkSizeUsd = WidgetHooks.useMinChunkSizeUsd();
 
-  const onOpen = useOnOpenConfirmationModal();
+  const onOpen = WidgetHooks.useOnOpenConfirmationModal();
   const { onConnect } = callbacks;
-  const switchChain = useSwitchChain();
-  const shouldUnwrap = useShouldUnwrap();
-  const shouldOnlyWrap = useShouldOnlyWrap();
+  const switchChain = WidgetHooks.useSwitchChain();
+  const shouldUnwrap = WidgetHooks.useShouldUnwrap();
+  const shouldOnlyWrap = WidgetHooks.useShouldOnlyWrap();
   const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
   const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
   const zeroSrcAmount = BN(typedSrcAmount || "0").isZero();
@@ -408,14 +393,14 @@ export const useShowConfirmationModalButton = () => {
         !srcToken || !dstToken
           ? t.placeOrder
           : !typedSrcAmount
-            ? t.enterAmount
-            : marketPriceLoading
-              ? t.outAmountLoading
-              : isButtonLoading
-                ? t.placeOrder
-                : error
-                  ? error
-                  : t.placeOrder,
+          ? t.enterAmount
+          : marketPriceLoading
+          ? t.outAmountLoading
+          : isButtonLoading
+          ? t.placeOrder
+          : error
+          ? error
+          : t.placeOrder,
       onClick: onOpen,
       loading: isButtonLoading,
       disabled: swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isButtonLoading || error,
@@ -426,20 +411,20 @@ export const useShowConfirmationModalButton = () => {
 };
 
 export const useFillDelayPanel = () => {
-  const { setFillDelay, fillDelay, milliseconds, error } = useFillDelay();
+  const { setFillDelay, fillDelay, milliseconds, error } = WidgetHooks.useFillDelay();
 
   const onInputChange = useCallback(
     (value: string) => {
       setFillDelay({ unit: fillDelay.unit, value: Number(value) });
     },
-    [setFillDelay, fillDelay],
+    [setFillDelay, fillDelay]
   );
 
   const onUnitSelect = useCallback(
     (unit: TimeUnit) => {
       setFillDelay({ unit, value: fillDelay.value });
     },
-    [setFillDelay, fillDelay],
+    [setFillDelay, fillDelay]
   );
 
   return {
@@ -475,7 +460,7 @@ export const useFee = () => {
     fee,
     state: { isMarketOrder },
   } = useTwapContext();
-  const destTokenAmount = useDestTokenAmount().amountUI;
+  const destTokenAmount = WidgetHooks.useDestTokenAmount().amountUI;
 
   const amountUI = useMemo(() => {
     if (!fee || !destTokenAmount || isMarketOrder) return "";
@@ -492,7 +477,7 @@ export const useLimitPriceMessage = () => {
     translations: t,
     state: { isMarketOrder },
   } = useTwapContext();
-  const hide = useShouldWrapOrUnwrapOnly();
+  const hide = WidgetHooks.useShouldWrapOrUnwrapOnly();
 
   return useMemo(() => {
     if (isMarketOrder || hide) return null;

@@ -9,7 +9,7 @@ import TokenLogo from "../../../components/base/TokenLogo";
 import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
 import { useTwapContext } from "../../../context";
 import { OrderHistoryMenu } from "./OrderHistorySelect";
-import { useOrderName } from "../../../hooks/logic-hooks";
+import { useOrderName } from "../../../hooks/widget-hooks";
 import { Virtuoso } from "react-virtuoso";
 import { TwapOrder } from "../../../types";
 

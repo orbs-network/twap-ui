@@ -5,7 +5,7 @@ import { Panel } from "../../components/Panel";
 import { TokenSelect } from "./token-select";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
-import { useAmountUi, useBalanceError, useDestTokenAmount, useOnSrcInputPercentClick, useShouldWrapOrUnwrapOnly, useUsdAmount } from "../../hooks/logic-hooks";
+import { useAmountUi, useBalanceError, useDestTokenAmount, useOnSrcInputPercentClick, useShouldWrapOrUnwrapOnly, useUsdAmount } from "../../hooks/widget-hooks";
 import { useTokenSelect } from "../../hooks/ui-hooks";
 const Input = (props: {
   className?: string;

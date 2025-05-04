@@ -1,5 +1,5 @@
 import { isNativeBalanceError } from "../../../utils";
-import { useNetwork } from "../../../hooks/logic-hooks";
+import { useNetwork } from "../../../hooks/widget-hooks";
 import { SwapFlow } from "@orbs-network/swap-ui";
 import { useTwapContext } from "../../../context";
 export function Failed(props: { error?: any }) {
