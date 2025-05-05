@@ -22,7 +22,7 @@ import { getOrderType } from "../../../utils";
 import { useSubmitOrderCallback } from "../../../hooks/send-transactions-hooks";
 
 const Modal = ({ children }: { children: ReactNode }) => {
-  const { modals, state, translations: t, srcUsd1Token, dstUsd1Token, updateState } = useTwapContext();
+  const { components, state, translations: t, srcUsd1Token, dstUsd1Token, updateState } = useTwapContext();
   const onClose = useOnCloseConfirmationModal();
   const deadline = useOrderDeadline();
   const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
@@ -42,7 +42,7 @@ const Modal = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    <modals.OrderConfirmationModal
+    <components.OrderConfirmationModal
       activeStep={state.activeStep}
       swapError={state.swapError}
       swapStatus={state.swapStatus}
@@ -75,7 +75,7 @@ const Modal = ({ children }: { children: ReactNode }) => {
       buttonDisabled={checkingApproval}
     >
       <div className="twap-create-order">{children}</div>
-    </modals.OrderConfirmationModal>
+    </components.OrderConfirmationModal>
   );
 };
 
@@ -135,9 +135,9 @@ export const SubmitOrderModal = () => {
           Failed: <Failed error={swapError} />,
           Success: <SuccessContent />,
           Main: <Main />,
-          Loader: components.CrateOrder?.Spinner,
-          SuccessIcon: components.CrateOrder?.SuccessIcon,
-          FailedIcon: components.CrateOrder?.ErrorIcon,
+          Loader: components.CreateOrderPanelSpinner,
+          SuccessIcon: components.CreateOrderPanelSuccessIcon,
+          FailedIcon: components.CreateOrderPanelErrorIcon,
           Link: components.Link,
         }}
       />

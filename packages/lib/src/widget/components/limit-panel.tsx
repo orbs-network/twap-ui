@@ -154,3 +154,4 @@ LimitPanel.DstTokenSelect = DstTokenSelect;
 LimitPanel.PercentSelector = PercentSelector;
 LimitPanel.Title = Title;
 LimitPanel.InvertPriceButton = InvertPriceButton;
+LimitPanel.usePanel = useLimitPricePanel;

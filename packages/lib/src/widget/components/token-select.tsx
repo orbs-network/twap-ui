@@ -7,13 +7,7 @@ import { useTokenSelect } from "../../hooks/ui-hooks";
 
 export const TokenSelect = ({ className = "", isSrcToken = false }: { className?: string; isSrcToken?: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const {
-    translations,
-    modals: { TokenSelectModal },
-    components,
-    srcToken,
-    dstToken,
-  } = useTwapContext();
+  const { translations, components, srcToken, dstToken } = useTwapContext();
   const token = isSrcToken ? srcToken : dstToken;
 
   const onSelect = useTokenSelect({ isSrcToken });
@@ -28,7 +22,7 @@ export const TokenSelect = ({ className = "", isSrcToken = false }: { className?
     [onSelect, onClose],
   );
 
-  const modal = !TokenSelectModal ? undefined : <TokenSelectModal onClose={onClose} isOpen={isOpen} isSrcToken={isSrcToken} onSelect={onTokenSelect} />;
+  const modal = !components.TokenSelectModal ? undefined : <components.TokenSelectModal onClose={onClose} isOpen={isOpen} isSrcToken={isSrcToken} onSelect={onTokenSelect} />;
 
   if (components.CurrencySelectButton) {
     return (

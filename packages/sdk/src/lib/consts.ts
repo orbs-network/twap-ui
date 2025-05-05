@@ -40,8 +40,8 @@ export const LEGACY_EXCHANGES_MAP = {
   [Configs.SushiBase.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
   [Configs.SushiEth.name]: ["0xc55943Fa6509004B2903ED8F8ab7347BfC47D0bA", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
   [Configs.PancakeSwap.name]: ["0xb2BAFe188faD927240038cC4FfF2d771d8A58905"],
-  [Configs.QuickSwap.name]:['0x26D0ec4Be402BCE03AAa8aAf0CF67e9428ba54eF'],
-  [Configs.Thena.name]:['0xc2aBC02acd77Bb2407efA22348dA9afC8B375290'],
-  [Configs.Lynex.name]:['0x72e3e1fD5D2Ee2F1C2Eb695206D490a1D45C3835'],
-  [Configs.DragonSwap.name]:['0x101e1B65Bb516FB5f4547C80BAe0b51f1b8D7a22']
+  [Configs.QuickSwap.name]: ["0x26D0ec4Be402BCE03AAa8aAf0CF67e9428ba54eF"],
+  [Configs.Thena.name]: ["0xc2aBC02acd77Bb2407efA22348dA9afC8B375290"],
+  [Configs.Lynex.name]: ["0x72e3e1fD5D2Ee2F1C2Eb695206D490a1D45C3835"],
+  [Configs.DragonSwap.name]: ["0x101e1B65Bb516FB5f4547C80BAe0b51f1b8D7a22"],
 };

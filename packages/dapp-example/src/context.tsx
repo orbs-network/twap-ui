@@ -26,7 +26,7 @@ const useConfig = () => {
     const config = Object.values(Configs).find((it) => it.name === configName);
     return config || Object.values(Configs).find((it) => it.chainId === chainId) || Configs.Lynex;
   }, [chainId]);
-  const [config, setConfig] = useState(initialConfig as any as  Config);
+  const [config, setConfig] = useState(initialConfig as any as Config);
 
   const onConfigChange = useCallback(
     (config: Config) => {

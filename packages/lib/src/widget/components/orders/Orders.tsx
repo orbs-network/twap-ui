@@ -16,8 +16,8 @@ const PORTAL_ID = "twap-orders-portal";
 
 export const Orders = ({ className = "" }: { className?: string }) => {
   const { components } = useTwapContext();
-  if (components.Orders) {
-    return <OrdersPortalContainer Component={components.Orders} />;
+  if (components.OrdersPanel) {
+    return <OrdersPortalContainer Component={components.OrdersPanel} />;
   }
 
   return (
@@ -40,7 +40,7 @@ export const OrdersPortalContainer = ({ Component }: { Component: FC<OrdersProps
   );
 };
 
-export const OrdersPortal = ({ children }: { children: ReactNode }) => {
+export const OrdersPortal = ({ children }: { children?: ReactNode }) => {
   return <div id={PORTAL_ID}>{children}</div>;
 };
 
@@ -85,6 +85,10 @@ const CancelOrderFlow = () => {
     };
   }, [cancelOrderTxHash, order?.id, t]);
 
+  if (components.CancelOrderPanel) {
+    return <components.CancelOrderPanel status={cancelOrderStatus} explorerUrl={explorerUrl} srcToken={srcToken} dstToken={dstToken} orderId={order?.id} />;
+  }
+
   return (
     <SwapFlow
       className="twap-cancel-order-flow"
@@ -106,17 +110,17 @@ const CancelOrderFlow = () => {
 };
 
 const CustomModal = ({ children }: { children: ReactNode }) => {
-  const OrderHistoryModal = useTwapContext().modals.OrderHistoryModal;
+  const OrdersModal = useTwapContext().components.OrdersModal;
   const { isOpen, onClose, cancelOrderStatus } = useOrderHistoryContext();
   const { translations: t } = useTwapContext();
-  if (!OrderHistoryModal) {
+  if (!OrdersModal) {
     return null;
   }
 
   return (
-    <OrderHistoryModal isOpen={Boolean(isOpen)} onClose={onClose} title={!cancelOrderStatus ? t.orderHistory : ""}>
+    <OrdersModal isOpen={Boolean(isOpen)} onClose={onClose} title={!cancelOrderStatus ? t.orderHistory : ""}>
       {children}
-    </OrderHistoryModal>
+    </OrdersModal>
   );
 };
 

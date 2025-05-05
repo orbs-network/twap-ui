@@ -1,4 +1,4 @@
-import { amountUi, TimeUnit } from "@orbs-network/twap-sdk";
+import { amountUi, Config, TimeUnit } from "@orbs-network/twap-sdk";
 import { useCallback, useMemo, useState } from "react";
 import { useTwapContext } from "../context";
 import {
@@ -22,6 +22,7 @@ import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
 import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
+import { useOrders } from "./order-hooks";
 
 const defaultPercent = [1, 5, 10];
 
@@ -146,9 +147,10 @@ export const useLimitPricePercentSelect = () => {
   const { buttons, isReset } = useMemo(() => {
     const isSelected = (percent: number) => (BN(limitPrice || 0).isZero() ? false : BN(selectedPricePercent || 0).eq(percent));
     const isReset = !BN(priceDiffFromMarket).isZero() && !options.includes(priceDiffFromMarket) && !selectedPricePercent;
+    const prefix = BN(priceDiffFromMarket).gt(0) ? "+" : "";
 
     const resetButton = {
-      text: isReset ? `${priceDiffFromMarket}%` : "0%",
+      text: isReset ? `${prefix}${priceDiffFromMarket}%` : "0%",
       selected: isReset || !selectedPricePercent ? true : false,
       onClick: () => onPercent("0"),
       isReset,
@@ -502,4 +504,8 @@ export const useLimitPriceMessage = () => {
       url: "https://www.orbs.com/dtwap-and-dlimit-faq/",
     };
   }, [t, isMarketOrder, hide]);
+};
+
+export const useUserOrders = (config: Config) => {
+  return useOrders(config);
 };

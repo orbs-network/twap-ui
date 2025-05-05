@@ -134,8 +134,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         srcBalance={srcBalance}
         dstBalance={dstBalance}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
-        components={{ Tooltip, TokenLogo, Link }}
-        modals={{ OrderConfirmationModal, OrderHistoryModal, TokenSelectModal }}
+        components={{ Tooltip, TokenLogo, Link, OrderConfirmationModal: OrderConfirmationModal, OrdersModal: OrderHistoryModal, TokenSelectModal }}
         useToken={useToken}
         includeStyles={true}
         customMinChunkSizeUsd={4}

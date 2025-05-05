@@ -190,12 +190,6 @@ export type InputProps = {
   isLoading?: boolean;
 };
 
-export interface Modals {
-  OrderConfirmationModal: FC<OrderConfirmationModalProps>;
-  TokenSelectModal?: FC<TokenSelectModalProps>;
-  OrderHistoryModal?: FC<OrderHistoryModalProps>;
-}
-
 export type BalanceProps = {
   balance: string;
   onMax?: () => void;
@@ -293,6 +287,14 @@ export type OrdersProps = {
   onCancelOrder: (order: TwapOrder) => Promise<string>;
 };
 
+export type CancelOrderProps = {
+  status?: SwapStatus;
+  explorerUrl?: string;
+  srcToken?: Token;
+  dstToken?: Token;
+  orderId?: number;
+};
+
 export type LinkProps = {
   href: string;
   children: ReactNode;
@@ -324,14 +326,15 @@ interface Components {
   SwitchTokens?: FC<SwitchTokensProps>;
   TokenLogo?: FC<TokenLogoProps>;
   OrdersButton?: FC<OrdersButtonProps>;
-  CrateOrder?: {
-    Spinner?: ReactNode;
-    SuccessIcon?: ReactNode;
-    ErrorIcon?: ReactNode;
-  };
 
-  Orders?: FC<OrdersProps>;
-  OrderConfirmation?: FC<OrderConfirmationModalProps>;
+  OrdersPanel?: FC<OrdersProps>;
+  OrdersModal?: FC<OrderHistoryModalProps>;
+  OrderConfirmationModal: FC<OrderConfirmationModalProps>;
+  TokenSelectModal?: FC<TokenSelectModalProps>;
+  CreateOrderPanelSpinner?: ReactNode;
+  CreateOrderPanelSuccessIcon?: ReactNode;
+  CreateOrderPanelErrorIcon?: ReactNode;
+  CancelOrderPanel?: FC<CancelOrderProps>;
 }
 
 interface CreateOrderCallbackArgs {
@@ -410,7 +413,6 @@ export interface TwapProps {
   isExactAppoval?: boolean;
   children?: React.ReactNode;
   components: Components;
-  modals: Modals;
   askDataParams?: any[];
   marketReferencePrice: { value?: string; isLoading?: boolean };
   customMinChunkSizeUsd?: number;

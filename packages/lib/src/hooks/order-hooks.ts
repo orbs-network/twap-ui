@@ -1,4 +1,4 @@
-import { buildOrder, getOrderFillDelay, Order, OrderStatus, parseOrderStatus, TwapAbi } from "@orbs-network/twap-sdk";
+import { buildOrder, Config, getOrderFillDelay, Order, OrderStatus, parseOrderStatus, TwapAbi } from "@orbs-network/twap-sdk";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
@@ -6,9 +6,9 @@ import moment from "moment";
 import { useTwapContext } from "../context";
 import { TwapOrder, Token } from "../types";
 
-const useKey = () => {
-  const { config, account } = useTwapContext();
-  return useMemo(() => ["useTwapOrderHistoryManager", account, config?.exchangeAddress, config?.chainId], [account, config]);
+const useKey = (config: Config) => {
+  const { account } = useTwapContext();
+  return useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
 };
 const useGetOrderStatuses = () => {
   const { publicClient } = useTwapContext();
@@ -37,9 +37,10 @@ const useGetOrderStatuses = () => {
   });
 };
 
-export const usePersistedOrdersStore = () => {
-  const queryKey = useKey();
-  const { config, account } = useTwapContext();
+export const usePersistedOrdersStore = (config: Config) => {
+  const { account } = useTwapContext();
+
+  const queryKey = useKey(config);
   const queryClient = useQueryClient();
   const ordersKey = `orders-${account}-${config.exchangeAddress}`;
   const cancelledOrderIdsKey = `cancelled-orders-${account}-${config.exchangeAddress}`;
@@ -85,7 +86,7 @@ export const usePersistedOrdersStore = () => {
         return [{ ...order, status: OrderStatus.Open }, ...orders];
       });
     },
-    [getCreatedOrders, ordersKey, queryClient, queryKey]
+    [getCreatedOrders, ordersKey, queryClient, queryKey],
   );
   const addCancelledOrderId = useCallback(
     (orderId: number) => {
@@ -105,21 +106,21 @@ export const usePersistedOrdersStore = () => {
         });
       }
     },
-    [getCancelledOrderIds, cancelledOrderIdsKey, queryClient, queryKey]
+    [getCancelledOrderIds, cancelledOrderIdsKey, queryClient, queryKey],
   );
   const deleteCreatedOrder = useCallback(
     (id: number) => {
       const orders = getCreatedOrders().filter((order) => order.id !== id);
       localStorage.setItem(ordersKey, JSON.stringify(orders));
     },
-    [getCreatedOrders, ordersKey]
+    [getCreatedOrders, ordersKey],
   );
   const deleteCancelledOrderId = useCallback(
     (orderId: number) => {
       const cancelledOrderIds = getCancelledOrderIds().filter((id) => id !== orderId);
       localStorage.setItem(cancelledOrderIdsKey, JSON.stringify(cancelledOrderIds));
     },
-    [getCancelledOrderIds, cancelledOrderIdsKey]
+    [getCancelledOrderIds, cancelledOrderIdsKey],
   );
 
   return {
@@ -132,12 +133,12 @@ export const usePersistedOrdersStore = () => {
   };
 };
 
-const useOrdersQuery = () => {
-  const { config, account, twapSDK } = useTwapContext();
-  const queryKey = useKey();
+const useOrdersQuery = (config: Config) => {
+  const { account, twapSDK } = useTwapContext();
+  const queryKey = useKey(config);
   const { mutateAsync: getOrderStatuses } = useGetOrderStatuses();
-  const { getCreatedOrders, getCancelledOrderIds, deleteCreatedOrder, deleteCancelledOrderId } = usePersistedOrdersStore();
-  return useQuery(
+  const { getCreatedOrders, getCancelledOrderIds, deleteCreatedOrder, deleteCancelledOrderId } = usePersistedOrdersStore(config);
+  const query = useQuery(
     queryKey,
     async ({ signal }) => {
       const orders = await twapSDK.getOrders(account!, signal);
@@ -155,7 +156,6 @@ const useOrdersQuery = () => {
 
       const statuses = await getOrderStatuses(orders);
 
-      
       const canceledOrders = new Set(getCancelledOrderIds());
 
       return orders.map((order, index): TwapOrder => {
@@ -179,12 +179,18 @@ const useOrdersQuery = () => {
       refetchOnWindowFocus: true,
       retry: 3,
       staleTime: Infinity,
-    }
+    },
   );
+
+  return {
+    ...query,
+    isLoading: Boolean(account && query.isLoading),
+  };
 };
 
-export const useOrders = () => {
-  const { data: orders, isLoading, error, refetch } = useOrdersQuery();
+export const useOrders = (config?: Config) => {
+  const { config: contextConfig } = useTwapContext();
+  const { data: orders, isLoading, error, refetch } = useOrdersQuery(config ?? contextConfig);
 
   return useMemo(() => {
     return {

@@ -18,6 +18,7 @@ import { TradeAmountMessage } from "./components/TradesAmountMe";
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import { Duration } from "./components/trade-duration-panel";
 import { TradesAmount } from "./components/trades-amount-panel";
+import { useUserOrders } from "../hooks/ui-hooks";
 
 const Widget = (props: TwapProps) => {
   const shouldWrapOrUnwrap = useMemo(() => {
@@ -34,7 +35,6 @@ const Widget = (props: TwapProps) => {
     </TwapProvider>
   );
 };
-
 Widget.Orders = OrdersPortal;
 Widget.LimitPrice = LimitPanel;
 Widget.ShowConfirmationButton = ShowConfirmationButton;
@@ -48,4 +48,5 @@ Widget.PriceMode = PriceMode;
 Widget.WarningMessage = WarningMessage;
 Widget.createGlobalStyle = createGlobalStyle;
 Widget.TradeAmountMessage = TradeAmountMessage;
+Widget.useOrders = useUserOrders;
 export { Widget };

@@ -64,7 +64,7 @@ export const useCancelOrder = () => {
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [swapStatus, setSwapStatus] = useState<SwapStatus | undefined>(undefined);
 
-  const { addCancelledOrderId } = usePersistedOrdersStore();
+  const { addCancelledOrderId } = usePersistedOrdersStore(twapSDK.config);
   const mutation = useMutation(
     async (order: TwapOrder) => {
       if (!account) throw new Error("account not defined");
@@ -131,7 +131,7 @@ const useCallbacks = () => {
     dstToken,
     state: { typedSrcAmount },
   } = useTwapContext();
-  const { addCreatedOrder } = usePersistedOrdersStore();
+  const { addCreatedOrder } = usePersistedOrdersStore(twapSDK.config);
   const destTokenAmountUI = useDestTokenAmount().amountUI;
   const { refetch: refetchOrders } = useOrders();
   const onRequest = useCallback((params: string[]) => twapSDK.analytics.onCreateOrderRequest(params, account), [twapSDK, account]);

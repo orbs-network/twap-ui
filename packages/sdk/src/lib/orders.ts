@@ -58,7 +58,7 @@ function groupFillsByTWAP(fills: GraphFill[]): OrderFills[] {
 
   for (const fill of fills) {
     const id = fill.TWAP_id;
-    
+
     if (!groupedMap.has(id)) {
       groupedMap.set(id, []);
     }
@@ -233,7 +233,7 @@ export class Orders {
 
     const ids = createdOrders.map((rawOrder) => rawOrder.Contract_id.toString());
     const allFills = await this.getFills(ids, signal);
-    
+
     const parsedOrders = createdOrders.map((o) => {
       const fills = allFills?.find((it) => it.id === Number(o.Contract_id) && it.exchange === o.exchange && it.twapAddress === o.twapAddress);
       return buildOrder({
@@ -376,7 +376,6 @@ const getOrderProgress = (srcAmount: string, filledSrcAmount: string) => {
 };
 
 export const parseOrderStatus = (progress: number, status?: number) => {
-  
   if (progress === 100) return OrderStatus.Completed;
   if (status && status > Date.now() / 1000) return OrderStatus.Open;
 
