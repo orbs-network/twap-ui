@@ -229,7 +229,7 @@ export const useLimitPricePanel = () => {
   const onInvert = useLimitPriceOnInvert();
   const tokenSelect = useLimitPriceTokenSelect();
   const {
-    state: { isInvertedPrice },
+    state: { isInvertedPrice, isMarketOrder },
   } = useTwapContext();
 
   const usd = useLimitPanelUsd();
@@ -243,6 +243,7 @@ export const useLimitPricePanel = () => {
     isInverted: isInvertedPrice,
     tokenSelect,
     usd,
+    isLimitOrder: !isMarketOrder,
   };
 };
 

@@ -202,6 +202,7 @@ export const useCreateOrder = () => {
       if (!params) throw new Error("failed to get params for ask method");
 
       callbacks.onRequest(params);
+      console.log(twapSDK.config);
 
       const txHash = await walletClient.writeContract({
         account: account.toLowerCase() as `0x${string}`,

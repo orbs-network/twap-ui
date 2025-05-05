@@ -304,7 +304,7 @@ export const useShouldWrapOrUnwrapOnly = () => {
 };
 
 export const useError = () => {
-  const { marketPrice } = useTwapContext();
+  const { marketPrice, isLimitPanel } = useTwapContext();
   const balanceError = useBalanceError();
   const chunksError = useChunks().error;
   const fillDelayError = useFillDelay().error;
@@ -320,7 +320,7 @@ export const useError = () => {
 
   if (BN(marketPrice || 0).isZero()) return;
 
-  return srcAmountError || limitPriceError || chunksError || fillDelayError || tradeSizeError || balanceError || orderDurationError;
+  return srcAmountError || limitPriceError || chunksError || fillDelayError || tradeSizeError || balanceError || (isLimitPanel && orderDurationError);
 };
 
 export const useNetwork = () => {

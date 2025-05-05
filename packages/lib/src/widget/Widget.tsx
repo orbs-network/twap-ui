@@ -5,13 +5,13 @@ import { FillDelayPanel } from "./components/fill-delay-panel";
 import { LimitPanel } from "./components/limit-panel";
 import { SwitchTokens } from "./components/switch-tokens";
 import { Orders, OrdersPortal } from "./components/orders/Orders";
-import { PoweredbyOrbs } from "./components/powered-by-orbs";
+import { PoweredByOrbs, PoweredbyOrbsPortal } from "./components/powered-by-orbs";
 import { PriceMode } from "./components/price-mode";
 import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
 import { SwapPanel } from "./components/swap-panel";
 import { GlobalStyles } from "./styles";
 import { TwapProvider } from "../context";
-import { WarningMessage } from "./components/warnings";
+import { WarningMessage, WarningMessagePortal } from "./components/warnings";
 import { TwapProps } from "../types";
 import { createGlobalStyle } from "styled-components";
 import { TradeAmountMessage } from "./components/TradesAmountMe";
@@ -28,6 +28,8 @@ const Widget = (props: TwapProps) => {
     <TwapProvider {...props}>
       <div className={`twap-widget ${shouldWrapOrUnwrap ? "twap-widget-wrap-only" : ""}`}>
         <Orders />
+        <WarningMessagePortal />
+        <PoweredbyOrbsPortal />
         <SubmitOrderModal />
         {props.includeStyles && <GlobalStyles isDarkMode={true} />}
         {props.children || <SwapPanel />}
@@ -40,7 +42,7 @@ Widget.LimitPrice = LimitPanel;
 Widget.ShowConfirmationButton = ShowConfirmationButton;
 Widget.TradesAmount = TradesAmount;
 Widget.TokenPanel = TokenPanel;
-Widget.PoweredByOrbs = PoweredbyOrbs;
+Widget.PoweredByOrbs = PoweredByOrbs;
 Widget.FillDelayPanel = FillDelayPanel;
 Widget.Duration = Duration;
 Widget.SwitchTokens = SwitchTokens;
