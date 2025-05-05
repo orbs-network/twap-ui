@@ -583,15 +583,25 @@ export const useOrdersHistoryQuery = () => {
       if (!lib) return;
       updateState({ newOrderLoading: true });
       try {
-        let orders: Order[] = [];
         if (!orderId) {
-          orders = await waitForOrdersLengthUpdate(lib.config, query.data?.length || 0, lib!.maker);
+          await query.refetch();
         } else {
-          orders = await waitForOrdersUpdate(lib.config, orderId, lib!.maker);
-        }
+          const fetchUntilUpdate = async () => {
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
+              const orders = (await query.refetch()).data;
+              console.log(orders, orderId);
 
-        if (orders?.length) {
-          queryClient.setQueriesData(queryKey, orders);
+              if (orders?.find((it) => it.id === orderId)) {
+                break;
+              }
+
+              // Avoid hammering the server: wait a bit
+              await new Promise((res) => setTimeout(res, 3_000)); // 1 second delay
+            }
+          };
+
+          await fetchUntilUpdate();
         }
       } catch (error) {
         console.error(error);
