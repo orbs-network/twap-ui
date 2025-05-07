@@ -103,7 +103,7 @@ const Main = ({ className = "" }: { className?: string }) => {
       <Panel.Header>
         <TradesAmountLabel />
       </Panel.Header>
-      <StyledRowFlex>
+      <StyledRowFlex className="twap-trades-amount-panel-content">
         <Input />
         <StyledText className="twap-trades-amount-panel-text">{t.tradesAmountSmallText}</StyledText>
       </StyledRowFlex>

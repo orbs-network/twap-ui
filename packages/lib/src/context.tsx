@@ -39,6 +39,7 @@ const contextReducer = (state: State, action: Action): State => {
         trade: state.trade,
         swapStatus: state.swapStatus,
         isMarketOrder: state.isMarketOrder,
+        typedDuration: state.typedDuration,
       };
     default:
       return state;

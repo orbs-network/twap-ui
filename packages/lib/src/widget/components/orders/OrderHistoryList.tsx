@@ -71,15 +71,10 @@ const ListOrder = ({ order, selectOrder }: { order: TwapOrder; selectOrder: (id?
 const StyledListItem = styled("div")({
   display: "flex",
   flexDirection: "column",
-  gap: 10,
   ".twap-orders__list-item-header": {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    "&-title": {},
-    "&-status": {
-      textTransform: "capitalize",
-    },
   },
   ".twap-orders__list-item-tokens": {
     display: "flex",
@@ -93,8 +88,6 @@ const StyledListItem = styled("div")({
   },
   ".twap-orders__list-item-token": {
     "&-logo": {
-      width: 20,
-      height: 20,
       img: {
         width: "100%",
         height: "100%",

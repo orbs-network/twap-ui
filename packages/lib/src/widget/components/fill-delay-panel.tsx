@@ -68,7 +68,7 @@ const Main = ({ className = "" }: { className?: string }) => {
       <Panel.Header>
         <FillDelayPanel.Label />
       </Panel.Header>
-      <StyledRowFlex>
+      <StyledRowFlex className="twap-trade-interval-panel-content">
         <FillDelayPanel.Input />
         <FillDelayPanel.Resolution />
       </StyledRowFlex>

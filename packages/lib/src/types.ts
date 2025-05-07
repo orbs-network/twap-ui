@@ -458,7 +458,7 @@ export type Token = {
 
 export interface TooltipProps {
   children: ReactNode;
-  tooltipText?: string | ReactElement | number;
+  tooltipText?: string;
 }
 
 export interface ButtonProps extends React.HTMLAttributes<HTMLElement> {
