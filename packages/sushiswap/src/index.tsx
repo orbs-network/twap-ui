@@ -86,7 +86,6 @@ const Configs: Record<string, Config> = {
     lensAddress: "0x549e1fc9a47FCc0C5C2EbdfF31254cc49fF7164e",
     exchangeAddress: "0x04eB53119079FA779492720D1EfeAEBF0aF2e5ad",
     exchangeType: "ExchangeV2",
-    minChunkSizeUsd: 5,
   },
   SushiBase: {
     ...TwapConfigs.SushiBase,
