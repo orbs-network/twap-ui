@@ -1,16 +1,16 @@
-import { Abi, eqIgnoreCase, erc20, estimateGasPrice, isNativeAddress, setWeb3Instance, zero } from "@defi.org/web3-candies";
+import { Abi, erc20, estimateGasPrice, isNativeAddress, setWeb3Instance, zero } from "@defi.org/web3-candies";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo } from "react";
 import { feeOnTransferDetectorAddresses, AMOUNT_TO_BORROW, REFETCH_GAS_PRICE, STALE_ALLOWANCE, REFETCH_BALANCE, REFETCH_ORDER_HISTORY } from "../consts";
 import { useTwapContext } from "../context/context";
 import { QueryKeys } from "../enums";
 import FEE_ON_TRANSFER_ABI from "../abi/FEE_ON_TRANSFER.json";
-import { amountBNV2, compact, getTheGraphUrl, groupBy, logger, orderBy } from "../utils";
+import { amountBNV2, getTheGraphUrl, groupBy, logger, orderBy } from "../utils";
 import { ExtendsOrderHistory, HistoryOrder, OrdersData, Status, Token } from "../types";
-import { useGetHasAllowance, useGetTokenFromParsedTokensList, useNetwork } from "./hooks";
+import { useGetHasAllowance, useNetwork } from "./hooks";
 import { ordersStore } from "../store";
-import { getGraphOrders, waitForCancelledOrder } from "../order-history";
+import { getGraphOrders } from "../order-history";
 import { useSrcAmount } from "./lib";
 import Configs from "@orbs-network/twap/configs.json";
 
@@ -188,38 +188,54 @@ const useAddNewOrder = () => {
             Open: updatedOpenOrders,
           };
         });
-      } catch (error) {}
-    },
-    [QUERY_KEY, queryClient, config],
-  );
-};
-
-const useUpdateOrderStatusToCanceled = () => {
-  const QUERY_KEY = useOrderHistoryKey();
-  const queryClient = useQueryClient();
-  const config = useTwapContext().config;
-  const { account } = useTwapContext();
-  const { refetch } = useOrdersHistory();
-
-  return useCallback(
-    async (orderId: number, twapAddress: string) => {
-      try {
-        const endpoint = getTheGraphUrl(config.chainId);
-        if (!endpoint || !account) return;
-        await waitForCancelledOrder(orderId, endpoint, account, twapAddress);
-        await refetch();
       } catch (error) {
         console.error(error);
       }
     },
-    [QUERY_KEY, queryClient, config, account, refetch],
+    [QUERY_KEY, queryClient, config],
+  );
+};
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const useUpdateOrderStatusToCanceled = () => {
+  const { refetch } = useOrdersHistory();
+
+  return useCallback(
+    async (orderId: number) => {
+      try {
+        let attempts = 0;
+        const maxAttempts = 20;
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          if (attempts++ >= maxAttempts) {
+            console.warn("Max attempts reached. Order not found.");
+            break;
+          }
+
+          const result = (await refetch()).data;
+          const cancelledOrders = result?.[Status.Canceled] || [];
+
+          const order = cancelledOrders.find((o) => o.id === orderId);
+
+          if (order) {
+            break;
+          }
+
+          await sleep(3000);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [refetch],
   );
 };
 
 export const LEGACY_EXCHANGE_ADDRESSES = {
-  [Configs.SushiArb.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
-  [Configs.SushiBase.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
-  [Configs.SushiEth.name]: ["0xc55943Fa6509004B2903ED8F8ab7347BfC47D0bA", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
+  [Configs.SushiArb.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a", "0x08c41f5D1C844061f6D952E25827eeAA576c6536", "0x1D1e69a706367e62a58CbC8C6924089eE379248F"],
+  [Configs.SushiBase.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a", "0x08c41f5D1C844061f6D952E25827eeAA576c6536", "0x1D1e69a706367e62a58CbC8C6924089eE379248F"],
+  [Configs.SushiEth.name]: ["0xc55943Fa6509004B2903ED8F8ab7347BfC47D0bA", "0x08c41f5D1C844061f6D952E25827eeAA576c6536", "0x1D1e69a706367e62a58CbC8C6924089eE379248F"],
 };
 
 export const LEGACY_TWAP_ADDRESSES = {

@@ -233,26 +233,3 @@ export const getGraphOrders = async (endpoint: string, account: string, twapAddr
     };
   });
 };
-
-const delay = (ms: number): Promise<void> => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
-export const waitForCancelledOrder = async (
-  orderId: number,
-  endpoint: string,
-  account: string,
-  twapAddress: string,
-  signal?: AbortSignal,
-  maxRetries = 20,
-  delayMs = 3000,
-): Promise<any[]> => {
-  for (let i = 0; i < maxRetries; i++) {
-    const orders = await getGraphOrders(endpoint, account, twapAddress.toLowerCase(), signal);
-    if (orders.some((o) => o.id === orderId && o.status === Status.Canceled)) {
-      return orders;
-    }
-    await delay(delayMs);
-  }
-  return [];
-};

@@ -2,7 +2,7 @@ import moment from "moment";
 import { useMemo } from "react";
 import { useTwapContext } from "../context/context";
 import { HistoryOrder } from "../types";
-import { amountUiV2, flatMap, flatMapObject } from "../utils";
+import { amountUiV2 } from "../utils";
 import BN from "bignumber.js";
 import { query } from "./query";
 import { useEstimatedDelayBetweenChunksMillis, useGetTokenFromParsedTokensList } from "./hooks";

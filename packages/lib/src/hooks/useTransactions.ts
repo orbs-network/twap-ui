@@ -405,7 +405,7 @@ export const useCancelOrder = (id?: number, twapAddress?: string) => {
         maxPriorityFeePerGas: priorityFeePerGas,
         maxFeePerGas,
       });
-      await onCancelOrder(id, twapAddress);
+      await onCancelOrder(id);
       console.log(`order canceled`);
     },
     {

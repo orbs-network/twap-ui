@@ -79,26 +79,27 @@ import { ThemeProvider } from "styled-components";
 import { ButtonProps } from "@orbs-network/twap-ui";
 import { TimeResolution } from "@orbs-network/twap-ui";
 
-const Configs = {
+const Configs: Record<string, Config> = {
   SushiArb: {
     ...TwapConfigs.SushiArb,
     twapAddress: "0x0B94dcC0EA2d1ee33Ab064DaC252de980a941eF3",
     lensAddress: "0x549e1fc9a47FCc0C5C2EbdfF31254cc49fF7164e",
-    exchangeAddress: "0x1D1e69a706367e62a58CbC8C6924089eE379248F",
+    exchangeAddress: "0x04eB53119079FA779492720D1EfeAEBF0aF2e5ad",
     exchangeType: "ExchangeV2",
+    minChunkSizeUsd: 5,
   },
   SushiBase: {
     ...TwapConfigs.SushiBase,
     twapAddress: "0xc918bdC47264687796Cd54FE362FaC4f8b99Eb55",
     lensAddress: "0x6313188c1909b161074D62E43105faC9B756A23e",
-    exchangeAddress: "0x1D1e69a706367e62a58CbC8C6924089eE379248F",
+    exchangeAddress: "0x04eB53119079FA779492720D1EfeAEBF0aF2e5ad",
     exchangeType: "ExchangeV2",
   },
   SushiEth: {
     ...TwapConfigs.SushiEth,
     twapAddress: "0xb1ed8BCAD1EaC8a1DF0764700472391800D12946",
     lensAddress: "0x0967f448c4d4dbd14c355E635AE9CbF68cc44A60",
-    exchangeAddress: "0x1D1e69a706367e62a58CbC8C6924089eE379248F",
+    exchangeAddress: "0x04eB53119079FA779492720D1EfeAEBF0aF2e5ad",
     exchangeType: "ExchangeV2",
   },
 };
