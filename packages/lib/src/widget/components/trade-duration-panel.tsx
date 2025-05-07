@@ -122,7 +122,7 @@ const Resolution = () => {
 
 const Menu = () => {
   return (
-    <StyledRowFlex>
+    <StyledRowFlex className="twap-duration-panel-content">
       <Input />
       <Resolution />
     </StyledRowFlex>
