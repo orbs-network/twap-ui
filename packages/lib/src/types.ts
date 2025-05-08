@@ -1,4 +1,4 @@
-import { CSSProperties, FC, ReactElement, ReactNode } from "react";
+import { CSSProperties, FC, ReactNode } from "react";
 import { IconType } from "@react-icons/all-files";
 import { Config, Order, OrderStatus, TimeDuration, TimeUnit, TwapSDK } from "@orbs-network/twap-sdk";
 import { SwapStatus } from "@orbs-network/swap-ui";
