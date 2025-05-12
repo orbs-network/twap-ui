@@ -23,14 +23,14 @@ import { useFormatNumber } from "./useFormatNumber";
 import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useOrders } from "./order-hooks";
+import { useTwapStore } from "../useTwapStore";
 
 const defaultPercent = [1, 5, 10];
 
 const useDerivedLimitPrice = () => {
-  const {
-    state: { typedPrice, isInvertedPrice },
-  } = useTwapContext();
   const { amountUI: limitPriceUI } = useLimitPrice();
+  const typedPrice = useTwapStore((s) => s.state.typedPrice);
+  const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
 
   return useMemo(() => {
     if (typedPrice !== undefined) return typedPrice;
@@ -47,10 +47,9 @@ const useLimitPriceLoading = () => {
 };
 
 export const useLimitPriceTokenSelect = () => {
-  const {
-    state: { isInvertedPrice },
-    callbacks,
-  } = useTwapContext();
+  const { callbacks } = useTwapContext();
+
+  const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
 
   const bottomTokenSelect = useCallback(
     (token: any) => {
@@ -82,7 +81,7 @@ export const useLimitPriceTokenSelect = () => {
 
 export const useLimitPriceInput = () => {
   const { onChange: onLimitPriceChange } = useLimitPrice();
-  const { updateState } = useTwapContext();
+  const updateState = useTwapStore((s) => s.updateState);
 
   const onChange = useCallback(
     (value: string) => {
@@ -100,15 +99,14 @@ export const useLimitPriceInput = () => {
 };
 
 export const useLimitPricePercentSelect = () => {
-  const {
-    dstToken,
-    marketPrice,
-    state: { isInvertedPrice, selectedPricePercent },
-    updateState,
-  } = useTwapContext();
+  const { dstToken, marketPrice } = useTwapContext();
   const isLoading = useLimitPriceLoading();
   const { onChange: onPriceChange, amountUI: limitPrice } = useLimitPrice();
   const priceDiffFromMarket = usePriceDiffFromMarketPercent();
+
+  const updateState = useTwapStore((s) => s.updateState);
+  const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
+  const selectedPricePercent = useTwapStore((s) => s.state.selectedPricePercent);
 
   const onPercent = useCallback(
     (percent?: string) => {
@@ -179,10 +177,8 @@ export const useLimitPricePercentSelect = () => {
 };
 
 export const useLimitPriceOnInvert = () => {
-  const {
-    state: { isInvertedPrice },
-    updateState,
-  } = useTwapContext();
+  const updateState = useTwapStore((s) => s.updateState);
+  const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
   return useCallback(() => {
     updateState({
       isInvertedPrice: !isInvertedPrice,
@@ -193,12 +189,8 @@ export const useLimitPriceOnInvert = () => {
 };
 
 export const useLimitPriceTokens = () => {
-  const {
-    srcToken,
-    dstToken,
-    state: { isInvertedPrice },
-  } = useTwapContext();
-
+  const { srcToken, dstToken } = useTwapContext();
+  const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
   return {
     topToken: isInvertedPrice ? dstToken : srcToken,
     bottomToken: isInvertedPrice ? srcToken : dstToken,
@@ -211,13 +203,9 @@ export const useLimitPriceError = () => {
 };
 
 export const useLimitPanelUsd = () => {
-  const {
-    state: { isInvertedPrice },
-    srcUsd1Token,
-    dstUsd1Token,
-  } = useTwapContext();
+  const { srcUsd1Token, dstUsd1Token } = useTwapContext();
   const { value: limitPrice } = useLimitPriceInput();
-
+  const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
   return useUsdAmount(limitPrice, isInvertedPrice ? srcUsd1Token : dstUsd1Token);
 };
 
@@ -228,10 +216,8 @@ export const useLimitPricePanel = () => {
   const percent = useLimitPricePercentSelect();
   const onInvert = useLimitPriceOnInvert();
   const tokenSelect = useLimitPriceTokenSelect();
-  const {
-    state: { isInvertedPrice, isMarketOrder },
-  } = useTwapContext();
-
+  const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const usd = useLimitPanelUsd();
 
   return {
@@ -300,10 +286,8 @@ export const useChunkSizeMessage = () => {
 };
 
 export const usePriceToggle = () => {
-  const {
-    state: { isMarketOrder },
-    updateState,
-  } = useTwapContext();
+  const updateState = useTwapStore((s) => s.updateState);
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
 
   const setIsMarketOrder = useCallback(
     (value: boolean) => {
@@ -319,19 +303,9 @@ export const usePriceToggle = () => {
 };
 
 export const useShowConfirmationModalButton = () => {
-  const {
-    isWrongChain,
-    srcUsd1Token,
-    account: maker,
-    translations: t,
-    callbacks,
-    marketPrice,
-    state: { swapStatus, typedSrcAmount },
-    marketPriceLoading,
-    srcBalance,
-    srcToken,
-    dstToken,
-  } = useTwapContext();
+  const { isWrongChain, srcUsd1Token, account: maker, translations: t, callbacks, marketPrice, marketPriceLoading, srcBalance, srcToken, dstToken } = useTwapContext();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const error = useError();
   const minChunkSizeUsd = useMinChunkSizeUsd();
 
@@ -457,10 +431,9 @@ export const useFillDelayPanel = () => {
 
 export const useConfirmationModalButton = () => {
   const { mutate: onSubmit, isLoading: mutationLoading } = useSubmitOrderCallback();
-  const {
-    state: { swapStatus, disclaimerAccepted },
-    translations: t,
-  } = useTwapContext();
+  const { translations: t } = useTwapContext();
+  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const disclaimerAccepted = useTwapStore((s) => s.state.disclaimerAccepted);
 
   return useMemo(() => {
     const isLoading = mutationLoading || swapStatus === SwapStatus.LOADING;
@@ -474,10 +447,8 @@ export const useConfirmationModalButton = () => {
 };
 
 export const useFee = () => {
-  const {
-    fee,
-    state: { isMarketOrder },
-  } = useTwapContext();
+  const { fee } = useTwapContext();
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const destTokenAmount = useDestTokenAmount().amountUI;
 
   const amountUI = useMemo(() => {
@@ -491,12 +462,9 @@ export const useFee = () => {
 };
 
 export const useLimitPriceMessage = () => {
-  const {
-    translations: t,
-    state: { isMarketOrder },
-  } = useTwapContext();
+  const { translations: t } = useTwapContext();
   const hide = useShouldWrapOrUnwrapOnly();
-
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   return useMemo(() => {
     if (isMarketOrder || hide) return null;
 

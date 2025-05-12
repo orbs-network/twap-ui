@@ -17,10 +17,11 @@ import { amountUi, isNativeAddress, iwethabi, TwapAbi } from "@orbs-network/twap
 import { useCallback, useRef, useState } from "react";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useOrders, usePersistedOrdersStore } from "./order-hooks";
+import { useTwapStore } from "../useTwapStore";
 
 export const useApproveToken = () => {
-  const { account, config, walletClient, publicClient, callbacks, twapSDK, updateState } = useTwapContext();
-
+  const { account, config, walletClient, publicClient, callbacks, twapSDK } = useTwapContext();
+  const updateState = useTwapStore((s) => s.updateState);
   return useMutation(
     async ({ token, amount }: { token: Token; amount: string }) => {
       if (!account) throw new Error("account is not defined");
@@ -123,14 +124,8 @@ export const useCancelOrder = () => {
 };
 
 const useCallbacks = () => {
-  const {
-    twapSDK,
-    account,
-    callbacks,
-    srcToken,
-    dstToken,
-    state: { typedSrcAmount },
-  } = useTwapContext();
+  const { twapSDK, account, callbacks, srcToken, dstToken } = useTwapContext();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const { addCreatedOrder } = usePersistedOrdersStore(twapSDK.config);
   const destTokenAmountUI = useDestTokenAmount().amountUI;
   const { refetch: refetchOrders } = useOrders();
@@ -172,7 +167,8 @@ const useCallbacks = () => {
 };
 
 export const useCreateOrder = () => {
-  const { account, updateState, walletClient, publicClient, twapSDK, chainId, dstToken } = useTwapContext();
+  const { account, walletClient, publicClient, twapSDK, chainId, dstToken } = useTwapContext();
+  const updateState = useTwapStore((s) => s.updateState);
   const callbacks = useCallbacks();
   const srcAmount = useSrcAmount().amountWei;
   const destTokenMinAmount = useDestTokenMinAmount().amountWei;
@@ -240,15 +236,9 @@ export const useCreateOrder = () => {
 };
 
 export const useWrapToken = () => {
-  const {
-    account,
-    walletClient,
-    publicClient,
-    callbacks,
-    state: { typedSrcAmount = "" },
-    twapSDK,
-    updateState,
-  } = useTwapContext();
+  const { account, walletClient, publicClient, callbacks, twapSDK } = useTwapContext();
+  const updateState = useTwapStore((s) => s.updateState);
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount || "");
   const tokenAddress = useNetwork()?.wToken.address;
 
   return useMutation(
@@ -293,16 +283,18 @@ export const useWrapToken = () => {
 
 export const useWrapOnly = () => {
   const { mutateAsync } = useWrapToken();
-  const { reset } = useTwapContext();
   const srcAmount = useSrcAmount().amountWei;
+  const resetState = useTwapStore((s) => s.resetState);
   return useMutation(async () => {
     await mutateAsync(srcAmount);
-    reset();
+    resetState();
   });
 };
 
 export const useUnwrapToken = () => {
-  const { account, reset, walletClient, publicClient, callbacks, updateState } = useTwapContext();
+  const { account, walletClient, publicClient, callbacks } = useTwapContext();
+  const resetState = useTwapStore((s) => s.resetState);
+  const updateState = useTwapStore((s) => s.updateState);
   const wTokenAddress = useNetwork()?.wToken.address;
   const { amountWei, amountUI = "" } = useSrcAmount();
 
@@ -334,7 +326,7 @@ export const useUnwrapToken = () => {
       onMutate: () => {
         callbacks.unwrap?.onRequest?.(amountUI);
       },
-      onSuccess: reset,
+      onSuccess: resetState,
       onError: (error) => {
         callbacks.unwrap?.onFailed?.((error as any).message);
       },
@@ -350,18 +342,14 @@ const getTotalSteps = (shouldWrap?: boolean, shouldApprove?: boolean) => {
 };
 
 const useSubmitOrderCallbacks = () => {
-  const {
-    callbacks,
-    srcToken,
-    dstToken,
-    state: { typedSrcAmount },
-  } = useTwapContext();
+  const { callbacks, srcToken, dstToken } = useTwapContext();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount || "");
   const dstAmount = useDestTokenAmount().amountUI;
   const onRequest = useCallback(() => {
     callbacks?.onSubmitOrderRequest?.({
       srcToken: srcToken!,
       dstToken: dstToken!,
-      srcAmount: typedSrcAmount || "",
+      srcAmount: typedSrcAmount,
       dstAmount,
     });
   }, [callbacks, srcToken, dstToken, typedSrcAmount, dstAmount]);
@@ -369,8 +357,9 @@ const useSubmitOrderCallbacks = () => {
 };
 
 export const useSubmitOrderCallback = () => {
-  const { updateState, srcToken, dstToken, isExactAppoval, chainId } = useTwapContext();
+  const { srcToken, dstToken, isExactAppoval, chainId } = useTwapContext();
   const { mutateAsync: getHasAllowance } = useHasAllowanceCallback();
+  const updateState = useTwapStore((s) => s.updateState);
   const approve = useApproveToken().mutateAsync;
   const wrapToken = useWrapToken().mutateAsync;
   const createOrder = useCreateOrder().mutateAsync;

@@ -10,11 +10,12 @@ import { useTwapContext } from "../../context";
 import { useLimitPriceError, useLimitPriceInput, useLimitPriceOnInvert, useLimitPricePanel, useLimitPricePercentSelect } from "../../hooks/ui-hooks";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
+import { useTwapStore } from "../../useTwapStore";
 
 export const LimitPanel = ({ children, className = "" }: { className?: string; children?: ReactNode }) => {
   const error = useLimitPriceError();
 
-  const isMarketOrder = useTwapContext().state.isMarketOrder;
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const shouldWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
 
   if (isMarketOrder || shouldWrapOrUnwrapOnly) return null;
@@ -103,7 +104,7 @@ const PercentSelector = () => {
 };
 
 const DstTokenSelect = ({ className = "" }: { className?: string }) => {
-  const { isInvertedPrice } = useTwapContext().state;
+  const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
 
   return <TokenSelect isSrcToken={isInvertedPrice} className={`twap-limit-price-panel-token-select ${className}`} />;
 };
@@ -128,11 +129,8 @@ const StyledPriceInvert = styled("div")({
 });
 
 const Title = () => {
-  const {
-    translations: t,
-    state: { isInvertedPrice },
-  } = useTwapContext();
-
+  const { translations: t } = useTwapContext();
+  const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
   return (
     <>
       <StyledTitle className="twap-limit-price-panel-title">

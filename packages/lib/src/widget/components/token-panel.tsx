@@ -7,6 +7,7 @@ import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
 import { useAmountUi, useBalanceError, useDestTokenAmount, useOnSrcInputPercentClick, useShouldWrapOrUnwrapOnly, useUsdAmount } from "../../hooks/logic-hooks";
 import { useTokenSelect } from "../../hooks/ui-hooks";
+import { useTwapStore } from "../../useTwapStore";
 const Input = (props: {
   className?: string;
   decimalScale?: number;
@@ -40,7 +41,7 @@ const TokenInput = ({ prefix = "", className = "", placeholder = "" }: { prefix?
   const { value, onChange } = useTokenInput({ isSrcToken });
   const token = useToken({ isSrcToken });
 
-  return <Input prefix={prefix} onChange={onChange} value={value} decimalScale={token?.decimals} className={className} placeholder={placeholder} />;
+  return <Input prefix={prefix} onChange={onChange} value={value || ""} decimalScale={token?.decimals} className={className} placeholder={placeholder} />;
 };
 
 const Context = createContext({} as { isSrcToken: boolean });
@@ -174,11 +175,8 @@ export const useTokenBalance = ({ isSrcToken }: { isSrcToken: boolean }) => {
 };
 
 export const useTokenUSD = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const {
-    srcUsd1Token,
-    dstUsd1Token,
-    state: { typedSrcAmount },
-  } = useTwapContext();
+  const { srcUsd1Token, dstUsd1Token } = useTwapContext();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const dstAmountOut = useDestTokenAmount().amountUI;
   const srcUsd = useUsdAmount(typedSrcAmount, srcUsd1Token);
   const dstUsd = useUsdAmount(dstAmountOut, dstUsd1Token);
@@ -194,11 +192,9 @@ export const useTokenUSD = ({ isSrcToken }: { isSrcToken: boolean }) => {
 };
 
 export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
-  const {
-    state: { typedSrcAmount = "" },
-    updateState,
-    marketPriceLoading,
-  } = useTwapContext();
+  const { marketPriceLoading } = useTwapContext();
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const updateState = useTwapStore((s) => s.updateState);
   const destTokenAmountUI = useDestTokenAmount().amountUI;
   const isWrapOrUnwrapOnly = useShouldWrapOrUnwrapOnly();
 

@@ -8,13 +8,13 @@ import { useTwapContext } from "../../../context";
 import { useConfirmationModalButton, useFee } from "../../../hooks/ui-hooks";
 import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../../hooks/logic-hooks";
 import { OrderDetails } from "../../../components/order-details";
+import { useTwapStore } from "../../../useTwapStore";
 
 const Price = () => {
-  const {
-    state: { isMarketOrder, trade },
-    srcToken,
-    dstToken,
-  } = useTwapContext();
+  const { srcToken, dstToken } = useTwapContext();
+
+  const trade = useTwapStore((s) => s.state.trade);
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
 
   const price = useMemo(
     () =>
@@ -34,11 +34,9 @@ const Price = () => {
 };
 
 export const AcceptDisclaimer = ({ className }: { className?: string }) => {
-  const {
-    translations: t,
-    state: { disclaimerAccepted },
-    updateState,
-  } = useTwapContext();
+  const { translations: t } = useTwapContext();
+  const disclaimerAccepted = useTwapStore((s) => s.state.disclaimerAccepted);
+  const updateState = useTwapStore((s) => s.updateState);
 
   const onChange = useCallback(() => {
     updateState({ disclaimerAccepted: !disclaimerAccepted });
@@ -66,13 +64,9 @@ const FillDelaySummary = () => {
 };
 
 export const Main = () => {
-  const {
-    translations,
-    components,
-    state: { trade, swapStatus },
-    srcUsd1Token,
-    dstUsd1Token,
-  } = useTwapContext();
+  const { translations, components, srcUsd1Token, dstUsd1Token } = useTwapContext();
+  const trade = useTwapStore((s) => s.state.trade);
+  const swapStatus = useTwapStore((s) => s.state.swapStatus);
   const srcAmountUsd = useUsdAmount(trade?.srcAmount, srcUsd1Token);
   const dstAmountUsd = useUsdAmount(trade?.dstAmount, dstUsd1Token);
 
@@ -104,13 +98,8 @@ const StyledBottom = styled("div")({
 });
 
 const Details = () => {
-  const {
-    isLimitPanel,
-    srcToken,
-    dstToken,
-    state: { isMarketOrder },
-  } = useTwapContext();
-
+  const { isLimitPanel, srcToken, dstToken } = useTwapContext();
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   const fee = useFee();
   const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
   const deadline = useOrderDeadline();

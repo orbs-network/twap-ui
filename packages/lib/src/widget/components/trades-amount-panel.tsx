@@ -5,14 +5,16 @@ import { StyledRowFlex, StyledText } from "../../styles";
 import { useTwapContext } from "../../context";
 import { useChunks, useShouldWrapOrUnwrapOnly, useSrcChunkAmountUSD, useSrcTokenChunkAmount } from "../../hooks/logic-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
+import { useTwapStore } from "../../useTwapStore";
 
 const useTradeSize = () => {
   const chunkSize = useSrcChunkAmountUSD();
   const { amountUI } = useSrcTokenChunkAmount();
-  const { srcToken, state, isLimitPanel } = useTwapContext();
+  const { srcToken, isLimitPanel } = useTwapContext();
   const chunksError = useChunks().error;
   const chunkSizeError = useSrcTokenChunkAmount().error;
-  const error = !state.typedSrcAmount ? false : chunksError || chunkSizeError;
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+  const error = !typedSrcAmount ? false : chunksError || chunkSizeError;
   const amountUIF = useFormatNumber({ value: amountUI, decimalScale: 3 });
   const chunkSizeF = useFormatNumber({ value: chunkSize, decimalScale: 2 });
 

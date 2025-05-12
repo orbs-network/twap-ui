@@ -1,5 +1,6 @@
 import { Link, Message, Portal } from "../../components/base";
 import { useTwapContext } from "../../context";
+import { useTwapStore } from "../../useTwapStore";
 const URL = "https://www.orbs.com/dtwap-and-dlimit-faq/";
 const LimitPriceWarning = ({ className }: { className?: string }) => {
   const { translations: t } = useTwapContext();
@@ -35,10 +36,7 @@ export const MarketPriceWarning = ({ className }: { className?: string }) => {
 };
 
 export const WarningMessagePortal = () => {
-  const {
-    state: { isMarketOrder },
-  } = useTwapContext();
-
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
   return <Portal containerId="twap-warning-message-container">{isMarketOrder ? <MarketPriceWarning /> : <LimitPriceWarning />}</Portal>;
 };
 

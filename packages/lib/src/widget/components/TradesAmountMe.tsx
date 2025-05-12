@@ -3,14 +3,16 @@ import { StyledText } from "../../styles";
 import { useChunks, useSrcChunkAmountUSD, useSrcTokenChunkAmount } from "../../hooks/logic-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
+import { useTwapStore } from "../../useTwapStore";
 
 export const TradeAmountMessage = () => {
   const chunkSize = useSrcChunkAmountUSD();
   const { amountUI } = useSrcTokenChunkAmount();
-  const { srcToken, state, isLimitPanel } = useTwapContext();
+  const { srcToken, isLimitPanel } = useTwapContext();
   const chunksError = useChunks().error;
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
   const chunkSizeError = useSrcTokenChunkAmount().error;
-  const error = !state.typedSrcAmount ? false : chunksError || chunkSizeError;
+  const error = !typedSrcAmount ? false : chunksError || chunkSizeError;
   const { translations: t } = useTwapContext();
   const amountUIF = useFormatNumber({ value: amountUI, decimalScale: 3 });
   const chunkSizeF = useFormatNumber({ value: chunkSize, decimalScale: 2 });

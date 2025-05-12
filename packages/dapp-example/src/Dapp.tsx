@@ -144,6 +144,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         }}
         fee={0.25}
         account={account}
+        orderDisclaimerAcceptedByDefault
       />
     </>
   );

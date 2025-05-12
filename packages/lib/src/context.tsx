@@ -1,12 +1,14 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { constructSDK } from "@orbs-network/twap-sdk";
-import { State, TwapProps, TwapContextType, Translations } from "./types";
+import { TwapProps, TwapContextType, Translations } from "./types";
 import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranslations from "./i18n/en.json";
 import * as chains from "viem/chains";
+import { useTwapStore } from "./useTwapStore";
+import { useTest } from "./hooks/logic-hooks";
 
 export const TwapContext = createContext({} as TwapContextType);
 const queryClient = new QueryClient({
@@ -17,68 +19,39 @@ const queryClient = new QueryClient({
   },
 });
 
-enum ActionType {
-  UPDATED_STATE = "UPDATED_STATE",
-  RESET = "RESET",
-}
-type Action = { type: ActionType.UPDATED_STATE; value: Partial<State> } | { type: ActionType.RESET };
-
-const initialState = {
-  disclaimerAccepted: true,
-  currentTime: Date.now(),
-} as State;
-
-const contextReducer = (state: State, action: Action): State => {
-  switch (action.type) {
-    case ActionType.UPDATED_STATE:
-      return { ...state, ...action.value };
-    case ActionType.RESET:
-      return {
-        ...initialState,
-        currentTime: Date.now(),
-        trade: state.trade,
-        swapStatus: state.swapStatus,
-        isMarketOrder: state.isMarketOrder,
-        typedDuration: state.typedDuration,
-      };
-    default:
-      return state;
-  }
-};
-
-const getInitialState = ({ orderDisclaimerAcceptedByDefault = true }: TwapProps) => {
-  return {
-    ...initialState,
-    disclaimerAccepted: orderDisclaimerAcceptedByDefault,
-  };
-};
-
 const Listeners = () => {
-  const { isLimitPanel, updateState, isTwapMarketByDefault, srcToken, dstToken, onSrcAmountChange, state } = useTwapContext();
+  const updateStore = useTwapStore((s) => s.updateState);
+  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
+
+  const { isLimitPanel, isTwapMarketByDefault, srcToken, dstToken, onSrcAmountChange, orderDisclaimerAcceptedByDefault } = useTwapContext();
 
   useEffect(() => {
-    updateState({ typedPrice: undefined, selectedPricePercent: undefined });
+    updateStore({ disclaimerAccepted: orderDisclaimerAcceptedByDefault });
+  }, [orderDisclaimerAcceptedByDefault]);
+
+  useEffect(() => {
+    updateStore({ typedPrice: undefined, selectedPricePercent: undefined });
   }, [srcToken?.address, dstToken?.address]);
 
   useEffect(() => {
     if (onSrcAmountChange) {
-      onSrcAmountChange(state.typedSrcAmount || "");
+      onSrcAmountChange(typedSrcAmount || "");
     }
-  }, [onSrcAmountChange, state.typedSrcAmount]);
+  }, [typedSrcAmount]);
 
   useEffect(() => {
     if (isLimitPanel) {
-      updateState({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION, isMarketOrder: false });
+      updateStore({ typedDuration: DEFAULT_LIMIT_PANEL_DURATION, isMarketOrder: false });
     } else {
-      updateState({ typedDuration: undefined, isMarketOrder: isTwapMarketByDefault ? true : false });
+      updateStore({ typedDuration: undefined, isMarketOrder: isTwapMarketByDefault ? true : false });
     }
-  }, [isLimitPanel, updateState, isTwapMarketByDefault]);
+  }, [isLimitPanel, updateStore, isTwapMarketByDefault]);
 
   useEffect(() => {
     setInterval(() => {
-      updateState({ currentTime: Date.now() });
+      updateStore({ currentTime: Date.now() });
     }, 60_000);
-  }, [updateState]);
+  }, [updateStore]);
 
   return null;
 };
@@ -91,18 +64,6 @@ const useTranslations = (translations?: Partial<Translations>): Translations => 
       ...translations,
     } as Translations;
   }, [translations]);
-};
-
-const useStore = (props: TwapProps) => {
-  const [state, dispatch] = useReducer(contextReducer, getInitialState(props));
-  const updateState = useCallback((value: Partial<State>) => dispatch({ type: ActionType.UPDATED_STATE, value }), [dispatch]);
-
-  const resetState = useCallback(() => dispatch({ type: ActionType.RESET }), [dispatch]);
-  return {
-    state,
-    updateState,
-    resetState,
-  };
 };
 
 const useInitiateWallet = (props: TwapProps) => {
@@ -124,7 +85,6 @@ const useInitiateWallet = (props: TwapProps) => {
 };
 
 const Content = (props: TwapProps) => {
-  const { state, updateState, resetState } = useStore(props);
   const translations = useTranslations(props.translations);
   const twapSDK = useMemo(() => constructSDK({ config: props.config }), [props.config]);
   const { walletClient, publicClient } = useInitiateWallet(props);
@@ -136,9 +96,6 @@ const Content = (props: TwapProps) => {
         account: props.account as `0x${string}` | undefined,
         translations,
         isWrongChain: !props.account || !props.chainId ? false : props.config.chainId !== props.chainId,
-        updateState,
-        reset: resetState,
-        state,
         walletClient,
         publicClient: publicClient as any as ReturnType<typeof createPublicClient>,
         twapSDK,
@@ -151,6 +108,7 @@ const Content = (props: TwapProps) => {
     </TwapContext.Provider>
   );
 };
+
 
 export const TwapProvider = (props: TwapProps) => {
   return (

@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { State } from "./types";
 
-interface TwapStore extends State {
-  resetStore: () => void;
-  updateStore: (value: Partial<State>) => void;
+interface TwapStore {
+  resetState: () => void;
+  updateState: (value: Partial<State>) => void;
+  state: State;
 }
 
 const initialState = {
@@ -12,15 +13,18 @@ const initialState = {
 } as State;
 
 export const useTwapStore = create<TwapStore>((set, get) => ({
-  ...initialState,
-  updateStore: (value: Partial<State>) => set((state) => ({ ...state, ...value })),
-  resetStore: () =>
+  state: initialState,
+  updateState: (value: Partial<State>) => set((state) => ({ state: { ...state.state, ...value } })),
+  resetState: () => {
     set({
-      ...initialState,
-      currentTime: Date.now(),
-      trade: get().trade,
-      swapStatus: get().swapStatus,
-      isMarketOrder: get().isMarketOrder,
-      typedDuration: get().typedDuration,
-    }),
+      state: {
+        ...initialState,
+        currentTime: Date.now(),
+        trade: get().state.trade,
+        swapStatus: get().state.swapStatus,
+        isMarketOrder: get().state.isMarketOrder,
+        typedDuration: get().state.typedDuration,
+      },
+    });
+  },
 }));

@@ -20,9 +20,12 @@ import { useFee } from "../../../hooks/ui-hooks";
 import { Steps } from "../../../types";
 import { getOrderType } from "../../../utils";
 import { useSubmitOrderCallback } from "../../../hooks/send-transactions-hooks";
+import { useTwapStore } from "../../../useTwapStore";
 
 const Modal = ({ children }: { children: ReactNode }) => {
-  const { components, state, translations: t, srcUsd1Token, dstUsd1Token, updateState } = useTwapContext();
+  const { components, translations: t, srcUsd1Token, dstUsd1Token } = useTwapContext();
+  const updateState = useTwapStore((s) => s.updateState);
+  const trade = useTwapStore((s) => s.state.trade);
   const onClose = useOnCloseConfirmationModal();
   const deadline = useOrderDeadline();
   const srcChunkAmount = useSrcTokenChunkAmount().amountUI;
@@ -31,8 +34,20 @@ const Modal = ({ children }: { children: ReactNode }) => {
   const dstMinAmountOut = useDestTokenMinAmount().amountUI;
   const fee = useFee();
   const { mutateAsync: onConfirm, checkingApproval } = useSubmitOrderCallback();
-  const srcUsd = useUsdAmount(state.trade?.srcAmount, srcUsd1Token);
-  const dstUsd = useUsdAmount(state.trade?.dstAmount, dstUsd1Token);
+  const srcUsd = useUsdAmount(trade?.srcAmount, srcUsd1Token);
+  const dstUsd = useUsdAmount(trade?.dstAmount, dstUsd1Token);
+  const activeStep = useTwapStore((s) => s.state.activeStep);
+  const swapError = useTwapStore((s) => s.state.swapError);
+  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const totalSteps = useTwapStore((s) => s.state.totalSteps);
+  const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
+  const disclaimerAccepted = useTwapStore((s) => s.state.disclaimerAccepted);
+  const showConfirmation = useTwapStore((s) => s.state.showConfirmation);
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const unwrapTxHash = useTwapStore((s) => s.state.unwrapTxHash);
+  const wrapTxHash = useTwapStore((s) => s.state.wrapTxHash);
+  const approveTxHash = useTwapStore((s) => s.state.approveTxHash);
+  const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
 
   const setDisclaimerAccepted = useCallback(
     (accepted: boolean) => {
@@ -43,14 +58,14 @@ const Modal = ({ children }: { children: ReactNode }) => {
 
   return (
     <components.OrderConfirmationModal
-      activeStep={state.activeStep}
-      swapError={state.swapError}
-      swapStatus={state.swapStatus}
-      totalSteps={state.totalSteps}
-      currentStepIndex={state.currentStepIndex || 0}
-      isOpen={Boolean(state.showConfirmation)}
+      activeStep={activeStep}
+      swapError={swapError}
+      swapStatus={swapStatus}
+      totalSteps={totalSteps}
+      currentStepIndex={currentStepIndex || 0}
+      isOpen={Boolean(showConfirmation)}
       onClose={onClose}
-      title={!state.swapStatus ? t.orderModalConfirmOrder : ""}
+      title={!swapStatus ? t.orderModalConfirmOrder : ""}
       feeAmount={fee.amountUI}
       feePercent={fee.percent}
       deadline={deadline}
@@ -58,19 +73,19 @@ const Modal = ({ children }: { children: ReactNode }) => {
       trades={chunks}
       fillDelayMillis={fillDelayMillis}
       dstMinAmountOut={dstMinAmountOut}
-      unwrapTxHash={state.unwrapTxHash}
-      wrapTxHash={state.wrapTxHash}
-      approveTxHash={state.approveTxHash}
-      createOrderTxHash={state.createOrderTxHash}
-      orderType={getOrderType(Boolean(state.isMarketOrder), chunks)}
-      srcToken={state.trade?.srcToken}
-      dstToken={state.trade?.dstToken}
-      srcAmount={state.trade?.srcAmount}
-      dstAmount={state.trade?.dstAmount}
+      unwrapTxHash={unwrapTxHash}
+      wrapTxHash={wrapTxHash}
+      approveTxHash={approveTxHash}
+      createOrderTxHash={createOrderTxHash}
+      orderType={getOrderType(Boolean(isMarketOrder), chunks)}
+      srcToken={trade?.srcToken}
+      dstToken={trade?.dstToken}
+      srcAmount={trade?.srcAmount}
+      dstAmount={trade?.dstAmount}
       srcAmountusd={srcUsd}
       dstAmountusd={dstUsd}
       onConfirm={onConfirm}
-      disclaimerAccepted={state.disclaimerAccepted}
+      disclaimerAccepted={disclaimerAccepted}
       setDisclaimerAccepted={setDisclaimerAccepted}
       buttonDisabled={checkingApproval}
     >
@@ -80,24 +95,29 @@ const Modal = ({ children }: { children: ReactNode }) => {
 };
 
 const useStep = () => {
-  const { translations: t, state } = useTwapContext();
+  const { translations: t } = useTwapContext();
+  const activeStep = useTwapStore((s) => s.state.activeStep);
+  const wrapTxHash = useTwapStore((s) => s.state.wrapTxHash);
+  const approveTxHash = useTwapStore((s) => s.state.approveTxHash);
+  const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
+  const trade = useTwapStore((s) => s.state.trade);
   const network = useNetwork();
-  const wrapExplorerUrl = useTransactionExplorerLink(state.wrapTxHash);
-  const approveExplorerUrl = useTransactionExplorerLink(state.approveTxHash);
-  const createOrderExplorerUrl = useTransactionExplorerLink(state.createOrderTxHash);
-  const srcToken = state.trade?.srcToken;
+  const wrapExplorerUrl = useTransactionExplorerLink(wrapTxHash);
+  const approveExplorerUrl = useTransactionExplorerLink(approveTxHash);
+  const createOrderExplorerUrl = useTransactionExplorerLink(createOrderTxHash);
+  const srcToken = trade?.srcToken;
   const isNativeIn = isNativeAddress(srcToken?.address || "");
   const symbol = isNativeIn ? network?.native.symbol || "" : srcToken?.symbol || "";
-  const orderName = state.trade?.title || "";
+  const orderName = trade?.title || "";
 
   return useMemo((): Step | undefined => {
-    if (state.activeStep === Steps.WRAP) {
+    if (activeStep === Steps.WRAP) {
       return {
         title: t.wrapAction.replace("{symbol}", symbol),
         explorerUrl: wrapExplorerUrl,
       };
     }
-    if (state.activeStep === Steps.APPROVE) {
+    if (activeStep === Steps.APPROVE) {
       return {
         title: t.approveAction?.replace("{symbol}", symbol),
         explorerUrl: approveExplorerUrl,
@@ -107,14 +127,16 @@ const useStep = () => {
       title: t.createOrderAction.replace("{name}", orderName),
       explorerUrl: createOrderExplorerUrl,
     };
-  }, [state.activeStep, approveExplorerUrl, createOrderExplorerUrl, symbol, orderName, t, wrapExplorerUrl]);
+  }, [activeStep, approveExplorerUrl, createOrderExplorerUrl, symbol, orderName, t, wrapExplorerUrl]);
 };
 
 export const SubmitOrderModal = () => {
-  const {
-    components,
-    state: { swapError, swapStatus, totalSteps, currentStepIndex, trade },
-  } = useTwapContext();
+  const { components } = useTwapContext();
+  const swapError = useTwapStore((s) => s.state.swapError);
+  const swapStatus = useTwapStore((s) => s.state.swapStatus);
+  const totalSteps = useTwapStore((s) => s.state.totalSteps);
+  const currentStepIndex = useTwapStore((s) => s.state.currentStepIndex);
+  const trade = useTwapStore((s) => s.state.trade);
   const srcAmountF = useFormatNumber({ value: trade?.srcAmount });
   const outAmountF = useFormatNumber({ value: trade?.dstAmount });
 
@@ -146,10 +168,9 @@ export const SubmitOrderModal = () => {
 };
 
 const SuccessContent = () => {
-  const {
-    state: { createOrderTxHash, trade },
-    translations: t,
-  } = useTwapContext();
+  const { translations: t } = useTwapContext();
+  const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
+  const trade = useTwapStore((s) => s.state.trade);
   const explorerUrl = useTransactionExplorerLink(createOrderTxHash);
   return <SwapFlow.Success title={t.CreateOrderModalOrderCreated.replace("{name}", trade?.title || "")} explorerUrl={explorerUrl} />;
 };

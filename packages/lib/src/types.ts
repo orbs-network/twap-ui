@@ -430,9 +430,6 @@ export interface TwapProps {
 
 export interface TwapContextType extends TwapProps {
   isWrongChain: boolean;
-  state: State;
-  updateState: (state: Partial<State>) => void;
-  reset: () => void;
   translations: Translations;
   walletClient?: ReturnType<typeof createWalletClient>;
   publicClient?: ReturnType<typeof createPublicClient>;
