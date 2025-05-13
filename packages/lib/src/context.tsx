@@ -8,7 +8,6 @@ import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranslations from "./i18n/en.json";
 import * as chains from "viem/chains";
 import { useTwapStore } from "./useTwapStore";
-import { useTest } from "./hooks/logic-hooks";
 
 export const TwapContext = createContext({} as TwapContextType);
 const queryClient = new QueryClient({
@@ -108,7 +107,6 @@ const Content = (props: TwapProps) => {
     </TwapContext.Provider>
   );
 };
-
 
 export const TwapProvider = (props: TwapProps) => {
   return (

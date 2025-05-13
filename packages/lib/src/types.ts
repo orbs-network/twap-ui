@@ -255,7 +255,7 @@ export type DurationSelectButtonsProps = {
 };
 
 export type LabelProps = {
-  text: ReactNode;
+  text: string;
   tooltip?: string;
 };
 

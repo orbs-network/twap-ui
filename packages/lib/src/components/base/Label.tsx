@@ -8,7 +8,7 @@ import { ReactNode } from "react";
 interface Props {
   tooltip?: string;
   className?: string;
-  text: ReactNode;
+  text: string;
 }
 
 export function Label({ tooltip, className = "", text }: Props) {

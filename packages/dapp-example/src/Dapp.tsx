@@ -58,7 +58,11 @@ const TokenLogo = ({ token }: TokenLogoProps) => {
 };
 
 const Link = ({ href, children }: LinkProps) => {
-  return <a href={href}>{children}</a>;
+  return (
+    <a href={href} target="_blank" rel="noreferrer">
+      {children}
+    </a>
+  );
 };
 
 const TWAPComponent = ({ limit }: { limit?: boolean }) => {

@@ -125,7 +125,6 @@ export const useMaxChunks = () => {
   return useMemo(() => twapSDK.getMaxChunks(typedSrcAmount || "", srcUsd1Token || 0, minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, twapSDK]);
 };
 
-
 export const useChunks = () => {
   const { twapSDK, isLimitPanel } = useTwapContext();
   const typedChunks = useTwapStore((s) => s.state.typedChunks);
@@ -151,7 +150,7 @@ export const useChunks = () => {
         typedChunks,
       });
     },
-    [updateState]
+    [updateState],
   );
 
   return {
@@ -189,7 +188,7 @@ export const useDestTokenAmount = () => {
   const limitPrice = useLimitPrice().amountWei;
   const amountWei = useMemo(
     () => twapSDK.getDestTokenAmount(srcAmountWei || "", limitPrice || "", srcToken?.decimals || 0),
-    [twapSDK, srcAmountWei, limitPrice, srcToken?.decimals]
+    [twapSDK, srcAmountWei, limitPrice, srcToken?.decimals],
   );
   return {
     amountWei,
@@ -204,7 +203,7 @@ export const useDestTokenMinAmount = () => {
   const srcTokenChunkAmount = useSrcTokenChunkAmount().amountWei;
   const amountWei = useMemo(
     () => twapSDK.getDestTokenMinAmount(srcTokenChunkAmount, limitPrice || "", Boolean(isMarketOrder), srcToken?.decimals || 0),
-    [twapSDK, srcTokenChunkAmount, limitPrice, isMarketOrder, srcToken?.decimals]
+    [twapSDK, srcTokenChunkAmount, limitPrice, isMarketOrder, srcToken?.decimals],
   );
 
   return {
@@ -460,7 +459,7 @@ export const useOnSrcInputPercentClick = () => {
       const value = amountUi(srcToken.decimals, _maxAmount || BN(srcBalance).times(percent).toString());
       updateState({ typedSrcAmount: value });
     },
-    [maxAmount, srcBalance, updateState, srcToken]
+    [maxAmount, srcBalance, updateState, srcToken],
   );
 };
 

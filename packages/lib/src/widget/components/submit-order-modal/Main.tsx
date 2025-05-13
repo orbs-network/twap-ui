@@ -2,7 +2,7 @@ import { styled } from "styled-components";
 import BN from "bignumber.js";
 import React, { useCallback, useMemo } from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
-import { Switch, Button, Link } from "../../../components/base";
+import { Switch, Button, Link, Label } from "../../../components/base";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
 import { useTwapContext } from "../../../context";
 import { useConfirmationModalButton, useFee } from "../../../hooks/ui-hooks";
@@ -43,19 +43,25 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   }, [disclaimerAccepted, updateState]);
 
   return (
-    <OrderDetails.DetailRow
-      className={`twap-order-modal-disclaimer ${className}`}
-      title={
-        <>
-          {`${t.accept} `}
-          <Link href="https://www.orbs.com/dtwap-dlimit-disclaimer">{t.disclaimer}</Link>
-        </>
-      }
-    >
-      <Switch checked={Boolean(disclaimerAccepted)} onChange={onChange} />
-    </OrderDetails.DetailRow>
+    <StyledDisclaimer className={`twap-order-modal-disclaimer ${className}`}>
+      <Label text={t.accept} />
+      <Link href="https://www.orbs.com/dtwap-dlimit-disclaimer">{t.disclaimer}</Link>
+      <div className="twap-order-modal-disclaimer-toggle">
+        <Switch checked={Boolean(disclaimerAccepted)} onChange={onChange} />
+      </div>
+    </StyledDisclaimer>
   );
 };
+
+const StyledDisclaimer = styled("div")({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  gap: 5,
+  ".twap-order-modal-disclaimer-toggle": {
+    marginLeft: "auto",
+  },
+});
 
 const FillDelaySummary = () => {
   const chunks = useChunks().chunks;

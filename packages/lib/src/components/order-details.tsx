@@ -99,7 +99,7 @@ const TradeInterval = ({ fillDelayMillis, chunks }: { fillDelayMillis?: number; 
   );
 };
 
-const DetailRow = ({ title, tooltip, children, className = "" }: { title: React.ReactNode; tooltip?: string; children?: React.ReactNode; className?: string }) => {
+const DetailRow = ({ title, tooltip, children, className = "" }: { title: string; tooltip?: string; children?: React.ReactNode; className?: string }) => {
   return (
     <StyledDetailRow className={`${className} twap-order-details__detail-row`}>
       <Label text={title} tooltip={tooltip} className="twap-order-details__detail-row-label" />

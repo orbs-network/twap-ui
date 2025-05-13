@@ -7,7 +7,7 @@ export const Link = ({ href, children }: LinkProps) => {
   const Link = components.Link;
   if (!Link) {
     return (
-      <a href={href} target="_blank">
+      <a href={href} target="_blank" rel="noreferrer">
         {children}
       </a>
     );
