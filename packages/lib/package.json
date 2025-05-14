@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-ui",
-  "version": "3.1.13",
+  "version": "3.1.14",
   "description": "TWAP UI",
   "license": "MIT",
   "author": "Orbs",
@@ -22,25 +22,22 @@
   },
   "dependencies": {
     "@orbs-network/swap-ui": "^0.0.41",
-    "@orbs-network/twap-sdk": "^3.1.13",
+    "@orbs-network/twap-sdk": "^3.1.14",
     "@react-icons/all-files": "^4.1.0",
     "@tanstack/react-query": "4.x",
     "bignumber.js": "9.x",
-    "moment": "2.x",
+    "moment": "^2.30.1",
     "react-error-boundary": "^4.0.10",
     "react-number-format": "5.x",
     "react-virtuoso": "^4.12.6",
-    "styled-components": "^6.1.12",
     "viem": "^2.23.2",
     "zustand": "^5.0.4"
   },
   "peerDependencies": {
     "bignumber.js": ">=9.0.0",
-    "moment": ">=2.0.0",
     "react": "*",
     "react-dom": "*",
-    "react-number-format": ">=5.0.0",
-    "styled-components": ">=5.0.0"
+    "react-number-format": ">=5.0.0"
   },
   "jest": {
     "preset": "ts-jest",
