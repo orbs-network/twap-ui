@@ -1,11 +1,11 @@
-import { Configs, OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
+import { Config, Configs, OrderInputValidation, Status, TokenData, TokensValidation, TWAPLib } from "@orbs-network/twap";
 import { useTwapContext } from "./context";
 import Web3 from "web3";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BN from "bignumber.js";
 import { InitLibProps, State, Translations } from "./types";
-import _ from "lodash";
+import _, { result } from "lodash";
 import { analytics } from "./analytics";
 import {
   eqIgnoreCase,
@@ -21,12 +21,15 @@ import {
   networks,
   maxUint256,
   parsebn,
+  erc20abi,
 } from "@defi.org/web3-candies";
-import { TimeResolution, useLimitPriceStore, useOrdersStore, useTwapStore, useWizardStore, WizardAction, WizardActionStatus } from "./store";
+import { TimeResolution, useLimitPriceStore, useTwapStore, useWizardStore } from "./store";
 import { MIN_NATIVE_BALANCE, QUERY_PARAMS, REFETCH_BALANCE, REFETCH_GAS_PRICE, REFETCH_ORDER_HISTORY, REFETCH_USD, STALE_ALLOWANCE, SUGGEST_CHUNK_VALUE } from "./consts";
 import { QueryKeys } from "./enums";
 import { useNumericFormat } from "react-number-format";
 import moment from "moment";
+import { ContractCallResults, Multicall } from "ethereum-multicall";
+
 import {
   amountBN,
   amountBNV2,
@@ -40,7 +43,7 @@ import {
   safeInteger,
   setQueryParam,
 } from "./utils";
-import { getOrders, groupOrdersByStatus, Order, waitForOrdersCancelled, waitForOrdersUpdate, waitForOrdersLengthUpdate } from "./order";
+import { getOrders, groupOrdersByStatus, Order } from "./order";
 
 /**
  * Actions
@@ -321,18 +324,28 @@ export const useCustomActions = () => {
 export const useCancelOrder = () => {
   const lib = useTwapStore((state) => state.lib);
   const { onOrderCancelled } = useOrdersHistoryQuery();
+  const { provider } = useTwapContext();
   const { priorityFeePerGas, maxFeePerGas } = useGasPriceQuery();
   return useMutation(
-    async (orderId: number) => {
-      analytics.onCancelOrder(orderId);
-      await lib?.cancelOrder(orderId, priorityFeePerGas, maxFeePerGas);
-      await onOrderCancelled(orderId);
+    async (order: Order) => {
+      if (!lib) return;
+      // we need to make sure that the twap address is the order created twap address
+      const config = {
+        ...lib.config,
+        twapAddress: order.twapAddress || lib.config.twapAddress,
+      } as Config;
+      const orderLib = new TWAPLib(config, lib.maker, provider);
+      analytics.onCancelOrder(order.id);
+      await orderLib.cancelOrder(order.id, priorityFeePerGas, maxFeePerGas);
+      await onOrderCancelled(order.id);
     },
     {
-      onSuccess: (_result) => {
+      onSuccess: () => {
         analytics.onCancelOrderSuccess();
       },
       onError: (error: Error) => {
+        console.log({ error });
+
         analytics.onCanelOrderError(error.message);
       },
     }
@@ -534,13 +547,36 @@ const useGasPriceQuery = () => {
   };
 };
 
-const LEGACY_TWAP_ADDRESSES = {
-  [Configs.PancakeSwap.name]: ["0x25a0A78f5ad07b2474D3D42F1c1432178465936d"],
-};
+const linea_exchanges = ["0x3A9df3eE209b802D0337383f5abCe3204d623588"];
+const base_exchanges = ["0x10ed1F36e4eBE76E161c9AADDa20BE841bc0082c", "0x3A9df3eE209b802D0337383f5abCe3204d623588"];
+const arbitrum_exchanges = ["0xE20167871dB616DdfFD0Fd870d9bC068C350DD1F", "0x807488ADAD033e95C438F998277bE654152594dc"];
+const bsc_exchanges = ["0xb2BAFe188faD927240038cC4FfF2d771d8A58905", "0xE2a0c3b9aD19A18c4bBa7fffBe5bC1b0E58Db1CE"];
 
 const LEGACY_EXCHANGE_ADDRESSES = {
-  [Configs.PancakeSwap.name]: ["0xb2BAFe188faD927240038cC4FfF2d771d8A58905"],
+  [Configs.PancakeSwap.name]: [...bsc_exchanges, ...base_exchanges, ...arbitrum_exchanges, ...linea_exchanges],
 };
+
+export const parseOrderStatus = (progress = 0, status?: number) => {
+  if (progress === 100) return Status.Completed;
+  if (status && status > Date.now() / 1000) return Status.Open;
+
+  switch (status) {
+    case 1:
+      return Status.Canceled;
+    case 2:
+      return Status.Completed;
+    default:
+      return Status.Expired;
+  }
+};
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function timeoutPromise(ms: number) {
+  return new Promise((_, reject) => setTimeout(() => reject(new Error("Request timed out")), ms));
+}
 
 export const useOrdersHistoryQuery = () => {
   const { lib, updateState, loading } = useTwapStore((state) => ({
@@ -550,28 +586,66 @@ export const useOrdersHistoryQuery = () => {
     loading: state.loading,
   }));
 
-  const queryClient = useQueryClient();
   const queryKey = useMemo(() => [QueryKeys.GET_ORDER_HISTORY, lib?.maker, lib?.config.chainId], [lib?.maker, lib?.config.chainId]);
 
   const query = useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!lib?.maker) return [];
-      const getOrdersByTwap = (twapAddress: string) => {
-        return getOrders({
-          account: lib!.maker,
-          signal,
-          chainId: lib!.config.chainId,
-          twapAddress,
-        });
-      };
+      if (!lib || !lib.maker) return [];
 
-      const twapAddresses = [lib?.config.twapAddress, ...(LEGACY_TWAP_ADDRESSES[lib?.config.name] || [])];
-      const result = await Promise.all(twapAddresses.map(getOrdersByTwap));
-      const orders = result.flat();
+      const orders = await getOrders({
+        account: lib!.maker,
+        signal,
+        chainId: lib!.config.chainId,
+        twapAddress: "",
+      });
       const exchangeAddresses = [lib?.config.exchangeAddress, ...(LEGACY_EXCHANGE_ADDRESSES[lib?.config.name] || [])].map((it) => it.toLowerCase());
       // show orders for selected exchange
-      return orders.filter((order) => exchangeAddresses.includes(order.exchange.toLowerCase()));
+      const filtered = orders.filter((order) => exchangeAddresses.includes(order.exchange.toLowerCase()));
+
+      async function fetchStatusesWithRetries(retries = 3, delay = 2000) {
+        const statuses: { [address: string]: Status } = {};
+
+        for (let attempt = 1; attempt <= retries; attempt++) {
+          let provider = lib!.provider;
+          if (attempt > 1) {
+            provider = new Web3(`https://rpcman.orbs.network/rpc?chainId=${lib!.config.chainId}&appId=twap-ui`);
+          }
+
+          const multicall = new Multicall({
+            web3Instance: provider,
+            tryAggregate: true,
+          });
+
+          const context = filtered.map((order) => ({
+            reference: order.id.toString(),
+            contractAddress: order.twapAddress,
+            abi: lib!.config.twapAbi,
+            calls: [{ reference: "status", methodName: "status", methodParameters: [order.id] }],
+          }));
+          try {
+            const r = (await await Promise.race([multicall.call(context), timeoutPromise(5_000)])) as ContractCallResults;
+            Object.entries(r.results).forEach(([id, result]) => {
+              const order = filtered.find((it) => it.id.toString() === id);
+              const status = result.callsReturnContext[0].returnValues[0];
+              statuses[id] = parseOrderStatus(order?.progress, status);
+            });
+
+            return statuses; // success
+          } catch (error) {
+            console.error(`Attempt ${attempt} failed:`, error);
+            if (attempt < retries) {
+              await sleep(delay); // wait before next retry
+            } else {
+              throw new Error("All retries failed.");
+            }
+          }
+        }
+      }
+
+      const statuses = await fetchStatusesWithRetries();
+
+      return filtered.map((it) => ({ ...it, status: statuses?.[it.id.toString()] || Status.Expired }));
     },
     staleTime: Infinity,
     refetchInterval: REFETCH_ORDER_HISTORY,
@@ -580,18 +654,25 @@ export const useOrdersHistoryQuery = () => {
 
   const onOrderCreated = useCallback(
     async (orderId?: number) => {
-      if (!lib) return;
       updateState({ newOrderLoading: true });
       try {
-        let orders: Order[] = [];
         if (!orderId) {
-          orders = await waitForOrdersLengthUpdate(lib.config, query.data?.length || 0, lib!.maker);
+          await query.refetch();
         } else {
-          orders = await waitForOrdersUpdate(lib.config, orderId, lib!.maker);
-        }
+          const fetchUntilUpdate = async () => {
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
+              const orders = (await query.refetch()).data;
+              if (orders?.find((it) => it.id === orderId)) {
+                break;
+              }
 
-        if (orders?.length) {
-          queryClient.setQueriesData(queryKey, orders);
+              // Avoid hammering the server: wait a bit
+              await new Promise((res) => setTimeout(res, 3_000)); // 1 second delay
+            }
+          };
+
+          await fetchUntilUpdate();
         }
       } catch (error) {
         console.error(error);
@@ -599,17 +680,27 @@ export const useOrdersHistoryQuery = () => {
         updateState({ newOrderLoading: false });
       }
     },
-    [lib, queryKey, queryClient, updateState, query.data]
+    [query]
   );
 
   const onOrderCancelled = useCallback(
     async (orderId: number) => {
-      const orders = await waitForOrdersCancelled(lib!.config, orderId, lib!.maker);
-      if (orders?.length) {
-        queryClient.setQueriesData(queryKey, orders);
-      }
+      const fetchUntilUpdate = async () => {
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const orders = (await query.refetch()).data;
+          if (orders?.find((it) => it.id === orderId)?.status.toLowerCase() === Status.Canceled.toLowerCase()) {
+            break;
+          }
+
+          // Avoid hammering the server: wait a bit
+          await new Promise((res) => setTimeout(res, 3_000)); // 1 second delay
+        }
+      };
+
+      await fetchUntilUpdate();
     },
-    [lib, queryKey, queryClient]
+    [query]
   );
 
   return {
@@ -1436,6 +1527,13 @@ export const useDeadline = () => {
   const currentTime = useTwapStore((s) => s.currentTime);
 
   const durationUi = useDurationUi();
+
+  // return useMemo(() => {
+  //   return moment(currentTime)
+  //     .add((durationUi.amount || 0) * durationUi.resolution)
+  //     .add(10, "days")
+  //     .valueOf();
+  // }, [durationUi, currentTime]);
 
   return useMemo(() => {
     return moment(currentTime)

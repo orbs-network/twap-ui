@@ -13,12 +13,14 @@ import BN from "bignumber.js";
 import { ExplorerIcon } from "./icons";
 import { OrderDetails, OrderDetailsRow } from "../../components";
 import { useOrderPrice } from "./hooks";
+import { Order } from "../../order";
 
 const OrderExpanded = () => {
   return (
     <StyledColumnFlex className="twap-order-expanded">
       <StyledContainer className="twap-order-expanded-details">
         <OrderStatusComponent />
+        <OrderId />
         <OrderPrice />
         <Filled />
         <MinAmountOut />
@@ -30,6 +32,11 @@ const OrderExpanded = () => {
       <OrderBottom />
     </StyledColumnFlex>
   );
+};
+
+const OrderId = () => {
+  const { order } = useListOrderContext();
+  return <OrderDetails.Id id={order.id} />;
 };
 
 const OrderStatusComponent = () => {
@@ -91,7 +98,7 @@ const CancelButton = () => {
 
   if (order.status !== Status.Open) return null;
 
-  return <CancelOrderButton orderId={order.id} />;
+  return <CancelOrderButton order={order} />;
 };
 
 const Expiry = () => {
@@ -158,7 +165,7 @@ const OrderPrice = () => {
   return <OrderDetails.Price srcToken={srcToken} dstToken={dstToken} price={price} />;
 };
 
-export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number; className?: string }) => {
+export const CancelOrderButton = ({ order, className = "" }: { order: Order; className?: string }) => {
   const { isLoading, mutateAsync } = useCancelOrder();
   const { translations, onCancelOrderSuccess } = useTwapContext();
 
@@ -166,11 +173,13 @@ export const CancelOrderButton = ({ orderId, className = "" }: { orderId: number
     async (e: any) => {
       e.stopPropagation();
       try {
-        await mutateAsync(orderId);
-        onCancelOrderSuccess?.(orderId);
-      } catch (error) {}
+        await mutateAsync(order);
+        onCancelOrderSuccess?.(order.id);
+      } catch (error) {
+        console.error(error);
+      }
     },
-    [orderId, mutateAsync, onCancelOrderSuccess]
+    [order, mutateAsync, onCancelOrderSuccess]
   );
 
   return (

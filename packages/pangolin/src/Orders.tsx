@@ -244,6 +244,10 @@ const OrderStatus = ({ orderUI }: { orderUI: OrderUI }) => {
   return <OrderDetail label="Status" value={getStatusName(orderUI?.ui.status)} />;
 };
 
+const OrderId = ({ orderUI }: { orderUI: OrderUI }) => {
+  return <OrderDetail label="Id" value={orderUI?.order.id} />;
+};
+
 const TotalTrades = ({ orderUI }: { orderUI: OrderUI }) => {
   const { translations } = useTwapContext();
   const { limit } = useOrdersContext();
@@ -275,11 +279,6 @@ const Deadline = ({ orderUI }: { orderUI: OrderUI }) => {
 
   if (limit) return null;
   return <OrderDetail labelTooltip={translations.maxDurationTooltip} label={translations.deadline} value={<Typography>{orderUI?.ui.deadlineUi}</Typography>} />;
-};
-
-const CancelOrder = ({ className = "", orderUI }: { className?: string; orderUI?: OrderUI }) => {
-  if (orderUI?.ui.status !== Status.Open) return null;
-  return <StyledCancelButton className={className} orderId={orderUI!.order.id} />;
 };
 
 const Header = () => {
@@ -318,6 +317,7 @@ const OrderDetails = ({ orderUI, className = "" }: { orderUI: OrderUI; className
   return (
     <SelectedOrderContext.Provider value={{ orderUI }}>
       <StyledDetails className={className}>
+        <OrderId orderUI={orderUI} />
         <SrcTokenAmount orderUI={orderUI} />
         <DstTokenAmount orderUI={orderUI} />
         <MinReceivedPerTrade orderUI={orderUI} />

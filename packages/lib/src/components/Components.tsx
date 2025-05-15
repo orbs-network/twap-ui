@@ -817,6 +817,10 @@ const Expiry = ({ expiryMillis, format = "ll HH:mm" }: { expiryMillis?: number; 
   );
 };
 
+const OrderId = ({ id }: { id: number }) => {
+  return <OrderDetailsRow label="Order ID">{id}</OrderDetailsRow>;
+};
+
 const Price = ({ srcToken, dstToken, price: _price }: { srcToken?: TokenData; dstToken?: TokenData; price?: string }) => {
   return <StyledPrice label="Price">{_price ? <InvertPrice price={_price} srcToken={srcToken} dstToken={dstToken} /> : "-"}</StyledPrice>;
 };
@@ -914,6 +918,7 @@ OrderDetails.SizePerTrade = SizePerTrade;
 OrderDetails.TradeInterval = TradeInterval;
 OrderDetails.Fee = Fee;
 OrderDetails.Row = OrderDetailsRow;
+OrderDetails.Id = OrderId;
 
 export const StyledDetailRowChildren = styled(StyledRowFlex)({
   width: "fit-content",

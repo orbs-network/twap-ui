@@ -99,7 +99,7 @@ export const TwapAdapter = (props: TwapLibProps) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TwapContext.Provider value={{ ...props, translations, uiPreferences: props.uiPreferences || {} }}>
+      <TwapContext.Provider value={{ ...props, translations, uiPreferences: props.uiPreferences || {}, provider: props.provider }}>
         <WrappedTwap {...props} />
       </TwapContext.Provider>
     </QueryClientProvider>

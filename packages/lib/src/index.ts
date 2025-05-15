@@ -14,4 +14,4 @@ export * from "./components/OrdersComponents";
 export * from "./ui-helper";
 export * from "./utils";
 export { default as translations } from "./i18n/en.json";
-export { Order, waitForOrdersUpdate } from "./order";
+export { Order } from "./order";

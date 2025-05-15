@@ -2,6 +2,7 @@ import { Config, Status } from "@orbs-network/twap";
 import BN from "bignumber.js";
 import _ from "lodash";
 import { amountUiV2 } from "./utils";
+import { networks } from "@defi.org/web3-candies";
 
 const getOrderProgress = (srcFilled?: string, srcAmountIn?: string) => {
   if (!srcFilled || !srcAmountIn) return 0;
@@ -48,27 +49,13 @@ const ordersCreatedQueryValues = `
       srcTokenSymbol
       timestamp
       transactionHash
+      twapAddress
 `;
 
-const getCreatedOrders = async ({
-  endpoint,
-  signal,
-  account,
-  page = 0,
-  limit,
-  twapAddress,
-}: {
-  endpoint: string;
-  signal?: AbortSignal;
-  account?: string;
-  page: number;
-  limit: number;
-  twapAddress?: string;
-}) => {
-  const address = twapAddress ? `twapAddress: "${twapAddress}"` : "";
+const getCreatedOrders = async ({ endpoint, signal, account, page = 0, limit }: { endpoint: string; signal?: AbortSignal; account?: string; page: number; limit: number }) => {
   const maker = account ? `, maker: "${account}"` : "";
 
-  const where = `where:{${address} ${maker}}`;
+  const where = `where:{ ${maker}}`;
 
   const query = `
   {
@@ -116,25 +103,13 @@ export const getCreatedOrder = async ({ endpoint, signal, id, txHash }: { endpoi
   return response.data.orderCreateds;
 };
 
-const getAllCreatedOrders = async ({
-  account,
-  endpoint,
-  signal,
-  twapAddress,
-  limit,
-}: {
-  account: string;
-  endpoint: string;
-  signal?: AbortSignal;
-  twapAddress?: string;
-  limit: number;
-}) => {
+const getAllCreatedOrders = async ({ account, endpoint, signal, limit }: { account: string; endpoint: string; signal?: AbortSignal; limit: number }) => {
   let page = 0;
-  let orders: any = [];
+  const orders: any = [];
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const orderCreateds = await getCreatedOrders({
-      twapAddress,
       account,
       signal,
       endpoint,
@@ -151,31 +126,6 @@ const getAllCreatedOrders = async ({
   return orders;
 };
 
-const getOrderStatuses = async (ids: string[], endpoint: string, twapAddress: string, signal?: AbortSignal) => {
-  const query = `
-      {
-          statusNews(where:{twapId_in: [${ids.map((id) => `"${id}"`)}], twapAddress: "${twapAddress}"}) {
-            twapId
-            status
-          }
-        }
-        `;
-
-  const response = await fetch(endpoint, {
-    method: "POST",
-    body: JSON.stringify({ query }),
-    signal,
-  });
-  const payload = await response.json();
-  if (payload.errors) {
-    throw new Error(payload.errors[0].message);
-  }
-  return payload.data.statusNews.reduce((result: { [key: string]: string }, item: any) => {
-    result[item.twapId] = item.status;
-    return result;
-  }, {});
-};
-
 const parseFills = (orderId: number, fills?: any) => {
   return {
     TWAP_id: Number(orderId),
@@ -188,12 +138,13 @@ const parseFills = (orderId: number, fills?: any) => {
   };
 };
 
-const getAllFills = async ({ endpoint, signal, ids, chainId, twapAddress }: { endpoint: string; signal?: AbortSignal; ids: string[]; chainId: number; twapAddress: string }) => {
+const getAllFills = async ({ endpoint, signal, ids, chainId }: { endpoint: string; signal?: AbortSignal; ids: string[]; chainId: number }) => {
   const LIMIT = 1_000;
   let page = 0;
-  const where = `where: { TWAP_id_in: [${ids.join(", ")}], twapAddress: "${twapAddress}" }`;
-  let fills = [];
+  const where = `where: { TWAP_id_in: [${ids.join(", ")}] }`;
+  const fills = [];
   const dexFee = chainId === 56 ? "dexFee" : "";
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const query = `
     {
@@ -219,7 +170,7 @@ const getAllFills = async ({ endpoint, signal, ids, chainId, twapAddress }: { en
     });
     const response = await payload.json();
 
-    let orderFilleds = _.groupBy(response.data.orderFilleds, "TWAP_id");
+    const orderFilleds = _.groupBy(response.data.orderFilleds, "TWAP_id");
 
     const result = Object.entries(orderFilleds).map(([orderId, fills]: any) => {
       return parseFills(orderId, fills);
@@ -229,7 +180,6 @@ const getAllFills = async ({ endpoint, signal, ids, chainId, twapAddress }: { en
     if (fills.length < LIMIT) break;
     page++;
   }
-
   return fills;
 };
 
@@ -267,8 +217,10 @@ export class Order {
   dollarValueIn: string;
   blockNumber: number;
   dexFee: string;
+  twapAddress: string;
 
-  constructor(rawOrder: any, fills: any, status: any) {
+  constructor(rawOrder: any, fills: any) {
+    this.status = "";
     const isMarketOrder = BN(rawOrder.ask_dstMinAmount || 0).lte(1);
     this.srcTokenSymbol = rawOrder.srcTokenSymbol;
     this.dollarValueIn = rawOrder.dollarValueIn;
@@ -291,9 +243,9 @@ export class Order {
     this.srcFilledAmountUsd = fills?.dollarValueIn || "0";
     this.dstFilledAmountUsd = fills?.dollarValueOut || "0";
     this.progress = progress;
-    this.status = getOrderStatus(progress, rawOrder, status);
     this.srcTokenAddress = rawOrder.ask_srcToken;
     this.dstTokenAddress = rawOrder.ask_dstToken;
+    this.twapAddress = rawOrder.twapAddress;
     this.totalChunks = new BN(rawOrder.ask_srcAmount || 0)
       .div(rawOrder.ask_srcBidAmount || 1) // Avoid division by zero
       .integerValue(BN.ROUND_FLOOR)
@@ -333,12 +285,13 @@ export const getMinimumDelayMinutes = (config: Config) => {
 const THE_GRAPH_API = "https://hub.orbs.network/api/apikey/subgraphs/id";
 
 export const THE_GRAPH_ORDERS_API = {
-  1: `${THE_GRAPH_API}/Bf7bvMYcJbDAvYWJmhMpHZ4cpFjqzkhK6GXXEpnPRq6`,
-  56: `${THE_GRAPH_API}/4NfXEi8rreQsnAr4aJ45RLCKgnjcWX46Lbt9SadiCcz6`,
-  137: `${THE_GRAPH_API}/3PyRPWSvDnMowGbeBy7aNsvUkD5ZuxdXQw2RdJq4NdXi`,
-  42161: `${THE_GRAPH_API}/83bpQexEaqBjHaQbKoFTbtvCXuo5RudRkfLgtRUYqo2c`,
-  8453: `${THE_GRAPH_API}/DFhaPQb3HATXkpsWNZw3gydYHehLBVEDiSk4iBdZJyps`,
-  1329: `${THE_GRAPH_API}/5zjzRnURzoddyFSZBw5E5NAM3oBgPq3NasTYbtMk6EL6`,
+  [networks.eth.id]: `${THE_GRAPH_API}/Bf7bvMYcJbDAvYWJmhMpHZ4cpFjqzkhK6GXXEpnPRq6`,
+  [networks.bsc.id]: `${THE_GRAPH_API}/4NfXEi8rreQsnAr4aJ45RLCKgnjcWX46Lbt9SadiCcz6`,
+  [networks.poly.id]: `${THE_GRAPH_API}/3PyRPWSvDnMowGbeBy7aNsvUkD5ZuxdXQw2RdJq4NdXi`,
+  [networks.arb.id]: `${THE_GRAPH_API}/83bpQexEaqBjHaQbKoFTbtvCXuo5RudRkfLgtRUYqo2c`,
+  [networks.base.id]: `${THE_GRAPH_API}/DFhaPQb3HATXkpsWNZw3gydYHehLBVEDiSk4iBdZJyps`,
+  [networks.linea.id]: `${THE_GRAPH_API}/6VsNPEYfFLPZCqdMMDadoXQjLHWJdjEwiD768GAtb7j6`,
+  [networks.ftm.id]: `${THE_GRAPH_API}/DdRo1pmJkrJC9fjsjEBWnNE1uqrbh7Diz4tVKd7rfupp`,
 };
 
 export const getTheGraphUrl = (chainId?: number) => {
@@ -352,7 +305,6 @@ export const getOrders = async ({
   signal,
   page,
   limit = 1_000,
-  twapAddress: _twapAddress,
 }: {
   account?: string;
   signal?: AbortSignal;
@@ -362,21 +314,19 @@ export const getOrders = async ({
   twapAddress: string;
 }): Promise<Order[]> => {
   const endpoint = getTheGraphUrl(chainId);
-  const twapAddress = _twapAddress?.toLowerCase();
   if (!endpoint) return [];
   let orders: any = [];
   if (typeof page === "number") {
-    orders = await getCreatedOrders({ endpoint, signal, account, twapAddress, page, limit });
+    orders = await getCreatedOrders({ endpoint, signal, account, page, limit });
   } else {
-    orders = await getAllCreatedOrders({ endpoint, signal, account, twapAddress, limit });
+    orders = await getAllCreatedOrders({ endpoint, signal, account, limit });
   }
 
   const ids = orders.map((order: any) => order.Contract_id);
-  const fills = await getAllFills({ endpoint, signal, ids, chainId, twapAddress });
-  const statuses = await getOrderStatuses(ids, endpoint, twapAddress, signal);
+  const fills = await getAllFills({ endpoint, signal, ids, chainId });
   orders = orders.map((rawOrder: any) => {
     const fill = fills?.find((it: any) => it.TWAP_id === Number(rawOrder.Contract_id));
-    return new Order(rawOrder, fill, statuses?.[rawOrder.Contract_id]);
+    return new Order(rawOrder, fill);
   });
 
   return _.orderBy(orders, (o: any) => o.createdAt, "desc");
@@ -392,76 +342,6 @@ export const groupOrdersByStatus = (orders: Order[]): GroupedOrders => {
     [Status.Canceled]: grouped[Status.Canceled] || [],
   };
 };
-
-export const waitForOrdersUpdate = async (config: Config, orderId: number, account: string, signal?: AbortSignal): Promise<Order[]> => {
-  const MAX_ATTEMPTS = 20;
-  const POLL_INTERVAL_MS = 3_000;
-
-  for (let i = 0; i < MAX_ATTEMPTS; i++) {
-    try {
-      const orders = await getOrders({
-        twapAddress: config.twapAddress,
-        account,
-        signal,
-        chainId: config.chainId,
-      });
-
-      if (orders.some((order) => order.id === orderId)) {
-        return orders;
-      }
-    } catch (error) {
-      if (signal?.aborted) {
-        throw new Error("Operation aborted");
-      }
-      console.error("Error fetching orders:", error);
-    }
-
-    await delay(POLL_INTERVAL_MS);
-  }
-
-  throw new Error(`Timeout: Order with ID ${orderId} not found within the allowed attempts`);
-};
-
-export const waitForOrdersLengthUpdate = async (config: Config, currentOrdersLength: number, account: string, signal?: AbortSignal): Promise<Order[]> => {
-  const MAX_ATTEMPTS = 20;
-  const POLL_INTERVAL_MS = 3_000;
-
-  for (let i = 0; i < MAX_ATTEMPTS; i++) {
-    try {
-      const orders = await getOrders({
-        twapAddress: config.twapAddress,
-        account,
-        signal,
-        chainId: config.chainId,
-      });
-
-      if (orders.length > currentOrdersLength) {
-        return orders;
-      }
-    } catch (error) {
-      if (signal?.aborted) {
-        throw new Error("Operation aborted");
-      }
-      console.error("Error fetching orders:", error);
-    }
-
-    await delay(POLL_INTERVAL_MS);
-  }
-
-  throw new Error("Timeout: Orders length did not update within the allowed attempts");
-};
-
-export const waitForOrdersCancelled = async (config: Config, orderId: number, account: string, signal?: AbortSignal) => {
-  for (let i = 0; i < 20; i++) {
-    const orders = await getOrders({ twapAddress: config.twapAddress, account, signal, chainId: config.chainId });
-    const order = orders.find((o) => o.id === orderId);
-    if (order && order.status !== Status.Open) {
-      return orders;
-    }
-    await delay(3_000);
-  }
-};
-
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

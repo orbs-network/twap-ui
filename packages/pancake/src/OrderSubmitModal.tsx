@@ -637,7 +637,7 @@ const OrderReview = ({ onSubmit }: { onSubmit: () => void }) => {
         </StyledDisclaimer>
         <StyledButtonContainer>
           <Button disabled={allowanceLoading} onClick={() => onSubmit()}>
-            Confirm
+            {allowanceLoading ? "Loading" : "Confirm"}
           </Button>
         </StyledButtonContainer>
       </StyledOrderSummary>

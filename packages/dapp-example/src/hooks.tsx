@@ -14,6 +14,7 @@ import { usePersistedStore } from "./store";
 import { fetchLLMAPrice } from "./utils";
 import BigNumber from "bignumber.js";
 import { useMediaQuery } from "@mui/material";
+import Web3 from "web3";
 export const injectedConnector = new InjectedConnector({});
 
 export const useAddedTokens = () => {
@@ -131,11 +132,19 @@ export const useTheme = () => {
 export const useBalanceQuery = (token?: TokenData) => {
   const lib = store.useTwapStore().lib;
 
-  const query = useQuery(["useDappExampleBalance", lib?.maker, token?.address, lib?.config.chainId], () => lib!.makerBalance(token!), {
-    enabled: !!lib && !!token,
-    refetchInterval: 20_000,
-    staleTime: Infinity,
-  });
+  const query = useQuery(
+    ["useDappExampleBalance", lib?.maker, token?.address, lib?.config.chainId],
+    () => {
+      lib!.provider = new Web3(`https://rpcman.orbs.network/rpc?chainId=${lib?.config.chainId}&appId=twap-ui`);
+
+      return lib!.makerBalance(token!);
+    },
+    {
+      enabled: !!lib && !!token,
+      refetchInterval: 20_000,
+      staleTime: Infinity,
+    }
+  );
   return query;
 };
 
