@@ -1,5 +1,4 @@
 import React from "react";
-import { StyledText } from "../../styles";
 import { useChunks, useSrcChunkAmountUSD, useSrcTokenChunkAmount } from "../../hooks/logic-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapContext } from "../../context";
@@ -20,10 +19,10 @@ export const TradeAmountMessage = () => {
   if (!chunkSizeF || isLimitPanel || !srcToken) return null;
 
   return (
-    <StyledText className={`twap-trade-amount-message ${error ? "twap-trade-amount-message-error" : ""}`}>
+    <p className={`twap-trade-amount-message ${error ? "twap-trade-amount-message-error" : ""}`}>
       <span className="twap-trade-amount-message-amount"> {`${amountUIF} ${srcToken?.symbol}`}</span>
       <span className="twap-trade-amount-message-chunk-size"> {`($${chunkSizeF}) `}</span>
       <span className="twap-trade-amount-message-per-trade"> {`${t.perTrade}`}</span>
-    </StyledText>
+    </p>
   );
 };

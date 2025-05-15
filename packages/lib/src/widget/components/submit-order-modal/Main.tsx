@@ -1,4 +1,3 @@
-import { styled } from "styled-components";
 import BN from "bignumber.js";
 import React, { useCallback, useMemo } from "react";
 import { SwapFlow } from "@orbs-network/swap-ui";
@@ -33,7 +32,7 @@ const Price = () => {
   );
 };
 
-export const AcceptDisclaimer = ({ className }: { className?: string }) => {
+export const AcceptDisclaimer = ({ className = "" }: { className?: string }) => {
   const { translations: t } = useTwapContext();
   const disclaimerAccepted = useTwapStore((s) => s.state.disclaimerAccepted);
   const updateState = useTwapStore((s) => s.updateState);
@@ -43,25 +42,15 @@ export const AcceptDisclaimer = ({ className }: { className?: string }) => {
   }, [disclaimerAccepted, updateState]);
 
   return (
-    <StyledDisclaimer className={`twap-order-modal-disclaimer ${className}`}>
+    <div className={`twap-order-modal-disclaimer ${className}`}>
       <Label text={t.accept} />
       <Link href="https://www.orbs.com/dtwap-dlimit-disclaimer">{t.disclaimer}</Link>
       <div className="twap-order-modal-disclaimer-toggle">
         <Switch checked={Boolean(disclaimerAccepted)} onChange={onChange} />
       </div>
-    </StyledDisclaimer>
+    </div>
   );
 };
-
-const StyledDisclaimer = styled("div")({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  gap: 5,
-  ".twap-order-modal-disclaimer-toggle": {
-    marginLeft: "auto",
-  },
-});
 
 const FillDelaySummary = () => {
   const chunks = useChunks().chunks;
@@ -88,20 +77,16 @@ export const Main = () => {
         outUsd={components.USD ? <components.USD value={dstAmountUsd} isLoading={false} /> : `$${outUsd}`}
       />
       {!swapStatus && (
-        <StyledBottom className="twap-create-order-bottom">
+        <div className="twap-create-order-bottom">
           <FillDelaySummary />
           <Details />
           <AcceptDisclaimer />
           <SubmitButton />
-        </StyledBottom>
+        </div>
       )}
     </>
   );
 };
-
-const StyledBottom = styled("div")({
-  width: "100%",
-});
 
 const Details = () => {
   const { isLimitPanel, srcToken, dstToken } = useTwapContext();

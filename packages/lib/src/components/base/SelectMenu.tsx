@@ -1,9 +1,7 @@
-import { styled } from "styled-components";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDown } from "@react-icons/all-files/io/IoIosArrowDown";
 import { ClickAwayListener } from "./ClickAwayListener";
 import { SelectMeuItem } from "../../types";
-import { StyledText } from "../../styles";
 import { useTwapContext } from "../../context";
 
 interface Props {
@@ -46,51 +44,22 @@ export const SelectMenu = (props: Props) => {
   return (
     <div className="twap-select">
       <ClickAwayListener onClickAway={() => setOpen(false)}>
-        <Container className="twap-select-menu">
-          <StyledSelected onClick={() => setOpen(!open)} className={`${props.className || ""} twap-select-menu-button`}>
-            <StyledText> {selected?.text}</StyledText>
+        <div className="twap-select-menu">
+          <div onClick={() => setOpen(!open)} className={`${props.className || ""} twap-select-menu-button`}>
+            <p> {selected?.text}</p>
             <IoIosArrowDown />
-          </StyledSelected>
+          </div>
           {open && (
-            <Menu className="twap-select-menu-list">
+            <div className="twap-select-menu-list">
               {props.items.map((item) => (
-                <StyledMenuItem className="twap-select-menu-list-item" key={item.value} onClick={() => onSelect(item)}>
-                  <StyledText>{item.text}</StyledText>
-                </StyledMenuItem>
+                <div className="twap-select-menu-list-item" key={item.value} onClick={() => onSelect(item)}>
+                  <p>{item.text}</p>
+                </div>
               ))}
-            </Menu>
+            </div>
           )}
-        </Container>
+        </div>
       </ClickAwayListener>
     </div>
   );
 };
-
-const Container = styled.div`
-  position: relative;
-`;
-
-const StyledSelected = styled("button")({
-  display: "flex",
-  alignItems: "center",
-  gap: 5,
-  textTransform: "capitalize",
-  color: "inherit",
-  cursor: "pointer",
-});
-
-const Menu = styled.div`
-  position: absolute;
-  z-index: 1000;
-  margin-top: 5px;
-  top: 100%;
-  overflow: hidden;
-`;
-
-const StyledMenuItem = styled.div`
-  cursor: pointer;
-  text-transform: capitalize;
-  p {
-    margin: 0;
-  }
-`;

@@ -224,7 +224,6 @@ export type LimitPanelPercentSelectProps = {
 };
 
 export type MessageProps = {
-  title: ReactNode;
   variant: MessageVariant;
   text: ReactNode;
 };
@@ -335,6 +334,9 @@ interface Components {
   CreateOrderPanelSuccessIcon?: ReactNode;
   CreateOrderPanelErrorIcon?: ReactNode;
   CancelOrderPanel?: FC<CancelOrderProps>;
+
+  SkeletonLoader?: FC;
+  Spinner?: FC;
 }
 
 interface CreateOrderCallbackArgs {
@@ -417,7 +419,6 @@ export interface TwapProps {
   marketReferencePrice: { value?: string; isLoading?: boolean };
   customMinChunkSizeUsd?: number;
   useToken?: (value?: string) => Token | undefined;
-  includeStyles?: boolean;
   callbacks: Callbacks;
   chainId?: number;
   icons?: Icons;

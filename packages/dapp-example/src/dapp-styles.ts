@@ -34,6 +34,12 @@ const getSelectButton = (isDarkMode?: boolean, selected?: boolean) => {
 export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDarkMode }) => {
   const colors = getColors(isDarkMode);
   return {
+    p: {
+      color: colors.text.main,
+    },
+    "*": {
+      boxSizing: "border-box",
+    },
     ".twap-orders": {
       display: "flex",
       flexDirection: "column",
@@ -124,6 +130,14 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       },
     },
     ".twap-order-details__detail-row": {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      justifyContent: "space-between",
+      a: {
+        color: colors.text.main,
+        textDecoration: "none",
+      },
       "&-label": {
         "*": {
           fontSize: 14,
@@ -185,16 +199,28 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       maxHeight: "60vh",
       height: 700,
     },
+    ".twap-orders__list-empty": {
+      textAlign: "center",
+      marginTop: 20,
+      marginBottom: 20,
+    },
     ".twap-orders__list-item": {
       cursor: "pointer",
       background: "#1B1B1B",
       padding: 12,
       borderRadius: 16,
       marginBottom: 6,
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
       "&:hover": {
         background: "rgba(255,255,255, 0.06)",
       },
       "&-header": {
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
+        justifyContent: "space-between",
         "&-title": {
           fontSize: 13,
           span: {
@@ -209,7 +235,27 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       },
     },
 
+    ".twap-orders__list-item-token": {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      img: {
+        width: 20,
+        height: 20,
+        objectFit: "cover",
+        borderRadius: "50%",
+      },
+    },
+    ".twap-orders__list-item-tokens": {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+    },
+
     ".twap-order-modal-disclaimer": {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
       p: {
         color: colors.text.main,
       },
@@ -217,6 +263,9 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         color: colors.text.main,
         textDecoration: "underline",
       },
+    },
+    ".twap-order-modal-disclaimer-toggle": {
+      marginLeft: "auto",
     },
 
     ".twap-select-menu-button": {
@@ -264,12 +313,18 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       color: colors.text.dark,
       fontSize: 14,
     },
-    ".twap-warning-message": {
+    ".twap-message": {
       padding: 16,
       background: "#1B1B1B",
       borderRadius: 20,
       color: colors.text.main,
       fontSize: 14,
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 5,
+      "&-right": {
+        flex: 1,
+      },
       a: {
         color: "white",
         fontWeight: 500,
@@ -307,9 +362,22 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     ".twap-input-loading": {
       opacity: 0,
     },
+
     ".twap-powered-by": {
-      a: {
-        color: colors.text.main,
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      color: colors.text.main,
+      textDecoration: "none",
+      fontSize: 16,
+      marginLeft: "auto",
+      marginRight: "auto",
+      width: "fit-content",
+      marginTop: 15,
+      marginBottom: 15,
+      img: {
+        width: 20,
+        height: 20,
       },
     },
     ".twap-price-switch ": {
@@ -355,12 +423,17 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         },
       },
     },
+
     ".twap-limit-price-panel-usd": {
       color: colors.text.dark,
       fontSize: 14,
       fontWeight: 500,
     },
+    button: {
+      cursor: "pointer",
+    },
     ".twap-limit-price-panel-invert-button": {
+      cursor: "pointer",
       width: 30,
       height: 30,
       display: "flex",
@@ -368,8 +441,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       justifyContent: "center",
       borderRadius: 999,
       position: "relative",
-      top: -5,
-      right: -5,
+
       svg: {
         width: 16,
         height: 16,
@@ -379,13 +451,23 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         background: "rgba(255, 255, 255, 0.07)",
       },
     },
+    ".twap-limit-price-panel-header": {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      justifyContent: "space-between",
+    },
     ".twap-limit-price-panel-title": {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
       ".twap-token-logo": {
         width: 20,
         height: 20,
       },
       ".twap-token-select": {
         paddingRight: 6,
+        width: "auto",
       },
       ".twap-token-select-symbol": {
         fontSize: 14,
@@ -489,6 +571,10 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       input: {
         fontWeight: 500,
         color: colors.text.main,
+        background: "transparent",
+        border: "none",
+        outline: "none",
+        width: "100%",
       },
     },
     ".orbs_StepIndicatorLine": {
@@ -496,6 +582,17 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     },
     ".orbs_StepIndicator": {
       // "--indicator-margin-bottom": "10px",
+    },
+    ".twap-limit-price-panel-body": {
+      display: "flex",
+      gap: 5,
+      ".twap-input": {
+        flex: 1,
+      },
+    },
+    ".twap-panel-content": {
+      display: "flex",
+      justifyContent: "space-between",
     },
     ".twap-limit-price-panel-percent": {
       marginLeft: "auto",
@@ -507,6 +604,9 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
 
     ".twap-limit-price-panel": {
       marginBottom: 5,
+      display: "flex",
+      flexDirection: "column",
+      gap: 5,
       ".twap-input": {
         input: {
           fontSize: 34,
@@ -515,6 +615,9 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     },
 
     ".twap-token-panel": {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
       ".twap-input": {
         input: {
           fontSize: 34,
@@ -565,24 +668,20 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         },
       },
     },
-    ".twap-token-panel-main": {
-      display: "flex",
-      flexDirection: "column",
-      gap: 10,
-    },
-    ".twap-token-panel-main-top": {
+
+    ".twap-token-panel-top": {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
       width: "100%",
     },
-    ".twap-token-panel-main-middle": {
+    ".twap-token-panel-middle": {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
       width: "100%",
     },
-    ".twap-token-panel-main-bottom": {
+    ".twap-token-panel-bottom": {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
@@ -592,6 +691,13 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       color: colors.text.dark,
       fontWeight: 500,
       fontSize: 15,
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      svg: {
+        position: "relative",
+        top: 2,
+      },
     },
     ".twap-duration-panel-buttons ": {
       display: "flex",

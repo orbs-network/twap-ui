@@ -1,9 +1,7 @@
-import { styled } from "styled-components";
 import { RiArrowUpDownLine } from "@react-icons/all-files/ri/RiArrowUpDownLine";
 import { IoClose } from "@react-icons/all-files/io5/IoClose";
 import React, { ReactNode } from "react";
 import { Panel } from "../../components/Panel";
-import { StyledRowFlex, StyledText } from "../../styles";
 import { NumericInput } from "../../components/base";
 import { TokenSelect } from "./token-select";
 import { useTwapContext } from "../../context";
@@ -27,22 +25,22 @@ export const LimitPanel = ({ children, className = "" }: { className?: string; c
   );
 };
 
-function Main({ className = "" }: { className?: string }) {
+function Main() {
   return (
-    <div className={`twap-limit-price-panel-main ${className}`}>
-      <StyledRowFlex style={{ justifyContent: "space-between" }} className="twap-limit-price-panel-main-header">
+    <>
+      <div className="twap-limit-price-panel-header">
         <Title />
         <InvertPriceButton />
-      </StyledRowFlex>
-      <StyledRowFlex style={{ justifyContent: "space-between" }} className="twap-limit-price-panel-main-body">
+      </div>
+      <div className="twap-limit-price-panel-body">
         <Input />
         <DstTokenSelect />
-      </StyledRowFlex>
-      <StyledRowFlex>
+      </div>
+      <div>
         <USD />
         <PercentSelector />
-      </StyledRowFlex>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -55,7 +53,7 @@ const USD = () => {
     return <components.USD isLoading={!usd} value={usd} />;
   }
 
-  return <StyledText className="twap-limit-price-panel-usd">{`$${usdF}`}</StyledText>;
+  return <p className="twap-limit-price-panel-usd">{`$${usdF}`}</p>;
 };
 
 const Input = ({ className = "" }: { className?: string }) => {
@@ -63,7 +61,15 @@ const Input = ({ className = "" }: { className?: string }) => {
   const { onBlur, onFocus } = Panel.usePanelContext();
 
   return (
-    <NumericInput loading={isLoading} className={`twap-limit-price-panel ${className}`} onBlur={onBlur} onFocus={onFocus} disabled={isLoading} onChange={onChange} value={value} />
+    <NumericInput
+      loading={isLoading}
+      className={`twap-limit-price-panel-input ${className}`}
+      onBlur={onBlur}
+      onFocus={onFocus}
+      disabled={isLoading}
+      onChange={onChange}
+      value={value}
+    />
   );
 };
 
@@ -85,7 +91,7 @@ const PercentSelector = () => {
           return (
             <div key={it.text} className={`twap-limit-price-panel-percent-reset`} onClick={it.onClick}>
               <button className={`${className} twap-limit-price-panel-percent-reset-button`}>
-                <StyledText>{it.text}</StyledText>
+                <p>{it.text}</p>
               </button>
               <button className={`${className} twap-limit-price-panel-percent-reset-icon `}>
                 <IoClose />
@@ -118,34 +124,25 @@ const InvertPriceButton = ({ className = "" }: { className?: string }) => {
   }
 
   return (
-    <StyledPriceInvert onClick={onInvert} className={`twap-limit-price-panel-invert-button ${className}`}>
+    <div onClick={onInvert} className={`twap-limit-price-panel-invert-button ${className}`}>
       <RiArrowUpDownLine size="16px" className="twap-limit-price-panel-icon" />
-    </StyledPriceInvert>
+    </div>
   );
 };
-
-const StyledPriceInvert = styled("div")({
-  cursor: "pointer",
-});
 
 const Title = () => {
   const { translations: t } = useTwapContext();
   const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
   return (
     <>
-      <StyledTitle className="twap-limit-price-panel-title">
-        <StyledText className="twap-limit-price-panel-title-text">{t.swapOne}</StyledText>
+      <div className="twap-limit-price-panel-title">
+        <p className="twap-limit-price-panel-title-text">{t.swapOne}</p>
         <TokenSelect isSrcToken={!isInvertedPrice} />
-        <StyledText className="twap-limit-price-panel-title-text">{t.isWorth}</StyledText>
-      </StyledTitle>
+        <p className="twap-limit-price-panel-title-text">{t.isWorth}</p>
+      </div>
     </>
   );
 };
-
-const StyledTitle = styled(StyledRowFlex)({
-  width: "auto",
-  gap: 7,
-});
 
 LimitPanel.Input = Input;
 LimitPanel.DstTokenSelect = DstTokenSelect;

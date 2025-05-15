@@ -1,6 +1,5 @@
 import React, { createContext, ReactNode, useCallback, useContext } from "react";
 import { Label, NumericInput } from "../../components/base";
-import { StyledText } from "../../styles";
 import { Panel } from "../../components/Panel";
 import { TokenSelect } from "./token-select";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
@@ -76,10 +75,10 @@ const Balance = ({ className = "" }: { className?: string }) => {
   }
 
   return (
-    <StyledText onClick={onMax} className={_className}>
+    <p onClick={onMax} className={_className}>
       <span className="twap-token-panel-balance-prefix">{t.balance}:</span>
       <span className="twap-token-panel-balance-value">{srcBalanceF || "0"}</span>
-    </StyledText>
+    </p>
   );
 };
 
@@ -96,9 +95,9 @@ const USD = ({ className = "" }: { className?: string }) => {
   }
 
   return (
-    <StyledText className={_className}>
+    <p className={_className}>
       <span className="twap-token-panel-usd-value"> ${usdF}</span>
-    </StyledText>
+    </p>
   );
 };
 
@@ -144,20 +143,20 @@ const BalanceAmountSelect = ({
 
 const Main = () => {
   return (
-    <div className="twap-token-panel-main">
-      <div className="twap-token-panel-main-top">
+    <>
+      <div className="twap-token-panel-top">
         <TokenPanelLabel />
         <BalanceAmountSelect />
       </div>
-      <div className="twap-token-panel-main-middle">
+      <div className="twap-token-panel-middle">
         <TokenInput />
         <Select />
       </div>
-      <div className="twap-token-panel-main-bottom">
+      <div className="twap-token-panel-bottom">
         <USD />
         <Balance />
       </div>
-    </div>
+    </>
   );
 };
 

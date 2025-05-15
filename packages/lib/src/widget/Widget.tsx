@@ -9,12 +9,10 @@ import { PoweredByOrbs, PoweredbyOrbsPortal } from "./components/powered-by-orbs
 import { PriceMode } from "./components/price-mode";
 import { SubmitOrderModal } from "./components/submit-order-modal/SubmitOrderModal";
 import { SwapPanel } from "./components/swap-panel";
-import { GlobalStyles } from "./styles";
 import { TwapProvider } from "../context";
 import { WarningMessage, WarningMessagePortal } from "./components/warnings";
 import { TwapProps } from "../types";
-import { createGlobalStyle } from "styled-components";
-import { TradeAmountMessage } from "./components/TradesAmountMe";
+import { TradeAmountMessage } from "./components/TradesAmountMessage";
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import { Duration } from "./components/trade-duration-panel";
 import { TradesAmount } from "./components/trades-amount-panel";
@@ -31,7 +29,6 @@ const Widget = (props: TwapProps) => {
         <WarningMessagePortal />
         <PoweredbyOrbsPortal />
         <SubmitOrderModal />
-        {props.includeStyles && <GlobalStyles isDarkMode={true} />}
         {props.children || <SwapPanel />}
       </div>
     </TwapProvider>
@@ -48,7 +45,6 @@ Widget.Duration = Duration;
 Widget.SwitchTokens = SwitchTokens;
 Widget.PriceMode = PriceMode;
 Widget.WarningMessage = WarningMessage;
-Widget.createGlobalStyle = createGlobalStyle;
 Widget.TradeAmountMessage = TradeAmountMessage;
 Widget.useOrders = useUserOrders;
 export { Widget };

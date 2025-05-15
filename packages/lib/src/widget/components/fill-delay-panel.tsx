@@ -1,6 +1,4 @@
 import { Panel } from "../../components/Panel";
-import { StyledRowFlex } from "../../styles";
-import { styled } from "styled-components";
 import { Label, Message, NumericInput, ResolutionSelect } from "../../components/base";
 import React, { ReactNode } from "react";
 import { useTwapContext } from "../../context";
@@ -12,7 +10,7 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
   const { onBlur, onFocus } = Panel.usePanelContext();
 
   return (
-    <StyledInput
+    <NumericInput
       onBlur={onBlur}
       onFocus={onFocus}
       className={`twap-trade-interval-panel-input ${className}`}
@@ -22,12 +20,6 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
     />
   );
 };
-
-const StyledInput = styled(NumericInput)({
-  input: {
-    padding: "0px",
-  },
-});
 
 const Resolution = () => {
   const { onUnitSelect, fillDelay } = useFillDelayPanel();
@@ -54,7 +46,7 @@ const WarningComponent = () => {
 
   if (!fillDelayError) return null;
 
-  return <Message title={fillDelayError} variant="warning" />;
+  return <Message variant="warning" />;
 };
 
 const TradeIntervalLabel = () => {
@@ -62,17 +54,17 @@ const TradeIntervalLabel = () => {
   return <Label className="twap-trade-interval-panel-label" tooltip={translations.tradeIntervalTootlip} text={translations.tradeIntervalTitle} />;
 };
 
-const Main = ({ className = "" }: { className?: string }) => {
+const Main = () => {
   return (
-    <StyledMain className={`${className} twap-trade-interval-panel-main`}>
+    <>
       <Panel.Header>
         <FillDelayPanel.Label />
       </Panel.Header>
-      <StyledRowFlex className="twap-trade-interval-panel-content">
+      <div className="twap-trade-interval-panel-content twap-panel-content">
         <FillDelayPanel.Input />
         <FillDelayPanel.Resolution />
-      </StyledRowFlex>
-    </StyledMain>
+      </div>
+    </>
   );
 };
 
@@ -80,12 +72,3 @@ FillDelayPanel.Resolution = Resolution;
 FillDelayPanel.Input = Input;
 FillDelayPanel.Label = TradeIntervalLabel;
 FillDelayPanel.Warning = WarningComponent;
-
-const StyledMain = styled("div")({
-  ".twap-select-menu": {
-    width: "auto",
-  },
-  ".twap-input": {
-    flex: 1,
-  },
-});

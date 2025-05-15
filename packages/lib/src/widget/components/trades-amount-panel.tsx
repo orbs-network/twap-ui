@@ -1,7 +1,6 @@
 import React, { ReactNode } from "react";
 import { Panel } from "../../components/Panel";
 import { Label, NumericInput } from "../../components/base";
-import { StyledRowFlex, StyledText } from "../../styles";
 import { useTwapContext } from "../../context";
 import { useChunks, useShouldWrapOrUnwrapOnly, useSrcChunkAmountUSD, useSrcTokenChunkAmount } from "../../hooks/logic-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
@@ -39,11 +38,11 @@ export const Amount = () => {
   const { translations: t } = useTwapContext();
   if (!value || !usd) return null;
   return (
-    <StyledText className={`twap-trade-amount-message ${error ? "twap-trade-amount-message-error" : ""}`}>
+    <p className={`twap-trade-amount-message ${error ? "twap-trade-amount-message-error" : ""}`}>
       <span className="twap-trade-amount-message-amount"> {`${value} ${token?.symbol}`}</span>
       <span className="twap-trade-amount-message-chunk-size"> {`($${usd}) `}</span>
       <span className="twap-trade-amount-message-per-trade"> {`${t.perTrade}`}</span>
-    </StyledText>
+    </p>
   );
 };
 
@@ -98,18 +97,18 @@ export const TradesAmountLabel = ({ className = "" }: { className?: string }) =>
   return <Label className={`twap-trades-amount-panel-label ${className}`} text={label} tooltip={tooltip} />;
 };
 
-const Main = ({ className = "" }: { className?: string }) => {
+const Main = () => {
   const { translations: t } = useTwapContext();
   return (
-    <div className={`twap-trades-amount-panel-main ${className}`}>
+    <>
       <Panel.Header>
         <TradesAmountLabel />
       </Panel.Header>
-      <StyledRowFlex className="twap-trades-amount-panel-content">
+      <div className="twap-trades-amount-panel-content twap-panel-content">
         <Input />
-        <StyledText className="twap-trades-amount-panel-text">{t.tradesAmountSmallText}</StyledText>
-      </StyledRowFlex>
-    </div>
+        <p className="twap-trades-amount-panel-text">{t.tradesAmountSmallText}</p>
+      </div>
+    </>
   );
 };
 

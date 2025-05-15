@@ -63,7 +63,7 @@ export const OrdersButton = ({ className = "" }: { className?: string }) => {
 
   return (
     <div className={`twap-orders__button ${className}`} onClick={onOpen}>
-      {isLoading && <Spinner size={20} />}
+      {isLoading && <Spinner />}
       <span className="twap-orders__button-text">{text}</span>
       <FaArrowRight className="twap-orders__button-icon" />
     </div>

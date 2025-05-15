@@ -1,6 +1,4 @@
-import { styled } from "styled-components";
 import React, { ReactNode, useMemo } from "react";
-import { StyledRowFlex, StyledText } from "../styles";
 import moment from "moment";
 import { fillDelayText, makeElipsisAddress } from "../utils";
 import { Token } from "../types";
@@ -101,10 +99,10 @@ const TradeInterval = ({ fillDelayMillis, chunks }: { fillDelayMillis?: number; 
 
 const DetailRow = ({ title, tooltip, children, className = "" }: { title: string; tooltip?: string; children?: React.ReactNode; className?: string }) => {
   return (
-    <StyledDetailRow className={`${className} twap-order-details__detail-row`}>
+    <div className={`${className} twap-order-details__detail-row`}>
       <Label text={title} tooltip={tooltip} className="twap-order-details__detail-row-label" />
-      <StyledDetailRowChildren className="twap-order-details__detail-row-value">{children}</StyledDetailRowChildren>
-    </StyledDetailRow>
+      <div className="twap-order-details__detail-row-value">{children}</div>
+    </div>
   );
 };
 
@@ -138,9 +136,9 @@ const FillDelaySummary = ({ chunks, fillDelayMillis }: { chunks: number; fillDel
   if (chunks === 1) return null;
 
   return (
-    <StyledText className="twap-order-details__fill-delay-text">
+    <p className="twap-order-details__fill-delay-text">
       {t.every} {fillDelayText(fillDelayMillis).toLowerCase()} <span>{t.over}</span> {chunks} <span>{t.orders}</span>
-    </StyledText>
+    </p>
   );
 };
 
@@ -153,23 +151,3 @@ OrderDetails.TradeInterval = TradeInterval;
 OrderDetails.DetailRow = DetailRow;
 OrderDetails.TxHash = TxHash;
 OrderDetails.FillDelaySummary = FillDelaySummary;
-
-const StyledDetailRow = styled(StyledRowFlex)({
-  flexWrap: "wrap",
-  justifyContent: "space-between",
-});
-const StyledDetailRowChildren = styled(StyledRowFlex)({
-  width: "auto",
-  justifyContent: "flex-end",
-  marginLeft: "auto",
-  "*": {
-    fontSize: "inherit",
-  },
-  a: {
-    color: "inherit",
-    textDecoration: "unset",
-    "&:hover": {
-      textDecoration: "underline",
-    },
-  },
-});

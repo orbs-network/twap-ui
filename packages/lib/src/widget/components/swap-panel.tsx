@@ -7,7 +7,7 @@ import { OrdersPortal } from "./orders/Orders";
 import { PoweredByOrbs } from "./powered-by-orbs";
 import { useTwapContext } from "../../context";
 import { WarningMessage } from "./warnings";
-import { TradeAmountMessage } from "./TradesAmountMe";
+import { TradeAmountMessage } from "./TradesAmountMessage";
 import { Duration } from "./trade-duration-panel";
 import { TradesAmount } from "./trades-amount-panel";
 import { PriceMode } from "./price-mode";

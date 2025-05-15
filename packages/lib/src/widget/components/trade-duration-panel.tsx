@@ -1,8 +1,6 @@
 import React, { createContext, ReactNode, useCallback } from "react";
 import { Label, NumericInput, ResolutionSelect } from "../../components/base";
 import { TimeUnit } from "@orbs-network/twap-sdk";
-import { StyledRowFlex } from "../../styles";
-import styled from "styled-components";
 import { Panel } from "../../components/Panel";
 import { useTwapContext } from "../../context";
 import { useOrderDuration, useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
@@ -122,32 +120,23 @@ const Resolution = () => {
 
 const Menu = () => {
   return (
-    <StyledRowFlex className="twap-duration-panel-content">
+    <div className="twap-duration-panel-content twap-panel-content">
       <Input />
       <Resolution />
-    </StyledRowFlex>
+    </div>
   );
 };
-const Main = ({ className = "", variant = "menu" }: { className?: string; variant?: "buttons" | "menu" }) => {
+const Main = ({ variant = "menu" }: { variant?: "buttons" | "menu" }) => {
   return (
-    <StyledMain className={`twap-duration-panel-main ${className}`}>
+    <>
       <Panel.Header>
         <DurationLabel />
       </Panel.Header>
       {variant === "buttons" && <Buttons />}
       {variant === "menu" && <Menu />}
-    </StyledMain>
+    </>
   );
 };
-
-const StyledMain = styled("div")({
-  flexWrap: "wrap",
-  ".twap-duration-panel-buttons": {
-    display: "flex",
-    justifyContent: "flex-end",
-    flex: 1,
-  },
-});
 
 Duration.Buttons = Buttons;
 Duration.Label = DurationLabel;

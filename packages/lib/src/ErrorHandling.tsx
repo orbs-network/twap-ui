@@ -1,37 +1,14 @@
-import { styled } from "styled-components";
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
-const StyledContainer = styled("div")<{ isDarkTheme?: number }>(({ theme, isDarkTheme }) => {
-  return {
-    alignItems: "center",
-    display: "flex",
-    flexDirection: "column",
-    p: {
-      color: isDarkTheme ? "white" : "black",
-      padding: 0,
-      fontSize: 20,
-      textAlign: "center",
-    },
-  };
-});
-
 const TwapFallbackUI = () => {
   return (
-    <StyledContainer>
+    <div className="twap-error-fallback">
       <p>Something went wrong</p>
       {/* <Button variant="contained" onClick={() => window.location.reload()}>
         Reload
       </Button> */}
-    </StyledContainer>
-  );
-};
-
-const OrdersFallbackUI = () => {
-  return (
-    <StyledContainer>
-      <p>Error in loading orders</p>
-    </StyledContainer>
+    </div>
   );
 };
 
@@ -45,14 +22,6 @@ export function TwapErrorWrapper({ children }: { children: React.ReactNode }) {
       }}
       FallbackComponent={TwapFallbackUI}
     >
-      <>{children}</>
-    </ErrorBoundary>
-  );
-}
-
-export function OrdersErrorWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <ErrorBoundary fallbackRender={OrdersFallbackUI}>
       <>{children}</>
     </ErrorBoundary>
   );

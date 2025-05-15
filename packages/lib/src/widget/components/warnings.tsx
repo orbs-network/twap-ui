@@ -2,14 +2,14 @@ import { Link, Message, Portal } from "../../components/base";
 import { useTwapContext } from "../../context";
 import { useTwapStore } from "../../useTwapStore";
 const URL = "https://www.orbs.com/dtwap-and-dlimit-faq/";
-const LimitPriceWarning = ({ className }: { className?: string }) => {
+const LimitPriceWarning = ({ className = "" }: { className?: string }) => {
   const { translations: t } = useTwapContext();
 
   return (
     <Message
-      className={`twap-limit-price-message ${className}`}
+      className={`twap-limit-price-warning ${className}`}
       variant="warning"
-      title={
+      text={
         <>
           {t.limitPriceMessage} <Link href={URL}>{t.learnMore}</Link>
         </>
@@ -18,13 +18,13 @@ const LimitPriceWarning = ({ className }: { className?: string }) => {
   );
 };
 
-export const MarketPriceWarning = ({ className }: { className?: string }) => {
+export const MarketPriceWarning = ({ className = "" }: { className?: string }) => {
   const { translations: t } = useTwapContext();
 
   return (
     <Message
       className={`twap-market-price-warning ${className}`}
-      title={
+      text={
         <>
           {`${t.marketOrderWarning} `}
           <Link href={URL}>{`${t.learnMore}`}</Link>

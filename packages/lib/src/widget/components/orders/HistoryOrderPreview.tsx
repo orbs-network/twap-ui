@@ -4,7 +4,6 @@ import BN from "bignumber.js";
 import { OrderStatus, Order, OrderType, getOrderLimitPriceRate, getOrderExcecutionRate } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext, useSelectedOrder } from "./context";
 import moment from "moment";
-import { StyledText } from "../../../styles";
 import { Token, TwapOrder } from "../../../types";
 import Button from "../../../components/base/Button";
 import { useFormatNumber } from "../../../hooks/useFormatNumber";
@@ -13,7 +12,6 @@ import { useAmountUi, useOrderName } from "../../../hooks/logic-hooks";
 import { HiArrowLeft } from "@react-icons/all-files/hi/HiArrowLeft";
 import { TokensDisplay } from "@orbs-network/swap-ui";
 import { OrderDetails } from "../../../components/order-details";
-import styled from "styled-components";
 
 export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
@@ -41,14 +39,14 @@ export const HistoryOrderPreview = () => {
   }
 
   return (
-    <StyledSelected className="twap-orders__selected-order">
+    <div className="twap-orders__selected-order">
       <div className="twap-orders__selected-order-header">
         <div style={{ cursor: "pointer" }} onClick={closePreview} className="twap-orders__selected-order-header-back-icon">
           {icons?.selectedOrderBack || <HiArrowLeft />}
         </div>
-        <StyledText className="twap-orders__selected-order-header-title">
+        <p className="twap-orders__selected-order-header-title">
           #{order?.id} {name} {t.order}
-        </StyledText>
+        </p>
       </div>
       <TokensDisplay
         SrcTokenLogo={components.TokenLogo && <components.TokenLogo token={srcToken} />}
@@ -72,22 +70,15 @@ export const HistoryOrderPreview = () => {
         </div>
         <CancelOrderButton order={order} />
       </div>
-    </StyledSelected>
+    </div>
   );
 };
 
-const StyledSelected = styled("div")({
-  ".twap-orders__selected-order-header": {
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "center",
-  },
-});
 const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: boolean; onClick: () => void; children: ReactNode; title: string }) => {
   return (
     <div className="twap-orders__selected-order-accordion">
       <div onClick={onClick} className="twap-orders__selected-order-accordion-trigger">
-        <StyledText>{title}</StyledText>
+        <p>{title}</p>
         <IoIosArrowDown style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
       </div>
       {expanded && <div className="twap-orders__selected-order-accordion-details">{children}</div>}
@@ -159,7 +150,7 @@ const CreatedAt = ({ order }: { order: Order }) => {
   }, [order?.createdAt, dateFormat]);
   return (
     <OrderDetails.DetailRow title={t.createdAt}>
-      <StyledText>{createdAtUi}</StyledText>
+      <p>{createdAtUi}</p>
     </OrderDetails.DetailRow>
   );
 };
@@ -172,9 +163,9 @@ const AmountOutFilled = ({ order }: { order: Order }) => {
 
   return (
     <OrderDetails.DetailRow title={t.amountReceived}>
-      <StyledText>
+      <p>
         {amount || "-"} {dstToken?.symbol}
-      </StyledText>
+      </p>
     </OrderDetails.DetailRow>
   );
 };
@@ -188,9 +179,9 @@ const AmountIn = ({ order }: { order: Order }) => {
 
   return (
     <OrderDetails.DetailRow title={t.amountOut}>
-      <StyledText>
+      <p>
         {amount || 0} {srcToken?.symbol}
-      </StyledText>
+      </p>
     </OrderDetails.DetailRow>
   );
 };
@@ -204,9 +195,9 @@ const AmountInFilled = ({ order }: { order: TwapOrder }) => {
 
   return (
     <OrderDetails.DetailRow title={t.amountSent}>
-      <StyledText>
+      <p>
         {amount || "-"} {srcToken?.symbol}
-      </StyledText>
+      </p>
     </OrderDetails.DetailRow>
   );
 };
@@ -216,7 +207,7 @@ const OrderStatusComponent = ({ order }: { order: TwapOrder }) => {
 
   return (
     <OrderDetails.DetailRow title={t.status}>
-      <StyledText>{text}</StyledText>
+      <p>{text}</p>
     </OrderDetails.DetailRow>
   );
 };
@@ -227,7 +218,7 @@ const Progress = ({ order }: { order: TwapOrder }) => {
   if (order?.chunks === 1) return null;
   return (
     <OrderDetails.DetailRow title={t.progress}>
-      <StyledText>{progress || 0}%</StyledText>
+      <p>{progress || 0}%</p>
     </OrderDetails.DetailRow>
   );
 };
@@ -264,11 +255,11 @@ const Price = ({ price, srcToken, dstToken, title }: { price?: string; srcToken?
   return (
     <OrderDetails.DetailRow title={title}>
       {BN(price || 0).isZero() ? (
-        <StyledText>-</StyledText>
+        <p>-</p>
       ) : (
-        <StyledText>
+        <p>
           1 {srcToken?.symbol} = {_price} {dstToken?.symbol}
-        </StyledText>
+        </p>
       )}
     </OrderDetails.DetailRow>
   );

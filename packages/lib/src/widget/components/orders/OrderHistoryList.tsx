@@ -1,23 +1,21 @@
-import { styled } from "styled-components";
 import { HiArrowRight } from "@react-icons/all-files/hi/HiArrowRight";
 import { OrderType } from "@orbs-network/twap-sdk";
 import { useOrderHistoryContext } from "./context";
 import * as React from "react";
-import moment from "moment";
 import { Loader } from "../../../components/base/Loader";
 import TokenLogo from "../../../components/base/TokenLogo";
-import { StyledRowFlex, StyledText, StyledColumnFlex } from "../../../styles";
 import { useTwapContext } from "../../../context";
 import { OrderHistoryMenu } from "./OrderHistorySelect";
 import { useOrderName } from "../../../hooks/logic-hooks";
 import { Virtuoso } from "react-virtuoso";
+import moment from "moment";
 import { TwapOrder } from "../../../types";
 
 const ListLoader = () => {
   return (
-    <StyledColumnFlex className="twap-orders__loader">
+    <div className="twap-orders__loader">
       <Loader />
-    </StyledColumnFlex>
+    </div>
   );
 };
 
@@ -34,19 +32,13 @@ export const OrderHistoryList = () => {
       ) : !selectedOrders.length ? (
         <EmptyList />
       ) : (
-        <StyledList className="twap-orders__list">
+        <div className="twap-orders__list">
           <Virtuoso style={{ height: "100%" }} data={selectedOrders} itemContent={(index, order) => <ListOrder key={index} selectOrder={selectOrder} order={order} />} />
-        </StyledList>
+        </div>
       )}
     </>
   );
 };
-
-const StyledList = styled("div")({
-  display: "flex",
-  flexDirection: "column",
-  gap: 7,
-});
 
 const ListOrder = ({ order, selectOrder }: { order: TwapOrder; selectOrder: (id?: number) => void }) => {
   const { components } = useTwapContext();
@@ -56,7 +48,7 @@ const ListOrder = ({ order, selectOrder }: { order: TwapOrder; selectOrder: (id?
   }
 
   return (
-    <StyledListItem className={`twap-orders__list-item twap-orders__list-item-${order.status}`} onClick={() => selectOrder(order?.id)}>
+    <div className={`twap-orders__list-item twap-orders__list-item-${order.status}`} onClick={() => selectOrder(order?.id)}>
       <ListItemHeader order={order} />
       <LinearProgressWithLabel value={order.progress || 0} />
       <div className="twap-orders__list-item-tokens">
@@ -64,41 +56,9 @@ const ListOrder = ({ order, selectOrder }: { order: TwapOrder; selectOrder: (id?
         <HiArrowRight className="twap-orders__list-item-tokens-arrow" />
         <TokenDisplay address={order.dstTokenAddress} />
       </div>
-    </StyledListItem>
+    </div>
   );
 };
-
-const StyledListItem = styled("div")({
-  display: "flex",
-  flexDirection: "column",
-  ".twap-orders__list-item-header": {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  ".twap-orders__list-item-tokens": {
-    display: "flex",
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "center",
-    "&-arrow": {
-      width: 15,
-      height: 15,
-    },
-  },
-  ".twap-orders__list-item-token": {
-    "&-logo": {
-      img: {
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-      },
-    },
-    "&-symbol": {
-      fontSize: 13,
-    },
-  },
-});
 
 const EmptyList = () => {
   const status = useOrderHistoryContext().status;
@@ -111,18 +71,11 @@ const EmptyList = () => {
   }, [status]);
 
   return (
-    <StyledEmpty className="twap-orders__list-empty">
-      <StyledText>{t.noOrders.replace("{status}", name)}</StyledText>
-    </StyledEmpty>
+    <div className="twap-orders__list-empty">
+      <p>{t.noOrders.replace("{status}", name)}</p>
+    </div>
   );
 };
-
-const StyledEmpty = styled(StyledColumnFlex)({
-  alignItems: "center",
-  justifyContent: "flex-start",
-  paddingTop: 30,
-  paddingBottom: 30,
-});
 
 const ListItemHeader = ({ order }: { order: TwapOrder }) => {
   const status = order && order.status;
@@ -136,10 +89,10 @@ const ListItemHeader = ({ order }: { order: TwapOrder }) => {
 
   return (
     <div className="twap-orders__list-item-header">
-      <StyledText className="twap-orders__list-item-header-title">
+      <p className="twap-orders__list-item-header-title">
         #{order?.id} {name} <span>{`(${formattedDate})`}</span>
-      </StyledText>
-      <StyledText className="twap-orders__list-item-header-status">{status}</StyledText>
+      </p>
+      <p className="twap-orders__list-item-header-status">{status}</p>
     </div>
   );
 };
@@ -149,49 +102,28 @@ const TokenDisplay = ({ address }: { address?: string; amount?: string }) => {
   const token = useToken?.(address);
 
   return (
-    <StyledTokenDisplay className="twap-orders__list-item-token">
+    <div className="twap-orders__list-item-token">
       {!token ? (
-        <StyledTokenDisplayLoader />
+        <div />
       ) : (
         <>
           <div className="twap-orders__list-item-token-logo">{components.TokenLogo ? <components.TokenLogo token={token} /> : <TokenLogo logo={token?.logoUrl} />}</div>
-          <StyledText className="twap-orders__list-item-token-symbol">{token?.symbol}</StyledText>
+          <p className="twap-orders__list-item-token-symbol">{token?.symbol}</p>
         </>
       )}
-    </StyledTokenDisplay>
+    </div>
   );
 };
 
-const StyledTokenDisplayLoader = styled(Loader)({
-  borderRadius: "50%",
-  width: 20,
-  height: 20,
-});
-
-const StyledTokenDisplay = styled("div")({
-  display: "flex",
-  alignItems: "center",
-  gap: 5,
-});
-
 function LinearProgressWithLabel(props: { value: number }) {
   return (
-    <StyledProgress className="twap-orders__list-item-progress">
+    <div className="twap-orders__list-item-progress">
       <div className="twap-orders__list-item-progress-bar">
         <div className="twap-orders__list-item-progress-bar-filled" style={{ width: `${props.value}%` }} />
       </div>
       <div className="twap-orders__list-item-token-progress-label">
-        <StyledText>{`${Math.round(props.value)}%`}</StyledText>
+        <p>{`${Math.round(props.value)}%`}</p>
       </div>
-    </StyledProgress>
+    </div>
   );
 }
-
-const StyledProgress = styled(StyledRowFlex)({
-  display: "flex",
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  width: "100%",
-  gap: 15,
-});

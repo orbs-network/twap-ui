@@ -1,8 +1,6 @@
-import { styled } from "styled-components";
 import React, { useCallback } from "react";
 import { Translations } from "../../types";
 import NumericInput from "./NumericInput";
-import { StyledRowFlex } from "../../styles";
 import { SelectMenu } from "./SelectMenu";
 import { TimeDuration, TimeUnit } from "@orbs-network/twap-sdk";
 
@@ -40,7 +38,7 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
   );
 
   return (
-    <StyledContainer className={`twap-time-selector ${className}`} style={{ pointerEvents: disabled ? "none" : "unset" }}>
+    <div className={`twap-time-selector ${className}`} style={{ pointerEvents: disabled ? "none" : "unset" }}>
       <NumericInput
         onBlur={onBlur}
         onFocus={onFocus}
@@ -51,7 +49,7 @@ export function TimeSelector({ value, onChange, disabled = false, className = ""
       />
 
       <ResolutionSelect unit={value.unit} onChange={onResolutionSelect} />
-    </StyledContainer>
+    </div>
   );
 }
 
@@ -65,18 +63,3 @@ export const ResolutionSelect = ({ onChange, unit, onOpen, onClose }: { onChange
 
   return <SelectMenu onOpen={onOpen} onClose={onClose} onSelect={(it) => onSelect(it.value as number)} items={timeArr} selected={unit} />;
 };
-
-const StyledContainer = styled(StyledRowFlex)({
-  ".twap-input": {
-    flex: 1,
-    input: {
-      textAlign: "left",
-      paddingLeft: 10,
-      flex: "unset",
-      width: "100%",
-      "&::placeholder": {
-        color: "white",
-      },
-    },
-  },
-});
