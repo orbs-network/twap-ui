@@ -237,6 +237,7 @@ export type SelectMenuProps = {
 export type OrderHistoryListOrderProps = {
   order: Order;
   selectOrder: (orderId: number) => void;
+  children: ReactNode;
 };
 
 export type LimitPanelInvertButtonProps = {
@@ -246,6 +247,7 @@ export type LimitPanelInvertButtonProps = {
 export type OrderHistorySelectedOrderProps = {
   order: Order;
   onBackClick: () => void;
+  children: ReactNode;
 };
 
 export type DurationSelectButtonsProps = {

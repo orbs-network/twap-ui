@@ -34,11 +34,7 @@ export const HistoryOrderPreview = () => {
 
   if (!order) return null;
 
-  if (components.OrderHistorySelectedOrder) {
-    return <components.OrderHistorySelectedOrder order={order} onBackClick={closePreview} />;
-  }
-
-  return (
+  const component = (
     <div className="twap-orders__selected-order">
       <div className="twap-orders__selected-order-header">
         <div style={{ cursor: "pointer" }} onClick={closePreview} className="twap-orders__selected-order-header-back-icon">
@@ -72,6 +68,16 @@ export const HistoryOrderPreview = () => {
       </div>
     </div>
   );
+
+  if (components.OrderHistorySelectedOrder) {
+    return (
+      <components.OrderHistorySelectedOrder order={order} onBackClick={closePreview}>
+        {component}
+      </components.OrderHistorySelectedOrder>
+    );
+  }
+
+  return component;
 };
 
 const AccordionContainer = ({ expanded, onClick, children, title }: { expanded: boolean; onClick: () => void; children: ReactNode; title: string }) => {

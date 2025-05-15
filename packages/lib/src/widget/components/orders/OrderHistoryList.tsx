@@ -43,11 +43,7 @@ export const OrderHistoryList = () => {
 const ListOrder = ({ order, selectOrder }: { order: TwapOrder; selectOrder: (id?: number) => void }) => {
   const { components } = useTwapContext();
 
-  if (components.OrderHistoryListOrder) {
-    return <components.OrderHistoryListOrder order={order} selectOrder={selectOrder} />;
-  }
-
-  return (
+  const component = (
     <div className={`twap-orders__list-item twap-orders__list-item-${order.status}`} onClick={() => selectOrder(order?.id)}>
       <ListItemHeader order={order} />
       <LinearProgressWithLabel value={order.progress || 0} />
@@ -58,6 +54,16 @@ const ListOrder = ({ order, selectOrder }: { order: TwapOrder; selectOrder: (id?
       </div>
     </div>
   );
+
+  if (components.OrderHistoryListOrder) {
+    return (
+      <components.OrderHistoryListOrder order={order} selectOrder={selectOrder}>
+        {component}
+      </components.OrderHistoryListOrder>
+    );
+  }
+
+  return component;
 };
 
 const EmptyList = () => {
