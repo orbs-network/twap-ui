@@ -1,6 +1,6 @@
 {
   "name": "@orbs-network/twap-sdk",
-  "version": "3.1.18",
+  "version": "3.1.19",
   "description": "TWAP UI SDK",
   "license": "MIT",
   "author": "Orbs",
@@ -20,7 +20,7 @@
     "test": "eslint src"
   },
   "dependencies": {
-    "@orbs-network/twap": "^2.7.2",
+    "@orbs-network/twap": "^2.7.6",
     "bignumber.js": "9.x"
   },
   "publishConfig": {
