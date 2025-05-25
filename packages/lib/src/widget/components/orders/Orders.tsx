@@ -104,6 +104,10 @@ const CancelOrderFlow = () => {
         Main: <SwapFlow.Main />,
         SrcTokenLogo: components.TokenLogo && <components.TokenLogo token={srcToken} />,
         DstTokenLogo: components.TokenLogo && <components.TokenLogo token={dstToken} />,
+        Loader: components.CreateOrderPanelSpinner,
+        SuccessIcon: components.CreateOrderPanelSuccessIcon,
+        FailedIcon: components.CreateOrderPanelErrorIcon,
+        Link: components.Link,
       }}
     />
   );

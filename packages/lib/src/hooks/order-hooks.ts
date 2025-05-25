@@ -181,6 +181,7 @@ const useOrdersQuery = (config: Config) => {
       staleTime: Infinity,
     },
   );
+  
 
   return {
     ...query,

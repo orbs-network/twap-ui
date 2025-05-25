@@ -45,6 +45,7 @@ type GraphFill = {
   timestamp: string;
   twapAddress: string;
   exchange: string;
+  transactionHash: string;
 };
 
 type OrderFills = {
@@ -200,6 +201,7 @@ export class Orders {
           TWAP_id
           srcAmountIn
           timestamp
+          transactionHash
           dollarValueIn
           dollarValueOut,
           ${dexFee}

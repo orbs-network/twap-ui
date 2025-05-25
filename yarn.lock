@@ -2780,15 +2780,15 @@
   dependencies:
     "@octokit/openapi-types" "^18.0.0"
 
-"@orbs-network/swap-ui@^0.0.41":
-  version "0.0.41"
-  resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.41.tgz#294ea0505fbc2207ce045050430bcf289aa400cd"
-  integrity sha512-7NMJAi2D3R1kam0Fp1IdZA468Dq3YJ39KlpQQcq0qz9MTjrTi4ho7yyRVDG4qrw02qX83QVhgOCvvbTTtjm+3w==
+"@orbs-network/swap-ui@^0.0.42":
+  version "0.0.42"
+  resolved "https://registry.yarnpkg.com/@orbs-network/swap-ui/-/swap-ui-0.0.42.tgz#1c13dc3e771ae2ba2dc91e5a45ba27d63c29ca42"
+  integrity sha512-vy4Y6wwwqaAQbz8vOI2UwIrrKWTXbm+cns8oZa6cbSj7WJ4RTFg1zjQ6EOlHlVaMuPDBLLOMV5MJPJdxptGfaQ==
 
-"@orbs-network/twap@^2.7.2":
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/@orbs-network/twap/-/twap-2.7.2.tgz#843e3c81da81e5501f93b5919d50632e854afeb7"
-  integrity sha512-gcv/0r0vV3K21VE1JRHL1Fr3B8Ug0Dr2xU5NhsknuGeVYhjckcKGhtUYZWG7seFNTJT80bV2HDydd1M9lckZhQ==
+"@orbs-network/twap@^2.7.6":
+  version "2.7.6"
+  resolved "https://registry.yarnpkg.com/@orbs-network/twap/-/twap-2.7.6.tgz#62b928bdfd933fbada847786346a4782146cc374"
+  integrity sha512-+GvikzcwIC4rSBYQVPzpe1AVSJzpINWHGYtddf8bs7Kq/0M39UuqOEEmQdHJAejfQ+OQAP25FOhGPXTEXl7jzA==
 
 "@parcel/watcher@2.0.4":
   version "2.0.4"

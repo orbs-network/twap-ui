@@ -137,7 +137,7 @@ const FillDelaySummary = ({ chunks, fillDelayMillis }: { chunks: number; fillDel
 
   return (
     <p className="twap-order-details__fill-delay-text">
-      {t.every} {fillDelayText(fillDelayMillis).toLowerCase()} <span>{t.over}</span> {chunks} <span>{t.orders}</span>
+      {t.every} {fillDelayText(fillDelayMillis).toLowerCase()} <span>{t.over}</span> {chunks} <span>{t.trades}</span>
     </p>
   );
 };

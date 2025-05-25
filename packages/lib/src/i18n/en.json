@@ -52,7 +52,7 @@
   "minReceivedPerTrade": "Min. received per trade",
   "poweredBy": "Powered by Orbs",
   "selectToken": "Select token",
-  "trades": "Trades",
+  "trades": "trades",
   "maxChunksError": "Max. trades amount is {maxChunks}",
   "minChunksError": "Min. trades amount is",
   "minTradeSizeError": "Min. trade size is {minTradeSize}",

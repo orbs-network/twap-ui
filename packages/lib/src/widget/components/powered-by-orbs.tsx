@@ -12,9 +12,9 @@ export function PoweredbyOrbsPortal() {
   };
 
   return (
-    <Portal containerId="twap-powered-by-container">
-      <a href="https://www.orbs.com/" target="_blank" className="twap-powered-by">
-        <p>{translations.poweredBy}</p>
+    <Portal containerId="twap-powered-by">
+      <a href="https://www.orbs.com/" target="_blank" className="twap-powered-by-content">
+        <span>{translations.poweredBy}</span>
         <img src={url} onError={onError} />
       </a>
     </Portal>
@@ -22,5 +22,5 @@ export function PoweredbyOrbsPortal() {
 }
 
 export const PoweredByOrbs = () => {
-  return <div id="twap-powered-by-container" />;
+  return <span id="twap-powered-by" />;
 };
