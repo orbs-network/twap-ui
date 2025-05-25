@@ -1,40 +1,36 @@
 import { buildOrder, Config, getOrderFillDelay, Order, OrderStatus, parseOrderStatus, TwapAbi } from "@orbs-network/twap-sdk";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import moment from "moment";
 import { useTwapContext } from "../context";
 import { TwapOrder, Token } from "../types";
+import { createPublicClient } from "viem";
 
 const useKey = (config: Config) => {
   const { account } = useTwapContext();
   return useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
 };
-const useGetOrderStatuses = () => {
-  const { publicClient } = useTwapContext();
-  return useMutation({
-    mutationFn: async (orders: Order[]) => {
-      try {
-        if (!publicClient) throw new Error("publicClient is not defined");
-        const multicallResponse = await publicClient?.multicall({
-          contracts: orders.map((order) => {
-            return {
-              abi: TwapAbi as any,
-              address: order.twapAddress as `0x${string}`,
-              functionName: "status",
-              args: [order.id],
-            };
-          }),
-        });
 
-        return multicallResponse.map((it) => {
-          return it.result as number;
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    },
-  });
+export const getOrderStatuses = async (publicClient: ReturnType<typeof createPublicClient>, orders: Order[]) => {
+  try {
+    const multicallResponse = await publicClient?.multicall({
+      contracts: orders.map((order) => {
+        return {
+          abi: TwapAbi as any,
+          address: order.twapAddress as `0x${string}`,
+          functionName: "status",
+          args: [order.id],
+        };
+      }),
+    });
+
+    return multicallResponse.map((it) => {
+      return it.result as number;
+    });
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const usePersistedOrdersStore = (config: Config) => {
@@ -134,13 +130,13 @@ export const usePersistedOrdersStore = (config: Config) => {
 };
 
 const useOrdersQuery = (config: Config) => {
-  const { account, twapSDK } = useTwapContext();
+  const { account, twapSDK, publicClient } = useTwapContext();
   const queryKey = useKey(config);
-  const { mutateAsync: getOrderStatuses } = useGetOrderStatuses();
   const { getCreatedOrders, getCancelledOrderIds, deleteCreatedOrder, deleteCancelledOrderId } = usePersistedOrdersStore(config);
   const query = useQuery(
     queryKey,
     async ({ signal }) => {
+      if (!publicClient) throw new Error("publicClient is not defined");
       const orders = await twapSDK.getOrders(account!, signal);
       // we add orders to the local storage if they are not in the orders array
 
@@ -154,7 +150,7 @@ const useOrdersQuery = (config: Config) => {
         }
       });
 
-      const statuses = await getOrderStatuses(orders);
+      const statuses = await getOrderStatuses(publicClient, orders);
 
       const canceledOrders = new Set(getCancelledOrderIds());
 
@@ -181,7 +177,6 @@ const useOrdersQuery = (config: Config) => {
       staleTime: Infinity,
     },
   );
-  
 
   return {
     ...query,

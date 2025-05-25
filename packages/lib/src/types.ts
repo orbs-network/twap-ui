@@ -391,7 +391,7 @@ export type Callbacks = {
   onMaxSrcAmount?: () => void;
 };
 
-interface Provider {
+export interface Provider {
   request(...args: any): Promise<any>;
   [key: string]: any; // Allow extra properties
 }
@@ -399,6 +399,26 @@ interface Provider {
 type Icons = {
   selectedOrderBack?: ReactNode;
 };
+
+export type PublicClient = ReturnType<typeof createPublicClient>;
+
+export interface BaseTwapProps {
+  isLimitPanel?: boolean;
+  config: Config;
+  srcToken?: Token;
+  dstToken?: Token;
+  srcUsd1Token?: number;
+  dstUsd1Token?: number;
+  srcBalance?: string;
+  dstBalance?: string;
+  children?: React.ReactNode;
+  askDataParams?: any[];
+  marketReferencePrice: { value?: string; isLoading?: boolean };
+  customMinChunkSizeUsd?: number;
+  chainId?: number;
+  account?: string;
+  provider?: Provider;
+}
 
 export interface TwapProps {
   provider?: Provider;
@@ -435,7 +455,7 @@ export interface TwapContextType extends TwapProps {
   isWrongChain: boolean;
   translations: Translations;
   walletClient?: ReturnType<typeof createWalletClient>;
-  publicClient?: ReturnType<typeof createPublicClient>;
+  publicClient?: PublicClient;
   twapSDK: TwapSDK;
   marketPrice?: string;
   marketPriceLoading?: boolean;

@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { constructSDK } from "@orbs-network/twap-sdk";
 import { TwapProps, TwapContextType, Translations } from "./types";
 import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranslations from "./i18n/en.json";
-import * as chains from "viem/chains";
 import { useTwapStore } from "./useTwapStore";
+import { useInitiateWallet } from "./hooks/logic-hooks";
 
 export const TwapContext = createContext({} as TwapContextType);
 const queryClient = new QueryClient({
@@ -65,28 +64,10 @@ const useTranslations = (translations?: Partial<Translations>): Translations => 
   }, [translations]);
 };
 
-const useInitiateWallet = (props: TwapProps) => {
-  const chain = useMemo(() => Object.values(chains).find((it: any) => it.id === props.chainId), [props.chainId]);
-  const transport = useMemo(() => (props.provider ? custom(props.provider) : undefined), [props.provider]);
-  const walletClient = useMemo(() => {
-    return transport ? createWalletClient({ chain, transport }) : undefined;
-  }, [transport]);
-
-  const publicClient = useMemo(() => {
-    if (!chain) return;
-    return createPublicClient({ chain, transport: transport || http() });
-  }, [transport, chain]);
-
-  return {
-    walletClient,
-    publicClient,
-  };
-};
-
 const Content = (props: TwapProps) => {
   const translations = useTranslations(props.translations);
   const twapSDK = useMemo(() => constructSDK({ config: props.config }), [props.config]);
-  const { walletClient, publicClient } = useInitiateWallet(props);
+  const { walletClient, publicClient } = useInitiateWallet(props.chainId, props.provider);
 
   return (
     <TwapContext.Provider
@@ -96,7 +77,7 @@ const Content = (props: TwapProps) => {
         translations,
         isWrongChain: !props.account || !props.chainId ? false : props.config.chainId !== props.chainId,
         walletClient,
-        publicClient: publicClient as any as ReturnType<typeof createPublicClient>,
+        publicClient,
         twapSDK,
         marketPrice: props.marketReferencePrice.value,
         marketPriceLoading: props.marketReferencePrice.isLoading,

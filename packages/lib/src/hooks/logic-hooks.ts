@@ -4,11 +4,13 @@ import { useTwapContext } from "../context";
 import { getMinNativeBalance, millisToDays, millisToMinutes, removeCommas, shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import BN from "bignumber.js";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { erc20Abi } from "viem";
+import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { TX_GAS_COST } from "../consts";
-import { Token } from "../types";
+import { Provider, Token } from "../types";
 import { useTwapStore } from "../useTwapStore";
+import * as chains from "viem/chains";
+import { getAllowance } from "../lib";
 
 const abi = [{ inputs: [], name: "latestAnswer", outputs: [{ internalType: "int256", name: "", type: "int256" }], stateMutability: "view", type: "function" }];
 
@@ -86,13 +88,11 @@ export const useHasAllowanceCallback = () => {
   return useMutation({
     mutationFn: async ({ token, amount }: { token: Token; amount: string }) => {
       if (!publicClient) throw new Error("publicClient is not defined");
-      const allowance = await publicClient.readContract({
-        address: token.address as `0x${string}`,
-        abi: erc20Abi,
-        functionName: "allowance",
-        args: [account as `0x${string}`, config.twapAddress as `0x${string}`],
-      });
-      return BN(allowance.toString()).gte(amount);
+      if (!account) throw new Error("account is not defined");
+      const allowance = await getAllowance(token.address, account, config.twapAddress, publicClient);
+      console.log({allowance});
+      
+      return BN(allowance).gte(amount);
     },
   });
 };
@@ -469,4 +469,28 @@ export const useSwitchChain = () => {
   return useCallback(() => {
     (walletClient as any)?.switchChain({ id: config.chainId });
   }, [config, walletClient]);
+};
+
+export const useInitiateWallet = (
+  chainId?: number,
+  provider?: Provider,
+): {
+  walletClient?: ReturnType<typeof createWalletClient>;
+  publicClient?: ReturnType<typeof createPublicClient>;
+} => {
+  const chain = useMemo(() => Object.values(chains).find((it: any) => it.id === chainId), [chainId]);
+  const transport = useMemo(() => (provider ? custom(provider) : undefined), [provider]);
+  const walletClient = useMemo(() => {
+    return transport ? (createWalletClient({ chain, transport }) as any) : undefined;
+  }, [transport]);
+
+  const publicClient = useMemo(() => {
+    if (!chain) return;
+    return createPublicClient({ chain, transport: transport || http() }) as any;
+  }, [transport, chain]);
+
+  return {
+    walletClient,
+    publicClient,
+  };
 };
