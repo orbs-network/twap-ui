@@ -26,6 +26,7 @@ const coingekoChainToName = {
   [networks.bsc.id]: "binance-smart-chain",
   [networks.linea.id]: "linea",
   [networks.sonic.id]: "sonic",
+  [networks.cronosZkEvm.id]: "cronos-zkevm",
 };
 
 const getDefaultTokens = async (chainId: number, signal?: AbortSignal): Promise<Token[]> => {

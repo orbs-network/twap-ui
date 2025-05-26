@@ -12,7 +12,7 @@ import { SwapPanel } from "./components/swap-panel";
 import { TwapProvider } from "../context";
 import { WarningMessage, WarningMessagePortal } from "./components/warnings";
 import { TwapProps } from "../types";
-import { TradeAmountMessage } from "./components/TradesAmountMessage";
+import { TradeAmountMessage } from "./components/TradeAmountMessage";
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import { Duration } from "./components/trade-duration-panel";
 import { TradesAmount } from "./components/trades-amount-panel";

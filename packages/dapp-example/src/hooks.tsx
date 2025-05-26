@@ -225,6 +225,7 @@ const chainIdToName: { [key: number]: string } = {
   48900: "zircuit",
   14: "flare",
   [networks.sonic.id]: "sonic",
+  [networks.cronosZkEvm.id]: "cronos-zkevm",
 };
 
 export async function fetchLLMAPrice(token: string, chainId: number | string) {

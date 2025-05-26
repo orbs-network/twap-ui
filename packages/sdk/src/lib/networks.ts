@@ -359,4 +359,25 @@ export const networks = {
     explorer: "https://flarescan.com",
     eip1559: true,
   },
+  cronosZkEvm: {
+    id: 388,
+    name: "Cronos zkEVM",
+    shortname: "cronosZkEvm",
+    native: {
+      address: "0x000000000000000000000000000000000000800a",
+      symbol: "zkCRO",
+      decimals: 18,
+      logoUrl: "https://cryptologos.cc/logos/cronos-cro-logo.png", // Replace with the official logo URL if available
+    },
+    wToken: {
+      symbol: "wzkCRO",
+      address: "0xC1bF55EE54E16229d9b369a5502Bfe5fC9F20b6d",
+      decimals: 18,
+      logoUrl: "https://cryptologos.cc/logos/cronos-cro-logo.png", // Replace with the official logo URL if available
+    },
+    publicRpcUrl: "https://rpc.zkevm.cronos.org",
+    logoUrl: "https://cryptologos.cc/logos/cronos-cro-logo.png", // Replace with the official logo URL if available
+    explorer: "https://explorer.zkevm.cronos.org",
+    eip1559: true,
+  },
 };

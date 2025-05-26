@@ -1,21 +1,13 @@
 import { useCallback, useMemo } from "react";
 import { BaseTwapProps, TwapOrder } from "../types";
 import { constructSDK, getOrderFillDelay, parseOrderStatus, TimeDuration, TwapSDK } from "@orbs-network/twap-sdk";
-import { getOrderStatuses } from "./order-hooks";
-import { createPublicClient, http, PublicClient } from "viem";
-import * as chains from "viem/chains";
-import { getAllowance } from "../lib";
+import { getAllowance, getOrderStatuses, getPublicFallbackClient } from "../lib";
 import { useAmountUi } from "./logic-hooks";
-
-const getPublicClient = (chainId: number) => {
-  const chain = Object.values(chains).find((it: any) => it.id === chainId);
-  return createPublicClient({ chain, transport: http(`https://rpcman.orbs.network/rpc?chainId=${chainId}&appId=twap-ui`) }) as PublicClient;
-};
 
 const useGetOrderCallback = (sdk: TwapSDK) => {
   return useCallback(
     async (account: string, signal?: AbortSignal) => {
-      const publicClient = getPublicClient(sdk.config.chainId);
+      const publicClient = getPublicFallbackClient(sdk.config.chainId);
       const orders = await sdk.getOrders(account!, signal);
       const statuses = await getOrderStatuses(publicClient, orders);
       return orders.map((order, index): TwapOrder => {
@@ -31,7 +23,7 @@ const useGetOrderCallback = (sdk: TwapSDK) => {
 const useGetAllowance = (sdk: TwapSDK) => {
   return useCallback(
     async (token: string, account: string) => {
-      const publicClient = getPublicClient(sdk.config.chainId);
+      const publicClient = getPublicFallbackClient(sdk.config.chainId);
       return getAllowance(token, account, sdk.config.twapAddress, publicClient);
     },
     [sdk],

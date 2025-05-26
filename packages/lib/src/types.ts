@@ -401,7 +401,7 @@ type Icons = {
 };
 
 export type PublicClient = ReturnType<typeof createPublicClient>;
-
+export type WalletClient = ReturnType<typeof createWalletClient>;
 export interface BaseTwapProps {
   isLimitPanel?: boolean;
   config: Config;

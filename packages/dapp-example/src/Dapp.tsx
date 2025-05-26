@@ -215,6 +215,7 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         components={{ Tooltip, TokenLogo, Link, OrderConfirmationModal: OrderConfirmationModal, OrdersModal: OrderHistoryModal, TokenSelectModal, SelectMenu, Toggle }}
         useToken={useToken}
         customMinChunkSizeUsd={4}
+
         fee={0.25}
         account={account}
         orderDisclaimerAcceptedByDefault

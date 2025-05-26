@@ -6,7 +6,7 @@ import { DEFAULT_LIMIT_PANEL_DURATION } from "./consts";
 import { TwapErrorWrapper } from "./ErrorHandling";
 import defaultTranslations from "./i18n/en.json";
 import { useTwapStore } from "./useTwapStore";
-import { useInitiateWallet } from "./hooks/logic-hooks";
+import { initiateWallet } from "./lib";
 
 export const TwapContext = createContext({} as TwapContextType);
 const queryClient = new QueryClient({
@@ -67,7 +67,7 @@ const useTranslations = (translations?: Partial<Translations>): Translations => 
 const Content = (props: TwapProps) => {
   const translations = useTranslations(props.translations);
   const twapSDK = useMemo(() => constructSDK({ config: props.config }), [props.config]);
-  const { walletClient, publicClient } = useInitiateWallet(props.chainId, props.provider);
+  const { walletClient, publicClient } = useMemo(() => initiateWallet(props.chainId, props.provider), [props.chainId, props.provider]);
 
   return (
     <TwapContext.Provider

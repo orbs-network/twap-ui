@@ -4,16 +4,16 @@ import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
 import moment from "moment";
 import { useTwapContext } from "../context";
-import { TwapOrder, Token } from "../types";
-import { createPublicClient } from "viem";
+import { TwapOrder, Token, PublicClient } from "../types";
+import { getPublicFallbackClient } from "../lib";
 
 const useKey = (config: Config) => {
   const { account } = useTwapContext();
   return useMemo(() => ["useTwapOrderHistoryManager", account, config.exchangeAddress, config.chainId], [account, config]);
 };
 
-export const getOrderStatuses = async (publicClient: ReturnType<typeof createPublicClient>, orders: Order[]) => {
-  try {
+export const getOrderStatusesWithFallback = async (chainId: number, publicClient: PublicClient, orders: Order[]) => {
+  const exec = async (publicClient: PublicClient) => {
     const multicallResponse = await publicClient?.multicall({
       contracts: orders.map((order) => {
         return {
@@ -25,11 +25,22 @@ export const getOrderStatuses = async (publicClient: ReturnType<typeof createPub
       }),
     });
 
-    return multicallResponse.map((it) => {
-      return it.result as number;
-    });
+    return multicallResponse
+      .map((it) => {
+        return it.result as number;
+      })
+      .filter((it) => it !== undefined);
+  };
+
+  try {
+    return await exec(publicClient);
   } catch (error) {
-    console.error(error);
+    try {
+      const fallbackClient = getPublicFallbackClient(chainId);
+      return await exec(fallbackClient);
+    } catch (error) {
+      return [];
+    }
   }
 };
 
@@ -150,7 +161,7 @@ const useOrdersQuery = (config: Config) => {
         }
       });
 
-      const statuses = await getOrderStatuses(publicClient, orders);
+      const statuses = await getOrderStatusesWithFallback(config.chainId, publicClient, orders);
 
       const canceledOrders = new Set(getCancelledOrderIds());
 
