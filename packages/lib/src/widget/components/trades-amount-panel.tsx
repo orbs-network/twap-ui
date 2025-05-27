@@ -46,7 +46,7 @@ export const Amount = () => {
   );
 };
 
-export const usePanel = () => {
+export const useTradesAmountPanel = () => {
   const { translations: t } = useTwapContext();
   const { setChunks, chunks, error } = useChunks();
   const tradeSize = useTradeSize();
@@ -61,7 +61,7 @@ export const usePanel = () => {
 };
 
 export const TradesAmount = ({ className = "", children }: { className?: string; children?: ReactNode }) => {
-  const { error } = usePanel();
+  const { error } = useTradesAmountPanel();
 
   const hide = useShouldWrapOrUnwrapOnly();
 
@@ -76,7 +76,7 @@ export const TradesAmount = ({ className = "", children }: { className?: string;
 
 const Input = ({ className = "" }: { className?: string }) => {
   const { onBlur, onFocus } = Panel.usePanelContext();
-  const { onChange, trades } = usePanel();
+  const { onChange, trades } = useTradesAmountPanel();
 
   return (
     <NumericInput
@@ -92,7 +92,7 @@ const Input = ({ className = "" }: { className?: string }) => {
 };
 
 export const TradesAmountLabel = ({ className = "" }: { className?: string }) => {
-  const { label, tooltip } = usePanel();
+  const { label, tooltip } = useTradesAmountPanel();
 
   return <Label className={`twap-trades-amount-panel-label ${className}`} text={label} tooltip={tooltip} />;
 };
@@ -114,5 +114,5 @@ const Main = () => {
 
 TradesAmount.Input = Input;
 TradesAmount.Label = TradesAmountLabel;
-TradesAmount.usePanel = usePanel;
+TradesAmount.usePanel = useTradesAmountPanel;
 TradesAmount.Amount = Amount;

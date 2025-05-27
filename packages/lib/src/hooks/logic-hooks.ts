@@ -90,7 +90,6 @@ export const useHasAllowanceCallback = () => {
       if (!publicClient) throw new Error("publicClient is not defined");
       if (!account) throw new Error("account is not defined");
       const allowance = await getAllowance(token.address, account, config.twapAddress, publicClient);
-      console.log({ allowance });
 
       return BN(allowance).gte(amount);
     },

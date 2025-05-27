@@ -127,33 +127,6 @@ export type OrderConfirmationModalProps = {
   onClose: () => void;
   title?: string;
   children?: ReactNode;
-  activeStep?: Steps;
-  createOrderTxHash?: string;
-  totalSteps?: number;
-  currentStepIndex?: number;
-  swapStatus?: SwapStatus;
-  swapError?: string;
-  approveTxHash?: string;
-  wrapTxHash?: string;
-  unwrapTxHash?: string;
-  srcToken?: Token;
-  dstToken?: Token;
-  srcAmount?: string;
-  dstAmount?: string;
-  srcAmountusd?: number;
-  dstAmountusd?: number;
-  deadline?: number;
-  srcChunkAmount?: string;
-  fillDelayMillis?: number;
-  dstMinAmountOut?: string;
-  trades?: number;
-  feePercent?: number;
-  feeAmount?: string;
-  orderType?: OrderType;
-  onConfirm: () => void;
-  disclaimerAccepted?: boolean;
-  setDisclaimerAccepted: (accepted: boolean) => void;
-  buttonDisabled?: boolean;
 };
 
 export type OrderHistoryModalProps = {

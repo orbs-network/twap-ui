@@ -7,7 +7,7 @@ import BN from "bignumber.js";
 export const Main = () => {
   const { translations: t } = useTwapContext();
 
-  const { tokenAmount, usdAmount, error, token, hide } = usePanel();
+  const { tokenAmount, usdAmount, error, token, hide } = useTradeAmountMessagePanel();
 
   if (hide) return null;
   return (
@@ -19,7 +19,7 @@ export const Main = () => {
   );
 };
 
-const usePanel = () => {
+export const useTradeAmountMessagePanel = () => {
   const chunkSize = useSrcChunkAmountUSD();
   const { amountUI } = useSrcTokenChunkAmount();
   const chunksError = useChunks().error;
@@ -43,4 +43,4 @@ export const TradeAmountMessage = () => {
   return <Main />;
 };
 
-TradeAmountMessage.usePanel = usePanel;
+TradeAmountMessage.usePanel = useTradeAmountMessagePanel;

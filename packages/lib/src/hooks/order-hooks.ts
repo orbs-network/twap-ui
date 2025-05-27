@@ -37,6 +37,7 @@ export const getOrderStatusesWithFallback = async (chainId: number, publicClient
   } catch (error) {
     try {
       const fallbackClient = getPublicFallbackClient(chainId);
+      if (!fallbackClient) return [];
       return await exec(fallbackClient);
     } catch (error) {
       return [];

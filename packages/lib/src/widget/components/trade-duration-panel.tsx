@@ -30,7 +30,7 @@ const Options: Option[] = [
 
 const Buttons = ({ className = "" }: { className?: string }) => {
   const { options } = usePanelContext();
-  const { setUnit, durationMillis } = usePanel();
+  const { setUnit, durationMillis } = useDurationPanel();
   const { components } = useTwapContext();
   const onChange = useCallback((unit: TimeUnit) => setUnit(unit), [setUnit]);
 
@@ -82,7 +82,7 @@ const DurationLabel = () => {
   return <Label text={translations.expiry} tooltip={translations.maxDurationTooltip} />;
 };
 
-export const usePanel = () => {
+export const useDurationPanel = () => {
   const { orderDuration: duration, setOrderDuration: setDuration, milliseconds: durationMillis } = useOrderDuration();
 
   const setUnit = useCallback((unit: TimeUnit) => setDuration({ unit, value: duration.value }), [setDuration, duration.value]);
@@ -96,7 +96,7 @@ export const usePanel = () => {
 };
 
 const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; className?: string }) => {
-  const { setDuration, duration } = usePanel();
+  const { setDuration, duration } = useDurationPanel();
   const { onBlur, onFocus } = Panel.usePanelContext();
 
   return (
@@ -112,7 +112,7 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
 };
 
 const Resolution = () => {
-  const { setUnit, duration } = usePanel();
+  const { setUnit, duration } = useDurationPanel();
   const { onBlur, onFocus } = Panel.usePanelContext();
 
   return <ResolutionSelect onClose={onBlur} onOpen={onFocus} unit={duration.unit} onChange={setUnit} />;
@@ -141,4 +141,4 @@ const Main = ({ variant = "menu" }: { variant?: "buttons" | "menu" }) => {
 Duration.Buttons = Buttons;
 Duration.Label = DurationLabel;
 Duration.Menu = Menu;
-Duration.usePanel = usePanel;
+Duration.usePanel = useDurationPanel;

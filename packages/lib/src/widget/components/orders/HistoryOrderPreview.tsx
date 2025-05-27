@@ -41,7 +41,7 @@ export const HistoryOrderPreview = () => {
           {icons?.selectedOrderBack || <HiArrowLeft />}
         </div>
         <p className="twap-orders__selected-order-header-title">
-          #{order?.id} {name} {t.order}
+          {name} {t.order}
         </p>
       </div>
       <TokensDisplay
@@ -103,6 +103,9 @@ const OrderInfo = ({ order }: { order: TwapOrder }) => {
 
   return (
     <OrderDetails>
+      <OrderDetails.DetailRow title="ID">
+        <p>{order.id}</p>
+      </OrderDetails.DetailRow>
       <LimitPrice order={order} />
       <CreatedAt order={order} />
       <OrderDetails.Expiry deadline={order?.deadline} />

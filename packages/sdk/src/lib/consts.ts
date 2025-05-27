@@ -35,7 +35,7 @@ export const nativeTokenAddresses = [
 
 export const maxUint256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
-export const LEGACY_EXCHANGES_MAP = {
+export const LEGACY_EXCHANGES_MAP: Record<string, string[]> = {
   [Configs.SushiArb.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
   [Configs.SushiBase.name]: ["0x846F2B29ef314bF3D667981b4ffdADc5B858312a", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
   [Configs.SushiEth.name]: ["0xc55943Fa6509004B2903ED8F8ab7347BfC47D0bA", "0x08c41f5D1C844061f6D952E25827eeAA576c6536"],
@@ -44,4 +44,6 @@ export const LEGACY_EXCHANGES_MAP = {
   [Configs.Thena.name]: ["0xc2aBC02acd77Bb2407efA22348dA9afC8B375290"],
   [Configs.Lynex.name]: ["0x72e3e1fD5D2Ee2F1C2Eb695206D490a1D45C3835"],
   [Configs.DragonSwap.name]: ["0x101e1B65Bb516FB5f4547C80BAe0b51f1b8D7a22"],
+  [Configs.SpookySwapSonic.name]: ["0xAd97B770ad64aE47fc7d64B3bD820dCDbF9ff7DA"],
+  [Configs.SpookySwap.name]: ["0x3924d62219483015f982b160d48c0fa5Fd436Cba"],
 };

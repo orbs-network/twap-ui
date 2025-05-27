@@ -215,7 +215,7 @@ export const useToken = ({ isSrcToken }: { isSrcToken: boolean }) => {
   return isSrcToken ? srcToken : dstToken;
 };
 
-const usePanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
+export const useTokenPanel = ({ isSrcToken }: { isSrcToken: boolean }) => {
   return {
     balance: useTokenBalance({ isSrcToken }),
     usd: useTokenUSD({ isSrcToken }),
@@ -232,4 +232,4 @@ TokenPanel.Select = Select;
 TokenPanel.Input = TokenInput;
 TokenPanel.BalanceSelect = BalanceAmountSelect;
 TokenPanel.Label = TokenPanelLabel;
-TokenPanel.usePanel = usePanel;
+TokenPanel.usePanel = useTokenPanel;

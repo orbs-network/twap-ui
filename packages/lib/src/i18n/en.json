@@ -96,7 +96,7 @@
   "CreateOrderModalNativeBalanceError": "Insufficient {nativeToken} balance",
   "CreateOrderModalOrderCreated": "{name} order created",
   "orderCancelled": "Order cancelled",
-  "cancelOrderModalTitle": "Cancel order {id}",
+  "cancelOrderModalTitle": "Cancel order #{id}",
   "orderHistory": "Order history",
   "amountReceived": "Amount received",
   "createdAt": "Created at",

@@ -2,7 +2,6 @@ import { Config, Configs } from "@orbs-network/twap-sdk";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 
-
 export enum Panels {
   TWAP = "TWAP",
   LIMIT = "LIMIT",

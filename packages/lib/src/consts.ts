@@ -14,6 +14,8 @@ export const DEFAULT_LIMIT_PANEL_DURATION = { unit: TimeUnit.Days, value: 7 };
 
 export const ORBS_LOGO = "https://raw.githubusercontent.com/orbs-network/twap-ui/master/logo/orbslogo.svg";
 export const ORBS_LOGO_FALLBACK = "https://www.orbs.com/assets/img/common/logo.svg";
+export const ORBS_WEBSITE_URL = "https://www.orbs.com/";
+
 export const TX_GAS_COST = 500_000;
 
 export { Configs };

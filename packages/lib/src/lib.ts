@@ -21,18 +21,25 @@ export const getAllowance = async (token: string, account: string, twapAddress: 
 
 export const initiateWallet = (chainId?: number, provider?: Provider) => {
   const chain = Object.values(chains).find((it: any) => it.id === chainId);
+  if (!chain) {
+    return {
+      walletClient: undefined,
+      publicClient: undefined,
+    };
+  }
   const transport = provider ? custom(provider) : undefined;
   const walletClient = transport ? (createWalletClient({ chain, transport }) as any) : undefined;
   const publicClient = createPublicClient({ chain, transport: transport || http() }) as any;
 
   return {
     walletClient: walletClient as WalletClient | undefined,
-    publicClient: publicClient as PublicClient,
+    publicClient: publicClient as PublicClient | undefined,
   };
 };
 
 export const getPublicFallbackClient = (chainId: number) => {
   const chain = Object.values(chains).find((it: any) => it.id === chainId);
+  if (!chain) return;
   return createPublicClient({ chain, transport: http(`https://rpcman.orbs.network/rpc?chainId=${chainId}&appId=twap-ui`) }) as ReturnType<typeof createPublicClient>;
 };
 

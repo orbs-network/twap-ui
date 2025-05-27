@@ -4,23 +4,17 @@ import { useTwapContext } from "../context";
 import {
   useAmountUi,
   useDestTokenAmount,
-  useError,
   useFillDelay,
   useLimitPrice,
-  useMinChunkSizeUsd,
-  useOnOpenConfirmationModal,
   usePriceDiffFromMarketPercent,
-  useShouldOnlyWrap,
-  useShouldUnwrap,
   useShouldWrapOrUnwrapOnly,
   useSrcChunkAmountUSD,
   useSrcTokenChunkAmount,
-  useSwitchChain,
   useUsdAmount,
 } from "./logic-hooks";
 import BN from "bignumber.js";
 import { useFormatNumber } from "./useFormatNumber";
-import { useSubmitOrderCallback, useUnwrapToken, useWrapOnly } from "./send-transactions-hooks";
+import { useSubmitOrderCallback } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useOrders } from "./order-hooks";
 import { useTwapStore } from "../useTwapStore";
@@ -300,106 +294,6 @@ export const usePriceToggle = () => {
     isMarketOrder,
     setIsMarketOrder,
   };
-};
-
-export const useShowConfirmationModalButton = () => {
-  const { isWrongChain, srcUsd1Token, account: maker, translations: t, callbacks, marketPrice, marketPriceLoading, srcBalance, srcToken, dstToken } = useTwapContext();
-  const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
-  const swapStatus = useTwapStore((s) => s.state.swapStatus);
-  const error = useError();
-  const minChunkSizeUsd = useMinChunkSizeUsd();
-
-  const onOpen = useOnOpenConfirmationModal();
-  const { onConnect } = callbacks;
-  const switchChain = useSwitchChain();
-  const shouldUnwrap = useShouldUnwrap();
-  const shouldOnlyWrap = useShouldOnlyWrap();
-  const { mutate: wrap, isLoading: wrapLoading } = useWrapOnly();
-  const { mutate: unwrap, isLoading: unwrapLoading } = useUnwrapToken();
-  const zeroSrcAmount = BN(typedSrcAmount || "0").isZero();
-  const zeroMarketPrice = !BN(marketPrice || 0).gt(0);
-  const isPropsLoading = marketPriceLoading || BN(srcUsd1Token || "0").isZero() || srcBalance === undefined || !minChunkSizeUsd;
-  const isButtonLoading = !srcToken || !dstToken || !typedSrcAmount ? false : isPropsLoading;
-
-  const noLiquidity = useMemo(() => {
-    const result = srcToken && dstToken && !isButtonLoading && !marketPriceLoading && zeroMarketPrice;
-    if (!result) return;
-    return {
-      text: t.noLiquidity,
-      disabled: true,
-      loading: false,
-      onClick: () => {},
-    };
-  }, [t, isButtonLoading, marketPriceLoading, zeroMarketPrice, srcToken, dstToken]);
-
-  const connect = useMemo(() => {
-    if (maker) return;
-
-    return {
-      text: t.connect,
-      disabled: false,
-      loading: false,
-      onClick: () => {
-        if (onConnect) {
-          onConnect();
-        }
-      },
-    };
-  }, [maker, onConnect, t]);
-
-  const invalidChain = useMemo(() => {
-    if (!isWrongChain) return;
-    return {
-      text: t.switchNetwork,
-      onClick: switchChain,
-      disabled: false,
-      loading: false,
-    };
-  }, [isWrongChain, t, switchChain]);
-
-  const wrapOnly = useMemo(() => {
-    if (!shouldOnlyWrap) return;
-
-    return {
-      text: error || t.wrap,
-      onClick: wrap,
-      disabled: error || wrapLoading,
-      loading: wrapLoading,
-    };
-  }, [shouldOnlyWrap, wrap, wrapLoading, t, error]);
-
-  const unwrapOnly = useMemo(() => {
-    if (!shouldUnwrap) return;
-
-    return {
-      text: error || t.unwrap,
-      onClick: unwrap,
-      disabled: error || unwrapLoading,
-      loading: unwrapLoading,
-    };
-  }, [shouldUnwrap, unwrap, error, unwrapLoading, t]);
-
-  const swap = useMemo(() => {
-    return {
-      text:
-        !srcToken || !dstToken
-          ? t.placeOrder
-          : !typedSrcAmount
-            ? t.enterAmount
-            : marketPriceLoading
-              ? t.outAmountLoading
-              : isButtonLoading
-                ? t.placeOrder
-                : error
-                  ? error
-                  : t.placeOrder,
-      onClick: onOpen,
-      loading: isButtonLoading,
-      disabled: swapStatus === SwapStatus.LOADING ? false : zeroMarketPrice || isButtonLoading || error,
-    };
-  }, [marketPriceLoading, zeroSrcAmount, t, onOpen, swapStatus, isButtonLoading, zeroMarketPrice, error, srcToken, dstToken, typedSrcAmount]);
-
-  return connect || invalidChain || wrapOnly || unwrapOnly || noLiquidity || swap;
 };
 
 export const useFillDelayPanel = () => {

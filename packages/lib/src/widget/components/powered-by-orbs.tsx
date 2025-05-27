@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ORBS_LOGO, ORBS_LOGO_FALLBACK } from "../../consts";
+import { ORBS_LOGO, ORBS_LOGO_FALLBACK, ORBS_WEBSITE_URL } from "../../consts";
 import { Portal } from "../../components/base";
 import { useTwapContext } from "../../context";
 
@@ -13,7 +13,7 @@ export function PoweredbyOrbsPortal() {
 
   return (
     <Portal containerId="twap-powered-by">
-      <a href="https://www.orbs.com/" target="_blank" className="twap-powered-by-content">
+      <a href={ORBS_WEBSITE_URL} target="_blank" className="twap-powered-by-content">
         <span>{translations.poweredBy}</span>
         <img src={url} onError={onError} />
       </a>

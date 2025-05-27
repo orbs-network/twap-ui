@@ -1,8 +1,8 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { http } from "viem";
-import { polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova, flare } from "viem/chains";
+import { polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova, flare, cronoszkEVM } from "viem/chains";
 
-const chains = [polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova, flare];
+const chains = [polygon, mainnet, arbitrum, bsc, fantom, blast, linea, sei, base, sonic, arbitrumNova, flare, cronoszkEVM];
 
 const transports = chains
   .map((chain) => {
