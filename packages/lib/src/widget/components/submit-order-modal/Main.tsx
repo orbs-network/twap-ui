@@ -8,20 +8,14 @@ import { useConfirmationModalButton, useFee } from "../../../hooks/ui-hooks";
 import { useChunks, useDestTokenMinAmount, useFillDelay, useOrderDeadline, useSrcTokenChunkAmount, useUsdAmount } from "../../../hooks/logic-hooks";
 import { OrderDetails } from "../../../components/order-details";
 import { useTwapStore } from "../../../useTwapStore";
+import { useTradePrice } from "./usePrice";
 
 const Price = () => {
   const { srcToken, dstToken } = useTwapContext();
 
-  const trade = useTwapStore((s) => s.state.trade);
-  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
+  const price = useTradePrice();
 
-  const price = useMemo(
-    () =>
-      BN(trade?.dstAmount || 0)
-        .dividedBy(trade?.srcAmount || 0)
-        .toString(),
-    [trade?.dstAmount, trade?.srcAmount],
-  );
+  const isMarketOrder = useTwapStore((s) => s.state.isMarketOrder);
 
   const priceF = useFormatNumber({ value: price, decimalScale: 4 });
 

@@ -305,7 +305,7 @@ interface Components {
 
   OrdersPanel?: FC<OrdersProps>;
   OrdersModal?: FC<OrderHistoryModalProps>;
-  OrderConfirmationModal: FC<OrderConfirmationModalProps>;
+  OrderConfirmationModal?: FC<OrderConfirmationModalProps>;
   TokenSelectModal?: FC<TokenSelectModalProps>;
   CreateOrderPanelSpinner?: ReactNode;
   CreateOrderPanelSuccessIcon?: ReactNode;

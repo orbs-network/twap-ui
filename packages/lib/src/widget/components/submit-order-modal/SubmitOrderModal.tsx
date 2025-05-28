@@ -20,6 +20,7 @@ import { useFee } from "../../../hooks/ui-hooks";
 import { Steps } from "../../../types";
 import { useSubmitOrderCallback } from "../../../hooks/send-transactions-hooks";
 import { useTwapStore } from "../../../useTwapStore";
+import { useTradePrice } from "./usePrice";
 
 const Modal = ({ children }: { children: ReactNode }) => {
   const { components } = useTwapContext();
@@ -116,7 +117,7 @@ const SuccessContent = () => {
 };
 
 export const useSubmitOrderPanel = () => {
-  const { dstUsd1Token, srcUsd1Token } = useTwapContext();
+  const { dstUsd1Token, srcUsd1Token, account } = useTwapContext();
   const trade = useTwapStore((s) => s.state.trade);
   const onClose = useOnCloseConfirmationModal();
   const deadline = useOrderDeadline();
@@ -125,7 +126,7 @@ export const useSubmitOrderPanel = () => {
   const fillDelayMillis = useFillDelay().milliseconds;
   const destMinAmountOut = useDestTokenMinAmount().amountUI;
   const fee = useFee();
-  const { mutateAsync: onConfirm, checkingApproval: loadingApproval } = useSubmitOrderCallback();
+  const { mutateAsync: submitOrder, checkingApproval: loadingApproval } = useSubmitOrderCallback();
   const srcUsd = useUsdAmount(trade?.srcAmount, srcUsd1Token);
   const dstUsd = useUsdAmount(trade?.dstAmount, dstUsd1Token);
   const activeStep = useTwapStore((s) => s.state.activeStep);
@@ -141,14 +142,21 @@ export const useSubmitOrderPanel = () => {
   const approveTxHash = useTwapStore((s) => s.state.approveTxHash);
   const createOrderTxHash = useTwapStore((s) => s.state.createOrderTxHash);
   const updateState = useTwapStore((s) => s.updateState);
+  const price = useTradePrice();
+
   const setDisclaimerAccepted = useCallback(
     (accepted: boolean) => {
       updateState({ disclaimerAccepted: accepted });
     },
     [updateState],
   );
+
+  const onConfirm = useCallback(() => {
+    submitOrder();
+  }, [submitOrder]);
+
   return {
-    trade,
+    ...trade,
     onClose,
     isOpen: showConfirmation,
     orderDeadline: deadline,
@@ -159,7 +167,7 @@ export const useSubmitOrderPanel = () => {
     fee,
     onConfirm,
     setDisclaimerAccepted,
-    loadingApproval,
+    loading: loadingApproval,
     srcUsd,
     dstUsd,
     activeStep,
@@ -174,5 +182,7 @@ export const useSubmitOrderPanel = () => {
     approveTxHash,
     createOrderTxHash,
     title: trade?.title,
+    price,
+    recipient: account,
   };
 };

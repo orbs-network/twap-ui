@@ -14,7 +14,11 @@ import {
   ButtonProps,
   InputProps,
   useFormatNumber,
+  formatDecimals,
+  fillDelayText,
+  makeElipsisAddress,
 } from "@orbs-network/twap-ui";
+import moment from "moment";
 import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
@@ -22,10 +26,11 @@ import { Panels, useDappContext } from "../context";
 import { GlobalStyles, StyledLayout } from "./styles";
 import { CurrencyInputPanel, Section, SwitchTokensButton } from "./components";
 import { useDappStore } from "./store";
-import { ChevronDown, Info, RefreshCcw } from "react-feather";
+import { ArrowRight, ChevronDown, Info, RefreshCcw } from "react-feather";
 import BN from "bignumber.js";
 import { useGetToken } from "./hooks";
 import { OrdersPanel } from "./orders";
+import { SubmitOrderPanel } from "./submit-order-panel";
 
 const OrderHistoryModal = (props: OrderHistoryModalProps) => {
   return (
@@ -401,12 +406,11 @@ export const Dapp = () => {
           Link,
           OrderConfirmationModal: OrderConfirmationModal,
           // uncomment this to show the orders modal
-          OrdersModal: OrderHistoryModal,
+          // OrdersModal: OrderHistoryModal,
           SelectMenu,
           Toggle,
           Button: CustomButton,
-          Input: CustomInput,
-          // OrdersPanel,
+          OrdersPanel,
         }}
         useToken={useToken}
         fee={0.25}
@@ -414,6 +418,7 @@ export const Dapp = () => {
         orderDisclaimerAcceptedByDefault
       >
         <StyledLayout>
+          {/* <SubmitOrderPanel /> */}
           <Flex vertical gap={10} align="center">
             <PanelToggle />
             {!limit && <MarketPriceToggle />}
