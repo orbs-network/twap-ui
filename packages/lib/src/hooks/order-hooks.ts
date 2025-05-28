@@ -34,11 +34,17 @@ export const getOrderStatusesWithFallback = async (chainId: number, publicClient
   };
 
   try {
-    return await exec(publicClient);
+    const result = await exec(publicClient);
+
+    if (!result.length && orders.length > 0) {
+      throw new Error("No result from main rpc");
+    }
+    return result;
   } catch (error) {
     try {
       const fallbackClient = getPublicFallbackClient(chainId);
       if (!fallbackClient) return [];
+
       return await exec(fallbackClient);
     } catch (error) {
       return [];
@@ -199,8 +205,8 @@ const useOrdersQuery = (config: Config) => {
 
 export const useOrders = (config?: Config) => {
   const { config: contextConfig } = useTwapContext();
-  const { data: orders, isLoading, error, refetch } = useOrdersQuery(config ?? contextConfig);
-  const {mutateAsync: cancelOrder} = useCancelOrder()
+  const { data: orders, isLoading, error, refetch, isRefetching } = useOrdersQuery(config ?? contextConfig);
+  const { mutateAsync: cancelOrder } = useCancelOrder();
 
   return useMemo(() => {
     return {
@@ -213,10 +219,11 @@ export const useOrders = (config?: Config) => {
       },
       isLoading,
       error,
-      refetch,
+      refetch: () => refetch().then((it) => it.data),
       cancelOrder,
+      isRefetching,
     };
-  }, [orders, isLoading, error, refetch, cancelOrder]);
+  }, [orders, isLoading, error, refetch, cancelOrder, isRefetching]);
 };
 
 const filterAndSortOrders = (orders: TwapOrder[], status: OrderStatus) => {

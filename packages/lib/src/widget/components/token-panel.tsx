@@ -7,6 +7,7 @@ import { useTwapContext } from "../../context";
 import { useAmountUi, useBalanceError, useDestTokenAmount, useOnSrcInputPercentClick, useShouldWrapOrUnwrapOnly, useUsdAmount } from "../../hooks/logic-hooks";
 import { useTokenSelect } from "../../hooks/ui-hooks";
 import { useTwapStore } from "../../useTwapStore";
+import { formatDecimals } from "../../utils";
 const Input = (props: {
   className?: string;
   decimalScale?: number;
@@ -205,7 +206,7 @@ export const useTokenInput = ({ isSrcToken }: { isSrcToken: boolean }) => {
     [updateState, isSrcToken],
   );
   return {
-    value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : destTokenAmountUI,
+    value: isWrapOrUnwrapOnly || isSrcToken ? typedSrcAmount : formatDecimals(destTokenAmountUI, 8),
     onChange,
     isLoading: isSrcToken ? false : marketPriceLoading,
   };

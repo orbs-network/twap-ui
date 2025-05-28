@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected, Steps, Token, TwapOrder } from "..";
+import { Steps, Token, TwapOrder } from "../types";
 import BN from "bignumber.js";
 import { erc20Abi, maxUint256, TransactionReceipt } from "viem";
 import { useTwapContext } from "../context";
@@ -18,6 +18,7 @@ import { useCallback, useRef, useState } from "react";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useOrders, usePersistedOrdersStore } from "./order-hooks";
 import { useTwapStore } from "../useTwapStore";
+import { ensureWrappedToken, getOrderIdFromCreateOrderEvent, isTxRejected } from "../utils";
 
 export const useApproveToken = () => {
   const { account, config, walletClient, publicClient, callbacks, twapSDK } = useTwapContext();
@@ -142,7 +143,7 @@ const useCallbacks = () => {
         receipt,
       });
 
-      if (!orderId) {
+      if (orderId === undefined || orderId === null) {
         return await refetchOrders();
       }
 
@@ -218,6 +219,7 @@ export const useCreateOrder = () => {
         throw new Error("failed to create order");
       }
       const orderId = getOrderIdFromCreateOrderEvent(receipt);
+
       await callbacks.onSuccess(receipt, params, srcToken, orderId);
 
       return {

@@ -30,7 +30,7 @@ export const NumberInput = (props: {
 
   return (
     <NumericFormat
-      className={props.className}
+      className={`input ${props.className}`}
       allowNegative={false}
       disabled={disabled}
       decimalScale={decimalScale}
@@ -222,7 +222,7 @@ export const TokensList = ({ onClick }: TokensListProps) => {
   );
 };
 
-export const UISelector = () => {
+export const PanelToggle = () => {
   const { setPanel, panel } = useDappContext();
 
   return (

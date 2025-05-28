@@ -5,7 +5,7 @@ import { Panel } from "../../components/Panel";
 import { NumericInput } from "../../components/base";
 import { TokenSelect } from "./token-select";
 import { useTwapContext } from "../../context";
-import { useLimitPriceError, useLimitPriceInput, useLimitPriceOnInvert, useLimitPricePanel, useLimitPricePercentSelect } from "../../hooks/ui-hooks";
+import { useLimitPriceError, useLimitPricePanel } from "../../hooks/ui-hooks";
 import { useShouldWrapOrUnwrapOnly } from "../../hooks/logic-hooks";
 import { useFormatNumber } from "../../hooks/useFormatNumber";
 import { useTwapStore } from "../../useTwapStore";
@@ -57,7 +57,7 @@ const USD = () => {
 };
 
 const Input = ({ className = "" }: { className?: string }) => {
-  const { value, onChange, isLoading } = useLimitPriceInput();
+  const { value, onChange, isLoading } = useLimitPricePanel().input;
   const { onBlur, onFocus } = Panel.usePanelContext();
 
   return (
@@ -74,7 +74,7 @@ const Input = ({ className = "" }: { className?: string }) => {
 };
 
 const PercentSelector = () => {
-  const { buttons, isReset } = useLimitPricePercentSelect();
+  const { buttons, isReset } = useLimitPricePanel().percent;
   const { components } = useTwapContext();
 
   if (components.LimitPanelPercentSelect) {
@@ -116,7 +116,7 @@ const DstTokenSelect = ({ className = "" }: { className?: string }) => {
 };
 
 const InvertPriceButton = ({ className = "" }: { className?: string }) => {
-  const onInvert = useLimitPriceOnInvert();
+  const onInvert = useLimitPricePanel().onInvert;
   const { components } = useTwapContext();
 
   if (components.LimitPanelInvertButton) {

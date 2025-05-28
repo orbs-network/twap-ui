@@ -281,7 +281,7 @@ export const useMarketPrice = (_fromToken?: Token, _toToken?: Token) => {
 
   const marketPrice = useMemo(() => {
     if (!fromTokenUsd || !toTokenUsd) return;
-    return amountBN(toToken?.decimals, (fromTokenUsd / toTokenUsd).toString());
+    return amountBN(toToken?.decimals, BN(fromTokenUsd).div(toTokenUsd).toFixed());
   }, [fromTokenUsd, toTokenUsd, toToken]);
 
   return {

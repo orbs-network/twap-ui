@@ -1,4 +1,4 @@
-import { Token, Widget } from "@orbs-network/twap-ui";
+import { Token, useFormatNumber } from "@orbs-network/twap-ui";
 import { Avatar, Button, Flex, Typography } from "antd";
 import { ReactNode, useState } from "react";
 import { NumberInput, Popup, TokensList } from "../Components";
@@ -16,7 +16,11 @@ const TokenSelectModal = ({ isOpen, onSelect, onClose }: { isOpen: boolean; onSe
 
 export const SwitchTokensButton = () => {
   const { switchTokens } = useDappStore();
-  return <Button onClick={switchTokens} type="primary" icon={<ArrowDown />} />;
+  return (
+    <Flex style={{ height: 10 }} align="center" justify="center">
+      <Button onClick={switchTokens} type="primary" icon={<ArrowDown />} />;
+    </Flex>
+  );
 };
 
 const TokenSelectButton = ({ onSelect, token }: { onSelect: (token: Token) => void; token?: Token }) => {
@@ -67,22 +71,24 @@ export const CurrencyInputPanel = ({
   token?: Token;
   onInputChange: (value: string) => void;
   value?: string;
-  title?: ReactNode;
+  title?: string;
   hideBalance?: boolean;
   hideUsd?: boolean;
 }) => {
+  const usdF = useFormatNumber({ value: usd, decimalScale: 2 });
+  const balanceF = useFormatNumber({ value: balance, decimalScale: 4 });
   return (
     <Flex vertical gap={10} style={{ width: "100%" }}>
-      <Flex className="token-panel-title">{title}</Flex>
+      {title && <Typography className="token-panel-title">{title}</Typography>}
       <Flex gap={10}>
-        <NumberInput onChange={onInputChange} value={value} className="token-panel-input" />
+        <NumberInput onChange={onInputChange} value={value} />
         <TokenSelectButton onSelect={onSelect} token={token} />
       </Flex>
       <Flex justify="space-between">
-        {!hideUsd && <Typography style={{ fontSize: 14, color: "white", opacity: 0.5 }}>${numericFormatter(usd, { thousandSeparator: true, decimalScale: 2 })}</Typography>}
+        {!hideUsd && <Typography style={{ fontSize: 14, color: "white", opacity: 0.5 }}>${usdF || "0"}</Typography>}
         {!hideBalance && (
-          <Typography style={{ fontSize: 14, color: "white", opacity: 0.5 }}>
-            {numericFormatter(balance, { thousandSeparator: true, decimalScale: 2 })} {token?.symbol}
+          <Typography style={{ fontSize: 14, color: "white", opacity: 0.5 }} onClick={() => onInputChange(balance)}>
+            {balanceF || "0"} {token?.symbol}
           </Typography>
         )}
       </Flex>
@@ -90,9 +96,9 @@ export const CurrencyInputPanel = ({
   );
 };
 
-export const Section = ({ children }: { children: React.ReactNode }) => {
+export const Section = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
   return (
-    <Flex vertical gap={10} style={{ width: "100%", borderRadius: 12, padding: 16, background: "#131313" }}>
+    <Flex vertical gap={10} style={{ width: "100%", borderRadius: 12, padding: 16, background: "#131313" }} className={className}>
       {children}
     </Flex>
   );

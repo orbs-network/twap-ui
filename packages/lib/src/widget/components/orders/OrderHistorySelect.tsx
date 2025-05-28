@@ -15,7 +15,7 @@ export function OrderHistoryMenu() {
         value: it,
       };
     });
-    return [{ text: "all", value: "" }, ...result];
+    return [{ text: "All", value: "" }, ...result];
   }, []);
 
   return <SelectMenu onSelect={onSelect} selected={status || ""} items={items} />;

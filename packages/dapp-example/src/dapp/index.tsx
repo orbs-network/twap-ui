@@ -1,7 +1,7 @@
 import { useTokenList, usePriceUSD, useMarketPrice, useTokenBalance } from "../hooks";
-import { NumberInput, Popup } from "../Components";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar } from "antd";
+import { NumberInput, Popup, PanelToggle } from "../Components";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Tooltip, Switch, Dropdown, Button, MenuProps, Flex, Typography, Avatar, TableProps, Space, Tag, Table } from "antd";
 import {
   TooltipProps,
   Widget,
@@ -13,15 +13,19 @@ import {
   ToggleProps,
   ButtonProps,
   InputProps,
+  useFormatNumber,
 } from "@orbs-network/twap-ui";
-import { Config, eqIgnoreCase } from "@orbs-network/twap-sdk";
+import { Config, TimeUnit } from "@orbs-network/twap-sdk";
 import { useAccount, useWalletClient } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { Panels, useDappContext } from "../context";
-import { GlobalStyles } from "./styles";
+import { GlobalStyles, StyledLayout } from "./styles";
 import { CurrencyInputPanel, Section, SwitchTokensButton } from "./components";
 import { useDappStore } from "./store";
-import { RefreshCcw } from "react-feather";
+import { ChevronDown, Info, RefreshCcw } from "react-feather";
+import BN from "bignumber.js";
+import { useGetToken } from "./hooks";
+import { OrdersPanel } from "./orders";
 
 const OrderHistoryModal = (props: OrderHistoryModalProps) => {
   return (
@@ -41,7 +45,7 @@ const OrderConfirmationModal = (props: OrderConfirmationModalProps) => {
 
 const useUSD = (address?: string) => {
   const res = usePriceUSD(address);
-  return res?.toString();
+  return !res ? "" : BN(res).toFixed();
 };
 
 const CustomTooltip = (props: TooltipProps) => {
@@ -53,11 +57,10 @@ const CustomTooltip = (props: TooltipProps) => {
 };
 
 const useToken = (addressOrSymbol?: string) => {
-  const tokens = useTokenList();
-
+  const getToken = useGetToken();
   return useMemo(() => {
-    return tokens?.find((it: any) => eqIgnoreCase(it.address || "", addressOrSymbol || "") || eqIgnoreCase(it.symbol || "", addressOrSymbol || ""));
-  }, [tokens, addressOrSymbol]);
+    return getToken(addressOrSymbol);
+  }, [getToken, addressOrSymbol]);
 };
 
 const Link = ({ href, children }: LinkProps) => {
@@ -76,7 +79,7 @@ const SelectMenu = (props: SelectMenuProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+    setAnchorEl(open ? null : event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
@@ -95,11 +98,15 @@ const SelectMenu = (props: SelectMenuProps) => {
     };
   });
   return (
-    <div>
-      <Button id="basic-button" aria-controls={open ? "basic-menu" : undefined} aria-haspopup="true" aria-expanded={open ? "true" : undefined} onClick={handleClick}>
-        {props.selected?.text}
-      </Button>
-      <Dropdown menu={{ items }} />
+    <div style={{ width: "fit-content" }}>
+      <Dropdown trigger={["click"]} menu={{ items }} open={open} onOpenChange={() => setAnchorEl(null)}>
+        <Button type="primary" aria-controls={open ? "basic-menu" : undefined} aria-haspopup="true" aria-expanded={open ? "true" : undefined} onClick={handleClick}>
+          <Flex gap={4} align="center">
+            <Typography style={{ textTransform: "capitalize" }}>{props.selected?.text}</Typography>
+            <ChevronDown size={16} />
+          </Flex>
+        </Button>
+      </Dropdown>
     </div>
   );
 };
@@ -195,12 +202,16 @@ const useTokens = () => {
 };
 
 const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
-  const { input, usd, balance, token, onTokenSelect } = Widget.useTokenPanel({ isSrcToken: Boolean(isSrcToken) });
+  const { input, usd, balance, token } = Widget.useTokenPanel({ isSrcToken: Boolean(isSrcToken) });
+
+  const { setSrcToken, setDstToken } = useDappStore();
+
+  const onSelect = isSrcToken ? setSrcToken : setDstToken;
 
   return (
     <Section>
       <CurrencyInputPanel
-        onSelect={onTokenSelect}
+        onSelect={onSelect}
         usd={usd.data?.toString() || ""}
         balance={balance?.toString() || ""}
         token={token}
@@ -213,30 +224,23 @@ const TokenPanel = ({ isSrcToken }: { isSrcToken?: boolean }) => {
 };
 
 const LimitPanel = () => {
-  const { input, usd, isInverted, percent, onInvert } = Widget.useLimitPanel();
+  const { input, usd, isInverted, percent, onInvert, isLimitOrder } = Widget.useLimitPanel();
   const { setSrcToken, setDstToken, srcToken, dstToken } = useDappStore();
   const onSelect = isInverted ? setSrcToken : setDstToken;
   const topToken = isInverted ? dstToken : srcToken;
   const bottomToken = isInverted ? srcToken : dstToken;
+
+  if (!isLimitOrder) return null;
   return (
     <Section>
       <Flex vertical gap={10} align="center" style={{ width: "100%" }}>
-        <CurrencyInputPanel
-          token={bottomToken}
-          onInputChange={() => {}}
-          value={input.value}
-          usd={usd?.toString() || ""}
-          onSelect={onSelect}
-          hideBalance
-          title={
-            <Flex justify="space-between" style={{ width: "100%" }}>
-              <Flex align="center" gap={4}>
-                <Typography>Swap when 1</Typography> <Avatar src={topToken?.logoUrl} size={20} /> <Typography>{topToken?.symbol} is worth</Typography>
-              </Flex>
-              <Button onClick={onInvert} type="text" icon={<RefreshCcw size={18} />} />
-            </Flex>
-          }
-        />
+        <Flex justify="space-between" style={{ width: "100%" }}>
+          <Flex align="center" gap={4}>
+            <Typography>Swap when 1</Typography> <Avatar src={topToken?.logoUrl} size={20} /> <Typography>{topToken?.symbol} is worth</Typography>
+          </Flex>
+          <Button onClick={onInvert} type="text" icon={<RefreshCcw size={18} />} />
+        </Flex>
+        <CurrencyInputPanel token={bottomToken} onInputChange={input.onChange} value={input.value} usd={usd?.toString() || ""} onSelect={onSelect} hideBalance />
       </Flex>
       <Flex
         gap={5}
@@ -266,9 +270,107 @@ const LimitPanel = () => {
   );
 };
 
-const TWAPComponent = ({ limit }: { limit?: boolean }) => {
+const TradeAmountMessage = () => {
+  const { usdAmount, tokenAmount, token, hide, error } = Widget.useTradeAmountMessagePanel();
+  const tokenAmountF = useFormatNumber({ value: tokenAmount });
+
+  if (hide) return null;
+
+  return (
+    <Typography className={`trade-amount-message ${error ? "trade-amount-message-error" : ""}`}>
+      {`${tokenAmountF} ${token?.symbol} `}
+      <span>{`($${usdAmount}) `}</span>
+      per trade
+    </Typography>
+  );
+};
+const Label = ({ label, tooltip }: { label: string; tooltip?: string }) => {
+  return (
+    <Flex align="center" gap={4}>
+      <Typography style={{ fontSize: 14, color: "white", opacity: 0.5 }}>{label}</Typography>
+      {tooltip && (
+        <Tooltip title={tooltip} arrow>
+          <Info size={14} color="white" />
+        </Tooltip>
+      )}
+    </Flex>
+  );
+};
+
+const timeArr: { text: string; value: TimeUnit }[] = [
+  {
+    text: "Minutes",
+    value: TimeUnit.Minutes,
+  },
+  {
+    text: "Hours",
+    value: TimeUnit.Hours,
+  },
+  {
+    text: "Days",
+    value: TimeUnit.Days,
+  },
+];
+
+const OrderDuration = () => {
+  const { title, tooltip, duration, onUnitSelect, onInputChange } = Widget.useDurationPanel();
+
+  const selected = timeArr.find((it) => it.value === duration.unit);
+
+  return (
+    <Section className="order-delay twap-input-panel">
+      <Label label={title} tooltip={tooltip} />
+      <Flex justify="space-between" style={{ width: "100%" }}>
+        <NumberInput onChange={onInputChange} value={duration.value} />
+        <SelectMenu items={timeArr} selected={selected} onSelect={(item) => onUnitSelect(Number(item.value))} />
+      </Flex>
+    </Section>
+  );
+};
+
+const FillDelay = () => {
+  const { title, tooltip, onUnitSelect, fillDelay, onInputChange } = Widget.useFillDelayPanel();
+
+  const selected = timeArr.find((it) => it.value === fillDelay.unit);
+
+  return (
+    <Section className="fill-duration twap-input-panel">
+      <Label label={title} tooltip={tooltip} />
+      <Flex justify="space-between" style={{ width: "100%" }}>
+        <NumberInput onChange={onInputChange} value={fillDelay.value} />
+        <SelectMenu items={timeArr} selected={selected} onSelect={(item) => onUnitSelect(Number(item.value))} />
+      </Flex>
+    </Section>
+  );
+};
+
+const TradeAmount = () => {
+  const { onChange, trades, tooltip, label } = Widget.useTradesAmountPanel();
+
+  return (
+    <Section className="trade-amount twap-input-panel">
+      <Label label={label} tooltip={tooltip} />
+      <Flex justify="space-between" style={{ width: "100%" }}>
+        <NumberInput onChange={(value) => onChange(Number(value))} value={trades} />
+        <Typography>trades</Typography>
+      </Flex>
+    </Section>
+  );
+};
+
+const MarketPriceToggle = () => {
+  const { isMarketOrder, setIsMarketOrder } = Widget.usePriceModePanel();
+  return (
+    <Flex gap={10} align="center" justify="flex-end" style={{ width: "100%" }}>
+      <Typography>Limit Price</Typography>
+      <Switch checked={!!isMarketOrder} onChange={() => setIsMarketOrder(!isMarketOrder)} />
+    </Flex>
+  );
+};
+
+export const Dapp = () => {
   const { chainId, address: account } = useAccount();
-  const config = useDappContext().config;
+  const { config, panel } = useDappContext();
   const { srcToken, dstToken } = useTokens();
   const client = useWalletClient();
   const { outAmount: marketPrice, isLoading: marketPriceLoading } = useMarketPrice(srcToken, dstToken);
@@ -276,6 +378,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
   const dstUsd = useUSD(dstToken?.address);
   const srcBalance = useTokenBalance(srcToken).data?.wei;
   const dstBalance = useTokenBalance(dstToken).data?.wei;
+  const limit = panel === Panels.LIMIT;
+
   return (
     <>
       <GlobalStyles isDarkMode={true} />
@@ -287,8 +391,8 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
         srcToken={srcToken}
         dstToken={dstToken}
         isLimitPanel={limit}
-        srcUsd1Token={srcUsd ? Number(srcUsd) : 0}
-        dstUsd1Token={dstUsd ? Number(dstUsd) : 0}
+        srcUsd1Token={srcUsd}
+        dstUsd1Token={dstUsd}
         srcBalance={srcBalance}
         dstBalance={dstBalance}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
@@ -296,35 +400,48 @@ const TWAPComponent = ({ limit }: { limit?: boolean }) => {
           Tooltip: CustomTooltip,
           Link,
           OrderConfirmationModal: OrderConfirmationModal,
+          // uncomment this to show the orders modal
           OrdersModal: OrderHistoryModal,
           SelectMenu,
           Toggle,
           Button: CustomButton,
           Input: CustomInput,
+          // OrdersPanel,
         }}
         useToken={useToken}
-        customMinChunkSizeUsd={4}
         fee={0.25}
         account={account}
         orderDisclaimerAcceptedByDefault
       >
-        <Flex vertical gap={10} align="center">
-          <LimitPanel />
-          <TokenPanel isSrcToken />
-          <SwitchTokensButton />
-          <TokenPanel />
-          <ConfirmationButton />
-        </Flex>
-      </Widget>
-    </>
-  );
-};
+        <StyledLayout>
+          <Flex vertical gap={10} align="center">
+            <PanelToggle />
+            {!limit && <MarketPriceToggle />}
+            <LimitPanel />
+            <Flex vertical gap={0} align="center" style={{ width: "100%" }}>
+              <TokenPanel isSrcToken />
+              <SwitchTokensButton />
+              <TokenPanel />
+            </Flex>
+            {limit ? (
+              <OrderDuration />
+            ) : (
+              <Flex gap={10} align="stretch" justify="space-between" style={{ width: "100%" }}>
+                <FillDelay />
+                <TradeAmount />
+              </Flex>
+            )}
+            <TradeAmountMessage />
+            <ConfirmationButton />
+            <Widget.PoweredByOrbs />
 
-export const Dapp = () => {
-  const { panel } = useDappContext();
-  return (
-    <div className="dapp">
-      <TWAPComponent limit={panel === Panels.LIMIT} />
-    </div>
+            <Widget.WarningMessage />
+          </Flex>
+        </StyledLayout>
+      </Widget>
+      <Flex style={{ width: "100%", marginTop: 50, maxWidth: "80vw" }}>
+        <Widget.Orders />
+      </Flex>
+    </>
   );
 };

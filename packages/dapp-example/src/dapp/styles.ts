@@ -1,4 +1,4 @@
-import { createGlobalStyle } from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 
 const getColors = (isDarkMode?: boolean) => {
   return {
@@ -9,6 +9,18 @@ const getColors = (isDarkMode?: boolean) => {
     },
   };
 };
+
+export const StyledLayout = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  max-width: 500px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+`;
 
 const getSelectButton = (isDarkMode?: boolean, selected?: boolean) => {
   return {
@@ -45,6 +57,9 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       flexDirection: "column",
       gap: 10,
     },
+    "#twap-orders-portal": {
+      width: "100%",
+    },
     ".twap-orders__button": {
       padding: 16,
       background: "#1B1B1B",
@@ -53,6 +68,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       alignItems: "center",
       justifyContent: "flex-start",
       height: 48,
+      width: "100%",
       color: colors.text.main,
       fontSize: 14,
       border: "1px solid rgba(255, 255, 255, 0.1)",
@@ -70,6 +86,12 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     },
     ".twap-submit-button": {
       marginTop: 20,
+    },
+    ".twap-orders__selected-order": {
+      button: {
+        width: "100%",
+        marginTop: 20,
+      },
     },
     ".twap-orders__selected-order-bottom": {
       marginTop: 20,
@@ -187,6 +209,14 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     ".twap-orders__list-item-token-logo": {
       background: "rgba(255, 255, 255, 0.1)",
       borderRadius: 999,
+      width: 20,
+      height: 20,
+      img: {
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        borderRadius: "50%",
+      },
     },
     ".twap-orders__selected-order-header": {
       gap: 10,
@@ -239,12 +269,6 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       display: "flex",
       alignItems: "center",
       gap: 5,
-      img: {
-        width: 20,
-        height: 20,
-        objectFit: "cover",
-        borderRadius: "50%",
-      },
     },
     ".twap-orders__list-item-tokens": {
       display: "flex",
@@ -268,47 +292,6 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       marginLeft: "auto",
     },
 
-    ".twap-select-menu-button": {
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      gap: 5,
-      borderRadius: 10,
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      padding: "6px 10px",
-      background: "transparent",
-      svg: {
-        width: 18,
-        height: 18,
-        color: "rgb(155, 155, 155)",
-      },
-      "&:hover": {
-        background: "rgba(255, 255, 255, 0.07)",
-      },
-    },
-    ".twap-select-menu-list": {
-      background: "#1B1B1B",
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      padding: "6px",
-      borderRadius: 10,
-      "&-item": {
-        borderRadius: 8,
-        fontSize: 14,
-        "&:hover": {
-          background: "rgba(255, 255, 255, 0.07)",
-        },
-      },
-    },
-    ".twap-trade-interval-panel-input": {
-      input: {
-        fontSize: 20,
-      },
-    },
-    ".twap-trades-amount-panel-input": {
-      input: {
-        fontSize: 20,
-      },
-    },
     ".twap-trades-amount-panel-text": {
       color: colors.text.dark,
       fontSize: 14,
@@ -353,17 +336,12 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         top: 2,
       },
     },
-    ".twap-input-loader": {
-      background: "rgba(255,255,255, 0.2)",
-      borderRadius: 8,
-      maxWidth: "80%",
-      height: "80%",
-    },
+
     ".twap-input-loading": {
       opacity: 0,
     },
 
-    ".twap-powered-by": {
+    ".twap-powered-by-content": {
       display: "flex",
       alignItems: "center",
       gap: 5,
@@ -379,35 +357,6 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         width: 20,
         height: 20,
       },
-    },
-    ".twap-price-switch ": {
-      display: "flex",
-      marginLeft: "auto",
-      color: colors.text.main,
-      alignItems: "center",
-      marginBottom: 10,
-      gap: 10,
-      p: {
-        fontWeight: 500,
-        fontSize: 14,
-      },
-    },
-    ".twap-switch": {
-      background: "rgb(94, 94, 94)",
-    },
-    ".twap-switch-checked": {
-      background: "rgb(252, 114, 255)",
-    },
-    ".twap-switch-handle": {
-      background: "white",
-    },
-    ".twap-widget": {
-      width: "100%",
-    },
-    ".twap-widget-swap-panel-top": {
-      display: "flex",
-      flexDirection: "column",
-      gap: 2,
     },
     ".twap-button": {
       height: 50,
@@ -432,31 +381,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
     button: {
       cursor: "pointer",
     },
-    ".twap-limit-price-panel-invert-button": {
-      cursor: "pointer",
-      width: 30,
-      height: 30,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: 999,
-      position: "relative",
 
-      svg: {
-        width: 16,
-        height: 16,
-        color: colors.text.dark,
-      },
-      "&:hover": {
-        background: "rgba(255, 255, 255, 0.07)",
-      },
-    },
-    ".twap-limit-price-panel-header": {
-      display: "flex",
-      alignItems: "center",
-      gap: 5,
-      justifyContent: "space-between",
-    },
     ".twap-limit-price-panel-title": {
       display: "flex",
       alignItems: "center",
@@ -515,13 +440,17 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
       gap: 5,
       color: colors.text.main,
     },
-    ".twap-trade-amount-message": {
+    ".trade-amount-message": {
       fontSize: 14,
       fontWeight: 500,
       color: colors.text.main,
-      marginTop: 20,
+      marginRight: "auto",
+      marginTop: 5,
       "&-error": {
         color: colors.text.error,
+      },
+      span: {
+        opacity: 0.7,
       },
     },
     ".twap-token-select": {
@@ -613,7 +542,18 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         },
       },
     },
+    ".trade-amount": {
+      maxWidth: "45%",
+    },
 
+    ".order-delay": {
+      flex: 1,
+    },
+    ".twap-input-panel": {
+      input: {
+        fontSize: 18,
+      },
+    },
     ".twap-token-panel": {
       display: "flex",
       flexDirection: "column",
@@ -699,32 +639,7 @@ export const GlobalStyles = createGlobalStyle<{ isDarkMode?: boolean }>(({ isDar
         top: 2,
       },
     },
-    ".twap-duration-panel-buttons ": {
-      display: "flex",
-      gap: 5,
-    },
 
-    ".twap-panel": {
-      border: "1px solid transparent",
-      padding: 16,
-      background: "#1B1B1B",
-      borderRadius: 20,
-      color: colors.text.main,
-      "&-error": {
-        ".twap-input": {
-          input: {
-            color: colors.text.error,
-          },
-        },
-        ".twap-token-panel-balance": {
-          color: colors.text.error,
-        },
-      },
-    },
-    ".twap-panel-focused": {
-      // background:'transparent',
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-    },
     ".twap-inputs": {
       display: "flex",
       alignItems: "stretch",

@@ -31,11 +31,11 @@ export const Orders = ({ className = "" }: { className?: string }) => {
 };
 
 export const OrdersPortalContainer = ({ Component }: { Component: FC<OrdersProps> }) => {
-  const { orders, isLoading: orderLoading } = useOrders();
+  const { orders, isLoading: orderLoading, refetch, isRefetching } = useOrders();
   const { mutateAsync: cancelOrder } = useCancelOrder();
   return (
     <Portal containerId={PORTAL_ID}>
-      <Component onCancelOrder={cancelOrder} orders={orders} isLoading={orderLoading} />
+      <Component onCancelOrder={cancelOrder} orders={orders} isLoading={orderLoading} refetch={refetch} isRefetching={isRefetching} />
     </Portal>
   );
 };

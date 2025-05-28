@@ -54,7 +54,7 @@ export class TwapSDK {
   getAskParams(props: getAskParamsProps) {
     return getAskParams(this.config, props);
   }
-  getMaxChunks(typedSrcAmount: string, oneSrcTokenUsd: number, minChunkSizeUsd: number) {
+  getMaxChunks(typedSrcAmount: string, oneSrcTokenUsd: string, minChunkSizeUsd: number) {
     return getMaxPossibleChunks(this.config, typedSrcAmount, oneSrcTokenUsd, minChunkSizeUsd);
   }
   getChunks(maxChunks: number, isLimitPanel: boolean, customChunks?: number) {
@@ -100,7 +100,7 @@ export class TwapSDK {
       value: MIN_FILL_DELAY_MILLIS,
     };
   }
-  getMinTradeSizeError(typedSrcAmount: string, oneSrcTokenUsd: number, minChunkSizeUsd: number) {
+  getMinTradeSizeError(typedSrcAmount: string, oneSrcTokenUsd: string, minChunkSizeUsd: number) {
     return {
       isError: BN(oneSrcTokenUsd || 0)
         .multipliedBy(typedSrcAmount || 0)

@@ -104,7 +104,7 @@ export const useLimitPrice = () => {
   const updateState = useTwapStore((s) => s.updateState);
   const amountWei = useMemo(() => {
     if (typedPrice === undefined || isMarketOrder || !marketPrice) return marketPrice;
-    const result = isInvertedPrice ? BN(1).div(typedPrice).toString() : typedPrice;
+    const result = isInvertedPrice ? BN(1).div(typedPrice).toFixed() : typedPrice;
     return amountBN(dstToken?.decimals, result);
   }, [typedPrice, isMarketOrder, marketPrice, isInvertedPrice, dstToken?.decimals]);
 
@@ -121,7 +121,7 @@ export const useMaxChunks = () => {
   const minChunkSizeUsd = useMinChunkSizeUsd();
   const typedSrcAmount = useTwapStore((s) => s.state.typedSrcAmount);
 
-  return useMemo(() => twapSDK.getMaxChunks(typedSrcAmount || "", srcUsd1Token || 0, minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, twapSDK]);
+  return useMemo(() => twapSDK.getMaxChunks(typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0), [typedSrcAmount, srcUsd1Token, twapSDK]);
 };
 
 export const useChunks = () => {
@@ -168,7 +168,7 @@ export const useSrcTokenChunkAmount = () => {
   const srcAmountWei = useSrcAmount().amountWei;
   const amountWei = useMemo(() => twapSDK.getSrcTokenChunkAmount(srcAmountWei || "", chunks), [twapSDK, srcAmountWei, chunks]);
   const error = useMemo(() => {
-    const { isError, value } = twapSDK.getMinTradeSizeError(typedSrcAmount || "", srcUsd1Token || 0, minChunkSizeUsd || 0);
+    const { isError, value } = twapSDK.getMinTradeSizeError(typedSrcAmount || "", srcUsd1Token || "", minChunkSizeUsd || 0);
 
     if (!isError) return undefined;
     return t.minTradeSizeError.replace("{minTradeSize}", `${value} USD`);
@@ -440,10 +440,10 @@ export const useTransactionExplorerLink = (txHash?: string) => {
 
 export const useUsdAmount = (amount?: string, usd?: string | number) => {
   return useMemo(() => {
-    if (!amount || !usd || BN(amount || "0").isZero() || BN(usd || "0").isZero()) return 0;
+    if (!amount || !usd || BN(amount || "0").isZero() || BN(usd || "0").isZero()) return "";
     return BN(amount || "0")
       .times(usd)
-      .toNumber();
+      .toFixed();
   }, [amount, usd]);
 };
 

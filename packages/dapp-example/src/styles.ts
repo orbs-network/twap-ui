@@ -78,13 +78,14 @@ export const GlobalStyles = createGlobalStyle<{ config: Config }>(({ config }) =
         transformOrigin: "center",
       },
     },
-    ".token-panel-input": {
+    ".input": {
       border: "none",
       color: "white",
       outline: "none",
       background: "transparent",
       fontSize: 24,
       fontWeight: 500,
+      width: "100%",
     },
     ".popup-main": {
       maxHeight: "80vh",

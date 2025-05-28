@@ -33,7 +33,7 @@ export const getChunks = (maxPossibleChunks: number, isLimitPanel = false, typed
   return maxPossibleChunks;
 };
 
-export const getMaxPossibleChunks = (config: Config, typedSrcAmount?: string, oneSrcTokenUsd?: string | number, minChunkSizeUsd?: number) => {
+export const getMaxPossibleChunks = (config: Config, typedSrcAmount?: string, oneSrcTokenUsd?: string, minChunkSizeUsd?: number) => {
   if (!typedSrcAmount || !oneSrcTokenUsd || !minChunkSizeUsd) return 1;
   const amount = BN(oneSrcTokenUsd).times(typedSrcAmount);
 

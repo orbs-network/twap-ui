@@ -15,6 +15,17 @@ function App() {
       <ConfigProvider
         theme={{
           components: {
+            Table: {
+              colorBgContainer: "#141414",
+              colorText: "#fff",
+              colorLink: "#fff",
+              colorTextHeading: "#fff",
+            },
+            Dropdown: {
+              colorBgElevated: "#141414",
+              colorText: "#fff",
+              colorBorder: "transparent",
+            },
             Input: {
               colorBgContainer: "#141414",
               colorText: "#fff",

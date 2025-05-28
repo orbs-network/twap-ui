@@ -18,6 +18,7 @@ import { useSubmitOrderCallback } from "./send-transactions-hooks";
 import { SwapStatus } from "@orbs-network/swap-ui";
 import { useOrders } from "./order-hooks";
 import { useTwapStore } from "../useTwapStore";
+import { formatDecimals } from "../utils";
 
 const defaultPercent = [1, 5, 10];
 
@@ -26,14 +27,15 @@ const useDerivedLimitPrice = () => {
   const typedPrice = useTwapStore((s) => s.state.typedPrice);
   const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
 
-  return useMemo(() => {
+  const result = useMemo(() => {
     if (typedPrice !== undefined) return typedPrice;
     if (isInvertedPrice && limitPriceUI) {
-      return BN(1).div(limitPriceUI).decimalPlaces(6).toString();
+      return BN(formatDecimals(BN(1).div(limitPriceUI).toFixed())).toFixed();
     }
 
-    return !limitPriceUI ? "" : BN(limitPriceUI).decimalPlaces(6).toString();
+    return !limitPriceUI ? "" : BN(formatDecimals(limitPriceUI)).toFixed();
   }, [typedPrice, limitPriceUI, isInvertedPrice]);
+  return result;
 };
 const useLimitPriceLoading = () => {
   const { srcToken, dstToken, marketPrice } = useTwapContext();
@@ -116,13 +118,14 @@ export const useLimitPricePercentSelect = () => {
       let basePrice = amountUi(dstToken?.decimals, marketPrice);
 
       if (isInvertedPrice && basePrice) {
-        basePrice = BN(1).div(basePrice).toString();
+        basePrice = formatDecimals(BN(1).div(basePrice).toFixed());
       }
 
-      const computedPrice = BN(basePrice || 0)
-        .times(multiplier)
-        .decimalPlaces(6)
-        .toString();
+      const computedPrice = formatDecimals(
+        BN(basePrice || 0)
+          .times(multiplier)
+          .toFixed(),
+      );
       onPriceChange(computedPrice);
     },
     [updateState, dstToken, marketPrice, isInvertedPrice, onPriceChange, isLoading],
@@ -200,6 +203,7 @@ export const useLimitPanelUsd = () => {
   const { srcUsd1Token, dstUsd1Token } = useTwapContext();
   const { value: limitPrice } = useLimitPriceInput();
   const isInvertedPrice = useTwapStore((s) => s.state.isInvertedPrice);
+
   return useUsdAmount(limitPrice, isInvertedPrice ? srcUsd1Token : dstUsd1Token);
 };
 
@@ -224,6 +228,7 @@ export const useLimitPricePanel = () => {
     tokenSelect,
     usd,
     isLimitOrder: !isMarketOrder,
+    hide: isMarketOrder,
   };
 };
 
@@ -298,6 +303,7 @@ export const usePriceToggle = () => {
 
 export const useFillDelayPanel = () => {
   const { setFillDelay, fillDelay, milliseconds, error } = useFillDelay();
+  const { translations: t } = useTwapContext();
 
   const onInputChange = useCallback(
     (value: string) => {
@@ -320,6 +326,8 @@ export const useFillDelayPanel = () => {
     milliseconds,
     fillDelay,
     error,
+    title: t.tradeIntervalTitle,
+    tooltip: t.tradeIntervalTootlip,
   };
 };
 
@@ -346,9 +354,10 @@ export const useFee = () => {
   const destTokenAmount = useDestTokenAmount().amountUI;
 
   const amountUI = useMemo(() => {
-    if (!fee || !destTokenAmount || isMarketOrder) return "";
-    return BN(destTokenAmount).multipliedBy(fee).dividedBy(100).toFixed().toString();
+    if (!fee || !destTokenAmount) return "";
+    return BN(destTokenAmount).multipliedBy(fee).dividedBy(100).toFixed();
   }, [fee, destTokenAmount, isMarketOrder]);
+
   return {
     amountUI,
     percent: fee,

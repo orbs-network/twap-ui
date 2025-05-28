@@ -30,12 +30,11 @@ const Options: Option[] = [
 
 const Buttons = ({ className = "" }: { className?: string }) => {
   const { options } = usePanelContext();
-  const { setUnit, durationMillis } = useDurationPanel();
+  const { onUnitSelect, durationMillis } = useDurationPanel();
   const { components } = useTwapContext();
-  const onChange = useCallback((unit: TimeUnit) => setUnit(unit), [setUnit]);
 
   if (components.DurationSelectButtons) {
-    return <components.DurationSelectButtons onSelect={onChange} selected={durationMillis} />;
+    return <components.DurationSelectButtons onSelect={onUnitSelect} selected={durationMillis} />;
   }
 
   return (
@@ -44,7 +43,7 @@ const Buttons = ({ className = "" }: { className?: string }) => {
         return (
           <button
             key={it.value}
-            onClick={() => onChange(it.value)}
+            onClick={() => onUnitSelect(it.value)}
             className={`twap-duration-panel-button twap-select-button ${durationMillis === it.value ? "twap-duration-panel-button-selected twap-select-button-selected" : ""}`}
           >
             {it.text}
@@ -83,15 +82,30 @@ const DurationLabel = () => {
 };
 
 export const useDurationPanel = () => {
+  const t = useTwapContext().translations;
   const { orderDuration: duration, setOrderDuration: setDuration, milliseconds: durationMillis } = useOrderDuration();
 
-  const setUnit = useCallback((unit: TimeUnit) => setDuration({ unit, value: duration.value }), [setDuration, duration.value]);
+  const onInputChange = useCallback(
+    (value: string) => {
+      setDuration({ unit: duration.unit, value: Number(value) });
+    },
+    [setDuration, duration],
+  );
 
+  const onUnitSelect = useCallback(
+    (unit: TimeUnit) => {
+      setDuration({ unit, value: duration.value });
+    },
+    [setDuration, duration],
+  );
   return {
     duration,
     setDuration,
     durationMillis,
-    setUnit,
+    onInputChange,
+    onUnitSelect,
+    title: t.expiry,
+    tooltip: t.maxDurationTooltip,
   };
 };
 
@@ -112,10 +126,10 @@ const Input = ({ placeholder = "0", className = "" }: { placeholder?: string; cl
 };
 
 const Resolution = () => {
-  const { setUnit, duration } = useDurationPanel();
+  const { onUnitSelect, duration } = useDurationPanel();
   const { onBlur, onFocus } = Panel.usePanelContext();
 
-  return <ResolutionSelect onClose={onBlur} onOpen={onFocus} unit={duration.unit} onChange={setUnit} />;
+  return <ResolutionSelect onClose={onBlur} onOpen={onFocus} unit={duration.unit} onChange={onUnitSelect} />;
 };
 
 const Menu = () => {

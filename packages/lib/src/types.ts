@@ -172,7 +172,7 @@ export type BalanceProps = {
 };
 
 export type USDProps = {
-  value: number;
+  value: string;
   isLoading: boolean;
 };
 
@@ -259,6 +259,8 @@ export type OrdersProps = {
   };
   isLoading: boolean;
   onCancelOrder: (order: TwapOrder) => Promise<string>;
+  isRefetching: boolean;
+  refetch: () => Promise<TwapOrder[] | undefined>;
 };
 
 export type CancelOrderProps = {
@@ -398,8 +400,8 @@ export interface TwapProps {
   translations?: Partial<Translations>;
   srcToken?: Token;
   dstToken?: Token;
-  srcUsd1Token?: number;
-  dstUsd1Token?: number;
+  srcUsd1Token?: string;
+  dstUsd1Token?: string;
   srcBalance?: string;
   dstBalance?: string;
   isExactAppoval?: boolean;
