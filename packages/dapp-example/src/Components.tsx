@@ -1,57 +1,85 @@
-import Dialog from "@mui/material/Dialog";
+import { Modal } from "antd";
 import React, { ReactNode, useCallback, useMemo, useState } from "react";
 import { Components, Token, useFormatNumber } from "@orbs-network/twap-ui";
 import { Config, Configs, eqIgnoreCase, getNetwork } from "@orbs-network/twap-sdk";
-import { MdClose } from "@react-icons/all-files/md/MdClose";
-import { BsMoon } from "@react-icons/all-files/bs/BsMoon";
-import { BsSun } from "@react-icons/all-files/bs/BsSun";
 import { useToken, useTokenBalance, useTokenList, useTokenUsd } from "./hooks";
 import { Virtuoso } from "react-virtuoso";
 import { Panels, useDappContext } from "./context";
 import { useSwitchChain } from "wagmi";
+import { NumericFormat } from "react-number-format";
+import BN from "bignumber.js";
+import { maxUint256 } from "viem";
 
-export const Popup = ({ isOpen, onClose, children, className = "", title }: { isOpen: boolean; onClose: () => void; children: ReactNode; className?: string; title?: string }) => {
+export const NumberInput = (props: {
+  onChange: (value: string) => void;
+  value?: string | number;
+  placeholder?: string;
+  disabled?: boolean;
+  isAllowed?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  loading?: boolean;
+  className?: string;
+  maxValue?: string;
+  prefix?: string;
+  decimalScale?: number;
+  minAmount?: number;
+}) => {
+  const { onChange, value, placeholder, disabled, onFocus, onBlur, maxValue, prefix, decimalScale, minAmount } = props;
+  const inputValue = value || minAmount || "";
+
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      classes={{
-        paper: `popup-main ${className}`,
+    <NumericFormat
+      className={props.className}
+      allowNegative={false}
+      disabled={disabled}
+      decimalScale={decimalScale}
+      onBlur={onBlur}
+      onFocus={onFocus}
+      style={{
+        flex: 1,
       }}
-    >
-      <div className="popup-header">
-        {title && <h2>{title}</h2>}
-        <button onClick={onClose} className="close-btn">
-          <MdClose />
-        </button>
-      </div>
-      <div className="popup-content">{children}</div>
-    </Dialog>
+      placeholder={placeholder || "0"}
+      isAllowed={(values) => {
+        const { floatValue = 0 } = values;
+        return maxValue ? floatValue <= parseFloat(maxValue) : BN(floatValue).isLessThanOrEqualTo(maxUint256.toString());
+      }}
+      prefix={prefix ? `${prefix} ` : ""}
+      value={disabled && value === "0" ? "" : inputValue}
+      thousandSeparator={","}
+      decimalSeparator="."
+      type="text"
+      min={minAmount}
+      onValueChange={(values, _sourceInfo) => {
+        if (_sourceInfo.source !== "event") {
+          return;
+        }
+
+        onChange(values.value === "." ? "0." : values.value);
+      }}
+    />
   );
 };
 
-export const ToggleTheme = () => {
-  const size = 18;
-  const { setTheme, theme } = useDappContext();
+export const Popup = ({ isOpen, onClose, children, className = "", title }: { isOpen: boolean; onClose: () => void; children: ReactNode; className?: string; title?: string }) => {
   return (
-    <div>
-      <button
-        style={{
-          opacity: theme === "dark" ? 0.5 : 1,
-        }}
-        onClick={() => setTheme("light")}
-      >
-        <BsMoon style={{ width: size, height: size }} />
-      </button>
-      <button
-        style={{
-          opacity: theme === "light" ? 0.5 : 1,
-        }}
-        onClick={() => setTheme("dark")}
-      >
-        <BsSun style={{ width: size, height: size }} />
-      </button>
-    </div>
+    <Modal
+      centered={true}
+      open={isOpen}
+      onCancel={onClose}
+      footer={null}
+      classNames={{
+        content: `popup-main ${className}`,
+      }}
+      styles={{
+        content: {
+          borderRadius: 16,
+        },
+      }}
+    >
+      <div className="popup-header">{title && <h2>{title}</h2>}</div>
+      <div className="popup-content">{children}</div>
+    </Modal>
   );
 };
 

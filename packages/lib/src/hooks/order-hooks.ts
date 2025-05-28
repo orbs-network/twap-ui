@@ -6,6 +6,7 @@ import moment from "moment";
 import { useTwapContext } from "../context";
 import { TwapOrder, Token, PublicClient } from "../types";
 import { getPublicFallbackClient } from "../lib";
+import { useCancelOrder } from "./send-transactions-hooks";
 
 const useKey = (config: Config) => {
   const { account } = useTwapContext();
@@ -199,6 +200,7 @@ const useOrdersQuery = (config: Config) => {
 export const useOrders = (config?: Config) => {
   const { config: contextConfig } = useTwapContext();
   const { data: orders, isLoading, error, refetch } = useOrdersQuery(config ?? contextConfig);
+  const {mutateAsync: cancelOrder} = useCancelOrder()
 
   return useMemo(() => {
     return {
@@ -212,8 +214,9 @@ export const useOrders = (config?: Config) => {
       isLoading,
       error,
       refetch,
+      cancelOrder,
     };
-  }, [orders, isLoading, error, refetch]);
+  }, [orders, isLoading, error, refetch, cancelOrder]);
 };
 
 const filterAndSortOrders = (orders: TwapOrder[], status: OrderStatus) => {

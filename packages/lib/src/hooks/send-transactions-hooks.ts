@@ -318,16 +318,16 @@ export const useUnwrapToken = () => {
         confirmations: 2,
       });
 
-      await callbacks.unwrap?.onSuccess?.(receipt, amountUI);
+      await callbacks?.unwrap?.onSuccess?.(receipt, amountUI);
       return receipt;
     },
     {
       onMutate: () => {
-        callbacks.unwrap?.onRequest?.(amountUI);
+        callbacks?.unwrap?.onRequest?.(amountUI);
       },
       onSuccess: resetState,
       onError: (error) => {
-        callbacks.unwrap?.onFailed?.((error as any).message);
+        callbacks?.unwrap?.onFailed?.((error as any).message);
       },
     },
   );

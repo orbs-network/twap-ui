@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Token } from "@orbs-network/twap-ui";
-import { useMediaQuery } from "@mui/material";
 import BN from "bignumber.js";
 import { amountBN, amountUi, eqIgnoreCase, erc20abi, getNetwork, isNativeAddress, networks, zeroAddress } from "@orbs-network/twap-sdk";
 import _ from "lodash";
@@ -291,7 +290,22 @@ export const useMarketPrice = (_fromToken?: Token, _toToken?: Token) => {
   };
 };
 
-export const useIsMobile = () => useMediaQuery("(max-width:600px)");
+const useWidth = () => {
+  const [width, setWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 0);
+
+  useEffect(() => {
+    function handleResize() {
+      setWidth(window.innerWidth);
+    }
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return width;
+};
+
+export const useIsMobile = () => useWidth() < 600;
 
 export const ten = BN(10);
 

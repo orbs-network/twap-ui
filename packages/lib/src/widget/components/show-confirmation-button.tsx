@@ -15,7 +15,7 @@ export const useConfirmationButtonPanel = () => {
   const minChunkSizeUsd = useMinChunkSizeUsd();
 
   const onOpen = useOnOpenConfirmationModal();
-  const { onConnect } = callbacks;
+  const onConnect = callbacks?.onConnect;
   const switchChain = useSwitchChain();
   const shouldUnwrap = useShouldUnwrap();
   const shouldOnlyWrap = useShouldOnlyWrap();
@@ -67,7 +67,7 @@ export const useConfirmationButtonPanel = () => {
 
     return {
       text: error || t.wrap,
-      onClick: wrap,
+      onClick: () => wrap,
       disabled: Boolean(error || wrapLoading),
       loading: wrapLoading,
     };
@@ -78,7 +78,7 @@ export const useConfirmationButtonPanel = () => {
 
     return {
       text: error || t.unwrap,
-      onClick: unwrap,
+      onClick: () => unwrap(),
       disabled: Boolean(error || unwrapLoading),
       loading: unwrapLoading,
     };

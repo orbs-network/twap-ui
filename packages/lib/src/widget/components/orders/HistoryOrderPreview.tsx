@@ -15,7 +15,7 @@ import { OrderDetails } from "../../../components/order-details";
 
 export const HistoryOrderPreview = () => {
   const order = useSelectedOrder();
-  const { useToken, components, translations: t, icons } = useTwapContext();
+  const { useToken, components, translations: t } = useTwapContext();
 
   const { selectedOrderId, closePreview } = useOrderHistoryContext();
   const [expanded, setExpanded] = useState<string | false>("panel1");
@@ -38,7 +38,7 @@ export const HistoryOrderPreview = () => {
     <div className="twap-orders__selected-order">
       <div className="twap-orders__selected-order-header">
         <div style={{ cursor: "pointer" }} onClick={closePreview} className="twap-orders__selected-order-header-back-icon">
-          {icons?.selectedOrderBack || <HiArrowLeft />}
+          <HiArrowLeft />
         </div>
         <p className="twap-orders__selected-order-header-title">
           {name} {t.order}

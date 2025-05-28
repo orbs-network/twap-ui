@@ -16,7 +16,7 @@ import { TradeAmountMessage, useTradeAmountMessagePanel } from "./components/Tra
 import { shouldUnwrapOnly, shouldWrapOnly } from "../utils";
 import { Duration, useDurationPanel } from "./components/trade-duration-panel";
 import { TradesAmount, useTradesAmountPanel } from "./components/trades-amount-panel";
-import { useFillDelayPanel, useLimitPricePanel, useUserOrders } from "../hooks/ui-hooks";
+import { useFillDelayPanel, useLimitPricePanel, useSwitchTokensCallback, useUserOrders } from "../hooks/ui-hooks";
 import { ORBS_LOGO, ORBS_WEBSITE_URL } from "../consts";
 
 const Widget = (props: TwapProps) => {
@@ -57,6 +57,7 @@ Widget.useTradesAmountPanel = useTradesAmountPanel;
 Widget.useDurationPanel = useDurationPanel;
 Widget.useTradeAmountMessagePanel = useTradeAmountMessagePanel;
 Widget.useConfirmationButtonPanel = useConfirmationButtonPanel;
+Widget.useSwitchTokens = useSwitchTokensCallback;
 Widget.websiteUrl = ORBS_WEBSITE_URL;
 Widget.orbsLogoUrl = ORBS_LOGO;
 export { Widget };

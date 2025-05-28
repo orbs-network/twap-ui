@@ -361,17 +361,12 @@ export type Callbacks = {
   onDstTokenSelect?: (token: any) => void;
   onSwitchTokens?: () => void;
   onConnect?: () => void;
-  onMaxSrcAmount?: () => void;
 };
 
 export interface Provider {
   request(...args: any): Promise<any>;
   [key: string]: any; // Allow extra properties
 }
-
-type Icons = {
-  selectedOrderBack?: ReactNode;
-};
 
 export type PublicClient = ReturnType<typeof createPublicClient>;
 export type WalletClient = ReturnType<typeof createWalletClient>;
@@ -414,9 +409,8 @@ export interface TwapProps {
   marketReferencePrice: { value?: string; isLoading?: boolean };
   customMinChunkSizeUsd?: number;
   useToken?: (value?: string) => Token | undefined;
-  callbacks: Callbacks;
+  callbacks?: Callbacks;
   chainId?: number;
-  icons?: Icons;
   dateFormat?: (date: number) => string;
   account?: string;
   orderDisclaimerAcceptedByDefault?: boolean;

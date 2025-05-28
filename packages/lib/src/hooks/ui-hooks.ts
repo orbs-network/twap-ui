@@ -48,23 +48,23 @@ export const useLimitPriceTokenSelect = () => {
   const bottomTokenSelect = useCallback(
     (token: any) => {
       if (isInvertedPrice) {
-        callbacks.onSrcTokenSelect?.(token);
+        callbacks?.onSrcTokenSelect?.(token);
       } else {
-        callbacks.onDstTokenSelect?.(token);
+        callbacks?.onDstTokenSelect?.(token);
       }
     },
-    [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect],
+    [isInvertedPrice, callbacks?.onDstTokenSelect, callbacks?.onSrcTokenSelect],
   );
 
   const topTokenSelect = useCallback(
     (token: any) => {
       if (isInvertedPrice) {
-        callbacks.onDstTokenSelect?.(token);
+        callbacks?.onDstTokenSelect?.(token);
       } else {
-        callbacks.onSrcTokenSelect?.(token);
+        callbacks?.onSrcTokenSelect?.(token);
       }
     },
-    [isInvertedPrice, callbacks.onDstTokenSelect, callbacks.onSrcTokenSelect],
+    [isInvertedPrice, callbacks?.onDstTokenSelect, callbacks?.onSrcTokenSelect],
   );
 
   return {
@@ -231,14 +231,14 @@ export const useTokenSelect = ({ isSrcToken }: { isSrcToken: boolean }) => {
   const { callbacks } = useTwapContext();
   return useCallback(
     (token: any) => {
-      isSrcToken ? callbacks.onSrcTokenSelect?.(token) : callbacks.onDstTokenSelect?.(token);
+      isSrcToken ? callbacks?.onSrcTokenSelect?.(token) : callbacks?.onDstTokenSelect?.(token);
     },
-    [isSrcToken, callbacks.onSrcTokenSelect, callbacks.onDstTokenSelect],
+    [isSrcToken, callbacks?.onSrcTokenSelect, callbacks?.onDstTokenSelect],
   );
 };
 
 export const useSwitchTokensCallback = () => {
-  return useTwapContext().callbacks.onSwitchTokens;
+  return useTwapContext().callbacks?.onSwitchTokens;
 };
 
 export const usePriceDisplay = (type: "limit" | "market") => {
