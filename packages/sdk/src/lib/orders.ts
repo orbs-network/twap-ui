@@ -255,6 +255,8 @@ export class Orders {
         maker: o.maker,
         exchange: o.exchange,
         twapAddress: o.twapAddress,
+        srcTokenSymbol: o.srcTokenSymbol,
+        dstTokenSymbol: o.dstTokenSymbol,
       });
     });
     return parsedOrders;
@@ -313,6 +315,8 @@ export const buildOrder = ({
   maker,
   exchange,
   twapAddress,
+  srcTokenSymbol,
+  dstTokenSymbol,
 }: {
   fills?: GraphFill[];
   srcAmount: string;
@@ -330,6 +334,8 @@ export const buildOrder = ({
   maker: string;
   exchange: string;
   twapAddress: string;
+  srcTokenSymbol: string;
+  dstTokenSymbol: string;
 }) => {
   const { filledDstAmount, filledSrcAmount, filledDollarValueIn, filledDollarValueOut, dexFee } = parseFills(fills || ([] as GraphFill[]));
   const chunks = new BN(srcAmount || 0)
@@ -364,6 +370,8 @@ export const buildOrder = ({
     chunks,
     dstMinAmount: Number(dstMinAmountPerChunk) === 1 ? "0" : new BN(dstMinAmountPerChunk).times(chunks).toString(),
     isMarketOrder: type === OrderType.TWAP_MARKET,
+    srcTokenSymbol,
+    dstTokenSymbol,
   };
 };
 

@@ -2,6 +2,7 @@ import { AddressPadding, OrderType, Token } from "./types";
 import BN from "bignumber.js";
 import { eqIgnoreCase, getNetwork, isNativeAddress, networks, TwapAbi } from "@orbs-network/twap-sdk";
 import { decodeEventLog, TransactionReceipt } from "viem";
+export { getOrderLimitPriceRate } from "@orbs-network/twap-sdk";
 
 export const removeCommas = (numStr: string): string => {
   return numStr.replace(/,/g, "");
@@ -73,7 +74,7 @@ export const parseError = (error?: any) => {
   }
 };
 
-export function formatDecimals(value?: string, scale: number = 6, maxDecimals: number = 8): string {
+export function formatDecimals(value?: string, scale = 6, maxDecimals = 8): string {
   if (!value) return "";
 
   // ─── keep the sign, work with the absolute value ────────────────

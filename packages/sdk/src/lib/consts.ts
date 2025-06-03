@@ -46,4 +46,5 @@ export const LEGACY_EXCHANGES_MAP: Record<string, string[]> = {
   [Configs.DragonSwap.name]: ["0x101e1B65Bb516FB5f4547C80BAe0b51f1b8D7a22"],
   [Configs.SpookySwapSonic.name]: ["0xAd97B770ad64aE47fc7d64B3bD820dCDbF9ff7DA"],
   [Configs.SpookySwap.name]: ["0x3924d62219483015f982b160d48c0fa5Fd436Cba"],
+  [Configs.SwapX.name]: ["0xE5012eBDe5e26EE3Ea41992154731a03023CF274"],
 };

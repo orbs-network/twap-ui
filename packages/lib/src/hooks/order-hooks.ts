@@ -74,7 +74,7 @@ export const usePersistedOrdersStore = (config: Config) => {
 
   const addCreatedOrder = useCallback(
     (orderId: number, txHash: string, params: string[], srcToken: Token, dstToken: Token) => {
-      const order = buildOrder({
+      const _order = buildOrder({
         srcAmount: params[3],
         srcTokenAddress: srcToken!.address,
         dstTokenAddress: dstToken!.address,
@@ -90,15 +90,22 @@ export const usePersistedOrdersStore = (config: Config) => {
         maker: account!,
         exchange: config.exchangeAddress,
         twapAddress: config.twapAddress,
+        srcTokenSymbol: srcToken.symbol,
+        dstTokenSymbol: dstToken.symbol,
       });
+
+      const order: TwapOrder = {
+        ..._order,
+        status: OrderStatus.Open,
+        fillDelayMillis: getOrderFillDelay(_order.fillDelay, config),
+      };
 
       const orders = getCreatedOrders();
       if (orders.some((o) => o.id === order.id)) return;
       orders.push(order);
       localStorage.setItem(ordersKey, JSON.stringify(orders));
       queryClient.setQueryData(queryKey, (orders?: TwapOrder[]) => {
-        if (!orders) return [order];
-        return [{ ...order, status: OrderStatus.Open }, ...orders];
+        return !orders ? [order] : [order, ...orders];
       });
     },
     [getCreatedOrders, ordersKey, queryClient, queryKey],

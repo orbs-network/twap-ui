@@ -368,7 +368,7 @@ const MarketPriceToggle = () => {
   return (
     <Flex gap={10} align="center" justify="flex-end" style={{ width: "100%" }}>
       <Typography>Limit Price</Typography>
-      <Switch checked={!!isMarketOrder} onChange={() => setIsMarketOrder(!isMarketOrder)} />
+      <Switch checked={!isMarketOrder} onChange={() => setIsMarketOrder(!isMarketOrder)} />
     </Flex>
   );
 };
@@ -400,17 +400,18 @@ export const Dapp = () => {
         dstUsd1Token={dstUsd}
         srcBalance={srcBalance}
         dstBalance={dstBalance}
+        customMinChunkSizeUsd={5}
         marketReferencePrice={{ value: marketPrice, isLoading: marketPriceLoading }}
         components={{
           Tooltip: CustomTooltip,
           Link,
           OrderConfirmationModal: OrderConfirmationModal,
           // uncomment this to show the orders modal
-          // OrdersModal: OrderHistoryModal,
+          OrdersModal: OrderHistoryModal,
           SelectMenu,
           Toggle,
           Button: CustomButton,
-          OrdersPanel,
+          // OrdersPanel,
         }}
         useToken={useToken}
         fee={0.25}
@@ -439,14 +440,11 @@ export const Dapp = () => {
             <TradeAmountMessage />
             <ConfirmationButton />
             <Widget.PoweredByOrbs />
-
+            <Widget.Orders />
             <Widget.WarningMessage />
           </Flex>
         </StyledLayout>
       </Widget>
-      <Flex style={{ width: "100%", marginTop: 50, maxWidth: "80vw" }}>
-        <Widget.Orders />
-      </Flex>
     </>
   );
 };
