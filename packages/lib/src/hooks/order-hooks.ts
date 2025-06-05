@@ -192,7 +192,7 @@ const useOrdersQuery = (config: Config) => {
           }
         }
 
-        return { ...order, status, fillDelayMillis: getOrderFillDelay(order.fillDelay, config) };
+        return { ...order, status, fillDelayMillis: getOrderFillDelay(order.fillDelay, config), progress: status === OrderStatus.Completed ? 100 : order.progress };
       });
     },
     {

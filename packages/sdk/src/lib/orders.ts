@@ -238,6 +238,7 @@ export class Orders {
 
     const parsedOrders = createdOrders.map((o) => {
       const fills = allFills?.find((it) => it.id === Number(o.Contract_id) && it.exchange === o.exchange && it.twapAddress === o.twapAddress);
+
       return buildOrder({
         fills: fills?.fills,
         srcAmount: o.ask_srcAmount,

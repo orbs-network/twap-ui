@@ -83,7 +83,7 @@ const DurationLabel = () => {
 
 export const useDurationPanel = () => {
   const t = useTwapContext().translations;
-  const { orderDuration: duration, setOrderDuration: setDuration, milliseconds: durationMillis } = useOrderDuration();
+  const { orderDuration: duration, setOrderDuration: setDuration, milliseconds: durationMillis, error } = useOrderDuration();
 
   const onInputChange = useCallback(
     (value: string) => {
@@ -106,6 +106,7 @@ export const useDurationPanel = () => {
     onUnitSelect,
     title: t.expiry,
     tooltip: t.maxDurationTooltip,
+    error,
   };
 };
 
@@ -156,3 +157,4 @@ Duration.Buttons = Buttons;
 Duration.Label = DurationLabel;
 Duration.Menu = Menu;
 Duration.usePanel = useDurationPanel;
+Duration.Resolution = Resolution;

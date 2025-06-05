@@ -18,19 +18,24 @@ interface ContextProps {
 type ThemeMode = "light" | "dark";
 const Context = createContext({} as ContextProps);
 
+const getConfigKey = (config: Config) => {
+  return `${config.name}-${config.chainId}`
+}
+
 const useConfig = () => {
   const { chainId } = useAccount();
-
+  
   const initialConfig = useMemo(() => {
-    const configName = localStorage.getItem("config-name");
-    const config = Object.values(Configs).find((it) => it.name === configName);
+    const configKey = localStorage.getItem("config-name");
+    const config = Object.values(Configs).find((it) => getConfigKey(it as Config) === configKey);
     return config || Object.values(Configs).find((it) => it.chainId === chainId) || Configs.Lynex;
   }, [chainId]);
+  
   const [config, setConfig] = useState(initialConfig as any as Config);
 
   const onConfigChange = useCallback(
     (config: Config) => {
-      localStorage.setItem("config-name", config.name);
+      localStorage.setItem("config-name", getConfigKey(config));
       setConfig(config);
     },
     [setConfig],
