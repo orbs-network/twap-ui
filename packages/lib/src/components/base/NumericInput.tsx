@@ -22,21 +22,7 @@ export interface Props {
   style?: CSSProperties;
 }
 
-function NumericInput({
-  style = {},
-  prefix = "",
-  onChange,
-  value,
-  disabled = false,
-  placeholder,
-  onFocus,
-  onBlur,
-  loading = false,
-  className = "",
-  maxValue,
-  decimalScale,
-  minAmount,
-}: Props) {
+function NumericInput({ prefix = "", onChange, value, disabled = false, placeholder, onFocus, onBlur, loading = false, className = "", maxValue, decimalScale, minAmount }: Props) {
   const inputValue = value || minAmount || "";
 
   const {

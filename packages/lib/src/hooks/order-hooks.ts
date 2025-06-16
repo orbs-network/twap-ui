@@ -1,4 +1,4 @@
-import { buildOrder, Config, getOrderFillDelay, Order, OrderStatus, parseOrderStatus, TwapAbi } from "@orbs-network/twap-sdk";
+import { buildOrder, Config, Order, OrderStatus, parseOrderStatus, TwapAbi } from "@orbs-network/twap-sdk";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { REFETCH_ORDER_HISTORY } from "../consts";
@@ -92,12 +92,12 @@ export const usePersistedOrdersStore = (config: Config) => {
         twapAddress: config.twapAddress,
         srcTokenSymbol: srcToken.symbol,
         dstTokenSymbol: dstToken.symbol,
+        config,
       });
 
       const order: TwapOrder = {
         ..._order,
         status: OrderStatus.Open,
-        fillDelayMillis: getOrderFillDelay(_order.fillDelay, config),
       };
 
       const orders = getCreatedOrders();
@@ -191,8 +191,7 @@ const useOrdersQuery = (config: Config) => {
             deleteCancelledOrderId(order.id);
           }
         }
-
-        return { ...order, status, fillDelayMillis: getOrderFillDelay(order.fillDelay, config), progress: status === OrderStatus.Completed ? 100 : order.progress };
+        return { ...order, status, progress: status === OrderStatus.Completed ? 100 : order.progress };
       });
     },
     {

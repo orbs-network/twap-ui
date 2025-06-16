@@ -186,7 +186,6 @@ export class Orders {
     const where = `where: { TWAP_id_in: [${ids.join(", ")}], exchange_in: [${this.exchanges}] }`;
 
     const fills = [];
-    const dexFee = this.config.chainId === 56 ? "dexFee" : "";
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const query = `
@@ -204,7 +203,6 @@ export class Orders {
           transactionHash
           dollarValueIn
           dollarValueOut,
-          ${dexFee}
         }
       }
     `;
@@ -258,6 +256,7 @@ export class Orders {
         twapAddress: o.twapAddress,
         srcTokenSymbol: o.srcTokenSymbol,
         dstTokenSymbol: o.dstTokenSymbol,
+        config: this.config,
       });
     });
     return parsedOrders;
@@ -300,6 +299,7 @@ export const getOrderLimitPriceRate = (order: Order, srcTokenDecimals: number, d
 };
 
 export const buildOrder = ({
+  config,
   fills,
   srcAmount,
   srcTokenAddress,
@@ -319,6 +319,7 @@ export const buildOrder = ({
   srcTokenSymbol,
   dstTokenSymbol,
 }: {
+  config: Config;
   fills?: GraphFill[];
   srcAmount: string;
   srcTokenAddress: string;
@@ -373,6 +374,7 @@ export const buildOrder = ({
     isMarketOrder: type === OrderType.TWAP_MARKET,
     srcTokenSymbol,
     dstTokenSymbol,
+    fillDelayMillis: getOrderFillDelay(fillDelay, config),
   };
 };
 
@@ -400,6 +402,6 @@ export const parseOrderStatus = (progress: number, status?: number) => {
   }
 };
 
-export const getOrderFillDelay = (fillDelay: number, config: Config) => {
+const getOrderFillDelay = (fillDelay: number, config: Config) => {
   return (fillDelay || 0) * 1000 + getEstimatedDelayBetweenChunksMillis(config);
 };

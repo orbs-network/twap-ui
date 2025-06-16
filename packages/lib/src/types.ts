@@ -520,5 +520,4 @@ export { SwapStatus };
 
 export interface TwapOrder extends Order {
   status?: OrderStatus;
-  fillDelayMillis?: number;
 }
